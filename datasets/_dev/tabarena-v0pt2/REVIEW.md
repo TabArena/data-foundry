@@ -602,6 +602,8 @@
   amend USE-1/USE-3 (option d). The knowledge files change; no
   definition does.
   **Deferred (2026-10-21):** waits on glioma_grading's issue 5.
+  **Resolved (2026-10-26, Lennart):** no; glioma_grading is retired (`No`, `No Good Target / Scientific Discovery`):
+  a cross-check of a label that already exists is no use case. A USE-1 Cases row records it.
 - **A USE-5 Cases row for a label right in its era but renamed later.** glioma_grading keeps TCGA's histological
   grade of 1989-2013, which WHO 2021 partly renames; corporate_credit_rating was retired under USE-5 (2026-10-16)
   because its labels were wrong for their own date and repairable from the origin (glioma review panel, 2026-10-20;
@@ -609,6 +611,8 @@
   Proposal: once glioma's issue 1 is decided, add the reading as a USE-5 Cases row ("a label correct under the
   criteria of its era, renamed later: kept with a note"). The knowledge files change; no definition does.
   **Deferred (2026-10-21):** waits on glioma_grading's issue 1.
+  **Resolved (2026-10-26):** moot for glioma_grading, retired on its use case; the question returns with the next
+  TCGA-era label (tcga_kidney_cancers).
 - **Decide sarcoma's and glioma_grading's tissue-site question alike.** Both are TCGA sets whose tissue source site
   carries the label (glioma: 45 sites, each pure in the label) and both ship a random split by patient. In glioma the
   features do not predict the site (below the majority rate within each grade) and holding sites out leaves the mean
@@ -618,6 +622,7 @@
   apart. Proposal: decide sarcoma's issue 4 with that fact written as the reason, and check glioma's split against the
   decision.
   **Deferred (2026-10-21):** waits on sarcoma's issue 4.
+  **Answer (AI, 2026-10-26):** glioma_grading is retired, so only sarcoma's issue 4 remains.
 
 ### Rules from the distribution_transformers review
 

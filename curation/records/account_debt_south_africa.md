@@ -47,6 +47,14 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Kaggle dataset upload without a task or evaluation metric; no paper defines one.
 
+CC (2026-10-26, Lennart): issue 1: drop the located unrecorded runs (LEAK-25 as amended on 2026-10-21).
+
+CC (2026-10-26, Lennart): issue 8: keep `TotalElectricityBill` with the note, "we can investigate later again".
+
+CC (2026-10-26, Lennart): the declared metric, ROC AUC (the fallback), is checked as declared.
+
+**Assessment (AI, 2026-10-26):** issues 1 and 8 are settled as implemented. Issue 9 (keep the billing totals) waits for a LEAK-10 amendment: the keep is a Must departure that a Cases row cannot carry (consistency check on the review page).
+
 ## Reference
 
 Kaggle

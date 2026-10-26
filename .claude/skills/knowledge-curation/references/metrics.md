@@ -97,7 +97,7 @@ challenge). It is overruled only by MET-2 or on evidence that it is biased or wr
 (a metric the forum shows was gamed) or measured on the shipped splits, written in the notes with its numbers. A
 competition that scored hard labels has fixed that the decision is a hard label, so its threshold metric (F1, a cost
 matrix) is kept: methods choose their threshold on the training side. Cases: zillow_prize, mercari_price_suggestion,
-amex_non_iid_1m, african_credit_scoring_challenge, force_2020.
+amex_non_iid_1m, force_2020; overruled: african_credit_scoring_challenge (2026-10-26).
 
 **MET-5 (Should).** A paper's metric is the source's metric only when it is one deliberate choice: the paper names it
 as the criterion it ranks, tunes or selects models by, or argues why it fits the decision. A paper that reports
@@ -219,7 +219,7 @@ and wait for the curator; the others are decided.
 |---|---|---|---|---|
 | MET-4 | zillow_prize | `mae`, the competition's metric (2026-10-21) | Kaggle scored MAE on logerror; RMSE had been kept as the house default; 0.38% of the rows (absolute logerror above 1) hold 49.9% of the squared error | applied |
 | MET-4, MET-12 | amex_non_iid_1m | `gini_top_capture` (top 4%, negatives weighted 20), per customer | the competition's M = 0.5 (G + D); the dataset-named `amex_metric` renamed; the official pandas code is slow on 460k customers | proposed |
-| MET-4, MET-6 | african_credit_scoring_challenge | `f1`, the competition's metric (2026-10-21) | Zindi scored F1 on submitted labels; ROC AUC had been kept as the house default | applied |
+| MET-4, MET-10 | african_credit_scoring_challenge | fallback `roc_auc`, Zindi's F1 overruled (2026-10-26, Lennart; `f1` declared 2026-10-21) | the host asked for "the probability of loan default" and had its top 10 bin "model outputs and probabilities" into risk categories, so the decision is a risk grade; the forum shows the F1 gamed by a hand-written rule (+0.07-0.10); with about 20 defaults per window one default moves F1 by about 0.05 | overrule |
 | MET-4, MET-7, MET-12 | force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition | `cost_matrix` with the competition's penalty matrix (2026-10-21) | a published 12 x 12 penalty matrix over hard labels (11 x 11 after Basement was dropped); no standard metric ranks the same | applied, renamed from `force_2020_penalty_matrix` |
 | MET-4 | digicow_farmer_training_adoption_challenge | `log_loss` (2026-10-21) | Zindi's rubric (log loss 0.75, ROC AUC 0.25 over the 7-, 90- and 120-day targets) scores targets the task does not ship; on the shipped 7-day target log loss carries 0.65 of 0.80 | applied |
 | MET-11 | porto_seguro | `roc_auc` for the normalized Gini (2026-10-21) | for a binary target the normalized Gini is 2 x ROC AUC - 1, so the two rank models the same | applied |

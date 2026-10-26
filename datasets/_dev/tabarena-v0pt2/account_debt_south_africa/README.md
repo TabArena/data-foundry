@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: account_debt_south_africa
 container_format: 2
-checksum: v2:2e6c60a670e40d70d6a38cb702fb56c764240d00ad493bcdd2d8149f0e1b5466
+checksum: v2:e6341748e4f6b2ca8f8352ba2f8782c3fc1367f132db6f4ce29611fc3c7cb316
 build: null
 build_stale: false
 data:
@@ -65,7 +65,7 @@ decisions:
 
 Binary classification of `BadDebt`, scored with `roc_auc` on IID splits. 101,686 rows and 7 features. Source: Kaggle (2020).
 
-Not built yet. The current definition gives checksum `v2:2e6c60a670e40d70d6a38cb702fb56c764240d00ad493bcdd2d8149f0e1b5466`.
+Not built yet. The current definition gives checksum `v2:e6341748e4f6b2ca8f8352ba2f8782c3fc1367f132db6f4ce29611fc3c7cb316`.
 
 ## In brief
 
@@ -192,7 +192,7 @@ We start with MunicipalDebtAnalysis.csv (138,509 accounts of eight South African
 - We drop the payment totals `totalreceipting`, `avgreceipting` and `collectionratio`: the status is read at the end of the two years they sum (decision table). ROC AUC 0.952 with them, 0.874 without.
 - Kept on purpose: `TotalBilling` and `AverageBilling` sum the same window, but billing is set by tariff and property. Within file blocks of 2,500 rows and property-value bins, their residuals separate the classes at ROC AUC 0.509 (total), 0.501 (per line) and 0.496 (number of lines), so no outcome-dependent part shows. Revisit if a column of interest or penalties on arrears turns up.
 - We drop `accountcategoryid` and `acccatabbr` (the category again), rename to the data card's names, and set placeholders to missing: a `PropertyValue` of 0 or 1 (25 rows of 1) and a `PropertySize` of 10 square metres or less (5 rows above 0).
-- Potential leak, kept on purpose (open for the curator): `TotalElectricityBill`, which the data card adds as "a means to recover debt" (a cut-off for arrears), so a zero bill may be a consequence of the target (LEAK-10, LEAK-6). Within file blocks where 80% or more of accounts are billed for electricity, the accounts billed none are bad debts at 38.6% against 19.2% (within-block ROC AUC 0.588), also at equal payment status; among billed accounts the median share of the bill is 0.334 for both classes, so no partial cut-off shows. A vacant, unconnected or prepaid property also bills zero; the data cannot tell these apart. ROC AUC 0.874 with it, 0.865 without.
+- Potential leak, kept on purpose (Lennart, CC 2026-10-26: kept with this note, to be investigated again): `TotalElectricityBill`, which the data card adds as "a means to recover debt" (a cut-off for arrears), so a zero bill may be a consequence of the target (LEAK-10, LEAK-6). Within file blocks where 80% or more of accounts are billed for electricity, the accounts billed none are bad debts at 38.6% against 19.2% (within-block ROC AUC 0.588), also at equal payment status; among billed accounts the median share of the bill is 0.334 for both classes, so no partial cut-off shows. A vacant, unconnected or prepaid property also bills zero; the data cannot tell these apart. ROC AUC 0.874 with it, 0.865 without.
 - Potential leak, kept on purpose: `HasIDNo`, by the data card a property of the holder ("often not captured properly or at all"). Accounts with one are bad debts more often (Residential 64% against 47%), so it may be captured when debt is pursued. ROC AUC 0.874 with it, 0.872 without.
 - We keep the 6,355 exact duplicate rows (6.2%), plausibly distinct accounts with the same property record or flat charge; without the copied test rows, ROC AUC falls from 0.874 to 0.867.
 - Anomaly: the file ends with a run of category Unknown (rows 134,192-138,276; 2,396 curated rows), mostly billed 1-3 times in two years; its never-payers with 1-3 bills are bad debts at 53% (86% elsewhere). Debt is recorded there, so it stays.

@@ -71,6 +71,12 @@ CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the o
 
 **Assessment (AI, 2026-10-22):** CLEAN-13 was amended on mortgage's issue 12 (Lennart, 2026-10-22): a block with at most one flag set merges with a reference level, so `data_channel` (`other` when no flag is set) now meets the rule as written; a Cases row names both datasets.
 
+CC (2026-10-26, Lennart): issue 8: keep the `Wrong Domain / Source Modality` and `NLP (Text)` markers, "to make clear that the original task behind this dataset would likely nowadays not be solved with tf-idf but raw embeddings with LLMs or similar. we can still keep the dataset for now as it is fine, but it is not perfect".
+
+CC (2026-10-26, Lennart): issue 9: keep `data_channel` merged; CLEAN-13 as amended on 2026-10-22 (mortgage's issue 12: exactly one flag, or at most one with a reference level) covers it.
+
+**Assessment (AI, 2026-10-26):** issues 8 and 9 are settled. Issue 5 waits for the wording of a LEAK-10 amendment (consistency check); issue 10 answers the question on the target: the source's decision acts on a score, its 1,400-share cut was set for class balance, and the regression ranks the articles as well as a classifier (ROC AUC 0.727 against 0.730 on the paper's label). The texts now say more than 1,400 shares, as the paper does.
+
 ## Reference
 
 A Proactive Intelligent Decision Support System for Predicting the Popularity of Online News

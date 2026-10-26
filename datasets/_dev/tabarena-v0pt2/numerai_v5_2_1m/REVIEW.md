@@ -63,6 +63,33 @@ and are no verdict reason (EV-4, as lucas_topsoil).
    - Decision: drop the 75, or keep them through the LEAK-31 amendment. If `all` is chosen in issue 4, the same call
      covers its 372 Faith features.
 
+   **Lennart (2026-10-26, discuss):** Please explain more slowly what these features potentially mean. Did they just arrive
+   later, or were they computed later? We don't care to be faithful to the exact old features at the time of the
+   competition. But if these features are correct and they exist in the same way for test data, we should be allowed
+   to use thenm no?
+
+   **Answer (AI, 2026-10-26):** both: they arrived late and their history was computed late, and the values are likely
+   correct. The problem is how they were chosen.
+   - Numerai engineers every feature "to be predictive of the target or additive to other features", and computes
+     each value from the data available at its era ("extreme care to make sure all features are point-in-time",
+     [docs](https://docs.numer.ai/numerai-tournament/data)). Faith I (186 features, era 1192) was released because a
+     model with it "does better than an identical model built on the V5 dataset in nearly every period", and Faith II
+     (186 more) added "variations" of "our most powerful features ever released"
+     ([forum 8200](https://forum.numer.ai/t/data-v5-1-release-faith/8200),
+     [8209](https://forum.numer.ai/t/new-target-for-payouts-and-data-v5-2-faith-ii/8209)).
+   - So the features were picked because they predicted the target over past weeks, and those weeks include our test
+     eras 1080-1191. It is like choosing features by their test-set score: every value is right, but the set was
+     tuned on our test labels, so every model looks better on those weeks than it could on new ones. After the
+     release (era 1192 on) your reading holds: there they are fair inputs.
+   - The gain fits that: +0.0043 ± 0.0006 per-era correlation in eras 1080-1131 (about 28% of the signal), +0.0013 in
+     1132-1183, +0.0056 in 1184-1191, and +0.0010 ± 0.0006 after the release. A drop at the release is what a
+     selection effect predicts (a fading edge once public could add to it).
+   - Keeping them with clean windows would mean testing only after era 1192: 44 eras (307,129 rows). With Numerai's
+     example model that scores 0.0062 ± 0.0027, too few for more than one window, and no more eras will come (v5 is
+     retired, issue 7).
+   - `medium` itself is not re-chosen: it is the 705 v5.0 features of July 2024 plus 35 Faith I and 40 Faith II.
+   - Recommendation unchanged: drop the 75 (705 features left).
+
 7. **Keep v5.2, or open v5.3 as a new record?** v5.3 ("Quantum", July 2026) is Numerai's current release, and its
    payout target is `target_ender_60`, the 60-day return (correlation 0.47 with the 20-day target; it needs a 12-era
    gap and is unresolved for eras 1228-1240). Numerai still updates the v5.2 files weekly.
@@ -75,6 +102,26 @@ and are no verdict reason (EV-4, as lucas_topsoil).
    - Recommendation: none; the panel left TP-6's question (is the 60-day payout target the better version?)
      unanswered.
    - Decision: keep v5.2 only, or also open v5.3 as a new record.
+
+   **Lennart (2026-10-26, discuss):** Is it the same data but a different target? then I would create a new record and
+   retire 5.2 and move to 5.3? or is it completely new data? how much does it differ? would it justify to keep both
+   versions in the benchmark?
+
+   **Answer (AI, 2026-10-26):** the same data with more features, not a new target; keep v5.2 only.
+   - v5.3 ("Quantum", 2026-07-16) is v5.2 plus 807 `quantum` features: all 2,748 v5.2 features, its 18 feature sets
+     (`medium` included) and its 41 targets are unchanged, and Numerai's staff write "v5.2 is a subset of 5.3". The
+     live files share the 6,861 stocks and agree on every shared feature.
+   - The 60-day payout target (`target_ender_60`, for rounds from 2026-08-28) is no v5.3 feature: our v5.2 files hold
+     it already. Choosing it is a separate call inside v5.2 (it needs a 12-era gap).
+   - The quantum features have the Faith problem on every window: released at about era 1229, after nearly all our
+     test eras, so LEAK-31 would drop them, which leads back to v5.2. Keeping both versions would ship the same rows
+     and targets twice (a duplicate).
+   - New fact: Numerai retired v5. "On October 16, 2026, Classic v6.0 becomes available to download, and public
+     v5.0–v5.3 training and validation downloads are retired" (docs). Our `download_description` no longer works from
+     Numerai; we hold the files, and community mirrors exist (not checked). v6.0 is new data: a new stock universe
+     with tickers and dates, 1,040 features (none shared with v5), 24 targets.
+   - Recommendation: keep v5.2 as a frozen release, note the retirement in the definition, and open v6.0 as a new
+     record for a current Numerai task (its tickers and dates reopen the forecasting question).
 
 4. **Restate the reason for `medium`, or ship `all`?** v5.2 has 2,748 features; the definition ships Numerai's
    `medium` set of 780, which Numerai describes as features "each unique in some way". CLEAN-22 lets a column leave
@@ -93,6 +140,22 @@ and are no verdict reason (EV-4, as lucas_topsoil).
    - Recommendation: keep `medium` only if a near-copy measurement supports it; otherwise `all` (critic and
      advocate; the mediator leaves it open). Quality only; it does not hold the dataset.
    - Decision: have the near-copy measurement run and keep `medium` if it holds, or ship `all` now.
+
+   **Lennart (2026-10-26, discuss):** taking all features seems more reasonable and leaving it to the model to select or
+   prune as needed, also maybe the models we tested for the probes are just not strong enough?
+
+   **Answer (AI, 2026-10-26):** agreed on `all`; the stronger models lift both sets but still cannot tell them apart.
+   - With Numerai's own settings, the example model (2,000 trees, learning rate 0.01, depth 5, column sample 0.1) and
+     the docs' deep benchmark model (30,000 trees, learning rate 0.001, 1,024 leaves), per-era CORR on the newest
+     window is 0.0035-0.0102 for `medium` and 0.0035-0.0108 for `all`, against 0.0006-0.0088 for the probes' untuned
+     LightGBM. The sign of all minus medium follows the training sample (+0.0055 and -0.0050 for two samples of the
+     same size), and on the full history (6.49M rows) the two tie.
+   - Training on the full history helps more than the feature set (newest window 0.0072 to 0.0102).
+   - Within `all` the `medium` features carry 26-27% of the gain, about their share of the columns; the other 1,968 add
+     no signal of their own, but nothing shows them to be near-copies. So CLEAN-22 gives no task reason to leave them
+     out, and `all` costs no score.
+   - Recommendation: ship `all`, without its Faith features (issue 3), which leaves exactly v5.0's `all` (2,376
+     features). Mark "Change" with issue 3's drop and I rebuild the definition.
 
 **Review panel:** ship after changes (mediator). Claim audit: most claims hold; four were refuted and are corrected
 in the notes (the target resolves about five weeks later, not four; the Faith gains are about half the stated size

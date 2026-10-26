@@ -30,7 +30,7 @@ For the curator: issue 3 (validity: chapter 10 on `event` = 0); issue 4 (a weigh
   against sepsis_survival_minimal_clinical_records).
 ```
 
-**Main points:** Read chapter 10 first, ship with the 728 `event` = 0 rows kept and the open risk stated in the notes,
+**Main points:** Keep the dataset at all (issue 10: the AI recommends `No` + `Not Representative`)? Read chapter 10 first, ship with the 728 `event` = 0 rows kept and the open risk stated in the notes,
 or hold (issue 3); keep the two-feature task, or No as for haberman_survival (issue 4); take the definition's Regression
 for the record's `problem_type`.
 
@@ -106,6 +106,39 @@ detail.
    - What would settle it: the benchmark's tuned results per fold, which show whether tuned methods separate.
    - Recommendation: none from the mediator (a weighing call); the advocate and the critic both keep it.
    - Decision: (a), (b) or (c).
+
+10. **Keep the dataset at all? (your verdict note)** You doubt the book's LGD table stands for a realistic task.
+
+    **Lennart (2026-10-26, discuss, on the verdict):** This is another use case / data from a book that is weird and likely a
+    bit fake. Are we sure we want to keep this dataset? I doubt it is representative of a good realistic task. Please
+    double check it and judge its quality. I assume it is not good enough
+
+    **Answer (AI, 2026-10-26):** not fake, but not good enough: `No` + `Not Representative`.
+    - Real, not generated. The book: "The data set has been kindly provided by a European bank and has been slightly
+      modified and anonymized. It includes 2,545 observations on loans and LGDs" (Baesens, Roesch and Scheule 2016,
+      ch. 1, p. 14). The values behave like real recoveries: 28.6% lose nothing and 5.6% everything, with the mass
+      between; the share without loss falls from 44% (LTV up to 0.3) to 6% (LTV above 1.2) and full losses rise from
+      2.5% to 22%; renting loans lose more (0.39 against 0.22); a linear model reaches R² 0.19, the level the authors
+      give for real linear LGD models (p. 3). No PROV-3 mark: no heaping, flat last digits; 26 over-precise LTVs and a
+      drifting file order point to an edited, sorted extract, not a generator.
+    - Not representative. The actor is real (a bank's IRB or IFRS 9 LGD model), but the table gives that model 2 of
+      the 5-15 inputs it uses (LTV and a renting flag; no exposure, collateral type, seniority, vintage, arrears or
+      macro), no default dates (no out-of-time test), an unclear portfolio (filed under "Corporate", with property-loan
+      fields) and an unsettled meaning for 28.6% of the target (issue 3). Strong methods land within 0.01-0.03 R², so
+      the task mostly measures regularisation.
+    - Consistent with today's calls: corporate_credit_rating_cat_data_set_ratings_raitings (the same book's ratings,
+      rejected), nba_players_2016_2019, dataorg_financial_health_prediction_challenge, and haberman_survival (two
+      features, `Not Representative`).
+    - mortgage, the book's third dataset, is a different case and should stay: the book names the provider and the
+      population ("50,000 residential U.S. mortgage borrowers over 60 periods ... provided by International Financial
+      Research"), it has about 20 inputs over dated quarters, and its defaults, payoffs, house prices and unemployment
+      peak at the real US dates (2006-2009). A line for the book's datasets: one stays only when the book says whose
+      rows they are (population, place, period) and the release keeps the inputs and dates the actor's model uses;
+      mortgage passes, lgd and ratings fail.
+    - A real LGD source for a later rebuild: Freddie Mac's single-family loan-level dataset holds the loss of each
+      defaulted loan (sale proceeds, expenses, recoveries) with dates and loan fields (licence and fit not checked).
+    - Recommendation: `No` + `Not Representative`, folder removed; issues 3 and 4 fall away with it. Set the verdict to
+      "Don't ship" and I retire it.
 
 **Review panel:** ship after changes (mediator). Claim audit: about 40 claims, none refuted; weakened and fixed: the
 within-run correlation (0.42, 0.35 without the exact repeats), the drift wording and the uncited `event` codebook

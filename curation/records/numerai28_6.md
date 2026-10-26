@@ -13,7 +13,7 @@ tags:
 collections:
 - TabArena Reject
 - TabSTAR
-year: '2017'
+year: '2016'
 source_links:
 - https://www.kaggle.com/datasets/numerai/encrypted-stock-market-data-from-numerai
 - https://www.openml.org/search?type=data&id=23517
@@ -42,6 +42,8 @@ CC (2026-10-22, Lennart): add as forced IID. Not a duplicate of numerai_v5_2: a 
 **Assessment (AI, 2026-10-22):** review panel (focused tier: claim audit, split audit) refuted no validity claim; its text fixes are in the notes (prediction point unstated in 2016; the LEAK-30 quantile bins kept on purpose; the hidden-week residual test; the IID ROC AUC read as an upper bound). dataset check: 0 errors, 0 warnings. Open in REVIEW.md: issue 1 (log loss, the source's metric, against ROC AUC) and the record fields `year` and `tags`. Priority 2: gap 0, use case -, source +, shape +, risk - (no thin domain or regime; encrypted features and a forced IID split; the data owner's CC0 release; 96,320 rows of 21 numeric features; log loss sits within 0.002 of the dummy). Not built yet.
 
 **Assessment (AI, 2026-10-22):** tag `Non-IID (Temporal)` replaced by `New IID`, following the decision to add it as forced IID (the definition carries `ForcedIIDFromTemporal`).
+
+CC (2026-10-26, Lennart): the record's year takes the definition's value (2016).
 
 ## Reference
 

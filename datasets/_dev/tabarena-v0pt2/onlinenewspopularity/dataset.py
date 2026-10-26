@@ -156,7 +156,7 @@ class Onlinenewspopularity(AbstractCuratedDataset):
         We start with OnlineNewsPopularity.csv from the UCI repository (dataset 332): Mashable articles published from 2013-01-07 to 2014-12-27, with 58 features extracted from each article's HTML and its shares at the crawl of 2015-01-08 (Fernandes et al. 2015). The R^2 values below are LightGBM on our 9 windows, averaged over 3 seeds.
 
         - Prediction point: before publication. The source's system "analyzes articles prior to their publication" (abstract) and suggests changes to the article and its publication day; the earlier Mashable articles are known, with their shares at the crawl of 2015-01-08 (see the potential leaks below).
-        - Target: `log_shares`, the natural log of the shares at the crawl. The source's binary task (popular above 1,400 shares) is a cut of this count.
+        - Target: `log_shares`, the natural log of the shares at the crawl. The source's binary task (popular: more than 1,400 shares, a threshold "which resulted in a balanced 'popular'/'unpopular' class distribution in the first training set", Fernandes et al. 2015, Sec. 3.1) is a cut of this count. The paper's decision acts on a score, not a label: its optimiser raises each article's probability of the popular class by suggesting changes before publication (Sec. 2.2, 2.4). The two framings rank articles alike on our windows: the regression's predictions score ROC AUC 0.727 on the > 1,400 label, a classifier 0.730 (paired difference 0.003, SE 0.003; LightGBM, 3 seeds, the 9 windows), so we keep the count.
         - Time: the publication date comes from the URL, which Mashable's archived pages confirm; the URL is dropped.
         - We drop `timedelta` and the seven weekday flags with `is_weekend`. They follow the authors' date, 1 to 5 days after the URL date for 24% of the articles, which is not known before publication and goes with the outcome (decision table).
         - The six `data_channel_is_*` flags become one categorical `data_channel`, `other` when no flag is set.
@@ -176,7 +176,7 @@ class Onlinenewspopularity(AbstractCuratedDataset):
     problem_type = "regression"
     metric = Metric.from_context(
         "rmsle",
-        reason="The paper scores a binary task (shares >= 1,400) with accuracy/F1/AUC; we ship a regression on the shares, so the original target is not ours. Shares are a heavy-tailed count (1 to 843,300) whose error matters relative to the count, so RMSLE on the shares.",
+        reason="The paper's task is binary (shares > 1,400, a cut set for class balance), ranked by ROC AUC; we ship a regression on the shares, which ranks articles as well (ROC AUC 0.727 on the paper's label against 0.730 for a classifier), so the original target is not ours. Shares are a heavy-tailed count (1 to 843,300) whose error matters relative to the count, so RMSLE on the shares.",
         target_transform="log",
     )
 

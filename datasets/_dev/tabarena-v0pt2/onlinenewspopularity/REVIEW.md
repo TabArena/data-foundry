@@ -13,9 +13,9 @@ split). Quality: CLEAN-11 and CLEAN-5 fixed; CLEAN-13 open (issue 9). Weighed: t
 ones changes R^2 by -0.0004) against the 15% and 9% of the signal the two groups carry. Left for the curator: issues
 5, 8 and 9.
 
-**Main points:** Keep the keyword and self-reference statistics with a note and amend LEAK-10 for them (issue 5);
-remove the record's `Wrong Domain / Source Modality` marker (issue 8); decide `data_channel` with mortgage's CLEAN-13
-amendment (issue 9).
+**Main points:** How to word the LEAK-10 amendment the keep needs (issue 5, a consistency check)? The share count or
+the source's popular/unpopular task (issue 10)? Settled on 2026-10-26: the markers kept, `data_channel` merged under
+CLEAN-13 as amended on 2026-10-22 (issues 8 and 9).
 
 **Record judgment:** valid with concerns: the crawl-time counts kept with a note (issue 5) and a modality marker the
 data does not bear out (issue 8). The source's task is predictive by design (a decision-support system that
@@ -71,33 +71,46 @@ release holds statistics of the text, not the text.
    - Recommendation: keep with the note and adopt the LEAK-10 amendment.
    - Decision: keep and amend LEAK-10; keep without the amendment; or drop both groups, as santander.
 
-8. **Remove the record's `Wrong Domain / Source Modality` marker?** The marker says the dataset belongs to another
-   modality (text). The release holds statistics of each article, not its text: the 19 text-derived columns add 0.004
-   R^2 (0.1515 to 0.1553), word counts of the URL's title part (the slug, weighted by TF-IDF) lower R^2 to 0.1517, and
-   no text column ships. It comes after issue 5 because its effect on the task is none.
-   - Effect on the task: none; the marker is the record's.
-   - Implemented: nothing; markers are the curator's.
-   - Alternative: keep it. `NLP (Text)` can stay as a note on the provenance; neither side contests it.
-   - Rule: SEL-12 (Must) holds; a marker is argued from the feature composition (principles, "Arguing a call",
-     internet_advertisements). Records with `Yes` keep this marker elsewhere (cardiotocography,
-     electric_motor_temperature_prediction), so keeping it is not inconsistent.
-   - Recommendation: remove it.
-   - Decision: remove the marker, or keep it.
+   **Consistency check (AI, 2026-10-26):** your "as implemented" keeps the counts, which needs the LEAK-10 amendment, but the
+   wording proposed above ("a value read at a later pull stays with a note when its effect is measured small")
+   collides with three calls: LEAK-6 (Must, "a confirmed leak goes even when small"; santander dropped its leak at
+   +0.003), your rule of 2026-10-21 that a lookup is not kept "merely because removing it changes no score"
+   (zillow_prize and melbourne_housing_market were blanked at no or small cost), and today's aeolus_1m mask of a
+   confirmed late value measured small. What sets this dataset apart is that its late values cannot be located: only
+   cells whose count is a unique value of 5,000 or more can be traced, and a mask built from them would itself come
+   from other rows' labels. (a) Amend LEAK-10 on that fact, narrowing LEAK-6: late values that can be located are
+   blanked (zillow, melbourne, aeolus); values that cannot be located go when they may carry a gain
+   (distribution_transformers); they stay with a note only when the traceable part shows none (this dataset). (b)
+   Treat it as aeolus and santander: mask the traced cells (R^2 changes by -0.0004), or drop both groups (0.155 to
+   0.109). (c) Reopen aeolus, zillow and melbourne to keep with notes. (d) Adopt the wording as proposed and amend
+   LEAK-6 too. I recommend (a); account_debt_south_africa's issue 9 asks for a clause of the same LEAK-10, so the two
+   can be worded at once.
 
-9. **Ship `data_channel` merged, or as six yes/no columns until CLEAN-13 is amended?** The six `data_channel_is_*`
-   flags become one categorical `data_channel`. 6,134 rows (15.5%) have no flag and become the category `other`, which
-   takes the place of a seventh flag; no row has two, so the merge loses nothing. CLEAN-13 (Must) allows a merge only when exactly one flag is set in every row.
-   - Effect on the task: none on the score; a question of the rule's wording.
-   - Implemented: merged.
-   - Alternative: six separate yes/no columns, lossless and within the rule as written.
-   - Rule and precedent: CLEAN-13 (Must). mortgage's `real_estate_type` uses the same reading, and mortgage's issue 12
-     proposes the amendment "exactly one, or at most one with a reference level `other`"; both are AI decisions, not
-     a curator precedent. The critic holds that the Must stands until amended; the advocate asks to avoid converting
-     now and reverting later.
-   - Recommendation: decide it with mortgage's issue 12 and ship the form chosen there; if the amendment is declined,
-     or not decided before this dataset ships, six flags.
-   - Decision: keep the merge and let mortgage's issue 12 settle it (that issue recommends the amendment), or ship six
-     flags now and merge again if the amendment passes.
+10. **The target: the share count, or the source's popular/unpopular task?** The definition ships the log share count
+    as a regression; the source's task is binary (popular: more than 1,400 shares).
+
+    **Lennart (2026-10-26, discuss, on the metric):** Why is the regression target better? it seems there is some action
+    decision happening based on the binary task? is that maybe the real relevant task? It might be that we dont care
+    amuch about share count but jsut if we should act on it which we infer on train time from the share count
+
+    **Answer (AI, 2026-10-26):** keep the count; the binary task adds no decision.
+    - The decision in the source acts on a score, not on a yes/no label: the authors' system "maximizes the
+      probability for the 'popular' class" by suggesting changes to an article before publication, and the author
+      decides on that list (Fernandes et al. 2015, Sec. 2.2 and 2.4). Every article is optimised; no one acts only on
+      the articles above a line.
+    - The line is no editorial choice: 1,400 shares "resulted in a balanced 'popular'/'unpopular' class distribution in
+      the first training set" (Sec. 3.1). The paper ranks its models by ROC AUC ("the most relevant metric ...
+      independent of the selected D2 value"), so it values the ranking, not the cut. (Our texts said "1,400 or more";
+      the paper's popular is strictly more than 1,400, and the definition now says so.)
+    - On our 9 windows the two framings rank articles alike: a classifier on the binary label scores ROC AUC 0.730
+      (the paper's random forest reported 0.73), the regression's predictions score 0.727 on the same label (paired
+      difference 0.003, SE 0.003), and both correlate 0.44 with the log share count. The binary label is the same
+      ranking at a coarser resolution, and its share drifts from 50% in training to 40-47% in the test windows.
+    - Rules: USE-5 (the target is what the actor acts on: here a continuous popularity score) and SEL-8 (the task and
+      its scope are the source's either way). Precedent: brazilian_ecommerce kept the delivery time over a late-delivery
+      flag. If you prefer the paper's task anyway: target popular (shares > 1,400), binary, ROC AUC as the source's
+      deliberate metric (MET-5); one or the other, not both (a second folder would be a duplicate).
+    - Recommendation: keep the regression with RMSLE. Mark "As declared" on the metric, or "Change" for the binary task.
 
 **Review panel:** ship after changes (mediator). Claim audit: of the definition's and the record's claims, 4 are
 refuted or understated (`known` said the earlier articles' shares are known before publication; "a quarter of the

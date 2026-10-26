@@ -27,41 +27,14 @@ For the curator: issue 7, mask the readings after the departure (against your CC
   call (does PROV-13 cover true but mis-timed values?); the domain field.
 ```
 
-**Main points:** Make the weather read after the departure missing (issue 7); keep the release's mis-timed
-weather under a narrowed PROV-13, or retire the dataset for a rebuild from BTS and Meteostat (issue 8; (b) makes
-issue 7 moot); take the definition's domain.
-
-**Record fields that disagree with the definition:**
-
-- `domain`: record `business & marketing`, definition `industry & manufacturing`.
+**Main points:** The rebuild from BTS and Meteostat is under way as `aeolus_rebuilt` (issue 8). Settled on 2026-10-26: the
+weather read after the departure masked (issue 7), the domain.
 
 **Record judgment:** valid. A real delay-prediction task with a temporal split, from the authors' release (Xu et al.,
 NeurIPS 2025) of the US DOT on-time flights (BTS) joined to Meteostat's hourly weather. The weather join is damaged
 (issue 8); the rest of the release is as documented, with March 2024 missing.
 
 **Issues for Lennart:**
-
-7. **Make the weather read after the departure missing?** The prediction point is shortly before the scheduled
-   departure. For 1.94% of the flights the release reads the destination weather after it (a median 0.7 hours, at
-   most 4.4 hours later), and for the 106 Guam departures in the frame (14 per test window) the origin weather about
-   10 hours after it. A value from after the prediction point is a leak, here a confirmed one: the claim audit timed
-   every reading with one time zone per airport.
-   - Effect: small. About 1% of each test window is affected, mostly eastbound transcontinental flights. Making the
-     late destination readings missing in the test windows costs 0.0003-0.0004 ROC AUC per window (untuned LightGBM,
-     1M training rows).
-   - Implemented: kept, with a `Potential leak, kept on purpose:` note, under your CC of 2026-10-12 ("the weather as
-     released"). The old reason ("re-joining it would be our own fix") is gone.
-   - Alternative: set O_TEMP/O_PRCP/O_WSPD to missing for ORIGIN == GUM, and D_TEMP/D_PRCP/D_WSPD where the
-     reading's hour falls after the scheduled departure. Cost: a table of one time zone per airport (310) in the
-     definition.
-   - Rule: LEAK-6 (Must), "a confirmed leak goes even when small"; LEAK-7 (Should), the smallest fix, here a mask.
-     Precedent: follows santander (a confirmed small leak dropped at +0.003); kick and onlinenewspopularity kept
-     suspected leaks, not confirmed ones. In the rebuttals the two sides swapped: the advocate accepted the mask and the critic accepted keeping the
-     readings. The mediator chose the mask on LEAK-6's wording. Both sides agreed on the Guam part. Neither part was
-     applied because both go against your CC of 2026-10-12.
-     Moot if issue 8 goes to (b).
-   - Recommendation: mask.
-   - Decision: mask the readings after the departure, or keep them as released with the note.
 
 8. **Keep the release's mis-timed weather, or rebuild?** The release looked up Meteostat's hourly weather (an open
    archive of station readings, time-stamped in UTC, the universal clock) by the flights' local scheduled clock
@@ -92,6 +65,22 @@ NeurIPS 2025) of the US DOT on-time flights (BTS) joined to Meteostat's hourly w
      released one.
    - Decision: (a) keep, recorded as an amendment that narrows PROV-13 to damage that makes values false (aeolus as
      its case); or (b) treat it like coad: retire `aeolus_1m` for a rebuild as a new record.
+
+   **Lennart (2026-10-26, change):** Can you rebuild this please, but keep it aeoulus_correct or something? I assume we have
+   all the information we need from the original sources, or is the data release from aeolus / the paper the only
+   source of some information? if the paper state does not add much, we can build our better version as intended
+
+   **Answer (AI, 2026-10-26):** the rebuild is done: `aeolus_rebuilt` (folder `aeolus_rebuilt_1m`), on the review page
+   with its own issues. To your question: the release and the paper hold nothing the task needs that the origins
+   lack. The release has three parts, a table, flight chains and daily airport graphs, all built from BTS fields (the
+   chains group flights by carrier, flight number and date, Sec. 3.2; the graphs link flights by "adjacent
+   temporal-spatial occupancy at the same airport", Sec. 3.3); the paper adds the task definition (App. B.2) and a June
+   2024 split we do not follow. The origins add what the release lacks or damaged: the weather at the right hour,
+   March 2024 (585,413 flights), 192,954 flights at 43 airports the release dropped, tail numbers (the aircraft's
+   previous flight), cancellations and BTS's coordinates. On the same windows the correctly timed weather adds
+   +0.043-0.051 ROC AUC against +0.032-0.039 for the release's, and with the previous flight the task reaches about
+   0.81 against 0.62. Recommendation: retire `aeolus_1m` once you accept the rebuild (its issue 5): the two are
+   versions of one dataset (PROV-6).
 
 **Review panel:** ship after changes, provided the curator confirms the weather call under PROV-13 (mediator).
 Full tier. Claim audit: 69 claims, most hold; 5 refuted or partly refuted (the weather lag, the late-reading

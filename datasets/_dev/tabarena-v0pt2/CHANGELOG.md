@@ -4,6 +4,38 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-26, later (aeolus rebuilt from BTS and Meteostat; six datasets out; credit cut to one product)
+
+Lennart's later marks of 2026-10-26 on the Open Datasets Review page; records carry them as `CC (2026-10-26, Lennart)`
+lines. Nothing was rebuilt as a container.
+
+- New folder `aeolus_rebuilt_1m` (record `aeolus_rebuilt`), at Lennart's ask: the Aeolus task rebuilt from the BTS
+  on-time table and Meteostat's hourly weather, joined in UTC at the full hour before the scheduled departure, with
+  March 2024, BTS coordinates and the aircraft's previous flight. Steps 0-6 of /add-dataset; its REVIEW.md holds six
+  issues; the review panel has not run.
+- `aeolus_1m`: the weather read after the scheduled departure is masked (each airport's time zone from its
+  coordinates); the record's domain is updated. Its issue 8 recommends retiring it once the rebuild is accepted.
+- Out of the working copy (folders removed): `glioma_grading_clinical_and_mutation_features` (no use case, `No Good
+  Target / Scientific Discovery`), `corporate_credit_rating_cat_data_set_ratings_raitings` (`Missing source
+  information`, `Not Representative`), `phiusil_phishing` (`Data Quality Issue`).
+- Records without a folder set to `No`: farm_to_feed_shopping_basket_recommendation_challenge (RecSys),
+  hepatitis_c_egypt (`AHDS`, `Data Quality Issue`, tagged `Search for better data`, a new tag),
+  high_storage_system_data_for_energy_optimization (`AHDS`), and as `Duplicate` of aeolus: airlines,
+  airlines_depdelay_10m and pnwflights14 (the same BTS on-time table). myocardial_infarction_complications is renamed
+  `mic_duplicate` (`No` + `Duplicate` of mic).
+- `african_credit_scoring_challenge`: only the main product (Type_1, 52,826 rows) with six windows of 2022, and ROC AUC
+  instead of Zindi's F1 (MET-4's overrule clause). Its new issue 8 asks whether to ship it: the task probes score it
+  near chance (random forest 0.594).
+- `alfa_battle_2_0_task_2` and `perth_house_prices` ship (`DF: Yes`, claims released). perth: a `UNIT` flag, nine
+  one-month windows every third month back from December 2020, no gap (the second exception to SPLIT-10 of its kind).
+  alfa: a SPLIT-9 Cases row for the repeat-client filter.
+- `account_debt_south_africa` (the electricity note), `onlinenewspopularity` (the paper's > 1,400, markers kept),
+  `numerai28_6` (year 2016) and `stroke_prediction` (year and source links): record and note changes; their open
+  issues hold answers and consistency checks.
+- Rules: TP-10 leg 2 (the target's last observation, amended earlier today) and CLEAN-19 cases; new Cases rows for
+  USE-1 (glioma), MET-4 (african_credit, an overrule), SPLIT-9 (alfa), SPLIT-10 and SPLIT-20 (perth), CLEAN-12 (perth's
+  `UNIT`). The working copy's REVIEW.md resolves glioma's two items.
+
 ## 2026-10-26 (the curator's marks: nba retired, house_prices_nominal copied forward as ames_housing, rain neighbours)
 
 Lennart's marks of 2026-10-26 on the Open Datasets Review page, in two rounds; records carry them as

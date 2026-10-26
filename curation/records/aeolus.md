@@ -16,7 +16,7 @@ collections:
 - New (BeyondArena)
 original_source: Kaggle
 year: '2025'
-domain: business & marketing
+domain: industry & manufacturing
 required_split:
 - Temporal (NON-IID)
 problem_type: Binary Classification
@@ -44,6 +44,16 @@ CC (2026-10-12, Lennart): Target `ARR_DEL15` (arrival 15+ minutes late, ROC AUC)
 **Assessment (AI, 2026-10-20):** review panel (full): ship after changes, provided the curator confirms keeping the release's mis-timed weather under PROV-13 (else retire for a rebuild from BTS and Meteostat as a new record); mask the weather read after the departure (LEAK-6, against the CC of 2026-10-12, open). Applied: fit `approximate` (weather 3.5-11.4 h old, a day for the 3.6% overnight arrivals; no inbound aircraft; operated flights only), impossible temperatures and wind speeds to missing, Guam and Pago Pago coordinate signs repaired, domain `industry & manufacturing` in the definition, notes corrected (paper's > 15 threshold, paper's June 2024 split, probes `no_spread`, LightGBM 0.612 and linear 0.594 on 50k rows, LightGBM 0.629-0.630 with 1M; the 2026-10-07 "0.64-0.67" is the superseded all-years set-up, the earlier "direct fit" is stale). Priority 2: gap -, use case - (fit approximate), source +, shape +, risk - (open PROV-13 damage that may need a rebuild, and a confirmed small leak).
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC and ACC for the delay-occurrence classification task (Xu et al., Aeolus: A Multi-structural Flight Delay Dataset, NeurIPS 2025 D&B, arXiv:2510.26616 (Sec. 4, Appendix: 'using Area Under the Curve (AUC) and Accuracy (ACC) as evaluation metrics')).
+
+CC (2026-10-26, Lennart): the record's domain takes the definition's value (industry & manufacturing, as nyc_taxi_trip_duration).
+
+CC (2026-10-26, Lennart): issue 7: "mask": the weather read after the scheduled departure is set missing (LEAK-6). This replaces CC 2026-10-12 (the weather as released) for those readings.
+
+CC (2026-10-26, Lennart): issue 8: "Can you rebuild this please, but keep it aeolus_correct or something? I assume we have all the information we need from the original sources, or is the data release from aeolus / the paper the only source of some information? if the paper state does not add much, we can build our better version as intended": the rebuild from BTS and Meteostat is the new record aeolus_rebuilt.
+
+CC (2026-10-26, Lennart): the declared metric, ROC AUC, is checked as declared.
+
+**Assessment (AI, 2026-10-26):** the mask is applied: each airport's time zone from its coordinates (`AIRPORT_TIME_ZONES`, 312 airports), the scheduled departure in UTC, and every weather reading whose hour (the release's local clock read as UTC) falls after it set missing. `dataset check` clean; task probes (3 windows): LightGBM ROC AUC 0.632, linear 0.611, no flag.
 
 ## Reference
 

@@ -2,11 +2,11 @@
 report_format: data-foundry-report-v2
 unique_name: aeolus_1m
 container_format: 2
-checksum: v2:61b3958bc09accc0d1cc8ca5ca78447e300060d2f381b70cd8d1985b81b3bb7b
+checksum: v2:54d6a75dd564ea032d72cd521a7b6cdb6aa7b1ce0cae1334bb2e595fe3edcdb3
 build: null
 build_stale: false
 data:
-  n_rows: 1785316
+  n_rows: 1785314
   n_features: 18
   dtypes:
     category: 5
@@ -57,9 +57,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `ARR_DEL15`, scored with `roc_auc` on temporal splits by `FL_DATE`. 1,785,316 rows and 18 features. Source: Kaggle (2025).
+Binary classification of `ARR_DEL15`, scored with `roc_auc` on temporal splits by `FL_DATE`. 1,785,314 rows and 18 features. Source: Kaggle (2025).
 
-Not built yet. The current definition gives checksum `v2:61b3958bc09accc0d1cc8ca5ca78447e300060d2f381b70cd8d1985b81b3bb7b`.
+Not built yet. The current definition gives checksum `v2:54d6a75dd564ea032d72cd521a7b6cdb6aa7b1ce0cae1334bb2e595fe3edcdb3`.
 
 ## In brief
 
@@ -71,13 +71,13 @@ Not built yet. The current definition gives checksum `v2:61b3958bc09accc0d1cc8ca
 
 **Predicted.** Whether it arrives at least 15 minutes after its scheduled arrival (the US DOT definition); about one flight in five does.
 
-**Known at prediction time.** The date, airline, flight number, route, scheduled times and duration, the airports' locations, and the weather at both airports observed 3.5 to 11 hours before departure (about a day early for overnight arrivals).
+**Known at prediction time.** The date, airline, flight number, route, scheduled times and duration, the airports' locations, and the weather at both airports observed 3.5 to 11 hours before departure (about a day early for overnight arrivals); a reading after the departure is missing.
 
 **What the test data stands for.** Each test window is two weeks at the end of 2024; training is a random million earlier flights from 2023 on, as for a model refit every two weeks.
 
 **Our changes to the source.** We use the history from 2023 on (the release starts in 2016) and two-week windows, so only one window falls in the holiday peak.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The weather is an old observation: 3.5 to 11 hours before departure by time zone, a day early for overnight arrivals; 2% of the destination readings and Guam's origin readings fall after the departure (at most 4.4 and about 10 hours). The inbound aircraft, the largest cause of delay, is missing, and so are cancelled and diverted flights: the task is the delay of a flight that operates.
+> **Use case fit: approximate (a stand-in with a known gap).** The weather is an old observation: 3.5 to 11 hours before departure by time zone, a day early for overnight arrivals; the 2% of the destination readings and Guam's origin readings that fall after the departure are set missing. The inbound aircraft, the largest cause of delay, is missing, and so are cancelled and diverted flights: the task is the delay of a flight that operates.
 
 ## Files in this folder
 
@@ -132,7 +132,7 @@ Only curators run `build`, when the dataset ships.
 | data_tags | Non-IID, Temporal, Spatial |
 | reference | xu2025aeolus |
 | version of | aeolus |
-| rows x columns | 1,785,316 x 19 |
+| rows x columns | 1,785,314 x 19 |
 | task.target | ARR_DEL15 |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -176,14 +176,14 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 1,785,316 rows of the final frame (the oldest rows: the frame is sorted by `FL_DATE`); 12 of 19 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 1,785,314 rows of the final frame (the oldest rows: the frame is sorted by `FL_DATE`); 12 of 19 columns, the target first. Cells are cut at 40 characters.
 
 | ARR_DEL15 | FL_DATE | OP_CARRIER | OP_CARRIER_FL_NUM | ORIGIN | DEST | CRS_ELAPSED_TIME | O_TEMP | O_PRCP | O_WSPD | D_TEMP | D_PRCP |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | 2023-01-01 00:00:00 | AA | 523 | ORD | DCA | 103 | 2.8 | 0 | 11.2 | 8.3 | 0 |
-| No | 2023-01-01 00:00:00 | WN | 121 | SJC | LAS | 90 | 10 | 0 | 18.4 | 11.1 | 0.3 |
-| No | 2023-01-01 00:00:00 | DL | 2037 | ATL | OGG | 595 | 12.2 | 0 | 0 | 16.7 | 0 |
-| No | 2023-01-01 00:00:00 | OO | 4922 | DFW | CLL | 60 | 22.2 | 0 | 24.1 | 22.8 | 0 |
+| No | 2023-01-01 00:00:00 | AA | 2100 | DFW | SNA | 198 | 23.9 | 0 | 22.3 | 16.1 | 0 |
+| No | 2023-01-01 00:00:00 | UA | 617 | DEN | ORD | 150 | -2.2 | 0 | 9.4 | 5 | 0 |
+| No | 2023-01-01 00:00:00 | OH | 5267 | MKE | CLT | 130 | 7.2 | 0 | 11.2 | 13.9 | 0 |
+| Yes | 2023-01-01 00:00:00 | B6 | 998 | MCO | LGA | 157 | 26.1 | 0 | 5.4 | 10 | 0 |
 | No | 2023-01-01 00:00:00 | UA | 2125 | BNA | IAD | 95 | 14.4 | 0 | 9.4 | 14.4 | 0 |
 
 ## Curation notes
@@ -198,7 +198,7 @@ We start with the nine yearly tables `Aeolus/Flight_Tab/flight_with_weather_<yea
 - CRS_DEP_TIME and CRS_ARR_TIME are local clock times dated on the flight date; we keep their time of day in minutes (`CRS_DEP_TIME_MIN`, `CRS_ARR_TIME_MIN`, as the authors' code does).
 - Anomaly: the release joined Meteostat's hourly records, whose timestamps are UTC, to the local scheduled clock times (first and second decision). So the origin weather is from 3.5 to 11.4 hours before the departure depending on the time zone (median 5.2), the destination weather a median 3.0 hours. Kept as released (curator, 2026-10-12).
 - Anomaly: the release dates the scheduled arrival on FL_DATE, so the 460,592 overnight arrivals (3.6% of the kept history) carry the destination reading of the departure date at the arrival's clock hour, a median 25 hours before the departure.
-- Potential leak, kept on purpose: the destination weather of 1.94% of the flights (0.9-1.1% in each test window) is read after the scheduled departure, a median 0.7 hours and at most 4.4 hours after it, and the origin weather of the 686 departures from Guam (106 in the frame) about 10 hours after it. Making the late destination readings missing in the test windows costs 0.0003-0.0004 ROC AUC per window (untuned LightGBM, 1M train rows); all of the destination weather adds 0.008-0.016. Kept with the weather as released (curator, 2026-10-12); revisit if the weather is re-joined or the readings are masked.
+- LEAK-6 (CC 2026-10-26, issue 7): a weather reading taken after the scheduled departure is set missing: the destination weather of 1.94% of the flights (0.9-1.1% in each test window; a median 0.7 hours and at most 4.4 hours after the departure) and the origin weather of the 686 departures from Guam (106 in the frame, about 10 hours after). Each airport's reading hour is timed in UTC with its time zone (`AIRPORT_TIME_ZONES`, from the coordinates). The mask costs 0.0003-0.0004 ROC AUC per window (untuned LightGBM, 1M train rows); all of the destination weather adds 0.008-0.016. The weather is otherwise as released; a re-join from BTS and Meteostat is the new record aeolus_rebuilt.
 - Proxy missing values: scheduled block times below 15 minutes (3 rows) become missing; the shortest real hop is 18 minutes. Four implausible longer block times stay (17-60 minutes on routes with medians of 90-133 minutes).
 - Impossible weather becomes missing: temperatures below -50 C (-60.6 C at Sarasota in May) and mean wind speeds above 120 km/h recorded without rain (up to 232 km/h), about 0.001% of the rows.
 - Repair: the release stores Guam's longitude and Pago Pago's latitude with the wrong sign; we set the true signs (`TRUE_SIGNS`).
@@ -278,25 +278,25 @@ In every year the 1% longest delays hold most of the variance of the arrival del
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| OP_CARRIER | category | 0 | 0 | 15 | WN, DL, AA, UA, OO, YX, B6, NK, MQ, AS |
-| OP_CARRIER_FL_NUM | category | 0 | 0 | 6722 | 777, 311, 700, 312, 323, 1186, 1368, 298, 1576, 377 |
-| ORIGIN | category | 0 | 0 | 309 | ATL, DEN, DFW, ORD, CLT, PHX, LAX, LAS, MCO, LGA |
-| DEST | category | 0 | 0 | 310 | ATL, DEN, DFW, ORD, CLT, PHX, LAX, LAS, MCO, SEA |
+| OP_CARRIER | category | 0 | 0 | 15 | WN, DL, AA, UA, OO, YX, MQ, B6, NK, AS |
+| OP_CARRIER_FL_NUM | category | 0 | 0 | 6749 | 687, 354, 323, 540, 312, 1150, 2047, 777, 371, 1497 |
+| ORIGIN | category | 0 | 0 | 310 | ATL, DFW, DEN, ORD, CLT, LAX, PHX, LAS, MCO, LGA |
+| DEST | category | 0 | 0 | 309 | ATL, DFW, DEN, ORD, CLT, LAX, PHX, LAS, MCO, SEA |
 | ARR_DEL15 | category | 0 | 0 | 2 | No, Yes |
-| FL_DATE | datetime64\[ns\] | 0 | 0 | 700 | 2024-12-01 00:00:00, 2024-11-22 00:00:00, 2024-11-26 00:00:00, 2024-12-02 00:00… |
-| D_TEMP | float64 | 471 | 0.03 | 791 | 10.0, 10.6, 13.9, 15.0, 15.6, 12.2, 14.4, 11.7, 13.3, 8.3 |
-| D_PRCP | float64 | 471 | 0.03 | 279 | 0.0, 0.3, 0.2, 0.5, 0.1, 1.0, 0.8, 0.4, 1.3, 0.7 |
-| D_WSPD | float64 | 471 | 0.03 | 344 | 0.0, 9.4, 7.6, 11.2, 5.4, 13.0, 14.8, 16.6, 18.4, 20.5 |
-| O_TEMP | float64 | 204 | 0.01 | 778 | 10.0, 13.9, 11.7, 10.6, 12.2, 14.4, 15.6, 13.3, 8.9, 8.3 |
-| O_PRCP | float64 | 203 | 0.01 | 262 | 0.0, 0.3, 0.2, 0.5, 0.1, 0.8, 1.0, 0.4, 1.5, 0.7 |
-| O_WSPD | float64 | 206 | 0.01 | 351 | 0.0, 7.6, 9.4, 5.4, 11.2, 13.0, 14.8, 16.6, 18.4, 20.5 |
-| CRS_ELAPSED_TIME | float64 | 0 | 0 | 605 | 90.0, 85.0, 80.0, 95.0, 75.0, 110.0, 115.0, 70.0, 120.0, 100.0 |
-| O_LATITUDE | float64 | 0 | 0 | 309 | 33.6404, 39.8584, 32.8959, 41.9796, 35.214, 33.4342, 33.9425, 36.0804, 28.4289,… |
-| O_LONGITUDE | float64 | 0 | 0 | 309 | -84.4269, -104.667, -97.0372, -87.9045, -80.9431, -112.0081, -118.4081, -115.15… |
-| D_LATITUDE | float64 | 0 | 0 | 310 | 33.6404, 39.8584, 32.8959, 41.9796, 35.214, 33.4342, 33.9425, 36.0804, 28.4289,… |
-| D_LONGITUDE | float64 | 0 | 0 | 310 | -84.4269, -104.667, -97.0372, -87.9045, -80.9431, -112.0081, -118.4081, -115.15… |
-| CRS_DEP_TIME_MIN | int64 | 0 | 0 | 1351 | 360, 420, 480, 540, 390, 600, 660, 450, 510, 375 |
-| CRS_ARR_TIME_MIN | int64 | 0 | 0 | 1427 | 1439, 1320, 1200, 1310, 1155, 1090, 545, 1050, 1000, 1030 |
+| FL_DATE | datetime64\[ns\] | 0 | 0 | 700 | 2024-12-01 00:00:00, 2024-11-26 00:00:00, 2024-11-24 00:00:00, 2024-11-22 00:00… |
+| D_TEMP | float64 | 28334 | 1.59 | 788 | 10.0, 13.9, 10.6, 13.3, 15.6, 15.0, 14.4, 12.2, 11.7, 16.1 |
+| D_PRCP | float64 | 28334 | 1.59 | 270 | 0.0, 0.3, 0.2, 0.5, 0.1, 0.8, 1.0, 0.4, 1.5, 0.7 |
+| D_WSPD | float64 | 28336 | 1.59 | 345 | 0.0, 9.4, 7.6, 11.2, 5.4, 13.0, 14.8, 16.6, 18.4, 20.5 |
+| O_TEMP | float64 | 202 | 0.01 | 777 | 10.0, 11.7, 12.2, 13.9, 11.1, 10.6, 8.3, 15.0, 8.9, 15.6 |
+| O_PRCP | float64 | 201 | 0.01 | 261 | 0.0, 0.3, 0.2, 0.5, 0.1, 1.0, 0.8, 0.4, 1.5, 1.3 |
+| O_WSPD | float64 | 205 | 0.01 | 358 | 0.0, 7.6, 5.4, 9.4, 11.2, 13.0, 14.8, 16.6, 18.4, 20.5 |
+| CRS_ELAPSED_TIME | float64 | 0 | 0 | 611 | 90.0, 85.0, 80.0, 75.0, 95.0, 70.0, 110.0, 115.0, 120.0, 100.0 |
+| O_LATITUDE | float64 | 0 | 0 | 310 | 33.6404, 32.8959, 39.8584, 41.9796, 35.214, 33.9425, 33.4342, 36.0804, 28.4289,… |
+| O_LONGITUDE | float64 | 0 | 0 | 310 | -84.4269, -97.0372, -104.667, -87.9045, -80.9431, -118.4081, -112.0081, -115.15… |
+| D_LATITUDE | float64 | 0 | 0 | 309 | 33.6404, 32.8959, 39.8584, 41.9796, 35.214, 33.9425, 33.4342, 36.0804, 28.4289,… |
+| D_LONGITUDE | float64 | 0 | 0 | 309 | -84.4269, -97.0372, -104.667, -87.9045, -80.9431, -118.4081, -112.0081, -115.15… |
+| CRS_DEP_TIME_MIN | int64 | 0 | 0 | 1346 | 360, 420, 480, 540, 390, 600, 660, 510, 450, 375 |
+| CRS_ARR_TIME_MIN | int64 | 0 | 0 | 1429 | 1439, 1200, 1310, 1320, 1125, 1090, 540, 1260, 1000, 1030 |
 
 </details>
 
@@ -304,8 +304,8 @@ In every year the 1% longest delays hold most of the variance of the arrival del
 
 | ARR_DEL15 | count | pct |
 |---|---|---|
-| No | 1421776 | 79.64 |
-| Yes | 363540 | 20.36 |
+| No | 1421760 | 79.64 |
+| Yes | 363554 | 20.36 |
 
 ### Numeric features
 
@@ -314,19 +314,19 @@ In every year the 1% longest delays hold most of the variance of the arrival del
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| CRS_ELAPSED_TIME | 178532 | 148.116 | 73.6126 | 20 | 697 |
-| O_TEMP | 178512 | 13.5786 | 10.2271 | -35 | 48.3 |
-| O_PRCP | 178512 | 0.0981788 | 0.734314 | 0 | 59.4 |
-| O_WSPD | 178512 | 12.1788 | 8.26515 | 0 | 76 |
-| D_TEMP | 178479 | 14.1669 | 10.3254 | -36 | 47.8 |
-| D_PRCP | 178479 | 0.0992828 | 0.752427 | 0 | 59.2 |
-| D_WSPD | 178479 | 12.564 | 8.26929 | 0 | 77.8 |
-| O_LATITUDE | 178532 | 36.5521 | 5.96633 | -14.331 | 71.2854 |
-| O_LONGITUDE | 178532 | -94.892 | 18.5016 | -176.646 | 144.796 |
-| D_LATITUDE | 178532 | 36.5641 | 5.97932 | -14.331 | 71.2854 |
-| D_LONGITUDE | 178532 | -94.8965 | 18.4976 | -176.646 | 144.796 |
-| CRS_DEP_TIME_MIN | 178532 | 805.506 | 297.772 | 1 | 1439 |
-| CRS_ARR_TIME_MIN | 178532 | 903.673 | 313.685 | 1 | 1439 |
+| CRS_ELAPSED_TIME | 178531 | 147.554 | 73.0774 | 20 | 685 |
+| O_TEMP | 178508 | 13.5808 | 10.2275 | -35 | 48.3 |
+| O_PRCP | 178508 | 0.100751 | 0.703025 | 0 | 49.5 |
+| O_WSPD | 178508 | 12.1394 | 8.25938 | 0 | 76 |
+| D_TEMP | 175792 | 14.0813 | 10.3258 | -32 | 50 |
+| D_PRCP | 175792 | 0.0985255 | 0.732954 | 0 | 49.5 |
+| D_WSPD | 175792 | 12.4982 | 8.25816 | 0 | 72.4 |
+| O_LATITUDE | 178531 | 36.5584 | 5.95397 | -14.331 | 71.2854 |
+| O_LONGITUDE | 178531 | -94.8811 | 18.4951 | -176.646 | 144.796 |
+| D_LATITUDE | 178531 | 36.5646 | 5.9823 | -14.331 | 71.2854 |
+| D_LONGITUDE | 178531 | -94.9098 | 18.4416 | -176.646 | 144.796 |
+| CRS_DEP_TIME_MIN | 178531 | 805.431 | 297.849 | 1 | 1439 |
+| CRS_ARR_TIME_MIN | 178531 | 903.76 | 313.441 | 1 | 1439 |
 
 </details>
 
@@ -337,33 +337,33 @@ In every year the 1% longest delays hold most of the variance of the arrival del
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| ARR_DEL15 | 1 | No | 142205 | 79.65 |
-| ARR_DEL15 | 2 | Yes | 36327 | 20.35 |
-| DEST | 1 | ATL | 8917 | 4.99 |
-| DEST | 2 | DEN | 7798 | 4.37 |
-| DEST | 3 | DFW | 7649 | 4.28 |
-| DEST | 4 | ORD | 6844 | 3.83 |
-| DEST | 5 | CLT | 5530 | 3.1 |
-| FL_DATE | 1 | 2024-12-01 00:00:00 | 2159 | 1.21 |
-| FL_DATE | 2 | 2024-11-22 00:00:00 | 2119 | 1.19 |
-| FL_DATE | 3 | 2024-11-26 00:00:00 | 2095 | 1.17 |
-| FL_DATE | 4 | 2024-12-02 00:00:00 | 2085 | 1.17 |
-| FL_DATE | 5 | 2024-11-24 00:00:00 | 2068 | 1.16 |
-| OP_CARRIER | 1 | WN | 36750 | 20.58 |
-| OP_CARRIER | 2 | DL | 26011 | 14.57 |
-| OP_CARRIER | 3 | AA | 24802 | 13.89 |
-| OP_CARRIER | 4 | UA | 19417 | 10.88 |
-| OP_CARRIER | 5 | OO | 18271 | 10.23 |
-| OP_CARRIER_FL_NUM | 1 | 777 | 86 | 0.05 |
-| OP_CARRIER_FL_NUM | 2 | 311 | 86 | 0.05 |
-| OP_CARRIER_FL_NUM | 3 | 700 | 85 | 0.05 |
-| OP_CARRIER_FL_NUM | 4 | 312 | 85 | 0.05 |
-| OP_CARRIER_FL_NUM | 5 | 323 | 84 | 0.05 |
-| ORIGIN | 1 | ATL | 8950 | 5.01 |
-| ORIGIN | 2 | DEN | 7760 | 4.35 |
-| ORIGIN | 3 | DFW | 7714 | 4.32 |
-| ORIGIN | 4 | ORD | 6831 | 3.83 |
-| ORIGIN | 5 | CLT | 5445 | 3.05 |
+| ARR_DEL15 | 1 | No | 142028 | 79.55 |
+| ARR_DEL15 | 2 | Yes | 36503 | 20.45 |
+| DEST | 1 | ATL | 9025 | 5.06 |
+| DEST | 2 | DFW | 7710 | 4.32 |
+| DEST | 3 | DEN | 7607 | 4.26 |
+| DEST | 4 | ORD | 7010 | 3.93 |
+| DEST | 5 | CLT | 5464 | 3.06 |
+| FL_DATE | 1 | 2024-12-01 00:00:00 | 2129 | 1.19 |
+| FL_DATE | 2 | 2024-11-26 00:00:00 | 2107 | 1.18 |
+| FL_DATE | 3 | 2024-11-24 00:00:00 | 2088 | 1.17 |
+| FL_DATE | 4 | 2024-11-22 00:00:00 | 2077 | 1.16 |
+| FL_DATE | 5 | 2024-11-21 00:00:00 | 2077 | 1.16 |
+| OP_CARRIER | 1 | WN | 36939 | 20.69 |
+| OP_CARRIER | 2 | DL | 25962 | 14.54 |
+| OP_CARRIER | 3 | AA | 24494 | 13.72 |
+| OP_CARRIER | 4 | UA | 19446 | 10.89 |
+| OP_CARRIER | 5 | OO | 18332 | 10.27 |
+| OP_CARRIER_FL_NUM | 1 | 687 | 92 | 0.05 |
+| OP_CARRIER_FL_NUM | 2 | 354 | 82 | 0.05 |
+| OP_CARRIER_FL_NUM | 3 | 323 | 80 | 0.04 |
+| OP_CARRIER_FL_NUM | 4 | 540 | 80 | 0.04 |
+| OP_CARRIER_FL_NUM | 5 | 312 | 80 | 0.04 |
+| ORIGIN | 1 | ATL | 8991 | 5.04 |
+| ORIGIN | 2 | DFW | 7750 | 4.34 |
+| ORIGIN | 3 | DEN | 7554 | 4.23 |
+| ORIGIN | 4 | ORD | 6885 | 3.86 |
+| ORIGIN | 5 | CLT | 5405 | 3.03 |
 
 </details>
 

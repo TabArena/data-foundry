@@ -26,106 +26,30 @@ Value: TP-2, a small real signal; TP-9 holds (20-56 default rows per window); TP
 Quality: CLEAN-11, one impossible share set to missing.
 Weighed: real lender task +, size +, two product eras -, near-chance 2024 windows -, a 2024 window where untuned
   models do not beat a guess (the unstable flag) -.
-For the curator: issue 1 (Type_1 only), issue 6 (the metric), issue 7. Issue 2 settled on 2026-10-26.
+For the curator: issue 8 (ship the Type_1 task?). Issues 1, 2, 6 and 7 settled on 2026-10-26.
 ```
 
-**Main points:** Ship the Type_1 loans only (issue 1, recommended)? The metric: ROC AUC over Zindi's F1 (issue 6, a
-consistency check)? The country part of the original use case cannot be reproduced (issue 7). Settled on 2026-10-26:
-the rows whose lender funds less than one unit stay dropped (issue 2).
+**Main points:** Ship the Type_1 task, which scores near chance (issue 8)? Settled on 2026-10-26: Type_1 only, ROC AUC over
+Zindi's F1, the lender-amount drop, and the country test noted as not reproduced (issues 1, 6, 2, 7).
 
 **Issues for Lennart:**
 
-1. **Test two product eras in one task?** Six test windows (5-10 days each, 2022-10-20 to 2022-12-01) score Type_1
-   7-day loans to repeat customers; three 30-day windows (2024-07-11 to 2024-10-08) score Type_7 loans, a product first
-   lent on 2023-07-27. Between them lie 19 months with about 100 rows a month (1,901 rows), used for training only.
-   SPLIT-20 asks to check the training history for breaks such as a change of product.
-   - Effect: one mean over two different tasks: a ranking of repeat customers of one product, and a product launch
-     with little history.
-   - Evidence: the 2022 windows hold 1,812-2,206 test rows and 20-31 default rows each (12,120 rows, 150 defaults);
-     85-96% of their test rows come from a customer seen in training. The 2024 windows hold 500-677 test rows and
-     32-56 default rows each (1,770 rows, 139 defaults); 12-44% of their test rows come from a seen customer, and
-     their training sides hold 98-688 Type_7 rows. Context, not a decision reason (SPLIT-21): untuned LightGBM scores
-     the 2024 windows near chance (ROC AUC 0.488-0.637).
-   - Implemented: both eras, with the 2024 windows named a new-product test in the splits comment.
-   - Alternative: "2022 Type_1 only": keep the 55,282 rows up to 2022-12-01. Cost: the 3,671 newest rows go, among
-     them all 1,770 test rows of 2024 and 139 of the 289 test defaults; the task no longer covers the lender's newest
-     product.
-   - Rule: SPLIT-20 (Should). The exception rests on the fact that the 2024 era alone (about 1,770 test rows in three
-     windows) is too small to stand as a task, while the lender scores both products (P3, the use case). Precedent:
-     aeolus, lending_club and sf_permit_time were each cut to one coherent stretch; here the newer stretch is too
-     small to be the task alone. The advocate and the critic both ask for the exception.
-   - Recommendation: record the exception (mediator).
-   - Decision: record the exception to SPLIT-20, or ship "2022 Type_1 only"; decide on spans, rows and product
-     coverage, not on model scores (SPLIT-21).
-
-   **Lennart (2026-10-26, discuss):** I think we should only ship type_1 here, the dataset seems anyhow very broken and we
-   need to just pull from the data the relevant task we think best matches what someone in reality would do / explore
-   / build to predict. Otherwise, it is just a very noisy data dump and weird competetion setup too. Also check what to
-   solution on Zinidi did, if you can read that
-
-   **Answer (AI, 2026-10-26):** I agree: ship the Type_1 loans only.
-   - Type_1 exists only from 2022-07-12 to 2022-12-01: 52,826 rows and 520 defaults (0.98%), none in 2023-2024, so a
-     Type_1 task ends with the 2022 windows. Within Type_1 the lender, the product and the duration (7 days) are
-     constant, and 99.6% of the rows are repeat customers: one lender scoring one product at disbursement.
-   - The six current 2022 windows, cut to Type_1, hold 1,821-2,446 test rows and 18-22 defaults each (122 in all),
-     above TP-9. Nine windows would leave some with 8 defaults, so six it is. No SPLIT-20 exception is needed, and the
-     2024 windows, which score near chance (ROC AUC 0.47-0.53), go.
-   - The current 2022 windows also hold 565 rows of other products, which default at about 10% and share 1.4% of
-     their customers with Type_1. Untuned LightGBM, as context only (SPLIT-21): mean ROC AUC 0.60 on Type_1 alone
-     (0.52-0.67 per window; 0.64 with the settled history added) against 0.68 for the mixed windows, so the mixed score
-     came from telling the products apart, not from ranking the customers of one product.
-   - What the Zindi solutions did ([discussions](https://zindi.africa/competitions/african-credit-scoring-challenge/discussions)):
-     the leaderboard rewarded leaks and rules, not a credit model. A widely used "magic" rule set every Ghanaian (or
-     loan type 3) customer's last loan to 1, worth +0.07-0.10 F1 ([24427](https://zindi.africa/competitions/african-credit-scoring-challenge/discussions/24427):
-     "It doesn't work with Kenya!"). The 3rd place used the repay amounts (recorded after the outcome), customer
-     aggregates over train and test together, random folds, and copied training labels onto test rows of the same loan
-     ([24855](https://zindi.africa/competitions/african-credit-scoring-challenge/discussions/24855)); the 6th kept only
-     each customer's latest loans ([24860](https://zindi.africa/competitions/african-credit-scoring-challenge/discussions/24860)).
-     Teams' cross-validation F1 of 0.84-0.99 against 0.62-0.73 on the leaderboard says the same. The 1st and 2nd places
-     never published their approach. No solution points to a real task other than scoring Kenyan repeat loans.
-   - What changes: the rows (Type_1 only), the six windows, and `row`, `use_case`, `changes` and the splits comment.
-     Mark "Change" and I make the cut.
-
-6. **Metric: ROC AUC instead of Zindi's F1?** The definition declares Zindi's leaderboard metric, F1 on hard 0/1
-   labels with default as the positive class (`Metric.source("f1")`, CC 2026-10-21; MET-4's Cases table names this
-   dataset as applied).
-
-   **Lennart (2026-10-26, discuss, on the verdict):** Here the metric choice is wrong, it should be ROC AUC, f1 is clearly
-   worse and maybe not well picked on the competition website. We will overrule this.
-
-   **Consistency check (AI, 2026-10-26):** this reverses your CC of 2026-10-21 for this dataset ("overrule it only when it is
-   biased or wrong") and MET-4's text, which keeps a competition's hard-label metric. MET-4 allows the overrule on
-   evidence from the source or measured on the shipped splits, and both exist here:
-   - From the source: Zindi's goal is a model that "accurately predicts the probability of loan default", and the top
-     10 had to build a "credit scoring function, using their model's outputs and probabilities ... binning model
-     outputs into risk categories" ([info](https://zindi.africa/competitions/african-credit-scoring-challenge)). The
-     lender's decision is a risk grade, not one hard label; F1 was only the leaderboard's scorer, with no threshold or
-     costs given.
-   - The forum shows the F1 was gamed: the "magic" rule above was worth +0.07-0.10 F1.
-   - On the shipped windows: untuned LightGBM scores F1 0.00-0.16 per window; with about 20 defaults per window one
-     more caught default moves F1 by about 0.05 (MET-10).
-   What sets it apart from your call of 2026-10-21? (a) these facts meet MET-4's overrule clause: declare ROC AUC,
-   keep F1 named as the original in the spec, change MET-4's Cases row to an overrule with these numbers, and check
-   hiva_agnostic, which declares a challenge's hard-label error rate the same way; (b) keep F1; (d) amend MET-4: a
-   competition's threshold metric without a fixed threshold or costs goes to ROC AUC. I recommend (a): the facts are
-   specific to this source.
-
-7. **The original use case: a model that generalises to a new country?** Zindi's test set held two parts: 15,069
-   Kenya rows, a random 18% of the same dates as the training file (98.4% of their customers are in it), and 3,525
-   Ghana rows (2021-11 to 2023-03, loan types 3, 2 and 8; types 3 and 8 never occur in training, no Ghana customer
-   does), "This split emphasises the need for models that generalise well." The test labels were never released.
-
-   **Lennart (2026-10-26, discuss, on the verdict):** Let me know if you need the original data from Zindi at all, I can
-   access it. Also note that the original use case was to generalize to another country? we dont really do that
-   anymore I guess, which is fine but weird. Let us think about this more.
-
-   **Answer (AI, 2026-10-26):** we cannot reproduce the country part, and I would not try. Ghana's rows have no public
-   labels (Zindi's files hold none; Zindi does not release test labels, so your access would not add them), and
-   their products are not in the training file. On Zindi that part was won by the hand-written rule above, not by a
-   model. Our task is the Kenyan half of Zindi's test, split by time instead of at random; with the Type_1 cut (issue
-   1) it also drops the 234 rows of new applicants. Both go into `changes` and `fit_reason` with the cut. We need
-   nothing more from Zindi: our Kaggle copy matches Zindi's file sizes, and only the sample submission and the starter
-   notebook are missing, neither with labels.
+8. **Ship the Type_1 task, now that it scores near chance?** Issues 1, 6 and 7 are applied (2026-10-26): the task keeps the
+   main product only (Type_1, 52,826 rows, 520 defaults, six windows of 1,821-2,446 rows with 18-22 default rows
+   each), and the metric is ROC AUC. On it the task probes (5 of 6 windows) give ROC AUC 0.594 for a random forest,
+   0.568 for LightGBM and 0.522 for a linear model; the random forest beats the class shares on 4 of 5 windows, and the
+   probes flag `no_spread`, `drift_baseline` and `unstable` (TP-1, TP-2, TP-3, TP-5). The mixed task had 0.68 on its
+   2022 windows, from telling the products apart.
+   - Effect on the task: models are ranked on a weak signal with about 20 positives per window; tuned models may do
+     better (the research run's history features reached 0.64), but the windows separate methods poorly.
+   - Rule: TP-2 (a small real signal is a task), TP-9 (18-22 positives per window hold the floor), TP-3/TP-5 (a
+     probe flag is a question, answered with tuned results, task_probes.md rules 1-3 and 9).
+   - Options: (a) ship it with the flags noted, to be re-checked against tuned results (as for the flags before the
+     cut); (b) don't ship: a near-chance task with few positives (`Too Small` or `No Good Target`), as digicow
+     (recommended `No`, the same mechanism).
+   - Recommendation: (a), since TP-2 keeps a small real signal and the windows meet TP-9; (b) if you read 0.59 as no
+     usable task.
+   - Decision: ship with the flags noted, or don't ship.
 
 **Review panel:** ship after changes (mediator). Claim audit: 74 claims, 59 hold, 3 refuted, 11 untested, 1 not
 reproduced; corrected in the definition: "no link to the outcome" for the count of a loan's other lenders (the count

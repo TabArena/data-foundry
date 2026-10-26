@@ -10,60 +10,14 @@ not trivial (TP): ROC AUC 0.874 against 0.787 for the best single feature, 101,6
 missing (CLEAN-10/11); 6.2% duplicate rows kept (LEAK-18). Weighed: a rare real public-finance task and its size,
 against the approximate fit and the missing municipality key. Left for the curator: issues 1, 8 and 9.
 
-**Main points:** Accept dropping the located unrecorded runs instead of retiring (issue 1)? Keep
-`TotalElectricityBill` (issue 8)? Keep the billing totals of the label window (issue 9)?
+**Main points:** Keep the billing totals of the label window through a LEAK-10 amendment (issue 9)? Settled on 2026-10-26: the
+unrecorded runs dropped, `TotalElectricityBill` kept with its note (issues 1 and 8).
 
 **Record judgment:** valid with concerns. Eight municipalities' billing accounts summarised over two years by the
 uploader (Kaggle owner dmsconsultingsa; named DMS Technologies in the bibtex); the label is mostly arrears older than
 the window, so the task is the status at the extract, a stand-in for the data card's forecast.
 
 **Issues for Lennart:**
-
-1. **Drop the located unrecorded runs instead of retiring?** Eight runs of consecutive file rows (28,124 rows, 20.3%
-   of the file) hold no account with debt aged 90+ days or a write-off. Inside them, none of the 12,167 accounts
-   billed in the two years that paid nothing (billed never-payers) is a bad debt, against 91.9% of the 40,801 such
-   accounts elsewhere. In the seven long runs ID numbers are on file for 0-0.7% of accounts against 53% outside, and
-   a model tells their rows apart at ROC AUC 0.988. Debt was not recorded there. Kept, the runs teach the model a
-   recording artefact and label real arrears "no". LEAK-25 (Must) says that "no event" mixed with "not recorded" is
-   retired "unless the recording process can be recovered"; its precedent, ghanas_indigenous_intel, was retired, but
-   there the unrecorded rows could not be located and the task was also `Too Small`. Implemented: a run without debt
-   is dropped when it holds at least 100 billed never-payers. The eight runs hold 183 to 4,583, every other run at
-   most 13, so any threshold from 20 to 150 drops the same runs; the paying runs of 334 and 218 rows stay. The
-   smallest run dropped is 186 rows from file row 91,971 (183 billed never-payers, no bad debt); the rule needs no
-   length threshold and never reads the label row by row. Cost: 101,686 rows remain, 56.25% positive; the threshold
-   is set on this file. Alternative: retire as `Data Quality Issue` (following ghanas_indigenous_intel; the task is
-   lost), or ask DMS Technologies which municipalities lack debt data (the dataset waits for an answer). Advocate and
-   critic agree on the drop. Recommendation: amend LEAK-25 so that "recovered" covers "located by a rule that does
-   not read the label, and dropped", decided once for caracas_cervical_cancer, this dataset and
-   fraud_detection_in_electricity_and_gas_consumption_1m (the working copy's REVIEW.md item on LEAK-25).
-   Decision needed: amend LEAK-25 (with the cross-dataset item), or retire.
-   LEAK-25 is amended (2026-10-21, Lennart): unrecorded rows located by a rule that does not read the label, and
-   dropped, count as recovered, so the drop meets the rule; this issue now needs only the curator's ok on the drop.
-
-8. **`TotalElectricityBill`: keep or drop?** The data card says electricity is billed "as a means to recover debt": a
-   municipality may cut a consumer's electricity for arrears. If a zero electricity bill is a cut-off for arrears
-   older than the window, the column is a consequence of the label (LEAK-10, Must): the model reads the
-   municipality's own reaction to the debt, which a score made before any cut-off could not use, and the benchmark
-   credits it with 0.009 ROC AUC (0.865 without, 0.874 with). Evidence (circumstantial, EV-6): within file blocks of
-   2,500 rows (a stand-in for the municipality, which has no column) where 80% or more of accounts are billed for
-   electricity, the accounts billed none are bad debts at 38.6% against 19.2% (ROC AUC 0.588 within blocks), and the
-   gap holds at equal payment status (paid something: 32.2% against 23.3%; never paid: 88.7% against 77.4%). Against
-   it: among billed accounts the median electricity share of the bill is 0.334 for both classes within blocks, so a
-   cut-off inside the window leaves no trace, and a vacant, unconnected or prepaid property also bills zero; the
-   domain practitioner reads a zero as no municipal supply or a prepaid meter, both known up front. The curator's
-   comment of 2026-10-12 (CC line) kept the column because "among billed accounts electricity is the same share of
-   the bill ... (median 0.33)", so "no cut-off for the window's arrears shows"; pooled over municipalities the
-   medians are 0.301 (bad debts) against 0.353, and within blocks the zero-bill gap above remains, so that keep is
-   asked again. A 0/1 "billed for electricity" flag is no middle way: with default LightGBM (which gives 0.870 where
-   the notes give 0.874) the full column scores 0.870, the flag 0.868 and neither 0.860, so the flag keeps nearly all
-   of the gain, and the zero it keeps is the suspect part. Rules: LEAK-10 (Must) against LEAK-6 (Must: a measured
-   effect with a known benign cause stays with a note, a confirmed leak goes). Precedent: none for this column;
-   LEAK-11 (south_africa_coronary_heart_disease) does not apply, since the column strengthens the signal.
-   Implemented: kept, with the corrected note (ROC AUC 0.874). Alternative: drop it (0.865; the task still ships).
-   What would settle it: DMS Technologies saying what a zero electricity bill means, or a meter-type column.
-   Recommendation: keep, as a LEAK-6 reading, since the data cannot show a cut-off and the benign causes are known
-   at the prediction point; drop if a zero is read as a cut-off.
-   Decision needed: keep (with the corrected note) or drop.
 
 9. **Keep the billing totals of the label window?** `TotalBilling` and `AverageBilling` sum the two years at whose
    end the label is read. If billing moved with the debt (interest or penalties on arrears billed in the window), a
@@ -78,6 +32,18 @@ the window, so the task is the status at the extract, a stand-in for the data ca
    critic agree on the keep. Recommendation: keep and record a LEAK-10 Cases row: a window sum that the data shows
    does not move with the outcome stays.
    Decision needed: the Cases row, an amendment of LEAK-10, or the drop.
+
+   **Lennart (2026-10-26, ok):** keep
+
+   **Consistency check (AI, 2026-10-26):** the keep follows the facts (the billing left over once municipality and property
+   value are accounted for separates the classes at ROC AUC 0.509 / 0.501 / 0.496, unlike mutual_funds_india's
+   `rating` and iranian_churn's usage), but LEAK-10 is a Must that puts a sum over the label's window out "even when
+   known at snapshot time", with no clause for "the data shows it does not move with the outcome". A Cases row cannot
+   carry a Must's departure, so the keep needs a short amendment of that clause, for example: "unless the data shows
+   the window's values do not move with the outcome, given the covariates known at the prediction point". It would sit
+   next to LEAK-10's existing "did not change" clause for lookups, and should be worded together with
+   onlinenewspopularity's issue 5 (the values read at a later pull), whose check asks the same question. Adopt this
+   amendment (then I add the Cases row and the keep stands), or drop the two columns (ROC AUC 0.874 to 0.832)?
 
 **Review panel:** ship after changes (mediator). Claim audit: 41 claims; the task text ("turned into bad debt") and
 the electricity note refuted in part (both fixed), a 186-row unrecorded run found (dropped), the record's quote

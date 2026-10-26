@@ -57,8 +57,9 @@ not accepted in the definition.
 | [`5g_energy_consumption`](5g_energy_consumption/) | grouped | 92,629 | 20 | 3 x 3 | not built |  |
 | [`account_debt_south_africa`](account_debt_south_africa/) | IID | 101,686 | 7 | 3 x 3 | not built |  |
 | [`acquire_valued_shoppers_challenge`](acquire_valued_shoppers_challenge/) | temporal | 160,057 | 111 | 5 x 1 | not built |  |
-| [`aeolus_1m`](aeolus_1m/) | temporal | 1,785,316 | 18 | 3 x 1 | not built |  |
-| [`african_credit_scoring_challenge`](african_credit_scoring_challenge/) | temporal | 58,953 | 10 | 9 x 1 | not built |  |
+| [`aeolus_1m`](aeolus_1m/) | temporal | 1,785,314 | 18 | 3 x 1 | not built |  |
+| [`aeolus_rebuilt_1m`](aeolus_rebuilt_1m/) | temporal | 1,799,254 | 34 | 3 x 1 | not built |  |
+| [`african_credit_scoring_challenge`](african_credit_scoring_challenge/) | temporal | 52,826 | 7 | 6 x 1 | not built |  |
 | [`airfoil_self_noise`](airfoil_self_noise/) | grouped | 1,503 | 5 | 10 x 3 | not built |  |
 | [`alfa_battle_2_0_task_2`](alfa_battle_2_0_task_2/) | temporal | 963,811 | 510 | 3 x 1 | not built |  |
 | [`allstate_claims_severity`](allstate_claims_severity/) | IID | 188,317 | 130 | 3 x 3 | not built |  |
@@ -96,7 +97,6 @@ not accepted in the definition.
 | [`concrete_compressive_strength`](concrete_compressive_strength/) | grouped | 1,030 | 8 | 10 x 3 | not built | `dataset_duplicate_rows` |
 | [`consumer_complaints_1m`](consumer_complaints_1m/) | temporal | 1,811,452 | 12 | 3 x 1 | not built |  |
 | [`cooking_time_1m`](cooking_time_1m/) | temporal | 2,527,113 | 196 | 3 x 1 | not built |  |
-| [`corporate_credit_rating_cat_data_set_ratings_raitings`](corporate_credit_rating_cat_data_set_ratings_raitings/) | IID | 197 | 6 | 20 x 3 | not built |  |
 | [`covertype`](covertype/) | IID | 581,012 | 14 | 1 x 3 | not built |  |
 | [`credit_approval`](credit_approval/) | IID | 690 | 15 | 20 x 3 | not built |  |
 | [`credit_card_clients_default`](credit_card_clients_default/) | IID | 30,000 | 23 | 3 x 3 | not built |  |
@@ -129,7 +129,6 @@ not accepted in the definition.
 | [`gallstone_disease`](gallstone_disease/) | IID | 319 | 38 | 20 x 3 | not built |  |
 | [`garments_worker_productivity`](garments_worker_productivity/) | temporal | 1,197 | 15 | 30 x 1 | not built |  |
 | [`give_me_some_credit`](give_me_some_credit/) | IID | 150,000 | 10 | 3 x 3 | not built |  |
-| [`glioma_grading_clinical_and_mutation_features`](glioma_grading_clinical_and_mutation_features/) | IID | 862 | 23 | 10 x 3 | not built |  |
 | [`heart_disease_cleveland`](heart_disease_cleveland/) | IID | 303 | 13 | 20 x 3 | not built |  |
 | [`heart_disease_hungary`](heart_disease_hungary/) | IID | 294 | 13 | 20 x 3 | not built | `dataset_constant_column` |
 | [`heart_disease_va_long_beach`](heart_disease_va_long_beach/) | IID | 200 | 13 | 20 x 3 | not built | `dataset_constant_column` |
@@ -184,8 +183,7 @@ not accepted in the definition.
 | [`open_university_learning_analytics_dataset`](open_university_learning_analytics_dataset/) | grouped | 26,395 | 40 | 3 x 3 | not built |  |
 | [`otto_group_product_classification_challenge`](otto_group_product_classification_challenge/) | IID | 61,878 | 93 | 3 x 3 | not built |  |
 | [`pancreatic_cancer_mouse_detection`](pancreatic_cancer_mouse_detection/) | grouped | 181 | 6,771 | 20 x 3 | not built | `dataset_missing_value_sentinel` |
-| [`perth_house_prices`](perth_house_prices/) | temporal | 33,090 | 18 | 9 x 1 | not built |  |
-| [`phiusil_phishing`](phiusil_phishing/) | IID | 235,370 | 49 | 3 x 3 | not built |  |
+| [`perth_house_prices`](perth_house_prices/) | temporal | 33,090 | 19 | 9 x 1 | not built |  |
 | [`pkdd_15_taxi_trip_time_prediction_ii_1m`](pkdd_15_taxi_trip_time_prediction_ii_1m/) | temporal | 1,434,291 | 8 | 3 x 1 | not built |  |
 | [`polish_companies_bankruptcy`](polish_companies_bankruptcy/) | IID | 5,790 | 64 | 3 x 3 | not built |  |
 | [`porto_seguro`](porto_seguro/) | IID | 595,206 | 37 | 1 x 3 | not built |  |

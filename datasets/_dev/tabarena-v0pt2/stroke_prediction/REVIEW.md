@@ -15,11 +15,6 @@ stays until Lennart decides.
 **Main points:** Retire under SEL-7 as cdc_diabetes_health_indicators was, or amend SEL-7 to keep it (issue 5); only
 if it stays, the PROV-3 bar for the marks left in the shipped columns (issue 1).
 
-**Record fields that disagree with the definition:**
-
-- `year`: record `2021`, definition `2018`.
-- `source_links`: record `the Kaggle cut (fedesoriano)`, definition `the contest page and the Mendeley Data deposit, doi:10.17632/x8ygrw87jw.1`.
-
 **Record judgment:** traced source, no good target. The record's Kaggle link is a cut of the contest file (the first
 249 strokes and the first 4,861 other rows); the record's "might be fake" concern is borne out for three columns,
 which are dropped, and marks remain in glucose and age (issue 1); the label is a stroke already had (issue 5).
@@ -59,6 +54,26 @@ which are dropped, and marks remain in glucose and age (issue 1); the label is a
    - (d) Reopen cdc_diabetes_health_indicators to match. Cost: undoes a decision of 2026-10-15.
    - Recommendation (mediator): (a). Decision needed: (a), (b), (c) or (d).
 
+   **Lennart (2026-10-26, discuss):** So in short, the problem is that the label might be before or after the collection of
+   the feature. And we retired cdc diabetes as a result. That makes sense as the use case to take action would be
+   wrong and we could not recover it. However, there could be a use cases where we want to know about people if they
+   ever had or ever will have a stroke based on the information (or similiar) and use this for some action on
+   screening. Could this be a reasonable task? also for cdc?
+
+   **Answer (AI, 2026-10-26):** not as a screening task; the two halves of "had or will have" are two decisions.
+   - A stroke already had is known: the patient and the doctor have it in the history, and the care that follows
+     (secondary prevention) starts from that diagnosis, not from a prediction.
+   - Screening acts on people who do not have the event yet: who gets a blood-pressure check, a statin or an
+     anticoagulant. Its label is a first event within a horizon (a first stroke within 10 years, as QRISK or the
+     Framingham stroke score predict), or a present condition only a test finds.
+   - A model trained on a mixed label learns mostly the history (here a missing BMI follows the stroke, odds x3.68),
+     and a screener cannot use it on people without one. The file has no dates to separate the halves, so the label
+     stays a stroke already had (SEL-7), and issue 5's recommendation (a) holds.
+   - cdc alike: its label is "ever told by a doctor you have diabetes", known to the respondent. The screening task
+     there is undiagnosed diabetes, with a label from a lab test, as in NHANES (fasting glucose or HbA1c; CDC
+     estimates about a fifth of adults with diabetes are undiagnosed). That would be a real task and a candidate for a
+     later search, not a reason to keep cdc or this file.
+
 1. **Only if issue 5 keeps the dataset: do the marks left in the shipped columns retire it under PROV-3?**
    - Problem: three columns carried nothing beyond age and are dropped (PROV-3, Must; fixing the definition comes
      before exclusion). Marks remain in two kept columns, all of PROV-3 test 4 (distributions a real record would not
@@ -92,6 +107,20 @@ which are dropped, and marks remain in glucose and age (issue 1); the label is a
    three dropped columns; what remains in shipped columns is PROV-3 test 4 only (the glucose floor at 55 and spike
    at 65, the extra ages 78 to 82), none linked to the stroke (p 0.45). Still open, only if issue 5 keeps the
    dataset: whether the dropped columns' marks extend to the kept ones, and whether the test-4 marks are enough.
+
+   **Lennart (2026-10-26, discuss):** So I understand that some columns are fake, while others seem real. What do we take
+   from this? can we keep the real data and still use it or is this enough info to understand it as fake.
+
+   **Answer (AI, 2026-10-26):** the file is a mix: its owner altered or generated part of it before the contest.
+   - Three columns (`Residence_type`, `ever_married`, `work_type`) carry nothing beyond age and look generated; they
+     are dropped. The kept columns show only weaker marks: no glucose below 55.00 with a spike at 65, and more
+     patients per year at ages 78-82 than at 70-77. Those fit an export limit and ages above 82 folded into the range
+     (disclosure control) as well as generation, and none is linked to the stroke (p 0.45).
+   - Keeping the columns that look real is allowed (PROV-3 as amended on 2026-10-21: marks count on the columns we
+     ship), so the marks alone would not retire it.
+   - But issue 5 retires it whatever issue 1 decides: the label is a stroke already had. So issue 1 needs no decision;
+     with (a) on issue 5 the dataset leaves as `No` + `No Good Target / Scientific Discovery`, and `Data Quality Issue`
+     can be added for the altered columns if you want the record to say both.
 
 **Review panel:** don't ship unless the curator amends SEL-7 (mediator); if it is amended, ship after the changes
 made in the definition. Claim audit: 59 claims, 47 hold, 2 refuted (the use-case wording and the record's year, both

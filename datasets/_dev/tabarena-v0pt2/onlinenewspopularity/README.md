@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: onlinenewspopularity
 container_format: 2
-checksum: v2:ae660df9296f0bd314f42a0e3f972fd93bbcba551c85d786075c4ff604187184
+checksum: v2:b68af7743f6786b28fc445bb3e22914f681c918e5429e868efd5e2320ec9d915
 build: null
 build_stale: false
 data:
@@ -58,7 +58,7 @@ decisions:
 
 Regression of `log_shares`, scored with `rmsle` on temporal splits by `publication_date`. 39,643 rows and 39 features. Source: UCI (2015).
 
-Not built yet. The current definition gives checksum `v2:ae660df9296f0bd314f42a0e3f972fd93bbcba551c85d786075c4ff604187184`.
+Not built yet. The current definition gives checksum `v2:b68af7743f6786b28fc445bb3e22914f681c918e5429e868efd5e2320ec9d915`.
 
 ## In brief
 
@@ -138,7 +138,7 @@ Only curators run `build`, when the dataset ships.
 | name | `rmsle` (standard; takes value; lower is better) |
 | origin | context: obvious from the task: the source defines no metric |
 | definition | sqrt(mean((log1p(y) - log1p(p))^2)); y and p non-negative |
-| reason | The paper scores a binary task (shares >= 1,400) with accuracy/F1/AUC; we ship a regression on the shares, so the original target is not ours. Shares are a heavy-tailed count (1 to 843,300) whose error matters relative to the count, so RMSLE on the shares. |
+| reason | The paper's task is binary (shares > 1,400, a cut set for class balance), ranked by ROC AUC; we ship a regression on the shares, which ranks articles as well (ROC AUC 0.727 on the paper's label against 0.730 for a classifier), so the original target is not ours. Shares are a heavy-tailed count (1 to 843,300) whose error matters relative to the count, so RMSLE on the shares. |
 | target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
 
 <details>
@@ -186,7 +186,7 @@ The first 5 of 39,643 rows of the final frame (the oldest rows: the frame is sor
 We start with OnlineNewsPopularity.csv from the UCI repository (dataset 332): Mashable articles published from 2013-01-07 to 2014-12-27, with 58 features extracted from each article's HTML and its shares at the crawl of 2015-01-08 (Fernandes et al. 2015). The R^2 values below are LightGBM on our 9 windows, averaged over 3 seeds.
 
 - Prediction point: before publication. The source's system "analyzes articles prior to their publication" (abstract) and suggests changes to the article and its publication day; the earlier Mashable articles are known, with their shares at the crawl of 2015-01-08 (see the potential leaks below).
-- Target: `log_shares`, the natural log of the shares at the crawl. The source's binary task (popular above 1,400 shares) is a cut of this count.
+- Target: `log_shares`, the natural log of the shares at the crawl. The source's binary task (popular: more than 1,400 shares, a threshold "which resulted in a balanced 'popular'/'unpopular' class distribution in the first training set", Fernandes et al. 2015, Sec. 3.1) is a cut of this count. The paper's decision acts on a score, not a label: its optimiser raises each article's probability of the popular class by suggesting changes before publication (Sec. 2.2, 2.4). The two framings rank articles alike on our windows: the regression's predictions score ROC AUC 0.727 on the > 1,400 label, a classifier 0.730 (paired difference 0.003, SE 0.003; LightGBM, 3 seeds, the 9 windows), so we keep the count.
 - Time: the publication date comes from the URL, which Mashable's archived pages confirm; the URL is dropped.
 - We drop `timedelta` and the seven weekday flags with `is_weekend`. They follow the authors' date, 1 to 5 days after the URL date for 24% of the articles, which is not known before publication and goes with the outcome (decision table).
 - The six `data_channel_is_*` flags become one categorical `data_channel`, `other` when no flag is set.

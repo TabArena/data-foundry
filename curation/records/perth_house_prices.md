@@ -4,8 +4,7 @@ name: Perth-House-Prices
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 1
 tags:
@@ -49,3 +48,19 @@ CC (2026-10-21, Lennart): ok on the follow-up item: a strong kept leak does not 
 **Assessment (AI, 2026-10-21):** metric now `Metric.from_context("rmsle", target_transform="log")` instead of the fallback rmse on the log target: a sale price's error matters relative to the price; the target still ships as log, and RMSLE is computed after the inverse, on the original scale (MET-3). Needs a rebuild to reach the container.
 
 CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
+
+CC (2026-10-26, Lennart): issue 3: keep all sales from 1988 (the history a monthly refit would have).
+
+CC (2026-10-26, Lennart): issue 5: "add unit as well": a `UNIT` flag from the address's unit number, `ADDRESS` kept.
+
+CC (2026-10-26, Lennart): issue 6: "Do (a)": nine one-month windows every third month back from December 2020 (`step=3`).
+
+CC (2026-10-26, Lennart): issue 7: no gap, as implemented.
+
+**Exception to SPLIT-10 (2026-10-26, Lennart):** no gap. The month resolution allows no gap shorter than the whole previous month, more than the real delay, and the newest month present early (December 2020, 0.71 of November's count) shows no price selection (mean residual +0.017 against +0.003 to +0.025 in July-November). Serves P4; the second exception of this reason, after ames_housing.
+
+CC (2026-10-26, Lennart): the declared metric, RMSLE on the price, is checked as declared.
+
+**Assessment (AI, 2026-10-26):** applied: `UNIT` (1,060 unit rows), windows every third month back from December 2020 (367-569 test sales, train 22,065-32,678 rows), the SPLIT-10 exception in the splits comment. `dataset check` clean; task probes (9 windows): LightGBM R² 0.860, linear 0.756, no flag. No open issue is left, so the folder's REVIEW.md is removed.
+
+CC (2026-10-26, Lennart): verdict ship.

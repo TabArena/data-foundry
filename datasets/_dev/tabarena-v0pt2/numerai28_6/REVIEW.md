@@ -11,11 +11,7 @@ quantile bins were fitted on a larger population that holds our test rows; no ra
 Weighed: data owner's release +, CC0 +, size +, encrypted features -, near-dummy log loss -.
 
 **Main points:** Keep the source's log loss, under which untuned tree models lose to the dummy, or use ROC AUC
-(issue 1)? The record's `year` disagrees with the definition.
-
-**Record fields that disagree with the definition:**
-
-- `year`: record `2017`, definition `2016`.
+(issue 1)? The record's year is settled (2016).
 
 **Record judgment:** valid. The data owner's own 2016 release, distinct from numerai_v5_2 in features, target and
 design; the week of a row is lost, and no test finds a trace of it.
@@ -36,6 +32,23 @@ design; the week of a row is lost, and no test finds a trace of it.
      a weighing call). Precedent: the curator's rule of 2026-10-21 trusts a competition's metric.
    - Recommendation: keep log loss (the competition's own metric; calibration is part of the task Numerai set).
    - Decision: log loss, or ROC AUC.
+
+   **Lennart (2026-10-26, change):** we keep roc auc. On the metric: "ROC AUC sounds better here, as it is binary and likely
+   more suited. Unless it is mostly about calibration?"
+
+   **Consistency check (AI, 2026-10-26):** it is mostly about calibration at the source, so your own exception applies.
+   - Numerai's 2016 rules: "where your model shows the most confident predictions, it needs to be especially correct
+     then. We evaluate your models with the Logarithmic Loss measure" (May 2016); "Models are ranked by accuracy
+     (logloss) as well as originality" (August 2016); "ranked by their weight and correlation within Numerai's
+     meta-model ... Generally, a lower logloss score results in a better rank" (October 2016 to March 2017; the Kaggle
+     file is of 2016-12-02). The whitepaper of February 2017 then paid stakes only when "logloss < −ln(0.5)".
+   - Calibration decided the pay, and the gap the issue measured is a calibration effect: untuned LightGBM scores log
+     loss 0.6945 against the dummy's 0.6931 while ranking above chance (ROC AUC 0.524).
+   - ROC AUC would also depart from MET-4 without a fact: bioresponse, binary as well, kept Kaggle's log loss (CC
+     2026-10-21), and on the shipped splits log loss separates the models more clearly than ROC AUC (linear against
+     random forest: about 17 split standard deviations against 6).
+   - Recommendation: keep log loss. Mark "As implemented" to keep it, or confirm ROC AUC with the fact that sets this
+     case apart.
 
 **Review panel:** focused tier, 2026-10-22: the claim auditor and the split auditor; the dataset-builder's checklist
 before them.

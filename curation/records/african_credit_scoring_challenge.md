@@ -55,3 +55,11 @@ CC (2026-10-21, Lennart): ok on the follow-up item: a strong kept leak does not 
 CC (2026-10-26, Lennart): issue 2: keep dropping the 8,899 rows whose lender funds less than 0.5 (LEAK-25).
 
 **Assessment (AI, 2026-10-26):** answers on the review page. Type_1 exists only from 2022-07-12 to 2022-12-01 (52,826 rows, 520 defaults); the six 2022 windows cut to Type_1 hold 18-22 defaults each, and the mixed windows' higher ROC AUC (0.68 against 0.60 untuned) comes from telling products apart (issue 1). Zindi's leaderboard was won with leaks and a hand-written Ghana rule, and its goal asked for default probabilities binned into risk grades; F1 per shipped window is 0.00-0.16 with about 20 defaults (issue 6, a consistency check against CC 2026-10-21). Zindi's Ghana test part cannot be reproduced: no labels, products absent from training (issue 7).
+
+CC (2026-10-26, Lennart): issue 1: "Do that then": keep the Type_1 loans only (six 2022 windows).
+
+CC (2026-10-26, Lennart): issue 6: "Yes do (a)": ROC AUC instead of Zindi's F1, under MET-4's overrule clause (the host asked for default probabilities binned into risk grades; the forum shows the F1 was gamed; one default moves F1 by about 0.05 on our windows). The metric mark: "See other issue to resolve this".
+
+CC (2026-10-26, Lennart): issue 7 as implemented: the competition's Ghana test and its new applicants are not reproduced; `changes` and `fit_reason` say so.
+
+**Assessment (AI, 2026-10-26):** applied: Type_1 only (52,826 rows, 520 defaults, 5,040 customers), lender_id, loan_type and duration dropped (constant), six windows of 1,821-2,446 rows and 18-22 default rows (2022-10-15 to 2022-12-01), horizon 7 days, `Metric.fallback` with F1 named as the rejected original. `dataset check` clean. Task probes (5 of 6 windows): random forest ROC AUC 0.594, LightGBM 0.568, linear 0.522; flags no_spread, drift_baseline, unstable. New REVIEW issue 8 asks whether to ship it.

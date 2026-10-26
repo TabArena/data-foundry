@@ -84,3 +84,5 @@ the 57k `ORIGIN_CALL` IDs. Work on it a bit more before the final call.
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — RMSLE of the travel time, the competition's evaluation metric, as RMSE on the log1p_travel_time target (Kaggle evaluation page).
 
 **Assessment (AI, 2026-10-21):** metric now `Metric.source("rmsle", target_transform="log1p")` instead of rmse on the log1p target: the competition's RMSLE on the travel time in seconds, computed after the inverse of the shipped log1p (MET-3); the score is the same number as before. Needs a rebuild to reach the container.
+
+CC (2026-10-26, Lennart): the declared metric is checked as declared.
