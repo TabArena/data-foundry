@@ -6,7 +6,7 @@ checked_by:
 suggestion: TBD -> 2nd Tier
 decision_markers:
 - Outdated
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - Tiny Data
 collections:

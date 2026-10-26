@@ -18,6 +18,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     DatasetDefinitionError,
     Grouping,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -33,7 +34,7 @@ from data_foundry.v2 import (
     workbench,
 )
 from data_foundry.v2.cli import add_dataset_parser
-from data_foundry.v2.dataset import PREPARED_MARKER, _categories_like, _horizon, _prepare_code_hash
+from data_foundry.v2.dataset import PREPARED_MARKER, _categories_like, _gap, _horizon, _prepare_code_hash
 from data_foundry.v2.splits import temporal_window_splits
 
 DEFINITION = '''
@@ -43,7 +44,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, drop_columns
 
 
 class Toy(AbstractCuratedDataset):
@@ -78,6 +79,7 @@ class Toy(AbstractCuratedDataset):
 
     target = "y"
     problem_type = "binary_classification"
+    metric = Metric.fallback(reason="the toy data is generated; it has no source metric")
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         return pd.read_csv(raw_dir / "toy.csv")
@@ -138,7 +140,7 @@ def test_flat_attributes_build_the_metadata() -> None:
     assert meta.academic_reference_bibtex.startswith("@misc{toy2024,\n  author")
     assert meta.academic_reference_bibtex_key == "toy2024"
     assert meta.data_tags == ["IID"]
-    assert task.objective_metric_name == "roc_auc"
+    assert (task.objective_metric.name, task.objective_metric.origin) == ("roc_auc", "fallback")
     assert task.stratify_on == "y"
 
 
@@ -323,6 +325,7 @@ BASE = {
     "bibtex": "@misc{toy2024,\n  title = {Toy}\n}",
     "target": "y",
     "problem_type": "regression",
+    "metric": Metric.fallback(reason="the toy data has no source metric"),
 }
 
 
@@ -355,10 +358,30 @@ def _define(**attrs: object) -> type[AbstractCuratedDataset]:
             "grouped or temporal, not both",
         ),
         ({"subsample_to_budget": True}, "version_of"),
+        (
+            {"temporal": Temporal(on="t", splits=TemporalSplits(window=7, unit="days", n_windows=3, sample_by="time"))},
+            "needs `subsample_to_budget = True`",
+        ),
         ({"version_of": "toy"}, "version_comment"),
         ({"SPLIT_RANDOM_STATE": 1}, "fixed for the whole benchmark"),
         ({"categorical_features": ("a",)}, "`_feature_types`"),
         ({"data_tags": "Spatial"}, "tuple of tags"),
+        ({"data_tags": ("2ndTierData",)}, "retired"),
+        ({"data_tags": ("ForcedGroupedFromTemporal",)}, "marks a grouped split"),
+        (
+            {
+                "data_tags": ("ForcedIIDFromTemporal",),
+                "grouping": Grouping(on="g", labels="per_group", definition="x"),
+            },
+            "marks an IID split",
+        ),
+        (
+            {
+                "data_tags": ("ForcedIIDFromTemporal",),
+                "temporal": Temporal(on="t", splits=TemporalSplits(window=7, unit="days", n_windows=2)),
+            },
+            "marks an IID split",
+        ),
     ],
 )
 def test_class_validation_rejects_bad_definitions(attrs: dict, match: str) -> None:
@@ -387,6 +410,66 @@ def test_temporal_rejects_a_horizon_the_windows_already_set(splits: TemporalSpli
         Temporal(on="t", splits=splits, horizon=7, horizon_unit="days")
 
 
+def test_temporal_gap_is_stated_by_the_windows_or_declared() -> None:
+    assert _gap(_define(temporal=Temporal(on="t", splits=TemporalSplits(window=7, unit="days", n_windows=3)))) == (
+        None,
+        None,
+    )
+    days = TemporalSplits(window=7, unit="days", n_windows=3, gap=1)
+    assert _gap(_define(temporal=Temporal(on="t", splits=days))) == (1, "days")
+    rows = TemporalSplits(window=320, unit="rows", n_windows=3, gap=10)
+    assert _gap(_define(temporal=Temporal(on="t", splits=rows))) == (10, "steps")
+    cohorts = TemporalSplits(window=1, unit="unique", n_windows=3, gap=5)
+    declared = Temporal(on="t", splits=cohorts, horizon=1, horizon_unit="years", gap=5, gap_unit="years")
+    assert _gap(_define(temporal=declared)) == (5, "years")
+    custom = Temporal(on="t", horizon=1, horizon_unit="months", gap=1, gap_unit="months")  # `_make_splits`
+    assert custom.resolved_gap == (1, "months")
+    minutes = TemporalSplits(window=91, unit="days", n_windows=3, gap=15, gap_unit="minutes")  # its own unit
+    assert _gap(_define(temporal=Temporal(on="t", splits=minutes))) == (15, "minutes")
+    assert "up to a gap of 15 minutes" in minutes.describe(3)
+    assert _horizon(_define(temporal=Temporal(on="t", splits=minutes))) == (91, "days")
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "match"),
+    [
+        ({"unit": "unique", "gap": 2, "gap_unit": "days"}, "needs a calendar unit"),
+        ({"unit": "rows", "gap": 2, "gap_unit": "minutes"}, "needs a calendar unit"),
+        ({"unit": "days", "gap_unit": "minutes"}, "no gap"),
+        ({"unit": "days", "gap": 1, "gap_unit": "seconds"}, "is not one of"),
+        ({"unit": "days", "sample_by": "groups"}, "sample_by"),
+    ],
+)
+def test_temporal_splits_reject_a_bad_gap_unit_or_sampling(kwargs: dict, match: str) -> None:
+    with pytest.raises(ValueError, match=match):
+        TemporalSplits(window=7, n_windows=3, **kwargs)
+
+
+@pytest.mark.parametrize(
+    ("kwargs", "match"),
+    [
+        ({"splits": TemporalSplits(window=7, unit="days", n_windows=3, gap=1), "gap": 1}, "together"),
+        (
+            {"splits": TemporalSplits(window=7, unit="days", n_windows=3, gap=1), "gap": 1, "gap_unit": "days"},
+            "the windows state the gap",
+        ),
+        ({"splits": TemporalSplits(window=7, unit="days", n_windows=3), "gap": 1, "gap_unit": "days"}, "leave none"),
+        (
+            {
+                "splits": TemporalSplits(window=1, unit="unique", n_windows=3, gap=5),
+                "horizon": 1,
+                "horizon_unit": "years",
+            },
+            "state it in a unit",
+        ),
+        ({"horizon": 1, "horizon_unit": "days", "gap": 0, "gap_unit": "days"}, "positive integer"),
+    ],
+)
+def test_temporal_rejects_a_bad_gap(kwargs: dict, match: str) -> None:
+    with pytest.raises(ValueError, match=match):
+        Temporal(on="t", **kwargs)
+
+
 def test_temporal_rejects_inconsistent_declarations() -> None:
     with pytest.raises(ValueError, match="together"):
         Temporal(on="t", horizon=3)
@@ -413,6 +496,12 @@ def test_grouping_is_stored_in_a_format_2_task() -> None:
     assert task.grouping.definition == "One group is a toy."
     assert task.grouping.aggregation == "mean"
     assert cls.dataset_metadata.data_tags == ["Non-IID", "GroupedTemporal"]
+
+
+def test_forced_grouped_tag_keeps_the_automatic_regime_tags() -> None:
+    grouping = Grouping(on="g", labels="per_group", definition="One group is a toy.")
+    cls = _define(grouping=grouping, data_tags=("ForcedGroupedFromTemporal",))
+    assert cls.dataset_metadata.data_tags == ["Non-IID", "Grouped", "ForcedGroupedFromTemporal"]
 
 
 def test_cast_and_drop_helpers() -> None:
@@ -474,7 +563,7 @@ def test_cli_new_scaffolds_from_the_template(tmp_path: Path) -> None:
     text = (tmp_path / "datasets" / "fresh_ds" / "dataset.py").read_text()
     assert 'unique_name = "fresh_ds"' in text
     assert "class FreshDs(AbstractCuratedDataset):" in text
-    assert (tmp_path / "datasets" / "fresh_ds" / "explore.ipynb").is_file()
+    assert sorted(p.name for p in (tmp_path / "datasets" / "fresh_ds").iterdir()) == ["dataset.py"]
 
 
 def test_decisions_are_rendered_into_the_report(tmp_path: Path, warehouse: Path) -> None:
@@ -609,15 +698,15 @@ def test_a_version_within_the_budget_is_refused(tmp_path: Path, warehouse: Path)
         get_dataset(tmp_path / "datasets", "toy_ds_1m").make_splits()
 
 
-def temporal_version_body() -> str:
+def temporal_version_body(windows: str = 'TemporalSplits(window=5, unit="days", n_windows=3)') -> str:
     """A temporal ``toy_ds_1m``: the 600 toy rows over 30 days (20 per day), 3 windows of 5 days."""
-    extra = '    temporal = Temporal(on="t", splits=TemporalSplits(window=5, unit="days", n_windows=3))\n'
+    extra = f'    temporal = Temporal(on="t", splits={windows})\n'
     return (
         DEFINITION.format(name="toy_ds_1m", comment="Toy data.")
         .replace(
-            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, drop_columns",
-            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits, "
-            "drop_columns",
+            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, drop_columns",
+            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, "
+            "TemporalSplits, drop_columns",
         )
         .replace(
             '        return drop_columns(df, ["row_id"])',
@@ -662,6 +751,25 @@ def test_a_temporal_version_samples_per_window_and_keeps_the_rows_it_uses(
     assert "the frame keeps only the rows a split uses" in plan.comment
 
 
+def test_a_temporal_version_sampled_by_time_keeps_whole_days(
+    tmp_path: Path, warehouse: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    del warehouse
+    monkeypatch.setattr(protocol, "TRAIN_ROW_BUDGET", 190)  # 9 whole days of 20 rows fit, the 10th would cross it
+    monkeypatch.setattr(protocol, "TEST_ROW_BUDGET", 60)  # 3 of a window's 5 days
+    windows = 'TemporalSplits(window=5, unit="days", n_windows=3, sample_by="time")'
+    write_definition(tmp_path / "datasets", "toy_ds_1m", body=temporal_version_body(windows))
+    plan = get_dataset(tmp_path / "datasets", "toy_ds_1m").make_splits()
+
+    full_days = plan.df["t"].value_counts()
+    assert (full_days == 20).all()  # every kept day keeps all its rows
+    for folds in plan.splits.values():
+        train, test = folds[0]
+        assert (len(train), len(test)) == (180, 60)  # at most the budget: the day crossing it is dropped
+        assert plan.df["t"].iloc[train].max() < plan.df["t"].iloc[test].min()
+    assert "drawn as whole values of `t`" in plan.comment
+
+
 def test_a_temporal_version_within_the_budget_is_refused(tmp_path: Path, warehouse: Path) -> None:
     del warehouse
     write_definition(tmp_path / "datasets", "toy_ds_1m", body=temporal_version_body())
@@ -674,8 +782,9 @@ def test_a_grouped_definition_reports_its_group_structure(tmp_path: Path, wareho
     body = (
         DEFINITION.format(name="toy_ds", comment="x")
         .replace(
-            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, drop_columns",
-            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary, drop_columns",
+            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, drop_columns",
+            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, "
+            "drop_columns",
         )
         .replace(
             '        return drop_columns(df, ["row_id"])',
@@ -1052,3 +1161,128 @@ def test_summary_findings(tmp_path: Path, warehouse: Path, replace: tuple[str, s
 def test_class_validation_checks_the_summary(summary: object, match: str) -> None:
     with pytest.raises(DatasetDefinitionError, match=match):
         _define(task_summary=summary)
+
+
+# --- the metric ---------------------------------------------------------------------------------------------------
+FALLBACK_LINE = '    metric = Metric.fallback(reason="the toy data is generated; it has no source metric")\n'
+
+
+def _with_metric(line: str, name: str = "toy_ds") -> str:
+    return DEFINITION.format(name=name, comment="x").replace(FALLBACK_LINE, line)
+
+
+@pytest.mark.parametrize("line", ["", '    metric = "f1"\n'])
+def test_a_definition_without_a_metric_fails_validation(line: str) -> None:
+    match = "missing required attribute" if not line else "`metric` must be a `Metric`"
+    with pytest.raises(DatasetDefinitionError, match=match):
+        load_definition_from_text(_with_metric(line, "toy_no_metric"), "toy_no_metric")
+
+
+def test_a_metric_of_another_type_fails_validation() -> None:
+    with pytest.raises(DatasetDefinitionError, match="`metric` must be a `Metric`"):
+        load_definition_from_text(_with_metric("    metric = 3\n", "toy_bad_metric"), "toy_bad_metric")
+
+
+def test_a_source_metric_is_written_into_the_spec_and_the_readme(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    line = '    metric = Metric.source("log_loss", original="LogLoss", reference="https://example.org/eval")\n'
+    folder = write_definition(tmp_path / "datasets", body=_with_metric(line))
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    assert result.ok, result.bundle_report.summary()
+    spec = result.container.task_metadata.objective_metric
+    assert (spec.name, spec.origin, spec.original, spec.prediction) == ("log_loss", "source", "LogLoss", "proba")
+    text = (folder / "README.md").read_text()
+    assert "**Metric**" in text
+    assert "| reference | https://example.org/eval |" in text
+    assert read_report(folder / "README.md")["task"]["metric_origin"] == "source"
+
+
+LOCAL_LINE = """    metric = Metric.local(
+        lambda y, p, **_: float((y == p).mean()),
+        name="hit_rate",
+        prediction="label",
+        greater_is_better=True,
+        reference="https://example.org/our-own-metric",
+    )
+"""
+
+
+def test_a_local_metric_is_warned_and_refused_by_build(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    write_definition(tmp_path / "datasets", body=_with_metric(LOCAL_LINE))
+    ds = get_dataset(tmp_path / "datasets", "toy_ds")
+    result = ds.check(verbose=False)
+    assert "task_metric_local" in [r.slug for r in result.bundle_report.warnings]
+    assert not [r for r in result.bundle_report.results if r.slug == "task_metric_not_computable"]
+    with pytest.raises(DatasetDefinitionError, match="allow_local_metric=True"):
+        ds.build(verbose=False)
+    assert ds.build(verbose=False, allow_local_metric=True).saved
+
+
+@pytest.fixture
+def era_metric(monkeypatch: pytest.MonkeyPatch) -> str:
+    from data_foundry.v2.metrics import METRICS, MetricDef
+
+    def mean_group_accuracy(y_true, y_pred, *, group, **_):
+        frame = pd.DataFrame({"hit": np.asarray(y_true) == np.asarray(y_pred), "g": group})
+        return float(frame.groupby("g")["hit"].mean().mean())
+
+    definition = MetricDef(
+        name="test_mean_group_accuracy",
+        problem_types=("binary_classification",),
+        prediction="label",
+        greater_is_better=True,
+        fn=mean_group_accuracy,
+        implementation="test",
+        definition="mean over groups of the accuracy",
+        kind="custom",
+        inputs=("group",),
+    )
+    monkeypatch.setitem(METRICS, definition.name, definition)
+    return definition.name
+
+
+SCORING = """    metric = Metric.source("{metric}", reference="https://example.org/eval", inputs={{"group": "era"}})
+    scoring_columns = (
+        ScoringColumn(column="era", role="group", used_by="{metric}", description="the toy week of a row"),
+    )
+"""
+
+
+def test_scoring_columns_are_kept_out_of_the_features(tmp_path: Path, warehouse: Path, era_metric: str) -> None:
+    del warehouse
+    body = (
+        _with_metric(SCORING.format(metric=era_metric))
+        .replace("import AbstractCuratedDataset,", "import ScoringColumn, AbstractCuratedDataset,")
+        .replace(
+            '        return drop_columns(df, ["row_id"])',
+            '        df["era"] = df["row_id"] % 6\n        return drop_columns(df, ["row_id"])',
+        )
+    )
+    folder = write_definition(tmp_path / "datasets", body=body)
+    ds = get_dataset(tmp_path / "datasets", "toy_ds")
+    result = ds.check(verbose=False)
+    assert result.ok, result.bundle_report.summary()
+    from data_foundry.curation_container import feature_columns
+    from data_foundry.v2.metrics import scorer
+
+    assert feature_columns(result.container) == ["x1", "colour"]
+    text = (folder / "README.md").read_text()
+    assert "**Scoring columns**" in text
+    assert "| `era` | group | test_mean_group_accuracy: the toy week of a row | never a feature |" in text
+    assert "and 2 features" in text
+    assert "scoring column:        era" in result.container.describe()
+    container = result.container
+    _, test_idx = container.experiment_metadata.splits[0][0]
+    y = container.dataset["y"].to_numpy()[test_idx]
+    assert scorer(container)(y, y, test_idx) == 1.0
+
+    missing = body.replace('        df["era"] = df["row_id"] % 6\n', "")
+    write_definition(tmp_path / "datasets", body=missing)
+    with pytest.raises(DatasetDefinitionError, match="`scoring_columns` names"):
+        get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+
+
+def test_the_template_metric_is_a_placeholder_the_checks_catch() -> None:
+    template = (Path(__file__).resolve().parents[1] / "datasets" / "_template" / "dataset.py").read_text()
+    assert 'metric = Metric.fallback(reason="TODO(verify):' in template

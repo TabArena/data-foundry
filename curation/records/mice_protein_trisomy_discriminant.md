@@ -8,7 +8,7 @@ data_foundry_status:
 - BeyondArena
 suggestion: No (Retired)
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - Non-IID (Grouped)
 collections:

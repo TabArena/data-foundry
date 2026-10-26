@@ -7,7 +7,7 @@ suggestion: TBD -> 2nd Tier
 decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 collections:
 - New (BeyondArena)
 domain: medical & healthcare

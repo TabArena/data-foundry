@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class EcoliProteins(AbstractCuratedDataset):
@@ -69,6 +69,13 @@ class EcoliProteins(AbstractCuratedDataset):
     # Task
     target = "class"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Horton & Nakai 1996 report cross-validated accuracy (81% over 8 sites), a field habit without costs; we keep"
+            " 5 of the 8 sites, so the figure's meaning changed (MET-2). Original rejected: accuracy. log_loss is the "
+            "multiclass fallback."
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         feature_names = [

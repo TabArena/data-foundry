@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class LjubljanaBreastCancer(AbstractCuratedDataset):
@@ -67,6 +67,13 @@ class LjubljanaBreastCancer(AbstractCuratedDataset):
     # Task
     target = "Class"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Every 1986-1988 paper on the data (Michalski et al., Clark & Niblett, Cestnik et al.) reports "
+            "accuracy only, without costs or a threshold; 30% recurrence on 286 rows. Original rejected: "
+            "accuracy. roc_auc is the binary fallback."
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         columns = [

@@ -12,7 +12,7 @@ suggestion: 'Yes'
 original_source: Kaggle
 year: '2013'
 required_split:
-- '?'
+- Random (IID)
 problem_type: Binary Classification
 source_links:
 - https://www.openml.org/search?type=data&id=4135
@@ -35,6 +35,8 @@ Potential issue: grouped data (manager-employees); test data was temporal (only 
 Lennart: Yes, if the groups are not a problem and we do not have repeated employee entries? Time should be ignorable as the processes did not change during collection (?);
 
 Andrej: Fits criteria
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — Area Under Receiver Operating Characteristic Curve (https://www.kaggle.com/competitions/amazon-employee-access-challenge (Kaggle API evaluationMetric)).
 
 ## Reference
 

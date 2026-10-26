@@ -32,3 +32,12 @@ def records_dir() -> Path:
 def vocabularies_path() -> Path:
     """Path to the editable dropdown vocabularies (``vocabularies.yaml``)."""
     return resolve_curation_root() / "vocabularies.yaml"
+
+
+def skills_dir() -> Path:
+    """Directory holding the repo's agent skills (``<repo>/.claude/skills``).
+
+    The repo root is the curation root's parent, the same root the dashboard's record links are
+    relative to. A non-editable install has no source tree, so the directory may not exist.
+    """
+    return resolve_curation_root().parent / ".claude" / "skills"

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import arff
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class WebsitePhishing(AbstractCuratedDataset):
@@ -91,6 +91,9 @@ class WebsitePhishing(AbstractCuratedDataset):
     # Task
     target = "is_phishing"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason="Abdelhamid, Ayesh & Thabtah 2014 compare associative classifiers by 3-class accuracy; we dropped the suspicious class (binary since 2026-10-14), so the task changed (MET-2), and no costs are fixed. roc_auc is the binary fallback.",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         with open(f"{raw_dir}/PhishingData.arff") as f:

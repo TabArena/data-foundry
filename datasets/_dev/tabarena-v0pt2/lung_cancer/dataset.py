@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
 
 
 class LungCancer(AbstractCuratedDataset):
@@ -71,6 +71,12 @@ class LungCancer(AbstractCuratedDataset):
     # Task
     target = "CancerType"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason=(
+            "The source paper clusters the samples (hierarchical and probabilistic clustering) to find "
+            "adenocarcinoma subclasses and declares no classification metric for predicting the class."
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_excel(f"{raw_dir}/dataseta_12600gene.xls")

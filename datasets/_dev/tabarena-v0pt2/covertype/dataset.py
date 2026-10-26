@@ -6,7 +6,7 @@ import re
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class Covertype(AbstractCuratedDataset):
@@ -72,6 +72,7 @@ class Covertype(AbstractCuratedDataset):
         - IID is optimistic for land far from any mapped cell: the US Forest Service maps were made of homogeneous stands of 2 to 80 hectares, so one stand spans about 20 to 900 neighbouring cells that share its label and have similar features, and a random test cell usually has cells of its stand in the training data. The data has no coordinates or time to split by (TabReD argues for a time split).
         - Until 2026-10-01 we held out one wilderness area at a time, on a frame reduced to the 3 classes and 3 areas that allow it (some cover types occur in only some areas). With 3 groups this was three domain-shift tests rather than a grouped task, and it dropped 4 of the 7 cover types, so we went back to the source's random split.
         - The OpenML version (https://www.openml.org/d/150, used by TALENT) comes with transformed features that leak the test distribution, and the UCI release has an incorrect column order.
+        - Metric: the fallback log loss rather than the paper's accuracy, a curator call (Lennart, 2026-10-21).
 
         Other steps:
         - We add the column names in the correct way.
@@ -82,6 +83,13 @@ class Covertype(AbstractCuratedDataset):
     # Task
     target = "Cover_Type"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Blackard & Dean 1999 report accuracy on 7 cover types, but name no costs between types and two types "
+            "hold 85% of the cells; a threshold metric without a source threshold is not used (MET-6, MET-8; Lennart, "
+            "2026-10-21)."
+        )
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         columns = [

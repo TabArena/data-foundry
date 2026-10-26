@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
 
 
 class GiveMeSomeCredit(AbstractCuratedDataset):
@@ -62,6 +62,12 @@ class GiveMeSomeCredit(AbstractCuratedDataset):
     # Task
     target = "FinancialDistressNextTwoYears"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="AUC",
+        reference="https://www.kaggle.com/competitions/GiveMeSomeCredit/overview/evaluation",
+        definition="ROC AUC of the probability of 90+ days delinquency within two years.",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/cs-training.csv", index_col=0, na_values="NA")

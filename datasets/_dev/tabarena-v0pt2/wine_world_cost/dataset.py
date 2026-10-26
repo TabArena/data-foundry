@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class WineWorldCost(AbstractCuratedDataset):
@@ -70,6 +70,11 @@ class WineWorldCost(AbstractCuratedDataset):
     # Task
     target = "Price"
     problem_type = "regression"
+    metric = Metric.from_context(
+        "rmsle",
+        reason="A scraped Kaggle dataset with no competition, paper or stated metric. For a bottle's price the error that matters is relative to the price (a pound off a cheap bottle is a large miss, on a rare one a small one), so RMSLE on the price.",
+        target_transform="log",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "WineDataset.csv")

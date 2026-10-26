@@ -3,8 +3,12 @@ name: Pages
 # Publish a public, READ-ONLY copy of the curation log to GitHub Pages.
 #
 # The site is regenerated from curation/records (the source of truth) on every
-# push to main that touches the backlog or the viewer, then deployed. Nothing
-# generated is committed back to the repo.
+# push to main that touches the backlog, the viewer, or the guideline skills
+# (rendered by guidelines.html), then deployed. Nothing generated is committed
+# back to the repo. Its Claimed by column shows the live claims board (the
+# `claims` branch): every push there runs `claims-to-pages.yaml`, a workflow that
+# lives on that branch only, which dispatches this one on main
+# (`data-foundry-curation claims init --pages-dispatch` puts it there).
 #
 # One-time setup: Settings -> Pages -> "Build and deployment" -> Source =
 # "GitHub Actions". The repository must be public (or on a plan that allows
@@ -18,6 +22,9 @@ on:
       - "curation/records/**"
       - "curation/vocabularies.yaml"
       - "src/data_foundry/curation/**"
+      # The Guidelines page renders these two skills' markdown files.
+      - ".claude/skills/knowledge-curation/**"
+      - ".claude/skills/knowledge-data-foundry/**"
       - ".github/workflows/pages.yaml"
   workflow_dispatch:
 
@@ -48,6 +55,10 @@ jobs:
 
       - name: Install package
         run: uv sync
+
+      - name: Fetch the claims board
+        # Caches the board in .git for build-site; a missing branch is an empty board.
+        run: uv run data-foundry-curation claims list > /dev/null
 
       - name: Build read-only static site
         env:

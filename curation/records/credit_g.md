@@ -13,7 +13,6 @@ original_source: UCI
 year: '1994'
 required_split:
 - Random (IID)
-- Temporal (NON-IID)
 problem_type: Binary Classification
 source_links:
 - https://www.openml.org/search?type=data&id=31
@@ -36,6 +35,10 @@ Potential issue: Outdated (Deutsche Mark)
 Lennart: Temporal impact unclear and not resolvable, otherwise ok and not too old
 
 Andrej: Fits criteria, but honestly this dataset with only 1000 samples from 1994 is not representative of a credit scoring task anymore. If no better dataset is available I would not use it
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source cost_matrix {"labels":["good","bad"],"matrix":[[0,1],[5,0]],"prediction":"proba"} — the Statlog cost matrix (5 for a bad customer predicted good, 1 for the reverse; UCI german.doc, Michie et al. 1994), from probabilities by least expected cost.
+
+CC (2026-10-21, Lennart): Unsure whether the cost matrix should score probabilities or labels (TabArena tunes thresholds); the AI's choice, probabilities with the least expected cost, is applied.
 
 ## Reference
 

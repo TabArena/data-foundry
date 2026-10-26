@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Grouping,
+    Metric,
     TaskSummary,
     drop_columns,
     murcko_scaffolds,
@@ -82,6 +83,12 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
     # Task
     target = "Label"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Huang, Liu & Huang 2024 (InterDIA) report AUC, accuracy, sensitivity, specificity, F1 and MCC side by side; "
+            "no unique metric. roc_auc is the binary fallback."
+        ),
+    )
     grouping = Grouping(
         on="scaffold",
         labels="per_sample",
@@ -121,12 +128,15 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
         return df[~df.duplicated(subset=features, keep=False)]
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        # every feature is a descriptor; the RDKit fragment counts stay numeric even where only 0 and 1 occur
+        # (CLEAN-14)
+        del df
         return FeatureTypes()
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         descriptors = raw.columns.drop(["SMILES", self.target])
         shared = raw[raw.duplicated(subset=descriptors, keep=False)]
-        pair = shared.groupby(list(descriptors), sort=False, dropna=False).ngroup().rename("pair") + 1
+        pair = shared.groupby(list(descriptors), sort=False, dropna=False, observed=True).ngroup().rename("pair") + 1
         labels = shared.groupby(pair)[self.target].transform("nunique")
         pairs = (
             shared[["SMILES", self.target]]

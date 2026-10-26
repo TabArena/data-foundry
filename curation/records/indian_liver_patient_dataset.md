@@ -36,6 +36,8 @@ Make sure to add indicator variable for clipping of 90
 
 CC (2026-10-06, Lennart): Kept after the task-probe review: the `no_spread` flag (untuned skills +0.47 to +0.50) does not hold for tuned methods. On BeyondArena LimiX-2 reaches ROC AUC 0.771 and the median method 0.750, with 4 of 29 methods tied with the best.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — The UCI page defines no task metric and the cited paper (Ramana et al. 2012) is a statistical comparison of the USA and India patient groups, not a benchmark with a declared score; later uses report accuracy only.
+
 ## Reference
 
 The original dataset was first proposed by Ramana et al. (2012) as a critical comparison of patients across USA and India:

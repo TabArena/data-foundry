@@ -14,7 +14,9 @@ collections:
 - TabArena Reject
 original_source: UCI
 year: '2014'
-domain: biology & life sciences
+domain: chemistry & material science
+required_split:
+- Random (IID)
 problem_type: Regression
 original_data_state: One Table
 source_links:
@@ -40,6 +42,14 @@ Other version in TabArena "QSAR_fish_toxicity"
 Generally fine to add, but we need to decide whether we allow two datasets that similar in the benchmark
 
 **Assessment (AI, 2026-10-14):** the quoted sentence about the fathead minnow and 908 chemicals is UCI's summary of QSAR fish toxicity (UCI 504), pasted by mistake into the summary of this dataset (UCI 505). This dataset is 546 chemicals with the 48-hour LC50 for Daphnia magna, a regression target (UCI 505 abstract; Cassotti et al. 2014).
+
+CC (2026-10-21, Lennart): one domain for the molecule-property datasets (the input is the molecule): "chemistry & material science", for all ten QSAR siblings.
+
+CC (2026-10-21, Lennart): ok on the follow-up item: a strong kept leak does not make the fit approximate (USE-8 amended); the kept leak is named in `fit_reason` as kept, not as a gap.
+
+**Assessment (AI, 2026-10-21):** fit set to `direct`; the authors' selection of the eight descriptors by their fit to the toxicity is named in `fit_reason` as a kept potential leak.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — Cassotti et al. (2014) report Q2 with RMSE, no single task metric; r2 and rmse rank models the same within a fold.
 
 ## Reference
 

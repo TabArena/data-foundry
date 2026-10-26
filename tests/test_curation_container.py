@@ -16,6 +16,8 @@ from data_foundry.schema import (
     PredictiveMLTaskMetadataV2,
 )
 
+from tests.test_bundle_checks import make_spec
+
 
 @pytest.fixture
 def make_toy_objects(
@@ -588,7 +590,7 @@ def _grouped_toy(task: PredictiveMLTaskMetadata | PredictiveMLTaskMetadataV2 | N
 
 def _v2_task(grouping: Grouping | None) -> PredictiveMLTaskMetadataV2:
     return PredictiveMLTaskMetadataV2(
-        target_column_name="y", problem_type="binary_classification", objective_metric_name="roc_auc", grouping=grouping
+        target_column_name="y", problem_type="binary_classification", objective_metric=make_spec(), grouping=grouping
     )
 
 
@@ -637,6 +639,46 @@ def test_a_format_2_container_round_trips(tmp_path):
     assert loaded.container_metadata["format_version"] == 2
 
 
+def test_a_format_2_container_keeps_its_metric_spec_and_scoring_columns(tmp_path):
+    from data_foundry.schema import ScoringColumn
+    from data_foundry.v2.dataset import metric_spec
+    from data_foundry.v2.metrics import Metric
+
+    spec = metric_spec(
+        Metric.stand_in("roc_auc", original="per-site AUC", reason="toy", reference="https://example.org"),
+        "binary_classification",
+    )
+    task = dataclasses.replace(
+        _v2_task(None),
+        objective_metric=spec,
+        scoring_columns=[ScoringColumn(column="g", role="group", used_by="roc_auc", description="the toy site")],
+    )
+    container = _grouped_toy(task)
+    path = container.save(save_dir=tmp_path)
+    task_json = json.loads((path / "task_metadata.predictive-ml-task-mold-v2.json").read_text())
+    assert task_json["objective_metric"]["original"] == "per-site AUC"
+    assert task_json["scoring_columns"][0]["column"] == "g"
+    assert "objective_metric_name" not in task_json
+    loaded = CuratedContainer.load(path)
+    assert loaded.task_metadata.objective_metric == spec
+    assert loaded.verify()
+    described = loaded.describe()
+    assert "objective_metric:      roc_auc (standard, proba, higher is better; origin: stand_in)" in described
+    assert "scoring column:        g (role group, used by roc_auc; never a feature): the toy site" in described
+    assert "(1 features" in described  # x only: not g (scoring), not y
+
+
+def test_an_old_format_2_task_file_names_the_rebuild(tmp_path):
+    path = _grouped_toy(_v2_task(None)).save(save_dir=tmp_path)
+    task_file = path / "task_metadata.predictive-ml-task-mold-v2.json"
+    task_json = json.loads(task_file.read_text())
+    task_json.pop("objective_metric")
+    task_json.pop("scoring_columns")
+    task_file.write_text(json.dumps({**task_json, "objective_metric_name": "roc_auc"}))
+    with pytest.raises(ValueError, match=r"older data_foundry.*rebuild the container with the current version"):
+        CuratedContainer.load(path)
+
+
 def test_an_iid_format_2_container_has_no_grouping():
     container = _grouped_toy(_v2_task(None))
     assert container.grouping is None
@@ -680,7 +722,7 @@ def test_an_unknown_metadata_type_names_a_newer_format(tmp_path):
 def test_format_2_task_rejects_what_does_not_fit(problem_type, kwargs, match):
     with pytest.raises((ValueError, pydantic.ValidationError), match=match):
         PredictiveMLTaskMetadataV2(
-            target_column_name="y", problem_type=problem_type, objective_metric_name="m", **kwargs
+            target_column_name="y", problem_type=problem_type, objective_metric=make_spec(), **kwargs
         )
 
 

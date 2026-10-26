@@ -4,12 +4,10 @@ name: Caracas Cervical Cancer
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 tags:
 - New IID
-- Multi-target
 collections:
 - New (BeyondArena)
 - TabSTAR
@@ -36,6 +34,14 @@ Some features are multi-categoricals as one-hot encoding. Might want to reverse 
 Has 4 target variables, unsure which one to use. Likely want to use Biopsy as the real ground truth (not just an indicator).
 
 **Assessment (AI, 2026-10-07):** Target: Biopsy. The creators predict it "where only behavioral and demographic information is observable" (Fernandes et al., PeerJ Comput. Sci. 2018, Results), so Hinselmann, Schiller and Citology are dropped as results of the same work-up (Schiller alone: ROC AUC 0.92). The STD and Dx columns are multi-label (43 of 740 patients have 2-4 STD types) and stay binary flags. The 108 patients who skipped the contraceptive question are dropped: they have no positive biopsy, Hinselmann or Schiller result where 8, 5 and 11 are expected, although their answers show no lower risk. Their results look unrecorded. All 55 positives stay. The folder ships the biopsy only; the Multi-target tag stays.
+
+CC (2026-10-15, Lennart): No `Multi-target` tag: the four test results come from one work-up and the dataset predicts the biopsy alone (review page, issue 5).
+
+**Assessment (AI, 2026-10-15):** The STD flags are one questionnaire question each and multi-label (9 patients have two or three types; `std_condylomatosis` is the parent of two subtypes, which `stds_number` counts twice), so they stay yes/no categories rather than one combined category. Impossible answers become missing (2 first intercourses after the current age, 2 STD diagnoses longer ago than the patient's age); the other contradictions (5 `dx_*` flags with `dx` 0, 7 STDs with no diagnosis counted) are not impossible and stay.
+
+CC (2026-10-15, Lennart): Ship (review of the 2026-10-07 run): the STD flags stay one yes/no category each, impossible answers become missing.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC (area under the ROC curve), Fernandes, Chicco, Cardoso & Fernandes 2018, 'Supervised deep learning embeddings for the prediction of cervical cancer diagnosis', PeerJ Computer Science 4:e154, doi:10.7717/peerj-cs.154 (abstract: 'top AUC ~0.69' for the biopsy); first use Fernandes, Cardoso & Fernandes, IbPRIA 2017, doi:10.1007/978-3-319-58838-4_27.
 
 ## Reference
 

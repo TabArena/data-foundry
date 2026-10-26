@@ -44,7 +44,9 @@ def rdkit_descriptors(smiles: pd.Series, *, prefix: str = "rdkit_") -> pd.DataFr
     """RDKit's 2D descriptors of each SMILES as ``<prefix><name>`` columns, on the index of ``smiles``.
 
     Values RDKit cannot compute for a molecule (partial charges, BCUT descriptors) are missing. Descriptors that are
-    constant over the molecules or an exact copy of an earlier descriptor are left out.
+    constant over the molecules or an exact copy of an earlier descriptor are left out. ``Ipc`` (the information
+    content of the molecular graph) grows exponentially with the molecule, beyond the float32 range for large ones
+    (6e166 in qsar_oral_toxicity), so it ships as ``Ipc_log10`` = log10(1 + Ipc), the same order on a usable scale.
 
     Raises:
         DatasetDefinitionError: Another RDKit version is installed, or a SMILES does not parse.
@@ -52,7 +54,10 @@ def rdkit_descriptors(smiles: pd.Series, *, prefix: str = "rdkit_") -> pd.DataFr
     molecules = _molecules(smiles)
     descriptors = import_build_dependency("rdkit.Chem.Descriptors")
     rows = [descriptors.CalcMolDescriptors(molecule) for molecule in molecules]
-    out = pd.DataFrame(rows, index=smiles.index).astype("float64").add_prefix(prefix)
+    out = pd.DataFrame(rows, index=smiles.index).astype("float64")
+    if "Ipc" in out.columns:
+        out.insert(out.columns.get_loc("Ipc"), "Ipc_log10", np.log10(1 + out.pop("Ipc")))
+    out = out.add_prefix(prefix)
     out = out.where(np.isfinite(out))
     out = out.loc[:, out.nunique(dropna=False).gt(1)]
     return out.loc[:, ~out.T.duplicated()]

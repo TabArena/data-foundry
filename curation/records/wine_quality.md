@@ -13,7 +13,6 @@ original_source: UCI
 year: '2009'
 required_split:
 - Random (IID)
-- Grouped (NON-IID)
 problem_type: Regression
 source_links:
 - https://www.openml.org/search?type=data&id=287
@@ -38,6 +37,8 @@ Potential issue: Omitted variable bias? Grouped data
 Lennart: use UCI version with indicator
 
 Andrej: Add red/white wine indicator
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source mae — MAD of Cortez et al. 2009 (scored metric changed from rmse to mae).
 
 ## Reference
 
