@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-10-26 11:31 UTC: 51 claim(s) (Lennart 38, Myunghwan 13).
+As of 2026-10-26 11:34 UTC: 52 claim(s) (Lennart 39, Myunghwan 13).
 
 ## Lennart
 
@@ -13,6 +13,7 @@ As of 2026-10-26 11:31 UTC: 51 claim(s) (Lennart 38, Myunghwan 13).
 | `aeolus` | add | 2026-10-23 | 2026-10-30 |  |
 | `african_credit_scoring_challenge` | add | 2026-10-23 | 2026-10-30 |  |
 | `alfa_battle_2_0_task_2` | add | 2026-10-23 | 2026-10-30 |  |
+| `ames_housing` | add | 2026-10-26 | 2026-11-02 | house_prices_nominal copied forward (review marks of 2026-10-26) |
 | `corporate_credit_rating_cat_data_set_ratings_raitings` | add | 2026-10-23 | 2026-10-30 |  |
 | `credit_card_customers` | add | 2026-10-23 | 2026-10-30 |  |
 | `diabetes_3` | add | 2026-10-23 | 2026-10-30 |  |
