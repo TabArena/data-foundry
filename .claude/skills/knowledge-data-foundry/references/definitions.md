@@ -178,7 +178,8 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
 * `year`: the year of that first publication (PROV-9 in
   [provenance.md](../../knowledge-curation/references/provenance.md)).
 * `data_tags`: context tags only, since listing a regime tag yourself switches the automatic ones off. `"Anonymized"`
-  when feature names or values carry no semantics or are masked (common for competition data); `"Spatial"` when the
+  when feature names or values carry no semantics or are masked (common for competition data; the record gets the
+  `Anonymized` marker, [selection.md](../../knowledge-curation/references/selection.md)); `"Spatial"` when the
   data holds geographic information (ZIP, latitude and longitude, region, store location); `"ForcedIIDFromTemporal"`
   when the task is temporal in nature but the release has no time index, or has too few periods and ships IID
   (SPLIT-8 in [splits.md](../../knowledge-curation/references/splits.md); a definition that declares a `grouping` or
@@ -459,7 +460,8 @@ and [cleaning_features.md](../../knowledge-curation/references/cleaning_features
 * Rare classes and merged labels.
 * The source's split protocol, taken as a claim.
 * Top solutions' preprocessing without their exploits.
-* Anonymized data: keep it as it is, tag `Anonymized`, and say what could not be determined.
+* Anonymized data: keep it as it is, tag `Anonymized` (and the record's `Anonymized` marker), and say what could not
+  be determined.
 * Destroyed meaning to reconstruct.
 * Classes recorded differently: "check number formats and missingness per class; do two same-label subgroups
   separate?"

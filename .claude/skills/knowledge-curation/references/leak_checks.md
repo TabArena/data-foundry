@@ -178,7 +178,8 @@ feature set the host released) is decided case by case (Lennart, 2026-10-21). Ca
 (2026-10-19).
 
 **LEAK-32 (Should).** Masked or anonymised features that may hide such a transform are a known risk of anonymised
-data, covered by its tag: no action. Cases: ieee_fraud_detection, kdd_cup_09_appetency (Lennart, 2026-10-19).
+data, covered by its tag and the `Anonymized` marker: no action. Cases: ieee_fraud_detection, kdd_cup_09_appetency
+(Lennart, 2026-10-19).
 
 ### Not a leak
 

@@ -266,6 +266,19 @@ An ethical concern (sensitive use, creators who ask that the data not be used fo
 (SEL-1). A licence or redistribution restriction is no reason and no marker: note it (what the terms are and where
 they are stated) and triage the data on its merits ([evidence.md](evidence.md), EV-4).
 
+### Anonymized data
+
+When the source replaced feature names or values on purpose (symbols such as `A1` to `A16`, `var_<n>`, hashed or
+masked codes), we cannot check what a column measures, whether it is known at the prediction point, or rule out a
+leak. Mark the record `Anonymized` and set `data_tags = ("Anonymized",)` in its definition
+([definitions.md](../../knowledge-data-foundry/references/definitions.md)), and say in a comment what could not be
+determined. The marker flags what the data cannot tell us, not a defect: it is no reason for `No` by itself, and the
+verdict comes from what can be checked (the source, the task, the probes; masked fields that may be post-outcome are
+LEAK-32 and LEAK-38 in [leak_checks.md](leak_checks.md)). No marker when the source documents the codes (decode them,
+CLEAN-12 in [cleaning_features.md](cleaning_features.md)), or when only ids were replaced while the features keep
+their meaning. Cases: `credit_approval` (Quinlan replaced all names and values by symbols), the Santander competitions
+(`var_<n>`), `aps_failure` (Scania's coded sensor names).
+
 ### Clear cases
 
 A genuine real-world tabular classification or regression task with a clear target and adequate size is `Yes` (well
@@ -350,6 +363,7 @@ marker records where a record stands, not an issue of the data.
 | `Not Available (from Paper))` | a paper's data that is not public and cannot be obtained | none |
 | `Data Requested` | state marker: the data or its source was requested from the authors or owners, and the answer is pending | none |
 | `Time-series (Regression)` | regression on a stream of readings (hourly or per-minute measurements), between a temporal task and forecasting | none (SEL-10 and SEL-11 decide which; SPLIT-7 in [splits.md](splits.md) when no timestamp survived) |
+| `Anonymized` | feature names or values replaced on purpose (symbols, `var_<n>`, hashed codes), so what a column measures, its timing and leaks cannot be checked; a concern flag, no exclusion reason; goes with the definition's `Anonymized` data tag | none (Patterns, "Anonymized data") |
 | `Robotics (RL)` | data of a control task (a robot arm, an aircraft), solved with control or reinforcement learning rather than as a prediction | none |
 | `TBD` | state marker: the markers are still to be decided; found on `TBD -> Yes` and `TBD -> 2nd Tier` records | none |
 
