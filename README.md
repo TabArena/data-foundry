@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-10-27 11:06 UTC: 90 claim(s) (Andrej 78, Myunghwan 12).
+As of 2026-10-27 11:07 UTC: 87 claim(s) (Andrej 75, Myunghwan 12).
 
 ## Andrej
 
@@ -18,7 +18,6 @@ As of 2026-10-27 11:06 UTC: 90 claim(s) (Andrej 78, Myunghwan 12).
 | `basque_offshore_ctd_chlorophyll` | triage | 2026-10-27 | 2026-11-03 | screening (two-regime zeros family) |
 | `blogfeedback` | triage | 2026-10-27 | 2026-11-03 | screening (two-regime zeros family) |
 | `boreal_postfire_lichen_biomass` | triage | 2026-10-27 | 2026-11-03 | screening (two-regime zeros family) |
-| `brazilian_vehicle_insurance_autoseg_2011` | triage | 2026-10-27 | 2026-11-03 | screening (two-regime zeros family) |
 | `bug_prediction_dataset_dambros` | triage | 2026-10-27 | 2026-11-03 | screening (two-regime zeros family) |
 | `cape_floristic_region_family_cover` | triage | 2026-10-27 | 2026-11-03 | screening (two-regime zeros family) |
 | `car_parts_intermittent_demand` | triage | 2026-10-27 | 2026-11-03 | screening (two-regime zeros family) |
@@ -56,7 +55,6 @@ As of 2026-10-27 11:06 UTC: 90 claim(s) (Andrej 78, Myunghwan 12).
 | `noaa_afsc_bottom_trawl_survey_cpue` | triage | 2026-10-27 | 2026-11-03 | screening (two-regime zeros family) |
 | `noaa_storm_events_damage` | triage | 2026-10-27 | 2026-11-03 | screening (two-regime zeros family) |
 | `north_american_breeding_bird_survey_counts` | triage | 2026-10-27 | 2026-11-03 | screening (two-regime zeros family) |
-| `norwegian_automobile_insurance_norauto` | triage | 2026-10-27 | 2026-11-03 | screening (two-regime zeros family) |
 | `opendengue_case_counts` | triage | 2026-10-27 | 2026-11-03 | screening (two-regime zeros family) |
 | `pennsylvania_oak_hickory_regeneration_experiment` | triage | 2026-10-27 | 2026-11-03 | screening (two-regime zeros family) |
 | `plains_wanderer_spotlight_counts` | triage | 2026-10-27 | 2026-11-03 | screening (two-regime zeros family) |
@@ -72,7 +70,6 @@ As of 2026-10-27 11:06 UTC: 90 claim(s) (Andrej 78, Myunghwan 12).
 | `spanish_motor_insurance_coverage_level_2022_2024` | triage | 2026-10-27 | 2026-11-03 | screening (two-regime zeros family) |
 | `svalbard_reindeer_total_count_pixels` | triage | 2026-10-27 | 2026-11-03 | screening (two-regime zeros family) |
 | `sweden_depth_to_bedrock` | triage | 2026-10-27 | 2026-11-03 | screening (two-regime zeros family) |
-| `swedish_motorcycle_insurance_wasa` | triage | 2026-10-27 | 2026-11-03 | screening (two-regime zeros family) |
 | `thailand_road_accident_fatalities_2015` | triage | 2026-10-27 | 2026-11-03 | screening (two-regime zeros family) |
 | `treeline_seedling_emergence_experiment` | triage | 2026-10-27 | 2026-11-03 | screening (two-regime zeros family) |
 | `unisolar_la_trobe_pv_generation` | triage | 2026-10-27 | 2026-11-03 | screening (two-regime zeros family) |
