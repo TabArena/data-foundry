@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: superconductivity
 container_format: 2
-checksum: v2:fdd079a13bdda9a4f69a34a91f8d0516dddb97b8dc3622a1039376d75ef9787d
+checksum: v2:64a97dd0808137aff12c5b8b26907cff99068afcb9eb5e2f96e2a7cd14c34cb4
 build:
   uuid: 01a11308-e9d1-7f71-b3e3-e172887ea0d9
   checksum: v2:ae9420faedcbad176d7019d1dc2e30a11901aa5298622d6d3077bffb316d7a04
@@ -78,7 +78,7 @@ decisions:
 
 Regression of `critical_temp`, scored with `rmse` on grouped splits by `composition`. 21,263 rows and 81 features. Source: UCI (2018).
 
-Built as `01a11308-e9d1-7f71-b3e3-e172887ea0d9` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:fdd079a13bdda9a4f69a34a91f8d0516dddb97b8dc3622a1039376d75ef9787d`, so the build is stale. See [Build](#build).
+Built as `01a11308-e9d1-7f71-b3e3-e172887ea0d9` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:64a97dd0808137aff12c5b8b26907cff99068afcb9eb5e2f96e2a7cd14c34cb4`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -96,7 +96,7 @@ Built as `01a11308-e9d1-7f71-b3e3-e172887ea0d9` on 2026-10-06, but `dataset.py` 
 
 **Our changes to the source.** We group the entries by composition; with random rows, 35% of the test rows had an identical row in training.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The features come from the formula, which is all a scientist has before synthesis, and the held-out compositions match screening new ones.
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features come from the formula, which is all a scientist has before synthesis, and the held-out compositions match screening new ones. But every row is a known superconductor (all critical temperatures above 0 K), while most candidates do not superconduct, so a model trained here gives every candidate a critical temperature.
 
 ## Files in this folder
 
@@ -437,4 +437,4 @@ The features come from the composition alone, so the entries of one composition 
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:fdd079a13bdda9a4f69a34a91f8d0516dddb97b8dc3622a1039376d75ef9787d` |
+| stale | yes: the definition now gives checksum `v2:64a97dd0808137aff12c5b8b26907cff99068afcb9eb5e2f96e2a7cd14c34cb4` |

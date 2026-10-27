@@ -33,7 +33,9 @@ class LjubljanaPrimaryTumor(AbstractCuratedDataset):
         fit="direct",
         fit_reason=(
             "The tissue type and the metastasis sites are known before the primary is found, and the label is the "
-            "site found. A model in use would also meet the rare sites we left out."
+            "site found. But the rows are patients whose primary was found, with the spread typical of it (neck "
+            "nodes in all 20 head and neck patients), not patients with metastases of unknown origin. A model in use "
+            "would also meet the rare sites we left out."
         ),
     )
 

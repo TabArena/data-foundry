@@ -48,7 +48,9 @@ class Superconductivity(AbstractCuratedDataset):
         fit="direct",
         fit_reason=(
             "The features come from the formula, which is all a scientist has before synthesis, and the held-out "
-            "compositions match screening new ones."
+            "compositions match screening new ones. But every row is a known superconductor (all critical "
+            "temperatures above 0 K), while most candidates do not superconduct, so a model trained here gives every "
+            "candidate a critical temperature."
         ),
     )
 
