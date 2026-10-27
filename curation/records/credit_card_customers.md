@@ -3,11 +3,10 @@ unique_name: credit_card_customers
 name: Credit Card customers
 checked_by:
 - Lennart
-data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
-suggestion: 'Yes'
-priority: 1
+suggestion: 'No'
+decision_markers:
+- AHDS (Artifical/Handmade/Deterministic/Simulated)
+- Missing source information
 tags:
 - New IID
 collections:
@@ -21,7 +20,6 @@ problem_type: Binary Classification
 original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/sakshigoyal7/credit-card-customers
-v2_path: datasets/_dev/tabarena-v0pt2/credit_card_customers/dataset.py
 source_row: 672
 type_adapter_id: curation-record-v1
 ---
@@ -59,6 +57,10 @@ CC (2026-10-21, Lennart): an upload whose first platform cannot be traced is kep
 **Assessment (AI, 2026-10-21):** REVIEW.md issue 3 settled and removed; the keep still depends on the PROV-3 standard (issue 1).
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — a Kaggle dataset without a competition; no metric named, the LEAPS case material is offline.
+
+CC (2026-10-26, Lennart): don't ship (verdict on the page): the measured marks of constructed data are enough for this dataset (issue 1, the standard (a)).
+
+**Assessment (AI, 2026-10-26):** retired under PROV-3 and SEL-16 on calibrated marks without a label link: the 12-month transaction count equals the Q4 plus Q1 counts in all 10,127 rows (564-597 with shuffled totals, 9 of 8,920 in Home Credit), inactive months and spend do not move with the counts and the limit as in real credit tables (Spearman -0.051 and 0.028 against -0.60 and 0.447), Education_Level carries nothing a classifier can tell from a shuffle (AUC 0.495 against 0.58-0.61), tenure follows age to the year, and no woman earns above $60K; the source (LEAPS case 11) is offline with no archived copy. `No` + `AHDS` and `Missing source information`; the folder left the working copy (in git history before this change).
 
 ## Reference
 

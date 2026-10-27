@@ -4,20 +4,18 @@ name: QSAR_BIOCONCENTRATION
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 2
 tags:
-- New IID
-- Free Text (Short)
+- Non-IID (Grouped)
 collections:
 - TabSTAR
 original_source: UCI
 year: '2016'
 domain: chemistry & material science
 required_split:
-- Random (IID)
+- Grouped (NON-IID)
 problem_type: Multiclass Classification
 original_data_state: One Table
 source_links:
@@ -56,6 +54,26 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer from the semantic context, keep it a number, this is a real-world bias. We want to make things categorical if we know from the context they are indeed such" (CLEAN-14, amended again). Kept categorical: B02(C-N) (presence of a C-N pair at topological distance 2). Reverted: the 24 RDKit fragment counts that hold only 0 and 1.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — Grisoni et al. (2016) report NER (balanced accuracy) with per-class rates at argmax, no costs. Original rejected: NER.
+
+CC (2026-10-26, Lennart): the `Free Text (Short)` tag is removed, as the definition has it: no string feature since the SMILES was dropped on 2026-10-14.
+
+CC (2026-10-26, Lennart): issue 8, option (a): add the logKOW with its measured/predicted flag from the authors' 2015 table (USE-6, USE-3: the assessor of the use case holds it before any fish test).
+
+**Assessment (AI, 2026-10-26):** issue 8 applied. `logKOW` and `logKOW_type` come from the Chemosphere SI table (1-s2.0-S0045653515000879-mmc2.xlsx, sha256 53787477...), matched on the CAS numbers of the cell and the logBCF both tables list: 774 of 776 chemicals (652 measured, 122 predicted), 2 missing. dataset check: 0 errors, 0 warnings; task probes: no flags; leak probe: logKOW alone 0.657, no copies. Random forest, macro ROC AUC on 30 of our splits: 0.760 with everything, 0.756 without the logKOW, 0.759 without the authors' 9 descriptors (paired -0.002, SE 0.001). Answers on the page: issue 1 (class or logBCF, raised again), issue 5 (the 9 come from commercial Dragon 6, the pool is unpublished), issue 9 (follows issue 5), issue 10 (a scaffold-grouped split recommended, as drug_induced_autoimmunity_prediction).
+
+CC (2026-10-26, Lennart): issue 1: "let us keep the clf task": the class only, no logBCF regression.
+
+CC (2026-10-26, Lennart): issue 5: "replace with mordred descriptors from the additional source when rebuilding". The authors' 9 Dragon descriptors are dropped (LEAK-31); this supersedes CC 2026-10-14 (RDKit next to the 9) and makes the categorical typing of B02(C-N) (CC 2026-10-21) moot. The Mordred part waits for the consistency answer on the page.
+
+**Assessment (AI, 2026-10-26):** the 9 descriptors are dropped in dataset.py (dataset check: 0 errors, 0 warnings; RDKit's descriptors alone give all 776 chemicals distinct vectors). Mordred measured before adding it: RDKit + logKOW scores macro ROC AUC 0.759 (random forest) and 0.765 (LightGBM) on 3 x 10 folds; adding Mordred's 1,220 2D descriptors that do not copy an RDKit column gives 0.746 and 0.745 (paired -0.013 ± 0.002, -0.020 ± 0.003). The precedent check finds Mordred a departure from CLEAN-24 and the scaffold split (issue 10) a drift from qsar_oral_toxicity, whose stated reason (structures linked by row order) no longer holds; both are asked on the page.
+
+CC (2026-10-26, Lennart): issue 5, option (b): RDKit's descriptors and the logKOW only, no Mordred "for now"; the background on Mordred goes into data_foundry.v2.chemistry, "to revisit if we want to add them at scale".
+
+CC (2026-10-26, Lennart): issue 10, option (d): SPLIT-31 amended, molecule datasets with exact structures group on the Bemis-Murcko scaffold (ring-less molecules and a scaffold of more than a tenth of the molecules alone), "and also do the right split for oral". Issue 9: `direct`.
+
+**Assessment (AI, 2026-10-26):** issues 5, 9 and 10 applied: no Mordred (its background is in data_foundry.v2.chemistry); scaffold groups (`scaffold_groups`: 104 ring-less and 262 bare-benzene chemicals alone; test folds of 188-345 chemicals); fit `direct` (6.4% of the test chemicals have a training analog at Tanimoto 0.7 or more, 12.6% at random). dataset check: 0 errors, 0 warnings. The task probes flag `unstable`: random forest macro ROC AUC 0.673 (0.756 under IID), log-loss skill +0.068, beating the class shares on 77% of the splits; 7 to 30 rows of the rarest class per test fold. Checked against a stronger model (TP-1): TabPFN v3.5 log loss 0.786 against 0.888 for the class shares (skill +0.118), macro ROC AUC 0.708, better on 26 of 30 splits. A weak but real signal (TP-2). No open issue left.
+
+CC (2026-10-26, Lennart): verdict ship.
 
 ## Reference
 

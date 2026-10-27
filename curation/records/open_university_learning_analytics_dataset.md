@@ -4,8 +4,7 @@ name: Open University Learning Analytics dataset
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 3
 decision_markers:
@@ -59,6 +58,8 @@ CC (2026-10-21, Lennart): option (a) of the cross-dataset item on tasks with too
 CC (2026-10-22, Lennart): issue 4: keep the 14-day TMA marking delay with its note. Issue 9: leave only the weight-0 TMA marks out of the scores; FFF's graded quizzes stay. Issue 12: keep the dataset despite `no_spread` and mark it for later: re-check with the first tuned run (TP-3).
 
 **Assessment (AI, 2026-10-22):** all three issues settled as implemented; a `Spread (TP-3)` bullet in the notes and a TP-3 cases row in task_probes.md mark the re-check with the first tuned run. REVIEW.md removed (nothing left open). Not built yet.
+
+CC (2026-10-26, Lennart): verdict ship.
 
 ## Reference
 

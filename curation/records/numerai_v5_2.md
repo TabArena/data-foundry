@@ -4,8 +4,7 @@ name: numerai v5.2
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 2
 decision_markers:
@@ -47,6 +46,16 @@ CC (2026-10-21, Lennart): the declared metric documents the original use case's 
 **Assessment (AI, 2026-10-21):** metric of numerai_v5_2_1m set to `pearsonr` (was RMSE): Numerai's per-era CORR is no listed metric name; pooled Pearson tracks it within 0.0002 per model on the shipped windows (every era's target mean is 0.5) and agrees with its model ranking at Kendall tau 0.89-0.93, RMSE at -0.11 to 0.39. Needs a rebuild to reach the container.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source mean_group_pearsonr {"method": "numerai_corr"} — Numerai's CORR, the per-era numerai_corr averaged over eras (docs.numer.ai, Correlation (CORR)), with `era` (the time column) as its group input; scored metric changed from pooled pearsonr.
+
+CC (2026-10-26, Lennart): issue 3: "ok, follow your recommendation": drop the Faith features (LEAK-31).
+
+CC (2026-10-26, Lennart): issue 4: "yes ship all": Numerai's `all` set without its 372 Faith features, 2,376 features (exactly v5.0's `all`).
+
+CC (2026-10-26, Lennart): issue 7: "Create the v6 data record, keep v5.2 as a frozen release, and search for community mirrors if any exist, otherwise we can keep our local versions".
+
+**Assessment (AI, 2026-10-26):** applied: `all` without the 372 Faith features (2,376 features; `dataset check` clean, 2,025,745 rows); the download notes say Numerai retired v5 on 2026-10-16 and that no community mirror matches our files (the Hugging Face upload Mcdonald82/numerai-v5.2 has the same train.parquet but validation only to era 1206), so our local files stay the only exact copy; task probes (3 windows, scored by R²) flag no_signal, drift_baseline and unstable as before, while Numerai's example LightGBM reaches per-era CORR 0.0094-0.0127 on the 2,376 features; the new record numerai_classic_v6 holds the v6.0 facts. No open issue is left, so the folder's REVIEW.md is removed.
+
+CC (2026-10-26, Lennart): verdict ship.
 
 ## Reference
 

@@ -45,6 +45,7 @@ decision_markers:
 - Ethical Issue
 - Too Small
 - Not Representative
+- Selection Bias
 - Not Available (from Paper))
 - Data Requested
 - Time-series (Regression)
@@ -67,6 +68,8 @@ tags:
 - '?'
 - Multi-target
 - Many class
+- Search for better data
+- Revisit later
 collections:
 - New (BeyondArena)
 - TabArena Reject

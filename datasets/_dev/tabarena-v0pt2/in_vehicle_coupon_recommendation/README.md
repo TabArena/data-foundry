@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: in_vehicle_coupon_recommendation
 container_format: 2
-checksum: v2:0453d88b2c89d615218ea765c24c6d964a3b489e9e497a37750e3b2c3fbe9b7e
+checksum: v2:a5eae437e4fe81a8a8e7a81134d91a385d3b5bf6993df29af0a3f4e7c4c4aa50
 build:
   uuid: 01a111fc-e38e-7ad4-90c9-b80013f7640e
   checksum: v2:cdd74cb8121009f4ed1bc57984fff0bdc1db9da0b6bdb2b832dc53dd0698ee73
@@ -76,7 +76,7 @@ decisions: []
 
 Binary classification of `AcceptCoupon`, scored with `roc_auc` on grouped splits by `respondent`. 12,684 rows and 24 features. Source: Other (2017).
 
-Built as `01a111fc-e38e-7ad4-90c9-b80013f7640e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:0453d88b2c89d615218ea765c24c6d964a3b489e9e497a37750e3b2c3fbe9b7e`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e38e-7ad4-90c9-b80013f7640e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:a5eae437e4fe81a8a8e7a81134d91a385d3b5bf6993df29af0a3f4e7c4c4aa50`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -94,7 +94,7 @@ Built as `01a111fc-e38e-7ad4-90c9-b80013f7640e` on 2026-10-06, but `dataset.py` 
 
 **Our changes to the source.** We rebuild the respondent from the file's blocks of identical profiles and hold out whole respondents; with random rows a model learned each person's habit of saying yes (ROC AUC 0.83 against 0.76).
 
-> **Use case fit: approximate (a stand-in with a known gap).** The answers are stated intentions about imagined trips, given in one survey sitting, not coupons accepted while driving, and the respondents are rebuilt from the file order (587 against the paper's 652 surveys).
+> **Use case fit: approximate (a stand-in with a known gap).** The answers are stated intentions about imagined trips, given in one survey sitting by Mechanical Turk volunteers, not coupons accepted by the drivers of a recommender, and the respondents are rebuilt from the file order (587 against the paper's 652 surveys).
 
 ## Files in this folder
 
@@ -390,4 +390,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:0453d88b2c89d615218ea765c24c6d964a3b489e9e497a37750e3b2c3fbe9b7e` |
+| stale | yes: the definition now gives checksum `v2:a5eae437e4fe81a8a8e7a81134d91a385d3b5bf6993df29af0a3f4e7c4c4aa50` |

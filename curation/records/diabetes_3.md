@@ -4,12 +4,9 @@ name: Diabetes
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 1
-decision_markers:
-- Trivial
 tags:
 - Tiny Data
 collections:
@@ -22,8 +19,8 @@ required_split:
 problem_type: Regression
 original_data_state: One Table
 source_links:
-- https://www.openml.org/d/44223
-- https://www4.stat.ncsu.edu/~boos/var.select/diabetes.html
+- https://doi.org/10.1214/009053604000000067
+- https://hastie.su.domains/Papers/LARS/diabetes.data
 v2_path: datasets/_dev/tabarena-v0pt2/diabetes_3/dataset.py
 source_row: 785
 type_adapter_id: curation-record-v1
@@ -48,6 +45,10 @@ The original source of the data is supposedly from the same group as the referen
 CC (2026-10-21, Lennart): on the USE-5 question (REVIEW.md issue 1): "In general, I would like to keep the data and just mark it as approximate, and we can case-by-case decide the details." USE-5 amended: a label from a named publication whose construction is undocumented may ship with fit approximate and a note naming the gap; kept as defined.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — the LARS paper illustrates variable selection, no held-out score.
+
+CC (2026-10-26, Lennart): the record's fields as the definition has them. source_links: the paper's DOI and the authors' file on Trevor Hastie's LARS page (PROV-8). The earlier links are copies: OpenML 44223 (https://www.openml.org/d/44223) ships the features scaled over all 442 rows, and https://www4.stat.ncsu.edu/~boos/var.select/diabetes.html is a later copy. The `Trivial` marker is removed (TP-4: the best single feature, chosen on the training side, stays below least squares, ridge and a random forest on all 60 shipped splits, mean R^2 0.31 against 0.48).
+
+CC (2026-10-26, Lennart): verdict ship.
 
 ## Reference
 

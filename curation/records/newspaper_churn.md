@@ -20,3 +20,5 @@ type_adapter_id: curation-record-v1
 ## Comments
 
 Data looks real and good, but we have no source information. Unclear if we want to use it.
+
+**Assessment (AI, 2026-10-26):** PROV-2 as amended on 2026-10-21 (an upload with no traceable first platform is kept for now, case by case, when the data passes PROV-3 and there is a source to point to; the gap goes into an approximate fit) applies here as to tour_travels_churn and mobile_churn. Not yet checked under PROV-3; the `Missing source information` marker stays until that check.
