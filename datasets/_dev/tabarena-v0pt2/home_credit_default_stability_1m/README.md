@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: home_credit_default_stability_1m
 container_format: 2
-checksum: v2:836baafdb57d996dbf27da5305a8611d0017740bf42632277d39c475c350fb95
+checksum: v2:5242f78585ef9beb2d64ae71043d0dd8d6ed7503ad2593ba0fae4c9366f30629
 build:
   uuid: 01a111fc-2b8d-77ef-a922-3ea3b96a716e
   checksum: v2:5a98ed32667628b5c2fea4874566abac7cf8d1f0b67636e5f12916fd41ddb8db
@@ -79,7 +79,7 @@ decisions: []
 
 Binary classification of `target`, scored with `roc_auc` on temporal splits by `date_decision`. 1,224,927 rows and 710 features. Source: Kaggle (2024).
 
-Built as `01a111fc-2b8d-77ef-a922-3ea3b96a716e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:836baafdb57d996dbf27da5305a8611d0017740bf42632277d39c475c350fb95`, so the build is stale. See [Build](#build).
+Built as `01a111fc-2b8d-77ef-a922-3ea3b96a716e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5242f78585ef9beb2d64ae71043d0dd8d6ed7503ad2593ba0fae4c9366f30629`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -91,7 +91,7 @@ Built as `01a111fc-2b8d-77ef-a922-3ea3b96a716e` on 2026-10-06, but `dataset.py` 
 
 **Predicted.** Whether the client defaulted (3.1% did); the time span in which a default counts is not stated.
 
-**Known at prediction time.** The application, the client's personal data, earlier applications to Home Credit, credit-bureau and tax-registry records, deposits and debit cards, summarised over the client's history, and the decision date; the categories are anonymized codes.
+**Known at prediction time.** The application, the client's personal data, earlier applications to Home Credit, credit-bureau and tax-registry records, deposits and debit cards, summarised over the client's history, and the decision date; some categories (district, employer, education, contract status and the like) are masked codes.
 
 **What the test data stands for.** Three two-month test windows from May to early October 2020; each trains on a random million of all earlier applications, as for a model refit every two months.
 
@@ -471,4 +471,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:836baafdb57d996dbf27da5305a8611d0017740bf42632277d39c475c350fb95` |
+| stale | yes: the definition now gives checksum `v2:5242f78585ef9beb2d64ae71043d0dd8d6ed7503ad2593ba0fae4c9366f30629` |

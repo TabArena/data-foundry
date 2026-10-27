@@ -301,16 +301,27 @@ they are stated) and triage the data on its merits ([evidence.md](evidence.md), 
 
 ### Anonymized data
 
-When the source replaced feature names or values on purpose (symbols such as `A1` to `A16`, `var_<n>`, hashed or
-masked codes), we cannot check what a column measures, whether it is known at the prediction point, or rule out a
-leak. Mark the record `Anonymized` and set `data_tags = ("Anonymized",)` in its definition
-([definitions.md](../../knowledge-data-foundry/references/definitions.md)), and say in a comment what could not be
-determined. The marker flags what the data cannot tell us, not a defect: it is no reason for `No` by itself, and the
-verdict comes from what can be checked (the source, the task, the probes; masked fields that may be post-outcome are
-LEAK-32 and LEAK-38 in [leak_checks.md](leak_checks.md)). No marker when the source documents the codes (decode them,
-CLEAN-12 in [cleaning_features.md](cleaning_features.md)), or when only ids were replaced while the features keep
-their meaning. Cases: `credit_approval` (Quinlan replaced all names and values by symbols), the Santander competitions
-(`var_<n>`), `aps_failure` (Scania's coded sensor names).
+When the source hid what the features are, by replacing their names or values on purpose, we cannot check what a
+column measures, whether it is known at the prediction point, or rule out a leak: symbols (`credit_approval`: Quinlan
+replaced all names and values), `var_<n>` (the Santander competitions), coded sensor names (`aps_failure`), unnamed
+descriptors (`bioresponse`, `hiva_agnostic`). Mark the record `Anonymized`, set `data_tags = ("Anonymized",)` in its
+definition ([definitions.md](../../knowledge-data-foundry/references/definitions.md)), and say in a comment what
+could not be determined; the marker and the tag go together (Andrej, 2026-10-20). The marker flags what the data
+cannot tell us, not a defect: it is no reason for `No` by itself, and the verdict comes from what can be checked (the
+source, the task, the probes; masked fields that may be post-outcome are LEAK-32 and LEAK-38 in
+[leak_checks.md](leak_checks.md)).
+
+No marker when:
+
+* the source documents the codes: decode them (CLEAN-12 in [cleaning_features.md](cleaning_features.md));
+* only ids were replaced while the features keep their meaning (a patient, customer or molecule id);
+* every column is described and only the values of some categories are codes (`amazon_employee_access`: role and
+  department ids; `home_credit_default_stability`: district, employer or contract status as masked codes, each column
+  defined in the competition's `feature_definitions.csv`);
+* the features are numbered measurements of a documented kind (`musk`: distances along rays; spectrum bins;
+  fingerprint bits such as `ecfp_<n>`).
+
+The cases without a marker were added on the review of PR #17 (Lennart, 2026-10-27).
 
 ### Clear cases
 
@@ -369,7 +380,7 @@ Records are sparse on purpose; a missing field is usually fine.
 
 ### Decision markers
 
-The 24 decision markers of the vocabulary, spelled as there. "None" means no rule of the curation files leads to the
+The 25 decision markers of the vocabulary, spelled as there. "None" means no rule of the curation files leads to the
 marker; its meaning comes from its name and how records use it, and the comments say why a record carries it. A state
 marker records where a record stands, not an issue of the data.
 
@@ -394,10 +405,10 @@ marker records where a record stands, not an issue of the data.
 | `Too Small` | a handful of units of a class per test fold and in total | TP-5 (TP-8 for a short class, TP-9 for the windows of a temporal task) |
 | `Not Representative` | the task or its setup does not represent the real application (features practitioners no longer use for the task, a prediction no decision rests on); a selective sample is `Selection Bias` | none |
 | `Selection Bias` | the rows are not drawn from the population the use case predicts for (cases and controls collected apart, only typical or confirmed cases, a volunteer or teaching collection, objects picked for measurement when the use case predicts for the others); a concern flag, usually on `Yes` records | none (Patterns, "Selection bias") |
+| `Anonymized` | feature names or values replaced on purpose (symbols, `var_<n>`, hashed codes), so what a column measures, its timing and leaks cannot be checked; a concern flag, no exclusion reason; goes with the definition's `Anonymized` data tag | none (Patterns, "Anonymized data") |
 | `Not Available (from Paper))` | a paper's data that is not public and cannot be obtained | none |
 | `Data Requested` | state marker: the data or its source was requested from the authors or owners, and the answer is pending | none |
 | `Time-series (Regression)` | regression on a stream of readings (hourly or per-minute measurements), between a temporal task and forecasting | none (SEL-10 and SEL-11 decide which; SPLIT-7 in [splits.md](splits.md) when no timestamp survived) |
-| `Anonymized` | feature names or values replaced on purpose (symbols, `var_<n>`, hashed codes), so what a column measures, its timing and leaks cannot be checked; a concern flag, no exclusion reason; goes with the definition's `Anonymized` data tag | none (Patterns, "Anonymized data") |
 | `Robotics (RL)` | data of a control task (a robot arm, an aircraft), solved with control or reinforcement learning rather than as a prediction | none |
 | `TBD` | state marker: the markers are still to be decided; found on `TBD -> Yes` and `TBD -> 2nd Tier` records | none |
 

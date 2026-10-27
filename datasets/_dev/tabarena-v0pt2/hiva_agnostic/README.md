@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: hiva_agnostic
 container_format: 2
-checksum: v2:2403cbbc7486c7073dcdc163de3f373c34c9b5620460e1374d6cde3b941010bf
+checksum: v2:316a7481719241aec75fbb8a51d0ca2aa3952fbffeed6e989e2850f2056ece64
 build:
   uuid: 01a13a7d-c4ee-761a-9292-ce1cd880e6c6
   checksum: v2:ce9fc12404d0aa0571b58de3e58925c06ff333bba14ab50bdfcba71338248ce4
@@ -67,7 +67,7 @@ decisions: []
 
 Binary classification of `CompoundActive`, scored with `balanced_accuracy` on IID splits. 4,229 rows and 1,429 features. Source: Other (2007).
 
-Built as `01a13a7d-c4ee-761a-9292-ce1cd880e6c6` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:2403cbbc7486c7073dcdc163de3f373c34c9b5620460e1374d6cde3b941010bf`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c4ee-761a-9292-ce1cd880e6c6` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:316a7481719241aec75fbb8a51d0ca2aa3952fbffeed6e989e2850f2056ece64`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -125,7 +125,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2007 |
 | domain | chemistry & material science |
 | license | Public Domain |
-| data_tags | IID |
+| data_tags | IID, Anonymized |
 | reference | guyon2007agnostic |
 | rows x columns | 4,229 x 1,430 |
 | task.target | CompoundActive |
@@ -380,4 +380,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:2403cbbc7486c7073dcdc163de3f373c34c9b5620460e1374d6cde3b941010bf` |
+| stale | yes: the definition now gives checksum `v2:316a7481719241aec75fbb8a51d0ca2aa3952fbffeed6e989e2850f2056ece64` |

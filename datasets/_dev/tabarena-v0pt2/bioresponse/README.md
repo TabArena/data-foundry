@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bioresponse
 container_format: 2
-checksum: v2:3ccdf59cf5143dcc41c2cc63b3d9cb4f72df8a4de72d47e3a0fbbbba3e37c310
+checksum: v2:3db0d23a1be526e4a4db2aab5479a65744b279211d06a9d949426afc7487b85f
 build:
   uuid: 01a111fc-4c0b-76f4-b01d-a4db8e120e35
   checksum: v2:1879917730dc9cc5db736aa1cc90af3f1b8a3ee3153e041d93ba0b823cb52287
@@ -68,7 +68,7 @@ decisions: []
 
 Binary classification of `MoleculeElicitsResponse`, scored with `log_loss` on IID splits. 3,751 rows and 1,776 features. Source: Kaggle (2012).
 
-Built as `01a111fc-4c0b-76f4-b01d-a4db8e120e35` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3ccdf59cf5143dcc41c2cc63b3d9cb4f72df8a4de72d47e3a0fbbbba3e37c310`, so the build is stale. See [Build](#build).
+Built as `01a111fc-4c0b-76f4-b01d-a4db8e120e35` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3db0d23a1be526e4a4db2aab5479a65744b279211d06a9d949426afc7487b85f`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -124,7 +124,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2012 |
 | domain | chemistry & material science |
 | license | Public Domain |
-| data_tags | IID |
+| data_tags | IID, Anonymized |
 | reference | bioresponse2012hamner |
 | rows x columns | 3,751 x 1,777 |
 | task.target | MoleculeElicitsResponse |
@@ -379,4 +379,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:3ccdf59cf5143dcc41c2cc63b3d9cb4f72df8a4de72d47e3a0fbbbba3e37c310` |
+| stale | yes: the definition now gives checksum `v2:3db0d23a1be526e4a4db2aab5479a65744b279211d06a9d949426afc7487b85f` |

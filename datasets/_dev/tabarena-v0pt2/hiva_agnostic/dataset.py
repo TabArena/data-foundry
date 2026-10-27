@@ -43,6 +43,7 @@ class HivaAgnostic(AbstractCuratedDataset):
     source = "Other"
     source_url = "https://www.agnostic.inf.ethz.ch"
     license = "Public Domain"
+    data_tags = ("Anonymized",)
     download_description = """
         We download the dataset from the challenge platform into predefined folder:
 

@@ -42,6 +42,7 @@ class Bioresponse(AbstractCuratedDataset):
     source = "Kaggle"
     source_url = "https://www.kaggle.com/c/bioresponse"
     license = "Public Domain"
+    data_tags = ("Anonymized",)
     download_description = """
         We download the data from Kaggle and uzip it to a predefined folder.
 

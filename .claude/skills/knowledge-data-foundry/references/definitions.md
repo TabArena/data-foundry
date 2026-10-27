@@ -180,8 +180,9 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
 * `year`: the year of that first publication (PROV-9 in
   [provenance.md](../../knowledge-curation/references/provenance.md)).
 * `data_tags`: context tags only, since listing a regime tag yourself switches the automatic ones off. `"Anonymized"`
-  when feature names or values carry no semantics or are masked (common for competition data; the record gets the
-  `Anonymized` marker, [selection.md](../../knowledge-curation/references/selection.md)); `"Spatial"` when the
+  when the source hid what the features are, by replacing their names or values on purpose (common for competition
+  data; the record gets the `Anonymized` marker, and the cases without it are in
+  [selection.md](../../knowledge-curation/references/selection.md), "Anonymized data"); `"Spatial"` when the
   data holds geographic information (ZIP, latitude and longitude, region, store location); `"ForcedIIDFromTemporal"`
   when the task is temporal in nature but the release has no time index, or has too few periods and ships IID
   (SPLIT-8 in [splits.md](../../knowledge-curation/references/splits.md); a definition that declares a `grouping` or
