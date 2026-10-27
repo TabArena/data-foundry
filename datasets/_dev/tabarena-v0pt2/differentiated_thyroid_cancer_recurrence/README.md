@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: differentiated_thyroid_cancer_recurrence
 container_format: 2
-checksum: v2:13eb6a966a2470c558fb71b7f47b341675dbb0b22d51edc2103d237346c64221
+checksum: v2:bba0422f2564dc91e18dee51fda1a1c3107bcd4091687196e243ece87e533f14
 build: null
 build_stale: false
 data:
   n_rows: 383
-  n_features: 14
+  n_features: 15
   dtypes:
-    category: 14
+    category: 15
     int64: 1
   n_test_dataset_rows: null
 task:
@@ -55,7 +55,7 @@ bundle_checks:
       splits.'
 decisions:
 - Response to therapy dropped
-- Radiotherapy column (Hx Radiothreapy) dropped
+- Radiotherapy history (Hx Radiothreapy) kept
 - Duplicate rows kept
 ---
 
@@ -63,9 +63,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `Recurred`, scored with `roc_auc` on IID splits. 383 rows and 14 features. Source: UCI (2023).
+Binary classification of `Recurred`, scored with `roc_auc` on IID splits. 383 rows and 15 features. Source: UCI (2023).
 
-Not built yet. The current definition gives checksum `v2:13eb6a966a2470c558fb71b7f47b341675dbb0b22d51edc2103d237346c64221`.
+Not built yet. The current definition gives checksum `v2:bba0422f2564dc91e18dee51fda1a1c3107bcd4091687196e243ece87e533f14`.
 
 ## In brief
 
@@ -75,15 +75,15 @@ Not built yet. The current definition gives checksum `v2:13eb6a966a2470c558fb71b
 
 **One row.** One patient with well-differentiated thyroid cancer after thyroid removal in Hamadan, Iran (383 patients); the source states at least 10 years of follow-up.
 
-**Predicted.** Whether the cancer recurred during follow-up (28% did); the label seems to count persistent disease as well.
+**Predicted.** Whether the cancer recurred during follow-up (28% did); the paper counts locoregional and distant metastases, which takes in disease that persisted from diagnosis.
 
-**Known at prediction time.** Age, sex, smoking, thyroid function, examination findings, swollen lymph nodes, the tumour's pathology and focality, its T, N and M stage and overall stage, and the initial risk class of the American Thyroid Association.
+**Known at prediction time.** Age, sex, smoking, earlier head and neck irradiation, thyroid function, examination findings, swollen lymph nodes, the tumour's pathology and focality, its T, N and M stage and overall stage, and the initial risk class of the American Thyroid Association.
 
 **What the test data stands for.** Random patients, so the test data stands for new patients of the same clinic.
 
-**Our changes to the source.** We drop the response to therapy, assessed in the first two years of follow-up and partly the outcome itself, and an undefined, undated radiotherapy column.
+**Our changes to the source.** We drop the response to therapy, assessed in the first two years of follow-up and partly the outcome itself.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The inputs are those of the initial staging, but the label is not verified: recurrence seems to include persistent disease, and the stated follow-up (at least 10 years) conflicts with the cohort period (2008-2023). A few distant metastases found after staging are kept as a potential leak, and one clinic's patients make a small task.
+> **Use case fit: approximate (a stand-in with a known gap).** The inputs are those of the initial staging, but the label is defined only loosely: the paper's recurrence includes distant metastases, which takes in persistent disease, and its follow-up of at least 10 years conflicts with the cohort period of the clinic's other paper (2008-2023). A few distant metastases found after staging are kept as a potential leak, and one clinic's patients make a small task.
 
 ## Files in this folder
 
@@ -128,7 +128,7 @@ Only curators run `build`, when the dataset ships.
 | license | CC BY 4.0 |
 | data_tags | IID |
 | reference | borzooei2024machine |
-| rows x columns | 383 x 15 |
+| rows x columns | 383 x 16 |
 | task.target | Recurred |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -142,12 +142,12 @@ Only curators run `build`, when the dataset ships.
 | name | `roc_auc` (standard; takes proba; higher is better) |
 | origin | fallback: the default for the problem type: the source defines no metric |
 | definition | area under the ROC curve |
-| reason | Borzooei et al. 2023 report AUC with sensitivity and specificity (abstract; full text paywalled), none named as the criterion. roc_auc is the binary fallback and the paper's threshold-free metric. |
+| reason | Borzooei et al. (2024, online 2023) report sensitivity, specificity, PPV, NPV, AUC and accuracy for every model (Table 2), none named as the criterion. roc_auc is the binary fallback and the paper's threshold-free metric. |
 
 <details>
-<summary>Feature types: 14 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 15 categorical, 0 string, 0 datetime</summary>
 
-- categorical (14): `Gender`, `Smoking`, `Hx Smoking`, `Thyroid Function`, `Physical Examination`, `Adenopathy`, `Pathology`, `Focality`, `Risk`, `T`, `N`, `M`, `Stage`, `Recurred`
+- categorical (15): `Gender`, `Smoking`, `Hx Smoking`, `Hx Radiothreapy`, `Thyroid Function`, `Physical Examination`, `Adenopathy`, `Pathology`, `Focality`, `Risk`, `T`, `N`, `M`, `Stage`, `Recurred`
 - string (0): none
 - datetime (0): none
 
@@ -174,34 +174,34 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 383 rows of the final frame (random rows: the frame is shuffled); 12 of 15 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 383 rows of the final frame (random rows: the frame is shuffled); 12 of 16 columns, the target first. Cells are cut at 40 characters.
 
-| Recurred | Age | Gender | Smoking | Hx Smoking | Thyroid Function | Physical Examination | Adenopathy | Pathology | Focality | Risk | T |
+| Recurred | Age | Gender | Smoking | Hx Smoking | Hx Radiothreapy | Thyroid Function | Physical Examination | Adenopathy | Pathology | Focality | Risk |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | 24 | M | No | No | Euthyroid | Single nodular goiter-right | No | Papillary | Uni-Focal | Low | T2 |
-| Yes | 20 | M | No | No | Euthyroid | Single nodular goiter-right | Right | Papillary | Uni-Focal | Low | T2 |
-| No | 24 | F | No | No | Euthyroid | Single nodular goiter-left | No | Papillary | Uni-Focal | Low | T2 |
-| No | 30 | F | No | No | Subclinical Hyperthyroidism | Multinodular goiter | No | Papillary | Multi-Focal | Low | T1b |
-| No | 43 | F | No | Yes | Euthyroid | Single nodular goiter-right | No | Papillary | Uni-Focal | Low | T1b |
+| Yes | 25 | F | No | No | No | Euthyroid | Multinodular goiter | Left | Papillary | Multi-Focal | Intermediate |
+| Yes | 35 | F | No | No | No | Euthyroid | Multinodular goiter | Right | Papillary | Multi-Focal | Intermediate |
+| No | 60 | F | No | No | No | Euthyroid | Single nodular goiter-right | No | Papillary | Uni-Focal | Low |
+| No | 31 | M | No | No | No | Euthyroid | Single nodular goiter-right | No | Papillary | Uni-Focal | Low |
+| No | 35 | F | No | No | No | Clinical Hyperthyroidism | Multinodular goiter | No | Papillary | Uni-Focal | Low |
 
 ## Curation notes
 
 We start with Thyroid_Diff.csv from UCI: 383 patients with well-differentiated thyroid cancer followed after thyroidectomy in Hamadan, Iran; the source states at least 10 years of follow-up.
 
-- Prediction point: after initial therapy, at the initial staging, when the ATA risk of recurrence is assigned. The model predicts recurrence during follow-up; the 14 kept features describe the patient and the tumour at diagnosis and surgery.
+- Prediction point: after initial therapy, at the initial staging, when the ATA risk of recurrence is assigned. The model predicts recurrence during follow-up; the 15 kept features describe the patient and the tumour at diagnosis and surgery.
 - We drop `Response`, the response to therapy. It is assessed during the first 2 years of follow-up (Tuttle et al. 2010), after the prediction point, and its structural incomplete category, "persistent or newly identified loco-regional or distant metastases" (ATA 2015), is the outcome itself (decision table).
-- We drop `Hx Radiothreapy` ("Yes" for 7 patients). No source defines or dates it, and 6 of the 7 are ATA high-risk men with advanced disease who all recurred, which fits radiotherapy given after the prediction point (decision table).
+- `Hx Radiothreapy` ("Yes" for 7 patients) stays (Lennart, CC 2026-10-26): the paper lists "history of radiation therapy to the head and neck region" among the variables collected with age and smoking at diagnosis, and its Table 1 counts "History of radiation exposure" for the same 7 (Borzooei et al. 2024, Methods). 6 of the 7 are ATA high-risk men who recurred, which fits irradiation as a known risk factor; it was dropped until the paper was read (decision table).
 - We rename the pathology value "Hurthel cell" to "Hurthle cell" (source typo).
 - `Age` is numeric and every other feature categorical.
 - Note: no source gives the meaning of `Hx Smoking`; it is probably former smoking, since 37 current smokers have `Hx Smoking` = No.
 - Duplicates: we keep the 26 rows (6.8%) that copy another row. The file's 383 rows are the paper's 383 patients, so the copies are distinct patients with the same coarse record: women with an ATA low-risk tumour who did not recur, 44 of the 48 rows in duplicate groups in the five most common profiles. Permuting `Age` within ATA risk and sex gives about as many by chance (23.2 duplicate feature vectors against 27). One profile of three patients carries both labels; we keep all three, as different patients with the same coarse record whose outcomes differ, a label ambiguity the task has (LEAK-20).
 - IID split over patients.
 - Anomaly: `Stage` differs from the AJCC 8th edition stage computed from `Age`, `T`, `N` and `M` in 12 of 383 rows. We keep it as recorded.
-- Potential leak, kept on purpose: 2 of the 18 patients with M1 are ATA intermediate risk, although distant metastases are ATA high risk, so their metastases may have been found after the initial staging. Dropping `M` and `Stage` changes the ROC AUC by +0.001. `M` stays, unlike the radiotherapy column: it is a defined staging field and only 2 of its 18 M1 values are doubtful, while the radiotherapy column has no definition or date and 6 of its 7 positives look like treatment of advanced disease. Revisit when the paper's variable definitions are read.
+- Potential leak, kept on purpose: 2 of the 18 patients with M1 are ATA intermediate risk, although distant metastases are ATA high risk, so their metastases may have been found after the initial staging. Dropping `M` and `Stage` changes the ROC AUC by +0.001. `M` stays: it is a defined staging field and only 2 of its 18 M1 values are doubtful.
 - Potential leak, kept on purpose: `Risk` was probably assigned from the records with the follow-up known. A crude ATA rule from `T`, `N`, `M` and `Adenopathy` agrees with it in 337 of 383 rows, and the discordant rows are not pushed toward the outcome (33% and 24% recurred, against 28% where the rule agrees); `Risk` adds at most 0.010 ROC AUC over the other columns. It stays as the clinician's own estimate, which the model refines.
-- Note: the label seems to count persistent disease as recurrence; the paper is behind a paywall. Recurrence is 4.8%, 62.7% and 100% in ATA low, intermediate and high risk, against about 3%, 21% and 68% of persistent or recurrent structural disease in Tuttle et al. 2010, and all 18 patients with M1 recurred. The task is valid either way, as the ATA initial risk estimates "the risk of persistent/recurrent disease" (ATA 2015).
-- Note: all 34 patients with ATA high risk or M1 recurred; if the label counts persistent disease, they may have the outcome at staging, a cohort question (LEAK-36). On 20 x 3 stratified folds, logistic regression gives ROC AUC 0.928 on all test rows and 0.901 without the High/M1 test rows (`Risk` alone 0.896 and 0.850). Leaving out as many other positives that the model ranks highest also gives 0.901, so the drop shows how hard the remaining rows are, not a leak. We keep the rows until the paper's cohort is known.
-- Note: the source states at least 10 years of follow-up, but the cohort paper gives the period January 2008 to December 2023 (Khazaei et al. 2024), so the labels of the later patients may be censored. Without dates this cannot be tested.
+- Note: the paper defines the label as "recurrence status (including both locoregional and distant metastasis)" and does not separate disease that persisted after the first treatment from disease that came back. Recurrence is 4.8%, 62.7% and 100% in ATA low, intermediate and high risk, against about 3%, 21% and 68% of persistent or recurrent structural disease in Tuttle et al. 2010, and all 18 patients with M1 recurred. The task is valid either way, as the ATA initial risk estimates "the risk of persistent/recurrent disease" (ATA 2015).
+- Note: all 34 patients with ATA high risk or M1 recurred; if the label counts persistent disease, they may have the outcome at staging, a cohort question (LEAK-36). On 20 x 3 stratified folds, logistic regression gives ROC AUC 0.928 on all test rows and 0.901 without the High/M1 test rows (`Risk` alone 0.896 and 0.850). Leaving out as many other positives that the model ranks highest also gives 0.901, so the drop shows how hard the remaining rows are, not a leak. The paper's cohort includes them (Table 1: ATA high risk 32, M1 18), so they stay (LEAK-22; Lennart, CC 2026-10-26).
+- Note: the paper states "A minimum follow-up period of 10 years was maintained for all patients ... The study spanned a period of 15 years", but the clinic's cohort paper gives the period January 2008 to December 2023 (Khazaei et al. 2024), so the labels of the later patients may be censored. Without dates this cannot be tested.
 - Note: the record's `Trivial` marker came from the paper's ROC AUC 0.984-0.997 on all features combined. Here the ATA risk alone gives 0.896 on the 60 shipped splits; a random forest beats it on 59 of 60 (mean gain 0.032), unscaled logistic regression on 59 and untuned CatBoost on 60, and standardised logistic regression on 52.
 
 ## Splits
@@ -291,9 +291,9 @@ It is assessed during the first 2 years of follow-up, after the initial staging 
 | Indeterminate | 61 | 7 | 0.115 |
 | Structural Incomplete | 91 | 89 | 0.978 |
 
-### 2. Radiotherapy column (Hx Radiothreapy) dropped
+### 2. Radiotherapy history (Hx Radiothreapy) kept
 
-No source defines or dates it, and 6 of its 7 'Yes' rows are high-risk men with advanced disease who all recurred, so it may record treatment given after the prediction point; it adds nothing to the other columns.
+The paper collects a history of radiation therapy to the head and neck region with the variables at diagnosis. 6 of its 7 'Yes' rows are high-risk men with advanced disease who all recurred; the column changes no score (logistic regression 0.9219 without it, 0.9221 with it).
 
 | Hx Radiothreapy | patients | recurred | ata_high_risk | distant_metastases | men | median_age |
 |---|---|---|---|---|---|---|
@@ -302,7 +302,7 @@ No source defines or dates it, and 6 of its 7 'Yes' rows are high-risk men with 
 
 ### 3. Duplicate rows kept
 
-The 383 rows are the paper's 383 patients; the copies are women with a low-risk tumour who did not recur, 44 of the 48 rows in duplicate groups in the five most common profiles of 14 coarse fields. The one profile with both labels is a label ambiguity the task has (LEAK-20).
+The 383 rows are the paper's 383 patients; the copies are women with a low-risk tumour who did not recur, 44 of the 48 rows in duplicate groups in the five most common profiles of the 15 fields. The one profile with both labels is a label ambiguity the task has (LEAK-20).
 
 | index | count |
 |---|---|
@@ -329,13 +329,14 @@ Accepted on purpose:
 ### Feature summary
 
 <details>
-<summary>Show the table (15 rows)</summary>
+<summary>Show the table (16 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | Gender | category | 0 | 0 | 2 | F, M |
 | Smoking | category | 0 | 0 | 2 | No, Yes |
 | Hx Smoking | category | 0 | 0 | 2 | No, Yes |
+| Hx Radiothreapy | category | 0 | 0 | 2 | No, Yes |
 | Thyroid Function | category | 0 | 0 | 5 | Euthyroid, Clinical Hyperthyroidism, Subclinical Hypothyroidism, Clinical Hypot… |
 | Physical Examination | category | 0 | 0 | 5 | Multinodular goiter, Single nodular goiter-right, Single nodular goiter-left, D… |
 | Adenopathy | category | 0 | 0 | 6 | No, Right, Bilateral, Left, Extensive, Posterior |
@@ -347,7 +348,7 @@ Accepted on purpose:
 | M | category | 0 | 0 | 2 | M0, M1 |
 | Stage | category | 0 | 0 | 5 | I, II, IVB, III, IVA |
 | Recurred | category | 0 | 0 | 2 | No, Yes |
-| Age | int64 | 0 | 0 | 65 | 31, 27, 26, 35, 30, 33, 40, 28, 38, 34 |
+| Age | int64 | 0 | 0 | 65 | 31, 27, 33, 26, 35, 30, 28, 40, 29, 38 |
 
 </details>
 
@@ -367,7 +368,7 @@ Accepted on purpose:
 ### Categorical features
 
 <details>
-<summary>Show the table (47 rows)</summary>
+<summary>Show the table (49 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -380,6 +381,8 @@ Accepted on purpose:
 | Focality | 2 | Multi-Focal | 136 | 35.51 |
 | Gender | 1 | F | 312 | 81.46 |
 | Gender | 2 | M | 71 | 18.54 |
+| Hx Radiothreapy | 1 | No | 376 | 98.17 |
+| Hx Radiothreapy | 2 | Yes | 7 | 1.83 |
 | Hx Smoking | 1 | No | 355 | 92.69 |
 | Hx Smoking | 2 | Yes | 28 | 7.31 |
 | M | 1 | M0 | 365 | 95.3 |

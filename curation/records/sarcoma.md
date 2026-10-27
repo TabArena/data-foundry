@@ -4,8 +4,7 @@ name: SARC
 checked_by:
 - Andrej
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 3
 decision_markers:
@@ -49,6 +48,10 @@ CC (2026-10-21, Lennart): "let us stay with direct fit if the task (without leak
 CC (2026-10-22, Lennart): issue 3: merge myxofibrosarcoma and undifferentiated pleomorphic sarcoma. Issue 4: keep the IID split by patient. Record field `problem_type` takes the definition's value (multiclass).
 
 **Assessment (AI, 2026-10-22):** four classes: leiomyosarcoma 80, undifferentiated pleomorphic sarcoma or myxofibrosarcoma 61, dedifferentiated liposarcoma 50, synovial sarcoma 10 (the TCGA study's single spectrum and the methylation classifier's one class, Koelsche et al. 2021). Random forest log loss 0.650 to 0.469, macro ROC AUC 0.958 to 0.984; the only probe flag is `few_minority` (synovial sarcoma, 3 per test fold). Holding whole sites out now raises the forest's log loss from 0.46 to 0.58 (stated in `splits_comment`). The best single feature (MDM2) reaches skill 0.24 against 0.75 for the best model. dataset check: 0 errors, 0 warnings. REVIEW.md removed (nothing left open). Not built yet.
+
+CC (2026-10-26, Lennart): verdict ship.
+
+**Assessment (AI, 2026-10-26):** the reason behind issue 4, from the cross-dataset item on TCGA tissue sites: the site is weakly visible from the features (one site against the rest ROC AUC 0.70-0.75, 0.69-0.73 within dedifferentiated liposarcoma), so IID by patient rests on the use case (a lab types new patients' tumours), not on a null gap; one site holds 101 of the 201 rows. In glioma_grading the features did not predict the site. Cases row in splits.md (SPLIT-29, SPLIT-31).
 
 ## Reference
 

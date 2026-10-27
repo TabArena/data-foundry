@@ -27,6 +27,8 @@ on this temporal stream leaks future information into training. Papers can pick 
 prescribed evaluation protocol is **not authoritative** and must be checked against the task design.
 Correctly excluded as forecasting rather than treated as in-scope temporal regression.
 
+CC (2026-10-22, Lennart): stays retired as `No` + `Time-series (Forecasting)` under TP-10 as amended on 2026-10-22 (leg 1 by the declared metric, trailing summaries allowed): "we know from the context and data state that these are indeed forecasting tasks"; no re-check.
+
 ## Reference
 
 Data driven prediction models of energy use of appliances in a low-energy house

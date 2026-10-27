@@ -4,17 +4,17 @@ name: fraud-detection-in-electricity-and-gas-consumption-challenge
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 2
 tags:
 - Review Prio 1 (Atlas)
 - Non-IID (Grouped)
+- Revisit later
 collections:
 - New (BeyondArena)
 original_source: Zindi
-year: '2020'
+year: '2019'
 domain: industry & manufacturing
 required_split:
 - Grouped (NON-IID)
@@ -65,6 +65,14 @@ same STEG data.
 **Assessment (AI, 2026-10-20):** review panel (re-check): ship after changes, once the curator amends LEAK-25 (REVIEW.md issue 2: the clients whose labels look unrecorded are located by their last invoice and dropped, as for caracas_cervical_cancer and account_debt_south_africa). Applied in the definition, which changes the data: only clients still billed from 2015 on (the fraud rate by year of last invoice is 4.0% for 2013 and 5.5% for 2014, 7.1-9.3% from 2015 to 2019 with no trend; 81,531 clients, 7.8% frauds), the use case as a screen of the clients not yet inspected (the labels are undated 2013-2019 findings; a 0 means no fraud was found), a splits comment, `counter_number` dropped (no meaning: fraud rate 7.3-9.5% across its deciles in no order), 15 shifted invoices, `counter_statue` A, `counter_coefficient` 0 and `months_number` above 120 set to missing, a note that the client record is one snapshot of unknown date (category 51 keeps its tariff mix across 2013), the reason for keeping the invoice rows (0.682 against 0.675 for per-client aggregates). Client-level LightGBM: ROC AUC 0.848 with the full history, 0.688 with the cut; task probe per client 0.633-0.686, no flag; leak probe no flag. The year is 2019 (first run 20-22 Sep 2019), not 2020. This supersedes the earlier figures of 83,874 clients and 0.61-0.69. Priority 2: gap -, use case - (fit approximate: undated labels, cut date read off the data), source +, shape +, risk - (the LEAK-25 reading is open and the rule as written would retire the dataset).
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — Zindi's evaluation: AUC over clients.
+
+CC (2026-10-26, Lennart): issues 1, 2, 4 and 8 as implemented. The history cut at 2013-01-01 stays (LEAK-10; LEAK-38 as amended 2026-10-22 sends named fields with a measured step to LEAK-10). The clients who left before 2015 are dropped by their last invoice date, never by the label (LEAK-25 as amended 2026-10-21). The invoice rows stay, one prediction per client (the exception below). counter_number is dropped (CLEAN-3). The year is 2019, the challenge's first run (PROV-9). On issue 1: "mark this for later that we might want to revisit the dataset here".
+
+**Exception to CLEAN-19 (2026-10-26, Lennart):** the invoice rows stay instead of one row per client with aggregates. Fact: each invoice is a full observation of the client's metering, which a row model uses as it is (LightGBM on the invoices, averaged per client, ROC AUC 0.682 against 0.675 on simple per-client aggregates), and the top solutions' aggregates rest on the full history, which the 2013 cut removes, so there is no shared feature set to copy. Serves P5: the data stays as the source records it, one row per invoice, which a row model uses as it is, as amex_non_iid keeps its statements (CC 2026-10-02).
+
+**Assessment (AI, 2026-10-26):** to revisit (Lennart's note on issue 1). The 2013 cut discards the invoices of 2013-2019 because they carry the traces of the inspections that set the labels (47.8% of the frauds; client-level LightGBM ROC AUC 0.848 with the full history, 0.688 with the cut). What would reopen it: dated inspections or dated fraud findings from STEG, which would allow a cut per client at its inspection date instead of one date for all. Tagged `Revisit later`.
+
+CC (2026-10-26, Lennart): verdict ship.
 
 ## Reference
 

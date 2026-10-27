@@ -55,13 +55,14 @@ K=.claude/skills/knowledge-data-foundry/scripts
   the output says how many were screened out, so a 49,000-column omics table takes minutes. A multiclass ROC AUC is the
   mean over the classes present in the test fold. Group columns are never features.
 * `task_probes.py`: dummy baselines against three untuned model families (a fourth on more than 1,000 inputs:
-  `selected_linear`, the linear model on the 500 inputs a univariate F-test picks on each train side), on every
-  shipped split up to 30 for a dataset of at most 5,000 scored units and the first 5 otherwise, scored per group for a
+  `selected_linear`, the linear model on the 500 inputs a univariate F-test picks on each train side), on every shipped
+  split up to 30 for a dataset of at most 5,000 scored units and the first 5 otherwise, scored per group for a
   group-unit task with `mean`, `any` or `last`; the best single feature chosen per split; the flags `no_signal`,
   `solved`, `no_spread`, `one_feature`, `drift_baseline`, `unstable`, `few_minority`. Each train and test side is capped
-  at `--max-rows` (default 200,000): a temporal task's train side keeps its newest rows, any other side random rows;
-  the dummy uses the whole train side. With `--out` it writes one JSON per dataset (per-split skill and dummy loss
-  included) and `summary.md`.
+  at `--max-rows` (default 200,000): a temporal task's train side keeps its newest rows, any other side random rows; the
+  dummy uses the whole train side. Raise the cap when a dataset needs it and compute allows (Lennart, 2026-10-21: "feel
+  free to raise the row cap maybe as needed and as we have compute"). With `--out` it writes one JSON per dataset
+  (per-split skill and dummy loss included) and `summary.md`.
 * `group_probes.py`, for a grouped task: the IID against grouped gap, several model families scored per group, and a
   permutation test across groups.
 * `hidden_groups.py`, for an IID task: entity-like columns (categorical, text and numeric, floats included), composite

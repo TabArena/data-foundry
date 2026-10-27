@@ -136,7 +136,7 @@ class ZillowPrize(AbstractCuratedDataset):
     curation_comments = """
         We start with train_2016_v2.csv and train_2017.csv (home sales in Los Angeles, Orange and Ventura counties) and properties_2016.csv and properties_2017.csv (one row per parcel) from round 1 of the Kaggle competition Zillow Prize.
 
-        - Prediction point: the first day of the sale month, since Zillow pairs each sale with the Zestimate of that day (FAQ). `transaction_month` replaces `transactiondate`.
+        - Prediction point: the first day of the sale month. Zillow's FAQ (Andrew Martin, Zillow, discussion 33899, 2017-05-31): "we pair sales prices of homes to their Zestimate values from the first day of the month in which they were sold ... if a home sells in LA on Oct 18th 2017 we'll use the Zestimate from October 1st". `transaction_month` replaces `transactiondate`. Each sale takes the property file of its year, as Zillow advised ("Yes, exactly!", same thread).
         - Target: `logerror` = log(Zestimate) - log(SalePrice), rounded to 4 decimals, as in train_2016_v2 and the Evaluation page.
         - Extreme values, kept: 2.1% of the rows have an absolute logerror above 0.4 and hold 74% of the squared error (decision table). Zillow traces them mostly to data errors such as miskeyed prices; the competition's test kept them.
         - Small signal (task probes no_signal, drift_baseline, unstable), kept: untuned LightGBM with an absolute-error loss (100 trees, row and column subsampling 0.8) beats the train mean in 8 or 9 of the 9 windows, depending on the seed (R^2 about 0.001 to 0.012); squared-error fits do not (3 or 4 of 9). A constant train median loses to the mean in 9 of 9, so the gain comes from the features (task_probes.md, rule 2). Tuned results are pending.
@@ -145,15 +145,16 @@ class ZillowPrize(AbstractCuratedDataset):
         - Note: after 15 October 2016 train_2016_v2 holds only part of the sales (the rest were the public leaderboard), so the November and December 2016 test windows hold 1,826 and 1,739 sales, about 18% of a usual month, and are noisier. The share looks random (absolute logerror above 0.4: 2.2% after, 2.0% before), so we keep them.
         - We drop the 24 sales of 2017 whose parcel has no home facts in properties_2017, as Zillow did for 2016 (discussion 34667).
         - We drop the 19 sales within 31 days of a sale of the same parcel, as the competition does (Data page); other repeat sales stay.
-        - `buildingqualitytypeid` (lower is better) is on another scale in properties_2017, where each code comes from one 2016 code (decision table; a crosstab of the data, Zillow publishes no conversion); we map the 2017 values onto the 2016 scale, which holds 8 values (1, 4, 6, 7, 8, 10, 11, 12; 6, 8 and 11 on 8 rows). It stays numeric (ordinal).
+        - `buildingqualitytypeid` is on another scale in properties_2017 ("This variable was fully recoded", discussion 40453, 2017-10-03): each 2017 code comes from one 2016 code, on the sold parcels (decision table) and on all 1.94M parcels with a code in both files (the crosstab posted in that thread). Zillow published no conversion and the competitors kept the raw codes, so a code meant one thing in 2016 and another in 2017. Exception to CLEAN-21 (2026-10-26, Lennart): we map the 2017 values onto the 2016 scale with the map the data shows, since no published conversion exists and the roll-wide crosstab confirms it. The column is categorical (codes 1, 4, 7, 10, 12, and 6, 8 and 11 on 8 rows): the codes are no clean order (1, 4 and 7 run from dearer to cheaper homes, but 10 and 12 are the largest and dearest), so "lower is better" does not hold.
         - Each column of `PRESENCE_FLAGS` holds one value or nothing and becomes a boolean (`taxdelinquencyflag` 1 or 0, see below).
         - `taxdelinquencyyear`: the two-digit years (3 to 15, and 99) become four-digit years.
         - `taxdelinquencyflag` and `taxdelinquencyyear` are one snapshot of about August-September 2016 in both files, taken after the sale for the sales of January to August 2016 (1.5% flagged, against 3.1-4.7% per month from September 2016; a sale clears the arrears). Both are missing for the sales before September 2016 (72,157 training rows; the flag is 1 or 0 elsewhere); every test row keeps them, since the snapshot predates every test window. Blanking, keeping and dropping them give the same L1 LightGBM skill within the seed spread (R^2 0.0053-0.0057, 9 windows, 3 seeds, two configs).
         - Zero means "not recorded" and becomes missing in `roomcnt` in every county (all of Los Angeles, 44% of Orange; those homes have a median of 3 bedrooms), in `bathroomcnt` (its zeros lack the counts derived from it), in `bedroomcnt` where the bathrooms are also 0 (large homes, no studios) and in `garagetotalsqft` where `garagecarcnt` is 1 or more (14,981 rows, about 30% of the Orange and Ventura garages).
         - The spa and hot-tub flags (`hashottuborspa`, `pooltypeid10`) are recorded for about half as many parcels in properties_2017 as in properties_2016 (2.2-3.1% of the 2016 sales against 1.5-2.3% of the 2017 sales for `hashottuborspa`); a recording change we keep, since no source says which file is right.
-        - Near copies, kept since they differ on some rows: `calculatedbathnbr` equals `bathroomcnt` on 99.98% of the rows, `finishedsquarefeet50` equals `finishedfloor1squarefeet` on 99.5%, `censustractandblock` equals `rawcensustractandblock` on its leading digits on 98.9%.
+        - Near copies, kept since they differ on some rows: `calculatedbathnbr` equals `bathroomcnt` on 99.98% of the rows, `finishedsquarefeet50` equals `finishedfloor1squarefeet` on 99.5%, and the two census tract-and-block columns are replaced by `census_tract` (below).
         - We drop `parcelid` (an identifier), `regionidcounty` (a recoding of `fips`), `assessmentyear` (the sale year minus one, constant within each property file) and `transactiondate`.
-        - `CODE_COLUMNS` (fips, the region ids and the type ids of the data dictionary), `propertycountylandusecode` and `propertyzoningdesc` are categories; the census tract-and-block numbers stay numeric: each is a county, tract and block code, so its order follows geography, and it has about 55,000 values.
+        - `CODE_COLUMNS` (fips, the region ids and the type ids of the data dictionary), `buildingqualitytypeid`, `propertycountylandusecode` and `propertyzoningdesc` are categories.
+        - `census_tract` (CLEAN-14, CC 2026-10-26): the census tract-and-block code is four nested parts (state and county, tract, block group, block; the raw code `060378001.011002` is county 06037, tract 8001.01, block 1002). We keep the tract as one category, its 11-digit ID (06037800101; 3,030 tracts, a median of 40 sales each, at most 0.2% of a window's test rows on a tract unseen in training), and drop `rawcensustractandblock` and `censustractandblock`: the county part is `fips`, and the block group (8,334 levels) and the block (55,601, 19-30% of the test rows unseen) are near-identifiers whose location the coordinates hold. No top solution is public; the most-voted kernels kept the codes numeric or dropped them. With LightGBM's own category handling the tract category scores below the numeric code (MAE 0.06876 against 0.06848), a model question, not a reason for the encoding.
         - Duplicate rows, kept: 7 rows repeat another row exactly and 39 more repeat another row's features with another logerror. They are separate sales of separate parcels, such as units of one building.
     """
 
@@ -268,15 +269,38 @@ class ZillowPrize(AbstractCuratedDataset):
         df["logerror"] = df["logerror"].round(4)
 
         # 9. Codes stored as floats: whole numbers, so their categories read "6037", not "6037.0".
-        for column in CODE_COLUMNS:
+        for column in (*CODE_COLUMNS, "buildingqualitytypeid"):
             df[column] = df[column].astype("Int64")
 
-        return drop_columns(df, ["parcelid", "transactiondate", "regionidcounty", "assessmentyear"])
+        # 10. The census tract (state, county and tract: 11 digits) from the raw tract-and-block code, whose leading zero
+        # and trailing zeros are lost in the float ("060378001.011002" is tract 06037800101, block 1002).
+        code = df["rawcensustractandblock"]
+        digits = code.map(lambda x: f"{x:.6f}" if pd.notna(x) else None)
+        df["census_tract"] = digits.str.split(".").str[0].str.zfill(9) + digits.str.split(".").str[1].str.slice(0, 2)
+
+        return drop_columns(
+            df,
+            [
+                "parcelid",
+                "transactiondate",
+                "regionidcounty",
+                "assessmentyear",
+                "rawcensustractandblock",  # replaced by census_tract
+                "censustractandblock",  # the same code as an integer
+            ],
+        )
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
             # the presence flags (booleans, and taxdelinquencyflag 1.0 / 0.0) are 0/1 flags: categorical (CLEAN-14)
-            categorical=[*CODE_COLUMNS, "propertycountylandusecode", "propertyzoningdesc", *PRESENCE_FLAGS],
+            categorical=[
+                *CODE_COLUMNS,
+                "buildingqualitytypeid",
+                "census_tract",
+                "propertycountylandusecode",
+                "propertyzoningdesc",
+                *PRESENCE_FLAGS,
+            ],
             datetime={"transaction_month": "%Y-%m-%d"},
         )
 

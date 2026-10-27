@@ -147,7 +147,9 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
           appears in a quarter is 7.4-11.9% for each quarter of 2012 and 23.8-25.9% for each quarter of 2013, while
           the number of such events per quarter does not jump at 2013Q1 (decision table). A client-level LightGBM on
           per-client aggregates scores ROC AUC 0.848 with the full history and 0.688 with the invoices before 2013
-          (3 folds, the kept clients). The cut date is read off the data; STEG and Zindi do not document it.
+          (3 folds, the kept clients). The cut date is read off the data; STEG and Zindi do not document it. To
+          revisit (Lennart, CC 2026-10-26): dated inspections or dated findings from STEG would allow a cut per client
+          at its inspection date instead of one date for all.
         - Cohort: the 81,531 clients billed before 2013 and still billed from 2015 on (6,394 frauds, 7.8%). The label
           counts the findings up to a client's last invoice, so a client who leaves early had less time to be found:
           among the clients billed before 2013, the fraud rate by the year of the last invoice is at most 0.8% up to
@@ -222,7 +224,7 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
             solutions' aggregates: the rows are usable as they are (the row model averaged per client scores 0.682
             against 0.675 for a LightGBM on simple per-client aggregates, same folds), and the top solutions built
             their aggregates on the full history, which the cut removes. amex_non_iid_1m keeps its raw statements the
-            same way.
+            same way. Exception to CLEAN-19 (Lennart, CC 2026-10-26).
         """,
     )
 

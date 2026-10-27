@@ -3,8 +3,9 @@ unique_name: airlines_depdelay_10m
 name: Airlines_DepDelay_10M
 checked_by:
 - AI (UNVERIFIED)
-suggestion: 'Yes'
-priority: 2
+suggestion: 'No'
+decision_markers:
+- Duplicate
 tags:
 - Non-IID (Temporal)
 - AI-Filled (Verify)
@@ -53,3 +54,7 @@ Lennart: temporal
 Andrej: Temporal split
 
 CC (2026-10-12, Lennart): aeolus (BTS on-time flights 2016-2024 with hourly weather at both airports, a temporal task in the TabArena v0.2 working copy as `aeolus_1m`) covers US flight delays. When this record is processed, decide whether it is a second flight-delay task or a duplicate of aeolus.
+
+CC (2026-10-26, Lennart): mark it a duplicate too (of aeolus, same source as airlines).
+
+**Assessment (AI, 2026-10-26):** OpenML's Airlines_DepDelay_10M is a 10M-row cut of the same ASA Data Expo 2009 file (BTS on-time flights, October 1987 to April 2008; the data "comes originally from RITA", doi:10.7910/DVN/HG7NV7), with the departure delay in minutes as the target. aeolus found the delay minutes a poor regression target (R² 0.01-0.02). aeolus (`aeolus_1m`) and its rebuild aeolus_rebuilt take their flights from the same BTS Reporting Carrier On-Time Performance table and predict the delay from the schedule (PROV-6). `No` + `Duplicate`.

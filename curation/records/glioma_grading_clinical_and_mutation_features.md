@@ -3,13 +3,12 @@ unique_name: glioma_grading_clinical_and_mutation_features
 name: Glioma Grading Clinical and Mutation Features
 checked_by:
 - Lennart
-data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
-suggestion: 'Yes'
-priority: 2
+suggestion: 'No'
+decision_markers:
+- No Good Target / Scientific Discovery
 tags:
 - New IID
+- 2nd Tier / Scientific Discovery
 collections:
 - TabSTAR
 original_source: UCI
@@ -23,7 +22,6 @@ source_links:
 - https://www.openml.org/search?type=data&id=46604
 - https://www.kaggle.com/datasets/vinayjose/glioma-grading-clinical-and-mutation-features
 - https://doi.org/10.24432/C5R62J
-v2_path: datasets/_dev/tabarena-v0pt2/glioma_grading_clinical_and_mutation_features/dataset.py
 source_row: 678
 type_adapter_id: curation-record-v1
 ---
@@ -41,6 +39,10 @@ I think we can still use it (as it is still suggested to be used this way)
 **Assessment (AI, 2026-10-20):** review panel: ship after changes (text only, the data is unchanged; fit now approximate). Open (REVIEW.md): is a cross-check of a grade that already exists a use case (issue 5, USE-1), and confirm keeping a label right in its era but partly renamed by WHO 2021 (issue 1, USE-5); the tissue-site split is to be decided with sarcoma's issue 4 (features do not predict the site; grouped by site 0.921 / 0.927 against 0.921 / 0.924). The batch between the two TCGA projects is not triggered (LEAK-14/LEAK-15: one sequencing centre, one GDC workflow; amplified DNA not visible, ROC AUC 0.532). Priority 2: gap -, use case -, source +, shape -, risk 0 (use case: a cross-check we wrote, fit approximate; shape: 862 patients; risk: no leak, the open issues are rule readings, not an unclear target).
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Tasci et al. 2022 select by accuracy with no threshold or costs for LGG vs GBM; accuracy rejected (MET-6, MET-8).
+
+CC (2026-10-26, Lennart): don't ship: "This use case seems too far-fetched to me ... unclear if the original author just did to look at the data / see if it works, but not that it makes sense for a real task"; "Yes, dont ship it and update the decision markers" (REVIEW issue 6).
+
+**Assessment (AI, 2026-10-26):** retired on the use case (USE-1): the grade is the pathologist's histological diagnosis, made from the tissue before the DNA is sequenced, so the only decision left is a cross-check of a known label, which is our wording; no setting where the grade is unknown has a source, and Tasci et al. (2022) name no clinical setting, actor or moment. The label is also of its era (WHO 2021 grades with markers the data lacks). `No` + `No Good Target / Scientific Discovery`, tagged `2nd Tier / Scientific Discovery`; the folder left the working copy (in git history before this change).
 
 ## Reference
 
