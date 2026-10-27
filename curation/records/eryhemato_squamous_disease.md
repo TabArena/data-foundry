@@ -41,6 +41,8 @@ CC (2026-10-06, Lennart): Changed to the clinical features only after the task-p
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — Guevenir et al. 1998 report cross-validated accuracy of VFI5 without costs between the six diagnoses, and we use the 12 clinical features only (MET-6).
 
+**Assessment (AI, 2026-10-27):** evidence for the Selection Bias marker of PR #16, checked on dermatology.data: 67 of the 72 lichen planus patients (93%) have oral mucosal involvement and none of the other 294 patients do, against 19% to 63% in clinic series of cutaneous lichen planus (56% of 91 biopsy-confirmed patients, https://jpad.com.pk/index.php/jpad/article/view/1817; 19% of 131, https://diposit.ub.edu/dspace/handle/2445/171919). All 20 pityriasis rubra pilaris patients are aged 7 to 22. The rows look like typical cases of each disease rather than a clinic's patients. The definition's fit_reason does not name this yet.
+
 ## Reference
 
 @article{guvenir1998learning,

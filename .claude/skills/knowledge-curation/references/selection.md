@@ -252,14 +252,30 @@ prediction time when the data loads (`us_accidents`: its published "78% accuracy
 ### Selection bias
 
 When the rows are not drawn from the population the use case predicts for, a class looks different than it would
-there: cases and controls collected apart or in different periods, only typical or confirmed cases, a teaching or
-volunteer collection, objects already picked for measurement. Mark it `Selection Bias`; the verdict is usually still
-`Yes` (Andrej, 2026-10-20). It is a concern flag: name the gap in `fit_reason` and judge the model comparison on the
-data, not on the marker. `eryhemato_squamous_disease` is the example: 93% of its lichen planus patients have mouth
-lesions, against 56% in a clinic series, and the ranking is unchanged; kept. No marker when the use case is defined on
-the selected population (only granted loans for a repayment score, Andrej 2026-10-15), or when one class was
-oversampled from the same population, which changes only the class shares (`credit_g`). `Not Representative` is a
-different flag: the task is not a real tabular-ML application.
+there: cases and controls collected apart or in different periods (`hepatitis_c_prediction`, `website_phishing`), only
+typical or confirmed cases (`sarcoma`; `superconductivity` holds only superconductors), a teaching or volunteer
+collection (`audiology_diagnosis`, `obesity_estimation`), or objects picked for measurement when the use case predicts
+for the objects that were not picked (`sdss_17`: picked by colour for a spectrum, classified without one). Mark it
+`Selection Bias`; the verdict is usually still `Yes` (Andrej, 2026-10-20). It is a concern flag: name the gap in the
+definition's `fit_reason`, give the evidence in the record (the class mix, or a feature against a reference series),
+and judge the model comparison on the data, not on the marker. `eryhemato_squamous_disease` is the example: 93% of its
+lichen planus patients have mouth lesions and no other patient does, against 19% to 63% in clinic series; kept.
+
+No marker when:
+
+* the use case is defined on the selected population (only granted loans for a repayment score, Andrej 2026-10-15;
+  patients referred for angiography, `heart_disease_cleveland`);
+* one class was oversampled from the same population, which changes only the class shares (`credit_g`,
+  `churn_telco_south_asia`);
+* tested compounds stand for the candidates a screen would test (the QSAR sets): how far a new candidate lies from the
+  tested ones is a question for the split;
+* the rows come from another population altogether (`pancreatic_cancer_mouse_detection`: mice of one lab for
+  patients), a question of the use-case fit.
+
+`Not Representative` is a different flag: the task or its setup is not the real application (features practitioners no
+longer use, a prediction no decision rests on). A record carries both when both hold (`audiology_diagnosis`). The
+clause on objects picked for measurement and the cases without a marker were added on the review of PR #16 (Lennart,
+2026-10-27).
 
 ### Leakage and irreversible damage
 
@@ -335,7 +351,7 @@ Records are sparse on purpose; a missing field is usually fine.
 
 ### Decision markers
 
-The 23 decision markers of the vocabulary, spelled as there. "None" means no rule of the curation files leads to the
+The 24 decision markers of the vocabulary, spelled as there. "None" means no rule of the curation files leads to the
 marker; its meaning comes from its name and how records use it, and the comments say why a record carries it. A state
 marker records where a record stands, not an issue of the data.
 
@@ -358,8 +374,8 @@ marker records where a record stands, not an issue of the data.
 | `Out-of-scope Task (CTR/RecSys/Ranking)` | a recommendation, ranking, click-through-rate or information-retrieval task | SEL-9 (SEL-8) |
 | `Ethical Issue` | an ethical concern, such as subjects or creators who object to ML use | SEL-1 |
 | `Too Small` | a handful of units of a class per test fold and in total | TP-5 (TP-8 for a short class, TP-9 for the windows of a temporal task) |
-| `Not Representative` | the data or its setup does not represent the real application (a selective sample, features practitioners no longer use for the task) | none |
-| `Selection Bias` | the rows are not drawn from the population the use case predicts for (cases and controls collected apart, only typical or confirmed cases, a volunteer or teaching collection); a concern flag, usually on `Yes` records | none (Patterns, "Selection bias") |
+| `Not Representative` | the task or its setup does not represent the real application (features practitioners no longer use for the task, a prediction no decision rests on); a selective sample is `Selection Bias` | none |
+| `Selection Bias` | the rows are not drawn from the population the use case predicts for (cases and controls collected apart, only typical or confirmed cases, a volunteer or teaching collection, objects picked for measurement when the use case predicts for the others); a concern flag, usually on `Yes` records | none (Patterns, "Selection bias") |
 | `Not Available (from Paper))` | a paper's data that is not public and cannot be obtained | none |
 | `Data Requested` | state marker: the data or its source was requested from the authors or owners, and the answer is pending | none |
 | `Time-series (Regression)` | regression on a stream of readings (hourly or per-minute measurements), between a temporal task and forecasting | none (SEL-10 and SEL-11 decide which; SPLIT-7 in [splits.md](splits.md) when no timestamp survived) |
