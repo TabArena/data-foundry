@@ -48,6 +48,8 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 CC (2026-10-21, Lennart): the metric is roc_auc as a stand-in for the competition's Gini Stability, whose slope term is noise on our 5-10 week test windows.
 
+**Assessment (AI, 2026-10-27):** no `Anonymized` marker (review of PR #17). Kaggle masked the values of the columns ending in `M` (116 of the 718 merged columns: district, zip code, employer, education, contract status, reject and cancel reasons), but every column is described in the competition's `feature_definitions.csv`, so what a column measures and when it is known can be checked; other categories are readable (`OWNED`, `MARRIED`). This is the selection.md case of documented columns with coded category values, as amazon_employee_access. The definition's `known` now says which categories are masked instead of "the categories are anonymized codes".
+
 ## Reference
 
 Daniel Herman, Tomas Jelinek, Walter Reade, Maggie Demkin, and Addison Howard. Home Credit - Credit Risk Model Stability. https://kaggle.com/competitions/home-credit-credit-risk-model-stability, 2024. Kaggle.

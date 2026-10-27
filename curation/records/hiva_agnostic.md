@@ -9,6 +9,8 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
+decision_markers:
+- Anonymized
 year: '2007'
 domain: chemistry & material science
 required_split:
@@ -50,6 +52,8 @@ CC (2026-10-21, Lennart): 0/1 presence flags are categorical ("Assuming it is bi
 CC (2026-10-21, Lennart): the 23 repeated descriptor vectors stay: they are distinct screened compounds (every NSC number distinct), not copies of one compound ("IF the copies dont make any sense from a task use case, we should drop them"); LEAK-19 as written.
 
 CC (2026-10-21, Lennart): the declared metric stays as it is (`balanced_accuracy`; the challenge most likely ranked by the balanced error rate, not verified; cross-dataset item "Metrics still to settle").
+
+CC (2026-10-27, Lennart): marker Anonymized, from the AI review of PR #17: the agnostic track of the challenge gives the 1,617 binary structure descriptors without names (the prior knowledge track had the structures instead), so their meaning cannot be checked; the definition's fit_reason says so. Data tag Anonymized added to the definition.
 
 ## Reference
 

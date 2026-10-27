@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: credit_approval
 container_format: 2
-checksum: v2:7372d956dd2c5d2ca0792f19876d6fa9c6231a9edb09ca5d2374a9a1a061446a
+checksum: v2:aa2fcc35243aafc91de24514cfc7b183a5a7eb4109cfc37c0e832af8e02287cc
 build:
   uuid: 01a111fc-cedf-7a16-9575-fb28a8d57db5
   checksum: v2:fed2366eee147d0f31c9c26ffade9f9ad26172afab61f28a4da7b7b54cb1d07d
@@ -68,7 +68,7 @@ decisions: []
 
 Binary classification of `A16`, scored with `roc_auc` on IID splits. 690 rows and 15 features. Source: UCI (1987).
 
-Built as `01a111fc-cedf-7a16-9575-fb28a8d57db5` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7372d956dd2c5d2ca0792f19876d6fa9c6231a9edb09ca5d2374a9a1a061446a`, so the build is stale. See [Build](#build).
+Built as `01a111fc-cedf-7a16-9575-fb28a8d57db5` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:aa2fcc35243aafc91de24514cfc7b183a5a7eb4109cfc37c0e832af8e02287cc`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -124,7 +124,7 @@ Only curators run `build`, when the dataset ships.
 | year | 1987 |
 | domain | finance |
 | license | CC BY 4.0 |
-| data_tags | IID |
+| data_tags | IID, Anonymized |
 | reference | quinlan1987simplifying |
 | rows x columns | 690 x 16 |
 | task.target | A16 |
@@ -366,4 +366,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:7372d956dd2c5d2ca0792f19876d6fa9c6231a9edb09ca5d2374a9a1a061446a` |
+| stale | yes: the definition now gives checksum `v2:aa2fcc35243aafc91de24514cfc7b183a5a7eb4109cfc37c0e832af8e02287cc` |

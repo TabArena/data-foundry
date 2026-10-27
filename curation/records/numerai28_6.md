@@ -7,6 +7,8 @@ data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
 priority: 2
+decision_markers:
+- Anonymized
 tags:
 - New IID
 collections:
@@ -49,6 +51,8 @@ CC (2026-10-26, Lennart): issue 1: "keep log loss": Numerai's 2016 tournament ra
 **Assessment (AI, 2026-10-26):** no open issue is left (the year is 2016, log loss stays), so the folder's REVIEW.md is removed; the verdict was "ship after changes".
 
 CC (2026-10-26, Lennart): verdict ship.
+
+CC (2026-10-27, Lennart): marker Anonymized, from the AI review of PR #17: the definition carries the Anonymized data tag; the 21 features are encrypted, regularized numbers in [0, 1], and what they measure, their timing and the target's horizon are hidden.
 
 ## Reference
 

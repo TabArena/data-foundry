@@ -46,6 +46,7 @@ decision_markers:
 - Too Small
 - Not Representative
 - Selection Bias
+- Anonymized
 - Not Available (from Paper))
 - Data Requested
 - Time-series (Regression)

@@ -4,6 +4,21 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-27, `Anonymized` data tag goes with the new marker (PR #17)
+
+- The new `Anonymized` decision marker (knowledge-curation `selection.md`, "Anonymized data") goes with the
+  definition's `Anonymized` data tag, and every folder now has both or neither: 22 folders. The PR marked 17 of them
+  (the 18th record, `lgg_low_grade_glioma`, is retired); `ieee_fraud_detection`, `kdd_cup_09_appetency` and
+  `numerai28_6` had the tag, and their records now carry the marker too.
+- `data_tags = ("Anonymized",)` added where the source hid what the features are: `credit_approval` (Quinlan replaced
+  all attribute names and values by symbols, Andrej), `bioresponse` (descriptors D1 to D1776 with hidden names) and
+  `hiva_agnostic` (the agnostic track's unnamed structure descriptors). The regime tag `IID` is unchanged.
+- No marker and no tag for documented columns whose category values are codes: `home_credit_default_stability_1m`
+  (Kaggle masked district, employer, contract status and the like, and describes every column) and
+  `amazon_employee_access` (role and department ids). The home credit `known` field said "the categories are anonymized
+  codes" and now names the masked ones; the other categories are readable.
+- Not rebuilt: all four builds were already stale, and their READMEs are regenerated with `dataset check`.
+
 ## 2026-10-27, Selection Bias named in the fit_reason (PR #16)
 
 - The new `Selection Bias` marker (knowledge-curation `selection.md`, "Selection bias") asks the definition's
