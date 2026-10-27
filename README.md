@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-10-26 22:20 UTC: 13 claim(s) (Myunghwan 13).
+As of 2026-10-27 06:01 UTC: 12 claim(s) (Myunghwan 12).
 
 ## Myunghwan
 
@@ -13,7 +13,6 @@ As of 2026-10-26 22:20 UTC: 13 claim(s) (Myunghwan 13).
 | `airqo_low_cost_air_quality_monitor_calibration_challenge` | triage | 2026-10-23 | 2026-10-30 | Next curation batch selected from the highest-priority unclaimed screening candidates; verdicts remain provisional. |
 | `bemtpl97` | add | 2026-10-23 | 2026-10-30 | Previously reviewed and locally defined; repeat screening and checks under the current workflow before final review. |
 | `cps88wages` | triage | 2026-10-23 | 2026-10-30 | Next curation batch selected from the highest-priority unclaimed screening candidates; verdicts remain provisional. |
-| `ctu_13` | triage | 2026-10-23 | 2026-10-30 | Next curation batch selected from the highest-priority unclaimed screening candidates; verdicts remain provisional. |
 | `dataset_from_uncertainty_guided_model_selection_for_tabular_foundation_models_in_biomolecule_efficacy_prediction` | triage | 2026-10-23 | 2026-10-30 | Next curation batch selected from the highest-priority unclaimed screening candidates; verdicts remain provisional. |
 | `eucalyptus` | add | 2026-10-23 | 2026-10-30 | Previously reviewed and locally defined; repeat screening and checks under the current workflow before final review. |
 | `fremtpl2` | triage | 2026-10-23 | 2026-10-30 | Next curation batch selected from the highest-priority unclaimed screening candidates; verdicts remain provisional. |
