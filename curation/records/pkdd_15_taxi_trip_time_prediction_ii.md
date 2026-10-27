@@ -4,8 +4,7 @@ name: 'ECML/PKDD 15: Taxi Trip Time Prediction (II)'
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 2
 decision_markers:
@@ -14,7 +13,7 @@ tags:
 - Review Prio 1 (Atlas)
 original_source: Kaggle
 year: '2015'
-domain: Other
+domain: industry & manufacturing
 required_split:
 - Temporal (NON-IID)
 problem_type: Regression
@@ -78,3 +77,25 @@ the 57k `ORIGIN_CALL` IDs. Work on it a bit more before the final call.
 **Assessment (AI, 2026-10-07):** Added as `pkdd_15_taxi_trip_time_prediction_ii_1m`: travel time at trip start from origin, destination (last GPS point), Porto local start time, call type, stand and taxi. Log1p target, monthly test windows Apr-Jun 2014, 1,655,983 trips after dropping non-trips, GPS errors and meter misuse. The taxi stays a feature: 99.93-100% of each test month's trips are by taxis seen before. ORIGIN_CALL is dropped: it adds nothing once the destination is known. Open: the challenge page says drivers "do not indicate the final destination of the ride", so the destination framing is ours. Its 2026-09-21 reason, a weak pickup-only signal, no longer holds under task_probes.md rule 2. Pickup-only LightGBM reaches R² 0.11-0.15, against 0.48-0.50 with the destination.
 
 **Assessment (AI, 2026-10-20):** priority 2 for the review of the added dataset: gap -, use case -, source +, shape +, risk - (Issue 1: source says drivers do not enter the destination, so that feature may not exist at pickup). A large temporal ETA regression from a documented challenge; without the destination, which may not be known at pickup, the signal is weak.
+
+**Assessment (AI, 2026-10-20):** Re-checked by the full review panel; recommend shipping `pkdd_15_taxi_trip_time_prediction_ii_1m` with this review's changes, the curator has the call. The definition now drops the 90 trips whose end point equals the start point (USE-7, as nyc_taxi_trip_duration) and takes monthly test windows of 30 days from 1 April, 1 May and 1 June 2014 with a one-day gap (SPLIT-9: without it 48, 36 and 8 train trips per window end after the window start). LightGBM R² 0.51-0.54 with the destination, 0.12-0.15 without, linear 0.04. Open (REVIEW.md): the reason for the destination framing, since the CC's weak-signal reason no longer holds under TP-2 (issue 1), and the short-trip cut at 60, 45 or 30 s (issue 2). Two counts of the 2026-09-21 investigation do not reproduce with the definition's Greater Porto box: 1,084 trips start outside it (not 1,459) and 1,672,375 rows remain after those filters (not 1,672,071); the decision table in the README is authoritative. Priority 2: gap -, use case -, source +, shape +, risk - (use case: the destination-at-pickup ETA is our framing, the source names no actor who knows the destination at pickup; risk: issue 1, the destination is recorded after the trip).
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — RMSLE of the travel time, the competition's evaluation metric, as RMSE on the log1p_travel_time target (Kaggle evaluation page).
+
+**Assessment (AI, 2026-10-21):** metric now `Metric.source("rmsle", target_transform="log1p")` instead of rmse on the log1p target: the competition's RMSLE on the travel time in seconds, computed after the inverse of the shipped log1p (MET-3); the score is the same number as before. Needs a rebuild to reach the container.
+
+CC (2026-10-21, Lennart): the datetime encoding of v0.2 (cross-dataset item from the nyc_taxi_trip_duration review): nothing to change while the v0.2 runs encode datetimes with the hour; the definition adds no hour column (CLEAN-2).
+
+CC (2026-10-26, Lennart): the declared metric is checked as declared.
+
+CC (2026-10-26, Lennart): issue 1: (a), "which is also more correct nowadays, where one would add it in an app. I think it is fine to use the destination as well for now and work on that": an ETA once the passenger names the destination, `fit="approximate"`, as nyc_taxi_trip_duration.
+
+CC (2026-10-26, Lennart): the record's domain takes the definition's value (industry & manufacturing).
+
+CC (2026-10-26, Lennart): issue 2: drop the trips that end within 100 m of their start, with a time cut at 30 s, and reopen nyc_taxi_trip_duration_1m for the same radius (option (c): "we just forgot to check for this for nyc and for these cases it also does not matter much to do a taxi trip right?").
+
+**Assessment (AI, 2026-10-26):** issue 2 applied: `MIN_STRAIGHT_LINE_KM = 0.1` replaces the identical-end-point rule and `MIN_TRAVEL_TIME_S` falls from 60 to 30 s; 1,636,276 trips after the filters (1,655,893 before). The trips within 100 m are no short rides (median 555 s, 57% over 5 min, 17% of the target's squared spread): in the app framing nobody books them. dataset check: 0 errors, 0 warnings. No open issue left.
+
+CC (2026-10-26, Lennart): verdict ship.
+
+**Assessment (AI, 2026-10-26):** what the encoding is worth here, from the review panel of 2026-10-20 (before the 100 m cut): LightGBM (300 trees, learning rate 0.1, 63 leaves, one fit per split) scored R^2 0.503 / 0.482 / 0.498 on the June / May / April windows with the local hour, weekday and day of year, and 0.483 / 0.452 / 0.462 with AutoGluon's date parts.

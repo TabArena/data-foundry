@@ -6,7 +6,7 @@ checked_by:
 suggestion: TBD -> 2nd Tier
 decision_markers:
 - Ethical Issue
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 - Needs extensive data wrangling
 tags:
 - Non-IID (Temporal)

@@ -42,8 +42,10 @@ curator, not verdicts:
 
 Group and target columns are not features. Text (string) columns enter as 16 TF-IDF + SVD components each, fitted on
 the train side (``text=False`` leaves them out; see ``curation_probes.text``). Categoricals enter as codes and
-datetimes as numbers. Train and test sides are capped at ``max_rows`` random rows (whole groups for a task scored per
-group). The numbers are indicative (untuned models); check a flag against tuned methods before acting on it.
+datetimes as numbers. Each train side is capped at ``max_rows`` rows: the newest rows for a temporal task (a random
+sample thins the periods next to the test window, the ones a drifting level is learnt from), else random rows; each
+test side at ``max_rows`` random rows (whole groups for a task scored per group). The dummy uses the whole train side.
+The numbers are indicative (untuned models); check a flag against tuned methods before acting on it.
 """
 
 from __future__ import annotations
@@ -83,6 +85,10 @@ SMALL_UNITS = 5_000
 """Up to this many scored units (rows, or groups), every shipped split is probed (at most ``SMALL_SPLITS``)."""
 SMALL_SPLITS = 30
 DEFAULT_SPLITS = 5
+MAX_ROWS = 200_000
+"""Rows kept of each train and test side (``cap_train``; the test side at random, or whole groups). Raised from 50,000
+on 2026-10-21: mortgage 99 s at 200,000 against 22 min uncapped, with the same flags; g_research_crypto_forecasting_1m
+(25 min) and force_2020 (31 min) are the slowest measured, so a sweep with ``--jobs 8`` stays within a few hours."""
 N_SINGLE = 5
 """Single-feature candidates per split: the features LightGBM uses most on its train side."""
 WIDE_INPUTS = 1_000
@@ -213,6 +219,19 @@ def inner_holdout(train: np.ndarray, groups: np.ndarray | None, times: np.ndarra
     return np.flatnonzero(~val), np.flatnonzero(val)
 
 
+def cap_train(train: np.ndarray, max_rows: int, times: np.ndarray | None, rng: np.random.Generator) -> np.ndarray:
+    """At most ``max_rows`` positions of a train side, sorted: the newest rows for a temporal task, else at random.
+
+    On a drifting temporal task a random sample thins the periods next to the test window, the ones a model learns
+    the current level from; the newest rows keep them whole (mortgage, 2026-10-21).
+    """
+    if len(train) <= max_rows:
+        return train
+    if times is not None:
+        return np.sort(train[np.argsort(times[train], kind="stable")[-max_rows:]])
+    return np.sort(rng.choice(train, max_rows, replace=False))
+
+
 def run(  # noqa: C901, PLR0912, PLR0913
     df: pd.DataFrame,
     target: str,
@@ -225,7 +244,7 @@ def run(  # noqa: C901, PLR0912, PLR0913
     group_time_on: str | None = None,
     time_on: str | None = None,
     n_splits: int | None = None,
-    max_rows: int = 50_000,
+    max_rows: int = MAX_ROWS,
     n_jobs: int = 8,
     text: bool = True,
 ) -> dict:
@@ -242,7 +261,8 @@ def run(  # noqa: C901, PLR0912, PLR0913
         group_time_on: The order of the rows inside a group, for ``aggregation="last"``.
         time_on: The time column of a temporal task (adds the drift baseline and a newest-rows inner hold-out).
         n_splits: Splits to probe (default: up to 30 for small data, else 5).
-        max_rows: Rows kept (at random; whole groups for a task scored per group) of each train and test side.
+        max_rows: Rows kept of each train and test side: the newest rows of a temporal task's train side, else
+            random rows (whole groups for the test side of a task scored per group).
         n_jobs: Threads per model.
         text: Encode the text columns (else leave them out).
     """
@@ -273,9 +293,7 @@ def run(  # noqa: C901, PLR0912, PLR0913
     pairs = []
     for split_train, split_test in flat[:n_splits]:
         full_train, test = np.asarray(split_train), np.asarray(split_test)
-        train = full_train
-        if len(train) > max_rows:
-            train = np.sort(rng.choice(train, max_rows, replace=False))
+        train = cap_train(full_train, max_rows, times, rng)
         if len(test) > max_rows and unit == "group":
             chosen = rng.permutation(np.unique(groups[test]))
             sizes = pd.Series(groups[test]).value_counts().reindex(chosen).to_numpy()
@@ -315,7 +333,7 @@ def run(  # noqa: C901, PLR0912, PLR0913
         return (lgb.LGBMRegressor if regression else lgb.LGBMClassifier)(n_estimators=200, verbose=-1, n_jobs=n_jobs)
 
     for i, (train, test, full_train) in enumerate(pairs):
-        ref = reference_of(train)
+        ref = reference_of(full_train)
         y_tr, y_te = y[train], y[test]
         X_tr, X_te = X.iloc[train].reset_index(drop=True), X.iloc[test].reset_index(drop=True)
         text_blocks: dict[str, list[str]] = {}

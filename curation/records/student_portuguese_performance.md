@@ -8,7 +8,7 @@ data_foundry_status:
 - BeyondArena
 suggestion: 'Yes'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - Tiny Data
 collections:
@@ -38,6 +38,8 @@ CC: "Cortez and Silva, 2008. Students from two schools - predict student perform
 We can treat the g3 as the prediction target and use g1 and g2 or drop it and just aim for predicting this for the next year for these students. might have some problem as features talk about the entire time or past behavior for the newest grade
 
 We use the port data and ignore the math data, as it is more or less a different version/target (382 students overlap) and the port data is larger. We only predict G3
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — RMSE of G3 in regression setup C of Cortez & Silva 2008.
 
 ## Reference
 

@@ -4,6 +4,10 @@ The probes in ``.claude/skills/knowledge-curation/scripts/curation_probes/`` tak
 problem type, the group and time columns and the splits; this module reads them from a v2 definition under a root
 folder: from the definition's own frame and split plan (rebuilt from the raw files), or from a container (the built
 one recorded in the definition's ``README.md``, or one rebuilt from the definition).
+
+The scoring columns (``task.scoring_columns``: the inputs of the metric, such as Numerai's ``era``) are never model
+inputs, so they are dropped from the frame the probes see, unless one is also the target, a group column or the time
+column, which the probes take by name. ``ProbeInput.scoring_cols`` lists the ones dropped.
 """
 
 from __future__ import annotations
@@ -36,6 +40,7 @@ class ProbeInput:
         time_on: The time column of a temporal task.
         origin: ``built`` (the container of the README build record), ``rebuilt`` (a container rebuilt from the
             definition) or ``definition`` (the definition's frame and split plan, no container).
+        scoring_cols: The scoring columns dropped from ``df`` (metric inputs, never features).
     """
 
     df: pd.DataFrame
@@ -46,6 +51,7 @@ class ProbeInput:
     grouping: Grouping | None
     time_on: str | None
     origin: str
+    scoring_cols: tuple[str, ...] = ()
 
     @property
     def group_cols(self) -> list[str]:
@@ -71,12 +77,24 @@ def definition(name: str, root: Path | str) -> AbstractCuratedDataset:
     return load_definition(Path(root) / name / "dataset.py")()  # this folder only
 
 
+def _without_scoring_columns(df: pd.DataFrame, task: Any) -> tuple[pd.DataFrame, tuple[str, ...]]:
+    """``df`` without the task's scoring columns (metric inputs), keeping the target, group and time columns."""
+    keep = {task.target_column_name, *as_column_list(task.group_on), task.time_on}
+    drop = tuple(
+        c.column
+        for c in getattr(task, "scoring_columns", None) or ()
+        if c.column in df.columns and c.column not in keep
+    )
+    return (df.drop(columns=list(drop)) if drop else df), drop
+
+
 def from_definition(ds: AbstractCuratedDataset) -> ProbeInput:
     """The definition's frame and split plan, rebuilt from the raw files (no container)."""
     plan = ds.make_splits()
     task = ds.task_metadata
+    df, scoring = _without_scoring_columns(plan.df, task)
     return ProbeInput(
-        df=plan.df,
+        df=df,
         target=task.target_column_name,
         problem_type=task.problem_type,
         regime=task.split_regime,
@@ -84,14 +102,16 @@ def from_definition(ds: AbstractCuratedDataset) -> ProbeInput:
         grouping=task.grouping,
         time_on=task.time_on,
         origin="definition",
+        scoring_cols=scoring,
     )
 
 
 def from_container(container: CuratedContainer, origin: str) -> ProbeInput:
     """A container's frame, task and shipped splits."""
     task = container.task_metadata
+    df, scoring = _without_scoring_columns(container.dataset, task)
     return ProbeInput(
-        df=container.dataset,
+        df=df,
         target=task.target_column_name,
         problem_type=task.problem_type,
         regime=task.split_regime,
@@ -99,6 +119,7 @@ def from_container(container: CuratedContainer, origin: str) -> ProbeInput:
         grouping=container.grouping,  # raises for a format-1 container
         time_on=task.time_on,
         origin=origin,
+        scoring_cols=scoring,
     )
 
 

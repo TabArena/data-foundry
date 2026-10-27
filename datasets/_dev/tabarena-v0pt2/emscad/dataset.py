@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, anonymize_ids
 
 CONTACT_PATTERN = r"#(?:EMAIL|PHONE|URL)_[0-9a-f]{8,}#"
 """EMSCAD masks e-mails, phones and URLs as ``#(EMAIL|PHONE|URL)_Keyed_SHA2#``, so one hash is one contact."""
@@ -148,6 +148,13 @@ class Emscad(AbstractCuratedDataset):
     # Task
     target = "fraudulent"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Vidros et al. 2017 report accuracy with precision, recall and F-measure on a balanced 450/450 sample; the "
+            "release we ship is 4.6% fraudulent, so the paper's accuracy does not carry over (MET-2), and no threshold or"
+            " costs are fixed. Original rejected: accuracy on the 1:1 sample. roc_auc is the binary fallback."
+        ),
+    )
     grouping = Grouping(
         on="poster_group",
         labels="per_sample",

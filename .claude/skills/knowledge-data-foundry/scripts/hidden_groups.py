@@ -1,4 +1,4 @@
-"""Hidden groups: columns, keys of all columns but one and near copies that carry the label, and a random split's gain.
+"""Hidden groups: columns, keys of all columns but one, near copies and repeated texts that carry the label.
 
 Usage::
 
@@ -8,10 +8,10 @@ Usage::
 Runs the hidden-group probe of ``curation_probes.hidden_groups``
 (``.claude/skills/knowledge-curation/scripts/curation_probes/hidden_groups.py`` says what it measures and when a
 candidate is a hit) on each dataset: an IID task gets the split gaps; a temporal task (``Temporal(on=...)``) gets the
-recurrence of its entities across the shipped splits instead, with its time column left out of the candidates; a
-grouped task is skipped. ``--include-grouped`` also runs the grouped datasets as if they were IID (their known group
-column is marked, and left out of the near-copy tokens and the composite keys; a key with the same groups is marked as
-the known group): the positive controls for the thresholds. ``--all`` probes every definition under ``--root``;
+recurrence of its entities across the shipped splits instead, with its time column left out of the candidates; a grouped
+task is skipped. ``--include-grouped`` also runs the grouped datasets as if they were IID (their known group column is
+marked, and left out of the near-copy tokens, the composite keys and the text keys; a key with the same groups is marked
+as the known group): the positive controls for the thresholds. ``--all`` probes every definition under ``--root``;
 ``--built`` reads the container recorded in each ``README.md``'s build record instead of rebuilding the frame from the
 raw files. ``--n-jobs`` sets the threads per model and ``--jobs`` the datasets probed in parallel. ``--out DIR`` writes
 one JSON per dataset and ``summary.md`` there. How to read the output:
@@ -115,7 +115,18 @@ def render(result: dict) -> str:
             f"{c['static']} attributes {c['static_columns'][:4]}{_outcome(c)}"
         )
     lines.extend(_key_lines(result))
-    c = result["near_copies"]
+    lines.append(_copy_line(result["near_copies"]))
+    lines.extend(_text_line(c) for c in result.get("text_keys", []))
+    return "\n".join(lines)
+
+
+def _copy_line(c: dict) -> str:
+    """The near copies of one dataset, or why the check did not run."""
+    if not c.get("run", True):
+        return (
+            f"   {NEAR_COPIES}: not run, no row has {COPY_MIN_SHARED} informative tokens "
+            f"({c['columns_used']} columns); no evidence either way"
+        )
     ladder = ", ".join(f"{s['similarity']}: {s['clusters']} ({s['repeated_share']:.1%})" for s in c["ladder"])
     sizes = ", ".join(f"{k}: {v}" for k, v in c["cluster_sizes"].items() if v)
     left_out = []
@@ -123,13 +134,23 @@ def render(result: dict) -> str:
         left_out.append(f"{c['rows_with_few_tokens']} rows with fewer than {COPY_MIN_SHARED} tokens")
     if c["rows_in_large_clusters"]:
         left_out.append(f"{c['rows_in_large_clusters']} rows of clusters over {COPY_MAX_CLUSTER}")
-    lines.append(
+    return (
         f"   {NEAR_COPIES} at {c['similarity']}: {c['values']} clusters, {c['repeated_share']:.1%} of the rows in "
         f"clusters of 2+, largest {c['largest']} (sizes {sizes or 'none'}), s_id {c['s_id']:.3f}{_outcome(c)}; "
         f"by similarity {ladder}; {c['columns_used']} columns, {c['seconds']} s"
         + "".join(f"; {note} left single" for note in left_out)
     )
-    return "\n".join(lines)
+
+
+def _text_line(c: dict) -> str:
+    """The exact key on one normalised text column."""
+    sizes = ", ".join(f"{k}: {v}" for k, v in c["cluster_sizes"].items() if v)
+    large = c["rows_in_large_keys"]
+    large = f"; {large} rows of texts over {COPY_MAX_CLUSTER} left single" if large else ""
+    return (
+        f"   {c['column']}: {c['values']} texts, {c['repeated_share']:.1%} of the rows share their normalised text, "
+        f"largest {c['largest']} (sizes {sizes or 'none'}), s_id {c['s_id']:.3f}{_outcome(c)}{large}, {c['seconds']} s"
+    )
 
 
 def _safe(name: str, root: Path, **kwargs) -> dict:
@@ -145,12 +166,15 @@ def _summary_row(r: dict) -> str:
         top = r.get("skipped") or r.get("error", "")
     else:
         parts = []
-        for c in [*r["scored"][:1], *r.get("composite_keys", [])[:1], r["near_copies"]]:
-            if "gap" in c:
+        texts = sorted(r.get("text_keys", []), key=lambda c: -c["repeated_share"])[:1]
+        for c in [*r["scored"][:1], *r.get("composite_keys", [])[:1], r["near_copies"], *texts]:
+            if c["column"] == NEAR_COPIES and not c.get("run", True):
+                parts.append(f"{c['column']} not run")
+            elif "gap" in c:
                 parts.append(f"{c['column']} gap {c['gap']:+.3f}")
             elif "test_rows_seen" in c:
                 parts.append(f"{c['column']} seen {c['test_rows_seen']:.1%}")
-            elif c["column"] == NEAR_COPIES:
+            elif c["column"] == NEAR_COPIES or c["dtype"] == "text key":
                 parts.append(f"{c['column']} {c['repeated_share']:.1%} of rows")
         top = "; ".join(parts)
     hits = ", ".join(r.get("hits", []))
@@ -180,7 +204,7 @@ def main(argv: list[str] | None = None) -> int:
         args.out.mkdir(parents=True, exist_ok=True)
         for result in results:
             (args.out / f"{result['name']}.json").write_text(json.dumps(result, indent=1, default=str))
-        header = "| dataset | regime | candidates | hits | top candidate; composite key; near copies |\n"
+        header = "| dataset | regime | candidates | hits | top candidate; composite key; near copies; text key |\n"
         header += "|---|---|---|---|---|\n"
         (args.out / "summary.md").write_text(header + "\n".join(_summary_row(r) for r in results) + "\n")
     return 0

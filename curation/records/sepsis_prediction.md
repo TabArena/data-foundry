@@ -35,6 +35,8 @@ https://physionet.org/content/challenge-2019/1.0.0/
 
 CC (2026-10-01, Lennart): Leak audit: the data is fine; the scoring has to change (planned). Each row is one patient-hour with only that hour's measurements, and SepsisLabel is 1 from 6 hours before onset onward, so at every hour the task is "sepsis within the next 6 hours"; no row feature encodes the time left in the stay. The risk is in the evaluation: grouped splits put complete patient records into the test set, and septic records end shortly after onset, so a method that uses a patient's later rows (record length, last Hour/ICULOS) can read the outcome. Going forward, predictions must be causal per patient and scored with the PhysioNet 2019 utility per patient (already declared as the metric, with group_on = Patient_ID and group_time_on = Hour) rather than as independent rows. Patient_ID is group metadata and must not be used as a model feature. Documented in the v2 definition's curation comments.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source normalized_early_detection_utility — PhysioNet/CinC Challenge 2019 normalized utility score (Reyna et al. 2020, Early prediction of sepsis from clinical data: the PhysioNet/Computing in Cardiology Challenge 2019, Crit Care Med 48(2):210-217; https://physionet.org/content/challenge-2019/1.0.0/); inputs {"group": "Patient_ID", "order": "Hour"}.
+
 ## Reference
 
 Kaggle / PhysioNet

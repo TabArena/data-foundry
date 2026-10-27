@@ -104,7 +104,7 @@ releases, and rows 63-69 one insurer's 2004 portfolio. None of the records touch
 The four rows that went into existing records keep those records' own verdicts: `fremtpl2` Yes (an earlier AI draft),
 `nyc_taxi_green_dec_2016` No (Lennart; rows 28 and 29), `online_retail` TBD -> Yes (Andrej).
 
-Markers on the 42 No records (a record can have several): `No Good Target  / Scientific Discovery` 28,
+Markers on the 42 No records (a record can have several): `No Good Target / Scientific Discovery` 28,
 `Time-series (Forecasting)` 8, `Too Small` 7, `No Good Target (yet)` 4, `Not Available (from Paper))` 3, `Image` 3,
 `Needs extensive data wrangling` 3, `Data Quality Issue` 1, `Trivial` 1, `Missing source information` 1.
 

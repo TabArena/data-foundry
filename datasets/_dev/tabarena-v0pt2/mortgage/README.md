@@ -2,21 +2,23 @@
 report_format: data-foundry-report-v2
 unique_name: mortgage
 container_format: 2
-checksum: v2:b44e6d5ee31c0922f7018ab79b433bc73e73eadbaef770a5b84dc8a5b504f824
+checksum: v2:a266bee4df1b78bd7f5ae68f0caae8b9940a609a80d5d75907d0ee90de3ee088
 build: null
 build_stale: false
 data:
-  n_rows: 622177
-  n_features: 17
+  n_rows: 621653
+  n_features: 21
   dtypes:
-    category: 2
-    float64: 10
-    int64: 6
+    category: 3
+    float64: 14
+    int64: 5
   n_test_dataset_rows: null
 task:
   target: status
   problem_type: multiclass_classification
   metric: log_loss
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: status
   time_on: time
@@ -30,12 +32,14 @@ splits:
   random_state: 4267
   time_horizon: 1
   time_horizon_unit: steps
+  time_gap: null
+  time_gap_unit: null
   n_train:
-    min: 597444
-    max: 614173
+    min: 597018
+    max: 613649
   n_test:
     min: 8004
-    max: 8482
+    max: 8459
 bundle_checks:
   ok: true
   errors: []
@@ -54,34 +58,34 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `status`, scored with `log_loss` on temporal splits by `time`. 622,177 rows and 17 features. Source: Other (2016).
+Multiclass classification of `status`, scored with `log_loss` on temporal splits by `time`. 621,653 rows and 21 features. Source: Other (2016).
 
-Not built yet. The current definition gives checksum `v2:b44e6d5ee31c0922f7018ab79b433bc73e73eadbaef770a5b84dc8a5b504f824`.
+Not built yet. The current definition gives checksum `v2:a266bee4df1b78bd7f5ae68f0caae8b9940a609a80d5d75907d0ee90de3ee088`.
 
 ## In brief
 
 **Question.** Will a mortgage default, be paid off, or stay active in the coming quarter?
 
-**Use case.** At the start of each quarter, a lender scores every mortgage it holds for whether, during the quarter, it defaults, is paid off or stays active, as in the book's own out-of-time backtest.
+**Use case.** At the start of each quarter, a lender scores every mortgage it holds for whether, during the quarter, it defaults, is paid off or stays active, as in the book's own out-of-time backtest; a loan that joins the book during a quarter is scored from then on, over the shorter rest of that quarter.
 
-**One row.** One US mortgage in one quarter, for 50,000 borrowers observed from 2000 Q2 to 2015 Q1 (Credit Risk Analytics, Baesens et al. 2016).
+**One row.** One US mortgage in one quarter, for 50,000 borrowers observed from 2000 Q2 to 2015 Q1 (Credit Risk Analytics, Baesens et al. 2016): a closed book that ages, with a pool of seasoned loans added in 2013 Q1.
 
-**Predicted.** The loan's status at the end of the quarter: active (93.29%), paid off (4.27%) or defaulted (2.44%).
+**Predicted.** The loan's status at the end of the quarter: active (93.29%), paid off (4.28%) or defaulted (2.44%).
 
-**Known at prediction time.** The quarter, the loan's dates (origination, first observation, maturity) and terms at origination (balance, rate, loan-to-value, credit score, property type, investor), its balance, rate and loan-to-value at the previous quarter, and unemployment, GDP growth and house prices as published by the quarter's start.
+**Known at prediction time.** The quarter, the loan's dates and origination terms (balance, rate, LTV, credit score, property), its balances at its previous two observations and their ratio, its rate and LTV at its previous observation, the macro figures and the market mortgage rate as published by the quarter's start, and the loan's rate minus that rate. In the quarter a loan joins the book only its dates and origination terms are known.
 
 **What the test data stands for.** Each test window is one quarter (2014 Q3, 2014 Q4, 2015 Q1), trained on every earlier quarter; a test loan's earlier quarters are in training, as for a lender scoring the loans it holds.
 
-**Our changes to the source.** We use each loan's balance, rate and loan-to-value of the previous quarter and the economic figures as published by the quarter's start; the source's own-quarter values partly record the event or come out later.
+**Our changes to the source.** We use each loan's state at its previous observation (and its balance at the one before) and the economic figures as published by the quarter's start, since the own-quarter values partly record the event or come out later. We add the balance ratio and the market mortgage rate (FRED), and drop the last row of loans that leave early without a recorded event.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is known when the quarter starts, the outcome falls within the quarter, and later quarters are tested, as in the book's backtest.
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything the model sees is known when the quarter starts, or when the loan joins the book during it (the GDP figures may carry later revisions; vintage unknown), the outcome falls within the quarter, and later quarters are tested, as in the book's backtest.
 
 ## Files in this folder
 
 | file | what it is |
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
-| [`explore.ipynb`](explore.ipynb) | The workbench for looking at the data (`ds = workbench()`), committed without outputs. Not needed to rebuild. |
+| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/mortgage.md`](../../../../curation/records/mortgage.md)
@@ -106,6 +110,16 @@ rm local-data-warehouse/mortgage/mortgage_csv.rar
 
 sha256 of mortgage_csv.rar: 1ce1c9be8d9a86edef040ca54c392bbfd609354a852507db63f20776a0b88924
 sha256 of mortgage.csv: f8e819eb02a3bfb575d927c878e921faf6c0751e2e19056100e7e9dee76cc1a8 (68,397,638 bytes)
+
+The market mortgage rate comes from FRED (Federal Reserve Bank of St. Louis), series MORTGAGE30US: Freddie
+Mac's weekly 30-year fixed rate from its Primary Mortgage Market Survey (https://fred.stlouisfed.org/series/MORTGAGE30US).
+No login is needed.
+
+wget -O local-data-warehouse/mortgage/MORTGAGE30US.csv "https://fred.stlouisfed.org/graph/fredgraph.csv?id=MORTGAGE30US"
+
+The file grows by one row a week, so its checksum changes; we use the weeks of 1999 Q4 to 2014 Q4 only. sha256
+of the copy downloaded on 2026-10-22 (2,899 weeks, 1971-04-02 to 2026-10-15):
+869ba44fd0e3633fcb57f0c782875e340b272b21895abb9f581c3f269a4d730c (46,979 bytes)
 ```
 
 Then, from the repository root:
@@ -126,8 +140,8 @@ Only curators run `build`, when the dataset ships.
 | domain | finance |
 | license | Use only in conjunction with the Credit Risk Analytics textbooks; commercial use prohibited (the agreement on the book's download form, http://www.creditriskanalytics.net/datasets.html). Note: the site's terms (http://www.creditriskanalytics.net/terms.html) say "You must not: Republish material from Credit Risk Analytics [...] Redistribute content from Credit Risk Analytics". |
 | data_tags | Non-IID, Temporal |
-| reference | baesens2016credit |
-| rows x columns | 622,177 x 18 |
+| reference | baesens2016credit,fred_mortgage30us |
+| rows x columns | 621,653 x 22 |
 | task.target | status |
 | task.problem_type | multiclass_classification |
 | task.metric | log_loss |
@@ -135,10 +149,19 @@ Only curators run `build`, when the dataset ships.
 | task.stratify_on | status |
 | task.time_on | time |
 
-<details>
-<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
+**Metric**
 
-- categorical (2): `real_estate_type`, `status`
+| field | value |
+|---|---|
+| name | `log_loss` (standard; takes proba; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | mean of -log p(true class) |
+| reason | The book uses the data for many PD/LGD examples with assorted diagnostics (ROC/AUC for binary default, calibration plots), not one metric for this three-outcome task. |
+
+<details>
+<summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
+
+- categorical (3): `real_estate_type`, `investor_orig_time`, `status`
 - string (0): none
 - datetime (0): none
 
@@ -157,59 +180,73 @@ Only curators run `build`, when the dataset ships.
   isbn={978-1-119-14398-7},
   doi={10.1002/9781119449560}
 }
+
+@misc{fred_mortgage30us,
+  title={30-Year Fixed Rate Mortgage Average in the United States [MORTGAGE30US]},
+  author={{Freddie Mac}},
+  howpublished={retrieved from FRED, Federal Reserve Bank of St. Louis, https://fred.stlouisfed.org/series/MORTGAGE30US},
+  year={2026},
+  note={Primary Mortgage Market Survey, weekly; retrieved 2026-10-22}
+}
 ```
 
 </details>
 
 ## Sample rows
 
-The first 5 of 622,177 rows of the final frame (the oldest rows: the frame is sorted by `time`); 12 of 18 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 621,653 rows of the final frame (the oldest rows: the frame is sorted by `time`); 12 of 22 columns, the target first. Cells are cut at 40 characters.
 
 | status | time | orig_time | first_time | mat_time | balance_time_lag_1 | LTV_time_lag_1 | interest_rate_time_lag_1 | hpi_time_lag_2 | gdp_time_lag_2 | uer_time_lag_1 | real_estate_type |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| active | 1 | -7 | 1 | 113 | nan | nan | nan | nan | nan | nan | single_family |
 | active | 1 | 1 | 1 | 119 | nan | nan | nan | nan | nan | nan | single_family |
-| active | 1 | 1 | 1 | 118 | nan | nan | nan | nan | nan | nan | single_family |
-| active | 1 | 1 | 1 | 118 | nan | nan | nan | nan | nan | nan | single_family |
 | active | 1 | -6 | 1 | 114 | nan | nan | nan | nan | nan | nan | single_family |
-| active | 1 | -3 | 1 | 117 | nan | nan | nan | nan | nan | nan | single_family |
+| active | 1 | -6 | 1 | 114 | nan | nan | nan | nan | nan | nan | planned_urban_development |
+| active | 1 | 1 | 1 | 119 | nan | nan | nan | nan | nan | nan | single_family |
 
 ## Curation notes
 
 We start with mortgage.csv from the data page of the book Credit Risk Analytics (Baesens, Roesch and Scheule 2016): one row per loan and period for 50,000 US mortgage borrowers.
 
-- Prediction point: the start of each quarter. A lender scores every loan it still holds for whether, during the quarter, the loan defaults, is paid off or stays active.
-- Target: `status`, the source's `status_time`, as `default`, `payoff` and `active` (the competing-risks form of the R Companion, chapter 11); we drop its indicator columns `default_time` and `payoff_time`. Loans that leave the panel without an event keep their last row `active` as recorded.
-- The loan's balance, interest rate and LTV come from its previous observation (`*_lag_1`): on an event row the row's own state partly records the event (decision table), and the previous state is what the lender knows (garments_worker_productivity precedent).
+- Prediction point: the start of each quarter. A lender scores every loan it still holds for whether, during the quarter, the loan defaults, is paid off or stays active. A loan that joins the book during a quarter is scored from the day it joins, over the shorter rest of that quarter (Lennart, 2026-10-22; USE-3): 8,132 rows with `time == orig_time` (24 in the test windows), and in the same way the first panel row of every loan that enters the pool during a quarter. On these rows only the dates and the origination terms are known; the lagged loan state is missing. US lenders book an expected-loss allowance (CECL) from the day a loan joins the book.
+- Target: `status`, the source's `status_time`, as `default`, `payoff` and `active` (the competing-risks form of the book's R Companion, chapter 11; unverified, we found no copy of the R Companion); we drop its indicator columns `default_time` and `payoff_time`. The source does not state its default definition.
+- Note: a binary default-only companion (`default_time` scored by ROC AUC, as in the book's chapter 6 models and chapter 13 backtest) might be reasonable in the future; for now the curator keeps the three classes alone (Lennart, 2026-10-22).
+- Label not recorded, rows dropped (LEAK-25, CLEAN-15): 501 loans leave the data before period 60 without an event, and the codebook says observations are censored when borrowers refinance; it does not say which exits those are, so the last row's label is unknown. We drop these 501 last rows (98 in the test windows; 36 have a zero balance, against 2 of 533,608 other active rows). 58 of them end a loan key whose id continues under another key (all in train).
+- The loan's balance, interest rate and LTV come from its previous observation (`*_lag_1`), and its balance also from the observation before (`balance_time_lag_2`): on an event row the row's own state partly records the event (decision table), and the earlier state is what the lender knows (garments_worker_productivity precedent). The data has no delinquency field, so the payment history comes only through the two balances (a balance that stops amortising).
+- Added column `balance_ratio_lag_1_to_2`, `balance_time_lag_1 / balance_time_lag_2` (missing when the balance two observations back is missing or zero): a balance that stops falling stands in for a missed payment, the days-past-due field a lender has and the data lacks (CLEAN-19; Lennart, 2026-10-22). The information is in the two raw balances, but untuned LightGBM does not find it there: in the mediator's runs (periods 60 / 59 / 58) the raw `balance_time_lag_2` alone moved the 3-class log loss from 0.1200 / 0.1321 / 0.1359 to 0.1201 / 0.1315 / 0.1357, the ratio to 0.1179 / 0.1271 / 0.1287, and the default ROC AUC from 0.57-0.66 to 0.76 / 0.85 / 0.82. On the shipped columns: log loss 0.1180 / 0.1274 / 0.1293 and default ROC AUC 0.75 / 0.84 / 0.81, against 0.1201 / 0.1327 / 0.1364 and 0.57 / 0.68 / 0.59 without the ratio.
+- Added columns from outside the source (Lennart, 2026-10-22: "this sounds like a good way to make the data better"): `market_rate_30y_lag_1`, the mean of Freddie Mac's weekly 30-year fixed mortgage rate (FRED series MORTGAGE30US, Primary Mortgage Market Survey) over the calendar quarter before the predicted one, and `rate_minus_market_rate_lag_1`, the loan's rate at its previous observation minus it: the refinance incentive that drives payoffs. Each weekly value is published on the Thursday it is dated, so the previous quarter's mean is known when the quarter starts (lag 1). Periods map to calendar quarters with period 1 = 2000 Q2, the one alignment under which the source's house price index and unemployment rate match the public series. Licence: FRED marks the series "Copyrighted: Citation Required" ("Copyright, 2016, Freddie Mac. Reprinted with permission"; data "as is", no warranties); the citation is in the bibtex. On the shipped columns, dropping the two market columns changes the log loss by -0.0003 / +0.0007 / -0.0005 (no clear gain for untuned LightGBM).
 - The macro columns hold the predicted quarter's own values (as the book's PD models use them), published during or after it. We use the newest values published when the quarter starts: unemployment one quarter back, GDP growth and the house price index two quarters back (decision table).
+- Note: the GDP figures may carry later revisions; their vintage is unknown (period 60: 2.84 in the file, 4.0 in FRED's current release). Dropping `gdp_time_lag_2` changes LightGBM's log loss by -0.0007 to -0.0001 over the three windows, so no revision signal reaches the score.
 - `LTV_time_lag_1` follows the source's formula with the previous balance and the index two quarters back. `hpi_orig_time` is published two quarters after origination; until then it is missing and the LTV keeps the house value at origination.
-- Period 51 is doubled for 312 loans: we drop the exact copies and, where two copies differ only in the status, keep the payoff copy (the loan leaves the panel).
-- An origination interest rate, original balance or current interest rate of 0 becomes missing (89,990, 270 and 25 rows); the source's `LTV_time` is missing on exactly the zero-balance rows.
-- We drop `id`, the borrower id in file order. A few ids hold two mortgages, so a loan is an id with its origination period and original balance; this key only finds a loan's previous observation.
+- Period 51 is doubled for 312 loans: we drop the exact copies. Where two copies differ only in the status (7 loans), we keep the payoff copy: all 7 loans end at period 51, so the second copy is damage to the file, not an ambiguous label (an exception to LEAK-20, Lennart, 2026-10-22) (a departure from LEAK-20, which drops both copies; open for the curator).
+- An origination interest rate, original balance or current interest rate of 0 becomes missing (89,990, 270 and 25 rows); the source's `LTV_time` is missing on exactly the 270 zero original-balance rows. A current rate of 37.5% becomes missing: 44 loans hold it in period 22, on their first row, and 6.1-6.5% from the next row on, so it is a placeholder.
+- We drop `id`, the borrower id in file order. 59 ids carry two keys (origination period and original balance): 44 of them are one mortgage with a revised origination field, the other 15 hold two mortgages. A loan is an id with its origination period and original balance; this key only finds a loan's previous observations.
+- Ids 35310 and 3020 equal ids 35309 and 3018 in every column over 15 and 8 quarters: we drop them (23 rows, all in train). Kept: 12 rows from 6 pairs of ids that match in one quarter only, separate loans on the same terms (2 pairs differ in the status).
 - The three real-estate flags (at most one set per row) become one category `real_estate_type`, `other` where none is set.
 - Note: `time`, `orig_time`, `first_time` and `mat_time` stay period numbers; the periods are quarters from 2000 Q2 to 2015 Q1.
-- Kept as recorded: origination fields that change within a loan, interest rates above 25% (44 rows) and LTVs above 300% (38 rows).
-- Duplicate rows kept (58 of 622,177 rows without `id`): they come from 8 pairs of borrower ids with the same origination profile, mostly separate loans on the same terms.
-- Note: unlike the book's retired HMEQ data (homeq_default_prediction), the loans show no generation artefacts (label-free nearest-neighbour distance: ROC AUC 0.58 for default, HMEQ 0.92).
-- Split: temporal, one quarter per window, like the book's out-of-time backtest (splits comment).
-- Note: the task probes flag `drift_baseline`. The task stays (task_probes.md rule 2): LightGBM trained on the full train side beats the previous quarter's class shares in each window (period 60: log loss 0.1195 against 0.1251).
+- Kept as recorded: origination fields that change within a loan (`Interest_Rate_orig_time` in 3,540 loans, where the new value equals the row's own-quarter rate on 2,703 rows; `mat_time` in 814 loans). Freezing them, with the credit score and LTV at origination, at the previous observation changes LightGBM's log loss by -0.0001 to -0.0002, so they stay.
+- Impossible balances become missing (CLEAN-11; Lennart, 2026-10-22): 38 rows whose source `LTV_time` is above 300% (up to 803.5%) carry a balance far above the loan's original balance (570,000 on an original 60,495). We mask the balance before it is lagged, so the 37 `LTV_time_lag_1` values above 300% and the lag-2 balances and ratios built from those balances are missing; the highest LTV left is 261.4%.
+- Note: unlike the book's retired HMEQ data (homeq_default_prediction), the loans show no generation artefacts (label-free nearest-neighbour distance: ROC AUC 0.52 for default, HMEQ 0.92).
+- Split: temporal, one quarter per window, like the book's out-of-time backtest (splits comment). Train and test are a closed book that ages, with a pool of 1,728 seasoned loans added at period 52, so a test window stands for a run-off book, not a lender's book with new loans.
+- Note: the task probes flag `drift_baseline` and `one_feature` (the single feature is `time`): 74-83% of LightGBM's gain over the all-history class shares is the quarter's overall event rate. The task stays: estimating the quarter's level is part of a PD model's job, and log loss is a proper score that rewards getting it right. With the balance ratio the level is 61-75% of the gain. LightGBM trained on the full train side also beats the previous quarter's class shares in each window (log loss 0.1180, 0.1274, 0.1293 against 0.1251, 0.1385, 0.1394 in periods 60, 59, 58).
 
 ## Splits
 
 The book's own out-of-time backtest fits on the periods before 60 and tests on period 60 (R Companion code,
 chapter 13, "Backtesting PD at level 1": `mortgage[mortgage$time < 60, ]` against
-`mortgage[mortgage$time > 59, ]`). We simulate a model that is refit every quarter and scores the loans active
+`mortgage[mortgage$time > 59, ]`; unverified, we found no copy of the R Companion). We simulate a model that is refit every quarter and scores the loans active
 in the next one: 3 test windows of one period each, periods 60, 59 and 58 (2015 Q1, 2014 Q4 and 2014 Q3; newest
 first), each trained on all earlier periods. A test quarter's loans have their earlier quarters in train
 (99.4-99.9% of the test rows), as for a lender scoring the loans it holds. The status of a quarter is known
 when the next one starts, so every training label is known at the cutoff and there is no gap.
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 597,444 to 614,173 rows, test 8,004 to 8,482 rows. Prediction horizon: 1 steps.
+3 repeat(s) x 1 fold(s) with seed 4267; train 597,018 to 613,649 rows, test 8,004 to 8,459 rows. Prediction horizon: 1 steps.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
-| 0 | 0 | 614173 | 8004 | 1 | 59 | 60 | 60 |
-| 1 | 0 | 605926 | 8247 | 1 | 58 | 59 | 59 |
-| 2 | 0 | 597444 | 8482 | 1 | 57 | 58 | 58 |
+| 0 | 0 | 613649 | 8004 | 1 | 59 | 60 | 60 |
+| 1 | 0 | 605477 | 8172 | 1 | 58 | 59 | 59 |
+| 2 | 0 | 597018 | 8459 | 1 | 57 | 58 | 58 |
 
 ## Decisions
 
@@ -232,8 +269,8 @@ The book's backtest trains on the periods before 60 and tests on period 60; a le
 
 | test period | active | default | payoff |
 |---|---|---|---|
-| 58 | 8260 | 77 | 145 |
-| 59 | 8029 | 53 | 165 |
+| 58 | 8237 | 77 | 145 |
+| 59 | 7954 | 53 | 165 |
 | 60 | 7814 | 43 | 147 |
 
 ### 3. Macro values as published when the quarter starts
@@ -250,7 +287,7 @@ The source's macro columns hold the quarter's own values (the house price index 
 
 0 error(s), 0 warning(s), 2 info (26 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicate_rows`: 25 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
+- **info** `dataset_duplicate_rows`: 2 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **info** `dataset_conflicting_duplicate_rows`: 4 row(s) (0.0%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
 ## Data checks
@@ -258,28 +295,32 @@ The source's macro columns hold the quarter's own values (the house price index 
 ### Feature summary
 
 <details>
-<summary>Show the table (18 rows)</summary>
+<summary>Show the table (22 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | real_estate_type | category | 0 | 0 | 4 | single_family, other, planned_urban_development, condominium |
+| investor_orig_time | category | 0 | 0 | 2 | 0, 1 |
 | status | category | 0 | 0 | 3 | active, payoff, default |
-| Interest_Rate_orig_time | float64 | 89990 | 14.46 | 1824 | 6.5, 5.875, 6.25, 6.0, 6.75, 5.75, 6.875, 6.375, 5.5, 6.625 |
-| LTV_time_lag_1 | float64 | 50533 | 8.12 | 523795 | 80.0, 81.4029, 81.9775, 78.4515, 83.6328, 82.4109, 80.4229, 81.8475, 77.5044, 8… |
-| balance_time_lag_1 | float64 | 50059 | 8.05 | 448646 | 650000.0, 400000.0, 200000.0, 1000000.0, 500000.0, 520000.0, 300000.0, 280000.0… |
-| interest_rate_time_lag_1 | float64 | 50082 | 8.05 | 5310 | 6.5, 6.25, 5.875, 6.0, 6.75, 5.75, 6.875, 6.375, 5.5, 7.5 |
-| hpi_orig_time | float64 | 16290 | 2.62 | 95 | 226.29, 225.1, 222.39, 216.77, 223.75, 221.91, 208.86, 191.42, 186.91, 199.21 |
+| balance_time_lag_2 | float64 | 96267 | 15.49 | 414067 | 650000.0, 400000.0, 1000000.0, 200000.0, 500000.0, 520000.0, 300000.0, 280000.0… |
+| balance_ratio_lag_1_to_2 | float64 | 96268 | 15.49 | 412578 | 1.0, 0.9998, 0.9998, 0.8889, 1.0, 0.9997, 1.0, 0.9998, 0.9994, 0.9997 |
+| Interest_Rate_orig_time | float64 | 89929 | 14.47 | 1824 | 6.5, 5.875, 6.25, 6.0, 6.75, 5.75, 6.875, 6.375, 5.5, 6.625 |
+| LTV_time_lag_1 | float64 | 50522 | 8.13 | 523323 | 80.0, 81.4029, 81.9775, 78.4515, 83.6328, 82.4109, 81.8475, 80.4229, 77.5044, 8… |
+| balance_time_lag_1 | float64 | 50048 | 8.05 | 448330 | 650000.0, 400000.0, 200000.0, 1000000.0, 500000.0, 520000.0, 300000.0, 280000.0… |
+| interest_rate_time_lag_1 | float64 | 50073 | 8.05 | 5307 | 6.5, 6.25, 5.875, 6.0, 6.75, 5.75, 6.875, 6.375, 5.5, 7.5 |
+| rate_minus_market_rate_lag_1 | float64 | 50073 | 8.05 | 35508 | 0.6277, -0.9223, 0.2754, -2.2277, -0.0515, -2.1354, -1.9636, -2.3646, 0.6586, 0… |
+| hpi_orig_time | float64 | 16275 | 2.62 | 95 | 226.29, 225.1, 222.39, 216.77, 223.75, 221.91, 208.86, 191.42, 186.91, 199.21 |
 | hpi_time_lag_2 | float64 | 812 | 0.13 | 58 | 219.67, 217.37, 222.39, 212.73, 225.1, 200.67, 226.29, 186.12, 223.75, 180.52 |
 | gdp_time_lag_2 | float64 | 812 | 0.13 | 58 | 1.2292, 1.693, 2.3617, 2.2742, 2.1514, 1.8507, 2.8991, 1.1042, 3.1212, 0.8369 |
 | uer_time_lag_1 | float64 | 283 | 0.05 | 36 | 4.7, 5.0, 7.8, 9.0, 4.5, 4.6, 4.4, 9.4, 5.8, 6.5 |
-| balance_orig_time | float64 | 270 | 0.04 | 10693 | 400000.0, 500000.0, 650000.0, 200000.0, 100000.0, 300000.0, 180000.0, 160000.0,… |
+| balance_orig_time | float64 | 270 | 0.04 | 10688 | 400000.0, 500000.0, 650000.0, 200000.0, 100000.0, 300000.0, 180000.0, 160000.0,… |
 | LTV_orig_time | float64 | 0 | 0 | 552 | 80.0, 90.0, 75.0, 95.0, 100.0, 70.0, 85.0, 65.0, 79.9, 60.0 |
+| market_rate_30y_lag_1 | float64 | 0 | 0 | 60 | 6.3585, 6.5515, 6.2146, 6.2246, 6.2438, 5.8723, 6.56, 6.0869, 6.6023, 6.3223 |
 | time | int64 | 0 | 0 | 60 | 30, 31, 29, 32, 28, 33, 27, 34, 26, 35 |
 | orig_time | int64 | 0 | 0 | 98 | 25, 26, 27, 22, 24, 23, 21, 18, 19, 20 |
 | first_time | int64 | 0 | 0 | 50 | 25, 28, 24, 30, 27, 29, 22, 20, 23, 26 |
-| mat_time | int64 | 0 | 0 | 202 | 142, 145, 141, 146, 143, 147, 148, 144, 140, 139 |
-| investor_orig_time | int64 | 0 | 0 | 2 | 0, 1 |
-| FICO_orig_time | int64 | 0 | 0 | 397 | 660, 662, 672, 687, 683, 682, 684, 661, 704, 701 |
+| mat_time | int64 | 0 | 0 | 201 | 142, 145, 141, 146, 143, 147, 148, 144, 140, 139 |
+| FICO_orig_time | int64 | 0 | 0 | 397 | 660, 662, 672, 687, 683, 682, 661, 684, 704, 701 |
 
 </details>
 
@@ -287,33 +328,36 @@ The source's macro columns hold the quarter's own values (the house price index 
 
 | status | count | pct |
 |---|---|---|
-| active | 580433 | 93.29 |
-| payoff | 26589 | 4.27 |
-| default | 15155 | 2.44 |
+| active | 579911 | 93.29 |
+| payoff | 26588 | 4.28 |
+| default | 15154 | 2.44 |
 
 ### Numeric features
 
 <details>
-<summary>Show the table (16 rows)</summary>
+<summary>Show the table (19 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| time | 622177 | 35.7932 | 11.5779 | 1 | 60 |
-| orig_time | 622177 | 20.5721 | 7.61615 | -40 | 60 |
-| first_time | 622177 | 24.6101 | 6.73912 | 1 | 60 |
-| mat_time | 622177 | 137.215 | 19.5231 | 18 | 229 |
-| balance_time_lag_1 | 572118 | 246647 | 215105 | 0 | 8.70186e+06 |
-| LTV_time_lag_1 | 571644 | 82.8259 | 24.4777 | 0 | 803.514 |
-| interest_rate_time_lag_1 | 572095 | 6.67572 | 2.06491 | 0.25 | 37.5 |
-| hpi_time_lag_2 | 621365 | 186.084 | 28.4016 | 107.83 | 226.29 |
-| gdp_time_lag_2 | 621365 | 1.55895 | 1.9292 | -4.14671 | 5.13246 |
-| uer_time_lag_1 | 621894 | 6.44484 | 1.90901 | 3.8 | 10 |
-| investor_orig_time | 622177 | 0.137969 | 0.344867 | 0 | 1 |
-| balance_orig_time | 621907 | 256419 | 219722 | 4791.5 | 8e+06 |
-| FICO_orig_time | 622177 | 673.597 | 71.7293 | 400 | 840 |
-| LTV_orig_time | 622177 | 78.9773 | 10.126 | 50.1 | 218.5 |
-| Interest_Rate_orig_time | 532187 | 6.60459 | 2.01594 | 0.95 | 19.75 |
-| hpi_orig_time | 605887 | 198.002 | 33.972 | 75.71 | 226.29 |
+| time | 621653 | 35.7897 | 11.5758 | 1 | 60 |
+| orig_time | 621653 | 20.5785 | 7.59638 | -40 | 60 |
+| first_time | 621653 | 24.6064 | 6.73352 | 1 | 60 |
+| mat_time | 621653 | 137.234 | 19.4827 | 20 | 229 |
+| balance_time_lag_1 | 571605 | 246699 | 215115 | 0 | 8.70186e+06 |
+| LTV_time_lag_1 | 571131 | 82.8013 | 23.9461 | 0 | 261.436 |
+| interest_rate_time_lag_1 | 571580 | 6.67273 | 2.04725 | 0.25 | 19.75 |
+| hpi_time_lag_2 | 620841 | 186.081 | 28.4038 | 107.83 | 226.29 |
+| gdp_time_lag_2 | 620841 | 1.55878 | 1.92943 | -4.14671 | 5.13246 |
+| uer_time_lag_1 | 621370 | 6.44502 | 1.90925 | 3.8 | 10 |
+| balance_orig_time | 621383 | 256479 | 219744 | 4791.5 | 8e+06 |
+| FICO_orig_time | 621653 | 673.611 | 71.7204 | 400 | 840 |
+| LTV_orig_time | 621653 | 78.976 | 10.1249 | 50.1 | 218.5 |
+| Interest_Rate_orig_time | 531724 | 6.60354 | 2.0149 | 0.95 | 19.75 |
+| hpi_orig_time | 605378 | 198.025 | 33.9399 | 75.71 | 226.29 |
+| balance_time_lag_2 | 525386 | 247234 | 216062 | 0 | 8.70186e+06 |
+| balance_ratio_lag_1_to_2 | 525385 | 0.995451 | 0.0247703 | 0 | 6.31763 |
+| market_rate_30y_lag_1 | 621653 | 5.44801 | 0.974053 | 3.35923 | 8.31615 |
+| rate_minus_market_rate_lag_1 | 571580 | 1.2778 | 1.93893 | -5.60231 | 15.3138 |
 
 </details>
 
@@ -321,13 +365,15 @@ The source's macro columns hold the quarter's own values (the house price index 
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| real_estate_type | 1 | single_family | 380815 | 61.21 |
-| real_estate_type | 2 | other | 121603 | 19.54 |
-| real_estate_type | 3 | planned_urban_development | 77694 | 12.49 |
-| real_estate_type | 4 | condominium | 42065 | 6.76 |
-| status | 1 | active | 580433 | 93.29 |
-| status | 2 | payoff | 26589 | 4.27 |
-| status | 3 | default | 15155 | 2.44 |
+| investor_orig_time | 1 | 0 | 535893 | 86.2 |
+| investor_orig_time | 2 | 1 | 85760 | 13.8 |
+| real_estate_type | 1 | single_family | 380503 | 61.21 |
+| real_estate_type | 2 | other | 121490 | 19.54 |
+| real_estate_type | 3 | planned_urban_development | 77640 | 12.49 |
+| real_estate_type | 4 | condominium | 42020 | 6.76 |
+| status | 1 | active | 579911 | 93.29 |
+| status | 2 | payoff | 26588 | 4.28 |
+| status | 3 | default | 15154 | 2.44 |
 
 ## Build
 

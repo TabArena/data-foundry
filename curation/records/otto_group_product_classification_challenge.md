@@ -32,6 +32,8 @@ CC: "Distinguish products in 10 groups based on 93 features. Competition not won
 
 **Assessment (AI, 2026-10-14):** 9 classes, not 10: the training file's `target` holds Class_1 to Class_9 (61,878 products) and the competition's sample submission has nine class columns.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source log_loss — multi-class logarithmic loss, the competition's evaluation metric (Kaggle evaluation page).
+
 ## Reference
 
 Benjamin Bossan, Josef Feigl, and Wendy Kan. Otto Group Product Classification Challenge. https://kaggle.com/competitions/otto-group-product-classification-challenge, 2015. Kaggle.

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
 
 
 class ConsumerComplaints1m(AbstractCuratedDataset):
@@ -116,11 +116,18 @@ class ConsumerComplaints1m(AbstractCuratedDataset):
         - The tags filed contains only three non-nan labels, of which one is a duplicate of the others. We created two categorical features from it instead.
         - We drop duplicates (2% of the data) as the data should not contain naturally occurring duplicates and this likely results from some overlap in data collection or data entry or faulty re-submissions. We investigated some of the duplicates and they appear to be identical complaints. There exist duplicates with different target labels, we also drop these as we have no way to determine what the correct label is (all copies are dropped).
         - We drop constant columns, the complaint ID, and when the complaint was send to the company (as it does not related to the target task)
+        - The class shares shift over time (from the v1 exploration, counted 2026-10-22 on the cleaned data): "Closed with explanation" is 85% of 2017, 54% of 2024 and 63% of 2025, "Closed with non-monetary relief" 10%, 44% and 35%, and "Closed with monetary relief" 4.5%, 1.7% and 1.3%. In the three test quarters of 2025 (Q2-Q4) explanation is 57%, 65% and 67%, monetary relief 1.2-1.8%.
     """
 
     # Task
     target = "Company response to consumer"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason=(
+            "The CFPB database is a public register with no prediction task; the task is our adaptation "
+            "following a benchmark paper, not an original task with a defined metric."
+        ),
+    )
 
     # Splits
     splits_comment = """

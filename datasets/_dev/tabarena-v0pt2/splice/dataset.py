@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class Splice(AbstractCuratedDataset):
@@ -61,6 +61,9 @@ class Splice(AbstractCuratedDataset):
     # Task
     target = "SiteType"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason="Towell, Shavlik & Noordewier 1990-1994 report test error rates of KBANN (per class too), a habit without costs between the three site types. Original rejected: error rate. log_loss is the multiclass fallback.",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/splice.data", index_col=False, header=None)

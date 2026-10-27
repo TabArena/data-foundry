@@ -6,7 +6,7 @@ checked_by:
 suggestion: 'No'
 decision_markers:
 - Not Available (from Paper))
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - AI-Filled (Verify)
 - Two-Regime Zeros

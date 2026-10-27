@@ -223,6 +223,8 @@ exclude = [
     "INP001",  # skill script folders are not packages
     "S603", "S607",  # subprocess calls with fixed commands
 ]
+# Claude Code hooks (`.claude/hooks/`): scripts the agent harness runs, not a package.
+".claude/hooks/*.py" = ["INP001"]
 # v2 dataset definitions (`datasets/**/dataset.py`): one class of declarations and a few hooks. Metadata text
 # and column lists are long, commented-out columns document decisions, and optional dependencies (polars,
 # matplotlib) are imported inside the hook that needs them.

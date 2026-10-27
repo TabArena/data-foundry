@@ -44,6 +44,10 @@ CC (2026-10-15, Lennart): Temporal, not grouped: retrofit savings are measured o
 
 **Assessment (AI, 2026-10-15):** Cleaning: the readings come in kWh from BDG2's raw files (the competition kept each site's own unit: ton-hours, pounds of steam, mmBTU, kBTU; BDG2 paper, Table 4), and 1.70M hours (4.2%) are dropped as not recorded: electricity at 0, site 0's 2016 gap, a cooling or heating plant at 0 for 48 hours or more in its season, readings stuck for a week or more, building 1099's steam unit error. 94.5% of the 2016 hours dropped are on the 1st place team's hand-made list of bad readings (solution repository, `rank-1/input/bad_meter_readings.zip`). Task: the top five teams used no lagged readings (GEPIII overview, Table 2). The best naive forecast, each meter's hour-of-week profile from the same month a year earlier, scores RMSE 1.39 / 1.27 / 1.37 on the three windows; LightGBM with 1,000 trees on 1M training rows 1.26 / 1.18 / 1.22. One LightGBM per site scores about the same (1.24 / 1.18 / 1.22), one per building and meter worse (1.37 / 1.27 / 1.34). For unseen buildings (every fifth held out, January-April 2017) LightGBM without building_id scores 1.71, a site x use x meter profile 2.01, LightGBM with the buildings' 2016 history 1.43.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — RMSLE (Root Mean Squared Logarithmic Error) (https://www.kaggle.com/competitions/ashrae-energy-prediction/overview/evaluation).
+
+**Assessment (AI, 2026-10-21):** metric now `Metric.source("rmsle", target_transform="log1p")` instead of rmse on the log1p target: the competition's RMSLE on the meter reading in kWh, computed after the inverse of the shipped log1p (MET-3); the score is the same number as before. Needs a rebuild to reach the container.
+
 ## Reference
 
 Addison Howard, Chris Balbach, Clayton Miller, Jeff Haberl, Krishnan Gowri, and Sohier Dane. ASHRAE - Great Energy Predictor III. https://kaggle.com/competitions/ashrae-energy-prediction, 2019. Kaggle.

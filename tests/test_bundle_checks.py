@@ -15,8 +15,11 @@ from data_foundry.bundle_checks import (
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.schema import (
     DatasetMetadata,
+    MetricSpec,
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadata,
+    PredictiveMLTaskMetadataV2,
+    ScoringColumn,
 )
 
 BIBTEX = """@misc{toy2025dataset,
@@ -26,6 +29,14 @@ BIBTEX = """@misc{toy2025dataset,
   howpublished = {\\url{https://example.com/toy}}
 }
 """
+
+
+def make_spec(problem_type: str = "binary_classification", metric=None) -> MetricSpec:
+    """A format-2 metric spec: ``metric`` (a `Metric`), or a fallback with a reason, for ``problem_type``."""
+    from data_foundry.v2.dataset import metric_spec
+    from data_foundry.v2.metrics import Metric
+
+    return metric_spec(metric or Metric.fallback(reason="test data"), problem_type)
 
 
 def make_dataset_metadata(**overrides) -> DatasetMetadata:
@@ -537,6 +548,21 @@ def test_iid_tags_on_a_grouped_task_are_flagged():
     assert "meta_tags_missing_regime" in found
 
 
+def test_forced_grouped_tag_on_an_iid_task_is_flagged():
+    metadata = make_dataset_metadata(data_tags=["IID", "ForcedGroupedFromTemporal"])
+    assert "meta_tags_contradict_regime" in slugs_of(make_container(dataset_metadata=metadata))
+
+
+def test_forced_iid_tag_on_a_grouped_task_is_flagged():
+    metadata = make_dataset_metadata(data_tags=["Non-IID", "Grouped", "ForcedIIDFromTemporal"])
+    assert "meta_tags_contradict_regime" in slugs_of(make_grouped_container(dataset_metadata=metadata))
+
+
+def test_forced_iid_tag_on_an_iid_task_is_not_flagged():
+    metadata = make_dataset_metadata(data_tags=["ForcedIIDFromTemporal"])
+    assert "meta_tags_contradict_regime" not in slugs_of(make_container(dataset_metadata=metadata))
+
+
 def test_non_iid_tags_on_an_iid_task_are_flagged():
     metadata = make_dataset_metadata(data_tags=["Non-IID", "Temporal"])
     assert "meta_tags_contradict_regime" in slugs_of(make_container(dataset_metadata=metadata))
@@ -744,3 +770,179 @@ def test_round_trip_comparison_sees_category_order_but_not_string_storage():
     assert [r.slug for r in _compare_frames(df, reordered, label="dataset")] == ["export_dtype_changed"]
     as_ordered = df.assign(c=df["c"].cat.as_ordered())
     assert "export_dtype_changed" in [r.slug for r in _compare_frames(df, as_ordered, label="dataset")]
+
+
+# --- Format 2: the metric spec and the scoring columns ------------------------------------------------------------
+def make_v2_container(df: pd.DataFrame | None = None, *, spec=None, scoring_columns=(), **task) -> CuratedContainer:
+    df = make_iid_frame() if df is None else df
+    problem_type = task.pop("problem_type", "binary_classification")
+    return CuratedContainer(
+        dataset=df,
+        dataset_metadata=make_dataset_metadata(),
+        task_metadata=PredictiveMLTaskMetadataV2(
+            target_column_name="target",
+            problem_type=problem_type,
+            objective_metric=spec or make_spec(problem_type),
+            scoring_columns=list(scoring_columns),
+            **task,
+        ),
+        experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="Toy split.", splits=make_iid_splits()),
+        uuid="u",
+    )
+
+
+def metric_findings(container: CuratedContainer) -> dict[str, str]:
+    report = run_bundle_checks(container, verbose=False)
+    return {r.slug: r.severity for r in report.results if r.slug.startswith(("task_metric", "task_scoring"))}
+
+
+def _spec(name: str = "roc_auc", **fields) -> MetricSpec:
+    from data_foundry.v2.metrics import METRICS
+
+    definition = METRICS.get(name)
+    base = {
+        "name": name,
+        "kind": definition.kind if definition else "custom",
+        "prediction": definition.prediction if definition else "proba",
+        "greater_is_better": definition.greater_is_better if definition else True,
+        "origin": "source",
+        "reference": "https://example.org/evaluation",
+    }
+    return MetricSpec(**(base | fields))
+
+
+def test_declared_fallback_and_source_metrics_pass():
+    assert metric_findings(make_v2_container()) == {}
+    assert metric_findings(make_v2_container(spec=_spec("roc_auc"))) == {}
+
+
+def test_undeclared_metric_is_an_error():
+    spec = _spec("roc_auc", origin="fallback", reference=None, reason=None)
+    assert metric_findings(make_v2_container(spec=spec)) == {"task_metric_undeclared": "error"}
+
+
+@pytest.mark.parametrize(
+    ("spec", "slug"),
+    [
+        ({"name": "amex_metric"}, "task_metric_unknown"),
+        ({"name": "AUC"}, "task_metric_not_canonical"),
+        ({"name": "rmse"}, "task_metric_problem_type_mismatch"),
+        ({"reference": None}, "task_metric_reference_missing"),
+        ({"origin": "stand_in", "original": "AP@k"}, "task_metric_stand_in_incomplete"),
+        ({"params": {"k": 3}}, "task_metric_unknown_param"),
+        ({"greater_is_better": False}, "task_metric_spec_mismatch"),
+    ],
+)
+def test_metric_spec_errors(spec, slug):
+    assert metric_findings(make_v2_container(spec=_spec(**({"name": "roc_auc"} | spec)))).get(slug) == "error"
+
+
+def test_local_metric_is_a_warning():
+    spec = _spec("max_error", kind="local", prediction="value", greater_is_better=False)
+    df = make_iid_frame()
+    df["target"] = df["feat_num"] * 2
+    found = metric_findings(make_v2_container(df, spec=spec, problem_type="regression"))
+    assert found == {"task_metric_local": "warning"}
+
+
+def test_metric_that_does_not_compute_on_a_split_is_an_error():
+    df = make_iid_frame()
+    df["target"] = pd.Categorical(np.where(np.arange(len(df)) % 3 == 0, "yes", "no"))  # fold 0's test side: all yes
+    found = metric_findings(make_v2_container(df, stratify_on=None))
+    assert found == {"task_metric_not_computable": "error"}
+
+
+@pytest.fixture
+def group_metric(monkeypatch: pytest.MonkeyPatch) -> str:
+    from data_foundry.v2.metrics import METRICS, MetricDef
+
+    def mean_group_accuracy(y_true, y_pred, *, group, **_):
+        frame = pd.DataFrame({"hit": np.asarray(y_true) == np.asarray(y_pred), "g": group})
+        return float(frame.groupby("g")["hit"].mean().mean())
+
+    definition = MetricDef(
+        name="test_mean_group_accuracy",
+        problem_types=("binary_classification",),
+        prediction="label",
+        greater_is_better=True,
+        fn=mean_group_accuracy,
+        implementation="test",
+        definition="mean over groups of the accuracy",
+        kind="custom",
+        inputs=("group",),
+    )
+    monkeypatch.setitem(METRICS, definition.name, definition)
+    return definition.name
+
+
+def _with_era() -> pd.DataFrame:
+    df = make_iid_frame()
+    df["era"] = pd.Categorical([f"e{i % 5}" for i in range(len(df))])
+    return df
+
+
+def _era(name: str, **fields) -> ScoringColumn:
+    return ScoringColumn(**({"column": "era", "role": "group", "used_by": name, "description": "the week"} | fields))
+
+
+def test_metric_with_a_documented_scoring_column_passes(group_metric):
+    spec = _spec(group_metric, inputs={"group": "era"})
+    assert metric_findings(make_v2_container(_with_era(), spec=spec, scoring_columns=[_era(group_metric)])) == {}
+
+
+def test_metric_input_that_models_also_see_is_only_an_info(group_metric):
+    spec = _spec(group_metric, inputs={"group": "era"})
+    assert metric_findings(make_v2_container(_with_era(), spec=spec)) == {"task_metric_input_is_model_input": "info"}
+
+
+def test_metric_without_its_input_is_an_error(group_metric):
+    found = metric_findings(make_v2_container(_with_era(), spec=_spec(group_metric)))
+    assert found["task_metric_input_missing"] == "error"
+
+
+@pytest.mark.parametrize(
+    ("column", "slug"),
+    [
+        ({"description": " "}, "task_scoring_column_undocumented"),
+        ({"role": "weight"}, "task_scoring_column_unused"),
+        ({"column": "feat_cat"}, "task_scoring_column_unused"),
+    ],
+)
+def test_scoring_column_errors(group_metric, column, slug):
+    spec = _spec(group_metric, inputs={"group": "era"})
+    found = metric_findings(make_v2_container(_with_era(), spec=spec, scoring_columns=[_era(group_metric, **column)]))
+    assert found.get(slug) == "error"
+
+
+def test_scoring_column_that_models_use_is_an_error(group_metric):
+    spec = _spec(group_metric, inputs={"group": "era"})
+    container = make_v2_container(_with_era(), spec=spec, scoring_columns=[_era(group_metric)], stratify_on="era")
+    assert metric_findings(container).get("task_scoring_column_is_feature") == "error"
+
+
+def test_placeholder_in_the_metric_reason_is_flagged():
+    spec = _spec("roc_auc", origin="fallback", reference=None, reason="TODO(verify): where we looked")
+    assert "meta_placeholder_left" in slugs_of(make_v2_container(spec=spec))
+
+
+def test_feature_columns_drop_target_group_and_scoring_columns(group_metric):
+    from data_foundry.curation_container import feature_columns
+
+    spec = _spec(group_metric, inputs={"group": "era"})
+    container = make_v2_container(_with_era(), spec=spec, scoring_columns=[_era(group_metric)])
+    assert feature_columns(container) == ["feat_num", "feat_cat"]
+    assert feature_columns(make_grouped_container()) == ["feat_num"]
+
+
+def test_target_transform_that_overflows_is_an_error():
+    """A log transform on a target whose exp overflows is not the scale the target ships on."""
+    df = make_iid_frame()
+    df["target"] = 800.0 + np.arange(len(df)) / len(df)  # exp(800) overflows: not a log target
+    spec = _spec("rmse", target_transform="log")
+    found = metric_findings(make_v2_container(df, spec=spec, problem_type="regression"))
+    assert found.get("task_metric_transform_overflow") == "error"
+    df["target"] = np.log1p(df["feat_num"].abs())
+    found = metric_findings(
+        make_v2_container(df, spec=_spec("rmse", target_transform="log1p"), problem_type="regression")
+    )
+    assert "task_metric_transform_overflow" not in found

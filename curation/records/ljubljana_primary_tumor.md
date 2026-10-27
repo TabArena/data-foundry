@@ -34,6 +34,8 @@ Has a lot of classes, need to see there are enough labels per class or if I need
 
 CC (2026-10-12, Lennart): Kept in TabArena v0.2 after the task-probe review (flag `few_minority`, multiclass). Prostate has 10 rows (3-4 per test fold), colon and thyroid 14 each (4-5). Together they are 13% of the test rows and 22% of a random forest's log loss (1.43 against 2.20 for the class shares). The definition already drops the classes with fewer than 10 rows. Too Small is for a task whose scored units are a handful; one rare class of the source's own labels that does not decide the score is part of the task.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — The 1986-1987 papers report accuracy only; we drop the classes with fewer than 10 rows (MET-2). Original rejected: accuracy. log_loss is the multiclass fallback.
+
 ## Reference
 
 UCI

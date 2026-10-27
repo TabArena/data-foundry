@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary
 
 
 class ConcreteCompressiveStrength(AbstractCuratedDataset):
@@ -73,6 +73,13 @@ class ConcreteCompressiveStrength(AbstractCuratedDataset):
     # Task
     target = "ConcreteCompressiveStrength"
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason=(
+            "Yeh 1998 (closed access) is cited for R^2 of predicted vs measured strength (about 0.91-0.92"
+            " for the ANN) by secondary sources; not read, and R^2 ranks models as RMSE does within a "
+            "fold. rmse is the regression fallback."
+        ),
+    )
     grouping = Grouping(
         on="mix",
         labels="per_sample",

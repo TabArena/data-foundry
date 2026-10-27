@@ -38,6 +38,14 @@ CC: "Real data, preprocessed, information about decoding videos, the same video 
 
 Valid metadata use case / problem!
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — the paper's R2 on the raw time is known only from a dissertation abstract and is not computable on the shipped log target; rmse on log time.
+
+CC (2026-10-21, Lennart): proposal accepted: the fallback rmse on the log transcoding time, not r2 on the raw time.
+
+**Assessment (AI, 2026-10-21):** metric now `Metric.from_context("rmsle", target_transform="log")` instead of the fallback rmse on the log target: transcoding times span orders of magnitude and a scheduler cares about the relative error (the source's R2 on the raw time is not verified, the paper was not read); the target still ships as log, and RMSLE is computed after the inverse, on the original scale (MET-3). Needs a rebuild to reach the container.
+
+CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
+
 ## Reference
 
 @inproceedings{deneke2014video,

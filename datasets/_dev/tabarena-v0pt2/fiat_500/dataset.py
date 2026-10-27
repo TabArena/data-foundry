@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class Fiat500(AbstractCuratedDataset):
@@ -68,6 +68,12 @@ class Fiat500(AbstractCuratedDataset):
     # Task
     target = "price"
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason=(
+            "Kaggle dataset without a competition or paper; the data card says only 'to train myself and test regression "
+            "algorithms', no metric named"
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/automobile_dot_it_used_fiat_500_in_Italy_dataset_filtered.csv")

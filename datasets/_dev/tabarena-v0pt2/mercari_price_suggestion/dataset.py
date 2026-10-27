@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class MercariPriceSuggestion(AbstractCuratedDataset):
@@ -60,7 +60,7 @@ class MercariPriceSuggestion(AbstractCuratedDataset):
     curation_comments = """
         We start from the Kaggle competition dataset.
 
-        - We log1p scale the target to match the target metric of the competition by default RMSE.
+        - We log1p scale the target; the metric is the competition's RMSLE on the price, computed after the inverse (`target_transform="log1p"`).
         - The dataset was solved by Kaggle experts by tabular models and a lot of custom string preprocessing. So it is a great use case to test encoding pipelines! The dataset also has mostly string data.
         - The task was treated and solved as an IID task on Kaggle.
         - We replace "No description yet" with NaN.
@@ -70,6 +70,14 @@ class MercariPriceSuggestion(AbstractCuratedDataset):
     # Task
     target = "price"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmsle",
+        original="Root Mean Squared Logarithmic Error",
+        reference="https://www.kaggle.com/competitions/mercari-price-suggestion-challenge/overview/evaluation",
+        definition="sqrt(mean((log1p(p) - log1p(a))^2)) of the price in US dollars, computed after the inverse of the "
+        "shipped log1p(price)",
+        target_transform="log1p",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "train.tsv", sep="\t")

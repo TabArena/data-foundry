@@ -52,6 +52,10 @@ Thus, we reduce the dataset only to the classes which exist for all the three bi
 
 CC (2026-10-01, Lennart): Back to IID splits on the full data (all 7 cover types, all 4 areas, 581,012 cells), as in Blackard & Dean (1999), who drew training and validation cells at random from the pooled areas. The leave-one-area-out split had only 3 groups, so it was three domain-shift tests rather than a grouped task, and it needed the frame cut to 3 cover types. IID is optimistic for land far from mapped cells: the cover maps are made of homogeneous stands of 2 to 80 ha, about 20 to 900 cells each, so a random test cell usually has cells of its stand in training; the data has no coordinates to split by.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — Blackard & Dean 1999 report accuracy, but name no costs between the 7 types and two types hold 85% of the cells; log loss keeps the probabilities (MET-6, MET-8).
+
+CC (2026-10-21, Lennart): Fallback log loss, not the paper's accuracy.
+
 ## Reference
 
 https://www.sciencedirect.com/science/article/abs/pii/S0168169999000460

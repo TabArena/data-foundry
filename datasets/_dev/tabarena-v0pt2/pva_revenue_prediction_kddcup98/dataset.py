@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 DATE_COLUMNS = [
     "ADATE_2",
@@ -192,6 +192,13 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
     # Task
     target = "TARGET_B"
     problem_type = "binary_classification"
+    metric = Metric.stand_in(
+        "roc_auc",
+        original="Net revenue of the mailing: sum over mailed donors of (TARGET_D - 0.68)",
+        reason="The original scores the donation amount (TARGET_D) and a mail/no-mail decision; our task is changed to the binary response and TARGET_D is dropped. Closest computable stand-in is roc_auc on response.",
+        reference="https://kdd.ics.uci.edu/databases/kddcup98/epsilon_mirror/cup98doc.txt",
+        definition="Original: total net profit = sum_{i mailed}(donation_i - $0.68), mailing decided by the model; stand-in: ROC AUC of TARGET_B (responded).",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "cup98LRN.txt")

@@ -66,6 +66,18 @@ CC (2026-10-06, Lennart): Kept after the task-probe review (flag `one_feature`: 
 
 CC (2026-10-14, Lennart): Drop the 37 rows whose last sale is the sale itself and the 2,480 whose listing predates their last sale (the 37 are among them); keep listings older than 6 months. 39,048 rows.
 
+CC (2026-10-21, Lennart): the declared metric documents the original use case's metric; overrule it only when it is biased or wrong (evidence from the paper); keep the note of the original metric (TP-6 amended).
+
+**Assessment (AI, 2026-10-21):** metric stays the default RMSE: the competition scored RMSLE (Kaggle API) and the target is stored as log1p, so RMSE on it is RMSLE. The notes now say so. Needs a rebuild to reach the container (notes only).
+
+CC (2026-10-21, Lennart): We want to keep real repeats, as houses can be sold several times; drop only exact copies of one sale.
+
+**Assessment (AI, 2026-10-21):** Of the 63 homes that appear more than once (130 rows), 51 pairs give the same sold price a median 61 Kaggle IDs apart: one sale scraped twice; the newest entry stays. The other 28 rows (sales at another price, some of them other units at an address without a unit number) now stay instead of only the newest entry; 39,060 rows. The split also violated SPLIT-14 (Must): with min_train_fraction=0.25 the oldest of the three quarter-size windows trained on 25% of the rows. Now three windows of a sixth of the rows (6,510) from the newest half, training on 50%, 67% and 83%. Dataset check: 0 errors, 0 warnings.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — RMSLE, the competition's evaluation metric, as RMSE on log1p(Sold Price).
+
+**Assessment (AI, 2026-10-21):** metric now `Metric.source("rmsle", target_transform="log1p")` instead of rmse on the log1p target: the competition's RMSLE on the sale price, computed after the inverse of the shipped log1p (MET-3); the score is the same number as before. Needs a rebuild to reach the container.
+
 ## Reference
 
 Kaggle

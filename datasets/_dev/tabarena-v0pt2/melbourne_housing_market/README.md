@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: melbourne_housing_market
 container_format: 2
-checksum: v2:6d58d4bd70e971ed80ce86d5394ba3f0979d184b9900d499f066ba6c6bb6889e
+checksum: v2:d5c544887cd789c92172e54d4103d13aa19bb2ea7090c6c33f4ec045620ddd0f
 build: null
 build_stale: false
 data:
@@ -18,7 +18,9 @@ data:
 task:
   target: log_price
   problem_type: regression
-  metric: rmse
+  metric: rmsle
+  metric_origin: context
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: Date
@@ -32,6 +34,8 @@ splits:
   random_state: 4267
   time_horizon: 3
   time_horizon_unit: weeks
+  time_gap: null
+  time_gap_unit: null
   n_train:
     min: 11753
     max: 20147
@@ -56,34 +60,33 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `log_price`, scored with `rmse` on temporal splits by `Date`. 21,266 rows and 19 features. Source: Kaggle (2018).
+Regression of `log_price`, scored with `rmsle` on temporal splits by `Date`. 21,266 rows and 19 features. Source: Kaggle (2017).
 
-Not built yet. The current definition gives checksum `v2:6d58d4bd70e971ed80ce86d5394ba3f0979d184b9900d499f066ba6c6bb6889e`.
+Not built yet. The current definition gives checksum `v2:d5c544887cd789c92172e54d4103d13aa19bb2ea7090c6c33f4ec045620ddd0f`.
 
 ## In brief
 
-**Question.** At what price will a Melbourne property listed for auction sell?
+**Question.** Before the auction, at what price will a Melbourne property sell, for a property that sells?
 
-**Use case.** When a property is listed for auction, a price model refit on all earlier sales estimates its sale price, for example for a buyer or an agent setting expectations.
+**Use case.** Before the auction of a Melbourne property, a price model fitted on all earlier sales estimates the price it sells for, for example for a buyer or an agent setting expectations. The task covers the properties that sell: a property passed in at auction has no sale price.
 
 **One row.** One sale of a property listed for auction in Melbourne, January 2016 to March 2018, from the weekly result sheets of Domain.com.au (21,266 sales).
 
 **Predicted.** The sale price, as the natural log of Australian dollars.
 
-**Known at prediction time.** The address, suburb, postcode, council area, region, coordinates, distance to the centre and the suburb's number of properties; the property type, rooms, agent and auction date; and six attributes scraped from realestate.com.au (bedrooms, bathrooms, car spaces, land and building size, year built).
+**Known at prediction time.** The address, suburb, postcode, council area, region, distance to the centre and the suburb's number of properties; the property type, rooms, agent and auction date; and, from a lookup on realestate.com.au made after the sale, the coordinates and six attributes (bedrooms, bathrooms, car spaces, land and building size, year built), blank for the sales before April 2017, looked up months later.
 
-**What the test data stands for.** Nine test windows of three consecutive weekly sheets, from August 2017 to March 2018; each trains on all earlier sales.
+**What the test data stands for.** Nine test windows of three consecutive weekly sheets, from August 2017 to March 2018; each trains on all earlier sales and predicts up to 7 calendar weeks ahead.
 
-**Our changes to the source.** We drop results without a sale price (passed in, vendor bid) and the auction outcome, known only after the auction, and test on later weekly sheets instead of random sales.
+**Our changes to the source.** We drop results without a sale price (passed in, vendor bid) and the auction outcome, known only after the auction, blank the attributes looked up months after the sale, and test on later weekly sheets instead of random sales.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The listing and the earlier sales are what a price model has before the auction, and later sheets stand for the coming auctions. The scraped attributes were looked up after the sale; blanking them for the 495 sales of 2016 whose bedroom count differs from the sheet changes the error by 0.0004.
+> **Use case fit: direct (the rows, features and split mirror the use case).** The listing and the earlier sales are what a price model has before the auction, the rows are the properties that sell, as the use case names, and later sheets stand for the coming auctions. The scraped attributes were looked up days or weeks after the sale (the weekly runs); those of the earlier sales, looked up months later, are blanked.
 
 ## Files in this folder
 
 | file | what it is |
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
-| [`explore.ipynb`](explore.ipynb) | The workbench for looking at the data (`ds = workbench()`), committed without outputs. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/melbourne_housing_market.md`](../../../../curation/records/melbourne_housing_market.md)
@@ -95,7 +98,8 @@ Not built yet. The current definition gives checksum `v2:6d58d4bd70e971ed80ce86d
 `dataset.py` reads its raw files from `local-data-warehouse/melbourne_housing_market/`. To get them:
 
 ```text
-We download the Kaggle dataset anthonypino/melbourne-housing-market (last updated 2018-10-14). It holds two
+We download version 27 of the Kaggle dataset anthonypino/melbourne-housing-market (2018-10-14, the current
+one; the md5s below identify its files). It holds two
 files: Melbourne_housing_FULL.csv (34,857 rows, 21 columns; md5 06cc531612b8261e0c594c5085e3dc30), which the
 definition uses, and MELBOURNE_HOUSE_PRICES_LESS.csv (63,023 rows, 13 columns; md5
 cc467c28044d01770d8784cf287d1b6e), read only for the evidence of two cleaning steps.
@@ -120,7 +124,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | Kaggle: https://www.kaggle.com/datasets/anthonypino/melbourne-housing-market |
-| year | 2018 |
+| year | 2017 |
 | domain | business & marketing |
 | license | CC BY-NC-SA 4.0 |
 | data_tags | Non-IID, Temporal, Spatial |
@@ -128,9 +132,19 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 21,266 x 20 |
 | task.target | log_price |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | rmsle |
 | task.split_regime | temporal_non_iid |
 | task.time_on | Date |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `rmsle` (standard; takes value; lower is better) |
+| origin | context: obvious from the task: the source defines no metric |
+| definition | sqrt(mean((log1p(y) - log1p(p))^2)); y and p non-negative |
+| reason | A Kaggle dataset without a task or metric. For a sale price the error that matters is relative to the price, so RMSLE on the price. |
+| target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
 
 <details>
 <summary>Feature types: 6 categorical, 1 string, 1 datetime</summary>
@@ -162,33 +176,34 @@ The first 5 of 21,266 rows of the final frame (the oldest rows: the frame is sor
 
 | log_price | Suburb | Address | Rooms | Type | Agent | Date | Distance | Postcode | Bedroom2 | Bathroom | Car |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 14.002 | Surrey Hills | 999A Riversdale Rd | 3 | house | Fletchers | 2016-01-28 00:00:00 | 11.2 | 3127 | 3 | 1 | 2 |
-| 13.6085 | Surrey Hills | 1/10 Florence Rd | 2 | unit | Fletchers | 2016-01-28 00:00:00 | 11.2 | 3127 | 2 | 1 | 2 |
-| 13.7046 | Ascot Vale | 42 Archer Av | 3 | house | Nelson | 2016-02-04 00:00:00 | 5.9 | 3032 | nan | nan | nan |
-| 13.5606 | Bentleigh East | 1/9 Francesco St | 3 | townhouse | Stockdale | 2016-02-04 00:00:00 | 13.9 | 3165 | nan | nan | nan |
-| 13.2177 | Port Melbourne | 404/101 Bay St | 2 | unit | Buxton | 2016-02-04 00:00:00 | 3.8 | 3207 | 2 | 1 | 1 |
+| 14.002 | Surrey Hills | 999A Riversdale Rd | 3 | house | Fletchers | 2016-01-28 00:00:00 | 10.2 | 3127 | nan | nan | nan |
+| 13.6085 | Surrey Hills | 1/10 Florence Rd | 2 | unit | Fletchers | 2016-01-28 00:00:00 | 10.2 | 3127 | nan | nan | nan |
+| 13.699 | Yarraville | 29 Newcastle St | 2 | house | hockingstuart | 2016-02-04 00:00:00 | 6.3 | 3013 | nan | nan | nan |
+| 13.6831 | Oakleigh South | 4 Montrose St | 4 | house | Buxton | 2016-02-04 00:00:00 | 15.5 | 3167 | nan | nan | nan |
+| 13.377 | Fawkner | 220 McBryde St | 3 | house | YPA | 2016-02-04 00:00:00 | 13.1 | 3060 | nan | nan | nan |
 
 ## Curation notes
 
 We start with Melbourne_housing_FULL.csv of the Kaggle dataset anthonypino/melbourne-housing-market: results of properties scheduled for auction in Melbourne (January 2016 to March 2018) from the weekly result sheets of Domain.com.au, with attributes scraped from realestate.com.au.
 
-- Prediction point: a property is listed for auction, and a price model refit on all earlier sales predicts its sale price from the listing and the auction date.
-- Version: the dataset's other file, MELBOURNE_HOUSE_PRICES_LESS.csv (read only for the decision tables), holds more results but not the scraped attributes. We use the full file for them: the RMSE in log price is 0.183 with them and 0.211 with the other file's columns only (LightGBM with fixed parameters on the shipped windows).
-- Coverage: before 27 May 2017 the full file holds only the inner suburbs (decision table); all test windows lie later. We keep the earlier rows: training only on the sales from 27 May 2017 raises the RMSE from 0.183 to 0.188.
+- Prediction point: before the auction, for a property that sells. A price model fitted on all earlier sales predicts the sale price from the listing and the auction date; a property passed in has no sale price and is not in the task.
+- Version: the dataset's other file, MELBOURNE_HOUSE_PRICES_LESS.csv (read only for the decision tables), holds more results but not the scraped attributes. We use the full file for them: the RMSE in log price is 0.182 with them, 0.200 without them and 0.206 with the other file's columns only (LightGBM with fixed parameters on the shipped windows, 3 seeds; worse in 9 of 9 windows; measured before the blanking of the April 2017 lookup, which adds 0.001).
+- Coverage: before 27 May 2017 the full file holds only the inner suburbs (decision table); all test windows lie later. We keep the earlier rows: training only on the sales from 27 May 2017 raises the RMSE from 0.182 to 0.185.
 - We keep the results with a sale price (S, SP, SA) and drop the passed-in (PI) and vendor-bid (VB) results, whose price is the highest or the vendor's bid (data card; decision table). We then drop Method, as the result of the auction is known only after it.
 - The 787 results dated 6 January 2018 are the sheet of 16 December 2017, read again in the holiday break (decision table); we date them 16 December 2017.
 - Repeated reports within 60 days: a sale reported again at the same price keeps its first report, and an address reported at two prices loses both reports. Addresses sold twice 63-679 days apart stay, as the earlier sale is history under the temporal split.
-- The scraped attributes were taken after the sale: six sales of 2016 show a construction year of 2017 or 2018, so we set all six scraped attributes of these rows to missing. Other late lookups stay: blanking the scraped values of the 495 sales of 2016 whose Bedroom2 differs from the sheet's Rooms changes the RMSE by +0.0004.
+- Attributes looked up after the sale (LEAK-7, LEAK-10; Lennart, 2026-10-21): the six attributes from realestate.com.au (Bedroom2, Bathroom, Car, Landsize, BuildingArea, YearBuilt) and the coordinates were looked up after the sale (forum thread 53664, step 4). The sales up to the sheet of 8 April 2017 were looked up at once, by 10 April 2017 (thread 30748: "It may be difficult" on 28 March, "I've added some more info to the dataset including landsize, bedroom, bathroom, carspace" on 10 April), up to 15 months after the sale; from the sheet of 22 April 2017 on, the uploader's weekly runs looked them up. We blank the six attributes of the 7,578 sales before 10 April 2017 (6,065 had them), so a missing value follows the date, not a change to the house. Bedroom2 equals Rooms in 84-88% of the sales of each month from April to September 2016, against 99.2-100% of each month from November 2016 on and 98.9-100% of each test window; the September 2017 snapshot holds the same values for the 2,728 test rows up to 23 September 2017. Blanking raises the RMSE by 0.0011 to 0.0016 over 3 seeds (mean 0.1813 to 0.1826, 6-7 of 9 windows worse; LightGBM with fixed parameters). A sale with a construction year after its sale year (a later building; six sales of 2016) also loses the six. The test rows keep the values of the weekly runs, recorded days or weeks after the sale; only Bedroom2 is checked against a value from the sale. The coordinates stay for every row, as a location does not change.
 - Impossible values to missing: YearBuilt before 1835, the founding of Melbourne, and BuildingArea, Bathroom and Bedroom2 of 0. Landsize 0 stays, as most of these rows are units without land of their own.
-- Anomaly: 92 sales give a BuildingArea of 1-29 square metres; kept.
-- Anomaly: the uploader's processing changed with the sheet of 27 May 2017, and Distance differs before and after for 140 of the 142 suburbs in both periods. Kept: setting each suburb's Distance to its later value changes the RMSE by -0.0004.
+- BuildingArea to missing where it cannot be (86 of 8,285 values): below 10 square metres (47), above 1,000 where it also exceeds the lot or 200 per room (7), and a house's area equal to its land size (32). Anomaly: 45 values of 10-29 may be in squares (9.29 square metres, an Australian unit); circumstantial, kept.
+- One Distance per suburb: the uploader's suburb table changed with the sheet of 27 May 2017 (140 of the 142 suburbs in both periods get a new value, Airport West 13.5 to 10.4 km), so each suburb gets the later value, the one every test window uses. The two rows without a suburb lookup (the "Fawkner Lot" row and one Footscray row) get their suburb's postcode, council area, region and property count.
+- Anomaly: 11 sheet dates (1,907 sales) are not a Saturday: nine lie 1-3 days after one, two are Thursdays (28 January and 4 February 2016); the other file has the same dates. Kept, as the windows count sheets, not days.
 - Spelling variants of a suburb or agency get the file's most frequent spelling.
 - Renamed: SellerG to Agent, Lattitude and Longtitude to Latitude and Longitude. The Type codes become the data card's words (house, unit, townhouse). Postcode is a category, Address text and Date a date. The target is log_price, the natural log of the price in Australian dollars.
 - Note: melbourne_housing_snapshot is a September 2017 subset of this file.
 
 ## Splits
 
-A price model refit after every three weekly result sheets predicts the sales of the next three: 9 test windows of 3 consecutive auction dates of the file (one weekly sheet each), from 3-17 March 2018 back to 12-26 August 2017, newest first. Each window trains on all earlier sales (55-95% of the rows), without a gap: a price is published in the sheet of its week. An IID task of this size would get 3 x 3 splits. Calendar windows do not fit the file: it has no sheet between 16 December 2017 and 20 January 2018 and 18 sales on 20 and 27 January 2018, so a monthly window would test January 2018 on 18 sales and a four-week one on 9. Three sheets put them in a window of 93 sales (20 January to 3 February 2018); the other windows hold 868-1,550.
+Before the auction, a price model fitted once per window on all earlier sales predicts the sales of the next three weekly result sheets: 9 test windows of 3 consecutive auction dates of the file (one weekly sheet each), from 3-17 March 2018 back to 12-26 August 2017, newest first. Each window trains on all earlier sales (55-95% of the rows), without a gap: a price is published in the sheet of its week. The horizon is three sheets, up to 7 calendar weeks: the file lacks the sheets of 10 June, 5 August and 2 December 2017 and 13 January 2018, so a window can span 4 calendar weeks, and the window of 20 January to 3 February 2018 trains on sales up to 16 December 2017. An IID task of this size would get 3 x 3 splits. Calendar windows do not fit the file: it has no sheet between 16 December 2017 and 20 January 2018 and 18 sales on 20 and 27 January 2018, so a monthly window would test January 2018 on 18 sales and a four-week one on 9. Three sheets put them in a window of 93 sales (20 January to 3 February 2018); the other windows hold 868-1,550. Recording delay (SPLIT-10; measured 2026-10-21 as ames_housing did): the newest sheets are not short. Every weekly sheet of the full file from August 2017 to 17 March 2018 holds as many sales as the same sheet of the companion file, read up to October 2018 (558 of 558 on 17 March 2018), so no sale reached a sheet after it was first read. The three sheets of March 2018 hold 1,121 sales, against 1,174 in the same three sheets of 2017 (companion file, all suburbs), and the newest window's mean residual log price is +0.009 (one LightGBM fit per window), inside the range of the other windows (-0.013 to +0.022). No gap.
 
 9 repeat(s) x 1 fold(s) with seed 4267; train 11,753 to 20,147 rows, test 93 to 1,550 rows. Prediction horizon: 3 weeks.
 
@@ -285,26 +300,26 @@ The file has no sheet between 16 December 2017 and 20 January 2018 and 18 sales 
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| CouncilArea | category | 2 | 0.01 | 33 | Darebin City Council, Boroondara City Council, Moreland City Council, Glen Eira… |
-| Regionname | category | 2 | 0.01 | 8 | Northern Metropolitan, Southern Metropolitan, Western Metropolitan, Eastern Met… |
 | Suburb | category | 0 | 0 | 340 | Reservoir, Bentleigh East, Richmond, Preston, Glenroy, Brunswick, Essendon, Nor… |
 | Type | category | 0 | 0 | 3 | house, unit, townhouse |
 | Agent | category | 0 | 0 | 302 | Nelson, Barry, Jellis, hockingstuart, Ray, Buxton, Marshall, Biggin, Brad, Wood… |
-| Postcode | category | 1 | 0 | 208 | 3073, 3046, 3020, 3121, 3165, 3040, 3058, 3163, 3012, 3204 |
+| Postcode | category | 0 | 0 | 208 | 3073, 3046, 3020, 3121, 3165, 3040, 3058, 3163, 3012, 3204 |
+| CouncilArea | category | 0 | 0 | 33 | Darebin City Council, Boroondara City Council, Moreland City Council, Glen Eira… |
+| Regionname | category | 0 | 0 | 8 | Northern Metropolitan, Southern Metropolitan, Western Metropolitan, Eastern Met… |
 | Date | datetime64\[ns\] | 0 | 0 | 78 | 2017-10-28 00:00:00, 2018-03-17 00:00:00, 2017-12-09 00:00:00, 2018-02-24 00:00… |
-| BuildingArea | float64 | 12981 | 61.04 | 586 | 120.0, 100.0, 115.0, 140.0, 130.0, 110.0, 150.0, 112.0, 160.0, 104.0 |
-| YearBuilt | float64 | 11850 | 55.72 | 142 | 1970.0, 1960.0, 1950.0, 1980.0, 1900.0, 2000.0, 1920.0, 1930.0, 1975.0, 1910.0 |
-| Landsize | float64 | 7148 | 33.61 | 1408 | 0.0, 650.0, 697.0, 534.0, 585.0, 700.0, 604.0, 400.0, 530.0, 590.0 |
-| Car | float64 | 5194 | 24.42 | 12 | 2.0, 1.0, 0.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0 |
-| Bathroom | float64 | 4951 | 23.28 | 9 | 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 9.0, 8.0 |
-| Bedroom2 | float64 | 4933 | 23.2 | 12 | 3.0, 2.0, 4.0, 5.0, 1.0, 6.0, 7.0, 8.0, 10.0, 9.0 |
-| Latitude | float64 | 4774 | 22.45 | 9733 | -37.8361, -37.8424, -37.7969, -37.7818, -37.7956, -37.8573, -37.7968, -37.7844,… |
-| Longitude | float64 | 4774 | 22.45 | 10407 | 144.9966, 144.991, 144.985, 145.0043, 144.9886, 144.9825, 144.9679, 145.0173, 1… |
-| Propertycount | float64 | 2 | 0.01 | 335 | 21650.0, 8870.0, 10969.0, 14949.0, 14577.0, 11918.0, 9264.0, 11364.0, 7485.0, 1… |
-| log_price | float64 | 0 | 0 | 2814 | 13.3047, 13.3847, 13.5924, 13.8155, 13.9978, 13.7102, 13.9108, 14.0779, 13.5278… |
-| Distance | float64 | 1 | 0 | 213 | 11.2, 13.8, 14.7, 10.5, 5.2, 8.4, 7.8, 13.9, 9.2, 11.4 |
+| BuildingArea | float64 | 16346 | 76.86 | 512 | 120.0, 140.0, 115.0, 110.0, 130.0, 150.0, 112.0, 100.0, 132.0, 160.0 |
+| YearBuilt | float64 | 15661 | 73.64 | 129 | 1970.0, 1960.0, 1980.0, 1950.0, 2000.0, 1975.0, 1990.0, 2010.0, 1900.0, 1920.0 |
+| Landsize | float64 | 13215 | 62.14 | 1250 | 0.0, 650.0, 697.0, 534.0, 585.0, 400.0, 530.0, 448.0, 700.0, 604.0 |
+| Car | float64 | 11267 | 52.98 | 12 | 2.0, 1.0, 3.0, 4.0, 0.0, 5.0, 6.0, 8.0, 7.0, 10.0 |
+| Bathroom | float64 | 11006 | 51.75 | 8 | 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 9.0, 8.0 |
+| Bedroom2 | float64 | 10998 | 51.72 | 11 | 3.0, 4.0, 2.0, 5.0, 1.0, 6.0, 7.0, 8.0, 10.0, 16.0 |
+| Latitude | float64 | 4774 | 22.45 | 9733 | -37.8361, -37.8424, -37.7969, -37.7844, -37.8573, -37.7956, -37.7818, -37.7968,… |
+| Longitude | float64 | 4774 | 22.45 | 10407 | 144.9966, 144.991, 144.985, 145.0043, 144.9886, 144.9825, 145.0026, 144.9911, 1… |
+| log_price | float64 | 0 | 0 | 2814 | 13.3047, 13.3847, 13.5924, 13.8155, 13.7102, 13.9978, 13.9108, 13.4588, 14.0779… |
+| Distance | float64 | 0 | 0 | 168 | 10.5, 13.8, 12.0, 6.2, 8.4, 5.3, 11.2, 5.2, 2.4, 10.4 |
+| Propertycount | float64 | 0 | 0 | 335 | 21650.0, 8870.0, 10969.0, 14949.0, 14577.0, 11918.0, 9264.0, 11364.0, 7485.0, 1… |
 | Rooms | int64 | 0 | 0 | 12 | 3, 2, 4, 1, 5, 6, 7, 8, 10, 9 |
-| Address | string | 0 | 0 | 21089 | 5 Charles St, 14 James St, 5 Margaret St, 13 George St, 53 William St, 7 Church… |
+| Address | string | 0 | 0 | 21089 | 5 Charles St, 13 George St, 14 James St, 5 Margaret St, 53 William St, 7 Church… |
 
 </details>
 
@@ -323,16 +338,16 @@ The file has no sheet between 16 December 2017 and 20 January 2018 and 18 sales 
 |---|---|---|---|---|---|
 | Rooms | 21266 | 2.96788 | 0.921439 | 1 | 16 |
 | log_price | 21266 | 13.7067 | 0.494303 | 11.6263 | 15.8502 |
-| Distance | 21265 | 11.6798 | 7.01586 | 0 | 48.1 |
-| Bedroom2 | 16333 | 3.02161 | 0.910566 | 1 | 16 |
-| Bathroom | 16315 | 1.55336 | 0.666466 | 1 | 9 |
-| Car | 16072 | 1.70041 | 0.980758 | 0 | 18 |
-| Landsize | 14118 | 559.27 | 1595.73 | 0 | 89030 |
-| BuildingArea | 8285 | 155.111 | 502.263 | 1 | 44515 |
-| YearBuilt | 9416 | 1966.99 | 35.4811 | 1850 | 2018 |
+| Distance | 21266 | 11.3113 | 7.13921 | 0 | 48.1 |
+| Bedroom2 | 10268 | 3.17257 | 0.891842 | 1 | 16 |
+| Bathroom | 10260 | 1.61365 | 0.672847 | 1 | 9 |
+| Car | 9999 | 1.82138 | 1.00464 | 0 | 18 |
+| Landsize | 8051 | 644.134 | 1928.95 | 0 | 89030 |
+| BuildingArea | 4920 | 154.863 | 78.3529 | 11 | 999 |
+| YearBuilt | 5605 | 1971.99 | 33.4559 | 1860 | 2018 |
 | Latitude | 16492 | -37.8049 | 0.0948635 | -38.1904 | -37.3978 |
 | Longitude | 16492 | 144.994 | 0.125682 | 144.424 | 145.526 |
-| Propertycount | 21264 | 7559.18 | 4546.11 | 83 | 21650 |
+| Propertycount | 21266 | 7559.07 | 4545.93 | 83 | 21650 |
 
 </details>
 
@@ -344,9 +359,9 @@ The file has no sheet between 16 December 2017 and 20 January 2018 and 18 sales 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | Address | 1 | 5 Charles St | 4 | 0.02 |
-| Address | 2 | 14 James St | 3 | 0.01 |
-| Address | 3 | 5 Margaret St | 3 | 0.01 |
-| Address | 4 | 13 George St | 3 | 0.01 |
+| Address | 2 | 13 George St | 3 | 0.01 |
+| Address | 3 | 14 James St | 3 | 0.01 |
+| Address | 4 | 5 Margaret St | 3 | 0.01 |
 | Address | 5 | 53 William St | 3 | 0.01 |
 | Agent | 1 | Nelson | 2055 | 9.66 |
 | Agent | 2 | Barry | 1941 | 9.13 |
@@ -368,9 +383,9 @@ The file has no sheet between 16 December 2017 and 20 January 2018 and 18 sales 
 | Postcode | 3 | 3020 | 449 | 2.11 |
 | Postcode | 4 | 3121 | 392 | 1.84 |
 | Postcode | 5 | 3165 | 379 | 1.78 |
-| Regionname | 1 | Northern Metropolitan | 6401 | 30.1 |
+| Regionname | 1 | Northern Metropolitan | 6402 | 30.1 |
 | Regionname | 2 | Southern Metropolitan | 6100 | 28.68 |
-| Regionname | 3 | Western Metropolitan | 4726 | 22.22 |
+| Regionname | 3 | Western Metropolitan | 4727 | 22.23 |
 | Regionname | 4 | Eastern Metropolitan | 2521 | 11.85 |
 | Regionname | 5 | South-Eastern Metropolitan | 1137 | 5.35 |
 | Suburb | 1 | Reservoir | 591 | 2.78 |

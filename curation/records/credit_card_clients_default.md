@@ -34,6 +34,8 @@ Lennart: Temporal impact can likely be ignored with these features
 
 Andrej: Seems fine
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — Yeh & Lien 2009 score the lift chart's area ratio, which equals 2 x ROC AUC - 1.
+
 ## Reference
 
 The comparisons of data mining techniques for the predictive accuracy of probability of default of credit card clients

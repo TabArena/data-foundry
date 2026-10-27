@@ -2,22 +2,24 @@
 report_format: data-foundry-report-v2
 unique_name: house_sales
 container_format: 2
-checksum: v2:55d7d8e7d76005ead16ec7a59b60f5478831e3609f47f29c5728db25152a04bc
+checksum: v2:8e58088d6a95e4d0769cfb130b5b3849d293bcc49c942eb0991aafd56f048df8
 build: null
 build_stale: false
 data:
-  n_rows: 20967
-  n_features: 19
+  n_rows: 20499
+  n_features: 20
   dtypes:
-    category: 1
+    category: 3
     datetime64[ns]: 1
-    float64: 7
-    int64: 11
+    float64: 9
+    int64: 8
   n_test_dataset_rows: null
 task:
   target: log_price
   problem_type: regression
-  metric: rmse
+  metric: rmsle
+  metric_origin: context
+  scoring_columns: null
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: date
@@ -31,12 +33,14 @@ splits:
   random_state: 4267
   time_horizon: 3
   time_horizon_unit: weeks
+  time_gap: 1
+  time_gap_unit: weeks
   n_train:
-    min: 11253
-    max: 19402
+    min: 10653
+    max: 18515
   n_test:
-    min: 659
-    max: 1565
+    min: 643
+    max: 1518
 bundle_checks:
   ok: true
   errors: []
@@ -45,6 +49,9 @@ bundle_checks:
   - dataset_conflicting_duplicate_rows
   accepted: {}
 decisions:
+- Sales the appraiser judged non-representative or questionable, and sales whose price
+  is not the house's, dropped
+- '`sale_condition` from the sale warnings the parties know before the price'
 - House features rebuilt as of each sale from the assessor's change log
 - The file's house features are the assessor's record as of 18-19 July 2015
 - 'Sales of May 2015 dropped: the sales list was extracted mid-month'
@@ -55,34 +62,33 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `log_price`, scored with `rmse` on temporal splits by `date`. 20,967 rows and 19 features. Source: GOV Website (2015).
+Regression of `log_price`, scored with `rmsle` on temporal splits by `date`. 20,499 rows and 20 features. Source: GOV Website (2015).
 
-Not built yet. The current definition gives checksum `v2:55d7d8e7d76005ead16ec7a59b60f5478831e3609f47f29c5728db25152a04bc`.
+Not built yet. The current definition gives checksum `v2:8e58088d6a95e4d0769cfb130b5b3849d293bcc49c942eb0991aafd56f048df8`.
 
 ## In brief
 
 **Question.** What price will a house in King County, Washington, sell for?
 
-**Use case.** An automated valuation model, as lenders or property sites run, estimates a house's price on the day it sells from the county assessor's record and its location, trained on all earlier sales.
+**Use case.** The county assessor's mass appraisal, or an automated valuation model that works from public records, estimates the price a house sells for, given the conditions of the sale the parties declare (such as a short sale or a sale between relatives), from the assessor's record of the house on the sale day and its location, before the sale is recorded, trained on the sales recorded earlier.
 
-**One row.** One sale of a house in King County, Washington (the Seattle area), May 2014 to April 2015 (20,967 sales).
+**One row.** One recorded sale of a house in King County, Washington (the Seattle area), May 2014 to April 2015 (20,607 sales).
 
 **Predicted.** The sale price, on a log scale; prices range from $75,000 to $7.7 million.
 
-**Known at prediction time.** The sale date, the location (coordinates and ZIP code) and the assessor's record of the house on the sale day: living, basement and lot area, bedrooms, bathrooms, floors, year built and renovated, grade and condition. A view index, waterfront and the neighbours' areas are as of July 2015.
+**Known at prediction time.** The sale date, the location (coordinates and ZIP code), the assessor's record of the house on the sale day (areas, rooms, floors, year built and renovated, grade, condition) and the sale's declared condition from the county's sale warnings, such as a short sale. A view index, waterfront and the neighbours' areas are as of July 2015. The assessed value and the previous sale price are not included.
 
-**What the test data stands for.** Each test window is three weeks of sales, nine windows from late October 2014 to April 2015, newest first; training is all earlier sales.
+**What the test data stands for.** Each test window is three weeks of sales, nine windows from late October 2014 to April 2015, newest first; training is all sales up to a week before the window.
 
-**Our changes to the source.** The file holds the assessor's record of July 2015, after every sale; we rebuild each house as of its sale day from the county's change log. We drop May 2015, which the extract cut short, and split by sale date.
+**Our changes to the source.** We rebuild each house as of its sale day from the county's change log (the file holds the record of July 2015), add the sale's declared condition, drop the 360 sales the appraiser judged non-representative or questionable with the price in view and May 2015, which the extract cut short, and split by sale date with a one-week gap for the recording of a sale.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The features describe the house as it was sold, and the windows follow a model refit every three weeks. A few values (view, waterfront, neighbours' areas) are still from July 2015, and the 1,225 sales the county flags as changed since the sale stay as noise.
+> **Use case fit: direct (the rows, features and split mirror the use case).** The features are the assessor's record on the sale day, which a mass appraisal works from, and the conditions declared at the sale. A small remnant from July 2015 stays: view, waterfront and the neighbours' areas changed after the sale for about 145 rows (masking them: RMSE 0.2147 against 0.2132), and the 1,206 sales the county flags as changed since the sale stay as noise.
 
 ## Files in this folder
 
 | file | what it is |
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
-| [`explore.ipynb`](explore.ipynb) | The workbench for looking at the data (`ds = workbench()`), committed without outputs. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/house_sales.md`](../../../../curation/records/house_sales.md)
@@ -97,9 +103,9 @@ Not built yet. The current definition gives checksum `v2:55d7d8e7d76005ead16ec7a
 kc_house_data.csv is a cut of the sales and property records of the King County Department of Assessments
 (21,386 of its 21,613 rows match a recorded sale on parcel, date and price), first distributed with the
 University of Washington's Machine Learning Specialization on Coursera (2015; course-2/kc_house_data.gl.zip in
-https://github.com/learnml/machine-learning-specialization holds the same table).
+https://github.com/learnml/machine-learning-specialization is dated 2015-11-06; its contents not checked).
 
-We download kc_house_data.csv from Kaggle (21,613 rows; md5 b1e7bdf4f3e61792c0979a5697dc7145) and two extracts of the King County Department of Assessments (https://info.kingcounty.gov/assessor/DataDownload/default.aspx): the change log of the property records (1.8 GB) and the residential building file. The county updates both every week; the definition reads the changes of 2014 and later for the file's parcels, and today's bathroom counts only where no later change records them.
+We download kc_house_data.csv from Kaggle (21,613 rows; md5 b1e7bdf4f3e61792c0979a5697dc7145) and three extracts of the King County Department of Assessments (https://info.kingcounty.gov/assessor/DataDownload/default.aspx): the change log of the property records (1.8 GB), the residential building file and the real property sales (150 MB). The county updates them every week; the definition reads the changes of 2014 and later for the file's parcels, today's bathroom counts only where no later change records them, and the 2014-2015 sales of the file's parcels (parcel, deed date, price and sale warnings; no names).
 
 mkdir -p local-data-warehouse/house_sales
 kaggle datasets download harlfoxem/housesalesprediction -p local-data-warehouse/house_sales
@@ -107,11 +113,12 @@ unzip local-data-warehouse/house_sales/housesalesprediction.zip -d local-data-wa
 rm local-data-warehouse/house_sales/housesalesprediction.zip
 wget -O "local-data-warehouse/house_sales/Change History Detail.zip" "https://aqua.kingcounty.gov/extranet/assessor/Change%20History%20Detail.zip"
 wget -O "local-data-warehouse/house_sales/Residential Building.zip" "https://aqua.kingcounty.gov/extranet/assessor/Residential%20Building.zip"
+wget -O "local-data-warehouse/house_sales/Real Property Sales.zip" "https://aqua.kingcounty.gov/extranet/assessor/Real%20Property%20Sales.zip"
 
-The first build filters the change log to house_sales_changes.csv and house_sales_bath_counts.csv in the same folder.
+The first build filters the extracts to three files in the same folder. With the downloads of 2026-10-07 (change log, building file) and 2026-10-19 (sales) their md5 are: house_sales_changes.csv 06491065b3ddbc8b0d9d20fb82444cad, house_sales_bath_counts.csv dc04ef1d66b0f1374a5b541bfb76c9ea, house_sales_sale_warnings.csv 06e45bc786381590dfcf24822e1ce221. A different md5 after a new download means the county changed its 2014-2015 records.
 ```
 
-On first use, `_prepare_raw_files` writes `house_sales_changes.csv`, `house_sales_bath_counts.csv` into the same folder.
+On first use, `_prepare_raw_files` writes `house_sales_changes.csv`, `house_sales_bath_counts.csv`, `house_sales_sale_warnings.csv` into the same folder.
 
 Then, from the repository root:
 
@@ -131,18 +138,28 @@ Only curators run `build`, when the dataset ships.
 | domain | business & marketing |
 | license | CC0 1.0 Public Domain |
 | data_tags | Non-IID, Temporal, Spatial |
-| reference | harlfoxem2016housesales |
-| rows x columns | 20,967 x 20 |
+| reference | fox2015kchousedata,kingcounty2015assessor |
+| rows x columns | 20,499 x 21 |
 | task.target | log_price |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | rmsle |
 | task.split_regime | temporal_non_iid |
 | task.time_on | date |
 
-<details>
-<summary>Feature types: 1 categorical, 0 string, 1 datetime</summary>
+**Metric**
 
-- categorical (1): `zipcode`
+| field | value |
+|---|---|
+| name | `rmsle` (standard; takes value; lower is better) |
+| origin | context: obvious from the task: the source defines no metric |
+| definition | sqrt(mean((log1p(y) - log1p(p))^2)); y and p non-negative |
+| reason | Neither the King County assessor extracts nor the Kaggle dataset card define a task metric (the Coursera course that first distributed kc_house_data used RSS/RMSE on the raw price as a teaching exercise, not a benchmark definition). For a sale price the error that matters is relative to the price (prices range from $75,000 to $7.7 million), so RMSLE on the price. |
+| target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
+
+<details>
+<summary>Feature types: 3 categorical, 0 string, 1 datetime</summary>
+
+- categorical (3): `zipcode`, `waterfront`, `sale_condition`
 - string (0): none
 - datetime (1): `date (%Y%m%dT%H%M%S)`
 
@@ -152,12 +169,18 @@ Only curators run `build`, when the dataset ships.
 <summary>BibTeX</summary>
 
 ```bibtex
-@misc{harlfoxem2016housesales,
-  author = {harlfoxem},
-  title = {House Sales in King County, USA},
-  year = {2016},
-  howpublished = {\url{https://www.kaggle.com/datasets/harlfoxem/housesalesprediction}},
-  note = {Kaggle dataset; first distributed as kc\_house\_data with the University of Washington's Machine Learning Specialization on Coursera (2015)}
+@misc{fox2015kchousedata,
+  author = {Fox, Emily and Guestrin, Carlos},
+  title = {kc\_house\_data: House sales in King County, Washington},
+  year = {2015},
+  howpublished = {Machine Learning Specialization, University of Washington, Coursera; \url{https://www.coursera.org/specializations/machine-learning}},
+  note = {Re-uploaded to Kaggle in 2016 as harlfoxem/housesalesprediction}
+}
+@misc{kingcounty2015assessor,
+  author = {{King County Department of Assessments}},
+  title = {Assessor data download: real property sales, residential building and change history extracts},
+  year = {2015},
+  howpublished = {\url{https://info.kingcounty.gov/assessor/DataDownload/default.aspx}}
 }
 ```
 
@@ -165,72 +188,138 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 20,967 rows of the final frame (the oldest rows: the frame is sorted by `date`); 12 of 20 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 20,499 rows of the final frame (the oldest rows: the frame is sorted by `date`); 12 of 21 columns, the target first. Cells are cut at 40 characters.
 
 | log_price | date | bedrooms | bathrooms | sqft_living | sqft_lot | floors | waterfront | view | condition | grade | sqft_above |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 12.5602 | 2014-05-02 00:00:00 | 3 | 2.5 | 2090 | 10834 | 1 | 0 | 0 | 4 | 8 | 1360 |
-| 13.6388 | 2014-05-02 00:00:00 | 4 | 2.5 | 3310 | 42998 | 2 | 0 | 0 | 3 | 9 | 3310 |
-| 12.6395 | 2014-05-02 00:00:00 | 2 | 1 | 850 | 6174 | 1 | 0 | 0 | 4 | 7 | 850 |
-| 13.2853 | 2014-05-02 00:00:00 | 3 | 1.75 | 2330 | 14892 | 1 | 0 | 0 | 3 | 8 | 1970 |
-| 12.5679 | 2014-05-02 00:00:00 | 3 | 3 | 1850 | 19966 | 1 | 0 | 0 | 4 | 7 | 1090 |
+| 12.4684 | 2014-05-02 00:00:00 | 4 | 2 | 1480 | 8625 | 1 | 0 | 0 | 4 | 7 | 1480 |
+| 13.039 | 2014-05-02 00:00:00 | 3 | 2.5 | 2680 | 5539 | 2 | 0 | 0 | 3 | 8 | 2680 |
+| 13.0605 | 2014-05-02 00:00:00 | 5 | 2.5 | 2210 | 9655 | 1 | 0 | 0 | 3 | 8 | 1460 |
+| 12.9888 | 2014-05-02 00:00:00 | 3 | 2.25 | 1970 | 35100 | 2 | 0 | 0 | 4 | 9 | 1970 |
+| 12.6115 | 2014-05-02 00:00:00 | 3 | 2.5 | 2540 | 5050 | 2 | 0 | 0 | 3 | 7 | 2540 |
 
 ## Curation notes
 
-We start with kc_house_data.csv from Kaggle: 21,613 sales of houses in King County, Washington, dated 2014-05-02 to 2015-05-27. Two extracts of the King County Department of Assessments give the house as it stood at each sale.
+We start with kc_house_data.csv from Kaggle: 21,613 sales of houses in King County, Washington, dated 2014-05-02 to 2015-05-27. Three extracts of the King County Department of Assessments give the house as it stood at each sale and the county's flags on each sale.
 
-- Prediction point: a house sells, and we predict its price from the assessor's record on the day of the sale and its location, with a model trained on all earlier sales (an automated valuation model).
-- The file's house features are the assessor's record as of 18-19 July 2015, after every kept sale (decision table). For 2,151 of the 20,967 kept rows the record changed between the sale and then, mostly upward, and untuned LightGBM scores better on these rows with the file's values (RMSE 0.156 against 0.208 with the record at the sale). These values are recorded after the outcome, so we rebuild each row as of its sale day.
-- The rebuild (`_as_of_sale`): each of `grade`, `condition`, `sqft_living`, `sqft_basement`, `bedrooms`, `floors`, `yr_built`, `yr_renovated` and `sqft_lot` whose attribute changed after the sale day and before 18 July 2015 takes the old value of its first such change. `bathrooms` (full, three-quarter and half baths) is rebuilt from the three counts where their history gives the file's value, and kept for the 5 rows where it does not. `sqft_above` is `sqft_living` minus `sqft_basement`, as in every row of the file. `_prepare_raw_files` cuts the two extracts down to the file's parcels.
-- We leave `view`, `waterfront` (the file's 0-4 view index is not a county attribute), `sqft_living15`, `sqft_lot15` (the neighbours' areas in July 2015) and the 10 values whose old value is blank as in the file.
-- Anomaly: the record at the sale describes what was sold, so `yr_built` is rebuilt for 24 rows, mostly teardowns, and 6 houses under construction carry a placeholder living area of 8 to 200 sq ft. We keep the 1,225 rows the county flags with sale warning 26, "IMP. CHARACTERISTICS CHANGED SINCE SALE", as noise.
-- We drop the 646 sales of May 2015 (3.0%): the sales list was extracted in mid-May 2015, so the month is incomplete, and its quickly recorded sales are cheaper (decision table).
-- We keep the repeated sales of one house (159 houses sold twice and one three times): under the temporal split the earlier sale is in the past, and LightGBM predicts resales worse than the other test rows (RMSE 0.36 against 0.17).
+- Prediction point: a house sells, and the assessor's mass appraisal or a public-record valuation model estimates its price from the assessor's record on the sale day and its location, trained on the sales recorded earlier. The assessed value and the previous sale price are not in the file; the conditions the parties declare at the sale are (`sale_condition`).
+- The target is the price of this sale, given its declared conditions (USE-5; Lennart, 2026-10-22, option (c) of REVIEW.md issue 8). We keep the sales the county flags as not at market value and add `sale_condition`, one categorical from the county's sale warnings (lookup type 7 of EXTR_LookUp) that name a fact of the transaction the parties know before the price: a lender or an agent knows a short sale or an estate sale. Levels, the first match wins: short sale (60), bankruptcy or forced sale (13, 23), estate (12), other pre-price code (11, 14, 16, 17, 18, 19, 20, 21, 22, 24, 25, 33, 34, 36: the transactions WAC 458-53-080(2) excludes from the ratio study, and 54 affordable housing), no market exposure (15, last: 65 of its sales also carry a more specific code), none (decision table).
+- We drop the related-party sales (warning 51; Lennart, 2026-10-26): a price between related parties is not a market price, and the assessor's ratio study leaves them out (WAC 458-53-080). This reopens option (c) of REVIEW issue 8 (2026-10-22), which kept them with a `sale_condition` level, so that they are treated as the family sales of ames_housing.
+- The county sets every warning after the deed is recorded, while it verifies the sale, and codes only the sales it checks, so `none` is not proof of a market sale. Sales are matched on parcel, deed date and price (20,742 of the 20,967 sales before May 2015); the other 225 are `none`. The Kaggle file holds these sales without a warning column.
+- We drop the 360 sales (1.7%) with warning 46 (non-representative sale, 357) or 8 (questionable per appraisal, 4; 7, questionable per sales identification, has none). These are the appraiser's judgments, made with the price in view (46 has no WAC 458-53-080 category): the residuals of the 46 sales lie only on the low side (untuned LightGBM without an indicator: none above +0.3, 29% below -0.3), so as a feature 46 leaks the label (`_judged`).
+- Neither feature nor filter: 26 (below), 10 teardown and 29 segregation or merger (priced like market sales of the land or the changed lot: mean residual +0.00 and +0.05), 32 ($1,000 or less: defined by the price; its one sale is recorded at $385,000) and the codes outside the WAC list (56 builder sale 31 sales, 40 and 41 relocation 32, 3 contract or cash sale 10, and the rarer 2, 4, 30, 31, 44, 52).
+- We drop the sales whose recorded price covers more or less than the house (Lennart, 2026-10-22): warning 45 (multi-parcel sale), 5 (full sales price not reported) and 1 (personal property included). The target is the house's price, and no input can explain the difference (USE-5).
+- Measured with this definition (RMSE on log price, untuned LightGBM, its 9 windows: 9,498 test sales, 391 of them with a code the earlier definition dropped; all / unflagged / flagged): drop the 1,061 sales with 15, 46, 60, 51, 23 or 13 and no indicator .1682 / .1611 / .2875; keep them without an indicator .1688 / .1622 / .2824; this definition .1662 / .1613 / .2552. With `sale_condition` the mean residual of a short sale moves from -0.23 to -0.04, related party (since dropped) from -0.16 to -0.03, no market exposure from -0.10 to +0.00.
+- The file's house features are the assessor's record as of 18-19 July 2015, after every kept sale (decision table). For 2,210 of the 20,584 kept rows the record changed between the sale and then, mostly upward, and untuned LightGBM scored better on the changed rows with the file's values (RMSE 0.156 against 0.208 with the record at the sale, 9 windows, measured before the non-market filter). These values are recorded after the outcome, so we rebuild each row as of its sale day.
+- The rebuild (`_as_of_sale`): each of `grade`, `condition`, `sqft_living`, `sqft_basement`, `bedrooms`, `floors`, `yr_built`, `yr_renovated` and `sqft_lot` (logged under the `Land` and `LandFootage` records) whose attribute changed after the sale day and before 18 July 2015 takes the old value of its first such change. `bathrooms` (full, three-quarter and half baths) is rebuilt from the three counts where their history gives the file's value, and kept for the 5 rows where it does not. `sqft_above` is `sqft_living` minus `sqft_basement` (the finished basement), as in every row of the file. `_prepare_raw_files` cuts the extracts down to the file's parcels.
+- Potential leak, kept on purpose: `view` (the file's 0-4 index, not a county attribute), `waterfront`, `sqft_living15` and `sqft_lot15` (the neighbours' areas) are as of July 2015. About 145 rows had a view or waterfront rating changed after the sale (39 gained a view); masking their `view` gives RMSE 0.2147 against 0.2132 kept, and dropping the neighbours' areas changes the changed rows by 0.004. Blanking them would make the missing value mark a change after the sale, so they stay, as do the 11 values whose old value is blank, the 5 bathroom rows and about 24 rows whose building record was entered in full after the sale. Revisit if a county view rating history becomes usable.
+- The 1,206 kept sales the county flags with warning 26, "IMP. CHARACTERISTICS CHANGED SINCE SALE", stay as noise: 1,067 of them are not rebuilt because their changes come after July 2015, and they sell below the model (-0.10), so the file holds the record at the sale.
+- Anomaly: the record at the sale describes what was sold, so `yr_built` is rebuilt for 24 rows, mostly teardowns. 6 houses under construction carry a placeholder living area of 8 to 200 sq ft with bedrooms recorded; we set their `sqft_living` and `sqft_above` to missing and keep the rows (the 290 sq ft house without bedrooms stays).
+- We drop the 646 sales of May 2015 (3.0%): the bulk of the sales list stops on 15 May 2015 (5 sales recorded up to 2 June), so the month is incomplete, and its quickly recorded sales are cheaper (decision table).
+- We keep the repeated sales of one house (154 houses sold more than once): under the temporal split the earlier sale is in the past, and LightGBM predicted resales worse than the other test rows (RMSE 0.27 against 0.17, measured before the non-market filter).
 - We drop `id`, the parcel number. `_load_raw` reads it and `zipcode` as text to keep the leading zeros.
-- `yr_renovated` = 0 (GeoDa: "'0' if never renovated") and 0 bedrooms or 0 bathrooms at the sale are unrecorded values; we set them to missing.
+- `yr_renovated` = 0 means never renovated (GeoDa: "'0' if never renovated"); we set it to missing, so missing means "never renovated" (an exception to CLEAN-10, Lennart, 2026-10-22: a 0 in a year column reads as a year to a linear model, and missing has no other meaning in this column). 0 bedrooms or 0 bathrooms at the sale are unrecorded values; we set them to missing.
 - Target: `log_price`, the log of the sale price ($75,000 to $7.7M).
-- `zipcode` is categorical, and `date` (the sale date) is a datetime and the time column.
-- No duplicate rows. 9 pairs of different parcels share every feature (townhouses built together), one of them sold on the same day at two prices (the conflicting duplicate the checks report); we keep them.
+- `zipcode` and `sale_condition` are categorical, and `date` (the sale date) is a datetime and the time column.
+- No duplicate rows. Different parcels can share every feature but the date and the price (townhouses built together); one pair also shares the date and was sold at two prices (the conflicting duplicate the checks report); we keep them.
 
 ## Splits
 
-A price model refit every three weeks predicts the sales of the next three weeks: 9 test windows of 21 days, from 10-30 April 2015 back to 24 October-13 November 2014, newest first, each trained on all earlier sales. Nine windows are the 3 x 3 splits an IID task of this size gets; they hold 659 to 1,565 sales each, and the oldest trains on 54% of the rows. Calendar months (a monthly refit) would give 6 windows of 978 to 2,231 sales.
+9 test windows of three weeks (21 days), from 10-30 April 2015 back to 24 October-13 November 2014, newest first, each trained on the sales up to one week before the window. The gap is the delay before a sale is recorded and a refit can learn its price: from the deed date to the recording date the delay has a median of 6 days, and 91% of sales are recorded within 14 days. The window length follows the window count, not a refit cadence the source states: nine windows are the 3 x 3 splits an IID task of this size gets; they hold 649 to 1,534 sales each, and the oldest trains on 52% of the rows. Calendar months (a monthly refit) would give 6 windows of 953 to 2,189 sales. With one year of data the windows cover late October to April only, and the training history is under one year.
 
-9 repeat(s) x 1 fold(s) with seed 4267; train 11,253 to 19,402 rows, test 659 to 1,565 rows. Prediction horizon: 3 weeks.
+9 repeat(s) x 1 fold(s) with seed 4267; train 10,653 to 18,515 rows, test 643 to 1,518 rows. Prediction horizon: 3 weeks. Gap between train and test: 1 weeks.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
-| 0 | 0 | 19402 | 1565 | 2014-05-02 00:00:00 | 2015-04-09 00:00:00 | 2015-04-10 00:00:00 | 2015-04-30 00:00:00 |
-| 1 | 0 | 17943 | 1459 | 2014-05-02 00:00:00 | 2015-03-19 00:00:00 | 2015-03-20 00:00:00 | 2015-04-09 00:00:00 |
-| 2 | 0 | 16806 | 1137 | 2014-05-02 00:00:00 | 2015-02-26 00:00:00 | 2015-02-27 00:00:00 | 2015-03-19 00:00:00 |
-| 3 | 0 | 15811 | 995 | 2014-05-02 00:00:00 | 2015-02-05 00:00:00 | 2015-02-06 00:00:00 | 2015-02-26 00:00:00 |
-| 4 | 0 | 15100 | 711 | 2014-05-02 00:00:00 | 2015-01-15 00:00:00 | 2015-01-16 00:00:00 | 2015-02-05 00:00:00 |
-| 5 | 0 | 14441 | 659 | 2014-05-02 00:00:00 | 2014-12-24 00:00:00 | 2014-12-26 00:00:00 | 2015-01-15 00:00:00 |
-| 6 | 0 | 13501 | 940 | 2014-05-02 00:00:00 | 2014-12-04 00:00:00 | 2014-12-05 00:00:00 | 2014-12-24 00:00:00 |
-| 7 | 0 | 12453 | 1048 | 2014-05-02 00:00:00 | 2014-11-13 00:00:00 | 2014-11-14 00:00:00 | 2014-12-04 00:00:00 |
-| 8 | 0 | 11253 | 1200 | 2014-05-02 00:00:00 | 2014-10-23 00:00:00 | 2014-10-24 00:00:00 | 2014-11-13 00:00:00 |
+| 0 | 0 | 18515 | 1518 | 2014-05-02 00:00:00 | 2015-04-02 00:00:00 | 2015-04-10 00:00:00 | 2015-04-30 00:00:00 |
+| 1 | 0 | 17157 | 1415 | 2014-05-02 00:00:00 | 2015-03-12 00:00:00 | 2015-03-20 00:00:00 | 2015-04-09 00:00:00 |
+| 2 | 0 | 16081 | 1096 | 2014-05-02 00:00:00 | 2015-02-19 00:00:00 | 2015-02-27 00:00:00 | 2015-03-19 00:00:00 |
+| 3 | 0 | 15297 | 943 | 2014-05-02 00:00:00 | 2015-01-29 00:00:00 | 2015-02-06 00:00:00 | 2015-02-26 00:00:00 |
+| 4 | 0 | 14626 | 688 | 2014-05-02 00:00:00 | 2015-01-08 00:00:00 | 2015-01-16 00:00:00 | 2015-02-05 00:00:00 |
+| 5 | 0 | 13987 | 643 | 2014-05-02 00:00:00 | 2014-12-18 00:00:00 | 2014-12-26 00:00:00 | 2015-01-15 00:00:00 |
+| 6 | 0 | 12938 | 923 | 2014-05-02 00:00:00 | 2014-11-26 00:00:00 | 2014-12-05 00:00:00 | 2014-12-24 00:00:00 |
+| 7 | 0 | 11857 | 1028 | 2014-05-02 00:00:00 | 2014-11-06 00:00:00 | 2014-11-14 00:00:00 | 2014-12-04 00:00:00 |
+| 8 | 0 | 10653 | 1185 | 2014-05-02 00:00:00 | 2014-10-16 00:00:00 | 2014-10-24 00:00:00 | 2014-11-13 00:00:00 |
 
 ## Decisions
 
-### 1. House features rebuilt as of each sale from the assessor's change log
+### 1. Sales the appraiser judged non-representative or questionable, and sales whose price is not the house's, dropped
 
-The file shows each house as the assessor recorded it in mid-July 2015, after every sale. For 2,151 rows the record changed between the sale and then; we use the record as it stood on the day of the sale. Bathrooms are rebuilt for 913 rows and left as in the file for 5, whose later bathroom history does not add up to the file.
+We match each sale to the county's sales on parcel, deed date and price and drop the 360 sales with warning 46 (non-representative sale), 7 (questionable per sales identification), 8 (questionable per appraisal): the appraiser sets them with the price in view, and their prices lie only below the model, so as a feature they would carry the label. We also drop the 108 sales with warning 45 (multi-parcel sale), 5 (full sales price not reported), 1 (personal property included): the recorded price covers more or less than the house, and the related-party sales (51), whose price is not a market price. The warnings that name a fact of the transaction become `sale_condition`; 26 (the house changed after the sale), 10 (teardown), 29 (segregation or merger) and the other codes (such as 56 builder sale) are neither feature nor filter.
+
+| county sale warning | sales | use |
+|---|---|---|
+| 26 | 1225 | neither feature nor filter |
+| 15 | 654 | sale_condition: no market exposure |
+| 46 | 357 | dropped (non-representative sale) |
+| 10 | 322 | neither feature nor filter |
+| 60 | 199 | sale_condition: short sale |
+| 29 | 104 | neither feature nor filter |
+| 51 | 91 | dropped (related party) |
+| 12 | 43 | sale_condition: estate |
+| 56 | 31 | neither feature nor filter |
+| 54 | 22 | sale_condition: other pre-price code |
+| 45 | 18 | dropped (multi-parcel sale) |
+| 41 | 17 | neither feature nor filter |
+| 40 | 15 | neither feature nor filter |
+| 23 | 13 | sale_condition: bankruptcy or forced sale |
+| 13 | 10 | sale_condition: bankruptcy or forced sale |
+| 3 | 10 | neither feature nor filter |
+| 31 | 5 | neither feature nor filter |
+| 8 | 4 | dropped (questionable per appraisal) |
+| 44 | 4 | neither feature nor filter |
+| 1 | 3 | dropped (personal property included) |
+| 11 | 3 | sale_condition: other pre-price code |
+| 33 | 3 | sale_condition: other pre-price code |
+| 22 | 3 | sale_condition: other pre-price code |
+| 4 | 3 | neither feature nor filter |
+| 5 | 3 | dropped (full sales price not reported) |
+| 17 | 3 | sale_condition: other pre-price code |
+| 30 | 3 | neither feature nor filter |
+| 18 | 3 | sale_condition: other pre-price code |
+| 20 | 2 | sale_condition: other pre-price code |
+| 52 | 2 | neither feature nor filter |
+| 14 | 2 | sale_condition: other pre-price code |
+| 92 | 1 | neither feature nor filter |
+| 2 | 1 | neither feature nor filter |
+| 16 | 1 | sale_condition: other pre-price code |
+| 32 | 1 | neither feature nor filter |
+| 25 | 1 | sale_condition: other pre-price code |
+| 34 | 1 | sale_condition: other pre-price code |
+| * | 1 | neither feature nor filter |
+
+### 2. `sale_condition` from the sale warnings the parties know before the price
+
+One level per sale, the first in this order that its warnings match: short sale (60); bankruptcy or forced sale (13, 23); estate (12); other pre-price code (11, 14, 16, 17, 18, 19, 20, 21, 22, 24, 25, 33, 34, 36, 54); no market exposure (15); else none. The county codes the sales it checks after recording, so none is not proof of a market sale.
+
+| sale_condition | sales |
+|---|---|
+| short sale | 129 |
+| bankruptcy or forced sale | 8 |
+| estate | 32 |
+| other pre-price code | 31 |
+| no market exposure | 471 |
+| none | 19828 |
+
+### 3. House features rebuilt as of each sale from the assessor's change log
+
+The file shows each house as the assessor recorded it in mid-July 2015, after every sale. For 2,208 rows the record changed between the sale and then; we use the record as it stood on the day of the sale. Bathrooms are rebuilt for 911 rows and left as in the file for 5, whose later bathroom history does not add up to the file.
 
 | index | rows rebuilt | file higher | file lower |
 |---|---|---|---|
-| grade | 395 | 295 | 100 |
-| condition | 1202 | 1015 | 187 |
-| sqft_living | 676 | 585 | 91 |
-| sqft_basement | 544 | 494 | 50 |
-| bedrooms | 582 | 407 | 175 |
+| grade | 394 | 295 | 99 |
+| condition | 1196 | 1011 | 185 |
+| sqft_living | 675 | 584 | 91 |
+| sqft_basement | 543 | 493 | 50 |
+| bedrooms | 581 | 406 | 175 |
 | floors | 95 | 40 | 55 |
 | yr_built | 24 | 22 | 2 |
 | yr_renovated | 61 | 48 | 13 |
-| sqft_lot | 0 | 0 | 0 |
-| bathrooms | 869 | 737 | 132 |
+| sqft_lot | 77 | 25 | 52 |
+| bathrooms | 867 | 735 | 132 |
 | sqft_above | 301 | 195 | 106 |
 
-### 2. The file's house features are the assessor's record as of 18-19 July 2015
+### 4. The file's house features are the assessor's record as of 18-19 July 2015
 
 Changes of building 1 dated up to 17 July 2015 are in the file (their old value differs from it); changes dated from 20 July 2015 on are not (their old value is the file's value).
 
@@ -245,7 +334,7 @@ Changes of building 1 dated up to 17 July 2015 are in the file (their old value 
 | 2015-08-03/2015-08-09 | 382 | 0.984 |
 | 2015-08-10/2015-08-16 | 377 | 0.973 |
 
-### 3. Sales of May 2015 dropped: the sales list was extracted mid-month
+### 5. Sales of May 2015 dropped: the sales list was extracted mid-month
 
 The month holds 646 sales against 978-2,231 in the others, nearly all from its first two weeks (May 1-7: 453, May 8-14: 190, May 15-21: 1, May 22-28: 2). In the assessor's sales records, 24% of the month's sales of the kind the table holds made it in, against 80-89% in every earlier month, and the quickly recorded sales that did are cheaper.
 
@@ -265,21 +354,21 @@ The month holds 646 sales against 978-2,231 in the others, nearly all from its f
 | 2015-04 | 2231 |
 | 2015-05 | 646 |
 
-### 4. Repeated sales of one house kept
+### 6. Repeated sales of one house kept
 
 A new sale can be the resale of a known house, and under the temporal split a resale's earlier sale is history.
 
 | test window | test rows | resales of a house sold before |
 |---|---|---|
-| 2015-04-10 to 2015-04-30 | 1565 | 30 |
-| 2015-03-20 to 2015-04-09 | 1459 | 26 |
-| 2015-02-27 to 2015-03-19 | 1137 | 27 |
-| 2015-02-06 to 2015-02-26 | 995 | 25 |
-| 2015-01-16 to 2015-02-05 | 711 | 10 |
-| 2014-12-26 to 2015-01-15 | 659 | 11 |
-| 2014-12-05 to 2014-12-24 | 940 | 9 |
-| 2014-11-14 to 2014-12-04 | 1048 | 8 |
-| 2014-10-24 to 2014-11-13 | 1200 | 5 |
+| 2015-04-10 to 2015-04-30 | 1518 | 28 |
+| 2015-03-20 to 2015-04-09 | 1415 | 26 |
+| 2015-02-27 to 2015-03-19 | 1096 | 25 |
+| 2015-02-06 to 2015-02-26 | 943 | 25 |
+| 2015-01-16 to 2015-02-05 | 688 | 9 |
+| 2014-12-26 to 2015-01-15 | 643 | 10 |
+| 2014-12-05 to 2014-12-24 | 923 | 9 |
+| 2014-11-14 to 2014-12-04 | 1028 | 5 |
+| 2014-10-24 to 2014-11-13 | 1185 | 5 |
 
 ## Bundle checks
 
@@ -292,30 +381,31 @@ A new sale can be the resale of a known house, and under the temporal split a re
 ### Feature summary
 
 <details>
-<summary>Show the table (20 rows)</summary>
+<summary>Show the table (21 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| zipcode | category | 0 | 0 | 70 | 98103, 98115, 98052, 98038, 98117, 98034, 98042, 98023, 98006, 98118 |
-| date | datetime64\[ns\] | 0 | 0 | 355 | 2014-06-23 00:00:00, 2014-06-25 00:00:00, 2014-06-26 00:00:00, 2014-07-08 00:00… |
-| yr_renovated | float64 | 20112 | 95.92 | 69 | 2014.0, 2003.0, 2000.0, 2005.0, 2007.0, 2013.0, 2004.0, 2006.0, 1990.0, 1991.0 |
+| waterfront | category | 0 | 0 | 2 | 0, 1 |
+| zipcode | category | 0 | 0 | 70 | 98103, 98115, 98052, 98038, 98034, 98117, 98042, 98006, 98133, 98118 |
+| sale_condition | category | 0 | 0 | 6 | none, no market exposure, short sale, estate, other pre-price code, bankruptcy … |
+| date | datetime64\[ns\] | 0 | 0 | 355 | 2014-06-23 00:00:00, 2014-06-26 00:00:00, 2014-06-25 00:00:00, 2014-07-08 00:00… |
+| yr_renovated | float64 | 19665 | 95.93 | 69 | 2014.0, 2003.0, 2000.0, 2005.0, 2013.0, 2007.0, 2004.0, 1990.0, 2006.0, 1991.0 |
 | bathrooms | float64 | 18 | 0.09 | 29 | 2.5, 1.0, 1.75, 2.25, 2.0, 1.5, 2.75, 3.0, 3.5, 3.25 |
 | bedrooms | float64 | 13 | 0.06 | 11 | 3.0, 4.0, 2.0, 5.0, 6.0, 1.0, 7.0, 8.0, 9.0, 10.0 |
-| log_price | float64 | 0 | 0 | 3959 | 12.7657, 13.017, 13.2177, 12.9598, 13.1224, 12.8992, 12.6916, 12.8347, 12.6115,… |
+| sqft_living | float64 | 6 | 0.03 | 999 | 1400.0, 1300.0, 1440.0, 1800.0, 1660.0, 1820.0, 1010.0, 1320.0, 1480.0, 1650.0 |
+| sqft_above | float64 | 6 | 0.03 | 922 | 1300.0, 1010.0, 1200.0, 1220.0, 1140.0, 1400.0, 1060.0, 1340.0, 1320.0, 1180.0 |
+| log_price | float64 | 0 | 0 | 3908 | 12.7657, 13.017, 13.2177, 12.9598, 13.1224, 12.8992, 12.6916, 12.8347, 13.1712,… |
 | floors | float64 | 0 | 0 | 6 | 1.0, 2.0, 1.5, 3.0, 2.5, 3.5 |
-| lat | float64 | 0 | 0 | 5017 | 47.6846, 47.6955, 47.6711, 47.6886, 47.686, 47.6624, 47.5402, 47.5491, 47.6904,… |
-| long | float64 | 0 | 0 | 749 | -122.29, -122.3, -122.362, -122.363, -122.291, -122.372, -122.288, -122.357, -1… |
-| sqft_living | int64 | 0 | 0 | 1023 | 1300, 1400, 1440, 1800, 1660, 1010, 1820, 1480, 1320, 1250 |
-| sqft_lot | int64 | 0 | 0 | 9612 | 5000, 6000, 4000, 7200, 4800, 7500, 4500, 8400, 9600, 3600 |
-| waterfront | int64 | 0 | 0 | 2 | 0, 1 |
+| lat | float64 | 0 | 0 | 4999 | 47.6846, 47.6955, 47.6904, 47.6624, 47.6886, 47.5491, 47.6711, 47.5402, 47.5322… |
+| long | float64 | 0 | 0 | 748 | -122.29, -122.3, -122.362, -122.363, -122.372, -122.291, -122.288, -122.357, -1… |
+| sqft_lot | int64 | 0 | 0 | 9442 | 5000, 6000, 4000, 7200, 4800, 7500, 4500, 8400, 9600, 3600 |
 | view | int64 | 0 | 0 | 5 | 0, 2, 3, 1, 4 |
 | condition | int64 | 0 | 0 | 5 | 3, 4, 5, 2, 1 |
 | grade | int64 | 0 | 0 | 12 | 7, 8, 9, 6, 10, 11, 5, 12, 4, 13 |
-| sqft_above | int64 | 0 | 0 | 945 | 1300, 1010, 1200, 1220, 1140, 1400, 1060, 1340, 1320, 1250 |
-| sqft_basement | int64 | 0 | 0 | 300 | 0, 500, 600, 700, 800, 400, 1000, 900, 300, 480 |
-| yr_built | int64 | 0 | 0 | 116 | 2014, 2005, 2006, 2004, 2007, 1977, 2003, 1978, 1968, 2008 |
-| sqft_living15 | int64 | 0 | 0 | 767 | 1540, 1440, 1560, 1500, 1580, 1610, 1620, 1800, 1460, 1510 |
-| sqft_lot15 | int64 | 0 | 0 | 8549 | 5000, 4000, 6000, 7200, 7500, 4800, 8400, 3600, 4500, 8000 |
+| sqft_basement | int64 | 0 | 0 | 299 | 0, 500, 600, 700, 800, 400, 900, 1000, 300, 480 |
+| yr_built | int64 | 0 | 0 | 116 | 2014, 2005, 2006, 2004, 2003, 1977, 2007, 1968, 1978, 2008 |
+| sqft_living15 | int64 | 0 | 0 | 756 | 1440, 1540, 1560, 1500, 1580, 1610, 1410, 1620, 1460, 1480 |
+| sqft_lot15 | int64 | 0 | 0 | 8433 | 5000, 4000, 6000, 7200, 4800, 7500, 8400, 3600, 4500, 4080 |
 
 </details>
 
@@ -323,50 +413,61 @@ A new sale can be the resale of a known house, and under the temporal split a re
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | 0.419 | 0.273 | 0.278 | 0.002 | log | 325481 | 1.83316e+06 | exponential |
+| 0 | 0 | 0 | 0.441 | 0.296 | 0.273 | 0.002 | log | 317048 | 1.81623e+06 | exponential |
 
 ### Numeric features
 
 <details>
-<summary>Show the table (18 rows)</summary>
+<summary>Show the table (17 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| log_price | 20967 | 13.047 | 0.526919 | 11.2252 | 15.8567 |
-| bedrooms | 20954 | 3.35936 | 0.90976 | 1 | 11 |
-| bathrooms | 20949 | 2.0927 | 0.772253 | 0.5 | 8 |
-| sqft_living | 20967 | 2067.81 | 916.859 | 8 | 13540 |
-| sqft_lot | 20967 | 14997.9 | 40578.5 | 520 | 1.65136e+06 |
-| floors | 20967 | 1.49604 | 0.543455 | 1 | 3.5 |
-| waterfront | 20967 | 0.00763104 | 0.0870239 | 0 | 1 |
-| view | 20967 | 0.234893 | 0.768432 | 0 | 4 |
-| condition | 20967 | 3.35651 | 0.602788 | 1 | 5 |
-| grade | 20967 | 7.6495 | 1.18061 | 1 | 13 |
-| sqft_above | 20967 | 1787.8 | 829.132 | 8 | 9410 |
-| sqft_basement | 20967 | 280.012 | 434.003 | 0 | 4820 |
-| yr_built | 20967 | 1970.99 | 29.3443 | 1900 | 2015 |
-| yr_renovated | 855 | 1994.81 | 15.4925 | 1934 | 2015 |
-| lat | 20967 | 47.5603 | 0.138548 | 47.1559 | 47.7776 |
-| long | 20967 | -122.214 | 0.140921 | -122.519 | -121.315 |
-| sqft_living15 | 20967 | 1987.5 | 685.389 | 460 | 6210 |
-| sqft_lot15 | 20967 | 12675.9 | 26954.3 | 651 | 871200 |
+| log_price | 20499 | 13.0571 | 0.52261 | 11.2252 | 15.8567 |
+| bedrooms | 20486 | 3.36142 | 0.909743 | 1 | 11 |
+| bathrooms | 20481 | 2.09693 | 0.771885 | 0.5 | 8 |
+| sqft_living | 20493 | 2073.06 | 917.88 | 290 | 13540 |
+| sqft_lot | 20499 | 14984 | 40551.1 | 572 | 1.65136e+06 |
+| floors | 20499 | 1.49859 | 0.544487 | 1 | 3.5 |
+| view | 20499 | 0.235816 | 0.769518 | 0 | 4 |
+| condition | 20499 | 3.3568 | 0.602965 | 1 | 5 |
+| grade | 20499 | 7.65711 | 1.17957 | 1 | 13 |
+| sqft_above | 20493 | 1790.89 | 829.744 | 290 | 9410 |
+| sqft_basement | 20499 | 282.095 | 435.309 | 0 | 4820 |
+| yr_built | 20499 | 1971.05 | 29.3948 | 1900 | 2015 |
+| yr_renovated | 834 | 1994.79 | 15.5226 | 1934 | 2015 |
+| lat | 20499 | 47.5619 | 0.137976 | 47.1559 | 47.7776 |
+| long | 20499 | -122.214 | 0.141296 | -122.519 | -121.315 |
+| sqft_living15 | 20499 | 1990.19 | 685.7 | 460 | 6210 |
+| sqft_lot15 | 20499 | 12671 | 27007.7 | 651 | 871200 |
 
 </details>
 
 ### Categorical features
 
+<details>
+<summary>Show the table (17 rows)</summary>
+
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| date | 1 | 2014-06-23 00:00:00 | 142 | 0.68 |
-| date | 2 | 2014-06-25 00:00:00 | 131 | 0.62 |
-| date | 3 | 2014-06-26 00:00:00 | 131 | 0.62 |
-| date | 4 | 2014-07-08 00:00:00 | 127 | 0.61 |
-| date | 5 | 2015-04-27 00:00:00 | 126 | 0.6 |
-| zipcode | 1 | 98103 | 582 | 2.78 |
-| zipcode | 2 | 98115 | 563 | 2.69 |
-| zipcode | 3 | 98052 | 558 | 2.66 |
-| zipcode | 4 | 98038 | 554 | 2.64 |
-| zipcode | 5 | 98117 | 539 | 2.57 |
+| date | 1 | 2014-06-23 00:00:00 | 140 | 0.68 |
+| date | 2 | 2014-06-26 00:00:00 | 129 | 0.63 |
+| date | 3 | 2014-06-25 00:00:00 | 127 | 0.62 |
+| date | 4 | 2014-07-08 00:00:00 | 126 | 0.61 |
+| date | 5 | 2015-04-22 00:00:00 | 121 | 0.59 |
+| sale_condition | 1 | none | 19828 | 96.73 |
+| sale_condition | 2 | no market exposure | 471 | 2.3 |
+| sale_condition | 3 | short sale | 129 | 0.63 |
+| sale_condition | 4 | estate | 32 | 0.16 |
+| sale_condition | 5 | other pre-price code | 31 | 0.15 |
+| waterfront | 1 | 0 | 20342 | 99.23 |
+| waterfront | 2 | 1 | 157 | 0.77 |
+| zipcode | 1 | 98103 | 576 | 2.81 |
+| zipcode | 2 | 98115 | 558 | 2.72 |
+| zipcode | 3 | 98052 | 555 | 2.71 |
+| zipcode | 4 | 98038 | 539 | 2.63 |
+| zipcode | 5 | 98034 | 530 | 2.59 |
+
+</details>
 
 ## Build
 

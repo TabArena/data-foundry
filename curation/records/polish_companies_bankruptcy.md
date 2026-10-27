@@ -34,6 +34,8 @@ Lennart: Could be used without temporal connection
 
 Andrej: task can be conceptualized s.t. the features are time-invariant. Only need to think about whether it is feasible to combine the year datasets or to choose one. If the latter I would use the year with the most observations. Also might reverse the feature engineering.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC, as reported by Zieba, Tomczak & Tomczak (2016), Expert Systems with Applications 58, 93-101.
+
 ## Reference
 
 Ensemble boosted trees with synthetic features generation in application to bankruptcy prediction

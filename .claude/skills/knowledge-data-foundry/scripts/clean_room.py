@@ -9,7 +9,8 @@ Loads the v2 definition of ``<unique_name>`` through ``dataset_io.py`` (its cura
 the raw files; ``--built`` reads the container of the README's build record instead) and the curation record for its
 source links, and writes two files:
 
-* ``DIR/data.parquet``: the curated frame with the target. A frame with more than ``--max-rows`` rows is a random
+* ``DIR/data.parquet``: the curated frame with the target, without the scoring columns (metric inputs, never
+  features; ``dataset_io.py`` drops them). A frame with more than ``--max-rows`` rows is a random
   sample of that many rows (seed 0, original order kept), and ``task.md`` says so.
 * ``DIR/task.md``: the target column, the problem type, rows x columns, the regime (IID, grouped with the group
   column, temporal with the time column), the number of folds or test windows, and the source links.

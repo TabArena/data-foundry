@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class OnlineShoppersPurchasingIntentionDataset(AbstractCuratedDataset):
@@ -72,6 +72,12 @@ class OnlineShoppersPurchasingIntentionDataset(AbstractCuratedDataset):
     # Task
     target = "Revenue"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Sakar et al. 2019 report accuracy, TPR, TNR and F1 (F1 stressed over accuracy, full text paywalled); no "
+            "fixed threshold or costs. Original rejected: F1. roc_auc is the binary fallback."
+        )
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/online_shoppers_intention.csv")

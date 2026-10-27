@@ -40,6 +40,8 @@ Version from NCBI has more columns than on OpenML.
 
 CC (2026-10-19, Lennart): the GEO values are RMA, normalised across the arrays processed together; kept, with a `Potential leak, kept on purpose` note in the definition: a scaling over all rows is no strong leak and often happens in reality. It is a reason for `No` only when a strong leak is suspected or the data can be rebuilt.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Spira et al. 2007 report accuracy with sensitivity and specificity of the 80-gene predictor (83/80/84%); the clinical claim rests on sensitivity and NPV, no single metric or threshold. roc_auc is the binary fallback.
+
 ## Reference
 
 @article{spira2007airway,

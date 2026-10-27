@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, drop_columns  # noqa: F401
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, drop_columns  # noqa: F401
 
 
 class ClassName(AbstractCuratedDataset):
@@ -48,9 +48,17 @@ class ClassName(AbstractCuratedDataset):
     # Data over the row budget ships as a sub-sampled `<name>_1m` version, which also sets: version_of = "<name>",
     # version_comment = "...", subsample_to_budget = True.
 
-    # Task (the metric defaults to roc_auc / log_loss / rmse; stratifying on a classification target is the default)
+    # Task (stratifying on a classification target is the default)
     target = "TODO"
     problem_type = "TODO"
+    # The metric (required). Look for the source's metric first: the competition's evaluation page, the paper's
+    # evaluation section, the task description. Then declare one of
+    #   metric = Metric.source("rmse", original="RMSE", reference="https://...")  # the name in data_foundry.v2.metrics
+    #   metric = Metric.stand_in("pearsonr", original="...", reason="why it cannot be computed", reference="https://...")
+    # and only when the source defines none, the fallback (roc_auc / log_loss / rmse by problem type) with where you
+    # looked. A metric that needs a column (a group, a weight) maps it in `inputs={"group": "era"}` and declares it in
+    # `scoring_columns = (ScoringColumn(column="era", role="group", used_by="...", description="..."),)`.
+    metric = Metric.fallback(reason="TODO(verify): where we looked for the source's metric, and found none.")
     # The regime: neither declaration is an IID task with the recommended split. A grouped task (import `Grouping`):
     # grouping = Grouping(
     #     on="...",                  # the group column, never a model feature

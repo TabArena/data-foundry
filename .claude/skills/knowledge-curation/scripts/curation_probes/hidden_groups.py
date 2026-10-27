@@ -1,4 +1,4 @@
-"""Hidden groups: columns, keys of all columns but one and near copies that carry the label, and a random split's gain.
+"""Hidden groups: columns, keys of all columns but one, near copies and repeated texts that carry the label.
 
 An IID split assumes the rows are independent. When many rows share an entity (a patient, a customer, a product)
 and the entity carries the label, a random split puts rows of one entity on both sides, and a model can score by
@@ -7,10 +7,11 @@ identical in all columns but one, and among clusters of rows that agree on almos
 tooling-independent: ``run`` takes a pandas frame, its target column and problem type, the known group columns, and
 for a temporal task the time column and the splits as ``(train_idx, test_idx)`` row positions.
 
-1. **Candidates**: columns with repeated values (at least ``MIN_GROUPS`` values, a mean of at least
-   ``MIN_MEAN_SIZE`` rows per value, at least ``MIN_REPEATED_SHARE`` of the rows sharing their value with another
-   row, no value holding more than ``MAX_TOP_SHARE`` of the rows): categoricals, text and integer-valued numbers.
-   Missing values are their own singleton groups.
+1. **Candidates**: columns with repeated values (at least ``MIN_GROUPS`` values held by two rows or more, a mean of at
+   least ``MIN_MEAN_SIZE`` rows per value, at least ``MIN_REPEATED_SHARE`` of the rows sharing their value with another
+   row, no value holding more than ``MAX_TOP_SHARE`` of the rows): categoricals, text and numbers, floats included (a
+   value computed once per entity and repeated on its rows, such as a run's boundary-layer thickness). Missing values
+   are their own singleton groups.
 2. **Memorisation** (``s_id``): each row with a repeated value is predicted by the other rows with that value (a
    leave-one-out group mean, shrunk to the prior), scored as skill (``2 AUC - 1``, macro for multiclass, or
    ``1 - MSE / MSE(mean)``). **Smooth part** (``s_smooth``): LightGBM on that column alone, with the rows of each
@@ -33,7 +34,10 @@ for a temporal task the time column and the splits as ``(train_idx, test_idx)`` 
    fingerprint bits that are mostly 0 the similarity is the Tanimoto coefficient. Two rows are near copies when
    their token sets have a Jaccard similarity of at least ``COPY_SIMILARITY`` (0.85: 92% of the columns agree when
    no value is dominant) and share at least ``COPY_MIN_SHARED`` tokens, so a table with fewer informative columns
-   has no near copies (its groups are combinations of a few columns, which step 6 covers). The clusters are the
+   has no near copies (its groups are combinations of a few columns, which step 6 covers). When no row has
+   ``COPY_MIN_SHARED`` tokens the check is **not run** (``run`` false, ``s_id`` and the shares missing): a narrow
+   table says nothing about copies, and a text column is one token, so an edited copy of a text never matches here
+   (step 7 covers texts). The clusters are the
    connected components; a cluster of more than ``COPY_MAX_CLUSTER`` rows is a
    common profile (empty records, a default customer) or a chain of neighbours, not one entity, and its rows count
    as singletons (``rows_in_large_clusters``). Pairs are found by MinHash (``MINHASH_BANDS`` bands of
@@ -59,38 +63,50 @@ for a temporal task the time column and the splits as ``(train_idx, test_idx)`` 
    two (a time column and one derived from it), if the number of keys times the rows stays within ``KEY_BUDGET`` (a
    wide table checks a random subset of the one-column keys, ``keys_checked``). The ``N_KEYS`` keys with the most
    rows above chance get ``s_id`` and the split gap of step 4 with folds by key.
+7. **Text keys** (``(text: description)``, the ``text_keys`` entry of the result): an exact key on each text column
+   (a string column whose values have a median of at least ``TEXT_MIN_WORDS`` words and that is no candidate of step
+   1, which covers a column of repeated texts), after normalising the text
+   (Unicode NFKC, lower case, every run of characters other than letters and digits as one space). Rows with the
+   same normalised text are one group, such as an ad posted again with other capitals or punctuation: an exact key
+   built from the data, which SPLIT-24 allows, where a similarity cluster is not. An empty text is a singleton, and
+   so are the rows of a text held by more than ``COPY_MAX_CLUSTER`` rows (boilerplate, ``rows_in_large_keys``). The
+   probe reports the keys like the near copies (count, rows in keys of two or more, largest, sizes, ``s_id``) and,
+   when at least ``COPY_MIN_SHARE`` of the rows share a key, the split gap of step 4 with the random folds moved by
+   key. The gap models do not read text (step 4), so a gap comes from the other columns of the repeated rows.
 
-A column candidate is **eligible** when its value carries the label (``s_id - s_smooth >= MIN_IDENTITY``) and it
-looks like an entity: at least ``MIN_STATIC`` attributes, or a label that its value nearly fixes
-(``s_id >= STRONG_ID``: a molecule's conformations, the samples of one mouse). The near copies are eligible when at
-least ``COPY_ELIGIBLE_SHARE`` of the rows are in a cluster of two or more and the clusters carry the label
-(``s_id >= MIN_IDENTITY``; they have no smooth part and share most columns by construction). A composite key is
-eligible when it counts (step 6) and carries the label (``s_id >= MIN_IDENTITY``). A candidate is a
-**hit** when it is eligible, ``gap >= MIN_GAP`` and ``gap >= MIN_RELATIVE_GAP * skill(random)``. A composite key is
-evidence of an entity by itself, so its gap may instead raise the error left by ``KEY_ERROR_RISE``
-(``gap >= KEY_ERROR_RISE * (1 - skill(random))``): concrete's mixes cost 7% of the skill but nearly double the
-error (R^2 0.923 against 0.857). A hit is a question, not a verdict: re-split a dataset by a column only when the
-context says the rows share an entity that new data would not have (the source describes the column as an id, or
-the use case predicts for new entities), or the evidence is very strong; then the use case decides, not the size of
-the gap. A near-copy cluster is never the group key itself: it points to an entity, and the key comes from the
-source.
+A column candidate is **eligible** when its value carries the label (``s_id - s_smooth >= MIN_IDENTITY``) and it looks
+like an entity: at least ``MIN_STATIC`` attributes, or a label that its value nearly fixes (``s_id >= STRONG_ID``: a
+molecule's conformations, the samples of one mouse). The near copies are eligible when at least ``COPY_ELIGIBLE_SHARE``
+of the rows are in a cluster of two or more and the clusters carry the label (``s_id >= MIN_IDENTITY``; they have no
+smooth part and share most columns by construction), and a text key the same way. A composite key is eligible when it
+counts (step 6) and carries the label (``s_id >= MIN_IDENTITY``). A candidate is a **hit** when it is eligible, ``gap >=
+MIN_GAP`` and ``gap >= MIN_RELATIVE_GAP * skill(random)``. A composite key is evidence of an entity by itself, so its
+gap may instead raise the error left by ``KEY_ERROR_RISE`` (``gap >= KEY_ERROR_RISE * (1 - skill(random))``): concrete's
+mixes cost 7% of the skill but nearly double the error (R^2 0.923 against 0.857). A hit is a question, not a verdict:
+re-split a dataset by a column only when the context says the rows share an entity that new data would not have (the
+source describes the column as an id, or the use case predicts for new entities), or the evidence is very strong; then
+the use case decides, not the size of the gap. A near-copy cluster is never the group key itself: it points to an
+entity, and the key comes from the source.
+
 
 **Temporal tasks** (``time_on`` given) get no gap and no hit: the splits already hold out the future, and an entity
 that recurs across the cutoff is part of the task (a customer's next month). Instead, for the ``N_TESTED`` top
-candidates (the eligible ones, listed as ``entity_like``, first), the composite keys and the near copies, the probe
-reports the share of test rows whose value (or cluster, or key) occurs among the training rows of each split
+candidates (the eligible ones, listed as ``entity_like``, first), the composite keys, the near copies and the text
+keys, the probe reports the share of test rows whose value (or cluster, or key) occurs among the training rows of each
+split
 (``test_rows_seen``, with its range over the splits): how often the entities recur across the cutoff. The time column
 is no candidate and no near-copy token (a composite key can leave it out), and only the scored candidates are turned
 into model inputs.
 
-Known group columns (``known``) are marked among the candidates and left out of the near-copy tokens and the composite
-keys; a key with the same groups is marked as the known group. Running a grouped task this way, as if it were IID,
-gives the positive controls for the thresholds.
+Known group columns (``known``) are marked among the candidates and left out of the near-copy tokens, the composite
+keys and the text keys; a key with the same groups is marked as the known group. Running a grouped task this way, as
+if it were IID, gives the positive controls for the thresholds.
 """
 
 from __future__ import annotations
 
 import time
+import unicodedata
 from itertools import combinations
 from math import comb
 
@@ -153,6 +169,11 @@ KEY_CACHE_CELLS = 10_000_000
 N_KEYS = 2
 """Composite keys that get ``s_id`` and the split gap."""
 
+TEXT_KEYS = "(text: {})"
+"""The name of a text key in the output."""
+TEXT_MIN_WORDS = 3
+"""Text keys: the least median number of words of a string column's values."""
+
 
 def constant_share(groups: np.ndarray, codes: np.ndarray) -> float:
     """The share of the groups with at least two rows in which ``codes`` takes one value."""
@@ -207,21 +228,18 @@ def group_codes(values: pd.Series) -> np.ndarray:
 
 
 def is_candidate(values: pd.Series) -> bool:
-    """Repeated values in a categorical, text or integer-valued column (thresholds in the module docstring)."""
+    """Repeated values in a categorical, text or numeric column (thresholds in the module docstring)."""
     dtype = values.dtype
     if pd.api.types.is_bool_dtype(dtype) or pd.api.types.is_datetime64_any_dtype(dtype):
         return False
-    if pd.api.types.is_float_dtype(dtype):
-        present = values.dropna().to_numpy()
-        if len(present) == 0 or not np.all(np.mod(present, 1) == 0):
-            return False
     counts = values.value_counts(dropna=True)
     n = len(values)
     if len(counts) < MIN_GROUPS or n / len(counts) < MIN_MEAN_SIZE:
         return False
     if counts.iloc[0] > MAX_TOP_SHARE * n:
         return False
-    return counts[counts >= 2].sum() >= MIN_REPEATED_SHARE * n
+    repeated = counts[counts >= 2]
+    return len(repeated) >= MIN_GROUPS and repeated.sum() >= MIN_REPEATED_SHARE * n
 
 
 def leave_one_out(groups: np.ndarray, y: np.ndarray, n_classes: int) -> tuple[np.ndarray, np.ndarray]:
@@ -428,6 +446,7 @@ def near_copies(df: pd.DataFrame, columns: list[str], rng: np.random.Generator) 
     profiles, inverse = np.unique(codes, axis=0, return_inverse=True)
     inverse = inverse.reshape(-1)
     rich = np.flatnonzero((profiles != dominant[None, :]).sum(axis=1) >= COPY_MIN_SHARED)
+    ran = len(rich) > 0
     pairs, similarity, checked = np.zeros((0, 2), dtype=np.int64), np.zeros(0), 0
     if len(rich) >= 2:
         pairs, similarity, _, checked = similar_pairs(profiles[rich], dominant, rng)
@@ -442,6 +461,7 @@ def near_copies(df: pd.DataFrame, columns: list[str], rng: np.random.Generator) 
         big = np.bincount(groups)[groups] > COPY_MAX_CLUSTER
         clusters[threshold], large[threshold] = singletons(groups, big), int(big.sum())
     info = {
+        "run": ran,
         "columns_used": codes.shape[1],
         "rows_with_few_tokens": int(few.sum()),
         "distinct_rows": len(profiles),
@@ -482,6 +502,8 @@ def copy_candidate(
     rows, pred = leave_one_out(groups, y, n_classes)
     s_id = skill(y[rows], pred, n_classes) if len(rows) >= 2 else float("nan")
     summary = cluster_summary(groups)
+    if not info["run"]:  # no row has enough tokens: no evidence either way
+        summary["repeated_share"] = float("nan")
     cand = {
         "column": NEAR_COPIES,
         "dtype": "clusters",
@@ -498,8 +520,75 @@ def copy_candidate(
         "rows_in_large_clusters": large[COPY_SIMILARITY],
         "ladder": [
             {"similarity": t, **cluster_summary(clusters[t]), "rows_in_large_clusters": large[t]} for t in COPY_LADDER
-        ],
+        ]
+        if info["run"]
+        else [],
         **info,
+        "_groups": groups,
+        "_rows": rows,
+    }
+    if not info["run"]:
+        cand["s_id"] = cand["s_identity"] = float("nan")
+    share = np.nan_to_num(cand["repeated_share"], nan=0.0)
+    cand["eligible"] = bool(share >= COPY_ELIGIBLE_SHARE and np.nan_to_num(cand["s_id"], nan=-1) >= MIN_IDENTITY)
+    cand["testable"] = bool(share >= COPY_MIN_SHARE and cand["largest"] <= MAX_TOP_SHARE * len(y))
+    cand["seconds"] = round(time.time() - started, 1)
+    return cand
+
+
+def text_columns(df: pd.DataFrame, columns: list[str]) -> list[str]:
+    """The string columns of ``columns`` whose values have a median of at least ``TEXT_MIN_WORDS`` words and that are
+    no column candidate (step 1 covers those).
+    """
+    found = []
+    for col in columns:
+        values = df[col]
+        if not (pd.api.types.is_string_dtype(values.dtype) or pd.api.types.is_object_dtype(values.dtype)):
+            continue
+        if is_candidate(values):
+            continue
+        present = values.dropna().astype(str)
+        if len(present) == 0:
+            continue
+        sample = present.sample(min(len(present), 10_000), random_state=0)
+        if sample.str.split().str.len().median() >= TEXT_MIN_WORDS:
+            found.append(col)
+    return found
+
+
+def normalise_text(values: pd.Series) -> pd.Series:
+    """Unicode NFKC, lower case, every run of characters other than letters and digits as one space; an empty text
+    is missing.
+    """
+    text = values.astype("string").map(lambda v: unicodedata.normalize("NFKC", v), na_action="ignore")
+    text = text.str.lower().str.replace(r"[\W_]+", " ", regex=True).str.strip()
+    return text.mask(text == "")
+
+
+def text_key_candidate(values: pd.Series, column: str, y: np.ndarray, n_classes: int) -> dict:
+    """The text key of one column (step 7 of the module docstring), shaped like the near-copy candidate."""
+    started = time.time()
+    groups = group_codes(normalise_text(values))
+    big = np.bincount(groups)[groups] > COPY_MAX_CLUSTER
+    groups = singletons(groups, big)
+    sizes = np.bincount(groups)
+    rows, pred = leave_one_out(groups, y, n_classes)
+    s_id = skill(y[rows], pred, n_classes) if len(rows) >= 2 else float("nan")
+    summary = cluster_summary(groups)
+    cand = {
+        "column": TEXT_KEYS.format(column),
+        "dtype": "text key",
+        "source_column": column,
+        "values": summary["clusters"],
+        "mean_rows_per_value": round(len(groups) / max(summary["clusters"], 1), 2),
+        "repeated_share": summary["repeated_share"],
+        "largest": summary["largest"],
+        "cluster_sizes": size_counts(sizes),
+        "rows_in_large_keys": int(big.sum()),
+        "s_id": s_id,
+        "s_smooth": 0.0,
+        "s_identity": s_id,
+        "known_group": False,
         "_groups": groups,
         "_rows": rows,
     }
@@ -752,7 +841,8 @@ def split_gap(
         _, random_folds = oof(Xs, ys, n_classes, splits(ys, None, n_classes), n_jobs)
         if full:
             cache["random"] = random_folds
-    grouped = moved(ys, gs, n_classes) if cand["column"] == NEAR_COPIES else splits(ys, gs, n_classes)
+    by_cluster = cand["dtype"] in ("clusters", "text key")
+    grouped = moved(ys, gs, n_classes) if by_cluster else splits(ys, gs, n_classes)
     _, group_folds = oof(Xs, ys, n_classes, grouped, n_jobs)
     cand["skill_random"] = float(np.nanmean(random_folds))
     cand["skill_grouped"] = float(np.nanmean(group_folds))
@@ -774,6 +864,29 @@ def recurrence(cand: dict, shipped: list[tuple[np.ndarray, np.ndarray]]) -> None
     cand["splits"] = len(seen)
 
 
+def gaps(
+    ranked: list,
+    keys: list,
+    clusters: list,
+    X: pd.DataFrame,
+    y: np.ndarray,
+    n_classes: int,
+    n_jobs: int,
+    rng: np.random.Generator,
+) -> None:
+    """Step 4 for an IID task: the top column candidates, the composite keys, and the near copies and text keys that
+    are testable.
+    """
+    cache: dict = {}
+    for cand in ranked:
+        split_gap(cand, X, y, n_classes, n_jobs, rng, cache)
+    for cand in keys:
+        split_gap(cand, X, y, n_classes, n_jobs, np.random.default_rng(2), cache)
+    for seed, cand in enumerate(clusters, start=1):
+        if cand["testable"]:
+            split_gap(cand, X, y, n_classes, n_jobs, np.random.default_rng(seed), cache)
+
+
 def run(
     df: pd.DataFrame,
     target: str,
@@ -790,7 +903,8 @@ def run(
         df: The rows, with the target, the known group columns and the time column.
         target: The target column.
         problem_type: ``"regression"``, or a classification type.
-        known: Known group columns: marked, and left out of the near-copy tokens and the composite keys.
+        known: Known group columns: marked, and left out of the near-copy tokens, the composite keys and the text
+            keys.
         time_on: The time column of a temporal task: no split gap, the recurrence across ``splits`` instead.
         splits: For a temporal task, the ``(train_idx, test_idx)`` row positions of each split.
         n_jobs: Threads per LightGBM model.
@@ -818,26 +932,22 @@ def run(
     copies = copy_candidate(df, tokens, y, n_classes, np.random.default_rng(1))
     key_columns = [c for c in df.columns if c != target and c not in known]
     keys, search = key_candidates(df, key_columns, y, n_classes, known, np.random.default_rng(2))
+    texts = [text_key_candidate(df[c], c, y, n_classes) for c in text_columns(df, tokens)]
 
     if temporal:
         shipped = [(np.asarray(train), np.asarray(test)) for train, test in splits or []]
-        for cand in [*ranked[:N_TESTED], *keys, copies]:
+        for cand in [*ranked[:N_TESTED], *keys, copies, *texts]:
             recurrence(cand, shipped)
     else:
-        cache: dict = {}
-        for cand in ranked[:N_TESTED]:
-            split_gap(cand, X, y, n_classes, n_jobs, rng, cache)
-        for cand in keys:
-            split_gap(cand, X, y, n_classes, n_jobs, np.random.default_rng(2), cache)
-        if copies["testable"]:
-            split_gap(copies, X, y, n_classes, n_jobs, np.random.default_rng(1), cache)
-    for cand in [*scored, *keys, copies]:
+        gaps(ranked[:N_TESTED], keys, [copies, *texts], X, y, n_classes, n_jobs, rng)
+    for cand in [*scored, *keys, copies, *texts]:
         cand.pop("_groups"), cand.pop("_rows")
     result["candidates"] = len(scored)
     result["scored"] = ranked
     result["composite_keys"] = keys
     result["composite_search"] = search
     result["near_copies"] = copies
-    result["hits"] = [c["column"] for c in [*ranked, *keys, copies] if c.get("hit")]
+    result["text_keys"] = texts
+    result["hits"] = [c["column"] for c in [*ranked, *keys, copies, *texts] if c.get("hit")]
     result["entity_like"] = [c["column"] for c in [*ranked, *keys] if c["eligible"]]
     return result

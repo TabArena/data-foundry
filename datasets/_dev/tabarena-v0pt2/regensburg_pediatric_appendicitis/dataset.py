@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
@@ -80,6 +80,12 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
     # Task
     target = "Severity"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Marcinkevics et al. 2024 report AUROC and AUPR side by side per target; neither is named as the "
+            "criterion. roc_auc is the binary fallback."
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_excel(raw_dir / "app_data.xlsx?download=1", sheet_name=0)

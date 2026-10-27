@@ -189,6 +189,13 @@ dl.fields { display: grid; grid-template-columns: 11.5rem minmax(0, 1fr); gap: .
 dl.fields dt { font-size: .78rem; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); padding-top: .2rem; }
 dl.fields dd { margin: 0; max-width: 68ch; }
 dt.usecase + dd { font-weight: 500; }
+.metricbox { margin-top: 1.6rem; max-width: 820px; }
+.metricbox h3 { margin: 0 0 .6rem; font: 600 .78rem/1.4 var(--font-body); text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); }
+.metricbox dd code { font-family: var(--font-mono); font-size: .86em; background: var(--surface-2); padding: .05em .3em; border-radius: 3px; }
+.metricbox dd a { overflow-wrap: anywhere; }
+.metricmark { margin-top: 1rem; border-bottom: 0; }
+.metricmark .seg, .metricmark .note { margin-left: 0; }
+.metricmark .note { width: 100%; }
 .judge { margin-top: 1.6rem; max-width: 820px; border-left: 4px solid var(--ink-3); background: var(--surface); padding: .8rem 1rem; border-radius: 0 6px 6px 0; }
 .judge.direct { border-color: var(--direct); } .judge.approximate { border-color: var(--approx); } .judge.none { border-color: var(--none); }
 .judge p { margin: .3rem 0 0; max-width: 68ch; }
@@ -244,6 +251,19 @@ textarea.note.big { min-height: 4.2rem; }
 .statepill[data-v="change"], .statepill[data-v="leave"] { color: var(--change); }
 .statepill[data-v="discuss"] { color: var(--discuss); }
 .clamp { max-height: 10.5rem; overflow: hidden; -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
+/* The conversation on an issue or item: the original text, then one turn per answer, note or closing label */
+.thread { list-style: none; margin: .7rem 0 0 2.4rem; padding: 0; display: grid; gap: .5rem; }
+.turn { border: 1px solid var(--rule); border-left-width: 4px; border-radius: 0 8px 8px 0; padding: .45rem .75rem .55rem; background: var(--surface); max-width: 78ch; }
+.turn.ai { border-left-color: var(--accent); background: var(--accent-soft); }
+.turn.curator { border-left-color: var(--discuss); background: var(--discuss-soft); margin-left: 1.5rem; }
+.turn.closed { border-left-color: var(--ok); background: var(--ok-soft); }
+.turn.closed.deferred { border-left-color: var(--ink-3); background: var(--surface-2); }
+.turn .who { font-size: .74rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-2); margin-bottom: .15rem; display: flex; flex-wrap: wrap; gap: .2rem .6rem; }
+.turn .who .when { font-weight: 500; color: var(--ink-3); text-transform: none; letter-spacing: 0; }
+.turn .md p { margin: .25rem 0; }
+.origlabel { font-size: .74rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); margin: .55rem 0 0 2.4rem; }
+.yourturn { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin-left: .5rem; padding: .05rem .45rem; border-radius: 4px; background: var(--approx-soft); color: var(--approx); white-space: nowrap; }
+@media (max-width: 860px) { .thread, .origlabel { margin-left: 0; } .turn.curator { margin-left: .8rem; } }
 .more { margin: .3rem 0 0 2.4rem; background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font-size: .84rem; font-weight: 500; }
 .more[hidden] { display: none; }
 
@@ -447,6 +467,10 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   const CAT = { added: "To ship", noship: "Rec. not to ship", notadded: "Not added", decided: "Decided: verify" };
   const labelsFor = (d) => (d.cat === "decided" ? VLABEL_DEC : d.cat === "notadded" ? VLABEL_NA : VLABEL);
   const ITEM_OPTS = [["ok", "As implemented"], ["change", "Change"], ["discuss", "Discuss"]];
+  // The mark on the declared metric (stored as `metric: {d, note}` on the record's review document).
+  const METRIC_OPTS = [["ok", "As declared"], ["change", "Change"], ["discuss", "Discuss"]];
+  const METRIC_LABEL = { ok: "As declared", change: "Change", discuss: "Discuss" };
+  const hasMetricMark = (d) => !!d.metric && !!d.folder && !d.retired && d.cat !== "decided";
   const X_OPTS = [["ok", "Go ahead"], ["leave", "Leave as is"], ["discuss", "Discuss"]];
   const FIELD_OPTS = [["update", "Take definition's value"], ["keep", "Keep record's value"]];
   const OPT_LABEL = { ok: "As implemented", change: "Change", discuss: "Discuss", leave: "Leave as is", update: "Take definition's value", keep: "Keep record's value" };
@@ -490,6 +514,24 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   // Plain text with `code` spans, such as the panel's recommendation and its role names.
   const escCode = (s) => esc(s).replace(/`([^`]+)`/g, "<code>$1</code>");
+  // The conversation on an issue or item (from the builder's `thread`): who spoke, when, and what was said.
+  const fmtDay = (iso) => { const p = String(iso || "").split("-"); if (p.length !== 3) return esc(iso); const m = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+p[1] - 1]; return (+p[2]) + " " + m + " " + p[0]; };
+  const TURN_WHO = { ai: "Claude", curator: "You", closed: "Closed" };
+  const TURN_KIND = { answer: "answer", "consistency check": "consistency check", note: "note", resolved: "resolved", deferred: "deferred" };
+  function threadHtml(it) {
+    const turns = it.thread || [];
+    if (!turns.length) return "";
+    return '<ol class="thread" aria-label="Conversation">' + turns.map((u) => {
+      let who = TURN_WHO[u.who] || u.who;
+      if (u.who === "closed") who = (u.kind === "deferred" ? "Deferred" : "Resolved") + (u.by ? " · " + esc(u.by) : "");
+      else who = (u.who === "curator" && u.by ? esc(u.by) : who) + " · " + esc(TURN_KIND[u.kind] || u.kind) + (u.mark ? " (" + esc(u.mark) + ")" : "");
+      return '<li class="turn ' + esc(u.who) + (u.kind === "deferred" ? " deferred" : "") + '"><div class="who"><span>' + who + '</span><span class="when">' + fmtDay(u.date) + "</span></div>" +
+        '<div class="md">' + u.html + "</div></li>";
+    }).join("") + "</ol>";
+  }
+  const awaitsCurator = (it) => !it.resolved && (it.thread || []).length > 0 && it.thread[it.thread.length - 1].who === "ai";
+  const yourTurn = (it) => (awaitsCurator(it) ? '<span class="yourturn" title="Claude answered; your mark is next">Your turn</span>' : "");
+  const origLabel = (it) => ((it.thread || []).length ? '<p class="origlabel">The question</p>' : "");
   const slug = (s) => String(s).replace(/[^A-Za-z0-9_-]/g, "-");
 
   function rev(name) {
@@ -515,6 +557,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       if (marked) done++;
     });
     d.fields.forEach((f) => { if (fields[f.key]) done++; });
+    if (hasMetricMark(d)) { total++; if (r.metric && r.metric.d) done++; }
     return { done, total };
   }
 
@@ -566,6 +609,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       });
     }
     if (out.fields) Object.keys(out.fields).forEach((k) => { if (!out.fields[k]) delete out.fields[k]; });
+    if (out.metric && !out.metric.d && !(out.metric.note || "").trim()) delete out.metric;
     return out;
   }
   async function persist(path) {
@@ -704,6 +748,48 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     out.push('<span class="jump"><button class="linkbtn" data-act="jump">Skip to your verdict ↓</button></span>');
     return '<div class="links">' + out.join("") + "</div>";
   }
+  // The declared metric (metrics.md, MET-11): origin, name, original, reference, reason, and the scoring columns.
+  const METRIC_ORIGIN = {
+    source: "the source's metric",
+    stand_in: "a stand-in for the source's metric, which cannot be computed",
+    fallback: "the default for the problem type: the source defines no unique metric",
+  };
+  function metricHtml(d) {
+    const m = d.metric;
+    if (!m) return d.folder ? '<p class="missing-note">No metric: the definition declares none and its README names none.</p>' : "";
+    const link = (v) => /^https?:\/\//.test(v) ? '<a href="' + esc(v) + '" target="_blank" rel="noopener">' + esc(v) + "</a>" : escCode(v);
+    const json = (v) => "<code>" + esc(JSON.stringify(v)) + "</code>";
+    const rows = [
+      ["Metric", "<code>" + esc(m.name) + "</code>"],
+      ["Origin", m.origin ? esc(m.origin) + (METRIC_ORIGIN[m.origin] ? ": " + esc(METRIC_ORIGIN[m.origin]) : "") : ""],
+      ["Original", m.original ? escCode(m.original) : ""],
+      ["Reference", m.reference ? link(m.reference) : ""],
+      ["Definition", m.definition ? escCode(m.definition) : ""],
+      ["Reason", m.reason ? escCode(m.reason) : ""],
+      ["Params", m.params && Object.keys(m.params).length ? json(m.params) : ""],
+      ["Inputs", m.inputs && Object.keys(m.inputs).length ? Object.entries(m.inputs).map(([r, c]) => esc(r) + ": <code>" + esc(c) + "</code>").join(", ") : ""],
+      ["Scoring columns", (m.scoring_columns || []).map((c) => "<code>" + esc(c.column) + "</code>" +
+        (c.role ? " (" + esc(c.role) + (c.description ? ": " + esc(c.description) : "") + ")" : "")).join("; ")],
+    ].filter(([, v]) => v);
+    const src = m.source === "readme"
+      ? "From the frontmatter of the generated <code>README.md</code> (name and origin only)."
+      : "From <code>metric</code> and <code>scoring_columns</code> in <code>dataset.py</code>, as of this page’s snapshot (" + esc(DATA.snapshot) + ").";
+    return '<section class="metricbox" aria-labelledby="mh"><h3 id="mh">Metric</h3><dl class="fields">' +
+      rows.map(([k, v]) => "<dt>" + esc(k) + "</dt><dd>" + v + "</dd>").join("") + '</dl><p class="srcnote">' + src + "</p>" +
+      metricMarkHtml(d) + "</section>";
+  }
+  // The curator's mark on the metric, like an issue's: as declared, change (say how in the note) or discuss.
+  function metricMarkHtml(d) {
+    if (!hasMetricMark(d)) return "";
+    const st = peekRev(d.name).metric || {};
+    const ro = mode === "readonly" ? " disabled" : "";
+    return '<div class="item metricmark" id="metric-mark"><h4>Your mark on the metric' +
+      (st.d ? '<span class="statepill" data-v="' + esc(st.d) + '">' + esc(METRIC_LABEL[st.d]) + "</span>" : "") + "</h4>" +
+      '<div class="seg small">' + segHtml(METRIC_OPTS, st.d, "metric", ro) + "</div>" +
+      '<label class="visually-hidden" for="note-m-' + slug(d.name) + '">Note on the metric</label>' +
+      '<textarea class="note" rows="1" id="note-m-' + slug(d.name) + '" data-note="metric" placeholder="Note on the metric (optional)"' +
+      (mode === "readonly" ? " readonly" : "") + ">" + esc(st.note || "") + "</textarea></div>";
+  }
   function useCaseHtml(d) {
     const s = d.summary;
     if (!s) {
@@ -772,6 +858,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       h += '<span class="facts">' + (m.regime ? "<span>" + esc(REGIME[m.regime] || m.regime) + "</span>" : "") +
         (m.problem ? "<span>" + esc(PROBLEM[m.problem] || m.problem) + "</span>" : "") +
         (m.rows ? "<span>" + Number(m.rows).toLocaleString("en-US") + " rows</span>" : "") +
+        (m.features ? "<span>" + Number(m.features).toLocaleString("en-US") + " features</span>" : "") +
         "<span>" + (m.retired ? "retired" : m.built ? "built" : "not built") + "</span></span>";
     }
     h += "</div>";
@@ -813,6 +900,11 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     det += "</section>";
     dec += '<h3 id="iss-h">Issues <span class="count">' + (d.cat === "decided" ? "for reference, no marks to set" : "a mark for each") + "</span></h3>";
     if (d.items.length && d.cat !== "decided") dec += '<p class="intro">As implemented: keep what the definition does now. Change: do what your note says. Discuss: Claude answers on the page first. Record fields are marked in their own table below.</p>';
+    if (hasMetricMark(d)) {
+      const mm = (r.metric && r.metric.d) ? METRIC_LABEL[r.metric.d] : "not marked yet";
+      dec += '<p class="intro">The metric (<code>' + esc(d.metric.name) + "</code>) is marked in the Use case tab, under Metric: " + esc(mm) +
+        '. <button class="linkbtn" data-act="ctab" data-c="usecase">Go there</button></p>';
+    }
     if (d.issuesIntroHtml) dec += '<div class="md intro">' + d.issuesIntroHtml + "</div>";
     if (d.items.length && d.cat === "decided") dec += '<p class="intro">Already decided in triage: the issues are shown for reference, with no marks to set.</p>';
     if (nClosed) {
@@ -826,9 +918,9 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       shownItems.forEach((it) => {
         const st = (r.items && r.items[it.n]) || {};
         dec += '<li class="item' + (it.resolved ? " resolved" : "") + '" id="item-' + it.n + '"><div class="item-top"><span class="num">' + it.n + "</span><h4>" + it.titleHtml +
-          (st.d ? '<span class="statepill" data-v="' + esc(st.d) + '">' + esc(OPT_LABEL[st.d]) + "</span>" : "") + "</h4></div>" +
+          (st.d ? '<span class="statepill" data-v="' + esc(st.d) + '">' + esc(OPT_LABEL[st.d]) + "</span>" : "") + yourTurn(it) + "</h4></div>" +
           '<div class="seg small">' + segHtml(ITEM_OPTS, st.d, "item", ' data-n="' + it.n + '"' + ro) + "</div>" +
-          '<div class="body md">' + it.html + "</div>" +
+          origLabel(it) + '<div class="body md">' + it.html + "</div>" + threadHtml(it) +
           '<label class="visually-hidden" for="note-i-' + slug(d.name) + "-" + it.n + '">Note on item ' + it.n + "</label>" +
           '<textarea class="note" rows="1" id="note-i-' + slug(d.name) + "-" + it.n + '" data-note="item" data-n="' + it.n + '" placeholder="Note (optional)"' + (mode === "readonly" ? " readonly" : "") + ">" + esc(st.note || "") + "</textarea></li>";
       });
@@ -892,7 +984,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     rec += '<div class="md">' + d.record.html + "</div>";
 
     const panel = (k, inner) => '<div class="cpanel" id="cp-' + k + '" role="tabpanel" aria-labelledby="ct-' + k + '"' + (ui.ctab === k ? "" : " hidden") + ">" + inner + "</div>";
-    h += panel("usecase", useCaseHtml(d)) + panel("decisions", dec) + panel("panel", panelHtml(d)) + panel("details", det) + panel("code", code) + panel("report", report) + panel("record", rec);
+    h += panel("usecase", useCaseHtml(d) + metricHtml(d)) + panel("decisions", dec) + panel("panel", panelHtml(d)) + panel("details", det) + panel("code", code) + panel("report", report) + panel("record", rec);
 
     // 3. Your verdict: below the tabs, whichever tab is open.
     h += '<section class="verdict-box" id="decide" aria-labelledby="decide-h"><h3 id="decide-h">' + (d.cat === "decided" ? "Is the triage update correct?" : "Your verdict") + "</h3>" +
@@ -949,7 +1041,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     const el = document.getElementById("view-across");
     const ro = mode === "readonly" ? " disabled" : "";
     const nResolved = DATA.crosscut.reduce((n, s) => n + s.items.filter((it) => it.resolved).length, 0);
-    let h = '<div class="page"><h2>Across datasets</h2><p class="lede">Issues that span several records, from the report’s Across datasets section. "Go ahead" means do what the item proposes.</p>';
+    let h = '<div class="page"><h2>Across datasets</h2><p class="lede">Issues that span several records, from the report’s Across datasets section. "Go ahead" means do what the item proposes. Under each question, the conversation so far: your notes, Claude’s answers and the closing label, each with its date; "Your turn" marks an item Claude has answered and that waits for your mark.</p>';
     if (nResolved) {
       h += '<p class="jump"><button class="linkbtn" data-act="toggleResolved">' + (ui.showResolved ? "Hide the " + nResolved + " resolved items" : "Show the " + nResolved + " resolved items") + "</button></p>";
     }
@@ -960,10 +1052,10 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       shown.forEach((it) => {
         const st = S.crosscut[it.id] || {};
         h += '<li class="item' + (it.resolved ? " resolved" : "") + '"><div class="item-top"><span class="num">' + esc(it.id.split("-")[1] * 1 + 1) + "</span><h4>" + it.titleHtml +
-          (st.d ? '<span class="statepill" data-v="' + esc(st.d) + '">' + esc(X_LABEL[st.d]) + "</span>" : "") + "</h4></div>" +
+          (st.d ? '<span class="statepill" data-v="' + esc(st.d) + '">' + esc(X_LABEL[st.d]) + "</span>" : "") + yourTurn(it) + "</h4></div>" +
           '<div class="seg small">' + segHtml(X_OPTS, st.d, "x", ' data-id="' + esc(it.id) + '"' + ro) + "</div>" +
-          '<div class="body md clamp">' + it.html + "</div>" +
-          '<button class="more" data-act="more">Show all</button>' +
+          origLabel(it) + '<div class="body md clamp">' + it.html + "</div>" +
+          '<button class="more" data-act="more">Show all</button>' + threadHtml(it) +
           '<label class="visually-hidden" for="note-x-' + esc(it.id) + '">Note</label>' +
           '<textarea class="note" rows="1" id="note-x-' + esc(it.id) + '" data-note="x" data-id="' + esc(it.id) + '" placeholder="Note (optional)"' + (mode === "readonly" ? " readonly" : "") + ">" + esc(st.note || "") + "</textarea></li>";
       });
@@ -990,6 +1082,8 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
         }
       });
       d.fields.forEach((f) => { const v = r.fields && r.fields[f.key]; if (v) marks.push("- Field " + f.field + " (record " + f.record + ", definition " + f.definition + "): " + OPT_LABEL[v]); });
+      const mt = r.metric;
+      if (mt && (mt.d || (mt.note || "").trim())) marks.push("- Metric (" + (d.metric ? d.metric.name : "none") + "): " + (mt.d ? METRIC_LABEL[mt.d] : "no mark") + ((mt.note || "").trim() ? ". Note: " + mt.note.trim() : ""));
       if (!r.verdict && !(r.note || "").trim() && !marks.length) return;
       const vl = r.verdict ? labelsFor(d)[r.verdict] : "no verdict";
       lines.push("## " + d.name + ": " + vl);
@@ -1015,7 +1109,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     Object.keys(S.reviews).sort().forEach((name) => {
       if (!byName.has(name)) return;
       const doc = cleanDoc(S.reviews[name]);
-      if (doc.verdict || hasText(doc.note) || Object.keys(doc.items || {}).length || Object.keys(doc.fields || {}).length) out.reviews[name] = doc;
+      if (doc.verdict || hasText(doc.note) || doc.metric || Object.keys(doc.items || {}).length || Object.keys(doc.fields || {}).length) out.reviews[name] = doc;
     });
     XITEMS.forEach((_, id) => {
       const doc = S.crosscut[id] && cleanDoc(S.crosscut[id]);
@@ -1197,6 +1291,16 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       refreshAll();
       return;
     }
+    if (act === "metric") {
+      const r = rev(name);
+      const mt = r.metric || (r.metric = {});
+      mt.d = mt.d === b.dataset.v ? null : b.dataset.v;
+      touch("reviews", name);
+      updatePill(b, mt.d, METRIC_LABEL);
+      updateCount();
+      refreshAll();
+      return;
+    }
     if (act === "field") {
       const r = rev(name);
       const k = b.dataset.k;
@@ -1241,6 +1345,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     const kind = t.dataset.note;
     if (kind === "verdict") { rev(ui.current).note = t.value; touch("reviews", ui.current, true); }
     else if (kind === "item") { const r = rev(ui.current); const n = t.dataset.n; (r.items[n] || (r.items[n] = {})).note = t.value; touch("reviews", ui.current, true); }
+    else if (kind === "metric") { const r = rev(ui.current); (r.metric || (r.metric = {})).note = t.value; touch("reviews", ui.current, true); }
     else if (kind === "x") { xdoc(t.dataset.id).note = t.value; touch("crosscut", t.dataset.id, true); }
   });
   document.addEventListener("change", (ev) => {

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class Diabetes130Us(AbstractCuratedDataset):
@@ -79,6 +79,12 @@ class Diabetes130Us(AbstractCuratedDataset):
     # Task
     target = "EarlyReadmission"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "The first publication is an explanatory logistic-regression study (odds ratios, significance of HbA1c "
+            "measurement); it defines no predictive score, and the UCI page names none."
+        )
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/diabetic_data.csv")

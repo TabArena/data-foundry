@@ -49,6 +49,8 @@ CC (2026-10-01, Lennart): Leak audit: the build from the 2026-01-23 download had
 
 CC (2026-10-06, Lennart): Kept after the task-probe sweep of the 2026-10-06 build. The probe flagged `unstable` (consumer_complaints_1m), only because the standard error of the best skill over the 3 temporal windows is 0.060 (limit 0.05): the best probe model (random forest) beats the class shares in all 3 windows, ROC AUC 0.90 +- 0.02, log loss 0.45 against 0.73. On BeyondArena's one fold all 21 configurations beat the dummy (log loss 0.41-0.56 against 0.71). The variation is the drift between the windows, not a missing signal.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — The CFPB database is a public register with no prediction task; the task is our adaptation following a benchmark paper, not an original task with a defined metric.
+
 ## Reference
 
 Kaggle / Gov

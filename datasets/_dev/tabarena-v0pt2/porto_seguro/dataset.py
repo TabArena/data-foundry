@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class PortoSeguro(AbstractCuratedDataset):
@@ -70,7 +70,12 @@ class PortoSeguro(AbstractCuratedDataset):
     # Task
     target = "target"
     problem_type = "binary_classification"
-    metric = "normalized_gini_coefficient"  # see https://www.kaggle.com/c/ClaimPredictionChallenge/discussion/703
+    metric = Metric.source(
+        "roc_auc",
+        original="Normalized Gini Coefficient",
+        reference="https://www.kaggle.com/competitions/porto-seguro-safe-driver-prediction/overview/evaluation",
+        definition="Normalized Gini = 2*AUC - 1 for a binary target; ranks models identically to ROC AUC.",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "train.csv")

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class HorseColicSurvival(AbstractCuratedDataset):
@@ -72,6 +72,9 @@ class HorseColicSurvival(AbstractCuratedDataset):
     # Task
     target = "outcome"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason="The UCI donation (McLeish & Cecile, 1989) defines no metric; its stated class attribute is the surgical lesion (attr 24), not the outcome we predict, and no paper defines an evaluation for the outcome task.",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         columns = [

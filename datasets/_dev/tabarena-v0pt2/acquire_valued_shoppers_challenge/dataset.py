@@ -9,7 +9,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    drop_columns,
+)
 
 
 class AcquireValuedShoppersChallenge(AbstractCuratedDataset):
@@ -80,6 +88,14 @@ class AcquireValuedShoppersChallenge(AbstractCuratedDataset):
     # Task
     target = "target"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="Area Under Receiver Operating Characteristic Curve",
+        reference=(
+            "https://www.kaggle.com/competitions/acquire-valued-shoppers-challenge (Kaggle API evaluationMetric)"
+        ),
+        definition="ROC AUC of the probability that a shopper becomes a repeat buyer of the offer",
+    )
 
     # Splits: a model deployed for 5 days before it is refit (the test window of TabRed), 5 windows back.
     temporal = Temporal(

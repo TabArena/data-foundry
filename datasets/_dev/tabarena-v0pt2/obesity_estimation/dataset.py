@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class ObesityEstimation(AbstractCuratedDataset):
@@ -74,6 +74,12 @@ class ObesityEstimation(AbstractCuratedDataset):
     # Task
     target = "BodyMass"
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason=(
+            "The source is a data descriptor for a 7-class obesity-level task with no defined evaluation metric, and "
+            "we changed the task to BMI regression (weight and height dropped), so no source metric applies."
+        )
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "ObesityDataSet_raw_and_data_sinthetic.csv")

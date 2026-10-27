@@ -14,6 +14,8 @@ from data_foundry.schema import (
 )
 from data_foundry.utils.checksum import encode_pydantic_metadata
 
+from tests.test_bundle_checks import make_spec
+
 
 @pytest.fixture
 def base_dataset_metadata_kwargs() -> dict:
@@ -64,8 +66,9 @@ def test_dataset_metadata_license_string(base_dataset_metadata_kwargs):
         ["Non-IID", "Temporal"],
         ["Grouped", "Spatial"],
         ["IID", "Anonymized"],
-        ["IID", "2ndTierData"],
+        ["IID", "2ndTierData"],  # retired, but old containers carry it and must still load
         ["ForcedIIDFromTemporal"],
+        ["Non-IID", "Grouped", "ForcedGroupedFromTemporal"],
         ["WrongDomain"],
         ["GroupedTemporal"],
     ],
@@ -359,6 +362,14 @@ def test_predictive_splits_metadata_time_gap_is_left_out_of_the_checksum_while_u
     assert b"time_gap" not in encode_pydantic_metadata(plain)
 
 
+def test_predictive_splits_metadata_time_gap_in_minutes():
+    splits = {0: {0: ([0, 1], [2, 3])}}
+    sm = PredictiveMLSplitsMetadata(splits_comment="temporal", splits=splits, time_gap=15, time_gap_unit="minutes")
+    assert (sm.time_gap, sm.time_gap_unit) == (15, "minutes")
+    with pytest.raises(pydantic.ValidationError):
+        PredictiveMLSplitsMetadata(splits_comment="temporal", splits=splits, time_gap=15, time_gap_unit="seconds")
+
+
 def test_predictive_splits_metadata_multi_fold():
     splits = {
         0: {0: ([0, 1, 2], [3, 4]), 1: ([0, 3, 4], [1, 2])},
@@ -496,7 +507,7 @@ def test_format_2_task_reads_the_group_fields_from_the_grouping():
     task = PredictiveMLTaskMetadataV2(
         target_column_name="y",
         problem_type="binary_classification",
-        objective_metric_name="metric",
+        objective_metric=make_spec(),
         grouping=Grouping(on=["a", "b"], labels="per_sample", time_on="t"),
     )
     assert (task.group_on, task.group_labels, task.group_time_on) == (["a", "b"], "per_sample", "t")

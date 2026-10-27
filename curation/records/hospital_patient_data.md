@@ -9,7 +9,7 @@ decision_markers:
 - No Good Target (yet)
 tags:
 - Non-IID (Temporal)
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 collections:
 - New (BeyondArena)
 source_links:

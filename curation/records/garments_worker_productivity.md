@@ -43,6 +43,8 @@ CC (2026-10-01, Lennart): Leak audit: **`incentive` leaks the same day's product
 
 CC (2026-10-06, Lennart): Kept after the task-probe review: the `unstable` flag measures the noise of single windows, not the task. Over the 30 one-day windows (17-24 rows each) random forest and LightGBM beat the train mean in 28 and 29 of them (mean skill +0.40 and +0.38, standard error 0.04); the linear model breaks down in a few windows (one at -2.9), which inflates the spread.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — the intro paper (Al Imran et al. 2021) reports six metrics without naming one; the authors' CoDIT 2019 paper headlines MAE; no unique metric (MET-5).
+
 ## Reference
 
 Mining the productivity data of the garment industry

@@ -26,6 +26,7 @@ from pathlib import Path
 from data_foundry.curation._paths import records_dir
 from data_foundry.curation.app import (
     STATIC_DIR,
+    _claims_payload,
     _docs_payload,
     _records_payload,
     _schema_payload,
@@ -41,7 +42,8 @@ def build_site(
 ) -> Path:
     """Write a read-only static site.
 
-    The site is ``index.html`` + ``schema.json`` + ``records.json`` for the grid, the other
+    The site is ``index.html`` + ``schema.json`` + ``records.json`` (with the claims of the cached claims board,
+    see :func:`~data_foundry.curation.app._records_payload`) + ``claims.json`` for the grid, the other
     static pages (``guidelines.html``), and ``docs/manifest.json`` with a copy of every
     guideline markdown file under ``docs/<skill>/<path>.md`` (the Start here README as
     ``docs/start/README.md``).
@@ -62,6 +64,7 @@ def build_site(
     records = records_dir() if directory is None else Path(directory)
     _write_json(out / "schema.json", _schema_payload())
     _write_json(out / "records.json", _records_payload(records))
+    _write_json(out / "claims.json", _claims_payload())  # the board the records' Claimed by column shows
 
     # Every page gets the read-only flag: index.html drops its write affordances, guidelines.html reads
     # the frozen docs/manifest.json. Cross-links between the pages are relative, so they resolve whether

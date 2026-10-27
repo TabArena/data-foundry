@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary
 
 
 class ElectricMotorTemperaturePrediction(AbstractCuratedDataset):
@@ -80,6 +80,18 @@ class ElectricMotorTemperaturePrediction(AbstractCuratedDataset):
     # Task
     target = "permanent_magnet_temperature"
     problem_type = "regression"
+    metric = Metric.source(
+        "mse",
+        original=(
+            "mean squared error (MSE in K^2 / degC^2); also MAE, R2 and the l-infinity norm (max abs error) reported"
+        ),
+        reference=(
+            "Kirchgaessner, Wallscheid, Boecker 2021, 'Data-Driven Permanent Magnet Temperature Estimation in Synchronous"
+            " Motors with Supervised Machine Learning', IEEE Trans. Energy Conversion, arXiv:2001.06246 (Sec. IV, Table "
+            "III; HPO objective is the average MSE over group-3-fold CV); the cited TPEL 2020 paper also ranks by MSE"
+        ),
+        definition="mean over samples of (predicted - measured permanent magnet temperature)^2, in K^2",
+    )
     grouping = Grouping(
         on="profile_id",
         labels="per_sample",

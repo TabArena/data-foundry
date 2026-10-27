@@ -82,7 +82,7 @@ record that already has a verdict gets an `**Assessment (AI)**` instead.
 | `name` | The names the dataset is published under, joined with ` / `. The body has no title heading. |
 | `checked_by` | The curators who reviewed it, or `AI (UNVERIFIED)`. |
 | `data_foundry_status` | Work state and collection membership in one list (below). |
-| `claimed_by` | The curator holding a WIP claim (one name, never the AI). |
+| `claimed_by` | The curator holding the claim, mirrored from the claims board ([claims.md](claims.md)); one name, never the AI. |
 | `suggestion` | The verdict; the one required field. |
 | `priority` | 1-5: how urgently a curator should act on the record at its stage (5 first): verify the screening and send it to `/add-dataset`, then review what `/add-dataset` added. Set by `/screen-candidates`, set again by `/add-dataset` from what it measured, changed by the curator; none on a rejected record. The factors are in [selection.md](../../knowledge-curation/references/selection.md), "Priority". |
 | `decision_markers` | Issue flags (`Duplicate`, `Trivial`, `Image`, `Too Small`, `Data Quality Issue`, ...); a clean dataset has none. |
@@ -118,12 +118,12 @@ option through the dashboard's ＋ header button or `save_vocabularies`.
 
 ### Claims
 
-A WIP value is a claim: `claimed_by` names the curator who holds it, set and cleared together with the WIP value.
-Leave a record claimed by someone else alone (no triage, no edits, only a note to the curator). When a curator takes
-records, the claim goes to `main` on its own, ahead of the work: a branch from `main` whose one commit changes only the
-claim lines (`data_foundry_status`, `claimed_by`), merged as soon as CI passes; then `main` is merged into the work
-branch. The PR that brings the work to `main` sets the final state and clears the claim. The dashboard's Claimed by
-filter on (empty) lists what is free.
+Who works on which dataset lives on the claims board, a branch every curator pushes to directly
+([claims.md](claims.md)): `claims claim <names>` before the work, `claims release <names>` when it reaches `main` or is
+dropped. Leave a dataset another curator holds alone (no triage, no edits, only a note to the curator). The record
+mirrors the claim: `claimed_by` names the holder and a WIP value says the stage, both written by the `claims` commands
+and carried to `main` by the work's own PR, which sets the final state. `claims sync` repairs a record that drifted
+from the board.
 
 ### Duplicates and retirements
 

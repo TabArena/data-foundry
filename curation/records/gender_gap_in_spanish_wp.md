@@ -3,9 +3,9 @@ unique_name: gender_gap_in_spanish_wp
 name: Gender_Gap_in_Spanish_WP
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 original_source: Kaggle
 year: '2021'
 required_split:

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
 
 
 class ForensicGlassIdentification(AbstractCuratedDataset):
@@ -64,6 +64,12 @@ class ForensicGlassIdentification(AbstractCuratedDataset):
     # Task
     target = "Type_of_glass"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason=(
+            "The source defines no metric for the 6-class task; its only result (Spiehler's BEAGLE vs NN vs DA "
+            "comparison) counts incorrect answers for a different, binary target (float vs non-float processed windows)."
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         columns = ["Id", "RI", "Na", "Mg", "Al", "Si", "K", "Ca", "Ba", "Fe", "Type_of_glass"]

@@ -8,7 +8,7 @@ decision_markers:
 - No Good Target (yet)
 tags:
 - Non-IID (Temporal)
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 collections:
 - CARTE/TARTE
 original_source: Website

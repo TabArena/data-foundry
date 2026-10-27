@@ -10,6 +10,8 @@ from data_foundry.schema import DatasetMetadata, Grouping, PredictiveMLSplitsMet
 from data_foundry.v2 import group_checks
 from data_foundry.v2.splits import grouped_splits
 
+from tests.test_bundle_checks import make_spec
+
 
 def _container(df: pd.DataFrame, grouping: Grouping | None, problem_type: str = "binary_classification"):
     splits = (
@@ -33,7 +35,10 @@ def _container(df: pd.DataFrame, grouping: Grouping | None, problem_type: str = 
             curation_comments=None,
         ),
         task_metadata=PredictiveMLTaskMetadataV2(
-            target_column_name="y", problem_type=problem_type, objective_metric_name="m", grouping=grouping
+            target_column_name="y",
+            problem_type=problem_type,
+            objective_metric=make_spec(problem_type),
+            grouping=grouping,
         ),
         experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="toy", splits=splits),
         uuid="u",

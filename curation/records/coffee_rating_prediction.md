@@ -47,6 +47,10 @@ CC (2026-10-01, Lennart): Leak audit: temporal splits are now 13 two-month windo
 
 CC (2026-10-06, Lennart): Kept after the task-probe review: the `unstable` flag measures the noise of single windows, not the task. Over all 13 two-month windows (54-115 reviews each) random forest and LightGBM beat the train mean in every window (mean skill +0.25 and +0.27, standard error 0.03), and random forest beats the linear model in all 13 (by +0.20 on average); the standard deviation of about 0.1 per window is expected at this size.
 
+CC (2026-10-21, Lennart): drop the `2ndTierData` tag ("we have this now with use case fit more or less"); the tag is retired from new definitions.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — Scraped Kaggle dataset with no task, competition or paper; no metric defined.
+
 ## Reference
 
 Kaggle

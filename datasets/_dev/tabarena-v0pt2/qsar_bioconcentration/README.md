@@ -2,40 +2,51 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_bioconcentration
 container_format: 2
-checksum: v2:fca9c9fce52e584331ab21e42ec65e51e50f0a38bdf212e30a688bcb00c7cbf5
+checksum: v2:a252a6db60ba2c7b6a2bff75325b754f8a5feeef9eb24b4aea75b26e4de7523e
 build: null
 build_stale: false
 data:
   n_rows: 776
-  n_features: 202
+  n_features: 195
   dtypes:
-    category: 1
-    float64: 198
-    int64: 4
+    category: 2
+    float64: 194
+    string: 1
   n_test_dataset_rows: null
 task:
   target: bioconcentration_mechanism
   problem_type: multiclass_classification
   metric: log_loss
-  split_regime: iid
+  metric_origin: fallback
+  scoring_columns: null
+  split_regime: grouped_non_iid
   stratify_on: bioconcentration_mechanism
   time_on: null
-  group_on: null
-  group_labels: null
+  group_on: scaffold
+  group_labels: per_sample
   group_time_on: null
-  grouping: null
+  grouping:
+    prediction_unit: row
+    aggregation: null
+    context: none
+    n_groups: 558
+    test_groups_per_fold:
+      min: 166
+      max: 200
 splits:
   n_repeats: 10
   n_folds: 3
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
-    min: 517
-    max: 518
+    min: 431
+    max: 588
   n_test:
-    min: 258
-    max: 259
+    min: 188
+    max: 345
 bundle_checks:
   ok: true
   errors: []
@@ -52,9 +63,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `bioconcentration_mechanism`, scored with `log_loss` on IID splits. 776 rows and 202 features. Source: UCI (2016).
+Multiclass classification of `bioconcentration_mechanism`, scored with `log_loss` on grouped splits by `scaffold`. 776 rows and 195 features. Source: UCI (2016).
 
-Not built yet. The current definition gives checksum `v2:fca9c9fce52e584331ab21e42ec65e51e50f0a38bdf212e30a688bcb00c7cbf5`.
+Not built yet. The current definition gives checksum `v2:a252a6db60ba2c7b6a2bff75325b754f8a5feeef9eb24b4aea75b26e4de7523e`.
 
 ## In brief
 
@@ -64,22 +75,22 @@ Not built yet. The current definition gives checksum `v2:fca9c9fce52e584331ab21e
 
 **One row.** One organic chemical with a measured bioconcentration factor in fish (776 chemicals, Grisoni et al. 2016).
 
-**Predicted.** The mechanism class, read from the measured bioconcentration and the measured octanol-water partitioning: lipid storage (59%), metabolised or eliminated (33%), or additional storage sites (8%).
+**Predicted.** The mechanism class, read from the measured bioconcentration and the measured octanol-water partitioning: lipid storage (59%), metabolized or eliminated (33%), or additional storage sites (8%).
 
-**Known at prediction time.** The chemical's structure, as the source's nine descriptors and 193 more computed with RDKit.
+**Known at prediction time.** The chemical's structure, as 193 descriptors computed with RDKit, and its octanol-water partition coefficient (logKOW) from the authors' table, measured for 84% of the chemicals and predicted for the rest.
 
-**What the test data stands for.** Random chemicals, one row each, as in the source's random split; the file has no chemical families for a stricter split.
+**What the test data stands for.** Whole chemical series are held out: chemicals that share a ring skeleton stay on one side, so a test chemical belongs to a family the model has not seen. Chemicals without a ring and those whose skeleton is the bare benzene ring (a third of the set) are held out one by one.
 
-**Our changes to the source.** We drop the measured bioconcentration factor the class is read from, swap back the structures of three pairs of chemicals that carried each other's, and drop three chemicals with another chemical's structure; we replace the structure's text by RDKit's descriptors of it.
+**Our changes to the source.** We split by chemical series instead of at random, drop the measured bioconcentration factor the class is read from and the nine descriptors the authors selected on labelled chemicals, add the logKOW from the authors' 2015 table, swap back the structures of three pairs of chemicals that carried each other's, and drop three chemicals with another chemical's structure; we replace the structure's text by RDKit's descriptors of it.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The structure and its descriptors are known before a fish test, and a held-out chemical is an untested one. The authors chose the nine descriptors on chemicals that also sit in our test folds, which may favour those slightly.
+> **Use case fit: direct (the rows, features and split mirror the use case).** The structure, its descriptors and the logKOW are known before a fish test, and a held-out chemical stands for an untested one of a series not yet measured: 6.4% of the test chemicals have a close analog in training (Tanimoto 0.7 or more), against 12.6% under a random split.
 
 ## Files in this folder
 
 | file | what it is |
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
-| [`explore.ipynb`](explore.ipynb) | The workbench for looking at the data (`ds = workbench()`), committed without outputs. Not needed to rebuild. |
+| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/qsar_bioconcentration.md`](../../../../curation/records/qsar_bioconcentration.md)
@@ -97,6 +108,13 @@ Research Group) and unzip it to a predefined folder.
 mkdir -p local-data-warehouse/qsar_bioconcentration && wget -P local-data-warehouse/qsar_bioconcentration/ https://archive.ics.uci.edu/static/public/510/qsar+bioconcentration+classes+dataset.zip && unzip local-data-warehouse/qsar_bioconcentration/qsar+bioconcentration+classes+dataset.zip -d local-data-warehouse/qsar_bioconcentration/ && rm local-data-warehouse/qsar_bioconcentration/qsar+bioconcentration+classes+dataset.zip
 
 sha256 of Grisoni_et_al_2016_EnvInt88.csv: 5bfd2d11afcd725e31bdc60be0cd1d7989024a00463ed9fd91d8951254cdc104
+
+The logKOW comes from the authors' 2015 BCF table, supplementary data 2 of Grisoni et al. 2015 (Chemosphere
+127:171-179) on Elsevier's server, which states no licence for it (downloaded 2026-10-26):
+
+wget -O local-data-warehouse/qsar_bioconcentration/1-s2.0-S0045653515000879-mmc2.xlsx https://ars.els-cdn.com/content/image/1-s2.0-S0045653515000879-mmc2.xlsx
+
+sha256 of 1-s2.0-S0045653515000879-mmc2.xlsx: 537874779929946820c175542650266a53a70d3d4f0b90c34c01658a5ee5ce8b
 ```
 
 Then, from the repository root:
@@ -116,19 +134,30 @@ Only curators run `build`, when the dataset ships.
 | year | 2016 |
 | domain | chemistry & material science |
 | license | CC BY 4.0 |
-| data_tags | IID |
+| data_tags | Non-IID, Grouped |
 | reference | grisoni2016investigating,grisoni2015qsar |
-| rows x columns | 776 x 203 |
+| rows x columns | 776 x 197 |
 | task.target | bioconcentration_mechanism |
 | task.problem_type | multiclass_classification |
 | task.metric | log_loss |
-| task.split_regime | iid |
+| task.split_regime | grouped_non_iid |
 | task.stratify_on | bioconcentration_mechanism |
+| task.group_on | scaffold |
+| task.group_labels | per_sample |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `log_loss` (standard; takes proba; lower is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | mean of -log p(true class) |
+| reason | Grisoni et al. 2016 report the non-error rate (NER, balanced accuracy) with per-class sensitivity, specificity and precision, the Milano group's house measure, at argmax with no costs. Original rejected: NER. log_loss is the multiclass fallback. |
 
 <details>
-<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
 
-- categorical (1): `bioconcentration_mechanism`
+- categorical (2): `logKOW_type`, `bioconcentration_mechanism`
 - string (0): none
 - datetime (0): none
 
@@ -162,82 +191,105 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 776 rows of the final frame (random rows: the frame is shuffled); 12 of 203 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 776 rows of the final frame (random rows: the frame is shuffled); 12 of 197 columns, the target first. Cells are cut at 40 characters.
 
-| bioconcentration_mechanism | nHM | piPC09 | PCD | X2Av | MLOGP | ON1V | N-072 | B02(C-N) | F04(C-O) | rdkit_MaxAbsEStateIndex | rdkit_MinAbsEStateIndex |
+| bioconcentration_mechanism | logKOW | logKOW_type | rdkit_MaxAbsEStateIndex | rdkit_MinAbsEStateIndex | rdkit_MinEStateIndex | rdkit_qed | rdkit_SPS | rdkit_MolWt | rdkit_HeavyAtomMolWt | rdkit_ExactMolWt | rdkit_NumValenceElectrons |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| lipid storage | 0 | 5.614 | 2.21 | 0.17 | 3.4 | 1.35 | 0 | 1 | 0 | 3.30389 | 1.11917 |
-| metabolized or eliminated | 2 | 6.329 | 2.38 | 0.2 | 4.58 | 2.67 | 0 | 0 | 12 | 12.3932 | 0.00717434 |
-| metabolized or eliminated | 1 | 6.554 | 2.94 | 0.18 | 4.83 | 3.14 | 0 | 1 | 15 | 12.9511 | 0.0085494 |
-| metabolized or eliminated | 7 | 8.186 | 3.27 | 0.19 | 5.69 | 1.19 | 0 | 0 | 2 | 6.2139 | 0.10945 |
-| lipid storage | 0 | 0 | 1.48 | 0.14 | 1.7 | 0.88 | 0 | 1 | 5 | 10.2191 | 0.0456944 |
+| lipid storage | 3.07 | measured | 10.2111 | 0.0578704 | -0.556883 | 0.506569 | 9.63636 | 192.001 | 188.977 | 190.954 | 58 |
+| metabolized or eliminated | 4.471 | predicted | 12.4992 | 0.0369534 | -3.57303 | 0.196485 | 19.3 | 697.613 | 682.493 | 691.581 | 122 |
+| lipid storage | 2.1 | measured | 10.3795 | 0.0810185 | -0.636574 | 0.515043 | 9.61538 | 182.135 | 176.087 | 182.033 | 68 |
+| metabolized or eliminated | 4.58 | measured | 11.5627 | 0.116506 | -0.686568 | 0.597203 | 11.96 | 361.781 | 345.653 | 361.072 | 130 |
+| metabolized or eliminated | 5.302 | predicted | 13.3266 | 0.0533869 | -4.92207 | 0.553252 | 18.5 | 527.839 | 510.703 | 527.071 | 190 |
 
 ## Curation notes
 
-We start with Grisoni_et_al_2016_EnvInt88.csv from UCI 510: 779 organic chemicals with CAS number, SMILES, the authors' Train/Test set, 9 Dragon descriptors, the mechanistic class and the measured fish logBCF. The authors' 2015 BCF table (Chemosphere SI), which adds the experimental logKOW, is evidence only.
+We start with Grisoni_et_al_2016_EnvInt88.csv from UCI 510: 779 organic chemicals with CAS number, SMILES, the authors' Train/Test set, 9 Dragon descriptors, the mechanistic class and the measured fish logBCF. From the authors' 2015 BCF table (Chemosphere SI) we add the logKOW.
 
 - Prediction point: an organic chemical whose bioconcentration in fish has not been measured, before a fish test. Its structure (the SMILES) and the descriptors computed from it are known; the measured BCF, and so the class read from it, are not.
-- Target: bioconcentration_mechanism, the class of the file, named as on the old UCI page. The class is a rule on the measured logBCF and the experimental logKOW: with the 2015 table's logKOW, a band of 0.5 log units around the TGD line gives the file's class for 600 of the 607 shipped chemicals with a logKOW of at least 1 (thresholds inferred from the data).
-- logBCF dropped: it is the measurement the class is read from and is not known for a new chemical. MLOGP, the calculated logKOW among the descriptors, does not complete the rule in its place (decision table). The regression on logBCF is the file's other task (OpenML 46586); we ship the class, which the paper models and the 9 descriptors were selected for.
+- Target: bioconcentration_mechanism, the class of the file, named as on the old UCI page. The class is a rule on the measured logBCF and the experimental logKOW: with the 2015 table's logKOW, a band of 0.5 log units around the TGD line gives the file's class for 600 of the 607 shipped chemicals with a logKOW of at least 1 (thresholds inferred from the data). The 2015 table gives a logKOW for 773 of the 776 chemicals, measured for 651 and predicted for 122; the band gives the file's class for 72% of the 122, and below a logKOW of 1 the class is mostly lipid storage by convention.
+- logBCF dropped: it is the measurement the class is read from and is not known for a new chemical. MLOGP, the calculated logKOW among the authors' descriptors, does not complete the rule in its place (decision table). The regression on logBCF is the file's other task (OpenML 46586); we ship the class, the task the paper models (Lennart, CC 2026-10-26).
+- logKOW (Lennart, CC 2026-10-26, USE-6 and USE-3): the assessor of the use case holds the chemical's logKOW, a cheap lab test that REACH requires from 1 tonne a year and the first tier of the bioaccumulation screen, before any fish test. We add it from the authors' 2015 table with `logKOW_type` (measured for 652 chemicals, predicted for 122), matched on the CAS numbers of the cell and the logBCF both tables list; 2 chemicals have no match and stay missing. It is no leak: alone it scores macro ROC AUC 0.659, and the class still needs the measured BCF. RDKit's MolLogP, a logKOW computed from the structure, stays among the descriptors.
 - Dropped CAS (registry numbers, an identifier) and Set (the authors' random 75/25 split).
-- The structure: RDKit's 2D descriptors of the repaired SMILES as `rdkit_*` columns (`rdkit_descriptors`, RDKit 2026.03.6), 193 of the 217, the others constant here or copies. The 9 descriptors do not tell positional isomers apart (61 chemicals share them with another, 14 of those with another class); with RDKit's added, every chemical has its own values (decision table). LightGBM's macro ROC AUC on our splits: 0.735 with the 9, 0.752 with RDKit's added (better on 13 of 15 splits).
-- `SMILES` dropped, as in every SMILES dataset (2026-10-14): next to the 9 descriptors the SMILES as text (character n-grams) lowers LightGBM's macro ROC AUC from 0.735 to 0.723.
+- The structure: RDKit's 2D descriptors of the repaired SMILES as `rdkit_*` columns (`rdkit_descriptors`, RDKit 2026.03.6), 193 of the 217, the others constant here or copies. The 9 descriptors do not tell positional isomers apart (61 chemicals share them with another, 14 of those with another class); with RDKit's added, every chemical has its own values (decision table). Default LightGBM's macro ROC AUC on the first 15 of our splits: 0.745 with the 9, 0.757 with RDKit's added (better on 12 of 15 splits).
+- `SMILES` dropped, as in every SMILES dataset (2026-10-14): next to the 9 descriptors the SMILES as text (character n-grams) lowered LightGBM's macro ROC AUC from 0.735 to 0.723 (run of 2026-10-14, settings not recorded).
 - Repaired rows, 6: three pairs carry each other's SMILES and descriptors (benzene and cyclohexane, naphthalene and tetralin, chlorobenzene and chlorocyclohexane; CAS numbers looked up in Wikidata and PubChem). The BCF and the class belong to the CAS number, as the 2015 table lists all six with their right SMILES and the file's logBCF, and the descriptors follow the SMILES, so we swap the SMILES and the 9 descriptors back within each pair.
 - Dropped rows, 3: triticonazole and two dioxins carry the structure of another chemical and have no partner row to repair them from.
-- Renamed B02[C-N] and F04[C-O] to B02(C-N) and F04(C-O), since LightGBM and XGBoost refuse square brackets in feature names.
-- Split: IID, one row per distinct chemical, as in the source's random split. The file holds no key of chemical families for a stricter split.
-- Note: the authors selected the 9 descriptors on their 584 training chemicals, which sit in our test folds too. A random forest scores macro AUC 0.064 higher on those chemicals than on the authors' test chemicals (one-sided p = 0.06 against random subsets), and logistic regression shows no gap (0.003), so we keep it (as home_credit_default_risk).
-- Note: TabSTAR's annotation (OpenML 46585) swaps the names of classes 2 and 3. Our labels follow the old UCI page and the rule: class 2 lies above the TGD line.
+- Split (Lennart, CC 2026-10-26, SPLIT-31 as amended): grouped on the Bemis-Murcko scaffold (the ring skeleton) of the repaired SMILES (`scaffold_groups`). The 42 congener series (260 chemicals, such as 64 biphenyls and 24 naphthalenes) and the other shared skeletons stay on one side; chemicals without a ring (104) and those whose skeleton is the bare benzene ring (262, 34%: more than a tenth of the set and no series) are groups of their own. A random split put relatives on both sides: a random forest scored macro ROC AUC 0.779 on test chemicals whose scaffold was in training and 0.655 on the others; under the groups 6.4% of the test chemicals have a training analog at Tanimoto 0.7 or more (Morgan radius 2, 2,048 bits), against 12.6% at random. The source split at random; qsar_oral_toxicity and drug_induced_autoimmunity_prediction group on the scaffold too.
+- The authors' 9 Dragon descriptors are dropped (Lennart, CC 2026-10-26, LEAK-31): the authors selected them on their 584 training chemicals, which sit in our test folds too. They come from Dragon 6 (commercial software), and the pool they were selected from is not published. Removing them costs nothing measurable: a random forest scores macro ROC AUC 0.760 with them and 0.759 without on 30 of our splits (paired -0.002, SE 0.001); MLOGP among them was a calculated logKOW, which the measured logKOW and RDKit's MolLogP now carry.
 
 ## Splits
 
-Default splits.
+Grouped splits on the Bemis-Murcko scaffold: all chemicals of one series stay on one side, so a model predicts chemicals of a series it has not seen; chemicals without a ring and those with the bare benzene ring are held out one by one. Chemicals with similar but not identical scaffolds can be on both sides.
 
-10 repeat(s) x 3 fold(s) with seed 4267; train 517 to 518 rows, test 258 to 259 rows.
+10 repeat(s) x 3 fold(s) with seed 4267; train 431 to 588 rows, test 188 to 345 rows.
 
 <details>
 <summary>Show all 30 splits</summary>
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 517 | 259 |
-| 0 | 1 | 517 | 259 |
-| 0 | 2 | 518 | 258 |
-| 1 | 0 | 517 | 259 |
-| 1 | 1 | 517 | 259 |
-| 1 | 2 | 518 | 258 |
-| 2 | 0 | 517 | 259 |
-| 2 | 1 | 517 | 259 |
-| 2 | 2 | 518 | 258 |
-| 3 | 0 | 517 | 259 |
-| 3 | 1 | 517 | 259 |
-| 3 | 2 | 518 | 258 |
-| 4 | 0 | 517 | 259 |
-| 4 | 1 | 517 | 259 |
-| 4 | 2 | 518 | 258 |
-| 5 | 0 | 517 | 259 |
-| 5 | 1 | 517 | 259 |
-| 5 | 2 | 518 | 258 |
-| 6 | 0 | 517 | 259 |
-| 6 | 1 | 517 | 259 |
-| 6 | 2 | 518 | 258 |
-| 7 | 0 | 517 | 259 |
-| 7 | 1 | 517 | 259 |
-| 7 | 2 | 518 | 258 |
-| 8 | 0 | 517 | 259 |
-| 8 | 1 | 517 | 259 |
-| 8 | 2 | 518 | 258 |
-| 9 | 0 | 517 | 259 |
-| 9 | 1 | 517 | 259 |
-| 9 | 2 | 518 | 258 |
+| 0 | 0 | 545 | 231 |
+| 0 | 1 | 559 | 217 |
+| 0 | 2 | 448 | 328 |
+| 1 | 0 | 588 | 188 |
+| 1 | 1 | 431 | 345 |
+| 1 | 2 | 533 | 243 |
+| 2 | 0 | 572 | 204 |
+| 2 | 1 | 527 | 249 |
+| 2 | 2 | 453 | 323 |
+| 3 | 0 | 551 | 225 |
+| 3 | 1 | 509 | 267 |
+| 3 | 2 | 492 | 284 |
+| 4 | 0 | 567 | 209 |
+| 4 | 1 | 431 | 345 |
+| 4 | 2 | 554 | 222 |
+| 5 | 0 | 507 | 269 |
+| 5 | 1 | 524 | 252 |
+| 5 | 2 | 521 | 255 |
+| 6 | 0 | 483 | 293 |
+| 6 | 1 | 503 | 273 |
+| 6 | 2 | 566 | 210 |
+| 7 | 0 | 540 | 236 |
+| 7 | 1 | 478 | 298 |
+| 7 | 2 | 534 | 242 |
+| 8 | 0 | 491 | 285 |
+| 8 | 1 | 511 | 265 |
+| 8 | 2 | 550 | 226 |
+| 9 | 0 | 573 | 203 |
+| 9 | 1 | 477 | 299 |
+| 9 | 2 | 502 | 274 |
 
 </details>
+
+## Group structure
+
+One group is a chemical series: the chemicals that share one Bemis-Murcko scaffold (ring systems and the chains linking them; Bemis and Murcko 1996), computed with RDKit from the repaired SMILES. A chemical without a ring, or with the bare benzene ring (34% of the set, more than a tenth), is a group of its own (SPLIT-31). An assessor estimates the bioconcentration of an untested chemical, often of a series not yet measured, so whole series are held out. Each row is one prediction, made from the chemical's descriptors and logKOW alone.
+
+| field | value |
+|---|---|
+| group column | `scaffold` |
+| labels | per_sample |
+| order inside a group | none |
+| prediction unit | row |
+| known about a group when predicting | none |
+
+| statistic | value |
+|---|---|
+| groups | 558 |
+| rows per group (min / median / max) | 1 / 1.0 / 64 |
+| largest group | 8.2% of the rows |
+| test groups per fold | 166 to 200 |
+| groups of two or more rows with a single label | 28.6% |
+| nearest neighbour in the same group | 24.1% of the rows (chance: 1.0%) |
+| label variance explained by the group | 0.73 (shuffled groups: 0.72) |
+
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Decisions
 
 ### 1. The class is the target; logBCF is dropped
 
-The class is a band of 0.5 log units around the BCF that the TGD equation expects from the experimental logKOW, so logBCF gives the class away and is not known for a new chemical. With the authors' experimental logKOW (2015 table, not in the file) the band gives the class of 600 of 607 chemicals with logKOW of at least 1; with MLOGP, the calculated logKOW among the features, it gives the class of 471 of 776 (the diagonal of the table), so no descriptor completes the rule once logBCF is gone.
+The class is a band of 0.5 log units around the BCF that the TGD equation expects from the experimental logKOW, so logBCF gives the class away and is not known for a new chemical. With the authors' experimental logKOW (2015 table, now a feature) the band gives the class of 600 of 607 chemicals with logKOW of at least 1; with MLOGP, the calculated logKOW among the authors' descriptors, it gives the class of 471 of 776 (the diagonal of the table), so no descriptor completes the rule once logBCF is gone.
 
 | class | band with MLOGP: additional storage sites | band with MLOGP: lipid storage | band with MLOGP: metabolized or eliminated |
 |---|---|---|---|
@@ -265,7 +317,7 @@ The SMILES, and the descriptors computed from it, of these rows is not the chemi
 
 The 9 descriptors do not tell positional isomers apart; with RDKit's 2D descriptors of the SMILES every chemical has its own values, and the SMILES as text adds nothing next to descriptors (CHANGELOG, 2026-10-14).
 
-| index | the 9 descriptors | with RDKit's descriptors |
+| index | the authors' 9 descriptors (dropped) | RDKit's descriptors (shipped) |
 |---|---|---|
 | chemicals | 776 | 776 |
 | distinct descriptor vectors | 743 | 776 |
@@ -282,72 +334,72 @@ The 9 descriptors do not tell positional isomers apart; with RDKit's 2D descript
 ### Feature summary
 
 <details>
-<summary>Show the table (203 rows)</summary>
+<summary>Show the table (197 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| logKOW_type | category | 2 | 0.26 | 2 | measured, predicted |
 | bioconcentration_mechanism | category | 0 | 0 | 3 | lipid storage, metabolized or eliminated, additional storage sites |
-| rdkit_MaxPartialCharge | float64 | 7 | 0.9 | 763 | 0.4596, -0.0533, 0.4261, 0.2121, 0.1606, 0.0558, 0.3236, 0.3796, 0.1556, 0.0277 |
-| rdkit_MinPartialCharge | float64 | 7 | 0.9 | 756 | -0.4766, -0.4574, -0.0533, -0.2345, -0.4574, -0.3243, -0.1031, -0.4667, -0.3975… |
-| rdkit_MaxAbsPartialCharge | float64 | 7 | 0.9 | 756 | 0.4766, 0.4574, 0.0533, 0.2345, 0.4574, 0.3243, 0.1031, 0.4667, 0.3975, 0.395 |
-| rdkit_MinAbsPartialCharge | float64 | 7 | 0.9 | 763 | 0.4596, 0.0533, 0.4261, 0.2121, 0.1606, 0.0558, 0.3236, 0.3796, 0.1556, 0.0277 |
-| rdkit_BCUT2D_MWHI | float64 | 7 | 0.9 | 769 | 14.1357, 16.5502, 35.5004, 35.4968, 35.498, 32.4503, 35.5022, 35.4957, 16.2691,… |
-| rdkit_BCUT2D_MWLOW | float64 | 7 | 0.9 | 767 | 10.012, 10.6905, 10.3226, 10.0635, 10.0704, 10.1904, 10.0596, 10.0593, 10.3087,… |
-| rdkit_BCUT2D_CHGHI | float64 | 7 | 0.9 | 769 | 2.0793, 2.1101, 2.1098, 2.1564, 2.1741, 2.2283, 2.1757, 2.0862, 2.1254, 2.3049 |
-| rdkit_BCUT2D_CHGLO | float64 | 7 | 0.9 | 769 | -2.1653, -2.1349, -2.0829, -2.1908, -1.9719, -2.2221, -2.1196, -1.9491, -2.1572… |
-| rdkit_BCUT2D_LOGPHI | float64 | 7 | 0.9 | 769 | 2.215, 2.2773, 2.388, 2.2913, 2.344, 2.4714, 2.4528, 2.2108, 2.0951, 2.235 |
-| rdkit_BCUT2D_LOGPLOW | float64 | 7 | 0.9 | 769 | -2.0345, -2.2227, -1.8239, -2.1221, -1.8951, -2.1145, -1.8604, -1.8986, -2.2031… |
-| rdkit_BCUT2D_MRHI | float64 | 7 | 0.9 | 769 | 4.9148, 5.7001, 6.4578, 6.3462, 6.4049, 8.1321, 6.5035, 6.3034, 4.6245, 6.338 |
-| rdkit_BCUT2D_MRLOW | float64 | 7 | 0.9 | 769 | 0.4101, 0.202, 1.6135, 0.0608, -0.3842, -0.3844, 1.6103, -0.385, 0.0857, -0.2742 |
-| piPC09 | float64 | 0 | 0 | 319 | 0.0, 5.901, 6.711, 5.614, 3.446, 3.726, 6.423, 6.124, 4.275, 3.056 |
-| PCD | float64 | 0 | 0 | 224 | 0.0, 1.24, 1.23, 1.25, 1.26, 2.38, 1.49, 2.31, 1.27, 2.34 |
-| X2Av | float64 | 0 | 0 | 63 | 0.21, 0.19, 0.2, 0.18, 0.17, 0.16, 0.15, 0.23, 0.22, 0.24 |
-| MLOGP | float64 | 0 | 0 | 344 | 5.99, 3.62, 6.23, 2.19, 2.73, 2.24, 3.31, 1.7, 4.95, 3.91 |
-| ON1V | float64 | 0 | 0 | 261 | 1.23, 1.21, 0.92, 1.25, 1.24, 1.2, 0.64, 0.63, 1.46, 1.26 |
-| rdkit_MaxAbsEStateIndex | float64 | 0 | 0 | 734 | 2.1204, 2.1782, 2.2037, 10.3795, 6.146, 2.2616, 2.2407, 10.2273, 10.3718, 2.0833 |
-| rdkit_MinAbsEStateIndex | float64 | 0 | 0 | 763 | 1.5, 0.0026, 1.3113, 0.052, 0.0371, 1.3138, 0.4799, 1.3058, 1.3391, 0.1944 |
-| rdkit_MinEStateIndex | float64 | 0 | 0 | 764 | -0.5752, -0.1304, 1.3113, -0.6205, 0.4799, 1.3391, 1.3058, -0.4432, 0.2873, 0.4… |
-| rdkit_qed | float64 | 0 | 0 | 672 | 0.6073, 0.5165, 0.659, 0.6227, 0.5066, 0.6444, 0.6489, 0.6367, 0.492, 0.4758 |
-| rdkit_SPS | float64 | 0 | 0 | 385 | 10.5, 10.0, 12.0, 9.5556, 9.125, 10.6471, 11.0, 9.25, 9.6364, 9.9 |
-| rdkit_MolWt | float64 | 0 | 0 | 638 | 291.992, 326.437, 360.882, 211.475, 163.003, 257.547, 192.001, 223.102, 153.137… |
-| rdkit_HeavyAtomMolWt | float64 | 0 | 0 | 545 | 120.11, 285.944, 321.397, 144.132, 356.85, 108.099, 96.088, 206.435, 301.943, 3… |
-| rdkit_ExactMolWt | float64 | 0 | 0 | 598 | 289.9224, 323.8834, 357.8444, 153.0426, 161.9639, 255.9613, 222.0003, 209.9406,… |
-| rdkit_NumValenceElectrons | float64 | 0 | 0 | 82 | 48.0, 82.0, 42.0, 54.0, 60.0, 88.0, 70.0, 66.0, 76.0, 58.0 |
+| rdkit_MaxPartialCharge | float64 | 7 | 0.9 | 763 | 0.4596, 0.4261, 0.2121, 0.1606, -0.0533, 0.0337, 0.0961, 0.0686, -0.0392, 0.4596 |
+| rdkit_MinPartialCharge | float64 | 7 | 0.9 | 756 | -0.4766, -0.4574, -0.3243, -0.1031, -0.2345, -0.4574, -0.4667, -0.0533, -0.4675… |
+| rdkit_MaxAbsPartialCharge | float64 | 7 | 0.9 | 756 | 0.4766, 0.4574, 0.3243, 0.1031, 0.2345, 0.4574, 0.4667, 0.0533, 0.4675, 0.4745 |
+| rdkit_MinAbsPartialCharge | float64 | 7 | 0.9 | 763 | 0.4596, 0.4261, 0.2121, 0.1606, 0.0533, 0.0337, 0.0961, 0.0686, 0.0392, 0.4596 |
+| rdkit_BCUT2D_MWHI | float64 | 7 | 0.9 | 769 | 35.5013, 16.5182, 16.476, 35.5403, 35.4968, 35.499, 35.4957, 35.5007, 13.8139, … |
+| rdkit_BCUT2D_MWLOW | float64 | 7 | 0.9 | 767 | 10.6905, 10.012, 10.5771, 10.3164, 10.3136, 10.1929, 10.1245, 10.3991, 10.0558,… |
+| rdkit_BCUT2D_CHGHI | float64 | 7 | 0.9 | 769 | 2.1237, 2.3356, 1.8782, 2.4213, 2.2157, 2.0437, 2.0757, 2.1917, 1.7532, 2.2597 |
+| rdkit_BCUT2D_CHGLO | float64 | 7 | 0.9 | 769 | -2.0634, -2.3238, -2.006, -2.1132, -2.2149, -2.0186, -2.1303, -2.0537, -1.8476,… |
+| rdkit_BCUT2D_LOGPHI | float64 | 7 | 0.9 | 769 | 2.4106, 2.3068, 2.1172, 2.5316, 2.6079, 2.2891, 2.2085, 2.3977, 1.969, 2.1132 |
+| rdkit_BCUT2D_LOGPLOW | float64 | 7 | 0.9 | 769 | -1.8524, -2.3847, -1.908, -2.0901, -1.9591, -1.847, -2.0275, -1.8875, -1.6332, … |
+| rdkit_BCUT2D_MRHI | float64 | 7 | 0.9 | 769 | 6.5177, 5.6338, 5.4095, 6.6703, 8.6754, 6.4321, 6.2011, 6.503, 5.4521, 4.7443 |
+| rdkit_BCUT2D_MRLOW | float64 | 7 | 0.9 | 769 | 0.4149, -0.0731, 0.3401, 1.2414, 0.3442, 0.2817, 0.5107, 1.446, 1.6666, -0.0328 |
+| logKOW | float64 | 2 | 0.26 | 518 | 3.2, 3.4, 4.0, 3.09, 3.33, 2.9, 1.7, 4.38, 4.56, 3.69 |
+| rdkit_MaxAbsEStateIndex | float64 | 0 | 0 | 734 | 2.1204, 2.1782, 10.3795, 2.2407, 2.2037, 6.146, 2.2616, 2.2986, 2.0833, 2.2361 |
+| rdkit_MinAbsEStateIndex | float64 | 0 | 0 | 763 | 1.5, 0.2873, 0.0371, 0.4799, 1.3113, 1.3138, 1.3391, 0.1944, 0.0671, 1.3058 |
+| rdkit_MinEStateIndex | float64 | 0 | 0 | 764 | 0.4799, 1.3058, -0.5752, -0.4432, 1.3391, 1.3113, -0.1304, -0.6205, 0.2873, 1.3… |
+| rdkit_qed | float64 | 0 | 0 | 672 | 0.6073, 0.5165, 0.6227, 0.659, 0.6489, 0.6444, 0.5066, 0.5298, 0.5003, 0.515 |
+| rdkit_SPS | float64 | 0 | 0 | 385 | 10.5, 10.0, 12.0, 9.5556, 9.125, 10.6471, 10.3333, 9.25, 9.9, 9.6364 |
+| rdkit_MolWt | float64 | 0 | 0 | 638 | 291.992, 326.437, 360.882, 211.475, 163.003, 153.137, 223.102, 307.991, 257.547… |
+| rdkit_HeavyAtomMolWt | float64 | 0 | 0 | 545 | 120.11, 321.397, 285.944, 144.132, 356.85, 108.099, 96.088, 301.943, 337.396, 2… |
+| rdkit_ExactMolWt | float64 | 0 | 0 | 598 | 289.9224, 323.8834, 357.8444, 153.0426, 209.9406, 161.9639, 255.9613, 222.0003,… |
+| rdkit_NumValenceElectrons | float64 | 0 | 0 | 82 | 48.0, 82.0, 54.0, 42.0, 60.0, 88.0, 70.0, 66.0, 94.0, 58.0 |
 | rdkit_FpDensityMorgan1 | float64 | 0 | 0 | 200 | 1.0, 0.6667, 1.25, 1.2, 1.2222, 1.5, 0.5, 0.75, 1.125, 1.2727 |
 | rdkit_FpDensityMorgan2 | float64 | 0 | 0 | 245 | 1.0, 2.0, 1.75, 1.4, 1.5, 1.25, 1.8, 1.3333, 1.5714, 1.6 |
-| rdkit_FpDensityMorgan3 | float64 | 0 | 0 | 268 | 2.0, 2.3333, 1.0, 2.5, 2.4, 1.5, 1.8, 1.8571, 2.25, 2.2 |
-| rdkit_AvgIpc | float64 | 0 | 0 | 549 | 1.7966, 1.6856, 1.6424, 2.0816, 1.7682, 1.9004, 1.77, 1.72, 1.5881, 1.9362 |
-| rdkit_BalabanJ | float64 | 0 | 0 | 630 | 3.1717, 3.0777, 3.0215, 3.1349, 3.6036, 3.1657, 3.4555, 3.3105, 3.0325, 2.0 |
-| rdkit_BertzCT | float64 | 0 | 0 | 658 | 222.2979, 577.3489, 534.5371, 168.3883, 220.1562, 236.165, 134.1074, 300.6338, … |
-| rdkit_Chi0 | float64 | 0 | 0 | 393 | 6.8534, 5.9831, 8.4307, 7.5605, 5.1129, 7.3973, 7.7236, 11.7067, 12.577, 6.6902 |
-| rdkit_Chi0n | float64 | 0 | 0 | 612 | 8.2766, 8.5772, 4.1346, 4.0653, 5.6968, 7.976, 8.3842, 4.3659, 4.8659, 5.943 |
-| rdkit_Chi0v | float64 | 0 | 0 | 641 | 10.9997, 13.1128, 12.0562, 9.9431, 7.9646, 12.0562, 7.1337, 11.4079, 8.8866, 10… |
-| rdkit_Chi1 | float64 | 0 | 0 | 509 | 4.1984, 3.3938, 4.6091, 3.7877, 5.1091, 3.7877, 5.4641, 4.6984, 4.8637, 4.1815 |
-| rdkit_Chi1n | float64 | 0 | 0 | 688 | 4.482, 2.1993, 4.6402, 4.6993, 4.2707, 2.4047, 4.3823, 2.234, 4.494, 4.5936 |
-| rdkit_Chi1v | float64 | 0 | 0 | 720 | 6.9671, 5.9939, 4.4575, 7.9403, 6.4835, 3.0504, 6.4775, 2.9553, 3.2152, 4.0687 |
-| rdkit_Chi2n | float64 | 0 | 0 | 741 | 0.9955, 2.6004, 3.2483, 7.2148, 4.2345, 4.8085, 1.8168, 1.2956, 1.5877, 1.6804 |
-| rdkit_Chi2v | float64 | 0 | 0 | 770 | 2.4394, 6.827, 4.9108, 2.2279, 4.4111, 4.9356, 9.9777, 3.9774, 7.4181, 3.1535 |
-| rdkit_Chi3n | float64 | 0 | 0 | 741 | 0.0, 1.6322, 0.3214, 2.2842, 2.0294, 0.3349, 3.5747, 0.7331, 0.8273, 0.8035 |
-| rdkit_Chi3v | float64 | 0 | 0 | 765 | 0.0, 1.2487, 8.0833, 5.5574, 1.9469, 5.6811, 3.5294, 1.3852, 3.2764, 4.8237 |
-| rdkit_Chi4n | float64 | 0 | 0 | 727 | 0.0, 0.8438, 0.376, 0.6301, 0.0412, 0.4599, 2.5381, 0.4147, 0.5202, 0.2268 |
-| rdkit_Chi4v | float64 | 0 | 0 | 746 | 0.0, 0.376, 1.2612, 0.91, 0.7597, 5.0768, 2.6597, 1.6952, 6.8724, 2.0905 |
-| rdkit_HallKierAlpha | float64 | 0 | 0 | 413 | -0.98, -0.78, -0.11, -0.69, -0.04, 0.18, -1.3, -1.56, -1.58, -0.98 |
-| rdkit_Ipc | float64 | 0 | 0 | 549 | 104.2009, 47.1973, 64.0525, 416.3144, 72.4953, 129.2253, 70.7989, 34.3995, 85.7… |
-| rdkit_Kappa1 | float64 | 0 | 0 | 565 | 12.0674, 13.3247, 6.7163, 14.5862, 6.1447, 7.5262, 7.9911, 10.8155, 9.5703, 5.4… |
-| rdkit_Kappa2 | float64 | 0 | 0 | 605 | 4.8485, 5.2559, 2.4603, 5.6637, 4.035, 2.8685, 2.0527, 3.0679, 3.5254, 4.4415 |
-| rdkit_Kappa3 | float64 | 0 | 0 | 661 | 2.4643, 1.5012, 2.6692, 1.4834, 2.834, 1.4595, 1.138, 1.6727, 3.1992, 2.6971 |
-| rdkit_LabuteASA | float64 | 0 | 0 | 660 | 124.0048, 134.3081, 113.7016, 62.8912, 79.8197, 72.6909, 58.8938, 62.8322, 56.5… |
-| rdkit_PEOE_VSA1 | float64 | 0 | 0 | 64 | 0.0, 5.1065, 4.7369, 9.4737, 5.3168, 5.7337, 4.8999, 9.0475, 4.5237, 10.6336 |
-| rdkit_PEOE_VSA10 | float64 | 0 | 0 | 115 | 0.0, 5.7495, 11.499, 5.0226, 10.0453, 9.7483, 12.6546, 6.104, 10.7721, 5.6939 |
-| rdkit_PEOE_VSA11 | float64 | 0 | 0 | 50 | 0.0, 5.7495, 11.499, 5.7832, 11.5665, 22.998, 4.3334, 5.6874, 5.1564, 6.6069 |
+| rdkit_FpDensityMorgan3 | float64 | 0 | 0 | 268 | 2.0, 2.3333, 1.0, 2.5, 1.5, 2.4, 1.8571, 1.8, 2.25, 2.2 |
+| rdkit_AvgIpc | float64 | 0 | 0 | 549 | 1.7966, 1.6856, 1.6424, 2.0816, 1.9004, 1.7682, 1.77, 1.5881, 1.8236, 1.9362 |
+| rdkit_BalabanJ | float64 | 0 | 0 | 630 | 3.1717, 3.0777, 3.0215, 3.6036, 3.1349, 3.0325, 3.3105, 3.4555, 3.1657, 3.2478 |
+| rdkit_BertzCT | float64 | 0 | 0 | 658 | 222.2979, 577.3489, 272.6334, 134.1074, 534.5371, 659.0218, 168.3883, 300.6338,… |
+| rdkit_Chi0 | float64 | 0 | 0 | 393 | 6.8534, 5.9831, 8.4307, 7.5605, 5.1129, 7.7236, 7.3973, 11.7067, 12.577, 6.6902 |
+| rdkit_Chi0n | float64 | 0 | 0 | 612 | 8.2766, 8.5772, 4.1346, 5.6968, 4.0653, 4.8659, 5.943, 7.3747, 4.3659, 7.976 |
+| rdkit_Chi0v | float64 | 0 | 0 | 641 | 10.9997, 12.0562, 13.1128, 7.9646, 9.9431, 12.0562, 5.943, 7.1337, 3.834, 11.40… |
+| rdkit_Chi1 | float64 | 0 | 0 | 509 | 4.1984, 3.3938, 4.6091, 3.7877, 5.4641, 3.7877, 5.1091, 4.6984, 4.1815, 4.8637 |
+| rdkit_Chi1n | float64 | 0 | 0 | 688 | 4.482, 4.2707, 2.1993, 4.6993, 4.6402, 1.3839, 3.0504, 4.5876, 2.234, 2.4047 |
+| rdkit_Chi1v | float64 | 0 | 0 | 720 | 6.9671, 5.9939, 7.9403, 4.4575, 6.4775, 3.0504, 6.4835, 4.1338, 3.6442, 2.5178 |
+| rdkit_Chi2n | float64 | 0 | 0 | 741 | 3.2483, 0.9955, 2.6004, 0.2474, 7.2148, 2.2167, 1.6658, 1.718, 4.8085, 2.1949 |
+| rdkit_Chi2v | float64 | 0 | 0 | 770 | 4.4111, 2.4394, 4.9108, 2.2279, 6.827, 4.9356, 2.6831, 2.5168, 4.8237, 3.5718 |
+| rdkit_Chi3n | float64 | 0 | 0 | 741 | 0.0, 0.3214, 1.6322, 0.9632, 2.0294, 0.8266, 0.8525, 0.8035, 1.1562, 0.8082 |
+| rdkit_Chi3v | float64 | 0 | 0 | 765 | 0.0, 1.1498, 2.8158, 1.0625, 1.3122, 3.4625, 1.7684, 1.8755, 2.9907, 2.8017 |
+| rdkit_Chi4n | float64 | 0 | 0 | 727 | 0.0, 0.8438, 0.4761, 0.5781, 0.376, 0.4411, 0.7146, 0.4517, 0.6301, 0.2268 |
+| rdkit_Chi4v | float64 | 0 | 0 | 746 | 0.0, 0.376, 0.7683, 2.2368, 0.6148, 0.8978, 1.2982, 1.7947, 2.2399, 2.8083 |
+| rdkit_HallKierAlpha | float64 | 0 | 0 | 413 | -0.98, -0.78, -0.11, -0.69, -0.04, -1.3, 0.18, -0.4, -1.56, -0.98 |
+| rdkit_Ipc_log10 | float64 | 0 | 0 | 549 | 2.022, 1.683, 1.8133, 2.6205, 2.1147, 1.8663, 1.8561, 1.9383, 2.188, 2.4284 |
+| rdkit_Kappa1 | float64 | 0 | 0 | 565 | 12.0674, 13.3247, 6.7163, 14.5862, 6.1447, 7.5262, 10.8155, 9.5703, 8.1198, 7.9… |
+| rdkit_Kappa2 | float64 | 0 | 0 | 605 | 4.8485, 5.2559, 2.4603, 5.6637, 2.8685, 2.0527, 4.035, 3.5254, 3.0679, 4.4415 |
+| rdkit_Kappa3 | float64 | 0 | 0 | 661 | 2.4643, 1.5012, 1.4834, 2.834, 1.4595, 2.6692, 2.6971, 1.138, 2.1622, 3.1992 |
+| rdkit_LabuteASA | float64 | 0 | 0 | 660 | 124.0048, 134.3081, 113.7016, 62.8322, 62.8912, 58.8938, 72.6909, 79.8197, 56.5… |
+| rdkit_PEOE_VSA1 | float64 | 0 | 0 | 64 | 0.0, 5.1065, 4.7369, 9.4737, 5.3168, 5.7337, 4.8999, 9.0475, 10.6336, 4.5237 |
+| rdkit_PEOE_VSA10 | float64 | 0 | 0 | 115 | 0.0, 5.7495, 11.499, 5.0226, 10.0453, 9.7483, 6.104, 10.7721, 12.6546, 5.6939 |
+| rdkit_PEOE_VSA11 | float64 | 0 | 0 | 50 | 0.0, 5.7495, 11.499, 5.7832, 11.5665, 22.998, 4.3334, 5.6874, 6.6069, 5.1564 |
 | rdkit_PEOE_VSA12 | float64 | 0 | 0 | 41 | 0.0, 5.88, 5.6935, 5.9072, 5.9483, 6.104, 11.8967, 5.6011, 3.7925, 11.8144 |
-| rdkit_PEOE_VSA13 | float64 | 0 | 0 | 29 | 0.0, 5.6874, 5.9072, 11.3748, 5.5593, 5.2392, 10.0233, 10.1181, 5.5593, 11.8144 |
-| rdkit_PEOE_VSA14 | float64 | 0 | 0 | 71 | 0.0, 5.9693, 6.7186, 7.8227, 6.0932, 6.1763, 5.6874, 6.0311, 11.9386, 12.1456 |
-| rdkit_PEOE_VSA2 | float64 | 0 | 0 | 49 | 0.0, 4.7945, 10.1143, 9.5891, 20.2286, 9.0475, 13.5712, 5.3168, 4.6818, 10.1113 |
-| rdkit_PEOE_VSA3 | float64 | 0 | 0 | 52 | 0.0, 4.7945, 4.565, 4.984, 9.5891, 9.6658, 9.968, 9.7785, 8.4178, 4.3052 |
-| rdkit_PEOE_VSA4 | float64 | 0 | 0 | 40 | 0.0, 13.1712, 5.2619, 5.0987, 14.9519, 4.984, 10.5238, 8.4178, 4.6818, 11.7619 |
+| rdkit_PEOE_VSA13 | float64 | 0 | 0 | 29 | 0.0, 5.6874, 5.9072, 11.3748, 5.5593, 5.2392, 10.0233, 11.8144, 5.5593, 10.1181 |
+| rdkit_PEOE_VSA14 | float64 | 0 | 0 | 71 | 0.0, 5.9693, 6.7186, 7.8227, 6.0932, 6.1763, 5.6874, 6.0311, 11.9386, 11.3748 |
+| rdkit_PEOE_VSA2 | float64 | 0 | 0 | 49 | 0.0, 4.7945, 10.1143, 9.5891, 20.2286, 9.0475, 13.5712, 5.3168, 4.6818, 9.6944 |
+| rdkit_PEOE_VSA3 | float64 | 0 | 0 | 52 | 0.0, 4.7945, 4.565, 4.984, 9.5891, 9.6658, 9.968, 9.7785, 8.4178, 22.729 |
+| rdkit_PEOE_VSA4 | float64 | 0 | 0 | 40 | 0.0, 13.1712, 5.2619, 5.0987, 14.9519, 4.984, 10.5238, 4.6818, 8.4178, 11.7619 |
+| rdkit_PEOE_VSA5 | float64 | 0 | 0 | 28 | 0.0, 11.6009, 23.2019, 5.0987, 11.7619, 11.3368, 34.8028, 6.5789, 13.1712, 10.1… |
+| rdkit_PEOE_VSA6 | float64 | 0 | 0 | 233 | 0.0, 34.8028, 23.2019, 46.4038, 18.1991, 12.1327, 11.6009, 36.3982, 6.0664, 58.… |
+| rdkit_PEOE_VSA7 | float64 | 0 | 0 | 257 | 0.0, 12.1327, 18.1991, 6.0664, 24.2655, 35.3924, 12.8416, 30.3318, 6.9237, 20.7… |
 
-(143 more rows not shown)
+(137 more rows not shown)
 
 </details>
 
@@ -362,19 +414,11 @@ The 9 descriptors do not tell positional isomers apart; with RDKit's 2D descript
 ### Numeric features
 
 <details>
-<summary>Show the table (202 rows)</summary>
+<summary>Show the table (194 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| nHM | 776 | 1.74871 | 1.9812 | 0 | 12 |
-| piPC09 | 776 | 3.45687 | 2.98324 | 0 | 9.316 |
-| PCD | 776 | 1.54951 | 0.958803 | 0 | 5.9 |
-| X2Av | 776 | 0.237101 | 0.149565 | 0.09 | 2.23 |
-| MLOGP | 776 | 3.20244 | 1.59456 | -1.96 | 8.32 |
-| ON1V | 776 | 1.50999 | 0.835735 | 0.08 | 7.19 |
-| N-072 | 776 | 0.186856 | 0.502774 | 0 | 3 |
-| B02(C-N) | 776 | 0.425258 | 0.494701 | 0 | 1 |
-| F04(C-O) | 776 | 3.57216 | 4.42602 | 0 | 25 |
+| logKOW | 774 | 3.64898 | 1.90258 | -4 | 10.5013 |
 | rdkit_MaxAbsEStateIndex | 776 | 8.20056 | 3.45779 | 1.5 | 14.2908 |
 | rdkit_MinAbsEStateIndex | 776 | 0.493544 | 0.650261 | 0 | 7.66829 |
 | rdkit_MinEStateIndex | 776 | -0.606209 | 1.76945 | -10.3772 | 2 |
@@ -415,7 +459,7 @@ The 9 descriptors do not tell positional isomers apart; with RDKit's 2D descript
 | rdkit_Chi4n | 776 | 1.37851 | 0.921525 | 0 | 6.66447 |
 | rdkit_Chi4v | 776 | 2.27801 | 3.02895 | 0 | 59.5593 |
 | rdkit_HallKierAlpha | 776 | -0.891416 | 1.11423 | -3.92 | 3.48 |
-| rdkit_Ipc | 776 | 1.05371e+07 | 2.75654e+08 | 2.75489 | 7.67539e+09 |
+| rdkit_Ipc_log10 | 776 | 3.38861 | 1.35608 | 0.574597 | 9.8851 |
 | rdkit_Kappa1 | 776 | 11.6206 | 5.17271 | 2.51364 | 52.02 |
 | rdkit_Kappa2 | 776 | 4.79762 | 2.44144 | 0.930799 | 20.522 |
 | rdkit_Kappa3 | 776 | 15.6567 | 341.271 | 0.293364 | 9507.96 |
@@ -426,18 +470,39 @@ The 9 descriptors do not tell positional isomers apart; with RDKit's 2D descript
 | rdkit_PEOE_VSA12 | 776 | 1.16296 | 3.23893 | 0 | 27.7316 |
 | rdkit_PEOE_VSA13 | 776 | 1.06424 | 2.77678 | 0 | 20.2363 |
 | rdkit_PEOE_VSA14 | 776 | 4.05999 | 14.6757 | 0 | 184.206 |
+| rdkit_PEOE_VSA2 | 776 | 3.02498 | 5.16207 | 0 | 30.343 |
+| rdkit_PEOE_VSA3 | 776 | 2.00674 | 4.42371 | 0 | 40.4573 |
+| rdkit_PEOE_VSA4 | 776 | 2.34663 | 10.2018 | 0 | 153.665 |
+| rdkit_PEOE_VSA5 | 776 | 1.98434 | 8.01396 | 0 | 92.8075 |
+| rdkit_PEOE_VSA6 | 776 | 32.0658 | 22.9971 | 0 | 116.009 |
+| rdkit_PEOE_VSA7 | 776 | 21.1763 | 16.4717 | 0 | 159.299 |
+| rdkit_PEOE_VSA8 | 776 | 9.12295 | 9.05574 | 0 | 50.6924 |
+| rdkit_PEOE_VSA9 | 776 | 8.56924 | 9.44417 | 0 | 53.5919 |
 
-(142 more rows not shown)
+(134 more rows not shown)
 
 </details>
 
 ### Categorical features
+
+<details>
+<summary>Show the table (11 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | bioconcentration_mechanism | 1 | lipid storage | 458 | 59.02 |
 | bioconcentration_mechanism | 2 | metabolized or eliminated | 254 | 32.73 |
 | bioconcentration_mechanism | 3 | additional storage sites | 64 | 8.25 |
+| logKOW_type | 1 | measured | 652 | 84.02 |
+| logKOW_type | 2 | predicted | 122 | 15.72 |
+| logKOW_type | 3 | &lt;NA> | 2 | 0.26 |
+| scaffold | 1 | c1ccc(-c2ccccc2)cc1 | 64 | 8.25 |
+| scaffold | 2 | c1ccc2ccccc2c1 | 24 | 3.09 |
+| scaffold | 3 | c1ccc(Oc2ccccc2)cc1 | 21 | 2.71 |
+| scaffold | 4 | c1ccc(Cc2ccccc2)cc1 | 18 | 2.32 |
+| scaffold | 5 | c1ncncn1 | 9 | 1.16 |
+
+</details>
 
 ## Build
 

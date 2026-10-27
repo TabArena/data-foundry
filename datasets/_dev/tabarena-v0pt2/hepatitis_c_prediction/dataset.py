@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, drop_columns
 
 ROUNDED_LABS = ["ALB", "ALT", "AST", "BIL", "CREA", "GGT", "PROT"]
 
@@ -75,6 +75,9 @@ class HepatitisCPrediction(AbstractCuratedDataset):
     # Task
     target = "Category"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason="Hoffmann et al. 2018 report overall and per-class accuracy under leave-one-out; 88% donors, so accuracy is dominated by donor vs patient; the suspect-donor class is dropped (MET-2). Original rejected: accuracy. log_loss is the multiclass fallback.",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "hcvdat0.csv")

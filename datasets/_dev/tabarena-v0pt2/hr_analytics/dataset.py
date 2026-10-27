@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, drop_columns
 
 RAW_FILE = "train_jqd04QH.csv"
 """The hackathon's train file: 18,359 enrollees with labels, 2,425 of them looking for a job change."""
@@ -96,7 +96,7 @@ class HrAnalytics(AbstractCuratedDataset):
         - Missing values stay missing (company type 27%, company size 26%, gender 22%, major 15%).
         - Duplicates: without the ID, 45 rows repeat an earlier row and 17 feature vectors carry both labels. They
           belong to different enrollees and stay.
-        - IID split: one row per enrollee and no dates. The contest also scored ROC AUC.
+        - IID split: one row per enrollee and no dates.
         - Note: the task probes flag `no_spread` (ROC AUC LightGBM 0.625, linear 0.622, random forest 0.619; LightGBM
           +0.012 over random forest, paired SE 0.006). We keep the task: a real signal with a low ceiling (Lennart,
           2026-10-14).
@@ -105,6 +105,12 @@ class HrAnalytics(AbstractCuratedDataset):
     # Task
     target = "LookingForJobChange"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="AUC-ROC",
+        reference="https://www.analyticsvidhya.com/datahack/contest/the-data-supremacy (also https://www.analyticsvidhya.com/datahack/contest/janatahack-hr-analytics)",
+        definition="Area under the ROC curve on the probability that an enrollee looks for a job change.",
+    )
     accepted_check_warnings = {
         "meta_license_unknown": (
             "Neither contest page (The Data Supremacy, 2018; JanataHack: HR Analytics, 2020) states a licence: they "

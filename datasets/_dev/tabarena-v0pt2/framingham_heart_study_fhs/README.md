@@ -2,23 +2,25 @@
 report_format: data-foundry-report-v2
 unique_name: framingham_heart_study_fhs
 container_format: 2
-checksum: v2:99d1c1a7451916cf4f4ea00e4a498aa707afbd4260f4d25263f738d2c8eb9975
+checksum: v2:ade8c6ebcb5cbda2d074794847be9d836511be6691c7d4f9026098426194b9f0
 build: null
 build_stale: false
 data:
-  n_rows: 4224
-  n_features: 15
+  n_rows: 4199
+  n_features: 14
   dtypes:
-    category: 1
-    float64: 9
-    int64: 6
+    category: 7
+    float64: 7
+    int64: 1
   n_test_dataset_rows: null
 task:
-  target: chd_within_10_years
+  target: ascvd_within_10_years
   problem_type: binary_classification
   metric: roc_auc
+  metric_origin: fallback
+  scoring_columns: null
   split_regime: iid
-  stratify_on: chd_within_10_years
+  stratify_on: ascvd_within_10_years
   time_on: null
   group_on: null
   group_labels: null
@@ -30,12 +32,14 @@ splits:
   random_state: 4267
   time_horizon: null
   time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
   n_train:
-    min: 2816
-    max: 2816
+    min: 2799
+    max: 2800
   n_test:
-    min: 1408
-    max: 1408
+    min: 1399
+    max: 1400
 bundle_checks:
   ok: true
   errors: []
@@ -45,41 +49,43 @@ bundle_checks:
 decisions:
 - 'The target is rebuilt: MIT''s TenYearCHD counts deaths and losses to follow-up
   as CHD'
-- 'Cohort: the baseline exam of the participants free of CHD'
+- 'Cohort: the baseline exam of the participants without prior ASCVD'
+- Prior strokes are recorded as incident strokes on day 0
+- 'Endpoint: hard ASCVD, the outcome of the current treatment decision'
 ---
 
 # framingham_heart_study_fhs
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `chd_within_10_years`, scored with `roc_auc` on IID splits. 4,224 rows and 15 features. Source: GOV Website (2004).
+Binary classification of `ascvd_within_10_years`, scored with `roc_auc` on IID splits. 4,199 rows and 14 features. Source: GOV Website (2004).
 
-Not built yet. The current definition gives checksum `v2:99d1c1a7451916cf4f4ea00e4a498aa707afbd4260f4d25263f738d2c8eb9975`.
+Not built yet. The current definition gives checksum `v2:ade8c6ebcb5cbda2d074794847be9d836511be6691c7d4f9026098426194b9f0`.
 
 ## In brief
 
-**Question.** Will a person without coronary heart disease have a first coronary event within ten years?
+**Question.** Will a person without heart disease or stroke have a heart attack, die of heart disease or have a stroke within ten years?
 
-**Use case.** At a routine exam, a physician estimates the 10-year risk of a first coronary heart disease event for a patient free of it, to decide on prevention, for example blood pressure or cholesterol treatment.
+**Use case.** At a patient's first assessment, a physician estimates the 10-year risk of a first hard atherosclerotic cardiovascular event (heart attack, coronary death or stroke), the risk on which current US guidelines decide statin treatment, for a patient free of such disease.
 
-**One row.** One participant of the Framingham Heart Study (Massachusetts) at the baseline exam, free of coronary heart disease (4,224 participants of the teaching version of the data; period not stated).
+**One row.** One participant of the Framingham Heart Study (Massachusetts) at the first exam, the baseline exam of about 1956 (three exams roughly 1956-1968), free of coronary heart disease and stroke (4,199 participants of the teaching version of the data).
 
-**Predicted.** Whether a first coronary heart disease event (angina, heart attack, coronary insufficiency or death from it) occurs within 10 years of the exam; 9.0% have one.
+**Predicted.** Whether a first hospitalized heart attack, death from coronary heart disease or stroke occurs within 10 years of the exam (hard ASCVD, the outcome of the 2013 pooled cohort equations); 6.6% have one.
 
-**Known at prediction time.** Age, sex, education, smoking and cigarettes per day, blood pressure medication, earlier stroke, hypertension, diabetes, total cholesterol, systolic and diastolic blood pressure, BMI, heart rate and glucose.
+**Known at prediction time.** Age, sex, education, smoking and cigarettes per day, blood pressure medication, hypertension, diabetes, total cholesterol, systolic and diastolic blood pressure, BMI, heart rate and glucose. HDL cholesterol, which current risk scores use, is missing: it was measured only at the third exam.
 
 **What the test data stands for.** Random participants, so the test data stands for new patients examined in the same way.
 
-**Our changes to the source.** We rebuild the label from the event dates; in the common copy, 265 of 644 positives had no coronary event within 10 years. We drop the 16 participants whose follow-up ended early without an event.
+**Our changes to the source.** We rebuild the label from the event dates as hard ASCVD; in the common copy, 265 of 644 positives had no coronary event within 10 years. We drop the 25 participants with an earlier stroke and the 16 whose follow-up ended early without an event.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** Everything is measured at the exam and the outcome follows within a fixed ten years, as in use. The teaching data was anonymized by undocumented methods, so values may be slightly perturbed.
+> **Use case fit: direct (the rows, features and split mirror the use case).** Everything is measured at the exam and the outcome, the one current treatment decisions use, follows within a fixed ten years, as in use. The care is that of the late 1950s, before statins (3.0% on blood pressure medication). The teaching data was anonymized by undocumented methods: no noise was added (digit preference intact); permutation or visit selection cannot be checked.
 
 ## Files in this folder
 
 | file | what it is |
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
-| [`explore.ipynb`](explore.ipynb) | The workbench for looking at the data (`ds = workbench()`), committed without outputs. Not needed to rebuild. |
+| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/framingham_heart_study_fhs.md`](../../../../curation/records/framingham_heart_study_fhs.md)
@@ -97,8 +103,8 @@ on request. The R package riskCommunicator redistributes it with NHLBI's permiss
 (sha256 8fdd578ae462f823bf737f451d8a98227c35cb2dbd6390cf2df3b3fa97050f56). It matches every count and mean of
 the BioLINCC documentation we compared (period-1 participants, prevalent CHD, events and deaths by sex). We
 export it to CSV with pyreadr; in R, write.csv(framingham, "framingham_teaching.csv", row.names = FALSE) gives
-the same values. The Kaggle upload shreyjain601/framingham-heart-study ("Framingham Dataset.csv") holds the
-same 453,453 values in the same order.
+the same values. The Kaggle upload shreyjain601/framingham-heart-study ("Framingham Dataset.csv") is reported
+to hold the same 453,453 values in the same order; not re-checked.
 
 mkdir -p local-data-warehouse/framingham_heart_study_fhs && cd local-data-warehouse/framingham_heart_study_fhs
 wget https://cran.r-project.org/src/contrib/Archive/riskCommunicator/riskCommunicator_1.0.0.tar.gz
@@ -136,17 +142,26 @@ Only curators run `build`, when the dataset ships.
 | license | NHLBI BioLINCC teaching dataset, free on request; BioLINCC: 'teaching datasets are completely unsuitable for publication purposes since specific statistical measures were used to create anonymous versions'. Redistributed 'with permission from the National Heart, Lung, and Blood Institute' in the R package riskCommunicator (GPL-3) |
 | data_tags | IID |
 | reference | nhlbi2004framingham,grembi2022riskcommunicator,bertsimas2017analyticsedge |
-| rows x columns | 4,224 x 16 |
-| task.target | chd_within_10_years |
+| rows x columns | 4,199 x 15 |
+| task.target | ascvd_within_10_years |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
 | task.split_regime | iid |
-| task.stratify_on | chd_within_10_years |
+| task.stratify_on | ascvd_within_10_years |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | fallback: the default for the problem type: the source defines no metric |
+| definition | area under the ROC curve |
+| reason | The teaching dataset defines no task or metric. The context (10-year risk scores) points to the C statistic, which equals roc_auc for a fixed-horizon binary outcome, so the fallback and the context agree. |
 
 <details>
-<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 7 categorical, 0 string, 0 datetime</summary>
 
-- categorical (1): `chd_within_10_years`
+- categorical (7): `male`, `education`, `currentSmoker`, `BPMeds`, `prevalentHyp`, `diabetes`, `ascvd_within_10_years`
 - string (0): none
 - datetime (0): none
 
@@ -185,93 +200,142 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 4,224 rows of the final frame (random rows: the frame is shuffled); 12 of 16 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 4,199 rows of the final frame (random rows: the frame is shuffled); 12 of 15 columns, the target first. Cells are cut at 40 characters.
 
-| chd_within_10_years | male | totChol | age | sysBP | diaBP | currentSmoker | cigsPerDay | BMI | diabetes | BPMeds | heartRate |
+| ascvd_within_10_years | male | totChol | age | sysBP | diaBP | currentSmoker | cigsPerDay | BMI | diabetes | BPMeds | heartRate |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | 0 | 302 | 54 | 210 | 127.5 | 0 | 0 | 31.98 | 0 | 0 | 68 |
-| No | 1 | 309 | 43 | 124 | 85 | 1 | 20 | 26.91 | 1 | 0 | 70 |
-| No | 0 | 254 | 49 | 142 | 87 | 0 | 0 | 27.94 | 0 | 0 | 60 |
-| No | 1 | 200 | 47 | 126 | 86 | 1 | 20 | 26.84 | 0 | 0 | 80 |
-| No | 1 | 231 | 42 | 123 | 87 | 1 | 20 | 21.48 | 0 | 0 | 75 |
+| No | 1 | 227 | 50 | 132 | 59 | 0 | 0 | 25.12 | 0 | 0 | 57 |
+| No | 0 | 179 | 41 | 111 | 79 | 0 | 0 | 25.87 | 0 | 0 | 85 |
+| No | 0 | 175 | 57 | 123 | 72 | 0 | 0 | 22.37 | 0 | 0 | 77 |
+| No | 0 | 320 | 51 | 145 | 85 | 1 | 9 | 24.03 | 0 | 0 | 75 |
+| Yes | 0 | 275 | 63 | 148 | 75 | 0 | 0 | 28.87 | 0 | 0 | 70 |
 
 ## Curation notes
 
 We start with the Framingham Heart Study teaching dataset of NHLBI BioLINCC, as redistributed in the R package
-riskCommunicator. We keep the baseline exam (period 1) of the 4,240 participants free of CHD, the population at
-risk of the documentation (p. 5).
+riskCommunicator. We keep the baseline exam (period 1, about 1956; the three exams ran roughly 1956-1968,
+documentation p. 1) of the 4,215 participants free of CHD and stroke, the cohort without prior atherosclerotic
+cardiovascular disease (ASCVD). The year 2004 is the creation date of the teaching file (2004-03-02,
+documentation p. 8); its first release date is not stated.
 
-- Prediction point: the baseline exam. A physician predicts whether a participant free of coronary heart disease
-  will have a first CHD event within 10 years, from the 15 risk factors of period 1.
+- Prediction point: the baseline exam. A physician predicts whether a participant free of CHD and stroke will
+  have a first hard ASCVD event within 10 years, from 14 risk factors of period 1.
 - We read the teaching dataset rather than MIT's cut of it (the file of the Kaggle uploads, its baseline rows
   with PREVCHD = 0), because the label has to be rebuilt from the event columns.
-- Target `chd_within_10_years`: Yes when the first CHD event (ANYCHD: angina pectoris, myocardial infarction,
-  coronary insufficiency or fatal CHD) happens within 3,652 days of the baseline exam. MIT's TenYearCHD is 1
-  exactly when TIMECHD is below 10 years, and TIMECHD is the censor date for a participant without an event,
-  so 265 of its 644 positives had no CHD event within 10 years (decision table). We keep ANYCHD, the CHD of
-  MIT's task; hard CHD (MI_FCHD) would give 191 Yes.
-- The 251 participants who died without CHD within 10 years are No: they had no CHD event. Dropping them would
-  select the cohort on an event after the prediction point and remove high-risk negatives.
-- We drop the 16 participants whose CHD follow-up ended within 10 years without an event: their 10-year status
-  is unknown. 4,224 participants remain, 379 Yes (9.0%).
-- We drop the identifier RANDID, the columns constant in the cohort (PERIOD, TIME, PREVCHD, PREVAP, PREVMI),
-  HDLC and LDLC (measured at period 3 only) and the follow-up columns (events and days to event, death or
-  censoring).
+- Target `ascvd_within_10_years`: Yes when a first hospitalized myocardial infarction or fatal CHD (MI_FCHD,
+  day TIMEMIFC) or a first stroke (STROKE, day TIMESTRK) happens within 3,652 days of the baseline exam. This is
+  hard ASCVD, the outcome of the ACC/AHA pooled cohort equations (2013), the score on which current US statin
+  decisions are made (Lennart, 2026-10-22: hard ASCVD matches the real-world use now). For context on the
+  same CHD-free cohort, any CHD (ANYCHD: angina pectoris, myocardial infarction, coronary insufficiency or
+  fatal CHD; the outcome of the FHS 10-year CHD function of Wilson et al. 1998) gives 379 Yes and hard CHD
+  (MI_FCHD, the outcome of ATP III) 191 (decision table 3).
+- MIT's TenYearCHD is 1 exactly when TIMECHD is below 10 years, and TIMECHD is the censor date for a participant
+  without an event, so 265 of its 644 positives had no CHD event within 10 years (decision table 1). Its
+  label cannot be used for any endpoint.
+- Prior ASCVD is excluded, as in the pooled cohort equations: besides the 194 with prevalent CHD, we drop the 25
+  participants with a stroke before the baseline exam (PREVSTRK = 1). The teaching data records their stroke
+  as STROKE = 1 on day 0, so kept they would all be Yes and `prevalentStroke` would give their label away.
+- The 218 participants who died without hard ASCVD within 10 years are No: they had no event (LEAK-22).
+  Dropping them would select the cohort on an event after the prediction point and remove high-risk negatives.
+- We drop the 16 participants whose follow-up ended within 10 years without an event (the earlier of the
+  TIMEMIFC and TIMESTRK censor dates): their 10-year status is unknown. 4,199 participants remain, 276 Yes
+  (6.6%; 187 hard CHD, 99 stroke, 10 both).
+- We drop the identifier RANDID, the columns constant in the cohort (PERIOD, TIME, PREVCHD, PREVAP, PREVMI,
+  PREVSTRK), HDLC and LDLC (measured at period 3 only, so the task lacks the HDL that current risk scores use)
+  and the follow-up columns (events and days to event, death or censoring).
 - We rename the features as in MIT's cut; `male` is 1 for SEX = 1 (men) and 0 for SEX = 2 (women). The flags
-  stay 0/1 and education stays numeric, as it is ordered. Age and the flags without missing values are stored
-  as integers.
+  stay 0/1. `education` becomes its four labels as a category (CLEAN-12; Lennart, 2026-10-22: a categorical
+  code is encoded as such). Age and the flags without missing values are stored as integers.
 - Missing values are real missing values in the source; there are no sentinels, and the ranges match the
-  documentation.
-- Anomaly: BioLINCC anonymized the teaching data by methods it does not document. The data is consistent where
-  we can check it, so a perturbation, if any, is small. Three participants have a CHD censor date after their
-  death; they are No either way.
-- No duplicate rows: no two participants share all 15 features.
+  documentation. cigsPerDay heaps at 9 and 43, values that occur almost only at period 1; their coding is
+  undocumented, and we keep them.
+- Anomaly: BioLINCC anonymized the teaching data by methods it does not document (Nahhas, Introduction to
+  Regression Methods for Public Health Using R, App. A.6, names permutations or random visit selection). No
+  noise was added: digit preference is intact (systolic BP ends in 0 far more often than in an odd digit).
+  Within a person, BMI and systolic BP six years apart correlate at r 0.90 and 0.71, and ages match the exam
+  days in every later exam. Permutation or visit selection cannot be checked. Four participants have an
+  MI/CHD and stroke censor date (end of follow-up) after their death; they are No either way.
+- Selection: the teaching data is "a subset of the data collected as part of the Framingham study" on 4,434
+  participants (documentation p. 1), of the 5,209 enrolled in 1948; how they were chosen is not documented.
+  The first exam is about 1956, so people who died or left before it are likely missing. The task stands for
+  this subset, not for the whole cohort.
+- Terms: BioLINCC calls teaching data unsuitable for publication (`license`). We use it to compare learning
+  methods, not to estimate clinical effects.
+- No duplicate rows: no two participants share all 14 features.
 - Note: IID split, one row per participant. The use case is risk prediction for new patients at an exam, and
-  the teaching data has no exam dates or family identifiers; the hidden-group probe finds no hidden group.
+  the teaching data has no exam dates or family identifiers, so spouses and relatives cannot be identified.
+- Possible variant (Lennart, 2026-10-22): every event-free exam with 10 years of follow-up left (periods 1-3),
+  split grouped by participant, would make a grouped task; for any CHD (10,759 rows, 1,229 Yes) logistic
+  regression rose from 0.736 to 0.745 on the same baseline test rows; not measured for hard ASCVD. Not shipped:
+  the use case is a patient's first assessment (USE-11), and the later exams are older, selected survivors.
 
 ## Splits
 
 Default splits.
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 2,816 rows, test 1,408 rows.
+3 repeat(s) x 3 fold(s) with seed 4267; train 2,799 to 2,800 rows, test 1,399 to 1,400 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 2816 | 1408 |
-| 0 | 1 | 2816 | 1408 |
-| 0 | 2 | 2816 | 1408 |
-| 1 | 0 | 2816 | 1408 |
-| 1 | 1 | 2816 | 1408 |
-| 1 | 2 | 2816 | 1408 |
-| 2 | 0 | 2816 | 1408 |
-| 2 | 1 | 2816 | 1408 |
-| 2 | 2 | 2816 | 1408 |
+| 0 | 0 | 2799 | 1400 |
+| 0 | 1 | 2799 | 1400 |
+| 0 | 2 | 2800 | 1399 |
+| 1 | 0 | 2799 | 1400 |
+| 1 | 1 | 2799 | 1400 |
+| 1 | 2 | 2800 | 1399 |
+| 2 | 0 | 2799 | 1400 |
+| 2 | 1 | 2799 | 1400 |
+| 2 | 2 | 2800 | 1399 |
 
 ## Decisions
 
 ### 1. The target is rebuilt: MIT's TenYearCHD counts deaths and losses to follow-up as CHD
 
-MIT's TenYearCHD equals TIMECHD < 3652 days in 4,240 of 4,240 rows, and TIMECHD is the day of the first CHD event or, without one, the censor date (death, last contact or end of follow-up). Our label is a first CHD event (ANYCHD = 1) within 10 years. Participants of MIT's rows, matched to the teaching dataset on their 15 features.
+MIT's TenYearCHD equals TIMECHD < 3652 days in 4,240 of 4,240 rows, and TIMECHD is the day of the first CHD event or, without one, the censor date (death, last contact or end of follow-up). So it is no label for any endpoint; ours is built from the event and death days. Participants of MIT's rows, matched to the teaching dataset on their 15 features.
 
-| outcome within 10 years | participants | MIT TenYearCHD = 1 | TIMECHD min (days) | TIMECHD max (days) | chd_within_10_years |
+| any CHD within 10 years | participants | MIT TenYearCHD = 1 | TIMECHD min (days) | TIMECHD max (days) | ascvd_within_10_years = Yes |
 |---|---|---|---|---|---|
-| CHD within 10 years | 379 | 379 | 26 | 3640 | Yes |
-| died without CHD within 10 years | 251 | 249 | 53 | 8766 | No |
-| lost to follow-up within 10 years | 16 | 16 | 754 | 3647 | dropped |
-| CHD-free for 10 years | 3594 | 0 | 3655 | 8766 | No |
+| CHD within 10 years | 379 | 379 | 26 | 3640 | 197 |
+| died without CHD within 10 years | 251 | 249 | 53 | 8766 | 33 |
+| lost to follow-up within 10 years | 16 | 16 | 754 | 3647 | 0 |
+| CHD-free for 10 years | 3594 | 0 | 3655 | 8766 | 46 |
 
-### 2. Cohort: the baseline exam of the participants free of CHD
+### 2. Cohort: the baseline exam of the participants without prior ASCVD
 
-The population at risk of the documentation (period 1, PREVCHD = 0), without the participants whose 10-year status is unknown.
+The pooled cohort equations apply to people without ASCVD, so prevalent CHD and prevalent stroke are dropped; the teaching data codes a prior stroke as STROKE = 1 on day 0, which would make each a Yes. Participants whose 10-year status is unknown are dropped; deaths from other causes are No (LEAK-22).
 
 | step | participants |
 |---|---|
 | participants at the baseline exam (period 1) | 4434 |
 | with prevalent CHD (dropped) | 194 |
 | free of CHD (MIT's 4,240 rows) | 4240 |
-| lost to follow-up within 10 years without CHD (dropped) | 16 |
-| kept | 4224 |
-| kept, chd_within_10_years = Yes | 379 |
+| with prevalent stroke (dropped) | 25 |
+| free of CHD and stroke | 4215 |
+| lost to follow-up within 10 years without hard ASCVD (dropped) | 16 |
+| died without hard ASCVD within 10 years (kept, No) | 218 |
+| kept | 4199 |
+| kept, ascvd_within_10_years = Yes | 276 |
+
+### 3. Prior strokes are recorded as incident strokes on day 0
+
+Every CHD-free participant with a stroke before the baseline exam has STROKE = 1 and TIMESTRK = 0.
+
+| index | CHD-free participants with PREVSTRK = 1 |
+|---|---|
+| participants | 25 |
+| STROKE = 1 | 25 |
+| TIMESTRK = 0 | 25 |
+
+### 4. Endpoint: hard ASCVD, the outcome of the current treatment decision
+
+The ACC/AHA pooled cohort equations (2013), on which US statin decisions are made, predict a first heart attack, CHD death or stroke. Any CHD and hard CHD are the outcomes of the older FHS and ATP III scores; counted here for context.
+
+| first event within 10 years | free of CHD (4,240) | kept rows (4,199) |
+|---|---|---|
+| any CHD (ANYCHD; FHS 10-year CHD function, 1998) | 379 | 374 |
+| hard CHD (MI_FCHD; ATP III, 2001) | 191 | 187 |
+| stroke (STROKE) | 124 | 99 |
+| hard ASCVD (MI_FCHD or STROKE; pooled cohort equations, 2013) | 301 | 276 |
 
 ## Bundle checks
 
@@ -283,67 +347,75 @@ The population at risk of the documentation (period 1, PREVCHD = 0), without the
 ### Feature summary
 
 <details>
-<summary>Show the table (16 rows)</summary>
+<summary>Show the table (15 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| chd_within_10_years | category | 0 | 0 | 2 | No, Yes |
-| glucose | float64 | 384 | 9.09 | 143 | 75.0, 77.0, 73.0, 80.0, 70.0, 83.0, 78.0, 74.0, 76.0, 85.0 |
-| education | float64 | 105 | 2.49 | 4 | 1.0, 2.0, 3.0, 4.0 |
-| BPMeds | float64 | 53 | 1.25 | 2 | 0.0, 1.0 |
-| totChol | float64 | 49 | 1.16 | 248 | 240.0, 220.0, 260.0, 210.0, 232.0, 250.0, 200.0, 225.0, 230.0, 205.0 |
+| education | category | 105 | 2.5 | 4 | 0-11 years, high school or GED, some college or vocational school, college degr… |
+| BPMeds | category | 52 | 1.24 | 2 | 0.0, 1.0 |
+| male | category | 0 | 0 | 2 | 0, 1 |
+| currentSmoker | category | 0 | 0 | 2 | 0, 1 |
+| diabetes | category | 0 | 0 | 2 | 0, 1 |
+| prevalentHyp | category | 0 | 0 | 2 | 0, 1 |
+| ascvd_within_10_years | category | 0 | 0 | 2 | No, Yes |
+| glucose | float64 | 383 | 9.12 | 141 | 75.0, 77.0, 73.0, 80.0, 70.0, 83.0, 78.0, 74.0, 76.0, 85.0 |
+| totChol | float64 | 49 | 1.17 | 247 | 240.0, 220.0, 210.0, 260.0, 232.0, 250.0, 200.0, 230.0, 225.0, 205.0 |
 | cigsPerDay | float64 | 29 | 0.69 | 33 | 0.0, 20.0, 30.0, 15.0, 10.0, 9.0, 5.0, 3.0, 40.0, 1.0 |
-| BMI | float64 | 19 | 0.45 | 1364 | 22.19, 22.91, 23.48, 22.54, 23.09, 25.09, 25.23, 23.1, 22.73, 25.94 |
-| heartRate | float64 | 1 | 0.02 | 73 | 75.0, 80.0, 70.0, 60.0, 85.0, 72.0, 65.0, 90.0, 68.0, 100.0 |
-| sysBP | float64 | 0 | 0 | 234 | 120.0, 130.0, 110.0, 115.0, 125.0, 124.0, 122.0, 126.0, 128.0, 116.0 |
+| BMI | float64 | 17 | 0.4 | 1357 | 22.19, 22.91, 23.48, 22.54, 23.09, 25.09, 22.73, 23.1, 25.23, 27.73 |
+| heartRate | float64 | 1 | 0.02 | 73 | 75.0, 80.0, 70.0, 85.0, 60.0, 72.0, 65.0, 90.0, 68.0, 100.0 |
+| sysBP | float64 | 0 | 0 | 233 | 120.0, 130.0, 110.0, 115.0, 125.0, 124.0, 122.0, 126.0, 128.0, 123.0 |
 | diaBP | float64 | 0 | 0 | 146 | 80.0, 82.0, 85.0, 70.0, 81.0, 84.0, 90.0, 78.0, 87.0, 86.0 |
-| male | int64 | 0 | 0 | 2 | 0, 1 |
-| age | int64 | 0 | 0 | 39 | 40, 46, 42, 41, 48, 39, 44, 45, 43, 52 |
-| currentSmoker | int64 | 0 | 0 | 2 | 0, 1 |
-| diabetes | int64 | 0 | 0 | 2 | 0, 1 |
-| prevalentStroke | int64 | 0 | 0 | 2 | 0, 1 |
-| prevalentHyp | int64 | 0 | 0 | 2 | 0, 1 |
+| age | int64 | 0 | 0 | 39 | 40, 46, 42, 48, 41, 39, 44, 45, 43, 51 |
 
 </details>
 
 ### Target distribution
 
-| chd_within_10_years | count | pct |
+| ascvd_within_10_years | count | pct |
 |---|---|---|
-| No | 3845 | 91.03 |
-| Yes | 379 | 8.97 |
+| No | 3923 | 93.43 |
+| Yes | 276 | 6.57 |
 
 ### Numeric features
 
-<details>
-<summary>Show the table (15 rows)</summary>
-
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| male | 4224 | 0.429214 | 0.495023 | 0 | 1 |
-| totChol | 4175 | 236.743 | 44.6106 | 107 | 696 |
-| age | 4224 | 49.602 | 8.5768 | 32 | 70 |
-| sysBP | 4224 | 132.344 | 22.0326 | 83.5 | 295 |
-| diaBP | 4224 | 82.8885 | 11.8954 | 48 | 142.5 |
-| currentSmoker | 4224 | 0.493608 | 0.500018 | 0 | 1 |
-| cigsPerDay | 4195 | 8.97831 | 11.8855 | 0 | 70 |
-| BMI | 4205 | 25.8079 | 4.08176 | 15.54 | 56.8 |
-| diabetes | 4224 | 0.0258049 | 0.158572 | 0 | 1 |
-| BPMeds | 4171 | 0.0297291 | 0.169859 | 0 | 1 |
-| heartRate | 4223 | 75.875 | 12.0027 | 44 | 143 |
-| glucose | 3840 | 81.9742 | 23.9833 | 40 | 394 |
-| education | 4119 | 1.97766 | 1.019 | 1 | 4 |
-| prevalentStroke | 4224 | 0.00591856 | 0.0767133 | 0 | 1 |
-| prevalentHyp | 4224 | 0.310606 | 0.462797 | 0 | 1 |
-
-</details>
+| totChol | 4150 | 236.742 | 44.5944 | 113 | 696 |
+| age | 4199 | 49.5639 | 8.56618 | 32 | 70 |
+| sysBP | 4199 | 132.247 | 21.9983 | 83.5 | 295 |
+| diaBP | 4199 | 82.8469 | 11.879 | 48 | 142.5 |
+| cigsPerDay | 4170 | 9.00839 | 11.9027 | 0 | 70 |
+| BMI | 4182 | 25.8 | 4.05691 | 15.54 | 56.8 |
+| heartRate | 4198 | 75.8914 | 12.0078 | 44 | 143 |
+| glucose | 3816 | 81.9392 | 23.9261 | 40 | 394 |
 
 ### Categorical features
 
+<details>
+<summary>Show the table (18 rows)</summary>
+
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| chd_within_10_years | 1 | No | 3845 | 91.03 |
-| chd_within_10_years | 2 | Yes | 379 | 8.97 |
+| BPMeds | 1 | 0.0 | 4030 | 95.98 |
+| BPMeds | 2 | 1.0 | 117 | 2.79 |
+| BPMeds | 3 | &lt;NA> | 52 | 1.24 |
+| ascvd_within_10_years | 1 | No | 3923 | 93.43 |
+| ascvd_within_10_years | 2 | Yes | 276 | 6.57 |
+| currentSmoker | 1 | 0 | 2121 | 50.51 |
+| currentSmoker | 2 | 1 | 2078 | 49.49 |
+| diabetes | 1 | 0 | 4091 | 97.43 |
+| diabetes | 2 | 1 | 108 | 2.57 |
+| education | 1 | 0-11 years | 1701 | 40.51 |
+| education | 2 | high school or GED | 1241 | 29.55 |
+| education | 3 | some college or vocational school | 683 | 16.27 |
+| education | 4 | college degree or more | 469 | 11.17 |
+| education | 5 | &lt;NA> | 105 | 2.5 |
+| male | 1 | 0 | 2396 | 57.06 |
+| male | 2 | 1 | 1803 | 42.94 |
+| prevalentHyp | 1 | 0 | 2906 | 69.21 |
+| prevalentHyp | 2 | 1 | 1293 | 30.79 |
+
+</details>
 
 ## Build
 

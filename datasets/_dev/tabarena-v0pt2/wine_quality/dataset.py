@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class WineQuality(AbstractCuratedDataset):
@@ -68,6 +68,12 @@ class WineQuality(AbstractCuratedDataset):
     # Task
     target = "median_wine_quality"
     problem_type = "regression"
+    metric = Metric.source(
+        "mae",
+        original="MAD (mean absolute deviation), with REC accuracy at tolerance T=0.25/0.5/1.0 and Kappa",
+        reference="Cortez et al. 2009, Decision Support Systems 47(4):547-553",
+        definition="Mean absolute error of the predicted median quality grade",
+    )
     accepted_check_warnings = {
         "task_target_low_cardinality": "The target is the median of at least three expert grades on a 0-10 scale "
         "(7 values occur); the paper models it as regression (Cortez et al. 2009, Sec. 2.2).",

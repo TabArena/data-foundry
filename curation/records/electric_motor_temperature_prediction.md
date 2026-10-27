@@ -47,6 +47,8 @@ Text says 4 target temperatures? are 4 PM, ST, SW, SY, we select PM
 
 CC (2026-10-06, Lennart): Kept after the task-probe sweep of the 2026-10-06 build. The probe flagged `no_spread`: R^2 0.970 (linear), 0.963 (LightGBM) and 0.937 (random forest), and with 3 grouped folds the paired gap (0.026) is within 2 standard errors. The tuned methods spread: on BeyondArena the RMSE of the 21 configurations ranges from 1.77 (RealMLP, tuned) to 3.52 (dummy 22.9), so the task separates methods even though all explain most of the variance.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source mse — Kirchgaessner, Wallscheid, Boecker 2021 (IEEE Trans. Energy Conversion, arXiv:2001.06246) rank and tune by MSE in K^2; the scored metric changes from rmse to mse.
+
 ## Reference
 
 @article{kirchgassner2020estimating,

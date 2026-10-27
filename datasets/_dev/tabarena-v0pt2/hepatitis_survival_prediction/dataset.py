@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class HepatitisSurvivalPrediction(AbstractCuratedDataset):
@@ -68,6 +68,9 @@ class HepatitisSurvivalPrediction(AbstractCuratedDataset):
     # Task
     target = "class"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason="Efron & Gong 1981/1986 study how to estimate the error rate of Gregory's logistic rule on these 155 patients: a statistics-methods paper, not a decision; 32 deaths, so accuracy is coarse. Original rejected: error rate. roc_auc is the binary fallback.",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         columns = [

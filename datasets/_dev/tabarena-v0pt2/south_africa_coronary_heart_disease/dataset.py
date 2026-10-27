@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class SouthAfricaCoronaryHeartDisease(AbstractCuratedDataset):
@@ -71,6 +71,9 @@ class SouthAfricaCoronaryHeartDisease(AbstractCuratedDataset):
     # Task
     target = "chd"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason="Rousseauw et al. 1983 (CORIS baseline study) is an epidemiological screening study with no prediction metric; ESL (Hastie, Tibshirani & Friedman, Sec. 4.4.2 and 5.2.2) uses the data to illustrate logistic regression coefficients and splines, not to score predictions. A retrospective case-control sample makes a ranking metric (roc_auc) the safer choice, as the case share is set by design.",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "SAHeart.csv")

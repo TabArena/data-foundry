@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class LabourInspectionCompliance(AbstractCuratedDataset):
@@ -70,11 +70,22 @@ class LabourInspectionCompliance(AbstractCuratedDataset):
         - The data has spatial information (County).
         - There are lot of undescribed numeric values. Thus, we do some general purpose preprocessing and drop all columns with less than 5 not nan values
         - The data has no dates, although the task is temporal and the inspections span January 2012 to June 2019 (per the Dataverse description). Without the inspection dates, we must treat the task as IID.
+        - Metric: precision at the median score (k = 50% of the test fold), which the paper calls the most important statistic; the same section calls accuracy or AUC also important, and the median cut is the paper's choice, not a stated inspection capacity (curator call, Lennart 2026-10-21).
     """
 
     # Task
     target = "NonCompliance"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "precision_at_k",
+        original="precision at the median prediction score (with balanced accuracy, accuracy, recall and AUC)",
+        reference="Flogard & Mengshoel 2022, NeurIPS Datasets and Benchmarks, Sec. 6.4-6.5",
+        definition=(
+            "share of non-compliant inspections among the half of the test fold with the highest scores "
+            "(threshold at the median score)"
+        ),
+        params={"k_fraction": 0.5},
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "data.csv", sep=";")

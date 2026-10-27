@@ -43,3 +43,11 @@ Data might have spatial components
 CC (2026-10-01, Lennart): The Zenodo file (Sanz-Guerrero et al.) holds only loans that had finished (fully paid or charged off) by the 2018Q4 snapshot. Against accepted_2007_to_2018Q4.csv.gz, at least 99.8% of the 36-month loans are finished up to 2015Q4, but 57-93% per quarter in 2016 (38% in 2017, 11% in 2018), and only 63-97% of the 60-month loans per quarter from 2014 on. The missing loans are mostly good ones still being repaid, so later or longer loans skew the labels (default rate among finished loans 15-16% in 2013, 24-26% in 2016). The v0.2 definition therefore keeps only the 36-month loans issued up to 2015 (609,544 rows) and tests on the quarters 2015 Q2-Q4; `term` is used only for this selection, not as a feature.
 
 **Assessment (AI, 2026-10-14), joint-applicant fields:** In accepted_2007_to_2018Q4.csv.gz the sec_app_* fields and revol_bal_joint are filled only from 2017Q1 on (1,025 of 4,407 joint applications in 2017Q1, then nearly all of them); joint applications start in 2015Q4 (511 loans) but without these fields. Among the 36-month loans issued up to 2015, all sec_app_* fields and revol_bal_joint are empty, so the sec_app_fico_n the definition built was empty and dropped with them. The definition now leaves these fields out of the merge; the final frame is unchanged (609,544 rows x 82 columns, same values).
+
+CC (2026-10-21, Lennart): record the SPLIT-9 / SPLIT-14 reading and the SPLIT-10 exception (cross-dataset item, ok).
+
+**Exception to SPLIT-10 (2026-10-21, Lennart):** a loan's outcome is known only when it ends, up to 36 months after issue, with no outcome dates: a 36-month gap leaves 5-9% of the rows for training in the three windows, a 12-month gap 33-46%, below the 50% floor. Serves SPLIT-14 (Must) (principles.md, Tensions).
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Sanz-Guerrero & Arroyo 2025 tune by balanced accuracy for its 'more stable behaviour' and test AUC second with DeLong tests; balanced accuracy fixes no decision threshold or costs for approving a loan (MET-6). Original rejected: balanced accuracy. roc_auc is the binary fallback (the paper's tested metric).
+
+CC (2026-10-21, Lennart): the metric is the roc_auc fallback, not the paper's balanced accuracy.

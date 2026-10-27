@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - Duplicate
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 collections:
 - TableShift
 source_links:

@@ -39,6 +39,10 @@ Data: pre-election interview (features) and a post-election interview (target)
 
 This entry refers to the February 5, 2026 version.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — ANES (the data's first publication) defines no prediction task. TableShift (Gardner et al. 2023), which defined the voting task, scores accuracy for every task of its benchmark, a house convention, not a choice from the decision; our task differs (temporal year splits, pre-election items only) and 78% voted, so accuracy at 0.5 is coarse. Original rejected: TableShift accuracy. roc_auc is the binary fallback.
+
+CC (2026-10-21, Lennart): metric: the fallback (roc_auc), not TableShift's accuracy.
+
 ## Reference
 
 @dataset{anes_timeseries_cdf_2026,

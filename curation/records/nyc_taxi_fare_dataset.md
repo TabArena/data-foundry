@@ -9,7 +9,7 @@ decision_markers:
 - Not Representative
 - Duplicate
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - Non-IID (Temporal)
 - Non-IID (Grouped)
 collections:

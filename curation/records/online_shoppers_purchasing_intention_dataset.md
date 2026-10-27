@@ -48,6 +48,8 @@ CC (2026-10-01, Lennart): Leak audit: kept `PageValues`, dropped the February-Ma
 
 **Assessment (AI, 2026-10-19):** open since the leak audit of 2026-10-01: 40 exact duplicate rows remain after the February-May sessions were dropped. To decide in the next pass: drop them as collection copies (with the share in the notes) or keep them as natural repeats.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Sakar et al. 2019 report accuracy, TPR, TNR and F1 (F1 stressed over accuracy, full text paywalled); no fixed threshold or costs. Original rejected: F1. roc_auc is the binary fallback.
+
 ## Reference
 
 Real-time prediction of online shoppers’ purchasing intention using multilayer perceptron and LSTM recurrent neural networks

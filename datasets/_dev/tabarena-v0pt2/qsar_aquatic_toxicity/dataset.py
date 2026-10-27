@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
 
 
 class QsarAquaticToxicity(AbstractCuratedDataset):
@@ -25,18 +25,19 @@ class QsarAquaticToxicity(AbstractCuratedDataset):
             "estimate, the number of nitrogen atoms and counts of atom fragments."
         ),
         split="Random chemicals, so the test data stands for new chemicals like those measured.",
-        fit="approximate",
+        fit="direct",
         fit_reason=(
-            "The descriptors come from the structure alone, as in screening, but the authors chose these eight from a"
-            " larger set by their fit to the toxicity values, which may carry information on the test chemicals into "
-            "the features."
+            "The descriptors come from the structure alone, as in screening. The authors chose these eight from a "
+            "larger set by their fit to the toxicity values, which may carry information on the test chemicals into "
+            "the features: a potential leak kept and noted, which does not make the fit approximate (USE-8 as amended"
+            " 2026-10-21)."
         ),
     )
 
     # Dataset
     unique_name = "qsar_aquatic_toxicity"
     year = "2014"
-    domain = "biology & life sciences"
+    domain = "chemistry & material science"
     source = "UCI"
     source_url = "https://doi.org/10.24432/C5SG7H"
     license = "CC BY 4.0"
@@ -66,6 +67,9 @@ class QsarAquaticToxicity(AbstractCuratedDataset):
     # Task
     target = "LC50"
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason="Cassotti et al. 2014 report Q2 (cv and external) with RMSE; r2 and rmse rank models the same within a fold. rmse is the regression fallback."
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         columns = ["TPSA", "SAacc", "H-050", "MLOGP", "RDCHI", "GATS1p", "nN", "C-040", "LC50"]

@@ -40,6 +40,12 @@ Andrej: Need to verify correct lag between features and target
 
 CC (2026-10-19, Lennart): 67 numeric columns are min-max scaled over all companies; kept, with a `Potential leak, kept on purpose` note in the definition: a scaling over all rows is no strong leak and often happens in reality. It is a reason for `No` only when a strong leak is suspected or the data can be rebuilt.
 
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: Liability_Assets_Flag (found on the data in `_feature_types`).
+
+CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer from the semantic context, keep it a number, this is a real-world bias. We want to make things categorical if we know from the context they are indeed such" (CLEAN-14, amended again). Kept categorical: Liability_Assets_Flag (explicit; 1 when liabilities exceed assets).
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Liang et al. 2016 report accuracy and Type I / II errors on a 1:1 sample and costs at several ratios, no single matrix.
+
 ## Reference
 
 Liang, D., Lu, C.-C., Tsai, C.-F., and Shih, G.-A. (2016) Financial Ratios and Corporate Governance Indicators in Bankruptcy Prediction: A Comprehensive Study. European Journal of Operational Research, vol. 252, no. 2, pp. 561-572

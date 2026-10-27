@@ -16,6 +16,7 @@ implements. The overview for people is the [skills README](../README.md).
 |---|---|---|
 | The pipeline: the stages and commands, the record after each step, the queues, which file is the truth for what, the agents | [pipeline.md](references/pipeline.md) | finding where a record stands or what comes next |
 | The curation records: editing through the store API, comment lines (`CC`, `Assessment`, `Counter-argument`, `Open issues`), AI triage, fields and vocabulary, claims, duplicates and retirements, the review queue, the definition pointers | [records.md](references/records.md) | before reading or writing any record |
+| Claims: the live board of who works on which dataset (a git branch), the `claims` commands, the hook, the records' mirror | [claims.md](references/claims.md) | before working on records or folders, and when a claim warning shows |
 | The dashboard: running and restarting it, its filters, pills, pins and links | [dashboard.md](references/dashboard.md) | starting it or explaining it to a curator |
 | The v2 definition: the folder, `dataset.py`, the base class, `task_summary`, field mapping, `curation_comments`, the `_clean` recipe, `Grouping` / `Temporal` / `TemporalSplits`, `_1m` versions, traps, bundle-check slugs, `_decisions`, recording decisions, reference definitions, the harness | [definitions.md](references/definitions.md) | writing or reviewing a `dataset.py` |
 | Running `dataset check` and the probes, and the checks only Data Foundry has (pointers, template, README) | [checks_and_probes.md](references/checks_and_probes.md) | verifying a definition |
@@ -23,6 +24,7 @@ implements. The overview for people is the [skills README](../README.md).
 | Rebuilding the working copy and verifying the build (only when the curator asks) | [rebuild.md](references/rebuild.md) | the curator asks for a rebuild |
 | Reaching sources: the Kaggle command line, PubChem, Zindi, SEC EDGAR, paywalls | [sources_access.md](references/sources_access.md) | a page does not load |
 | Batch runs with several agents and the machine's limits | [agent_runs.md](references/agent_runs.md) | planning a run of more than a few datasets |
+| Exploring a dataset in a notebook: an optional starting point (`ds = workbench()`), not part of a dataset folder | [explore_notebook_reference.ipynb](references/explore_notebook_reference.ipynb) | you want a notebook to look at a dataset; copy it next to `dataset.py`, do not commit the copy |
 
 The scripts are in [scripts/](scripts/):
 

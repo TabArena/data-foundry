@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
 
 
 class GarmentsWorkerProductivity(AbstractCuratedDataset):
@@ -89,6 +89,9 @@ class GarmentsWorkerProductivity(AbstractCuratedDataset):
     # Task
     target = "actual_productivity"
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason="The intro paper (Al Imran, Rahim, Ahmed 2021, IJBIDM) reports six evaluation metrics without naming one (full text 403); the same authors' earlier CoDIT 2019 paper headlines MAE. No unique metric of the first publication. rmse is the regression fallback."
+    )
 
     # Splits
     splits_comment = """

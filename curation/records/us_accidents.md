@@ -5,7 +5,7 @@ checked_by:
 - Lennart
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 - Time-series (Forecasting)
 tags:
 - Free Text (Short)

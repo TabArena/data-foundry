@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class CreditG(AbstractCuratedDataset):
@@ -60,12 +60,25 @@ class CreditG(AbstractCuratedDataset):
     """
     curation_comments = """
         - We reversed the original ordinal encoding.
-        - Anomaly: the original task used a cost matrix for evaluation.
+        - Metric: the Statlog cost matrix on probabilities, each applicant predicted as the class of least expected cost (the AI's choice; the curator was unsure and noted TabArena's threshold tuning, 2026-10-21).
     """
 
     # Task
     target = "good_or_bad_customer"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "cost_matrix",
+        original="Statlog German credit cost matrix (average misclassification cost)",
+        reference=(
+            "UCI Statlog (German Credit Data) page https://doi.org/10.24432/C5NC77 (german.doc); Michie, "
+            "Spiegelhalter & Taylor 1994, Statlog book, Ch. 9 (German credit, average cost)"
+        ),
+        definition=(
+            "mean cost per applicant: 5 for a bad customer predicted good, 1 for a good customer predicted bad; from "
+            "probabilities, predicted bad when p(bad) > 1/6"
+        ),
+        params={"labels": ["good", "bad"], "matrix": [[0, 1], [5, 0]], "prediction": "proba"},
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/german.data", header=None, sep=r"\s+")

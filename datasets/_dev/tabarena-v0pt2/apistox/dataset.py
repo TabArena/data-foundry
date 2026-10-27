@@ -9,6 +9,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -68,7 +69,7 @@ class Apistox(AbstractCuratedDataset):
     # Dataset
     unique_name = "apistox"
     year = "2024"
-    domain = "biology & life sciences"
+    domain = "chemistry & material science"
     source = "Other"  # Zenodo, with the Scientific Data descriptor; UCI 995 only links to the Zenodo DOI
     source_url = "https://doi.org/10.5281/zenodo.11062076"
     license = "CC BY-NC 4.0"
@@ -115,6 +116,13 @@ class Apistox(AbstractCuratedDataset):
     # Task
     target = "toxic_to_bees"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Adamczyk et al. 2025 (ApisTox, Scientific Data) recommend reporting AUROC and MCC together; no "
+            "single deciding metric (MET-5). MCC needs a threshold the source does not fix. roc_auc is the "
+            "binary fallback and the paper's threshold-free metric."
+        ),
+    )
 
     # Splits: four ten-year windows of first publication years (every year from 1950 on is in the data, so ten
     # distinct years are ten calendar years).
@@ -144,9 +152,10 @@ class Apistox(AbstractCuratedDataset):
         return drop_columns(df, [*DROPPED_AFTER_TEST, "label", "name", "CID", "CAS", "SMILES"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # The agrochemical flags stay 0/1, the year an integer and the descriptors floats; the target becomes a
-        # category.
-        return FeatureTypes()
+        # The four agrochemical flags are yes/no flags: categorical (CLEAN-14). The year stays an integer and the
+        # descriptors numeric, the RDKit fragment counts too where only 0 and 1 occur; the target becomes a category.
+        del df
+        return FeatureTypes(categorical=["herbicide", "fungicide", "insecticide", "other_agrochemical"])
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         toxic = raw["label"].eq(1)

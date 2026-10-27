@@ -39,6 +39,8 @@ CC (2026-10-14, Lennart): Binary, Phishy against Legitimate: the Suspicious clas
 
 CC (2026-10-14, Lennart): Accept `dataset_pure_feature_value` (all 167 sites with popUpWidnow = 1 are phishing): the same reversed coding as the other signals, a page property, not a leak.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Abdelhamid, Ayesh & Thabtah 2014 score 3-class accuracy; our task is binary (suspicious class dropped) and no costs are fixed.
+
 ## Reference
 
 Phishing detection based Associative Classification data mining

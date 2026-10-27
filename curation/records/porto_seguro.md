@@ -31,6 +31,12 @@ type_adapter_id: curation-record-v1
 
 CC: "Data from Kaggle competition. Some ordinal features, definitely interesting. Top solutions applied some interesting feature engineering. We do not know much about the features given, but from what we know about the task it might be suitable to use random splits as the task likely has been designed time-invariant as the targets are always the ground truth of what happened in the future.; -1 maps to nan, needs preprocessing. While some information are missing, it is more likely than not that a random split is appropriate enough; need to make missing values to nans!"
 
+CC (2026-10-21, Lennart): the declared metric documents the original use case's metric; overrule it only when it is biased or wrong (evidence from the paper); keep the note of the original metric (TP-6 amended).
+
+**Assessment (AI, 2026-10-21):** metric `normalized_gini_coefficient` replaced by the default `roc_auc`: for a binary target the normalized Gini is 2 x ROC AUC - 1, so both rank models the same, and a listed name is scored downstream while an unlisted one falls back to the default. The notes name the Gini. Needs a rebuild to reach the container.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — the competition's normalized Gini coefficient, 2 x AUC - 1 for a binary target, which ranks models the same as ROC AUC (Kaggle evaluation page).
+
 ## Reference
 
 Addison Howard, Adriano Moala, and Walter Reade. Porto Seguro’s Safe Driver Prediction. https://kaggle.com/competitions/porto-seguro-safe-driver-prediction, 2017. Kaggle.

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, Metric, TaskSummary
 
 
 def composition_labels(elements: pd.DataFrame) -> pd.Series:
@@ -83,6 +83,12 @@ class Superconductivity(AbstractCuratedDataset):
     # Task
     target = "critical_temp"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmse",
+        original="out-of-sample RMSE (with R2)",
+        reference="Hamidieh 2018, Computational Materials Science 154:346-354, doi:10.1016/j.commatsci.2018.07.052",
+        definition="RMSE of the critical temperature in K (paper: about 9.5 K for XGBoost; R2 about 0.92 reported alongside)",
+    )
     grouping = Grouping(
         on="composition",
         labels="per_sample",

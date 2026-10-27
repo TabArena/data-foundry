@@ -41,6 +41,8 @@ CC (2026-10-14, Lennart): Build from the hackathon's public train file (18,359 r
 
 CC (2026-10-14, Lennart): Task probes `no_spread` accepted: the real labels give ROC AUC 0.62-0.63 for every model family (LightGBM +0.012 over random forest, paired SE 0.006), a real signal with a low ceiling.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC-ROC (https://www.analyticsvidhya.com/datahack/contest/the-data-supremacy (also https://www.analyticsvidhya.com/datahack/contest/janatahack-hr-analytics)).
+
 ## Reference
 
 https://www.kaggle.com/datasets/arashnic/hr-analytics-job-change-of-data-scientists

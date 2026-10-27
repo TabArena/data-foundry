@@ -36,6 +36,8 @@ Lennart: After preprocessing (handling duplicated patiens, handling one-hot enco
 
 Andrej: Requires proper preprocessing and handling of duplicate patients before inclusion
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — the first publication is an explanatory logistic regression with no predictive score.
+
 ## Reference
 
 Beata Strack, Jonathan P. DeShazo, Chris Gennings, Juan L. Olmo, Sebastian Ventura, Krzysztof J. Cios, and John N. Clore, “ Impact of HbA1c Measurement on Hospital Readmission Rates: Analysis of 70,000 Clinical Database Patient Records,” BioMed Research International, vol. 2014, Article ID 781670, 11 pages, 2014.

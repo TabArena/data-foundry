@@ -46,6 +46,10 @@ The data would allow to predict no shows as a second target
 
 The distributions are suspiciously clean, but the data source seems valid.
 
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: IsRepeatedGuest.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — The data paper publishes the data without a prediction task or metric; the authors' earlier cancellation-prediction papers used other (non-public) data and reported several metrics (accuracy, precision, AUC), none set as the task's metric.
+
 ## Reference
 
 Antonio, N., de Almeida, A., & Nunes, L. (2019). Hotel booking demand datasets. Data in brief, 22, 41-49.

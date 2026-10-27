@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class TourTravelsChurn(AbstractCuratedDataset):
@@ -38,6 +38,7 @@ class TourTravelsChurn(AbstractCuratedDataset):
     source = "Kaggle"
     source_url = "https://www.kaggle.com/datasets/tejashvi14/tour-travels-customer-churn-prediction/"
     license = "CC0: Public Domain"
+    data_tags = ("ForcedIIDFromTemporal",)
     download_description = """
         kaggle datasets download tejashvi14/tour-travels-customer-churn-prediction --unzip && mkdir -p local-data-warehouse/tour_travels_churn && mv Customertravel.csv local-data-warehouse/tour_travels_churn/
     """
@@ -52,11 +53,17 @@ class TourTravelsChurn(AbstractCuratedDataset):
     """
     curation_comments = """
         The source of the data from Kaggle is unknown but the data distributions look reasonable enough to use. But I would also not be surprised if we find out the data is artificially created.
+
+        - The split is forced (ForcedIIDFromTemporal, SPLIT-8): the company would train on customers whose churn is known by an earlier date and score its current ones, but the file is one undated snapshot. A dated window would test a model on a later season's customers, whose bookings and services may differ; the cost cannot be measured here.
+        - Source (PROV-2 as amended, Lennart 2026-10-21): the first upload is a bare Kaggle upload that names no origin. It is kept for now, case by case, because the data looks sound (the generated-data probe raises no flag: no rule leaves, 71% of the 21 column pairs dependent, no uniform column, 2026-10-21) and the upload is a source to point to; the risk is taken knowingly ("if the data looks good enough even without a good source but there is a source, we want to keep it for now and risk it"). The gap is in the approximate fit.
     """
 
     # Task
     target = "Target"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason="Bare Kaggle dataset upload with no competition, paper or stated evaluation metric",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "Customertravel.csv")

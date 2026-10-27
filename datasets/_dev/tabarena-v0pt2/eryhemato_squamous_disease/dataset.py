@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class EryhematoSquamousDisease(AbstractCuratedDataset):
@@ -77,6 +77,12 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
     # Task
     target = "class"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Guevenir et al. 1998 report cross-validated accuracy of VFI5, without costs between the six diagnoses; we "
+            "use the 12 clinical features only. Original rejected: accuracy. log_loss is the multiclass fallback."
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         feature_names = [

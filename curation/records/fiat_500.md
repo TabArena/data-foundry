@@ -39,6 +39,8 @@ Andrej: Is crawled data, but one could imagine people to be interested in estima
 
 CC (2026-10-14, Lennart): Keep one row per car, its first listing (1,434 rows).
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — Kaggle dataset without a competition or paper; the data card names no metric.
+
 ## Reference
 
 https://www.kaggle.com/datasets/paolocons/another-fiat-500-dataset-1538-rows

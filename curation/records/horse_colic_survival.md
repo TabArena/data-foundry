@@ -35,6 +35,8 @@ type_adapter_id: curation-record-v1
 
 Has multiple possible classes (lesion or others). Decide for one that is reasonable
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — The UCI donation (McLeish & Cecile, 1989) defines no metric; its stated class attribute is the surgical lesion (attr 24), not the outcome we predict, and no paper defines an evaluation for the outcome task.
+
 ## Reference
 
 ?

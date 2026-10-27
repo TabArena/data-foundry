@@ -21,6 +21,7 @@ from data_foundry.schema import (
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadata,
     PredictiveMLTaskMetadataV2,
+    as_column_list,
     resolve_warehouse_dir,
 )
 from data_foundry.utils.checksum import (
@@ -51,6 +52,18 @@ containers), 2 for the v2 definitions (:mod:`data_foundry.v2`)."""
 NoIndentMetadata = [
     PredictiveMLSplitsMetadata.type_adapter_id,
 ]
+
+
+def feature_columns(container: CuratedContainer) -> list[str]:
+    """The model's input columns, in frame order: every column but the target, the group column(s) and, in format 2,
+    the scoring columns (:class:`~data_foundry.schema.ScoringColumn`: metric inputs, never features).
+
+    ``X = container.dataset[feature_columns(container)]``.
+    """
+    task = container.task_metadata
+    excluded = {task.target_column_name, *as_column_list(task.group_on)}
+    excluded.update(c.column for c in getattr(task, "scoring_columns", None) or ())
+    return [c for c in container.dataset.columns if c not in excluded]
 
 
 @dataclass
@@ -237,23 +250,14 @@ class CuratedContainer:
     def _feature_dtype_counts(self) -> dict[str, int]:
         """Count feature-column dtypes.
 
-        Excludes the target column and any ``group_on`` columns. Binary
+        Counts the :func:`feature_columns` (no target, group or scoring column). Binary
         columns (exactly two distinct non-null values, regardless of dtype)
         are counted only in the ``binary`` bucket — the ``numeric``,
         ``categorical``, ``datetime``, and ``text`` buckets all exclude
         binary columns, so the four buckets plus ``binary`` partition
         ``n_features``.
         """
-        excluded: set[str] = {self.task_metadata.target_column_name}
-        group_on = self.task_metadata.group_on
-        if isinstance(group_on, list):
-            excluded.update(group_on)
-        elif isinstance(group_on, str):
-            excluded.add(group_on)
-
-        feature_df = self.dataset.drop(
-            columns=[c for c in excluded if c in self.dataset.columns],
-        )
+        feature_df = self.dataset[feature_columns(self)]
         binary_cols = {c for c in feature_df.columns if feature_df[c].nunique(dropna=True) == 2}
         numeric_cols = feature_df.select_dtypes(include=["number"], exclude=["bool"]).columns
         categorical_cols = feature_df.select_dtypes(include=["category", "bool"]).columns
@@ -523,6 +527,13 @@ class CuratedContainer:
             adapter = TypeAdapter(MetadataRegistry[type_adapter_id])
             with meta_file.open("r") as f:
                 meta_data = json.load(f)
+
+            if type_adapter_id == PredictiveMLTaskMetadataV2.type_adapter_id and "objective_metric" not in meta_data:
+                raise ValueError(
+                    f"{path / meta_file.name}: written by an older data_foundry (format 2 with "
+                    "`objective_metric_name`, before the `objective_metric` spec); rebuild the container with the "
+                    "current version.",
+                )
 
             # backward compatibility for typo (FIXME: remove in the future)
             if "licence" in meta_data:

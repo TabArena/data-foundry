@@ -39,6 +39,8 @@ Great case of a dataset where there is a vision model and a tabular baseline (RF
 
 **Assessment (AI, 2026-10-14):** The data first appeared on Zenodo (Regensburg Pediatric Appendicitis Dataset v1.0, 2023-02-23, concept DOI 10.5281/zenodo.7669214; the definition downloads v1.03, 10.5281/zenodo.7711412), five days before the paper's preprint (arXiv 2302.14460). UCI 938 is a later copy whose metadata names the Zenodo DOI as its source, so the original source is Other, as in the definition. The old UCI link carried the wrong slug (`toxicity`); id 938 is this dataset.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Marcinkevics et al. 2024 report AUROC and AUPR side by side per target; neither is named as the criterion. roc_auc is the binary fallback.
+
 ## Reference
 
 @article{marcinkevivcs2024interpretable,

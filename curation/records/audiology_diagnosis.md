@@ -44,6 +44,8 @@ Discussion: Not a meaningful predictive task. The available data sample is highl
 
 CC (2026-10-06, Lennart): Re-defined the target after the task-probe review (flags `no_spread`, `unstable`). The 3-class merge (cochlear / normal / other) was our own, made from the diagnosis names: it put the 24 mixed losses under cochlear and lumped conductive with retrocochlear and central disorders under other. The 24 original diagnoses cannot be the target (16 have 4 or fewer cases), and dropping the rare ones does not help: the four large cochlear diagnoses are spelled out by two history findings (age_gt_60, history_noise: 139 of 147 cases). The source defines no grouping. The new target is the standard distinction between a hearing loss with and without a conductive part: normal 19, sensorineural 142, conductive_or_mixed 34 (195 cases). Duplicated cases (27) stay dropped, bells_palsy and the central diagnoses (possible_brainstem_disorder, poss_central) are dropped as not a type of hearing loss; the four types with conductive and mixed apart would leave 10 conductive cases, 3-4 per test fold. Probes on the rebuilt container: no flags; the linear model reaches log-loss skill +0.81 (log loss 0.14 against 0.76 for the class shares), the strongest single feature (`tymp`) +0.45. The label is partly read off its defining tests (a depth-3 tree reaches about 91% against 73% for the majority class), as any label of this data is.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — UCI page defines no metric; Protos reported classification accuracy on the 24 original diagnoses, a different target from our 3 grouped types, so no metric is defined for the shipped task.
+
 ## Reference
 
 @incollection{bareiss1990protos,

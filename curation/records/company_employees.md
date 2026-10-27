@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - No Good Target (yet)
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - Free Text (Short)
 - Review Prio 1 (Atlas)
 collections:

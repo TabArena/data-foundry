@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
 
 
 class RossmannStoreSales(AbstractCuratedDataset):
@@ -69,11 +69,21 @@ class RossmannStoreSales(AbstractCuratedDataset):
         - We assign categorical data type to the Store column and the DayOfWeek column.
         - For the train data, the # of customers per day is given, which is not available at the prediction point for the test data. The 1st-place solution says that one model variation computed recent-history features on the number of customers instead of sales, and also used store-level aggregates such as average sales per customer. However this would mean that we have to define split-specific splits. Since many high performing solutions did not utilize customer information, we drop the column.
         - The StateHoliday column has two encodings for the entry 0, one as number and one as object. We combine them into one category.
+        - The Kaggle test file covers 2015-08-01 to 2015-09-17 (48 days) for 856 of the 1,115 stores; the train file covers 2013-01-01 to 2015-07-31 (942 days) for all 1,115 (from the v1 exploration, counted 2026-10-22).
     """
 
     # Task
     target = "Sales"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmspe",
+        original="Root Mean Square Percentage Error (RMSPE)",
+        reference=(
+            "https://www.kaggle.com/competitions/rossmann-store-sales/overview/evaluation (Kaggle API "
+            "evaluationMetric: 'Root Mean Square Percentage Error')"
+        ),
+        definition="sqrt(mean(((y - p) / y)^2)) over the store-days with Sales != 0, on the raw sales",
+    )
 
     # Splits
     splits_comment = """
@@ -114,6 +124,10 @@ class RossmannStoreSales(AbstractCuratedDataset):
                 "StoreType",
                 "Assortment",
                 "PromoInterval",
+                # 0/1 flags (CLEAN-14)
+                "Promo",
+                "SchoolHoliday",
+                "Promo2",
             ],
             datetime=["Date"],
         )

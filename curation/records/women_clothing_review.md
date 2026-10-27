@@ -8,7 +8,7 @@ checked_by:
 suggestion: 'No'
 decision_markers:
 - Wrong Domain / Source Modality
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 - NLP (Text)
 collections:
 - TabSTAR

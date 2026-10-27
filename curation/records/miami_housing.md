@@ -37,6 +37,12 @@ Andrej: We need to write down the reason why we consider some housing datasets a
 
 **Assessment (AI, 2026-10-14):** The file first appeared on OpenML 43093 (MiamiHousing2016, uploaded 2021-09-24, creator and contributor Steven C. Bourassa, citing Mayer, Bourassa, Hoesli and Scognamiglio 2021, SSRN 3924412), so the source is OpenML, 2021; the definition said Kaggle and now says OpenML. The Kaggle dataset deepcontractor/miami-housing-dataset (last updated 2022-01-30) copies the OpenML description and names openml.org as its source; OpenML 44983 (2022-12-22) is a copy of that Kaggle dataset. All three describe the same 13,932 sales of 2016.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — Mayer et al. 2021 (SSRN) could not be read; the abstract names only 'predictive performance'. rmse on the log sale price is the regression fallback.
+
+**Assessment (AI, 2026-10-21):** metric now `Metric.from_context("rmsle", target_transform="log")` instead of the fallback rmse on the log target: a sale price's error matters relative to the price; the target still ships as log, and RMSLE is computed after the inverse, on the original scale (MET-3). Needs a rebuild to reach the container.
+
+CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
+
 ## Reference
 
 https://doi.org/10.1177/0042098020982508

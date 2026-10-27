@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
@@ -71,6 +71,9 @@ class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
     # Task
     target = "AcademicOutcome"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason="UCI page and the data paper define no task metric; the first-publication case study compares classifiers on several scores (likely F1 given the class imbalance) without a declared task metric. Not verified in full text."
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         data = pd.read_csv(raw_dir / "data.csv", sep=";")

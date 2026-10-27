@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
 
 FIVE_YEARS = 5 * 365.25  # days; N_Days is whole days, so an event on day 1,826 or earlier is within 5 years
 LAST_TRIAL_ID = 312  # IDs 1-312 are the trial patients, 313-418 the patients outside the trial
@@ -106,6 +106,13 @@ class CirrhosisPatientSurvivalPrediction(AbstractCuratedDataset):
     # Task
     target = "death_or_transplant_within_5y"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "The source is a survival study (Cox model); our binary 5-year label is a derived task with "
+            "no defined metric. The 5-year c-statistic used for GLOBE / Mayo risk scores equals ROC AUC "
+            "on a binary label, so roc_auc also follows from context."
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "cirrhosis.csv")

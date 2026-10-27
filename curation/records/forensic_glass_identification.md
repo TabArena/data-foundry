@@ -37,6 +37,8 @@ Generally a valid potential task, might be outdated but still valid for the task
 
 CC (2026-10-12, Lennart): Kept in TabArena v0.2 after the task-probe review (flag `few_minority`, multiclass). Tableware (class 6) has 9 rows, 3 in every test fold, and class 5 has 13 (4-5). Together they are 10% of the test rows and 14% of a random forest's log loss (0.70 against 1.51 for the class shares). Too Small is for a task whose scored units are a handful; one rare class of the source's own labels that does not decide the score is part of the task.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — the source defines no metric for the 6-class task; its only result (Spiehler's comparison) counts errors on a different, binary target.
+
 ## Reference
 
 UCI

@@ -6,7 +6,7 @@ checked_by:
 suggestion: 'No'
 decision_markers:
 - Missing source information
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 collections:
 - New (BeyondArena)
 source_links:
