@@ -4,12 +4,9 @@ name: Differentiated Thyroid Cancer Recurrence
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 1
-decision_markers:
-- Trivial
 tags:
 - Tiny Data
 collections:
@@ -46,6 +43,18 @@ Performance in paper is already very high, likely trivial
 CC (2026-10-21, Lennart): an unverified label definition makes the fit approximate ("yea it does"), and a potential leak kept on purpose does not by itself ("stay with direct fit if the task (without leakage) would be a direct fit"); USE-8 amended. The fit stays approximate, now for the unverified label (breadth and follow-up); the kept `M` is no longer a reason for it.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Borzooei et al. 2023 report AUC, sensitivity and specificity, none named as the criterion.
+
+CC (2026-10-26, Lennart): the `Trivial` marker is removed, as the definition has it (TP-4: without `Response`, a random forest beats the risk class alone on 59 of 60 splits, mean gain 0.032 ROC AUC; the paper's 0.98-0.997 used `Response`).
+
+**Assessment (AI, 2026-10-26):** the paper read (Borzooei et al. 2024, Eur Arch Otorhinolaryngol 281:2095-2104, the curator's PDF). Cohort: 383 patients of one centre, Table 1 with ATA high risk 32 and M1 18 as in the file, so the 34 high-risk or M1 patients are in the paper's cohort (issue 2: keep, (a)). Label: "recurrence status (including both locoregional and distant metastasis)", persistence not separated from recurrence. Follow-up: "a minimum follow-up period of 10 years ... The study spanned a period of 15 years". `Hx Radiothreapy` is "history of radiation therapy to the head and neck region", recorded with age and smoking at diagnosis (issue 6: keep, (b)). The paper's top feature is the structurally incomplete response (importance 0.843), which we drop.
+
+CC (2026-10-26, Lennart): issue 2: "ok keep then": the 34 ATA high-risk or M1 patients stay, as the paper's cohort includes them (LEAK-22).
+
+CC (2026-10-26, Lennart): issue 6, option (b): `Hx Radiothreapy` stays as a plain input, as the paper defines it as a history of head and neck irradiation collected at diagnosis ("ok (b)").
+
+**Assessment (AI, 2026-10-26):** issues 2 and 6 applied: `Hx Radiothreapy` is back among the 15 features with the paper's definition in the notes; the label, cohort and follow-up notes quote the paper; the metric note cites its Table 2. dataset check: 0 errors, 0 warnings. No open issue left.
+
+CC (2026-10-26, Lennart): verdict ship.
 
 ## Reference
 
