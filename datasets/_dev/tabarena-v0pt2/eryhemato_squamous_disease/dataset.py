@@ -34,7 +34,7 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
             "We drop the 22 findings from the biopsy and keep the clinical examination; with the biopsy the task is "
             "close to solved."
         ),
-        fit="direct",
+        fit="approximate",
         fit_reason=(
             "The clinical findings come before the biopsy and the label is the confirmed diagnosis, so the task is "
             "the differential the source describes. But the patients look like typical cases rather than a clinic's: "

@@ -30,7 +30,7 @@ class LjubljanaPrimaryTumor(AbstractCuratedDataset):
         ),
         split="Random patients.",
         changes="We drop the primary sites with fewer than 10 patients.",
-        fit="direct",
+        fit="approximate",
         fit_reason=(
             "The tissue type and the metastasis sites are known before the primary is found, and the label is the "
             "site found. But the rows are patients whose primary was found, with the spread typical of it (neck "

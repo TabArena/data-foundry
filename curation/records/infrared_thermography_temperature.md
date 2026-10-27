@@ -50,6 +50,8 @@ CC (2026-10-21, Lennart): scope: "Yes, go with (a)". The facial temperatures rea
 
 CC (2026-10-27, Lennart): marker Selection Bias, from the AI review of PR #16: the people were recruited at a university health center, 889 of the 1,020 in the raw file aged 18 to 25 and 3 over 60, against the clinic patients of the triage use case. The definition's fit_reason does not name the age range yet.
 
+CC (2026-10-27, Lennart): fit stays direct: the setting, a university clinic, sees the same mostly young people (USE-8, amended on the review of PR #16); the Selection Bias marker stays.
+
 ## Reference
 
 Infrared Thermography for Measuring Elevated Body Temperature: Clinical Accuracy, Calibration, and Evaluation

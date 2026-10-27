@@ -260,14 +260,16 @@ for the objects that were not picked (`sdss_17`: picked by colour for a spectrum
 `Selection Bias`; the verdict is usually still `Yes` (Andrej, 2026-10-20). It is a concern flag: name the gap in the
 definition's `fit_reason`, give the evidence in the record (the class mix, or a feature against a reference series),
 and judge the model comparison on the data, not on the marker. The marker does not by itself make the fit
-approximate: when the real-world setting of the use case has the same bias, the fit is direct (USE-8 in
-[use_case.md](use_case.md)). `eryhemato_squamous_disease` is the example: 93% of its lichen planus patients have mouth
-lesions and no other patient does, against 19% to 63% in clinic series; kept.
+approximate: the fit is direct when the real-world setting of the use case has the same bias, and approximate when it
+does not (USE-8 in [use_case.md](use_case.md)). The marker stays either way, since it says something special about the
+data (Lennart, 2026-10-27). `eryhemato_squamous_disease` is the example: 93% of its lichen planus patients have mouth
+lesions and no other patient does, against 19% to 63% in clinic series; kept, with an approximate fit.
 
 No marker when:
 
-* the use case is defined on the selected population (only granted loans for a repayment score, Andrej 2026-10-15;
-  patients referred for angiography, `heart_disease_cleveland`);
+* the selection is how the label comes to exist, so every dataset of the task has it (only granted loans have a
+  repayment outcome, Andrej 2026-10-15; only patients referred for angiography have its result,
+  `heart_disease_cleveland`);
 * one class was oversampled from the same population, which changes only the class shares (`credit_g`,
   `churn_telco_south_asia`);
 * tested compounds stand for the candidates a screen would test (the QSAR sets): how far a new candidate lies from the

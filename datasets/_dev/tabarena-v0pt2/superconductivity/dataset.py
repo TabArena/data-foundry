@@ -45,7 +45,7 @@ class Superconductivity(AbstractCuratedDataset):
             "We group the entries by composition; with random rows, 35% of the test rows had an identical row in "
             "training."
         ),
-        fit="direct",
+        fit="approximate",
         fit_reason=(
             "The features come from the formula, which is all a scientist has before synthesis, and the held-out "
             "compositions match screening new ones. But every row is a known superconductor (all critical "

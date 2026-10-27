@@ -86,7 +86,7 @@ Built as `01a111fc-a1c3-79c0-8d48-48221a6702fe` on 2026-10-06, but `dataset.py` 
 
 **Our changes to the source.** We drop the 22 findings from the biopsy and keep the clinical examination; with the biopsy the task is close to solved.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The clinical findings come before the biopsy and the label is the confirmed diagnosis, so the task is the differential the source describes. But the patients look like typical cases rather than a clinic's: 93% of those with lichen planus have mouth lesions and no other patient does, against 19% to 63% in clinic series. It is small and old.
+> **Use case fit: approximate (a stand-in with a known gap).** The clinical findings come before the biopsy and the label is the confirmed diagnosis, so the task is the differential the source describes. But the patients look like typical cases rather than a clinic's: 93% of those with lichen planus have mouth lesions and no other patient does, against 19% to 63% in clinic series. It is small and old.
 
 ## Files in this folder
 

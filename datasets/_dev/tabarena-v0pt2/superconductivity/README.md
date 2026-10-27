@@ -96,7 +96,7 @@ Built as `01a11308-e9d1-7f71-b3e3-e172887ea0d9` on 2026-10-06, but `dataset.py` 
 
 **Our changes to the source.** We group the entries by composition; with random rows, 35% of the test rows had an identical row in training.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The features come from the formula, which is all a scientist has before synthesis, and the held-out compositions match screening new ones. But every row is a known superconductor (all critical temperatures above 0 K), while most candidates do not superconduct, so a model trained here gives every candidate a critical temperature.
+> **Use case fit: approximate (a stand-in with a known gap).** The features come from the formula, which is all a scientist has before synthesis, and the held-out compositions match screening new ones. But every row is a known superconductor (all critical temperatures above 0 K), while most candidates do not superconduct, so a model trained here gives every candidate a critical temperature.
 
 ## Files in this folder
 

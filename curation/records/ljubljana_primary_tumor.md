@@ -40,6 +40,8 @@ CC (2026-10-12, Lennart): Kept in TabArena v0.2 after the task-probe review (fla
 
 **Assessment (AI, 2026-10-27):** evidence for the Selection Bias marker of PR #16, checked on primary-tumor.data: all 20 head and neck patients have neck nodes and 21 of the 24 breast patients have armpit nodes (8% and 4% of the other patients). The rows are patients whose primary was found, with the spread typical of it, not the patients with metastases of unknown origin the use case is about. The definition's fit_reason does not name this yet.
 
+CC (2026-10-27, Lennart): fit approximate (was direct): patients with metastases of unknown origin do not show the selection of these rows, so it is a known gap (USE-8, amended on the review of PR #16); the Selection Bias marker stays.
+
 ## Reference
 
 UCI

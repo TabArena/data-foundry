@@ -45,6 +45,8 @@ CC (2026-10-06, Lennart): Grouped by composition (was IID). The split follows wh
 
 CC (2026-10-27, Lennart): marker Selection Bias, from the AI review of PR #16: SuperCon lists only superconductors, and all 21,263 rows have a critical temperature above 0 K (the lowest is 0.00021 K), while the use case screens candidate compositions, most of which do not superconduct. The definition's fit_reason does not name this yet.
 
+CC (2026-10-27, Lennart): fit approximate (was direct): a screen meets mostly materials that do not superconduct, so the selection is a known gap (USE-8, amended on the review of PR #16); the Selection Bias marker stays.
+
 ## Reference
 
 Hamidieh, Kam. "A data-driven statistical model for predicting the critical temperature of a superconductor." Computational Materials Science 154 (2018): 346-354.

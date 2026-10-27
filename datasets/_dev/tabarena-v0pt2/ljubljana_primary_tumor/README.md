@@ -86,7 +86,7 @@ Built as `01a111fc-e43e-74ec-8af2-b710f7045924` on 2026-10-06, but `dataset.py` 
 
 **Our changes to the source.** We drop the primary sites with fewer than 10 patients.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The tissue type and the metastasis sites are known before the primary is found, and the label is the site found. But the rows are patients whose primary was found, with the spread typical of it (neck nodes in all 20 head and neck patients), not patients with metastases of unknown origin. A model in use would also meet the rare sites we left out.
+> **Use case fit: approximate (a stand-in with a known gap).** The tissue type and the metastasis sites are known before the primary is found, and the label is the site found. But the rows are patients whose primary was found, with the spread typical of it (neck nodes in all 20 head and neck patients), not patients with metastases of unknown origin. A model in use would also meet the rare sites we left out.
 
 ## Files in this folder
 
