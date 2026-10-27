@@ -37,6 +37,8 @@ CC (2026-10-06, Lennart): Kept after the task-probe review: the `no_spread` flag
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Esen et al. 2024 report accuracy, precision, recall, F-measure and AUC side by side, none named as the criterion (MET-5).
 
+CC (2026-10-27, Lennart): keep it as Andrej marked it: the Selection Bias marker and fit direct (USE-8, amended on the review of PR #16); how the patients were chosen is not stated.
+
 ## Reference
 
 @article{esen2024early,

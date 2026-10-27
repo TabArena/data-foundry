@@ -18,7 +18,8 @@ record, audit or PR that motivated it.
   `ljubljana_primary_tumor` and `superconductivity` move from `fit="direct"` to `"approximate"` (a dermatologist's
   lichen planus patients, metastases of unknown origin and a screen of mostly non-superconductors do not share the
   selection); `infrared_thermography_temperature` stays direct, as its university clinic sees mostly students.
-  `gallstone_disease` stays direct for now: how its patients were chosen is not stated.
+  `gallstone_disease` stays direct with the marker, as Andrej marked it (Lennart): how its patients were chosen is not
+  stated.
 - No container changes: the task summary is not stored in the container. The regenerated READMEs of the first four
   also show the checksum the current code gives (their builds were already stale; the checksum is the same with the
   old text), and the infrared README no longer lists the `REVIEW.md` that was deleted on 2026-10-21.
