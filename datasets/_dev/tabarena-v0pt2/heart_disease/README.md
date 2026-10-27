@@ -2,11 +2,11 @@
 report_format: data-foundry-report-v2
 unique_name: heart_disease
 container_format: 2
-checksum: v2:b2fc99859075e0ab99e22ab91fd1991a1ebc8e23cbcc4af7f9596762b7e3f6e6
+checksum: v2:9da73d1c17c2e01050b19d6091e6750c7dba37d6e03dd098f286ddf60cf1a065
 build: null
 build_stale: false
 data:
-  n_rows: 797
+  n_rows: 796
   n_features: 13
   dtypes:
     category: 9
@@ -41,10 +41,10 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 494
+    min: 493
     max: 597
   n_test:
-    min: 200
+    min: 199
     max: 303
 bundle_checks:
   ok: true
@@ -55,20 +55,20 @@ bundle_checks:
   accepted:
     task_group_count_low: 'Three hospitals by design: the source built its model at
       one hospital and applied it at the others. The fourth hospital (Switzerland)
-      is left out because its published file kept only 8 of its 23 patients without
-      disease.'
+      is left out because its published file kept only 8 of its about 27 patients
+      without disease.'
     splits_dimensions_off_protocol: Leave one hospital out gives exactly three splits.
       More repeats would split the same three hospitals the same way, so they would
       add copies, not information.
     groups_test_groups_few: 'Testing on one unseen hospital at a time is the task.
-      Each fold still scores 200 to 303 patients one by one (smallest class: 51).
+      Each fold still scores 199 to 303 patients one by one (smallest class: 51).
       The signal carries over to unseen hospitals: the linear model beats the class
-      shares on all three (task probes), and logistic regression reaches ROC AUC 0.868
-      on held-out hospitals (group probes, 2026-10-21). Most of the variation between
-      folds comes from Long Beach, the hardest hospital.'
+      shares at each of the three (task probes, ROC AUC 0.880, 0.898, 0.732). Most
+      of the variation between folds comes from Long Beach, the hardest hospital.'
     groups_largest_share_high: Cleveland is a real hospital, one of three, not a catch-all
-      value. When it is the test hospital, the model trains on the other two (494
-      patients), where two of Cleveland's tests were almost never recorded.
+      value. When it is the test hospital, the model trains on the other two (493
+      patients), where two of Cleveland's tests were rarely recorded (`ca` for 5,
+      `thal` for 62).
 decisions:
 - 'Split by hospital: train on two, test on the third'
 ---
@@ -77,27 +77,27 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `heart_disease_diagnosis`, scored with `roc_auc` on grouped splits by `hospital`. 797 rows and 13 features. Source: UCI (1988).
+Binary classification of `heart_disease_diagnosis`, scored with `roc_auc` on grouped splits by `hospital`. 796 rows and 13 features. Source: UCI (1988).
 
-Not built yet. The current definition gives checksum `v2:b2fc99859075e0ab99e22ab91fd1991a1ebc8e23cbcc4af7f9596762b7e3f6e6`.
+Not built yet. The current definition gives checksum `v2:9da73d1c17c2e01050b19d6091e6750c7dba37d6e03dd098f286ddf60cf1a065`.
 
 ## In brief
 
 **Question.** Will the angiogram of a patient at a new hospital show a narrowed coronary artery?
 
-**Use case.** A cardiologist estimates a chest-pain patient's chance of coronary artery disease from the history and noninvasive tests with a model built at other hospitals, to decide whether the patient needs angiography, as Detrano et al. (1989) applied their Cleveland model in Budapest, Long Beach and Switzerland.
+**Use case.** For a chest-pain patient referred for angiography, a cardiologist estimates from the history and the noninvasive tests done before it whether the angiogram will show narrowing, with a model built at other hospitals, to decide whether the angiogram is needed. Detrano et al. (1989) built their model in Cleveland and applied it at other hospitals, to spare patients an unnecessary angiogram (p. 309).
 
-**One row.** One of 797 patients examined by angiography at one of three hospitals: Cleveland Clinic (303), the Hungarian Institute of Cardiology in Budapest (294) and the VA Medical Center in Long Beach (200); exams of the 1980s, donated in 1988.
+**One row.** One of 796 patients examined by angiography at one of three hospitals: Cleveland Clinic (303), the Hungarian Institute of Cardiology in Budapest (294) and the VA Medical Center in Long Beach (199); exams of 1981 to 1987, donated in 1988.
 
-**Predicted.** Whether the angiogram shows more than 50% narrowing in any major coronary artery (49% do; 36% to 75% by hospital).
+**Predicted.** Whether the angiogram shows more than 50% narrowing in any major coronary artery (49% do; 36% to 74% by hospital).
 
-**Known at prediction time.** Age, sex, chest-pain type, resting blood pressure, cholesterol, fasting blood sugar, resting ECG, an exercise test (peak heart rate, chest pain on exercise, the ECG's ST depression and its slope) and, mostly in Cleveland, calcium seen on fluoroscopy and a thallium scan. Not the hospital.
+**Known at prediction time.** Age, sex, chest-pain type, resting blood pressure, cholesterol, fasting blood sugar, resting ECG, an exercise test (peak heart rate, chest pain on exercise, the ECG's ST depression and its slope) and, mostly in Cleveland, calcium seen on fluoroscopy and a thallium scan. Not the hospital, though which tests were recorded tells the hospitals apart.
 
 **What the test data stands for.** Whole hospitals are held out: each split trains on two hospitals and tests on the third, so the test data stands for the patients of a hospital the model has never seen.
 
-**Our changes to the source.** We merge three hospitals' files into one table and split by hospital, leave out the Swiss file (its release dropped most patients without disease), and merge the four grades of disease into one class.
+**Our changes to the source.** We merge three hospitals' files into one table and split by hospital, leave out the Swiss file (its release dropped most patients without disease), drop one Long Beach patient entered twice, and merge the four grades of disease into one class.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The features come from tests done before the angiogram that sets the label, and a held-out hospital is a new one with its own disease rate and test habits. But every patient had already been sent to angiography, so the data shows referred patients, not those a referral is decided for.
+> **Use case fit: approximate (a stand-in with a known gap).** Every patient had been referred for angiography, as at this check, and the features come from tests done before the angiogram (30 exercise tests dated after it, likely date errors, are kept). But Cleveland ran three tests on every patient by study protocol, and two are no longer used: CT has replaced the thallium-201 scan and calcium seen on fluoroscopy.
 
 ## Files in this folder
 
@@ -139,7 +139,7 @@ Only curators run `build`, when the dataset ships.
 | license | CC BY 4.0 |
 | data_tags | Non-IID, Grouped |
 | reference | detrano1989international |
-| rows x columns | 797 x 15 |
+| rows x columns | 796 x 15 |
 | task.target | heart_disease_diagnosis |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -153,9 +153,9 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
-| reason | Detrano et al. 1989 score reliability (calibration in the large) and clinical utility (percent correctly classified): two criteria, one of them about probabilities; no threshold or costs for the hard call. Original rejected: percent correctly classified. roc_auc is the binary fallback. |
+| reason | Detrano et al. 1989 score reliability, the mean predicted probability against the disease rate (calibration in the large) and by quintiles (p. 306), and clinical utility, the percent correctly classified over the thresholds 0.2 to 0.8 they call relevant for angiography decisions (p. 307): no single threshold, so a threshold-free metric (MET-7); UCI's heart-disease.names reports accuracy at 0.5, a default. No costs of errors: UCI's costs/ folder holds the prices of the tests, and Statlog's 5:1 heart cost matrix belongs to a later 270-row cut of the Cleveland file, not to this source. ROC AUC per held-out hospital does not score reliability. roc_auc is the binary fallback. |
 
 <details>
 <summary>Feature types: 9 categorical, 0 string, 0 datetime</summary>
@@ -186,46 +186,47 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 797 rows of the final frame (random rows: the frame is shuffled); 12 of 15 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 796 rows of the final frame (random rows: the frame is shuffled); 12 of 15 columns, the target first. Cells are cut at 40 characters.
 
 | heart_disease_diagnosis | age | sex | cp | trestbps | chol | fbs | restecg | thalach | exang | oldpeak | slope |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 52 | 1 | 3 | 140 | 259 | 0 | 1 | 170 | 0 | 0 | nan |
-| 0 | 53 | 0 | 2 | 113 | 468 | nan | 0 | 127 | 0 | 0 | nan |
-| 1 | 63 | 0 | 4 | 150 | 407 | 0 | 2 | 154 | 0 | 4 | 2 |
-| 1 | 54 | 1 | 4 | nan | nan | 0 | 1 | nan | nan | nan | nan |
-| 1 | 71 | 1 | 4 | 130 | 221 | 0 | 1 | 115 | 1 | 0 | nan |
+| Yes | 56 | male | asymptomatic | nan | nan | 0 | left ventricular hypertrophy | nan | nan | nan | nan |
+| Yes | 60 | male | non-anginal pain | 140 | 185 | 0 | left ventricular hypertrophy | 155 | 0 | 3 | flat |
+| No | 51 | female | non-anginal pain | 110 | 190 | 0 | normal | 120 | 0 | 0 | nan |
+| Yes | 46 | male | asymptomatic | 118 | 186 | 0 | normal | 124 | 0 | 0 | nan |
+| Yes | 54 | male | atypical angina | 192 | 283 | 0 | left ventricular hypertrophy | 195 | 0 | 0 | upsloping |
 
 ## Curation notes
 
-We start with the processed files of three hospitals from UCI's Heart Disease collection, the 14 attributes used in the study.
+We start with the processed files of three hospitals from UCI's Heart Disease collection, the 13 variables of the Detrano et al. (1989) model and its label (p. 305; pages of Am J Cardiol 64:304-310). UCI's raw 76-attribute files hold the same 294 Hungarian, 200 Long Beach and 123 Swiss patients, so the patients the release dropped are not public.
 
-- Prediction point: before the angiogram, with the history, the resting tests and the exercise test at hand. `ca` (major arteries with calcium seen on cardiac fluoroscopy, 0-3) and `thal` (exercise thallium scan) are noninvasive tests done before the angiogram (Detrano et al. 1986, PMID 3698241 and 3706156), so neither is read from it.
-- One study, three tasks merged: the files share the protocol, attributes and label, and a model trained on two hospitals ranks the third's patients nearly as well as one trained there (TabPFN 3.5 ROC AUC 0.888 on Cleveland, 0.906 on Hungary, 0.739 on Long Beach; trained in-site 0.913, 0.914, 0.708). We concatenate the files and keep the hospital as the group column.
-- Split by hospital, as in the source: Detrano et al. (1989) derived their model on the Cleveland patients and "applied [it] to" the other hospitals' patients (abstract). A hospital that uses a model built elsewhere brings its own disease rate (36% in Budapest, 46% in Cleveland, 75% in Long Beach, as in the paper) and its own test habits (`ca` and `thal` recorded almost only in Cleveland, no exercise test for 53 Long Beach patients). Held out whole, a hospital is scored on its own patients only. A random split would mix the hospitals in every test fold, and 68% of its positive-negative pairs would compare patients of two hospitals, a comparison no clinician makes. The model is not given the hospital: a new one is unknown.
-- Note: the task probes flag `unstable` (the standard error of the best model family's mean skill is 0.094 over the 3 splits). The signal is there at every held-out hospital: the linear model beats the class shares on 3 of 3 (mean ROC AUC 0.838). The spread is between hospitals, Long Beach being the hardest (TabPFN 3.5: 0.888 Cleveland, 0.906 Hungary, 0.739 Long Beach). Kept, as `consumer_complaints_1m` and `apistox` were with 3 and 4 windows.
-- Switzerland left out: its UCI file keeps 123 of the paper's 143 patients and only 8 of its 23 without disease (94% diseased against the paper's 84%), so its disease rate is the release's, not the hospital's, and as a held-out hospital it would be scored on 8 patients without disease.
-- Missing values: "?" becomes NaN. Cholesterol 0 (49 Long Beach rows) and resting blood pressure 0 (1 row) are impossible and become NaN. Other missing values stay: whether a test was done is known before the angiogram. In Hungary `slope` is missing exactly when there is no ST depression.
-- Target: `num` (0 = no narrowing over 50%, 1-4 = disease grades; the Hungarian file holds only 0/1) becomes the binary `heart_disease_diagnosis`, as in the study.
-- Codes are kept as in UCI: `sex` 1 = male; `cp` 1 typical angina, 2 atypical angina, 3 non-anginal pain, 4 asymptomatic; `fbs` 1 = fasting blood sugar over 120 mg/dl; `restecg` 0 normal, 1 ST-T wave abnormality, 2 left ventricular hypertrophy; `exang` 1 = angina on exercise; `oldpeak` ST depression on exercise relative to rest; `slope` of the peak-exercise ST segment, 1 up, 2 flat, 3 down; `thal` 3 normal, 6 fixed defect, 7 reversible defect.
-- Anomaly: the Hungarian file keeps 294 of the paper's 425 patients (36% diseased against 38%), selection not stated. 6 Long Beach angiograms are dated 7 to 15 days (one 369 days) before the exercise test in the raw file; kept. One Long Beach `oldpeak` is negative.
-- Duplicates: two rows repeat another row of the same hospital (one Hungarian, one Long Beach); with 13 coarse attributes these are plausible patients, kept.
+- Prediction point: after the referral for angiography, before the angiogram, with the history, the resting tests and the exercise test at hand. `ca` (major arteries with calcium seen on cardiac fluoroscopy, 0-3) and `thal` (exercise thallium scan) are noninvasive tests done before the angiogram (Detrano et al. 1986, PMID 3698241 and 3706156; in Cleveland by research protocol, read after the angiogram and without knowledge of its result, p. 305), so neither is read from it. In 30 patients the raw files date the angiogram before the exercise test (Cleveland 11, by 7 to 449 days; Hungary 13, by 1 to 367 days; Long Beach 6, by 7 to 15 days and one by 369), and one Long Beach angiogram is dated 1901; the codebook doubts this date field ("cmo: month of cardiac cath (sp?) (perhaps 'call')"), and the paper has every test within 6 weeks before the angiogram (p. 306). Kept: 15 of the 30 are diseased, and blanking their exercise tests leaves the linear model's ROC AUC at 0.836.
+- One study, three tasks merged: the files share the attributes, their coding and the label (though `ca` and `thal` were recorded almost only in Cleveland), and a model trained on the other two hospitals ranks a hospital's patients nearly as well as one trained there (logistic regression ROC AUC 0.880 on Cleveland, 0.898 on Hungary, 0.732 on Long Beach; trained in-site 0.905, 0.905, 0.663; TabPFN 3.5 gave 0.888, 0.906, 0.739 against 0.913, 0.914, 0.708 in the first run, not reproduced since). We concatenate the files and keep the hospital as the group column.
+- Split by hospital, the source's design generalised: Detrano et al. built their model on the Cleveland patients and "applied [it] to" the patients of the other hospitals (abstract, p. 305); here every hospital is tested once. A hospital brings its own disease rate (46% in Cleveland, 36% in Budapest, 74% in Long Beach; the paper's Table I gives 46%, 38% and 74%) and its own test habits (`ca` and `thal` recorded almost only in Cleveland, no exercise test for 53 Long Beach patients). Held out whole, a hospital is scored on its own patients only: a random split would compare patients of two hospitals in 68% of its positive-negative pairs, and the hospital's disease rate alone would reach a pooled ROC AUC of 0.65. The model is not given the hospital, but the features tell the hospitals apart (91% accuracy, 85% from which tests are missing); reweighting the training hospitals to one disease rate changes the mean ROC AUC by 0.003 or less.
+- Note: three hospitals give three splits, the case in which `covertype` (three areas) went back to a random split. Here the transfer to a new hospital is the source's design, no class drops out (51 or more patients of each class in every test fold), and resampling the patients of each held-out hospital separates 7 of 15 pairs of model families, against 4 to 5 for a random 10 x 3 split. `sepsis_prediction_1m` kept its hospitals as a feature because its use case is the known hospitals.
+- Note: the task probes flag `unstable` (standard error of the best family's mean skill 0.105 over the 3 splits). The linear model beats the class shares at every held-out hospital (ROC AUC 0.880, 0.898, 0.732); the spread is Long Beach, the hardest hospital under every split, in-site too. Kept as one atypical group, as `musk` and `pancreatic_cancer_mouse_detection` were; re-check with tuned results after the build.
+- Switzerland left out: its UCI file keeps 123 of the paper's 143 patients and only 8 of its about 27 without disease (94% diseased against 81% by the paper's Table I, 85% of 85 in Basel and 74% of 58 in Zurich; the abstract gives 84%; cholesterol 0 in every row), so its disease rate is the release's, not the hospital's, and as a held-out hospital it would be scored on 8 patients without disease.
+- Missing values: "?" becomes NaN. Cholesterol 0 (49 Long Beach rows) and resting blood pressure 0 (1 row) are impossible and become NaN. Other missing values stay: whether a test was done is known before the angiogram, and the source's model was built for patients with only some tests (352 logistic regressions, one per clinically relevant set of variables, p. 305). The test hospitals did the thallium scan for a minority (Table II: 41 patients in Long Beach, 33 in Budapest) and the paper lists no fluoroscopy among their data (p. 306), so `ca` and `thal` are missing by the hospitals' practice, not by the release. Recording differs by hospital and is not harmonised: Hungary and Long Beach leave `slope` blank when there is no ST depression (188 of the 190 blanks in Hungary), Cleveland records it (99 rows); `restecg` left ventricular hypertrophy is 49% of Cleveland's patients and 2% of Hungary's. Harmonising `slope` changes the ROC AUC by under 0.003.
+- Target: `num` (0 = no narrowing over 50%, 1-4 = disease grades; the Hungarian file holds only 0/1) becomes the binary `heart_disease_diagnosis` (Yes/No), as in the study.
+- Codes get their labels from UCI's `heart-disease.names`: `sex`; `cp` typical angina, atypical angina, non-anginal pain, asymptomatic; `restecg` normal, ST-T wave abnormality, left ventricular hypertrophy; `slope` of the peak-exercise ST segment upsloping, flat, downsloping; `thal` normal, fixed defect, reversible defect. `fbs` (fasting blood sugar over 120 mg/dl) and `exang` (angina on exercise) stay 0/1 flags. `oldpeak` is the ST depression on exercise relative to rest; one Long Beach value is negative.
+- Anomaly: the Hungarian file keeps 294 of the paper's 425 patients (36% diseased against 38%); the paper took all catheterizations of 1983 to 1987 without prior infarction or valve disease (p. 306), and how the 294 were chosen is not stated.
+- Duplicates: the Long Beach pair of equal rows is one patient entered twice (the raw file gives both the same exercise and angiogram dates and the same ten vessel readings, which no other Long Beach pair shares), so one is dropped. The Hungarian pair is two patients (exams in March and May 1986) and stays.
 
 ## Splits
 
-Leave one hospital out: three splits, each training on two hospitals and testing on the third (Cleveland, Hungary, then Long Beach), one repeat, since repeating a split of three groups into three folds gives the same splits. This follows the source, which built its model at one hospital and tested it at the others; with three hospitals the scores are three numbers and differ by hospital (Long Beach is the hardest).
+Leave one hospital out: three splits, each training on two hospitals and testing on the third (Cleveland, Hungary, then Long Beach), one repeat, since repeating a split of three groups into three folds gives the same splits. The source built its model in Cleveland and applied it at the other hospitals; leaving each hospital out in turn generalises that design so that every hospital is tested once. With three hospitals the scores are three numbers and differ by hospital (Long Beach is the hardest). Unlike `covertype`'s three areas, the transfer is the source's design and no class drops out (curation notes).
 
-1 repeat(s) x 3 fold(s) with seed 4267; train 494 to 597 rows, test 200 to 303 rows.
+1 repeat(s) x 3 fold(s) with seed 4267; train 493 to 597 rows, test 199 to 303 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 494 | 303 |
-| 0 | 1 | 503 | 294 |
-| 0 | 2 | 597 | 200 |
+| 0 | 0 | 493 | 303 |
+| 0 | 1 | 502 | 294 |
+| 0 | 2 | 597 | 199 |
 
 ## Group structure
 
-One group is a hospital: Cleveland Clinic, the Hungarian Institute of Cardiology (Budapest) or the VA Medical Center (Long Beach). The source's question is whether a probability model carries over to other hospitals: "This model, derived from the clinical and noninvasive test results of 303 patients undergoing angiography at the Cleveland Clinic in Cleveland, Ohio, was applied to a group of 425 patients undergoing angiography at the Hungarian Institute of Cardiology in Budapest, Hungary (disease prevalence 38%); 200 patients undergoing angiography at the Veterans Administration Medical Center in Long Beach, California (disease prevalence 75%)" (Detrano et al. 1989, abstract). So whole hospitals are held out and the model is not told the hospital. Each row is one patient and one prediction.
+One group is a hospital: Cleveland Clinic, the Hungarian Institute of Cardiology (Budapest) or the VA Medical Center (Long Beach). The source's question is whether a probability model carries over to other hospitals: "This model, derived from the clinical and noninvasive test results of 303 patients undergoing angiography at the Cleveland Clinic in Cleveland, Ohio, was applied to a group of 425 patients undergoing angiography at the Hungarian Institute of Cardiology in Budapest, Hungary (disease prevalence 38%); 200 patients undergoing angiography at the Veterans Administration Medical Center in Long Beach, California (disease prevalence 75%); ..." (Detrano et al. 1989, abstract). So whole hospitals are held out and the model is not told the hospital. Each row is one patient and one prediction.
 
 | field | value |
 |---|---|
@@ -238,11 +239,11 @@ One group is a hospital: Cleveland Clinic, the Hungarian Institute of Cardiology
 | statistic | value |
 |---|---|
 | groups | 3 |
-| rows per group (min / median / max) | 200 / 294.0 / 303 |
-| largest group | 38.0% of the rows |
+| rows per group (min / median / max) | 199 / 294.0 / 303 |
+| largest group | 38.1% of the rows |
 | test groups per fold | 1 |
 | groups of two or more rows with a single label | 0.0% |
-| nearest neighbour in the same group | 74.3% of the rows (chance: 34.3%) |
+| nearest neighbour in the same group | 74.2% of the rows (chance: 34.3%) |
 | label variance explained by the group | 0.09 (shuffled groups: 0.00) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
@@ -251,26 +252,26 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ### 1. Split by hospital: train on two, test on the third
 
-The source built its model at one hospital and applied it at the others (Detrano et al. 1989), and the hospitals differ in disease rate and in which tests they recorded, as a new hospital would. Trained on two hospitals, TabPFN 3.5 reaches ROC AUC 0.888 on Cleveland, 0.906 on Hungary and 0.739 on Long Beach (LR 0.879, 0.903, 0.693), and its mean predicted probability is off where the disease rate differs (46% against 36% in Hungary, 62% against 75% in Long Beach), the source's own finding.
+The source built its model at one hospital and applied it at the others (Detrano et al. 1989, p. 305), and the hospitals differ in disease rate and in which tests they recorded, as a new hospital would. Trained on the other two hospitals, logistic regression reaches ROC AUC 0.880 on Cleveland, 0.898 on Hungary and 0.732 on Long Beach. The paper has the Cleveland model overpredicting disease by 10 points in Budapest and 5 in Long Beach (abstract, p. 307); our models overpredict in Hungary too but underpredict in Long Beach, mostly for its patients without an exercise test. ROC AUC within one hospital does not score this.
 
-| hospital | patients | disease_pct | ca_missing_pct | thal_missing_pct | slope_missing_pct | chol_missing_pct | exercise_test_missing_pct |
+| hospital | patients | disease_pct | ca_missing_pct | thal_missing_pct | slope_missing_pct | chol_missing_pct | no_exercise_test |
 |---|---|---|---|---|---|---|---|
 | Cleveland | 303 | 46 | 1 | 1 | 0 | 0 | 0 |
 | Hungary | 294 | 36 | 99 | 90 | 65 | 8 | 0 |
-| VA Long Beach | 200 | 74 | 99 | 83 | 51 | 28 | 28 |
+| VA Long Beach | 199 | 74 | 99 | 83 | 51 | 28 | 53 |
 
 ## Bundle checks
 
 0 error(s), 0 warning(s), 1 info (26 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicate_rows`: 2 exact duplicate row(s) (0.3% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
+- **info** `dataset_duplicate_rows`: 1 exact duplicate row(s) (0.1% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 
 Accepted on purpose:
 
-- `task_group_count_low`: Three hospitals by design: the source built its model at one hospital and applied it at the others. The fourth hospital (Switzerland) is left out because its published file kept only 8 of its 23 patients without disease.
+- `task_group_count_low`: Three hospitals by design: the source built its model at one hospital and applied it at the others. The fourth hospital (Switzerland) is left out because its published file kept only 8 of its about 27 patients without disease.
 - `splits_dimensions_off_protocol`: Leave one hospital out gives exactly three splits. More repeats would split the same three hospitals the same way, so they would add copies, not information.
-- `groups_test_groups_few`: Testing on one unseen hospital at a time is the task. Each fold still scores 200 to 303 patients one by one (smallest class: 51). The signal carries over to unseen hospitals: the linear model beats the class shares on all three (task probes), and logistic regression reaches ROC AUC 0.868 on held-out hospitals (group probes, 2026-10-21). Most of the variation between folds comes from Long Beach, the hardest hospital.
-- `groups_largest_share_high`: Cleveland is a real hospital, one of three, not a catch-all value. When it is the test hospital, the model trains on the other two (494 patients), where two of Cleveland's tests were almost never recorded.
+- `groups_test_groups_few`: Testing on one unseen hospital at a time is the task. Each fold still scores 199 to 303 patients one by one (smallest class: 51). The signal carries over to unseen hospitals: the linear model beats the class shares at each of the three (task probes, ROC AUC 0.880, 0.898, 0.732). Most of the variation between folds comes from Long Beach, the hardest hospital.
+- `groups_largest_share_high`: Cleveland is a real hospital, one of three, not a catch-all value. When it is the test hospital, the model trains on the other two (493 patients), where two of Cleveland's tests were rarely recorded (`ca` for 5, `thal` for 62).
 
 ## Data checks
 
@@ -281,21 +282,21 @@ Accepted on purpose:
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| thal | category | 434 | 54.45 | 3 | 3.0, 7.0, 6.0 |
-| slope | category | 292 | 36.64 | 3 | 2.0, 1.0, 3.0 |
+| thal | category | 433 | 54.4 | 3 | normal, reversible defect, fixed defect |
+| slope | category | 291 | 36.56 | 3 | flat, upsloping, downsloping |
 | exang | category | 54 | 6.78 | 2 | 0.0, 1.0 |
 | fbs | category | 15 | 1.88 | 2 | 0.0, 1.0 |
-| restecg | category | 1 | 0.13 | 3 | 0.0, 2.0, 1.0 |
-| sex | category | 0 | 0 | 2 | 1.0, 0.0 |
-| cp | category | 0 | 0 | 4 | 4.0, 3.0, 2.0, 1.0 |
+| restecg | category | 1 | 0.13 | 3 | normal, left ventricular hypertrophy, ST-T wave abnormality |
+| sex | category | 0 | 0 | 2 | male, female |
+| cp | category | 0 | 0 | 4 | asymptomatic, non-anginal pain, atypical angina, typical angina |
 | hospital | category | 0 | 0 | 3 | Cleveland, Hungary, VA Long Beach |
-| heart_disease_diagnosis | category | 0 | 0 | 2 | 0, 1 |
-| ca | float64 | 493 | 61.86 | 4 | 0.0, 1.0, 2.0, 3.0 |
-| chol | float64 | 79 | 9.91 | 216 | 254.0, 220.0, 211.0, 216.0, 219.0, 223.0, 204.0, 230.0, 246.0, 240.0 |
-| trestbps | float64 | 58 | 7.28 | 57 | 120.0, 130.0, 140.0, 110.0, 150.0, 160.0, 125.0, 128.0, 138.0, 112.0 |
-| oldpeak | float64 | 56 | 7.03 | 43 | 0.0, 1.0, 2.0, 1.5, 3.0, 1.2, 0.8, 0.6, 0.5, 2.5 |
-| thalach | float64 | 54 | 6.78 | 110 | 150.0, 140.0, 130.0, 120.0, 160.0, 170.0, 125.0, 110.0, 142.0, 162.0 |
-| age | float64 | 0 | 0 | 49 | 54.0, 58.0, 55.0, 52.0, 57.0, 56.0, 59.0, 48.0, 62.0, 51.0 |
+| heart_disease_diagnosis | category | 0 | 0 | 2 | No, Yes |
+| ca | float64 | 492 | 61.81 | 4 | 0.0, 1.0, 2.0, 3.0 |
+| chol | float64 | 79 | 9.92 | 216 | 254.0, 220.0, 216.0, 223.0, 230.0, 211.0, 204.0, 219.0, 246.0, 240.0 |
+| trestbps | float64 | 58 | 7.29 | 57 | 120.0, 130.0, 140.0, 110.0, 150.0, 160.0, 125.0, 128.0, 138.0, 112.0 |
+| oldpeak | float64 | 56 | 7.04 | 43 | 0.0, 1.0, 2.0, 1.5, 3.0, 1.2, 0.8, 0.5, 0.6, 2.5 |
+| thalach | float64 | 54 | 6.78 | 110 | 150.0, 140.0, 130.0, 160.0, 120.0, 170.0, 125.0, 110.0, 142.0, 162.0 |
+| age | float64 | 0 | 0 | 49 | 54.0, 58.0, 55.0, 57.0, 52.0, 59.0, 56.0, 48.0, 51.0, 62.0 |
 
 </details>
 
@@ -303,18 +304,18 @@ Accepted on purpose:
 
 | heart_disease_diagnosis | count | pct |
 |---|---|---|
-| 0 | 403 | 50.56 |
-| 1 | 394 | 49.44 |
+| No | 403 | 50.63 |
+| Yes | 393 | 49.37 |
 
 ### Numeric features
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| age | 797 | 53.2321 | 9.45859 | 28 | 77 |
-| trestbps | 739 | 132.627 | 17.7862 | 92 | 200 |
-| chol | 718 | 246.833 | 58.5271 | 85 | 603 |
-| thalach | 743 | 140.171 | 24.9743 | 69 | 202 |
-| oldpeak | 741 | 0.914305 | 1.09314 | -0.5 | 6.2 |
+| age | 796 | 53.2261 | 9.46302 | 28 | 77 |
+| trestbps | 738 | 132.603 | 17.7867 | 92 | 200 |
+| chol | 717 | 246.872 | 58.5587 | 85 | 603 |
+| thalach | 742 | 140.201 | 24.9778 | 69 | 202 |
+| oldpeak | 740 | 0.915541 | 1.09336 | -0.5 | 6.2 |
 | ca | 304 | 0.661184 | 0.933608 | 0 | 3 |
 
 ### Categorical features
@@ -324,35 +325,35 @@ Accepted on purpose:
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| cp | 1 | 4.0 | 398 | 49.94 |
-| cp | 2 | 3.0 | 187 | 23.46 |
-| cp | 3 | 2.0 | 170 | 21.33 |
-| cp | 4 | 1.0 | 42 | 5.27 |
-| exang | 1 | 0.0 | 460 | 57.72 |
-| exang | 2 | 1.0 | 283 | 35.51 |
+| cp | 1 | asymptomatic | 398 | 50 |
+| cp | 2 | non-anginal pain | 186 | 23.37 |
+| cp | 3 | atypical angina | 170 | 21.36 |
+| cp | 4 | typical angina | 42 | 5.28 |
+| exang | 1 | 0.0 | 460 | 57.79 |
+| exang | 2 | 1.0 | 282 | 35.43 |
 | exang | 3 | &lt;NA> | 54 | 6.78 |
-| fbs | 1 | 0.0 | 649 | 81.43 |
-| fbs | 2 | 1.0 | 133 | 16.69 |
+| fbs | 1 | 0.0 | 648 | 81.41 |
+| fbs | 2 | 1.0 | 133 | 16.71 |
 | fbs | 3 | &lt;NA> | 15 | 1.88 |
-| heart_disease_diagnosis | 1 | 0 | 403 | 50.56 |
-| heart_disease_diagnosis | 2 | 1 | 394 | 49.44 |
-| hospital | 1 | Cleveland | 303 | 38.02 |
-| hospital | 2 | Hungary | 294 | 36.89 |
-| hospital | 3 | VA Long Beach | 200 | 25.09 |
-| restecg | 1 | 0.0 | 466 | 58.47 |
-| restecg | 2 | 2.0 | 181 | 22.71 |
-| restecg | 3 | 1.0 | 149 | 18.7 |
+| heart_disease_diagnosis | 1 | No | 403 | 50.63 |
+| heart_disease_diagnosis | 2 | Yes | 393 | 49.37 |
+| hospital | 1 | Cleveland | 303 | 38.07 |
+| hospital | 2 | Hungary | 294 | 36.93 |
+| hospital | 3 | VA Long Beach | 199 | 25 |
+| restecg | 1 | normal | 466 | 58.54 |
+| restecg | 2 | left ventricular hypertrophy | 181 | 22.74 |
+| restecg | 3 | ST-T wave abnormality | 148 | 18.59 |
 | restecg | 4 | &lt;NA> | 1 | 0.13 |
-| sex | 1 | 1.0 | 613 | 76.91 |
-| sex | 2 | 0.0 | 184 | 23.09 |
-| slope | 1 | &lt;NA> | 292 | 36.64 |
-| slope | 2 | 2.0 | 284 | 35.63 |
-| slope | 3 | 1.0 | 170 | 21.33 |
-| slope | 4 | 3.0 | 51 | 6.4 |
-| thal | 1 | &lt;NA> | 434 | 54.45 |
-| thal | 2 | 3.0 | 177 | 22.21 |
-| thal | 3 | 7.0 | 150 | 18.82 |
-| thal | 4 | 6.0 | 36 | 4.52 |
+| sex | 1 | male | 612 | 76.88 |
+| sex | 2 | female | 184 | 23.12 |
+| slope | 1 | &lt;NA> | 291 | 36.56 |
+| slope | 2 | flat | 284 | 35.68 |
+| slope | 3 | upsloping | 170 | 21.36 |
+| slope | 4 | downsloping | 51 | 6.41 |
+| thal | 1 | &lt;NA> | 433 | 54.4 |
+| thal | 2 | normal | 177 | 22.24 |
+| thal | 3 | reversible defect | 150 | 18.84 |
+| thal | 4 | fixed defect | 36 | 4.52 |
 
 </details>
 

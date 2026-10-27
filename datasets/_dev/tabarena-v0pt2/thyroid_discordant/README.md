@@ -139,7 +139,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
 | reason | The cited paper scores test error rate (accuracy) on the Garvan hypothyroid domain; no publication defines a task or metric for the 'dis' (discordant) file, and accuracy is uninformative at about 1.6% positives |
 

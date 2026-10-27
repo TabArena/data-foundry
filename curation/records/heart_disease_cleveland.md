@@ -53,6 +53,8 @@ CC (2026-10-21, Andrej): Retired as a duplicate of `heart_disease`, which holds 
 
 CC (2026-10-21, Lennart): proposal accepted: roc_auc (fallback) for the heart_disease_* datasets, not log_loss.
 
+CC (2026-10-27, Lennart): retirement confirmed in the review of PR #20: the hospital's patients are part of `heart_disease`, split by hospital.
+
 ## Reference
 
 @article{detrano1989international,

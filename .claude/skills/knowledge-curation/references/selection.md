@@ -56,7 +56,7 @@ used for ML. Marker: `Ethical Issue`. Cases: the Pima Indian Diabetes Dataset.
 **SEL-2 (Must).** The rule stands in for the real-world use: when a rule seems to exclude a dataset, check how the
 prediction is made in practice, and let the use case decide (Lennart, 2026-10-15). Every scope rule below is read this
 way; it is how the use case (P3, [use_case.md](use_case.md)) informs the scope. Cases: breast_cancer_prediction,
-heart_disease_cleveland (SEL-14).
+heart_disease (SEL-14).
 
 ### A predictive task
 
@@ -119,7 +119,7 @@ Cases: the lists under Patterns, "Non-tabular modality".
 
 **SEL-14 (Must; narrows SEL-13, applies SEL-2).** Readings that real tabular models take as inputs stay in scope: when
 the human reading is the established clinical or operational result that tabular models are used on in practice, the
-task is tabular. Cases: breast_cancer_prediction, heart_disease_cleveland; breast_w stays out.
+task is tabular. Cases: breast_cancer_prediction, heart_disease; breast_w stays out.
 
 **SEL-15 (Must; amended 2026-10-21, Lennart, on infrared_thermography_temperature).** Attributes measured on the
 entity directly (lab values, sensor readings, questionnaire answers, transaction fields) are tabular. A physical
@@ -218,7 +218,7 @@ One more layer of abstraction is still image-derived (SEL-13):
 * `breast_w`'s 1-10 cytology grades are a pathologist's scoring of cell morphology under a microscope: `No`.
 * The exception (SEL-14, applying SEL-2): the BI-RADS assessment and density of a screening mammogram, which risk
   models such as the BCSC Risk Calculator combine with risk factors (`breast_cancer_prediction`), or the thallium-scan
-  result of `heart_disease_cleveland`, stay in scope. `breast_w` stays out because its grades describe the slide for a
+  result of `heart_disease`, stay in scope. `breast_w` stays out because its grades describe the slide for a
   call pathology makes from the image itself.
 
 Measured attributes and signals (SEL-15): `wbcatt` (expert-annotated white-blood-cell morphology) sits on the
@@ -269,7 +269,7 @@ No marker when:
 
 * the selection is how the label comes to exist, so every dataset of the task has it (only granted loans have a
   repayment outcome, Andrej 2026-10-15; only patients referred for angiography have its result,
-  `heart_disease_cleveland`);
+  `heart_disease`);
 * one class was oversampled from the same population, which changes only the class shares (`credit_g`,
   `churn_telco_south_asia`);
 * tested compounds stand for the candidates a screen would test (the QSAR sets): how far a new candidate lies from the
@@ -427,7 +427,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SEL-7 | stroke_prediction | a stroke the patient already had, undated, in a hackathon release rather than an interview: retired as cdc_diabetes_health_indicators, since no decision is made with it (a screening task would need a first stroke within a horizon, from dated records); with `Data Quality Issue` for the columns that look generated; SEL-7 not amended (2026-10-26, Lennart: "This looks too bad, dont ship it") | applied |
 | SEL-8, SEL-9 | yearprediction_the_million_song_dataset | the Million Song Dataset Challenge, a song-recommendation task, though OpenML 4352 serves it as a regression; the regression re-framings are duplicates | applied |
 | SEL-13 | internet_advertisements, breast_w | image descriptors with a few non-visual columns, and a pathologist's grades of a slide: `No` | applied |
-| SEL-14 (SEL-2) | breast_cancer_prediction, heart_disease_cleveland | the BI-RADS assessment and density, and the thallium-scan result, stay inputs: tabular models use them in practice | applied |
+| SEL-14 (SEL-2) | breast_cancer_prediction, heart_disease | the BI-RADS assessment and density, and the thallium-scan result, stay inputs: tabular models use them in practice | applied |
 | SEL-15 | wbcatt | expert-annotated white-blood-cell morphology, on the `breast_w` boundary: kept only provisionally | applied |
 | SEL-15 | infrared_thermography_temperature | blackbody-compensated facial temperatures at named sites, read through a thermal camera used as a thermometer, the target the same quantity by mouth: kept as a measurement, not an image descriptor; the counter-cases satimage and wilt hold values that recognise image content (SEL-13) (2026-10-21, Lennart) | applied |
 | SEL-16 | Higgs, sonar | simulated physics with its own benchmarks; an outdated handcrafted toy experiment: out | applied |

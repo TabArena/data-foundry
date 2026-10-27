@@ -196,7 +196,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
 | reason | Xu et al., Aeolus: A Multi-structural Flight Delay Dataset (NeurIPS 2025 D&B, arXiv:2510.26616, Sec. 4 and Appendix) report AUC and accuracy side by side for the delay classification, no single criterion (MET-5). roc_auc is the binary fallback (CC 2026-10-26). |
 

@@ -192,7 +192,7 @@ The hidden-group cases and the probe's calibration are in [task_probes.md](task_
 
 * **Only a few groups** (− for a grouped split): with only a few groups, a grouped split is a domain-shift test
   between them rather than prediction for unseen entities; that is its own decision (covertype: 3 wilderness areas,
-  IID instead).
+  IID instead; heart_disease: 3 hospitals kept grouped, as the source's own transfer design).
 
 ## Patterns
 
@@ -256,6 +256,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-28 | telemonitoring_parkinsons | R^2 -0.17 to -0.31 grouped against 0.75 IID; as warm start 6.33 against 6.48 for the carried-forward value; retired (2026-10-02) | applied |
 | SPLIT-29, SPLIT-31 | sarcoma | IID by patient kept over a split by tissue source site: the site is weakly visible from the features (one site against the rest ROC AUC 0.70-0.75, 0.69-0.73 within dedifferentiated liposarcoma) and holding sites out raises a random forest's log loss (0.64 to 0.77 before the merge of MFS and UPS, 0.46 to 0.58 after), but a lab types the tumours of new patients and one site holds 101 of the 201 rows; the optimism is stated in `splits_comment`. The reason is the use case, not a null gap: in glioma_grading (retired 2026-10-26 on USE-1) the features did not predict the site and a split by site scored like a random one (2026-10-22, Lennart) | applied |
 | Few groups (factor) | covertype | 3 wilderness areas: IID instead of grouped | applied |
+| Few groups (factor) | heart_disease | 3 hospitals, leave one out kept: the source built its model in Cleveland and applied it at the other hospitals, no class drops out (51 or more of each per test fold), and 7 of 15 pairs of model families separate (4 to 5 under a random 10 x 3 split); SPLIT-1, SPLIT-4 and SPLIT-23 outweigh the factor (2026-10-27, Lennart) | applied |
 | SPLIT-31 | amazon_employee_access, bank_marketing | IID kept: optimistic, but it matches how the task is framed; candidates for a grouped or temporal variant | applied |
 | SPLIT-31 | infrared_thermography_temperature | IID kept over a measured year-to-year shift (a first-year calibration over-predicts the second year by 0.06-0.09 °C): the calibration is a function of the inputs that should not depend on the day, so no real signal across time; temporal is a candidate variant (2026-10-21, Lennart) | applied |
 | SPLIT-31 | qsar_oral_toxicity | IID kept over related chemicals (random forest 0.882 IID, 0.842 by Butina clusters, 0.843 by reconstructed Murcko scaffolds, ranking unchanged); the scaffold-grouped variant on structures linked by row order stays a listed candidate, not built (2026-10-21, Lennart); superseded 2026-10-26 by the amendment below | applied |

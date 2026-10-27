@@ -137,7 +137,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `rmse` (standard; takes value; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | sqrt(mean((y - p)^2)) |
 | reason | Cassotti et al. 2014 report Q2 (cv and external) with RMSE; r2 and rmse rank models the same within a fold. rmse is the regression fallback. |
 

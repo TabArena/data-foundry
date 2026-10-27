@@ -384,7 +384,7 @@ METRIC_ORIGINS = {
     "source": "the source's metric",
     "stand_in": "a stand-in for the source's metric, which cannot be computed",
     "context": "obvious from the task: the source defines no metric",
-    "fallback": "the default for the problem type: the source defines no metric",
+    "fallback": "the default for the problem type: the source defines no metric the task would use in practice",
 }
 
 
