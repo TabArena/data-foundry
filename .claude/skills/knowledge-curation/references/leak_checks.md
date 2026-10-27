@@ -95,8 +95,12 @@ Test: probes 4, 9 and 17. Cases: hepatitis_c_prediction, gallstone_disease.
 **LEAK-14 (Must).** A class that comes from a separate source or assay is dropped once the paper confirms it. Test:
 probe 7. Cases: biogeographical_ancestry_prediction.
 
-**LEAK-15 (Must).** Batch noise across the whole feature space, with no batch id, retires the dataset: a feature subset
-does not help when it also separates same-label groups. Test: probes 7 and 8. Cases: prostate_cancer_detection.
+**LEAK-15 (Must; amended 2026-10-27, Andrej, on gallstone_disease).** A recording artefact that runs through several
+features that would matter for prediction in practice, and that cannot be undone (no batch id to drop, no format to
+harmonise, no route to align), retires the dataset: a feature subset does not help when it also separates same-label
+groups. An artefact confined to features a practical model would not rely on is fixed (LEAK-13, LEAK-14, LEAK-39) or
+kept with a note. Test: probes 7, 8 and 17, and the score without the affected features. Cases:
+prostate_cancer_detection (retired), gallstone_disease (kept).
 
 **LEAK-39 (Must; 2026-10-26, Andrej, on gallstone_disease).** Rows of one class recorded through a separate route, found
 by a recording fingerprint (number formats, a derived column that follows another definition, a shifted measurement)
@@ -334,7 +338,7 @@ The cases of the rules outside this table are named in the rules.
 | LEAK-12 (SPLIT-9) | Temporal: training rows whose label is not yet known at the prediction point | filter training rows by an as-of date | hotel_booking_demand: in-window cancellations in train were 100% cancelled (log loss 1.7 to 0.33); a filter on `ReservationStatusDate` keeps the shortcut |
 | LEAK-13 | Class-specific recording conventions | harmonise (round every row to the shared precision, drop a column only one class has); first measure how much the fix removes | hepatitis_c_prediction (7 lab columns rounded, `ALP` dropped) |
 | LEAK-14 | One class from a separate source or assay | drop that class once the paper confirms it | biogeographical_ancestry_prediction (Turkey, `rs3857620`) |
-| LEAK-15 | Batch noise across the whole feature space, no batch id | retire; a feature subset does not help when it also separates same-label groups | prostate_cancer_detection (the paper's 7 features: Benign against NED 0.92-0.97, the label 0.62-0.70) |
+| LEAK-15 (amended 2026-10-27, Andrej) | A recording artefact through several features that matter for prediction, that cannot be undone | retire; a feature subset does not help when it also separates same-label groups | gallstone_disease, kept: after LEAK-13 and LEAK-39 the suspected artefacts left (AST lower with gallstones, the fatty-liver grades on two scales) do not carry the score (TabPFN 3.5 0.826 without AST, 0.827 with it; 0.834 without the grade, 0.838 with it). prostate_cancer_detection, retired (the paper's 7 features: Benign against NED 0.92-0.97, the label 0.62-0.70) |
 | LEAK-13 (amended 2026-10-26, Andrej) | Precision that differs by class, filled cells with many decimals, a column filled in for one class only | write every row at the measured precision; drop the one-class column | gallstone_disease: GFR, vitamin D, visceral muscle area, CRP and creatinine at their measured precision (with LEAK-39, probe 17 from 0.949 to 0.666); `Hyperlipidemia` dropped (8 with gallstones, none without, though high cholesterol is as common without) |
 | LEAK-39 | Part of one class recorded through a second route, found by a format fingerprint | drop the route's rows | gallstone_disease: 77 rows (72 with gallstones, 5 without); before the drop TabPFN 3.5 separates them from those without gallstones at 0.993, the other cases at 0.842, and scores the route's 5 without gallstones 0.77 (0.22 for the others) |
 | LEAK-40 | Gaps filled by interpolation down a class-sorted file | keep the fills when a label-free re-imputation inside each fold scores the same or higher | gallstone_disease: 134 fills kept (re-imputed, TabPFN 3.5 0.864; with the fills 0.838) |
