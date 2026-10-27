@@ -4,6 +4,26 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-27, Selection Bias named in the fit_reason (PR #16)
+
+- The new `Selection Bias` marker (knowledge-curation `selection.md`, "Selection bias") asks the definition's
+  `fit_reason` to name the gap. Five definitions did not yet, and now do, with the numbers checked on the curated
+  rows: `eryhemato_squamous_disease` (67 of 72 lichen planus patients have mouth lesions and no other patient does,
+  against 19% to 63% in clinic series), `ljubljana_primary_tumor` (patients whose primary was found; neck nodes in all
+  20 head and neck patients), `superconductivity` (only superconductors), `in_vehicle_coupon_recommendation`
+  (Mechanical Turk volunteers) and `infrared_thermography_temperature` (one university clinic, 87% aged 18 to 25).
+  The evidence is in each record.
+- USE-8 amended (Lennart): a selection bias is judged against the real-world setting of the use case, direct when the
+  setting has the same bias and approximate when it does not; the marker stays either way. `eryhemato_squamous_disease`,
+  `ljubljana_primary_tumor` and `superconductivity` move from `fit="direct"` to `"approximate"` (a dermatologist's
+  lichen planus patients, metastases of unknown origin and a screen of mostly non-superconductors do not share the
+  selection); `infrared_thermography_temperature` stays direct, as its university clinic sees mostly students.
+  `gallstone_disease` stays direct with the marker, as Andrej marked it (Lennart): how its patients were chosen is not
+  stated.
+- No container changes: the task summary is not stored in the container. The regenerated READMEs of the first four
+  also show the checksum the current code gives (their builds were already stale; the checksum is the same with the
+  old text), and the infrared README no longer lists the `REVIEW.md` that was deleted on 2026-10-21.
+
 ## 2026-10-26, the cross-dataset REVIEW.md retired; README trimmed
 
 - `REVIEW.md` (the working copy's cross-dataset items, 61, of which 58 resolved and kept only because the review page

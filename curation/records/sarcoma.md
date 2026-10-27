@@ -7,6 +7,8 @@ data_foundry_status:
 - 'DF: Yes'
 suggestion: 'Yes'
 priority: 3
+decision_markers:
+- Selection Bias
 tags:
 - Tiny Data
 collections:

@@ -74,11 +74,19 @@ as kept, not as a gap. The fit becomes approximate only when avoiding the leak n
 homesite_quote_conversion). An unverified label definition is a known gap and makes the fit
 approximate (Lennart, 2026-10-21, differentiated_thyroid_cancer_recurrence).
 
-Marker for None: `No Good Target / Scientific Discovery`. Cases: direct, airfoil_self_noise, superconductivity,
-2_month_survival_rate_prediction, kick and homesite_quote_conversion (a strong kept leak); approximate, account_debt_south_africa
-(one snapshot for a forecast), alfa_battle_2_0_task_2 (a label without a stated horizon), coffee_rating_prediction
-(one judge for the rating a buyer meets; Lennart, 2026-10-14), differentiated_thyroid_cancer_recurrence (an unverified
-label breadth), sarcoma (a closed set of types; its kept preprocessing does not count).
+A selection bias does not by itself make a fit approximate either (`Selection Bias`, [selection.md](selection.md),
+"Selection bias"). Judge it against the real-world setting of the use case: when that setting has the same bias (it
+meets the same selected cases), the data mirrors it and the fit is direct; when it does not, the selection is a known
+gap and the fit is approximate. Either way `fit_reason` names the selection and the marker stays (Lennart,
+2026-10-27).
+
+Marker for None: `No Good Target / Scientific Discovery`. Cases: direct, airfoil_self_noise,
+2_month_survival_rate_prediction, kick and homesite_quote_conversion (a strong kept leak),
+infrared_thermography_temperature (a selection its setting shares); approximate, account_debt_south_africa (one
+snapshot for a forecast), alfa_battle_2_0_task_2 (a label without a stated horizon), coffee_rating_prediction (one
+judge for the rating a buyer meets; Lennart, 2026-10-14), differentiated_thyroid_cancer_recurrence (an unverified
+label breadth), sarcoma (a closed set of types; its kept preprocessing does not count), superconductivity (a
+selection its setting does not share: only superconductors).
 
 **USE-9 (Should; narrows USE-8).** Before settling on approximate, ask whether the data as shipped mirrors another
 well-defined use case that practitioners have, where the features are known and the label is not. If it does, that is
@@ -154,7 +162,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | USE-6 | 2_month_survival_rate_prediction | the physicians' day-3 survival estimates and DNR orders are not inputs: the source's task is an objective estimate set beside the physician's, who was interviewed only as its comparator (Knaus et al. 1995); differs from breast_cancer_prediction, where the radiologist's BI-RADS reading is the actor's own input (2026-10-26, Lennart) | applied |
 | USE-7 | bias_correction_r_bias_correction_r_2 | the three days without an LDAPS run are dropped (2026-10-15, Lennart) | applied |
 | USE-7 | nyc_taxi_trip_duration_1m, pkdd_15_taxi_trip_time_prediction_ii_1m | an ETA with the destination named at pickup: a recorded end within 100 m of the start is no destination anyone names, so those trips are dropped in both (nyc reopened to match pkdd, where a 15-second GPS clock turns a return to the start into an end within 100 m); the cut rests on the inputs, not on the travel time (2026-10-26, Lennart) | applied |
-| USE-8 | airfoil_self_noise, superconductivity, 2_month_survival_rate_prediction | direct | applied |
+| USE-8 | airfoil_self_noise, superconductivity, 2_month_survival_rate_prediction | direct; superconductivity approximate since 2026-10-27 (the selection-bias row below) | applied |
 | USE-8 | account_debt_south_africa | approximate: one snapshot stands in for a forecast | applied |
 | USE-8 | kick | approximate for a potential leak kept on purpose (missing WheelType, ROC AUC 0.757 with, 0.691 without); reopened by the amendment of 2026-10-21, under which a kept leak alone no longer makes a fit approximate; now direct (next row) | applied |
 | USE-8 | kick, homesite_quote_conversion | a strong kept leak stays direct: kick's missing WheelType (ROC AUC +0.066) and homesite's two status-like fields (+0.050) are named in `fit_reason` as kept, not as a gap; qsar_aquatic_toxicity and onlinenewspopularity moved to direct the same way, and perth_house_prices, credit_card_customers, african_credit_scoring_challenge and zillow_prize stay approximate for their other gaps only (Lennart, 2026-10-21) | applied |
@@ -162,6 +170,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | USE-8 | coffee_rating_prediction | approximate: one judge or rating service stands for the rating a buyer meets (2026-10-14, Lennart) | applied |
 | USE-8 | house_sales | a remnant kept from after the sale (view, waterfront, the neighbours' areas; about 145 rows changed, RMSE 0.2147 masked against 0.2132 kept) does not make the fit approximate: USE-8 amended (2026-10-21, Lennart) | applied |
 | USE-8 | sarcoma | approximate for the closed set of confirmed types (five, four since the merge of 2026-10-22); the source's preprocessing over all patients, kept under LEAK-30, does not count toward the fit (2026-10-21, Lennart) | applied |
+| USE-8 | eryhemato_squamous_disease, ljubljana_primary_tumor, superconductivity; infrared_thermography_temperature | a selection bias is judged against the real-world setting: the first three move from direct to approximate, as their settings do not share it (a dermatologist's lichen planus patients, metastases of unknown origin, a screen of mostly non-superconductors); infrared stays direct, its university clinic seeing mostly students; the `Selection Bias` marker stays on all four (2026-10-27, Lennart) | applied |
 | USE-8 | differentiated_thyroid_cancer_recurrence | approximate: what counts as recurrence is not verified (all 32 patients of the ATA high-risk class recurred, so it seems to include persistent disease), and the horizon differs between UCI and the cohort paper (2026-10-21, Lennart) | applied |
 | USE-8 | qsar_oral_toxicity | approximate: the screening is simulated; held out by scaffold (2026-10-26), 16.3% of the test chemicals have a close training analog (Tanimoto 0.7 or more) against 11.0% of the project's untested chemicals (24.7% under a random split; 19.7% against 9.3% before the extension) (2026-10-21, Lennart; numbers of 2026-10-26) | applied |
 | USE-8 | qsar_bioconcentration | direct: held out by scaffold (SPLIT-31), a test chemical stands for an untested one of a series not yet measured (6.4% have a close training analog, 12.6% under a random split); the authors' nine selected descriptors are dropped (LEAK-31), so no kept leak remains (2026-10-26, Lennart) | applied |
