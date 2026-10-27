@@ -259,8 +259,10 @@ collection (`audiology_diagnosis`, `obesity_estimation`), or objects picked for 
 for the objects that were not picked (`sdss_17`: picked by colour for a spectrum, classified without one). Mark it
 `Selection Bias`; the verdict is usually still `Yes` (Andrej, 2026-10-20). It is a concern flag: name the gap in the
 definition's `fit_reason`, give the evidence in the record (the class mix, or a feature against a reference series),
-and judge the model comparison on the data, not on the marker. `eryhemato_squamous_disease` is the example: 93% of its
-lichen planus patients have mouth lesions and no other patient does, against 19% to 63% in clinic series; kept.
+and judge the model comparison on the data, not on the marker. The marker does not by itself make the fit
+approximate: when the real-world setting of the use case has the same bias, the fit is direct (USE-8 in
+[use_case.md](use_case.md)). `eryhemato_squamous_disease` is the example: 93% of its lichen planus patients have mouth
+lesions and no other patient does, against 19% to 63% in clinic series; kept.
 
 No marker when:
 

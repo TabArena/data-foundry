@@ -74,6 +74,11 @@ as kept, not as a gap. The fit becomes approximate only when avoiding the leak n
 homesite_quote_conversion). An unverified label definition is a known gap and makes the fit
 approximate (Lennart, 2026-10-21, differentiated_thyroid_cancer_recurrence).
 
+A selection bias does not by itself make a fit approximate either (`Selection Bias`, [selection.md](selection.md),
+"Selection bias"). Judge it against the real-world setting of the use case: when that setting has the same bias (it
+meets the same selected cases), the data mirrors it and the fit is direct; `fit_reason` still names the selection
+(Lennart, 2026-10-27).
+
 Marker for None: `No Good Target / Scientific Discovery`. Cases: direct, airfoil_self_noise, superconductivity,
 2_month_survival_rate_prediction, kick and homesite_quote_conversion (a strong kept leak); approximate, account_debt_south_africa
 (one snapshot for a forecast), alfa_battle_2_0_task_2 (a label without a stated horizon), coffee_rating_prediction
