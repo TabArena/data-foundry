@@ -139,7 +139,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
 | reason | Islam et al. 2019 report accuracy with precision, recall and F-measure (no unique metric, MET-5); no threshold or costs; 251 deduplicated rows, 69% positive. roc_auc is the binary fallback. |
 

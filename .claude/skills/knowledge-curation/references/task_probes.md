@@ -331,13 +331,14 @@ task-probe flags the decision answers. The decisions on metrics (2026-10-21) are
 | TP-4 | aps_failure | one_feature | kept (2026-10-06) | the per-split single feature (AUC 0.970) stays below all 20 configurations; AUC near its ceiling | applied |
 | TP-5 | musk | no_spread, unstable | kept (2026-10-06) | 13 musk and 21 non-musk molecules per fold: a tiny-data task | applied |
 | TP-1 | pancreatic_cancer_mouse_detection | unstable | kept (2026-10-06) | foundation models above AUC 0.5 on all their folds; the `t` file suffix is an open question in the record | applied |
+| TP-1 | heart_disease | unstable | kept (2026-10-27) | one atypical hospital: Long Beach is the hardest under every split, in-site too, while the linear model beats the class shares at all three; re-check with tuned results after the build; no amendment for grouped tasks for now (Lennart) | applied |
 | TP-2 | amex_non_iid_1m | no_spread | kept (2026-10-06) | strong methods converge at AUC 0.95 on 1.5M rows | applied |
 | TP-2 | acquire_valued_shoppers_challenge | no_spread | kept (2026-10-06) | a real task with a low ceiling (best AUC 0.654, 12 of 21 tied) | applied |
 | TP-3 | coil_2000, marketing_campaign, naticusdroid_android_permissions_dataset | no_spread | kept (2026-10-06) | tuned methods separate: at most 2 of 29 tied with the best | applied |
 | TP-3 | gallstone_disease, indian_liver_patient_dataset, mercedes_benz_greener_manufacturing | no_spread | kept (2026-10-06) | tuned methods spread | applied |
 | TP-1 | mercari_price_suggestion | no_spread | kept (2026-10-06) | the probe left its text out: R² 0.06 without, 0.67 with it | applied |
 | TP-1 | coffee_rating_prediction, garments_worker_productivity | unstable | kept (2026-10-06) | tree models beat the mean in 13 of 13 and 28-29 of 30 windows | applied |
-| TP-2 | heart_disease_cleveland | no_spread | kept (2026-10-06) | a real task with clear signal (AUC 0.91); little room between methods is the noise of a small task | applied |
+| TP-2 | heart_disease_cleveland | no_spread | kept (2026-10-06) | a real task with clear signal (AUC 0.91); little room between methods is the noise of a small task; retired 2026-10-21 as a duplicate of heart_disease, not on this flag | applied |
 | TP-1 | consumer_complaints_1m | unstable | kept (2026-10-06, rebuild sweep) | best probe model above the dummy in 3 of 3 windows (AUC 0.90); the standard error of 0.060 over 3 windows is drift, not a missing signal; all 21 BeyondArena configurations beat the dummy | applied |
 | TP-3 | electric_motor_temperature_prediction | no_spread | kept (2026-10-06, rebuild sweep) | R^2 0.94-0.97 for every probe model, a gap 3 folds cannot test; tuned RMSE 1.77-3.52 on BeyondArena | applied |
 | TP-4 | expresso_churn_prediction_1m | one_feature | kept (2026-10-07) | active days (REGULARITY, AUC 0.890) are the natural core of a churn task; on the full 1M/500k folds untuned LightGBM beats it on 3 of 3 (0.903 against 0.890) | applied |

@@ -141,7 +141,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `log_loss` (standard; takes proba; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | mean of -log p(true class) |
 | reason | Guevenir et al. 1998 report cross-validated accuracy of VFI5, without costs between the six diagnoses; we use the 12 clinical features only. Original rejected: accuracy. log_loss is the multiclass fallback. |
 

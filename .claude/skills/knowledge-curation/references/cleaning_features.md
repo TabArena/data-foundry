@@ -65,7 +65,7 @@ across the split (LEAK-16 to LEAK-21)). A row whose target the source names as n
 the source's words. A single extreme target in the training period only may leave with the source's words or where
 experts of the field drop such a value by default, decided case by case. Rows that are a sentinel in every
 feature are a decision of their own (Weighed factors). Cases: caracas_cervical_cancer, churn_telco_south_asia,
-heart_disease_va_long_beach, thyroid_discordant, sdss_17, ames_housing, mercedes_benz_greener_manufacturing,
+heart_disease, thyroid_discordant, sdss_17, ames_housing, mercedes_benz_greener_manufacturing,
 qsar_tid_11.
 
 ### Undo destroyed meaning
@@ -174,7 +174,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | CLEAN-10 | house_sales | `yr_renovated` = 0 ("never renovated" in the source) set to missing, so missing means never renovated; the fact that sets it apart from bank_marketing's `pdays = -1` and ames_housing's no-remodel coding: a 0 in a year column misleads a linear model as a year, and after the as-of-sale rebuild missing has no other meaning in the column (2026-10-22, Lennart) | exception |
 | CLEAN-11 | caracas_cervical_cancer | a first intercourse after the current age, an STD diagnosed longer ago than the patient's age: missing | applied |
 | CLEAN-11 | churn_telco_south_asia | a negative network age or an undocumented code: missing | applied |
-| CLEAN-11 | heart_disease_va_long_beach | `chol == 0`: missing | applied |
+| CLEAN-11 | heart_disease (Long Beach, first as heart_disease_va_long_beach) | `chol == 0`: missing | applied |
 | CLEAN-11 | thyroid_discordant | `age = 455`: missing | applied |
 | CLEAN-11 | sdss_17 | `-9999`: missing | applied |
 | CLEAN-11 | ames_housing (record house_prices_nominal until 2026-10-26) | De Cock's three partial sales over 4,000 sq ft, which he calls "Partial Sales that likely don't represent actual market values" (2011, p. 4), all in the training rows: dropped with his words; the case that prompted the amendment (2026-10-21, Lennart) | applied |

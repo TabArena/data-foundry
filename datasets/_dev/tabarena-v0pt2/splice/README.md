@@ -138,7 +138,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `log_loss` (standard; takes proba; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | mean of -log p(true class) |
 | reason | Towell, Shavlik & Noordewier 1990-1994 report test error rates of KBANN (per class too), a habit without costs between the three site types. Original rejected: error rate. log_loss is the multiclass fallback. |
 

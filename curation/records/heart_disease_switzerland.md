@@ -8,14 +8,13 @@ data_foundry_status:
 suggestion: 'No'
 decision_markers:
 - Outdated
-- Trivial
 - Too Small
 tags:
 - Tiny Data
 collections:
 - TabArena Reject
 original_source: UCI
-year: '1989'
+year: '1988'
 domain: medical & healthcare
 required_split:
 - Random (IID)
@@ -36,6 +35,8 @@ Consists of 4 datasets with similar features and low value counts depending on h
 We take all datasets from this repo as they all represent real tasks. We use the binary classification version of the datasets and the processed files.
 
 Too few samples, is few-shot
+
+**Assessment (AI, 2026-10-27):** `Trivial` removed and the year set to 1988, the year of the UCI donation its siblings carry, on Lennart's ask to resolve the side findings of PR #20. TP-4 test on the 123 patients of `processed.switzerland.data` (115 diseased, 8 without; 3 folds x 20 repeats, stratified): the best single feature chosen on each split's training side (chest-pain type in 45 of 60 folds) reaches ROC AUC 0.677 against 0.705 for logistic regression and 0.708 for a random forest, and matches both on 22 of 60 folds, so no feature or rule solves the task. With 2 or 3 patients without disease per test fold the file stays `Too Small` (TP-5); the verdict `No` is unchanged. Its patients are left out of `heart_disease` (the release kept 8 of the paper's 23 without disease).
 
 ## Reference
 

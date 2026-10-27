@@ -117,7 +117,7 @@ the test class balance (Provost et al. 1998), and is coarse on small folds. Most
 accuracy because the field did, not because the decision called for it: "In many cases, like all that used accuracy,
 the author did not know better" (Lennart, 2026-10-21). Be critical, judge each case by the use case, and declare the
 fallback when the paper's threshold metric is a habit. Competitions fall under MET-4. Cases: ljubljana_breast_cancer,
-heart_disease_cleveland, clock_protein_toxicity, credit_approval (accuracy or error rate, no threshold or costs:
+heart_disease, clock_protein_toxicity, credit_approval (accuracy or error rate, no threshold or costs:
 fallback proposed), covertype (a single deliberate accuracy, hard labels per map cell: kept, proposed).
 
 **MET-7 (Should).** When the source fixes a cost matrix, a single treatment threshold or a k from its decision, declare
@@ -230,7 +230,7 @@ and wait for the curator; the others are decided.
 | MET-3, MET-5 | forest_fires | `mae` on the burned area in hectares, the target shipped as log1p (`target_transform="log1p"`, 2026-10-21) | Cortez & Morais 2007 fit on log1p(area), report MAD and RMSE on the area and rank by MAD (SVM with 4 weather inputs, MAD 12.71; the mean predictor has the best RMSE); MAE on the shipped log1p values would be another metric | applied |
 | MET-5 | gallstone_disease | fallback `roc_auc` | Esen et al. 2024 report accuracy, precision, recall, F-measure and AUC; accuracy is the headline, none is named as the criterion | proposed |
 | MET-6 | ljubljana_breast_cancer | fallback `roc_auc` | every 1986-1988 paper reports accuracy only, without costs or a threshold; 30% recurrence on 286 rows | proposed |
-| MET-6, MET-8 | heart_disease_cleveland (and _hungary, _va_long_beach) | fallback `roc_auc` | Detrano 1989 scores reliability (calibration in the large) and percent correctly classified: two criteria, one of them about probabilities | proposed |
+| MET-6, MET-7, MET-8 | heart_disease (the merged heart_disease_cleveland, _hungary, _va_long_beach) | fallback `roc_auc` (2026-10-21, Lennart; checked 2026-10-27) | Detrano 1989 scores reliability (calibration in the large and by quintiles, p. 306) and the percent correctly classified over the thresholds 0.2 to 0.8 (p. 307): two criteria and no single threshold; Statlog's 5:1 matrix belongs to a later cut of the Cleveland file (PROV-8) | applied |
 | MET-7 | credit_g | `cost_matrix` (bad as good costs 5, good as bad costs 1), scored from probabilities by the least expected cost (2026-10-21, Lennart) | Statlog's cost matrix in german.doc and the Statlog book's average cost; from probabilities, the Bayes decision is p(bad) > 1/6 | applied |
 | MET-7 | aps_failure | `cost_matrix` (false alarm 10, missed failure 500), mean per row, kept (2026-10-21, Lennart) | the IDA 2016 challenge scored total cost on its 16,000-row test file; ROC AUC is at 0.99 | applied |
 | MET-2, MET-7 | taiwanese_bankruptcy_prediction | fallback `roc_auc` | Liang et al. 2016: average accuracy on a 1:1 sample (the release is 3.2% bankrupt) and a cost with ratios 1 to 5: no single matrix | proposed |

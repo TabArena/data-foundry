@@ -138,7 +138,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
 | reason | Quinlan 1987 and the Statlog Australian credit study score error rate without a cost matrix or threshold; the approve / decline use case gives no equal-cost hard-label decision. Original rejected: error rate (accuracy). roc_auc is the binary fallback. |
 

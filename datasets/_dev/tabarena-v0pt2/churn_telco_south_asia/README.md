@@ -132,7 +132,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
 | reason | The first publication (closed access, abstract elided) could not be read; no metric verified. Cohort is 50/50 by design, so accuracy (the likely reported number) would be close in spirit, but AUC is insensitive to the artificial base rate as the curation notes say. |
 

@@ -4,6 +4,77 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-27, `heart_disease`: the curator's marks; the paper read in full (PR #20)
+
+- Lennart's marks on `heart_disease/REVIEW.md`, all applied; no mark needed a consistency prompt, and the file is
+  removed with nothing left open:
+  - The fit stays `approximate`. The referral for angiography is now the setting of the use case, the check before a
+    scheduled angiogram, and no longer the gap. The gap is Cleveland's testing by study protocol and two inputs that are
+    no longer used: CT has replaced the thallium-201 scan and calcium seen on fluoroscopy. It is a USE-8 Cases row.
+  - The split by hospital stays. It is a "Few groups (factor)" row next to covertype in splits.md.
+  - The merge is confirmed. The PROV-6 Cases row names the three retired hospital datasets and `heart_statlog`. The
+    skill files' cases now point to `heart_disease`: SEL-2 and SEL-14, the `Selection Bias` no-marker case, MET-6,
+    CLEAN-11 and the `no_spread` example. The metrics.md row is `applied`. The sibling records that named the retired
+    datasets point to `heart_disease`.
+  - No amendment for `unstable` on grouped tasks: a TP-1 Cases row keeps `heart_disease`, to be re-checked with tuned
+    results after the build.
+  - The `roc_auc` fallback stays as declared.
+- The paper (Detrano et al. 1989, Am J Cardiol 64:304-310) was shared and read in full. The definition now cites its
+  pages:
+  - its model used the 13 variables of the UCI files, fitted for every clinically relevant set of tests (p. 305);
+  - Cleveland ran the three tests by protocol and read them after the angiogram, without knowing its result (p. 305);
+  - the other hospitals did the thallium scan for a minority and list no fluoroscopy (p. 306), so `ca` and `thal` are
+    missing by the hospitals' practice, not by the release;
+  - every test came within 6 weeks before the angiogram (p. 306), so the 30 exercise tests dated after it are likely
+    date errors;
+  - reliability is calibration in the large and by quintiles (p. 306), and accuracy was scored over the thresholds 0.2
+    to 0.8 (p. 307).
+- The Swiss file kept 8 of about 27 patients without disease (the paper's Table I gives 81% diseased), not 8 of 23.
+- `dataset check`: 0 errors, 0 warnings (4 accepted). Not built.
+
+## 2026-10-27, `heart_disease`: review panel on the merge (PR #20)
+
+- The full `/add-dataset` review panel ran on the merged definition (claim, column and split auditors, domain
+  practitioner, blind reviewer, precedent checker, advocate and critic, mediator): ship after changes. Its questions for
+  the curator went into `heart_disease/REVIEW.md`, settled and removed the same day (entry above).
+- Applied in `heart_disease/dataset.py`:
+  - One Long Beach patient entered twice is dropped. In the raw file the two equal rows share the exercise and
+    angiogram dates and all ten vessel readings, which no other Long Beach pair does. The equal Hungarian pair is two
+    patients (exams in March and May 1986) and stays. The dataset now has 796 rows.
+  - The codes of `sex`, `cp`, `restecg`, `slope` and `thal` get their UCI labels, and the target is Yes/No
+    (CLEAN-12).
+  - The use case is now the check before a scheduled angiogram, since every patient had already been referred.
+  - The 30 exercise tests dated after the angiogram (11 in Cleveland, 13 in Hungary, 6 in Long Beach) are named and
+    kept (LEAK-11).
+  - The claims about Detrano et al. (1989) are marked as read from the abstract only. The claim that the data
+    reproduces the paper's finding is corrected: the paper's Cleveland model overpredicted disease in both Budapest and
+    Long Beach, while our models overpredict in Budapest but underpredict in Long Beach.
+  - The metric reason names the 0.5 threshold of `heart-disease.names`, UCI's test prices and Statlog's cost matrix,
+    each with why it is not used.
+  - The numbers are updated.
+- With the labels, the task probe first gave a different linear ROC AUC (0.865 / 0.893 / 0.730 instead of 0.877 /
+  0.902 / 0.738). The probe filled a missing category with the median of its codes, so the order of the levels changed
+  the score. The probes now give a missing category its own code (next entry); labels and codes then score the same,
+  0.880 / 0.898 / 0.732.
+- Not built; the definition's checksum changes.
+
+## 2026-10-27, fallback metric wording in every README; probes give a missing category its own code (PR #20)
+
+- The READMEs said "the source defines no metric" for every fallback metric. That contradicts a fallback whose source
+  defines a metric the task would not use (MET-5, MET-6, MET-9). An example is `heart_disease`, whose source scores the
+  percent correctly classified at a 0.5 default threshold. The generator (`src/data_foundry/v2/report.py`) now writes
+  "the source defines no metric the task would use in practice", as metrics.md defines the fallback. The line is
+  updated in the 82 READMEs that have it; nothing else in them changes, and no checksum changes.
+- The probes' shared model inputs (`curation_probes/text.py`, `groups.py`; the task, group and hidden-group probes)
+  filled a missing category with the median of its codes. A missing value then counted as whichever level sat in the
+  middle of the order, and relabelling the levels moved the scores (`heart_disease`: linear ROC AUC 0.877 / 0.902 /
+  0.738 with the UCI codes, 0.865 / 0.893 / 0.730 with labels). A missing category is now one more code after the
+  levels: 0.880 / 0.898 / 0.732 either way. Probe numbers cited in other definitions came from the old encoding; the
+  difference shows only where a categorical column has missing values.
+- Record `heart_disease_switzerland` (no folder): `Trivial` removed after the TP-4 test, which the marker never had
+  (the best single feature reaches ROC AUC 0.677 against 0.705 to 0.708 for the methods). The year is set to 1988, as
+  its siblings have it. The record stays `No`, `Too Small`.
+
 ## 2026-10-27, `Anonymized` data tag goes with the new marker (PR #17)
 
 - The new `Anonymized` decision marker (knowledge-curation `selection.md`, "Anonymized data") goes with the
@@ -377,6 +448,29 @@ consistency checks in the folder's `REVIEW.md` and are not applied yet. Nothing 
   - no feature from the other top solutions helps in all three windows;
   - whole-minute sampling over all history is proposed;
   - new issue 7 on a 15-minute gap.
+
+## 2026-10-21 (heart_disease: three Detrano hospitals in one dataset, split by hospital; the three sites retired)
+
+- `heart_disease` (new): the processed UCI files of three hospitals of Detrano et al. (1989), Cleveland, Budapest
+  and VA Long Beach, in one table of 797 patients with the binary angiography label. The hospital is the group column,
+  not a feature, and a custom `_make_splits` leaves one hospital out (three splits, one repeat): the source built its
+  model at one hospital and applied it at the others, and a random split would compare patients of two hospitals in
+  68% of its positive-negative pairs. The Swiss file is left out: it keeps only 8 of the paper's 23 Swiss patients
+  without disease, so its disease rate is the release's, and it would be a test fold of 8 negatives. `dataset check`:
+  0 errors; 4 warnings that follow from the three hospitals (`task_group_count_low`,
+  `splits_dimensions_off_protocol`, `groups_test_groups_few`, `groups_largest_share_high`), accepted with reasons; one
+  info (2 duplicate rows, kept). Task probes flag `unstable` (the linear model beats the class shares on 3 of 3
+  hospitals, ROC AUC 0.838; the spread is between hospitals), answered in `curation_comments`. Not built.
+- Removed `heart_disease_cleveland`, `heart_disease_hungary` and `heart_disease_va_long_beach`: retired as duplicates
+  of `heart_disease` (`No (Retired)`, marker `Duplicate`). They were one task of one study counted three times: a
+  model trained on the other hospitals ranks each site's patients nearly as well as one trained there (TabPFN 3.5 ROC
+  AUC 0.888, 0.906 and 0.739 against 0.913, 0.914 and 0.708). BeyondArena datasets; the shipped notebooks and
+  collection pins are unchanged, and their containers and raw files stay in the warehouse.
+- Records: `heart_statlog` is `No` + `Duplicate` (all 270 rows are Cleveland rows with the same label). Andrej's
+  review in [`curation/records/heart_disease.md`](../../../curation/records/heart_disease.md); evidence in
+  `~/claude_jobs/heart_pool/`.
+- `heart_disease` declares the metric the three sites declared on `main` (roc_auc fallback, accepted by Lennart
+  2026-10-21 for the heart_disease datasets).
 
 ## 2026-10-21 (force_2020 units and depth order; qsar_oral_toxicity extended; RDKit Ipc on a log scale)
 

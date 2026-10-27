@@ -160,7 +160,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
 | reason | Ballabio et al. 2019 report the non-error rate with sensitivity and specificity, the group's house measure, without costs; 8.4% very toxic. Original rejected: NER. roc_auc is the binary fallback. |
 
