@@ -1,6 +1,6 @@
 name: open_soil_spectral_library
 holder: Myunghwan
-stage: triage
+stage: review
 claimed_at: '2026-10-23T16:27:03Z'
-expires_at: '2026-10-30T16:27:03Z'
-note: Next curation batch selected from the highest-priority unclaimed screening candidates; verdicts remain provisional.
+expires_at: '2026-11-04T03:18:24Z'
+note: Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized.
