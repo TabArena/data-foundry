@@ -2,5 +2,5 @@ name: sendy_logistics_challenge
 holder: Myunghwan
 stage: review
 claimed_at: '2026-10-28T03:20:07Z'
-expires_at: '2026-11-06T01:20:45Z'
-note: 'Curator ship accepted; placement-to-arrival RMSE task built and verified (21,199 rows, 13 predictors, random 3x3 folds). Updating PR #33; retain ownership until merge.'
+expires_at: '2026-11-06T01:43:31Z'
+note: 'Curator ship accepted; build and verification complete. Submitted in PR #33: https://github.com/TabArena/data-foundry/pull/33 (commit 46e8b32). Placement-to-arrival RMSE; 21,199 rows, 13 predictors, random 3x3 folds. Awaiting PR review/merge; retain Myunghwan ownership until merged.'
