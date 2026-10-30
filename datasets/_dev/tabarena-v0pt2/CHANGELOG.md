@@ -4,6 +4,63 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-30, `early_learning_predictors`: Stata missing codes, 44 counts and amounts numeric, a timer dropped (PR #35)
+
+- `.a` and `.b` are Stata's extended missing values, exported to the CSV as text in 46 columns (2,388 and 29 cells
+  after the target filter, only in the 2020-2022 rounds). They occur only where the question was asked (all 40 `.a` of
+  the DSD subsidy amount are programmes that said they receive it), while a skipped question is blank, so they are
+  unanswered questions; neither the codebook nor the DDI metadata defines them. `_clean` sets them to missing and
+  makes the 46 columns numbers (45 survive the cleaning; `count_aftercare` is dropped later), and they leave
+  `categorical`: the `count_register_*` and `count_staff_*` counts, the `pri_amount_*`, `pri_expense_*` and
+  `pri_fees_*` amounts in rand per month, `pri_capacity`, `pri_dsd_year` and `teacher_duration` (minutes), all
+  `numeric` in DataFirst's codebook. The other categorical columns stay: multi-select answers such as `health` and
+  `obs_hazard`, free text, 0/1 flags.
+- `teacher_duration` is dropped (Lennart): the minutes the teacher's socio-emotional rating form was open, a timer of
+  the data collection like the three `duration_elom` timers dropped before, no property of the child or the facility.
+  It exists only in 2020-2022 (26% of the children), 39% of its values are 0 (93% in the 2020 round) and 1.4% exceed
+  a day, up to 29 days; its Spearman correlation with the score is -0.06, and what signal it has follows the survey
+  round, which is dropped as `data_year`. CLEAN-22 Cases row. Without it, one more pair of rows is an exact copy (3)
+  and one more feature vector carries two scores (30 rows).
+- Notes made to match the code: the assessor's id (`id_enumerator`) is dropped with the other ids, as the code has
+  done since the migration, so the curation note no longer says it is kept, `known` no longer lists the assessor and
+  `fit_reason` no longer names it as a gap; `changes` names both drops. 742 features.
+- Raised by Adrian in issue #36 (on the BeyondArena notebook, whose typing the v2 definition had copied) and found by
+  the dtype sweep the same day. CC line in the record, CLEAN-10 Cases row. `dataset check`: 0 errors, the one warning
+  it had before (`certificate_register` and `certificate_registration_npo` are copies). Not built.
+
+## 2026-10-30, a dtype probe and one sweep of every definition; `qsar_biodeg`'s fragment counts numeric (PR #35)
+
+- Why `bank_marketing` went unnoticed: CLEAN-14 already said a count stays numeric, but only the `/add-dataset` panel
+  (checklist P7, the column auditor) applies it, and most folders came from the BeyondArena notebooks without one. The
+  0/1 sweep of 2026-10-21 looked only at columns holding 0 and 1.
+- New probe: `dtype_probes.py` (knowledge-data-foundry) on `curation_probes/dtypes.py` (knowledge-curation). Per
+  column, it compares the dtype with the values, the name and the source's codebook (read from UCI's and OpenML's APIs
+  through the definition's source link) and flags the columns to look at. The meaning decides. CLEAN-14, P7, the column
+  auditor and step 5 of `/add-dataset` now run it.
+- CLEAN-14 amended (Lennart): an ordinal scale is decided case by case, categorical by default; a column whose meaning
+  is unknown is looked up before it is typed.
+- `qsar_biodeg`: `N073_chemical_substructure` and `C026_chemical_substructure` are numeric. They are the atom-centred
+  fragments N-073 and C-026, which count the atoms of that type (0 to 3 and 0 to 12); the definition had typed them
+  categorical while their meaning was unknown. The curation note on "numeric-ordinal" features is replaced. CC line in
+  the record, CLEAN-14 Cases row. `dataset check`: 0 errors, 0 warnings. Not built.
+- The sweep, once, over the 163 definitions (outputs in `local-data-warehouse/_runs/2026-10-30_dtype_sweep/`): 489
+  flagged columns in 48 datasets, 358 of them only `numeric_levels` (codes, ids). Beyond the two datasets above,
+  the findings went to the curator and nothing else changed here: `early_learning_predictors` (45 counts and amounts
+  typed categorical, with Stata missing codes `.a` and `.b` among the numbers), counts with open ends typed
+  categorical (`mic`'s `INF_ANAM`, `hr_analytics`' `experience`), ordinal scales typed numeric (`gallstone_disease`'s
+  HFA, `ljubljana_breast_cancer`'s bin midpoints, `in_vehicle_coupon_recommendation`'s `time`) and codes typed numeric
+  (`sberbank_housing_market_forecasting`'s `ID_metro`, `brazilian_ecommerce`'s zip prefixes,
+  `ieee_fraud_detection`'s `TransactionID`).
+
+## 2026-10-30, `bank_marketing`: `campaign` and `previous` numeric again (issue #34)
+
+- `campaign` (contacts in this campaign, 1-63) and `previous` (contacts before it, 0-275) are counts, as the UCI
+  description gives them, and leave `categorical` in `_feature_types` (CLEAN-14: a count stays numeric). The BeyondArena
+  notebook had typed them categorical (48 and 41 levels), and the migration to v2 carried that over; TabArena v0.1 had
+  them numeric. Raised by Adrian in issue #34; Lennart's decision is a CC line in the record and a CLEAN-14 Cases row.
+- `dataset check`: no new findings; the README now lists both as int64. Not built: the container
+  `01a111fc-7c2d-7441-b859-646c9bfbf380` still has them as categories until the next build.
+
 ## 2026-10-27, `heart_disease`: the curator's marks; the paper read in full (PR #20)
 
 - Lennart's marks on `heart_disease/REVIEW.md`, all applied; no mark needed a consistency prompt, and the file is

@@ -44,6 +44,7 @@ K=.claude/skills/knowledge-data-foundry/scripts
 .venv/bin/python $K/group_probes.py <unique_name> [--repeats 3] [--permutations 100]
 .venv/bin/python $K/hidden_groups.py <unique_name> [--built] [--include-grouped] [--out DIR]     # or --all
 .venv/bin/python $K/generated_probes.py <unique_name> [--built] [--out DIR]                     # or --all
+.venv/bin/python $K/dtype_probes.py <unique_name> [--codebook URL] [--no-fetch] [--out DIR]    # or --all --jobs 4
 .venv/bin/python $K/tuned_results.py <unique_name> [--feature auto]
 ```
 
@@ -75,6 +76,16 @@ K=.claude/skills/knowledge-data-foundry/scripts
   evidence either way, not 0%.
 * `generated_probes.py`: the four marks of generated data (`formula`, `rule_leaves`, `independent_columns`,
   `uniform_within_class`).
+* `dtype_probes.py`: is each column typed by its meaning (CLEAN-14), on the frame the split step leaves. It reads the
+  source's codebook from the definition's first UCI or OpenML link (types and descriptions, matched by column name) and
+  flags, strongest first: a categorical column the codebook or the name calls a count or an amount (`quantity_words`),
+  one of numbers the codebook types as numeric (`codebook_numeric`), a numeric column the codebook types as categorical
+  (`codebook_categorical`), a categorical column whose levels look like a count (`count_like`: 0 or 1 upwards, the first
+  ten all there, rarer as they grow), a numeric column named as a code (`code_name`), and any other categorical column
+  of numbers (`numeric_levels`, mostly codes). The few levels that are no number in a column of numbers are listed:
+  often proxy missing codes (`.b`, `-3`) that made a count categorical (CLEAN-10). UCI types coded answers as `Integer`
+  too, and names often differ from the codebook's (the output says how many matched): read the codebook where they do. A
+  flag is a question; the meaning decides.
 * `tuned_results.py`: the per-fold BeyondArena results of tuned and default methods cached under
   `~/.cache/tabarena/artifacts/` (`methods/<method>/results/hpo_results.parquet`), set against a dummy on the same
   splits of the shipped container; `--feature auto` adds the raw-feature test of TP-4. The runs used the shipped

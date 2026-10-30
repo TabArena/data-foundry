@@ -29,8 +29,8 @@ implements. The overview for people is the [skills README](../README.md).
 The scripts are in [scripts/](scripts/):
 
 * the probe entry points `leak_probes.py`, `task_probes.py`, `group_probes.py`, `hidden_groups.py`,
-  `generated_probes.py` (they load a Data Foundry dataset through `dataset_io.py` and call the general probe library
-  of `knowledge-curation`), `tuned_results.py` and `check_collection_bundles.py`;
+  `generated_probes.py`, `dtype_probes.py` (they load a Data Foundry dataset through `dataset_io.py` and call the
+  general probe library of `knowledge-curation`), `tuned_results.py` and `check_collection_bundles.py`;
 * for the pipeline: `benchmark_coverage.py` (the accepted set per domain, problem type and regime, for screening
   priorities), `clean_room.py` (the blind reviewer's folder) and `decision_register.py` (the decisions grouped by rule,
   with the consistency flags);
