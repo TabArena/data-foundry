@@ -89,6 +89,12 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
         - We drop all samples with a missing target.
         - Due to most samples having missing values, we drop all "HOME LEARNING ENVIRONMENT DATA" features. This mostly aligns with the Zindi challenge, except that the features hle_ind, quintile_used, and ses_proxy were kept. We keep the latter two, because they are not missing for all samples and are derived from other; not-HLE features.
         - We drop all features with 100% missing values and one unique value.
+        - `.a` and `.b` are Stata's extended missing values, exported to the CSV as text (2,388 and 29 cells after the
+          target filter, only in the 2020-2022 rounds). They occur only where the question was asked (all 40 `.a` of
+          the DSD subsidy amount are programmes that receive it), while a skipped question is blank, so they are
+          unanswered questions; the source does not say which code is which. They become missing values. The 46
+          columns that held them are counts, rand amounts per month, a year and minutes, `numeric` in the source's
+          codebook: they are numbers, no longer categories (CLEAN-10, CLEAN-14; issue #36).
         - We drop all indicator columns.
         - We drop some repeated columns, such as age_group_label.
         - Because all features could generally be available at prediction time, even if would not be ideal effort-wise, we keep all features that don't leak the target or are otherwise problematic.
@@ -131,6 +137,9 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
         df = df.loc[~df["child_total_elom"].isna()]
+        # Stata's extended missing values `.a` and `.b`, exported as text, made 46 numeric columns text (curation notes)
+        coded = [col for col in df.columns if df[col].isin([".a", ".b"]).any()]
+        df[coded] = df[coded].replace({".a": None, ".b": None}).apply(pd.to_numeric)
         leaky_cols = [col for col in df.columns if "result" in col]
         leaky_cols += [col for col in df.columns if "domain" in col]
         leaky_cols += [col for col in df.columns if "child_score" in col]
@@ -223,32 +232,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "certificate_registration_npo",
                 "certificate_registration_partial",
                 "certificate_registration_program",
-                "count_register_gender",
-                "count_register_gender_female",
-                "count_register_gender_male",
-                "count_register_gender_other",
-                "count_register_race_african",
-                "count_register_race_coloured",
-                "count_register_race_indian",
-                "count_register_race_other",
-                "count_register_race_white",
-                "count_register_year_2013",
-                "count_register_year_2014",
-                "count_register_year_2015",
-                "count_register_year_2016",
-                "count_register_year_2017",
-                "count_register_year_2018",
-                "count_register_year_2019",
-                "count_register_year_2020",
-                "count_register_year_2021",
-                "count_staff_gender_male",
-                "count_staff_gender_other",
-                "count_staff_qual_nqf4_5",
-                "count_staff_qual_nqf6_9",
-                "count_staff_qual_skills",
-                "count_staff_salary",
-                "count_staff_salary_paid",
-                "count_staff_salary_unpaid",
                 "facility_type",
                 "health",
                 "healthother",
@@ -506,17 +489,9 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pra_training_5",
                 "pra_training_6",
                 "pri_aftercare",
-                "pri_amount_funding_dbe",
-                "pri_amount_funding_doh",
-                "pri_amount_funding_donations",
-                "pri_amount_funding_dsd",
-                "pri_amount_funding_fees",
-                "pri_amount_funding_fundraising",
-                "pri_amount_funding_other",
                 "pri_attendance_usual",
                 "pri_calc_time_close",
                 "pri_calc_time_open",
-                "pri_capacity",
                 "pri_clinic_travel_1",
                 "pri_clinic_travel_2",
                 "pri_clinic_travel_3",
@@ -570,18 +545,8 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pri_dsd_unregistered_9",
                 "pri_dsd_unregistered_97",
                 "pri_dsd_unregistered_other",
-                "pri_dsd_year",
-                "pri_expense_admin",
-                "pri_expense_food",
-                "pri_expense_maintenance",
-                "pri_expense_materials",
-                "pri_expense_other",
-                "pri_expense_rent",
-                "pri_expense_staff",
                 "pri_expenseother",
                 "pri_fees",
-                "pri_fees_amount_0_1",
-                "pri_fees_amount_2_3",
                 "pri_fees_exceptions",
                 "pri_fees_exceptions_other",
                 "pri_fees_free",
@@ -711,7 +676,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "sanitation_educators_3",
                 "sanitation_learners",
                 "urban",
-                "teacher_duration",
                 "teacher_emotional_met",
                 "teacher_selfcare_met",
                 "teacher_social_met",

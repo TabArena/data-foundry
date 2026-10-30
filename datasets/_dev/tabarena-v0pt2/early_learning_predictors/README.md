@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: early_learning_predictors
 container_format: 2
-checksum: v2:39fa9a71d410d6f0e2c1411ce5740988cfa7f56205fdc3af4ffc047932df48df
+checksum: v2:9046045578d9b918961ef633f2c1df18c064b8a0308a10007b17584ebc0c194d
 build:
   uuid: 01a111fc-59b5-7e83-8468-0ee2628e95b3
   checksum: v2:ec3dfb429e7c17335aa5683a85458b99e78d373664de2bf4a319f46a2ea15237
@@ -22,9 +22,9 @@ data:
   n_rows: 18874
   n_features: 743
   dtypes:
-    category: 514
+    category: 469
     datetime64[ns]: 1
-    float64: 230
+    float64: 275
   n_test_dataset_rows: null
 task:
   target: child_total_elom
@@ -78,7 +78,7 @@ decisions: []
 
 Regression of `child_total_elom`, scored with `rmse` on grouped splits by `id_facility`. 18,874 rows and 743 features. Source: Other (2024).
 
-Built as `01a111fc-59b5-7e83-8468-0ee2628e95b3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:39fa9a71d410d6f0e2c1411ce5740988cfa7f56205fdc3af4ffc047932df48df`, so the build is stale. See [Build](#build).
+Built as `01a111fc-59b5-7e83-8468-0ee2628e95b3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9046045578d9b918961ef633f2c1df18c064b8a0308a10007b17584ebc0c194d`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -163,9 +163,9 @@ Only curators run `build`, when the dataset ships.
 | definition | RMSE of the child's total ELOM score. |
 
 <details>
-<summary>Feature types: 514 categorical, 0 string, 1 datetime</summary>
+<summary>Feature types: 469 categorical, 0 string, 1 datetime</summary>
 
-- categorical (514): `child_gender`, `child_age_group`, `child_attends`, `child_grant`, `child_has_sibling`, `child_stunted`, `child_languages`, `child_spectacles`, `child_years_in_programme`, `dc_best`, `language_match`, `mn_best`, `phase_natemis`, `pre_covid`, `prov_best`, `certificate_register`, `certificate_registration_npo`, `certificate_registration_partial`, `certificate_registration_program`, `count_register_gender`, `count_register_gender_female`, `count_register_gender_male`, `count_register_gender_other`, `count_register_race_african`, `count_register_race_coloured`, `count_register_race_indian`, `count_register_race_other`, `count_register_race_white`, `count_register_year_2013`, `count_register_year_2014`, `count_register_year_2015`, `count_register_year_2016`, `count_register_year_2017`, `count_register_year_2018`, `count_register_year_2019`, `count_register_year_2020`, `count_register_year_2021`, `count_staff_gender_male`, `count_staff_gender_other`, `count_staff_qual_nqf4_5`, `count_staff_qual_nqf6_9`, `count_staff_qual_skills`, `count_staff_salary`, `count_staff_salary_paid`, `count_staff_salary_unpaid`, `facility_type`, `health`, `healthother`, `library_access`, `obs_access`, `obs_access_disability_0`, `obs_access_disability_1`, `obs_access_disability_2`, `obs_access_disability_3`, `obs_access_disability_4`, `obs_access_disability_5`, `obs_access_disability_6`, `obs_accessible`, `obs_area`, `obs_area_0`, `obs_area_1`, `obs_area_2`, `obs_area_3`, `obs_area_4`, `obs_area_5`, `obs_area_6`, `obs_area_7`, `obs_area_8`, `obs_books`, `obs_books_age`, `obs_cooking_1`, `obs_cooking_2`, `obs_cooking_3`, `obs_cooking_4`, `obs_cooking_5`, `obs_cooking_6`, `obs_cooking_7`, `obs_electricity_working`, `obs_equipment_0`, `obs_equipment_1`, `obs_equipment_2`, `obs_equipment_3`, `obs_equipment_4`, `obs_equipment_5`, `obs_fence`, `obs_fencing_play_area`, `obs_firstaid`, `obs_gate`, `obs_handwashing_0`, `obs_handwashing_1`, `obs_handwashing_2`, `obs_handwashing_3`, `obs_handwashing_97`, `obs_handwashing_friendly`, `obs_handwashingother`, `obs_hazard`, `obs_hazard_0`, `obs_hazard_1`, `obs_hazard_2`, `obs_hazard_3`, `obs_hazard_4`, `obs_hazard_5`, `obs_hazard_6`, `obs_hazard_7`, `obs_hazard_8`, `obs_hazard_97`, `obs_heating_1`, `obs_heating_2`, `obs_heating_3`, `obs_heating_4`, `obs_heating_5`, `obs_heating_6`, `obs_heating_7`, `obs_heating_8`, `obs_lighting_1`, `obs_lighting_2`, `obs_lighting_3`, `obs_lighting_4`, `obs_lighting_5`, `obs_lighting_6`, `obs_lighting_8`, `obs_materials`, `obs_materials_0`, `obs_materials_1`, `obs_materials_10`, `obs_materials_11`, `obs_materials_12`, `obs_materials_13`, `obs_materials_14`, `obs_materials_15`, `obs_materials_16`, `obs_materials_17`, `obs_materials_18`, `obs_materials_19`, `obs_materials_2`, `obs_materials_20`, `obs_materials_3`, `obs_materials_4`, `obs_materials_5`, `obs_materials_6`, `obs_materials_7`, `obs_materials_8`, `obs_materials_9`, `obs_materials_97`, `obs_materialsother`, `obs_menu_compliance`, `obs_menu_display`, `obs_menu_same`, `obs_outdoor`, `obs_potable`, `obs_safety_0`, `obs_safety_1`, `obs_safety_10`, `obs_safety_2`, `obs_safety_3`, `obs_safety_4`, `obs_safety_5`, `obs_safety_6`, `obs_safety_7`, `obs_safety_8`, `obs_safety_9`, `obs_shared`, `obs_space`, `obs_toilet`, `obs_toilet_0`, `obs_toilet_1`, `obs_toilet_2`, `obs_toilet_3`, `obs_toilet_4`, `obs_toilet_5`, `obs_toilet_6`, `obs_toilet_7`, `obs_toilet_8`, `obs_toilet_97`, `obs_toilet_clean`, `obs_toilet_paper`, `obs_toilet_size_chemical_1`, `obs_toilet_size_disability_1`, `obs_toilet_size_disability_2`, `obs_toilet_size_disability_3`, `obs_toilet_size_flush_1`, `obs_toilet_size_flush_2`, `obs_toilet_size_flush_3`, `obs_toilet_size_pit_1`, `obs_toilet_size_pit_2`, `obs_toilet_size_pit_3`, `obs_toilet_size_septic_2`, `obs_toilet_size_septic_3`, `obs_toilet_size_ventilation_1`, `obs_toilet_size_ventilation_2`, `obs_toilet_size_ventilation_3`, `obs_toilets_children`, `obs_toilets_gender`, `obs_water_running`, `obs_water_running_none`, `obs_waterother`, `position_other`, `position_other_reason`, `pqa_class`, `pqa_class_age_1`, `pqa_class_age_2`, `pqa_class_age_3`, `pqa_class_age_4`, `pqa_class_age_5`, `pqa_class_age_6`, `pqa_curriculum_literacy`, `pqa_curriculum_ncf`, `pqa_curriculum_numeracy`, `pqa_environment_accessible`, `pqa_environment_appropriate`, `pqa_environment_areas`, `pqa_environment_open`, `pqa_environment_outdoor`, `pqa_environment_variety`, `pqa_relationships_acknowledge`, `pqa_relationships_discipline`, `pqa_relationships_peers`, `pqa_relationships_staff`, `pqa_teaching_choice`, `pqa_teaching_engagement`, `pqa_teaching_participation`, `pqa_teaching_questions`, `pqa_teaching_support`, `pra_class_size_large`, `pra_class_space_large`, `pra_class_space_small`, `pra_clearance_ncp`, `pra_clearance_police`, `pra_cohort_0`, `pra_cohort_1`, `pra_cohort_2`, `pra_cohort_3`, `pra_cohort_4`, `pra_cohort_5`, `pra_cohort_6`, `pra_dob`, `pra_education_other`, `pra_gender`, `pra_groupings_1`, `pra_groupings_2`, `pra_groupings_3`, `pra_groupings_4`, `pra_groupings_5`, `pra_language`, `pra_learnership`, `pra_materials_donated`, `pra_materials_kit`, `pra_materials_library`, `pra_materials_makefind`, `pra_ncf_trainer_1`, `pra_ncf_trainer_2`, `pra_ncf_trainer_3`, `pra_ncf_trainer_4`, `pra_ncf_trainer_5`, `pra_ncf_trainer_97`, `pra_ncf_trainerother`, `pra_ncf_training`, `pra_on_time`, `pra_online_training`, `pra_online_training_details`, `pra_paid`, `pra_parent_meeting`, `pra_parent_same_attendance`, `pra_plan_4yrs_1`, `pra_plan_4yrs_2`, `pra_plan_4yrs_3`, `pra_plan_4yrs_4`, `pra_plan_4yrs_97`, `pra_plan_4yrs_other`, `pra_plan_5yrs_1`, `pra_plan_5yrs_2`, `pra_plan_5yrs_3`, `pra_plan_5yrs_4`, `pra_plan_5yrs_5`, `pra_plan_5yrs_97`, `pra_plan_5yrs_other`, `pra_plan_approved`, `pra_plan_ncf`, `pra_plans_0`, `pra_plans_1`, `pra_plans_2`, `pra_plans_3`, `pra_qualification_0`, `pra_qualification_1`, `pra_qualification_2`, `pra_qualification_3`, `pra_qualification_4`, `pra_qualification_5`, `pra_qualification_6`, `pra_qualification_7`, `pra_qualification_97`, `pra_qualification_other`, `pra_special_referrals`, `pra_special_training`, `pra_training_0`, `pra_training_1`, `pra_training_2`, `pra_training_3`, `pra_training_4`, `pra_training_5`, `pra_training_6`, `pri_aftercare`, `pri_amount_funding_dbe`, `pri_amount_funding_doh`, `pri_amount_funding_donations`, `pri_amount_funding_dsd`, `pri_amount_funding_fees`, `pri_amount_funding_fundraising`, `pri_amount_funding_other`, `pri_attendance_usual`, `pri_calc_time_close`, `pri_calc_time_open`, `pri_capacity`, `pri_clinic_travel_1`, `pri_clinic_travel_2`, `pri_clinic_travel_3`, `pri_clinic_travel_4`, `pri_clinic_travel_5`, `pri_clinic_travel_97`, `pri_confirm_subsidy`, `pri_covid_awareness`, `pri_covid_awareness_1`, `pri_covid_awareness_2`, `pri_covid_awareness_3`, `pri_covid_awareness_4`, `pri_covid_awareness_97`, `pri_covid_awareness_other`, `pri_covid_fund_applied`, `pri_covid_fund_received`, `pri_covid_precautions`, `pri_covid_precautions_1`, `pri_covid_precautions_2`, `pri_covid_precautions_3`, `pri_covid_precautions_4`, `pri_covid_precautions_5`, `pri_covid_precautions_6`, `pri_covid_precautions_97`, `pri_covid_precautions_other`, `pri_dsd_conditional_1`, `pri_dsd_conditional_10`, `pri_dsd_conditional_2`, `pri_dsd_conditional_3`, `pri_dsd_conditional_4`, `pri_dsd_conditional_5`, `pri_dsd_conditional_6`, `pri_dsd_conditional_7`, `pri_dsd_conditional_8`, `pri_dsd_conditional_9`, `pri_dsd_conditional_97`, `pri_dsd_conditional_other`, `pri_dsd_previous`, `pri_dsd_unregistered_1`, `pri_dsd_unregistered_10`, `pri_dsd_unregistered_11`, `pri_dsd_unregistered_12`, `pri_dsd_unregistered_13`, `pri_dsd_unregistered_2`, `pri_dsd_unregistered_3`, `pri_dsd_unregistered_4`, `pri_dsd_unregistered_5`, `pri_dsd_unregistered_6`, `pri_dsd_unregistered_7`, `pri_dsd_unregistered_8`, `pri_dsd_unregistered_9`, `pri_dsd_unregistered_97`, `pri_dsd_unregistered_other`, `pri_dsd_year`, `pri_expense_admin`, `pri_expense_food`, `pri_expense_maintenance`, `pri_expense_materials`, `pri_expense_other`, `pri_expense_rent`, `pri_expense_staff`, `pri_expenseother`, `pri_fees`, `pri_fees_amount_0_1`, `pri_fees_amount_2_3`, `pri_fees_exceptions`, `pri_fees_exceptions_other`, `pri_fees_free`, `pri_firstaid`, `pri_food_donation`, `pri_food_donor_1`, `pri_food_donor_2`, `pri_food_donor_3`, `pri_food_donor_4`, `pri_food_donor_97`, `pri_food_donorother`, `pri_food_guidance`, `pri_food_type_0`, `pri_food_type_1`, `pri_food_type_2`, `pri_food_type_3`, `pri_food_type_4`, `pri_food_type_5`, `pri_funding_1`, `pri_funding_2`, `pri_funding_3`, `pri_funding_4`, `pri_funding_5`, `pri_funding_6`, `pri_funding_7`, `pri_funding_97`, `pri_funding_donations`, `pri_funding_food`, `pri_funding_none`, `pri_funding_salary_0`, `pri_funding_salary_1`, `pri_funding_salary_2`, `pri_funding_salary_3`, `pri_funding_salary_4`, `pri_funding_salary_97`, `pri_funding_salaryother`, `pri_fundingother`, `pri_garden`, `pri_health_0`, `pri_health_1`, `pri_health_2`, `pri_health_3`, `pri_health_4`, `pri_health_5`, `pri_health_97`, `pri_holidays`, `pri_internet`, `pri_internet_user_1`, `pri_internet_user_2`, `pri_internet_user_3`, `pri_internet_user_4`, `pri_landother`, `pri_language`, `pri_library`, `pri_library_material_1`, `pri_library_material_10`, `pri_library_material_11`, `pri_library_material_12`, `pri_library_material_2`, `pri_library_material_3`, `pri_library_material_4`, `pri_library_material_5`, `pri_library_material_6`, `pri_library_material_7`, `pri_library_material_8`, `pri_library_material_9`, `pri_meal_1`, `pri_meal_2`, `pri_meal_3`, `pri_meal_4`, `pri_meals`, `pri_money_1`, `pri_money_2`, `pri_money_3`, `pri_money_97`, `pri_moneyother`, `pri_network`, `pri_network_type_1`, `pri_network_type_2`, `pri_network_type_3`, `pri_network_type_97`, `pri_precovid_attendance`, `pri_qualification_0`, `pri_qualification_1`, `pri_qualification_2`, `pri_qualification_3`, `pri_qualification_4`, `pri_qualification_5`, `pri_qualification_6`, `pri_qualification_7`, `pri_qualification_97`, `pri_qualificationother`, `pri_reason_register_year`, `pri_records_0`, `pri_records_1`, `pri_records_2`, `pri_records_3`, `pri_records_4`, `pri_records_5`, `pri_refrigerator`, `pri_registered_cipc`, `pri_registered_health`, `pri_registered_npo`, `pri_school`, `pri_staff_changes_reasons_1`, `pri_staff_changes_reasons_2`, `pri_staff_changes_reasons_3`, `pri_staff_changes_reasons_4`, `pri_staff_changes_reasons_5`, `pri_staff_changes_reasons_6`, `pri_staff_changes_reasons_97`, `pri_staff_changes_reasonsother`, `pri_subsidy`, `pri_support`, `pri_support_provider_1`, `pri_support_provider_2`, `pri_support_provider_3`, `pri_support_provider_4`, `pri_support_provider_5`, `pri_support_provider_97`, `pri_support_providerother`, `pri_transport`, `pri_zoning`, `professionals_practitioners`, `sanitation_educators_1`, `sanitation_educators_2`, `sanitation_educators_3`, `sanitation_learners`, `urban`, `teacher_duration`, `teacher_emotional_met`, `teacher_selfcare_met`, `teacher_social_met`, `pra_breadwinner`, `pra_letcee_club`, `pri_funding_subsidy`
+- categorical (469): `child_gender`, `child_age_group`, `child_attends`, `child_grant`, `child_has_sibling`, `child_stunted`, `child_languages`, `child_spectacles`, `child_years_in_programme`, `dc_best`, `language_match`, `mn_best`, `phase_natemis`, `pre_covid`, `prov_best`, `certificate_register`, `certificate_registration_npo`, `certificate_registration_partial`, `certificate_registration_program`, `facility_type`, `health`, `healthother`, `library_access`, `obs_access`, `obs_access_disability_0`, `obs_access_disability_1`, `obs_access_disability_2`, `obs_access_disability_3`, `obs_access_disability_4`, `obs_access_disability_5`, `obs_access_disability_6`, `obs_accessible`, `obs_area`, `obs_area_0`, `obs_area_1`, `obs_area_2`, `obs_area_3`, `obs_area_4`, `obs_area_5`, `obs_area_6`, `obs_area_7`, `obs_area_8`, `obs_books`, `obs_books_age`, `obs_cooking_1`, `obs_cooking_2`, `obs_cooking_3`, `obs_cooking_4`, `obs_cooking_5`, `obs_cooking_6`, `obs_cooking_7`, `obs_electricity_working`, `obs_equipment_0`, `obs_equipment_1`, `obs_equipment_2`, `obs_equipment_3`, `obs_equipment_4`, `obs_equipment_5`, `obs_fence`, `obs_fencing_play_area`, `obs_firstaid`, `obs_gate`, `obs_handwashing_0`, `obs_handwashing_1`, `obs_handwashing_2`, `obs_handwashing_3`, `obs_handwashing_97`, `obs_handwashing_friendly`, `obs_handwashingother`, `obs_hazard`, `obs_hazard_0`, `obs_hazard_1`, `obs_hazard_2`, `obs_hazard_3`, `obs_hazard_4`, `obs_hazard_5`, `obs_hazard_6`, `obs_hazard_7`, `obs_hazard_8`, `obs_hazard_97`, `obs_heating_1`, `obs_heating_2`, `obs_heating_3`, `obs_heating_4`, `obs_heating_5`, `obs_heating_6`, `obs_heating_7`, `obs_heating_8`, `obs_lighting_1`, `obs_lighting_2`, `obs_lighting_3`, `obs_lighting_4`, `obs_lighting_5`, `obs_lighting_6`, `obs_lighting_8`, `obs_materials`, `obs_materials_0`, `obs_materials_1`, `obs_materials_10`, `obs_materials_11`, `obs_materials_12`, `obs_materials_13`, `obs_materials_14`, `obs_materials_15`, `obs_materials_16`, `obs_materials_17`, `obs_materials_18`, `obs_materials_19`, `obs_materials_2`, `obs_materials_20`, `obs_materials_3`, `obs_materials_4`, `obs_materials_5`, `obs_materials_6`, `obs_materials_7`, `obs_materials_8`, `obs_materials_9`, `obs_materials_97`, `obs_materialsother`, `obs_menu_compliance`, `obs_menu_display`, `obs_menu_same`, `obs_outdoor`, `obs_potable`, `obs_safety_0`, `obs_safety_1`, `obs_safety_10`, `obs_safety_2`, `obs_safety_3`, `obs_safety_4`, `obs_safety_5`, `obs_safety_6`, `obs_safety_7`, `obs_safety_8`, `obs_safety_9`, `obs_shared`, `obs_space`, `obs_toilet`, `obs_toilet_0`, `obs_toilet_1`, `obs_toilet_2`, `obs_toilet_3`, `obs_toilet_4`, `obs_toilet_5`, `obs_toilet_6`, `obs_toilet_7`, `obs_toilet_8`, `obs_toilet_97`, `obs_toilet_clean`, `obs_toilet_paper`, `obs_toilet_size_chemical_1`, `obs_toilet_size_disability_1`, `obs_toilet_size_disability_2`, `obs_toilet_size_disability_3`, `obs_toilet_size_flush_1`, `obs_toilet_size_flush_2`, `obs_toilet_size_flush_3`, `obs_toilet_size_pit_1`, `obs_toilet_size_pit_2`, `obs_toilet_size_pit_3`, `obs_toilet_size_septic_2`, `obs_toilet_size_septic_3`, `obs_toilet_size_ventilation_1`, `obs_toilet_size_ventilation_2`, `obs_toilet_size_ventilation_3`, `obs_toilets_children`, `obs_toilets_gender`, `obs_water_running`, `obs_water_running_none`, `obs_waterother`, `position_other`, `position_other_reason`, `pqa_class`, `pqa_class_age_1`, `pqa_class_age_2`, `pqa_class_age_3`, `pqa_class_age_4`, `pqa_class_age_5`, `pqa_class_age_6`, `pqa_curriculum_literacy`, `pqa_curriculum_ncf`, `pqa_curriculum_numeracy`, `pqa_environment_accessible`, `pqa_environment_appropriate`, `pqa_environment_areas`, `pqa_environment_open`, `pqa_environment_outdoor`, `pqa_environment_variety`, `pqa_relationships_acknowledge`, `pqa_relationships_discipline`, `pqa_relationships_peers`, `pqa_relationships_staff`, `pqa_teaching_choice`, `pqa_teaching_engagement`, `pqa_teaching_participation`, `pqa_teaching_questions`, `pqa_teaching_support`, `pra_class_size_large`, `pra_class_space_large`, `pra_class_space_small`, `pra_clearance_ncp`, `pra_clearance_police`, `pra_cohort_0`, `pra_cohort_1`, `pra_cohort_2`, `pra_cohort_3`, `pra_cohort_4`, `pra_cohort_5`, `pra_cohort_6`, `pra_dob`, `pra_education_other`, `pra_gender`, `pra_groupings_1`, `pra_groupings_2`, `pra_groupings_3`, `pra_groupings_4`, `pra_groupings_5`, `pra_language`, `pra_learnership`, `pra_materials_donated`, `pra_materials_kit`, `pra_materials_library`, `pra_materials_makefind`, `pra_ncf_trainer_1`, `pra_ncf_trainer_2`, `pra_ncf_trainer_3`, `pra_ncf_trainer_4`, `pra_ncf_trainer_5`, `pra_ncf_trainer_97`, `pra_ncf_trainerother`, `pra_ncf_training`, `pra_on_time`, `pra_online_training`, `pra_online_training_details`, `pra_paid`, `pra_parent_meeting`, `pra_parent_same_attendance`, `pra_plan_4yrs_1`, `pra_plan_4yrs_2`, `pra_plan_4yrs_3`, `pra_plan_4yrs_4`, `pra_plan_4yrs_97`, `pra_plan_4yrs_other`, `pra_plan_5yrs_1`, `pra_plan_5yrs_2`, `pra_plan_5yrs_3`, `pra_plan_5yrs_4`, `pra_plan_5yrs_5`, `pra_plan_5yrs_97`, `pra_plan_5yrs_other`, `pra_plan_approved`, `pra_plan_ncf`, `pra_plans_0`, `pra_plans_1`, `pra_plans_2`, `pra_plans_3`, `pra_qualification_0`, `pra_qualification_1`, `pra_qualification_2`, `pra_qualification_3`, `pra_qualification_4`, `pra_qualification_5`, `pra_qualification_6`, `pra_qualification_7`, `pra_qualification_97`, `pra_qualification_other`, `pra_special_referrals`, `pra_special_training`, `pra_training_0`, `pra_training_1`, `pra_training_2`, `pra_training_3`, `pra_training_4`, `pra_training_5`, `pra_training_6`, `pri_aftercare`, `pri_attendance_usual`, `pri_calc_time_close`, `pri_calc_time_open`, `pri_clinic_travel_1`, `pri_clinic_travel_2`, `pri_clinic_travel_3`, `pri_clinic_travel_4`, `pri_clinic_travel_5`, `pri_clinic_travel_97`, `pri_confirm_subsidy`, `pri_covid_awareness`, `pri_covid_awareness_1`, `pri_covid_awareness_2`, `pri_covid_awareness_3`, `pri_covid_awareness_4`, `pri_covid_awareness_97`, `pri_covid_awareness_other`, `pri_covid_fund_applied`, `pri_covid_fund_received`, `pri_covid_precautions`, `pri_covid_precautions_1`, `pri_covid_precautions_2`, `pri_covid_precautions_3`, `pri_covid_precautions_4`, `pri_covid_precautions_5`, `pri_covid_precautions_6`, `pri_covid_precautions_97`, `pri_covid_precautions_other`, `pri_dsd_conditional_1`, `pri_dsd_conditional_10`, `pri_dsd_conditional_2`, `pri_dsd_conditional_3`, `pri_dsd_conditional_4`, `pri_dsd_conditional_5`, `pri_dsd_conditional_6`, `pri_dsd_conditional_7`, `pri_dsd_conditional_8`, `pri_dsd_conditional_9`, `pri_dsd_conditional_97`, `pri_dsd_conditional_other`, `pri_dsd_previous`, `pri_dsd_unregistered_1`, `pri_dsd_unregistered_10`, `pri_dsd_unregistered_11`, `pri_dsd_unregistered_12`, `pri_dsd_unregistered_13`, `pri_dsd_unregistered_2`, `pri_dsd_unregistered_3`, `pri_dsd_unregistered_4`, `pri_dsd_unregistered_5`, `pri_dsd_unregistered_6`, `pri_dsd_unregistered_7`, `pri_dsd_unregistered_8`, `pri_dsd_unregistered_9`, `pri_dsd_unregistered_97`, `pri_dsd_unregistered_other`, `pri_expenseother`, `pri_fees`, `pri_fees_exceptions`, `pri_fees_exceptions_other`, `pri_fees_free`, `pri_firstaid`, `pri_food_donation`, `pri_food_donor_1`, `pri_food_donor_2`, `pri_food_donor_3`, `pri_food_donor_4`, `pri_food_donor_97`, `pri_food_donorother`, `pri_food_guidance`, `pri_food_type_0`, `pri_food_type_1`, `pri_food_type_2`, `pri_food_type_3`, `pri_food_type_4`, `pri_food_type_5`, `pri_funding_1`, `pri_funding_2`, `pri_funding_3`, `pri_funding_4`, `pri_funding_5`, `pri_funding_6`, `pri_funding_7`, `pri_funding_97`, `pri_funding_donations`, `pri_funding_food`, `pri_funding_none`, `pri_funding_salary_0`, `pri_funding_salary_1`, `pri_funding_salary_2`, `pri_funding_salary_3`, `pri_funding_salary_4`, `pri_funding_salary_97`, `pri_funding_salaryother`, `pri_fundingother`, `pri_garden`, `pri_health_0`, `pri_health_1`, `pri_health_2`, `pri_health_3`, `pri_health_4`, `pri_health_5`, `pri_health_97`, `pri_holidays`, `pri_internet`, `pri_internet_user_1`, `pri_internet_user_2`, `pri_internet_user_3`, `pri_internet_user_4`, `pri_landother`, `pri_language`, `pri_library`, `pri_library_material_1`, `pri_library_material_10`, `pri_library_material_11`, `pri_library_material_12`, `pri_library_material_2`, `pri_library_material_3`, `pri_library_material_4`, `pri_library_material_5`, `pri_library_material_6`, `pri_library_material_7`, `pri_library_material_8`, `pri_library_material_9`, `pri_meal_1`, `pri_meal_2`, `pri_meal_3`, `pri_meal_4`, `pri_meals`, `pri_money_1`, `pri_money_2`, `pri_money_3`, `pri_money_97`, `pri_moneyother`, `pri_network`, `pri_network_type_1`, `pri_network_type_2`, `pri_network_type_3`, `pri_network_type_97`, `pri_precovid_attendance`, `pri_qualification_0`, `pri_qualification_1`, `pri_qualification_2`, `pri_qualification_3`, `pri_qualification_4`, `pri_qualification_5`, `pri_qualification_6`, `pri_qualification_7`, `pri_qualification_97`, `pri_qualificationother`, `pri_reason_register_year`, `pri_records_0`, `pri_records_1`, `pri_records_2`, `pri_records_3`, `pri_records_4`, `pri_records_5`, `pri_refrigerator`, `pri_registered_cipc`, `pri_registered_health`, `pri_registered_npo`, `pri_school`, `pri_staff_changes_reasons_1`, `pri_staff_changes_reasons_2`, `pri_staff_changes_reasons_3`, `pri_staff_changes_reasons_4`, `pri_staff_changes_reasons_5`, `pri_staff_changes_reasons_6`, `pri_staff_changes_reasons_97`, `pri_staff_changes_reasonsother`, `pri_subsidy`, `pri_support`, `pri_support_provider_1`, `pri_support_provider_2`, `pri_support_provider_3`, `pri_support_provider_4`, `pri_support_provider_5`, `pri_support_provider_97`, `pri_support_providerother`, `pri_transport`, `pri_zoning`, `professionals_practitioners`, `sanitation_educators_1`, `sanitation_educators_2`, `sanitation_educators_3`, `sanitation_learners`, `urban`, `teacher_emotional_met`, `teacher_selfcare_met`, `teacher_social_met`, `pra_breadwinner`, `pra_letcee_club`, `pri_funding_subsidy`
 - string (0): none
 - datetime (1): `child_dob (%d%b%Y)`
 
@@ -196,11 +196,11 @@ The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffle
 
 | child_total_elom | child_dob | child_gender | child_age | child_age_group | child_attendance | child_attends | child_grant | child_has_sibling | child_height | child_zha | child_stunted |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 48.6 | 2016-12-06 00:00:00 | Female | 58 | 50-59 Months | nan | nan | Yes | nan | 105.2 | -0.675005 | Normal HAZ |
-| 59.58 | 2017-07-09 00:00:00 | Female | 51 | 50-59 Months | nan | nan | Yes | nan | 115 | 2.37902 | Normal HAZ |
-| 31.76 | 2017-12-12 00:00:00 | Male | 50 | 50-59 Months | nan | nan | Yes | nan | 99 | -1.2764 | Normal HAZ |
-| 46.08 | 2016-11-29 00:00:00 | Female | 57 | 50-59 Months | nan | nan | nan | nan | 100.9 | -1.48966 | Normal HAZ |
-| 41.82 | 2018-05-09 00:00:00 | Male | 59 | 50-59 Months | 5 | Yes | nan | nan | nan | nan | nan |
+| 32.82 | 2017-02-08 00:00:00 | Female | 56 | 50-59 Months | nan | nan | nan | nan | 111.7 | 0.958869 | Normal HAZ |
+| 69.73 | NaT | Male | 66.5902 | 60-69 Months | nan | nan | Yes | nan | 117.9 | 0.983093 | Normal HAZ |
+| 75.78 | NaT | Female | 66.1967 | 60-69 Months | nan | nan | nan | nan | 110.4 | -0.379348 | Normal HAZ |
+| 40.37 | 2017-09-16 00:00:00 | Female | 64.53 | 60-69 Months | 5 | Yes | nan | nan | nan | nan | nan |
+| 59.64 | NaT | Female | 63.7705 | 60-69 Months | nan | nan | Yes | nan | 113 | 0.402596 | Normal HAZ |
 
 ## Curation notes
 
@@ -214,6 +214,12 @@ The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffle
 - We drop all samples with a missing target.
 - Due to most samples having missing values, we drop all "HOME LEARNING ENVIRONMENT DATA" features. This mostly aligns with the Zindi challenge, except that the features hle_ind, quintile_used, and ses_proxy were kept. We keep the latter two, because they are not missing for all samples and are derived from other; not-HLE features.
 - We drop all features with 100% missing values and one unique value.
+- `.a` and `.b` are Stata's extended missing values, exported to the CSV as text (2,388 and 29 cells after the
+  target filter, only in the 2020-2022 rounds). They occur only where the question was asked (all 40 `.a` of
+  the DSD subsidy amount are programmes that receive it), while a skipped question is blank, so they are
+  unanswered questions; the source does not say which code is which. They become missing values. The 46
+  columns that held them are counts, rand amounts per month, a year and minutes, `numeric` in the source's
+  codebook: they are numbers, no longer categories (CLEAN-10, CLEAN-14; issue #36).
 - We drop all indicator columns.
 - We drop some repeated columns, such as age_group_label.
 - Because all features could generally be available at prediction time, even if would not be ideal effort-wise, we keep all features that don't leak the target or are otherwise problematic.
@@ -264,8 +270,8 @@ One group is an early learning facility; its rows are the children assessed ther
 | largest group | 0.3% of the rows |
 | test groups per fold | 847 |
 | groups of two or more rows with a single label | 0.0% |
-| nearest neighbour in the same group | 59.2% of the rows (chance: 0.1%) |
-| label variance explained by the group | 0.40 (shuffled groups: 0.14) |
+| nearest neighbour in the same group | 59.7% of the rows (chance: 0.1%) |
+| label variance explained by the group | 0.40 (shuffled groups: 0.13) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
@@ -295,9 +301,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | obs_toilet_size_disability_1 | category | 18847 | 99.86 | 2 | no, yes |
 | obs_toilet_size_disability_2 | category | 18847 | 99.86 | 2 | yes, no |
 | obs_toilet_size_disability_3 | category | 18847 | 99.86 | 2 | no, yes |
-| pri_amount_funding_other | category | 18846 | 99.85 | 5 | 3800, .a, 5280, 46000, 800 |
 | pri_funding_salaryother | category | 18845 | 99.85 | 8 | CHURCH OF SKHUKHUZA, DBE, DEPARTMENT OF EDUCATION, DSD, METHODIST CHURCH, FOOD … |
-| pri_amount_funding_doh | category | 18839 | 99.81 | 8 | 2, .a, 13770, 18000, 26000, 56000, 42000, 24000 |
 | pri_covid_precautions_other | category | 18839 | 99.81 | 8 | SCREENS BETWEEN DESKS, NO ENTRY TO PARENTS., NO PARENTS ALLOWED ON SITE, KIDS H… |
 | pra_class_size_large | category | 18837 | 99.8 | 8 | THERE ARE 2 GROUPS, ONE GROUP OF 27 COMES CERTAIN DAYS, THE OTHER GROUP OF 26 O… |
 | pri_confirm_subsidy | category | 18837 | 99.8 | 2 | yes, no |
@@ -318,10 +322,8 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | pri_dsd_unregistered_other | category | 18776 | 99.48 | 20 | HAD PROBLEMS REGISTERING SINCE 2005, THEY LOST MY DOCUMENTS, POLICY CHANGES AFT… |
 | pri_staff_changes_reasonsother | category | 18746 | 99.32 | 29 | COVID PROTOCOLS ENFORCEMENT, IT WAS BECAUSE OF COVID19, SAME NUMBER, TO SPACE K… |
 | pra_class_space_large | category | 18726 | 99.22 | 31 | THE CLASSROOM IS BIG, THERE ARE 1,2,3,4 YEAR OLDS IN THIS CLASS. THE MEASUREMEN… |
-| pri_amount_funding_dbe | category | 18726 | 99.22 | 21 | 15000, 22000, 2, 5000, 5500, 1, 12000, .a, 10241, 10666 |
 | obs_waterother | category | 18721 | 99.19 | 28 | ASK FROM THE NEIGHBOR'S, THEY BUY WATER, THEY BUY WATER FROM THE COMMUNITY, THE… |
 | pri_reason_register_year | category | 18700 | 99.08 | 34 | DISABLED CHILD. PARENTS STILL LOOKING FOR APPROPRIATE SCHOOL FOR HER, THE SCHOO… |
-| pri_amount_funding_donations | category | 18690 | 99.03 | 27 | 3000, .a, 1, 1000, 10000, 300, 5000, 500, 11000, 800 |
 | pri_library_material_9 | category | 18590 | 98.5 | 2 | yes, no |
 | obs_water_running_none | category | 18589 | 98.49 | 60 | TAP IS BROKEN, THEY STOLE THE PRESSURE PUMP., THE WHOLE AREA IS STRUGGLING WITH… |
 | pri_library_material_5 | category | 18582 | 98.45 | 2 | no, yes |
@@ -346,6 +348,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | pri_library_material_3 | category | 18542 | 98.24 | 2 | yes, no |
 | pri_library_material_6 | category | 18542 | 98.24 | 2 | yes, no |
 | pri_library_material_8 | category | 18542 | 98.24 | 2 | yes, no |
+| pra_online_training_details | category | 18528 | 98.17 | 66 | NONE, NQF LEVEL 6 IN ECD, PLAY SA, GRADE R PLAY BASED LEARNING COURSE, NTATAISE… |
+| library_access | category | 18518 | 98.11 | 2 | yes, no |
+| obs_toilet_size_ventilation_1 | category | 18506 | 98.05 | 2 | yes, no |
+| obs_toilet_size_ventilation_2 | category | 18506 | 98.05 | 2 | yes, no |
 
 (685 more rows not shown)
 
@@ -360,7 +366,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 ### Numeric features
 
 <details>
-<summary>Show the table (230 rows)</summary>
+<summary>Show the table (275 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -388,7 +394,25 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | count_present_girls | 2332 | 20.0832 | 16.6004 | 0 | 120 |
 | count_register_all | 8640 | 57.7405 | 37.2974 | 0 | 293 |
 | count_register_foreign | 2332 | 1.59477 | 6.9096 | 0 | 79 |
+| count_register_gender | 7822 | 58.6735 | 37.7319 | -3 | 293 |
+| count_register_gender_female | 7799 | 29.5812 | 19.3001 | 0 | 156 |
+| count_register_gender_male | 7799 | 29.2658 | 19.6315 | 0 | 163 |
+| count_register_gender_other | 7763 | 0.0133969 | 0.590071 | 0 | 26 |
 | count_register_race | 7824 | 57.8487 | 37.2114 | -5 | 293 |
+| count_register_race_african | 7813 | 48.7452 | 37.9235 | 0 | 277 |
+| count_register_race_coloured | 7793 | 7.94675 | 21.8724 | 0 | 293 |
+| count_register_race_indian | 7778 | 0.134096 | 1.35502 | 0 | 31 |
+| count_register_race_other | 7771 | 0.126753 | 2.42807 | 0 | 85 |
+| count_register_race_white | 7777 | 1.02777 | 8.87519 | 0 | 158 |
+| count_register_year_2013 | 6913 | 0.00925792 | 0.250407 | 0 | 10 |
+| count_register_year_2014 | 6906 | 0.0508254 | 0.639193 | 0 | 22 |
+| count_register_year_2015 | 6931 | 3.91127 | 9.55011 | 0 | 118 |
+| count_register_year_2016 | 6961 | 15.0001 | 12.4583 | 0 | 93 |
+| count_register_year_2017 | 6962 | 17.632 | 12.3668 | 0 | 87 |
+| count_register_year_2018 | 6956 | 11.2799 | 9.77272 | 0 | 93 |
+| count_register_year_2019 | 6980 | 6.39198 | 7.30974 | 0 | 75 |
+| count_register_year_2020 | 6951 | 2.4831 | 4.07335 | 0 | 33 |
+| count_register_year_2021 | 6929 | 0.517102 | 1.78014 | 0 | 30 |
 | count_register_year_grader | 7063 | 36.0603 | 27.6289 | 0 | 251 |
 | count_register_year_school | 7063 | 0.0587569 | 0.84986 | 0 | 32 |
 | count_staff_all | 8361 | 5.86473 | 3.58128 | 0 | 39 |
@@ -399,40 +423,22 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | count_staff_contract_temporary | 2332 | 0.508576 | 1.08078 | 0 | 8 |
 | count_staff_gender | 7864 | 6.10809 | 3.5291 | 1 | 39 |
 | count_staff_gender_female | 7864 | 5.51933 | 3.19893 | 1 | 37 |
+| count_staff_gender_male | 7841 | 0.595332 | 0.761392 | 0 | 8 |
+| count_staff_gender_other | 7824 | 0.0031953 | 0.0564402 | 0 | 1 |
 | count_staff_managers | 204 | 0.946078 | 0.399549 | 0 | 2 |
 | count_staff_paid | 2206 | 6.25295 | 4.06784 | 1 | 39 |
 | count_staff_paid_assistants | 2206 | 0.427471 | 1.35959 | 0 | 16 |
 | count_staff_paid_cooks | 2206 | 0.990481 | 0.533163 | 0 | 3 |
 | count_staff_paid_maintenance | 2206 | 0.567996 | 0.610305 | 0 | 3 |
-| count_staff_paid_managers | 2206 | 0.901632 | 0.419293 | 0 | 4 |
-| count_staff_paid_practitioners | 2206 | 3.03581 | 2.265 | 0 | 24 |
-| count_staff_paid_support | 2206 | 0.329556 | 0.715051 | 0 | 4 |
-| count_staff_time | 7864 | 6.11152 | 3.52753 | 1 | 39 |
-| count_staff_time_full | 7864 | 5.81218 | 3.47245 | 0 | 37 |
-| count_staff_time_part | 2332 | 0.328902 | 0.75727 | 0 | 6 |
-| count_staff_unpaid | 329 | 2.96049 | 1.99579 | 1 | 9 |
-| count_staff_unpaid_assistants | 329 | 0.43465 | 0.884909 | 0 | 4 |
-| count_staff_unpaid_cooks | 329 | 0.419453 | 0.574126 | 0 | 2 |
-| count_staff_unpaid_maintenance | 329 | 0.413374 | 0.5625 | 0 | 2 |
-| count_staff_unpaid_managers | 329 | 0.440729 | 0.497231 | 0 | 1 |
-| count_staff_unpaid_practitioners | 329 | 0.848024 | 1.08257 | 0 | 6 |
-| count_staff_unpaid_support | 329 | 0.404255 | 0.980347 | 0 | 5 |
-| count_toilets_adults | 7065 | 1.76221 | 1.32408 | 0 | 15 |
-| count_toilets_children | 7621 | 5.46818 | 7.47083 | 0 | 55 |
-| facility_hours | 362 | 8.56354 | 1.78408 | 4 | 12 |
-| facility_size | 3167 | 142.065 | 307.907 | 1 | 2295 |
-| gr_1_tt | 586 | 1.11092 | 0.595984 | 1 | 5 |
-| gr_c1 | 586 | 4.90444 | 10.1786 | 1 | 88 |
-| gr_c2 | 586 | 4.19454 | 6.7312 | 1 | 60 |
 
-(170 more rows not shown)
+(215 more rows not shown)
 
 </details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (1,760 rows)</summary>
+<summary>Show the table (1,537 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -491,13 +497,13 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | child_years_in_programme | 3 | 3rd year in programme | 3164 | 16.76 |
 | child_years_in_programme | 4 | &lt;NA> | 2370 | 12.56 |
 | child_years_in_programme | 5 | Don't know | 290 | 1.54 |
-| count_register_gender | 1 | &lt;NA> | 11046 | 58.52 |
-| count_register_gender | 2 | 40 | 242 | 1.28 |
-| count_register_gender | 3 | 30 | 240 | 1.27 |
-| count_register_gender | 4 | 45 | 203 | 1.08 |
-| count_register_gender | 5 | 34 | 163 | 0.86 |
+| dc_best | 1 | &lt;NA> | 8295 | 43.95 |
+| dc_best | 2 | CITY OF CAPE TOWN | 1446 | 7.66 |
+| dc_best | 3 | CAPE WINELANDS | 651 | 3.45 |
+| dc_best | 4 | BOJANALA | 537 | 2.85 |
+| dc_best | 5 | NKANGALA | 494 | 2.62 |
 
-(1,700 more rows not shown)
+(1,477 more rows not shown)
 
 </details>
 
@@ -512,4 +518,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:39fa9a71d410d6f0e2c1411ce5740988cfa7f56205fdc3af4ffc047932df48df` |
+| stale | yes: the definition now gives checksum `v2:9046045578d9b918961ef633f2c1df18c064b8a0308a10007b17584ebc0c194d` |

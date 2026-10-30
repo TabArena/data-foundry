@@ -43,6 +43,8 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 **Assessment (AI, 2026-10-26):** an open doubt under CLEAN-14, from the cross-dataset item of 2026-10-21: `practitioner` and `quintile_used` hold only 0 and 1 and stay numeric because no codebook gives their meaning; they become categorical if a codebook names them yes/no items.
 
+CC (2026-10-30, Lennart): the Stata missing codes `.a` and `.b` become missing values and the 46 columns that held them are numeric (45 in the cleaned frame: the `count_register_*` and `count_staff_*` counts, the `pri_amount_*`, `pri_expense_*` and `pri_fees_*` amounts, `pri_capacity`, `pri_dsd_year`, `teacher_duration`). The source's codebook types them `numeric`; the codes occur only where the question was asked (a skipped question is blank), so they are unanswered questions, which the source does not define further. Raised by Adrian in issue #36 and found by the dtype probe's sweep the same day. CLEAN-10, CLEAN-14.
+
 ## Reference
 
 DataDrive2030. ELOM and Thrive by Five Index 2016-2023, Merged Data [dataset]. Version 1. Cape Town: DataDrive2030 [producer], 2024. Cape Town: DataFirst [distributor], 2024. DOI: https://doi.org/10.25828/WG0D-Y909

@@ -4,6 +4,21 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-30, `early_learning_predictors`: Stata missing codes to missing, 45 counts and amounts numeric (PR #35)
+
+- `.a` and `.b` are Stata's extended missing values, exported to the CSV as text in 46 columns (2,388 and 29 cells
+  after the target filter, only in the 2020-2022 rounds). They occur only where the question was asked (all 40 `.a` of
+  the DSD subsidy amount are programmes that said they receive it), while a skipped question is blank, so they are
+  unanswered questions; neither the codebook nor the DDI metadata defines them. `_clean` sets them to missing and
+  makes the 46 columns numbers (45 survive the cleaning; `count_aftercare` is dropped later), and they leave
+  `categorical`: the `count_register_*` and `count_staff_*` counts, the `pri_amount_*`, `pri_expense_*` and
+  `pri_fees_*` amounts in rand per month, `pri_capacity`, `pri_dsd_year` and `teacher_duration` (minutes), all
+  `numeric` in DataFirst's codebook. The other categorical columns stay: multi-select answers such as `health` and
+  `obs_hazard`, free text, 0/1 flags.
+- Raised by Adrian in issue #36 (on the BeyondArena notebook, whose typing the v2 definition had copied) and found by
+  the dtype sweep the same day. CC line in the record, CLEAN-10 Cases row. `dataset check`: 0 errors, the one warning
+  it had before (`certificate_register` and `certificate_registration_npo` are copies). Not built.
+
 ## 2026-10-30, a dtype probe and one sweep of every definition; `qsar_biodeg`'s fragment counts numeric (PR #35)
 
 - Why `bank_marketing` went unnoticed: CLEAN-14 already said a count stays numeric, but only the `/add-dataset` panel
@@ -21,7 +36,7 @@ record, audit or PR that motivated it.
   the record, CLEAN-14 Cases row. `dataset check`: 0 errors, 0 warnings. Not built.
 - The sweep, once, over the 163 definitions (outputs in `local-data-warehouse/_runs/2026-10-30_dtype_sweep/`): 489
   flagged columns in 48 datasets, 358 of them only `numeric_levels` (codes, ids). Beyond the two datasets above,
-  the findings went to the curator and nothing else changed here: `early_learning_predictors` (42 counts and amounts
+  the findings went to the curator and nothing else changed here: `early_learning_predictors` (45 counts and amounts
   typed categorical, with Stata missing codes `.a` and `.b` among the numbers), counts with open ends typed
   categorical (`mic`'s `INF_ANAM`, `hr_analytics`' `experience`), ordinal scales typed numeric (`gallstone_disease`'s
   HFA, `ljubljana_breast_cancer`'s bin midpoints, `in_vehicle_coupon_recommendation`'s `time`) and codes typed numeric
