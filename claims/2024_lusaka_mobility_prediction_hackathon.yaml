@@ -1,6 +1,6 @@
 name: 2024_lusaka_mobility_prediction_hackathon
 holder: Myunghwan
-stage: triage
+stage: review
 claimed_at: '2026-10-28T03:20:07Z'
-expires_at: '2026-11-04T03:20:07Z'
-note: 'Next Myunghwan curation batch: highest remaining eligible priority 3; existing screening dossiers await curator review. Reservation only; no scientific acceptance or build.'
+expires_at: '2026-11-06T07:14:10Z'
+note: 'Curator accepted; build, reload and traced-input reproduction complete. Submitted in PR #33: https://github.com/TabArena/data-foundry/pull/33 . Accepted approximations and source/descriptor limits are documented. Awaiting PR review/merge; retain Myunghwan ownership until merged.'
