@@ -48,13 +48,16 @@ K=.claude/skills/knowledge-data-foundry/scripts
 .venv/bin/python $K/tuned_results.py <unique_name> [--feature auto]
 ```
 
-* `leak_probes.py`: probes 1-6 and 14 of the leak table (all features, each feature alone, missing indicators, drop
-  one, exact copies across the split with and without string and datetime columns, each long string column alone as
+* `leak_probes.py`: probes 1-6, 14, 17 and 18 of the leak table (all features, each feature alone, missing indicators,
+  drop one, exact copies across the split with and without string and datetime columns, each long string column alone as
   text (TF-IDF + SVD on the train side, character n-grams for one-token strings), nearest-neighbour agreement and the
   label-free distance score, a depth-2 and depth-3 tree on the label), with untuned LightGBM on the first shipped
   splits. With more columns than `--max-single-features` only the most informative enter the single-feature fits, and
   the output says how many were screened out, so a 49,000-column omics table takes minutes. A multiclass ROC AUC is the
-  mean over the classes present in the test fold. Group columns are never features.
+  mean over the classes present in the test fold. Group columns are never features. For a classification task it also
+  scores the number format alone (probe 17), and, when the raw file is one table holding the target column, counts per
+  column and class the cells on a straight line between their neighbours in the raw file's order (probe 18: gaps filled
+  by interpolation).
 * `task_probes.py`: dummy baselines against three untuned model families (a fourth on more than 1,000 inputs:
   `selected_linear`, the linear model on the 500 inputs a univariate F-test picks on each train side), on every shipped
   split up to 30 for a dataset of at most 5,000 scored units and the first 5 otherwise, scored per group for a

@@ -19,6 +19,13 @@ first ``n_splits`` splits, prints each number as soon as it is known and returns
 * the 1-nearest-neighbour label agreement (R^2 for regression) for the closest tenth of the test rows and for
   all of them, against chance;
 * for a binary target, the ROC AUC of a label-free score: each row's distance to its nearest other row.
+* for a classification target, the score of the number format alone (probe 17): the decimals each value of a float
+  column is written with, all columns together and the three best alone. Classes recorded differently give
+  themselves away here (gallstone_disease 0.947 before the fix, 0.557 after).
+
+``fill_counts`` (probe 18) needs the rows in the source's order, which ``run`` does not get: it counts, per column and
+class, the cells that lie on a straight line between the cells above and below, the trace of gaps filled by
+interpolation. Run it on the raw table.
 
 Wide data: with more than ``max_single_features`` columns, only that many enter the single-feature fits, and the
 output says how many were screened out. The screen keeps the columns that best explain the label alone on the first
@@ -267,6 +274,46 @@ def string_checks(
     return out
 
 
+def written_decimals(values: pd.Series) -> pd.Series:
+    """The decimals each value is written with, at most 8 (2.50 counts 1, 3.0 counts 0); missing stays missing."""
+    v = values.astype(float)
+    out = pd.Series(np.nan, index=v.index)
+    for d in range(8):
+        scaled = v * 10.0**d
+        whole = (scaled - scaled.round()).abs() <= 1e-9 + 1e-12 * scaled.abs()
+        out[out.isna() & v.notna() & whole] = d
+    out[out.isna() & v.notna()] = 8
+    return out
+
+
+def straight_line_fills(values: pd.Series) -> pd.Series:
+    """Cells on a straight line between the cells above and below, in the order given: a cell whose step from the row
+    above equals its step to the row below (and is not zero), in a run of two or more such cells, or alone when the
+    step is finer than 0.01. Gaps filled by linear interpolation leave this trace; so do runs of round values by
+    chance (92, 91, 90, 89), which only the values themselves can tell apart.
+    """
+    v = values.astype(float)
+    step_in, step_out = v.diff(), -v.diff(-1)
+    hit = ((step_in - step_out).abs() < 1e-6 * v.abs().clip(lower=1)) & (step_in.abs() > 1e-9)
+    run_size = hit.groupby((hit != hit.shift()).cumsum()).transform("size")
+    finer = (step_in * 100 - (step_in * 100).round()).abs() > 1e-6
+    return hit & ((run_size >= 2) | finer)
+
+
+def fill_counts(raw: pd.DataFrame, target: str, *, min_cells: int = 5) -> dict[str, dict[str, int]]:
+    """Per numeric column of ``raw``, in its row order, the cells of ``straight_line_fills`` counted per target value;
+    the columns with at least ``min_cells`` of them, most first.
+    """
+    out = {}
+    for col in raw.columns:
+        if col == target or not pd.api.types.is_numeric_dtype(raw[col]) or raw[col].nunique() <= 5:
+            continue
+        hit = straight_line_fills(raw[col])
+        if hit.sum() >= min_cells:
+            out[col] = {str(k): int(n) for k, n in hit.groupby(raw[target]).sum().items()}
+    return dict(sorted(out.items(), key=lambda kv: -sum(kv[1].values())))
+
+
 def run(
     df: pd.DataFrame,
     target: str,
@@ -341,6 +388,17 @@ def run(
     missing = dict(sorted(missing.items(), key=lambda kv: -kv[1]))
     result["missing"] = missing
     say(f"missing indicator alone: {dict(list(missing.items())[:5])}")
+    if not regression:
+        floats = [c for c in X.columns if pd.api.types.is_float_dtype(X[c]) and X[c].nunique() > 5]
+        if floats:
+            fmt = pd.DataFrame({c: written_decimals(X[c]) for c in floats}, index=X.index)
+            result["format_alone"] = fit(fmt)
+            top = keep_most_informative(fmt, y, pairs[0][0], 3, regression=False)
+            result["format_single"] = {c: round(fit(fmt[[c]]), 3) for c in top}
+            say(
+                f"number format alone (decimals written, {len(floats)} float columns): {result['format_alone']:.3f}; "
+                f"best columns: {result['format_single']}"
+            )
     result["without"] = {}
     for col in single.index[:3]:
         result["without"][col] = fit(X.drop(columns=[col]))

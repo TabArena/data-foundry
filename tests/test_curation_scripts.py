@@ -555,6 +555,51 @@ def test_task_probe_run_on_a_capped_temporal_task(task_probe):
 
 
 @pytest.fixture(scope="module")
+def leak_probe():
+    """curation_probes.leak, imported through leak_probes.py; it needs LightGBM, so the tests skip without it."""
+    pytest.importorskip("lightgbm")
+    return _import("leak_probes").leak
+
+
+def test_leak_probe_written_decimals(leak_probe):
+    """Decimals as written: trailing zeros do not count, interpolated values carry many, missing stays missing."""
+    values = pd.Series([2.5, 3.0, 0.215, np.nan, 27.28571429, 0.001, 1234.5])
+    got = leak_probe.written_decimals(values)
+    assert got.isna().tolist() == [False, False, False, True, False, False, False]
+    assert got.dropna().tolist() == [1, 0, 3, 8, 3, 1]
+
+
+def test_leak_probe_straight_line_fills(leak_probe):
+    """A run of interpolated cells and a single fine-step fill are found; a single round step is not."""
+    values = pd.Series([5.0, 7.3, 8.2, 9.1, 10.0, 4.4, 1.0, 1.215, 1.43, 3.0, 1.0, 1.5, 2.0, 0.3])
+    assert list(np.flatnonzero(leak_probe.straight_line_fills(values))) == [2, 3, 7]
+
+
+def test_leak_probe_fill_counts_per_class(leak_probe):
+    """In a class-sorted table, fills in one class's block are counted for that class only."""
+    rng = np.random.default_rng(0)
+    a = rng.normal(20, 5, 60).round(1)
+    a[10:20] = np.linspace(a[9], a[20], 12)[1:-1]  # ten cells filled between rows 9 and 20
+    raw = pd.DataFrame({"y": [0] * 30 + [1] * 30, "a": a, "b": rng.normal(size=60)})
+    assert leak_probe.fill_counts(raw, "y") == {"a": {"0": 10, "1": 0}}
+
+
+def test_leak_probe_run_scores_the_number_format(leak_probe):
+    """One class written in whole numbers, the other to one decimal: the format alone gives the class away."""
+    rng = np.random.default_rng(2)
+    n = 400
+    y = np.repeat([0, 1], n // 2)
+    x = rng.normal(50, 10, n)
+    x = np.where(y == 1, x.round(0), x.round(1) + 0.05 * (x.round(1) % 1 == 0))
+    df = pd.DataFrame({"x": x, "noise": rng.normal(size=n).round(3), "y": y})
+    idx = rng.permutation(n)
+    splits = [(idx[:300], idx[300:]), (idx[100:], idx[:100])]
+    result = leak_probe.run(df, "y", "binary_classification", splits, n_splits=2, n_jobs=1)
+    assert result["format_alone"] > 0.95
+    assert next(iter(result["format_single"])) == "x"
+
+
+@pytest.fixture(scope="module")
 def dtype_probe():
     """curation_probes.dtypes, imported through dtype_probes.py."""
     pytest.importorskip("joblib")
