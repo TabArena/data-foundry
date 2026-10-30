@@ -2,11 +2,12 @@
 unique_name: 2024_lusaka_mobility_prediction_hackathon
 name: 2024-lusaka-mobility-prediction-hackathon
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Myunghwan
+data_foundry_status:
+- WIP (DF)
+claimed_by: Myunghwan
+suggestion: 'Yes'
 priority: 3
-tags:
-- AI-Filled (Verify)
 collections:
 - New (BeyondArena)
 original_source: Zindi
@@ -15,18 +16,30 @@ domain: technology & internet
 required_split:
 - Temporal (NON-IID)
 problem_type: Regression
+original_data_state: Database (or multiple to-be-joined tables)
 source_links:
-- https://zindi.africa/competitions/2024-lusaka-mobility-prediction-hackathon/data
-- https://zindi.africa/competitions/2024-lusaka-mobility-prediction-hackathon
-- '# a different Yango dataset (average road speeds, Sept 2023), not this task''s data'
-- https://zindi.africa/competitions/practice-challenge-lusaka/data
+- https://zindi.world/competitions/2024-lusaka-mobility-prediction-hackathon
+- https://zindi.world/competitions/2024-lusaka-mobility-prediction-hackathon/data
+- https://api.zindi.world/v1/competitions/2024-lusaka-mobility-prediction-hackathon
+- https://github.com/Mwandamena/yango-hackathon/tree/2fa7817be0740ea1739143ea6e61a28d6cf1462d/data
+v2_path: datasets/_dev/tabarena-v0pt2/2024_lusaka_mobility_prediction_hackathon/dataset.py
 source_row: 934
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
+
+CC (2026-10-29, Myunghwan): Include the trip-start ride-time task with the accepted approximate endpoint/weather inputs. Preserve the supplied aligned trip/weather calendar and the identified participant copy. The source year remains 2024; no calendar correction is inferred.
+
+**Assessment (AI, 2026-10-29):** One row is a labeled trip. Predict actual duration in minutes using trip start, four endpoint coordinates, straight-line distance and three preceding-hour weather fields. Actual traveled distance and identifiers are excluded. After dropping 21 missing start times, 112,739 rows remain. Keep positive durations and zero straight-line distances without unsupported trimming.
+
+The pinned participant copy identifies this exact Yango/Zindi Lusaka challenge. Its trip timestamps run through January 2023 and early February, while the competition describes January 2024; weather and the inspected participant starter also identify January 2023. Preserve the supplied calendar, first-source year 2024 and the pinned public mirror. Train, Test, weather and sample-submission byte lengths match the organizer's listing; dictionary and starter lengths differ. Organizer-original byte equality and the reason for the calendar discrepancy remain unverified.
+
+At trip start, recorded destination and straight-line distance stand in for the requested destination; capture timing is unverified. Weather uses floor(trip_start) minus one hour, without future fill or year/timezone shifting: 112,716 rides have exact preceding-hour matches, and 23 out-of-coverage rides retain missing weather. Earlier-hour measurement does not establish publication latency. These limitations were explicitly accepted as an approximation, not certified as prospectively available facts.
+
+Use the competition's RMSE on actual minutes with identity target transform. Three chronological four-day test windows have a one-day training gap. All observed durations are below one day, so observed training trip ends precede refit; additional reporting delay and cohort-extraction maturity remain unknown. The final test includes a partial final day. This same-release city/month task does not establish all-season or other-city generalization. Source reuse restrictions remain separate from scientific acceptance.
+
+The current measured findings and accepted task above supersede the source-only counts and provisional framing in the historical screening notes below. Priority 3 is retained for the traceable source and specified ride-time use case; approximate timing and source/calendar limits remain explicit.
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 

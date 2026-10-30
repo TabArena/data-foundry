@@ -2,14 +2,17 @@
 unique_name: protein_model_quality_rf_pcp
 name: RF-PCP (quality assessment of modeled protein structures, CASP and decoy sets)
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
-priority: 3
+- Myunghwan
+data_foundry_status:
+- WIP (DF)
+claimed_by: Myunghwan
+suggestion: 'Yes'
+priority: 2
 tags:
 - AI-Filled (Verify)
 - Non-IID (Grouped)
 original_source: Other
-year: '2015'
+year: '2014'
 domain: biology & life sciences
 required_split:
 - Grouped (NON-IID)
@@ -18,12 +21,27 @@ original_data_state: One Table
 source_links:
 - https://sourceforge.net/projects/rf-pcp/files/
 - https://doi.org/10.1142/S0219720015500055
-needs_review:
-- ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/protein_model_quality_rf_pcp/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
+
+CC (2026-10-29, Myunghwan): Include GDT_TS as a historical tabular quality benchmark with the documented descriptor uncertainties. Use source year 2014 and retain the paper's 2015 citation. Exclude the 4,893 explicitly named native references; retain the 95,094-row candidate population, including the three documented ambiguous zero-RMSD cases. Preserve all six supplied descriptors and the canonical-protein holdout.
+
+**Assessment (AI, 2026-10-29):** The author archive has 99,987 rows. A row is a candidate protein structure; the six numeric inputs are surface area, cumulative aliphatic C-beta distances, empirical energy, secondary-structure score, sequence length and aliphatic pair count. Identifiers and both alternative outcomes are excluded from predictors. GDT_TS is the supplied fractional average agreement at 1, 2, 4 and 8 angstrom tolerances. Predict it after candidate generation, before the experimental reference is available.
+
+The source paper fits three separate regressions. Its Section 3 reports multiple measures without a unique criterion, so regression RMSE is the fallback. Our diagnostic R-squared is 1-SSE/SST, whereas the paper reports squared Pearson correlation. Section 4.1 uses tolerance plus/minus 1 angstrom for RMSD and plus/minus 0.1 for TM/GDT. The first archive release is August 2014; the article appeared online in December 2014 and in a 2015 issue.
+
+Exclude source IDs beginning native_ or ending _native.pdb by reference identity, not target value. Retain casp5_T0156_1nxj.nNh1.pdb and ROSETTA_1aa2_1aa2h2.pdb despite perfect labels because their reference role is unverified. Retain CASP10_T0676_HOMER_TS2.pdb with RMSD0/GDT0.0116: exact alignment coverage is unavailable, so neither a numerical repair nor deletion is supported. The paper's headline native count is not a measured count of independent protein groups.
+
+SS has an equation/prose disagreement and 5,620 values above modeled sequence length. ED/PN have 134 inconsistent zero combinations under the simple common-pair interpretation. Preserve those values and signed/extreme finite Energy. Feature-generation code and exact row-level alignment outputs were not recovered; no native-dependent feature leakage, sentinel mechanism or supported numerical correction was demonstrated.
+
+Source-backed identity checks merge six biological components spanning 14 PDB keys, reducing 453 source keys to 445 canonical proteins. Official CASP links cover 339 targets; three more are sequence-verified. The required hash-checked identity map prevents silently restoring the earlier same-protein alias leak. Nine repeated group-disjoint folds have zero known identity or exact-predictor overlap. Protein-family independence, modern-generator transfer and top-one structure-selection usefulness are not claimed.
+
+On the same five held-out-protein folds, Ridge RMSE0.19318568 versus training-side-selected LightGBM0.17894541 gives a 7.37% reduction. The all-nine-fold LightGBM RMSE is0.17804637 and R-squared0.227478; it beats the training mean in every fold. These are descriptive repeated-fold results, not proof of a significant advantage over TM-score or maximum future improvement. The bounded stronger comparison addresses the untuned no_spread question without promising a benchmark-wide ranking.
+
+Priority 2 balances traceable source and grouped biological coverage against unresolved source conventions and approximate historical fit. The three original targets remain one source family, with only GDT_TS selected. The current measurements and curator decisions supersede the provisional counts, source year, tolerances and target recommendations in the historical screening below.
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata and notes below were drafted by an AI assistant from the release files and the paper's abstract; a human must verify them before relying on them.**
 

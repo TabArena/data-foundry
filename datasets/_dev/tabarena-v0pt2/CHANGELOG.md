@@ -1,5 +1,9 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-10-29 - Lusaka and RF-PCP accepted tasks
+
+Add the accepted Lusaka trip-duration regression (112,739 rides, nine predictors, three temporal test windows with a one-day gap) and historical RF-PCP GDT_TS regression (95,094 rows, six predictors, 445 canonical proteins and nine group-disjoint folds). Preserve their accepted approximations, source/calendar and descriptor uncertainties. RF-PCP uses a required source-backed identity map; only one target is selected from its related outcomes.
+
 Every change to this folder gets an entry here, newest first: edited definitions or helper files, added or removed
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
