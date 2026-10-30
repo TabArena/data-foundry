@@ -101,14 +101,40 @@ point are filtered out by an as-of date: SPLIT-9 in [splits.md](splits.md). Case
 
 ### Artefacts that differ by class
 
-**LEAK-13 (Must).** Class-specific recording conventions are harmonised: round every row to the shared precision, drop
-a column only one class has. First measure how much the fix removes. Test: probe 9. Cases: hepatitis_c_prediction.
+**LEAK-13 (Must; amended 2026-10-26, Andrej, on gallstone_disease).** Class-specific recording conventions are
+harmonised: write every row at the precision of the measured values, computed columns and filled cells included, and
+drop a column only one class has or one that was filled in for one class only. First measure how much the fix removes.
+Test: probes 4, 9 and 17. Cases: hepatitis_c_prediction, gallstone_disease.
 
 **LEAK-14 (Must).** A class that comes from a separate source or assay is dropped once the paper confirms it. Test:
 probe 7. Cases: biogeographical_ancestry_prediction.
 
-**LEAK-15 (Must).** Batch noise across the whole feature space, with no batch id, retires the dataset: a feature subset
-does not help when it also separates same-label groups. Test: probes 7 and 8. Cases: prostate_cancer_detection.
+**LEAK-15 (Must; amended 2026-10-27, Andrej, on gallstone_disease).** A recording artefact that runs through several
+features that would matter for prediction in practice, and that cannot be undone (no batch id to drop, no format to
+harmonise, no route to align), retires the dataset: a feature subset does not help when it also separates same-label
+groups. An artefact confined to features a practical model would not rely on is fixed (LEAK-13, LEAK-14, LEAK-39) or
+kept with a note. Test: probes 7, 8 and 17, and the score without the affected features. Cases:
+prostate_cancer_detection (retired), gallstone_disease (kept).
+
+**LEAK-39 (Must; 2026-10-26, Andrej, on gallstone_disease).** Rows of one class recorded through a separate route, found
+by a recording fingerprint (number formats, a derived column that follows another definition, a shifted measurement)
+rather than a source column, are dropped when models recognise them and the route cannot be aligned with the other
+rows: too few rows of the other class went through it to calibrate it. Find them as rows of one class that share the
+formats the other class rarely has. Then score them against the other class out of fold, and score the other class's
+rows of the same route: when those are predicted as the first class, models learn the route, not the target. Test:
+probes 7, 9 and 17. Cases: gallstone_disease.
+
+**LEAK-40 (Should; 2026-10-26, Andrej, on gallstone_disease).** Gaps the source filled from neighbouring rows
+(interpolation, carried values) in a file sorted by class are tested, not assumed to leak: set the filled cells to
+missing and re-impute them inside each training fold without the label. When that scores the same or higher, the fills
+stay with a note. Setting them to missing is no fix when the gaps follow the classes: the missing values then mark a
+class. Their written precision is harmonised (LEAK-13). Values filled from the label, such as an outcome group's mean,
+are LEAK-10 and go back to missing. Test: probe 18. Cases: gallstone_disease (kept),
+heart_failure_followup_survival (outcome-group means, set back to missing).
+
+Marker, for a dataset where LEAK-13 to LEAK-15, LEAK-39 or LEAK-40 applied, kept or retired: `Class-dependent
+Recording`. It says the classes were measured, formatted or filled differently, so the recording can give the label
+away. `Selection Bias` is about which rows were sampled, with the measurements alike.
 
 Generated or manipulated data is retired (`AHDS`, `Data Quality Issue`; SEL-16, PROV-3); how to tell (probe 15):
 PROV-3 in [provenance.md](provenance.md), "Is the data generated?".
@@ -303,6 +329,8 @@ The numbers compare the shipped data with a suspected fix; they are not leaderbo
 | 14 | A simple formula or lookup for the target; a shallow tree on the label | R^2 near 1; a depth-2 or depth-3 tree close to the full model | video_game_fps: log FPS = game + CPU + GPU, R^2 0.99998; audiology's cochlear diagnoses: two history answers decide 139 of 147 |
 | 15 | The generated-data tests of PROV-3 ([provenance.md](provenance.md), "Is the data generated?"; the scope is SEL-16) | see there | ecommerce_shipping, customer_satisfaction_in_airline, homeq_default_prediction |
 | 16 | Every block of columns: mean 0 and SD 1, or min 0 and max 1, over the whole table | the source scaled over all rows, test rows included | coad_colon_adenocarcinoma (z-scores over 260 patients); credit_card_customers (clipped at whole-file percentiles) |
+| 17 | The number format alone: the decimals each value of a float column is written with, all columns together and the best three alone (`leak_probes.py`) | the format scores far above chance | gallstone_disease 0.949 (best alone: GFR 0.802, two decimals for 80% of those without gallstones and 15% of those with; CRP 0.783; obesity % 0.708, another definition in the second route); 0.666 after LEAK-13 and LEAK-39, nearly all from CRP's exact zeros (0.682), real low values |
+| 18 | Cells on a straight line between the cells above and below, per column and class, in the raw file's order (`leak_probes.py`) | many such cells, in one class more than the other: gaps filled by interpolation. Runs of round values are found too; the values tell them apart | gallstone_disease: vitamin D 77 cells, all without gallstones; visceral muscle area 36, all with; GFR 14. Also flagged, and measured: ECF/TBW 8 (each equals the rounded 100 x ECW / TBW) |
 
 ## Cases
 
@@ -336,7 +364,10 @@ The cases of the rules outside this table are named in the rules.
 | LEAK-12 (SPLIT-9) | Temporal: training rows whose label is not yet known at the prediction point | filter training rows by an as-of date | hotel_booking_demand: in-window cancellations in train were 100% cancelled (log loss 1.7 to 0.33); a filter on `ReservationStatusDate` keeps the shortcut |
 | LEAK-13 | Class-specific recording conventions | harmonise (round every row to the shared precision, drop a column only one class has); first measure how much the fix removes | hepatitis_c_prediction (7 lab columns rounded, `ALP` dropped) |
 | LEAK-14 | One class from a separate source or assay | drop that class once the paper confirms it | biogeographical_ancestry_prediction (Turkey, `rs3857620`) |
-| LEAK-15 | Batch noise across the whole feature space, no batch id | retire; a feature subset does not help when it also separates same-label groups | prostate_cancer_detection (the paper's 7 features: Benign against NED 0.92-0.97, the label 0.62-0.70) |
+| LEAK-15 (amended 2026-10-27, Andrej) | A recording artefact through several features that matter for prediction, that cannot be undone | retire; a feature subset does not help when it also separates same-label groups | gallstone_disease, kept: after LEAK-13 and LEAK-39 the suspected artefacts left (AST lower with gallstones, the fatty-liver grades on two scales) do not carry the score (TabPFN 3.5 0.826 without AST, 0.827 with it; 0.834 without the grade, 0.838 with it). prostate_cancer_detection, retired (the paper's 7 features: Benign against NED 0.92-0.97, the label 0.62-0.70) |
+| LEAK-13 (amended 2026-10-26, Andrej) | Precision that differs by class, filled cells with many decimals, a column filled in for one class only | write every row at the measured precision; drop the one-class column | gallstone_disease: GFR, vitamin D, visceral muscle area, CRP and creatinine at their measured precision (with LEAK-39, probe 17 from 0.949 to 0.666); `Hyperlipidemia` dropped (8 with gallstones, none without, though high cholesterol is as common without) |
+| LEAK-39 | Part of one class recorded through a second route, found by a format fingerprint | drop the route's rows | gallstone_disease: 77 rows (72 with gallstones, 5 without); before the drop TabPFN 3.5 separates them from those without gallstones at 0.993, the other cases at 0.842, and scores the route's 5 without gallstones 0.77 (0.22 for the others) |
+| LEAK-40 | Gaps filled by interpolation down a class-sorted file | keep the fills when a label-free re-imputation inside each fold scores the same or higher | gallstone_disease: 134 fills kept (re-imputed, TabPFN 3.5 0.864; with the fills 0.838) |
 | PROV-3 ([provenance.md](provenance.md)) | Generated or manipulated data | retire (`AHDS`, `Data Quality Issue`) | ecommerce_shipping, customer_satisfaction_in_airline, homeq_default_prediction |
 | LEAK-22 | The cohort holds rows that cannot have the outcome | follow the paper's cohort | diabetes_130_us: encounters ending in death (1,084) or hospice (461) removed (Strack et al. 2014, Sec. 2.3) |
 | LEAK-23 | Only rows with the event, follow-up ending on one date (right truncation) | an outcome within a fixed horizon, over the rows followed that long | cirrhosis_patient_survival_prediction (time to death over deaths only until 2026-10-14; now death or transplant within 5 years) |

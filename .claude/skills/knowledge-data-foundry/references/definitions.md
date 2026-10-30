@@ -466,8 +466,9 @@ and [cleaning_features.md](../../knowledge-curation/references/cleaning_features
 * Anonymized data: keep it as it is, tag `Anonymized` (and the record's `Anonymized` marker), and say what could not
   be determined.
 * Destroyed meaning to reconstruct.
-* Classes recorded differently: "check number formats and missingness per class; do two same-label subgroups
-  separate?"
+* Classes recorded differently: "check number formats and missingness per class (probes 3, 9, 17); do two same-label
+  subgroups separate, or rows of one class that share a format the other class rarely has (LEAK-39)? Are there
+  straight-line fills in the raw order (probe 18, LEAK-40)?"
 * Cohort and selection, right truncation.
 * A label read off a later stage.
 * Definition bugs the audit found in shipped datasets: a numeric column listed as categorical (a 125k-level category in

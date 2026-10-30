@@ -47,6 +47,7 @@ decision_markers:
 - Not Representative
 - Selection Bias
 - Anonymized
+- Class-dependent Recording
 - Not Available (from Paper))
 - Data Requested
 - Time-series (Regression)
