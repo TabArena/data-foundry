@@ -2,24 +2,25 @@
 unique_name: bemtpl97
 name: beMTPL97
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Myunghwan
+data_foundry_status:
+- WIP (DF)
+claimed_by: Myunghwan
+suggestion: 'Yes'
 priority: 4
-tags:
-- AI-Filled (Verify)
-original_source: Other
-year: '1997'
+original_source: Github
+year: '2020'
 domain: insurance
 required_split:
 - Random (IID)
 problem_type: Regression
 original_data_state: One Table
 source_links:
+- https://github.com/henckr/treeML/tree/2ee8accc6df49168bd865cdf49efa1b7a5c8f4de
 - https://dutangc.github.io/CASdatasets/reference/beMTPL97.html
 - https://ideas.repec.org/a/taf/sactxx/v2018y2018i8p681-705.html
+v2_path: datasets/_dev/tabarena-v0pt2/bemtpl97/dataset.py
 source_row: 1045
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -41,3 +42,27 @@ beMTPL97 from the CASdatasets actuarial collection: a Belgian motor third-party 
 ---
 
 Also see https://arxiv.org/abs/2605.22892 and https://cas.uqam.ca/pub/web/CASdatasets-manual.pdf
+
+**Assessment (AI, 2026-10-23), prior-decision carry-over, not new screening:** The curator confirmed regression on original `nclaims` values 0–5, with RMSE and a random split. `expo` is the recorded time insured: longer coverage gives more opportunity for claims, so retain it as a predictor. Keep the original count target unchanged. Exclude `id` as an identifier and `claim`, `amount` and `average` as same-period outcome information; `nclaims` is the target, never a predictor. Realized exposure can reflect later cancellation; its availability at a new-policy quotation remains a noted limitation of the accepted scenario. The old annualized-frequency/severity alternatives in the main screening do not replace these choices. This carries forward the previous definition and confirmed decisions; it adds no source inspection, model result or fresh verification mark.
+
+CC (2026-10-23, Myunghwan): Accepted for adding: original nclaims 0–5 regression, RMSE and random held-out policyholders from the represented portfolio. Retain expo, the recorded time insured: longer coverage permits more claims. Exclude id and same-period outcome columns claim, amount and average; nclaims is the target. Do not annualize, bin, clip, weight or add row filters. Realized exposure may reflect cancellation and is not verified as quotation-time information; retain the accepted approximate-fit and source-release selection notes. Screening and curator review are complete; current-API qualification remains add-stage work.
+
+**Assessment (AI, 2026-10-23), current add-stage builder evidence:** The pinned CASdatasets and author releases decode to exactly equal 163,212-row tables. All original counts and rows survive; 13 predictors include exposure, nominal postcode and municipality coordinates. Nine IID folds each train on 108,808 and test on 54,404 rows. Current dataset check has no errors or unaccepted warnings; the two retained target warnings follow the existing count-task decision. Leak probes (three capped folds) and the IID hidden-group probe establish no new remedy; neither can verify quotation-time exposure. Current task probes (five full folds) have no flags: LightGBM RMSE 0.364180 versus dummy 0.368248. Bounded train-only local LightGBM/Ridge tuning on all nine full folds scores 0.363999/0.364032 versus dummy 0.367470, each winning 9/9; this is small signal, not the full tuned benchmark suite. Zero-heavy diagnostics are retained separately. The author data commit is verified as 2020-04-30, so year/source now name that release; 1997 remains the observation year and earliest public distribution is unverified. Source-selected high-severity exclusions and exposure/cancellation timing remain qualified limits. Full evidence, draft follow-ups and the claims list are in this delivery; independent panel and curator add review remain pending. Priority 4: gap + (insurance is thin among 133 accepted definitions), use case + (actuarial pricing research), source + (pinned author/CASdatasets agreement), shape + (163,212 rows, 13 mixed predictors), risk - (approximate exposure timing and selected release).
+
+**Assessment (AI, 2026-10-23), builder self-review correction:** Fresh rdata frames use NumPy string column labels. sklearn 1.7.2 ColumnTransformer did not recognize these as feature names when replaying the saved Ridge model; normalizing only the label scalar type to Python str fixes that failure. Field text, source values, original counts, rows and the accepted scientific task remain unchanged. The initial qualification used normal string headers from its verified Parquet input, so its scores are not invalidated by this input-compatibility fix. Model replay and the affected checks are retained in the self-review evidence; this is not the independent panel or final add acceptance.
+
+CC (2026-10-26, Myunghwan): "yes, expected claim count should matter, so poisson deviance (with focusing on small number error) migt be better." Supersede only the earlier RMSE choice with source mean_poisson_deviance for original observed-period nclaims (observed 0-5), predicting expected claim count. Retain all released rows, expo as a predictor, the random policyholder split and id/claim/amount/average exclusions; no annualization, target transformation, weighting, clipping or binning. This favors the source loss's penalty for near-zero expected counts when claims occur, not every small absolute error. This is not a final ship or build decision.
+
+**Assessment (AI, 2026-10-26), correction application pending:** Exact accepted definition/record recovered in a fresh child checkout from pin 1964e1b2e4caa41c8a94082e028f65d4cd8b2b6b; historical checkout identity is retained, not treated as this execution location. Public raw RDA matches the accepted SHA-256. Source mean Poisson deviance has no registry entry at the pin, and Metric.local is explicitly prohibited in the working copy by the pinned add instructions. The intended Metric.source definition and minimal shared-registry candidate are retained in the owned warehouse for direct scorer-domain checks. Shared code is not edited in this dataset leaf. The executable fallback and generated README remain explicitly historical RMSE, not an applied substitute for the curator's decision. Application and affected qualification remain incomplete until the bounded library registration/helper follow-up is resolved. Historical builder/auditor reports and scores are unchanged; negative old predictions are not rescored. No independent role, final review, build or publication is claimed.
+
+**Assessment (AI, 2026-10-26), bounded affected qualification:** Original all-row count target, 13 predictors and nine folds remain unchanged. Fixed Poisson diagnostics use training-only numeric scaling/categorical encoding, strictly positive finite expected-count predictions, no clipping, weighting, offsets, target transforms or HPO. Mean Poisson deviance: train-mean dummy 0.551734632; poisson_linear 0.547592694 (9/9 wins), poisson_lightgbm 0.528534431 (9/9 wins), poisson_forest 0.529093723 (9/9 wins), bm_only_poisson 0.549323188 (9/9 wins), expo_only_poisson 0.551113166 (9/9 wins). Every full-fold candidate score agrees with the source log-likelihood formula. These are fresh bounded diagnostics through an isolated supported scorer override, not old tuned scores, a full tuned benchmark, commercial pricing validation or completed registry integration. Official task probes hardcode RMSE and clip regression outputs; their flags were not relabelled. Neutral full-row blind inputs now include exact dtype/category restoration and the current scoring contract; no blind role ran. Shared-registry absence and zero-mean pseudo-prediction helper failure remain precise implementation blockers; application is pending, and executable RMSE/generated README are explicitly historical. Remaining independent synthesis and final human review stay separate.
+
+**Assessment (AI, 2026-10-26), final same-worker critical corrections:** Clarify expected count as prediction and original nclaims as labels. Attribute the strictly positive finite mean contract to the AI/scikit scorer implementation protocol, not an extra verbatim curator choice; the human selected source deviance and expected observed-period counts. Replace the stale no-current-qualification sentence with completed bounded candidate diagnostics and still-blocked official integration/application. Narrow source-selection wording: large-claim preprocessing is documented, but excluded identities and removal of complete policies are unverified. This corrects an overstatement already identified in accepted domain evidence; it changes no source row, predictor, split, fit label or result. Saved-artifact checks of all45 fixed models confirm declared settings, train-only scaler/encoder contracts and solver iteration bounds without refitting. C028/source-default and domain/precedent metric interpretations require scoped independent reconciliation during the independent review; changed neutral scoring text needs independent blind handling there. Preserve remaining panel/mediator/editor and curator review gates. The historical named-versus-executed checkout equivalence remains unproven and requires controller provenance reconciliation before final integration; this recovery binds only exact admitted bytes to the fresh owned checkout.
+
+**Assessment (AI, 2026-10-26), direct remaining-test follow-up:** Applied the already approved source mean_poisson_deviance. Registered the sklearn scorer and corrected only its synthetic computability inputs; actual invalid model means still raise. Official dataset check now has zero errors/zero open warnings, with the two previously accepted count-shape warnings retained. Every source row, original nclaims value and all 13 predictors (including expo) are unchanged; id/claim/amount/average remain excluded. The current typed frame equals the prior executable and all nine original fold arrays match exactly. All 54 saved fixed-model scores reproduce through the integrated source scorer and independent Poisson likelihood; no refits or prediction clipping. LightGBM deviance0.528534 versus dummy0.551735 (4.20% same-fold skill, wins9/9); forest0.529094, linear0.547593. Independent focused claim/domain/precedent review found no new contradiction; existing approximate-fit, source-selection, identity and licence limitations remain disclosed. No final ship/build/commit approval inferred. Priority 4: gap + (insurance), use case + (risk differentiation), source + (pinned author code and public table), shape + (163k mixed-type records), risk - (no demonstrated new defect; retained timing/selection limits).
+
+**CC (2026-10-28, Myunghwan):** "ship all". Approved this dataset for shipping in the five-dataset final added-dataset review (beMTPL97, Eucalyptus, Tanzania tourism, CPS88 wages and OSSL), on the exact presented definition with previously settled task choices and disclosed limitations retained. This is scientific acceptance for a separately requested build; it does not authorize build, commit or publication.
+
+**Assessment (AI, 2026-10-28):** The independent consistency check supports applying this overall verdict without another task choice. Existing local curator dispositions remain distinct from source verification or shared-rule amendments. No definition, scorer, data, fold or warning acceptance was changed by this final verdict.
+
+**Maintenance (AI, 2026-10-29):** Publication-privacy cleanup removes acquisition/process details from descriptive metadata. Native format-2 rebuild `01a18ad7-0bb6-7938-bc7e-98a4b50a8804` verifies on reload and reproduces from its single traced raw input. Every data row, target, scoring semantics and all nine folds exactly match the previous build; only descriptive metadata changes the checksum. Prior containers and scientific decisions are preserved.

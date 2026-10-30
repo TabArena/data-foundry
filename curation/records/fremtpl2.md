@@ -2,11 +2,11 @@
 unique_name: fremtpl2
 name: freMTPL2
 checked_by:
-- AI (UNVERIFIED)
+- Myunghwan
+data_foundry_status:
+- 'DF: Suspended'
 suggestion: TBD -> Yes
-priority: 4
-tags:
-- AI-Filled (Verify)
+priority: 3
 original_source: Other
 domain: insurance
 required_split:
@@ -19,8 +19,6 @@ source_links:
 - https://cas.uqam.ca/pub/web/CASdatasets-manual.pdf
 - https://doi.org/10.2139/ssrn.3164764
 source_row: 1044
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -42,3 +40,7 @@ freMTPL2 is the well-known French Motor Third-Party Liability insurance dataset 
 ---
 
 Also see https://arxiv.org/abs/2605.22892 and https://cas.uqam.ca/pub/web/CASdatasets-manual.pdf
+
+CC (2026-10-28, Myunghwan): Hold freMTPL2, not reject it. Missing timing information prevents a defensible prediction point and split, and the released fields do not support a trustworthy contract/group-level evaluation. Preserve the candidate and completed evidence; reopen only if reliable timing and a defensible observation/linkage unit become available, followed by curator reconsideration.
+
+**Assessment (AI, 2026-10-29):** Preserve the applied hold as TBD -> Yes with DF: Suspended, not No or scientific acceptance. Every released IDpol is distinct; identical rating profiles do not establish contract identity. The requested zero/non-zero association check found weak positive within-profile dependence (pair correlation about 0.017; 131 both-positive pairs versus 81.79 expected under the stated profile-size-stratified null), not a causal linkage finding. The approved task intent remains original uncapped ClaimNb with Exposure as a predictor and source count Poisson deviance. The annualized/capped implementation is an unapproved historical draft, omitted from this PR along with its v2 pointer; it is not a qualified version of the approved count task. The official active reservation was released. No automatic restart, refit, build or acceptance follows the hold.

@@ -1090,7 +1090,7 @@ def metric_computes_findings(container: CuratedContainer, metric: object) -> lis
 
 
 def _metric_computes_findings(ctx: _Ctx, metric: object | None = None) -> Iterator[CheckResult]:
-    """The metric computes a finite value on a random prediction of each split's test side."""
+    """The metric computes a finite value on domain-valid test predictions for each split."""
     from data_foundry.v2.metrics import METRICS, dummy_prediction, is_finite, score  # noqa: PLC0415
 
     task = ctx.task
@@ -1112,6 +1112,10 @@ def _metric_computes_findings(ctx: _Ctx, metric: object | None = None) -> Iterat
             rows = np.sort(np.random.default_rng(0).choice(rows, METRIC_CHECK_TEST_ROWS, replace=False))
         try:
             y_pred = dummy_prediction(prediction, y[train_idx], len(rows), labels=labels, seed=repeat * 1000 + fold)
+            if spec.name == "mean_poisson_deviance":
+                # Observed zero counts are valid labels, but not valid expected means for this scorer.
+                unit_mean = {"identity": 1.0, "log": 0.0, "log1p": np.log(2.0), "log10": 0.0}
+                y_pred = np.full(len(rows), unit_mean[spec.target_transform])
             inputs = {role: ctx.df[column].to_numpy()[rows] for role, column in spec.inputs.items()}
             with warnings.catch_warnings():  # an undefined score (one class in the test side) is the finding
                 warnings.simplefilter("ignore")
@@ -1125,7 +1129,7 @@ def _metric_computes_findings(ctx: _Ctx, metric: object | None = None) -> Iterat
         yield CheckResult(
             "task_metric_not_computable",
             "error",
-            f"Metric {spec.name!r} gives no finite value on a random prediction of {len(failures)} split(s): "
+            f"Metric {spec.name!r} gives no finite value on a test prediction of {len(failures)} split(s): "
             f"{'; '.join(failures[:3])}.",
             hint="A test side with a single class, a negative target for rmsle, or a constant group breaks the "
             "metric on that split.",

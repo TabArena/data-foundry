@@ -39,7 +39,8 @@ custom metrics against their official code, vendored in ``tests/test_v2_metrics_
 
 The custom metrics (``kind="custom"``): ``cost_matrix``, ``precision_at_k``, ``average_precision_at_k``, ``rmspe``,
 ``gini_top_capture``, ``weighted_pearsonr``, ``mean_group_pearsonr``, ``hierarchical_balanced_accuracy``,
-``gini_stability``, ``par_k`` and ``normalized_early_detection_utility``. Each :class:`MetricDef` holds its formula,
+``mean_absolute_log1p_error``, ``gini_stability``, ``par_k`` and ``normalized_early_detection_utility``. Each
+:class:`MetricDef` holds its formula,
 its reference, its prediction kind, its input roles and its params. A metric with inputs takes the values of the
 scored rows by role: ``group`` (rows of one unit: an era, a patient, an instance), ``order`` (sorts rows in time: a
 week, an hour; rows arrive in any order, so no metric relies on row position) and ``weight``. A metric scores the
@@ -417,6 +418,15 @@ METRICS: dict[str, MetricDef] = {
         ),
         # regression
         _standard(
+            "mean_poisson_deviance",
+            _REG,
+            "value",
+            _LOWER,
+            _value_metric("mean_poisson_deviance"),
+            "sklearn.metrics.mean_poisson_deviance",
+            "2*mean(y*log(y/p)-y+p); finite y>=0 and p>0; 0*log(0/p)=0",
+        ),
+        _standard(
             "rmse",
             _REG,
             "value",
@@ -504,6 +514,15 @@ METRICS: dict[str, MetricDef] = {
 # selected algorithm) is aggregated by the caller as the task's grouping declares, except where the metric itself
 # defines the per-group step (``par_k``, ``mean_group_pearsonr``, ...). Each is tested against the official or
 # reference implementation in ``tests/test_v2_metrics_custom.py``.
+
+
+def _mean_absolute_log1p_error(y_true, y_pred, **_):
+    y_true = np.asarray(y_true, dtype=float)
+    y_pred = np.asarray(y_pred, dtype=float)
+    # A clipping floor would change the chosen error cost.
+    if any(not np.isfinite(v).all() or (v <= -1).any() for v in (y_true, y_pred)):
+        raise ValueError("mean_absolute_log1p_error needs finite values greater than -1.")
+    return _sklearn_metrics().mean_absolute_error(np.log1p(y_true), np.log1p(y_pred))
 
 
 def _require(params: Mapping[str, Any], *names: str) -> None:
@@ -910,6 +929,15 @@ _TOP_K_PARAMS = {
 }
 
 _CUSTOM_METRICS = (
+    _custom(
+        "mean_absolute_log1p_error",
+        _REG,
+        "value",
+        _LOWER,
+        _mean_absolute_log1p_error,
+        "mean(|log1p(y) - log1p(p)|); finite y and p greater than -1, without clipping",
+        "numpy.log1p followed by sklearn.metrics.mean_absolute_error; context-selected CPS88 prediction loss",
+    ),
     _custom(
         "cost_matrix",
         _CLF,
@@ -1382,6 +1410,9 @@ def score(spec: Any, y_true: Any, y_pred: Any, *, labels: Any = None, **inputs: 
         raise ValueError(f"metric {fields['name']!r} needs the input(s) {missing} (pass them by role).")
     y_true = np.asarray(y_true)
     transform = fields.get("target_transform") or "identity"
+    if transform == "log1p" and fn is _mean_absolute_log1p_error:
+        # Cancel log1p(expm1(z)) before overflow or rounding a very negative inverse to -1.
+        return float(_sklearn_metrics().mean_absolute_error(y_true, y_pred))
     if transform != "identity":  # the target ships transformed for modelling: score on the original scale
         if transform not in INVERSE_TRANSFORMS:
             raise ValueError(f"target_transform is one of {TARGET_TRANSFORMS}, not {transform!r}.")

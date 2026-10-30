@@ -1,8 +1,99 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-10-30 - Verified Lusaka and RF-PCP builds
+
+- `2024_lusaka_mobility_prediction_hackathon`: UUID `01a18ba1-f606-7d63-916c-bd52aa2af8d3`, checksum `v2:d29faf5b7c7e325f96158a7de2b8b8c6e7188219ec8a2fdc09f0819317c1c40f`.
+- `protein_model_quality_rf_pcp`: UUID `01a18ba2-013a-7001-a61c-686e78b112d7`, checksum `v2:9c815361646dd91564cc761b59da41b5dd13244b9911968281ce056688cc1d7a`.
+
+Both format-2 exports verify on reload and reproduce from three traced raw CSV inputs with zero bundle errors or warnings. Build provenance is clean source commit `ea35638cb7c9dc88ff6b7f6f6316594207a68393`. Every accepted row, data type, target, feature and fold exactly matches the prior accepted build; Lusaka retains its checksum and RF-PCP changes only curation prose. All twelve earlier dataset builds are unchanged. The two definitions pass lint and formatting; record vocabularies and pointers validate. The full test suite passes (1,361 passed, 180 skipped; eight library warnings). Raw inputs, containers and the verified backup remain outside Git.
+
+## 2026-10-29 - Lusaka and RF-PCP accepted tasks
+
+Add the accepted Lusaka trip-duration regression (112,739 rides, nine predictors, three temporal test windows with a one-day gap) and historical RF-PCP GDT_TS regression (95,094 rows, six predictors, 445 canonical proteins and nine group-disjoint folds). Preserve their accepted approximations, source/calendar and descriptor uncertainties. RF-PCP uses a required source-backed identity map; only one target is selected from its related outcomes.
+
 Every change to this folder gets an entry here, newest first: edited definitions or helper files, added or removed
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
+
+## 2026-10-29 — Publication privacy and metadata refresh
+
+- Remove personal workspace/session identifiers and internal execution references from curation records; preserve the attributed scientific decisions and evidence.
+- Regenerate three format-2 containers after descriptive metadata edits. Each saved container verifies and reproduces from one traced input. Every row, target, scoring semantics and all nine folds exactly match its predecessor; no model refits or scientific changes.
+- `ai4d_lab_tanzania_tourism_classification_challenge`: new UUID `01a18ad4-f6a0-759d-a526-da34a2568066`, checksum `v2:2c65c3a0286292fd2d29ca555c06a81da04ff699c35acff9f92ee45578bf9731`.
+- `bemtpl97`: new UUID `01a18ad7-0bb6-7938-bc7e-98a4b50a8804`, checksum `v2:c453db381a0392e96b56e809e924cb0be3d0c3f4cf1087235d06d69a97aab978`.
+- `cps88wages`: new UUID `01a18ad7-7905-7c46-8544-db56a44113a9`, checksum `v2:b1a5d7407a208f9a3f1e3e51f0d0e6b72591916480a829fbd95b9de81d6f480e`.
+- Zero build errors or open warnings. Prior versions and raw inputs are preserved outside Git. Combined validation: 1,357 tests pass, 178 skipped; the 18 localhost tests pass on recheck with socket access.
+
+## 2026-10-29 — Sendy build after curator shipment approval
+
+- Built only `sendy_logistics_challenge`: 21,199 rows, 13 inputs, repeated random 3 x 3 folds, RMSE in seconds.
+  New format-2 UUID: `01a18a16-1f77-7fc2-b293-c8d8ca2eeefc`; clean source commit `b58e9ac9185941edb42d19f681fe534aad8ec734`.
+- Zero build crashes, errors or warnings. Reload/checksum verification passed; rebuilding from the single traced
+  `Train.csv` (4,094,263 bytes) produced the identical checksum. A manifest-backed raw-input ZIP remains local.
+- Built rows and all nine folds exactly match the reviewed definition. The five-fold task probes reproduce the
+  accepted scores (LightGBM RMSE 1531.575 seconds versus dummy 1808.663), with no flags or new decisions.
+- Full tests: 1,326 passed, 177 skipped, six existing library warnings; all 174 definitions import. Joined the existing
+  CLEAN-11 heading across its line wrap so the recorded Sendy exception validates; rule wording is unchanged.
+- Updated the generated dataset README and collection table. No previous Sendy container was superseded or deleted.
+  Raw data and containers remain outside Git; ownership/WIP is retained until integration.
+
+## 2026-10-29 — Sendy scaffold, incomplete
+
+Source-based scaffold after Myunghwan screening approval. Original files, cleaning, split, checks, probes and add-stage panel remain pending. Verified static rider attributes may be joined; undated changing rider summaries are excluded. No build or readiness claim.
+
+## 2026-10-29 — Sendy actual-data qualification
+
+Qualified original files and implemented 21,201 rows/19 inputs. Original RMSE, proposed random folds forced by missing dates, no undated rider-table summaries. Completed checks, leakage/task/hidden-group probes, targeted sensitivity and independent scientific panel. Three choices remain for the curator: recorded-label proxy, source distance, and split limitation. No build or dataset commit.
+
+## 2026-10-29 — Sendy placement-time task recheck
+
+Qualified placement-to-arrival seconds with 13 placement-time inputs; excluded later events and rider identity. Recomputed native checks/probes and fixed-fold metric/tail diagnostics, with focused independent audits. All source rows remain. Recorded-label uncertainty, provisional distance, random same-release evaluation and metric choice remain open; no build or commit. Prior pickup definition/evidence preserved locally.
+
+## 2026-10-29 — Sendy approved eligibility filters
+
+Applied Myunghwan-approved total duration >24 hours and straight-line average speed >100 km/h exclusions. Two duration rows removed, zero additional speed rows; retain 21,199 rows. Source data and previous evidence preserved. Outcome-conditioned scope disclosed. Fresh checks/probes and focused independent review completed; distance retained following consistency review. All four add-stage choices are settled; ready for final review-added judgment after final consistency verification. No curator ship/build/commit.
+
+## 2026-10-29 — Sendy final curator acceptance
+
+Myunghwan: "yes, ship" after review-added-datasets. Accepted the 21,199-row, 13-predictor placement-to-arrival task, approved filters, retained distance, random same-release split and RMSE. No open issues remain. Public claim retained until integration; no build or commit performed.
+
+## 2026-10-29: Chicago approximate injury-task investigation
+
+- Integrate the accepted and verified Chicago dataset into PR #33 alongside its existing ten datasets, preserving their source and build records.
+- Built `chicago_traffic_crashes_1m` on 2026-10-29 as format 2, UUID `01a18a0b-6aa8-726f-a33a-75044860edbf`: 1,097,209 rows, 21 predictors, nine quarterly tests. Native saved-container verification and checksum reload passed; reproduction from the traced input set matches the accepted checksum. Zero errors or unaccepted warnings, one accepted physical-MISSING warning and two informational findings. Frozen raw input backup and manifest retained locally; no data/split drift or new task-probe sweep. Build made from the existing uncommitted working tree; no commit, push or publication performed.
+- Accepted `chicago_traffic_crashes_1m` for shipping (2026-10-29, Myunghwan): keep posted speed as implemented; all review issues resolved, with accepted approximations and the physical-MISSING warning preserved. Archived the resolved review and removed it from the open queue. Data and splits unchanged; ready for a separately requested build and repository integration.
+- Applied Myunghwan's 2026-10-29 review answers for `chicago_traffic_crashes_1m`: accepted final-snapshot injury labels and closer-to-fact scene framing; accepted the physical-device-MISSING warning. Recorded the dataset-specific SPLIT-10 exception without changing the rule. Speed discussion and final inclusion remain open; data, features and splits are unchanged. No build or commit.
+- Revised `chicago_traffic_crashes_1m` on 2026-10-29: restored five physical-condition fields by Myunghwan direction with measured availability risk and explicit LEAK-10/38 disagreement. Affected checks/probes and focused independent review completed for the 21-input recipe. One source-semantic warning is proposed for acceptance; final inclusion and build remain undecided.
+- Prepared `chicago_traffic_crashes_1m` for review of the curator-authorized approximate five-class injury task: 16 scene/context inputs, hourly event time, notification-eligible quarterly training, original-source copy removal and log loss. Five condition fields are withheld for conditional recording concerns; outcome/report/investigation fields remain excluded. Native checks and independent panel evidence support review; final surrogate decisions remain open. No container build, warning acceptance, source commit or publication.
+
+
+Every change to this folder gets an entry here, newest first: edited definitions or helper files, added or removed
+datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
+record, audit or PR that motivated it.
+
+## 2026-10-28 (ten accepted datasets built and verified)
+
+- Built only the ten datasets listed in the source-integration entry below, from clean source `6d189a922994ddb0221c8249d07552d4df8af88b`. All ten format-2 builds succeeded: zero crashes, errors, open warnings or new warnings against the committed reports. Accepted warning explanations remain in the definitions and reports.
+- Every full-build checksum matches its accepted pre-build report exactly, preserving rows, predictors, targets, metrics and splits. Every saved container reloads with a verified checksum. All ten check-only reproductions from the traced-input warehouse match their full builds.
+- Traced 15 raw input files (1,303,769,410 bytes). Created the local backup `tabarena-v0pt2-ten-raw-inputs-2026-10-28.zip` (574,316,168 bytes; SHA-256 `065b244b8ab96ec462f3191f35b95bc9ad8bf7b4371ccc1bd22fa7e9b8f80a9c`), with a per-file manifest and verified archive CRCs. Raw inputs, containers and the backup are excluded from Git.
+- No rows or splits changed from the accepted qualified versions. Reused their dated task/group/leak qualification decisions; no new task-probe sweep or model fits were needed. No superseded container existed in this fresh build warehouse, and none was deleted.
+- The integration suite passes (1,326 tests passed, 176 skipped). Record vocabulary and dataset pointers validate. Existing upstream lint/format debt remains unchanged; no new findings were introduced. The initial suite caught stale derived review flags in eight imported records; recomputing them from the current record contents and vocabulary resolved that failure. There are no build-raised open items.
+
+## 2026-10-28 (ten accepted datasets prepared for build)
+
+- Integrate Myunghwan's ten final ship decisions, preserving the accepted definitions, rows, predictors, targets, metrics and split protocols:
+  - [bemtpl97](bemtpl97/).
+  - [eucalyptus](eucalyptus/).
+  - [ai4d_lab_tanzania_tourism_classification_challenge](ai4d_lab_tanzania_tourism_classification_challenge/).
+  - [cps88wages](cps88wages/).
+  - [open_soil_spectral_library](open_soil_spectral_library/).
+  - [airqo_low_cost_air_quality_monitor_calibration_challenge](airqo_low_cost_air_quality_monitor_calibration_challenge/).
+  - [lt_vehicle_loan_default_prediction](lt_vehicle_loan_default_prediction/).
+  - [predictive_insights_youth_income_prediction_challenge](predictive_insights_youth_income_prediction_challenge/).
+  - [medical_facility_operational_data](medical_facility_operational_data/).
+  - [dataset_from_uncertainty_guided_model_selection_for_tabular_foundation_models_in_biomolecule_efficacy_prediction](dataset_from_uncertainty_guided_model_selection_for_tabular_foundation_models_in_biomolecule_efficacy_prediction/).
+- Combine source Poisson-deviance support and valid-domain computability checks with the context-selected absolute log1p error and portable scoring examples/tests. Preserve upstream changes.
+- Build/reload/traced-input reproducibility results follow in a separate entry after execution. No raw data or containers enter Git.
 
 ## 2026-10-27, `heart_disease`: the curator's marks; the paper read in full (PR #20)
 

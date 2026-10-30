@@ -14,6 +14,10 @@ script imports nothing from ``data_foundry``. It:
    target may ship on a modelling scale (``target_transform``: ``log``, ``log1p``, ``log10``); the metric is
    computed after the inverse of both the true values and the predictions.
 
+For example, ``mean_absolute_log1p_error`` computes mean absolute differences of ``log1p`` values; it rejects
+non-finite raw values or raw values at most -1 rather than clipping. With ``target_transform="log1p"``, this is
+exactly MAE on the shipped target and predictions.
+
 Run::
 
     # Default: the toy container shipped in this repository.
@@ -47,6 +51,7 @@ STANDARD = {
     "mcc": metrics.matthews_corrcoef,
     "rmse": lambda y, p: metrics.mean_squared_error(y, p) ** 0.5,
     "mae": metrics.mean_absolute_error,
+    "mean_poisson_deviance": metrics.mean_poisson_deviance,
     "mse": metrics.mean_squared_error,
     "r2": metrics.r2_score,
     "rmsle": lambda y, p: metrics.mean_squared_log_error(y, p) ** 0.5,
@@ -148,8 +153,10 @@ def main(path: Path) -> float | None:
     inverse = INVERSE[spec.get("target_transform") or "identity"]  # identity in format 1 and for classification
     if spec["prediction"] == "value":
         y_true, y_pred = inverse(np.asarray(y_true, dtype=float)), inverse(np.asarray(y_pred, dtype=float))
+    # This is a computability example; sampling zero labels would produce invalid Poisson count means.
+    y_pred = np.ones(len(y_true)) if spec["name"] == "mean_poisson_deviance" else y_pred
     value = float(STANDARD[spec["name"]](y_true, y_pred, **kwargs))
-    print(f"{spec['name']} of a random prediction on the first test fold ({len(test_idx)} rows): {value:.4f}")
+    print(f"{spec['name']} of a test prediction on the first test fold ({len(test_idx)} rows): {value:.4f}")
     return value
 
 

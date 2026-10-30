@@ -1,0 +1,444 @@
+---
+report_format: data-foundry-report-v2
+unique_name: predictive_insights_youth_income_prediction_challenge
+container_format: 2
+checksum: v2:22b1b49ac7b8efc95d060a7bf2e26d604ab1742290de44202cab0d0b29b41ccc
+build:
+  uuid: 01a1862a-0d79-7de6-a2a3-5d6010bcefe5
+  checksum: v2:22b1b49ac7b8efc95d060a7bf2e26d604ab1742290de44202cab0d0b29b41ccc
+  built_at: '2026-10-29T05:37:45+00:00'
+  path: predictive_insights_youth_income_prediction_challenge/01a1862a-0d79-7de6-a2a3-5d6010bcefe5
+  data_foundry_version: 0.0.5
+  git_sha: 6d189a922994ddb0221c8249d07552d4df8af88b
+  libraries:
+    python: 3.12.3
+    pandas: 3.1.0
+    numpy: 2.5.4
+    pyarrow: 26.0.0
+    scikit-learn: 1.7.2
+    polars: 2.0.0
+build_stale: false
+data:
+  n_rows: 4017
+  n_features: 18
+  dtypes:
+    category: 17
+    datetime64[ns]: 1
+    int64: 1
+  n_test_dataset_rows: null
+task:
+  target: Target
+  problem_type: binary_classification
+  metric: roc_auc
+  metric_origin: source
+  scoring_columns: null
+  split_regime: iid
+  stratify_on: Target
+  time_on: null
+  group_on: null
+  group_labels: null
+  group_time_on: null
+  grouping: null
+splits:
+  n_repeats: 3
+  n_folds: 3
+  random_state: 4267
+  time_horizon: null
+  time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
+  n_train:
+    min: 2678
+    max: 2678
+  n_test:
+    min: 1339
+    max: 1339
+bundle_checks:
+  ok: true
+  errors: []
+  warnings: []
+  infos:
+  - dataset_conflicting_duplicate_rows
+  accepted:
+    dataset_duplicate_rows: Myunghwan accepted natural profile coincidence on 2026-10-27
+      conditional on no demonstrated prediction simplification. After three complete
+      source-copy removals, retaining date/round and excluding tenure leaves seven
+      extra identical labelled profiles and three feature groups with both outcomes
+      among 4,017 respondents. Source records differed in tenure. Preserve the natural
+      coincidence/ambiguity under LEAK-18/20; equal-profile held-out sensitivity is
+      a diagnostic, not an authenticated identity split. Reopen if source linkage
+      or new performance evidence establishes a duplication benefit. Earlier sixteen-input
+      scores are historical, not current qualification.
+decisions:
+- Survey chronology remains unresolved
+- Exact source copies removed without merging coarse profiles
+---
+
+# predictive_insights_youth_income_prediction_challenge
+
+> Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
+
+Binary classification of `Target`, scored with `roc_auc` on IID splits. 4,017 rows and 18 features. Source: Zindi (2023).
+
+Built as `01a1862a-0d79-7de6-a2a3-5d6010bcefe5` on 2026-10-29. See [Build](#build).
+
+## In brief
+
+**Question.** Will a young South African be employed at the source's follow-up survey?
+
+**Use case.** Youth-employment analysts estimate employment outcomes from baseline survey answers to inform support planning. This predicts observed outcomes; it does not estimate the benefit of an intervention.
+
+**One row.** One labelled respondent in the original South African competition release: 4,020 source rows, 4,017 after removing three exact copies apart from the identifier. The survey programme is unnamed.
+
+**Predicted.** Target 1 means employed and 0 unemployed at follow-up. Both original starter notebooks describe one year after baseline; the date field's role and individual outcome dates are not authenticated.
+
+**Known at prediction time.** Source-described baseline labour-market status, geography and province, educational qualifications and subject-result bands, sex and citizenship flags, birth year and month, plus the survey date and redundant source round. Tenure is excluded because its missingness is conditionally outcome-linked.
+
+**What the test data stands for.** Repeated stratified random respondent folds, an approximation forced from a temporal task. The four survey waves do not establish three mature future windows with at least half the rows for training. Future-cohort performance is not established.
+
+**Our changes to the source.** Remove the person identifier, tenure, and three exact source copies. Keep baseline-employed respondents, survey date/round context and all other source values/missing answers.
+
+> **Use case fit: approximate (a stand-in with a known gap).** The source calls the inputs baseline and the target a one-year outcome. Yet survey dates extend to March 2023 in a June 2023 archive; those dates cannot all be baseline dates of mature one-year labels. Their role, covariate timing and follow-up selection need clarification. Date and round are retained as source context by curator decision; IID is an approximation.
+
+## Files in this folder
+
+| file | what it is |
+|---|---|
+| [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
+| [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
+
+- The curation record, with the triage decision and its sources: [`curation/records/predictive_insights_youth_income_prediction_challenge.md`](../../../../curation/records/predictive_insights_youth_income_prediction_challenge.md)
+- The original source: <https://zindi.world/competitions/predictive-insights-youth-income-prediction-challenge>
+- The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
+
+## Rebuild
+
+`dataset.py` reads its raw files from `local-data-warehouse/predictive_insights_youth_income_prediction_challenge/`. To get them:
+
+```text
+Sign in to Zindi at
+https://zindi.world/competitions/predictive-insights-youth-income-prediction-challenge/data
+and download the original all-files archive, subject to its terms. The curator supplied
+predictive-insights-youth-income-prediction-challenge20230621-4520-15eqo8v.zip
+(SHA256 975995c9e87e82ead4389eea9409388bfb29b398534e6396ebb92e7bd6200832).
+Extract into local-data-warehouse/predictive_insights_youth_income_prediction_challenge/.
+This definition reads only Train.csv
+(SHA256 83fe90d3ca0835ea0d274109d2c00eb71d9681fd41bf70127d687328d7dc4e4c).
+Test.csv has no labels and is retained for overlap/source checks, never treated as labelled data.
+Preserve both starter notebooks and the release manifest as original source documentation.
+```
+
+Then, from the repository root:
+
+```bash
+.venv/bin/python -m data_foundry.curation.cli dataset check datasets/_dev/tabarena-v0pt2/predictive_insights_youth_income_prediction_challenge   # pipeline and checks, no UUID; rewrites this page
+.venv/bin/python -m data_foundry.curation.cli dataset build datasets/_dev/tabarena-v0pt2/predictive_insights_youth_income_prediction_challenge   # also saves the container and records its UUID
+```
+
+Only curators run `build`, when the dataset ships.
+
+## Dataset and task
+
+| field | value |
+|---|---|
+| source | Zindi: https://zindi.world/competitions/predictive-insights-youth-income-prediction-challenge |
+| year | 2023 |
+| domain | social science |
+| license | Zindi competition terms: data remains property of Zindi and the competition host; redistribution to nonparticipants is prohibited. No separate open-data licence is supplied. |
+| data_tags | IID, Spatial, ForcedIIDFromTemporal |
+| reference | PredictiveInsights2023YouthEmployment |
+| rows x columns | 4,017 x 19 |
+| task.target | Target |
+| task.problem_type | binary_classification |
+| task.metric | roc_auc |
+| task.split_regime | iid |
+| task.stratify_on | Target |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `roc_auc` (standard; takes proba; higher is better) |
+| origin | source: the source's metric |
+| original | Area Under the Curve (ROC AUC) |
+| reference | https://zindi.world/competitions/predictive-insights-youth-income-prediction-challenge |
+| definition | area under the ROC curve |
+
+<details>
+<summary>Feature types: 17 categorical, 0 string, 1 datetime</summary>
+
+- categorical (17): `Round`, `Status`, `Geography`, `Province`, `Matric`, `Degree`, `Diploma`, `Schoolquintile`, `Math`, `Mathlit`, `Additional_lang`, `Home_lang`, `Science`, `Female`, `Sa_citizen`, `Birthmonth`, `Target`
+- string (0): none
+- datetime (1): `Survey_date (%Y-%m-%d)`
+
+</details>
+
+<details>
+<summary>BibTeX</summary>
+
+```bibtex
+@misc{PredictiveInsights2023YouthEmployment,
+  author = {{Predictive Insights and Zindi}},
+  title = {Predictive Insights Youth Income Prediction Challenge},
+  year = {2023},
+  howpublished = {\url{https://zindi.world/competitions/predictive-insights-youth-income-prediction-challenge}},
+  note = {Original June 2023 release; binary employment outcome despite the challenge name}
+}
+```
+
+</details>
+
+## Sample rows
+
+The first 5 of 4,017 rows of the final frame (random rows: the frame is shuffled); 12 of 19 columns, the target first. Cells are cut at 40 characters.
+
+| Target | Survey_date | Round | Status | Geography | Province | Matric | Degree | Diploma | Schoolquintile | Math | Mathlit |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 2023-02-22 00:00:00 | 4 | unemployed | Urban | KwaZulu-Natal | nan | nan | nan | nan | nan | nan |
+| 1 | 2022-08-05 00:00:00 | 3 | wage employed | Rural | KwaZulu-Natal | 1 | nan | nan | 1 | nan | 30 - 39 % |
+| 0 | 2023-02-02 00:00:00 | 4 | unemployed | Urban | Gauteng | 1 | nan | 1 | 2 | 30 - 39 % | nan |
+| 0 | 2022-08-15 00:00:00 | 3 | studying | Urban | North West | 1 | 0 | 0 | 3 | nan | 50 - 59 % |
+| 0 | 2023-03-01 00:00:00 | 4 | unemployed | Rural | North West | nan | nan | nan | nan | nan | nan |
+
+## Curation notes
+
+- Prediction point (USE-1, USE-3): the baseline interview, before follow-up employment is known, as the
+  original competition and both original starter notebooks describe. The realised timing is not verified.
+- Target (USE-5, USE-8): retain original 0/1 employment labels, including respondents employed at baseline;
+  no income target, initially-unemployed filter, nonresponse recoding or causal interpretation is introduced.
+  All 4,020 source labels are present, but attrition, nonresponse handling and individual follow-up dates
+  are not documented by the released files. Complete labels do not prove complete ascertainment.
+- Chronology: the original archive manifest was generated on 2023-06-21. Survey_date spans 2021-08-11 to
+  2023-03-27, with 1,977 rows in the newest wave. Survey_date cannot be baseline for every mature one-year
+  outcome in this release. It could mean follow-up, or another description could be wrong; neither is
+  established. The related 2026 host hackathon's six-month account is not proof of the original horizon.
+- Calendar context (CLEAN-3, CLEAN-14, CLEAN-22; USE-3): Myunghwan requested retaining Survey_date
+  as potentially useful seasonal context on 2026-10-27 and allowed redundant Round to remain.
+  Survey_date is stored losslessly as a datetime; Round is a category and a deterministic function of
+  date in this release, adding no information conditional on the full date. No target date, age,
+  month/year feature or date backshift is fabricated. Calendar extraction belongs to the learner.
+  Source-described baseline availability is retained as an explicit approximation, not proven by
+  model scores. Wave association alone is not leakage evidence. Drop Person_id, a masked release ID.
+- Baseline status (USE-6): retain the labour-market status the release describes as baseline. Its
+  association with later employment is legitimate if it is a baseline value; timing remains unresolved.
+- Tenure (LEAK-10; LEAK-38 conditional-test clause): independently replicated outcome-linked missingness
+  within source Round and Status. In round 3 self-employment, all 10 negative labels lack tenure and all
+  28 positives have it; among wage-employed respondents, 69 of 77 negatives lack it and no positive does
+  (25 positives). The difference persists within geography, sex and matric strata. This is a measured
+  fill-pattern concern, not proof of the actual collection time. Drop the entire tenure field; do not
+  retain its missingness indicator or invent a wave-specific repair. On the earlier seventeen-input proposal's nine folds,
+  fixed LightGBM ROC AUC fell from 0.7844 to 0.7370 without tenure. That difference mixes legitimate
+  duration information and suspect fill; it is not an estimated amount of leakage. Removing tenure
+  resolves this feature exposure only; source horizon and other mutable-feature timing stay unresolved.
+- Copies (LEAK-16, LEAK-19): three source rows are exact repeats of all non-ID fields, target included;
+  remove later copies in source order. No full-source feature vector has conflicting labels. Coincident
+  profiles after removing tenure remain: matching coarse answers do not establish a shared person.
+  All source person IDs are unique and the official train/test person-ID sets are disjoint; masked IDs
+  alone cannot authenticate longitudinal identity.
+- Cleaning (CLEAN-2, CLEAN-9, CLEAN-10, CLEAN-14): leave missing answers missing; preserve school-quintile
+  code 0 because the source does not define it as missing. Treat all finite-response fields, 0/1 flags,
+  birth month and mark bands as categories; birth year stays numeric. Every released non-ID
+  string is a finite response or date, so no free text is discarded. Do not execute starter-model
+  imputation, dummy encoding, subject-score engineering or citizenship filtering.
+- Retained coincident profiles (LEAK-18, LEAK-20): restoring date/round leaves seven extra identical
+  labelled rows and three feature-profile groups with both labels. Source rows differed in the
+  excluded tenure field after three complete non-ID source copies were removed. Myunghwan accepted
+  natural profile coincidence on 2026-10-27 conditional on no demonstrated prediction simplification.
+  Current equal-profile held-out AUC is 0.7933 versus ordinary-fold 0.7939, supplying no material
+  simplification evidence in the tested model; different partitions do not estimate causal inflation.
+  Equal-feature-profile grouping is a diagnostic, not an authenticated person key. Reopen retention
+  if identity evidence or a measured prediction benefit establishes a duplication problem.
+- Recording quality (CLEAN-10, CLEAN-11): 1,125 retained birth months are January, including 857 with
+  birth year 2000; the January share varies by survey wave. A default or anonymisation convention is
+  possible, not established. Preserve these valid-looking values and school-quintile code 0 until
+  a source rule supports another meaning; do not manufacture a birth day or restrict the age range.
+- CC (2026-10-27, Myunghwan): authorized completion of add-dataset for this reviewed eighteen-input task.
+  Myunghwan explicitly approved final scientific inclusion on 2026-10-28. Keep Survey_date as datetime, allow redundant categorical Round,
+  exclude Person_id/Tenure, retain coincident profiles under the saved conditional decision, and
+  preserve source ROC AUC and repeated stratified random evaluation. Approximate fit, unresolved
+  source chronology/ascertainment and round-four distribution shift remain documented limitations.
+  This instruction is not final inclusion or authority for a container build, source commit or publication.
+- Access: original competition data is private under Zindi's redistribution terms; raw files and any
+  derivative data remain in the local warehouse. Licensing is not a scientific rejection reason (EV-4).
+
+## Splits
+
+Repeated stratified random respondent folds follow the v2 recommendation for 4,017 rows.
+ForcedIIDFromTemporal (SPLIT-8): four survey waves and unresolved baseline/outcome dates cannot establish
+three meaningful future windows each trained on at least 50% of the data (SPLIT-14). We do not backshift
+Survey_date or invent calendar mappings. This approximation tests other respondents from represented
+cohorts, not a model deployed into future cohorts. Calendar holdouts are diagnostic sensitivity tests;
+they cannot establish a mature-label deployment protocol without authenticated observation dates.
+
+3 repeat(s) x 3 fold(s) with seed 4267; train 2,678 rows, test 1,339 rows.
+
+| repeat | fold | n_train | n_test |
+|---|---|---|---|
+| 0 | 0 | 2678 | 1339 |
+| 0 | 1 | 2678 | 1339 |
+| 0 | 2 | 2678 | 1339 |
+| 1 | 0 | 2678 | 1339 |
+| 1 | 1 | 2678 | 1339 |
+| 1 | 2 | 2678 | 1339 |
+| 2 | 0 | 2678 | 1339 |
+| 2 | 1 | 2678 | 1339 |
+| 2 | 2 | 2678 | 1339 |
+
+## Decisions
+
+### 1. Survey chronology remains unresolved
+
+The archive predates one year after the newest survey dates. These dates are not authenticated baseline dates; do not construct a prospective protocol by assuming they are.
+
+| Round | rows | positive | first_survey_date | last_survey_date | positive_share |
+|---|---|---|---|---|---|
+| 1 | 240 | 86 | 2021-08-11 | 2021-08-23 | 0.358333 |
+| 2 | 975 | 367 | 2022-02-21 | 2022-03-18 | 0.37641 |
+| 3 | 828 | 296 | 2022-07-28 | 2022-09-03 | 0.357488 |
+| 4 | 1977 | 344 | 2023-02-01 | 2023-03-27 | 0.174001 |
+
+### 2. Exact source copies removed without merging coarse profiles
+
+Use every non-ID source field, including the date and target, to identify exact copies.
+
+| source_rows | retained_rows | removed_copies |
+|---|---|---|
+| 4020 | 4017 | 3 |
+
+## Bundle checks
+
+0 error(s), 0 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+
+- **info** `dataset_conflicting_duplicate_rows`: 3 row(s) (0.1%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+
+Accepted on purpose:
+
+- `dataset_duplicate_rows`: Myunghwan accepted natural profile coincidence on 2026-10-27 conditional on no demonstrated prediction simplification. After three complete source-copy removals, retaining date/round and excluding tenure leaves seven extra identical labelled profiles and three feature groups with both outcomes among 4,017 respondents. Source records differed in tenure. Preserve the natural coincidence/ambiguity under LEAK-18/20; equal-profile held-out sensitivity is a diagnostic, not an authenticated identity split. Reopen if source linkage or new performance evidence establishes a duplication benefit. Earlier sixteen-input scores are historical, not current qualification.
+
+## Data checks
+
+### Feature summary
+
+<details>
+<summary>Show the table (19 rows)</summary>
+
+| index | dtype | n_missing | pct_missing | n_unique | examples |
+|---|---|---|---|---|---|
+| Home_lang | category | 3636 | 90.52 | 6 | 50 - 59 %, 40 - 49 %, 60 - 69 %, 70 - 79 %, 30 - 39 %, 80 - 100 % |
+| Science | category | 3285 | 81.78 | 7 | 30 - 39 %, 40 - 49 %, 0 - 29 %, 50 - 59 %, 60 - 69 %, 80 - 100 %, 70 - 79 % |
+| Math | category | 3020 | 75.18 | 7 | 0 - 29 %, 30 - 39 %, 40 - 49 %, 50 - 59 %, 60 - 69 %, 70 - 79 %, 80 - 100 % |
+| Mathlit | category | 2665 | 66.34 | 7 | 40 - 49 %, 30 - 39 %, 50 - 59 %, 60 - 69 %, 0 - 29 %, 70 - 79 %, 80 - 100 % |
+| Additional_lang | category | 2000 | 49.79 | 6 | 50 - 59 %, 60 - 69 %, 40 - 49 %, 70 - 79 %, 30 - 39 %, 80 - 100 % |
+| Degree | category | 1828 | 45.51 | 2 | 0.0, 1.0 |
+| Diploma | category | 1806 | 44.96 | 2 | 0.0, 1.0 |
+| Schoolquintile | category | 1658 | 41.27 | 6 | 3.0, 2.0, 1.0, 4.0, 5.0, 0.0 |
+| Matric | category | 1006 | 25.04 | 2 | 1.0, 0.0 |
+| Round | category | 0 | 0 | 4 | 4, 2, 3, 1 |
+| Status | category | 0 | 0 | 7 | unemployed, studying, wage employed, other, self employed, employment programme… |
+| Geography | category | 0 | 0 | 3 | Urban, Rural, Suburb |
+| Province | category | 0 | 0 | 9 | Gauteng, KwaZulu-Natal, Limpopo, Mpumalanga, Eastern Cape, Western Cape, North … |
+| Female | category | 0 | 0 | 2 | 1, 0 |
+| Sa_citizen | category | 0 | 0 | 2 | 1, 0 |
+| Birthmonth | category | 0 | 0 | 12 | 1, 9, 5, 12, 4, 3, 10, 8, 6, 11 |
+| Target | category | 0 | 0 | 2 | 0, 1 |
+| Survey_date | datetime64\[ns\] | 0 | 0 | 79 | 2023-02-13 00:00:00, 2023-02-16 00:00:00, 2023-02-08 00:00:00, 2023-02-09 00:00… |
+| Birthyear | int64 | 0 | 0 | 30 | 2000, 1999, 1998, 2001, 2002, 1997, 1996, 1995, 2003, 1994 |
+
+</details>
+
+### Target distribution
+
+| Target | count | pct |
+|---|---|---|
+| 0 | 2926 | 72.84 |
+| 1 | 1091 | 27.16 |
+
+### Numeric features
+
+| index | count | mean | std | min | max |
+|---|---|---|---|---|---|
+| Birthyear | 4017 | 1997.46 | 4.37839 | 1972 | 2004 |
+
+### Categorical features
+
+<details>
+<summary>Show the table (72 rows)</summary>
+
+| column | rank | value | count | pct |
+|---|---|---|---|---|
+| Additional_lang | 1 | &lt;NA> | 2000 | 49.79 |
+| Additional_lang | 2 | 50 - 59 % | 819 | 20.39 |
+| Additional_lang | 3 | 60 - 69 % | 518 | 12.9 |
+| Additional_lang | 4 | 40 - 49 % | 445 | 11.08 |
+| Additional_lang | 5 | 70 - 79 % | 160 | 3.98 |
+| Birthmonth | 1 | 1 | 1125 | 28.01 |
+| Birthmonth | 2 | 9 | 323 | 8.04 |
+| Birthmonth | 3 | 5 | 290 | 7.22 |
+| Birthmonth | 4 | 12 | 275 | 6.85 |
+| Birthmonth | 5 | 4 | 270 | 6.72 |
+| Degree | 1 | 0.0 | 2018 | 50.24 |
+| Degree | 2 | &lt;NA> | 1828 | 45.51 |
+| Degree | 3 | 1.0 | 171 | 4.26 |
+| Diploma | 1 | 0.0 | 2031 | 50.56 |
+| Diploma | 2 | &lt;NA> | 1806 | 44.96 |
+| Diploma | 3 | 1.0 | 180 | 4.48 |
+| Female | 1 | 1 | 2267 | 56.44 |
+| Female | 2 | 0 | 1750 | 43.56 |
+| Geography | 1 | Urban | 2794 | 69.55 |
+| Geography | 2 | Rural | 803 | 19.99 |
+| Geography | 3 | Suburb | 420 | 10.46 |
+| Home_lang | 1 | &lt;NA> | 3636 | 90.52 |
+| Home_lang | 2 | 50 - 59 % | 140 | 3.49 |
+| Home_lang | 3 | 40 - 49 % | 137 | 3.41 |
+| Home_lang | 4 | 60 - 69 % | 74 | 1.84 |
+| Home_lang | 5 | 70 - 79 % | 18 | 0.45 |
+| Math | 1 | &lt;NA> | 3020 | 75.18 |
+| Math | 2 | 0 - 29 % | 321 | 7.99 |
+| Math | 3 | 30 - 39 % | 299 | 7.44 |
+| Math | 4 | 40 - 49 % | 197 | 4.9 |
+| Math | 5 | 50 - 59 % | 99 | 2.46 |
+| Mathlit | 1 | &lt;NA> | 2665 | 66.34 |
+| Mathlit | 2 | 40 - 49 % | 419 | 10.43 |
+| Mathlit | 3 | 30 - 39 % | 344 | 8.56 |
+| Mathlit | 4 | 50 - 59 % | 292 | 7.27 |
+| Mathlit | 5 | 60 - 69 % | 154 | 3.83 |
+| Matric | 1 | 1.0 | 2561 | 63.75 |
+| Matric | 2 | &lt;NA> | 1006 | 25.04 |
+| Matric | 3 | 0.0 | 450 | 11.2 |
+| Province | 1 | Gauteng | 1168 | 29.08 |
+| Province | 2 | KwaZulu-Natal | 855 | 21.28 |
+| Province | 3 | Limpopo | 421 | 10.48 |
+| Province | 4 | Mpumalanga | 363 | 9.04 |
+| Province | 5 | Eastern Cape | 329 | 8.19 |
+| Round | 1 | 4 | 1977 | 49.22 |
+| Round | 2 | 2 | 973 | 24.22 |
+| Round | 3 | 3 | 827 | 20.59 |
+| Round | 4 | 1 | 240 | 5.97 |
+| Sa_citizen | 1 | 1 | 4015 | 99.95 |
+| Sa_citizen | 2 | 0 | 2 | 0.05 |
+| Schoolquintile | 1 | &lt;NA> | 1658 | 41.27 |
+| Schoolquintile | 2 | 3.0 | 739 | 18.4 |
+| Schoolquintile | 3 | 2.0 | 504 | 12.55 |
+| Schoolquintile | 4 | 1.0 | 445 | 11.08 |
+| Schoolquintile | 5 | 4.0 | 329 | 8.19 |
+| Science | 1 | &lt;NA> | 3285 | 81.78 |
+| Science | 2 | 30 - 39 % | 263 | 6.55 |
+| Science | 3 | 40 - 49 % | 182 | 4.53 |
+| Science | 4 | 0 - 29 % | 116 | 2.89 |
+| Science | 5 | 50 - 59 % | 98 | 2.44 |
+
+(12 more rows not shown)
+
+</details>
+
+## Build
+
+| field | value |
+|---|---|
+| uuid | 01a1862a-0d79-7de6-a2a3-5d6010bcefe5 |
+| checksum | v2:22b1b49ac7b8efc95d060a7bf2e26d604ab1742290de44202cab0d0b29b41ccc |
+| built_at | 2026-10-29T05:37:45+00:00 |
+| path | predictive_insights_youth_income_prediction_challenge/01a1862a-0d79-7de6-a2a3-5d6010bcefe5 |
+| data_foundry_version | 0.0.5 |
+| git_sha | 6d189a922994ddb0221c8249d07552d4df8af88b |
+| libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |

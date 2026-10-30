@@ -11,6 +11,8 @@ so they run on a table from any source. Modules:
 * ``groups``: for a grouped task, does the grouping matter, and is there signal across groups.
 * ``hidden_groups``: columns, composite keys and near copies that act as an entity, which a random split would leak.
 * ``generated``: is the target a formula or a rule set of the features, or were the columns drawn one by one.
+* ``label_maturity``: release-boundary event rates across explicit windows and end buffers.
+* ``duplicate_contamination``: exact-profile matches by label/multiplicity on actual folds, with aligned row losses.
 * ``text``: the numeric model inputs and the TF-IDF + SVD text encoding the probes share.
 
 ``problem_type`` is ``"regression"`` or a classification type (any other value). Import the package with the folder

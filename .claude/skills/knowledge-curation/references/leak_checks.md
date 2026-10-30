@@ -256,8 +256,15 @@ Reading the probes:
 * The string overlap compares exact values: the same molecule written as two SMILES strings, or the same text with
   other whitespace, does not count. Canonicalise (RDKit for SMILES) before comparing when the overlap matters (probe
   5; LEAK-16).
-* A pure-value flag on a heavily imbalanced target (base rates of 94-98%: amazon_employee_access, aps_failure) is
-  usually an ordinary category effect (probe 4; EV-3).
+* On extremely imbalanced targets, near-pure majority categories can reflect the base rate. For each suspicious
+  value, compare label rates within that value against all other values, their difference or ratio, and information
+  gain from binary membership in that value (mutual information), with supporting counts (probe 4; EV-3;
+  amazon_employee_access, aps_failure). Substantial supported information gain is a potential leakage or memorization
+  signal to investigate, not evidence against leakage. High cardinality alone neither implies this signal nor
+  explains it away; sparse categories can inflate empirical whole-feature information gain. Read suspicious-value
+  associations alongside source timing and training-only lookup behavior: mixed labels or partial lookup coverage
+  do not clear a suspected leak. Association alone does not establish its mechanism; legitimate history can also be
+  informative (LEAK-34, TP-4).
 * A near-saturated score alone is not a leak (diamonds R^2 0.993 and splice AUC 0.99+ showed none). Run the probes and
   report what they found (EV-3).
 * A claimed problem gets a second check that tries to refute it with its own code (EV-6). In the audit all 15 findings
@@ -303,6 +310,13 @@ The numbers compare the shipped data with a suspected fix; they are not leaderbo
 | 14 | A simple formula or lookup for the target; a shallow tree on the label | R^2 near 1; a depth-2 or depth-3 tree close to the full model | video_game_fps: log FPS = game + CPU + GPU, R^2 0.99998; audiology's cochlear diagnoses: two history answers decide 139 of 147 |
 | 15 | The generated-data tests of PROV-3 ([provenance.md](provenance.md), "Is the data generated?"; the scope is SEL-16) | see there | ecommerce_shipping, customer_satisfaction_in_airline, homeq_default_prediction |
 | 16 | Every block of columns: mean 0 and SD 1, or min 0 and max 1, over the whole table | the source scaled over all rows, test rows included | coad_colon_adenocarcinoma (z-scores over 260 patients); credit_card_customers (clipped at whole-file percentiles) |
+
+## Detailed checks for release-boundary labels and repeated profiles
+
+[Checking diagnostics](checking_diagnostics.md) expands probes 5 and 13: an explicit
+window/end-buffer grid for delayed event labels, and exact profile-overlap counts by
+label and multiplicity on every shipped fold. These produce evidence for the existing
+rules; they do not trim, group, reject or accept a dataset automatically.
 
 ## Cases
 
