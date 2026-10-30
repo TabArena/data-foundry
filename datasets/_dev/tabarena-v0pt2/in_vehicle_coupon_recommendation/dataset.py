@@ -49,9 +49,9 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "The answers are stated intentions about imagined trips, given in one survey sitting, not coupons "
-            "accepted while driving, and the respondents are rebuilt from the file order (587 against the paper's 652"
-            " surveys)."
+            "The answers are stated intentions about imagined trips, given in one survey sitting by Mechanical Turk "
+            "volunteers, not coupons accepted by the drivers of a recommender, and the respondents are rebuilt from "
+            "the file order (587 against the paper's 652 surveys)."
         ),
     )
 

@@ -140,7 +140,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
 | reason | Chicco & Jurman 2020 call PR AUC with Alive (92.6%) as positive their 'principal indicator', with ROC AUC, MCC, F1 and others; on our folds PR AUC sits at its floor 0.926 with a best of 0.966, so it resolves models poorly (MET-9). Original rejected: PR AUC on the majority class. roc_auc is the binary fallback. |
 

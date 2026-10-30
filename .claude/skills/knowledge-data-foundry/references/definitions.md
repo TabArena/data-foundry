@@ -170,7 +170,9 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
 * `domain`: exactly one of `"education"`, `"environmental science & climate"`, `"biology & life sciences"`,
   `"handcrafted"`, `"chemistry & material science"`, `"industry & manufacturing"`, `"physics & astronomy"`,
   `"multimedia"`, `"medical & healthcare"`, `"technology & internet"`, `"finance"`, `"social science"`,
-  `"business & marketing"`, `"insurance"`; the closest match when the record's value differs.
+  `"business & marketing"`, `"insurance"`; the closest match when the record's value differs. A molecule-property
+  dataset (the input is the molecule: QSAR, toxicity, bioactivity) is `"chemistry & material science"` (Lennart,
+  2026-10-21, the ten QSAR siblings).
 * `source`: exactly one of `"Kaggle"`, `"Zindi"`, `"OpenML"`, `"GitHub"`, `"UCI"`, `"HuggingFace"`, `"GOV Website"`,
   `"Customer"`, `"Other"`, `"ASlib"`: where the data was first published, with `source_url` pointing there
   (PROV-8 in [provenance.md](../../knowledge-curation/references/provenance.md)). `download_description` says where
@@ -178,7 +180,9 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
 * `year`: the year of that first publication (PROV-9 in
   [provenance.md](../../knowledge-curation/references/provenance.md)).
 * `data_tags`: context tags only, since listing a regime tag yourself switches the automatic ones off. `"Anonymized"`
-  when feature names or values carry no semantics or are masked (common for competition data); `"Spatial"` when the
+  when the source hid what the features are, by replacing their names or values on purpose (common for competition
+  data; the record gets the `Anonymized` marker, and the cases without it are in
+  [selection.md](../../knowledge-curation/references/selection.md), "Anonymized data"); `"Spatial"` when the
   data holds geographic information (ZIP, latitude and longitude, region, store location); `"ForcedIIDFromTemporal"`
   when the task is temporal in nature but the release has no time index, or has too few periods and ships IID
   (SPLIT-8 in [splits.md](../../knowledge-curation/references/splits.md); a definition that declares a `grouping` or
@@ -459,7 +463,8 @@ and [cleaning_features.md](../../knowledge-curation/references/cleaning_features
 * Rare classes and merged labels.
 * The source's split protocol, taken as a claim.
 * Top solutions' preprocessing without their exploits.
-* Anonymized data: keep it as it is, tag `Anonymized`, and say what could not be determined.
+* Anonymized data: keep it as it is, tag `Anonymized` (and the record's `Anonymized` marker), and say what could not
+  be determined.
 * Destroyed meaning to reconstruct.
 * Classes recorded differently: "check number formats and missingness per class (probes 3, 9, 17); do two same-label
   subgroups separate, or rows of one class that share a format the other class rarely has (LEAK-39)? Are there
@@ -609,7 +614,12 @@ Read the closest one in full before writing (paths under `datasets/_dev/tabarena
 ## What the benchmark harness does with a definition
 
 * v0.2 runs a new default pipeline like BeyondArena's, which keeps the hour of a datetime (skrub's `DatetimeEncoder`);
-  only the v0.1 pipeline dropped it (Lennart, 2026-10-12). Do not add hour columns to work around it.
+  only the v0.1 pipeline dropped it (Lennart, 2026-10-12). Do not add hour columns to work around it. Nothing changes in
+  a definition while the v0.2 runs encode datetimes with the hour (Lennart, 2026-10-21: "we will always run with
+  datetime encoding in v0.2, most likely some evolution of tabarena_default"). nyc_taxi_trip_duration_1m and
+  pkdd_15_taxi_trip_time_prediction_ii_1m, whose only time feature is a datetime, show what is at stake (LightGBM RMSE
+  0.357-0.381 with the hour against 0.414-0.441 with AutoGluon's date parts; R^2 0.482-0.503 against 0.452-0.483), and
+  checks and probes may use them to test an encoding.
 * A group column is split and scoring metadata, never a feature; the harness drops it before fitting
   (`datasets/_dev/tabarena-v0pt2/BENCHMARK_CHANGES_TODO.md` lists what the harness still needs, such as per-group
   scoring and custom metrics).

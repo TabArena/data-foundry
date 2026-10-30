@@ -159,7 +159,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
 | reason | Vidros et al. 2017 report accuracy with precision, recall and F-measure on a balanced 450/450 sample; the release we ship is 4.6% fraudulent, so the paper's accuracy does not carry over (MET-2), and no threshold or costs are fixed. Original rejected: accuracy on the 1:1 sample. roc_auc is the binary fallback. |
 

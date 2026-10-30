@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ljubljana_primary_tumor
 container_format: 2
-checksum: v2:08d97f9b8a565760b3fbbd6646bc63c00b32938f844563debddb93aabbec14ef
+checksum: v2:c882330aa9edbb5159f8d7e65fac90f3e0235dcc283b7015cfea277368381980
 build:
   uuid: 01a111fc-e43e-74ec-8af2-b710f7045924
   checksum: v2:ddbe1140621ffda771f1ea9797d30fbd1fe902bc0a4c9f1d8337b9eee4d9fcd2
@@ -68,7 +68,7 @@ decisions: []
 
 Multiclass classification of `class`, scored with `log_loss` on IID splits. 302 rows and 17 features. Source: UCI (1988).
 
-Built as `01a111fc-e43e-74ec-8af2-b710f7045924` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:08d97f9b8a565760b3fbbd6646bc63c00b32938f844563debddb93aabbec14ef`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e43e-74ec-8af2-b710f7045924` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c882330aa9edbb5159f8d7e65fac90f3e0235dcc283b7015cfea277368381980`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -86,7 +86,7 @@ Built as `01a111fc-e43e-74ec-8af2-b710f7045924` on 2026-10-06, but `dataset.py` 
 
 **Our changes to the source.** We drop the primary sites with fewer than 10 patients.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The tissue type and the metastasis sites are known before the primary is found, and the label is the site found. A model in use would also meet the rare sites we left out.
+> **Use case fit: approximate (a stand-in with a known gap).** The tissue type and the metastasis sites are known before the primary is found, and the label is the site found. But the rows are patients whose primary was found, with the spread typical of it (neck nodes in all 20 head and neck patients), not patients with metastases of unknown origin. A model in use would also meet the rare sites we left out.
 
 ## Files in this folder
 
@@ -140,7 +140,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `log_loss` (standard; takes proba; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | mean of -log p(true class) |
 | reason | The 1986-1987 papers report accuracy only; we drop the classes with fewer than 10 rows (MET-2). Original rejected: accuracy. log_loss is the multiclass fallback. |
 
@@ -393,4 +393,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:08d97f9b8a565760b3fbbd6646bc63c00b32938f844563debddb93aabbec14ef` |
+| stale | yes: the definition now gives checksum `v2:c882330aa9edbb5159f8d7e65fac90f3e0235dcc283b7015cfea277368381980` |

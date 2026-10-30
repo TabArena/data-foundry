@@ -4,8 +4,7 @@ name: rosbank1
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 2
 tags:
@@ -48,6 +47,24 @@ Might be streaming event data (?), need to figure out when looking at the data
 CC (2026-10-21, Lennart): on CLEAN-19: "Okay, we here the case is that we want to take the best of both, or a reasonable combination, and not a union. so here we take the best for alfa as it is the top-solution etc, does that make sense?" (CLEAN-19, amended). The CoLES aggregates are a published baseline; the open question (REVIEW.md issue 5) is now whether a 2018 top solution's features are better, else CoLES stays.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC - Area Under the ROC Curve (task 1, churn); task 2 POS spend used RMSE (https://boosters.pro/api/champ/champ?champname=rosbank1 (metric: 'AUC', checked 2026-10-21)).
+
+CC (2026-10-26, Lennart): issue 1: churn only, no second folder for the spend target (PROV-6: a swapped target of the same rows is a duplicate).
+
+CC (2026-10-26, Lennart): issue 8: "ok keep the temporal split as is" (SPLIT-1, SPLIT-9).
+
+CC (2026-10-26, Lennart): issue 7, option (c): amounts are converted to rubles at the Bank of Russia's official daily rate ("try to fix this"; CLEAN-21, the measuring body's conversion).
+
+**Assessment (AI, 2026-10-26):** issue 7 applied. amount is converted at the Bank of Russia's rate in force on the transaction's day (XML_dynamic series of the 30 currencies it quoted then, downloaded 2026-10-26, pinned by checksum in download_description). The currency codes have no codebook; the conversion confirms the ISO 4217 numeric reading (810 and 643 rubles): converted, the median POS purchase of every currency with 30 or more lies between 355 and 3,346 rubles, against 500 in rubles and 8 to 671,000 units before. The 1,466 transactions (0.3%, 184 clients) in 27 currencies the Bank did not quote on their day (baht, dirham, lari, kuna, rupiah, dong and smaller ones; Hong Kong dollars before April 2017) keep their counts and leave the amount statistics. std_amount_trx_CASH_ADV became constant (one kept client with two cash advances in a quoted currency) and is dropped. dataset check: 0 errors, 0 warnings. Issue 5: a search found the 1st place of task 1 (Kirill Khrylchenko, private AUC 0.8747) published with code (github.com/KhrylchenkoKirill/rosbank); the comparison with the CoLES features on our windows is running.
+
+**Assessment (AI, 2026-10-26):** issue 5 compared. Khrylchenko's (1st place, task 1) feature blocks rebuilt from his code on our transactions in rubles (his own CV on the rebuild matches his notebooks: time 0.848 against 0.852, money 0.831 against 0.830). Untuned LightGBM, ROC AUC over the three windows: CoLES 0.855, his full set 0.882 (2,320 columns), CoLES plus his time and MCC-time blocks 0.893 (+.038 ± .016), CoLES plus his time block alone +.045; the gain comes from the October window (515 clients, about 4 SE). His repository has no licence; no code copied. Recommendation on the page: CoLES plus his time block (CLEAN-19, a reasonable combination).
+
+CC (2026-10-26, Lennart): issue 5, option (c): CoLES plus the time block of the 1st place (Khrylchenko) (CLEAN-19, a reasonable combination).
+
+**Assessment (AI, 2026-10-26):** issue 5 applied: `time_features`, our rewrite of the 1st place's time block (no code copied; his repository has no licence): for all transactions, each category, money in and money out, the span, spread, position and gaps of the active days, the same over the last active month, active days per month and the quarter of the last month; 349 columns after dropping copies. Untuned LightGBM on the three windows: CoLES 0.857, with the time block 0.896 (+0.038; October +0.051); 300 trees 0.853 against 0.891. dataset check: 0 errors, 0 warnings.
+
+**Assessment (AI, 2026-10-26):** probes on the definition with the time features: task probes LightGBM 0.891, random forest 0.883, linear 0.823, no flag (the earlier `no_spread` is gone: LightGBM leads linear by 0.136, paired SE 0.042). Leak probes: the strongest single feature is `time_pos_span` (0.853 alone), the span of the client's POS activity, i.e. recency, the signal of the 1st place's best block; the file holds no transactions from the label window (LEAK-10, 2026-10-20), and dropping the feature changes the probe's model from 0.878 to 0.889, so no single column carries the task. No open issue left.
+
+CC (2026-10-26, Lennart): verdict ship.
 
 ## Reference
 

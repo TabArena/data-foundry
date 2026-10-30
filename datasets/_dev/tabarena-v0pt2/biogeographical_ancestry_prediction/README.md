@@ -138,7 +138,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `log_loss` (standard; takes proba; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | mean of -log p(true class) |
 | reason | Heinzel et al. 2025 report ROC AUC, accuracy and log loss, with none named as the criterion (MET-5); log loss scores the class probabilities over all populations (Lennart, 2026-10-21: ROC AUC is not a good metric for this multiclass task). |
 

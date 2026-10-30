@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: fraud_detection_in_electricity_and_gas_consumption_1m
 container_format: 2
-checksum: v2:1ecc2f2e82f536dcb7d3dfa7605e20c16851d244774ea129b4325028400bb6c5
+checksum: v2:aa03f878e0aa8eaec1a2be134c29e9c44e83829bcfeac53dcd7f54a968edff20
 build: null
 build_stale: false
 data:
@@ -69,7 +69,7 @@ decisions:
 
 Binary classification of `fraud`, scored with `roc_auc` on grouped splits by `client_id`, one prediction per group (mean). 1,500,000 rows and 17 features. Source: Zindi (2019).
 
-Not built yet. The current definition gives checksum `v2:1ecc2f2e82f536dcb7d3dfa7605e20c16851d244774ea129b4325028400bb6c5`.
+Not built yet. The current definition gives checksum `v2:aa03f878e0aa8eaec1a2be134c29e9c44e83829bcfeac53dcd7f54a968edff20`.
 
 ## In brief
 
@@ -214,7 +214,9 @@ We start with client_train.csv and invoice_train.csv of the Zindi challenge, fro
   appears in a quarter is 7.4-11.9% for each quarter of 2012 and 23.8-25.9% for each quarter of 2013, while
   the number of such events per quarter does not jump at 2013Q1 (decision table). A client-level LightGBM on
   per-client aggregates scores ROC AUC 0.848 with the full history and 0.688 with the invoices before 2013
-  (3 folds, the kept clients). The cut date is read off the data; STEG and Zindi do not document it.
+  (3 folds, the kept clients). The cut date is read off the data; STEG and Zindi do not document it. To
+  revisit (Lennart, CC 2026-10-26): dated inspections or dated findings from STEG would allow a cut per client
+  at its inspection date instead of one date for all.
 - Cohort: the 81,531 clients billed before 2013 and still billed from 2015 on (6,394 frauds, 7.8%). The label
   counts the findings up to a client's last invoice, so a client who leaves early had less time to be found:
   among the clients billed before 2013, the fraud rate by the year of the last invoice is at most 0.8% up to
@@ -292,7 +294,7 @@ gas) on their latest date. We keep the invoice rows rather than one row per clie
 solutions' aggregates: the rows are usable as they are (the row model averaged per client scores 0.682
 against 0.675 for a LightGBM on simple per-client aggregates, same folds), and the top solutions built
 their aggregates on the full history, which the cut removes. amex_non_iid_1m keeps its raw statements the
-same way.
+same way. Exception to CLEAN-19 (Lennart, CC 2026-10-26).
 
 | field | value |
 |---|---|

@@ -139,7 +139,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
 | reason | Rousseauw et al. 1983 (CORIS baseline study) is an epidemiological screening study with no prediction metric; ESL (Hastie, Tibshirani & Friedman, Sec. 4.4.2 and 5.2.2) uses the data to illustrate logistic regression coefficients and splines, not to score predictions. A retrospective case-control sample makes a ranking metric (roc_auc) the safer choice, as the case share is set by design. |
 

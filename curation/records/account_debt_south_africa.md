@@ -4,8 +4,7 @@ name: ACCOUNT_DEBT_SOUTH_AFRICA
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 2
 tags:
@@ -46,6 +45,20 @@ CC (2026-10-12, Lennart): Kept `TotalElectricityBill`: its signal is mostly whet
 CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: HasIDNo.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Kaggle dataset upload without a task or evaluation metric; no paper defines one.
+
+CC (2026-10-26, Lennart): issue 1: drop the located unrecorded runs (LEAK-25 as amended on 2026-10-21).
+
+CC (2026-10-26, Lennart): issue 8: keep `TotalElectricityBill` with the note, "we can investigate later again".
+
+CC (2026-10-26, Lennart): the declared metric, ROC AUC (the fallback), is checked as declared.
+
+**Assessment (AI, 2026-10-26):** issues 1 and 8 are settled as implemented. Issue 9 (keep the billing totals) waits for a LEAK-10 amendment: the keep is a Must departure that a Cases row cannot carry (consistency check on the review page).
+
+CC (2026-10-26, Lennart): issue 9: "keep them, amend it but make clear this needs case by case curator judgement": `TotalBilling` and `AverageBilling` stay; LEAK-10 amended (a window sum that the data shows does not move with the outcome, given the covariates known at the prediction point, stays, case by case).
+
+**Assessment (AI, 2026-10-26):** the LEAK-10 amendment and its Cases row are written; no open issue is left, so the folder's REVIEW.md is removed.
+
+CC (2026-10-26, Lennart): verdict ship.
 
 ## Reference
 

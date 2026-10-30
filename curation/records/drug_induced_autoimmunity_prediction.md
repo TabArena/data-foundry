@@ -9,13 +9,14 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Tiny Data
+- Non-IID (Grouped)
 collections:
 - New (BeyondArena)
 original_source: UCI
 year: '2025'
 domain: medical & healthcare
 required_split:
-- Random (IID)
+- Grouped (NON-IID)
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:

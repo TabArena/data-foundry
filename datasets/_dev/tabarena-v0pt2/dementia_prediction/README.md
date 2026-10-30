@@ -149,7 +149,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `log_loss` (standard; takes proba; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | mean of -log p(true class) |
 | reason | The OASIS-2 paper describes the data and reports group analyses, no prediction task or metric; the Mendeley copy's paper is a later reuse, not the first publication |
 

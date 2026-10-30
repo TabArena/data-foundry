@@ -47,6 +47,8 @@ CC (2026-10-21, Lennart): option (a) of the consistency check on one-snapshot ch
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — The first publication (closed access, abstract elided) could not be read; no metric verified. Cohort is 50/50 by design, so accuracy (the likely reported number) would be close in spirit, but AUC is insensitive to the artificial base rate as the curation notes say.
 
+CC (2026-10-21, Lennart): the fallback metric stays (`roc_auc`; the first publication could not be read, so no metric is known; cross-dataset item "Metrics still to settle").
+
 ## Reference
 
 @inproceedings{ahmed2017mcs,

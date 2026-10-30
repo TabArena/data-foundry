@@ -4,20 +4,19 @@ name: QSAR oral toxicity
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 4
 tags:
-- New IID
 - Many features
+- Non-IID (Grouped)
 collections:
 - New (BeyondArena)
 original_source: Other
 year: '2019'
 domain: chemistry & material science
 required_split:
-- Random (IID)
+- Grouped (NON-IID)
 problem_type: Binary Classification
 original_data_state: One Table
 source_links:
@@ -57,6 +56,12 @@ CC (2026-10-21, Lennart): Extend with the package's validation set and use the f
 CC (2026-10-21, Lennart): `rdkit_Ipc`: fix it by scaling rather than dropping it. Accept the `dataset_pure_feature_value` warning (rdkit_fr_Ar_COO) with its reason. `original_source`: take the definition's value (Other).
 
 **Assessment (AI, 2026-10-21):** Applied. `rdkit_descriptors` (data_foundry.v2.chemistry) now ships Ipc as `rdkit_Ipc_log10` = log10(1 + Ipc) for every SMILES dataset, so the definition keeps it (208 descriptors; maximum 166.8 here instead of 6e166). apistox and qsar_bioconcentration change with it: apistox's Ipc reached 2.6e38, just below the float32 limit, now 38.4; qsar_bioconcentration's 7.7e9, now 9.9. The warning is accepted in `accepted_check_warnings`; `original_source` is Other. dataset check: 0 errors, 0 warnings on all three. Not rebuilt.
+
+CC (2026-10-26, Lennart): reopened from qsar_bioconcentration's issue 10, option (d) ("also do the right split for oral"): SPLIT-31 amended, so the split groups on the Bemis-Murcko scaffold of the QSAR-ready SMILES, ring-less chemicals and the bare benzene ring alone. This supersedes CC 2026-10-21 (IID kept, the scaffold variant a candidate): the structures are exact since the extension of the same day.
+
+**Assessment (AI, 2026-10-26):** applied: `scaffold_groups` on the QSAR-ready SMILES (2,577 ring-less and 1,969 bare-benzene chemicals alone; test folds of 3,365-3,918 chemicals). Close training analogs (Morgan radius 2, 2,048 bits, Tanimoto 0.7 or more) of the test chemicals: 16.3% (24.7% at random), against 11.0% for the untested chemicals of the project's prediction set, so the fit stays approximate with the new numbers in fit_reason. Task probes: random forest ROC AUC 0.864, LightGBM 0.821, linear 0.757, no flag. dataset check: 0 errors, 0 warnings.
+
+CC (2026-10-26, Lennart): verdict ship.
 
 ## Reference
 

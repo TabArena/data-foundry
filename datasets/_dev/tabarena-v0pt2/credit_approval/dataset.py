@@ -41,6 +41,7 @@ class CreditApproval(AbstractCuratedDataset):
     source = "UCI"
     source_url = "https://doi.org/10.24432/C5FS30"
     license = "CC BY 4.0"
+    data_tags = ("Anonymized",)
     download_description = """
         We get the credit screening data from UCI.
 
