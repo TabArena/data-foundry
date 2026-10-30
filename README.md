@@ -2,7 +2,36 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-10-30 16:40 UTC: 84 claim(s) (Lennart 63, Myunghwan 21).
+As of 2026-10-30 18:03 UTC: 108 claim(s) (Andrej 24, Lennart 63, Myunghwan 21).
+
+## Andrej
+
+| Dataset | Stage | Since | Until | Note |
+|---|---|---|---|---|
+| `allstate_claim_prediction_challenge` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
+| `australian_vehicle_insurance_2004_2005` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
+| `avito_demand_prediction` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
+| `basque_offshore_bivalve_biotoxins` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
+| `basque_offshore_ctd_chlorophyll` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
+| `blogfeedback` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
+| `boreal_postfire_lichen_biomass` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
+| `cape_floristic_region_family_cover` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
+| `crms_phragmites_cover` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
+| `frempl_french_motor_personal_line` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
+| `liberty_mutual_fire_peril_loss_cost` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
+| `nantucket_sound_sea_duck_aerial_survey_counts` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
+| `noaa_afsc_bottom_trawl_survey_cpue` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
+| `noaa_storm_events_damage` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
+| `pennsylvania_oak_hickory_regeneration_experiment` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
+| `pricing_game_2017_french_mtpl` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
+| `rand_health_insurance_experiment_doctor_visits` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
+| `spanish_motor_insurance_2015_2018` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
+| `spanish_motor_insurance_coverage_level_2022_2024` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
+| `sweden_depth_to_bedrock` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
+| `thailand_road_accident_register_2019_2022` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
+| `wadden_sea_sibes_macoma_abundance` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
+| `walmart_sales_in_stormy_weather` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
+| `wisconsin_local_government_property_insurance_fund` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
 
 ## Lennart
 
