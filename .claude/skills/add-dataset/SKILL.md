@@ -133,8 +133,9 @@ runs the pipeline, the checks and `_decisions` without saving, and writes `READM
 data (`ds = workbench()` in a scratch notebook or script, never committed), re-run, read the README diff. Stop when there are no errors and every warning is fixed or
 proposed for acceptance with a reason. Run `dataset check` again after every `ruff --fix`.
 
-Then run the leak probes and the task probes, the group probes for a grouped task and the hidden-group probe for an
-IID one ([checks_and_probes.md](../knowledge-data-foundry/references/checks_and_probes.md)). Read every flag by
+Then run the leak probes and the task probes, the group probes for a grouped task, the hidden-group probe for an
+IID one and the dtype probe ([checks_and_probes.md](../knowledge-data-foundry/references/checks_and_probes.md)): every
+column it flags gets its meaning from the codebook, and its dtype from CLEAN-14. Read every flag by
 [evidence.md](../knowledge-curation/references/evidence.md), "Reading a probe": the highest-ranked reading first. A
 leak gets the mildest remedy that removes it (drop, lag, filter, re-split) with the deciding number in a bullet; a
 task-probe flag is answered by the rules of [task_probes.md](../knowledge-curation/references/task_probes.md).

@@ -1,4 +1,4 @@
-"""Probes for curating a tabular dataset: leaks, task difficulty, groups, hidden groups and generated data.
+"""Probes for curating a tabular dataset: leaks, task difficulty, groups, hidden groups, generated data, dtypes.
 
 The probes are tooling-independent: every function takes plain inputs (a pandas frame, the target column, the problem
 type, group or time columns, and splits as lists of ``(train_idx, test_idx)`` row positions) and returns plain numbers,
@@ -11,6 +11,8 @@ so they run on a table from any source. Modules:
 * ``groups``: for a grouped task, does the grouping matter, and is there signal across groups.
 * ``hidden_groups``: columns, composite keys and near copies that act as an entity, which a random split would leak.
 * ``generated``: is the target a formula or a rule set of the features, or were the columns drawn one by one.
+* ``dtypes``: is each column typed by its meaning (a count numeric, a code categorical), against its values,
+  its name and the source's codebook.
 * ``text``: the numeric model inputs and the TF-IDF + SVD text encoding the probes share.
 
 ``problem_type`` is ``"regression"`` or a classification type (any other value). Import the package with the folder

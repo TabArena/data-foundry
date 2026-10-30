@@ -4,6 +4,30 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-30, a dtype probe and one sweep of every definition; `qsar_biodeg`'s fragment counts numeric (PR #35)
+
+- Why `bank_marketing` went unnoticed: CLEAN-14 already said a count stays numeric, but only the `/add-dataset` panel
+  (checklist P7, the column auditor) applies it, and most folders came from the BeyondArena notebooks without one. The
+  0/1 sweep of 2026-10-21 looked only at columns holding 0 and 1.
+- New probe: `dtype_probes.py` (knowledge-data-foundry) on `curation_probes/dtypes.py` (knowledge-curation). Per
+  column, it compares the dtype with the values, the name and the source's codebook (read from UCI's and OpenML's APIs
+  through the definition's source link) and flags the columns to look at. The meaning decides. CLEAN-14, P7, the column
+  auditor and step 5 of `/add-dataset` now run it.
+- CLEAN-14 amended (Lennart): an ordinal scale is decided case by case, categorical by default; a column whose meaning
+  is unknown is looked up before it is typed.
+- `qsar_biodeg`: `N073_chemical_substructure` and `C026_chemical_substructure` are numeric. They are the atom-centred
+  fragments N-073 and C-026, which count the atoms of that type (0 to 3 and 0 to 12); the definition had typed them
+  categorical while their meaning was unknown. The curation note on "numeric-ordinal" features is replaced. CC line in
+  the record, CLEAN-14 Cases row. `dataset check`: 0 errors, 0 warnings. Not built.
+- The sweep, once, over the 163 definitions (outputs in `local-data-warehouse/_runs/2026-10-30_dtype_sweep/`): 489
+  flagged columns in 48 datasets, 358 of them only `numeric_levels` (codes, ids). Beyond the two datasets above,
+  the findings went to the curator and nothing else changed here: `early_learning_predictors` (42 counts and amounts
+  typed categorical, with Stata missing codes `.a` and `.b` among the numbers), counts with open ends typed
+  categorical (`mic`'s `INF_ANAM`, `hr_analytics`' `experience`), ordinal scales typed numeric (`gallstone_disease`'s
+  HFA, `ljubljana_breast_cancer`'s bin midpoints, `in_vehicle_coupon_recommendation`'s `time`) and codes typed numeric
+  (`sberbank_housing_market_forecasting`'s `ID_metro`, `brazilian_ecommerce`'s zip prefixes,
+  `ieee_fraud_detection`'s `TransactionID`).
+
 ## 2026-10-30, `bank_marketing`: `campaign` and `previous` numeric again (issue #34)
 
 - `campaign` (contacts in this campaign, 1-63) and `previous` (contacts before it, 0-275) are counts, as the UCI

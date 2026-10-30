@@ -61,7 +61,11 @@ class QsarBiodeg(AbstractCuratedDataset):
         - We added semantic meaningful feature names.
         - biodeg.csv has no header row, so we read it with `header=None` and keep the first chemical: 1,055 rows,
           356 readily biodegradable, as on UCI.
-        - Anomaly: several features are numeric-ordinal in nature but it is unclear if they are categorical features.
+        - The counts stay numeric (CLEAN-14): atoms, groups, circuits, the frequencies of atom pairs, and the two
+          atom-centred fragments `N073_chemical_substructure` (N-073: Ar2NH / Ar3N / Ar2N-Al / R..N..R, 0 to 3) and
+          `C026_chemical_substructure` (C-026: R--CX--R, 0 to 12), which count the atoms of that type in the molecule.
+          The definition had typed those two categorical while their meaning was unknown (found by the dtype probe,
+          2026-10-30). The three presence/absence descriptors (B01[C-Br], B03[C-Cl], B04[C-Br]) are yes/no flags.
     """
 
     # Task
@@ -104,14 +108,14 @@ class QsarBiodeg(AbstractCuratedDataset):
             "Num_Circuits",
             "Presence_CBr_At_Dist1",
             "Presence_CCl_At_Dist3",
-            "N073_chemical_substructure",  # no idea what this might be
+            "N073_chemical_substructure",  # N-073: atom-centred fragment Ar2NH / Ar3N / Ar2N-Al / R..N..R, a count
             "Adjacency_LeadingEigenvalue",
             "Intrinsic_State_Pseudoconnectivity",
             "Presence_CBr_At_Dist4",
             "Sum_dO_EStates",
             "Laplace_MoharIndex2",
             "Num_RingTertiaryC",
-            "C026_chemical_substructure",
+            "C026_chemical_substructure",  # C-026: atom-centred fragment R--CX--R, a count
             "Freq_CN_At_Dist2",
             "Num_HBond_Donors_Atoms",
             "Weighted_LeadingEigenvalue_Burden_Matrix",
@@ -130,8 +134,6 @@ class QsarBiodeg(AbstractCuratedDataset):
             categorical=[
                 "Presence_CBr_At_Dist1",
                 "Presence_CCl_At_Dist3",
-                "N073_chemical_substructure",
                 "Presence_CBr_At_Dist4",
-                "C026_chemical_substructure",  # very likely categorical, but unclear
             ],
         )

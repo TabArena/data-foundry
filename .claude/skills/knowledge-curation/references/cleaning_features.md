@@ -85,7 +85,9 @@ caracas_cervical_cancer (Lennart, 2026-10-15); mortgage, onlinenewspopularity (r
 every 0/1 flag of the working copy: "we should have one clear way to treat 0/1 flags"; amended again the same day,
 when the literal reading had typed counts and anonymized descriptors categorical: "no if we can infer from the
 semantic context, keep it a number, this is a real-world bias. We want to make things categorical if we know from the
-context they are indeed such").** Categorical for a fixed, finite set of values (inferred from the description and the
+context they are indeed such"; amended 2026-10-30, Lennart, on bank_marketing and qsar_biodeg: "ordinal scales are
+case-by-case, they could be either but generally we know they are not numeric so categorical might be the safer
+bet").** Categorical for a fixed, finite set of values (inferred from the description and the
 context), string for free text and high-cardinality values, datetime for dates (`YYYY-MM-DD` where possible;
 reconstruct numerically encoded dates as far as the information allows), numeric for everything else. A 0/1 column is
 categorical when its meaning (the codebook, its name, the source) says it is a yes/no flag (`waterfront`,
@@ -93,6 +95,12 @@ categorical when its meaning (the codebook, its name, the source) says it is a y
 missing values); a boolean column too. A count or a measured quantity stays numeric even when only 0 and 1 occur (an
 RDKit fragment count, `NoOfURLRedirect`, `mosque_count_500`, an aggregate over a history). With no semantic context
 (anonymized or opaque descriptors) a 0/1 column stays as the source ships it, numeric. A constant column is no flag.
+An ordinal scale (a grade, a stage, binned ranges, answers on a survey scale) is no measured quantity: it is decided
+case by case, categorical by default. A column whose meaning is unknown is looked up (the codebook, the paper, the
+descriptor software's manual) before it is typed: qsar_biodeg's two atom-centred fragments were typed categorical as
+"no idea what this might be", and they are counts. Test: the dtype probe (`dtype_probes.py`,
+[checks_and_probes.md](../../knowledge-data-foundry/references/checks_and_probes.md)) lists the columns whose dtype
+disagrees with their values, their name or the source's codebook; the meaning decides.
 
 ### The target
 
@@ -188,6 +196,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | CLEAN-14 | every 0/1 flag of the working copy (35 definitions, e.g. framingham_heart_study_fhs, phiusil_phishing, bioresponse, home_credit_default_risk, zillow_prize) | first applied on the data: every feature holding only 0 and 1 typed categorical, counts and anonymized descriptors included; revised the same day by meaning: flags kept categorical (`waterfront`, `male`, `Promo`, `FLAG_DOCUMENT_*`, santander's `ind_var*` indicators, zillow's presence flags), counts reverted to numeric (RDKit fragment counts, `NoOfURLRedirect`, `mosque_count_*`, coil_2000's policy counts, cardiotocography's `DS`, home credit aggregates), anonymized descriptors reverted (amex_non_iid_1m, ieee_fraud_detection's V columns, bioresponse, homesite_quote_conversion's fields); the case that prompted the second amendment (2026-10-21, Lennart) | applied |
 | CLEAN-14 | zillow_prize | the census tract-and-block code as one categorical `census_tract` (11-digit tract ID, 3,030 levels); the block group and block parts (8,334 and 55,601 levels) dropped as near-identifiers, the county part being `fips` (2026-10-26, Lennart) | applied |
 | CLEAN-14 | bank_marketing | `campaign` and `previous`, the contacts with a client in this and in earlier campaigns (1-63 and 0-275), typed categorical by the BeyondArena notebook (48 and 41 levels): counts, so numeric, as the UCI description gives them; the 0/1 sweep of 2026-10-21 looked only at columns holding 0 and 1 (2026-10-30, Lennart, issue #34) | applied |
+| CLEAN-14 | qsar_biodeg | `N073_chemical_substructure` and `C026_chemical_substructure`, the atom-centred fragments N-073 and C-026 (counts of atoms of that type, 0-3 and 0-12), typed categorical while their meaning was unknown: counts, so numeric; found by the dtype probe's sweep (2026-10-30, Lennart) | applied |
 | CLEAN-17 | audiology_diagnosis | classes merged by a convention of the field, and the merge tested (TP-7) | applied |
 | CLEAN-17 | force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition | the Basement class (103 rows, all in well 16/4-1) dropped: a class that lives in one group cannot be on the train and the test side of a split by that group; the other 11 classes occur in at least 4 wells; the first class dropped for living in one group (2026-10-21, Lennart) | applied |
 | CLEAN-19 | alfa_battle_2_0_task_2 | the features the 1st, 4th and 9th place solutions have in common (513 aggregates over the restored ruble amounts) replace the organisers' 127 (untuned LightGBM 0.787 / 0.771 / 0.772 against 0.774 / 0.757 / 0.763 on the three windows) (2026-10-13, Lennart); the top solutions' features are the better of the two, so they are taken and not merged with the organisers' (CLEAN-19 as amended 2026-10-21, Lennart) | applied |
