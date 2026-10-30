@@ -1,0 +1,6 @@
+name: early_learning_predictors
+holder: Lennart
+stage: add
+claimed_at: '2026-10-30T15:37:23Z'
+expires_at: '2026-11-06T15:37:23Z'
+note: 'Issue #36: the 45 counts and amounts numeric (.a/.b to missing); teacher_duration check (PR #35)'

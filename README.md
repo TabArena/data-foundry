@@ -2,13 +2,14 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-10-30 14:22 UTC: 23 claim(s) (Lennart 2, Myunghwan 21).
+As of 2026-10-30 15:37 UTC: 24 claim(s) (Lennart 3, Myunghwan 21).
 
 ## Lennart
 
 | Dataset | Stage | Since | Until | Note |
 |---|---|---|---|---|
 | `bank_marketing` | add | 2026-10-30 | 2026-11-06 | Issue #34: campaign and previous back to numeric (counts); PR to follow |
+| `early_learning_predictors` | add | 2026-10-30 | 2026-11-06 | Issue #36: the 45 counts and amounts numeric (.a/.b to missing); teacher_duration check (PR #35) |
 | `qsar_biodeg` | add | 2026-10-30 | 2026-11-06 | Issue #34 follow-up: N073 and C026 are fragment counts, back to numeric (PR #35) |
 
 ## Myunghwan
