@@ -7,6 +7,8 @@ data_foundry_status:
 - 'DF: Yes'
 suggestion: Disagreement
 priority: 4
+decision_markers:
+- Selection Bias
 tags:
 - New IID
 collections:
@@ -45,6 +47,10 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 CC (2026-10-21, Lennart): split: "IID is okay for now, but document the discussion. I think here we want to approximate and learn a function that is independent of time (like the measurements should be the same between two different days given other inputs are the same) -> no real signal across time". IID kept; the measured year-to-year shift (a first-year calibration over-predicts the second year by 0.06-0.09 °C; past-only training +0.5% to +6.7% RMSE in 6 expanding windows) is recorded in the definition, temporal a candidate variant (SPLIT-31).
 
 CC (2026-10-21, Lennart): scope: "Yes, go with (a)". The facial temperatures read through the thermal camera are measurements (SEL-15), not image descriptors (SEL-13); SEL-15 is amended: a physical quantity measured through an imaging device at defined sites (a temperature, a volume, an angle), used by the field as the instrument's reading, is a measurement, with satimage and wilt as the counter-cases. The marker `Wrong Domain / Source Modality` is removed with this decision.
+
+CC (2026-10-27, Lennart): marker Selection Bias, from the AI review of PR #16: the people were recruited at a university health center, 889 of the 1,020 in the raw file aged 18 to 25 and 3 over 60, against the clinic patients of the triage use case. The definition's fit_reason does not name the age range yet.
+
+CC (2026-10-27, Lennart): fit stays direct: the setting, a university clinic, sees the same mostly young people (USE-8, amended on the review of PR #16); the Selection Bias marker stays.
 
 ## Reference
 

@@ -153,7 +153,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `rmse` (standard; takes value; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | sqrt(mean((y - p)^2)) |
 | reason | The Scorecard release defines no prediction task; TableShift binarizes the rate at 0.5 and scores accuracy, a different target from ours. |
 

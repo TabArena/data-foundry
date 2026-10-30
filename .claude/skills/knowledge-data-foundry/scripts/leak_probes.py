@@ -12,7 +12,10 @@ measures) on the first ``--splits`` shipped splits: untuned LightGBM with ``--n-
 capped at ``--max-rows`` each, at most ``--max-single-features`` columns (and missing patterns) fitted one by one, and
 the definition's group columns left out of the features. ``--out DIR`` also writes the numbers to
 ``DIR/<unique_name>.json``. The numbers are indicative (untuned models, a few splits) and meant for comparing the
-shipped data with a suspected fix. How to read them: ``.claude/skills/knowledge-curation/references/leak_checks.md``.
+shipped data with a suspected fix. For a classification task whose raw file is one table holding the target column,
+it also counts, per column and class, the cells on a straight line between their neighbours in the raw file's order
+(probe 18: gaps filled by interpolation). How to read them:
+``.claude/skills/knowledge-curation/references/leak_checks.md``.
 The probes use the shipped target; when the definition changed the target (merged, dropped or binned classes), run
 the same checks on the source's labels in a scratch notebook as well (section 1 of that file).
 """
@@ -25,6 +28,8 @@ import sys
 import time
 from pathlib import Path
 
+import pandas as pd
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "knowledge-curation" / "scripts"))
 import dataset_io
 from curation_probes import leak
@@ -33,7 +38,8 @@ from curation_probes import leak
 def probe(args: argparse.Namespace) -> dict:
     """Print the probes for one dataset and return their numbers; see the module docstring."""
     started = time.time()
-    data = dataset_io.from_definition(dataset_io.definition(args.name, args.root))
+    ds = dataset_io.definition(args.name, args.root)
+    data = dataset_io.from_definition(ds)
     result = leak.run(
         data.df,
         data.target,
@@ -46,6 +52,15 @@ def probe(args: argparse.Namespace) -> dict:
         max_single_features=args.max_single_features,
         n_jobs=args.n_jobs,
     )
+    raw = ds.raw
+    if data.problem_type != "regression" and isinstance(raw, pd.DataFrame) and data.target in raw.columns:
+        result["fills"] = leak.fill_counts(raw, data.target)
+        leak.say(
+            "cells on a straight line between their neighbours (raw file order), per class: "
+            f"{result['fills'] or 'none'}"
+        )
+    else:
+        leak.say("straight-line fills: not run (a regression, or the raw file is not one table holding the target)")
     result["seconds"] = round(time.time() - started)
     return result
 

@@ -137,7 +137,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `log_loss` (standard; takes proba; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | mean of -log p(true class) |
 | reason | da Rocha Neto 2006 / 2011 report the classification (hit) rate, and a reject-option error-reject trade-off on the 2-class version; no threshold or costs for the 3-class diagnosis, and the full texts could not be opened. Original rejected: accuracy. log_loss is the multiclass fallback. |
 

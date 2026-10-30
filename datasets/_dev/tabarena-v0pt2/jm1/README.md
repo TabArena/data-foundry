@@ -148,7 +148,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
 | reason | Menzies & Di Stefano 2004 report probability of detection (PD) and of false alarm (PF) at operating points, a trade-off with no fixed threshold or combined score; the ROC curve is PD against PF. roc_auc is the binary fallback. |
 

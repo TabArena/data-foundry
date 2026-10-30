@@ -139,8 +139,6 @@ AI_REVIEWER: str = "AI (UNVERIFIED)"
 """``checked_by`` value meaning "an AI triaged this; a human still must verify it"."""
 AI_FILLED_TAG: str = "AI-Filled (Verify)"
 """``tags`` value flagging records whose fields were populated by the AI-review pass."""
-BETTER_DATA_TAG: str = "Better Data Available"
-"""``tags`` value: a larger or newer dataset for the same task exists (its record is named in the comments)."""
 COLLECTION_TAGS: tuple[str, ...] = ("TabArena (v0.1)", "BeyondArena")
 """``data_foundry_status`` values denoting membership in one of *our* shipped collections."""
 WIP_STATUSES: tuple[str, ...] = ("WIP (DF)", "WIP (Triage)")
@@ -261,9 +259,7 @@ class CurationRecord:
         * ``"wip_unclaimed"`` — a WIP state (:data:`WIP_STATUSES`) without a ``claimed_by``, so nobody knows whose
           work it is;
         * ``"claim_without_wip"`` — a ``claimed_by`` on a record that is not in a WIP state (a claim left behind
-          after the work was released or finished);
-        * ``"better_data_review"`` — :data:`BETTER_DATA_TAG` is set: a better dataset for the same task was found,
-          and a curator must decide whether this record's verdict still holds (then removes the tag).
+          after the work was released or finished).
 
         Returned sorted for stable serialization.
         """
@@ -282,8 +278,6 @@ class CurationRecord:
             reasons.add("wip_unclaimed")
         if self.claimed_by and not wip:
             reasons.add("claim_without_wip")
-        if BETTER_DATA_TAG in (self.tags or []):
-            reasons.add("better_data_review")
         return sorted(reasons)
 
     def describe(self) -> str:

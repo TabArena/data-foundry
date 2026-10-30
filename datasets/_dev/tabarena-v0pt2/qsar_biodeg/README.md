@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_biodeg
 container_format: 2
-checksum: v2:c00c73bdb008e7433c54d82339d617777ca2d815bf088106359fae21ddd62dac
+checksum: v2:d2d677d14d439374b9a0bf7e2eea724bb82cac913c6d43e6f84580084006fb87
 build:
   uuid: 01a13a7d-c2bf-742d-b04d-f9b569da1f3d
   checksum: v2:5d0dcabbc947ec79fe0e230bddca7b95568e2a8cc0ce95f85fb21a9c114d1739
@@ -22,9 +22,9 @@ data:
   n_rows: 1055
   n_features: 41
   dtypes:
-    category: 6
+    category: 4
     float64: 17
-    int64: 19
+    int64: 21
   n_test_dataset_rows: null
 task:
   target: Biodegradable
@@ -69,7 +69,7 @@ decisions: []
 
 Binary classification of `Biodegradable`, scored with `roc_auc` on IID splits. 1,055 rows and 41 features. Source: UCI (2013).
 
-Built as `01a13a7d-c2bf-742d-b04d-f9b569da1f3d` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:c00c73bdb008e7433c54d82339d617777ca2d815bf088106359fae21ddd62dac`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2bf-742d-b04d-f9b569da1f3d` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:d2d677d14d439374b9a0bf7e2eea724bb82cac913c6d43e6f84580084006fb87`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -137,14 +137,14 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
 | reason | Mansouri et al. 2013 report error rate / NER with sensitivity and specificity, the group's house measure, without a decision threshold or costs. Original rejected: NER (balanced accuracy). roc_auc is the binary fallback. |
 
 <details>
-<summary>Feature types: 6 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 4 categorical, 0 string, 0 datetime</summary>
 
-- categorical (6): `Presence_CBr_At_Dist1`, `Presence_CCl_At_Dist3`, `N073_chemical_substructure`, `Presence_CBr_At_Dist4`, `C026_chemical_substructure`, `Biodegradable`
+- categorical (4): `Presence_CBr_At_Dist1`, `Presence_CCl_At_Dist3`, `Presence_CBr_At_Dist4`, `Biodegradable`
 - string (0): none
 - datetime (0): none
 
@@ -185,7 +185,11 @@ The first 5 of 1,055 rows of the final frame (random rows: the frame is shuffled
 - We added semantic meaningful feature names.
 - biodeg.csv has no header row, so we read it with `header=None` and keep the first chemical: 1,055 rows,
   356 readily biodegradable, as on UCI.
-- Anomaly: several features are numeric-ordinal in nature but it is unclear if they are categorical features.
+- The counts stay numeric (CLEAN-14): atoms, groups, circuits, the frequencies of atom pairs, and the two
+  atom-centred fragments `N073_chemical_substructure` (N-073: Ar2NH / Ar3N / Ar2N-Al / R..N..R, 0 to 3) and
+  `C026_chemical_substructure` (C-026: R--CX--R, 0 to 12), which count the atoms of that type in the molecule.
+  The definition had typed those two categorical while their meaning was unknown (found by the dtype probe,
+  2026-10-30). The three presence/absence descriptors (B01[C-Br], B03[C-Cl], B04[C-Br]) are yes/no flags.
 
 ## Splits
 
@@ -248,9 +252,7 @@ Default splits.
 |---|---|---|---|---|---|
 | Presence_CBr_At_Dist1 | category | 0 | 0 | 2 | 0, 1 |
 | Presence_CCl_At_Dist3 | category | 0 | 0 | 2 | 0, 1 |
-| N073_chemical_substructure | category | 0 | 0 | 4 | 0, 1, 2, 3 |
 | Presence_CBr_At_Dist4 | category | 0 | 0 | 2 | 0, 1 |
-| C026_chemical_substructure | category | 0 | 0 | 11 | 0, 1, 2, 3, 4, 6, 5, 8, 10, 12 |
 | Biodegradable | category | 0 | 0 | 2 | No, Yes |
 | Laplace_Leading_Eigenvalue | float64 | 0 | 0 | 440 | 4.732, 4.414, 4.0, 4.17, 4.562, 4.807, 4.303, 4.77, 4.499, 3.618 |
 | Weighted_Balaban_Index_Barysz_Matrix | float64 | 0 | 0 | 1022 | 4.2631, 3.0785, 3.1387, 2.9639, 2.4441, 2.7059, 3.2439, 2.4524, 3.1241, 3.1806 |
@@ -282,7 +284,9 @@ Default splits.
 | Num_Aromatic_Nitro_Groups | int64 | 0 | 0 | 4 | 0, 1, 2, 3 |
 | Num_CRX3 | int64 | 0 | 0 | 4 | 0, 1, 2, 3 |
 | Num_Circuits | int64 | 0 | 0 | 13 | 1, 0, 2, 3, 6, 4, 7, 5, 15, 10 |
+| N073_chemical_substructure | int64 | 0 | 0 | 4 | 0, 1, 2, 3 |
 | Num_RingTertiaryC | int64 | 0 | 0 | 8 | 0, 1, 2, 4, 6, 3, 8, 5 |
+| C026_chemical_substructure | int64 | 0 | 0 | 11 | 0, 1, 2, 3, 4, 6, 5, 12, 8, 10 |
 | Freq_CN_At_Dist2 | int64 | 0 | 0 | 16 | 0, 2, 4, 3, 1, 6, 8, 5, 10, 18 |
 | Num_HBond_Donors_Atoms | int64 | 0 | 0 | 8 | 0, 1, 2, 3, 4, 6, 5, 7 |
 | Num_Nitrogen_Atoms | int64 | 0 | 0 | 8 | 0, 1, 2, 3, 4, 5, 6, 8 |
@@ -301,7 +305,7 @@ Default splits.
 ### Numeric features
 
 <details>
-<summary>Show the table (36 rows)</summary>
+<summary>Show the table (38 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -328,11 +332,13 @@ Default splits.
 | Num_CRX3 | 1055 | 0.0293839 | 0.217997 | 0 | 3 |
 | Weighted_Normalized_SpectralPositiveSum_Burden_Matrix | 1055 | 1.23873 | 0.0964657 | 0.863 | 1.641 |
 | Num_Circuits | 1055 | 1.40569 | 4.78854 | 0 | 147 |
+| N073_chemical_substructure | 1055 | 0.0312796 | 0.199544 | 0 | 3 |
 | Adjacency_LeadingEigenvalue | 1055 | 2.21564 | 0.226131 | 1 | 2.859 |
 | Intrinsic_State_Pseudoconnectivity | 1055 | -0.00120569 | 0.158928 | -1.099 | 1.073 |
 | Sum_dO_EStates | 1055 | 8.78051 | 11.8959 | 0 | 71.167 |
 | Laplace_MoharIndex2 | 1055 | 2.66834 | 2.09661 | 0.444 | 17.537 |
 | Num_RingTertiaryC | 1055 | 0.129858 | 0.644057 | 0 | 8 |
+| C026_chemical_substructure | 1055 | 0.883412 | 1.52047 | 0 | 12 |
 | Freq_CN_At_Dist2 | 1055 | 1.27488 | 2.27399 | 0 | 18 |
 | Num_HBond_Donors_Atoms | 1055 | 0.961137 | 1.25701 | 0 | 7 |
 | Weighted_LeadingEigenvalue_Burden_Matrix | 1055 | 3.91824 | 0.999602 | 2.267 | 10.695 |
@@ -346,30 +352,16 @@ Default splits.
 
 ### Categorical features
 
-<details>
-<summary>Show the table (17 rows)</summary>
-
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | Biodegradable | 1 | No | 699 | 66.26 |
 | Biodegradable | 2 | Yes | 356 | 33.74 |
-| C026_chemical_substructure | 1 | 0 | 658 | 62.37 |
-| C026_chemical_substructure | 2 | 1 | 138 | 13.08 |
-| C026_chemical_substructure | 3 | 2 | 133 | 12.61 |
-| C026_chemical_substructure | 4 | 3 | 56 | 5.31 |
-| C026_chemical_substructure | 5 | 4 | 39 | 3.7 |
-| N073_chemical_substructure | 1 | 0 | 1026 | 97.25 |
-| N073_chemical_substructure | 2 | 1 | 26 | 2.46 |
-| N073_chemical_substructure | 3 | 2 | 2 | 0.19 |
-| N073_chemical_substructure | 4 | 3 | 1 | 0.09 |
 | Presence_CBr_At_Dist1 | 1 | 0 | 1013 | 96.02 |
 | Presence_CBr_At_Dist1 | 2 | 1 | 42 | 3.98 |
 | Presence_CBr_At_Dist4 | 1 | 0 | 1027 | 97.35 |
 | Presence_CBr_At_Dist4 | 2 | 1 | 28 | 2.65 |
 | Presence_CCl_At_Dist3 | 1 | 0 | 899 | 85.21 |
 | Presence_CCl_At_Dist3 | 2 | 1 | 156 | 14.79 |
-
-</details>
 
 ## Build
 
@@ -382,4 +374,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c00c73bdb008e7433c54d82339d617777ca2d815bf088106359fae21ddd62dac` |
+| stale | yes: the definition now gives checksum `v2:d2d677d14d439374b9a0bf7e2eea724bb82cac913c6d43e6f84580084006fb87` |

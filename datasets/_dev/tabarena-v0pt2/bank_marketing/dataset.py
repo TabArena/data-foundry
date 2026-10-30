@@ -63,6 +63,9 @@ class BankMarketing(AbstractCuratedDataset):
     curation_comments = """
         - We removed the "duration" feature following its original description to obtain a "realistic predictive model".
         - We further remove the "month" and "day_of_week" features, as they also relate to the last contact -- which is not available in a real-world scenario.
+        - `campaign` and `previous` are counts of contacts (UCI: "number of contacts performed during this campaign",
+          "... before this campaign"), so they stay numeric. The BeyondArena notebook typed them categorical (48 and
+          41 levels), which lost the order and left the high counts as rare levels (issue #34).
     """
 
     # Task
@@ -116,8 +119,6 @@ class BankMarketing(AbstractCuratedDataset):
                 "housing",
                 "loan",
                 "contact",
-                "campaign",
-                "previous",
                 "poutcome",
             ],
         )

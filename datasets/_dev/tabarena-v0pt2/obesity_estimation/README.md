@@ -138,7 +138,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `rmse` (standard; takes value; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | sqrt(mean((y - p)^2)) |
 | reason | The source is a data descriptor for a 7-class obesity-level task with no defined evaluation metric, and we changed the task to BMI regression (weight and height dropped), so no source metric applies. |
 

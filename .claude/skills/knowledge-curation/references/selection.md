@@ -56,7 +56,7 @@ used for ML. Marker: `Ethical Issue`. Cases: the Pima Indian Diabetes Dataset.
 **SEL-2 (Must).** The rule stands in for the real-world use: when a rule seems to exclude a dataset, check how the
 prediction is made in practice, and let the use case decide (Lennart, 2026-10-15). Every scope rule below is read this
 way; it is how the use case (P3, [use_case.md](use_case.md)) informs the scope. Cases: breast_cancer_prediction,
-heart_disease_cleveland (SEL-14).
+heart_disease (SEL-14).
 
 ### A predictive task
 
@@ -79,8 +79,9 @@ after each row, supports only a look back at which rows drew the outcome. Marker
 `No Good Target / Scientific Discovery`. Cases: analcatdata_supreme (Lennart, 2026-10-14).
 
 **SEL-7 (Must; narrows SEL-3).** A label the respondent already knows, asked in the same interview as the features (a
-past diagnosis), is predicted by nobody. A screening task needs positives that do not know yet, found by an
-independent measurement such as a lab test. Cases: cdc_diabetes_health_indicators (Lennart, 2026-10-15).
+past diagnosis), is predicted by nobody. A screening task needs positives that do not know yet, found by an independent
+measurement such as a lab test. Cases: cdc_diabetes_health_indicators (Lennart, 2026-10-15), stroke_prediction (an
+undated stroke the patient already had; 2026-10-26).
 
 ### The original task
 
@@ -118,7 +119,7 @@ Cases: the lists under Patterns, "Non-tabular modality".
 
 **SEL-14 (Must; narrows SEL-13, applies SEL-2).** Readings that real tabular models take as inputs stay in scope: when
 the human reading is the established clinical or operational result that tabular models are used on in practice, the
-task is tabular. Cases: breast_cancer_prediction, heart_disease_cleveland; breast_w stays out.
+task is tabular. Cases: breast_cancer_prediction, heart_disease; breast_w stays out.
 
 **SEL-15 (Must; amended 2026-10-21, Lennart, on infrared_thermography_temperature).** Attributes measured on the
 entity directly (lab values, sensor readings, questionnaire answers, transaction fields) are tabular. A physical
@@ -217,7 +218,7 @@ One more layer of abstraction is still image-derived (SEL-13):
 * `breast_w`'s 1-10 cytology grades are a pathologist's scoring of cell morphology under a microscope: `No`.
 * The exception (SEL-14, applying SEL-2): the BI-RADS assessment and density of a screening mammogram, which risk
   models such as the BCSC Risk Calculator combine with risk factors (`breast_cancer_prediction`), or the thallium-scan
-  result of `heart_disease_cleveland`, stay in scope. `breast_w` stays out because its grades describe the slide for a
+  result of `heart_disease`, stay in scope. `breast_w` stays out because its grades describe the slide for a
   call pathology makes from the image itself.
 
 Measured attributes and signals (SEL-15): `wbcatt` (expert-annotated white-blood-cell morphology) sits on the
@@ -249,13 +250,37 @@ class is no evidence in either direction ([evidence.md](evidence.md), EV-5; Lenn
 with ROC AUC or log loss against the class prior, and fit a quick gradient-boosting model on the features known at
 prediction time when the data loads (`us_accidents`: its published "78% accuracy" settled nothing).
 
-### Small or dated, and the task is still done today
+### Selection bias
 
-Before settling the verdict, look for a larger or newer public source of the same task: same target and use case,
-features of the same kind (the deep pass of `/screen-candidates`, "Better data for the same task"). A hit becomes its
-own record, not a `Duplicate`. The old record is not rejected automatically: it gets a pointer comment and the tag
-`Better Data Available`, which keeps it in the review queue until a curator decides its verdict and removes the tag
-(`body_density_prediction` → `nhanes_dxa_body_fat`).
+When the rows are not drawn from the population the use case predicts for, a class looks different than it would
+there: cases and controls collected apart or in different periods (`hepatitis_c_prediction`, `website_phishing`), only
+typical or confirmed cases (`sarcoma`; `superconductivity` holds only superconductors), a teaching or volunteer
+collection (`audiology_diagnosis`, `obesity_estimation`), or objects picked for measurement when the use case predicts
+for the objects that were not picked (`sdss_17`: picked by colour for a spectrum, classified without one). Mark it
+`Selection Bias`; the verdict is usually still `Yes` (Andrej, 2026-10-20). It is a concern flag: name the gap in the
+definition's `fit_reason`, give the evidence in the record (the class mix, or a feature against a reference series),
+and judge the model comparison on the data, not on the marker. The marker does not by itself make the fit
+approximate: the fit is direct when the real-world setting of the use case has the same bias, and approximate when it
+does not (USE-8 in [use_case.md](use_case.md)). The marker stays either way, since it says something special about the
+data (Lennart, 2026-10-27). `eryhemato_squamous_disease` is the example: 93% of its lichen planus patients have mouth
+lesions and no other patient does, against 19% to 63% in clinic series; kept, with an approximate fit.
+
+No marker when:
+
+* the selection is how the label comes to exist, so every dataset of the task has it (only granted loans have a
+  repayment outcome, Andrej 2026-10-15; only patients referred for angiography have its result,
+  `heart_disease`);
+* one class was oversampled from the same population, which changes only the class shares (`credit_g`,
+  `churn_telco_south_asia`);
+* tested compounds stand for the candidates a screen would test (the QSAR sets): how far a new candidate lies from the
+  tested ones is a question for the split;
+* the rows come from another population altogether (`pancreatic_cancer_mouse_detection`: mice of one lab for
+  patients), a question of the use-case fit.
+
+`Not Representative` is a different flag: the task or its setup is not the real application (features practitioners no
+longer use, a prediction no decision rests on). A record carries both when both hold (`audiology_diagnosis`). The
+clause on objects picked for measurement and the cases without a marker were added on the review of PR #16 (Lennart,
+2026-10-27).
 
 ### Leakage and irreversible damage
 
@@ -273,6 +298,30 @@ it as LEAK-30 in [leak_checks.md](leak_checks.md) says (coad_colon_adenocarcinom
 An ethical concern (sensitive use, creators who ask that the data not be used for ML) is `Ethical Issue`, `No`
 (SEL-1). A licence or redistribution restriction is no reason and no marker: note it (what the terms are and where
 they are stated) and triage the data on its merits ([evidence.md](evidence.md), EV-4).
+
+### Anonymized data
+
+When the source hid what the features are, by replacing their names or values on purpose, we cannot check what a
+column measures, whether it is known at the prediction point, or rule out a leak: symbols (`credit_approval`: Quinlan
+replaced all names and values), `var_<n>` (the Santander competitions), coded sensor names (`aps_failure`), unnamed
+descriptors (`bioresponse`, `hiva_agnostic`). Mark the record `Anonymized`, set `data_tags = ("Anonymized",)` in its
+definition ([definitions.md](../../knowledge-data-foundry/references/definitions.md)), and say in a comment what
+could not be determined; the marker and the tag go together (Andrej, 2026-10-20). The marker flags what the data
+cannot tell us, not a defect: it is no reason for `No` by itself, and the verdict comes from what can be checked (the
+source, the task, the probes; masked fields that may be post-outcome are LEAK-32 and LEAK-38 in
+[leak_checks.md](leak_checks.md)).
+
+No marker when:
+
+* the source documents the codes: decode them (CLEAN-12 in [cleaning_features.md](cleaning_features.md));
+* only ids were replaced while the features keep their meaning (a patient, customer or molecule id);
+* every column is described and only the values of some categories are codes (`amazon_employee_access`: role and
+  department ids; `home_credit_default_stability`: district, employer or contract status as masked codes, each column
+  defined in the competition's `feature_definitions.csv`);
+* the features are numbered measurements of a documented kind (`musk`: distances along rays; spectrum bins;
+  fingerprint bits such as `ecfp_<n>`).
+
+The cases without a marker were added on the review of PR #17 (Lennart, 2026-10-27).
 
 ### Clear cases
 
@@ -331,7 +380,7 @@ Records are sparse on purpose; a missing field is usually fine.
 
 ### Decision markers
 
-The 23 decision markers of the vocabulary, spelled as there. "None" means no rule of the curation files leads to the
+The 25 decision markers of the vocabulary, spelled as there. "None" means no rule of the curation files leads to the
 marker; its meaning comes from its name and how records use it, and the comments say why a record carries it. A state
 marker records where a record stands, not an issue of the data.
 
@@ -354,7 +403,10 @@ marker records where a record stands, not an issue of the data.
 | `Out-of-scope Task (CTR/RecSys/Ranking)` | a recommendation, ranking, click-through-rate or information-retrieval task | SEL-9 (SEL-8) |
 | `Ethical Issue` | an ethical concern, such as subjects or creators who object to ML use | SEL-1 |
 | `Too Small` | a handful of units of a class per test fold and in total | TP-5 (TP-8 for a short class, TP-9 for the windows of a temporal task) |
-| `Not Representative` | the data or its setup does not represent the real application (a selective sample, features practitioners no longer use for the task) | none |
+| `Not Representative` | the task or its setup does not represent the real application (features practitioners no longer use for the task, a prediction no decision rests on); a selective sample is `Selection Bias` | none |
+| `Selection Bias` | the rows are not drawn from the population the use case predicts for (cases and controls collected apart, only typical or confirmed cases, a volunteer or teaching collection, objects picked for measurement when the use case predicts for the others); a concern flag, usually on `Yes` records | none (Patterns, "Selection bias") |
+| `Anonymized` | feature names or values replaced on purpose (symbols, `var_<n>`, hashed codes), so what a column measures, its timing and leaks cannot be checked; a concern flag, no exclusion reason; goes with the definition's `Anonymized` data tag | none (Patterns, "Anonymized data") |
+| `Class-dependent Recording` | the classes were measured, formatted or filled differently, so the recording can give the label away; on kept datasets once fixed, as on retired ones | LEAK-13 to LEAK-15, LEAK-39, LEAK-40 ([leak_checks.md](leak_checks.md)) |
 | `Not Available (from Paper))` | a paper's data that is not public and cannot be obtained | none |
 | `Data Requested` | state marker: the data or its source was requested from the authors or owners, and the answer is pending | none |
 | `Time-series (Regression)` | regression on a stream of readings (hourly or per-minute measurements), between a temporal task and forecasting | none (SEL-10 and SEL-11 decide which; SPLIT-7 in [splits.md](splits.md) when no timestamp survived) |
@@ -373,9 +425,10 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SEL-5 | central_international_medical_college_and_hospital_health_risk_prediction | the label is NEWS2, and its inputs are the whole task: `Trivial` | applied |
 | SEL-6 | analcatdata_supreme | Congress's responses in 1979-1988 to Supreme Court rulings of 1953-1988, counted over one shared window: `No Good Target / Scientific Discovery` (2026-10-14, Lennart) | applied |
 | SEL-7 | cdc_diabetes_health_indicators | "ever told you have diabetes", told a median of 10 years earlier, with the undiagnosed in the negative class (2026-10-15, Lennart) | applied |
+| SEL-7 | stroke_prediction | a stroke the patient already had, undated, in a hackathon release rather than an interview: retired as cdc_diabetes_health_indicators, since no decision is made with it (a screening task would need a first stroke within a horizon, from dated records); with `Data Quality Issue` for the columns that look generated; SEL-7 not amended (2026-10-26, Lennart: "This looks too bad, dont ship it") | applied |
 | SEL-8, SEL-9 | yearprediction_the_million_song_dataset | the Million Song Dataset Challenge, a song-recommendation task, though OpenML 4352 serves it as a regression; the regression re-framings are duplicates | applied |
 | SEL-13 | internet_advertisements, breast_w | image descriptors with a few non-visual columns, and a pathologist's grades of a slide: `No` | applied |
-| SEL-14 (SEL-2) | breast_cancer_prediction, heart_disease_cleveland | the BI-RADS assessment and density, and the thallium-scan result, stay inputs: tabular models use them in practice | applied |
+| SEL-14 (SEL-2) | breast_cancer_prediction, heart_disease | the BI-RADS assessment and density, and the thallium-scan result, stay inputs: tabular models use them in practice | applied |
 | SEL-15 | wbcatt | expert-annotated white-blood-cell morphology, on the `breast_w` boundary: kept only provisionally | applied |
 | SEL-15 | infrared_thermography_temperature | blackbody-compensated facial temperatures at named sites, read through a thermal camera used as a thermometer, the target the same quantity by mouth: kept as a measurement, not an image descriptor; the counter-cases satimage and wilt hold values that recognise image content (SEL-13) (2026-10-21, Lennart) | applied |
 | SEL-16 | Higgs, sonar | simulated physics with its own benchmarks; an outdated handcrafted toy experiment: out | applied |

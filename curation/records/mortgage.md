@@ -4,8 +4,7 @@ name: Mortgage
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 4
 tags:
@@ -51,6 +50,8 @@ CC (2026-10-22, Lennart): issue 13: (b), keep the payoff copy of the 7 doubled p
 **Exception to LEAK-20 (2026-10-22, Lennart):** for 7 loans period 51 is doubled with only the status differing (active and payoff); the payoff copy is kept instead of dropping both, because all 7 loans end at period 51, so the active copy is damage to the file (PROV-13), not an ambiguous label. Serves P5 (faithful data: the file repaired toward what was recorded).
 
 **Assessment (AI, 2026-10-22):** issue 15 applied: the 38 source balances that put the source's LTV above 300% become missing before lagging, so no `LTV_time_lag_1` above 300% is left (highest 261.4%). Issue 13 as implemented, with the exception recorded. REVIEW.md removed (nothing left open). Not built yet.
+
+CC (2026-10-26, Lennart): verdict ship.
 
 ## Reference
 

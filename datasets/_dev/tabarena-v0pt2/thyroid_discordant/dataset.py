@@ -33,8 +33,7 @@ class ThyroidDiscordant(AbstractCuratedDataset):
         fit="approximate",
         fit_reason=(
             "The label is an undefined reading of these same test results, so the model reproduces that reading "
-            "rather than predicting an outcome, which serves only to automate it. The data are from the 1980s and the"
-            " curators found the task close to trivial."
+            "rather than predicting an outcome, which serves only to automate it. The data are from the 1980s."
         ),
     )
 

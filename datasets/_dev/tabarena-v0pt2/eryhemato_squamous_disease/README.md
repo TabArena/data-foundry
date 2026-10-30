@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: eryhemato_squamous_disease
 container_format: 2
-checksum: v2:b09aa596fb37c068550911b156d42a2e2763dd7ed20c1ded98737dafd8c4390a
+checksum: v2:1c55eb681d7ed3df7915a1b8d55fd1e48bf0eabc740dbe34c39aad5c340e9c2b
 build:
   uuid: 01a111fc-a1c3-79c0-8d48-48221a6702fe
   checksum: v2:aba9d540c391f2a14f0cf06bd994fff1205b5549b7de973316d943823e12ad15
@@ -68,7 +68,7 @@ decisions: []
 
 Multiclass classification of `class`, scored with `log_loss` on IID splits. 366 rows and 12 features. Source: UCI (1998).
 
-Built as `01a111fc-a1c3-79c0-8d48-48221a6702fe` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b09aa596fb37c068550911b156d42a2e2763dd7ed20c1ded98737dafd8c4390a`, so the build is stale. See [Build](#build).
+Built as `01a111fc-a1c3-79c0-8d48-48221a6702fe` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1c55eb681d7ed3df7915a1b8d55fd1e48bf0eabc740dbe34c39aad5c340e9c2b`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -86,7 +86,7 @@ Built as `01a111fc-a1c3-79c0-8d48-48221a6702fe` on 2026-10-06, but `dataset.py` 
 
 **Our changes to the source.** We drop the 22 findings from the biopsy and keep the clinical examination; with the biopsy the task is close to solved.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The clinical findings come before the biopsy and the label is the confirmed diagnosis, so the task is the differential the source describes. It is small and old.
+> **Use case fit: approximate (a stand-in with a known gap).** The clinical findings come before the biopsy and the label is the confirmed diagnosis, so the task is the differential the source describes. But the patients look like typical cases rather than a clinic's: 93% of those with lichen planus have mouth lesions and no other patient does, against 19% to 63% in clinic series. It is small and old.
 
 ## Files in this folder
 
@@ -141,7 +141,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `log_loss` (standard; takes proba; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | mean of -log p(true class) |
 | reason | Guevenir et al. 1998 report cross-validated accuracy of VFI5, without costs between the six diagnoses; we use the 12 clinical features only. Original rejected: accuracy. log_loss is the multiclass fallback. |
 
@@ -382,4 +382,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:b09aa596fb37c068550911b156d42a2e2763dd7ed20c1ded98737dafd8c4390a` |
+| stale | yes: the definition now gives checksum `v2:1c55eb681d7ed3df7915a1b8d55fd1e48bf0eabc740dbe34c39aad5c340e9c2b` |

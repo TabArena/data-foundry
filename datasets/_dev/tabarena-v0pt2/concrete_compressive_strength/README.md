@@ -150,7 +150,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `rmse` (standard; takes value; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | sqrt(mean((y - p)^2)) |
 | reason | Yeh 1998 (closed access) is cited for R^2 of predicted vs measured strength (about 0.91-0.92 for the ANN) by secondary sources; not read, and R^2 ranks models as RMSE does within a fold. rmse is the regression fallback. |
 

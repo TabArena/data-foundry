@@ -86,7 +86,7 @@ record that already has a verdict gets an `**Assessment (AI)**` instead.
 | `suggestion` | The verdict; the one required field. |
 | `priority` | 1-5: how urgently a curator should act on the record at its stage (5 first): verify the screening and send it to `/add-dataset`, then review what `/add-dataset` added. Set by `/screen-candidates`, set again by `/add-dataset` from what it measured, changed by the curator; none on a rejected record. The factors are in [selection.md](../../knowledge-curation/references/selection.md), "Priority". |
 | `decision_markers` | Issue flags (`Duplicate`, `Trivial`, `Image`, `Too Small`, `Data Quality Issue`, ...); a clean dataset has none. |
-| `tags` | Priority and shape tags (`New IID`, `Non-IID (Temporal)`, `Non-IID (Grouped)`, `Tiny Data`, `Many features`, `Multi-target`, `Better Data Available`). Remove a tag that does not apply. |
+| `tags` | Priority and shape tags (`New IID`, `Non-IID (Temporal)`, `Non-IID (Grouped)`, `Tiny Data`, `Many features`, `Multi-target`). Remove a tag that does not apply. |
 | `collections` | External benchmarks the dataset appears in (TabSTAR, CARTE/TARTE, TabRed, TableShift, ...), never our own. |
 | `original_source` | Where the data was first published ([provenance.md](../../knowledge-curation/references/provenance.md)): `OpenML`, `UCI`, `Kaggle`, `Zindi`, `GOV Website`, `Github`, `Company`, `Website`, `Other`, `?`. This is the record's vocabulary; the definition's `source` uses the schema's values (`GitHub`, `HuggingFace`, `Customer`, `ASlib`, ...), and `dataset new` maps one to the other. |
 | `year` | The year the data was first published (free text: `2014`, `? (2014)`). |
@@ -139,9 +139,8 @@ from the board.
 
 `needs_review` is derived, never set by hand: `CurationRecord.review_reasons()` recomputes it on every save. Today it
 holds `suggestion` (no verdict), a dropdown value outside the vocabulary, `ai_unverified`, `ship_conflict`,
-`wip_unclaimed`, `claim_without_wip` and `better_data_review` (tagged `Better Data Available`: a larger or newer
-dataset for the same task has its own record, and a curator must decide whether this one's verdict holds). A new
-automated check goes into `review_reasons()` with a matching assertion in `tests/test_records_integrity.py`.
+`wip_unclaimed` and `claim_without_wip`. A new automated check goes into `review_reasons()` with a matching assertion
+in `tests/test_records_integrity.py`.
 
 ## The definition pointers (`v2_path`, `notebook_path`)
 

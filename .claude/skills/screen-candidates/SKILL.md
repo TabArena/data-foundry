@@ -76,16 +76,6 @@ load-bearing sentence by section, read the Kaggle discussions and notebooks with
 siblings' decisions and follow their precedent, and download the data when one fact decides the verdict (a
 duplicate by rows, a deterministic target). Say which checks were skipped.
 
-**Better data for the same task** (deep pass). When the record is small, dated or narrow (`Tiny Data`, `Too Small`,
-`Outdated`, `Not Representative`, or a classic UCI/StatLib-era set), search for a larger or newer public dataset with
-the same target and use case, and features of the same kind known at prediction time. The features need not match
-column for column. Government surveys, registries and newer studies are the usual places. For a hit, load it and
-report its size after cleaning and a quick baseline. Add it as its own record (a different source is not a
-`Duplicate`). On the old record, add a comment naming the new record in backticks and the tag
-`Better Data Available`, which puts it in the review queue (`better_data_review`). Do not change its verdict: the
-curator decides whether it still holds, then removes the tag. Precedent: `body_density_prediction` (252 men, 1985) →
-`nhanes_dxa_body_fat` (21,768 people, DXA percent fat).
-
 ## Step 4: Fast reject, or not
 
 Walk the Must rules of parts 1, 2 and 5 that the context can decide: ethics, scope (non-tabular, generated or

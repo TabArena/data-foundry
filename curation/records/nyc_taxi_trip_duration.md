@@ -4,8 +4,7 @@ name: NYC Taxi Trip Duration
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -80,6 +79,12 @@ CC (2026-10-21, Lennart): ok on creating the _1m version (`nyc_taxi_trip_duratio
 
 **Assessment (AI, 2026-10-21):** metric now `Metric.source("rmsle", target_transform="log1p")` instead of rmse on the log1p target: the competition's RMSLE on the trip duration in seconds, computed after the inverse of the shipped log1p (MET-3); the score is the same number as before. Needs a rebuild to reach the container.
 
+CC (2026-10-21, Lennart): the datetime encoding of v0.2 (the cross-dataset item from this review): nothing to change while the v0.2 runs encode datetimes with the hour ("we will always run with datetime encoding in v0.2, most likely some evolution of tabarena_default"); the definition adds no hour column (CLEAN-2). This closes the second open point of the assessment of 2026-10-20.
+
 CC (2026-10-22, Lennart): verdict ship. Record field `domain` takes the definition's value (industry & manufacturing).
 
 **Assessment (AI, 2026-10-22):** ships as `nyc_taxi_trip_duration_1m`; REVIEW.md removed (nothing left open). Not built yet.
+
+CC (2026-10-26, Lennart): reopened from pkdd_15_taxi_trip_time_prediction_ii issue 2, option (c): trips whose drop-off lies within 100 m of the pickup are dropped, as in pkdd ("we just forgot to check for this for nyc"; USE-7: nobody names a destination that close). This supersedes the review panel's keep of the near-start trips at other coordinates (Assessment 2026-10-20, CLEAN-11).
+
+**Assessment (AI, 2026-10-26):** applied in dataset.py: `MIN_STRAIGHT_LINE_KM = 0.1` replaces the identical-coordinate rule. Besides the 4,539 trips at identical coordinates, about 4,500 more leave (of the trips of 30 s to 3 h before the box filter: 1,082 within 10 m, median 69 s; 3,436 at 10-100 m, median 230 s). The sampled frame has 1,165,967 rows (1,166,477 before). dataset check: 0 errors, 0 warnings. Not built, so nothing published changes.

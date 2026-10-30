@@ -139,7 +139,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
 | reason | Spira et al. 2007 report accuracy with sensitivity and specificity of the 80-gene predictor (83/80/84%); the clinical claim rests on sensitivity and NPV, no single metric or threshold. roc_auc is the binary fallback. |
 

@@ -44,24 +44,29 @@ K=.claude/skills/knowledge-data-foundry/scripts
 .venv/bin/python $K/group_probes.py <unique_name> [--repeats 3] [--permutations 100]
 .venv/bin/python $K/hidden_groups.py <unique_name> [--built] [--include-grouped] [--out DIR]     # or --all
 .venv/bin/python $K/generated_probes.py <unique_name> [--built] [--out DIR]                     # or --all
+.venv/bin/python $K/dtype_probes.py <unique_name> [--codebook URL] [--no-fetch] [--out DIR]    # or --all --jobs 4
 .venv/bin/python $K/tuned_results.py <unique_name> [--feature auto]
 ```
 
-* `leak_probes.py`: probes 1-6 and 14 of the leak table (all features, each feature alone, missing indicators, drop
-  one, exact copies across the split with and without string and datetime columns, each long string column alone as
+* `leak_probes.py`: probes 1-6, 14, 17 and 18 of the leak table (all features, each feature alone, missing indicators,
+  drop one, exact copies across the split with and without string and datetime columns, each long string column alone as
   text (TF-IDF + SVD on the train side, character n-grams for one-token strings), nearest-neighbour agreement and the
   label-free distance score, a depth-2 and depth-3 tree on the label), with untuned LightGBM on the first shipped
   splits. With more columns than `--max-single-features` only the most informative enter the single-feature fits, and
   the output says how many were screened out, so a 49,000-column omics table takes minutes. A multiclass ROC AUC is the
-  mean over the classes present in the test fold. Group columns are never features.
+  mean over the classes present in the test fold. Group columns are never features. For a classification task it also
+  scores the number format alone (probe 17), and, when the raw file is one table holding the target column, counts per
+  column and class the cells on a straight line between their neighbours in the raw file's order (probe 18: gaps filled
+  by interpolation).
 * `task_probes.py`: dummy baselines against three untuned model families (a fourth on more than 1,000 inputs:
-  `selected_linear`, the linear model on the 500 inputs a univariate F-test picks on each train side), on every
-  shipped split up to 30 for a dataset of at most 5,000 scored units and the first 5 otherwise, scored per group for a
+  `selected_linear`, the linear model on the 500 inputs a univariate F-test picks on each train side), on every shipped
+  split up to 30 for a dataset of at most 5,000 scored units and the first 5 otherwise, scored per group for a
   group-unit task with `mean`, `any` or `last`; the best single feature chosen per split; the flags `no_signal`,
   `solved`, `no_spread`, `one_feature`, `drift_baseline`, `unstable`, `few_minority`. Each train and test side is capped
-  at `--max-rows` (default 200,000): a temporal task's train side keeps its newest rows, any other side random rows;
-  the dummy uses the whole train side. With `--out` it writes one JSON per dataset (per-split skill and dummy loss
-  included) and `summary.md`.
+  at `--max-rows` (default 200,000): a temporal task's train side keeps its newest rows, any other side random rows; the
+  dummy uses the whole train side. Raise the cap when a dataset needs it and compute allows (Lennart, 2026-10-21: "feel
+  free to raise the row cap maybe as needed and as we have compute"). With `--out` it writes one JSON per dataset
+  (per-split skill and dummy loss included) and `summary.md`.
 * `group_probes.py`, for a grouped task: the IID against grouped gap, several model families scored per group, and a
   permutation test across groups.
 * `hidden_groups.py`, for an IID task: entity-like columns (categorical, text and numeric, floats included), composite
@@ -71,6 +76,16 @@ K=.claude/skills/knowledge-data-foundry/scripts
   evidence either way, not 0%.
 * `generated_probes.py`: the four marks of generated data (`formula`, `rule_leaves`, `independent_columns`,
   `uniform_within_class`).
+* `dtype_probes.py`: is each column typed by its meaning (CLEAN-14), on the frame the split step leaves. It reads the
+  source's codebook from the definition's first UCI or OpenML link (types and descriptions, matched by column name) and
+  flags, strongest first: a categorical column the codebook or the name calls a count or an amount (`quantity_words`),
+  one of numbers the codebook types as numeric (`codebook_numeric`), a numeric column the codebook types as categorical
+  (`codebook_categorical`), a categorical column whose levels look like a count (`count_like`: 0 or 1 upwards, the first
+  ten all there, rarer as they grow), a numeric column named as a code (`code_name`), and any other categorical column
+  of numbers (`numeric_levels`, mostly codes). The few levels that are no number in a column of numbers are listed:
+  often proxy missing codes (`.b`, `-3`) that made a count categorical (CLEAN-10). UCI types coded answers as `Integer`
+  too, and names often differ from the codebook's (the output says how many matched): read the codebook where they do. A
+  flag is a question; the meaning decides.
 * `tuned_results.py`: the per-fold BeyondArena results of tuned and default methods cached under
   `~/.cache/tabarena/artifacts/` (`methods/<method>/results/hpo_results.parquet`), set against a dummy on the same
   splits of the shipped container; `--feature auto` adds the raw-feature test of TP-4. The runs used the shipped

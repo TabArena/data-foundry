@@ -29,7 +29,6 @@ from data_foundry.curation.app import (
 )
 from data_foundry.curation.notebooks import resolve_notebook, sync_notebook_paths
 from data_foundry.curation.record import (
-    BETTER_DATA_TAG,
     FIELDS,
     CurationRecord,
     load_vocabularies,
@@ -199,13 +198,6 @@ def test_a_wip_state_and_its_claim_go_together() -> None:
     assert claimed.review_reasons(vocab) == []
     assert unclaimed.review_reasons(vocab) == ["wip_unclaimed"]
     assert left_behind.review_reasons(vocab) == ["claim_without_wip"]
-
-
-def test_better_data_tag_puts_the_record_in_review() -> None:
-    """A record flagged with a better dataset for its task waits in the Review queue until the tag is removed."""
-    vocab = {"suggestion": ["Yes"], "tags": [BETTER_DATA_TAG]}
-    assert _record("a", suggestion="Yes", tags=[BETTER_DATA_TAG]).review_reasons(vocab) == ["better_data_review"]
-    assert _record("b", suggestion="Yes").review_reasons(vocab) == []
 
 
 def test_claimed_by_sits_next_to_the_wip_state_in_the_front_matter() -> None:

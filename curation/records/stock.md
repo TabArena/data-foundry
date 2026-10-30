@@ -27,6 +27,8 @@ CC: "Regression. Not a meaningful prediction task, rather interpretability as th
 
 Data is stock per company and you want to predict the stock of one company from the others at time point t (which you could just read off the internet at that point). Clearly a forecasting task with 10 forecasting time series.
 
+CC (2026-10-22, Lennart): stays retired as `No` + `Time-series (Forecasting)` under TP-10 as amended on 2026-10-22 (leg 1 by the declared metric, trailing summaries allowed): "we know from the context and data state that these are indeed forecasting tasks"; no re-check.
+
 ## Reference
 
 StatLib; Luis Torgo
