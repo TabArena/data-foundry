@@ -4,6 +4,15 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-30, `bank_marketing`: `campaign` and `previous` numeric again (issue #34)
+
+- `campaign` (contacts in this campaign, 1-63) and `previous` (contacts before it, 0-275) are counts, as the UCI
+  description gives them, and leave `categorical` in `_feature_types` (CLEAN-14: a count stays numeric). The BeyondArena
+  notebook had typed them categorical (48 and 41 levels), and the migration to v2 carried that over; TabArena v0.1 had
+  them numeric. Raised by Adrian in issue #34; Lennart's decision is a CC line in the record and a CLEAN-14 Cases row.
+- `dataset check`: no new findings; the README now lists both as int64. Not built: the container
+  `01a111fc-7c2d-7441-b859-646c9bfbf380` still has them as categories until the next build.
+
 ## 2026-10-27, `heart_disease`: the curator's marks; the paper read in full (PR #20)
 
 - Lennart's marks on `heart_disease/REVIEW.md`, all applied; no mark needed a consistency prompt, and the file is
