@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: early_learning_predictors
 container_format: 2
-checksum: v2:9046045578d9b918961ef633f2c1df18c064b8a0308a10007b17584ebc0c194d
+checksum: v2:fc8aff87c3c76cb45cd2e097f88b91c1a0b1663d15039d8d223803ab22d20ac1
 build:
   uuid: 01a111fc-59b5-7e83-8468-0ee2628e95b3
   checksum: v2:ec3dfb429e7c17335aa5683a85458b99e78d373664de2bf4a319f46a2ea15237
@@ -20,11 +20,11 @@ build:
 build_stale: true
 data:
   n_rows: 18874
-  n_features: 743
+  n_features: 742
   dtypes:
     category: 469
     datetime64[ns]: 1
-    float64: 275
+    float64: 274
   n_test_dataset_rows: null
 task:
   target: child_total_elom
@@ -76,9 +76,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `child_total_elom`, scored with `rmse` on grouped splits by `id_facility`. 18,874 rows and 743 features. Source: Other (2024).
+Regression of `child_total_elom`, scored with `rmse` on grouped splits by `id_facility`. 18,874 rows and 742 features. Source: Other (2024).
 
-Built as `01a111fc-59b5-7e83-8468-0ee2628e95b3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9046045578d9b918961ef633f2c1df18c064b8a0308a10007b17584ebc0c194d`, so the build is stale. See [Build](#build).
+Built as `01a111fc-59b5-7e83-8468-0ee2628e95b3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:fc8aff87c3c76cb45cd2e097f88b91c1a0b1663d15039d8d223803ab22d20ac1`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -90,13 +90,13 @@ Built as `01a111fc-59b5-7e83-8468-0ee2628e95b3` on 2026-10-06, but `dataset.py` 
 
 **Predicted.** The child's total score on the Early Learning Outcomes Measure: 23 items over five areas (gross and fine motor development, numeracy, cognition and executive function, literacy and language).
 
-**Known at prediction time.** 743 features: the child's age, sex, birth date, grant, stunting, languages and years in the programme; the facility's registration, staff, building, equipment and observed practice; teacher and parent questionnaires; and the person who did the assessment. Many are missing for whole survey rounds.
+**Known at prediction time.** 742 features: the child's age, sex, birth date, grant, stunting, languages and years in the programme; the facility's registration, staff, building, equipment and observed practice; teacher and parent questionnaires. Many are missing for whole survey rounds.
 
 **What the test data stands for.** Whole facilities are held out, so the test data stands for facilities never surveyed; the source's competition split children at random.
 
-**Our changes to the source.** We drop the parts and other versions of the score, another child assessment, the home-learning survey (mostly missing) and the survey year, and split by facility.
+**Our changes to the source.** We drop the parts and other versions of the score, another child assessment, the home-learning survey (mostly missing), the survey year, the assessor's id and the timers of the data collection, and split by facility.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The source's question is explanatory. As a forecast, some surveys were made after the assessment, the assessor is kept as a feature though known only at the assessment, and the rows mix survey rounds with different questions.
+> **Use case fit: approximate (a stand-in with a known gap).** The source's question is explanatory. As a forecast, some surveys were made after the assessment, and the rows mix survey rounds with different questions.
 
 ## Files in this folder
 
@@ -144,7 +144,7 @@ Only curators run `build`, when the dataset ships.
 | license | Creative Commons CC-BY (Attribution-only) License |
 | data_tags | Non-IID, Grouped |
 | reference | DataDrive2030_2024_elom_thrivebyfive |
-| rows x columns | 18,874 x 745 |
+| rows x columns | 18,874 x 744 |
 | task.target | child_total_elom |
 | task.problem_type | regression |
 | task.metric | rmse |
@@ -192,15 +192,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffled); 12 of 745 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffled); 12 of 744 columns, the target first. Cells are cut at 40 characters.
 
 | child_total_elom | child_dob | child_gender | child_age | child_age_group | child_attendance | child_attends | child_grant | child_has_sibling | child_height | child_zha | child_stunted |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 32.82 | 2017-02-08 00:00:00 | Female | 56 | 50-59 Months | nan | nan | nan | nan | 111.7 | 0.958869 | Normal HAZ |
-| 69.73 | NaT | Male | 66.5902 | 60-69 Months | nan | nan | Yes | nan | 117.9 | 0.983093 | Normal HAZ |
-| 75.78 | NaT | Female | 66.1967 | 60-69 Months | nan | nan | nan | nan | 110.4 | -0.379348 | Normal HAZ |
-| 40.37 | 2017-09-16 00:00:00 | Female | 64.53 | 60-69 Months | 5 | Yes | nan | nan | nan | nan | nan |
-| 59.64 | NaT | Female | 63.7705 | 60-69 Months | nan | nan | Yes | nan | 113 | 0.402596 | Normal HAZ |
+| 59.27 | 2017-07-19 00:00:00 | Male | 63.8686 | 60-69 Months | 5 | Yes | nan | nan | 118.933 | nan | nan |
+| 39.45 | NaT | Male | 65.8033 | 60-69 Months | nan | nan | nan | nan | 110 | -0.592619 | Normal HAZ |
+| 50.88 | 2016-11-13 00:00:00 | Female | 52 | 50-59 Months | nan | nan | nan | nan | nan | nan | nan |
+| 58.9 | 2018-03-23 00:00:00 | Female | 59.96 | 60-69 Months | 5 | Yes | nan | nan | 113.9 | 0.94501 | Normal HAZ |
+| 49.79 | 2016-09-03 00:00:00 | Female | 54 | 50-59 Months | nan | nan | Yes | nan | nan | nan | nan |
 
 ## Curation notes
 
@@ -218,8 +218,9 @@ The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffle
   target filter, only in the 2020-2022 rounds). They occur only where the question was asked (all 40 `.a` of
   the DSD subsidy amount are programmes that receive it), while a skipped question is blank, so they are
   unanswered questions; the source does not say which code is which. They become missing values. The 46
-  columns that held them are counts, rand amounts per month, a year and minutes, `numeric` in the source's
-  codebook: they are numbers, no longer categories (CLEAN-10, CLEAN-14; issue #36).
+  columns that held them are counts, rand amounts per month, a year and a timer in minutes, `numeric` in the
+  source's codebook: they are numbers, no longer categories (CLEAN-10, CLEAN-14; issue #36). The timer,
+  `teacher_duration`, is dropped (below).
 - We drop all indicator columns.
 - We drop some repeated columns, such as age_group_label.
 - Because all features could generally be available at prediction time, even if would not be ideal effort-wise, we keep all features that don't leak the target or are otherwise problematic.
@@ -227,7 +228,16 @@ The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffle
 - Additional description of the target: The ELOM 4 & 5 Years Assessment Tool measures whether preschool children are on track for their age in key areas of development. It is a standardised tool that measures performance across five key developmental domains for children aged 50 to 59 months and 60 to 69 months. The scoring assesses a child in 23 items, across five domains, namely: gross motor development, fine motor development, emergent numeracy and mathematics, cognition and executive functioning, and emergent literacy and language. These five domains form part of the direct assessment.
 - Note: We keep some features that were not in the zindi challenge, such as the teacher and parent questionnaires, because they are potentially predictive and could be available at prediction time. Moreover, some columns present in the zindi challenge (like latitude and longitude) are not available.
 - Note: The data consists of a few subsets with partially distinct features collected. This might not represent a real task, but we don't know for sure, so we keep all samples.
-- Note: The enumerator_id is a control variable of the data collection rather than a factor that should be used for prediction. However, it is predictive and explains noise in the target, so we keep it as a feature.
+- The assessor's id (`id_enumerator`) is a control variable of the data collection rather than a factor that
+  should be used for prediction, so we drop it with the other ids, although it is predictive and explains
+  noise in the target.
+- We drop `teacher_duration`, the minutes the teacher's socio-emotional rating form was open (DataFirst's
+  codebook: "Teacher SEF duration in minutes"): a timer of the data collection, like the three `duration_elom`
+  timers dropped above, not a property of the child, the teacher or the facility. It exists only in the
+  2020-2022 rounds (26% of the children); 39% of its values are 0 (93% in the 2020 round, 50% in 2021, 28% in
+  2022) and 1.4% exceed a day, up to 29 days. Its Spearman correlation with the score is -0.06, and what signal
+  it has follows the round (the 0-minute forms, mostly of 2020, score 50.1 against 48.1 overall), which we drop
+  as `data_year` (2026-10-30, Lennart).
 - Note: There are strong patterns of missingness within the data, due to different uses of various tools and measurements across subgroups
 - Anomaly: Many missing values
 - Feature families by column name (from the v1 exploration, counted 2026-10-22 on the cleaned data, 745 columns; a column can match more than one): pri 258, obs 161, pra 149, count_ 74, pqa 35, child 25, teacher 22. 576 columns are also in the Zindi train file, 136 more are pra/pqa/pri/obs columns not in it, and 33 others are new (among them the target, child_total_elom; Zindi calls it target). 102 Zindi columns are not in our data, among them latitude, longitude, the ward, municipality and province ids and the date columns. 80% of the cells are missing and every row has a missing value.
@@ -280,15 +290,15 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 0 error(s), 1 warning(s), 2 info (26 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_duplicate_columns`: 1 duplicated column pair(s): [('certificate_register', 'certificate_registration_npo')]. (hint: Keep one of each pair.)
-- **info** `dataset_duplicate_rows`: 2 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
-- **info** `dataset_conflicting_duplicate_rows`: 29 row(s) (0.2%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+- **info** `dataset_duplicate_rows`: 3 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
+- **info** `dataset_conflicting_duplicate_rows`: 30 row(s) (0.2%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (745 rows)</summary>
+<summary>Show the table (744 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
@@ -353,7 +363,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | obs_toilet_size_ventilation_1 | category | 18506 | 98.05 | 2 | yes, no |
 | obs_toilet_size_ventilation_2 | category | 18506 | 98.05 | 2 | yes, no |
 
-(685 more rows not shown)
+(684 more rows not shown)
 
 </details>
 
@@ -366,7 +376,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 ### Numeric features
 
 <details>
-<summary>Show the table (275 rows)</summary>
+<summary>Show the table (274 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -431,7 +441,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | count_staff_paid_cooks | 2206 | 0.990481 | 0.533163 | 0 | 3 |
 | count_staff_paid_maintenance | 2206 | 0.567996 | 0.610305 | 0 | 3 |
 
-(215 more rows not shown)
+(214 more rows not shown)
 
 </details>
 
@@ -518,4 +528,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:9046045578d9b918961ef633f2c1df18c064b8a0308a10007b17584ebc0c194d` |
+| stale | yes: the definition now gives checksum `v2:fc8aff87c3c76cb45cd2e097f88b91c1a0b1663d15039d8d223803ab22d20ac1` |

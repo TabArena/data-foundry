@@ -4,7 +4,7 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
-## 2026-10-30, `early_learning_predictors`: Stata missing codes to missing, 45 counts and amounts numeric (PR #35)
+## 2026-10-30, `early_learning_predictors`: Stata missing codes, 44 counts and amounts numeric, a timer dropped (PR #35)
 
 - `.a` and `.b` are Stata's extended missing values, exported to the CSV as text in 46 columns (2,388 and 29 cells
   after the target filter, only in the 2020-2022 rounds). They occur only where the question was asked (all 40 `.a` of
@@ -15,6 +15,15 @@ record, audit or PR that motivated it.
   `pri_fees_*` amounts in rand per month, `pri_capacity`, `pri_dsd_year` and `teacher_duration` (minutes), all
   `numeric` in DataFirst's codebook. The other categorical columns stay: multi-select answers such as `health` and
   `obs_hazard`, free text, 0/1 flags.
+- `teacher_duration` is dropped (Lennart): the minutes the teacher's socio-emotional rating form was open, a timer of
+  the data collection like the three `duration_elom` timers dropped before, no property of the child or the facility.
+  It exists only in 2020-2022 (26% of the children), 39% of its values are 0 (93% in the 2020 round) and 1.4% exceed
+  a day, up to 29 days; its Spearman correlation with the score is -0.06, and what signal it has follows the survey
+  round, which is dropped as `data_year`. CLEAN-22 Cases row. Without it, one more pair of rows is an exact copy (3)
+  and one more feature vector carries two scores (30 rows).
+- Notes made to match the code: the assessor's id (`id_enumerator`) is dropped with the other ids, as the code has
+  done since the migration, so the curation note no longer says it is kept, `known` no longer lists the assessor and
+  `fit_reason` no longer names it as a gap; `changes` names both drops. 742 features.
 - Raised by Adrian in issue #36 (on the BeyondArena notebook, whose typing the v2 definition had copied) and found by
   the dtype sweep the same day. CC line in the record, CLEAN-10 Cases row. `dataset check`: 0 errors, the one warning
   it had before (`certificate_register` and `certificate_registration_npo` are copies). Not built.

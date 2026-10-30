@@ -27,9 +27,9 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
             " motor development, numeracy, cognition and executive function, literacy and language)."
         ),
         known=(
-            "743 features: the child's age, sex, birth date, grant, stunting, languages and years in the programme; "
+            "742 features: the child's age, sex, birth date, grant, stunting, languages and years in the programme; "
             "the facility's registration, staff, building, equipment and observed practice; teacher and parent "
-            "questionnaires; and the person who did the assessment. Many are missing for whole survey rounds."
+            "questionnaires. Many are missing for whole survey rounds."
         ),
         split=(
             "Whole facilities are held out, so the test data stands for facilities never surveyed; the source's "
@@ -37,13 +37,13 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
         ),
         changes=(
             "We drop the parts and other versions of the score, another child assessment, the home-learning survey "
-            "(mostly missing) and the survey year, and split by facility."
+            "(mostly missing), the survey year, the assessor's id and the timers of the data collection, and split by "
+            "facility."
         ),
         fit="approximate",
         fit_reason=(
-            "The source's question is explanatory. As a forecast, some surveys were made after the assessment, the "
-            "assessor is kept as a feature though known only at the assessment, and the rows mix survey rounds with "
-            "different questions."
+            "The source's question is explanatory. As a forecast, some surveys were made after the assessment, and the "
+            "rows mix survey rounds with different questions."
         ),
     )
 
@@ -93,8 +93,9 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
           target filter, only in the 2020-2022 rounds). They occur only where the question was asked (all 40 `.a` of
           the DSD subsidy amount are programmes that receive it), while a skipped question is blank, so they are
           unanswered questions; the source does not say which code is which. They become missing values. The 46
-          columns that held them are counts, rand amounts per month, a year and minutes, `numeric` in the source's
-          codebook: they are numbers, no longer categories (CLEAN-10, CLEAN-14; issue #36).
+          columns that held them are counts, rand amounts per month, a year and a timer in minutes, `numeric` in the
+          source's codebook: they are numbers, no longer categories (CLEAN-10, CLEAN-14; issue #36). The timer,
+          `teacher_duration`, is dropped (below).
         - We drop all indicator columns.
         - We drop some repeated columns, such as age_group_label.
         - Because all features could generally be available at prediction time, even if would not be ideal effort-wise, we keep all features that don't leak the target or are otherwise problematic.
@@ -102,7 +103,16 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
         - Additional description of the target: The ELOM 4 & 5 Years Assessment Tool measures whether preschool children are on track for their age in key areas of development. It is a standardised tool that measures performance across five key developmental domains for children aged 50 to 59 months and 60 to 69 months. The scoring assesses a child in 23 items, across five domains, namely: gross motor development, fine motor development, emergent numeracy and mathematics, cognition and executive functioning, and emergent literacy and language. These five domains form part of the direct assessment.
         - Note: We keep some features that were not in the zindi challenge, such as the teacher and parent questionnaires, because they are potentially predictive and could be available at prediction time. Moreover, some columns present in the zindi challenge (like latitude and longitude) are not available.
         - Note: The data consists of a few subsets with partially distinct features collected. This might not represent a real task, but we don't know for sure, so we keep all samples.
-        - Note: The enumerator_id is a control variable of the data collection rather than a factor that should be used for prediction. However, it is predictive and explains noise in the target, so we keep it as a feature.
+        - The assessor's id (`id_enumerator`) is a control variable of the data collection rather than a factor that
+          should be used for prediction, so we drop it with the other ids, although it is predictive and explains
+          noise in the target.
+        - We drop `teacher_duration`, the minutes the teacher's socio-emotional rating form was open (DataFirst's
+          codebook: "Teacher SEF duration in minutes"): a timer of the data collection, like the three `duration_elom`
+          timers dropped above, not a property of the child, the teacher or the facility. It exists only in the
+          2020-2022 rounds (26% of the children); 39% of its values are 0 (93% in the 2020 round, 50% in 2021, 28% in
+          2022) and 1.4% exceed a day, up to 29 days. Its Spearman correlation with the score is -0.06, and what signal
+          it has follows the round (the 0-minute forms, mostly of 2020, score 50.1 against 48.1 overall), which we drop
+          as `data_year` (2026-10-30, Lennart).
         - Note: There are strong patterns of missingness within the data, due to different uses of various tools and measurements across subgroups
         - Anomaly: Many missing values
         - Feature families by column name (from the v1 exploration, counted 2026-10-22 on the cleaned data, 745 columns; a column can match more than one): pri 258, obs 161, pra 149, count_ 74, pqa 35, child 25, teacher 22. 576 columns are also in the Zindi train file, 136 more are pra/pqa/pri/obs columns not in it, and 33 others are new (among them the target, child_total_elom; Zindi calls it target). 102 Zindi columns are not in our data, among them latitude, longitude, the ward, municipality and province ids and the date columns. 80% of the cells are missing and every row has a missing value.
@@ -206,6 +216,8 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "teacher_date",
                 # repeats `child_age_group`
                 "age_group_label",
+                # how long the teacher's rating form was open: a timer of the data collection (curation notes)
+                "teacher_duration",
             ],
         )
         return df
