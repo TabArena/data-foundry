@@ -58,8 +58,7 @@ anes_voting_2026 (Lennart, 2026-10-19).
 real missing values when the encoding can be inferred from the description and the context. Keep a code and say why
 when it means something ("not previously contacted").
 
-**CLEAN-11 (Should; amended 2026-10-21, Lennart, on ames_housing, mercedes_benz_greener_manufacturing and
-qsar_tid_11).** Impossible values become missing, and the row stays. Values that are only unusual stay. A row leaves
+**CLEAN-11 (Should; amended 2026-10-21, Lennart, on ames_housing, mercedes_benz_greener_manufacturing and qsar_tid_11).** Impossible values become missing, and the row stays. Values that are only unusual stay. A row leaves
 only when it is no task row (USE-7, [use_case.md](use_case.md)) or a copy ([leak_checks.md](leak_checks.md), Copies
 across the split (LEAK-16 to LEAK-21)). A row whose target the source names as not the task's quantity may leave, with
 the source's words. A single extreme target in the training period only may leave with the source's words or where
@@ -172,6 +171,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | CLEAN-7 | sf_permit_time, home_credit_default_risk | under LEAK-29 in [leak_checks.md](leak_checks.md), Cases | applied |
 | CLEAN-8 | rosbank1, alfa_battle_2_0_task_2, anes_voting_2026 | columns or categories kept by counts over the whole table, as ordinary cleaning (2026-10-19, Lennart) | applied |
 | CLEAN-10 | house_sales | `yr_renovated` = 0 ("never renovated" in the source) set to missing, so missing means never renovated; the fact that sets it apart from bank_marketing's `pdays = -1` and ames_housing's no-remodel coding: a 0 in a year column misleads a linear model as a year, and after the as-of-sale rebuild missing has no other meaning in the column (2026-10-22, Lennart) | exception |
+| CLEAN-11 | sendy_logistics_challenge | Myunghwan approved excluding total placement-to-arrival duration >24 hours and straight-line average speed >100 km/h: two exceptional preconfirmation delays dominated 39.31% of prior fixed-model squared error; zero speed exclusions. Explicit outcome-conditioned ordinary-delivery cohort, not proven bad labels or eligibility known at placement; serves P3/P4 (2026-10-29) | exception |
 | CLEAN-11 | caracas_cervical_cancer | a first intercourse after the current age, an STD diagnosed longer ago than the patient's age: missing | applied |
 | CLEAN-11 | churn_telco_south_asia | a negative network age or an undocumented code: missing | applied |
 | CLEAN-11 | heart_disease (Long Beach, first as heart_disease_va_long_beach) | `chol == 0`: missing | applied |

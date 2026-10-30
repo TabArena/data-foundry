@@ -51,6 +51,7 @@ EXPECTED = {
     "f1_weighted": (Y_MULTI, L_MULTI, skm.f1_score(Y_MULTI, L_MULTI, average="weighted")),
     "roc_auc_ovo_macro": (Y_MULTI, P_MULTI, skm.roc_auc_score(Y_MULTI, P_MULTI, multi_class="ovo", average="macro")),
     "roc_auc_ovr_macro": (Y_MULTI, P_MULTI, skm.roc_auc_score(Y_MULTI, P_MULTI, multi_class="ovr", average="macro")),
+    "mean_poisson_deviance": (Y_REG, P_REG, skm.mean_poisson_deviance(Y_REG, P_REG)),
     "rmse": (Y_REG, P_REG, np.sqrt(skm.mean_squared_error(Y_REG, P_REG))),
     "mae": (Y_REG, P_REG, skm.mean_absolute_error(Y_REG, P_REG)),
     "mse": (Y_REG, P_REG, skm.mean_squared_error(Y_REG, P_REG)),
@@ -363,3 +364,22 @@ def test_target_transform_round_trips_through_json() -> None:
     del dumped["objective_metric"]["target_transform"]
     assert adapter.validate_python(dumped).objective_metric.target_transform == "identity"
     assert any("target_transform" in line for line in spec.describe_lines())
+
+
+@pytest.mark.parametrize("bad", [0.0, -1.0, np.nan, np.inf, -np.inf])
+def test_poisson_deviance_rejects_invalid_expected_means(bad) -> None:
+    """Computability probes must not weaken the real scorer's strict domain."""
+    with pytest.raises(ValueError, match=r"deviance|NaN|infinity"):
+        score(Metric.source("mean_poisson_deviance"), [0, 1, 3], [0.2, bad, 2.0])
+
+
+def test_poisson_deviance_matches_source_likelihood_with_zero_observations() -> None:
+    """Compare the source Poisson log-likelihood ratio independently of sklearn."""
+    rng = np.random.default_rng(4267)
+    y = rng.poisson(0.2, 1000)
+    p = rng.lognormal(-2, 1, 1000)
+    expected = -2 * np.mean(scipy.stats.poisson.logpmf(y, p) - scipy.stats.poisson.logpmf(y, y))
+    assert score(Metric.source("mean_poisson_deviance"), y, p) == pytest.approx(expected, abs=1e-12)
+    assert score(Metric.source("mean_poisson_deviance"), [0], [0.25]) == pytest.approx(0.5)
+    with pytest.raises(ValueError, match="deviance"):
+        score(Metric.source("mean_poisson_deviance"), [-1, 0], [1, 1])

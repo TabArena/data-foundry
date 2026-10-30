@@ -7,12 +7,15 @@ its source. Each metric is also checked on a small case computed by hand. The 1M
 
 from __future__ import annotations
 
+import math
+
 import numpy as np
 import pandas as pd
 import pytest
-from data_foundry.schema import ScoringColumn
+from data_foundry.schema import MetricSpec, ScoringColumn
 from data_foundry.v2.dataset import metric_spec
 from data_foundry.v2.metrics import METRICS, Metric, dummy_prediction, score
+from pydantic import TypeAdapter
 from scipy import stats
 from sklearn.metrics import roc_auc_score
 
@@ -628,6 +631,7 @@ def test_every_custom_metric_documents_itself() -> None:
                 "gini_stability",
                 "gini_top_capture",
                 "hierarchical_balanced_accuracy",
+                "mean_absolute_log1p_error",
                 "mean_group_pearsonr",
                 "normalized_early_detection_utility",
                 "par_k",
@@ -699,3 +703,55 @@ def test_every_custom_metric_passes_the_bundle_metric_checks(name: str) -> None:
     ]
     container = make_v2_container(df, spec=spec, scoring_columns=scoring, problem_type=problem_type)
     assert metric_findings(container) == {}
+
+
+# --- absolute log1p error ------------------------------------------------------------------------------------------
+
+
+def test_mean_absolute_log1p_error_matches_scalar_reference_and_zero_targets() -> None:
+    """Match a scalar reference, including zero wages and reciprocal shifted factors."""
+    y = np.array([0.0, 1.0, 3.0, 50.05, 18777.2])
+    p = np.array([1.0, 3.0, 7.0, 100.0, 5000.0])
+    spec = metric_spec(
+        Metric.from_context("mean_absolute_log1p_error", reason="relative-like wage errors"), "regression"
+    )
+    expected = math.fsum(abs(math.log1p(a) - math.log1p(b)) for a, b in zip(y, p)) / len(y)
+    assert score(spec, y, p) == pytest.approx(expected, rel=1e-12)
+    assert score(spec, [0, 1, 3], [1, 3, 7]) == pytest.approx(math.log(2))
+    assert score(spec, y, y) == 0
+    assert score(spec, y, p) == pytest.approx(score(spec, p, y))
+
+
+def test_log1p_target_scores_absolute_error_on_the_shipped_values() -> None:
+    """Preserve transformed-scale MAE through JSON and extreme model predictions."""
+    spec = metric_spec(
+        Metric.from_context("mean_absolute_log1p_error", reason="approved wage loss", target_transform="log1p"),
+        "regression",
+    )
+    adapter = TypeAdapter(MetricSpec)
+    serialized = adapter.validate_json(adapter.dump_json(spec))
+    # Negative predictions are allowed on the transformed scale; no logarithm is taken of them.
+    z = np.log1p([0.0, 50.05, 18777.2])
+    p = np.array([-0.5, 5.0, 9.0])
+    assert score(spec, z, p) == pytest.approx(np.mean(np.abs(z - p)), rel=1e-12)
+    assert score(serialized, z, p) == pytest.approx(np.mean(np.abs(z - p)), rel=1e-12)
+    # Direct transformed-scale scoring remains valid outside the inverse's floating-point range.
+    assert score(serialized, [0, 1], [-1000, 1000]) == pytest.approx(999.5)
+
+
+@pytest.mark.parametrize("bad", [-1.0, -2.0, np.nan, np.inf, -np.inf])
+@pytest.mark.parametrize("side", ["truth", "prediction"])
+def test_mean_absolute_log1p_error_refuses_invalid_values(bad, side) -> None:
+    """Reject invalid raw-scale values rather than silently clip them."""
+    spec = Metric.from_context("mean_absolute_log1p_error", reason="approved wage loss")
+    y, p = [1.0, 2.0], [1.5, 2.5]
+    (y if side == "truth" else p)[0] = bad
+    with pytest.raises(ValueError, match="finite values greater than -1"):
+        score(spec, y, p)
+
+
+def test_mean_absolute_log1p_error_does_not_broadcast_mismatched_rows() -> None:
+    """Refuse mismatched observation counts."""
+    spec = Metric.from_context("mean_absolute_log1p_error", reason="approved wage loss")
+    with pytest.raises(ValueError, match="inconsistent numbers of samples"):
+        score(spec, [1, 2, 3], [2])

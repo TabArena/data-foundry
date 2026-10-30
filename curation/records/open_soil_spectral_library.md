@@ -2,20 +2,19 @@
 unique_name: open_soil_spectral_library
 name: Open Soil Spectral Library (OSSL) / KSSL MIR soil spectra
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
-priority: 4
-decision_markers:
-- Wrong Domain / Source Modality
+- Myunghwan
+data_foundry_status:
+- WIP (DF)
+claimed_by: Myunghwan
+suggestion: 'Yes'
+priority: 3
 tags:
-- AI-Filled (Verify)
 - Many features
-- Multi-target
 - Non-IID (Grouped)
 collections:
 - New (BeyondArena)
 original_source: Website
-year: '2021'
+year: '2023'
 domain: environmental science & climate
 required_split:
 - Grouped (NON-IID)
@@ -26,8 +25,7 @@ source_links:
 - https://doi.org/10.5281/zenodo.7599269
 - https://docs.soilspectroscopy.org/
 - https://github.com/soilspectroscopy/ossl-models
-needs_review:
-- ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/open_soil_spectral_library/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -49,6 +47,36 @@ Safanelli et al., PLOS One 20(1):e0296545, 2025. Compilation of soil spectra wit
 Why it is the dataset to settle the spectroscopy question on: the incumbent models in this field are Cubist, PLSR and memory-based learning, i.e. tabular-style learners on ~1,700 wavenumber bins, so "modality-specific models clearly superior" (criterion 4A) is not obvious here; the `Wrong Domain / Source Modality` marker is the provisional flag, not a verdict. Same call would settle `bloodsai_blood_spectroscopy_classification_challenge`. Licence mix (LUCAS under a JRC agreement, Serbia internal) is noted, not a factor. Points to decide: one spectral range (MIR), spatially grouped split by site (many layers per location), and the library "spatially over-represents USA and European Union". Data not inspected.
 
 Drafted 2026-09-23 as a follow-up to `open_soil_data` (iSDA), whose 49k rows are 96% spectroscopy-model predictions; this is one of the measured-data parents of that family (`open_soil_spectral_library`, `africa_soil_property_prediction_challenge`, `africa_soil_profiles_database`, `lucas_topsoil`, `wosis_soil_profiles`).
+
+CC (2026-10-26, Myunghwan): yes, pursue this. but if the target is weight percent, we need to check if transofmration this into [0, 1] is better or not.
+
+**Assessment (AI, 2026-10-27):** Applied the actual saved screening approval, original SHA256 cdf3786fbf6f124bbdafb2a29bffbd9c8a682ef8cea1b4140a1a63f6c5b45e75, after independent consistency review. No final transform, split, scorer, inclusion or build choice is inferred. The provisional modality concern remains for qualification. The task has one target; existing triage reservation and historical comments are preserved.
+
+**Assessment (AI, 2026-10-27):** Current add-stage measurements supersede historical source-only counts and direct-assay/direct-fit interpretations above. The archived KSSL subset joins one-to-one on dataset code and layer UUID: 86,603 source rows, 76,813 complete MIR scans, 75,929 usable scan/reference pairs and 20,626 native LIMS keys. Source OC is a total-C-based analytical estimate, exactly reconstructed S-first/N-fallback; 62 usable zeros are retained, no negative or >100 targets remain, and upstream pre-import sentinel counts cannot be recovered. All 1,701 spectral bins are predictors; all chemistry and identifiers are excluded. All nine folds separate native keys, but every key is not certified as one physical profile; archive/standard groups and possible shared WoSIS/ISRIC origins are disclosed. The proposed source-origin RMSE cites original-unit external evaluation while distinguishing deliberate inner log1p RMSE. Bounded percent/fraction checks show no material aggregate improvement; final scorer, split, representation, scope and inclusion remain with Myunghwan. No build or dataset source commit. Priority 3: gap 0 (133 accepted definitions show this domain/problem/regime is not thin), use case + (source scan-upload laboratory calibration), source + (institution, immutable archive and paper), shape + (75,929 rows and grouped structure), risk - (physical-group/assay-equivalence and spectral-scope limitations).
+
+**Assessment (AI, 2026-10-27):** Existing-folder recheck in a fresh pinned copy: native dataset check passed with zero errors/warnings and the disclosed heavy-check information item; the regenerated README is byte-identical to the retained qualified card. Current full frame and all nine fold memberships match the retained science, including exact sampled rows and retained paired predictions. No learner was refitted. Source/reference, leakage/task and bounded group evidence is reused only for this unchanged task; the native group command remains interrupted, not passing. Full earlier panel reports are inherited; the current focused panel and cold final-package review remain to run. All five published choices remain open; no build or inclusion decision. Priority 3: gap 0 (133 accepted definitions), use case + (source laboratory calibration), source + (documented archive), shape + (75,929 rows, grouped), risk - (spectral scope and reference/physical-group limitations).
+
+**Assessment (AI, 2026-10-27):** Current focused independent claim, column, split and domain audits and mediation support the bounded archived calibration proposal, subject to all five published human choices. Corrected the source-key evidence limit: the importer first aggregated taxonomy per native key, so archived taxonomy agreement cannot certify physical-profile identity. The new complete column audit supersedes the inherited physical-profile wording for the grouping row. No rows, predictors, references, numeric metric, fold memberships or target representation changed; no learner refit. Required cold exact-package editor review remains pending. Priority 3: gap 0, use case +, source +, shape +, risk - (spectral scope and reference/group interpretation).
+
+**Assessment (AI, 2026-10-27):** Cold independent editor reviewed the compact and human-facing draft. Clarified retention of all usable scan/reference rows after documented missing-input/reference exclusions; no discretionary row exclusion or numerical method changed. Corrected native review-evidence capture to include actual custom tool calls/results and explicitly distinguish encrypted dispatch payloads from readable child task readbacks. Exact final-byte re-review/completion is pinned in the external package receipt. All five human choices remain open; no build or inclusion decision.
+
+**Assessment (AI, 2026-10-27):** Direct add-dataset continuation preserves the current definition, all prior scientific measurements and the five published issue IDs. Earlier pending external-package-receipt statements describe the interrupted controlled run, not a scientific requirement. The current task is unchanged: finish editor corrections, regenerate the card and verify the final review documents. No new screening, model fit, inferred human decision, build or dataset commit. Priority 3: gap 0, use case +, source +, shape +, risk - (spectral scope and reference/group interpretation).
+
+**Assessment (AI, 2026-10-27):** Direct pre-human-review add-dataset work is complete. The regenerated card passed 26 native checks with zero errors and warnings; heavy automatic duplicate checks remain a disclosed information skip with unchanged-frame full-spectrum audit evidence. Exact full-frame, all nine folds and saved paired-prediction scores match the retained investigation, with zero new fits. Record, pointer, priority, table and review-format checks passed. The final independent editor found no necessary document edits. The existing full and focused scientific panels are preserved, not rerun or replaced by self-review. The earlier interrupted native group command and fresh-machine decode limitation remain explicit; bounded follow-up group evidence is distinct. All five published choices await Myunghwan, and no ship, representation, split or scorer decision is inferred. Priority 3: gap 0, use case +, source +, shape +, risk - (spectral scope and reference/group interpretation).
+
+CC (2026-10-27, Myunghwan): “For 1, let's use the measurements. For 3, let's stck to the orignal target and eval.” Retain all 1,701 measured MIR inputs, the original weight-percent target and per-row RMSE; the reference target itself is accepted (“It's fine even for the archieved reference”). The normalization discussion's number 3 did not approve a split.
+
+CC (2026-10-27, Myunghwan): “OK. group id is slightly better. stick to group id.” Further scope: “we can regard each id as the "experiment/measurement batch". still OK in real-world scenario”. Keep whole native source-ID groups together, predicting and scoring each row separately. Measurement-batch interpretation is the chosen benchmark scenario, not verification of one-to-one experimental batch or physical-profile identity.
+
+**Assessment (AI, 2026-10-27):** Applied all five settled task-definition choices and removed their resolved open issues, retaining their full panel and decision history in the run. The definition's executable loading, cleaning, target values, feature list and fold memberships are unchanged. Removed the provisional modality marker after approval of the measured spectral inputs. Added the bounded same-fold few-band/PCA findings without replacing raw inputs or choosing a preprocessing method. Final add-stage checks and editorial review precede the requested review-added-datasets discussion. No overall ship verdict, build or dataset commit is inferred. Priority 3: gap 0, use case +, source +, shape +, risk - (reference and source-group interpretation limits).
+
+CC (2026-10-27, Myunghwan): Finish add-dataset work and then move to review-added-datasets on this dataset. This instruction supplies no overall ship verdict.
+
+**Assessment (AI, 2026-10-27):** Add-dataset is complete with the confirmed task choices applied. Post-choice regeneration returned 26 checks, zero errors and warnings, with heavy duplicate checks explicitly skipped and separate applicable spectrum audits retained. The complete frame hash and all nine fold memberships are unchanged; records, pointers and the generated table passed. Independent decision-consistency and final editorial review found no necessary corrections. All five original issue IDs are resolved in preserved history. Review-added-datasets now considers the completed definition and disclosed limits, with the overall curator verdict still open. No build, dataset commit or publication. Priority 3: gap 0, use case +, source +, shape +, risk - (reference/group interpretation limits).
+
+**CC (2026-10-28, Myunghwan):** "ship all". Approved this dataset for shipping in the five-dataset final added-dataset review (beMTPL97, Eucalyptus, Tanzania tourism, CPS88 wages and OSSL), on the exact presented definition with previously settled task choices and disclosed limitations retained. This is scientific acceptance for a separately requested build; it does not authorize build, commit or publication.
+
+**Assessment (AI, 2026-10-28):** The independent consistency check supports applying this overall verdict without another task choice. Existing local curator dispositions remain distinct from source verification or shared-rule amendments. No definition, scorer, data, fold or warning acceptance was changed by this final verdict.
 
 ## Reference
 

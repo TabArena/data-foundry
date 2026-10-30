@@ -2,13 +2,12 @@
 unique_name: predictive_insights_youth_income_prediction_challenge
 name: predictive-insights-youth-income-prediction-challenge
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
-priority: 4
-decision_markers:
-- TBD
-tags:
-- AI-Filled (Verify)
+- Myunghwan
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Myunghwan
+suggestion: 'Yes'
+priority: 3
 collections:
 - New (BeyondArena)
 original_source: Zindi
@@ -20,13 +19,24 @@ problem_type: Binary Classification
 source_links:
 - https://zindi.africa/competitions/predictive-insights-youth-income-prediction-challenge/data
 - https://zindi.africa/competitions/predictive-insights-youth-income-prediction-challenge
+v2_path: datasets/_dev/tabarena-v0pt2/predictive_insights_youth_income_prediction_challenge/dataset.py
 source_row: 889
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
+
+**Current review status (AI, 2026-10-28):** Final scientific inclusion explicitly approved. This new final verdict supersedes the prior pending status; earlier inferred ship statements remain historical, not the basis of this approval.
+
+CC (2026-10-28, Myunghwan): "yes. ship" in direct response to the final scientific-inclusion question for the current Youth employment definition. Accept this implemented task with the acknowledged survey-year/round, unavailable individual/follow-up information and cohort-shift limitations. Preserve date/Round, ID/Tenure exclusion, conditional profile retention and current random-fold evaluation. No whole-round-holdout change, build, commit or publication requested.
+
+**Current review status (AI, 2026-10-28):** Technical add/review work is complete and retained from the completed review. The latest limitation acknowledgement is saved; settled choices are not reopened. Current random-fold scores concern represented survey mixtures; round-4 holdout remains separate diagnostic evidence.
+
+CC (2026-10-28, Myunghwan): Acknowledged the survey-year/round limitation and unavailable individual/follow-up information, and considers feature-based estimation for a new survey round a reasonable task. Preserve current date/Round, exclusions, profile-retention decisions and random-fold evaluation. No whole-round-holdout change was requested. This records the actual acknowledgement; no additional final ship wording is invented.
+
+**Current review status (AI, 2026-10-27):** Add-dataset follow-through is complete; final review-added-datasets verdict is pending. Earlier assertions of scientific inclusion/ship below are superseded agent interpretations, not current curator authority.
+
+CC (2026-10-27, Myunghwan): Clarified that the earlier instruction meant completing tabarena-add-dataset after review for both Youth employment and siRNA, not a final ship verdict. Date/Round, ID/Tenure exclusions and conditional profile retention remain settled. The implemented Random (IID) field remains coherent; the earlier generated item-1/split-update marks do not independently establish acceptance of overall timing/scope limitations.
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
@@ -44,3 +54,27 @@ A Zindi competition to predict whether a young person in South Africa is employe
 ---
 
 predict if a young person in South Africa is employed
+
+**CC (2026-10-26, Myunghwan):** “pursue”. Proceed with the original binary employment-at-follow-up task, preserving the original population including respondents already employed at baseline. Check baseline-only predictors including tenure; person/survey-round construction and split; original follow-up horizon; and missing-follow-up handling. Source ROC AUC is supported. Final features, split and inclusion require actual-data qualification; no build or commit authorized. Original attributed input is preserved in the direct run's evidence/curator-proceed-decision.json.
+
+**Assessment (AI, 2026-10-27):** Independent screening consistency review found no concrete contradiction requiring renewed approval; see the direct run's evidence/screening-consistency.md. Applied the saved proceed decision through the record store. The inherited IID declaration is unresolved and is now `?`; the earlier file-size-based shape estimate and direct-fit claim are unverified historical drafts. The original public Zindi Data page still describes baseline to one-year employment. A related host hackathon article describes a six-month outcome without authenticating identical release bytes. This is an unresolved source-description discrepancy, not demonstrated label corruption or leakage. Baseline employment persistence remains a legitimate predictive signal. Current official unauthenticated file endpoints returned HEAD 401 for Train.csv, Test.csv and the Python starter notebook; the listed R starter endpoint returned HEAD 404. No raw data was downloaded, inspected or measured; no model, dataset check or add-stage panel ran. Add-stage qualification is incomplete pending permitted original-file access. Public file access failure is not a scientific rejection. The existing Myunghwan claim remains unexpired at its original triage stage; no claim stage change was inferred from approval. Priority remains 4 from screening; not recalculated from unavailable actual data.
+
+**Assessment (AI, 2026-10-27, original files supplied):** The original all-files archive is now locally inspected. The added definition keeps 4,017 of 4,020 labelled records after three exact source-copy removals and has 16 predictors. Target remains employment at follow-up, including baseline-employed participants, scored by the source ROC AUC. Original source notebooks confirm the one-year claim but do not authenticate individual horizons or the baseline/follow-up role of Survey_date: 2,804 retained dates would reach their one-year anniversary after the June 2023 archive. This is a source-interpretation inconsistency, not established label corruption. Independent conditional missingness tests motivated dropping Tenure globally; ID/date/round are also excluded. Remaining Status and other mutable-input timing, label ascertainment/attrition and person identity remain source-described rather than verified. Approximate fit and ForcedIIDFromTemporal preserve those limits; no date backshift, horizon substitution or new population filter is introduced. Final nine-fold probes have learnable signal (linear ROC AUC 0.758, constant 0.500; minimum 363 positives per test fold), with no task flags. The 72 remaining identical labelled-profile extras and 23 conflicting profiles arise after feature coarsening; equal-profile sensitivity did not materially inflate scores. Propose retention under LEAK-18/20, leaving the duplicate warning unaccepted for Myunghwan's decision. Full panel reports and ranked questions are retained for added-dataset review. Earlier proceed approval remains qualification authority, not final inclusion/build/commit. Priority 3: gap + (social science is thin among 133 accepted definitions), use case 0 (approximate rather than direct fit), source + (original identified publisher release and both starter documents), shape + (4,017 rows and 16 mixed-type predictors), risk - (unresolved chronology and ascertainment).
+
+**CC (2026-10-27, Myunghwan):** “if there's no evidence of the duplicate record with making predictions simpler, then OK with coincident profiles.” Accept the implemented retention on that conditional basis. The timing/inclusion issue needs timestamp-column and timing-criticality context before judgment; the split-field request was a question, not an update/keep decision. No overall ship verdict, build or commit requested.
+
+**Assessment (AI, 2026-10-27):** Independent partial-decision consistency review found retention consistent with LEAK-16/18/20 and natural-repeat/ambiguity precedents, without an exception or reflection. Equal-profile held-out fixed-model ROC AUC 0.7393 versus IID 0.7366 and independent blind sensitivity give no material simplification evidence in tested setups. They do not prove person independence or every-model absence. Accepted the duplicate warning with this reason; the three full-source copies remain removed. Issue 1 now gives all time-related fields, wave ranges, the June 2023 chronology conflict and prospective-evaluation consequences. No new model fits needed; all numerical inputs and exact folds remain unchanged. Final inclusion and required_split remain unresolved.
+
+**CC (2026-10-27, Myunghwan):** I buy tenuare exclusion based on this issue. if person id is not repeated, then timing is less critical. it's rather more concerned about distribution shift into round 4. survey date might be important since target date may be related to season. round 4 can have same seasonality as round 2.
+
+**Assessment (AI, 2026-10-27):** Tenure exclusion is explicitly confirmed. Independent consistency review found no conflict requiring reflection. Round2/4 share February–March, but same-month target rates differ sharply. Fixed-model survey-month diagnostics improved the single round4 test AUC from 0.6292 to 0.6534; full date/round helped random-fold mixture prediction but not this future-wave comparison. These are bounded sensitivity results, not a causal seasonal estimate or permission to choose the best tested encoding. Date/round exclusion is provisional; association with a cohort alone is not leakage evidence. Unique masked IDs do not authenticate predictor/outcome timing. No final feature, split or inclusion decision inferred; accepted coincident-profile disposition and original target/population remain in force. Candidate and exact folds unchanged; the new diagnostic receipts are retained in the private direct run.
+
+**CC (2026-10-27, Myunghwan):** “round doesn't have any info. we can have it for a garbage info. but survey date is important in my opinion”. Retain survey date as calendar context and allow redundant Round. Earlier Tenure exclusion and conditional acceptance of coincident profiles remain in force. No final ship, split-field, build or commit verdict is inferred.
+
+**Assessment (AI, 2026-10-27, calendar restoration):** Survey_date is retained as datetime and Round categorical; every observed date maps to one round, so round adds no information conditional on date. No invented outcome date or hand-derived calendar features are added. Person_id/Tenure remain excluded. Restoring these fields changes the standardized row order and thus the actual respondent membership of random folds; all affected qualification, duplicate/group checks and focused independent review are repeated rather than reusing older numerical scores as current. Original one-year source interpretation and ascertainment limitations remain documented; primary use is prediction within the released mixture and round4 shift is tested separately. The earlier 16-input assessment is historical. Final inclusion and required_split remain unresolved.
+
+**Assessment (AI, 2026-10-27, eighteen-input qualification):** Restored Survey_date losslessly as datetime and Round categorical, as directed; date determines round on all 79 observed dates. Keep 4,017 original respondents after three complete-copy removals, original Target/population/source ROC AUC and the existing repeated-stratified-random protocol. All affected canonical probes and independent new-fold tests are complete: linear AUC 0.8015, random forest 0.7992, LightGBM 0.7955, constant 0.5000; no task flags, minimum 363 employed/test fold. New full-input fixed-model AUC 0.7939 versus equal-profile grouping 0.7933 supports the saved conditional coincident-profile retention; seven labelled extras and three conflicting feature groups remain. Independent exact source-value/label and fold/metric audits pass. Forced-IID approximation and source horizon/field-time/ascertainment limits stay explicit; newest-wave diagnostic AUC 0.6093 is not a verified deployment estimate. No final inclusion or required_split mark inferred. Focused panel reports and ranked overall inclusion issue are retained in REVIEW.md. Priority 3: gap + (thin social-science coverage), use case 0 (approximate), source + (identified original release/starters), shape + (4,017 rows/18 mixed inputs), risk - (unresolved chronology/ascertainment and cohort shift).
+
+CC (2026-10-27, Myunghwan): “OK. finish tabarena-add-dataset on this.” Accepted the final reviewed 4,017-row, eighteen-predictor employment task and completion of the add stage. Retain Survey_date and allowed redundant Round, keep Person_id/Tenure excluded, preserve the original target/population/source ROC AUC and conditional coincident-profile retention. Accept the documented approximate-fit and forced-IID scope; align required_split to Random (IID). Build, commit, push and publication are not requested.
+
+**Assessment (AI, 2026-10-27):** Final acceptance applied. The actual approval and scoped marks were saved against review snapshot6816dd6ea3ed55d55be5b11ccf1fc47dfa27dc392f57f52bf804654c31cd0e7d before application. Independent final consistency review read the fresh decision register and found no rule/precedent conflict or reflection need. Final scientific inclusion is now accepted; all case-specific review issues and the split-field disagreement are resolved. Current eighteen-input qualification remains valid: zero errors/unaccepted warnings, one accepted duplicate warning, no task flags, exact all-nine-fold metric/source alignment verified, minimum363employed/testfold, linearROC_AUC0.8015/RF0.7992/LGBM0.7955. Current equal-profile sensitivity0.7933 versusIID0.7939 supports the saved bounded coincidence decision. Source timing/horizon/ascertainment and newest-wave shift remain accepted limitations; no timing proof is invented. Only decision prose changes in the recipe; full numerical input/fold identity is verified before evidence reuse. The closed REVIEW and full panel history are archived privately, and the empty live REVIEW is removed under the workflow. Official ownership and original claim stage remain preserved; no DF:Yes/main integration or build/commit is claimed.

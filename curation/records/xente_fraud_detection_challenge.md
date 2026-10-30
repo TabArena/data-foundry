@@ -2,13 +2,8 @@
 unique_name: xente_fraud_detection_challenge
 name: xente-fraud-detection-challenge
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
-priority: 3
-decision_markers:
-- TBD
-tags:
-- AI-Filled (Verify)
+- Myunghwan
+suggestion: 'No'
 collections:
 - New (BeyondArena)
 original_source: Zindi
@@ -24,8 +19,6 @@ source_links:
 - https://zindi.africa/competitions/indabax-benin-2022/data
 - https://zindi.africa/competitions/multimedia-university-of-kenya-hackathon/data
 source_row: 927
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -43,3 +36,7 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (finance, binary, temporal not thin), use case + (Xente named, the decision is the transaction screen), source + (the publisher's dates and variable definitions), shape + (about 140k transactions, mixed types, timestamps), risk - (few positives per temporal window).
 
 Xente fraud detection (Zindi) is a transaction-level financial fraud classification task with a clear binary target (fraudulent vs not) and standard tabular transaction features (amount, channel, product, customer/timestamp). This is a representative real-world tabular classification problem, well known, and likely benefits from a temporal split given timestamps. The main caveats are extreme class imbalance and the need to confirm dataset size and feature usability after cleaning. Provisionally a Yes pending human verification of size, target, and leakage.
+
+CC (2026-10-29, Myunghwan): "This is the suspcious/leaky issue. 80 cases are coverable by simple lookups. In this case, my decision is no." Reject the current Xente candidate because a substantial fraction of the fraud class is concentrated in exact monetary values and is susceptible to lookup/memorization. This final No supersedes earlier screening approval and provisional feature-retention discussion.
+
+**Assessment (AI, 2026-10-29):** The original labelled release has 95,662 transactions and 193 frauds. Amount values 500000, 800000, 3000000 and 5000000 cover 80 frauds (41.45% of all frauds) in 81 rows; the same Value groups cover 79 frauds (40.93%) in 80 rows. Dropping Amount while retaining Value therefore preserves the main signal. The policy fixed before held-out scoring selects Value keys with at least 5 training rows and at least 90% training fraud precision; it identifies 9/14, 5/46 and 17/54 later frauds with zero observed false positives in the oldest/middle/newest chronological windows. The 80/193 full-data count is descriptive, not test recall. These measurements support the curator's case-specific rejection for suspicious shortcut/memorization coverage; they do not demonstrate a particular post-outcome recording mechanism or a whole-task TP-4 triviality proof, so no such marker is added. Low prevalence itself was accepted and label-maturity work was deferred; neither is the reason for rejection. The original category-purity warning alone was not decisive. No Xente definition or container is added; prior raw data, models and independent review are preserved locally.

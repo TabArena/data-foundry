@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from data_foundry.curation_container import CuratedContainer
+from data_foundry.curation_container import CuratedContainer, feature_columns
 from data_foundry.schema import as_column_list, resolve_warehouse_dir
 from data_foundry.v2 import discover_datasets, load_definition, read_report
 
@@ -41,6 +41,8 @@ class ProbeInput:
         origin: ``built`` (the container of the README build record), ``rebuilt`` (a container rebuilt from the
             definition) or ``definition`` (the definition's frame and split plan, no container).
         scoring_cols: The scoring columns dropped from ``df`` (metric inputs, never features).
+        feature_cols: Exact model inputs, excluding scoring/group metadata even when kept in ``df`` as a time key.
+            None for manually constructed legacy inputs.
     """
 
     df: pd.DataFrame
@@ -52,6 +54,7 @@ class ProbeInput:
     time_on: str | None
     origin: str
     scoring_cols: tuple[str, ...] = ()
+    feature_cols: tuple[str, ...] | None = None
 
     @property
     def group_cols(self) -> list[str]:
@@ -93,6 +96,7 @@ def from_definition(ds: AbstractCuratedDataset) -> ProbeInput:
     plan = ds.make_splits()
     task = ds.task_metadata
     df, scoring = _without_scoring_columns(plan.df, task)
+    excluded = {task.target_column_name, *as_column_list(task.group_on), *(c.column for c in task.scoring_columns)}
     return ProbeInput(
         df=df,
         target=task.target_column_name,
@@ -103,6 +107,7 @@ def from_definition(ds: AbstractCuratedDataset) -> ProbeInput:
         time_on=task.time_on,
         origin="definition",
         scoring_cols=scoring,
+        feature_cols=tuple(c for c in plan.df.columns if c not in excluded),
     )
 
 
@@ -120,6 +125,7 @@ def from_container(container: CuratedContainer, origin: str) -> ProbeInput:
         time_on=task.time_on,
         origin=origin,
         scoring_cols=scoring,
+        feature_cols=tuple(feature_columns(container)),
     )
 
 

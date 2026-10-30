@@ -44,6 +44,8 @@ K=.claude/skills/knowledge-data-foundry/scripts
 .venv/bin/python $K/group_probes.py <unique_name> [--repeats 3] [--permutations 100]
 .venv/bin/python $K/hidden_groups.py <unique_name> [--built] [--include-grouped] [--out DIR]     # or --all
 .venv/bin/python $K/generated_probes.py <unique_name> [--built] [--out DIR]                     # or --all
+.venv/bin/python $K/duplicate_contamination.py <unique_name> [--built] [--row-details] [--losses packet.json] [--out result.json]
+.venv/bin/python $K/label_maturity.py <unique_name> [--built] --positive-label '"Yes"' --reference-start YYYY-MM-DD --reference-end YYYY-MM-DD [--min-rate-ratio 0.9] [--out result.json]
 .venv/bin/python $K/tuned_results.py <unique_name> [--feature auto]
 ```
 
@@ -72,6 +74,18 @@ K=.claude/skills/knowledge-data-foundry/scripts
   evidence either way, not 0%.
 * `generated_probes.py`: the four marks of generated data (`formula`, `rule_leaves`, `independent_columns`,
   `uniform_within_class`).
+* `duplicate_contamination.py`: all shipped folds, without row sampling or model fits. Counts exact predictor
+  profiles in train for each test row, split by same/different labels and one/two-or-more matches. Target, declared
+  group and scoring columns are excluded; dates and text predictors are retained. `--exclude` explicitly changes
+  the profile and is recorded. `--row-details` retains positions/counts. Optional `--losses` compares saved per-row
+  losses after validating the frame digest and both ordered split sides; verify model/scorer provenance separately.
+* `label_maturity.py`: a binary event-label diagnostic over the task's date column (`--time-on` overrides it).
+  Specify a historical reference and positive label (`--positive-label` takes JSON; use the canonical label,
+  e.g. `'"Yes"'` for L&T); dates are UTC
+  calendar days and ends are exclusive. Retains daily counts, monthly reference rates and the complete
+  window/buffer grid. `--windows 1,3,7,14,21,28,all` and `--buffers 0,3,7,14,21,28,31` are defaults; the optional
+  `--min-rate-ratio` has no universal default. Neither command changes the definition or emits a scientific verdict.
+  Interpret both with [checking diagnostics](../../knowledge-curation/references/checking_diagnostics.md).
 * `tuned_results.py`: the per-fold BeyondArena results of tuned and default methods cached under
   `~/.cache/tabarena/artifacts/` (`methods/<method>/results/hpo_results.parquet`), set against a dummy on the same
   splits of the shipped container; `--feature auto` adds the raw-feature test of TP-4. The runs used the shipped
