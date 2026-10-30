@@ -1,0 +1,6 @@
+name: bank_marketing
+holder: Lennart
+stage: add
+claimed_at: '2026-10-30T14:11:01Z'
+expires_at: '2026-11-06T14:11:01Z'
+note: 'Issue #34: campaign and previous back to numeric (counts); PR to follow'
