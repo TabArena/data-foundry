@@ -1,5 +1,12 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-10-30 - Verified Lusaka and RF-PCP builds
+
+- `2024_lusaka_mobility_prediction_hackathon`: UUID `01a18ba1-f606-7d63-916c-bd52aa2af8d3`, checksum `v2:d29faf5b7c7e325f96158a7de2b8b8c6e7188219ec8a2fdc09f0819317c1c40f`.
+- `protein_model_quality_rf_pcp`: UUID `01a18ba2-013a-7001-a61c-686e78b112d7`, checksum `v2:9c815361646dd91564cc761b59da41b5dd13244b9911968281ce056688cc1d7a`.
+
+Both format-2 exports verify on reload and reproduce from three traced raw CSV inputs with zero bundle errors or warnings. Build provenance is clean source commit `ea35638cb7c9dc88ff6b7f6f6316594207a68393`. Every accepted row, data type, target, feature and fold exactly matches the prior accepted build; Lusaka retains its checksum and RF-PCP changes only curation prose. All twelve earlier dataset builds are unchanged. The two definitions pass lint and formatting; record vocabularies and pointers validate. The full test suite passes (1,361 passed, 180 skipped; eight library warnings). Raw inputs, containers and the verified backup remain outside Git.
+
 ## 2026-10-29 - Lusaka and RF-PCP accepted tasks
 
 Add the accepted Lusaka trip-duration regression (112,739 rides, nine predictors, three temporal test windows with a one-day gap) and historical RF-PCP GDT_TS regression (95,094 rows, six predictors, 445 canonical proteins and nine group-disjoint folds). Preserve their accepted approximations, source/calendar and descriptor uncertainties. RF-PCP uses a required source-backed identity map; only one target is selected from its related outcomes.

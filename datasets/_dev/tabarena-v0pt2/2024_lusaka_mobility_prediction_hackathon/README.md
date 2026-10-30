@@ -3,7 +3,20 @@ report_format: data-foundry-report-v2
 unique_name: 2024_lusaka_mobility_prediction_hackathon
 container_format: 2
 checksum: v2:d29faf5b7c7e325f96158a7de2b8b8c6e7188219ec8a2fdc09f0819317c1c40f
-build: null
+build:
+  uuid: 01a18ba1-f606-7d63-916c-bd52aa2af8d3
+  checksum: v2:d29faf5b7c7e325f96158a7de2b8b8c6e7188219ec8a2fdc09f0819317c1c40f
+  built_at: '2026-10-30T07:06:51+00:00'
+  path: 2024_lusaka_mobility_prediction_hackathon/01a18ba1-f606-7d63-916c-bd52aa2af8d3
+  data_foundry_version: 0.0.5
+  git_sha: ea35638cb7c9dc88ff6b7f6f6316594207a68393
+  libraries:
+    python: 3.12.3
+    pandas: 3.1.0
+    numpy: 2.5.4
+    pyarrow: 26.0.0
+    scikit-learn: 1.7.2
+    polars: 2.0.0
 build_stale: false
 data:
   n_rows: 112739
@@ -57,7 +70,7 @@ decisions:
 
 Regression of `Target`, scored with `rmse` on temporal splits by `trip_start`. 112,739 rows and 9 features. Source: Zindi (2024).
 
-Not built yet. The current definition gives checksum `v2:d29faf5b7c7e325f96158a7de2b8b8c6e7188219ec8a2fdc09f0819317c1c40f`.
+Built as `01a18ba1-f606-7d63-916c-bd52aa2af8d3` on 2026-10-30. See [Build](#build).
 
 ## In brief
 
@@ -292,4 +305,12 @@ Use only an exact prior-hour weather row, and compare the one-day gap with obser
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a18ba1-f606-7d63-916c-bd52aa2af8d3 |
+| checksum | v2:d29faf5b7c7e325f96158a7de2b8b8c6e7188219ec8a2fdc09f0819317c1c40f |
+| built_at | 2026-10-30T07:06:51+00:00 |
+| path | 2024_lusaka_mobility_prediction_hackathon/01a18ba1-f606-7d63-916c-bd52aa2af8d3 |
+| data_foundry_version | 0.0.5 |
+| git_sha | ea35638cb7c9dc88ff6b7f6f6316594207a68393 |
+| libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |

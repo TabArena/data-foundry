@@ -41,7 +41,7 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
 <!-- datasets:start -->
 | dataset | regime | rows | features | splits | UUID | open warnings |
 |---|---|---|---|---|---|---|
-| [`2024_lusaka_mobility_prediction_hackathon`](2024_lusaka_mobility_prediction_hackathon/) | temporal | 112,739 | 9 | 3 x 1 | not built |  |
+| [`2024_lusaka_mobility_prediction_hackathon`](2024_lusaka_mobility_prediction_hackathon/) | temporal | 112,739 | 9 | 3 x 1 | `01a18ba1-f606-7d63-916c-bd52aa2af8d3` |  |
 | [`2_month_survival_rate_prediction`](2_month_survival_rate_prediction/) | IID | 8,967 | 22 | 3 x 3 | not built |  |
 | [`5g_energy_consumption`](5g_energy_consumption/) | grouped | 92,629 | 20 | 3 x 3 | not built |  |
 | [`account_debt_south_africa`](account_debt_south_africa/) | IID | 101,686 | 7 | 3 x 3 | not built |  |
@@ -182,7 +182,7 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
 | [`porto_seguro`](porto_seguro/) | IID | 595,206 | 37 | 1 x 3 | not built |  |
 | [`predict_students_dropout_and_academic_success`](predict_students_dropout_and_academic_success/) | IID | 4,424 | 36 | 3 x 3 | not built |  |
 | [`predictive_insights_youth_income_prediction_challenge`](predictive_insights_youth_income_prediction_challenge/) | IID | 4,017 | 18 | 3 x 3 | `01a1862a-0d79-7de6-a2a3-5d6010bcefe5` |  |
-| [`protein_model_quality_rf_pcp`](protein_model_quality_rf_pcp/) | grouped | 95,094 | 6 | 3 x 3 | not built |  |
+| [`protein_model_quality_rf_pcp`](protein_model_quality_rf_pcp/) | grouped | 95,094 | 6 | 3 x 3 | `01a18ba2-013a-7001-a61c-686e78b112d7` |  |
 | [`pva_revenue_prediction_kddcup98`](pva_revenue_prediction_kddcup98/) | IID | 191,769 | 477 | 3 x 3 | not built | `dataset_constant_column`, `dataset_missing_value_label`, `meta_license_unknown` |
 | [`qsar_aquatic_toxicity`](qsar_aquatic_toxicity/) | IID | 546 | 8 | 20 x 3 | not built | `dataset_conflicting_duplicate_rows` |
 | [`qsar_bioconcentration`](qsar_bioconcentration/) | grouped | 776 | 195 | 10 x 3 | not built |  |

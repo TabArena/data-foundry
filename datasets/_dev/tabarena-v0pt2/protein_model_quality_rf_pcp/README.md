@@ -3,7 +3,20 @@ report_format: data-foundry-report-v2
 unique_name: protein_model_quality_rf_pcp
 container_format: 2
 checksum: v2:9c815361646dd91564cc761b59da41b5dd13244b9911968281ce056688cc1d7a
-build: null
+build:
+  uuid: 01a18ba2-013a-7001-a61c-686e78b112d7
+  checksum: v2:9c815361646dd91564cc761b59da41b5dd13244b9911968281ce056688cc1d7a
+  built_at: '2026-10-30T07:06:53+00:00'
+  path: protein_model_quality_rf_pcp/01a18ba2-013a-7001-a61c-686e78b112d7
+  data_foundry_version: 0.0.5
+  git_sha: ea35638cb7c9dc88ff6b7f6f6316594207a68393
+  libraries:
+    python: 3.12.3
+    pandas: 3.1.0
+    numpy: 2.5.4
+    pyarrow: 26.0.0
+    scikit-learn: 1.7.2
+    polars: 2.0.0
 build_stale: false
 data:
   n_rows: 95094
@@ -62,7 +75,7 @@ decisions: []
 
 Regression of `GDT`, scored with `rmse` on grouped splits by `protein_id`. 95,094 rows and 6 features. Source: Other (2014).
 
-Not built yet. The current definition gives checksum `v2:9c815361646dd91564cc761b59da41b5dd13244b9911968281ce056688cc1d7a`.
+Built as `01a18ba2-013a-7001-a61c-686e78b112d7` on 2026-10-30. See [Build](#build).
 
 ## In brief
 
@@ -321,4 +334,12 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a18ba2-013a-7001-a61c-686e78b112d7 |
+| checksum | v2:9c815361646dd91564cc761b59da41b5dd13244b9911968281ce056688cc1d7a |
+| built_at | 2026-10-30T07:06:53+00:00 |
+| path | protein_model_quality_rf_pcp/01a18ba2-013a-7001-a61c-686e78b112d7 |
+| data_foundry_version | 0.0.5 |
+| git_sha | ea35638cb7c9dc88ff6b7f6f6316594207a68393 |
+| libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
