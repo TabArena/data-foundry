@@ -50,9 +50,6 @@ every uncommitted curation change and offer the commit.
   without a fact that sets it apart, contradicts a similar precedent, drifts from the curator's earlier calls, or is
   the third exception of its kind ([principles.md](../../knowledge-curation/references/principles.md), "Consistent
   judgement"). The curator's answer follows as a `CC` line; the check stays as the record of the question.
-* `**Better data (AI, YYYY-MM-DD):**` is the result of a search for better data on an existing record: the new
-  record of a hit and what it adds, or none found and where we looked (`/screen-candidates better data`). The fields
-  stay as they are.
 * `**Open issues (AI, YYYY-MM-DD):**` followed by numbered issues: the open questions of a record that has no dataset
   folder, until the curator settles them (a folder keeps them in its `REVIEW.md`, [working_copy.md](working_copy.md)).
 * A field edit alone gets no comment: git records who changed what.
@@ -89,7 +86,7 @@ record that already has a verdict gets an `**Assessment (AI)**` instead.
 | `suggestion` | The verdict; the one required field. |
 | `priority` | 1-5: how urgently a curator should act on the record at its stage (5 first): verify the screening and send it to `/add-dataset`, then review what `/add-dataset` added. Set by `/screen-candidates`, set again by `/add-dataset` from what it measured, changed by the curator; none on a rejected record. The factors are in [selection.md](../../knowledge-curation/references/selection.md), "Priority". |
 | `decision_markers` | Issue flags (`Duplicate`, `Trivial`, `Image`, `Too Small`, `Data Quality Issue`, ...); a clean dataset has none. |
-| `tags` | Priority and shape tags (`New IID`, `Non-IID (Temporal)`, `Non-IID (Grouped)`, `Tiny Data`, `Many features`, `Multi-target`). Remove a tag that does not apply. `Search for better data` is the curator's mark for a later search for a larger or newer dataset of the same task (`/screen-candidates better data`); it stays until the curator removes it. |
+| `tags` | Priority and shape tags (`New IID`, `Non-IID (Temporal)`, `Non-IID (Grouped)`, `Tiny Data`, `Many features`, `Multi-target`). Remove a tag that does not apply. `Search for better data` is the curator's ask to look for a larger or newer dataset of the same task: when the record is screened (`/screen-candidates <name>`), a data scout searches for it; the curator removes the tag. |
 | `collections` | External benchmarks the dataset appears in (TabSTAR, CARTE/TARTE, TabRed, TableShift, ...), never our own. |
 | `original_source` | Where the data was first published ([provenance.md](../../knowledge-curation/references/provenance.md)): `OpenML`, `UCI`, `Kaggle`, `Zindi`, `GOV Website`, `Github`, `Company`, `Website`, `Other`, `?`. This is the record's vocabulary; the definition's `source` uses the schema's values (`GitHub`, `HuggingFace`, `Customer`, `ASlib`, ...), and `dataset new` maps one to the other. |
 | `year` | The year the data was first published (free text: `2014`, `? (2014)`). |

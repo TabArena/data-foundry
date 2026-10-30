@@ -37,18 +37,17 @@ Two stages, and in each one the AI works first and you verify:
 
 ### `/screen-candidates`: a quick first pass
 
-* **When:** you found a dataset; the backlog needs a pass; you want to know what to look at next; "check X" on a record
-  that has no dataset folder yet.
+* **When:** you found a dataset; you are looking for datasets on a task or domain; the backlog needs a pass; you want
+  to know what to look at next; "check X" on a record that has no dataset folder yet.
 * **You type:** `/screen-candidates https://www.kaggle.com/datasets/<owner>/<slug>`, `/screen-candidates
-  some_record,another_record`, or `/screen-candidates` alone for every record without a verdict. To find new
-  candidates from the records we have: `/screen-candidates better data` searches the records you tagged
-  `Search for better data` (or the names you give, or `all`) for a larger or newer dataset of the same task, and
-  screens what it finds as new records.
+  some_record,another_record`, `/screen-candidates find datasets on <task or domain>`, or `/screen-candidates` alone
+  for every record without a verdict.
 * **Claude:** reads the source and the web (nothing is downloaded beyond a preview, nothing built); writes into each
   record what the next stage needs (first publication, the data as published, the use case, the likely split, papers,
-  related records and duplicates, risks); rejects the obvious cases (unethical, generated, non-tabular, forecasting,
-  duplicate, unknown source, no use case) after a second agent tried to refute each reject; gives every other record
-  `TBD -> Yes` or `TBD -> 2nd Tier` and a priority from 1 (last) to 5 (first).
+  related records and duplicates, risks); for new candidates, data scouts look for better data for the same task (a
+  larger or newer dataset), and each one they find is screened as a new record; rejects the obvious cases (unethical,
+  generated, non-tabular, forecasting, duplicate, unknown source, no use case) after a second agent tried to refute
+  each reject; gives every other record `TBD -> Yes` or `TBD -> 2nd Tier` and a priority from 1 (last) to 5 (first).
 * **You see:** the records in the dashboard's Screening queue, marked 🤖 until you verify them. A single name gets a
   deeper pass (the paper's text, Kaggle discussions, related records).
 * **Next:** `/review-screened-candidates`.
@@ -89,7 +88,8 @@ Two stages, and in each one the AI works first and you verify:
 | You want to | Do |
 |---|---|
 | add a dataset you found | `/screen-candidates <link>`, then `/review-screened-candidates` |
-| find larger or newer data for a task we have | tag the record `Search for better data`, then `/screen-candidates better data` (or `better data all`) |
+| find datasets on a task or domain | `/screen-candidates find datasets on <task or domain>` |
+| have better data searched for a dataset we have | tag its record `Search for better data`, then `/screen-candidates <name>` |
 | know what to look at next | `/review-screened-candidates` (the queue is sorted by priority) |
 | get a dataset you accepted into the benchmark | `/add-dataset <name>` |
 | know whether a dataset is ready | `/add-dataset <name>` on its folder (a re-check) |
@@ -115,8 +115,8 @@ one side (definitions in [`.claude/agents/`](../agents/)):
 | review editor | reads `REVIEW.md` as you would and fixes what is unclear |
 
 A full panel costs on the order of a million tokens per dataset; for a re-check after a small change Claude runs a
-smaller one. In stage 1, two agents help: a screener for batches and a reject checker that argues against every quick
-`No`; a third, the data scout, searches for better data when you ask.
+smaller one. In stage 1, three agents help: a screener for batches, a reject checker that argues against every quick
+`No`, and data scouts that look for new datasets.
 
 ## Who works on what
 

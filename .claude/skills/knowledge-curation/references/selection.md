@@ -161,7 +161,7 @@ above 5 (first version, 2026-10-19, to be tuned; it orders the review of added d
 | A clear use case | the source names who acts on the prediction and the decision, and the fit is direct (USE-1, USE-8, [use_case.md](use_case.md)); a use case the curation wrote ("for example a lender") does not count |
 | A strong source | the first publisher documents the data (a paper, a codebook, an institution's page) (PROV-1, PROV-8, [provenance.md](provenance.md)) |
 | A good shape | comfortably above `Too Small` (about 1,000 units and 5 features or more, a first guess), with a mix of feature types or a grouped or temporal structure |
-| A known risk (minus one) | a likely leak, heavy joins across tables, or an unclear target; once added, also an open issue that raises one of these or damage that may not be repairable, a duplicate, or the recommendation not to ship |
+| A known risk (minus one) | a likely leak, heavy joins across tables, an unclear target, or better data found for the same task (screened as its own record); once added, also an open issue that raises one of these or damage that may not be repairable, a duplicate, or the recommendation not to ship |
 
 A rejected record (`No`) has no priority. The factors only order the queue: a record with priority 1 is still a
 candidate, and a high priority never stands in for a check of the rules. Within one priority the review of added
@@ -254,12 +254,11 @@ prediction time when the data loads (`us_accidents`: its published "78% accuracy
 
 A small or dated dataset whose task still matters may have better data: a larger or newer public dataset with the same
 target and use case, and features of the same kind known at the prediction point, not necessarily column for column.
-The search runs when the curator asks (`/screen-candidates better data`, over the records tagged
-`Search for better data` or over all records), not in every screening. A hit from another source is its own record,
-not a `Duplicate` (PROV-4); a newer release of the same source is a version (PROV-6), and the curator decides which one
-enters. The old record is not rejected automatically: it keeps its verdict until the curator decides. Cases:
-`body_density_prediction` (252 men, 1985) → NHANES DXA body fat (21,768 people); `hepatitis_c_egypt`, tagged for a
-search (Lennart, 2026-10-26).
+Screening looks for it (`/screen-candidates`, step 3, "Better data for the same task"), with data scouts whenever new
+candidates come in. A hit from another source is its own record, not a `Duplicate` (PROV-4); a newer release of the
+same source is a version (PROV-6), and the curator decides which one enters. The old record is not rejected
+automatically: it keeps the verdict its own data earns. Cases: `body_density_prediction` (252 men, 1985) and NHANES
+DXA body fat (21,768 people); `hepatitis_c_egypt`, tagged `Search for better data` (Lennart, 2026-10-26).
 
 ### Selection bias
 
