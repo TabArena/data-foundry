@@ -1,0 +1,6 @@
+name: qsar_biodeg
+holder: Lennart
+stage: add
+claimed_at: '2026-10-30T14:22:49Z'
+expires_at: '2026-11-06T14:22:49Z'
+note: 'Issue #34 follow-up: N073 and C026 are fragment counts, back to numeric (PR #35)'
