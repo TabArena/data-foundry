@@ -2,5 +2,5 @@ name: geoai_ground_level_no2_estimation_challenge
 holder: Myunghwan
 stage: triage
 claimed_at: '2026-10-28T03:20:07Z'
-expires_at: '2026-11-04T03:20:07Z'
-note: 'Next Myunghwan curation batch: highest remaining eligible priority 3; existing screening dossiers await curator review. Reservation only; no scientific acceptance or build.'
+expires_at: '2026-11-06T23:20:18Z'
+note: 'Curator accepted as implemented with documented label-QC, regional and observed-day coverage limits. Built and verified: 82,051 rows, 11 predictors, station-held-out 3x3 folds; reload and traced-input reproduction passed with zero warnings. Local commits 7b2837b and 8cba4df on geoai-no2-curation; not pushed or submitted. Retain Myunghwan ownership pending upstream integration; existing stage preserved by gateway.'
