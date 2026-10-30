@@ -7,6 +7,25 @@ from pathlib import Path
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "avgAge": ["20-30 years", "30-40 years", "40-50 years", "50-60 years", "60-70 years", "70-80 years"],
+    "romanCatholic": [
+        "0%",
+        "1 - 10%",
+        "11 - 23%",
+        "24 - 36%",
+        "37 - 49%",
+        "50 - 62%",
+        "63 - 75%",
+        "76 - 88%",
+        "89 - 99%",
+        "100%",
+    ],
+    "contributionPrivateThirdPartyInsurance": ["f 0", "f 1 - 49", "f 50 - 99", "f 100 - 199"],
+}
+
 
 class Coil2000(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -61,6 +80,8 @@ class Coil2000(AbstractCuratedDataset):
         - We combined the original training and validation data into one new dataset.
         - We reversed the ordinal encoding of the original data where possible.
         - Anomaly: the data has 15% duplicates.
+        - Ordinal scales (2026-10-30, CLEAN-14): 3 columns typed as ordered categories in the order of the source's
+          codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -286,6 +307,7 @@ class Coil2000(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "customerSubtype",
                 "customerMainType",

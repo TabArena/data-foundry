@@ -43,6 +43,8 @@ CC (2026-10-14, Lennart): Task probes `no_spread` accepted: the real labels give
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC-ROC (https://www.analyticsvidhya.com/datahack/contest/the-data-supremacy (also https://www.analyticsvidhya.com/datahack/contest/janatahack-hr-analytics)).
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 3 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `education_level`, `experience`, `company_size` (the README lists their levels); left unordered: `last_new_job` (a level outside the scale is a state of its own).
+
 ## Reference
 
 https://www.kaggle.com/datasets/arashnic/hr-analytics-job-change-of-data-scientists

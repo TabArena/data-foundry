@@ -50,6 +50,8 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — The data paper publishes the data without a prediction task or metric; the authors' earlier cancellation-prediction papers used other (non-public) data and reported several metrics (accuracy, precision, AUC), none set as the task's metric.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `DepositType` (the README lists their levels); left unordered: `ArrivalDateMonth` (a partial order); `Meal` (a level outside the scale is a state of its own).
+
 ## Reference
 
 Antonio, N., de Almeida, A., & Nunes, L. (2019). Hotel booking demand datasets. Data in brief, 22, 41-49.

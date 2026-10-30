@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: audiology_diagnosis
 container_format: 2
-checksum: v2:fa9a4b7559070fe9d7536d1ba6bc303b52e097034e1493839b85538baaef584d
+checksum: v2:7f583fc9d49916ed2e6eece568133120d157b8c50d5698defb60098fd43d45f5
 build:
   uuid: 01a111fc-c395-7cc5-9b60-91d8a7afaa20
   checksum: v2:3044c012f561b616370f46630853c7c58c6476463989263eb70d410e8b786995
@@ -66,7 +66,7 @@ decisions: []
 
 Multiclass classification of `diagnosis`, scored with `log_loss` on IID splits. 195 rows and 65 features. Source: UCI (1987).
 
-Built as `01a111fc-c395-7cc5-9b60-91d8a7afaa20` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:fa9a4b7559070fe9d7536d1ba6bc303b52e097034e1493839b85538baaef584d`, so the build is stale. See [Build](#build).
+Built as `01a111fc-c395-7cc5-9b60-91d8a7afaa20` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7f583fc9d49916ed2e6eece568133120d157b8c50d5698defb60098fd43d45f5`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -142,9 +142,10 @@ Only curators run `build`, when the dataset ships.
 | reason | UCI page defines no metric; Protos reported classification accuracy on the 24 original diagnoses, a different target from our 3 grouped types, so no metric is defined for the shipped task |
 
 <details>
-<summary>Feature types: 66 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 60 categorical, 6 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (66): `age_gt_60`, `air`, `airBoneGap`, `ar_c`, `ar_u`, `bone`, `boneAbnormal`, `history_buzzing`, `history_dizziness`, `history_fluctuating`, `history_heredity`, `history_nausea`, `history_noise`, `history_recruitment`, `history_ringing`, `history_roaring`, `history_vomiting`, `late_wave_poor`, `m_at_2k`, `m_cond_lt_1k`, `m_gt_1k`, `m_m_gt_2k`, `m_m_sn`, `m_m_sn_gt_1k`, `m_m_sn_gt_2k`, `m_m_sn_gt_500`, `m_p_sn_gt_2k`, `m_s_gt_500`, `m_s_sn`, `m_s_sn_gt_1k`, `m_s_sn_gt_2k`, `m_s_sn_gt_3k`, `m_s_sn_gt_4k`, `m_sn_2_3k`, `m_sn_gt_1k`, `m_sn_gt_2k`, `m_sn_gt_3k`, `m_sn_gt_4k`, `m_sn_gt_500`, `m_sn_gt_6k`, `m_sn_lt_1k`, `m_sn_lt_2k`, `m_sn_lt_3k`, `middle_wave_poor`, `mod_gt_4k`, `mod_mixed`, `mod_s_mixed`, `mod_s_sn_gt_500`, `mod_sn`, `mod_sn_gt_1k`, `mod_sn_gt_2k`, `mod_sn_gt_3k`, `mod_sn_gt_4k`, `mod_sn_gt_500`, `notch_4k`, `notch_at_4k`, `o_ar_c`, `o_ar_u`, `s_sn_gt_1k`, `s_sn_gt_2k`, `s_sn_gt_4k`, `speech`, `static_normal`, `tymp`, `wave_V_delayed`, `diagnosis`
+- categorical (60): `age_gt_60`, `airBoneGap`, `boneAbnormal`, `history_buzzing`, `history_dizziness`, `history_fluctuating`, `history_heredity`, `history_nausea`, `history_noise`, `history_recruitment`, `history_ringing`, `history_roaring`, `history_vomiting`, `late_wave_poor`, `m_at_2k`, `m_cond_lt_1k`, `m_gt_1k`, `m_m_gt_2k`, `m_m_sn`, `m_m_sn_gt_1k`, `m_m_sn_gt_2k`, `m_m_sn_gt_500`, `m_p_sn_gt_2k`, `m_s_gt_500`, `m_s_sn`, `m_s_sn_gt_1k`, `m_s_sn_gt_2k`, `m_s_sn_gt_3k`, `m_s_sn_gt_4k`, `m_sn_2_3k`, `m_sn_gt_1k`, `m_sn_gt_2k`, `m_sn_gt_3k`, `m_sn_gt_4k`, `m_sn_gt_500`, `m_sn_gt_6k`, `m_sn_lt_1k`, `m_sn_lt_2k`, `m_sn_lt_3k`, `middle_wave_poor`, `mod_gt_4k`, `mod_mixed`, `mod_s_mixed`, `mod_s_sn_gt_500`, `mod_sn`, `mod_sn_gt_1k`, `mod_sn_gt_2k`, `mod_sn_gt_3k`, `mod_sn_gt_4k`, `mod_sn_gt_500`, `notch_4k`, `notch_at_4k`, `s_sn_gt_1k`, `s_sn_gt_2k`, `s_sn_gt_4k`, `speech`, `static_normal`, `tymp`, `wave_V_delayed`, `diagnosis`
+- ordinal (6): `air (normal < mild < moderate < severe < profound)`, `ar_c (normal < elevated < absent)`, `ar_u (normal < elevated < absent)`, `bone (normal < mild < moderate)`, `o_ar_c (normal < elevated < absent)`, `o_ar_u (normal < elevated < absent)`
 - string (0): none
 - datetime (0): none
 
@@ -172,10 +173,10 @@ The first 5 of 195 rows of the final frame (random rows: the frame is shuffled);
 
 | diagnosis | age_gt_60 | air | airBoneGap | ar_c | ar_u | bone | boneAbnormal | history_buzzing | history_dizziness | history_fluctuating | history_heredity |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| sensorineural | t | mild | f | normal | normal | mild | t | f | t | f | f |
+| sensorineural | f | normal | f | normal | normal | nan | f | f | t | f | f |
 | normal | f | normal | f | elevated | normal | nan | f | f | f | f | f |
 | sensorineural | f | mild | f | elevated | elevated | nan | f | f | f | f | f |
-| sensorineural | f | mild | f | normal | normal | nan | f | f | t | t | f |
+| normal | f | normal | f | normal | elevated | nan | f | f | f | f | f |
 | sensorineural | t | mild | f | normal | absent | mild | t | f | f | f | f |
 
 ## Curation notes
@@ -188,6 +189,9 @@ We start with the data from UCI and merge train and test data.
 - We drop the cases whose diagnosis is not a type of hearing loss: bells_palsy (a facial-nerve diagnosis) and the central diagnoses possible_brainstem_disorder and poss_central (3 cases after the duplicates).
 - We do not use the cause as the target: among the cochlear diagnoses it is spelled out by two history findings (age_gt_60 and history_noise agree with cochlear_age, cochlear_age_and_noise, cochlear_poss_noise or cochlear_unknown in 139 of 147 cases).
 - We remove the columns that are constant after these steps: history_fullness, and the brainstem-test findings bser, viith_nerve_signs and waveform_ItoV_prolonged, which only the dropped cases had (bser is also recorded for one kept case).
+- Ordinal scales (2026-10-30, CLEAN-14): 6 columns typed as ordered categories in the order of the source's
+  codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
+  (CLEAN-10).
 
 ## Splits
 
@@ -277,7 +281,7 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| bone | category | 64 | 32.82 | 4 | mild, unmeasured, normal, moderate |
+| bone | category | 102 | 52.31 | 3 | mild, normal, moderate |
 | o_ar_c | category | 5 | 2.56 | 3 | normal, absent, elevated |
 | speech | category | 5 | 2.56 | 6 | normal, good, very_good, very_poor, poor, unmeasured |
 | ar_c | category | 4 | 2.05 | 3 | normal, absent, elevated |
@@ -357,7 +361,7 @@ No numeric features to summarize.
 ### Categorical features
 
 <details>
-<summary>Show the table (153 rows)</summary>
+<summary>Show the table (152 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -378,11 +382,10 @@ No numeric features to summarize.
 | ar_u | 2 | absent | 41 | 21.03 |
 | ar_u | 3 | elevated | 35 | 17.95 |
 | ar_u | 4 | &lt;NA> | 3 | 1.54 |
-| bone | 1 | &lt;NA> | 64 | 32.82 |
+| bone | 1 | &lt;NA> | 102 | 52.31 |
 | bone | 2 | mild | 55 | 28.21 |
-| bone | 3 | unmeasured | 38 | 19.49 |
-| bone | 4 | normal | 34 | 17.44 |
-| bone | 5 | moderate | 4 | 2.05 |
+| bone | 3 | normal | 34 | 17.44 |
+| bone | 4 | moderate | 4 | 2.05 |
 | boneAbnormal | 1 | f | 151 | 77.44 |
 | boneAbnormal | 2 | t | 44 | 22.56 |
 | diagnosis | 1 | sensorineural | 142 | 72.82 |
@@ -421,8 +424,9 @@ No numeric features to summarize.
 | m_m_sn | 1 | f | 187 | 95.9 |
 | m_m_sn | 2 | t | 8 | 4.1 |
 | m_m_sn_gt_1k | 1 | f | 190 | 97.44 |
+| m_m_sn_gt_1k | 2 | t | 5 | 2.56 |
 
-(93 more rows not shown)
+(92 more rows not shown)
 
 </details>
 
@@ -437,4 +441,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:fa9a4b7559070fe9d7536d1ba6bc303b52e097034e1493839b85538baaef584d` |
+| stale | yes: the definition now gives checksum `v2:7f583fc9d49916ed2e6eece568133120d157b8c50d5698defb60098fd43d45f5` |

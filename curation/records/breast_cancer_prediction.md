@@ -44,6 +44,8 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — The BCSC page poses the question (predict any cancer from patient characteristics and the mammography assessment) but names no metric; it suggests the data for 'statistical methods for binary outcomes'.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `birads_assessment` (a level outside the scale is a state of its own); ordinal scales shipped as numbers, left as numbers for the curator's review: `birads_breast_density`.
+
 ## Reference
 
 Other

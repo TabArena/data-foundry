@@ -8,6 +8,14 @@ import numpy as np
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "cut": ["Fair", "Good", "Very Good", "Premium", "Ideal"],
+    "color": ["J", "I", "H", "G", "F", "E", "D"],
+    "clarity": ["I1", "SI2", "SI1", "VS2", "VS1", "VVS2", "VVS1", "IF"],
+}
+
 
 class Diamonds(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -59,6 +67,8 @@ class Diamonds(AbstractCuratedDataset):
         - The price ships on a log scale (log of US dollars), the scale a practitioner models a price on, and is scored
           by RMSLE on the dollar price after the inverse (`target_transform="log"`; Lennart, 2026-10-21): a price's
           error matters relative to the price.
+        - Ordinal scales (2026-10-30, CLEAN-14): 3 columns typed as ordered categories in the order of the source's
+          codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -84,6 +94,7 @@ class Diamonds(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "cut",
                 "color",

@@ -48,3 +48,5 @@ CC (2026-10-26, Lennart): the record's year takes the definition's value (2026, 
 **Assessment (AI, 2026-10-26):** applied: the remark on the model-filled weather in the notes, the metric relabelled as the fallback (same ROC AUC). No open issue is left, so the folder's REVIEW.md is removed; the review panel has not run (the curator's call of 2026-10-26).
 
 CC (2026-10-26, Lennart): verdict ship.
+
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `O_COCO` (a partial order); `D_COCO` (a partial order); `INBOUND_STATUS` (a level outside the scale is a state of its own).

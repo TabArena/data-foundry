@@ -36,6 +36,8 @@ Andrej: As the task is non-discriminative but supportive in nature, I see no iss
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — the UCI page and the data paper define no task metric; the case study compares classifiers on several scores (not verified in full text).
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `Previous_qualification` (a partial order); `Mothers_qualification` (a partial order); `Fathers_qualification` (a partial order); ordinal scales shipped as numbers, left as numbers for the curator's review: `Application_order`.
+
 ## Reference
 
 Early prediction of student's performance in higher education: a case study

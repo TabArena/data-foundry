@@ -69,6 +69,8 @@ CC (2026-10-27, Lennart): review of PR #20, marks on REVIEW.md. Fit `approximate
 
 CC (2026-10-27, Lennart): verdict ship, nothing open after the review of PR #20. To be built on the curator's ask.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `slope` (the README lists their levels); left unordered: `cp` (asymptomatic is half the rows and the most diseased; the order is contested).
+
 ## Reference
 
 @article{detrano1989international,

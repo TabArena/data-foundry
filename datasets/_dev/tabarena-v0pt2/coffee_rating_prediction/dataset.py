@@ -8,6 +8,12 @@ import numpy as np
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "roast": ["Light", "Medium-Light", "Medium", "Medium-Dark", "Dark"],
+}
+
 
 class CoffeeRatingPrediction(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -73,6 +79,8 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
         - We parse agtron into a lower and upper value as float.
         - Note, the data contains several spatial features about locations. We do not resolve these.
         - The price feature is extremely messy as a result of web scrapping. We resolve this feature as real tabular data (not from a web scrapper but from the database source), would have these information stored in a more structured way. We drop coffees that are measured in "capsules" units as they exist only 8 times and seem to be strong outliers. We normalizes the price to be per grams. Moreover, we convert all currencies to USD (with a fixed rate); we ignore the temporal incorrectness this may introduce as it is most likely minimal.
+        - Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
+          codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -227,6 +235,7 @@ class CoffeeRatingPrediction(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "roast",
                 "NT_price",

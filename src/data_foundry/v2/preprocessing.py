@@ -11,7 +11,7 @@ fails on a misspelled name), and ``anonymize_ids`` gives stable anonymous ids. T
 from __future__ import annotations
 
 import hashlib
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Sequence
 
 import numpy as np
 import pandas as pd
@@ -47,17 +47,36 @@ def drop_columns(df: pd.DataFrame, columns: Iterable[str]) -> pd.DataFrame:
     return df.drop(columns=columns)
 
 
+def set_missing(df: pd.DataFrame, codes: Mapping[str, Iterable]) -> pd.DataFrame:
+    """Set the given codes of each column to missing: the values outside a scale that mean "unknown" (don't know,
+    refused, not asked) and proxy missing values (CLEAN-10). A column that is not in the frame is an error.
+
+    Raises:
+        KeyError: A column is not in the frame.
+    """
+    missing = _missing(df, codes)
+    if missing:
+        raise KeyError(f"Cannot set missing values in columns that are not in the frame: {missing}")
+    df = df.copy(deep=not copy_on_write_enabled())
+    for col, values in codes.items():
+        df[col] = df[col].mask(df[col].isin(list(values)))
+    return df
+
+
 def cast_dtypes(
     df: pd.DataFrame,
     *,
     categorical: Iterable[str] = (),
     string: Iterable[str] = (),
     datetime: Iterable[str] | Mapping[str, str | None] = (),
+    ordinal: Mapping[str, Sequence] | None = None,
 ) -> pd.DataFrame:
     """Cast columns by meaning, the same way for every dataset.
 
     * ``categorical``: ``category`` dtype (unordered), unused categories removed; text categories are stored as
       ``object``, the dtype they come back with from parquet.
+    * ``ordinal``: an ordered ``category`` with the given levels, lowest first, unused levels removed; a value that
+      is not one of the levels raises, rather than becoming missing.
     * ``string``: pandas ``string`` dtype (free text / high-cardinality text); missing values stay ``<NA>``.
     * ``datetime``: ``pd.to_datetime``; a mapping gives a per-column ``format`` (None = inferred).
 
@@ -65,11 +84,11 @@ def cast_dtypes(
 
     Raises:
         KeyError: A listed column is not in the frame.
-        ValueError: A column is listed under two dtypes.
+        ValueError: A column is listed under two dtypes, or holds a value that is not one of its ordinal levels.
     """
-    categorical, string = list(categorical), list(string)
+    categorical, string, ordinal = list(categorical), list(string), dict(ordinal or {})
     formats = dict(datetime) if isinstance(datetime, Mapping) else dict.fromkeys(datetime)
-    listed = categorical + string + list(formats)
+    listed = categorical + string + list(formats) + list(ordinal)
     duplicated = sorted({c for c in listed if listed.count(c) > 1})
     if duplicated:
         raise ValueError(f"Columns listed under more than one dtype: {duplicated}")
@@ -91,10 +110,27 @@ def cast_dtypes(
         df[col] = df[col].where(df[col].notna(), np.nan).astype("string")
     for col in categorical:
         df[col] = df[col].astype("category").cat.remove_unused_categories()
+    for col, levels in ordinal.items():
+        df[col] = _ordered(df[col], levels)
+    for col in [*categorical, *ordinal]:
         categories = df[col].cat.categories
         if isinstance(categories.dtype, pd.StringDtype):  # `string` categories come back as `object` from parquet
             df[col] = df[col].cat.rename_categories(categories.astype(object))
     return df
+
+
+def _ordered(values: pd.Series, levels: Sequence) -> pd.Series:
+    """``values`` as an ordered ``category`` with ``levels``, lowest first, unused levels removed.
+
+    Raises:
+        ValueError: A value is not one of the levels (``pd.Categorical`` would make it missing).
+    """
+    unknown = set(values.dropna().unique()) - set(levels)
+    if unknown:
+        msg = f"`{values.name}` holds values that are not among its ordinal levels: {sorted(map(str, unknown))[:10]}"
+        raise ValueError(msg)
+    ordered = pd.Categorical(values, categories=list(levels), ordered=True)
+    return pd.Series(ordered, index=values.index, name=values.name).cat.remove_unused_categories()
 
 
 def canonical_dtypes(df: pd.DataFrame) -> pd.DataFrame:

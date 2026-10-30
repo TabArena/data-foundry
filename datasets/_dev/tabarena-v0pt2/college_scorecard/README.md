@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: college_scorecard
 container_format: 2
-checksum: v2:6ab6ba7fb4afcb3a9d9334d5ea7be773988099aa69f5528519cc139a655a3e35
+checksum: v2:7724fb6eb4cb5ddc6ee3b0e0168dcfa6243c5d88b24e71e2941b685ad36dc08a
 build: null
 build_stale: false
 data:
@@ -62,7 +62,7 @@ decisions:
 
 Regression of `completion_rate_150pct`, scored with `rmse` on temporal splits by `cohort_year`. 34,431 rows and 92 features. Source: GOV Website (2026).
 
-Not built yet. The current definition gives checksum `v2:6ab6ba7fb4afcb3a9d9334d5ea7be773988099aa69f5528519cc139a655a3e35`.
+Not built yet. The current definition gives checksum `v2:7724fb6eb4cb5ddc6ee3b0e0168dcfa6243c5d88b24e71e2941b685ad36dc08a`.
 
 ## In brief
 
@@ -158,9 +158,10 @@ Only curators run `build`, when the dataset ships.
 | reason | The Scorecard release defines no prediction task; TableShift binarizes the rate at 0.5 and scores accuracy, a different target from ours. |
 
 <details>
-<summary>Feature types: 10 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 7 categorical, 3 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (10): `STABBR`, `CONTROL`, `PREDDEG`, `HIGHDEG`, `REGION`, `OPEFLAG`, `OPENADMP`, `ADMCON7`, `MAIN`, `DISTANCEONLY`
+- categorical (7): `STABBR`, `CONTROL`, `REGION`, `OPEFLAG`, `OPENADMP`, `MAIN`, `DISTANCEONLY`
+- ordinal (3): `PREDDEG (Predominantly certificate-degree granting < Predominantly associate's-degree granting < Predominantly bachelor's-degree granting < Entirely graduate-degree granting)`, `HIGHDEG (Non-degree-granting < Certificate degree < Associate degree < Bachelor's degree < Graduate degree)`, `ADMCON7 (Neither required nor recommended < Considered but not required < Recommended < Required)`
 - string (0): none
 - datetime (0): none
 
@@ -210,6 +211,9 @@ We start with the files MERGED1996_97_PP.csv to MERGED2025_26_PP.csv of the Coll
 - Split: temporal by entering cohort with a label gap (splits comment), not grouped by institution, since a model is used on the next cohorts of institutions it has seen (decision table).
 - Anomaly: completion rates of 0 (24 institution-cohorts) and 1 (14), and ACT 25th percentiles below 10 (56 rows), kept as reported.
 - Note: we keep the rate as a regression target; TableShift binarizes it at 0.5.
+- Ordinal scales (2026-10-30, CLEAN-14): 3 columns typed as ordered categories in the order of the source's
+  codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
+  (CLEAN-10).
 
 ## Splits
 
@@ -268,48 +272,48 @@ Accepted on purpose:
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | DISTANCEONLY | category | 19576 | 56.86 | 2 | 0.0, 1.0 |
-| ADMCON7 | category | 5637 | 16.37 | 5 | Required, Recommended, Neither required nor recommended, Considered but not req… |
+| ADMCON7 | category | 5646 | 16.4 | 4 | Required, Recommended, Neither required nor recommended, Considered but not req… |
 | OPENADMP | category | 21 | 0.06 | 3 | No, Yes, Does not enroll first-time students |
 | STABBR | category | 0 | 0 | 57 | NY, CA, PA, OH, FL, TX, MA, IL, NC, GA |
 | MAIN | category | 0 | 0 | 2 | 1, 0 |
-| PREDDEG | category | 0 | 0 | 5 | Predominantly bachelor's-degree granting, Predominantly associate's-degree gran… |
+| PREDDEG | category | 1 | 0 | 4 | Predominantly bachelor's-degree granting, Predominantly associate's-degree gran… |
 | HIGHDEG | category | 0 | 0 | 5 | Graduate degree, Bachelor's degree, Associate degree, Non-degree-granting, Cert… |
 | CONTROL | category | 0 | 0 | 3 | Private nonprofit, Public, Private for-profit |
 | REGION | category | 0 | 0 | 10 | Southeast (AL, AR, FL, GA, KY, LA, MS, NC, SC, TN, VA, WV), Mid East (DE, DC, M… |
 | OPEFLAG | category | 0 | 0 | 5 | Participates in Title IV federal financial aid programs, Branch campus of a mai… |
 | NPT4_PUB | float64 | 27908 | 81.05 | 5402 | 14183.0, 12503.0, 8258.0, 14656.0, 8909.0, 14589.0, 9493.0, 12152.0, 8243.0, 14… |
 | NPT4_PRIV | float64 | 22443 | 65.18 | 9483 | 20989.0, 23345.0, 21336.0, 18539.0, 22302.0, 19725.0, 18963.0, 24231.0, 18595.0… |
-| UG25ABV | float64 | 17320 | 50.3 | 6075 | 0.0, 0.0073, 0.0061, 0.0096, 0.0034, 0.0057, 0.0045, 0.0042, 0.0038, 0.0053 |
+| UG25ABV | float64 | 17320 | 50.3 | 6075 | 0.0, 0.0073, 0.0096, 0.0034, 0.0061, 0.0955, 0.0038, 0.0053, 0.0057, 0.0045 |
 | ACTMT75 | float64 | 16799 | 48.79 | 29 | 25.0, 24.0, 26.0, 23.0, 27.0, 22.0, 28.0, 29.0, 21.0, 20.0 |
 | ACTMT25 | float64 | 16796 | 48.78 | 34 | 17.0, 18.0, 16.0, 19.0, 20.0, 21.0, 22.0, 15.0, 23.0, 24.0 |
 | ACTEN75 | float64 | 16788 | 48.76 | 29 | 25.0, 24.0, 26.0, 23.0, 27.0, 22.0, 28.0, 29.0, 21.0, 30.0 |
 | ACTEN25 | float64 | 16785 | 48.75 | 34 | 19.0, 20.0, 18.0, 17.0, 21.0, 16.0, 15.0, 22.0, 23.0, 24.0 |
 | UGDS_NHPI | float64 | 16400 | 47.63 | 432 | 0.0, 0.0006, 0.0007, 0.0008, 0.001, 0.0009, 0.0005, 0.0011, 0.0004, 0.0013 |
 | UGDS_2MOR | float64 | 16400 | 47.63 | 1147 | 0.0, 0.0295, 0.0195, 0.0236, 0.0154, 0.0199, 0.018, 0.0181, 0.0238, 0.0177 |
-| COSTT4_A | float64 | 15942 | 46.3 | 15125 | 21105.0, 33700.0, 16682.0, 18700.0, 24725.0, 32045.0, 21120.0, 17700.0, 37572.0… |
+| COSTT4_A | float64 | 15942 | 46.3 | 15125 | 17700.0, 24725.0, 18700.0, 21120.0, 33700.0, 16682.0, 32045.0, 21105.0, 21029.0… |
 | PCTFLOAN | float64 | 15680 | 45.54 | 7038 | 0.0, 1.0, 0.6628, 0.6667, 0.8333, 0.5597, 0.6043, 0.6966, 0.7722, 0.6253 |
 | FTFTPCTPELL | float64 | 13686 | 39.75 | 7049 | 0.0, 0.5, 1.0, 0.3333, 0.6667, 0.4, 0.4286, 0.375, 0.6, 0.4444 |
 | FTFTPCTFLOAN | float64 | 13686 | 39.75 | 7345 | 0.0, 1.0, 0.75, 0.8333, 0.6667, 0.8571, 0.8, 0.5, 0.625, 0.7778 |
 | ACTCM75 | float64 | 13682 | 39.74 | 28 | 25.0, 24.0, 26.0, 23.0, 27.0, 28.0, 22.0, 29.0, 21.0, 30.0 |
 | ACTCM25 | float64 | 13677 | 39.72 | 34 | 19.0, 20.0, 18.0, 21.0, 17.0, 22.0, 23.0, 16.0, 24.0, 25.0 |
-| PCTPELL | float64 | 13669 | 39.7 | 6916 | 0.0, 0.3333, 0.2681, 0.5, 0.3478, 0.3317, 0.2965, 0.368, 0.3937, 0.4444 |
+| PCTPELL | float64 | 13669 | 39.7 | 6916 | 0.0, 0.3333, 0.2681, 0.5, 0.3478, 0.3317, 0.2965, 0.2498, 0.3937, 0.4444 |
 | STUFACR | float64 | 13596 | 39.49 | 76 | 12.0, 14.0, 13.0, 11.0, 15.0, 16.0, 17.0, 10.0, 18.0, 19.0 |
 | SATMT25 | float64 | 13397 | 38.91 | 304 | 450.0, 460.0, 430.0, 440.0, 470.0, 490.0, 420.0, 500.0, 480.0, 410.0 |
 | SATMT75 | float64 | 13398 | 38.91 | 274 | 570.0, 560.0, 580.0, 550.0, 590.0, 610.0, 540.0, 600.0, 530.0, 620.0 |
 | SAT_AVG | float64 | 11064 | 32.13 | 808 | 1010.0, 1030.0, 1050.0, 990.0, 970.0, 1070.0, 1090.0, 950.0, 930.0, 1105.0 |
 | GRADS | float64 | 9879 | 28.69 | 5806 | 1.0, 18.0, 4.0, 7.0, 5.0, 8.0, 12.0, 3.0, 13.0, 9.0 |
-| ENDOWBEGIN | float64 | 9297 | 27 | 24441 | 0.0, 442871.0, 39000.0, 65712.0, 134104.0, 1660594.0, 312884.0, 58622.0, 190100… |
+| ENDOWBEGIN | float64 | 9297 | 27 | 24441 | 0.0, 39000.0, 442871.0, 65712.0, 134104.0, 1660594.0, 312884.0, 58622.0, 190100… |
 | RET_FT4 | float64 | 6743 | 19.58 | 5307 | 0.75, 0.8, 1.0, 0.7, 0.5, 0.71, 0.78, 0.72, 0.68, 0.76 |
-| ADM_RATE | float64 | 5778 | 16.78 | 7562 | 1.0, 0.5, 0.6667, 0.75, 0.7438, 0.685, 0.7147, 0.6279, 0.8333, 0.7436 |
-| ADM_RATE_ALL | float64 | 5229 | 15.19 | 7462 | 1.0, 0.6625, 0.6544, 0.6409, 0.6747, 0.6642, 0.6773, 0.6706, 0.6742, 0.6335 |
+| ADM_RATE | float64 | 5778 | 16.78 | 7562 | 1.0, 0.5, 0.6667, 0.7438, 0.75, 0.6279, 0.685, 0.7147, 0.8333, 0.8381 |
+| ADM_RATE_ALL | float64 | 5229 | 15.19 | 7462 | 1.0, 0.6625, 0.6544, 0.6409, 0.6747, 0.6642, 0.6706, 0.6335, 0.6773, 0.6742 |
 | PFTFAC | float64 | 2256 | 6.55 | 8113 | 1.0, 0.5, 0.6667, 0.3333, 0.25, 0.6, 0.75, 0.8, 0.4, 0.8333 |
 | C150_4_LATEST | float64 | 1221 | 3.55 | 8074 | 0.5, 1.0, 0.3333, 0.4, 0.0, 0.6667, 0.4286, 0.6, 0.25, 0.2 |
 | TUITIONFEE_IN | float64 | 425 | 1.23 | 15435 | 17148.0, 16356.0, 15600.0, 14880.0, 0.0, 14196.0, 11880.0, 13548.0, 9000.0, 566… |
-| TUITIONFEE_OUT | float64 | 425 | 1.23 | 15806 | 17148.0, 16356.0, 15600.0, 14880.0, 14196.0, 0.0, 13548.0, 11880.0, 18000.0, 90… |
-| AVGFACSAL | float64 | 288 | 0.84 | 9006 | 5781.0, 6876.0, 5723.0, 5894.0, 5914.0, 5685.0, 5605.0, 4724.0, 6244.0, 5820.0 |
-| TUITFTE | float64 | 204 | 0.59 | 17681 | 0.0, 3860.0, 7723.0, 6694.0, 5727.0, 6657.0, 11059.0, 4518.0, 4514.0, 9550.0 |
+| TUITIONFEE_OUT | float64 | 425 | 1.23 | 15806 | 17148.0, 15600.0, 16356.0, 14880.0, 14196.0, 0.0, 11880.0, 13548.0, 18000.0, 90… |
+| AVGFACSAL | float64 | 288 | 0.84 | 9006 | 5781.0, 6876.0, 5723.0, 5914.0, 4977.0, 5605.0, 5685.0, 5894.0, 6244.0, 5820.0 |
+| TUITFTE | float64 | 204 | 0.59 | 17681 | 0.0, 3860.0, 7723.0, 6433.0, 4518.0, 6694.0, 5727.0, 3130.0, 11059.0, 6657.0 |
 | INEXPFTE | float64 | 204 | 0.59 | 14090 | 5032.0, 0.0, 5089.0, 6199.0, 4963.0, 5196.0, 4362.0, 6090.0, 4405.0, 7042.0 |
-| PPTUG_EF | float64 | 35 | 0.1 | 5793 | 0.0, 0.0011, 0.0082, 0.006, 0.0073, 0.0074, 0.0193, 0.0006, 0.0019, 0.0069 |
+| PPTUG_EF | float64 | 35 | 0.1 | 5793 | 0.0, 0.0011, 0.0082, 0.006, 0.0074, 0.0073, 0.0193, 0.0019, 0.0006, 0.0157 |
 | PCIP01 | float64 | 28 | 0.08 | 1187 | 0.0, 0.0333, 0.012, 0.0018, 0.0016, 0.0106, 0.0331, 0.0028, 0.0037, 0.0387 |
 | PCIP03 | float64 | 28 | 0.08 | 1042 | 0.0, 0.0034, 0.0033, 0.0026, 0.0044, 0.0053, 0.0023, 0.0038, 0.0022, 0.005 |
 | PCIP04 | float64 | 28 | 0.08 | 860 | 0.0, 0.0019, 0.0029, 0.0025, 0.0039, 0.0049, 0.0077, 0.0036, 0.0008, 0.0126 |
@@ -320,7 +324,7 @@ Accepted on purpose:
 | PCIP12 | float64 | 28 | 0.08 | 1035 | 0.0, 1.0, 0.0019, 0.0032, 0.0034, 0.0043, 0.0046, 0.0009, 0.005, 0.0008 |
 | PCIP13 | float64 | 28 | 0.08 | 3279 | 0.0, 0.1429, 0.125, 0.0833, 0.1, 0.1111, 0.0455, 0.2, 0.0909, 0.1176 |
 | PCIP14 | float64 | 28 | 0.08 | 2598 | 0.0, 0.0027, 0.0014, 0.0016, 0.0022, 0.0032, 0.003, 0.0023, 0.0026, 0.0039 |
-| PCIP15 | float64 | 28 | 0.08 | 2180 | 0.0, 0.0011, 0.0009, 0.001, 0.0017, 0.0005, 0.0056, 0.004, 0.0019, 0.0054 |
+| PCIP15 | float64 | 28 | 0.08 | 2180 | 0.0, 0.0011, 0.0009, 0.001, 0.0017, 0.0056, 0.0005, 0.0019, 0.004, 0.0054 |
 | PCIP16 | float64 | 28 | 0.08 | 932 | 0.0, 0.0093, 0.0056, 0.0066, 0.0047, 0.0065, 0.0068, 0.005, 0.0067, 0.0033 |
 | PCIP19 | float64 | 28 | 0.08 | 1294 | 0.0, 0.0078, 0.0095, 0.0115, 0.014, 0.0053, 0.0042, 0.0017, 0.0076, 0.016 |
 | PCIP22 | float64 | 28 | 0.08 | 1005 | 0.0, 0.0047, 0.0026, 0.0048, 0.0034, 0.0033, 0.0036, 0.0041, 0.0045, 0.0049 |
@@ -418,7 +422,7 @@ Accepted on purpose:
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | ADMCON7 | 1 | Required | 22904 | 66.52 |
-| ADMCON7 | 2 | &lt;NA> | 5637 | 16.37 |
+| ADMCON7 | 2 | &lt;NA> | 5646 | 16.4 |
 | ADMCON7 | 3 | Recommended | 3039 | 8.83 |
 | ADMCON7 | 4 | Neither required nor recommended | 2502 | 7.27 |
 | ADMCON7 | 5 | Considered but not required | 340 | 0.99 |
@@ -448,7 +452,7 @@ Accepted on purpose:
 | PREDDEG | 2 | Predominantly associate's-degree granting | 4371 | 12.69 |
 | PREDDEG | 3 | Predominantly certificate-degree granting | 704 | 2.04 |
 | PREDDEG | 4 | Entirely graduate-degree granting | 28 | 0.08 |
-| PREDDEG | 5 | Not classified | 1 | 0 |
+| PREDDEG | 5 | &lt;NA> | 1 | 0 |
 | REGION | 1 | Southeast (AL, AR, FL, GA, KY, LA, MS, NC, SC, TN, VA, WV) | 8390 | 24.37 |
 | REGION | 2 | Mid East (DE, DC, MD, NJ, NY, PA) | 6228 | 18.09 |
 | REGION | 3 | Great Lakes (IL, IN, MI, OH, WI) | 5169 | 15.01 |

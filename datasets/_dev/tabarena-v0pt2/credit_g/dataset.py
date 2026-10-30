@@ -7,6 +7,24 @@ from pathlib import Path
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "employment_since": [
+        "unemployed",
+        "< 1 year",
+        "1 <= ... < 4 years",
+        "4 <= ... < 7 years",
+        ">= 7 years",
+    ],  # open-ended
+    "job": [
+        "unemployed / unskilled non-resident",
+        "unskilled resident",
+        "skilled employee / official",
+        "management / self-employed / highly qualified",
+    ],
+}
+
 
 class CreditG(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -60,7 +78,19 @@ class CreditG(AbstractCuratedDataset):
     """
     curation_comments = """
         - We reversed the original ordinal encoding.
+        - Labels follow the corrected code table (Groemping 2019, "South German Credit Data: Correcting a Widely Used
+          Data Set", UCI 573), not Statlog's german.doc, which is wrong for checking_status, credit_history,
+          credit_purpose, savings_status, personal_status_sex, property, housing and foreign_worker. The codes keep
+          their order: matched on duration, amount and age (990 of 1,000 rows unique in both files), A11 is code 1,
+          A12 code 2 and so on in every column, with foreign_worker reversed (A201 is "no"). The numeric codes mean:
+          installment_rate_percent 1 = >= 35%, 2 = 25-35%, 3 = 20-25%, 4 = < 20% of disposable income (a higher code
+          is a lower rate); residence_since 1 = < 1 year to 4 = >= 7 years; existing_credits_count 1 = 1, 2 = 2-3,
+          3 = 4-5, 4 = >= 6; people_liable 1 = 0 to 2, 2 = 3 or more. UCI 573 also corrects a few values (34 rows of
+          other_installment_plans, 10 of foreign_worker, 1 of housing); this definition keeps Statlog's values
+          (2026-10-30).
         - Metric: the Statlog cost matrix on probabilities, each applicant predicted as the class of least expected cost (the AI's choice; the curator was unsure and noted TabArena's threshold tuning, 2026-10-21).
+        - Ordinal scales (2026-10-30, CLEAN-14): 2 columns typed as ordered categories in the order of the source's
+          codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -110,38 +140,40 @@ class CreditG(AbstractCuratedDataset):
             20: "good_or_bad_customer",
         }
         category_mappings = {
+            # the labels of the corrected code table (Groemping 2019, UCI 573 South German Credit); the Statlog
+            # german.doc table is wrong for these columns (curation notes)
             "checking_status": {
-                "A11": "<0 DM",
-                "A12": "0 <= ... < 200 DM",
-                "A13": ">= 200 DM / salary assignments for >= 1 year",
-                "A14": "no checking account",
+                "A11": "no checking account",
+                "A12": "< 0 DM",
+                "A13": "0 <= ... < 200 DM",
+                "A14": ">= 200 DM / salary for at least 1 year",
             },
             "credit_history": {
-                "A30": "no credits taken / all paid duly",
-                "A31": "all credits at this bank paid duly",
-                "A32": "existing credits paid duly till now",
-                "A33": "delay in paying off in past",
-                "A34": "critical account / other credits existing",
+                "A30": "delay in paying off in the past",
+                "A31": "critical account / other credits elsewhere",
+                "A32": "no credits taken / all credits paid back duly",
+                "A33": "existing credits paid back duly till now",
+                "A34": "all credits at this bank paid back duly",
             },
             "credit_purpose": {
-                "A40": "car (new)",
-                "A41": "car (used)",
-                "A42": "furniture/equipment",
-                "A43": "radio/television",
-                "A44": "domestic appliances",
-                "A45": "repairs",
-                "A46": "education",
-                "A47": "vacation",
-                "A48": "retraining",
-                "A49": "business",
-                "A410": "others",
+                "A40": "others",
+                "A41": "car (new)",
+                "A42": "car (used)",
+                "A43": "furniture/equipment",
+                "A44": "radio/television",
+                "A45": "domestic appliances",
+                "A46": "repairs",
+                "A47": "education",
+                "A48": "vacation",
+                "A49": "retraining",
+                "A410": "business",
             },
             "savings_status": {
-                "A61": "< 100 DM",
-                "A62": "100 <= ... < 500 DM",
-                "A63": "500 <= ... < 1000 DM",
-                "A64": ">= 1000 DM",
-                "A65": "unknown / no savings",
+                "A61": "unknown / no savings account",
+                "A62": "< 100 DM",
+                "A63": "100 <= ... < 500 DM",
+                "A64": "500 <= ... < 1000 DM",
+                "A65": ">= 1000 DM",
             },
             "employment_since": {
                 "A71": "unemployed",
@@ -152,20 +184,19 @@ class CreditG(AbstractCuratedDataset):
             },
             "personal_status_sex": {
                 "A91": "male: divorced/separated",
-                "A92": "female: divorced/separated/married",
-                "A93": "male: single",
-                "A94": "male: married/widowed",
-                "A95": "female: single",
+                "A92": "female: non-single, or male: single",
+                "A93": "male: married/widowed",
+                "A94": "female: single",
             },
             "other_debtors": {"A101": "none", "A102": "co-applicant", "A103": "guarantor"},
             "property": {
-                "A121": "real estate",
-                "A122": "building society savings / life insurance",
-                "A123": "car or other (not savings)",
-                "A124": "unknown / no property",
+                "A121": "unknown / no property",
+                "A122": "car or other",
+                "A123": "building society savings / life insurance",
+                "A124": "real estate",
             },
             "other_installment_plans": {"A141": "bank", "A142": "stores", "A143": "none"},
-            "housing": {"A151": "rent", "A152": "own", "A153": "for free"},
+            "housing": {"A151": "for free", "A152": "rent", "A153": "own"},
             "job": {
                 "A171": "unemployed / unskilled non-resident",
                 "A172": "unskilled resident",
@@ -173,7 +204,7 @@ class CreditG(AbstractCuratedDataset):
                 "A174": "management / self-employed / highly qualified",
             },
             "telephone": {"A191": "none", "A192": "yes, registered"},
-            "foreign_worker": {"A201": "yes", "A202": "no"},
+            "foreign_worker": {"A201": "no", "A202": "yes"},
             "good_or_bad_customer": {"1": "good", "2": "bad"},
         }
         df.columns = list(feature_names.values())
@@ -186,6 +217,7 @@ class CreditG(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "checking_status",
                 "credit_history",

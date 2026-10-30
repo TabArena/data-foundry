@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: immoscout_german_house_prices
 container_format: 2
-checksum: v2:0c79fd1cbd2ac800d186a7e07bdd4c6e20a6823554221222a704c96b44ea1ee8
+checksum: v2:c9be209c1b0e30c0e0d9f8d92c45c6229bcfc44e09d6bf7edd6777fd0b2ef359
 build:
   uuid: 01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9
   checksum: v2:e91f49bdb50c1cd545a4e8d63445b34d9d9656af0c38c65cf81d41e18ec5054d
@@ -68,7 +68,7 @@ decisions: []
 
 Regression of `LogPrice`, scored with `rmsle` on IID splits. 10,317 rows and 23 features. Source: Kaggle (2020).
 
-Built as `01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:0c79fd1cbd2ac800d186a7e07bdd4c6e20a6823554221222a704c96b44ea1ee8`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c9be209c1b0e30c0e0d9f8d92c45c6229bcfc44e09d6bf7edd6777fd0b2ef359`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -148,9 +148,10 @@ Only curators run `build`, when the dataset ships.
 | target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
 
 <details>
-<summary>Feature types: 8 categorical, 4 string, 0 datetime</summary>
+<summary>Feature types: 7 categorical, 1 ordinal, 4 string, 0 datetime</summary>
 
-- categorical (8): `Type`, `Furnishing_quality`, `Condition`, `Heating`, `Energy_certificate`, `Energy_certificate_type`, `Energy_efficiency_class`, `Garagetype`
+- categorical (7): `Type`, `Furnishing_quality`, `Condition`, `Heating`, `Energy_certificate`, `Energy_certificate_type`, `Garagetype`
+- ordinal (1): `Energy_efficiency_class ( H  <  G  <  F  <  E  <  D  <  C  <  B  <  A  <  A+ )`
 - string (4): `Energy_source`, `State`, `City`, `Place`
 - datetime (0): none
 
@@ -199,7 +200,15 @@ We treat this as an IID time-independent task, because the prices is not sold pr
 - We drop Free_of_Relation as it indicates a (mostly) price-independent variable; showing logistic information. Note that this column also indicates that the houses are most likely from the same time, further justifying our use case of an IID task.
 - We drop all cases where the price is less than 10k (most of which have a price of 0) as we think this might be a data error, or a case where the price is put to 0 to be marked as "price on request" (which is common in house listings).
 - We drop all duplicates as these are most likely repeated entries given the feature space.
+- `Condition` and `Furnishing_quality`: the English labels of the scrape do not fit the houses they describe.
+  `Condition` "dilapidated" (1,137 houses) has the newest median year built (2010) and the highest median
+  price, "as new" (11) the oldest (1870) and the lowest; `Furnishing_quality` "refined" (904) is the oldest and
+  cheapest level. The translation of ImmoScout24's German labels looks permuted, and the original labels are
+  not available (the Kaggle upload is deleted; OpenML 43342 says nothing on it). Both stay unordered
+  categories: read their labels as codes, not as meanings (2026-10-30).
 - We drop all rows where the living space is less than 10 (in Germany, this would likely not be enough living space for a real house, and thus might be a data error.
+- Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
+  codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -366,4 +375,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:0c79fd1cbd2ac800d186a7e07bdd4c6e20a6823554221222a704c96b44ea1ee8` |
+| stale | yes: the definition now gives checksum `v2:c9be209c1b0e30c0e0d9f8d92c45c6229bcfc44e09d6bf7edd6777fd0b2ef359` |

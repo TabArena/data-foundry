@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: in_vehicle_coupon_recommendation
 container_format: 2
-checksum: v2:a5eae437e4fe81a8a8e7a81134d91a385d3b5bf6993df29af0a3f4e7c4c4aa50
+checksum: v2:9e9cc8b7683f947a1c47c1e1287d5283aa1d63eddb1baed21cb7086dad663253
 build:
   uuid: 01a111fc-e38e-7ad4-90c9-b80013f7640e
   checksum: v2:cdd74cb8121009f4ed1bc57984fff0bdc1db9da0b6bdb2b832dc53dd0698ee73
@@ -76,7 +76,7 @@ decisions: []
 
 Binary classification of `AcceptCoupon`, scored with `roc_auc` on grouped splits by `respondent`. 12,684 rows and 24 features. Source: Other (2017).
 
-Built as `01a111fc-e38e-7ad4-90c9-b80013f7640e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:a5eae437e4fe81a8a8e7a81134d91a385d3b5bf6993df29af0a3f4e7c4c4aa50`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e38e-7ad4-90c9-b80013f7640e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9e9cc8b7683f947a1c47c1e1287d5283aa1d63eddb1baed21cb7086dad663253`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -157,9 +157,10 @@ Only curators run `build`, when the dataset ships.
 | definition | Area under the ROC curve on AcceptCoupon. |
 
 <details>
-<summary>Feature types: 24 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 16 categorical, 8 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (24): `respondent`, `expiration`, `destination`, `passenger`, `weather`, `coupon`, `gender`, `age`, `maritalStatus`, `has_children`, `education`, `occupation`, `income`, `car`, `Bar`, `CoffeeHouse`, `CarryAway`, `RestaurantLessThan20`, `Restaurant20To50`, `toCoupon_GEQ15min`, `toCoupon_GEQ25min`, `direction_same`, `direction_opp`, `AcceptCoupon`
+- categorical (16): `respondent`, `expiration`, `destination`, `passenger`, `weather`, `coupon`, `gender`, `maritalStatus`, `has_children`, `occupation`, `car`, `toCoupon_GEQ15min`, `toCoupon_GEQ25min`, `direction_same`, `direction_opp`, `AcceptCoupon`
+- ordinal (8): `age (below21 < 21 < 26 < 31 < 36 < 41 < 46 < 50plus)`, `education (Some High School < High School Graduate < Some college - no degree < Associates degree < Bachelors degree < Graduate degree (Masters or Doctorate))`, `income (Less than $12500 < $12500 - $24999 < $25000 - $37499 < $37500 - $49999 < $50000 - $62499 < $62500 - $74999 < $75000 - $87499 < $87500 - $99999 < $100000 or More)`, `Bar (never < less1 < 1~3 < 4~8 < gt8)`, `CoffeeHouse (never < less1 < 1~3 < 4~8 < gt8)`, `CarryAway (never < less1 < 1~3 < 4~8 < gt8)`, `RestaurantLessThan20 (never < less1 < 1~3 < 4~8 < gt8)`, `Restaurant20To50 (never < less1 < 1~3 < 4~8 < gt8)`
 - string (0): none
 - datetime (0): none
 
@@ -204,6 +205,8 @@ The first 5 of 12,684 rows of the final frame (random rows: the frame is shuffle
 - Anomaly: the numeric features in the dataset are low-cardinality (<25)
 - We simulate a cold-start model (as used before a recommender has any history for a user): predict whether a person accepts a coupon from their profile, stated habits and the scenario, for people not seen in training. The data is a survey (Wang et al. 2017, Sec. 6.2): each MTurk respondent first gave demographics and preferences, then answered hypothetical driving scenarios (22 per person in the file, 19 fixed questionnaire versions), all in one sitting and without timestamps, so there is no real interaction history for a warm-start setting. A random split puts about two-thirds of each person's other answers in train, which lets a model learn that person's tendency to say yes (ROC AUC 0.83 random vs 0.76 grouped; leak audit 2026-09-24).
 - The respondent id is not shipped with the data. The raw file lists each respondent's answers as a consecutive block with identical first-part answers, so a block of the same profile is one respondent: 587 blocks, 517 of them with 22 rows, against 652 accepted surveys in the paper, so a few blocks likely merge two adjacent respondents with identical profiles, which only makes the grouping stricter. The paper reports out-of-sample AUC from 5-fold testing (Table 3) without saying whether folds were split by respondent; a random split would be a warm start.
+- Ordinal scales (2026-10-30, CLEAN-14): 8 columns typed as ordered categories in the order of the source's
+  codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -390,4 +393,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:a5eae437e4fe81a8a8e7a81134d91a385d3b5bf6993df29af0a3f4e7c4c4aa50` |
+| stale | yes: the definition now gives checksum `v2:9e9cc8b7683f947a1c47c1e1287d5283aa1d63eddb1baed21cb7086dad663253` |

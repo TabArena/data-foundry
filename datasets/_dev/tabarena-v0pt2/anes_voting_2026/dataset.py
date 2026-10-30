@@ -14,7 +14,84 @@ from data_foundry.v2 import (
     Temporal,
     TemporalSplits,
     object_columns,
+    set_missing,
 )
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "VCF0110": [1, 2, 3, 4],
+    "VCF0111": ["3", "2", "1"],
+    "VCF0114": ["1", "2", "3", "4", "5"],
+    "VCF0130a": ["5", "4", "3", "2", "1", "0"],  # open-ended
+    "VCF0138": ["0", "1", "2", "3"],  # open-ended
+    "VCF0140": ["1", "2", "3", "4", "5", "6"],
+    "VCF0140a": ["1", "2", "3", "4", "5", "6", "7"],
+    "VCF0301": ["1", "2", "3", "4", "5", "6", "7"],
+    "VCF0303": ["1", "2", "3"],
+    "VCF0305": ["1", "2", "3", "4"],
+    "VCF0310": ["1", "2", "3"],
+    "VCF0311": ["1", "2"],
+    "VCF0314": ["0", "1", "2", "3", "4", "5"],  # open-ended
+    "VCF0315": ["0", "1", "2", "3", "4", "5"],  # open-ended
+    "VCF0318": ["0", "1", "2", "3", "4", "5"],  # open-ended
+    "VCF0319": ["0", "1", "2", "3", "4", "5"],  # open-ended
+    "VCF0338": ["4", "3", "2", "1"],
+    "VCF0339": ["4", "3", "2", "1"],
+    "VCF0341": ["4", "3", "2", "1"],
+    "VCF0350": ["4", "3", "2", "1"],
+    "VCF0351": ["4", "3", "2", "1"],
+    "VCF0353": ["4", "3", "2", "1"],
+    "VCF0354": ["4", "3", "2", "1"],
+    "VCF0355": ["4", "3", "2", "1"],
+    "VCF0356": ["4", "3", "2", "1"],
+    "VCF0357": ["4", "3", "2", "1"],
+    "VCF0362": ["4", "3", "2", "1"],
+    "VCF0365": ["4", "3", "2", "1"],
+    "VCF0366": ["4", "3", "2", "1"],
+    "VCF0367": ["4", "3", "2", "1"],
+    "VCF0368": ["4", "3", "2", "1"],
+    "VCF0369": ["4", "3", "2", "1"],
+    "VCF0401": ["0", "1", "2", "3", "4", "5"],  # open-ended
+    "VCF0402": ["0", "1", "2", "3", "4", "5"],  # open-ended
+    "VCF0405": ["0", "1", "2", "3", "4", "5"],  # open-ended
+    "VCF0406": ["0", "1", "2", "3", "4", "5"],  # open-ended
+    "VCF0451": ["1", "2", "3", "4"],
+    "VCF0834": ["1", "2", "3", "4", "5", "6", "7"],
+    "VCF0839": ["1", "2", "3", "4", "5", "6", "7"],
+    "VCF0842": ["1", "2", "3", "4", "5", "6", "7"],
+    "VCF0843": ["1", "2", "3", "4", "5", "6", "7"],
+    "VCF0850": ["3", "2", "1"],
+    "VCF0870": ["1", "3", "5"],
+    "VCF0871": ["1", "2", "3", "4", "5"],
+    "VCF0872": ["1", "3", "5"],
+    "VCF9009": ["1", "2", "4", "5"],
+    "VCF9044a": ["1", "2", "3"],
+    "VCF9045": ["1", "3", "5"],
+    "VCF9073": ["1", "2", "3", "4", "5", "6", "7"],
+    "VCF9077": ["1", "2", "3", "4", "5", "6", "7"],
+    "VCF9081": ["1", "2", "3", "4", "5", "6", "7"],
+    "VCF9085": ["1", "2", "3", "4", "5", "6", "7"],
+    "VCF9086": ["1", "2", "3", "4", "5", "6", "7"],
+    "VCF9089": ["1", "2", "3", "4", "5", "6", "7"],
+    "VCF9093": ["1", "2", "3", "4", "5", "6", "7"],
+    "VCF9094": ["1", "2", "3", "4", "5", "6", "7"],
+    "VCF9122": ["1", "2", "3", "4", "5", "6", "7"],  # open-ended
+    "VCF9209": ["5", "4", "3", "2", "1"],
+    "VCF9210": ["5", "4", "3", "2", "1"],
+    "VCF9211": ["5", "4", "3", "2", "1"],
+    "VCF9212": ["5", "4", "3", "2", "1"],
+    "VCF9213": ["5", "4", "3", "2", "1"],
+    "VCF9214": ["5", "4", "3", "2", "1"],
+    "VCF9215": ["5", "4", "3", "2", "1"],
+    "VCF9216": ["5", "4", "3", "2", "1"],
+    "VCF9220": ["1", "2", "3"],
+    "VCF9225": ["1", "2", "3"],
+    "VCF9226": ["1", "2", "3", "4", "5"],
+    "VCF9238": ["1", "2", "3"],
+    "VCF9239": ["5", "4", "3", "2", "1"],
+    "VCF9244": ["5", "4", "3", "2", "1"],
+}
 
 
 class AnesVoting2026(AbstractCuratedDataset):
@@ -92,6 +169,9 @@ class AnesVoting2026(AbstractCuratedDataset):
         - Note: Ideally, we would select different feature sets per data split, depending on feature availability. However, for simplicity, we just keep all features.
         - Note: We considered keeping the unique respondent identifier in the data, because otherwise models that are able to reconstruct this information would unfairly benefit. However, for now we drop the identifier since it is not a desirable predictive feature for the given task, because the goal is generalization to the population, not memorizing individual behavior.
         - Metric: the fallback ROC AUC, not TableShift's accuracy (Lennart, 2026-10-21; metric spec).
+        - Ordinal scales (2026-10-30, CLEAN-14): 71 columns typed as ordered categories in the order of the source's
+          codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
+          (CLEAN-10); 20 counts and indices stored as text are numbers.
     """
 
     # Task
@@ -602,8 +682,129 @@ class AnesVoting2026(AbstractCuratedDataset):
         for col in num_cols:
             df[col] = pd.to_numeric(df[col])
         df = df.sort_values(by="VCF0004", kind="stable").reset_index(drop=True)
+        # codes outside a scale that mean unknown (don't know, refused, not asked): missing (CLEAN-10)
+        df = set_missing(
+            df,
+            {
+                "VCF0110": [0],
+                "VCF0111": ["0"],
+                "VCF0114": ["0"],
+                "VCF0130a": ["8", "9"],
+                "VCF0138": ["9"],
+                "VCF0140": ["8", "9"],
+                "VCF0140a": ["8", "9"],
+                "VCF0301": ["0"],
+                "VCF0303": ["0"],
+                "VCF0305": ["0"],
+                "VCF0310": ["0", "9"],
+                "VCF0311": ["0"],
+                "VCF0314": ["9"],
+                "VCF0315": ["9"],
+                "VCF0318": ["9"],
+                "VCF0319": ["9"],
+                "VCF0338": ["0", "8", "9"],
+                "VCF0339": ["8", "9"],
+                "VCF0341": ["8", "9"],
+                "VCF0350": ["8", "9"],
+                "VCF0351": ["8", "9"],
+                "VCF0353": ["8", "9"],
+                "VCF0354": ["8", "9"],
+                "VCF0355": ["8", "9"],
+                "VCF0356": ["8", "9"],
+                "VCF0357": ["8", "9"],
+                "VCF0362": ["8", "9"],
+                "VCF0365": ["8", "9"],
+                "VCF0366": ["8", "9"],
+                "VCF0367": ["8", "9"],
+                "VCF0368": ["8", "9"],
+                "VCF0369": ["8", "9"],
+                "VCF0401": ["9"],
+                "VCF0402": ["9"],
+                "VCF0405": ["9"],
+                "VCF0406": ["9"],
+                "VCF0451": ["0", "8"],
+                "VCF0834": ["0", "9"],
+                "VCF0839": ["0", "9"],
+                "VCF0842": ["-1", "0", "9"],
+                "VCF0843": ["-1", "0", "9"],
+                "VCF0850": ["0", "9"],
+                "VCF0870": ["0", "8"],
+                "VCF0871": ["-2", "0", "8", "9"],
+                "VCF0872": ["8", "9"],
+                "VCF9009": ["8", "9"],
+                "VCF9044a": ["8", "9"],
+                "VCF9045": ["8", "9"],
+                "VCF9073": ["0", "8", "9"],
+                "VCF9077": ["0", "8", "9"],
+                "VCF9081": ["0", "8", "9"],
+                "VCF9085": ["0", "8", "9"],
+                "VCF9086": ["0", "8", "9"],
+                "VCF9089": ["0", "8", "9"],
+                "VCF9093": ["0", "8", "9"],
+                "VCF9094": ["0", "8", "9"],
+                "VCF9122": ["9"],
+                "VCF9209": ["-1", "-8", "-9"],
+                "VCF9210": ["-1", "-8", "-9"],
+                "VCF9211": ["-1", "-8", "-9"],
+                "VCF9212": ["-1", "-8", "-9"],
+                "VCF9213": ["-1", "-8", "-9"],
+                "VCF9214": ["-1", "-8", "-9"],
+                "VCF9215": ["-1", "-8", "-9"],
+                "VCF9216": ["-1", "-8", "-9"],
+                "VCF9220": ["-8", "-9"],
+                "VCF9225": ["-8", "-9"],
+                "VCF9226": ["-8", "-9"],
+                "VCF9238": ["-8", "-9"],
+                "VCF9239": ["-8", "-9"],
+                "VCF9244": ["-8", "-9"],
+                "VCF0138a": ["9"],
+                "VCF0138b": ["9"],
+                "VCF0138c": ["9"],
+                "VCF0138d": ["9"],
+                "VCF0316": ["99"],
+                "VCF0317": ["99"],
+                "VCF0320": ["99"],
+                "VCF0321": ["99"],
+                "VCF0322": ["999"],
+                "VCF0323": ["99"],
+                "VCF0324": ["999"],
+                "VCF0403": ["99"],
+                "VCF0404": ["99"],
+                "VCF0407": ["99"],
+                "VCF0408": ["99"],
+                "VCF0409": ["999"],
+                "VCF0410": ["99"],
+                "VCF0411": ["999"],
+                "VCF9033": ["8", "9"],
+                "VCF9035": ["8", "9"],
+            },
+        )
+        # counts and indices, numbers in the codebook, stored as text (CLEAN-14)
+        num_codes = [
+            "VCF0138a",
+            "VCF0138b",
+            "VCF0138c",
+            "VCF0138d",
+            "VCF0316",
+            "VCF0317",
+            "VCF0320",
+            "VCF0321",
+            "VCF0322",
+            "VCF0323",
+            "VCF0324",
+            "VCF0403",
+            "VCF0404",
+            "VCF0407",
+            "VCF0408",
+            "VCF0409",
+            "VCF0410",
+            "VCF0411",
+            "VCF9033",
+            "VCF9035",
+        ]
+        df[num_codes] = df[num_codes].apply(pd.to_numeric)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         # VCF0110 is cast in `_clean` already. Every text column as categorical would require more careful audition.
-        return FeatureTypes(categorical=["VCF0110", *object_columns(df)])
+        return FeatureTypes(ordinal=ORDINAL_LEVELS, categorical=["VCF0110", *object_columns(df)])

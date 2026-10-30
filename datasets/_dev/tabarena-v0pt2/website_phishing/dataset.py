@@ -8,6 +8,17 @@ import arff
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "popUpWidnow": ["-1", "0", "1"],
+    "SSLfinal_State": ["-1", "0", "1"],
+    "Request_URL": ["-1", "0", "1"],
+    "URL_of_Anchor": ["-1", "0", "1"],
+    "web_traffic": ["-1", "0", "1"],
+    "URL_Length": ["-1", "0", "1"],
+}
+
 
 class WebsitePhishing(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -78,6 +89,8 @@ class WebsitePhishing(AbstractCuratedDataset):
           sites have SFH rated legitimate), and `having_IP_Address` takes only 0 and 1.
         - We renamed the target to `is_phishing` (Yes / No).
         - Anomaly: about half the rows are exact duplicates (47% of the 1,250 rows).
+        - Ordinal scales (2026-10-30, CLEAN-14): 6 columns typed as ordered categories in the order of the source's
+          codebook (`ORDINAL_LEVELS`).
     """
 
     accepted_check_warnings = {
@@ -110,6 +123,7 @@ class WebsitePhishing(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "SFH",
                 "popUpWidnow",

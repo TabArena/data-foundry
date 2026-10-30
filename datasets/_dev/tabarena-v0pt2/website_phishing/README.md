@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: website_phishing
 container_format: 2
-checksum: v2:9a324fa02e70eeb3002ab47a390586bb702b07a0bb05cf1c8af0f699afda56f8
+checksum: v2:781fa652198069c1bd3b61006deb84f072f87219c7790713a4ff1d32b287d574
 build:
   uuid: 01a13a7d-c2c0-77e5-80e6-a355a6e11902
   checksum: v2:c7cde63c8fb7303d3381838fca364ad477533b018a05b5f96c01e8cf0c9b4948
@@ -72,7 +72,7 @@ decisions: []
 
 Binary classification of `is_phishing`, scored with `roc_auc` on IID splits. 1,250 rows and 9 features. Source: UCI (2016).
 
-Built as `01a13a7d-c2c0-77e5-80e6-a355a6e11902` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:9a324fa02e70eeb3002ab47a390586bb702b07a0bb05cf1c8af0f699afda56f8`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2c0-77e5-80e6-a355a6e11902` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:781fa652198069c1bd3b61006deb84f072f87219c7790713a4ff1d32b287d574`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -149,9 +149,10 @@ Only curators run `build`, when the dataset ships.
 | reason | Abdelhamid, Ayesh & Thabtah 2014 compare associative classifiers by 3-class accuracy; we dropped the suspicious class (binary since 2026-10-14), so the task changed (MET-2), and no costs are fixed. roc_auc is the binary fallback. |
 
 <details>
-<summary>Feature types: 10 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 4 categorical, 6 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (10): `SFH`, `popUpWidnow`, `SSLfinal_State`, `Request_URL`, `URL_of_Anchor`, `web_traffic`, `URL_Length`, `age_of_domain`, `having_IP_Address`, `is_phishing`
+- categorical (4): `SFH`, `age_of_domain`, `having_IP_Address`, `is_phishing`
+- ordinal (6): `popUpWidnow (-1 < 0 < 1)`, `SSLfinal_State (-1 < 0 < 1)`, `Request_URL (-1 < 0 < 1)`, `URL_of_Anchor (-1 < 0 < 1)`, `web_traffic (-1 < 0 < 1)`, `URL_Length (-1 < 0 < 1)`
 - string (0): none
 - datetime (0): none
 
@@ -199,6 +200,8 @@ The first 5 of 1,250 rows of the final frame (random rows: the frame is shuffled
   sites have SFH rated legitimate), and `having_IP_Address` takes only 0 and 1.
 - We renamed the target to `is_phishing` (Yes / No).
 - Anomaly: about half the rows are exact duplicates (47% of the 1,250 rows).
+- Ordinal scales (2026-10-30, CLEAN-14): 6 columns typed as ordered categories in the order of the source's
+  codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -331,4 +334,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:9a324fa02e70eeb3002ab47a390586bb702b07a0bb05cf1c8af0f699afda56f8` |
+| stale | yes: the definition now gives checksum `v2:781fa652198069c1bd3b61006deb84f072f87219c7790713a4ff1d32b287d574` |

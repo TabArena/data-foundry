@@ -76,6 +76,8 @@ CC (2026-10-26, Lennart): the declared metric, ROC AUC (the source's ROC area of
 
 CC (2026-10-26, Lennart): verdict ship.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `ca` (the README lists their levels).
+
 ## Reference
 
 @article{knaus1995support,

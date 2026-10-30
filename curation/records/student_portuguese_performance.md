@@ -41,6 +41,8 @@ We use the port data and ignore the math data, as it is more or less a different
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — RMSE of G3 in regression setup C of Cortez & Silva 2008.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): ordinal scales shipped as numbers, left as numbers for the curator's review: `Medu`, `Fedu`, `traveltime`, `studytime`, `failures`, `famrel`, `freetime`, `goout`, `Dalc`, `Walc`, `health`.
+
 ## Reference
 
 Cortez, P., & Silva, A. M. G. (2008). Using data mining to predict secondary school student performance.

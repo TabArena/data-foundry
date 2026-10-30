@@ -42,6 +42,8 @@ other, never both at once. After investigation we shipped the classification ver
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: stand_in roc_auc — the KDD Cup 98 net revenue of the mailing (sum of TARGET_D - $0.68 over mailed donors) needs the donation amount, which our binary-response task drops (cup98doc.txt).
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 6 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `SOLP3`, `SOLIH`, `RFA_2F`, `RFA_2A`, `GEOCODE2`, `DOMAIN_ses` (the README lists their levels); left unordered: `MDMAUD_recency` (a level outside the scale is a state of its own); `MDMAUD_frequency` (a level outside the scale is a state of its own); `MDMAUD_amount` (a level outside the scale is a state of its own); ordinal scales shipped as numbers, left as numbers for the curator's review: `INCOME`, `WEALTH1`, `WEALTH2`.
+
 ## Reference
 
 Website / readme

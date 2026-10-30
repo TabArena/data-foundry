@@ -43,6 +43,8 @@ Moreover, this is not sold prices (as immoscout shows only prices you can ask to
 
 CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `Energy_efficiency_class` (the README lists their levels); left unordered: `Furnishing_quality` (low confidence); `Condition` (a partial order); Condition and Furnishing_quality labels are permuted in the scrape ("dilapidated": 1,137 houses, median year built 2010, the highest median price; "as new": 11, 1870, the lowest; Furnishing "refined" the oldest and cheapest); the German labels are lost, so both stay unordered with a note. Options for the curator: swap the two clear levels, neutral codes, or keep..
+
 ## Reference
 
 Kaggle / OpenML

@@ -7,6 +7,18 @@ from pathlib import Path
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "FCVC": [1.0, 2.0, 3.0],
+    "NCP": [1.0, 3.0, 4.0],  # open-ended
+    "CAEC": ["no", "Sometimes", "Frequently", "Always"],
+    "CH2O": [1.0, 2.0, 3.0],  # open-ended
+    "FAF": [0.0, 1.0, 2.0, 3.0],
+    "TUE": [0.0, 1.0, 2.0],  # open-ended
+    "CALC": ["no", "Sometimes", "Frequently", "Always"],
+}
+
 
 class ObesityEstimation(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -69,6 +81,8 @@ class ObesityEstimation(AbstractCuratedDataset):
         - We use only the real data, throwing away the SMOTE samples. The real answers are the first 498 rows: their class counts equal Fig. 1 of the data paper (Palechor & De la Hoz 2019), and all its Normal_Weight rows are among them. A filter on whole-number values would let in 15 synthetic rows, so we cut by position.
         - We drop the 10 exact copies among the 498 real rows (8 groups; one answer set appears 4 times), leaving 488. Each copy repeats all 16 answers, age, height to the centimetre and weight to the kilogram, and 4 groups are neighbouring rows, so they are one person sending the form again; Fig. 1 counts them.
         - We make the task a regression task, re-creating the body mass values underlying the discretized obesity levels, and drop weight and height which leak the target partially. Thus, we create a regression task of estimating the body mass of individuals based on their eating habits and other questions from the questionnaire. The original task is trivial to solve due to the leak and thus not interesting.
+        - Ordinal scales (2026-10-30, CLEAN-14): 7 columns typed as ordered categories in the order of the source's
+          codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -98,6 +112,7 @@ class ObesityEstimation(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "Gender",
                 "family_history_with_overweight",

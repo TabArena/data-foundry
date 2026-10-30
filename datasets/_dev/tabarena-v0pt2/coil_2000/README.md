@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: coil_2000
 container_format: 2
-checksum: v2:fb8d71f920fec28adb59746e82e8736808c129d0de5574ed5c1a829df04b9f18
+checksum: v2:c82bfb4bf10850de793146239f40f8ae3c81247c37c639c27a3a10abe601b42e
 build:
   uuid: 01a111fc-ceb4-7695-8b34-df7a285cfcb6
   checksum: v2:d2e67763e07858eea9e9b3cc295c8ca3b517b51a7969ec701a8323ad722d2ac8
@@ -69,7 +69,7 @@ decisions: []
 
 Binary classification of `MobileHomePolicy`, scored with `precision_at_k` on IID splits. 9,822 rows and 85 features. Source: UCI (2000).
 
-Built as `01a111fc-ceb4-7695-8b34-df7a285cfcb6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:fb8d71f920fec28adb59746e82e8736808c129d0de5574ed5c1a829df04b9f18`, so the build is stale. See [Build](#build).
+Built as `01a111fc-ceb4-7695-8b34-df7a285cfcb6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c82bfb4bf10850de793146239f40f8ae3c81247c37c639c27a3a10abe601b42e`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -148,9 +148,10 @@ Only curators run `build`, when the dataset ships.
 | params | {'k_fraction': 0.2} |
 
 <details>
-<summary>Feature types: 6 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 3 categorical, 3 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (6): `customerSubtype`, `customerMainType`, `romanCatholic`, `avgAge`, `contributionPrivateThirdPartyInsurance`, `MobileHomePolicy`
+- categorical (3): `customerSubtype`, `customerMainType`, `MobileHomePolicy`
+- ordinal (3): `avgAge (20-30 years < 30-40 years < 40-50 years < 50-60 years < 60-70 years < 70-80 years)`, `romanCatholic (0% < 1 - 10% < 11 - 23% < 24 - 36% < 37 - 49% < 50 - 62% < 63 - 75% < 76 - 88% < 89 - 99% < 100%)`, `contributionPrivateThirdPartyInsurance (f 0 < f 1 - 49 < f 50 - 99 < f 100 - 199)`
 - string (0): none
 - datetime (0): none
 
@@ -188,6 +189,8 @@ The first 5 of 9,822 rows of the final frame (random rows: the frame is shuffled
 - We combined the original training and validation data into one new dataset.
 - We reversed the ordinal encoding of the original data where possible.
 - Anomaly: the data has 15% duplicates.
+- Ordinal scales (2026-10-30, CLEAN-14): 3 columns typed as ordered categories in the order of the source's
+  codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -414,4 +417,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:fb8d71f920fec28adb59746e82e8736808c129d0de5574ed5c1a829df04b9f18` |
+| stale | yes: the definition now gives checksum `v2:c82bfb4bf10850de793146239f40f8ae3c81247c37c639c27a3a10abe601b42e` |

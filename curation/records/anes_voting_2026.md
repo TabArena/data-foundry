@@ -43,6 +43,8 @@ This entry refers to the February 5, 2026 version.
 
 CC (2026-10-21, Lennart): metric: the fallback (roc_auc), not TableShift's accuracy.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 71 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `VCF0110`, `VCF0111`, `VCF0114`, `VCF0130a`, `VCF0138`, `VCF0140`, `VCF0140a`, `VCF0301`, `VCF0303`, `VCF0305`, `VCF0310`, `VCF0311` and 59 more (the README lists their levels); their codes that mean unknown (don't know, refused, not asked) are missing in `VCF0110`, `VCF0111`, `VCF0114`, `VCF0130a`, `VCF0138`, `VCF0140`, `VCF0140a`, `VCF0301`, `VCF0303`, `VCF0305`, `VCF0310`, `VCF0311` and 59 more (CLEAN-10); 20 counts and indices stored as text are numbers: `VCF0138a`, `VCF0138b`, `VCF0138c`, `VCF0138d`, `VCF0316`, `VCF0317`, `VCF0320`, `VCF0321`, `VCF0322`, `VCF0323`, `VCF0324`, `VCF0403` and 8 more; left unordered: `VCF0130` (a level outside the scale is a state of its own); `VCF0137` (a partial order); `VCF0148` (a partial order); `VCF0148a` (a partial order); `VCF0149` (a partial order); `VCF0155` (a level outside the scale is a state of its own); `VCF9002` (a level outside the scale is a state of its own); `VCF9044` (a partial order); `VCF9266` (a level outside the scale is a state of its own); ordinal scales shipped as numbers, left as numbers for the curator's review: `VCF0102`, `VCF0103`; codes shipped as numbers, left for the curator's review: `VCF0104`.
+
 ## Reference
 
 @dataset{anes_timeseries_cdf_2026,

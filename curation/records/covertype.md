@@ -56,6 +56,8 @@ CC (2026-10-01, Lennart): Back to IID splits on the full data (all 7 cover types
 
 CC (2026-10-21, Lennart): Fallback log loss, not the paper's accuracy.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `Soil_ClimaticZone` (a partial order).
+
 ## Reference
 
 https://www.sciencedirect.com/science/article/abs/pii/S0168169999000460

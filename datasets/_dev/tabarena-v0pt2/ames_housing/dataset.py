@@ -16,6 +16,7 @@ from data_foundry.v2 import (
     TemporalSplits,
     drop_columns,
     object_columns,
+    set_missing,
 )
 
 # The data end in July 2010 with 8 sales (101-122 in July 2006-2009): the month was cut by the extract.
@@ -429,6 +430,37 @@ ABSENT_LEVELS = {
 }
 
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "Lot Shape": ["Regular", "Slightly irregular", "Moderately Irregular", "Irregular"],
+    "Utilities": [
+        "Electricity and Gas Only",
+        "Electricity, Gas, and Water (Septic Tank)",
+        "All public Utilities (E,G,W,& S)",
+    ],
+    "Land Slope": ["Gentle slope", "Moderate Slope", "Severe Slope"],
+    "Exter Qual": ["Fair", "Typical/Average", "Good", "Excellent"],
+    "Exter Cond": ["Poor", "Fair", "Typical/Average", "Good", "Excellent"],
+    "Heating QC": ["Poor", "Fair", "Typical/Average", "Good", "Excellent"],
+    "Kitchen Qual": ["Poor", "Fair", "Typical/Average", "Good", "Excellent"],
+    "Functional": [
+        "Salvage only",
+        "Severely Damaged",
+        "Major Deductions 2",
+        "Major Deductions 1",
+        "Moderate Deductions",
+        "Minor Deductions 2",
+        "Minor Deductions 1",
+        "Typical Functionality",
+    ],
+    "Garage Qual": ["Poor", "Fair", "Typical/Average", "Good", "Excellent"],
+    "Garage Cond": ["Poor", "Fair", "Typical/Average", "Good", "Excellent"],
+    "Paved Drive": ["Dirt/Gravel", "Partial Pavement", "Paved"],
+    "Pool QC": ["Fair", "Typical/Average", "Good", "Excellent"],
+}
+
+
 class AmesHousing(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="What price will a house in Ames, Iowa sell for?",
@@ -517,6 +549,9 @@ class AmesHousing(AbstractCuratedDataset):
         - Anomaly: `Year Remod/Add` starts at 1950: 337 of the 629 houses built before 1950 show 1950, where the documentation gives the construction year for no remodel. Kept as recorded.
         - No duplicate rows. Two pairs of neighbouring parcels share every feature and sold in one month at different prices; kept.
         - Not trivial (TP-4; the record's `Trivial` marker was removed, CC 2026-10-26): `Overall Qual` alone reaches R² 0.682 in the task probe (13 windows) and De Cock's two-variable model 0.766, against 0.911 for the probe's linear model and 0.900 for its LightGBM.
+        - Ordinal scales (2026-10-30, CLEAN-14): 12 columns typed as ordered categories in the order of the source's
+          codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
+          (CLEAN-10).
     """
 
     # Task
@@ -593,12 +628,22 @@ class AmesHousing(AbstractCuratedDataset):
         # Target: the log of the sale price, renamed in place.
         df = df.rename(columns={"SalePrice": "log_SalePrice"})
         df["log_SalePrice"] = np.log(df["log_SalePrice"])
+        # codes outside a scale that mean unknown (don't know, refused, not asked): missing (CLEAN-10)
+        df = set_missing(
+            df,
+            {
+                "Garage Qual": ["No garage"],
+                "Garage Cond": ["No garage"],
+                "Pool QC": ["No pool"],
+            },
+        )
         return drop_columns(df, ["Order", "PID", "Yr Sold", "Mo Sold"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         # The non-numeric columns are the 23 nominal and 21 text-coded ordinal variables of the documentation (text
         # in the cleaned frame, categories in the final one).
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[c for c in df.columns if c != "Month Sold" and not pd.api.types.is_numeric_dtype(df[c])],
             datetime={"Month Sold": "%Y%m"},
         )

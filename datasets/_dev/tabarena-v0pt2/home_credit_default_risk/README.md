@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: home_credit_default_risk
 container_format: 2
-checksum: v2:e185cb5b7a44021d5e9d2d5bfb3f1faa9bf8090481a84e6a22300ad8c13d8dde
+checksum: v2:370de3c0f49560a67d5fa37cddedd1308eeb735afe230c79e8b95e831695faa0
 build:
   uuid: 01a111fb-c9a4-79ac-b807-b4b9dffd8068
   checksum: v2:1a393d7cebaaa9c5dd20682edd3c56e7c65a975a8f94a37ce6528b23a311ad2f
@@ -73,7 +73,7 @@ decisions: []
 
 Binary classification of `TARGET`, scored with `roc_auc` on IID splits. 307,507 rows and 709 features. Source: Kaggle (2018).
 
-Built as `01a111fb-c9a4-79ac-b807-b4b9dffd8068` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:e185cb5b7a44021d5e9d2d5bfb3f1faa9bf8090481a84e6a22300ad8c13d8dde`, so the build is stale. See [Build](#build).
+Built as `01a111fb-c9a4-79ac-b807-b4b9dffd8068` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:370de3c0f49560a67d5fa37cddedd1308eeb735afe230c79e8b95e831695faa0`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -152,9 +152,10 @@ Only curators run `build`, when the dataset ships.
 | definition | ROC AUC between predicted probability and TARGET |
 
 <details>
-<summary>Feature types: 49 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 48 categorical, 1 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (49): `NAME_CONTRACT_TYPE`, `CODE_GENDER`, `FLAG_OWN_CAR`, `FLAG_OWN_REALTY`, `NAME_TYPE_SUITE`, `NAME_INCOME_TYPE`, `NAME_EDUCATION_TYPE`, `NAME_FAMILY_STATUS`, `NAME_HOUSING_TYPE`, `OCCUPATION_TYPE`, `WEEKDAY_APPR_PROCESS_START`, `FLAG_WORK_PHONE`, `FLAG_PHONE`, `REG_CITY_NOT_LIVE_CITY`, `LIVE_CITY_NOT_WORK_CITY`, `ORGANIZATION_TYPE`, `FONDKAPREMONT_MODE`, `HOUSETYPE_MODE`, `WALLSMATERIAL_MODE`, `EMERGENCYSTATE_MODE`, `FLAG_DOCUMENT_3`, `FLAG_DOCUMENT_8`, `FLAG_DOCUMENT_18`, `FLAG_MOBIL`, `FLAG_EMP_PHONE`, `FLAG_CONT_MOBILE`, `FLAG_EMAIL`, `REG_REGION_NOT_LIVE_REGION`, `REG_REGION_NOT_WORK_REGION`, `LIVE_REGION_NOT_WORK_REGION`, `REG_CITY_NOT_WORK_CITY`, `FLAG_DOCUMENT_2`, `FLAG_DOCUMENT_4`, `FLAG_DOCUMENT_5`, `FLAG_DOCUMENT_6`, `FLAG_DOCUMENT_7`, `FLAG_DOCUMENT_9`, `FLAG_DOCUMENT_10`, `FLAG_DOCUMENT_11`, `FLAG_DOCUMENT_12`, `FLAG_DOCUMENT_13`, `FLAG_DOCUMENT_14`, `FLAG_DOCUMENT_15`, `FLAG_DOCUMENT_16`, `FLAG_DOCUMENT_17`, `FLAG_DOCUMENT_19`, `FLAG_DOCUMENT_20`, `FLAG_DOCUMENT_21`, `TARGET`
+- categorical (48): `NAME_CONTRACT_TYPE`, `CODE_GENDER`, `FLAG_OWN_CAR`, `FLAG_OWN_REALTY`, `NAME_TYPE_SUITE`, `NAME_INCOME_TYPE`, `NAME_FAMILY_STATUS`, `NAME_HOUSING_TYPE`, `OCCUPATION_TYPE`, `WEEKDAY_APPR_PROCESS_START`, `FLAG_WORK_PHONE`, `FLAG_PHONE`, `REG_CITY_NOT_LIVE_CITY`, `LIVE_CITY_NOT_WORK_CITY`, `ORGANIZATION_TYPE`, `FONDKAPREMONT_MODE`, `HOUSETYPE_MODE`, `WALLSMATERIAL_MODE`, `EMERGENCYSTATE_MODE`, `FLAG_DOCUMENT_3`, `FLAG_DOCUMENT_8`, `FLAG_DOCUMENT_18`, `FLAG_MOBIL`, `FLAG_EMP_PHONE`, `FLAG_CONT_MOBILE`, `FLAG_EMAIL`, `REG_REGION_NOT_LIVE_REGION`, `REG_REGION_NOT_WORK_REGION`, `LIVE_REGION_NOT_WORK_REGION`, `REG_CITY_NOT_WORK_CITY`, `FLAG_DOCUMENT_2`, `FLAG_DOCUMENT_4`, `FLAG_DOCUMENT_5`, `FLAG_DOCUMENT_6`, `FLAG_DOCUMENT_7`, `FLAG_DOCUMENT_9`, `FLAG_DOCUMENT_10`, `FLAG_DOCUMENT_11`, `FLAG_DOCUMENT_12`, `FLAG_DOCUMENT_13`, `FLAG_DOCUMENT_14`, `FLAG_DOCUMENT_15`, `FLAG_DOCUMENT_16`, `FLAG_DOCUMENT_17`, `FLAG_DOCUMENT_19`, `FLAG_DOCUMENT_20`, `FLAG_DOCUMENT_21`, `TARGET`
+- ordinal (1): `NAME_EDUCATION_TYPE (Lower secondary < Secondary / secondary special < Incomplete higher < Higher education < Academic degree)`
 - string (0): none
 - datetime (0): none
 
@@ -199,6 +200,8 @@ We start from this file.
 - Potential leak, kept on purpose: the 43 building columns (`*_AVG`, `*_MODE`, `*_MEDI`, `TOTALAREA_MODE`) are "normalized information about building where the client lives" (HomeCredit_columns_description.csv) and each spans exactly 0 to 1, so Home Credit likely scaled them over all applications, ours included; the method is not documented and no raw values exist. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak; revisit if Home Credit documents it.
 - We replace values that became inf after aggregation with NaN. This occurred across several aggregated columns.
 - Tagged ForcedIIDFromTemporal: applications arrive over time, but the release has no application dates (its DAYS_ columns are "time only relative to the application", HomeCredit_columns_description.csv), so the split is random.
+- Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
+  codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -465,4 +468,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:e185cb5b7a44021d5e9d2d5bfb3f1faa9bf8090481a84e6a22300ad8c13d8dde` |
+| stale | yes: the definition now gives checksum `v2:370de3c0f49560a67d5fa37cddedd1308eeb735afe230c79e8b95e831695faa0` |

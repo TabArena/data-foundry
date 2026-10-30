@@ -56,6 +56,8 @@ CC (2026-10-26, Lennart): issue 6, option (b): `Hx Radiothreapy` stays as a plai
 
 CC (2026-10-26, Lennart): verdict ship.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 5 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `Thyroid Function`, `Risk`, `T`, `N`, `Stage` (the README lists their levels).
+
 ## Reference
 
 @article{borzooei2024machine,

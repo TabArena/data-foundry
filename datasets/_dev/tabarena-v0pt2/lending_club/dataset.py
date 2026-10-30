@@ -13,7 +13,26 @@ from data_foundry.v2 import (
     Temporal,
     TemporalSplits,
     drop_columns,
+    set_missing,
 )
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "emp_length": [
+        "< 1 year",
+        "1 year",
+        "2 years",
+        "3 years",
+        "4 years",
+        "5 years",
+        "6 years",
+        "7 years",
+        "8 years",
+        "9 years",
+        "10+ years",
+    ],  # open-ended
+}
 
 
 class LendingClub(AbstractCuratedDataset):
@@ -89,6 +108,9 @@ class LendingClub(AbstractCuratedDataset):
         - `term` is used only for this selection and is not a feature (it is part of the company's own assessment, see the merged features). Until 2026-10 the `lending_club_1m` version tested on 2016 and the v1 `lending_club` notebook on 2016-2018.
         - We leave out the joint-applicant fields of the original data (sec_app_*, revol_bal_joint): they are filled only from 2017 on, so they are empty for the loans we keep.
         - Loans per issue year in the cleaned data (from the v1 exploration, counted 2026-10-22): 836 (2008), 4,716 (2009), 8,466 (2010), 12,747 (2011), 41,953 (2012), 99,018 (2013), 161,028 (2014), 280,780 (2015); 46% of the rows are from 2015, the year of the test windows.
+        - Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
+          codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
+          (CLEAN-10).
     """
 
     # Task
@@ -246,10 +268,18 @@ class LendingClub(AbstractCuratedDataset):
                 "disbursement_method",  # a single value ("Cash") for the loans we keep
             ],
         )
+        # codes outside a scale that mean unknown (don't know, refused, not asked): missing (CLEAN-10)
+        df = set_missing(
+            df,
+            {
+                "emp_length": ["NI"],
+            },
+        )
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=(
                 "home_ownership_n",
                 "application_type",

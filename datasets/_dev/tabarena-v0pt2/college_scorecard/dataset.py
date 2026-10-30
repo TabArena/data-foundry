@@ -17,6 +17,7 @@ from data_foundry.v2 import (
     Temporal,
     TemporalSplits,
     drop_columns,
+    set_missing,
 )
 
 RAW_ZIP = "College_Scorecard_Raw_Data_06102026.zip"
@@ -140,6 +141,26 @@ def to_labels(series: pd.Series, labels: dict, missing: tuple = ()) -> pd.Series
     return series.map(labels)
 
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "PREDDEG": [
+        "Predominantly certificate-degree granting",
+        "Predominantly associate's-degree granting",
+        "Predominantly bachelor's-degree granting",
+        "Entirely graduate-degree granting",
+    ],
+    "HIGHDEG": [
+        "Non-degree-granting",
+        "Certificate degree",
+        "Associate degree",
+        "Bachelor's degree",
+        "Graduate degree",
+    ],
+    "ADMCON7": ["Neither required nor recommended", "Considered but not required", "Recommended", "Required"],
+}
+
+
 class CollegeScorecard(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question=(
@@ -238,6 +259,9 @@ class CollegeScorecard(AbstractCuratedDataset):
         - Split: temporal by entering cohort with a label gap (splits comment), not grouped by institution, since a model is used on the next cohorts of institutions it has seen (decision table).
         - Anomaly: completion rates of 0 (24 institution-cohorts) and 1 (14), and ACT 25th percentiles below 10 (56 rows), kept as reported.
         - Note: we keep the rate as a regression target; TableShift binarizes it at 0.5.
+        - Ordinal scales (2026-10-30, CLEAN-14): 3 columns typed as ordered categories in the order of the source's
+          codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
+          (CLEAN-10).
     """
 
     # Task
@@ -308,11 +332,19 @@ class CollegeScorecard(AbstractCuratedDataset):
             df[column] = to_labels(df[column], labels, missing=TO_MISSING.get(column, ()))
         # 6. Target, and the identifier and the cohort count (from the outcome file) out.
         df = df.rename(columns={"C150_4": self.target})
+        # codes outside a scale that mean unknown (don't know, refused, not asked): missing (CLEAN-10)
+        df = set_missing(
+            df,
+            {
+                "PREDDEG": ["Not classified"],
+                "ADMCON7": ["Do not know"],
+            },
+        )
         return drop_columns(df, ["UNITID", "D150_4"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         # MAIN and DISTANCEONLY are 0/1 flags (CLEAN-14)
-        return FeatureTypes(categorical=["STABBR", *LABELS, "MAIN", "DISTANCEONLY"])
+        return FeatureTypes(ordinal=ORDINAL_LEVELS, categorical=["STABBR", *LABELS, "MAIN", "DISTANCEONLY"])
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         rows = cohort_rows(raw)

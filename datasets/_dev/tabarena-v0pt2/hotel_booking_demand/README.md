@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: hotel_booking_demand
 container_format: 2
-checksum: v2:b514995f66498e7efca178829f5a239dde232ef3b275a0e39ab4a03fd702e5d9
+checksum: v2:3526da74f042973e33eb9546c523b9327863952bd70947f73cd2e8511f923450
 build:
   uuid: 01a111fc-83ac-7d29-9b51-a07539b9d67c
   checksum: v2:2f18db4b72cd822107064f59371e2b6ab9ea2d9c03fd57e1842ec43f79c7d30c
@@ -76,7 +76,7 @@ decisions: []
 
 Binary classification of `IsCanceled`, scored with `roc_auc` on temporal splits by `arrival_date`. 81,418 rows and 28 features. Source: Other (2018).
 
-Built as `01a111fc-83ac-7d29-9b51-a07539b9d67c` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b514995f66498e7efca178829f5a239dde232ef3b275a0e39ab4a03fd702e5d9`, so the build is stale. See [Build](#build).
+Built as `01a111fc-83ac-7d29-9b51-a07539b9d67c` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3526da74f042973e33eb9546c523b9327863952bd70947f73cd2e8511f923450`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -155,9 +155,10 @@ Only curators run `build`, when the dataset ships.
 | reason | The data paper publishes the data without a prediction task or metric; the authors' earlier cancellation-prediction papers used other (non-public) data and reported several metrics (accuracy, precision, AUC), none set as the task's metric. |
 
 <details>
-<summary>Feature types: 13 categorical, 0 string, 2 datetime</summary>
+<summary>Feature types: 12 categorical, 1 ordinal, 0 string, 2 datetime</summary>
 
-- categorical (13): `Country`, `ArrivalDateMonth`, `Meal`, `MarketSegment`, `DistributionChannel`, `ReservedRoomType`, `DepositType`, `Agent`, `Company`, `CustomerType`, `hotel`, `IsRepeatedGuest`, `IsCanceled`
+- categorical (12): `Country`, `ArrivalDateMonth`, `Meal`, `MarketSegment`, `DistributionChannel`, `ReservedRoomType`, `Agent`, `Company`, `CustomerType`, `hotel`, `IsRepeatedGuest`, `IsCanceled`
+- ordinal (1): `DepositType (No Deposit      < Refundable      < Non Refund     )`
 - string (0): none
 - datetime (2): `arrival_date`, `booking_date`
 
@@ -209,6 +210,8 @@ The first 5 of 81,418 rows of the final frame (the oldest rows: the frame is sor
 - Anomaly: The first recorded month for the city hotels shows an unusually high amount of cancellations.
 - Cancellations rise over the period (from the v1 exploration, counted 2026-10-22 on the cleaned data, by arrival year): city 23.5% (2015, from July), 30.3% (2016), 35.1% (2017, to August); resort 20.7%, 23.7%, 30.3%, with a summer peak (resort 31-38% in July-August 2016 and 2017). The city anomaly above is July 2015 with 61% cancelled. LeadTime has a long tail: median 57 days, p90 209, max 737.
 - ReservationStatus equals the target (Canceled or No-Show for every cancelled booking, Check-Out for every other one), and ReservationStatusDate tells it too: every booking whose last status change is after the arrival date was not cancelled (57,364), every one changed before arrival was (22,250; median 41 days before arrival, 28% more than 90 days before). Both are dropped after splitting (from the v1 exploration, counted 2026-10-22).
+- Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
+  codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -398,4 +401,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:b514995f66498e7efca178829f5a239dde232ef3b275a0e39ab4a03fd702e5d9` |
+| stale | yes: the definition now gives checksum `v2:3526da74f042973e33eb9546c523b9327863952bd70947f73cd2e8511f923450` |

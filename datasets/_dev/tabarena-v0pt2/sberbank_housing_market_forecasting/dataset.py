@@ -7,7 +7,15 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import polars as pl
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    set_missing,
+)
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -129,6 +137,14 @@ LAGS = {"1mo": MONTHLY, "3mo": QUARTERLY, "1y": YEARLY}
 SUFFIX = {"1mo": "_lag_1m", "3mo": "_lag_1q", "1y": "_lag_1y"}
 
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "state": [1.0, 2.0, 3.0, 4.0],
+    "ecology": ["poor", "satisfactory", "good", "excellent"],
+}
+
+
 class SberbankHousingMarketForecasting(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="What will a Moscow flat sell for, per square metre?",
@@ -210,6 +226,9 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         - We drop the ID column as it does not provide information.
         - Note, the dataset contains a lot of spatial feature and even more already decoded spatial information (like distances to various points of interest).
         - We keep the 1,126 sales whose build_year is later than the year of sale (Lennart, 2026-10-14; until then they were dropped as errors). 1,124 were sold 0 to 4 years before it, which fits flats sold before completion; 2 have a build_year coded from a range (such as 20052009), kept as it is.
+        - Ordinal scales (2026-10-30, CLEAN-14): 2 columns typed as ordered categories in the order of the source's
+          codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
+          (CLEAN-10).
     """
 
     # Task
@@ -300,10 +319,19 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         data = data.drop(columns=["0_6_all", "7_14_all", "id"])
         data = data.reset_index(drop=True)
         df = data
+        # codes outside a scale that mean unknown (don't know, refused, not asked): missing (CLEAN-10)
+        df = set_missing(
+            df,
+            {
+                "state": [33.0],
+                "ecology": ["no data"],
+            },
+        )
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 # 1-4; the one row with 33 (id 10092, likely a typo for 3) also has the range-coded build_year
                 # 20052009; both values are kept as they are

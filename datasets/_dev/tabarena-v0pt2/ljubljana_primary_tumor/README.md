@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ljubljana_primary_tumor
 container_format: 2
-checksum: v2:c882330aa9edbb5159f8d7e65fac90f3e0235dcc283b7015cfea277368381980
+checksum: v2:2cc86c5d2cc446783daa0a129104f0e72e2320ff1f889bcb7ec0b48ba9210ed3
 build:
   uuid: 01a111fc-e43e-74ec-8af2-b710f7045924
   checksum: v2:ddbe1140621ffda771f1ea9797d30fbd1fe902bc0a4c9f1d8337b9eee4d9fcd2
@@ -68,7 +68,7 @@ decisions: []
 
 Multiclass classification of `class`, scored with `log_loss` on IID splits. 302 rows and 17 features. Source: UCI (1988).
 
-Built as `01a111fc-e43e-74ec-8af2-b710f7045924` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c882330aa9edbb5159f8d7e65fac90f3e0235dcc283b7015cfea277368381980`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e43e-74ec-8af2-b710f7045924` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2cc86c5d2cc446783daa0a129104f0e72e2320ff1f889bcb7ec0b48ba9210ed3`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -145,9 +145,10 @@ Only curators run `build`, when the dataset ships.
 | reason | The 1986-1987 papers report accuracy only; we drop the classes with fewer than 10 rows (MET-2). Original rejected: accuracy. log_loss is the multiclass fallback. |
 
 <details>
-<summary>Feature types: 18 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 16 categorical, 2 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (18): `age`, `sex`, `histologic-type`, `degree-of-diffe`, `bone`, `bone-marrow`, `lung`, `pleura`, `peritoneum`, `liver`, `brain`, `skin`, `neck`, `supraclavicular`, `axillar`, `mediastinum`, `abdominal`, `class`
+- categorical (16): `sex`, `histologic-type`, `bone`, `bone-marrow`, `lung`, `pleura`, `peritoneum`, `liver`, `brain`, `skin`, `neck`, `supraclavicular`, `axillar`, `mediastinum`, `abdominal`, `class`
+- ordinal (2): `age (<30 < 30-59 < >=60)`, `degree-of-diffe (well < fairly < poorly)`
 - string (0): none
 - datetime (0): none
 
@@ -188,6 +189,8 @@ We start with the data from UCI.
 - We reverse the ordinal encoding of all features, adding the text back to the categories.
 - We drop classes with less than 10 samples to have sufficient data per class for a robust benchmark task. In reality, this would call for collecting more data on these classes, or treating it as an individual few-shot prediction task.
 - The data contains many duplicates (10%), which seems to be naturally occurring given the limited amount of features. Moreover, the duplicates sometimes have different targets. We keep the duplicates. While this might bias evaluation a bit, it represents the real-world task with ambiguous features better.
+- Ordinal scales (2026-10-30, CLEAN-14): 2 columns typed as ordered categories in the order of the source's
+  codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -393,4 +396,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c882330aa9edbb5159f8d7e65fac90f3e0235dcc283b7015cfea277368381980` |
+| stale | yes: the definition now gives checksum `v2:2cc86c5d2cc446783daa0a129104f0e72e2320ff1f889bcb7ec0b48ba9210ed3` |

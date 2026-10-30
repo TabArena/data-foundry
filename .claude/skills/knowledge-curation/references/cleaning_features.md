@@ -102,6 +102,24 @@ descriptor software's manual) before it is typed: qsar_biodeg's two atom-centred
 [checks_and_probes.md](../../knowledge-data-foundry/references/checks_and_probes.md)) lists the columns whose dtype
 disagrees with their values, their name or the source's codebook; the meaning decides.
 
+An ordinal scale typed as a category is an ordered category, in the order its codebook gives (often not the order of
+its codes): `FeatureTypes(ordinal={col: [levels, lowest first]})` (amended 2026-10-30, Lennart: "Update now going
+forward for all relevant datasets"). A count or band with an open end ("3 or more", "> 20", "50plus") is flagged going
+forward: the dtype probe names it (`open_end`), and the definition says what the open level holds. The handling below
+is the AI's proposal of 2026-10-30, applied and under the curator's review:
+
+* a level outside the scale that means unknown (don't know, refused, not asked, an undocumented code) becomes missing
+  (CLEAN-10); a level outside it that is a state of its own (no basement, not prescribed, no checking account) keeps
+  the column an unordered category until the curator places it;
+* an open end is one ordered level, labelled as the source labels it, with no extra column to mark it: on the 20
+  datasets with an open end, an indicator column added nothing over the ordered level, and the open level as missing
+  with an indicator did worse (LightGBM and a linear model, 2026-10-30 run);
+* a scale the source ships as numbers (a 1-5 rating) stays a number for now: the benchmark's pipeline drops the order
+  of a category, and as an unordered category the scale cost LightGBM 6% of its error on
+  student_portuguese_performance;
+* a partial order (two lines of severity), a cycle (months, weekdays, wind directions) and an order of low confidence
+  stay unordered.
+
 ### The target
 
 **CLEAN-15 (Must).** Drop rows with a missing target.
@@ -181,6 +199,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | CLEAN-8 | rosbank1, alfa_battle_2_0_task_2, anes_voting_2026 | columns or categories kept by counts over the whole table, as ordinary cleaning (2026-10-19, Lennart) | applied |
 | CLEAN-10 | house_sales | `yr_renovated` = 0 ("never renovated" in the source) set to missing, so missing means never renovated; the fact that sets it apart from bank_marketing's `pdays = -1` and ames_housing's no-remodel coding: a 0 in a year column misleads a linear model as a year, and after the as-of-sale rebuild missing has no other meaning in the column (2026-10-22, Lennart) | exception |
 | CLEAN-10 | early_learning_predictors | Stata's extended missing values `.a` and `.b`, exported to the CSV as text (2,388 and 29 cells in 46 columns), set to missing: they occur only where the question was asked, while a skipped question is blank, so they are unanswered questions, and the source does not define them. The 46 columns, `numeric` in the codebook (counts, rand amounts, a year, minutes), had been categories because of them (CLEAN-14) (2026-10-30, Lennart, issue #36) | applied |
+| CLEAN-10 | amex_non_iid_1m, clock_protein_toxicity, anes_voting_2026 | -1 in raddar's 55 integer columns of amex (its missing value, on the same rows across blocks), -1 for the counts nAcid and nBase in 2 molecules, and ANES's survey codes for don't know, refused and not asked (with the undocumented 2024 -1 of 197 respondents) set to missing; ashrae's and rain_in_australia's cloud cover 9 (sky obscured) kept, with a note (2026-10-30) | applied |
 | CLEAN-11 | caracas_cervical_cancer | a first intercourse after the current age, an STD diagnosed longer ago than the patient's age: missing | applied |
 | CLEAN-11 | churn_telco_south_asia | a negative network age or an undocumented code: missing | applied |
 | CLEAN-11 | heart_disease (Long Beach, first as heart_disease_va_long_beach) | `chol == 0`: missing | applied |
@@ -191,6 +210,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | CLEAN-11 | qsar_tid_11 | one pXC50 of -6.24, a half-effect concentration of about 1.7 million mol/L: impossible, so the target is missing and the row leaves by CLEAN-15; the training-period clause does not apply to a random split (2026-10-21, Lennart) | applied |
 | CLEAN-11 | mortgage | 38 balances that put the source's own LTV above 300% (570,000 on an original 60,495): impossible, missing before lagging, so the 37 lagged LTVs above 300% and the balances and ratios built from them are missing (2026-10-22, Lennart) | applied |
 | CLEAN-12 | perth_house_prices | a `UNIT` flag from the address's unit number ("10/23 ..."), the property type the upload dropped; `ADDRESS` kept as text; the first flag derived from free text (2026-10-26, Lennart) | applied |
+| CLEAN-12 | credit_g, immoscout_german_house_prices | credit_g relabelled by the corrected code table (Groemping 2019, UCI 573): Statlog's german.doc is wrong for 8 columns, the codes match one to one; immoscout's `Condition` and `Furnishing_quality` labels are permuted in the scrape ("dilapidated" the newest and dearest), kept unordered with a note, as the German labels are lost (2026-10-30) | applied |
 | CLEAN-13 | caracas_cervical_cancer | each STD type is its own question, and 9 patients have two or three: one category per flag; one category of combinations would need 14 levels, 9 of them with 1-3 patients (2026-10-15, Lennart) | applied |
 | CLEAN-13 | mortgage, onlinenewspopularity | `real_estate_type` (three property flags, 19.5% of rows with none) and `data_channel` (six channel flags) merged into one category with the reference level `other` for rows with no flag; at most one flag is set in every row, so the merge is lossless (2026-10-22, Lennart; the rule's wording amended) | applied |
 | CLEAN-14 | qsar_oral_toxicity, hiva_agnostic, qsar_tid_11 | fingerprint bits and binary structure descriptors, checked to hold only 0 and 1, typed categorical (int64, category and float64 before) (2026-10-21, Lennart) | applied |
@@ -198,6 +218,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | CLEAN-14 | zillow_prize | the census tract-and-block code as one categorical `census_tract` (11-digit tract ID, 3,030 levels); the block group and block parts (8,334 and 55,601 levels) dropped as near-identifiers, the county part being `fips` (2026-10-26, Lennart) | applied |
 | CLEAN-14 | bank_marketing | `campaign` and `previous`, the contacts with a client in this and in earlier campaigns (1-63 and 0-275), typed categorical by the BeyondArena notebook (48 and 41 levels): counts, so numeric, as the UCI description gives them; the 0/1 sweep of 2026-10-21 looked only at columns holding 0 and 1 (2026-10-30, Lennart, issue #34) | applied |
 | CLEAN-14 | qsar_biodeg | `N073_chemical_substructure` and `C026_chemical_substructure`, the atom-centred fragments N-073 and C-026 (counts of atoms of that type, 0-3 and 0-12), typed categorical while their meaning was unknown: counts, so numeric; found by the dtype probe's sweep (2026-10-30, Lennart) | applied |
+| CLEAN-14 | 39 definitions (e.g. mic, eryhemato_squamous_disease, diamonds, ames_housing, anes_voting_2026, hr_analytics, in_vehicle_coupon_recommendation, diabetes_130_us) | 220 ordinal scales typed as ordered categories in their codebook order (often not the order of their codes); anes_voting_2026's 20 indices and counts from text to numbers; 84 columns left unordered (a state outside the scale, a partial order, a cycle, low confidence); 167 scales shipped as numbers and 22 codes shipped as numbers left as they are, for the curator (2026-10-30, Lennart; the handling under review) | applied |
 | CLEAN-17 | audiology_diagnosis | classes merged by a convention of the field, and the merge tested (TP-7) | applied |
 | CLEAN-17 | force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition | the Basement class (103 rows, all in well 16/4-1) dropped: a class that lives in one group cannot be on the train and the test side of a split by that group; the other 11 classes occur in at least 4 wells; the first class dropped for living in one group (2026-10-21, Lennart) | applied |
 | CLEAN-19 | alfa_battle_2_0_task_2 | the features the 1st, 4th and 9th place solutions have in common (513 aggregates over the restored ruble amounts) replace the organisers' 127 (untuned LightGBM 0.787 / 0.771 / 0.772 against 0.774 / 0.757 / 0.763 on the three windows) (2026-10-13, Lennart); the top solutions' features are the better of the two, so they are taken and not merged with the organisers' (CLEAN-19 as amended 2026-10-21, Lennart) | applied |

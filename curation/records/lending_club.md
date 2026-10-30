@@ -51,3 +51,5 @@ CC (2026-10-21, Lennart): record the SPLIT-9 / SPLIT-14 reading and the SPLIT-10
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Sanz-Guerrero & Arroyo 2025 tune by balanced accuracy for its 'more stable behaviour' and test AUC second with DeLong tests; balanced accuracy fixes no decision threshold or costs for approving a loan (MET-6). Original rejected: balanced accuracy. roc_auc is the binary fallback (the paper's tested metric).
 
 CC (2026-10-21, Lennart): the metric is the roc_auc fallback, not the paper's balanced accuracy.
+
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `emp_length` (the README lists their levels); their codes that mean unknown (don't know, refused, not asked) are missing in `emp_length` (CLEAN-10).

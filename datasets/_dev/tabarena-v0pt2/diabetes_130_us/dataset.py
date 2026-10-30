@@ -7,6 +7,36 @@ from pathlib import Path
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "age": [
+        "[0-10)",
+        "[10-20)",
+        "[20-30)",
+        "[30-40)",
+        "[40-50)",
+        "[50-60)",
+        "[60-70)",
+        "[70-80)",
+        "[80-90)",
+        "[90-100)",
+    ],
+    "weight": [
+        "[0-25)",
+        "[25-50)",
+        "[50-75)",
+        "[75-100)",
+        "[100-125)",
+        "[125-150)",
+        "[150-175)",
+        "[175-200)",
+        ">200",
+    ],  # open-ended
+    "max_glu_serum": ["Norm", ">200", ">300"],  # open-ended
+    "A1Cresult": ["Norm", ">7", ">8"],  # open-ended
+}
+
 
 class Diabetes130Us(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -74,6 +104,8 @@ class Diabetes130Us(AbstractCuratedDataset):
         - The other codes for an unknown value ("Not Available" and "Not Mapped" in the ID columns, "Unknown/Invalid" in gender) stay as categories, as IDS_mapping.csv lists them as codes of their own next to "NULL".
         - We drop examide, citoglipton and glimepiride-pioglitazone, which are constant ("No") after the filters above.
         - Anomaly: There is a distribution shift based on the original order. The reason for this might be that the encounters are ordered in some way such that later parts of the data contain different sub-groups than earlier parts. This is also indicated by the fact that the "payer_code" feature is responsible for the shift. This distribution shift vanishes after randomly shuffling the data (as done by default for this and all other datasets used in TabArena).
+        - Ordinal scales (2026-10-30, CLEAN-14): 4 columns typed as ordered categories in the order of the source's
+          codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -187,6 +219,7 @@ class Diabetes130Us(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "race",
                 "gender",

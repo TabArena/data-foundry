@@ -132,6 +132,18 @@ def _mit_rows(raw: dict[str, pd.DataFrame]) -> pd.DataFrame:
     return matched
 
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "education": [
+        "0-11 years",
+        "high school or GED",
+        "some college or vocational school",
+        "college degree or more",
+    ],  # open-ended
+}
+
+
 class FraminghamHeartStudyFhs(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question=(
@@ -292,6 +304,8 @@ class FraminghamHeartStudyFhs(AbstractCuratedDataset):
           split grouped by participant, would make a grouped task; for any CHD (10,759 rows, 1,229 Yes) logistic
           regression rose from 0.736 to 0.745 on the same baseline test rows; not measured for hard ASCVD. Not shipped:
           the use case is a patient's first assessment (USE-11), and the later exams are older, selected survivors.
+        - Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
+          codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -331,6 +345,7 @@ class FraminghamHeartStudyFhs(AbstractCuratedDataset):
         # the 0/1 flags (CLEAN-14) and the education level are categorical; the measurements stay numeric
         del df
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=["male", "education", "currentSmoker", "BPMeds", "prevalentHyp", "diabetes"],
         )
 

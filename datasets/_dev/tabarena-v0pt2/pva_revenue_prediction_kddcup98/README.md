@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: pva_revenue_prediction_kddcup98
 container_format: 2
-checksum: v2:55c531a54f176b916829c7f5acde3077278d85a83f4e603fabe69e723c34e4f8
+checksum: v2:ec934f1194761c14a4aec0c1a937f0fd7298aefdbc5ba608d5fa48bd8960ed35
 build:
   uuid: 01a13a7d-f16c-7ca9-ac9e-41670aefdb4e
   checksum: v2:7d87e4e7163e59fa1ca7ad8e1a9179de10f350eef500d4ba219b89c69c8f943c
@@ -75,7 +75,7 @@ decisions: []
 
 Binary classification of `TARGET_B`, scored with `roc_auc` on IID splits. 191,769 rows and 477 features. Source: Other (1998).
 
-Built as `01a13a7d-f16c-7ca9-ac9e-41670aefdb4e` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:55c531a54f176b916829c7f5acde3077278d85a83f4e603fabe69e723c34e4f8`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-f16c-7ca9-ac9e-41670aefdb4e` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:ec934f1194761c14a4aec0c1a937f0fd7298aefdbc5ba608d5fa48bd8960ed35`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -154,9 +154,10 @@ Only curators run `build`, when the dataset ships.
 | reason | The original scores the donation amount (TARGET_D) and a mail/no-mail decision; our task is changed to the binary response and TARGET_D is dropped. Closest computable stand-in is roc_auc on response. |
 
 <details>
-<summary>Feature types: 51 categorical, 27 string, 53 datetime</summary>
+<summary>Feature types: 45 categorical, 6 ordinal, 27 string, 53 datetime</summary>
 
-- categorical (51): `PVASTATE`, `MAILCODE`, `NOEXCH`, `RECINHSE`, `RECP3`, `RECPGVG`, `RECSWEEP`, `MDMAUD_recency`, `MDMAUD_frequency`, `MDMAUD_amount`, `MAJOR`, `DOMAIN_urbanicity`, `DOMAIN_ses`, `CLUSTER`, `CLUSTER2`, `AGEFLAG`, `HOMEOWNR`, `CHILD03`, `CHILD07`, `CHILD12`, `CHILD18`, `GENDER`, `DATASRCE`, `SOLIH`, `SOLP3`, `GEOCODE`, `GEOCODE2`, `LIFESRC`, `PEPSTRFL`, `HPHONE_D`, `RFA_2F`, `RFA_2A`, `COLLECT1`, `VETERANS`, `BIBLE`, `CATLG`, `HOMEE`, `PETS`, `CDPLAY`, `STEREO`, `PCOWNERS`, `PHOTO`, `CRAFTS`, `FISHER`, `GARDENIN`, `BOATS`, `WALKER`, `KIDSTUFF`, `CARDS`, `PLATES`, `TARGET_B`
+- categorical (45): `PVASTATE`, `MAILCODE`, `NOEXCH`, `RECINHSE`, `RECP3`, `RECPGVG`, `RECSWEEP`, `MDMAUD_recency`, `MDMAUD_frequency`, `MDMAUD_amount`, `MAJOR`, `DOMAIN_urbanicity`, `CLUSTER`, `CLUSTER2`, `AGEFLAG`, `HOMEOWNR`, `CHILD03`, `CHILD07`, `CHILD12`, `CHILD18`, `GENDER`, `DATASRCE`, `GEOCODE`, `LIFESRC`, `PEPSTRFL`, `HPHONE_D`, `COLLECT1`, `VETERANS`, `BIBLE`, `CATLG`, `HOMEE`, `PETS`, `CDPLAY`, `STEREO`, `PCOWNERS`, `PHOTO`, `CRAFTS`, `FISHER`, `GARDENIN`, `BOATS`, `WALKER`, `KIDSTUFF`, `CARDS`, `PLATES`, `TARGET_B`
+- ordinal (6): `SOLP3 (Do Not Solicit or Mail < one solicitation per year < two solicitations per year < twelve solicitations per year < can be mailed (Default))`, `SOLIH (Do Not Solicit < one solicitation per year < two solicitations per year < three solicitations per year < four solicitations per year < five solicitations per year < six solicitations per year < twelve solicitations per year < can be mailed (Default))`, `RFA_2F (1 < 2 < 3 < 4)`, `RFA_2A (D < E < F < G)`, `GEOCODE2 (D < C < B < A)`, `DOMAIN_ses (Lower Lowest SES in Urban communities < Lowest SES < Average SES < Highest SES)`
 - string (27): `OSOURCE`, `STATE`, `ZIP`, `Title`, `RFA_2`, `RFA_3`, `RFA_4`, `RFA_5`, `RFA_6`, `RFA_7`, `RFA_8`, `RFA_9`, `RFA_10`, `RFA_11`, `RFA_12`, `RFA_13`, `RFA_14`, `RFA_15`, `RFA_16`, `RFA_17`, `RFA_18`, `RFA_19`, `RFA_20`, `RFA_21`, `RFA_22`, `RFA_23`, `RFA_24`
 - datetime (53): `DOB (%Y%m)`, `ADATE_2 (%Y%m)`, `ADATE_3 (%Y%m)`, `ADATE_4 (%Y%m)`, `ADATE_5 (%Y%m)`, `ADATE_6 (%Y%m)`, `ADATE_7 (%Y%m)`, `ADATE_8 (%Y%m)`, `ADATE_9 (%Y%m)`, `ADATE_10 (%Y%m)`, `ADATE_11 (%Y%m)`, `ADATE_12 (%Y%m)`, `ADATE_13 (%Y%m)`, `ADATE_14 (%Y%m)`, `ADATE_15 (%Y%m)`, `ADATE_16 (%Y%m)`, `ADATE_17 (%Y%m)`, `ADATE_18 (%Y%m)`, `ADATE_19 (%Y%m)`, `ADATE_20 (%Y%m)`, `ADATE_21 (%Y%m)`, `ADATE_22 (%Y%m)`, `ADATE_23 (%Y%m)`, `ADATE_24 (%Y%m)`, `RDATE_3 (%Y%m)`, `RDATE_4 (%Y%m)`, `RDATE_5 (%Y%m)`, `RDATE_6 (%Y%m)`, `RDATE_7 (%Y%m)`, `RDATE_8 (%Y%m)`, `RDATE_9 (%Y%m)`, `RDATE_10 (%Y%m)`, `RDATE_11 (%Y%m)`, `RDATE_12 (%Y%m)`, `RDATE_13 (%Y%m)`, `RDATE_14 (%Y%m)`, `RDATE_15 (%Y%m)`, `RDATE_16 (%Y%m)`, `RDATE_17 (%Y%m)`, `RDATE_18 (%Y%m)`, `RDATE_19 (%Y%m)`, `RDATE_20 (%Y%m)`, `RDATE_21 (%Y%m)`, `RDATE_22 (%Y%m)`, `RDATE_23 (%Y%m)`, `RDATE_24 (%Y%m)`, `MAXADATE (%Y%m)`, `ODATEDW (%Y%m)`, `MINRDATE (%Y%m)`, `MAXRDATE (%Y%m)`, `LASTDATE (%Y%m)`, `FISTDATE (%Y%m)`, `NEXTDATE (%Y%m)`
 
@@ -208,6 +209,8 @@ We start with the train and validation data from the KDD Cup 1998 website and co
 - We resolve the ordinal encoding and nan encoding for all columns.
 - Note, that data has a lot of features that contain data from a similar origin that was transformed into individual columns.
 - We do not decode the promotion codes across years but keep them as string columns as it would blow up the dimensionality too much otherwise.
+- Ordinal scales (2026-10-30, CLEAN-14): 6 columns typed as ordered categories in the order of the source's
+  codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -473,4 +476,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:55c531a54f176b916829c7f5acde3077278d85a83f4e603fabe69e723c34e4f8` |
+| stale | yes: the definition now gives checksum `v2:ec934f1194761c14a4aec0c1a937f0fd7298aefdbc5ba608d5fa48bd8960ed35` |

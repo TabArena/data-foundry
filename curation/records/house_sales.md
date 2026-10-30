@@ -69,6 +69,8 @@ CC (2026-10-26, Lennart): on ames_housing issue 7 (option (c), "do (c)"): drop t
 
 CC (2026-10-26, Lennart): verdict ship.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): ordinal scales shipped as numbers, left as numbers for the curator's review: `view`, `condition`, `grade`.
+
 ## Reference
 
 https://www.kaggle.com/datasets/harlfoxem/housesalesprediction

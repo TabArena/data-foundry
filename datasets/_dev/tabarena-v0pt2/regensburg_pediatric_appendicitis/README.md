@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: regensburg_pediatric_appendicitis
 container_format: 2
-checksum: v2:6a12cf7448098c5f04184330974ca63650554a2b1facd977df218ecdc4e58dd4
+checksum: v2:a5e10424bacccd706d5af6330a8d739ba9674f199a0202b5aa8181cca448ddfa
 build:
   uuid: 01a111fc-ee89-74ad-b25b-309464691fe6
   checksum: v2:33d1e7ed244bae6b272fba7b043eb64e09987465a1a721142d8d57b597ca37d3
@@ -68,7 +68,7 @@ decisions: []
 
 Binary classification of `Severity`, scored with `roc_auc` on IID splits. 763 rows and 51 features. Source: Other (2023).
 
-Built as `01a111fc-ee89-74ad-b25b-309464691fe6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6a12cf7448098c5f04184330974ca63650554a2b1facd977df218ecdc4e58dd4`, so the build is stale. See [Build](#build).
+Built as `01a111fc-ee89-74ad-b25b-309464691fe6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:a5e10424bacccd706d5af6330a8d739ba9674f199a0202b5aa8181cca448ddfa`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -147,9 +147,10 @@ Only curators run `build`, when the dataset ships.
 | reason | Marcinkevics et al. 2024 report AUROC and AUPR side by side per target; neither is named as the criterion. roc_auc is the binary fallback. |
 
 <details>
-<summary>Feature types: 33 categorical, 3 string, 0 datetime</summary>
+<summary>Feature types: 26 categorical, 7 ordinal, 3 string, 0 datetime</summary>
 
-- categorical (33): `Sex`, `Peritonitis`, `Migratory_Pain`, `Lower_Right_Abd_Pain`, `Contralateral_Rebound_Tenderness`, `Ipsilateral_Rebound_Tenderness`, `Coughing_Pain`, `Psoas_Sign`, `Nausea`, `Loss_of_Appetite`, `Dysuria`, `Stool`, `Ketones_in_Urine`, `RBC_in_Urine`, `WBC_in_Urine`, `Neutrophilia`, `Appendix_on_US`, `Free_Fluids`, `Appendix_Wall_Layers`, `Target_Sign`, `Perfusion`, `Surrounding_Tissue_Reaction`, `Pathological_Lymph_Nodes`, `Bowel_Wall_Thickening`, `Ileus`, `Coprostasis`, `Meteorism`, `Enteritis`, `Appendicolith`, `Perforation`, `Appendicular_Abscess`, `Conglomerate_of_Bowel_Loops`, `Severity`
+- categorical (26): `Sex`, `Migratory_Pain`, `Lower_Right_Abd_Pain`, `Contralateral_Rebound_Tenderness`, `Ipsilateral_Rebound_Tenderness`, `Coughing_Pain`, `Psoas_Sign`, `Nausea`, `Loss_of_Appetite`, `Dysuria`, `Stool`, `Neutrophilia`, `Appendix_on_US`, `Free_Fluids`, `Appendix_Wall_Layers`, `Target_Sign`, `Perfusion`, `Surrounding_Tissue_Reaction`, `Pathological_Lymph_Nodes`, `Bowel_Wall_Thickening`, `Ileus`, `Coprostasis`, `Meteorism`, `Enteritis`, `Conglomerate_of_Bowel_Loops`, `Severity`
+- ordinal (7): `Ketones_in_Urine (no < + < ++ < +++)`, `RBC_in_Urine (no < + < ++ < +++)`, `WBC_in_Urine (no < + < ++ < +++)`, `Peritonitis (no < local < generalized)`, `Appendicolith (no < suspected < yes)`, `Perforation (no < not excluded < suspected < yes)`, `Appendicular_Abscess (no < suspected < yes)`
 - string (3): `Lymph_Nodes_Location`, `Abscess_Location`, `Gynecological_Findings`
 - datetime (0): none
 
@@ -194,6 +195,8 @@ We start with the tabular meta-data used in the paper. We create only one task o
  - Warning: We tried to clean the data as good as possible but we suspect it might still contain some features leaking the severity, but we lack the medical expertise to identify them. Thus, I would not be surprised if we had to remove this dataset later again.
 - The data contains string data, but only for a very small number of patients and the text is often seemingly very useless. The features add most likely no value, but we keep them in for the pipeline/model to ignore if needed.
 - We drop the few patients that did not have an ultrasound to avoid them being leaking due to missing features.
+- Ordinal scales (2026-10-30, CLEAN-14): 7 columns typed as ordered categories in the order of the source's
+  codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -424,4 +427,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6a12cf7448098c5f04184330974ca63650554a2b1facd977df218ecdc4e58dd4` |
+| stale | yes: the definition now gives checksum `v2:a5e10424bacccd706d5af6330a8d739ba9674f199a0202b5aa8181cca448ddfa` |

@@ -8,6 +8,12 @@ import numpy as np
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "item_condition_id": [5, 4, 3, 2, 1],
+}
+
 
 class MercariPriceSuggestion(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -65,6 +71,8 @@ class MercariPriceSuggestion(AbstractCuratedDataset):
         - The task was treated and solved as an IID task on Kaggle.
         - We replace "No description yet" with NaN.
         - We take the full data (about 1.48M rows after de-duplication) with 3-fold cross-validation, so every fold trains on about 990k rows. Until 2026-10 a `mercari_price_suggestion_1m` version sub-sampled it to one 1M / 250k split.
+        - Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
+          codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -94,6 +102,7 @@ class MercariPriceSuggestion(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "item_condition_id",
                 "shipping",

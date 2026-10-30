@@ -8,6 +8,12 @@ import numpy as np
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, SplitPlan, TaskSummary, Temporal
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "DepositType": ["No Deposit     ", "Refundable     ", "Non Refund     "],
+}
+
 
 class HotelBookingDemand(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -85,6 +91,8 @@ class HotelBookingDemand(AbstractCuratedDataset):
         - Anomaly: The first recorded month for the city hotels shows an unusually high amount of cancellations.
         - Cancellations rise over the period (from the v1 exploration, counted 2026-10-22 on the cleaned data, by arrival year): city 23.5% (2015, from July), 30.3% (2016), 35.1% (2017, to August); resort 20.7%, 23.7%, 30.3%, with a summer peak (resort 31-38% in July-August 2016 and 2017). The city anomaly above is July 2015 with 61% cancelled. LeadTime has a long tail: median 57 days, p90 209, max 737.
         - ReservationStatus equals the target (Canceled or No-Show for every cancelled booking, Check-Out for every other one), and ReservationStatusDate tells it too: every booking whose last status change is after the arrival date was not cancelled (57,364), every one changed before arrival was (22,250; median 41 days before arrival, 28% more than 90 days before). Both are dropped after splitting (from the v1 exploration, counted 2026-10-22).
+        - Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
+          codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -147,6 +155,7 @@ class HotelBookingDemand(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "Country",
                 "ArrivalDateMonth",

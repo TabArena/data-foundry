@@ -49,6 +49,8 @@ CC (2026-10-06, Lennart): Kept in TabArena v0.2 as a valid task after the task-p
 
 CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `month` (a partial order); `day` (a partial order).
+
 ## Reference
 
 @article{cortez2007data,

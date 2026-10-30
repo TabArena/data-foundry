@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bank_marketing
 container_format: 2
-checksum: v2:3c70f9963ef6a5f5473d9ab514f6338a9d825ad680dd061828ca9cbf8267e423
+checksum: v2:8ef75d9bb29bce6d418dd83b6567ee8f8fa7f38c71ac3434a4332d4e176bc46a
 build:
   uuid: 01a111fc-7c2d-7441-b859-646c9bfbf380
   checksum: v2:df7e993235e244580c862ce525a593509ccdcce2503c8efd6c2ad7382a02bdeb
@@ -70,7 +70,7 @@ decisions: []
 
 Binary classification of `SubscribeTermDeposit`, scored with `roc_auc` on IID splits. 45,211 rows and 13 features. Source: UCI (2012).
 
-Built as `01a111fc-7c2d-7441-b859-646c9bfbf380` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3c70f9963ef6a5f5473d9ab514f6338a9d825ad680dd061828ca9cbf8267e423`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7c2d-7441-b859-646c9bfbf380` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8ef75d9bb29bce6d418dd83b6567ee8f8fa7f38c71ac3434a4332d4e176bc46a`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -148,9 +148,10 @@ Only curators run `build`, when the dataset ships.
 | definition | ROC AUC of term-deposit subscription. |
 
 <details>
-<summary>Feature types: 9 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 8 categorical, 1 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (9): `job`, `marital`, `education`, `default`, `housing`, `loan`, `contact`, `poutcome`, `SubscribeTermDeposit`
+- categorical (8): `job`, `marital`, `default`, `housing`, `loan`, `contact`, `poutcome`, `SubscribeTermDeposit`
+- ordinal (1): `education (primary < secondary < tertiary)`
 - string (0): none
 - datetime (0): none
 
@@ -179,11 +180,11 @@ The first 5 of 45,211 rows of the final frame (random rows: the frame is shuffle
 
 | SubscribeTermDeposit | age | job | marital | education | default | balance | housing | loan | contact | campaign | pdays |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| no | 40 | management | divorced | tertiary | no | 502 | yes | no | cellular | 4 | 270 |
-| no | 51 | management | married | tertiary | no | 21574 | no | no | unknown | 3 | -1 |
-| no | 44 | technician | married | secondary | no | 13761 | yes | no | unknown | 1 | -1 |
-| no | 57 | management | married | tertiary | no | 1318 | no | no | cellular | 2 | 94 |
-| no | 48 | admin. | married | secondary | no | 1800 | yes | no | unknown | 1 | -1 |
+| no | 30 | blue-collar | married | secondary | no | 1196 | no | no | unknown | 1 | -1 |
+| no | 35 | management | married | tertiary | no | 387 | yes | no | cellular | 2 | -1 |
+| no | 42 | blue-collar | married | primary | no | 0 | no | no | telephone | 1 | -1 |
+| no | 28 | unemployed | single | tertiary | no | 7 | no | no | cellular | 1 | -1 |
+| no | 31 | technician | married | tertiary | no | 15 | no | no | unknown | 1 | -1 |
 
 ## Curation notes
 
@@ -192,6 +193,9 @@ The first 5 of 45,211 rows of the final frame (random rows: the frame is shuffle
 - `campaign` and `previous` are counts of contacts (UCI: "number of contacts performed during this campaign",
   "... before this campaign"), so they stay numeric. The BeyondArena notebook typed them categorical (48 and
   41 levels), which lost the order and left the high counts as rare levels (issue #34).
+- Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
+  codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
+  (CLEAN-10).
 
 ## Splits
 
@@ -228,9 +232,9 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| education | category | 1857 | 4.11 | 3 | secondary, tertiary, primary |
 | job | category | 0 | 0 | 12 | blue-collar, management, technician, admin., services, retired, self-employed, … |
 | marital | category | 0 | 0 | 3 | married, single, divorced |
-| education | category | 0 | 0 | 4 | secondary, tertiary, primary, unknown |
 | default | category | 0 | 0 | 2 | no, yes |
 | housing | category | 0 | 0 | 2 | yes, no |
 | loan | category | 0 | 0 | 2 | no, yes |
@@ -240,7 +244,7 @@ Default splits.
 | age | int64 | 0 | 0 | 77 | 32, 31, 33, 34, 35, 36, 30, 37, 39, 38 |
 | balance | int64 | 0 | 0 | 7168 | 0, 1, 2, 4, 3, 5, 6, 8, 23, 10 |
 | campaign | int64 | 0 | 0 | 48 | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 |
-| pdays | int64 | 0 | 0 | 559 | -1, 182, 92, 183, 91, 181, 370, 184, 364, 95 |
+| pdays | int64 | 0 | 0 | 559 | -1, 182, 92, 91, 183, 181, 370, 184, 364, 95 |
 | previous | int64 | 0 | 0 | 41 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 
 </details>
@@ -279,7 +283,7 @@ Default splits.
 | education | 1 | secondary | 23202 | 51.32 |
 | education | 2 | tertiary | 13301 | 29.42 |
 | education | 3 | primary | 6851 | 15.15 |
-| education | 4 | unknown | 1857 | 4.11 |
+| education | 4 | &lt;NA> | 1857 | 4.11 |
 | housing | 1 | yes | 25130 | 55.58 |
 | housing | 2 | no | 20081 | 44.42 |
 | job | 1 | blue-collar | 9732 | 21.53 |
@@ -310,4 +314,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:3c70f9963ef6a5f5473d9ab514f6338a9d825ad680dd061828ca9cbf8267e423` |
+| stale | yes: the definition now gives checksum `v2:8ef75d9bb29bce6d418dd83b6567ee8f8fa7f38c71ac3434a4332d4e176bc46a` |

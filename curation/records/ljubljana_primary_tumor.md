@@ -42,6 +42,8 @@ CC (2026-10-12, Lennart): Kept in TabArena v0.2 after the task-probe review (fla
 
 CC (2026-10-27, Lennart): fit approximate (was direct): patients with metastases of unknown origin do not show the selection of these rows, so it is a known gap (USE-8, amended on the review of PR #16); the Selection Bias marker stays.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 2 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `age`, `degree-of-diffe` (the README lists their levels).
+
 ## Reference
 
 UCI

@@ -1286,3 +1286,61 @@ def test_scoring_columns_are_kept_out_of_the_features(tmp_path: Path, warehouse:
 def test_the_template_metric_is_a_placeholder_the_checks_catch() -> None:
     template = (Path(__file__).resolve().parents[1] / "datasets" / "_template" / "dataset.py").read_text()
     assert 'metric = Metric.fallback(reason="TODO(verify):' in template
+
+
+def test_ordinal_columns_are_ordered_categories_with_the_given_levels() -> None:
+    df = pd.DataFrame({"grade": ["mild", None, "severe", "mild"], "n": [0.0, 2.0, 1.0, np.nan]})
+    out = cast_dtypes(df, ordinal={"grade": ["none", "mild", "moderate", "severe"], "n": [0, 1, 2, 3]})
+    assert out["grade"].cat.ordered
+    assert list(out["grade"].cat.categories) == ["mild", "severe"]  # unused levels removed, the order kept
+    assert out["grade"].cat.categories.dtype == object
+    assert list(out["n"].cat.categories) == [0, 1, 2]
+    assert out["n"].isna().tolist() == [False, False, False, True]
+
+
+def test_an_ordinal_value_outside_the_levels_raises() -> None:
+    df = pd.DataFrame({"grade": ["mild", "unknown"]})
+    with pytest.raises(ValueError, match="unknown"):
+        cast_dtypes(df, ordinal={"grade": ["mild", "severe"]})
+    with pytest.raises(ValueError, match="more than one dtype"):
+        cast_dtypes(df, categorical=["grade"], ordinal={"grade": ["mild", "unknown"]})
+
+
+def test_ordinal_columns_keep_their_order_in_container_and_report(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    body = DEFINITION.format(name="toy_ds", comment="x").replace(
+        'return FeatureTypes(categorical=["colour"])',
+        'return FeatureTypes(ordinal={{"colour": ["blue", "green", "red"]}})'.replace("{{", "{").replace("}}", "}"),
+    )
+    folder = write_definition(tmp_path / "datasets", body=body)
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    colour = result.container.dataset["colour"]
+    assert colour.cat.ordered
+    assert list(colour.cat.categories) == ["blue", "green", "red"]
+    text = (folder / "README.md").read_text()
+    assert "Feature types: 1 categorical, 1 ordinal" in text  # the target y, then colour
+    assert "`colour (blue < green < red)`" in text
+
+
+def test_set_missing_turns_codes_into_missing_values() -> None:
+    from data_foundry.v2 import set_missing
+
+    df = pd.DataFrame({"a": ["1", "8", "9", None], "b": [1, -1, 2, 3]})
+    out = set_missing(df, {"a": ["8", "9"], "b": [-1]})
+    assert out["a"].isna().tolist() == [False, True, True, True]
+    assert out["b"].isna().tolist() == [False, True, False, False]
+    with pytest.raises(KeyError, match="c"):
+        set_missing(df, {"c": [1]})
+
+
+def test_an_ordinal_column_may_also_be_named_categorical(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    body = DEFINITION.format(name="toy_ds", comment="x").replace(
+        'return FeatureTypes(categorical=["colour"])',
+        'return FeatureTypes(categorical=["colour"], ordinal={{"colour": ["blue", "green", "red"]}})'.replace(
+            "{{", "{"
+        ).replace("}}", "}"),
+    )
+    write_definition(tmp_path / "datasets", body=body)
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    assert result.container.dataset["colour"].cat.ordered

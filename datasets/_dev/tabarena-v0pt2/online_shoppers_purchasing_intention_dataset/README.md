@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: online_shoppers_purchasing_intention_dataset
 container_format: 2
-checksum: v2:037e40bb70512711476623b602c473eae84383842f04d6d78b42950e18b5c2c2
+checksum: v2:cbaa9730c6fe33da273a9dd10bf3c56210b28864b07188b3183868e593886a22
 build:
   uuid: 01a111fc-b5f1-748b-a755-99b0a7c15a25
   checksum: v2:97076c1ab7ef8a7b53470378967dcdb5fc10d5358da47b31dbcde92a3b9a5ec2
@@ -69,7 +69,7 @@ decisions: []
 
 Binary classification of `Revenue`, scored with `roc_auc` on IID splits. 6,875 rows and 16 features. Source: UCI (2018).
 
-Built as `01a111fc-b5f1-748b-a755-99b0a7c15a25` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:037e40bb70512711476623b602c473eae84383842f04d6d78b42950e18b5c2c2`, so the build is stale. See [Build](#build).
+Built as `01a111fc-b5f1-748b-a755-99b0a7c15a25` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:cbaa9730c6fe33da273a9dd10bf3c56210b28864b07188b3183868e593886a22`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -146,9 +146,10 @@ Only curators run `build`, when the dataset ships.
 | reason | Sakar et al. 2019 report accuracy, TPR, TNR and F1 (F1 stressed over accuracy, full text paywalled); no fixed threshold or costs. Original rejected: F1. roc_auc is the binary fallback. |
 
 <details>
-<summary>Feature types: 8 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 7 categorical, 1 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (8): `Month`, `OperatingSystems`, `Browser`, `Region`, `TrafficType`, `VisitorType`, `Weekend`, `Revenue`
+- categorical (7): `OperatingSystems`, `Browser`, `Region`, `TrafficType`, `VisitorType`, `Weekend`, `Revenue`
+- ordinal (1): `Month (June < Jul < Aug < Sep < Oct < Nov < Dec)`
 - string (0): none
 - datetime (0): none
 
@@ -190,6 +191,8 @@ The first 5 of 6,875 rows of the final frame (random rows: the frame is shuffled
 - We keep only the sessions from June to December (6,875 of 12,330). "PageValues" is meant as a historical Google Analytics metric per page, stored and updated at regular intervals, averaged over the pages a session visits (Sakar et al. 2019, Sec. 2.1). In February, March and May, however, every one of the 560 buyers has PageValues > 0 and PageValues alone separates buyers with ROC AUC 0.974, so these values most likely include the session's own purchase (the page-value table was probably computed over that period). From June on, 27% of buyers have PageValues = 0 and its AUC is 0.814, as expected for a historical page metric. We keep PageValues and drop the early months; this cannot be proven from the data, as a change in site tracking would leave a similar pattern.
 - We drop "SpecialDay": it is non-zero only in February and May, so it is constant on the kept months.
 - We keep the IID split: each session belongs to a different user, sampled over one year (Sakar et al. 2019, Sec. 2.1), and only the month is known.
+- Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
+  codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -318,4 +321,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:037e40bb70512711476623b602c473eae84383842f04d6d78b42950e18b5c2c2` |
+| stale | yes: the definition now gives checksum `v2:cbaa9730c6fe33da273a9dd10bf3c56210b28864b07188b3183868e593886a22` |

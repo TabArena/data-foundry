@@ -65,6 +65,8 @@ CC (2026-10-26, Lennart): the declared metric, ROC AUC (the fallback; the source
 
 CC (2026-10-26, Lennart): verdict ship.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `WindDir9am` (a partial order); `WindGustDir_prev_day` (a partial order); `WindDir3pm_prev_day` (a partial order).
+
 ## Reference
 
 Kaggle

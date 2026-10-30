@@ -11,6 +11,38 @@ RAW_FILE = "train_jqd04QH.csv"
 """The hackathon's train file: 18,359 enrollees with labels, 2,425 of them looking for a job change."""
 
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "education_level": ["Primary School", "High School", "Graduate", "Masters", "Phd"],
+    "experience": [
+        "<1",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "14",
+        "15",
+        "16",
+        "17",
+        "18",
+        "19",
+        "20",
+        ">20",
+    ],  # open-ended
+    "company_size": ["<10", "10/49", "50-99", "100-500", "500-999", "1000-4999", "5000-9999", "10000+"],  # open-ended
+}
+
+
 class HrAnalytics(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="Is a person who signed up for a data-science training looking for a new job?",
@@ -100,6 +132,8 @@ class HrAnalytics(AbstractCuratedDataset):
         - Note: the task probes flag `no_spread` (ROC AUC LightGBM 0.625, linear 0.622, random forest 0.619; LightGBM
           +0.012 over random forest, paired SE 0.006). We keep the task: a real signal with a low ceiling (Lennart,
           2026-10-14).
+        - Ordinal scales (2026-10-30, CLEAN-14): 3 columns typed as ordered categories in the order of the source's
+          codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -133,6 +167,7 @@ class HrAnalytics(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "city",
                 "gender",

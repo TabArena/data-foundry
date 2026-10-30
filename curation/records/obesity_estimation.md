@@ -51,6 +51,8 @@ CC (2026-10-14, Lennart): Drop the duplicates: 488 rows.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — The source is a data descriptor for a 7-class obesity-level task with no defined evaluation metric, and we changed the task to BMI regression (weight and height dropped), so no source metric applies.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 7 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `FCVC`, `NCP`, `CAEC`, `CH2O`, `FAF`, `TUE`, `CALC` (the README lists their levels).
+
 ## Reference
 
 @article{palechor2019dataset,

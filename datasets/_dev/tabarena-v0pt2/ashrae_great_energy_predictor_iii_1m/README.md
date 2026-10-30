@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ashrae_great_energy_predictor_iii_1m
 container_format: 2
-checksum: v2:651ebdc53e414da4c3c9594d4f61fa0397d1316d5e28b4a77c27ec6ecbaea5af
+checksum: v2:d88072f3fa0216bb5beaa23d72392377bfda02789c090f6e0b86825e24aa7d12
 build: null
 build_stale: false
 data:
@@ -60,7 +60,7 @@ decisions:
 
 Regression of `log1p_meter_reading`, scored with `rmsle` on temporal splits by `timestamp`. 2,500,000 rows and 15 features. Source: Kaggle (2019).
 
-Not built yet. The current definition gives checksum `v2:651ebdc53e414da4c3c9594d4f61fa0397d1316d5e28b4a77c27ec6ecbaea5af`.
+Not built yet. The current definition gives checksum `v2:d88072f3fa0216bb5beaa23d72392377bfda02789c090f6e0b86825e24aa7d12`.
 
 ## In brief
 
@@ -218,6 +218,9 @@ We start with the Kaggle competition's train.csv (2016), building_metadata.csv a
 - The target is log1p of kWh, in one unit for all meters; the metric is the competition's RMSLE on kWh, computed after the inverse (`target_transform="log1p"`).
 - building_id and site_id are categories: the test hours belong to meters seen in train, as in the competition.
 - precip_depth_1_hr = -1 stays: it codes a trace of rain in NOAA's ISD-Lite data (format note, field 11).
+- `cloud_coverage` is in oktas (0-8), and 9 means the sky is obscured (fog or precipitation): 9,905 rows. We
+  keep the values as recorded, as rain_in_australia does: a code that means something stays, with this note
+  (CLEAN-10, 2026-10-30).
 
 Version of `ashrae_great_energy_predictor_iii`: The cleaned frame has 39.1M hourly readings, so the dataset ships only as this `_1m` version. We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. As in TabReD, the train side is a random sample of the whole history rather than its newest part, so every window trains on all seasons seen so far.
 

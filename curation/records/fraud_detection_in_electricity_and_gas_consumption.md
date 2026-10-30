@@ -74,6 +74,8 @@ CC (2026-10-26, Lennart): issues 1, 2, 4 and 8 as implemented. The history cut a
 
 CC (2026-10-26, Lennart): verdict ship.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `reading_remarque` (low confidence).
+
 ## Reference
 
 Zindi main source

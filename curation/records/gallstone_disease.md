@@ -39,6 +39,8 @@ CC (2026-10-06, Lennart): Kept after the task-probe review: the `no_spread` flag
 
 CC (2026-10-27, Lennart): keep it as Andrej marked it: the Selection Bias marker and fit direct (USE-8, amended on the review of PR #16); how the patients were chosen is not stated.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): ordinal scales shipped as numbers, left as numbers for the curator's review: `Hepatic Fat Accumulation (HFA)`.
+
 ## Reference
 
 @article{esen2024early,

@@ -5,7 +5,20 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, set_missing
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "temperature_of_extremities": [4.0, 3.0, 1.0, 2.0],
+    "peripheral_pulse": [4.0, 3.0, 1.0, 2.0],
+    "capillary_refill_time": [1.0, 2.0],  # open-ended
+    "peristalsis": [4.0, 3.0, 2.0, 1.0],
+    "abdominal_distension": [1.0, 2.0, 3.0, 4.0],
+    "nasogastric_tube": [1.0, 2.0, 3.0],
+    "nasogastric_reflux": [1.0, 3.0, 2.0],  # open-ended
+    "rectal_exam_feces": [4.0, 3.0, 1.0, 2.0],
+}
 
 
 class HorseColicSurvival(AbstractCuratedDataset):
@@ -67,6 +80,9 @@ class HorseColicSurvival(AbstractCuratedDataset):
         - We keep only the first instance (hospital number) per horse, as they can be treated multiple times and otherwise leaks information about the target.
         - We use the target "outcome" to model a task where we aim to predict if the horse survives or not. We drop cases that have not outcome recorded.
         - We keep the duplicates occurring in the data.
+        - Ordinal scales (2026-10-30, CLEAN-14): 8 columns typed as ordered categories in the order of the source's
+          codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
+          (CLEAN-10).
     """
 
     # Task
@@ -131,10 +147,18 @@ class HorseColicSurvival(AbstractCuratedDataset):
             ]
         )
         df["outcome"] = df["outcome"].map({1: "Lived", 2: "Died", 3: "Euthanized"})
+        # codes outside a scale that mean unknown (don't know, refused, not asked): missing (CLEAN-10)
+        df = set_missing(
+            df,
+            {
+                "capillary_refill_time": [3.0],
+            },
+        )
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "temperature_of_extremities",
                 "peripheral_pulse",

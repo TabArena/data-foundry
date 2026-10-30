@@ -56,6 +56,8 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 **Assessment (AI, 2026-10-21):** metric stays rmse on log(price_doc / full_sq), not `rmsle` + `target_transform`: the inverse of the shipped target is the price per square metre, not the price the competition scored, so RMSLE after the inverse would score the price per m2 (off by log vs log1p and by the per-m2 scale) and is no closer to the competition's RMSLE than the current RMSE, which equals RMSE of log(price) up to log vs log1p.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 2 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `state`, `ecology` (the README lists their levels); their codes that mean unknown (don't know, refused, not asked) are missing in `state`, `ecology` (CLEAN-10).
+
 ## Reference
 
 Alex Matveev, Anastasia_Sidorova_50806198, and DataCanary. Sberbank Russian Housing Market. https://kaggle.com/competitions/sberbank-russian-housing-market, 2017. Kaggle.

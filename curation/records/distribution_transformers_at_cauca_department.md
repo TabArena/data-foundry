@@ -51,6 +51,8 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 
 CC (2026-10-26, Lennart): verdict ship.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `client_type` (a level outside the scale is a state of its own).
+
 ## Reference
 
 [1] L. Alvarez, Predictive Maintenance of Distributions. Transformers. Case Study: Department of Cauca (Colombia), first ed., Our Knowledge Publishing, 2021. ISBN 978-620-3-93390-1

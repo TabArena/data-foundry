@@ -43,6 +43,8 @@ CC (2026-10-21, Lennart): an upload whose first platform cannot be traced is kep
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — bare Kaggle upload with no competition, paper or stated metric.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `AnnualIncomeClass` (the README lists their levels).
+
 ## Reference
 
 Kaggle

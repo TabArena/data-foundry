@@ -72,6 +72,11 @@ class AmexNonIid1m(AbstractCuratedDataset):
     """
     curation_comments = """
         We start with the raw data from Kaggle and do not apply any further preprocessing to simulate a pipeline that can handle raw non-IID grouped data.
+        - Missing values: raddar's integer re-encoding writes a missing value as -1. In the 55 integer columns that hold
+          -1 (int8 and int16, among them the categorical D_64, D_66, D_68, B_30, B_38, D_114, D_116, D_117, D_120 and
+          D_126), -1 is the minimum, no cell is missing, and the -1 cells fall on the same rows across blocks (the same
+          176,716 rows in D_113 to D_125, 101,548 in D_103, D_107, D_129, D_139, D_143 and D_145, 2,016 in B_16 to
+          B_38). `_clean` sets them back to missing (CLEAN-10, 2026-10-30).
     """
 
     # Task
@@ -112,6 +117,9 @@ class AmexNonIid1m(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
+        # raddar's integer columns code a missing value as -1 (curation notes)
+        for col in [c for c in df.columns if pd.api.types.is_integer_dtype(df[c]) and (df[c] == -1).any()]:
+            df[col] = df[col].where(df[col].ne(-1)).astype("float32")
         df.S_2 = pd.to_datetime(df.S_2)
         df = df.sort_values(["customer_ID", "S_2"], kind="stable")
         df = df.set_index("customer_ID")

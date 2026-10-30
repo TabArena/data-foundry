@@ -4,6 +4,38 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-30, ordinal scales typed in order; counts with an open end; proxy missing codes; credit_g relabelled (PR #37)
+
+- Ordinal type: `FeatureTypes(ordinal={col: [levels, lowest first]})` casts a column to an ordered category (a value
+  that is no level raises), and `set_missing(df, {col: codes})` sets the codes outside a scale that mean unknown to
+  missing. The container already kept the order; the README lists ordinal columns with their levels. An ordinal
+  column may also be named among the categorical ones.
+- 220 ordinal scales in 39 definitions are ordered categories now, in the order of each source's codebook (often not
+  the order of the codes): seven agents read the codebooks for 1,980 candidate columns of 95 datasets
+  (`local-data-warehouse/_runs/2026-10-30_ordinal/`). anes_voting_2026's 20 likes-dislikes indices and counts are
+  numbers. Codes outside a scale that mean unknown (don't know, refused, not asked, undocumented codes) are missing.
+  Left unordered, for the curator's review board: 39 columns with a level outside the scale that is a state of its own
+  (no basement, not prescribed, no checking account), partial orders, cycles and orders of low confidence. Left as
+  they are: 167 ordinal scales shipped as numbers (point 3) and 22 codes shipped as numbers (point 4).
+- Counts with an open end ("3 or more", "> 20") are one ordered level, with no indicator column; the dtype probe flags
+  them (`open_end`) and unordered scales (`ordinal_like`). CLEAN-14 amended (Lennart); the handling is the AI's
+  proposal under review.
+- Experiment (unordered categories against the codes in order, an open end with an indicator, and the open level as
+  missing with an indicator; LightGBM, a linear model and TabPFN v3.5 on the shipped splits): on 55 datasets the codes
+  in order lowered LightGBM's error against unordered categories by 1.56% on average (median 0.12%; 12 datasets better
+  beyond two standard errors, 3 worse), most on small clinical tables of grades (eryhemato_squamous_disease 31%,
+  audiology_diagnosis 15%, cirrhosis_patient_survival_prediction 11%, mic 7%); a linear model on the bare codes lost
+  where a scale is not monotone in the target (mean -1.04%; 11 better, 13 worse). On the 20 datasets with an open end
+  the ordered level did best for LightGBM (+0.68%; with an indicator +0.58%; the open level as missing with an indicator
+  +0.38%, worse than the ordered level on 11 of 20). TabPFN v3.5 runs on SkyPilot; its numbers are on the review board.
+- Found along the way: credit_g relabelled by the corrected code table (Groemping 2019, UCI 573; Statlog's german.doc
+  is wrong for 8 columns, the codes match one to one); amex_non_iid_1m's -1 in raddar's 55 integer columns and
+  clock_protein_toxicity's -1 counts are missing; immoscout_german_house_prices' `Condition` and
+  `Furnishing_quality` labels are permuted in the scrape (noted, unordered); ashrae's cloud cover 9 (sky obscured)
+  noted as rain_in_australia does; early_learning_predictors cleaned (two spellings of Normal merged, a date, three
+  copies dropped, 26 free-text columns as strings; 739 features, its one warning gone).
+- `dataset check` on the 43 changed definitions: no new error or warning. Not built.
+
 ## 2026-10-30, `early_learning_predictors`: Stata missing codes, 44 counts and amounts numeric, a timer dropped (PR #35)
 
 - `.a` and `.b` are Stata's extended missing values, exported to the CSV as text in 46 columns (2,388 and 29 cells

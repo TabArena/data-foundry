@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: credit_g
 container_format: 2
-checksum: v2:33c9468ea3a9c903c0bfbc9eec3d250c7a7d9d9c2634b90bebad657d843743aa
+checksum: v2:11ac9e90b0d525be907185b1fa8db4cb3ec2f9db6117d5014b492af6a41c6a1f
 build:
   uuid: 01a111fc-cf4e-7841-a626-e0358b0042c6
   checksum: v2:db7592c8a2928f6e03ba79421d5bb29644dea45e047e9e09e439f3b9857441f2
@@ -67,7 +67,7 @@ decisions: []
 
 Binary classification of `good_or_bad_customer`, scored with `cost_matrix` on IID splits. 1,000 rows and 20 features. Source: UCI (1994).
 
-Built as `01a111fc-cf4e-7841-a626-e0358b0042c6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:33c9468ea3a9c903c0bfbc9eec3d250c7a7d9d9c2634b90bebad657d843743aa`, so the build is stale. See [Build](#build).
+Built as `01a111fc-cf4e-7841-a626-e0358b0042c6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:11ac9e90b0d525be907185b1fa8db4cb3ec2f9db6117d5014b492af6a41c6a1f`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -144,9 +144,10 @@ Only curators run `build`, when the dataset ships.
 | params | {'labels': ['good', 'bad'], 'matrix': [[0, 1], [5, 0]], 'prediction': 'proba'} |
 
 <details>
-<summary>Feature types: 14 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 12 categorical, 2 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (14): `checking_status`, `credit_history`, `credit_purpose`, `savings_status`, `employment_since`, `personal_status_sex`, `other_debtors`, `property`, `other_installment_plans`, `housing`, `job`, `telephone`, `foreign_worker`, `good_or_bad_customer`
+- categorical (12): `checking_status`, `credit_history`, `credit_purpose`, `savings_status`, `personal_status_sex`, `other_debtors`, `property`, `other_installment_plans`, `housing`, `telephone`, `foreign_worker`, `good_or_bad_customer`
+- ordinal (2): `employment_since (unemployed < < 1 year < 1 <= ... < 4 years < 4 <= ... < 7 years < >= 7 years)`, `job (unemployed / unskilled non-resident < unskilled resident < skilled employee / official < management / self-employed / highly qualified)`
 - string (0): none
 - datetime (0): none
 
@@ -173,16 +174,28 @@ The first 5 of 1,000 rows of the final frame (random rows: the frame is shuffled
 
 | good_or_bad_customer | checking_status | duration_months | credit_history | credit_purpose | credit_amount | savings_status | employment_since | installment_rate_percent | personal_status_sex | other_debtors | residence_since |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| good | no checking account | 48 | delay in paying off in past | radio/television | 12749 | 500 &lt;= ... &lt; 1000 DM | 4 &lt;= ... &lt; 7 years | 4 | male: single | none | 1 |
-| good | &lt;0 DM | 24 | all credits at this bank paid duly | furniture/equipment | 2483 | 500 &lt;= ... &lt; 1000 DM | 1 &lt;= ... &lt; 4 years | 4 | male: single | none | 4 |
-| bad | 0 &lt;= ... &lt; 200 DM | 24 | existing credits paid duly till now | others | 11328 | &lt; 100 DM | 1 &lt;= ... &lt; 4 years | 2 | male: single | co-applicant | 3 |
-| bad | 0 &lt;= ... &lt; 200 DM | 48 | existing credits paid duly till now | car (new) | 6560 | 100 &lt;= ... &lt; 500 DM | 4 &lt;= ... &lt; 7 years | 3 | male: single | none | 2 |
-| good | no checking account | 48 | critical account / other credits existi… | car (used) | 2751 | unknown / no savings | >= 7 years | 4 | male: single | none | 3 |
+| good | no checking account | 18 | no credits taken / all credits paid bac… | furniture/equipment | 2389 | unknown / no savings account | &lt; 1 year | 4 | female: non-single, or male: single | none | 1 |
+| good | 0 &lt;= ... &lt; 200 DM | 12 | critical account / other credits elsewh… | furniture/equipment | 409 | 500 &lt;= ... &lt; 1000 DM | 1 &lt;= ... &lt; 4 years | 3 | female: non-single, or male: single | none | 3 |
+| good | >= 200 DM / salary for at least 1 year | 15 | existing credits paid back duly till now | car (new) | 3594 | unknown / no savings account | &lt; 1 year | 1 | female: non-single, or male: single | none | 2 |
+| good | >= 200 DM / salary for at least 1 year | 24 | all credits at this bank paid back duly | domestic appliances | 2058 | unknown / no savings account | 1 &lt;= ... &lt; 4 years | 4 | male: divorced/separated | none | 2 |
+| good | &lt; 0 DM | 12 | no credits taken / all credits paid bac… | furniture/equipment | 1103 | unknown / no savings account | 4 &lt;= ... &lt; 7 years | 4 | male: married/widowed | guarantor | 3 |
 
 ## Curation notes
 
 - We reversed the original ordinal encoding.
+- Labels follow the corrected code table (Groemping 2019, "South German Credit Data: Correcting a Widely Used
+  Data Set", UCI 573), not Statlog's german.doc, which is wrong for checking_status, credit_history,
+  credit_purpose, savings_status, personal_status_sex, property, housing and foreign_worker. The codes keep
+  their order: matched on duration, amount and age (990 of 1,000 rows unique in both files), A11 is code 1,
+  A12 code 2 and so on in every column, with foreign_worker reversed (A201 is "no"). The numeric codes mean:
+  installment_rate_percent 1 = >= 35%, 2 = 25-35%, 3 = 20-25%, 4 = < 20% of disposable income (a higher code
+  is a lower rate); residence_since 1 = < 1 year to 4 = >= 7 years; existing_credits_count 1 = 1, 2 = 2-3,
+  3 = 4-5, 4 = >= 6; people_liable 1 = 0 to 2, 2 = 3 or more. UCI 573 also corrects a few values (34 rows of
+  other_installment_plans, 10 of foreign_worker, 1 of housing); this definition keeps Statlog's values
+  (2026-10-30).
 - Metric: the Statlog cost matrix on probabilities, each applicant predicted as the class of least expected cost (the AI's choice; the curator was unsure and noted TabArena's threshold tuning, 2026-10-21).
+- Ordinal scales (2026-10-30, CLEAN-14): 2 columns typed as ordered categories in the order of the source's
+  codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -242,25 +255,25 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| checking_status | category | 0 | 0 | 4 | no checking account, &lt;0 DM, 0 &lt;= ... &lt; 200 DM, >= 200 DM / salary assignments f… |
-| credit_history | category | 0 | 0 | 5 | existing credits paid duly till now, critical account / other credits existing,… |
-| credit_purpose | category | 0 | 0 | 10 | radio/television, car (new), furniture/equipment, car (used), business, educati… |
-| savings_status | category | 0 | 0 | 5 | &lt; 100 DM, unknown / no savings, 100 &lt;= ... &lt; 500 DM, 500 &lt;= ... &lt; 1000 DM, >= 1… |
+| checking_status | category | 0 | 0 | 4 | >= 200 DM / salary for at least 1 year, no checking account, &lt; 0 DM, 0 &lt;= ... &lt;… |
+| credit_history | category | 0 | 0 | 5 | no credits taken / all credits paid back duly, all credits at this bank paid ba… |
+| credit_purpose | category | 0 | 0 | 10 | furniture/equipment, others, car (used), car (new), retraining, repairs, domest… |
+| savings_status | category | 0 | 0 | 5 | unknown / no savings account, >= 1000 DM, &lt; 100 DM, 100 &lt;= ... &lt; 500 DM, 500 &lt;=… |
 | employment_since | category | 0 | 0 | 5 | 1 &lt;= ... &lt; 4 years, >= 7 years, 4 &lt;= ... &lt; 7 years, &lt; 1 year, unemployed |
-| personal_status_sex | category | 0 | 0 | 4 | male: single, female: divorced/separated/married, male: married/widowed, male: … |
+| personal_status_sex | category | 0 | 0 | 4 | male: married/widowed, female: non-single, or male: single, female: single, mal… |
 | other_debtors | category | 0 | 0 | 3 | none, guarantor, co-applicant |
-| property | category | 0 | 0 | 4 | car or other (not savings), real estate, building society savings / life insura… |
+| property | category | 0 | 0 | 4 | building society savings / life insurance, unknown / no property, car or other,… |
 | other_installment_plans | category | 0 | 0 | 3 | none, bank, stores |
-| housing | category | 0 | 0 | 3 | own, rent, for free |
+| housing | category | 0 | 0 | 3 | rent, for free, own |
 | job | category | 0 | 0 | 4 | skilled employee / official, unskilled resident, management / self-employed / h… |
 | telephone | category | 0 | 0 | 2 | none, yes, registered |
-| foreign_worker | category | 0 | 0 | 2 | yes, no |
+| foreign_worker | category | 0 | 0 | 2 | no, yes |
 | good_or_bad_customer | category | 0 | 0 | 2 | good, bad |
 | duration_months | int64 | 0 | 0 | 33 | 24, 12, 18, 36, 6, 15, 9, 48, 30, 21 |
-| credit_amount | int64 | 0 | 0 | 921 | 1262, 1275, 1393, 1258, 1478, 2333, 1287, 433, 1236, 1344 |
+| credit_amount | int64 | 0 | 0 | 921 | 1258, 1275, 1393, 1478, 1262, 1287, 709, 1449, 727, 6761 |
 | installment_rate_percent | int64 | 0 | 0 | 4 | 4, 2, 3, 1 |
 | residence_since | int64 | 0 | 0 | 4 | 4, 2, 3, 1 |
-| age_years | int64 | 0 | 0 | 53 | 27, 26, 23, 24, 28, 25, 30, 35, 36, 31 |
+| age_years | int64 | 0 | 0 | 53 | 27, 26, 23, 24, 28, 25, 35, 30, 36, 31 |
 | existing_credits_count | int64 | 0 | 0 | 4 | 1, 2, 3, 4 |
 | people_liable | int64 | 0 | 0 | 2 | 1, 2 |
 
@@ -292,32 +305,32 @@ Default splits.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| checking_status | 1 | no checking account | 394 | 39.4 |
-| checking_status | 2 | &lt;0 DM | 274 | 27.4 |
-| checking_status | 3 | 0 &lt;= ... &lt; 200 DM | 269 | 26.9 |
-| checking_status | 4 | >= 200 DM / salary assignments for >= 1 year | 63 | 6.3 |
-| credit_history | 1 | existing credits paid duly till now | 530 | 53 |
-| credit_history | 2 | critical account / other credits existing | 293 | 29.3 |
-| credit_history | 3 | delay in paying off in past | 88 | 8.8 |
-| credit_history | 4 | all credits at this bank paid duly | 49 | 4.9 |
-| credit_history | 5 | no credits taken / all paid duly | 40 | 4 |
-| credit_purpose | 1 | radio/television | 280 | 28 |
-| credit_purpose | 2 | car (new) | 234 | 23.4 |
-| credit_purpose | 3 | furniture/equipment | 181 | 18.1 |
-| credit_purpose | 4 | car (used) | 103 | 10.3 |
-| credit_purpose | 5 | business | 97 | 9.7 |
+| checking_status | 1 | >= 200 DM / salary for at least 1 year | 394 | 39.4 |
+| checking_status | 2 | no checking account | 274 | 27.4 |
+| checking_status | 3 | &lt; 0 DM | 269 | 26.9 |
+| checking_status | 4 | 0 &lt;= ... &lt; 200 DM | 63 | 6.3 |
+| credit_history | 1 | no credits taken / all credits paid back duly | 530 | 53 |
+| credit_history | 2 | all credits at this bank paid back duly | 293 | 29.3 |
+| credit_history | 3 | existing credits paid back duly till now | 88 | 8.8 |
+| credit_history | 4 | critical account / other credits elsewhere | 49 | 4.9 |
+| credit_history | 5 | delay in paying off in the past | 40 | 4 |
+| credit_purpose | 1 | furniture/equipment | 280 | 28 |
+| credit_purpose | 2 | others | 234 | 23.4 |
+| credit_purpose | 3 | car (used) | 181 | 18.1 |
+| credit_purpose | 4 | car (new) | 103 | 10.3 |
+| credit_purpose | 5 | retraining | 97 | 9.7 |
 | employment_since | 1 | 1 &lt;= ... &lt; 4 years | 339 | 33.9 |
 | employment_since | 2 | >= 7 years | 253 | 25.3 |
 | employment_since | 3 | 4 &lt;= ... &lt; 7 years | 174 | 17.4 |
 | employment_since | 4 | &lt; 1 year | 172 | 17.2 |
 | employment_since | 5 | unemployed | 62 | 6.2 |
-| foreign_worker | 1 | yes | 963 | 96.3 |
-| foreign_worker | 2 | no | 37 | 3.7 |
+| foreign_worker | 1 | no | 963 | 96.3 |
+| foreign_worker | 2 | yes | 37 | 3.7 |
 | good_or_bad_customer | 1 | good | 700 | 70 |
 | good_or_bad_customer | 2 | bad | 300 | 30 |
-| housing | 1 | own | 713 | 71.3 |
-| housing | 2 | rent | 179 | 17.9 |
-| housing | 3 | for free | 108 | 10.8 |
+| housing | 1 | rent | 713 | 71.3 |
+| housing | 2 | for free | 179 | 17.9 |
+| housing | 3 | own | 108 | 10.8 |
 | job | 1 | skilled employee / official | 630 | 63 |
 | job | 2 | unskilled resident | 200 | 20 |
 | job | 3 | management / self-employed / highly qualified | 148 | 14.8 |
@@ -328,19 +341,19 @@ Default splits.
 | other_installment_plans | 1 | none | 814 | 81.4 |
 | other_installment_plans | 2 | bank | 139 | 13.9 |
 | other_installment_plans | 3 | stores | 47 | 4.7 |
-| personal_status_sex | 1 | male: single | 548 | 54.8 |
-| personal_status_sex | 2 | female: divorced/separated/married | 310 | 31 |
-| personal_status_sex | 3 | male: married/widowed | 92 | 9.2 |
+| personal_status_sex | 1 | male: married/widowed | 548 | 54.8 |
+| personal_status_sex | 2 | female: non-single, or male: single | 310 | 31 |
+| personal_status_sex | 3 | female: single | 92 | 9.2 |
 | personal_status_sex | 4 | male: divorced/separated | 50 | 5 |
-| property | 1 | car or other (not savings) | 332 | 33.2 |
-| property | 2 | real estate | 282 | 28.2 |
-| property | 3 | building society savings / life insurance | 232 | 23.2 |
-| property | 4 | unknown / no property | 154 | 15.4 |
-| savings_status | 1 | &lt; 100 DM | 603 | 60.3 |
-| savings_status | 2 | unknown / no savings | 183 | 18.3 |
-| savings_status | 3 | 100 &lt;= ... &lt; 500 DM | 103 | 10.3 |
-| savings_status | 4 | 500 &lt;= ... &lt; 1000 DM | 63 | 6.3 |
-| savings_status | 5 | >= 1000 DM | 48 | 4.8 |
+| property | 1 | building society savings / life insurance | 332 | 33.2 |
+| property | 2 | unknown / no property | 282 | 28.2 |
+| property | 3 | car or other | 232 | 23.2 |
+| property | 4 | real estate | 154 | 15.4 |
+| savings_status | 1 | unknown / no savings account | 603 | 60.3 |
+| savings_status | 2 | >= 1000 DM | 183 | 18.3 |
+| savings_status | 3 | &lt; 100 DM | 103 | 10.3 |
+| savings_status | 4 | 100 &lt;= ... &lt; 500 DM | 63 | 6.3 |
+| savings_status | 5 | 500 &lt;= ... &lt; 1000 DM | 48 | 4.8 |
 | telephone | 1 | none | 596 | 59.6 |
 | telephone | 2 | yes, registered | 404 | 40.4 |
 
@@ -357,4 +370,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:33c9468ea3a9c903c0bfbc9eec3d250c7a7d9d9c2634b90bebad657d843743aa` |
+| stale | yes: the definition now gives checksum `v2:11ac9e90b0d525be907185b1fa8db4cb3ec2f9db6117d5014b492af6a41c6a1f` |

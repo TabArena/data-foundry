@@ -78,6 +78,8 @@ CC (2026-10-21, Lennart): We want to keep real repeats, as houses can be sold se
 
 **Assessment (AI, 2026-10-21):** metric now `Metric.source("rmsle", target_transform="log1p")` instead of rmse on the log1p target: the competition's RMSLE on the sale price, computed after the inverse of the shipped log1p (MET-3); the score is the same number as before. Needs a rebuild to reach the container.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): ordinal scales shipped as numbers, left as numbers for the curator's review: `Elementary School Score`, `Middle School Score`, `High School Score`.
+
 ## Reference
 
 Kaggle

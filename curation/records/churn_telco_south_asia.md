@@ -49,6 +49,8 @@ CC (2026-10-21, Lennart): option (a) of the consistency check on one-snapshot ch
 
 CC (2026-10-21, Lennart): the fallback metric stays (`roc_auc`; the first publication could not be read, so no metric is known; cross-dataset item "Metrics still to settle").
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `aug_user_type` (low confidence); `sep_user_type` (low confidence).
+
 ## Reference
 
 @inproceedings{ahmed2017mcs,

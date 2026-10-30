@@ -38,6 +38,8 @@ Andrej: Use the most extensive data version
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — The challenge defined no predictive scoring rule: judging criteria were not announced in advance and mixed an empirical evaluation with qualitative judging of explanations; only accuracy figures (~72-74%) were reported for entries.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): ordinal scales shipped as numbers, left as numbers for the curator's review: `MaxDelq2PublicRecLast12M`, `MaxDelqEver`.
+
 ## Reference
 
 https://www.kaggle.com/datasets/averkiyoliabev/home-equity-line-of-creditheloc

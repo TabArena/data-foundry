@@ -38,6 +38,8 @@ Andrej: Requires proper preprocessing and handling of duplicate patients before 
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — the first publication is an explanatory logistic regression with no predictive score.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 4 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `age`, `weight`, `max_glu_serum`, `A1Cresult` (the README lists their levels); left unordered: `metformin` (a level outside the scale is a state of its own); `repaglinide` (a level outside the scale is a state of its own); `nateglinide` (a level outside the scale is a state of its own); `chlorpropamide` (a level outside the scale is a state of its own); `glimepiride` (a level outside the scale is a state of its own); `glipizide` (a level outside the scale is a state of its own); `glyburide` (a level outside the scale is a state of its own); `pioglitazone` (a level outside the scale is a state of its own); `rosiglitazone` (a level outside the scale is a state of its own); `acarbose` (a level outside the scale is a state of its own); and 3 more.
+
 ## Reference
 
 Beata Strack, Jonathan P. DeShazo, Chris Gennings, Juan L. Olmo, Sebastian Ventura, Krzysztof J. Cios, and John N. Clore, “ Impact of HbA1c Measurement on Hospital Readmission Rates: Analysis of 70,000 Clinical Database Patient Records,” BioMed Research International, vol. 2014, Article ID 781670, 11 pages, 2014.

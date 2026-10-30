@@ -22,6 +22,14 @@ def _cohort(raw: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame({"event": event, "followed": followed, "covered": covered.reindex(raw.index)})
 
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "Edema": ["N", "S", "Y"],
+    "Stage": [1.0, 2.0, 3.0, 4.0],
+}
+
+
 class CirrhosisPatientSurvivalPrediction(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question=(
@@ -101,6 +109,8 @@ class CirrhosisPatientSurvivalPrediction(AbstractCuratedDataset):
         - We drop ID, and N_Days and Status, which define the label.
         - The other columns are the baseline values taken at registration (the follow-up visits are in the separate pbcseq file), so all stay. The 66 patients outside the trial have no drug, ascites, hepatomegaly, spiders, copper, alkaline phosphatase or SGOT; these stay missing.
         - Until 2026-10-14 the task regressed the log time to death over the 161 patients who died. That is right truncation: a patient registered in 1982-84 entered only with a death within about 3 years (median 1.86 years, against 3.98 for 1974-76), so the label partly measured the calendar window.
+        - Ordinal scales (2026-10-30, CLEAN-14): 2 columns typed as ordered categories in the order of the source's
+          codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -130,6 +140,7 @@ class CirrhosisPatientSurvivalPrediction(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "Drug",
                 "Ascites",

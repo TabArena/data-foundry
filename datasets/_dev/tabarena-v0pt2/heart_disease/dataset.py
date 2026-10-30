@@ -40,6 +40,13 @@ LABELS = {
 }
 
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "slope": ["upsloping", "flat", "downsloping"],
+}
+
+
 class HeartDisease(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="Will the angiogram of a patient at a new hospital show a narrowed coronary artery?",
@@ -120,6 +127,8 @@ class HeartDisease(AbstractCuratedDataset):
         - Codes get their labels from UCI's `heart-disease.names`: `sex`; `cp` typical angina, atypical angina, non-anginal pain, asymptomatic; `restecg` normal, ST-T wave abnormality, left ventricular hypertrophy; `slope` of the peak-exercise ST segment upsloping, flat, downsloping; `thal` normal, fixed defect, reversible defect. `fbs` (fasting blood sugar over 120 mg/dl) and `exang` (angina on exercise) stay 0/1 flags. `oldpeak` is the ST depression on exercise relative to rest; one Long Beach value is negative.
         - Anomaly: the Hungarian file keeps 294 of the paper's 425 patients (36% diseased against 38%); the paper took all catheterizations of 1983 to 1987 without prior infarction or valve disease (p. 306), and how the 294 were chosen is not stated.
         - Duplicates: the Long Beach pair of equal rows is one patient entered twice (the raw file gives both the same exercise and angiogram dates and the same ten vessel readings, which no other Long Beach pair shares), so one is dropped. The Hungarian pair is two patients (exams in March and May 1986) and stays.
+        - Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
+          codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -180,7 +189,9 @@ class HeartDisease(AbstractCuratedDataset):
         return df.drop(columns=["num"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(categorical=["hospital", "sex", "cp", "fbs", "restecg", "exang", "slope", "thal"])
+        return FeatureTypes(
+            ordinal=ORDINAL_LEVELS, categorical=["hospital", "sex", "cp", "fbs", "restecg", "exang", "slope", "thal"]
+        )
 
     def _make_splits(self, df: pd.DataFrame) -> SplitPlan:
         # Leave one hospital out, one repeat: fold i tests on the i-th hospital and trains on the other two

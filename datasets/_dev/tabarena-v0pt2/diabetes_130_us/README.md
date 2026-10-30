@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: diabetes_130_us
 container_format: 2
-checksum: v2:ea36e697ee626c84f9c68bca3687d3b784fed3477627da3d0d913be0a1448cec
+checksum: v2:d4983370f493278ca0b0beaae390132d7b033e5e145b937b42e3023a5732f74b
 build:
   uuid: 01a111fc-82d1-7838-bf50-fa314882cfef
   checksum: v2:eb9b004418443ea085fa8272aedde899f8b4e3492dd152825acedb8110288e02
@@ -67,7 +67,7 @@ decisions: []
 
 Binary classification of `EarlyReadmission`, scored with `roc_auc` on IID splits. 69,973 rows and 44 features. Source: UCI (2014).
 
-Built as `01a111fc-82d1-7838-bf50-fa314882cfef` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ea36e697ee626c84f9c68bca3687d3b784fed3477627da3d0d913be0a1448cec`, so the build is stale. See [Build](#build).
+Built as `01a111fc-82d1-7838-bf50-fa314882cfef` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d4983370f493278ca0b0beaae390132d7b033e5e145b937b42e3023a5732f74b`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -144,9 +144,10 @@ Only curators run `build`, when the dataset ships.
 | reason | The first publication is an explanatory logistic-regression study (odds ratios, significance of HbA1c measurement); it defines no predictive score, and the UCI page names none. |
 
 <details>
-<summary>Feature types: 37 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 33 categorical, 4 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (37): `race`, `gender`, `age`, `weight`, `admission_type_id`, `discharge_disposition_id`, `admission_source_id`, `payer_code`, `medical_specialty`, `diag_1`, `diag_2`, `diag_3`, `max_glu_serum`, `A1Cresult`, `metformin`, `repaglinide`, `nateglinide`, `chlorpropamide`, `glimepiride`, `acetohexamide`, `glipizide`, `glyburide`, `tolbutamide`, `pioglitazone`, `rosiglitazone`, `acarbose`, `miglitol`, `troglitazone`, `tolazamide`, `insulin`, `glyburide-metformin`, `glipizide-metformin`, `metformin-rosiglitazone`, `metformin-pioglitazone`, `change`, `diabetesMed`, `EarlyReadmission`
+- categorical (33): `race`, `gender`, `admission_type_id`, `discharge_disposition_id`, `admission_source_id`, `payer_code`, `medical_specialty`, `diag_1`, `diag_2`, `diag_3`, `metformin`, `repaglinide`, `nateglinide`, `chlorpropamide`, `glimepiride`, `acetohexamide`, `glipizide`, `glyburide`, `tolbutamide`, `pioglitazone`, `rosiglitazone`, `acarbose`, `miglitol`, `troglitazone`, `tolazamide`, `insulin`, `glyburide-metformin`, `glipizide-metformin`, `metformin-rosiglitazone`, `metformin-pioglitazone`, `change`, `diabetesMed`, `EarlyReadmission`
+- ordinal (4): `age ([0-10) < [10-20) < [20-30) < [30-40) < [40-50) < [50-60) < [60-70) < [70-80) < [80-90) < [90-100))`, `weight ([0-25) < [25-50) < [50-75) < [75-100) < [100-125) < [125-150) < [150-175) < [175-200) < >200)`, `max_glu_serum (Norm < >200 < >300)`, `A1Cresult (Norm < >7 < >8)`
 - string (0): none
 - datetime (0): none
 
@@ -193,6 +194,8 @@ The first 5 of 69,973 rows of the final frame (random rows: the frame is shuffle
 - The other codes for an unknown value ("Not Available" and "Not Mapped" in the ID columns, "Unknown/Invalid" in gender) stay as categories, as IDS_mapping.csv lists them as codes of their own next to "NULL".
 - We drop examide, citoglipton and glimepiride-pioglitazone, which are constant ("No") after the filters above.
 - Anomaly: There is a distribution shift based on the original order. The reason for this might be that the encounters are ordered in some way such that later parts of the data contain different sub-groups than earlier parts. This is also indicated by the fact that the "payer_code" feature is responsible for the shift. This distribution shift vanishes after randomly shuffling the data (as done by default for this and all other datasets used in TabArena).
+- Ordinal scales (2026-10-30, CLEAN-14): 4 columns typed as ordered categories in the order of the source's
+  codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -377,4 +380,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:ea36e697ee626c84f9c68bca3687d3b784fed3477627da3d0d913be0a1448cec` |
+| stale | yes: the definition now gives checksum `v2:d4983370f493278ca0b0beaae390132d7b033e5e145b937b42e3023a5732f74b` |

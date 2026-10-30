@@ -40,6 +40,8 @@ Andrej: Fits criteria, but honestly this dataset with only 1000 samples from 199
 
 CC (2026-10-21, Lennart): Unsure whether the cost matrix should score probabilities or labels (TabArena tunes thresholds); the AI's choice, probabilities with the least expected cost, is applied.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 2 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `employment_since`, `job` (the README lists their levels); left unordered: `checking_status` (a level outside the scale is a state of its own); `savings_status` (a level outside the scale is a state of its own); `property` (a level outside the scale is a state of its own); ordinal scales shipped as numbers, left as numbers for the curator's review: `installment_rate_percent`, `residence_since`, `existing_credits_count`; labels relabelled by the corrected code table (Groemping 2019, UCI 573 South German Credit): Statlog's german.doc is wrong for checking_status, credit_history, credit_purpose, savings_status, personal_status_sex, property, housing and foreign_worker; matched on duration, amount and age, the codes correspond one to one (990 rows). UCI 573 also corrects a few values (34 rows of other_installment_plans, 10 of foreign_worker, 1 of housing), not applied: a question for the curator..
+
 ## Reference
 
 10.24432/C5NC77

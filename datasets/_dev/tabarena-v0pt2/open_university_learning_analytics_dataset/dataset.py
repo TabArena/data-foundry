@@ -96,6 +96,21 @@ def _click_features(raw: dict[str, pd.DataFrame], day: int) -> pd.DataFrame:
     )
 
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "highest_education": [
+        "No Formal quals",
+        "Lower Than A Level",
+        "A Level or Equivalent",
+        "HE Qualification",
+        "Post Graduate Qualification",
+    ],
+    "imd_band": ["0-10%", "10-20%", "20-30%", "30-40%", "40-50%", "50-60%", "60-70%", "70-80%", "80-90%", "90-100%"],
+    "age_band": ["0-35", "35-55", "55<="],  # open-ended
+}
+
+
 class OpenUniversityLearningAnalyticsDataset(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question=("On day 60 of an online course, will a student finish with distinction, pass, fail or withdraw?"),
@@ -189,6 +204,8 @@ class OpenUniversityLearningAnalyticsDataset(AbstractCuratedDataset):
         - Anomaly: 93 Withdrawn registrations (0.35% of rows, all in 2014J presentations) have no date_unregistration and stay in the cohort. 84 of them have no click on days 46-59, against 22% of the withdrawals that have a date, and 19 never clicked, so most likely withdrew before day 60. We keep them: the date would be inferred from the label and the activity, and a filter on Withdrawn alone selects on the target. 45 registrations have no date_registration (7 in the cohort, kept missing).
         - Duplicates: one pair of rows shares all features but not the result (Fail and Withdrawn); we keep both as two real registrations.
         - Spread (TP-3): untuned model families score alike on the 9 splits (log-loss skill 0.173 random forest, 0.170 LightGBM, 0.162 logistic regression; the lead of 0.011 is within twice its paired standard error of 0.009). Kept pending tuned results (Lennart, 2026-10-22): re-check with the first tuned run.
+        - Ordinal scales (2026-10-30, CLEAN-14): 3 columns typed as ordered categories in the order of the source's
+          codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -265,7 +282,7 @@ class OpenUniversityLearningAnalyticsDataset(AbstractCuratedDataset):
         return drop_columns(df, ["code_presentation", "date_unregistration"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(categorical=CATEGORICAL)
+        return FeatureTypes(ordinal=ORDINAL_LEVELS, categorical=CATEGORICAL)
 
     def _make_splits(self, df: pd.DataFrame) -> SplitPlan:
         # the grouped 3x3 cross-validation, then each train side loses the registrations of that fold's test students

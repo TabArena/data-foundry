@@ -45,6 +45,8 @@ Photometric LightGBM: log loss about 0.33, OvR AUC about 0.96.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — SDSS DR17 (Abdurro'uf et al. 2022) is a data release with no prediction task or metric; the Kaggle 'Stellar Classification Dataset - SDSS17' is a dataset page, not a competition, with no evaluation metric. Our task (photometric classification, redshift/plate/fiber dropped) also differs from the SDSS pipeline's spectroscopic classification.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): codes shipped as numbers, left for the curator's review: `cam_col`.
+
 ## Reference
 
 fedesoriano. (January 2022). Stellar Classification Dataset - SDSS17. Retrieved [Date Retrieved] from https://www.kaggle.com/fedesoriano/stellar-classification-dataset-sdss17.

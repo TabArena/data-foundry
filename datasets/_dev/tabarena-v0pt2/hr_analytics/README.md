@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: hr_analytics
 container_format: 2
-checksum: v2:68ddfd7bc02dec8022985ccb379836275d43eb979c2cfe2b310bfc8365352d40
+checksum: v2:cc848993ea112858823fca44104c59eb59a00ae0e5d1b99f8a92ba9ef19e5368
 build:
   uuid: 01a13a7d-c2d4-7c87-a495-ce69f1b8a4c4
   checksum: v2:e812c1329270426adef79897cec0ec3f1b2d8724e57d3359308efcb2130b09d6
@@ -76,7 +76,7 @@ decisions: []
 
 Binary classification of `LookingForJobChange`, scored with `roc_auc` on IID splits. 18,359 rows and 12 features. Source: Other (2018).
 
-Built as `01a13a7d-c2d4-7c87-a495-ce69f1b8a4c4` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:68ddfd7bc02dec8022985ccb379836275d43eb979c2cfe2b310bfc8365352d40`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2d4-7c87-a495-ce69f1b8a4c4` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:cc848993ea112858823fca44104c59eb59a00ae0e5d1b99f8a92ba9ef19e5368`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -159,9 +159,10 @@ Only curators run `build`, when the dataset ships.
 | definition | Area under the ROC curve on the probability that an enrollee looks for a job change. |
 
 <details>
-<summary>Feature types: 11 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 8 categorical, 3 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (11): `city`, `gender`, `relevent_experience`, `enrolled_university`, `education_level`, `major_discipline`, `experience`, `company_size`, `company_type`, `last_new_job`, `LookingForJobChange`
+- categorical (8): `city`, `gender`, `relevent_experience`, `enrolled_university`, `major_discipline`, `company_type`, `last_new_job`, `LookingForJobChange`
+- ordinal (3): `education_level (Primary School < High School < Graduate < Masters < Phd)`, `experience (<1 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < 11 < 12 < 13 < 14 < 15 < 16 < 17 < 18 < 19 < 20 < >20)`, `company_size (<10 < 10/49 < 50-99 < 100-500 < 500-999 < 1000-4999 < 5000-9999 < 10000+)`
 - string (0): none
 - datetime (0): none
 
@@ -223,6 +224,8 @@ Supremacy (DataHack, July 2018). The same files ran again as JanataHack: HR Anal
 - Note: the task probes flag `no_spread` (ROC AUC LightGBM 0.625, linear 0.622, random forest 0.619; LightGBM
   +0.012 over random forest, paired SE 0.006). We keep the task: a real signal with a low ceiling (Lennart,
   2026-10-14).
+- Ordinal scales (2026-10-30, CLEAN-14): 3 columns typed as ordered categories in the order of the source's
+  codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -360,4 +363,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:68ddfd7bc02dec8022985ccb379836275d43eb979c2cfe2b310bfc8365352d40` |
+| stale | yes: the definition now gives checksum `v2:cc848993ea112858823fca44104c59eb59a00ae0e5d1b99f8a92ba9ef19e5368` |

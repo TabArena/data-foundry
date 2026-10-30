@@ -66,6 +66,8 @@ CC (2026-10-26, Lennart): the declared metric, RMSE on the log price (the Kaggle
 
 CC (2026-10-26, Lennart): verdict ship.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 12 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `Lot Shape`, `Utilities`, `Land Slope`, `Exter Qual`, `Exter Cond`, `Heating QC`, `Kitchen Qual`, `Functional`, `Garage Qual`, `Garage Cond`, `Paved Drive`, `Pool QC` (the README lists their levels); their codes that mean unknown (don't know, refused, not asked) are missing in `Garage Qual`, `Garage Cond`, `Pool QC` (CLEAN-10); left unordered: `Bsmt Qual` (a level outside the scale is a state of its own); `Bsmt Cond` (a level outside the scale is a state of its own); `Bsmt Exposure` (a level outside the scale is a state of its own); `BsmtFin Type 1` (a level outside the scale is a state of its own); `BsmtFin Type 2` (a level outside the scale is a state of its own); `Electrical` (a level outside the scale is a state of its own); `Fireplace Qu` (a level outside the scale is a state of its own); `Garage Finish` (a level outside the scale is a state of its own); `Fence` (a partial order); ordinal scales shipped as numbers, left as numbers for the curator's review: `Overall Qual`, `Overall Cond`.
+
 ## Reference
 
 @article{de2011ames,

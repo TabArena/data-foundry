@@ -119,6 +119,34 @@ STRING_COLUMNS = [
 """Free-text and high-cardinality code columns, kept as strings."""
 
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "SOLP3": [
+        "Do Not Solicit or Mail",
+        "one solicitation per year",
+        "two solicitations per year",
+        "twelve solicitations per year",
+        "can be mailed (Default)",
+    ],  # open-ended
+    "SOLIH": [
+        "Do Not Solicit",
+        "one solicitation per year",
+        "two solicitations per year",
+        "three solicitations per year",
+        "four solicitations per year",
+        "five solicitations per year",
+        "six solicitations per year",
+        "twelve solicitations per year",
+        "can be mailed (Default)",
+    ],  # open-ended
+    "RFA_2F": [1, 2, 3, 4],  # open-ended
+    "RFA_2A": ["D", "E", "F", "G"],  # open-ended
+    "GEOCODE2": ["D", "C", "B", "A"],
+    "DOMAIN_ses": ["Lower Lowest SES in Urban communities", "Lowest SES", "Average SES", "Highest SES"],
+}
+
+
 class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="Will a lapsed donor give to a veterans' charity in response to its renewal mailing?",
@@ -187,6 +215,8 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
         - We resolve the ordinal encoding and nan encoding for all columns.
         - Note, that data has a lot of features that contain data from a similar origin that was transformed into individual columns.
         - We do not decode the promotion codes across years but keep them as string columns as it would blow up the dimensionality too much otherwise.
+        - Ordinal scales (2026-10-30, CLEAN-14): 6 columns typed as ordered categories in the order of the source's
+          codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -488,6 +518,7 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "PVASTATE",
                 "MAILCODE",

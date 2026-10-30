@@ -7,6 +7,18 @@ from pathlib import Path
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "Ketones_in_Urine": ["no", "+", "++", "+++"],
+    "RBC_in_Urine": ["no", "+", "++", "+++"],
+    "WBC_in_Urine": ["no", "+", "++", "+++"],
+    "Peritonitis": ["no", "local", "generalized"],
+    "Appendicolith": ["no", "suspected", "yes"],
+    "Perforation": ["no", "not excluded", "suspected", "yes"],
+    "Appendicular_Abscess": ["no", "suspected", "yes"],
+}
+
 
 class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -75,6 +87,8 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
          - Warning: We tried to clean the data as good as possible but we suspect it might still contain some features leaking the severity, but we lack the medical expertise to identify them. Thus, I would not be surprised if we had to remove this dataset later again.
         - The data contains string data, but only for a very small number of patients and the text is often seemingly very useless. The features add most likely no value, but we keep them in for the pipeline/model to ignore if needed.
         - We drop the few patients that did not have an ultrasound to avoid them being leaking due to missing features.
+        - Ordinal scales (2026-10-30, CLEAN-14): 7 columns typed as ordered categories in the order of the source's
+          codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -111,6 +125,7 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "Sex",
                 "Peritonitis",

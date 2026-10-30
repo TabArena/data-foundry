@@ -129,6 +129,18 @@ recommend:
 * Until TabArena scores at the group unit, the three group-unit datasets are scored per row; the metadata says what
   the right unit is, and nothing is held back.
 
+## Ordinal features
+
+- [ ] **Give the models the order of an ordered category.** v0.2 containers store ordinal scales as ordered categories
+  (`CategoricalDtype(levels, ordered=True)`: 220 columns in 39 datasets, 2026-10-30). AutoGluon's
+  `CategoryFeatureGenerator` rebuilds every category unordered (`pd.Categorical(X[col], categories=...)`), so no model
+  sees the order. Pass it to the models that can use it, for example the codes in order as a number for the tree
+  models, and keep the categories for a model that wants them. Run of 2026-10-30 (the codes in order against unordered
+  categories, on the shipped splits): LightGBM's error fell by 1.56% on average over 55 datasets (12 better, 3 worse),
+  up to 31% on eryhemato_squamous_disease; a linear model on the bare codes loses where a scale is not monotone in the
+  target, so keep the categories for such a model. Once the order reaches the models, the 167 ordinal scales the sources
+  ship as numbers can become ordered categories too (see the CHANGELOG).
+
 ## Library version
 
 - [ ] **Require the data-foundry release that carries the v0.2 metadata.** v0.2 containers store

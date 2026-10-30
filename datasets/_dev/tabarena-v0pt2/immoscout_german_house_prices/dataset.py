@@ -9,6 +9,12 @@ import numpy as np
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "Energy_efficiency_class": [" H ", " G ", " F ", " E ", " D ", " C ", " B ", " A ", " A+ "],
+}
+
 
 class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -79,7 +85,15 @@ class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
         - We drop Free_of_Relation as it indicates a (mostly) price-independent variable; showing logistic information. Note that this column also indicates that the houses are most likely from the same time, further justifying our use case of an IID task.
         - We drop all cases where the price is less than 10k (most of which have a price of 0) as we think this might be a data error, or a case where the price is put to 0 to be marked as "price on request" (which is common in house listings).
         - We drop all duplicates as these are most likely repeated entries given the feature space.
+        - `Condition` and `Furnishing_quality`: the English labels of the scrape do not fit the houses they describe.
+          `Condition` "dilapidated" (1,137 houses) has the newest median year built (2010) and the highest median
+          price, "as new" (11) the oldest (1870) and the lowest; `Furnishing_quality` "refined" (904) is the oldest and
+          cheapest level. The translation of ImmoScout24's German labels looks permuted, and the original labels are
+          not available (the Kaggle upload is deleted; OpenML 43342 says nothing on it). Both stay unordered
+          categories: read their labels as codes, not as meanings (2026-10-30).
         - We drop all rows where the living space is less than 10 (in Germany, this would likely not be enough living space for a real house, and thus might be a data error.
+        - Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
+          codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -118,6 +132,7 @@ class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "Type",
                 "Furnishing_quality",
