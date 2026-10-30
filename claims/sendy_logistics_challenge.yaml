@@ -1,6 +1,6 @@
 name: sendy_logistics_challenge
 holder: Myunghwan
-stage: triage
+stage: review
 claimed_at: '2026-10-28T03:20:07Z'
-expires_at: '2026-11-04T03:20:07Z'
-note: 'Next Myunghwan curation batch: highest remaining eligible priority 3; existing screening dossiers await curator review. Reservation only; no scientific acceptance or build.'
+expires_at: '2026-11-06T01:20:45Z'
+note: 'Curator ship accepted; placement-to-arrival RMSE task built and verified (21,199 rows, 13 predictors, random 3x3 folds). Updating PR #33; retain ownership until merge.'
