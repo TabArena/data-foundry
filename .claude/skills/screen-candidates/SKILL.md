@@ -1,7 +1,7 @@
 ---
 name: screen-candidates
-description: "Screen candidate datasets: a quick first pass from the source link and the web, without building anything. Fills each curation record with what the next stage needs (first publication, the data as published, the use case, the likely split, papers, siblings and duplicates, risks), rejects the obvious cases fast (unethical, generated, non-tabular, forecasting, duplicate, unknown source, no use case) and gives every other record a priority from 1 to 5 for the curator's review. Use when the curator shares a new dataset link, wants the backlog screened or prioritized, or asks to check a record that has no dataset folder yet (\"check X\", \"what did I miss on X\"). The curator verifies the result with /review-screened-candidates."
-argument-hint: "[<unique_name>,... | <dashboard filter> | <source link>]"
+description: "Screen candidate datasets: a quick first pass from the source link and the web, without building anything. Fills each curation record with what the next stage needs (first publication, the data as published, the use case, the likely split, papers, siblings and duplicates, risks), rejects the obvious cases fast (unethical, generated, non-tabular, forecasting, duplicate, unknown source, no use case) and gives every other record a priority from 1 to 5 for the curator's review. On request it also finds new candidates: better data (a larger or newer public dataset of the same task) for existing records, screened as new links. Use when the curator shares a new dataset link, wants the backlog screened or prioritized, asks to check a record that has no dataset folder yet (\"check X\", \"what did I miss on X\"), or wants better data found for existing records (\"better data\", the records tagged Search for better data, or all). The curator verifies the result with /review-screened-candidates."
+argument-hint: "[<unique_name>,... | <dashboard filter> | <source link> | better data [<names> | <filter> | all]]"
 user-invocable: true
 ---
 
@@ -13,7 +13,9 @@ Nothing is downloaded beyond a preview and nothing is built. The curator checks 
 `/review-screened-candidates`; only the curator sets a plain `Yes`.
 
 **Input:** record names, a dashboard filter, or source links (a link without a record gets a new record). Without an
-argument: every record without a verdict. A single name gets the deep pass (below).
+argument: every record without a verdict. A single name gets the deep pass (below). `better data`, with names, a
+filter, `all` or nothing: search existing records for a larger or newer dataset of the same task, and screen the hits
+as new links ("Search for better data", below).
 
 $ARGUMENTS
 
@@ -22,11 +24,48 @@ $ARGUMENTS
 | Step | Read |
 |---|---|
 | all | [principles.md](../knowledge-curation/references/principles.md): the ranking, strengths and the judgment record |
+| better data | [selection.md](../knowledge-curation/references/selection.md), "Small or dated, and the task is still done today"; [provenance.md](../knowledge-curation/references/provenance.md) (PROV-4, PROV-6); [use_case.md](../knowledge-curation/references/use_case.md) |
 | 3 | [provenance.md](../knowledge-curation/references/provenance.md), [use_case.md](../knowledge-curation/references/use_case.md), [splits.md](../knowledge-curation/references/splits.md), [metrics.md](../knowledge-curation/references/metrics.md) (MET-1, MET-4 to MET-7), [sources_access.md](../knowledge-data-foundry/references/sources_access.md) |
 | 4 | [selection.md](../knowledge-curation/references/selection.md) (the scope rules and patterns, the markers), [evidence.md](../knowledge-curation/references/evidence.md) |
 | 5 | [selection.md](../knowledge-curation/references/selection.md), "Priority" |
 | 6 | [records.md](../knowledge-data-foundry/references/records.md): the store API, the `AI (UNVERIFIED)` convention, the screening block |
 | 7 | [verification.md](../knowledge-curation/references/verification.md): the checks marked "screen"; [writing.md](../knowledge-curation/references/writing.md) |
+
+## Search for better data (on request)
+
+Only when the input starts with `better data`; a screening never searches on its own. It looks for new candidates: a
+larger or newer public dataset of the same task as a record we already have. Its hits go through steps 1 to 7 like
+any new link.
+
+**Which records.** The names or the filter given. `better data` alone: the records tagged `Search for better data`,
+the curator's mark for this search. `better data all`: every record whose task is in scope, small and dated ones first
+(`Tiny Data`, `Too Small`, `Outdated`, `Not Representative`, a classic UCI or StatLib set). Skip a record rejected for
+its task (ethics, scope, no use case): other data does not fix that. Search a `Duplicate` through its original. Before
+a run over more than about 50 records, say how many records and agents it takes, and ask.
+
+**Same task, better data.** The same target (or the same quantity measured better) and use case, with features of the
+same kind known at the prediction point; they need not match column for column. Better is larger or newer, ideally
+both. Look at the old data's publisher (a later release or survey wave), the papers that cite it and newer studies of
+the task, government surveys and registries, competitions and the usual repositories. Preview only, as in step 3.
+
+**Run.** The `data-scout` agent, about 10 records per agent, all in one message. It writes nothing and returns per
+record the hits (link, publisher, year, rows as published, why the task is the same, what it adds) or where it looked.
+Then the main session:
+
+* drops a hit that already has a record (`grep -il` over `curation/records/` by name and link) and reports it;
+* merges a hit that several records found;
+* gives every other hit a record (step 1) and a screening (steps 2 to 7). A hit from another source is its own record,
+  not a `Duplicate` (PROV-4); a newer release of the same source is a version (PROV-6), and the curator decides which
+  one enters. The siblings line of the screening block names the old record and what the hit adds.
+
+**The old record** (claimed for the write, released after; one another curator holds is skipped and listed) gets one
+line in its comments: ``**Better data (AI, <date>):** `<new_record>`: <what it adds>; screened: <verdict, priority>.``
+A record tagged `Search for better data` gets the line without a hit too: none found, and where we looked. Nothing
+else changes: the verdict, markers, priority and tags stay, the tag until the curator removes it, and the record goes
+into no queue. Precedent: `body_density_prediction` (252 men, 1985) → NHANES DXA body fat (21,768 people).
+
+**Report**, with step 7's: per old record, the hits with their new records, verdicts and priorities; the hits that
+already had a record; how many records were searched without a hit.
 
 ## Step 1: List the records
 

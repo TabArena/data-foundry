@@ -33,7 +33,8 @@ never sets a plain `Yes` while screening; only a curator does.
 
 ## The queues
 
-* **To screen:** records without a verdict, or a filter or list the curator names.
+* **To screen:** records without a verdict, or a filter or list the curator names, or the hits of a search for
+  better data (`/screen-candidates better data`, over the records tagged `Search for better data` or all of them).
 * **Screening review:** the dashboard's Screening pill (AI-unverified records whose verdict is not `No`, highest
   priority first); confirmed rejections are found with the status funnel on 🤖 and ✗.
 * **To add:** `suggestion` `Yes`, no `DF: Yes`, no claim on the board, not AI-unverified
@@ -66,7 +67,7 @@ The custom agents in `.claude/agents/` and the stage that uses them:
 
 | Stage | Agents |
 |---|---|
-| Screen | `candidate-screener` (a batch of records), `reject-checker` (tries to refute each fast reject) |
+| Screen | `candidate-screener` (a batch of records), `reject-checker` (tries to refute each fast reject), `data-scout` (a search for better data, on request) |
 | Add | `dataset-builder` (one source unit of a batch) |
 | Add: the review panel ([review_panel.md](../../add-dataset/references/review_panel.md)) | `claim-auditor`, `column-auditor`, `split-auditor`, `domain-practitioner`, `blind-reviewer`, `precedent-checker`, then `advocate` and `critic`, then `mediator`, then `review-editor` |
 | Both review skills | `precedent-checker`, on the curator's decisions before they are applied |

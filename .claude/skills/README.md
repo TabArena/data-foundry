@@ -40,7 +40,10 @@ Two stages, and in each one the AI works first and you verify:
 * **When:** you found a dataset; the backlog needs a pass; you want to know what to look at next; "check X" on a record
   that has no dataset folder yet.
 * **You type:** `/screen-candidates https://www.kaggle.com/datasets/<owner>/<slug>`, `/screen-candidates
-  some_record,another_record`, or `/screen-candidates` alone for every record without a verdict.
+  some_record,another_record`, or `/screen-candidates` alone for every record without a verdict. To find new
+  candidates from the records we have: `/screen-candidates better data` searches the records you tagged
+  `Search for better data` (or the names you give, or `all`) for a larger or newer dataset of the same task, and
+  screens what it finds as new records.
 * **Claude:** reads the source and the web (nothing is downloaded beyond a preview, nothing built); writes into each
   record what the next stage needs (first publication, the data as published, the use case, the likely split, papers,
   related records and duplicates, risks); rejects the obvious cases (unethical, generated, non-tabular, forecasting,
@@ -86,6 +89,7 @@ Two stages, and in each one the AI works first and you verify:
 | You want to | Do |
 |---|---|
 | add a dataset you found | `/screen-candidates <link>`, then `/review-screened-candidates` |
+| find larger or newer data for a task we have | tag the record `Search for better data`, then `/screen-candidates better data` (or `better data all`) |
 | know what to look at next | `/review-screened-candidates` (the queue is sorted by priority) |
 | get a dataset you accepted into the benchmark | `/add-dataset <name>` |
 | know whether a dataset is ready | `/add-dataset <name>` on its folder (a re-check) |
@@ -112,7 +116,7 @@ one side (definitions in [`.claude/agents/`](../agents/)):
 
 A full panel costs on the order of a million tokens per dataset; for a re-check after a small change Claude runs a
 smaller one. In stage 1, two agents help: a screener for batches and a reject checker that argues against every quick
-`No`.
+`No`; a third, the data scout, searches for better data when you ask.
 
 ## Who works on what
 

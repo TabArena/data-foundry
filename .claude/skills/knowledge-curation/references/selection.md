@@ -250,6 +250,17 @@ class is no evidence in either direction ([evidence.md](evidence.md), EV-5; Lenn
 with ROC AUC or log loss against the class prior, and fit a quick gradient-boosting model on the features known at
 prediction time when the data loads (`us_accidents`: its published "78% accuracy" settled nothing).
 
+### Small or dated, and the task is still done today
+
+A small or dated dataset whose task still matters may have better data: a larger or newer public dataset with the same
+target and use case, and features of the same kind known at the prediction point, not necessarily column for column.
+The search runs when the curator asks (`/screen-candidates better data`, over the records tagged
+`Search for better data` or over all records), not in every screening. A hit from another source is its own record,
+not a `Duplicate` (PROV-4); a newer release of the same source is a version (PROV-6), and the curator decides which one
+enters. The old record is not rejected automatically: it keeps its verdict until the curator decides. Cases:
+`body_density_prediction` (252 men, 1985) → NHANES DXA body fat (21,768 people); `hepatitis_c_egypt`, tagged for a
+search (Lennart, 2026-10-26).
+
 ### Selection bias
 
 When the rows are not drawn from the population the use case predicts for, a class looks different than it would
