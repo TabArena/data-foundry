@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-10-31 17:25 UTC: 374 claim(s) (Andrej 24, Lennart 330, Myunghwan 20).
+As of 2026-10-31 17:25 UTC: 225 claim(s) (Andrej 24, Lennart 181, Myunghwan 20).
 
 ## Andrej
 
@@ -66,158 +66,9 @@ As of 2026-10-31 17:25 UTC: 374 claim(s) (Andrej 24, Lennart 330, Myunghwan 20).
 | `lending_club` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `mercari_price_suggestion` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `open_university_learning_analytics_dataset` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `pulse_oximetry_sao2_correction` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `pump_it_up_tanzania_water_points` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `pva_revenue_prediction_kddcup98` | triage | 2026-10-30 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `qatar_biobank_t2dm_onset` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `qm8` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `qm9` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `qmof_gcmc` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `qmof_quantum` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `qsar_aquatic_toxicity` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `qsar_bioconcentration` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `qsar_biodeg` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `qsar_fish_toxicity` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `qsar_tid_10980` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `qsar_tid_11` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `qualitative_bankruptcy` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `radcure_head_neck_survival` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `rain_in_australia` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `rais_employment_separation` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_acetic_acid_species` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_adenine_colloidal_gold` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_alzheimer` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_amino_acids_glycine` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_bioprocess_analytes_anton_532` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_bioprocess_substrates` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_cancer_cell_cooh` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_comfile_stroke` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_covid19_salvia` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_diabetes_skin_ear_lobe` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_ecoli_fermentation` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_ecoli_metabolites` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_flow_microgel_synthesis` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_formic_acid_species` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_fuel_benchtop` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_hair_dyes_sers` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_head_neck_cancer` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_kaiser_ecoli_fermentation` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_levulinic_acid_species` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_microgel_size_lf_fingerprint` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_microgel_synthesis` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_microplastics_weathered` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_mlrod` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_pharmaceutical_ingredients` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_ralstonia_fermentations` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_rruff_mineral_raw` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_serum_prostate_cancer` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_streptococcus_thermophilus_fermentation_kaiser` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_sugar_mixtures_high_snr` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_synthetic_organic_pigments_raw` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_wheat_lines` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `raman_yeast_fermentation` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `rdkit_features` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `ready_biodegradability_huang_zhang` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `real_estate_valuation` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `record_linkage_comparison_patterns` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `recs_2020_household_electricity` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `reddit_memes_subreddit` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `regensburg_pediatric_appendicitis` | triage | 2026-10-30 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `renewable_energy_optimized_interior_design_dataset` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `report_retention_times` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `riboflavin` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `rich_healthcare_china_incident_diabetes` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `riiid_answer_correctness` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `rmftsa_ladata` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `robod_room_occupancy` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `rosbank1` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `rotterdam_breast_cancer` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `row_1040` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `rsctc2010_burkitt_lymphoma` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `rwi_geo_red_houses_for_sale` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `sao_paulo_itbi_transactions` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `sao_paulo_property_price_images` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `sarcoma` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `sarcoma_methylation_classification` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `sarscov2_3clpro_diamond` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `sarscov2_invitro_touret` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `sat03_16_indu_algo_runtime` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `sat11_hand_algo_runtime` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `sat18_exp_algo_runtime` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `sba_7a_loan_chargeoff` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `sber_mbd_product_propensity` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `sberbank_housing_market_forecasting` | triage | 2026-10-30 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `scania_component_x` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `schizo` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `scimago_media_ranking` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `script_carpediem_icu` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `sdss_17` | triage | 2026-10-30 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `sdss_mpajhu_bpt_class` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `seasfire_cube_burned_area` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `secom_semiconductor_yield` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `seer_breast_cancer_5y_survival` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `seer_breast_cancer_survival` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `seer_primary_site_from_metastases` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `seismic_bumps` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `senseurcity_low_cost_sensor_calibration` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `sf_permit_time` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `sgcc_electricity_theft_detection` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `shell_ai_2025_fuel_blend_properties` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `shhs_obstructive_sleep_apnea` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `shifts_weather_temperature` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `shill_bidding_dataset` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `siab_long_term_unemployment` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `sigma_aldrich_safety_data` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `sinalize_sin_transformer_forced_outages` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `sinan_dengue_case_screening` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `sirio_libanes_covid_icu` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `skull_bone_molecular_age` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `sleep_health_and_lifestyle_dataset` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `sleuth_case2002` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `sleuth_ex1714` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `slf_avalanche_danger_level` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `smart_grid_stability_and_reliability_dataset` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `smart_meter_electricity_consumption_dataset` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `smart_vascular_events` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `smartshark_release_defect_prediction` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `socal_house_prices_images` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `social_pressure_turnout_michigan_2006` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `soil_compaction_proctor_mdd` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `soil_ksat_pedotransfer` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `solar_flare` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `solid_polymer_electrolyte_ionic_conductivity` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `solid_state_synthesis_impurity_phases` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `solprop_solvation_free_energy` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `somas_aqueous_solubility` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `south_africa_coronary_heart_disease` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `southern_denmark_hospital_uti` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `spanish_wine_quality_dataset` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `spec_cpu2017_results` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `speoau_energy_data_hackathon` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `sports_bet_datasets` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `spotify_tracks_dataset` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `springleaf_marketing_response` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `srbct_prediction` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `stalib_cars` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `stats19_collision_severity` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `statssa_gpsjs_crime_victimisation` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `stock_pledge_default_china` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `stroke_risk_prediction_dataset_based_on_symptoms` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `student_performance_on_an_entrance_examination` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `student_portuguese_performance` | triage | 2026-10-30 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `sulfur_debutanizer` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `supercon_mdr_2024` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `superconductivity` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `surgery_timing_complications` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `suzuki_miyaura_hte_yields` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `swan_sf_solar_flare` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `swd` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `swedish_motorcycle_insurance` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `synerise_recsys2025_churn` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `synthetic_clinical_tabular_dataset` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `synthetic_control` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `systematically_verified_thermoelectric_zt` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `sz_clay_shenzhen` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `tadpole` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
 | `taiwan_actual_price_registration_sales` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `taiwanese_bankruptcy_prediction` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
