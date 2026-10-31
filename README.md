@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
+As of 2026-10-31 13:14 UTC: 821 claim(s) (Andrej 24, Lennart 777, Myunghwan 20).
 
 ## Andrej
 
@@ -54,6 +54,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `alerce_ztf_light_curve_classes` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `alfa_bank_credit_history_default` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `alibaba_pai_2020_job_duration` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `alko_wine_price_list` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `amazon_bestseller_price` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `amazon_bin_weight` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `amazon_book_prices_2023` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -66,6 +67,8 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `amr_uti_antibiotic_resistance` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `amsterdamumcdb` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `anes_voting_2026` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
+| `antarex_hpc_fault_classification` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `antt_interstate_bus_ticket_sales` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `apachejit` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `apokasc3_red_giant_mass` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `aq_bench_ozone_metrics` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -90,6 +93,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `bad_customer_detection` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `bank_marketing` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `bbbp_martins` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `bcf_lunghini_2019` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `bcsc_risk_estimation` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `beataml2_ex_vivo_drug_response` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `beef_marbling_nir` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -98,6 +102,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `bio_ner` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `biogen_adme` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `biomedical_ner_corpora` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `blended_cement_concrete_strength` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `block_copolymer_phase` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `bosch_engine_test_bench_calibration` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `bosch_production_line_performance` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -106,6 +111,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `brca1_variant_effect_evo2` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `breast_cancer_prediction` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `brilliant_earth_diamond_prices` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `bsnip1_psychosis_eye_movement` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `bts_t100_domestic_segment` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `buchwald_hartwig_yields` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `bulgarian_telecom_business_churn` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -160,6 +166,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `club_mahindra_resort_spend` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `cmmd_mammography` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `cms_hospital_general_information` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `cmu_cap_calendar_meetings` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `cn_coupling_hte_50k` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `cns_tumor_methylation_classification` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `coda_tb_clinical_triage` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -172,6 +179,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `copper_alloys_properties` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `core_mof_gas_uptake` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `core_temperature_surgical_infection` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `cosmicflows4_distance_velocity` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `cosmicflows4_tully_fisher` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `costa_rica_household_poverty` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `county_health_rankings_premature_mortality` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -181,6 +189,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `credit_card_clients_default` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `credit_g` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `cropharvest_crop_noncrop` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `cropmapil_orchard_type` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `crossed_barrel_toughness` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `cryptic_mtb_drug_resistance` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `csgo_skin_price` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -210,6 +219,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `dilist_drug_induced_liver_injury` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `distribution_transformers_at_cauca_department` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `dol_lca_h1b_offered_wages` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `dpreview_camera_specifications_price` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `drebin_android_malware` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `driams_antimicrobial_resistance` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `drrisk_diabetic_retinopathy_ehr` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -217,13 +227,17 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `drug_solubility_binary_solvent_mixtures` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `drugchat_instructions` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `dry_gas_z_factor_databank` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `dtc_milan_nijmegen_progression` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `dubai_dld_sales_transactions` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `duolingo_spaced_repetition_recall` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `dvm_car_prices` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `dvm_car_uk_used_car_adverts` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `eaglei_county_outages_weather_warnings` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `early_learning_predictors` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `early_sepsis_mortality_transcriptome` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `ecoli_sigma70_promoters_regulondb` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `ed_uti_urine_culture_prediction` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `eicu_crd_2020_2021` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `elaia1_aki_progression` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `els2002_bachelors_attainment` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `elsa_future_sppb_score` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -244,6 +258,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `experimental_band_gap_zhuo` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `expo_tumor_tissue_of_origin` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `expresso_churn_prediction` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
+| `facebook_recruiting_human_or_robot` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `fannie_mae_single_family_loan_performance` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `fars_person_injury_severity` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `favorita_store_sales` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -270,6 +285,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `flavors_of_cacao_ratings_2026` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `flchain_mortality` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `flipkart_fashion_discount` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `florida_dor_property_sales` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `flower_bouquets_rating` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `fma_track_genre` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `folktables_acs_income` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -296,6 +312,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `genomic_prediction_rice_flowering_time` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `genomic_prediction_soy_yield` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `genomic_prediction_switchgrass_height` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `glacial_aquifer_well_arsenic_manganese` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `glaucoma_smdg` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `global_dams_database` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `global_findex_2025` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -303,6 +320,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `gmrepo_gut_microbiome_disease` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `goiania_apartment_prices` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `gossis_icu_hospital_mortality` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `gradcafe_graduate_admissions` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `gse10893_breast_cancer_subtype` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `gse147221_schizophrenia_methylation` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `gse39582_colon_cancer_mmr_cin` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -318,6 +336,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `happy_teddy_sdss_photo_z` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `happyforce_employee_churn` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `hateful_memes` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `hbdc_audiogram_air_bone_gap` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `hdx_conflict_events` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `heart_disease` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `heloc` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
@@ -364,6 +383,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `ices_datras_fish_age` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `ieg_world_bank_project_outcome` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `ijcai15_repeat_buyers` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `ili_external_corrosion_cross_country_pipeline` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `ilthermo_ionic_liquid_mixture_viscosity` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `imls_awarded_grants` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `imls_broadband_availability` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -379,6 +399,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `istella22` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `itpa_hmode_confinement_db5` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `jane_street_real_time_market_data_forecasting` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `jd_com_msom_2020_delivery_time` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `jnu_ctg_fetal_wellbeing` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `js_vulnerable_functions` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `kamernet_room_size` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -387,6 +408,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `kepler_koi_disposition` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `khaadi_clothes_price` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `king_county_home_sales_1999_2025` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `knhanes_undiagnosed_diabetes` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `kronodroid_android_malware` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `kumc_inpatient_aki_prediction` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `lade_last_mile_delivery_eta` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -411,6 +433,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `lymphus_cervical_lymph_node_metastasis` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `mango_dmc_nir` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `mango_mass` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `maritime_disasters_survival_elinder_erixson` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `materials_project_properties` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `medicaid_child_adult_core_set_quality` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `medicaid_financial_management` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -427,6 +450,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `mercari_japan_item_prices` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `mercari_price_suggestion` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `meta2db_microbiome_disease_state` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `meta_kaggle_user_monthly_activity` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `metabric_breast_cancer_clinical` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `metlin_smrt_retention_time` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `mgnify_hiv_gut_host_sex` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -443,6 +467,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `minecraft_screenshots_mobs` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `mining_flotation_silica_quality` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `minnesota_well_arsenic` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `mittelmann_miplib2017_solver_runtimes` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `mkphoto2023_bots` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `mofdscribe_descriptions` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `mofsimplify_mof_stability` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -493,11 +518,13 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `nrgi_extractive_payments_project` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `nsduh_mental_health_treatment` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `nsduh_past_year_drug_use` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `nsw_property_sales` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `ntia_internet_use_survey_home_adoption` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `numom2b_pregnancy_outcomes` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `nura_nuclear_receptor_activity` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `nvss_natality_pregnancy_outcomes` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `ny_sparcs_inpatient_length_of_stay` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `ny_wcb_assembled_claims` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `nyc_annualized_property_sales` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `nyc_citywide_payroll` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `oasis1_dementia_mri` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -507,9 +534,11 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `ocha_fts_requirements_and_funding` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `oemc_eu_land_cover_classification` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `ofsted_school_inspection_outcomes` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `onestop_eye_movements_critical_span` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `online_shoppers_purchasing_intention_dataset` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `onsides_adverse_drug_events` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `open_international_soccer_database` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `open_policing_stop_outcome` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `open_university_learning_analytics_dataset` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `openalex_journal_citedness` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `optn_kidney_delayed_graft_function` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -556,6 +585,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `prc_2024_aircraft_takeoff_weight` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `prc_2026_taxi_out_time` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `predict_students_dropout_and_academic_success` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
+| `pregnancy_pelvic_girdle_pain_sydney` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `prism_stool_metabolomics_cd_vs_uc` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `pro_act_als_progression` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `promise_cta_obstructive_cad` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -571,6 +601,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `qmof_quantum` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `radcure_head_neck_survival` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `rain_in_australia` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
+| `rais_employment_separation` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `raman_acetic_acid_species` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `raman_adenine_colloidal_gold` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `raman_alzheimer` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -632,6 +663,8 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `script_carpediem_icu` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `sdss_17` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `sdss_mpajhu_bpt_class` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `seasfire_cube_burned_area` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `secom_semiconductor_yield` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `seer_breast_cancer_5y_survival` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `seer_breast_cancer_survival` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `seer_primary_site_from_metastases` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -643,6 +676,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `shifts_weather_temperature` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `siab_long_term_unemployment` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `sigma_aldrich_safety_data` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `sinalize_sin_transformer_forced_outages` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `sinan_dengue_case_screening` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `sirio_libanes_covid_icu` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `skull_bone_molecular_age` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -682,6 +716,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `tcga_hnsc_tumor_vs_normal_rnaseq` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `tcga_lung_histology` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `tcga_pancancer_tumor_type` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `tcga_rcc_histology_reviewed` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `tdc_ames` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `tdc_aqsoldb` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `tdc_bbb_martins` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -691,8 +726,11 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `ted_public_procurement_single_bid` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `tess_toi_disposition` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `texas_tdi_insurance_complaints` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `thai_apparel_line_productivity` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `therlid_infrared_vs_contact_temperature` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `thoracic_surgery_one_year_survival` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `thrive_by_five_index_2024` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `tianchi_o2o_coupon_redemption` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `tls_os_fingerprinting_masaryk` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `tokopedia_product_weight` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `tokyo_clay_airport_soil_properties` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -724,6 +762,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `usgs_postfire_debris_flow` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `uspto_reaction_yields` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `v4finbench_corporate_distress` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `vampire_strategy_selection_tptp` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `vcbench_founder_success` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `vdss_lombardo` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `vehicle_insurance_claim_fraud` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -768,6 +807,7 @@ As of 2026-10-31 13:02 UTC: 781 claim(s) (Andrej 24, Lennart 737, Myunghwan 20).
 | `x_wines` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `xapi_edu_students_academic_performance` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `xuetangx_mooc_dropout` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `yambda_track_like_rate` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `yogurt_brand_choice` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `zeosyn_zeolite_synthesis` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `zepto_grocery_price` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
