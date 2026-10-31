@@ -27,7 +27,10 @@ record, audit or PR that motivated it.
   audiology_diagnosis 15%, cirrhosis_patient_survival_prediction 11%, mic 7%); a linear model on the bare codes lost
   where a scale is not monotone in the target (mean -1.04%; 11 better, 13 worse). On the 20 datasets with an open end
   the ordered level did best for LightGBM (+0.68%; with an indicator +0.58%; the open level as missing with an indicator
-  +0.38%, worse than the ordered level on 11 of 20). TabPFN v3.5 runs on SkyPilot; its numbers are on the review board.
+  +0.38%, worse than the ordered level on 11 of 20). TabPFN v3.5 (public weights, on SkyPilot) gains less from the
+  order, as it handles unordered categories well: +0.25% on average over the 55 datasets (10 better, 6 worse, most on
+  ames_housing, 4.7%), and on the 20 with an open end the ordered level did best again (+0.46%; with an indicator
+  +0.37%; missing with an indicator +0.34%, worse than the ordered level on 12 of 20).
 - Found along the way: credit_g relabelled by the corrected code table (Groemping 2019, UCI 573; Statlog's german.doc
   is wrong for 8 columns, the codes match one to one); amex_non_iid_1m's -1 in raddar's 55 integer columns and
   clock_protein_toxicity's -1 counts are missing; immoscout_german_house_prices' `Condition` and
