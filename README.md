@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-10-31 01:25 UTC: 107 claim(s) (Andrej 24, Lennart 63, Myunghwan 20).
+As of 2026-10-31 11:30 UTC: 109 claim(s) (Andrej 24, Lennart 65, Myunghwan 20).
 
 ## Andrej
 
@@ -67,6 +67,7 @@ As of 2026-10-31 01:25 UTC: 107 claim(s) (Andrej 24, Lennart 63, Myunghwan 20).
 | `emscad` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `eryhemato_squamous_disease` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `expresso_churn_prediction` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
+| `fl2000` | triage | 2026-10-31 | 2026-11-07 | ring: duplicate of ringnorm (curator); fl2000: marker check |
 | `framingham_heart_study_fhs` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `fraud_detection_in_electricity_and_gas_consumption` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `gallstone_disease` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
@@ -93,6 +94,7 @@ As of 2026-10-31 01:25 UTC: 107 claim(s) (Andrej 24, Lennart 63, Myunghwan 20).
 | `pva_revenue_prediction_kddcup98` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `rain_in_australia` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `regensburg_pediatric_appendicitis` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
+| `ring` | triage | 2026-10-31 | 2026-11-07 | ring: duplicate of ringnorm (curator); fl2000: marker check |
 | `sberbank_housing_market_forecasting` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `sdss_17` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `sf_permit_time` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
