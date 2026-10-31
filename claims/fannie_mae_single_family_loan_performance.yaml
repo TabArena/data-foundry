@@ -1,0 +1,6 @@
+name: fannie_mae_single_family_loan_performance
+holder: Myunghwan
+stage: triage
+claimed_at: '2026-10-31T23:44:24Z'
+expires_at: '2026-11-07T23:44:24Z'
+note: Curator-requested triage of PR39 priority-4 candidates with 10M+ source observations.
