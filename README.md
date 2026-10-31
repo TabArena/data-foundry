@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-10-31 13:14 UTC: 821 claim(s) (Andrej 24, Lennart 777, Myunghwan 20).
+As of 2026-10-31 13:44 UTC: 823 claim(s) (Andrej 24, Lennart 779, Myunghwan 20).
 
 ## Andrej
 
@@ -434,6 +434,7 @@ As of 2026-10-31 13:14 UTC: 821 claim(s) (Andrej 24, Lennart 777, Myunghwan 20).
 | `mango_dmc_nir` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `mango_mass` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `maritime_disasters_survival_elinder_erixson` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `marketing_campaign` | add | 2026-10-31 | 2026-11-07 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `materials_project_properties` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `medicaid_child_adult_core_set_quality` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `medicaid_financial_management` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
@@ -461,6 +462,7 @@ As of 2026-10-31 13:14 UTC: 821 claim(s) (Andrej 24, Lennart 777, Myunghwan 20).
 | `mgnify_skin_virome_host_sex` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `mgnify_t2d_gut_host_sex` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `mgnify_vegetable_oil_diet_gut_host_sex` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
+| `miami_housing` | add | 2026-10-31 | 2026-11-07 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `mic` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `milk_nir_composition` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `mimic_iv_ed_triage` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
