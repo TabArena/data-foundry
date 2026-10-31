@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: diamonds
 container_format: 2
-checksum: v2:1cf17170012d2dfd8128297be61250e2e009f5a3d0ae21689d5425b5f48e107e
+checksum: v2:26fbd9b3e434830a61e22457a5eec65f3ed3c4d8dd691cf563612c51a71fb293
 build:
   uuid: 01a111fc-d45e-7211-98d8-ee98e5da227f
   checksum: v2:c5776dcaa602180a8810b316b7bf78514aa234837b87df7f6438d0bc4de4231f
@@ -69,7 +69,7 @@ decisions: []
 
 Regression of `price`, scored with `rmsle` on IID splits. 53,940 rows and 9 features. Source: Other (2007).
 
-Built as `01a111fc-d45e-7211-98d8-ee98e5da227f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1cf17170012d2dfd8128297be61250e2e009f5a3d0ae21689d5425b5f48e107e`, so the build is stale. See [Build](#build).
+Built as `01a111fc-d45e-7211-98d8-ee98e5da227f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:26fbd9b3e434830a61e22457a5eec65f3ed3c4d8dd691cf563612c51a71fb293`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -144,9 +144,10 @@ Only curators run `build`, when the dataset ships.
 | target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
 
 <details>
-<summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 0 categorical, 3 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (3): `cut`, `color`, `clarity`
+- categorical (0): none
+- ordinal (3): `cut (Fair < Good < Very Good < Premium < Ideal)`, `color (J < I < H < G < F < E < D)`, `clarity (I1 < SI2 < SI1 < VS2 < VS1 < VVS2 < VVS1 < IF)`
 - string (0): none
 - datetime (0): none
 
@@ -185,6 +186,8 @@ The first 5 of 53,940 rows of the final frame (random rows: the frame is shuffle
 - The price ships on a log scale (log of US dollars), the scale a practitioner models a price on, and is scored
   by RMSLE on the dollar price after the inverse (`target_transform="log"`; Lennart, 2026-10-21): a price's
   error matters relative to the price.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -282,4 +285,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:1cf17170012d2dfd8128297be61250e2e009f5a3d0ae21689d5425b5f48e107e` |
+| stale | yes: the definition now gives checksum `v2:26fbd9b3e434830a61e22457a5eec65f3ed3c4d8dd691cf563612c51a71fb293` |

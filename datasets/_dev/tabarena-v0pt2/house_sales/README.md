@@ -2,17 +2,17 @@
 report_format: data-foundry-report-v2
 unique_name: house_sales
 container_format: 2
-checksum: v2:8e58088d6a95e4d0769cfb130b5b3849d293bcc49c942eb0991aafd56f048df8
+checksum: v2:892614a9f25957bd15c54b908683762c7fe39c5ffad376b5f5e0441e97215b88
 build: null
 build_stale: false
 data:
   n_rows: 20499
   n_features: 20
   dtypes:
-    category: 3
+    category: 6
     datetime64[ns]: 1
     float64: 9
-    int64: 8
+    int64: 5
   n_test_dataset_rows: null
 task:
   target: log_price
@@ -64,7 +64,7 @@ decisions:
 
 Regression of `log_price`, scored with `rmsle` on temporal splits by `date`. 20,499 rows and 20 features. Source: GOV Website (2015).
 
-Not built yet. The current definition gives checksum `v2:8e58088d6a95e4d0769cfb130b5b3849d293bcc49c942eb0991aafd56f048df8`.
+Not built yet. The current definition gives checksum `v2:892614a9f25957bd15c54b908683762c7fe39c5ffad376b5f5e0441e97215b88`.
 
 ## In brief
 
@@ -157,9 +157,10 @@ Only curators run `build`, when the dataset ships.
 | target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
 
 <details>
-<summary>Feature types: 3 categorical, 0 string, 1 datetime</summary>
+<summary>Feature types: 3 categorical, 3 ordinal, 0 string, 1 datetime</summary>
 
 - categorical (3): `zipcode`, `waterfront`, `sale_condition`
+- ordinal (3): `view (0 < 1 < 2 < 3 < 4)`, `condition (1 < 2 < 3 < 4 < 5)`, `grade (1 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < 11 < 12 < 13)`
 - string (0): none
 - datetime (1): `date (%Y%m%dT%H%M%S)`
 
@@ -210,7 +211,7 @@ We start with kc_house_data.csv from Kaggle: 21,613 sales of houses in King Coun
 - Neither feature nor filter: 26 (below), 10 teardown and 29 segregation or merger (priced like market sales of the land or the changed lot: mean residual +0.00 and +0.05), 32 ($1,000 or less: defined by the price; its one sale is recorded at $385,000) and the codes outside the WAC list (56 builder sale 31 sales, 40 and 41 relocation 32, 3 contract or cash sale 10, and the rarer 2, 4, 30, 31, 44, 52).
 - We drop the sales whose recorded price covers more or less than the house (Lennart, 2026-10-22): warning 45 (multi-parcel sale), 5 (full sales price not reported) and 1 (personal property included). The target is the house's price, and no input can explain the difference (USE-5).
 - Measured with this definition (RMSE on log price, untuned LightGBM, its 9 windows: 9,498 test sales, 391 of them with a code the earlier definition dropped; all / unflagged / flagged): drop the 1,061 sales with 15, 46, 60, 51, 23 or 13 and no indicator .1682 / .1611 / .2875; keep them without an indicator .1688 / .1622 / .2824; this definition .1662 / .1613 / .2552. With `sale_condition` the mean residual of a short sale moves from -0.23 to -0.04, related party (since dropped) from -0.16 to -0.03, no market exposure from -0.10 to +0.00.
-- The file's house features are the assessor's record as of 18-19 July 2015, after every kept sale (decision table). For 2,210 of the 20,584 kept rows the record changed between the sale and then, mostly upward, and untuned LightGBM scored better on the changed rows with the file's values (RMSE 0.156 against 0.208 with the record at the sale, 9 windows, measured before the non-market filter). These values are recorded after the outcome, so we rebuild each row as of its sale day.
+- The file's house features are the assessor's record as of 18-19 July 2015, after every kept sale (decision table). For 2,210 of the 20,584 rows kept before the related-party sales were dropped, the record changed between the sale and then, mostly upward, and untuned LightGBM scored better on the changed rows with the file's values (RMSE 0.156 against 0.208 with the record at the sale, 9 windows, measured before the non-market filter). These values are recorded after the outcome, so we rebuild each row as of its sale day.
 - The rebuild (`_as_of_sale`): each of `grade`, `condition`, `sqft_living`, `sqft_basement`, `bedrooms`, `floors`, `yr_built`, `yr_renovated` and `sqft_lot` (logged under the `Land` and `LandFootage` records) whose attribute changed after the sale day and before 18 July 2015 takes the old value of its first such change. `bathrooms` (full, three-quarter and half baths) is rebuilt from the three counts where their history gives the file's value, and kept for the 5 rows where it does not. `sqft_above` is `sqft_living` minus `sqft_basement` (the finished basement), as in every row of the file. `_prepare_raw_files` cuts the extracts down to the file's parcels.
 - Potential leak, kept on purpose: `view` (the file's 0-4 index, not a county attribute), `waterfront`, `sqft_living15` and `sqft_lot15` (the neighbours' areas) are as of July 2015. About 145 rows had a view or waterfront rating changed after the sale (39 gained a view); masking their `view` gives RMSE 0.2147 against 0.2132 kept, and dropping the neighbours' areas changes the changed rows by 0.004. Blanking them would make the missing value mark a change after the sale, so they stay, as do the 11 values whose old value is blank, the 5 bathroom rows and about 24 rows whose building record was entered in full after the sale. Revisit if a county view rating history becomes usable.
 - The 1,206 kept sales the county flags with warning 26, "IMP. CHARACTERISTICS CHANGED SINCE SALE", stay as noise: 1,067 of them are not rebuilt because their changes come after July 2015, and they sell below the model (-0.10), so the file holds the record at the sale.
@@ -222,6 +223,8 @@ We start with kc_house_data.csv from Kaggle: 21,613 sales of houses in King Coun
 - Target: `log_price`, the log of the sale price ($75,000 to $7.7M).
 - `zipcode` and `sale_condition` are categorical, and `date` (the sale date) is a datetime and the time column.
 - No duplicate rows. Different parcels can share every feature but the date and the price (townhouses built together); one pair also shares the date and was sold at two prices (the conflicting duplicate the checks report); we keep them.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); 3 of them were shipped as numbers.
 
 ## Splits
 
@@ -386,6 +389,9 @@ A new sale can be the resale of a known house, and under the temporal split a re
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | waterfront | category | 0 | 0 | 2 | 0, 1 |
+| view | category | 0 | 0 | 5 | 0, 2, 3, 1, 4 |
+| condition | category | 0 | 0 | 5 | 3, 4, 5, 2, 1 |
+| grade | category | 0 | 0 | 12 | 7, 8, 9, 6, 10, 11, 5, 12, 4, 13 |
 | zipcode | category | 0 | 0 | 70 | 98103, 98115, 98052, 98038, 98034, 98117, 98042, 98006, 98133, 98118 |
 | sale_condition | category | 0 | 0 | 6 | none, no market exposure, short sale, estate, other pre-price code, bankruptcy … |
 | date | datetime64\[ns\] | 0 | 0 | 355 | 2014-06-23 00:00:00, 2014-06-26 00:00:00, 2014-06-25 00:00:00, 2014-07-08 00:00… |
@@ -399,9 +405,6 @@ A new sale can be the resale of a known house, and under the temporal split a re
 | lat | float64 | 0 | 0 | 4999 | 47.6846, 47.6955, 47.6904, 47.6624, 47.6886, 47.5491, 47.6711, 47.5402, 47.5322… |
 | long | float64 | 0 | 0 | 748 | -122.29, -122.3, -122.362, -122.363, -122.372, -122.291, -122.288, -122.357, -1… |
 | sqft_lot | int64 | 0 | 0 | 9442 | 5000, 6000, 4000, 7200, 4800, 7500, 4500, 8400, 9600, 3600 |
-| view | int64 | 0 | 0 | 5 | 0, 2, 3, 1, 4 |
-| condition | int64 | 0 | 0 | 5 | 3, 4, 5, 2, 1 |
-| grade | int64 | 0 | 0 | 12 | 7, 8, 9, 6, 10, 11, 5, 12, 4, 13 |
 | sqft_basement | int64 | 0 | 0 | 299 | 0, 500, 600, 700, 800, 400, 900, 1000, 300, 480 |
 | yr_built | int64 | 0 | 0 | 116 | 2014, 2005, 2006, 2004, 2003, 1977, 2007, 1968, 1978, 2008 |
 | sqft_living15 | int64 | 0 | 0 | 756 | 1440, 1540, 1560, 1500, 1580, 1610, 1410, 1620, 1460, 1480 |
@@ -418,7 +421,7 @@ A new sale can be the resale of a known house, and under the temporal split a re
 ### Numeric features
 
 <details>
-<summary>Show the table (17 rows)</summary>
+<summary>Show the table (14 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -428,9 +431,6 @@ A new sale can be the resale of a known house, and under the temporal split a re
 | sqft_living | 20493 | 2073.06 | 917.88 | 290 | 13540 |
 | sqft_lot | 20499 | 14984 | 40551.1 | 572 | 1.65136e+06 |
 | floors | 20499 | 1.49859 | 0.544487 | 1 | 3.5 |
-| view | 20499 | 0.235816 | 0.769518 | 0 | 4 |
-| condition | 20499 | 3.3568 | 0.602965 | 1 | 5 |
-| grade | 20499 | 7.65711 | 1.17957 | 1 | 13 |
 | sqft_above | 20493 | 1790.89 | 829.744 | 290 | 9410 |
 | sqft_basement | 20499 | 282.095 | 435.309 | 0 | 4820 |
 | yr_built | 20499 | 1971.05 | 29.3948 | 1900 | 2015 |
@@ -445,20 +445,35 @@ A new sale can be the resale of a known house, and under the temporal split a re
 ### Categorical features
 
 <details>
-<summary>Show the table (17 rows)</summary>
+<summary>Show the table (32 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
+| condition | 1 | 3 | 13917 | 67.89 |
+| condition | 2 | 4 | 5258 | 25.65 |
+| condition | 3 | 5 | 1135 | 5.54 |
+| condition | 4 | 2 | 164 | 0.8 |
+| condition | 5 | 1 | 25 | 0.12 |
 | date | 1 | 2014-06-23 00:00:00 | 140 | 0.68 |
 | date | 2 | 2014-06-26 00:00:00 | 129 | 0.63 |
 | date | 3 | 2014-06-25 00:00:00 | 127 | 0.62 |
 | date | 4 | 2014-07-08 00:00:00 | 126 | 0.61 |
 | date | 5 | 2015-04-22 00:00:00 | 121 | 0.59 |
+| grade | 1 | 7 | 8481 | 41.37 |
+| grade | 2 | 8 | 5758 | 28.09 |
+| grade | 3 | 9 | 2479 | 12.09 |
+| grade | 4 | 6 | 1961 | 9.57 |
+| grade | 5 | 10 | 1067 | 5.21 |
 | sale_condition | 1 | none | 19828 | 96.73 |
 | sale_condition | 2 | no market exposure | 471 | 2.3 |
 | sale_condition | 3 | short sale | 129 | 0.63 |
 | sale_condition | 4 | estate | 32 | 0.16 |
 | sale_condition | 5 | other pre-price code | 31 | 0.15 |
+| view | 1 | 0 | 18476 | 90.13 |
+| view | 2 | 2 | 913 | 4.45 |
+| view | 3 | 3 | 487 | 2.38 |
+| view | 4 | 1 | 315 | 1.54 |
+| view | 5 | 4 | 308 | 1.5 |
 | waterfront | 1 | 0 | 20342 | 99.23 |
 | waterfront | 2 | 1 | 157 | 0.77 |
 | zipcode | 1 | 98103 | 576 | 2.81 |

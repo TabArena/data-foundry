@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: horse_colic_survival
 container_format: 2
-checksum: v2:042efb51016a634587ad17c5c23443bd61a558b1bd6c963926b79c5978a9847c
+checksum: v2:f593cafe67e5973451eba15872cc9274c04fbac9c134c132c2a9b7b1858870a0
 build:
   uuid: 01a111fc-df0b-7d08-9ad5-3bfee18c9b55
   checksum: v2:3edea035ca49ff4f42bfa2eb137a98817c67387f49f0fb111c2fd7cf979fa727
@@ -70,7 +70,7 @@ decisions: []
 
 Multiclass classification of `outcome`, scored with `log_loss` on IID splits. 344 rows and 20 features. Source: UCI (1989).
 
-Built as `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:042efb51016a634587ad17c5c23443bd61a558b1bd6c963926b79c5978a9847c`, so the build is stale. See [Build](#build).
+Built as `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f593cafe67e5973451eba15872cc9274c04fbac9c134c132c2a9b7b1858870a0`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -147,9 +147,10 @@ Only curators run `build`, when the dataset ships.
 | reason | The UCI donation (McLeish & Cecile, 1989) defines no metric; its stated class attribute is the surgical lesion (attr 24), not the outcome we predict, and no paper defines an evaluation for the outcome task. |
 
 <details>
-<summary>Feature types: 13 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 5 categorical, 8 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (13): `temperature_of_extremities`, `peripheral_pulse`, `mucous_membranes`, `capillary_refill_time`, `pain`, `peristalsis`, `abdominal_distension`, `nasogastric_tube`, `nasogastric_reflux`, `rectal_exam_feces`, `abdomen`, `abdominocentesis_appearance`, `outcome`
+- categorical (5): `mucous_membranes`, `pain`, `abdomen`, `abdominocentesis_appearance`, `outcome`
+- ordinal (8): `temperature_of_extremities (4.0 < 3.0 < 1.0 < 2.0)`, `peripheral_pulse (4.0 < 3.0 < 1.0 < 2.0)`, `capillary_refill_time (1.0 < 2.0)`, `peristalsis (4.0 < 3.0 < 2.0 < 1.0)`, `abdominal_distension (1.0 < 2.0 < 3.0 < 4.0)`, `nasogastric_tube (1.0 < 2.0 < 3.0)`, `nasogastric_reflux (1.0 < 3.0 < 2.0)`, `rectal_exam_feces (4.0 < 3.0 < 1.0 < 2.0)`
 - string (0): none
 - datetime (0): none
 
@@ -176,11 +177,11 @@ The first 5 of 344 rows of the final frame (random rows: the frame is shuffled);
 
 | outcome | age | rectal_temperature | pulse | respiratory_rate | temperature_of_extremities | peripheral_pulse | mucous_membranes | capillary_refill_time | pain | peristalsis | abdominal_distension |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Euthanized | 1 | nan | 40 | 16 | nan | nan | nan | 1 | nan | nan | nan |
-| Died | 9 | 38.1 | 136 | 48 | 3 | 3 | 3 | 1 | 5 | 1 | 3 |
-| Died | 1 | nan | nan | nan | nan | nan | nan | nan | nan | nan | nan |
-| Lived | 9 | nan | nan | nan | nan | nan | nan | nan | nan | nan | nan |
-| Lived | 1 | 38.9 | 44 | 14 | 3 | 1 | 1 | 1 | 2 | 3 | 2 |
+| Lived | 1 | 37.4 | 50 | 32 | 3 | 3 | nan | 1 | 4 | 4 | 1 |
+| Lived | 1 | nan | 60 | 36 | 3 | 1 | 3 | 1 | 3 | 3 | 2 |
+| Lived | 1 | 37.8 | 60 | 80 | 1 | 3 | 2 | 2 | 2 | 3 | 3 |
+| Euthanized | 1 | 37.2 | 72 | 24 | 3 | 2 | 4 | 2 | 4 | 3 | 3 |
+| Died | 9 | 38.2 | 78 | 60 | 4 | 4 | 6 | nan | 3 | 3 | 3 |
 
 ## Curation notes
 
@@ -191,6 +192,8 @@ We start with the data from UCI and merge the train and test data.
 - We keep only the first instance (hospital number) per horse, as they can be treated multiple times and otherwise leaks information about the target.
 - We use the target "outcome" to model a task where we aim to predict if the horse survives or not. We drop cases that have not outcome recorded.
 - We keep the duplicates occurring in the data.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 8 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing (CLEAN-10).
 
 ## Splits
 
@@ -293,15 +296,15 @@ Default splits.
 | pain | category | 62 | 18.02 | 5 | 3.0, 2.0, 5.0, 1.0, 4.0 |
 | peristalsis | category | 50 | 14.53 | 4 | 3.0, 4.0, 1.0, 2.0 |
 | mucous_membranes | category | 48 | 13.95 | 6 | 1.0, 3.0, 4.0, 2.0, 5.0, 6.0 |
-| capillary_refill_time | category | 37 | 10.76 | 3 | 1.0, 2.0, 3.0 |
+| capillary_refill_time | category | 39 | 11.34 | 2 | 1.0, 2.0 |
 | outcome | category | 0 | 0 | 3 | Lived, Died, Euthanized |
-| nasogastric_reflux_ph | float64 | 281 | 81.69 | 24 | 2.0, 5.0, 7.0, 6.5, 5.5, 6.0, 4.5, 3.0, 4.0, 7.5 |
-| abdominocentesis_total_protein | float64 | 220 | 63.95 | 44 | 2.0, 1.0, 3.9, 2.8, 5.0, 3.4, 3.6, 1.4, 4.3, 2.6 |
+| nasogastric_reflux_ph | float64 | 281 | 81.69 | 24 | 2.0, 5.0, 7.0, 6.5, 6.0, 5.5, 7.5, 3.0, 4.5, 4.0 |
+| abdominocentesis_total_protein | float64 | 220 | 63.95 | 44 | 2.0, 1.0, 3.9, 2.8, 5.0, 4.3, 2.6, 3.4, 3.6, 1.4 |
 | respiratory_rate | float64 | 67 | 19.48 | 40 | 20.0, 24.0, 12.0, 16.0, 30.0, 40.0, 36.0, 28.0, 32.0, 18.0 |
 | rectal_temperature | float64 | 65 | 18.9 | 40 | 38.0, 38.2, 38.3, 38.5, 37.8, 37.5, 38.1, 38.6, 38.4, 37.7 |
-| total_protein | float64 | 40 | 11.63 | 83 | 6.5, 7.0, 7.5, 6.0, 65.0, 6.6, 6.7, 6.8, 6.2, 7.2 |
-| packed_cell_volume | float64 | 35 | 10.17 | 54 | 37.0, 45.0, 44.0, 35.0, 50.0, 40.0, 43.0, 36.0, 47.0, 38.0 |
-| pulse | float64 | 24 | 6.98 | 54 | 48.0, 60.0, 40.0, 44.0, 88.0, 42.0, 52.0, 72.0, 120.0, 100.0 |
+| total_protein | float64 | 40 | 11.63 | 83 | 6.5, 7.0, 7.5, 6.6, 6.0, 65.0, 6.8, 6.7, 7.2, 6.2 |
+| packed_cell_volume | float64 | 35 | 10.17 | 54 | 37.0, 45.0, 50.0, 35.0, 44.0, 40.0, 43.0, 47.0, 36.0, 38.0 |
+| pulse | float64 | 24 | 6.98 | 54 | 60.0, 48.0, 40.0, 44.0, 88.0, 42.0, 52.0, 120.0, 72.0, 100.0 |
 | age | int64 | 0 | 0 | 2 | 1, 9 |
 
 </details>
@@ -330,7 +333,7 @@ Default splits.
 ### Categorical features
 
 <details>
-<summary>Show the table (59 rows)</summary>
+<summary>Show the table (58 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -350,8 +353,7 @@ Default splits.
 | abdominocentesis_appearance | 4 | 1.0 | 48 | 13.95 |
 | capillary_refill_time | 1 | 1.0 | 220 | 63.95 |
 | capillary_refill_time | 2 | 2.0 | 85 | 24.71 |
-| capillary_refill_time | 3 | &lt;NA> | 37 | 10.76 |
-| capillary_refill_time | 4 | 3.0 | 2 | 0.58 |
+| capillary_refill_time | 3 | &lt;NA> | 39 | 11.34 |
 | mucous_membranes | 1 | 1.0 | 92 | 26.74 |
 | mucous_membranes | 2 | 3.0 | 72 | 20.93 |
 | mucous_membranes | 3 | 4.0 | 48 | 13.95 |
@@ -407,4 +409,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:042efb51016a634587ad17c5c23443bd61a558b1bd6c963926b79c5978a9847c` |
+| stale | yes: the definition now gives checksum `v2:f593cafe67e5973451eba15872cc9274c04fbac9c134c132c2a9b7b1858870a0` |

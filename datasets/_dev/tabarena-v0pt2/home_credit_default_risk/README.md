@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: home_credit_default_risk
 container_format: 2
-checksum: v2:e185cb5b7a44021d5e9d2d5bfb3f1faa9bf8090481a84e6a22300ad8c13d8dde
+checksum: v2:b3bc967893c1124b948e1b4a480f94917e63eaadc123125f8129ad2df9095f58
 build:
   uuid: 01a111fb-c9a4-79ac-b807-b4b9dffd8068
   checksum: v2:1a393d7cebaaa9c5dd20682edd3c56e7c65a975a8f94a37ce6528b23a311ad2f
@@ -22,9 +22,9 @@ data:
   n_rows: 307507
   n_features: 709
   dtypes:
-    category: 49
+    category: 51
     float64: 654
-    int64: 7
+    int64: 5
   n_test_dataset_rows: null
 task:
   target: TARGET
@@ -73,7 +73,7 @@ decisions: []
 
 Binary classification of `TARGET`, scored with `roc_auc` on IID splits. 307,507 rows and 709 features. Source: Kaggle (2018).
 
-Built as `01a111fb-c9a4-79ac-b807-b4b9dffd8068` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:e185cb5b7a44021d5e9d2d5bfb3f1faa9bf8090481a84e6a22300ad8c13d8dde`, so the build is stale. See [Build](#build).
+Built as `01a111fb-c9a4-79ac-b807-b4b9dffd8068` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b3bc967893c1124b948e1b4a480f94917e63eaadc123125f8129ad2df9095f58`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -152,9 +152,10 @@ Only curators run `build`, when the dataset ships.
 | definition | ROC AUC between predicted probability and TARGET |
 
 <details>
-<summary>Feature types: 49 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 47 categorical, 4 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (49): `NAME_CONTRACT_TYPE`, `CODE_GENDER`, `FLAG_OWN_CAR`, `FLAG_OWN_REALTY`, `NAME_TYPE_SUITE`, `NAME_INCOME_TYPE`, `NAME_EDUCATION_TYPE`, `NAME_FAMILY_STATUS`, `NAME_HOUSING_TYPE`, `OCCUPATION_TYPE`, `WEEKDAY_APPR_PROCESS_START`, `FLAG_WORK_PHONE`, `FLAG_PHONE`, `REG_CITY_NOT_LIVE_CITY`, `LIVE_CITY_NOT_WORK_CITY`, `ORGANIZATION_TYPE`, `FONDKAPREMONT_MODE`, `HOUSETYPE_MODE`, `WALLSMATERIAL_MODE`, `EMERGENCYSTATE_MODE`, `FLAG_DOCUMENT_3`, `FLAG_DOCUMENT_8`, `FLAG_DOCUMENT_18`, `FLAG_MOBIL`, `FLAG_EMP_PHONE`, `FLAG_CONT_MOBILE`, `FLAG_EMAIL`, `REG_REGION_NOT_LIVE_REGION`, `REG_REGION_NOT_WORK_REGION`, `LIVE_REGION_NOT_WORK_REGION`, `REG_CITY_NOT_WORK_CITY`, `FLAG_DOCUMENT_2`, `FLAG_DOCUMENT_4`, `FLAG_DOCUMENT_5`, `FLAG_DOCUMENT_6`, `FLAG_DOCUMENT_7`, `FLAG_DOCUMENT_9`, `FLAG_DOCUMENT_10`, `FLAG_DOCUMENT_11`, `FLAG_DOCUMENT_12`, `FLAG_DOCUMENT_13`, `FLAG_DOCUMENT_14`, `FLAG_DOCUMENT_15`, `FLAG_DOCUMENT_16`, `FLAG_DOCUMENT_17`, `FLAG_DOCUMENT_19`, `FLAG_DOCUMENT_20`, `FLAG_DOCUMENT_21`, `TARGET`
+- categorical (47): `NAME_CONTRACT_TYPE`, `CODE_GENDER`, `FLAG_OWN_CAR`, `FLAG_OWN_REALTY`, `NAME_TYPE_SUITE`, `NAME_INCOME_TYPE`, `NAME_FAMILY_STATUS`, `NAME_HOUSING_TYPE`, `OCCUPATION_TYPE`, `FLAG_WORK_PHONE`, `FLAG_PHONE`, `REG_CITY_NOT_LIVE_CITY`, `LIVE_CITY_NOT_WORK_CITY`, `ORGANIZATION_TYPE`, `FONDKAPREMONT_MODE`, `HOUSETYPE_MODE`, `WALLSMATERIAL_MODE`, `EMERGENCYSTATE_MODE`, `FLAG_DOCUMENT_3`, `FLAG_DOCUMENT_8`, `FLAG_DOCUMENT_18`, `FLAG_MOBIL`, `FLAG_EMP_PHONE`, `FLAG_CONT_MOBILE`, `FLAG_EMAIL`, `REG_REGION_NOT_LIVE_REGION`, `REG_REGION_NOT_WORK_REGION`, `LIVE_REGION_NOT_WORK_REGION`, `REG_CITY_NOT_WORK_CITY`, `FLAG_DOCUMENT_2`, `FLAG_DOCUMENT_4`, `FLAG_DOCUMENT_5`, `FLAG_DOCUMENT_6`, `FLAG_DOCUMENT_7`, `FLAG_DOCUMENT_9`, `FLAG_DOCUMENT_10`, `FLAG_DOCUMENT_11`, `FLAG_DOCUMENT_12`, `FLAG_DOCUMENT_13`, `FLAG_DOCUMENT_14`, `FLAG_DOCUMENT_15`, `FLAG_DOCUMENT_16`, `FLAG_DOCUMENT_17`, `FLAG_DOCUMENT_19`, `FLAG_DOCUMENT_20`, `FLAG_DOCUMENT_21`, `TARGET`
+- ordinal (4): `NAME_EDUCATION_TYPE (Lower secondary < Secondary / secondary special < Incomplete higher < Higher education < Academic degree)`, `REGION_RATING_CLIENT (1 < 2 < 3)`, `REGION_RATING_CLIENT_W_CITY (1 < 2 < 3)`, `WEEKDAY_APPR_PROCESS_START (MONDAY < TUESDAY < WEDNESDAY < THURSDAY < FRIDAY < SATURDAY < SUNDAY)`
 - string (0): none
 - datetime (0): none
 
@@ -199,6 +200,9 @@ We start from this file.
 - Potential leak, kept on purpose: the 43 building columns (`*_AVG`, `*_MODE`, `*_MEDI`, `TOTALAREA_MODE`) are "normalized information about building where the client lives" (HomeCredit_columns_description.csv) and each spans exactly 0 to 1, so Home Credit likely scaled them over all applications, ours included; the method is not documented and no raw values exist. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak; revisit if Home Credit documents it.
 - We replace values that became inf after aggregation with NaN. This occurred across several aggregated columns.
 - Tagged ForcedIIDFromTemporal: applications arrive over time, but the release has no application dates (its DAYS_ columns are "time only relative to the application", HomeCredit_columns_description.csv), so the split is random.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 4 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); 2 of them were shipped as numbers; 1 are calendar or
+  compass cycles, in their usual order (the wrap is not shown).
 
 ## Splits
 
@@ -259,6 +263,8 @@ Accepted on purpose:
 | FLAG_CONT_MOBILE | category | 0 | 0 | 2 | 1, 0 |
 | FLAG_PHONE | category | 0 | 0 | 2 | 0, 1 |
 | FLAG_EMAIL | category | 0 | 0 | 2 | 0, 1 |
+| REGION_RATING_CLIENT | category | 0 | 0 | 3 | 2, 3, 1 |
+| REGION_RATING_CLIENT_W_CITY | category | 0 | 0 | 3 | 2, 3, 1 |
 | WEEKDAY_APPR_PROCESS_START | category | 0 | 0 | 7 | TUESDAY, WEDNESDAY, MONDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY |
 | REG_REGION_NOT_LIVE_REGION | category | 0 | 0 | 2 | 0, 1 |
 | REG_REGION_NOT_WORK_REGION | category | 0 | 0 | 2 | 0, 1 |
@@ -296,8 +302,6 @@ Accepted on purpose:
 | NEW_RATIO_BURO_AMT_CREDIT_SUM_DEBT_MAX | float64 | 303273 | 98.62 | 3825 | 0.0, 0.1428, 3.2608, 0.5683, 0.6934, 0.7695, 5.4631, 1.1109, 3.6078, 0.7951 |
 | NEW_RATIO_BURO_AMT_CREDIT_SUM_DEBT_MEAN | float64 | 301935 | 98.19 | 5072 | 0.0, 22.8255, 1.1365, -727.7435, 1.5982, 1.6121, 0.1428, -488.9192, -26288.0707… |
 | NEW_RATIO_BURO_AMT_CREDIT_SUM_DEBT_SUM | float64 | 301411 | 98.02 | 5072 | 0.0, 3.2608, 0.5683, -1455.487, 0.9589, 1.6121, 0.1428, -488.9192, -13144.0353,… |
-| NEW_RATIO_BURO_MONTHS_BALANCE_MAX_MAX | float64 | 296673 | 96.48 | 602 | 0.0, 1.0, 0.5, 0.3333, 0.6667, 0.2, 0.1111, 0.75, 3.0, 2.0 |
-| NEW_RATIO_PREV_AMT_DOWN_PAYMENT_MIN | float64 | 291716 | 94.86 | 5635 | 0.0, 1.0, 2.0, 0.5, 1.5, 0.2, 0.4, 0.6, 1.6667, 0.6667 |
 
 (650 more rows not shown)
 
@@ -313,7 +317,7 @@ Accepted on purpose:
 ### Numeric features
 
 <details>
-<summary>Show the table (661 rows)</summary>
+<summary>Show the table (659 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -329,8 +333,6 @@ Accepted on purpose:
 | DAYS_ID_PUBLISH | 307507 | -2994.2 | 1509.45 | -7197 | 0 |
 | OWN_CAR_AGE | 104580 | 12.0611 | 11.9449 | 0 | 91 |
 | CNT_FAM_MEMBERS | 307505 | 2.15266 | 0.91068 | 1 | 20 |
-| REGION_RATING_CLIENT | 307507 | 2.05246 | 0.509034 | 1 | 3 |
-| REGION_RATING_CLIENT_W_CITY | 307507 | 2.03152 | 0.502737 | 1 | 3 |
 | HOUR_APPR_PROCESS_START | 307507 | 12.0634 | 3.26584 | 0 | 23 |
 | EXT_SOURCE_1 | 134131 | 0.502129 | 0.211063 | 0.0145681 | 0.962693 |
 | EXT_SOURCE_2 | 306847 | 0.514392 | 0.19106 | 8.17362e-08 | 0.855 |
@@ -377,15 +379,17 @@ Accepted on purpose:
 | LIVINGAREA_MEDI | 153158 | 0.108608 | 0.112261 | 0 | 1 |
 | NONLIVINGAPARTMENTS_MEDI | 93995 | 0.00865116 | 0.0474152 | 0 | 1 |
 | NONLIVINGAREA_MEDI | 137827 | 0.0282363 | 0.0701669 | 0 | 1 |
+| TOTALAREA_MODE | 159077 | 0.102548 | 0.107463 | 0 | 1 |
+| OBS_30_CNT_SOCIAL_CIRCLE | 306486 | 1.42221 | 2.40093 | 0 | 348 |
 
-(601 more rows not shown)
+(599 more rows not shown)
 
 </details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (131 rows)</summary>
+<summary>Show the table (137 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -450,7 +454,7 @@ Accepted on purpose:
 | FLAG_PHONE | 2 | 1 | 86427 | 28.11 |
 | FLAG_WORK_PHONE | 1 | 0 | 246203 | 80.06 |
 
-(71 more rows not shown)
+(77 more rows not shown)
 
 </details>
 
@@ -465,4 +469,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:e185cb5b7a44021d5e9d2d5bfb3f1faa9bf8090481a84e6a22300ad8c13d8dde` |
+| stale | yes: the definition now gives checksum `v2:b3bc967893c1124b948e1b4a480f94917e63eaadc123125f8129ad2df9095f58` |

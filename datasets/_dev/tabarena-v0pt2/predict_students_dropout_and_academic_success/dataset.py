@@ -7,6 +7,12 @@ from pathlib import Path
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "Application_order": [0, 1, 2, 3, 4, 5, 6, 9],
+}
+
 
 class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -66,6 +72,8 @@ class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
         - We renamed the target variable and fixed some typos in the feature names.
         - We reversed the ordinal encoding of all categorical features.
         - We removed whitespaces and special characters from the feature names.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them were shipped as numbers.
     """
 
     # Task
@@ -349,6 +357,7 @@ class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "Marital_status",
                 "Application_mode",

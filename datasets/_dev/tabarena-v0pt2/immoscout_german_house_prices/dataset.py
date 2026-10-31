@@ -9,6 +9,69 @@ import numpy as np
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "Energy_efficiency_class": [" H ", " G ", " F ", " E ", " D ", " C ", " B ", " A ", " A+ "],
+    "Furnishing_quality": ["simple", "normal", "sophisticated", "luxury"],
+}
+
+# The scrape's English labels are permuted (curation notes): ImmoScout24's own code for each label, found by matching
+# the houses to an April 2020 scrape that keeps the codes. None is the scrape's missing value; a code of None is
+# ImmoScout24's "no information".
+IS24_CODES = {
+    "Condition": {
+        "modernized": "well_kept",
+        "refurbished": "need_of_renovation",
+        "dilapidated": "mint_condition",
+        "maintained": None,
+        "renovated": "modernized",
+        "fixer-upper": "refurbished",
+        "first occupation after refurbishment": "fully_renovated",
+        "first occupation": "first_time_use_after_refurbishment",
+        "by arrangement": "negotiable",
+        "as new": "ripe_for_demolition",
+        None: "first_time_use",
+    },
+    "Furnishing_quality": {
+        "refined": "simple",
+        "normal": "normal",
+        "basic": None,
+        "luxus": "luxury",
+        None: "sophisticated",
+    },
+    "Type": {
+        "Mid-terrace house": "single_family_house",
+        "Duplex": "multi_family_house",
+        "Single dwelling": "semidetached_house",
+        "Villa": "villa",
+        "Farmhouse": "mid_terrace_house",
+        "Residential property": None,
+        "Multiple dwelling": "end_terrace_house",
+        "Bungalow": "special_real_estate",
+        "Special property": "bungalow",
+        "Corner house": "farmhouse",
+        "Castle": "castle_manor_house",
+        None: "other",
+    },
+    "Heating": {
+        "stove heating": "central_heating",
+        "central heating": None,
+        "heat pump": "gas_heating",
+        "oil heating": "floor_heating",
+        "underfloor heating": "stove_heating",
+        "night storage heater": "self_contained_central_heating",
+        "district heating": "heat_pump",
+        "wood-pellet heating": "electric_heating",
+        "floor heating": "night_storage_heater",
+        "electric heating": "district_heating",
+        "gas heating": "wood_pellet_heating",
+        "cogeneration units": "combined_heat_and_power_plant",
+        "solar heating": "solar_heating",
+        None: "oil_heating",
+    },
+}
+
 
 class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -79,7 +142,25 @@ class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
         - We drop Free_of_Relation as it indicates a (mostly) price-independent variable; showing logistic information. Note that this column also indicates that the houses are most likely from the same time, further justifying our use case of an IID task.
         - We drop all cases where the price is less than 10k (most of which have a price of 0) as we think this might be a data error, or a case where the price is put to 0 to be marked as "price on request" (which is common in house listings).
         - We drop all duplicates as these are most likely repeated entries given the feature space.
+        - `Condition`, `Furnishing_quality`, `Type` and `Heating` carry ImmoScout24's own codes (`IS24_CODES`; the
+          curator's marks of 2026-10-31, CLEAN-12): the scrape's English labels are permuted, and in each column the
+          missing value took a real label while one real level became missing. "dilapidated" (1,137 houses) has the
+          newest median year built (2010) and the highest price, "as new" (11) the oldest (1870). The codes come from a
+          match: 3,548 of the 10,552 houses are also in an ImmoScout24 scrape of April 2020 that keeps the portal's
+          codes (Kaggle `phanindraparashar/germany-housing-rent-and-price-data-set-apr-20`, `apr20_price.csv`),
+          matched exactly on state, living space, lot and rooms, then on year built and price within 0.8-1.25, and
+          only where one house fits. The pairs are the same houses (energy class agrees for 99.5%, year renovated
+          98.4%, floors 99.1%), and each label maps to one code for 93-100% of its matched houses (96-100% where
+          price and year built agree exactly); the levels' median year built and price per m2 match the April codes'
+          over the whole file. "maintained", "basic", "Residential property" and "central heating" are ImmoScout24's
+          "no information" (missing); the missing values are first occupation (new builds), upscale, other and oil
+          heating. `Furnishing_quality` is then ImmoScout24's scale simple < normal < sophisticated < luxury;
+          `Condition` stays unordered, as "negotiable" is no state and "well_kept" does not sit against the
+          renovation levels. No copy with the German labels and no scraper code were found; the Kaggle upload is
+          deleted.
         - We drop all rows where the living space is less than 10 (in Germany, this would likely not be enough living space for a real house, and thus might be a data error.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 2 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -99,6 +180,9 @@ class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
+        # ImmoScout24's codes for the permuted labels; an unknown label raises
+        for col, codes in IS24_CODES.items():
+            df[col] = [codes[None if pd.isna(v) else v] for v in df[col]]
         # Data realistic drops
         df = df[df["Price"] >= 10000]
         df = df[df["Living_space"] >= 10]
@@ -118,6 +202,7 @@ class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "Type",
                 "Furnishing_quality",

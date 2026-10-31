@@ -61,6 +61,8 @@ CC (2026-10-22, Lennart): issue 4: keep the 14-day TMA marking delay with its no
 
 CC (2026-10-26, Lennart): verdict ship.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 3 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `highest_education`, `imd_band`, `age_band` (the README lists their levels).
+
 ## Reference
 
 Kuzilek J., Hlosta M., Zdrahal Z. Open University Learning Analytics dataset Sci. Data 4:170171 doi: 10.1038/sdata.2017.171 (2017).

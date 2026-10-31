@@ -25,6 +25,37 @@ RESPONDENT_COLUMNS = [
 """Answers to the survey's first part (demographics and habits), asked once per respondent."""
 
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "age": ["below21", "21", "26", "31", "36", "41", "46", "50plus"],  # open-ended
+    "education": [
+        "Some High School",
+        "High School Graduate",
+        "Some college - no degree",
+        "Associates degree",
+        "Bachelors degree",
+        "Graduate degree (Masters or Doctorate)",
+    ],
+    "income": [
+        "Less than $12500",
+        "$12500 - $24999",
+        "$25000 - $37499",
+        "$37500 - $49999",
+        "$50000 - $62499",
+        "$62500 - $74999",
+        "$75000 - $87499",
+        "$87500 - $99999",
+        "$100000 or More",
+    ],  # open-ended
+    "Bar": ["never", "less1", "1~3", "4~8", "gt8"],  # open-ended
+    "CoffeeHouse": ["never", "less1", "1~3", "4~8", "gt8"],  # open-ended
+    "CarryAway": ["never", "less1", "1~3", "4~8", "gt8"],  # open-ended
+    "RestaurantLessThan20": ["never", "less1", "1~3", "4~8", "gt8"],  # open-ended
+    "Restaurant20To50": ["never", "less1", "1~3", "4~8", "gt8"],  # open-ended
+}
+
+
 class InVehicleCouponRecommendation(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="Will a driver accept a coupon for a nearby venue offered in the car?",
@@ -88,6 +119,8 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
         - Anomaly: the numeric features in the dataset are low-cardinality (<25)
         - We simulate a cold-start model (as used before a recommender has any history for a user): predict whether a person accepts a coupon from their profile, stated habits and the scenario, for people not seen in training. The data is a survey (Wang et al. 2017, Sec. 6.2): each MTurk respondent first gave demographics and preferences, then answered hypothetical driving scenarios (22 per person in the file, 19 fixed questionnaire versions), all in one sitting and without timestamps, so there is no real interaction history for a warm-start setting. A random split puts about two-thirds of each person's other answers in train, which lets a model learn that person's tendency to say yes (ROC AUC 0.83 random vs 0.76 grouped; leak audit 2026-09-24).
         - The respondent id is not shipped with the data. The raw file lists each respondent's answers as a consecutive block with identical first-part answers, so a block of the same profile is one respondent: 587 blocks, 517 of them with 22 rows, against 652 accepted surveys in the paper, so a few blocks likely merge two adjacent respondents with identical profiles, which only makes the grouping stricter. The paper reports out-of-sample AUC from 5-fold testing (Table 3) without saying whether folds were split by respondent; a random split would be a warm start.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 8 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -145,6 +178,7 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "respondent",
                 "expiration",

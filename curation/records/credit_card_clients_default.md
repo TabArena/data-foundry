@@ -36,6 +36,10 @@ Andrej: Seems fine
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — Yeh & Lien 2009 score the lift chart's area ratio, which equals 2 x ROC AUC - 1.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `EDUCATION` (a level outside the scale is a state of its own).
+
+CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 1 columns with a state outside the scale ordered, the state placed by the rule.
+
 ## Reference
 
 The comparisons of data mining techniques for the predictive accuracy of probability of default of credit card clients

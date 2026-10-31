@@ -7,6 +7,22 @@ from pathlib import Path
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "Thyroid Function": [
+        "Clinical Hypothyroidism",
+        "Subclinical Hypothyroidism",
+        "Euthyroid",
+        "Subclinical Hyperthyroidism",
+        "Clinical Hyperthyroidism",
+    ],
+    "Risk": ["Low", "Intermediate", "High"],
+    "T": ["T1a", "T1b", "T2", "T3a", "T3b", "T4a", "T4b"],
+    "N": ["N0", "N1a", "N1b"],
+    "Stage": ["I", "II", "III", "IVA", "IVB"],
+}
+
 
 class DifferentiatedThyroidCancerRecurrence(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -89,6 +105,8 @@ class DifferentiatedThyroidCancerRecurrence(AbstractCuratedDataset):
         - Note: all 34 patients with ATA high risk or M1 recurred; if the label counts persistent disease, they may have the outcome at staging, a cohort question (LEAK-36). On 20 x 3 stratified folds, logistic regression gives ROC AUC 0.928 on all test rows and 0.901 without the High/M1 test rows (`Risk` alone 0.896 and 0.850). Leaving out as many other positives that the model ranks highest also gives 0.901, so the drop shows how hard the remaining rows are, not a leak. The paper's cohort includes them (Table 1: ATA high risk 32, M1 18), so they stay (LEAK-22; Lennart, CC 2026-10-26).
         - Note: the paper states "A minimum follow-up period of 10 years was maintained for all patients ... The study spanned a period of 15 years", but the clinic's cohort paper gives the period January 2008 to December 2023 (Khazaei et al. 2024), so the labels of the later patients may be censored. Without dates this cannot be tested.
         - Note: the record's `Trivial` marker came from the paper's ROC AUC 0.984-0.997 on all features combined. Here the ATA risk alone gives 0.896 on the 60 shipped splits; a random forest beats it on 59 of 60 (mean gain 0.032), unscaled logistic regression on 59 and untuned CatBoost on 60, and standardised logistic regression on 52.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 5 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -124,7 +142,9 @@ class DifferentiatedThyroidCancerRecurrence(AbstractCuratedDataset):
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(categorical=[c for c in df.columns if c not in ("Age", self.target)])
+        return FeatureTypes(
+            ordinal=ORDINAL_LEVELS, categorical=[c for c in df.columns if c not in ("Age", self.target)]
+        )
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         recurred = raw["Recurred"].eq("Yes")

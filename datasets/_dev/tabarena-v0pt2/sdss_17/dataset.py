@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class Sdss17(AbstractCuratedDataset):
@@ -112,3 +112,7 @@ class Sdss17(AbstractCuratedDataset):
             ]
         )
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        # cam_col names which of the six camera columns took the image: a code, not a quantity (point 4, 2026-10-31)
+        return FeatureTypes(categorical=["cam_col"])

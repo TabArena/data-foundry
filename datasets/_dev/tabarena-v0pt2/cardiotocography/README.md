@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: cardiotocography
 container_format: 2
-checksum: v2:c5a0b9f3a4ef42d4768e2f3122b753f6ccb71e929904b524c0b2e68ff29d288f
+checksum: v2:3cf33ab6e94e30a4ba7e3399cd7dc2c02b8f5936a542984303b22ff6c7abaa9d
 build:
   uuid: 01a111fc-7d1e-7b12-8cc7-298d2fc12820
   checksum: v2:732dddb0e814a5736c664898ca5254d54ea242cee222a20e2e5a126a2636a504
@@ -22,8 +22,8 @@ data:
   n_rows: 2126
   n_features: 22
   dtypes:
-    category: 2
-    float64: 22
+    category: 3
+    float64: 21
   n_test_dataset_rows: null
 task:
   target: NSP
@@ -77,7 +77,7 @@ decisions: []
 
 Multiclass classification of `NSP`, scored with `log_loss` on grouped splits by `patient_id`. 2,126 rows and 22 features. Source: UCI (2010).
 
-Built as `01a111fc-7d1e-7b12-8cc7-298d2fc12820` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c5a0b9f3a4ef42d4768e2f3122b753f6ccb71e929904b524c0b2e68ff29d288f`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7d1e-7b12-8cc7-298d2fc12820` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3cf33ab6e94e30a4ba7e3399cd7dc2c02b8f5936a542984303b22ff6c7abaa9d`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -154,9 +154,10 @@ Only curators run `build`, when the dataset ships.
 | reason | UCI page defines no task metric; the SisPorto 2.0 paper describes the analysis program and expert agreement, not a prediction benchmark. |
 
 <details>
-<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 2 categorical, 1 ordinal, 0 string, 0 datetime</summary>
 
 - categorical (2): `patient_id`, `NSP`
+- ordinal (1): `Tendency (-1.0 < 0.0 < 1.0)`
 - string (0): none
 - datetime (0): none
 
@@ -197,6 +198,8 @@ We use the data from UCI and the 3 class problem of predicting NSP as it is more
 - Each row is a segment (sample `b` to `e`) of one exam file, and 1,706 of the 1,774 consecutive segment pairs within a file overlap, so the rows of a file must stay together. The patient ID above the file is our guess, no source documents it: we strip the trailing number of a named file (`Aast_1` ... `Aast_14` -> `Aast`), each numbered file (`S0001027.dat`) stays alone. This gives 176 IDs for 352 files; 61 IDs merge 2 to 14 files and 10 span exam dates 50 to 1,139 days apart, so a stem is likely initials and may hold two women or two pregnancies. Merging too much only makes the split stricter; a woman under two IDs (similar stems such as `Mcslr`/`Mcslrc`, or a numbered file) would put her separate exams on both sides, but never overlapping segments.
 - The raw data has dates and the start and end index of the recording. We drop these as they are not relevant for the predictive task and would not be available for test samples.
 - We drop all other columns that represent the label.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them were shipped as numbers.
 
 ## Splits
 
@@ -261,7 +264,7 @@ One group is a patient, as far as the file names identify one; its rows are segm
 | largest group | 2.5% of the rows |
 | test groups per fold | 56 to 62 |
 | groups of two or more rows with a single label | 62.1% |
-| nearest neighbour in the same group | 66.6% of the rows (chance: 0.8%) |
+| nearest neighbour in the same group | 68.0% of the rows (chance: 0.8%) |
 | label variance explained by the group | 0.50 (shuffled groups: 0.08) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
@@ -283,6 +286,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| Tendency | category | 0 | 0 | 3 | 0.0, 1.0, -1.0 |
 | NSP | category | 0 | 0 | 3 | 1.0, 2.0, 3.0 |
 | patient_id | category | 0 | 0 | 176 | 6be4bb9797f6, 8ca98716a316, a8e224f4ea68, cbb8f049c20b, 7b2d930bb3f0, fd828194e… |
 | LB | float64 | 0 | 0 | 48 | 133.0, 130.0, 122.0, 138.0, 125.0, 128.0, 120.0, 144.0, 142.0, 132.0 |
@@ -306,7 +310,6 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | Mean | float64 | 0 | 0 | 103 | 143.0, 144.0, 135.0, 141.0, 140.0, 132.0, 133.0, 145.0, 136.0, 147.0 |
 | Median | float64 | 0 | 0 | 95 | 146.0, 137.0, 142.0, 145.0, 147.0, 141.0, 151.0, 134.0, 149.0, 143.0 |
 | Variance | float64 | 0 | 0 | 133 | 1.0, 0.0, 2.0, 3.0, 4.0, 5.0, 8.0, 6.0, 7.0, 9.0 |
-| Tendency | float64 | 0 | 0 | 3 | 0.0, 1.0, -1.0 |
 
 </details>
 
@@ -321,7 +324,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 ### Numeric features
 
 <details>
-<summary>Show the table (22 rows)</summary>
+<summary>Show the table (21 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -346,22 +349,29 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | Mean | 2126 | 134.611 | 15.5936 | 73 | 182 |
 | Median | 2126 | 138.09 | 14.4666 | 77 | 186 |
 | Variance | 2126 | 18.8081 | 28.9776 | 0 | 269 |
-| Tendency | 2126 | 0.32032 | 0.610829 | -1 | 1 |
 
 </details>
 
 ### Categorical features
+
+<details>
+<summary>Show the table (11 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | NSP | 1 | 1.0 | 1655 | 77.85 |
 | NSP | 2 | 2.0 | 295 | 13.88 |
 | NSP | 3 | 3.0 | 176 | 8.28 |
+| Tendency | 1 | 0.0 | 1115 | 52.45 |
+| Tendency | 2 | 1.0 | 846 | 39.79 |
+| Tendency | 3 | -1.0 | 165 | 7.76 |
 | patient_id | 1 | 6be4bb9797f6 | 54 | 2.54 |
 | patient_id | 2 | 8ca98716a316 | 53 | 2.49 |
 | patient_id | 3 | a8e224f4ea68 | 40 | 1.88 |
 | patient_id | 4 | cbb8f049c20b | 37 | 1.74 |
 | patient_id | 5 | 7b2d930bb3f0 | 36 | 1.69 |
+
+</details>
 
 ## Build
 
@@ -374,4 +384,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c5a0b9f3a4ef42d4768e2f3122b753f6ccb71e929904b524c0b2e68ff29d288f` |
+| stale | yes: the definition now gives checksum `v2:3cf33ab6e94e30a4ba7e3399cd7dc2c02b8f5936a542984303b22ff6c7abaa9d` |

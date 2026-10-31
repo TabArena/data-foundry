@@ -5,7 +5,21 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, set_missing
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "Ketones_in_Urine": ["no", "+", "++", "+++"],
+    "RBC_in_Urine": ["no", "+", "++", "+++"],
+    "WBC_in_Urine": ["no", "+", "++", "+++"],
+    "Peritonitis": ["no", "local", "generalized"],
+    "Appendicolith": ["no", "suspected", "yes"],
+    "Perforation": ["no", "not excluded", "suspected", "yes"],
+    "Appendicular_Abscess": ["no", "suspected", "yes"],
+    "Appendix_Wall_Layers": ["intact", "partially raised", "raised"],
+    "Perfusion": ["no", "hypoperfused", "present", "hyperperfused"],
+}
 
 
 class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
@@ -75,6 +89,18 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
          - Warning: We tried to clean the data as good as possible but we suspect it might still contain some features leaking the severity, but we lack the medical expertise to identify them. Thus, I would not be surprised if we had to remove this dataset later again.
         - The data contains string data, but only for a very small number of patients and the text is often seemingly very useless. The features add most likely no value, but we keep them in for the pipeline/model to ignore if needed.
         - We drop the few patients that did not have an ultrasound to avoid them being leaking due to missing features.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 9 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`).
+        - `Appendix_Wall_Layers` (2026-10-31, CLEAN-14): the codebook's "regular / irregular" (Zenodo Data Summary); the
+          labels translate the German record of the 2021 release (intact = intakt, raised = aufgehoben, the layering
+          lost; partially raised = partly lost), so intact < partially raised < raised. `upset` (1 child) is irregular
+          in the authors' code but of unknown degree: missing.
+        - `Perfusion` (2026-10-31, CLEAN-14): the codebook's scale is the amount of blood flow (unremarkable /
+          hypoperfused / hyperperfused), but this file has no `unremarkable`: the 16 children linked to the 2021
+          release with `unremarkable` are blank here, so a blank also means unremarkable. `no` (no flow, 3 children)
+          and `present` (flow without a grade, 1) are not in the codebook; ordered by flow as no < hypoperfused <
+          present < hyperperfused, `present`'s place is our reading (the authors' code groups `no` with hypoperfused
+          and `present` with hyperperfused).
     """
 
     # Task
@@ -107,10 +133,13 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
                 "Management",
             ]
         )
+        # irregular wall layers of unknown degree, off the scale (CLEAN-14)
+        df = set_missing(df, {"Appendix_Wall_Layers": ["upset"]})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "Sex",
                 "Peritonitis",

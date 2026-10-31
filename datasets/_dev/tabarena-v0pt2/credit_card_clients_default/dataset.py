@@ -5,7 +5,13 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, set_missing
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "EDUCATION": [3, 2, 1],
+}
 
 
 class CreditCardClientsDefault(AbstractCuratedDataset):
@@ -60,6 +66,10 @@ class CreditCardClientsDefault(AbstractCuratedDataset):
         - We rename the target variable and restore the original class names.
         - We drop the "ID" column.
         - Anomaly: the data has temporal features but the task is time-invariant.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed by the
+          curator's rule (missing when the column has no other missing value, else the lowest level; a state that is
+          simply not on the scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
     """
 
     # Task
@@ -85,10 +95,19 @@ class CreditCardClientsDefault(AbstractCuratedDataset):
         target_feature = "DefaultOnPaymentNextMonth"
         df = df.rename(columns={"default payment next month": target_feature})
         df[target_feature] = df[target_feature].map({1: "Yes", 0: "No"})
+        # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
+        # CLEAN-14): don't know, refused, not asked, other
+        df = set_missing(
+            df,
+            {
+                "EDUCATION": [0, 5, 6, 4],
+            },
+        )
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "SEX",
                 "MARRIAGE",

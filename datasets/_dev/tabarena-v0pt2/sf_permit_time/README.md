@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sf_permit_time
 container_format: 2
-checksum: v2:5711ccbdd6cf49f46a1aa9300964e050fcb6f6540b93baec3c1e4bd1f4b960d3
+checksum: v2:0f9be49e6fd416cc91780d2ebd3961deaed2ad434e5cb8b37994a44432fc977b
 build:
   uuid: 01a111fb-de83-7f11-84c7-a33ce2f7887a
   checksum: v2:c7e1a905c70fe391b4861aa875f2d4e83aa937dc30aea8e7676411b5c3b3a991
@@ -78,7 +78,7 @@ decisions:
 
 Regression of `DaysToIssue`, scored with `rmsle` on temporal splits by `Filed Date`. 99,847 rows and 37 features. Source: GOV Website (2026).
 
-Built as `01a111fb-de83-7f11-84c7-a33ce2f7887a` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5711ccbdd6cf49f46a1aa9300964e050fcb6f6540b93baec3c1e4bd1f4b960d3`, so the build is stale. See [Build](#build).
+Built as `01a111fb-de83-7f11-84c7-a33ce2f7887a` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:0f9be49e6fd416cc91780d2ebd3961deaed2ad434e5cb8b37994a44432fc977b`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -163,9 +163,10 @@ Only curators run `build`, when the dataset ships.
 | target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
 
 <details>
-<summary>Feature types: 14 categorical, 14 string, 1 datetime</summary>
+<summary>Feature types: 12 categorical, 2 ordinal, 14 string, 1 datetime</summary>
 
-- categorical (14): `Permit Type Definition`, `DescriptionIsStandardPhrase`, `Structural Notification`, `Voluntary Soft-Story Retrofit`, `Fire Only Permit`, `TIDF Compliance`, `Existing Construction Type Description`, `Proposed Construction Type Description`, `Site Permit`, `Application Submission Method`, `supervisor_district`, `neighborhoods_analysis_boundaries`, `point_source`, `reroof`
+- categorical (12): `Permit Type Definition`, `DescriptionIsStandardPhrase`, `Structural Notification`, `Voluntary Soft-Story Retrofit`, `Fire Only Permit`, `TIDF Compliance`, `Site Permit`, `Application Submission Method`, `supervisor_district`, `neighborhoods_analysis_boundaries`, `point_source`, `reroof`
+- ordinal (2): `Existing Construction Type Description (constr type 1 < constr type 2 < constr type 3 < constr type 4 < wood frame (5))`, `Proposed Construction Type Description (constr type 1 < constr type 2 < constr type 3 < constr type 4 < wood frame (5))`
 - string (14): `Block`, `Lot`, `Street Number`, `Street Number Suffix`, `Street Name`, `Street Suffix`, `Unit`, `Unit Suffix`, `Description`, `Existing Use`, `Proposed Use`, `Existing Occupancy`, `Proposed Occupancy`, `Zipcode`
 - datetime (1): `Filed Date`
 
@@ -211,6 +212,8 @@ We start with the Building Permits table of the San Francisco open data portal (
 - Split: training holds only the permits issued before the window starts, after a six-month gap (splits_comment, decision table). At a window start 3.0-6.7% of the earlier permits are still open (median 310-520 days to issue); with their labels and the filing time as a number, LightGBM learned the 2020 slowdown from permits issued during the test window (RMSE 1.19 instead of 1.52 on 2020-H2). A one-month gap, as in brazilian_ecommerce, is too short: 21-34% of the permits filed 1-6 months before a window are still open, and LightGBM trained on the rest predicts 0.58 log days too fast.
 - Anomaly: Current Status is read at the download, so the status filter also drops 4,316 permits that were issued and later expired (2,764), cancelled (1,093), reinstated, suspended or revoked (4.1% of the cohort). We keep the filter.
 - Permits per filing year in the cleaned data (from the v1 exploration, counted 2026-10-22): 11,958 (2015), 11,840 (2016), 12,006 (2017), 12,786 (2018), 12,194 (2019), 10,636 (2020), 9,915 (2021), 9,449 (2022), 9,063 (2023).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 2 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -410,4 +413,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:5711ccbdd6cf49f46a1aa9300964e050fcb6f6540b93baec3c1e4bd1f4b960d3` |
+| stale | yes: the definition now gives checksum `v2:0f9be49e6fd416cc91780d2ebd3961deaed2ad434e5cb8b37994a44432fc977b` |

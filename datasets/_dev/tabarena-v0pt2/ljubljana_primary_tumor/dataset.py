@@ -7,6 +7,13 @@ from pathlib import Path
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "age": ["<30", "30-59", ">=60"],  # open-ended
+    "degree-of-diffe": ["well", "fairly", "poorly"],
+}
+
 
 class LjubljanaPrimaryTumor(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -67,6 +74,8 @@ class LjubljanaPrimaryTumor(AbstractCuratedDataset):
         - We reverse the ordinal encoding of all features, adding the text back to the categories.
         - We drop classes with less than 10 samples to have sufficient data per class for a robust benchmark task. In reality, this would call for collecting more data on these classes, or treating it as an individual few-shot prediction task.
         - The data contains many duplicates (10%), which seems to be naturally occurring given the limited amount of features. Moreover, the duplicates sometimes have different targets. We keep the duplicates. While this might bias evaluation a bit, it represents the real-world task with ambiguous features better.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 2 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -161,4 +170,4 @@ class LjubljanaPrimaryTumor(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         # every attribute is categorical (decoded from its integer codes above)
-        return FeatureTypes(categorical=[c for c in df.columns if c != self.target])
+        return FeatureTypes(ordinal=ORDINAL_LEVELS, categorical=[c for c in df.columns if c != self.target])

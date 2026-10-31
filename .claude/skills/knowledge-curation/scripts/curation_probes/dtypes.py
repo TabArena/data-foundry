@@ -53,12 +53,35 @@ import pandas as pd
 MIN_LEVELS = 10
 RANK_CORR = -0.5
 MOSTLY = 0.9
-FLAG_ORDER = ("quantity_words", "codebook_numeric", "codebook_categorical", "count_like", "code_name", "numeric_levels")
+FLAG_ORDER = (
+    "quantity_words",
+    "codebook_numeric",
+    "codebook_categorical",
+    "ordinal_like",
+    "open_end",
+    "count_like",
+    "code_name",
+    "numeric_levels",
+)
 QUANTITY_WORDS = re.compile(
     r"\b(numbers? of|counts? of|how many|how much|frequency of|quantity of|amount of|no\. of)\b", re.IGNORECASE
 )
 QUANTITY_NAME_PARTS = {"nb", "num", "number", "count", "counts", "cnt", "freq", "times", "amount", "qty", "expense"}
 CODE_NAME_PARTS = {"id", "code", "zip", "zipcode", "postcode", "postal"}
+OPEN_LEVEL = re.compile(
+    r"^\s*(<=?|>=?|≤|≥)\s*\$?\d|\d\s*\+\s*$|\d\s*<=?\s*$|\d+\s*plus\b|^(gt|lt|ge|le|less|below|above|over|under)\s*\d"
+    r"|\b(or more|and more|or over|and over|or older|and older|more than|less than|fewer than)\b",
+    re.IGNORECASE,
+)
+OPEN_WORDS = re.compile(r"\b(or more|and more|and over|or over|more than|or older|and older)\b", re.IGNORECASE)
+RANGE_LEVEL = re.compile(r"^\s*[\[(]?\s*\$?\d[\d,.]*\s*(-|\u2013|~|/|to)\s*\$?\d[\d,.]*\s*[\])%]?\s*$", re.IGNORECASE)
+SCALE_WORDS = re.compile(
+    r"\b(low|medium|high|none|mild|moderate|severe|never|rarely|seldom|sometimes|often|frequently|always|usually|"
+    r"poor|fair|good|excellent|average|slight|minor|major|strongly|agree|disagree|daily|weekly|monthly|primary|"
+    r"secondary|tertiary|ex|gd|ta|fa|po)\b",  # the last five: Ames-style quality codes (excellent ... poor)
+    re.IGNORECASE,
+)
+ORDINAL_WORDS = re.compile(r"\b(ordinal|ordered|grade[sd]?|stage|scale|severity|degree)\b", re.IGNORECASE)
 NUMERIC_TYPES = {"integer", "continuous", "numeric", "real"}
 CATEGORICAL_TYPES = {"categorical", "nominal"}
 
@@ -142,6 +165,10 @@ def column_table(
             "n_values": int(s.nunique(dropna=True)),
             "numeric_share": None,
             "other_levels": [str(level) for level in others[:5]],
+            "ordered": bool(s.cat.ordered) if categorical else None,
+            "open_levels": [str(x) for x in s.cat.categories if OPEN_LEVEL.search(str(x))][:5] if categorical else [],
+            "range_levels": sum(bool(RANGE_LEVEL.search(str(x))) for x in s.cat.categories) if categorical else 0,
+            "scale_levels": sum(bool(SCALE_WORDS.search(str(x))) for x in s.cat.categories) if categorical else 0,
             "value_min": None,
             "value_max": None,
             "integer": None,
@@ -166,27 +193,37 @@ def column_table(
 def _flags(row: dict, counts: pd.Series, *, categorical: bool) -> list[str]:
     ctype = str(row["codebook_type"] or "").lower()
     description = str(row["codebook_description"] or "")
-    words = QUANTITY_WORDS.search(description) or _name_parts(row["column"]) & QUANTITY_NAME_PARTS
     several = row["n_values"] > 2
-    flags = []
     if categorical:
-        mostly = row["numeric_share"] >= MOSTLY
-        if several and words and row["numeric_share"] >= 0.5:
-            flags.append("quantity_words")
-        if several and mostly and ctype in NUMERIC_TYPES:
-            flags.append("codebook_numeric")
-        if mostly and row["integer"] and len(counts) >= MIN_LEVELS:
-            start = row["value_min"]
-            head = {start + i for i in range(MIN_LEVELS)}
-            if start in (0, 1) and head <= set(counts.index) and (row["rank_corr"] or 0) <= RANK_CORR:
-                flags.append("count_like")
-        if not flags and several and mostly:
-            flags.append("numeric_levels")
-    else:
-        if several and ctype in CATEGORICAL_TYPES:
-            flags.append("codebook_categorical")
-        if several and row["integer"] and _name_parts(row["column"]) & CODE_NAME_PARTS:
-            flags.append("code_name")
+        return _categorical_flags(row, counts, ctype, description, several=several)
+    flags = []
+    if several and ctype in CATEGORICAL_TYPES:
+        flags.append("codebook_categorical")
+    if several and row["integer"] and _name_parts(row["column"]) & CODE_NAME_PARTS:
+        flags.append("code_name")
+    return flags
+
+
+def _categorical_flags(row: dict, counts: pd.Series, ctype: str, description: str, *, several: bool) -> list[str]:
+    flags = ["open_end"] if row["open_levels"] or OPEN_WORDS.search(description) else []
+    if row["ordered"]:  # typed ordinal on purpose: only an open end is worth naming
+        return flags
+    levels = row["open_levels"] or row["range_levels"] or row["scale_levels"] >= 2
+    if several and (levels or ORDINAL_WORDS.search(description) or OPEN_WORDS.search(description)):
+        flags.insert(0, "ordinal_like")
+    words = QUANTITY_WORDS.search(description) or _name_parts(row["column"]) & QUANTITY_NAME_PARTS
+    mostly = row["numeric_share"] >= MOSTLY
+    if several and words and row["numeric_share"] >= 0.5:
+        flags.append("quantity_words")
+    if several and mostly and ctype in NUMERIC_TYPES:
+        flags.append("codebook_numeric")
+    if mostly and row["integer"] and len(counts) >= MIN_LEVELS:
+        start = row["value_min"]
+        head = {start + i for i in range(MIN_LEVELS)}
+        if start in (0, 1) and head <= set(counts.index) and (row["rank_corr"] or 0) <= RANK_CORR:
+            flags.append("count_like")
+    if not flags and several and mostly:
+        flags.append("numeric_levels")
     return flags
 
 

@@ -7,6 +7,22 @@ from pathlib import Path
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "INF_ANAM": [0.0, 1.0, 2.0, 3.0],  # open-ended
+    "STENOK_AN": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0],  # open-ended
+    "FK_STENOK": [0.0, 1.0, 2.0, 3.0, 4.0],
+    "IBS_POST": [0.0, 1.0, 2.0],
+    "GB": [0.0, 1.0, 2.0, 3.0],
+    "DLIT_AG": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0],  # open-ended
+    "ant_im": [0.0, 1.0, 2.0, 3.0, 4.0],
+    "lat_im": [0.0, 1.0, 2.0, 3.0, 4.0],
+    "inf_im": [0.0, 1.0, 2.0, 3.0, 4.0],
+    "post_im": [0.0, 1.0, 2.0, 3.0, 4.0],
+    "TIME_B_S": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0],  # open-ended
+}
+
 
 class Mic(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -68,6 +84,8 @@ class Mic(AbstractCuratedDataset):
         - We treat "?" as missing values.
         - We dropped the "id" column.
         - We reversed the ordinal encoding of the target feature.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 11 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -256,6 +274,7 @@ class Mic(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "SEX",
                 "INF_ANAM",

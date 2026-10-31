@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: california_house_prices_2020
 container_format: 2
-checksum: v2:d80f9daa2ee6bb8a641c348803c628d59f9718d8bdfb4945c8040e126c0e5d19
+checksum: v2:d74789170eb8097450e140f7aac81ef7e5902efbf6c392c68a6d41974d35c460
 build:
   uuid: 01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a
   checksum: v2:c703f2c88510fa9def52e7c79051dd9dd5f9e711d25ea0914082fd131606d0eb
@@ -22,9 +22,9 @@ data:
   n_rows: 39060
   n_features: 41
   dtypes:
-    category: 1
+    category: 4
     datetime64[ns]: 3
-    float64: 18
+    float64: 15
     int64: 1
     string: 19
   n_test_dataset_rows: null
@@ -70,7 +70,7 @@ decisions: []
 
 Regression of `Sold Price`, scored with `rmsle` on temporal splits by `time_index`. 39,060 rows and 41 features. Source: Kaggle (2021).
 
-Built as `01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:d80f9daa2ee6bb8a641c348803c628d59f9718d8bdfb4945c8040e126c0e5d19`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:d74789170eb8097450e140f7aac81ef7e5902efbf6c392c68a6d41974d35c460`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -150,9 +150,10 @@ Only curators run `build`, when the dataset ships.
 | target scale | ships on the `log1p` scale for modelling; scored on the original scale after the inverse of `log1p` |
 
 <details>
-<summary>Feature types: 1 categorical, 19 string, 3 datetime</summary>
+<summary>Feature types: 1 categorical, 3 ordinal, 19 string, 3 datetime</summary>
 
 - categorical (1): `Zip Region`
+- ordinal (3): `Elementary School Score (1.0 < 2.0 < 3.0 < 4.0 < 5.0 < 6.0 < 7.0 < 8.0 < 9.0 < 10.0)`, `Middle School Score (1.0 < 2.0 < 3.0 < 4.0 < 5.0 < 6.0 < 7.0 < 8.0 < 9.0)`, `High School Score (1.0 < 2.0 < 3.0 < 4.0 < 5.0 < 6.0 < 7.0 < 8.0 < 9.0 < 10.0)`
 - string (19): `Summary`, `Type`, `Heating`, `Cooling`, `Parking`, `Region`, `Elementary School`, `Middle School`, `High School`, `Flooring`, `Heating features`, `Cooling features`, `Appliances included`, `Laundry features`, `Parking features`, `City`, `Address`, `Zip`, `Bedrooms_description`
 - datetime (3): `Year built`, `Listed On (%Y-%m-%d)`, `Last Sold On (%Y-%m-%d)`
 
@@ -206,6 +207,8 @@ We found out that the data was web scraped from redfin.com and that the houses a
 - We fixed one entry that had a negative value for garage space, likely due to a typo. This error still exists on the website.
 - We drop the 2,480 homes (6.0%) whose last sale is on or after their listing date: the listing describes an earlier sale, and 125 of them give the price we predict as the last sale price. They were 5-6% of each test window but about half its squared error (LightGBM RMSE 0.196 with them, 0.140 without). Listings older than 6 months before the sale stay (Lennart, 2026-10-14).
 - After all the above preprocessing, 63 homes appear more than once (same address, ZIP code and year built; 130 rows). 51 pairs give the same sold price a median 61 Kaggle IDs apart: one sale scraped twice, of which we keep the newest entry. The other 28 rows are sales at another price (a resale, or another unit at an address without a unit number) and stay, as an earlier sale is history under the temporal split (Lennart, 2026-10-21: "we want to keep real repeats, as houses can be sold several times").
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); 3 of them were shipped as numbers.
 
 ## Splits
 
@@ -233,18 +236,18 @@ Three test windows in sale order, each a sixth of the sales (6,510 rows), cut fr
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| Middle School Score | category | 13613 | 34.85 | 9 | 6.0, 3.0, 5.0, 7.0, 4.0, 8.0, 9.0, 2.0, 1.0 |
+| High School Score | category | 4471 | 11.45 | 10 | 7.0, 6.0, 8.0, 5.0, 4.0, 3.0, 9.0, 2.0, 10.0, 1.0 |
+| Elementary School Score | category | 3889 | 9.96 | 10 | 6.0, 7.0, 5.0, 4.0, 8.0, 9.0, 3.0, 2.0, 1.0, 10.0 |
 | Zip Region | category | 0 | 0 | 5 | San Francisco Bay Area, Southern California / LA Area, Northern California, Cen… |
 | Last Sold On | datetime64\[ns\] | 15538 | 39.78 | 5855 | 2017-06-30 00:00:00, 2015-02-27 00:00:00, 2017-05-26 00:00:00, 2017-12-29 00:00… |
 | Year built | datetime64\[ns\] | 1017 | 2.6 | 156 | 1973-01-01 00:00:00, 2020-01-01 00:00:00, 1950-01-01 00:00:00, 1947-01-01 00:00… |
 | Listed On | datetime64\[ns\] | 0 | 0 | 1145 | 2020-09-18 00:00:00, 2020-10-16 00:00:00, 2020-10-02 00:00:00, 2020-10-09 00:00… |
 | Last Sold Price | float64 | 15538 | 39.78 | 3547 | 650000.0, 850000.0, 500000.0, 550000.0, 1200000.0, 1100000.0, 700000.0, 350000.… |
-| Middle School Score | float64 | 13613 | 34.85 | 9 | 6.0, 3.0, 5.0, 7.0, 4.0, 8.0, 9.0, 2.0, 1.0 |
 | Middle School Distance | float64 | 13612 | 34.85 | 210 | 0.6, 0.8, 0.7, 0.5, 0.9, 0.4, 1.0, 0.3, 1.1, 1.2 |
 | Lot | float64 | 12280 | 31.44 | 7731 | 5000.0, 6098.0, 2500.0, 6534.0, 2495.0, 2996.0, 11325.6, 5998.0, 7405.0, 43560.0 |
 | Full bathrooms | float64 | 5805 | 14.86 | 15 | 2.0, 1.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 |
-| High School Score | float64 | 4471 | 11.45 | 10 | 7.0, 6.0, 8.0, 5.0, 4.0, 3.0, 9.0, 2.0, 10.0, 1.0 |
 | High School Distance | float64 | 4295 | 11 | 330 | 0.8, 0.7, 0.9, 0.6, 1.0, 0.5, 1.2, 1.1, 1.3, 0.4 |
-| Elementary School Score | float64 | 3889 | 9.96 | 10 | 6.0, 7.0, 5.0, 4.0, 8.0, 9.0, 3.0, 2.0, 1.0, 10.0 |
 | Elementary School Distance | float64 | 3767 | 9.64 | 235 | 0.3, 0.4, 0.2, 0.5, 0.6, 0.7, 0.1, 0.8, 0.9, 1.0 |
 | Annual tax amount | float64 | 3571 | 9.14 | 17402 | 1204.0, 1395.0, 2307.0, 2506.0, 4235.0, 1266.0, 5340.0, 1976.0, 2800.0, 2460.0 |
 | Bedrooms | float64 | 3412 | 8.74 | 28 | 3.0, 2.0, 4.0, 1.0, 5.0, 6.0, 0.0, 7.0, 8.0, 9.0 |
@@ -287,7 +290,7 @@ Three test windows in sale order, each a sixth of the sales (6,510 rows), cut fr
 ### Numeric features
 
 <details>
-<summary>Show the table (19 rows)</summary>
+<summary>Show the table (16 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -299,11 +302,8 @@ Three test windows in sale order, each a sixth of the sales (6,510 rows), cut fr
 | Full bathrooms | 33255 | 2.08934 | 0.975794 | 1 | 17 |
 | Total interior livable area | 36856 | 1832.98 | 1184.13 | 1 | 35970 |
 | Garage spaces | 38396 | 1.4539 | 8.6261 | 0 | 1000 |
-| Elementary School Score | 35171 | 5.75178 | 2.12281 | 1 | 10 |
 | Elementary School Distance | 35293 | 1.07571 | 2.25736 | 0 | 57.2 |
-| Middle School Score | 25447 | 5.30734 | 2.01058 | 1 | 9 |
 | Middle School Distance | 25448 | 1.61558 | 2.3795 | 0 | 57.2 |
-| High School Score | 34589 | 6.12287 | 2.0055 | 1 | 10 |
 | High School Distance | 34765 | 2.27699 | 3.48409 | 0 | 73.9 |
 | Tax assessed value | 35890 | 793971 | 1.13305e+06 | 0 | 4.59e+07 |
 | Annual tax amount | 35489 | 10032.7 | 13602.8 | 0 | 552485 |
@@ -316,7 +316,7 @@ Three test windows in sale order, each a sixth of the sales (6,510 rows), cut fr
 ### Categorical features
 
 <details>
-<summary>Show the table (115 rows)</summary>
+<summary>Show the table (130 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -355,6 +355,11 @@ Three test windows in sale order, each a sixth of the sales (6,510 rows), cut fr
 | Elementary School | 3 | Daniel Webster Elementary School | 288 | 0.74 |
 | Elementary School | 4 | Sherman Elementary School | 282 | 0.72 |
 | Elementary School | 5 | Kenter Canyon Elementary School | 281 | 0.72 |
+| Elementary School Score | 1 | 6.0 | 5264 | 13.48 |
+| Elementary School Score | 2 | 7.0 | 5080 | 13.01 |
+| Elementary School Score | 3 | 5.0 | 5033 | 12.89 |
+| Elementary School Score | 4 | 4.0 | 4986 | 12.76 |
+| Elementary School Score | 5 | 8.0 | 4693 | 12.01 |
 | Flooring | 1 | &lt;NA> | 9304 | 23.82 |
 | Flooring | 2 | Wood | 3836 | 9.82 |
 | Flooring | 3 | Hardwood | 1846 | 4.73 |
@@ -375,13 +380,8 @@ Three test windows in sale order, each a sixth of the sales (6,510 rows), cut fr
 | High School | 3 | University Senior High School Charter | 1153 | 2.95 |
 | High School | 4 | Harbor High School | 707 | 1.81 |
 | High School | 5 | Independence High School | 657 | 1.68 |
-| Last Sold On | 1 | &lt;NA> | 15538 | 39.78 |
-| Last Sold On | 2 | 2017-06-30 00:00:00 | 27 | 0.07 |
-| Last Sold On | 3 | 2015-02-27 00:00:00 | 25 | 0.06 |
-| Last Sold On | 4 | 2017-05-26 00:00:00 | 25 | 0.06 |
-| Last Sold On | 5 | 2017-12-29 00:00:00 | 25 | 0.06 |
 
-(55 more rows not shown)
+(70 more rows not shown)
 
 </details>
 
@@ -396,4 +396,4 @@ Three test windows in sale order, each a sixth of the sales (6,510 rows), cut fr
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:d80f9daa2ee6bb8a641c348803c628d59f9718d8bdfb4945c8040e126c0e5d19` |
+| stale | yes: the definition now gives checksum `v2:d74789170eb8097450e140f7aac81ef7e5902efbf6c392c68a6d41974d35c460` |

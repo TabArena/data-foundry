@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: hotel_booking_demand
 container_format: 2
-checksum: v2:b514995f66498e7efca178829f5a239dde232ef3b275a0e39ab4a03fd702e5d9
+checksum: v2:b3d4e1aca7bff71488ed345b96988e310b51007dda3402602ad93ab227c706f8
 build:
   uuid: 01a111fc-83ac-7d29-9b51-a07539b9d67c
   checksum: v2:2f18db4b72cd822107064f59371e2b6ab9ea2d9c03fd57e1842ec43f79c7d30c
@@ -76,7 +76,7 @@ decisions: []
 
 Binary classification of `IsCanceled`, scored with `roc_auc` on temporal splits by `arrival_date`. 81,418 rows and 28 features. Source: Other (2018).
 
-Built as `01a111fc-83ac-7d29-9b51-a07539b9d67c` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b514995f66498e7efca178829f5a239dde232ef3b275a0e39ab4a03fd702e5d9`, so the build is stale. See [Build](#build).
+Built as `01a111fc-83ac-7d29-9b51-a07539b9d67c` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b3d4e1aca7bff71488ed345b96988e310b51007dda3402602ad93ab227c706f8`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -155,9 +155,10 @@ Only curators run `build`, when the dataset ships.
 | reason | The data paper publishes the data without a prediction task or metric; the authors' earlier cancellation-prediction papers used other (non-public) data and reported several metrics (accuracy, precision, AUC), none set as the task's metric. |
 
 <details>
-<summary>Feature types: 13 categorical, 0 string, 2 datetime</summary>
+<summary>Feature types: 10 categorical, 3 ordinal, 0 string, 2 datetime</summary>
 
-- categorical (13): `Country`, `ArrivalDateMonth`, `Meal`, `MarketSegment`, `DistributionChannel`, `ReservedRoomType`, `DepositType`, `Agent`, `Company`, `CustomerType`, `hotel`, `IsRepeatedGuest`, `IsCanceled`
+- categorical (10): `Country`, `MarketSegment`, `DistributionChannel`, `ReservedRoomType`, `Agent`, `Company`, `CustomerType`, `hotel`, `IsRepeatedGuest`, `IsCanceled`
+- ordinal (3): `DepositType (No Deposit      < Refundable      < Non Refund     )`, `Meal (SC        < BB        < HB        < FB       )`, `ArrivalDateMonth (January < February < March < April < May < June < July < August < September < October < November < December)`
 - string (0): none
 - datetime (2): `arrival_date`, `booking_date`
 
@@ -209,6 +210,11 @@ The first 5 of 81,418 rows of the final frame (the oldest rows: the frame is sor
 - Anomaly: The first recorded month for the city hotels shows an unusually high amount of cancellations.
 - Cancellations rise over the period (from the v1 exploration, counted 2026-10-22 on the cleaned data, by arrival year): city 23.5% (2015, from July), 30.3% (2016), 35.1% (2017, to August); resort 20.7%, 23.7%, 30.3%, with a summer peak (resort 31-38% in July-August 2016 and 2017). The city anomaly above is July 2015 with 61% cancelled. LeadTime has a long tail: median 57 days, p90 209, max 737.
 - ReservationStatus equals the target (Canceled or No-Show for every cancelled booking, Check-Out for every other one), and ReservationStatusDate tells it too: every booking whose last status change is after the arrival date was not cancelled (57,364), every one changed before arrival was (22,250; median 41 days before arrival, 28% more than 90 days before). Both are dropped after splitting (from the v1 exploration, counted 2026-10-22).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); 1 are calendar or compass cycles, in their usual order
+  (the wrap is not shown); 1 hold a state outside the scale, placed by the curator's rule (missing when the
+  column has no other missing value, else the lowest level; a state that is simply not on the scale, such as
+  Other, is missing).
 
 ## Splits
 
@@ -257,7 +263,7 @@ Accepted on purpose:
 | Country | category | 336 | 0.41 | 172 | PRT, GBR, FRA, ESP, DEU, IRL, ITA, BEL, BRA, NLD |
 | IsCanceled | category | 0 | 0 | 2 | 0, 1 |
 | ArrivalDateMonth | category | 0 | 0 | 12 | August, July, May, April, June, March, October, September, February, December |
-| Meal | category | 0 | 0 | 5 | BB , HB , SC , Undefined, FB |
+| Meal | category | 0 | 0 | 4 | BB , SC , HB , FB |
 | MarketSegment | category | 0 | 0 | 8 | Online TA, Offline TA/TO, Direct, Groups, Corporate, Complementary, Aviation, U… |
 | DistributionChannel | category | 0 | 0 | 5 | TA/TO, Direct, Corporate, GDS, Undefined |
 | IsRepeatedGuest | category | 0 | 0 | 2 | 0, 1 |
@@ -318,7 +324,7 @@ Accepted on purpose:
 ### Categorical features
 
 <details>
-<summary>Show the table (63 rows)</summary>
+<summary>Show the table (62 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -364,10 +370,9 @@ Accepted on purpose:
 | MarketSegment | 4 | Groups | 4881 | 5.99 |
 | MarketSegment | 5 | Corporate | 3546 | 4.36 |
 | Meal | 1 | BB | 62812 | 77.15 |
-| Meal | 2 | HB | 8936 | 10.98 |
-| Meal | 3 | SC | 8835 | 10.85 |
-| Meal | 4 | Undefined | 487 | 0.6 |
-| Meal | 5 | FB | 348 | 0.43 |
+| Meal | 2 | SC | 9322 | 11.45 |
+| Meal | 3 | HB | 8936 | 10.98 |
+| Meal | 4 | FB | 348 | 0.43 |
 | ReservedRoomType | 1 | A | 52134 | 64.03 |
 | ReservedRoomType | 2 | D | 16678 | 20.48 |
 | ReservedRoomType | 3 | E | 5693 | 6.99 |
@@ -382,8 +387,9 @@ Accepted on purpose:
 | booking_date | 2 | 2016-02-03 00:00:00 | 308 | 0.38 |
 | booking_date | 3 | 2015-10-14 00:00:00 | 289 | 0.35 |
 | booking_date | 4 | 2016-01-06 00:00:00 | 275 | 0.34 |
+| booking_date | 5 | 2017-01-16 00:00:00 | 272 | 0.33 |
 
-(3 more rows not shown)
+(2 more rows not shown)
 
 </details>
 
@@ -398,4 +404,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:b514995f66498e7efca178829f5a239dde232ef3b275a0e39ab4a03fd702e5d9` |
+| stale | yes: the definition now gives checksum `v2:b3d4e1aca7bff71488ed345b96988e310b51007dda3402602ad93ab227c706f8` |

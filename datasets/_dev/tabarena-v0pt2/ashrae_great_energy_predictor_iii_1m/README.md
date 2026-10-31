@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ashrae_great_energy_predictor_iii_1m
 container_format: 2
-checksum: v2:651ebdc53e414da4c3c9594d4f61fa0397d1316d5e28b4a77c27ec6ecbaea5af
+checksum: v2:014ea078c6ba64e0baf64356665a054e4bc4c7495b903aed8f519bf511fcb5da
 build: null
 build_stale: false
 data:
@@ -60,7 +60,7 @@ decisions:
 
 Regression of `log1p_meter_reading`, scored with `rmsle` on temporal splits by `timestamp`. 2,500,000 rows and 15 features. Source: Kaggle (2019).
 
-Not built yet. The current definition gives checksum `v2:651ebdc53e414da4c3c9594d4f61fa0397d1316d5e28b4a77c27ec6ecbaea5af`.
+Not built yet. The current definition gives checksum `v2:014ea078c6ba64e0baf64356665a054e4bc4c7495b903aed8f519bf511fcb5da`.
 
 ## In brief
 
@@ -218,6 +218,9 @@ We start with the Kaggle competition's train.csv (2016), building_metadata.csv a
 - The target is log1p of kWh, in one unit for all meters; the metric is the competition's RMSLE on kWh, computed after the inverse (`target_transform="log1p"`).
 - building_id and site_id are categories: the test hours belong to meters seen in train, as in the competition.
 - precip_depth_1_hr = -1 stays: it codes a trace of rain in NOAA's ISD-Lite data (format note, field 11).
+- `cloud_coverage` is in oktas (0-8), and 9 means the sky is obscured (fog or precipitation), so the cloud
+  amount cannot be estimated (ISD's code table): 9,905 rows, missing (CLEAN-10; the curator's marks of
+  2026-10-31, as in rain_in_australia).
 
 Version of `ashrae_great_energy_predictor_iii`: The cleaned frame has 39.1M hourly readings, so the dataset ships only as this `_1m` version. We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. As in TabReD, the train side is a random sample of the whole history rather than its newest part, so every window trains on all seasons seen so far.
 
@@ -289,18 +292,18 @@ Chilled-water zeros peak in winter and steam and hot-water zeros in summer: a pl
 
 | month | chilledwater | electricity | hotwater | steam |
 |---|---|---|---|---|
-| 1 | 0.265 | 0 | 0.069 | 0.034 |
-| 2 | 0.247 | 0 | 0.094 | 0.039 |
+| 1 | 0.266 | 0 | 0.072 | 0.033 |
+| 2 | 0.247 | 0 | 0.095 | 0.04 |
 | 3 | 0.231 | 0 | 0.109 | 0.048 |
 | 4 | 0.17 | 0 | 0.137 | 0.066 |
-| 5 | 0.056 | 0 | 0.334 | 0.136 |
+| 5 | 0.056 | 0 | 0.333 | 0.135 |
 | 6 | 0.036 | 0 | 0.396 | 0.178 |
-| 7 | 0.035 | 0 | 0.417 | 0.193 |
-| 8 | 0.029 | 0 | 0.413 | 0.182 |
-| 9 | 0.039 | 0 | 0.397 | 0.158 |
-| 10 | 0.065 | 0 | 0.351 | 0.139 |
-| 11 | 0.207 | 0 | 0.125 | 0.057 |
-| 12 | 0.257 | 0 | 0.087 | 0.032 |
+| 7 | 0.034 | 0 | 0.416 | 0.194 |
+| 8 | 0.029 | 0 | 0.414 | 0.182 |
+| 9 | 0.039 | 0 | 0.398 | 0.158 |
+| 10 | 0.065 | 0 | 0.351 | 0.138 |
+| 11 | 0.207 | 0 | 0.124 | 0.058 |
+| 12 | 0.256 | 0 | 0.087 | 0.032 |
 
 ## Bundle checks
 
@@ -316,22 +319,22 @@ Chilled-water zeros peak in winter and steam and hot-water zeros in summer: a pl
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| building_id | category | 0 | 0 | 1449 | 1298, 1331, 1259, 1249, 1241, 1297, 1258, 1296, 1301, 1295 |
+| building_id | category | 0 | 0 | 1449 | 1331, 1298, 1259, 1249, 1301, 1258, 1241, 1297, 1296, 1293 |
 | meter | category | 0 | 0 | 4 | electricity, chilledwater, steam, hotwater |
 | site_id | category | 0 | 0 | 16 | 13, 9, 2, 14, 3, 15, 0, 4, 6, 8 |
 | primary_use | category | 0 | 0 | 16 | Education, Office, Entertainment/public assembly, Lodging/residential, Public s… |
 | timestamp | datetime64\[ns\] | 0 | 0 | 17544 | 2017-11-15 06:00:00, 2017-08-25 13:00:00, 2017-05-24 17:00:00, 2017-10-23 21:00… |
-| floor_count | float64 | 2.09773e+06 | 83.91 | 18 | 1.0, 2.0, 4.0, 6.0, 3.0, 5.0, 8.0, 7.0, 9.0, 11.0 |
-| year_built | float64 | 1.50621e+06 | 60.25 | 116 | 1976.0, 1964.0, 2006.0, 1975.0, 1966.0, 2007.0, 1968.0, 1967.0, 1970.0, 2004.0 |
-| cloud_coverage | float64 | 1.11064e+06 | 44.43 | 10 | 0.0, 2.0, 4.0, 8.0, 6.0, 7.0, 9.0, 1.0, 3.0, 5.0 |
-| precip_depth_1_hr | float64 | 442426 | 17.7 | 167 | 0.0, -1.0, 3.0, 5.0, 8.0, 10.0, 13.0, 2.0, 15.0, 18.0 |
-| wind_direction | float64 | 179675 | 7.19 | 57 | 0.0, 300.0, 170.0, 290.0, 180.0, 310.0, 320.0, 160.0, 280.0, 270.0 |
-| sea_level_pressure | float64 | 129033 | 5.16 | 748 | 1015.5, 1015.9, 1015.2, 1015.6, 1016.4, 1016.2, 1016.9, 1016.3, 1016.5, 1016.0 |
-| wind_speed | float64 | 18579 | 0.74 | 73 | 0.0, 2.1, 2.6, 1.5, 3.1, 3.6, 4.1, 4.6, 5.1, 5.7 |
-| dew_temperature | float64 | 14843 | 0.59 | 553 | 18.9, 10.0, 18.3, 17.8, 13.9, 17.2, 13.3, 15.0, 12.8, 16.7 |
-| air_temperature | float64 | 12745 | 0.51 | 646 | 23.3, 24.4, 22.8, 23.9, 25.0, 20.0, 21.7, 25.6, 22.2, 15.0 |
-| log1p_meter_reading | float64 | 0 | 0 | 704780 | 0.0, 2.4984, 3.0445, 6.7568, 2.4188, 2.1332, 2.0165, 3.2581, 7.4494, 1.6094 |
-| square_feet | int64 | 0 | 0 | 1397 | 150695, 387638, 200933, 42755, 64583, 171084, 171008, 72958, 65000, 71088 |
+| floor_count | float64 | 2.09767e+06 | 83.91 | 18 | 1.0, 2.0, 4.0, 6.0, 3.0, 5.0, 8.0, 7.0, 9.0, 11.0 |
+| year_built | float64 | 1.50598e+06 | 60.24 | 116 | 1976.0, 1964.0, 2006.0, 1975.0, 1966.0, 2007.0, 1968.0, 1967.0, 2004.0, 1960.0 |
+| cloud_coverage | float64 | 1.12034e+06 | 44.81 | 9 | 0.0, 2.0, 4.0, 8.0, 6.0, 7.0, 1.0, 3.0, 5.0 |
+| precip_depth_1_hr | float64 | 442383 | 17.7 | 167 | 0.0, -1.0, 3.0, 5.0, 8.0, 10.0, 13.0, 2.0, 15.0, 18.0 |
+| wind_direction | float64 | 179645 | 7.19 | 57 | 0.0, 300.0, 170.0, 290.0, 180.0, 310.0, 320.0, 160.0, 270.0, 280.0 |
+| sea_level_pressure | float64 | 129012 | 5.16 | 748 | 1015.5, 1015.9, 1015.2, 1015.6, 1016.0, 1016.5, 1016.4, 1016.3, 1016.2, 1016.9 |
+| wind_speed | float64 | 18534 | 0.74 | 73 | 0.0, 2.1, 2.6, 1.5, 3.1, 3.6, 4.1, 4.6, 5.1, 5.7 |
+| dew_temperature | float64 | 14856 | 0.59 | 553 | 18.9, 10.0, 18.3, 17.8, 17.2, 13.3, 13.9, 15.0, 12.8, 16.7 |
+| air_temperature | float64 | 12729 | 0.51 | 646 | 24.4, 23.3, 22.8, 23.9, 25.0, 20.0, 21.7, 25.6, 22.2, 21.1 |
+| log1p_meter_reading | float64 | 0 | 0 | 704619 | 0.0, 2.4984, 3.0445, 6.7568, 2.4188, 3.2581, 2.0165, 1.6094, 3.434, 2.1332 |
+| square_feet | int64 | 0 | 0 | 1397 | 150695, 387638, 200933, 42755, 64583, 72958, 171008, 171084, 65000, 71088 |
 
 </details>
 
@@ -339,7 +342,7 @@ Chilled-water zeros peak in winter and steam and hot-water zeros in summer: a pl
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 5.94 | 0.766 | -1.23 | 6.907 | 0.338 | log1p | 1.21713e+06 | 4.36139e+06 | exponential |
+| 0 | 0 | 5.95 | 0.766 | -1.229 | 6.905 | 0.339 | log1p | 1.21682e+06 | 4.35149e+06 | exponential |
 
 ### Numeric features
 
@@ -348,17 +351,17 @@ Chilled-water zeros peak in winter and steam and hot-water zeros in summer: a pl
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| square_feet | 250000 | 108550 | 117017 | 283 | 875000 |
-| year_built | 99432 | 1967.84 | 30.5726 | 1900 | 2017 |
-| floor_count | 40274 | 4.30076 | 4.02977 | 1 | 26 |
-| air_temperature | 248669 | 15.8905 | 11.0224 | -28.9 | 48.3 |
-| cloud_coverage | 139063 | 1.942 | 2.42289 | 0 | 9 |
-| dew_temperature | 248455 | 7.70635 | 10.2539 | -34.7 | 26.7 |
-| precip_depth_1_hr | 205545 | 0.783186 | 7.48959 | -1 | 455 |
-| sea_level_pressure | 237111 | 1015.81 | 7.40748 | 968.8 | 1046.7 |
-| wind_direction | 232014 | 174.445 | 113.924 | 0 | 360 |
-| wind_speed | 248083 | 3.39178 | 2.26857 | 0 | 24.2 |
-| log1p_meter_reading | 250000 | 4.60347 | 2.6281 | 0 | 16.0164 |
+| square_feet | 250000 | 108616 | 117214 | 283 | 875000 |
+| year_built | 99394 | 1967.86 | 30.5529 | 1900 | 2017 |
+| floor_count | 40239 | 4.31325 | 4.04335 | 1 | 26 |
+| air_temperature | 248665 | 15.8947 | 11.0201 | -28.9 | 48.3 |
+| cloud_coverage | 138068 | 1.89268 | 2.35853 | 0 | 8 |
+| dew_temperature | 248439 | 7.70847 | 10.2545 | -34.7 | 26.7 |
+| precip_depth_1_hr | 205507 | 0.776193 | 7.3515 | -1 | 455 |
+| sea_level_pressure | 237088 | 1015.81 | 7.40812 | 968.8 | 1046.7 |
+| wind_direction | 231980 | 174.435 | 113.904 | 0 | 360 |
+| wind_speed | 248076 | 3.3915 | 2.26756 | 0 | 24.2 |
+| log1p_meter_reading | 250000 | 4.60125 | 2.62766 | 0 | 16.0164 |
 
 </details>
 
@@ -369,25 +372,25 @@ Chilled-water zeros peak in winter and steam and hot-water zeros in summer: a pl
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| building_id | 1 | 1298 | 462 | 0.18 |
-| building_id | 2 | 1331 | 461 | 0.18 |
-| building_id | 3 | 1259 | 442 | 0.18 |
-| building_id | 4 | 1249 | 436 | 0.17 |
-| building_id | 5 | 1241 | 425 | 0.17 |
-| meter | 1 | electricity | 147324 | 58.93 |
-| meter | 2 | chilledwater | 52955 | 21.18 |
-| meter | 3 | steam | 34698 | 13.88 |
-| meter | 4 | hotwater | 15023 | 6.01 |
-| primary_use | 1 | Education | 100202 | 40.08 |
-| primary_use | 2 | Office | 54488 | 21.8 |
-| primary_use | 3 | Entertainment/public assembly | 27971 | 11.19 |
-| primary_use | 4 | Lodging/residential | 26919 | 10.77 |
-| primary_use | 5 | Public services | 20881 | 8.35 |
-| site_id | 1 | 13 | 33762 | 13.5 |
-| site_id | 2 | 9 | 33446 | 13.38 |
-| site_id | 3 | 2 | 31075 | 12.43 |
-| site_id | 4 | 14 | 30813 | 12.33 |
-| site_id | 5 | 3 | 29862 | 11.94 |
+| building_id | 1 | 1331 | 464 | 0.19 |
+| building_id | 2 | 1298 | 456 | 0.18 |
+| building_id | 3 | 1259 | 430 | 0.17 |
+| building_id | 4 | 1249 | 429 | 0.17 |
+| building_id | 5 | 1301 | 426 | 0.17 |
+| meter | 1 | electricity | 147312 | 58.92 |
+| meter | 2 | chilledwater | 52991 | 21.2 |
+| meter | 3 | steam | 34708 | 13.88 |
+| meter | 4 | hotwater | 14989 | 6 |
+| primary_use | 1 | Education | 100370 | 40.15 |
+| primary_use | 2 | Office | 54423 | 21.77 |
+| primary_use | 3 | Entertainment/public assembly | 27878 | 11.15 |
+| primary_use | 4 | Lodging/residential | 26882 | 10.75 |
+| primary_use | 5 | Public services | 20938 | 8.38 |
+| site_id | 1 | 13 | 33800 | 13.52 |
+| site_id | 2 | 9 | 33491 | 13.4 |
+| site_id | 3 | 2 | 31066 | 12.43 |
+| site_id | 4 | 14 | 30782 | 12.31 |
+| site_id | 5 | 3 | 29906 | 11.96 |
 | timestamp | 1 | 2017-11-15 06:00:00 | 34 | 0.01 |
 | timestamp | 2 | 2017-08-25 13:00:00 | 33 | 0.01 |
 | timestamp | 3 | 2017-05-24 17:00:00 | 33 | 0.01 |

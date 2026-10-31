@@ -9,6 +9,14 @@ import numpy as np
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "tumor-size": [2.0, 7.0, 12.0, 17.0, 22.0, 27.0, 32.0, 37.0, 42.0, 47.0, 52.0],
+    "inv-nodes": [1.0, 4.0, 7.0, 10.0, 13.0, 16.0, 25.0],
+    "deg-malig": [1, 2, 3],
+}
+
 
 class LjubljanaBreastCancer(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -62,6 +70,8 @@ class LjubljanaBreastCancer(AbstractCuratedDataset):
         - We encode missing values as np.nan instead of "?".
         - We turn the bands of age, tumour size and number of affected lymph nodes (e.g. "40-49") into numbers: each band becomes its midpoint (age 24.5 to 74.5, tumour size 2 to 52, nodes 1 to 25). The source gives only the bands, so the exact values cannot be recovered.
         - We keep duplicates as they seem naturally occurring.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); 3 of them were shipped as numbers.
     """
 
     # Task
@@ -121,6 +131,7 @@ class LjubljanaBreastCancer(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "menopause",
                 "node-caps",

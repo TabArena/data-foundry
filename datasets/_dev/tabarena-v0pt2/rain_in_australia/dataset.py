@@ -18,6 +18,7 @@ from data_foundry.v2 import (
     TemporalSplits,
     cast_dtypes,
     drop_columns,
+    set_missing,
 )
 
 # When BoM records each column of day D ("Notes to accompany Daily Weather Observations", IDCJDW0000).
@@ -144,6 +145,49 @@ def _neighbour_readings(observations: pd.DataFrame, rows: pd.DataFrame) -> pd.Da
         recorded = wide[reading].reindex(columns=locations).notna().any().to_numpy()
         columns.update({f"{reading}_at_{loc}": values[:, j] for j, loc in enumerate(locations) if recorded[j]})
     return pd.DataFrame(columns, index=rows.index)
+
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "WindDir3pm_prev_day": [
+        "N",
+        "NNE",
+        "NE",
+        "ENE",
+        "E",
+        "ESE",
+        "SE",
+        "SSE",
+        "S",
+        "SSW",
+        "SW",
+        "WSW",
+        "W",
+        "WNW",
+        "NW",
+        "NNW",
+    ],
+    "WindDir9am": ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"],
+    "WindGustDir_prev_day": [
+        "N",
+        "NNE",
+        "NE",
+        "ENE",
+        "E",
+        "ESE",
+        "SE",
+        "SSE",
+        "S",
+        "SSW",
+        "SW",
+        "WSW",
+        "W",
+        "WNW",
+        "NW",
+        "NNW",
+    ],
+}
 
 
 class RainInAustralia(AbstractCuratedDataset):
@@ -273,7 +317,8 @@ class RainInAustralia(AbstractCuratedDataset):
         - Anomaly: the file has no rows for any location in 2011-04, 2012-12 and 2013-02, and from 2016-01-27 to
           2017-02-28.
         - Anomaly: Evaporation is a multi-day total after days without a reading, and Cloud9am and Cloud3pm hold 9 (sky
-          obscured) in 3 rows. We keep the values as recorded.
+          obscured) in 3 rows: the cloud amount cannot be estimated, so they are missing (CLEAN-10; the curator's marks
+          of 2026-10-31, as a calm wind has no direction).
         - Anomaly: missing Sunshine and Evaporation grow from 34-46% of the rows in 2009-2013 to 66-79% in 2017-2025.
         - Anomaly: a blank Cloud9am is mostly a clear or near-clear sky at the time of the observation, mixed with
           true gaps. Among the locations that record cloud, rain follows 11.7% of blank mornings against 24.7% of
@@ -289,6 +334,9 @@ class RainInAustralia(AbstractCuratedDataset):
           be a total over several days (RainToday 40.6% against 21.8%). We keep them, as known at 9 am.
         - Note: BoM's terms allow personal and in-house use; the rattle documentation records the Bureau's permission to
           use the data with BoM acknowledged as the source.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); 3 are calendar or compass cycles, in their usual order
+          (the wrap is not shown); codes that mean unknown are missing (CLEAN-10).
     """
 
     # Task
@@ -344,10 +392,23 @@ class RainInAustralia(AbstractCuratedDataset):
         # No label, or no 9 am reading on D (the next reading may then cover several days).
         df = df[df["RainTomorrow"].notna() & df["Rainfall"].notna()]
         # The other locations' 9 am readings of the same day whose 9 am comes no later than the row's own.
+        # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
+        # CLEAN-14): don't know, refused, not asked, other
+        df = set_missing(
+            df,
+            {
+                "WindDir3pm_prev_day": ["Calm"],
+                "WindDir9am": ["Calm"],
+                # 9: sky obscured, the cloud amount cannot be estimated (BoM; the curator's marks of 2026-10-31)
+                "Cloud9am": [9],
+                "Cloud3pm_prev_day": [9],
+            },
+        )
         return pd.concat([df, _neighbour_readings(observations, df)], axis=1)
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=["Location", "WindDir9am", "RainToday", "WindGustDir_prev_day", "WindDir3pm_prev_day"],
             datetime={"Date": "%Y-%m-%d"},
         )

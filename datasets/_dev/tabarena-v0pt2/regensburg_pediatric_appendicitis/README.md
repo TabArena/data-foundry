@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: regensburg_pediatric_appendicitis
 container_format: 2
-checksum: v2:6a12cf7448098c5f04184330974ca63650554a2b1facd977df218ecdc4e58dd4
+checksum: v2:cac0c304d07c9d09c59c3ac11f77317d2a005b134ba5ac2e448044635ea88fc2
 build:
   uuid: 01a111fc-ee89-74ad-b25b-309464691fe6
   checksum: v2:33d1e7ed244bae6b272fba7b043eb64e09987465a1a721142d8d57b597ca37d3
@@ -68,7 +68,7 @@ decisions: []
 
 Binary classification of `Severity`, scored with `roc_auc` on IID splits. 763 rows and 51 features. Source: Other (2023).
 
-Built as `01a111fc-ee89-74ad-b25b-309464691fe6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6a12cf7448098c5f04184330974ca63650554a2b1facd977df218ecdc4e58dd4`, so the build is stale. See [Build](#build).
+Built as `01a111fc-ee89-74ad-b25b-309464691fe6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:cac0c304d07c9d09c59c3ac11f77317d2a005b134ba5ac2e448044635ea88fc2`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -147,9 +147,10 @@ Only curators run `build`, when the dataset ships.
 | reason | Marcinkevics et al. 2024 report AUROC and AUPR side by side per target; neither is named as the criterion. roc_auc is the binary fallback. |
 
 <details>
-<summary>Feature types: 33 categorical, 3 string, 0 datetime</summary>
+<summary>Feature types: 24 categorical, 9 ordinal, 3 string, 0 datetime</summary>
 
-- categorical (33): `Sex`, `Peritonitis`, `Migratory_Pain`, `Lower_Right_Abd_Pain`, `Contralateral_Rebound_Tenderness`, `Ipsilateral_Rebound_Tenderness`, `Coughing_Pain`, `Psoas_Sign`, `Nausea`, `Loss_of_Appetite`, `Dysuria`, `Stool`, `Ketones_in_Urine`, `RBC_in_Urine`, `WBC_in_Urine`, `Neutrophilia`, `Appendix_on_US`, `Free_Fluids`, `Appendix_Wall_Layers`, `Target_Sign`, `Perfusion`, `Surrounding_Tissue_Reaction`, `Pathological_Lymph_Nodes`, `Bowel_Wall_Thickening`, `Ileus`, `Coprostasis`, `Meteorism`, `Enteritis`, `Appendicolith`, `Perforation`, `Appendicular_Abscess`, `Conglomerate_of_Bowel_Loops`, `Severity`
+- categorical (24): `Sex`, `Migratory_Pain`, `Lower_Right_Abd_Pain`, `Contralateral_Rebound_Tenderness`, `Ipsilateral_Rebound_Tenderness`, `Coughing_Pain`, `Psoas_Sign`, `Nausea`, `Loss_of_Appetite`, `Dysuria`, `Stool`, `Neutrophilia`, `Appendix_on_US`, `Free_Fluids`, `Target_Sign`, `Surrounding_Tissue_Reaction`, `Pathological_Lymph_Nodes`, `Bowel_Wall_Thickening`, `Ileus`, `Coprostasis`, `Meteorism`, `Enteritis`, `Conglomerate_of_Bowel_Loops`, `Severity`
+- ordinal (9): `Ketones_in_Urine (no < + < ++ < +++)`, `RBC_in_Urine (no < + < ++ < +++)`, `WBC_in_Urine (no < + < ++ < +++)`, `Peritonitis (no < local < generalized)`, `Appendicolith (no < suspected < yes)`, `Perforation (no < not excluded < suspected < yes)`, `Appendicular_Abscess (no < suspected < yes)`, `Appendix_Wall_Layers (intact < partially raised < raised)`, `Perfusion (no < hypoperfused < present < hyperperfused)`
 - string (3): `Lymph_Nodes_Location`, `Abscess_Location`, `Gynecological_Findings`
 - datetime (0): none
 
@@ -194,6 +195,18 @@ We start with the tabular meta-data used in the paper. We create only one task o
  - Warning: We tried to clean the data as good as possible but we suspect it might still contain some features leaking the severity, but we lack the medical expertise to identify them. Thus, I would not be surprised if we had to remove this dataset later again.
 - The data contains string data, but only for a very small number of patients and the text is often seemingly very useless. The features add most likely no value, but we keep them in for the pipeline/model to ignore if needed.
 - We drop the few patients that did not have an ultrasound to avoid them being leaking due to missing features.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 9 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`).
+- `Appendix_Wall_Layers` (2026-10-31, CLEAN-14): the codebook's "regular / irregular" (Zenodo Data Summary); the
+  labels translate the German record of the 2021 release (intact = intakt, raised = aufgehoben, the layering
+  lost; partially raised = partly lost), so intact < partially raised < raised. `upset` (1 child) is irregular
+  in the authors' code but of unknown degree: missing.
+- `Perfusion` (2026-10-31, CLEAN-14): the codebook's scale is the amount of blood flow (unremarkable /
+  hypoperfused / hyperperfused), but this file has no `unremarkable`: the 16 children linked to the 2021
+  release with `unremarkable` are blank here, so a blank also means unremarkable. `no` (no flow, 3 children)
+  and `present` (flow without a grade, 1) are not in the codebook; ordered by flow as no < hypoperfused <
+  present < hyperperfused, `present`'s place is our reading (the authors' code groups `no` with hypoperfused
+  and `present` with hyperperfused).
 
 ## Splits
 
@@ -265,7 +278,7 @@ Default splits.
 | Target_Sign | category | 626 | 82.04 | 2 | yes, no |
 | Meteorism | category | 623 | 81.65 | 2 | yes, no |
 | Pathological_Lymph_Nodes | category | 560 | 73.39 | 2 | yes, no |
-| Appendix_Wall_Layers | category | 546 | 71.56 | 4 | intact, raised, partially raised, upset |
+| Appendix_Wall_Layers | category | 547 | 71.69 | 3 | intact, raised, partially raised |
 | Surrounding_Tissue_Reaction | category | 512 | 67.1 | 2 | yes, no |
 | RBC_in_Urine | category | 191 | 25.03 | 4 | no, +, +++, ++ |
 | Ketones_in_Urine | category | 185 | 24.25 | 4 | no, +++, +, ++ |
@@ -286,25 +299,25 @@ Default splits.
 | Appendix_on_US | category | 1 | 0.13 | 2 | yes, no |
 | Nausea | category | 1 | 0.13 | 2 | yes, no |
 | Severity | category | 0 | 0 | 2 | uncomplicated, complicated |
-| Segmented_Neutrophils | float64 | 710 | 93.05 | 39 | 63.0, 82.0, 46.0, 59.0, 72.0, 62.0, 74.0, 39.0, 61.0, 68.0 |
+| Segmented_Neutrophils | float64 | 710 | 93.05 | 39 | 63.0, 72.0, 82.0, 59.0, 73.0, 61.0, 83.0, 62.0, 46.0, 54.0 |
 | Appendix_Diameter | float64 | 267 | 34.99 | 78 | 8.0, 9.0, 7.0, 6.0, 10.0, 5.0, 11.0, 12.0, 4.0, 7.5 |
-| Neutrophil_Percentage | float64 | 96 | 12.58 | 351 | 79.0, 84.0, 84.5, 68.4, 80.0, 88.0, 83.0, 85.5, 75.5, 87.1 |
+| Neutrophil_Percentage | float64 | 96 | 12.58 | 351 | 79.0, 80.0, 84.5, 68.4, 84.0, 88.0, 75.5, 83.8, 81.0, 81.8 |
 | Alvarado_Score | float64 | 43 | 5.64 | 11 | 5.0, 8.0, 7.0, 6.0, 4.0, 9.0, 3.0, 2.0, 10.0, 0.0 |
 | Paedriatic_Appendicitis_Score | float64 | 43 | 5.64 | 11 | 6.0, 4.0, 5.0, 7.0, 3.0, 8.0, 2.0, 9.0, 10.0, 1.0 |
-| BMI | float64 | 25 | 3.28 | 624 | 16.0, 16.6, 19.6, 16.7, 17.4, 16.2, 14.9, 20.8, 15.9, 18.6 |
-| Height | float64 | 24 | 3.15 | 187 | 140.0, 158.0, 160.0, 165.0, 164.0, 143.0, 152.0, 163.0, 146.0, 154.0 |
+| BMI | float64 | 25 | 3.28 | 624 | 16.0, 19.6, 16.6, 15.3, 18.6, 17.3, 17.6, 15.9, 16.7, 17.4 |
+| Height | float64 | 24 | 3.15 | 187 | 140.0, 158.0, 165.0, 160.0, 164.0, 152.0, 143.0, 146.0, 163.0, 166.0 |
 | RDW | float64 | 23 | 3.01 | 53 | 12.6, 12.7, 12.5, 12.9, 12.8, 12.4, 12.2, 12.1, 12.3, 13.1 |
-| RBC_Count | float64 | 15 | 1.97 | 171 | 4.93, 4.74, 4.73, 4.54, 4.61, 4.56, 4.59, 4.98, 4.75, 4.92 |
-| Hemoglobin | float64 | 15 | 1.97 | 65 | 13.5, 12.9, 13.2, 13.1, 12.8, 13.9, 13.6, 14.0, 13.8, 13.3 |
-| Thrombocyte_Count | float64 | 15 | 1.97 | 259 | 221.0, 267.0, 234.0, 245.0, 233.0, 275.0, 250.0, 305.0, 277.0, 223.0 |
-| CRP | float64 | 8 | 1.05 | 148 | 0.0, 1.0, 3.0, 2.0, 4.0, 6.0, 5.0, 8.0, 15.0, 7.0 |
-| WBC_Count | float64 | 4 | 0.52 | 209 | 8.1, 8.7, 6.9, 7.0, 8.6, 11.0, 15.9, 8.0, 16.1, 10.9 |
-| Weight | float64 | 2 | 0.26 | 268 | 50.0, 33.0, 45.0, 40.0, 56.0, 39.0, 52.0, 53.0, 37.0, 36.0 |
-| Body_Temperature | float64 | 2 | 0.26 | 46 | 37.0, 36.8, 37.2, 37.8, 37.4, 37.5, 38.0, 37.3, 36.9, 38.2 |
-| Age | float64 | 0 | 0 | 699 | 11.05, 6.64, 12.7, 13.83, 14.1985, 9.25, 11.37, 13.473, 8.7584, 13.89 |
-| Abscess_Location | string | 750 | 98.3 | 7 | Douglas, rechter Unterbauch, re Mittelbauch, an den M. psoas rechts, rechter Mi… |
-| Gynecological_Findings | string | 737 | 96.59 | 14 | keine, Ovarialzyste, Ovarialzysten, Zyste Uterus, kleine Ovarzyste rechts, V. a… |
-| Lymph_Nodes_Location | string | 642 | 84.14 | 26 | mesenterial, re UB, rechter Unterbauch, reUB, re MB, ileocoecal, re UB , rechte… |
+| RBC_Count | float64 | 15 | 1.97 | 171 | 4.93, 4.74, 4.73, 4.54, 4.56, 4.59, 4.61, 4.98, 4.75, 4.92 |
+| Hemoglobin | float64 | 15 | 1.97 | 65 | 13.5, 12.9, 13.2, 13.1, 14.0, 12.8, 13.6, 13.9, 13.8, 13.3 |
+| Thrombocyte_Count | float64 | 15 | 1.97 | 259 | 221.0, 267.0, 275.0, 245.0, 305.0, 234.0, 250.0, 277.0, 223.0, 233.0 |
+| CRP | float64 | 8 | 1.05 | 148 | 0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 5.0, 8.0, 7.0, 15.0 |
+| WBC_Count | float64 | 4 | 0.52 | 209 | 8.1, 8.7, 6.9, 7.0, 8.6, 16.1, 10.9, 15.9, 11.0, 8.4 |
+| Weight | float64 | 2 | 0.26 | 268 | 50.0, 33.0, 45.0, 40.0, 56.0, 39.0, 52.0, 53.0, 25.0, 54.0 |
+| Body_Temperature | float64 | 2 | 0.26 | 46 | 37.0, 36.8, 37.2, 37.8, 37.4, 37.5, 37.3, 38.0, 36.9, 38.2 |
+| Age | float64 | 0 | 0 | 699 | 11.05, 9.25, 6.64, 12.7, 13.83, 14.1985, 15.8138, 16.783, 8.8624, 10.76 |
+| Abscess_Location | string | 750 | 98.3 | 7 | Douglas, rechter Unterbauch, an den M. psoas rechts, rechter Mittelbauch, perit… |
+| Gynecological_Findings | string | 737 | 96.59 | 14 | keine, Ovarialzyste, Ovarialzysten, Ovarialzyste re., unauffällig, V. a. Ovaria… |
+| Lymph_Nodes_Location | string | 642 | 84.14 | 26 | mesenterial, re UB, rechter Unterbauch, reUB, re MB, ileocoecal, ileocöcal, rec… |
 
 </details>
 
@@ -344,15 +357,15 @@ Default splits.
 ### Categorical features
 
 <details>
-<summary>Show the table (130 rows)</summary>
+<summary>Show the table (129 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | Abscess_Location | 1 | &lt;NA> | 750 | 98.3 |
 | Abscess_Location | 2 | Douglas | 6 | 0.79 |
 | Abscess_Location | 3 | rechter Unterbauch | 2 | 0.26 |
-| Abscess_Location | 4 | re Mittelbauch | 1 | 0.13 |
-| Abscess_Location | 5 | an den M. psoas rechts | 1 | 0.13 |
+| Abscess_Location | 4 | an den M. psoas rechts | 1 | 0.13 |
+| Abscess_Location | 5 | rechter Mittelbauch | 1 | 0.13 |
 | Appendicolith | 1 | &lt;NA> | 694 | 90.96 |
 | Appendicolith | 2 | no | 33 | 4.33 |
 | Appendicolith | 3 | yes | 33 | 4.33 |
@@ -361,11 +374,10 @@ Default splits.
 | Appendicular_Abscess | 2 | no | 65 | 8.52 |
 | Appendicular_Abscess | 3 | yes | 18 | 2.36 |
 | Appendicular_Abscess | 4 | suspected | 1 | 0.13 |
-| Appendix_Wall_Layers | 1 | &lt;NA> | 546 | 71.56 |
+| Appendix_Wall_Layers | 1 | &lt;NA> | 547 | 71.69 |
 | Appendix_Wall_Layers | 2 | intact | 132 | 17.3 |
 | Appendix_Wall_Layers | 3 | raised | 75 | 9.83 |
 | Appendix_Wall_Layers | 4 | partially raised | 9 | 1.18 |
-| Appendix_Wall_Layers | 5 | upset | 1 | 0.13 |
 | Appendix_on_US | 1 | yes | 500 | 65.53 |
 | Appendix_on_US | 2 | no | 262 | 34.34 |
 | Appendix_on_US | 3 | &lt;NA> | 1 | 0.13 |
@@ -397,7 +409,7 @@ Default splits.
 | Gynecological_Findings | 2 | keine | 9 | 1.18 |
 | Gynecological_Findings | 3 | Ovarialzyste | 4 | 0.52 |
 | Gynecological_Findings | 4 | Ovarialzysten | 2 | 0.26 |
-| Gynecological_Findings | 5 | Zyste Uterus | 1 | 0.13 |
+| Gynecological_Findings | 5 | Ovarialzyste re. | 1 | 0.13 |
 | Ileus | 1 | &lt;NA> | 703 | 92.14 |
 | Ileus | 2 | no | 37 | 4.85 |
 | Ileus | 3 | yes | 23 | 3.01 |
@@ -408,8 +420,9 @@ Default splits.
 | Ketones_in_Urine | 2 | &lt;NA> | 185 | 24.25 |
 | Ketones_in_Urine | 3 | +++ | 124 | 16.25 |
 | Ketones_in_Urine | 4 | + | 77 | 10.09 |
+| Ketones_in_Urine | 5 | ++ | 49 | 6.42 |
 
-(70 more rows not shown)
+(69 more rows not shown)
 
 </details>
 
@@ -424,4 +437,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6a12cf7448098c5f04184330974ca63650554a2b1facd977df218ecdc4e58dd4` |
+| stale | yes: the definition now gives checksum `v2:cac0c304d07c9d09c59c3ac11f77317d2a005b134ba5ac2e448044635ea88fc2` |

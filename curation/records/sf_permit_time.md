@@ -50,3 +50,5 @@ CC (2026-10-19, Lennart): `DescriptionIsStandardPhrase` counts the descriptions 
 **Assessment (AI, 2026-10-21):** metric now `Metric.from_context("rmsle", target_transform="log")` instead of the fallback rmse on the log target: a waiting time's error matters relative to the time; the target still ships as log, and RMSLE is computed after the inverse, on the original scale (MET-3). Needs a rebuild to reach the container.
 
 CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
+
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 2 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `Existing Construction Type Description`, `Proposed Construction Type Description` (the README lists their levels).

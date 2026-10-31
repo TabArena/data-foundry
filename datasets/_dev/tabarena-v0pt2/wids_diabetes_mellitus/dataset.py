@@ -7,6 +7,14 @@ from pathlib import Path
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "gcs_eyes_apache": [1.0, 2.0, 3.0, 4.0],
+    "gcs_motor_apache": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+    "gcs_verbal_apache": [1.0, 2.0, 3.0, 4.0, 5.0],
+}
+
 
 class WidsDiabetesMellitus(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -68,6 +76,8 @@ class WidsDiabetesMellitus(AbstractCuratedDataset):
         - Several Kaggle experts also re-computed the BMI. We also noticed that for 2770 rows, the BMI did not match the real BMI based on the weight and height. We drop all of these cases, as it is unclear to us what the cause of this error is. Given the small fraction, there is either a data entry error, or some values got corrected manually.
         - We found and dropped three duplicated columns that provided no new information.
         - We keep medical codes as string, as these could be more meaningfully decoded.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); 3 of them were shipped as numbers.
     """
 
     # Task
@@ -122,6 +132,7 @@ class WidsDiabetesMellitus(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "hospital_id",
                 "icu_id",

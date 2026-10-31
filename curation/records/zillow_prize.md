@@ -64,3 +64,5 @@ CC (2026-10-26, Lennart): issue 9: "make it categorical, but also please check w
 **Assessment (AI, 2026-10-26):** applied; `dataset check` clean (153,108 rows, 56 columns). The research (Meta Kaggle's 2,813 public forum messages, the 19 most-voted kernels) found no public top-3 write-up. No open issue is left, so the folder's REVIEW.md is removed.
 
 CC (2026-10-26, Lennart): verdict ship.
+
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `buildingqualitytypeid` (a partial order).

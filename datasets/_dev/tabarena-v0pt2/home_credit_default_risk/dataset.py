@@ -45,6 +45,22 @@ CATEGORICAL = [
 ]
 
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "NAME_EDUCATION_TYPE": [
+        "Lower secondary",
+        "Secondary / secondary special",
+        "Incomplete higher",
+        "Higher education",
+        "Academic degree",
+    ],
+    "REGION_RATING_CLIENT": [1, 2, 3],
+    "REGION_RATING_CLIENT_W_CITY": [1, 2, 3],
+    "WEEKDAY_APPR_PROCESS_START": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"],
+}
+
+
 class HomeCreditDefaultRisk(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="Will a loan applicant have trouble repaying the loan?",
@@ -113,6 +129,9 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
         - Potential leak, kept on purpose: the 43 building columns (`*_AVG`, `*_MODE`, `*_MEDI`, `TOTALAREA_MODE`) are "normalized information about building where the client lives" (HomeCredit_columns_description.csv) and each spans exactly 0 to 1, so Home Credit likely scaled them over all applications, ours included; the method is not documented and no raw values exist. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak; revisit if Home Credit documents it.
         - We replace values that became inf after aggregation with NaN. This occurred across several aggregated columns.
         - Tagged ForcedIIDFromTemporal: applications arrive over time, but the release has no application dates (its DAYS_ columns are "time only relative to the application", HomeCredit_columns_description.csv), so the split is random.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 4 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); 2 of them were shipped as numbers; 1 are calendar or
+          compass cycles, in their usual order (the wrap is not shown).
     """
 
     # Task
@@ -192,7 +211,7 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
             "FLAG_DOCUMENT_20",
             "FLAG_DOCUMENT_21",
         ]
-        return FeatureTypes(categorical=[*CATEGORICAL, *flags])
+        return FeatureTypes(ordinal=ORDINAL_LEVELS, categorical=[*CATEGORICAL, *flags])
 
 
 def _copies(df: pd.DataFrame) -> list[str]:

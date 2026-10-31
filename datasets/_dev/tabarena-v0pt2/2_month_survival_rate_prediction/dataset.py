@@ -197,6 +197,13 @@ def _alive_after_day_3(df: pd.DataFrame) -> pd.Series:
     return ~(df["death"].eq(1) & df["d.time"].le(3))
 
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "ca": ["no", "yes", "metastatic"],
+}
+
+
 class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="Will a seriously ill hospital patient die within two months?",
@@ -292,6 +299,8 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
         - Anomaly: heart rate 0 (30 patients), mean blood pressure 0 (16) and respiration rate 0 (30) remain among the patients alive after day 3. Most of them die within 2 months, so these look like arrests on day 3; we keep them. wblc 0 (9 patients, 8 with MOSF w/Malig) stays too: the smallest non-zero values are 0.05, 0.07 and 0.08, so 0 reads as a count below the lab's resolution in profound neutropenia.
         - alb above 6 g/dL (4 patients: 6.3, 8.6, 10.9 and 29.0) is set missing: serum albumin does not reach such values (29.0 reads as g/L).
         - Note: dzclass groups the eight dzgroup values into four classes; both are kept as in the source. No duplicate rows.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -334,6 +343,7 @@ class Dataset2MonthSurvivalRatePrediction(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=["sex", "dzgroup", "dzclass", "race", "diabetes", "dementia", "ca"],
         )
 

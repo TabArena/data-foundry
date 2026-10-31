@@ -27,6 +27,22 @@ ACTIVITY = [
 """The usage aggregates of the observation window; missing when the extract has no record, 0 is a record of none."""
 
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "TENURE": [
+        "D 3-6 month",
+        "E 6-9 month",
+        "F 9-12 month",
+        "G 12-15 month",
+        "H 15-18 month",
+        "I 18-21 month",
+        "J 21-24 month",
+        "K > 24 month",
+    ],  # open-ended
+}
+
+
 class ExpressoChurnPrediction1m(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="Will a mobile phone customer in Senegal stop using the service for the next 90 days?",
@@ -116,6 +132,8 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
         - Note: REGULARITY ranges from 1 to 62; the codebook calls it "nombre de fois que le client est actif pendant 90 jours", so reading it as the active days in the last 62 days of the window is our inference. FREQUENCE, "the number of times the client made revenue" (codebook), reaches 91. ARPU_SEGMENT is REVENUE / 3 rounded in every row; both are kept as released.
         - Note: the task probes flag one_feature (REGULARITY alone ROC AUC 0.890). We keep the task by rule 4 of task_probes.md: active days are the natural core of a churn task, and on the shipped folds an untuned LightGBM beats REGULARITY alone on 3 of 3 folds (0.9023 to 0.9031 against 0.8896 to 0.8902).
         - Note: Zindi's rules forbid redistributing the data, uploads to Kaggle or GitHub included; the Kaggle copies we name are such uploads.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -151,7 +169,7 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
         return drop_columns(df, ["user_id", "MRG", "REGION"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(categorical=["TENURE", "TOP_PACK"])
+        return FeatureTypes(ordinal=ORDINAL_LEVELS, categorical=["TENURE", "TOP_PACK"])
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         # REGION is dropped from `df`, so its evidence comes from the raw file

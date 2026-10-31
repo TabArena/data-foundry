@@ -58,6 +58,8 @@ class ClockProteinToxicity(AbstractCuratedDataset):
     """
     curation_comments = """
         - We remove duplicated columns (same values for all rows).
+        - `nAcid` and `nBase` (counts of acidic and basic groups) are -1 in the same 2 molecules: no count, so missing
+          (CLEAN-10, CLEAN-11; 2026-10-30).
     """
 
     # Task
@@ -169,4 +171,7 @@ class ClockProteinToxicity(AbstractCuratedDataset):
             "nFG12Ring",
         ]
         df = df.drop(columns=duplicate_columns)
+        # a count of acidic or basic groups cannot be negative: -1 is the descriptor software's failure code
+        for col in ["nAcid", "nBase"]:
+            df[col] = df[col].where(df[col].ge(0))
         return df

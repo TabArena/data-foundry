@@ -9,6 +9,11 @@ import numpy as np
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
+# The ordinal scale, lowest level first (curation notes; the README lists it).
+ORDINAL_LEVELS = {
+    "structure_quality": [1.0, 2.0, 3.0, 4.0, 5.0],
+}
+
 
 class MiamiHousing(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -71,6 +76,9 @@ class MiamiHousing(AbstractCuratedDataset):
         - The file first appeared on OpenML (43093, uploaded 2021-09-24, creator Steven C. Bourassa, citing Mayer et
           al. 2021). Kaggle deepcontractor/miami-housing-dataset copies its description and names openml.org as its
           source, and OpenML 44983 (2022) copies Kaggle.
+        - `structure_quality` ("quality of the structure", OpenML 43093, codes 1-5 without labels) is an ordered
+          category in the order of its codes (2026-10-31, CLEAN-14; the curator's marks: the order comes from the
+          context and logic, not from the target, so the high prices of the 16 homes rated 3 do not move it).
     """
 
     # Task
@@ -97,6 +105,7 @@ class MiamiHousing(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "avno60plus",
             ],

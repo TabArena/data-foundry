@@ -40,6 +40,10 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Kaggle dataset card states a goal (maximise the next campaign's profit) but no evaluation metric.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `Education` (a partial order).
+
+CC (2026-10-31, Lennart): marks on the review board of PR #37: Education left unordered with a note (2n Cycle cannot be placed).
+
 ## Reference
 
 https://www.kaggle.com/datasets/rodsaldanha/arketing-campaign

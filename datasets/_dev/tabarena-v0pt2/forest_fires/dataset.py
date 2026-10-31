@@ -8,6 +8,13 @@ import numpy as np
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "month": ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"],
+    "day": ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
+}
+
 
 class ForestFires(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -62,6 +69,9 @@ class ForestFires(AbstractCuratedDataset):
         - The original paper used a IID split. The tasks sounds like it requires a temporal split. However, the data does not contain the original time indices (or order of samples) and just month and weekday over four years (January 2000 to December 2003, Cortez and Morais 2007, Sec. 2). Furthermore, the authors made sure to only use time-invariant features as it seems they wanted to develop a time-invaraint model for deployment and analysis of the data. In other words, this task can be handled by IID splits. Furthermore, the task in the paper was about using algorithms also for feature selection (so scientific discovery).
         - We log1p scale the target as suggested by the authors, and score it as they did: they fit on log1p(area) and computed MAD and RMSE on the raw area after back-transforming the predictions (Cortez and Morais 2007, Sec. 3-4), so the metric is MAE after the inverse (`target_transform="log1p"`, MET-3).
         - The data contains naturally occurring duplicates.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 2 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); 2 are calendar or compass cycles, in their usual order
+          (the wrap is not shown).
     """
 
     # Task
@@ -86,6 +96,7 @@ class ForestFires(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "month",
                 "day",

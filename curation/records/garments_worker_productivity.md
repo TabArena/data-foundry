@@ -45,6 +45,10 @@ CC (2026-10-06, Lennart): Kept after the task-probe review: the `unstable` flag 
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — the intro paper (Al Imran et al. 2021) reports six metrics without naming one; the authors' CoDIT 2019 paper headlines MAE; no unique metric (MET-5).
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `quarter` (a partial order); `day` (a partial order).
+
+CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 2 calendar or compass cycles ordered.
+
 ## Reference
 
 Mining the productivity data of the garment industry

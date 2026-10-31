@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: churn_telco_south_asia
 container_format: 2
-checksum: v2:47ff4763ccb15842bcfd0cdda555e76b53b79b1feee48929c85472e5d3553e31
+checksum: v2:4784ec5356520140781364d7c9a0845169021193b0b1a80090d9c85770f29f66
 build: null
 build_stale: false
 data:
@@ -56,7 +56,7 @@ decisions:
 
 Binary classification of `churn_status`, scored with `roc_auc` on IID splits. 2,000 rows and 13 features. Source: Kaggle (2017).
 
-Not built yet. The current definition gives checksum `v2:47ff4763ccb15842bcfd0cdda555e76b53b79b1feee48929c85472e5d3553e31`.
+Not built yet. The current definition gives checksum `v2:4784ec5356520140781364d7c9a0845169021193b0b1a80090d9c85770f29f66`.
 
 ## In brief
 
@@ -192,6 +192,9 @@ We start with South Asian Wireless Telecom Operator (SATO 2015).csv (2,000 rows,
 - Note: the September favourite network moves towards ufone, among active subscribers more (decision table). The share rises with calls in both classes (lowest to highest fifth: 0.40 to 0.93 active, 0.18 to 0.80 churned), so it follows activity, not a recording that differs by class.
 - Note: churn_telco_south_asia_duplicate (DSN Telecoms Churn 2018) is this file with renamed networks.
 - Year: 2017, the first publication; the data were collected in 2015.
+- Left unordered (2026-10-31, CLEAN-14, the curator's marks): `aug_user_type` and `sep_user_type` are a 2G or 3G
+  subscription (data card); `Other` (374 subscribers, the same in both months, while 103 move between 2G and 3G)
+  is undocumented and uses data like the 2G users, so it is not 4G. Two levels on the scale and one off it.
 
 ## Splits
 

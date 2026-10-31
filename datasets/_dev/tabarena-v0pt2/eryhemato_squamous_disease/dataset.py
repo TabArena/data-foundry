@@ -8,6 +8,21 @@ import numpy as np
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "erythema": [0, 1, 2, 3],
+    "scaling": [0, 1, 2, 3],
+    "definite borders": [0, 1, 2, 3],
+    "itching": [0, 1, 2, 3],
+    "koebner phenomenon": [0, 1, 2, 3],
+    "polygonal papules": [0, 1, 2, 3],
+    "follicular papules": [0, 1, 2, 3],
+    "oral mucosal involvement": [0, 1, 2, 3],
+    "knee and elbow involvement": [0, 1, 2, 3],
+    "scalp involvement": [0, 1, 2, 3],
+}
+
 
 class EryhematoSquamousDisease(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -74,6 +89,8 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
         - We keep only the clinical features: the 10 clinical findings graded 0 to 3, family history and age. The source describes two steps: "Patients were first evaluated clinically with 12 features. Afterwards, skin samples were taken for the evaluation of 22 histopathological features." With the 22 histopathological features the task is close to solved (a logistic model reaches macro ROC AUC 0.999 and 97% accuracy on the shipped splits); the task here is the clinical differential before the biopsy (macro ROC AUC 0.98, 87% accuracy), where seborrheic dermatitis, pityriasis rosea and chronic dermatitis are the hard cases.
         - We encode all features but age as categorical, since they are ordinal features in nature.
         - We ensure missing values in age are encoded as NaN.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 10 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -148,4 +165,6 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         # age is numeric, and has some missing values
-        return FeatureTypes(categorical=[c for c in df.columns if c not in ("age", self.target)])
+        return FeatureTypes(
+            ordinal=ORDINAL_LEVELS, categorical=[c for c in df.columns if c not in ("age", self.target)]
+        )

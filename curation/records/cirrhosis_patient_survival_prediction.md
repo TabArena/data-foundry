@@ -54,6 +54,8 @@ CC (2026-10-14, Lennart): The 5-year task has a good target: marker `No Good Tar
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — The source is a survival study (Cox model); our binary 5-year label is a derived task with no defined metric. The 5-year c-statistic used for GLOBE / Mayo risk scores equals ROC AUC on a binary label, so roc_auc also follows from context.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 2 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `Edema`, `Stage` (the README lists their levels).
+
 ## Reference
 
 Fleming, T.R. and Harrington, D.P. (1991) Counting Processes and Survival Analysis. Wiley Series in Probability and Mathematical Statistics: Applied Probability and Statistics, John Wiley and Sons Inc., New York.

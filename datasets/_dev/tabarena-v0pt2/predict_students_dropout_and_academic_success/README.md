@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: predict_students_dropout_and_academic_success
 container_format: 2
-checksum: v2:d126bf00778bd6070c8d010c1b2d8b52e1046e278d53039924461867e61edc8c
+checksum: v2:0cdc3b5dfeefb16106da34ef315232e15500d69b35e8537dae2be096674eb114
 build:
   uuid: 01a111fc-b7bd-7c0b-a919-1a848957caf4
   checksum: v2:29ca775f9fd8e27edc7509838682f54ddfd2065cad22627f86c60139287afe39
@@ -22,9 +22,9 @@ data:
   n_rows: 4424
   n_features: 36
   dtypes:
-    category: 18
+    category: 19
     float64: 7
-    int64: 12
+    int64: 11
   n_test_dataset_rows: null
 task:
   target: AcademicOutcome
@@ -68,7 +68,7 @@ decisions: []
 
 Multiclass classification of `AcademicOutcome`, scored with `log_loss` on IID splits. 4,424 rows and 36 features. Source: UCI (2021).
 
-Built as `01a111fc-b7bd-7c0b-a919-1a848957caf4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d126bf00778bd6070c8d010c1b2d8b52e1046e278d53039924461867e61edc8c`, so the build is stale. See [Build](#build).
+Built as `01a111fc-b7bd-7c0b-a919-1a848957caf4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:0cdc3b5dfeefb16106da34ef315232e15500d69b35e8537dae2be096674eb114`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -143,9 +143,10 @@ Only curators run `build`, when the dataset ships.
 | reason | UCI page and the data paper define no task metric; the first-publication case study compares classifiers on several scores (likely F1 given the class imbalance) without a declared task metric. Not verified in full text. |
 
 <details>
-<summary>Feature types: 18 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 18 categorical, 1 ordinal, 0 string, 0 datetime</summary>
 
 - categorical (18): `Marital_status`, `Application_mode`, `Course`, `Daytimeevening_attendance`, `Previous_qualification`, `Nationality`, `Mothers_qualification`, `Fathers_qualification`, `Mothers_occupation`, `Fathers_occupation`, `Displaced`, `Educational_special_needs`, `Debtor`, `Tuition_fees_up_to_date`, `Gender`, `Scholarship_holder`, `International`, `AcademicOutcome`
+- ordinal (1): `Application_order (0 < 1 < 2 < 3 < 4 < 5 < 6 < 9)`
 - string (0): none
 - datetime (0): none
 
@@ -184,6 +185,8 @@ The first 5 of 4,424 rows of the final frame (random rows: the frame is shuffled
 - We renamed the target variable and fixed some typos in the feature names.
 - We reversed the ordinal encoding of all categorical features.
 - We removed whitespaces and special characters from the feature names.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them were shipped as numbers.
 
 ## Splits
 
@@ -219,6 +222,7 @@ Default splits.
 |---|---|---|---|---|---|
 | Marital_status | category | 0 | 0 | 6 | single, married, divorced, facto union, legally separated, widower |
 | Application_mode | category | 0 | 0 | 18 | 1st phase - general contingent, 2nd phase - general contingent, Over 23 years o… |
+| Application_order | category | 0 | 0 | 8 | 1, 2, 3, 4, 5, 6, 0, 9 |
 | Course | category | 0 | 0 | 17 | Nursing, Management, Social Service, Veterinary Nursing, Journalism and Communi… |
 | Daytimeevening_attendance | category | 0 | 0 | 2 | daytime, evening |
 | Previous_qualification | category | 0 | 0 | 17 | Secondary education, Technological specialization course, Basic education 3rd c… |
@@ -242,7 +246,6 @@ Default splits.
 | Unemployment_rate | float64 | 0 | 0 | 10 | 7.6, 9.4, 10.8, 12.4, 12.7, 11.1, 15.5, 13.9, 8.9, 16.2 |
 | Inflation_rate | float64 | 0 | 0 | 9 | 1.4, 2.6, -0.8, 0.5, 3.7, 0.6, 2.8, -0.3, 0.3 |
 | GDP | float64 | 0 | 0 | 10 | 0.32, -3.12, 1.74, 1.79, -1.7, 2.02, -4.06, 0.79, 3.51, -0.92 |
-| Application_order | int64 | 0 | 0 | 8 | 1, 2, 3, 4, 5, 6, 9, 0 |
 | Age_at_enrollment | int64 | 0 | 0 | 46 | 18, 19, 20, 21, 22, 24, 23, 26, 25, 27 |
 | Curricular_units_1st_sem_credited | int64 | 0 | 0 | 21 | 0, 2, 1, 3, 6, 4, 7, 5, 8, 9 |
 | Curricular_units_1st_sem_enrolled | int64 | 0 | 0 | 23 | 6, 5, 7, 8, 0, 12, 10, 11, 9, 15 |
@@ -268,11 +271,10 @@ Default splits.
 ### Numeric features
 
 <details>
-<summary>Show the table (19 rows)</summary>
+<summary>Show the table (18 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| Application_order | 4424 | 1.72785 | 1.31379 | 0 | 9 |
 | Previous_qualification_grade | 4424 | 132.613 | 13.1883 | 95 | 190 |
 | Admission_grade | 4424 | 126.978 | 14.482 | 95 | 190 |
 | Age_at_enrollment | 4424 | 23.2651 | 7.58782 | 17 | 70 |
@@ -297,7 +299,7 @@ Default splits.
 ### Categorical features
 
 <details>
-<summary>Show the table (64 rows)</summary>
+<summary>Show the table (69 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -309,6 +311,11 @@ Default splits.
 | Application_mode | 3 | Over 23 years old | 785 | 17.74 |
 | Application_mode | 4 | Change of course | 312 | 7.05 |
 | Application_mode | 5 | Technological specialization diploma holders | 213 | 4.81 |
+| Application_order | 1 | 1 | 3026 | 68.4 |
+| Application_order | 2 | 2 | 547 | 12.36 |
+| Application_order | 3 | 3 | 309 | 6.98 |
+| Application_order | 4 | 4 | 249 | 5.63 |
+| Application_order | 5 | 5 | 154 | 3.48 |
 | Course | 1 | Nursing | 766 | 17.31 |
 | Course | 2 | Management | 380 | 8.59 |
 | Course | 3 | Social Service | 355 | 8.02 |
@@ -356,13 +363,8 @@ Default splits.
 | Nationality | 3 | Santomean | 14 | 0.32 |
 | Nationality | 4 | Cape Verdean | 13 | 0.29 |
 | Nationality | 5 | Spanish | 13 | 0.29 |
-| Previous_qualification | 1 | Secondary education | 3717 | 84.02 |
-| Previous_qualification | 2 | Technological specialization course | 219 | 4.95 |
-| Previous_qualification | 3 | Basic education 3rd cycle (9th/10th/11th year) or equiv. | 162 | 3.66 |
-| Previous_qualification | 4 | Higher education - degree | 126 | 2.85 |
-| Previous_qualification | 5 | Other - 11th year of schooling | 45 | 1.02 |
 
-(4 more rows not shown)
+(9 more rows not shown)
 
 </details>
 
@@ -377,4 +379,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:d126bf00778bd6070c8d010c1b2d8b52e1046e278d53039924461867e61edc8c` |
+| stale | yes: the definition now gives checksum `v2:0cdc3b5dfeefb16106da34ef315232e15500d69b35e8537dae2be096674eb114` |

@@ -61,6 +61,8 @@ CC (2026-10-22, Lennart): issue 1: (a), hard ASCVD within 10 years, as it matche
 
 CC (2026-10-26, Lennart): verdict ship.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `education` (the README lists their levels).
+
 ## Reference
 
 https://www.nhlbi.nih.gov/sites/default/files/media/docs/risk-assessment.pdf

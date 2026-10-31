@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: mic
 container_format: 2
-checksum: v2:13a2ff71424aa1c6f77de5ee197c85d3fbf5828ebad6db24711b3e9f67c7c4f1
+checksum: v2:aff4e17c97c20a40712b856fcd17ebad5d672d1339d22fca0519cef8a6ec26a3
 build:
   uuid: 01a111fc-88a2-7b7e-86e3-99576cde774e
   checksum: v2:a64ea123c6016422c656182848fc75bc4e27f2b94031a6b15a01fffb634ab238
@@ -67,7 +67,7 @@ decisions: []
 
 Multiclass classification of `LET_IS`, scored with `log_loss` on IID splits. 1,700 rows and 102 features. Source: Other (2020).
 
-Built as `01a111fc-88a2-7b7e-86e3-99576cde774e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:13a2ff71424aa1c6f77de5ee197c85d3fbf5828ebad6db24711b3e9f67c7c4f1`, so the build is stale. See [Build](#build).
+Built as `01a111fc-88a2-7b7e-86e3-99576cde774e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:aff4e17c97c20a40712b856fcd17ebad5d672d1339d22fca0519cef8a6ec26a3`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -144,9 +144,10 @@ Only curators run `build`, when the dataset ships.
 | reason | The deposit lists prediction problems and time points but no evaluation metric; the GigaScience paper studies trajectories, not prediction scores. |
 
 <details>
-<summary>Feature types: 91 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 80 categorical, 11 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (91): `SEX`, `INF_ANAM`, `STENOK_AN`, `FK_STENOK`, `IBS_POST`, `IBS_NASL`, `GB`, `SIM_GIPERT`, `DLIT_AG`, `ZSN_A`, `nr_11`, `nr_01`, `nr_02`, `nr_03`, `nr_04`, `nr_07`, `nr_08`, `np_01`, `np_04`, `np_05`, `np_07`, `np_08`, `np_09`, `np_10`, `endocr_01`, `endocr_02`, `endocr_03`, `zab_leg_01`, `zab_leg_02`, `zab_leg_03`, `zab_leg_04`, `zab_leg_06`, `O_L_POST`, `K_SH_POST`, `MP_TP_POST`, `SVT_POST`, `GT_POST`, `FIB_G_POST`, `ant_im`, `lat_im`, `inf_im`, `post_im`, `IM_PG_P`, `ritm_ecg_p_01`, `ritm_ecg_p_02`, `ritm_ecg_p_04`, `ritm_ecg_p_06`, `ritm_ecg_p_07`, `ritm_ecg_p_08`, `n_r_ecg_p_01`, `n_r_ecg_p_02`, `n_r_ecg_p_03`, `n_r_ecg_p_04`, `n_r_ecg_p_05`, `n_r_ecg_p_06`, `n_r_ecg_p_08`, `n_r_ecg_p_09`, `n_r_ecg_p_10`, `n_p_ecg_p_01`, `n_p_ecg_p_03`, `n_p_ecg_p_04`, `n_p_ecg_p_05`, `n_p_ecg_p_06`, `n_p_ecg_p_07`, `n_p_ecg_p_08`, `n_p_ecg_p_09`, `n_p_ecg_p_10`, `n_p_ecg_p_11`, `n_p_ecg_p_12`, `fibr_ter_01`, `fibr_ter_02`, `fibr_ter_03`, `fibr_ter_05`, `fibr_ter_06`, `fibr_ter_07`, `fibr_ter_08`, `GIPO_K`, `GIPER_NA`, `TIME_B_S`, `NA_KB`, `NOT_NA_KB`, `LID_KB`, `NITR_S`, `LID_S_n`, `B_BLOK_S_n`, `ANT_CA_S_n`, `GEPAR_S_n`, `ASP_S_n`, `TIKL_S_n`, `TRENT_S_n`, `LET_IS`
+- categorical (80): `SEX`, `IBS_NASL`, `SIM_GIPERT`, `ZSN_A`, `nr_11`, `nr_01`, `nr_02`, `nr_03`, `nr_04`, `nr_07`, `nr_08`, `np_01`, `np_04`, `np_05`, `np_07`, `np_08`, `np_09`, `np_10`, `endocr_01`, `endocr_02`, `endocr_03`, `zab_leg_01`, `zab_leg_02`, `zab_leg_03`, `zab_leg_04`, `zab_leg_06`, `O_L_POST`, `K_SH_POST`, `MP_TP_POST`, `SVT_POST`, `GT_POST`, `FIB_G_POST`, `IM_PG_P`, `ritm_ecg_p_01`, `ritm_ecg_p_02`, `ritm_ecg_p_04`, `ritm_ecg_p_06`, `ritm_ecg_p_07`, `ritm_ecg_p_08`, `n_r_ecg_p_01`, `n_r_ecg_p_02`, `n_r_ecg_p_03`, `n_r_ecg_p_04`, `n_r_ecg_p_05`, `n_r_ecg_p_06`, `n_r_ecg_p_08`, `n_r_ecg_p_09`, `n_r_ecg_p_10`, `n_p_ecg_p_01`, `n_p_ecg_p_03`, `n_p_ecg_p_04`, `n_p_ecg_p_05`, `n_p_ecg_p_06`, `n_p_ecg_p_07`, `n_p_ecg_p_08`, `n_p_ecg_p_09`, `n_p_ecg_p_10`, `n_p_ecg_p_11`, `n_p_ecg_p_12`, `fibr_ter_01`, `fibr_ter_02`, `fibr_ter_03`, `fibr_ter_05`, `fibr_ter_06`, `fibr_ter_07`, `fibr_ter_08`, `GIPO_K`, `GIPER_NA`, `NA_KB`, `NOT_NA_KB`, `LID_KB`, `NITR_S`, `LID_S_n`, `B_BLOK_S_n`, `ANT_CA_S_n`, `GEPAR_S_n`, `ASP_S_n`, `TIKL_S_n`, `TRENT_S_n`, `LET_IS`
+- ordinal (11): `INF_ANAM (0.0 < 1.0 < 2.0 < 3.0)`, `STENOK_AN (0.0 < 1.0 < 2.0 < 3.0 < 4.0 < 5.0 < 6.0)`, `FK_STENOK (0.0 < 1.0 < 2.0 < 3.0 < 4.0)`, `IBS_POST (0.0 < 1.0 < 2.0)`, `GB (0.0 < 1.0 < 2.0 < 3.0)`, `DLIT_AG (0.0 < 1.0 < 2.0 < 3.0 < 4.0 < 5.0 < 6.0 < 7.0)`, `ant_im (0.0 < 1.0 < 2.0 < 3.0 < 4.0)`, `lat_im (0.0 < 1.0 < 2.0 < 3.0 < 4.0)`, `inf_im (0.0 < 1.0 < 2.0 < 3.0 < 4.0)`, `post_im (0.0 < 1.0 < 2.0 < 3.0 < 4.0)`, `TIME_B_S (1.0 < 2.0 < 3.0 < 4.0 < 5.0 < 6.0 < 7.0 < 8.0 < 9.0)`
 - string (0): none
 - datetime (0): none
 
@@ -188,6 +189,8 @@ The first 5 of 1,700 rows of the final frame (random rows: the frame is shuffled
 - We treat "?" as missing values.
 - We dropped the "id" column.
 - We reversed the ordinal encoding of the target feature.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 11 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -430,4 +433,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:13a2ff71424aa1c6f77de5ee197c85d3fbf5828ebad6db24711b3e9f67c7c4f1` |
+| stale | yes: the definition now gives checksum `v2:aff4e17c97c20a40712b856fcd17ebad5d672d1339d22fca0519cef8a6ec26a3` |

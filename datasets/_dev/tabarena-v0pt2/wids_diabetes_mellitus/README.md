@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: wids_diabetes_mellitus
 container_format: 2
-checksum: v2:0a072e23f23e7dc7f6f7dd4da865cc241436257d9e591fd90a03830b7d0a9a84
+checksum: v2:3ea415a427d9020a9d4b590423bbacaa8b4974e534fd8ee31c546b5f04c6d0c0
 build:
   uuid: 01a111fc-032c-7d1f-a669-78dc5d1cd86b
   checksum: v2:b724e5a0243a18699a7ba8390138b37b2eb67967a3b0b97d6c8499f5a4a0484f
@@ -22,8 +22,8 @@ data:
   n_rows: 127358
   n_features: 181
   dtypes:
-    category: 29
-    float64: 151
+    category: 32
+    float64: 148
     string: 2
   n_test_dataset_rows: null
 task:
@@ -68,7 +68,7 @@ decisions: []
 
 Binary classification of `diabetes_mellitus`, scored with `roc_auc` on IID splits. 127,358 rows and 181 features. Source: Kaggle (2021).
 
-Built as `01a111fc-032c-7d1f-a669-78dc5d1cd86b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:0a072e23f23e7dc7f6f7dd4da865cc241436257d9e591fd90a03830b7d0a9a84`, so the build is stale. See [Build](#build).
+Built as `01a111fc-032c-7d1f-a669-78dc5d1cd86b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3ea415a427d9020a9d4b590423bbacaa8b4974e534fd8ee31c546b5f04c6d0c0`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -145,9 +145,10 @@ Only curators run `build`, when the dataset ships.
 | definition | AUC between the predicted probability of diabetes_mellitus and the observed label |
 
 <details>
-<summary>Feature types: 29 categorical, 2 string, 0 datetime</summary>
+<summary>Feature types: 29 categorical, 3 ordinal, 2 string, 0 datetime</summary>
 
 - categorical (29): `hospital_id`, `icu_id`, `elective_surgery`, `ethnicity`, `gender`, `hospital_admit_source`, `icu_admit_source`, `icu_stay_type`, `icu_type`, `apache_post_operative`, `arf_apache`, `intubated_apache`, `gcs_unable_apache`, `ventilated_apache`, `aids`, `cirrhosis`, `hepatic_failure`, `immunosuppression`, `leukemia`, `lymphoma`, `solid_tumor_with_metastasis`, `d1_sysbp_min_clipped`, `d1_sysbp_max_clipped`, `d1_heartrate_min_clipped`, `d1_heartrate_max_clipped`, `d1_diasbp_min_clipped`, `d1_diasbp_max_clipped`, `heart_rate_apache_clipped`, `diabetes_mellitus`
+- ordinal (3): `gcs_eyes_apache (1.0 < 2.0 < 3.0 < 4.0)`, `gcs_motor_apache (1.0 < 2.0 < 3.0 < 4.0 < 5.0 < 6.0)`, `gcs_verbal_apache (1.0 < 2.0 < 3.0 < 4.0 < 5.0)`
 - string (2): `apache_2_diagnosis`, `apache_3j_diagnosis`
 - datetime (0): none
 
@@ -174,11 +175,11 @@ The first 5 of 127,358 rows of the final frame (random rows: the frame is shuffl
 
 | diabetes_mellitus | hospital_id | age | bmi | elective_surgery | ethnicity | gender | height | hospital_admit_source | icu_admit_source | icu_id | icu_stay_type |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 196 | 20 | 24.3359 | 0 | Caucasian | F | 160 | Emergency Department | Accident & Emergency | 829 | admit |
-| 0 | 18 | 89 | 20.3356 | 0 | Caucasian | M | 185.4 | Emergency Department | Accident & Emergency | 804 | admit |
-| 1 | 119 | 60 | 23.4375 | 0 | Native American | F | 160 | Emergency Department | Accident & Emergency | 417 | admit |
-| 1 | 118 | 78 | 27.6786 | 0 | Caucasian | M | 177.8 | Operating Room | Accident & Emergency | 92 | admit |
-| 0 | 185 | 58 | 17.1914 | 0 | African American | F | 170.2 | nan | Accident & Emergency | 679 | admit |
+| 0 | 7 | 24 | 23.2018 | 0 | African American | F | 172.7 | Emergency Department | Accident & Emergency | 1104 | admit |
+| 0 | 103 | 77 | 23.9946 | 0 | nan | F | 158 | Direct Admit | Accident & Emergency | 798 | admit |
+| 1 | 49 | 76 | 27.9315 | 0 | Caucasian | M | 180.3 | Emergency Department | Accident & Emergency | 888 | admit |
+| 1 | 44 | 47 | 19.9857 | 0 | Other/Unknown | M | 163 | Emergency Department | Accident & Emergency | 388 | admit |
+| 0 | 194 | 62 | 30.6336 | 0 | Caucasian | F | 165 | Direct Admit | Accident & Emergency | 594 | admit |
 
 ## Curation notes
 
@@ -193,6 +194,8 @@ We start with the Kaggle dataset.
 - Several Kaggle experts also re-computed the BMI. We also noticed that for 2770 rows, the BMI did not match the real BMI based on the weight and height. We drop all of these cases, as it is unclear to us what the cause of this error is. Given the small fraction, there is either a data entry error, or some values got corrected manually.
 - We found and dropped three duplicated columns that provided no new information.
 - We keep medical codes as string, as these could be more meaningfully decoded.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); 3 of them were shipped as numbers.
 
 ## Splits
 
@@ -227,6 +230,9 @@ Default splits.
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | hospital_admit_source | category | 32415 | 25.45 | 15 | Emergency Department, Operating Room, Floor, Direct Admit, Recovery Room, Other… |
+| gcs_eyes_apache | category | 2126 | 1.67 | 4 | 4.0, 3.0, 1.0, 2.0 |
+| gcs_motor_apache | category | 2126 | 1.67 | 6 | 6.0, 5.0, 1.0, 4.0, 3.0, 2.0 |
+| gcs_verbal_apache | category | 2126 | 1.67 | 5 | 5.0, 1.0, 4.0, 3.0, 2.0 |
 | ethnicity | category | 1533 | 1.2 | 6 | Caucasian, African American, Other/Unknown, Hispanic, Asian, Native American |
 | gcs_unable_apache | category | 681 | 0.53 | 2 | 0.0, 1.0 |
 | icu_admit_source | category | 221 | 0.17 | 5 | Accident & Emergency, Operating Room / Recovery, Floor, Other Hospital, Other I… |
@@ -262,30 +268,27 @@ Default splits.
 | h1_lactate_max | float64 | 115935 | 91.03 | 593 | 1.0, 1.2, 1.1, 1.3, 0.9, 1.6, 1.4, 1.5, 1.8, 1.7 |
 | h1_lactate_min | float64 | 115935 | 91.03 | 583 | 1.0, 1.2, 1.1, 1.3, 0.9, 1.6, 1.4, 1.5, 1.8, 0.8 |
 | h1_pao2fio2ratio_max | float64 | 110959 | 87.12 | 3374 | 200.0, 42.0, 720.0, 160.0, 190.0, 180.0, 210.0, 260.0, 300.0, 250.0 |
-| h1_pao2fio2ratio_min | float64 | 110959 | 87.12 | 3351 | 200.0, 38.0, 654.8138, 190.0, 180.0, 160.0, 210.0, 150.0, 260.0, 120.0 |
+| h1_pao2fio2ratio_min | float64 | 110959 | 87.12 | 3351 | 200.0, 654.8138, 38.0, 190.0, 180.0, 160.0, 150.0, 210.0, 260.0, 120.0 |
 | h1_arterial_ph_max | float64 | 105538 | 82.87 | 577 | 7.36, 7.38, 7.34, 7.37, 7.35, 7.4, 7.39, 7.32, 7.33, 7.41 |
-| h1_arterial_ph_min | float64 | 105538 | 82.87 | 598 | 7.34, 7.32, 7.37, 7.36, 7.35, 7.38, 7.33, 7.4, 7.39, 7.31 |
+| h1_arterial_ph_min | float64 | 105538 | 82.87 | 598 | 7.34, 7.32, 7.37, 7.36, 7.35, 7.38, 7.33, 7.39, 7.4, 7.31 |
 | h1_arterial_pco2_max | float64 | 105354 | 82.72 | 819 | 41.0, 39.0, 38.0, 40.0, 44.0, 42.0, 43.0, 45.0, 46.0, 37.0 |
 | h1_arterial_pco2_min | float64 | 105354 | 82.72 | 800 | 39.0, 38.0, 40.0, 37.0, 41.0, 42.0, 43.0, 36.0, 44.0, 35.0 |
-| h1_arterial_po2_max | float64 | 105145 | 82.56 | 1823 | 81.0, 76.0, 71.0, 80.0, 74.0, 82.0, 79.0, 84.0, 67.0, 83.0 |
-| h1_arterial_po2_min | float64 | 105145 | 82.56 | 1820 | 81.0, 76.0, 80.0, 73.0, 82.0, 69.0, 71.0, 70.0, 67.0, 72.0 |
+| h1_arterial_po2_max | float64 | 105145 | 82.56 | 1823 | 81.0, 76.0, 71.0, 80.0, 74.0, 82.0, 79.0, 84.0, 67.0, 69.0 |
+| h1_arterial_po2_min | float64 | 105145 | 82.56 | 1820 | 81.0, 76.0, 80.0, 73.0, 82.0, 69.0, 71.0, 67.0, 70.0, 72.0 |
 | h1_hco3_max | float64 | 104037 | 81.69 | 222 | 23.0, 24.0, 22.0, 25.0, 21.0, 26.0, 20.0, 27.0, 19.0, 28.0 |
 | h1_hco3_min | float64 | 104037 | 81.69 | 210 | 23.0, 24.0, 22.0, 25.0, 21.0, 26.0, 20.0, 27.0, 19.0, 28.0 |
-| h1_wbc_max | float64 | 103602 | 81.35 | 2109 | 10.6, 10.1, 9.3, 9.6, 13.6, 10.7, 9.2, 9.8, 10.0, 12.9 |
-| h1_wbc_min | float64 | 103602 | 81.35 | 2105 | 10.6, 10.1, 9.6, 10.7, 9.8, 9.3, 12.9, 10.8, 10.0, 13.6 |
+| h1_wbc_max | float64 | 103602 | 81.35 | 2109 | 10.6, 10.1, 9.3, 9.6, 13.6, 10.7, 9.8, 9.2, 10.2, 12.9 |
+| h1_wbc_min | float64 | 103602 | 81.35 | 2105 | 10.6, 10.1, 9.6, 10.7, 9.8, 9.3, 13.6, 12.9, 10.8, 10.0 |
 | h1_calcium_max | float64 | 103567 | 81.32 | 59 | 8.3, 8.4, 8.1, 8.2, 8.6, 8.5, 8.0, 7.9, 8.7, 8.8 |
 | h1_calcium_min | float64 | 103567 | 81.32 | 62 | 8.3, 8.4, 8.1, 8.2, 8.6, 8.5, 8.0, 7.9, 8.7, 8.8 |
-| h1_platelets_max | float64 | 103337 | 81.14 | 554 | 173.0, 157.0, 178.0, 175.0, 144.0, 133.0, 183.0, 153.0, 152.0, 158.0 |
-| h1_platelets_min | float64 | 103337 | 81.14 | 554 | 173.0, 144.0, 157.0, 183.0, 178.0, 133.0, 175.0, 159.0, 153.0, 139.0 |
+| h1_platelets_max | float64 | 103337 | 81.14 | 554 | 173.0, 157.0, 178.0, 144.0, 175.0, 133.0, 183.0, 153.0, 182.0, 158.0 |
+| h1_platelets_min | float64 | 103337 | 81.14 | 554 | 173.0, 144.0, 157.0, 178.0, 133.0, 183.0, 175.0, 159.0, 153.0, 139.0 |
 | h1_bun_max | float64 | 102663 | 80.61 | 259 | 14.0, 13.0, 15.0, 12.0, 11.0, 16.0, 17.0, 10.0, 18.0, 9.0 |
 | h1_bun_min | float64 | 102663 | 80.61 | 259 | 14.0, 13.0, 15.0, 12.0, 11.0, 16.0, 17.0, 10.0, 18.0, 9.0 |
 | h1_creatinine_max | float64 | 102456 | 80.45 | 874 | 0.9, 0.8, 0.7, 1.0, 1.1, 0.6, 1.2, 1.3, 0.5, 1.4 |
 | h1_creatinine_min | float64 | 102456 | 80.45 | 871 | 0.8, 0.9, 0.7, 1.0, 1.1, 0.6, 1.2, 1.3, 0.5, 1.4 |
 | h1_diasbp_invasive_max | float64 | 102393 | 80.4 | 103 | 62.0, 60.0, 64.0, 68.0, 66.0, 70.0, 58.0, 63.0, 61.0, 74.0 |
 | h1_diasbp_invasive_min | float64 | 102393 | 80.4 | 86 | 50.0, 54.0, 52.0, 56.0, 48.0, 58.0, 46.0, 60.0, 53.0, 55.0 |
-| h1_sysbp_invasive_max | float64 | 102371 | 80.38 | 182 | 126.0, 124.0, 132.0, 120.0, 122.0, 128.0, 130.0, 134.0, 140.0, 146.0 |
-| h1_sysbp_invasive_min | float64 | 102371 | 80.38 | 168 | 110.0, 98.0, 108.0, 94.0, 102.0, 92.0, 104.0, 100.0, 114.0, 106.0 |
-| h1_mbp_invasive_max | float64 | 102328 | 80.35 | 255 | 88.0, 82.0, 94.0, 90.0, 80.0, 86.0, 84.0, 92.0, 83.0, 96.0 |
 
 (122 more rows not shown)
 
@@ -301,7 +304,7 @@ Default splits.
 ### Numeric features
 
 <details>
-<summary>Show the table (151 rows)</summary>
+<summary>Show the table (148 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -315,9 +318,6 @@ Default splits.
 | bun_apache | 102511 | 25.6757 | 20.6522 | 4 | 127 |
 | creatinine_apache | 103040 | 1.48085 | 1.54154 | 0.3 | 11.18 |
 | fio2_apache | 29717 | 0.595963 | 0.262634 | 0.21 | 1 |
-| gcs_eyes_apache | 125232 | 3.48922 | 0.939215 | 1 | 4 |
-| gcs_motor_apache | 125232 | 5.48625 | 1.27054 | 1 | 6 |
-| gcs_verbal_apache | 125232 | 4.03304 | 1.53708 | 1 | 5 |
 | glucose_apache | 112990 | 160.192 | 90.6085 | 39 | 598.7 |
 | heart_rate_apache | 127076 | 99.7562 | 30.7582 | 30 | 178 |
 | hematocrit_apache | 101227 | 32.9715 | 6.83231 | 16.2 | 51.4 |
@@ -365,15 +365,18 @@ Default splits.
 | h1_heartrate_max | 123403 | 92.3839 | 21.7741 | 46 | 164 |
 | h1_heartrate_min | 123403 | 83.7195 | 20.2076 | 36 | 144 |
 | h1_mbp_invasive_max | 25030 | 94.6658 | 30.4365 | 35.625 | 293.375 |
+| h1_mbp_invasive_min | 25030 | 75.9631 | 19.0813 | 8 | 140 |
+| h1_mbp_max | 121005 | 91.3092 | 20.3787 | 49 | 165 |
+| h1_mbp_min | 121005 | 78.8683 | 18.8258 | 32 | 138 |
 
-(91 more rows not shown)
+(88 more rows not shown)
 
 </details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (89 rows)</summary>
+<summary>Show the table (104 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -416,29 +419,29 @@ Default splits.
 | ethnicity | 3 | Other/Unknown | 6131 | 4.81 |
 | ethnicity | 4 | Hispanic | 4957 | 3.89 |
 | ethnicity | 5 | Asian | 2136 | 1.68 |
+| gcs_eyes_apache | 1 | 4.0 | 89695 | 70.43 |
+| gcs_eyes_apache | 2 | 3.0 | 18267 | 14.34 |
+| gcs_eyes_apache | 3 | 1.0 | 11159 | 8.76 |
+| gcs_eyes_apache | 4 | 2.0 | 6111 | 4.8 |
+| gcs_eyes_apache | 5 | &lt;NA> | 2126 | 1.67 |
+| gcs_motor_apache | 1 | 6.0 | 99763 | 78.33 |
+| gcs_motor_apache | 2 | 5.0 | 10526 | 8.26 |
+| gcs_motor_apache | 3 | 1.0 | 7383 | 5.8 |
+| gcs_motor_apache | 4 | 4.0 | 6276 | 4.93 |
+| gcs_motor_apache | 5 | &lt;NA> | 2126 | 1.67 |
 | gcs_unable_apache | 1 | 0.0 | 125232 | 98.33 |
 | gcs_unable_apache | 2 | 1.0 | 1445 | 1.13 |
 | gcs_unable_apache | 3 | &lt;NA> | 681 | 0.53 |
+| gcs_verbal_apache | 1 | 5.0 | 80587 | 63.28 |
+| gcs_verbal_apache | 2 | 1.0 | 22264 | 17.48 |
+| gcs_verbal_apache | 3 | 4.0 | 15418 | 12.11 |
+| gcs_verbal_apache | 4 | 3.0 | 4269 | 3.35 |
+| gcs_verbal_apache | 5 | 2.0 | 2694 | 2.12 |
 | gender | 1 | M | 69152 | 54.3 |
 | gender | 2 | F | 58166 | 45.67 |
 | gender | 3 | &lt;NA> | 40 | 0.03 |
-| heart_rate_apache_clipped | 1 | False | 126025 | 98.95 |
-| heart_rate_apache_clipped | 2 | True | 1333 | 1.05 |
-| hepatic_failure | 1 | 0 | 125613 | 98.63 |
-| hepatic_failure | 2 | 1 | 1745 | 1.37 |
-| hospital_admit_source | 1 | Emergency Department | 50082 | 39.32 |
-| hospital_admit_source | 2 | &lt;NA> | 32415 | 25.45 |
-| hospital_admit_source | 3 | Operating Room | 13585 | 10.67 |
-| hospital_admit_source | 4 | Floor | 11062 | 8.69 |
-| hospital_admit_source | 5 | Direct Admit | 8090 | 6.35 |
-| hospital_id | 1 | 118 | 4241 | 3.33 |
-| hospital_id | 2 | 19 | 3781 | 2.97 |
-| hospital_id | 3 | 188 | 3022 | 2.37 |
-| hospital_id | 4 | 86 | 2907 | 2.28 |
-| hospital_id | 5 | 7 | 2879 | 2.26 |
-| icu_admit_source | 1 | Accident & Emergency | 75076 | 58.95 |
 
-(29 more rows not shown)
+(44 more rows not shown)
 
 </details>
 
@@ -453,4 +456,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:0a072e23f23e7dc7f6f7dd4da865cc241436257d9e591fd90a03830b7d0a9a84` |
+| stale | yes: the definition now gives checksum `v2:3ea415a427d9020a9d4b590423bbacaa8b4974e534fd8ee31c546b5f04c6d0c0` |

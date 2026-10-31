@@ -84,6 +84,7 @@ class MyDataset(AbstractCuratedDataset):
             categorical=["colour"],                # the classification target is added automatically
             string=["description"],
             datetime={"date": "%Y-%m-%d"},         # or a list of names (format inferred)
+            ordinal={"condition": ["poor", "fair", "good"]},  # an ordinal scale, lowest level first (CLEAN-14)
         )
 
     def _decisions(self, raw, df) -> list[Decision]:           # optional: Decisions
@@ -123,7 +124,8 @@ Do not re-implement any of this.
 * Defaults: `stratify_on` is the target for classification; set it only to deviate. `metric` has no default: it is
   required, and `Metric.fallback(reason=...)` resolves to the problem type's `roc_auc`, `log_loss` or `rmse` at build.
 * After `_clean`: it casts the columns `_feature_types` names (a dict gives datetime formats; unused categories are
-  removed; a classification target becomes a category without being listed), then fixes the row order: the rows in
+  removed; a classification target becomes a category without being listed; an `ordinal` column is an ordered
+  category, also when `categorical` names it too), then fixes the row order: the rows in
   the order of their content (a hash of each row, so the order `_clean` returns does not matter), then a stable sort by
   the time column for a temporal task, otherwise a shuffle with seed 42 (`shuffle = False` keeps the order of `_clean`,
   with a reason in `curation_comments`), then `reset_index`. Never shuffle, sort or `reset_index` yourself, and never
@@ -288,7 +290,12 @@ The order the collection's definitions converge on. Emit the steps that plausibl
 # 5. TODO(verify): proxy missing values and impossible values to NaN, keeping the rows:
 #       df = df.replace({"?": np.nan, " ": np.nan})     # UCI style
 #       df[col] = df[col].replace(-1, np.nan)           # sentinel style (-1, -9, -999, 999999)
-# 6. Dtypes by meaning, named in `_feature_types` (not cast here); no `object` column survives. Cast mid-way with
+#       df = set_missing(df, {"q7": [8, 9]})           # survey codes: don't know, refused, not asked
+# 6. Dtypes by meaning, named in `_feature_types` (not cast here); no `object` column survives. An ordinal scale (a
+#    grade, a rating, bands, a count with an open end) is `ordinal={col: [levels, lowest first]}`, in the order of the
+#    codebook (not the order of the codes: it is often reversed); a value that is no level raises, so the codes outside
+#    the scale that mean unknown go to `set_missing` first, and a column with a level that is a state of its own (no
+#    basement, not prescribed) stays categorical (CLEAN-14). Cast mid-way with
 #    `cast_dtypes` only when a later step needs the dtype. A SMILES column becomes RDKit descriptors and is dropped:
 #       df = pd.concat([df, rdkit_descriptors(df["SMILES"])], axis=1)   # `rdkit_*` columns
 #    then check for rows that are now copies (stereoisomers).

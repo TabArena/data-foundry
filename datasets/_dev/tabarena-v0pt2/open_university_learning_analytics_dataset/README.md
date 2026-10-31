@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: open_university_learning_analytics_dataset
 container_format: 2
-checksum: v2:445644887a7ed058237bb5e89a059fe47e1f45e70577eccf4e6558557cc6ac94
+checksum: v2:672ce6a0c2b676c667aea45a0213eff9fb43ea27b10cac04af9804f60dabeb66
 build: null
 build_stale: false
 data:
@@ -72,7 +72,7 @@ decisions:
 
 Multiclass classification of `final_result`, scored with `log_loss` on grouped splits by `module_presentation`. 26,395 rows and 40 features. Source: Other (2015).
 
-Not built yet. The current definition gives checksum `v2:445644887a7ed058237bb5e89a059fe47e1f45e70577eccf4e6558557cc6ac94`.
+Not built yet. The current definition gives checksum `v2:672ce6a0c2b676c667aea45a0213eff9fb43ea27b10cac04af9804f60dabeb66`.
 
 ## In brief
 
@@ -165,9 +165,10 @@ Only curators run `build`, when the dataset ships.
 | reason | The source is a data descriptor (OU Analyse open dataset) with no prediction task or metric; our day-60 four-class task is our construction. |
 
 <details>
-<summary>Feature types: 10 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 7 categorical, 3 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (10): `module_presentation`, `code_module`, `presentation_start`, `gender`, `region`, `highest_education`, `imd_band`, `age_band`, `disability`, `final_result`
+- categorical (7): `module_presentation`, `code_module`, `presentation_start`, `gender`, `region`, `disability`, `final_result`
+- ordinal (3): `highest_education (No Formal quals < Lower Than A Level < A Level or Equivalent < HE Qualification < Post Graduate Qualification)`, `imd_band (0-10% < 10-20% < 20-30% < 30-40% < 40-50% < 50-60% < 60-70% < 70-80% < 80-90% < 90-100%)`, `age_band (0-35 < 35-55 < 55<=)`
 - string (0): none
 - datetime (0): none
 
@@ -220,6 +221,8 @@ We start with the seven tables of the Open University Learning Analytics Dataset
 - Anomaly: 93 Withdrawn registrations (0.35% of rows, all in 2014J presentations) have no date_unregistration and stay in the cohort. 84 of them have no click on days 46-59, against 22% of the withdrawals that have a date, and 19 never clicked, so most likely withdrew before day 60. We keep them: the date would be inferred from the label and the activity, and a filter on Withdrawn alone selects on the target. 45 registrations have no date_registration (7 in the cohort, kept missing).
 - Duplicates: one pair of rows shares all features but not the result (Fail and Withdrawn); we keep both as two real registrations.
 - Spread (TP-3): untuned model families score alike on the 9 splits (log-loss skill 0.173 random forest, 0.170 LightGBM, 0.162 logistic regression; the lead of 0.011 is within twice its paired standard error of 0.009). Kept pending tuned results (Lennart, 2026-10-22): re-check with the first tuned run.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 

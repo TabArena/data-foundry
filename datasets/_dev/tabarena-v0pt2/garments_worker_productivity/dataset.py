@@ -7,6 +7,13 @@ from pathlib import Path
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "quarter": ["Quarter1", "Quarter2", "Quarter3", "Quarter4", "Quarter5"],
+    "day": ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"],
+}
+
 
 class GarmentsWorkerProductivity(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -84,6 +91,9 @@ class GarmentsWorkerProductivity(AbstractCuratedDataset):
         - It can be expected that feature engineering exposing the non-iid properties of the dataset will be crucial for good predictive performance.
         - We cannot fully exclude the possibility of leaks, since not enough information about the date of collection for some features is given.
         - We define 30 splits with one day for testing each, resulting in small test sizes of 17-24 samples per split.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 2 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); 2 are calendar or compass cycles, in their usual order
+          (the wrap is not shown).
     """
 
     # Task
@@ -136,6 +146,7 @@ class GarmentsWorkerProductivity(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "quarter",
                 "department",

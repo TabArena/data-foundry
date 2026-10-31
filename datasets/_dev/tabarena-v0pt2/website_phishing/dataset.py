@@ -8,6 +8,18 @@ import arff
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "SFH": ["-1", "0", "1"],
+    "popUpWidnow": ["-1", "0", "1"],
+    "SSLfinal_State": ["-1", "0", "1"],
+    "Request_URL": ["-1", "0", "1"],
+    "URL_of_Anchor": ["-1", "0", "1"],
+    "web_traffic": ["-1", "0", "1"],
+    "URL_Length": ["-1", "0", "1"],
+}
+
 
 class WebsitePhishing(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -78,6 +90,13 @@ class WebsitePhishing(AbstractCuratedDataset):
           sites have SFH rated legitimate), and `having_IP_Address` takes only 0 and 1.
         - We renamed the target to `is_phishing` (Yes / No).
         - Anomaly: about half the rows are exact duplicates (47% of the 1,250 rows).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): the seven three-level signals are
+          ordered categories (`ORDINAL_LEVELS`), with the suspicious 0 in the middle, as in Mohammad et al.'s rules
+          (UCI 327 features document): legitimate, suspicious (the middle bin or state), phishy. They keep the codes'
+          order -1, 0, 1. Which end is phishy is a reading: from the features alone (no label), six of them run with
+          `having_IP_Address` = 1 (an IP address in the URL, 11% of sites) and the rare `popUpWidnow` = 1, so 1 is
+          their phishy end, while `web_traffic` runs against them, as the data page codes it. `age_of_domain` and
+          `having_IP_Address` have two levels.
     """
 
     accepted_check_warnings = {
@@ -110,6 +129,7 @@ class WebsitePhishing(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "SFH",
                 "popUpWidnow",

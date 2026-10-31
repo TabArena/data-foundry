@@ -40,6 +40,8 @@ Andrej: Fits criteria
 
 CC (2026-10-30, Lennart): `campaign` and `previous` are counts and stay numeric, as the UCI description gives them ("number of contacts performed during this campaign", "... before this campaign"); the BeyondArena notebook had typed them categorical (issue #34, raised by Adrian). CLEAN-14: a count stays numeric.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `education` (the README lists their levels); their codes that mean unknown (don't know, refused, not asked) are missing in `education` (CLEAN-10).
+
 ## Reference
 
 S. Moro, R. Laureano and P. Cortez. Using Data Mining for Bank Direct Marketing: An Application of the CRISP-DM Methodology. In P. Novais et al. (Eds.), Proceedings of the European Simulation and Modelling Conference - ESM'2011, pp. 117-121, Guimarães, Portugal, October, 2011. EUROSIS.

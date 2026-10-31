@@ -32,6 +32,10 @@ CC: "Good dataset with many features, can checkout leaderboard and code for some
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC of the WiDS Datathon 2021 evaluation page.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): ordinal scales shipped as numbers, left as numbers for the curator's review: `gcs_eyes_apache`, `gcs_motor_apache`, `gcs_verbal_apache`.
+
+CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 3 ordinal scales shipped as numbers are ordered categories (point 3).
+
 ## Reference
 
 Karen Matthys, Meredith Lee, NehaGoel, Sharada Kalanidhi, Valerie, and Vani M. WiDS Datathon 2021. https://kaggle.com/competitions/widsdatathon2021, 2021. Kaggle.

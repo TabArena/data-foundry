@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: lending_club
 container_format: 2
-checksum: v2:6a2bcd9b59c8cab654c4c7d630ad5a66a21a6d203a53df504605cb2bf175e396
+checksum: v2:2ac4d3e897ae146e5e4c40328e64cca39388d715405f0dc65e6ac99d0dae8acb
 build:
   uuid: 01a111fb-70c3-7e45-af56-3ed5e3a90f7f
   checksum: v2:d4904238a396f98457bb4678a6e8425feeac587b3f2232019110bfe66bdd0a40
@@ -70,7 +70,7 @@ decisions: []
 
 Binary classification of `Default`, scored with `roc_auc` on temporal splits by `issue_d`. 609,544 rows and 81 features. Source: Other (2018).
 
-Built as `01a111fb-70c3-7e45-af56-3ed5e3a90f7f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6a2bcd9b59c8cab654c4c7d630ad5a66a21a6d203a53df504605cb2bf175e396`, so the build is stale. See [Build](#build).
+Built as `01a111fb-70c3-7e45-af56-3ed5e3a90f7f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2ac4d3e897ae146e5e4c40328e64cca39388d715405f0dc65e6ac99d0dae8acb`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -158,9 +158,10 @@ Only curators run `build`, when the dataset ships.
 | reason | Sanz-Guerrero & Arroyo 2025 tune by balanced accuracy for its 'more stable behaviour' and test AUC second with DeLong tests; balanced accuracy fixes no decision threshold or costs for approving a loan (MET-6). Original rejected: balanced accuracy. roc_auc is the binary fallback (the paper's tested metric). |
 
 <details>
-<summary>Feature types: 5 categorical, 5 string, 2 datetime</summary>
+<summary>Feature types: 4 categorical, 1 ordinal, 5 string, 2 datetime</summary>
 
-- categorical (5): `home_ownership_n`, `application_type`, `emp_length`, `Default`, `purpose`
+- categorical (4): `home_ownership_n`, `application_type`, `Default`, `purpose`
+- ordinal (1): `emp_length (< 1 year < 1 year < 2 years < 3 years < 4 years < 5 years < 6 years < 7 years < 8 years < 9 years < 10+ years)`
 - string (5): `emp_title`, `addr_state`, `zip_code`, `title`, `desc`
 - datetime (2): `issue_d (%b-%Y)`, `earliest_cr_line (%b-%Y)`
 
@@ -208,6 +209,8 @@ We start with the data from Sanz-Guerrero et al. (2025), which is already prepro
 - `term` is used only for this selection and is not a feature (it is part of the company's own assessment, see the merged features). Until 2026-10 the `lending_club_1m` version tested on 2016 and the v1 `lending_club` notebook on 2016-2018.
 - We leave out the joint-applicant fields of the original data (sec_app_*, revol_bal_joint): they are filled only from 2017 on, so they are empty for the loans we keep.
 - Loans per issue year in the cleaned data (from the v1 exploration, counted 2026-10-22): 836 (2008), 4,716 (2009), 8,466 (2010), 12,747 (2011), 41,953 (2012), 99,018 (2013), 161,028 (2014), 280,780 (2015); 46% of the rows are from 2015, the year of the test windows.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing (CLEAN-10).
 
 ## Splits
 
@@ -248,7 +251,7 @@ Tensions).
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| emp_length | category | 0 | 0 | 12 | 10+ years, 2 years, &lt; 1 year, 3 years, 1 year, 5 years, 4 years, NI, 7 years, 8… |
+| emp_length | category | 35734 | 5.86 | 11 | 10+ years, 2 years, &lt; 1 year, 3 years, 1 year, 5 years, 4 years, 7 years, 8 yea… |
 | purpose | category | 0 | 0 | 14 | debt_consolidation, credit_card, home_improvement, other, major_purchase, small… |
 | home_ownership_n | category | 0 | 0 | 4 | MORTGAGE, RENT, OWN, OTHER |
 | Default | category | 0 | 0 | 2 | Fully Paid, Defaulted |
@@ -260,14 +263,14 @@ Tensions).
 | all_util | float64 | 594661 | 97.56 | 136 | 59.0, 60.0, 61.0, 66.0, 63.0, 64.0, 55.0, 67.0, 68.0, 73.0 |
 | inq_fi | float64 | 594661 | 97.56 | 17 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | inq_last_12m | float64 | 594661 | 97.56 | 25 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
-| max_bal_bc | float64 | 594661 | 97.56 | 8530 | 0.0, 2968.0, 4900.0, 2098.0, 3958.0, 4000.0, 2907.0, 2000.0, 2430.0, 2924.0 |
+| max_bal_bc | float64 | 594661 | 97.56 | 8530 | 0.0, 2968.0, 4900.0, 3958.0, 2098.0, 2195.0, 4000.0, 1900.0, 2907.0, 2430.0 |
 | open_acc_6m | float64 | 594661 | 97.56 | 13 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | open_il_12m | float64 | 594661 | 97.56 | 12 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 9.0, 8.0 |
 | open_il_24m | float64 | 594661 | 97.56 | 17 | 1.0, 0.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | open_act_il | float64 | 594661 | 97.56 | 33 | 1.0, 2.0, 3.0, 0.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | open_rv_12m | float64 | 594661 | 97.56 | 18 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0 |
 | open_rv_24m | float64 | 594661 | 97.56 | 28 | 1.0, 2.0, 3.0, 0.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
-| total_bal_il | float64 | 594661 | 97.56 | 12061 | 0.0, 21098.0, 12621.0, 26748.0, 10238.0, 26750.0, 16187.0, 11196.0, 10409.0, 18… |
+| total_bal_il | float64 | 594661 | 97.56 | 12061 | 0.0, 11536.0, 30750.0, 15294.0, 10409.0, 35101.0, 25903.0, 6259.0, 16187.0, 225… |
 | total_cu_tl | float64 | 594661 | 97.56 | 30 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | mths_since_last_record | float64 | 511699 | 83.95 | 122 | 61.0, 62.0, 65.0, 64.0, 69.0, 66.0, 67.0, 71.0, 68.0, 57.0 |
 | mths_since_recent_bc_dlq | float64 | 465154 | 76.31 | 152 | 46.0, 45.0, 48.0, 25.0, 14.0, 44.0, 19.0, 35.0, 21.0, 40.0 |
@@ -278,7 +281,7 @@ Tensions).
 | mo_sin_old_il_acct | float64 | 68900 | 11.3 | 479 | 122.0, 121.0, 124.0, 123.0, 126.0, 125.0, 132.0, 130.0, 133.0, 120.0 |
 | num_tl_120dpd_2m | float64 | 68588 | 11.25 | 5 | 0.0, 1.0, 2.0, 3.0, 6.0 |
 | pct_tl_nvr_dlq | float64 | 47912 | 7.86 | 550 | 100.0, 95.0, 90.0, 96.0, 92.0, 97.0, 90.9, 91.7, 92.3, 80.0 |
-| avg_cur_bal | float64 | 47807 | 7.84 | 60256 | 1971.0, 1843.0, 2112.0, 1762.0, 1956.0, 0.0, 1839.0, 2289.0, 1250.0, 1826.0 |
+| avg_cur_bal | float64 | 47807 | 7.84 | 60256 | 1971.0, 1843.0, 2112.0, 1762.0, 1956.0, 0.0, 2289.0, 1839.0, 1905.0, 2587.0 |
 | mo_sin_old_rev_tl_op | float64 | 47799 | 7.84 | 720 | 131.0, 119.0, 125.0, 138.0, 127.0, 124.0, 120.0, 130.0, 132.0, 156.0 |
 | mo_sin_rcnt_rev_tl_op | float64 | 47799 | 7.84 | 241 | 2.0, 3.0, 4.0, 1.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 |
 | mo_sin_rcnt_tl | float64 | 47798 | 7.84 | 166 | 2.0, 3.0, 4.0, 1.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 |
@@ -294,10 +297,10 @@ Tensions).
 | num_tl_90g_dpd_24m | float64 | 47798 | 7.84 | 22 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | num_tl_op_past_12m | float64 | 47798 | 7.84 | 28 | 1.0, 2.0, 0.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | tot_coll_amt | float64 | 47798 | 7.84 | 8917 | 0.0, 50.0, 100.0, 75.0, 150.0, 60.0, 200.0, 70.0, 80.0, 55.0 |
-| tot_cur_bal | float64 | 47798 | 7.84 | 257345 | 0.0, 19998.0, 5537.0, 12066.0, 22396.0, 17951.0, 14511.0, 27316.0, 16219.0, 197… |
-| tot_hi_cred_lim | float64 | 47798 | 7.84 | 269449 | 17500.0, 12500.0, 15500.0, 16500.0, 12000.0, 13800.0, 13500.0, 12400.0, 16000.0… |
+| tot_cur_bal | float64 | 47798 | 7.84 | 257345 | 0.0, 19998.0, 5537.0, 12066.0, 14511.0, 27316.0, 16219.0, 22396.0, 17951.0, 192… |
+| tot_hi_cred_lim | float64 | 47798 | 7.84 | 269449 | 17500.0, 12500.0, 15500.0, 16500.0, 12000.0, 13500.0, 13800.0, 12400.0, 16000.0… |
 | total_il_high_credit_limit | float64 | 47798 | 7.84 | 119478 | 0.0, 10000.0, 15000.0, 5000.0, 20000.0, 12000.0, 6000.0, 25000.0, 8000.0, 4000.0 |
-| total_rev_hi_lim | float64 | 47798 | 7.84 | 16364 | 10000.0, 12000.0, 11000.0, 13500.0, 8500.0, 15000.0, 13000.0, 9000.0, 11500.0, … |
+| total_rev_hi_lim | float64 | 47798 | 7.84 | 16364 | 10000.0, 12000.0, 11000.0, 13500.0, 8500.0, 15000.0, 13000.0, 11500.0, 9000.0, … |
 | num_bc_sats | float64 | 38224 | 6.27 | 43 | 3.0, 4.0, 2.0, 5.0, 6.0, 7.0, 1.0, 8.0, 9.0, 10.0 |
 | num_sats | float64 | 38224 | 6.27 | 70 | 9.0, 8.0, 10.0, 11.0, 7.0, 12.0, 6.0, 13.0, 14.0, 5.0 |
 | bc_util | float64 | 37433 | 6.14 | 1343 | 0.0, 98.0, 96.0, 97.0, 95.0, 99.0, 94.0, 93.0, 98.2, 92.0 |
@@ -306,7 +309,7 @@ Tensions).
 | mths_since_recent_bc | float64 | 36639 | 6.01 | 439 | 3.0, 2.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 1.0, 10.0 |
 | acc_open_past_24mths | float64 | 31273 | 5.13 | 48 | 3.0, 4.0, 2.0, 5.0, 1.0, 6.0, 7.0, 0.0, 8.0, 9.0 |
 | mort_acc | float64 | 31273 | 5.13 | 35 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
-| total_bal_ex_mort | float64 | 31273 | 5.13 | 131732 | 0.0, 19998.0, 19217.0, 9999.0, 12066.0, 16219.0, 22396.0, 12479.0, 16473.0, 948… |
+| total_bal_ex_mort | float64 | 31273 | 5.13 | 131732 | 0.0, 19998.0, 19217.0, 12479.0, 16219.0, 12066.0, 9999.0, 22396.0, 17154.0, 273… |
 | total_bc_limit | float64 | 31273 | 5.13 | 11542 | 0.0, 5000.0, 6000.0, 4000.0, 3000.0, 7000.0, 8000.0, 7500.0, 4500.0, 3500.0 |
 
 (22 more rows not shown)
@@ -466,4 +469,4 @@ Tensions).
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6a2bcd9b59c8cab654c4c7d630ad5a66a21a6d203a53df504605cb2bf175e396` |
+| stale | yes: the definition now gives checksum `v2:2ac4d3e897ae146e5e4c40328e64cca39388d715405f0dc65e6ac99d0dae8acb` |

@@ -43,6 +43,8 @@ Andrej: We need to write down the reason why we consider some housing datasets a
 
 CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
 
+CC (2026-10-31, Lennart): marks on the review board of PR #37 (the order comes from the context and logic, not from the target): structure_quality, a 1-5 quality code without labels, is an ordered category in the order of its codes.
+
 ## Reference
 
 https://doi.org/10.1177/0042098020982508

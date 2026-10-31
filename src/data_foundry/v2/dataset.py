@@ -143,11 +143,17 @@ class FeatureTypes:
         categorical: Columns cast to ``category`` (fixed, finite value sets); unused categories are removed.
         string: Columns cast to ``string`` (free text, high-cardinality text).
         datetime: Columns parsed with ``pd.to_datetime``; a mapping gives a per-column format.
+        ordinal: Columns cast to an ordered ``category``, as a mapping column -> its levels, lowest first (an ordinal
+            scale: a grade, a rating, a stage, bands, a count with an open end). Every value must be one of the
+            levels or missing (`set_missing` turns the codes outside the scale into missing values); unused levels
+            are removed. A column listed here is ordinal even when ``categorical`` lists it too, which is handy when
+            ``categorical`` is computed.
     """
 
     categorical: tuple[str, ...] | list[str] = ()
     string: tuple[str, ...] | list[str] = ()
     datetime: tuple[str, ...] | list[str] | dict[str, str | None] = ()
+    ordinal: dict[str, tuple | list] = field(default_factory=dict)
 
     @property
     def datetime_formats(self) -> dict[str, str | None]:
@@ -566,6 +572,7 @@ class AbstractCuratedDataset(ABC):
         df = cast_dtypes(
             df,
             categorical=[c for c in types.categorical if c in present or order],
+            ordinal={c: levels for c, levels in types.ordinal.items() if c in present or order},
             string=[c for c in types.string if c in present or order],
             datetime={c: f for c, f in types.datetime_formats.items() if c in present or order},
         )
@@ -584,10 +591,20 @@ class AbstractCuratedDataset(ABC):
         if not isinstance(types, FeatureTypes):
             msg = f"{type(self).__name__}: `_feature_types` must return a FeatureTypes."
             raise DatasetDefinitionError(msg)
-        listed = {*types.categorical, *types.string, *types.datetime_formats}
+        if types.ordinal:  # an ordinal column may also be named among the categorical ones; it is ordinal
+            types = FeatureTypes(
+                categorical=[c for c in types.categorical if c not in types.ordinal],
+                string=types.string,
+                datetime=types.datetime,
+                ordinal=types.ordinal,
+            )
+        listed = {*types.categorical, *types.string, *types.datetime_formats, *types.ordinal}
         if self.problem_type != "regression" and self.target not in listed and self.target in df.columns:
             types = FeatureTypes(
-                categorical=(*types.categorical, self.target), string=types.string, datetime=types.datetime
+                categorical=(*types.categorical, self.target),
+                string=types.string,
+                datetime=types.datetime,
+                ordinal=types.ordinal,
             )
         return types
 

@@ -2,11 +2,11 @@
 report_format: data-foundry-report-v2
 unique_name: aeolus_rebuilt_1m
 container_format: 2
-checksum: v2:67fcebd4ab998b3e7bde2c47166e2d976d45cf4eeace53fbfc3aa9b60e176572
+checksum: v2:3b5f4cb8ce6b4b66bf60997dd741a036492cb3ad73a88058cef7741f46ca7ff7
 build: null
 build_stale: false
 data:
-  n_rows: 1799254
+  n_rows: 1799255
   n_features: 34
   dtypes:
     category: 8
@@ -61,9 +61,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `ARR_DEL15`, scored with `roc_auc` on temporal splits by `FL_DATE`. 1,799,254 rows and 34 features. Source: GOV Website (2026).
+Binary classification of `ARR_DEL15`, scored with `roc_auc` on temporal splits by `FL_DATE`. 1,799,255 rows and 34 features. Source: GOV Website (2026).
 
-Not built yet. The current definition gives checksum `v2:67fcebd4ab998b3e7bde2c47166e2d976d45cf4eeace53fbfc3aa9b60e176572`.
+Not built yet. The current definition gives checksum `v2:3b5f4cb8ce6b4b66bf60997dd741a036492cb3ad73a88058cef7741f46ca7ff7`.
 
 ## In brief
 
@@ -183,7 +183,7 @@ Only curators run `build`, when the dataset ships.
 | data_tags | Non-IID, Temporal, Spatial |
 | reference | bts2026ontime,meteostat2026hourly,xu2025aeolus |
 | version of | aeolus_rebuilt |
-| rows x columns | 1,799,254 x 35 |
+| rows x columns | 1,799,255 x 35 |
 | task.target | ARR_DEL15 |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -201,9 +201,10 @@ Only curators run `build`, when the dataset ships.
 | reason | Xu et al., Aeolus: A Multi-structural Flight Delay Dataset (NeurIPS 2025 D&B, arXiv:2510.26616, Sec. 4 and Appendix) report AUC and accuracy side by side for the delay classification, no single criterion (MET-5). roc_auc is the binary fallback (CC 2026-10-26). |
 
 <details>
-<summary>Feature types: 8 categorical, 0 string, 1 datetime</summary>
+<summary>Feature types: 7 categorical, 1 ordinal, 0 string, 1 datetime</summary>
 
-- categorical (8): `OP_CARRIER`, `OP_CARRIER_FL_NUM`, `ORIGIN`, `DEST`, `O_COCO`, `D_COCO`, `INBOUND_STATUS`, `ARR_DEL15`
+- categorical (7): `OP_CARRIER`, `OP_CARRIER_FL_NUM`, `ORIGIN`, `DEST`, `O_COCO`, `D_COCO`, `ARR_DEL15`
+- ordinal (1): `INBOUND_STATUS (not departed < in the air < arrived)`
 - string (0): none
 - datetime (1): `FL_DATE`
 
@@ -240,15 +241,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 1,799,254 rows of the final frame (the oldest rows: the frame is sorted by `FL_DATE`); 12 of 35 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 1,799,255 rows of the final frame (the oldest rows: the frame is sorted by `FL_DATE`); 12 of 35 columns, the target first. Cells are cut at 40 characters.
 
 | ARR_DEL15 | FL_DATE | OP_CARRIER | OP_CARRIER_FL_NUM | ORIGIN | DEST | CRS_DEP_TIME_MIN | CRS_ARR_TIME_MIN | CRS_ELAPSED_TIME | DISTANCE | O_LATITUDE | O_LONGITUDE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | No | 2023-01-01 00:00:00 | DL | 1377 | ATL | PBI | 980 | 1085 | 105 | 545 | 33.6367 | -84.4278 |
 | No | 2023-01-01 00:00:00 | DL | 1109 | ATL | LGA | 680 | 810 | 130 | 762 | 33.6367 | -84.4278 |
 | No | 2023-01-01 00:00:00 | WN | 3370 | LAS | SAN | 500 | 575 | 75 | 258 | 36.08 | -115.152 |
-| No | 2023-01-01 00:00:00 | UA | 2329 | SFO | LAS | 505 | 607 | 102 | 414 | 37.6189 | -122.376 |
-| No | 2023-01-01 00:00:00 | 9E | 4633 | ORF | DTW | 330 | 455 | 125 | 529 | 36.8947 | -76.2011 |
+| Yes | 2023-01-01 00:00:00 | NK | 3165 | ORD | MIA | 1240 | 49 | 189 | 1197 | 41.9769 | -87.9081 |
+| No | 2023-01-01 00:00:00 | AA | 2509 | MCO | DCA | 834 | 962 | 128 | 759 | 28.4294 | -81.3089 |
 
 ## Curation notes
 
@@ -270,6 +271,10 @@ We start with the monthly files of the BTS Reporting Carrier On-Time Performance
 - `OP_CARRIER_FL_NUM` is categorical (the paper's Table 9), as in aeolus_1m; one operated flight has none.
 - Note: compared with the Aeolus release, the rebuild adds March 2024 (585,413 operated flights) and the 192,954 flights of 43 airports the release left out (mostly Allegiant and SkyWest), and reads the weather in the hour before departure, not 3.5 to 11 hours earlier. With aeolus_1m's inputs (the schedule and three weather values per airport), the weather adds 0.043-0.051 ROC AUC per window here against 0.032-0.039 in aeolus_1m (the destination's alone 0.010-0.014 against 0.014-0.015; untuned LightGBM on each dataset's own splits).
 - Task probes (200k newest training rows, three windows): no flags; ROC AUC LightGBM 0.819, random forest 0.808, linear 0.760, the best single feature (`INBOUND_ARR_DELAY`) 0.729. Leak probes (50k rows): no exact copies across the split; `INBOUND_ARR_DELAY` alone 0.734 against 0.790 for all features, the core of the task (a late aircraft makes a late flight); its missing indicator 0.683, which marks a previous flight that had not landed by the prediction point, known then. Every test airport is in training (known entities, SPLIT-13).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed by the
+  curator's rule (missing when the column has no other missing value, else the lowest level; a state that is
+  simply not on the scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
 
 Version of `aeolus_rebuilt`: The BTS files hold 13,708,650 operated flights from 2023 on with an arrival delay (13,926,960 scheduled). We sample per test window (v2 split protocol): each window keeps at most 500k of its rows (all of them here), and its train side is a random 1M of the earlier flights, drawn in one random order for all windows; the frame keeps only the rows a split uses.
 
@@ -750,8 +755,8 @@ The tail number links each flight to the aircraft's flight scheduled just before
 
 0 error(s), 0 warning(s), 2 info (26 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 62,973,890 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
-- **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 62,973,890 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
+- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 62,973,925 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
+- **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 62,973,925 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
 
 ## Data checks
 
@@ -762,41 +767,41 @@ The tail number links each flight to the aircraft's flight scheduled just before
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| O_COCO | category | 14403 | 0.8 | 21 | fair, cloudy, overcast, clear, fog, light rain, rain, heavy rain, light snowfal… |
-| D_COCO | category | 14450 | 0.8 | 22 | fair, cloudy, overcast, clear, light rain, fog, rain, heavy rain, light snowfal… |
-| OP_CARRIER | category | 0 | 0 | 15 | WN, DL, AA, OO, UA, YX, MQ, B6, NK, AS |
-| OP_CARRIER_FL_NUM | category | 0 | 0 | 6742 | 1100, 323, 540, 312, 555, 516, 354, 1368, 1178, 1401 |
-| ORIGIN | category | 0 | 0 | 354 | ATL, DEN, DFW, ORD, CLT, PHX, LAX, LAS, MCO, SEA |
-| DEST | category | 0 | 0 | 354 | ATL, DFW, DEN, ORD, CLT, PHX, LAX, LAS, SEA, LGA |
-| INBOUND_STATUS | category | 0 | 0 | 4 | arrived, in the air, none, not departed |
+| INBOUND_STATUS | category | 35968 | 2 | 3 | arrived, in the air, not departed |
+| O_COCO | category | 14497 | 0.81 | 21 | fair, cloudy, overcast, clear, fog, light rain, rain, heavy rain, light snowfal… |
+| D_COCO | category | 14512 | 0.81 | 22 | fair, cloudy, overcast, clear, light rain, fog, rain, heavy rain, light snowfal… |
+| OP_CARRIER | category | 0 | 0 | 15 | WN, DL, AA, UA, OO, YX, MQ, B6, NK, AS |
+| OP_CARRIER_FL_NUM | category | 0 | 0 | 6727 | 540, 1368, 372, 322, 323, 374, 1233, 383, 697, 354 |
+| ORIGIN | category | 0 | 0 | 354 | ATL, DEN, DFW, ORD, CLT, LAX, PHX, LAS, MCO, SEA |
+| DEST | category | 0 | 0 | 354 | ATL, DEN, DFW, ORD, CLT, LAX, PHX, LAS, LGA, MCO |
 | ARR_DEL15 | category | 0 | 0 | 2 | No, Yes |
-| FL_DATE | datetime64\[ns\] | 0 | 0 | 731 | 2024-12-01 00:00:00, 2024-11-22 00:00:00, 2024-11-26 00:00:00, 2024-11-30 00:00… |
-| INBOUND_ARR_DELAY | float64 | 278226 | 15.46 | 1238 | -11.0, -13.0, -10.0, -12.0, -14.0, -15.0, -8.0, -9.0, -16.0, -7.0 |
-| O_PRCP | float64 | 126442 | 7.03 | 249 | 0.0, 0.3, 0.5, 0.2, 0.8, 1.0, 1.5, 1.3, 0.1, 2.0 |
-| D_PRCP | float64 | 126514 | 7.03 | 256 | 0.0, 0.3, 0.5, 0.2, 0.8, 1.0, 1.3, 1.5, 2.0, 1.8 |
-| INBOUND_DEP_DELAY | float64 | 56605 | 3.15 | 1291 | -5.0, -4.0, -3.0, -6.0, -2.0, -1.0, -7.0, 0.0, -8.0, -9.0 |
-| INBOUND_TURN_MIN | float64 | 36124 | 2.01 | 8019 | 50.0, 45.0, 40.0, 55.0, 60.0, 35.0, 65.0, 70.0, 30.0, 66.0 |
-| INBOUND_MIN_SINCE_SCHED_DEP | float64 | 36124 | 2.01 | 7188 | 120.0, 180.0, 150.0, 105.0, 240.0, 135.0, 165.0, 110.0, 90.0, 115.0 |
-| O_CLDC | float64 | 5783 | 0.32 | 9 | 8.0, 2.0, 4.0, 0.0, 6.0, 7.0, 5.0, 3.0, 1.0 |
-| D_CLDC | float64 | 5729 | 0.32 | 9 | 8.0, 2.0, 4.0, 0.0, 6.0, 7.0, 5.0, 3.0, 1.0 |
-| O_WDIR | float64 | 1680 | 0.09 | 361 | 0.0, 170.0, 260.0, 180.0, 320.0, 300.0, 310.0, 210.0, 200.0, 330.0 |
-| O_PRES | float64 | 1657 | 0.09 | 817 | 1016.0, 1017.0, 1019.0, 1015.0, 1020.0, 1018.0, 1014.0, 1021.0, 1013.0, 1022.0 |
-| D_WDIR | float64 | 1677 | 0.09 | 361 | 0.0, 260.0, 170.0, 310.0, 330.0, 180.0, 210.0, 300.0, 200.0, 320.0 |
-| D_PRES | float64 | 1676 | 0.09 | 813 | 1019.0, 1017.0, 1020.0, 1015.0, 1016.0, 1018.0, 1021.0, 1014.0, 1013.0, 1023.0 |
-| O_WSPD | float64 | 1373 | 0.08 | 183 | 0.0, 9.4, 11.2, 7.6, 13.0, 5.4, 14.8, 16.6, 18.4, 20.5 |
-| D_TEMP | float64 | 1354 | 0.08 | 608 | 10.0, 13.9, 15.0, 15.6, 14.4, 12.2, 13.3, 11.7, 8.3, 10.6 |
-| D_RHUM | float64 | 1362 | 0.08 | 99 | 93.0, 90.0, 86.0, 72.0, 70.0, 76.0, 82.0, 74.0, 60.0, 68.0 |
-| D_WSPD | float64 | 1369 | 0.08 | 188 | 0.0, 9.4, 11.2, 7.6, 13.0, 5.4, 14.8, 16.6, 18.4, 20.5 |
-| O_TEMP | float64 | 1338 | 0.07 | 592 | 10.0, 13.9, 15.0, 15.6, 13.3, 12.2, 14.4, 11.7, 10.6, 11.1 |
-| O_RHUM | float64 | 1345 | 0.07 | 99 | 93.0, 90.0, 86.0, 76.0, 72.0, 70.0, 74.0, 82.0, 68.0, 89.0 |
-| CRS_ELAPSED_TIME | float64 | 0 | 0 | 611 | 90.0, 85.0, 95.0, 80.0, 75.0, 70.0, 110.0, 115.0, 120.0, 100.0 |
-| DISTANCE | float64 | 0 | 0 | 1618 | 337.0, 399.0, 296.0, 867.0, 594.0, 404.0, 391.0, 862.0, 328.0, 733.0 |
-| O_LATITUDE | float64 | 0 | 0 | 357 | 33.6367, 39.8617, 32.8972, 41.9769, 35.2136, 33.4342, 33.9425, 36.08, 28.4294, … |
-| O_LONGITUDE | float64 | 0 | 0 | 359 | -84.4278, -104.6731, -97.0378, -87.9081, -80.9492, -112.0117, -118.4081, -115.1… |
-| D_LATITUDE | float64 | 0 | 0 | 357 | 33.6367, 32.8972, 39.8617, 41.9769, 35.2136, 33.4342, 33.9425, 36.08, 47.45, 40… |
-| D_LONGITUDE | float64 | 0 | 0 | 359 | -84.4278, -97.0378, -104.6731, -87.9081, -80.9492, -112.0117, -118.4081, -115.1… |
-| CRS_DEP_TIME_MIN | int64 | 0 | 0 | 1350 | 360, 420, 480, 540, 600, 390, 660, 510, 450, 375 |
-| CRS_ARR_TIME_MIN | int64 | 0 | 0 | 1431 | 1439, 1320, 1200, 1310, 1090, 540, 1260, 1155, 630, 1030 |
+| FL_DATE | datetime64\[ns\] | 0 | 0 | 731 | 2024-12-01 00:00:00, 2024-11-22 00:00:00, 2024-11-26 00:00:00, 2024-11-27 00:00… |
+| INBOUND_ARR_DELAY | float64 | 277121 | 15.4 | 1253 | -12.0, -13.0, -10.0, -11.0, -14.0, -15.0, -9.0, -8.0, -16.0, -7.0 |
+| D_PRCP | float64 | 126680 | 7.04 | 255 | 0.0, 0.3, 0.5, 0.2, 0.8, 1.0, 1.5, 1.3, 1.8, 0.1 |
+| O_PRCP | float64 | 125958 | 7 | 252 | 0.0, 0.3, 0.5, 0.2, 0.8, 1.0, 1.3, 1.5, 1.8, 0.1 |
+| INBOUND_DEP_DELAY | float64 | 56241 | 3.13 | 1279 | -5.0, -4.0, -3.0, -6.0, -2.0, -1.0, -7.0, 0.0, -8.0, -9.0 |
+| INBOUND_TURN_MIN | float64 | 35968 | 2 | 8021 | 50.0, 45.0, 40.0, 55.0, 60.0, 35.0, 65.0, 70.0, 30.0, 66.0 |
+| INBOUND_MIN_SINCE_SCHED_DEP | float64 | 35968 | 2 | 7225 | 120.0, 180.0, 150.0, 240.0, 135.0, 105.0, 165.0, 110.0, 90.0, 115.0 |
+| O_CLDC | float64 | 5784 | 0.32 | 9 | 8.0, 2.0, 4.0, 0.0, 6.0, 7.0, 5.0, 3.0, 1.0 |
+| D_CLDC | float64 | 5781 | 0.32 | 9 | 8.0, 2.0, 4.0, 0.0, 6.0, 7.0, 5.0, 3.0, 1.0 |
+| O_WDIR | float64 | 1647 | 0.09 | 361 | 0.0, 260.0, 170.0, 300.0, 200.0, 180.0, 320.0, 310.0, 190.0, 210.0 |
+| O_PRES | float64 | 1621 | 0.09 | 816 | 1015.0, 1017.0, 1018.0, 1019.0, 1016.0, 1020.0, 1014.0, 1021.0, 1013.0, 1022.0 |
+| D_WDIR | float64 | 1691 | 0.09 | 361 | 0.0, 260.0, 300.0, 330.0, 180.0, 310.0, 170.0, 200.0, 210.0, 320.0 |
+| D_PRES | float64 | 1693 | 0.09 | 805 | 1018.0, 1016.0, 1017.0, 1019.0, 1020.0, 1015.0, 1014.0, 1021.0, 1013.0, 1022.0 |
+| D_TEMP | float64 | 1376 | 0.08 | 594 | 10.0, 13.9, 15.0, 14.4, 15.6, 11.7, 13.3, 10.6, 12.2, 8.3 |
+| D_RHUM | float64 | 1382 | 0.08 | 99 | 93.0, 90.0, 86.0, 76.0, 72.0, 82.0, 70.0, 68.0, 74.0, 60.0 |
+| D_WSPD | float64 | 1387 | 0.08 | 191 | 0.0, 9.4, 11.2, 7.6, 13.0, 5.4, 14.8, 16.6, 18.4, 20.5 |
+| O_TEMP | float64 | 1307 | 0.07 | 607 | 10.0, 13.9, 15.6, 13.3, 15.0, 11.7, 12.2, 14.4, 10.6, 17.2 |
+| O_RHUM | float64 | 1312 | 0.07 | 99 | 93.0, 90.0, 86.0, 72.0, 76.0, 70.0, 82.0, 68.0, 74.0, 60.0 |
+| O_WSPD | float64 | 1334 | 0.07 | 187 | 0.0, 9.4, 11.2, 7.6, 13.0, 5.4, 14.8, 16.6, 18.4, 20.5 |
+| CRS_ELAPSED_TIME | float64 | 0 | 0 | 605 | 90.0, 85.0, 95.0, 80.0, 75.0, 110.0, 115.0, 70.0, 120.0, 100.0 |
+| DISTANCE | float64 | 0 | 0 | 1624 | 337.0, 399.0, 296.0, 594.0, 404.0, 862.0, 391.0, 867.0, 328.0, 733.0 |
+| O_LATITUDE | float64 | 0 | 0 | 357 | 33.6367, 39.8617, 32.8972, 41.9769, 35.2136, 33.9425, 33.4342, 36.08, 28.4294, … |
+| O_LONGITUDE | float64 | 0 | 0 | 359 | -84.4278, -104.6731, -97.0378, -87.9081, -80.9492, -118.4081, -112.0117, -115.1… |
+| D_LATITUDE | float64 | 0 | 0 | 357 | 33.6367, 39.8617, 32.8972, 41.9769, 35.2136, 33.9425, 33.4342, 36.08, 40.7772, … |
+| D_LONGITUDE | float64 | 0 | 0 | 359 | -84.4278, -104.6731, -97.0378, -87.9081, -80.9492, -118.4081, -112.0117, -115.1… |
+| CRS_DEP_TIME_MIN | int64 | 0 | 0 | 1347 | 360, 420, 480, 540, 600, 390, 450, 660, 375, 510 |
+| CRS_ARR_TIME_MIN | int64 | 0 | 0 | 1432 | 1439, 1310, 1320, 1260, 1200, 1090, 630, 1125, 1000, 1155 |
 
 </details>
 
@@ -804,8 +809,8 @@ The tail number links each flight to the aircraft's flight scheduled just before
 
 | ARR_DEL15 | count | pct |
 |---|---|---|
-| No | 1432062 | 79.59 |
-| Yes | 367192 | 20.41 |
+| No | 1432050 | 79.59 |
+| Yes | 367205 | 20.41 |
 
 ### Numeric features
 
@@ -814,32 +819,32 @@ The tail number links each flight to the aircraft's flight scheduled just before
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| CRS_DEP_TIME_MIN | 179925 | 806.733 | 298.473 | 1 | 1439 |
-| CRS_ARR_TIME_MIN | 179925 | 904.967 | 314.437 | 1 | 1439 |
-| CRS_ELAPSED_TIME | 179925 | 147.424 | 72.7656 | 22 | 685 |
-| DISTANCE | 179925 | 834.562 | 596.826 | 31 | 5095 |
-| O_LATITUDE | 179925 | 36.5555 | 5.99335 | -14.33 | 71.2847 |
-| O_LONGITUDE | 179925 | -94.8636 | 18.6123 | -176.643 | 145.73 |
-| D_LATITUDE | 179925 | 36.5654 | 5.9901 | -14.33 | 71.2847 |
-| D_LONGITUDE | 179925 | -94.8395 | 18.605 | -176.643 | 145.73 |
-| O_TEMP | 179791 | 14.5273 | 10.2784 | -34 | 47.8 |
-| O_RHUM | 179789 | 61.5397 | 22.2863 | 2 | 100 |
-| O_PRCP | 167210 | 0.0902619 | 0.747987 | 0 | 51.6 |
-| O_WDIR | 179749 | 175.6 | 111.227 | 0 | 360 |
-| O_WSPD | 179786 | 13.7271 | 8.56485 | 0 | 74.2 |
-| O_PRES | 179760 | 1017.3 | 7.4559 | 960.7 | 1051.2 |
-| O_CLDC | 179342 | 4.37514 | 2.82903 | 0 | 8 |
-| D_TEMP | 179805 | 14.5388 | 10.2231 | -36.1 | 47.2 |
-| D_RHUM | 179804 | 61.5476 | 22.1146 | 2 | 100 |
-| D_PRCP | 167167 | 0.0924531 | 0.732534 | 0 | 63.8 |
-| D_WDIR | 179764 | 176.495 | 111.231 | 0 | 360 |
-| D_WSPD | 179802 | 13.7389 | 8.57188 | 0 | 88.9 |
-| D_PRES | 179767 | 1017.29 | 7.45024 | 967 | 1058.1 |
-| D_CLDC | 179385 | 4.37355 | 2.83431 | 0 | 8 |
-| INBOUND_TURN_MIN | 176204 | 249.195 | 1993.66 | -354 | 692618 |
-| INBOUND_MIN_SINCE_SCHED_DEP | 176204 | 369.769 | 1997.84 | -55 | 692815 |
-| INBOUND_DEP_DELAY | 174186 | 9.54109 | 43.3175 | -38 | 2963 |
-| INBOUND_ARR_DELAY | 151846 | -1.0959 | 42.0022 | -82 | 3020 |
+| CRS_DEP_TIME_MIN | 179926 | 806.864 | 297.277 | 4 | 1439 |
+| CRS_ARR_TIME_MIN | 179926 | 905.672 | 313.027 | 1 | 1439 |
+| CRS_ELAPSED_TIME | 179926 | 147.453 | 72.9175 | 23 | 697 |
+| DISTANCE | 179926 | 834.573 | 597.11 | 31 | 5095 |
+| O_LATITUDE | 179926 | 36.5308 | 5.97247 | -14.33 | 71.2847 |
+| O_LONGITUDE | 179926 | -94.8273 | 18.6933 | -176.643 | 145.73 |
+| D_LATITUDE | 179926 | 36.5267 | 5.99309 | -14.33 | 71.2847 |
+| D_LONGITUDE | 179926 | -94.8975 | 18.7603 | -176.643 | 145.73 |
+| O_TEMP | 179776 | 14.5844 | 10.249 | -35 | 48.3 |
+| O_RHUM | 179775 | 61.5006 | 22.2279 | 2 | 100 |
+| O_PRCP | 167192 | 0.0905612 | 0.745554 | 0 | 78.2 |
+| O_WDIR | 179739 | 175.431 | 111.04 | 0 | 360 |
+| O_WSPD | 179772 | 13.7239 | 8.5701 | 0 | 98 |
+| O_PRES | 179751 | 1017.31 | 7.43387 | 960.5 | 1059.4 |
+| O_CLDC | 179347 | 4.3684 | 2.82244 | 0 | 8 |
+| D_TEMP | 179803 | 14.5891 | 10.2443 | -35 | 47.2 |
+| D_RHUM | 179803 | 61.5363 | 22.1299 | 2 | 100 |
+| D_PRCP | 167198 | 0.0926201 | 0.773413 | 0 | 70.4 |
+| D_WDIR | 179782 | 176.502 | 111.331 | 0 | 360 |
+| D_WSPD | 179803 | 13.7287 | 8.5521 | 0 | 83.5 |
+| D_PRES | 179773 | 1017.3 | 7.45331 | 965.6 | 1053.6 |
+| D_CLDC | 179365 | 4.35878 | 2.82741 | 0 | 8 |
+| INBOUND_TURN_MIN | 176298 | 251.839 | 2044.91 | -350 | 692618 |
+| INBOUND_MIN_SINCE_SCHED_DEP | 176298 | 372.143 | 2048.93 | -55 | 692815 |
+| INBOUND_DEP_DELAY | 174239 | 9.56299 | 44.247 | -47 | 3024 |
+| INBOUND_ARR_DELAY | 152111 | -0.93583 | 43.4289 | -126 | 3063 |
 
 </details>
 
@@ -850,47 +855,47 @@ The tail number links each flight to the aircraft's flight scheduled just before
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| ARR_DEL15 | 1 | No | 143081 | 79.52 |
-| ARR_DEL15 | 2 | Yes | 36844 | 20.48 |
-| DEST | 1 | ATL | 8891 | 4.94 |
-| DEST | 2 | DFW | 7794 | 4.33 |
-| DEST | 3 | DEN | 7711 | 4.29 |
-| DEST | 4 | ORD | 6964 | 3.87 |
-| DEST | 5 | CLT | 5470 | 3.04 |
-| D_COCO | 1 | fair | 53648 | 29.82 |
-| D_COCO | 2 | cloudy | 49286 | 27.39 |
-| D_COCO | 3 | overcast | 27473 | 15.27 |
-| D_COCO | 4 | clear | 22284 | 12.39 |
-| D_COCO | 5 | light rain | 7730 | 4.3 |
-| FL_DATE | 1 | 2024-12-01 00:00:00 | 2323 | 1.29 |
-| FL_DATE | 2 | 2024-11-22 00:00:00 | 2124 | 1.18 |
-| FL_DATE | 3 | 2024-11-26 00:00:00 | 2121 | 1.18 |
-| FL_DATE | 4 | 2024-11-30 00:00:00 | 2107 | 1.17 |
-| FL_DATE | 5 | 2024-12-02 00:00:00 | 2099 | 1.17 |
-| INBOUND_STATUS | 1 | arrived | 151846 | 84.39 |
-| INBOUND_STATUS | 2 | in the air | 22340 | 12.42 |
-| INBOUND_STATUS | 3 | none | 3721 | 2.07 |
-| INBOUND_STATUS | 4 | not departed | 2018 | 1.12 |
-| OP_CARRIER | 1 | WN | 36251 | 20.15 |
-| OP_CARRIER | 2 | DL | 25752 | 14.31 |
-| OP_CARRIER | 3 | AA | 24316 | 13.51 |
-| OP_CARRIER | 4 | OO | 19228 | 10.69 |
-| OP_CARRIER | 5 | UA | 19055 | 10.59 |
-| OP_CARRIER_FL_NUM | 1 | 1100 | 81 | 0.05 |
-| OP_CARRIER_FL_NUM | 2 | 323 | 81 | 0.05 |
-| OP_CARRIER_FL_NUM | 3 | 540 | 80 | 0.04 |
-| OP_CARRIER_FL_NUM | 4 | 312 | 80 | 0.04 |
-| OP_CARRIER_FL_NUM | 5 | 555 | 78 | 0.04 |
-| ORIGIN | 1 | ATL | 8829 | 4.91 |
-| ORIGIN | 2 | DEN | 7933 | 4.41 |
-| ORIGIN | 3 | DFW | 7643 | 4.25 |
-| ORIGIN | 4 | ORD | 6867 | 3.82 |
-| ORIGIN | 5 | CLT | 5394 | 3 |
-| O_COCO | 1 | fair | 53819 | 29.91 |
-| O_COCO | 2 | cloudy | 49853 | 27.71 |
-| O_COCO | 3 | overcast | 27228 | 15.13 |
-| O_COCO | 4 | clear | 21693 | 12.06 |
-| O_COCO | 5 | fog | 8035 | 4.47 |
+| ARR_DEL15 | 1 | No | 143318 | 79.65 |
+| ARR_DEL15 | 2 | Yes | 36608 | 20.35 |
+| DEST | 1 | ATL | 8731 | 4.85 |
+| DEST | 2 | DEN | 7817 | 4.34 |
+| DEST | 3 | DFW | 7646 | 4.25 |
+| DEST | 4 | ORD | 6965 | 3.87 |
+| DEST | 5 | CLT | 5359 | 2.98 |
+| D_COCO | 1 | fair | 53977 | 30 |
+| D_COCO | 2 | cloudy | 49545 | 27.54 |
+| D_COCO | 3 | overcast | 27426 | 15.24 |
+| D_COCO | 4 | clear | 22071 | 12.27 |
+| D_COCO | 5 | light rain | 7739 | 4.3 |
+| FL_DATE | 1 | 2024-12-01 00:00:00 | 2251 | 1.25 |
+| FL_DATE | 2 | 2024-11-22 00:00:00 | 2132 | 1.18 |
+| FL_DATE | 3 | 2024-11-26 00:00:00 | 2131 | 1.18 |
+| FL_DATE | 4 | 2024-11-27 00:00:00 | 2093 | 1.16 |
+| FL_DATE | 5 | 2024-11-30 00:00:00 | 2084 | 1.16 |
+| INBOUND_STATUS | 1 | arrived | 152111 | 84.54 |
+| INBOUND_STATUS | 2 | in the air | 22128 | 12.3 |
+| INBOUND_STATUS | 3 | &lt;NA> | 3628 | 2.02 |
+| INBOUND_STATUS | 4 | not departed | 2059 | 1.14 |
+| OP_CARRIER | 1 | WN | 36187 | 20.11 |
+| OP_CARRIER | 2 | DL | 25872 | 14.38 |
+| OP_CARRIER | 3 | AA | 24389 | 13.56 |
+| OP_CARRIER | 4 | UA | 19412 | 10.79 |
+| OP_CARRIER | 5 | OO | 18737 | 10.41 |
+| OP_CARRIER_FL_NUM | 1 | 540 | 90 | 0.05 |
+| OP_CARRIER_FL_NUM | 2 | 1368 | 87 | 0.05 |
+| OP_CARRIER_FL_NUM | 3 | 372 | 83 | 0.05 |
+| OP_CARRIER_FL_NUM | 4 | 322 | 82 | 0.05 |
+| OP_CARRIER_FL_NUM | 5 | 323 | 81 | 0.05 |
+| ORIGIN | 1 | ATL | 8822 | 4.9 |
+| ORIGIN | 2 | DEN | 7781 | 4.32 |
+| ORIGIN | 3 | DFW | 7656 | 4.26 |
+| ORIGIN | 4 | ORD | 6970 | 3.87 |
+| ORIGIN | 5 | CLT | 5488 | 3.05 |
+| O_COCO | 1 | fair | 53764 | 29.88 |
+| O_COCO | 2 | cloudy | 49968 | 27.77 |
+| O_COCO | 3 | overcast | 27257 | 15.15 |
+| O_COCO | 4 | clear | 21761 | 12.09 |
+| O_COCO | 5 | fog | 8081 | 4.49 |
 
 </details>
 

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bad_customer_detection
 container_format: 2
-checksum: v2:b27cf5fe4c9bb0a4dc01104921fc52b875f06d76fc19acd26e17c805047c1fdb
+checksum: v2:24d75da0d2c992a7db777ca0c27d58266023aeef3b5791ee37cae9e4e3199c6e
 build:
   uuid: 01a111fc-c415-7ef4-a2b9-d98a1d4aa9f8
   checksum: v2:3f1816d93251a2d25adda0f1bd20121ce71f72583ac02a9de8997731cac9b6ad
@@ -67,7 +67,7 @@ decisions: []
 
 Binary classification of `bad_customer`, scored with `roc_auc` on IID splits. 1,723 rows and 13 features. Source: Kaggle (2020).
 
-Built as `01a111fc-c415-7ef4-a2b9-d98a1d4aa9f8` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b27cf5fe4c9bb0a4dc01104921fc52b875f06d76fc19acd26e17c805047c1fdb`, so the build is stale. See [Build](#build).
+Built as `01a111fc-c415-7ef4-a2b9-d98a1d4aa9f8` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:24d75da0d2c992a7db777ca0c27d58266023aeef3b5791ee37cae9e4e3199c6e`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -142,9 +142,10 @@ Only curators run `build`, when the dataset ships.
 | reason | Kaggle dataset (not a competition) with no stated task metric; the original source is unknown (open item in the record) |
 
 <details>
-<summary>Feature types: 9 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 8 categorical, 1 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (9): `sex`, `education`, `product_type`, `having_children_flg`, `region`, `family_status`, `phone_operator`, `is_client`, `bad_customer`
+- categorical (8): `sex`, `product_type`, `having_children_flg`, `region`, `family_status`, `phone_operator`, `is_client`, `bad_customer`
+- ordinal (1): `education (Incomplete secondary education < Secondary education < Secondary special education < Incomplete higher education < Higher education < PhD degree)`
 - string (0): none
 - datetime (0): none
 
@@ -181,6 +182,8 @@ The first 5 of 1,723 rows of the final frame (random rows: the frame is shuffled
 
 - We renamed the values of the target variable to be more descriptive.
 - Note: The original source of the data is still to be clarified (open item in the curation record).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -324,4 +327,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:b27cf5fe4c9bb0a4dc01104921fc52b875f06d76fc19acd26e17c805047c1fdb` |
+| stale | yes: the definition now gives checksum `v2:24d75da0d2c992a7db777ca0c27d58266023aeef3b5791ee37cae9e4e3199c6e` |

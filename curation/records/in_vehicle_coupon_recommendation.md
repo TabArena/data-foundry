@@ -43,6 +43,8 @@ Andrej: Need to test whether time-invariant; Mechanical turk data might be inter
 
 CC (2026-10-27, Lennart): marker Selection Bias, from the AI review of PR #16: the respondents are Amazon Mechanical Turk workers, a volunteer sample rather than the drivers of an in-vehicle recommender, as the web volunteers of obesity_estimation; the stated intentions about imagined trips are a separate gap, already in the fit_reason.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 8 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `age`, `education`, `income`, `Bar`, `CoffeeHouse`, `CarryAway`, `RestaurantLessThan20`, `Restaurant20To50` (the README lists their levels).
+
 ## Reference
 
 A Bayesian framework for learning rule sets for interpretable classification By Wang, Tong, Cynthia Rudin, Finale Doshi-Velez, Yimin Liu, Erica Klampfl, and Perry MacNeille. 2017

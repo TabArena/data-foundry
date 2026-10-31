@@ -7,6 +7,81 @@ from pathlib import Path
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "avgAge": ["20-30 years", "30-40 years", "40-50 years", "50-60 years", "60-70 years", "70-80 years"],
+    "romanCatholic": [
+        "0%",
+        "1 - 10%",
+        "11 - 23%",
+        "24 - 36%",
+        "37 - 49%",
+        "50 - 62%",
+        "63 - 75%",
+        "76 - 88%",
+        "89 - 99%",
+        "100%",
+    ],
+    "contributionPrivateThirdPartyInsurance": ["f 0", "f 1 - 49", "f 50 - 99", "f 100 - 199"],
+    "protestant": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "otherReligion": [0, 1, 2, 3, 4, 5],
+    "noReligion": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "married": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "livingTogether": [0, 1, 2, 3, 4, 5, 6, 7],
+    "otherRelation": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "singles": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "householdWithoutChildren": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "householdWithChildren": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "highLevelEducation": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "mediumLevelEducation": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "lowerLevelEducation": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "highStatus": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "entrepreneur": [0, 1, 2, 3, 4, 5],
+    "farmer": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "middleManagement": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "skilledLabourers": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "unskilledLabourers": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "socialClassA": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "socialClassB1": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "socialClassB2": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "socialClassC": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "socialClassD": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "rentedHouse": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "homeOwners": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "oneCar": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "twoCars": [0, 1, 2, 3, 4, 5, 6, 7, 9],
+    "noCar": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "nationalHealthService": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "privateHealthInsurance": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "incomeLessThan30k": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "income30To45k": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "income45To75k": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "income75To122k": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "incomeAbove123k": [0, 1, 2, 3, 4, 5, 6, 7, 9],
+    "averageIncome": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "purchasingPowerClass": [1, 2, 3, 4, 5, 6, 7, 8],
+    "contributionThirdPartyInsuranceFirms": [0, 1, 2, 3, 4, 5, 6],
+    "contributionThirdPartyInsuranceAgriculture": [0, 1, 2, 3, 4],
+    "contributionCarPolicies": [0, 4, 5, 6, 7, 8, 9],  # open-ended
+    "contributionDeliveryVanPolicies": [0, 5, 6, 7],
+    "contributionMotorcycleScooterPolicies": [0, 3, 4, 5, 6, 7],
+    "contributionLorryPolicies": [0, 4, 6, 7, 9],  # open-ended
+    "contributionTrailerPolicies": [0, 1, 2, 3, 4, 5],
+    "contributionTractorPolicies": [0, 3, 4, 5, 6, 7],
+    "contributionAgriculturalMachinesPolicies": [0, 1, 2, 3, 4, 6],
+    "contributionMopedPolicies": [0, 2, 3, 4, 5, 6],
+    "contributionLifeInsurances": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],  # open-ended
+    "contributionPrivateAccidentInsurancePolicies": [0, 1, 2, 3, 4, 5, 6],
+    "contributionFamilyAccidentsInsurancePolicies": [0, 2, 3],
+    "contributionDisabilityInsurancePolicies": [0, 4, 5, 6, 7],
+    "contributionFirePolicies": [0, 1, 2, 3, 4, 5, 6, 7, 8],
+    "contributionSurfboardPolicies": [0, 1, 2, 3],
+    "contributionBoatPolicies": [0, 1, 2, 3, 4, 5, 6],
+    "contributionPropertyInsurancePolicies": [0, 1, 2, 3, 4, 5, 6],
+    "contributionSocialSecurityInsurancePolicies": [0, 2, 3, 4, 5],
+}
+
 
 class Coil2000(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -61,6 +136,8 @@ class Coil2000(AbstractCuratedDataset):
         - We combined the original training and validation data into one new dataset.
         - We reversed the ordinal encoding of the original data where possible.
         - Anomaly: the data has 15% duplicates.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 59 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); 56 of them were shipped as numbers.
     """
 
     # Task
@@ -286,6 +363,7 @@ class Coil2000(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "customerSubtype",
                 "customerMainType",

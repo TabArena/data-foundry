@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: 2_month_survival_rate_prediction
 container_format: 2
-checksum: v2:9c244b0d3dcc67c655aa671db8d9e1bbe01cea26ce743d8c6cb36c9a518e18ba
+checksum: v2:564ff1c7b619fad68e1964cf4913eb13f82012466b1ff9815f88fdf646e01823
 build: null
 build_stale: false
 data:
@@ -62,7 +62,7 @@ decisions:
 
 Binary classification of `death_within_2_months`, scored with `roc_auc` on IID splits. 8,967 rows and 22 features. Source: Other (2003).
 
-Not built yet. The current definition gives checksum `v2:9c244b0d3dcc67c655aa671db8d9e1bbe01cea26ce743d8c6cb36c9a518e18ba`.
+Not built yet. The current definition gives checksum `v2:564ff1c7b619fad68e1964cf4913eb13f82012466b1ff9815f88fdf646e01823`.
 
 ## In brief
 
@@ -145,9 +145,10 @@ Only curators run `build`, when the dataset ships.
 | definition | Area under the ROC curve of the predicted probability of death within 2 months |
 
 <details>
-<summary>Feature types: 8 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 7 categorical, 1 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (8): `sex`, `dzgroup`, `dzclass`, `race`, `diabetes`, `dementia`, `ca`, `death_within_2_months`
+- categorical (7): `sex`, `dzgroup`, `dzclass`, `race`, `diabetes`, `dementia`, `death_within_2_months`
+- ordinal (1): `ca (no < yes < metastatic)`
 - string (0): none
 - datetime (0): none
 
@@ -212,6 +213,8 @@ We start with support2.csv from the Vanderbilt Biostatistics data repository (hb
 - Anomaly: heart rate 0 (30 patients), mean blood pressure 0 (16) and respiration rate 0 (30) remain among the patients alive after day 3. Most of them die within 2 months, so these look like arrests on day 3; we keep them. wblc 0 (9 patients, 8 with MOSF w/Malig) stays too: the smallest non-zero values are 0.05, 0.07 and 0.08, so 0 reads as a count below the lab's resolution in profound neutropenia.
 - alb above 6 g/dL (4 patients: 6.3, 8.6, 10.9 and 29.0) is set missing: serum albumin does not reach such values (29.0 reads as g/L).
 - Note: dzclass groups the eight dzgroup values into four classes; both are kept as in the source. No duplicate rows.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 

@@ -48,6 +48,10 @@ CC (2026-10-15, Lennart): Temporal, not grouped: retrofit savings are measured o
 
 **Assessment (AI, 2026-10-21):** metric now `Metric.source("rmsle", target_transform="log1p")` instead of rmse on the log1p target: the competition's RMSLE on the meter reading in kWh, computed after the inverse of the shipped log1p (MET-3); the score is the same number as before. Needs a rebuild to reach the container.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): cloud_coverage 9 (sky obscured, 9,905 rows) kept as recorded with a note, as rain_in_australia does (CLEAN-10)..
+
+CC (2026-10-31, Lennart): marks on the review board of PR #37: cloud cover 9 (sky obscured, the amount cannot be estimated) set to missing (CLEAN-10).
+
 ## Reference
 
 Addison Howard, Chris Balbach, Clayton Miller, Jeff Haberl, Krishnan Gowri, and Sohier Dane. ASHRAE - Great Energy Predictor III. https://kaggle.com/competitions/ashrae-energy-prediction, 2019. Kaggle.

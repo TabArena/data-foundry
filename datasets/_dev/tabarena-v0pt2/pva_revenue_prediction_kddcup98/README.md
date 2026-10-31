@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: pva_revenue_prediction_kddcup98
 container_format: 2
-checksum: v2:55c531a54f176b916829c7f5acde3077278d85a83f4e603fabe69e723c34e4f8
+checksum: v2:449b4df8a2922cab0a1e5c7dd6da7b9e04ff0ab671b73bb72db5ba9c144b7314
 build:
   uuid: 01a13a7d-f16c-7ca9-ac9e-41670aefdb4e
   checksum: v2:7d87e4e7163e59fa1ca7ad8e1a9179de10f350eef500d4ba219b89c69c8f943c
@@ -22,9 +22,9 @@ data:
   n_rows: 191769
   n_features: 477
   dtypes:
-    category: 51
+    category: 54
     datetime64[ns]: 53
-    float64: 50
+    float64: 47
     int64: 297
     string: 27
   n_test_dataset_rows: null
@@ -75,7 +75,7 @@ decisions: []
 
 Binary classification of `TARGET_B`, scored with `roc_auc` on IID splits. 191,769 rows and 477 features. Source: Other (1998).
 
-Built as `01a13a7d-f16c-7ca9-ac9e-41670aefdb4e` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:55c531a54f176b916829c7f5acde3077278d85a83f4e603fabe69e723c34e4f8`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-f16c-7ca9-ac9e-41670aefdb4e` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:449b4df8a2922cab0a1e5c7dd6da7b9e04ff0ab671b73bb72db5ba9c144b7314`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -154,9 +154,10 @@ Only curators run `build`, when the dataset ships.
 | reason | The original scores the donation amount (TARGET_D) and a mail/no-mail decision; our task is changed to the binary response and TARGET_D is dropped. Closest computable stand-in is roc_auc on response. |
 
 <details>
-<summary>Feature types: 51 categorical, 27 string, 53 datetime</summary>
+<summary>Feature types: 42 categorical, 12 ordinal, 27 string, 53 datetime</summary>
 
-- categorical (51): `PVASTATE`, `MAILCODE`, `NOEXCH`, `RECINHSE`, `RECP3`, `RECPGVG`, `RECSWEEP`, `MDMAUD_recency`, `MDMAUD_frequency`, `MDMAUD_amount`, `MAJOR`, `DOMAIN_urbanicity`, `DOMAIN_ses`, `CLUSTER`, `CLUSTER2`, `AGEFLAG`, `HOMEOWNR`, `CHILD03`, `CHILD07`, `CHILD12`, `CHILD18`, `GENDER`, `DATASRCE`, `SOLIH`, `SOLP3`, `GEOCODE`, `GEOCODE2`, `LIFESRC`, `PEPSTRFL`, `HPHONE_D`, `RFA_2F`, `RFA_2A`, `COLLECT1`, `VETERANS`, `BIBLE`, `CATLG`, `HOMEE`, `PETS`, `CDPLAY`, `STEREO`, `PCOWNERS`, `PHOTO`, `CRAFTS`, `FISHER`, `GARDENIN`, `BOATS`, `WALKER`, `KIDSTUFF`, `CARDS`, `PLATES`, `TARGET_B`
+- categorical (42): `PVASTATE`, `MAILCODE`, `NOEXCH`, `RECINHSE`, `RECP3`, `RECPGVG`, `RECSWEEP`, `MAJOR`, `DOMAIN_urbanicity`, `CLUSTER`, `CLUSTER2`, `AGEFLAG`, `HOMEOWNR`, `CHILD03`, `CHILD07`, `CHILD12`, `CHILD18`, `GENDER`, `DATASRCE`, `GEOCODE`, `LIFESRC`, `PEPSTRFL`, `HPHONE_D`, `COLLECT1`, `VETERANS`, `BIBLE`, `CATLG`, `HOMEE`, `PETS`, `CDPLAY`, `STEREO`, `PCOWNERS`, `PHOTO`, `CRAFTS`, `FISHER`, `GARDENIN`, `BOATS`, `WALKER`, `KIDSTUFF`, `CARDS`, `PLATES`, `TARGET_B`
+- ordinal (12): `SOLP3 (Do Not Solicit or Mail < one solicitation per year < two solicitations per year < twelve solicitations per year < can be mailed (Default))`, `SOLIH (Do Not Solicit < one solicitation per year < two solicitations per year < three solicitations per year < four solicitations per year < five solicitations per year < six solicitations per year < twelve solicitations per year < can be mailed (Default))`, `RFA_2F (1 < 2 < 3 < 4)`, `RFA_2A (D < E < F < G)`, `GEOCODE2 (D < C < B < A)`, `DOMAIN_ses (Lower Lowest SES in Urban communities < Lowest SES < Average SES < Highest SES)`, `INCOME (1.0 < 2.0 < 3.0 < 4.0 < 5.0 < 6.0 < 7.0)`, `WEALTH1 (0.0 < 1.0 < 2.0 < 3.0 < 4.0 < 5.0 < 6.0 < 7.0 < 8.0 < 9.0)`, `WEALTH2 (0.0 < 1.0 < 2.0 < 3.0 < 4.0 < 5.0 < 6.0 < 7.0 < 8.0 < 9.0)`, `MDMAUD_recency (Dormant Donor < Inactive Donor < Lapsed Donor < Current Donor)`, `MDMAUD_frequency (One gift in the period of recency < Two-Four gifts in the period of recency < Five+ gifts in the period of recency)`, `MDMAUD_amount (Less than $100 (Low Dollar) < $100-499 (Core) < $500-999 (Major) < $1,000+ (Top))`
 - string (27): `OSOURCE`, `STATE`, `ZIP`, `Title`, `RFA_2`, `RFA_3`, `RFA_4`, `RFA_5`, `RFA_6`, `RFA_7`, `RFA_8`, `RFA_9`, `RFA_10`, `RFA_11`, `RFA_12`, `RFA_13`, `RFA_14`, `RFA_15`, `RFA_16`, `RFA_17`, `RFA_18`, `RFA_19`, `RFA_20`, `RFA_21`, `RFA_22`, `RFA_23`, `RFA_24`
 - datetime (53): `DOB (%Y%m)`, `ADATE_2 (%Y%m)`, `ADATE_3 (%Y%m)`, `ADATE_4 (%Y%m)`, `ADATE_5 (%Y%m)`, `ADATE_6 (%Y%m)`, `ADATE_7 (%Y%m)`, `ADATE_8 (%Y%m)`, `ADATE_9 (%Y%m)`, `ADATE_10 (%Y%m)`, `ADATE_11 (%Y%m)`, `ADATE_12 (%Y%m)`, `ADATE_13 (%Y%m)`, `ADATE_14 (%Y%m)`, `ADATE_15 (%Y%m)`, `ADATE_16 (%Y%m)`, `ADATE_17 (%Y%m)`, `ADATE_18 (%Y%m)`, `ADATE_19 (%Y%m)`, `ADATE_20 (%Y%m)`, `ADATE_21 (%Y%m)`, `ADATE_22 (%Y%m)`, `ADATE_23 (%Y%m)`, `ADATE_24 (%Y%m)`, `RDATE_3 (%Y%m)`, `RDATE_4 (%Y%m)`, `RDATE_5 (%Y%m)`, `RDATE_6 (%Y%m)`, `RDATE_7 (%Y%m)`, `RDATE_8 (%Y%m)`, `RDATE_9 (%Y%m)`, `RDATE_10 (%Y%m)`, `RDATE_11 (%Y%m)`, `RDATE_12 (%Y%m)`, `RDATE_13 (%Y%m)`, `RDATE_14 (%Y%m)`, `RDATE_15 (%Y%m)`, `RDATE_16 (%Y%m)`, `RDATE_17 (%Y%m)`, `RDATE_18 (%Y%m)`, `RDATE_19 (%Y%m)`, `RDATE_20 (%Y%m)`, `RDATE_21 (%Y%m)`, `RDATE_22 (%Y%m)`, `RDATE_23 (%Y%m)`, `RDATE_24 (%Y%m)`, `MAXADATE (%Y%m)`, `ODATEDW (%Y%m)`, `MINRDATE (%Y%m)`, `MAXRDATE (%Y%m)`, `LASTDATE (%Y%m)`, `FISTDATE (%Y%m)`, `NEXTDATE (%Y%m)`
 
@@ -183,11 +184,11 @@ The first 5 of 191,769 rows of the final frame (random rows: the frame is shuffl
 
 | TARGET_B | ODATEDW | OSOURCE | STATE | ZIP | MAILCODE | PVASTATE | DOB | NOEXCH | RECINHSE | RECP3 | RECPGVG |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 1990-01-01 00:00:00 | WKB | FL | 33980 | Address is OK | P | NaT | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
-| 0 | 1988-01-01 00:00:00 | LIS | WA | 98685 | Address is OK | nan | NaT | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
-| 0 | 1988-01-01 00:00:00 | LIS | CA | 93446 | Address is OK | nan | 1925-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
-| 0 | 1996-01-01 00:00:00 | HFH | CA | 92843 | Address is OK | nan | 1920-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
-| 0 | 1986-01-01 00:00:00 | DRK | CA | 90712 | Address is OK | nan | 1954-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
+| 0 | 1990-01-01 00:00:00 | LHJ | NV | 89015 | Address is OK | nan | NaT | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
+| 0 | 1986-01-01 00:00:00 | GUR | ND | 58545 | Address is OK | nan | 1933-08-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
+| 0 | 1991-01-01 00:00:00 | PCL | OK | 73045 | Address is OK | nan | NaT | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
+| 0 | 1992-01-01 00:00:00 |  | WI | 54915 | Address is OK | nan | NaT | 0-nan-case | Not an In House Record | Donor has given to PVA's P3 program | Not a Planned Giving Record |
+| 0 | 1986-01-01 00:00:00 | FRC | WY | 82009 | Address is OK | nan | 1935-06-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
 
 ## Curation notes
 
@@ -208,6 +209,11 @@ We start with the train and validation data from the KDD Cup 1998 website and co
 - We resolve the ordinal encoding and nan encoding for all columns.
 - Note, that data has a lot of features that contain data from a similar origin that was transformed into individual columns.
 - We do not decode the promotion codes across years but keep them as string columns as it would blow up the dimensionality too much otherwise.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 12 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); 3 of them were shipped as numbers; 3 hold a state
+  outside the scale, placed by the curator's rule (missing when the column has no other missing value, else the
+  lowest level; a state that is simply not on the scale, such as Other, is missing); codes that mean unknown are
+  missing (CLEAN-10).
 
 ## Splits
 
@@ -246,6 +252,9 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| MDMAUD_recency | category | 191201 | 99.7 | 4 | Current Donor, Lapsed Donor, Dormant Donor, Inactive Donor |
+| MDMAUD_frequency | category | 191201 | 99.7 | 3 | One gift in the period of recency, Two-Four gifts in the period of recency, Fiv… |
+| MDMAUD_amount | category | 191201 | 99.7 | 4 | $100-499 (Core), Less than $100 (Low Dollar), $500-999 (Major), $1,000+ (Top) |
 | PLATES | category | 190646 | 99.41 | 1 | Yes |
 | HOMEE | category | 189973 | 99.06 | 1 | Yes |
 | CARDS | category | 189737 | 98.94 | 1 | Yes |
@@ -271,7 +280,10 @@ Default splits.
 | PETS | category | 162914 | 84.95 | 1 | Yes |
 | LIFESRC | category | 108819 | 56.74 | 3 | MATCHED ON POLK ONLY, MATCHED BOTH MM AND POLK, MATCHED ON METRO MAIL ONLY |
 | PEPSTRFL | category | 100866 | 52.6 | 1 | Has PEP Star RFA Status |
+| WEALTH1 | category | 89940 | 46.9 | 10 | 9.0, 8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.0 |
+| WEALTH2 | category | 88052 | 45.92 | 10 | 9.0, 8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.0 |
 | HOMEOWNR | category | 44734 | 23.33 | 2 | Homeowner, Unknown |
+| INCOME | category | 42798 | 22.32 | 7 | 5.0, 2.0, 4.0, 1.0, 3.0, 6.0, 7.0 |
 | DATASRCE | category | 42781 | 22.31 | 3 | Both, Polk, MetroMail |
 | GENDER | category | 5912 | 3.08 | 6 | Female, Male, Unknown, Joint Account, unknown gender, C, A |
 | CLUSTER | category | 4727 | 2.46 | 53 | 40, 35, 24, 36, 27, 49, 12, 18, 13, 45 |
@@ -294,18 +306,12 @@ Default splits.
 | HPHONE_D | category | 0 | 0 | 2 | 1, 0 |
 | RFA_2F | category | 0 | 0 | 4 | 1, 2, 3, 4 |
 | RFA_2A | category | 0 | 0 | 4 | F, E, G, D |
-| MDMAUD_recency | category | 0 | 0 | 5 | Not applicable, Current Donor, Lapsed Donor, Dormant Donor, Inactive Donor |
-| MDMAUD_frequency | category | 0 | 0 | 4 | Not applicable, One gift in the period of recency, Two-Four gifts in the period… |
-| MDMAUD_amount | category | 0 | 0 | 5 | Not applicable, $100-499 (Core), Less than $100 (Low Dollar), $500-999 (Major),… |
-| RDATE_5 | datetime64\[ns\] | 191743 | 99.99 | 7 | 1996-04-01 00:00:00, 1997-03-01 00:00:00, 1996-06-01 00:00:00, 1996-05-01 00:00… |
+| RDATE_5 | datetime64\[ns\] | 191743 | 99.99 | 7 | 1996-04-01 00:00:00, 1997-03-01 00:00:00, 1996-06-01 00:00:00, 1998-03-01 00:00… |
 | RDATE_3 | datetime64\[ns\] | 191312 | 99.76 | 18 | 1996-06-01 00:00:00, 1996-07-01 00:00:00, 1997-04-01 00:00:00, 1996-08-01 00:00… |
 | RDATE_4 | datetime64\[ns\] | 191183 | 99.69 | 24 | 1996-05-01 00:00:00, 1996-04-01 00:00:00, 1996-06-01 00:00:00, 1996-01-01 00:00… |
 | RDATE_6 | datetime64\[ns\] | 190168 | 99.17 | 21 | 1996-03-01 00:00:00, 1995-12-01 00:00:00, 1996-04-01 00:00:00, 1995-11-01 00:00… |
 | RDATE_15 | datetime64\[ns\] | 177341 | 92.48 | 16 | 1995-05-01 00:00:00, 1995-06-01 00:00:00, 1995-07-01 00:00:00, 1995-08-01 00:00… |
 | RDATE_23 | datetime64\[ns\] | 176186 | 91.87 | 17 | 1994-08-01 00:00:00, 1994-07-01 00:00:00, 1994-09-01 00:00:00, 1994-10-01 00:00… |
-| RDATE_20 | datetime64\[ns\] | 175909 | 91.73 | 10 | 1994-12-01 00:00:00, 1994-11-01 00:00:00, 1995-01-01 00:00:00, 1995-02-01 00:00… |
-| RDATE_7 | datetime64\[ns\] | 173962 | 90.71 | 13 | 1996-03-01 00:00:00, 1996-02-01 00:00:00, 1996-01-01 00:00:00, 1996-04-01 00:00… |
-| RDATE_17 | datetime64\[ns\] | 173028 | 90.23 | 11 | 1995-03-01 00:00:00, 1995-02-01 00:00:00, 1995-04-01 00:00:00, 1995-05-01 00:00… |
 
 (418 more rows not shown)
 
@@ -321,14 +327,12 @@ Default splits.
 ### Numeric features
 
 <details>
-<summary>Show the table (347 rows)</summary>
+<summary>Show the table (344 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | AGE | 144091 | 61.6289 | 16.6652 | 1 | 98 |
 | NUMCHLD | 24716 | 1.53083 | 0.810449 | 1 | 7 |
-| INCOME | 148971 | 3.89297 | 1.85211 | 1 | 7 |
-| WEALTH1 | 101829 | 5.35028 | 2.74719 | 0 | 9 |
 | HIT | 191769 | 3.31684 | 9.1041 | 0 | 242 |
 | MBCRAFT | 85565 | 0.150669 | 0.470677 | 0 | 6 |
 | MBGARDEN | 85565 | 0.0590545 | 0.261758 | 0 | 4 |
@@ -351,7 +355,6 @@ Default splits.
 | LOCALGOV | 191769 | 6.83301 | 4.3627 | 0 | 99 |
 | STATEGOV | 191769 | 4.57277 | 5.12607 | 0 | 99 |
 | FEDGOV | 191769 | 3.12038 | 4.17505 | 0 | 99 |
-| WEALTH2 | 103717 | 4.94657 | 2.80809 | 0 | 9 |
 | POP901 | 191769 | 3265.8 | 5756.63 | 0 | 100286 |
 | POP902 | 191769 | 868.613 | 1466.81 | 0 | 23766 |
 | POP903 | 191769 | 1227.52 | 2137.22 | 0 | 35403 |
@@ -385,15 +388,18 @@ Default splits.
 | AGE907 | 191769 | 24.494 | 7.50701 | 0 | 75 |
 | CHIL1 | 191769 | 39.5943 | 8.21835 | 0 | 99 |
 | CHIL2 | 191769 | 38.3615 | 6.38461 | 0 | 99 |
+| CHIL3 | 191769 | 21.0123 | 5.79012 | 0 | 99 |
+| AGEC1 | 191769 | 12.1736 | 6.02875 | 0 | 99 |
+| AGEC2 | 191769 | 22.1747 | 7.78128 | 0 | 99 |
 
-(287 more rows not shown)
+(284 more rows not shown)
 
 </details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (527 rows)</summary>
+<summary>Show the table (542 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -458,7 +464,7 @@ Default splits.
 | ADATE_24 | 3 | 1994-05-01 00:00:00 | 593 | 0.31 |
 | ADATE_3 | 1 | 1996-06-01 00:00:00 | 187810 | 97.94 |
 
-(467 more rows not shown)
+(482 more rows not shown)
 
 </details>
 
@@ -473,4 +479,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:55c531a54f176b916829c7f5acde3077278d85a83f4e603fabe69e723c34e4f8` |
+| stale | yes: the definition now gives checksum `v2:449b4df8a2922cab0a1e5c7dd6da7b9e04ff0ab671b73bb72db5ba9c144b7314` |

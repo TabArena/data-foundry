@@ -47,6 +47,8 @@ CC (2026-10-06, Lennart): Re-defined the target after the task-probe review (fla
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — UCI page defines no metric; Protos reported classification accuracy on the 24 original diagnoses, a different target from our 3 grouped types, so no metric is defined for the shipped task.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 6 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `air`, `ar_c`, `ar_u`, `bone`, `o_ar_c`, `o_ar_u` (the README lists their levels); their codes that mean unknown (don't know, refused, not asked) are missing in `bone` (CLEAN-10); left unordered: `speech` (a partial order).
+
 ## Reference
 
 @incollection{bareiss1990protos,

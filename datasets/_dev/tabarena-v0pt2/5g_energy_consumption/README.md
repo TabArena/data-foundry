@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: 5g_energy_consumption
 container_format: 2
-checksum: v2:9fa64f6e8132b873d4d1d346e7a88a35b05b66f869ba4c20370b6db4b4c77b61
+checksum: v2:cf916dd5ffc5b4c2995e01640c48237640a5e2f075f041375b066e1bb7d76f43
 build:
   uuid: 01a111fc-7d10-76f4-b97c-284becb386ec
   checksum: v2:f656e1e34bd973009beb9f9a0f191920552ec4d008bfda996ba0dd0cd957ff85
@@ -22,9 +22,9 @@ data:
   n_rows: 92629
   n_features: 20
   dtypes:
-    category: 3
+    category: 4
     float64: 14
-    int32: 3
+    int32: 2
     int64: 2
   n_test_dataset_rows: null
 task:
@@ -76,7 +76,7 @@ decisions: []
 
 Regression of `Energy`, scored with `mape` on grouped splits by `BS`. 92,629 rows and 20 features. Source: Zindi (2023).
 
-Built as `01a111fc-7d10-76f4-b97c-284becb386ec` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9fa64f6e8132b873d4d1d346e7a88a35b05b66f869ba4c20370b6db4b4c77b61`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7d10-76f4-b97c-284becb386ec` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:cf916dd5ffc5b4c2995e01640c48237640a5e2f075f041375b066e1bb7d76f43`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -159,9 +159,9 @@ Only curators run `build`, when the dataset ships.
 | reason | false: the per-row WMAPE weights come with the test file and are not published; every test station here is new, so unweighted mape is the closest stand-in |
 
 <details>
-<summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 4 categorical, 0 string, 0 datetime</summary>
 
-- categorical (3): `BS`, `RUType`, `Mode`
+- categorical (4): `BS`, `RUType`, `Mode`, `weekday_number`
 - string (0): none
 - datetime (0): none
 
@@ -247,7 +247,7 @@ One group is a base station; its rows are its hourly measurements. The ITU AI/ML
 | largest group | 0.1% of the rows |
 | test groups per fold | 307 to 308 |
 | groups of two or more rows with a single label | 0.0% |
-| nearest neighbour in the same group | 5.1% of the rows (chance: 0.1%) |
+| nearest neighbour in the same group | 5.4% of the rows (chance: 0.1%) |
 | label variance explained by the group | 0.86 (shuffled groups: 0.01) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
@@ -269,6 +269,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | BS | category | 0 | 0 | 923 | B_583, B_728, B_261, B_669, B_512, B_26, B_168, B_777, B_160, B_733 |
 | RUType | category | 0 | 0 | 12 | Type4, Type6, Type1, Type7, Type3, Type2, Type5, Type9, Type10, Type8 |
 | Mode | category | 0 | 0 | 2 | Mode2, Mode1 |
+| weekday_number | category | 0 | 0 | 7 | 0, 1, 6, 2, 4, 3, 5 |
 | load_Cell1 | float64 | 87254 | 94.2 | 4392 | 0.0459, 0.0458, 0.0459, 0.0344, 0.0582, 0.046, 0.0462, 0.046, 0.0462, 0.0459 |
 | ESMode1_Cell1 | float64 | 87254 | 94.2 | 25 | 0.0, 1.0, 0.5, 0.9889, 0.5444, 0.5194, 0.9431, 0.9806, 0.6375, 0.1847 |
 | ESMode2_Cell1 | float64 | 87254 | 94.2 | 24 | 0.0, 1.0, 0.9889, 0.5439, 0.5178, 0.9436, 0.9806, 0.6356, 0.1836, 0.0011 |
@@ -284,7 +285,6 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | Frequency | float64 | 0 | 0 | 8 | 365.0, 532.0, 189.0, 426.98, 155.6, 697.002, 364.0, 979.998 |
 | TXpower | float64 | 0 | 0 | 25 | 6.8759, 6.4275, 6.1286, 7.3259, 5.9791, 5.6801, 6.577, 6.7265, 8.0345, 5.3812 |
 | day | int32 | 0 | 0 | 8 | 2, 3, 1, 4, 6, 5, 7, 8 |
-| weekday_number | int32 | 0 | 0 | 7 | 0, 1, 6, 2, 4, 3, 5 |
 | hour | int32 | 0 | 0 | 24 | 2, 21, 8, 18, 19, 5, 15, 14, 20, 1 |
 | Bandwidth | int64 | 0 | 0 | 5 | 20, 10, 2, 5, 8 |
 | Antennas | int64 | 0 | 0 | 6 | 2, 1, 4, 32, 8, 64 |
@@ -300,7 +300,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 ### Numeric features
 
 <details>
-<summary>Show the table (19 rows)</summary>
+<summary>Show the table (18 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -321,7 +321,6 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | ESMode3_Cell1 | 5375 | 0.000148181 | 0.00255468 | 0 | 0.0628053 |
 | ESMode6_Cell1 | 5375 | 0.387457 | 0.396055 | 0 | 0.927924 |
 | day | 92629 | 3.53941 | 1.83091 | 1 | 8 |
-| weekday_number | 92629 | 2.66745 | 2.06081 | 0 | 6 |
 | hour | 92629 | 11.5768 | 6.89432 | 0 | 23 |
 
 </details>
@@ -329,7 +328,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 ### Categorical features
 
 <details>
-<summary>Show the table (12 rows)</summary>
+<summary>Show the table (17 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -345,6 +344,11 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | RUType | 3 | Type1 | 19902 | 21.49 |
 | RUType | 4 | Type7 | 12641 | 13.65 |
 | RUType | 5 | Type3 | 4442 | 4.8 |
+| weekday_number | 1 | 0 | 17820 | 19.24 |
+| weekday_number | 2 | 1 | 15742 | 16.99 |
+| weekday_number | 3 | 6 | 14969 | 16.16 |
+| weekday_number | 4 | 2 | 13482 | 14.55 |
+| weekday_number | 5 | 4 | 13353 | 14.42 |
 
 </details>
 
@@ -359,4 +363,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:9fa64f6e8132b873d4d1d346e7a88a35b05b66f869ba4c20370b6db4b4c77b61` |
+| stale | yes: the definition now gives checksum `v2:cf916dd5ffc5b4c2995e01640c48237640a5e2f075f041375b066e1bb7d76f43` |
