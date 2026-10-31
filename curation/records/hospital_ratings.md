@@ -4,7 +4,7 @@ name: Hospital ratings
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> 2nd Tier
-priority: 2
+priority: 1
 decision_markers:
 - No Good Target (yet)
 tags:
@@ -42,3 +42,5 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (medical not thin), use case 0 (none stated), source + (CMS), shape + (over 4,000 rows, mixed categorical columns); `original_data_state` says Database but the Kaggle release is one file (2.6 MB), left as set, risk - (target computed from the shipped measure groups).
 
 Kaggle dataset of CMS/Medicare.gov hospital ratings, already tagged 2nd Tier / Scientific Discovery. Predicting a hospital star rating is plausible as a tabular task, but the overall rating is computed deterministically from the same quality-measure columns, creating a strong leakage risk, and much of the file is administrative/descriptive metadata rather than predictive features. A human must determine whether a non-leaky target and adequate clean feature set exist (and how to join the multiple measure tables). Keep in 2nd tier pending that inspection.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `cms_hospital_general_information` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

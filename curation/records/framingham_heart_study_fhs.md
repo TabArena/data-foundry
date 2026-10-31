@@ -61,6 +61,8 @@ CC (2026-10-22, Lennart): issue 1: (a), hard ASCVD within 10 years, as it matche
 
 CC (2026-10-26, Lennart): verdict ship.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nhanes_cvd_mortality` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 https://www.nhlbi.nih.gov/sites/default/files/media/docs/risk-assessment.pdf

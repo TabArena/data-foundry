@@ -1,0 +1,38 @@
+---
+unique_name: freddie_mac_single_family_default
+name: 'Freddie Mac Single-Family Loan-Level Dataset: default at origination'
+checked_by:
+- AI (UNVERIFIED)
+suggestion: TBD -> Yes
+priority: 3
+tags:
+- AI-Filled (Verify)
+original_source: Company
+domain: finance
+problem_type: Binary Classification
+original_data_state: Database (or multiple to-be-joined tables)
+source_links:
+- https://www.freddiemac.com/research/datasets/sf-loanlevel-dataset
+needs_review:
+- ai_unverified
+type_adapter_id: curation-record-v1
+---
+
+## Comments
+
+**⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from the source's pages and papers (and, where the block says so, a preview of the files), NOT from building the data. A human must verify everything before relying on it.**
+
+**Screening (AI, 2026-10-31):** `TBD -> Yes`, priority 3: Freddie Mac's loan-level origination and monthly performance files for about 56 million real US mortgages, published so investors can model credit performance; default at origination is a clear lending task, but the default label and its horizon are ours to define from the monthly status.
+- Source: Freddie Mac, Single-Family Loan-Level Dataset (https://www.freddiemac.com/research/datasets/sf-loanlevel-dataset; first released in 2013 per the run's notes, not confirmed on the page). As published: the Standard and Non-Standard datasets cover "approximately 56 million mortgages", originated from January 1999, with "monthly loan performance data ... disclosed through June 30, 2026"; per origination year an origination file (credit score, DTI, LTV and CLTV, rate, occupancy, purpose, property type, state, mortgage insurance, channel, seller) and a monthly performance file (delinquency status, zero-balance code, modification), plus sample files (50,000 loans per vintage, per the run). Free registration on Clarity Data Intelligence; use is free "for non-commercial, academic/research and for limited use", commercial redistribution needs a licence (no criterion, EV-4).
+- Use case: the page says the data will "help investors build more accurate credit performance models in support of ongoing risk sharing initiatives"; the decision at origination or acquisition is the price or acceptance of a loan's credit risk; fit direct for a lender or guarantor scoring a new loan; regime temporal by origination vintage (the label horizon must mature before the test window, SPLIT-9).
+- Siblings and duplicates: `freddie_mac_single_family_lgd` (same source, loss given default at default: a distinct task, PROV-7); `fannie_mae_single_family_loan_performance` (the other agency's file, https://capitalmarkets.fanniemae.com/credit-risk-transfer/single-family-credit-risk-transfer/fannie-mae-single-family-loan-performance-data, moved here from source_links as another source, PROV-12; the same at-origination task could be built from it, PROV-4); `mortgage` (`Yes`, the Baesens textbook panel, status per loan and quarter: another prediction point); `homeq_default_prediction` (`No (Retired)`, generated classes) and `lgd` (`No`). External collections: none known (not searched; the session's web search budget ran out).
+- Better data: no new search; found as better data for `homeq_default_prediction`.
+- Papers and pages: Freddie Mac's dataset page (read); its General User Guide and file layout (not read); the many credit-risk papers that use the file (not read).
+- Metric: none found (the dataset page defines no task or metric); fallback `roc_auc` for default within the horizon (MET-1, MET-8). Inputs: none for the metric; the origination month for the temporal split ships.
+- Risks for /add-dataset: the target (for example 90+ days delinquent or a credit-event zero-balance code within N months of origination) and its horizon are our construction (an unclear target until fixed); loans of the last N months before the cutoff have no mature label (SPLIT-9); the label needs the monthly performance file joined to the origination file (a large join; subsample per vintage); post-origination fields (modification, estimated LTV, current UPB) must not enter; relief-refinance programmes change the population over vintages; first-lien mortgages, not the home-equity loans of the retired HMEQ.
+- Priority: gap 0 (finance, binary and temporal are not thin), use case + (the publisher names investors and credit-performance models), source + (the agency's own release with a user guide), shape + (millions of loans over 27 vintages, mixed types), risk - (a target and horizon to define, a join of the monthly files).
+
+**Assessment (AI, 2026-10-31):** a candidate from the data-scouting run of 2026-10-30/31, not screened yet. Found through better data for `homeq_default_prediction`.
+- as published: about 56 million US single-family mortgages originated 1999 - March 2026, with a monthly performance file per loan; a random sample of 50,000 loans per vintage; target: default or serious delinquency (e.g. 90+ days past due, or a credit-event zero-balance code) within a fixed horizon after origination, from the monthly ...; access: registration.
+- Why: HMEQ's BAD (default or serious delinquency of a home-secured loan) predicted at application from borrower credit and collateral (debt-to-income, property value, credit history); Freddie Mac gives the same quantity on real loans with features of the same kind known at origination (credit score, DTI, LTV/CLTV, ...
+- Adds: Real loans instead of the retired textbook file whose classes were generated differently; millions of loans over 27 vintages, a temporal split by origination. Caveats: first-lien mortgages, not home-equity loans; the default label and its horizon are our construction from the monthly status; terms forbid ...

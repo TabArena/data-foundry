@@ -43,6 +43,8 @@ Andrej: Need to test whether time-invariant; Mechanical turk data might be inter
 
 CC (2026-10-27, Lennart): marker Selection Bias, from the AI review of PR #16: the respondents are Amazon Mechanical Turk workers, a volunteer sample rather than the drivers of an in-vehicle recommender, as the web volunteers of obesity_estimation; the stated intentions about imagined trips are a separate gap, already in the fit_reason.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `tianchi_o2o_coupon_redemption` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 A Bayesian framework for learning rule sets for interpretable classification By Wang, Tong, Cynthia Rudin, Finale Doshi-Velez, Yimin Liu, Erica Klampfl, and Perry MacNeille. 2017

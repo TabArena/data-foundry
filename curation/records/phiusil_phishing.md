@@ -46,6 +46,8 @@ CC (2026-10-26, Lennart): "Yes exclude" (issue 1): `No` + `Data Quality Issue`; 
 
 **Assessment (AI, 2026-10-26):** excluded: the two classes were collected in different forms (every legitimate row a ranked site's homepage as https://www.<domain>, half of the phishing rows takedown or error pages), so a fixed rule without training reaches ROC AUC 0.9998 and every split gives 1.0; Mendeley versions 1 and 2 hold the same file, so nothing can be repaired from the origin. The definition with its six decision tables is in git history before this change; the evidence is in the assessment of 2026-10-20.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `pilwd_134k_phishing` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Prasad, A., & Chandra, S. (2023). PhiUSIIL: A diverse security profile empowered phishing URL detection framework based on similarity index and incremental learning. Computers & Security, 103545. doi: https://doi.org/10.1016/j.cose.2023.103545

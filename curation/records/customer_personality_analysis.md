@@ -52,6 +52,8 @@ Well-known Kaggle 'Customer Personality Analysis' marketing dataset (~2240 rows,
 
 CC: "Looks like a nice dataset, but source is not entirely clear to me. Also might be more a clustering task than predictive task? - could make it a predictive task using the following feature as target: Response: 1 if customer accepted the offer in the last campaign, 0 otherwise. However, we don't know enough about the time when the features were collected, so rather not use this task"
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `x5_retailhero_sms_response` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Kaggle

@@ -43,6 +43,8 @@ Lennart: temporal data
 
 Andrej: unsure whether the features are extracted from time-series. even if yes, they are extracted from 8h windows and I think this is rather a tabular task. BUT: Temporal correlations need to be investigated. unsure whether the extracted features are time-invariant
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `aaia16_coal_mine_seismic_hazard` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 See some of the papers on UCI

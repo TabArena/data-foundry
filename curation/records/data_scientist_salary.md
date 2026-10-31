@@ -4,7 +4,7 @@ name: data_scientist_salary
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> 2nd Tier
-priority: 2
+priority: 1
 decision_markers:
 - Data Quality Issue
 - NLP (Text)
@@ -14,6 +14,7 @@ tags:
 - AI-Filled (Verify)
 collections:
 - TabSTAR
+- MulTaBench
 domain: technology & internet
 required_split:
 - Random (IID)
@@ -46,3 +47,5 @@ MachineHack 'Predict the Data Scientist's Salary in India' hackathon (OpenML id 
 ---
 
 Text descriptions are cut off after the first blurb! No full sentences? Salary prediction as a classification instead of a regression task. Otherwise seems like a real-ish task but mostly for string preprocessing
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `adzuna_job_salary_prediction` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

@@ -39,3 +39,5 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (finance, binary, IID not thin), use case 0 (approximate, written for a sponsor), source 0 (survey unnamed), shape + (about 145k rows, many categorical answers), risk - (survey-answer target, likely leaking FQ columns): 1.
 
 Based on the name this is a mobile-banking adoption/usage prediction challenge on Zindi, most likely a financial-inclusion binary classification on demographic/survey tabular features, but the record has no comments. Such tasks are genuine real-world tabular prediction problems, so missing info alone is not a rejection reason. A human must confirm the actual target, check size after cleaning, and verify it does not duplicate the IndabaX Tanzania mobile-banking or broader financial-inclusion datasets.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `global_findex_2025_mobile_banking` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

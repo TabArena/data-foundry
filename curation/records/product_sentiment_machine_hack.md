@@ -10,6 +10,7 @@ decision_markers:
 - NLP (Text)
 collections:
 - TabSTAR
+- MulTaBench
 source_links:
 - https://www.openml.org/search?type=data&id=46651&sort=runs&status=active
 - https://machinehack.com/hackathons/product_ sentiment_classification_weekend_hackathon_19

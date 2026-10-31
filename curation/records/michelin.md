@@ -13,6 +13,8 @@ tags:
 collections:
 - CARTE/TARTE
 - TabSTAR
+- MulTaBench
+- STRABLE
 year: '2026'
 source_links:
 - https://www.kaggle.com/datasets/ngshiheng/michelin-guide-restaurants-2021

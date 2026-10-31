@@ -23,6 +23,8 @@ CC: ""UPDATE: The data was actually extracted from a table with text columns [Na
 
 Deduplication task. Instances compare two spots. Might be clustered data as different labeling methods were used to label the data, although most were simply labeled by humans. TabRepo results show very low errors for all models; task sounds not like a predictive task? ""
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `record_linkage_comparison_patterns` (TBD -> 2nd Tier, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Laurent Candillier and Vincent Lemaire. Design and Analysis of the Nomao Challenge - Active Learning in the Real-World. In: Proceedings of the ALRA : Active Learning in Real-world Applications, Workshop ECML-PKDD 2012, Friday, September 28, 2012, Bristol, UK.

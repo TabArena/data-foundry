@@ -43,6 +43,8 @@ Andrej: We need to write down the reason why we consider some housing datasets a
 
 CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `florida_dor_property_sales` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 https://doi.org/10.1177/0042098020982508

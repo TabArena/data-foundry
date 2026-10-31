@@ -12,6 +12,7 @@ tags:
 collections:
 - TabSTAR
 - Vectorizing Strings
+- MulTaBench
 year: '2016'
 source_links:
 - https://sites.google.com/site/anhaidgroup/useful-stuff/the-magellan-data-repository?authuser=0 / https://pages.cs.wisc.edu/~anhai/data/784_data/books2/csv_files/

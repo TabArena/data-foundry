@@ -14,6 +14,7 @@ tags:
 - New IID
 collections:
 - CARTE/TARTE
+- STRABLE
 source_links:
 - https://www.kaggle.com/datasets/markusschmitz/museums
 source_row: 499

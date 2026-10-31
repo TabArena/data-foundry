@@ -52,3 +52,5 @@ Dataset (1) is a duplicate from the churn dataset in TabArena.
 "China-Churn" Data Requested on 07/03/2026 by Lennart
 
 Found the data on OpenML via TabSTAR? Unclear if duplicate or different data?
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `orange_belgium_churn_uplift` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

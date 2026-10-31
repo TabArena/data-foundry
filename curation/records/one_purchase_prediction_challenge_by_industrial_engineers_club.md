@@ -4,7 +4,7 @@ name: One Purchase Prediction Challenge by Industrial Engineers Club
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> Yes
-priority: 2
+priority: 1
 decision_markers:
 - TBD
 tags:
@@ -43,3 +43,5 @@ A Zindi competition whose stated goal is to predict which customers will purchas
 ---
 
 predict which customer will purchase again
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `ijcai15_repeat_buyers` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

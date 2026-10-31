@@ -30,6 +30,8 @@ Preprocessing: https://www.kaggle.com/code/rohitrox/medical-provider-fraud-detec
 
 We have no information on the source but the data looks quite real. So we could use it and risk it. However, in most other cases we would rule the dataset out as we cannot judge it correctly.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `medicare_provider_leie_exclusion` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Kaggle

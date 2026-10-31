@@ -4,7 +4,7 @@ name: digital-green-crop-yield-estimate-challenge
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> 2nd Tier
-priority: 2
+priority: 1
 decision_markers:
 - No Good Target / Scientific Discovery
 tags:
@@ -47,3 +47,5 @@ Zindi 'Digital Green Crop Yield Estimate Challenge' to predict per-acre rice/whe
 predict the crop yield per acre of rice or wheat crops in India
 
 Survey data, I'd say it should rather be a predictive discovery task
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `csisa_lds_rice_yield_india_2018` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

@@ -55,6 +55,10 @@ CC (2026-10-21, Lennart): the declared metric stays as it is (`balanced_accuracy
 
 CC (2026-10-27, Lennart): marker Anonymized, from the AI review of PR #17: the agnostic track of the challenge gives the 1,617 binary structure descriptors without names (the prior knowledge track had the structures instead), so their meaning cannot be checked; the definition's fit_reason says so. Data tag Anonymized added to the definition.
 
+**Assessment (AI, 2026-10-31):** the benchmark ChemPile (https://arxiv.org/abs/2505.12534) carries a related version, "hiv", not this record's data, so no collection tag: NCI Developmental Therapeutics Program AIDS Antiviral Screen (released 1999-2004), curated by MoleculeNet (Wu et al. 2018). Related records: hiva_agnostic ('DF: Yes', the 2007 Agnostic Learning challenge subset of the same screen with 1,617 anonymized descriptors) and hiv_qsar (OpenML 1039, marked Duplicate, 'No'). This config is the full screen with SMILES rather than the challenge subset, which is also what scout_0
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nci_aids_antiviral_screen` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Datasets from the Agnostic Learning vs. Prior Knowledge Challenge (http://www.agnostic.inf.ethz.ch)

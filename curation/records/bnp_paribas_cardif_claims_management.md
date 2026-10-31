@@ -35,6 +35,8 @@ Looks good but needs some help with preprocessing and co
 
 The data is anonymized and we cannot recover the original grouped, temporal structure. It might be possible to approximate that by studying the top solutions, but this would be a lot of work
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `ny_wcb_assembled_claims` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Anna Montoya, detoldim, Dumora, Lam Dang, Sebastien Conort, and Will Cukierski. BNP Paribas Cardif Claims Management. https://kaggle.com/competitions/bnp-paribas-cardif-claims-management, 2016. Kaggle.

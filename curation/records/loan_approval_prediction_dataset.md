@@ -26,3 +26,5 @@ I cannot determine if it is fake or not. It is used a lot.
 Rel "Data Mining for Business Intelligence" by Galit Shmueli et al.?
 
 Based on the available information, this does not look like a good task. Filter it for now
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `hmda_mortgage_application_decision` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

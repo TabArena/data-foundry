@@ -33,6 +33,8 @@ Check for group or temporal split
 
 it also seems this was more a data mining than prediction task? No need to generalize to new data!
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `bosch_production_line_performance` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Evans, B., and Fisher, D. (1994). Overcoming process delays with decision tree induction. IEEE Expert, Vol. 9, No. 1, 60--66.

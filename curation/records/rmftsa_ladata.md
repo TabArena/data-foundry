@@ -33,6 +33,8 @@ CC: "Actual task is regression, data apparently was collected between 1970-79. A
 
 Mortality is leaking, but also seems like a multivariate forecasting task. Unclear if this is the line or borderline, need to finalize
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `chicago_nmmaps_cvd_mortality` (TBD -> 2nd Tier, priority 1). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Data Sets for 'Regression Models for Time Series Analysis' by B. Kedem and K. Fokianos, Wiley 2002. Submitted by Kostas Fokianos (fokianos@ucy.ac.cy) [8/Nov/02] (176k)

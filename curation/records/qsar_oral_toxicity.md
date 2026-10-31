@@ -12,6 +12,7 @@ tags:
 - Non-IID (Grouped)
 collections:
 - New (BeyondArena)
+- ChemPile
 original_source: Other
 year: '2019'
 domain: chemistry & material science

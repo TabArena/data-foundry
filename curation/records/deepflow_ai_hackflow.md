@@ -41,3 +41,5 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0, use case 0 (design-stage surrogate), source 0 (no provider, no codebook beyond the page), shape + (78,000 rows, about 30 columns), risk - (likely simulated, EUI leak): 1.
 
 Zindi 'deepflow-ai-hackflow' competition with no description, comments, or metadata in the record, so task type, target, domain, modality, and size are all unknown. The 'deep ... flow' naming gives no reliable signal and Zindi competitions span tabular, image, and forecasting tasks. Insufficient information to assess, and that alone is not a rejection reason. A human must inspect the competition page to determine modality, task, target, size, and split.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `cbecs_2018_building_energy_use` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

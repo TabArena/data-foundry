@@ -40,6 +40,8 @@ CC (2026-10-01, Lennart): Leak audit, kept as is with a comment in the definitio
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Rousseauw et al. 1983 and ESL score no predictions; a case-control sample sets the case share by design, so a ranking metric.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `aric_incident_chd` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @article{rossouw1983coronary,

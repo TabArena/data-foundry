@@ -12,6 +12,7 @@ decision_markers:
 - NLP (Text)
 collections:
 - TabSTAR
+- MulTaBench
 source_links:
 - https://www.kaggle.com/datasets/nicapotato/womens-ecommerce-clothing-reviews/
 - https://arxiv.org/abs/1805.03687
