@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-10-31 13:00 UTC: 166 claim(s) (Andrej 24, Lennart 122, Myunghwan 20).
+As of 2026-10-31 13:00 UTC: 107 claim(s) (Andrej 24, Lennart 63, Myunghwan 20).
 
 ## Andrej
 
@@ -39,126 +39,67 @@ As of 2026-10-31 13:00 UTC: 166 claim(s) (Andrej 24, Lennart 122, Myunghwan 20).
 |---|---|---|---|---|
 | `2_month_survival_rate_prediction` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `5g_energy_consumption` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `aeolus` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `aeolus_rebuilt` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `ai_jobs_net_salaries` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `airbnb` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `american_eagle_prices` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `ames_housing` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `amex_non_iid` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `anes_voting_2026` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `anime_planet` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `arcene` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `ashrae_great_energy_predictor_iii` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `audiology_diagnosis` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `babies_r_us` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `bad_customer_detection` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `bank_marketing` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `beer` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `book_price_prediction` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `books_goodreads` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `breast_cancer_prediction` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `california_house_prices_2020` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `cardiotocography` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `chocolate_bar_ratings` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `churn_telco_south_asia` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `cirrhosis_patient_survival_prediction` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `clear_corpus` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `climate_model_weather_forecasting` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `clock_protein_toxicity` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `coffee_rating_prediction` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `coil_2000` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `college_scorecard` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `consumer_complaints` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `cooking_time` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `covid_trials` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `credit_card_clients_default` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `credit_g` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `data_scientist_salary` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `delivery_eta` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `dementia_prediction` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `diabetes_130_us` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `diamonds` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `differentiated_thyroid_cancer_recurrence` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `distribution_transformers_at_cauca_department` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `drug_directory` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `early_learning_predictors` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `employee_remuneration_and_expenses_earning_over_75000` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `employee_salaries` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `emscad` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `eryhemato_squamous_disease` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `expresso_churn_prediction` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `fifa` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `framingham_heart_study_fhs` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `fraud_detection_in_electricity_and_gas_consumption` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `gallstone_disease` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `heart_disease` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `heloc` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `hiva_agnostic` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `home_credit_default_risk` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `home_credit_default_stability` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `horse_colic_survival` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `hotel_booking_demand` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `house_sales` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `hr_analytics` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `hs_cards_data` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `imdb_genre_prediction` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `immoscout_german_house_prices` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `in_vehicle_coupon_recommendation` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `infrared_thermography_temperature` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `insurance_complaints` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `jigsaw_unintended_bias100k` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `journal_score_sjr` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `kickstarter` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `korean_drama` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `lending_club` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `ljubljana_breast_cancer` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `ljubljana_primary_tumor` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `loan_ibrd` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `maps_router_eta` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `melbourne_airbnb_open_data` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `melting_point` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `mercari_price_suggestion` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `mic` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `michelin` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `movie_revenues` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `museums` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `obesity_estimation` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `online_shoppers_purchasing_intention_dataset` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `onlinenewspopularity` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `open_university_learning_analytics_dataset` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `osha_accidents_data` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `ova_breast` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `predict_students_dropout_and_academic_success` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `product_sentiment_machine_hack` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `pva_revenue_prediction_kddcup98` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `qsar_oral_toxicity` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `rain_in_australia` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `ramen_ratings` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `regensburg_pediatric_appendicitis` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `rotten_tomatoes` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `sberbank_housing_market_forecasting` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `sdss_17` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `sf_permit_time` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `spotify_tracks_dataset` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `student_portuguese_performance` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `tcga_coad_molecular_subtype` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `tour_travels_churn` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `us_accidents` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `used_cars_pakistan` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `used_cars_saudi_arabia` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `videogame_sales` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `website_phishing` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `whisky` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 | `wids_diabetes_mellitus` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `wikiliq_spirit` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `wina_poland` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `wine_world_cost` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `wineenthusiasts` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `winevivino` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `women_clothing_review` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `yelp` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
-| `zomato` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: add benchmark collection tags / version notes |
 
 ## Myunghwan
 
