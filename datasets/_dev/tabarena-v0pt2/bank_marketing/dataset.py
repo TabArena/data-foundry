@@ -72,9 +72,8 @@ class BankMarketing(AbstractCuratedDataset):
         - `campaign` and `previous` are counts of contacts (UCI: "number of contacts performed during this campaign",
           "... before this campaign"), so they stay numeric. The BeyondArena notebook typed them categorical (48 and
           41 levels), which lost the order and left the high counts as rare levels (issue #34).
-        - Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
-          codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
-          (CLEAN-10).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing (CLEAN-10).
     """
 
     # Task
@@ -116,7 +115,8 @@ class BankMarketing(AbstractCuratedDataset):
         data.columns = feature_names
         df = data
         df = df.drop(columns=["day", "month", "duration"])
-        # codes outside a scale that mean unknown (don't know, refused, not asked): missing (CLEAN-10)
+        # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
+        # CLEAN-14): don't know, refused, not asked, other
         df = set_missing(
             df,
             {

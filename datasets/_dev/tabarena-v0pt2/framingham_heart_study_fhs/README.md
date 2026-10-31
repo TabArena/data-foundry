@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: framingham_heart_study_fhs
 container_format: 2
-checksum: v2:0de4ae9752526a94207457191680865266597b7ea4cafaac2e9faff67bc4bbeb
+checksum: v2:019bcabaefab056ec648bb4bf29b2b0ef21820f0cfb952473aa2389db71834b8
 build: null
 build_stale: false
 data:
@@ -60,7 +60,7 @@ decisions:
 
 Binary classification of `ascvd_within_10_years`, scored with `roc_auc` on IID splits. 4,199 rows and 14 features. Source: GOV Website (2004).
 
-Not built yet. The current definition gives checksum `v2:0de4ae9752526a94207457191680865266597b7ea4cafaac2e9faff67bc4bbeb`.
+Not built yet. The current definition gives checksum `v2:019bcabaefab056ec648bb4bf29b2b0ef21820f0cfb952473aa2389db71834b8`.
 
 ## In brief
 
@@ -268,8 +268,8 @@ documentation p. 8); its first release date is not stated.
   split grouped by participant, would make a grouped task; for any CHD (10,759 rows, 1,229 Yes) logistic
   regression rose from 0.736 to 0.745 on the same baseline test rows; not measured for hard ASCVD. Not shipped:
   the use case is a patient's first assessment (USE-11), and the later exams are older, selected survivors.
-- Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
-  codebook (`ORDINAL_LEVELS`).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: student_portuguese_performance
 container_format: 2
-checksum: v2:6476c924c18f3c848822e3ed418474ee64d6dcac39ba6186e5f98a770ae11595
+checksum: v2:e81ed9bf9ea4d74f68cab780e7be64f224628b0d6a37a66164ad492ef04accfc
 build:
   uuid: 01a111fc-bd82-7068-93bd-0d20f8e4fea0
   checksum: v2:15f900151b360044e6e1a9f3d90f57359f6b73bc62a377276618fb78091b6cdc
@@ -22,8 +22,8 @@ data:
   n_rows: 649
   n_features: 30
   dtypes:
-    category: 17
-    int64: 14
+    category: 28
+    int64: 3
   n_test_dataset_rows: null
 task:
   target: G3
@@ -67,7 +67,7 @@ decisions: []
 
 Regression of `G3`, scored with `rmse` on IID splits. 649 rows and 30 features. Source: UCI (2014).
 
-Built as `01a111fc-bd82-7068-93bd-0d20f8e4fea0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6476c924c18f3c848822e3ed418474ee64d6dcac39ba6186e5f98a770ae11595`, so the build is stale. See [Build](#build).
+Built as `01a111fc-bd82-7068-93bd-0d20f8e4fea0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:e81ed9bf9ea4d74f68cab780e7be64f224628b0d6a37a66164ad492ef04accfc`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -145,9 +145,10 @@ Only curators run `build`, when the dataset ships.
 | definition | Root mean squared error of the predicted final grade G3 (0-20); the paper's classification setups use PCC instead |
 
 <details>
-<summary>Feature types: 17 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 17 categorical, 11 ordinal, 0 string, 0 datetime</summary>
 
 - categorical (17): `school`, `sex`, `address`, `famsize`, `Pstatus`, `Mjob`, `Fjob`, `reason`, `guardian`, `schoolsup`, `famsup`, `paid`, `activities`, `nursery`, `higher`, `internet`, `romantic`
+- ordinal (11): `Medu (0 < 1 < 2 < 3 < 4)`, `Fedu (0 < 1 < 2 < 3 < 4)`, `traveltime (1 < 2 < 3 < 4)`, `studytime (1 < 2 < 3 < 4)`, `failures (0 < 1 < 2 < 3)`, `famrel (1 < 2 < 3 < 4 < 5)`, `freetime (1 < 2 < 3 < 4 < 5)`, `goout (1 < 2 < 3 < 4 < 5)`, `Dalc (1 < 2 < 3 < 4 < 5)`, `Walc (1 < 2 < 3 < 4 < 5)`, `health (1 < 2 < 3 < 4 < 5)`
 - string (0): none
 - datetime (0): none
 
@@ -183,6 +184,8 @@ The first 5 of 649 rows of the final frame (random rows: the frame is shuffled);
 We use the data from UCI.
 
 - We drop G1 and G2 to simulate the task to predict the final grade from the base characteristic.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 11 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); 11 of them were shipped as numbers.
 
 ## Splits
 
@@ -277,10 +280,15 @@ Default splits.
 | address | category | 0 | 0 | 2 | U, R |
 | famsize | category | 0 | 0 | 2 | GT3, LE3 |
 | Pstatus | category | 0 | 0 | 2 | T, A |
+| Medu | category | 0 | 0 | 5 | 2, 4, 1, 3, 0 |
+| Fedu | category | 0 | 0 | 5 | 2, 1, 3, 4, 0 |
 | Mjob | category | 0 | 0 | 5 | other, services, at_home, teacher, health |
 | Fjob | category | 0 | 0 | 5 | other, services, at_home, teacher, health |
 | reason | category | 0 | 0 | 4 | course, home, reputation, other |
 | guardian | category | 0 | 0 | 3 | mother, father, other |
+| traveltime | category | 0 | 0 | 4 | 1, 2, 3, 4 |
+| studytime | category | 0 | 0 | 4 | 2, 1, 3, 4 |
+| failures | category | 0 | 0 | 4 | 0, 1, 2, 3 |
 | schoolsup | category | 0 | 0 | 2 | no, yes |
 | famsup | category | 0 | 0 | 2 | yes, no |
 | paid | category | 0 | 0 | 2 | no, yes |
@@ -289,18 +297,13 @@ Default splits.
 | higher | category | 0 | 0 | 2 | yes, no |
 | internet | category | 0 | 0 | 2 | yes, no |
 | romantic | category | 0 | 0 | 2 | no, yes |
+| famrel | category | 0 | 0 | 5 | 4, 5, 3, 2, 1 |
+| freetime | category | 0 | 0 | 5 | 3, 4, 2, 5, 1 |
+| goout | category | 0 | 0 | 5 | 3, 2, 4, 5, 1 |
+| Dalc | category | 0 | 0 | 5 | 1, 2, 3, 4, 5 |
+| Walc | category | 0 | 0 | 5 | 1, 2, 3, 4, 5 |
+| health | category | 0 | 0 | 5 | 5, 3, 4, 1, 2 |
 | age | int64 | 0 | 0 | 8 | 17, 16, 18, 15, 19, 20, 21, 22 |
-| Medu | int64 | 0 | 0 | 5 | 2, 4, 1, 3, 0 |
-| Fedu | int64 | 0 | 0 | 5 | 2, 1, 3, 4, 0 |
-| traveltime | int64 | 0 | 0 | 4 | 1, 2, 3, 4 |
-| studytime | int64 | 0 | 0 | 4 | 2, 1, 3, 4 |
-| failures | int64 | 0 | 0 | 4 | 0, 1, 2, 3 |
-| famrel | int64 | 0 | 0 | 5 | 4, 5, 3, 2, 1 |
-| freetime | int64 | 0 | 0 | 5 | 3, 4, 2, 5, 1 |
-| goout | int64 | 0 | 0 | 5 | 3, 2, 4, 5, 1 |
-| Dalc | int64 | 0 | 0 | 5 | 1, 2, 3, 4, 5 |
-| Walc | int64 | 0 | 0 | 5 | 1, 2, 3, 4, 5 |
-| health | int64 | 0 | 0 | 5 | 5, 3, 4, 1, 2 |
 | absences | int64 | 0 | 0 | 24 | 0, 2, 4, 6, 8, 10, 12, 1, 5, 16 |
 | G3 | int64 | 0 | 0 | 17 | 11, 10, 13, 12, 14, 15, 16, 8, 9, 17 |
 
@@ -314,40 +317,39 @@ Default splits.
 
 ### Numeric features
 
-<details>
-<summary>Show the table (14 rows)</summary>
-
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | age | 649 | 16.7442 | 1.21814 | 15 | 22 |
-| Medu | 649 | 2.51464 | 1.13455 | 0 | 4 |
-| Fedu | 649 | 2.30663 | 1.09993 | 0 | 4 |
-| traveltime | 649 | 1.56857 | 0.74866 | 1 | 4 |
-| studytime | 649 | 1.93066 | 0.82951 | 1 | 4 |
-| failures | 649 | 0.22188 | 0.593235 | 0 | 3 |
-| famrel | 649 | 3.93066 | 0.955717 | 1 | 5 |
-| freetime | 649 | 3.18028 | 1.05109 | 1 | 5 |
-| goout | 649 | 3.1849 | 1.17577 | 1 | 5 |
-| Dalc | 649 | 1.50231 | 0.924834 | 1 | 5 |
-| Walc | 649 | 2.28043 | 1.28438 | 1 | 5 |
-| health | 649 | 3.53621 | 1.44626 | 1 | 5 |
 | absences | 649 | 3.65948 | 4.64076 | 0 | 32 |
 | G3 | 649 | 11.906 | 3.23066 | 0 | 19 |
-
-</details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (43 rows)</summary>
+<summary>Show the table (95 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
+| Dalc | 1 | 1 | 451 | 69.49 |
+| Dalc | 2 | 2 | 121 | 18.64 |
+| Dalc | 3 | 3 | 43 | 6.63 |
+| Dalc | 4 | 4 | 17 | 2.62 |
+| Dalc | 5 | 5 | 17 | 2.62 |
+| Fedu | 1 | 2 | 209 | 32.2 |
+| Fedu | 2 | 1 | 174 | 26.81 |
+| Fedu | 3 | 3 | 131 | 20.18 |
+| Fedu | 4 | 4 | 128 | 19.72 |
+| Fedu | 5 | 0 | 7 | 1.08 |
 | Fjob | 1 | other | 367 | 56.55 |
 | Fjob | 2 | services | 181 | 27.89 |
 | Fjob | 3 | at_home | 42 | 6.47 |
 | Fjob | 4 | teacher | 36 | 5.55 |
 | Fjob | 5 | health | 23 | 3.54 |
+| Medu | 1 | 2 | 186 | 28.66 |
+| Medu | 2 | 4 | 175 | 26.96 |
+| Medu | 3 | 1 | 143 | 22.03 |
+| Medu | 4 | 3 | 139 | 21.42 |
+| Medu | 5 | 0 | 6 | 0.92 |
 | Mjob | 1 | other | 258 | 39.75 |
 | Mjob | 2 | services | 136 | 20.96 |
 | Mjob | 3 | at_home | 135 | 20.8 |
@@ -355,37 +357,41 @@ Default splits.
 | Mjob | 5 | health | 48 | 7.4 |
 | Pstatus | 1 | T | 569 | 87.67 |
 | Pstatus | 2 | A | 80 | 12.33 |
+| Walc | 1 | 1 | 247 | 38.06 |
+| Walc | 2 | 2 | 150 | 23.11 |
+| Walc | 3 | 3 | 120 | 18.49 |
+| Walc | 4 | 4 | 87 | 13.41 |
+| Walc | 5 | 5 | 45 | 6.93 |
 | activities | 1 | no | 334 | 51.46 |
 | activities | 2 | yes | 315 | 48.54 |
 | address | 1 | U | 452 | 69.65 |
 | address | 2 | R | 197 | 30.35 |
+| failures | 1 | 0 | 549 | 84.59 |
+| failures | 2 | 1 | 70 | 10.79 |
+| failures | 3 | 2 | 16 | 2.47 |
+| failures | 4 | 3 | 14 | 2.16 |
+| famrel | 1 | 4 | 317 | 48.84 |
+| famrel | 2 | 5 | 180 | 27.73 |
+| famrel | 3 | 3 | 101 | 15.56 |
+| famrel | 4 | 2 | 29 | 4.47 |
+| famrel | 5 | 1 | 22 | 3.39 |
 | famsize | 1 | GT3 | 457 | 70.42 |
 | famsize | 2 | LE3 | 192 | 29.58 |
 | famsup | 1 | yes | 398 | 61.33 |
 | famsup | 2 | no | 251 | 38.67 |
+| freetime | 1 | 3 | 251 | 38.67 |
+| freetime | 2 | 4 | 178 | 27.43 |
+| freetime | 3 | 2 | 107 | 16.49 |
+| freetime | 4 | 5 | 68 | 10.48 |
+| freetime | 5 | 1 | 45 | 6.93 |
+| goout | 1 | 3 | 205 | 31.59 |
+| goout | 2 | 2 | 145 | 22.34 |
+| goout | 3 | 4 | 141 | 21.73 |
+| goout | 4 | 5 | 110 | 16.95 |
+| goout | 5 | 1 | 48 | 7.4 |
 | guardian | 1 | mother | 455 | 70.11 |
-| guardian | 2 | father | 153 | 23.57 |
-| guardian | 3 | other | 41 | 6.32 |
-| higher | 1 | yes | 580 | 89.37 |
-| higher | 2 | no | 69 | 10.63 |
-| internet | 1 | yes | 498 | 76.73 |
-| internet | 2 | no | 151 | 23.27 |
-| nursery | 1 | yes | 521 | 80.28 |
-| nursery | 2 | no | 128 | 19.72 |
-| paid | 1 | no | 610 | 93.99 |
-| paid | 2 | yes | 39 | 6.01 |
-| reason | 1 | course | 285 | 43.91 |
-| reason | 2 | home | 149 | 22.96 |
-| reason | 3 | reputation | 143 | 22.03 |
-| reason | 4 | other | 72 | 11.09 |
-| romantic | 1 | no | 410 | 63.17 |
-| romantic | 2 | yes | 239 | 36.83 |
-| school | 1 | GP | 423 | 65.18 |
-| school | 2 | MS | 226 | 34.82 |
-| schoolsup | 1 | no | 581 | 89.52 |
-| schoolsup | 2 | yes | 68 | 10.48 |
-| sex | 1 | F | 383 | 59.01 |
-| sex | 2 | M | 266 | 40.99 |
+
+(35 more rows not shown)
 
 </details>
 
@@ -400,4 +406,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6476c924c18f3c848822e3ed418474ee64d6dcac39ba6186e5f98a770ae11595` |
+| stale | yes: the definition now gives checksum `v2:e81ed9bf9ea4d74f68cab780e7be64f224628b0d6a37a66164ad492ef04accfc` |

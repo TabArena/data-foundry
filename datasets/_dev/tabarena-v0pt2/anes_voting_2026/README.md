@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: anes_voting_2026
 container_format: 2
-checksum: v2:54c29d0efaf38f4f006cf4dd1542fc6eab9ac059452be9a503f098da3cd086f9
+checksum: v2:6a6fffb7ccea025c75ed9a9815a9a9d0baf99b58717bf0efc8befd26a95214f1
 build:
   uuid: 01a111fb-cb34-797a-ba46-5305a0c33af4
   checksum: v2:68b50d2a440c41001df168da2140a54131d4bde60c6aed028178881555c35d42
@@ -22,8 +22,8 @@ data:
   n_rows: 48587
   n_features: 261
   dtypes:
-    category: 225
-    float64: 37
+    category: 228
+    float64: 34
   n_test_dataset_rows: null
 task:
   target: VCF0702
@@ -70,7 +70,7 @@ decisions: []
 
 Binary classification of `VCF0702`, scored with `roc_auc` on temporal splits by `VCF0004`. 48,587 rows and 261 features. Source: Other (2026).
 
-Built as `01a111fb-cb34-797a-ba46-5305a0c33af4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:54c29d0efaf38f4f006cf4dd1542fc6eab9ac059452be9a503f098da3cd086f9`, so the build is stale. See [Build](#build).
+Built as `01a111fb-cb34-797a-ba46-5305a0c33af4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6a6fffb7ccea025c75ed9a9815a9a9d0baf99b58717bf0efc8befd26a95214f1`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -150,10 +150,10 @@ Only curators run `build`, when the dataset ships.
 | reason | ANES (the data's first publication) defines no prediction task. TableShift (Gardner et al. 2023), which defined the voting task, scores accuracy for every task of its benchmark, a house convention, not a choice from the decision; our task differs (temporal year splits, pre-election items only) and 78% voted, so accuracy at 0.5 is coarse. Original rejected: TableShift accuracy. roc_auc is the binary fallback. |
 
 <details>
-<summary>Feature types: 154 categorical, 71 ordinal, 0 string, 0 datetime</summary>
+<summary>Feature types: 151 categorical, 77 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (154): `VCF0105a`, `VCF0105b`, `VCF0106`, `VCF0107`, `VCF0108`, `VCF0109`, `VCF0112`, `VCF0113`, `VCF0115`, `VCF0116`, `VCF0118`, `VCF0126`, `VCF0127`, `VCF0127a`, `VCF0127b`, `VCF0130`, `VCF0132`, `VCF0134`, `VCF0135`, `VCF0137`, `VCF0143`, `VCF0146`, `VCF0147`, `VCF0148`, `VCF0148a`, `VCF0149`, `VCF0150`, `VCF0151`, `VCF0152`, `VCF0154a`, `VCF0154b`, `VCF0155`, `VCF0156`, `VCF0157`, `VCF0170d`, `VCF0302`, `VCF0358`, `VCF0359`, `VCF0360`, `VCF0361`, `VCF0370`, `VCF0371`, `VCF0372`, `VCF0373`, `VCF0374`, `VCF0375a`, `VCF0375b`, `VCF0376a`, `VCF0376b`, `VCF0377a`, `VCF0377b`, `VCF0378a`, `VCF0378b`, `VCF0379a`, `VCF0379b`, `VCF0380`, `VCF0381a`, `VCF0381b`, `VCF0382a`, `VCF0382b`, `VCF0383a`, `VCF0383b`, `VCF0384a`, `VCF0384b`, `VCF0385a`, `VCF0385b`, `VCF0386`, `VCF0387a`, `VCF0387b`, `VCF0388a`, `VCF0388b`, `VCF0389a`, `VCF0389b`, `VCF0390a`, `VCF0390b`, `VCF0391a`, `VCF0391b`, `VCF0392`, `VCF0393a`, `VCF0393b`, `VCF0394a`, `VCF0394b`, `VCF0395a`, `VCF0395b`, `VCF0396a`, `VCF0396b`, `VCF0397a`, `VCF0397b`, `VCF0450`, `VCF0475`, `VCF0476a`, `VCF0476b`, `VCF0477a`, `VCF0477b`, `VCF0478a`, `VCF0478b`, `VCF0479a`, `VCF0479b`, `VCF0480a`, `VCF0480b`, `VCF0481`, `VCF0482a`, `VCF0482b`, `VCF0483a`, `VCF0483b`, `VCF0484a`, `VCF0484b`, `VCF0485a`, `VCF0485b`, `VCF0486a`, `VCF0486b`, `VCF0487`, `VCF0488a`, `VCF0488b`, `VCF0489a`, `VCF0489b`, `VCF0490a`, `VCF0490b`, `VCF0491a`, `VCF0491b`, `VCF0492a`, `VCF0492b`, `VCF0493`, `VCF0494a`, `VCF0494b`, `VCF0495a`, `VCF0495b`, `VCF0496a`, `VCF0496b`, `VCF0497a`, `VCF0497b`, `VCF0498a`, `VCF0498b`, `VCF0702`, `VCF0713`, `VCF0714`, `VCF9001`, `VCF9002`, `VCF9028`, `VCF9029`, `VCF9044`, `VCF9217`, `VCF9218`, `VCF9222`, `VCF9224`, `VCF9243`, `VCF9265`, `VCF9266`, `VCF9277`, `VCF9278`, `VCF9279`, `VCF9280`, `VCF9281`, `VCF9282`
-- ordinal (71): `VCF0110 (1 < 2 < 3 < 4)`, `VCF0111 (3 < 2 < 1)`, `VCF0114 (1 < 2 < 3 < 4 < 5)`, `VCF0130a (5 < 4 < 3 < 2 < 1 < 0)`, `VCF0138 (0 < 1 < 2 < 3)`, `VCF0140 (1 < 2 < 3 < 4 < 5 < 6)`, `VCF0140a (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF0301 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF0303 (1 < 2 < 3)`, `VCF0305 (1 < 2 < 3 < 4)`, `VCF0310 (1 < 2 < 3)`, `VCF0311 (1 < 2)`, `VCF0314 (0 < 1 < 2 < 3 < 4 < 5)`, `VCF0315 (0 < 1 < 2 < 3 < 4 < 5)`, `VCF0318 (0 < 1 < 2 < 3 < 4 < 5)`, `VCF0319 (0 < 1 < 2 < 3 < 4 < 5)`, `VCF0338 (4 < 3 < 2 < 1)`, `VCF0339 (4 < 3 < 2 < 1)`, `VCF0341 (4 < 3 < 2 < 1)`, `VCF0350 (4 < 3 < 2 < 1)`, `VCF0351 (4 < 3 < 2 < 1)`, `VCF0353 (4 < 3 < 2 < 1)`, `VCF0354 (4 < 3 < 2 < 1)`, `VCF0355 (4 < 3 < 2 < 1)`, `VCF0356 (4 < 3 < 2 < 1)`, `VCF0357 (4 < 3 < 2 < 1)`, `VCF0362 (4 < 3 < 2 < 1)`, `VCF0365 (4 < 3 < 2 < 1)`, `VCF0366 (4 < 3 < 2 < 1)`, `VCF0367 (4 < 3 < 2 < 1)`, `VCF0368 (4 < 3 < 2 < 1)`, `VCF0369 (4 < 3 < 2 < 1)`, `VCF0401 (0 < 1 < 2 < 3 < 4 < 5)`, `VCF0402 (0 < 1 < 2 < 3 < 4 < 5)`, `VCF0405 (0 < 1 < 2 < 3 < 4 < 5)`, `VCF0406 (0 < 1 < 2 < 3 < 4 < 5)`, `VCF0451 (1 < 2 < 3 < 4)`, `VCF0834 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF0839 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF0842 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF0843 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF0850 (3 < 2 < 1)`, `VCF0870 (1 < 3 < 5)`, `VCF0871 (1 < 2 < 3 < 4 < 5)`, `VCF0872 (1 < 3 < 5)`, `VCF9009 (1 < 2 < 4 < 5)`, `VCF9044a (1 < 2 < 3)`, `VCF9045 (1 < 3 < 5)`, `VCF9073 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF9077 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF9081 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF9085 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF9086 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF9089 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF9093 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF9094 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF9122 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF9209 (5 < 4 < 3 < 2 < 1)`, `VCF9210 (5 < 4 < 3 < 2 < 1)`, `VCF9211 (5 < 4 < 3 < 2 < 1)`, `VCF9212 (5 < 4 < 3 < 2 < 1)`, `VCF9213 (5 < 4 < 3 < 2 < 1)`, `VCF9214 (5 < 4 < 3 < 2 < 1)`, `VCF9215 (5 < 4 < 3 < 2 < 1)`, `VCF9216 (5 < 4 < 3 < 2 < 1)`, `VCF9220 (1 < 2 < 3)`, `VCF9225 (1 < 2 < 3)`, `VCF9226 (1 < 2 < 3 < 4 < 5)`, `VCF9238 (1 < 2 < 3)`, `VCF9239 (5 < 4 < 3 < 2 < 1)`, `VCF9244 (5 < 4 < 3 < 2 < 1)`
+- categorical (151): `VCF0104`, `VCF0105a`, `VCF0105b`, `VCF0106`, `VCF0107`, `VCF0108`, `VCF0109`, `VCF0112`, `VCF0113`, `VCF0115`, `VCF0116`, `VCF0118`, `VCF0126`, `VCF0127`, `VCF0127a`, `VCF0127b`, `VCF0132`, `VCF0134`, `VCF0135`, `VCF0137`, `VCF0143`, `VCF0146`, `VCF0147`, `VCF0148`, `VCF0148a`, `VCF0149`, `VCF0150`, `VCF0151`, `VCF0152`, `VCF0154a`, `VCF0154b`, `VCF0156`, `VCF0157`, `VCF0170d`, `VCF0302`, `VCF0358`, `VCF0359`, `VCF0360`, `VCF0361`, `VCF0370`, `VCF0371`, `VCF0372`, `VCF0373`, `VCF0374`, `VCF0375a`, `VCF0375b`, `VCF0376a`, `VCF0376b`, `VCF0377a`, `VCF0377b`, `VCF0378a`, `VCF0378b`, `VCF0379a`, `VCF0379b`, `VCF0380`, `VCF0381a`, `VCF0381b`, `VCF0382a`, `VCF0382b`, `VCF0383a`, `VCF0383b`, `VCF0384a`, `VCF0384b`, `VCF0385a`, `VCF0385b`, `VCF0386`, `VCF0387a`, `VCF0387b`, `VCF0388a`, `VCF0388b`, `VCF0389a`, `VCF0389b`, `VCF0390a`, `VCF0390b`, `VCF0391a`, `VCF0391b`, `VCF0392`, `VCF0393a`, `VCF0393b`, `VCF0394a`, `VCF0394b`, `VCF0395a`, `VCF0395b`, `VCF0396a`, `VCF0396b`, `VCF0397a`, `VCF0397b`, `VCF0450`, `VCF0475`, `VCF0476a`, `VCF0476b`, `VCF0477a`, `VCF0477b`, `VCF0478a`, `VCF0478b`, `VCF0479a`, `VCF0479b`, `VCF0480a`, `VCF0480b`, `VCF0481`, `VCF0482a`, `VCF0482b`, `VCF0483a`, `VCF0483b`, `VCF0484a`, `VCF0484b`, `VCF0485a`, `VCF0485b`, `VCF0486a`, `VCF0486b`, `VCF0487`, `VCF0488a`, `VCF0488b`, `VCF0489a`, `VCF0489b`, `VCF0490a`, `VCF0490b`, `VCF0491a`, `VCF0491b`, `VCF0492a`, `VCF0492b`, `VCF0493`, `VCF0494a`, `VCF0494b`, `VCF0495a`, `VCF0495b`, `VCF0496a`, `VCF0496b`, `VCF0497a`, `VCF0497b`, `VCF0498a`, `VCF0498b`, `VCF0702`, `VCF0713`, `VCF0714`, `VCF9001`, `VCF9028`, `VCF9029`, `VCF9044`, `VCF9217`, `VCF9218`, `VCF9222`, `VCF9224`, `VCF9243`, `VCF9265`, `VCF9277`, `VCF9278`, `VCF9279`, `VCF9280`, `VCF9281`, `VCF9282`
+- ordinal (77): `VCF0110 (1 < 2 < 3 < 4)`, `VCF0111 (3 < 2 < 1)`, `VCF0114 (1 < 2 < 3 < 4 < 5)`, `VCF0130a (5 < 4 < 3 < 2 < 1 < 0)`, `VCF0138 (0 < 1 < 2 < 3)`, `VCF0140 (1 < 2 < 3 < 4 < 5 < 6)`, `VCF0140a (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF0301 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF0303 (1 < 2 < 3)`, `VCF0305 (1 < 2 < 3 < 4)`, `VCF0310 (1 < 2 < 3)`, `VCF0311 (1 < 2)`, `VCF0314 (0 < 1 < 2 < 3 < 4 < 5)`, `VCF0315 (0 < 1 < 2 < 3 < 4 < 5)`, `VCF0318 (0 < 1 < 2 < 3 < 4 < 5)`, `VCF0319 (0 < 1 < 2 < 3 < 4 < 5)`, `VCF0338 (4 < 3 < 2 < 1)`, `VCF0339 (4 < 3 < 2 < 1)`, `VCF0341 (4 < 3 < 2 < 1)`, `VCF0350 (4 < 3 < 2 < 1)`, `VCF0351 (4 < 3 < 2 < 1)`, `VCF0353 (4 < 3 < 2 < 1)`, `VCF0354 (4 < 3 < 2 < 1)`, `VCF0355 (4 < 3 < 2 < 1)`, `VCF0356 (4 < 3 < 2 < 1)`, `VCF0357 (4 < 3 < 2 < 1)`, `VCF0362 (4 < 3 < 2 < 1)`, `VCF0365 (4 < 3 < 2 < 1)`, `VCF0366 (4 < 3 < 2 < 1)`, `VCF0367 (4 < 3 < 2 < 1)`, `VCF0368 (4 < 3 < 2 < 1)`, `VCF0369 (4 < 3 < 2 < 1)`, `VCF0401 (0 < 1 < 2 < 3 < 4 < 5)`, `VCF0402 (0 < 1 < 2 < 3 < 4 < 5)`, `VCF0405 (0 < 1 < 2 < 3 < 4 < 5)`, `VCF0406 (0 < 1 < 2 < 3 < 4 < 5)`, `VCF0451 (1 < 2 < 3 < 4)`, `VCF0834 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF0839 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF0842 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF0843 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF0850 (3 < 2 < 1)`, `VCF0870 (1 < 3 < 5)`, `VCF0871 (1 < 2 < 3 < 4 < 5)`, `VCF0872 (1 < 3 < 5)`, `VCF9009 (1 < 2 < 4 < 5)`, `VCF9044a (1 < 2 < 3)`, `VCF9045 (1 < 3 < 5)`, `VCF9073 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF9077 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF9081 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF9085 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF9086 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF9089 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF9093 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF9094 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF9122 (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `VCF9209 (5 < 4 < 3 < 2 < 1)`, `VCF9210 (5 < 4 < 3 < 2 < 1)`, `VCF9211 (5 < 4 < 3 < 2 < 1)`, `VCF9212 (5 < 4 < 3 < 2 < 1)`, `VCF9213 (5 < 4 < 3 < 2 < 1)`, `VCF9214 (5 < 4 < 3 < 2 < 1)`, `VCF9215 (5 < 4 < 3 < 2 < 1)`, `VCF9216 (5 < 4 < 3 < 2 < 1)`, `VCF9220 (1 < 2 < 3)`, `VCF9225 (1 < 2 < 3)`, `VCF9226 (1 < 2 < 3 < 4 < 5)`, `VCF9238 (1 < 2 < 3)`, `VCF9239 (5 < 4 < 3 < 2 < 1)`, `VCF9244 (5 < 4 < 3 < 2 < 1)`, `VCF0102 (1.0 < 2.0 < 3.0 < 4.0 < 5.0 < 6.0 < 7.0)`, `VCF0103 (8.0 < 7.0 < 6.0 < 5.0 < 4.0 < 3.0 < 2.0 < 1.0)`, `VCF0130 (7 < 0 < 5 < 4 < 3 < 2 < 1)`, `VCF0155 (5 < 3 < 1)`, `VCF9002 (1 < 2 < 3 < 4 < 5 < 6)`, `VCF9266 (1 < 2 < 3)`
 - string (0): none
 - datetime (0): none
 
@@ -206,9 +206,11 @@ The first 5 of 48,587 rows of the final frame (the oldest rows: the frame is sor
 - Note: Ideally, we would select different feature sets per data split, depending on feature availability. However, for simplicity, we just keep all features.
 - Note: We considered keeping the unique respondent identifier in the data, because otherwise models that are able to reconstruct this information would unfairly benefit. However, for now we drop the identifier since it is not a desirable predictive feature for the given task, because the goal is generalization to the population, not memorizing individual behavior.
 - Metric: the fallback ROC AUC, not TableShift's accuracy (Lennart, 2026-10-21; metric spec).
-- Ordinal scales (2026-10-30, CLEAN-14): 71 columns typed as ordered categories in the order of the source's
-  codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
-  (CLEAN-10); 20 counts and indices stored as text are numbers.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 77 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); 2 of them were shipped as numbers; 4 hold a state
+  outside the scale, placed by the curator's rule (missing when the column has no other missing value, else the
+  lowest level; a state that is simply not on the scale, such as Other, is missing); codes that mean unknown are
+  missing (CLEAN-10); 20 counts and indices stored as text are numbers.
 
 ## Splits
 
@@ -285,6 +287,7 @@ We use each of the last 9 years once as test data, using all prior data as train
 | VCF0395b | category | 46788 | 96.3 | 11 | 33, 35, 32, 34, 12, 31, 11, 40, 24, 23 |
 | VCF0377a | category | 46569 | 95.85 | 218 | 1233, 1205, 938, 906, 915, 1026, 1213, 909, 801, 805 |
 | VCF0377b | category | 46570 | 95.85 | 10 | 33, 35, 32, 12, 34, 11, 31, 40, 23, 22 |
+| VCF9266 | category | 46168 | 95.02 | 3 | 1, 3, 2 |
 | VCF0484a | category | 45865 | 94.4 | 308 | 402, 304, 931, 505, 217, 1107, 702, 201, 313, 801 |
 | VCF0484b | category | 45865 | 94.4 | 12 | 33, 23, 21, 22, 34, 24, 32, 40, 31, 35 |
 | VCF0490a | category | 45578 | 93.81 | 296 | 401, 201, 217, 1106, 609, 1101, 930, 801, 709, 218 |
@@ -304,7 +307,6 @@ We use each of the last 9 years once as test data, using all prior data as train
 | VCF0483a | category | 43517 | 89.57 | 359 | 402, 304, 505, 931, 217, 313, 216, 1107, 1189, 805 |
 | VCF0483b | category | 43518 | 89.57 | 12 | 33, 23, 21, 22, 34, 24, 32, 40, 31, 35 |
 | VCF0477a | category | 43428 | 89.38 | 323 | 401, 1205, 938, 801, 1233, 201, 609, 915, 500, 934 |
-| VCF0477b | category | 43428 | 89.38 | 12 | 33, 23, 35, 32, 21, 34, 24, 40, 31, 22 |
 
 (202 more rows not shown)
 
@@ -320,15 +322,12 @@ We use each of the last 9 years once as test data, using all prior data as train
 ### Numeric features
 
 <details>
-<summary>Show the table (37 rows)</summary>
+<summary>Show the table (34 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | VCF0004 | 48587 | 1997.46 | 22.8987 | 1948 | 2024 |
 | VCF0101 | 48011 | 47.5444 | 18.2336 | 0 | 99 |
-| VCF0102 | 48587 | 3.80711 | 1.79409 | 0 | 7 |
-| VCF0103 | 48587 | 4.04094 | 1.73286 | 0 | 8 |
-| VCF0104 | 48587 | 1.54387 | 0.503134 | 0 | 3 |
 | VCF0138a | 7840 | 0.245153 | 0.583265 | 0 | 4 |
 | VCF0138b | 7839 | 0.1652 | 0.446566 | 0 | 3 |
 | VCF0138c | 7839 | 0.165837 | 0.448753 | 0 | 4 |
@@ -367,10 +366,24 @@ We use each of the last 9 years once as test data, using all prior data as train
 ### Categorical features
 
 <details>
-<summary>Show the table (1,105 rows)</summary>
+<summary>Show the table (1,117 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
+| VCF0102 | 1 | 3.0 | 9100 | 18.73 |
+| VCF0102 | 2 | 2.0 | 8792 | 18.1 |
+| VCF0102 | 3 | 4.0 | 8083 | 16.64 |
+| VCF0102 | 4 | 5.0 | 7890 | 16.24 |
+| VCF0102 | 5 | 6.0 | 6439 | 13.25 |
+| VCF0103 | 1 | 4.0 | 12492 | 25.71 |
+| VCF0103 | 2 | 3.0 | 9318 | 19.18 |
+| VCF0103 | 3 | 5.0 | 7113 | 14.64 |
+| VCF0103 | 4 | 2.0 | 6471 | 13.32 |
+| VCF0103 | 5 | 6.0 | 5807 | 11.95 |
+| VCF0104 | 1 | 2.0 | 26521 | 54.58 |
+| VCF0104 | 2 | 1.0 | 21943 | 45.16 |
+| VCF0104 | 3 | 0.0 | 114 | 0.23 |
+| VCF0104 | 4 | 3.0 | 9 | 0.02 |
 | VCF0105a | 1 | 1 | 36812 | 75.77 |
 | VCF0105a | 2 | 2 | 5453 | 11.22 |
 | VCF0105a | 3 | 5 | 3904 | 8.04 |
@@ -417,22 +430,8 @@ We use each of the last 9 years once as test data, using all prior data as train
 | VCF0112 | 5 | &lt;NA> | 576 | 1.19 |
 | VCF0113 | 1 | 2 | 30042 | 61.83 |
 | VCF0113 | 2 | 1 | 13015 | 26.79 |
-| VCF0113 | 3 | &lt;NA> | 5530 | 11.38 |
-| VCF0114 | 1 | 3 | 14794 | 30.45 |
-| VCF0114 | 2 | 4 | 12178 | 25.06 |
-| VCF0114 | 3 | 1 | 7760 | 15.97 |
-| VCF0114 | 4 | 2 | 7474 | 15.38 |
-| VCF0114 | 5 | &lt;NA> | 3910 | 8.05 |
-| VCF0115 | 1 | &lt;NA> | 25554 | 52.59 |
-| VCF0115 | 2 | 3 | 6801 | 14 |
-| VCF0115 | 3 | 1 | 5430 | 11.18 |
-| VCF0115 | 4 | 6 | 4607 | 9.48 |
-| VCF0115 | 5 | 2 | 3949 | 8.13 |
-| VCF0116 | 1 | 1 | 24531 | 50.49 |
-| VCF0116 | 2 | &lt;NA> | 7840 | 16.14 |
-| VCF0116 | 3 | 5 | 7789 | 16.03 |
 
-(1,045 more rows not shown)
+(1,057 more rows not shown)
 
 </details>
 
@@ -447,4 +446,4 @@ We use each of the last 9 years once as test data, using all prior data as train
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:54c29d0efaf38f4f006cf4dd1542fc6eab9ac059452be9a503f098da3cd086f9` |
+| stale | yes: the definition now gives checksum `v2:6a6fffb7ccea025c75ed9a9815a9a9d0baf99b58717bf0efc8befd26a95214f1` |

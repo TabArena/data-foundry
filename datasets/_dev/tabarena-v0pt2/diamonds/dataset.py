@@ -67,8 +67,8 @@ class Diamonds(AbstractCuratedDataset):
         - The price ships on a log scale (log of US dollars), the scale a practitioner models a price on, and is scored
           by RMSLE on the dollar price after the inverse (`target_transform="log"`; Lennart, 2026-10-21): a price's
           error matters relative to the price.
-        - Ordinal scales (2026-10-30, CLEAN-14): 3 columns typed as ordered categories in the order of the source's
-          codebook (`ORDINAL_LEVELS`).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`).
     """
 
     # Task

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: cirrhosis_patient_survival_prediction
 container_format: 2
-checksum: v2:1d35bc028107b2c49383bce3df250e6d1d4d811f9b485cb8750bd242be0a0435
+checksum: v2:7db7829b95440d9722f022b8f003c29a9dbf5903d9ebf81544895754797715be
 build:
   uuid: 01a13a7d-c2bd-721a-88c1-f86443866b1e
   checksum: v2:60b5d8fa6859308588d97ac9b03d362d334da815e103b670c1c18a43c5a21477
@@ -69,7 +69,7 @@ decisions:
 
 Binary classification of `death_or_transplant_within_5y`, scored with `roc_auc` on IID splits. 304 rows and 17 features. Source: Other (1991).
 
-Built as `01a13a7d-c2bd-721a-88c1-f86443866b1e` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:1d35bc028107b2c49383bce3df250e6d1d4d811f9b485cb8750bd242be0a0435`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2bd-721a-88c1-f86443866b1e` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:7db7829b95440d9722f022b8f003c29a9dbf5903d9ebf81544895754797715be`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -196,8 +196,8 @@ We start with the UCI copy (878) of the Mayo Clinic PBC data (Fleming and Harrin
 - We drop ID, and N_Days and Status, which define the label.
 - The other columns are the baseline values taken at registration (the follow-up visits are in the separate pbcseq file), so all stay. The 66 patients outside the trial have no drug, ascites, hepatomegaly, spiders, copper, alkaline phosphatase or SGOT; these stay missing.
 - Until 2026-10-14 the task regressed the log time to death over the 161 patients who died. That is right truncation: a patient registered in 1982-84 entered only with a death within about 3 years (median 1.86 years, against 3.98 for 1974-76), so the label partly measured the calendar window.
-- Ordinal scales (2026-10-30, CLEAN-14): 2 columns typed as ordered categories in the order of the source's
-  codebook (`ORDINAL_LEVELS`).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 2 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -387,4 +387,4 @@ Follow-up ended in July 1986 for everyone, so a patient registered after about m
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:1d35bc028107b2c49383bce3df250e6d1d4d811f9b485cb8750bd242be0a0435` |
+| stale | yes: the definition now gives checksum `v2:7db7829b95440d9722f022b8f003c29a9dbf5903d9ebf81544895754797715be` |

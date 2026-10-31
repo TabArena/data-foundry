@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: coil_2000
 container_format: 2
-checksum: v2:c82bfb4bf10850de793146239f40f8ae3c81247c37c639c27a3a10abe601b42e
+checksum: v2:4e476302e43f2465a5d73087bcc5e10b30d50e6e5a7f008416e2473667bba6f6
 build:
   uuid: 01a111fc-ceb4-7695-8b34-df7a285cfcb6
   checksum: v2:d2e67763e07858eea9e9b3cc295c8ca3b517b51a7969ec701a8323ad722d2ac8
@@ -22,8 +22,8 @@ data:
   n_rows: 9822
   n_features: 85
   dtypes:
-    category: 6
-    int64: 80
+    category: 62
+    int64: 24
   n_test_dataset_rows: null
 task:
   target: MobileHomePolicy
@@ -69,7 +69,7 @@ decisions: []
 
 Binary classification of `MobileHomePolicy`, scored with `precision_at_k` on IID splits. 9,822 rows and 85 features. Source: UCI (2000).
 
-Built as `01a111fc-ceb4-7695-8b34-df7a285cfcb6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c82bfb4bf10850de793146239f40f8ae3c81247c37c639c27a3a10abe601b42e`, so the build is stale. See [Build](#build).
+Built as `01a111fc-ceb4-7695-8b34-df7a285cfcb6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:4e476302e43f2465a5d73087bcc5e10b30d50e6e5a7f008416e2473667bba6f6`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -148,10 +148,10 @@ Only curators run `build`, when the dataset ships.
 | params | {'k_fraction': 0.2} |
 
 <details>
-<summary>Feature types: 3 categorical, 3 ordinal, 0 string, 0 datetime</summary>
+<summary>Feature types: 3 categorical, 59 ordinal, 0 string, 0 datetime</summary>
 
 - categorical (3): `customerSubtype`, `customerMainType`, `MobileHomePolicy`
-- ordinal (3): `avgAge (20-30 years < 30-40 years < 40-50 years < 50-60 years < 60-70 years < 70-80 years)`, `romanCatholic (0% < 1 - 10% < 11 - 23% < 24 - 36% < 37 - 49% < 50 - 62% < 63 - 75% < 76 - 88% < 89 - 99% < 100%)`, `contributionPrivateThirdPartyInsurance (f 0 < f 1 - 49 < f 50 - 99 < f 100 - 199)`
+- ordinal (59): `avgAge (20-30 years < 30-40 years < 40-50 years < 50-60 years < 60-70 years < 70-80 years)`, `romanCatholic (0% < 1 - 10% < 11 - 23% < 24 - 36% < 37 - 49% < 50 - 62% < 63 - 75% < 76 - 88% < 89 - 99% < 100%)`, `contributionPrivateThirdPartyInsurance (f 0 < f 1 - 49 < f 50 - 99 < f 100 - 199)`, `protestant (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `otherReligion (0 < 1 < 2 < 3 < 4 < 5)`, `noReligion (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `married (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `livingTogether (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7)`, `otherRelation (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `singles (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `householdWithoutChildren (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `householdWithChildren (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `highLevelEducation (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `mediumLevelEducation (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `lowerLevelEducation (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `highStatus (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `entrepreneur (0 < 1 < 2 < 3 < 4 < 5)`, `farmer (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `middleManagement (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `skilledLabourers (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `unskilledLabourers (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `socialClassA (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `socialClassB1 (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `socialClassB2 (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `socialClassC (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `socialClassD (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `rentedHouse (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `homeOwners (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `oneCar (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `twoCars (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 9)`, `noCar (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `nationalHealthService (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `privateHealthInsurance (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `incomeLessThan30k (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `income30To45k (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `income45To75k (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `income75To122k (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `incomeAbove123k (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 9)`, `averageIncome (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `purchasingPowerClass (1 < 2 < 3 < 4 < 5 < 6 < 7 < 8)`, `contributionThirdPartyInsuranceFirms (0 < 1 < 2 < 3 < 4 < 5 < 6)`, `contributionThirdPartyInsuranceAgriculture (0 < 1 < 2 < 3 < 4)`, `contributionCarPolicies (0 < 4 < 5 < 6 < 7 < 8 < 9)`, `contributionDeliveryVanPolicies (0 < 5 < 6 < 7)`, `contributionMotorcycleScooterPolicies (0 < 3 < 4 < 5 < 6 < 7)`, `contributionLorryPolicies (0 < 4 < 6 < 7 < 9)`, `contributionTrailerPolicies (0 < 1 < 2 < 3 < 4 < 5)`, `contributionTractorPolicies (0 < 3 < 4 < 5 < 6 < 7)`, `contributionAgriculturalMachinesPolicies (0 < 1 < 2 < 3 < 4 < 6)`, `contributionMopedPolicies (0 < 2 < 3 < 4 < 5 < 6)`, `contributionLifeInsurances (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `contributionPrivateAccidentInsurancePolicies (0 < 1 < 2 < 3 < 4 < 5 < 6)`, `contributionFamilyAccidentsInsurancePolicies (0 < 2 < 3)`, `contributionDisabilityInsurancePolicies (0 < 4 < 5 < 6 < 7)`, `contributionFirePolicies (0 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8)`, `contributionSurfboardPolicies (0 < 1 < 2 < 3)`, `contributionBoatPolicies (0 < 1 < 2 < 3 < 4 < 5 < 6)`, `contributionPropertyInsurancePolicies (0 < 1 < 2 < 3 < 4 < 5 < 6)`, `contributionSocialSecurityInsurancePolicies (0 < 2 < 3 < 4 < 5)`
 - string (0): none
 - datetime (0): none
 
@@ -189,8 +189,8 @@ The first 5 of 9,822 rows of the final frame (random rows: the frame is shuffled
 - We combined the original training and validation data into one new dataset.
 - We reversed the ordinal encoding of the original data where possible.
 - Anomaly: the data has 15% duplicates.
-- Ordinal scales (2026-10-30, CLEAN-14): 3 columns typed as ordered categories in the order of the source's
-  codebook (`ORDINAL_LEVELS`).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 59 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); 56 of them were shipped as numbers.
 
 ## Splits
 
@@ -230,62 +230,62 @@ Default splits.
 | avgAge | category | 0 | 0 | 6 | 40-50 years, 30-40 years, 50-60 years, 60-70 years, 20-30 years, 70-80 years |
 | customerMainType | category | 0 | 0 | 10 | Family with grown ups, Average Family, Conservative families, Successful hedoni… |
 | romanCatholic | category | 0 | 0 | 10 | 0%, 1 - 10%, 11 - 23%, 24 - 36%, 37 - 49%, 50 - 62%, 63 - 75%, 76 - 88%, 100%, … |
+| protestant | category | 0 | 0 | 10 | 4, 5, 6, 3, 7, 2, 9, 1, 0, 8 |
+| otherReligion | category | 0 | 0 | 6 | 0, 1, 2, 3, 4, 5 |
+| noReligion | category | 0 | 0 | 10 | 3, 4, 2, 5, 0, 6, 1, 7, 9, 8 |
+| married | category | 0 | 0 | 10 | 7, 6, 5, 9, 8, 4, 3, 2, 1, 0 |
+| livingTogether | category | 0 | 0 | 8 | 0, 1, 2, 3, 4, 5, 6, 7 |
+| otherRelation | category | 0 | 0 | 10 | 2, 0, 3, 4, 1, 5, 6, 7, 9, 8 |
+| singles | category | 0 | 0 | 10 | 0, 2, 1, 3, 4, 5, 6, 7, 8, 9 |
+| householdWithoutChildren | category | 0 | 0 | 10 | 3, 4, 2, 5, 0, 1, 6, 7, 9, 8 |
+| householdWithChildren | category | 0 | 0 | 10 | 4, 5, 3, 6, 2, 7, 1, 8, 9, 0 |
+| highLevelEducation | category | 0 | 0 | 10 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
+| mediumLevelEducation | category | 0 | 0 | 10 | 4, 3, 2, 5, 0, 1, 6, 7, 9, 8 |
+| lowerLevelEducation | category | 0 | 0 | 10 | 5, 6, 4, 3, 2, 7, 9, 0, 8, 1 |
+| highStatus | category | 0 | 0 | 10 | 0, 2, 1, 3, 4, 5, 6, 7, 9, 8 |
+| entrepreneur | category | 0 | 0 | 6 | 0, 1, 2, 5, 3, 4 |
+| farmer | category | 0 | 0 | 10 | 0, 1, 2, 3, 4, 5, 6, 8, 9, 7 |
+| middleManagement | category | 0 | 0 | 10 | 2, 3, 4, 0, 5, 1, 6, 7, 9, 8 |
+| skilledLabourers | category | 0 | 0 | 10 | 2, 0, 3, 1, 4, 5, 6, 7, 8, 9 |
+| unskilledLabourers | category | 0 | 0 | 10 | 2, 3, 1, 0, 4, 5, 6, 7, 9, 8 |
+| socialClassA | category | 0 | 0 | 10 | 0, 1, 2, 3, 4, 5, 6, 7, 9, 8 |
+| socialClassB1 | category | 0 | 0 | 10 | 2, 1, 0, 3, 4, 5, 6, 9, 8, 7 |
+| socialClassB2 | category | 0 | 0 | 10 | 2, 3, 0, 1, 4, 5, 6, 8, 7, 9 |
+| socialClassC | category | 0 | 0 | 10 | 5, 4, 3, 2, 6, 0, 1, 7, 9, 8 |
+| socialClassD | category | 0 | 0 | 10 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
+| rentedHouse | category | 0 | 0 | 10 | 0, 9, 2, 3, 4, 8, 5, 1, 7, 6 |
+| homeOwners | category | 0 | 0 | 10 | 9, 0, 7, 6, 5, 1, 4, 8, 2, 3 |
+| oneCar | category | 0 | 0 | 10 | 6, 7, 5, 9, 4, 8, 3, 2, 0, 1 |
+| twoCars | category | 0 | 0 | 9 | 0, 2, 1, 3, 4, 5, 6, 7, 9 |
+| noCar | category | 0 | 0 | 10 | 2, 0, 3, 1, 4, 5, 6, 7, 9, 8 |
+| nationalHealthService | category | 0 | 0 | 10 | 7, 5, 6, 9, 8, 4, 2, 3, 0, 1 |
+| privateHealthInsurance | category | 0 | 0 | 10 | 2, 4, 0, 3, 1, 5, 7, 6, 9, 8 |
+| incomeLessThan30k | category | 0 | 0 | 10 | 0, 2, 3, 1, 4, 5, 6, 7, 9, 8 |
+| income30To45k | category | 0 | 0 | 10 | 4, 3, 5, 2, 0, 6, 1, 7, 9, 8 |
+| income45To75k | category | 0 | 0 | 10 | 3, 2, 4, 0, 1, 5, 6, 7, 9, 8 |
+| income75To122k | category | 0 | 0 | 10 | 0, 1, 2, 3, 4, 5, 6, 8, 9, 7 |
+| incomeAbove123k | category | 0 | 0 | 9 | 0, 1, 2, 3, 4, 5, 6, 7, 9 |
+| averageIncome | category | 0 | 0 | 10 | 3, 4, 5, 2, 6, 7, 8, 1, 0, 9 |
+| purchasingPowerClass | category | 0 | 0 | 8 | 3, 6, 4, 5, 1, 7, 2, 8 |
 | contributionPrivateThirdPartyInsurance | category | 0 | 0 | 4 | f 0, f 50 - 99, f 1 - 49, f 100 - 199 |
-| MobileHomePolicy | category | 0 | 0 | 2 | No, Yes |
-| numberOfHouses | int64 | 0 | 0 | 9 | 1, 2, 3, 7, 4, 5, 6, 8, 10 |
-| avgSizeHousehold | int64 | 0 | 0 | 6 | 3, 2, 4, 1, 5, 6 |
-| protestant | int64 | 0 | 0 | 10 | 4, 5, 6, 3, 7, 2, 9, 1, 0, 8 |
-| otherReligion | int64 | 0 | 0 | 6 | 0, 1, 2, 3, 4, 5 |
-| noReligion | int64 | 0 | 0 | 10 | 3, 4, 2, 5, 0, 6, 1, 7, 9, 8 |
-| married | int64 | 0 | 0 | 10 | 7, 6, 5, 9, 8, 4, 3, 2, 1, 0 |
-| livingTogether | int64 | 0 | 0 | 8 | 0, 1, 2, 3, 4, 5, 6, 7 |
-| otherRelation | int64 | 0 | 0 | 10 | 2, 0, 3, 4, 1, 5, 6, 7, 9, 8 |
-| singles | int64 | 0 | 0 | 10 | 0, 2, 1, 3, 4, 5, 6, 7, 8, 9 |
-| householdWithoutChildren | int64 | 0 | 0 | 10 | 3, 4, 2, 5, 0, 1, 6, 7, 9, 8 |
-| householdWithChildren | int64 | 0 | 0 | 10 | 4, 5, 3, 6, 2, 7, 1, 8, 9, 0 |
-| highLevelEducation | int64 | 0 | 0 | 10 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
-| mediumLevelEducation | int64 | 0 | 0 | 10 | 4, 3, 2, 5, 0, 1, 6, 7, 9, 8 |
-| lowerLevelEducation | int64 | 0 | 0 | 10 | 5, 6, 4, 3, 2, 7, 9, 0, 8, 1 |
-| highStatus | int64 | 0 | 0 | 10 | 0, 2, 1, 3, 4, 5, 6, 7, 9, 8 |
-| entrepreneur | int64 | 0 | 0 | 6 | 0, 1, 2, 5, 3, 4 |
-| farmer | int64 | 0 | 0 | 10 | 0, 1, 2, 3, 4, 5, 6, 8, 9, 7 |
-| middleManagement | int64 | 0 | 0 | 10 | 2, 3, 4, 0, 5, 1, 6, 7, 9, 8 |
-| skilledLabourers | int64 | 0 | 0 | 10 | 2, 0, 3, 1, 4, 5, 6, 7, 8, 9 |
-| unskilledLabourers | int64 | 0 | 0 | 10 | 2, 3, 1, 0, 4, 5, 6, 7, 9, 8 |
-| socialClassA | int64 | 0 | 0 | 10 | 0, 1, 2, 3, 4, 5, 6, 7, 9, 8 |
-| socialClassB1 | int64 | 0 | 0 | 10 | 2, 1, 0, 3, 4, 5, 6, 9, 8, 7 |
-| socialClassB2 | int64 | 0 | 0 | 10 | 2, 3, 0, 1, 4, 5, 6, 8, 7, 9 |
-| socialClassC | int64 | 0 | 0 | 10 | 5, 4, 3, 2, 6, 0, 1, 7, 9, 8 |
-| socialClassD | int64 | 0 | 0 | 10 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
-| rentedHouse | int64 | 0 | 0 | 10 | 0, 9, 2, 3, 4, 8, 5, 1, 7, 6 |
-| homeOwners | int64 | 0 | 0 | 10 | 9, 0, 7, 6, 5, 1, 4, 8, 2, 3 |
-| oneCar | int64 | 0 | 0 | 10 | 6, 7, 5, 9, 4, 8, 3, 2, 0, 1 |
-| twoCars | int64 | 0 | 0 | 9 | 0, 2, 1, 3, 4, 5, 6, 7, 9 |
-| noCar | int64 | 0 | 0 | 10 | 2, 0, 3, 1, 4, 5, 6, 7, 9, 8 |
-| nationalHealthService | int64 | 0 | 0 | 10 | 7, 5, 6, 9, 8, 4, 2, 3, 0, 1 |
-| privateHealthInsurance | int64 | 0 | 0 | 10 | 2, 4, 0, 3, 1, 5, 7, 6, 9, 8 |
-| incomeLessThan30k | int64 | 0 | 0 | 10 | 0, 2, 3, 1, 4, 5, 6, 7, 9, 8 |
-| income30To45k | int64 | 0 | 0 | 10 | 4, 3, 5, 2, 0, 6, 1, 7, 9, 8 |
-| income45To75k | int64 | 0 | 0 | 10 | 3, 2, 4, 0, 1, 5, 6, 7, 9, 8 |
-| income75To122k | int64 | 0 | 0 | 10 | 0, 1, 2, 3, 4, 5, 6, 8, 9, 7 |
-| incomeAbove123k | int64 | 0 | 0 | 9 | 0, 1, 2, 3, 4, 5, 6, 7, 9 |
-| averageIncome | int64 | 0 | 0 | 10 | 3, 4, 5, 2, 6, 7, 8, 1, 9, 0 |
-| purchasingPowerClass | int64 | 0 | 0 | 8 | 3, 6, 4, 5, 1, 7, 2, 8 |
-| contributionThirdPartyInsuranceFirms | int64 | 0 | 0 | 7 | 0, 2, 3, 4, 1, 6, 5 |
-| contributionThirdPartyInsuranceAgriculture | int64 | 0 | 0 | 5 | 0, 4, 3, 2, 1 |
-| contributionCarPolicies | int64 | 0 | 0 | 7 | 0, 6, 5, 7, 8, 4, 9 |
-| contributionDeliveryVanPolicies | int64 | 0 | 0 | 4 | 0, 6, 5, 7 |
-| contributionMotorcycleScooterPolicies | int64 | 0 | 0 | 6 | 0, 4, 6, 5, 3, 7 |
-| contributionLorryPolicies | int64 | 0 | 0 | 5 | 0, 6, 7, 4, 9 |
-| contributionTrailerPolicies | int64 | 0 | 0 | 6 | 0, 2, 1, 3, 4, 5 |
-| contributionTractorPolicies | int64 | 0 | 0 | 6 | 0, 3, 4, 5, 6, 7 |
-| contributionAgriculturalMachinesPolicies | int64 | 0 | 0 | 6 | 0, 4, 3, 2, 6, 1 |
-| contributionMopedPolicies | int64 | 0 | 0 | 6 | 0, 3, 4, 2, 5, 6 |
-| contributionLifeInsurances | int64 | 0 | 0 | 10 | 0, 4, 3, 6, 5, 2, 1, 7, 9, 8 |
-| contributionPrivateAccidentInsurancePolicies | int64 | 0 | 0 | 7 | 0, 2, 3, 1, 4, 6, 5 |
-| contributionFamilyAccidentsInsurancePolicies | int64 | 0 | 0 | 3 | 0, 2, 3 |
-| contributionDisabilityInsurancePolicies | int64 | 0 | 0 | 5 | 0, 6, 7, 4, 5 |
-| contributionFirePolicies | int64 | 0 | 0 | 9 | 0, 4, 3, 2, 5, 6, 1, 7, 8 |
+| contributionThirdPartyInsuranceFirms | category | 0 | 0 | 7 | 0, 2, 3, 4, 1, 5, 6 |
+| contributionThirdPartyInsuranceAgriculture | category | 0 | 0 | 5 | 0, 4, 3, 2, 1 |
+| contributionCarPolicies | category | 0 | 0 | 7 | 0, 6, 5, 7, 8, 4, 9 |
+| contributionDeliveryVanPolicies | category | 0 | 0 | 4 | 0, 6, 5, 7 |
+| contributionMotorcycleScooterPolicies | category | 0 | 0 | 6 | 0, 4, 6, 5, 3, 7 |
+| contributionLorryPolicies | category | 0 | 0 | 5 | 0, 6, 7, 4, 9 |
+| contributionTrailerPolicies | category | 0 | 0 | 6 | 0, 2, 1, 3, 4, 5 |
+| contributionTractorPolicies | category | 0 | 0 | 6 | 0, 3, 4, 5, 6, 7 |
+| contributionAgriculturalMachinesPolicies | category | 0 | 0 | 6 | 0, 4, 3, 2, 6, 1 |
+| contributionMopedPolicies | category | 0 | 0 | 6 | 0, 3, 4, 2, 5, 6 |
+| contributionLifeInsurances | category | 0 | 0 | 10 | 0, 4, 3, 5, 6, 2, 1, 7, 8, 9 |
+| contributionPrivateAccidentInsurancePolicies | category | 0 | 0 | 7 | 0, 2, 3, 1, 4, 5, 6 |
+| contributionFamilyAccidentsInsurancePolicies | category | 0 | 0 | 3 | 0, 2, 3 |
+| contributionDisabilityInsurancePolicies | category | 0 | 0 | 5 | 0, 6, 7, 5, 4 |
+| contributionFirePolicies | category | 0 | 0 | 9 | 0, 4, 3, 2, 5, 6, 1, 7, 8 |
+| contributionSurfboardPolicies | category | 0 | 0 | 4 | 0, 2, 1, 3 |
+| contributionBoatPolicies | category | 0 | 0 | 7 | 0, 4, 2, 1, 3, 5, 6 |
+| contributionPropertyInsurancePolicies | category | 0 | 0 | 7 | 0, 1, 2, 4, 3, 6, 5 |
 
 (26 more rows not shown)
 
@@ -301,108 +301,106 @@ Default splits.
 ### Numeric features
 
 <details>
-<summary>Show the table (80 rows)</summary>
+<summary>Show the table (24 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | numberOfHouses | 9822 | 1.10874 | 0.412101 | 1 | 10 |
 | avgSizeHousehold | 9822 | 2.67756 | 0.780701 | 1 | 6 |
-| protestant | 9822 | 4.63765 | 1.72121 | 0 | 9 |
-| otherReligion | 9822 | 1.05009 | 1.01116 | 0 | 5 |
-| noReligion | 9822 | 3.26298 | 1.60629 | 0 | 9 |
-| married | 9822 | 6.18896 | 1.89607 | 0 | 9 |
-| livingTogether | 9822 | 0.873142 | 0.961955 | 0 | 7 |
-| otherRelation | 9822 | 2.2866 | 1.71067 | 0 | 9 |
-| singles | 9822 | 1.88729 | 1.77924 | 0 | 9 |
-| householdWithoutChildren | 9822 | 3.23732 | 1.60914 | 0 | 9 |
-| householdWithChildren | 9822 | 4.30289 | 1.98415 | 0 | 9 |
-| highLevelEducation | 9822 | 1.48452 | 1.64597 | 0 | 9 |
-| mediumLevelEducation | 9822 | 3.30727 | 1.72338 | 0 | 9 |
-| lowerLevelEducation | 9822 | 4.59204 | 2.27984 | 0 | 9 |
-| highStatus | 9822 | 1.8988 | 1.81441 | 0 | 9 |
-| entrepreneur | 9822 | 0.403278 | 0.786792 | 0 | 5 |
-| farmer | 9822 | 0.545714 | 1.10635 | 0 | 9 |
-| middleManagement | 9822 | 2.87711 | 1.8467 | 0 | 9 |
-| skilledLabourers | 9822 | 2.22653 | 1.74803 | 0 | 9 |
-| unskilledLabourers | 9822 | 2.29118 | 1.68401 | 0 | 9 |
-| socialClassA | 9822 | 1.65068 | 1.74241 | 0 | 9 |
-| socialClassB1 | 9822 | 1.59509 | 1.32149 | 0 | 9 |
-| socialClassB2 | 9822 | 2.20474 | 1.53416 | 0 | 9 |
-| socialClassC | 9822 | 3.74221 | 1.9449 | 0 | 9 |
-| socialClassD | 9822 | 1.06821 | 1.29823 | 0 | 9 |
-| rentedHouse | 9822 | 4.18774 | 3.09313 | 0 | 9 |
-| homeOwners | 9822 | 4.81949 | 3.09354 | 0 | 9 |
-| oneCar | 9822 | 6.0225 | 1.54398 | 0 | 9 |
-| twoCars | 9822 | 1.33598 | 1.21363 | 0 | 9 |
-| noCar | 9822 | 1.95673 | 1.59684 | 0 | 9 |
-| nationalHealthService | 9822 | 6.25433 | 2.00037 | 0 | 9 |
-| privateHealthInsurance | 9822 | 2.75066 | 2.00296 | 0 | 9 |
-| incomeLessThan30k | 9822 | 2.57707 | 2.07312 | 0 | 9 |
-| income30To45k | 9822 | 3.5055 | 1.87136 | 0 | 9 |
-| income45To75k | 9822 | 2.73946 | 1.95062 | 0 | 9 |
-| income75To122k | 9822 | 0.808491 | 1.17377 | 0 | 9 |
-| incomeAbove123k | 9822 | 0.208002 | 0.561832 | 0 | 9 |
-| averageIncome | 9822 | 3.80452 | 1.33093 | 0 | 9 |
-| purchasingPowerClass | 9822 | 4.26033 | 1.99891 | 1 | 8 |
-| contributionThirdPartyInsuranceFirms | 9822 | 0.0388923 | 0.356924 | 0 | 6 |
-| contributionThirdPartyInsuranceAgriculture | 9822 | 0.0737121 | 0.507818 | 0 | 4 |
-| contributionCarPolicies | 9822 | 2.95642 | 2.92174 | 0 | 9 |
-| contributionDeliveryVanPolicies | 9822 | 0.0548768 | 0.566108 | 0 | 7 |
-| contributionMotorcycleScooterPolicies | 9822 | 0.170841 | 0.888518 | 0 | 7 |
-| contributionLorryPolicies | 9822 | 0.00885767 | 0.237556 | 0 | 9 |
-| contributionTrailerPolicies | 9822 | 0.0193443 | 0.200885 | 0 | 5 |
-| contributionTractorPolicies | 9822 | 0.0935655 | 0.60435 | 0 | 7 |
-| contributionAgriculturalMachinesPolicies | 9822 | 0.0115048 | 0.215408 | 0 | 6 |
-| contributionMopedPolicies | 9822 | 0.215027 | 0.810899 | 0 | 6 |
-| contributionLifeInsurances | 9822 | 0.202301 | 0.910574 | 0 | 9 |
-| contributionPrivateAccidentInsurancePolicies | 9822 | 0.0115048 | 0.188699 | 0 | 6 |
-| contributionFamilyAccidentsInsurancePolicies | 9822 | 0.0187335 | 0.213712 | 0 | 3 |
-| contributionDisabilityInsurancePolicies | 9822 | 0.023315 | 0.37535 | 0 | 7 |
-| contributionFirePolicies | 9822 | 1.84942 | 1.88127 | 0 | 8 |
-| contributionSurfboardPolicies | 9822 | 0.001629 | 0.0570585 | 0 | 3 |
-| contributionBoatPolicies | 9822 | 0.0152718 | 0.24421 | 0 | 6 |
 | contributionBicyclePolicies | 9822 | 0.0253513 | 0.157198 | 0 | 1 |
-| contributionPropertyInsurancePolicies | 9822 | 0.0166972 | 0.211487 | 0 | 6 |
-| contributionSocialSecurityInsurancePolicies | 9822 | 0.0454083 | 0.396983 | 0 | 5 |
 | numberOfPrivateThirdPartyInsurance | 9822 | 0.40002 | 0.492001 | 0 | 2 |
-
-(20 more rows not shown)
+| numberOfThirdPartyInsuranceFirms | 9822 | 0.0140501 | 0.126058 | 0 | 5 |
+| numberOfThirdPartyInsuranceAgriculture | 9822 | 0.0212788 | 0.144319 | 0 | 1 |
+| numberOfCarPolicies | 9822 | 0.557218 | 0.608575 | 0 | 12 |
+| numberOfDeliveryVanPolicies | 9822 | 0.0110975 | 0.129928 | 0 | 5 |
+| numberOfMotorcycleScooterPolicies | 9822 | 0.0402158 | 0.223622 | 0 | 8 |
+| numberOfLorryPolicies | 9822 | 0.00223987 | 0.0684019 | 0 | 4 |
+| numberOfTrailerPolicies | 9822 | 0.011403 | 0.116251 | 0 | 3 |
+| numberOfTractorPolicies | 9822 | 0.0344125 | 0.249706 | 0 | 6 |
+| numberOfAgriculturalMachinesPolicies | 9822 | 0.00519243 | 0.109954 | 0 | 6 |
+| numberOfMopedPolicies | 9822 | 0.071065 | 0.267432 | 0 | 3 |
+| numberOfLifeInsurances | 9822 | 0.0798208 | 0.384431 | 0 | 8 |
+| numberOfPrivateAccidentInsurancePolicies | 9822 | 0.00458155 | 0.0675354 | 0 | 1 |
+| numberOfFamilyAccidentsInsurancePolicies | 9822 | 0.00794136 | 0.0887643 | 0 | 1 |
+| numberOfDisabilityInsurancePolicies | 9822 | 0.00427611 | 0.0712239 | 0 | 2 |
+| numberOfFirePolicies | 9822 | 0.574018 | 0.561255 | 0 | 7 |
+| numberOfSurfboardPolicies | 9822 | 0.00091631 | 0.0302583 | 0 | 1 |
+| numberOfBoatPolicies | 9822 | 0.00509061 | 0.0779964 | 0 | 2 |
+| numberOfBicyclePolicies | 9822 | 0.03146 | 0.20907 | 0 | 4 |
+| numberOfPropertyInsurancePolicies | 9822 | 0.00845042 | 0.0926472 | 0 | 2 |
+| numberOfSocialSecurityInsurancePolicies | 9822 | 0.0138465 | 0.117728 | 0 | 2 |
 
 </details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (26 rows)</summary>
+<summary>Show the table (302 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | MobileHomePolicy | 1 | No | 9236 | 94.03 |
 | MobileHomePolicy | 2 | Yes | 586 | 5.97 |
+| averageIncome | 1 | 3 | 3232 | 32.91 |
+| averageIncome | 2 | 4 | 3063 | 31.19 |
+| averageIncome | 3 | 5 | 1268 | 12.91 |
+| averageIncome | 4 | 2 | 1110 | 11.3 |
+| averageIncome | 5 | 6 | 646 | 6.58 |
 | avgAge | 1 | 40-50 years | 5154 | 52.47 |
 | avgAge | 2 | 30-40 years | 2409 | 24.53 |
 | avgAge | 3 | 50-60 years | 1777 | 18.09 |
 | avgAge | 4 | 60-70 years | 329 | 3.35 |
 | avgAge | 5 | 20-30 years | 104 | 1.06 |
-| contributionPrivateThirdPartyInsurance | 1 | f 0 | 5903 | 60.1 |
-| contributionPrivateThirdPartyInsurance | 2 | f 50 - 99 | 3562 | 36.27 |
-| contributionPrivateThirdPartyInsurance | 3 | f 1 - 49 | 341 | 3.47 |
-| contributionPrivateThirdPartyInsurance | 4 | f 100 - 199 | 16 | 0.16 |
-| customerMainType | 1 | Family with grown ups | 2694 | 27.43 |
-| customerMainType | 2 | Average Family | 1513 | 15.4 |
-| customerMainType | 3 | Conservative families | 1111 | 11.31 |
-| customerMainType | 4 | Successful hedonists | 959 | 9.76 |
-| customerMainType | 5 | Living well | 940 | 9.57 |
-| customerSubtype | 1 | Lower class large families | 1401 | 14.26 |
-| customerSubtype | 2 | Traditional families | 569 | 5.79 |
-| customerSubtype | 3 | Middle class families | 546 | 5.56 |
-| customerSubtype | 4 | Large religous families | 542 | 5.52 |
-| customerSubtype | 5 | Modern, complete families | 460 | 4.68 |
-| romanCatholic | 1 | 0% | 5420 | 55.18 |
-| romanCatholic | 2 | 1 - 10% | 2744 | 27.94 |
-| romanCatholic | 3 | 11 - 23% | 1213 | 12.35 |
-| romanCatholic | 4 | 24 - 36% | 243 | 2.47 |
-| romanCatholic | 5 | 37 - 49% | 123 | 1.25 |
+| contributionAgriculturalMachinesPolicies | 1 | 0 | 9790 | 99.67 |
+| contributionAgriculturalMachinesPolicies | 2 | 4 | 11 | 0.11 |
+| contributionAgriculturalMachinesPolicies | 3 | 3 | 8 | 0.08 |
+| contributionAgriculturalMachinesPolicies | 4 | 2 | 7 | 0.07 |
+| contributionAgriculturalMachinesPolicies | 5 | 6 | 5 | 0.05 |
+| contributionBoatPolicies | 1 | 0 | 9777 | 99.54 |
+| contributionBoatPolicies | 2 | 4 | 18 | 0.18 |
+| contributionBoatPolicies | 3 | 2 | 8 | 0.08 |
+| contributionBoatPolicies | 4 | 1 | 6 | 0.06 |
+| contributionBoatPolicies | 5 | 3 | 6 | 0.06 |
+| contributionCarPolicies | 1 | 0 | 4825 | 49.12 |
+| contributionCarPolicies | 2 | 6 | 3910 | 39.81 |
+| contributionCarPolicies | 3 | 5 | 1013 | 10.31 |
+| contributionCarPolicies | 4 | 7 | 64 | 0.65 |
+| contributionCarPolicies | 5 | 8 | 5 | 0.05 |
+| contributionDeliveryVanPolicies | 1 | 0 | 9730 | 99.06 |
+| contributionDeliveryVanPolicies | 2 | 6 | 71 | 0.72 |
+| contributionDeliveryVanPolicies | 3 | 5 | 17 | 0.17 |
+| contributionDeliveryVanPolicies | 4 | 7 | 4 | 0.04 |
+| contributionDisabilityInsurancePolicies | 1 | 0 | 9784 | 99.61 |
+| contributionDisabilityInsurancePolicies | 2 | 6 | 32 | 0.33 |
+| contributionDisabilityInsurancePolicies | 3 | 7 | 4 | 0.04 |
+| contributionDisabilityInsurancePolicies | 4 | 5 | 1 | 0.01 |
+| contributionDisabilityInsurancePolicies | 5 | 4 | 1 | 0.01 |
+| contributionFamilyAccidentsInsurancePolicies | 1 | 0 | 9744 | 99.21 |
+| contributionFamilyAccidentsInsurancePolicies | 2 | 2 | 50 | 0.51 |
+| contributionFamilyAccidentsInsurancePolicies | 3 | 3 | 28 | 0.29 |
+| contributionFirePolicies | 1 | 0 | 4464 | 45.45 |
+| contributionFirePolicies | 2 | 4 | 2142 | 21.81 |
+| contributionFirePolicies | 3 | 3 | 1541 | 15.69 |
+| contributionFirePolicies | 4 | 2 | 901 | 9.17 |
+| contributionFirePolicies | 5 | 5 | 263 | 2.68 |
+| contributionLifeInsurances | 1 | 0 | 9308 | 94.77 |
+| contributionLifeInsurances | 2 | 4 | 172 | 1.75 |
+| contributionLifeInsurances | 3 | 3 | 141 | 1.44 |
+| contributionLifeInsurances | 4 | 5 | 65 | 0.66 |
+| contributionLifeInsurances | 5 | 6 | 65 | 0.66 |
+| contributionLorryPolicies | 1 | 0 | 9808 | 99.86 |
+| contributionLorryPolicies | 2 | 6 | 10 | 0.1 |
+| contributionLorryPolicies | 3 | 7 | 2 | 0.02 |
+| contributionLorryPolicies | 4 | 4 | 1 | 0.01 |
+| contributionLorryPolicies | 5 | 9 | 1 | 0.01 |
+| contributionMopedPolicies | 1 | 0 | 9150 | 93.16 |
+| contributionMopedPolicies | 2 | 3 | 481 | 4.9 |
+| contributionMopedPolicies | 3 | 4 | 99 | 1.01 |
+| contributionMopedPolicies | 4 | 2 | 63 | 0.64 |
+| contributionMopedPolicies | 5 | 5 | 27 | 0.27 |
+| contributionMotorcycleScooterPolicies | 1 | 0 | 9460 | 96.31 |
+
+(242 more rows not shown)
 
 </details>
 
@@ -417,4 +415,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c82bfb4bf10850de793146239f40f8ae3c81247c37c639c27a3a10abe601b42e` |
+| stale | yes: the definition now gives checksum `v2:4e476302e43f2465a5d73087bcc5e10b30d50e6e5a7f008416e2473667bba6f6` |

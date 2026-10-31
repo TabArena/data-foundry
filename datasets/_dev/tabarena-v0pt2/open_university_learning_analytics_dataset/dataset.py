@@ -204,8 +204,8 @@ class OpenUniversityLearningAnalyticsDataset(AbstractCuratedDataset):
         - Anomaly: 93 Withdrawn registrations (0.35% of rows, all in 2014J presentations) have no date_unregistration and stay in the cohort. 84 of them have no click on days 46-59, against 22% of the withdrawals that have a date, and 19 never clicked, so most likely withdrew before day 60. We keep them: the date would be inferred from the label and the activity, and a filter on Withdrawn alone selects on the target. 45 registrations have no date_registration (7 in the cohort, kept missing).
         - Duplicates: one pair of rows shares all features but not the result (Fail and Withdrawn); we keep both as two real registrations.
         - Spread (TP-3): untuned model families score alike on the 9 splits (log-loss skill 0.173 random forest, 0.170 LightGBM, 0.162 logistic regression; the lead of 0.011 is within twice its paired standard error of 0.009). Kept pending tuned results (Lennart, 2026-10-22): re-check with the first tuned run.
-        - Ordinal scales (2026-10-30, CLEAN-14): 3 columns typed as ordered categories in the order of the source's
-          codebook (`ORDINAL_LEVELS`).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`).
     """
 
     # Task

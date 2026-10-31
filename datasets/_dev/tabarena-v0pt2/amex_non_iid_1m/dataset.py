@@ -109,6 +109,8 @@ class AmexNonIid1m(AbstractCuratedDataset):
     accepted_check_warnings = {
         "splits_rows_never_tested": "The v2 protocol caps each test fold at 500k rows; the grouped folds of the 1.5M-row "
         "frame overshoot by whole groups, so 325 rows (0.02%) are trimmed from a test fold (2026-10-01).",
+        "dataset_constant_column": "D_87 is 1 or missing, as in AMEX's original data (1 in 3,865 of 5.5M statements); "
+        "raddar's -1 is its missing value (CLEAN-10, 2026-10-30), so whether it is present is the column's information.",
     }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: credit_card_clients_default
 container_format: 2
-checksum: v2:165aed0ea14159110280ae4ff831c1e73609bf7fc26c2ae07ecbeab0519a6aa3
+checksum: v2:7c8a1f7d355ba0877417e737583143cdc305d9c8749214a4e04ed882f09c1fa6
 build:
   uuid: 01a111fc-a3c4-755e-b3fb-ad77ce7129a5
   checksum: v2:5d236c15c392c1f552a15f01023ce7757e961813ba93c296485e1b897bfb1968
@@ -69,7 +69,7 @@ decisions: []
 
 Binary classification of `DefaultOnPaymentNextMonth`, scored with `roc_auc` on IID splits. 30,000 rows and 23 features. Source: UCI (2016).
 
-Built as `01a111fc-a3c4-755e-b3fb-ad77ce7129a5` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:165aed0ea14159110280ae4ff831c1e73609bf7fc26c2ae07ecbeab0519a6aa3`, so the build is stale. See [Build](#build).
+Built as `01a111fc-a3c4-755e-b3fb-ad77ce7129a5` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7c8a1f7d355ba0877417e737583143cdc305d9c8749214a4e04ed882f09c1fa6`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -145,9 +145,10 @@ Only curators run `build`, when the dataset ships.
 | definition | area ratio = area between model gains curve and baseline / area between ideal curve and baseline = Gini = 2*ROC AUC - 1, so ranking equals roc_auc |
 
 <details>
-<summary>Feature types: 4 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 3 categorical, 1 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (4): `SEX`, `MARRIAGE`, `EDUCATION`, `DefaultOnPaymentNextMonth`
+- categorical (3): `SEX`, `MARRIAGE`, `DefaultOnPaymentNextMonth`
+- ordinal (1): `EDUCATION (3 < 2 < 1)`
 - string (0): none
 - datetime (0): none
 
@@ -177,17 +178,21 @@ The first 5 of 30,000 rows of the final frame (random rows: the frame is shuffle
 
 | DefaultOnPaymentNextMonth | LIMIT_BAL | SEX | EDUCATION | MARRIAGE | AGE | PAY_0 | PAY_2 | PAY_3 | PAY_4 | PAY_5 | PAY_6 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Yes | 210000 | 1 | 2 | 2 | 24 | 0 | 0 | 0 | 0 | 0 | 0 |
-| Yes | 400000 | 2 | 2 | 2 | 41 | -2 | -2 | -2 | -2 | -2 | -2 |
-| No | 50000 | 2 | 2 | 2 | 25 | 0 | 0 | 0 | 0 | 0 | 0 |
-| No | 50000 | 2 | 1 | 2 | 28 | 0 | 0 | 0 | 0 | 0 | 0 |
-| No | 250000 | 2 | 2 | 1 | 38 | 0 | 0 | 0 | 0 | 0 | 0 |
+| No | 160000 | 2 | 2 | 2 | 39 | 0 | 0 | 0 | 0 | 0 | 0 |
+| No | 300000 | 2 | 2 | 1 | 43 | -2 | -2 | -2 | -2 | -2 | -2 |
+| No | 180000 | 2 | 3 | 2 | 55 | -1 | -1 | 0 | 0 | 0 | 0 |
+| No | 130000 | 2 | 2 | 2 | 24 | 0 | 0 | -1 | 0 | 0 | 0 |
+| Yes | 30000 | 2 | 2 | 1 | 42 | 2 | 2 | 0 | 0 | 0 | 0 |
 
 ## Curation notes
 
 - We rename the target variable and restore the original class names.
 - We drop the "ID" column.
 - Anomaly: the data has temporal features but the task is time-invariant.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed by the
+  curator's rule (missing when the column has no other missing value, else the lowest level; a state that is
+  simply not on the scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
 
 ## Splits
 
@@ -223,8 +228,8 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| EDUCATION | category | 468 | 1.56 | 3 | 2, 1, 3 |
 | SEX | category | 0 | 0 | 2 | 2, 1 |
-| EDUCATION | category | 0 | 0 | 7 | 2, 1, 3, 5, 4, 6, 0 |
 | MARRIAGE | category | 0 | 0 | 4 | 2, 1, 3, 0 |
 | DefaultOnPaymentNextMonth | category | 0 | 0 | 2 | No, Yes |
 | LIMIT_BAL | int64 | 0 | 0 | 81 | 50000, 20000, 30000, 80000, 200000, 150000, 100000, 180000, 360000, 60000 |
@@ -238,7 +243,7 @@ Default splits.
 | BILL_AMT1 | int64 | 0 | 0 | 22723 | 0, 390, 780, 326, 316, 2500, 396, 2400, 416, 500 |
 | BILL_AMT2 | int64 | 0 | 0 | 22346 | 0, 390, 326, 780, 316, 396, 2500, 2400, -200, 416 |
 | BILL_AMT3 | int64 | 0 | 0 | 22026 | 0, 390, 780, 326, 316, 396, 2500, 2400, 416, 200 |
-| BILL_AMT4 | int64 | 0 | 0 | 21548 | 0, 390, 780, 316, 326, 396, 2400, 150, 2500, 416 |
+| BILL_AMT4 | int64 | 0 | 0 | 21548 | 0, 390, 780, 316, 326, 396, 2400, 150, 2500, 1000 |
 | BILL_AMT5 | int64 | 0 | 0 | 21010 | 0, 390, 780, 316, 326, 150, 396, 2400, 2500, 416 |
 | BILL_AMT6 | int64 | 0 | 0 | 20604 | 0, 390, 780, 150, 316, 326, 396, 416, -18, 2400 |
 | PAY_AMT1 | int64 | 0 | 0 | 7943 | 0, 2000, 3000, 5000, 1500, 4000, 10000, 1000, 2500, 6000 |
@@ -290,7 +295,7 @@ Default splits.
 ### Categorical features
 
 <details>
-<summary>Show the table (13 rows)</summary>
+<summary>Show the table (12 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -299,8 +304,7 @@ Default splits.
 | EDUCATION | 1 | 2 | 14030 | 46.77 |
 | EDUCATION | 2 | 1 | 10585 | 35.28 |
 | EDUCATION | 3 | 3 | 4917 | 16.39 |
-| EDUCATION | 4 | 5 | 280 | 0.93 |
-| EDUCATION | 5 | 4 | 123 | 0.41 |
+| EDUCATION | 4 | &lt;NA> | 468 | 1.56 |
 | MARRIAGE | 1 | 2 | 15964 | 53.21 |
 | MARRIAGE | 2 | 1 | 13659 | 45.53 |
 | MARRIAGE | 3 | 3 | 323 | 1.08 |
@@ -321,4 +325,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:165aed0ea14159110280ae4ff831c1e73609bf7fc26c2ae07ecbeab0519a6aa3` |
+| stale | yes: the definition now gives checksum `v2:7c8a1f7d355ba0877417e737583143cdc305d9c8749214a4e04ed882f09c1fa6` |

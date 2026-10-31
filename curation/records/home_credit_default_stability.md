@@ -52,6 +52,8 @@ CC (2026-10-21, Lennart): the metric is roc_auc as a stand-in for the competitio
 
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `first_empl_employedtotal_800L` (the README lists their levels); codes shipped as numbers, left for the curator's review: `max_persontype_1072L`.
 
+CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): max_persontype_1072L a category.
+
 ## Reference
 
 Daniel Herman, Tomas Jelinek, Walter Reade, Maggie Demkin, and Addison Howard. Home Credit - Credit Risk Model Stability. https://kaggle.com/competitions/home-credit-credit-risk-model-stability, 2024. Kaggle.

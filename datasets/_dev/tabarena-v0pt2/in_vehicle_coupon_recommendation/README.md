@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: in_vehicle_coupon_recommendation
 container_format: 2
-checksum: v2:9e9cc8b7683f947a1c47c1e1287d5283aa1d63eddb1baed21cb7086dad663253
+checksum: v2:636bf1615fc6f379956052830e36fe5c84c704a57e54474de25ea4ff7122d754
 build:
   uuid: 01a111fc-e38e-7ad4-90c9-b80013f7640e
   checksum: v2:cdd74cb8121009f4ed1bc57984fff0bdc1db9da0b6bdb2b832dc53dd0698ee73
@@ -76,7 +76,7 @@ decisions: []
 
 Binary classification of `AcceptCoupon`, scored with `roc_auc` on grouped splits by `respondent`. 12,684 rows and 24 features. Source: Other (2017).
 
-Built as `01a111fc-e38e-7ad4-90c9-b80013f7640e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9e9cc8b7683f947a1c47c1e1287d5283aa1d63eddb1baed21cb7086dad663253`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e38e-7ad4-90c9-b80013f7640e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:636bf1615fc6f379956052830e36fe5c84c704a57e54474de25ea4ff7122d754`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -205,8 +205,8 @@ The first 5 of 12,684 rows of the final frame (random rows: the frame is shuffle
 - Anomaly: the numeric features in the dataset are low-cardinality (<25)
 - We simulate a cold-start model (as used before a recommender has any history for a user): predict whether a person accepts a coupon from their profile, stated habits and the scenario, for people not seen in training. The data is a survey (Wang et al. 2017, Sec. 6.2): each MTurk respondent first gave demographics and preferences, then answered hypothetical driving scenarios (22 per person in the file, 19 fixed questionnaire versions), all in one sitting and without timestamps, so there is no real interaction history for a warm-start setting. A random split puts about two-thirds of each person's other answers in train, which lets a model learn that person's tendency to say yes (ROC AUC 0.83 random vs 0.76 grouped; leak audit 2026-09-24).
 - The respondent id is not shipped with the data. The raw file lists each respondent's answers as a consecutive block with identical first-part answers, so a block of the same profile is one respondent: 587 blocks, 517 of them with 22 rows, against 652 accepted surveys in the paper, so a few blocks likely merge two adjacent respondents with identical profiles, which only makes the grouping stricter. The paper reports out-of-sample AUC from 5-fold testing (Table 3) without saying whether folds were split by respondent; a random split would be a warm start.
-- Ordinal scales (2026-10-30, CLEAN-14): 8 columns typed as ordered categories in the order of the source's
-  codebook (`ORDINAL_LEVELS`).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 8 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -393,4 +393,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:9e9cc8b7683f947a1c47c1e1287d5283aa1d63eddb1baed21cb7086dad663253` |
+| stale | yes: the definition now gives checksum `v2:636bf1615fc6f379956052830e36fe5c84c704a57e54474de25ea4ff7122d754` |

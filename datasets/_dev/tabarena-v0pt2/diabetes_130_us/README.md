@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: diabetes_130_us
 container_format: 2
-checksum: v2:d4983370f493278ca0b0beaae390132d7b033e5e145b937b42e3023a5732f74b
+checksum: v2:edaae3a2f202be8e12a2f1ae2feefe6cf286080cebb257507c7a0c14df17a23f
 build:
   uuid: 01a111fc-82d1-7838-bf50-fa314882cfef
   checksum: v2:eb9b004418443ea085fa8272aedde899f8b4e3492dd152825acedb8110288e02
@@ -67,7 +67,7 @@ decisions: []
 
 Binary classification of `EarlyReadmission`, scored with `roc_auc` on IID splits. 69,973 rows and 44 features. Source: UCI (2014).
 
-Built as `01a111fc-82d1-7838-bf50-fa314882cfef` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d4983370f493278ca0b0beaae390132d7b033e5e145b937b42e3023a5732f74b`, so the build is stale. See [Build](#build).
+Built as `01a111fc-82d1-7838-bf50-fa314882cfef` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:edaae3a2f202be8e12a2f1ae2feefe6cf286080cebb257507c7a0c14df17a23f`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -144,10 +144,10 @@ Only curators run `build`, when the dataset ships.
 | reason | The first publication is an explanatory logistic-regression study (odds ratios, significance of HbA1c measurement); it defines no predictive score, and the UCI page names none. |
 
 <details>
-<summary>Feature types: 33 categorical, 4 ordinal, 0 string, 0 datetime</summary>
+<summary>Feature types: 20 categorical, 17 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (33): `race`, `gender`, `admission_type_id`, `discharge_disposition_id`, `admission_source_id`, `payer_code`, `medical_specialty`, `diag_1`, `diag_2`, `diag_3`, `metformin`, `repaglinide`, `nateglinide`, `chlorpropamide`, `glimepiride`, `acetohexamide`, `glipizide`, `glyburide`, `tolbutamide`, `pioglitazone`, `rosiglitazone`, `acarbose`, `miglitol`, `troglitazone`, `tolazamide`, `insulin`, `glyburide-metformin`, `glipizide-metformin`, `metformin-rosiglitazone`, `metformin-pioglitazone`, `change`, `diabetesMed`, `EarlyReadmission`
-- ordinal (4): `age ([0-10) < [10-20) < [20-30) < [30-40) < [40-50) < [50-60) < [60-70) < [70-80) < [80-90) < [90-100))`, `weight ([0-25) < [25-50) < [50-75) < [75-100) < [100-125) < [125-150) < [150-175) < [175-200) < >200)`, `max_glu_serum (Norm < >200 < >300)`, `A1Cresult (Norm < >7 < >8)`
+- categorical (20): `race`, `gender`, `admission_type_id`, `discharge_disposition_id`, `admission_source_id`, `payer_code`, `medical_specialty`, `diag_1`, `diag_2`, `diag_3`, `acetohexamide`, `tolbutamide`, `troglitazone`, `tolazamide`, `glipizide-metformin`, `metformin-rosiglitazone`, `metformin-pioglitazone`, `change`, `diabetesMed`, `EarlyReadmission`
+- ordinal (17): `age ([0-10) < [10-20) < [20-30) < [30-40) < [40-50) < [50-60) < [60-70) < [70-80) < [80-90) < [90-100))`, `weight ([0-25) < [25-50) < [50-75) < [75-100) < [100-125) < [125-150) < [150-175) < [175-200) < >200)`, `max_glu_serum (Norm < >200 < >300)`, `A1Cresult (Norm < >7 < >8)`, `metformin (Down < Steady < Up)`, `repaglinide (Down < Steady < Up)`, `nateglinide (Down < Steady < Up)`, `chlorpropamide (Down < Steady < Up)`, `glimepiride (Down < Steady < Up)`, `glipizide (Down < Steady < Up)`, `glyburide (Down < Steady < Up)`, `pioglitazone (Down < Steady < Up)`, `rosiglitazone (Down < Steady < Up)`, `acarbose (Steady < Up)`, `miglitol (Down < Steady < Up)`, `insulin (Down < Steady < Up)`, `glyburide-metformin (Down < Steady < Up)`
 - string (0): none
 - datetime (0): none
 
@@ -177,11 +177,11 @@ The first 5 of 69,973 rows of the final frame (random rows: the frame is shuffle
 
 | EarlyReadmission | race | gender | age | weight | admission_type_id | discharge_disposition_id | admission_source_id | time_in_hospital | payer_code | medical_specialty | num_lab_procedures |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | AfricanAmerican | Female | \[70-80) | nan | Emergency | Discharged/transferred to SNF | Emergency Room | 5 | nan | Orthopedics-Reconstructive | 45 |
-| Yes | Caucasian | Male | \[60-70) | nan | nan | Discharged to home | nan | 1 | nan | nan | 54 |
-| No | Caucasian | Male | \[40-50) | \[100-125) | nan | Discharged to home | nan | 4 | nan | Cardiology | 75 |
-| Yes | Caucasian | Female | \[50-60) | nan | Emergency | Discharged/transferred to SNF | Emergency Room | 5 | MC | nan | 60 |
-| No | AfricanAmerican | Male | \[30-40) | nan | nan | Discharged to home | nan | 3 | nan | Family/GeneralPractice | 60 |
+| No | Caucasian | Female | \[70-80) | nan | Emergency | nan | Emergency Room | 4 | nan | nan | 56 |
+| No | Caucasian | Male | \[50-60) | nan | Emergency | Discharged to home | Emergency Room | 2 | nan | InternalMedicine | 37 |
+| No | Caucasian | Male | \[80-90) | nan | Emergency | Discharged to home | Emergency Room | 7 | CM | Cardiology | 64 |
+| No | Caucasian | Male | \[80-90) | nan | Emergency | Discharged to home | Emergency Room | 2 | nan | nan | 19 |
+| No | Caucasian | Male | \[60-70) | nan | Elective | nan | Transfer from a hospital | 10 | nan | nan | 54 |
 
 ## Curation notes
 
@@ -194,8 +194,10 @@ The first 5 of 69,973 rows of the final frame (random rows: the frame is shuffle
 - The other codes for an unknown value ("Not Available" and "Not Mapped" in the ID columns, "Unknown/Invalid" in gender) stay as categories, as IDS_mapping.csv lists them as codes of their own next to "NULL".
 - We drop examide, citoglipton and glimepiride-pioglitazone, which are constant ("No") after the filters above.
 - Anomaly: There is a distribution shift based on the original order. The reason for this might be that the encounters are ordered in some way such that later parts of the data contain different sub-groups than earlier parts. This is also indicated by the fact that the "payer_code" feature is responsible for the shift. This distribution shift vanishes after randomly shuffling the data (as done by default for this and all other datasets used in TabArena).
-- Ordinal scales (2026-10-30, CLEAN-14): 4 columns typed as ordered categories in the order of the source's
-  codebook (`ORDINAL_LEVELS`).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 17 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); 13 hold a state outside the scale, placed by the
+  curator's rule (missing when the column has no other missing value, else the lowest level; a state that is
+  simply not on the scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
 
 ## Splits
 
@@ -229,9 +231,22 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| miglitol | category | 69953 | 99.97 | 3 | Steady, Down, Up |
+| chlorpropamide | category | 69902 | 99.9 | 3 | Steady, Up, Down |
+| acarbose | category | 69773 | 99.71 | 2 | Steady, Up |
+| nateglinide | category | 69482 | 99.3 | 3 | Steady, Up, Down |
+| glyburide-metformin | category | 69477 | 99.29 | 3 | Steady, Up, Down |
+| repaglinide | category | 69056 | 98.69 | 3 | Steady, Up, Down |
 | weight | category | 67185 | 96.02 | 9 | \[75-100), \[50-75), \[100-125), \[125-150), \[25-50), \[0-25), \[150-175), \[175-200),… |
 | max_glu_serum | category | 66625 | 95.22 | 3 | Norm, >200, >300 |
+| glimepiride | category | 66276 | 94.72 | 3 | Steady, Up, Down |
+| rosiglitazone | category | 65312 | 93.34 | 3 | Steady, Up, Down |
+| pioglitazone | category | 64710 | 92.48 | 3 | Steady, Up, Down |
+| glyburide | category | 62198 | 88.89 | 3 | Steady, Up, Down |
+| glipizide | category | 60966 | 87.13 | 3 | Steady, Up, Down |
 | A1Cresult | category | 57128 | 81.64 | 3 | >8, Norm, >7 |
+| metformin | category | 55070 | 78.7 | 3 | Steady, Up, Down |
+| insulin | category | 34258 | 48.96 | 3 | Steady, Down, Up |
 | medical_specialty | category | 33639 | 48.07 | 70 | InternalMedicine, Family/GeneralPractice, Emergency/Trauma, Cardiology, Surgery… |
 | payer_code | category | 30415 | 43.47 | 17 | MC, HM, BC, SP, MD, CP, UN, CM, OG, PO |
 | admission_source_id | category | 4820 | 6.89 | 16 | Emergency Room, Physician Referral, Transfer from a hospital, Transfer from ano… |
@@ -243,23 +258,10 @@ Default splits.
 | diag_1 | category | 10 | 0.01 | 694 | 414, 428, 786, 410, 486, 427, 715, 434, 682, 780 |
 | gender | category | 0 | 0 | 3 | Female, Male, Unknown/Invalid |
 | age | category | 0 | 0 | 10 | \[70-80), \[60-70), \[50-60), \[80-90), \[40-50), \[30-40), \[90-100), \[20-30), \[10-20… |
-| metformin | category | 0 | 0 | 4 | No, Steady, Up, Down |
-| repaglinide | category | 0 | 0 | 4 | No, Steady, Up, Down |
-| nateglinide | category | 0 | 0 | 4 | No, Steady, Up, Down |
-| chlorpropamide | category | 0 | 0 | 4 | No, Steady, Up, Down |
-| glimepiride | category | 0 | 0 | 4 | No, Steady, Up, Down |
 | acetohexamide | category | 0 | 0 | 2 | No, Steady |
-| glipizide | category | 0 | 0 | 4 | No, Steady, Up, Down |
-| glyburide | category | 0 | 0 | 4 | No, Steady, Up, Down |
 | tolbutamide | category | 0 | 0 | 2 | No, Steady |
-| pioglitazone | category | 0 | 0 | 4 | No, Steady, Up, Down |
-| rosiglitazone | category | 0 | 0 | 4 | No, Steady, Up, Down |
-| acarbose | category | 0 | 0 | 3 | No, Steady, Up |
-| miglitol | category | 0 | 0 | 4 | No, Steady, Down, Up |
 | troglitazone | category | 0 | 0 | 2 | No, Steady |
 | tolazamide | category | 0 | 0 | 2 | No, Steady |
-| insulin | category | 0 | 0 | 4 | No, Steady, Down, Up |
-| glyburide-metformin | category | 0 | 0 | 4 | No, Steady, Up, Down |
 | glipizide-metformin | category | 0 | 0 | 2 | No, Steady |
 | metformin-rosiglitazone | category | 0 | 0 | 2 | No, Steady |
 | metformin-pioglitazone | category | 0 | 0 | 2 | No, Steady |
@@ -310,7 +312,7 @@ Default splits.
 | A1Cresult | 4 | >7 | 2865 | 4.09 |
 | EarlyReadmission | 1 | No | 63696 | 91.03 |
 | EarlyReadmission | 2 | Yes | 6277 | 8.97 |
-| acarbose | 1 | No | 69773 | 99.71 |
+| acarbose | 1 | &lt;NA> | 69773 | 99.71 |
 | acarbose | 2 | Steady | 190 | 0.27 |
 | acarbose | 3 | Up | 10 | 0.01 |
 | acetohexamide | 1 | No | 69972 | 100 |
@@ -332,7 +334,7 @@ Default splits.
 | age | 5 | \[40-50) | 6828 | 9.76 |
 | change | 1 | No | 38482 | 55 |
 | change | 2 | Ch | 31491 | 45 |
-| chlorpropamide | 1 | No | 69902 | 99.9 |
+| chlorpropamide | 1 | &lt;NA> | 69902 | 99.9 |
 | chlorpropamide | 2 | Steady | 66 | 0.09 |
 | chlorpropamide | 3 | Up | 4 | 0.01 |
 | chlorpropamide | 4 | Down | 1 | 0 |
@@ -361,7 +363,7 @@ Default splits.
 | gender | 1 | Female | 37229 | 53.2 |
 | gender | 2 | Male | 32741 | 46.79 |
 | gender | 3 | Unknown/Invalid | 3 | 0 |
-| glimepiride | 1 | No | 66276 | 94.72 |
+| glimepiride | 1 | &lt;NA> | 66276 | 94.72 |
 | glimepiride | 2 | Steady | 3331 | 4.76 |
 | glimepiride | 3 | Up | 230 | 0.33 |
 
@@ -380,4 +382,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:d4983370f493278ca0b0beaae390132d7b033e5e145b937b42e3023a5732f74b` |
+| stale | yes: the definition now gives checksum `v2:edaae3a2f202be8e12a2f1ae2feefe6cf286080cebb257507c7a0c14df17a23f` |

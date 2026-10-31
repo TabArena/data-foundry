@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: diamonds
 container_format: 2
-checksum: v2:14d092a68cbbbb3a1307fc4e3ee3838858e0e0dcb395448047d6b81979278414
+checksum: v2:26fbd9b3e434830a61e22457a5eec65f3ed3c4d8dd691cf563612c51a71fb293
 build:
   uuid: 01a111fc-d45e-7211-98d8-ee98e5da227f
   checksum: v2:c5776dcaa602180a8810b316b7bf78514aa234837b87df7f6438d0bc4de4231f
@@ -69,7 +69,7 @@ decisions: []
 
 Regression of `price`, scored with `rmsle` on IID splits. 53,940 rows and 9 features. Source: Other (2007).
 
-Built as `01a111fc-d45e-7211-98d8-ee98e5da227f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:14d092a68cbbbb3a1307fc4e3ee3838858e0e0dcb395448047d6b81979278414`, so the build is stale. See [Build](#build).
+Built as `01a111fc-d45e-7211-98d8-ee98e5da227f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:26fbd9b3e434830a61e22457a5eec65f3ed3c4d8dd691cf563612c51a71fb293`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -186,8 +186,8 @@ The first 5 of 53,940 rows of the final frame (random rows: the frame is shuffle
 - The price ships on a log scale (log of US dollars), the scale a practitioner models a price on, and is scored
   by RMSLE on the dollar price after the inverse (`target_transform="log"`; Lennart, 2026-10-21): a price's
   error matters relative to the price.
-- Ordinal scales (2026-10-30, CLEAN-14): 3 columns typed as ordered categories in the order of the source's
-  codebook (`ORDINAL_LEVELS`).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -285,4 +285,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:14d092a68cbbbb3a1307fc4e3ee3838858e0e0dcb395448047d6b81979278414` |
+| stale | yes: the definition now gives checksum `v2:26fbd9b3e434830a61e22457a5eec65f3ed3c4d8dd691cf563612c51a71fb293` |

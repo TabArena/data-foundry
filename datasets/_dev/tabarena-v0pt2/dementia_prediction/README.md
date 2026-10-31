@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: dementia_prediction
 container_format: 2
-checksum: v2:8bbc58d49213993b6e0e09cd0a63abb906491ed9dd57de7639e090572abbb78a
+checksum: v2:f5e757ea475eb5aafd271211a4a2ea218e2e94d581d6bc425c52cbc1117373a6
 build:
   uuid: 01a111fc-d5b5-7da4-8ffe-99dd2600b6e0
   checksum: v2:9ddc612f5674f4b595dfba519a28785aa6b30e0cf85e35380aab666fff024a7c
@@ -22,8 +22,8 @@ data:
   n_rows: 370
   n_features: 8
   dtypes:
-    category: 3
-    float64: 5
+    category: 4
+    float64: 4
     int64: 2
   n_test_dataset_rows: null
 task:
@@ -75,7 +75,7 @@ decisions: []
 
 Multiclass classification of `CDR`, scored with `log_loss` on grouped splits by `Subject ID`. 370 rows and 8 features. Source: Other (2010).
 
-Built as `01a111fc-d5b5-7da4-8ffe-99dd2600b6e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8bbc58d49213993b6e0e09cd0a63abb906491ed9dd57de7639e090572abbb78a`, so the build is stale. See [Build](#build).
+Built as `01a111fc-d5b5-7da4-8ffe-99dd2600b6e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f5e757ea475eb5aafd271211a4a2ea218e2e94d581d6bc425c52cbc1117373a6`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -154,9 +154,10 @@ Only curators run `build`, when the dataset ships.
 | reason | The OASIS-2 paper describes the data and reports group analyses, no prediction task or metric; the Mendeley copy's paper is a later reuse, not the first publication |
 
 <details>
-<summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 3 categorical, 1 ordinal, 0 string, 0 datetime</summary>
 
 - categorical (3): `M/F`, `Subject ID`, `CDR`
+- ordinal (1): `SES (5.0 < 4.0 < 3.0 < 2.0 < 1.0)`
 - string (0): none
 - datetime (0): none
 
@@ -186,8 +187,8 @@ The first 5 of 370 rows of the final frame (random rows: the frame is shuffled).
 | CDR | Subject ID | M/F | Age | EDUC | SES | MMSE | eTIV | nWBV | ASF |
 |---|---|---|---|---|---|---|---|---|---|
 | no_dementia | OAS2_0121 | F | 73 | 11 | 4 | 30 | 1475.33 | 0.725546 | 1.18956 |
-| mild_AD | OAS2_0079 | F | 73 | 12 | 4 | 16 | 1477.65 | 0.696455 | 1.18769 |
-| no_dementia | OAS2_0103 | F | 69 | 16 | 1 | 30 | 1404.46 | 0.750452 | 1.24959 |
+| very_mild_AD | OAS2_0046 | F | 83 | 15 | 2 | 20 | 1476.09 | 0.749731 | 1.18895 |
+| no_dementia | OAS2_0055 | M | 67 | 13 | 3 | 27 | 1365.26 | 0.826571 | 1.28547 |
 | no_dementia | OAS2_0109 | M | 83 | 11 | 4 | 29 | 1744.08 | 0.670229 | 1.00626 |
 | mild_AD | OAS2_0106 | F | 70 | 11 | 4 | 22 | 1445.16 | 0.722038 | 1.2144 |
 
@@ -198,6 +199,8 @@ We start with the data from Mendeley.
 - CDR and Group are both the same target variable. CDR is the Clinical Dementia Rating (0 = no dementia, 0.5 = very mild AD, 1 = mild AD, 2 = moderate AD), which determines the group variable. 31 of the 150 subjects change their rating across visits (the 'Converted' group). We make this a task to predict for a patient (at any given time point of a scan) their dementia rating. The rating is ordinal but discrete, so we treat it as a classification problem (not regression). We drop cases with moderate_AD (n=3), as we do not have enough data on this class to include them in our prediction task.
 - We drop the group variable (Nondemented / Demented / Converted, derived from the ratings over the visits) and the time of the scan (visit number, MR delay). We predict each visit's rating from the subject's sex, age, years of education (EDUC), socioeconomic status (SES, 19 missing), the Mini-Mental State Examination score of the same visit (MMSE, 2 missing; a separate cognitive test, not derived from the rating) and three measures from the visit's MRI scan: estimated total intracranial volume (eTIV), normalized whole-brain volume (nWBV) and the atlas scaling factor (ASF, which is 1755 / eTIV, kept as in the source).
 - We also drop the constant hand column.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them were shipped as numbers.
 
 ## Splits
 
@@ -292,8 +295,8 @@ One group is a subject of OASIS-2: older adults scanned on two or more visits at
 | largest group | 1.4% of the rows |
 | test groups per fold | 48 to 52 |
 | groups of two or more rows with a single label | 78.9% |
-| nearest neighbour in the same group | 83.0% of the rows (chance: 0.5%) |
-| label variance explained by the group | 0.83 (shuffled groups: 0.37) |
+| nearest neighbour in the same group | 68.4% of the rows (chance: 0.5%) |
+| label variance explained by the group | 0.83 (shuffled groups: 0.38) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
@@ -308,15 +311,15 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| SES | category | 19 | 5.14 | 5 | 2.0, 1.0, 3.0, 4.0, 5.0 |
 | Subject ID | category | 0 | 0 | 150 | OAS2_0073, OAS2_0048, OAS2_0127, OAS2_0070, OAS2_0027, OAS2_0017, OAS2_0034, OA… |
 | M/F | category | 0 | 0 | 2 | F, M |
 | CDR | category | 0 | 0 | 3 | no_dementia, very_mild_AD, mild_AD |
-| SES | float64 | 19 | 5.14 | 5 | 2.0, 1.0, 3.0, 4.0, 5.0 |
 | MMSE | float64 | 2 | 0.54 | 18 | 30.0, 29.0, 28.0, 27.0, 26.0, 25.0, 23.0, 21.0, 20.0, 22.0 |
-| eTIV | float64 | 0 | 0 | 368 | 1364.5, 1402.1, 1927.705, 1956.9603, 1294.81, 1525.34, 1569.21, 1688.0096, 1360… |
-| nWBV | float64 | 0 | 0 | 370 | 0.8195, 0.7255, 0.6965, 0.7505, 0.6702, 0.722, 0.7732, 0.737, 0.8063, 0.7267 |
-| ASF | float64 | 0 | 0 | 368 | 1.2862, 1.2517, 0.9104, 0.8968, 1.3554, 1.1506, 1.1184, 1.0397, 1.2897, 0.9679 |
-| Age | int64 | 0 | 0 | 38 | 73, 75, 78, 80, 71, 81, 82, 76, 77, 68 |
+| eTIV | float64 | 0 | 0 | 368 | 1364.5, 1402.1, 1598.6, 1406.41, 1229.72, 1201.5445, 1460.55, 1688.0096, 1360.7… |
+| nWBV | float64 | 0 | 0 | 370 | 0.739, 0.7255, 0.7497, 0.8266, 0.6702, 0.722, 0.6976, 0.737, 0.7202, 0.7267 |
+| ASF | float64 | 0 | 0 | 368 | 1.2862, 1.2517, 1.0978, 1.2478, 1.4272, 1.4606, 1.2016, 1.0397, 1.2897, 0.9679 |
+| Age | int64 | 0 | 0 | 38 | 73, 75, 80, 78, 71, 81, 82, 76, 77, 68 |
 | EDUC | int64 | 0 | 0 | 12 | 12, 16, 18, 14, 13, 15, 20, 11, 8, 17 |
 
 ### Target distribution
@@ -333,13 +336,15 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 |---|---|---|---|---|---|
 | Age | 370 | 76.9486 | 7.59261 | 60 | 97 |
 | EDUC | 370 | 14.5784 | 2.87133 | 6 | 23 |
-| SES | 351 | 2.46724 | 1.1331 | 1 | 5 |
 | MMSE | 368 | 27.3995 | 3.62412 | 4 | 30 |
 | eTIV | 370 | 1487.72 | 176.411 | 1105.65 | 2004.48 |
 | nWBV | 370 | 0.729742 | 0.0370475 | 0.644399 | 0.836842 |
 | ASF | 370 | 1.19584 | 0.138345 | 0.875539 | 1.5873 |
 
 ### Categorical features
+
+<details>
+<summary>Show the table (15 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -348,11 +353,18 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | CDR | 3 | mild_AD | 41 | 11.08 |
 | M/F | 1 | F | 211 | 57.03 |
 | M/F | 2 | M | 159 | 42.97 |
+| SES | 1 | 2.0 | 103 | 27.84 |
+| SES | 2 | 1.0 | 86 | 23.24 |
+| SES | 3 | 3.0 | 81 | 21.89 |
+| SES | 4 | 4.0 | 74 | 20 |
+| SES | 5 | &lt;NA> | 19 | 5.14 |
 | Subject ID | 1 | OAS2_0073 | 5 | 1.35 |
 | Subject ID | 2 | OAS2_0048 | 5 | 1.35 |
 | Subject ID | 3 | OAS2_0127 | 5 | 1.35 |
 | Subject ID | 4 | OAS2_0070 | 5 | 1.35 |
 | Subject ID | 5 | OAS2_0027 | 4 | 1.08 |
+
+</details>
 
 ## Build
 
@@ -365,4 +377,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8bbc58d49213993b6e0e09cd0a63abb906491ed9dd57de7639e090572abbb78a` |
+| stale | yes: the definition now gives checksum `v2:f5e757ea475eb5aafd271211a4a2ea218e2e94d581d6bc425c52cbc1117373a6` |

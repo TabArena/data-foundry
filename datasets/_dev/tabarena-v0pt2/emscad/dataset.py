@@ -62,6 +62,21 @@ def poster_groups(df: pd.DataFrame) -> pd.Series:
     return anonymize_ids(first_job.astype(str))
 
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "required_experience": [
+        "Not Applicable",
+        "Internship",
+        "Entry level",
+        "Associate",
+        "Mid-Senior level",
+        "Director",
+        "Executive",
+    ],
+}
+
+
 class Emscad(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="Is this job ad a scam?",
@@ -143,6 +158,10 @@ class Emscad(AbstractCuratedDataset):
         - We removed job listings with non english texts (138 rows).
         - We do not subsample the data, as a result, the data is heavily imbalanced.
         - We found no relation of job_id with a timestamp and even found cases where a lower job_id has a description claiming to be a job from 2014 (so the end of the collection period). Thus, we do dropped job_id as it does not contain any signal.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed by the
+          curator's rule (missing when the column has no other missing value, else the lowest level; a state that is
+          simply not on the scale, such as Other, is missing).
     """
 
     # Task
@@ -376,6 +395,7 @@ class Emscad(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "poster_group",
                 "telecommuting",

@@ -45,6 +45,8 @@ CC (2026-10-14, Lennart): Task probes `no_spread` accepted: the real labels give
 
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 3 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `education_level`, `experience`, `company_size` (the README lists their levels); left unordered: `last_new_job` (a level outside the scale is a state of its own).
 
+CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 1 columns with a state outside the scale ordered, the state placed by the rule.
+
 ## Reference
 
 https://www.kaggle.com/datasets/arashnic/hr-analytics-job-change-of-data-scientists

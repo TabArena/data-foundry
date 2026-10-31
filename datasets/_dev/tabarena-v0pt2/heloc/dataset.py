@@ -5,7 +5,14 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, set_missing
+
+# The ordinal scales, lowest level first, from the FICO data dictionary (curation notes; the README lists them):
+# the worst delinquency, from a derogatory comment to current and never delinquent.
+ORDINAL_LEVELS = {
+    "MaxDelq2PublicRecLast12M": [0, 1, 2, 3, 4, 7],
+    "MaxDelqEver": [2, 3, 4, 5, 6, 8],
+}
 
 
 class Heloc(AbstractCuratedDataset):
@@ -63,6 +70,9 @@ class Heloc(AbstractCuratedDataset):
         - Label: "Bad" means the applicant was 90 days past due or worse at least once in the 24 months after the account was opened; "Good" means never more than 90 days overdue (FICO's challenge description, as reproduced in the AIX360 HELOC tutorial; FICO's challenge page now redirects).
         - The applicants requested a credit line of $5,000 to $150,000 (same source).
         - Anomaly: the dataset has time-related features. However, the task and features are preprocessed to be time-invariant.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): `MaxDelq2PublicRecLast12M` and
+          `MaxDelqEver` are ordered categories, from a derogatory comment to current and never delinquent (FICO data
+          dictionary); their codes for unknown delinquency, "all other" and no bureau record (-9) are missing.
     """
 
     # Task
@@ -75,3 +85,10 @@ class Heloc(AbstractCuratedDataset):
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/heloc_dataset_v1 (1).csv")
         return df
+
+    def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
+        # codes outside the delinquency scales (CLEAN-10, CLEAN-14): unknown delinquency, all other, no bureau record
+        return set_missing(raw, {"MaxDelq2PublicRecLast12M": [5, 6, 9, -9], "MaxDelqEver": [7, -9]})
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        return FeatureTypes(ordinal=ORDINAL_LEVELS)

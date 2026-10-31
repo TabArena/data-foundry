@@ -74,8 +74,8 @@ class LjubljanaPrimaryTumor(AbstractCuratedDataset):
         - We reverse the ordinal encoding of all features, adding the text back to the categories.
         - We drop classes with less than 10 samples to have sufficient data per class for a robust benchmark task. In reality, this would call for collecting more data on these classes, or treating it as an individual few-shot prediction task.
         - The data contains many duplicates (10%), which seems to be naturally occurring given the limited amount of features. Moreover, the duplicates sometimes have different targets. We keep the duplicates. While this might bias evaluation a bit, it represents the real-world task with ambiguous features better.
-        - Ordinal scales (2026-10-30, CLEAN-14): 2 columns typed as ordered categories in the order of the source's
-          codebook (`ORDINAL_LEVELS`).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 2 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`).
     """
 
     # Task

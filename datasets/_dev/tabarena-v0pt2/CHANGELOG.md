@@ -4,6 +4,53 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-31, the curator's marks on PR #37's review board applied (PR #37)
+
+- A level outside a scale that is a state of its own (no basement, not prescribed, no checking account): the column
+  is ordered, and the state is missing when the column has no other missing value, else the lowest level (Lennart:
+  "In data foundry, we want to keep the right state independent of what the downstream benchmark does"). The 35
+  columns left unordered for such a state are ordered now. By meaning, a state that is simply not on the scale (Other,
+  a mixed electrical system, BI-RADS 0 "needs more imaging", a calm wind, a lapsed registration, heloc's "all other"
+  and no bureau record) is missing even where the column has other missing values (18 columns), and ANES's "all of
+  life" residence is the top level. distribution_transformers' `client_type` stays unordered (commercial, industrial
+  and official clients beside the residential strata 1-6).
+- The ordinal scales the sources ship as numbers are ordered categories too (point 3: 164 columns, and the 3 of low
+  confidence below), as the right state of the data; that AutoGluon's preprocessing drops the order is a benchmark
+  TODO (`BENCHMARK_CHANGES_TODO.md`). Months, weekdays and wind directions are ordered in their usual order (10
+  columns; the wrap is not shown).
+  heart_disease's `cp` is ordered by how typical the angina is (asymptomatic < non-anginal pain < atypical < typical
+  angina), from the clinical logic, not the outcome; for the same reason miami_housing's `structure_quality` (a 1-5
+  quality code without labels, doubted for the high prices of the homes rated 3) is ordered by its codes.
+  early_learning_predictors' `child_stunted` is ordered.
+- Codes shipped as numbers are categories (point 4): early_learning_predictors' 18 answer codes, 5g_energy_consumption
+  `weekday_number`, sdss_17 `cam_col`, home_credit_default_stability_1m `max_persontype_1072L`, anes_voting_2026
+  `VCF0104` and sberbank's `ID_metro`; brazilian_ecommerce's zip prefixes stay numbers (nearby prefixes are nearby
+  places). ieee_fraud_detection's `TransactionID` is dropped: a row number in time order (Spearman 1.0 with
+  `TransactionDT`), an identifier (CLEAN-3).
+- Placed by meaning: infrared_thermography_temperature's age band 21-30 between 21-25 and 26-30; hotel_booking_demand's
+  Undefined meal is SC (the paper: "Undefined/SC - no meal package"); heloc's two delinquency scales ordered by the
+  FICO data dictionary, their unknown, all-other and no-record codes missing.
+- Labels (Lennart: "we want the right labels in all cases"): credit_g's source is UCI 573 (South German Credit,
+  Groemping 2019), every code labelled from its code table, 57 coded values and 10 typos in amount or age corrected, 9
+  ordinal scales. immoscout_german_house_prices' `Condition`, `Furnishing_quality`, `Type` and `Heating` carry
+  ImmoScout24's own codes: the scrape's English labels are permuted, the missing value swapped with a real level in
+  each column; 3,548 of the houses match an April 2020 scrape that keeps the codes, and each label maps to one code
+  for 93-100% of its matches. `Furnishing_quality` is then ordered; `Condition` stays unordered (a partial order).
+- The orders of low confidence checked again without the label: regensburg_pediatric_appendicitis'
+  `Appendix_Wall_Layers` (intact < partially raised < raised, from the German record of the 2021 release; `upset`, 1
+  child, missing) and `Perfusion` (by blood flow, no < hypoperfused < present < hyperperfused) ordered, with a note
+  that a blank `Perfusion` also means unremarkable in this file; website_phishing's `SFH` ordered, with a note on
+  which end is phishy; churn_telco_south_asia's user types, the STEG `reading_remarque` and marketing_campaign's
+  `Education` unordered with a note.
+- gallstone_disease's `Comorbidity`: the undocumented 2 (1 row) and 3 (2 rows) recoded to 1, as each row lists one
+  disease; the rows kept (CLEAN-11). Cloud cover 9 (sky obscured, the cloud amount cannot be estimated) missing in
+  ashrae_great_energy_predictor_iii_1m and rain_in_australia (CLEAN-10). amex_non_iid_1m's `D_87` became constant
+  with the -1 fix of 2026-10-30 (1 or missing, as in AMEX's data), a warning the entry below missed: accepted with
+  its reason.
+- 443 ordinal columns in 59 definitions. CLEAN-14 rewritten with the marks; Cases rows for CLEAN-3, 10, 11, 12 and
+  14. `dataset check` on the 67 changed definitions: no error, and against main two warnings fewer and none new. Not
+  built.
+
 ## 2026-10-30, ordinal scales typed in order; counts with an open end; proxy missing codes; credit_g relabelled (PR #37)
 
 - Ordinal type: `FeatureTypes(ordinal={col: [levels, lowest first]})` casts a column to an ordered category (a value

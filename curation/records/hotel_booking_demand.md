@@ -52,6 +52,8 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `DepositType` (the README lists their levels); left unordered: `ArrivalDateMonth` (a partial order); `Meal` (a level outside the scale is a state of its own).
 
+CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 1 calendar or compass cycles ordered; 1 columns with a state outside the scale ordered, the state placed by the rule; Meal's Undefined is SC (the paper), the meal plan ordered; the arrival month ordered.
+
 ## Reference
 
 Antonio, N., de Almeida, A., & Nunes, L. (2019). Hotel booking demand datasets. Data in brief, 22, 41-49.

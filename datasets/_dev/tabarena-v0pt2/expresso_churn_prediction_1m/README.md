@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: expresso_churn_prediction_1m
 container_format: 2
-checksum: v2:984659bc8d0b46510d47aada9877b43cd970ab8f0fb116a1294117907c4ca60e
+checksum: v2:8f2436432548d6fd8367e1017a7227b7fab95dc4cd7f2ab6599f8a45bc182033
 build: null
 build_stale: false
 data:
@@ -65,7 +65,7 @@ decisions:
 
 Binary classification of `CHURN`, scored with `roc_auc` on IID splits. 1,500,000 rows and 15 features. Source: Zindi (2020).
 
-Not built yet. The current definition gives checksum `v2:984659bc8d0b46510d47aada9877b43cd970ab8f0fb116a1294117907c4ca60e`.
+Not built yet. The current definition gives checksum `v2:8f2436432548d6fd8367e1017a7227b7fab95dc4cd7f2ab6599f8a45bc182033`.
 
 ## In brief
 
@@ -207,8 +207,8 @@ We start with Train.csv of the Zindi hackathon UmojaHack Ghana: Expresso Churn P
 - Note: REGULARITY ranges from 1 to 62; the codebook calls it "nombre de fois que le client est actif pendant 90 jours", so reading it as the active days in the last 62 days of the window is our inference. FREQUENCE, "the number of times the client made revenue" (codebook), reaches 91. ARPU_SEGMENT is REVENUE / 3 rounded in every row; both are kept as released.
 - Note: the task probes flag one_feature (REGULARITY alone ROC AUC 0.890). We keep the task by rule 4 of task_probes.md: active days are the natural core of a churn task, and on the shipped folds an untuned LightGBM beats REGULARITY alone on 3 of 3 folds (0.9023 to 0.9031 against 0.8896 to 0.8902).
 - Note: Zindi's rules forbid redistributing the data, uploads to Kaggle or GitHub included; the Kaggle copies we name are such uploads.
-- Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
-  codebook (`ORDINAL_LEVELS`).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`).
 
 Version of `expresso_churn_prediction`: We sub-sample the frame (2,154,048 customers) to 1.5M customers, stratified on the target, and use 3-fold cross-validation, so every fold trains on 1M and tests on 500k customers (v2 split protocol).
 

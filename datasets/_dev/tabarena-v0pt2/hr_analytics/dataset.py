@@ -40,6 +40,7 @@ ORDINAL_LEVELS = {
         ">20",
     ],  # open-ended
     "company_size": ["<10", "10/49", "50-99", "100-500", "500-999", "1000-4999", "5000-9999", "10000+"],  # open-ended
+    "last_new_job": ["never", "1", "2", "3", "4", ">4"],  # open-ended
 }
 
 
@@ -132,8 +133,10 @@ class HrAnalytics(AbstractCuratedDataset):
         - Note: the task probes flag `no_spread` (ROC AUC LightGBM 0.625, linear 0.622, random forest 0.619; LightGBM
           +0.012 over random forest, paired SE 0.006). We keep the task: a real signal with a low ceiling (Lennart,
           2026-10-14).
-        - Ordinal scales (2026-10-30, CLEAN-14): 3 columns typed as ordered categories in the order of the source's
-          codebook (`ORDINAL_LEVELS`).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 4 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed by the
+          curator's rule (missing when the column has no other missing value, else the lowest level; a state that is
+          simply not on the scale, such as Other, is missing).
     """
 
     # Task

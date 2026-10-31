@@ -6,7 +6,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Metric,
+    TaskSummary,
+    drop_columns,
+    set_missing,
+)
 
 TARGET = "cancer_within_one_year"
 
@@ -41,6 +49,20 @@ YES_NO_MISSING = [  # 0 = no, 1 = yes, 9 = missing
     "prior_mammogram",
     "prior_breast_biopsy",
 ]
+
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "birads_breast_density": [1, 2, 3, 4],
+    "birads_assessment": [
+        "1: Negative",
+        "2: Benign finding(s)",
+        "3: Probably benign",
+        "4: Suspicious abnormality",
+        "5: Highly suggestive of malignancy",
+    ],
+}
 
 
 class BreastCancerPrediction(AbstractCuratedDataset):
@@ -137,6 +159,11 @@ class BreastCancerPrediction(AbstractCuratedDataset):
         - One exam per woman, her earliest in the sample (lowest age; two age ties keep the file's order), so the folds are IID (Lennart, 2026-10-15): 3,133 of the 36,714 women contribute 2-4 exams, and the use case is one woman's screening read. The 20 women with cancer and several exams are positive only on their last exam, so 20 of the 259 cancers go. Untuned LightGBM scores alike either way (ROC AUC 0.928 earliest exam, 0.923 latest, 0.925 all exams grouped by woman). The file's two exact copies go with it.
         - Duplicates: repeated feature vectors (52.2% of the rows, the `dataset_duplicate_rows` warning) stay: the features are coarse, and these are different women with the same profile (49.6% of the test rows have a copy in train), whose outcomes are independent.
         - Anomaly: the BCSC recommends the data "for use as a teaching tool only; they should not be used to conduct primary research". We use it to compare learning methods, not to estimate clinical effects.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 2 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them were shipped as numbers; 1 hold a state
+          outside the scale, placed by the curator's rule (missing when the column has no other missing value, else the
+          lowest level; a state that is simply not on the scale, such as Other, is missing); codes that mean unknown are
+          missing (CLEAN-10).
     """
 
     accepted_check_warnings = {
@@ -176,6 +203,14 @@ class BreastCancerPrediction(AbstractCuratedDataset):
         # codebook sentinels: 9 = missing for the yes/no answers, -99 for BMI
         df[YES_NO_MISSING] = df[YES_NO_MISSING].replace(9, np.nan)
         df["bmi"] = df["bmi"].replace(-99, np.nan)
+        # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
+        # CLEAN-14): don't know, refused, not asked, other
+        df = set_missing(
+            df,
+            {
+                "birads_assessment": ["0: Needs additional imaging"],
+            },
+        )
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
@@ -187,7 +222,7 @@ class BreastCancerPrediction(AbstractCuratedDataset):
             "prior_mammogram",
             "family_history_breast_cancer",
         ]
-        return FeatureTypes(categorical=["birads_assessment", "mammogram_type", *flags])
+        return FeatureTypes(ordinal=ORDINAL_LEVELS, categorical=["birads_assessment", "mammogram_type", *flags])
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         by_assessment = (

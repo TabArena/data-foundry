@@ -91,6 +91,12 @@ ORDINAL_LEVELS = {
     "VCF9238": ["1", "2", "3"],
     "VCF9239": ["5", "4", "3", "2", "1"],
     "VCF9244": ["5", "4", "3", "2", "1"],
+    "VCF0102": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0],  # open-ended
+    "VCF0103": [8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0],  # open-ended
+    "VCF0130": ["7", "0", "5", "4", "3", "2", "1"],  # open-ended
+    "VCF0155": ["5", "3", "1"],
+    "VCF9002": ["1", "2", "3", "4", "5", "6"],  # open-ended
+    "VCF9266": ["1", "2", "3"],
 }
 
 
@@ -169,9 +175,11 @@ class AnesVoting2026(AbstractCuratedDataset):
         - Note: Ideally, we would select different feature sets per data split, depending on feature availability. However, for simplicity, we just keep all features.
         - Note: We considered keeping the unique respondent identifier in the data, because otherwise models that are able to reconstruct this information would unfairly benefit. However, for now we drop the identifier since it is not a desirable predictive feature for the given task, because the goal is generalization to the population, not memorizing individual behavior.
         - Metric: the fallback ROC AUC, not TableShift's accuracy (Lennart, 2026-10-21; metric spec).
-        - Ordinal scales (2026-10-30, CLEAN-14): 71 columns typed as ordered categories in the order of the source's
-          codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
-          (CLEAN-10); 20 counts and indices stored as text are numbers.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 77 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); 2 of them were shipped as numbers; 4 hold a state
+          outside the scale, placed by the curator's rule (missing when the column has no other missing value, else the
+          lowest level; a state that is simply not on the scale, such as Other, is missing); codes that mean unknown are
+          missing (CLEAN-10); 20 counts and indices stored as text are numbers.
     """
 
     # Task
@@ -682,7 +690,8 @@ class AnesVoting2026(AbstractCuratedDataset):
         for col in num_cols:
             df[col] = pd.to_numeric(df[col])
         df = df.sort_values(by="VCF0004", kind="stable").reset_index(drop=True)
-        # codes outside a scale that mean unknown (don't know, refused, not asked): missing (CLEAN-10)
+        # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
+        # CLEAN-14): don't know, refused, not asked, other
         df = set_missing(
             df,
             {
@@ -757,6 +766,12 @@ class AnesVoting2026(AbstractCuratedDataset):
                 "VCF9238": ["-8", "-9"],
                 "VCF9239": ["-8", "-9"],
                 "VCF9244": ["-8", "-9"],
+                "VCF0102": [0.0],
+                "VCF0103": [0.0],
+                "VCF0130": ["8", "9"],
+                "VCF0155": ["8", "9", "0"],
+                "VCF9002": ["0", "9"],
+                "VCF9266": ["-9", "7"],
                 "VCF0138a": ["9"],
                 "VCF0138b": ["9"],
                 "VCF0138c": ["9"],
@@ -807,4 +822,5 @@ class AnesVoting2026(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         # VCF0110 is cast in `_clean` already. Every text column as categorical would require more careful audition.
-        return FeatureTypes(ordinal=ORDINAL_LEVELS, categorical=["VCF0110", *object_columns(df)])
+        # VCF0104 (gender) is a code stored as a number (point 4, 2026-10-31)
+        return FeatureTypes(ordinal=ORDINAL_LEVELS, categorical=["VCF0110", "VCF0104", *object_columns(df)])

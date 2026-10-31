@@ -109,6 +109,76 @@ ORDINAL_LEVELS = {
         "Basic: Practitioner sometimes supports children to do things for themselves and",
         "Good: Practitioner regularly supports children to do things for themselves and t",
     ],
+    "quintile": [1.0, 2.0, 3.0, 4.0, 5.0],
+    "gr_ecd": [0.0, 1.0, 2.0, 3.0, 4.0],
+    "obs_booknumber": [1.0, 2.0, 3.0, 4.0, 5.0],  # open-ended
+    "obs_condition_equipment": [1.0, 2.0, 3.0, 4.0],
+    "obs_infrastructure": [1.0, 2.0, 3.0, 4.0],
+    "obs_material_display": [0.0, 1.0, 2.0, 3.0],
+    "plan": [0.0, 2.0, 1.0],
+    "pqa_assessment_observation": [0.0, 1.0, 2.0],
+    "pqa_assessment_systematic": [0.0, 1.0, 2.0],
+    "pqa_curriculum_balance": [0.0, 1.0, 2.0],
+    "pqa_curriculum_plan": [0.0, 1.0, 2.0],
+    "pra_adequacy_materials": [1.0, 2.0, 3.0, 4.0, 5.0],
+    "pra_class_space_2": [1.0, 2.0, 3.0, 4.0, 5.0],
+    "pra_cotlands_support": [3.0, 4.0, 5.0],
+    "pra_cotlands_visits": [0.0, 1.0, 4.0, 11.0],  # open-ended
+    "pra_education": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+    "pra_engaged": [1.0, 2.0, 3.0],
+    "pra_free_play": [0.0, 1.0, 2.0, 3.0, 5.0],  # open-ended
+    "pra_free_play_outdoor": [0.0, 1.0, 2.0, 3.0, 4.0],
+    "pra_grade": [0.0, 8.0, 9.0, 10.0, 11.0, 12.0],
+    "pra_letcee_support_cluster": [1.0, 3.0, 4.0, 5.0],
+    "pra_letcee_support_coach": [1.0, 3.0, 4.0],
+    "pra_motivate_mentoring": [1.0, 2.0, 3.0, 4.0],
+    "pra_motivate_recognition": [1.0, 2.0, 3.0, 4.0],
+    "pra_motivate_support": [1.0, 2.0, 3.0, 4.0],
+    "pra_ntataise_attendance": [5.0, 7.0, 8.0, 9.0, 11.0],  # open-ended
+    "pra_ntataise_support": [2.0, 3.0, 4.0, 5.0],
+    "pra_ntataise_visits": [2.0, 3.0, 4.0, 5.0, 7.0, 8.0, 11.0],  # open-ended
+    "pra_satisfaction_support": [1.0, 2.0, 3.0, 4.0, 5.0],
+    "pra_tuc_support": [1.0, 3.0, 4.0, 5.0],
+    "pra_tuc_visits": [1.0, 2.0, 4.0, 5.0, 7.0, 10.0, 11.0],  # open-ended
+    "pri_covid_staff_salaries": [0.0, 1.0, 2.0],
+    "pri_education": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+    "pri_fees_paid_proportion": [0.0, 1.0, 2.0, 3.0, 4.0],
+    "pri_food_parents_afternoon": [0.0, 1.0, 2.0],
+    "pri_food_parents_breakfast": [0.0, 1.0, 2.0],
+    "pri_food_parents_lunch": [0.0, 1.0, 2.0],
+    "pri_food_parents_morning": [0.0, 1.0, 2.0],
+    "pri_parents_activities": [0.0, 1.0, 2.0, 3.0],
+    "pri_parents_contact": [0.0, 1.0, 2.0, 3.0],
+    "pri_parents_frequency": [0.0, 4.0, 3.0, 2.0, 1.0],
+    "pri_registered_dsd": [4.0, 3.0, 2.0, 1.0],
+    "pri_registered_partial": [4.0, 3.0, 2.0, 1.0],
+    "pri_registered_programme": [4.0, 3.0, 2.0, 1.0],
+    "pri_same_language": [4.0, 3.0, 2.0, 1.0],
+    "pri_separate": [0.0, 1.0, 2.0],
+    "pri_staff_employed": [4.0, 3.0, 2.0, 1.0],
+    "pri_support_dbe": [0.0, 1.0, 2.0, 3.0, 4.0],  # open-ended
+    "pri_support_dsd": [0.0, 1.0, 2.0, 3.0, 4.0],  # open-ended
+    "pri_support_frequency": [1.0, 2.0, 3.0, 4.0],
+    "pri_support_municipality": [0.0, 1.0, 2.0, 3.0, 4.0],  # open-ended
+    "pri_support_ngo": [0.0, 1.0, 2.0, 3.0, 4.0],  # open-ended
+    "rating": [0.0, 1.0, 2.0, 3.0],
+    "ses_cat": [1.0, 2.0, 3.0, 4.0, 5.0],
+    "ses_proxy": [1.0, 2.0, 3.0, 4.0, 5.0],
+    "teacher_emotional_appropriate": [0.0, 1.0, 2.0],
+    "teacher_emotional_confidence": [0.0, 1.0, 2.0],
+    "teacher_emotional_independent": [0.0, 1.0, 2.0],
+    "teacher_emotional_selfstarter": [0.0, 1.0, 2.0],
+    "teacher_emotional_understand": [0.0, 1.0, 2.0],
+    "teacher_familiarity_with_child": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0],
+    "teacher_selfcare_total": [1.0, 2.0, 3.0, 4.0],
+    "teacher_social_assistance": [1.0, 2.0, 3.0, 4.0],
+    "teacher_social_cooperate": [1.0, 2.0, 3.0, 4.0],
+    "teacher_social_ideas": [1.0, 2.0, 3.0, 4.0],
+    "teacher_social_initiative": [1.0, 2.0, 3.0, 4.0],
+    "teacher_social_nonaggressive": [1.0, 2.0, 3.0, 4.0],
+    "teacher_social_peers": [1.0, 2.0, 3.0, 4.0],
+    "teacher_emotional_adjust": [0.0, 1.0, 2.0],
+    "child_stunted": ["Severely stunted", "Moderately stunted", "Normal"],
 }
 
 
@@ -228,9 +298,9 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
         - Anomaly: Many missing values
         - Feature families by column name (from the v1 exploration, counted 2026-10-22 on the cleaned data, 745 columns; a column can match more than one): pri 258, obs 161, pra 149, count_ 74, pqa 35, child 25, teacher 22. 576 columns are also in the Zindi train file, 136 more are pra/pqa/pri/obs columns not in it, and 33 others are new (among them the target, child_total_elom; Zindi calls it target). 102 Zindi columns are not in our data, among them latitude, longitude, the ward, municipality and province ids and the date columns. 80% of the cells are missing and every row has a missing value.
         - Anomaly: This is a highly underspecified task, leaving a lot of data cleaning to the user/model.
-        - Ordinal scales (2026-10-30, CLEAN-14): 19 columns typed as ordered categories in the order of the source's
-          codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
-          (CLEAN-10).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 89 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); 69 of them were shipped as numbers; codes that mean
+          unknown are missing (CLEAN-10).
     """
 
     # Task
@@ -340,11 +410,23 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "teacher_duration",
             ],
         )
-        # codes outside a scale that mean unknown (don't know, refused, not asked): missing (CLEAN-10)
+        # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
+        # CLEAN-14): don't know, refused, not asked, other
         df = set_missing(
             df,
             {
                 "child_years_in_programme": ["Don't know"],
+                "gr_ecd": [5.0],
+                "pra_education": [97.0],
+                "pra_grade": [14.0],
+                "pra_satisfaction_support": [0.0],
+                "pri_parents_activities": [97.0],
+                "pri_parents_contact": [97.0],
+                "pri_parents_frequency": [97.0],
+                "pri_registered_dsd": [5.0],
+                "pri_registered_partial": [5.0],
+                "pri_registered_programme": [5.0],
+                "pri_support_frequency": [97.0],
             },
         )
         return df
@@ -353,6 +435,25 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
         return FeatureTypes(
             ordinal=ORDINAL_LEVELS,
             categorical=(
+                # answer codes stored as numbers (building, water and energy source, owner, language, job; point 4)
+                "gr_1_tt",
+                "grade_r",
+                "obs_building",
+                "obs_cooking_census",
+                "obs_heating_census",
+                "obs_lighting_census",
+                "obs_water",
+                "pra_class_language",
+                "pra_job",
+                "pra_previous",
+                "pra_shape",
+                "pri_bank",
+                "pri_facilities",
+                "pri_kitchen",
+                "pri_land",
+                "pri_location",
+                "pri_meal_prep",
+                "programme",
                 "child_gender",
                 "child_age_group",
                 "child_attends",

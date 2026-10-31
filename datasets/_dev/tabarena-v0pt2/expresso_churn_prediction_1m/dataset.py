@@ -132,8 +132,8 @@ class ExpressoChurnPrediction1m(AbstractCuratedDataset):
         - Note: REGULARITY ranges from 1 to 62; the codebook calls it "nombre de fois que le client est actif pendant 90 jours", so reading it as the active days in the last 62 days of the window is our inference. FREQUENCE, "the number of times the client made revenue" (codebook), reaches 91. ARPU_SEGMENT is REVENUE / 3 rounded in every row; both are kept as released.
         - Note: the task probes flag one_feature (REGULARITY alone ROC AUC 0.890). We keep the task by rule 4 of task_probes.md: active days are the natural core of a churn task, and on the shipped folds an untuned LightGBM beats REGULARITY alone on 3 of 3 folds (0.9023 to 0.9031 against 0.8896 to 0.8902).
         - Note: Zindi's rules forbid redistributing the data, uploads to Kaggle or GitHub included; the Kaggle copies we name are such uploads.
-        - Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
-          codebook (`ORDINAL_LEVELS`).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`).
     """
 
     # Task

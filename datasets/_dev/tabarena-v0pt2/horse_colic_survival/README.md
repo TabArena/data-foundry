@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: horse_colic_survival
 container_format: 2
-checksum: v2:ca2202b45bee6c0520e955ad1d218430706a8fb44a0d5fabb401f5a0c9e64e8a
+checksum: v2:f593cafe67e5973451eba15872cc9274c04fbac9c134c132c2a9b7b1858870a0
 build:
   uuid: 01a111fc-df0b-7d08-9ad5-3bfee18c9b55
   checksum: v2:3edea035ca49ff4f42bfa2eb137a98817c67387f49f0fb111c2fd7cf979fa727
@@ -70,7 +70,7 @@ decisions: []
 
 Multiclass classification of `outcome`, scored with `log_loss` on IID splits. 344 rows and 20 features. Source: UCI (1989).
 
-Built as `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ca2202b45bee6c0520e955ad1d218430706a8fb44a0d5fabb401f5a0c9e64e8a`, so the build is stale. See [Build](#build).
+Built as `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f593cafe67e5973451eba15872cc9274c04fbac9c134c132c2a9b7b1858870a0`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -192,9 +192,8 @@ We start with the data from UCI and merge the train and test data.
 - We keep only the first instance (hospital number) per horse, as they can be treated multiple times and otherwise leaks information about the target.
 - We use the target "outcome" to model a task where we aim to predict if the horse survives or not. We drop cases that have not outcome recorded.
 - We keep the duplicates occurring in the data.
-- Ordinal scales (2026-10-30, CLEAN-14): 8 columns typed as ordered categories in the order of the source's
-  codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
-  (CLEAN-10).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 8 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing (CLEAN-10).
 
 ## Splits
 
@@ -410,4 +409,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:ca2202b45bee6c0520e955ad1d218430706a8fb44a0d5fabb401f5a0c9e64e8a` |
+| stale | yes: the definition now gives checksum `v2:f593cafe67e5973451eba15872cc9274c04fbac9c134c132c2a9b7b1858870a0` |

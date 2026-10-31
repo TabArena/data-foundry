@@ -73,8 +73,8 @@ class BadCustomerDetection(AbstractCuratedDataset):
     curation_comments = """
         - We renamed the values of the target variable to be more descriptive.
         - Note: The original source of the data is still to be clarified (open item in the curation record).
-        - Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
-          codebook (`ORDINAL_LEVELS`).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`).
     """
 
     # Task

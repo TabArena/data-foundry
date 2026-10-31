@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: tour_travels_churn
 container_format: 2
-checksum: v2:7d3917764bbadd6897b3273f75e66953325ba1df50dfcefd2d436f9cd8554c5d
+checksum: v2:5a3420f6b9f8ded2d68129eb0d5b2b01009ea254f83dc06421662cc3cfc35ae1
 build:
   uuid: 01a111fc-edc9-7641-b79f-dc54c06b0b31
   checksum: v2:a3ce4a5df5a1b015fca9fb245262424231cb3f590950bd1532d83c936ef4b569
@@ -70,7 +70,7 @@ decisions: []
 
 Binary classification of `Target`, scored with `roc_auc` on IID splits. 954 rows and 6 features. Source: Kaggle (2021).
 
-Built as `01a111fc-edc9-7641-b79f-dc54c06b0b31` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7d3917764bbadd6897b3273f75e66953325ba1df50dfcefd2d436f9cd8554c5d`, so the build is stale. See [Build](#build).
+Built as `01a111fc-edc9-7641-b79f-dc54c06b0b31` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5a3420f6b9f8ded2d68129eb0d5b2b01009ea254f83dc06421662cc3cfc35ae1`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -185,8 +185,8 @@ The source of the data from Kaggle is unknown but the data distributions look re
 
 - The split is forced (ForcedIIDFromTemporal, SPLIT-8): the company would train on customers whose churn is known by an earlier date and score its current ones, but the file is one undated snapshot. A dated window would test a model on a later season's customers, whose bookings and services may differ; the cost cannot be measured here.
 - Source (PROV-2 as amended, Lennart 2026-10-21): the first upload is a bare Kaggle upload that names no origin. It is kept for now, case by case, because the data looks sound (the generated-data probe raises no flag: no rule leaves, 71% of the 21 column pairs dependent, no uniform column, 2026-10-21) and the upload is a source to point to; the risk is taken knowingly ("if the data looks good enough even without a good source but there is a source, we want to keep it for now and risk it"). The gap is in the approximate fit.
-- Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
-  codebook (`ORDINAL_LEVELS`).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -301,4 +301,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:7d3917764bbadd6897b3273f75e66953325ba1df50dfcefd2d436f9cd8554c5d` |
+| stale | yes: the definition now gives checksum `v2:5a3420f6b9f8ded2d68129eb0d5b2b01009ea254f83dc06421662cc3cfc35ae1` |

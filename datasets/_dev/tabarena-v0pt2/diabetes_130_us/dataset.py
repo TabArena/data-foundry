@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, set_missing
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -35,6 +35,19 @@ ORDINAL_LEVELS = {
     ],  # open-ended
     "max_glu_serum": ["Norm", ">200", ">300"],  # open-ended
     "A1Cresult": ["Norm", ">7", ">8"],  # open-ended
+    "metformin": ["Down", "Steady", "Up"],
+    "repaglinide": ["Down", "Steady", "Up"],
+    "nateglinide": ["Down", "Steady", "Up"],
+    "chlorpropamide": ["Down", "Steady", "Up"],
+    "glimepiride": ["Down", "Steady", "Up"],
+    "glipizide": ["Down", "Steady", "Up"],
+    "glyburide": ["Down", "Steady", "Up"],
+    "pioglitazone": ["Down", "Steady", "Up"],
+    "rosiglitazone": ["Down", "Steady", "Up"],
+    "acarbose": ["Steady", "Up"],
+    "miglitol": ["Down", "Steady", "Up"],
+    "insulin": ["Down", "Steady", "Up"],
+    "glyburide-metformin": ["Down", "Steady", "Up"],
 }
 
 
@@ -104,8 +117,10 @@ class Diabetes130Us(AbstractCuratedDataset):
         - The other codes for an unknown value ("Not Available" and "Not Mapped" in the ID columns, "Unknown/Invalid" in gender) stay as categories, as IDS_mapping.csv lists them as codes of their own next to "NULL".
         - We drop examide, citoglipton and glimepiride-pioglitazone, which are constant ("No") after the filters above.
         - Anomaly: There is a distribution shift based on the original order. The reason for this might be that the encounters are ordered in some way such that later parts of the data contain different sub-groups than earlier parts. This is also indicated by the fact that the "payer_code" feature is responsible for the shift. This distribution shift vanishes after randomly shuffling the data (as done by default for this and all other datasets used in TabArena).
-        - Ordinal scales (2026-10-30, CLEAN-14): 4 columns typed as ordered categories in the order of the source's
-          codebook (`ORDINAL_LEVELS`).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 17 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); 13 hold a state outside the scale, placed by the
+          curator's rule (missing when the column has no other missing value, else the lowest level; a state that is
+          simply not on the scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
     """
 
     # Task
@@ -215,6 +230,26 @@ class Diabetes130Us(AbstractCuratedDataset):
         df = df.mask(df.isin(["?", "NULL"]))
         # Drop constant features
         df = df.drop(columns=["examide", "citoglipton", "glimepiride-pioglitazone"])
+        # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
+        # CLEAN-14): don't know, refused, not asked, other
+        df = set_missing(
+            df,
+            {
+                "metformin": ["No"],
+                "repaglinide": ["No"],
+                "nateglinide": ["No"],
+                "chlorpropamide": ["No"],
+                "glimepiride": ["No"],
+                "glipizide": ["No"],
+                "glyburide": ["No"],
+                "pioglitazone": ["No"],
+                "rosiglitazone": ["No"],
+                "acarbose": ["No"],
+                "miglitol": ["No"],
+                "insulin": ["No"],
+                "glyburide-metformin": ["No"],
+            },
+        )
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

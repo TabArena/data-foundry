@@ -30,6 +30,7 @@ from data_foundry.v2 import (
     object_columns,
     order_rows,
     read_report,
+    set_missing,
     splits as protocol,
     workbench,
 )
@@ -1323,8 +1324,6 @@ def test_ordinal_columns_keep_their_order_in_container_and_report(tmp_path: Path
 
 
 def test_set_missing_turns_codes_into_missing_values() -> None:
-    from data_foundry.v2 import set_missing
-
     df = pd.DataFrame({"a": ["1", "8", "9", None], "b": [1, -1, 2, 3]})
     out = set_missing(df, {"a": ["8", "9"], "b": [-1]})
     assert out["a"].isna().tolist() == [False, True, True, True]

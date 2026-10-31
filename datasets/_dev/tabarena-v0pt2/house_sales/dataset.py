@@ -208,6 +208,15 @@ def _as_of_sale(sales: pd.DataFrame, changes: pd.DataFrame, bath_counts: pd.Data
     return out, stats
 
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "view": [0, 1, 2, 3, 4],
+    "condition": [1, 2, 3, 4, 5],
+    "grade": [1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+}
+
+
 class HouseSales(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="What price will a house in King County, Washington, sell for?",
@@ -311,6 +320,8 @@ class HouseSales(AbstractCuratedDataset):
         - Target: `log_price`, the log of the sale price ($75,000 to $7.7M).
         - `zipcode` and `sale_condition` are categorical, and `date` (the sale date) is a datetime and the time column.
         - No duplicate rows. Different parcels can share every feature but the date and the price (townhouses built together); one pair also shares the date and was sold at two prices (the conflicting duplicate the checks report); we keep them.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); 3 of them were shipped as numbers.
     """
 
     # Task
@@ -439,6 +450,7 @@ class HouseSales(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=["zipcode", "waterfront", "sale_condition"],  # waterfront is a 0/1 flag (CLEAN-14)
             datetime={"date": "%Y%m%dT%H%M%S"},
         )

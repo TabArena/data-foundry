@@ -40,6 +40,8 @@ Andrej: Use the most extensive data version
 
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): ordinal scales shipped as numbers, left as numbers for the curator's review: `MaxDelq2PublicRecLast12M`, `MaxDelqEver`.
 
+CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 2 ordinal scales shipped as numbers are ordered categories (point 3); the two delinquency scales ordered (FICO data dictionary), their unknown, all-other and no-record codes missing.
+
 ## Reference
 
 https://www.kaggle.com/datasets/averkiyoliabev/home-equity-line-of-creditheloc

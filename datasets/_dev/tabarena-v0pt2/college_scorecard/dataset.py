@@ -259,9 +259,8 @@ class CollegeScorecard(AbstractCuratedDataset):
         - Split: temporal by entering cohort with a label gap (splits comment), not grouped by institution, since a model is used on the next cohorts of institutions it has seen (decision table).
         - Anomaly: completion rates of 0 (24 institution-cohorts) and 1 (14), and ACT 25th percentiles below 10 (56 rows), kept as reported.
         - Note: we keep the rate as a regression target; TableShift binarizes it at 0.5.
-        - Ordinal scales (2026-10-30, CLEAN-14): 3 columns typed as ordered categories in the order of the source's
-          codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
-          (CLEAN-10).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing (CLEAN-10).
     """
 
     # Task
@@ -332,7 +331,8 @@ class CollegeScorecard(AbstractCuratedDataset):
             df[column] = to_labels(df[column], labels, missing=TO_MISSING.get(column, ()))
         # 6. Target, and the identifier and the cohort count (from the outcome file) out.
         df = df.rename(columns={"C150_4": self.target})
-        # codes outside a scale that mean unknown (don't know, refused, not asked): missing (CLEAN-10)
+        # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
+        # CLEAN-14): don't know, refused, not asked, other
         df = set_missing(
             df,
             {

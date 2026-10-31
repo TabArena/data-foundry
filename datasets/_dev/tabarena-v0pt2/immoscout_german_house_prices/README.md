@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: immoscout_german_house_prices
 container_format: 2
-checksum: v2:c9be209c1b0e30c0e0d9f8d92c45c6229bcfc44e09d6bf7edd6777fd0b2ef359
+checksum: v2:9613bdda439f79c60c166f6e57380029aee05c1a201cccf8dc1988eb1e5019bc
 build:
   uuid: 01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9
   checksum: v2:e91f49bdb50c1cd545a4e8d63445b34d9d9656af0c38c65cf81d41e18ec5054d
@@ -68,7 +68,7 @@ decisions: []
 
 Regression of `LogPrice`, scored with `rmsle` on IID splits. 10,317 rows and 23 features. Source: Kaggle (2020).
 
-Built as `01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c9be209c1b0e30c0e0d9f8d92c45c6229bcfc44e09d6bf7edd6777fd0b2ef359`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9613bdda439f79c60c166f6e57380029aee05c1a201cccf8dc1988eb1e5019bc`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -148,10 +148,10 @@ Only curators run `build`, when the dataset ships.
 | target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
 
 <details>
-<summary>Feature types: 7 categorical, 1 ordinal, 4 string, 0 datetime</summary>
+<summary>Feature types: 6 categorical, 2 ordinal, 4 string, 0 datetime</summary>
 
-- categorical (7): `Type`, `Furnishing_quality`, `Condition`, `Heating`, `Energy_certificate`, `Energy_certificate_type`, `Garagetype`
-- ordinal (1): `Energy_efficiency_class ( H  <  G  <  F  <  E  <  D  <  C  <  B  <  A  <  A+ )`
+- categorical (6): `Type`, `Condition`, `Heating`, `Energy_certificate`, `Energy_certificate_type`, `Garagetype`
+- ordinal (2): `Energy_efficiency_class ( H  <  G  <  F  <  E  <  D  <  C  <  B  <  A  <  A+ )`, `Furnishing_quality (simple < normal < sophisticated < luxury)`
 - string (4): `Energy_source`, `State`, `City`, `Place`
 - datetime (0): none
 
@@ -185,11 +185,11 @@ The first 5 of 10,317 rows of the final frame (random rows: the frame is shuffle
 
 | LogPrice | Type | Living_space | Lot | Usable_area | Rooms | Bedrooms | Bathrooms | Floors | Year_built | Furnishing_quality | Year_renovated |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 14.221 | Duplex | 347 | 395 | 337 | 10 | nan | 4 | 4 | 1700 | nan | 2013 |
-| 14.221 | Duplex | 200 | 320 | 72 | 9 | nan | 3 | 3 | 1938 | normal | 2000 |
-| 10.4631 | nan | 52 | 495 | nan | 4 | 1 | 1 | 1 | 1972 | normal | nan |
-| 13.2159 | Mid-terrace house | 269 | 845 | 14 | 6 | 5 | 2 | 2 | 1994 | nan | nan |
-| 13.7953 | Duplex | 500 | 200 | 130 | 20 | nan | nan | 3 | 1973 | nan | 2020 |
+| 12.7628 | single_family_house | 118.5 | 411 | 78.15 | 6 | 4 | 1 | 3 | 1992 | normal | nan |
+| 11.5029 | other | 125 | 545 | 20 | 6 | 3 | 2 | 3 | nan | normal | nan |
+| 13.9895 | special_real_estate | 260 | 478 | 300 | 8.5 | 6 | 4 | 2 | 2018 | luxury | 2018 |
+| 12.449 | mid_terrace_house | 85 | 134 | 33 | 5 | nan | 1 | 3 | 1955 | normal | 2012 |
+| 13.5861 | single_family_house | 200 | 595 | 78 | 6.5 | 4 | 2 | 3 | 1991 | sophisticated | nan |
 
 ## Curation notes
 
@@ -200,15 +200,25 @@ We treat this as an IID time-independent task, because the prices is not sold pr
 - We drop Free_of_Relation as it indicates a (mostly) price-independent variable; showing logistic information. Note that this column also indicates that the houses are most likely from the same time, further justifying our use case of an IID task.
 - We drop all cases where the price is less than 10k (most of which have a price of 0) as we think this might be a data error, or a case where the price is put to 0 to be marked as "price on request" (which is common in house listings).
 - We drop all duplicates as these are most likely repeated entries given the feature space.
-- `Condition` and `Furnishing_quality`: the English labels of the scrape do not fit the houses they describe.
-  `Condition` "dilapidated" (1,137 houses) has the newest median year built (2010) and the highest median
-  price, "as new" (11) the oldest (1870) and the lowest; `Furnishing_quality` "refined" (904) is the oldest and
-  cheapest level. The translation of ImmoScout24's German labels looks permuted, and the original labels are
-  not available (the Kaggle upload is deleted; OpenML 43342 says nothing on it). Both stay unordered
-  categories: read their labels as codes, not as meanings (2026-10-30).
+- `Condition`, `Furnishing_quality`, `Type` and `Heating` carry ImmoScout24's own codes (`IS24_CODES`; the
+  curator's marks of 2026-10-31, CLEAN-12): the scrape's English labels are permuted, and in each column the
+  missing value took a real label while one real level became missing. "dilapidated" (1,137 houses) has the
+  newest median year built (2010) and the highest price, "as new" (11) the oldest (1870). The codes come from a
+  match: 3,548 of the 10,552 houses are also in an ImmoScout24 scrape of April 2020 that keeps the portal's
+  codes (Kaggle `phanindraparashar/germany-housing-rent-and-price-data-set-apr-20`, `apr20_price.csv`),
+  matched exactly on state, living space, lot and rooms, then on year built and price within 0.8-1.25, and
+  only where one house fits. The pairs are the same houses (energy class agrees for 99.5%, year renovated
+  98.4%, floors 99.1%), and each label maps to one code for 93-100% of its matched houses (96-100% where
+  price and year built agree exactly); the levels' median year built and price per m2 match the April codes'
+  over the whole file. "maintained", "basic", "Residential property" and "central heating" are ImmoScout24's
+  "no information" (missing); the missing values are first occupation (new builds), upscale, other and oil
+  heating. `Furnishing_quality` is then ImmoScout24's scale simple < normal < sophisticated < luxury;
+  `Condition` stays unordered, as "negotiable" is no state and "well_kept" does not sit against the
+  renovation levels. No copy with the German labels and no scraper code were found; the Kaggle upload is
+  deleted.
 - We drop all rows where the living space is less than 10 (in Germany, this would likely not be enough living space for a real house, and thus might be a data error.
-- Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
-  codebook (`ORDINAL_LEVELS`).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 2 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -244,24 +254,24 @@ Default splits.
 |---|---|---|---|---|---|
 | Energy_efficiency_class | category | 4709 | 45.64 | 9 | D , F , H , E , G , C , B , A+ , A |
 | Energy_certificate_type | category | 3443 | 33.37 | 2 | demand certificate, consumption certificate |
-| Furnishing_quality | category | 2662 | 25.8 | 4 | normal, basic, refined, luxus |
+| Furnishing_quality | category | 2617 | 25.37 | 4 | normal, sophisticated, simple, luxury |
 | Garagetype | category | 1912 | 18.53 | 7 | Garage, Outside parking lot, Parking lot, Carport, Underground parking lot, Dup… |
+| Condition | category | 1035 | 10.03 | 10 | well_kept, need_of_renovation, mint_condition, modernized, refurbished, fully_r… |
+| Heating | category | 853 | 8.27 | 13 | central_heating, gas_heating, floor_heating, oil_heating, stove_heating, self_c… |
 | Energy_certificate | category | 721 | 6.99 | 3 | available, not required by law, available for inspection |
-| Heating | category | 572 | 5.54 | 13 | stove heating, heat pump, central heating, oil heating, underfloor heating, nig… |
-| Type | category | 394 | 3.82 | 11 | Mid-terrace house, Duplex, Single dwelling, Farmhouse, Villa, Multiple dwelling… |
-| Condition | category | 304 | 2.95 | 10 | modernized, refurbished, dilapidated, maintained, renovated, fixer-upper, first… |
-| Energy_consumption | float64 | 7926 | 76.82 | 1420 | 114.0, 128.0, 120.0, 121.0, 130.0, 119.0, 97.0, 125.0, 131.0, 90.0 |
+| Type | category | 360 | 3.49 | 11 | single_family_house, multi_family_house, semidetached_house, mid_terrace_house,… |
+| Energy_consumption | float64 | 7926 | 76.82 | 1420 | 114.0, 128.0, 120.0, 130.0, 121.0, 131.0, 125.0, 97.0, 119.0, 148.0 |
 | Year_renovated | float64 | 5081 | 49.25 | 67 | 2019.0, 2018.0, 2017.0, 2020.0, 2015.0, 2016.0, 2010.0, 2014.0, 2012.0, 2013.0 |
-| Usable_area | float64 | 4874 | 47.24 | 1010 | 50.0, 100.0, 60.0, 30.0, 40.0, 80.0, 70.0, 20.0, 120.0, 150.0 |
+| Usable_area | float64 | 4874 | 47.24 | 1010 | 50.0, 100.0, 60.0, 30.0, 40.0, 80.0, 70.0, 20.0, 120.0, 90.0 |
 | Bedrooms | float64 | 3587 | 34.77 | 32 | 3.0, 4.0, 5.0, 2.0, 6.0, 1.0, 7.0, 8.0, 9.0, 10.0 |
 | Floors | float64 | 2584 | 25.05 | 10 | 2.0, 3.0, 1.0, 4.0, 5.0, 0.0, 6.0, 7.0, 8.0, 13.0 |
 | Garages | float64 | 1912 | 18.53 | 37 | 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 8.0, 7.0, 10.0, 12.0 |
-| Bathrooms | float64 | 1743 | 16.89 | 28 | 2.0, 1.0, 3.0, 4.0, 5.0, 6.0, 8.0, 7.0, 10.0, 9.0 |
+| Bathrooms | float64 | 1743 | 16.89 | 28 | 2.0, 1.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0, 9.0 |
 | Year_built | float64 | 679 | 6.58 | 292 | 1900.0, 1960.0, 2000.0, 2020.0, 1978.0, 1972.0, 1950.0, 1920.0, 1970.0, 1980.0 |
-| Living_space | float64 | 0 | 0 | 1862 | 120.0, 150.0, 200.0, 160.0, 130.0, 140.0, 180.0, 100.0, 170.0, 110.0 |
+| Living_space | float64 | 0 | 0 | 1862 | 120.0, 200.0, 150.0, 160.0, 130.0, 140.0, 180.0, 100.0, 110.0, 170.0 |
 | Lot | float64 | 0 | 0 | 2518 | 1000.0, 800.0, 500.0, 300.0, 600.0, 400.0, 700.0, 1200.0, 200.0, 250.0 |
 | Rooms | float64 | 0 | 0 | 72 | 5.0, 6.0, 4.0, 7.0, 8.0, 9.0, 10.0, 3.0, 11.0, 12.0 |
-| LogPrice | float64 | 0 | 0 | 1407 | 12.8967, 12.7628, 12.6082, 12.4252, 12.7657, 13.0148, 13.017, 12.8866, 13.2159,… |
+| LogPrice | float64 | 0 | 0 | 1407 | 12.8967, 12.7628, 12.6082, 12.4252, 13.0148, 13.017, 12.7657, 12.8866, 13.1204,… |
 | Energy_source | string | 1187 | 11.51 | 104 | Gas , l , Strom , Fernwrme , Erdgas leicht , Holzpellets , Erdwrme , Holz , Fls… |
 | Place | string | 278 | 2.69 | 4748 | Innenstadt, Falkensee, Stadtmitte, Hameln, Barsinghausen, Homburg, Schotten, Gi… |
 | State | string | 1 | 0.01 | 16 | Nordrhein-Westfalen, Bayern, Baden-Wrttemberg, Niedersachsen, Rheinland-Pfalz, … |
@@ -309,11 +319,11 @@ Default splits.
 | City | 3 | Nordfriesland (Kreis) | 93 | 0.9 |
 | City | 4 | Wetteraukreis | 85 | 0.82 |
 | City | 5 | Rhein-Sieg-Kreis | 76 | 0.74 |
-| Condition | 1 | modernized | 4352 | 42.18 |
-| Condition | 2 | refurbished | 1292 | 12.52 |
-| Condition | 3 | dilapidated | 1137 | 11.02 |
-| Condition | 4 | maintained | 1035 | 10.03 |
-| Condition | 5 | renovated | 1017 | 9.86 |
+| Condition | 1 | well_kept | 4352 | 42.18 |
+| Condition | 2 | need_of_renovation | 1292 | 12.52 |
+| Condition | 3 | mint_condition | 1137 | 11.02 |
+| Condition | 4 | &lt;NA> | 1035 | 10.03 |
+| Condition | 5 | modernized | 1017 | 9.86 |
 | Energy_certificate | 1 | available | 6836 | 66.26 |
 | Energy_certificate | 2 | not required by law | 1558 | 15.1 |
 | Energy_certificate | 3 | available for inspection | 1202 | 11.65 |
@@ -332,20 +342,20 @@ Default splits.
 | Energy_source | 4 | Strom | 539 | 5.22 |
 | Energy_source | 5 | Fernwrme | 175 | 1.7 |
 | Furnishing_quality | 1 | normal | 3668 | 35.55 |
-| Furnishing_quality | 2 | &lt;NA> | 2662 | 25.8 |
-| Furnishing_quality | 3 | basic | 2617 | 25.37 |
-| Furnishing_quality | 4 | refined | 904 | 8.76 |
-| Furnishing_quality | 5 | luxus | 466 | 4.52 |
+| Furnishing_quality | 2 | sophisticated | 2662 | 25.8 |
+| Furnishing_quality | 3 | &lt;NA> | 2617 | 25.37 |
+| Furnishing_quality | 4 | simple | 904 | 8.76 |
+| Furnishing_quality | 5 | luxury | 466 | 4.52 |
 | Garagetype | 1 | Garage | 4325 | 41.92 |
 | Garagetype | 2 | &lt;NA> | 1912 | 18.53 |
 | Garagetype | 3 | Outside parking lot | 1666 | 16.15 |
 | Garagetype | 4 | Parking lot | 1562 | 15.14 |
 | Garagetype | 5 | Carport | 714 | 6.92 |
-| Heating | 1 | stove heating | 5863 | 56.83 |
-| Heating | 2 | heat pump | 968 | 9.38 |
-| Heating | 3 | central heating | 853 | 8.27 |
-| Heating | 4 | oil heating | 716 | 6.94 |
-| Heating | 5 | &lt;NA> | 572 | 5.54 |
+| Heating | 1 | central_heating | 5863 | 56.83 |
+| Heating | 2 | gas_heating | 968 | 9.38 |
+| Heating | 3 | &lt;NA> | 853 | 8.27 |
+| Heating | 4 | floor_heating | 716 | 6.94 |
+| Heating | 5 | oil_heating | 572 | 5.54 |
 | Place | 1 | &lt;NA> | 278 | 2.69 |
 | Place | 2 | Innenstadt | 31 | 0.3 |
 | Place | 3 | Falkensee | 23 | 0.22 |
@@ -356,11 +366,11 @@ Default splits.
 | State | 3 | Baden-Wrttemberg | 1280 | 12.41 |
 | State | 4 | Niedersachsen | 1264 | 12.25 |
 | State | 5 | Rheinland-Pfalz | 996 | 9.65 |
-| Type | 1 | Mid-terrace house | 4228 | 40.98 |
-| Type | 2 | Duplex | 2083 | 20.19 |
-| Type | 3 | Single dwelling | 1148 | 11.13 |
-| Type | 4 | Farmhouse | 565 | 5.48 |
-| Type | 5 | &lt;NA> | 394 | 3.82 |
+| Type | 1 | single_family_house | 4228 | 40.98 |
+| Type | 2 | multi_family_house | 2083 | 20.19 |
+| Type | 3 | semidetached_house | 1148 | 11.13 |
+| Type | 4 | mid_terrace_house | 565 | 5.48 |
+| Type | 5 | other | 394 | 3.82 |
 
 </details>
 
@@ -375,4 +385,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c9be209c1b0e30c0e0d9f8d92c45c6229bcfc44e09d6bf7edd6777fd0b2ef359` |
+| stale | yes: the definition now gives checksum `v2:9613bdda439f79c60c166f6e57380029aee05c1a201cccf8dc1988eb1e5019bc` |

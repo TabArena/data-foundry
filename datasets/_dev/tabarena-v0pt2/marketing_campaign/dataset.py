@@ -60,6 +60,9 @@ class MarketingCampaign(AbstractCuratedDataset):
         - We drop the ID column.
         - We rename the values of the target variable to be more descriptive.
         - We drop constant columns.
+        - Left unordered (2026-10-31, CLEAN-14, the curator's marks): `Education` runs Basic < Graduation < Master <
+          PhD, but `2n Cycle` (203 customers) is not described by the source (the iFood case: "customer's level of
+          education"); it reads either as the Bologna second cycle (master level) or as a school cycle below graduation.
     """
 
     # Task

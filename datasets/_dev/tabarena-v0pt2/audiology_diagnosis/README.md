@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: audiology_diagnosis
 container_format: 2
-checksum: v2:7f583fc9d49916ed2e6eece568133120d157b8c50d5698defb60098fd43d45f5
+checksum: v2:850b7e6236b3768e9590a14f04020f4f459cc9275c8eb43883aa1d90b8652902
 build:
   uuid: 01a111fc-c395-7cc5-9b60-91d8a7afaa20
   checksum: v2:3044c012f561b616370f46630853c7c58c6476463989263eb70d410e8b786995
@@ -66,7 +66,7 @@ decisions: []
 
 Multiclass classification of `diagnosis`, scored with `log_loss` on IID splits. 195 rows and 65 features. Source: UCI (1987).
 
-Built as `01a111fc-c395-7cc5-9b60-91d8a7afaa20` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7f583fc9d49916ed2e6eece568133120d157b8c50d5698defb60098fd43d45f5`, so the build is stale. See [Build](#build).
+Built as `01a111fc-c395-7cc5-9b60-91d8a7afaa20` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:850b7e6236b3768e9590a14f04020f4f459cc9275c8eb43883aa1d90b8652902`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -189,9 +189,8 @@ We start with the data from UCI and merge train and test data.
 - We drop the cases whose diagnosis is not a type of hearing loss: bells_palsy (a facial-nerve diagnosis) and the central diagnoses possible_brainstem_disorder and poss_central (3 cases after the duplicates).
 - We do not use the cause as the target: among the cochlear diagnoses it is spelled out by two history findings (age_gt_60 and history_noise agree with cochlear_age, cochlear_age_and_noise, cochlear_poss_noise or cochlear_unknown in 139 of 147 cases).
 - We remove the columns that are constant after these steps: history_fullness, and the brainstem-test findings bser, viith_nerve_signs and waveform_ItoV_prolonged, which only the dropped cases had (bser is also recorded for one kept case).
-- Ordinal scales (2026-10-30, CLEAN-14): 6 columns typed as ordered categories in the order of the source's
-  codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
-  (CLEAN-10).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 6 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing (CLEAN-10).
 
 ## Splits
 
@@ -441,4 +440,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:7f583fc9d49916ed2e6eece568133120d157b8c50d5698defb60098fd43d45f5` |
+| stale | yes: the definition now gives checksum `v2:850b7e6236b3768e9590a14f04020f4f459cc9275c8eb43883aa1d90b8652902` |

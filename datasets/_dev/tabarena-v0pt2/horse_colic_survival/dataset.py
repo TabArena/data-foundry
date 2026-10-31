@@ -80,9 +80,8 @@ class HorseColicSurvival(AbstractCuratedDataset):
         - We keep only the first instance (hospital number) per horse, as they can be treated multiple times and otherwise leaks information about the target.
         - We use the target "outcome" to model a task where we aim to predict if the horse survives or not. We drop cases that have not outcome recorded.
         - We keep the duplicates occurring in the data.
-        - Ordinal scales (2026-10-30, CLEAN-14): 8 columns typed as ordered categories in the order of the source's
-          codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
-          (CLEAN-10).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 8 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing (CLEAN-10).
     """
 
     # Task
@@ -147,7 +146,8 @@ class HorseColicSurvival(AbstractCuratedDataset):
             ]
         )
         df["outcome"] = df["outcome"].map({1: "Lived", 2: "Died", 3: "Euthanized"})
-        # codes outside a scale that mean unknown (don't know, refused, not asked): missing (CLEAN-10)
+        # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
+        # CLEAN-14): don't know, refused, not asked, other
         df = set_missing(
             df,
             {

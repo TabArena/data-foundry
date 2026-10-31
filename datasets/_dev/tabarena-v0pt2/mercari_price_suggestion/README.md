@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: mercari_price_suggestion
 container_format: 2
-checksum: v2:d794309dd83a1606735e8eba6c7003cebdc8fc78e08b7c778552ae3a2cec8b54
+checksum: v2:4ea943c8515654b547e7a2b695185822a396ee3e62f23d44b619cdc5a1c0e798
 build:
   uuid: 01a111fb-0462-74d5-bdd8-89846cb8d091
   checksum: v2:831bd4bf3baf371d5e158bbb6b34b20f1a8162d5f2ce48ab85046990e4233d7e
@@ -69,7 +69,7 @@ decisions: []
 
 Regression of `price`, scored with `rmsle` on IID splits. 1,482,486 rows and 6 features. Source: Kaggle (2017).
 
-Built as `01a111fb-0462-74d5-bdd8-89846cb8d091` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d794309dd83a1606735e8eba6c7003cebdc8fc78e08b7c778552ae3a2cec8b54`, so the build is stale. See [Build](#build).
+Built as `01a111fb-0462-74d5-bdd8-89846cb8d091` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:4ea943c8515654b547e7a2b695185822a396ee3e62f23d44b619cdc5a1c0e798`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -191,8 +191,8 @@ We start from the Kaggle competition dataset.
 - The task was treated and solved as an IID task on Kaggle.
 - We replace "No description yet" with NaN.
 - We take the full data (about 1.48M rows after de-duplication) with 3-fold cross-validation, so every fold trains on about 990k rows. Until 2026-10 a `mercari_price_suggestion_1m` version sub-sampled it to one 1M / 250k split.
-- Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
-  codebook (`ORDINAL_LEVELS`).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -286,4 +286,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:d794309dd83a1606735e8eba6c7003cebdc8fc78e08b7c778552ae3a2cec8b54` |
+| stale | yes: the definition now gives checksum `v2:4ea943c8515654b547e7a2b695185822a396ee3e62f23d44b619cdc5a1c0e798` |

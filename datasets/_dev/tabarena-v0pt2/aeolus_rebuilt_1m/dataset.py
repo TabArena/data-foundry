@@ -18,6 +18,7 @@ from data_foundry.v2 import (
     TaskSummary,
     Temporal,
     TemporalSplits,
+    set_missing,
 )
 
 HISTORY_START = "2023-01-01"
@@ -283,6 +284,13 @@ def _flights_utc(raw: dict[str, pl.DataFrame]) -> tuple[pl.DataFrame, pl.DataFra
     return f, mapping
 
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "INBOUND_STATUS": ["not departed", "in the air", "arrived"],
+}
+
+
 class AeolusRebuilt1m(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="Will a US domestic flight arrive 15 minutes or more late?",
@@ -436,6 +444,10 @@ class AeolusRebuilt1m(AbstractCuratedDataset):
         - `OP_CARRIER_FL_NUM` is categorical (the paper's Table 9), as in aeolus_1m; one operated flight has none.
         - Note: compared with the Aeolus release, the rebuild adds March 2024 (585,413 operated flights) and the 192,954 flights of 43 airports the release left out (mostly Allegiant and SkyWest), and reads the weather in the hour before departure, not 3.5 to 11 hours earlier. With aeolus_1m's inputs (the schedule and three weather values per airport), the weather adds 0.043-0.051 ROC AUC per window here against 0.032-0.039 in aeolus_1m (the destination's alone 0.010-0.014 against 0.014-0.015; untuned LightGBM on each dataset's own splits).
         - Task probes (200k newest training rows, three windows): no flags; ROC AUC LightGBM 0.819, random forest 0.808, linear 0.760, the best single feature (`INBOUND_ARR_DELAY`) 0.729. Leak probes (50k rows): no exact copies across the split; `INBOUND_ARR_DELAY` alone 0.734 against 0.790 for all features, the core of the task (a late aircraft makes a late flight); its missing indicator 0.683, which marks a previous flight that had not landed by the prediction point, known then. Every test airport is in training (known entities, SPLIT-13).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed by the
+          curator's rule (missing when the column has no other missing value, else the lowest level; a state that is
+          simply not on the scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
     """
 
     # Task
@@ -614,11 +626,20 @@ class AeolusRebuilt1m(AbstractCuratedDataset):
         df = df.to_pandas()
         # A flight number is a label of its carrier (one operated flight has none); nullable before it becomes a category.
         df["OP_CARRIER_FL_NUM"] = df["OP_CARRIER_FL_NUM"].astype("Int64")
+        # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
+        # CLEAN-14): don't know, refused, not asked, other
+        df = set_missing(
+            df,
+            {
+                "INBOUND_STATUS": ["none"],
+            },
+        )
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         del df
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=["OP_CARRIER", "OP_CARRIER_FL_NUM", "ORIGIN", "DEST", "O_COCO", "D_COCO", "INBOUND_STATUS"],
             datetime=["FL_DATE"],
         )

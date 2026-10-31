@@ -15,6 +15,7 @@ from data_foundry.v2 import (
     Temporal,
     TemporalSplits,
     drop_columns,
+    set_missing,
 )
 
 METER_TYPES = {0: "electricity", 1: "chilledwater", 2: "steam", 3: "hotwater"}
@@ -221,9 +222,9 @@ class AshraeGreatEnergyPredictorIii1m(AbstractCuratedDataset):
         - The target is log1p of kWh, in one unit for all meters; the metric is the competition's RMSLE on kWh, computed after the inverse (`target_transform="log1p"`).
         - building_id and site_id are categories: the test hours belong to meters seen in train, as in the competition.
         - precip_depth_1_hr = -1 stays: it codes a trace of rain in NOAA's ISD-Lite data (format note, field 11).
-        - `cloud_coverage` is in oktas (0-8), and 9 means the sky is obscured (fog or precipitation): 9,905 rows. We
-          keep the values as recorded, as rain_in_australia does: a code that means something stays, with this note
-          (CLEAN-10, 2026-10-30).
+        - `cloud_coverage` is in oktas (0-8), and 9 means the sky is obscured (fog or precipitation), so the cloud
+          amount cannot be estimated (ISD's code table): 9,905 rows, missing (CLEAN-10; the curator's marks of
+          2026-10-31, as in rain_in_australia).
     """
 
     # Task
@@ -310,6 +311,8 @@ class AshraeGreatEnergyPredictorIii1m(AbstractCuratedDataset):
             timestamp=pd.to_datetime(weather["timestamp"], format="%Y-%m-%d %H:%M:%S").astype("datetime64[ns]")
             + pd.to_timedelta(weather["site_id"].map(SITE_UTC_OFFSET_HOURS), unit="h")
         )
+        # cloud cover 9: the sky obscured, the cloud amount cannot be estimated (curation notes)
+        weather = set_missing(weather, {"cloud_coverage": [9]})
         df = df.merge(weather, on=["site_id", "timestamp"], how="left", validate="many_to_one")
 
         df["log1p_meter_reading"] = np.log1p(df["reading_kwh"])

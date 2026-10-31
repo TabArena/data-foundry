@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sberbank_housing_market_forecasting
 container_format: 2
-checksum: v2:44c8e32e4a2fd7ed8e8a010df08dcf03a204b79e0d24a103e10a79824734c806
+checksum: v2:b81a2394a879ddb28e5c99ab4bcfc5ee32fbb8be6bd30195a57b6730d98856e4
 build:
   uuid: 01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7
   checksum: v2:53a44153b4da1976a157742f955d2dbea5f4e85c85e25e48af1746db3acc846c
@@ -22,11 +22,11 @@ data:
   n_rows: 28321
   n_features: 386
   dtypes:
-    category: 23
+    category: 24
     datetime64[ns]: 1
     float32: 3
     float64: 206
-    int64: 154
+    int64: 153
   n_test_dataset_rows: null
 task:
   target: price_doc
@@ -72,7 +72,7 @@ decisions: []
 
 Regression of `price_doc`, scored with `rmse` on temporal splits by `timestamp`. 28,321 rows and 386 features. Source: Kaggle (2017).
 
-Built as `01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:44c8e32e4a2fd7ed8e8a010df08dcf03a204b79e0d24a103e10a79824734c806`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:b81a2394a879ddb28e5c99ab4bcfc5ee32fbb8be6bd30195a57b6730d98856e4`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -152,9 +152,9 @@ Only curators run `build`, when the dataset ships.
 | definition | RMSE on log(price_doc / full_sq); since full_sq is known per row, log(price/sq) - log(price_hat/sq) = log(price) - log(price_hat), so this is the competition's RMSLE on the sale price up to log vs log1p (negligible at prices of 10^5 to 10^8 RUB) |
 
 <details>
-<summary>Feature types: 21 categorical, 2 ordinal, 0 string, 0 datetime</summary>
+<summary>Feature types: 22 categorical, 2 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (21): `ID_railroad_station_walk`, `ID_railroad_station_avto`, `ID_big_road1`, `ID_big_road2`, `ID_railroad_terminal`, `ID_bus_terminal`, `material`, `sub_area`, `product_type`, `culture_objects_top_25`, `thermal_power_plant_raion`, `incineration_raion`, `oil_chemistry_raion`, `radiation_raion`, `railroad_terminal_raion`, `big_market_raion`, `nuclear_reactor_raion`, `detention_facility_raion`, `water_1line`, `big_road1_1line`, `railroad_1line`
+- categorical (22): `ID_metro`, `ID_railroad_station_walk`, `ID_railroad_station_avto`, `ID_big_road1`, `ID_big_road2`, `ID_railroad_terminal`, `ID_bus_terminal`, `material`, `sub_area`, `product_type`, `culture_objects_top_25`, `thermal_power_plant_raion`, `incineration_raion`, `oil_chemistry_raion`, `radiation_raion`, `railroad_terminal_raion`, `big_market_raion`, `nuclear_reactor_raion`, `detention_facility_raion`, `water_1line`, `big_road1_1line`, `railroad_1line`
 - ordinal (2): `state (1.0 < 2.0 < 3.0 < 4.0)`, `ecology (poor < satisfactory < good < excellent)`
 - string (0): none
 - datetime (0): none
@@ -212,9 +212,8 @@ We follow the preprocessing from TabRed (https://github.com/yandex-research/tabr
 - We drop the ID column as it does not provide information.
 - Note, the dataset contains a lot of spatial feature and even more already decoded spatial information (like distances to various points of interest).
 - We keep the 1,126 sales whose build_year is later than the year of sale (Lennart, 2026-10-14; until then they were dropped as errors). 1,124 were sold 0 to 4 years before it, which fits flats sold before completion; 2 have a build_year coded from a range (such as 20052009), kept as it is.
-- Ordinal scales (2026-10-30, CLEAN-14): 2 columns typed as ordered categories in the order of the source's
-  codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
-  (CLEAN-10).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 2 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing (CLEAN-10).
 
 ## Splits
 
@@ -261,6 +260,7 @@ We always use 6 month of the data as test data and all prior data as training da
 | big_market_raion | category | 0 | 0 | 2 | no, yes |
 | nuclear_reactor_raion | category | 0 | 0 | 2 | no, yes |
 | detention_facility_raion | category | 0 | 0 | 2 | no, yes |
+| ID_metro | category | 0 | 0 | 222 | 45, 108, 21, 206, 29, 79, 132, 12, 20, 2 |
 | ID_railroad_station_avto | category | 0 | 0 | 132 | 75, 105, 19, 4, 39, 24, 42, 73, 47, 2 |
 | water_1line | category | 0 | 0 | 2 | no, yes |
 | ID_big_road1 | category | 0 | 0 | 48 | 1, 2, 38, 13, 4, 14, 11, 5, 3, 16 |
@@ -305,7 +305,6 @@ We always use 6 month of the data as test data and all prior data as training da
 | build_count_1971-1995 | float64 | 4960 | 17.51 | 92 | 10.0, 0.0, 131.0, 130.0, 93.0, 58.0, 42.0, 59.0, 176.0, 102.0 |
 | build_count_after_1995 | float64 | 4960 | 17.51 | 69 | 23.0, 0.0, 57.0, 13.0, 20.0, 176.0, 22.0, 11.0, 252.0, 33.0 |
 | cafe_sum_1500_min_price_avg | float64 | 4126 | 14.57 | 2494 | 1000.0, 500.0, 700.0, 300.0, 600.0, 716.67, 660.0, 750.0, 650.0, 833.33 |
-| cafe_sum_1500_max_price_avg | float64 | 4126 | 14.57 | 1665 | 1000.0, 1500.0, 1750.0, 1166.67, 1250.0, 500.0, 1100.0, 1208.33, 1125.0, 900.0 |
 
 (327 more rows not shown)
 
@@ -320,7 +319,7 @@ We always use 6 month of the data as test data and all prior data as training da
 ### Numeric features
 
 <details>
-<summary>Show the table (363 rows)</summary>
+<summary>Show the table (362 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -385,14 +384,14 @@ We always use 6 month of the data as test data and all prior data as training da
 | build_count_foam | 23361 | 0.159582 | 1.10325 | 0 | 11 |
 | build_count_slag | 23361 | 4.43859 | 13.1373 | 0 | 84 |
 
-(303 more rows not shown)
+(302 more rows not shown)
 
 </details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (81 rows)</summary>
+<summary>Show the table (86 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -411,6 +410,11 @@ We always use 6 month of the data as test data and all prior data as training da
 | ID_bus_terminal | 3 | 9 | 3328 | 11.75 |
 | ID_bus_terminal | 4 | 5 | 2604 | 9.19 |
 | ID_bus_terminal | 5 | 3 | 2085 | 7.36 |
+| ID_metro | 1 | 45 | 2722 | 9.61 |
+| ID_metro | 2 | 108 | 1702 | 6.01 |
+| ID_metro | 3 | 21 | 1653 | 5.84 |
+| ID_metro | 4 | 206 | 1607 | 5.67 |
+| ID_metro | 5 | 29 | 763 | 2.69 |
 | ID_railroad_station_avto | 1 | 75 | 1702 | 6.01 |
 | ID_railroad_station_avto | 2 | 105 | 1653 | 5.84 |
 | ID_railroad_station_avto | 3 | 19 | 1583 | 5.59 |
@@ -451,13 +455,8 @@ We always use 6 month of the data as test data and all prior data as training da
 | oil_chemistry_raion | 1 | no | 28055 | 99.06 |
 | oil_chemistry_raion | 2 | yes | 266 | 0.94 |
 | product_type | 1 | Investment | 17379 | 61.36 |
-| product_type | 2 | OwnerOccupier | 10942 | 38.64 |
-| radiation_raion | 1 | no | 19059 | 67.3 |
-| radiation_raion | 2 | yes | 9262 | 32.7 |
-| railroad_1line | 1 | no | 27485 | 97.05 |
-| railroad_1line | 2 | yes | 836 | 2.95 |
 
-(21 more rows not shown)
+(26 more rows not shown)
 
 </details>
 
@@ -472,4 +471,4 @@ We always use 6 month of the data as test data and all prior data as training da
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:44c8e32e4a2fd7ed8e8a010df08dcf03a204b79e0d24a103e10a79824734c806` |
+| stale | yes: the definition now gives checksum `v2:b81a2394a879ddb28e5c99ab4bcfc5ee32fbb8be6bd30195a57b6730d98856e4` |

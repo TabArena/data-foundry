@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: lending_club
 container_format: 2
-checksum: v2:7a17f7d17deb235c84311a715a9501e2253a612fe46ac439c6edcb3accbbf071
+checksum: v2:2ac4d3e897ae146e5e4c40328e64cca39388d715405f0dc65e6ac99d0dae8acb
 build:
   uuid: 01a111fb-70c3-7e45-af56-3ed5e3a90f7f
   checksum: v2:d4904238a396f98457bb4678a6e8425feeac587b3f2232019110bfe66bdd0a40
@@ -70,7 +70,7 @@ decisions: []
 
 Binary classification of `Default`, scored with `roc_auc` on temporal splits by `issue_d`. 609,544 rows and 81 features. Source: Other (2018).
 
-Built as `01a111fb-70c3-7e45-af56-3ed5e3a90f7f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7a17f7d17deb235c84311a715a9501e2253a612fe46ac439c6edcb3accbbf071`, so the build is stale. See [Build](#build).
+Built as `01a111fb-70c3-7e45-af56-3ed5e3a90f7f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2ac4d3e897ae146e5e4c40328e64cca39388d715405f0dc65e6ac99d0dae8acb`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -209,9 +209,8 @@ We start with the data from Sanz-Guerrero et al. (2025), which is already prepro
 - `term` is used only for this selection and is not a feature (it is part of the company's own assessment, see the merged features). Until 2026-10 the `lending_club_1m` version tested on 2016 and the v1 `lending_club` notebook on 2016-2018.
 - We leave out the joint-applicant fields of the original data (sec_app_*, revol_bal_joint): they are filled only from 2017 on, so they are empty for the loans we keep.
 - Loans per issue year in the cleaned data (from the v1 exploration, counted 2026-10-22): 836 (2008), 4,716 (2009), 8,466 (2010), 12,747 (2011), 41,953 (2012), 99,018 (2013), 161,028 (2014), 280,780 (2015); 46% of the rows are from 2015, the year of the test windows.
-- Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
-  codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
-  (CLEAN-10).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing (CLEAN-10).
 
 ## Splits
 
@@ -470,4 +469,4 @@ Tensions).
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:7a17f7d17deb235c84311a715a9501e2253a612fe46ac439c6edcb3accbbf071` |
+| stale | yes: the definition now gives checksum `v2:2ac4d3e897ae146e5e4c40328e64cca39388d715405f0dc65e6ac99d0dae8acb` |

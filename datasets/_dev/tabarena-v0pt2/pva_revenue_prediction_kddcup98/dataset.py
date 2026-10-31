@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, set_missing
 
 DATE_COLUMNS = [
     "ADATE_2",
@@ -144,6 +144,21 @@ ORDINAL_LEVELS = {
     "RFA_2A": ["D", "E", "F", "G"],  # open-ended
     "GEOCODE2": ["D", "C", "B", "A"],
     "DOMAIN_ses": ["Lower Lowest SES in Urban communities", "Lowest SES", "Average SES", "Highest SES"],
+    "INCOME": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0],
+    "WEALTH1": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0],
+    "WEALTH2": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0],
+    "MDMAUD_recency": ["Dormant Donor", "Inactive Donor", "Lapsed Donor", "Current Donor"],
+    "MDMAUD_frequency": [
+        "One gift in the period of recency",
+        "Two-Four gifts in the period of recency",
+        "Five+ gifts in the period of recency",
+    ],  # open-ended
+    "MDMAUD_amount": [
+        "Less than $100 (Low Dollar)",
+        "$100-499 (Core)",
+        "$500-999 (Major)",
+        "$1,000+ (Top)",
+    ],  # open-ended
 }
 
 
@@ -215,8 +230,11 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
         - We resolve the ordinal encoding and nan encoding for all columns.
         - Note, that data has a lot of features that contain data from a similar origin that was transformed into individual columns.
         - We do not decode the promotion codes across years but keep them as string columns as it would blow up the dimensionality too much otherwise.
-        - Ordinal scales (2026-10-30, CLEAN-14): 6 columns typed as ordered categories in the order of the source's
-          codebook (`ORDINAL_LEVELS`).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 12 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); 3 of them were shipped as numbers; 3 hold a state
+          outside the scale, placed by the curator's rule (missing when the column has no other missing value, else the
+          lowest level; a state that is simply not on the scale, such as Other, is missing); codes that mean unknown are
+          missing (CLEAN-10).
     """
 
     # Task
@@ -514,6 +532,16 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
         )
         for c in STRING_COLUMNS:
             df[c] = df[c].replace(" ", np.nan)
+        # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
+        # CLEAN-14): don't know, refused, not asked, other
+        df = set_missing(
+            df,
+            {
+                "MDMAUD_recency": ["Not applicable"],
+                "MDMAUD_frequency": ["Not applicable"],
+                "MDMAUD_amount": ["Not applicable"],
+            },
+        )
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

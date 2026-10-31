@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: college_scorecard
 container_format: 2
-checksum: v2:7724fb6eb4cb5ddc6ee3b0e0168dcfa6243c5d88b24e71e2941b685ad36dc08a
+checksum: v2:ec2a00440dbffc541689cb17220f7ec311c5a28ff130ae918c819f1a9149610a
 build: null
 build_stale: false
 data:
@@ -62,7 +62,7 @@ decisions:
 
 Regression of `completion_rate_150pct`, scored with `rmse` on temporal splits by `cohort_year`. 34,431 rows and 92 features. Source: GOV Website (2026).
 
-Not built yet. The current definition gives checksum `v2:7724fb6eb4cb5ddc6ee3b0e0168dcfa6243c5d88b24e71e2941b685ad36dc08a`.
+Not built yet. The current definition gives checksum `v2:ec2a00440dbffc541689cb17220f7ec311c5a28ff130ae918c819f1a9149610a`.
 
 ## In brief
 
@@ -211,9 +211,8 @@ We start with the files MERGED1996_97_PP.csv to MERGED2025_26_PP.csv of the Coll
 - Split: temporal by entering cohort with a label gap (splits comment), not grouped by institution, since a model is used on the next cohorts of institutions it has seen (decision table).
 - Anomaly: completion rates of 0 (24 institution-cohorts) and 1 (14), and ACT 25th percentiles below 10 (56 rows), kept as reported.
 - Note: we keep the rate as a regression target; TableShift binarizes it at 0.5.
-- Ordinal scales (2026-10-30, CLEAN-14): 3 columns typed as ordered categories in the order of the source's
-  codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
-  (CLEAN-10).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing (CLEAN-10).
 
 ## Splits
 

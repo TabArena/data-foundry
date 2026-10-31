@@ -13,6 +13,15 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSu
 SAME_SALE_ROWS = 51
 
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "Elementary School Score": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
+    "Middle School Score": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0],
+    "High School Score": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
+}
+
+
 class CaliforniaHousePrices2020(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="What price will a California home sell for, given its listing?",
@@ -89,6 +98,8 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
         - We fixed one entry that had a negative value for garage space, likely due to a typo. This error still exists on the website.
         - We drop the 2,480 homes (6.0%) whose last sale is on or after their listing date: the listing describes an earlier sale, and 125 of them give the price we predict as the last sale price. They were 5-6% of each test window but about half its squared error (LightGBM RMSE 0.196 with them, 0.140 without). Listings older than 6 months before the sale stay (Lennart, 2026-10-14).
         - After all the above preprocessing, 63 homes appear more than once (same address, ZIP code and year built; 130 rows). 51 pairs give the same sold price a median 61 Kaggle IDs apart: one sale scraped twice, of which we keep the newest entry. The other 28 rows are sales at another price (a resale, or another unit at an address without a unit number) and stay, as an earlier sale is history under the temporal split (Lennart, 2026-10-21: "we want to keep real repeats, as houses can be sold several times").
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); 3 of them were shipped as numbers.
     """
 
     # Task
@@ -235,6 +246,7 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=["Zip Region"],
             string=[
                 "Summary",

@@ -144,5 +144,7 @@ class Dataset5gEnergyConsumption(AbstractCuratedDataset):
                 "BS",
                 "RUType",
                 "Mode",
+                # the day of the week as a code (point 4, 2026-10-31)
+                "weekday_number",
             ],
         )

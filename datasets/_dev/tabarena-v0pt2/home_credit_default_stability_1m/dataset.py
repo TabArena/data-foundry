@@ -221,8 +221,8 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
         - We drop case_id as it is already collapsed and thus does not contain extra information.
         - We cast all object and string columns to be categorical. Note that they are anonymized and string preprocessing likely does not add a lot of value as a result.
         - We drop name-related columns as they do not hold relevant information. These were otherwise dropped as high-cardinality string columns in TabRed or on Kaggle.
-        - Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
-          codebook (`ORDINAL_LEVELS`).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`).
     """
 
     # Task
@@ -368,6 +368,7 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
         # where only 0 and 1 occur
         return FeatureTypes(
             ordinal=ORDINAL_LEVELS,
-            categorical=[*(c for c in text_cols if c != "date_decision"), "isbidproduct_1095L"],
+            # max_persontype_1072L is a person-type code, not a quantity (point 4, 2026-10-31)
+            categorical=[*(c for c in text_cols if c != "date_decision"), "isbidproduct_1095L", "max_persontype_1072L"],
             datetime={"date_decision": "%Y-%m-%d"},
         )

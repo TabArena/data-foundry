@@ -458,6 +458,63 @@ ORDINAL_LEVELS = {
     "Garage Cond": ["Poor", "Fair", "Typical/Average", "Good", "Excellent"],
     "Paved Drive": ["Dirt/Gravel", "Partial Pavement", "Paved"],
     "Pool QC": ["Fair", "Typical/Average", "Good", "Excellent"],
+    "Overall Qual": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    "Overall Cond": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "Bsmt Qual": [
+        "No basement",
+        "Poor (<70 inches)",
+        "Fair (70-79 inches)",
+        "Typical (80-89 inches)",
+        "Good (90-99 inches)",
+        "Excellent (100+ inches)",
+    ],  # open-ended
+    "Bsmt Cond": [
+        "No basement",
+        "Poor - Severe cracking, settling, or wetness",
+        "Fair - dampness or some cracking or settling",
+        "Typical - slight dampness allowed",
+        "Good",
+        "Excellent",
+    ],
+    "Bsmt Exposure": [
+        "No basement",
+        "No Exposure",
+        "Minimum Exposure",
+        "Average Exposure (split levels or foyers typically score average or above)",
+        "Good Exposure",
+    ],
+    "BsmtFin Type 1": [
+        "No basement",
+        "Unfinished",
+        "Low Quality",
+        "Average Rec Room",
+        "Below Average Living Quarters",
+        "Average Living Quarters",
+        "Good Living Quarters",
+    ],
+    "BsmtFin Type 2": [
+        "No basement",
+        "Unfinished",
+        "Low Quality",
+        "Average Rec Room",
+        "Below Average Living Quarters",
+        "Average Living Quarters",
+        "Good Living Quarters",
+    ],
+    "Electrical": [
+        "60 AMP Fuse Box and mostly knob & tube wiring (poor)",
+        "60 AMP Fuse Box and mostly Romex wiring (Fair)",
+        "Fuse Box over 60 AMP and all Romex wiring (Average)",
+        "Standard Circuit Breakers & Romex",
+    ],
+    "Fireplace Qu": [
+        "Poor - Ben Franklin Stove",
+        "Fair - Prefabricated Fireplace in basement",
+        "Average - Prefabricated Fireplace in main living area or Masonry Fireplace in basement",
+        "Good - Masonry Fireplace in main level",
+        "Excellent - Exceptional Masonry Fireplace",
+    ],
+    "Garage Finish": ["No garage", "Unfinished", "Rough Finished", "Finished"],
 }
 
 
@@ -549,9 +606,11 @@ class AmesHousing(AbstractCuratedDataset):
         - Anomaly: `Year Remod/Add` starts at 1950: 337 of the 629 houses built before 1950 show 1950, where the documentation gives the construction year for no remodel. Kept as recorded.
         - No duplicate rows. Two pairs of neighbouring parcels share every feature and sold in one month at different prices; kept.
         - Not trivial (TP-4; the record's `Trivial` marker was removed, CC 2026-10-26): `Overall Qual` alone reaches R² 0.682 in the task probe (13 windows) and De Cock's two-variable model 0.766, against 0.911 for the probe's linear model and 0.900 for its LightGBM.
-        - Ordinal scales (2026-10-30, CLEAN-14): 12 columns typed as ordered categories in the order of the source's
-          codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
-          (CLEAN-10).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 22 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); 2 of them were shipped as numbers; 8 hold a state
+          outside the scale, placed by the curator's rule (missing when the column has no other missing value, else the
+          lowest level; a state that is simply not on the scale, such as Other, is missing); codes that mean unknown are
+          missing (CLEAN-10).
     """
 
     # Task
@@ -628,13 +687,16 @@ class AmesHousing(AbstractCuratedDataset):
         # Target: the log of the sale price, renamed in place.
         df = df.rename(columns={"SalePrice": "log_SalePrice"})
         df["log_SalePrice"] = np.log(df["log_SalePrice"])
-        # codes outside a scale that mean unknown (don't know, refused, not asked): missing (CLEAN-10)
+        # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
+        # CLEAN-14): don't know, refused, not asked, other
         df = set_missing(
             df,
             {
                 "Garage Qual": ["No garage"],
                 "Garage Cond": ["No garage"],
                 "Pool QC": ["No pool"],
+                "Electrical": ["Mixed"],
+                "Fireplace Qu": ["No fireplace"],
             },
         )
         return drop_columns(df, ["Order", "PID", "Yr Sold", "Mo Sold"])

@@ -89,8 +89,8 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
         - We keep only the clinical features: the 10 clinical findings graded 0 to 3, family history and age. The source describes two steps: "Patients were first evaluated clinically with 12 features. Afterwards, skin samples were taken for the evaluation of 22 histopathological features." With the 22 histopathological features the task is close to solved (a logistic model reaches macro ROC AUC 0.999 and 97% accuracy on the shipped splits); the task here is the clinical differential before the biopsy (macro ROC AUC 0.98, 87% accuracy), where seborrheic dermatitis, pityriasis rosea and chronic dermatitis are the hard cases.
         - We encode all features but age as categorical, since they are ordinal features in nature.
         - We ensure missing values in age are encoded as NaN.
-        - Ordinal scales (2026-10-30, CLEAN-14): 10 columns typed as ordered categories in the order of the source's
-          codebook (`ORDINAL_LEVELS`).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 10 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`).
     """
 
     # Task

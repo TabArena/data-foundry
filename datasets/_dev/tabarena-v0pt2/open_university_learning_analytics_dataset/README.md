@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: open_university_learning_analytics_dataset
 container_format: 2
-checksum: v2:e8c7f72cda5ad2ca43f2a945e971e7a6bd80d2180dccb25c6229edce1afba56a
+checksum: v2:672ce6a0c2b676c667aea45a0213eff9fb43ea27b10cac04af9804f60dabeb66
 build: null
 build_stale: false
 data:
@@ -72,7 +72,7 @@ decisions:
 
 Multiclass classification of `final_result`, scored with `log_loss` on grouped splits by `module_presentation`. 26,395 rows and 40 features. Source: Other (2015).
 
-Not built yet. The current definition gives checksum `v2:e8c7f72cda5ad2ca43f2a945e971e7a6bd80d2180dccb25c6229edce1afba56a`.
+Not built yet. The current definition gives checksum `v2:672ce6a0c2b676c667aea45a0213eff9fb43ea27b10cac04af9804f60dabeb66`.
 
 ## In brief
 
@@ -221,8 +221,8 @@ We start with the seven tables of the Open University Learning Analytics Dataset
 - Anomaly: 93 Withdrawn registrations (0.35% of rows, all in 2014J presentations) have no date_unregistration and stay in the cohort. 84 of them have no click on days 46-59, against 22% of the withdrawals that have a date, and 19 never clicked, so most likely withdrew before day 60. We keep them: the date would be inferred from the label and the activity, and a filter on Withdrawn alone selects on the target. 45 registrations have no date_registration (7 in the cohort, kept missing).
 - Duplicates: one pair of rows shares all features but not the result (Fail and Withdrawn); we keep both as two real registrations.
 - Spread (TP-3): untuned model families score alike on the 9 splits (log-loss skill 0.173 random forest, 0.170 LightGBM, 0.162 logistic regression; the lead of 0.011 is within twice its paired standard error of 0.009). Kept pending tuned results (Lennart, 2026-10-22): re-check with the first tuned run.
-- Ordinal scales (2026-10-30, CLEAN-14): 3 columns typed as ordered categories in the order of the source's
-  codebook (`ORDINAL_LEVELS`).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 

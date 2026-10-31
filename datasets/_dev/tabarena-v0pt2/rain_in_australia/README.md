@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: rain_in_australia
 container_format: 2
-checksum: v2:a9dd162c15ceb997501f88eda6c2f19521b576877facfbd45ed68bd5b42adab3
+checksum: v2:94dbf05da15adea080319d62cd729ce697af02b20a49756be14dab0e92700b80
 build: null
 build_stale: false
 data:
@@ -61,7 +61,7 @@ decisions:
 
 Binary classification of `RainTomorrow`, scored with `roc_auc` on temporal splits by `Date`. 264,562 rows and 165 features. Source: GOV Website (2026).
 
-Not built yet. The current definition gives checksum `v2:a9dd162c15ceb997501f88eda6c2f19521b576877facfbd45ed68bd5b42adab3`.
+Not built yet. The current definition gives checksum `v2:94dbf05da15adea080319d62cd729ce697af02b20a49756be14dab0e92700b80`.
 
 ## In brief
 
@@ -154,9 +154,10 @@ Only curators run `build`, when the dataset ships.
 | reason | The data is a Kaggle dataset / rattle example file built from BoM observations with no task description or metric; no paper defines one. Binary fallback roc_auc. |
 
 <details>
-<summary>Feature types: 6 categorical, 0 string, 1 datetime</summary>
+<summary>Feature types: 3 categorical, 3 ordinal, 0 string, 1 datetime</summary>
 
-- categorical (6): `Location`, `WindDir9am`, `RainToday`, `WindGustDir_prev_day`, `WindDir3pm_prev_day`, `RainTomorrow`
+- categorical (3): `Location`, `RainToday`, `RainTomorrow`
+- ordinal (3): `WindDir3pm_prev_day (N < NNE < NE < ENE < E < ESE < SE < SSE < S < SSW < SW < WSW < W < WNW < NW < NNW)`, `WindDir9am (N < NNE < NE < ENE < E < ESE < SE < SSE < S < SSW < SW < WSW < W < WNW < NW < NNW)`, `WindGustDir_prev_day (N < NNE < NE < ENE < E < ESE < SE < SSE < S < SSW < SW < WSW < W < WNW < NW < NNW)`
 - string (0): none
 - datetime (1): `Date (%Y-%m-%d)`
 
@@ -242,7 +243,8 @@ to 2026-01-30, with the target RainTomorrow.
 - Anomaly: the file has no rows for any location in 2011-04, 2012-12 and 2013-02, and from 2016-01-27 to
   2017-02-28.
 - Anomaly: Evaporation is a multi-day total after days without a reading, and Cloud9am and Cloud3pm hold 9 (sky
-  obscured) in 3 rows. We keep the values as recorded.
+  obscured) in 3 rows: the cloud amount cannot be estimated, so they are missing (CLEAN-10; the curator's marks
+  of 2026-10-31, as a calm wind has no direction).
 - Anomaly: missing Sunshine and Evaporation grow from 34-46% of the rows in 2009-2013 to 66-79% in 2017-2025.
 - Anomaly: a blank Cloud9am is mostly a clear or near-clear sky at the time of the observation, mixed with
   true gaps. Among the locations that record cloud, rain follows 11.7% of blank mornings against 24.7% of
@@ -258,6 +260,9 @@ to 2026-01-30, with the target RainTomorrow.
   be a total over several days (RainToday 40.6% against 21.8%). We keep them, as known at 9 am.
 - Note: BoM's terms allow personal and in-house use; the rattle documentation records the Bureau's permission to
   use the data with BoM acknowledged as the source.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); 3 are calendar or compass cycles, in their usual order
+  (the wrap is not shown); codes that mean unknown are missing (CLEAN-10).
 
 ## Splits
 
@@ -396,9 +401,9 @@ Rainfall, Pressure9am and Humidity9am of the same day at every other location wh
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| WindDir9am | category | 19760 | 7.47 | 16 | N, E, SSE, SE, S, SW, NW, W, NNE, ESE |
 | WindGustDir_prev_day | category | 18074 | 6.83 | 16 | W, SE, S, SSW, E, SSE, SW, WSW, N, ENE |
-| WindDir3pm_prev_day | category | 9863 | 3.73 | 17 | SE, W, S, WSW, SW, SSE, WNW, SSW, N, ESE |
-| WindDir9am | category | 4757 | 1.8 | 17 | N, E, SSE, SE, S, SW, Calm, NW, W, NNE |
+| WindDir3pm_prev_day | category | 11472 | 4.34 | 16 | SE, W, S, WSW, SW, SSE, WNW, SSW, N, ESE |
 | Location | category | 0 | 0 | 49 | Canberra, Sydney, Darwin, Hobart, Perth, Brisbane, PerthAirport, Launceston, Me… |
 | RainToday | category | 0 | 0 | 2 | No, Yes |
 | RainTomorrow | category | 0 | 0 | 2 | No, Yes |
@@ -451,8 +456,8 @@ Rainfall, Pressure9am and Humidity9am of the same day at every other location wh
 | Sunshine_prev_day | float64 | 162591 | 61.46 | 146 | 0.0, 11.0, 10.8, 10.7, 10.5, 10.9, 10.0, 10.6, 10.4, 11.1 |
 | Evaporation | float64 | 151354 | 57.21 | 392 | 4.0, 8.0, 2.2, 2.0, 2.8, 3.4, 2.4, 2.6, 3.2, 3.0 |
 | Pressure9am_at_Sale | float64 | 147675 | 55.82 | 391 | 1015.5, 1017.7, 1021.6, 1019.4, 1021.1, 1018.8, 1022.1, 1017.6, 1016.5, 1016.0 |
-| Cloud3pm_prev_day | float64 | 124928 | 47.22 | 10 | 7.0, 8.0, 1.0, 6.0, 2.0, 3.0, 5.0, 4.0, 0.0, 9.0 |
-| Cloud9am | float64 | 118426 | 44.76 | 10 | 7.0, 8.0, 1.0, 6.0, 0.0, 2.0, 3.0, 5.0, 4.0, 9.0 |
+| Cloud3pm_prev_day | float64 | 124929 | 47.22 | 9 | 7.0, 8.0, 1.0, 6.0, 2.0, 3.0, 5.0, 4.0, 0.0 |
+| Cloud9am | float64 | 118428 | 44.76 | 9 | 7.0, 8.0, 1.0, 6.0, 0.0, 2.0, 3.0, 5.0, 4.0 |
 | Rainfall_at_Cairns | float64 | 107540 | 40.65 | 361 | 0.0, 0.2, 0.4, 0.6, 1.0, 0.8, 1.2, 1.4, 2.2, 3.2 |
 | Rainfall_at_GoldCoast | float64 | 104553 | 39.52 | 282 | 0.0, 0.2, 0.4, 0.6, 0.8, 1.2, 1.0, 2.0, 1.6, 2.2 |
 | Humidity9am_at_Newcastle | float64 | 103298 | 39.04 | 81 | 74.0, 73.0, 75.0, 71.0, 81.0, 69.0, 78.0, 65.0, 77.0, 97.0 |
@@ -481,7 +486,7 @@ Rainfall, Pressure9am and Humidity9am of the same day at every other location wh
 | WindSpeed9am | 259859 | 14.0328 | 8.82517 | 0 | 87 |
 | Humidity9am | 262080 | 69.0177 | 19.3956 | 1 | 100 |
 | Pressure9am | 236146 | 1017.72 | 7.10757 | 978.6 | 1042.5 |
-| Cloud9am | 146136 | 4.76394 | 2.89703 | 0 | 9 |
+| Cloud9am | 146134 | 4.76388 | 2.89701 | 0 | 8 |
 | Temp9am | 263620 | 16.9334 | 6.53046 | -6.2 | 41 |
 | MaxTemp_prev_day | 263426 | 23.2672 | 7.11929 | -4.1 | 48.9 |
 | Sunshine_prev_day | 101971 | 7.63747 | 3.77268 | 0 | 14.5 |
@@ -489,7 +494,7 @@ Rainfall, Pressure9am and Humidity9am of the same day at every other location wh
 | WindSpeed3pm_prev_day | 254749 | 18.5424 | 8.68475 | 0 | 87 |
 | Humidity3pm_prev_day | 256536 | 51.3703 | 21.0051 | 1 | 100 |
 | Pressure3pm_prev_day | 235905 | 1015.3 | 7.04819 | 972 | 1040.3 |
-| Cloud3pm_prev_day | 139634 | 4.7263 | 2.77168 | 0 | 9 |
+| Cloud3pm_prev_day | 139633 | 4.72627 | 2.77167 | 0 | 8 |
 | Temp3pm_prev_day | 257983 | 21.7546 | 6.98799 | -5.1 | 48.2 |
 | Rainfall_at_Adelaide | 46641 | 1.40234 | 4.0704 | 0 | 75.2 |
 | Rainfall_at_Albany | 32502 | 2.3192 | 5.67823 | 0 | 126.4 |
@@ -567,10 +572,10 @@ Rainfall, Pressure9am and Humidity9am of the same day at every other location wh
 | WindDir3pm_prev_day | 4 | WSW | 16983 | 6.42 |
 | WindDir3pm_prev_day | 5 | SW | 16463 | 6.22 |
 | WindDir9am | 1 | N | 20449 | 7.73 |
-| WindDir9am | 2 | E | 17135 | 6.48 |
-| WindDir9am | 3 | SSE | 16972 | 6.42 |
-| WindDir9am | 4 | SE | 16967 | 6.41 |
-| WindDir9am | 5 | S | 15916 | 6.02 |
+| WindDir9am | 2 | &lt;NA> | 19760 | 7.47 |
+| WindDir9am | 3 | E | 17135 | 6.48 |
+| WindDir9am | 4 | SSE | 16972 | 6.42 |
+| WindDir9am | 5 | SE | 16967 | 6.41 |
 | WindGustDir_prev_day | 1 | &lt;NA> | 18074 | 6.83 |
 | WindGustDir_prev_day | 2 | W | 17907 | 6.77 |
 | WindGustDir_prev_day | 3 | SE | 17196 | 6.5 |

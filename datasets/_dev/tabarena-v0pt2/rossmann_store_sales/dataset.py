@@ -7,6 +7,12 @@ from pathlib import Path
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "DayOfWeek": [1, 2, 3, 4, 5, 6, 7],
+}
+
 
 class RossmannStoreSales(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -70,6 +76,9 @@ class RossmannStoreSales(AbstractCuratedDataset):
         - For the train data, the # of customers per day is given, which is not available at the prediction point for the test data. The 1st-place solution says that one model variation computed recent-history features on the number of customers instead of sales, and also used store-level aggregates such as average sales per customer. However this would mean that we have to define split-specific splits. Since many high performing solutions did not utilize customer information, we drop the column.
         - The StateHoliday column has two encodings for the entry 0, one as number and one as object. We combine them into one category.
         - The Kaggle test file covers 2015-08-01 to 2015-09-17 (48 days) for 856 of the 1,115 stores; the train file covers 2013-01-01 to 2015-07-31 (942 days) for all 1,115 (from the v1 exploration, counted 2026-10-22).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); 1 are calendar or compass cycles, in their usual order
+          (the wrap is not shown).
     """
 
     # Task
@@ -117,6 +126,7 @@ class RossmannStoreSales(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "Store",
                 "DayOfWeek",

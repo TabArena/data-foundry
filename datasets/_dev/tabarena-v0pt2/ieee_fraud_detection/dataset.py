@@ -73,6 +73,9 @@ class IeeeFraudDetection(AbstractCuratedDataset):
         - The data is given as transactions, but the task is to predict fraudulent clients. Once a transaction is detected as fraud, the entire account is considered fraudulent.
         - The competition host commented on the labeling logic: "The logic of our labeling is define reported chargeback on the card as fraud transaction (isFraud=1) and transactions posterior to it with either user account, email address or billing address directly linked to these attributes as fraud too" (https://www.kaggle.com/c/ieee-fraud-detection/discussion/101203#589276)
         - We load train_transaction.csv and train_identity.csv and merge them on TransactionID.
+        - We drop `TransactionID` after the merges: it is a row number, unique, consecutive and in the order of
+          TransactionDT (rank correlation 1.0 over 590,540 rows), so it holds only the time, which `day` gives; a code
+          shipped as a number with no meaning of its own (CLEAN-3; the curator's marks of 2026-10-31, point 4).
         - We derive Transaction_date from TransactionDT using the competition reference start date 2017-11-30.
         - The Kaggle competition also provides test_transaction.csv and test_identity.csv, but they are unlabeled and are therefore excluded from df for curation checks.
         - We normalize the D-columns, since they correspond to days since a certain event, we can normalize them by the transaction date to get the actual day of the event. This is also what the first place solution on Kaggle did.
@@ -129,6 +132,8 @@ class IeeeFraudDetection(AbstractCuratedDataset):
             self.folder / "uids_v1_no_multiuid_cleaning.csv", usecols=["TransactionID", "uid"], engine="pyarrow"
         )
         df = df.merge(uids, on="TransactionID", how="left")
+        # a running row number in time order: an identifier, the time is `day` (curation notes; CLEAN-3)
+        df = df.drop(columns=["TransactionID"])
         df = df.sort_values(by=["Transaction_date"], kind="stable").reset_index(drop=True)
         return df
 

@@ -226,9 +226,8 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         - We drop the ID column as it does not provide information.
         - Note, the dataset contains a lot of spatial feature and even more already decoded spatial information (like distances to various points of interest).
         - We keep the 1,126 sales whose build_year is later than the year of sale (Lennart, 2026-10-14; until then they were dropped as errors). 1,124 were sold 0 to 4 years before it, which fits flats sold before completion; 2 have a build_year coded from a range (such as 20052009), kept as it is.
-        - Ordinal scales (2026-10-30, CLEAN-14): 2 columns typed as ordered categories in the order of the source's
-          codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
-          (CLEAN-10).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 2 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing (CLEAN-10).
     """
 
     # Task
@@ -319,7 +318,8 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         data = data.drop(columns=["0_6_all", "7_14_all", "id"])
         data = data.reset_index(drop=True)
         df = data
-        # codes outside a scale that mean unknown (don't know, refused, not asked): missing (CLEAN-10)
+        # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
+        # CLEAN-14): don't know, refused, not asked, other
         df = set_missing(
             df,
             {
@@ -333,9 +333,11 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         return FeatureTypes(
             ordinal=ORDINAL_LEVELS,
             categorical=[
-                # 1-4; the one row with 33 (id 10092, likely a typo for 3) also has the range-coded build_year
-                # 20052009; both values are kept as they are
+                # 1-4, ordinal; the one row with 33 (id 10092, likely a typo for 3; it also has the range-coded
+                # build_year 20052009) is missing (ORDINAL_LEVELS)
                 "state",
+                # the metro station's id, like the other station ids (point 4, 2026-10-31)
+                "ID_metro",
                 "ID_railroad_station_walk",
                 "ID_railroad_station_avto",
                 "ID_big_road1",

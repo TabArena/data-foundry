@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: heart_disease
 container_format: 2
-checksum: v2:e78fde1bcd2da7e746195191481e73bc346ada570bad72e292e528a619367647
+checksum: v2:218986ed81ec360cb322338892a18de2d28f1d64ae969093e1fafff0a23aac34
 build: null
 build_stale: false
 data:
@@ -79,7 +79,7 @@ decisions:
 
 Binary classification of `heart_disease_diagnosis`, scored with `roc_auc` on grouped splits by `hospital`. 796 rows and 13 features. Source: UCI (1988).
 
-Not built yet. The current definition gives checksum `v2:e78fde1bcd2da7e746195191481e73bc346ada570bad72e292e528a619367647`.
+Not built yet. The current definition gives checksum `v2:218986ed81ec360cb322338892a18de2d28f1d64ae969093e1fafff0a23aac34`.
 
 ## In brief
 
@@ -158,10 +158,10 @@ Only curators run `build`, when the dataset ships.
 | reason | Detrano et al. 1989 score reliability, the mean predicted probability against the disease rate (calibration in the large) and by quintiles (p. 306), and clinical utility, the percent correctly classified over the thresholds 0.2 to 0.8 they call relevant for angiography decisions (p. 307): no single threshold, so a threshold-free metric (MET-7); UCI's heart-disease.names reports accuracy at 0.5, a default. No costs of errors: UCI's costs/ folder holds the prices of the tests, and Statlog's 5:1 heart cost matrix belongs to a later 270-row cut of the Cleveland file, not to this source. ROC AUC per held-out hospital does not score reliability. roc_auc is the binary fallback. |
 
 <details>
-<summary>Feature types: 8 categorical, 1 ordinal, 0 string, 0 datetime</summary>
+<summary>Feature types: 7 categorical, 2 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (8): `hospital`, `sex`, `cp`, `fbs`, `restecg`, `exang`, `thal`, `heart_disease_diagnosis`
-- ordinal (1): `slope (upsloping < flat < downsloping)`
+- categorical (7): `hospital`, `sex`, `fbs`, `restecg`, `exang`, `thal`, `heart_disease_diagnosis`
+- ordinal (2): `slope (upsloping < flat < downsloping)`, `cp (asymptomatic < non-anginal pain < atypical angina < typical angina)`
 - string (0): none
 - datetime (0): none
 
@@ -212,8 +212,8 @@ We start with the processed files of three hospitals from UCI's Heart Disease co
 - Codes get their labels from UCI's `heart-disease.names`: `sex`; `cp` typical angina, atypical angina, non-anginal pain, asymptomatic; `restecg` normal, ST-T wave abnormality, left ventricular hypertrophy; `slope` of the peak-exercise ST segment upsloping, flat, downsloping; `thal` normal, fixed defect, reversible defect. `fbs` (fasting blood sugar over 120 mg/dl) and `exang` (angina on exercise) stay 0/1 flags. `oldpeak` is the ST depression on exercise relative to rest; one Long Beach value is negative.
 - Anomaly: the Hungarian file keeps 294 of the paper's 425 patients (36% diseased against 38%); the paper took all catheterizations of 1983 to 1987 without prior infarction or valve disease (p. 306), and how the 294 were chosen is not stated.
 - Duplicates: the Long Beach pair of equal rows is one patient entered twice (the raw file gives both the same exercise and angiogram dates and the same ten vessel readings, which no other Long Beach pair shares), so one is dropped. The Hungarian pair is two patients (exams in March and May 1986) and stays.
-- Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
-  codebook (`ORDINAL_LEVELS`).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 2 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 

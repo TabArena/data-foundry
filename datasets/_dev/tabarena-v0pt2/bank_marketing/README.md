@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bank_marketing
 container_format: 2
-checksum: v2:8ef75d9bb29bce6d418dd83b6567ee8f8fa7f38c71ac3434a4332d4e176bc46a
+checksum: v2:ba0c473783007aeda1b5feb0007bcbf004299d97bb1508b0c62d726f86044b59
 build:
   uuid: 01a111fc-7c2d-7441-b859-646c9bfbf380
   checksum: v2:df7e993235e244580c862ce525a593509ccdcce2503c8efd6c2ad7382a02bdeb
@@ -70,7 +70,7 @@ decisions: []
 
 Binary classification of `SubscribeTermDeposit`, scored with `roc_auc` on IID splits. 45,211 rows and 13 features. Source: UCI (2012).
 
-Built as `01a111fc-7c2d-7441-b859-646c9bfbf380` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8ef75d9bb29bce6d418dd83b6567ee8f8fa7f38c71ac3434a4332d4e176bc46a`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7c2d-7441-b859-646c9bfbf380` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ba0c473783007aeda1b5feb0007bcbf004299d97bb1508b0c62d726f86044b59`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -193,9 +193,8 @@ The first 5 of 45,211 rows of the final frame (random rows: the frame is shuffle
 - `campaign` and `previous` are counts of contacts (UCI: "number of contacts performed during this campaign",
   "... before this campaign"), so they stay numeric. The BeyondArena notebook typed them categorical (48 and
   41 levels), which lost the order and left the high counts as rare levels (issue #34).
-- Ordinal scales (2026-10-30, CLEAN-14): 1 columns typed as ordered categories in the order of the source's
-  codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
-  (CLEAN-10).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing (CLEAN-10).
 
 ## Splits
 
@@ -314,4 +313,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8ef75d9bb29bce6d418dd83b6567ee8f8fa7f38c71ac3434a4332d4e176bc46a` |
+| stale | yes: the definition now gives checksum `v2:ba0c473783007aeda1b5feb0007bcbf004299d97bb1508b0c62d726f86044b59` |

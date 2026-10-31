@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: rossmann_store_sales
 container_format: 2
-checksum: v2:8659ff2ebb53aaff0813b99080e96e19439fd142a9d02c79766fe948b726e1aa
+checksum: v2:939fa036577e862b43cf1d299f4bfdf3ed0261e224675b8ab261ff94e4bd6385
 build:
   uuid: 01a111fc-4eab-762b-baa6-12fb81c7e2ee
   checksum: v2:baba7a6d8e2a40857f30a6179d720541ce4faf14ac918c45d3c5116107201d6e
@@ -69,7 +69,7 @@ decisions: []
 
 Regression of `Sales`, scored with `rmspe` on temporal splits by `Date`. 844,392 rows and 15 features. Source: Kaggle (2015).
 
-Built as `01a111fc-4eab-762b-baa6-12fb81c7e2ee` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8659ff2ebb53aaff0813b99080e96e19439fd142a9d02c79766fe948b726e1aa`, so the build is stale. See [Build](#build).
+Built as `01a111fc-4eab-762b-baa6-12fb81c7e2ee` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:939fa036577e862b43cf1d299f4bfdf3ed0261e224675b8ab261ff94e4bd6385`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -149,9 +149,10 @@ Only curators run `build`, when the dataset ships.
 | definition | sqrt(mean(((y - p) / y)^2)) over the store-days with Sales != 0, on the raw sales |
 
 <details>
-<summary>Feature types: 9 categorical, 0 string, 1 datetime</summary>
+<summary>Feature types: 8 categorical, 1 ordinal, 0 string, 1 datetime</summary>
 
-- categorical (9): `Store`, `DayOfWeek`, `StateHoliday`, `StoreType`, `Assortment`, `PromoInterval`, `Promo`, `SchoolHoliday`, `Promo2`
+- categorical (8): `Store`, `StateHoliday`, `StoreType`, `Assortment`, `PromoInterval`, `Promo`, `SchoolHoliday`, `Promo2`
+- ordinal (1): `DayOfWeek (1 < 2 < 3 < 4 < 5 < 6 < 7)`
 - string (0): none
 - datetime (1): `Date`
 
@@ -196,6 +197,9 @@ The first 5 of 844,392 rows of the final frame (the oldest rows: the frame is so
 - For the train data, the # of customers per day is given, which is not available at the prediction point for the test data. The 1st-place solution says that one model variation computed recent-history features on the number of customers instead of sales, and also used store-level aggregates such as average sales per customer. However this would mean that we have to define split-specific splits. Since many high performing solutions did not utilize customer information, we drop the column.
 - The StateHoliday column has two encodings for the entry 0, one as number and one as object. We combine them into one category.
 - The Kaggle test file covers 2015-08-01 to 2015-09-17 (48 days) for 856 of the 1,115 stores; the train file covers 2013-01-01 to 2015-07-31 (942 days) for all 1,115 (from the v1 exploration, counted 2026-10-22).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); 1 are calendar or compass cycles, in their usual order
+  (the wrap is not shown).
 
 ## Splits
 
@@ -317,4 +321,4 @@ Therefore, we define the same horizon for our test splits and add one day betwee
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8659ff2ebb53aaff0813b99080e96e19439fd142a9d02c79766fe948b726e1aa` |
+| stale | yes: the definition now gives checksum `v2:939fa036577e862b43cf1d299f4bfdf3ed0261e224675b8ab261ff94e4bd6385` |

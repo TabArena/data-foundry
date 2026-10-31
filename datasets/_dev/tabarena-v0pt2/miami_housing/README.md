@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: miami_housing
 container_format: 2
-checksum: v2:8107b7bcd2a77bf943daffbd52c6d435bb828a3873ec54d5ea39b5458859b579
+checksum: v2:cd595b5a35389b6c459485690451e2586bec82252636583b5be546f37d863f34
 build:
   uuid: 01a111fc-b2f3-70cf-951c-6cf119716e45
   checksum: v2:bd320b218fcee1f7a1671353adce650be061341a6b03d25957fdd692a9e8b59c
@@ -22,8 +22,8 @@ data:
   n_rows: 13776
   n_features: 15
   dtypes:
-    category: 1
-    float64: 15
+    category: 2
+    float64: 14
   n_test_dataset_rows: null
 task:
   target: SALE_PRC
@@ -67,7 +67,7 @@ decisions: []
 
 Regression of `SALE_PRC`, scored with `rmsle` on IID splits. 13,776 rows and 15 features. Source: OpenML (2021).
 
-Built as `01a111fc-b2f3-70cf-951c-6cf119716e45` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8107b7bcd2a77bf943daffbd52c6d435bb828a3873ec54d5ea39b5458859b579`, so the build is stale. See [Build](#build).
+Built as `01a111fc-b2f3-70cf-951c-6cf119716e45` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:cd595b5a35389b6c459485690451e2586bec82252636583b5be546f37d863f34`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -140,9 +140,10 @@ Only curators run `build`, when the dataset ships.
 | target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
 
 <details>
-<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 1 categorical, 1 ordinal, 0 string, 0 datetime</summary>
 
 - categorical (1): `avno60plus`
+- ordinal (1): `structure_quality (1.0 < 2.0 < 3.0 < 4.0 < 5.0)`
 - string (0): none
 - datetime (0): none
 
@@ -194,6 +195,9 @@ The first 5 of 13,776 rows of the final frame (random rows: the frame is shuffle
 - The file first appeared on OpenML (43093, uploaded 2021-09-24, creator Steven C. Bourassa, citing Mayer et
   al. 2021). Kaggle deepcontractor/miami-housing-dataset copies its description and names openml.org as its
   source, and OpenML 44983 (2022) copies Kaggle.
+- `structure_quality` ("quality of the structure", OpenML 43093, codes 1-5 without labels) is an ordered
+  category in the order of its codes (2026-10-31, CLEAN-14; the curator's marks: the order comes from the
+  context and logic, not from the target, so the high prices of the 16 homes rated 3 do not move it).
 
 ## Splits
 
@@ -228,6 +232,7 @@ Default splits.
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | avno60plus | category | 0 | 0 | 2 | 0.0, 1.0 |
+| structure_quality | category | 0 | 0 | 5 | 4.0, 2.0, 5.0, 1.0, 3.0 |
 | LATITUDE | float64 | 0 | 0 | 13776 | 25.7099, 25.5155, 25.5785, 25.6914, 25.7334, 25.6748, 25.8278, 25.5637, 25.6954… |
 | LONGITUDE | float64 | 0 | 0 | 13776 | -80.2576, -80.3876, -80.3792, -80.4149, -80.4095, -80.4102, -80.3047, -80.4939,… |
 | SALE_PRC | float64 | 0 | 0 | 2106 | 12.4292, 12.6115, 12.4684, 12.5062, 12.5776, 12.5425, 12.4875, 12.7657, 12.5602… |
@@ -242,7 +247,6 @@ Default splits.
 | HWY_DIST | float64 | 0 | 0 | 13213 | 2140.8, 3212.1, 4550.7, 4007.4, 1582.4, 2814.6, 6972.8, 4589.9, 997.3, 474.6 |
 | age | float64 | 0 | 0 | 96 | 0.0, 16.0, 26.0, 21.0, 11.0, 36.0, 12.0, 23.0, 10.0, 31.0 |
 | month_sold | float64 | 0 | 0 | 12 | 6.0, 8.0, 5.0, 4.0, 3.0, 9.0, 7.0, 12.0, 11.0, 10.0 |
-| structure_quality | float64 | 0 | 0 | 5 | 4.0, 2.0, 5.0, 1.0, 3.0 |
 
 </details>
 
@@ -255,7 +259,7 @@ Default splits.
 ### Numeric features
 
 <details>
-<summary>Show the table (15 rows)</summary>
+<summary>Show the table (14 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -273,7 +277,6 @@ Default splits.
 | HWY_DIST | 13776 | 7731.19 | 6074.76 | 90.2 | 48167.3 |
 | age | 13776 | 30.5873 | 21.1168 | 0 | 96 |
 | month_sold | 13776 | 6.63524 | 3.3024 | 1 | 12 |
-| structure_quality | 13776 | 3.51735 | 1.0963 | 1 | 5 |
 
 </details>
 
@@ -283,6 +286,11 @@ Default splits.
 |---|---|---|---|---|
 | avno60plus | 1 | 0.0 | 13570 | 98.5 |
 | avno60plus | 2 | 1.0 | 206 | 1.5 |
+| structure_quality | 1 | 4.0 | 7546 | 54.78 |
+| structure_quality | 2 | 2.0 | 4053 | 29.42 |
+| structure_quality | 3 | 5.0 | 1989 | 14.44 |
+| structure_quality | 4 | 1.0 | 172 | 1.25 |
+| structure_quality | 5 | 3.0 | 16 | 0.12 |
 
 ## Build
 
@@ -295,4 +303,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8107b7bcd2a77bf943daffbd52c6d435bb828a3873ec54d5ea39b5458859b579` |
+| stale | yes: the definition now gives checksum `v2:cd595b5a35389b6c459485690451e2586bec82252636583b5be546f37d863f34` |

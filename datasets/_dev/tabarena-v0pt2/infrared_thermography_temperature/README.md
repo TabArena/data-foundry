@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: infrared_thermography_temperature
 container_format: 2
-checksum: v2:4c2c29da4b1934282a0a5a8ff4b7838f68cfac8dae779d57b87a5b764126a273
+checksum: v2:8fe2993295b9f4025dfb2b540bcbf00e1dff2fcf8888e2915da1a45d3078845e
 build: null
 build_stale: false
 data:
@@ -58,7 +58,7 @@ decisions:
 
 Regression of `aveOralM`, scored with `rmse` on IID splits. 1,001 rows and 35 features. Source: Other (2023).
 
-Not built yet. The current definition gives checksum `v2:4c2c29da4b1934282a0a5a8ff4b7838f68cfac8dae779d57b87a5b764126a273`.
+Not built yet. The current definition gives checksum `v2:8fe2993295b9f4025dfb2b540bcbf00e1dff2fcf8888e2915da1a45d3078845e`.
 
 ## In brief
 
@@ -137,9 +137,10 @@ Only curators run `build`, when the dataset ships.
 | definition | A_rms = sqrt(mean((T_oral_estimated - T_ref)^2)) in degrees C; the paper reports it and the clinical bias per T_ref interval (<37, 37-38, >38 C). |
 
 <details>
-<summary>Feature types: 4 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 3 categorical, 1 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (4): `Gender`, `Age`, `Ethnicity`, `Cosmetics`
+- categorical (3): `Gender`, `Ethnicity`, `Cosmetics`
+- ordinal (1): `Age (18-20 < 21-25 < 21-30 < 26-30 < 31-40 < 41-50 < 51-60 < >60)`
 - string (0): none
 - datetime (0): none
 
@@ -201,6 +202,10 @@ We start with FLIR_groups1and2.csv from PhysioNet (version 1.0.0): 1,020 subject
 - Anomaly: `Age` has an overlapping bin 21-30 for 10 subjects, and `aveOralM` lies on a 0.05 °C grid shifted by -0.01 °C, which does not change the RMSE. Both kept.
 - Scope (SEL-15, amended 2026-10-21, Lennart): each column is a blackbody-compensated temperature at a named facial site, the camera is used as a thermometer, the target is the same physical quantity measured by mouth, and the release holds no images, so the readings are measurements, not image descriptors (SEL-13). satimage and wilt, where an imaging sensor's values serve to recognise what the image shows, are the counter-cases.
 - Split decision (2026-10-21, Lennart): IID, not temporal. The task learns a calibration, a function of the inputs that should be the same on two different days when the other inputs are the same, so we expect no real signal across time. The year-to-year shift measured above (a first-year calibration over-predicts the second year by 0.06-0.09 °C; past-only training costs +0.5% to +6.7% RMSE) is recorded, and a temporal variant stays a candidate (SPLIT-31).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed by the
+  curator's rule (missing when the column has no other missing value, else the lowest level; a state that is
+  simply not on the scale, such as Other, is missing).
 
 ## Splits
 

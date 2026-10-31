@@ -7,6 +7,12 @@ from pathlib import Path
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "Hepatic Fat Accumulation (HFA)": [0, 1, 2, 3, 4],
+}
+
 
 class GallstoneDisease(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -64,6 +70,12 @@ class GallstoneDisease(AbstractCuratedDataset):
     """
     curation_comments = """
         We use the data without any further curation.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them were shipped as numbers.
+        - `Comorbidity` is "any comorbidity", 0 or 1, as the paper describes it: all 217 rows with 0 have none of the
+          four listed diseases (CAD, hypothyroidism, hyperlipidemia, diabetes), and the 1s have one, two, or another
+          condition. Three rows hold an undocumented 2 (1 row) or 3 (2 rows), each with exactly one listed disease: an
+          entry error for 1, recoded to 1; the rows stay (CLEAN-11; the curator's marks of 2026-10-31).
     """
 
     # Task
@@ -77,8 +89,14 @@ class GallstoneDisease(AbstractCuratedDataset):
         df = pd.read_excel(raw_dir / "dataset-uci.xlsx", sheet_name="dataset", engine="calamine")
         return df
 
+    def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
+        # Comorbidity is 0 (none) or 1 (any); the three 2 and 3 have one of the listed diseases each (curation notes)
+        raw["Comorbidity"] = raw["Comorbidity"].replace({2: 1, 3: 1})
+        return raw
+
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "Coronary Artery Disease (CAD)",
                 "Hypothyroidism",

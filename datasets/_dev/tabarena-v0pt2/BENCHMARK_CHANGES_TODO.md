@@ -131,15 +131,19 @@ recommend:
 
 ## Ordinal features
 
-- [ ] **Give the models the order of an ordered category.** v0.2 containers store ordinal scales as ordered categories
-  (`CategoricalDtype(levels, ordered=True)`: 220 columns in 39 datasets, 2026-10-30). AutoGluon's
-  `CategoryFeatureGenerator` rebuilds every category unordered (`pd.Categorical(X[col], categories=...)`), so no model
-  sees the order. Pass it to the models that can use it, for example the codes in order as a number for the tree
-  models, and keep the categories for a model that wants them. Run of 2026-10-30 (the codes in order against unordered
-  categories, on the shipped splits): LightGBM's error fell by 1.56% on average over 55 datasets (12 better, 3 worse),
-  up to 31% on eryhemato_squamous_disease; a linear model on the bare codes loses where a scale is not monotone in the
-  target, so keep the categories for such a model. Once the order reaches the models, the 167 ordinal scales the sources
-  ship as numbers can become ordered categories too (see the CHANGELOG).
+- [ ] **Keep the order of an ordered category in the pipeline, and give it to the models.** v0.2 containers store
+  ordinal scales as ordered categories (`CategoricalDtype(levels, ordered=True)`): the curated state, whatever the
+  benchmark does with it (Lennart, 2026-10-31: "In data foundry, we want to keep the right state independent of what the
+  downstream benchmark does"). Since 2026-10-31 that includes the 167 scales the sources ship as numbers (ratings,
+  grades, bands), so this change is due before the next benchmark run. Two steps. The preprocessing (TabArena's, used as
+  in BeyondArena going forward) must keep the order: AutoGluon's `CategoryFeatureGenerator` rebuilds every category
+  unordered (`pd.Categorical(X[col], categories=...)`). And the models must be told: for example the codes in order as a
+  number for the tree models, with the categories kept for a model that wants them. Without it, the scales shipped as
+  numbers reach the models as unordered categories, which raised LightGBM's error by 6.0% on
+  student_portuguese_performance, 4.8% on breast_cancer_prediction and 3.9% on gallstone_disease (TabPFN v3.5 barely
+  changes). With the order, LightGBM's error fell by 1.56% on average over 55 datasets (12 better, 3 worse), up to 31%
+  on eryhemato_squamous_disease; TabPFN v3.5's by 0.25% (10 better, 6 worse); a linear model on the bare codes loses
+  where a scale is not monotone in the target (run of 2026-10-30, the shipped splits).
 
 ## Library version
 

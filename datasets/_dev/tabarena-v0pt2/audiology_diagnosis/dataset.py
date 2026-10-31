@@ -83,9 +83,8 @@ class AudiologyDiagnosis(AbstractCuratedDataset):
         - We drop the cases whose diagnosis is not a type of hearing loss: bells_palsy (a facial-nerve diagnosis) and the central diagnoses possible_brainstem_disorder and poss_central (3 cases after the duplicates).
         - We do not use the cause as the target: among the cochlear diagnoses it is spelled out by two history findings (age_gt_60 and history_noise agree with cochlear_age, cochlear_age_and_noise, cochlear_poss_noise or cochlear_unknown in 139 of 147 cases).
         - We remove the columns that are constant after these steps: history_fullness, and the brainstem-test findings bser, viith_nerve_signs and waveform_ItoV_prolonged, which only the dropped cases had (bser is also recorded for one kept case).
-        - Ordinal scales (2026-10-30, CLEAN-14): 6 columns typed as ordered categories in the order of the source's
-          codebook (`ORDINAL_LEVELS`); their codes that mean unknown (don't know, refused, not asked) are missing
-          (CLEAN-10).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 6 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing (CLEAN-10).
     """
 
     # Task
@@ -217,7 +216,8 @@ class AudiologyDiagnosis(AbstractCuratedDataset):
         df["diagnosis"] = df["diagnosis"].apply(hearing_loss)
         # Constant after the steps above: the brainstem-test findings were recorded only for the dropped cases.
         df = df.drop(columns=["history_fullness", "bser", "viith_nerve_signs", "waveform_ItoV_prolonged"])
-        # codes outside a scale that mean unknown (don't know, refused, not asked): missing (CLEAN-10)
+        # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
+        # CLEAN-14): don't know, refused, not asked, other
         df = set_missing(
             df,
             {

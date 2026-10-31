@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ieee_fraud_detection
 container_format: 2
-checksum: v2:e2fb71801c250f052e656cb333f606d11c3c1373a3f952c9be617f474ad22847
+checksum: v2:dfacbd6c60cb31ffd0ee5a818431e512609ef3d7045f75cd90dbf2ab77c9d78c
 build:
   uuid: 01a111fa-fc65-735f-bcbe-b5845dbfe917
   checksum: v2:9563bb404c2115312e17c44aec93b0679d2f1857f10d18b3fa052c3cbaadcd7e
@@ -20,12 +20,11 @@ build:
 build_stale: true
 data:
   n_rows: 590540
-  n_features: 435
+  n_features: 434
   dtypes:
     category: 51
     datetime64[ns]: 1
     float64: 383
-    int64: 1
   n_test_dataset_rows: null
 task:
   target: isFraud
@@ -69,9 +68,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `isFraud`, scored with `roc_auc` on temporal splits by `Transaction_date`. 590,540 rows and 435 features. Source: Kaggle (2019).
+Binary classification of `isFraud`, scored with `roc_auc` on temporal splits by `Transaction_date`. 590,540 rows and 434 features. Source: Kaggle (2019).
 
-Built as `01a111fa-fc65-735f-bcbe-b5845dbfe917` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:e2fb71801c250f052e656cb333f606d11c3c1373a3f952c9be617f474ad22847`, so the build is stale. See [Build](#build).
+Built as `01a111fa-fc65-735f-bcbe-b5845dbfe917` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:dfacbd6c60cb31ffd0ee5a818431e512609ef3d7045f75cd90dbf2ab77c9d78c`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -132,7 +131,7 @@ Only curators run `build`, when the dataset ships.
 | license | non-commercial purposes only, including academic research |
 | data_tags | Non-IID, Temporal, Anonymized |
 | reference | ieee-fraud-detection |
-| rows x columns | 590,540 x 436 |
+| rows x columns | 590,540 x 435 |
 | task.target | isFraud |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -176,15 +175,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 590,540 rows of the final frame (the oldest rows: the frame is sorted by `Transaction_date`); 12 of 436 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 590,540 rows of the final frame (the oldest rows: the frame is sorted by `Transaction_date`); 12 of 435 columns, the target first. Cells are cut at 40 characters.
 
-| isFraud | TransactionID | TransactionAmt | ProductCD | card1 | card2 | card3 | card4 | card5 | card6 | addr1 | addr2 |
+| isFraud | TransactionAmt | ProductCD | card1 | card2 | card3 | card4 | card5 | card6 | addr1 | addr2 | dist1 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 2987000 | 68.5 | W | 13926 | nan | 150 | discover | 142 | credit | 315 | 87 |
-| 0 | 2987001 | 29 | W | 2755 | 404 | 150 | mastercard | 102 | credit | 325 | 87 |
-| 0 | 2987002 | 59 | W | 4663 | 490 | 150 | visa | 166 | debit | 330 | 87 |
-| 0 | 2987003 | 50 | W | 18132 | 567 | 150 | mastercard | 117 | debit | 476 | 87 |
-| 0 | 2987004 | 50 | H | 4497 | 514 | 150 | mastercard | 102 | credit | 420 | 87 |
+| 0 | 68.5 | W | 13926 | nan | 150 | discover | 142 | credit | 315 | 87 | 19 |
+| 0 | 29 | W | 2755 | 404 | 150 | mastercard | 102 | credit | 325 | 87 | nan |
+| 0 | 59 | W | 4663 | 490 | 150 | visa | 166 | debit | 330 | 87 | 287 |
+| 0 | 50 | W | 18132 | 567 | 150 | mastercard | 117 | debit | 476 | 87 | nan |
+| 0 | 50 | H | 4497 | 514 | 150 | mastercard | 102 | credit | 420 | 87 | nan |
 
 ## Curation notes
 
@@ -192,6 +191,9 @@ The first 5 of 590,540 rows of the final frame (the oldest rows: the frame is so
 - The data is given as transactions, but the task is to predict fraudulent clients. Once a transaction is detected as fraud, the entire account is considered fraudulent.
 - The competition host commented on the labeling logic: "The logic of our labeling is define reported chargeback on the card as fraud transaction (isFraud=1) and transactions posterior to it with either user account, email address or billing address directly linked to these attributes as fraud too" (https://www.kaggle.com/c/ieee-fraud-detection/discussion/101203#589276)
 - We load train_transaction.csv and train_identity.csv and merge them on TransactionID.
+- We drop `TransactionID` after the merges: it is a row number, unique, consecutive and in the order of
+  TransactionDT (rank correlation 1.0 over 590,540 rows), so it holds only the time, which `day` gives; a code
+  shipped as a number with no meaning of its own (CLEAN-3; the curator's marks of 2026-10-31, point 4).
 - We derive Transaction_date from TransactionDT using the competition reference start date 2017-11-30.
 - The Kaggle competition also provides test_transaction.csv and test_identity.csv, but they are unlabeled and are therefore excluded from df for curation checks.
 - We normalize the D-columns, since they correspond to days since a certain event, we can normalize them by the transaction date to get the actual day of the event. This is also what the first place solution on Kaggle did.
@@ -218,15 +220,15 @@ To define three train/test splits, we use the last three months as test sets, le
 
 0 error(s), 0 warning(s), 2 info (26 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 257,475,440 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
-- **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 257,475,440 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
+- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 256,884,900 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
+- **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 256,884,900 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (436 rows)</summary>
+<summary>Show the table (435 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
@@ -291,7 +293,7 @@ To define three train/test splits, we use the last three months as test sets, le
 | D12 | float64 | 525823 | 89.04 | 64551 | -159.8919, -62.0756, -154.0968, -23.0734, -21.7893, -22.8682, -85.6475, -74.981… |
 | id_03 | float64 | 524216 | 88.77 | 24 | 0.0, 1.0, 3.0, 2.0, 5.0, 4.0, 6.0, -5.0, -6.0, -7.0 |
 
-(376 more rows not shown)
+(375 more rows not shown)
 
 </details>
 
@@ -305,11 +307,10 @@ To define three train/test splits, we use the last three months as test sets, le
 ### Numeric features
 
 <details>
-<summary>Show the table (384 rows)</summary>
+<summary>Show the table (383 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| TransactionID | 590540 | 3.28227e+06 | 170474 | 2.987e+06 | 3.57754e+06 |
 | TransactionAmt | 590540 | 135.027 | 239.163 | 0.251 | 31937.4 |
 | dist1 | 238269 | 118.502 | 371.872 | 0 | 10286 |
 | dist2 | 37627 | 231.855 | 529.053 | 0 | 11623 |
@@ -369,8 +370,9 @@ To define three train/test splits, we use the last three months as test sets, le
 | V25 | 514467 | 0.97766 | 0.185245 | 0 | 7 |
 | V26 | 514467 | 0.98804 | 0.209302 | 0 | 13 |
 | V27 | 514467 | 0.00077556 | 0.0285959 | 0 | 4 |
+| V28 | 514467 | 0.000829985 | 0.0311328 | 0 | 4 |
 
-(324 more rows not shown)
+(323 more rows not shown)
 
 </details>
 
@@ -457,4 +459,4 @@ To define three train/test splits, we use the last three months as test sets, le
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:e2fb71801c250f052e656cb333f606d11c3c1373a3f952c9be617f474ad22847` |
+| stale | yes: the definition now gives checksum `v2:dfacbd6c60cb31ffd0ee5a818431e512609ef3d7045f75cd90dbf2ab77c9d78c` |

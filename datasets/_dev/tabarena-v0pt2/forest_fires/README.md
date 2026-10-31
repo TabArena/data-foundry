@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: forest_fires
 container_format: 2
-checksum: v2:f54530429f3134262300958a262be2581f2f3b6f5ac911f24228f5495836f2b2
+checksum: v2:9ea6ffcdfa49b99cee01d0f2c2c405eccebf2e1b7befc8918050eb41d4874082
 build:
   uuid: 01a111fc-a4a0-72df-82ce-c3f0eed0000e
   checksum: v2:df1da5470a0277bf48f209cae9d833ec7d5bdeae2ca906d8d15dc04e2dd2c09f
@@ -70,7 +70,7 @@ decisions: []
 
 Regression of `area`, scored with `mae` on IID splits. 517 rows and 12 features. Source: UCI (2008).
 
-Built as `01a111fc-a4a0-72df-82ce-c3f0eed0000e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f54530429f3134262300958a262be2581f2f3b6f5ac911f24228f5495836f2b2`, so the build is stale. See [Build](#build).
+Built as `01a111fc-a4a0-72df-82ce-c3f0eed0000e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9ea6ffcdfa49b99cee01d0f2c2c405eccebf2e1b7befc8918050eb41d4874082`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -147,9 +147,10 @@ Only curators run `build`, when the dataset ships.
 | target scale | ships on the `log1p` scale for modelling; scored on the original scale after the inverse of `log1p` |
 
 <details>
-<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 0 categorical, 2 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (2): `month`, `day`
+- categorical (0): none
+- ordinal (2): `month (jan < feb < mar < apr < may < jun < jul < aug < sep < oct < nov < dec)`, `day (mon < tue < wed < thu < fri < sat < sun)`
 - string (0): none
 - datetime (0): none
 
@@ -188,6 +189,9 @@ We start with the data from UCI.
 - The original paper used a IID split. The tasks sounds like it requires a temporal split. However, the data does not contain the original time indices (or order of samples) and just month and weekday over four years (January 2000 to December 2003, Cortez and Morais 2007, Sec. 2). Furthermore, the authors made sure to only use time-invariant features as it seems they wanted to develop a time-invaraint model for deployment and analysis of the data. In other words, this task can be handled by IID splits. Furthermore, the task in the paper was about using algorithms also for feature selection (so scientific discovery).
 - We log1p scale the target as suggested by the authors, and score it as they did: they fit on log1p(area) and computed MAD and RMSE on the raw area after back-transforming the predictions (Cortez and Morais 2007, Sec. 3-4), so the metric is MAE after the inverse (`target_transform="log1p"`, MET-3).
 - The data contains naturally occurring duplicates.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 2 columns are ordered categories in
+  the order of the source's codebook (`ORDINAL_LEVELS`); 2 are calendar or compass cycles, in their usual order
+  (the wrap is not shown).
 
 ## Splits
 
@@ -348,4 +352,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:f54530429f3134262300958a262be2581f2f3b6f5ac911f24228f5495836f2b2` |
+| stale | yes: the definition now gives checksum `v2:9ea6ffcdfa49b99cee01d0f2c2c405eccebf2e1b7befc8918050eb41d4874082` |

@@ -65,8 +65,7 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - dataset_constant_column
+  warnings: []
   infos:
   - dataset_duplicates_skipped
   - dataset_pure_feature_value_skipped
@@ -74,6 +73,9 @@ bundle_checks:
     splits_rows_never_tested: The v2 protocol caps each test fold at 500k rows; the
       grouped folds of the 1.5M-row frame overshoot by whole groups, so 325 rows (0.02%)
       are trimmed from a test fold (2026-10-01).
+    dataset_constant_column: D_87 is 1 or missing, as in AMEX's original data (1 in
+      3,865 of 5.5M statements); raddar's -1 is its missing value (CLEAN-10, 2026-10-30),
+      so whether it is present is the column's information.
 decisions: []
 ---
 
@@ -253,15 +255,15 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 2 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (26 checks run, plus the dataset's own checks).
 
-- **warning** `dataset_constant_column`: 1 constant column(s) (1 distinct non-null value): ['D_87']. (hint: Drop them unless the constant is meaningful for the task.)
 - **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 286,500,000 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
 - **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 286,500,000 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
 
 Accepted on purpose:
 
 - `splits_rows_never_tested`: The v2 protocol caps each test fold at 500k rows; the grouped folds of the 1.5M-row frame overshoot by whole groups, so 325 rows (0.02%) are trimmed from a test fold (2026-10-01).
+- `dataset_constant_column`: D_87 is 1 or missing, as in AMEX's original data (1 in 3,865 of 5.5M statements); raddar's -1 is its missing value (CLEAN-10, 2026-10-30), so whether it is present is the column's information.
 
 ## Data checks
 

@@ -54,6 +54,8 @@ CC (2026-10-27, Lennart): fit stays direct: the setting, a university clinic, se
 
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `Age` (a level outside the scale is a state of its own).
 
+CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 1 columns with a state outside the scale ordered, the state placed by the rule; the age bands ordered, the overlapping 21-30 by its midpoint.
+
 ## Reference
 
 Infrared Thermography for Measuring Elevated Body Temperature: Clinical Accuracy, Calibration, and Evaluation

@@ -7,6 +7,12 @@ from pathlib import Path
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, anonymize_ids
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "Tendency": [-1.0, 0.0, 1.0],
+}
+
 
 class Cardiotocography(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -69,6 +75,8 @@ class Cardiotocography(AbstractCuratedDataset):
         - Each row is a segment (sample `b` to `e`) of one exam file, and 1,706 of the 1,774 consecutive segment pairs within a file overlap, so the rows of a file must stay together. The patient ID above the file is our guess, no source documents it: we strip the trailing number of a named file (`Aast_1` ... `Aast_14` -> `Aast`), each numbered file (`S0001027.dat`) stays alone. This gives 176 IDs for 352 files; 61 IDs merge 2 to 14 files and 10 span exam dates 50 to 1,139 days apart, so a stem is likely initials and may hold two women or two pregnancies. Merging too much only makes the split stricter; a woman under two IDs (similar stems such as `Mcslr`/`Mcslrc`, or a numbered file) would put her separate exams on both sides, but never overlapping segments.
         - The raw data has dates and the start and end index of the recording. We drop these as they are not relevant for the predictive task and would not be available for test samples.
         - We drop all other columns that represent the label.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
+          the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them were shipped as numbers.
     """
 
     # Task
@@ -137,6 +145,7 @@ class Cardiotocography(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "patient_id",
             ],
