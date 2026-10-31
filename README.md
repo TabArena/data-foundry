@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-10-30 23:20 UTC: 108 claim(s) (Andrej 24, Lennart 63, Myunghwan 21).
+As of 2026-10-31 01:25 UTC: 107 claim(s) (Andrej 24, Lennart 63, Myunghwan 20).
 
 ## Andrej
 
@@ -123,6 +123,5 @@ As of 2026-10-30 23:20 UTC: 108 claim(s) (Andrej 24, Lennart 63, Myunghwan 21).
 | `open_soil_spectral_library` | review | 2026-10-23 | 2026-11-04 | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
 | `predictive_insights_youth_income_prediction_challenge` | review | 2026-10-23 | 2026-11-04 | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
 | `protein_model_quality_rf_pcp` | review | 2026-10-28 | 2026-11-06 | Curator accepted; build, reload and traced-input reproduction complete. Submitted in PR #33: https://github.com/TabArena/data-foundry/pull/33 . Accepted approximations and source/descriptor limits are documented. Awaiting PR review/merge; retain Myunghwan ownership until merged. |
-| `qos_prediction_challenge` | triage | 2026-10-28 | 2026-11-04 | Next Myunghwan curation batch: highest remaining eligible priority 3; existing screening dossiers await curator review. Reservation only; no scientific acceptance or build. |
 | `sendy_logistics_challenge` | review | 2026-10-28 | 2026-11-06 | Curator ship accepted; build and verification complete. Submitted in PR #33: https://github.com/TabArena/data-foundry/pull/33 (commit 46e8b32). Placement-to-arrival RMSE; 21,199 rows, 13 predictors, random 3x3 folds. Awaiting PR review/merge; retain Myunghwan ownership until merged. |
 | `tunisian_fraud_detection_challenge` | triage | 2026-10-28 | 2026-11-04 | Next Myunghwan curation batch: highest remaining eligible priority 3; existing screening dossiers await curator review. Reservation only; no scientific acceptance or build. |
