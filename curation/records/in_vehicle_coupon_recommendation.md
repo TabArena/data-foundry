@@ -9,6 +9,8 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
+decision_markers:
+- Selection Bias
 original_source: Other
 year: '2017'
 required_split:
@@ -38,6 +40,10 @@ Lennart: Leaning towards yes, features seem time invariant; but data source migh
 Andrej: Need to test whether time-invariant; Mechanical turk data might be interesting to include
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC (out-of-sample, 5-fold, Table 3) (Wang et al. (2017), A Bayesian framework for learning rule sets for interpretable classification, JMLR 18(70), Sec. 6.2 and Table 3).
+
+CC (2026-10-27, Lennart): marker Selection Bias, from the AI review of PR #16: the respondents are Amazon Mechanical Turk workers, a volunteer sample rather than the drivers of an in-vehicle recommender, as the web volunteers of obesity_estimation; the stated intentions about imagined trips are a separate gap, already in the fit_reason.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `tianchi_o2o_coupon_redemption` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference
 

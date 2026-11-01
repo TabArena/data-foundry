@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pandas as pd
 import pytest
-from data_foundry.v2 import DatasetDefinitionError, chemistry, murcko_scaffolds, rdkit_descriptors
+from data_foundry.v2 import DatasetDefinitionError, chemistry, murcko_scaffolds, rdkit_descriptors, scaffold_groups
 
 pytest.importorskip("rdkit")
 
@@ -72,3 +72,21 @@ def test_a_scaffold_smiles_that_does_not_parse_is_an_error() -> None:
     """A SMILES RDKit cannot parse stops the definition, as for the descriptors."""
     with pytest.raises(DatasetDefinitionError, match="cannot parse 1 SMILES"):
         murcko_scaffolds(pd.Series(["CCO", "C1CC"]))
+
+
+def test_scaffold_groups_keep_series_together_and_ring_less_or_common_scaffolds_apart() -> None:
+    """Biphenyls share a group; ethanol, methanol and the benzenes (here 3 of 6) each get one of their own."""
+    smiles = pd.Series(["c1ccccc1Cl", "Cc1ccccc1", "Oc1ccccc1", "Clc1ccc(cc1)-c1ccccc1", "c1ccc(cc1)-c1ccccc1", "CCO"])
+    out = scaffold_groups(smiles, max_share=0.4)
+
+    assert out.iloc[3] == out.iloc[4] == "c1ccc(-c2ccccc2)cc1"
+    assert list(out.iloc[[0, 1, 2, 5]]) == [f"single: {s}" for s in smiles.iloc[[0, 1, 2, 5]]]
+    assert out.nunique() == 5
+
+
+def test_scaffold_groups_keep_a_scaffold_below_the_share_together() -> None:
+    """With a higher share the benzenes form one group."""
+    smiles = pd.Series(["c1ccccc1Cl", "Cc1ccccc1", "Oc1ccccc1", "Clc1ccc(cc1)-c1ccccc1", "c1ccc(cc1)-c1ccccc1", "CCO"])
+    out = scaffold_groups(smiles, max_share=0.6)
+
+    assert out.iloc[0] == out.iloc[1] == out.iloc[2] == "c1ccccc1"

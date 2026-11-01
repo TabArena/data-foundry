@@ -4,13 +4,14 @@ name: Used Cars Saudi Arabia
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> Yes
-priority: 2
+priority: 1
 tags:
 - Free Text (Short)
 - New IID
 - AI-Filled (Verify)
 collections:
 - CARTE/TARTE
+- MulTaBench
 original_source: Kaggle
 year: '2021'
 domain: business & marketing
@@ -47,3 +48,5 @@ Saudi Arabia used-car listings scraped from syarah.com (Kaggle), a valid tabular
 used cars data
 
 the task would likely need to be filtered by negotiable or not
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `dvm_car_uk_used_car_adverts` (TBD -> Yes, priority 3), `us_used_cars_cargurus` (TBD -> Yes, priority 1). Each is screened in its own record; this record's verdict stays the curator's.

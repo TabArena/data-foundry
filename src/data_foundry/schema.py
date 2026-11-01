@@ -213,8 +213,9 @@ class MetricSpec:
     origin: MetricOrigin
     """``source`` (what the competition or paper scored), ``stand_in`` (the closest computable metric to an original
     that cannot be computed, named in ``original``), ``context`` (the source defines no metric, but the task makes one
-    obvious, e.g. a relative error for a price; why in ``reason``) or ``fallback`` (the source defines no metric and
-    none is obvious: roc_auc / log_loss / rmse by problem type, the reason in ``reason``)."""
+    obvious, e.g. a relative error for a price; why in ``reason``) or ``fallback`` (the source defines no metric the
+    task would use in practice, and none is obvious: roc_auc / log_loss / rmse by problem type, the reason in
+    ``reason``)."""
     params: dict[str, Any] = dataclasses.field(default_factory=dict)
     """JSON values only: a cost matrix, ``k``, the shape of a transform."""
     inputs: dict[str, str] = dataclasses.field(default_factory=dict)

@@ -2,17 +2,17 @@
 report_format: data-foundry-report-v2
 unique_name: rosbank1
 container_format: 2
-checksum: v2:40666a6693c4cea2d6c91a2eb03b735719c32ccdecb75d1ee18cfc5e00cc3009
+checksum: v2:84c12df88f051bc4a30d24a57eabfc0fae56afe300e160ee626cd474364242d2
 build: null
 build_stale: false
 data:
   n_rows: 4791
-  n_features: 347
+  n_features: 695
   dtypes:
     category: 2
     datetime64[ns]: 3
-    float64: 227
-    int64: 116
+    float64: 572
+    int64: 119
   n_test_dataset_rows: null
 task:
   target: churn
@@ -59,15 +59,17 @@ decisions:
 - channel_type is one column per client
 - The period end is three months after the first transaction, or the last transaction
   when later
+- Amounts in rubles at the Bank of Russia's rate of the day; currencies it did not
+  quote are masked
 ---
 
 # rosbank1
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `churn`, scored with `roc_auc` on temporal splits by `period_end`. 4,791 rows and 347 features. Source: Other (2018).
+Binary classification of `churn`, scored with `roc_auc` on temporal splits by `period_end`. 4,791 rows and 695 features. Source: Other (2018).
 
-Not built yet. The current definition gives checksum `v2:40666a6693c4cea2d6c91a2eb03b735719c32ccdecb75d1ee18cfc5e00cc3009`.
+Not built yet. The current definition gives checksum `v2:84c12df88f051bc4a30d24a57eabfc0fae56afe300e160ee626cd474364242d2`.
 
 ## In brief
 
@@ -79,11 +81,11 @@ Not built yet. The current definition gives checksum `v2:40666a6693c4cea2d6c91a2
 
 **Predicted.** Whether the client makes no card purchases in the three months after the period (churn); in the October 2017 window 179 of 515 clients did.
 
-**Known at prediction time.** Summaries of the client's card transactions up to the end of the period (counts, sums, means and spreads by transaction type, currency and the 97 most frequent merchant categories), the dates of the first and last transaction, and the client's channel type (undocumented; constant per client, read as how the client was acquired).
+**Known at prediction time.** Summaries of the client's card transactions up to the end of the period (counts, and sums, means and spreads in rubles, by transaction type, currency and the 97 most frequent merchant categories), when and how regularly the client was active (the competition winner's time features), the dates of the first and last transaction, and the client's channel type (undocumented; constant per client, read as how the client was acquired).
 
 **What the test data stands for.** Each test window is one month of period ends (October, November, December 2017); training holds the clients whose three-month outcome was known before the window starts.
 
-**Our changes to the source.** We summarise the transactions, rebuild each period's end date from the first and last transactions, and split by it, where the competition split clients at random; periods ending from January 2018 on are left out as their outcome window may not be complete.
+**Our changes to the source.** We summarise the transactions in rubles, add the competition winner's time features, rebuild each period's end date from the first and last transactions, and split by it, where the competition split clients at random; periods ending from January 2018 on are left out as their outcome window may not be complete.
 
 > **Use case fit: approximate (a stand-in with a known gap).** How the label window was placed is not published, and the newest rows contradict 'after the period' (clients whose period had not ended when the data stops still have full spend labels). The period end dates are reconstructed from the transactions, as the data has no dates. The test windows are small (63 to 515 clients) and the two newest are a thin tail of the client intake.
 
@@ -110,6 +112,16 @@ mkdir -p local-data-warehouse/rosbank1
 wget -O local-data-warehouse/rosbank1/train.csv.gz https://huggingface.co/datasets/pytorch-lifestream/rosbank-churn/resolve/aad1b512deaee7ffea4c289e496785bc9e17bd80/train.csv.gz
 
 train.csv.gz: 4,646,502 bytes, sha256 fe27320183acbe038577080ae8b30b9d7f7b8a40dd92cf43e405b56fdd6627f6 (the Git LFS object id on Hugging Face); 490,513 transactions of 5,000 clients.
+
+The Bank of Russia's official exchange rates (open on its site, no login; downloaded 2026-10-26): its currency list, and the daily rates of 1 September 2016 to 3 April 2018 of the 30 currencies in the data it quoted then (series ids from the list; the other 27 currencies return no rates for these dates).
+
+cd local-data-warehouse/rosbank1
+curl -fo cbr_currencies.xml https://www.cbr.ru/scripts/XML_valFull.asp
+mkdir -p cbr_rates && for id in R01010 R01020A R01035 R01060 R01090B R01100 R01115 R01135 R01200 R01215 R01235 R01239 R01270 R01335 R01350 R01370 R01375 R01500 R01535 R01565 R01585F R01625 R01700J R01720 R01760 R01770 R01775 R01810 R01815 R01820; do
+    curl -fo cbr_rates/$id.xml "https://www.cbr.ru/scripts/XML_dynamic.asp?date_req1=01/09/2016&date_req2=03/04/2018&VAL_NM_RQ=$id"
+done
+
+cbr_currencies.xml: sha256 b6bc755432f5f3cfa8827496263ce6978a0382ae24c7a1b9ff2568406e6d7ec3 (the list grows when the Bank adds a currency; the 30 ids above are what the definition needs). The 30 rate files concatenated in name order (cat cbr_rates/*.xml | sha256sum): 50cbff2632b63e7f9e0c9b461c6fa47d717f5b5854d9e1f202c485018bd9b339.
 ```
 
 Then, from the repository root:
@@ -131,7 +143,7 @@ Only curators run `build`, when the dataset ships.
 | license | None stated: the competition rules (boosters.pro API, `regulations`) and the Hugging Face card give no data licence |
 | data_tags | Non-IID, Temporal |
 | reference | Rosbank2018MLCompetition |
-| rows x columns | 4,791 x 348 |
+| rows x columns | 4,791 x 696 |
 | task.target | churn |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -175,15 +187,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 4,791 rows of the final frame (the oldest rows: the frame is sorted by `period_end`); 12 of 348 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 4,791 rows of the final frame (the oldest rows: the frame is sorted by `period_end`); 12 of 696 columns, the target first. Cells are cut at 40 characters.
 
 | churn | n_transactions | amount_sum | amount_mean | amount_std | channel_type | count_trx_POS | count_trx_DEPOSIT | count_trx_WD_ATM_ROS | count_trx_WD_ATM_PARTNER | count_trx_C2C_IN | count_trx_WD_ATM_OTHER |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| No | 165 | 606314 | 3674.63 | 5540.24 | type2 | 149 | 0 | 11 | 0 | 0 | 0 |
 | No | 34 | 50855.4 | 1495.75 | 2145.03 | type2 | 17 | 0 | 0 | 4 | 5 | 0 |
-| No | 165 | 558654 | 3385.78 | 5582.65 | type2 | 149 | 0 | 11 | 0 | 0 | 0 |
 | No | 109 | 234565 | 2151.98 | 4535.65 | type1 | 105 | 4 | 0 | 0 | 0 | 0 |
+| No | 158 | 185369 | 1173.22 | 3094.07 | type1 | 154 | 0 | 0 | 0 | 0 | 0 |
 | Yes | 11 | 158358 | 14396.2 | 20785 | type3 | 10 | 0 | 0 | 0 | 0 | 0 |
-| No | 158 | 175851 | 1112.98 | 3019.39 | type1 | 154 | 0 | 0 | 0 | 0 | 0 |
 
 ## Curation notes
 
@@ -193,13 +205,14 @@ We start with train.csv.gz of Rosbank's ML Competition on Boosters.pro (2018), f
 - Task: churn, the competition's task 1, as in CoLES (Babaev et al. 2022). target_flag is 1 exactly when target_sum, the POS spend of the next three months, is positive (decision table): churn "Yes" is target_flag 0, and target_sum is dropped.
 - Tabular framing: for this sequence data, the tabular baseline in the literature is LightGBM on hand-crafted aggregates (CoLES, Sec. 4.1.2, Table 6: ROC AUC 0.825, level with the supervised sequence model at 0.817, above CPC, RTD and SOP at 0.782 to 0.802, and below CoLES embeddings fed to LightGBM at 0.843). We build them as pytorch-lifestream configures them for this dataset (`aggregate_transactions`).
 - Features, where we deviate from that configuration: all 10 transaction categories and four currency values (rubles, euros, US dollars, "other") get their own columns, against its 7 categories and 1 currency; the 97 most frequent MCC codes plus "other", as there. A mean or standard deviation over no transactions or of one transaction is missing (the configuration writes 0).
+- Time features of the 1st place (Lennart, CC 2026-10-26, CLEAN-19: the better of the baseline and the top solutions' features, or a reasonable combination): Kirill Khrylchenko won task 1 (private ROC AUC 0.8747) and published his code (github.com/KhrylchenkoKirill/rosbank, no licence; `time_features` is our rewrite, no code copied). His time block, which his slides rank as his best: for all transactions, each category, money in and money out, the span, spread, position and gaps of the client's active days, the same over the last active calendar month, the active days per month and the quarter of the last month (351 columns; two last-month gaps of cash advances copy the whole history's here and are dropped). Untuned LightGBM on our three windows: CoLES 0.857, CoLES plus the time block 0.896 (+0.038; October, 515 clients, +0.051). His full feature set scored lower than this combination (0.882), and his money and MCC blocks add nothing to CoLES (-0.016 to +0.004); his MCC-time block needs his 11 hand-made MCC groups and is not taken. Deviations from his code: days counted in days (not years of 360 days), unique active days per group, the last month and the months by year and month, the quarter as one number, and missing where he writes 0.
 - The 97 MCC codes are the most frequent over all transactions, test windows included: a pipeline choice that approximates the task (a deployed model would choose from its own history), not a value computed from test rows; kept (Lennart, 2026-10-19).
 - channel_type is undocumented (the competition publishes no column descriptions); it is constant per client and read as the acquisition channel (a participant notebook, kianya/rosbank-competition, says so), so it is one categorical column (decision table).
 - Time: the data has no period dates. Most clients transact over 80 to 92 days, so period_end, the time column, is the first transaction plus three months, or the last transaction when that is later (decision table). first_transaction and last_transaction are features. All three are dates, as POS transactions carry a date only. For the clients at first plus three months the estimate is an upper bound of the true period end (a period that started before the first transaction ends earlier), so it errs on the safe side for the gap. The transactions in the file are not in the label window: 107 of the 479 clients with a POS purchase after first plus three months still churned.
 - Cohort: how the label window was placed is not published, and the newest labels are off: 24 of the 36 clients whose period ends in March 2018 churned, against 35.5% for October 2017 to February 2018, while 37 of the 63 clients whose period ends from April 2018 on, after the transactions stop (2 April 2018), have full spend labels that a window after their period could not hold. We keep the periods ending before 1 January 2018, whose three-month window after the period closes by 31 March 2018, inside the transactions (decision table). A window fixed in calendar time would make churn rise with cohort age; in channel type1 (two thirds of the clients) it does not (logit slope +0.006 per month, SE 0.013, with activity controls; panel review 2026-10-20), so we read the window as per client.
 - Split: temporal on period_end, with each training client's three-month label window as a gap (splits_comment; decision table).
 - Not used: test.csv.gz (no labels), PERIOD (the month of TRDATETIME) and cl_id, which carries the label (alone ROC AUC 0.728).
-- Anomaly: amount is in the transaction's currency, so the overall amount statistics mix currencies, as in CoLES: 2.6% of transactions are not in rubles, but 1,072 clients (22.4%) have one, and the largest amounts are in Vietnamese dong and Indonesian rupiah (up to 35.8 million).
+- Currencies (Lennart, CC 2026-10-26, CLEAN-21): amount is in the transaction's own currency (2.6% of transactions are not in rubles, 1,072 clients have one, and the largest amounts are Vietnamese dong and Indonesian rupiah, up to 35.8 million), where CoLES adds them up as one unit. We convert it to rubles at the Bank of Russia's official rate in force on the transaction's day (a rate holds until the next one is set, so a weekend takes the last rate before it); the rate is public on that day, before the prediction point. currency holds ISO 4217 numeric codes, rubles as 810 (the ruble's code before 1998) and in 32 rows as 643 (the current code). The data has no codebook; the conversion confirms the reading (decision table: converted, the median POS purchase of every currency with 30 or more lies between 355 and 3,346 rubles, against 500 in rubles and 8 to 671,000 units before). The Bank quoted 30 of the 57 other currencies then. The 1,466 transactions (0.3%, of 184 clients) in a currency it did not quote on their day (27 currencies: Thai baht, UAE dirham, Georgian lari, Croatian kuna, rupiah, dong and smaller ones; Hong Kong dollars before April 2017) keep their counts but leave the amount statistics, rather than take a rate from another source. Every amount column changes; the counts do not. std_amount_trx_CASH_ADV is dropped: of the kept clients only one has two or more cash advances in a quoted currency, so it holds one value.
 - Duplicates: 828 transaction rows repeat another row; we count them, as POS transactions carry a date only. Two pairs of clients share all aggregates, the label and period_end, so each pair falls on one side of every split; we keep them.
 - Note: the task probes flag `no_spread` (LightGBM leads linear by 0.017 AUC, a skill gap of 0.034 with paired standard error 0.087), a gap 3 windows cannot test; we keep the task.
 
@@ -286,6 +299,46 @@ The data has no period dates; most clients transact over 80 to 92 days, the thre
 | 93-100 | 268 | 268 | 0.168 |
 | over 100 | 184 | 184 | 0.332 |
 
+### 6. Amounts in rubles at the Bank of Russia's rate of the day; currencies it did not quote are masked
+
+currency holds ISO 4217 numeric codes (810 and 643 are rubles): converted at the official rate, the median POS purchase of each currency lands near the ruble one, where the amounts as recorded range over five orders of magnitude. A missing median: the Bank set no rate for the currency on those days.
+
+| currency | POS transactions | median amount | median in rubles |
+|---|---|---|---|
+| 810 | 404465 | 500 | 500 |
+| 978 | 5260 | 25 | 1660 |
+| 840 | 1755 | 38.4 | 2267.5 |
+| 933 | 534 | 17 | 523.2 |
+| 985 | 417 | 35 | 519.5 |
+| 949 | 375 | 62 | 1010.6 |
+| 203 | 374 | 538 | 1337.6 |
+| 764 | 363 | 699 | nan |
+| 826 | 255 | 14 | 1089.1 |
+| 784 | 250 | 104.1 | nan |
+| 975 | 248 | 28.3 | 1008.5 |
+| 392 | 187 | 4201 | 2161.9 |
+| 980 | 176 | 218.9 | 472.5 |
+| 981 | 147 | 29.8 | nan |
+| 348 | 141 | 3265 | 673.2 |
+| 756 | 122 | 37 | 2240.1 |
+| 578 | 109 | 188 | 1258.7 |
+| 752 | 107 | 142 | 952.1 |
+| 410 | 104 | 23235 | 1219.5 |
+| 702 | 96 | 32.1 | 1308.7 |
+| 398 | 91 | 3555 | 646.9 |
+| 191 | 88 | 120 | nan |
+| 360 | 65 | 409500 | nan |
+| 352 | 59 | 3040 | nan |
+| 51 | 55 | 12249 | 1533.5 |
+| 376 | 55 | 53 | nan |
+| 156 | 53 | 380 | 3346.4 |
+| 484 | 53 | 327 | nan |
+| 704 | 41 | 671000 | nan |
+| 124 | 40 | 8.4 | 355.4 |
+| 356 | 36 | 3781.5 | 3344.6 |
+| 144 | 34 | 6134.5 | nan |
+| 344 | 33 | 45 | 3375.8 |
+
 ## Bundle checks
 
 0 error(s), 0 warning(s), 1 info (26 checks run, plus the dataset's own checks).
@@ -301,7 +354,7 @@ Accepted on purpose:
 ### Feature summary
 
 <details>
-<summary>Show the table (348 rows)</summary>
+<summary>Show the table (696 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
@@ -310,63 +363,63 @@ Accepted on purpose:
 | first_transaction | datetime64\[ns\] | 0 | 0 | 347 | 2016-12-01 00:00:00, 2017-06-01 00:00:00, 2016-11-01 00:00:00, 2016-12-23 00:00… |
 | last_transaction | datetime64\[ns\] | 0 | 0 | 413 | 2017-02-28 00:00:00, 2017-01-31 00:00:00, 2017-06-30 00:00:00, 2017-02-22 00:00… |
 | period_end | datetime64\[ns\] | 0 | 0 | 352 | 2017-03-01 00:00:00, 2017-09-01 00:00:00, 2017-02-28 00:00:00, 2017-02-01 00:00… |
-| std_amount_trx_CASH_ADV | float64 | 4789 | 99.96 | 2 | 22590.1521, 6559.2185 |
-| mean_amount_trx_CASH_ADV | float64 | 4771 | 99.58 | 20 | 40200.0, 25.95, 20000.0, 50000.0, 676.0, 2621.21, 802.88, 150000.0, 3000.0, 286… |
+| time_cash_adv_gap_mean | float64 | 4789 | 99.96 | 2 | 8.7143, 9.25 |
+| time_cash_adv_gap_max | float64 | 4789 | 99.96 | 2 | 16.0, 22.0 |
+| time_cash_adv_gap_min | float64 | 4789 | 99.96 | 2 | 3.0, 2.0 |
+| time_cash_adv_gap_std | float64 | 4789 | 99.96 | 2 | 4.9487, 7.5952 |
+| time_cash_adv_gap_p50 | float64 | 4789 | 99.96 | 2 | 9.0, 6.5 |
+| time_cash_adv_gap_p95 | float64 | 4789 | 99.96 | 2 | 15.7, 19.75 |
+| time_cash_adv_lastmonth_gap_mean | float64 | 4789 | 99.96 | 2 | 6.75, 12.0 |
+| time_cash_adv_lastmonth_gap_std | float64 | 4789 | 99.96 | 2 | 5.3561, 10.0 |
+| time_cash_adv_lastmonth_gap_p50 | float64 | 4789 | 99.96 | 2 | 4.0, 12.0 |
+| time_cash_adv_lastmonth_gap_p95 | float64 | 4789 | 99.96 | 2 | 14.2, 21.0 |
+| mean_amount_trx_CASH_ADV | float64 | 4773 | 99.62 | 18 | 40200.0, 170.7661, 50000.0, 676.0, 2621.21, 802.88, 150000.0, 3000.0, 9990.0086… |
 | std_amount_mcc_9222 | float64 | 4771 | 99.58 | 19 | 0.0, 3640.1272, 49.4975, 1048.2631, 595.2481, 415.5053, 88.3883, 433.5, 840.031… |
-| std_amount_mcc_7995 | float64 | 4757 | 99.29 | 30 | 0.0, 77.7817, 7.0711, 2913.0355, 212.132, 498.3848, 141.4214, 25.237, 28.8675, … |
-| std_amount_mcc_4215 | float64 | 4757 | 99.29 | 34 | 1963.6355, 23264.5202, 197.9899, 675.287, 111.7229, 8611.8136, 68.0062, 608.111… |
-| std_amount_mcc_5948 | float64 | 4757 | 99.29 | 33 | 0.0, 8145.8701, 136.1409, 738.2195, 1556.9435, 117.9364, 1030.2546, 848.6633, 1… |
-| std_amount_mcc_5994 | float64 | 4757 | 99.29 | 34 | 39.3107, 0.0, 22.8348, 47.5034, 253.1442, 0.0354, 47.6739, 23.3345, 116.4453, 6… |
+| time_cash_adv_span | float64 | 4771 | 99.58 | 3 | 0.0, 61.0, 37.0 |
+| time_cash_adv_std | float64 | 4771 | 99.58 | 3 | 0.0, 17.6489, 15.1182 |
+| time_cash_adv_median | float64 | 4771 | 99.58 | 20 | 102.0, 73.0, 136.0, 76.0, 132.0, 151.0, 203.0, 178.0, 251.0, 282.0 |
+| time_cash_adv_mean | float64 | 4771 | 99.58 | 20 | 102.0, 73.0, 136.0, 76.0, 132.0, 151.0, 203.0, 178.0, 251.0, 282.0 |
+| time_cash_adv_max | float64 | 4771 | 99.58 | 20 | 102.0, 73.0, 136.0, 76.0, 132.0, 151.0, 203.0, 178.0, 251.0, 282.0 |
+| time_cash_adv_lastmonth_span | float64 | 4771 | 99.58 | 3 | 0.0, 27.0, 24.0 |
+| time_cash_adv_lastmonth_std | float64 | 4771 | 99.58 | 3 | 0.0, 9.3252, 10.873 |
+| time_cash_adv_lastmonth_median | float64 | 4771 | 99.58 | 20 | 102.0, 73.0, 136.0, 76.0, 132.0, 151.0, 203.0, 178.0, 251.0, 282.0 |
+| time_cash_adv_lastmonth_mean | float64 | 4771 | 99.58 | 20 | 102.0, 73.0, 136.0, 76.0, 132.0, 151.0, 203.0, 178.0, 251.0, 282.0 |
+| time_cash_adv_days_per_month_mean | float64 | 4771 | 99.58 | 3 | 1.0, 2.6667, 2.5 |
+| time_cash_adv_days_per_month_median | float64 | 4771 | 99.58 | 3 | 1.0, 2.0, 2.5 |
+| time_cash_adv_days_per_month_max | float64 | 4771 | 99.58 | 3 | 1.0, 5.0, 3.0 |
+| time_cash_adv_days_per_month_min | float64 | 4771 | 99.58 | 2 | 1.0, 2.0 |
+| time_cash_adv_days_per_month_std | float64 | 4771 | 99.58 | 3 | 0.0, 1.6997, 0.5 |
+| time_cash_adv_last_quarter | float64 | 4771 | 99.58 | 4 | 3.0, 2.0, 1.0, 4.0 |
+| std_amount_mcc_7995 | float64 | 4757 | 99.29 | 30 | 0.0, 77.7817, 7.0711, 30053.0089, 212.132, 2913.0355, 141.4214, 25.237, 28.8675… |
+| std_amount_mcc_4215 | float64 | 4757 | 99.29 | 34 | 1963.6355, 23264.5202, 197.9899, 675.287, 111.7229, 8611.8136, 3957.3956, 608.1… |
+| std_amount_mcc_5948 | float64 | 4757 | 99.29 | 33 | 0.0, 8145.8701, 136.1409, 738.2195, 1556.9435, 7525.6529, 1030.2546, 848.6633, … |
+| std_amount_mcc_5994 | float64 | 4757 | 99.29 | 34 | 39.3107, 0.0, 22.8348, 2803.8189, 253.1442, 47.6739, 0.0579, 164.0037, 116.4453… |
 | std_amount_mcc_5993 | float64 | 4754 | 99.23 | 33 | 0.0, 14.1421, 141.4214, 102.0621, 15.2753, 9.7468, 714.1778, 6023.1509, 973.808… |
 | std_amount_mcc_5422 | float64 | 4751 | 99.17 | 40 | 103.7467, 344.4928, 232.9292, 83.8629, 954.5942, 1233.1396, 1740.3656, 88.3883,… |
-| std_amount_mcc_5949 | float64 | 4748 | 99.1 | 42 | 0.0, 8764.5886, 7.0711, 734.6839, 465.2763, 1718.6736, 2784.9613, 507.7027, 236… |
-| std_amount_mcc_5714 | float64 | 4746 | 99.06 | 44 | 0.0, 226.2742, 121.9469, 248.9016, 19.799, 18650.7708, 1207.831, 56.5685, 397.6… |
+| std_amount_mcc_5949 | float64 | 4748 | 99.1 | 42 | 0.0, 8764.5886, 7.0711, 734.6839, 465.2763, 1718.6736, 2784.9613, 507.7027, 110… |
+| std_amount_mcc_5714 | float64 | 4746 | 99.06 | 44 | 0.0, 226.2742, 248.9016, 121.9469, 19.799, 18650.7708, 1207.831, 56.5685, 397.6… |
 | std_amount_mcc_7941 | float64 | 4744 | 99.02 | 39 | 0.0, 707.1068, 282.8427, 300.0, 9727.7068, 20243.7184, 636.3961, 15851.7559, 34… |
-| std_amount_mcc_5811 | float64 | 4740 | 98.94 | 50 | 56.5685, 98.2878, 0.7071, 710.6423, 508.1624, 0.0, 47.697, 1055.7104, 150.1299,… |
-| mean_amount_mcc_5994 | float64 | 4735 | 98.83 | 54 | 71.0, 60.0, 75.0, 142.5, 4490.0, 453.6667, 52.0, 5.2, 199.0, 2.465 |
+| std_amount_mcc_5811 | float64 | 4740 | 98.94 | 50 | 56.5685, 98.2878, 68.0686, 0.7071, 508.1624, 710.6423, 47.697, 1055.7104, 150.1… |
+| mean_amount_mcc_5994 | float64 | 4735 | 98.83 | 55 | 60.0, 75.0, 453.6667, 71.0, 4490.0, 431.8905, 142.5, 4190.6685, 308.9585, 199.0 |
+| time_cat_lastmonth_gap_mean | float64 | 4735 | 98.83 | 31 | 15.0, 5.0, 11.0, 9.0, 2.0, 1.0, 3.0, 8.0, 6.0, 14.0 |
+| time_cat_lastmonth_gap_max | float64 | 4735 | 98.83 | 22 | 15.0, 11.0, 6.0, 9.0, 14.0, 3.0, 2.0, 5.0, 8.0, 1.0 |
+| time_cat_lastmonth_gap_min | float64 | 4735 | 98.83 | 20 | 1.0, 3.0, 2.0, 15.0, 6.0, 8.0, 5.0, 11.0, 9.0, 14.0 |
+| time_cat_lastmonth_gap_std | float64 | 4735 | 98.83 | 12 | 0.0, 2.5, 0.5, 6.5, 6.4931, 3.5, 4.0277, 3.2998, 4.0, 2.1651 |
+| time_cat_lastmonth_gap_p50 | float64 | 4735 | 98.83 | 27 | 15.0, 11.0, 3.0, 5.0, 2.0, 9.0, 1.0, 6.0, 4.0, 5.5 |
+| time_cat_lastmonth_gap_p95 | float64 | 4735 | 98.83 | 34 | 15.0, 11.0, 6.0, 3.0, 5.0, 1.0, 9.0, 2.0, 8.0, 14.0 |
 | std_amount_mcc_5816 | float64 | 4730 | 98.73 | 49 | 0.0, 332.3402, 1736.2131, 106.066, 296.9162, 1202.0815, 3164.1008, 1804.4528, 4… |
-| std_amount_mcc_5462 | float64 | 4729 | 98.71 | 61 | 219.2031, 79.652, 215.4228, 70.7107, 252.7179, 73.5391, 490.7321, 255.9727, 232… |
-| std_amount_mcc_5441 | float64 | 4729 | 98.71 | 60 | 19.799, 125.1579, 448.1946, 282.8427, 395.2727, 149.9066, 422.1251, 415.0717, 2… |
-| mean_amount_mcc_7995 | float64 | 4728 | 98.69 | 47 | 100.0, 200.0, 300.0, 50.0, 350.0, 55.0, 700.0, 850.0, 344.2857, 57.2727 |
-| std_amount_mcc_7991 | float64 | 4727 | 98.66 | 55 | 35.3553, 212.132, 353.5534, 1.4142, 21.2132, 636.3961, 678.405, 1909.1883, 763.… |
+| std_amount_mcc_5441 | float64 | 4730 | 98.73 | 60 | 125.1579, 13.5569, 448.1946, 19.799, 46.5224, 395.2727, 149.9066, 422.1251, 415… |
+| std_amount_mcc_5462 | float64 | 4729 | 98.71 | 61 | 219.2031, 79.652, 215.4228, 70.7107, 252.7179, 73.5391, 490.7321, 232.795, 255.… |
+| mean_amount_mcc_7995 | float64 | 4728 | 98.69 | 50 | 100.0, 200.0, 300.0, 350.0, 55.0, 811.3333, 3006.8462, 850.0, 700.0, 32017.7211 |
+| std_amount_mcc_7991 | float64 | 4728 | 98.69 | 56 | 35.3553, 212.132, 636.3961, 353.5534, 838.6497, 290.7319, 271.2416, 1909.1883, … |
 | std_amount_mcc_5631 | float64 | 4722 | 98.56 | 68 | 141.4214, 289.9138, 44.5, 205.7751, 416.2343, 3285.2181, 1697.7634, 1431.1841, … |
-| std_amount_mcc_6300 | float64 | 4720 | 98.52 | 68 | 0.0, 9647.1664, 14840.4743, 20134.967, 12530.8966, 2038.5676, 20942.2048, 31097… |
-| std_amount_mcc_5611 | float64 | 4720 | 98.52 | 69 | 0.0, 70.7107, 15922.6305, 2262.7417, 1773.1887, 4301.5501, 190.9188, 12232.9473… |
-| std_amount_mcc_5251 | float64 | 4720 | 98.52 | 69 | 0.0, 221.0583, 76.3675, 16268.9592, 1534.4217, 158.3919, 189.6451, 92.0128, 110… |
-| std_amount_mcc_7399 | float64 | 4717 | 98.46 | 68 | 0.0, 99.3202, 7787.6145, 176.7767, 364.5629, 155.1154, 471.9354, 25.5131, 1484.… |
+| std_amount_mcc_5251 | float64 | 4721 | 98.54 | 68 | 0.0, 1534.4217, 76.3675, 221.0583, 16268.9592, 158.3919, 189.6451, 92.0128, 853… |
+| std_amount_mcc_6300 | float64 | 4720 | 98.52 | 68 | 0.0, 9647.1664, 20134.967, 14840.4743, 12530.8966, 2038.5676, 20942.2048, 31097… |
+| std_amount_mcc_5611 | float64 | 4720 | 98.52 | 69 | 0.0, 70.7107, 15922.6305, 637.2753, 1773.1887, 4301.5501, 190.9188, 12232.9473,… |
+| std_amount_mcc_7399 | float64 | 4717 | 98.46 | 69 | 0.0, 99.3202, 176.7767, 7787.6145, 364.5629, 155.1154, 471.9354, 1484.9242, 149… |
 | mean_amount_mcc_9222 | float64 | 4713 | 98.37 | 50 | 3825.0, 299.0, 589.0, 510.0, 290.0, 765.0, 2699.0, 520.0, 2525.0, 420.0 |
-| std_amount_mcc_7299 | float64 | 4710 | 98.31 | 65 | 0.0, 353.5534, 494.9747, 247.4874, 1223.4052, 8414.5707, 1060.6602, 35.3553, 51… |
-| std_amount_mcc_7999 | float64 | 4703 | 98.16 | 77 | 0.0, 318.1981, 565.6854, 777.8175, 84.8528, 173.2051, 1045.6065, 247.4874, 289.… |
-| std_amount_mcc_8011 | float64 | 4703 | 98.16 | 83 | 0.0, 1414.2136, 424.2641, 1767.767, 2851.7616, 19798.9899, 3534.1197, 1484.3629… |
-| std_amount_mcc_4789 | float64 | 4702 | 98.14 | 74 | 0.0, 9.1924, 35.3553, 1695.8599, 62.3538, 14.7196, 162.6346, 340.6234, 21.2132,… |
-| std_amount_mcc_5542 | float64 | 4701 | 98.12 | 85 | 0.0, 70.6793, 372.9055, 599.697, 393.4585, 103.923, 93.4384, 149.6716, 79.6556,… |
-| std_amount_mcc_8043 | float64 | 4695 | 98 | 87 | 0.0, 1414.2136, 1081.8734, 9228.9634, 1959.0393, 359.9174, 529.1503, 13852.2218… |
-| std_amount_mcc_7311 | float64 | 4693 | 97.95 | 86 | 0.0, 70.7107, 479.7547, 226.2742, 3703.5681, 1.4142, 94.388, 64.0278, 3404.3376… |
-| std_amount_mcc_5655 | float64 | 4690 | 97.89 | 96 | 212.132, 0.0, 282.8427, 989.2424, 1443.1696, 351.1415, 1166.0274, 1034.2682, 54… |
-| std_amount_mcc_5511 | float64 | 4690 | 97.89 | 99 | 0.0, 1449.5689, 4231.327, 3877.0665, 3920.9071, 1903.9541, 377.7718, 763.6753, … |
-| mean_amount_mcc_5993 | float64 | 4685 | 97.79 | 94 | 100.0, 1500.0, 300.0, 135.0, 1000.0, 150.0, 11.0, 180.0, 125.0, 705.0 |
-| std_amount_mcc_7538 | float64 | 4683 | 97.75 | 106 | 0.0, 1124.2998, 3111.4113, 309.8849, 9508.274, 1876.3075, 21720.3765, 247.4874,… |
-| std_amount_mcc_5309 | float64 | 4676 | 97.6 | 115 | 21.8415, 3650.2125, 12853.1101, 2641.8711, 1784.4762, 20767.5836, 854.3381, 138… |
-| mean_amount_mcc_5422 | float64 | 4675 | 97.58 | 114 | 460.0, 150.0, 354.44, 465.51, 586.9, 420.0, 427.6, 977.0, 315.8, 5100.0 |
-| std_amount_mcc_5735 | float64 | 4671 | 97.5 | 106 | 0.0, 504.2484, 77.0, 139.3891, 288.1406, 214.9605, 2.3094, 14.1421, 137.9438, 3… |
-| std_amount_mcc_3011 | float64 | 4670 | 97.47 | 109 | 0.0, 8555.9921, 5585.696, 9391.8532, 8977.7503, 25490.1346, 20495.9346, 2828.42… |
-| mean_amount_mcc_5816 | float64 | 4669 | 97.45 | 97 | 21.0, 100.0, 20.0, 269.0, 2699.0, 150.0, 300.0, 110.0, 3399.0, 80.0 |
-| std_amount_mcc_7523 | float64 | 4669 | 97.45 | 91 | 0.0, 35.3553, 70.7107, 71.7713, 106.066, 358.8567, 49.4975, 21.2132, 277.5394, … |
-| std_amount_mcc_6051 | float64 | 4669 | 97.45 | 91 | 0.0, 2594.5405, 0.433, 2561.0418, 196.7232, 3548.3987, 4483.6897, 9.8995, 141.4… |
-| mean_amount_mcc_7941 | float64 | 4667 | 97.41 | 105 | 700.0, 1000.0, 200.0, 1500.0, 1200.0, 4400.0, 5400.0, 120.0, 5000.0, 9900.0 |
-| std_amount_mcc_5944 | float64 | 4660 | 97.27 | 130 | 3818.3766, 33217.7553, 424.2641, 301.2612, 688.722, 897.7425, 664.6804, 1342.51… |
-| std_amount_mcc_7542 | float64 | 4658 | 97.22 | 107 | 0.0, 35.3553, 70.7107, 282.8427, 77.7817, 212.132, 91.9239, 28.2843, 190.9188, … |
-| std_amount_mcc_4784 | float64 | 4651 | 97.08 | 101 | 0.0, 35.3553, 57.735, 14.6385, 42.4264, 707.1068, 176.7767, 353.5534, 70.7107, … |
-| std_amount_mcc_7298 | float64 | 4650 | 97.06 | 130 | 0.0, 601.0408, 1060.6602, 353.5534, 417.193, 2115.6559, 2919.3173, 77.7817, 312… |
-| mean_amount_mcc_5949 | float64 | 4646 | 96.97 | 137 | 250.0, 240.0, 280.0, 140.0, 110.0, 58.0, 6792.5, 38.0, 64166.6667, 3360.0 |
-| std_amount_mcc_7922 | float64 | 4645 | 96.95 | 130 | 0.0, 1414.2136, 848.5281, 707.1068, 4242.6407, 148.4924, 1838.4776, 70.7107, 28… |
-| mean_amount_mcc_5811 | float64 | 4643 | 96.91 | 140 | 545.0, 739.0, 300.0, 5900.0, 795.0, 690.0, 171.0, 535.0, 503.3333, 1010.0 |
-| std_amount_mcc_5947 | float64 | 4643 | 96.91 | 143 | 70.7107, 0.0, 1414.2136, 35.3553, 438.4062, 1137.7927, 933.0773, 275.3227, 1407… |
-| std_amount_mcc_8021 | float64 | 4643 | 96.91 | 139 | 0.0, 353.5534, 183.8478, 1909.1883, 2474.8737, 2107.5262, 8995.9318, 35.3553, 8… |
-| std_amount_mcc_9399 | float64 | 4642 | 96.89 | 133 | 0.0, 178.5445, 353.5534, 197.9899, 141.5651, 5852.6163, 1521.3684, 2252.7314, 8… |
-| std_amount_mcc_5943 | float64 | 4641 | 96.87 | 149 | 67.1751, 62.2254, 700.0357, 98.0757, 80.7279, 802.5662, 223.4457, 159.4532, 30.… |
 
-(288 more rows not shown)
+(636 more rows not shown)
 
 </details>
 
@@ -380,14 +433,14 @@ Accepted on purpose:
 ### Numeric features
 
 <details>
-<summary>Show the table (343 rows)</summary>
+<summary>Show the table (691 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | n_transactions | 4791 | 98.7769 | 77.4164 | 1 | 512 |
-| amount_sum | 4791 | 562293 | 1.4249e+06 | 9.99 | 6.45674e+07 |
-| amount_mean | 4791 | 10878 | 28020.6 | 5.495 | 1.13276e+06 |
-| amount_std | 4763 | 18372 | 73905.9 | 0 | 2.88737e+06 |
+| amount_sum | 4791 | 528616 | 614877 | 0 | 8.7996e+06 |
+| amount_mean | 4790 | 10715.3 | 21522.8 | 5.495 | 718170 |
+| amount_std | 4762 | 16161.6 | 20409.9 | 0 | 309214 |
 | count_trx_POS | 4791 | 84.0044 | 71.4311 | 1 | 457 |
 | count_trx_DEPOSIT | 4791 | 4.33145 | 6.80101 | 0 | 75 |
 | count_trx_WD_ATM_ROS | 4791 | 3.76915 | 7.75664 | 0 | 194 |
@@ -398,38 +451,37 @@ Accepted on purpose:
 | count_trx_BACK_TRX | 4791 | 0.546233 | 1.2343 | 0 | 17 |
 | count_trx_CAT | 4791 | 0.245669 | 1.36385 | 0 | 32 |
 | count_trx_CASH_ADV | 4791 | 0.00647047 | 0.14932 | 0 | 8 |
-| mean_amount_trx_POS | 4791 | 5450.68 | 34011.1 | 0.99 | 1.73466e+06 |
-| mean_amount_trx_DEPOSIT | 2782 | 26669.9 | 24785.1 | 10 | 295000 |
-| mean_amount_trx_WD_ATM_ROS | 2641 | 29551.4 | 37720.5 | 100 | 200000 |
-| mean_amount_trx_WD_ATM_PARTNER | 1695 | 29072.2 | 42630.1 | 100 | 400000 |
+| mean_amount_trx_POS | 4790 | 5068.78 | 21374.1 | 2.78 | 1e+06 |
+| mean_amount_trx_DEPOSIT | 2782 | 26676.4 | 24788.2 | 10 | 295000 |
+| mean_amount_trx_WD_ATM_ROS | 2641 | 30049.6 | 38111.8 | 100 | 236100 |
+| mean_amount_trx_WD_ATM_PARTNER | 1695 | 29234.8 | 42799 | 100 | 400000 |
 | mean_amount_trx_C2C_IN | 1558 | 14679.1 | 24368.7 | 0.5 | 437009 |
-| mean_amount_trx_WD_ATM_OTHER | 1159 | 9246.37 | 66305.3 | 10 | 1.96408e+06 |
+| mean_amount_trx_WD_ATM_OTHER | 1138 | 7084.69 | 12875.2 | 100 | 200000 |
 | mean_amount_trx_C2C_OUT | 1161 | 15370.8 | 22153.5 | 1.94 | 300000 |
-| mean_amount_trx_BACK_TRX | 1400 | 8911.01 | 60332.8 | 0.93 | 2.066e+06 |
+| mean_amount_trx_BACK_TRX | 1397 | 7649.49 | 24797.9 | 0.93 | 430000 |
 | mean_amount_trx_CAT | 388 | 14715.9 | 52955.4 | 0.04 | 511625 |
-| mean_amount_trx_CASH_ADV | 20 | 21597.6 | 35870.2 | 25.95 | 150000 |
-| std_amount_trx_POS | 4635 | 9180.42 | 86489.6 | 0 | 3.60814e+06 |
-| std_amount_trx_DEPOSIT | 2383 | 18604.2 | 16550 | 0 | 185969 |
-| std_amount_trx_WD_ATM_ROS | 1973 | 23930.3 | 25975.6 | 0 | 137532 |
-| std_amount_trx_WD_ATM_PARTNER | 1264 | 23671.1 | 32073.3 | 0 | 230940 |
+| mean_amount_trx_CASH_ADV | 18 | 23880.5 | 37140.7 | 170.766 | 150000 |
+| std_amount_trx_POS | 4633 | 6512.9 | 10666.2 | 0 | 287585 |
+| std_amount_trx_DEPOSIT | 2383 | 18599.8 | 16548.9 | 0 | 185969 |
+| std_amount_trx_WD_ATM_ROS | 1973 | 24036.6 | 25946 | 0 | 137532 |
+| std_amount_trx_WD_ATM_PARTNER | 1264 | 23717.5 | 32095.3 | 0 | 230940 |
 | std_amount_trx_C2C_IN | 960 | 12090.7 | 15746.2 | 0 | 169706 |
-| std_amount_trx_WD_ATM_OTHER | 823 | 7231.53 | 46682.8 | 0 | 1.24406e+06 |
+| std_amount_trx_WD_ATM_OTHER | 806 | 5144.13 | 9237.89 | 0 | 94873.6 |
 | std_amount_trx_C2C_OUT | 791 | 12719.5 | 19243.6 | 0 | 220046 |
-| std_amount_trx_BACK_TRX | 561 | 4459.09 | 9671.36 | 0 | 95475.5 |
+| std_amount_trx_BACK_TRX | 561 | 4636.07 | 9679.24 | 0 | 95475.5 |
 | std_amount_trx_CAT | 196 | 20091.3 | 75134.7 | 0 | 636396 |
-| std_amount_trx_CASH_ADV | 2 | 14574.7 | 11335.6 | 6559.22 | 22590.2 |
 | count_currency_810 | 4791 | 96.2488 | 76.7197 | 0 | 512 |
 | count_currency_978 | 4791 | 1.09476 | 5.35696 | 0 | 162 |
 | count_currency_840 | 4791 | 0.391776 | 4.34224 | 0 | 202 |
 | count_currency_other | 4791 | 1.04154 | 5.05078 | 0 | 107 |
 | mean_amount_currency_810 | 4755 | 10600.7 | 21459.2 | 5.495 | 718170 |
-| mean_amount_currency_978 | 582 | 184.442 | 354.621 | 0.93 | 3680 |
-| mean_amount_currency_840 | 320 | 197.532 | 452.661 | 0.565 | 4000 |
-| mean_amount_currency_other | 540 | 103251 | 1.55775e+06 | 0.25 | 3.5835e+07 |
+| mean_amount_currency_978 | 582 | 11919.6 | 22559.7 | 63.7852 | 240381 |
+| mean_amount_currency_840 | 320 | 11649.4 | 26496.6 | 33.5122 | 236100 |
+| mean_amount_currency_other | 419 | 6095.58 | 13823.9 | 17.9513 | 176641 |
 | std_amount_currency_810 | 4715 | 16072.5 | 20377.9 | 0 | 309214 |
-| std_amount_currency_978 | 436 | 133.035 | 224.893 | 0 | 2235.73 |
-| std_amount_currency_840 | 172 | 145.79 | 299.468 | 0 | 2865.84 |
-| std_amount_currency_other | 413 | 46970.2 | 332469 | 0 | 4.82868e+06 |
+| std_amount_currency_978 | 436 | 8685.3 | 14539.7 | 0 | 140669 |
+| std_amount_currency_840 | 172 | 8692.75 | 17881.7 | 0 | 172936 |
+| std_amount_currency_other | 318 | 4344.64 | 8205.32 | 0 | 72545.9 |
 | count_mcc_5411 | 4791 | 24.7115 | 26.9588 | 0 | 264 |
 | count_mcc_6011 | 4791 | 10.8668 | 12.2085 | 0 | 194 |
 | count_mcc_5814 | 4791 | 8.23231 | 15.3954 | 0 | 158 |
@@ -444,8 +496,9 @@ Accepted on purpose:
 | count_mcc_4121 | 4791 | 1.21645 | 7.79249 | 0 | 213 |
 | count_mcc_5211 | 4791 | 1.28887 | 4.11698 | 0 | 67 |
 | count_mcc_4829 | 4791 | 1.28658 | 4.73387 | 0 | 151 |
+| count_mcc_5691 | 4791 | 1.04112 | 1.91003 | 0 | 25 |
 
-(283 more rows not shown)
+(631 more rows not shown)
 
 </details>
 

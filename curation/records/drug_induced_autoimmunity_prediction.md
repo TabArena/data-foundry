@@ -92,6 +92,8 @@ CC (2026-10-26, Andrej): The SMILES is important for performance, so it stays in
 - The 2026-10-14 rule for every SMILES dataset (drop the string) is overridden here only; the `dataset_identifier_column` warning (one SMILES per row) is accepted in the definition, as for `phiusil_phishing`: the structure is the input of the task, not a row id.
 - Still to do: rebuild (the build is stale).
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `dilist_drug_induced_liver_injury` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @article{huang2025interdia,

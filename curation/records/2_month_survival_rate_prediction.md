@@ -76,6 +76,8 @@ CC (2026-10-26, Lennart): the declared metric, ROC AUC (the source's ROC area of
 
 CC (2026-10-26, Lennart): verdict ship.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `gossis_icu_hospital_mortality` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @article{knaus1995support,

@@ -41,6 +41,8 @@ We use the port data and ignore the math data, as it is more or less a different
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — RMSE of G3 in regression setup C of Cortez & Silva 2008.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `hsls09_secondary_student_achievement` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Cortez, P., & Silva, A. M. G. (2008). Using data mining to predict secondary school student performance.

@@ -9,6 +9,7 @@ data_foundry_status:
 suggestion: 'Yes'
 decision_markers:
 - Data Quality Issue
+- Selection Bias
 tags:
 - Tiny Data
 collections:
@@ -49,6 +50,8 @@ TODO: remove height / weight, make regression task, remove SMOTE samples
 CC (2026-10-14, Lennart): Drop the duplicates: 488 rows.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — The source is a data descriptor for a 7-class obesity-level task with no defined evaluation metric, and we changed the task to BMI regression (weight and height dropped), so no source metric applies.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nhanes_bmi_from_habits` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference
 

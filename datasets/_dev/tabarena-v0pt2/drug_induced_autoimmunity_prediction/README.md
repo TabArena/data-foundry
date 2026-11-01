@@ -151,7 +151,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
 | reason | Huang, Liu & Huang 2024 (InterDIA) report AUC, accuracy, sensitivity, specificity, F1 and MCC side by side; no unique metric. roc_auc is the binary fallback. |
 
@@ -499,11 +499,11 @@ Accepted on purpose:
 |---|---|---|---|---|
 | Label | 1 | 0 | 447 | 76.15 |
 | Label | 2 | 1 | 140 | 23.85 |
-| SMILES | 1 | CSc1ccc2Sc3ccccc3N(CC\[C@@H\]4CCCCN4C)c2c1 | 1 | 0.17 |
-| SMILES | 2 | CCN\[C@H\]1CN(CCCOC)S(=O)(=O)c2sc(cc12)S(=O)(=O)N | 1 | 0.17 |
-| SMILES | 3 | C\[C@H\](CN1CC(=O)NC(=O)C1)N2CC(=O)NC(=O)C2 | 1 | 0.17 |
-| SMILES | 4 | NC(=O)CS(=O)C(c1ccccc1)c2ccccc2 | 1 | 0.17 |
-| SMILES | 5 | CCC(=O)O\[C@@\]1(\[C@@H\](C)C\[C@H\]2\[C@@H\]3CCC4=CC(=O)C=C\[C@\]4(C)\[C@@... | 1 | 0.17 |
+| SMILES | 1 | CCOc1ccccc1O\[C@H\](\[C@@H\]2CNCCO2)c3ccccc3 | 1 | 0.17 |
+| SMILES | 2 | CSc1ccc2Sc3ccccc3N(CC\[C@@H\]4CCCCN4C)c2c1 | 1 | 0.17 |
+| SMILES | 3 | CCN\[C@H\]1CN(CCCOC)S(=O)(=O)c2sc(cc12)S(=O)(=O)N | 1 | 0.17 |
+| SMILES | 4 | C\[C@H\](CN1CC(=O)NC(=O)C1)N2CC(=O)NC(=O)C2 | 1 | 0.17 |
+| SMILES | 5 | NC(=O)CS(=O)C(c1ccccc1)c2ccccc2 | 1 | 0.17 |
 | scaffold | 1 | c1ccccc1 | 41 | 6.98 |
 | scaffold | 2 | O=C1C=CC2C(=C1)CCC1C3CCCC3CCC21 | 12 | 2.04 |
 | scaffold | 3 | O=C1C=CC2C(=C1)CCC1C2CCC2C1CC1OCOC12 | 6 | 1.02 |

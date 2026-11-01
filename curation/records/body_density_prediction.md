@@ -50,6 +50,8 @@ Also, I think that the use from this is limited unless we actually embed the den
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — the standard error of estimate of the prediction equation in Penrose, Nelson & Fisher 1985 and Johnson 1996.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nhanes_dxa_body_fat` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @article{penrose1985generalized,

@@ -13,6 +13,7 @@ decision_markers:
 - Trivial
 - No Good Target (yet)
 - Not Representative
+- Selection Bias
 tags:
 - Tiny Data
 collections:
@@ -47,6 +48,8 @@ Also, there is selection bias as only drinking people are in the sample.
 **Assessment (AI, 2026-10-21):** metric now `Metric.from_context("rmsle", target_transform="log1p")` instead of the fallback rmse on the log1p target: drinks per day is a right-skewed count whose error matters relative to the amount; the target still ships as log1p, and RMSLE is computed after the inverse, on the original scale (MET-3). Needs a rebuild to reach the container.
 
 CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nhanes_alcohol_drinks_from_blood_tests` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference
 

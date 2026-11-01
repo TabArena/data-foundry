@@ -137,7 +137,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `log_loss` (standard; takes proba; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | mean of -log p(true class) |
 | reason | UCI page defines no metric; Protos reported classification accuracy on the 24 original diagnoses, a different target from our 3 grouped types, so no metric is defined for the shipped task |
 

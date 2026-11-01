@@ -4,8 +4,7 @@ name: Melbourne Housing Market
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 2
 decision_markers:
@@ -56,3 +55,5 @@ CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the o
 CC (2026-10-22, Lennart): verdict ship. Issue 9: use 2017.
 
 **Assessment (AI, 2026-10-22):** `year` is 2017, the Kaggle upload's first version; PROV-9 now says a Kaggle upload that grew over its versions is one publication and takes its first version's year (the growing-source clause covers registers and archives we snapshot). The BibTeX keeps the version we use (2018). REVIEW.md removed (nothing left open). Not built yet.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nsw_property_sales` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

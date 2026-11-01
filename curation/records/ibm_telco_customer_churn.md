@@ -22,3 +22,5 @@ type_adapter_id: curation-record-v1
 Sample data set, not real
 From https://community.ibm.com/community/user/blogs/steven-macko/2019/07/11/telco-customer-churn-1113
 https://www.kaggle.com/datasets/yeanzc/telco-customer-churn-ibm-dataset
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `orange_belgium_churn_uplift` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

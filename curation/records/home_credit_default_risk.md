@@ -42,6 +42,8 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — Area Under Receiver Operating Characteristic Curve (Kaggle API evaluationMetric) (https://www.kaggle.com/competitions/home-credit-default-risk/overview/evaluation).
 
+**Assessment (AI, 2026-10-26):** an open doubt under CLEAN-14, from the cross-dataset item of 2026-10-21: the 10 `CC_NAME_CONTRACT_STATUS_*` min/max aggregates were typed categorical and then reverted to numeric as aggregates over the card history, but the max of a one-hot status reads as "ever had this status", a yes/no flag by meaning. Typing them categorical is the curator's call.
+
 ## Reference
 
 Anna Montoya, inversion, KirillOdintsov, and Martin Kotek. Home Credit Default Risk. https://kaggle.com/competitions/home-credit-default-risk, 2018. Kaggle.

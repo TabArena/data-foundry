@@ -119,9 +119,9 @@ class InfraredThermographyTemperature(AbstractCuratedDataset):
         fit="direct",
         fit_reason=(
             "The station has the camera's readings, the room sensors and the intake answers when the image is "
-            "taken, and the oral reading is the reference it is calibrated to. Both papers call the conditions a best "
-            "case (15 minutes of rest, key points partly placed by hand, blurred images excluded), and the task "
-            "covers one clinic's cameras and rooms."
+            "taken, and the oral reading is its reference. Both papers call the conditions a best case (15 minutes of "
+            "rest, key points partly placed by hand, blurred images excluded), and the task covers one university "
+            "clinic's cameras, rooms and people (87% aged 18 to 25)."
         ),
     )
 

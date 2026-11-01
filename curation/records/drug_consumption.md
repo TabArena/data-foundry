@@ -4,7 +4,7 @@ name: drug_consumption
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> 2nd Tier
-priority: 3
+priority: 2
 decision_markers:
 - No Good Target / Scientific Discovery
 tags:
@@ -47,6 +47,8 @@ UCI 'Drug Consumption (quantified)' dataset: ~1885 respondents with Big-Five per
 CC: ""Predict using demographic and psychological data whether a person uses drugs. 18 Different targets available. Unclear which one used in Talent. Scientific discovery task.
 
 Categorical data made to be numeric by default""
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nsduh_past_year_drug_use` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference
 

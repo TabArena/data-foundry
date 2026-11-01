@@ -3,9 +3,10 @@
 Tooling-independent (pandas, NumPy and scikit-learn); the probes of this package share these encoders, so a column
 enters every probe the same way.
 
-* ``features``: the numeric model inputs of a frame. Categoricals enter as their codes, datetimes and periods as
-  seconds, and a missing value as the column's median (0 for a column without values); string columns are left out
-  and returned by name.
+* ``features``: the numeric model inputs of a frame. Categoricals enter as their codes, a missing value as one more
+  code after the levels (a median code would depend on the order of the levels); datetimes and periods as seconds;
+  a missing number as the column's median (0 for a column without values). String columns are left out and returned
+  by name.
 * ``encode_text``: each text column as ``TEXT_COMPONENTS`` TF-IDF + SVD components fitted on the train rows only:
   words for prose, character 2- to 5-grams for strings that are mostly one token (a SMILES, a code, a URL), where
   words would only match whole repeated values.
@@ -31,7 +32,7 @@ def features(df: pd.DataFrame, drop: list[str]) -> tuple[pd.DataFrame, list[str]
     X = X.drop(columns=text)
     for col in X.columns:
         if isinstance(X[col].dtype, pd.CategoricalDtype):
-            X[col] = X[col].cat.codes.replace(-1, np.nan)
+            X[col] = X[col].cat.codes.replace(-1, len(X[col].cat.categories))
         elif pd.api.types.is_datetime64_any_dtype(X[col]):
             X[col] = X[col].astype("int64") // 10**9
         elif isinstance(X[col].dtype, pd.PeriodDtype):

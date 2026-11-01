@@ -42,6 +42,8 @@ The 2017 sibling capture of [[intrusion_detection]] (CSE-CIC-IDS2018), generated
 
 Three versions exist and they disagree. The original CIC CSVs come from CICFlowMeter, whose own authors list 16 defects they later fixed — incorrect flow creation, empty flow lists for attack pcaps, PSH-flag and Down/Up-ratio bugs, ICMP mishandling, negative IAT values (Shafi et al., Computers & Security 148:104160, 2025, Sec. 4.1.1, p. 8). The BCCC re-release re-extracts ~300 features from the raw pcaps with NTLFlowLyzer, but that paper builds a profiling system, "not a detection system" (Sec. 6.1, p. 12), so it ships no task; its Table 2 also shows how thin the attack classes are (SQL injection 21 -> 24 flows, Heartbleed 11 -> 12). The independent audit (Engelen et al., WTMC 2021; Liu et al., CNS 2022) publishes separately corrected labels.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `luflow_intrusion_detection` (TBD -> 2nd Tier, priority 2), `ugr16_isp_netflow_intrusion` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Sharafaldin, I., Habibi Lashkari, A., Ghorbani, A. A., "Toward Generating a New Intrusion Detection Dataset and Intrusion Traffic Characterization", ICISSP, 2018.

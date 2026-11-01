@@ -32,6 +32,8 @@ CC: "Good dataset with many features, can checkout leaderboard and code for some
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC of the WiDS Datathon 2021 evaluation page.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `gossis_icu_hospital_mortality` (TBD -> Yes, priority 2); a related task: `gossis_icu_hospital_mortality` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Karen Matthys, Meredith Lee, NehaGoel, Sharada Kalanidhi, Valerie, and Vani M. WiDS Datathon 2021. https://kaggle.com/competitions/widsdatathon2021, 2021. Kaggle.

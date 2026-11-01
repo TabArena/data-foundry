@@ -3,12 +3,10 @@ unique_name: digicow_farmer_training_adoption_challenge
 name: DigiCow Farmer Training Adoption Challenge
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
-suggestion: 'Yes'
-priority: 1
+suggestion: 'No'
 decision_markers:
+- Data Quality Issue
+- Too Small
 - Needs extensive data wrangling
 tags:
 - Non-IID (Temporal)
@@ -23,7 +21,6 @@ problem_type: Binary Classification
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://zindi.africa/competitions/digicow-farmer-training-adoption-challenge/data
-v2_path: datasets/_dev/tabarena-v0pt2/digicow_farmer_training_adoption_challenge/dataset.py
 source_row: 731
 type_adapter_id: curation-record-v1
 ---
@@ -56,3 +53,7 @@ CC (2026-10-21, Lennart): the declared metric documents the original use case's 
 CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: belong_to_cooperative.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: stand_in log_loss — for Zindi's rubric of 0.75 log loss + 0.25 ROC AUC over three targets; two targets are dropped, and log loss carries 0.65 of the 7-day target's 0.80 weight.
+
+CC (2026-10-26, Lennart): don't ship (issue 1 as recommended): `No` + `Data Quality Issue` and `Too Small`; revisit if DigiCow documents who was followed up and when.
+
+**Assessment (AI, 2026-10-26):** retired: the adoption label tracks who was followed up ("no" mixes non-adoption with no follow-up, and the recording process cannot be recovered, as ghanas_indigenous_intel), and the newest test windows hold 9 and 5 adopters (TP-9). Revisit if DigiCow documents who was followed up and when. The folder left the working copy (in git history before this change).

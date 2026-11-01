@@ -26,3 +26,5 @@ Might be a scientific discovery task
 (mis-labeled as duplicate by TabArena-v0.1 (?), I remember curating it before but cannot find it anymore...)
 
 "Your objective should be to achieve graphical displays which will be meaningful to the viewers and highlight relevant aspects of the data."
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `epa_fuel_economy_vehicles` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

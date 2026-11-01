@@ -4,8 +4,7 @@ name: mobile_churn
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 1
 decision_markers:
@@ -54,6 +53,10 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 CC (2026-10-22, Lennart): issue 2: confirm the drop of the SIM cards never activated, in every month ("looks good to me").
 
 **Assessment (AI, 2026-10-22):** settled as implemented; REVIEW.md removed (nothing left open). Not built yet.
+
+CC (2026-10-26, Lennart): verdict ship.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `orange_belgium_churn_uplift` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference
 

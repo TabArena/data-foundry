@@ -11,10 +11,12 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Grouping,
     Metric,
     TaskSummary,
     drop_columns,
     rdkit_descriptors,
+    scaffold_groups,
 )
 
 PACKAGE_FILE = "vt_data.mat"
@@ -78,21 +80,22 @@ class QsarOralToxicity(AbstractCuratedDataset):
             "bits and 208 descriptors computed from it."
         ),
         split=(
-            "Random chemicals; salt forms and hydrates of one compound share the structure and are kept once, so a "
-            "test chemical never has its parent structure in training (checked on the structure keys the source "
-            "gives)."
+            "Whole chemical series are held out: chemicals that share a ring skeleton stay on one side, so a test "
+            "chemical belongs to a family the model has not seen. Chemicals without a ring and those whose skeleton "
+            "is the bare benzene ring are held out one by one. Salt forms and hydrates of one compound are kept once."
         ),
         changes=(
             "We add the project's evaluation set to the calibration set UCI holds, compute descriptors from the "
             "structure in place of its text, and drop exact copies, the fingerprints that occur with both classes "
-            "and second rows of a parent structure; the source fixed one training, test and evaluation set."
+            "and second rows of a parent structure, and split by chemical series; the source fixed one training, test "
+            "and evaluation set."
         ),
         fit="approximate",
         fit_reason=(
-            "The screening is simulated: the test rows are random tested chemicals, closer to the training chemicals "
-            "than the untested ones a screener faces (24.5% against 11.0% have a close analog, Tanimoto 0.7 or "
-            "more). The score follows that distance (random forest ROC AUC 0.715 for distant chemicals, 0.945 for "
-            "close ones)."
+            "The screening is simulated: the test rows are tested chemicals, held out by series but still closer to "
+            "the training chemicals than the untested ones a screener faces (16.3% against 11.0% have a close analog,"
+            " Tanimoto 0.7 or more; 24.7% under a random split). The score follows that distance (random forest ROC "
+            "AUC 0.715 for distant chemicals, 0.945 for close ones, under the random split)."
         ),
     )
 
@@ -159,10 +162,9 @@ class QsarOralToxicity(AbstractCuratedDataset):
         - 122 of the kept QSAR-ready structures still carry stereo markers, which the fingerprint ignores (two stereo forms can share a vector).
         - Duplicates dropped: the salt forms, hydrates and stereoisomers of one compound share the QSAR-ready parent structure and so the bit vector (594 repeated vectors over 1,314 rows; a few are hash collisions of different chemicals rather than one parent). We drop the 732 exact copies and then every row of the 20 bit vectors that occur with both classes (52 rows), as for wine_quality and jm1; nine parents still keep two rows with different vectors (tautomer or salt entries, all "No"), of which we drop the later row, so a test chemical never has its parent structure in train. 11,105 chemicals remain (931 very toxic, 8.4%; decision tables). The source kept the copies: 237 evaluation rows repeat a calibration vector (236 repeat a calibration InChIKey).
         - Note: the class depends on the counter-ion in some cases (sodium and potassium cyanide are very toxic, silver cyanide is not), which the parent structure does not show.
-        - IID split: stratified 3-fold cross-validation with 3 repeats over the chemicals. All three source sets are random draws: the project drew its evaluation set "without supervised sampling of the chemicals based on structures" (Mansouri et al. 2021), and the package stores the authors' stratified random training and test sets in order (decision table), which we do not keep. The split rests on the use case, a new chemical each time with no entity that recurs, and on these structure-blind source protocols.
-        - Note: the score depends on how close a test chemical is to the training chemicals, the applicability domain of any QSAR model (random forest ROC AUC 0.715 below a Tanimoto similarity of 0.5 to the nearest training chemical, 9.6% of test rows, and 0.945 above 0.7). Chemotypes carry part of that: held out by their Murcko scaffold (5,506 scaffolds, 2,577 acyclic chemicals each its own group) a random forest falls from 0.900 to 0.852 over 2 x 3 folds, with the model ranking unchanged.
-        - Fit: approximate (Lennart, 2026-10-21: "a more simulated use case than a direct real case"). The random test chemicals are members of the tested reference set; the untested chemicals of the project's 48,137-chemical prediction set have less than half the share of close analogs (11.0% against 24.5% at Tanimoto 0.7 or more; median nearest similarity 0.486 against 0.576).
-        - Grouped variant: a scaffold-grouped split stays a listed candidate (SPLIT-31; Lennart, 2026-10-21), not built: the scaffolds are our reconstruction from the structures, not a field of the source.
+        - Split (Lennart, CC 2026-10-26, SPLIT-31 as amended; reopened from IID): grouped on the Bemis-Murcko scaffold of the QSAR-ready SMILES (`scaffold_groups`), 3 folds with 3 repeats. Chemicals without a ring (2,577, 23%) and those whose skeleton is the bare benzene ring (1,969, 18%: more than a tenth of the set and no series) are groups of their own. Since the extension of 2026-10-21 every row has its own QSAR-ready structure (InChIKey reproduced for 99.8%), so the scaffold is exact; the earlier reason for IID, structures linked by row order, no longer holds. All three source sets are random draws ("without supervised sampling of the chemicals based on structures", Mansouri et al. 2021), and the package's fixed training and test sets are not kept.
+        - Note: the score depends on how close a test chemical is to the training chemicals, the applicability domain of any QSAR model (random forest ROC AUC 0.715 below a Tanimoto similarity of 0.5 to the nearest training chemical, 9.6% of test rows, and 0.945 above 0.7). Chemotypes carry part of that: held out by their Murcko scaffold (2,577 acyclic chemicals each its own group, benzenes grouped) a random forest fell from 0.900 to 0.852 over 2 x 3 folds, with the model ranking unchanged (2026-10-21).
+        - Fit: approximate (Lennart, 2026-10-21: "a more simulated use case than a direct real case"). The test chemicals are members of the tested reference set; the untested chemicals of the project's 48,137-chemical prediction set have fewer close analogs: 11.0% at Tanimoto 0.7 or more (Morgan radius 2, 2,048 bits; median nearest similarity 0.486), against 16.3% for the test chemicals under the scaffold groups (median 0.519) and 24.7% under a random split (0.573).
         - Scope: the features are a vectorised molecular graph, as in qsar_tid_11. On repeat 0 of the shipped splits a random forest on the bits (ROC AUC 0.901) and LightGBM (0.885) match a similarity-weighted nearest-neighbour model of the paper's N3 kind (Tanimoto, weight sim^10: 0.893).
         - Licence: the package's readme states it is freeware to be used with a reference to the paper; the UCI copy of the two calibration sets is CC BY 4.0.
     """
@@ -177,6 +179,19 @@ class QsarOralToxicity(AbstractCuratedDataset):
             "fallback."
         ),
     )
+
+    grouping = Grouping(
+        on="scaffold",
+        labels="per_sample",
+        prediction_unit="row",
+        context="none",
+        definition="""
+            One group is a chemical series: the chemicals that share one Bemis-Murcko scaffold (ring systems and the chains linking them; Bemis and Murcko 1996), computed with RDKit from the QSAR-ready SMILES. A chemical without a ring (23%), or with the bare benzene ring (18%, more than a tenth of the set), is a group of its own (SPLIT-31). The screen meets untested chemicals, many of series without animal data, so whole series are held out. Each row is one prediction, made from the chemical's structure alone.
+        """,
+    )
+    splits_comment = """
+        Grouped splits on the Bemis-Murcko scaffold: all chemicals of one series stay on one side, so a model predicts chemicals of a series it has not seen; chemicals without a ring and those with the bare benzene ring are held out one by one. Chemicals with similar but not identical scaffolds can be on both sides.
+    """
 
     accepted_check_warnings = {
         "dataset_pure_feature_value": "rdkit_fr_Ar_COO = 1 (one aromatic carboxylic acid group) marks 212 chemicals, "
@@ -209,6 +224,8 @@ class QsarOralToxicity(AbstractCuratedDataset):
         df["smiles"] = df["smiles"].replace(SMILES_REPAIRS)
         # The structure as numbers: RDKit's 2D descriptors in place of the SMILES (data_foundry.v2.chemistry).
         df = pd.concat([df, rdkit_descriptors(df["smiles"])], axis=1)
+        # The split groups: the chemical series (Bemis-Murcko scaffold); no ring or the bare benzene ring alone
+        df = df.assign(scaffold=scaffold_groups(df["smiles"]))
         return drop_columns(df, ["set", "id", "casrn", "name", "smiles", "inchikey", "class"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
@@ -279,7 +296,7 @@ class QsarOralToxicity(AbstractCuratedDataset):
                 "The package's three sets, of which UCI holds two",
                 "The training and test sets of the package's ECFP_1024_02 block equal the UCI file row by row; the "
                 "validation set is the project's evaluation set, which UCI lacks. Both were drawn at random, so the "
-                "recommended IID cross-validation runs over all three.",
+                "scaffold-grouped cross-validation runs over all three.",
                 sets,
             ),
             Decision(

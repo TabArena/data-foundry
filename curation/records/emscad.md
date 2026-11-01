@@ -15,6 +15,7 @@ tags:
 collections:
 - TexTabBench
 - TabSTAR
+- MulTaBench
 original_source: Other
 year: '2017'
 domain: business & marketing
@@ -45,6 +46,8 @@ Also contains non-English text (at least German, didn't check yet for more); tit
 CC (2026-10-14, Lennart): No ForcedIIDFromTemporal tag: the grouped split already marks the task as Non-IID. The dates are lost, though they could have been used for modelling too.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Vidros et al. 2017 report accuracy with precision, recall and F-measure on a balanced 450/450 sample, while the shipped release is 4.6% fraudulent and no threshold or costs are fixed (MET-2, MET-6).
+
+**Assessment (AI, 2026-11-01):** the benchmark MulTaBench (https://arxiv.org/abs/2605.10616) carries this record's data as "Fake Job Postings": Text-tabular; EMSCAD (Vidros et al. 2017) via OpenML 46655. Paper notes no significant TAR gain here. Tagged MulTaBench on 2026-11-01.
 
 ## Reference
 

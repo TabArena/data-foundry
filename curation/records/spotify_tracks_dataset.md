@@ -21,6 +21,7 @@ collections:
 - New (BeyondArena)
 - TexTabBench
 - CARTE/TARTE
+- MulTaBench
 original_source: Kaggle
 year: '2022'
 domain: technology & internet
@@ -47,6 +48,8 @@ This also explains why the track IDs are not unique, as one track can appear in 
 I conclude that we should not use track ID but instead need to look for our own alternative label. Hence, let us keep this as TBD for now and revisit it later. 
 
 Time_signature column seems wrong (https://www.kaggle.com/datasets/maharshipandya/-spotify-tracks-dataset/discussion/374642#3036205)
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `fma_track_genre` (TBD -> 2nd Tier, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference
 

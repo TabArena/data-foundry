@@ -3,11 +3,10 @@ unique_name: corporate_credit_rating_cat_data_set_ratings_raitings
 name: CORPORATE_CREDIT_RATING_CAT Data Set Ratings Raitings
 checked_by:
 - Lennart
-data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
-suggestion: 'Yes'
-priority: 1
+suggestion: 'No'
+decision_markers:
+- Missing source information
+- Not Representative
 tags:
 - Tiny Data
 collections:
@@ -24,7 +23,6 @@ source_links:
 - https://medium.com/@polanitzer/multiclass-classification-for-corporate-credit-ratings-using-credit-risk-analytics-book-by-harald-98d5940c745a
 - https://github.com/Polanitz/Multiclass-Classification-for-Corporate-Credit-Ratings/blob/main/ratings.csv
 - http://www.creditriskanalytics.net/datasets-private2.html
-v2_path: datasets/_dev/tabarena-v0pt2/corporate_credit_rating_cat_data_set_ratings_raitings/dataset.py
 source_row: 786
 type_adapter_id: curation-record-v1
 ---
@@ -52,6 +50,10 @@ Unclear if a regression or classification task, likely classification (even if i
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: stand_in mae — the source (R Companion, Ch08_LowDefaultPortfolios.R lines 62-80) tabulates the absolute notch difference |rating - predicted| per error band, not one scalar; MAE is its mean. Scored metric changes from rmse; needs a rebuild to reach the container.
 
 CC (2026-10-21, Lennart): MAE accepted as the stand-in for the book's table of absolute notch differences (over the rmse fallback).
+
+CC (2026-10-26, Lennart): don't ship: "I feel the data and its source is too constructed and too risky to add. There is likely a better real use case somewhere behind this data and this might not be here. ... I am rather on the side to say no about it very clearly going forward."
+
+**Assessment (AI, 2026-10-26):** asked whether any good reason to keep it remains: no. For it stood only that the rows are the book's own (not the generated OpenML 46372) and that the ratios move together as real accounts do. Against it: 197 institutions with six ratios; no agency, period, country, rating type or provider (PROV-2, the book names none and chapter 8 was never obtained); a small signal (ridge R² about 0.28); the end codes too rare to score (codes 1, 2 and 10 hold 12 rows); a textbook licence without redistribution. corporate_issuer_credit_rating, rebuilt from the agencies' own rating histories, covers the task with a real source. `No` + `Missing source information`, `Not Representative`; the folder left the working copy (in git history before this change).
 
 ## Reference
 

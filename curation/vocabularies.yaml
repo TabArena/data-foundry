@@ -45,6 +45,9 @@ decision_markers:
 - Ethical Issue
 - Too Small
 - Not Representative
+- Selection Bias
+- Anonymized
+- Class-dependent Recording
 - Not Available (from Paper))
 - Data Requested
 - Time-series (Regression)
@@ -66,6 +69,8 @@ tags:
 - '?'
 - Multi-target
 - Many class
+- Search for better data
+- Revisit later
 collections:
 - New (BeyondArena)
 - TabArena Reject
@@ -77,6 +82,12 @@ collections:
 - FS Benchmark
 - AutoML_MM
 - TexTabBench Extra
+- STRABLE
+- MulTaBench
+- RamanBench
+- TabBench-Bio
+- ChemPile
+- tabular-dl-more-data
 - Vectorizing Strings
 - TabArena Submission
 - New

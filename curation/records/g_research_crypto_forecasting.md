@@ -4,8 +4,7 @@ name: G-Research Crypto Forecasting
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 3
 decision_markers:

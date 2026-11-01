@@ -41,6 +41,10 @@ CC (2026-10-21, Lennart): one domain for the molecule-property datasets (the inp
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Mansouri et al. (2013) report error rate / NER with sensitivity and specificity, without a threshold or costs. Original rejected: NER (balanced accuracy).
 
+CC (2026-10-30, Lennart): `N073_chemical_substructure` and `C026_chemical_substructure` are numeric: the atom-centred fragments N-073 (Ar2NH / Ar3N / Ar2N-Al / R..N..R) and C-026 (R--CX--R) count the atoms of that type (0 to 3 and 0 to 12). The definition had typed them categorical while their meaning was unknown; the dtype probe found them in the sweep after issue #34. CLEAN-14: a count stays numeric.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `ready_biodegradability_huang_zhang` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Mansouri, K., Ringsted, T., Ballabio, D., Todeschini, R., Consonni, V. (2013). Quantitative Structure - Activity Relationship models for ready biodegradability of chemicals. Journal of Chemical Information and Modeling, 53, 867-878

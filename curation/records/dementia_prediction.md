@@ -10,6 +10,7 @@ suggestion: Yes (Disagreement)
 decision_markers:
 - Wrong Domain / Source Modality
 - Time-series (Classification)
+- Selection Bias
 tags:
 - Tiny Data
 - Non-IID (Grouped)
@@ -42,6 +43,8 @@ Grouped data
 AT: No objection, but we need to quickly talk about how we proceed with medical image data
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — the OASIS-2 paper reports group analyses, no prediction metric.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `oasis3_dementia_status` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference
 

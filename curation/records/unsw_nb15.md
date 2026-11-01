@@ -39,6 +39,8 @@ The most-benchmarked modern tabular IDS dataset and the usual stand-in for KDD'9
 
 **Suggested No on criterion 4B**, from the canonical page's own description: the raw packets "was created by the **IXIA PerfectStorm tool** in the Cyber Range Lab of UNSW Canberra for generating a hybrid of real modern normal activities and **synthetic** contemporary attack behaviours". Both sides of the traffic come out of a commercial traffic generator in a lab, so it is the same scripted-testbed situation as [[kddcup99]] and [[intrusion_detection]], only newer. The `attack_cat` column also allows a 9-class framing if the verdict is ever revisited. The paper (Moustafa & Slay, MilCIS 2015) is not read — the quote above is from the project page.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `luflow_intrusion_detection` (TBD -> 2nd Tier, priority 2), `ugr16_isp_netflow_intrusion` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Moustafa, N., Slay, J., "UNSW-NB15: a comprehensive data set for network intrusion detection systems (UNSW-NB15 network data set)", Military Communications and Information Systems Conference (MilCIS), 2015.

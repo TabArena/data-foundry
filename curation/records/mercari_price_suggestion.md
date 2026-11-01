@@ -15,6 +15,8 @@ tags:
 collections:
 - TexTabBench
 - TabSTAR
+- MulTaBench
+- STRABLE
 original_source: Kaggle
 year: '2017'
 domain: business & marketing
@@ -41,3 +43,7 @@ CC (2026-10-06, Lennart): Kept after the task-probe review: the `no_spread` flag
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — the competition's RMSLE, as RMSE on the shipped log1p(price) (Kaggle evaluation page).
 
 **Assessment (AI, 2026-10-21):** metric now `Metric.source("rmsle", target_transform="log1p")` instead of rmse on the log1p target: the competition's RMSLE on the price, computed after the inverse of the shipped log1p (MET-3); the score is the same number as before. Needs a rebuild to reach the container.
+
+**Assessment (AI, 2026-11-01):** the benchmark MulTaBench (https://arxiv.org/abs/2605.10616) carries this record's data as "Mercari Marketplace": Text-tabular; AutoML Multimodal 100K subsample (OpenML 46660) of the 2017 Mercari Kaggle competition. Tagged MulTaBench on 2026-11-01.
+
+**Assessment (AI, 2026-11-01):** the benchmark STRABLE (https://arxiv.org/abs/2605.12292) carries this record's data as "Mercari Price Prediction": Raw file mercari_train.tsv from TextTabBench. Subsampled by STRABLE to 75,000 rows. Tagged STRABLE on 2026-11-01.

@@ -47,13 +47,16 @@ side (metadata, checks, the dataset review) is tracked in the curation records a
   against their official code). The adapter (`adapter.py`) has to:
   - **Read the spec.** Take `objective_metric.name` in format 2 (`container.format_version == 2`) and
     `objective_metric_name` in format 1.
-  - **Register the custom scorers.** Wrap `data_foundry.v2.metrics.score(spec, y_true, y_pred, labels=..., **inputs)`
-    in an AutoGluon scorer (`autogluon.core.metrics.make_scorer`, with `greater_is_better` and `optimum` from the
-    spec, `needs_proba` for `prediction == "proba"`, `needs_class` for `"label"`; the module docstring has the
-    sketch). A metric with `inputs` (a group, an order, a weight) needs the scored rows' values of those columns:
-    pass them by row index, as `data_foundry.v2.metrics.scorer(container)(y_true, y_pred, row_index)` does. A task
-    predicted per group (`grouping.prediction_unit == "group"`) is aggregated first by `grouping.aggregation`
-    (`scorer` does it; the section below). Inner validation and tuning use the same scorer.
+  - **Register the custom scorers.** Wrap `data_foundry.v2.metrics.score(spec, y_true, y_pred, labels=..., **inputs)` in
+    an AutoGluon scorer (`autogluon.core.metrics.make_scorer`, with `greater_is_better` and `optimum` from the spec,
+    `needs_proba` for `prediction == "proba"`, `needs_class` for `"label"`; the module docstring has the sketch). A
+    metric with `inputs` (a group, an order, a weight) needs the scored rows' values of those columns: pass them by row
+    index, as `data_foundry.v2.metrics.scorer(container)(y_true, y_pred, row_index)` does. A task predicted per group
+    (`grouping.prediction_unit == "group"`) is aggregated first by `grouping.aggregation` (`scorer` does it; the section
+    below). Inner validation and tuning use the same scorer. A correlation metric (`pearsonr`, `weighted_pearsonr`,
+    `mean_group_pearsonr`) is undefined for a constant prediction (`data_foundry.v2.metrics` returns NaN): the scorer
+    needs a guard so a constant prediction (a dummy, a collapsed model) scores 0, no signal, instead of breaking the
+    fold.
   - **Drop the scoring columns from the features.** `task_metadata.scoring_columns` (column, role, used_by,
     description) are the metric's inputs and never model inputs, like the group column:
     `data_foundry.curation_container.feature_columns(container)` returns the frame's features without them.
@@ -74,7 +77,7 @@ side (metadata, checks, the dataset review) is tracked in the curation records a
 
   | Metric | Kind, prediction | Datasets |
   |---|---|---|
-  | `roc_auc` | standard, proba | 78: 51 fallbacks, 25 from the source (porto_seguro's normalized Gini among them), 2 stand-ins; `*` anes_voting_2026, heart_disease_cleveland, heart_disease_hungary, heart_disease_va_long_beach, hepatitis_survival_prediction, home_credit_default_stability_1m, lending_club, sepsis_survival_minimal_clinical_records |
+  | `roc_auc` | standard, proba | 76: 49 fallbacks, 25 from the source (porto_seguro's normalized Gini among them), 2 stand-ins; `*` anes_voting_2026, heart_disease (the three Detrano hospitals, merged on 2026-10-21), hepatitis_survival_prediction, home_credit_default_stability_1m, lending_club, sepsis_survival_minimal_clinical_records |
   | `rmse` | standard, value | 45: 27 fallbacks, 18 from the source (RMSLE as `rmse` on a log1p target included); `*` video_transcoding_time_prediction |
   | `log_loss` | standard, proba | 26: 22 fallbacks, 2 from the source, 2 stand-ins; `*` covertype, hepatitis_c_prediction |
   | `mae` | standard, value | allstate_claims_severity, forest_fires, wine_quality, zillow_prize; stand-in for `*` corporate_credit_rating_cat_data_set_ratings_raitings |
@@ -138,3 +141,12 @@ recommend:
 - [ ] **Temporal `_1m` versions ship up to 2.5M rows** (each split still trains on at most 1M and tests on at most
   500k rows): check storage and loading for `cooking_time_1m`, `delivery_eta_1m` and `maps_router_eta_1m` (2.5M rows,
   989 float columns for maps).
+
+## Model defaults
+
+- [ ] **Check the LightGBM default on force_2020 once it is built.** Untuned LightGBM with the default
+  `min_child_weight` of 0.001 diverged on force_2020 (grouped fold 0, 100k rows: test log loss 14-15; with
+  `min_child_weight=1`, 0.81), as on mice_protein_trisomy_discriminant. After the definition masked the impossible
+  readings (DCAL 10,006.8, DRHO -7,429.3 and others) the task probe's LightGBM gives 0.872 and no longer diverges, so
+  extreme values were the likely trigger. Left for later (Lennart, 2026-10-21: "we dont need to check the benchmark
+  case, we can do that later, it is fine as is for now").

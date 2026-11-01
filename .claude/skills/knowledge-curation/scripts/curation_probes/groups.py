@@ -35,11 +35,11 @@ from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 
 def features(df: pd.DataFrame, drop: list[str]) -> pd.DataFrame:
-    """Numeric model inputs: categoricals as codes, datetimes as seconds, strings left out, NaN as the median."""
+    """Numeric model inputs: categoricals as codes (missing as one more code), datetimes as seconds, no strings."""
     X = df.drop(columns=drop).select_dtypes(exclude=["string", "object"])
     for col in X.columns:
         if isinstance(X[col].dtype, pd.CategoricalDtype):
-            X[col] = X[col].cat.codes.replace(-1, np.nan)
+            X[col] = X[col].cat.codes.replace(-1, len(X[col].cat.categories))
         elif pd.api.types.is_datetime64_any_dtype(X[col]):
             X[col] = X[col].astype("int64") // 10**9
     X = X.astype(float)

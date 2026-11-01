@@ -144,7 +144,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
 | reason | Abdelhamid, Ayesh & Thabtah 2014 compare associative classifiers by 3-class accuracy; we dropped the suspicious class (binary since 2026-10-14), so the task changed (MET-2), and no costs are fixed. roc_auc is the binary fallback. |
 

@@ -4,7 +4,7 @@ name: womens-mentorship-hackathon
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> 2nd Tier
-priority: 2
+priority: 1
 tags:
 - AI-Filled (Verify)
 collections:
@@ -44,3 +44,5 @@ This Zindi women's mentorship hackathon asks to predict which women are at highe
 ---
 
 Predict which women are at highest risk of being made a victim of a crime in South Africa
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `statssa_gpsjs_crime_victimisation` (TBD -> 2nd Tier, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

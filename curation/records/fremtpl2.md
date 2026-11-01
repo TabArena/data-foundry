@@ -4,7 +4,7 @@ name: freMTPL2
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> Yes
-priority: 4
+priority: 3
 tags:
 - AI-Filled (Verify)
 original_source: Other
@@ -42,3 +42,5 @@ freMTPL2 is the well-known French Motor Third-Party Liability insurance dataset 
 ---
 
 Also see https://arxiv.org/abs/2605.22892 and https://cas.uqam.ca/pub/web/CASdatasets-manual.pdf
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `eumtpl` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

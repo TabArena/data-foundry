@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 from data_foundry.v2 import (
     AbstractCuratedDataset,
@@ -18,6 +19,12 @@ from data_foundry.v2 import (
 
 TRANSACTIONS_FILE = "train.csv.gz"
 TIME_FORMAT = "%d%b%y:%H:%M:%S"  # TRDATETIME, e.g. 21OCT17:00:00:00
+
+RATES_DIR = "cbr_rates"
+"""The Bank of Russia's official daily rates, one file per currency it quoted (download_description)."""
+CURRENCY_LIST = "cbr_currencies.xml"
+"""The Bank of Russia's currency list: its series id and the ISO 4217 numeric code of each currency."""
+RUBLES = (810, 643)  # the ISO numeric code of the ruble before (RUR) and after (RUB) the 1998 redenomination
 
 # The hand-crafted features of the CoLES paper (Babaev et al. 2022, Sec. 4.1.2) as pytorch-lifestream configures them
 # for this dataset (ptls-experiments, scenario_rosbank/conf/inference/seq_encoder/agg_feature.yaml): the count, sum,
@@ -39,12 +46,52 @@ CURRENCIES = {810: "810", 978: "978", 840: "840"}  # rubles (810, the old RUR co
 N_MCC = 97  # the most frequent MCC codes get their own columns, the rest share "other" (ptls: `mcc: in: 100`)
 OTHER = "other"
 
+# The time features of the competition's 1st place in task 1 (Kirill Khrylchenko, 2018; time.ipynb of
+# github.com/KhrylchenkoKirill/rosbank, rewritten here): where a client's active days lie and how far apart they are,
+# for all transactions, each transaction category, money in and money out
+FIRST_DAY = pd.Timestamp("2016-10-07")  # the first day of the transactions; days are counted from it
+INFLOW = {"DEPOSIT", "C2C_IN", "BACK_TRX"}  # the other categories take money out
+DATE_STATS = ("span", "std", "median", "mean", "max", "gap_mean", "gap_max", "gap_min", "gap_std", "gap_p50", "gap_p95")
+
 DISCOUNT_MONTHS = 3  # "history of clients' transactions during 3 months of privileged usage" (the task text)
 LABEL_MONTHS = 3  # the label covers "the next three months of usage of the product" after the period
 # How the label window was placed is not published, and the newest periods' labels are off (March 2018: 24 of 36
 # churned). We keep the clients whose period ends before 2018-01-01: a three-month window after the period then closes by
 # 2018-03-31, inside the transactions (they end 2018-04-02) (curation_comments, "Cohort").
 LABELS_COMPLETE_BEFORE = "2018-01-01"
+
+
+def read_ruble_rates(raw_dir: Path) -> pd.DataFrame:
+    """The Bank of Russia's rates: `currency` (ISO numeric code), `date` (the day a rate takes effect), `rubles`."""
+    iso = pd.read_xml(raw_dir / CURRENCY_LIST, xpath="./Item", parser="etree", encoding="cp1251")
+    iso = iso.dropna(subset=["ISO_Num_Code"]).set_index("ID")["ISO_Num_Code"].astype(int)
+    frames = []
+    for path in sorted((raw_dir / RATES_DIR).glob("*.xml")):
+        rates = pd.read_xml(path, xpath="./Record", parser="etree", encoding="cp1251")
+        frames.append(
+            pd.DataFrame(
+                {
+                    "currency": rates["Id"].map(iso),
+                    "date": pd.to_datetime(rates["Date"], format="%d.%m.%Y"),
+                    # rubles per `Nominal` units, with a decimal comma
+                    "rubles": rates["Value"].str.replace(",", ".").astype(float) / rates["Nominal"],
+                }
+            )
+        )
+    rates = pd.concat(frames, ignore_index=True)
+    assert rates["currency"].notna().all(), "a rate series without an ISO code"
+    return rates
+
+
+def in_rubles(tx: pd.DataFrame, rates: pd.DataFrame) -> pd.Series:
+    """`amount` in rubles at the rate in force on the transaction's day; missing where the Bank set no rate."""
+    day = pd.to_datetime(tx["TRDATETIME"], format=TIME_FORMAT).dt.normalize()
+    left = pd.DataFrame({"day": day, "currency": tx["currency"]}).sort_values("day", kind="stable")
+    quoted = pd.merge_asof(
+        left.reset_index(), rates.sort_values("date", kind="stable"), left_on="day", right_on="date", by="currency"
+    )
+    rate = quoted.set_index("index")["rubles"].reindex(tx.index)
+    return tx["amount"] * rate.where(~tx["currency"].isin(RUBLES), 1.0)
 
 
 def per_value_stats(tx: pd.DataFrame, column: str, values: list[str], prefix: str) -> pd.DataFrame:
@@ -61,6 +108,63 @@ def per_value_stats(tx: pd.DataFrame, column: str, values: list[str], prefix: st
     mean.columns = [f"mean_amount_{prefix}_{v}" for v in values]
     std.columns = [f"std_amount_{prefix}_{v}" for v in values]
     return pd.concat([count, mean, std], axis=1)
+
+
+def date_stats(days: np.ndarray) -> list[float]:
+    """Of sorted active days: span, spread, median, mean and last day, and the gaps between them; missing if undefined."""
+    if len(days) == 0:
+        return [np.nan] * len(DATE_STATS)
+    stats = [days[-1] - days[0], days.std(), np.median(days), days.mean(), days[-1]]
+    if len(days) < 2:
+        return [*stats, *[np.nan] * 6]
+    gaps = np.diff(days)
+    return [*stats, gaps.mean(), gaps.max(), gaps.min(), gaps.std(), *np.percentile(gaps, [50, 95])]
+
+
+def time_features(tx: pd.DataFrame) -> pd.DataFrame:
+    """Per client (`cl_id`, the index): the 1st place's time features, over the whole history and the last month.
+
+    For each group of transactions (all, each category, money in, money out): `date_stats` of the active days, the same
+    over the group's last active calendar month, the active days per calendar month (mean, median, max, min, std), and
+    the quarter of the last active month.
+    """
+    time = pd.to_datetime(tx["TRDATETIME"], format=TIME_FORMAT).dt.normalize()
+    active = pd.DataFrame(
+        {"cl_id": tx["cl_id"], "category": tx["trx_category"], "day": (time - FIRST_DAY).dt.days, "time": time}
+    ).drop_duplicates(["cl_id", "category", "day"])
+    active["month"] = active["time"].dt.to_period("M")
+    groups = {
+        "all": None,
+        **{c.lower(): {c} for c in TRX_CATEGORIES},
+        "in": INFLOW,
+        "out": set(TRX_CATEGORIES) - INFLOW,
+    }
+    rows = {}
+    for cl_id, client in active.groupby("cl_id", sort=True):
+        row = {}
+        for name, categories in groups.items():
+            part = client if categories is None else client[client["category"].isin(categories)]
+            part = part.drop_duplicates("day").sort_values("day", kind="stable")
+            days = part["day"].to_numpy(dtype=float)
+            row.update(zip([f"time_{name}_{s}" for s in DATE_STATS], date_stats(days), strict=True))
+            last = part["month"].max() if len(part) else None
+            in_last = days[(part["month"] == last).to_numpy()] if len(part) else days
+            # the last day of the last month is the group's last day (`max` above), so it is left out here
+            last_month = {s: v for s, v in zip(DATE_STATS, date_stats(in_last), strict=True) if s != "max"}
+            row.update({f"time_{name}_lastmonth_{s}": v for s, v in last_month.items()})
+            per_month = part.groupby("month")["day"].size().to_numpy(dtype=float)
+            spread = (
+                [per_month.mean(), np.median(per_month), per_month.max(), per_month.min(), per_month.std()]
+                if len(per_month)
+                else [np.nan] * 5
+            )
+            names = [f"time_{name}_days_per_month_{s}" for s in ("mean", "median", "max", "min", "std")]
+            row.update(zip(names, spread, strict=True))
+            row[f"time_{name}_last_quarter"] = last.quarter if last is not None else np.nan
+        rows[cl_id] = row
+    out = pd.DataFrame.from_dict(rows, orient="index")
+    out.index.name = "cl_id"
+    return out
 
 
 def aggregate_transactions(tx: pd.DataFrame) -> pd.DataFrame:
@@ -115,7 +219,7 @@ def aggregate_transactions(tx: pd.DataFrame) -> pd.DataFrame:
     labels = by_client[["target_flag", "target_sum"]].agg(["min", "max"])
     assert (labels.xs("min", axis=1, level=1) == labels.xs("max", axis=1, level=1)).all().all(), "one label per client"
     labels = labels.xs("min", axis=1, level=1)
-    return pd.concat([overall, *blocks, distinct, dates, labels], axis=1)
+    return pd.concat([overall, *blocks, distinct, time_features(tx), dates, labels], axis=1)
 
 
 class Rosbank1(AbstractCuratedDataset):
@@ -135,8 +239,9 @@ class Rosbank1(AbstractCuratedDataset):
             "2017 window 179 of 515 clients did."
         ),
         known=(
-            "Summaries of the client's card transactions up to the end of the period (counts, sums, means and spreads"
-            " by transaction type, currency and the 97 most frequent merchant categories), the dates of the first and"
+            "Summaries of the client's card transactions up to the end of the period (counts, and sums, means and "
+            "spreads in rubles, by transaction type, currency and the 97 most frequent merchant categories), when and "
+            "how regularly the client was active (the competition winner's time features), the dates of the first and"
             " last transaction, and the client's channel type (undocumented; constant per client, read as how the "
             "client was acquired)."
         ),
@@ -145,7 +250,8 @@ class Rosbank1(AbstractCuratedDataset):
             "clients whose three-month outcome was known before the window starts."
         ),
         changes=(
-            "We summarise the transactions, rebuild each period's end date from the first and last transactions, and "
+            "We summarise the transactions in rubles, add the competition winner's time features, rebuild each "
+            "period's end date from the first and last transactions, and "
             "split by it, where the competition split clients at random; periods ending from January 2018 on are left"
             " out as their outcome window may not be complete."
         ),
@@ -175,6 +281,16 @@ class Rosbank1(AbstractCuratedDataset):
         wget -O local-data-warehouse/rosbank1/train.csv.gz https://huggingface.co/datasets/pytorch-lifestream/rosbank-churn/resolve/aad1b512deaee7ffea4c289e496785bc9e17bd80/train.csv.gz
 
         train.csv.gz: 4,646,502 bytes, sha256 fe27320183acbe038577080ae8b30b9d7f7b8a40dd92cf43e405b56fdd6627f6 (the Git LFS object id on Hugging Face); 490,513 transactions of 5,000 clients.
+
+        The Bank of Russia's official exchange rates (open on its site, no login; downloaded 2026-10-26): its currency list, and the daily rates of 1 September 2016 to 3 April 2018 of the 30 currencies in the data it quoted then (series ids from the list; the other 27 currencies return no rates for these dates).
+
+        cd local-data-warehouse/rosbank1
+        curl -fo cbr_currencies.xml https://www.cbr.ru/scripts/XML_valFull.asp
+        mkdir -p cbr_rates && for id in R01010 R01020A R01035 R01060 R01090B R01100 R01115 R01135 R01200 R01215 R01235 R01239 R01270 R01335 R01350 R01370 R01375 R01500 R01535 R01565 R01585F R01625 R01700J R01720 R01760 R01770 R01775 R01810 R01815 R01820; do
+            curl -fo cbr_rates/$id.xml "https://www.cbr.ru/scripts/XML_dynamic.asp?date_req1=01/09/2016&date_req2=03/04/2018&VAL_NM_RQ=$id"
+        done
+
+        cbr_currencies.xml: sha256 b6bc755432f5f3cfa8827496263ce6978a0382ae24c7a1b9ff2568406e6d7ec3 (the list grows when the Bank adds a currency; the 30 ids above are what the definition needs). The 30 rate files concatenated in name order (cat cbr_rates/*.xml | sha256sum): 50cbff2632b63e7f9e0c9b461c6fa47d717f5b5854d9e1f202c485018bd9b339.
     """
     bibtex = r"""
         @misc{Rosbank2018MLCompetition,
@@ -192,13 +308,14 @@ class Rosbank1(AbstractCuratedDataset):
         - Task: churn, the competition's task 1, as in CoLES (Babaev et al. 2022). target_flag is 1 exactly when target_sum, the POS spend of the next three months, is positive (decision table): churn "Yes" is target_flag 0, and target_sum is dropped.
         - Tabular framing: for this sequence data, the tabular baseline in the literature is LightGBM on hand-crafted aggregates (CoLES, Sec. 4.1.2, Table 6: ROC AUC 0.825, level with the supervised sequence model at 0.817, above CPC, RTD and SOP at 0.782 to 0.802, and below CoLES embeddings fed to LightGBM at 0.843). We build them as pytorch-lifestream configures them for this dataset (`aggregate_transactions`).
         - Features, where we deviate from that configuration: all 10 transaction categories and four currency values (rubles, euros, US dollars, "other") get their own columns, against its 7 categories and 1 currency; the 97 most frequent MCC codes plus "other", as there. A mean or standard deviation over no transactions or of one transaction is missing (the configuration writes 0).
+        - Time features of the 1st place (Lennart, CC 2026-10-26, CLEAN-19: the better of the baseline and the top solutions' features, or a reasonable combination): Kirill Khrylchenko won task 1 (private ROC AUC 0.8747) and published his code (github.com/KhrylchenkoKirill/rosbank, no licence; `time_features` is our rewrite, no code copied). His time block, which his slides rank as his best: for all transactions, each category, money in and money out, the span, spread, position and gaps of the client's active days, the same over the last active calendar month, the active days per month and the quarter of the last month (351 columns; two last-month gaps of cash advances copy the whole history's here and are dropped). Untuned LightGBM on our three windows: CoLES 0.857, CoLES plus the time block 0.896 (+0.038; October, 515 clients, +0.051). His full feature set scored lower than this combination (0.882), and his money and MCC blocks add nothing to CoLES (-0.016 to +0.004); his MCC-time block needs his 11 hand-made MCC groups and is not taken. Deviations from his code: days counted in days (not years of 360 days), unique active days per group, the last month and the months by year and month, the quarter as one number, and missing where he writes 0.
         - The 97 MCC codes are the most frequent over all transactions, test windows included: a pipeline choice that approximates the task (a deployed model would choose from its own history), not a value computed from test rows; kept (Lennart, 2026-10-19).
         - channel_type is undocumented (the competition publishes no column descriptions); it is constant per client and read as the acquisition channel (a participant notebook, kianya/rosbank-competition, says so), so it is one categorical column (decision table).
         - Time: the data has no period dates. Most clients transact over 80 to 92 days, so period_end, the time column, is the first transaction plus three months, or the last transaction when that is later (decision table). first_transaction and last_transaction are features. All three are dates, as POS transactions carry a date only. For the clients at first plus three months the estimate is an upper bound of the true period end (a period that started before the first transaction ends earlier), so it errs on the safe side for the gap. The transactions in the file are not in the label window: 107 of the 479 clients with a POS purchase after first plus three months still churned.
         - Cohort: how the label window was placed is not published, and the newest labels are off: 24 of the 36 clients whose period ends in March 2018 churned, against 35.5% for October 2017 to February 2018, while 37 of the 63 clients whose period ends from April 2018 on, after the transactions stop (2 April 2018), have full spend labels that a window after their period could not hold. We keep the periods ending before 1 January 2018, whose three-month window after the period closes by 31 March 2018, inside the transactions (decision table). A window fixed in calendar time would make churn rise with cohort age; in channel type1 (two thirds of the clients) it does not (logit slope +0.006 per month, SE 0.013, with activity controls; panel review 2026-10-20), so we read the window as per client.
         - Split: temporal on period_end, with each training client's three-month label window as a gap (splits_comment; decision table).
         - Not used: test.csv.gz (no labels), PERIOD (the month of TRDATETIME) and cl_id, which carries the label (alone ROC AUC 0.728).
-        - Anomaly: amount is in the transaction's currency, so the overall amount statistics mix currencies, as in CoLES: 2.6% of transactions are not in rubles, but 1,072 clients (22.4%) have one, and the largest amounts are in Vietnamese dong and Indonesian rupiah (up to 35.8 million).
+        - Currencies (Lennart, CC 2026-10-26, CLEAN-21): amount is in the transaction's own currency (2.6% of transactions are not in rubles, 1,072 clients have one, and the largest amounts are Vietnamese dong and Indonesian rupiah, up to 35.8 million), where CoLES adds them up as one unit. We convert it to rubles at the Bank of Russia's official rate in force on the transaction's day (a rate holds until the next one is set, so a weekend takes the last rate before it); the rate is public on that day, before the prediction point. currency holds ISO 4217 numeric codes, rubles as 810 (the ruble's code before 1998) and in 32 rows as 643 (the current code). The data has no codebook; the conversion confirms the reading (decision table: converted, the median POS purchase of every currency with 30 or more lies between 355 and 3,346 rubles, against 500 in rubles and 8 to 671,000 units before). The Bank quoted 30 of the 57 other currencies then. The 1,466 transactions (0.3%, of 184 clients) in a currency it did not quote on their day (27 currencies: Thai baht, UAE dirham, Georgian lari, Croatian kuna, rupiah, dong and smaller ones; Hong Kong dollars before April 2017) keep their counts but leave the amount statistics, rather than take a rate from another source. Every amount column changes; the counts do not. std_amount_trx_CASH_ADV is dropped: of the kept clients only one has two or more cash advances in a quoted currency, so it holds one value.
         - Duplicates: 828 transaction rows repeat another row; we count them, as POS transactions carry a date only. Two pairs of clients share all aggregates, the label and period_end, so each pair falls on one side of every split; we keep them.
         - Note: the task probes flag `no_spread` (LightGBM leads linear by 0.017 AUC, a skill gap of 0.034 with paired standard error 0.087), a gap 3 windows cannot test; we keep the task.
     """
@@ -230,11 +347,14 @@ class Rosbank1(AbstractCuratedDataset):
         A churn model is refit, for example every month, and scores the clients whose grace period ends in that month. A client's label covers the three months after its period, so it is known three months after period_end: each window trains on the clients whose period ended at least three months before the window starts. Windows of one calendar month of period_end, newest first: December 2017 (63 clients, 23 churned), November 2017 (123, 49) and October 2017 (515, 179), training on 3,566, 3,078 and 2,559 clients. A fourth window (September 2017) would train on 44% of the clients, below the 50% floor, and two-month windows would leave one window above it. The periods ending from January 2018 on are not in the dataset (curation_comments, "Cohort"). The client intake drops after July 2017 (first transactions 400 to 800 a month, then about 50 to 110), so November and December are a thin tail of late or irregular clients; the period end is estimated from the last transaction for 11%, 29% and 38% of the October, November and December clients. Every test label window spans the New Year and no training label window does. The competition split its clients at random (its unlabelled test file covers the same months); this split mirrors the refit, and on the same test windows a random training side scores about 0.01 AUC higher, while 3 x 3 random folds score lower (0.817 against 0.860) as the later clients are easier to score.
     """
 
-    def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
-        return pd.read_csv(raw_dir / TRANSACTIONS_FILE)
+    def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
+        return {"transactions": pd.read_csv(raw_dir / TRANSACTIONS_FILE), "rates": read_ruble_rates(raw_dir)}
 
-    def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
-        df = aggregate_transactions(raw)
+    def _clean(self, raw: dict[str, pd.DataFrame]) -> pd.DataFrame:
+        tx = raw["transactions"]
+        # amounts in rubles at the Bank of Russia's rate of the day; a currency it did not quote is masked
+        # (curation_comments, "Currencies")
+        df = aggregate_transactions(tx.assign(amount=in_rubles(tx, raw["rates"])))
         # target_flag is 1 exactly when target_sum (the POS spend of the next three months) is positive: a churned
         # client has no POS purchase in the three months after the discount period
         assert ((df["target_flag"] == 1) == (df["target_sum"] > 0)).all(), "target_flag is target_sum > 0"
@@ -242,8 +362,11 @@ class Rosbank1(AbstractCuratedDataset):
         # clients whose three-month label window may not be complete in the labels (curation_comments, "Cohort")
         df = df[df["period_end"] < pd.Timestamp(LABELS_COMPLETE_BEFORE)]
         # target_sum is the other task's target and defines target_flag; the source's cl_id carries the label
-        # (curation_comments, "Not used")
-        return drop_columns(df.reset_index(), ["cl_id", "target_flag", "target_sum"])
+        # (curation_comments, "Not used"). Cash advances are rare: of the kept clients only one has two or more in a
+        # quoted currency, so their standard deviation is one value (curation_comments, "Currencies"), and the clients
+        # with two or more cash advance days have them in one month, so the last month's gaps copy the whole history's.
+        cash_advance = ["std_amount_trx_CASH_ADV", "time_cash_adv_lastmonth_gap_max", "time_cash_adv_lastmonth_gap_min"]
+        return drop_columns(df.reset_index(), ["cl_id", "target_flag", "target_sum", *cash_advance])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
@@ -251,13 +374,14 @@ class Rosbank1(AbstractCuratedDataset):
             datetime=["first_transaction", "last_transaction", "period_end"],
         )
 
-    def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
-        clients = raw.groupby("cl_id", sort=True)[["target_flag", "target_sum"]].first()
+    def _decisions(self, raw: dict[str, pd.DataFrame], df: pd.DataFrame) -> list[Decision]:
+        tx = raw["transactions"]
+        clients = tx.groupby("cl_id", sort=True)[["target_flag", "target_sum"]].first()
         labels = pd.crosstab(clients["target_flag"], clients["target_sum"] > 0)
         labels.columns = [f"target_sum {'> 0' if positive else '= 0'}" for positive in labels.columns]
 
         # the period_end of all 5,000 clients (as in `aggregate_transactions`), for the months around the cut
-        dated = raw.assign(time=pd.to_datetime(raw["TRDATETIME"], format=TIME_FORMAT).dt.normalize())
+        dated = tx.assign(time=pd.to_datetime(tx["TRDATETIME"], format=TIME_FORMAT).dt.normalize())
         first = dated.groupby("cl_id", sort=True)["time"].min()
         last = dated.groupby("cl_id", sort=True)["time"].max()
         three_months_on = first + pd.DateOffset(months=DISCOUNT_MONTHS)
@@ -287,7 +411,7 @@ class Rosbank1(AbstractCuratedDataset):
         channels = pd.DataFrame(
             {"clients": channel.groupby(channel).size(), "churn share": churned.groupby(channel).mean().round(3)}
         )
-        most = int(raw.groupby("cl_id")["channel_type"].nunique(dropna=False).max())
+        most = int(tx.groupby("cl_id")["channel_type"].nunique(dropna=False).max())
 
         span = (df["last_transaction"] - df["first_transaction"]).dt.days
         bucket = pd.cut(
@@ -302,6 +426,17 @@ class Rosbank1(AbstractCuratedDataset):
                 "churn share": churned.groupby(bucket, observed=False).mean().round(3),
             }
         )
+        # amounts in rubles: the median POS purchase per currency, before and after the conversion
+        pos = tx.assign(rubles=in_rubles(tx, raw["rates"]))[tx["trx_category"] == "POS"]
+        currencies = pos.groupby("currency").agg(
+            transactions=("amount", "size"), median_amount=("amount", "median"), median_rubles=("rubles", "median")
+        )
+        currencies = (
+            currencies[currencies["transactions"] >= 30]
+            .sort_values("transactions", ascending=False, kind="stable")
+            .round(1)
+        )
+        currencies.columns = ["POS transactions", "median amount", "median in rubles"]
         return [
             Decision(
                 "churn is target_flag 0: no POS purchase in the three months after the period",
@@ -335,5 +470,12 @@ class Rosbank1(AbstractCuratedDataset):
                 "The data has no period dates; most clients transact over 80 to 92 days, the three months of the "
                 "discounted period.",
                 spans,
+            ),
+            Decision(
+                "Amounts in rubles at the Bank of Russia's rate of the day; currencies it did not quote are masked",
+                "currency holds ISO 4217 numeric codes (810 and 643 are rubles): converted at the official rate, the "
+                "median POS purchase of each currency lands near the ruble one, where the amounts as recorded range "
+                "over five orders of magnitude. A missing median: the Bank set no rate for the currency on those days.",
+                currencies,
             ),
         ]

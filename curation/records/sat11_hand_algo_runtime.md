@@ -53,6 +53,8 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 **Assessment (AI, 2026-10-21):** the log transform of the runtime moved from par_k's `target_transform` param to the spec-level `target_transform="log"` (the param is removed, so no double inverse is possible); the score is unchanged. Needs a rebuild to reach the container.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `sat03_16_indu_algo_runtime` (TBD -> Yes, priority 4), `sat18_exp_algo_runtime` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @inproceedings{xu-sat12a,

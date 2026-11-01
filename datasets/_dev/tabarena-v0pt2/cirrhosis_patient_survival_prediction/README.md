@@ -141,7 +141,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
 | reason | The source is a survival study (Cox model); our binary 5-year label is a derived task with no defined metric. The 5-year c-statistic used for GLOBE / Mayo risk scores equals ROC AUC on a binary label, so roc_auc also follows from context. |
 

@@ -20,7 +20,9 @@ For every column of the cleaned frame (load it through
 2. When its value comes into existence, and whether that is before the prediction point. Post-outcome fields,
    missingness caused by the outcome, a window that ends at the outcome, an id that encodes the label.
 3. Its dtype and cleaning against `cleaning_features.md`: by meaning, proxy missing values, impossible values,
-   encodings reversed, identifiers dropped or turned into their meaning.
+   encodings reversed, identifiers dropped or turned into their meaning. Run the dtype probe
+   (`.claude/skills/knowledge-data-foundry/scripts/dtype_probes.py <name> --out <run folder>`) and answer each column
+   it flags: a count or a measured quantity typed categorical, or a code typed numeric, is a cleaning problem.
 4. A verdict: fine, leak (rule, strength, remedy), cleaning problem (rule, remedy), or question for the curator.
 
 Never edit a repository file. Return the column table (column | meaning | known at prediction? | dtype and cleaning |

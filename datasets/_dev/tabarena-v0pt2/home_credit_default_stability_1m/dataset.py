@@ -161,7 +161,7 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
         known=(
             "The application, the client's personal data, earlier applications to Home Credit, credit-bureau and "
             "tax-registry records, deposits and debit cards, summarised over the client's history, and the decision "
-            "date; the categories are anonymized codes."
+            "date; some categories (district, employer, education, contract status and the like) are masked codes."
         ),
         split=(
             "Three two-month test windows from May to early October 2020; each trains on a random million of all "

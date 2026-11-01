@@ -3,10 +3,9 @@ unique_name: pnwflights14
 name: pnwflights14
 checked_by:
 - AI (UNVERIFIED)
-suggestion: TBD -> 2nd Tier
-priority: 1
+suggestion: 'No'
 decision_markers:
-- TBD
+- Duplicate
 tags:
 - AI-Filled (Verify)
 year: '2014'
@@ -39,3 +38,7 @@ type_adapter_id: curation-record-v1
 Pacific Northwest 2014 flights data (analogous to the well-known nycflights13 teaching dataset), distributed as flights plus auxiliary tables (airlines/airports/weather). It supports standard tabular tasks such as flight delay classification or arrival-delay regression with a natural temporal split, and is large and real-world. Some joining and target definition is needed, and the standard departure-time leakage must be avoided. Suggest TBD -> Yes; a human must pick the non-leaking target (e.g. arrival delay) and confirm usable size after cleaning.
 
 **Assessment (AI, 2026-10-21):** aeolus (BTS on-time flights 2016-2024 with hourly weather at both airports, a temporal task in the TabArena v0.2 working copy as `aeolus_1m`) covers US flight delays, and pnwflights14 ends at the same BTS on-time table (aeolus review panel, precedent check, 2026-10-20). When this record is processed, judge it against aeolus under PROV-6: a second flight-delay task, or a duplicate of aeolus (a cut of one source without a distinct task), as for airlines and airlines_depdelay_10m.
+
+CC (2026-10-26, Lennart): mark it a duplicate too (of aeolus, same source as airlines).
+
+**Assessment (AI, 2026-10-26):** the R teaching package's flights of the two Pacific Northwest airports (Seattle, Portland) in 2014 come from the same BTS on-time table, a cut of one source without a distinct task. aeolus (`aeolus_1m`) and its rebuild aeolus_rebuilt take their flights from the same BTS Reporting Carrier On-Time Performance table and predict the delay from the schedule (PROV-6). `No` + `Duplicate`.

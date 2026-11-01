@@ -139,7 +139,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
 | reason | The first publication is an explanatory logistic-regression study (odds ratios, significance of HbA1c measurement); it defines no predictive score, and the UCI page names none. |
 

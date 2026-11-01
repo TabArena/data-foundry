@@ -11,6 +11,7 @@ decision_markers:
 collections:
 - TabSTAR
 - AutoML_MM
+- MulTaBench
 source_links:
 - https://www.kaggle.com/competitions/jigsaw-unintended-bias-in-toxicity-classification/data?select=all_data.csv
 - https://www.openml.org/search?type=data&id=46654&sort=runs&status=active

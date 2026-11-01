@@ -12,6 +12,7 @@ tags:
 - Free Text (Sentences)
 collections:
 - TexTabBench Extra
+- STRABLE
 original_source: GOV Website
 year: '2021'
 source_links:

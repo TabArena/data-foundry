@@ -34,6 +34,8 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmspe — Root Mean Square Percentage Error (RMSPE) (https://www.kaggle.com/competitions/rossmann-store-sales/overview/evaluation (Kaggle API evaluationMetric: 'Root Mean Square Percentage Error')).
 
+CC (2026-10-21, Lennart): the declared metric stays as it is (`rmspe`, as Kaggle scored; cross-dataset item "Metrics still to settle").
+
 ## Reference
 
 FlorianKnauer and Will Cukierski. Rossmann Store Sales. https://kaggle.com/competitions/rossmann-store-sales, 2015. Kaggle.

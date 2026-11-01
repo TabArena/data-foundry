@@ -138,7 +138,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `log_loss` (standard; takes proba; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | mean of -log p(true class) |
 | reason | Blackard & Dean 1999 report accuracy on 7 cover types, but name no costs between types and two types hold 85% of the cells; a threshold metric without a source threshold is not used (MET-6, MET-8; Lennart, 2026-10-21). |
 

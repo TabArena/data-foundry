@@ -139,7 +139,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `log_loss` (standard; takes proba; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | mean of -log p(true class) |
 | reason | The source defines no metric for the 6-class task; its only result (Spiehler's BEAGLE vs NN vs DA comparison) counts incorrect answers for a different, binary target (float vs non-float processed windows). |
 

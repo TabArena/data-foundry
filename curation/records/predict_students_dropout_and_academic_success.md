@@ -36,6 +36,8 @@ Andrej: As the task is non-discriminative but supportive in nature, I see no iss
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — the UCI page and the data paper define no task metric; the case study compares classifiers on several scores (not verified in full text).
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `upv_university_student_dropout` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Early prediction of student's performance in higher education: a case study

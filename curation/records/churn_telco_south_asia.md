@@ -47,6 +47,10 @@ CC (2026-10-21, Lennart): option (a) of the consistency check on one-snapshot ch
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — The first publication (closed access, abstract elided) could not be read; no metric verified. Cohort is 50/50 by design, so accuracy (the likely reported number) would be close in spirit, but AUC is insensitive to the artificial base rate as the curation notes say.
 
+CC (2026-10-21, Lennart): the fallback metric stays (`roc_auc`; the first publication could not be read, so no metric is known; cross-dataset item "Metrics still to settle").
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `orange_belgium_churn_uplift` (TBD -> Yes, priority 2); a related task: `bulgarian_telecom_business_churn` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @inproceedings{ahmed2017mcs,

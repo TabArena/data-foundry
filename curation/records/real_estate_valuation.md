@@ -33,6 +33,8 @@ Small data, unsure time horizon, need to get square foot book to the model
 
 AT: Only 8 time stamps. Also target does not meaningfully vary over time. Rather an IID task. But most importantly, a small dataset like this does not represent real estate prediction
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `taiwan_actual_price_registration_sales` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @article{yeh2018building,

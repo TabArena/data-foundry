@@ -1101,7 +1101,8 @@ class Metric:
     * :meth:`stand_in`: the closest computable metric to an original that cannot be computed.
     * :meth:`from_context`: the source defines no metric, but the task makes one obvious (a relative error for a
       price).
-    * :meth:`fallback`: the source defines no metric and none is obvious; roc_auc / log_loss / rmse by problem type.
+    * :meth:`fallback`: the source defines no metric the task would use in practice, and none is obvious; roc_auc /
+      log_loss / rmse by problem type.
     * :meth:`local`: code only the definition holds, for a user's own dataset that is never shipped (refused by
       ``build`` unless ``allow_local_metric=True``).
     """

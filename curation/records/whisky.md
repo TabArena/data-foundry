@@ -10,6 +10,7 @@ tags:
 - Free Text (Short)
 collections:
 - CARTE/TARTE
+- STRABLE
 source_links:
 - https://whiskyanalysis.com/index.php/database/
 source_row: 491

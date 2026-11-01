@@ -34,10 +34,12 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
             "We drop the 22 findings from the biopsy and keep the clinical examination; with the biopsy the task is "
             "close to solved."
         ),
-        fit="direct",
+        fit="approximate",
         fit_reason=(
             "The clinical findings come before the biopsy and the label is the confirmed diagnosis, so the task is "
-            "the differential the source describes. It is small and old."
+            "the differential the source describes. But the patients look like typical cases rather than a clinic's: "
+            "93% of those with lichen planus have mouth lesions and no other patient does, against 19% to 63% in "
+            "clinic series. It is small and old."
         ),
     )
 

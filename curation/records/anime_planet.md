@@ -9,6 +9,7 @@ decision_markers:
 - Out-of-scope Task (CTR/RecSys/Ranking)
 collections:
 - CARTE/TARTE
+- MulTaBench
 original_source: Website
 source_links:
 - https://www.kaggle.com/datasets/hernan4444/animeplanet-recommendation-database-2020/data

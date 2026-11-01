@@ -4,8 +4,7 @@ name: Distribution Transformers at Cauca Department
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 2
 tags:
@@ -49,6 +48,8 @@ CC (2026-10-21, Lennart): option (a) of the cross-dataset item on tasks with too
 CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: urban, keraunic_criticality, removable_connectors, overhead_lv_network, circuit_end.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — a data article with no prediction benchmark or score.
+
+CC (2026-10-26, Lennart): verdict ship.
 
 ## Reference
 

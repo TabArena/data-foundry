@@ -34,6 +34,8 @@ Rel: https://arxiv.org/abs/2311.12879
 
 Only 83 samples, and in the paper from rel RF gets 100% accuracy. So likely we can rule it out for now.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `treehouse_pediatric_tumor_type` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @article{khan2001classification,

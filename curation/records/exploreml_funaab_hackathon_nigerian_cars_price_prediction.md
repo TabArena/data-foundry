@@ -38,3 +38,5 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (business not thin), use case + (the source names individuals and companies valuing a car before buying or selling), source 0 (no data documentation), shape 0 (size unknown, about 11 mixed features), risk - (unknown origin, possible re-upload).
 
 Zindi ExploreML/FUNAAB hackathon: predict the price of Nigerian used cars. This is a clear, genuine real-world tabular regression task (price prediction from vehicle attributes such as make, model, year, mileage), a good fit for the benchmark in the business domain, and an IID split is appropriate. The main risks are smallish hackathon size and listing-date leakage. A human must download the data to confirm the row count, the continuous price target, the feature set, and that no temporal/grouped split is required.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `dvm_car_uk_used_car_adverts` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

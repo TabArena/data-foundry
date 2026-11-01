@@ -34,6 +34,8 @@ Same source as clock_protein_toxicity
 Only has 90 samples, not enough for us here.
 Plus, it is the same source data (not target) as Toxicity. So we keep only Toxicity.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `ncats_cytotoxicity_profiling` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @article{gul2021structure,

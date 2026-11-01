@@ -25,3 +25,5 @@ No source information. Might be fake.
 Likely Analytics Vidhya competition data. Likely fake?
 
 From all the sources and info, the data is most likely generated/fake just for the learning problem. Thus, it would be hard to argue to use it.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `hmda_mortgage_application_decision` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

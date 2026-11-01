@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from data_foundry.schema import Grouping, ScoringColumn
 from data_foundry.utils.dtypes import object_columns
-from data_foundry.v2.chemistry import murcko_scaffolds, rdkit_descriptors
+from data_foundry.v2.chemistry import murcko_scaffolds, rdkit_descriptors, scaffold_groups
 from data_foundry.v2.dataset import (
     AUTO,
     AbstractCuratedDataset,
@@ -55,6 +55,7 @@ __all__ = [
     "order_rows",
     "rdkit_descriptors",
     "read_report",
+    "scaffold_groups",
     "score",
     "scorer",
     "workbench",

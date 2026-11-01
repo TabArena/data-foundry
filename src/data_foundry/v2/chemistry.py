@@ -4,7 +4,14 @@ A SMILES string holds the whole structure, but a tabular model reads it as text 
 computed from it (the working copy's CHANGELOG, 2026-10-14). A definition with a SMILES column therefore adds
 ``rdkit_descriptors(df[column])`` in ``_clean`` and drops the string, so every method gets the molecule in the same
 tabular form. RDKit is in the ``build`` extra, pinned, because descriptor values can change between releases.
-``murcko_scaffolds`` gives the groups of a scaffold-grouped split (``Grouping(on=...)``) from the same column.
+``murcko_scaffolds`` gives the scaffolds of the same column, and ``scaffold_groups`` the groups of a scaffold-grouped
+split (``Grouping(on=...)``) built from them.
+
+Mordred, not used: its open 2D descriptors (``mordredcommunity`` 2.0.7, BSD-3, 1,613 descriptors, many of them
+Dragon's) run with the pinned RDKit. On qsar_bioconcentration (2026-10-26) they lowered macro ROC AUC: RDKit's
+descriptors and the logKOW scored 0.759 (random forest) and 0.765 (LightGBM) over 3 x 10 folds, and adding Mordred's
+1,220 descriptors that do not copy an RDKit one 0.746 and 0.745 (paired -0.013 and -0.020). Every SMILES dataset
+ships RDKit's descriptors alone (CLEAN-24); revisit Mordred for all of them at once, with a gain measured on several.
 """
 
 from __future__ import annotations
@@ -63,6 +70,10 @@ def rdkit_descriptors(smiles: pd.Series, *, prefix: str = "rdkit_") -> pd.DataFr
     return out.loc[:, ~out.T.duplicated()]
 
 
+MAX_SCAFFOLD_SHARE = 0.1
+"""A scaffold that holds more molecules than this share is no series to hold out (SPLIT-31)."""
+
+
 def murcko_scaffolds(smiles: pd.Series) -> pd.Series:
     """The Bemis-Murcko scaffold of each SMILES (its ring systems and the chains linking them, atom and bond types
     kept, stereochemistry dropped) as canonical SMILES, on the index of ``smiles``.
@@ -77,3 +88,20 @@ def murcko_scaffolds(smiles: pd.Series) -> pd.Series:
     scaffold = import_build_dependency("rdkit.Chem.Scaffolds.MurckoScaffold")
     out = [scaffold.MurckoScaffoldSmiles(mol=molecule, includeChirality=False) for molecule in molecules]
     return pd.Series(out, index=smiles.index, dtype="string", name="scaffold")
+
+
+def scaffold_groups(smiles: pd.Series, *, max_share: float = MAX_SCAFFOLD_SHARE) -> pd.Series:
+    """The group of each molecule in a scaffold-grouped split (SPLIT-31), on the index of ``smiles``.
+
+    Molecules that share a Bemis-Murcko scaffold form one group. A molecule without a ring is a group of its own, and
+    so is each molecule of a scaffold that holds more than ``max_share`` of the molecules (in practice the bare
+    benzene ring: 34% of qsar_bioconcentration, 18% of qsar_oral_toxicity), which is no series and would leave folds of
+    very unequal size. A single molecule's group is ``"single: <its SMILES>"``.
+
+    Raises:
+        DatasetDefinitionError: Another RDKit version is installed, or a SMILES does not parse.
+    """
+    scaffold = murcko_scaffolds(smiles)
+    share = scaffold.map(scaffold.value_counts(normalize=True))
+    alone = scaffold.eq("") | share.gt(max_share)
+    return scaffold.mask(alone, "single: " + smiles.astype("string")).rename("scaffold")

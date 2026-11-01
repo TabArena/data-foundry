@@ -4,8 +4,7 @@ name: house_sales
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -67,6 +66,10 @@ CC (2026-10-22, Lennart): issue 10: drop the sales with warning 45, 5 or 1 (the 
 CC (2026-10-26, Lennart): on ames_housing issue 7 (option (c), "do (c)"): drop the related-party sales (warning 51) here too, as the family sales of ames_housing. This reopens issue 8 of 2026-10-22, option (c), which kept them with a `sale_condition` level; the other declared conditions stay as they were.
 
 **Assessment (AI, 2026-10-26):** the 85 sales whose first `sale_condition` level was related party are dropped (91 sales carry warning 51; 6 were already dropped by another code): 20,499 sales. `sale_condition` loses its related-party level. `dataset check` clean; task probes (5 of 9 windows): LightGBM R² 0.894, no flag.
+
+CC (2026-10-26, Lennart): verdict ship.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `cook_county_residential_sales` (TBD -> Yes, priority 3), `king_county_home_sales_1999_2025` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference
 

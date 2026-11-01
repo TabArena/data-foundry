@@ -4,8 +4,7 @@ name: huntprohibited
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 3
 decision_markers:
@@ -55,6 +54,8 @@ CC (2026-10-22, Lennart): issue 4: (a), keep the random split by ad (exact copie
 CC (2026-10-22, Lennart): issue 10: keep the random split (no date recoverable).
 
 **Assessment (AI, 2026-10-22):** all issues settled; REVIEW.md removed. Not built yet.
+
+CC (2026-10-26, Lennart): verdict ship.
 
 ## Reference
 

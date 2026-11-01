@@ -4,16 +4,17 @@ name: numerai28.6
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 2
+decision_markers:
+- Anonymized
 tags:
 - New IID
 collections:
 - TabArena Reject
 - TabSTAR
-year: '2017'
+year: '2016'
 source_links:
 - https://www.kaggle.com/datasets/numerai/encrypted-stock-market-data-from-numerai
 - https://www.openml.org/search?type=data&id=23517
@@ -42,6 +43,16 @@ CC (2026-10-22, Lennart): add as forced IID. Not a duplicate of numerai_v5_2: a 
 **Assessment (AI, 2026-10-22):** review panel (focused tier: claim audit, split audit) refuted no validity claim; its text fixes are in the notes (prediction point unstated in 2016; the LEAK-30 quantile bins kept on purpose; the hidden-week residual test; the IID ROC AUC read as an upper bound). dataset check: 0 errors, 0 warnings. Open in REVIEW.md: issue 1 (log loss, the source's metric, against ROC AUC) and the record fields `year` and `tags`. Priority 2: gap 0, use case -, source +, shape +, risk - (no thin domain or regime; encrypted features and a forced IID split; the data owner's CC0 release; 96,320 rows of 21 numeric features; log loss sits within 0.002 of the dummy). Not built yet.
 
 **Assessment (AI, 2026-10-22):** tag `Non-IID (Temporal)` replaced by `New IID`, following the decision to add it as forced IID (the definition carries `ForcedIIDFromTemporal`).
+
+CC (2026-10-26, Lennart): the record's year takes the definition's value (2016).
+
+CC (2026-10-26, Lennart): issue 1: "keep log loss": Numerai's 2016 tournament ranked and paid on log loss, so calibration was part of the source's decision.
+
+**Assessment (AI, 2026-10-26):** no open issue is left (the year is 2016, log loss stays), so the folder's REVIEW.md is removed; the verdict was "ship after changes".
+
+CC (2026-10-26, Lennart): verdict ship.
+
+CC (2026-10-27, Lennart): marker Anonymized, from the AI review of PR #17: the definition carries the Anonymized data tag; the 21 features are encrypted, regularized numbers in [0, 1], and what they measure, their timing and the target's horizon are hidden.
 
 ## Reference
 

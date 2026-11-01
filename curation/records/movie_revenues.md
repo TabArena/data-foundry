@@ -12,6 +12,7 @@ tags:
 - Free Text (Sentences)
 collections:
 - CARTE/TARTE
+- MulTaBench
 year: '2017'
 domain: business & marketing
 source_links:

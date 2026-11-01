@@ -30,6 +30,8 @@ Seems like generated data like (https://www.kaggle.com/datasets/muhammadwaqas023
 
 Seems like a scientific discovery task, unclear what the target should be. Plus due to fear of being fake, we can keep it as 2nd tier
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `ili_external_corrosion_cross_country_pipeline` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Kaggle / AMSE website?

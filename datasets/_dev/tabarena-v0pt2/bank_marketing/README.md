@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bank_marketing
 container_format: 2
-checksum: v2:87cff862cd2cb40a9c14147b0619096630febc8d21e18119c7a9fd7ac7148a4f
+checksum: v2:3c70f9963ef6a5f5473d9ab514f6338a9d825ad680dd061828ca9cbf8267e423
 build:
   uuid: 01a111fc-7c2d-7441-b859-646c9bfbf380
   checksum: v2:df7e993235e244580c862ce525a593509ccdcce2503c8efd6c2ad7382a02bdeb
@@ -22,8 +22,8 @@ data:
   n_rows: 45211
   n_features: 13
   dtypes:
-    category: 11
-    int64: 3
+    category: 9
+    int64: 5
   n_test_dataset_rows: null
 task:
   target: SubscribeTermDeposit
@@ -70,7 +70,7 @@ decisions: []
 
 Binary classification of `SubscribeTermDeposit`, scored with `roc_auc` on IID splits. 45,211 rows and 13 features. Source: UCI (2012).
 
-Built as `01a111fc-7c2d-7441-b859-646c9bfbf380` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:87cff862cd2cb40a9c14147b0619096630febc8d21e18119c7a9fd7ac7148a4f`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7c2d-7441-b859-646c9bfbf380` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3c70f9963ef6a5f5473d9ab514f6338a9d825ad680dd061828ca9cbf8267e423`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -148,9 +148,9 @@ Only curators run `build`, when the dataset ships.
 | definition | ROC AUC of term-deposit subscription. |
 
 <details>
-<summary>Feature types: 11 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 9 categorical, 0 string, 0 datetime</summary>
 
-- categorical (11): `job`, `marital`, `education`, `default`, `housing`, `loan`, `contact`, `campaign`, `previous`, `poutcome`, `SubscribeTermDeposit`
+- categorical (9): `job`, `marital`, `education`, `default`, `housing`, `loan`, `contact`, `poutcome`, `SubscribeTermDeposit`
 - string (0): none
 - datetime (0): none
 
@@ -189,6 +189,9 @@ The first 5 of 45,211 rows of the final frame (random rows: the frame is shuffle
 
 - We removed the "duration" feature following its original description to obtain a "realistic predictive model".
 - We further remove the "month" and "day_of_week" features, as they also relate to the last contact -- which is not available in a real-world scenario.
+- `campaign` and `previous` are counts of contacts (UCI: "number of contacts performed during this campaign",
+  "... before this campaign"), so they stay numeric. The BeyondArena notebook typed them categorical (48 and
+  41 levels), which lost the order and left the high counts as rare levels (issue #34).
 
 ## Splits
 
@@ -232,13 +235,13 @@ Default splits.
 | housing | category | 0 | 0 | 2 | yes, no |
 | loan | category | 0 | 0 | 2 | no, yes |
 | contact | category | 0 | 0 | 3 | cellular, unknown, telephone |
-| campaign | category | 0 | 0 | 48 | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 |
-| previous | category | 0 | 0 | 41 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | poutcome | category | 0 | 0 | 4 | unknown, failure, other, success |
 | SubscribeTermDeposit | category | 0 | 0 | 2 | no, yes |
 | age | int64 | 0 | 0 | 77 | 32, 31, 33, 34, 35, 36, 30, 37, 39, 38 |
 | balance | int64 | 0 | 0 | 7168 | 0, 1, 2, 4, 3, 5, 6, 8, 23, 10 |
+| campaign | int64 | 0 | 0 | 48 | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 |
 | pdays | int64 | 0 | 0 | 559 | -1, 182, 92, 183, 91, 181, 370, 184, 364, 95 |
+| previous | int64 | 0 | 0 | 41 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 
 </details>
 
@@ -255,22 +258,19 @@ Default splits.
 |---|---|---|---|---|---|
 | age | 45211 | 40.9362 | 10.6188 | 18 | 95 |
 | balance | 45211 | 1362.27 | 3044.77 | -8019 | 102127 |
+| campaign | 45211 | 2.76384 | 3.09802 | 1 | 63 |
 | pdays | 45211 | 40.1978 | 100.129 | -1 | 871 |
+| previous | 45211 | 0.580323 | 2.30344 | 0 | 275 |
 
 ### Categorical features
 
 <details>
-<summary>Show the table (37 rows)</summary>
+<summary>Show the table (27 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | SubscribeTermDeposit | 1 | no | 39922 | 88.3 |
 | SubscribeTermDeposit | 2 | yes | 5289 | 11.7 |
-| campaign | 1 | 1 | 17544 | 38.8 |
-| campaign | 2 | 2 | 12505 | 27.66 |
-| campaign | 3 | 3 | 5521 | 12.21 |
-| campaign | 4 | 4 | 3522 | 7.79 |
-| campaign | 5 | 5 | 1764 | 3.9 |
 | contact | 1 | cellular | 29285 | 64.77 |
 | contact | 2 | unknown | 13020 | 28.8 |
 | contact | 3 | telephone | 2906 | 6.43 |
@@ -296,11 +296,6 @@ Default splits.
 | poutcome | 2 | failure | 4901 | 10.84 |
 | poutcome | 3 | other | 1840 | 4.07 |
 | poutcome | 4 | success | 1511 | 3.34 |
-| previous | 1 | 0 | 36954 | 81.74 |
-| previous | 2 | 1 | 2772 | 6.13 |
-| previous | 3 | 2 | 2106 | 4.66 |
-| previous | 4 | 3 | 1142 | 2.53 |
-| previous | 5 | 4 | 714 | 1.58 |
 
 </details>
 
@@ -315,4 +310,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:87cff862cd2cb40a9c14147b0619096630febc8d21e18119c7a9fd7ac7148a4f` |
+| stale | yes: the definition now gives checksum `v2:3c70f9963ef6a5f5473d9ab514f6338a9d825ad680dd061828ca9cbf8267e423` |

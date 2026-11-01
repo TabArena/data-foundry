@@ -5,6 +5,8 @@ suggestion: 'No'
 decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 - Duplicate
+collections:
+- MulTaBench
 original_source: Kaggle
 year: '2022'
 required_split:

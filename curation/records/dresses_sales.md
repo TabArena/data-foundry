@@ -35,6 +35,8 @@ This dataset is missing any source information and looking for it, I can also no
 
 Moreover, the task seems to be to predict ratings for one user? In general it is a weird data setup and not having the data source makes this even harder to parse
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `visuelle_new_fashion_product_sales` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 https://www.researchgate.net/publication/293464737_main_steps_for_doing_data_mining_project_using_weka or 10.24432/C56W3V (does not seem to be the real case)

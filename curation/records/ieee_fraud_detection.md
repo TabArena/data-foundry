@@ -10,6 +10,7 @@ data_foundry_status:
 suggestion: 'Yes'
 decision_markers:
 - Data Quality Issue
+- Anonymized
 tags:
 - Non-IID (Temporal)
 collections:
@@ -46,6 +47,8 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer from the semantic context, keep it a number, this is a real-world bias. We want to make things categorical if we know from the context they are indeed such" (CLEAN-14, amended again). Reverted: V1, V14, V41, V65, V88, V107 stay numeric (anonymized Vesta features).
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — Area under the ROC curve (https://www.kaggle.com/competitions/ieee-fraud-detection/overview/evaluation).
+
+CC (2026-10-27, Lennart): marker Anonymized, from the AI review of PR #17: the definition carries the Anonymized data tag; Vesta masked most fields (V1 to V339, C, D, M and id_ columns, card1 to card6), so their meaning and timing cannot be checked one by one (LEAK-32 names this case).
 
 ## Reference
 

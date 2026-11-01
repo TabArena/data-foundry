@@ -2,16 +2,16 @@
 report_format: data-foundry-report-v2
 unique_name: zillow_prize
 container_format: 2
-checksum: v2:a468124a39434900ad48dc62a1415102e345dbcd15f24a100db5990f894f8d46
+checksum: v2:465cdd4689d7d8d2ec365534bd25f6fa90ca769b449822802c41f8dafe099b56
 build: null
 build_stale: false
 data:
   n_rows: 153108
-  n_features: 56
+  n_features: 55
   dtypes:
-    category: 21
+    category: 23
     datetime64[ns]: 1
-    float64: 35
+    float64: 32
   n_test_dataset_rows: null
 task:
   target: logerror
@@ -61,9 +61,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `logerror`, scored with `mae` on temporal splits by `transaction_month`. 153,108 rows and 56 features. Source: Kaggle (2017).
+Regression of `logerror`, scored with `mae` on temporal splits by `transaction_month`. 153,108 rows and 55 features. Source: Kaggle (2017).
 
-Not built yet. The current definition gives checksum `v2:a468124a39434900ad48dc62a1415102e345dbcd15f24a100db5990f894f8d46`.
+Not built yet. The current definition gives checksum `v2:465cdd4689d7d8d2ec365534bd25f6fa90ca769b449822802c41f8dafe099b56`.
 
 ## In brief
 
@@ -136,7 +136,7 @@ Only curators run `build`, when the dataset ships.
 | license | Kaggle Competition Rules (data for use in the competition only; no redistribution) |
 | data_tags | Non-IID, Temporal, Spatial |
 | reference | Zillow2017ZillowPrize |
-| rows x columns | 153,108 x 57 |
+| rows x columns | 153,108 x 56 |
 | task.target | logerror |
 | task.problem_type | regression |
 | task.metric | mae |
@@ -154,9 +154,9 @@ Only curators run `build`, when the dataset ships.
 | definition | MAE of logerror = log(Zestimate) - log(SalePrice) over all scored sales |
 
 <details>
-<summary>Feature types: 21 categorical, 0 string, 1 datetime</summary>
+<summary>Feature types: 23 categorical, 0 string, 1 datetime</summary>
 
-- categorical (21): `fips`, `airconditioningtypeid`, `architecturalstyletypeid`, `buildingclasstypeid`, `heatingorsystemtypeid`, `propertylandusetypeid`, `typeconstructiontypeid`, `regionidcity`, `regionidneighborhood`, `regionidzip`, `propertycountylandusecode`, `propertyzoningdesc`, `hashottuborspa`, `fireplaceflag`, `taxdelinquencyflag`, `poolcnt`, `pooltypeid10`, `pooltypeid2`, `pooltypeid7`, `decktypeid`, `storytypeid`
+- categorical (23): `fips`, `airconditioningtypeid`, `architecturalstyletypeid`, `buildingclasstypeid`, `heatingorsystemtypeid`, `propertylandusetypeid`, `typeconstructiontypeid`, `regionidcity`, `regionidneighborhood`, `regionidzip`, `buildingqualitytypeid`, `census_tract`, `propertycountylandusecode`, `propertyzoningdesc`, `hashottuborspa`, `fireplaceflag`, `taxdelinquencyflag`, `poolcnt`, `pooltypeid10`, `pooltypeid2`, `pooltypeid7`, `decktypeid`, `storytypeid`
 - string (0): none
 - datetime (1): `transaction_month (%Y-%m-%d)`
 
@@ -179,21 +179,21 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 153,108 rows of the final frame (the oldest rows: the frame is sorted by `transaction_month`); 12 of 57 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 153,108 rows of the final frame (the oldest rows: the frame is sorted by `transaction_month`); 12 of 56 columns, the target first. Cells are cut at 40 characters.
 
 | logerror | airconditioningtypeid | architecturalstyletypeid | basementsqft | bathroomcnt | bedroomcnt | buildingclasstypeid | buildingqualitytypeid | calculatedbathnbr | decktypeid | finishedfloor1squarefeet | calculatedfinishedsquarefeet |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0.1865 | nan | nan | nan | 4 | 4 | nan | nan | 4 | False | nan | 2467 |
-| 0.1536 | 1 | nan | nan | 5 | 4 | nan | 4 | 5 | False | nan | 2835 |
-| 0.0723 | nan | nan | nan | 3 | 3 | nan | 4 | 3 | False | nan | 1405 |
-| 0.0392 | nan | nan | nan | 3 | 3 | nan | 4 | 3 | False | nan | 2614 |
-| -0.0608 | nan | nan | nan | 2 | 4 | nan | nan | 2 | False | nan | 1654 |
+| 0.062 | 1 | nan | nan | 3 | 4 | nan | 4 | 3 | False | nan | 4035 |
+| -0.0471 | nan | nan | nan | 1 | 1 | nan | nan | 1 | False | nan | 876 |
+| 0.0592 | nan | nan | nan | 1.5 | 2 | nan | nan | 1.5 | False | nan | 1413 |
+| 0.0119 | 1 | nan | nan | 2 | 4 | nan | 4 | 2 | False | nan | 2004 |
+| -0.0294 | nan | nan | nan | 2 | 4 | nan | 4 | 2 | False | nan | 1609 |
 
 ## Curation notes
 
 We start with train_2016_v2.csv and train_2017.csv (home sales in Los Angeles, Orange and Ventura counties) and properties_2016.csv and properties_2017.csv (one row per parcel) from round 1 of the Kaggle competition Zillow Prize.
 
-- Prediction point: the first day of the sale month, since Zillow pairs each sale with the Zestimate of that day (FAQ). `transaction_month` replaces `transactiondate`.
+- Prediction point: the first day of the sale month. Zillow's FAQ (Andrew Martin, Zillow, discussion 33899, 2017-05-31): "we pair sales prices of homes to their Zestimate values from the first day of the month in which they were sold ... if a home sells in LA on Oct 18th 2017 we'll use the Zestimate from October 1st". `transaction_month` replaces `transactiondate`. Each sale takes the property file of its year, as Zillow advised ("Yes, exactly!", same thread).
 - Target: `logerror` = log(Zestimate) - log(SalePrice), rounded to 4 decimals, as in train_2016_v2 and the Evaluation page.
 - Extreme values, kept: 2.1% of the rows have an absolute logerror above 0.4 and hold 74% of the squared error (decision table). Zillow traces them mostly to data errors such as miskeyed prices; the competition's test kept them.
 - Small signal (task probes no_signal, drift_baseline, unstable), kept: untuned LightGBM with an absolute-error loss (100 trees, row and column subsampling 0.8) beats the train mean in 8 or 9 of the 9 windows, depending on the seed (R^2 about 0.001 to 0.012); squared-error fits do not (3 or 4 of 9). A constant train median loses to the mean in 9 of 9, so the gain comes from the features (task_probes.md, rule 2). Tuned results are pending.
@@ -202,15 +202,16 @@ We start with train_2016_v2.csv and train_2017.csv (home sales in Los Angeles, O
 - Note: after 15 October 2016 train_2016_v2 holds only part of the sales (the rest were the public leaderboard), so the November and December 2016 test windows hold 1,826 and 1,739 sales, about 18% of a usual month, and are noisier. The share looks random (absolute logerror above 0.4: 2.2% after, 2.0% before), so we keep them.
 - We drop the 24 sales of 2017 whose parcel has no home facts in properties_2017, as Zillow did for 2016 (discussion 34667).
 - We drop the 19 sales within 31 days of a sale of the same parcel, as the competition does (Data page); other repeat sales stay.
-- `buildingqualitytypeid` (lower is better) is on another scale in properties_2017, where each code comes from one 2016 code (decision table; a crosstab of the data, Zillow publishes no conversion); we map the 2017 values onto the 2016 scale, which holds 8 values (1, 4, 6, 7, 8, 10, 11, 12; 6, 8 and 11 on 8 rows). It stays numeric (ordinal).
+- `buildingqualitytypeid` is on another scale in properties_2017 ("This variable was fully recoded", discussion 40453, 2017-10-03): each 2017 code comes from one 2016 code, on the sold parcels (decision table) and on all 1.94M parcels with a code in both files (the crosstab posted in that thread). Zillow published no conversion and the competitors kept the raw codes, so a code meant one thing in 2016 and another in 2017. Exception to CLEAN-21 (2026-10-26, Lennart): we map the 2017 values onto the 2016 scale with the map the data shows, since no published conversion exists and the roll-wide crosstab confirms it. The column is categorical (codes 1, 4, 7, 10, 12, and 6, 8 and 11 on 8 rows): the codes are no clean order (1, 4 and 7 run from dearer to cheaper homes, but 10 and 12 are the largest and dearest), so "lower is better" does not hold.
 - Each column of `PRESENCE_FLAGS` holds one value or nothing and becomes a boolean (`taxdelinquencyflag` 1 or 0, see below).
 - `taxdelinquencyyear`: the two-digit years (3 to 15, and 99) become four-digit years.
 - `taxdelinquencyflag` and `taxdelinquencyyear` are one snapshot of about August-September 2016 in both files, taken after the sale for the sales of January to August 2016 (1.5% flagged, against 3.1-4.7% per month from September 2016; a sale clears the arrears). Both are missing for the sales before September 2016 (72,157 training rows; the flag is 1 or 0 elsewhere); every test row keeps them, since the snapshot predates every test window. Blanking, keeping and dropping them give the same L1 LightGBM skill within the seed spread (R^2 0.0053-0.0057, 9 windows, 3 seeds, two configs).
 - Zero means "not recorded" and becomes missing in `roomcnt` in every county (all of Los Angeles, 44% of Orange; those homes have a median of 3 bedrooms), in `bathroomcnt` (its zeros lack the counts derived from it), in `bedroomcnt` where the bathrooms are also 0 (large homes, no studios) and in `garagetotalsqft` where `garagecarcnt` is 1 or more (14,981 rows, about 30% of the Orange and Ventura garages).
 - The spa and hot-tub flags (`hashottuborspa`, `pooltypeid10`) are recorded for about half as many parcels in properties_2017 as in properties_2016 (2.2-3.1% of the 2016 sales against 1.5-2.3% of the 2017 sales for `hashottuborspa`); a recording change we keep, since no source says which file is right.
-- Near copies, kept since they differ on some rows: `calculatedbathnbr` equals `bathroomcnt` on 99.98% of the rows, `finishedsquarefeet50` equals `finishedfloor1squarefeet` on 99.5%, `censustractandblock` equals `rawcensustractandblock` on its leading digits on 98.9%.
+- Near copies, kept since they differ on some rows: `calculatedbathnbr` equals `bathroomcnt` on 99.98% of the rows, `finishedsquarefeet50` equals `finishedfloor1squarefeet` on 99.5%, and the two census tract-and-block columns are replaced by `census_tract` (below).
 - We drop `parcelid` (an identifier), `regionidcounty` (a recoding of `fips`), `assessmentyear` (the sale year minus one, constant within each property file) and `transactiondate`.
-- `CODE_COLUMNS` (fips, the region ids and the type ids of the data dictionary), `propertycountylandusecode` and `propertyzoningdesc` are categories; the census tract-and-block numbers stay numeric: each is a county, tract and block code, so its order follows geography, and it has about 55,000 values.
+- `CODE_COLUMNS` (fips, the region ids and the type ids of the data dictionary), `buildingqualitytypeid`, `propertycountylandusecode` and `propertyzoningdesc` are categories.
+- `census_tract` (CLEAN-14, CC 2026-10-26): the census tract-and-block code is four nested parts (state and county, tract, block group, block; the raw code `060378001.011002` is county 06037, tract 8001.01, block 1002). We keep the tract as one category, its 11-digit ID (06037800101; 3,030 tracts, a median of 40 sales each, at most 0.2% of a window's test rows on a tract unseen in training), and drop `rawcensustractandblock` and `censustractandblock`: the county part is `fips`, and the block group (8,334 levels) and the block (55,601, 19-30% of the test rows unseen) are near-identifiers whose location the coordinates hold. No top solution is public; the most-voted kernels kept the codes numeric or dropped them. With LightGBM's own category handling the tract category scores below the numeric code (MAE 0.06876 against 0.06848), a model question, not a reason for the encoding.
 - Duplicate rows, kept: 7 rows repeat another row exactly and 39 more repeat another row's features with another logerror. They are separate sales of separate parcels, such as units of one building.
 
 ## Splits
@@ -292,7 +293,7 @@ Accepted on purpose:
 ### Feature summary
 
 <details>
-<summary>Show the table (57 rows)</summary>
+<summary>Show the table (56 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
@@ -303,6 +304,7 @@ Accepted on purpose:
 | regionidneighborhood | category | 92105 | 60.16 | 505 | 27080, 118208, 48570, 37739, 48200, 268496, 51906, 54300, 113455, 274049 |
 | taxdelinquencyflag | category | 72157 | 47.13 | 2 | 0.0, 1.0 |
 | heatingorsystemtypeid | category | 57049 | 37.26 | 12 | 2, 7, 24, 6, 20, 13, 18, 1, 10, 11 |
+| buildingqualitytypeid | category | 55558 | 36.29 | 8 | 7, 4, 1, 10, 12, 8, 6, 11 |
 | propertyzoningdesc | category | 54073 | 35.32 | 2292 | LAR1, LAR3, LARS, LBR1N, LARD1.5, LAR2, SCUR2, LARD2, LARA, LARE11 |
 | regionidcity | category | 2991 | 1.95 | 178 | 12447, 46298, 54311, 5534, 52650, 40227, 16764, 25218, 34278, 27110 |
 | regionidzip | category | 77 | 0.05 | 389 | 97319, 96987, 96974, 97318, 97329, 97118, 97328, 96993, 96996, 96962 |
@@ -317,42 +319,40 @@ Accepted on purpose:
 | propertylandusetypeid | category | 0 | 0 | 14 | 261, 266, 246, 269, 248, 247, 265, 263, 260, 275 |
 | storytypeid | category | 0 | 0 | 2 | False, True |
 | fireplaceflag | category | 0 | 0 | 2 | False, True |
+| census_tract | category | 0 | 0 | 3030 | 06059052420, 06059052426, 06059062604, 06059032023, 06037901004, 06059032059, 0… |
 | transaction_month | datetime64\[ns\] | 0 | 0 | 19 | 2017-06-01 00:00:00, 2016-06-01 00:00:00, 2017-05-01 00:00:00, 2016-08-01 00:00… |
-| finishedsquarefeet13 | float64 | 153044 | 99.96 | 16 | 1440.0, 1344.0, 1392.0, 1536.0, 1248.0, 1152.0, 1056.0, 1488.0, 1464.0, 1566.0 |
+| finishedsquarefeet13 | float64 | 153044 | 99.96 | 16 | 1440.0, 1344.0, 1392.0, 1536.0, 1248.0, 1152.0, 1488.0, 1056.0, 1566.0, 1464.0 |
 | basementsqft | float64 | 153022 | 99.94 | 73 | 700.0, 1528.0, 515.0, 273.0, 168.0, 900.0, 100.0, 1312.0, 912.0, 771.0 |
-| yardbuildingsqft26 | float64 | 152958 | 99.9 | 105 | 120.0, 144.0, 88.0, 60.0, 56.0, 180.0, 125.0, 108.0, 37.0, 100.0 |
-| finishedsquarefeet6 | float64 | 152362 | 99.51 | 607 | 3470.0, 720.0, 952.0, 2530.0, 3500.0, 4442.0, 765.0, 520.0, 2180.0, 4345.0 |
+| yardbuildingsqft26 | float64 | 152958 | 99.9 | 105 | 120.0, 60.0, 88.0, 56.0, 144.0, 125.0, 180.0, 108.0, 37.0, 204.0 |
+| finishedsquarefeet6 | float64 | 152362 | 99.51 | 607 | 2530.0, 3500.0, 952.0, 3470.0, 720.0, 4442.0, 765.0, 520.0, 572.0, 935.0 |
 | poolsizesum | float64 | 151432 | 98.91 | 366 | 450.0, 400.0, 800.0, 500.0, 600.0, 512.0, 480.0, 420.0, 648.0, 525.0 |
 | taxdelinquencyyear | float64 | 150025 | 97.99 | 12 | 2015.0, 2014.0, 2013.0, 2012.0, 2011.0, 2010.0, 2009.0, 2008.0, 2007.0, 2006.0 |
 | yardbuildingsqft17 | float64 | 148537 | 97.01 | 734 | 200.0, 240.0, 300.0, 180.0, 120.0, 288.0, 360.0, 216.0, 400.0, 150.0 |
-| finishedsquarefeet15 | float64 | 147103 | 96.08 | 2518 | 1680.0, 1536.0, 1600.0, 2016.0, 1560.0, 1440.0, 1364.0, 1488.0, 2160.0, 1740.0 |
-| finishedfloor1squarefeet | float64 | 141330 | 92.31 | 2224 | 1431.0, 1260.0, 880.0, 1226.0, 1252.0, 798.0, 1104.0, 1205.0, 1441.0, 780.0 |
-| finishedsquarefeet50 | float64 | 141330 | 92.31 | 2247 | 1431.0, 1260.0, 1226.0, 880.0, 1252.0, 1104.0, 798.0, 1205.0, 856.0, 780.0 |
+| finishedsquarefeet15 | float64 | 147103 | 96.08 | 2518 | 1680.0, 1536.0, 1600.0, 2016.0, 1560.0, 1440.0, 1364.0, 1488.0, 1800.0, 1936.0 |
+| finishedfloor1squarefeet | float64 | 141330 | 92.31 | 2224 | 1431.0, 1260.0, 880.0, 1226.0, 1252.0, 1104.0, 798.0, 1441.0, 1205.0, 734.0 |
+| finishedsquarefeet50 | float64 | 141330 | 92.31 | 2247 | 1431.0, 1260.0, 1226.0, 880.0, 1252.0, 798.0, 1104.0, 734.0, 780.0, 1462.0 |
 | fireplacecnt | float64 | 136758 | 89.32 | 5 | 1.0, 2.0, 3.0, 4.0, 5.0 |
 | threequarterbathnbr | float64 | 132857 | 86.77 | 5 | 1.0, 2.0, 3.0, 4.0, 7.0 |
 | numberofstories | float64 | 118163 | 77.18 | 5 | 1.0, 2.0, 3.0, 4.0, 6.0 |
 | roomcnt | float64 | 118143 | 77.16 | 16 | 6.0, 7.0, 5.0, 8.0, 4.0, 9.0, 10.0, 3.0, 11.0, 12.0 |
 | garagetotalsqft | float64 | 117331 | 76.63 | 1016 | 400.0, 441.0, 360.0, 462.0, 460.0, 440.0, 420.0, 483.0, 480.0, 430.0 |
 | garagecarcnt | float64 | 102350 | 66.85 | 15 | 2.0, 1.0, 3.0, 0.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
-| buildingqualitytypeid | float64 | 55558 | 36.29 | 8 | 7.0, 4.0, 1.0, 10.0, 12.0, 8.0, 6.0, 11.0 |
 | unitcnt | float64 | 53851 | 35.17 | 13 | 1.0, 2.0, 4.0, 3.0, 6.0, 143.0, 11.0, 9.0, 5.0, 70.0 |
 | lotsizesquarefeet | float64 | 16830 | 10.99 | 24573 | 6000.0, 5000.0, 7200.0, 7000.0, 6500.0, 7500.0, 6600.0, 5500.0, 4000.0, 5200.0 |
-| finishedsquarefeet12 | float64 | 7638 | 4.99 | 5632 | 1200.0, 1120.0, 1080.0, 1040.0, 1300.0, 1260.0, 1440.0, 960.0, 1280.0, 1400.0 |
+| finishedsquarefeet12 | float64 | 7638 | 4.99 | 5632 | 1200.0, 1080.0, 1120.0, 1040.0, 1300.0, 1260.0, 1440.0, 960.0, 1280.0, 1400.0 |
 | calculatedbathnbr | float64 | 1681 | 1.1 | 24 | 2.0, 3.0, 1.0, 2.5, 4.0, 1.5, 5.0, 3.5, 4.5, 6.0 |
 | fullbathcnt | float64 | 1681 | 1.1 | 16 | 2.0, 3.0, 1.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 |
 | bathroomcnt | float64 | 1649 | 1.08 | 24 | 2.0, 3.0, 1.0, 2.5, 4.0, 1.5, 5.0, 3.5, 4.5, 6.0 |
 | bedroomcnt | float64 | 1609 | 1.05 | 17 | 3.0, 2.0, 4.0, 5.0, 1.0, 6.0, 0.0, 8.0, 7.0, 9.0 |
 | yearbuilt | float64 | 972 | 0.63 | 138 | 1955.0, 1989.0, 1950.0, 1964.0, 1954.0, 1973.0, 1953.0, 1956.0, 1979.0, 1987.0 |
 | calculatedfinishedsquarefeet | float64 | 823 | 0.54 | 5733 | 1200.0, 1120.0, 1080.0, 1440.0, 1040.0, 1300.0, 1260.0, 960.0, 1280.0, 1320.0 |
-| censustractandblock | float64 | 800 | 0.52 | 55348 | 60371371031000.0, 60379203391054.0, 60590320582009.0, 60372766032001.0, 6059062… |
-| structuretaxvaluedollarcnt | float64 | 476 | 0.31 | 89997 | 100000.0, 200000.0, 90000.0, 150000.0, 92000.0, 140000.0, 105000.0, 120000.0, 1… |
-| taxamount | float64 | 11 | 0.01 | 138071 | 2418.22, 1544.26, 2388.63, 1076.27, 3720.52, 4401.72, 4905.5, 2386.52, 1418.64,… |
-| logerror | float64 | 0 | 0 | 8177 | 0.003, 0.002, 0.005, 0.001, 0.007, 0.004, 0.006, -0.005, 0.0, 0.01 |
+| structuretaxvaluedollarcnt | float64 | 476 | 0.31 | 89997 | 100000.0, 200000.0, 90000.0, 150000.0, 92000.0, 140000.0, 120000.0, 105000.0, 1… |
+| taxamount | float64 | 11 | 0.01 | 138071 | 2418.22, 1544.26, 2388.63, 3720.52, 1076.27, 4905.5, 4401.72, 2386.52, 2354.5, … |
+| logerror | float64 | 0 | 0 | 8177 | 0.003, 0.002, 0.005, 0.001, 0.007, 0.004, 0.006, 0.0, -0.005, 0.01 |
 | latitude | float64 | 0 | 0 | 116721 | 33984600.0, 33665651.0, 33766300.0, 34056700.0, 33785200.0, 33667397.0, 3360300… |
-| longitude | float64 | 0 | 0 | 116305 | -118445000.0, -118389000.0, -118390000.0, -118438000.0, -118463000.0, -11843200… |
-| rawcensustractandblock | float64 | 0 | 0 | 55601 | 60379203.3911, 60590626.1021, 60371371.031, 60590320.582, 60372741.001, 6037920… |
-| taxvaluedollarcnt | float64 | 2 | 0 | 94654 | 400000.0, 350000.0, 500000.0, 420000.0, 340000.0, 375000.0, 450000.0, 300000.0,… |
-| landtaxvaluedollarcnt | float64 | 3 | 0 | 94876 | 20980.0, 300000.0, 200000.0, 29757.0, 203996.0, 21299.0, 204922.0, 19149.0, 183… |
+| longitude | float64 | 0 | 0 | 116305 | -118445000.0, -118389000.0, -118390000.0, -118438000.0, -118383000.0, -11846300… |
+| taxvaluedollarcnt | float64 | 2 | 0 | 94654 | 400000.0, 350000.0, 500000.0, 420000.0, 340000.0, 600000.0, 375000.0, 300000.0,… |
+| landtaxvaluedollarcnt | float64 | 3 | 0 | 94876 | 20980.0, 300000.0, 200000.0, 29757.0, 203996.0, 21299.0, 204922.0, 400000.0, 19… |
 
 </details>
 
@@ -365,7 +365,7 @@ Accepted on purpose:
 ### Numeric features
 
 <details>
-<summary>Show the table (35 rows)</summary>
+<summary>Show the table (32 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -373,7 +373,6 @@ Accepted on purpose:
 | basementsqft | 86 | 705.14 | 580.628 | 90 | 3560 |
 | bathroomcnt | 151459 | 2.31278 | 0.978063 | 1 | 20 |
 | bedroomcnt | 151499 | 3.07289 | 1.11144 | 0 | 16 |
-| buildingqualitytypeid | 97550 | 5.56713 | 1.90225 | 1 | 12 |
 | calculatedbathnbr | 151427 | 2.31274 | 0.978059 | 1 | 20 |
 | finishedfloor1squarefeet | 11778 | 1356.77 | 661.193 | 44 | 7625 |
 | calculatedfinishedsquarefeet | 152285 | 1778.09 | 940.139 | 2 | 35640 |
@@ -390,7 +389,6 @@ Accepted on purpose:
 | longitude | 153108 | -1.18201e+08 | 360240 | -1.19475e+08 | -1.17555e+08 |
 | lotsizesquarefeet | 136278 | 29513.7 | 122811 | 167 | 6.97101e+06 |
 | poolsizesum | 1676 | 517.991 | 158.044 | 24 | 1750 |
-| rawcensustractandblock | 153108 | 6.04919e+07 | 205497 | 6.0371e+07 | 6.11101e+07 |
 | roomcnt | 34965 | 6.49409 | 1.55476 | 1 | 18 |
 | threequarterbathnbr | 20251 | 1.00914 | 0.110064 | 1 | 7 |
 | unitcnt | 99257 | 1.11162 | 1.02722 | 1 | 237 |
@@ -403,14 +401,13 @@ Accepted on purpose:
 | landtaxvaluedollarcnt | 153105 | 288027 | 444679 | 22 | 4.89522e+07 |
 | taxamount | 153097 | 5993.56 | 7212.63 | 19.92 | 586639 |
 | taxdelinquencyyear | 3083 | 2014.05 | 1.53629 | 1999 | 2015 |
-| censustractandblock | 152308 | 6.04917e+13 | 2.05266e+11 | 6.0371e+13 | 6.11101e+13 |
 
 </details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (80 rows)</summary>
+<summary>Show the table (90 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -427,6 +424,16 @@ Accepted on purpose:
 | buildingclasstypeid | 1 | &lt;NA> | 153080 | 99.98 |
 | buildingclasstypeid | 2 | 4 | 27 | 0.02 |
 | buildingclasstypeid | 3 | 3 | 1 | 0 |
+| buildingqualitytypeid | 1 | &lt;NA> | 55558 | 36.29 |
+| buildingqualitytypeid | 2 | 7 | 49921 | 32.61 |
+| buildingqualitytypeid | 3 | 4 | 40444 | 26.42 |
+| buildingqualitytypeid | 4 | 1 | 4490 | 2.93 |
+| buildingqualitytypeid | 5 | 10 | 2473 | 1.62 |
+| census_tract | 1 | 06059052420 | 417 | 0.27 |
+| census_tract | 2 | 06059052426 | 397 | 0.26 |
+| census_tract | 3 | 06059062604 | 392 | 0.26 |
+| census_tract | 4 | 06059032023 | 364 | 0.24 |
+| census_tract | 5 | 06037901004 | 339 | 0.22 |
 | decktypeid | 1 | False | 151942 | 99.24 |
 | decktypeid | 2 | True | 1166 | 0.76 |
 | fips | 1 | 6037 | 99476 | 64.97 |
@@ -464,18 +471,8 @@ Accepted on purpose:
 | propertyzoningdesc | 3 | LAR3 | 4777 | 3.12 |
 | propertyzoningdesc | 4 | LARS | 2625 | 1.71 |
 | propertyzoningdesc | 5 | LBR1N | 2440 | 1.59 |
-| regionidcity | 1 | 12447 | 35062 | 22.9 |
-| regionidcity | 2 | 46298 | 5088 | 3.32 |
-| regionidcity | 3 | 54311 | 3691 | 2.41 |
-| regionidcity | 4 | 5534 | 3591 | 2.35 |
-| regionidcity | 5 | 52650 | 3469 | 2.27 |
-| regionidneighborhood | 1 | &lt;NA> | 92105 | 60.16 |
-| regionidneighborhood | 2 | 27080 | 1329 | 0.87 |
-| regionidneighborhood | 3 | 118208 | 1323 | 0.86 |
-| regionidneighborhood | 4 | 48570 | 1303 | 0.85 |
-| regionidneighborhood | 5 | 37739 | 1274 | 0.83 |
 
-(20 more rows not shown)
+(30 more rows not shown)
 
 </details>
 

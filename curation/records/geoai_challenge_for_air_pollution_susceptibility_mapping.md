@@ -50,3 +50,5 @@ GeoAI Zindi challenge whose stated task is to predict the pollution levels (AQI)
 predict the pollution levels (AQI) of the city of Milan during 202
 
 time-series
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `aq_bench_ozone_metrics` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
