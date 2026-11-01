@@ -39,7 +39,7 @@ Andrej: Need to clarify source
 
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `education` (the README lists their levels).
 
-CC (2026-11-01, Lennart): marks on the review board of PR #37: month is an ordered category (a cycle named by numbers: the curator's cycle rule).
+CC (2026-11-01, Lennart): marks on the review board of PR #37: month stays a number (a position in the year's continuous cycle, shipped as a number: the curator's cycle rule).
 
 ## Reference
 

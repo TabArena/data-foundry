@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bad_customer_detection
 container_format: 2
-checksum: v2:d1429f9fc953793fca7b284e3baa72af8c7b1565ecd4a420d81bdef342bedb8d
+checksum: v2:b75dd6f441b687d81d8e4d906e4272b2730b3c76a344135176168d8744ae6e63
 build:
   uuid: 01a111fc-c415-7ef4-a2b9-d98a1d4aa9f8
   checksum: v2:3f1816d93251a2d25adda0f1bd20121ce71f72583ac02a9de8997731cac9b6ad
@@ -22,8 +22,8 @@ data:
   n_rows: 1723
   n_features: 13
   dtypes:
-    category: 10
-    int64: 4
+    category: 9
+    int64: 5
   n_test_dataset_rows: null
 task:
   target: bad_customer
@@ -67,7 +67,7 @@ decisions: []
 
 Binary classification of `bad_customer`, scored with `roc_auc` on IID splits. 1,723 rows and 13 features. Source: Kaggle (2020).
 
-Built as `01a111fc-c415-7ef4-a2b9-d98a1d4aa9f8` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d1429f9fc953793fca7b284e3baa72af8c7b1565ecd4a420d81bdef342bedb8d`, so the build is stale. See [Build](#build).
+Built as `01a111fc-c415-7ef4-a2b9-d98a1d4aa9f8` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b75dd6f441b687d81d8e4d906e4272b2730b3c76a344135176168d8744ae6e63`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -142,10 +142,10 @@ Only curators run `build`, when the dataset ships.
 | reason | Kaggle dataset (not a competition) with no stated task metric; the original source is unknown (open item in the record) |
 
 <details>
-<summary>Feature types: 8 categorical, 2 ordinal, 0 string, 0 datetime</summary>
+<summary>Feature types: 8 categorical, 1 ordinal, 0 string, 0 datetime</summary>
 
 - categorical (8): `sex`, `product_type`, `having_children_flg`, `region`, `family_status`, `phone_operator`, `is_client`, `bad_customer`
-- ordinal (2): `education (Incomplete secondary education < Secondary education < Secondary special education < Incomplete higher education < Higher education < PhD degree)`, `month (1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < 11 < 12)`
+- ordinal (1): `education (Incomplete secondary education < Secondary education < Secondary special education < Incomplete higher education < Higher education < PhD degree)`
 - string (0): none
 - datetime (0): none
 
@@ -184,9 +184,9 @@ The first 5 of 1,723 rows of the final frame (random rows: the frame is shuffled
 - Note: The original source of the data is still to be clarified (open item in the curation record).
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
   the order of the source's codebook (`ORDINAL_LEVELS`).
-- Cycle (2026-11-01, CLEAN-14, Lennart's rule): `month`, the month number of the loan, names a member of the
-  calendar's cycle rather than measuring a quantity (no value lies between two months or days), so it is an
-  ordered category in the calendar's order; the wrap is not shown.
+- Cycle (2026-11-01, CLEAN-14, Lennart's rule): `month` (1-12) stays a number. A weekday or a month is a
+  position in a continuous cycle (weekday 1.5 is Monday noon), and the source ships it as a number; named
+  weekdays and months are ordered categories instead.
 
 ## Splits
 
@@ -246,7 +246,6 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| month | category | 0 | 0 | 12 | 11, 12, 10, 3, 7, 8, 1, 2, 9, 4 |
 | sex | category | 0 | 0 | 2 | male, female |
 | education | category | 0 | 0 | 6 | Secondary special education, Higher education, Secondary education, Incomplete … |
 | product_type | category | 0 | 0 | 22 | Cell phones, Household appliances, Computers, Furniture, Clothing, Cosmetics an… |
@@ -256,6 +255,7 @@ Default splits.
 | phone_operator | category | 0 | 0 | 5 | 1, 0, 2, 3, 4 |
 | is_client | category | 0 | 0 | 2 | 1, 0 |
 | bad_customer | category | 0 | 0 | 2 | No, Yes |
+| month | int64 | 0 | 0 | 12 | 11, 12, 10, 3, 7, 8, 1, 2, 9, 4 |
 | credit_amount | int64 | 0 | 0 | 205 | 15000, 14000, 11000, 21000, 8000, 13000, 9500, 14500, 30000, 18000 |
 | credit_term | int64 | 0 | 0 | 22 | 12, 6, 10, 18, 24, 3, 4, 15, 36, 8 |
 | age | int64 | 0 | 0 | 66 | 23, 24, 26, 31, 22, 25, 30, 29, 27, 21 |
@@ -274,6 +274,7 @@ Default splits.
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
+| month | 1723 | 6.70807 | 3.53842 | 1 | 12 |
 | credit_amount | 1723 | 29264.7 | 27926.8 | 5000 | 301000 |
 | credit_term | 1723 | 11.5467 | 6.54835 | 3 | 36 |
 | age | 1723 | 35.9118 | 13.1202 | 18 | 90 |
@@ -282,7 +283,7 @@ Default splits.
 ### Categorical features
 
 <details>
-<summary>Show the table (34 rows)</summary>
+<summary>Show the table (29 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -300,11 +301,6 @@ Default splits.
 | having_children_flg | 2 | 1 | 738 | 42.83 |
 | is_client | 1 | 1 | 1042 | 60.48 |
 | is_client | 2 | 0 | 681 | 39.52 |
-| month | 1 | 11 | 174 | 10.1 |
-| month | 2 | 12 | 162 | 9.4 |
-| month | 3 | 10 | 160 | 9.29 |
-| month | 4 | 3 | 158 | 9.17 |
-| month | 5 | 7 | 145 | 8.42 |
 | phone_operator | 1 | 1 | 666 | 38.65 |
 | phone_operator | 2 | 0 | 536 | 31.11 |
 | phone_operator | 3 | 2 | 317 | 18.4 |
@@ -334,4 +330,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:d1429f9fc953793fca7b284e3baa72af8c7b1565ecd4a420d81bdef342bedb8d` |
+| stale | yes: the definition now gives checksum `v2:b75dd6f441b687d81d8e4d906e4272b2730b3c76a344135176168d8744ae6e63` |

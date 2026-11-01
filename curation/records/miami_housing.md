@@ -45,7 +45,7 @@ CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the o
 
 CC (2026-10-31, Lennart): marks on the review board of PR #37 (the order comes from the context and logic, not from the target): structure_quality, a 1-5 quality code without labels, is an ordered category in the order of its codes.
 
-CC (2026-11-01, Lennart): marks on the review board of PR #37: month_sold is an ordered category (a cycle named by numbers: the curator's cycle rule).
+CC (2026-11-01, Lennart): marks on the review board of PR #37: month_sold stays a number (a position in the year's continuous cycle, shipped as a number: the curator's cycle rule).
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `florida_dor_property_sales` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 

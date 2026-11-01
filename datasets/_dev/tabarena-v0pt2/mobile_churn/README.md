@@ -2,16 +2,16 @@
 report_format: data-foundry-report-v2
 unique_name: mobile_churn
 container_format: 2
-checksum: v2:adc43e6e832a70b14c945c9195d6b8af4c15877ab03b58b2128b30beacdccbff
+checksum: v2:fdfd55e99eabd6aaac648e55fa033313c87fc0b6f18597e4307ef82ab9e40707
 build: null
 build_stale: false
 data:
   n_rows: 54207
   n_features: 57
   dtypes:
-    category: 7
+    category: 6
     float64: 34
-    int64: 17
+    int64: 18
   n_test_dataset_rows: null
 task:
   target: churn
@@ -61,7 +61,7 @@ decisions:
 
 Binary classification of `churn`, scored with `roc_auc` on IID splits. 54,207 rows and 57 features. Source: Kaggle (2019).
 
-Not built yet. The current definition gives checksum `v2:adc43e6e832a70b14c945c9195d6b8af4c15877ab03b58b2128b30beacdccbff`.
+Not built yet. The current definition gives checksum `v2:fdfd55e99eabd6aaac648e55fa033313c87fc0b6f18597e4307ef82ab9e40707`.
 
 ## In brief
 
@@ -145,10 +145,9 @@ Only curators run `build`, when the dataset ships.
 | reason | Kaggle dataset with unknown origin (no paper, no operator); no task or metric defined. |
 
 <details>
-<summary>Feature types: 6 categorical, 1 ordinal, 0 string, 0 datetime</summary>
+<summary>Feature types: 6 categorical, 0 string, 0 datetime</summary>
 
 - categorical (6): `user_intake`, `user_has_outgoing_calls`, `user_has_outgoing_sms`, `user_use_gprs`, `user_does_reload`, `churn`
-- ordinal (1): `month (6 < 7 < 8)`
 - string (0): none
 - datetime (0): none
 
@@ -199,9 +198,9 @@ We start with mobile-churn-data.xlsx (66,469 rows) from the Kaggle dataset dimit
 - Duplicates kept: 9 rows are exact copies, and 8 feature vectors occur with both labels.
 - Anomaly: negative amounts in seven spending and top-up columns (refunds or corrections); kept as published.
 - Note: the licence is "unknown" (Kaggle data card, OpenML 44231). The year 2019 is that of the Kaggle upload; the data are from 2013.
-- Cycle (2026-11-01, CLEAN-14, Lennart's rule): `month`, the record month (June, July and August 2013), names a
-  member of the calendar's cycle rather than measuring a quantity (no value lies between two months or days), so
-  it is an ordered category in the calendar's order; the wrap is not shown.
+- Cycle (2026-11-01, CLEAN-14, Lennart's rule): `month`, the record month (6 to 8), stays a number. A weekday or
+  a month is a position in a continuous cycle (weekday 1.5 is Monday noon), and the source ships it as a number;
+  named weekdays and months are ordered categories instead.
 
 ## Splits
 
@@ -263,7 +262,6 @@ Accepted on purpose:
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| month | category | 0 | 0 | 3 | 6, 8, 7 |
 | user_intake | category | 0 | 0 | 2 | 0, 1 |
 | user_has_outgoing_calls | category | 0 | 0 | 2 | 1, 0 |
 | user_has_outgoing_sms | category | 0 | 0 | 2 | 1, 0 |
@@ -304,6 +302,7 @@ Accepted on purpose:
 | last_100_calls_outgoing_to_offnet_duration | float64 | 0 | 0 | 14743 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | last_100_calls_outgoing_to_abroad_duration | float64 | 0 | 0 | 2915 | 0.0, 0.5, 1.0, 2.0, 0.53, 1.5, 1.08, 1.38, 0.72, 0.33 |
 | last_100_gprs_usage | float64 | 0 | 0 | 2630 | 0.0, 0.3, 0.31, 0.59, 0.32, 0.6, 0.61, 0.33, 0.62, 0.35 |
+| month | int64 | 0 | 0 | 3 | 6, 8, 7 |
 | reloads_count | int64 | 0 | 0 | 25 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | calls_outgoing_count | int64 | 0 | 0 | 581 | 0, 1, 2, 3, 4, 5, 6, 7, 9, 8 |
 | calls_outgoing_to_onnet_count | int64 | 0 | 0 | 66 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
@@ -334,10 +333,11 @@ Accepted on purpose:
 ### Numeric features
 
 <details>
-<summary>Show the table (51 rows)</summary>
+<summary>Show the table (52 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
+| month | 54207 | 6.04684 | 0.285943 | 6 | 8 |
 | user_lifetime | 52912 | 953.679 | 653.232 | 0 | 1986 |
 | user_no_outgoing_activity_in_days | 53500 | 5.08764 | 10.5106 | 0 | 100 |
 | user_account_balance_last | 54207 | 11.7788 | 19.822 | 0 | 1775.71 |
@@ -395,15 +395,12 @@ Accepted on purpose:
 ### Categorical features
 
 <details>
-<summary>Show the table (15 rows)</summary>
+<summary>Show the table (12 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | churn | 1 | No | 48815 | 90.05 |
 | churn | 2 | Yes | 5392 | 9.95 |
-| month | 1 | 6 | 52674 | 97.17 |
-| month | 2 | 8 | 1006 | 1.86 |
-| month | 3 | 7 | 527 | 0.97 |
 | user_does_reload | 1 | 1 | 29944 | 55.24 |
 | user_does_reload | 2 | 0 | 24263 | 44.76 |
 | user_has_outgoing_calls | 1 | 1 | 50812 | 93.74 |

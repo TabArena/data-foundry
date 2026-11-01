@@ -49,6 +49,8 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37: Condition, Furnis
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `rwi_geo_red_houses_for_sale` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-01, Lennart): keep this dataset as fixed in PR #37 (ImmoScout24's codes restored); the April 2020 scrape it was matched against is a new record, germany_housing_rent_and_price_apr_20, screened as a candidate to replace this one.
+
 ## Reference
 
 Kaggle / OpenML

@@ -41,13 +41,6 @@ def never_activated(raw: pd.DataFrame) -> pd.Series:
     return raw["user_intake"].eq(0) & raw["user_lifetime"].ge(NO_ACTIVATION_DATE)
 
 
-# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
-# them). An open-ended level holds everything beyond it.
-ORDINAL_LEVELS = {
-    "month": [6, 7, 8],
-}
-
-
 class MobileChurn(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="Will a prepaid mobile customer churn?",
@@ -128,9 +121,9 @@ class MobileChurn(AbstractCuratedDataset):
         - Duplicates kept: 9 rows are exact copies, and 8 feature vectors occur with both labels.
         - Anomaly: negative amounts in seven spending and top-up columns (refunds or corrections); kept as published.
         - Note: the licence is "unknown" (Kaggle data card, OpenML 44231). The year 2019 is that of the Kaggle upload; the data are from 2013.
-        - Cycle (2026-11-01, CLEAN-14, Lennart's rule): `month`, the record month (June, July and August 2013), names a
-          member of the calendar's cycle rather than measuring a quantity (no value lies between two months or days), so
-          it is an ordered category in the calendar's order; the wrap is not shown.
+        - Cycle (2026-11-01, CLEAN-14, Lennart's rule): `month`, the record month (6 to 8), stays a number. A weekday or
+          a month is a position in a continuous cycle (weekday 1.5 is Monday noon), and the source ships it as a number;
+          named weekdays and months are ordered categories instead.
     """
 
     # Task
@@ -166,7 +159,6 @@ class MobileChurn(AbstractCuratedDataset):
         # the 0/1 flags are categorical (CLEAN-14), every other feature numeric; the target becomes a category
         del df
         return FeatureTypes(
-            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "user_intake",
                 "user_has_outgoing_calls",

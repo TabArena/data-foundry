@@ -7,11 +7,13 @@ record, audit or PR that motivated it.
 ## 2026-11-01, the curator's second marks on PR #37: cycles, partial orders, two cleanings (PR #37)
 
 - Cycles (Lennart: "if there is a concept such as 1.5 of the scale that is reasonably between 1 and 2 (like half day),
-  then a number makes sense as the true measure is continuous, but if it is a cycle of categoricals it likely needs to
-  be ordered"): a column that names a member of a cycle, by name or by number, is an ordered category. Applied to the
-  weekdays and months stored as numbers: 5g_energy_consumption `weekday_number` (a category since 2026-10-31),
-  bad_customer_detection `month`, miami_housing `month_sold`, rossmann_store_sales `CompetitionOpenSinceMonth` and
-  mobile_churn `month`. Hours, days of the month and wind direction in degrees stay numbers. CLEAN-14 amended.
+  then a number makes sense as the true measure is continuous", and "there is weekday 1.5 which is between monday and
+  tuesday"): a weekday, a month or an hour is a position in a continuous cycle. Shipped as numbers it is a number:
+  5g_energy_consumption `weekday_number` (a category since 2026-10-31) and rossmann_store_sales `DayOfWeek` (an
+  unordered category before) are numbers again; bad_customer_detection `month`, miami_housing `month_sold`,
+  rossmann_store_sales `CompetitionOpenSinceMonth` and mobile_churn `month` stay numbers (ordered for a few hours
+  today, then reverted when the curator asked why weekdays differ from days). Shipped as names it stays an ordered
+  category (forest_fires, garments, home_credit, hotel_booking_demand, rain_in_australia). CLEAN-14 amended.
 - Partial orders stay unordered, and the definition says so and names the lines (Lennart): notes added to mic,
   horse_colic_survival, audiology_diagnosis, predict_students_dropout_and_academic_success, covertype, force_2020,
   rossmann_store_sales, kick, fiat_500 and distribution_transformers_at_cauca_department. CLEAN-14 amended.
@@ -22,7 +24,7 @@ record, audit or PR that motivated it.
 - early_learning_predictors: `language_match` ("Assessment language matches home", 0/1) held the enumerator's reason
   in place of the answer in 16 rows; each explains why the child was assessed in another language than at home, so
   they are 0 (CLEAN-11).
-- 448 ordinal columns in 61 definitions. `dataset check` on the 16 definitions changed today: no error, no warning.
+- 442 ordinal columns in 58 definitions. `dataset check` on the 16 definitions changed today: no error, no warning.
   The review board's dataset sheets are rebuilt from the definitions as they stand. Not built.
 
 ## 2026-10-31, the curator's marks on PR #37's review board applied (PR #37)

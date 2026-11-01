@@ -12,7 +12,6 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSu
 # The ordinal scale, lowest level first (curation notes; the README lists it).
 ORDINAL_LEVELS = {
     "structure_quality": [1.0, 2.0, 3.0, 4.0, 5.0],
-    "month_sold": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0],
 }
 
 
@@ -80,9 +79,9 @@ class MiamiHousing(AbstractCuratedDataset):
         - `structure_quality` ("quality of the structure", OpenML 43093, codes 1-5 without labels) is an ordered
           category in the order of its codes (2026-10-31, CLEAN-14; the curator's marks: the order comes from the
           context and logic, not from the target, so the high prices of the 16 homes rated 3 do not move it).
-        - Cycle (2026-11-01, CLEAN-14, Lennart's rule): `month_sold`, the month of the sale, names a member of the
-          calendar's cycle rather than measuring a quantity (no value lies between two months or days), so it is an
-          ordered category in the calendar's order; the wrap is not shown.
+        - Cycle (2026-11-01, CLEAN-14, Lennart's rule): `month_sold` (1-12) stays a number. A weekday or a month is a
+          position in a continuous cycle (weekday 1.5 is Monday noon), and the source ships it as a number; named
+          weekdays and months are ordered categories instead.
     """
 
     # Task
