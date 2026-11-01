@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-01 16:25 UTC: 128 claim(s) (Andrej 25, Lennart 81, Myunghwan 22).
+As of 2026-11-01 16:49 UTC: 129 claim(s) (Andrej 25, Lennart 82, Myunghwan 22).
 
 ## Andrej
 
@@ -61,6 +61,7 @@ As of 2026-11-01 16:25 UTC: 128 claim(s) (Andrej 25, Lennart 81, Myunghwan 22).
 | `covertype` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `credit_card_clients_default` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `credit_g` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
+| `customer_personality_analysis` | review | 2026-11-01 | 2026-11-08 | issue #38: Duplicate of marketing_campaign |
 | `dementia_prediction` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `diabetes_130_us` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `diamonds` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
