@@ -18,6 +18,8 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
 
 ## Rebuild
 
+A scoped build of `tunisian_fraud_detection_challenge` on 2026-10-31 produced a format-2 container from one traced raw file (9,679,520 bytes). Saved-container reload and reproduction from only that input verified the same checksum; its dataset card records the UUID, clean source commit and accepted warnings.
+
 - Publication metadata refresh, 2026-10-29: beMTPL97, Tanzania tourism and CPS88 wages were rebuilt after removing acquisition/process details from descriptions. Reload and single-input reproduction pass for each. Every row, target, scoring semantics and all nine folds remain identical; only metadata changes their checksums. The table points to the new UUIDs; previous versions and the other nine dataset builds are preserved.
 
 - Scoped build, 2026-10-29: Sendy Logistics adds 21,199 rows, 13 predictors and 3 x 3 random folds as format-2 UUID `01a18a16-1f77-7fc2-b293-c8d8ca2eeefc`, built from clean source `b58e9ac9185941edb42d19f681fe534aad8ec734`. Reload and reproduction from its single traced `Train.csv` (4,094,263 bytes) pass with the accepted checksum. Reviewed rows and all nine folds match exactly, with zero build errors or warnings. Raw-input backup remains local.
@@ -212,6 +214,7 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
 | [`taiwanese_bankruptcy_prediction`](taiwanese_bankruptcy_prediction/) | IID | 6,819 | 92 | 3 x 3 | not built |  |
 | [`thyroid_discordant`](thyroid_discordant/) | IID | 3,711 | 26 | 10 x 3 | not built |  |
 | [`tour_travels_churn`](tour_travels_churn/) | IID | 954 | 6 | 10 x 3 | not built | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows`, `meta_bibtex_latex_hazard` |
+| [`tunisian_fraud_detection_challenge`](tunisian_fraud_detection_challenge/) | temporal | 21,295 | 103 | 4 x 1 | `01a19475-b104-7ff0-82db-ed3aeb71f3a7` |  |
 | [`video_transcoding_time_prediction`](video_transcoding_time_prediction/) | grouped | 68,784 | 18 | 3 x 3 | not built |  |
 | [`website_phishing`](website_phishing/) | IID | 1,250 | 9 | 10 x 3 | not built | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows` |
 | [`wids_diabetes_mellitus`](wids_diabetes_mellitus/) | IID | 127,358 | 181 | 3 x 3 | not built |  |

@@ -1,5 +1,29 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-10-31 (Tunisian build verified, Myunghwan)
+
+- Built `tunisian_fraud_detection_challenge` as format 2: UUID `01a19475-b104-7ff0-82db-ed3aeb71f3a7`, checksum `v2:84d2d72d5ffe91a80168cd461f4367b63635ee74467d97d96c89e6de9ce57972`, from clean definition commit `4bc27fd6d8b49f8c9c16446bb7e85132ce90943b`.
+- Verified saved reload, exact accepted data and four split memberships, and identical checksum from the single traced Train.csv (9,679,520 bytes). A verified raw-input ZIP is retained privately. No new errors or unaccepted warnings; both annual-time warning reasons remain accepted.
+- Full tests: 1,326 passed, 177 skipped. The added definition passes Ruff lint and format checks; repository-wide lint/format findings remain in unchanged files. Existing model probes are reusable because data, predictors, target, scorer and splits are identical. Claim remains active until integration; no source publication performed.
+
+## 2026-10-31 (Tunisian dataset accepted, Myunghwan)
+
+- Accepted `tunisian_fraud_detection_challenge` for a later requested build, including its retrospective investigation use and four annual fiscal-cohort tests.
+- Accepted the six-timestamp and annual-window encoding warnings with explicit reasons; updated the record to `Temporal (NON-IID)`. Rows, labels, predictors, metric and split memberships are unchanged.
+- Closed all dataset review issues and retained their full history privately. The existing reservation remains active until integration. No build or publication performed.
+
+## 2026-10-31 (Tunisian retrospective task clarified, Myunghwan)
+
+- Accepted retrospective investigation as the use of archived annual dossiers; fiscal-cohort tests do not simulate past operational refits. Target, predictors, rows and split membership are unchanged.
+- Checked the matched-source test mirror: all non-target training columns are supplied and all retained predictors contain observations. No additional schema exclusion follows. Historical timing remains unverified.
+- Closed review issue 1; overall inclusion, annual-time warning reasons and the record's split-field reconciliation remain open.
+
+## 2026-10-31 (Tunisian tax adjustment qualified, Myunghwan)
+
+- Added `tunisian_fraud_detection_challenge` for annual principal tax-adjustment estimation on the supplied log scale with source RMSE. Keep21,295taxpayer-years and103features after identity/redundancy cleaning; test all four eligible cohorts2015–2018.
+- Full actual-data probes and independent review support nontrivial cohort signal. Historical feature/label availability and sample selection remain explicit limitations; no causal deployment claim or final scientific acceptance. The review was subsequently settled on 2026-10-31; its full evidence is preserved in the private curation run.
+- Two annual-time warnings remain unaccepted. No saved container build, source publication or rule amendment.
+
 ## 2026-10-30 - Verified Lusaka and RF-PCP builds
 
 - `2024_lusaka_mobility_prediction_hackathon`: UUID `01a18ba1-f606-7d63-916c-bd52aa2af8d3`, checksum `v2:d29faf5b7c7e325f96158a7de2b8b8c6e7188219ec8a2fdc09f0819317c1c40f`.
