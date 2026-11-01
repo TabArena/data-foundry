@@ -8,15 +8,17 @@ data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
 - BeyondArena
-suggestion: 'Yes'
+suggestion: No (Retired)
+decision_markers:
+- AHDS (Artifical/Handmade/Deterministic/Simulated)
 original_source: Kaggle
-year: '2019'
+year: '2020'
 required_split:
 - Random (IID)
 source_links:
+- https://github.com/nailson/ifood-data-business-analyst-test
 - https://www.kaggle.com/datasets/rodsaldanha/arketing-campaign
 notebook_path: datasets/beyond_iid/old_iid/marketing_campaign/marketing_campaign.ipynb
-v2_path: datasets/_dev/tabarena-v0pt2/marketing_campaign/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -45,6 +47,10 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 CC (2026-10-31, Lennart): marks on the review board of PR #37: Education left unordered with a note (2n Cycle cannot be placed).
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `hillstrom_email_campaign` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
+**Assessment (AI, 2026-11-01):** generated data (SEL-16, PROV-3; issue #38). The file is the sample data of the iFood Data Analyst Case, the iFood Brain team's hiring test (https://github.com/nailson/ifood-data-business-analyst-test, CSV and PDF added 2020-03-18): all 2,240 rows and 29 columns of the Kaggle upload equal its `ml_project1_data.csv`, as does the upload of `customer_personality_analysis`. The case PDF, page 1: "you are presented a sample dataset, that mocks metainformation on the customer and on iFood campaign interactions with that customer", for a made-up company in the retail food sector. `Z_CostContact` (3) and `Z_Revenue` (11) reproduce the PDF's pilot campaign (6,720 MU cost, 3,674 MU revenue from 334 responders). Measured marks of a generator: 193 groups of identical customers, 21 of their 209 pairs with different labels; `Recency` uniform over 0-99 and unrelated to spend, yet predictive; `Dt_Customer` flat over 699 days; 98.6% of `MntFishProducts` on ceil(1.3 x an integer) against 76-78% in the other spend columns; planted values (`YOLO`, birth year 1893, income 666,666). The first publication is the case of 2020, not the SAS textbook (Parr-Rud 2014) the Kaggle page credits, which no source ties to this file; `year` is now 2020 and the case leads `source_links` (PROV-8, PROV-9). Precedent: `churn` and `healthcare_insurance_expenses` (CC 2026-10-06). The BeyondArena collection keeps its pinned container, as for those two.
+
+CC (2026-11-01, Lennart): Don't ship on the review page of issue #38; retired from the TabArena v0.2 working copy as generated data (`AHDS`). The folder is removed and `v2_path` cleared.
 
 ## Reference
 

@@ -84,6 +84,21 @@ record, audit or PR that motivated it.
 - 442 ordinal columns in 58 definitions. `dataset check` on the 16 definitions changed today: no error, no warning.
   The review board's dataset sheets are rebuilt from the definitions as they stand. Not built.
 
+## 2026-11-01, `marketing_campaign` retired: the iFood hiring case's mock data (issue #38)
+
+- `marketing_campaign` is retired: `No (Retired)` with `AHDS` (SEL-16, PROV-3), Lennart's "Don't ship" on the review
+  page of issue #38. The folder is removed and the record's `v2_path` cleared; `DF: Yes`, the collection tags and the
+  BeyondArena container stay, as for `churn` and `healthcare_insurance_expenses`.
+- Why: the Kaggle file is, cell for cell, the sample data of the iFood Data Analyst Case, a hiring test whose PDF
+  says the data "mocks metainformation on the customer" of a made-up company. Its constant columns reproduce the
+  case's campaign figures, and the data carries a generator's marks that reach the label: identical customers with
+  different labels, a uniform `Recency` unrelated to spend, flat joining dates, `MntFishProducts` on a 1.3 grid, and
+  planted values. The evidence is in the record's Assessment of this date.
+- `customer_personality_analysis`, the same file, keeps its `No`; `Duplicate` of `marketing_campaign` replaces
+  `Missing source information`.
+- PR #37 still edits this folder (ordinal typing); its changes to `dataset.py` and the generated `README.md` lapse
+  with the retirement.
+
 ## 2026-10-31, the curator's marks on PR #37's review board applied (PR #37)
 
 - A level outside a scale that is a state of its own (no basement, not prescribed, no checking account): the column
