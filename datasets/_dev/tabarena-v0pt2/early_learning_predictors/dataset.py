@@ -111,13 +111,7 @@ ORDINAL_LEVELS = {
         "Good: Practitioner regularly supports children to do things for themselves and t",
     ],
     "gr_ecd": ["almost none", "0-25%", "25-50%", "50-75%", "almost all"],
-    "obs_booknumber": [
-        "none or almost none",
-        "less than 50",
-        "50-100 books",
-        "100-250 books",
-        "more than 250 books",
-    ],  # open-ended
+    "obs_booknumber": ["none or almost none", "less than 50", "50-100 books", "100-250 books", "more than 250 books"],
     "obs_condition_equipment": [
         "bad (mostly broken and unused)",
         "okay (some in working condition)",
@@ -163,7 +157,6 @@ ORDINAL_LEVELS = {
     ],
     "pra_adequacy_materials": ["inadequate", "somewhat adequate", "adequate", "good", "excellent"],
     "pra_cotlands_support": ["neutral", "very satisfied", "extremely satisfied"],
-    "pra_cotlands_visits": ["1 time", "4 times", "more than 10 times"],  # open-ended
     "pra_education": [
         "below Grade 12/matric",
         "matric/National Senior Certificate",
@@ -181,27 +174,10 @@ ORDINAL_LEVELS = {
     "pra_motivate_mentoring": ["disagree strongly", "disagree a little", "agree a little", "agree strongly"],
     "pra_motivate_recognition": ["disagree strongly", "disagree a little", "agree a little", "agree strongly"],
     "pra_motivate_support": ["disagree strongly", "disagree a little", "agree a little", "agree strongly"],
-    "pra_ntataise_attendance": ["5 times", "7 times", "8 times", "9 times", "more than 10 times"],  # open-ended
     "pra_ntataise_support": ["slightly satisfied", "neutral", "very satisfied", "extremely satisfied"],
-    "pra_ntataise_visits": [
-        "2 times",
-        "3 times",
-        "4 times",
-        "5 times",
-        "7 times",
-        "8 times",
-        "more than 10 times",
-    ],  # open-ended
+    "pra_ntataise_visits": ["2 times", "3 times", "4 times", "5 times", "7 times", "8 times", "more than 10 times"],
     "pra_tuc_support": ["not satisfied", "neutral", "very satisfied", "extremely satisfied"],
-    "pra_tuc_visits": [
-        "1 time",
-        "2 times",
-        "4 times",
-        "5 times",
-        "7 times",
-        "10 times",
-        "more than 10 times",
-    ],  # open-ended
+    "pra_tuc_visits": ["1 time", "2 times", "4 times", "5 times", "7 times", "10 times", "more than 10 times"],
     "pri_covid_staff_salaries": [
         "no, not able to pay them at all",
         "no, had to reduce their salaries",
@@ -249,11 +225,7 @@ ORDINAL_LEVELS = {
         "about the same number as previous years",
         "more staff than previous years",
     ],
-    "pri_support_dbe": ["never", "once", "twice", "three times", "more than three times"],  # open-ended
-    "pri_support_dsd": ["never", "once", "twice", "three times", "more than three times"],  # open-ended
     "pri_support_frequency": ["once a year", "once a term", "once a month", "once a week"],
-    "pri_support_municipality": ["never", "once", "twice", "three times", "more than three times"],  # open-ended
-    "pri_support_ngo": ["never", "once", "twice", "three times", "more than three times"],  # open-ended
     "rating": [
         "no books at all",
         "lack of books, few books, or dated books",
@@ -357,7 +329,6 @@ CODE_LABELS = {
         "5": "excellent",
     },
     "pra_cotlands_support": {"3": "neutral", "4": "very satisfied", "5": "extremely satisfied"},
-    "pra_cotlands_visits": {"1": "1 time", "4": "4 times", "11": "more than 10 times"},
     "pra_education": {
         "1": "below Grade 12/matric",
         "2": "matric/National Senior Certificate",
@@ -406,13 +377,6 @@ CODE_LABELS = {
         "2": "disagree a little",
         "3": "agree a little",
         "4": "agree strongly",
-    },
-    "pra_ntataise_attendance": {
-        "5": "5 times",
-        "7": "7 times",
-        "8": "8 times",
-        "9": "9 times",
-        "11": "more than 10 times",
     },
     "pra_ntataise_support": {
         "2": "slightly satisfied",
@@ -511,16 +475,6 @@ CODE_LABELS = {
         "3": "more than half of the number of previous years",
         "4": "less than half of the number of previous years",
     },
-    "pri_support_dbe": {"0": "never", "1": "once", "2": "twice", "3": "three times", "4": "more than three times"},
-    "pri_support_dsd": {"0": "never", "1": "once", "2": "twice", "3": "three times", "4": "more than three times"},
-    "pri_support_municipality": {
-        "0": "never",
-        "1": "once",
-        "2": "twice",
-        "3": "three times",
-        "4": "more than three times",
-    },
-    "pri_support_ngo": {"0": "never", "1": "once", "2": "twice", "3": "three times", "4": "more than three times"},
     "pri_support_frequency": {"1": "once a year", "2": "once a term", "3": "once a month", "4": "once a week"},
     "rating": {
         "0": "no books at all",
@@ -768,6 +722,18 @@ SCORES = [
 ]
 
 
+# Counts in exact units whose top (or bottom) level is a cut end: numbers, the cut end at its bound, so that
+# value alone marks the censored rows (CLEAN-14; the curator's marks of 2026-11-01).
+COUNT_VALUES = {
+    "pri_support_dbe": {"0": 0, "1": 1, "2": 2, "3": 3, "4": 4},
+    "pri_support_dsd": {"0": 0, "1": 1, "2": 2, "3": 3, "4": 4},
+    "pri_support_municipality": {"0": 0, "1": 1, "2": 2, "3": 3, "4": 4},
+    "pri_support_ngo": {"0": 0, "1": 1, "2": 2, "3": 3, "4": 4},
+    "pra_ntataise_attendance": {"5": 5, "7": 7, "8": 8, "9": 9, "11": 11},
+    "pra_cotlands_visits": {"1": 1, "4": 4, "11": 11},
+}
+
+
 class EarlyLearningPredictors(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question=(
@@ -900,6 +866,11 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
           `pri_mobile`, `pra_gender`; 7 scores with no words per level are numbers (`SCORES`): `quintile`,
           `pra_class_space_2`, `pra_satisfaction_support`, `ses_cat`, `ses_proxy`, `teacher_familiarity_with_child`,
           `teacher_selfcare_total`.
+        - Counts with a cut end (2026-11-01, CLEAN-14; the curator: "it is not made up of bins/ranges but clear years
+          and just cuts"): `pri_support_dbe` (more than three times → 4); `pri_support_dsd` (more than three times → 4);
+          `pri_support_municipality` (more than three times → 4); `pri_support_ngo` (more than three times → 4);
+          `pra_ntataise_attendance` (more than 10 times → 11); `pra_cotlands_visits` (more than 10 times → 11) are
+          numbers; the cut end takes its bound, so that value alone marks the censored rows.
     """
 
     # Task
@@ -1046,6 +1017,9 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
         df = decode(df, CODE_LABELS)
         # scores with no words per level are numbers (CLEAN-14)
         df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
+        # counts with a cut end are numbers (COUNT_VALUES)
+        df = decode(df, COUNT_VALUES)
+        df[list(COUNT_VALUES)] = df[list(COUNT_VALUES)].astype("float64")
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

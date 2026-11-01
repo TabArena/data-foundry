@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: tour_travels_churn
 container_format: 2
-checksum: v2:de2ccd942b528de535eb6480ffd7aa43f0be852c1fe23def7982d49289e7f140
+checksum: v2:1bf3d4ccefcd9bcfa3a103290f5dbd54e509e7efc0bdef6f587d2066b34eaccd
 build:
   uuid: 01a111fc-edc9-7641-b79f-dc54c06b0b31
   checksum: v2:a3ce4a5df5a1b015fca9fb245262424231cb3f590950bd1532d83c936ef4b569
@@ -70,7 +70,7 @@ decisions: []
 
 Binary classification of `Target`, scored with `roc_auc` on IID splits. 954 rows and 6 features. Source: Kaggle (2021).
 
-Built as `01a111fc-edc9-7641-b79f-dc54c06b0b31` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:de2ccd942b528de535eb6480ffd7aa43f0be852c1fe23def7982d49289e7f140`, so the build is stale. See [Build](#build).
+Built as `01a111fc-edc9-7641-b79f-dc54c06b0b31` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1bf3d4ccefcd9bcfa3a103290f5dbd54e509e7efc0bdef6f587d2066b34eaccd`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -173,11 +173,11 @@ The first 5 of 954 rows of the final frame (random rows: the frame is shuffled).
 
 | Target | Age | FrequentFlyer | AnnualIncomeClass | ServicesOpted | AccountSyncedToSocialMedia | BookedHotelOrNot |
 |---|---|---|---|---|---|---|
-| 0 | 34 | No | Middle Income | 1 | Yes | Yes |
-| 0 | 36 | No | Middle Income | 1 | No | Yes |
-| 0 | 36 | Yes | Low Income | 1 | No | Yes |
-| 1 | 28 | Yes | Low Income | 1 | No | No |
-| 0 | 31 | No | Middle Income | 1 | No | Yes |
+| Yes | 30 | Yes | High Income | 1 | No | No |
+| Yes | 29 | No | Low Income | 2 | Yes | No |
+| No | 30 | No | Middle Income | 5 | Yes | No |
+| No | 30 | No Record | Low Income | 1 | Yes | Yes |
+| No | 36 | No | Middle Income | 3 | Yes | No |
 
 ## Curation notes
 
@@ -187,6 +187,8 @@ The source of the data from Kaggle is unknown but the data distributions look re
 - Source (PROV-2 as amended, Lennart 2026-10-21): the first upload is a bare Kaggle upload that names no origin. It is kept for now, case by case, because the data looks sound (the generated-data probe raises no flag: no rule leaves, 71% of the 21 column pairs dependent, no uniform column, 2026-10-21) and the upload is a source to point to; the risk is taken knowingly ("if the data looks good enough even without a good source but there is a source, we want to keep it for now and risk it"). The gap is in the approximate fit.
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
   categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+- The target (2026-11-01, CLEAN-25): `Target` ships its classes as words (1 is the event). Binary: "Yes" is the
+  event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
@@ -250,7 +252,7 @@ Default splits.
 | AnnualIncomeClass | category | 0 | 0 | 3 | Middle Income, Low Income, High Income |
 | AccountSyncedToSocialMedia | category | 0 | 0 | 2 | No, Yes |
 | BookedHotelOrNot | category | 0 | 0 | 2 | No, Yes |
-| Target | category | 0 | 0 | 2 | 0, 1 |
+| Target | category | 0 | 0 | 2 | No, Yes |
 | Age | int64 | 0 | 0 | 11 | 30, 37, 34, 31, 28, 29, 36, 27, 35, 38 |
 | ServicesOpted | int64 | 0 | 0 | 6 | 1, 2, 3, 4, 5, 6 |
 
@@ -258,8 +260,8 @@ Default splits.
 
 | Target | count | pct |
 |---|---|---|
-| 0 | 730 | 76.52 |
-| 1 | 224 | 23.48 |
+| No | 730 | 76.52 |
+| Yes | 224 | 23.48 |
 
 ### Numeric features
 
@@ -285,8 +287,8 @@ Default splits.
 | FrequentFlyer | 1 | No | 608 | 63.73 |
 | FrequentFlyer | 2 | Yes | 286 | 29.98 |
 | FrequentFlyer | 3 | No Record | 60 | 6.29 |
-| Target | 1 | 0 | 730 | 76.52 |
-| Target | 2 | 1 | 224 | 23.48 |
+| Target | 1 | No | 730 | 76.52 |
+| Target | 2 | Yes | 224 | 23.48 |
 
 </details>
 
@@ -301,4 +303,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:de2ccd942b528de535eb6480ffd7aa43f0be852c1fe23def7982d49289e7f140` |
+| stale | yes: the definition now gives checksum `v2:1bf3d4ccefcd9bcfa3a103290f5dbd54e509e7efc0bdef6f587d2066b34eaccd` |

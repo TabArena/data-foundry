@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: hepatitis_c_prediction
 container_format: 2
-checksum: v2:ccac255e48569160124a99b8c998a45b3d71be7f6492841715dec0bb8eff2699
+checksum: v2:ae9bb4e04f4a48b0c39e2514cb0d5d3eb6a7e4ef268a285a998c7dfc48ef4235
 build:
   uuid: 01a111fc-da06-7344-b05c-32c0c4829da1
   checksum: v2:3b064a7111c0feec2dbda78b7c01add1af848f38ec06d17d94232ac6bac1e80a
@@ -68,7 +68,7 @@ decisions: []
 
 Multiclass classification of `Category`, scored with `log_loss` on IID splits. 608 rows and 11 features. Source: UCI (2020).
 
-Built as `01a111fc-da06-7344-b05c-32c0c4829da1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ccac255e48569160124a99b8c998a45b3d71be7f6492841715dec0bb8eff2699`, so the build is stale. See [Build](#build).
+Built as `01a111fc-da06-7344-b05c-32c0c4829da1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ae9bb4e04f4a48b0c39e2514cb0d5d3eb6a7e4ef268a285a998c7dfc48ef4235`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -145,9 +145,10 @@ Only curators run `build`, when the dataset ships.
 | reason | Hoffmann et al. 2018 report overall and per-class accuracy under leave-one-out; 88% donors, so accuracy is dominated by donor vs patient; the suspect-donor class is dropped (MET-2). Original rejected: accuracy. log_loss is the multiclass fallback. |
 
 <details>
-<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 1 categorical, 1 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (2): `Sex`, `Category`
+- categorical (1): `Sex`
+- ordinal (1): `Category (blood donor < hepatitis < fibrosis < cirrhosis)`
 - string (0): none
 - datetime (0): none
 
@@ -176,11 +177,11 @@ The first 5 of 608 rows of the final frame (random rows: the frame is shuffled).
 
 | Category | Age | Sex | ALB | ALT | AST | BIL | CHE | CHOL | CREA | GGT | PROT |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0=Blood Donor | 48 | m | 43 | 18 | 21 | 10 | 7.19 | 6.37 | 80 | 16 | 69 |
-| 0=Blood Donor | 50 | m | 36 | 26 | 29 | 6 | 7.5 | 5.75 | 67 | 64 | 70 |
-| 0=Blood Donor | 56 | m | 38 | 17 | 16 | 4 | 9.9 | 5.3 | 95 | 21 | 67 |
-| 0=Blood Donor | 45 | f | 38 | 13 | 15 | 6 | 6.95 | 5.29 | 66 | 49 | 70 |
-| 0=Blood Donor | 36 | m | 46 | 27 | 25 | 6 | 6.61 | 5.07 | 71 | 10 | 80 |
+| blood donor | 34 | m | 43 | 98 | 46 | 11 | 7.99 | 3.62 | 71 | 35 | 70 |
+| blood donor | 54 | m | 46 | 19 | 25 | 24 | 7.83 | 6.24 | 76 | 24 | 77 |
+| blood donor | 34 | m | 45 | 20 | 30 | 6 | 7.6 | 5.07 | 95 | 10 | 72 |
+| blood donor | 48 | f | 46 | 23 | 25 | 11 | 9.41 | 5.84 | 85 | 19 | 77 |
+| blood donor | 67 | m | 39 | 19 | 26 | 9 | 7.95 | 5.53 | 100 | 17 | 70 |
 
 ## Curation notes
 
@@ -189,6 +190,8 @@ We start with the data from UCI.
 - The hepatitis related classes were defined in the paper, but the blood donor class is not mentioned in it. It seems the paper might be related to a different task than the UCI release in the end. But it has the same features. Thus, after looking more into it, we adjust the classes. We drop the "suspect Blood Donor" class as we cannot map it to being part of a reasonable task. We thus treat the task as predicting whether a patient has one of three versions of hepatitis, or is "just" a blood donor.
 - The donor and patient rows were recorded under different precision conventions in the UCI source: ALB and BIL are whole numbers in about 100% of patient rows but about 10% of donor rows, CREA the other way round, and ALP is missing only for patients. These format cues alone separate patients from donors (ROC AUC 0.9997). We round ALB, ALT, AST, BIL, CREA, GGT and PROT to integers for all rows (at most +-0.5 on values in the tens to hundreds; BIL, the smallest, changes by 2.6% in the median) and drop ALP. CHE and CHOL are single-digit values without a class difference in precision, so they stay as recorded.
 - There are no exact or near duplicates (minimum standardised nearest-neighbour distance 0.20), so there is no evidence of several rows per patient.
+- The target (2026-11-01, CLEAN-25): `Category` ships its classes as words, blood donor < hepatitis < fibrosis <
+  cirrhosis (the source's own labels without their code; ordered by the course of the disease).
 
 ## Splits
 
@@ -278,18 +281,18 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| Category | category | 0 | 0 | 4 | 0=Blood Donor, 3=Cirrhosis, 1=Hepatitis, 2=Fibrosis |
+| Category | category | 0 | 0 | 4 | blood donor, cirrhosis, hepatitis, fibrosis |
 | Sex | category | 0 | 0 | 2 | m, f |
-| CHOL | float64 | 10 | 1.64 | 309 | 5.1, 5.07, 5.3, 5.73, 5.9, 4.69, 4.43, 5.62, 4.55, 4.68 |
-| ALB | float64 | 1 | 0.16 | 36 | 40.0, 46.0, 42.0, 43.0, 44.0, 45.0, 41.0, 39.0, 38.0, 47.0 |
-| ALT | float64 | 1 | 0.16 | 82 | 18.0, 20.0, 15.0, 17.0, 16.0, 19.0, 21.0, 25.0, 24.0, 26.0 |
-| PROT | float64 | 1 | 0.16 | 33 | 72.0, 73.0, 71.0, 74.0, 70.0, 76.0, 69.0, 77.0, 68.0, 75.0 |
-| AST | float64 | 0 | 0 | 82 | 22.0, 24.0, 26.0, 28.0, 25.0, 19.0, 20.0, 21.0, 23.0, 30.0 |
+| CHOL | float64 | 10 | 1.64 | 309 | 5.07, 5.1, 5.3, 5.73, 5.9, 5.88, 4.69, 5.62, 4.55, 4.43 |
+| ALB | float64 | 1 | 0.16 | 36 | 40.0, 46.0, 42.0, 43.0, 41.0, 45.0, 44.0, 39.0, 38.0, 47.0 |
+| ALT | float64 | 1 | 0.16 | 82 | 15.0, 20.0, 18.0, 17.0, 16.0, 19.0, 21.0, 25.0, 24.0, 26.0 |
+| PROT | float64 | 1 | 0.16 | 33 | 72.0, 73.0, 71.0, 74.0, 70.0, 76.0, 77.0, 69.0, 68.0, 75.0 |
+| AST | float64 | 0 | 0 | 82 | 24.0, 22.0, 26.0, 25.0, 28.0, 19.0, 20.0, 21.0, 23.0, 27.0 |
 | BIL | float64 | 0 | 0 | 47 | 6.0, 4.0, 7.0, 5.0, 8.0, 9.0, 10.0, 3.0, 11.0, 12.0 |
-| CHE | float64 | 0 | 0 | 401 | 7.52, 9.82, 5.95, 7.1, 6.8, 8.9, 7.93, 7.0, 7.87, 7.5 |
-| CREA | float64 | 0 | 0 | 78 | 67.0, 74.0, 72.0, 70.0, 71.0, 83.0, 69.0, 81.0, 88.0, 82.0 |
-| GGT | float64 | 0 | 0 | 120 | 16.0, 14.0, 15.0, 24.0, 12.0, 19.0, 22.0, 18.0, 21.0, 13.0 |
-| Age | int64 | 0 | 0 | 49 | 46, 48, 33, 51, 52, 35, 50, 43, 49, 37 |
+| CHE | float64 | 0 | 0 | 401 | 7.52, 5.95, 9.82, 7.1, 7.5, 6.8, 7.87, 8.84, 7.93, 7.0 |
+| CREA | float64 | 0 | 0 | 78 | 67.0, 72.0, 74.0, 70.0, 71.0, 69.0, 83.0, 82.0, 81.0, 88.0 |
+| GGT | float64 | 0 | 0 | 120 | 16.0, 14.0, 15.0, 12.0, 24.0, 19.0, 18.0, 22.0, 13.0, 21.0 |
+| Age | int64 | 0 | 0 | 49 | 46, 48, 33, 51, 52, 50, 35, 56, 37, 38 |
 
 </details>
 
@@ -297,10 +300,10 @@ Default splits.
 
 | Category | count | pct |
 |---|---|---|
-| 0=Blood Donor | 533 | 87.66 |
-| 3=Cirrhosis | 30 | 4.93 |
-| 1=Hepatitis | 24 | 3.95 |
-| 2=Fibrosis | 21 | 3.45 |
+| blood donor | 533 | 87.66 |
+| cirrhosis | 30 | 4.93 |
+| hepatitis | 24 | 3.95 |
+| fibrosis | 21 | 3.45 |
 
 ### Numeric features
 
@@ -321,10 +324,10 @@ Default splits.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| Category | 1 | 0=Blood Donor | 533 | 87.66 |
-| Category | 2 | 3=Cirrhosis | 30 | 4.93 |
-| Category | 3 | 1=Hepatitis | 24 | 3.95 |
-| Category | 4 | 2=Fibrosis | 21 | 3.45 |
+| Category | 1 | blood donor | 533 | 87.66 |
+| Category | 2 | cirrhosis | 30 | 4.93 |
+| Category | 3 | hepatitis | 24 | 3.95 |
+| Category | 4 | fibrosis | 21 | 3.45 |
 | Sex | 1 | m | 371 | 61.02 |
 | Sex | 2 | f | 237 | 38.98 |
 
@@ -339,4 +342,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:ccac255e48569160124a99b8c998a45b3d71be7f6492841715dec0bb8eff2699` |
+| stale | yes: the definition now gives checksum `v2:ae9bb4e04f4a48b0c39e2514cb0d5d3eb6a7e4ef268a285a998c7dfc48ef4235` |

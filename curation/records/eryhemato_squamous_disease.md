@@ -49,6 +49,8 @@ CC (2026-10-27, Lennart): fit approximate (was direct): a dermatologist's lichen
 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 10 scores are numbers (erythema, scaling, definite borders, itching, koebner phenomenon, polygonal papules, follicular papules, oral mucosal involvement and more).
 
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships its class names.
+
 ## Reference
 
 @article{guvenir1998learning,

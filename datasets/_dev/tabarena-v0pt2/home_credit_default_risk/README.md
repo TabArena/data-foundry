@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: home_credit_default_risk
 container_format: 2
-checksum: v2:dad6e518c7ebeac6beeec600928acf67d104ab3a062a2912f3608a9fc0010034
+checksum: v2:45614405d2bc1c9d6dd7824fdf31b8b040352662e6d21787e7c189a3800c4932
 build:
   uuid: 01a111fb-c9a4-79ac-b807-b4b9dffd8068
   checksum: v2:1a393d7cebaaa9c5dd20682edd3c56e7c65a975a8f94a37ce6528b23a311ad2f
@@ -73,7 +73,7 @@ decisions: []
 
 Binary classification of `TARGET`, scored with `roc_auc` on IID splits. 307,507 rows and 709 features. Source: Kaggle (2018).
 
-Built as `01a111fb-c9a4-79ac-b807-b4b9dffd8068` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:dad6e518c7ebeac6beeec600928acf67d104ab3a062a2912f3608a9fc0010034`, so the build is stale. See [Build](#build).
+Built as `01a111fb-c9a4-79ac-b807-b4b9dffd8068` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:45614405d2bc1c9d6dd7824fdf31b8b040352662e6d21787e7c189a3800c4932`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -182,11 +182,11 @@ The first 5 of 307,507 rows of the final frame (random rows: the frame is shuffl
 
 | TARGET | NAME_CONTRACT_TYPE | CODE_GENDER | FLAG_OWN_CAR | FLAG_OWN_REALTY | CNT_CHILDREN | AMT_INCOME_TOTAL | AMT_CREDIT | AMT_ANNUITY | AMT_GOODS_PRICE | NAME_TYPE_SUITE | NAME_INCOME_TYPE |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | Cash loans | M | N | Y | 0 | 157500 | 1.05129e+06 | 30870 | 918000 | Unaccompanied | Working |
-| 0 | Revolving loans | F | N | Y | 1 | 121500 | 180000 | 9000 | 180000 | Unaccompanied | Commercial associate |
-| 0 | Cash loans | F | Y | Y | 0 | 405000 | 1.68659e+06 | 44622 | 1.5075e+06 | Unaccompanied | Working |
-| 0 | Cash loans | F | Y | Y | 0 | 157500 | 1.28835e+06 | 37800 | 1.125e+06 | Unaccompanied | Working |
-| 0 | Cash loans | M | Y | Y | 0 | 166500 | 327024 | 12325.5 | 270000 | Spouse, partner | Working |
+| No | Cash loans | F | N | N | 0 | 58500 | 547344 | 17316 | 472500 | Spouse, partner | Working |
+| No | Cash loans | F | N | Y | 0 | 202500 | 1.1025e+06 | 46710 | 1.1025e+06 | Unaccompanied | Pensioner |
+| Yes | Cash loans | F | N | Y | 0 | 180000 | 1.31736e+06 | 53784 | 1.1295e+06 | Unaccompanied | Working |
+| Yes | Cash loans | F | Y | Y | 0 | 99000 | 225000 | 16002 | 225000 | Unaccompanied | Working |
+| No | Cash loans | M | N | Y | 0 | 292500 | 454500 | 27936 | 454500 | Unaccompanied | Working |
 
 ## Curation notes
 
@@ -206,6 +206,8 @@ We start from this file.
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 2 scores with no words per level are
   numbers (`SCORES`): `REGION_RATING_CLIENT`, `REGION_RATING_CLIENT_W_CITY`.
+- The target (2026-11-01, CLEAN-25): `TARGET` ships its classes as words (1 is the event). Binary: "Yes" is the
+  event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
@@ -251,7 +253,7 @@ Accepted on purpose:
 | EMERGENCYSTATE_MODE | category | 145754 | 47.4 | 2 | No, Yes |
 | OCCUPATION_TYPE | category | 96389 | 31.35 | 18 | Laborers, Sales staff, Core staff, Managers, Drivers, High skill tech staff, Ac… |
 | NAME_TYPE_SUITE | category | 1292 | 0.42 | 7 | Unaccompanied, Family, Spouse, partner, Children, Other_B, Other_A, Group of pe… |
-| TARGET | category | 0 | 0 | 2 | 0, 1 |
+| TARGET | category | 0 | 0 | 2 | No, Yes |
 | NAME_CONTRACT_TYPE | category | 0 | 0 | 2 | Cash loans, Revolving loans |
 | CODE_GENDER | category | 0 | 0 | 2 | F, M |
 | FLAG_OWN_CAR | category | 0 | 0 | 2 | N, Y |
@@ -296,13 +298,13 @@ Accepted on purpose:
 | FLAG_DOCUMENT_21 | category | 0 | 0 | 2 | 0, 1 |
 | NEW_RATIO_BURO_CREDIT_DAY_OVERDUE_MAX | float64 | 307456 | 99.98 | 5 | 0.0, 1.4333, 0.3872, 0.0248, 0.134 |
 | NEW_RATIO_BURO_CREDIT_DAY_OVERDUE_MEAN | float64 | 307456 | 99.98 | 5 | 0.0, 3.7267, 0.6453, 0.0372, 0.1787 |
-| NEW_RATIO_BURO_AMT_CREDIT_SUM_OVERDUE_MEAN | float64 | 307401 | 99.97 | 5 | 0.0, 4.0, 2.5534, 0.0097, 1605.3333 |
-| NEW_RATIO_BURO_CNT_CREDIT_PROLONG_SUM | float64 | 304610 | 99.06 | 10 | 0.0, 1.0, 2.0, 0.5, 5.0, 3.0, 0.3333, 4.0, 1.5, 0.25 |
-| NEW_RATIO_BURO_AMT_CREDIT_SUM_LIMIT_MEAN | float64 | 303906 | 98.83 | 1948 | 0.0, 1.0, 2.0, 5.0, 0.3, 0.4364, 3.8785, 0.125, 0.6667, 2.5949 |
-| NEW_RATIO_BURO_AMT_CREDIT_SUM_LIMIT_SUM | float64 | 303746 | 98.78 | 1923 | 0.0, 1.0, 0.3333, 0.0333, 2.0, 1.5, 0.2, 3.3333, 0.4, 3.0 |
-| NEW_RATIO_BURO_AMT_CREDIT_SUM_DEBT_MAX | float64 | 303273 | 98.62 | 3825 | 0.0, 0.1428, 3.2608, 0.5683, 0.6934, 0.7695, 5.4631, 1.1109, 3.6078, 0.7951 |
-| NEW_RATIO_BURO_AMT_CREDIT_SUM_DEBT_MEAN | float64 | 301935 | 98.19 | 5072 | 0.0, 22.8255, 1.1365, -727.7435, 1.5982, 1.6121, 0.1428, -488.9192, -26288.0707… |
-| NEW_RATIO_BURO_AMT_CREDIT_SUM_DEBT_SUM | float64 | 301411 | 98.02 | 5072 | 0.0, 3.2608, 0.5683, -1455.487, 0.9589, 1.6121, 0.1428, -488.9192, -13144.0353,… |
+| NEW_RATIO_BURO_AMT_CREDIT_SUM_OVERDUE_MEAN | float64 | 307401 | 99.97 | 5 | 0.0, 2.5534, 0.0097, 1605.3333, 4.0 |
+| NEW_RATIO_BURO_CNT_CREDIT_PROLONG_SUM | float64 | 304610 | 99.06 | 10 | 0.0, 1.0, 2.0, 0.5, 3.0, 0.3333, 5.0, 1.5, 4.0, 0.25 |
+| NEW_RATIO_BURO_AMT_CREDIT_SUM_LIMIT_MEAN | float64 | 303906 | 98.83 | 1948 | 0.0, 1.0, 2.0, 0.3, 5.0, 1.875, 0.4364, 0.6667, 4.0, 2.5949 |
+| NEW_RATIO_BURO_AMT_CREDIT_SUM_LIMIT_SUM | float64 | 303746 | 98.78 | 1923 | 0.0, 1.0, 0.3333, 0.0333, 2.0, 1.5, 0.2, 1.2, 0.5, 3.0 |
+| NEW_RATIO_BURO_AMT_CREDIT_SUM_DEBT_MAX | float64 | 303273 | 98.62 | 3825 | 0.0, 0.7695, 0.5683, 0.6934, 0.1428, 3.2608, 27138.4, 1.1247, 0.9708, 121.3287 |
+| NEW_RATIO_BURO_AMT_CREDIT_SUM_DEBT_MEAN | float64 | 301935 | 98.19 | 5072 | 0.0, -26288.0707, 1.1365, 22.8255, -727.7435, 1.6121, 0.1428, -488.9192, 1.5982… |
+| NEW_RATIO_BURO_AMT_CREDIT_SUM_DEBT_SUM | float64 | 301411 | 98.02 | 5072 | 0.0, -13144.0353, 0.5683, 3.2608, -1455.487, 1.6121, 0.1428, -488.9192, 0.9589,… |
 | NEW_RATIO_BURO_MONTHS_BALANCE_MAX_MAX | float64 | 296673 | 96.48 | 602 | 0.0, 1.0, 0.5, 0.3333, 0.6667, 0.2, 0.1111, 0.75, 3.0, 2.0 |
 | NEW_RATIO_PREV_AMT_DOWN_PAYMENT_MIN | float64 | 291716 | 94.86 | 5635 | 0.0, 1.0, 2.0, 0.5, 1.5, 0.2, 0.4, 0.6, 1.6667, 0.6667 |
 
@@ -314,8 +316,8 @@ Accepted on purpose:
 
 | TARGET | count | pct |
 |---|---|---|
-| 0 | 282682 | 91.93 |
-| 1 | 24825 | 8.07 |
+| No | 282682 | 91.93 |
+| Yes | 24825 | 8.07 |
 
 ### Numeric features
 
@@ -472,4 +474,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:dad6e518c7ebeac6beeec600928acf67d104ab3a062a2912f3608a9fc0010034` |
+| stale | yes: the definition now gives checksum `v2:45614405d2bc1c9d6dd7824fdf31b8b040352662e6d21787e7c189a3800c4932` |

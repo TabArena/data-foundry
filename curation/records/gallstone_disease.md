@@ -47,6 +47,8 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 3 coded columns carry their words; the target keeps its codes.
 
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (0 means gallstones present (UCI)).
+
 ## Reference
 
 @article{esen2024early,

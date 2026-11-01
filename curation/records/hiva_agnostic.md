@@ -61,6 +61,8 @@ CC (2026-10-27, Lennart): marker Anonymized, from the AI review of PR #17: the a
 
 **Assessment (AI, 2026-11-01):** ChemPile's "hiv" is the record `nci_aids_antiviral_screen`, now tagged ChemPile.
 
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the active compound).
+
 ## Reference
 
 Datasets from the Agnostic Learning vs. Prior Knowledge Challenge (http://www.agnostic.inf.ethz.ch)

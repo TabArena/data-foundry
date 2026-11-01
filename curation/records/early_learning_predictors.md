@@ -57,6 +57,8 @@ CC (2026-11-01, Lennart): marks on the review board of PR #37: language_match's 
 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 93 coded columns carry their words; 7 scores are numbers (quintile, pra_class_space_2, pra_satisfaction_support, ses_cat, ses_proxy, teacher_familiarity_with_child, teacher_selfcare_total); undocumented 0 codes missing (pra_cotlands_visits, pra_free_play, pra_free_play_outdoor, obs_water, pri_bank).
 
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): counts with a cut end are numbers: pri_support_dbe, pri_support_dsd, pri_support_municipality, pri_support_ngo, pra_ntataise_attendance, pra_cotlands_visits.
+
 ## Reference
 
 DataDrive2030. ELOM and Thrive by Five Index 2016-2023, Merged Data [dataset]. Version 1. Cape Town: DataDrive2030 [producer], 2024. Cape Town: DataFirst [distributor], 2024. DOI: https://doi.org/10.25828/WG0D-Y909

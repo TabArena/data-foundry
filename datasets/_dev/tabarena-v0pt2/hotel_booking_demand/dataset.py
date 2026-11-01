@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, SplitPlan, TaskSummary, Temporal
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, SplitPlan, TaskSummary, Temporal, decode
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
@@ -111,6 +111,8 @@ class HotelBookingDemand(AbstractCuratedDataset):
           their usual order (the wrap is not shown); 1 hold a state outside the scale, placed by the curator's rule
           (missing when the column has no other missing value, else the lowest level; a state that is simply not on the
           scale, such as Other, is missing).
+        - The target (2026-11-01, CLEAN-25): `IsCanceled` ships its classes as words (1 is the event). Binary: "Yes" is
+          the event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -171,6 +173,8 @@ class HotelBookingDemand(AbstractCuratedDataset):
             df[col] = df[col].astype(str).str.strip().replace("NULL", np.nan)
         # the paper: "Undefined/SC - no meal package": one level
         df["Meal"] = df["Meal"].replace({"Undefined": "SC       "})
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
@@ -269,8 +273,8 @@ class HotelBookingDemand(AbstractCuratedDataset):
 
             print(f"\n=== Step {split} ===")
             print("Train size:", len(train_idx), "| Test size:", len(test_idx))
-            print("Train target mean:", df.loc[train_idx, target_col].astype(int).mean())
-            print("Test target mean:", df.loc[test_idx, target_col].astype(int).mean())
+            print("Train share cancelled:", df.loc[train_idx, target_col].eq("Yes").mean())
+            print("Test share cancelled:", df.loc[test_idx, target_col].eq("Yes").mean())
 
             assert len(set(train_idx).intersection(set(test_idx))) == 0, "Train and test indices overlap!"
             assert test_df["arrival_date"].max() < pred_date + pd.DateOffset(months=3), (

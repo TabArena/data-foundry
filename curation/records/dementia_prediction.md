@@ -52,6 +52,8 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 1 scores are numbers (SES).
 
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target is an ordered category, no_dementia < very_mild_AD < mild_AD.
+
 ## Reference
 
 Rel source paper: Open Access Series of Imaging Studies: Longitudinal MRI Data in Nondemented and Demented Older Adults  https://direct.mit.edu/jocn/article/22/12/2677/4983/Open-Access-Series-of-Imaging-Studies-Longitudinal

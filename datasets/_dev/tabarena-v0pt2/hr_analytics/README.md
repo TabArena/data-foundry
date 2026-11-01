@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: hr_analytics
 container_format: 2
-checksum: v2:4014816324b8d93d94054cefab8f1e283ba481e19b20cc83c64a907bcee19adb
+checksum: v2:2c8e6d6913b0cb1a201bda96e314bb9688630da3adb507f1d5222593e7b42fcb
 build:
   uuid: 01a13a7d-c2d4-7c87-a495-ce69f1b8a4c4
   checksum: v2:e812c1329270426adef79897cec0ec3f1b2d8724e57d3359308efcb2130b09d6
@@ -20,10 +20,10 @@ build:
 build_stale: true
 data:
   n_rows: 18359
-  n_features: 12
+  n_features: 13
   dtypes:
-    category: 11
-    float64: 1
+    category: 10
+    float64: 3
     int64: 1
   n_test_dataset_rows: null
 task:
@@ -74,9 +74,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `LookingForJobChange`, scored with `roc_auc` on IID splits. 18,359 rows and 12 features. Source: Other (2018).
+Binary classification of `LookingForJobChange`, scored with `roc_auc` on IID splits. 18,359 rows and 13 features. Source: Other (2018).
 
-Built as `01a13a7d-c2d4-7c87-a495-ce69f1b8a4c4` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:4014816324b8d93d94054cefab8f1e283ba481e19b20cc83c64a907bcee19adb`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2d4-7c87-a495-ce69f1b8a4c4` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:2c8e6d6913b0cb1a201bda96e314bb9688630da3adb507f1d5222593e7b42fcb`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -141,7 +141,7 @@ Only curators run `build`, when the dataset ships.
 | license |  |
 | data_tags | IID, Spatial |
 | reference | analyticsvidhya2018datasupremacy |
-| rows x columns | 18,359 x 13 |
+| rows x columns | 18,359 x 14 |
 | task.target | LookingForJobChange |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -159,10 +159,10 @@ Only curators run `build`, when the dataset ships.
 | definition | Area under the ROC curve on the probability that an enrollee looks for a job change. |
 
 <details>
-<summary>Feature types: 7 categorical, 4 ordinal, 0 string, 0 datetime</summary>
+<summary>Feature types: 8 categorical, 2 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (7): `city`, `gender`, `relevent_experience`, `enrolled_university`, `major_discipline`, `company_type`, `LookingForJobChange`
-- ordinal (4): `education_level (Primary School < High School < Graduate < Masters < Phd)`, `experience (<1 < 1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < 11 < 12 < 13 < 14 < 15 < 16 < 17 < 18 < 19 < 20 < >20)`, `company_size (<10 < 10/49 < 50-99 < 100-500 < 500-999 < 1000-4999 < 5000-9999 < 10000+)`, `last_new_job (never < 1 < 2 < 3 < 4 < >4)`
+- categorical (8): `city`, `gender`, `relevent_experience`, `last_new_job_never`, `enrolled_university`, `major_discipline`, `company_type`, `LookingForJobChange`
+- ordinal (2): `education_level (Primary School < High School < Graduate < Masters < Phd)`, `company_size (<10 < 10/49 < 50-99 < 100-500 < 500-999 < 1000-4999 < 5000-9999 < 10000+)`
 - string (0): none
 - datetime (0): none
 
@@ -187,15 +187,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 18,359 rows of the final frame (random rows: the frame is shuffled); 12 of 13 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 18,359 rows of the final frame (random rows: the frame is shuffled); 12 of 14 columns, the target first. Cells are cut at 40 characters.
 
 | LookingForJobChange | city | city_development_index | gender | relevent_experience | enrolled_university | education_level | major_discipline | experience | company_size | company_type | last_new_job |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Yes | city_16 | 0.91 | Male | Has relevent experience | no_enrollment | Graduate | STEM | >20 | &lt;10 | Funded Startup | 2 |
-| No | city_72 | 0.795 | Male | Has relevent experience | Part time course | Graduate | STEM | 9 | 100-500 | Pvt Ltd | 4 |
-| No | city_67 | 0.855 | nan | Has relevent experience | no_enrollment | Masters | STEM | >20 | 50-99 | Pvt Ltd | 2 |
-| No | city_103 | 0.92 | Male | Has relevent experience | no_enrollment | Graduate | STEM | 11 | 50-99 | Pvt Ltd | 2 |
-| No | city_72 | 0.795 | Male | Has relevent experience | no_enrollment | Graduate | STEM | 6 | 1000-4999 | NGO | 1 |
+| Yes | city_100 | 0.887 | Male | Has relevent experience | no_enrollment | Graduate | STEM | 9 | 500-999 | Pvt Ltd | 1 |
+| No | city_114 | 0.926 | Male | Has relevent experience | no_enrollment | Graduate | STEM | 21 | nan | nan | 3 |
+| No | city_103 | 0.92 | Female | Has relevent experience | no_enrollment | Graduate | STEM | 4 | 10/49 | Pvt Ltd | 1 |
+| No | city_123 | 0.738 | nan | Has relevent experience | no_enrollment | Graduate | STEM | 4 | 10/49 | Pvt Ltd | nan |
+| No | city_21 | 0.624 | nan | Has relevent experience | Full time course | Graduate | STEM | 3 | nan | nan | nan |
 
 ## Curation notes
 
@@ -228,6 +228,10 @@ Supremacy (DataHack, July 2018). The same files ran again as JanataHack: HR Anal
   categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed
   by the curator's rule (missing when the column has no other missing value, else the lowest level; a state that
   is simply not on the scale, such as Other, is missing).
+- Counts with a cut end (2026-11-01, CLEAN-14; the curator: "it is not made up of bins/ranges but clear years
+  and just cuts"): `experience` (>20 → 21, <1 → 0); `last_new_job` (>4 → 5) are numbers; the cut end takes its
+  bound, so that value alone marks the censored rows. `last_new_job_never` (0/1) holds "never" changed jobs, a
+  state, not a count.
 
 ## Splits
 
@@ -263,7 +267,7 @@ Accepted on purpose:
 ### Feature summary
 
 <details>
-<summary>Show the table (13 rows)</summary>
+<summary>Show the table (14 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
@@ -272,12 +276,13 @@ Accepted on purpose:
 | gender | category | 4098 | 22.32 | 3 | Male, Female, Other |
 | major_discipline | category | 2838 | 15.46 | 6 | STEM, Humanities, Other, Business Degree, Arts, No Major |
 | education_level | category | 457 | 2.49 | 5 | Graduate, Masters, High School, Phd, Primary School |
-| last_new_job | category | 367 | 2 | 6 | 1, >4, 2, never, 4, 3 |
+| last_new_job_never | category | 367 | 2 | 2 | 0.0, 1.0 |
 | enrolled_university | category | 342 | 1.86 | 3 | no_enrollment, Full time course, Part time course |
-| experience | category | 59 | 0.32 | 22 | >20, 5, 4, 3, 6, 2, 9, 10, 7, 8 |
 | city | category | 0 | 0 | 123 | city_103, city_21, city_16, city_114, city_160, city_136, city_67, city_75, cit… |
 | relevent_experience | category | 0 | 0 | 2 | Has relevent experience, No relevent experience |
 | LookingForJobChange | category | 0 | 0 | 2 | No, Yes |
+| last_new_job | float64 | 2553 | 13.91 | 5 | 1.0, 5.0, 2.0, 4.0, 3.0 |
+| experience | float64 | 59 | 0.32 | 22 | 21.0, 5.0, 4.0, 3.0, 6.0, 2.0, 9.0, 10.0, 7.0, 8.0 |
 | city_development_index | float64 | 0 | 0 | 93 | 0.92, 0.624, 0.91, 0.926, 0.698, 0.897, 0.939, 0.855, 0.924, 0.804 |
 | training_hours | int64 | 0 | 0 | 241 | 28, 12, 18, 20, 22, 24, 50, 23, 34, 17 |
 
@@ -295,12 +300,14 @@ Accepted on purpose:
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | city_development_index | 18359 | 0.84714 | 0.110189 | 0.448 | 0.949 |
+| experience | 18300 | 10.583 | 6.79303 | 0 | 21 |
+| last_new_job | 15806 | 2.35132 | 1.6076 | 1 | 5 |
 | training_hours | 18359 | 65.899 | 60.8853 | 1 | 336 |
 
 ### Categorical features
 
 <details>
-<summary>Show the table (47 rows)</summary>
+<summary>Show the table (40 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -330,20 +337,13 @@ Accepted on purpose:
 | enrolled_university | 2 | Full time course | 3187 | 17.36 |
 | enrolled_university | 3 | Part time course | 1171 | 6.38 |
 | enrolled_university | 4 | &lt;NA> | 342 | 1.86 |
-| experience | 1 | >20 | 3437 | 18.72 |
-| experience | 2 | 5 | 1309 | 7.13 |
-| experience | 3 | 4 | 1250 | 6.81 |
-| experience | 4 | 3 | 1159 | 6.31 |
-| experience | 5 | 6 | 1125 | 6.13 |
 | gender | 1 | Male | 12884 | 70.18 |
 | gender | 2 | &lt;NA> | 4098 | 22.32 |
 | gender | 3 | Female | 1188 | 6.47 |
 | gender | 4 | Other | 189 | 1.03 |
-| last_new_job | 1 | 1 | 7567 | 41.22 |
-| last_new_job | 2 | >4 | 3339 | 18.19 |
-| last_new_job | 3 | 2 | 2835 | 15.44 |
-| last_new_job | 4 | never | 2186 | 11.91 |
-| last_new_job | 5 | 4 | 1038 | 5.65 |
+| last_new_job_never | 1 | 0.0 | 15806 | 86.09 |
+| last_new_job_never | 2 | 1.0 | 2186 | 11.91 |
+| last_new_job_never | 3 | &lt;NA> | 367 | 2 |
 | major_discipline | 1 | STEM | 13738 | 74.83 |
 | major_discipline | 2 | &lt;NA> | 2838 | 15.46 |
 | major_discipline | 3 | Humanities | 688 | 3.75 |
@@ -365,4 +365,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:4014816324b8d93d94054cefab8f1e283ba481e19b20cc83c64a907bcee19adb` |
+| stale | yes: the definition now gives checksum `v2:2c8e6d6913b0cb1a201bda96e314bb9688630da3adb507f1d5222593e7b42fcb` |

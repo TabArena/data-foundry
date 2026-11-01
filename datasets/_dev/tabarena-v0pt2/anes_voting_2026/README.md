@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: anes_voting_2026
 container_format: 2
-checksum: v2:61111ae7b7a47d593142566d383b4002b9c7a1ae6638e50408c1f337fb587f8a
+checksum: v2:117216d7f35b7361a9ebf7f0e7579f61625668f1862c0935d9fe554a664e4868
 build:
   uuid: 01a111fb-cb34-797a-ba46-5305a0c33af4
   checksum: v2:68b50d2a440c41001df168da2140a54131d4bde60c6aed028178881555c35d42
@@ -22,8 +22,8 @@ data:
   n_rows: 48587
   n_features: 261
   dtypes:
-    category: 215
-    float64: 47
+    category: 213
+    float64: 49
   n_test_dataset_rows: null
 task:
   target: VCF0702
@@ -70,7 +70,7 @@ decisions: []
 
 Binary classification of `VCF0702`, scored with `roc_auc` on temporal splits by `VCF0004`. 48,587 rows and 261 features. Source: Other (2026).
 
-Built as `01a111fb-cb34-797a-ba46-5305a0c33af4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:61111ae7b7a47d593142566d383b4002b9c7a1ae6638e50408c1f337fb587f8a`, so the build is stale. See [Build](#build).
+Built as `01a111fb-cb34-797a-ba46-5305a0c33af4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:117216d7f35b7361a9ebf7f0e7579f61625668f1862c0935d9fe554a664e4868`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -150,10 +150,10 @@ Only curators run `build`, when the dataset ships.
 | reason | ANES (the data's first publication) defines no prediction task. TableShift (Gardner et al. 2023), which defined the voting task, scores accuracy for every task of its benchmark, a house convention, not a choice from the decision; our task differs (temporal year splits, pre-election items only) and 78% voted, so accuracy at 0.5 is coarse. Original rejected: TableShift accuracy. roc_auc is the binary fallback. |
 
 <details>
-<summary>Feature types: 150 categorical, 65 ordinal, 0 string, 0 datetime</summary>
+<summary>Feature types: 150 categorical, 63 ordinal, 0 string, 0 datetime</summary>
 
 - categorical (150): `VCF0104`, `VCF0105a`, `VCF0105b`, `VCF0106`, `VCF0107`, `VCF0108`, `VCF0109`, `VCF0112`, `VCF0113`, `VCF0115`, `VCF0116`, `VCF0118`, `VCF0126`, `VCF0127`, `VCF0127a`, `VCF0127b`, `VCF0132`, `VCF0134`, `VCF0135`, `VCF0137`, `VCF0143`, `VCF0146`, `VCF0147`, `VCF0148`, `VCF0148a`, `VCF0149`, `VCF0150`, `VCF0151`, `VCF0152`, `VCF0154a`, `VCF0154b`, `VCF0156`, `VCF0157`, `VCF0170d`, `VCF0302`, `VCF0358`, `VCF0359`, `VCF0360`, `VCF0361`, `VCF0370`, `VCF0371`, `VCF0372`, `VCF0373`, `VCF0374`, `VCF0375a`, `VCF0375b`, `VCF0376a`, `VCF0376b`, `VCF0377a`, `VCF0377b`, `VCF0378a`, `VCF0378b`, `VCF0379a`, `VCF0379b`, `VCF0380`, `VCF0381a`, `VCF0381b`, `VCF0382a`, `VCF0382b`, `VCF0383a`, `VCF0383b`, `VCF0384a`, `VCF0384b`, `VCF0385a`, `VCF0385b`, `VCF0386`, `VCF0387a`, `VCF0387b`, `VCF0388a`, `VCF0388b`, `VCF0389a`, `VCF0389b`, `VCF0390a`, `VCF0390b`, `VCF0391a`, `VCF0391b`, `VCF0392`, `VCF0393a`, `VCF0393b`, `VCF0394a`, `VCF0394b`, `VCF0395a`, `VCF0395b`, `VCF0396a`, `VCF0396b`, `VCF0397a`, `VCF0397b`, `VCF0450`, `VCF0475`, `VCF0476a`, `VCF0476b`, `VCF0477a`, `VCF0477b`, `VCF0478a`, `VCF0478b`, `VCF0479a`, `VCF0479b`, `VCF0480a`, `VCF0480b`, `VCF0481`, `VCF0482a`, `VCF0482b`, `VCF0483a`, `VCF0483b`, `VCF0484a`, `VCF0484b`, `VCF0485a`, `VCF0485b`, `VCF0486a`, `VCF0486b`, `VCF0487`, `VCF0488a`, `VCF0488b`, `VCF0489a`, `VCF0489b`, `VCF0490a`, `VCF0490b`, `VCF0491a`, `VCF0491b`, `VCF0492a`, `VCF0492b`, `VCF0493`, `VCF0494a`, `VCF0494b`, `VCF0495a`, `VCF0495b`, `VCF0496a`, `VCF0496b`, `VCF0497a`, `VCF0497b`, `VCF0498a`, `VCF0498b`, `VCF0702`, `VCF0713`, `VCF0714`, `VCF9028`, `VCF9029`, `VCF9044`, `VCF9217`, `VCF9218`, `VCF9222`, `VCF9224`, `VCF9243`, `VCF9265`, `VCF9277`, `VCF9278`, `VCF9279`, `VCF9280`, `VCF9281`, `VCF9282`
-- ordinal (65): `VCF0110 (grade school or less (0-8 grades) < high school (12 grades or fewer, incl. non-college training) < some college (13 grades or more, no degree) < college or advanced degree)`, `VCF0111 (rural, small towns, outlying and adjacent areas < suburban areas < central cities)`, `VCF0114 (0-16 percentile < 17-33 percentile < 34-67 percentile < 68-95 percentile < 96-100 percentile)`, `VCF0130a (never < a few times a year < once or twice a month < almost every week < every week, once a week < every week, more than once a week)`, `VCF0138 (none < one < two < three or more)`, `VCF0140 (8 grades or less < 9-12 grades, no diploma or equivalency < 12 grades, diploma or equivalency < 12 grades, diploma or equivalency plus non-academic training < some college, no degree; junior or community college degree (AA) < BA level degrees; advanced degrees)`, `VCF0140a (8 grades or less < 9-12 grades, no diploma or equivalency < 12 grades, diploma or equivalency < 12 grades, diploma or equivalency plus non-academic training < some college, no degree; junior or community college degree (AA) < BA level degrees < advanced degrees incl. LLB)`, `VCF0301 (strong Democrat < weak Democrat < independent - Democrat < independent - independent < independent - Republican < weak Republican < strong Republican)`, `VCF0303 (Democrats (including leaners) < independents < Republicans (including leaners))`, `VCF0305 (independent < leaning independent < weak partisan < strong partisan)`, `VCF0310 (not much interested < somewhat interested < very much interested)`, `VCF0311 (don't care very much < care a good deal)`, `VCF0314 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0315 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0318 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0319 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0338 (not well at all < not too well < quite well < extremely well)`, `VCF0339 (not well at all < not too well < quite well < extremely well)`, `VCF0341 (not well at all < not too well < quite well < extremely well)`, `VCF0350 (not well at all < not too well < quite well < extremely well)`, `VCF0351 (not well at all < not too well < quite well < extremely well)`, `VCF0353 (not well at all < not too well < quite well < extremely well)`, `VCF0354 (not well at all < not too well < quite well < extremely well)`, `VCF0355 (not well at all < not too well < quite well < extremely well)`, `VCF0356 (not well at all < not too well < quite well < extremely well)`, `VCF0357 (not well at all < not too well < quite well < extremely well)`, `VCF0362 (not well at all < not too well < quite well < extremely well)`, `VCF0365 (not well at all < not too well < quite well < extremely well)`, `VCF0366 (not well at all < not too well < quite well < extremely well)`, `VCF0367 (not well at all < not too well < quite well < extremely well)`, `VCF0368 (not well at all < not too well < quite well < extremely well)`, `VCF0369 (not well at all < not too well < quite well < extremely well)`, `VCF0401 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0402 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0405 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0406 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0451 (approve strongly < approve not strongly < disapprove not strongly < disapprove strongly)`, `VCF0850 (a book written by men, not the Word of God < the Word of God, but not everything in it to be taken literally < the actual Word of God, to be taken literally, word for word)`, `VCF0870 (better < stayed same < worse)`, `VCF0871 (much better < somewhat better < stayed same < somewhat worse < much worse)`, `VCF0872 (get better < stay about the same < get worse)`, `VCF9009 (approve strongly < approve not strongly < disapprove not strongly < disapprove strongly)`, `VCF9044a (better < same (haven't made much difference) < worse)`, `VCF9045 (weaker < same < stronger)`, `VCF9122 (one < two < three < four < five < six < seven or more)`, `VCF9209 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9210 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9211 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9212 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9213 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9214 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9215 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9216 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9220 (gotten better < stayed the same < gotten worse)`, `VCF9225 (better < stayed same < worse)`, `VCF9226 (much better < somewhat better < same < somewhat worse < much worse)`, `VCF9238 (more difficult < keep these rules about the same < make it easier)`, `VCF9239 (not at all important < not too important < somewhat important < very important < extremely important)`, `VCF9244 (never < once in a while < about half the time < most of the time < always)`, `VCF0102 (17-24 < 25-34 < 35-44 < 45-54 < 55-64 < 65-74 < 75-99 and over)`, `VCF0103 (before 1895 < 1895-1910 < 1911-1926 < 1927-1942 < 1943-1958 < 1959-1974 < 1975-1990 < 1991-present)`, `VCF0130 (no religious preference < never < a few times a year < once or twice a month < almost every week < every week)`, `VCF0155 (not much at all < somewhat < a lot)`, `VCF9002 (4 years or less < 5-9 years < 10-19 years < 20-29 years < 30 or more years)`, `VCF9266 (English more < both equally (bilingual) < Spanish more)`
+- ordinal (63): `VCF0110 (grade school or less (0-8 grades) < high school (12 grades or fewer, incl. non-college training) < some college (13 grades or more, no degree) < college or advanced degree)`, `VCF0111 (rural, small towns, outlying and adjacent areas < suburban areas < central cities)`, `VCF0114 (0-16 percentile < 17-33 percentile < 34-67 percentile < 68-95 percentile < 96-100 percentile)`, `VCF0130a (never < a few times a year < once or twice a month < almost every week < every week, once a week < every week, more than once a week)`, `VCF0140 (8 grades or less < 9-12 grades, no diploma or equivalency < 12 grades, diploma or equivalency < 12 grades, diploma or equivalency plus non-academic training < some college, no degree; junior or community college degree (AA) < BA level degrees; advanced degrees)`, `VCF0140a (8 grades or less < 9-12 grades, no diploma or equivalency < 12 grades, diploma or equivalency < 12 grades, diploma or equivalency plus non-academic training < some college, no degree; junior or community college degree (AA) < BA level degrees < advanced degrees incl. LLB)`, `VCF0301 (strong Democrat < weak Democrat < independent - Democrat < independent - independent < independent - Republican < weak Republican < strong Republican)`, `VCF0303 (Democrats (including leaners) < independents < Republicans (including leaners))`, `VCF0305 (independent < leaning independent < weak partisan < strong partisan)`, `VCF0310 (not much interested < somewhat interested < very much interested)`, `VCF0311 (don't care very much < care a good deal)`, `VCF0314 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0315 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0318 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0319 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0338 (not well at all < not too well < quite well < extremely well)`, `VCF0339 (not well at all < not too well < quite well < extremely well)`, `VCF0341 (not well at all < not too well < quite well < extremely well)`, `VCF0350 (not well at all < not too well < quite well < extremely well)`, `VCF0351 (not well at all < not too well < quite well < extremely well)`, `VCF0353 (not well at all < not too well < quite well < extremely well)`, `VCF0354 (not well at all < not too well < quite well < extremely well)`, `VCF0355 (not well at all < not too well < quite well < extremely well)`, `VCF0356 (not well at all < not too well < quite well < extremely well)`, `VCF0357 (not well at all < not too well < quite well < extremely well)`, `VCF0362 (not well at all < not too well < quite well < extremely well)`, `VCF0365 (not well at all < not too well < quite well < extremely well)`, `VCF0366 (not well at all < not too well < quite well < extremely well)`, `VCF0367 (not well at all < not too well < quite well < extremely well)`, `VCF0368 (not well at all < not too well < quite well < extremely well)`, `VCF0369 (not well at all < not too well < quite well < extremely well)`, `VCF0401 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0402 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0405 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0406 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0451 (approve strongly < approve not strongly < disapprove not strongly < disapprove strongly)`, `VCF0850 (a book written by men, not the Word of God < the Word of God, but not everything in it to be taken literally < the actual Word of God, to be taken literally, word for word)`, `VCF0870 (better < stayed same < worse)`, `VCF0871 (much better < somewhat better < stayed same < somewhat worse < much worse)`, `VCF0872 (get better < stay about the same < get worse)`, `VCF9009 (approve strongly < approve not strongly < disapprove not strongly < disapprove strongly)`, `VCF9044a (better < same (haven't made much difference) < worse)`, `VCF9045 (weaker < same < stronger)`, `VCF9209 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9210 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9211 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9212 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9213 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9214 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9215 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9216 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9220 (gotten better < stayed the same < gotten worse)`, `VCF9225 (better < stayed same < worse)`, `VCF9226 (much better < somewhat better < same < somewhat worse < much worse)`, `VCF9238 (more difficult < keep these rules about the same < make it easier)`, `VCF9239 (not at all important < not too important < somewhat important < very important < extremely important)`, `VCF9244 (never < once in a while < about half the time < most of the time < always)`, `VCF0102 (17-24 < 25-34 < 35-44 < 45-54 < 55-64 < 65-74 < 75-99 and over)`, `VCF0103 (before 1895 < 1895-1910 < 1911-1926 < 1927-1942 < 1943-1958 < 1959-1974 < 1975-1990 < 1991-present)`, `VCF0130 (no religious preference < never < a few times a year < once or twice a month < almost every week < every week)`, `VCF0155 (not much at all < somewhat < a lot)`, `VCF9002 (4 years or less < 5-9 years < 10-19 years < 20-29 years < 30 or more years)`, `VCF9266 (English more < both equally (bilingual) < Spanish more)`
 - string (0): none
 - datetime (0): none
 
@@ -181,11 +181,11 @@ The first 5 of 48,587 rows of the final frame (the oldest rows: the frame is sor
 
 | VCF0702 | VCF0004 | VCF0101 | VCF0102 | VCF0103 | VCF0104 | VCF0105a | VCF0105b | VCF0106 | VCF0107 | VCF0108 | VCF0109 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 2 | 1948 | nan | 25-34 | 1911-1926 | female | white non-Hispanic | white non-Hispanic | white non-Hispanic | nan | nan | nan |
-| 1 | 1948 | nan | 45-54 | 1895-1910 | female | white non-Hispanic | white non-Hispanic | white non-Hispanic | nan | nan | nan |
-| 2 | 1948 | nan | 25-34 | 1911-1926 | female | black non-Hispanic | black non-Hispanic | black non-Hispanic | nan | nan | nan |
-| 1 | 1948 | nan | 25-34 | 1911-1926 | male | white non-Hispanic | white non-Hispanic | white non-Hispanic | nan | nan | nan |
-| 1 | 1948 | nan | nan | nan | male | white non-Hispanic | white non-Hispanic | white non-Hispanic | nan | nan | nan |
+| Yes | 1948 | nan | 65-74 | before 1895 | male | white non-Hispanic | white non-Hispanic | white non-Hispanic | nan | nan | nan |
+| Yes | 1948 | nan | 45-54 | 1895-1910 | female | white non-Hispanic | white non-Hispanic | white non-Hispanic | nan | nan | nan |
+| Yes | 1948 | nan | 45-54 | 1895-1910 | female | white non-Hispanic | white non-Hispanic | white non-Hispanic | nan | nan | nan |
+| Yes | 1948 | nan | 55-64 | before 1895 | female | white non-Hispanic | white non-Hispanic | white non-Hispanic | nan | nan | nan |
+| Yes | 1948 | nan | 25-34 | 1911-1926 | male | white non-Hispanic | white non-Hispanic | white non-Hispanic | nan | nan | nan |
 
 ## Curation notes
 
@@ -233,6 +233,11 @@ The first 5 of 48,587 rows of the final frame (the oldest rows: the frame is sor
   VCF0130; "all of life" is the respondent's age, so VCF9001 (years in the community) is a number and VCF9002
   places those rows in their age's band. Left as they are: the like-dislike mention counts, whose 0 also holds
   don't know (splitting it needs each count's filter, a few hundred rows each).
+- The target (2026-11-01, CLEAN-25): `VCF0702` ships its classes as words (2 means voted (ANES codebook)).
+  Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
+- Counts with a cut end (2026-11-01, CLEAN-14; the curator: "it is not made up of bins/ranges but clear years
+  and just cuts"): `VCF0138` (three or more → 3); `VCF9122` (seven or more → 7) are numbers; the cut end takes
+  its bound, so that value alone marks the censored rows.
 
 ## Splits
 
@@ -338,18 +343,19 @@ We use each of the last 9 years once as test data, using all prior data as train
 
 | VCF0702 | count | pct |
 |---|---|---|
-| 2 | 37880 | 77.96 |
-| 1 | 10707 | 22.04 |
+| Yes | 37880 | 77.96 |
+| No | 10707 | 22.04 |
 
 ### Numeric features
 
 <details>
-<summary>Show the table (47 rows)</summary>
+<summary>Show the table (49 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | VCF0004 | 48587 | 1997.46 | 22.8987 | 1948 | 2024 |
 | VCF0101 | 47200 | 48.3613 | 17.2821 | 17 | 99 |
+| VCF0138 | 12133 | 0.906041 | 1.12053 | 0 | 3 |
 | VCF0138a | 7840 | 0.245153 | 0.583265 | 0 | 4 |
 | VCF0138b | 7839 | 0.1652 | 0.446566 | 0 | 3 |
 | VCF0138c | 7839 | 0.165837 | 0.448753 | 0 | 4 |
@@ -394,6 +400,7 @@ We use each of the last 9 years once as test data, using all prior data as train
 | VCF9089 | 13425 | 5.2692 | 1.45828 | 1 | 7 |
 | VCF9093 | 26014 | 5.51499 | 1.61678 | 1 | 7 |
 | VCF9094 | 29668 | 2.93488 | 1.6803 | 1 | 7 |
+| VCF9122 | 22596 | 1.86467 | 0.763987 | 1 | 7 |
 | VCF9123 | 16062 | 5.66449 | 5.13168 | 1 | 48 |
 
 </details>
@@ -401,7 +408,7 @@ We use each of the last 9 years once as test data, using all prior data as train
 ### Categorical features
 
 <details>
-<summary>Show the table (982 rows)</summary>
+<summary>Show the table (972 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -466,7 +473,7 @@ We use each of the last 9 years once as test data, using all prior data as train
 | VCF0114 | 1 | 34-67 percentile | 14794 | 30.45 |
 | VCF0114 | 2 | 68-95 percentile | 12178 | 25.06 |
 
-(922 more rows not shown)
+(912 more rows not shown)
 
 </details>
 
@@ -481,4 +488,4 @@ We use each of the last 9 years once as test data, using all prior data as train
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:61111ae7b7a47d593142566d383b4002b9c7a1ae6638e50408c1f337fb587f8a` |
+| stale | yes: the definition now gives checksum `v2:117216d7f35b7361a9ebf7f0e7579f61625668f1862c0935d9fe554a664e4868` |

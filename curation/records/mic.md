@@ -54,6 +54,8 @@ CC (2026-11-01, Lennart): marks on the review board of PR #37: ZSN_A stays unord
 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 11 coded columns carry their words; 2 scores are numbers (FK_STENOK, GB).
 
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): counts with a cut end are numbers: INF_ANAM.
+
 ## Reference
 
 Trajectories, bifurcations, and pseudo-time in large clinical datasets: applications to myocardial infarction and diabetes data

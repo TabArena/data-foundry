@@ -53,6 +53,8 @@ CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words w
 
 CC (2026-11-01, Lennart): on the review board's ANES sheet: read 2024's attendance 9 as never (except the short form), recover 2020's VCF0130a never from VCF0130, "all of life" as the respondent's age (VCF9001 a number, VCF9002 by age band), decode the 40 master-code columns; the mention counts' 0 left as it is.
 
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (2 means voted (ANES codebook)); counts with a cut end are numbers: VCF0138, VCF9122.
+
 ## Reference
 
 @dataset{anes_timeseries_cdf_2026,

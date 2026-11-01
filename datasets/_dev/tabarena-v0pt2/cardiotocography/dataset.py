@@ -11,6 +11,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metr
 # them). An open-ended level holds everything beyond it.
 ORDINAL_LEVELS = {
     "Tendency": ["left asymmetric", "symmetric", "right asymmetric"],
+    "NSP": ["normal", "suspect", "pathologic"],
 }
 
 
@@ -88,6 +89,8 @@ class Cardiotocography(AbstractCuratedDataset):
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order.
+        - The target (2026-11-01, CLEAN-25): `NSP` ships its classes as words, normal < suspect < pathologic (CTG.xls,
+          sheet Description: 'NSP | Normal=1; Suspect=2; Pathologic=3').
     """
 
     # Task
@@ -154,6 +157,8 @@ class Cardiotocography(AbstractCuratedDataset):
         )
         # the codebook's words for its codes (CLEAN-12)
         df = decode(df, CODE_LABELS)
+        # the target's classes in words (CLEAN-25): the source's class names
+        df = decode(df, {self.target: {"1": "normal", "2": "suspect", "3": "pathologic"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

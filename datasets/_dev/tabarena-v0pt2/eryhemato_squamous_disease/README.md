@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: eryhemato_squamous_disease
 container_format: 2
-checksum: v2:bbf0ca1e25e284e98c1cb62ab8722bea135c85b317c1e62f97c8b599d331ddeb
+checksum: v2:9d20f2a5dcb8e9834228e910684c55231475a0384b78cc9291f1e48840128db9
 build:
   uuid: 01a111fc-a1c3-79c0-8d48-48221a6702fe
   checksum: v2:aba9d540c391f2a14f0cf06bd994fff1205b5549b7de973316d943823e12ad15
@@ -68,7 +68,7 @@ decisions: []
 
 Multiclass classification of `class`, scored with `log_loss` on IID splits. 366 rows and 12 features. Source: UCI (1998).
 
-Built as `01a111fc-a1c3-79c0-8d48-48221a6702fe` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:bbf0ca1e25e284e98c1cb62ab8722bea135c85b317c1e62f97c8b599d331ddeb`, so the build is stale. See [Build](#build).
+Built as `01a111fc-a1c3-79c0-8d48-48221a6702fe` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9d20f2a5dcb8e9834228e910684c55231475a0384b78cc9291f1e48840128db9`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -178,11 +178,11 @@ The first 5 of 366 rows of the final frame (random rows: the frame is shuffled);
 
 | class | erythema | scaling | definite borders | itching | koebner phenomenon | polygonal papules | follicular papules | oral mucosal involvement | knee and elbow involvement | scalp involvement | family history |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 2 | 3 | 2 | 0 | 1 | 0 | 0 | 0 | 2 | 3 | 0 |
-| 5 | 1 | 1 | 0 | 2 | 0 | 0 | 0 | 0 | 1 | 0 | 0 |
-| 1 | 2 | 2 | 1 | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 1 |
-| 1 | 1 | 1 | 1 | 1 | 1 | 0 | 0 | 0 | 2 | 2 | 0 |
-| 5 | 1 | 2 | 1 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| chronic dermatitis | 2 | 1 | 0 | 2 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| seborrheic dermatitis | 1 | 2 | 2 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| psoriasis | 3 | 2 | 2 | 3 | 2 | 0 | 0 | 0 | 2 | 3 | 0 |
+| pityriasis rubra pilaris | 2 | 1 | 1 | 1 | 0 | 0 | 2 | 0 | 3 | 2 | 0 |
+| psoriasis | 3 | 2 | 2 | 3 | 2 | 0 | 0 | 0 | 0 | 2 | 0 |
 
 ## Curation notes
 
@@ -195,6 +195,8 @@ We start with the data from UCI.
   each level is carries the words, a score without them is a number): 10 scores with no words per level are
   numbers (`SCORES`): `erythema`, `scaling`, `definite borders`, `itching`, `koebner phenomenon`, `polygonal
   papules`, `follicular papules`, `oral mucosal involvement`, `knee and elbow involvement`, `scalp involvement`.
+- The target (2026-11-01, CLEAN-25): `class` ships its classes as words (dermatology.names, 9. Class
+  Distribution).
 
 ## Splits
 
@@ -296,8 +298,8 @@ Default splits.
 | knee and elbow involvement | category | 0 | 0 | 4 | 0, 2, 1, 3 |
 | scalp involvement | category | 0 | 0 | 4 | 0, 2, 1, 3 |
 | family history | category | 0 | 0 | 2 | 0, 1 |
-| class | category | 0 | 0 | 6 | 1, 3, 2, 5, 4, 6 |
-| age | float64 | 8 | 2.19 | 60 | 40.0, 50.0, 27.0, 36.0, 22.0, 25.0, 55.0, 35.0, 30.0, 33.0 |
+| class | category | 0 | 0 | 6 | psoriasis, lichen planus, seborrheic dermatitis, chronic dermatitis, pityriasis… |
+| age | float64 | 8 | 2.19 | 60 | 50.0, 40.0, 27.0, 36.0, 22.0, 35.0, 25.0, 55.0, 30.0, 33.0 |
 
 </details>
 
@@ -305,12 +307,12 @@ Default splits.
 
 | class | count | pct |
 |---|---|---|
-| 1 | 112 | 30.6 |
-| 3 | 72 | 19.67 |
-| 2 | 61 | 16.67 |
-| 5 | 52 | 14.21 |
-| 4 | 49 | 13.39 |
-| 6 | 20 | 5.46 |
+| psoriasis | 112 | 30.6 |
+| lichen planus | 72 | 19.67 |
+| seborrheic dermatitis | 61 | 16.67 |
+| chronic dermatitis | 52 | 14.21 |
+| pityriasis rosea | 49 | 13.39 |
+| pityriasis rubra pilaris | 20 | 5.46 |
 
 ### Numeric features
 
@@ -325,11 +327,11 @@ Default splits.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| class | 1 | 1 | 112 | 30.6 |
-| class | 2 | 3 | 72 | 19.67 |
-| class | 3 | 2 | 61 | 16.67 |
-| class | 4 | 5 | 52 | 14.21 |
-| class | 5 | 4 | 49 | 13.39 |
+| class | 1 | psoriasis | 112 | 30.6 |
+| class | 2 | lichen planus | 72 | 19.67 |
+| class | 3 | seborrheic dermatitis | 61 | 16.67 |
+| class | 4 | chronic dermatitis | 52 | 14.21 |
+| class | 5 | pityriasis rosea | 49 | 13.39 |
 | definite borders | 1 | 2 | 168 | 45.9 |
 | definite borders | 2 | 1 | 93 | 25.41 |
 | definite borders | 3 | 0 | 59 | 16.12 |
@@ -386,4 +388,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:bbf0ca1e25e284e98c1cb62ab8722bea135c85b317c1e62f97c8b599d331ddeb` |
+| stale | yes: the definition now gives checksum `v2:9d20f2a5dcb8e9834228e910684c55231475a0384b78cc9291f1e48840128db9` |

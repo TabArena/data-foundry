@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, anonymize_ids, decode
 
 CONTACT_PATTERN = r"#(?:EMAIL|PHONE|URL)_[0-9a-f]{8,}#"
 """EMSCAD masks e-mails, phones and URLs as ``#(EMAIL|PHONE|URL)_Keyed_SHA2#``, so one hash is one contact."""
@@ -162,6 +162,8 @@ class Emscad(AbstractCuratedDataset):
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed
           by the curator's rule (missing when the column has no other missing value, else the lowest level; a state that
           is simply not on the scale, such as Other, is missing).
+        - The target (2026-11-01, CLEAN-25): `fraudulent` ships its classes as words (1 is the event). Binary: "Yes" is
+          the event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -391,6 +393,8 @@ class Emscad(AbstractCuratedDataset):
         # Group ads of the same poster (used for the splits only)
         df["poster_group"] = poster_groups(df)
         df = df.drop(columns=["job_id"])
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

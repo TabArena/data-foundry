@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, object_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode, object_columns
 
 TABLES = {
     "application": "application_train.csv",
@@ -137,6 +137,8 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 2 scores with no words per level are
           numbers (`SCORES`): `REGION_RATING_CLIENT`, `REGION_RATING_CLIENT_W_CITY`.
+        - The target (2026-11-01, CLEAN-25): `TARGET` ships its classes as words (1 is the event). Binary: "Yes" is the
+          event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -185,6 +187,8 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
         df = df.drop(columns=[c for c in features if df[c].nunique() <= 1])
         # scores with no words per level are numbers (CLEAN-14)
         df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df.drop(columns=_copies(df.drop(columns=self.target)))
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

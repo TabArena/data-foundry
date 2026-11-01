@@ -52,6 +52,8 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): -1, raddar's missing value in the 55 integer columns that hold it (on the same rows across blocks), set back to missing (CLEAN-10)..
 
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
 ## Reference
 
 Kaggle

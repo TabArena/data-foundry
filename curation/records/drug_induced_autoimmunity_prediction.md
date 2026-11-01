@@ -56,6 +56,8 @@ CC (2026-10-21, Lennart): make this dataset grouped here as well ("we want to ha
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `dilist_drug_induced_liver_injury` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
 ## Reference
 
 @article{huang2025interdia,

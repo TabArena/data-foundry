@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
 
 # Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
 SCORES = [
@@ -92,6 +92,8 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
           each level is carries the words, a score without them is a number): 10 scores with no words per level are
           numbers (`SCORES`): `erythema`, `scaling`, `definite borders`, `itching`, `koebner phenomenon`, `polygonal
           papules`, `follicular papules`, `oral mucosal involvement`, `knee and elbow involvement`, `scalp involvement`.
+        - The target (2026-11-01, CLEAN-25): `class` ships its classes as words (dermatology.names, 9. Class
+          Distribution).
     """
 
     # Task
@@ -164,6 +166,20 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
         df["age"] = df["age"].replace("?", np.nan).astype(float)
         # scores with no words per level are numbers (CLEAN-14)
         df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
+        # the target's classes in words (CLEAN-25): the source's class names
+        df = decode(
+            df,
+            {
+                self.target: {
+                    "1": "psoriasis",
+                    "2": "seborrheic dermatitis",
+                    "3": "lichen planus",
+                    "4": "pityriasis rosea",
+                    "5": "chronic dermatitis",
+                    "6": "pityriasis rubra pilaris",
+                }
+            },
+        )
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

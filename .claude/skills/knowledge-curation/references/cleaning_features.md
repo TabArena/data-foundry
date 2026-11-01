@@ -88,6 +88,8 @@ What ships as words and what as numbers, in short (Lennart, 2026-11-01: "let us 
 |---|---|
 | a code the source names in words, level by level (a grade, a type, an answer, a band) | the words; ordered when the scale is |
 | a measurement: a count, an amount, a size, a duration, an hour or weekday of a cycle | a number |
+| a count in exact units with a cut end ("three or more", ">20") | a number, the cut end at its bound (CLEAN-14) |
+| a classification target | its classes in words; binary "No"/"Yes" with "Yes" the event (CLEAN-25) |
 | a score or rating with no words per level, or words only at its two ends | a number (CLEAN-14) |
 | a code with no words anywhere (an id, a detector number, an anonymized or undocumented code) | the code, as a category |
 | a 0/1 flag | 0/1, as a category (CLEAN-14) |
@@ -155,8 +157,13 @@ ordinal from the context and logic, not from target information"). The curator's
   lowest level would rank it below every other; a state at the top of a scale goes there (a residence of "all of
   life"); a synonym of a level is that level; an overlapping band sits by its midpoint. A state that is a second
   dimension (non-residential client types beside residential strata) keeps the column unordered.
-* A count or band with an open end ("3 or more", "> 20", "50plus") is one ordered level, labelled as the source labels
-  it, with no extra column: on the 20 datasets with an open end, an indicator column added nothing over the ordered
+* A count in exact units whose only grouping is a cut end (children "three or more", experience "<1" ... "20" ">20",
+  employment "10+ years") is a number, not bands (Lennart, 2026-11-01: "it is not made up of bins/ranges but clear
+  years and just cuts"): the cut end takes its bound ("three or more" 3, ">20" 21, "<1" 0), so that value alone marks
+  the censored rows; a state that is no count ("never" changed jobs) becomes a 0/1 column. Bands of a quantity
+  ("21-25", "1-10%", "$5.00 - $9.99") stay ordered categories.
+* A band scale with an open end ("3 or more" among bands, "> 20", "50plus") is one ordered level, labelled as the
+  source labels it, with no extra column: on the 20 datasets with an open end, an indicator column added nothing over the ordered
   level for LightGBM, a linear model and TabPFN v3.5, and the open level as missing with an indicator did worse
   (2026-10-30 run). The dtype probe names every open end (`open_end`), and the definition says what it holds.
 * A cycle of time or direction (the hour, the weekday, the day of the month, the month, a compass direction) is a
@@ -187,6 +194,24 @@ convention of the field, with the merge tested (TP-7): [task_probes.md](task_pro
 
 **CLEAN-18 (Should).** Remove a `Multi-target` tag when the dataset predicts one target ([selection.md](selection.md),
 "Reading decision markers and optional fields").
+
+**CLEAN-25 (Should; 2026-11-01, Lennart: "yes decode the targets too ... provide orderd cateogricals for the targets
+of all classification datasets (if that exists / can be infered maybe?)").** A classification target ships its
+classes as words, like every coded column (CLEAN-12):
+
+* Binary: "No" / "Yes", with "Yes" the event the task predicts (default, fraud, death, a diagnosis), whatever the
+  source's codes are (gallstone_disease's 0 means gallstones present, ANES's 2 means voted). "Yes" sorts second, so it
+  is the positive class of every metric (`labels[1]`) and of a harness that sorts the classes. A binary target the
+  source already names in words keeps them ("negative" / "positive", "Active" / "Churned"). Where its event sorts
+  first (lending_club's "Defaulted" before "Fully Paid", credit_g's "bad" before "good"), ROC AUC and log loss score
+  the same either way, and a metric that needs the event names it in its params (credit_g's cost matrix labels). A
+  binary target is not typed ordered.
+* Multiclass: the source's class names. When the classes form a scale (normal < suspect < pathologic, no dementia <
+  very mild < mild, blood donor < hepatitis < fibrosis < cirrhosis), the target is an ordered category in the scale's
+  order (`FeatureTypes(ordinal={target: [...]})`), by meaning, never by the class sizes. Nominal classes (diseases,
+  species, glass types) and classes with a state outside the scale ("Withdrawn" beside fail < pass < distinction) stay
+  unordered. A consumer aligns its probability columns to the container's categories by name (the examples do).
+* A target with no words in the source (anonymized classes such as `Class_1` ... `Class_9`) keeps them.
 
 ### Features we build
 

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: hotel_booking_demand
 container_format: 2
-checksum: v2:0fa061704a713eaf37d82cf9c4b05a83619d548eaf108c71be7115ae8463b609
+checksum: v2:901f8c545a9df30ae807f7b428aafe02141306a6c148cef0f5fc9015945ce58d
 build:
   uuid: 01a111fc-83ac-7d29-9b51-a07539b9d67c
   checksum: v2:2f18db4b72cd822107064f59371e2b6ab9ea2d9c03fd57e1842ec43f79c7d30c
@@ -76,7 +76,7 @@ decisions: []
 
 Binary classification of `IsCanceled`, scored with `roc_auc` on temporal splits by `arrival_date`. 81,418 rows and 28 features. Source: Other (2018).
 
-Built as `01a111fc-83ac-7d29-9b51-a07539b9d67c` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:0fa061704a713eaf37d82cf9c4b05a83619d548eaf108c71be7115ae8463b609`, so the build is stale. See [Build](#build).
+Built as `01a111fc-83ac-7d29-9b51-a07539b9d67c` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:901f8c545a9df30ae807f7b428aafe02141306a6c148cef0f5fc9015945ce58d`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -187,11 +187,11 @@ The first 5 of 81,418 rows of the final frame (the oldest rows: the frame is sor
 
 | IsCanceled | LeadTime | ArrivalDateYear | ArrivalDateMonth | ArrivalDateWeekNumber | ArrivalDateDayOfMonth | StaysInWeekendNights | StaysInWeekNights | Adults | Children | Babies | Meal |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 85 | 2015 | July | 27 | 1 | 0 | 3 | 2 | 0 | 0 | BB |
-| 0 | 110 | 2015 | July | 27 | 1 | 1 | 4 | 3 | 0 | 0 | BB |
-| 0 | 149 | 2015 | July | 27 | 1 | 2 | 5 | 2 | 1 | 0 | BB |
-| 0 | 1 | 2015 | July | 27 | 1 | 0 | 1 | 1 | 0 | 0 | BB |
-| 0 | 181 | 2015 | July | 27 | 1 | 0 | 4 | 2 | 0 | 0 | BB |
+| No | 342 | 2015 | July | 27 | 1 | 0 | 0 | 2 | 0 | 0 | BB |
+| No | 149 | 2015 | July | 27 | 1 | 2 | 5 | 2 | 1 | 0 | BB |
+| No | 14 | 2015 | July | 27 | 1 | 0 | 2 | 2 | 0 | 0 | BB |
+| No | 78 | 2015 | July | 27 | 1 | 2 | 5 | 2 | 0 | 0 | BB |
+| Yes | 257 | 2015 | July | 27 | 1 | 0 | 2 | 2 | 0 | 0 | HB |
 
 ## Curation notes
 
@@ -215,6 +215,8 @@ The first 5 of 81,418 rows of the final frame (the oldest rows: the frame is sor
   their usual order (the wrap is not shown); 1 hold a state outside the scale, placed by the curator's rule
   (missing when the column has no other missing value, else the lowest level; a state that is simply not on the
   scale, such as Other, is missing).
+- The target (2026-11-01, CLEAN-25): `IsCanceled` ships its classes as words (1 is the event). Binary: "Yes" is
+  the event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
@@ -261,7 +263,7 @@ Accepted on purpose:
 | Company | category | 76934 | 94.49 | 325 | 40, 223, 153, 45, 154, 219, 281, 174, 233, 51 |
 | Agent | category | 8886 | 10.91 | 319 | 9, 240, 14, 7, 250, 241, 28, 8, 1, 6 |
 | Country | category | 336 | 0.41 | 172 | PRT, GBR, FRA, ESP, DEU, IRL, ITA, BEL, BRA, NLD |
-| IsCanceled | category | 0 | 0 | 2 | 0, 1 |
+| IsCanceled | category | 0 | 0 | 2 | No, Yes |
 | ArrivalDateMonth | category | 0 | 0 | 12 | August, July, May, April, June, March, October, September, February, December |
 | Meal | category | 0 | 0 | 4 | BB , SC , HB , FB |
 | MarketSegment | category | 0 | 0 | 8 | Online TA, Offline TA/TO, Direct, Groups, Corporate, Complementary, Aviation, U… |
@@ -294,8 +296,8 @@ Accepted on purpose:
 
 | IsCanceled | count | pct |
 |---|---|---|
-| 0 | 57746 | 70.93 |
-| 1 | 23672 | 29.07 |
+| No | 57746 | 70.93 |
+| Yes | 23672 | 29.07 |
 
 ### Numeric features
 
@@ -360,8 +362,8 @@ Accepted on purpose:
 | DistributionChannel | 3 | Corporate | 4356 | 5.35 |
 | DistributionChannel | 4 | GDS | 168 | 0.21 |
 | DistributionChannel | 5 | Undefined | 5 | 0.01 |
-| IsCanceled | 1 | 0 | 57746 | 70.93 |
-| IsCanceled | 2 | 1 | 23672 | 29.07 |
+| IsCanceled | 1 | No | 57746 | 70.93 |
+| IsCanceled | 2 | Yes | 23672 | 29.07 |
 | IsRepeatedGuest | 1 | 0 | 79092 | 97.14 |
 | IsRepeatedGuest | 2 | 1 | 2326 | 2.86 |
 | MarketSegment | 1 | Online TA | 49614 | 60.94 |
@@ -387,7 +389,7 @@ Accepted on purpose:
 | booking_date | 2 | 2016-02-03 00:00:00 | 308 | 0.38 |
 | booking_date | 3 | 2015-10-14 00:00:00 | 289 | 0.35 |
 | booking_date | 4 | 2016-01-06 00:00:00 | 275 | 0.34 |
-| booking_date | 5 | 2017-01-16 00:00:00 | 272 | 0.33 |
+| booking_date | 5 | 2016-01-14 00:00:00 | 272 | 0.33 |
 
 (2 more rows not shown)
 
@@ -404,4 +406,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:0fa061704a713eaf37d82cf9c4b05a83619d548eaf108c71be7115ae8463b609` |
+| stale | yes: the definition now gives checksum `v2:901f8c545a9df30ae807f7b428aafe02141306a6c148cef0f5fc9015945ce58d` |

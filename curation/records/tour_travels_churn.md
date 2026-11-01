@@ -45,6 +45,8 @@ CC (2026-10-21, Lennart): an upload whose first platform cannot be traced is kep
 
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `AnnualIncomeClass` (the README lists their levels).
 
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
 ## Reference
 
 Kaggle

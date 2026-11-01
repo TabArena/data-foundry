@@ -281,8 +281,10 @@ The order the collection's definitions converge on. Emit the steps that plausibl
 
 ```python
 # 1. Load (+ merge multiple tables on their key, following the source's own joins).
-# 2. Rename columns and the target to meaningful names; fix typos, strip special characters. Binary targets get
-#    readable labels: df[target] = df[target].map({1: "Yes", 0: "No"})
+# 2. Rename columns and the target to meaningful names; fix typos, strip special characters. The target's classes
+#    are words (CLEAN-25): binary "No"/"Yes" with "Yes" the event the task predicts,
+#    `df = decode(df, {self.target: {0: "No", 1: "Yes"}})`; a multiclass target the source's class names, ordered
+#    (`ordinal={target: [...]}`) when they form a scale.
 # 3. TODO(verify): drop uninformative identifiers. To keep an id but hide its names (a group id), use
 #    `anonymize_ids(df[col])`, never random ids: `uuid4()` changes the data on every run.
 # 4. TODO(verify): reverse ordinal codes and true one-hot blocks, restore the labels; yes/no flags that can be set

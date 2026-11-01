@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: cirrhosis_patient_survival_prediction
 container_format: 2
-checksum: v2:87b416483303de5586ef79c1272a24beb2a46a94b3be0e8e79570f288ed7c541
+checksum: v2:adf202f78f7686212cb43f3c251896ca0211b294c5e7e446ea02cf805f984a3c
 build:
   uuid: 01a13a7d-c2bd-721a-88c1-f86443866b1e
   checksum: v2:60b5d8fa6859308588d97ac9b03d362d334da815e103b670c1c18a43c5a21477
@@ -69,7 +69,7 @@ decisions:
 
 Binary classification of `death_or_transplant_within_5y`, scored with `roc_auc` on IID splits. 304 rows and 17 features. Source: Other (1991).
 
-Built as `01a13a7d-c2bd-721a-88c1-f86443866b1e` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:87b416483303de5586ef79c1272a24beb2a46a94b3be0e8e79570f288ed7c541`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2bd-721a-88c1-f86443866b1e` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:adf202f78f7686212cb43f3c251896ca0211b294c5e7e446ea02cf805f984a3c`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -179,11 +179,11 @@ The first 5 of 304 rows of the final frame (random rows: the frame is shuffled);
 
 | death_or_transplant_within_5y | Drug | Age | Sex | Ascites | Hepatomegaly | Spiders | Edema | Bilirubin | Cholesterol | Albumin | Copper |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | D-penicillamine | 17512 | F | N | Y | N | N | 6.3 | 436 | 3.02 | 75 |
-| 0 | Placebo | 17323 | F | N | N | N | N | 0.5 | 316 | 3.65 | 68 |
-| 0 | D-penicillamine | 19916 | F | N | N | Y | N | 2.3 | nan | 3.93 | 24 |
-| 1 | Placebo | 19098 | F | N | Y | N | S | 28 | 556 | 3.26 | 152 |
-| 1 | D-penicillamine | 25873 | F | N | N | Y | S | 2 | 225 | 3.53 | 51 |
+| No | nan | 27394 | F | nan | nan | nan | S | 0.7 | nan | 3.96 | nan |
+| No | nan | 23741 | F | nan | nan | nan | N | 2.1 | nan | 3.34 | nan |
+| No | Placebo | 12279 | F | N | Y | Y | N | 1.1 | 498 | 3.8 | 88 |
+| No | D-penicillamine | 20104 | F | N | N | N | N | 0.9 | 460 | 3.03 | 57 |
+| Yes | nan | 19724 | F | nan | nan | nan | N | 9 | nan | 3.29 | nan |
 
 ## Curation notes
 
@@ -201,6 +201,8 @@ We start with the UCI copy (878) of the Mayo Clinic PBC data (Fleming and Harrin
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 1 scores with no words per level are
   numbers (`SCORES`): `Stage`.
+- The target (2026-11-01, CLEAN-25): `death_or_transplant_within_5y` ships its classes as words (1 is the
+  event). Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
@@ -308,18 +310,18 @@ Follow-up ended in July 1986 for everyone, so a patient registered after about m
 | Spiders | category | 66 | 21.71 | 2 | N, Y |
 | Sex | category | 0 | 0 | 2 | F, M |
 | Edema | category | 0 | 0 | 3 | N, S, Y |
-| death_or_transplant_within_5y | category | 0 | 0 | 2 | 0, 1 |
-| Tryglicerides | float64 | 93 | 30.59 | 125 | 101.0, 118.0, 90.0, 68.0, 56.0, 58.0, 106.0, 88.0, 114.0, 133.0 |
-| Cholesterol | float64 | 92 | 30.26 | 158 | 316.0, 448.0, 260.0, 259.0, 248.0, 236.0, 263.0, 302.0, 257.0, 288.0 |
-| Copper | float64 | 68 | 22.37 | 134 | 58.0, 67.0, 52.0, 20.0, 75.0, 51.0, 13.0, 74.0, 57.0, 50.0 |
-| Alk_Phos | float64 | 66 | 21.71 | 229 | 1828.0, 7277.0, 1052.0, 944.0, 559.0, 1345.0, 2276.0, 1790.0, 1009.0, 1588.0 |
-| SGOT | float64 | 66 | 21.71 | 128 | 71.3, 170.5, 97.65, 137.95, 120.9, 57.35, 106.95, 151.9, 134.85, 74.4 |
-| Platelets | float64 | 11 | 3.62 | 201 | 344.0, 224.0, 181.0, 213.0, 265.0, 165.0, 190.0, 226.0, 268.0, 228.0 |
+| death_or_transplant_within_5y | category | 0 | 0 | 2 | No, Yes |
+| Tryglicerides | float64 | 93 | 30.59 | 125 | 118.0, 68.0, 101.0, 90.0, 58.0, 56.0, 137.0, 99.0, 88.0, 87.0 |
+| Cholesterol | float64 | 92 | 30.26 | 158 | 448.0, 257.0, 316.0, 302.0, 263.0, 259.0, 236.0, 248.0, 260.0, 267.0 |
+| Copper | float64 | 68 | 22.37 | 134 | 67.0, 58.0, 20.0, 52.0, 57.0, 75.0, 13.0, 51.0, 74.0, 50.0 |
+| Alk_Phos | float64 | 66 | 21.71 | 229 | 1828.0, 1009.0, 1345.0, 1052.0, 944.0, 7277.0, 1790.0, 559.0, 2276.0, 1062.0 |
+| SGOT | float64 | 66 | 21.71 | 128 | 71.3, 137.95, 120.9, 170.5, 97.65, 57.35, 128.65, 74.4, 151.9, 106.95 |
+| Platelets | float64 | 11 | 3.62 | 201 | 344.0, 265.0, 224.0, 181.0, 165.0, 213.0, 142.0, 311.0, 200.0, 166.0 |
 | Stage | float64 | 6 | 1.97 | 4 | 3.0, 4.0, 2.0, 1.0 |
-| Prothrombin | float64 | 2 | 0.66 | 48 | 11.0, 10.6, 10.1, 9.9, 10.0, 10.3, 9.8, 10.4, 11.5, 11.1 |
-| Bilirubin | float64 | 0 | 0 | 87 | 0.6, 0.7, 0.9, 0.8, 0.5, 1.3, 1.1, 1.2, 1.8, 1.4 |
-| Albumin | float64 | 0 | 0 | 135 | 3.35, 3.6, 3.26, 3.63, 3.7, 3.4, 3.65, 3.76, 3.55, 3.34 |
-| Age | int64 | 0 | 0 | 267 | 19724, 23011, 22646, 23376, 17532, 16071, 18628, 20454, 21915, 17897 |
+| Prothrombin | float64 | 2 | 0.66 | 48 | 11.0, 10.6, 10.1, 9.9, 10.0, 10.3, 9.8, 11.5, 11.1, 10.4 |
+| Bilirubin | float64 | 0 | 0 | 87 | 0.6, 0.7, 0.9, 0.8, 0.5, 1.3, 1.1, 1.8, 1.2, 1.4 |
+| Albumin | float64 | 0 | 0 | 135 | 3.35, 3.6, 3.26, 3.7, 3.63, 3.4, 3.34, 3.5, 3.55, 4.08 |
+| Age | int64 | 0 | 0 | 267 | 19724, 23011, 23376, 22646, 21915, 16802, 18628, 16071, 19358, 20454 |
 
 </details>
 
@@ -327,8 +329,8 @@ Follow-up ended in July 1986 for everyone, so a patient registered after about m
 
 | death_or_transplant_within_5y | count | pct |
 |---|---|---|
-| 0 | 197 | 64.8 |
-| 1 | 107 | 35.2 |
+| No | 197 | 64.8 |
+| Yes | 107 | 35.2 |
 
 ### Numeric features
 
@@ -375,8 +377,8 @@ Follow-up ended in July 1986 for everyone, so a patient registered after about m
 | Spiders | 1 | N | 167 | 54.93 |
 | Spiders | 2 | Y | 71 | 23.36 |
 | Spiders | 3 | &lt;NA> | 66 | 21.71 |
-| death_or_transplant_within_5y | 1 | 0 | 197 | 64.8 |
-| death_or_transplant_within_5y | 2 | 1 | 107 | 35.2 |
+| death_or_transplant_within_5y | 1 | No | 197 | 64.8 |
+| death_or_transplant_within_5y | 2 | Yes | 107 | 35.2 |
 
 </details>
 
@@ -391,4 +393,4 @@ Follow-up ended in July 1986 for everyone, so a patient registered after about m
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:87b416483303de5586ef79c1272a24beb2a46a94b3be0e8e79570f288ed7c541` |
+| stale | yes: the definition now gives checksum `v2:adf202f78f7686212cb43f3c251896ca0211b294c5e7e446ea02cf805f984a3c` |

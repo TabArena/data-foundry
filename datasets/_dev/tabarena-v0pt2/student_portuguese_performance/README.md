@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: student_portuguese_performance
 container_format: 2
-checksum: v2:b1fe39f55f674cce12b0f08661a08b251feba97648655ba6ad8711f38f225498
+checksum: v2:6342cc062ce73c58fcfd450231b6b26939ee888b57f8e91f5e7f0dafed8a6b0d
 build:
   uuid: 01a111fc-bd82-7068-93bd-0d20f8e4fea0
   checksum: v2:15f900151b360044e6e1a9f3d90f57359f6b73bc62a377276618fb78091b6cdc
@@ -22,7 +22,8 @@ data:
   n_rows: 649
   n_features: 30
   dtypes:
-    category: 22
+    category: 21
+    float64: 1
     int64: 9
   n_test_dataset_rows: null
 task:
@@ -67,7 +68,7 @@ decisions: []
 
 Regression of `G3`, scored with `rmse` on IID splits. 649 rows and 30 features. Source: UCI (2014).
 
-Built as `01a111fc-bd82-7068-93bd-0d20f8e4fea0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b1fe39f55f674cce12b0f08661a08b251feba97648655ba6ad8711f38f225498`, so the build is stale. See [Build](#build).
+Built as `01a111fc-bd82-7068-93bd-0d20f8e4fea0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6342cc062ce73c58fcfd450231b6b26939ee888b57f8e91f5e7f0dafed8a6b0d`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -145,10 +146,10 @@ Only curators run `build`, when the dataset ships.
 | definition | Root mean squared error of the predicted final grade G3 (0-20); the paper's classification setups use PCC instead |
 
 <details>
-<summary>Feature types: 16 categorical, 6 ordinal, 0 string, 0 datetime</summary>
+<summary>Feature types: 16 categorical, 5 ordinal, 0 string, 0 datetime</summary>
 
 - categorical (16): `school`, `sex`, `address`, `Pstatus`, `Mjob`, `Fjob`, `reason`, `guardian`, `schoolsup`, `famsup`, `paid`, `activities`, `nursery`, `higher`, `internet`, `romantic`
-- ordinal (6): `Medu (none < primary education (4th grade) < 5th to 9th grade < secondary education < higher education)`, `Fedu (none < primary education (4th grade) < 5th to 9th grade < secondary education < higher education)`, `traveltime (<15 min < 15 to 30 min < 30 min to 1 hour < >1 hour)`, `studytime (<2 hours < 2 to 5 hours < 5 to 10 hours < >10 hours)`, `failures (no failures < 1 failure < 2 failures < 3 or more failures)`, `famsize (less or equal to 3 < greater than 3)`
+- ordinal (5): `Medu (none < primary education (4th grade) < 5th to 9th grade < secondary education < higher education)`, `Fedu (none < primary education (4th grade) < 5th to 9th grade < secondary education < higher education)`, `traveltime (<15 min < 15 to 30 min < 30 min to 1 hour < >1 hour)`, `studytime (<2 hours < 2 to 5 hours < 5 to 10 hours < >10 hours)`, `famsize (less or equal to 3 < greater than 3)`
 - string (0): none
 - datetime (0): none
 
@@ -173,11 +174,11 @@ The first 5 of 649 rows of the final frame (random rows: the frame is shuffled);
 
 | G3 | school | sex | age | address | famsize | Pstatus | Medu | Fedu | Mjob | Fjob | reason |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 10 | Mousinho da Silveira | F | 18 | urban | greater than 3 | living together | secondary education | secondary education | services | services | course |
-| 13 | Gabriel Pereira | M | 15 | urban | greater than 3 | living together | secondary education | higher education | other | other | home |
-| 11 | Gabriel Pereira | M | 16 | urban | greater than 3 | living together | 5th to 9th grade | 5th to 9th grade | other | other | course |
-| 11 | Gabriel Pereira | F | 16 | urban | less or equal to 3 | living together | 5th to 9th grade | 5th to 9th grade | at_home | other | course |
-| 9 | Mousinho da Silveira | F | 19 | urban | greater than 3 | living together | primary education (4th grade) | primary education (4th grade) | other | other | course |
+| 8 | Gabriel Pereira | M | 18 | urban | greater than 3 | living together | 5th to 9th grade | 5th to 9th grade | other | at_home | course |
+| 14 | Mousinho da Silveira | F | 16 | urban | greater than 3 | living together | primary education (4th grade) | primary education (4th grade) | other | other | course |
+| 11 | Mousinho da Silveira | F | 17 | rural | greater than 3 | living together | none | none | at_home | other | course |
+| 16 | Mousinho da Silveira | F | 15 | rural | greater than 3 | living together | secondary education | secondary education | other | services | course |
+| 16 | Gabriel Pereira | F | 16 | urban | greater than 3 | living together | primary education (4th grade) | primary education (4th grade) | services | services | course |
 
 ## Curation notes
 
@@ -192,6 +193,9 @@ We use the data from UCI.
   words (`CODE_LABELS`), in the same order; 3 unordered codes carry their words: `school`, `address`, `Pstatus`;
   6 scores with no words per level are numbers (`SCORES`): `famrel`, `freetime`, `goout`, `Dalc`, `Walc`,
   `health`.
+- Counts with a cut end (2026-11-01, CLEAN-14; the curator: "it is not made up of bins/ranges but clear years
+  and just cuts"): `failures` (3 or more → 3) are numbers; the cut end takes its bound, so that value alone
+  marks the censored rows.
 
 ## Splits
 
@@ -294,7 +298,6 @@ Default splits.
 | guardian | category | 0 | 0 | 3 | mother, father, other |
 | traveltime | category | 0 | 0 | 4 | &lt;15 min, 15 to 30 min, 30 min to 1 hour, >1 hour |
 | studytime | category | 0 | 0 | 4 | 2 to 5 hours, &lt;2 hours, 5 to 10 hours, >10 hours |
-| failures | category | 0 | 0 | 4 | no failures, 1 failure, 2 failures, 3 or more failures |
 | schoolsup | category | 0 | 0 | 2 | no, yes |
 | famsup | category | 0 | 0 | 2 | yes, no |
 | paid | category | 0 | 0 | 2 | no, yes |
@@ -303,14 +306,15 @@ Default splits.
 | higher | category | 0 | 0 | 2 | yes, no |
 | internet | category | 0 | 0 | 2 | yes, no |
 | romantic | category | 0 | 0 | 2 | no, yes |
+| failures | float64 | 0 | 0 | 4 | 0.0, 1.0, 2.0, 3.0 |
 | age | int64 | 0 | 0 | 8 | 17, 16, 18, 15, 19, 20, 21, 22 |
 | famrel | int64 | 0 | 0 | 5 | 4, 5, 3, 2, 1 |
 | freetime | int64 | 0 | 0 | 5 | 3, 4, 2, 5, 1 |
 | goout | int64 | 0 | 0 | 5 | 3, 2, 4, 5, 1 |
-| Dalc | int64 | 0 | 0 | 5 | 1, 2, 3, 4, 5 |
+| Dalc | int64 | 0 | 0 | 5 | 1, 2, 3, 5, 4 |
 | Walc | int64 | 0 | 0 | 5 | 1, 2, 3, 4, 5 |
 | health | int64 | 0 | 0 | 5 | 5, 3, 4, 1, 2 |
-| absences | int64 | 0 | 0 | 24 | 0, 2, 4, 6, 8, 10, 1, 12, 5, 16 |
+| absences | int64 | 0 | 0 | 24 | 0, 2, 4, 6, 8, 10, 5, 1, 12, 16 |
 | G3 | int64 | 0 | 0 | 17 | 11, 10, 13, 12, 14, 15, 16, 8, 9, 17 |
 
 </details>
@@ -326,6 +330,7 @@ Default splits.
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | age | 649 | 16.7442 | 1.21814 | 15 | 22 |
+| failures | 649 | 0.22188 | 0.593235 | 0 | 3 |
 | famrel | 649 | 3.93066 | 0.955717 | 1 | 5 |
 | freetime | 649 | 3.18028 | 1.05109 | 1 | 5 |
 | goout | 649 | 3.1849 | 1.17577 | 1 | 5 |
@@ -338,7 +343,7 @@ Default splits.
 ### Categorical features
 
 <details>
-<summary>Show the table (65 rows)</summary>
+<summary>Show the table (61 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -368,10 +373,6 @@ Default splits.
 | activities | 2 | yes | 315 | 48.54 |
 | address | 1 | urban | 452 | 69.65 |
 | address | 2 | rural | 197 | 30.35 |
-| failures | 1 | no failures | 549 | 84.59 |
-| failures | 2 | 1 failure | 70 | 10.79 |
-| failures | 3 | 2 failures | 16 | 2.47 |
-| failures | 4 | 3 or more failures | 14 | 2.16 |
 | famsize | 1 | greater than 3 | 457 | 70.42 |
 | famsize | 2 | less or equal to 3 | 192 | 29.58 |
 | famsup | 1 | yes | 398 | 61.33 |
@@ -402,8 +403,12 @@ Default splits.
 | studytime | 1 | 2 to 5 hours | 305 | 47 |
 | studytime | 2 | &lt;2 hours | 212 | 32.67 |
 | studytime | 3 | 5 to 10 hours | 97 | 14.95 |
+| studytime | 4 | >10 hours | 35 | 5.39 |
+| traveltime | 1 | &lt;15 min | 366 | 56.39 |
+| traveltime | 2 | 15 to 30 min | 213 | 32.82 |
+| traveltime | 3 | 30 min to 1 hour | 54 | 8.32 |
 
-(5 more rows not shown)
+(1 more rows not shown)
 
 </details>
 
@@ -418,4 +423,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:b1fe39f55f674cce12b0f08661a08b251feba97648655ba6ad8711f38f225498` |
+| stale | yes: the definition now gives checksum `v2:6342cc062ce73c58fcfd450231b6b26939ee888b57f8e91f5e7f0dafed8a6b0d` |

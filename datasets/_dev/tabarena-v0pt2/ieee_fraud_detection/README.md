@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ieee_fraud_detection
 container_format: 2
-checksum: v2:6ca3ad976d260d58d40151e8bc48c4b04fce3c8dd9e36b82ae680163a81b00bf
+checksum: v2:270b9f5cff82c265f18e396861c035a6f1297fcf4433a6a8d4ea6e509eaa6c32
 build:
   uuid: 01a111fa-fc65-735f-bcbe-b5845dbfe917
   checksum: v2:9563bb404c2115312e17c44aec93b0679d2f1857f10d18b3fa052c3cbaadcd7e
@@ -70,7 +70,7 @@ decisions: []
 
 Binary classification of `isFraud`, scored with `roc_auc` on temporal splits by `Transaction_date`. 590,540 rows and 434 features. Source: Kaggle (2019).
 
-Built as `01a111fa-fc65-735f-bcbe-b5845dbfe917` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6ca3ad976d260d58d40151e8bc48c4b04fce3c8dd9e36b82ae680163a81b00bf`, so the build is stale. See [Build](#build).
+Built as `01a111fa-fc65-735f-bcbe-b5845dbfe917` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:270b9f5cff82c265f18e396861c035a6f1297fcf4433a6a8d4ea6e509eaa6c32`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -179,11 +179,11 @@ The first 5 of 590,540 rows of the final frame (the oldest rows: the frame is so
 
 | isFraud | TransactionAmt | ProductCD | card1 | card2 | card3 | card4 | card5 | card6 | addr1 | addr2 | dist1 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 68.5 | W | 13926 | nan | 150 | discover | 142 | credit | 315 | 87 | 19 |
-| 0 | 29 | W | 2755 | 404 | 150 | mastercard | 102 | credit | 325 | 87 | nan |
-| 0 | 59 | W | 4663 | 490 | 150 | visa | 166 | debit | 330 | 87 | 287 |
-| 0 | 50 | W | 18132 | 567 | 150 | mastercard | 117 | debit | 476 | 87 | nan |
-| 0 | 50 | H | 4497 | 514 | 150 | mastercard | 102 | credit | 420 | 87 | nan |
+| No | 68.5 | W | 13926 | nan | 150 | discover | 142 | credit | 315 | 87 | 19 |
+| No | 29 | W | 2755 | 404 | 150 | mastercard | 102 | credit | 325 | 87 | nan |
+| No | 59 | W | 4663 | 490 | 150 | visa | 166 | debit | 330 | 87 | 287 |
+| No | 50 | W | 18132 | 567 | 150 | mastercard | 117 | debit | 476 | 87 | nan |
+| No | 50 | H | 4497 | 514 | 150 | mastercard | 102 | credit | 420 | 87 | nan |
 
 ## Curation notes
 
@@ -206,6 +206,8 @@ The first 5 of 590,540 rows of the final frame (the oldest rows: the frame is so
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 1 unordered codes carry their words:
   `id_14`.
+- The target (2026-11-01, CLEAN-25): `isFraud` ships its classes as words (1 is the event). Binary: "Yes" is the
+  event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
@@ -283,7 +285,7 @@ To define three train/test splits, we use the last three months as test sets, le
 | card3 | category | 1565 | 0.27 | 114 | 150.0, 185.0, 106.0, 144.0, 146.0, 117.0, 143.0, 119.0, 102.0, 147.0 |
 | card4 | category | 1577 | 0.27 | 4 | visa, mastercard, american express, discover |
 | card6 | category | 1571 | 0.27 | 4 | debit, credit, debit or credit, charge card |
-| isFraud | category | 0 | 0 | 2 | 0, 1 |
+| isFraud | category | 0 | 0 | 2 | No, Yes |
 | ProductCD | category | 0 | 0 | 5 | W, C, R, H, S |
 | card1 | category | 0 | 0 | 13553 | 7919, 9500, 15885, 17188, 15066, 12695, 12544, 6019, 2803, 7585 |
 | Transaction_date | datetime64\[ns\] | 0 | 0 | 573349 | 2018-03-19 15:53:37, 2018-01-19 21:24:26, 2018-04-12 23:49:11, 2018-02-21 18:09… |
@@ -304,8 +306,8 @@ To define three train/test splits, we use the last three months as test sets, le
 
 | isFraud | count | pct |
 |---|---|---|
-| 0 | 569877 | 96.5 |
-| 1 | 20663 | 3.5 |
+| No | 569877 | 96.5 |
+| Yes | 20663 | 3.5 |
 
 ### Numeric features
 
@@ -462,4 +464,4 @@ To define three train/test splits, we use the last three months as test sets, le
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6ca3ad976d260d58d40151e8bc48c4b04fce3c8dd9e36b82ae680163a81b00bf` |
+| stale | yes: the definition now gives checksum `v2:270b9f5cff82c265f18e396861c035a6f1297fcf4433a6a8d4ea6e509eaa6c32` |

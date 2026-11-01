@@ -54,6 +54,8 @@ CC (2026-10-01, Lennart): Leak audit: kept `PageValues`, dropped the February-Ma
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `ga_merchandise_store_sessions` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (True means revenue).
+
 ## Reference
 
 Real-time prediction of online shoppers’ purchasing intention using multilayer perceptron and LSTM recurrent neural networks

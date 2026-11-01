@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, decode
 
 
 class AmexNonIid1m(AbstractCuratedDataset):
@@ -77,6 +77,8 @@ class AmexNonIid1m(AbstractCuratedDataset):
           D_126), -1 is the minimum, no cell is missing, and the -1 cells fall on the same rows across blocks (the same
           176,716 rows in D_113 to D_125, 101,548 in D_103, D_107, D_129, D_139, D_143 and D_145, 2,016 in B_16 to
           B_38). `_clean` sets them back to missing (CLEAN-10, 2026-10-30).
+        - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
+          event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -132,6 +134,8 @@ class AmexNonIid1m(AbstractCuratedDataset):
         df.target = df.target.astype("int8")
         del targets
         df = df.reset_index().reset_index(drop=True)
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

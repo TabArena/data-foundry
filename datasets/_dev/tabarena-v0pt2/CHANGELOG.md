@@ -4,6 +4,30 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-11-01, targets in words; counts with a cut end are numbers (PR #37)
+
+- The target rule (CLEAN-25; Lennart: "yes decode the targets too ... provide orderd cateogricals for the targets of
+  all classification datasets"): a classification target ships its classes as words. All 109 classification targets
+  checked; 34 were codes. 30 binary targets are "No"/"Yes" with "Yes" the event (gallstone_disease's 0 is gallstones
+  present, anes_voting_2026's 2 is voted, hepatitis_survival_prediction's 1 is death, indian_liver_patient_dataset's 1
+  a liver patient); "Yes" sorts second, the positive class of every metric. Four multiclass targets carry the source's
+  class names (cardiotocography, eryhemato_squamous_disease, forensic_glass_identification, hepatitis_c_prediction).
+  Ordered targets where the classes form a scale: cardiotocography (normal < suspect < pathologic),
+  dementia_prediction (no dementia < very mild < mild), hepatitis_c_prediction (blood donor < hepatitis < fibrosis <
+  cirrhosis). Nominal targets and targets with a state outside a scale (open_university's "Withdrawn") stay
+  unordered; `otto`'s anonymized classes keep their names. BENCHMARK_CHANGES_TODO: align probability columns to the
+  container's categories by name.
+- Counts with a cut end (CLEAN-14 amended; the curator on hr_analytics: "it is not made up of bins/ranges but clear
+  years and just cuts"): 13 columns in 6 definitions are numbers, the cut end at its bound ("three or more" 3, ">20"
+  21, "<1" 0): hr_analytics `experience` and `last_new_job` (with `last_new_job_never`, a 0/1 column for "never"),
+  lending_club `emp_length`, student_portuguese `failures`, mic `INF_ANAM`, ANES VCF0138 and VCF9122,
+  early_learning_predictors' support and attendance counts. Bands stay ordered categories.
+- Decoding changes the rows' content, and the row order of a shuffled task follows the content (`order_rows`):
+  the IID splits of the decoded datasets will differ from today's containers at the next build.
+  forensic_glass_identification's new order puts the nominal target's codes at rho -0.21 with position, a chance
+  outcome (0.4% of shuffles): the warning is accepted with that reason. `dataset check` on the 40 definitions: no
+  error; against main no new warning. Not built.
+
 ## 2026-11-01, codes decoded into the codebook's words; scores without words are numbers (PR #37)
 
 - The curator's rule (Lennart: "if we can replace the numbers with a description that is obviously not continous then

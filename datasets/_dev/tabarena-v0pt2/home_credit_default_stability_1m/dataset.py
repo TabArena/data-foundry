@@ -10,7 +10,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits, decode
 
 
 def set_table_dtypes(df):
@@ -223,6 +223,8 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
         - We drop name-related columns as they do not hold relevant information. These were otherwise dropped as high-cardinality string columns in TabRed or on Kaggle.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+        - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
+          event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -360,6 +362,8 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
                 "first_employername_160M",
             ]
         )
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

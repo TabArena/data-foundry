@@ -47,6 +47,8 @@ CC (2026-10-14, Lennart): Task probes `no_spread` accepted: the real labels give
 
 CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 1 columns with a state outside the scale ordered, the state placed by the rule.
 
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): counts with a cut end are numbers: experience, last_new_job.
+
 ## Reference
 
 https://www.kaggle.com/datasets/arashnic/hr-analytics-job-change-of-data-scientists

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: gallstone_disease
 container_format: 2
-checksum: v2:ed2370bf677c2354128ad279fd6e629a6fb51eefa4322e696d70d49c6b1949a1
+checksum: v2:5db5e4189d60e289020bc318e519cf2bad68429072f710aa8d13e4d23ae673c9
 build:
   uuid: 01a111fc-d8af-7a12-816b-905e5085bf7f
   checksum: v2:087c399da17c83e68663c6f18d35bedf6a650bb478ce9752985712430fe71520
@@ -68,7 +68,7 @@ decisions: []
 
 Binary classification of `Gallstone Status`, scored with `roc_auc` on IID splits. 319 rows and 38 features. Source: UCI (2025).
 
-Built as `01a111fc-d8af-7a12-816b-905e5085bf7f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ed2370bf677c2354128ad279fd6e629a6fb51eefa4322e696d70d49c6b1949a1`, so the build is stale. See [Build](#build).
+Built as `01a111fc-d8af-7a12-816b-905e5085bf7f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5db5e4189d60e289020bc318e519cf2bad68429072f710aa8d13e4d23ae673c9`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -176,11 +176,11 @@ The first 5 of 319 rows of the final frame (random rows: the frame is shuffled);
 
 | Gallstone Status | Age | Gender | Comorbidity | Coronary Artery Disease (CAD) | Hypothyroidism | Hyperlipidemia | Diabetes Mellitus (DM) | Height | Weight | Body Mass Index (BMI) | Total Body Water (TBW) |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 76 | female | any | 0 | 0 | 0 | 0 | 158 | 56.4 | 22.6 | 27.1 |
-| 0 | 72 | female | any | 0 | 0 | 0 | 1 | 150 | 70.9 | 31.5 | 32.4 |
-| 0 | 62 | female | any | 0 | 0 | 0 | 0 | 158 | 82.6 | 33.1 | 36.3 |
-| 1 | 59 | female | none | 0 | 0 | 0 | 0 | 156 | 64.4 | 26.5 | 29.7 |
-| 1 | 44 | female | none | 0 | 0 | 0 | 0 | 169 | 73.8 | 25.8 | 32.7 |
+| Yes | 23 | male | any | 0 | 0 | 0 | 0 | 178 | 74.1 | 23.4 | 46.1 |
+| Yes | 43 | male | none | 0 | 0 | 0 | 0 | 168 | 73.4 | 26 | 45.5 |
+| Yes | 43 | female | none | 0 | 0 | 0 | 0 | 160 | 47.3 | 18.5 | 26 |
+| No | 50 | female | none | 0 | 0 | 0 | 0 | 153 | 75.7 | 32.3 | 34.7 |
+| Yes | 58 | female | none | 0 | 0 | 0 | 0 | 163 | 66.9 | 25.2 | 31.2 |
 
 ## Curation notes
 
@@ -195,6 +195,8 @@ We use the data without any further curation.
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
   words (`CODE_LABELS`), in the same order; 2 unordered codes carry their words: `Gender`, `Comorbidity`.
+- The target (2026-11-01, CLEAN-25): `Gallstone Status` ships its classes as words (0 means gallstones present
+  (UCI)). Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
@@ -284,7 +286,7 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| Gallstone Status | category | 0 | 0 | 2 | 0, 1 |
+| Gallstone Status | category | 0 | 0 | 2 | Yes, No |
 | Gender | category | 0 | 0 | 2 | male, female |
 | Comorbidity | category | 0 | 0 | 2 | none, any |
 | Coronary Artery Disease (CAD) | category | 0 | 0 | 2 | 0, 1 |
@@ -292,37 +294,37 @@ Default splits.
 | Hyperlipidemia | category | 0 | 0 | 2 | 0, 1 |
 | Diabetes Mellitus (DM) | category | 0 | 0 | 2 | 0, 1 |
 | Hepatic Fat Accumulation (HFA) | category | 0 | 0 | 5 | no fat accumulation, moderate, mild, severe, very severe |
-| Weight | float64 | 0 | 0 | 245 | 68.4, 69.6, 76.8, 78.4, 68.2, 77.6, 62.8, 92.2, 70.6, 74.7 |
-| Body Mass Index (BMI) | float64 | 0 | 0 | 162 | 25.3, 28.2, 29.9, 28.0, 27.4, 25.1, 25.2, 27.2, 30.8, 31.5 |
-| Total Body Water (TBW) | float64 | 0 | 0 | 199 | 31.2, 34.3, 44.0, 47.1, 34.8, 41.8, 36.3, 37.1, 47.6, 46.1 |
-| Extracellular Water (ECW) | float64 | 0 | 0 | 109 | 18.0, 20.0, 14.0, 12.0, 13.0, 19.0, 15.0, 11.0, 17.1, 16.9 |
-| Intracellular Water (ICW) | float64 | 0 | 0 | 138 | 20.0, 28.0, 22.0, 25.0, 23.0, 29.0, 19.0, 27.0, 21.0, 19.2 |
-| Extracellular Fluid/Total Body Water (ECF/TBW) | float64 | 0 | 0 | 81 | 42.0, 43.0, 41.0, 40.0, 44.0, 46.0, 45.0, 47.0, 48.0, 39.0 |
-| Total Body Fat Ratio (TBFR) (%) | float64 | 0 | 0 | 228 | 34.2, 23.6, 19.2, 19.7, 33.4, 21.6, 28.1, 24.3, 31.9, 17.0 |
-| Lean Mass (LM) (%) | float64 | 0 | 0 | 294 | 80.24, 76.4, 73.22, 72.11, 67.18, 72.8, 71.95, 78.55, 80.94, 77.08 |
-| Body Protein Content (Protein) (%) | float64 | 0 | 0 | 259 | 17.1, 18.47, 13.95, 15.85, 14.9, 13.45, 14.19, 14.2, 16.48, 14.71 |
+| Weight | float64 | 0 | 0 | 245 | 68.4, 69.6, 63.6, 68.2, 76.8, 92.2, 77.6, 70.6, 62.8, 74.7 |
+| Body Mass Index (BMI) | float64 | 0 | 0 | 162 | 28.2, 25.3, 29.9, 28.0, 27.2, 25.2, 27.4, 25.1, 31.5, 23.8 |
+| Total Body Water (TBW) | float64 | 0 | 0 | 199 | 31.2, 47.1, 34.3, 44.0, 43.2, 47.2, 46.1, 41.8, 35.1, 36.3 |
+| Extracellular Water (ECW) | float64 | 0 | 0 | 109 | 18.0, 14.0, 20.0, 13.0, 12.0, 19.0, 11.0, 15.0, 17.1, 16.9 |
+| Intracellular Water (ICW) | float64 | 0 | 0 | 138 | 20.0, 28.0, 22.0, 23.0, 25.0, 29.0, 19.0, 27.0, 21.0, 17.0 |
+| Extracellular Fluid/Total Body Water (ECF/TBW) | float64 | 0 | 0 | 81 | 42.0, 43.0, 41.0, 40.0, 44.0, 45.0, 46.0, 47.0, 48.0, 39.0 |
+| Total Body Fat Ratio (TBFR) (%) | float64 | 0 | 0 | 228 | 19.7, 34.2, 23.6, 19.2, 17.0, 31.9, 39.0, 18.0, 28.0, 21.6 |
+| Lean Mass (LM) (%) | float64 | 0 | 0 | 294 | 76.4, 73.22, 80.24, 68.16, 77.08, 63.42, 64.84, 64.03, 82.06, 78.55 |
+| Body Protein Content (Protein) (%) | float64 | 0 | 0 | 259 | 17.1, 16.48, 13.95, 13.45, 14.2, 14.9, 14.19, 15.85, 18.47, 17.45 |
 | Bone Mass (BM) | float64 | 0 | 0 | 25 | 2.4, 2.6, 3.0, 2.2, 2.3, 2.5, 2.8, 3.1, 3.3, 3.4 |
-| Muscle Mass (MM) | float64 | 0 | 0 | 219 | 56.8, 68.2, 63.4, 43.5, 43.9, 65.4, 64.5, 42.0, 48.6, 41.8 |
-| Obesity (%) | float64 | 0 | 0 | 276 | 15.1, 36.0, 6.8, 49.5, 13.2, 10.8, 32.6, 27.9, 23.1, 40.1 |
-| Total Fat Content (TFC) | float64 | 0 | 0 | 212 | 24.2, 19.2, 16.4, 20.1, 28.9, 27.6, 23.8, 22.0, 30.8, 17.1 |
-| Visceral Fat Area (VFA) | float64 | 0 | 0 | 209 | 9.1, 12.6, 10.6, 8.2, 8.0, 10.4, 9.5, 9.0, 10.1, 14.5 |
-| Visceral Muscle Area (VMA) (Kg) | float64 | 0 | 0 | 179 | 34.5, 32.2, 28.6, 29.2, 32.3, 26.8, 35.3, 33.8, 31.5, 37.1 |
-| Glucose | float64 | 0 | 0 | 78 | 91.0, 99.0, 93.0, 89.0, 96.0, 94.0, 92.0, 103.0, 98.0, 101.0 |
-| Total Cholesterol (TC) | float64 | 0 | 0 | 150 | 183.0, 172.0, 187.0, 190.0, 226.0, 199.0, 185.0, 173.0, 206.0, 180.0 |
-| Low Density Lipoprotein (LDL) | float64 | 0 | 0 | 135 | 122.0, 94.0, 118.0, 125.0, 127.0, 106.0, 115.0, 167.0, 151.0, 96.0 |
+| Muscle Mass (MM) | float64 | 0 | 0 | 219 | 56.8, 68.2, 43.9, 63.4, 43.5, 65.4, 57.4, 49.6, 57.5, 53.5 |
+| Obesity (%) | float64 | 0 | 0 | 276 | 13.2, 36.0, 15.1, 6.8, 49.5, 27.9, 34.3, 16.0, 18.2, 2.7 |
+| Total Fat Content (TFC) | float64 | 0 | 0 | 212 | 24.2, 27.6, 23.8, 19.2, 16.4, 20.1, 28.9, 25.3, 18.4, 17.2 |
+| Visceral Fat Area (VFA) | float64 | 0 | 0 | 209 | 9.1, 8.2, 10.6, 12.6, 10.1, 8.0, 10.4, 9.0, 14.5, 9.5 |
+| Visceral Muscle Area (VMA) (Kg) | float64 | 0 | 0 | 179 | 34.5, 32.3, 32.2, 26.8, 29.2, 28.6, 34.0, 33.8, 30.9, 37.1 |
+| Glucose | float64 | 0 | 0 | 78 | 91.0, 99.0, 89.0, 93.0, 96.0, 94.0, 92.0, 97.0, 98.0, 101.0 |
+| Total Cholesterol (TC) | float64 | 0 | 0 | 150 | 183.0, 190.0, 172.0, 187.0, 226.0, 206.0, 185.0, 199.0, 180.0, 173.0 |
+| Low Density Lipoprotein (LDL) | float64 | 0 | 0 | 135 | 122.0, 94.0, 127.0, 125.0, 106.0, 118.0, 151.0, 167.0, 105.0, 129.0 |
 | High Density Lipoprotein (HDL) | float64 | 0 | 0 | 63 | 40.0, 44.0, 42.0, 46.0, 50.0, 45.0, 54.0, 43.0, 48.0, 47.0 |
-| Triglyceride | float64 | 0 | 0 | 178 | 125.0, 78.0, 116.0, 97.0, 128.0, 63.0, 106.0, 145.0, 93.0, 118.0 |
-| Aspartat Aminotransferaz (AST) | float64 | 0 | 0 | 44 | 16.0, 17.0, 14.0, 15.0, 21.0, 18.0, 13.0, 19.0, 12.0, 20.0 |
-| Alanin Aminotransferaz (ALT) | float64 | 0 | 0 | 67 | 16.0, 18.0, 13.0, 14.0, 12.0, 15.0, 19.0, 17.0, 20.0, 27.0 |
-| Alkaline Phosphatase (ALP) | float64 | 0 | 0 | 97 | 66.0, 73.0, 63.0, 79.0, 49.0, 70.0, 51.0, 65.0, 86.0, 71.0 |
-| Creatinine | float64 | 0 | 0 | 76 | 0.7, 0.6, 0.64, 0.86, 0.81, 0.59, 0.96, 0.9, 0.82, 0.61 |
-| Glomerular Filtration Rate (GFR) | float64 | 0 | 0 | 275 | 106.6, 108.81, 107.26, 112.47, 107.4, 104.72, 110.4, 113.0, 94.17, 110.63 |
-| C-Reactive Protein (CRP) | float64 | 0 | 0 | 117 | 0.0, 0.5, 0.2, 0.8, 0.6, 0.08, 0.9, 1.3, 1.7, 2.4 |
-| Hemoglobin (HGB) | float64 | 0 | 0 | 83 | 14.4, 15.6, 13.5, 16.0, 13.8, 14.1, 14.5, 15.5, 15.9, 12.9 |
-| Vitamin D | float64 | 0 | 0 | 238 | 24.0, 30.0, 20.0, 8.7, 25.0, 15.0, 26.0, 6.6, 6.2, 21.8 |
-| Age | int64 | 0 | 0 | 56 | 53, 56, 51, 50, 44, 59, 35, 54, 37, 38 |
-| Height | int64 | 0 | 0 | 46 | 170, 175, 168, 160, 165, 176, 163, 172, 178, 158 |
-| Visceral Fat Rating (VFR) | int64 | 0 | 0 | 22 | 9, 8, 7, 10, 12, 6, 11, 5, 3, 15 |
+| Triglyceride | float64 | 0 | 0 | 178 | 125.0, 97.0, 78.0, 116.0, 93.0, 63.0, 103.0, 106.0, 128.0, 105.0 |
+| Aspartat Aminotransferaz (AST) | float64 | 0 | 0 | 44 | 16.0, 17.0, 14.0, 18.0, 21.0, 15.0, 13.0, 19.0, 12.0, 22.0 |
+| Alanin Aminotransferaz (ALT) | float64 | 0 | 0 | 67 | 16.0, 18.0, 13.0, 14.0, 15.0, 12.0, 17.0, 19.0, 20.0, 27.0 |
+| Alkaline Phosphatase (ALP) | float64 | 0 | 0 | 97 | 66.0, 73.0, 63.0, 86.0, 65.0, 49.0, 70.0, 51.0, 79.0, 58.0 |
+| Creatinine | float64 | 0 | 0 | 76 | 0.7, 0.6, 0.64, 0.86, 0.81, 0.59, 0.96, 0.82, 0.9, 0.61 |
+| Glomerular Filtration Rate (GFR) | float64 | 0 | 0 | 275 | 106.6, 107.4, 112.47, 108.81, 107.26, 99.96, 95.7, 113.0, 107.7, 106.0 |
+| C-Reactive Protein (CRP) | float64 | 0 | 0 | 117 | 0.0, 0.5, 0.2, 0.8, 0.6, 1.7, 0.9, 1.3, 2.4, 0.08 |
+| Hemoglobin (HGB) | float64 | 0 | 0 | 83 | 14.4, 15.6, 13.5, 16.0, 14.5, 14.1, 13.8, 12.9, 15.4, 15.5 |
+| Vitamin D | float64 | 0 | 0 | 238 | 24.0, 30.0, 20.0, 8.7, 12.4, 22.3, 6.6, 15.7, 21.8, 35.4 |
+| Age | int64 | 0 | 0 | 56 | 53, 56, 50, 51, 59, 44, 35, 54, 37, 34 |
+| Height | int64 | 0 | 0 | 46 | 170, 175, 168, 165, 163, 160, 172, 176, 158, 178 |
+| Visceral Fat Rating (VFR) | int64 | 0 | 0 | 22 | 9, 7, 10, 8, 12, 6, 11, 5, 3, 15 |
 
 </details>
 
@@ -330,8 +332,8 @@ Default splits.
 
 | Gallstone Status | count | pct |
 |---|---|---|
-| 0 | 161 | 50.47 |
-| 1 | 158 | 49.53 |
+| Yes | 161 | 50.47 |
+| No | 158 | 49.53 |
 
 ### Numeric features
 
@@ -387,8 +389,8 @@ Default splits.
 | Coronary Artery Disease (CAD) | 2 | 1 | 12 | 3.76 |
 | Diabetes Mellitus (DM) | 1 | 0 | 276 | 86.52 |
 | Diabetes Mellitus (DM) | 2 | 1 | 43 | 13.48 |
-| Gallstone Status | 1 | 0 | 161 | 50.47 |
-| Gallstone Status | 2 | 1 | 158 | 49.53 |
+| Gallstone Status | 1 | Yes | 161 | 50.47 |
+| Gallstone Status | 2 | No | 158 | 49.53 |
 | Gender | 1 | male | 162 | 50.78 |
 | Gender | 2 | female | 157 | 49.22 |
 | Hepatic Fat Accumulation (HFA) | 1 | no fat accumulation | 129 | 40.44 |
@@ -414,4 +416,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:ed2370bf677c2354128ad279fd6e629a6fb51eefa4322e696d70d49c6b1949a1` |
+| stale | yes: the definition now gives checksum `v2:5db5e4189d60e289020bc318e519cf2bad68429072f710aa8d13e4d23ae673c9` |

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode, drop_columns, set_missing
 
 RAW_FILE = "train_jqd04QH.csv"
 """The hackathon's train file: 18,359 enrollees with labels, 2,425 of them looking for a job change."""
@@ -15,32 +15,38 @@ RAW_FILE = "train_jqd04QH.csv"
 # them). An open-ended level holds everything beyond it.
 ORDINAL_LEVELS = {
     "education_level": ["Primary School", "High School", "Graduate", "Masters", "Phd"],
-    "experience": [
-        "<1",
-        "1",
-        "2",
-        "3",
-        "4",
-        "5",
-        "6",
-        "7",
-        "8",
-        "9",
-        "10",
-        "11",
-        "12",
-        "13",
-        "14",
-        "15",
-        "16",
-        "17",
-        "18",
-        "19",
-        "20",
-        ">20",
-    ],  # open-ended
     "company_size": ["<10", "10/49", "50-99", "100-500", "500-999", "1000-4999", "5000-9999", "10000+"],  # open-ended
-    "last_new_job": ["never", "1", "2", "3", "4", ">4"],  # open-ended
+}
+
+
+# Counts in exact units whose top (or bottom) level is a cut end: numbers, the cut end at its bound, so that
+# value alone marks the censored rows (CLEAN-14; the curator's marks of 2026-11-01).
+COUNT_VALUES = {
+    "experience": {
+        "<1": 0,
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4,
+        "5": 5,
+        "6": 6,
+        "7": 7,
+        "8": 8,
+        "9": 9,
+        "10": 10,
+        "11": 11,
+        "12": 12,
+        "13": 13,
+        "14": 14,
+        "15": 15,
+        "16": 16,
+        "17": 17,
+        "18": 18,
+        "19": 19,
+        "20": 20,
+        ">20": 21,
+    },
+    "last_new_job": {"1": 1, "2": 2, "3": 3, "4": 4, ">4": 5},
 }
 
 
@@ -137,6 +143,10 @@ class HrAnalytics(AbstractCuratedDataset):
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed
           by the curator's rule (missing when the column has no other missing value, else the lowest level; a state that
           is simply not on the scale, such as Other, is missing).
+        - Counts with a cut end (2026-11-01, CLEAN-14; the curator: "it is not made up of bins/ranges but clear years
+          and just cuts"): `experience` (>20 → 21, <1 → 0); `last_new_job` (>4 → 5) are numbers; the cut end takes its
+          bound, so that value alone marks the censored rows. `last_new_job_never` (0/1) holds "never" changed jobs, a
+          state, not a count.
     """
 
     # Task
@@ -166,6 +176,13 @@ class HrAnalytics(AbstractCuratedDataset):
         # data dictionary: "0 - Not looking for job change, 1 - Looking for a job change"
         df = df.rename(columns={"target": self.target})
         df[self.target] = df[self.target].map({1: "Yes", 0: "No"})
+        # "never" changed jobs is a state, not a count of years: a 0/1 column of its own (CLEAN-14)
+        never = df["last_new_job"].eq("never")
+        df["last_new_job_never"] = never.astype("int64").where(df["last_new_job"].notna())
+        df = set_missing(df, {"last_new_job": ["never"]})
+        # counts with a cut end are numbers (COUNT_VALUES)
+        df = decode(df, COUNT_VALUES)
+        df[list(COUNT_VALUES)] = df[list(COUNT_VALUES)].astype("float64")
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
@@ -175,12 +192,11 @@ class HrAnalytics(AbstractCuratedDataset):
                 "city",
                 "gender",
                 "relevent_experience",
+                "last_new_job_never",
                 "enrolled_university",
                 "education_level",
                 "major_discipline",
-                "experience",
                 "company_size",
                 "company_type",
-                "last_new_job",
             ],
         )

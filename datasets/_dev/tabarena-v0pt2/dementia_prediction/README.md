@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: dementia_prediction
 container_format: 2
-checksum: v2:109fb93190bca8db470b750e8639e972fac195f6f6619040b6993de2a6ec2126
+checksum: v2:2253ca4a65170098889271e57551e46ab8832eca5f495802b0345fd980aff85c
 build:
   uuid: 01a111fc-d5b5-7da4-8ffe-99dd2600b6e0
   checksum: v2:9ddc612f5674f4b595dfba519a28785aa6b30e0cf85e35380aab666fff024a7c
@@ -75,7 +75,7 @@ decisions: []
 
 Multiclass classification of `CDR`, scored with `log_loss` on grouped splits by `Subject ID`. 370 rows and 8 features. Source: Other (2010).
 
-Built as `01a111fc-d5b5-7da4-8ffe-99dd2600b6e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:109fb93190bca8db470b750e8639e972fac195f6f6619040b6993de2a6ec2126`, so the build is stale. See [Build](#build).
+Built as `01a111fc-d5b5-7da4-8ffe-99dd2600b6e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2253ca4a65170098889271e57551e46ab8832eca5f495802b0345fd980aff85c`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -154,9 +154,10 @@ Only curators run `build`, when the dataset ships.
 | reason | The OASIS-2 paper describes the data and reports group analyses, no prediction task or metric; the Mendeley copy's paper is a later reuse, not the first publication |
 
 <details>
-<summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 2 categorical, 1 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (3): `M/F`, `Subject ID`, `CDR`
+- categorical (2): `M/F`, `Subject ID`
+- ordinal (1): `CDR (no_dementia < very_mild_AD < mild_AD)`
 - string (0): none
 - datetime (0): none
 
@@ -201,6 +202,8 @@ We start with the data from Mendeley.
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 1 scores with no words per level are
   numbers (`SCORES`): `SES`.
+- The target (2026-11-01, CLEAN-25): `CDR` ships its classes as words, no_dementia < very_mild_AD < mild_AD (the
+  Clinical Dementia Rating's order (CDR 0, 0.5, 1)).
 
 ## Splits
 
@@ -368,4 +371,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:109fb93190bca8db470b750e8639e972fac195f6f6619040b6993de2a6ec2126` |
+| stale | yes: the definition now gives checksum `v2:2253ca4a65170098889271e57551e46ab8832eca5f495802b0345fd980aff85c` |

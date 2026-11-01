@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: mic
 container_format: 2
-checksum: v2:0cf11c090ee2ce0f7f71800f6667c29ff83a981399141d228de45611489f8d84
+checksum: v2:07667907b16adc20f3ff924c3db7733f10fa04c9b4dcf7b949cd59e31307ba29
 build:
   uuid: 01a111fc-88a2-7b7e-86e3-99576cde774e
   checksum: v2:a64ea123c6016422c656182848fc75bc4e27f2b94031a6b15a01fffb634ab238
@@ -22,8 +22,8 @@ data:
   n_rows: 1700
   n_features: 102
   dtypes:
-    category: 89
-    float64: 14
+    category: 88
+    float64: 15
   n_test_dataset_rows: null
 task:
   target: LET_IS
@@ -67,7 +67,7 @@ decisions: []
 
 Multiclass classification of `LET_IS`, scored with `log_loss` on IID splits. 1,700 rows and 102 features. Source: Other (2020).
 
-Built as `01a111fc-88a2-7b7e-86e3-99576cde774e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:0cf11c090ee2ce0f7f71800f6667c29ff83a981399141d228de45611489f8d84`, so the build is stale. See [Build](#build).
+Built as `01a111fc-88a2-7b7e-86e3-99576cde774e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:07667907b16adc20f3ff924c3db7733f10fa04c9b4dcf7b949cd59e31307ba29`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -144,10 +144,10 @@ Only curators run `build`, when the dataset ships.
 | reason | The deposit lists prediction problems and time points but no evaluation metric; the GigaScience paper studies trajectories, not prediction scores. |
 
 <details>
-<summary>Feature types: 80 categorical, 9 ordinal, 0 string, 0 datetime</summary>
+<summary>Feature types: 80 categorical, 8 ordinal, 0 string, 0 datetime</summary>
 
 - categorical (80): `SEX`, `IBS_NASL`, `SIM_GIPERT`, `ZSN_A`, `nr_11`, `nr_01`, `nr_02`, `nr_03`, `nr_04`, `nr_07`, `nr_08`, `np_01`, `np_04`, `np_05`, `np_07`, `np_08`, `np_09`, `np_10`, `endocr_01`, `endocr_02`, `endocr_03`, `zab_leg_01`, `zab_leg_02`, `zab_leg_03`, `zab_leg_04`, `zab_leg_06`, `O_L_POST`, `K_SH_POST`, `MP_TP_POST`, `SVT_POST`, `GT_POST`, `FIB_G_POST`, `IM_PG_P`, `ritm_ecg_p_01`, `ritm_ecg_p_02`, `ritm_ecg_p_04`, `ritm_ecg_p_06`, `ritm_ecg_p_07`, `ritm_ecg_p_08`, `n_r_ecg_p_01`, `n_r_ecg_p_02`, `n_r_ecg_p_03`, `n_r_ecg_p_04`, `n_r_ecg_p_05`, `n_r_ecg_p_06`, `n_r_ecg_p_08`, `n_r_ecg_p_09`, `n_r_ecg_p_10`, `n_p_ecg_p_01`, `n_p_ecg_p_03`, `n_p_ecg_p_04`, `n_p_ecg_p_05`, `n_p_ecg_p_06`, `n_p_ecg_p_07`, `n_p_ecg_p_08`, `n_p_ecg_p_09`, `n_p_ecg_p_10`, `n_p_ecg_p_11`, `n_p_ecg_p_12`, `fibr_ter_01`, `fibr_ter_02`, `fibr_ter_03`, `fibr_ter_05`, `fibr_ter_06`, `fibr_ter_07`, `fibr_ter_08`, `GIPO_K`, `GIPER_NA`, `NA_KB`, `NOT_NA_KB`, `LID_KB`, `NITR_S`, `LID_S_n`, `B_BLOK_S_n`, `ANT_CA_S_n`, `GEPAR_S_n`, `ASP_S_n`, `TIKL_S_n`, `TRENT_S_n`, `LET_IS`
-- ordinal (9): `INF_ANAM (zero < one < two < three and more)`, `STENOK_AN (never < during the last year < one year ago < two years ago < three years ago < 4-5 years ago < more than 5 years ago)`, `IBS_POST (none < exertional angina pectoris < unstable angina pectoris)`, `DLIT_AG (no arterial hypertension < one year < two years < three years < four years < five years < 6-10 years < more than 10 years)`, `ant_im (no infarct in this location < QRS has no changes < QRS like QR-complex < QRS like Qr-complex < QRS like QS-complex)`, `lat_im (no infarct in this location < QRS has no changes < QRS like QR-complex < QRS like Qr-complex < QRS like QS-complex)`, `inf_im (no infarct in this location < QRS has no changes < QRS like QR-complex < QRS like Qr-complex < QRS like QS-complex)`, `post_im (no infarct in this location < QRS has no changes < QRS like QR-complex < QRS like Qr-complex < QRS like QS-complex)`, `TIME_B_S (less than 2 hours < 2-4 hours < 4-6 hours < 6-8 hours < 8-12 hours < 12-24 hours < more than 1 day < more than 2 days < more than 3 days)`
+- ordinal (8): `STENOK_AN (never < during the last year < one year ago < two years ago < three years ago < 4-5 years ago < more than 5 years ago)`, `IBS_POST (none < exertional angina pectoris < unstable angina pectoris)`, `DLIT_AG (no arterial hypertension < one year < two years < three years < four years < five years < 6-10 years < more than 10 years)`, `ant_im (no infarct in this location < QRS has no changes < QRS like QR-complex < QRS like Qr-complex < QRS like QS-complex)`, `lat_im (no infarct in this location < QRS has no changes < QRS like QR-complex < QRS like Qr-complex < QRS like QS-complex)`, `inf_im (no infarct in this location < QRS has no changes < QRS like QR-complex < QRS like Qr-complex < QRS like QS-complex)`, `post_im (no infarct in this location < QRS has no changes < QRS like QR-complex < QRS like Qr-complex < QRS like QS-complex)`, `TIME_B_S (less than 2 hours < 2-4 hours < 4-6 hours < 6-8 hours < 8-12 hours < 12-24 hours < more than 1 day < more than 2 days < more than 3 days)`
 - string (0): none
 - datetime (0): none
 
@@ -177,11 +177,11 @@ The first 5 of 1,700 rows of the final frame (random rows: the frame is shuffled
 
 | LET_IS | AGE | SEX | INF_ANAM | STENOK_AN | FK_STENOK | IBS_POST | IBS_NASL | GB | SIM_GIPERT | DLIT_AG | ZSN_A |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| alive | 55 | male | zero | never | 0 | none | nan | 0 | 0 | no arterial hypertension | stage I |
-| alive | 63 | female | zero | two years ago | 1 | unstable angina pectoris | nan | 2 | 0 | more than 10 years | no chronic heart failure |
-| alive | 54 | male | two | one year ago | 3 | exertional angina pectoris | nan | 0 | 0 | no arterial hypertension | stage IIA (left ventricular systolic dy… |
-| alive | 84 | female | zero | never | 0 | none | nan | 2 | 0 | nan | nan |
-| alive | 74 | female | zero | never | 0 | none | nan | 0 | 0 | no arterial hypertension | no chronic heart failure |
+| alive | 63 | female | 0 | more than 5 years ago | 2 | exertional angina pectoris | nan | 2 | 0 | more than 10 years | no chronic heart failure |
+| alive | 56 | male | 0 | never | 0 | none | nan | 0 | 0 | no arterial hypertension | no chronic heart failure |
+| alive | 66 | male | 0 | during the last year | 1 | none | nan | 0 | 0 | no arterial hypertension | no chronic heart failure |
+| asystole | 63 | female | 1 | never | 0 | unstable angina pectoris | nan | 2 | 0 | 6-10 years | no chronic heart failure |
+| cardiogenic_shock | 54 | female | 0 | two years ago | 2 | unstable angina pectoris | nan | 2 | 0 | 6-10 years | no chronic heart failure |
 
 ## Curation notes
 
@@ -199,6 +199,9 @@ The first 5 of 1,700 rows of the final frame (random rows: the frame is shuffled
   each level is carries the words, a score without them is a number): 9 ordered codes carry their codebook's
   words (`CODE_LABELS`), in the same order; 2 unordered codes carry their words: `ZSN_A`, `SEX`; 2 scores with
   no words per level are numbers (`SCORES`): `FK_STENOK`, `GB`.
+- Counts with a cut end (2026-11-01, CLEAN-14; the curator: "it is not made up of bins/ranges but clear years
+  and just cuts"): `INF_ANAM` (three and more → 3) are numbers; the cut end takes its bound, so that value alone
+  marks the censored rows.
 
 ## Splits
 
@@ -339,11 +342,12 @@ Default splits.
 ### Numeric features
 
 <details>
-<summary>Show the table (14 rows)</summary>
+<summary>Show the table (15 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | AGE | 1692 | 61.857 | 11.2599 | 26 | 92 |
+| INF_ANAM | 1696 | 0.554835 | 0.836801 | 0 | 3 |
 | FK_STENOK | 1627 | 1.20529 | 1.04081 | 0 | 4 |
 | GB | 1691 | 1.39326 | 1.0888 | 0 | 3 |
 | S_AD_KBRIG | 624 | 136.907 | 34.9978 | 0 | 260 |
@@ -363,7 +367,7 @@ Default splits.
 ### Categorical features
 
 <details>
-<summary>Show the table (287 rows)</summary>
+<summary>Show the table (282 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -406,11 +410,6 @@ Default splits.
 | IM_PG_P | 1 | 0.0 | 1649 | 97 |
 | IM_PG_P | 2 | 1.0 | 50 | 2.94 |
 | IM_PG_P | 3 | &lt;NA> | 1 | 0.06 |
-| INF_ANAM | 1 | zero | 1060 | 62.35 |
-| INF_ANAM | 2 | one | 410 | 24.12 |
-| INF_ANAM | 3 | two | 147 | 8.65 |
-| INF_ANAM | 4 | three and more | 79 | 4.65 |
-| INF_ANAM | 5 | &lt;NA> | 4 | 0.24 |
 | K_SH_POST | 1 | 0.0 | 1639 | 96.41 |
 | K_SH_POST | 2 | 1.0 | 46 | 2.71 |
 | K_SH_POST | 3 | &lt;NA> | 15 | 0.88 |
@@ -427,8 +426,13 @@ Default splits.
 | LID_S_n | 3 | &lt;NA> | 10 | 0.59 |
 | MP_TP_POST | 1 | 0.0 | 1572 | 92.47 |
 | MP_TP_POST | 2 | 1.0 | 114 | 6.71 |
+| MP_TP_POST | 3 | &lt;NA> | 14 | 0.82 |
+| NA_KB | 1 | &lt;NA> | 657 | 38.65 |
+| NA_KB | 2 | 1.0 | 618 | 36.35 |
+| NA_KB | 3 | 0.0 | 425 | 25 |
+| NITR_S | 1 | 0.0 | 1496 | 88 |
 
-(227 more rows not shown)
+(222 more rows not shown)
 
 </details>
 
@@ -443,4 +447,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:0cf11c090ee2ce0f7f71800f6667c29ff83a981399141d228de45611489f8d84` |
+| stale | yes: the definition now gives checksum `v2:07667907b16adc20f3ff924c3db7733f10fa04c9b4dcf7b949cd59e31307ba29` |

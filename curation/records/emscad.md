@@ -53,6 +53,8 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 
 **Assessment (AI, 2026-11-01):** the benchmark MulTaBench (https://arxiv.org/abs/2605.10616) carries this record's data as "Fake Job Postings": Text-tabular; EMSCAD (Vidros et al. 2017) via OpenML 46655. Paper notes no significant TAR gain here. Tagged MulTaBench on 2026-11-01.
 
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
 ## Reference
 
 https://doi.org/10.3390/fi9010006

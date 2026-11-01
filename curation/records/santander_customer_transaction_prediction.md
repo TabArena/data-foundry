@@ -36,6 +36,8 @@ CC: "Interesting dataset, but not on OpenML. License allows to use the data for 
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — Area Under Receiver Operating Characteristic Curve (https://www.kaggle.com/competitions/santander-customer-transaction-prediction (Kaggle API evaluationMetric)).
 
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
 ## Reference
 
 Mercedes Piedra, Sohier Dane, and Soraya_Jimenez. Santander Customer Transaction Prediction. https://kaggle.com/competitions/santander-customer-transaction-prediction, 2019. Kaggle.

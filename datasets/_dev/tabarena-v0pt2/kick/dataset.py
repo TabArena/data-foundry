@@ -13,6 +13,7 @@ from data_foundry.v2 import (
     TaskSummary,
     Temporal,
     TemporalSplits,
+    decode,
     drop_columns,
 )
 
@@ -80,6 +81,8 @@ class Kick(AbstractCuratedDataset):
         - Partial order, left unordered (2026-11-01, CLEAN-14): `Size` runs in chains within body types (COMPACT <
           MEDIUM < LARGE cars, SMALL < MEDIUM < LARGE SUV, SMALL < LARGE TRUCK); CROSSOVER, SPECIALTY, SPORTS and VAN
           are body types off those chains.
+        - The target (2026-11-01, CLEAN-25): `IsBadBuy` ships its classes as words (1 is the event). Binary: "Yes" is
+          the event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -106,7 +109,10 @@ class Kick(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         # WheelType, WheelTypeID, PRIMEUNIT and AUCGUART were filled in after the outcome (LEAK-10, notes)
-        return drop_columns(raw, ["RefId", "WheelType", "WheelTypeID", "PRIMEUNIT", "AUCGUART"])
+        df = drop_columns(raw, ["RefId", "WheelType", "WheelTypeID", "PRIMEUNIT", "AUCGUART"])
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
+        return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(

@@ -49,6 +49,8 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 9 coded columns carry their words; 6 scores are numbers (famrel, freetime, goout, Dalc, Walc, health).
 
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): counts with a cut end are numbers: failures.
+
 ## Reference
 
 Cortez, P., & Silva, A. M. G. (2008). Using data mining to predict secondary school student performance.

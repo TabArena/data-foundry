@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: pva_revenue_prediction_kddcup98
 container_format: 2
-checksum: v2:014ff71a0a8209c9e428501e722760c24d111e0d725f929ac5a4961fb4640279
+checksum: v2:985dd84765798db9ddfee15a2ac90dd6fe9cc28f13e41941457f38992c2704c5
 build:
   uuid: 01a13a7d-f16c-7ca9-ac9e-41670aefdb4e
   checksum: v2:7d87e4e7163e59fa1ca7ad8e1a9179de10f350eef500d4ba219b89c69c8f943c
@@ -75,7 +75,7 @@ decisions: []
 
 Binary classification of `TARGET_B`, scored with `roc_auc` on IID splits. 191,769 rows and 477 features. Source: Other (1998).
 
-Built as `01a13a7d-f16c-7ca9-ac9e-41670aefdb4e` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:014ff71a0a8209c9e428501e722760c24d111e0d725f929ac5a4961fb4640279`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-f16c-7ca9-ac9e-41670aefdb4e` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:985dd84765798db9ddfee15a2ac90dd6fe9cc28f13e41941457f38992c2704c5`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -184,11 +184,11 @@ The first 5 of 191,769 rows of the final frame (random rows: the frame is shuffl
 
 | TARGET_B | ODATEDW | OSOURCE | STATE | ZIP | MAILCODE | PVASTATE | DOB | NOEXCH | RECINHSE | RECP3 | RECPGVG |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 1995-01-01 00:00:00 | ESN | TX | 75948 | Address is OK | nan | 1925-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
-| 0 | 1994-01-01 00:00:00 | DBL | MO | 65721 | Address is OK | nan | 1974-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
-| 0 | 1994-01-01 00:00:00 | ARG | MI | 48072 | Address is OK | nan | 1962-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
-| 0 | 1994-01-01 00:00:00 | GAR | MI | 48854 | Address is OK | nan | NaT | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
-| 0 | 1991-01-01 00:00:00 | SYN | TX | 75057 | Address is OK | nan | NaT | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
+| No | 1995-01-01 00:00:00 | MM3 | KY | 41101 | Address is OK | nan | 1923-01-01 00:00:00 | 0-nan-case | Not an In House Record | Donor has given to PVA's P3 program | Not a Planned Giving Record |
+| No | 1995-01-01 00:00:00 | SYN | NM | 87111 | Address is OK | nan | 1950-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
+| No | 1991-01-01 00:00:00 | HAN | TX | 79360 | Address is OK | nan | 1948-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
+| No | 1986-01-01 00:00:00 | MCC | FL | 33404 | Address is OK | nan | 1919-05-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
+| No | 1995-01-01 00:00:00 | MBC | CA | 94563 | Address is OK | nan | 1950-01-01 00:00:00 | 0-nan-case | Not an In House Record | Not a P3 Record | Not a Planned Giving Record |
 
 ## Curation notes
 
@@ -223,6 +223,8 @@ We start with the train and validation data from the KDD Cup 1998 website and co
   2 = Above average SES, 3 = Below average SES, 4 = Lowest SES.)" (cup98dic.txt). Each row is read by its own
   scheme, on one line: lowest < below average < average < above average < highest. Before, urban codes 2 and 3
   (6,504 and 5,270 rows) were read as average and lowest, and code 4 had a coined label.
+- The target (2026-11-01, CLEAN-25): `TARGET_B` ships its classes as words (1 is the event). Binary: "Yes" is
+  the event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
@@ -308,11 +310,11 @@ Default splits.
 | SOLIH | category | 0 | 0 | 9 | can be mailed (Default), twelve solicitations per year, Do Not Solicit, one sol… |
 | MAJOR | category | 0 | 0 | 2 | Not a Major Donor, Major Donor |
 | GEOCODE | category | 0 | 0 | 8 | No code has been assigned or did not match at any level, 12, 03, 14, 05, 04, 02… |
-| TARGET_B | category | 0 | 0 | 2 | 0, 1 |
+| TARGET_B | category | 0 | 0 | 2 | No, Yes |
 | HPHONE_D | category | 0 | 0 | 2 | 1, 0 |
 | RFA_2F | category | 0 | 0 | 4 | one gift in the period of recency, two gifts in the period of recency, three gi… |
 | RFA_2A | category | 0 | 0 | 4 | $15.00 - $24.99, $10.00 - $14.99, $25.00 and above, $5.00 - $9.99 |
-| RDATE_5 | datetime64\[ns\] | 191743 | 99.99 | 7 | 1996-04-01 00:00:00, 1997-03-01 00:00:00, 1996-05-01 00:00:00, 1996-06-01 00:00… |
+| RDATE_5 | datetime64\[ns\] | 191743 | 99.99 | 7 | 1996-04-01 00:00:00, 1997-03-01 00:00:00, 1996-06-01 00:00:00, 1996-05-01 00:00… |
 | RDATE_3 | datetime64\[ns\] | 191312 | 99.76 | 18 | 1996-06-01 00:00:00, 1996-07-01 00:00:00, 1997-04-01 00:00:00, 1996-08-01 00:00… |
 | RDATE_4 | datetime64\[ns\] | 191183 | 99.69 | 24 | 1996-05-01 00:00:00, 1996-04-01 00:00:00, 1996-01-01 00:00:00, 1996-06-01 00:00… |
 | RDATE_6 | datetime64\[ns\] | 190168 | 99.17 | 21 | 1996-03-01 00:00:00, 1995-12-01 00:00:00, 1996-04-01 00:00:00, 1995-11-01 00:00… |
@@ -330,8 +332,8 @@ Default splits.
 
 | TARGET_B | count | pct |
 |---|---|---|
-| 0 | 182053 | 94.93 |
-| 1 | 9716 | 5.07 |
+| No | 182053 | 94.93 |
+| Yes | 9716 | 5.07 |
 
 ### Numeric features
 
@@ -488,4 +490,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:014ff71a0a8209c9e428501e722760c24d111e0d725f929ac5a4961fb4640279` |
+| stale | yes: the definition now gives checksum `v2:985dd84765798db9ddfee15a2ac90dd6fe9cc28f13e41941457f38992c2704c5` |

@@ -120,6 +120,8 @@ class IeeeFraudDetection(AbstractCuratedDataset):
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 1 unordered codes carry their words:
           `id_14`.
+        - The target (2026-11-01, CLEAN-25): `isFraud` ships its classes as words (1 is the event). Binary: "Yes" is the
+          event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -172,6 +174,8 @@ class IeeeFraudDetection(AbstractCuratedDataset):
         df = df.sort_values(by=["Transaction_date"], kind="stable").reset_index(drop=True)
         # the codebook's words for its codes (CLEAN-12)
         df = decode(df, CODE_LABELS)
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

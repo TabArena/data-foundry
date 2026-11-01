@@ -66,6 +66,8 @@ CC (2026-10-22, Lennart): issue 1: (a), drop `WheelType` and `WheelTypeID` under
 
 CC (2026-11-01, Lennart): marks on the review board of PR #37: Size stays unordered (chains within body types), noted in the definition.
 
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
 ## Reference
 
 faysal, Will Adams, and Will Cukierski. Don't Get Kicked!. https://kaggle.com/competitions/DontGetKicked, 2011. Kaggle.

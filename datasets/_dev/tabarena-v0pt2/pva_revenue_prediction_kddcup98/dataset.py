@@ -266,6 +266,8 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
           2 = Above average SES, 3 = Below average SES, 4 = Lowest SES.)" (cup98dic.txt). Each row is read by its own
           scheme, on one line: lowest < below average < average < above average < highest. Before, urban codes 2 and 3
           (6,504 and 5,270 rows) were read as average and lowest, and code 4 had a coined label.
+        - The target (2026-11-01, CLEAN-25): `TARGET_B` ships its classes as words (1 is the event). Binary: "Yes" is
+          the event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -576,6 +578,8 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
         df = decode(df, CODE_LABELS)
         # scores with no words per level are numbers (CLEAN-14)
         df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

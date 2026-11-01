@@ -50,6 +50,8 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 5 coded columns carry their words; 3 scores are numbers (INCOME, WEALTH1, WEALTH2); DOMAIN_ses read row by row in the dictionary's two schemes (urban codes 2 and 3 were misread); AGEFLAG blank and GENDER A, C and Unknown missing.
 
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
 ## Reference
 
 Website / readme

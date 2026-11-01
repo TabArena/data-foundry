@@ -166,3 +166,12 @@ recommend:
   readings (DCAL 10,006.8, DRHO -7,429.3 and others) the task probe's LightGBM gives 0.872 and no longer diverges, so
   extreme values were the likely trigger. Left for later (Lennart, 2026-10-21: "we dont need to check the benchmark
   case, we can do that later, it is fine as is for now").
+
+## Ordered targets and the positive class (2026-11-01, PR #37)
+
+Classification targets ship their classes as words now (CLEAN-25). Binary targets are "No"/"Yes" with "Yes" the
+event, so sorting the classes gives the right positive class. Three multiclass targets are ordered categories whose
+category order is not the sorted order (cardiotocography: normal < suspect < pathologic; dementia_prediction;
+hepatitis_c_prediction): the harness must align its probability columns to the container's categories by class name
+(as `examples/benchmark_on_beyond_arena.py` does with `reindex(columns=labels)`), never by position after sorting.
+

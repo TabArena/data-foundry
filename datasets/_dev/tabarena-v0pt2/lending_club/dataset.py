@@ -12,26 +12,27 @@ from data_foundry.v2 import (
     TaskSummary,
     Temporal,
     TemporalSplits,
+    decode,
     drop_columns,
     set_missing,
 )
 
-# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
-# them). An open-ended level holds everything beyond it.
-ORDINAL_LEVELS = {
-    "emp_length": [
-        "< 1 year",
-        "1 year",
-        "2 years",
-        "3 years",
-        "4 years",
-        "5 years",
-        "6 years",
-        "7 years",
-        "8 years",
-        "9 years",
-        "10+ years",
-    ],  # open-ended
+# Counts in exact units whose top (or bottom) level is a cut end: numbers, the cut end at its bound, so that
+# value alone marks the censored rows (CLEAN-14; the curator's marks of 2026-11-01).
+COUNT_VALUES = {
+    "emp_length": {
+        "< 1 year": 0,
+        "1 year": 1,
+        "2 years": 2,
+        "3 years": 3,
+        "4 years": 4,
+        "5 years": 5,
+        "6 years": 6,
+        "7 years": 7,
+        "8 years": 8,
+        "9 years": 9,
+        "10+ years": 10,
+    },
 }
 
 
@@ -111,6 +112,9 @@ class LendingClub(AbstractCuratedDataset):
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing
           (CLEAN-10).
+        - Counts with a cut end (2026-11-01, CLEAN-14; the curator: "it is not made up of bins/ranges but clear years
+          and just cuts"): `emp_length` (10+ years → 10, < 1 year → 0) are numbers; the cut end takes its bound, so that
+          value alone marks the censored rows.
     """
 
     # Task
@@ -276,15 +280,16 @@ class LendingClub(AbstractCuratedDataset):
                 "emp_length": ["NI"],
             },
         )
+        # counts with a cut end are numbers (COUNT_VALUES)
+        df = decode(df, COUNT_VALUES)
+        df[list(COUNT_VALUES)] = df[list(COUNT_VALUES)].astype("float64")
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
-            ordinal=ORDINAL_LEVELS,
             categorical=(
                 "home_ownership_n",
                 "application_type",
-                "emp_length",
                 "Default",
                 "purpose",
             ),

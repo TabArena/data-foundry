@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
 
 
 class HepatitisSurvivalPrediction(AbstractCuratedDataset):
@@ -63,6 +63,8 @@ class HepatitisSurvivalPrediction(AbstractCuratedDataset):
         - We convert numeric features to float and categorical features to category dtype.
         - The target stays coded as in the UCI file: 1 = died (32 patients), 2 = lived (123); the names file lists the classes as "DIE, LIVE" in this order.
         - Prediction point: not stated. The inputs (examination, blood tests, biopsy histology) imply the patient's work-up; the UCI names file gives neither when they were recorded nor the follow-up period for death.
+        - The target (2026-11-01, CLEAN-25): `class` ships its classes as words (1 means the patient died (UCI: 1 DIE, 2
+          LIVE)). Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -103,6 +105,8 @@ class HepatitisSurvivalPrediction(AbstractCuratedDataset):
         df = df.replace("?", np.nan)
         as_float_type = ["age", "bilirubin", "alk_phosphate", "sgot", "albumin", "protime"]
         df[as_float_type] = df[as_float_type].astype(float)
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"1": "Yes", "2": "No"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

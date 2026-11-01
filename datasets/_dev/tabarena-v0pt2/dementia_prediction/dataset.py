@@ -11,6 +11,13 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metr
 SCORES = ["SES"]
 
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "CDR": ["no_dementia", "very_mild_AD", "mild_AD"],
+}
+
+
 class DementiaPrediction(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question=("How severe is an older adult's dementia, judging from a short cognitive test and a brain scan?"),
@@ -79,6 +86,8 @@ class DementiaPrediction(AbstractCuratedDataset):
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 1 scores with no words per level are
           numbers (`SCORES`): `SES`.
+        - The target (2026-11-01, CLEAN-25): `CDR` ships its classes as words, no_dementia < very_mild_AD < mild_AD (the
+          Clinical Dementia Rating's order (CDR 0, 0.5, 1)).
     """
 
     # Task
@@ -129,4 +138,4 @@ class DementiaPrediction(AbstractCuratedDataset):
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(categorical=["M/F", "Subject ID"])
+        return FeatureTypes(ordinal=ORDINAL_LEVELS, categorical=["M/F", "Subject ID"])
