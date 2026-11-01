@@ -4,6 +4,42 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-11-01, `nci_aids_antiviral_screen` added: the NCI DTP AIDS antiviral screen (PR #15)
+
+- Added as `datasets/_dev/tabarena-v0pt2/nci_aids_antiviral_screen/`: 41,133 compounds of the NCI Developmental
+  Therapeutics Program's AIDS antiviral screen (May 2004 conclusions joined to the 1999 structure file by registry
+  number), each one a structure and the screen's own conclusion — confirmed active 386, confirmed moderately active
+  1,011, confirmed inactive 39,736. The structure is the only feature, as a `SMILES` column (CLEAN-24 as amended);
+  the split is scaffold-grouped (20,772 groups, 15,993 of them one compound, the bare benzene ring 5.1%); the metric
+  is the `log_loss` fallback, since both the source's metrics score a merged binary target (MET-2, MET-11). The
+  target ships as an ordered scale (CLEAN-25). `dataset check` clean; the task, leak, group and dtype probes raise no
+  flag on 5 or 9 splits.
+- A full review panel ran (claim, column and split auditors, domain practitioner, blind reviewer, precedent checker,
+  advocate and critic with one rebuttal each, mediator, editor). Its settled changes are applied:
+  - **The source's charge field is now read.** The file marks cations with a code the reader dropped, so 690 shipped
+    compounds carried a hydrogen atom that is nowhere in the file (a sodium counter-ion as sodium hydride, a
+    phosphonium centre as a neutral five-bonded phosphorus). The file's own usage settles the meaning: it writes that
+    code and the ordinary +1 code on the same motifs (four-bonded phosphorus 538 against 81, bare sodium 426 against
+    25), and it is not strict V2000. The repair recovered 2 of the 609 unreadable records and merged 6 duplicate
+    keys, so the count is 41,133; the measured effect on scores is nil. MoleculeNet's copy carries the same artefact,
+    so our structures now differ from MoleculeNet's and OGB's on those 690 compounds (PROV-15, EV-4).
+  - **The NSC submission-batch dependency is disclosed, not split away** (SPLIT-30, LEAK-38 format, precedent
+    sarcoma): compounds registered consecutively share activity far above chance (0.343 against a 0.034 base rate,
+    0.283 across scaffold groups), but the registry number is not shipped, so no model can see it, and grouping the
+    batches away costs macro ROC AUC 0.8215 to 0.8184, inside the fold spread.
+  - The metric reason, the quoted numbers and the encoding description were corrected; all were measured again on the
+    repaired data and the shipped 1,407-column encoding.
+- **Weislow et al. 1989 was read** (the curator supplied the PDF): it defines the soluble-formazan assay, the primary
+  screen's protocol, and the rule that a compound showing at least 30% protection is re-tested — which is where the
+  word "confirmed" in the labels comes from. It does not define the three conclusions; "moderately" and "category" do
+  not occur in it. So the CA/CM boundary is a DTP reporting convention, and PROV-17 no longer applies. The boundary is
+  instead visible in the source's released files: on the 387 actives where both an EC50 and an IC50 were reached, the
+  selectivity index separates CA from CM at ROC AUC 0.948 and one threshold reproduces 89.7% of the labels. On that
+  evidence the fit reads `direct`.
+- Open for the curator in the folder's `REVIEW.md`: the target framing (the three conclusions against the field's
+  binary active/inactive cut, which MoleculeNet, OGB, HIVA and ChemPile use), and the retirement of `hiva_agnostic`
+  (PROV-6), the 2007 challenge cut of this same screen. Not built.
+
 ## 2026-11-01, three QSAR datasets ship the structure instead of the authors' descriptors (PR #15)
 
 The structures the UCI copies left out come from the authors' own releases, so these three follow CLEAN-24 as amended
