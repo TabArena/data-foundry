@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-01 19:23 UTC: 56 claim(s) (Andrej 25, Lennart 9, Myunghwan 22).
+As of 2026-11-01 19:24 UTC: 55 claim(s) (Andrej 25, Lennart 8, Myunghwan 22).
 
 ## Andrej
 
@@ -43,7 +43,6 @@ As of 2026-11-01 19:23 UTC: 56 claim(s) (Andrej 25, Lennart 9, Myunghwan 22).
 | `fl2000` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
 | `hiva_agnostic` | add | 2026-11-01 | 2026-11-08 | add-dataset: nci_aids_antiviral_screen against hiva_agnostic (same NCI AIDS screen) |
 | `nci_aids_antiviral_screen` | add | 2026-11-01 | 2026-11-08 | add-dataset: nci_aids_antiviral_screen against hiva_agnostic (same NCI AIDS screen) |
-| `qsar_tid_11` | add | 2026-11-01 | 2026-11-08 | SMILES only (PR #15) |
 | `secom_semiconductor_yield` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `zeosyn_zeolite_synthesis` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `zindi_weekendz_laduma_analytics_football_league_winners_prediction_challenge` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
