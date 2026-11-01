@@ -10,6 +10,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSu
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
 ORDINAL_LEVELS = {
+    "INF_ANAM": ["zero", "one", "two", "three and more"],  # open-ended
     "STENOK_AN": [
         "never",
         "during the last year",
@@ -18,7 +19,7 @@ ORDINAL_LEVELS = {
         "three years ago",
         "4-5 years ago",
         "more than 5 years ago",
-    ],
+    ],  # open-ended
     "IBS_POST": ["none", "exertional angina pectoris", "unstable angina pectoris"],
     "DLIT_AG": [
         "no arterial hypertension",
@@ -29,7 +30,7 @@ ORDINAL_LEVELS = {
         "five years",
         "6-10 years",
         "more than 10 years",
-    ],
+    ],  # open-ended
     "ant_im": [
         "no infarct in this location",
         "QRS has no changes",
@@ -68,13 +69,14 @@ ORDINAL_LEVELS = {
         "more than 1 day",
         "more than 2 days",
         "more than 3 days",
-    ],
+    ],  # open-ended
 }
 
 
 # The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
 # (CLEAN-12; the curator's rule of 2026-11-01).
 CODE_LABELS = {
+    "INF_ANAM": {"0": "zero", "1": "one", "2": "two", "3": "three and more"},
     "STENOK_AN": {
         "0": "never",
         "1": "during the last year",
@@ -149,13 +151,6 @@ CODE_LABELS = {
 SCORES = ["FK_STENOK", "GB"]
 
 
-# Counts in exact units whose top (or bottom) level is a cut end: numbers, the cut end at its bound, so that
-# value alone marks the censored rows (CLEAN-14; the curator's marks of 2026-11-01).
-COUNT_VALUES = {
-    "INF_ANAM": {"0": 0, "1": 1, "2": 2, "3": 3},
-}
-
-
 class Mic(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="Will a heart attack patient die in hospital, and of what?",
@@ -226,9 +221,6 @@ class Mic(AbstractCuratedDataset):
           each level is carries the words, a score without them is a number): 9 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order; 2 unordered codes carry their words: `ZSN_A`, `SEX`; 2 scores with
           no words per level are numbers (`SCORES`): `FK_STENOK`, `GB`.
-        - Counts with a cut end (2026-11-01, CLEAN-14; the curator: "it is not made up of bins/ranges but clear years
-          and just cuts"): `INF_ANAM` (three and more → 3) are numbers; the cut end takes its bound, so that value alone
-          marks the censored rows.
     """
 
     # Task
@@ -417,9 +409,6 @@ class Mic(AbstractCuratedDataset):
         df = decode(df, CODE_LABELS)
         # scores with no words per level are numbers (CLEAN-14)
         df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
-        # counts with a cut end are numbers (COUNT_VALUES)
-        df = decode(df, COUNT_VALUES)
-        df[list(COUNT_VALUES)] = df[list(COUNT_VALUES)].astype("float64")
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
@@ -427,6 +416,7 @@ class Mic(AbstractCuratedDataset):
             ordinal=ORDINAL_LEVELS,
             categorical=[
                 "SEX",
+                "INF_ANAM",
                 "STENOK_AN",
                 "IBS_POST",
                 "IBS_NASL",

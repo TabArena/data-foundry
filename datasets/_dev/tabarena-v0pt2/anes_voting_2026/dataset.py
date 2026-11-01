@@ -36,7 +36,8 @@ ORDINAL_LEVELS = {
         "almost every week",
         "every week, once a week",
         "every week, more than once a week",
-    ],
+    ],  # open-ended
+    "VCF0138": ["none", "one", "two", "three or more"],  # open-ended
     "VCF0140": [
         "8 grades or less",
         "9-12 grades, no diploma or equivalency",
@@ -67,10 +68,38 @@ ORDINAL_LEVELS = {
     "VCF0305": ["independent", "leaning independent", "weak partisan", "strong partisan"],
     "VCF0310": ["not much interested", "somewhat interested", "very much interested"],
     "VCF0311": ["don't care very much", "care a good deal"],
-    "VCF0314": ["no mentions", "one mention", "two mentions", "three mentions", "four mentions", "five mentions"],
-    "VCF0315": ["no mentions", "one mention", "two mentions", "three mentions", "four mentions", "five mentions"],
-    "VCF0318": ["no mentions", "one mention", "two mentions", "three mentions", "four mentions", "five mentions"],
-    "VCF0319": ["no mentions", "one mention", "two mentions", "three mentions", "four mentions", "five mentions"],
+    "VCF0314": [
+        "no mentions",
+        "one mention",
+        "two mentions",
+        "three mentions",
+        "four mentions",
+        "five mentions",
+    ],  # open-ended
+    "VCF0315": [
+        "no mentions",
+        "one mention",
+        "two mentions",
+        "three mentions",
+        "four mentions",
+        "five mentions",
+    ],  # open-ended
+    "VCF0318": [
+        "no mentions",
+        "one mention",
+        "two mentions",
+        "three mentions",
+        "four mentions",
+        "five mentions",
+    ],  # open-ended
+    "VCF0319": [
+        "no mentions",
+        "one mention",
+        "two mentions",
+        "three mentions",
+        "four mentions",
+        "five mentions",
+    ],  # open-ended
     "VCF0338": ["not well at all", "not too well", "quite well", "extremely well"],
     "VCF0339": ["not well at all", "not too well", "quite well", "extremely well"],
     "VCF0341": ["not well at all", "not too well", "quite well", "extremely well"],
@@ -87,10 +116,38 @@ ORDINAL_LEVELS = {
     "VCF0367": ["not well at all", "not too well", "quite well", "extremely well"],
     "VCF0368": ["not well at all", "not too well", "quite well", "extremely well"],
     "VCF0369": ["not well at all", "not too well", "quite well", "extremely well"],
-    "VCF0401": ["no mentions", "one mention", "two mentions", "three mentions", "four mentions", "five mentions"],
-    "VCF0402": ["no mentions", "one mention", "two mentions", "three mentions", "four mentions", "five mentions"],
-    "VCF0405": ["no mentions", "one mention", "two mentions", "three mentions", "four mentions", "five mentions"],
-    "VCF0406": ["no mentions", "one mention", "two mentions", "three mentions", "four mentions", "five mentions"],
+    "VCF0401": [
+        "no mentions",
+        "one mention",
+        "two mentions",
+        "three mentions",
+        "four mentions",
+        "five mentions",
+    ],  # open-ended
+    "VCF0402": [
+        "no mentions",
+        "one mention",
+        "two mentions",
+        "three mentions",
+        "four mentions",
+        "five mentions",
+    ],  # open-ended
+    "VCF0405": [
+        "no mentions",
+        "one mention",
+        "two mentions",
+        "three mentions",
+        "four mentions",
+        "five mentions",
+    ],  # open-ended
+    "VCF0406": [
+        "no mentions",
+        "one mention",
+        "two mentions",
+        "three mentions",
+        "four mentions",
+        "five mentions",
+    ],  # open-ended
     "VCF0451": ["approve strongly", "approve not strongly", "disapprove not strongly", "disapprove strongly"],
     "VCF0850": [
         "a book written by men, not the Word of God",
@@ -103,6 +160,7 @@ ORDINAL_LEVELS = {
     "VCF9009": ["approve strongly", "approve not strongly", "disapprove not strongly", "disapprove strongly"],
     "VCF9044a": ["better", "same (haven't made much difference)", "worse"],
     "VCF9045": ["weaker", "same", "stronger"],
+    "VCF9122": ["one", "two", "three", "four", "five", "six", "seven or more"],  # open-ended
     "VCF9209": ["not well at all", "slightly well", "moderately well", "very well", "extremely well"],
     "VCF9210": ["not well at all", "slightly well", "moderately well", "very well", "extremely well"],
     "VCF9211": ["not well at all", "slightly well", "moderately well", "very well", "extremely well"],
@@ -133,7 +191,7 @@ ORDINAL_LEVELS = {
         "1959-1974",
         "1975-1990",
         "1991-present",
-    ],
+    ],  # open-ended
     "VCF0130": [
         "no religious preference",
         "never",
@@ -141,9 +199,15 @@ ORDINAL_LEVELS = {
         "once or twice a month",
         "almost every week",
         "every week",
-    ],
+    ],  # open-ended
     "VCF0155": ["not much at all", "somewhat", "a lot"],
-    "VCF9002": ["4 years or less", "5-9 years", "10-19 years", "20-29 years", "30 or more years"],
+    "VCF9002": [
+        "4 years or less",
+        "5-9 years",
+        "10-19 years",
+        "20-29 years",
+        "30 or more years",
+    ],  # open-ended
     "VCF9266": ["English more", "both equally (bilingual)", "Spanish more"],
 }
 
@@ -173,6 +237,7 @@ CODE_LABELS = {
         "1": "every week, once a week",
         "0": "every week, more than once a week",
     },
+    "VCF0138": {"0": "none", "1": "one", "2": "two", "3": "three or more"},
     "VCF0140": {
         "1": "8 grades or less",
         "2": "9-12 grades, no diploma or equivalency",
@@ -311,6 +376,7 @@ CODE_LABELS = {
     },
     "VCF9044a": {"1": "better", "2": "same (haven't made much difference)", "3": "worse"},
     "VCF9045": {"1": "weaker", "3": "same", "5": "stronger"},
+    "VCF9122": {"1": "one", "2": "two", "3": "three", "4": "four", "5": "five", "6": "six", "7": "seven or more"},
     "VCF9209": {
         "5": "not well at all",
         "4": "slightly well",
@@ -12091,14 +12157,6 @@ SCORES = [
 ]
 
 
-# Counts in exact units whose top (or bottom) level is a cut end: numbers, the cut end at its bound, so that
-# value alone marks the censored rows (CLEAN-14; the curator's marks of 2026-11-01).
-COUNT_VALUES = {
-    "VCF0138": {"0": 0, "1": 1, "2": 2, "3": 3},
-    "VCF9122": {"1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7},
-}
-
-
 class AnesVoting2026(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="Will a survey respondent vote in the coming US national election?",
@@ -12203,9 +12261,6 @@ class AnesVoting2026(AbstractCuratedDataset):
           don't know (splitting it needs each count's filter, a few hundred rows each).
         - The target (2026-11-01, CLEAN-25): `VCF0702` ships its classes as words (2 means voted (ANES codebook)).
           Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
-        - Counts with a cut end (2026-11-01, CLEAN-14; the curator: "it is not made up of bins/ranges but clear years
-          and just cuts"): `VCF0138` (three or more → 3); `VCF9122` (seven or more → 7) are numbers; the cut end takes
-          its bound, so that value alone marks the censored rows.
     """
 
     # Task
@@ -12969,9 +13024,6 @@ class AnesVoting2026(AbstractCuratedDataset):
         df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
         # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
         df = decode(df, {self.target: {"1": "No", "2": "Yes"}})
-        # counts with a cut end are numbers (COUNT_VALUES)
-        df = decode(df, COUNT_VALUES)
-        df[list(COUNT_VALUES)] = df[list(COUNT_VALUES)].astype("float64")
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

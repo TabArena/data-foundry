@@ -55,6 +55,8 @@ CC (2026-11-01, Lennart): on the review board's ANES sheet: read 2024's attendan
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (2 means voted (ANES codebook)); counts with a cut end are numbers: VCF0138, VCF9122.
 
+CC (2026-11-01, Lennart): counts with a cut end stay ordered categories of the source's levels, the cut end a level of its own (CLEAN-14): the lossless form, chosen from the context rather than by model runs; the same day's numbers with censoring flags are reverted.
+
 ## Reference
 
 @dataset{anes_timeseries_cdf_2026,

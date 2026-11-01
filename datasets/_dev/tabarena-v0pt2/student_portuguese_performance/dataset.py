@@ -14,6 +14,7 @@ ORDINAL_LEVELS = {
     "Fedu": ["none", "primary education (4th grade)", "5th to 9th grade", "secondary education", "higher education"],
     "traveltime": ["<15 min", "15 to 30 min", "30 min to 1 hour", ">1 hour"],  # open-ended
     "studytime": ["<2 hours", "2 to 5 hours", "5 to 10 hours", ">10 hours"],  # open-ended
+    "failures": ["no failures", "1 failure", "2 failures", "3 or more failures"],  # open-ended
     "famsize": ["less or equal to 3", "greater than 3"],
 }
 
@@ -37,6 +38,7 @@ CODE_LABELS = {
     },
     "traveltime": {"1": "<15 min", "2": "15 to 30 min", "3": "30 min to 1 hour", "4": ">1 hour"},
     "studytime": {"1": "<2 hours", "2": "2 to 5 hours", "3": "5 to 10 hours", "4": ">10 hours"},
+    "failures": {"0": "no failures", "1": "1 failure", "2": "2 failures", "3": "3 or more failures"},
     "school": {"GP": "Gabriel Pereira", "MS": "Mousinho da Silveira"},
     "address": {"U": "urban", "R": "rural"},
     "famsize": {"LE3": "less or equal to 3", "GT3": "greater than 3"},
@@ -46,13 +48,6 @@ CODE_LABELS = {
 
 # Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
 SCORES = ["famrel", "freetime", "goout", "Dalc", "Walc", "health"]
-
-
-# Counts in exact units whose top (or bottom) level is a cut end: numbers, the cut end at its bound, so that
-# value alone marks the censored rows (CLEAN-14; the curator's marks of 2026-11-01).
-COUNT_VALUES = {
-    "failures": {"0": 0, "1": 1, "2": 2, "3": 3},
-}
 
 
 class StudentPortuguesePerformance(AbstractCuratedDataset):
@@ -116,9 +111,6 @@ class StudentPortuguesePerformance(AbstractCuratedDataset):
           words (`CODE_LABELS`), in the same order; 3 unordered codes carry their words: `school`, `address`, `Pstatus`;
           6 scores with no words per level are numbers (`SCORES`): `famrel`, `freetime`, `goout`, `Dalc`, `Walc`,
           `health`.
-        - Counts with a cut end (2026-11-01, CLEAN-14; the curator: "it is not made up of bins/ranges but clear years
-          and just cuts"): `failures` (3 or more → 3) are numbers; the cut end takes its bound, so that value alone
-          marks the censored rows.
     """
 
     # Task
@@ -142,9 +134,6 @@ class StudentPortuguesePerformance(AbstractCuratedDataset):
         df = decode(df, CODE_LABELS)
         # scores with no words per level are numbers (CLEAN-14)
         df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
-        # counts with a cut end are numbers (COUNT_VALUES)
-        df = decode(df, COUNT_VALUES)
-        df[list(COUNT_VALUES)] = df[list(COUNT_VALUES)].astype("float64")
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

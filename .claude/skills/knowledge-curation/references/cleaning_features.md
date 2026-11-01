@@ -87,15 +87,17 @@ What ships as words and what as numbers, in short (Lennart, 2026-11-01: "let us 
 | The column is | It ships as |
 |---|---|
 | a code the source names in words, level by level (a grade, a type, an answer, a band) | the words; ordered when the scale is |
-| a measurement: a count, an amount, a size, a duration, an hour or weekday of a cycle | a number |
-| a count in exact units with a cut end ("three or more", ">20") | a number, the cut end at its bound (CLEAN-14) |
+| a measurement with no cut end: a count, an amount, a size, a duration, an hour or weekday of a cycle | a number |
+| a count or band the source cuts at an end ("three or more", ">20", "10+ years") | an ordered category of the source's levels, the cut end a level of its own (CLEAN-14) |
 | a classification target | its classes in words; binary "No"/"Yes" with "Yes" the event (CLEAN-25) |
 | a score or rating with no words per level, or words only at its two ends | a number (CLEAN-14) |
 | a code with no words anywhere (an id, a detector number, an anonymized or undocumented code) | the code, as a category |
 | a 0/1 flag | 0/1, as a category (CLEAN-14) |
 | a code that only means unknown (don't know, refused, not asked) | missing (CLEAN-10) |
 
-A column that still ships as a number while its source has words for it is a gap to close, not a choice.
+A column that still ships as a number while its source has words for it is a gap to close, not a choice. The
+type follows from the source and its context, never from model runs: choosing a dtype case by case by running
+models is "a too strong choice" (Lennart, 2026-11-01); keep what the context says and lose no information.
 
 **CLEAN-13 (Must; narrows CLEAN-12; amended 2026-10-22, Lennart, on mortgage and onlinenewspopularity).** A block is
 one-hot only when every row has exactly one flag set, or at most one with a reference level: the rows with no flag set
@@ -157,15 +159,17 @@ ordinal from the context and logic, not from target information"). The curator's
   lowest level would rank it below every other; a state at the top of a scale goes there (a residence of "all of
   life"); a synonym of a level is that level; an overlapping band sits by its midpoint. A state that is a second
   dimension (non-residential client types beside residential strata) keeps the column unordered.
-* A count in exact units whose only grouping is a cut end (children "three or more", experience "<1" ... "20" ">20",
-  employment "10+ years") is a number, not bands (Lennart, 2026-11-01: "it is not made up of bins/ranges but clear
-  years and just cuts"): the cut end takes its bound ("three or more" 3, ">20" 21, "<1" 0), so that value alone marks
-  the censored rows; a state that is no count ("never" changed jobs) becomes a 0/1 column. Bands of a quantity
-  ("21-25", "1-10%", "$5.00 - $9.99") stay ordered categories.
-* A band scale with an open end ("3 or more" among bands, "> 20", "50plus") is one ordered level, labelled as the
-  source labels it, with no extra column: on the 20 datasets with an open end, an indicator column added nothing over the ordered
-  level for LightGBM, a linear model and TabPFN v3.5, and the open level as missing with an indicator did worse
-  (2026-10-30 run). The dtype probe names every open end (`open_end`), and the definition says what it holds.
+* A count or a band scale that the source cuts at an end ("three or more", "<1" ... "20" ">20", "10+ years", "50plus")
+  ships as an ordered category of the source's own levels: the cut end is one level of its own, labelled as the source
+  labels it, with no extra column (Lennart, 2026-11-01: "we should rather keep what makes sense from the context and
+  not lose the information if possible, so that might be ordered categorical as an only option"). It is the one
+  lossless form in one column: the exact values stay levels, the order is kept, and the cut end stays what the source
+  says, where a number would invent a value (21 years for ">20") and need a flag to undo it. A model that wants a
+  number reads the levels' order. A count with no cut stays a number; bands of a quantity ("21-25", "1-10%") are
+  ordered categories as well. The dtype probe names every open end (`open_end`), and the definition says what it holds.
+  For a while on 2026-11-01 these counts were numbers with a censoring flag; the flag moved no model by more than half
+  a percent either way on hr_analytics and lending_club (and on the 20 open-end datasets of the 2026-10-30 run an
+  indicator added nothing over the ordered level), so the lossless form stays.
 * A cycle of time or direction (the hour, the weekday, the day of the month, the month, a compass direction) is a
   continuous position: a value between two others means something (Lennart, 2026-11-01: "if there is a concept such
   as 1.5 of the scale that is reasonably between 1 and 2 (like half day), then a number makes sense as the true measure

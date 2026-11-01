@@ -4,7 +4,7 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
-## 2026-11-01, targets in words; counts with a cut end are numbers (PR #37)
+## 2026-11-01, targets in words; counts with a cut end stay ordered categories (PR #37)
 
 - The target rule (CLEAN-25; Lennart: "yes decode the targets too ... provide orderd cateogricals for the targets of
   all classification datasets"): a classification target ships its classes as words. All 109 classification targets
@@ -17,11 +17,13 @@ record, audit or PR that motivated it.
   cirrhosis). Nominal targets and targets with a state outside a scale (open_university's "Withdrawn") stay
   unordered; `otto`'s anonymized classes keep their names. BENCHMARK_CHANGES_TODO: align probability columns to the
   container's categories by name.
-- Counts with a cut end (CLEAN-14 amended; the curator on hr_analytics: "it is not made up of bins/ranges but clear
-  years and just cuts"): 13 columns in 6 definitions are numbers, the cut end at its bound ("three or more" 3, ">20"
-  21, "<1" 0): hr_analytics `experience` and `last_new_job` (with `last_new_job_never`, a 0/1 column for "never"),
-  lending_club `emp_length`, student_portuguese `failures`, mic `INF_ANAM`, ANES VCF0138 and VCF9122,
-  early_learning_predictors' support and attendance counts. Bands stay ordered categories.
+- Counts with a cut end stay ordered categories of the source's levels, the cut end a level of its own (CLEAN-14,
+  made explicit; Lennart: "keep what makes sense from the context and not lose the information if possible, so that
+  might be ordered categorical as an only option"). For a few hours they were numbers (the cut end at its bound) with
+  censoring flags; tested on hr_analytics and lending_club, the flag moved no model by more than half a percent, and
+  the curator chose the lossless form without deciding types by model runs. The 13 columns (hr_analytics
+  `experience` and `last_new_job`, lending_club `emp_length`, student_portuguese `failures`, mic `INF_ANAM`, ANES
+  VCF0138 and VCF9122, six early_learning_predictors counts) are as before.
 - Decoding changes the rows' content, and the row order of a shuffled task follows the content (`order_rows`):
   the IID splits of the decoded datasets will differ from today's containers at the next build.
   forensic_glass_identification's new order puts the nominal target's codes at rho -0.21 with position, a chance
