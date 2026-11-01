@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-01 13:48 UTC: 82 claim(s) (Andrej 25, Lennart 35, Myunghwan 22).
+As of 2026-11-01 15:33 UTC: 100 claim(s) (Andrej 25, Lennart 53, Myunghwan 22).
 
 ## Andrej
 
@@ -43,7 +43,7 @@ As of 2026-11-01 13:48 UTC: 82 claim(s) (Andrej 25, Lennart 35, Myunghwan 22).
 | `amex_non_iid` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `bad_customer_detection` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `bank_marketing` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `california_house_prices_2020` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
+| `california_house_prices_2020` | triage | 2026-10-30 | 2026-11-08 | benchmark follow-up of the data-scouting run (PR #39) |
 | `cirrhosis_patient_survival_prediction` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `coffee_rating_prediction` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `coil_2000` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
@@ -52,27 +52,45 @@ As of 2026-11-01 13:48 UTC: 82 claim(s) (Andrej 25, Lennart 35, Myunghwan 22).
 | `credit_g` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `diabetes_130_us` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `distribution_transformers_at_cauca_department` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `emscad` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
+| `drug_directory` | triage | 2026-11-01 | 2026-11-08 | benchmark follow-up of the data-scouting run (PR #39) |
+| `ema_medicines` | triage | 2026-11-01 | 2026-11-08 | benchmark follow-up of the data-scouting run (PR #39) |
+| `ema_orphan_designations` | triage | 2026-11-01 | 2026-11-08 | benchmark follow-up of the data-scouting run (PR #39) |
+| `emscad` | triage | 2026-10-30 | 2026-11-08 | benchmark follow-up of the data-scouting run (PR #39) |
 | `eryhemato_squamous_disease` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `expresso_churn_prediction` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `facebook_recruiting_human_or_robot` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `fl2000` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
 | `fraud_detection_in_electricity_and_gas_consumption` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
+| `hearthstone_card_class_mug` | triage | 2026-11-01 | 2026-11-08 | benchmark follow-up of the data-scouting run (PR #39) |
 | `heloc` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
+| `hiva_agnostic` | triage | 2026-11-01 | 2026-11-08 | benchmark follow-up of the data-scouting run (PR #39) |
 | `home_credit_default_risk` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `home_credit_default_stability` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `horse_colic_survival` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `hotel_booking_demand` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `hr_analytics` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `lending_club` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
-| `mercari_price_suggestion` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
+| `hrsa_health_professional_shortage_areas` | triage | 2026-11-01 | 2026-11-08 | benchmark follow-up of the data-scouting run (PR #39) |
+| `hrsa_medically_underserved_areas` | triage | 2026-11-01 | 2026-11-08 | benchmark follow-up of the data-scouting run (PR #39) |
+| `hs_cards_data` | triage | 2026-11-01 | 2026-11-08 | benchmark follow-up of the data-scouting run (PR #39) |
+| `kick_starter_funding` | triage | 2026-11-01 | 2026-11-08 | benchmark follow-up of the data-scouting run (PR #39) |
+| `kickstarter` | triage | 2026-11-01 | 2026-11-08 | benchmark follow-up of the data-scouting run (PR #39) |
+| `kickstarter_projects_webrobots` | triage | 2026-11-01 | 2026-11-08 | benchmark follow-up of the data-scouting run (PR #39) |
+| `lending_club` | triage | 2026-10-30 | 2026-11-08 | benchmark follow-up of the data-scouting run (PR #39) |
+| `melting_point` | triage | 2026-11-01 | 2026-11-08 | benchmark follow-up of the data-scouting run (PR #39) |
+| `melting_point_patents` | triage | 2026-11-01 | 2026-11-08 | benchmark follow-up of the data-scouting run (PR #39) |
+| `mercari_price_suggestion` | triage | 2026-10-30 | 2026-11-08 | benchmark follow-up of the data-scouting run (PR #39) |
+| `nci_aids_antiviral_screen` | triage | 2026-11-01 | 2026-11-08 | benchmark follow-up of the data-scouting run (PR #39) |
 | `open_university_learning_analytics_dataset` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
+| `openfda_ndc_dea_schedule` | triage | 2026-11-01 | 2026-11-08 | benchmark follow-up of the data-scouting run (PR #39) |
 | `rain_in_australia` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `secom_semiconductor_yield` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
-| `sf_permit_time` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
+| `sf_permit_time` | triage | 2026-10-30 | 2026-11-08 | benchmark follow-up of the data-scouting run (PR #39) |
 | `tour_travels_churn` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
+| `wineenthusiasts` | triage | 2026-11-01 | 2026-11-08 | benchmark follow-up of the data-scouting run (PR #39) |
 | `zeosyn_zeolite_synthesis` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `zindi_weekendz_laduma_analytics_football_league_winners_prediction_challenge` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
+| `zomato` | triage | 2026-11-01 | 2026-11-08 | benchmark follow-up of the data-scouting run (PR #39) |
+| `zomato_bangalore_restaurants` | triage | 2026-11-01 | 2026-11-08 | benchmark follow-up of the data-scouting run (PR #39) |
 
 ## Myunghwan
 
