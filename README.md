@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-01 18:14 UTC: 131 claim(s) (Andrej 25, Lennart 84, Myunghwan 22).
+As of 2026-11-01 18:54 UTC: 134 claim(s) (Andrej 25, Lennart 87, Myunghwan 22).
 
 ## Andrej
 
@@ -45,6 +45,7 @@ As of 2026-11-01 18:14 UTC: 131 claim(s) (Andrej 25, Lennart 84, Myunghwan 22).
 | `ames_housing` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `amex_non_iid` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `anes_voting_2026` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
+| `apistox` | add | 2026-11-01 | 2026-11-08 | SMILES as a typed structure column (CLEAN-24 amended, PR #15) |
 | `ashrae_great_energy_predictor_iii` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `audiology_diagnosis` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `bad_customer_detection` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
@@ -107,6 +108,8 @@ As of 2026-11-01 18:14 UTC: 131 claim(s) (Andrej 25, Lennart 84, Myunghwan 22).
 | `open_university_learning_analytics_dataset` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `predict_students_dropout_and_academic_success` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `pva_revenue_prediction_kddcup98` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
+| `qsar_bioconcentration` | add | 2026-11-01 | 2026-11-08 | SMILES as a typed structure column (CLEAN-24 amended, PR #15) |
+| `qsar_oral_toxicity` | add | 2026-11-01 | 2026-11-08 | SMILES as a typed structure column (CLEAN-24 amended, PR #15) |
 | `qsar_tid_11` | add | 2026-11-01 | 2026-11-08 | scaffold-grouped split from ChEMBL 17 structures (SPLIT-31) |
 | `rain_in_australia` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `regensburg_pediatric_appendicitis` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
