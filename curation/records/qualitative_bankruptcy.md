@@ -44,6 +44,8 @@ Moreover, this also shows 100% performance https://github.com/ParidhiGola/Qualit
 
 As a result, we deem this dataset to be trivial most likely, besides missing some source information.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `american_companies_bankruptcy` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @article{kim2003discovery,

@@ -30,6 +30,8 @@ CC (2026-10-16, Lennart): new record to rebuild `coad_colon_adenocarcinoma` from
 - Open for `/add-dataset`: one primary-tumour sample per patient (which aliquot when there are several); patients missing an assay (keep with missing blocks, or require all three); the 27k-array samples (fewer probes); methylation per probe (about 485,000) or averaged over each gene's promoter within the sample, as MLOmics did.
 - Previous version: `coad_colon_adenocarcinoma` (MLOmics, 256 patients, 36,355 features), definition in git at commit 2475ea2.
 
+**Assessment (AI, 2026-10-31):** a newer release of this record's own source was found by the data-scouting run (PROV-6; the curator decides which one enters): TCGA gastrointestinal adenocarcinoma molecular subtypes (Liu et al. 2018) extended to rectal adenocarcinoma (TCGA-READ) (https://doi.org/10.1016/j.ccell.2018.03.010, https://portal.gdc.cancer.gov/projects/TCGA-READ). As published: Liu et al. label 921 GI adenocarcinomas (esophagus, stomach, colon, rectum); GDC API 2026-10-30: TCGA-COAD 461 cases, TCGA-READ 172 cases, both with the same STAR-Counts, miRNA and methylation files. about 1.35x the patients (COAD + READ, about 630 cases before the per-assay filters) with no new pipeline; a GDC site/project grouped split becomes possible. Version of the same source (PROV-6): the curator decides whether the rebuild takes
+
 ## Reference
 
 Liu Y, Sethi NS, Hinoue T, et al. Comparative Molecular Analysis of Gastrointestinal Adenocarcinomas. Cancer Cell. 2018;33(4):721-735. doi:10.1016/j.ccell.2018.03.010

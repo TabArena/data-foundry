@@ -11,6 +11,7 @@ tags:
 - Free Text (Short)
 collections:
 - TabSTAR
+- STRABLE
 original_source: GOV Website
 year: '2026'
 domain: finance
@@ -34,6 +35,8 @@ Check if we can get newer version of data from source, yes we can and should tak
 Unsure if this is a reasonable task or not and if one can predict it, needs to see once we look into the data
 
 The data as is might be missing a lot of features that actually drive the predictions. So making this a real task is a lot of work
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `ibrd_loans_historical_snapshots` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference
 

@@ -20,3 +20,5 @@ type_adapter_id: curation-record-v1
 ## Comments
 
 Seems like it has enough to be used to predict something for future games etc
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nba_shot_locations_2004_2025` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

@@ -31,6 +31,8 @@ from "datahack.analyticsvidhya.com/contest/mckinsey-analytics-online-hackathon-i
 
 Data looks real enough from going over it and how it was prepared. But other dataset from this source is very likely fake. So unsure how to go about it.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `hmda_mortgage_application_decision` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Website

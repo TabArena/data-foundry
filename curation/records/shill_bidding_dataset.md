@@ -27,6 +27,8 @@ type_adapter_id: curation-record-v1
 
 There is no information on which auctions happened during the same time period. There might be data leakage with random splits. Using grouped splits based on auction might be good enough. Some Kaggle notebooks show almost perfect performance with random forest - need to check for leaks carefully. Most features are handcrafted, which again might have introduced issues. According to the paper, statistics from the full dataset (e.g., average number of bids in all the auctions in the dataset) were used. Most other features seem to be generated per bidder. If we split by bidder & auction, the task might be valid. I would add it with grouped splits and then see whether the performance results are suspicious.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `facebook_recruiting_human_or_robot` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Alzahrani, A., & Sadaoui, S. (2018). Scraping and preprocessing commercial auction data for fraud classification. arXiv preprint arXiv:1806.00656.

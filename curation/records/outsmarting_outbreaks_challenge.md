@@ -4,7 +4,7 @@ name: outsmarting-outbreaks-challenge
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> 2nd Tier
-priority: 2
+priority: 1
 decision_markers:
 - Needs extensive data wrangling
 - TBD
@@ -43,3 +43,5 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (medical, temporal not thin), use case + (the source names the actors and the decision), source 0 (a competition page, no codebook beyond VariableDefinitions.txt), shape + (a hospital-month panel with side tables), risk - (forecasting-like panel, joins).
 
 A Zindi disease-outbreak challenge provided as multiple to-be-joined tables with temporal structure. Depending on framing it could be a legitimate temporal-split predictive task (e.g. predicting case counts/outbreak risk for a location-period) or a forecasting task, which would be out of scope. It needs substantial wrangling to join tables and define a fixed predictive target. Suggest TBD -> 2nd Tier; a human must verify whether the task is a fixed predictive classification/regression with a temporal split versus a forecasting-over-horizon problem, and assess size after joins.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `tanzania_waterborne_disease_cases` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

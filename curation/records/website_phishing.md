@@ -49,6 +49,8 @@ CC (2026-10-27, Lennart): marker Selection Bias, from the AI review of PR #16: p
 
 CC (2026-10-31, Lennart): marks on the review board of PR #37: SFH ordered with the suspicious 0 in the middle; which end is phishy noted from the features alone (no label).
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `web_page_phishing_detection` (TBD -> Yes, priority 2), `phishing_websites_vrbancic` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Phishing detection based Associative Classification data mining

@@ -36,6 +36,8 @@ CC (2026-10-06, Lennart): Kept in TabArena v0.2 as a valid tiny, high-dimensiona
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — the paper reports sensitivity and specificity at its classifier's operating point, with no single threshold-free metric.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `debernardi_urinary_pancreatic_cancer` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @article{hingorani2003preinvasive,

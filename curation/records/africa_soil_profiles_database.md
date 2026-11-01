@@ -46,6 +46,8 @@ ISRIC compilation of legacy soil profiles for Sub-Saharan Africa, made for the A
 
 Drafted 2026-09-23 as a follow-up to `open_soil_data` (iSDA), whose 49k rows are 96% spectroscopy-model predictions; this is one of the measured-data parents of that family (`open_soil_spectral_library`, `africa_soil_property_prediction_challenge`, `africa_soil_profiles_database`, `lucas_topsoil`, `wosis_soil_profiles`).
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `soil_ksat_pedotransfer` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Leenaars JGB, van Oostrum AJM, Ruiperez Gonzalez M (2014). Africa Soil Profiles Database, Version 1.2. A compilation of georeferenced and standardised legacy soil profile data for Sub-Saharan Africa (with dataset). ISRIC Report 2014/01, Wageningen.

@@ -53,6 +53,8 @@ CC (2026-10-14, Lennart): Drop the duplicates: 488 rows.
 
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 7 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `FCVC`, `NCP`, `CAEC`, `CH2O`, `FAF`, `TUE`, `CALC` (the README lists their levels).
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nhanes_bmi_from_habits` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @article{palechor2019dataset,

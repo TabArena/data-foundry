@@ -26,3 +26,5 @@ Lennart: too small
 Andrej: too small
 
 `first_principles_*` are artificial datasets generated from physical first-principles formulas (PMLB) — excluded as artificial/simulated.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `kepler_dr24_tce_vetting` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.

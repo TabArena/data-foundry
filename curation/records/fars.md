@@ -21,3 +21,5 @@ type_adapter_id: curation-record-v1
 ## Comments
 
 CC: "traffic accident data. Not much information given. Need to validate. likely from here https://www.nhtsa.gov/research-data/fatality-analysis-reporting-system-fars"
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `fars_person_injury_severity` (TBD -> 2nd Tier, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

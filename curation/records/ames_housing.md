@@ -70,6 +70,8 @@ CC (2026-10-26, Lennart): verdict ship.
 
 CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 2 ordinal scales shipped as numbers are ordered categories (point 3); 8 columns with a state outside the scale ordered, the state placed by the rule.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `cook_county_residential_sales` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @article{de2011ames,

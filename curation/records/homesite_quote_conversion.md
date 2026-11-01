@@ -53,6 +53,8 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC (area under the ROC curve) (https://www.kaggle.com/competitions/homesite-quote-conversion/overview/evaluation).
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `liberty_mutual_property_inspection` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Darrel, Stephen D Stayton, and Will Cukierski. Homesite Quote Conversion. https://kaggle.com/competitions/homesite-quote-conversion, 2015. Kaggle.

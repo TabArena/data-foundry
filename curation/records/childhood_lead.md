@@ -28,3 +28,5 @@ Again split the domain via a categorical variable for which we have samples in t
 
 Could build any task from this. Unclear if any task is a real task that has been used in real-world or was made-up/designed as in TableShift.
 Likely we could argue for some task like TableShift.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nhanes_childhood_blood_lead_2017_2023` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

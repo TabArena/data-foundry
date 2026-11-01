@@ -4,7 +4,7 @@ name: Yassir ETA Prediction Challenge
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> Yes
-priority: 3
+priority: 2
 decision_markers:
 - TBD
 tags:
@@ -46,3 +46,5 @@ Yassir ETA prediction (Zindi/UmojaHack) is a ride-hailing estimated-time-of-arri
 ---
 
 Predict the estimated time of arrival for Algerian ride-hailing business Yassir
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `chicago_rideshare_trip_duration` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

@@ -66,6 +66,8 @@ CC (2026-10-26, Lennart): issue 5, option (c): CoLES plus the time block of the 
 
 CC (2026-10-26, Lennart): verdict ship.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `sber_mbd_product_propensity` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Booster

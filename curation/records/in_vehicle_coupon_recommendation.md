@@ -45,6 +45,8 @@ CC (2026-10-27, Lennart): marker Selection Bias, from the AI review of PR #16: t
 
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 8 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `age`, `education`, `income`, `Bar`, `CoffeeHouse`, `CarryAway`, `RestaurantLessThan20`, `Restaurant20To50` (the README lists their levels).
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `tianchi_o2o_coupon_redemption` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 A Bayesian framework for learning rule sets for interpretable classification By Wang, Tong, Cynthia Rudin, Finale Doshi-Velez, Yimin Liu, Erica Klampfl, and Perry MacNeille. 2017

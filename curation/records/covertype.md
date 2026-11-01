@@ -60,6 +60,8 @@ CC (2026-10-21, Lennart): Fallback log loss, not the paper's accuracy.
 
 CC (2026-11-01, Lennart): marks on the review board of PR #37: Soil_ClimaticZone stays unordered (a second dimension within the altitude belts), noted in the definition.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `fia_forest_type` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 https://www.sciencedirect.com/science/article/abs/pii/S0168169999000460

@@ -4,7 +4,7 @@ name: Valuation
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> 2nd Tier
-priority: 2
+priority: 1
 decision_markers:
 - No Good Target (yet)
 - Needs extensive data wrangling
@@ -47,3 +47,5 @@ NYC property valuation and assessment data (data.gov) — essentially a governme
 CC: "GOV data without a real predictive task; full evaluation either depends on a clear formula from the GOV or is given by some third party. Has geospatial data; temporal impact on price; requires a lot of expert feature engineering to make it work; basically just a SQL dump but not a real dataset yet; maybe not a lot of temporal leakage as it is just one year; could collect data from prior years as well and filter it to a good dataset etc"
 
 Also includes text otherwise
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `cook_county_residential_sales` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

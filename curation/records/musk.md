@@ -42,6 +42,8 @@ CC (2026-10-06, Lennart): Kept in TabArena v0.2 as a valid tiny-data task after 
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Dietterich et al. 1997 report per-molecule accuracy (10-fold CV), as all multiple-instance work does: a habit without costs; 34 molecules per test fold, so accuracy moves in steps of about 3% (MET-10). Original rejected: accuracy. roc_auc is the binary fallback, per molecule (aggregation any).
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `leffingwell_odor_musk` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 10.24432/C51608

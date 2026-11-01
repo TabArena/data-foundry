@@ -42,3 +42,5 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (medical and temporal not thin), use case 0 (none named), source 0 (third-party extract, the publisher's page is dead), shape + (about 13K rows, mixed types), risk - (no target, unmatured status, text columns).
 
 A Kaggle 'overview of clinical trials' table (aggregated research-landscape data), already tagged 2nd Tier / Scientific Discovery and Non-IID (Temporal). It reads as a descriptive registry/overview table rather than a dataset built around a clear predictive target, which risks falling into the non-predictive/scientific-discovery exclusion. It could be reframed as a predictive task (e.g. predicting trial outcome/completion) if a sensible target and adequate clean rows exist. A human must define whether a real predictive target is available, the row count after cleaning, and confirm the temporal split regime.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `trialbench_trial_approval` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

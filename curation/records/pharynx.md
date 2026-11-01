@@ -27,3 +27,5 @@ Lennart: simulated data streams without source information
 Andrej: too small
 
 OpenML BNG(pharynx): a Bayesian Network Generator (synthetic) version of the pharynx dataset — artificial, not merely small.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `radcure_head_neck_survival` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

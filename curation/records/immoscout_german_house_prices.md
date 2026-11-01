@@ -47,6 +47,8 @@ CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the o
 
 CC (2026-10-31, Lennart): marks on the review board of PR #37: Condition, Furnishing_quality, Type and Heating relabelled with ImmoScout24's own codes, found by matching 3,548 houses to an April 2020 scrape that keeps them (each label permuted, the missing value swapped with a real level in each column); Furnishing_quality then ordered.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `rwi_geo_red_houses_for_sale` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Kaggle / OpenML

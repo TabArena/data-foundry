@@ -43,6 +43,8 @@ CC (2026-10-27, Lennart): keep it as Andrej marked it: the Selection Bias marker
 
 CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 1 ordinal scales shipped as numbers are ordered categories (point 3); Comorbidity's three undocumented 2 and 3 (each with one listed disease) recoded to 1, the rows kept (CLEAN-11); the fat-accumulation grade an ordered category.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nhanes_iii_gallstones` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @article{esen2024early,

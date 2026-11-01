@@ -50,6 +50,8 @@ CC (2026-10-12, Lennart): Kept in TabArena v0.2 after the task-probe review (fla
 
 CC (2026-11-01, Lennart): marks on the review board of PR #37: ZSN_A stays unordered as a partial order (two lines of severity), noted in the definition.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `gusto_i_mi_mortality` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Trajectories, bifurcations, and pseudo-time in large clinical datasets: applications to myocardial infarction and diabetes data

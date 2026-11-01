@@ -49,6 +49,8 @@ Largest measured-label source for a digital-soil-mapping regression (points + co
 
 Drafted 2026-09-23 as a follow-up to `open_soil_data` (iSDA), whose 49k rows are 96% spectroscopy-model predictions; this is one of the measured-data parents of that family (`open_soil_spectral_library`, `africa_soil_property_prediction_challenge`, `africa_soil_profiles_database`, `lucas_topsoil`, `wosis_soil_profiles`).
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `soil_ksat_pedotransfer` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Batjes NH, Calisto L, de Sousa LM (2024). Providing quality-assessed and standardised soil data to support global mapping and modelling (WoSIS snapshot 2023). Earth System Science Data 16:4735-4765.

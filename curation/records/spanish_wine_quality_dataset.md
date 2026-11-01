@@ -46,3 +46,5 @@ A Kaggle 'Spanish Wine Quality' dataset (fedesoriano) with attributes such as wi
 ---
 
 Likely a duplicate with other wine datasets and anyhow not a real predictive task?
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `x_wines` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

@@ -12,6 +12,7 @@ tags:
 - Non-IID (Temporal)
 collections:
 - CARTE/TARTE
+- MulTaBench
 year: '2023'
 domain: business & marketing
 source_links:

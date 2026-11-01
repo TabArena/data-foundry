@@ -41,6 +41,8 @@ A Kaggle water-quality dataset that, per the CC comment and the Kaggle descripti
 
 CC: "created from imaginary data of water quality in an urban environment, recommended using this dataset for educational purposes"
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `glacial_aquifer_well_arsenic_manganese` (TBD -> Yes, priority 2), `chicago_beach_bacteria_advisory` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Kaggle

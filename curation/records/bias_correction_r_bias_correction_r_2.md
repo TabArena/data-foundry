@@ -43,6 +43,8 @@ CC (2026-10-15, Lennart): Ship (review of the 2026-10-07 run).
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — Cho et al. 2020 report R^2, bias and RMSE side by side (Sec. 3.3) without naming one as the criterion; rmse is the regression fallback (and one of the reported metrics).
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `ppnn_ecmwf_t2m_postprocessing_germany` (TBD -> Yes, priority 4), `euppbench_t2m_station_postprocessing` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Cho, D., Yoo, C., & Im, J. (2020). Comparative Assessment of Various Machine Learning-Based Bias Correction Methods for Numerical Weather Prediction Model Forecasts of Extreme Air Temperatures in Urban Areas. Earth and Space Science, 7(4), e2019EA000740. DOI: 10.1029/2019EA000740.

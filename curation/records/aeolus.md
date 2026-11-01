@@ -11,6 +11,7 @@ tags:
 - Non-IID (Temporal)
 collections:
 - New (BeyondArena)
+- tabular-dl-more-data
 original_source: Kaggle
 year: '2025'
 domain: industry & manufacturing

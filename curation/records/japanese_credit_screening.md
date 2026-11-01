@@ -36,6 +36,8 @@ This is the Credit Screening (150 rows) version
 
 Too few rows after cross-validation -> few-shot
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `hmda_mortgage_application_decision` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @misc{japanese_credit_screening_28,

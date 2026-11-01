@@ -73,6 +73,8 @@ CC (2026-10-26, Lennart): verdict ship.
 
 CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 3 ordinal scales shipped as numbers are ordered categories (point 3).
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `cook_county_residential_sales` (TBD -> Yes, priority 3), `king_county_home_sales_1999_2025` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 https://www.kaggle.com/datasets/harlfoxem/housesalesprediction

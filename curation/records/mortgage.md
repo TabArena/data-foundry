@@ -53,6 +53,8 @@ CC (2026-10-22, Lennart): issue 13: (b), keep the payoff copy of the 7 doubled p
 
 CC (2026-10-26, Lennart): verdict ship.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `fannie_mae_single_family_loan_performance` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @book{baesens2016credit,

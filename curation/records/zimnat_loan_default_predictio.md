@@ -45,3 +45,5 @@ Zimnat loan default prediction (UmojaHack Zimbabwe, Zindi) asks to predict which
 ---
 
 Predict which customers will default on a loan
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `sba_7a_loan_chargeoff` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

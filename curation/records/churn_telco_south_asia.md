@@ -53,6 +53,8 @@ CC (2026-10-21, Lennart): the fallback metric stays (`roc_auc`; the first public
 
 CC (2026-10-31, Lennart): marks on the review board of PR #37: the user types left unordered with a note (Other is undocumented and not 4G).
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `orange_belgium_churn_uplift` (TBD -> Yes, priority 2); a related task: `bulgarian_telecom_business_churn` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @inproceedings{ahmed2017mcs,

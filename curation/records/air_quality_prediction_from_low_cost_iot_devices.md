@@ -39,3 +39,5 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0, use case + (Chemotronix's calibration decision, stated), source 0 (a hackathon page, no paper), shape 0 (unknown size), risk - (stream of readings, three devices).
 
 A Zindi challenge to predict air quality from low-cost IoT sensor devices, with no descriptive comments. Such tasks are usually either sensor calibration/regression on tabular sensor readings (potentially viable) or temporal forecasting of pollutant levels (excluded), and they are inherently time-stamped so a temporal split is likely. The modality and exact target are unverified from the record. A human must determine whether the task is a fixed calibration/estimation (acceptable) or a forecast over a horizon, plus the table structure and size.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `senseurcity_low_cost_sensor_calibration` (TBD -> Yes, priority 3); a related task: `epa_purpleair_pm25_correction` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

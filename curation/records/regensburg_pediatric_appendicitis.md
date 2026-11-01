@@ -45,6 +45,8 @@ Great case of a dataset where there is a vision model and a tabular baseline (RF
 
 CC (2026-10-31, Lennart): marks on the review board of PR #37: Appendix_Wall_Layers ordered intact < partially raised < raised (the German record of the 2021 release; upset, 1 child, missing) and Perfusion ordered by blood flow no < hypoperfused < present < hyperperfused; a blank Perfusion also means unremarkable in this file (noted).
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `pecarn_pediatric_head_trauma_citbi` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @article{marcinkevivcs2024interpretable,

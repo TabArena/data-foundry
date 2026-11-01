@@ -11,6 +11,7 @@ tags:
 - Review Prio 1 (Atlas)
 collections:
 - CARTE/TARTE
+- STRABLE
 source_links:
 - https://business.yelp.com/data/resources/open-dataset/ / https://www.kaggle.com/datasets/yelp-dataset/yelp-dataset?select=yelp_academic_dataset_business.json
 source_row: 492

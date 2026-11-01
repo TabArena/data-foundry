@@ -14,6 +14,7 @@ tags:
 collections:
 - TabArena Reject
 - TabRed
+- tabular-dl-more-data
 original_source: Kaggle
 year: '2024'
 domain: industry & manufacturing

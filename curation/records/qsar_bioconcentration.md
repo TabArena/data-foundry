@@ -75,6 +75,8 @@ CC (2026-10-26, Lennart): issue 10, option (d): SPLIT-31 amended, molecule datas
 
 CC (2026-10-26, Lennart): verdict ship.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `bcf_lunghini_2019` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @article{grisoni2016investigating,

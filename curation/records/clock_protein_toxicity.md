@@ -47,6 +47,8 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 CC (2026-11-01, Lennart): marks on the review board of PR #37: the two molecules the descriptor software failed on are dropped (-1 counts, 62-68 descriptors at 0 that the other molecules have, no structures to recompute them); an exception to CLEAN-11.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `ncats_cytotoxicity_profiling` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @article{gul2021structure,

@@ -27,3 +27,5 @@ type_adapter_id: curation-record-v1
 CC: "Server performance data. Temporal data. Would require time split; weirdly little amount of samples for data from every 5 secs"
 
 Weird old use case, likely not how it would be solved nowadays. Also, a time column is missing to do a proper split, and very small data for the sake of this kind of task. In general, it seems to be a temporal task that we cannot split and an in general outdated dataset
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `antarex_hpc_fault_classification` (TBD -> 2nd Tier, priority 3); a related task: `backblaze_hard_drive_failure` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

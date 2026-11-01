@@ -38,6 +38,8 @@ Andrej: task can be conceptualized s.t. the features are time-invariant. Only ne
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC, as reported by Zieba, Tomczak & Tomczak (2016), Expert Systems with Applications 58, 93-101.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `american_companies_bankruptcy` (TBD -> Yes, priority 2), `v4finbench_corporate_distress` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Ensemble boosted trees with synthetic features generation in application to bankruptcy prediction

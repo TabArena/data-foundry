@@ -52,6 +52,8 @@ CC (2026-10-15, Lennart): Temporal, not grouped: retrofit savings are measured o
 
 CC (2026-10-31, Lennart): marks on the review board of PR #37: cloud cover 9 (sky obscured, the amount cannot be estimated) set to missing (CLEAN-10).
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `cbecs_2018_building_energy_use` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Addison Howard, Chris Balbach, Clayton Miller, Jeff Haberl, Krishnan Gowri, and Sohier Dane. ASHRAE - Great Energy Predictor III. https://kaggle.com/competitions/ashrae-energy-prediction, 2019. Kaggle.

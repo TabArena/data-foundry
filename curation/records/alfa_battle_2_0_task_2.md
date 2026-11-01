@@ -67,6 +67,8 @@ CC (2026-10-26, Lennart): the declared metric, ROC AUC, is checked as declared.
 
 CC (2026-10-26, Lennart): verdict ship.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `alfa_bank_credit_history_default` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Booster

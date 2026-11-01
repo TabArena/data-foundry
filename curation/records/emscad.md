@@ -15,6 +15,7 @@ tags:
 collections:
 - TexTabBench
 - TabSTAR
+- MulTaBench
 original_source: Other
 year: '2017'
 domain: business & marketing
@@ -49,6 +50,8 @@ CC (2026-10-14, Lennart): No ForcedIIDFromTemporal tag: the grouped split alread
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `required_experience` (a level outside the scale is a state of its own); `required_education` (a partial order).
 
 CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 1 columns with a state outside the scale ordered, the state placed by the rule.
+
+**Assessment (AI, 2026-11-01):** the benchmark MulTaBench (https://arxiv.org/abs/2605.10616) carries this record's data as "Fake Job Postings": Text-tabular; EMSCAD (Vidros et al. 2017) via OpenML 46655. Paper notes no significant TAR gain here. Tagged MulTaBench on 2026-11-01.
 
 ## Reference
 
