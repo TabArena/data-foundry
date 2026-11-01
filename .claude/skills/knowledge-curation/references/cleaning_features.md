@@ -161,14 +161,13 @@ permutes the feature order when it runs.
 **CLEAN-24 (Should; amended 2026-11-01, Lennart).** A molecule's structure ships as a SMILES column marked as a
 structure, never as plain text and never pre-encoded: the definition lists it in `smiles_columns` (RDKit's canonical
 form, `canonical_smiles`), the container records it as a semantic column of type `smiles` with the recommended
-encoding, and the benchmark encodes it, as it encodes dates and text. The recommended encoding is RDKit's 2D
-descriptors and the 166 MACCS keys (`encode_smiles`, one pinned RDKit); a benchmark may use its own. A SMILES read as
+encoding, and the benchmark encodes it, as it encodes dates and text. The recommended encoding is RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts (`encode_smiles`, one pinned RDKit); a benchmark may use its own. A SMILES read as
 text adds nothing (character n-grams: -0.025 to +0.010 ROC AUC next to descriptors; a text embedding: nothing on
 apistox), a fixed encoding of the structure does, and the MACCS keys add 0.02 on drug_induced_autoimmunity_prediction
 without costing more than 0.006 elsewhere. Source columns computed from the same structure are one modelling choice of
 the authors and leave, whether or not the recommended encoding reproduces them exactly (Lennart, 2026-11-01: "the real
 task here is going from smiles to a prediction"): drug_induced_autoimmunity_prediction's RDKit descriptors,
-qsar_tid_11's FCFP6 bits. Measured properties stay (qsar_bioconcentration's logKOW). Salts stay as published: salt forms of one
+qsar_tid_11's FCFP6 bits, qsar_oral_toxicity's ECFP bits. Measured properties stay (qsar_bioconcentration's logKOW). Salts stay as published: salt forms of one
 compound are a decision of their own (LEAK-19), since the largest fragment is no salt stripper. Check for rows that
 become copies once the stereochemistry is gone (`canonical_smiles(..., stereo=False)`: a 2D encoding does not tell
 stereoisomers apart). Cases: apistox, drug_induced_autoimmunity_prediction, qsar_bioconcentration,
@@ -225,9 +224,9 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | CLEAN-22 | coad_colon_adenocarcinoma | ships 36,355 features; its report had weighed one model's 50,000-feature cap (2026-10-15, Lennart) | applied |
 | CLEAN-22 | early_learning_predictors | `teacher_duration`, the minutes the teacher's rating form was open, leaves as a timer of the data collection, like the three `duration_elom` timers the definition already dropped: no property of the child or the facility, 39% zeros and forms open for up to 29 days, and its little signal (Spearman -0.06 with the score) follows the survey round, which is dropped (2026-10-30, Lennart) | applied |
 | CLEAN-24 | apistox, drug_induced_autoimmunity_prediction, qsar_bioconcentration | the SMILES as text next to the descriptors: -0.025 to +0.010 ROC AUC; the string is dropped (2026-10-14); superseded by the amendment below | applied |
-| CLEAN-24 | apistox, drug_induced_autoimmunity_prediction, qsar_bioconcentration, qsar_oral_toxicity, qsar_tid_11 | the amendment: the SMILES ships as a typed structure column and the benchmark encodes it (recommended: RDKit's 2D descriptors with the MACCS keys); the shipped RDKit descriptors leave, drug_induced's source descriptors too (reproduced: 0.771 against 0.772 LightGBM ROC AUC); apistox keeps its 141 salts, since the largest fragment turns triclopyr and picloram triethylammonium into triethylamine (2026-11-01, Lennart; discussion doc "SMILES Handling in Data Foundry and TabArena v0.2") | applied |
+| CLEAN-24 | apistox, drug_induced_autoimmunity_prediction, qsar_bioconcentration, qsar_oral_toxicity, qsar_tid_11 | the amendment: the SMILES ships as a typed structure column and the benchmark encodes it (recommended: RDKit's 2D descriptors with the MACCS keys and the ECFP4 counts); the shipped RDKit descriptors leave, drug_induced's source descriptors too (reproduced: 0.771 against 0.772 LightGBM ROC AUC); apistox keeps its 141 salts, since the largest fragment turns triclopyr and picloram triethylammonium into triethylamine (2026-11-01, Lennart; discussion doc "SMILES Handling in Data Foundry and TabArena v0.2") | applied |
 | CLEAN-24 | qsar_tid_11 | SMILES only: the authors' FCFP6 bits leave as one modelling choice; RDKit recomputes none of them exactly; LightGBM R^2 on the scaffold splits 0.645 with the bits, 0.601 with the recommended encoding, 0.658 with RDKit's ECFP4 counts added to it (2026-11-01, Lennart) | applied |
-| CLEAN-24 | qsar_oral_toxicity | the published ECFP bits (Dragon 7) still ship next to the SMILES; the same reasoning would drop them (asked 2026-11-01) | open |
+| CLEAN-24 | qsar_oral_toxicity | SMILES only: the published ECFP bits (Dragon 7) leave as one modelling choice; the copies are found on the 2D structure instead of the bit vector, 11,116 chemicals (11 more: bit collisions had joined different chemicals) (2026-11-01, Lennart) | applied |
 
 ## In Data Foundry
 

@@ -37,7 +37,7 @@ The probe methods are the general library in
 in the README's build record) through `dataset_io.py` and call it. The probes use the shipped target and splits; when
 the definition changed the target, run the same checks on the source's labels in a scratch notebook (`ds = workbench()`).
 A SMILES column (`smiles_columns`) enters every probe in the recommended encoding (`encode_smiles`: RDKit's 2D
-descriptors and the MACCS keys), as a benchmark would give it to a model; the blind reviewer's clean room keeps the
+descriptors, the MACCS keys and the ECFP4 counts), as a benchmark would give it to a model; the blind reviewer's clean room keeps the
 string. The bundle check `dataset_smiles_column` parses every SMILES with the pinned RDKit.
 
 ```bash

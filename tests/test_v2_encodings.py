@@ -26,7 +26,7 @@ def test_the_recommendations_cover_smiles_dates_and_text_with_two_text_encodings
     assert recommended["datetime"] == (DATETIME_ENCODING,)
     assert recommended["text"] == (TEXT_TFIDF_ENCODING, TEXT_E5_ENCODING)
     assert all(encoding.kind == kind for kind, specs in recommended.items() for encoding in specs)
-    assert recommended["smiles"][0].id.startswith("rdkit2d-maccs-rdkit")
+    assert recommended["smiles"][0].id.startswith("rdkit2d-maccs-ecfp4-rdkit")
 
 
 def test_the_spec_id_names_the_encoding_the_library_and_the_revision() -> None:

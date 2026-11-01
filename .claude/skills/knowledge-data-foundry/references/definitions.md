@@ -254,7 +254,7 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
   stay features, and the container records them as semantic columns of type `smiles` with the recommended encoding's
   spec id (`semantic_columns(container, "smiles")` lists them; a benchmark encodes them, never as text). Leave them
   out of `_feature_types`. The recommended encodings of every kind of column (SMILES, dates, text) are in
-  `data_foundry.v2.encodings` (`recommended_encodings()`): RDKit's 2D descriptors with the MACCS keys for a SMILES,
+  `data_foundry.v2.encodings` (`recommended_encodings()`): RDKit's 2D descriptors with the MACCS keys and the ECFP4 counts for a SMILES,
   skrub's `DatetimeEncoder` as BeyondArena for a date, TF-IDF and e5 sentence embeddings for text (check both).
 
 ### `curation_comments`
@@ -299,7 +299,7 @@ The order the collection's definitions converge on. Emit the steps that plausibl
 #    the class attribute `smiles_columns = ("SMILES",)` (not in `_feature_types`), in RDKit's canonical form:
 #       df["SMILES"] = canonical_smiles(df["SMILES"])   # salts as published; stereo kept
 #    then check for rows that are copies to a 2D encoding: `canonical_smiles(df["SMILES"], stereo=False).duplicated()`.
-#    The benchmark encodes it (recommended: `encode_smiles`, RDKit's 2D descriptors and the MACCS keys).
+#    The benchmark encodes it (recommended: `encode_smiles`, RDKit's 2D descriptors, the MACCS keys and the ECFP4 counts).
 # 7. TODO(verify): drop constant, all-missing and duplicated columns.
 # 8. TODO(verify): drop leaking features (the traps below; leak_checks.md). The most common step in the collection.
 # 9. TODO(verify): duplicate rows: decide and document (leak_checks.md, Copies across the split (LEAK-16 to LEAK-21)).

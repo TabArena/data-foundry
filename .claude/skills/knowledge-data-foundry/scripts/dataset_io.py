@@ -10,8 +10,8 @@ inputs, so they are dropped from the frame the probes see, unless one is also th
 column, which the probes take by name. ``ProbeInput.scoring_cols`` lists the ones dropped.
 
 A SMILES column (``task.semantic_columns`` of type ``smiles``) enters the probes in the recommended encoding
-(``data_foundry.v2.chemistry.encode_smiles``: RDKit's 2D descriptors and the MACCS keys, columns
-``<column>__rdkit_<name>`` and ``<column>__maccs_<i>``), as a benchmark would give it to a model, not as text.
+(``data_foundry.v2.chemistry.encode_smiles``: RDKit's 2D descriptors, the MACCS keys and the ECFP4 counts, columns
+``<column>__rdkit_<name>``, ``<column>__maccs_<i>`` and ``<column>__ecfp4_<i>``), as a benchmark would give it to a model, not as text.
 ``encode_smiles=False`` keeps the string (the blind reviewer's clean room). ``ProbeInput.smiles_cols`` lists them.
 """
 

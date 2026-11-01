@@ -9,8 +9,8 @@ see what a model would see. A benchmark may use these encodings, take inspiratio
 ========  ========================================  ==========================================================
 kind      recommended (:func:`recommended_encodings`)  what it computes
 ========  ========================================  ==========================================================
-smiles    ``rdkit2d-maccs`` (:func:`~data_foundry.v2.chemistry.encode_smiles`)  RDKit's 2D descriptors and the 166 MACCS
-          keys, per molecule
+smiles    ``rdkit2d-maccs-ecfp4`` (:func:`~data_foundry.v2.chemistry.encode_smiles`)  RDKit's 2D descriptors, the 166
+          MACCS keys and the ECFP4 counts, per molecule
 datetime  ``skrub-datetime`` (:func:`encode_datetime`)  skrub's ``DatetimeEncoder(add_weekday=True,
           periodic_encoding="circular")``, as BeyondArena and TabArena's ``tabarena_default`` pipeline
 text      ``tfidf-svd`` (:func:`encode_text_tfidf`) and ``e5-small-v2`` (:func:`encode_text_e5`): check both
@@ -45,7 +45,7 @@ class Encoding:
     kind: str
     """The kind of column it encodes: ``smiles``, ``datetime`` or ``text``."""
     name: str
-    """What it computes, e.g. ``rdkit2d-maccs``."""
+    """What it computes, e.g. ``rdkit2d-maccs-ecfp4``."""
     revision: int
     """Bumped for any change that alters the values or the columns."""
     description: str
@@ -55,7 +55,7 @@ class Encoding:
 
     @property
     def id(self) -> str:
-        """The spec id, e.g. ``rdkit2d-maccs-rdkit2026.03.6-r1``: a cache of encoded values is keyed by it."""
+        """The spec id, e.g. ``rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1``: a cache of encoded values is keyed by it."""
         return "-".join(part for part in (self.name, self.library, f"r{self.revision}") if part)
 
 

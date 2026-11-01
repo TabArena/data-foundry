@@ -305,7 +305,7 @@ class SemanticColumn:
     description: str
     """What the column is and the form of its values (e.g. RDKit's canonical SMILES of the largest fragment)."""
     recommended_encoding: str | None = None
-    """The spec id of the encoding Data Foundry recommends, e.g. ``rdkit2d-maccs-rdkit2026.03.6-r1``."""
+    """The spec id of the encoding Data Foundry recommends, e.g. ``rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1``."""
 
 
 # TODO: fields that might be cool to add in the future

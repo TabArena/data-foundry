@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: drug_induced_autoimmunity_prediction
 container_format: 2
-checksum: v2:854427ac2dce3961cbdea5831fe767b456d3c95f1047db53aec273bec8be9de3
+checksum: v2:f0f6be25545b346539ab1ae8d600a230da8b2892cebb9ea30f17747cbcf6ec52
 build:
   uuid: 01a13aff-7235-73c3-932c-785cd540127b
   checksum: v2:8b265d2d3eddb7add77dc45cb583a5b314652160191f2bb7923a2256ac744c09
@@ -77,7 +77,7 @@ decisions:
 
 Binary classification of `Label`, scored with `roc_auc` on grouped splits by `scaffold`. 587 rows and 1 features. Source: UCI (2025).
 
-Built as `01a13aff-7235-73c3-932c-785cd540127b` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:854427ac2dce3961cbdea5831fe767b456d3c95f1047db53aec273bec8be9de3`, so the build is stale. See [Build](#build).
+Built as `01a13aff-7235-73c3-932c-785cd540127b` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:f0f6be25545b346539ab1ae8d600a230da8b2892cebb9ea30f17747cbcf6ec52`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -197,7 +197,7 @@ The first 5 of 587 rows of the final frame (random rows: the frame is shuffled).
 We start with the dataset from UCI.
 
 - We pool the source's training file (477 drugs, 118 positive) and test file (120 drugs, 30 positive) into 597 drugs and use our own splits; the files share no SMILES, and UCI's count of 477 instances is the training file alone.
-- The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01; Andrej's call of 2026-10-26 to keep it), in RDKit's canonical form (`canonical_smiles`; 503 of the source's strings were not canonical, none is a salt), declared in `smiles_columns`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors and the 166 MACCS keys). Scaffold-grouped ROC AUC over our 60 splits (LightGBM / random forest, 2026-11-01): the source's 176 descriptors 0.771 / 0.776, our full RDKit set in their place 0.772 / 0.777, the MACCS keys added 0.796 / 0.799 (better on 51 and 59 of 60 splits), the SMILES read as text (character n-grams) 0.763 / 0.766. Andrej measured the same gain for TabPFN 3.5 (0.803 to 0.826 with MACCS keys, 27 of 30 splits; `~/claude_jobs/dia_review/`).
+- The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01; Andrej's call of 2026-10-26 to keep it), in RDKit's canonical form (`canonical_smiles`; 503 of the source's strings were not canonical, none is a salt), declared in `smiles_columns`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts). Scaffold-grouped ROC AUC over our 60 splits (LightGBM / random forest, 2026-11-01): the source's 176 descriptors 0.771 / 0.776, our full RDKit set in their place 0.772 / 0.777, the MACCS keys added 0.796 / 0.799 (better on 51 and 59 of 60 splits), the SMILES read as text (character n-grams) 0.763 / 0.766. Andrej measured the same gain for TabPFN 3.5 (0.803 to 0.826 with MACCS keys, 27 of 30 splits; `~/claude_jobs/dia_review/`).
 - The source's 176 RDKit descriptors leave (2026-11-01): RDKit computed them from the same SMILES, and the recommended encoding reproduces them (the full RDKit set scores as they do, above), so shipping both would give a model the structure twice.
 - Scaffold-grouped splits (2026-10-19), not random ones: under random splits about a third of the test drugs have a close relative in training with the same label, and a nearest-neighbour fingerprint lookup without a model reaches ROC AUC 0.822 against TabPFN's 0.854; with whole scaffolds held out, TabPFN 0.768, HGB 0.737, RF 0.724, LR 0.687 (generic scaffolds, `~/claude_jobs/dia_review/`). The use case screens new candidates, which come from series not yet seen, and scaffold splits are the standard for this: the Therapeutics Data Commons ADMET group splits all its endpoints by scaffold, among them drug-induced liver injury, a drug-level label like this one (Huang et al. 2021, NeurIPS Datasets and Benchmarks, arXiv:2102.09548). The source validated on random splits (its test file is as similar to its training file as a random split is), so our scores are lower than the paper's AUC 0.88-0.89 by design. The groups are the Bemis-Murcko scaffolds (Bemis and Murcko 1996, J Med Chem 39(15):2887-2893): 443 groups, the largest 41 drugs (benzene), 10 with both labels. The 53 drugs without a ring each form their own group (390 ring scaffolds plus these 53): they share no skeleton, only 2 have a close relative among them (Tanimoto >= 0.7), and their nearest neighbour's label agrees at the base rate (0.925). The groups come from `scaffold_groups` since 2026-11-01, as in qsar_bioconcentration and qsar_oral_toxicity: the same 443 groups as the definition's own code before, under other group names, so the drugs fall into other folds.
 - Duplicates dropped: 9 pairs of rows are one structure once the stereo marks are set aside (the same 18 rows that share every one of the source's descriptors), stereoisomers a 2D encoding does not tell apart (PubChem): quinine and quinidine, and 8 drugs entered twice with other stereo marks (lovastatin, fluticasone propionate, enalapril, fluvastatin, lisinopril, pravastatin, carbidopa, streptomycin), 3 pairs across the source's two files. We keep one row of the 8 pairs with one label and drop both streptomycin rows (one positive, one negative), as for qsar_oral_toxicity: 587 drugs, 140 positive (decision table).
@@ -385,4 +385,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | de9e6adde48a58047e4e9a41f249e28507e48ed3-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:854427ac2dce3961cbdea5831fe767b456d3c95f1047db53aec273bec8be9de3` |
+| stale | yes: the definition now gives checksum `v2:f0f6be25545b346539ab1ae8d600a230da8b2892cebb9ea30f17747cbcf6ec52` |

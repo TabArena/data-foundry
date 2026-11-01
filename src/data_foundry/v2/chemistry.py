@@ -9,12 +9,13 @@ form a definition ships: RDKit's canonical SMILES, every fragment and the stereo
 published: the largest fragment is no salt stripper (apistox's triclopyr and picloram triethylammonium salts both
 reduce to triethylamine), so salt forms of one compound are a definition's decision (LEAK-19).
 
-:func:`encode_smiles` is the recommended encoding (:data:`DEFAULT_SMILES_ENCODING`): RDKit's 2D descriptors and the
-166 MACCS keys, one row per molecule, the same for a molecule in every dataset, so a benchmark can cache it by value.
+:func:`encode_smiles` is the recommended encoding (:data:`DEFAULT_SMILES_ENCODING`): RDKit's 2D descriptors, the
+166 MACCS keys and the ECFP4 counts, one row per molecule, the same for a molecule in every dataset, so a benchmark can cache it by value.
 Its spec id names the RDKit release and a revision; the container records it as the column's
 ``recommended_encoding``. A benchmark may use it or its own encoding; the probes of this repository use it
 (``dataset_io.py``). Measured on the SMILES datasets of 2026-11-01: the MACCS keys add 0.02 ROC AUC next to the
-descriptors on drug_induced_autoimmunity_prediction and change the others by -0.006 to +0.009.
+descriptors on drug_induced_autoimmunity_prediction and change the others by -0.006 to +0.009; the ECFP4 counts lift
+qsar_tid_11's LightGBM R^2 from 0.601 to 0.658.
 
 :func:`rdkit_descriptors` gives the descriptors alone, with the columns that are constant or copies in the given
 molecules left out (the form the definitions shipped before 2026-11-01). RDKit is in the ``build`` extra, pinned,
@@ -131,30 +132,37 @@ def rdkit_descriptors(smiles: pd.Series, *, prefix: str = "rdkit_") -> pd.DataFr
     return out.loc[:, ~out.T.duplicated()]
 
 
+ECFP4_SIZE = 1024
+"""The positions of the ECFP4 count fingerprint in the recommended encoding."""
+
+MACCS_KEYS = 166
+"""The MACCS keys in RDKit's fingerprint (its bit 0 is unused and left out)."""
+
 DEFAULT_SMILES_ENCODING = Encoding(
     kind="smiles",
-    name="rdkit2d-maccs",
+    name="rdkit2d-maccs-ecfp4",
     revision=1,
     library=f"rdkit{RDKIT_VERSION}",
     description=(
         "RDKit's 2D descriptors (Descriptors.CalcMolDescriptors; Ipc as Ipc_log10 = log10(1 + Ipc); values RDKit "
-        "cannot compute missing) as rdkit_<name>, and the 166 MACCS keys (0/1) as maccs_1 to maccs_166, one row per "
-        "molecule, no column dropped."
+        f"cannot compute missing) as rdkit_<name>, the {MACCS_KEYS} MACCS keys (0/1) as maccs_1 to maccs_{MACCS_KEYS}, "
+        f"and the ECFP4 count fingerprint (Morgan, radius 2, {ECFP4_SIZE} positions) as ecfp4_0 to "
+        f"ecfp4_{ECFP4_SIZE - 1}, one row per molecule, no column dropped."
     ),
 )
-"""The recommended encoding of a SMILES column (Lennart, 2026-11-01: RDKit's 2D descriptors with the MACCS keys)."""
-
-MACCS_KEYS = 166
-"""The MACCS keys in RDKit's fingerprint (its bit 0 is unused and left out)."""
+"""The recommended encoding of a SMILES column (Lennart, 2026-11-01): RDKit's 2D descriptors with the MACCS keys, and
+the ECFP4 counts, which helped once (qsar_tid_11: LightGBM R^2 0.601 to 0.658 on the scaffold splits). One pipeline
+choice to revisit for the benchmark; a feature selection step may follow it."""
 
 
 def encode_smiles(smiles: pd.Series, encoding: Encoding = DEFAULT_SMILES_ENCODING, *, prefix: str = "") -> pd.DataFrame:
     """A SMILES column in the recommended encoding: one row per value of ``smiles``, on its index.
 
-    The columns are ``<prefix>rdkit_<descriptor>`` (float64) and ``<prefix>maccs_1`` to ``<prefix>maccs_166`` (int8;
-    nullable ``Int8`` when a SMILES is missing). They are the same for every dataset (none is dropped for being constant
-    in the given molecules), and each distinct SMILES is computed once, so a benchmark can cache the rows by value
-    under ``encoding.id``. A missing SMILES gives a row of missing values.
+    The columns are ``<prefix>rdkit_<descriptor>`` (float64), ``<prefix>maccs_1`` to ``<prefix>maccs_166`` (int8) and
+    ``<prefix>ecfp4_0`` to ``<prefix>ecfp4_1023`` (the ECFP4 counts, int16); the integer columns are nullable (``Int8``,
+    ``Int16``) when a SMILES is missing. They are the same for every dataset (none is dropped for being constant in the
+    given molecules), and each distinct SMILES is computed once, so a benchmark can cache the rows by value under
+    ``encoding.id``. A missing SMILES gives a row of missing values.
 
     Raises:
         ValueError: ``encoding`` is not :data:`DEFAULT_SMILES_ENCODING` (the one encoding implemented).
@@ -172,10 +180,21 @@ def encode_smiles(smiles: pd.Series, encoding: Encoding = DEFAULT_SMILES_ENCODIN
         columns=[f"maccs_{i}" for i in range(1, MACCS_KEYS + 1)],
         dtype="int8",
     )
-    table = pd.concat([_descriptor_frame(molecules, values).add_prefix("rdkit_"), keys], axis=1)
+    morgan = import_build_dependency("rdkit.Chem.rdFingerprintGenerator").GetMorganGenerator(
+        radius=2, fpSize=ECFP4_SIZE
+    )
+    counts = pd.DataFrame(
+        np.array([morgan.GetCountFingerprintAsNumPy(molecule) for molecule in molecules], dtype="int16").reshape(
+            len(molecules), ECFP4_SIZE
+        ),
+        index=values,
+        columns=[f"ecfp4_{i}" for i in range(ECFP4_SIZE)],
+    )
+    table = pd.concat([_descriptor_frame(molecules, values).add_prefix("rdkit_"), keys, counts], axis=1)
     out = table.reindex(smiles.to_numpy(dtype="object"))
     if smiles.isna().any():
         out[keys.columns] = out[keys.columns].astype("Int8")
+        out[counts.columns] = out[counts.columns].astype("Int16")
     out.index = smiles.index
     return out.add_prefix(prefix)
 

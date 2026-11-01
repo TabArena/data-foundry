@@ -150,7 +150,7 @@ tabarena-v0.2 with good time keeping and adding it on top of the benchmark recor
 - [ ] **SMILES columns: encode them as structures (Data Foundry side done, 2026-11-01).** A v0.2 container now ships a
   molecule's structure as a `string` column listed in `task_metadata.semantic_columns`
   (`data_foundry.schema.SemanticColumn`: `column`, `semantic_type` `smiles`, `description`,
-  `recommended_encoding`, e.g. `rdkit2d-maccs-rdkit2026.03.6-r1`); `data_foundry.curation_container.semantic_columns
+  `recommended_encoding`, e.g. `rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1`); `data_foundry.curation_container.semantic_columns
   (container, "smiles")` lists them. Datasets: apistox, drug_induced_autoimmunity_prediction, qsar_bioconcentration,
   qsar_oral_toxicity, qsar_tid_11 (and the molecule candidates to come). TabArena needs, in this order:
   - **A guard first.** The model-agnostic pipeline marks every pandas `string` column as text
@@ -160,9 +160,11 @@ tabarena-v0.2 with good time keeping and adding it on top of the benchmark recor
     semantic column (or encode it as below), never pass it on as text.
   - **The adapter** passes `semantic_columns` into the task, and the pipeline maps them to an AutoGluon special type
     `smiles` (`FeatureMetadata` takes any special-type name); the text generators exclude it.
-  - **A SMILES feature generator** with the recommended encoding (`data_foundry.v2.chemistry.encode_smiles`: RDKit's 2D
-    descriptors and the 166 MACCS keys, one row per molecule; Data Foundry is already a dependency) or TabArena's own,
+  - **A SMILES feature generator** with the recommended encoding (`data_foundry.v2.chemistry.encode_smiles`: RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts, one row per molecule; Data Foundry is already a dependency) or TabArena's own,
     cached by value under the encoding's id on the cache contract above, so a fit needs no RDKit.
+    The recommended encoding is wide (about 1,400 columns, the ECFP4 counts added by default because they helped once:
+    qsar_tid_11's LightGBM R^2 from 0.601 to 0.658): "just one pipeline choice that we can later investigate for the
+    benchmark", and a feature selection step may follow it (Lennart, 2026-11-01).
   - Whether a method may read the raw SMILES with its own encoder on the main leaderboard is open (Lennart,
     2026-11-01: "we keep this discussion for later").
 - [ ] **Recommended encodings of dates and text (`data_foundry.v2.encodings`, `recommended_encodings()`).** Dates: skrub's

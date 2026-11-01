@@ -32,7 +32,7 @@ The two container formats score differently:
   rows by the spec, taking the scoring columns' values by row index. The model is a histogram gradient boosting
   model, which takes numeric and categorical columns; other columns (strings, datetimes) are left out here. A SMILES
   column (``semantic_columns(container, "smiles")``) is a molecule's structure: it enters in the recommended encoding
-  (``data_foundry.v2.chemistry.encode_smiles``, RDKit's 2D descriptors and the MACCS keys; RDKit is in the ``build``
+  (``data_foundry.v2.chemistry.encode_smiles``, RDKit's 2D descriptors, the MACCS keys and the ECFP4 counts; RDKit is in the ``build``
   extra), never as text.
 
 Requires ``scikit-learn>=1.4`` (for :func:`sklearn.metrics.root_mean_squared_error`).

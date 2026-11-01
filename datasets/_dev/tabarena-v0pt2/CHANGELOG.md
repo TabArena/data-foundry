@@ -13,7 +13,9 @@ record, audit or PR that motivated it.
   descriptors in place of the string. Until TabArena reads the field, it must not pass such a column to its text
   embedding (`BENCHMARK_CHANGES_TODO.md`).
 - The recommended encodings (`data_foundry.v2.encodings`, `recommended_encodings()`): a SMILES as RDKit's 2D
-  descriptors with the 166 MACCS keys (`encode_smiles`, spec `rdkit2d-maccs-rdkit2026.03.6-r1`); a date as skrub's
+  descriptors with the 166 MACCS keys and the ECFP4 counts (`encode_smiles`, spec
+  `rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1`; the ECFP4 counts added by default since they helped once, on qsar_tid_11,
+  Lennart: "just one pipeline choice that we can later investigate"); a date as skrub's
   `DatetimeEncoder(add_weekday=True, periodic_encoding="circular")`, as BeyondArena (`encode_datetime`); text as TF-IDF
   fitted on the training rows and as e5-small-v2 sentence embeddings, both to be checked (`encode_text_tfidf`,
   `encode_text_e5`). New extra `encodings` (skrub, sentence-transformers). The probes encode SMILES columns this way
@@ -25,8 +27,11 @@ record, audit or PR that motivated it.
   and windows unchanged.
 - `qsar_bioconcentration`: `SMILES` ships in place of RDKit's 193 descriptors; logKOW stays. The isomer decision table
   now compares the authors' 9 descriptors with the recommended encoding (every chemical has its own values).
-- `qsar_oral_toxicity`: `SMILES` ships next to the 1,024 published ECFP bits, in place of RDKit's 208 descriptors; the
-  accepted `dataset_pure_feature_value` warning on `rdkit_fr_Ar_COO` leaves with that column.
+- `qsar_oral_toxicity`: `SMILES` is the one feature, in place of RDKit's 208 descriptors and the authors' 1,024 ECFP
+  bits (Lennart: the bits are one modelling choice, as for qsar_tid_11); the accepted `dataset_pure_feature_value`
+  warning on `rdkit_fr_Ar_COO` leaves with that column. Copies are found on the 2D structure instead of the bit vector
+  (720 exact copies, 20 structures with both classes, 10 tautomer pairs by InChIKey): 11,116 chemicals (933 very
+  toxic), 11 more than before, since bit collisions had joined different chemicals.
 - `drug_induced_autoimmunity_prediction`: `SMILES` ships typed as a structure (Andrej kept it as a plain string on
   2026-10-26), and the source's 176 RDKit descriptors leave, since the recommended encoding reproduces them (scaffold-
   grouped ROC AUC 0.771 against 0.772 with LightGBM) and adds the MACCS keys (0.796). The stereoisomer pairs are found

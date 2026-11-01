@@ -68,6 +68,10 @@ CC (2026-11-01, Lennart): SMILES ship as a typed structure column, not pre-encod
 
 **Assessment (AI, 2026-11-01):** the definition now ships `SMILES` (RDKit's canonical form of the QSAR-ready SMILES) in `smiles_columns` next to the 1,024 published ECFP bits, which stay since the recommended encoding does not reproduce Dragon's fingerprint; RDKit's 208 descriptors no longer ship. The accepted `dataset_pure_feature_value` warning on `rdkit_fr_Ar_COO` left with the descriptor column. MACCS keys next to bits and descriptors: +0.009 (LightGBM) / -0.003 (random forest) ROC AUC.
 
+CC (2026-11-01, Lennart): ship the SMILES only, as for qsar_tid_11: the authors' fingerprint is one modelling choice; the benchmark encodes the structure.
+
+**Assessment (AI, 2026-11-01):** the 1,024 ECFP bits (Dragon 7) leave; `SMILES` is the one feature. The copies are now found on the 2D structure (`canonical_smiles(..., stereo=False)`) instead of the bit vector: 720 exact copies, the 20 structures with both classes (52 rows) and 10 tautomer pairs by InChIKey leave, so 11,116 chemicals remain (933 very toxic), 11 more than before, since bit collisions had joined different chemicals. Scaffold groups: 7,481 (2,579 ring-less and 1,973 bare-benzene chemicals alone).
+
 ## Reference
 
 @article{ballabio2019integrated,

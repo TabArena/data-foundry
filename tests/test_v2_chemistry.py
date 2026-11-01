@@ -99,7 +99,7 @@ def test_scaffold_groups_keep_a_scaffold_below_the_share_together() -> None:
     assert out.iloc[0] == out.iloc[1] == out.iloc[2] == "c1ccccc1"
 
 
-def test_encode_smiles_gives_every_descriptor_and_the_166_maccs_keys_per_molecule() -> None:
+def test_encode_smiles_gives_every_descriptor_the_maccs_keys_and_the_ecfp4_counts_per_molecule() -> None:
     """The recommended encoding: the same columns for any molecules, one row per value, each distinct SMILES once."""
     smiles = pd.Series(["CCO", "c1ccccc1", "CCO"], index=[7, 8, 9])
     out = chemistry.encode_smiles(smiles)
@@ -108,7 +108,11 @@ def test_encode_smiles_gives_every_descriptor_and_the_166_maccs_keys_per_molecul
     maccs = [c for c in out.columns if c.startswith("maccs_")]
     descriptors = [c for c in out.columns if c.startswith("rdkit_")]
     assert maccs == [f"maccs_{i}" for i in range(1, 167)]
-    assert len(descriptors) + len(maccs) == out.shape[1]
+    ecfp4 = [c for c in out.columns if c.startswith("ecfp4_")]
+    assert ecfp4 == [f"ecfp4_{i}" for i in range(1024)]
+    assert len(descriptors) + len(maccs) + len(ecfp4) == out.shape[1]
+    assert (out[ecfp4].dtypes == "int16").all()
+    assert out.loc[7, ecfp4].sum() > 0
     assert "rdkit_Ipc_log10" in descriptors
     assert "rdkit_Ipc" not in descriptors
     assert (out[maccs].dtypes == "int8").all()
@@ -125,13 +129,14 @@ def test_encode_smiles_prefix_and_missing_values() -> None:
     assert out.columns[0].startswith("SMILES__rdkit_")
     assert out.iloc[1].isna().all()
     assert out["SMILES__maccs_1"].dtype == "Int8"
+    assert out["SMILES__ecfp4_0"].dtype == "Int16"
 
 
 def test_the_default_encoding_names_rdkit_and_its_revision() -> None:
     """The spec id keys a cache: the encoding's name, the pinned RDKit release and the revision."""
     encoding = chemistry.DEFAULT_SMILES_ENCODING
 
-    assert encoding.id == f"rdkit2d-maccs-rdkit{chemistry.RDKIT_VERSION}-r1"
+    assert encoding.id == f"rdkit2d-maccs-ecfp4-rdkit{chemistry.RDKIT_VERSION}-r1"
     with pytest.raises(ValueError, match="Unknown SMILES encoding"):
         chemistry.encode_smiles(pd.Series(["CCO"]), Encoding(kind="smiles", name="other", revision=1, description=""))
 
