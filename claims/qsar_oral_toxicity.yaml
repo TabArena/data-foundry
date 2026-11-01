@@ -1,0 +1,6 @@
+name: qsar_oral_toxicity
+holder: Lennart
+stage: add
+claimed_at: '2026-11-01T19:32:03Z'
+expires_at: '2026-11-08T19:32:03Z'
+note: 'SMILES only (PR #15)'
