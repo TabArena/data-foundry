@@ -19,7 +19,6 @@ source_links:
 - https://www.ema.europa.eu/en/medicines/download-medicine-data
 - https://huggingface.co/datasets/inria-soda/STRABLE-benchmark/tree/main/medicines
 - https://arxiv.org/abs/2605.12292
-- https://huggingface.co/datasets/inria-soda/STRABLE-benchmark/tree/main/orphan-designations
 needs_review:
 - ai_unverified
 type_adapter_id: curation-record-v1
@@ -45,3 +44,5 @@ type_adapter_id: curation-record-v1
 - Notes: EMA medicines download (medicines.csv). | EMA download (orphan_designations.csv). Paper says 'therapeutic area'; config target is Status (binary).
 
 **Assessment (AI, 2026-10-31):** cleanup flag of the data-scouting run: STRABLE's orphan-designations table is inside this record and may need its own.
+
+**Assessment (AI, 2026-11-01):** STRABLE's orphan-designations table moved to its own record, `ema_orphan_designations`, on 2026-11-01; this record now holds the one table its name says (the screening block above still mentions the other).

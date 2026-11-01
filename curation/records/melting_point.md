@@ -31,6 +31,8 @@ Contains SMILES, so likely requires domain-specific solutions. Could also be see
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `melting_point_patents` (TBD -> Yes, priority 3), `bradley_open_melting_point` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
+**Assessment (AI, 2026-11-01):** ChemPile's "melting_points" is the record `melting_point_patents`, now tagged ChemPile.
+
 ## Reference
 
 Frank Mtetwa and John Hedengren. Thermophysical Property: Melting Point. https://kaggle.com/competitions/melting-point, 2025. Kaggle.

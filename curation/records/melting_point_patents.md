@@ -7,6 +7,8 @@ suggestion: TBD -> Yes
 priority: 3
 tags:
 - AI-Filled (Verify)
+collections:
+- ChemPile
 original_source: Other
 year: '2015'
 domain: chemistry & material science
@@ -38,3 +40,5 @@ type_adapter_id: curation-record-v1
 - as published: almost 300,000 melting and decomposition points text-mined from US patents (about 275,000 compounds after processing per later papers); melting_point.sdf (638 MB) and pyrolysis_point.sdf; target: melting point (degrees C) per compound; access: open (CC0).
 - Why: Same target (melting point) and unit (the compound) as the Kaggle melting-point competition, with structure as the input
 - Adds: About two orders of magnitude more compounds than the competition (its train.csv is 2.3 MB and test.csv 0.6 MB, a few thousand compounds, not counted); caveat: text-mined values carry label noise
+
+**Assessment (AI, 2026-11-01):** the benchmark ChemPile (https://arxiv.org/abs/2505.12534) carries this record's data as "melting_points": the ChemNLP builder (`data/tabular/melting_points`, meta.yaml `num_points: 274983`) reads an OCHEM export (`ochem_clean.csv`) with the compound name, SMILES and melting point range. Its 274,983 compounds match this patent-mined compilation (about 275,000 compounds after processing), not the set of the paper the builder cites (Tetko et al. 2014, doi 10.1021/ci5005288: "more than 47k compounds"), so it is taken as this record's data; compare the rows at /add-dataset. Tagged ChemPile on 2026-11-01.

@@ -7,6 +7,8 @@ suggestion: TBD -> Yes
 priority: 3
 tags:
 - AI-Filled (Verify)
+collections:
+- ChemPile
 original_source: GOV Website
 domain: chemistry & material science
 original_data_state: Database (or multiple to-be-joined tables)
@@ -39,3 +41,5 @@ type_adapter_id: curation-record-v1
 - Why: Same target and screen as hiva_agnostic: HIVA is the Agnostic Learning vs. Prior Knowledge challenge's subset of this very NCI screen (3,845 training + 384 validation compounds), given as 1,617 unnamed binary descriptors. The DTP release is the same measurement with the compounds named.
 - Adds: 41,127-43,850 compounds instead of 4,229 (149 active), labels for every compound instead of a test set whose labels were never released, the original three classes (CA/CM/CI) instead of a pre-binarized target, and real structures (NSC numbers, SMILES) instead of anonymized bits, which removes the Anonymized marker ...
 - A newer release of the same source as the record(s) named above (PROV-6): the curator decides which one enters.
+
+**Assessment (AI, 2026-11-01):** the benchmark ChemPile (https://arxiv.org/abs/2505.12534) carries this record's data as "hiv": the MoleculeNet HIV processing of this screen (41,127 compounds, SMILES, active or moderately active against inactive), turned into text prompts by the ChemNLP builder `data/tabular/hiv`. `hiva_agnostic` holds the 2007 challenge subset of the same screen. Tagged ChemPile on 2026-11-01.

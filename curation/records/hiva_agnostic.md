@@ -59,6 +59,8 @@ CC (2026-10-27, Lennart): marker Anonymized, from the AI review of PR #17: the a
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nci_aids_antiviral_screen` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
+**Assessment (AI, 2026-11-01):** ChemPile's "hiv" is the record `nci_aids_antiviral_screen`, now tagged ChemPile.
+
 ## Reference
 
 Datasets from the Agnostic Learning vs. Prior Knowledge Challenge (http://www.agnostic.inf.ethz.ch)

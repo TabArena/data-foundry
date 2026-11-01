@@ -20,7 +20,6 @@ source_links:
 - https://data.hrsa.gov/topics/health-workforce/shortage-areas
 - https://huggingface.co/datasets/inria-soda/STRABLE-benchmark/tree/main/health-professional-shortage-areas
 - https://arxiv.org/abs/2605.12292
-- https://huggingface.co/datasets/inria-soda/STRABLE-benchmark/tree/main/medically-underserved-areas-populations
 - https://data.hrsa.gov/DataDownload/DD_Files/BCD_HPSA_FCT_DET_PC.csv
 - https://data.hrsa.gov/DataDownload/DD_Files/BCD_HPSA_FCT_DET_DH.csv
 - https://data.hrsa.gov/DataDownload/DD_Files/BCD_HPSA_FCT_DET_MH.csv
@@ -50,3 +49,5 @@ type_adapter_id: curation-record-v1
 - Notes: HRSA HPSA download. The HPSA score is computed by HRSA from component scores; check whether the components are among the 57 columns. | Raw file MUA_DET.xlsx (HRSA). IMU is a formula of four component scores; check whether they are among the 51 columns.
 
 **Assessment (AI, 2026-10-31):** cleanup flag of the data-scouting run: STRABLE's separate underserved-areas table is inside this record and needs its own.
+
+**Assessment (AI, 2026-11-01):** STRABLE's medically underserved areas table moved to its own record, `hrsa_medically_underserved_areas`, on 2026-11-01; this record now holds the one table its name says (the screening block above still mentions the other).

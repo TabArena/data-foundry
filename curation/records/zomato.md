@@ -30,3 +30,5 @@ Orders and important information about sales etc are dummy-generated and not rea
 Some of the data could be used for a tabular task, unclear how much we can use it for text-based tasks without major additional effort on our side
 
 **Assessment (AI, 2026-10-31):** the benchmark MulTaBench (https://arxiv.org/abs/2605.10616) carries a related version, "Zomato Restaurants", not this record's data, so no collection tag: Text-tabular; raw user review text and vote count are features (posted alongside the rating). The record zomato is tagged CARTE/TexTabBench but links a different Kaggle dataset (anas123siddiqui/zomato-database, partly generated); MulTaBench's source is the Bangalore scrape, so the record's link may be wrong.
+
+**Assessment (AI, 2026-11-01):** MulTaBench's "Zomato Restaurants" now has its own record, `zomato_bangalore_restaurants`.
