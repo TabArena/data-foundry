@@ -4,6 +4,57 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-11-01, SMILES ship as typed structure columns; recommended encodings for SMILES, dates and text (PR #15)
+
+- CLEAN-24 amended (Lennart, 2026-11-01; path C of the discussion doc "SMILES Handling in Data Foundry and TabArena
+  v0.2"): a molecule's structure ships as a SMILES column, listed in the definition's new `smiles_columns`, and the
+  container records it in `task_metadata.semantic_columns` (`SemanticColumn`, type `smiles`, with the recommended
+  encoding's spec id), so a benchmark encodes it as a structure and never as text. Definitions no longer ship RDKit
+  descriptors in place of the string. Until TabArena reads the field, it must not pass such a column to its text
+  embedding (`BENCHMARK_CHANGES_TODO.md`).
+- The recommended encodings (`data_foundry.v2.encodings`, `recommended_encodings()`): a SMILES as RDKit's 2D
+  descriptors with the 166 MACCS keys (`encode_smiles`, spec `rdkit2d-maccs-rdkit2026.03.6-r1`); a date as skrub's
+  `DatetimeEncoder(add_weekday=True, periodic_encoding="circular")`, as BeyondArena (`encode_datetime`); text as TF-IDF
+  fitted on the training rows and as e5-small-v2 sentence embeddings, both to be checked (`encode_text_tfidf`,
+  `encode_text_e5`). New extra `encodings` (skrub, sentence-transformers). The probes encode SMILES columns this way
+  (`dataset_io.py`); the bundle check `dataset_smiles_column` parses them with the pinned RDKit, and a SMILES column
+  raises no `dataset_identifier_column`.
+- `apistox`: `SMILES` ships (RDKit's canonical form; 17 strings change) in place of RDKit's 199 descriptors. The 141
+  salts and complexes stay as published: the largest fragment would make 86 rows copies of another (triclopyr and
+  picloram triethylammonium both reduce to triethylamine), so `canonical_smiles` keeps every fragment by default. Rows
+  and windows unchanged.
+- `qsar_bioconcentration`: `SMILES` ships in place of RDKit's 193 descriptors; logKOW stays. The isomer decision table
+  now compares the authors' 9 descriptors with the recommended encoding (every chemical has its own values).
+- `qsar_oral_toxicity`: `SMILES` ships next to the 1,024 published ECFP bits, in place of RDKit's 208 descriptors; the
+  accepted `dataset_pure_feature_value` warning on `rdkit_fr_Ar_COO` leaves with that column.
+- `drug_induced_autoimmunity_prediction`: `SMILES` ships typed as a structure (Andrej kept it as a plain string on
+  2026-10-26), and the source's 176 RDKit descriptors leave, since the recommended encoding reproduces them (scaffold-
+  grouped ROC AUC 0.771 against 0.772 with LightGBM) and adds the MACCS keys (0.796). The stereoisomer pairs are found
+  on the stereo-free SMILES: the same 9 pairs, 587 drugs, 140 positive. The accepted `dataset_identifier_column`
+  warning leaves.
+- `qsar_tid_11`: the ChEMBL 17 structure ships as `SMILES` next to the 1,024 FCFP bits; the two duplicate-row warnings
+  are gone, since rows that share a fingerprint differ in their structure.
+- All five: `dataset check` clean. Records carry the CC and an Assessment. Not built.
+
+## 2026-11-01, scaffold groups: `qsar_tid_11` grouped from ChEMBL 17 structures, `drug_induced_autoimmunity_prediction` on `scaffold_groups`
+
+- `qsar_tid_11`: scaffold-grouped splits in place of random ones (Lennart, 2026-11-01; SPLIT-31 as amended). The file
+  carries ChEMBL compound ids, and ChEMBL 17's structure table (`chembl_17_chemreps.txt.gz`, the release the data was
+  drawn from, a new raw file with its download command and checksum) gives every one its structure; the definition
+  cuts out the file's compounds once (`prepared_raw_files`) and joins them on `MOLECULE_CHEMBL_ID`. 2,529 groups for
+  5,704 compounds (21 ring-less alone, the bare benzene ring 2%). Close training analogs of the test compounds fall
+  from 79.7% to 59.2%; on the definition's splits LightGBM's R^2 is 0.747 under IID and 0.657 grouped, and the task
+  probes raise no flag (on the fingerprint alone; the structure joins the features in the entry above). Rows
+  unchanged (5,704). Record:
+  [`curation/records/qsar_tid_11.md`](../../../curation/records/qsar_tid_11.md). `dataset check` clean otherwise. Not
+  built.
+- `drug_induced_autoimmunity_prediction`: the split groups come from `scaffold_groups`, the helper of
+  qsar_bioconcentration and qsar_oral_toxicity, in place of the definition's own scaffold code. The groups are the same
+  443 (the bare benzene ring holds 7%, under the tenth that would split it), but their names change, so the drugs fall
+  into other folds. `dataset check` clean. Not built.
+- `BENCHMARK_CHANGES_TODO.md`: new section "Encodings and their caches" (one cache contract for every encoding, the
+  encoding's compute time added on top of the benchmark record, and no SMILES column into the text embedding).
+
 ## 2026-11-01, `marketing_campaign` retired: the iFood hiring case's mock data (issue #38)
 
 - `marketing_campaign` is retired: `No (Retired)` with `AHDS` (SEL-16, PROV-3), Lennart's "Don't ship" on the review

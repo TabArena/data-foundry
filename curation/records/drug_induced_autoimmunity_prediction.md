@@ -94,6 +94,10 @@ CC (2026-10-26, Andrej): The SMILES is important for performance, so it stays in
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `dilist_drug_induced_liver_injury` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-01, Lennart): SMILES ship as a typed structure column, not pre-encoded and never as text (path C of the discussion doc "SMILES Handling in Data Foundry and TabArena v0.2" (https://claude.ai/artifact/6r49WpR9Uard5ogo7qK4rB)): the benchmark encodes it; the recommended encoding in Data Foundry is RDKit's 2D descriptors with the MACCS keys.
+
+**Assessment (AI, 2026-11-01):** the definition now ships `SMILES` (RDKit's canonical form) in `smiles_columns`, as Andrej decided to keep it on 2026-10-26, but typed as a structure, and the source's 176 RDKit descriptors leave: the recommended encoding reproduces them (LightGBM / random forest ROC AUC over the 60 scaffold splits: source descriptors 0.771 / 0.776, our full RDKit set 0.772 / 0.777) and adds the MACCS keys (0.796 / 0.799, better on 51 and 59 of 60 splits); the SMILES read as text gives 0.763 / 0.766. The stereoisomer pairs are now found on the stereo-free canonical SMILES: the same 9 pairs, 587 drugs, 140 positive. The split groups come from `scaffold_groups` (the same 443 groups, other folds).
+
 ## Reference
 
 @article{huang2025interdia,

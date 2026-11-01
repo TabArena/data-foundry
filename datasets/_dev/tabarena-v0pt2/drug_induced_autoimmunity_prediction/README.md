@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: drug_induced_autoimmunity_prediction
 container_format: 2
-checksum: v2:3db6a06bf1aa591d279ec94a8d7d6c4fd57317f4d717b3c2fafe61966c871cf3
+checksum: v2:854427ac2dce3961cbdea5831fe767b456d3c95f1047db53aec273bec8be9de3
 build:
   uuid: 01a13aff-7235-73c3-932c-785cd540127b
   checksum: v2:8b265d2d3eddb7add77dc45cb583a5b314652160191f2bb7923a2256ac744c09
@@ -20,11 +20,9 @@ build:
 build_stale: true
 data:
   n_rows: 587
-  n_features: 177
+  n_features: 1
   dtypes:
     category: 1
-    float64: 82
-    int64: 94
     string: 2
   n_test_dataset_rows: null
 task:
@@ -47,6 +45,8 @@ task:
     test_groups_per_fold:
       min: 139
       max: 153
+  semantic_columns:
+    SMILES: smiles
 splits:
   n_repeats: 20
   n_folds: 3
@@ -56,30 +56,28 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 348
-    max: 420
+    min: 350
+    max: 432
   n_test:
-    min: 167
-    max: 239
+    min: 155
+    max: 237
 bundle_checks:
   ok: true
   errors: []
   warnings: []
   infos: []
-  accepted:
-    dataset_identifier_column: SMILES is the drug's structure, the input of the task,
-      not a row id; it is unique per row because one drug appears once.
+  accepted: {}
 decisions:
-- Stereoisomers that share every descriptor are kept once
+- Stereoisomers that are one 2D structure are kept once
 ---
 
 # drug_induced_autoimmunity_prediction
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `Label`, scored with `roc_auc` on grouped splits by `scaffold`. 587 rows and 177 features. Source: UCI (2025).
+Binary classification of `Label`, scored with `roc_auc` on grouped splits by `scaffold`. 587 rows and 1 features. Source: UCI (2025).
 
-Built as `01a13aff-7235-73c3-932c-785cd540127b` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:3db6a06bf1aa591d279ec94a8d7d6c4fd57317f4d717b3c2fafe61966c871cf3`, so the build is stale. See [Build](#build).
+Built as `01a13aff-7235-73c3-932c-785cd540127b` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:854427ac2dce3961cbdea5831fe767b456d3c95f1047db53aec273bec8be9de3`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -91,11 +89,11 @@ Built as `01a13aff-7235-73c3-932c-785cd540127b` on 2026-10-14, but `dataset.py` 
 
 **Predicted.** Whether the drug is labelled as causing drug-induced autoimmunity (23.85% are); how the positive and negative drugs were chosen is not stated in the definition.
 
-**Known at prediction time.** The structure as a SMILES string, and descriptors computed from it with RDKit (size, shape and connectivity indices, charge and polarity measures, counts of rings and chemical groups).
+**Known at prediction time.** The drug's chemical structure, as a SMILES string.
 
 **What the test data stands for.** Whole chemical scaffolds (a drug's ring skeleton) are held out, so the test data stands for drugs from chemical series not seen in training.
 
-**Our changes to the source.** We pool the source's training and test sets and split them by scaffold instead of at random; a drug entered twice as two stereoisomers is kept once.
+**Our changes to the source.** We pool the source's training and test sets and split them by scaffold instead of at random; a drug entered twice as two stereoisomers is kept once, and the descriptors the source computed from the structure give way to the structure itself.
 
 > **Use case fit: direct (the rows, features and split mirror the use case).** The features come from the structure alone, which is all a screen has before testing, and the test drugs come from scaffolds the model has not seen, as new candidates do. The set is small.
 
@@ -137,7 +135,7 @@ Only curators run `build`, when the dataset ships.
 | license | CC BY 4.0 |
 | data_tags | Non-IID, Grouped |
 | reference | huang2025interdia |
-| rows x columns | 587 x 179 |
+| rows x columns | 587 x 3 |
 | task.target | Label |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -156,10 +154,11 @@ Only curators run `build`, when the dataset ships.
 | reason | Huang, Liu & Huang 2024 (InterDIA) report AUC, accuracy, sensitivity, specificity, F1 and MCC side by side; no unique metric. roc_auc is the binary fallback. |
 
 <details>
-<summary>Feature types: 1 categorical, 1 string, 0 datetime</summary>
+<summary>Feature types: 1 categorical, 0 string, 1 smiles, 0 datetime</summary>
 
 - categorical (1): `Label`
-- string (1): `SMILES`
+- string (0): none
+- smiles (1): `SMILES`
 - datetime (0): none
 
 </details>
@@ -183,103 +182,103 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 587 rows of the final frame (random rows: the frame is shuffled); 12 of 179 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 587 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
 
-| Label | SMILES | BalabanJ | BertzCT | Chi0 | Chi0n | Chi0v | Chi1 | Chi1n | Chi1v | Chi2n | Chi2v |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | CSc1ccc2Sc3ccccc3N(CC\[C@@H\]4CCCCN4C)c2c1 | 1.63 | 746.426 | 17.225 | 15.072 | 16.705 | 12.258 | 9.188 | 11.229 | 6.974 | 8.937 |
-| 0 | CCN\[C@H\]1CN(CCCOC)S(=O)(=O)c2sc(cc12)S(… | 2.444 | 756.904 | 17.251 | 12.981 | 15.43 | 10.713 | 7.104 | 10.907 | 5.173 | 10.147 |
-| 0 | C\[C@H\](CN1CC(=O)NC(=O)C1)N2CC(=O)NC(=O)… | 1.908 | 404.411 | 13.991 | 10.64 | 10.64 | 8.936 | 6.056 | 6.056 | 4.866 | 4.866 |
-| 0 | NC(=O)CS(=O)C(c1ccccc1)c2ccccc2 | 2.396 | 529.714 | 13.665 | 10.36 | 11.177 | 9.182 | 5.936 | 7.318 | 4.193 | 5.714 |
-| 0 | CCC(=O)O\[C@@\]1(\[C@@H\](C)C\[C@H\]2\[C@@H\]3C… | 1.85 | 925.393 | 23.69 | 19.189 | 19.945 | 14.918 | 11.592 | 11.97 | 10.546 | 11.171 |
+| Label | SMILES | scaffold |
+|---|---|---|
+| 1 | CC(C)NC\[C@H\](O)COc1ccc(COCCOC(C)C)cc1 | c1ccccc1 |
+| 0 | CN(C)C\[C@H\](c1ccc(O)cc1)C1(O)CCCCC1 | c1ccc(CC2CCCCC2)cc1 |
+| 0 | O=C(CCCc1ccccc1)OCC(COC(=O)CCCc1ccccc1)… | O=C(CCCc1ccccc1)OCC(COC(=O)CCCc1ccccc1)… |
+| 0 | CCCc1c2oc(C(=O)O)cc(=O)c2cc2c(=O)cc(C(=… | O=c1cc\[nH\]c2cc3occc(=O)c3cc12 |
+| 1 | C\[C@H\]1c2cccc(O)c2C(\[O-\])=C2C(=O)\[C@\]3(… | C=C1C(=O)CC2CC3Cc4ccccc4C=C3C(=O)C2C1=O |
 
 ## Curation notes
 
 We start with the dataset from UCI.
 
 - We pool the source's training file (477 drugs, 118 positive) and test file (120 drugs, 30 positive) into 597 drugs and use our own splits; the files share no SMILES, and UCI's count of 477 instances is the training file alone.
-- We drop the constant columns, and fr_Nhpyrrole, MaxEStateIndex and fr_benzene, which copy other descriptor columns in these drugs.
-- `SMILES` kept as a string feature (2026-10-26), unlike the other SMILES datasets: the source's 176 descriptors lose structure a model can use. Next to them, MACCS keys computed from the SMILES lift the scaffold-grouped ROC AUC of TabPFN 3.5 from 0.803 to 0.826 (better on 27 of 30 splits) and of a random forest from 0.770 to 0.795; the SMILES as plain character n-grams does not (LightGBM 0.835 -> 0.810 on the random splits of 2026-10-14). We ship the string rather than one chosen fingerprint, so a model can read the structure as it likes.
-- Scaffold-grouped splits (2026-10-19), not random ones: under random splits about a third of the test drugs have a close relative in training with the same label, and a nearest-neighbour fingerprint lookup without a model reaches ROC AUC 0.822 against TabPFN's 0.854; with whole scaffolds held out, TabPFN 0.768, HGB 0.737, RF 0.724, LR 0.687 (generic scaffolds, `~/claude_jobs/dia_review/`). The use case screens new candidates, which come from series not yet seen, and scaffold splits are the standard for this: the Therapeutics Data Commons ADMET group splits all its endpoints by scaffold, among them drug-induced liver injury, a drug-level label like this one (Huang et al. 2021, NeurIPS Datasets and Benchmarks, arXiv:2102.09548). The source validated on random splits (its test file is as similar to its training file as a random split is), so our scores are lower than the paper's AUC 0.88-0.89 by design. The groups are the Bemis-Murcko scaffolds (Bemis and Murcko 1996, J Med Chem 39(15):2887-2893): 443 groups, the largest 41 drugs (benzene), 10 with both labels. The 53 drugs without a ring each form their own group (390 ring scaffolds plus these 53): they share no skeleton, only 2 have a close relative among them (Tanimoto >= 0.7), and their nearest neighbour's label agrees at the base rate (0.925).
-- Duplicates dropped: 9 pairs of rows share every descriptor, all stereoisomers, which 2D descriptors do not tell apart (PubChem; their SMILES differ only in the stereo marks): quinine and quinidine, and 8 drugs entered twice with other stereo marks (lovastatin, fluticasone propionate, enalapril, fluvastatin, lisinopril, pravastatin, carbidopa, streptomycin), 3 pairs across the source's two files. We keep one row of the 8 pairs with one label and drop both streptomycin rows (one positive, one negative), as for qsar_oral_toxicity: 587 drugs, 140 positive (decision table).
+- The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01; Andrej's call of 2026-10-26 to keep it), in RDKit's canonical form (`canonical_smiles`; 503 of the source's strings were not canonical, none is a salt), declared in `smiles_columns`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors and the 166 MACCS keys). Scaffold-grouped ROC AUC over our 60 splits (LightGBM / random forest, 2026-11-01): the source's 176 descriptors 0.771 / 0.776, our full RDKit set in their place 0.772 / 0.777, the MACCS keys added 0.796 / 0.799 (better on 51 and 59 of 60 splits), the SMILES read as text (character n-grams) 0.763 / 0.766. Andrej measured the same gain for TabPFN 3.5 (0.803 to 0.826 with MACCS keys, 27 of 30 splits; `~/claude_jobs/dia_review/`).
+- The source's 176 RDKit descriptors leave (2026-11-01): RDKit computed them from the same SMILES, and the recommended encoding reproduces them (the full RDKit set scores as they do, above), so shipping both would give a model the structure twice.
+- Scaffold-grouped splits (2026-10-19), not random ones: under random splits about a third of the test drugs have a close relative in training with the same label, and a nearest-neighbour fingerprint lookup without a model reaches ROC AUC 0.822 against TabPFN's 0.854; with whole scaffolds held out, TabPFN 0.768, HGB 0.737, RF 0.724, LR 0.687 (generic scaffolds, `~/claude_jobs/dia_review/`). The use case screens new candidates, which come from series not yet seen, and scaffold splits are the standard for this: the Therapeutics Data Commons ADMET group splits all its endpoints by scaffold, among them drug-induced liver injury, a drug-level label like this one (Huang et al. 2021, NeurIPS Datasets and Benchmarks, arXiv:2102.09548). The source validated on random splits (its test file is as similar to its training file as a random split is), so our scores are lower than the paper's AUC 0.88-0.89 by design. The groups are the Bemis-Murcko scaffolds (Bemis and Murcko 1996, J Med Chem 39(15):2887-2893): 443 groups, the largest 41 drugs (benzene), 10 with both labels. The 53 drugs without a ring each form their own group (390 ring scaffolds plus these 53): they share no skeleton, only 2 have a close relative among them (Tanimoto >= 0.7), and their nearest neighbour's label agrees at the base rate (0.925). The groups come from `scaffold_groups` since 2026-11-01, as in qsar_bioconcentration and qsar_oral_toxicity: the same 443 groups as the definition's own code before, under other group names, so the drugs fall into other folds.
+- Duplicates dropped: 9 pairs of rows are one structure once the stereo marks are set aside (the same 18 rows that share every one of the source's descriptors), stereoisomers a 2D encoding does not tell apart (PubChem): quinine and quinidine, and 8 drugs entered twice with other stereo marks (lovastatin, fluticasone propionate, enalapril, fluvastatin, lisinopril, pravastatin, carbidopa, streptomycin), 3 pairs across the source's two files. We keep one row of the 8 pairs with one label and drop both streptomycin rows (one positive, one negative), as for qsar_oral_toxicity: 587 drugs, 140 positive (decision table).
 
 ## Splits
 
 Grouped splits on the Bemis-Murcko scaffold: all drugs with one ring skeleton stay on one side, so a model predicts drugs of a series it has not seen. Drugs with similar but not identical scaffolds can be on both sides.
 
-20 repeat(s) x 3 fold(s) with seed 4267; train 348 to 420 rows, test 167 to 239 rows.
+20 repeat(s) x 3 fold(s) with seed 4267; train 350 to 432 rows, test 155 to 237 rows.
 
 <details>
 <summary>Show all 60 splits</summary>
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 380 | 207 |
-| 0 | 1 | 393 | 194 |
-| 0 | 2 | 401 | 186 |
-| 1 | 0 | 384 | 203 |
-| 1 | 1 | 408 | 179 |
-| 1 | 2 | 382 | 205 |
-| 2 | 0 | 365 | 222 |
-| 2 | 1 | 404 | 183 |
-| 2 | 2 | 405 | 182 |
-| 3 | 0 | 416 | 171 |
-| 3 | 1 | 355 | 232 |
-| 3 | 2 | 403 | 184 |
-| 4 | 0 | 413 | 174 |
-| 4 | 1 | 396 | 191 |
-| 4 | 2 | 365 | 222 |
-| 5 | 0 | 419 | 168 |
-| 5 | 1 | 404 | 183 |
-| 5 | 2 | 351 | 236 |
-| 6 | 0 | 369 | 218 |
-| 6 | 1 | 413 | 174 |
-| 6 | 2 | 392 | 195 |
-| 7 | 0 | 418 | 169 |
-| 7 | 1 | 362 | 225 |
-| 7 | 2 | 394 | 193 |
-| 8 | 0 | 409 | 178 |
-| 8 | 1 | 393 | 194 |
-| 8 | 2 | 372 | 215 |
-| 9 | 0 | 414 | 173 |
-| 9 | 1 | 406 | 181 |
-| 9 | 2 | 354 | 233 |
-| 10 | 0 | 410 | 177 |
-| 10 | 1 | 363 | 224 |
-| 10 | 2 | 401 | 186 |
-| 11 | 0 | 413 | 174 |
-| 11 | 1 | 363 | 224 |
-| 11 | 2 | 398 | 189 |
-| 12 | 0 | 416 | 171 |
-| 12 | 1 | 359 | 228 |
-| 12 | 2 | 399 | 188 |
-| 13 | 0 | 400 | 187 |
-| 13 | 1 | 404 | 183 |
-| 13 | 2 | 370 | 217 |
-| 14 | 0 | 380 | 207 |
-| 14 | 1 | 390 | 197 |
-| 14 | 2 | 404 | 183 |
-| 15 | 0 | 381 | 206 |
-| 15 | 1 | 394 | 193 |
-| 15 | 2 | 399 | 188 |
-| 16 | 0 | 420 | 167 |
-| 16 | 1 | 348 | 239 |
-| 16 | 2 | 406 | 181 |
-| 17 | 0 | 376 | 211 |
-| 17 | 1 | 402 | 185 |
-| 17 | 2 | 396 | 191 |
-| 18 | 0 | 404 | 183 |
+| 0 | 0 | 414 | 173 |
+| 0 | 1 | 352 | 235 |
+| 0 | 2 | 408 | 179 |
+| 1 | 0 | 432 | 155 |
+| 1 | 1 | 378 | 209 |
+| 1 | 2 | 364 | 223 |
+| 2 | 0 | 409 | 178 |
+| 2 | 1 | 395 | 192 |
+| 2 | 2 | 370 | 217 |
+| 3 | 0 | 385 | 202 |
+| 3 | 1 | 389 | 198 |
+| 3 | 2 | 400 | 187 |
+| 4 | 0 | 415 | 172 |
+| 4 | 1 | 367 | 220 |
+| 4 | 2 | 392 | 195 |
+| 5 | 0 | 370 | 217 |
+| 5 | 1 | 396 | 191 |
+| 5 | 2 | 408 | 179 |
+| 6 | 0 | 417 | 170 |
+| 6 | 1 | 350 | 237 |
+| 6 | 2 | 407 | 180 |
+| 7 | 0 | 416 | 171 |
+| 7 | 1 | 396 | 191 |
+| 7 | 2 | 362 | 225 |
+| 8 | 0 | 420 | 167 |
+| 8 | 1 | 352 | 235 |
+| 8 | 2 | 402 | 185 |
+| 9 | 0 | 402 | 185 |
+| 9 | 1 | 363 | 224 |
+| 9 | 2 | 409 | 178 |
+| 10 | 0 | 417 | 170 |
+| 10 | 1 | 360 | 227 |
+| 10 | 2 | 397 | 190 |
+| 11 | 0 | 363 | 224 |
+| 11 | 1 | 398 | 189 |
+| 11 | 2 | 413 | 174 |
+| 12 | 0 | 369 | 218 |
+| 12 | 1 | 405 | 182 |
+| 12 | 2 | 400 | 187 |
+| 13 | 0 | 415 | 172 |
+| 13 | 1 | 350 | 237 |
+| 13 | 2 | 409 | 178 |
+| 14 | 0 | 404 | 183 |
+| 14 | 1 | 363 | 224 |
+| 14 | 2 | 407 | 180 |
+| 15 | 0 | 423 | 164 |
+| 15 | 1 | 382 | 205 |
+| 15 | 2 | 369 | 218 |
+| 16 | 0 | 373 | 214 |
+| 16 | 1 | 400 | 187 |
+| 16 | 2 | 401 | 186 |
+| 17 | 0 | 406 | 181 |
+| 17 | 1 | 417 | 170 |
+| 17 | 2 | 351 | 236 |
+| 18 | 0 | 372 | 215 |
 | 18 | 1 | 402 | 185 |
-| 18 | 2 | 368 | 219 |
+| 18 | 2 | 400 | 187 |
 | 19 | 0 | 419 | 168 |
-| 19 | 1 | 373 | 214 |
-| 19 | 2 | 382 | 205 |
+| 19 | 1 | 372 | 215 |
+| 19 | 2 | 383 | 204 |
 
 </details>
 
 ## Group structure
 
-One group is a chemical scaffold: the drugs that share one Bemis-Murcko scaffold (ring systems and the chains linking them, atom and bond types kept, stereochemistry dropped; Bemis and Murcko 1996), computed with RDKit from the source's SMILES. A drug without a ring is a group of its own. The use case is screening new drug candidates by structure, and a new candidate comes from a chemical series not yet tested, so whole scaffolds are held out, as the Therapeutics Data Commons ADMET benchmarks do (Huang et al. 2021). Each row is one prediction, made from the drug's descriptors alone.
+One group is a chemical scaffold: the drugs that share one Bemis-Murcko scaffold (ring systems and the chains linking them, atom and bond types kept, stereochemistry dropped; Bemis and Murcko 1996), computed with RDKit from the source's SMILES. A drug without a ring is a group of its own, and so would be each drug of a scaffold holding more than a tenth of the drugs (SPLIT-31; none here: the bare benzene ring holds 7%). The use case is screening new drug candidates by structure, and a new candidate comes from a chemical series not yet tested, so whole scaffolds are held out, as the Therapeutics Data Commons ADMET benchmarks do (Huang et al. 2021). Each row is one prediction, made from the drug's structure alone.
 
 | field | value |
 |---|---|
@@ -296,120 +295,51 @@ One group is a chemical scaffold: the drugs that share one Bemis-Murcko scaffold
 | largest group | 7.0% of the rows |
 | test groups per fold | 139 to 153 |
 | groups of two or more rows with a single label | 82.7% |
-| nearest neighbour in the same group | 19.8% of the rows (chance: 0.6%) |
-| label variance explained by the group | 0.87 (shuffled groups: 0.78) |
+| label variance explained by the group | 0.87 (shuffled groups: 0.72) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Decisions
 
-### 1. Stereoisomers that share every descriptor are kept once
+### 1. Stereoisomers that are one 2D structure are kept once
 
-2D descriptors carry no stereochemistry, so each pair differs only in the stereo marks of its SMILES. Quinine and quinidine are two drugs; the other pairs are one drug entered twice with other stereo marks. A pair with one label keeps one row, the pair with both labels (streptomycin) none.
+A 2D encoding carries no stereochemistry, so each pair differs only in the stereo marks of its SMILES (the source's 2D descriptors are equal too). Quinine and quinidine are two drugs; the other pairs are one drug entered twice with other stereo marks. A pair with one label keeps one row, the pair with both labels (streptomycin) none.
 
 | pair | SMILES | Label | kept |
 |---|---|---|---|
-| 1 | CC(C)n1c(\C=C\[C@H](O)C[C@H](O)CC(=O)O)c(c2ccc(F)cc2)c3ccccc13 | 1 | True |
-| 1 | CC(C)n1c(\C=C\[C@@H](O)C[C@@H](O)CC(=O)O)c(c2ccc(F)cc2)c3ccccc13 | 1 | False |
-| 2 | NCCCC[C@H](N[C@@H](CCc1ccccc1)C(=O)O)C(=O)N2CCC[C@H]2C(=O)O | 1 | True |
-| 2 | NCCCC[C@H](N[C@H](CCc1ccccc1)C(=O)O)C(=O)N2CCC[C@@H]2C(=O)O | 1 | False |
-| 3 | CN[C@H]1[C@H](O)[C@@H](O)[C@H](CO)O[C@H]1O[C@H]2[C@H](O[C@H]3[C@H](O)[C@@H](O)[… | 1 | False |
-| 3 | CN[C@@H]1[C@H](O)[C@H](O)[C@H](CO)O[C@@H]1O[C@@H]2[C@H](O[C@@H]3[C@H](O)[C@H](O… | 0 | False |
-| 4 | COc1ccc2nccc([C@H](O)[C@H]3C[C@@H]4CCN3C[C@@H]4C=C)c2c1 | 1 | True |
-| 4 | COc1ccc2nccc([C@@H](O)[C@@H]3C[C@@H]4CCN3C[C@@H]4C=C)c2c1 | 1 | False |
+| 1 | COc1ccc2nccc([C@H](O)[C@H]3C[C@@H]4CCN3C[C@@H]4C=C)c2c1 | 1 | True |
+| 1 | COc1ccc2nccc([C@@H](O)[C@@H]3C[C@@H]4CCN3C[C@@H]4C=C)c2c1 | 1 | False |
+| 2 | CC(C)n1c(\C=C\[C@H](O)C[C@H](O)CC(=O)O)c(c2ccc(F)cc2)c3ccccc13 | 1 | True |
+| 2 | CC(C)n1c(\C=C\[C@@H](O)C[C@@H](O)CC(=O)O)c(c2ccc(F)cc2)c3ccccc13 | 1 | False |
+| 3 | C[C@@](Cc1ccc(O)c(O)c1)(NN)C(=O)O | 1 | True |
+| 3 | C[C@](Cc1ccc(O)c(O)c1)(NN)C(=O)O | 1 | False |
+| 4 | CCC(=O)O[C@@]1([C@H](C)C[C@H]2[C@@H]3C[C@H](F)C4=CC(=O)C=C[C@]4(C)[C@@]3(F)[C@@… | 0 | True |
+| 4 | CCC(=O)O[C@@]1([C@H](C)C[C@@H]2[C@@H]3C[C@H](F)C4=CC(=O)C=C[C@@]4(C)[C@@]3(F)[C… | 0 | False |
 | 5 | CC[C@H](C)C(=O)O[C@@H]1C[C@H](C)C=C2C=C[C@H](C)[C@H](CC[C@@H]3C[C@H](O)CC(=O)O3… | 1 | True |
 | 5 | CC[C@H](C)C(=O)O[C@H]1C[C@@H](C)C=C2C=C[C@H](C)[C@H](CC[C@@H]3C[C@@H](O)CC(=O)O… | 1 | False |
-| 6 | C[C@@](Cc1ccc(O)c(O)c1)(NN)C(=O)O | 1 | True |
-| 6 | C[C@](Cc1ccc(O)c(O)c1)(NN)C(=O)O | 1 | False |
+| 6 | CC[C@H](C)C(=O)O[C@H]1C[C@H](O)C=C2C=C[C@H](C)[C@H](CC[C@@H](O)C[C@@H](O)CC(=O)… | 1 | True |
+| 6 | CC[C@H](C)C(=O)O[C@@H]1C[C@H](O)C=C2C=C[C@H](C)[C@H](CC[C@H](O)C[C@H](O)CC(=O)O… | 1 | False |
 | 7 | CCOC(=O)[C@H](CCc1ccccc1)N[C@H](C)C(=O)N2CCC[C@@H]2C(=O)O | 1 | True |
 | 7 | CCOC(=O)[C@H](CCc1ccccc1)N[C@@H](C)C(=O)N2CCC[C@H]2C(=O)O | 1 | False |
-| 8 | CCC(=O)O[C@@]1([C@H](C)C[C@H]2[C@@H]3C[C@H](F)C4=CC(=O)C=C[C@]4(C)[C@@]3(F)[C@@… | 0 | True |
-| 8 | CCC(=O)O[C@@]1([C@H](C)C[C@@H]2[C@@H]3C[C@H](F)C4=CC(=O)C=C[C@@]4(C)[C@@]3(F)[C… | 0 | False |
-| 9 | CC[C@H](C)C(=O)O[C@H]1C[C@H](O)C=C2C=C[C@H](C)[C@H](CC[C@@H](O)C[C@@H](O)CC(=O)… | 1 | True |
-| 9 | CC[C@H](C)C(=O)O[C@@H]1C[C@H](O)C=C2C=C[C@H](C)[C@H](CC[C@H](O)C[C@H](O)CC(=O)O… | 1 | False |
+| 8 | CN[C@H]1[C@H](O)[C@@H](O)[C@H](CO)O[C@H]1O[C@H]2[C@H](O[C@H]3[C@H](O)[C@@H](O)[… | 1 | False |
+| 8 | CN[C@@H]1[C@H](O)[C@H](O)[C@H](CO)O[C@@H]1O[C@@H]2[C@H](O[C@@H]3[C@H](O)[C@H](O… | 0 | False |
+| 9 | NCCCC[C@H](N[C@@H](CCc1ccccc1)C(=O)O)C(=O)N2CCC[C@H]2C(=O)O | 1 | True |
+| 9 | NCCCC[C@H](N[C@H](CCc1ccccc1)C(=O)O)C(=O)N2CCC[C@@H]2C(=O)O | 1 | False |
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
-
-Accepted on purpose:
-
-- `dataset_identifier_column`: SMILES is the drug's structure, the input of the task, not a row id; it is unique per row because one drug appears once.
 
 ## Data checks
 
 ### Feature summary
 
-<details>
-<summary>Show the table (179 rows)</summary>
-
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | Label | category | 0 | 0 | 2 | 0, 1 |
-| BalabanJ | float64 | 0 | 0 | 486 | 1.838, 1.735, 2.195, 2.218, 2.462, 1.797, 1.384, 1.43, 1.85, 1.66 |
-| BertzCT | float64 | 0 | 0 | 574 | 49.784, 138.219, 8.0, 109.109, 593.895, 431.802, 42.913, 393.569, 400.94, 670.2… |
-| Chi0 | float64 | 0 | 0 | 448 | 10.836, 20.698, 11.707, 16.397, 23.859, 12.958, 13.828, 9.845, 18.656, 15.364 |
-| Chi0n | float64 | 0 | 0 | 569 | 2.439, 15.141, 20.6, 17.145, 3.602, 12.893, 13.404, 11.919, 15.3, 15.35 |
-| Chi0v | float64 | 0 | 0 | 570 | 13.404, 13.542, 20.6, 17.901, 3.602, 12.893, 15.141, 11.919, 15.35, 21.884 |
-| Chi1 | float64 | 0 | 0 | 514 | 12.963, 14.867, 4.5, 9.075, 14.918, 6.914, 9.665, 11.952, 4.877, 4.164 |
-| Chi1n | float64 | 0 | 0 | 569 | 8.308, 9.823, 5.936, 9.128, 1.224, 11.19, 6.728, 10.569, 7.049, 8.304 |
-| Chi1v | float64 | 0 | 0 | 577 | 9.912, 9.973, 3.683, 7.771, 9.298, 5.98, 8.265, 11.19, 10.003, 9.128 |
-| Chi2n | float64 | 0 | 0 | 564 | 5.461, 7.441, 5.49, 6.974, 7.094, 6.56, 7.4, 0.512, 7.662, 2.667 |
-| Chi2v | float64 | 0 | 0 | 575 | 7.441, 5.714, 3.622, 4.764, 6.863, 8.484, 6.101, 7.094, 8.194, 8.783 |
-| Chi3n | float64 | 0 | 0 | 562 | 0.0, 3.86, 5.325, 0.635, 2.029, 2.506, 1.508, 8.791, 4.305, 5.216 |
-| Chi3v | float64 | 0 | 0 | 566 | 0.0, 1.508, 4.229, 5.883, 5.911, 2.494, 2.029, 0.635, 5.216, 6.899 |
-| Chi4n | float64 | 0 | 0 | 556 | 0.0, 1.799, 6.96, 1.131, 1.838, 7.261, 2.405, 3.93, 3.531, 1.276 |
-| Chi4v | float64 | 0 | 0 | 553 | 0.0, 3.356, 3.831, 6.315, 3.409, 1.276, 5.685, 2.621, 4.132, 6.96 |
-| EState_VSA1 | float64 | 0 | 0 | 250 | 0.0, 6.104, 5.969, 5.601, 11.57, 30.064, 10.023, 12.011, 11.939, 5.415 |
-| EState_VSA10 | float64 | 0 | 0 | 121 | 0.0, 4.795, 9.589, 9.901, 5.107, 14.696, 19.49, 19.802, 24.597, 14.384 |
-| EState_VSA11 | float64 | 0 | 0 | 5 | 0.0, 4.39, 8.781, 13.575, 4.795 |
-| EState_VSA2 | float64 | 0 | 0 | 333 | 0.0, 5.907, 6.104, 6.607, 11.949, 6.421, 5.918, 6.042, 5.817, 5.559 |
-| EState_VSA3 | float64 | 0 | 0 | 291 | 0.0, 5.563, 6.421, 6.545, 19.262, 6.607, 5.918, 12.108, 5.687, 12.463 |
-| EState_VSA4 | float64 | 0 | 0 | 284 | 0.0, 5.563, 11.127, 25.683, 6.421, 19.262, 6.076, 5.573, 12.842, 38.525 |
-| EState_VSA5 | float64 | 0 | 0 | 208 | 0.0, 4.9, 5.563, 12.133, 11.127, 6.066, 6.924, 7.11, 12.152, 6.421 |
-| EState_VSA6 | float64 | 0 | 0 | 147 | 0.0, 12.133, 6.924, 6.066, 24.265, 13.847, 7.11, 4.9, 18.199, 6.197 |
-| EState_VSA7 | float64 | 0 | 0 | 144 | 0.0, 30.332, 13.847, 6.924, 6.066, 12.133, 24.265, 6.076, 18.199, 20.771 |
-| EState_VSA8 | float64 | 0 | 0 | 274 | 0.0, 5.317, 10.634, 6.924, 4.984, 10.301, 9.968, 13.847, 4.992, 4.9 |
-| EState_VSA9 | float64 | 0 | 0 | 147 | 0.0, 4.737, 9.474, 5.734, 5.107, 11.601, 16.338, 9.843, 14.211, 10.471 |
-| ExactMolWt | float64 | 0 | 0 | 569 | 300.067, 376.205, 252.09, 443.145, 285.136, 434.21, 415.272, 352.225, 405.186, … |
-| FractionCSP3 | float64 | 0 | 0 | 195 | 0.5, 1.0, 0.0, 0.333, 0.429, 0.4, 0.125, 0.75, 0.294, 0.667 |
-| HallKierAlpha | float64 | 0 | 0 | 278 | -2.41, -1.59, -2.33, -1.06, -1.3, -2.62, -1.26, -1.51, -1.1, -0.9 |
-| HeavyAtomMolWt | float64 | 0 | 0 | 506 | 320.215, 238.181, 266.191, 420.248, 290.213, 403.256, 278.202, 372.294, 226.17,… |
-| Ipc | float64 | 0 | 0 | 553 | 1500075.637, 88.552, 78.513, 8427682.936, 271685.711, 527310.369, 18978.936, 6.… |
-| Kappa1 | float64 | 0 | 0 | 552 | 22.001, 11.813, 17.569, 21.519, 25.482, 18.922, 23.622, 18.626, 10.39, 21.517 |
-| Kappa2 | float64 | 0 | 0 | 567 | 6.893, 5.098, 4.112, 1.065, 4.081, 1.544, 6.725, 4.242, 5.954, 10.848 |
-| Kappa3 | float64 | 0 | 0 | 550 | 2.478, 3.398, 5.43, 1.868, 1.088, 2.02, 0.407, 1512.242, 2.913, 2.239 |
-| LabuteASA | float64 | 0 | 0 | 574 | 182.429, 159.078, 89.32, 183.524, 28.307, 156.137, 181.029, 110.0, 120.331, 46.… |
-| MaxAbsEStateIndex | float64 | 0 | 0 | 557 | 12.341, 13.683, 12.399, 13.523, 12.61, 11.547, 12.3, 12.866, 12.555, 13.144 |
-| MaxAbsPartialCharge | float64 | 0 | 0 | 181 | 0.481, 0.508, 0.493, 0.48, 0.394, 0.504, 0.393, 0.507, 0.462, 0.369 |
-| MaxPartialCharge | float64 | 0 | 0 | 246 | 0.326, 0.303, 0.306, 0.119, 0.224, 0.339, 0.416, 0.174, 0.255, 0.407 |
-| MinAbsEStateIndex | float64 | 0 | 0 | 318 | 0.013, 0.004, 0.008, 0.017, 0.016, 0.003, 0.054, 0.006, 0.022, 0.007 |
-| MinAbsPartialCharge | float64 | 0 | 0 | 237 | 0.303, 0.326, 0.306, 0.119, 0.224, 0.339, 0.255, 0.316, 0.336, 0.407 |
-| MinEStateIndex | float64 | 0 | 0 | 538 | -0.594, -1.299, -0.598, -0.816, -0.238, -1.362, -0.499, -0.953, 0.483, -0.94 |
-| MinPartialCharge | float64 | 0 | 0 | 172 | -0.481, -0.493, -0.508, -0.48, -0.394, -0.504, -0.393, -0.507, -0.39, -0.462 |
-| MolLogP | float64 | 0 | 0 | 564 | 4.894, 2.548, 1.63, 0.03, 2.01, 0.718, 1.418, 2.44, 4.03, 3.036 |
-| MolMR | float64 | 0 | 0 | 585 | 98.485, 23.325, 156.91, 13.002, 22.752, 88.243, 135.483, 114.456, 118.471, 83.6… |
-| MolWt | float64 | 0 | 0 | 569 | 300.745, 376.468, 252.273, 443.432, 285.343, 434.504, 415.574, 352.471, 405.969… |
-| PEOE_VSA1 | float64 | 0 | 0 | 245 | 0.0, 5.317, 9.843, 5.107, 10.213, 9.637, 14.743, 4.737, 5.734, 15.32 |
-| PEOE_VSA10 | float64 | 0 | 0 | 178 | 0.0, 5.75, 6.104, 12.084, 6.607, 6.042, 5.601, 5.783, 18.46, 12.208 |
-| PEOE_VSA11 | float64 | 0 | 0 | 96 | 0.0, 11.499, 5.783, 5.96, 11.566, 6.104, 11.384, 23.386, 5.132, 5.694 |
-| PEOE_VSA12 | float64 | 0 | 0 | 53 | 0.0, 5.907, 11.814, 5.783, 10.023, 5.948, 5.429, 5.601, 5.824, 5.88 |
-| PEOE_VSA13 | float64 | 0 | 0 | 30 | 0.0, 5.907, 5.559, 11.814, 5.687, 10.023, 5.083, 6.2, 17.722, 5.239 |
-| PEOE_VSA14 | float64 | 0 | 0 | 58 | 0.0, 5.969, 11.939, 6.093, 6.176, 5.69, 6.031, 15.192, 17.908, 12.063 |
-| PEOE_VSA2 | float64 | 0 | 0 | 104 | 0.0, 4.795, 9.589, 14.384, 4.9, 9.694, 14.906, 4.567, 9.779, 10.114 |
-| PEOE_VSA3 | float64 | 0 | 0 | 71 | 0.0, 4.795, 4.984, 4.39, 9.589, 9.779, 8.418, 9.185, 13.557, 9.666 |
-| PEOE_VSA4 | float64 | 0 | 0 | 47 | 0.0, 5.262, 13.171, 5.099, 4.984, 12.629, 4.992, 8.418, 5.213, 9.968 |
-| PEOE_VSA5 | float64 | 0 | 0 | 26 | 0.0, 11.337, 11.762, 10.197, 11.601, 5.099, 6.423, 6.579, 23.099, 23.202 |
-| PEOE_VSA6 | float64 | 0 | 0 | 214 | 0.0, 12.133, 6.066, 30.332, 18.199, 11.601, 24.265, 42.465, 6.924, 13.847 |
-| PEOE_VSA7 | float64 | 0 | 0 | 375 | 0.0, 6.924, 12.133, 18.199, 6.421, 17.696, 12.842, 30.332, 6.066, 25.123 |
-| PEOE_VSA8 | float64 | 0 | 0 | 346 | 0.0, 6.421, 6.545, 5.687, 6.042, 16.748, 11.836, 5.563, 12.966, 12.587 |
-| PEOE_VSA9 | float64 | 0 | 0 | 287 | 0.0, 6.607, 6.104, 12.208, 6.042, 6.545, 11.375, 12.649, 5.694, 13.214 |
-| SMR_VSA1 | float64 | 0 | 0 | 246 | 0.0, 4.795, 9.901, 14.638, 9.531, 4.737, 9.589, 24.597, 9.843, 14.696 |
-
-(119 more rows not shown)
-
-</details>
+| SMILES | string | 0 | 0 | 587 | FC(F)O\[C@H\](Cl)C(F)(F)F, CC(C)NC\[C@H\](O)COc1ccc(COCCOC(C)C)cc1, CN(C)C\[C@H\](c1c… |
+| scaffold | string | 0 | 0 | 443 | c1ccccc1, O=C1C=CC2C(=C1)CCC1C3CCCC3CCC21, C1=CC(c2ccccc2)C=CN1, O=C1C=C2CCC3C4… |
 
 ### Target distribution
 
@@ -420,75 +350,7 @@ Accepted on purpose:
 
 ### Numeric features
 
-<details>
-<summary>Show the table (176 rows)</summary>
-
-| index | count | mean | std | min | max |
-|---|---|---|---|---|---|
-| BalabanJ | 587 | 2.14482 | 0.72901 | 0.837 | 5.083 |
-| BertzCT | 587 | 751.797 | 406.908 | 2 | 2629.39 |
-| Chi0 | 587 | 18.3804 | 7.3679 | 2 | 50.12 |
-| Chi0n | 587 | 14.5875 | 6.17875 | 0.908 | 41.328 |
-| Chi0v | 587 | 15.0959 | 6.23188 | 0.908 | 41.328 |
-| Chi1 | 587 | 12.0358 | 4.91226 | 1 | 32.35 |
-| Chi1n | 587 | 8.54635 | 3.7945 | 0.204 | 23.269 |
-| Chi1v | 587 | 9.05645 | 3.85637 | 0.204 | 24.44 |
-| Chi2n | 587 | 6.77765 | 3.33628 | 0 | 19.352 |
-| Chi2v | 587 | 7.33667 | 3.39161 | 0 | 19.615 |
-| Chi3n | 587 | 4.92545 | 2.81046 | 0 | 15.952 |
-| Chi3v | 587 | 5.38347 | 2.86079 | 0 | 15.952 |
-| Chi4n | 587 | 3.60784 | 2.34501 | 0 | 13.236 |
-| Chi4v | 587 | 3.98534 | 2.40441 | 0 | 13.236 |
-| EState_VSA1 | 587 | 18.3406 | 23.4416 | 0 | 155.672 |
-| EState_VSA10 | 587 | 13.3559 | 10.9551 | 0 | 58.719 |
-| EState_VSA11 | 587 | 0.203313 | 1.18226 | 0 | 13.575 |
-| EState_VSA2 | 587 | 15.948 | 14.0787 | 0 | 96.781 |
-| EState_VSA3 | 587 | 15.3842 | 13.6341 | 0 | 106.949 |
-| EState_VSA4 | 587 | 19.5502 | 18.1839 | 0 | 117.806 |
-| EState_VSA5 | 587 | 12.9895 | 14.4506 | 0 | 121.996 |
-| EState_VSA6 | 587 | 11.7622 | 13.9208 | 0 | 92.71 |
-| EState_VSA7 | 587 | 16.4322 | 18.7899 | 0 | 93.698 |
-| EState_VSA8 | 587 | 16.035 | 17.0592 | 0 | 90.83 |
-| EState_VSA9 | 587 | 10.4069 | 10.5362 | 0 | 69.606 |
-| ExactMolWt | 587 | 363.895 | 148.964 | 31.006 | 979.426 |
-| FractionCSP3 | 587 | 0.478593 | 0.260085 | 0 | 1 |
-| HallKierAlpha | 587 | -1.9837 | 1.12493 | -7.06 | 1.74 |
-| HeavyAtomCount | 587 | 25.3015 | 10.284 | 2 | 67 |
-| HeavyAtomMolWt | 587 | 340.664 | 139.778 | 30.006 | 914.661 |
-| Ipc | 587 | 9.34444e+11 | 1.63408e+13 | 2 | 3.85e+14 |
-| Kappa1 | 587 | 18.5039 | 7.93427 | 1.6 | 55.667 |
-| Kappa2 | 587 | 7.74297 | 3.96945 | 0.6 | 26.62 |
-| Kappa3 | 587 | 9.54761 | 87.9914 | -4.9 | 1512.24 |
-| LabuteASA | 587 | 150.563 | 60.4194 | 11.859 | 396.572 |
-| MaxAbsEStateIndex | 587 | 11.4027 | 2.70568 | 2.335 | 17.361 |
-| MaxAbsPartialCharge | 587 | 0.444649 | 0.0999929 | 0.12 | 0.875 |
-| MaxPartialCharge | 587 | 0.257055 | 0.108521 | -0.085 | 0.573 |
-| MinAbsEStateIndex | 587 | 0.243111 | 0.539842 | 0 | 6.578 |
-| MinAbsPartialCharge | 587 | 0.253041 | 0.101144 | 0.002 | 0.493 |
-| MinEStateIndex | 587 | -1.23359 | 1.54304 | -6.625 | 4.5 |
-| MinPartialCharge | 587 | -0.440005 | 0.10255 | -0.875 | -0.12 |
-| MolLogP | 587 | 2.32317 | 2.66777 | -9.358 | 9.868 |
-| MolMR | 587 | 95.4896 | 38.517 | 5.396 | 255.322 |
-| MolWt | 587 | 364.276 | 149.094 | 31.014 | 980.181 |
-| NHOHCount | 587 | 2.20784 | 2.05082 | 0 | 15 |
-| NOCount | 587 | 5.90971 | 3.50432 | 0 | 23 |
-| NumAliphaticCarbocycles | 587 | 0.688245 | 1.29184 | 0 | 5 |
-| NumAliphaticHeterocycles | 587 | 0.730835 | 0.959479 | 0 | 7 |
-| NumAliphaticRings | 587 | 1.41908 | 1.5746 | 0 | 8 |
-| NumAromaticCarbocycles | 587 | 0.984668 | 0.902085 | 0 | 4 |
-| NumAromaticHeterocycles | 587 | 0.453152 | 0.738347 | 0 | 5 |
-| NumAromaticRings | 587 | 1.43782 | 1.18039 | 0 | 8 |
-| NumHAcceptors | 587 | 5.00511 | 3.13273 | 0 | 21 |
-| NumHDonors | 587 | 1.94719 | 1.75426 | 0 | 12 |
-| NumHeteroatoms | 587 | 6.7632 | 3.75806 | 1 | 25 |
-| NumRotatableBonds | 587 | 5.98978 | 4.6333 | 0 | 28 |
-| NumSaturatedCarbocycles | 587 | 0.49063 | 1.01583 | 0 | 5 |
-| NumSaturatedHeterocycles | 587 | 0.48552 | 0.795279 | 0 | 5 |
-| NumSaturatedRings | 587 | 0.97615 | 1.28901 | 0 | 7 |
-
-(116 more rows not shown)
-
-</details>
+No numeric features to summarize.
 
 ### Categorical features
 
@@ -499,16 +361,16 @@ Accepted on purpose:
 |---|---|---|---|---|
 | Label | 1 | 0 | 447 | 76.15 |
 | Label | 2 | 1 | 140 | 23.85 |
-| SMILES | 1 | CCOc1ccccc1O\[C@H\](\[C@@H\]2CNCCO2)c3ccccc3 | 1 | 0.17 |
-| SMILES | 2 | CSc1ccc2Sc3ccccc3N(CC\[C@@H\]4CCCCN4C)c2c1 | 1 | 0.17 |
-| SMILES | 3 | CCN\[C@H\]1CN(CCCOC)S(=O)(=O)c2sc(cc12)S(=O)(=O)N | 1 | 0.17 |
-| SMILES | 4 | C\[C@H\](CN1CC(=O)NC(=O)C1)N2CC(=O)NC(=O)C2 | 1 | 0.17 |
-| SMILES | 5 | NC(=O)CS(=O)C(c1ccccc1)c2ccccc2 | 1 | 0.17 |
+| SMILES | 1 | FC(F)O\[C@H\](Cl)C(F)(F)F | 1 | 0.17 |
+| SMILES | 2 | CC(C)NC\[C@H\](O)COc1ccc(COCCOC(C)C)cc1 | 1 | 0.17 |
+| SMILES | 3 | CN(C)C\[C@H\](c1ccc(O)cc1)C1(O)CCCCC1 | 1 | 0.17 |
+| SMILES | 4 | O=C(CCCc1ccccc1)OCC(COC(=O)CCCc1ccccc1)OC(=O)CCCc1ccccc1 | 1 | 0.17 |
+| SMILES | 5 | CCCc1c2oc(C(=O)O)cc(=O)c2cc2c(=O)cc(C(=O)O)n(CC)c12 | 1 | 0.17 |
 | scaffold | 1 | c1ccccc1 | 41 | 6.98 |
 | scaffold | 2 | O=C1C=CC2C(=C1)CCC1C3CCCC3CCC21 | 12 | 2.04 |
-| scaffold | 3 | O=C1C=CC2C(=C1)CCC1C2CCC2C1CC1OCOC12 | 6 | 1.02 |
-| scaffold | 4 | C1=CC(c2ccccc2)C=CN1 | 6 | 1.02 |
-| scaffold | 5 | O=C1C=C2CCC3C4CCCC4CCC3C2CC1 | 6 | 1.02 |
+| scaffold | 3 | C1=CC(c2ccccc2)C=CN1 | 6 | 1.02 |
+| scaffold | 4 | O=C1C=C2CCC3C4CCCC4CCC3C2CC1 | 6 | 1.02 |
+| scaffold | 5 | O=C1C=CC2C(=C1)CCC1C2CCC2C1CC1OCOC12 | 6 | 1.02 |
 
 </details>
 
@@ -523,4 +385,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | de9e6adde48a58047e4e9a41f249e28507e48ed3-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:3db6a06bf1aa591d279ec94a8d7d6c4fd57317f4d717b3c2fafe61966c871cf3` |
+| stale | yes: the definition now gives checksum `v2:854427ac2dce3961cbdea5831fe767b456d3c95f1047db53aec273bec8be9de3` |

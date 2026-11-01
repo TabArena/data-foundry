@@ -184,7 +184,8 @@ towards a scaffold split as is often correct for chemicals"): a molecule dataset
 groups on the Bemis-Murcko scaffold, as a new chemical under assessment often comes from a series not yet measured. A
 molecule without a ring is a group of its own, and so is each molecule of a scaffold that holds more than a tenth of
 the molecules, which is no series and would leave folds of very unequal size (`scaffold_groups` in
-`data_foundry.v2.chemistry`). Cases: drug_induced_autoimmunity_prediction, qsar_bioconcentration, qsar_oral_toxicity.
+`data_foundry.v2.chemistry`). Cases: drug_induced_autoimmunity_prediction, qsar_bioconcentration, qsar_oral_toxicity,
+qsar_tid_11.
 
 The hidden-group cases and the probe's calibration are in [task_probes.md](task_probes.md), "Hidden groups".
 
@@ -263,6 +264,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-31 | drug_induced_autoimmunity_prediction | grouped on the Bemis-Murcko scaffold, ring-less drugs alone, the bare benzene ring one group (7% of the drugs): new candidates come from series not yet tested, as in the TDC ADMET benchmarks (2026-10-19, Lennart) | applied |
 | SPLIT-31 | qsar_bioconcentration | the amendment: scaffold groups in place of IID, ring-less chemicals and the bare benzene ring (34%) alone; close training analogs of the test chemicals fall from 12.6% to 6.4% (2026-10-26, Lennart) | applied |
 | SPLIT-31 | qsar_oral_toxicity | reopened under the amendment: every row has its own QSAR-ready structure since 2026-10-21, so the scaffold is exact; ring-less chemicals (23%) and the bare benzene ring (18%) alone; close training analogs fall from 24.7% to 16.3%, against 11.0% for the untested chemicals, so the fit stays approximate (2026-10-26, Lennart) | applied |
+| SPLIT-31 | qsar_tid_11 | scaffold groups in place of IID: the file carries ChEMBL compound ids, and ChEMBL 17 (the release the data was drawn from) gives every one its structure; 21 ring-less compounds alone, the bare benzene ring 2%; close training analogs fall from 79.7% to 59.2%, untuned LightGBM RMSE 0.794 to 0.920; the features stay the source's fingerprint (2026-11-01, Lennart) | applied |
 
 ## In Data Foundry
 

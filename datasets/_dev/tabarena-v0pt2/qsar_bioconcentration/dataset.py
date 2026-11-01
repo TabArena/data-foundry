@@ -14,8 +14,9 @@ from data_foundry.v2 import (
     Grouping,
     Metric,
     TaskSummary,
+    canonical_smiles,
     drop_columns,
-    rdkit_descriptors,
+    encode_smiles,
     scaffold_groups,
 )
 
@@ -71,7 +72,7 @@ class QsarBioconcentration(AbstractCuratedDataset):
             "partitioning: lipid storage (59%), metabolized or eliminated (33%), or additional storage sites (8%)."
         ),
         known=(
-            "The chemical's structure, as 193 descriptors computed with RDKit, and its "
+            "The chemical's structure (a SMILES string) and its "
             "octanol-water partition coefficient (logKOW) from the authors' table, measured for 84% of the chemicals "
             "and predicted for the rest."
         ),
@@ -86,7 +87,7 @@ class QsarBioconcentration(AbstractCuratedDataset):
             "selected on labelled chemicals, add the logKOW from the authors' "
             "2015 table, swap back the structures of three "
             "pairs of chemicals that carried each other's, and drop three chemicals with another chemical's "
-            "structure; we replace the structure's text by RDKit's descriptors of it."
+            "structure; the structure ships in RDKit's canonical form."
         ),
         fit="direct",
         fit_reason=(
@@ -146,8 +147,7 @@ class QsarBioconcentration(AbstractCuratedDataset):
         - logBCF dropped: it is the measurement the class is read from and is not known for a new chemical. MLOGP, the calculated logKOW among the authors' descriptors, does not complete the rule in its place (decision table). The regression on logBCF is the file's other task (OpenML 46586); we ship the class, the task the paper models (Lennart, CC 2026-10-26).
         - logKOW (Lennart, CC 2026-10-26, USE-6 and USE-3): the assessor of the use case holds the chemical's logKOW, a cheap lab test that REACH requires from 1 tonne a year and the first tier of the bioaccumulation screen, before any fish test. We add it from the authors' 2015 table with `logKOW_type` (measured for 652 chemicals, predicted for 122), matched on the CAS numbers of the cell and the logBCF both tables list; 2 chemicals have no match and stay missing. It is no leak: alone it scores macro ROC AUC 0.659, and the class still needs the measured BCF. RDKit's MolLogP, a logKOW computed from the structure, stays among the descriptors.
         - Dropped CAS (registry numbers, an identifier) and Set (the authors' random 75/25 split).
-        - The structure: RDKit's 2D descriptors of the repaired SMILES as `rdkit_*` columns (`rdkit_descriptors`, RDKit 2026.03.6), 193 of the 217, the others constant here or copies. The 9 descriptors do not tell positional isomers apart (61 chemicals share them with another, 14 of those with another class); with RDKit's added, every chemical has its own values (decision table). Default LightGBM's macro ROC AUC on the first 15 of our splits: 0.745 with the 9, 0.757 with RDKit's added (better on 12 of 15 splits).
-        - `SMILES` dropped, as in every SMILES dataset (2026-10-14): next to the 9 descriptors the SMILES as text (character n-grams) lowered LightGBM's macro ROC AUC from 0.735 to 0.723 (run of 2026-10-14, settings not recorded).
+        - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01): the repaired SMILES in RDKit's canonical form (`canonical_smiles`; no salts here), declared in `smiles_columns`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors and the 166 MACCS keys). From 2026-10-14 to 2026-11-01 the definition shipped RDKit's 193 varying descriptors in place of the string. The 9 descriptors do not tell positional isomers apart (61 chemicals share them with another, 14 of those with another class); in the recommended encoding every chemical has its own values (decision table). Default LightGBM's macro ROC AUC on the first 15 of our splits: 0.745 with the 9, 0.757 with RDKit's descriptors added (better on 12 of 15 splits); the MACCS keys next to the descriptors change it by -0.003 (LightGBM) and +0.009 (random forest; 2026-11-01). The SMILES read as text (character n-grams) lowered LightGBM's macro ROC AUC from 0.735 to 0.723 next to the 9 descriptors (run of 2026-10-14, settings not recorded).
         - Repaired rows, 6: three pairs carry each other's SMILES and descriptors (benzene and cyclohexane, naphthalene and tetralin, chlorobenzene and chlorocyclohexane; CAS numbers looked up in Wikidata and PubChem). The BCF and the class belong to the CAS number, as the 2015 table lists all six with their right SMILES and the file's logBCF, and the descriptors follow the SMILES, so we swap the SMILES and the 9 descriptors back within each pair.
         - Dropped rows, 3: triticonazole and two dioxins carry the structure of another chemical and have no partner row to repair them from.
         - Split (Lennart, CC 2026-10-26, SPLIT-31 as amended): grouped on the Bemis-Murcko scaffold (the ring skeleton) of the repaired SMILES (`scaffold_groups`). The 42 congener series (260 chemicals, such as 64 biphenyls and 24 naphthalenes) and the other shared skeletons stay on one side; chemicals without a ring (104) and those whose skeleton is the bare benzene ring (262, 34%: more than a tenth of the set and no series) are groups of their own. A random split put relatives on both sides: a random forest scored macro ROC AUC 0.779 on test chemicals whose scaffold was in training and 0.655 on the others; under the groups 6.4% of the test chemicals have a training analog at Tanimoto 0.7 or more (Morgan radius 2, 2,048 bits), against 12.6% at random. The source split at random; qsar_oral_toxicity and drug_induced_autoimmunity_prediction group on the scaffold too.
@@ -157,6 +157,7 @@ class QsarBioconcentration(AbstractCuratedDataset):
     # Task
     target = "bioconcentration_mechanism"
     problem_type = "multiclass_classification"
+    smiles_columns = ("SMILES",)
     metric = Metric.fallback(
         reason="Grisoni et al. 2016 report the non-error rate (NER, balanced accuracy) with per-class sensitivity, specificity and precision, the Milano group's house measure, at argmax with no costs. Original rejected: NER. log_loss is the multiclass fallback."
     )
@@ -187,17 +188,17 @@ class QsarBioconcentration(AbstractCuratedDataset):
         # the SMILES of these rows, and the descriptors computed from it, is another chemical than their CAS number
         df = df[~df["CAS"].isin(WRONG_STRUCTURE)]
         df = df.assign(**{self.target: df["Class"].map(CLASS_LABELS)})
-        # The structure as numbers: RDKit's 2D descriptors in place of the SMILES (data_foundry.v2.chemistry)
-        df = pd.concat([df, rdkit_descriptors(df["SMILES"])], axis=1)
+        # The structure ships as a SMILES column (`smiles_columns`), in RDKit's canonical form
+        df["SMILES"] = canonical_smiles(df["SMILES"])
         # The split groups: the chemical series (Bemis-Murcko scaffold); no ring or the bare benzene ring alone
         df = df.assign(scaffold=scaffold_groups(df["SMILES"]))
         # CAS is an identifier, Set the authors' random split, logBCF the measurement the class is read from; the
         # authors selected their 9 descriptors on labelled chemicals of our test folds (curation_comments)
-        return drop_columns(df, ["CAS", "Set", "Class", "logBCF", "SMILES", *DESCRIPTORS])
+        return drop_columns(df, ["CAS", "Set", "Class", "logBCF", *DESCRIPTORS])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # The descriptors (floats and counts, the RDKit fragment counts too where only 0 and 1 occur) stay numeric;
-        # the target becomes a category.
+        # logKOW stays numeric and its type is a category; the SMILES is typed by `smiles_columns`; the target
+        # becomes a category.
         del df
         return FeatureTypes(categorical=["logKOW_type"])
 
@@ -229,12 +230,13 @@ class QsarBioconcentration(AbstractCuratedDataset):
                 for cas, (name, other) in WRONG_STRUCTURE.items()
             ]
         ).set_index("CAS")
-        rdkit_columns = [column for column in df.columns if column.startswith("rdkit_")]
+        encoded = pd.concat([encode_smiles(df["SMILES"]), df[self.target]], axis=1)
+        encoded_columns = list(encoded.columns.drop(self.target))
         source = kept.assign(**{self.target: kept["Class"].map(CLASS_LABELS)})
         isomers = pd.DataFrame(
             {
                 "the authors' 9 descriptors (dropped)": _shared_descriptors(source, DESCRIPTORS, self.target),
-                "RDKit's descriptors (shipped)": _shared_descriptors(df, rdkit_columns, self.target),
+                "the recommended SMILES encoding": _shared_descriptors(encoded, encoded_columns, self.target),
             }
         )
         return [
@@ -256,10 +258,10 @@ class QsarBioconcentration(AbstractCuratedDataset):
                 structure,
             ),
             Decision(
-                "SMILES replaced by RDKit's descriptors",
-                "The 9 descriptors do not tell positional isomers apart; with RDKit's 2D descriptors of the SMILES "
-                "every chemical has its own values, and the SMILES as text adds nothing next to descriptors "
-                "(CHANGELOG, 2026-10-14).",
+                "The structure ships as a SMILES column, the 9 descriptors leave",
+                "The 9 descriptors do not tell positional isomers apart; in the recommended encoding of the SMILES "
+                "(RDKit's 2D descriptors and the MACCS keys) every chemical has its own values. The SMILES read as "
+                "text adds nothing next to descriptors (CHANGELOG, 2026-10-14), so it is typed as a structure.",
                 isomers,
             ),
         ]

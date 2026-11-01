@@ -69,6 +69,7 @@ from data_foundry.schema import (
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadataV2,
     ScoringColumn,
+    SemanticColumn,
     as_column_list,
     resolve_warehouse_dir,
 )
@@ -316,6 +317,11 @@ class AbstractCuratedDataset(ABC):
     """The columns the metric needs (``ScoringColumn(column=..., role=..., used_by=..., description=...)``, e.g.
     Numerai's ``era`` as the ``group`` of a per-era correlation): kept in the frame, never model features. Each one is
     an input of the metric (``Metric.source(..., inputs={"group": "era"})``)."""
+    smiles_columns: ClassVar[tuple[str, ...]] = ()
+    """Features that hold a molecule's structure as a SMILES string (CLEAN-24): cast to ``string`` and recorded in the
+    container as :class:`~data_foundry.schema.SemanticColumn` (type ``smiles``, with the recommended encoding's spec
+    id), so a benchmark encodes them as structures and never reads them as text. Ship the form
+    :func:`~data_foundry.v2.chemistry.canonical_smiles` gives; leave them out of :meth:`_feature_types`."""
     stratify_on: ClassVar[Any] = AUTO
     """Column(s) to stratify on. Default: the target for classification, nothing for regression."""
     grouping: ClassVar[Grouping | None] = None
@@ -543,6 +549,7 @@ class AbstractCuratedDataset(ABC):
             declared["grouping.on"] = as_column_list(self.grouping.on)
             declared["grouping.time_on"] = as_column_list(self.grouping.time_on)
         declared["scoring_columns"] = [c.column for c in task.scoring_columns]
+        declared["smiles_columns"] = list(self.smiles_columns)
         declared["metric inputs"] = list(task.objective_metric.inputs.values())
         for attribute, columns in declared.items():
             missing = [c for c in columns if c not in df.columns]
@@ -566,7 +573,7 @@ class AbstractCuratedDataset(ABC):
         df = cast_dtypes(
             df,
             categorical=[c for c in types.categorical if c in present or order],
-            string=[c for c in types.string if c in present or order],
+            string=[c for c in (*types.string, *self.smiles_columns) if c in present or order],
             datetime={c: f for c, f in types.datetime_formats.items() if c in present or order},
         )
         df = canonical_nans(canonical_dtypes(df))
@@ -585,6 +592,12 @@ class AbstractCuratedDataset(ABC):
             msg = f"{type(self).__name__}: `_feature_types` must return a FeatureTypes."
             raise DatasetDefinitionError(msg)
         listed = {*types.categorical, *types.string, *types.datetime_formats}
+        if listed & set(self.smiles_columns):
+            msg = (
+                f"{type(self).__name__}: {sorted(listed & set(self.smiles_columns))} is in `smiles_columns`, which "
+                "types it; leave it out of `_feature_types`."
+            )
+            raise DatasetDefinitionError(msg)
         if self.problem_type != "regression" and self.target not in listed and self.target in df.columns:
             types = FeatureTypes(
                 categorical=(*types.categorical, self.target), string=types.string, datetime=types.datetime
@@ -1221,8 +1234,29 @@ def _build_metadata(cls: type[AbstractCuratedDataset]) -> tuple[DatasetMetadata,
         time_on=cls.temporal.on if cls.temporal is not None else None,
         grouping=grouping,
         scoring_columns=[dataclasses.replace(c, description=clean_text(c.description)) for c in cls.scoring_columns],
+        semantic_columns=_smiles_semantic_columns(cls.smiles_columns),
     )
     return dataset, task
+
+
+def _smiles_semantic_columns(columns: tuple[str, ...]) -> list[SemanticColumn]:
+    """The container's record of a definition's ``smiles_columns``, naming the recommended encoding."""
+    if not columns:
+        return []
+    from data_foundry.v2.chemistry import DEFAULT_SMILES_ENCODING  # noqa: PLC0415 - chemistry imports this module
+
+    description = (
+        "A molecule's structure as a SMILES string (RDKit's canonical SMILES; salts and stereochemistry as the "
+        "definition ships them). Encode it as a structure, never as text; recommended: "
+        "data_foundry.v2.chemistry.encode_smiles "
+        f"({DEFAULT_SMILES_ENCODING.description})"
+    )
+    return [
+        SemanticColumn(
+            column=c, semantic_type="smiles", description=description, recommended_encoding=DEFAULT_SMILES_ENCODING.id
+        )
+        for c in columns
+    ]
 
 
 def metric_spec(metric: Metric, problem_type: str) -> MetricSpec:
@@ -1316,6 +1350,8 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         isinstance(c, ScoringColumn) for c in cls.scoring_columns
     ):
         fail("`scoring_columns` must be a tuple of `ScoringColumn(...)`.")
+    if isinstance(cls.smiles_columns, str) or not all(isinstance(c, str) for c in cls.smiles_columns):
+        fail("`smiles_columns` must be a tuple of column names.")
     if cls.temporal is not None and not isinstance(cls.temporal, Temporal):
         fail("`temporal` must be a `Temporal(...)`.")
     if cls.grouping is not None and cls.temporal is not None:

@@ -283,6 +283,31 @@ class ScoringColumn:
     per-era correlations"."""
 
 
+SemanticType = Literal["smiles"]
+"""What a :class:`SemanticColumn` holds: ``smiles``, a molecule's structure as a SMILES string."""
+
+
+@pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
+class SemanticColumn:
+    """A model feature whose values need an encoding of their own, beyond their dtype: a SMILES column.
+
+    The column ships as a ``string`` column and stays a feature
+    (:func:`~data_foundry.curation_container.feature_columns`), but a benchmark should not read it as text: it encodes
+    it by its ``semantic_type``, with the ``recommended_encoding`` or its own
+    (:func:`~data_foundry.curation_container.semantic_columns` lists them). For ``smiles`` the recommended encoding is
+    :func:`data_foundry.v2.chemistry.encode_smiles`, whose spec id the field records.
+    """
+
+    column: str
+    """The column of the frame."""
+    semantic_type: SemanticType
+    """What it holds (``smiles``)."""
+    description: str
+    """What the column is and the form of its values (e.g. RDKit's canonical SMILES of the largest fragment)."""
+    recommended_encoding: str | None = None
+    """The spec id of the encoding Data Foundry recommends, e.g. ``rdkit2d-maccs-rdkit2026.03.6-r1``."""
+
+
 # TODO: fields that might be cool to add in the future
 #   - derived_from (to check for duplicates)
 #   - dataset_version (unlikely, we track versions of these files in code repos?)
@@ -644,6 +669,8 @@ class PredictiveMLTaskMetadataV2:
     prediction unit, the aggregation and the context. The group column is metadata, never a model feature."""
     scoring_columns: list[ScoringColumn] = dataclasses.field(default_factory=list)
     """The columns the metric needs (:class:`ScoringColumn`): kept in the frame, never model features."""
+    semantic_columns: list[SemanticColumn] = dataclasses.field(default_factory=list)
+    """Features that need an encoding of their own (:class:`SemanticColumn`, e.g. a SMILES column): never text."""
 
     type_adapter_id: str = "predictive-ml-task-mold-v2"
     """Identifies container format 2."""
@@ -669,6 +696,7 @@ class PredictiveMLTaskMetadataV2:
             raise ValueError(f"scoring_columns lists a column twice: {scoring}.")
         if self.target_column_name in scoring:
             raise ValueError(f"The target column ({self.target_column_name!r}) cannot be a scoring column.")
+        self._check_semantic_columns(scoring)
         aggregation = self.grouping.aggregation if self.grouping is not None else None
         if aggregation == "any" and self.problem_type != "binary_classification":
             raise ValueError(
@@ -678,6 +706,18 @@ class PredictiveMLTaskMetadataV2:
             raise ValueError(
                 f"aggregation={aggregation!r} selects the row with the lowest / highest predicted value: it needs a "
                 f"regression target, got {self.problem_type!r}.",
+            )
+
+    def _check_semantic_columns(self, scoring: list[str]) -> None:
+        """A semantic column is listed once and is a feature: not the target, the time, a group or a scoring column."""
+        semantic = [c.column for c in self.semantic_columns]
+        if len(set(semantic)) != len(semantic):
+            raise ValueError(f"semantic_columns lists a column twice: {semantic}.")
+        not_features = {self.target_column_name, self.time_on, *as_column_list(self.group_on), *scoring}
+        if not_features & set(semantic):
+            raise ValueError(
+                f"A semantic column is a feature; {sorted(not_features & set(semantic))} is the target, the time, a "
+                "group or a scoring column.",
             )
 
     @property
@@ -723,6 +763,11 @@ class PredictiveMLTaskMetadataV2:
             lines.append(
                 f"  scoring column:        {scoring.column} (role {scoring.role}, used by {scoring.used_by}; never a "
                 f"feature): {scoring.description}"
+            )
+        for semantic in self.semantic_columns:
+            lines.append(
+                f"  semantic column:       {semantic.column} ({semantic.semantic_type}; a feature, never text; "
+                f"recommended encoding {semantic.recommended_encoding})"
             )
         grouping = self.grouping
         if grouping is not None:

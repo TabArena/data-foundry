@@ -64,6 +64,10 @@ CC (2026-10-26, Lennart): reopened from qsar_bioconcentration's issue 10, option
 
 CC (2026-10-26, Lennart): verdict ship.
 
+CC (2026-11-01, Lennart): SMILES ship as a typed structure column, not pre-encoded and never as text (path C of the discussion doc "SMILES Handling in Data Foundry and TabArena v0.2" (https://claude.ai/artifact/6r49WpR9Uard5ogo7qK4rB)): the benchmark encodes it; the recommended encoding in Data Foundry is RDKit's 2D descriptors with the MACCS keys.
+
+**Assessment (AI, 2026-11-01):** the definition now ships `SMILES` (RDKit's canonical form of the QSAR-ready SMILES) in `smiles_columns` next to the 1,024 published ECFP bits, which stay since the recommended encoding does not reproduce Dragon's fingerprint; RDKit's 208 descriptors no longer ship. The accepted `dataset_pure_feature_value` warning on `rdkit_fr_Ar_COO` left with the descriptor column. MACCS keys next to bits and descriptors: +0.009 (LightGBM) / -0.003 (random forest) ROC AUC.
+
 ## Reference
 
 @article{ballabio2019integrated,

@@ -77,6 +77,10 @@ CC (2026-10-26, Lennart): verdict ship.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `bcf_lunghini_2019` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-01, Lennart): SMILES ship as a typed structure column, not pre-encoded and never as text (path C of the discussion doc "SMILES Handling in Data Foundry and TabArena v0.2" (https://claude.ai/artifact/6r49WpR9Uard5ogo7qK4rB)): the benchmark encodes it; the recommended encoding in Data Foundry is RDKit's 2D descriptors with the MACCS keys.
+
+**Assessment (AI, 2026-11-01):** the definition now ships `SMILES` (RDKit's canonical form of the repaired SMILES) in `smiles_columns` and no longer RDKit's 193 descriptors; logKOW stays. In the recommended encoding every chemical has its own values. MACCS keys next to the descriptors: -0.003 (LightGBM) / +0.009 (random forest) macro ROC AUC.
+
 ## Reference
 
 @article{grisoni2016investigating,

@@ -48,6 +48,10 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Adamczyk et al. 2025 (ApisTox, Scientific Data) recommend reporting AUROC and MCC together; no single deciding metric (MET-5). MCC needs a threshold the source does not fix. roc_auc is the binary fallback and the paper's threshold-free metric.
 
+CC (2026-11-01, Lennart): SMILES ship as a typed structure column, not pre-encoded and never as text (path C of the discussion doc "SMILES Handling in Data Foundry and TabArena v0.2" (https://claude.ai/artifact/6r49WpR9Uard5ogo7qK4rB)): the benchmark encodes it; the recommended encoding in Data Foundry is RDKit's 2D descriptors with the MACCS keys.
+
+**Assessment (AI, 2026-11-01):** the definition now ships `SMILES` (RDKit's canonical form; 17 strings change) in `smiles_columns` and no longer RDKit's 199 descriptors. The 141 salts and complexes stay as published: the largest fragment would make 86 rows copies of another, among them triclopyr and picloram triethylammonium, which both reduce to triethylamine. MACCS keys next to the descriptors: -0.006 (LightGBM) / +0.004 (random forest) ROC AUC over the 4 windows. The decade windows already keep series apart about as a scaffold split would (test compounds with a training analog at Tanimoto >= 0.7: 10-24%, against 14-19% for scaffold groups and 17-30% at random), so the temporal split stays.
+
 ## Reference
 
 ApisTox: a new benchmark dataset for the classification of small molecules toxicity on honey bees

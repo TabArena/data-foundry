@@ -13,8 +13,8 @@ from data_foundry.v2 import (
     TaskSummary,
     Temporal,
     TemporalSplits,
+    canonical_smiles,
     drop_columns,
-    rdkit_descriptors,
 )
 
 RAW_FILE = "dataset_final.csv"
@@ -46,8 +46,8 @@ class Apistox(AbstractCuratedDataset):
             " bee (the US EPA threshold); 29% are."
         ),
         known=(
-            "The chemical structure as 199 descriptors computed from it, whether it is a herbicide, fungicide, "
-            "insecticide or other agrochemical, and the year the compound first appears in the literature."
+            "The chemical structure (a SMILES string), whether it is a herbicide, fungicide, insecticide or other "
+            "agrochemical, and the year the compound first appears in the literature."
         ),
         split=(
             "Each test window is a decade of new compounds (2014-2023, 2004-2013, 1994-2003, 1984-1993), with every "
@@ -55,8 +55,8 @@ class Apistox(AbstractCuratedDataset):
         ),
         changes=(
             "We drop the toxicity level, the exposure route and the label's database, all recorded with or after the "
-            "test; we replace the structure's text by descriptors computed from it and set the pesticide type to "
-            "missing where the source marks it unknown."
+            "test, write the structure in RDKit's canonical form, and set the pesticide type to missing where the "
+            "source marks it unknown."
         ),
         fit="approximate",
         fit_reason=(
@@ -102,8 +102,7 @@ class Apistox(AbstractCuratedDataset):
         - Target: `toxic_to_bees` is the file's `label`, "Yes" when the LD50 is at most 11 µg per bee, the US EPA threshold (Methods, Eq. 1).
         - Dropped as recorded with or after the test: `ppdb_level` (the same LD50 cut at 1 and 100 µg), `toxicity_type` (the route with the strongest measured toxicity) and `source` (the database the label came from, which a new candidate does not have).
         - Dropped as identifiers: `name`, `CID` and `CAS`.
-        - The structure: RDKit's 2D descriptors of `SMILES` as `rdkit_*` columns (`rdkit_descriptors`, RDKit 2026.03.6, pinned in the build extra), 199 of the 217, the others being constant here or a copy of another; values RDKit cannot compute (partial charges and BCUT descriptors of 107 compounds) are missing. Mean ROC AUC on the 4 windows, LightGBM / random forest: 0.79 / 0.71 with the flags and the year, 0.83 / 0.82 adding the descriptors.
-        - `SMILES` dropped, as in every SMILES dataset (2026-10-14): as text (character n-grams) it adds 0.010 ROC AUC to LightGBM next to the descriptors, within the variation between windows (standard error 0.023).
+        - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), declared in `smiles_columns`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors and the 166 MACCS keys). The values are RDKit's canonical form of the source's SMILES (`canonical_smiles`; 17 strings change). Every fragment is kept: 141 compounds are salts or complexes, and stripping them to the largest fragment would make 86 rows copies of another, among them triclopyr and picloram triethylammonium, which both reduce to triethylamine. From 2026-10-14 to 2026-11-01 the definition shipped RDKit's 199 varying descriptors in place of the string. Mean ROC AUC on the 4 windows, LightGBM / random forest: 0.79 / 0.71 with the flags and the year, 0.83 / 0.82 adding the descriptors; the MACCS keys next to them change it by -0.006 / +0.004 (2026-11-01). The SMILES read as text adds 0.010 to LightGBM (character n-grams, standard error 0.023), and the default text embedding of TabArena v0.2 nothing (Assessment of 2026-10-07).
         - The four agrochemical flags stay numeric 0/1. All four at 0 is the source's "'unknown' pesticide type" (Methods), so we set those 55 rows to missing. They are more often toxic (29 of 55, against 27% of the rest), and the flags were read in 2024, not at each compound's year.
         - We rename `year` to `first_publication_year`: the year of the earliest article PubChem links to the CID, else the PubChem record's creation date, so some compounds are dated late. We keep the source's years; dropping the affected compounds moves a window's ROC AUC by at most 0.044.
         - Note: salts and mixtures of one active substance are separate rows, as in the source, so some test compounds have their parent on the training side. Under a temporal split this is the substance's own history; leaving them out costs at most 0.034 ROC AUC.
@@ -116,6 +115,7 @@ class Apistox(AbstractCuratedDataset):
     # Task
     target = "toxic_to_bees"
     problem_type = "binary_classification"
+    smiles_columns = ("SMILES",)
     metric = Metric.fallback(
         reason=(
             "Adamczyk et al. 2025 (ApisTox, Scientific Data) recommend reporting AUROC and MCC together; no "
@@ -146,14 +146,14 @@ class Apistox(AbstractCuratedDataset):
         # is unknown rather than "none of the four" (Methods, ECOTOX processing): a proxy missing value.
         unknown = df[FLAGS].sum(axis=1).eq(0)
         df[FLAGS] = df[FLAGS].astype("float64").where(~unknown, axis=0)
-        # The structure as numbers: RDKit's 2D descriptors in place of the SMILES (data_foundry.v2.chemistry).
-        df = pd.concat([df, rdkit_descriptors(df["SMILES"])], axis=1)
-        # Derived from the measured LD50 values or from the database the label came from, the identifiers, the SMILES.
-        return drop_columns(df, [*DROPPED_AFTER_TEST, "label", "name", "CID", "CAS", "SMILES"])
+        # The structure ships as a SMILES column (`smiles_columns`), in RDKit's canonical form, salts as published
+        df["SMILES"] = canonical_smiles(df["SMILES"])
+        # Derived from the measured LD50 values or from the database the label came from, and the identifiers.
+        return drop_columns(df, [*DROPPED_AFTER_TEST, "label", "name", "CID", "CAS"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # The four agrochemical flags are yes/no flags: categorical (CLEAN-14). The year stays an integer and the
-        # descriptors numeric, the RDKit fragment counts too where only 0 and 1 occur; the target becomes a category.
+        # The four agrochemical flags are yes/no flags: categorical (CLEAN-14). The year stays an integer, the SMILES
+        # is typed by `smiles_columns`; the target becomes a category.
         del df
         return FeatureTypes(categorical=["herbicide", "fungicide", "insecticide", "other_agrochemical"])
 

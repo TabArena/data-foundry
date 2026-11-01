@@ -6,7 +6,22 @@ from pathlib import Path
 
 import arff
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    TaskSummary,
+    canonical_smiles,
+    scaffold_groups,
+)
+
+RAW_FILE = "11.arff"
+STRUCTURES_FILE = "chembl_17_chemreps.txt.gz"
+"""ChEMBL 17's structure table (chembl_id, canonical SMILES, InChI, InChIKey; 133.6 MB, sha256 484009d0...b44e): the
+ChEMBL release the Meta-QSAR data was drawn from, so every compound id of the file has its structure as it stood then."""
+PREPARED_FILE = "chembl_17_structures_tid11.csv"
+"""The ChEMBL 17 SMILES of this file's compounds, cut out of STRUCTURES_FILE once."""
 
 # Salt forms of a compound that is also in the data (LEAK-19). The raw file has no structures, so the ids come from
 # ChEMBL's molecule_hierarchy (API, 2026-10-21) for the rows in repeated fingerprint vectors: 37 groups of two
@@ -70,20 +85,23 @@ class QsarTid11(AbstractCuratedDataset):
             "The compound's median measured potency, as the negative log of the concentration that gives half the "
             "effect; higher means more potent."
         ),
-        known=("A 1,024-bit fingerprint of the molecule's structure (which circular substructures it contains)."),
+        known=(
+            "A 1,024-bit fingerprint of the molecule's structure (which circular substructures it contains), and the "
+            "structure itself as a SMILES string."
+        ),
         split=(
-            "Random compounds, so close relatives of a test compound can be in training. The file is roughly in "
-            "ChEMBL ID order, with the mean activity drifting along it; the shuffle removes this order."
+            "Whole chemical series (compounds sharing a ring skeleton) are held out, so the test data stands for "
+            "compounds of series not measured yet."
         ),
         changes=(
             "We drop one row with a negative activity value, judged a data error, and 37 rows that are salt forms "
-            "of a compound already in the data."
+            "of a compound already in the data, add each compound's structure from ChEMBL 17, and split by chemical "
+            "series instead of at random."
         ),
         fit="direct",
         fit_reason=(
             "The fingerprint comes from the structure alone, which is all a chemist has before synthesis, and "
-            "held-out compounds stand for unmeasured ones. The activities are medians over measurements of many "
-            "sources."
+            "held-out series stand for new ones. The activities are medians over measurements of many sources."
         ),
     )
 
@@ -98,6 +116,10 @@ class QsarTid11(AbstractCuratedDataset):
         We download the dataset from OpenML to a predefined folder.
 
         mkdir -p local-data-warehouse/qsar_tid_11/ && wget -P local-data-warehouse/qsar_tid_11/ https://www.openml.org/data/download/1674848/11.arff
+
+        The compounds' structures, for the scaffold groups of the split, come from ChEMBL 17's structure table (133,574,872 bytes, sha256 484009d05a2b1a4af714b18f76f329b69fcce806044ebcca7695efa30d58b44e); the definition cuts out this file's compounds once (chembl_17_structures_tid11.csv).
+
+        wget -P local-data-warehouse/qsar_tid_11/ https://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/releases/chembl_17/chembl_17_chemreps.txt.gz
     """
     bibtex = """
         @article{olier2018meta,
@@ -114,9 +136,28 @@ class QsarTid11(AbstractCuratedDataset):
         - The target is ChEMBL target 11, human prothrombin (thrombin, CHEMBL204), named by OpenML's original data URL.
         - OpenML (uploaded 2015-10-06, creators the Meta-QSAR team) is the first publication; the Mendeley Data release
           (doi:10.17632/spwgrcnjdg.1) came in 2020 and computes the fingerprints with RDKit instead of Pipeline Pilot.
-        - We drop the "MOLECULE_CHEMBL_ID" column.
+        - We drop the "MOLECULE_CHEMBL_ID" column after it has served the join to the structures.
         - The file lists the compounds roughly in ChEMBL ID order, and the mean activity drifts along it (6.8 in the
           first tenth, 5.6 in the ninth); the standard shuffle removes this order.
+        - Scaffold-grouped splits (Lennart, 2026-11-01; SPLIT-31 as amended), in place of random ones. The rows carry
+          ChEMBL compound ids, and ChEMBL 17, the release the data was drawn from, holds the structure of every one
+          (its InChIKey equals today's ChEMBL for all 5,505 ids still served). The groups are the Bemis-Murcko
+          scaffolds of those structures (`scaffold_groups`): 2,529 groups for 5,704 compounds, 21 compounds without a
+          ring alone, the largest group the bare benzene ring with 117 compounds (2%), 89 groups of 10 or more holding
+          1,751 compounds. Counter-ions carry no ring here: stripping the 549 salts to their largest fragment changes
+          no scaffold. A random split gave 79.7% of the test compounds a close training analog (Tanimoto >= 0.7,
+          Morgan radius 2, 2,048 bits; median nearest 0.81), the scaffold groups 59.2% (median 0.73), and untuned
+          LightGBM's RMSE rises from 0.794 to 0.920 (3 x 3 folds, 2026-11-01 run). On the definition's splits the
+          group probe gives LightGBM R^2 0.747 under IID and 0.657 grouped, and the task probes raise no flag
+          (LightGBM R^2 0.66, random forest 0.62, linear 0.48: the families still separate). Of the 356 fingerprint vectors
+          that repeat (802 rows; the repeated-fingerprint bullet below), 303 lie within one scaffold and now stay on
+          one side; 53 vectors (128 rows) span two or more scaffolds, analogs whose ring systems differ in a way the
+          fingerprint does not see.
+        - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01): ChEMBL 17's SMILES in RDKit's
+          canonical form (`canonical_smiles`; the 549 salts as ChEMBL records them), declared in `smiles_columns`, so a
+          benchmark encodes it as a structure and never as text; the recommended encoding is
+          `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors and the 166 MACCS keys). The source's
+          1,024 FCFP bits stay: Pipeline Pilot's fingerprint, which the recommended encoding does not reproduce.
         - Only one row has a negative value (-6.24) and is thus extremely out-of-distribution, which is likely results from the target being log scaled in the original domain. We remove this row as it is unclear if this is a scaling or labeling error, but we judge it is in all cases a data artifact.
         - Why the row may leave (CLEAN-11, CLEAN-15): a pXC50 of -6.24 is a half-effect concentration of 10^6.24 mol/L, about 1.7 million mol/L, which no substance reaches (pure water is 55 mol/L). The value is impossible, so the target is missing and the row drops. It does not meet CLEAN-11's clause for an extreme target in the training period only: the split is random, and the source does not name the row.
         - We do not log scale the target (it could make sense for this distribution), as the original label is already log transformed.
@@ -132,13 +173,15 @@ class QsarTid11(AbstractCuratedDataset):
           ChEMBL ids with one ChEMBL parent (molecule_hierarchy), the same fingerprint and nearly the same target
           (median sd 0.04 within a pair; 0.006 in the 31 pairs that make up a whole vector). The rule does not read
           the target: we keep the parent's own row (in the one pair without it, the lowest ChEMBL id). The ids are
-          embedded as SALT_FORM_COPIES, since the raw file has no structures.
+          embedded as SALT_FORM_COPIES: the parent links come from ChEMBL's molecule_hierarchy, which neither the
+          raw file nor ChEMBL 17's structure table carries.
         - The 1,024 fingerprint bits are 0/1 presence flags (OpenML stores them as floats): integers typed categorical, the house form for 0/1 presence flags (CLEAN-14; Lennart, 2026-10-21).
     """
 
     # Task
     target = "MEDIAN_PXC50"
     problem_type = "regression"
+    smiles_columns = ("SMILES",)
     metric = Metric.source(
         "rmse",
         original="Average root mean squared error (RMSE) with 10-fold cross-validation",
@@ -148,24 +191,59 @@ class QsarTid11(AbstractCuratedDataset):
         ),
         definition="RMSE of MEDIAN_PXC50 (pXC50, already a -log10 scale).",
     )
+    grouping = Grouping(
+        on="scaffold",
+        labels="per_sample",
+        prediction_unit="row",
+        context="none",
+        definition="""
+            One group is a chemical series: the compounds that share one Bemis-Murcko scaffold (ring systems and the chains linking them; Bemis and Murcko 1996), computed with RDKit from the compound's ChEMBL 17 structure. A compound without a ring is a group of its own, and so would be each compound of a scaffold holding more than a tenth of the compounds (SPLIT-31; none here: the bare benzene ring holds 2%). A medicinal chemist screens candidates that often come from a series not yet measured on the target, so whole series are held out. Each row is one prediction, made from the compound's fingerprint alone.
+        """,
+    )
+
+    # Splits
+    splits_comment = """
+        Grouped splits on the Bemis-Murcko scaffold: all compounds of one series stay on one side, so a model predicts compounds of a series it has not seen; compounds without a ring are held out one by one. Compounds with similar but not identical scaffolds can be on both sides.
+    """
+
+    prepared_raw_files = (PREPARED_FILE,)
+
+    @staticmethod
+    def _read_arff(raw_dir: Path) -> pd.DataFrame:
+        with open(raw_dir / RAW_FILE) as f:
+            data = arff.load(f)
+        return pd.DataFrame(data["data"], columns=[x[0] for x in data["attributes"]])
+
+    def _prepare_raw_files(self, raw_dir: Path) -> None:
+        ids = set(self._read_arff(raw_dir)["MOLECULE_CHEMBL_ID"])
+        reps = pd.read_csv(raw_dir / STRUCTURES_FILE, sep="\t", usecols=["chembl_id", "canonical_smiles"])
+        reps = reps[reps["chembl_id"].isin(ids)].rename(columns={"chembl_id": "MOLECULE_CHEMBL_ID"})
+        reps.rename(columns={"canonical_smiles": "SMILES"}).to_csv(raw_dir / PREPARED_FILE, index=False)
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
-        with open(raw_dir / "11.arff") as f:
-            data = arff.load(f)
-        df = pd.DataFrame(data["data"], columns=[x[0] for x in data["attributes"]])
+        df = self._read_arff(raw_dir)
+        # The structure of each compound, joined on the source's own key (ChEMBL 17 holds every id of the file)
+        structures = pd.read_csv(raw_dir / PREPARED_FILE)
+        df = df.merge(structures, on="MOLECULE_CHEMBL_ID", how="left", validate="many_to_one")
+        assert df["SMILES"].notna().all(), "a compound id of the file has no ChEMBL 17 structure"
         return df
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
         # Salt-form copies of a compound in the data leave (LEAK-19); the parent's row stays.
         df = df[~df["MOLECULE_CHEMBL_ID"].isin(SALT_FORM_COPIES)]
-        df = df.drop(columns=["MOLECULE_CHEMBL_ID"])
         # Remove one negative outlier row
         df = df[df["MEDIAN_PXC50"] >= 0].reset_index(drop=True)
-        bits = df.columns.drop("MEDIAN_PXC50")
+        # The split groups: the chemical series (Bemis-Murcko scaffold); no ring, or a scaffold above a tenth, alone.
+        # Counter-ions carry no ring here, so a salt's scaffold is its parent's.
+        df = df.assign(scaffold=scaffold_groups(df["SMILES"]))
+        # The structure ships as a SMILES column (`smiles_columns`), in RDKit's canonical form, next to the bits
+        df = df.assign(SMILES=canonical_smiles(df["SMILES"]))
+        df = df.drop(columns=["MOLECULE_CHEMBL_ID"])
+        bits = df.columns.drop(["MEDIAN_PXC50", "scaffold", "SMILES"])
         df[bits] = df[bits].astype("int8")
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         # The fingerprint bits are 0/1 presence flags: categorical (CLEAN-14).
-        return FeatureTypes(categorical=list(df.columns.drop(self.target)))
+        return FeatureTypes(categorical=list(df.columns.drop([self.target, "scaffold", "SMILES"])))

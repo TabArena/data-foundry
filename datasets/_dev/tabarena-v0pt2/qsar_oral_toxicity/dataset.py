@@ -14,8 +14,8 @@ from data_foundry.v2 import (
     Grouping,
     Metric,
     TaskSummary,
+    canonical_smiles,
     drop_columns,
-    rdkit_descriptors,
     scaffold_groups,
 )
 
@@ -77,7 +77,7 @@ class QsarOralToxicity(AbstractCuratedDataset):
         ),
         known=(
             "The chemical's structure, with salts, solvents and stereochemistry removed, as 1,024 on/off fingerprint "
-            "bits and 208 descriptors computed from it."
+            "bits and as a SMILES string."
         ),
         split=(
             "Whole chemical series are held out: chemicals that share a ring skeleton stay on one side, so a test "
@@ -85,8 +85,8 @@ class QsarOralToxicity(AbstractCuratedDataset):
             "is the bare benzene ring are held out one by one. Salt forms and hydrates of one compound are kept once."
         ),
         changes=(
-            "We add the project's evaluation set to the calibration set UCI holds, compute descriptors from the "
-            "structure in place of its text, and drop exact copies, the fingerprints that occur with both classes "
+            "We add the project's evaluation set to the calibration set UCI holds, ship the structure as a SMILES "
+            "string next to the bits, and drop exact copies, the fingerprints that occur with both classes "
             "and second rows of a parent structure, and split by chemical series; the source fixed one training, test "
             "and evaluation set."
         ),
@@ -155,9 +155,8 @@ class QsarOralToxicity(AbstractCuratedDataset):
         - Target: `very_toxic` is "Yes" when the rat oral LD50 is 50 mg/kg or less (the package's class 1, the UCI file's "positive"; paper, Sec. 2.1; CATMoS Methods, "LD50<=50mg/kg"). On the evaluation set the label equals the project's EPA category 1 on all 2,894 rows and `LD50 <= 50` on every row that carries a dose; 2,845 of the kept chemicals (26%) carry the category without a point LD50.
         - Reading the raw file: MATLAB stores the text fields as `string` objects, which `scipy.io.loadmat` leaves undecoded, so `_prepare_raw_files` reads them out of the file's subsystem data (the decoder is documented in `_matlab_strings`) and writes bits, class and text per chemical into vt_data_02.csv. Checks of that step: the decoded "very toxic" field agrees with the `class_*` vectors on all 11,886 rows; the InChIKey has the right shape on every row and is reproduced by RDKit from the row's own SMILES for 99.8% of rows (99.99% on the skeleton, the one exception being the repaired silicon carbide below), so the SMILES is the structure the row is about; the evaluation rows match the project's public `validationset.txt` by its RowID on all 2,894 rows, with the same InChIKey, class and QSAR-ready SMILES, and the calibration rows match `trainingset_171130.txt` by CASRN (8,837) or, where a CASRN was mangled into a date by spreadsheet software, by InChIKey (155), with 100% class agreement.
         - Features, the fingerprint: binary extended connectivity fingerprints (paper, Sec. 2.2) computed with Dragon 7 (Sec. 2.7), radius 2 with 2 bits per fragment, the package's ECFP_1024_02 block (the variant its models use for this endpoint), 1,024 hashed bits, named `ecfp_1` to `ecfp_1024` in file order and typed categorical, the house form for 0/1 presence flags (CLEAN-14; Lennart, 2026-10-21). No bit is constant and no two bits are equal.
-        - Features, the structure: RDKit's 2D descriptors of the QSAR-ready SMILES as `rdkit_*` columns (`rdkit_descriptors`, RDKit 2026.03.6), 208 of the 217, the others constant here or copies; values RDKit cannot compute (partial charges and BCUT descriptors of 12 chemicals) are missing. They decide: default LightGBM's ROC AUC over the 9 shipped splits is 0.885 on the bits alone and 0.901 with the descriptors added (better on 9 of 9 splits); the descriptors alone give 0.897, a random forest (500 trees) on repeat 0 0.901 against 0.912.
-        - `rdkit_Ipc_log10`: RDKit's information content of the molecular graph grows exponentially with the molecule (five chemicals above 1e38, the largest 6e166), beyond any float32 pipeline, so `rdkit_descriptors` ships it as log10(1 + Ipc) for every SMILES dataset (Lennart, 2026-10-21); a tree model sees the same order.
-        - `smiles` dropped, as in every SMILES dataset (2026-10-14).
+        - Features, the structure: `SMILES`, the QSAR-ready SMILES in RDKit's canonical form (`canonical_smiles`), declared in `smiles_columns` (CLEAN-24 as amended, Lennart, 2026-11-01), so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, `Ipc` as log10(1 + Ipc) since the largest reaches 6e166, and the 166 MACCS keys). From 2026-10-21 to 2026-11-01 the definition shipped RDKit's 208 varying descriptors in place of the string. The descriptors decide: default LightGBM's ROC AUC over the 9 shipped splits is 0.885 on the bits alone and 0.901 with the descriptors added (better on 9 of 9 splits); the descriptors alone give 0.897, a random forest (500 trees) on repeat 0 0.901 against 0.912. The MACCS keys next to bits and descriptors change it by +0.009 (LightGBM) and -0.003 (random forest; scaffold splits, 2026-11-01). The bits stay: they are the source's published features, which the recommended encoding does not reproduce (Dragon 7's ECFP).
+        - Accepted on 2026-10-21 and now outside the frame: the descriptor `rdkit_fr_Ar_COO` = 1 (one aromatic carboxylic acid group) marks 212 chemicals, 1 of them very toxic, a pure feature value; a fragment count of the QSAR-ready structure, computed before any animal test, so it cannot carry the outcome (Lennart, 2026-10-21). The recommended encoding still holds it.
         - Repaired row, 1: the QSAR-ready SMILES of silicon carbide (CASRN 409-21-2) gives silicon five bonds and no toolkit reads it; we use PubChem's structure for that CASRN. Its bits stay the package's.
         - 122 of the kept QSAR-ready structures still carry stereo markers, which the fingerprint ignores (two stereo forms can share a vector).
         - Duplicates dropped: the salt forms, hydrates and stereoisomers of one compound share the QSAR-ready parent structure and so the bit vector (594 repeated vectors over 1,314 rows; a few are hash collisions of different chemicals rather than one parent). We drop the 732 exact copies and then every row of the 20 bit vectors that occur with both classes (52 rows), as for wine_quality and jm1; nine parents still keep two rows with different vectors (tautomer or salt entries, all "No"), of which we drop the later row, so a test chemical never has its parent structure in train. 11,105 chemicals remain (931 very toxic, 8.4%; decision tables). The source kept the copies: 237 evaluation rows repeat a calibration vector (236 repeat a calibration InChIKey).
@@ -172,6 +171,7 @@ class QsarOralToxicity(AbstractCuratedDataset):
     # Task
     target = "very_toxic"
     problem_type = "binary_classification"
+    smiles_columns = ("SMILES",)
     metric = Metric.fallback(
         reason=(
             "Ballabio et al. 2019 report the non-error rate with sensitivity and specificity, the group's "
@@ -192,12 +192,6 @@ class QsarOralToxicity(AbstractCuratedDataset):
     splits_comment = """
         Grouped splits on the Bemis-Murcko scaffold: all chemicals of one series stay on one side, so a model predicts chemicals of a series it has not seen; chemicals without a ring and those with the bare benzene ring are held out one by one. Chemicals with similar but not identical scaffolds can be on both sides.
     """
-
-    accepted_check_warnings = {
-        "dataset_pure_feature_value": "rdkit_fr_Ar_COO = 1 (one aromatic carboxylic acid group) marks 212 chemicals, "
-        "1 of them very toxic: a fragment count of the QSAR-ready structure, computed before any animal test, so it "
-        "cannot carry the outcome; aromatic acids are rarely acutely lethal (Lennart, 2026-10-21).",
-    }
 
     prepared_raw_files = (PREPARED_FILE,)
 
@@ -222,15 +216,15 @@ class QsarOralToxicity(AbstractCuratedDataset):
         df = df[~df["inchikey"].duplicated()]
         # One QSAR-ready SMILES RDKit cannot read (a pentavalent silicon): PubChem's structure of the same chemical.
         df["smiles"] = df["smiles"].replace(SMILES_REPAIRS)
-        # The structure as numbers: RDKit's 2D descriptors in place of the SMILES (data_foundry.v2.chemistry).
-        df = pd.concat([df, rdkit_descriptors(df["smiles"])], axis=1)
+        # The structure ships as a SMILES column (`smiles_columns`), in RDKit's canonical form
+        df = df.assign(SMILES=canonical_smiles(df["smiles"]))
         # The split groups: the chemical series (Bemis-Murcko scaffold); no ring or the bare benzene ring alone
-        df = df.assign(scaffold=scaffold_groups(df["smiles"]))
+        df = df.assign(scaffold=scaffold_groups(df["SMILES"]))
         return drop_columns(df, ["set", "id", "casrn", "name", "smiles", "inchikey", "class"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # The 1,024 bits are 0/1 presence flags: categorical (CLEAN-14). The descriptors stay numeric, the RDKit
-        # fragment counts too where only 0 and 1 occur; the target becomes a category.
+        # The 1,024 bits are 0/1 presence flags: categorical (CLEAN-14). The SMILES is typed by `smiles_columns`;
+        # the target becomes a category.
         del df
         return FeatureTypes(categorical=BITS)
 

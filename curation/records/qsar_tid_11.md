@@ -9,10 +9,12 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
+tags:
+- Non-IID (Grouped)
 year: '2015'
 domain: chemistry & material science
 required_split:
-- Random (IID)
+- Grouped (NON-IID)
 problem_type: Regression
 source_links:
 - https://www.openml.org/search?type=data&id=3050
@@ -52,3 +54,11 @@ CC (2026-10-21, Lennart): "Yes, follow your recommendation" on the repeated fing
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — Average root mean squared error (RMSE) with 10-fold cross-validation (Olier et al. 2018, Meta-QSAR, Machine Learning 107:285-311, doi:10.1007/s10994-017-5685-x, Sec. 2.3 (arXiv:1709.03854)).
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `papyrus_bioactivity` (TBD -> Yes, priority 2), `chembl36_kinase_bioactivity` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
+**Assessment (AI, 2026-11-01):** a scaffold split is possible (SPLIT-31 as amended): ChEMBL 17, the release the data was drawn from, holds the structure of all 5,742 compound ids of the file (`chembl_17_chemreps.txt.gz`; the InChIKey equals today's ChEMBL for all 5,505 ids still served). Bemis-Murcko scaffolds (`scaffold_groups`): 2,529 groups for 5,704 compounds, 21 ring-less compounds alone, the largest group the bare benzene ring (117, 2%). Random against scaffold split: test compounds with a close training analog (Tanimoto >= 0.7, Morgan r2 2,048 bits) 79.7% against 59.2%; untuned LightGBM RMSE 0.794 against 0.920 (3 x 3 folds). Of the 356 repeated fingerprint vectors, 303 lie within one scaffold. Evidence: `local-data-warehouse/_runs/2026-11-01_scaffold_checks/qsar_tid_11/`.
+
+CC (2026-11-01, Lennart): go ahead with the scaffold split. The definition joins each compound's ChEMBL 17 structure on `MOLECULE_CHEMBL_ID` and groups on the scaffold; `required_split` is now `Grouped (NON-IID)`. Not built.
+
+CC (2026-11-01, Lennart): SMILES ship as a typed structure column, not pre-encoded and never as text (path C of the discussion doc "SMILES Handling in Data Foundry and TabArena v0.2" (https://claude.ai/artifact/6r49WpR9Uard5ogo7qK4rB)): the benchmark encodes it; the recommended encoding in Data Foundry is RDKit's 2D descriptors with the MACCS keys.
+
+**Assessment (AI, 2026-11-01):** the definition now ships the ChEMBL 17 structure as `SMILES` (RDKit's canonical form, salts as ChEMBL records them) in `smiles_columns`, next to the source's 1,024 FCFP bits, which stay since the recommended encoding does not reproduce Pipeline Pilot's fingerprint. With the structure in the frame the two duplicate-row warnings are gone (rows that share a fingerprint differ in their structure).

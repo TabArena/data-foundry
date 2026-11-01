@@ -1286,3 +1286,76 @@ def test_scoring_columns_are_kept_out_of_the_features(tmp_path: Path, warehouse:
 def test_the_template_metric_is_a_placeholder_the_checks_catch() -> None:
     template = (Path(__file__).resolve().parents[1] / "datasets" / "_template" / "dataset.py").read_text()
     assert 'metric = Metric.fallback(reason="TODO(verify):' in template
+
+
+def test_smiles_columns_ship_as_typed_structures(tmp_path: Path, warehouse: Path) -> None:
+    """A ``smiles_columns`` entry is cast to string, stays a feature, and is recorded as a semantic column with the
+    recommended encoding; its one value per row is no identifier warning."""
+    pytest.importorskip("rdkit")
+    del warehouse
+    from data_foundry.curation_container import CuratedContainer, feature_columns, semantic_columns
+    from data_foundry.v2.chemistry import DEFAULT_SMILES_ENCODING
+
+    body = (
+        DEFINITION.format(name="toy_ds", comment="Toy data.")
+        .replace(
+            '    metric = Metric.fallback(reason="the toy data is generated; it has no source metric")\n',
+            '    metric = Metric.fallback(reason="the toy data is generated; it has no source metric")\n'
+            '    smiles_columns = ("SMILES",)\n',
+        )
+        .replace(
+            '        return drop_columns(df, ["row_id"])',
+            '        df["SMILES"] = "C" * 1 + df["row_id"].map(lambda i: "C" * int(i)) + "O"\n'
+            '        return drop_columns(df, ["row_id"])',
+        )
+    )
+    folder = write_definition(tmp_path / "datasets", body=body)
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    assert result.ok, result.bundle_report.summary()
+    container = result.container
+    assert container.dataset["SMILES"].dtype == "string"
+    assert "SMILES" in feature_columns(container)
+    assert semantic_columns(container) == ["SMILES"]
+    assert semantic_columns(container, "smiles") == ["SMILES"]
+    (column,) = container.task_metadata.semantic_columns
+    assert (column.semantic_type, column.recommended_encoding) == ("smiles", DEFAULT_SMILES_ENCODING.id)
+    slugs = {r.slug for r in result.bundle_report.results}
+    assert "dataset_identifier_column" not in slugs
+    assert "semantic column:       SMILES" in container.describe()
+    text = (folder / "README.md").read_text()
+    assert "- smiles (1): `SMILES`" in text
+    assert "semantic_columns:" in text
+    saved = container.save(tmp_path / "saved")
+    loaded = CuratedContainer.load(saved)
+    assert loaded.task_metadata.semantic_columns == container.task_metadata.semantic_columns
+
+    typed_twice = body.replace(
+        'FeatureTypes(categorical=["colour"])', 'FeatureTypes(categorical=["colour"], string=["SMILES"])'
+    )
+    write_definition(tmp_path / "datasets", body=typed_twice)
+    with pytest.raises(DatasetDefinitionError, match="smiles_columns"):
+        get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+
+
+def test_a_smiles_column_rdkit_cannot_parse_is_an_error(tmp_path: Path, warehouse: Path) -> None:
+    """The bundle check parses every SMILES with the pinned RDKit."""
+    pytest.importorskip("rdkit")
+    del warehouse
+    body = (
+        DEFINITION.format(name="toy_ds", comment="Toy data.")
+        .replace(
+            '    metric = Metric.fallback(reason="the toy data is generated; it has no source metric")\n',
+            '    metric = Metric.fallback(reason="the toy data is generated; it has no source metric")\n'
+            '    smiles_columns = ("SMILES",)\n',
+        )
+        .replace(
+            '        return drop_columns(df, ["row_id"])',
+            '        df["SMILES"] = df["row_id"].map(lambda i: "C1CC" if i == 0 else "CCO")\n'
+            '        return drop_columns(df, ["row_id"])',
+        )
+    )
+    write_definition(tmp_path / "datasets", body=body)
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    errors = [r for r in result.bundle_report.results if r.slug == "dataset_smiles_column" and r.severity == "error"]
+    assert errors, result.bundle_report.summary()
+    assert "C1CC" in errors[0].message

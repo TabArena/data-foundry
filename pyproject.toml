@@ -75,6 +75,12 @@ build = [
     # releases
     "rdkit==2026.3.6",
 ]
+# The recommended encodings of date and text columns (`data_foundry.v2.encodings`): skrub's DatetimeEncoder, and the
+# e5 sentence embeddings (sentence-transformers pulls in torch).
+encodings = [
+    "skrub",
+    "sentence-transformers",
+]
 tests = [
     "data-foundry[build]",
     "pytest",

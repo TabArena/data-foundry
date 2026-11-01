@@ -8,9 +8,17 @@ their scorers, :mod:`data_foundry.v2.chemistry` for SMILES columns, :mod:`data_f
 
 from __future__ import annotations
 
-from data_foundry.schema import Grouping, ScoringColumn
+from data_foundry.schema import Grouping, ScoringColumn, SemanticColumn
 from data_foundry.utils.dtypes import object_columns
-from data_foundry.v2.chemistry import murcko_scaffolds, rdkit_descriptors, scaffold_groups
+from data_foundry.v2.chemistry import (
+    DEFAULT_SMILES_ENCODING,
+    canonical_smiles,
+    encode_smiles,
+    invalid_smiles,
+    murcko_scaffolds,
+    rdkit_descriptors,
+    scaffold_groups,
+)
 from data_foundry.v2.dataset import (
     AUTO,
     AbstractCuratedDataset,
@@ -21,6 +29,13 @@ from data_foundry.v2.dataset import (
     TaskSummary,
     clean_text,
 )
+from data_foundry.v2.encodings import (
+    Encoding,
+    encode_datetime,
+    encode_text_e5,
+    encode_text_tfidf,
+    recommended_encodings,
+)
 from data_foundry.v2.metrics import Metric, score, scorer
 from data_foundry.v2.preprocessing import anonymize_ids, cast_dtypes, drop_columns, order_rows
 from data_foundry.v2.registry import discover_datasets, get_dataset, load_definition
@@ -30,31 +45,41 @@ from data_foundry.v2.workbench import workbench
 
 __all__ = [
     "AUTO",
+    "DEFAULT_SMILES_ENCODING",
     "AbstractCuratedDataset",
     "CurationResult",
     "DatasetDefinitionError",
     "Decision",
+    "Encoding",
     "FeatureTypes",
     "Grouping",
     "Metric",
     "ScoringColumn",
+    "SemanticColumn",
     "SplitPlan",
     "Splits",
     "TaskSummary",
     "Temporal",
     "TemporalSplits",
     "anonymize_ids",
+    "canonical_smiles",
     "cast_dtypes",
     "clean_text",
     "discover_datasets",
     "drop_columns",
+    "encode_datetime",
+    "encode_smiles",
+    "encode_text_e5",
+    "encode_text_tfidf",
     "get_dataset",
+    "invalid_smiles",
     "load_definition",
     "murcko_scaffolds",
     "object_columns",
     "order_rows",
     "rdkit_descriptors",
     "read_report",
+    "recommended_encodings",
     "scaffold_groups",
     "score",
     "scorer",
