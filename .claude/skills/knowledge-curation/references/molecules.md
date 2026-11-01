@@ -63,10 +63,16 @@ The task is going from the structure to a prediction (Lennart, 2026-11-01). So:
 * **Recovering a structure:**
   * When the source ships only descriptors or fingerprints, recover the structures by the rows' identifiers from the
     release the data came from: ChEMBL 17 for qsar_tid_11, the authors' supporting information or workbook for
-    qsar_biodeg, qsar_fish_toxicity and qsar_aquatic_toxicity.
-  * Link row by row and prove the link: the same order and values, and a few simple descriptors recomputed with RDKit
-    (atom counts, nitro groups).
-  * When no public release has the structures (bioresponse, clock_protein_toxicity), the descriptors stay.
+    qsar_biodeg, qsar_fish_toxicity and qsar_aquatic_toxicity. A UCI copy often leaves the structures out while the
+    authors' own page or the paper's supporting information still has them.
+  * Link row by row and prove the link, and keep the proof in the definition as an assertion: the same row count and
+    order, every shared column identical, or a few simple descriptors recomputed with RDKit (atom counts, nitro
+    groups). On all four datasets so far the authors' file was the shipped file plus the structures, row for row.
+  * The authors' file can also be the better source: qsar_fish_toxicity's workbook carries the target at full
+    precision, where the UCI copy rounds it to three decimals.
+  * When no public release has the structures, the descriptors stay: bioresponse (Kaggle published anonymous, scaled
+    descriptors and no identifiers) and clock_protein_toxicity (the 171 molecules carry internal codes, and their
+    structures exist only as drawings in a Word figure).
 
 ## Copies and salt forms (LEAK-16, LEAK-19, LEAK-20)
 

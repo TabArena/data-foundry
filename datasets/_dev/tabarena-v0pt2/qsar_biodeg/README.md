@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_biodeg
 container_format: 2
-checksum: v2:d2d677d14d439374b9a0bf7e2eea724bb82cac913c6d43e6f84580084006fb87
+checksum: v2:75bbdbd38993d63c6a51e9109fd15b959168e4d84d7681553d29ee75e7d2aee5
 build:
   uuid: 01a13a7d-c2bf-742d-b04d-f9b569da1f3d
   checksum: v2:5d0dcabbc947ec79fe0e230bddca7b95568e2a8cc0ce95f85fb21a9c114d1739
@@ -20,11 +20,10 @@ build:
 build_stale: true
 data:
   n_rows: 1055
-  n_features: 41
+  n_features: 1
   dtypes:
-    category: 4
-    float64: 17
-    int64: 21
+    category: 1
+    string: 2
   n_test_dataset_rows: null
 task:
   target: Biodegradable
@@ -32,13 +31,22 @@ task:
   metric: roc_auc
   metric_origin: fallback
   scoring_columns: null
-  split_regime: iid
+  split_regime: grouped_non_iid
   stratify_on: Biodegradable
   time_on: null
-  group_on: null
-  group_labels: null
+  group_on: scaffold
+  group_labels: per_sample
   group_time_on: null
-  grouping: null
+  grouping:
+    prediction_unit: row
+    aggregation: null
+    context: none
+    n_groups: 872
+    test_groups_per_fold:
+      min: 283
+      max: 297
+  semantic_columns:
+    SMILES: smiles
 splits:
   n_repeats: 10
   n_folds: 3
@@ -48,17 +56,16 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 703
-    max: 704
+    min: 656
+    max: 761
   n_test:
-    min: 351
-    max: 352
+    min: 294
+    max: 399
 bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos:
-  - dataset_duplicate_rows
+  infos: []
   accepted: {}
 decisions: []
 ---
@@ -67,9 +74,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `Biodegradable`, scored with `roc_auc` on IID splits. 1,055 rows and 41 features. Source: UCI (2013).
+Binary classification of `Biodegradable`, scored with `roc_auc` on grouped splits by `scaffold`. 1,055 rows and 1 features. Source: UCI (2013).
 
-Built as `01a13a7d-c2bf-742d-b04d-f9b569da1f3d` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:d2d677d14d439374b9a0bf7e2eea724bb82cac913c6d43e6f84580084006fb87`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2bf-742d-b04d-f9b569da1f3d` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:75bbdbd38993d63c6a51e9109fd15b959168e4d84d7681553d29ee75e7d2aee5`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -81,11 +88,13 @@ Built as `01a13a7d-c2bf-742d-b04d-f9b569da1f3d` on 2026-10-14, but `dataset.py` 
 
 **Predicted.** Whether the chemical is readily biodegradable in the standard test; 33.7% are.
 
-**Known at prediction time.** 41 molecular descriptors computed from the chemical structure (counts of atoms and groups, and topological and electronic indices).
+**Known at prediction time.** The chemical's structure, as a SMILES string.
 
-**What the test data stands for.** Random chemicals, so the test data stands for new chemicals; structurally similar ones can be on both sides.
+**What the test data stands for.** Whole chemical series are held out: chemicals that share a ring skeleton stay on one side, so a test chemical belongs to a family the model has not seen. Chemicals without a ring are held out one by one.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The descriptors come from the structure alone, which is all a screener has before testing, and the test chemicals stand for new ones.
+**Our changes to the source.** We add each chemical's structure from the paper's supporting information and ship it in place of the authors' 41 descriptors, and split by chemical series instead of at random.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The structure is all a screener has before testing, and a held-out series stands for a family not yet tested.
 
 ## Files in this folder
 
@@ -104,6 +113,14 @@ Built as `01a13a7d-c2bf-742d-b04d-f9b569da1f3d` on 2026-10-14, but `dataset.py` 
 
 ```text
 mkdir -p local-data-warehouse/qsar_biodeg/ && wget -P local-data-warehouse/qsar_biodeg/ https://archive.ics.uci.edu/static/public/254/qsar+biodegradation.zip && unzip local-data-warehouse/qsar_biodeg/qsar+biodegradation.zip -d local-data-warehouse/qsar_biodeg/ && rm local-data-warehouse/qsar_biodeg/qsar+biodegradation.zip
+
+The structures come from the paper's supporting information, which UCI left out (downloaded 2026-11-01;
+pubs.acs.org refuses a command-line download, so we take the Internet Archive's copy of the same file):
+
+wget -O local-data-warehouse/qsar_biodeg/ci4000213_si_001.xlsx https://web.archive.org/web/20230306145658id_/https://pubs.acs.org/doi/suppl/10.1021/ci4000213/suppl_file/ci4000213_si_001.xlsx
+
+ci4000213_si_001.xlsx (503,427 bytes), sha256
+64355cd79cedbcc5a6e1fc9178215d22d716643f2ce6ad60fa1aa45c45fc5f98
 ```
 
 Then, from the repository root:
@@ -123,14 +140,16 @@ Only curators run `build`, when the dataset ships.
 | year | 2013 |
 | domain | chemistry & material science |
 | license | CC BY 4.0 |
-| data_tags | IID |
+| data_tags | Non-IID, Grouped |
 | reference | mansouri2013quantitative |
-| rows x columns | 1,055 x 42 |
+| rows x columns | 1,055 x 3 |
 | task.target | Biodegradable |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
-| task.split_regime | iid |
+| task.split_regime | grouped_non_iid |
 | task.stratify_on | Biodegradable |
+| task.group_on | scaffold |
+| task.group_labels | per_sample |
 
 **Metric**
 
@@ -142,10 +161,11 @@ Only curators run `build`, when the dataset ships.
 | reason | Mansouri et al. 2013 report error rate / NER with sensitivity and specificity, the group's house measure, without a decision threshold or costs. Original rejected: NER (balanced accuracy). roc_auc is the binary fallback. |
 
 <details>
-<summary>Feature types: 4 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 1 categorical, 0 string, 1 smiles, 0 datetime</summary>
 
-- categorical (4): `Presence_CBr_At_Dist1`, `Presence_CCl_At_Dist3`, `Presence_CBr_At_Dist4`, `Biodegradable`
+- categorical (1): `Biodegradable`
 - string (0): none
+- smiles (1): `SMILES`
 - datetime (0): none
 
 </details>
@@ -170,130 +190,125 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 1,055 rows of the final frame (random rows: the frame is shuffled); 12 of 42 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 1,055 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
 
-| Biodegradable | Laplace_Leading_Eigenvalue | Weighted_Balaban_Index_Barysz_Matrix | Num_Heavy_Atoms | Freq_NN_At_Dist1 | Freq_CN_At_Dist4 | Num_ssssC_Atoms | Num_Substituted_BenzeneC | Percentage_C_Atoms | Num_Terminal_PrimaryC | Num_Oxygen_Atoms | Freq_CN_At_Dist3 |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| No | 5.449 | 3.493 | 0 | 0 | 0 | 3 | 3 | 37.5 | 9 | 0 | 0 |
-| No | 5.35 | 4.5704 | 0 | 0 | 0 | 2 | 0 | 29.4 | 6 | 4 | 0 |
-| Yes | 4.543 | 2.5935 | 0 | 0 | 2 | 0 | 1 | 40.9 | 1 | 1 | 2 |
-| Yes | 4.334 | 3.1387 | 0 | 0 | 0 | 0 | 0 | 26.3 | 2 | 2 | 0 |
-| No | 4.933 | 2.0578 | 0 | 0 | 3 | 0 | 4 | 53.3 | 0 | 0 | 4 |
+| Biodegradable | SMILES | scaffold |
+|---|---|---|
+| Yes | CC(CCO)CCO | single: CC(CCO)CCO |
+| No | CCCCOCCOP(=O)(OCCOCCCC)OCCOCCCC | single: CCCCOCCOP(=O)(OCCOCCCC)OCCOCCCC |
+| No | O=C1NC(=O)C(c2ccccc2)(c2ccccc2)N1 | O=C1NC(=O)C(c2ccccc2)(c2ccccc2)N1 |
+| Yes | CCCCCCCCO | single: CCCCCCCCO |
+| No | CCC(Oc1ccc(C(C)(C)CC)cc1C(C)(C)CC)C(=O)… | O=C(COc1ccccc1)Nc1ccccc1 |
 
 ## Curation notes
 
-- We added semantic meaningful feature names.
 - biodeg.csv has no header row, so we read it with `header=None` and keep the first chemical: 1,055 rows,
   356 readily biodegradable, as on UCI.
-- The counts stay numeric (CLEAN-14): atoms, groups, circuits, the frequencies of atom pairs, and the two
-  atom-centred fragments `N073_chemical_substructure` (N-073: Ar2NH / Ar3N / Ar2N-Al / R..N..R, 0 to 3) and
-  `C026_chemical_substructure` (C-026: R--CX--R, 0 to 12), which count the atoms of that type in the molecule.
-  The definition had typed those two categorical while their meaning was unknown (found by the dtype probe,
-  2026-10-30). The three presence/absence descriptors (B01[C-Br], B03[C-Cl], B04[C-Br]) are yes/no flags.
+- The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), in RDKit's canonical form
+  (`canonical_smiles`; no salts or mixtures here), declared in `smiles_columns`, so a benchmark encodes it as a
+  structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's
+  2D descriptors, the 166 MACCS keys and the ECFP4 counts).
+- The authors' 41 descriptors leave (Lennart, 2026-11-01, as for qsar_tid_11: the task goes from the structure
+  to a prediction, and the descriptors are one modelling choice of the authors). They were Dragon descriptors
+  selected by a genetic algorithm, which no open tool recomputes. Their meaning and dtypes, settled on
+  2026-10-30 (counts numeric, three presence flags categorical), no longer apply.
+- The structures come from the paper's supporting information, which the UCI copy left out. Its "Train+Test"
+  sheet is the same 1,055 rows in the same order: all 41 descriptors and the class are identical on every row,
+  so the link is exact and needs no key. All 1,055 SMILES parse and no two are the same chemical.
+- Stereoisomers stay: three pairs are one structure once the stereo marks are set aside (maleic and fumaric
+  acid, sorbitol and mannitol, dieldrin and endrin), each pair agreeing on its class. They are distinct
+  chemicals with distinct structures, as in qsar_tid_11; a 2D encoding cannot tell them apart, and each pair
+  shares a scaffold, so they never straddle the split.
+- Not used here: the supporting information's "External validation" sheet holds 670 further chemicals with
+  structures and classes (657 of them new to this set). That is a candidate of its own, not an extension of
+  the dataset UCI publishes.
+- Split (CLEAN-24, SPLIT-31 as amended): grouped on the Bemis-Murcko scaffold of the structure
+  (`scaffold_groups`); chemicals without a ring, and those of a scaffold holding more than a tenth of the set,
+  are groups of their own. A screener judges an untested chemical, often of a series not yet measured, so whole
+  series are held out; qsar_bioconcentration, qsar_oral_toxicity, qsar_fish_toxicity, qsar_aquatic_toxicity and
+  qsar_tid_11 group the same way. The source split at random.
 
 ## Splits
 
-Default splits.
+Grouped splits on the Bemis-Murcko scaffold: all chemicals of one series stay on one side, so a model predicts chemicals of a series it has not seen; chemicals without a ring are held out one by one. Chemicals with similar but not identical scaffolds can be on both sides.
 
-10 repeat(s) x 3 fold(s) with seed 4267; train 703 to 704 rows, test 351 to 352 rows.
+10 repeat(s) x 3 fold(s) with seed 4267; train 656 to 761 rows, test 294 to 399 rows.
 
 <details>
 <summary>Show all 30 splits</summary>
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 703 | 352 |
-| 0 | 1 | 703 | 352 |
-| 0 | 2 | 704 | 351 |
-| 1 | 0 | 703 | 352 |
-| 1 | 1 | 703 | 352 |
-| 1 | 2 | 704 | 351 |
-| 2 | 0 | 703 | 352 |
-| 2 | 1 | 703 | 352 |
-| 2 | 2 | 704 | 351 |
-| 3 | 0 | 703 | 352 |
-| 3 | 1 | 703 | 352 |
-| 3 | 2 | 704 | 351 |
-| 4 | 0 | 703 | 352 |
-| 4 | 1 | 703 | 352 |
-| 4 | 2 | 704 | 351 |
-| 5 | 0 | 703 | 352 |
-| 5 | 1 | 703 | 352 |
-| 5 | 2 | 704 | 351 |
-| 6 | 0 | 703 | 352 |
-| 6 | 1 | 703 | 352 |
-| 6 | 2 | 704 | 351 |
-| 7 | 0 | 703 | 352 |
-| 7 | 1 | 703 | 352 |
-| 7 | 2 | 704 | 351 |
-| 8 | 0 | 703 | 352 |
-| 8 | 1 | 703 | 352 |
-| 8 | 2 | 704 | 351 |
-| 9 | 0 | 703 | 352 |
-| 9 | 1 | 703 | 352 |
-| 9 | 2 | 704 | 351 |
+| 0 | 0 | 731 | 324 |
+| 0 | 1 | 705 | 350 |
+| 0 | 2 | 674 | 381 |
+| 1 | 0 | 693 | 362 |
+| 1 | 1 | 761 | 294 |
+| 1 | 2 | 656 | 399 |
+| 2 | 0 | 671 | 384 |
+| 2 | 1 | 702 | 353 |
+| 2 | 2 | 737 | 318 |
+| 3 | 0 | 727 | 328 |
+| 3 | 1 | 725 | 330 |
+| 3 | 2 | 658 | 397 |
+| 4 | 0 | 702 | 353 |
+| 4 | 1 | 724 | 331 |
+| 4 | 2 | 684 | 371 |
+| 5 | 0 | 699 | 356 |
+| 5 | 1 | 714 | 341 |
+| 5 | 2 | 697 | 358 |
+| 6 | 0 | 693 | 362 |
+| 6 | 1 | 712 | 343 |
+| 6 | 2 | 705 | 350 |
+| 7 | 0 | 741 | 314 |
+| 7 | 1 | 683 | 372 |
+| 7 | 2 | 686 | 369 |
+| 8 | 0 | 734 | 321 |
+| 8 | 1 | 704 | 351 |
+| 8 | 2 | 672 | 383 |
+| 9 | 0 | 700 | 355 |
+| 9 | 1 | 740 | 315 |
+| 9 | 2 | 670 | 385 |
 
 </details>
 
+## Group structure
+
+One group is a chemical series: the chemicals that share one Bemis-Murcko scaffold (ring systems and the chains linking them; Bemis and Murcko 1996), computed with RDKit from the structure. A chemical without a ring, or one of a scaffold that holds more than a tenth of the set, is a group of its own (SPLIT-31). A screener judges an untested chemical, often of a series not yet measured, so whole series are held out. Each row is one prediction, made from the chemical's structure alone.
+
+| field | value |
+|---|---|
+| group column | `scaffold` |
+| labels | per_sample |
+| order inside a group | none |
+| prediction unit | row |
+| known about a group when predicting | none |
+
+| statistic | value |
+|---|---|
+| groups | 872 |
+| rows per group (min / median / max) | 1 / 1.0 / 26 |
+| largest group | 2.5% of the rows |
+| test groups per fold | 283 to 297 |
+| groups of two or more rows with a single label | 63.0% |
+| label variance explained by the group | 0.92 (shuffled groups: 0.83) |
+
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicate_rows`: 3 exact duplicate row(s) (0.3% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 
 ## Data checks
 
 ### Feature summary
 
-<details>
-<summary>Show the table (42 rows)</summary>
-
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| Presence_CBr_At_Dist1 | category | 0 | 0 | 2 | 0, 1 |
-| Presence_CCl_At_Dist3 | category | 0 | 0 | 2 | 0, 1 |
-| Presence_CBr_At_Dist4 | category | 0 | 0 | 2 | 0, 1 |
 | Biodegradable | category | 0 | 0 | 2 | No, Yes |
-| Laplace_Leading_Eigenvalue | float64 | 0 | 0 | 440 | 4.732, 4.414, 4.0, 4.17, 4.562, 4.807, 4.303, 4.77, 4.499, 3.618 |
-| Weighted_Balaban_Index_Barysz_Matrix | float64 | 0 | 0 | 1022 | 4.2631, 3.0785, 3.1387, 2.9639, 2.4441, 2.7059, 3.2439, 2.4524, 3.1241, 3.1806 |
-| Percentage_C_Atoms | float64 | 0 | 0 | 188 | 33.3, 50.0, 40.0, 25.0, 42.9, 28.6, 30.0, 37.5, 46.2, 41.2 |
-| Sum_dssC_EStates | float64 | 0 | 0 | 384 | 0.0, -0.193, -0.671, 0.134, -1.072, -0.117, -1.093, 0.787, -0.481, -0.995 |
-| Weighted_HyperWiener_Index_Burden_Matrix | float64 | 0 | 0 | 756 | 3.647, 3.66, 3.375, 3.462, 3.192, 3.37, 3.233, 3.678, 3.699, 3.772 |
-| Lopping_Centric_Index | float64 | 0 | 0 | 373 | 0.0, 0.875, 1.185, 0.881, 1.16, 1.187, 0.971, 1.459, 0.918, 0.802 |
-| Laplace_Spectral_Moment6 | float64 | 0 | 0 | 510 | 9.54, 8.597, 9.833, 9.183, 9.882, 10.099, 9.311, 8.755, 7.408, 8.16 |
-| Mean_Sanderson_Electronegativity | float64 | 0 | 0 | 167 | 0.998, 0.979, 0.993, 0.974, 0.987, 1.014, 0.991, 0.98, 0.983, 1.003 |
-| Mean_Ionization_Potential | float64 | 0 | 0 | 125 | 1.127, 1.139, 1.125, 1.14, 1.129, 1.121, 1.146, 1.141, 1.132, 1.144 |
-| Weighted_Normalized_SpectralPositiveSum_Burden_Matrix | float64 | 0 | 0 | 352 | 1.299, 1.296, 1.195, 1.254, 1.28, 1.253, 1.25, 1.264, 1.202, 1.295 |
-| Adjacency_LeadingEigenvalue | float64 | 0 | 0 | 329 | 2.0, 2.236, 2.194, 1.848, 2.175, 2.303, 2.101, 1.902, 1.732, 2.136 |
-| Intrinsic_State_Pseudoconnectivity | float64 | 0 | 0 | 205 | 0.0, -0.008, 0.001, 0.004, -0.002, -0.001, 0.014, -0.025, 0.015, -0.007 |
-| Sum_dO_EStates | float64 | 0 | 0 | 470 | 0.0, 10.249, 19.107, 10.535, 10.337, 11.013, 10.645, 10.87, 10.582, 20.135 |
-| Laplace_MoharIndex2 | float64 | 0 | 0 | 553 | 1.542, 1.06, 0.975, 0.95, 1.74, 1.0, 1.481, 1.14, 2.052, 1.707 |
-| Weighted_LeadingEigenvalue_Burden_Matrix | float64 | 0 | 0 | 705 | 3.309, 4.009, 6.88, 3.497, 3.423, 3.329, 3.728, 3.755, 3.573, 4.738 |
-| Intrinsic_State_Pseudoconnectivity_SAvg | float64 | 0 | 0 | 624 | 2.833, 2.167, 2.5, 2.667, 1.833, 2.0, 2.333, 2.25, 2.802, 3.133 |
-| Weighted_SpectralMoment6_Burden_Matrix | float64 | 0 | 0 | 862 | 8.128, 8.506, 8.497, 8.68, 8.704, 9.118, 8.601, 8.143, 8.015, 8.562 |
-| Num_Heavy_Atoms | int64 | 0 | 0 | 11 | 0, 1, 2, 3, 4, 6, 5, 10, 8, 7 |
-| Freq_NN_At_Dist1 | int64 | 0 | 0 | 4 | 0, 1, 2, 3 |
-| Freq_CN_At_Dist4 | int64 | 0 | 0 | 16 | 0, 2, 1, 3, 4, 6, 7, 11, 8, 5 |
-| Num_ssssC_Atoms | int64 | 0 | 0 | 13 | 0, 1, 2, 3, 4, 6, 8, 9, 5, 11 |
-| Num_Substituted_BenzeneC | int64 | 0 | 0 | 15 | 0, 2, 3, 4, 1, 6, 5, 8, 7, 9 |
-| Num_Terminal_PrimaryC | int64 | 0 | 0 | 15 | 0, 1, 2, 3, 4, 6, 5, 8, 9, 7 |
-| Num_Oxygen_Atoms | int64 | 0 | 0 | 12 | 0, 2, 1, 4, 3, 6, 5, 7, 8, 12 |
-| Freq_CN_At_Dist3 | int64 | 0 | 0 | 21 | 0, 2, 4, 3, 1, 6, 8, 5, 12, 10 |
-| Freq_CO_At_Dist3 | int64 | 0 | 0 | 24 | 0, 2, 4, 6, 8, 1, 3, 12, 9, 10 |
-| Num_N_Hydrazine | int64 | 0 | 0 | 3 | 0, 1, 2 |
-| Num_Aromatic_Nitro_Groups | int64 | 0 | 0 | 4 | 0, 1, 2, 3 |
-| Num_CRX3 | int64 | 0 | 0 | 4 | 0, 1, 2, 3 |
-| Num_Circuits | int64 | 0 | 0 | 13 | 1, 0, 2, 3, 6, 4, 7, 5, 15, 10 |
-| N073_chemical_substructure | int64 | 0 | 0 | 4 | 0, 1, 2, 3 |
-| Num_RingTertiaryC | int64 | 0 | 0 | 8 | 0, 1, 2, 4, 6, 3, 8, 5 |
-| C026_chemical_substructure | int64 | 0 | 0 | 11 | 0, 1, 2, 3, 4, 6, 5, 12, 8, 10 |
-| Freq_CN_At_Dist2 | int64 | 0 | 0 | 16 | 0, 2, 4, 3, 1, 6, 8, 5, 10, 18 |
-| Num_HBond_Donors_Atoms | int64 | 0 | 0 | 8 | 0, 1, 2, 3, 4, 6, 5, 7 |
-| Num_Nitrogen_Atoms | int64 | 0 | 0 | 8 | 0, 1, 2, 3, 4, 5, 6, 8 |
-| Num_Esters | int64 | 0 | 0 | 5 | 0, 2, 1, 3, 4 |
-| Num_Halogen_Atoms | int64 | 0 | 0 | 17 | 0, 1, 2, 3, 4, 6, 5, 10, 8, 27 |
-
-</details>
+| SMILES | string | 0 | 0 | 1055 | FC(F)(Cl)C(F)(Cl)Cl, CC(CCO)CCO, CCCCOCCOP(=O)(OCCOCCCC)OCCOCCCC, O=C1NC(=O)C(c… |
+| scaffold | string | 0 | 0 | 872 | c1ccc(Cc2ccccc2)cc1, c1ccc2ccccc2c1, C1CCCCC1, c1ccncc1, c1ccc(-c2ccccc2)cc1, O… |
 
 ### Target distribution
 
@@ -304,64 +319,29 @@ Default splits.
 
 ### Numeric features
 
-<details>
-<summary>Show the table (38 rows)</summary>
-
-| index | count | mean | std | min | max |
-|---|---|---|---|---|---|
-| Laplace_Leading_Eigenvalue | 1055 | 4.78264 | 0.546916 | 2 | 6.496 |
-| Weighted_Balaban_Index_Barysz_Matrix | 1055 | 3.06951 | 0.831308 | 0.8039 | 9.1775 |
-| Num_Heavy_Atoms | 1055 | 0.716588 | 1.46245 | 0 | 12 |
-| Freq_NN_At_Dist1 | 1055 | 0.042654 | 0.25601 | 0 | 3 |
-| Freq_CN_At_Dist4 | 1055 | 0.980095 | 2.33295 | 0 | 36 |
-| Num_ssssC_Atoms | 1055 | 0.290047 | 1.07377 | 0 | 13 |
-| Num_Substituted_BenzeneC | 1055 | 1.64645 | 2.22482 | 0 | 18 |
-| Percentage_C_Atoms | 1055 | 37.0556 | 9.14447 | 0 | 60.7 |
-| Num_Terminal_PrimaryC | 1055 | 1.3763 | 1.96352 | 0 | 24 |
-| Num_Oxygen_Atoms | 1055 | 1.80379 | 1.77543 | 0 | 12 |
-| Freq_CN_At_Dist3 | 1055 | 1.43697 | 3.11658 | 0 | 44 |
-| Sum_dssC_EStates | 1055 | -0.197129 | 0.769662 | -5.256 | 4.722 |
-| Weighted_HyperWiener_Index_Burden_Matrix | 1055 | 3.47684 | 0.58415 | 1.544 | 5.701 |
-| Lopping_Centric_Index | 1055 | 1.35072 | 0.786166 | 0 | 4.491 |
-| Laplace_Spectral_Moment6 | 1055 | 9.93738 | 0.928678 | 4.174 | 12.609 |
-| Freq_CO_At_Dist3 | 1055 | 3.63033 | 4.45724 | 0 | 40 |
-| Mean_Sanderson_Electronegativity | 1055 | 1.0133 | 0.0464943 | 0.957 | 1.311 |
-| Mean_Ionization_Potential | 1055 | 1.13111 | 0.030143 | 1.022 | 1.377 |
-| Num_N_Hydrazine | 1055 | 0.00853081 | 0.101802 | 0 | 2 |
-| Num_Aromatic_Nitro_Groups | 1055 | 0.0739336 | 0.317475 | 0 | 3 |
-| Num_CRX3 | 1055 | 0.0293839 | 0.217997 | 0 | 3 |
-| Weighted_Normalized_SpectralPositiveSum_Burden_Matrix | 1055 | 1.23873 | 0.0964657 | 0.863 | 1.641 |
-| Num_Circuits | 1055 | 1.40569 | 4.78854 | 0 | 147 |
-| N073_chemical_substructure | 1055 | 0.0312796 | 0.199544 | 0 | 3 |
-| Adjacency_LeadingEigenvalue | 1055 | 2.21564 | 0.226131 | 1 | 2.859 |
-| Intrinsic_State_Pseudoconnectivity | 1055 | -0.00120569 | 0.158928 | -1.099 | 1.073 |
-| Sum_dO_EStates | 1055 | 8.78051 | 11.8959 | 0 | 71.167 |
-| Laplace_MoharIndex2 | 1055 | 2.66834 | 2.09661 | 0.444 | 17.537 |
-| Num_RingTertiaryC | 1055 | 0.129858 | 0.644057 | 0 | 8 |
-| C026_chemical_substructure | 1055 | 0.883412 | 1.52047 | 0 | 12 |
-| Freq_CN_At_Dist2 | 1055 | 1.27488 | 2.27399 | 0 | 18 |
-| Num_HBond_Donors_Atoms | 1055 | 0.961137 | 1.25701 | 0 | 7 |
-| Weighted_LeadingEigenvalue_Burden_Matrix | 1055 | 3.91824 | 0.999602 | 2.267 | 10.695 |
-| Intrinsic_State_Pseudoconnectivity_SAvg | 1055 | 2.55842 | 0.642765 | 1.467 | 5.825 |
-| Num_Nitrogen_Atoms | 1055 | 0.686256 | 1.09039 | 0 | 8 |
-| Weighted_SpectralMoment6_Burden_Matrix | 1055 | 8.62949 | 1.24199 | 4.917 | 14.7 |
-| Num_Esters | 1055 | 0.0511848 | 0.31897 | 0 | 4 |
-| Num_Halogen_Atoms | 1055 | 0.723223 | 2.23929 | 0 | 27 |
-
-</details>
+No numeric features to summarize.
 
 ### Categorical features
+
+<details>
+<summary>Show the table (12 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | Biodegradable | 1 | No | 699 | 66.26 |
 | Biodegradable | 2 | Yes | 356 | 33.74 |
-| Presence_CBr_At_Dist1 | 1 | 0 | 1013 | 96.02 |
-| Presence_CBr_At_Dist1 | 2 | 1 | 42 | 3.98 |
-| Presence_CBr_At_Dist4 | 1 | 0 | 1027 | 97.35 |
-| Presence_CBr_At_Dist4 | 2 | 1 | 28 | 2.65 |
-| Presence_CCl_At_Dist3 | 1 | 0 | 899 | 85.21 |
-| Presence_CCl_At_Dist3 | 2 | 1 | 156 | 14.79 |
+| SMILES | 1 | FC(F)(Cl)C(F)(Cl)Cl | 1 | 0.09 |
+| SMILES | 2 | CC(CCO)CCO | 1 | 0.09 |
+| SMILES | 3 | CCCCOCCOP(=O)(OCCOCCCC)OCCOCCCC | 1 | 0.09 |
+| SMILES | 4 | O=C1NC(=O)C(c2ccccc2)(c2ccccc2)N1 | 1 | 0.09 |
+| SMILES | 5 | CCCCCCCCO | 1 | 0.09 |
+| scaffold | 1 | c1ccc(Cc2ccccc2)cc1 | 26 | 2.46 |
+| scaffold | 2 | c1ccc2ccccc2c1 | 20 | 1.9 |
+| scaffold | 3 | C1CCCCC1 | 16 | 1.52 |
+| scaffold | 4 | c1ccncc1 | 16 | 1.52 |
+| scaffold | 5 | c1ccc(-c2ccccc2)cc1 | 16 | 1.52 |
+
+</details>
 
 ## Build
 
@@ -374,4 +354,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:d2d677d14d439374b9a0bf7e2eea724bb82cac913c6d43e6f84580084006fb87` |
+| stale | yes: the definition now gives checksum `v2:75bbdbd38993d63c6a51e9109fd15b959168e4d84d7681553d29ee75e7d2aee5` |

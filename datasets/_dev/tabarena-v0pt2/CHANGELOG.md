@@ -4,6 +4,32 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-11-01, three QSAR datasets ship the structure instead of the authors' descriptors (PR #15)
+
+The structures the UCI copies left out come from the authors' own releases, so these three follow CLEAN-24 as amended
+(the task goes from the structure to a prediction; the descriptors are one modelling choice of the authors). In each
+case the authors' file is the shipped file plus the structures, row for row, which the definition asserts when it
+loads: every shared column is identical on every row, so the link needs no key.
+
+- `qsar_biodeg`: the paper's supporting information (`ci4000213_si_001.xlsx`, sheet `Train+Test`; taken from the
+  Internet Archive, since pubs.acs.org refuses a command-line download) holds the same 1,055 rows in the same order,
+  with CAS-RN, SMILES, the class and all 41 descriptors. The Dragon descriptors leave; `SMILES` is the one feature;
+  scaffold-grouped, 872 groups. Three stereoisomer pairs stay (maleic/fumaric acid, sorbitol/mannitol,
+  dieldrin/endrin), each agreeing on its class and sharing a scaffold. Task probes, 30 splits: random forest ROC AUC
+  0.929, LightGBM 0.928, no flags. The sheet `External validation` holds 670 further chemicals (657 new): a candidate
+  of its own, noted in the record.
+- `qsar_fish_toxicity`: the authors' workbook (`toxicity_data_fish.xlsx`, Milano Chemometrics) holds the same 908 rows
+  in the same order, with the 6 descriptors identical on every row. They leave, which also settles the mild optimism
+  they carried (chosen by a genetic algorithm on 726 chemicals that overlap our test folds, LEAK-31). The target now
+  comes from the workbook at full precision; the UCI file rounds LC50 to 3 decimals. Scaffold-grouped, 786 groups.
+  Task probes: LightGBM R^2 0.640, random forest 0.614, no flags.
+- `qsar_aquatic_toxicity`: the authors' workbook (`toxicity_data.xlsx`) holds the same 546 rows in the same order,
+  with the 8 descriptors and LC50 identical on every row. They leave, which settles the kept potential leak the record
+  named (LEAK-31). Scaffold-grouped, 463 groups. Task probes: LightGBM R^2 0.573, random forest 0.548, no flags.
+- Not recoverable, so they keep their descriptors: `bioresponse` (anonymous, scaled descriptors, no identifiers) and
+  `clock_protein_toxicity` (internal codes; the structures exist only as drawings in a Word figure).
+- All three: `dataset check` clean, records carry the CC and an Assessment, CLEAN-24's Cases row added. Not built.
+
 ## 2026-11-01, SMILES ship as typed structure columns; recommended encodings for SMILES, dates and text (PR #15)
 
 - CLEAN-24 amended (Lennart, 2026-11-01; path C of the discussion doc "SMILES Handling in Data Foundry and TabArena

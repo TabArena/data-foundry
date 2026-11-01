@@ -9,11 +9,13 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
+tags:
+- Non-IID (Grouped)
 original_source: UCI
 year: '2013'
 domain: chemistry & material science
 required_split:
-- Random (IID)
+- Grouped (NON-IID)
 problem_type: Binary Classification
 source_links:
 - https://www.openml.org/search?type=data&id=1494
@@ -44,6 +46,10 @@ CC (2026-10-21, Lennart): one domain for the molecule-property datasets (the inp
 CC (2026-10-30, Lennart): `N073_chemical_substructure` and `C026_chemical_substructure` are numeric: the atom-centred fragments N-073 (Ar2NH / Ar3N / Ar2N-Al / R..N..R) and C-026 (R--CX--R) count the atoms of that type (0 to 3 and 0 to 12). The definition had typed them categorical while their meaning was unknown; the dtype probe found them in the sweep after issue #34. CLEAN-14: a count stays numeric.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `ready_biodegradability_huang_zhang` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
+CC (2026-11-01, Lennart): go ahead for the structure-recoverable datasets: ship the SMILES only, as for qsar_tid_11. The authors' descriptors are one modelling choice; the benchmark encodes the structure.
+
+**Assessment (AI, 2026-11-01):** the structures are recoverable and the link is exact. The paper's supporting information (ACS, `ci4000213_si_001.xlsx`, taken from the Internet Archive since pubs.acs.org refuses a command-line download) holds, in its `Train+Test` sheet, the same 1,055 rows in the same order as UCI's `biodeg.csv`, with CAS-RN, SMILES, the class and all 41 descriptors: every descriptor and the class are identical on every row, so no key is needed. The 41 Dragon descriptors leave; `SMILES` is the one feature, and the split is scaffold-grouped (872 groups). Three stereoisomer pairs (maleic/fumaric acid, sorbitol/mannitol, dieldrin/endrin) stay, each agreeing on its class; they share a scaffold. The task probes raise no flag: random forest ROC AUC 0.929, LightGBM 0.928, linear 0.900 over 30 splits. The `External validation` sheet holds 670 further chemicals with structures and classes (657 new); that is a candidate of its own, noted for screening.
 
 ## Reference
 

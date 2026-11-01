@@ -269,7 +269,8 @@ apistox), a fixed encoding of the structure does, and the MACCS keys add 0.02 on
 without costing more than 0.006 elsewhere. Source columns computed from the same structure are one modelling choice of
 the authors and leave, whether or not the recommended encoding reproduces them exactly (Lennart, 2026-11-01: "the real
 task here is going from smiles to a prediction"): drug_induced_autoimmunity_prediction's RDKit descriptors,
-qsar_tid_11's FCFP6 bits, qsar_oral_toxicity's ECFP bits. Measured properties stay (qsar_bioconcentration's logKOW). Salts stay as published: salt forms of one
+qsar_tid_11's FCFP6 bits, qsar_oral_toxicity's ECFP bits, the Dragon descriptors of qsar_biodeg,
+qsar_fish_toxicity and qsar_aquatic_toxicity. Measured properties stay (qsar_bioconcentration's logKOW). Salts stay as published: salt forms of one
 compound are a decision of their own (LEAK-19), since the largest fragment is no salt stripper. Check for rows that
 become copies once the stereochemistry is gone (`canonical_smiles(..., stereo=False)`: a 2D encoding does not tell
 stereoisomers apart). Cases: apistox, drug_induced_autoimmunity_prediction, qsar_bioconcentration,
@@ -339,6 +340,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | CLEAN-24 | apistox, drug_induced_autoimmunity_prediction, qsar_bioconcentration, qsar_oral_toxicity, qsar_tid_11 | the amendment: the SMILES ships as a typed structure column and the benchmark encodes it (recommended: RDKit's 2D descriptors with the MACCS keys and the ECFP4 counts); the shipped RDKit descriptors leave, drug_induced's source descriptors too (reproduced: 0.771 against 0.772 LightGBM ROC AUC); apistox keeps its 141 salts, since the largest fragment turns triclopyr and picloram triethylammonium into triethylamine (2026-11-01, Lennart; discussion doc "SMILES Handling in Data Foundry and TabArena v0.2") | applied |
 | CLEAN-24 | qsar_tid_11 | SMILES only: the authors' FCFP6 bits leave as one modelling choice; RDKit recomputes none of them exactly; LightGBM R^2 on the scaffold splits 0.645 with the bits, 0.601 with the recommended encoding, 0.658 with RDKit's ECFP4 counts added to it (2026-11-01, Lennart) | applied |
 | CLEAN-24 | qsar_oral_toxicity | SMILES only: the published ECFP bits (Dragon 7) leave as one modelling choice; the copies are found on the 2D structure instead of the bit vector, 11,116 chemicals (11 more: bit collisions had joined different chemicals) (2026-11-01, Lennart) | applied |
+| CLEAN-24 | qsar_biodeg, qsar_fish_toxicity, qsar_aquatic_toxicity | SMILES only: the structures the UCI copies left out come from the authors' own releases (the paper's supporting information; the Milano Chemometrics workbooks), the same rows in the same order, every descriptor identical, so the link needs no key; the Dragon descriptors leave, which also settles the descriptor-selection leaks of the two toxicity sets (LEAK-31) (2026-11-01, Lennart) | applied |
 
 ## In Data Foundry
 
