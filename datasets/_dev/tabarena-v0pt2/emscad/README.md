@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: emscad
 container_format: 2
-checksum: v2:2a9313e7fb76729a40de898d4abb19c7bf829ac2af8b92ed7ef759f2cd69c891
+checksum: v2:628083fbe3b6bc1fce44b11839c05bcae2edef507e92cc2ac5ebf536f531209c
 build:
   uuid: 01a111fc-7ebc-7346-942e-09517a07829e
   checksum: v2:9b052a25b58d29e3edbdc3fb43d5480da80e75d90658e58f32ec216c64f27cc0
@@ -82,7 +82,7 @@ decisions: []
 
 Binary classification of `fraudulent`, scored with `roc_auc` on grouped splits by `poster_group`. 16,116 rows and 17 features. Source: Other (2017).
 
-Built as `01a111fc-7ebc-7346-942e-09517a07829e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2a9313e7fb76729a40de898d4abb19c7bf829ac2af8b92ed7ef759f2cd69c891`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7ebc-7346-942e-09517a07829e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:628083fbe3b6bc1fce44b11839c05bcae2edef507e92cc2ac5ebf536f531209c`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -220,10 +220,10 @@ No details are given on how the subsampling was done. Moreover, duplicates were 
 - We removed job listings with non english texts (138 rows).
 - We do not subsample the data, as a result, the data is heavily imbalanced.
 - We found no relation of job_id with a timestamp and even found cases where a lower job_id has a description claiming to be a job from 2014 (so the end of the collection period). Thus, we do dropped job_id as it does not contain any signal.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
-  the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed by the
-  curator's rule (missing when the column has no other missing value, else the lowest level; a state that is
-  simply not on the scale, such as Other, is missing).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed
+  by the curator's rule (missing when the column has no other missing value, else the lowest level; a state that
+  is simply not on the scale, such as Other, is missing).
 
 ## Splits
 
@@ -407,4 +407,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:2a9313e7fb76729a40de898d4abb19c7bf829ac2af8b92ed7ef759f2cd69c891` |
+| stale | yes: the definition now gives checksum `v2:628083fbe3b6bc1fce44b11839c05bcae2edef507e92cc2ac5ebf536f531209c` |

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: obesity_estimation
 container_format: 2
-checksum: v2:fb64f895e695dc25bab4b444d54698063f8da70e26a39c41fae3ab269a0b88da
+checksum: v2:f3332f6f7c6be5d88d832d31b890d2fb260ae661f13533a0f6dc9a0b701bcde9
 build:
   uuid: 01a13a7d-c2ba-7a4d-bb80-1eb0032878a9
   checksum: v2:ed914824ca4ef307976afa2a00fbd0a66b334728e4e282386dff8cdef1232c76
@@ -68,7 +68,7 @@ decisions: []
 
 Regression of `BodyMass`, scored with `rmse` on IID splits. 488 rows and 14 features. Source: UCI (2019).
 
-Built as `01a13a7d-c2ba-7a4d-bb80-1eb0032878a9` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:fb64f895e695dc25bab4b444d54698063f8da70e26a39c41fae3ab269a0b88da`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2ba-7a4d-bb80-1eb0032878a9` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:f3332f6f7c6be5d88d832d31b890d2fb260ae661f13533a0f6dc9a0b701bcde9`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -186,8 +186,9 @@ The first 5 of 488 rows of the final frame (random rows: the frame is shuffled);
 - We use only the real data, throwing away the SMOTE samples. The real answers are the first 498 rows: their class counts equal Fig. 1 of the data paper (Palechor & De la Hoz 2019), and all its Normal_Weight rows are among them. A filter on whole-number values would let in 15 synthetic rows, so we cut by position.
 - We drop the 10 exact copies among the 498 real rows (8 groups; one answer set appears 4 times), leaving 488. Each copy repeats all 16 answers, age, height to the centimetre and weight to the kilogram, and 4 groups are neighbouring rows, so they are one person sending the form again; Fig. 1 counts them.
 - We make the task a regression task, re-creating the body mass values underlying the discretized obesity levels, and drop weight and height which leak the target partially. Thus, we create a regression task of estimating the body mass of individuals based on their eating habits and other questions from the questionnaire. The original task is trivial to solve due to the leak and thus not interesting.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 7 columns are ordered categories in
-  the order of the source's codebook (`ORDINAL_LEVELS`).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 7 columns are ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`); 5 of them decoded from the source's codes
+  into its words (`CODE_LABELS`, 2026-11-01).
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 5 ordered codes carry their codebook's
   words (`CODE_LABELS`), in the same order.
@@ -372,4 +373,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:fb64f895e695dc25bab4b444d54698063f8da70e26a39c41fae3ab269a0b88da` |
+| stale | yes: the definition now gives checksum `v2:f3332f6f7c6be5d88d832d31b890d2fb260ae661f13533a0f6dc9a0b701bcde9` |

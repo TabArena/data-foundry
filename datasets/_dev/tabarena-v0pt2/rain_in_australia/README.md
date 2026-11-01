@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: rain_in_australia
 container_format: 2
-checksum: v2:94dbf05da15adea080319d62cd729ce697af02b20a49756be14dab0e92700b80
+checksum: v2:67084ec56517d77f492fa073aac602b580db20bf5b453f325ed1f273d32ffda8
 build: null
 build_stale: false
 data:
@@ -61,7 +61,7 @@ decisions:
 
 Binary classification of `RainTomorrow`, scored with `roc_auc` on temporal splits by `Date`. 264,562 rows and 165 features. Source: GOV Website (2026).
 
-Not built yet. The current definition gives checksum `v2:94dbf05da15adea080319d62cd729ce697af02b20a49756be14dab0e92700b80`.
+Not built yet. The current definition gives checksum `v2:67084ec56517d77f492fa073aac602b580db20bf5b453f325ed1f273d32ffda8`.
 
 ## In brief
 
@@ -260,9 +260,9 @@ to 2026-01-30, with the target RainTomorrow.
   be a total over several days (RainToday 40.6% against 21.8%). We keep them, as known at 9 am.
 - Note: BoM's terms allow personal and in-house use; the rattle documentation records the Bureau's permission to
   use the data with BoM acknowledged as the source.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
-  the order of the source's codebook (`ORDINAL_LEVELS`); 3 are calendar or compass cycles, in their usual order
-  (the wrap is not shown); codes that mean unknown are missing (CLEAN-10).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`); 3 are calendar or compass cycles, in
+  their usual order (the wrap is not shown); codes that mean unknown are missing (CLEAN-10).
 
 ## Splits
 

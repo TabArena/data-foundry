@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: website_phishing
 container_format: 2
-checksum: v2:3fa46bcd6184b34b79f2d95f3b6854993a7471e119d78823252d9e4d07eaef3a
+checksum: v2:bdf85f4e75af84fa1144dc7a7ca1cc18342c9876497c0f307ca00cf3582ac7e6
 build:
   uuid: 01a13a7d-c2c0-77e5-80e6-a355a6e11902
   checksum: v2:c7cde63c8fb7303d3381838fca364ad477533b018a05b5f96c01e8cf0c9b4948
@@ -72,7 +72,7 @@ decisions: []
 
 Binary classification of `is_phishing`, scored with `roc_auc` on IID splits. 1,250 rows and 9 features. Source: UCI (2016).
 
-Built as `01a13a7d-c2c0-77e5-80e6-a355a6e11902` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:3fa46bcd6184b34b79f2d95f3b6854993a7471e119d78823252d9e4d07eaef3a`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2c0-77e5-80e6-a355a6e11902` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:bdf85f4e75af84fa1144dc7a7ca1cc18342c9876497c0f307ca00cf3582ac7e6`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -200,12 +200,13 @@ The first 5 of 1,250 rows of the final frame (random rows: the frame is shuffled
   sites have SFH rated legitimate), and `having_IP_Address` takes only 0 and 1.
 - We renamed the target to `is_phishing` (Yes / No).
 - Anomaly: about half the rows are exact duplicates (47% of the 1,250 rows).
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): the seven three-level signals are
-  ordered categories (`ORDINAL_LEVELS`), with the suspicious 0 in the middle, as in Mohammad et al.'s rules
-  (UCI 327 features document): legitimate, suspicious (the middle bin or state), phishy. They keep the codes'
-  order -1, 0, 1. Which end is phishy is a reading: from the features alone (no label), six of them run with
-  `having_IP_Address` = 1 (an IP address in the URL, 11% of sites) and the rare `popUpWidnow` = 1, so 1 is
-  their phishy end, while `web_traffic` runs against them, as the data page codes it. `age_of_domain` and
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 7 columns are ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`)the seven three-level signals are ordered
+  categories (`ORDINAL_LEVELS`), with the suspicious 0 in the middle, as in Mohammad et al.'s rules (UCI 327
+  features document): legitimate, suspicious (the middle bin or state), phishy. They keep the codes' order -1,
+  0, 1. Which end is phishy is a reading: from the features alone (no label), six of them run with
+  `having_IP_Address` = 1 (an IP address in the URL, 11% of sites) and the rare `popUpWidnow` = 1, so 1 is their
+  phishy end, while `web_traffic` runs against them, as the data page codes it. `age_of_domain` and
   `having_IP_Address` have two levels.
 
 ## Splits
@@ -339,4 +340,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:3fa46bcd6184b34b79f2d95f3b6854993a7471e119d78823252d9e4d07eaef3a` |
+| stale | yes: the definition now gives checksum `v2:bdf85f4e75af84fa1144dc7a7ca1cc18342c9876497c0f307ca00cf3582ac7e6` |

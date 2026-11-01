@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: gallstone_disease
 container_format: 2
-checksum: v2:4a40a7a58e7758749a1e66755b1787b284a0dbbcfb78b2b82bb3d07712eeba53
+checksum: v2:ed2370bf677c2354128ad279fd6e629a6fb51eefa4322e696d70d49c6b1949a1
 build:
   uuid: 01a111fc-d8af-7a12-816b-905e5085bf7f
   checksum: v2:087c399da17c83e68663c6f18d35bedf6a650bb478ce9752985712430fe71520
@@ -68,7 +68,7 @@ decisions: []
 
 Binary classification of `Gallstone Status`, scored with `roc_auc` on IID splits. 319 rows and 38 features. Source: UCI (2025).
 
-Built as `01a111fc-d8af-7a12-816b-905e5085bf7f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:4a40a7a58e7758749a1e66755b1787b284a0dbbcfb78b2b82bb3d07712eeba53`, so the build is stale. See [Build](#build).
+Built as `01a111fc-d8af-7a12-816b-905e5085bf7f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ed2370bf677c2354128ad279fd6e629a6fb51eefa4322e696d70d49c6b1949a1`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -185,8 +185,9 @@ The first 5 of 319 rows of the final frame (random rows: the frame is shuffled);
 ## Curation notes
 
 We use the data without any further curation.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
-  the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them were shipped as numbers.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them decoded from the source's codes
+  into its words (`CODE_LABELS`, 2026-11-01).
 - `Comorbidity` is "any comorbidity", 0 or 1, as the paper describes it: all 217 rows with 0 have none of the
   four listed diseases (CAD, hypothyroidism, hyperlipidemia, diabetes), and the 1s have one, two, or another
   condition. Three rows hold an undocumented 2 (1 row) or 3 (2 rows), each with exactly one listed disease: an
@@ -413,4 +414,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:4a40a7a58e7758749a1e66755b1787b284a0dbbcfb78b2b82bb3d07712eeba53` |
+| stale | yes: the definition now gives checksum `v2:ed2370bf677c2354128ad279fd6e629a6fb51eefa4322e696d70d49c6b1949a1` |

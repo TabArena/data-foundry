@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: heloc
 container_format: 2
-checksum: v2:2f03e9f5653275ea82923eb8271d4b4bab3827f35b7a46f5b886f97bced4b1c2
+checksum: v2:e39d86bfdb6dace0c6d21a8cc13d172123a6b800cf74f6b2e5f9186713ba1d56
 build:
   uuid: 01a111fc-afbf-7df2-bc38-76e6a79a64eb
   checksum: v2:f1b2524f366bfcbe0131c9d2c31b7e9aa23c751f6f5c361a361b5066e114b1ba
@@ -70,7 +70,7 @@ decisions: []
 
 Binary classification of `RiskPerformance`, scored with `roc_auc` on IID splits. 10,459 rows and 23 features. Source: Other (2018).
 
-Built as `01a111fc-afbf-7df2-bc38-76e6a79a64eb` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2f03e9f5653275ea82923eb8271d4b4bab3827f35b7a46f5b886f97bced4b1c2`, so the build is stale. See [Build](#build).
+Built as `01a111fc-afbf-7df2-bc38-76e6a79a64eb` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:e39d86bfdb6dace0c6d21a8cc13d172123a6b800cf74f6b2e5f9186713ba1d56`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -186,9 +186,11 @@ The first 5 of 10,459 rows of the final frame (random rows: the frame is shuffle
 - Label: "Bad" means the applicant was 90 days past due or worse at least once in the 24 months after the account was opened; "Good" means never more than 90 days overdue (FICO's challenge description, as reproduced in the AIX360 HELOC tutorial; FICO's challenge page now redirects).
 - The applicants requested a credit line of $5,000 to $150,000 (same source).
 - Anomaly: the dataset has time-related features. However, the task and features are preprocessed to be time-invariant.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): `MaxDelq2PublicRecLast12M` and
-  `MaxDelqEver` are ordered categories, from a derogatory comment to current and never delinquent (FICO data
-  dictionary); their codes for unknown delinquency, "all other" and no bureau record (-9) are missing.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`); 2 of them decoded from the source's codes
+  into its words (`CODE_LABELS`, 2026-11-01)`MaxDelq2PublicRecLast12M` and `MaxDelqEver` are ordered categories,
+  from a derogatory comment to current and never delinquent (FICO data dictionary); their codes for unknown
+  delinquency, "all other" and no bureau record (-9) are missing.
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 2 ordered codes carry their codebook's
   words (`CODE_LABELS`), in the same order.
@@ -326,4 +328,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:2f03e9f5653275ea82923eb8271d4b4bab3827f35b7a46f5b886f97bced4b1c2` |
+| stale | yes: the definition now gives checksum `v2:e39d86bfdb6dace0c6d21a8cc13d172123a6b800cf74f6b2e5f9186713ba1d56` |

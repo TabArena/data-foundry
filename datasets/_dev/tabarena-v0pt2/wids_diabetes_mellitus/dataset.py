@@ -98,8 +98,9 @@ class WidsDiabetesMellitus(AbstractCuratedDataset):
         - Several Kaggle experts also re-computed the BMI. We also noticed that for 2770 rows, the BMI did not match the real BMI based on the weight and height. We drop all of these cases, as it is unclear to us what the cause of this error is. Given the small fraction, there is either a data entry error, or some values got corrected manually.
         - We found and dropped three duplicated columns that provided no new information.
         - We keep medical codes as string, as these could be more meaningfully decoded.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`); 3 of them were shipped as numbers.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 3 of them decoded from the source's codes
+          into its words (`CODE_LABELS`, 2026-11-01).
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 3 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order.

@@ -252,11 +252,11 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
         - We resolve the ordinal encoding and nan encoding for all columns.
         - Note, that data has a lot of features that contain data from a similar origin that was transformed into individual columns.
         - We do not decode the promotion codes across years but keep them as string columns as it would blow up the dimensionality too much otherwise.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 12 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`); 3 of them were shipped as numbers; 3 hold a state
-          outside the scale, placed by the curator's rule (missing when the column has no other missing value, else the
-          lowest level; a state that is simply not on the scale, such as Other, is missing); codes that mean unknown are
-          missing (CLEAN-10).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 9 columns are ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 2 of them decoded from the source's codes
+          into its words (`CODE_LABELS`, 2026-11-01); 3 hold a state outside the scale, placed by the curator's rule
+          (missing when the column has no other missing value, else the lowest level; a state that is simply not on the
+          scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 2 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order; 3 unordered codes carry their words: `AGEFLAG`, `GENDER`,

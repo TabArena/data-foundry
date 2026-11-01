@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: home_credit_default_risk
 container_format: 2
-checksum: v2:3fe11fa4b9bde118fe6c4399ab78c081c606fe7f9e0fd31d949289ef2b198d1d
+checksum: v2:dad6e518c7ebeac6beeec600928acf67d104ab3a062a2912f3608a9fc0010034
 build:
   uuid: 01a111fb-c9a4-79ac-b807-b4b9dffd8068
   checksum: v2:1a393d7cebaaa9c5dd20682edd3c56e7c65a975a8f94a37ce6528b23a311ad2f
@@ -73,7 +73,7 @@ decisions: []
 
 Binary classification of `TARGET`, scored with `roc_auc` on IID splits. 307,507 rows and 709 features. Source: Kaggle (2018).
 
-Built as `01a111fb-c9a4-79ac-b807-b4b9dffd8068` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3fe11fa4b9bde118fe6c4399ab78c081c606fe7f9e0fd31d949289ef2b198d1d`, so the build is stale. See [Build](#build).
+Built as `01a111fb-c9a4-79ac-b807-b4b9dffd8068` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:dad6e518c7ebeac6beeec600928acf67d104ab3a062a2912f3608a9fc0010034`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -200,9 +200,9 @@ We start from this file.
 - Potential leak, kept on purpose: the 43 building columns (`*_AVG`, `*_MODE`, `*_MEDI`, `TOTALAREA_MODE`) are "normalized information about building where the client lives" (HomeCredit_columns_description.csv) and each spans exactly 0 to 1, so Home Credit likely scaled them over all applications, ours included; the method is not documented and no raw values exist. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak; revisit if Home Credit documents it.
 - We replace values that became inf after aggregation with NaN. This occurred across several aggregated columns.
 - Tagged ForcedIIDFromTemporal: applications arrive over time, but the release has no application dates (its DAYS_ columns are "time only relative to the application", HomeCredit_columns_description.csv), so the split is random.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 4 columns are ordered categories in
-  the order of the source's codebook (`ORDINAL_LEVELS`); 2 of them were shipped as numbers; 1 are calendar or
-  compass cycles, in their usual order (the wrap is not shown).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 are calendar or compass cycles, in
+  their usual order (the wrap is not shown).
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 2 scores with no words per level are
   numbers (`SCORES`): `REGION_RATING_CLIENT`, `REGION_RATING_CLIENT_W_CITY`.
@@ -472,4 +472,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:3fe11fa4b9bde118fe6c4399ab78c081c606fe7f9e0fd31d949289ef2b198d1d` |
+| stale | yes: the definition now gives checksum `v2:dad6e518c7ebeac6beeec600928acf67d104ab3a062a2912f3608a9fc0010034` |

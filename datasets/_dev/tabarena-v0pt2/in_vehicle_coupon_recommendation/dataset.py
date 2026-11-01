@@ -144,8 +144,9 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
         - Anomaly: the numeric features in the dataset are low-cardinality (<25)
         - We simulate a cold-start model (as used before a recommender has any history for a user): predict whether a person accepts a coupon from their profile, stated habits and the scenario, for people not seen in training. The data is a survey (Wang et al. 2017, Sec. 6.2): each MTurk respondent first gave demographics and preferences, then answered hypothetical driving scenarios (22 per person in the file, 19 fixed questionnaire versions), all in one sitting and without timestamps, so there is no real interaction history for a warm-start setting. A random split puts about two-thirds of each person's other answers in train, which lets a model learn that person's tendency to say yes (ROC AUC 0.83 random vs 0.76 grouped; leak audit 2026-09-24).
         - The respondent id is not shipped with the data. The raw file lists each respondent's answers as a consecutive block with identical first-part answers, so a block of the same profile is one respondent: 587 blocks, 517 of them with 22 rows, against 652 accepted surveys in the paper, so a few blocks likely merge two adjacent respondents with identical profiles, which only makes the grouping stricter. The paper reports out-of-sample AUC from 5-fold testing (Table 3) without saying whether folds were split by respondent; a random split would be a warm start.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 8 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 8 columns are ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them decoded from the source's codes
+          into its words (`CODE_LABELS`, 2026-11-01).
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order.

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: dementia_prediction
 container_format: 2
-checksum: v2:54dc95683ce3d5d26dbca57b3bb0915926f09ac424d1bf55682b87e12961a958
+checksum: v2:109fb93190bca8db470b750e8639e972fac195f6f6619040b6993de2a6ec2126
 build:
   uuid: 01a111fc-d5b5-7da4-8ffe-99dd2600b6e0
   checksum: v2:9ddc612f5674f4b595dfba519a28785aa6b30e0cf85e35380aab666fff024a7c
@@ -75,7 +75,7 @@ decisions: []
 
 Multiclass classification of `CDR`, scored with `log_loss` on grouped splits by `Subject ID`. 370 rows and 8 features. Source: Other (2010).
 
-Built as `01a111fc-d5b5-7da4-8ffe-99dd2600b6e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:54dc95683ce3d5d26dbca57b3bb0915926f09ac424d1bf55682b87e12961a958`, so the build is stale. See [Build](#build).
+Built as `01a111fc-d5b5-7da4-8ffe-99dd2600b6e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:109fb93190bca8db470b750e8639e972fac195f6f6619040b6993de2a6ec2126`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -198,8 +198,6 @@ We start with the data from Mendeley.
 - CDR and Group are both the same target variable. CDR is the Clinical Dementia Rating (0 = no dementia, 0.5 = very mild AD, 1 = mild AD, 2 = moderate AD), which determines the group variable. 31 of the 150 subjects change their rating across visits (the 'Converted' group). We make this a task to predict for a patient (at any given time point of a scan) their dementia rating. The rating is ordinal but discrete, so we treat it as a classification problem (not regression). We drop cases with moderate_AD (n=3), as we do not have enough data on this class to include them in our prediction task.
 - We drop the group variable (Nondemented / Demented / Converted, derived from the ratings over the visits) and the time of the scan (visit number, MR delay). We predict each visit's rating from the subject's sex, age, years of education (EDUC), socioeconomic status (SES, 19 missing), the Mini-Mental State Examination score of the same visit (MMSE, 2 missing; a separate cognitive test, not derived from the rating) and three measures from the visit's MRI scan: estimated total intracranial volume (eTIV), normalized whole-brain volume (nWBV) and the atlas scaling factor (ASF, which is 1755 / eTIV, kept as in the source).
 - We also drop the constant hand column.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
-  the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them were shipped as numbers.
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 1 scores with no words per level are
   numbers (`SCORES`): `SES`.
@@ -370,4 +368,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:54dc95683ce3d5d26dbca57b3bb0915926f09ac424d1bf55682b87e12961a958` |
+| stale | yes: the definition now gives checksum `v2:109fb93190bca8db470b750e8639e972fac195f6f6619040b6993de2a6ec2126` |

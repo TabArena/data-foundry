@@ -83,8 +83,9 @@ class AudiologyDiagnosis(AbstractCuratedDataset):
         - We drop the cases whose diagnosis is not a type of hearing loss: bells_palsy (a facial-nerve diagnosis) and the central diagnoses possible_brainstem_disorder and poss_central (3 cases after the duplicates).
         - We do not use the cause as the target: among the cochlear diagnoses it is spelled out by two history findings (age_gt_60 and history_noise agree with cochlear_age, cochlear_age_and_noise, cochlear_poss_noise or cochlear_unknown in 139 of 147 cases).
         - We remove the columns that are constant after these steps: history_fullness, and the brainstem-test findings bser, viith_nerve_signs and waveform_ItoV_prolonged, which only the dropped cases had (bser is also recorded for one kept case).
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 6 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing (CLEAN-10).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 6 columns are ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing
+          (CLEAN-10).
         - Partial order, left unordered (2026-11-01, CLEAN-14): `speech` runs very_poor < poor < good < very_good, but
           where `normal` sits against good and very_good is not documented.
     """

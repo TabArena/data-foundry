@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sberbank_housing_market_forecasting
 container_format: 2
-checksum: v2:7879fc67937ec89c2fc59a9e5e0280f4eb2006fe233d77253d6e5142a3d211ec
+checksum: v2:c1c8adbd6d383c20c370653734be9b54b1a53aa9f041f658293602a5df1bd95c
 build:
   uuid: 01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7
   checksum: v2:53a44153b4da1976a157742f955d2dbea5f4e85c85e25e48af1746db3acc846c
@@ -72,7 +72,7 @@ decisions: []
 
 Regression of `price_doc`, scored with `rmse` on temporal splits by `timestamp`. 28,321 rows and 386 features. Source: Kaggle (2017).
 
-Built as `01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:7879fc67937ec89c2fc59a9e5e0280f4eb2006fe233d77253d6e5142a3d211ec`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:c1c8adbd6d383c20c370653734be9b54b1a53aa9f041f658293602a5df1bd95c`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -212,8 +212,9 @@ We follow the preprocessing from TabRed (https://github.com/yandex-research/tabr
 - We drop the ID column as it does not provide information.
 - Note, the dataset contains a lot of spatial feature and even more already decoded spatial information (like distances to various points of interest).
 - We keep the 1,126 sales whose build_year is later than the year of sale (Lennart, 2026-10-14; until then they were dropped as errors). 1,124 were sold 0 to 4 years before it, which fits flats sold before completion; 2 have a build_year coded from a range (such as 20052009), kept as it is.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 2 columns are ordered categories in
-  the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing (CLEAN-10).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing
+  (CLEAN-10).
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 1 unordered codes carry their words:
   `material`; 1 scores with no words per level are numbers (`SCORES`): `state`.
@@ -474,4 +475,4 @@ We always use 6 month of the data as test data and all prior data as training da
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:7879fc67937ec89c2fc59a9e5e0280f4eb2006fe233d77253d6e5142a3d211ec` |
+| stale | yes: the definition now gives checksum `v2:c1c8adbd6d383c20c370653734be9b54b1a53aa9f041f658293602a5df1bd95c` |

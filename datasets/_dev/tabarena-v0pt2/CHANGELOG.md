@@ -13,8 +13,9 @@ record, audit or PR that motivated it.
   text. CLEAN-12 and CLEAN-14 amended; `decode(df, CODE_LABELS)` in the v2 API (a code without a label raises), after
   `set_missing`.
 - Six agents read the codebooks for every coded column of 44 definitions
-  (`local-data-warehouse/_runs/2026-10-30_ordinal/decode/`). In 29 definitions 377 coded columns now carry their words (BI-RADS density "almost entirely fatty" to "extremely
-  dense", ames' ratings "very poor" to "very excellent", the ANES codes, coil_2000's percentage and guilder bands,
+  (`local-data-warehouse/_runs/2026-10-30_ordinal/decode/`). In 29 definitions 377 coded columns now carry their
+  words (BI-RADS density "almost entirely fatty" to "extremely dense", ames' ratings "very poor" to "very excellent",
+  the ANES codes, coil_2000's percentage and guilder bands,
   early_learning_predictors' answers), and 54 scores and ratings are numbers again (california_house_prices_2020's
   school ratings, miami_housing's `structure_quality`, eryhemato_squamous_disease's ten findings, student_portuguese's
   1-5 ratings, the ANES 7-point scales with words only at the ends, cirrhosis' stage, ljubljana's degree of
@@ -28,6 +29,10 @@ record, audit or PR that motivated it.
   Undocumented codes are missing: early_learning_predictors (`pra_cotlands_visits`, `pra_free_play`,
   `pra_free_play_outdoor`, `obs_water`, `pri_bank` 0), credit_card_clients_default `MARRIAGE` 0, pva `AGEFLAG` blank
   and `GENDER` A, C and Unknown.
+- The curator's answers on the ANES sheet: church attendance in 2024 reads the filter's "No" (stored as 9) as never,
+  except the short form; 2020's VCF0130a recovers never from VCF0130; "all of life" is the respondent's age, so
+  VCF9001 is a number and VCF9002 bands those rows by age; the 40 master-code columns carry the appendix's words.
+  CLEAN-12 has a table of what ships as words and what as numbers.
 - `dataset check` on the 29 definitions: no error; against main three warnings fewer and none new. Not built.
 
 ## 2026-11-01, the curator's second marks on PR #37: cycles, partial orders, two cleanings (PR #37)

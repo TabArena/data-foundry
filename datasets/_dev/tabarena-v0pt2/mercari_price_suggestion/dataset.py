@@ -79,8 +79,9 @@ class MercariPriceSuggestion(AbstractCuratedDataset):
         - The task was treated and solved as an IID task on Kaggle.
         - We replace "No description yet" with NaN.
         - We take the full data (about 1.48M rows after de-duplication) with 3-fold cross-validation, so every fold trains on about 990k rows. Until 2026-10 a `mercari_price_suggestion_1m` version sub-sampled it to one 1M / 250k split.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them decoded from the source's codes
+          into its words (`CODE_LABELS`, 2026-11-01).
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order; 1 unordered codes carry their words: `shipping`.

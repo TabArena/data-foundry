@@ -118,8 +118,9 @@ class HorseColicSurvival(AbstractCuratedDataset):
         - We keep only the first instance (hospital number) per horse, as they can be treated multiple times and otherwise leaks information about the target.
         - We use the target "outcome" to model a task where we aim to predict if the horse survives or not. We drop cases that have not outcome recorded.
         - We keep the duplicates occurring in the data.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 8 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing (CLEAN-10).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 8 columns are ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 8 of them decoded from the source's codes
+          into its words (`CODE_LABELS`, 2026-11-01); codes that mean unknown are missing (CLEAN-10).
         - Partial order, left unordered (2026-11-01, CLEAN-14): `pain`: the codebook says it "should NOT be treated as
           ordered"; alert (1) < intermittent mild (3) < intermittent severe (4) < continuous severe pain (5) is a line,
           and depressed (2) is off it. `mucous_membranes` has two lines from normal pink (1): pallor and cyanosis (3 < 4

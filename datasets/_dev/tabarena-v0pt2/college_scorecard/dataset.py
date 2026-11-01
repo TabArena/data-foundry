@@ -259,8 +259,9 @@ class CollegeScorecard(AbstractCuratedDataset):
         - Split: temporal by entering cohort with a label gap (splits comment), not grouped by institution, since a model is used on the next cohorts of institutions it has seen (decision table).
         - Anomaly: completion rates of 0 (24 institution-cohorts) and 1 (14), and ACT 25th percentiles below 10 (56 rows), kept as reported.
         - Note: we keep the rate as a regression target; TableShift binarizes it at 0.5.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing (CLEAN-10).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing
+          (CLEAN-10).
     """
 
     # Task

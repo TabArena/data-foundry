@@ -91,9 +91,9 @@ class GarmentsWorkerProductivity(AbstractCuratedDataset):
         - It can be expected that feature engineering exposing the non-iid properties of the dataset will be crucial for good predictive performance.
         - We cannot fully exclude the possibility of leaks, since not enough information about the date of collection for some features is given.
         - We define 30 splits with one day for testing each, resulting in small test sizes of 17-24 samples per split.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 2 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`); 2 are calendar or compass cycles, in their usual order
-          (the wrap is not shown).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 2 are calendar or compass cycles, in
+          their usual order (the wrap is not shown).
     """
 
     # Task

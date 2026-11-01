@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: pva_revenue_prediction_kddcup98
 container_format: 2
-checksum: v2:ffe651eab8da5388602178e1edafce2a72967a6df81e7057d56165f8cb864424
+checksum: v2:014ff71a0a8209c9e428501e722760c24d111e0d725f929ac5a4961fb4640279
 build:
   uuid: 01a13a7d-f16c-7ca9-ac9e-41670aefdb4e
   checksum: v2:7d87e4e7163e59fa1ca7ad8e1a9179de10f350eef500d4ba219b89c69c8f943c
@@ -75,7 +75,7 @@ decisions: []
 
 Binary classification of `TARGET_B`, scored with `roc_auc` on IID splits. 191,769 rows and 477 features. Source: Other (1998).
 
-Built as `01a13a7d-f16c-7ca9-ac9e-41670aefdb4e` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:ffe651eab8da5388602178e1edafce2a72967a6df81e7057d56165f8cb864424`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-f16c-7ca9-ac9e-41670aefdb4e` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:014ff71a0a8209c9e428501e722760c24d111e0d725f929ac5a4961fb4640279`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -209,11 +209,11 @@ We start with the train and validation data from the KDD Cup 1998 website and co
 - We resolve the ordinal encoding and nan encoding for all columns.
 - Note, that data has a lot of features that contain data from a similar origin that was transformed into individual columns.
 - We do not decode the promotion codes across years but keep them as string columns as it would blow up the dimensionality too much otherwise.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 12 columns are ordered categories in
-  the order of the source's codebook (`ORDINAL_LEVELS`); 3 of them were shipped as numbers; 3 hold a state
-  outside the scale, placed by the curator's rule (missing when the column has no other missing value, else the
-  lowest level; a state that is simply not on the scale, such as Other, is missing); codes that mean unknown are
-  missing (CLEAN-10).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 9 columns are ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`); 2 of them decoded from the source's codes
+  into its words (`CODE_LABELS`, 2026-11-01); 3 hold a state outside the scale, placed by the curator's rule
+  (missing when the column has no other missing value, else the lowest level; a state that is simply not on the
+  scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 2 ordered codes carry their codebook's
   words (`CODE_LABELS`), in the same order; 3 unordered codes carry their words: `AGEFLAG`, `GENDER`,
@@ -488,4 +488,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:ffe651eab8da5388602178e1edafce2a72967a6df81e7057d56165f8cb864424` |
+| stale | yes: the definition now gives checksum `v2:014ff71a0a8209c9e428501e722760c24d111e0d725f929ac5a4961fb4640279` |

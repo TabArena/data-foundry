@@ -167,10 +167,11 @@ class CreditG(AbstractCuratedDataset):
           income (">= 35" is code 1), residence_since and existing_credits_count are bands, people_liable is "0 to
           2" or "3 or more".
         - Metric: the Statlog cost matrix on probabilities, each applicant predicted as the class of least expected cost (the AI's choice; the curator was unsure and noted TabArena's threshold tuning, 2026-10-21).
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 9 columns are ordered categories
-          (`ORDINAL_LEVELS`): the balances, employment, instalment rate, residence, property, number of credits, job
-          and people liable. "no checking account", "unknown / no savings account" and "unknown / no property" are
-          states outside their scales: missing, by the curator's rule, as the data has no other missing value.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 9 columns are ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`)9 columns are ordered categories
+          (`ORDINAL_LEVELS`): the balances, employment, instalment rate, residence, property, number of credits, job and
+          people liable. "no checking account", "unknown / no savings account" and "unknown / no property" are states
+          outside their scales: missing, by the curator's rule, as the data has no other missing value.
     """
 
     # Task

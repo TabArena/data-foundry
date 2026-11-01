@@ -75,10 +75,11 @@ class CreditCardClientsDefault(AbstractCuratedDataset):
         - We rename the target variable and restore the original class names.
         - We drop the "ID" column.
         - Anomaly: the data has temporal features but the task is time-invariant.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed by the
-          curator's rule (missing when the column has no other missing value, else the lowest level; a state that is
-          simply not on the scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them decoded from the source's codes
+          into its words (`CODE_LABELS`, 2026-11-01); 1 hold a state outside the scale, placed by the curator's rule
+          (missing when the column has no other missing value, else the lowest level; a state that is simply not on the
+          scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order; 2 unordered codes carry their words: `MARRIAGE`, `SEX`.

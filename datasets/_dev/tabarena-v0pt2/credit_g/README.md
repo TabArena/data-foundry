@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: credit_g
 container_format: 2
-checksum: v2:a371e77d6c43c65c48d3bdfcc6d9b85058958dcb5ada8a92cc0f2de77afb0740
+checksum: v2:7dfcce48c410e022a5ba41d4a9782a0486d4ac6d134546fa693d9e96b485bbd7
 build:
   uuid: 01a111fc-cf4e-7841-a626-e0358b0042c6
   checksum: v2:db7592c8a2928f6e03ba79421d5bb29644dea45e047e9e09e439f3b9857441f2
@@ -67,7 +67,7 @@ decisions: []
 
 Binary classification of `good_or_bad_customer`, scored with `cost_matrix` on IID splits. 1,000 rows and 20 features. Source: UCI (1994).
 
-Built as `01a111fc-cf4e-7841-a626-e0358b0042c6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:a371e77d6c43c65c48d3bdfcc6d9b85058958dcb5ada8a92cc0f2de77afb0740`, so the build is stale. See [Build](#build).
+Built as `01a111fc-cf4e-7841-a626-e0358b0042c6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7dfcce48c410e022a5ba41d4a9782a0486d4ac6d134546fa693d9e96b485bbd7`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -204,10 +204,11 @@ The first 5 of 1,000 rows of the final frame (random rows: the frame is shuffled
   income (">= 35" is code 1), residence_since and existing_credits_count are bands, people_liable is "0 to
   2" or "3 or more".
 - Metric: the Statlog cost matrix on probabilities, each applicant predicted as the class of least expected cost (the AI's choice; the curator was unsure and noted TabArena's threshold tuning, 2026-10-21).
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 9 columns are ordered categories
-  (`ORDINAL_LEVELS`): the balances, employment, instalment rate, residence, property, number of credits, job
-  and people liable. "no checking account", "unknown / no savings account" and "unknown / no property" are
-  states outside their scales: missing, by the curator's rule, as the data has no other missing value.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 9 columns are ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`)9 columns are ordered categories
+  (`ORDINAL_LEVELS`): the balances, employment, instalment rate, residence, property, number of credits, job and
+  people liable. "no checking account", "unknown / no savings account" and "unknown / no property" are states
+  outside their scales: missing, by the curator's rule, as the data has no other missing value.
 
 ## Splits
 
@@ -389,4 +390,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:a371e77d6c43c65c48d3bdfcc6d9b85058958dcb5ada8a92cc0f2de77afb0740` |
+| stale | yes: the definition now gives checksum `v2:7dfcce48c410e022a5ba41d4a9782a0486d4ac6d134546fa693d9e96b485bbd7` |

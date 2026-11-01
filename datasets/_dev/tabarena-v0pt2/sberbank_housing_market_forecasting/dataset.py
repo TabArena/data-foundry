@@ -241,8 +241,9 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         - We drop the ID column as it does not provide information.
         - Note, the dataset contains a lot of spatial feature and even more already decoded spatial information (like distances to various points of interest).
         - We keep the 1,126 sales whose build_year is later than the year of sale (Lennart, 2026-10-14; until then they were dropped as errors). 1,124 were sold 0 to 4 years before it, which fits flats sold before completion; 2 have a build_year coded from a range (such as 20052009), kept as it is.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 2 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing (CLEAN-10).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing
+          (CLEAN-10).
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 1 unordered codes carry their words:
           `material`; 1 scores with no words per level are numbers (`SCORES`): `state`.

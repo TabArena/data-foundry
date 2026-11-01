@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: aeolus_rebuilt_1m
 container_format: 2
-checksum: v2:3b5f4cb8ce6b4b66bf60997dd741a036492cb3ad73a88058cef7741f46ca7ff7
+checksum: v2:ec086b63b892722ad33a2a68dc40cf0cfb4d38748cb7f21568807b0720cd1d03
 build: null
 build_stale: false
 data:
@@ -63,7 +63,7 @@ decisions:
 
 Binary classification of `ARR_DEL15`, scored with `roc_auc` on temporal splits by `FL_DATE`. 1,799,255 rows and 34 features. Source: GOV Website (2026).
 
-Not built yet. The current definition gives checksum `v2:3b5f4cb8ce6b4b66bf60997dd741a036492cb3ad73a88058cef7741f46ca7ff7`.
+Not built yet. The current definition gives checksum `v2:ec086b63b892722ad33a2a68dc40cf0cfb4d38748cb7f21568807b0720cd1d03`.
 
 ## In brief
 
@@ -271,10 +271,10 @@ We start with the monthly files of the BTS Reporting Carrier On-Time Performance
 - `OP_CARRIER_FL_NUM` is categorical (the paper's Table 9), as in aeolus_1m; one operated flight has none.
 - Note: compared with the Aeolus release, the rebuild adds March 2024 (585,413 operated flights) and the 192,954 flights of 43 airports the release left out (mostly Allegiant and SkyWest), and reads the weather in the hour before departure, not 3.5 to 11 hours earlier. With aeolus_1m's inputs (the schedule and three weather values per airport), the weather adds 0.043-0.051 ROC AUC per window here against 0.032-0.039 in aeolus_1m (the destination's alone 0.010-0.014 against 0.014-0.015; untuned LightGBM on each dataset's own splits).
 - Task probes (200k newest training rows, three windows): no flags; ROC AUC LightGBM 0.819, random forest 0.808, linear 0.760, the best single feature (`INBOUND_ARR_DELAY`) 0.729. Leak probes (50k rows): no exact copies across the split; `INBOUND_ARR_DELAY` alone 0.734 against 0.790 for all features, the core of the task (a late aircraft makes a late flight); its missing indicator 0.683, which marks a previous flight that had not landed by the prediction point, known then. Every test airport is in training (known entities, SPLIT-13).
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
-  the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed by the
-  curator's rule (missing when the column has no other missing value, else the lowest level; a state that is
-  simply not on the scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed
+  by the curator's rule (missing when the column has no other missing value, else the lowest level; a state that
+  is simply not on the scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
 
 Version of `aeolus_rebuilt`: The BTS files hold 13,708,650 operated flights from 2023 on with an arrival delay (13,926,960 scheduled). We sample per test window (v2 split protocol): each window keeps at most 500k of its rows (all of them here), and its train side is a random 1M of the earlier flights, drawn in one random order for all windows; the frame keeps only the rows a split uses.
 

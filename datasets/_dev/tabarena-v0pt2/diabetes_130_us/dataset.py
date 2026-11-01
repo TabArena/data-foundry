@@ -117,10 +117,11 @@ class Diabetes130Us(AbstractCuratedDataset):
         - The other codes for an unknown value ("Not Available" and "Not Mapped" in the ID columns, "Unknown/Invalid" in gender) stay as categories, as IDS_mapping.csv lists them as codes of their own next to "NULL".
         - We drop examide, citoglipton and glimepiride-pioglitazone, which are constant ("No") after the filters above.
         - Anomaly: There is a distribution shift based on the original order. The reason for this might be that the encounters are ordered in some way such that later parts of the data contain different sub-groups than earlier parts. This is also indicated by the fact that the "payer_code" feature is responsible for the shift. This distribution shift vanishes after randomly shuffling the data (as done by default for this and all other datasets used in TabArena).
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 17 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`); 13 hold a state outside the scale, placed by the
-          curator's rule (missing when the column has no other missing value, else the lowest level; a state that is
-          simply not on the scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 17 columns are
+          ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`); 13 hold a state outside the
+          scale, placed by the curator's rule (missing when the column has no other missing value, else the lowest
+          level; a state that is simply not on the scale, such as Other, is missing); codes that mean unknown are
+          missing (CLEAN-10).
     """
 
     # Task

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: immoscout_german_house_prices
 container_format: 2
-checksum: v2:9613bdda439f79c60c166f6e57380029aee05c1a201cccf8dc1988eb1e5019bc
+checksum: v2:c78291f976a8b34a01c49320c5f386eccfeef7102c2080515aa02f09ab6dbf3f
 build:
   uuid: 01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9
   checksum: v2:e91f49bdb50c1cd545a4e8d63445b34d9d9656af0c38c65cf81d41e18ec5054d
@@ -68,7 +68,7 @@ decisions: []
 
 Regression of `LogPrice`, scored with `rmsle` on IID splits. 10,317 rows and 23 features. Source: Kaggle (2020).
 
-Built as `01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9613bdda439f79c60c166f6e57380029aee05c1a201cccf8dc1988eb1e5019bc`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e1d2-7c5b-a5e9-bb8bb2b58ed9` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c78291f976a8b34a01c49320c5f386eccfeef7102c2080515aa02f09ab6dbf3f`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -217,8 +217,8 @@ We treat this as an IID time-independent task, because the prices is not sold pr
   renovation levels. No copy with the German labels and no scraper code were found; the Kaggle upload is
   deleted.
 - We drop all rows where the living space is less than 10 (in Germany, this would likely not be enough living space for a real house, and thus might be a data error.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 2 columns are ordered categories in
-  the order of the source's codebook (`ORDINAL_LEVELS`).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`).
 
 ## Splits
 
@@ -385,4 +385,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:9613bdda439f79c60c166f6e57380029aee05c1a201cccf8dc1988eb1e5019bc` |
+| stale | yes: the definition now gives checksum `v2:c78291f976a8b34a01c49320c5f386eccfeef7102c2080515aa02f09ab6dbf3f` |

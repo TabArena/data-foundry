@@ -108,8 +108,9 @@ class LendingClub(AbstractCuratedDataset):
         - `term` is used only for this selection and is not a feature (it is part of the company's own assessment, see the merged features). Until 2026-10 the `lending_club_1m` version tested on 2016 and the v1 `lending_club` notebook on 2016-2018.
         - We leave out the joint-applicant fields of the original data (sec_app_*, revol_bal_joint): they are filled only from 2017 on, so they are empty for the loans we keep.
         - Loans per issue year in the cleaned data (from the v1 exploration, counted 2026-10-22): 836 (2008), 4,716 (2009), 8,466 (2010), 12,747 (2011), 41,953 (2012), 99,018 (2013), 161,028 (2014), 280,780 (2015); 46% of the rows are from 2015, the year of the test windows.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing (CLEAN-10).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing
+          (CLEAN-10).
     """
 
     # Task

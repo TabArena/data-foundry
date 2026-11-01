@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: california_house_prices_2020
 container_format: 2
-checksum: v2:0d78f45f92fe0882669825dd9f9d71895164a402abb0a70171e3720e12974d0d
+checksum: v2:41199e397b9d1618231376a18d4d49a8d449c5fd74b988299d058281c0cdce94
 build:
   uuid: 01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a
   checksum: v2:c703f2c88510fa9def52e7c79051dd9dd5f9e711d25ea0914082fd131606d0eb
@@ -70,7 +70,7 @@ decisions: []
 
 Regression of `Sold Price`, scored with `rmsle` on temporal splits by `time_index`. 39,060 rows and 41 features. Source: Kaggle (2021).
 
-Built as `01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:0d78f45f92fe0882669825dd9f9d71895164a402abb0a70171e3720e12974d0d`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c063-762b-b7dc-6a2ca7c1ce3a` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:41199e397b9d1618231376a18d4d49a8d449c5fd74b988299d058281c0cdce94`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -206,8 +206,6 @@ We found out that the data was web scraped from redfin.com and that the houses a
 - We fixed one entry that had a negative value for garage space, likely due to a typo. This error still exists on the website.
 - We drop the 2,480 homes (6.0%) whose last sale is on or after their listing date: the listing describes an earlier sale, and 125 of them give the price we predict as the last sale price. They were 5-6% of each test window but about half its squared error (LightGBM RMSE 0.196 with them, 0.140 without). Listings older than 6 months before the sale stay (Lennart, 2026-10-14).
 - After all the above preprocessing, 63 homes appear more than once (same address, ZIP code and year built; 130 rows). 51 pairs give the same sold price a median 61 Kaggle IDs apart: one sale scraped twice, of which we keep the newest entry. The other 28 rows are sales at another price (a resale, or another unit at an address without a unit number) and stay, as an earlier sale is history under the temporal split (Lennart, 2026-10-21: "we want to keep real repeats, as houses can be sold several times").
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
-  the order of the source's codebook (`ORDINAL_LEVELS`); 3 of them were shipped as numbers.
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 3 scores with no words per level are
   numbers (`SCORES`): `Elementary School Score`, `Middle School Score`, `High School Score`.
@@ -401,4 +399,4 @@ Three test windows in sale order, each a sixth of the sales (6,510 rows), cut fr
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:0d78f45f92fe0882669825dd9f9d71895164a402abb0a70171e3720e12974d0d` |
+| stale | yes: the definition now gives checksum `v2:41199e397b9d1618231376a18d4d49a8d449c5fd74b988299d058281c0cdce94` |

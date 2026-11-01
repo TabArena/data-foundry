@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: cardiotocography
 container_format: 2
-checksum: v2:8a93e06b45209ff943287426d7b8f75548761102fa2ddbec2614afd161eaaa02
+checksum: v2:4f2bba690e2bc2076d2493509114511ac03c92b57cf5e6974576877e2603a325
 build:
   uuid: 01a111fc-7d1e-7b12-8cc7-298d2fc12820
   checksum: v2:732dddb0e814a5736c664898ca5254d54ea242cee222a20e2e5a126a2636a504
@@ -77,7 +77,7 @@ decisions: []
 
 Multiclass classification of `NSP`, scored with `log_loss` on grouped splits by `patient_id`. 2,126 rows and 22 features. Source: UCI (2010).
 
-Built as `01a111fc-7d1e-7b12-8cc7-298d2fc12820` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8a93e06b45209ff943287426d7b8f75548761102fa2ddbec2614afd161eaaa02`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7d1e-7b12-8cc7-298d2fc12820` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:4f2bba690e2bc2076d2493509114511ac03c92b57cf5e6974576877e2603a325`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -198,8 +198,9 @@ We use the data from UCI and the 3 class problem of predicting NSP as it is more
 - Each row is a segment (sample `b` to `e`) of one exam file, and 1,706 of the 1,774 consecutive segment pairs within a file overlap, so the rows of a file must stay together. The patient ID above the file is our guess, no source documents it: we strip the trailing number of a named file (`Aast_1` ... `Aast_14` -> `Aast`), each numbered file (`S0001027.dat`) stays alone. This gives 176 IDs for 352 files; 61 IDs merge 2 to 14 files and 10 span exam dates 50 to 1,139 days apart, so a stem is likely initials and may hold two women or two pregnancies. Merging too much only makes the split stricter; a woman under two IDs (similar stems such as `Mcslr`/`Mcslrc`, or a numbered file) would put her separate exams on both sides, but never overlapping segments.
 - The raw data has dates and the start and end index of the recording. We drop these as they are not relevant for the predictive task and would not be available for test samples.
 - We drop all other columns that represent the label.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
-  the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them were shipped as numbers.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them decoded from the source's codes
+  into its words (`CODE_LABELS`, 2026-11-01).
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
   words (`CODE_LABELS`), in the same order.
@@ -387,4 +388,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8a93e06b45209ff943287426d7b8f75548761102fa2ddbec2614afd161eaaa02` |
+| stale | yes: the definition now gives checksum `v2:4f2bba690e2bc2076d2493509114511ac03c92b57cf5e6974576877e2603a325` |

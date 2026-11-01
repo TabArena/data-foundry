@@ -177,11 +177,11 @@ class BreastCancerPrediction(AbstractCuratedDataset):
         - One exam per woman, her earliest in the sample (lowest age; two age ties keep the file's order), so the folds are IID (Lennart, 2026-10-15): 3,133 of the 36,714 women contribute 2-4 exams, and the use case is one woman's screening read. The 20 women with cancer and several exams are positive only on their last exam, so 20 of the 259 cancers go. Untuned LightGBM scores alike either way (ROC AUC 0.928 earliest exam, 0.923 latest, 0.925 all exams grouped by woman). The file's two exact copies go with it.
         - Duplicates: repeated feature vectors (52.2% of the rows, the `dataset_duplicate_rows` warning) stay: the features are coarse, and these are different women with the same profile (49.6% of the test rows have a copy in train), whose outcomes are independent.
         - Anomaly: the BCSC recommends the data "for use as a teaching tool only; they should not be used to conduct primary research". We use it to compare learning methods, not to estimate clinical effects.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 2 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them were shipped as numbers; 1 hold a state
-          outside the scale, placed by the curator's rule (missing when the column has no other missing value, else the
-          lowest level; a state that is simply not on the scale, such as Other, is missing); codes that mean unknown are
-          missing (CLEAN-10).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them decoded from the source's codes
+          into its words (`CODE_LABELS`, 2026-11-01); 1 hold a state outside the scale, placed by the curator's rule
+          (missing when the column has no other missing value, else the lowest level; a state that is simply not on the
+          scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order.

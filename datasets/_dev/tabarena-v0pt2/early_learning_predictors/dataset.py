@@ -887,9 +887,9 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
         - Anomaly: Many missing values
         - Feature families by column name (from the v1 exploration, counted 2026-10-22 on the cleaned data, 745 columns; a column can match more than one): pri 258, obs 161, pra 149, count_ 74, pqa 35, child 25, teacher 22. 576 columns are also in the Zindi train file, 136 more are pra/pqa/pri/obs columns not in it, and 33 others are new (among them the target, child_total_elom; Zindi calls it target). 102 Zindi columns are not in our data, among them latitude, longitude, the ward, municipality and province ids and the date columns. 80% of the cells are missing and every row has a missing value.
         - Anomaly: This is a highly underspecified task, leaving a lot of data cleaning to the user/model.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 89 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`); 69 of them were shipped as numbers; codes that mean
-          unknown are missing (CLEAN-10).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 86 columns are
+          ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`); 66 of them decoded from the
+          source's codes into its words (`CODE_LABELS`, 2026-11-01); codes that mean unknown are missing (CLEAN-10).
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 66 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order; 27 unordered codes carry their words: `gr_1_tt`, `grade_r`,

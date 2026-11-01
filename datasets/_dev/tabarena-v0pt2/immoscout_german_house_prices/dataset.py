@@ -159,8 +159,8 @@ class ImmoscoutGermanHousePrices(AbstractCuratedDataset):
           renovation levels. No copy with the German labels and no scraper code were found; the Kaggle upload is
           deleted.
         - We drop all rows where the living space is less than 10 (in Germany, this would likely not be enough living space for a real house, and thus might be a data error.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 2 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`).
     """
 
     # Task

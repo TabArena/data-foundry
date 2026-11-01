@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bad_customer_detection
 container_format: 2
-checksum: v2:b75dd6f441b687d81d8e4d906e4272b2730b3c76a344135176168d8744ae6e63
+checksum: v2:1bf921b6d4975071c7b739e8f8f39ae7fdfa6ffd24e876c26793892cb7fe4d22
 build:
   uuid: 01a111fc-c415-7ef4-a2b9-d98a1d4aa9f8
   checksum: v2:3f1816d93251a2d25adda0f1bd20121ce71f72583ac02a9de8997731cac9b6ad
@@ -67,7 +67,7 @@ decisions: []
 
 Binary classification of `bad_customer`, scored with `roc_auc` on IID splits. 1,723 rows and 13 features. Source: Kaggle (2020).
 
-Built as `01a111fc-c415-7ef4-a2b9-d98a1d4aa9f8` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b75dd6f441b687d81d8e4d906e4272b2730b3c76a344135176168d8744ae6e63`, so the build is stale. See [Build](#build).
+Built as `01a111fc-c415-7ef4-a2b9-d98a1d4aa9f8` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1bf921b6d4975071c7b739e8f8f39ae7fdfa6ffd24e876c26793892cb7fe4d22`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -182,8 +182,8 @@ The first 5 of 1,723 rows of the final frame (random rows: the frame is shuffled
 
 - We renamed the values of the target variable to be more descriptive.
 - Note: The original source of the data is still to be clarified (open item in the curation record).
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
-  the order of the source's codebook (`ORDINAL_LEVELS`).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`).
 - Cycle (2026-11-01, CLEAN-14, Lennart's rule): `month` (1-12) stays a number. A weekday or a month is a
   position in a continuous cycle (weekday 1.5 is Monday noon), and the source ships it as a number; named
   weekdays and months are ordered categories instead.
@@ -330,4 +330,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:b75dd6f441b687d81d8e4d906e4272b2730b3c76a344135176168d8744ae6e63` |
+| stale | yes: the definition now gives checksum `v2:1bf921b6d4975071c7b739e8f8f39ae7fdfa6ffd24e876c26793892cb7fe4d22` |

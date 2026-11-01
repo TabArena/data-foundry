@@ -85,8 +85,9 @@ class GallstoneDisease(AbstractCuratedDataset):
     """
     curation_comments = """
         We use the data without any further curation.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them were shipped as numbers.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them decoded from the source's codes
+          into its words (`CODE_LABELS`, 2026-11-01).
         - `Comorbidity` is "any comorbidity", 0 or 1, as the paper describes it: all 217 rows with 0 have none of the
           four listed diseases (CAD, hypothyroidism, hyperlipidemia, diabetes), and the 1s have one, two, or another
           condition. Three rows hold an undocumented 2 (1 row) or 3 (2 rows), each with exactly one listed disease: an

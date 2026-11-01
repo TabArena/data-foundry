@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: early_learning_predictors
 container_format: 2
-checksum: v2:53d56b011119c5364ff428c81ac3e90a3451e28409a237969e34e10e8438154d
+checksum: v2:4cb05b2b4389a7042a25b15740d1a88663d883678eee28d52c01ececb4657b36
 build:
   uuid: 01a111fc-59b5-7e83-8468-0ee2628e95b3
   checksum: v2:ec3dfb429e7c17335aa5683a85458b99e78d373664de2bf4a319f46a2ea15237
@@ -78,7 +78,7 @@ decisions: []
 
 Regression of `child_total_elom`, scored with `rmse` on grouped splits by `id_facility`. 18,874 rows and 739 features. Source: Other (2024).
 
-Built as `01a111fc-59b5-7e83-8468-0ee2628e95b3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:53d56b011119c5364ff428c81ac3e90a3451e28409a237969e34e10e8438154d`, so the build is stale. See [Build](#build).
+Built as `01a111fc-59b5-7e83-8468-0ee2628e95b3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:4cb05b2b4389a7042a25b15740d1a88663d883678eee28d52c01ececb4657b36`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -253,9 +253,9 @@ The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffle
 - Anomaly: Many missing values
 - Feature families by column name (from the v1 exploration, counted 2026-10-22 on the cleaned data, 745 columns; a column can match more than one): pri 258, obs 161, pra 149, count_ 74, pqa 35, child 25, teacher 22. 576 columns are also in the Zindi train file, 136 more are pra/pqa/pri/obs columns not in it, and 33 others are new (among them the target, child_total_elom; Zindi calls it target). 102 Zindi columns are not in our data, among them latitude, longitude, the ward, municipality and province ids and the date columns. 80% of the cells are missing and every row has a missing value.
 - Anomaly: This is a highly underspecified task, leaving a lot of data cleaning to the user/model.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 89 columns are ordered categories in
-  the order of the source's codebook (`ORDINAL_LEVELS`); 69 of them were shipped as numbers; codes that mean
-  unknown are missing (CLEAN-10).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 86 columns are
+  ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`); 66 of them decoded from the
+  source's codes into its words (`CODE_LABELS`, 2026-11-01); codes that mean unknown are missing (CLEAN-10).
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 66 ordered codes carry their codebook's
   words (`CODE_LABELS`), in the same order; 27 unordered codes carry their words: `gr_1_tt`, `grade_r`,
@@ -551,4 +551,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:53d56b011119c5364ff428c81ac3e90a3451e28409a237969e34e10e8438154d` |
+| stale | yes: the definition now gives checksum `v2:4cb05b2b4389a7042a25b15740d1a88663d883678eee28d52c01ececb4657b36` |

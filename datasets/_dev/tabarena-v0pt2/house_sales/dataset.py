@@ -358,8 +358,9 @@ class HouseSales(AbstractCuratedDataset):
         - Target: `log_price`, the log of the sale price ($75,000 to $7.7M).
         - `zipcode` and `sale_condition` are categorical, and `date` (the sale date) is a datetime and the time column.
         - No duplicate rows. Different parcels can share every feature but the date and the price (townhouses built together); one pair also shares the date and was sold at two prices (the conflicting duplicate the checks report); we keep them.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`); 3 of them were shipped as numbers.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 2 of them decoded from the source's codes
+          into its words (`CODE_LABELS`, 2026-11-01).
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 2 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order; 1 scores with no words per level are numbers (`SCORES`): `view`.

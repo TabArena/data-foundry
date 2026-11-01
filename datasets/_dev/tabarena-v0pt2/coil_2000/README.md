@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: coil_2000
 container_format: 2
-checksum: v2:d19a15995df57dc8e91273d3c8aeae4cc8fe2b05e04c81f0650274680a2d0ef8
+checksum: v2:ec9665e3386ff0842c6d395360ded63c1e3feebf6c5378acdbb1faf3358a4b3f
 build:
   uuid: 01a111fc-ceb4-7695-8b34-df7a285cfcb6
   checksum: v2:d2e67763e07858eea9e9b3cc295c8ca3b517b51a7969ec701a8323ad722d2ac8
@@ -69,7 +69,7 @@ decisions: []
 
 Binary classification of `MobileHomePolicy`, scored with `precision_at_k` on IID splits. 9,822 rows and 85 features. Source: UCI (2000).
 
-Built as `01a111fc-ceb4-7695-8b34-df7a285cfcb6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d19a15995df57dc8e91273d3c8aeae4cc8fe2b05e04c81f0650274680a2d0ef8`, so the build is stale. See [Build](#build).
+Built as `01a111fc-ceb4-7695-8b34-df7a285cfcb6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ec9665e3386ff0842c6d395360ded63c1e3feebf6c5378acdbb1faf3358a4b3f`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -189,8 +189,9 @@ The first 5 of 9,822 rows of the final frame (random rows: the frame is shuffled
 - We combined the original training and validation data into one new dataset.
 - We reversed the ordinal encoding of the original data where possible.
 - Anomaly: the data has 15% duplicates.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 59 columns are ordered categories in
-  the order of the source's codebook (`ORDINAL_LEVELS`); 56 of them were shipped as numbers.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 58 columns are
+  ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`); 55 of them decoded from the
+  source's codes into its words (`CODE_LABELS`, 2026-11-01).
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 55 ordered codes carry their codebook's
   words (`CODE_LABELS`), in the same order; 2 scores with no words per level are numbers (`SCORES`):
@@ -420,4 +421,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:d19a15995df57dc8e91273d3c8aeae4cc8fe2b05e04c81f0650274680a2d0ef8` |
+| stale | yes: the definition now gives checksum `v2:ec9665e3386ff0842c6d395360ded63c1e3feebf6c5378acdbb1faf3358a4b3f` |

@@ -89,8 +89,8 @@ class RegensburgPediatricAppendicitis(AbstractCuratedDataset):
          - Warning: We tried to clean the data as good as possible but we suspect it might still contain some features leaking the severity, but we lack the medical expertise to identify them. Thus, I would not be surprised if we had to remove this dataset later again.
         - The data contains string data, but only for a very small number of patients and the text is often seemingly very useless. The features add most likely no value, but we keep them in for the pipeline/model to ignore if needed.
         - We drop the few patients that did not have an ultrasound to avoid them being leaking due to missing features.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 9 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 9 columns are ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`).
         - `Appendix_Wall_Layers` (2026-10-31, CLEAN-14): the codebook's "regular / irregular" (Zenodo Data Summary); the
           labels translate the German record of the 2021 release (intact = intakt, raised = aufgehoben, the layering
           lost; partially raised = partly lost), so intact < partially raised < raised. `upset` (1 child) is irregular

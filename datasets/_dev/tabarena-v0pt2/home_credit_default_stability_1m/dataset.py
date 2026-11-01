@@ -221,8 +221,8 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
         - We drop case_id as it is already collapsed and thus does not contain extra information.
         - We cast all object and string columns to be categorical. Note that they are anonymized and string preprocessing likely does not add a lot of value as a result.
         - We drop name-related columns as they do not hold relevant information. These were otherwise dropped as high-cardinality string columns in TabRed or on Kaggle.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`).
     """
 
     # Task

@@ -131,9 +131,9 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
         - Potential leak, kept on purpose: the 43 building columns (`*_AVG`, `*_MODE`, `*_MEDI`, `TOTALAREA_MODE`) are "normalized information about building where the client lives" (HomeCredit_columns_description.csv) and each spans exactly 0 to 1, so Home Credit likely scaled them over all applications, ours included; the method is not documented and no raw values exist. Kept (Lennart, 2026-10-19): a scaling over all rows is no strong leak; revisit if Home Credit documents it.
         - We replace values that became inf after aggregation with NaN. This occurred across several aggregated columns.
         - Tagged ForcedIIDFromTemporal: applications arrive over time, but the release has no application dates (its DAYS_ columns are "time only relative to the application", HomeCredit_columns_description.csv), so the split is random.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 4 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`); 2 of them were shipped as numbers; 1 are calendar or
-          compass cycles, in their usual order (the wrap is not shown).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 are calendar or compass cycles, in
+          their usual order (the wrap is not shown).
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 2 scores with no words per level are
           numbers (`SCORES`): `REGION_RATING_CLIENT`, `REGION_RATING_CLIENT_W_CITY`.

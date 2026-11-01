@@ -69,8 +69,6 @@ class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
         - We renamed the target variable and fixed some typos in the feature names.
         - We reversed the ordinal encoding of all categorical features.
         - We removed whitespaces and special characters from the feature names.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them were shipped as numbers.
         - Partial order, left unordered (2026-11-01, CLEAN-14): `Previous_qualification`, `Mothers_qualification` and
           `Fathers_qualification` lie on the Portuguese education ladder, but the pre- and post-Bologna degrees are ties
           and the old-system courses sit beside the year levels, so there is no single line.

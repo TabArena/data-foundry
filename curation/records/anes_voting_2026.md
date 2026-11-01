@@ -51,6 +51,8 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 157 coded columns carry their words; 12 scores are numbers (VCF0834, VCF0839, VCF0842, VCF0843, VCF9073, VCF9077, VCF9081, VCF9085 and more); codes that only mean unknown are missing in the unordered codes too; VCF0130's 0 (not ascertained or not asked) missing; age 0 and the thermometers' DK/NA codes missing; open calls on the review board's ANES sheet.
 
+CC (2026-11-01, Lennart): on the review board's ANES sheet: read 2024's attendance 9 as never (except the short form), recover 2020's VCF0130a never from VCF0130, "all of life" as the respondent's age (VCF9001 a number, VCF9002 by age band), decode the 40 master-code columns; the mention counts' 0 left as it is.
+
 ## Reference
 
 @dataset{anes_timeseries_cdf_2026,

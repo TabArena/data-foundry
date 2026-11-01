@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: student_portuguese_performance
 container_format: 2
-checksum: v2:7fde2a3f0ec6aaab7fca0a2b1b767f2c6bc6d858b627669b03fd4cec4b075b7a
+checksum: v2:b1fe39f55f674cce12b0f08661a08b251feba97648655ba6ad8711f38f225498
 build:
   uuid: 01a111fc-bd82-7068-93bd-0d20f8e4fea0
   checksum: v2:15f900151b360044e6e1a9f3d90f57359f6b73bc62a377276618fb78091b6cdc
@@ -67,7 +67,7 @@ decisions: []
 
 Regression of `G3`, scored with `rmse` on IID splits. 649 rows and 30 features. Source: UCI (2014).
 
-Built as `01a111fc-bd82-7068-93bd-0d20f8e4fea0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7fde2a3f0ec6aaab7fca0a2b1b767f2c6bc6d858b627669b03fd4cec4b075b7a`, so the build is stale. See [Build](#build).
+Built as `01a111fc-bd82-7068-93bd-0d20f8e4fea0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b1fe39f55f674cce12b0f08661a08b251feba97648655ba6ad8711f38f225498`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -184,8 +184,9 @@ The first 5 of 649 rows of the final frame (random rows: the frame is shuffled);
 We use the data from UCI.
 
 - We drop G1 and G2 to simulate the task to predict the final grade from the base characteristic.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 11 columns are ordered categories in
-  the order of the source's codebook (`ORDINAL_LEVELS`); 11 of them were shipped as numbers.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 6 columns are ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`); 6 of them decoded from the source's codes
+  into its words (`CODE_LABELS`, 2026-11-01).
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 6 ordered codes carry their codebook's
   words (`CODE_LABELS`), in the same order; 3 unordered codes carry their words: `school`, `address`, `Pstatus`;
@@ -417,4 +418,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:7fde2a3f0ec6aaab7fca0a2b1b767f2c6bc6d858b627669b03fd4cec4b075b7a` |
+| stale | yes: the definition now gives checksum `v2:b1fe39f55f674cce12b0f08661a08b251feba97648655ba6ad8711f38f225498` |

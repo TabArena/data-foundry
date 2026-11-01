@@ -82,6 +82,19 @@ short-form interviews of 1992-1996 that did not ask): split it by what the data 
 missing. In `dataset.py`: `CODE_LABELS = {col: {code: label}}` and `decode(df, CODE_LABELS)` after `set_missing`; a
 code without a label raises.
 
+What ships as words and what as numbers, in short (Lennart, 2026-11-01: "let us get a general rule for this"):
+
+| The column is | It ships as |
+|---|---|
+| a code the source names in words, level by level (a grade, a type, an answer, a band) | the words; ordered when the scale is |
+| a measurement: a count, an amount, a size, a duration, an hour or weekday of a cycle | a number |
+| a score or rating with no words per level, or words only at its two ends | a number (CLEAN-14) |
+| a code with no words anywhere (an id, a detector number, an anonymized or undocumented code) | the code, as a category |
+| a 0/1 flag | 0/1, as a category (CLEAN-14) |
+| a code that only means unknown (don't know, refused, not asked) | missing (CLEAN-10) |
+
+A column that still ships as a number while its source has words for it is a gap to close, not a choice.
+
 **CLEAN-13 (Must; narrows CLEAN-12; amended 2026-10-22, Lennart, on mortgage and onlinenewspopularity).** A block is
 one-hot only when every row has exactly one flag set, or at most one with a reference level: the rows with no flag set
 become one more category (such as `other`), and the merge stays lossless. Yes/no flags that can be set together are

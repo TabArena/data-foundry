@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: credit_card_clients_default
 container_format: 2
-checksum: v2:c269db2555ae2170d2d12e1d823098a0260f787e90ec4350c1fbac2fc393b710
+checksum: v2:9803b2b3c7be7a4de26a952130593210aeb486fd47942fa148a0039a44da6547
 build:
   uuid: 01a111fc-a3c4-755e-b3fb-ad77ce7129a5
   checksum: v2:5d236c15c392c1f552a15f01023ce7757e961813ba93c296485e1b897bfb1968
@@ -69,7 +69,7 @@ decisions: []
 
 Binary classification of `DefaultOnPaymentNextMonth`, scored with `roc_auc` on IID splits. 30,000 rows and 23 features. Source: UCI (2016).
 
-Built as `01a111fc-a3c4-755e-b3fb-ad77ce7129a5` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c269db2555ae2170d2d12e1d823098a0260f787e90ec4350c1fbac2fc393b710`, so the build is stale. See [Build](#build).
+Built as `01a111fc-a3c4-755e-b3fb-ad77ce7129a5` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9803b2b3c7be7a4de26a952130593210aeb486fd47942fa148a0039a44da6547`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -189,10 +189,11 @@ The first 5 of 30,000 rows of the final frame (random rows: the frame is shuffle
 - We rename the target variable and restore the original class names.
 - We drop the "ID" column.
 - Anomaly: the data has temporal features but the task is time-invariant.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
-  the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed by the
-  curator's rule (missing when the column has no other missing value, else the lowest level; a state that is
-  simply not on the scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them decoded from the source's codes
+  into its words (`CODE_LABELS`, 2026-11-01); 1 hold a state outside the scale, placed by the curator's rule
+  (missing when the column has no other missing value, else the lowest level; a state that is simply not on the
+  scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
   words (`CODE_LABELS`), in the same order; 2 unordered codes carry their words: `MARRIAGE`, `SEX`.
@@ -328,4 +329,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c269db2555ae2170d2d12e1d823098a0260f787e90ec4350c1fbac2fc393b710` |
+| stale | yes: the definition now gives checksum `v2:9803b2b3c7be7a4de26a952130593210aeb486fd47942fa148a0039a44da6547` |

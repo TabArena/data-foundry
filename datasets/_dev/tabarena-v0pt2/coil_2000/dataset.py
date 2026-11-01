@@ -1101,8 +1101,9 @@ class Coil2000(AbstractCuratedDataset):
         - We combined the original training and validation data into one new dataset.
         - We reversed the ordinal encoding of the original data where possible.
         - Anomaly: the data has 15% duplicates.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 59 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`); 56 of them were shipped as numbers.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 58 columns are
+          ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`); 55 of them decoded from the
+          source's codes into its words (`CODE_LABELS`, 2026-11-01).
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 55 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order; 2 scores with no words per level are numbers (`SCORES`):

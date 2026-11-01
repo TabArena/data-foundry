@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: predict_students_dropout_and_academic_success
 container_format: 2
-checksum: v2:fa3c5de81eb3277dd55ff7f21c3bd72d8d850df89782758a9e7404f42cf71252
+checksum: v2:039eae3aba61758fc2f7f9345e6650666d6fba8be509a6f782d0a810b6438075
 build:
   uuid: 01a111fc-b7bd-7c0b-a919-1a848957caf4
   checksum: v2:29ca775f9fd8e27edc7509838682f54ddfd2065cad22627f86c60139287afe39
@@ -68,7 +68,7 @@ decisions: []
 
 Multiclass classification of `AcademicOutcome`, scored with `log_loss` on IID splits. 4,424 rows and 36 features. Source: UCI (2021).
 
-Built as `01a111fc-b7bd-7c0b-a919-1a848957caf4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:fa3c5de81eb3277dd55ff7f21c3bd72d8d850df89782758a9e7404f42cf71252`, so the build is stale. See [Build](#build).
+Built as `01a111fc-b7bd-7c0b-a919-1a848957caf4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:039eae3aba61758fc2f7f9345e6650666d6fba8be509a6f782d0a810b6438075`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -184,8 +184,6 @@ The first 5 of 4,424 rows of the final frame (random rows: the frame is shuffled
 - We renamed the target variable and fixed some typos in the feature names.
 - We reversed the ordinal encoding of all categorical features.
 - We removed whitespaces and special characters from the feature names.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
-  the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them were shipped as numbers.
 - Partial order, left unordered (2026-11-01, CLEAN-14): `Previous_qualification`, `Mothers_qualification` and
   `Fathers_qualification` lie on the Portuguese education ladder, but the pre- and post-Bologna degrees are ties
   and the old-system courses sit beside the year levels, so there is no single line.
@@ -385,4 +383,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:fa3c5de81eb3277dd55ff7f21c3bd72d8d850df89782758a9e7404f42cf71252` |
+| stale | yes: the definition now gives checksum `v2:039eae3aba61758fc2f7f9345e6650666d6fba8be509a6f782d0a810b6438075` |

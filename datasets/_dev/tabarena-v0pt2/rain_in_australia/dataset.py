@@ -334,9 +334,9 @@ class RainInAustralia(AbstractCuratedDataset):
           be a total over several days (RainToday 40.6% against 21.8%). We keep them, as known at 9 am.
         - Note: BoM's terms allow personal and in-house use; the rattle documentation records the Bureau's permission to
           use the data with BoM acknowledged as the source.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`); 3 are calendar or compass cycles, in their usual order
-          (the wrap is not shown); codes that mean unknown are missing (CLEAN-10).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 3 are calendar or compass cycles, in
+          their usual order (the wrap is not shown); codes that mean unknown are missing (CLEAN-10).
     """
 
     # Task

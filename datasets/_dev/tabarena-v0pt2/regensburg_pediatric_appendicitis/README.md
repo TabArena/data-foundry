@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: regensburg_pediatric_appendicitis
 container_format: 2
-checksum: v2:cac0c304d07c9d09c59c3ac11f77317d2a005b134ba5ac2e448044635ea88fc2
+checksum: v2:b3fd10f7ca06993581e67fa3ba2f648a137eda10c489148f948b2eda1f530912
 build:
   uuid: 01a111fc-ee89-74ad-b25b-309464691fe6
   checksum: v2:33d1e7ed244bae6b272fba7b043eb64e09987465a1a721142d8d57b597ca37d3
@@ -68,7 +68,7 @@ decisions: []
 
 Binary classification of `Severity`, scored with `roc_auc` on IID splits. 763 rows and 51 features. Source: Other (2023).
 
-Built as `01a111fc-ee89-74ad-b25b-309464691fe6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:cac0c304d07c9d09c59c3ac11f77317d2a005b134ba5ac2e448044635ea88fc2`, so the build is stale. See [Build](#build).
+Built as `01a111fc-ee89-74ad-b25b-309464691fe6` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b3fd10f7ca06993581e67fa3ba2f648a137eda10c489148f948b2eda1f530912`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -195,8 +195,8 @@ We start with the tabular meta-data used in the paper. We create only one task o
  - Warning: We tried to clean the data as good as possible but we suspect it might still contain some features leaking the severity, but we lack the medical expertise to identify them. Thus, I would not be surprised if we had to remove this dataset later again.
 - The data contains string data, but only for a very small number of patients and the text is often seemingly very useless. The features add most likely no value, but we keep them in for the pipeline/model to ignore if needed.
 - We drop the few patients that did not have an ultrasound to avoid them being leaking due to missing features.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 9 columns are ordered categories in
-  the order of the source's codebook (`ORDINAL_LEVELS`).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 9 columns are ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`).
 - `Appendix_Wall_Layers` (2026-10-31, CLEAN-14): the codebook's "regular / irregular" (Zenodo Data Summary); the
   labels translate the German record of the 2021 release (intact = intakt, raised = aufgehoben, the layering
   lost; partially raised = partly lost), so intact < partially raised < raised. `upset` (1 child) is irregular
@@ -437,4 +437,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:cac0c304d07c9d09c59c3ac11f77317d2a005b134ba5ac2e448044635ea88fc2` |
+| stale | yes: the definition now gives checksum `v2:b3fd10f7ca06993581e67fa3ba2f648a137eda10c489148f948b2eda1f530912` |

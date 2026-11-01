@@ -73,8 +73,8 @@ class BadCustomerDetection(AbstractCuratedDataset):
     curation_comments = """
         - We renamed the values of the target variable to be more descriptive.
         - Note: The original source of the data is still to be clarified (open item in the curation record).
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
-          the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`).
         - Cycle (2026-11-01, CLEAN-14, Lennart's rule): `month` (1-12) stays a number. A weekday or a month is a
           position in a continuous cycle (weekday 1.5 is Monday noon), and the source ships it as a number; named
           weekdays and months are ordered categories instead.

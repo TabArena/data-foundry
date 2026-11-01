@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ames_housing
 container_format: 2
-checksum: v2:b6d3584f839cd29a72e4668d602f24b3396d484eb39e6d5e3c41fa0e64acb7fc
+checksum: v2:b0e3da8f1e984d2d243944551c5141a6681b5c72e86c933ed9b1b71fec4bf3dd
 build: null
 build_stale: false
 data:
@@ -61,7 +61,7 @@ decisions:
 
 Regression of `log_SalePrice`, scored with `rmse` on temporal splits by `Month Sold`. 2,837 rows and 78 features. Source: Other (2011).
 
-Not built yet. The current definition gives checksum `v2:b6d3584f839cd29a72e4668d602f24b3396d484eb39e6d5e3c41fa0e64acb7fc`.
+Not built yet. The current definition gives checksum `v2:b0e3da8f1e984d2d243944551c5141a6681b5c72e86c933ed9b1b71fec4bf3dd`.
 
 ## In brief
 
@@ -204,11 +204,11 @@ We start with AmesHousing.txt, the data file of De Cock (2011): 2,930 sales of r
 - Anomaly: `Year Remod/Add` starts at 1950: 337 of the 629 houses built before 1950 show 1950, where the documentation gives the construction year for no remodel. Kept as recorded.
 - No duplicate rows. Two pairs of neighbouring parcels share every feature and sold in one month at different prices; kept.
 - Not trivial (TP-4; the record's `Trivial` marker was removed, CC 2026-10-26): `Overall Qual` alone reaches R² 0.682 in the task probe (13 windows) and De Cock's two-variable model 0.766, against 0.911 for the probe's linear model and 0.900 for its LightGBM.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 22 columns are ordered categories in
-  the order of the source's codebook (`ORDINAL_LEVELS`); 2 of them were shipped as numbers; 8 hold a state
-  outside the scale, placed by the curator's rule (missing when the column has no other missing value, else the
-  lowest level; a state that is simply not on the scale, such as Other, is missing); codes that mean unknown are
-  missing (CLEAN-10).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 22 columns are
+  ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`); 2 of them decoded from the
+  source's codes into its words (`CODE_LABELS`, 2026-11-01); 8 hold a state outside the scale, placed by the
+  curator's rule (missing when the column has no other missing value, else the lowest level; a state that is
+  simply not on the scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 2 ordered codes carry their codebook's
   words (`RATING_LABELS`), in the same order.

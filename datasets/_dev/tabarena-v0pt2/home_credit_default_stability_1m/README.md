@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: home_credit_default_stability_1m
 container_format: 2
-checksum: v2:c7e63c2609fb27f7cb323f55b9b5be1d8979b88a616a6007e9339cc0f7a22afe
+checksum: v2:39dd9244035c50d79e5b3b69e6e8470181de54e1b3c56cd95a9809506efd3074
 build:
   uuid: 01a111fc-2b8d-77ef-a922-3ea3b96a716e
   checksum: v2:5a98ed32667628b5c2fea4874566abac7cf8d1f0b67636e5f12916fd41ddb8db
@@ -79,7 +79,7 @@ decisions: []
 
 Binary classification of `target`, scored with `roc_auc` on temporal splits by `date_decision`. 1,224,927 rows and 710 features. Source: Kaggle (2024).
 
-Built as `01a111fc-2b8d-77ef-a922-3ea3b96a716e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c7e63c2609fb27f7cb323f55b9b5be1d8979b88a616a6007e9339cc0f7a22afe`, so the build is stale. See [Build](#build).
+Built as `01a111fc-2b8d-77ef-a922-3ea3b96a716e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:39dd9244035c50d79e5b3b69e6e8470181de54e1b3c56cd95a9809506efd3074`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -210,8 +210,8 @@ We start with the data from Kaggle and follow the preprocessing from TabRed (htt
 - We drop case_id as it is already collapsed and thus does not contain extra information.
 - We cast all object and string columns to be categorical. Note that they are anonymized and string preprocessing likely does not add a lot of value as a result.
 - We drop name-related columns as they do not hold relevant information. These were otherwise dropped as high-cardinality string columns in TabRed or on Kaggle.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
-  the order of the source's codebook (`ORDINAL_LEVELS`).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`).
 
 Version of `home_credit_default_stability`: We sample per test window (v2 split protocol): each window keeps at most 500k of its rows, and its train side is a random 1M of all earlier rows, drawn in one random order for all windows; the frame keeps only the rows a split uses. We follow TabReD and use random sub-sampling of the train data. The idea behind this instead of a time-based subsampling is to keep data from various time periods and model the distribution shift across the full time horizon.
 
@@ -474,4 +474,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c7e63c2609fb27f7cb323f55b9b5be1d8979b88a616a6007e9339cc0f7a22afe` |
+| stale | yes: the definition now gives checksum `v2:39dd9244035c50d79e5b3b69e6e8470181de54e1b3c56cd95a9809506efd3074` |

@@ -106,9 +106,11 @@ class Heloc(AbstractCuratedDataset):
         - Label: "Bad" means the applicant was 90 days past due or worse at least once in the 24 months after the account was opened; "Good" means never more than 90 days overdue (FICO's challenge description, as reproduced in the AIX360 HELOC tutorial; FICO's challenge page now redirects).
         - The applicants requested a credit line of $5,000 to $150,000 (same source).
         - Anomaly: the dataset has time-related features. However, the task and features are preprocessed to be time-invariant.
-        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): `MaxDelq2PublicRecLast12M` and
-          `MaxDelqEver` are ordered categories, from a derogatory comment to current and never delinquent (FICO data
-          dictionary); their codes for unknown delinquency, "all other" and no bureau record (-9) are missing.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 2 of them decoded from the source's codes
+          into its words (`CODE_LABELS`, 2026-11-01)`MaxDelq2PublicRecLast12M` and `MaxDelqEver` are ordered categories,
+          from a derogatory comment to current and never delinquent (FICO data dictionary); their codes for unknown
+          delinquency, "all other" and no bureau record (-9) are missing.
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 2 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order.

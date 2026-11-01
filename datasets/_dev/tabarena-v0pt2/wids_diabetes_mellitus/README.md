@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: wids_diabetes_mellitus
 container_format: 2
-checksum: v2:6529d0d630e249796551961ab704130d013de42ac3c88f38a7e7be4f8951dddd
+checksum: v2:e18525d4d50cf24f0949f1fd132494e70a83e00973ccf8c00e4543a3fdde6ebb
 build:
   uuid: 01a111fc-032c-7d1f-a669-78dc5d1cd86b
   checksum: v2:b724e5a0243a18699a7ba8390138b37b2eb67967a3b0b97d6c8499f5a4a0484f
@@ -68,7 +68,7 @@ decisions: []
 
 Binary classification of `diabetes_mellitus`, scored with `roc_auc` on IID splits. 127,358 rows and 181 features. Source: Kaggle (2021).
 
-Built as `01a111fc-032c-7d1f-a669-78dc5d1cd86b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6529d0d630e249796551961ab704130d013de42ac3c88f38a7e7be4f8951dddd`, so the build is stale. See [Build](#build).
+Built as `01a111fc-032c-7d1f-a669-78dc5d1cd86b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:e18525d4d50cf24f0949f1fd132494e70a83e00973ccf8c00e4543a3fdde6ebb`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -194,8 +194,9 @@ We start with the Kaggle dataset.
 - Several Kaggle experts also re-computed the BMI. We also noticed that for 2770 rows, the BMI did not match the real BMI based on the weight and height. We drop all of these cases, as it is unclear to us what the cause of this error is. Given the small fraction, there is either a data entry error, or some values got corrected manually.
 - We found and dropped three duplicated columns that provided no new information.
 - We keep medical codes as string, as these could be more meaningfully decoded.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
-  the order of the source's codebook (`ORDINAL_LEVELS`); 3 of them were shipped as numbers.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`); 3 of them decoded from the source's codes
+  into its words (`CODE_LABELS`, 2026-11-01).
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 3 ordered codes carry their codebook's
   words (`CODE_LABELS`), in the same order.
@@ -459,4 +460,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6529d0d630e249796551961ab704130d013de42ac3c88f38a7e7be4f8951dddd` |
+| stale | yes: the definition now gives checksum `v2:e18525d4d50cf24f0949f1fd132494e70a83e00973ccf8c00e4543a3fdde6ebb` |

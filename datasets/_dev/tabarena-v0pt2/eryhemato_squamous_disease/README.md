@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: eryhemato_squamous_disease
 container_format: 2
-checksum: v2:59841e616029c51884f272baaf717ea9798c589d739e40ae6354ca856070a7ff
+checksum: v2:bbf0ca1e25e284e98c1cb62ab8722bea135c85b317c1e62f97c8b599d331ddeb
 build:
   uuid: 01a111fc-a1c3-79c0-8d48-48221a6702fe
   checksum: v2:aba9d540c391f2a14f0cf06bd994fff1205b5549b7de973316d943823e12ad15
@@ -68,7 +68,7 @@ decisions: []
 
 Multiclass classification of `class`, scored with `log_loss` on IID splits. 366 rows and 12 features. Source: UCI (1998).
 
-Built as `01a111fc-a1c3-79c0-8d48-48221a6702fe` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:59841e616029c51884f272baaf717ea9798c589d739e40ae6354ca856070a7ff`, so the build is stale. See [Build](#build).
+Built as `01a111fc-a1c3-79c0-8d48-48221a6702fe` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:bbf0ca1e25e284e98c1cb62ab8722bea135c85b317c1e62f97c8b599d331ddeb`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -191,8 +191,6 @@ We start with the data from UCI.
 - We keep only the clinical features: the 10 clinical findings graded 0 to 3, family history and age. The source describes two steps: "Patients were first evaluated clinically with 12 features. Afterwards, skin samples were taken for the evaluation of 22 histopathological features." With the 22 histopathological features the task is close to solved (a logistic model reaches macro ROC AUC 0.999 and 97% accuracy on the shipped splits); the task here is the clinical differential before the biopsy (macro ROC AUC 0.98, 87% accuracy), where seborrheic dermatitis, pityriasis rosea and chronic dermatitis are the hard cases.
 - We encode all features but age as categorical, since they are ordinal features in nature.
 - We ensure missing values in age are encoded as NaN.
-- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 10 columns are ordered categories in
-  the order of the source's codebook (`ORDINAL_LEVELS`).
 - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
   each level is carries the words, a score without them is a number): 10 scores with no words per level are
   numbers (`SCORES`): `erythema`, `scaling`, `definite borders`, `itching`, `koebner phenomenon`, `polygonal
@@ -388,4 +386,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:59841e616029c51884f272baaf717ea9798c589d739e40ae6354ca856070a7ff` |
+| stale | yes: the definition now gives checksum `v2:bbf0ca1e25e284e98c1cb62ab8722bea135c85b317c1e62f97c8b599d331ddeb` |
