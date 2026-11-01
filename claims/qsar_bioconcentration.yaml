@@ -1,6 +1,0 @@
-name: qsar_bioconcentration
-holder: Lennart
-stage: add
-claimed_at: '2026-11-01T18:54:29Z'
-expires_at: '2026-11-08T18:54:29Z'
-note: 'SMILES as a typed structure column (CLEAN-24 amended, PR #15)'
