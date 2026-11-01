@@ -86,6 +86,9 @@ class Mic(AbstractCuratedDataset):
         - We reversed the ordinal encoding of the target feature.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 11 columns are ordered categories in
           the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Partial order, left unordered (2026-11-01, CLEAN-14): `ZSN_A` (chronic heart failure) has two lines of
+          severity, 0 < 1 < 2 < 4 and 0 < 1 < 3 < 4 (UCI 579: "partially ordered"): 2 and 3 are stage IIA of the right
+          and of the left ventricle, 4 both.
     """
 
     # Task

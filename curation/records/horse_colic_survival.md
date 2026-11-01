@@ -39,6 +39,8 @@ Has multiple possible classes (lesion or others). Decide for one that is reasona
 
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 8 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `temperature_of_extremities`, `peripheral_pulse`, `capillary_refill_time`, `peristalsis`, `abdominal_distension`, `nasogastric_tube`, `nasogastric_reflux`, `rectal_exam_feces` (the README lists their levels); their codes that mean unknown (don't know, refused, not asked) are missing in `capillary_refill_time` (CLEAN-10); left unordered: `mucous_membranes` (a partial order); `pain` (a partial order).
 
+CC (2026-11-01, Lennart): marks on the review board of PR #37: pain and mucous_membranes stay unordered as partial orders, noted in the definition.
+
 ## Reference
 
 ?

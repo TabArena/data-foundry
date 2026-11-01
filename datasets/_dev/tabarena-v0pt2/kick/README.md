@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: kick
 container_format: 2
-checksum: v2:c6d54e7749c774e40077f06f93d43810dc3afc6a554004bfd0927911031ea206
+checksum: v2:006f2dae5bb87bd8d4957d671ea412127e5633fb3e9e3c287193a235cb2c71f7
 build:
   uuid: 01a111fc-8ab4-7b2f-9955-2cc583c9e979
   checksum: v2:56fbaf6a01bb708925bcfc79ee4891d3ee2b707defd7ce843852e2521bbc17ae
@@ -73,7 +73,7 @@ decisions:
 
 Binary classification of `IsBadBuy`, scored with `roc_auc` on temporal splits by `PurchDate`. 72,983 rows and 28 features. Source: Kaggle (2011).
 
-Built as `01a111fc-8ab4-7b2f-9955-2cc583c9e979` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c6d54e7749c774e40077f06f93d43810dc3afc6a554004bfd0927911031ea206`, so the build is stale. See [Build](#build).
+Built as `01a111fc-8ab4-7b2f-9955-2cc583c9e979` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:006f2dae5bb87bd8d4957d671ea412127e5633fb3e9e3c287193a235cb2c71f7`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -199,6 +199,9 @@ The first 5 of 72,983 rows of the final frame (the oldest rows: the frame is sor
 - Leak, dropped (LEAK-10; Lennart, 2026-10-22, consistent with expresso_churn_prediction's REGION): "WheelType" and "WheelTypeID" were most likely filled in after the outcome. WheelType is missing for 24.9% of bad buys and 1.5% of good ones, in every band of vehicle age, odometer and price; a model of the missingness from the auction covariates, fit on good buys, predicts 1.2% missing for the bad buys; within auction and purchase date the missing flag alone still separates bad buys (ROC AUC 0.572), while the missing flags of the other columns stay at 0.49-0.54. Its whole value is the flag: LightGBM on the 9 temporal windows (300 trees, mean ROC AUC) 0.750 with the columns, 0.677 without.
 - Leak, dropped (LEAK-10; same decision): "PRIMEUNIT" and "AUCGUART" (filled on the same rows, about 95% missing). From October 2010 they are filled for 32.7% of good buys and 7.8% of bad ones; a model of the fill from the auction covariates, fit on good buys, predicts 42.3% filled for the bad buys; within auction and purchase date the flag gives ROC AUC 0.632. These months fall in the last test windows.
 - The host's test file carries all four fields the same way (WheelType missing for 4.5% of the Kaggle test rows against 4.3% of train; PRIMEUNIT filled for 46.0% in December 2010), so the competition's task had them. We drop them anyway because that test file is a holdout from the same snapshot, taken after the outcomes; at a real auction no car has been kicked back yet. If the recording process is ever documented as known at the auction, they can come back.
+- Partial order, left unordered (2026-11-01, CLEAN-14): `Size` runs in chains within body types (COMPACT <
+  MEDIUM < LARGE cars, SMALL < MEDIUM < LARGE SUV, SMALL < LARGE TRUCK); CROSSOVER, SPECIALTY, SPORTS and VAN
+  are body types off those chains.
 
 ## Splits
 
@@ -407,4 +410,4 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c6d54e7749c774e40077f06f93d43810dc3afc6a554004bfd0927911031ea206` |
+| stale | yes: the definition now gives checksum `v2:006f2dae5bb87bd8d4957d671ea412127e5633fb3e9e3c287193a235cb2c71f7` |

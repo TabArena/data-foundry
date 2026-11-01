@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: rossmann_store_sales
 container_format: 2
-checksum: v2:939fa036577e862b43cf1d299f4bfdf3ed0261e224675b8ab261ff94e4bd6385
+checksum: v2:98b4aca4f0e7a5fea1885bac772f5f5900db1efb662cd7f00df4b435c8e587c9
 build:
   uuid: 01a111fc-4eab-762b-baa6-12fb81c7e2ee
   checksum: v2:baba7a6d8e2a40857f30a6179d720541ce4faf14ac918c45d3c5116107201d6e
@@ -22,9 +22,9 @@ data:
   n_rows: 844392
   n_features: 15
   dtypes:
-    category: 9
+    category: 10
     datetime64[ns]: 1
-    float64: 5
+    float64: 4
     int64: 1
   n_test_dataset_rows: null
 task:
@@ -69,7 +69,7 @@ decisions: []
 
 Regression of `Sales`, scored with `rmspe` on temporal splits by `Date`. 844,392 rows and 15 features. Source: Kaggle (2015).
 
-Built as `01a111fc-4eab-762b-baa6-12fb81c7e2ee` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:939fa036577e862b43cf1d299f4bfdf3ed0261e224675b8ab261ff94e4bd6385`, so the build is stale. See [Build](#build).
+Built as `01a111fc-4eab-762b-baa6-12fb81c7e2ee` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:98b4aca4f0e7a5fea1885bac772f5f5900db1efb662cd7f00df4b435c8e587c9`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -149,10 +149,10 @@ Only curators run `build`, when the dataset ships.
 | definition | sqrt(mean(((y - p) / y)^2)) over the store-days with Sales != 0, on the raw sales |
 
 <details>
-<summary>Feature types: 8 categorical, 1 ordinal, 0 string, 1 datetime</summary>
+<summary>Feature types: 8 categorical, 2 ordinal, 0 string, 1 datetime</summary>
 
 - categorical (8): `Store`, `StateHoliday`, `StoreType`, `Assortment`, `PromoInterval`, `Promo`, `SchoolHoliday`, `Promo2`
-- ordinal (1): `DayOfWeek (1 < 2 < 3 < 4 < 5 < 6 < 7)`
+- ordinal (2): `DayOfWeek (1 < 2 < 3 < 4 < 5 < 6 < 7)`, `CompetitionOpenSinceMonth (1.0 < 2.0 < 3.0 < 4.0 < 5.0 < 6.0 < 7.0 < 8.0 < 9.0 < 10.0 < 11.0 < 12.0)`
 - string (0): none
 - datetime (1): `Date`
 
@@ -179,11 +179,11 @@ The first 5 of 844,392 rows of the final frame (the oldest rows: the frame is so
 
 | Sales | Store | DayOfWeek | Date | Promo | StateHoliday | SchoolHoliday | StoreType | Assortment | CompetitionDistance | CompetitionOpenSinceMonth | CompetitionOpenSinceYear |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| 5035 | 769 | 2 | 2013-01-01 00:00:00 | 0 | a | 1 | b | b | 840 | nan | nan |
 | 3375 | 682 | 2 | 2013-01-01 00:00:00 | 0 | a | 1 | b | a | 150 | 9 | 2006 |
+| 2907 | 530 | 2 | 2013-01-01 00:00:00 | 0 | a | 1 | a | c | 18160 | nan | nan |
 | 4491 | 948 | 2 | 2013-01-01 00:00:00 | 0 | a | 1 | b | b | 1430 | nan | nan |
 | 17267 | 262 | 2 | 2013-01-01 00:00:00 | 0 | a | 1 | b | a | 1180 | 5 | 2013 |
-| 3139 | 353 | 2 | 2013-01-01 00:00:00 | 0 | a | 1 | b | b | 900 | nan | nan |
-| 2646 | 512 | 2 | 2013-01-01 00:00:00 | 0 | a | 1 | b | b | 590 | nan | nan |
 
 ## Curation notes
 
@@ -200,6 +200,11 @@ The first 5 of 844,392 rows of the final frame (the oldest rows: the frame is so
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
   the order of the source's codebook (`ORDINAL_LEVELS`); 1 are calendar or compass cycles, in their usual order
   (the wrap is not shown).
+- Cycle (2026-11-01, CLEAN-14, Lennart's rule): `CompetitionOpenSinceMonth`, the month the nearest competitor
+  opened, names a member of the calendar's cycle rather than measuring a quantity (no value lies between two
+  months or days), so it is an ordered category in the calendar's order; the wrap is not shown.
+- Partial order, left unordered (2026-11-01, CLEAN-14): `Assortment`: a (basic) is the lowest, but whether b
+  (extra) is below or above c (extended) is not stated.
 
 ## Splits
 
@@ -229,6 +234,7 @@ Therefore, we define the same horizon for our test splits and add one day betwee
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | PromoInterval | category | 423307 | 50.13 | 3 | Jan,Apr,Jul,Oct, Feb,May,Aug,Nov, Mar,Jun,Sept,Dec |
+| CompetitionOpenSinceMonth | category | 268619 | 31.81 | 12 | 9.0, 4.0, 11.0, 3.0, 7.0, 12.0, 10.0, 6.0, 5.0, 2.0 |
 | Store | category | 0 | 0 | 1115 | 1097, 423, 769, 682, 494, 562, 335, 85, 733, 262 |
 | DayOfWeek | category | 0 | 0 | 7 | 6, 2, 3, 5, 1, 4, 7 |
 | Promo | category | 0 | 0 | 2 | 0, 1 |
@@ -240,10 +246,9 @@ Therefore, we define the same horizon for our test splits and add one day betwee
 | Date | datetime64\[ns\] | 0 | 0 | 942 | 2015-06-10 00:00:00, 2015-06-30 00:00:00, 2015-06-09 00:00:00, 2015-06-08 00:00… |
 | Promo2SinceWeek | float64 | 423307 | 50.13 | 24 | 14.0, 40.0, 31.0, 10.0, 5.0, 37.0, 1.0, 13.0, 45.0, 22.0 |
 | Promo2SinceYear | float64 | 423307 | 50.13 | 7 | 2011.0, 2013.0, 2014.0, 2012.0, 2009.0, 2010.0, 2015.0 |
-| CompetitionOpenSinceMonth | float64 | 268619 | 31.81 | 12 | 9.0, 4.0, 11.0, 3.0, 7.0, 12.0, 10.0, 6.0, 5.0, 2.0 |
 | CompetitionOpenSinceYear | float64 | 268619 | 31.81 | 23 | 2013.0, 2012.0, 2014.0, 2005.0, 2010.0, 2011.0, 2009.0, 2008.0, 2007.0, 2006.0 |
 | CompetitionDistance | float64 | 2186 | 0.26 | 654 | 250.0, 50.0, 350.0, 1200.0, 190.0, 90.0, 180.0, 330.0, 150.0, 140.0 |
-| Sales | int64 | 0 | 0 | 21734 | 5674, 5558, 5483, 6214, 6049, 5723, 5449, 5140, 5489, 5041 |
+| Sales | int64 | 0 | 0 | 21734 | 5674, 5558, 5483, 6214, 6049, 5723, 5449, 5489, 5140, 5041 |
 
 </details>
 
@@ -259,7 +264,6 @@ Therefore, we define the same horizon for our test splits and add one day betwee
 |---|---|---|---|---|---|
 | Sales | 844392 | 6955.51 | 3104.21 | 0 | 41551 |
 | CompetitionDistance | 842206 | 5457.98 | 7809.44 | 20 | 75860 |
-| CompetitionOpenSinceMonth | 575773 | 7.22488 | 3.21014 | 1 | 12 |
 | CompetitionOpenSinceYear | 575773 | 2008.7 | 5.97805 | 1900 | 2015 |
 | Promo2SinceWeek | 421085 | 23.2534 | 14.1006 | 1 | 50 |
 | Promo2SinceYear | 421085 | 2011.75 | 1.66096 | 2009 | 2015 |
@@ -267,13 +271,18 @@ Therefore, we define the same horizon for our test splits and add one day betwee
 ### Categorical features
 
 <details>
-<summary>Show the table (36 rows)</summary>
+<summary>Show the table (41 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | Assortment | 1 | a | 444909 | 52.69 |
 | Assortment | 2 | c | 391271 | 46.34 |
 | Assortment | 3 | b | 8212 | 0.97 |
+| CompetitionOpenSinceMonth | 1 | &lt;NA> | 268619 | 31.81 |
+| CompetitionOpenSinceMonth | 2 | 9.0 | 95467 | 11.31 |
+| CompetitionOpenSinceMonth | 3 | 4.0 | 72256 | 8.56 |
+| CompetitionOpenSinceMonth | 4 | 11.0 | 70032 | 8.29 |
+| CompetitionOpenSinceMonth | 5 | 3.0 | 52685 | 6.24 |
 | Date | 1 | 2015-06-10 00:00:00 | 1115 | 0.13 |
 | Date | 2 | 2015-06-30 00:00:00 | 1115 | 0.13 |
 | Date | 3 | 2015-06-09 00:00:00 | 1115 | 0.13 |
@@ -321,4 +330,4 @@ Therefore, we define the same horizon for our test splits and add one day betwee
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:939fa036577e862b43cf1d299f4bfdf3ed0261e224675b8ab261ff94e4bd6385` |
+| stale | yes: the definition now gives checksum `v2:98b4aca4f0e7a5fea1885bac772f5f5900db1efb662cd7f00df4b435c8e587c9` |

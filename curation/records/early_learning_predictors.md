@@ -51,6 +51,8 @@ CC (2026-10-30, Lennart): `teacher_duration` is dropped: the minutes the teacher
 
 CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 69 ordinal scales shipped as numbers are ordered categories (point 3); child_stunted ordered after merging its two spellings of Normal; 18 answer codes stored as numbers are categories.
 
+CC (2026-11-01, Lennart): marks on the review board of PR #37: language_match's 16 written reasons (why the child was assessed in another language than at home) recoded to 0; the 26 free-text columns, categories before, are strings.
+
 ## Reference
 
 DataDrive2030. ELOM and Thrive by Five Index 2016-2023, Merged Data [dataset]. Version 1. Cape Town: DataDrive2030 [producer], 2024. Cape Town: DataFirst [distributor], 2024. DOI: https://doi.org/10.25828/WG0D-Y909

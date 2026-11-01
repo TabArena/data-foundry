@@ -75,6 +75,8 @@ CC (2026-10-26, Lennart): verdict ship.
 
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `GROUP` (a partial order).
 
+CC (2026-11-01, Lennart): marks on the review board of PR #37: GROUP stays unordered (regional equivalents), noted in the definition.
+
 ## Reference
 
 Bormann P., Aursand P., Dilib F., Dischington P., Manral S. 2020. FORCE Machine Learning Competition. https://github.com/bolgebrygg/Force-2020-Machine-Learning-competition

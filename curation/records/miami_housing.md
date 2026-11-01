@@ -45,6 +45,8 @@ CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the o
 
 CC (2026-10-31, Lennart): marks on the review board of PR #37 (the order comes from the context and logic, not from the target): structure_quality, a 1-5 quality code without labels, is an ordered category in the order of its codes.
 
+CC (2026-11-01, Lennart): marks on the review board of PR #37: month_sold is an ordered category (a cycle named by numbers: the curator's cycle rule).
+
 ## Reference
 
 https://doi.org/10.1177/0042098020982508

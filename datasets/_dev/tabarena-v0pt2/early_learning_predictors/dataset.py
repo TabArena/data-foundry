@@ -268,8 +268,11 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
           `pri_calc_time_close` ("HH:MM") are present only where the hour and minute columns are and equal to them, so
           they are dropped, as is `certificate_registration_npo`, a copy of `certificate_register`; 26 columns of the
           enumerators' free text (the "other" answers and the explanations of flagged measurements) are strings.
-          `language_match` holds 0, 1 and 12 explanations in place of a 0 or 1 (16 rows); it stays a category, as the
-          explanations do not say which answer they replace.
+        - `language_match` ("Assessment language matches home", DataFirst V1328; 1 for 14,813 children, 0 for 6) holds
+          the enumerator's reason in place of the answer in 16 rows. Each reason explains why the child was assessed in
+          another language than at home (English at an English school or on the principal's request, a child who
+          answers in Sesotho where the parents speak Zulu), so they are a "no": 0 (2026-11-01, CLEAN-11; Lennart asked
+          to find out what they mean rather than keep them as categories).
         - `.a` and `.b` are Stata's extended missing values, exported to the CSV as text (2,388 and 29 cells after the
           target filter, only in the 2020-2022 rounds). They occur only where the question was asked (all 40 `.a` of
           the DSD subsidy amount are programmes that receive it), while a skipped question is blank, so they are
@@ -332,6 +335,9 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
         df = raw
         df = df.loc[~df["child_total_elom"].isna()]
         df["child_stunted"] = df["child_stunted"].replace({"Normal HAZ": "Normal"})  # 2016-2022 and 2023 spellings
+        # the enumerator's reason why the assessment was not in the home language, written in place of a 0 (notes)
+        answer = df["language_match"]
+        df["language_match"] = answer.where(answer.isin(["0", "1"]) | answer.isna(), "0")
         # Stata's extended missing values `.a` and `.b`, exported as text, made 46 numeric columns text (curation notes)
         coded = [col for col in df.columns if df[col].isin([".a", ".b"]).any()]
         df[coded] = df[coded].replace({".a": None, ".b": None}).apply(pd.to_numeric)

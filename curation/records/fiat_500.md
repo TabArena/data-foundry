@@ -43,6 +43,8 @@ CC (2026-10-14, Lennart): Keep one row per car, its first listing (1,434 rows).
 
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `model` (a partial order).
 
+CC (2026-11-01, Lennart): marks on the review board of PR #37: model stays unordered (pop below lounge and sport, which are not ranked), noted in the definition.
+
 ## Reference
 
 https://www.kaggle.com/datasets/paolocons/another-fiat-500-dataset-1538-rows

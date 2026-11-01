@@ -58,6 +58,8 @@ CC (2026-10-21, Lennart): Fallback log loss, not the paper's accuracy.
 
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `Soil_ClimaticZone` (a partial order).
 
+CC (2026-11-01, Lennart): marks on the review board of PR #37: Soil_ClimaticZone stays unordered (a second dimension within the altitude belts), noted in the definition.
+
 ## Reference
 
 https://www.sciencedirect.com/science/article/abs/pii/S0168169999000460

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: horse_colic_survival
 container_format: 2
-checksum: v2:f593cafe67e5973451eba15872cc9274c04fbac9c134c132c2a9b7b1858870a0
+checksum: v2:bc8bfffcb9ed01c9afbaf5fd6f3ac686aa8046bc3062983f7fd71c1b07e9e44f
 build:
   uuid: 01a111fc-df0b-7d08-9ad5-3bfee18c9b55
   checksum: v2:3edea035ca49ff4f42bfa2eb137a98817c67387f49f0fb111c2fd7cf979fa727
@@ -70,7 +70,7 @@ decisions: []
 
 Multiclass classification of `outcome`, scored with `log_loss` on IID splits. 344 rows and 20 features. Source: UCI (1989).
 
-Built as `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f593cafe67e5973451eba15872cc9274c04fbac9c134c132c2a9b7b1858870a0`, so the build is stale. See [Build](#build).
+Built as `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:bc8bfffcb9ed01c9afbaf5fd6f3ac686aa8046bc3062983f7fd71c1b07e9e44f`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -194,6 +194,10 @@ We start with the data from UCI and merge the train and test data.
 - We keep the duplicates occurring in the data.
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 8 columns are ordered categories in
   the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing (CLEAN-10).
+- Partial order, left unordered (2026-11-01, CLEAN-14): `pain`: the codebook says it "should NOT be treated as
+  ordered"; alert (1) < intermittent mild (3) < intermittent severe (4) < continuous severe pain (5) is a line,
+  and depressed (2) is off it. `mucous_membranes` has two lines from normal pink (1): pallor and cyanosis (3 < 4
+  < 6) and congestion (2 < 5).
 
 ## Splits
 
@@ -409,4 +413,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:f593cafe67e5973451eba15872cc9274c04fbac9c134c132c2a9b7b1858870a0` |
+| stale | yes: the definition now gives checksum `v2:bc8bfffcb9ed01c9afbaf5fd6f3ac686aa8046bc3062983f7fd71c1b07e9e44f` |

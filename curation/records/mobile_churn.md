@@ -56,6 +56,8 @@ CC (2026-10-22, Lennart): issue 2: confirm the drop of the SIM cards never activ
 
 CC (2026-10-26, Lennart): verdict ship.
 
+CC (2026-11-01, Lennart): marks on the review board of PR #37: month, the record month, is an ordered category (the curator's cycle rule).
+
 ## Reference
 
 Kaggle

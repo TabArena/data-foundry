@@ -49,6 +49,8 @@ CC (2026-10-06, Lennart): Re-defined the target after the task-probe review (fla
 
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 6 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `air`, `ar_c`, `ar_u`, `bone`, `o_ar_c`, `o_ar_u` (the README lists their levels); their codes that mean unknown (don't know, refused, not asked) are missing in `bone` (CLEAN-10); left unordered: `speech` (a partial order).
 
+CC (2026-11-01, Lennart): marks on the review board of PR #37: speech stays unordered (where normal sits is not documented), noted in the definition.
+
 ## Reference
 
 @incollection{bareiss1990protos,

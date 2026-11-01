@@ -40,6 +40,8 @@ Andrej: As the task is non-discriminative but supportive in nature, I see no iss
 
 CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 1 ordinal scales shipped as numbers are ordered categories (point 3).
 
+CC (2026-11-01, Lennart): marks on the review board of PR #37: the three qualification columns stay unordered (ties and side branches), noted in the definition.
+
 ## Reference
 
 Early prediction of student's performance in higher education: a case study

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: early_learning_predictors
 container_format: 2
-checksum: v2:f064a6fd8304c479e1cc54454ff08d2fe2c9a4cdeade6e554834b144d889e792
+checksum: v2:7a2d2c7ddd18440c9f5592c9d98d83e1aca0de1048dd85b97638447cb3d6de52
 build:
   uuid: 01a111fc-59b5-7e83-8468-0ee2628e95b3
   checksum: v2:ec3dfb429e7c17335aa5683a85458b99e78d373664de2bf4a319f46a2ea15237
@@ -78,7 +78,7 @@ decisions: []
 
 Regression of `child_total_elom`, scored with `rmse` on grouped splits by `id_facility`. 18,874 rows and 739 features. Source: Other (2024).
 
-Built as `01a111fc-59b5-7e83-8468-0ee2628e95b3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f064a6fd8304c479e1cc54454ff08d2fe2c9a4cdeade6e554834b144d889e792`, so the build is stale. See [Build](#build).
+Built as `01a111fc-59b5-7e83-8468-0ee2628e95b3` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7a2d2c7ddd18440c9f5592c9d98d83e1aca0de1048dd85b97638447cb3d6de52`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -197,10 +197,10 @@ The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffle
 
 | child_total_elom | child_dob | child_gender | child_age | child_age_group | child_attendance | child_attends | child_grant | child_has_sibling | child_height | child_zha | child_stunted |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 28.8 | 2017-07-24 00:00:00 | Female | 50 | 50-59 Months | nan | nan | nan | nan | 99.3 | -1.04959 | Normal |
-| 67.66 | NaT | Female | 65.082 | 60-69 Months | nan | nan | nan | nan | 119.8 | 1.64911 | Normal |
+| 73.11 | NaT | Female | 67.0164 | 60-69 Months | nan | nan | nan | nan | 102 | -2.15153 | Moderately stunted |
+| 41.74 | 2017-01-27 00:00:00 | Female | 60 | 60-69 Months | nan | nan | Yes | nan | nan | nan | nan |
 | 56.12 | 2015-12-14 00:00:00 | Female | 63 | 60-69 Months | nan | nan | nan | nan | nan | nan | nan |
-| 37.12 | 2017-07-17 00:00:00 | Female | 50 | 50-59 Months | nan | nan | nan | nan | 107 | 0.70653 | Normal |
+| 17.28 | 2018-08-30 00:00:00 | Male | 53.75 | 50-59 Months | 5 | Yes | nan | nan | 105.1 | -0.324208 | Normal |
 | 53.04 | 2016-11-12 00:00:00 | Female | 59 | 50-59 Months | nan | nan | nan | nan | 102.9 | -1.27022 | Normal |
 
 ## Curation notes
@@ -220,8 +220,11 @@ The first 5 of 18,874 rows of the final frame (random rows: the frame is shuffle
   `pri_calc_time_close` ("HH:MM") are present only where the hour and minute columns are and equal to them, so
   they are dropped, as is `certificate_registration_npo`, a copy of `certificate_register`; 26 columns of the
   enumerators' free text (the "other" answers and the explanations of flagged measurements) are strings.
-  `language_match` holds 0, 1 and 12 explanations in place of a 0 or 1 (16 rows); it stays a category, as the
-  explanations do not say which answer they replace.
+- `language_match` ("Assessment language matches home", DataFirst V1328; 1 for 14,813 children, 0 for 6) holds
+  the enumerator's reason in place of the answer in 16 rows. Each reason explains why the child was assessed in
+  another language than at home (English at an English school or on the principal's request, a child who
+  answers in Sesotho where the parents speak Zulu), so they are a "no": 0 (2026-11-01, CLEAN-11; Lennart asked
+  to find out what they mean rather than keep them as categories).
 - `.a` and `.b` are Stata's extended missing values, exported to the CSV as text (2,388 and 29 cells after the
   target filter, only in the 2020-2022 rounds). They occur only where the question was asked (all 40 `.a` of
   the DSD subsidy amount are programmes that receive it), while a skipped question is blank, so they are
@@ -458,7 +461,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 ### Categorical features
 
 <details>
-<summary>Show the table (1,931 rows)</summary>
+<summary>Show the table (1,929 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -523,7 +526,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | facility_type | 5 | DAY MOTHER | 364 | 1.93 |
 | gr_1_tt | 1 | &lt;NA> | 18288 | 96.9 |
 
-(1,871 more rows not shown)
+(1,869 more rows not shown)
 
 </details>
 
@@ -538,4 +541,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:f064a6fd8304c479e1cc54454ff08d2fe2c9a4cdeade6e554834b144d889e792` |
+| stale | yes: the definition now gives checksum `v2:7a2d2c7ddd18440c9f5592c9d98d83e1aca0de1048dd85b97638447cb3d6de52` |

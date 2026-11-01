@@ -11,6 +11,7 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSu
 # them). An open-ended level holds everything beyond it.
 ORDINAL_LEVELS = {
     "DayOfWeek": [1, 2, 3, 4, 5, 6, 7],
+    "CompetitionOpenSinceMonth": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0],
 }
 
 
@@ -79,6 +80,11 @@ class RossmannStoreSales(AbstractCuratedDataset):
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
           the order of the source's codebook (`ORDINAL_LEVELS`); 1 are calendar or compass cycles, in their usual order
           (the wrap is not shown).
+        - Cycle (2026-11-01, CLEAN-14, Lennart's rule): `CompetitionOpenSinceMonth`, the month the nearest competitor
+          opened, names a member of the calendar's cycle rather than measuring a quantity (no value lies between two
+          months or days), so it is an ordered category in the calendar's order; the wrap is not shown.
+        - Partial order, left unordered (2026-11-01, CLEAN-14): `Assortment`: a (basic) is the lowest, but whether b
+          (extra) is below or above c (extended) is not stated.
     """
 
     # Task

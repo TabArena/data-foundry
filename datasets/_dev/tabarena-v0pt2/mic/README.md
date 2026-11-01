@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: mic
 container_format: 2
-checksum: v2:aff4e17c97c20a40712b856fcd17ebad5d672d1339d22fca0519cef8a6ec26a3
+checksum: v2:2797b61259c55df0c15c88eb632ad3ba7fd78de4170a9a9118a9883809fdc0d1
 build:
   uuid: 01a111fc-88a2-7b7e-86e3-99576cde774e
   checksum: v2:a64ea123c6016422c656182848fc75bc4e27f2b94031a6b15a01fffb634ab238
@@ -67,7 +67,7 @@ decisions: []
 
 Multiclass classification of `LET_IS`, scored with `log_loss` on IID splits. 1,700 rows and 102 features. Source: Other (2020).
 
-Built as `01a111fc-88a2-7b7e-86e3-99576cde774e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:aff4e17c97c20a40712b856fcd17ebad5d672d1339d22fca0519cef8a6ec26a3`, so the build is stale. See [Build](#build).
+Built as `01a111fc-88a2-7b7e-86e3-99576cde774e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2797b61259c55df0c15c88eb632ad3ba7fd78de4170a9a9118a9883809fdc0d1`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -191,6 +191,9 @@ The first 5 of 1,700 rows of the final frame (random rows: the frame is shuffled
 - We reversed the ordinal encoding of the target feature.
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 11 columns are ordered categories in
   the order of the source's codebook (`ORDINAL_LEVELS`).
+- Partial order, left unordered (2026-11-01, CLEAN-14): `ZSN_A` (chronic heart failure) has two lines of
+  severity, 0 < 1 < 2 < 4 and 0 < 1 < 3 < 4 (UCI 579: "partially ordered"): 2 and 3 are stage IIA of the right
+  and of the left ventricle, 4 both.
 
 ## Splits
 
@@ -433,4 +436,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:aff4e17c97c20a40712b856fcd17ebad5d672d1339d22fca0519cef8a6ec26a3` |
+| stale | yes: the definition now gives checksum `v2:2797b61259c55df0c15c88eb632ad3ba7fd78de4170a9a9118a9883809fdc0d1` |

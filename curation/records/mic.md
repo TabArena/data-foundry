@@ -48,6 +48,8 @@ CC (2026-10-12, Lennart): Kept in TabArena v0.2 after the task-probe review (fla
 
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 11 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `INF_ANAM`, `STENOK_AN`, `FK_STENOK`, `IBS_POST`, `GB`, `DLIT_AG`, `ant_im`, `lat_im`, `inf_im`, `post_im`, `TIME_B_S` (the README lists their levels); left unordered: `ZSN_A` (a partial order).
 
+CC (2026-11-01, Lennart): marks on the review board of PR #37: ZSN_A stays unordered as a partial order (two lines of severity), noted in the definition.
+
 ## Reference
 
 Trajectories, bifurcations, and pseudo-time in large clinical datasets: applications to myocardial infarction and diabetes data

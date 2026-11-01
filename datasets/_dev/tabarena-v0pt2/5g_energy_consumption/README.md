@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: 5g_energy_consumption
 container_format: 2
-checksum: v2:cf916dd5ffc5b4c2995e01640c48237640a5e2f075f041375b066e1bb7d76f43
+checksum: v2:150585f2d6bd259cafd58f0468224b8426772b184b10a543fce76395f0505721
 build:
   uuid: 01a111fc-7d10-76f4-b97c-284becb386ec
   checksum: v2:f656e1e34bd973009beb9f9a0f191920552ec4d008bfda996ba0dd0cd957ff85
@@ -76,7 +76,7 @@ decisions: []
 
 Regression of `Energy`, scored with `mape` on grouped splits by `BS`. 92,629 rows and 20 features. Source: Zindi (2023).
 
-Built as `01a111fc-7d10-76f4-b97c-284becb386ec` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:cf916dd5ffc5b4c2995e01640c48237640a5e2f075f041375b066e1bb7d76f43`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7d10-76f4-b97c-284becb386ec` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:150585f2d6bd259cafd58f0468224b8426772b184b10a543fce76395f0505721`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -159,9 +159,10 @@ Only curators run `build`, when the dataset ships.
 | reason | false: the per-row WMAPE weights come with the test file and are not published; every test station here is new, so unweighted mape is the closest stand-in |
 
 <details>
-<summary>Feature types: 4 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 3 categorical, 1 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (4): `BS`, `RUType`, `Mode`, `weekday_number`
+- categorical (3): `BS`, `RUType`, `Mode`
+- ordinal (1): `weekday_number (0 < 1 < 2 < 3 < 4 < 5 < 6)`
 - string (0): none
 - datetime (0): none
 
@@ -209,6 +210,9 @@ The first 5 of 92,629 rows of the final frame (random rows: the frame is shuffle
 - Anomaly: The raw files cover one week only, 2023-01-01 01:00 to 2023-01-08 00:00 (168 hours).
 - Anomaly: The source does not state the energy unit. `Energy` runs from 0.75 to exactly 100, and every value is a multiple of 100/669, so the values were rescaled to a maximum of 100.
 - Note: The station id `BS` stays in the data as the group column, which is split metadata, not a model feature. Every test station is unseen in training, so as a feature it would be an unknown category without information.
+- Cycle (2026-11-01, CLEAN-14, Lennart's rule): `weekday_number`, the day of the week (0 Monday to 6 Sunday,
+  pandas' weekday of `Time`), names a member of the calendar's cycle rather than measuring a quantity (no value
+  lies between two months or days), so it is an ordered category in the calendar's order; the wrap is not shown.
 
 ## Splits
 
@@ -363,4 +367,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:cf916dd5ffc5b4c2995e01640c48237640a5e2f075f041375b066e1bb7d76f43` |
+| stale | yes: the definition now gives checksum `v2:150585f2d6bd259cafd58f0468224b8426772b184b10a543fce76395f0505721` |

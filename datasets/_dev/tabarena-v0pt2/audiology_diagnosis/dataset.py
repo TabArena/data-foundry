@@ -85,6 +85,8 @@ class AudiologyDiagnosis(AbstractCuratedDataset):
         - We remove the columns that are constant after these steps: history_fullness, and the brainstem-test findings bser, viith_nerve_signs and waveform_ItoV_prolonged, which only the dropped cases had (bser is also recorded for one kept case).
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 6 columns are ordered categories in
           the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing (CLEAN-10).
+        - Partial order, left unordered (2026-11-01, CLEAN-14): `speech` runs very_poor < poor < good < very_good, but
+          where `normal` sits against good and very_good is not documented.
     """
 
     # Task

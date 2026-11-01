@@ -77,6 +77,9 @@ class Kick(AbstractCuratedDataset):
         - Leak, dropped (LEAK-10; Lennart, 2026-10-22, consistent with expresso_churn_prediction's REGION): "WheelType" and "WheelTypeID" were most likely filled in after the outcome. WheelType is missing for 24.9% of bad buys and 1.5% of good ones, in every band of vehicle age, odometer and price; a model of the missingness from the auction covariates, fit on good buys, predicts 1.2% missing for the bad buys; within auction and purchase date the missing flag alone still separates bad buys (ROC AUC 0.572), while the missing flags of the other columns stay at 0.49-0.54. Its whole value is the flag: LightGBM on the 9 temporal windows (300 trees, mean ROC AUC) 0.750 with the columns, 0.677 without.
         - Leak, dropped (LEAK-10; same decision): "PRIMEUNIT" and "AUCGUART" (filled on the same rows, about 95% missing). From October 2010 they are filled for 32.7% of good buys and 7.8% of bad ones; a model of the fill from the auction covariates, fit on good buys, predicts 42.3% filled for the bad buys; within auction and purchase date the flag gives ROC AUC 0.632. These months fall in the last test windows.
         - The host's test file carries all four fields the same way (WheelType missing for 4.5% of the Kaggle test rows against 4.3% of train; PRIMEUNIT filled for 46.0% in December 2010), so the competition's task had them. We drop them anyway because that test file is a holdout from the same snapshot, taken after the outcomes; at a real auction no car has been kicked back yet. If the recording process is ever documented as known at the auction, they can come back.
+        - Partial order, left unordered (2026-11-01, CLEAN-14): `Size` runs in chains within body types (COMPACT <
+          MEDIUM < LARGE cars, SMALL < MEDIUM < LARGE SUV, SMALL < LARGE TRUCK); CROSSOVER, SPECIALTY, SPORTS and VAN
+          are body types off those chains.
     """
 
     # Task

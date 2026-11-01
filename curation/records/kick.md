@@ -64,6 +64,8 @@ CC (2026-10-22, Lennart): issue 1: (a), drop `WheelType` and `WheelTypeID` under
 
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `Size` (a partial order).
 
+CC (2026-11-01, Lennart): marks on the review board of PR #37: Size stays unordered (chains within body types), noted in the definition.
+
 ## Reference
 
 faysal, Will Adams, and Will Cukierski. Don't Get Kicked!. https://kaggle.com/competitions/DontGetKicked, 2011. Kaggle.
