@@ -32,8 +32,11 @@ record, audit or PR that motivated it.
   grouped ROC AUC 0.771 against 0.772 with LightGBM) and adds the MACCS keys (0.796). The stereoisomer pairs are found
   on the stereo-free SMILES: the same 9 pairs, 587 drugs, 140 positive. The accepted `dataset_identifier_column`
   warning leaves.
-- `qsar_tid_11`: the ChEMBL 17 structure ships as `SMILES` next to the 1,024 FCFP bits; the two duplicate-row warnings
-  are gone, since rows that share a fingerprint differ in their structure.
+- `qsar_tid_11`: the ChEMBL 17 structure ships as `SMILES`, the one feature; the authors' 1,024 FCFP6 bits leave as one
+  modelling choice (Lennart: "the real task here is going from smiles to a prediction"). RDKit recomputes none of them
+  exactly. LightGBM R^2 on the scaffold splits: 0.645 with the bits, 0.601 with the recommended encoding, 0.658 with
+  RDKit's ECFP4 counts added to it. The 474 stereoisomer rows stay (own potencies, 2026-10-21 decision); the two
+  duplicate-row warnings are gone.
 - All five: `dataset check` clean. Records carry the CC and an Assessment. Not built.
 
 ## 2026-11-01, scaffold groups: `qsar_tid_11` grouped from ChEMBL 17 structures, `drug_induced_autoimmunity_prediction` on `scaffold_groups`

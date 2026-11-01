@@ -85,22 +85,19 @@ class QsarTid11(AbstractCuratedDataset):
             "The compound's median measured potency, as the negative log of the concentration that gives half the "
             "effect; higher means more potent."
         ),
-        known=(
-            "A 1,024-bit fingerprint of the molecule's structure (which circular substructures it contains), and the "
-            "structure itself as a SMILES string."
-        ),
+        known=("The compound's chemical structure, as a SMILES string."),
         split=(
             "Whole chemical series (compounds sharing a ring skeleton) are held out, so the test data stands for "
             "compounds of series not measured yet."
         ),
         changes=(
             "We drop one row with a negative activity value, judged a data error, and 37 rows that are salt forms "
-            "of a compound already in the data, add each compound's structure from ChEMBL 17, and split by chemical "
-            "series instead of at random."
+            "of a compound already in the data, replace the authors' fingerprint with the compound's structure from "
+            "ChEMBL 17, and split by chemical series instead of at random."
         ),
         fit="direct",
         fit_reason=(
-            "The fingerprint comes from the structure alone, which is all a chemist has before synthesis, and "
+            "The structure is all a chemist has before synthesis, and "
             "held-out series stand for new ones. The activities are medians over measurements of many sources."
         ),
     )
@@ -117,7 +114,7 @@ class QsarTid11(AbstractCuratedDataset):
 
         mkdir -p local-data-warehouse/qsar_tid_11/ && wget -P local-data-warehouse/qsar_tid_11/ https://www.openml.org/data/download/1674848/11.arff
 
-        The compounds' structures, for the scaffold groups of the split, come from ChEMBL 17's structure table (133,574,872 bytes, sha256 484009d05a2b1a4af714b18f76f329b69fcce806044ebcca7695efa30d58b44e); the definition cuts out this file's compounds once (chembl_17_structures_tid11.csv).
+        The compounds' structures, for the SMILES column and the scaffold groups of the split, come from ChEMBL 17's structure table (133,574,872 bytes, sha256 484009d05a2b1a4af714b18f76f329b69fcce806044ebcca7695efa30d58b44e); the definition cuts out this file's compounds once (chembl_17_structures_tid11.csv).
 
         wget -P local-data-warehouse/qsar_tid_11/ https://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/releases/chembl_17/chembl_17_chemreps.txt.gz
     """
@@ -157,7 +154,15 @@ class QsarTid11(AbstractCuratedDataset):
           canonical form (`canonical_smiles`; the 549 salts as ChEMBL records them), declared in `smiles_columns`, so a
           benchmark encodes it as a structure and never as text; the recommended encoding is
           `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors and the 166 MACCS keys). The source's
-          1,024 FCFP bits stay: Pipeline Pilot's fingerprint, which the recommended encoding does not reproduce.
+          1,024 FCFP6 bits leave (Lennart, 2026-11-01: "the real task here is going from smiles to a prediction, the
+          bits are just one possible modelling choice by the authors"). RDKit computes the same kind of fingerprint, but
+          not these columns: with its closest settings (radius 3, feature invariants, 1,024 bits) no source bit is
+          matched exactly by any RDKit bit, at any position. A benchmark computes its own encoding of the structure.
+          On the scaffold splits LightGBM's R^2 was 0.66 on the bits alone and 0.68 with the encoded structure added.
+        - Stereoisomers stay (as the repeated-fingerprint decision below): 474 rows in 217 groups share one structure
+          once the stereo marks are set aside, each with its own measured potency (range within a group: median 0.45,
+          up to 4.48 pXC50). The SMILES keeps the stereo marks; the recommended 2D encoding does not tell them apart.
+          Each group shares a scaffold, so it stays on one side of the split. No two rows share a SMILES.
         - Only one row has a negative value (-6.24) and is thus extremely out-of-distribution, which is likely results from the target being log scaled in the original domain. We remove this row as it is unclear if this is a scaling or labeling error, but we judge it is in all cases a data artifact.
         - Why the row may leave (CLEAN-11, CLEAN-15): a pXC50 of -6.24 is a half-effect concentration of 10^6.24 mol/L, about 1.7 million mol/L, which no substance reaches (pure water is 55 mol/L). The value is impossible, so the target is missing and the row drops. It does not meet CLEAN-11's clause for an extreme target in the training period only: the split is random, and the source does not name the row.
         - We do not log scale the target (it could make sense for this distribution), as the original label is already log transformed.
@@ -175,7 +180,6 @@ class QsarTid11(AbstractCuratedDataset):
           the target: we keep the parent's own row (in the one pair without it, the lowest ChEMBL id). The ids are
           embedded as SALT_FORM_COPIES: the parent links come from ChEMBL's molecule_hierarchy, which neither the
           raw file nor ChEMBL 17's structure table carries.
-        - The 1,024 fingerprint bits are 0/1 presence flags (OpenML stores them as floats): integers typed categorical, the house form for 0/1 presence flags (CLEAN-14; Lennart, 2026-10-21).
     """
 
     # Task
@@ -197,7 +201,7 @@ class QsarTid11(AbstractCuratedDataset):
         prediction_unit="row",
         context="none",
         definition="""
-            One group is a chemical series: the compounds that share one Bemis-Murcko scaffold (ring systems and the chains linking them; Bemis and Murcko 1996), computed with RDKit from the compound's ChEMBL 17 structure. A compound without a ring is a group of its own, and so would be each compound of a scaffold holding more than a tenth of the compounds (SPLIT-31; none here: the bare benzene ring holds 2%). A medicinal chemist screens candidates that often come from a series not yet measured on the target, so whole series are held out. Each row is one prediction, made from the compound's fingerprint alone.
+            One group is a chemical series: the compounds that share one Bemis-Murcko scaffold (ring systems and the chains linking them; Bemis and Murcko 1996), computed with RDKit from the compound's ChEMBL 17 structure. A compound without a ring is a group of its own, and so would be each compound of a scaffold holding more than a tenth of the compounds (SPLIT-31; none here: the bare benzene ring holds 2%). A medicinal chemist screens candidates that often come from a series not yet measured on the target, so whole series are held out. Each row is one prediction, made from the compound's structure alone.
         """,
     )
 
@@ -237,13 +241,13 @@ class QsarTid11(AbstractCuratedDataset):
         # The split groups: the chemical series (Bemis-Murcko scaffold); no ring, or a scaffold above a tenth, alone.
         # Counter-ions carry no ring here, so a salt's scaffold is its parent's.
         df = df.assign(scaffold=scaffold_groups(df["SMILES"]))
-        # The structure ships as a SMILES column (`smiles_columns`), in RDKit's canonical form, next to the bits
-        df = df.assign(SMILES=canonical_smiles(df["SMILES"]))
-        df = df.drop(columns=["MOLECULE_CHEMBL_ID"])
-        bits = df.columns.drop(["MEDIAN_PXC50", "scaffold", "SMILES"])
-        df[bits] = df[bits].astype("int8")
-        return df
+        # The structure ships as a SMILES column (`smiles_columns`), in RDKit's canonical form; the authors' FCFP6
+        # bits leave, one modelling choice of the structure (curation_comments)
+        return pd.DataFrame(
+            {"SMILES": canonical_smiles(df["SMILES"]), "MEDIAN_PXC50": df["MEDIAN_PXC50"], "scaffold": df["scaffold"]}
+        )
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # The fingerprint bits are 0/1 presence flags: categorical (CLEAN-14).
-        return FeatureTypes(categorical=list(df.columns.drop([self.target, "scaffold", "SMILES"])))
+        # the SMILES is typed by `smiles_columns`; the target stays numeric
+        del df
+        return FeatureTypes()

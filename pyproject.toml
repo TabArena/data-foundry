@@ -88,7 +88,8 @@ tests = [
     "markdown-it-py",
 ]
 dev = [
-    "data-foundry[build,tests]",
+    # the recommended encodings of dates and text (skrub, sentence-transformers for e5) in development and tests
+    "data-foundry[build,tests,encodings]",
     "autogluon",
     "lightgbm",
     "ruff",
