@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-01 17:29 UTC: 129 claim(s) (Andrej 25, Lennart 82, Myunghwan 22).
+As of 2026-11-01 17:43 UTC: 130 claim(s) (Andrej 25, Lennart 83, Myunghwan 22).
 
 ## Andrej
 
@@ -66,6 +66,7 @@ As of 2026-11-01 17:29 UTC: 129 claim(s) (Andrej 25, Lennart 82, Myunghwan 22).
 | `diamonds` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `differentiated_thyroid_cancer_recurrence` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `distribution_transformers_at_cauca_department` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
+| `drug_induced_autoimmunity_prediction` | add | 2026-11-01 | 2026-11-08 | scaffold_groups like the other molecule datasets (SPLIT-31); SMILES discussion |
 | `early_learning_predictors` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `emscad` | add | 2026-11-01 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `eryhemato_squamous_disease` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
