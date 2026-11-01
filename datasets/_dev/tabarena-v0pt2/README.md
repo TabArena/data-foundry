@@ -15,6 +15,8 @@ Working setup towards TabArena-v0.2
 
 ## Rebuild
 
+A scoped build of `tunisian_fraud_detection_challenge` on 2026-10-31 produced a format-2 container from one traced raw file (9,679,520 bytes). Saved-container reload and reproduction from only that input verified the same checksum; its dataset card records the UUID, clean source commit and accepted warnings.
+
 124 datasets were built on 2026-10-06 from the definitions in this folder (the UUIDs below; a 125th, `mutual_funds_india`,
 was retired on 2026-10-14), as container format 2 (`container.format_version == 2`); 15 of them were rebuilt on
 2026-10-14 after the review of their task summaries (`CHANGELOG.md`). The definitions added since are not built yet, and a
@@ -220,7 +222,7 @@ not accepted in the definition.
 | [`taiwanese_bankruptcy_prediction`](taiwanese_bankruptcy_prediction/) | IID | 6,819 | 92 | 3 x 3 | not built |  |
 | [`thyroid_discordant`](thyroid_discordant/) | IID | 3,711 | 26 | 10 x 3 | not built |  |
 | [`tour_travels_churn`](tour_travels_churn/) | IID | 954 | 6 | 10 x 3 | not built | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows`, `meta_bibtex_latex_hazard` |
-| [`tunisian_fraud_detection_challenge`](tunisian_fraud_detection_challenge/) | temporal | 21,295 | 103 | 4 x 1 | not built |  |
+| [`tunisian_fraud_detection_challenge`](tunisian_fraud_detection_challenge/) | temporal | 21,295 | 103 | 4 x 1 | `01a19475-b104-7ff0-82db-ed3aeb71f3a7` |  |
 | [`video_transcoding_time_prediction`](video_transcoding_time_prediction/) | grouped | 68,784 | 18 | 3 x 3 | not built |  |
 | [`website_phishing`](website_phishing/) | IID | 1,250 | 9 | 10 x 3 | not built | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows` |
 | [`wids_diabetes_mellitus`](wids_diabetes_mellitus/) | IID | 127,358 | 181 | 3 x 3 | not built |  |

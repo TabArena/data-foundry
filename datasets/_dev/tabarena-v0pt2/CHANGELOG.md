@@ -4,6 +4,12 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-31 (Tunisian build verified, Myunghwan)
+
+- Built `tunisian_fraud_detection_challenge` as format 2: UUID `01a19475-b104-7ff0-82db-ed3aeb71f3a7`, checksum `v2:84d2d72d5ffe91a80168cd461f4367b63635ee74467d97d96c89e6de9ce57972`, from clean definition commit `4bc27fd6d8b49f8c9c16446bb7e85132ce90943b`.
+- Verified saved reload, exact accepted data and four split memberships, and identical checksum from the single traced Train.csv (9,679,520 bytes). A verified raw-input ZIP is retained privately. No new errors or unaccepted warnings; both annual-time warning reasons remain accepted.
+- Full tests: 1,326 passed, 177 skipped. The added definition passes Ruff lint and format checks; repository-wide lint/format findings remain in unchanged files. Existing model probes are reusable because data, predictors, target, scorer and splits are identical. Claim remains active until integration; no source publication performed.
+
 ## 2026-10-31 (Tunisian dataset accepted, Myunghwan)
 
 - Accepted `tunisian_fraud_detection_challenge` for a later requested build, including its retrospective investigation use and four annual fiscal-cohort tests.

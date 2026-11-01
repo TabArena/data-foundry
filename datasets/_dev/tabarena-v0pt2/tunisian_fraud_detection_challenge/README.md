@@ -3,7 +3,20 @@ report_format: data-foundry-report-v2
 unique_name: tunisian_fraud_detection_challenge
 container_format: 2
 checksum: v2:84d2d72d5ffe91a80168cd461f4367b63635ee74467d97d96c89e6de9ce57972
-build: null
+build:
+  uuid: 01a19475-b104-7ff0-82db-ed3aeb71f3a7
+  checksum: v2:84d2d72d5ffe91a80168cd461f4367b63635ee74467d97d96c89e6de9ce57972
+  built_at: '2026-11-01T00:15:05+00:00'
+  path: tunisian_fraud_detection_challenge/01a19475-b104-7ff0-82db-ed3aeb71f3a7
+  data_foundry_version: 0.0.5
+  git_sha: 4bc27fd6d8b49f8c9c16446bb7e85132ce90943b
+  libraries:
+    python: 3.12.3
+    pandas: 3.1.0
+    numpy: 2.5.4
+    pyarrow: 26.0.0
+    scikit-learn: 1.7.2
+    polars: 2.0.0
 build_stale: false
 data:
   n_rows: 21295
@@ -63,7 +76,7 @@ decisions: []
 
 Regression of `target`, scored with `rmse` on temporal splits by `fiscal_year`. 21,295 rows and 103 features. Source: Zindi (2019).
 
-Not built yet. The current definition gives checksum `v2:84d2d72d5ffe91a80168cd461f4367b63635ee74467d97d96c89e6de9ce57972`.
+Built as `01a19475-b104-7ff0-82db-ed3aeb71f3a7` on 2026-11-01. See [Build](#build).
 
 ## In brief
 
@@ -446,4 +459,12 @@ Accepted on purpose:
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a19475-b104-7ff0-82db-ed3aeb71f3a7 |
+| checksum | v2:84d2d72d5ffe91a80168cd461f4367b63635ee74467d97d96c89e6de9ce57972 |
+| built_at | 2026-11-01T00:15:05+00:00 |
+| path | tunisian_fraud_detection_challenge/01a19475-b104-7ff0-82db-ed3aeb71f3a7 |
+| data_foundry_version | 0.0.5 |
+| git_sha | 4bc27fd6d8b49f8c9c16446bb7e85132ce90943b |
+| libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
