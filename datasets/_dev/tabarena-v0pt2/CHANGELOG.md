@@ -4,6 +4,21 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-11-01, `marketing_campaign` retired: the iFood hiring case's mock data (issue #38)
+
+- `marketing_campaign` is retired: `No (Retired)` with `AHDS` (SEL-16, PROV-3), Lennart's "Don't ship" on the review
+  page of issue #38. The folder is removed and the record's `v2_path` cleared; `DF: Yes`, the collection tags and the
+  BeyondArena container stay, as for `churn` and `healthcare_insurance_expenses`.
+- Why: the Kaggle file is, cell for cell, the sample data of the iFood Data Analyst Case, a hiring test whose PDF
+  says the data "mocks metainformation on the customer" of a made-up company. Its constant columns reproduce the
+  case's campaign figures, and the data carries a generator's marks that reach the label: identical customers with
+  different labels, a uniform `Recency` unrelated to spend, flat joining dates, `MntFishProducts` on a 1.3 grid, and
+  planted values. The evidence is in the record's Assessment of this date.
+- `customer_personality_analysis`, the same file, keeps its `No`; `Duplicate` of `marketing_campaign` replaces
+  `Missing source information`.
+- PR #37 still edits this folder (ordinal typing); its changes to `dataset.py` and the generated `README.md` lapse
+  with the retirement.
+
 ## 2026-10-30, `early_learning_predictors`: Stata missing codes, 44 counts and amounts numeric, a timer dropped (PR #35)
 
 - `.a` and `.b` are Stata's extended missing values, exported to the CSV as text in 46 columns (2,388 and 29 cells
