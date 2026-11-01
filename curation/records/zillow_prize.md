@@ -66,3 +66,5 @@ CC (2026-10-26, Lennart): issue 9: "make it categorical, but also please check w
 CC (2026-10-26, Lennart): verdict ship.
 
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `buildingqualitytypeid` (a partial order).
+
+CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 7 coded columns carry their words.

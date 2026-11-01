@@ -5,23 +5,49 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
 ORDINAL_LEVELS = {
-    "Medu": [0, 1, 2, 3, 4],
-    "Fedu": [0, 1, 2, 3, 4],
-    "traveltime": [1, 2, 3, 4],  # open-ended
-    "studytime": [1, 2, 3, 4],  # open-ended
-    "failures": [0, 1, 2, 3],  # open-ended
-    "famrel": [1, 2, 3, 4, 5],
-    "freetime": [1, 2, 3, 4, 5],
-    "goout": [1, 2, 3, 4, 5],
-    "Dalc": [1, 2, 3, 4, 5],
-    "Walc": [1, 2, 3, 4, 5],
-    "health": [1, 2, 3, 4, 5],
+    "Medu": ["none", "primary education (4th grade)", "5th to 9th grade", "secondary education", "higher education"],
+    "Fedu": ["none", "primary education (4th grade)", "5th to 9th grade", "secondary education", "higher education"],
+    "traveltime": ["<15 min", "15 to 30 min", "30 min to 1 hour", ">1 hour"],  # open-ended
+    "studytime": ["<2 hours", "2 to 5 hours", "5 to 10 hours", ">10 hours"],  # open-ended
+    "failures": ["no failures", "1 failure", "2 failures", "3 or more failures"],  # open-ended
+    "famsize": ["less or equal to 3", "greater than 3"],
 }
+
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "Medu": {
+        "0": "none",
+        "1": "primary education (4th grade)",
+        "2": "5th to 9th grade",
+        "3": "secondary education",
+        "4": "higher education",
+    },
+    "Fedu": {
+        "0": "none",
+        "1": "primary education (4th grade)",
+        "2": "5th to 9th grade",
+        "3": "secondary education",
+        "4": "higher education",
+    },
+    "traveltime": {"1": "<15 min", "2": "15 to 30 min", "3": "30 min to 1 hour", "4": ">1 hour"},
+    "studytime": {"1": "<2 hours", "2": "2 to 5 hours", "3": "5 to 10 hours", "4": ">10 hours"},
+    "failures": {"0": "no failures", "1": "1 failure", "2": "2 failures", "3": "3 or more failures"},
+    "school": {"GP": "Gabriel Pereira", "MS": "Mousinho da Silveira"},
+    "address": {"U": "urban", "R": "rural"},
+    "famsize": {"LE3": "less or equal to 3", "GT3": "greater than 3"},
+    "Pstatus": {"T": "living together", "A": "apart"},
+}
+
+
+# Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
+SCORES = ["famrel", "freetime", "goout", "Dalc", "Walc", "health"]
 
 
 class StudentPortuguesePerformance(AbstractCuratedDataset):
@@ -79,6 +105,11 @@ class StudentPortuguesePerformance(AbstractCuratedDataset):
         - We drop G1 and G2 to simulate the task to predict the final grade from the base characteristic.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 11 columns are ordered categories in
           the order of the source's codebook (`ORDINAL_LEVELS`); 11 of them were shipped as numbers.
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 6 ordered codes carry their codebook's
+          words (`CODE_LABELS`), in the same order; 3 unordered codes carry their words: `school`, `address`, `Pstatus`;
+          6 scores with no words per level are numbers (`SCORES`): `famrel`, `freetime`, `goout`, `Dalc`, `Walc`,
+          `health`.
     """
 
     # Task
@@ -98,6 +129,10 @@ class StudentPortuguesePerformance(AbstractCuratedDataset):
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
         df = df.drop(columns=["G1", "G2"])
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
+        # scores with no words per level are numbers (CLEAN-14)
+        df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

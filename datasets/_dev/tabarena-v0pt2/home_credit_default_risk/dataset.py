@@ -55,10 +55,12 @@ ORDINAL_LEVELS = {
         "Higher education",
         "Academic degree",
     ],
-    "REGION_RATING_CLIENT": [1, 2, 3],
-    "REGION_RATING_CLIENT_W_CITY": [1, 2, 3],
     "WEEKDAY_APPR_PROCESS_START": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"],
 }
+
+
+# Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
+SCORES = ["REGION_RATING_CLIENT", "REGION_RATING_CLIENT_W_CITY"]
 
 
 class HomeCreditDefaultRisk(AbstractCuratedDataset):
@@ -132,6 +134,9 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 4 columns are ordered categories in
           the order of the source's codebook (`ORDINAL_LEVELS`); 2 of them were shipped as numbers; 1 are calendar or
           compass cycles, in their usual order (the wrap is not shown).
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 2 scores with no words per level are
+          numbers (`SCORES`): `REGION_RATING_CLIENT`, `REGION_RATING_CLIENT_W_CITY`.
     """
 
     # Task
@@ -178,6 +183,8 @@ class HomeCreditDefaultRisk(AbstractCuratedDataset):
         # of the "nan" category the one-hot encoding adds to every table)
         features = df.columns.drop(self.target)
         df = df.drop(columns=[c for c in features if df[c].nunique() <= 1])
+        # scores with no words per level are numbers (CLEAN-14)
+        df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
         return df.drop(columns=_copies(df.drop(columns=self.target)))
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

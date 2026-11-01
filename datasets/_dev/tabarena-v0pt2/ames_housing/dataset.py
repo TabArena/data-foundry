@@ -14,6 +14,7 @@ from data_foundry.v2 import (
     TaskSummary,
     Temporal,
     TemporalSplits,
+    decode,
     drop_columns,
     object_columns,
     set_missing,
@@ -458,8 +459,29 @@ ORDINAL_LEVELS = {
     "Garage Cond": ["Poor", "Fair", "Typical/Average", "Good", "Excellent"],
     "Paved Drive": ["Dirt/Gravel", "Partial Pavement", "Paved"],
     "Pool QC": ["Fair", "Typical/Average", "Good", "Excellent"],
-    "Overall Qual": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    "Overall Cond": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "Overall Qual": [
+        "very poor",
+        "poor",
+        "fair",
+        "below average",
+        "average",
+        "above average",
+        "good",
+        "very good",
+        "excellent",
+        "very excellent",
+    ],
+    "Overall Cond": [
+        "very poor",
+        "poor",
+        "fair",
+        "below average",
+        "average",
+        "above average",
+        "good",
+        "very good",
+        "excellent",
+    ],
     "Bsmt Qual": [
         "No basement",
         "Poor (<70 inches)",
@@ -515,6 +537,35 @@ ORDINAL_LEVELS = {
         "Excellent - Exceptional Masonry Fireplace",
     ],
     "Garage Finish": ["No garage", "Unfinished", "Rough Finished", "Finished"],
+}
+
+
+# The documentation's words for the two 1-10 ratings, decoded in `_clean` (CLEAN-12; the curator's rule of
+# 2026-11-01).
+RATING_LABELS = {
+    "Overall Qual": {
+        "1": "very poor",
+        "2": "poor",
+        "3": "fair",
+        "4": "below average",
+        "5": "average",
+        "6": "above average",
+        "7": "good",
+        "8": "very good",
+        "9": "excellent",
+        "10": "very excellent",
+    },
+    "Overall Cond": {
+        "1": "very poor",
+        "2": "poor",
+        "3": "fair",
+        "4": "below average",
+        "5": "average",
+        "6": "above average",
+        "7": "good",
+        "8": "very good",
+        "9": "excellent",
+    },
 }
 
 
@@ -611,6 +662,9 @@ class AmesHousing(AbstractCuratedDataset):
           outside the scale, placed by the curator's rule (missing when the column has no other missing value, else the
           lowest level; a state that is simply not on the scale, such as Other, is missing); codes that mean unknown are
           missing (CLEAN-10).
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 2 ordered codes carry their codebook's
+          words (`RATING_LABELS`), in the same order.
     """
 
     # Task
@@ -699,6 +753,8 @@ class AmesHousing(AbstractCuratedDataset):
                 "Fireplace Qu": ["No fireplace"],
             },
         )
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, RATING_LABELS)
         return drop_columns(df, ["Order", "PID", "Yr Sold", "Mo Sold"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

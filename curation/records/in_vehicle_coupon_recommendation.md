@@ -47,6 +47,8 @@ CC (2026-10-27, Lennart): marker Selection Bias, from the AI review of PR #16: t
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `tianchi_o2o_coupon_redemption` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 1 coded columns carry their words.
+
 ## Reference
 
 A Bayesian framework for learning rule sets for interpretable classification By Wang, Tong, Cynthia Rudin, Finale Doshi-Velez, Yimin Liu, Erica Klampfl, and Perry MacNeille. 2017

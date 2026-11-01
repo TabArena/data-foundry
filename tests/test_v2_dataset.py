@@ -23,6 +23,7 @@ from data_foundry.v2 import (
     Temporal,
     TemporalSplits,
     cast_dtypes,
+    decode,
     discover_datasets,
     drop_columns,
     get_dataset,
@@ -1330,6 +1331,23 @@ def test_set_missing_turns_codes_into_missing_values() -> None:
     assert out["b"].isna().tolist() == [False, True, False, False]
     with pytest.raises(KeyError, match="c"):
         set_missing(df, {"c": [1]})
+
+
+def test_decode_replaces_codes_by_their_words() -> None:
+    df = pd.DataFrame({"density": [1.0, 4.0, None, 2.0], "job": ["1", "2", "1", None]})
+    # a code matches however it is written: 1.0 by "1", "1" by 1
+    labels = {
+        "density": {"1": "almost entirely fatty", 2: "scattered", 4.0: "extremely dense"},
+        "job": {1: "a", 2: "b"},
+    }
+    out = decode(df, labels)
+    assert out["density"].tolist()[:2] == ["almost entirely fatty", "extremely dense"]
+    assert out["density"].isna().tolist() == [False, False, True, False]
+    assert out["job"].tolist()[:3] == ["a", "b", "a"]
+    with pytest.raises(ValueError, match="without a label"):
+        decode(df, {"density": {1: "x"}})
+    with pytest.raises(KeyError, match="c"):
+        decode(df, {"c": {1: "x"}})
 
 
 def test_an_ordinal_column_may_also_be_named_categorical(tmp_path: Path, warehouse: Path) -> None:

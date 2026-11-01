@@ -9,10 +9,8 @@ import numpy as np
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
-# The ordinal scale, lowest level first (curation notes; the README lists it).
-ORDINAL_LEVELS = {
-    "structure_quality": [1.0, 2.0, 3.0, 4.0, 5.0],
-}
+# Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
+SCORES = ["structure_quality"]
 
 
 class MiamiHousing(AbstractCuratedDataset):
@@ -82,6 +80,9 @@ class MiamiHousing(AbstractCuratedDataset):
         - Cycle (2026-11-01, CLEAN-14, Lennart's rule): `month_sold` (1-12) stays a number. A weekday or a month is a
           position in a continuous cycle (weekday 1.5 is Monday noon), and the source ships it as a number; named
           weekdays and months are ordered categories instead.
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 1 scores with no words per level are
+          numbers (`SCORES`): `structure_quality`.
     """
 
     # Task
@@ -104,11 +105,12 @@ class MiamiHousing(AbstractCuratedDataset):
         df = df.drop_duplicates(subset=["PARCELNO"])
         df = df.drop(columns=["PARCELNO"])
         df[self.task_metadata.target_column_name] = np.log(df[self.task_metadata.target_column_name])
+        # scores with no words per level are numbers (CLEAN-14)
+        df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
-            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "avno60plus",
             ],

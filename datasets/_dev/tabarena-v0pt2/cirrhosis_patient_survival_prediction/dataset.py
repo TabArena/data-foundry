@@ -26,8 +26,11 @@ def _cohort(raw: pd.DataFrame) -> pd.DataFrame:
 # them). An open-ended level holds everything beyond it.
 ORDINAL_LEVELS = {
     "Edema": ["N", "S", "Y"],
-    "Stage": [1.0, 2.0, 3.0, 4.0],
 }
+
+
+# Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
+SCORES = ["Stage"]
 
 
 class CirrhosisPatientSurvivalPrediction(AbstractCuratedDataset):
@@ -111,6 +114,9 @@ class CirrhosisPatientSurvivalPrediction(AbstractCuratedDataset):
         - Until 2026-10-14 the task regressed the log time to death over the 161 patients who died. That is right truncation: a patient registered in 1982-84 entered only with a death within about 3 years (median 1.86 years, against 3.98 for 1974-76), so the label partly measured the calendar window.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 2 columns are ordered categories in
           the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 1 scores with no words per level are
+          numbers (`SCORES`): `Stage`.
     """
 
     # Task
@@ -136,6 +142,8 @@ class CirrhosisPatientSurvivalPrediction(AbstractCuratedDataset):
         df = df.loc[keep]
         df["death_or_transplant_within_5y"] = cohort.loc[keep, "event"].astype(int)
         df = drop_columns(df, ["ID", "N_Days", "Status"])
+        # scores with no words per level are numbers (CLEAN-14)
+        df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
@@ -147,7 +155,6 @@ class CirrhosisPatientSurvivalPrediction(AbstractCuratedDataset):
                 "Hepatomegaly",
                 "Spiders",
                 "Edema",
-                "Stage",
                 "Sex",
             ],
         )

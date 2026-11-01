@@ -70,8 +70,17 @@ qsar_tid_11.
 
 ### Undo destroyed meaning
 
-**CLEAN-12 (Should).** Reverse ordinal codes and one-hot blocks into categories with their labels, join dates split
-across columns, and split ids that encode a group and a session. This kind of reconstruction is always welcome.
+**CLEAN-12 (Should; amended 2026-11-01, Lennart, on the PR #37 review: "we can often replace the numbers with a
+better description of the code but we did not do so so far").** Reverse ordinal codes and one-hot blocks into
+categories with their labels, join dates split across columns, and split ids that encode a group and a session. This
+kind of reconstruction is always welcome. A code whose codebook says in words what it means is decoded into those
+words: an ordered code into an ordered category of the words (CLEAN-14), a nominal code (a job, a building type, a
+water source) into a category of the words. The number was only how the file stored the level. A code with no words
+(an id, a detector column, an anonymized code) stays as shipped. A decoded scale is read once more for a level that
+mixes a state with "not asked" (ANES's church attendance 0 holds people without a religion in 1970-1988 and the
+short-form interviews of 1992-1996 that did not ask): split it by what the data shows (the survey year), else
+missing. In `dataset.py`: `CODE_LABELS = {col: {code: label}}` and `decode(df, CODE_LABELS)` after `set_missing`; a
+code without a label raises.
 
 **CLEAN-13 (Must; narrows CLEAN-12; amended 2026-10-22, Lennart, on mortgage and onlinenewspopularity).** A block is
 one-hot only when every row has exactly one flag set, or at most one with a reference level: the rows with no flag set
@@ -107,10 +116,22 @@ An ordinal scale is an ordered category, in the order its codebook gives (often 
 relevant datasets"). The order comes from the scale's meaning, never from the target (2026-10-31, Lennart: "we keep the
 ordinal from the context and logic, not from target information"). The curator's marks of 2026-10-31 and 2026-11-01:
 
-* A scale the source ships as numbers (a 1-5 rating, a grade, bands) is an ordered category too: "In data foundry, we
-  want to keep the right state independent of what the downstream benchmark does" (Lennart). That the benchmark's
-  pipeline drops the order today is a pipeline change to make (BENCHMARK_CHANGES_TODO.md), not a reason to type the
-  scale as a number.
+* A scale the source ships as numbers is typed by what the source says its levels are (Lennart, 2026-11-01: "if we
+  can replace the numbers with a description that is obviously not continous then orderd categorical makes sense,
+  otherwie in some cases the numeric version would make more sense"). The test: does the source say in words what
+  each level is?
+  * Yes, every level: the codes are decoded into the words (CLEAN-12) and ordered, lowest first (BI-RADS density from
+    "almost entirely fatty" to "extremely dense", a parent's education from "none" to "higher education").
+  * No: a score or rating with no words per level, with words only at its two ends ("1 = strongly disagree ... 7 =
+    strongly agree"), or whose meaning the context does not give (a 1-10 rating, a quality score, a points total, an
+    index) is a number, as shipped, like a count. A value between two levels means something, as for the cycles below
+    (Lennart, on a 1-10 school rating: "it seems less likley that this should be categorical as 1.5 is well defined
+    more or less").
+  * Bands of a quantity ("21-25", "1-10%", "3 or more") are ordered categories with the band labels, decoded where
+    the file stores a band's number.
+  The order is the right state of the data whatever the benchmark's pipeline does with it ("In data foundry, we want
+  to keep the right state independent of what the downstream benchmark does", Lennart, 2026-10-31); that the
+  pipeline drops the order today is a pipeline change to make (BENCHMARK_CHANGES_TODO.md).
 * A level outside the scale that means unknown (don't know, refused, not asked, an undocumented code) is missing
   (CLEAN-10). A level outside it that is a state of its own (no basement, not prescribed, never, no checking account)
   is missing when the column has no other missing value, else the lowest level (Lennart: "making it ordered and setting
@@ -236,6 +257,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | CLEAN-11 | mortgage | 38 balances that put the source's own LTV above 300% (570,000 on an original 60,495): impossible, missing before lagging, so the 37 lagged LTVs above 300% and the balances and ratios built from them are missing (2026-10-22, Lennart) | applied |
 | CLEAN-12 | perth_house_prices | a `UNIT` flag from the address's unit number ("10/23 ..."), the property type the upload dropped; `ADDRESS` kept as text; the first flag derived from free text (2026-10-26, Lennart) | applied |
 | CLEAN-12 | credit_g, immoscout_german_house_prices | credit_g switched to UCI 573 (South German Credit, Groemping 2019), the corrected Statlog data: Statlog's german.doc labels 8 columns wrongly, and UCI 573 corrects 57 coded values and 10 typos in amount or age; every code labelled by its code table (2026-10-31, Lennart: "we want the right labels in all cases"); immoscout's `Condition`, `Furnishing_quality`, `Type` and `Heating` labels are permuted in the scrape, the missing value swapped with a real level in each: ImmoScout24's own codes restored by matching 3,548 houses to an April 2020 scrape that keeps them (93-100% of each label's matches on one code), `Furnishing_quality` then ordered (2026-10-31, Lennart's marks: "find out more") | applied |
+| CLEAN-12 | pva_revenue_prediction_kddcup98, anes_voting_2026, ljubljana_breast_cancer and 26 more | codes decoded into the codebook's words (377 columns in 29 definitions, the curator's rule of 2026-11-01); pva's `DOMAIN_ses` read the urban scheme's codes as the other scheme's and is read row by row now; ljubljana's bands are band text, not midpoints; ANES codes that only mean unknown are missing in the unordered codes too (CLEAN-10); anonymized and undocumented codes, 0/1 flags and the targets stay codes (2026-11-01, Lennart) | applied |
 | CLEAN-13 | caracas_cervical_cancer | each STD type is its own question, and 9 patients have two or three: one category per flag; one category of combinations would need 14 levels, 9 of them with 1-3 patients (2026-10-15, Lennart) | applied |
 | CLEAN-13 | mortgage, onlinenewspopularity | `real_estate_type` (three property flags, 19.5% of rows with none) and `data_channel` (six channel flags) merged into one category with the reference level `other` for rows with no flag; at most one flag is set in every row, so the merge is lossless (2026-10-22, Lennart; the rule's wording amended) | applied |
 | CLEAN-14 | qsar_oral_toxicity, hiva_agnostic, qsar_tid_11 | fingerprint bits and binary structure descriptors, checked to hold only 0 and 1, typed categorical (int64, category and float64 before) (2026-10-21, Lennart) | applied |
@@ -243,8 +265,9 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | CLEAN-14 | zillow_prize | the census tract-and-block code as one categorical `census_tract` (11-digit tract ID, 3,030 levels); the block group and block parts (8,334 and 55,601 levels) dropped as near-identifiers, the county part being `fips` (2026-10-26, Lennart) | applied |
 | CLEAN-14 | bank_marketing | `campaign` and `previous`, the contacts with a client in this and in earlier campaigns (1-63 and 0-275), typed categorical by the BeyondArena notebook (48 and 41 levels): counts, so numeric, as the UCI description gives them; the 0/1 sweep of 2026-10-21 looked only at columns holding 0 and 1 (2026-10-30, Lennart, issue #34) | applied |
 | CLEAN-14 | qsar_biodeg | `N073_chemical_substructure` and `C026_chemical_substructure`, the atom-centred fragments N-073 and C-026 (counts of atoms of that type, 0-3 and 0-12), typed categorical while their meaning was unknown: counts, so numeric; found by the dtype probe's sweep (2026-10-30, Lennart) | applied |
-| CLEAN-14 | 60 definitions (e.g. mic, eryhemato_squamous_disease, diamonds, ames_housing, anes_voting_2026, student_portuguese_performance, coil_2000, early_learning_predictors, heart_disease) | the ordinal scales as ordered categories in their codebook's order, those the sources ship as numbers too (167 columns); the states outside a scale placed by the curator's rule; calendar and compass cycles ordered; heart_disease's chest-pain type ordered by the typicality of angina, not by the outcome, and miami_housing's unlabelled 1-5 `structure_quality` by its codes, not by its prices; codes shipped as numbers as categories (sberbank ID_metro, early_learning_predictors' 18 answer codes), zip prefixes kept as numbers; partial orders unordered with a note; the orders of low confidence checked again without the label (regensburg's wall layers and perfusion and website_phishing's `SFH` ordered; churn_telco's user type, the STEG reading remark and marketing_campaign's `Education` unordered with a note) (2026-10-30 and the curator's marks of 2026-10-31, Lennart) | applied |
+| CLEAN-14 | 60 definitions, revised by the decode rule of 2026-11-01 below (e.g. mic, eryhemato_squamous_disease, diamonds, ames_housing, anes_voting_2026, student_portuguese_performance, coil_2000, early_learning_predictors, heart_disease) | the ordinal scales as ordered categories in their codebook's order, those the sources ship as numbers too (167 columns); the states outside a scale placed by the curator's rule; calendar and compass cycles ordered; heart_disease's chest-pain type ordered by the typicality of angina, not by the outcome, and miami_housing's unlabelled 1-5 `structure_quality` by its codes, not by its prices; codes shipped as numbers as categories (sberbank ID_metro, early_learning_predictors' 18 answer codes), zip prefixes kept as numbers; partial orders unordered with a note; the orders of low confidence checked again without the label (regensburg's wall layers and perfusion and website_phishing's `SFH` ordered; churn_telco's user type, the STEG reading remark and marketing_campaign's `Education` unordered with a note) (2026-10-30 and the curator's marks of 2026-10-31, Lennart) | applied |
 | CLEAN-14 | 5g_energy_consumption, bad_customer_detection, miami_housing, rossmann_store_sales, mobile_churn; mic, horse_colic_survival, audiology_diagnosis, predict_students_dropout_and_academic_success, covertype, force_2020, kick, fiat_500, distribution_transformers_at_cauca_department | the cycle rule: weekdays and months shipped as numbers are numbers (`weekday_number`, `month`, `month_sold`, `CompetitionOpenSinceMonth`, rossmann's `DayOfWeek`, an unordered category before), named ones ordered categories; first written to order the numbered ones too, revised the same day ("there is weekday 1.5 which is between monday and tuesday"); the partial orders noted with their lines in each definition (2026-11-01, Lennart) | applied |
+| CLEAN-14 | california_house_prices_2020, miami_housing, eryhemato_squamous_disease, student_portuguese_performance, anes_voting_2026 and 13 more | scores and ratings with no words per level, or words only at their ends, are numbers again (54 columns: school ratings 1-10, `structure_quality`, the ten 0-3 findings, 1-5 ratings, 7-point scales, a histologic stage, a degree of malignancy); labelled scales ordered by their words; reverses the 2026-10-31 typing of every scale shipped as numbers as an ordered category (2026-11-01, Lennart: "if we can replace the numbers with a description that is obviously not continous then orderd categorical makes sense") | applied |
 | CLEAN-17 | audiology_diagnosis | classes merged by a convention of the field, and the merge tested (TP-7) | applied |
 | CLEAN-17 | force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition | the Basement class (103 rows, all in well 16/4-1) dropped: a class that lives in one group cannot be on the train and the test side of a split by that group; the other 11 classes occur in at least 4 wells; the first class dropped for living in one group (2026-10-21, Lennart) | applied |
 | CLEAN-19 | alfa_battle_2_0_task_2 | the features the 1st, 4th and 9th place solutions have in common (513 aggregates over the restored ruble amounts) replace the organisers' 127 (untuned LightGBM 0.787 / 0.771 / 0.772 against 0.774 / 0.757 / 0.763 on the three windows) (2026-10-13, Lennart); the top solutions' features are the better of the two, so they are taken and not merged with the organisers' (CLEAN-19 as amended 2026-10-21, Lennart) | applied |

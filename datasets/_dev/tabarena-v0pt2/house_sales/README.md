@@ -2,17 +2,17 @@
 report_format: data-foundry-report-v2
 unique_name: house_sales
 container_format: 2
-checksum: v2:892614a9f25957bd15c54b908683762c7fe39c5ffad376b5f5e0441e97215b88
+checksum: v2:933fb7b0256509df7bfef203c44adf5f71d0d368b3fb6c93ab44321552295b7c
 build: null
 build_stale: false
 data:
   n_rows: 20499
   n_features: 20
   dtypes:
-    category: 6
+    category: 5
     datetime64[ns]: 1
     float64: 9
-    int64: 5
+    int64: 6
   n_test_dataset_rows: null
 task:
   target: log_price
@@ -64,7 +64,7 @@ decisions:
 
 Regression of `log_price`, scored with `rmsle` on temporal splits by `date`. 20,499 rows and 20 features. Source: GOV Website (2015).
 
-Not built yet. The current definition gives checksum `v2:892614a9f25957bd15c54b908683762c7fe39c5ffad376b5f5e0441e97215b88`.
+Not built yet. The current definition gives checksum `v2:933fb7b0256509df7bfef203c44adf5f71d0d368b3fb6c93ab44321552295b7c`.
 
 ## In brief
 
@@ -157,10 +157,10 @@ Only curators run `build`, when the dataset ships.
 | target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
 
 <details>
-<summary>Feature types: 3 categorical, 3 ordinal, 0 string, 1 datetime</summary>
+<summary>Feature types: 3 categorical, 2 ordinal, 0 string, 1 datetime</summary>
 
 - categorical (3): `zipcode`, `waterfront`, `sale_condition`
-- ordinal (3): `view (0 < 1 < 2 < 3 < 4)`, `condition (1 < 2 < 3 < 4 < 5)`, `grade (1 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10 < 11 < 12 < 13)`
+- ordinal (2): `condition (poor < fair < average < good < very good)`, `grade (cabin < poor < low < fair < low average < average < good < better < very good < excellent < luxury < mansion)`
 - string (0): none
 - datetime (1): `date (%Y%m%dT%H%M%S)`
 
@@ -193,11 +193,11 @@ The first 5 of 20,499 rows of the final frame (the oldest rows: the frame is sor
 
 | log_price | date | bedrooms | bathrooms | sqft_living | sqft_lot | floors | waterfront | view | condition | grade | sqft_above |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 12.4684 | 2014-05-02 00:00:00 | 4 | 2 | 1480 | 8625 | 1 | 0 | 0 | 4 | 7 | 1480 |
-| 13.039 | 2014-05-02 00:00:00 | 3 | 2.5 | 2680 | 5539 | 2 | 0 | 0 | 3 | 8 | 2680 |
-| 13.0605 | 2014-05-02 00:00:00 | 5 | 2.5 | 2210 | 9655 | 1 | 0 | 0 | 3 | 8 | 1460 |
-| 12.9888 | 2014-05-02 00:00:00 | 3 | 2.25 | 1970 | 35100 | 2 | 0 | 0 | 4 | 9 | 1970 |
-| 12.6115 | 2014-05-02 00:00:00 | 3 | 2.5 | 2540 | 5050 | 2 | 0 | 0 | 3 | 7 | 2540 |
+| 13.3535 | 2014-05-02 00:00:00 | 4 | 2.75 | 2710 | 37277 | 2 | 0 | 0 | average | better | 2710 |
+| 14.152 | 2014-05-02 00:00:00 | 4 | 2.5 | 2830 | 4000 | 1.5 | 0 | 0 | good | good | 1820 |
+| 12.7426 | 2014-05-02 00:00:00 | 3 | 2 | 1930 | 11947 | 1 | 0 | 0 | good | good | 1930 |
+| 12.9945 | 2014-05-02 00:00:00 | 4 | 2.25 | 2160 | 8119 | 1 | 0 | 0 | average | good | 1080 |
+| 13.0857 | 2014-05-02 00:00:00 | 4 | 2.5 | 2710 | 35868 | 2 | 0 | 0 | average | better | 2710 |
 
 ## Curation notes
 
@@ -225,6 +225,9 @@ We start with kc_house_data.csv from Kaggle: 21,613 sales of houses in King Coun
 - No duplicate rows. Different parcels can share every feature but the date and the price (townhouses built together); one pair also shares the date and was sold at two prices (the conflicting duplicate the checks report); we keep them.
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
   the order of the source's codebook (`ORDINAL_LEVELS`); 3 of them were shipped as numbers.
+- Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+  each level is carries the words, a score without them is a number): 2 ordered codes carry their codebook's
+  words (`CODE_LABELS`), in the same order; 1 scores with no words per level are numbers (`SCORES`): `view`.
 
 ## Splits
 
@@ -389,25 +392,25 @@ A new sale can be the resale of a known house, and under the temporal split a re
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | waterfront | category | 0 | 0 | 2 | 0, 1 |
-| view | category | 0 | 0 | 5 | 0, 2, 3, 1, 4 |
-| condition | category | 0 | 0 | 5 | 3, 4, 5, 2, 1 |
-| grade | category | 0 | 0 | 12 | 7, 8, 9, 6, 10, 11, 5, 12, 4, 13 |
+| condition | category | 0 | 0 | 5 | average, good, very good, fair, poor |
+| grade | category | 0 | 0 | 12 | average, good, better, low average, very good, excellent, fair, luxury, low, ma… |
 | zipcode | category | 0 | 0 | 70 | 98103, 98115, 98052, 98038, 98034, 98117, 98042, 98006, 98133, 98118 |
 | sale_condition | category | 0 | 0 | 6 | none, no market exposure, short sale, estate, other pre-price code, bankruptcy … |
 | date | datetime64\[ns\] | 0 | 0 | 355 | 2014-06-23 00:00:00, 2014-06-26 00:00:00, 2014-06-25 00:00:00, 2014-07-08 00:00… |
 | yr_renovated | float64 | 19665 | 95.93 | 69 | 2014.0, 2003.0, 2000.0, 2005.0, 2013.0, 2007.0, 2004.0, 1990.0, 2006.0, 1991.0 |
 | bathrooms | float64 | 18 | 0.09 | 29 | 2.5, 1.0, 1.75, 2.25, 2.0, 1.5, 2.75, 3.0, 3.5, 3.25 |
 | bedrooms | float64 | 13 | 0.06 | 11 | 3.0, 4.0, 2.0, 5.0, 6.0, 1.0, 7.0, 8.0, 9.0, 10.0 |
-| sqft_living | float64 | 6 | 0.03 | 999 | 1400.0, 1300.0, 1440.0, 1800.0, 1660.0, 1820.0, 1010.0, 1320.0, 1480.0, 1650.0 |
-| sqft_above | float64 | 6 | 0.03 | 922 | 1300.0, 1010.0, 1200.0, 1220.0, 1140.0, 1400.0, 1060.0, 1340.0, 1320.0, 1180.0 |
-| log_price | float64 | 0 | 0 | 3908 | 12.7657, 13.017, 13.2177, 12.9598, 13.1224, 12.8992, 12.6916, 12.8347, 13.1712,… |
+| sqft_living | float64 | 6 | 0.03 | 999 | 1400.0, 1300.0, 1440.0, 1800.0, 1660.0, 1820.0, 1010.0, 1320.0, 1480.0, 1540.0 |
+| sqft_above | float64 | 6 | 0.03 | 922 | 1300.0, 1010.0, 1200.0, 1220.0, 1140.0, 1400.0, 1060.0, 1340.0, 1180.0, 1320.0 |
+| log_price | float64 | 0 | 0 | 3908 | 12.7657, 13.017, 13.2177, 12.9598, 13.1224, 12.8992, 12.6916, 12.8347, 12.6115,… |
 | floors | float64 | 0 | 0 | 6 | 1.0, 2.0, 1.5, 3.0, 2.5, 3.5 |
-| lat | float64 | 0 | 0 | 4999 | 47.6846, 47.6955, 47.6904, 47.6624, 47.6886, 47.5491, 47.6711, 47.5402, 47.5322… |
+| lat | float64 | 0 | 0 | 4999 | 47.6846, 47.6955, 47.6886, 47.5402, 47.6624, 47.5491, 47.6904, 47.6711, 47.5533… |
 | long | float64 | 0 | 0 | 748 | -122.29, -122.3, -122.362, -122.363, -122.372, -122.291, -122.288, -122.357, -1… |
-| sqft_lot | int64 | 0 | 0 | 9442 | 5000, 6000, 4000, 7200, 4800, 7500, 4500, 8400, 9600, 3600 |
-| sqft_basement | int64 | 0 | 0 | 299 | 0, 500, 600, 700, 800, 400, 900, 1000, 300, 480 |
-| yr_built | int64 | 0 | 0 | 116 | 2014, 2005, 2006, 2004, 2003, 1977, 2007, 1968, 1978, 2008 |
-| sqft_living15 | int64 | 0 | 0 | 756 | 1440, 1540, 1560, 1500, 1580, 1610, 1410, 1620, 1460, 1480 |
+| sqft_lot | int64 | 0 | 0 | 9442 | 5000, 6000, 4000, 7200, 4800, 7500, 4500, 9600, 8400, 3600 |
+| view | int64 | 0 | 0 | 5 | 0, 2, 3, 1, 4 |
+| sqft_basement | int64 | 0 | 0 | 299 | 0, 500, 600, 700, 400, 800, 900, 1000, 300, 480 |
+| yr_built | int64 | 0 | 0 | 116 | 2014, 2005, 2006, 2004, 2003, 2007, 1977, 1968, 1978, 2008 |
+| sqft_living15 | int64 | 0 | 0 | 756 | 1440, 1540, 1560, 1500, 1580, 1610, 1410, 1620, 1720, 1510 |
 | sqft_lot15 | int64 | 0 | 0 | 8433 | 5000, 4000, 6000, 7200, 4800, 7500, 8400, 3600, 4500, 4080 |
 
 </details>
@@ -421,7 +424,7 @@ A new sale can be the resale of a known house, and under the temporal split a re
 ### Numeric features
 
 <details>
-<summary>Show the table (14 rows)</summary>
+<summary>Show the table (15 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -431,6 +434,7 @@ A new sale can be the resale of a known house, and under the temporal split a re
 | sqft_living | 20493 | 2073.06 | 917.88 | 290 | 13540 |
 | sqft_lot | 20499 | 14984 | 40551.1 | 572 | 1.65136e+06 |
 | floors | 20499 | 1.49859 | 0.544487 | 1 | 3.5 |
+| view | 20499 | 0.235816 | 0.769518 | 0 | 4 |
 | sqft_above | 20493 | 1790.89 | 829.744 | 290 | 9410 |
 | sqft_basement | 20499 | 282.095 | 435.309 | 0 | 4820 |
 | yr_built | 20499 | 1971.05 | 29.3948 | 1900 | 2015 |
@@ -445,35 +449,30 @@ A new sale can be the resale of a known house, and under the temporal split a re
 ### Categorical features
 
 <details>
-<summary>Show the table (32 rows)</summary>
+<summary>Show the table (27 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| condition | 1 | 3 | 13917 | 67.89 |
-| condition | 2 | 4 | 5258 | 25.65 |
-| condition | 3 | 5 | 1135 | 5.54 |
-| condition | 4 | 2 | 164 | 0.8 |
-| condition | 5 | 1 | 25 | 0.12 |
+| condition | 1 | average | 13917 | 67.89 |
+| condition | 2 | good | 5258 | 25.65 |
+| condition | 3 | very good | 1135 | 5.54 |
+| condition | 4 | fair | 164 | 0.8 |
+| condition | 5 | poor | 25 | 0.12 |
 | date | 1 | 2014-06-23 00:00:00 | 140 | 0.68 |
 | date | 2 | 2014-06-26 00:00:00 | 129 | 0.63 |
 | date | 3 | 2014-06-25 00:00:00 | 127 | 0.62 |
 | date | 4 | 2014-07-08 00:00:00 | 126 | 0.61 |
 | date | 5 | 2015-04-22 00:00:00 | 121 | 0.59 |
-| grade | 1 | 7 | 8481 | 41.37 |
-| grade | 2 | 8 | 5758 | 28.09 |
-| grade | 3 | 9 | 2479 | 12.09 |
-| grade | 4 | 6 | 1961 | 9.57 |
-| grade | 5 | 10 | 1067 | 5.21 |
+| grade | 1 | average | 8481 | 41.37 |
+| grade | 2 | good | 5758 | 28.09 |
+| grade | 3 | better | 2479 | 12.09 |
+| grade | 4 | low average | 1961 | 9.57 |
+| grade | 5 | very good | 1067 | 5.21 |
 | sale_condition | 1 | none | 19828 | 96.73 |
 | sale_condition | 2 | no market exposure | 471 | 2.3 |
 | sale_condition | 3 | short sale | 129 | 0.63 |
 | sale_condition | 4 | estate | 32 | 0.16 |
 | sale_condition | 5 | other pre-price code | 31 | 0.15 |
-| view | 1 | 0 | 18476 | 90.13 |
-| view | 2 | 2 | 913 | 4.45 |
-| view | 3 | 3 | 487 | 2.38 |
-| view | 4 | 1 | 315 | 1.54 |
-| view | 5 | 4 | 308 | 1.5 |
 | waterfront | 1 | 0 | 20342 | 99.23 |
 | waterfront | 2 | 1 | 157 | 0.77 |
 | zipcode | 1 | 98103 | 576 | 2.81 |

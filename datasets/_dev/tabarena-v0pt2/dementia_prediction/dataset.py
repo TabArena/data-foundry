@@ -7,11 +7,8 @@ from pathlib import Path
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary
 
-# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
-# them). An open-ended level holds everything beyond it.
-ORDINAL_LEVELS = {
-    "SES": [5.0, 4.0, 3.0, 2.0, 1.0],
-}
+# Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
+SCORES = ["SES"]
 
 
 class DementiaPrediction(AbstractCuratedDataset):
@@ -81,6 +78,9 @@ class DementiaPrediction(AbstractCuratedDataset):
         - We also drop the constant hand column.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
           the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them were shipped as numbers.
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 1 scores with no words per level are
+          numbers (`SCORES`): `SES`.
     """
 
     # Task
@@ -126,7 +126,9 @@ class DementiaPrediction(AbstractCuratedDataset):
         df["CDR"] = df["CDR"].replace({0.5: "very_mild_AD", 1: "mild_AD", 2: "moderate_AD", 0: "no_dementia"})
         df = df[df["CDR"] != "moderate_AD"]
         df = df.sample(frac=1, random_state=42).sort_values(by=["Subject ID"], kind="stable").reset_index(drop=True)
+        # scores with no words per level are numbers (CLEAN-14)
+        df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(ordinal=ORDINAL_LEVELS, categorical=["M/F", "Subject ID"])
+        return FeatureTypes(categorical=["M/F", "Subject ID"])

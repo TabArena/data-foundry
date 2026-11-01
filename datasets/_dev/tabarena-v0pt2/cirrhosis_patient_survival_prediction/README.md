@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: cirrhosis_patient_survival_prediction
 container_format: 2
-checksum: v2:7db7829b95440d9722f022b8f003c29a9dbf5903d9ebf81544895754797715be
+checksum: v2:a3fac10bc00c73541cdb1d3ac5dd424943b0862bd3030dcf89a1411fc699e26b
 build:
   uuid: 01a13a7d-c2bd-721a-88c1-f86443866b1e
   checksum: v2:60b5d8fa6859308588d97ac9b03d362d334da815e103b670c1c18a43c5a21477
@@ -22,8 +22,8 @@ data:
   n_rows: 304
   n_features: 17
   dtypes:
-    category: 8
-    float64: 9
+    category: 7
+    float64: 10
     int64: 1
   n_test_dataset_rows: null
 task:
@@ -69,7 +69,7 @@ decisions:
 
 Binary classification of `death_or_transplant_within_5y`, scored with `roc_auc` on IID splits. 304 rows and 17 features. Source: Other (1991).
 
-Built as `01a13a7d-c2bd-721a-88c1-f86443866b1e` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:7db7829b95440d9722f022b8f003c29a9dbf5903d9ebf81544895754797715be`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2bd-721a-88c1-f86443866b1e` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:a3fac10bc00c73541cdb1d3ac5dd424943b0862bd3030dcf89a1411fc699e26b`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -146,10 +146,10 @@ Only curators run `build`, when the dataset ships.
 | reason | The source is a survival study (Cox model); our binary 5-year label is a derived task with no defined metric. The 5-year c-statistic used for GLOBE / Mayo risk scores equals ROC AUC on a binary label, so roc_auc also follows from context. |
 
 <details>
-<summary>Feature types: 6 categorical, 2 ordinal, 0 string, 0 datetime</summary>
+<summary>Feature types: 6 categorical, 1 ordinal, 0 string, 0 datetime</summary>
 
 - categorical (6): `Drug`, `Ascites`, `Hepatomegaly`, `Spiders`, `Sex`, `death_or_transplant_within_5y`
-- ordinal (2): `Edema (N < S < Y)`, `Stage (1.0 < 2.0 < 3.0 < 4.0)`
+- ordinal (1): `Edema (N < S < Y)`
 - string (0): none
 - datetime (0): none
 
@@ -179,11 +179,11 @@ The first 5 of 304 rows of the final frame (random rows: the frame is shuffled);
 
 | death_or_transplant_within_5y | Drug | Age | Sex | Ascites | Hepatomegaly | Spiders | Edema | Bilirubin | Cholesterol | Albumin | Copper |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | D-penicillamine | 15031 | F | N | N | N | N | 5.5 | 528 | 4.18 | 77 |
-| 1 | nan | 23011 | F | nan | nan | nan | N | 0.7 | nan | 3.4 | nan |
-| 1 | Placebo | 13736 | F | N | Y | N | N | 11 | 674 | 3.55 | 358 |
+| 1 | D-penicillamine | 17512 | F | N | Y | N | N | 6.3 | 436 | 3.02 | 75 |
+| 0 | Placebo | 17323 | F | N | N | N | N | 0.5 | 316 | 3.65 | 68 |
+| 0 | D-penicillamine | 19916 | F | N | N | Y | N | 2.3 | nan | 3.93 | 24 |
 | 1 | Placebo | 19098 | F | N | Y | N | S | 28 | 556 | 3.26 | 152 |
-| 0 | D-penicillamine | 22960 | F | N | N | N | N | 1.1 | 399 | 3.6 | 79 |
+| 1 | D-penicillamine | 25873 | F | N | N | Y | S | 2 | 225 | 3.53 | 51 |
 
 ## Curation notes
 
@@ -198,6 +198,9 @@ We start with the UCI copy (878) of the Mayo Clinic PBC data (Fleming and Harrin
 - Until 2026-10-14 the task regressed the log time to death over the 161 patients who died. That is right truncation: a patient registered in 1982-84 entered only with a death within about 3 years (median 1.86 years, against 3.98 for 1974-76), so the label partly measured the calendar window.
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 2 columns are ordered categories in
   the order of the source's codebook (`ORDINAL_LEVELS`).
+- Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+  each level is carries the words, a score without them is a number): 1 scores with no words per level are
+  numbers (`SCORES`): `Stage`.
 
 ## Splits
 
@@ -303,20 +306,20 @@ Follow-up ended in July 1986 for everyone, so a patient registered after about m
 | Ascites | category | 66 | 21.71 | 2 | N, Y |
 | Hepatomegaly | category | 66 | 21.71 | 2 | Y, N |
 | Spiders | category | 66 | 21.71 | 2 | N, Y |
-| Stage | category | 6 | 1.97 | 4 | 3.0, 4.0, 2.0, 1.0 |
 | Sex | category | 0 | 0 | 2 | F, M |
 | Edema | category | 0 | 0 | 3 | N, S, Y |
 | death_or_transplant_within_5y | category | 0 | 0 | 2 | 0, 1 |
-| Tryglicerides | float64 | 93 | 30.59 | 125 | 118.0, 101.0, 90.0, 68.0, 56.0, 58.0, 135.0, 114.0, 88.0, 99.0 |
-| Cholesterol | float64 | 92 | 30.26 | 158 | 260.0, 259.0, 248.0, 236.0, 263.0, 448.0, 302.0, 316.0, 257.0, 360.0 |
-| Copper | float64 | 68 | 22.37 | 134 | 67.0, 58.0, 20.0, 52.0, 50.0, 51.0, 75.0, 57.0, 13.0, 74.0 |
-| Alk_Phos | float64 | 66 | 21.71 | 229 | 1052.0, 1828.0, 7277.0, 1345.0, 559.0, 2276.0, 1790.0, 944.0, 1009.0, 1215.0 |
-| SGOT | float64 | 66 | 21.71 | 128 | 71.3, 97.65, 137.95, 120.9, 170.5, 151.9, 74.4, 106.95, 134.85, 128.65 |
-| Platelets | float64 | 11 | 3.62 | 201 | 344.0, 265.0, 224.0, 181.0, 213.0, 165.0, 268.0, 311.0, 226.0, 269.0 |
-| Prothrombin | float64 | 2 | 0.66 | 48 | 11.0, 10.6, 10.1, 9.9, 10.0, 10.3, 9.8, 11.1, 10.4, 11.5 |
-| Bilirubin | float64 | 0 | 0 | 87 | 0.6, 0.7, 0.9, 0.8, 0.5, 1.3, 1.1, 1.8, 1.2, 1.4 |
-| Albumin | float64 | 0 | 0 | 135 | 3.35, 3.6, 3.26, 3.63, 3.7, 3.4, 3.55, 3.5, 3.34, 3.76 |
-| Age | int64 | 0 | 0 | 267 | 19724, 23011, 22646, 23376, 20454, 17897, 21915, 17532, 18628, 16071 |
+| Tryglicerides | float64 | 93 | 30.59 | 125 | 101.0, 118.0, 90.0, 68.0, 56.0, 58.0, 106.0, 88.0, 114.0, 133.0 |
+| Cholesterol | float64 | 92 | 30.26 | 158 | 316.0, 448.0, 260.0, 259.0, 248.0, 236.0, 263.0, 302.0, 257.0, 288.0 |
+| Copper | float64 | 68 | 22.37 | 134 | 58.0, 67.0, 52.0, 20.0, 75.0, 51.0, 13.0, 74.0, 57.0, 50.0 |
+| Alk_Phos | float64 | 66 | 21.71 | 229 | 1828.0, 7277.0, 1052.0, 944.0, 559.0, 1345.0, 2276.0, 1790.0, 1009.0, 1588.0 |
+| SGOT | float64 | 66 | 21.71 | 128 | 71.3, 170.5, 97.65, 137.95, 120.9, 57.35, 106.95, 151.9, 134.85, 74.4 |
+| Platelets | float64 | 11 | 3.62 | 201 | 344.0, 224.0, 181.0, 213.0, 265.0, 165.0, 190.0, 226.0, 268.0, 228.0 |
+| Stage | float64 | 6 | 1.97 | 4 | 3.0, 4.0, 2.0, 1.0 |
+| Prothrombin | float64 | 2 | 0.66 | 48 | 11.0, 10.6, 10.1, 9.9, 10.0, 10.3, 9.8, 10.4, 11.5, 11.1 |
+| Bilirubin | float64 | 0 | 0 | 87 | 0.6, 0.7, 0.9, 0.8, 0.5, 1.3, 1.1, 1.2, 1.8, 1.4 |
+| Albumin | float64 | 0 | 0 | 135 | 3.35, 3.6, 3.26, 3.63, 3.7, 3.4, 3.65, 3.76, 3.55, 3.34 |
+| Age | int64 | 0 | 0 | 267 | 19724, 23011, 22646, 23376, 17532, 16071, 18628, 20454, 21915, 17897 |
 
 </details>
 
@@ -328,6 +331,9 @@ Follow-up ended in July 1986 for everyone, so a patient registered after about m
 | 1 | 107 | 35.2 |
 
 ### Numeric features
+
+<details>
+<summary>Show the table (11 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -341,11 +347,14 @@ Follow-up ended in July 1986 for everyone, so a patient registered after about m
 | Tryglicerides | 211 | 123.137 | 67.7786 | 44 | 598 |
 | Platelets | 293 | 261.386 | 105.958 | 70 | 721 |
 | Prothrombin | 302 | 10.8447 | 1.10545 | 9 | 18 |
+| Stage | 298 | 3 | 0.89518 | 1 | 4 |
+
+</details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (24 rows)</summary>
+<summary>Show the table (19 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -366,11 +375,6 @@ Follow-up ended in July 1986 for everyone, so a patient registered after about m
 | Spiders | 1 | N | 167 | 54.93 |
 | Spiders | 2 | Y | 71 | 23.36 |
 | Spiders | 3 | &lt;NA> | 66 | 21.71 |
-| Stage | 1 | 3.0 | 108 | 35.53 |
-| Stage | 2 | 4.0 | 103 | 33.88 |
-| Stage | 3 | 2.0 | 71 | 23.36 |
-| Stage | 4 | 1.0 | 16 | 5.26 |
-| Stage | 5 | &lt;NA> | 6 | 1.97 |
 | death_or_transplant_within_5y | 1 | 0 | 197 | 64.8 |
 | death_or_transplant_within_5y | 2 | 1 | 107 | 35.2 |
 
@@ -387,4 +391,4 @@ Follow-up ended in July 1986 for everyone, so a patient registered after about m
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:7db7829b95440d9722f022b8f003c29a9dbf5903d9ebf81544895754797715be` |
+| stale | yes: the definition now gives checksum `v2:a3fac10bc00c73541cdb1d3ac5dd424943b0862bd3030dcf89a1411fc699e26b` |

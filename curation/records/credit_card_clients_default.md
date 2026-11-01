@@ -40,6 +40,8 @@ Andrej: Seems fine
 
 CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 1 columns with a state outside the scale ordered, the state placed by the rule.
 
+CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 3 coded columns carry their words; MARRIAGE 0 (undocumented) missing.
+
 ## Reference
 
 The comparisons of data mining techniques for the predictive accuracy of probability of default of credit card clients

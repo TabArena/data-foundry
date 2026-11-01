@@ -49,6 +49,8 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `ces_validated_turnout` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 157 coded columns carry their words; 12 scores are numbers (VCF0834, VCF0839, VCF0842, VCF0843, VCF9073, VCF9077, VCF9081, VCF9085 and more); codes that only mean unknown are missing in the unordered codes too; VCF0130's 0 (not ascertained or not asked) missing; age 0 and the thermometers' DK/NA codes missing; open calls on the review board's ANES sheet.
+
 ## Reference
 
 @dataset{anes_timeseries_cdf_2026,

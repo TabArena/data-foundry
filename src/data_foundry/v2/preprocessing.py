@@ -63,6 +63,40 @@ def set_missing(df: pd.DataFrame, codes: Mapping[str, Iterable]) -> pd.DataFrame
     return df
 
 
+def decode(df: pd.DataFrame, labels: Mapping[str, Mapping]) -> pd.DataFrame:
+    """Replace each column's codes by the words its codebook gives them (CLEAN-12), such as 1 by "almost entirely
+    fatty". A code matches its label by how it is written (1, 1.0 and "1" are one code). Missing values stay missing;
+    run `set_missing` first for the codes that mean unknown. A code without a label, or a column that is not in the
+    frame, is an error.
+
+    Raises:
+        KeyError: A column is not in the frame.
+        ValueError: A code of a column has no label.
+    """
+    missing = _missing(df, labels)
+    if missing:
+        raise KeyError(f"Cannot decode columns that are not in the frame: {missing}")
+    df = df.copy(deep=not copy_on_write_enabled())
+    for col, mapping in labels.items():
+        by_code = {_code(k): v for k, v in mapping.items()}
+        codes = df[col].astype(object).map(lambda v: None if pd.isna(v) else _code(v))
+        unlabelled = sorted({c for c in codes.dropna().unique() if c not in by_code})
+        if unlabelled:
+            raise ValueError(f"Codes of {col!r} without a label: {unlabelled[:10]}")
+        df[col] = codes.map(by_code)
+    return df
+
+
+def _code(value: object) -> str:
+    """A code as written: 1, 1.0 and "1" are the same code."""
+    text = str(value).strip()
+    try:
+        number = float(text)
+    except ValueError:
+        return text
+    return str(int(number)) if number.is_integer() else text
+
+
 def cast_dtypes(
     df: pd.DataFrame,
     *,

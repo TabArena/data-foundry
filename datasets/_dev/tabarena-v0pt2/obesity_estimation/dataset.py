@@ -5,18 +5,29 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
 ORDINAL_LEVELS = {
-    "FCVC": [1.0, 2.0, 3.0],
-    "NCP": [1.0, 3.0, 4.0],  # open-ended
+    "FCVC": ["never", "sometimes", "always"],
+    "NCP": ["between 1 and 2", "three", "more than three"],  # open-ended
     "CAEC": ["no", "Sometimes", "Frequently", "Always"],
-    "CH2O": [1.0, 2.0, 3.0],  # open-ended
-    "FAF": [0.0, 1.0, 2.0, 3.0],
-    "TUE": [0.0, 1.0, 2.0],  # open-ended
+    "CH2O": ["less than a liter", "between 1 and 2 L", "more than 2 L"],  # open-ended
+    "FAF": ["I do not have", "1 or 2 days", "2 or 4 days", "4 or 5 days"],
+    "TUE": ["0-2 hours", "3-5 hours", "more than 5 hours"],  # open-ended
     "CALC": ["no", "Sometimes", "Frequently", "Always"],
+}
+
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "FCVC": {"1": "never", "2": "sometimes", "3": "always"},
+    "NCP": {"1": "between 1 and 2", "3": "three", "4": "more than three"},
+    "CH2O": {"1": "less than a liter", "2": "between 1 and 2 L", "3": "more than 2 L"},
+    "FAF": {"0": "I do not have", "1": "1 or 2 days", "2": "2 or 4 days", "3": "4 or 5 days"},
+    "TUE": {"0": "0-2 hours", "1": "3-5 hours", "2": "more than 5 hours"},
 }
 
 
@@ -83,6 +94,9 @@ class ObesityEstimation(AbstractCuratedDataset):
         - We make the task a regression task, re-creating the body mass values underlying the discretized obesity levels, and drop weight and height which leak the target partially. Thus, we create a regression task of estimating the body mass of individuals based on their eating habits and other questions from the questionnaire. The original task is trivial to solve due to the leak and thus not interesting.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 7 columns are ordered categories in
           the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 5 ordered codes carry their codebook's
+          words (`CODE_LABELS`), in the same order.
     """
 
     # Task
@@ -108,6 +122,8 @@ class ObesityEstimation(AbstractCuratedDataset):
         # Creat real target
         df["BodyMass"] = df["Weight"] / (df["Height"] ** 2)
         df = df.drop(columns=["Height", "Weight", "NObeyesdad"])
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

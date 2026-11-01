@@ -22,7 +22,7 @@ from data_foundry.v2.dataset import (
     clean_text,
 )
 from data_foundry.v2.metrics import Metric, score, scorer
-from data_foundry.v2.preprocessing import anonymize_ids, cast_dtypes, drop_columns, order_rows, set_missing
+from data_foundry.v2.preprocessing import anonymize_ids, cast_dtypes, decode, drop_columns, order_rows, set_missing
 from data_foundry.v2.registry import discover_datasets, get_dataset, load_definition
 from data_foundry.v2.report import read_report
 from data_foundry.v2.splits import SplitPlan, Splits, Temporal, TemporalSplits
@@ -46,6 +46,7 @@ __all__ = [
     "anonymize_ids",
     "cast_dtypes",
     "clean_text",
+    "decode",
     "discover_datasets",
     "drop_columns",
     "get_dataset",

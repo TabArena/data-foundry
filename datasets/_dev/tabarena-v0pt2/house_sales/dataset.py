@@ -15,6 +15,7 @@ from data_foundry.v2 import (
     TaskSummary,
     Temporal,
     TemporalSplits,
+    decode,
     drop_columns,
 )
 
@@ -211,10 +212,47 @@ def _as_of_sale(sales: pd.DataFrame, changes: pd.DataFrame, bath_counts: pd.Data
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
 ORDINAL_LEVELS = {
-    "view": [0, 1, 2, 3, 4],
-    "condition": [1, 2, 3, 4, 5],
-    "grade": [1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13],
+    "condition": ["poor", "fair", "average", "good", "very good"],
+    "grade": [
+        "cabin",
+        "poor",
+        "low",
+        "fair",
+        "low average",
+        "average",
+        "good",
+        "better",
+        "very good",
+        "excellent",
+        "luxury",
+        "mansion",
+    ],
 }
+
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "condition": {"1": "poor", "2": "fair", "3": "average", "4": "good", "5": "very good"},
+    "grade": {
+        "1": "cabin",
+        "3": "poor",
+        "4": "low",
+        "5": "fair",
+        "6": "low average",
+        "7": "average",
+        "8": "good",
+        "9": "better",
+        "10": "very good",
+        "11": "excellent",
+        "12": "luxury",
+        "13": "mansion",
+    },
+}
+
+
+# Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
+SCORES = ["view"]
 
 
 class HouseSales(AbstractCuratedDataset):
@@ -322,6 +360,9 @@ class HouseSales(AbstractCuratedDataset):
         - No duplicate rows. Different parcels can share every feature but the date and the price (townhouses built together); one pair also shares the date and was sold at two prices (the conflicting duplicate the checks report); we keep them.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
           the order of the source's codebook (`ORDINAL_LEVELS`); 3 of them were shipped as numbers.
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 2 ordered codes carry their codebook's
+          words (`CODE_LABELS`), in the same order; 1 scores with no words per level are numbers (`SCORES`): `view`.
     """
 
     # Task
@@ -446,6 +487,10 @@ class HouseSales(AbstractCuratedDataset):
         # Target: the log of the sale price, renamed in place.
         df = df.rename(columns={"price": "log_price"})
         df["log_price"] = np.log(df["log_price"])
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
+        # scores with no words per level are numbers (CLEAN-14)
+        df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
         return drop_columns(df, ["id"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

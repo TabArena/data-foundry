@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: credit_card_clients_default
 container_format: 2
-checksum: v2:7c8a1f7d355ba0877417e737583143cdc305d9c8749214a4e04ed882f09c1fa6
+checksum: v2:c269db2555ae2170d2d12e1d823098a0260f787e90ec4350c1fbac2fc393b710
 build:
   uuid: 01a111fc-a3c4-755e-b3fb-ad77ce7129a5
   checksum: v2:5d236c15c392c1f552a15f01023ce7757e961813ba93c296485e1b897bfb1968
@@ -69,7 +69,7 @@ decisions: []
 
 Binary classification of `DefaultOnPaymentNextMonth`, scored with `roc_auc` on IID splits. 30,000 rows and 23 features. Source: UCI (2016).
 
-Built as `01a111fc-a3c4-755e-b3fb-ad77ce7129a5` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7c8a1f7d355ba0877417e737583143cdc305d9c8749214a4e04ed882f09c1fa6`, so the build is stale. See [Build](#build).
+Built as `01a111fc-a3c4-755e-b3fb-ad77ce7129a5` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c269db2555ae2170d2d12e1d823098a0260f787e90ec4350c1fbac2fc393b710`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -148,7 +148,7 @@ Only curators run `build`, when the dataset ships.
 <summary>Feature types: 3 categorical, 1 ordinal, 0 string, 0 datetime</summary>
 
 - categorical (3): `SEX`, `MARRIAGE`, `DefaultOnPaymentNextMonth`
-- ordinal (1): `EDUCATION (3 < 2 < 1)`
+- ordinal (1): `EDUCATION (high school < university < graduate school)`
 - string (0): none
 - datetime (0): none
 
@@ -178,11 +178,11 @@ The first 5 of 30,000 rows of the final frame (random rows: the frame is shuffle
 
 | DefaultOnPaymentNextMonth | LIMIT_BAL | SEX | EDUCATION | MARRIAGE | AGE | PAY_0 | PAY_2 | PAY_3 | PAY_4 | PAY_5 | PAY_6 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| No | 160000 | 2 | 2 | 2 | 39 | 0 | 0 | 0 | 0 | 0 | 0 |
-| No | 300000 | 2 | 2 | 1 | 43 | -2 | -2 | -2 | -2 | -2 | -2 |
-| No | 180000 | 2 | 3 | 2 | 55 | -1 | -1 | 0 | 0 | 0 | 0 |
-| No | 130000 | 2 | 2 | 2 | 24 | 0 | 0 | -1 | 0 | 0 | 0 |
-| Yes | 30000 | 2 | 2 | 1 | 42 | 2 | 2 | 0 | 0 | 0 | 0 |
+| No | 160000 | female | high school | married | 45 | -1 | -1 | -2 | -2 | -1 | 0 |
+| No | 250000 | male | university | married | 47 | -1 | -1 | -1 | -1 | -1 | -1 |
+| No | 160000 | female | university | married | 37 | 0 | 0 | 0 | 0 | 0 | -1 |
+| No | 360000 | male | graduate school | single | 27 | -1 | 2 | -1 | -1 | -1 | -1 |
+| No | 260000 | female | university | married | 34 | 0 | 0 | 0 | 0 | 0 | 0 |
 
 ## Curation notes
 
@@ -193,6 +193,9 @@ The first 5 of 30,000 rows of the final frame (random rows: the frame is shuffle
   the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed by the
   curator's rule (missing when the column has no other missing value, else the lowest level; a state that is
   simply not on the scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
+- Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+  each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
+  words (`CODE_LABELS`), in the same order; 2 unordered codes carry their words: `MARRIAGE`, `SEX`.
 
 ## Splits
 
@@ -228,9 +231,9 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| EDUCATION | category | 468 | 1.56 | 3 | 2, 1, 3 |
-| SEX | category | 0 | 0 | 2 | 2, 1 |
-| MARRIAGE | category | 0 | 0 | 4 | 2, 1, 3, 0 |
+| EDUCATION | category | 468 | 1.56 | 3 | university, graduate school, high school |
+| MARRIAGE | category | 54 | 0.18 | 3 | single, married, others |
+| SEX | category | 0 | 0 | 2 | female, male |
 | DefaultOnPaymentNextMonth | category | 0 | 0 | 2 | No, Yes |
 | LIMIT_BAL | int64 | 0 | 0 | 81 | 50000, 20000, 30000, 80000, 200000, 150000, 100000, 180000, 360000, 60000 |
 | AGE | int64 | 0 | 0 | 56 | 29, 27, 28, 30, 26, 31, 25, 34, 32, 33 |
@@ -240,10 +243,10 @@ Default splits.
 | PAY_4 | int64 | 0 | 0 | 11 | 0, -1, -2, 2, 3, 4, 7, 5, 6, 1 |
 | PAY_5 | int64 | 0 | 0 | 10 | 0, -1, -2, 2, 3, 4, 7, 5, 6, 8 |
 | PAY_6 | int64 | 0 | 0 | 10 | 0, -1, -2, 2, 3, 4, 7, 6, 5, 8 |
-| BILL_AMT1 | int64 | 0 | 0 | 22723 | 0, 390, 780, 326, 316, 2500, 396, 2400, 416, 500 |
-| BILL_AMT2 | int64 | 0 | 0 | 22346 | 0, 390, 326, 780, 316, 396, 2500, 2400, -200, 416 |
+| BILL_AMT1 | int64 | 0 | 0 | 22723 | 0, 390, 780, 326, 316, 2500, 396, 2400, 416, 1050 |
+| BILL_AMT2 | int64 | 0 | 0 | 22346 | 0, 390, 780, 326, 316, 396, 2500, 2400, -200, 416 |
 | BILL_AMT3 | int64 | 0 | 0 | 22026 | 0, 390, 780, 326, 316, 396, 2500, 2400, 416, 200 |
-| BILL_AMT4 | int64 | 0 | 0 | 21548 | 0, 390, 780, 316, 326, 396, 2400, 150, 2500, 1000 |
+| BILL_AMT4 | int64 | 0 | 0 | 21548 | 0, 390, 780, 316, 326, 396, 2400, 150, 2500, 416 |
 | BILL_AMT5 | int64 | 0 | 0 | 21010 | 0, 390, 780, 316, 326, 150, 396, 2400, 2500, 416 |
 | BILL_AMT6 | int64 | 0 | 0 | 20604 | 0, 390, 780, 150, 316, 326, 396, 416, -18, 2400 |
 | PAY_AMT1 | int64 | 0 | 0 | 7943 | 0, 2000, 3000, 5000, 1500, 4000, 10000, 1000, 2500, 6000 |
@@ -301,16 +304,16 @@ Default splits.
 |---|---|---|---|---|
 | DefaultOnPaymentNextMonth | 1 | No | 23364 | 77.88 |
 | DefaultOnPaymentNextMonth | 2 | Yes | 6636 | 22.12 |
-| EDUCATION | 1 | 2 | 14030 | 46.77 |
-| EDUCATION | 2 | 1 | 10585 | 35.28 |
-| EDUCATION | 3 | 3 | 4917 | 16.39 |
+| EDUCATION | 1 | university | 14030 | 46.77 |
+| EDUCATION | 2 | graduate school | 10585 | 35.28 |
+| EDUCATION | 3 | high school | 4917 | 16.39 |
 | EDUCATION | 4 | &lt;NA> | 468 | 1.56 |
-| MARRIAGE | 1 | 2 | 15964 | 53.21 |
-| MARRIAGE | 2 | 1 | 13659 | 45.53 |
-| MARRIAGE | 3 | 3 | 323 | 1.08 |
-| MARRIAGE | 4 | 0 | 54 | 0.18 |
-| SEX | 1 | 2 | 18112 | 60.37 |
-| SEX | 2 | 1 | 11888 | 39.63 |
+| MARRIAGE | 1 | single | 15964 | 53.21 |
+| MARRIAGE | 2 | married | 13659 | 45.53 |
+| MARRIAGE | 3 | others | 323 | 1.08 |
+| MARRIAGE | 4 | &lt;NA> | 54 | 0.18 |
+| SEX | 1 | female | 18112 | 60.37 |
+| SEX | 2 | male | 11888 | 39.63 |
 
 </details>
 
@@ -325,4 +328,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:7c8a1f7d355ba0877417e737583143cdc305d9c8749214a4e04ed882f09c1fa6` |
+| stale | yes: the definition now gives checksum `v2:c269db2555ae2170d2d12e1d823098a0260f787e90ec4350c1fbac2fc393b710` |

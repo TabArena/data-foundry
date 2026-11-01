@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ames_housing
 container_format: 2
-checksum: v2:1fa9b9be0197dcdfb2920d0de7ddb4e788a8631eb1700c8509478a1e7e32f0aa
+checksum: v2:b6d3584f839cd29a72e4668d602f24b3396d484eb39e6d5e3c41fa0e64acb7fc
 build: null
 build_stale: false
 data:
@@ -61,7 +61,7 @@ decisions:
 
 Regression of `log_SalePrice`, scored with `rmse` on temporal splits by `Month Sold`. 2,837 rows and 78 features. Source: Other (2011).
 
-Not built yet. The current definition gives checksum `v2:1fa9b9be0197dcdfb2920d0de7ddb4e788a8631eb1700c8509478a1e7e32f0aa`.
+Not built yet. The current definition gives checksum `v2:b6d3584f839cd29a72e4668d602f24b3396d484eb39e6d5e3c41fa0e64acb7fc`.
 
 ## In brief
 
@@ -148,7 +148,7 @@ Only curators run `build`, when the dataset ships.
 <summary>Feature types: 24 categorical, 22 ordinal, 0 string, 1 datetime</summary>
 
 - categorical (24): `MS SubClass`, `MS Zoning`, `Street`, `Alley`, `Land Contour`, `Lot Config`, `Neighborhood`, `Condition 1`, `Condition 2`, `Bldg Type`, `House Style`, `Roof Style`, `Roof Matl`, `Exterior 1st`, `Exterior 2nd`, `Mas Vnr Type`, `Foundation`, `Heating`, `Central Air`, `Garage Type`, `Fence`, `Misc Feature`, `Sale Type`, `Sale Condition`
-- ordinal (22): `Lot Shape (Regular < Slightly irregular < Moderately Irregular < Irregular)`, `Utilities (Electricity and Gas Only < Electricity, Gas, and Water (Septic Tank) < All public Utilities (E,G,W,& S))`, `Land Slope (Gentle slope < Moderate Slope < Severe Slope)`, `Exter Qual (Fair < Typical/Average < Good < Excellent)`, `Exter Cond (Poor < Fair < Typical/Average < Good < Excellent)`, `Heating QC (Poor < Fair < Typical/Average < Good < Excellent)`, `Kitchen Qual (Poor < Fair < Typical/Average < Good < Excellent)`, `Functional (Salvage only < Severely Damaged < Major Deductions 2 < Major Deductions 1 < Moderate Deductions < Minor Deductions 2 < Minor Deductions 1 < Typical Functionality)`, `Garage Qual (Poor < Fair < Typical/Average < Good < Excellent)`, `Garage Cond (Poor < Fair < Typical/Average < Good < Excellent)`, `Paved Drive (Dirt/Gravel < Partial Pavement < Paved)`, `Pool QC (Fair < Typical/Average < Good < Excellent)`, `Overall Qual (1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9 < 10)`, `Overall Cond (1 < 2 < 3 < 4 < 5 < 6 < 7 < 8 < 9)`, `Bsmt Qual (No basement < Poor (<70 inches) < Fair (70-79 inches) < Typical (80-89 inches) < Good (90-99 inches) < Excellent (100+ inches))`, `Bsmt Cond (No basement < Poor - Severe cracking, settling, or wetness < Fair - dampness or some cracking or settling < Typical - slight dampness allowed < Good < Excellent)`, `Bsmt Exposure (No basement < No Exposure < Minimum Exposure < Average Exposure (split levels or foyers typically score average or above) < Good Exposure)`, `BsmtFin Type 1 (No basement < Unfinished < Low Quality < Average Rec Room < Below Average Living Quarters < Average Living Quarters < Good Living Quarters)`, `BsmtFin Type 2 (No basement < Unfinished < Low Quality < Average Rec Room < Below Average Living Quarters < Average Living Quarters < Good Living Quarters)`, `Electrical (60 AMP Fuse Box and mostly knob & tube wiring (poor) < 60 AMP Fuse Box and mostly Romex wiring (Fair) < Fuse Box over 60 AMP and all Romex wiring (Average) < Standard Circuit Breakers & Romex)`, `Fireplace Qu (Poor - Ben Franklin Stove < Fair - Prefabricated Fireplace in basement < Average - Prefabricated Fireplace in main living area or Masonry Fireplace in basement < Good - Masonry Fireplace in main level < Excellent - Exceptional Masonry Fireplace)`, `Garage Finish (No garage < Unfinished < Rough Finished < Finished)`
+- ordinal (22): `Lot Shape (Regular < Slightly irregular < Moderately Irregular < Irregular)`, `Utilities (Electricity and Gas Only < Electricity, Gas, and Water (Septic Tank) < All public Utilities (E,G,W,& S))`, `Land Slope (Gentle slope < Moderate Slope < Severe Slope)`, `Exter Qual (Fair < Typical/Average < Good < Excellent)`, `Exter Cond (Poor < Fair < Typical/Average < Good < Excellent)`, `Heating QC (Poor < Fair < Typical/Average < Good < Excellent)`, `Kitchen Qual (Poor < Fair < Typical/Average < Good < Excellent)`, `Functional (Salvage only < Severely Damaged < Major Deductions 2 < Major Deductions 1 < Moderate Deductions < Minor Deductions 2 < Minor Deductions 1 < Typical Functionality)`, `Garage Qual (Poor < Fair < Typical/Average < Good < Excellent)`, `Garage Cond (Poor < Fair < Typical/Average < Good < Excellent)`, `Paved Drive (Dirt/Gravel < Partial Pavement < Paved)`, `Pool QC (Fair < Typical/Average < Good < Excellent)`, `Overall Qual (very poor < poor < fair < below average < average < above average < good < very good < excellent < very excellent)`, `Overall Cond (very poor < poor < fair < below average < average < above average < good < very good < excellent)`, `Bsmt Qual (No basement < Poor (<70 inches) < Fair (70-79 inches) < Typical (80-89 inches) < Good (90-99 inches) < Excellent (100+ inches))`, `Bsmt Cond (No basement < Poor - Severe cracking, settling, or wetness < Fair - dampness or some cracking or settling < Typical - slight dampness allowed < Good < Excellent)`, `Bsmt Exposure (No basement < No Exposure < Minimum Exposure < Average Exposure (split levels or foyers typically score average or above) < Good Exposure)`, `BsmtFin Type 1 (No basement < Unfinished < Low Quality < Average Rec Room < Below Average Living Quarters < Average Living Quarters < Good Living Quarters)`, `BsmtFin Type 2 (No basement < Unfinished < Low Quality < Average Rec Room < Below Average Living Quarters < Average Living Quarters < Good Living Quarters)`, `Electrical (60 AMP Fuse Box and mostly knob & tube wiring (poor) < 60 AMP Fuse Box and mostly Romex wiring (Fair) < Fuse Box over 60 AMP and all Romex wiring (Average) < Standard Circuit Breakers & Romex)`, `Fireplace Qu (Poor - Ben Franklin Stove < Fair - Prefabricated Fireplace in basement < Average - Prefabricated Fireplace in main living area or Masonry Fireplace in basement < Good - Masonry Fireplace in main level < Excellent - Exceptional Masonry Fireplace)`, `Garage Finish (No garage < Unfinished < Rough Finished < Finished)`
 - string (0): none
 - datetime (1): `Month Sold (%Y%m)`
 
@@ -177,11 +177,11 @@ The first 5 of 2,837 rows of the final frame (the oldest rows: the frame is sort
 
 | log_SalePrice | MS SubClass | MS Zoning | Lot Frontage | Lot Area | Street | Alley | Lot Shape | Land Contour | Utilities | Lot Config | Land Slope |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 12.4684 | SPLIT OR MULTI-LEVEL | Residential Low Density | 100 | 14330 | Paved | No alley access | Slightly irregular | Depression | All public Utilities (E,G,W,& S) | Corner lot | Gentle slope |
-| 11.7025 | 1-STORY 1946 & NEWER ALL STYLES | Residential Low Density | nan | 13052 | Paved | No alley access | Slightly irregular | Near Flat/Level | All public Utilities (E,G,W,& S) | Cul-de-sac | Gentle slope |
-| 11.8845 | 2 FAMILY CONVERSION - ALL STYLES AND AG… | Residential Low Density | 100 | 34650 | Paved | No alley access | Regular | Banked - Quick and significant rise fro… | All public Utilities (E,G,W,& S) | Inside lot | Gentle slope |
-| 11.8458 | 1-STORY 1946 & NEWER ALL STYLES | Residential Low Density | 74 | 7733 | Paved | No alley access | Slightly irregular | Near Flat/Level | All public Utilities (E,G,W,& S) | Inside lot | Gentle slope |
+| 11.2898 | 1-STORY 1945 & OLDER | Residential Low Density | 50 | 5220 | Paved | No alley access | Slightly irregular | Near Flat/Level | All public Utilities (E,G,W,& S) | Inside lot | Gentle slope |
+| 12.4684 | 1-STORY 1946 & NEWER ALL STYLES | Residential Low Density | 78 | 11645 | Paved | No alley access | Regular | Near Flat/Level | All public Utilities (E,G,W,& S) | Inside lot | Gentle slope |
 | 11.8458 | 1-STORY 1946 & NEWER ALL STYLES | Residential Low Density | 66 | 12778 | Paved | No alley access | Regular | Near Flat/Level | All public Utilities (E,G,W,& S) | Inside lot | Gentle slope |
+| 12.4684 | SPLIT OR MULTI-LEVEL | Residential Low Density | 100 | 14330 | Paved | No alley access | Slightly irregular | Depression | All public Utilities (E,G,W,& S) | Corner lot | Gentle slope |
+| 12.1063 | 1-STORY 1946 & NEWER ALL STYLES | Residential Low Density | 78 | 10140 | Paved | No alley access | Regular | Near Flat/Level | All public Utilities (E,G,W,& S) | Inside lot | Gentle slope |
 
 ## Curation notes
 
@@ -209,6 +209,9 @@ We start with AmesHousing.txt, the data file of De Cock (2011): 2,930 sales of r
   outside the scale, placed by the curator's rule (missing when the column has no other missing value, else the
   lowest level; a state that is simply not on the scale, such as Other, is missing); codes that mean unknown are
   missing (CLEAN-10).
+- Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+  each level is carries the words, a score without them is a number): 2 ordered codes carry their codebook's
+  words (`RATING_LABELS`), in the same order.
 
 ## Splits
 
@@ -327,8 +330,8 @@ The assessor values a house at its market value. Sales between family members, a
 | Condition 2 | category | 0 | 0 | 8 | Normal, Adjacent to feeder street, Adjacent to arterial street, Adjacent to pos… |
 | Bldg Type | category | 0 | 0 | 5 | Single-family Detached, Townhouse End Unit, Townhouse Inside Unit, Duplex, Two-… |
 | House Style | category | 0 | 0 | 8 | One story, Two story, One and one-half story: 2nd level finished, Split Level, … |
-| Overall Qual | category | 0 | 0 | 10 | 5, 6, 7, 8, 4, 9, 3, 10, 2, 1 |
-| Overall Cond | category | 0 | 0 | 9 | 5, 6, 7, 8, 4, 3, 9, 2, 1 |
+| Overall Qual | category | 0 | 0 | 10 | average, above average, good, very good, below average, excellent, fair, very e… |
+| Overall Cond | category | 0 | 0 | 9 | average, above average, good, very good, below average, fair, excellent, poor, … |
 | Roof Style | category | 0 | 0 | 6 | Gable, Hip, Gambrel (Barn), Flat, Mansard, Shed |
 | Roof Matl | category | 0 | 0 | 7 | Standard (Composite) Shingle, Gravel & Tar, Wood Shakes, Wood Shingles, Membran… |
 | Exterior 1st | category | 0 | 0 | 16 | Vinyl Siding, Metal Siding, Hard Board, Wood Siding, Plywood, Cement Board, Bri… |
@@ -349,18 +352,18 @@ The assessor values a house at its market value. Sales between family members, a
 | Sale Condition | category | 0 | 0 | 3 | Normal Sale, Home was not completed when last assessed (associated with New Hom… |
 | Month Sold | datetime64\[ns\] | 0 | 0 | 54 | 2006-07-01 00:00:00, 2009-07-01 00:00:00, 2007-07-01 00:00:00, 2007-06-01 00:00… |
 | Lot Frontage | float64 | 480 | 16.92 | 127 | 60.0, 80.0, 70.0, 50.0, 75.0, 65.0, 85.0, 21.0, 24.0, 63.0 |
-| Garage Yr Blt | float64 | 149 | 5.25 | 101 | 2005.0, 2006.0, 2007.0, 2004.0, 2003.0, 1977.0, 2008.0, 1998.0, 2000.0, 1999.0 |
-| Mas Vnr Area | float64 | 22 | 0.78 | 434 | 0.0, 120.0, 176.0, 72.0, 180.0, 108.0, 216.0, 200.0, 144.0, 16.0 |
+| Garage Yr Blt | float64 | 149 | 5.25 | 101 | 2005.0, 2007.0, 2006.0, 2004.0, 2003.0, 1977.0, 2008.0, 1998.0, 2000.0, 1999.0 |
+| Mas Vnr Area | float64 | 22 | 0.78 | 434 | 0.0, 120.0, 176.0, 180.0, 200.0, 108.0, 16.0, 72.0, 144.0, 216.0 |
 | Year Remod/Add | float64 | 2 | 0.07 | 61 | 1950.0, 2006.0, 2007.0, 2005.0, 2004.0, 2000.0, 2003.0, 2002.0, 2008.0, 1998.0 |
 | Bsmt Full Bath | float64 | 2 | 0.07 | 3 | 0.0, 1.0, 2.0 |
 | Bsmt Half Bath | float64 | 2 | 0.07 | 3 | 0.0, 1.0, 2.0 |
-| BsmtFin SF 1 | float64 | 1 | 0.04 | 982 | 0.0, 24.0, 16.0, 300.0, 20.0, 384.0, 600.0, 288.0, 500.0, 700.0 |
-| BsmtFin SF 2 | float64 | 1 | 0.04 | 271 | 0.0, 180.0, 294.0, 374.0, 539.0, 144.0, 435.0, 483.0, 72.0, 182.0 |
-| Bsmt Unf SF | float64 | 1 | 0.04 | 1124 | 0.0, 384.0, 728.0, 600.0, 672.0, 216.0, 100.0, 572.0, 816.0, 270.0 |
-| Total Bsmt SF | float64 | 1 | 0.04 | 1047 | 864.0, 0.0, 672.0, 912.0, 1040.0, 768.0, 816.0, 728.0, 1008.0, 780.0 |
+| BsmtFin SF 1 | float64 | 1 | 0.04 | 982 | 0.0, 24.0, 16.0, 300.0, 288.0, 600.0, 20.0, 384.0, 375.0, 624.0 |
+| BsmtFin SF 2 | float64 | 1 | 0.04 | 271 | 0.0, 180.0, 294.0, 162.0, 539.0, 435.0, 144.0, 147.0, 182.0, 72.0 |
+| Bsmt Unf SF | float64 | 1 | 0.04 | 1124 | 0.0, 384.0, 728.0, 600.0, 672.0, 100.0, 216.0, 572.0, 624.0, 300.0 |
+| Total Bsmt SF | float64 | 1 | 0.04 | 1047 | 864.0, 0.0, 672.0, 912.0, 1040.0, 768.0, 816.0, 728.0, 780.0, 1008.0 |
 | Garage Cars | float64 | 0 | 0 | 6 | 2.0, 1.0, 3.0, 0.0, 4.0, 5.0 |
 | Garage Area | float64 | 0 | 0 | 597 | 0.0, 576.0, 440.0, 484.0, 240.0, 528.0, 480.0, 400.0, 264.0, 288.0 |
-| log_SalePrice | float64 | 0 | 0 | 1003 | 11.8494, 11.813, 11.7753, 11.9512, 11.8845, 11.9829, 11.6082, 12.1281, 11.6527,… |
+| log_SalePrice | float64 | 0 | 0 | 1003 | 11.8494, 11.813, 11.7753, 11.9512, 11.8845, 11.9829, 12.1281, 11.6082, 11.6527,… |
 
 (19 more rows not shown)
 

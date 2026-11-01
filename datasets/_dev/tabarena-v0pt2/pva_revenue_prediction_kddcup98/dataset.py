@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, set_missing
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode, set_missing
 
 DATE_COLUMNS = [
     "ADATE_2",
@@ -140,13 +140,15 @@ ORDINAL_LEVELS = {
         "twelve solicitations per year",
         "can be mailed (Default)",
     ],  # open-ended
-    "RFA_2F": [1, 2, 3, 4],  # open-ended
-    "RFA_2A": ["D", "E", "F", "G"],  # open-ended
+    "RFA_2F": [
+        "one gift in the period of recency",
+        "two gifts in the period of recency",
+        "three gifts in the period of recency",
+        "four or more gifts in the period of recency",
+    ],  # open-ended
+    "RFA_2A": ["$5.00 - $9.99", "$10.00 - $14.99", "$15.00 - $24.99", "$25.00 and above"],  # open-ended
     "GEOCODE2": ["D", "C", "B", "A"],
-    "DOMAIN_ses": ["Lower Lowest SES in Urban communities", "Lowest SES", "Average SES", "Highest SES"],
-    "INCOME": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0],
-    "WEALTH1": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0],
-    "WEALTH2": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0],
+    "DOMAIN_ses": ["Lowest SES", "Below average SES", "Average SES", "Above average SES", "Highest SES"],
     "MDMAUD_recency": ["Dormant Donor", "Inactive Donor", "Lapsed Donor", "Current Donor"],
     "MDMAUD_frequency": [
         "One gift in the period of recency",
@@ -160,6 +162,26 @@ ORDINAL_LEVELS = {
         "$1,000+ (Top)",
     ],  # open-ended
 }
+
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "RFA_2F": {
+        "1": "one gift in the period of recency",
+        "2": "two gifts in the period of recency",
+        "3": "three gifts in the period of recency",
+        "4": "four or more gifts in the period of recency",
+    },
+    "RFA_2A": {"D": "$5.00 - $9.99", "E": "$10.00 - $14.99", "F": "$15.00 - $24.99", "G": "$25.00 and above"},
+    "AGEFLAG": {"Exact": "exact", "Inferred from Date of Birth Field": "inferred from date of birth field"},
+    "GENDER": {"Male": "male", "Female": "female", "Joint Account, unknown gender": "joint account, unknown gender"},
+    "PVASTATE": {"P": "PVA state"},
+}
+
+
+# Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
+SCORES = ["INCOME", "WEALTH1", "WEALTH2"]
 
 
 class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
@@ -235,6 +257,15 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
           outside the scale, placed by the curator's rule (missing when the column has no other missing value, else the
           lowest level; a state that is simply not on the scale, such as Other, is missing); codes that mean unknown are
           missing (CLEAN-10).
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 2 ordered codes carry their codebook's
+          words (`CODE_LABELS`), in the same order; 3 unordered codes carry their words: `AGEFLAG`, `GENDER`,
+          `PVASTATE`; 3 scores with no words per level are numbers (`SCORES`): `INCOME`, `WEALTH1`, `WEALTH2`.
+        - `DOMAIN_ses` (2026-11-01, CLEAN-12): the dictionary codes the neighbourhood's socio-economic status in two
+          schemes, "1 = Highest SES 2 = Average SES 3 = Lowest SES (except for Urban communities, where 1 = Highest SES,
+          2 = Above average SES, 3 = Below average SES, 4 = Lowest SES.)" (cup98dic.txt). Each row is read by its own
+          scheme, on one line: lowest < below average < average < above average < highest. Before, urban codes 2 and 3
+          (6,504 and 5,270 rows) were read as average and lowest, and code 4 had a coined label.
     """
 
     # Task
@@ -383,12 +414,9 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
             "T": "Town",
             "R": "Rural",
         }
-        ses_map = {
-            "1": "Highest SES",
-            "2": "Average SES",
-            "3": "Lowest SES",
-            "4": "Lower Lowest SES in Urban communities",  # weird name to show it is lower as otherwise we would need to rename 2 and 3 only for urban cases, but this should be fine.
-        }
+        # the dictionary's two schemes for the second byte: urban neighbourhoods have four levels, the others three
+        ses_map = {"1": "Highest SES", "2": "Average SES", "3": "Lowest SES"}
+        urban_ses_map = {"1": "Highest SES", "2": "Above average SES", "3": "Below average SES", "4": "Lowest SES"}
         # Handle DOB (YYMM; 0 = no birth date on file)
         dob = df["DOB"].fillna(0).astype(int)
         df = df[(dob == 0) | (dob % 100 != 0)]  # drop the 2 rows with month 00; DOB 0 becomes missing below
@@ -459,7 +487,7 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
         b1 = b.str[0]
         b2 = b.str[1]
         df["DOMAIN_urbanicity"] = b1.map(urbanicity_map)
-        df["DOMAIN_ses"] = b2.map(ses_map)
+        df["DOMAIN_ses"] = b2.map(ses_map).where(b1 != "U", b2.map(urban_ses_map))
         df = df.drop(columns=["DOMAIN"])
         # Cluster fix nan
         df["CLUSTER"] = df["CLUSTER"].replace(" ", np.nan)  # Likely not Ordinal
@@ -542,6 +570,12 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
                 "MDMAUD_amount": ["Not applicable"],
             },
         )
+        # codes the codebook leaves without words, or a question that did not apply (CLEAN-10)
+        df = set_missing(df, {"AGEFLAG": [" "], "GENDER": ["A", "C", "Unknown"]})
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
+        # scores with no words per level are numbers (CLEAN-14)
+        df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

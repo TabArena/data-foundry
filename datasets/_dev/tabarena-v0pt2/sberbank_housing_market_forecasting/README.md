@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sberbank_housing_market_forecasting
 container_format: 2
-checksum: v2:b81a2394a879ddb28e5c99ab4bcfc5ee32fbb8be6bd30195a57b6730d98856e4
+checksum: v2:7879fc67937ec89c2fc59a9e5e0280f4eb2006fe233d77253d6e5142a3d211ec
 build:
   uuid: 01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7
   checksum: v2:53a44153b4da1976a157742f955d2dbea5f4e85c85e25e48af1746db3acc846c
@@ -22,10 +22,10 @@ data:
   n_rows: 28321
   n_features: 386
   dtypes:
-    category: 24
+    category: 23
     datetime64[ns]: 1
     float32: 3
-    float64: 206
+    float64: 207
     int64: 153
   n_test_dataset_rows: null
 task:
@@ -72,7 +72,7 @@ decisions: []
 
 Regression of `price_doc`, scored with `rmse` on temporal splits by `timestamp`. 28,321 rows and 386 features. Source: Kaggle (2017).
 
-Built as `01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:b81a2394a879ddb28e5c99ab4bcfc5ee32fbb8be6bd30195a57b6730d98856e4`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2eb-7775-8b3c-17b7b9a68ca7` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:7879fc67937ec89c2fc59a9e5e0280f4eb2006fe233d77253d6e5142a3d211ec`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -152,10 +152,10 @@ Only curators run `build`, when the dataset ships.
 | definition | RMSE on log(price_doc / full_sq); since full_sq is known per row, log(price/sq) - log(price_hat/sq) = log(price) - log(price_hat), so this is the competition's RMSLE on the sale price up to log vs log1p (negligible at prices of 10^5 to 10^8 RUB) |
 
 <details>
-<summary>Feature types: 22 categorical, 2 ordinal, 0 string, 0 datetime</summary>
+<summary>Feature types: 22 categorical, 1 ordinal, 0 string, 0 datetime</summary>
 
 - categorical (22): `ID_metro`, `ID_railroad_station_walk`, `ID_railroad_station_avto`, `ID_big_road1`, `ID_big_road2`, `ID_railroad_terminal`, `ID_bus_terminal`, `material`, `sub_area`, `product_type`, `culture_objects_top_25`, `thermal_power_plant_raion`, `incineration_raion`, `oil_chemistry_raion`, `radiation_raion`, `railroad_terminal_raion`, `big_market_raion`, `nuclear_reactor_raion`, `detention_facility_raion`, `water_1line`, `big_road1_1line`, `railroad_1line`
-- ordinal (2): `state (1.0 < 2.0 < 3.0 < 4.0)`, `ecology (poor < satisfactory < good < excellent)`
+- ordinal (1): `ecology (poor < satisfactory < good < excellent)`
 - string (0): none
 - datetime (0): none
 
@@ -214,6 +214,9 @@ We follow the preprocessing from TabRed (https://github.com/yandex-research/tabr
 - We keep the 1,126 sales whose build_year is later than the year of sale (Lennart, 2026-10-14; until then they were dropped as errors). 1,124 were sold 0 to 4 years before it, which fits flats sold before completion; 2 have a build_year coded from a range (such as 20052009), kept as it is.
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 2 columns are ordered categories in
   the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing (CLEAN-10).
+- Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+  each level is carries the words, a score without them is a number): 1 unordered codes carry their words:
+  `material`; 1 scores with no words per level are numbers (`SCORES`): `state`.
 
 ## Splits
 
@@ -245,8 +248,7 @@ We always use 6 month of the data as test data and all prior data as training da
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| state | category | 12702 | 44.85 | 4 | 3.0, 2.0, 1.0, 4.0 |
-| material | category | 8851 | 31.25 | 6 | 1.0, 2.0, 5.0, 4.0, 6.0, 3.0 |
+| material | category | 8851 | 31.25 | 6 | panel, brick, breezeblock, mass concrete, mass concrete plus brick, wood |
 | ecology | category | 7813 | 27.59 | 4 | poor, good, satisfactory, excellent |
 | ID_railroad_station_walk | category | 24 | 0.08 | 132 | 24.0, 47.0, 75.0, 39.0, 42.0, 4.0, 33.0, 2.0, 18.0, 28.0 |
 | product_type | category | 0 | 0 | 2 | Investment, OwnerOccupier |
@@ -276,6 +278,7 @@ We always use 6 month of the data as test data and all prior data as training da
 | provision_retail_space_sqm_lag_1y | float64 | 16414 | 57.96 | 2 | 794.0, 741.0 |
 | hospital_beds_raion | float64 | 13665 | 48.25 | 79 | 540.0, 30.0, 1046.0, 2300.0, 240.0, 1084.0, 750.0, 229.0, 645.0, 1183.0 |
 | build_year | float64 | 12853 | 45.38 | 118 | 2014.0, 2015.0, 0.0, 2013.0, 1970.0, 2016.0, 1968.0, 1969.0, 1.0, 1967.0 |
+| state | float64 | 12702 | 44.85 | 4 | 3.0, 2.0, 1.0, 4.0 |
 | cafe_sum_500_min_price_avg | float64 | 12687 | 44.8 | 634 | 500.0, 1000.0, 300.0, 1500.0, 750.0, 400.0, 650.0, 954.84, 600.0, 666.67 |
 | cafe_sum_500_max_price_avg | float64 | 12687 | 44.8 | 434 | 1000.0, 1500.0, 500.0, 2500.0, 1250.0, 750.0, 1166.67, 1750.0, 1564.52, 1333.33 |
 | cafe_avg_price_500 | float64 | 12687 | 44.8 | 835 | 750.0, 1250.0, 400.0, 2000.0, 575.0, 1000.0, 825.0, 1259.68, 1375.0, 800.0 |
@@ -314,12 +317,12 @@ We always use 6 month of the data as test data and all prior data as training da
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | -0.944 | -1.175 | 0.155 | 0.001 | log | 248444 | 2.72491e+17 | exponential |
+| 0 | 0 | 0 | -0.944 | -1.175 | 0.155 | 0.001 | log | 248444 | 2.73861e+17 | exponential |
 
 ### Numeric features
 
 <details>
-<summary>Show the table (362 rows)</summary>
+<summary>Show the table (363 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -330,6 +333,7 @@ We always use 6 month of the data as test data and all prior data as training da
 | build_year | 15468 | 3171.4 | 161214 | 0 | 2.0052e+07 |
 | num_room | 19470 | 1.91418 | 0.857557 | 0 | 19 |
 | kitch_sq | 19470 | 6.25336 | 25.6483 | 0 | 2014 |
+| state | 15619 | 2.08349 | 0.859481 | 1 | 4 |
 | area_m | 28321 | 1.86006e+07 | 2.14579e+07 | 2.08163e+06 | 2.06072e+08 |
 | raion_popul | 28321 | 81667 | 58953.7 | 2546 | 247469 |
 | green_zone_part | 28321 | 0.225532 | 0.17728 | 0.00187937 | 0.852923 |
@@ -382,16 +386,15 @@ We always use 6 month of the data as test data and all prior data as training da
 | build_count_monolith | 23361 | 11.7904 | 19.2783 | 0 | 127 |
 | build_count_panel | 23361 | 106.505 | 88.525 | 0 | 431 |
 | build_count_foam | 23361 | 0.159582 | 1.10325 | 0 | 11 |
-| build_count_slag | 23361 | 4.43859 | 13.1373 | 0 | 84 |
 
-(302 more rows not shown)
+(303 more rows not shown)
 
 </details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (86 rows)</summary>
+<summary>Show the table (81 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -445,18 +448,18 @@ We always use 6 month of the data as test data and all prior data as training da
 | ecology | 5 | excellent | 3064 | 10.82 |
 | incineration_raion | 1 | no | 25982 | 91.74 |
 | incineration_raion | 2 | yes | 2339 | 8.26 |
-| material | 1 | 1.0 | 13291 | 46.93 |
+| material | 1 | panel | 13291 | 46.93 |
 | material | 2 | &lt;NA> | 8851 | 31.25 |
-| material | 3 | 2.0 | 2714 | 9.58 |
-| material | 4 | 5.0 | 1386 | 4.89 |
-| material | 5 | 4.0 | 1305 | 4.61 |
+| material | 3 | brick | 2714 | 9.58 |
+| material | 4 | breezeblock | 1386 | 4.89 |
+| material | 5 | mass concrete | 1305 | 4.61 |
 | nuclear_reactor_raion | 1 | no | 27550 | 97.28 |
 | nuclear_reactor_raion | 2 | yes | 771 | 2.72 |
 | oil_chemistry_raion | 1 | no | 28055 | 99.06 |
 | oil_chemistry_raion | 2 | yes | 266 | 0.94 |
 | product_type | 1 | Investment | 17379 | 61.36 |
 
-(26 more rows not shown)
+(21 more rows not shown)
 
 </details>
 
@@ -471,4 +474,4 @@ We always use 6 month of the data as test data and all prior data as training da
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:b81a2394a879ddb28e5c99ab4bcfc5ee32fbb8be6bd30195a57b6730d98856e4` |
+| stale | yes: the definition now gives checksum `v2:7879fc67937ec89c2fc59a9e5e0280f4eb2006fe233d77253d6e5142a3d211ec` |

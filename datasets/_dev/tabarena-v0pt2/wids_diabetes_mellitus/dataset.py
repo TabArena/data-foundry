@@ -5,14 +5,36 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
 ORDINAL_LEVELS = {
-    "gcs_eyes_apache": [1.0, 2.0, 3.0, 4.0],
-    "gcs_motor_apache": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
-    "gcs_verbal_apache": [1.0, 2.0, 3.0, 4.0, 5.0],
+    "gcs_eyes_apache": ["none", "to pain", "to speech", "spontaneous"],
+    "gcs_motor_apache": ["none", "extension", "abnormal flexion", "withdrawal", "localises pain", "obeys commands"],
+    "gcs_verbal_apache": ["none", "incomprehensible sounds", "inappropriate words", "confused", "oriented"],
+}
+
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "gcs_eyes_apache": {"1": "none", "2": "to pain", "3": "to speech", "4": "spontaneous"},
+    "gcs_motor_apache": {
+        "1": "none",
+        "2": "extension",
+        "3": "abnormal flexion",
+        "4": "withdrawal",
+        "5": "localises pain",
+        "6": "obeys commands",
+    },
+    "gcs_verbal_apache": {
+        "1": "none",
+        "2": "incomprehensible sounds",
+        "3": "inappropriate words",
+        "4": "confused",
+        "5": "oriented",
+    },
 }
 
 
@@ -78,6 +100,9 @@ class WidsDiabetesMellitus(AbstractCuratedDataset):
         - We keep medical codes as string, as these could be more meaningfully decoded.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
           the order of the source's codebook (`ORDINAL_LEVELS`); 3 of them were shipped as numbers.
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 3 ordered codes carry their codebook's
+          words (`CODE_LABELS`), in the same order.
     """
 
     # Task
@@ -128,6 +153,8 @@ class WidsDiabetesMellitus(AbstractCuratedDataset):
             max_val = df[f].max()
             clip_f = f + "_clipped"
             df[clip_f] = (df[f] == min_val) | (df[f] == max_val)
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

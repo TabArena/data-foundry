@@ -5,12 +5,27 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
 ORDINAL_LEVELS = {
-    "Hepatic Fat Accumulation (HFA)": [0, 1, 2, 3, 4],
+    "Hepatic Fat Accumulation (HFA)": ["no fat accumulation", "mild", "moderate", "severe", "very severe"],
+}
+
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "Hepatic Fat Accumulation (HFA)": {
+        "0": "no fat accumulation",
+        "1": "mild",
+        "2": "moderate",
+        "3": "severe",
+        "4": "very severe",
+    },
+    "Gender": {"0": "male", "1": "female"},
+    "Comorbidity": {"0": "none", "1": "any"},
 }
 
 
@@ -76,6 +91,9 @@ class GallstoneDisease(AbstractCuratedDataset):
           four listed diseases (CAD, hypothyroidism, hyperlipidemia, diabetes), and the 1s have one, two, or another
           condition. Three rows hold an undocumented 2 (1 row) or 3 (2 rows), each with exactly one listed disease: an
           entry error for 1, recoded to 1; the rows stay (CLEAN-11; the curator's marks of 2026-10-31).
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
+          words (`CODE_LABELS`), in the same order; 2 unordered codes carry their words: `Gender`, `Comorbidity`.
     """
 
     # Task
@@ -91,8 +109,11 @@ class GallstoneDisease(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         # Comorbidity is 0 (none) or 1 (any); the three 2 and 3 have one of the listed diseases each (curation notes)
-        raw["Comorbidity"] = raw["Comorbidity"].replace({2: 1, 3: 1})
-        return raw
+        df = raw
+        df["Comorbidity"] = df["Comorbidity"].replace({2: 1, 3: 1})
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
+        return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(

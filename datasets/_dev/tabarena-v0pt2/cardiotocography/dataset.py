@@ -5,12 +5,19 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, anonymize_ids, decode
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
 ORDINAL_LEVELS = {
-    "Tendency": [-1.0, 0.0, 1.0],
+    "Tendency": ["left asymmetric", "symmetric", "right asymmetric"],
+}
+
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "Tendency": {"-1": "left asymmetric", "0": "symmetric", "1": "right asymmetric"},
 }
 
 
@@ -77,6 +84,9 @@ class Cardiotocography(AbstractCuratedDataset):
         - We drop all other columns that represent the label.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
           the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them were shipped as numbers.
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
+          words (`CODE_LABELS`), in the same order.
     """
 
     # Task
@@ -141,6 +151,8 @@ class Cardiotocography(AbstractCuratedDataset):
                 "CLASS",
             ]
         )
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

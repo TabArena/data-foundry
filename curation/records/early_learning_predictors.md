@@ -55,6 +55,8 @@ CC (2026-11-01, Lennart): marks on the review board of PR #37: language_match's 
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `thrive_by_five_index_2024` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 93 coded columns carry their words; 7 scores are numbers (quintile, pra_class_space_2, pra_satisfaction_support, ses_cat, ses_proxy, teacher_familiarity_with_child, teacher_selfcare_total); undocumented 0 codes missing (pra_cotlands_visits, pra_free_play, pra_free_play_outdoor, obs_water, pri_bank).
+
 ## Reference
 
 DataDrive2030. ELOM and Thrive by Five Index 2016-2023, Merged Data [dataset]. Version 1. Cape Town: DataDrive2030 [producer], 2024. Cape Town: DataFirst [distributor], 2024. DOI: https://doi.org/10.25828/WG0D-Y909

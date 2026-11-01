@@ -8,20 +8,19 @@ import numpy as np
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
-# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
-# them). An open-ended level holds everything beyond it.
-ORDINAL_LEVELS = {
-    "erythema": [0, 1, 2, 3],
-    "scaling": [0, 1, 2, 3],
-    "definite borders": [0, 1, 2, 3],
-    "itching": [0, 1, 2, 3],
-    "koebner phenomenon": [0, 1, 2, 3],
-    "polygonal papules": [0, 1, 2, 3],
-    "follicular papules": [0, 1, 2, 3],
-    "oral mucosal involvement": [0, 1, 2, 3],
-    "knee and elbow involvement": [0, 1, 2, 3],
-    "scalp involvement": [0, 1, 2, 3],
-}
+# Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
+SCORES = [
+    "erythema",
+    "scaling",
+    "definite borders",
+    "itching",
+    "koebner phenomenon",
+    "polygonal papules",
+    "follicular papules",
+    "oral mucosal involvement",
+    "knee and elbow involvement",
+    "scalp involvement",
+]
 
 
 class EryhematoSquamousDisease(AbstractCuratedDataset):
@@ -91,6 +90,10 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
         - We ensure missing values in age are encoded as NaN.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 10 columns are ordered categories in
           the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 10 scores with no words per level are
+          numbers (`SCORES`): `erythema`, `scaling`, `definite borders`, `itching`, `koebner phenomenon`, `polygonal
+          papules`, `follicular papules`, `oral mucosal involvement`, `knee and elbow involvement`, `scalp involvement`.
     """
 
     # Task
@@ -161,10 +164,10 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
         ]
         df = raw[[*clinical, self.target]].copy()
         df["age"] = df["age"].replace("?", np.nan).astype(float)
+        # scores with no words per level are numbers (CLEAN-14)
+        df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         # age is numeric, and has some missing values
-        return FeatureTypes(
-            ordinal=ORDINAL_LEVELS, categorical=[c for c in df.columns if c not in ("age", self.target)]
-        )
+        return FeatureTypes(categorical=[c for c in df.columns if c not in ("age", self.target)])

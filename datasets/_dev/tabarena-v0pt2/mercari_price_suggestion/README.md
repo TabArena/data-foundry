@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: mercari_price_suggestion
 container_format: 2
-checksum: v2:4ea943c8515654b547e7a2b695185822a396ee3e62f23d44b619cdc5a1c0e798
+checksum: v2:bc77eef73f40a2ba5123f3c1f0ebf000bca469459acb11dd30b90a6330d86e1f
 build:
   uuid: 01a111fb-0462-74d5-bdd8-89846cb8d091
   checksum: v2:831bd4bf3baf371d5e158bbb6b34b20f1a8162d5f2ce48ab85046990e4233d7e
@@ -69,7 +69,7 @@ decisions: []
 
 Regression of `price`, scored with `rmsle` on IID splits. 1,482,486 rows and 6 features. Source: Kaggle (2017).
 
-Built as `01a111fb-0462-74d5-bdd8-89846cb8d091` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:4ea943c8515654b547e7a2b695185822a396ee3e62f23d44b619cdc5a1c0e798`, so the build is stale. See [Build](#build).
+Built as `01a111fb-0462-74d5-bdd8-89846cb8d091` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:bc77eef73f40a2ba5123f3c1f0ebf000bca469459acb11dd30b90a6330d86e1f`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -149,7 +149,7 @@ Only curators run `build`, when the dataset ships.
 <summary>Feature types: 1 categorical, 1 ordinal, 4 string, 0 datetime</summary>
 
 - categorical (1): `shipping`
-- ordinal (1): `item_condition_id (5 < 4 < 3 < 2 < 1)`
+- ordinal (1): `item_condition_id (poor < fair < good < like new < new)`
 - string (4): `name`, `category_name`, `brand_name`, `item_description`
 - datetime (0): none
 
@@ -176,11 +176,11 @@ The first 5 of 1,482,486 rows of the final frame (random rows: the frame is shuf
 
 | price | name | item_condition_id | category_name | brand_name | shipping | item_description |
 |---|---|---|---|---|---|---|
-| 3.73767 | Rae Dunn Hip Hop Coffee Mug Magenta New | 1 | Home/Kitchen & Dining/Coffee & Tea Acce… | Rae Dunn | 0 | RAE DUNN COFFEE CUP Farmhouse Country B… |
-| 2.48491 | Colourpop Liquid Lipsticks | 2 | Beauty/Makeup/Lips | ColourPop Cosmetics | 1 | Only been swatched once. Colors are: Vi… |
-| 2.83321 | Cute flower print romper | 3 | Women/Dresses/Above Knee, Mini |  | 0 | Bought in Spain. Too small for me now. |
-| 3.89182 | LuLaRoe Disney Os Leggings Toy Story | 1 | Women/Athletic Apparel/Pants, Tights, L… | LuLaRoe | 1 | Toy story characters Black grey cream O… |
-| 3.58352 | Kobe 9 (Peach Mango) | 3 | Men/Shoes/Athletic | Nike | 0 | - Size 8.5 - Good Condition - Great Bas… |
+| 3.04452 | New boys converse high top tops sz 2.5 | like new | Kids/Boys (4+)/Shoes |  | paid by seller | Brand new. Never worn. No box or tags. … |
+| 2.3979 | Old Navy the sweetheart jeans sz 0 short | good | Women/Jeans/Other | Old Navy | paid by seller | Old navy the sweetheart jeans, stretch,… |
+| 2.3979 | DGG Dog Gone Gorgeous sweater | good | Other/Pet Supplies/Dogs | PetSmart | paid by buyer | Adorable and warm DGG sweater size M Ve… |
+| 3.04452 | Toddler Converse Size 11-Excellent Cond! | good | Kids/Girls 2T-5T/Shoes | Nike | paid by buyer | Excellent used condition toddler Conver… |
+| 3.04452 | Bride items | new | Women/Other/Other |  | paid by buyer | Unopened bride & bride tribe shot glass… |
 
 ## Curation notes
 
@@ -193,6 +193,9 @@ We start from the Kaggle competition dataset.
 - We take the full data (about 1.48M rows after de-duplication) with 3-fold cross-validation, so every fold trains on about 990k rows. Until 2026-10 a `mercari_price_suggestion_1m` version sub-sampled it to one 1M / 250k split.
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
   the order of the source's codebook (`ORDINAL_LEVELS`).
+- Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+  each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
+  words (`CODE_LABELS`), in the same order; 1 unordered codes carry their words: `shipping`.
 
 ## Splits
 
@@ -218,25 +221,25 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| item_condition_id | category | 0 | 0 | 5 | 1, 3, 2, 4, 5 |
-| shipping | category | 0 | 0 | 2 | 0, 1 |
-| price | float64 | 0 | 0 | 828 | 2.3979, 2.5649, 2.7081, 2.8332, 2.3026, 2.1972, 2.7726, 3.0445, 2.0794, 3.2189 |
+| item_condition_id | category | 0 | 0 | 5 | new, good, like new, fair, poor |
+| shipping | category | 0 | 0 | 2 | paid by buyer, paid by seller |
+| price | float64 | 0 | 0 | 828 | 2.3979, 2.5649, 2.7081, 2.8332, 2.3026, 2.1972, 2.7726, 3.0445, 2.0794, 2.9444 |
 | brand_name | string | 632641 | 42.67 | 4809 | PINK, Nike, Victoria's Secret, LuLaRoe, Apple, FOREVER 21, Nintendo, Lululemon,… |
-| item_description | string | 82495 | 5.56 | 1.28142e+06 | New, Brand new, Good condition, Great condition, Never worn, Like new, NWT, Nev… |
+| item_description | string | 82495 | 5.56 | 1.28142e+06 | New, Brand new, Good condition, Great condition, Like new, Never worn, NWT, Bra… |
 | category_name | string | 6327 | 0.43 | 1287 | Women/Athletic Apparel/Pants, Tights, Leggings, Women/Tops & Blouses/T-Shirts, … |
-| name | string | 0 | 0 | 1.22527e+06 | Bundle, Reserved, Vans, Converse, Coach purse, BUNDLE, Lularoe TC leggings, Ame… |
+| name | string | 0 | 0 | 1.22527e+06 | Bundle, Reserved, Lularoe TC leggings, Coach purse, Dress, Converse, Romper, BU… |
 
 ### Target distribution
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0.06 | 0.677 | -0.127 | 0.561 | 0.035 | log1p | 692213 | 488700 | lognormal |
+| 0 | 0 | 0.06 | 0.669 | -0.138 | 0.565 | 0.035 | log1p | 692244 | 495184 | lognormal |
 
 ### Numeric features
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| price | 148249 | 2.97833 | 0.749159 | 0 | 7.6034 |
+| price | 148249 | 2.9803 | 0.751636 | 0 | 7.38399 |
 
 ### Categorical features
 
@@ -245,33 +248,33 @@ Default splits.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| brand_name | 1 | &lt;NA> | 63252 | 42.67 |
-| brand_name | 2 | PINK | 5414 | 3.65 |
-| brand_name | 3 | Nike | 5389 | 3.64 |
-| brand_name | 4 | Victoria's Secret | 4854 | 3.27 |
-| brand_name | 5 | LuLaRoe | 3101 | 2.09 |
-| category_name | 1 | Women/Athletic Apparel/Pants, Tights, Leggings | 6134 | 4.14 |
-| category_name | 2 | Women/Tops & Blouses/T-Shirts | 4646 | 3.13 |
-| category_name | 3 | Beauty/Makeup/Face | 3477 | 2.35 |
-| category_name | 4 | Beauty/Makeup/Lips | 3017 | 2.04 |
-| category_name | 5 | Electronics/Video Games & Consoles/Games | 2700 | 1.82 |
-| item_condition_id | 1 | 1 | 64458 | 43.48 |
-| item_condition_id | 2 | 3 | 43122 | 29.09 |
-| item_condition_id | 3 | 2 | 37326 | 25.18 |
-| item_condition_id | 4 | 4 | 3088 | 2.08 |
-| item_condition_id | 5 | 5 | 255 | 0.17 |
-| item_description | 1 | &lt;NA> | 8375 | 5.65 |
-| item_description | 2 | New | 402 | 0.27 |
-| item_description | 3 | Brand new | 340 | 0.23 |
-| item_description | 4 | Good condition | 129 | 0.09 |
-| item_description | 5 | Great condition | 115 | 0.08 |
-| name | 1 | Bundle | 238 | 0.16 |
-| name | 2 | Reserved | 46 | 0.03 |
-| name | 3 | Vans | 43 | 0.03 |
-| name | 4 | Converse | 42 | 0.03 |
-| name | 5 | Coach purse | 42 | 0.03 |
-| shipping | 1 | 0 | 81706 | 55.11 |
-| shipping | 2 | 1 | 66543 | 44.89 |
+| brand_name | 1 | &lt;NA> | 63246 | 42.66 |
+| brand_name | 2 | PINK | 5466 | 3.69 |
+| brand_name | 3 | Nike | 5399 | 3.64 |
+| brand_name | 4 | Victoria's Secret | 4881 | 3.29 |
+| brand_name | 5 | LuLaRoe | 3092 | 2.09 |
+| category_name | 1 | Women/Athletic Apparel/Pants, Tights, Leggings | 5978 | 4.03 |
+| category_name | 2 | Women/Tops & Blouses/T-Shirts | 4632 | 3.12 |
+| category_name | 3 | Beauty/Makeup/Face | 3385 | 2.28 |
+| category_name | 4 | Beauty/Makeup/Lips | 2912 | 1.96 |
+| category_name | 5 | Electronics/Video Games & Consoles/Games | 2661 | 1.79 |
+| item_condition_id | 1 | new | 64028 | 43.19 |
+| item_condition_id | 2 | good | 42942 | 28.97 |
+| item_condition_id | 3 | like new | 37776 | 25.48 |
+| item_condition_id | 4 | fair | 3255 | 2.2 |
+| item_condition_id | 5 | poor | 248 | 0.17 |
+| item_description | 1 | &lt;NA> | 8247 | 5.56 |
+| item_description | 2 | New | 385 | 0.26 |
+| item_description | 3 | Brand new | 297 | 0.2 |
+| item_description | 4 | Good condition | 112 | 0.08 |
+| item_description | 5 | Great condition | 109 | 0.07 |
+| name | 1 | Bundle | 218 | 0.15 |
+| name | 2 | Reserved | 47 | 0.03 |
+| name | 3 | Lularoe TC leggings | 47 | 0.03 |
+| name | 4 | Coach purse | 43 | 0.03 |
+| name | 5 | Dress | 42 | 0.03 |
+| shipping | 1 | paid by buyer | 81973 | 55.29 |
+| shipping | 2 | paid by seller | 66276 | 44.71 |
 
 </details>
 
@@ -286,4 +289,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:4ea943c8515654b547e7a2b695185822a396ee3e62f23d44b619cdc5a1c0e798` |
+| stale | yes: the definition now gives checksum `v2:bc77eef73f40a2ba5123f3c1f0ebf000bca469459acb11dd30b90a6330d86e1f` |

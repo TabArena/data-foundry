@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, anonymize_ids, decode
 
 RESPONDENT_COLUMNS = [
     "gender",
@@ -28,7 +28,16 @@ RESPONDENT_COLUMNS = [
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
 ORDINAL_LEVELS = {
-    "age": ["below21", "21", "26", "31", "36", "41", "46", "50plus"],  # open-ended
+    "age": [
+        "below 21",
+        "21 to 25",
+        "26 to 30",
+        "31 to 35",
+        "36 to 40",
+        "41 to 45",
+        "46 to 49",
+        "50 or older",
+    ],  # open-ended
     "education": [
         "Some High School",
         "High School Graduate",
@@ -53,6 +62,22 @@ ORDINAL_LEVELS = {
     "CarryAway": ["never", "less1", "1~3", "4~8", "gt8"],  # open-ended
     "RestaurantLessThan20": ["never", "less1", "1~3", "4~8", "gt8"],  # open-ended
     "Restaurant20To50": ["never", "less1", "1~3", "4~8", "gt8"],  # open-ended
+}
+
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "age": {
+        "below21": "below 21",
+        "21": "21 to 25",
+        "26": "26 to 30",
+        "31": "31 to 35",
+        "36": "36 to 40",
+        "41": "41 to 45",
+        "46": "46 to 49",
+        "50plus": "50 or older",
+    },
 }
 
 
@@ -121,6 +146,9 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
         - The respondent id is not shipped with the data. The raw file lists each respondent's answers as a consecutive block with identical first-part answers, so a block of the same profile is one respondent: 587 blocks, 517 of them with 22 rows, against 652 accepted surveys in the paper, so a few blocks likely merge two adjacent respondents with identical profiles, which only makes the grouping stricter. The paper reports out-of-sample AUC from 5-fold testing (Table 3) without saying whether folds were split by respondent; a random split would be a warm start.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 8 columns are ordered categories in
           the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
+          words (`CODE_LABELS`), in the same order.
     """
 
     # Task
@@ -174,6 +202,8 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
         # Drop constant columns
         df = df.drop(columns=["toCoupon_GEQ5min"])
         df = df.rename(columns={"passanger": "passenger"})
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

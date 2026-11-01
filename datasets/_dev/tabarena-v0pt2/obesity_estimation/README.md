@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: obesity_estimation
 container_format: 2
-checksum: v2:a7917458e903b7eb0fcccbdba12252205749e850d130424b8284eeac29debee5
+checksum: v2:fb64f895e695dc25bab4b444d54698063f8da70e26a39c41fae3ab269a0b88da
 build:
   uuid: 01a13a7d-c2ba-7a4d-bb80-1eb0032878a9
   checksum: v2:ed914824ca4ef307976afa2a00fbd0a66b334728e4e282386dff8cdef1232c76
@@ -68,7 +68,7 @@ decisions: []
 
 Regression of `BodyMass`, scored with `rmse` on IID splits. 488 rows and 14 features. Source: UCI (2019).
 
-Built as `01a13a7d-c2ba-7a4d-bb80-1eb0032878a9` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:a7917458e903b7eb0fcccbdba12252205749e850d130424b8284eeac29debee5`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2ba-7a4d-bb80-1eb0032878a9` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:fb64f895e695dc25bab4b444d54698063f8da70e26a39c41fae3ab269a0b88da`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -146,7 +146,7 @@ Only curators run `build`, when the dataset ships.
 <summary>Feature types: 6 categorical, 7 ordinal, 0 string, 0 datetime</summary>
 
 - categorical (6): `Gender`, `family_history_with_overweight`, `FAVC`, `SMOKE`, `SCC`, `MTRANS`
-- ordinal (7): `FCVC (1.0 < 2.0 < 3.0)`, `NCP (1.0 < 3.0 < 4.0)`, `CAEC (no < Sometimes < Frequently < Always)`, `CH2O (1.0 < 2.0 < 3.0)`, `FAF (0.0 < 1.0 < 2.0 < 3.0)`, `TUE (0.0 < 1.0 < 2.0)`, `CALC (no < Sometimes < Frequently < Always)`
+- ordinal (7): `FCVC (never < sometimes < always)`, `NCP (between 1 and 2 < three < more than three)`, `CAEC (no < Sometimes < Frequently < Always)`, `CH2O (less than a liter < between 1 and 2 L < more than 2 L)`, `FAF (I do not have < 1 or 2 days < 2 or 4 days < 4 or 5 days)`, `TUE (0-2 hours < 3-5 hours < more than 5 hours)`, `CALC (no < Sometimes < Frequently < Always)`
 - string (0): none
 - datetime (0): none
 
@@ -175,11 +175,11 @@ The first 5 of 488 rows of the final frame (random rows: the frame is shuffled);
 
 | BodyMass | Gender | Age | family_history_with_overweight | FAVC | FCVC | NCP | CAEC | SMOKE | CH2O | SCC | FAF |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 24.114 | Male | 20 | yes | no | 3 | 1 | Sometimes | no | 2 | no | 0 |
-| 29.3848 | Female | 36 | yes | yes | 2 | 3 | Sometimes | no | 1 | no | 0 |
-| 24.4857 | Male | 26 | no | yes | 2 | 3 | Always | no | 2 | no | 1 |
-| 25.565 | Male | 19 | yes | no | 1 | 3 | Sometimes | no | 2 | no | 3 |
-| 24.6094 | Female | 23 | yes | no | 3 | 3 | Frequently | no | 2 | no | 3 |
+| 23.7812 | Female | 29 | yes | no | always | three | Always | no | between 1 and 2 L | no | I do not have |
+| 24.4193 | Male | 21 | no | no | never | three | no | no | between 1 and 2 L | no | 2 or 4 days |
+| 24.623 | Male | 14 | yes | yes | always | three | Sometimes | no | more than 2 L | no | 2 or 4 days |
+| 25.8065 | Female | 27 | no | yes | always | between 1 and 2 | Sometimes | no | less than a liter | no | 1 or 2 days |
+| 23.7118 | Female | 18 | yes | yes | never | three | Sometimes | no | between 1 and 2 L | no | 2 or 4 days |
 
 ## Curation notes
 
@@ -188,6 +188,9 @@ The first 5 of 488 rows of the final frame (random rows: the frame is shuffled);
 - We make the task a regression task, re-creating the body mass values underlying the discretized obesity levels, and drop weight and height which leak the target partially. Thus, we create a regression task of estimating the body mass of individuals based on their eating habits and other questions from the questionnaire. The original task is trivial to solve due to the leak and thus not interesting.
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 7 columns are ordered categories in
   the order of the source's codebook (`ORDINAL_LEVELS`).
+- Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+  each level is carries the words, a score without them is a number): 5 ordered codes carry their codebook's
+  words (`CODE_LABELS`), in the same order.
 
 ## Splits
 
@@ -281,18 +284,18 @@ Default splits.
 | Gender | category | 0 | 0 | 2 | Male, Female |
 | family_history_with_overweight | category | 0 | 0 | 2 | yes, no |
 | FAVC | category | 0 | 0 | 2 | yes, no |
-| FCVC | category | 0 | 0 | 3 | 2.0, 3.0, 1.0 |
-| NCP | category | 0 | 0 | 3 | 3.0, 1.0, 4.0 |
+| FCVC | category | 0 | 0 | 3 | sometimes, always, never |
+| NCP | category | 0 | 0 | 3 | three, between 1 and 2, more than three |
 | CAEC | category | 0 | 0 | 4 | Sometimes, Frequently, Always, no |
 | SMOKE | category | 0 | 0 | 2 | no, yes |
-| CH2O | category | 0 | 0 | 3 | 2.0, 1.0, 3.0 |
+| CH2O | category | 0 | 0 | 3 | between 1 and 2 L, less than a liter, more than 2 L |
 | SCC | category | 0 | 0 | 2 | no, yes |
-| FAF | category | 0 | 0 | 4 | 0.0, 1.0, 2.0, 3.0 |
-| TUE | category | 0 | 0 | 3 | 0.0, 1.0, 2.0 |
+| FAF | category | 0 | 0 | 4 | I do not have, 1 or 2 days, 2 or 4 days, 4 or 5 days |
+| TUE | category | 0 | 0 | 3 | 0-2 hours, 3-5 hours, more than 5 hours |
 | CALC | category | 0 | 0 | 4 | Sometimes, no, Frequently, Always |
 | MTRANS | category | 0 | 0 | 5 | Public_Transportation, Automobile, Walking, Motorbike, Bike |
-| Age | float64 | 0 | 0 | 35 | 18.0, 21.0, 23.0, 19.0, 20.0, 22.0, 17.0, 24.0, 26.0, 25.0 |
-| BodyMass | float64 | 0 | 0 | 392 | 22.0386, 29.3848, 22.4913, 24.2215, 22.2222, 21.7738, 26.9896, 24.4898, 21.875,… |
+| Age | float64 | 0 | 0 | 35 | 18.0, 21.0, 23.0, 19.0, 20.0, 22.0, 17.0, 24.0, 25.0, 26.0 |
+| BodyMass | float64 | 0 | 0 | 392 | 29.3848, 22.0386, 21.7738, 24.4898, 24.2215, 22.2222, 26.9896, 22.4913, 22.8571… |
 
 </details>
 
@@ -324,18 +327,18 @@ Default splits.
 | CALC | 2 | no | 176 | 36.07 |
 | CALC | 3 | Frequently | 45 | 9.22 |
 | CALC | 4 | Always | 1 | 0.2 |
-| CH2O | 1 | 2.0 | 263 | 53.89 |
-| CH2O | 2 | 1.0 | 131 | 26.84 |
-| CH2O | 3 | 3.0 | 94 | 19.26 |
-| FAF | 1 | 0.0 | 159 | 32.58 |
-| FAF | 2 | 1.0 | 152 | 31.15 |
-| FAF | 3 | 2.0 | 112 | 22.95 |
-| FAF | 4 | 3.0 | 65 | 13.32 |
+| CH2O | 1 | between 1 and 2 L | 263 | 53.89 |
+| CH2O | 2 | less than a liter | 131 | 26.84 |
+| CH2O | 3 | more than 2 L | 94 | 19.26 |
+| FAF | 1 | I do not have | 159 | 32.58 |
+| FAF | 2 | 1 or 2 days | 152 | 31.15 |
+| FAF | 3 | 2 or 4 days | 112 | 22.95 |
+| FAF | 4 | 4 or 5 days | 65 | 13.32 |
 | FAVC | 1 | yes | 340 | 69.67 |
 | FAVC | 2 | no | 148 | 30.33 |
-| FCVC | 1 | 2.0 | 264 | 54.1 |
-| FCVC | 2 | 3.0 | 192 | 39.34 |
-| FCVC | 3 | 1.0 | 32 | 6.56 |
+| FCVC | 1 | sometimes | 264 | 54.1 |
+| FCVC | 2 | always | 192 | 39.34 |
+| FCVC | 3 | never | 32 | 6.56 |
 | Gender | 1 | Male | 266 | 54.51 |
 | Gender | 2 | Female | 222 | 45.49 |
 | MTRANS | 1 | Public_Transportation | 318 | 65.16 |
@@ -343,16 +346,16 @@ Default splits.
 | MTRANS | 3 | Walking | 54 | 11.07 |
 | MTRANS | 4 | Motorbike | 11 | 2.25 |
 | MTRANS | 5 | Bike | 7 | 1.43 |
-| NCP | 1 | 3.0 | 340 | 69.67 |
-| NCP | 2 | 1.0 | 102 | 20.9 |
-| NCP | 3 | 4.0 | 46 | 9.43 |
+| NCP | 1 | three | 340 | 69.67 |
+| NCP | 2 | between 1 and 2 | 102 | 20.9 |
+| NCP | 3 | more than three | 46 | 9.43 |
 | SCC | 1 | no | 433 | 88.73 |
 | SCC | 2 | yes | 55 | 11.27 |
 | SMOKE | 1 | no | 456 | 93.44 |
 | SMOKE | 2 | yes | 32 | 6.56 |
-| TUE | 1 | 0.0 | 237 | 48.57 |
-| TUE | 2 | 1.0 | 178 | 36.48 |
-| TUE | 3 | 2.0 | 73 | 14.96 |
+| TUE | 1 | 0-2 hours | 237 | 48.57 |
+| TUE | 2 | 3-5 hours | 178 | 36.48 |
+| TUE | 3 | more than 5 hours | 73 | 14.96 |
 | family_history_with_overweight | 1 | yes | 296 | 60.66 |
 | family_history_with_overweight | 2 | no | 192 | 39.34 |
 
@@ -369,4 +372,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:a7917458e903b7eb0fcccbdba12252205749e850d130424b8284eeac29debee5` |
+| stale | yes: the definition now gives checksum `v2:fb64f895e695dc25bab4b444d54698063f8da70e26a39c41fae3ab269a0b88da` |

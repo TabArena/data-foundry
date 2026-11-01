@@ -49,6 +49,8 @@ CC (2026-11-01, Lennart): marks on the review board of PR #37: month_sold stays 
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `florida_dor_property_sales` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 1 scores are numbers (structure_quality).
+
 ## Reference
 
 https://doi.org/10.1177/0042098020982508

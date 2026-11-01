@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ieee_fraud_detection
 container_format: 2
-checksum: v2:dfacbd6c60cb31ffd0ee5a818431e512609ef3d7045f75cd90dbf2ab77c9d78c
+checksum: v2:6ca3ad976d260d58d40151e8bc48c4b04fce3c8dd9e36b82ae680163a81b00bf
 build:
   uuid: 01a111fa-fc65-735f-bcbe-b5845dbfe917
   checksum: v2:9563bb404c2115312e17c44aec93b0679d2f1857f10d18b3fa052c3cbaadcd7e
@@ -70,7 +70,7 @@ decisions: []
 
 Binary classification of `isFraud`, scored with `roc_auc` on temporal splits by `Transaction_date`. 590,540 rows and 434 features. Source: Kaggle (2019).
 
-Built as `01a111fa-fc65-735f-bcbe-b5845dbfe917` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:dfacbd6c60cb31ffd0ee5a818431e512609ef3d7045f75cd90dbf2ab77c9d78c`, so the build is stale. See [Build](#build).
+Built as `01a111fa-fc65-735f-bcbe-b5845dbfe917` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6ca3ad976d260d58d40151e8bc48c4b04fce3c8dd9e36b82ae680163a81b00bf`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -203,6 +203,9 @@ The first 5 of 590,540 rows of the final frame (the oldest rows: the frame is so
 - Anomaly: Missing values.
 - Anomaly: Several features might allow to approximate to the uid and can lead to overfitting.
 - Anomaly: Grouped data with members of a group often sharing the same label, depending on whether fraud occurred previously or not.
+- Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+  each level is carries the words, a score without them is a number): 1 unordered codes carry their words:
+  `id_14`.
 
 ## Splits
 
@@ -244,7 +247,7 @@ To define three train/test splits, we use the last three months as test sets, le
 | id_30 | category | 512975 | 86.87 | 75 | Windows 10, Windows 7, iOS 11.2.1, iOS 11.1.2, Android 7.0, Mac OS X 10_12_6, M… |
 | id_32 | category | 512954 | 86.86 | 4 | 24.0, 32.0, 16.0, 0.0 |
 | id_34 | category | 512735 | 86.82 | 4 | match_status:2, match_status:1, match_status:0, match_status:-1 |
-| id_14 | category | 510496 | 86.45 | 25 | -300.0, -360.0, -480.0, -420.0, -600.0, 60.0, 0.0, -240.0, -180.0, -540.0 |
+| id_14 | category | 510496 | 86.45 | 25 | UTC-05:00, UTC-06:00, UTC-08:00, UTC-07:00, UTC-10:00, UTC+01:00, UTC+00:00, UT… |
 | DeviceInfo | category | 471874 | 79.91 | 1786 | Windows, iOS Device, MacOS, Trident/7.0, rv:11.0, rv:57.0, SM-J700M Build/MMB29… |
 | id_13 | category | 463220 | 78.44 | 54 | 52.0, 49.0, 64.0, 33.0, 27.0, 20.0, 14.0, 63.0, 19.0, 25.0 |
 | id_16 | category | 461200 | 78.1 | 2 | Found, NotFound |
@@ -459,4 +462,4 @@ To define three train/test splits, we use the last three months as test sets, le
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:dfacbd6c60cb31ffd0ee5a818431e512609ef3d7045f75cd90dbf2ab77c9d78c` |
+| stale | yes: the definition now gives checksum `v2:6ca3ad976d260d58d40151e8bc48c4b04fce3c8dd9e36b82ae680163a81b00bf` |

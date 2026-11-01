@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Metric,
     TaskSummary,
+    decode,
     drop_columns,
     set_missing,
 )
@@ -54,7 +55,12 @@ YES_NO_MISSING = [  # 0 = no, 1 = yes, 9 = missing
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
 ORDINAL_LEVELS = {
-    "birads_breast_density": [1, 2, 3, 4],
+    "birads_breast_density": [
+        "almost entirely fatty",
+        "scattered fibroglandular densities",
+        "heterogeneously dense",
+        "extremely dense",
+    ],
     "birads_assessment": [
         "1: Negative",
         "2: Benign finding(s)",
@@ -62,6 +68,18 @@ ORDINAL_LEVELS = {
         "4: Suspicious abnormality",
         "5: Highly suggestive of malignancy",
     ],
+}
+
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "birads_breast_density": {
+        "1": "almost entirely fatty",
+        "2": "scattered fibroglandular densities",
+        "3": "heterogeneously dense",
+        "4": "extremely dense",
+    },
 }
 
 
@@ -164,6 +182,9 @@ class BreastCancerPrediction(AbstractCuratedDataset):
           outside the scale, placed by the curator's rule (missing when the column has no other missing value, else the
           lowest level; a state that is simply not on the scale, such as Other, is missing); codes that mean unknown are
           missing (CLEAN-10).
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
+          words (`CODE_LABELS`), in the same order.
     """
 
     accepted_check_warnings = {
@@ -211,6 +232,8 @@ class BreastCancerPrediction(AbstractCuratedDataset):
                 "birads_assessment": ["0: Needs additional imaging"],
             },
         )
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

@@ -5,12 +5,21 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, set_missing
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode, set_missing
 
 # The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
 # them). An open-ended level holds everything beyond it.
 ORDINAL_LEVELS = {
-    "EDUCATION": [3, 2, 1],
+    "EDUCATION": ["high school", "university", "graduate school"],
+}
+
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "EDUCATION": {"1": "graduate school", "2": "university", "3": "high school"},
+    "MARRIAGE": {"1": "married", "2": "single", "3": "others"},
+    "SEX": {"1": "male", "2": "female"},
 }
 
 
@@ -70,6 +79,9 @@ class CreditCardClientsDefault(AbstractCuratedDataset):
           the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed by the
           curator's rule (missing when the column has no other missing value, else the lowest level; a state that is
           simply not on the scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
+          words (`CODE_LABELS`), in the same order; 2 unordered codes carry their words: `MARRIAGE`, `SEX`.
     """
 
     # Task
@@ -103,6 +115,10 @@ class CreditCardClientsDefault(AbstractCuratedDataset):
                 "EDUCATION": [0, 5, 6, 4],
             },
         )
+        # codes the codebook leaves without words, or a question that did not apply (CLEAN-10)
+        df = set_missing(df, {"MARRIAGE": [0.0]})
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

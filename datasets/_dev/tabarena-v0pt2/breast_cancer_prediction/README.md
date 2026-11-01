@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: breast_cancer_prediction
 container_format: 2
-checksum: v2:a8b7ab674e452423439da26bd2d72b28e65fc4e4f6a1536687774b9364e4f289
+checksum: v2:218fed5c64609d2df06fa1aeb077121b261cb6f11581d37e7b36661762290f1e
 build: null
 build_stale: false
 data:
@@ -67,7 +67,7 @@ decisions:
 
 Binary classification of `cancer_within_one_year`, scored with `roc_auc` on IID splits. 36,714 rows and 10 features. Source: GOV Website (2014).
 
-Not built yet. The current definition gives checksum `v2:a8b7ab674e452423439da26bd2d72b28e65fc4e4f6a1536687774b9364e4f289`.
+Not built yet. The current definition gives checksum `v2:218fed5c64609d2df06fa1aeb077121b261cb6f11581d37e7b36661762290f1e`.
 
 ## In brief
 
@@ -162,7 +162,7 @@ Only curators run `build`, when the dataset ships.
 <summary>Feature types: 7 categorical, 2 ordinal, 0 string, 0 datetime</summary>
 
 - categorical (7): `mammogram_type`, `comparison_mammogram_available`, `current_hormone_therapy`, `prior_breast_biopsy`, `prior_mammogram`, `family_history_breast_cancer`, `cancer_within_one_year`
-- ordinal (2): `birads_breast_density (1 < 2 < 3 < 4)`, `birads_assessment (1: Negative < 2: Benign finding(s) < 3: Probably benign < 4: Suspicious abnormality < 5: Highly suggestive of malignancy)`
+- ordinal (2): `birads_breast_density (almost entirely fatty < scattered fibroglandular densities < heterogeneously dense < extremely dense)`, `birads_assessment (1: Negative < 2: Benign finding(s) < 3: Probably benign < 4: Suspicious abnormality < 5: Highly suggestive of malignancy)`
 - string (0): none
 - datetime (0): none
 
@@ -192,11 +192,11 @@ The first 5 of 36,714 rows of the final frame (random rows: the frame is shuffle
 
 | cancer_within_one_year | age | birads_assessment | comparison_mammogram_available | birads_breast_density | family_history_breast_cancer | current_hormone_therapy | prior_mammogram | prior_breast_biopsy | mammogram_type | bmi |
 |---|---|---|---|---|---|---|---|---|---|---|
-| No | 64 | 1: Negative | 1 | 3 | 0 | 0 | 1 | 0 | film | 20.8968 |
-| No | 70 | 1: Negative | 1 | 2 | 0 | 0 | 1 | 0 | film | 35.428 |
-| No | 60 | 1: Negative | 1 | 3 | 0 | 1 | 1 | 0 | digital | nan |
-| No | 65 | 1: Negative | 1 | 2 | 0 | 0 | 1 | 1 | film | nan |
-| No | 70 | 2: Benign finding(s) | 1 | 2 | 0 | 1 | 1 | 0 | film | 31.093 |
+| No | 70 | 1: Negative | 1 | scattered fibroglandular densities | 0 | 0 | 1 | 0 | digital | nan |
+| No | 60 | 2: Benign finding(s) | 1 | scattered fibroglandular densities | 0 | 0 | 1 | 0 | film | 30.5533 |
+| No | 61 | 1: Negative | 1 | heterogeneously dense | 0 | 0 | 1 | 0 | film | 22.4591 |
+| No | 75 | nan | 1 | heterogeneously dense | 1 | 0 | 1 | 0 | film | nan |
+| No | 61 | 1: Negative | 1 | scattered fibroglandular densities | 0 | 0 | 1 | nan | digital | nan |
 
 ## Curation notes
 
@@ -216,6 +216,9 @@ We start with the BCSC Digital Mammography Dataset (`mammography.csv`, 40,000 ro
   outside the scale, placed by the curator's rule (missing when the column has no other missing value, else the
   lowest level; a state that is simply not on the scale, such as Other, is missing); codes that mean unknown are
   missing (CLEAN-10).
+- Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+  each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
+  words (`CODE_LABELS`), in the same order.
 
 ## Splits
 
@@ -288,9 +291,9 @@ Accepted on purpose:
 | prior_mammogram | category | 578 | 1.57 | 2 | 1.0, 0.0 |
 | family_history_breast_cancer | category | 217 | 0.59 | 2 | 0.0, 1.0 |
 | cancer_within_one_year | category | 0 | 0 | 2 | No, Yes |
-| birads_breast_density | category | 0 | 0 | 4 | 2, 3, 1, 4 |
+| birads_breast_density | category | 0 | 0 | 4 | scattered fibroglandular densities, heterogeneously dense, almost entirely fatt… |
 | mammogram_type | category | 0 | 0 | 2 | film, digital |
-| bmi | float64 | 21371 | 58.21 | 1850 | 25.606, 24.7996, 27.4636, 29.2641, 25.7471, 23.777, 27.435, 28.3424, 23.1724, 2… |
+| bmi | float64 | 21371 | 58.21 | 1850 | 25.606, 24.7996, 27.4636, 29.2641, 25.7471, 27.435, 23.777, 28.3424, 24.0307, 2… |
 | age | int64 | 0 | 0 | 30 | 60, 61, 62, 65, 63, 64, 66, 67, 68, 69 |
 
 </details>
@@ -321,10 +324,10 @@ Accepted on purpose:
 | birads_assessment | 3 | &lt;NA> | 2847 | 7.75 |
 | birads_assessment | 4 | 3: Probably benign | 129 | 0.35 |
 | birads_assessment | 5 | 4: Suspicious abnormality | 54 | 0.15 |
-| birads_breast_density | 1 | 2 | 19490 | 53.09 |
-| birads_breast_density | 2 | 3 | 11055 | 30.11 |
-| birads_breast_density | 3 | 1 | 4961 | 13.51 |
-| birads_breast_density | 4 | 4 | 1208 | 3.29 |
+| birads_breast_density | 1 | scattered fibroglandular densities | 19490 | 53.09 |
+| birads_breast_density | 2 | heterogeneously dense | 11055 | 30.11 |
+| birads_breast_density | 3 | almost entirely fatty | 4961 | 13.51 |
+| birads_breast_density | 4 | extremely dense | 1208 | 3.29 |
 | cancer_within_one_year | 1 | No | 36475 | 99.35 |
 | cancer_within_one_year | 2 | Yes | 239 | 0.65 |
 | comparison_mammogram_available | 1 | 1.0 | 31136 | 84.81 |

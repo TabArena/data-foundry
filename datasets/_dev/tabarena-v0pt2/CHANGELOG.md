@@ -4,6 +4,32 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-11-01, codes decoded into the codebook's words; scores without words are numbers (PR #37)
+
+- The curator's rule (Lennart: "if we can replace the numbers with a description that is obviously not continous then
+  orderd categorical makes sense, otherwise in some cases the numeric version would make more sense"; on a 1-10 school
+  rating: "1.5 is well defined more or less"): a code whose codebook says in words what each level is carries the
+  words; a score or rating with no words per level, or words only at its two ends, is a number; bands keep their band
+  text. CLEAN-12 and CLEAN-14 amended; `decode(df, CODE_LABELS)` in the v2 API (a code without a label raises), after
+  `set_missing`.
+- Six agents read the codebooks for every coded column of 44 definitions
+  (`local-data-warehouse/_runs/2026-10-30_ordinal/decode/`). In 29 definitions 377 coded columns now carry their words (BI-RADS density "almost entirely fatty" to "extremely
+  dense", ames' ratings "very poor" to "very excellent", the ANES codes, coil_2000's percentage and guilder bands,
+  early_learning_predictors' answers), and 54 scores and ratings are numbers again (california_house_prices_2020's
+  school ratings, miami_housing's `structure_quality`, eryhemato_squamous_disease's ten findings, student_portuguese's
+  1-5 ratings, the ANES 7-point scales with words only at the ends, cirrhosis' stage, ljubljana's degree of
+  malignancy). 395 ordinal columns in 53 definitions. Left as codes: anonymized and undocumented codes (amex, ieee
+  except `id_14`, porto_seguro, the STEG data, alfa_battle), 0/1 flags, the targets, website_phishing's signals (the
+  curator kept their codes), and the cases put to the curator on the dataset sheets.
+- Found by reading the words: pva_revenue_prediction_kddcup98's `DOMAIN_ses` read the urban scheme's codes 2 and 3
+  as average and lowest (6,504 and 5,270 rows); each row is read by its own scheme now. ljubljana_breast_cancer's
+  bands are ordered categories of the bands, not their midpoints. ANES: VCF0130's 0 is religion not ascertained or not
+  asked (missing); age 0, the thermometers' 98/99 and 998/999 and other codes that mean unknown are missing (CLEAN-10).
+  Undocumented codes are missing: early_learning_predictors (`pra_cotlands_visits`, `pra_free_play`,
+  `pra_free_play_outdoor`, `obs_water`, `pri_bank` 0), credit_card_clients_default `MARRIAGE` 0, pva `AGEFLAG` blank
+  and `GENDER` A, C and Unknown.
+- `dataset check` on the 29 definitions: no error; against main three warnings fewer and none new. Not built.
+
 ## 2026-11-01, the curator's second marks on PR #37: cycles, partial orders, two cleanings (PR #37)
 
 - Cycles (Lennart: "if there is a concept such as 1.5 of the scale that is reasonably between 1 and 2 (like half day),

@@ -13,13 +13,8 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSu
 SAME_SALE_ROWS = 51
 
 
-# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
-# them). An open-ended level holds everything beyond it.
-ORDINAL_LEVELS = {
-    "Elementary School Score": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
-    "Middle School Score": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0],
-    "High School Score": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0],
-}
+# Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
+SCORES = ["Elementary School Score", "Middle School Score", "High School Score"]
 
 
 class CaliforniaHousePrices2020(AbstractCuratedDataset):
@@ -100,6 +95,9 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
         - After all the above preprocessing, 63 homes appear more than once (same address, ZIP code and year built; 130 rows). 51 pairs give the same sold price a median 61 Kaggle IDs apart: one sale scraped twice, of which we keep the newest entry. The other 28 rows are sales at another price (a resale, or another unit at an address without a unit number) and stay, as an earlier sale is history under the temporal split (Lennart, 2026-10-21: "we want to keep real repeats, as houses can be sold several times").
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 3 columns are ordered categories in
           the order of the source's codebook (`ORDINAL_LEVELS`); 3 of them were shipped as numbers.
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 3 scores with no words per level are
+          numbers (`SCORES`): `Elementary School Score`, `Middle School Score`, `High School Score`.
     """
 
     # Task
@@ -242,11 +240,12 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
         df[self.task_metadata.target_column_name] = np.log1p(df[self.task_metadata.target_column_name])
         # Rest time_index (to avoid gaps from dropping rows)
         df = df.drop(columns=["time_index"]).reset_index().rename(columns={"index": "time_index"})
+        # scores with no words per level are numbers (CLEAN-14)
+        df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
-            ordinal=ORDINAL_LEVELS,
             categorical=["Zip Region"],
             string=[
                 "Summary",

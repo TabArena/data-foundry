@@ -7,7 +7,39 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits, decode
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "id_14": {
+        "-660": "UTC-11:00",
+        "-600": "UTC-10:00",
+        "-540": "UTC-09:00",
+        "-480": "UTC-08:00",
+        "-420": "UTC-07:00",
+        "-360": "UTC-06:00",
+        "-300": "UTC-05:00",
+        "-240": "UTC-04:00",
+        "-210": "UTC-03:30",
+        "-180": "UTC-03:00",
+        "-120": "UTC-02:00",
+        "0": "UTC+00:00",
+        "60": "UTC+01:00",
+        "120": "UTC+02:00",
+        "180": "UTC+03:00",
+        "240": "UTC+04:00",
+        "270": "UTC+04:30",
+        "300": "UTC+05:00",
+        "330": "UTC+05:30",
+        "360": "UTC+06:00",
+        "420": "UTC+07:00",
+        "480": "UTC+08:00",
+        "540": "UTC+09:00",
+        "600": "UTC+10:00",
+        "720": "UTC+12:00",
+    },
+}
 
 
 class IeeeFraudDetection(AbstractCuratedDataset):
@@ -85,6 +117,9 @@ class IeeeFraudDetection(AbstractCuratedDataset):
         - Anomaly: Missing values.
         - Anomaly: Several features might allow to approximate to the uid and can lead to overfitting.
         - Anomaly: Grouped data with members of a group often sharing the same label, depending on whether fraud occurred previously or not.
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 1 unordered codes carry their words:
+          `id_14`.
     """
 
     # Task
@@ -135,6 +170,8 @@ class IeeeFraudDetection(AbstractCuratedDataset):
         # a running row number in time order: an identifier, the time is `day` (curation notes; CLEAN-3)
         df = df.drop(columns=["TransactionID"])
         df = df.sort_values(by=["Transaction_date"], kind="stable").reset_index(drop=True)
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

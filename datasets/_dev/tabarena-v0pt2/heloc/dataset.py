@@ -5,13 +5,49 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, set_missing
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode, set_missing
 
 # The ordinal scales, lowest level first, from the FICO data dictionary (curation notes; the README lists them):
 # the worst delinquency, from a derogatory comment to current and never delinquent.
 ORDINAL_LEVELS = {
-    "MaxDelq2PublicRecLast12M": [0, 1, 2, 3, 4, 7],
-    "MaxDelqEver": [2, 3, 4, 5, 6, 8],
+    "MaxDelq2PublicRecLast12M": [
+        "derogatory comment",
+        "120+ days delinquent",
+        "90 days delinquent",
+        "60 days delinquent",
+        "30 days delinquent",
+        "current and never delinquent",
+    ],
+    "MaxDelqEver": [
+        "derogatory comment",
+        "120+ days delinquent",
+        "90 days delinquent",
+        "60 days delinquent",
+        "30 days delinquent",
+        "current and never delinquent",
+    ],
+}
+
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "MaxDelq2PublicRecLast12M": {
+        "0": "derogatory comment",
+        "1": "120+ days delinquent",
+        "2": "90 days delinquent",
+        "3": "60 days delinquent",
+        "4": "30 days delinquent",
+        "7": "current and never delinquent",
+    },
+    "MaxDelqEver": {
+        "2": "derogatory comment",
+        "3": "120+ days delinquent",
+        "4": "90 days delinquent",
+        "5": "60 days delinquent",
+        "6": "30 days delinquent",
+        "8": "current and never delinquent",
+    },
 }
 
 
@@ -73,6 +109,9 @@ class Heloc(AbstractCuratedDataset):
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): `MaxDelq2PublicRecLast12M` and
           `MaxDelqEver` are ordered categories, from a derogatory comment to current and never delinquent (FICO data
           dictionary); their codes for unknown delinquency, "all other" and no bureau record (-9) are missing.
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 2 ordered codes carry their codebook's
+          words (`CODE_LABELS`), in the same order.
     """
 
     # Task
@@ -88,7 +127,10 @@ class Heloc(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         # codes outside the delinquency scales (CLEAN-10, CLEAN-14): unknown delinquency, all other, no bureau record
-        return set_missing(raw, {"MaxDelq2PublicRecLast12M": [5, 6, 9, -9], "MaxDelqEver": [7, -9]})
+        df = set_missing(raw, {"MaxDelq2PublicRecLast12M": [5, 6, 9, -9], "MaxDelqEver": [7, -9]})
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
+        return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(ordinal=ORDINAL_LEVELS)

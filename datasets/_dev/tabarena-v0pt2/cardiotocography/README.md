@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: cardiotocography
 container_format: 2
-checksum: v2:3cf33ab6e94e30a4ba7e3399cd7dc2c02b8f5936a542984303b22ff6c7abaa9d
+checksum: v2:8a93e06b45209ff943287426d7b8f75548761102fa2ddbec2614afd161eaaa02
 build:
   uuid: 01a111fc-7d1e-7b12-8cc7-298d2fc12820
   checksum: v2:732dddb0e814a5736c664898ca5254d54ea242cee222a20e2e5a126a2636a504
@@ -77,7 +77,7 @@ decisions: []
 
 Multiclass classification of `NSP`, scored with `log_loss` on grouped splits by `patient_id`. 2,126 rows and 22 features. Source: UCI (2010).
 
-Built as `01a111fc-7d1e-7b12-8cc7-298d2fc12820` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3cf33ab6e94e30a4ba7e3399cd7dc2c02b8f5936a542984303b22ff6c7abaa9d`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7d1e-7b12-8cc7-298d2fc12820` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8a93e06b45209ff943287426d7b8f75548761102fa2ddbec2614afd161eaaa02`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -157,7 +157,7 @@ Only curators run `build`, when the dataset ships.
 <summary>Feature types: 2 categorical, 1 ordinal, 0 string, 0 datetime</summary>
 
 - categorical (2): `patient_id`, `NSP`
-- ordinal (1): `Tendency (-1.0 < 0.0 < 1.0)`
+- ordinal (1): `Tendency (left asymmetric < symmetric < right asymmetric)`
 - string (0): none
 - datetime (0): none
 
@@ -184,11 +184,11 @@ The first 5 of 2,126 rows of the final frame (random rows: the frame is shuffled
 
 | NSP | LB | AC | FM | UC | ASTV | MSTV | ALTV | MLTV | DL | DS | DP |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 142 | 1 | 3 | 1 | 55 | 1.3 | 10 | 15.5 | 2 | 0 | 0 |
-| 2 | 144 | 0 | 10 | 0 | 75 | 0.3 | 67 | 4.2 | 0 | 0 | 0 |
-| 1 | 136 | 0 | 0 | 4 | 51 | 0.6 | 28 | 6.2 | 0 | 0 | 0 |
-| 1 | 122 | 0 | 0 | 1 | 26 | 1.3 | 4 | 9.8 | 0 | 0 | 0 |
-| 1 | 128 | 4 | 6 | 3 | 29 | 1.6 | 0 | 7.1 | 4 | 0 | 0 |
+| 1 | 126 | 0 | 0 | 0 | 40 | 1.1 | 5 | 10.1 | 0 | 0 | 0 |
+| 1 | 134 | 6 | 0 | 9 | 60 | 1.3 | 0 | 0 | 5 | 0 | 0 |
+| 3 | 134 | 0 | 2 | 0 | 81 | 0.2 | 53 | 4.9 | 0 | 0 | 0 |
+| 1 | 142 | 1 | 0 | 8 | 49 | 0.9 | 28 | 5.8 | 5 | 0 | 0 |
+| 1 | 130 | 0 | 0 | 3 | 31 | 1.1 | 0 | 17.6 | 0 | 0 | 0 |
 
 ## Curation notes
 
@@ -200,6 +200,9 @@ We use the data from UCI and the 3 class problem of predicting NSP as it is more
 - We drop all other columns that represent the label.
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 1 columns are ordered categories in
   the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them were shipped as numbers.
+- Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+  each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
+  words (`CODE_LABELS`), in the same order.
 
 ## Splits
 
@@ -286,26 +289,26 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| Tendency | category | 0 | 0 | 3 | 0.0, 1.0, -1.0 |
+| Tendency | category | 0 | 0 | 3 | symmetric, right asymmetric, left asymmetric |
 | NSP | category | 0 | 0 | 3 | 1.0, 2.0, 3.0 |
 | patient_id | category | 0 | 0 | 176 | 6be4bb9797f6, 8ca98716a316, a8e224f4ea68, cbb8f049c20b, 7b2d930bb3f0, fd828194e… |
-| LB | float64 | 0 | 0 | 48 | 133.0, 130.0, 122.0, 138.0, 125.0, 128.0, 120.0, 144.0, 142.0, 132.0 |
+| LB | float64 | 0 | 0 | 48 | 133.0, 130.0, 122.0, 138.0, 125.0, 128.0, 120.0, 142.0, 144.0, 132.0 |
 | AC | float64 | 0 | 0 | 22 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
-| FM | float64 | 0 | 0 | 96 | 0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 7.0, 5.0, 8.0, 10.0 |
+| FM | float64 | 0 | 0 | 96 | 0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 5.0, 7.0, 8.0, 10.0 |
 | UC | float64 | 0 | 0 | 19 | 0.0, 3.0, 4.0, 1.0, 2.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | ASTV | float64 | 0 | 0 | 75 | 60.0, 58.0, 65.0, 63.0, 64.0, 61.0, 51.0, 62.0, 22.0, 25.0 |
 | MSTV | float64 | 0 | 0 | 57 | 0.8, 0.5, 1.3, 0.4, 0.7, 0.9, 0.6, 1.2, 1.5, 1.0 |
-| ALTV | float64 | 0 | 0 | 87 | 0.0, 1.0, 2.0, 5.0, 4.0, 3.0, 8.0, 6.0, 12.0, 10.0 |
-| MLTV | float64 | 0 | 0 | 249 | 0.0, 7.1, 6.7, 5.2, 6.5, 9.5, 8.5, 7.2, 6.8, 5.6 |
+| ALTV | float64 | 0 | 0 | 87 | 0.0, 1.0, 2.0, 5.0, 4.0, 3.0, 8.0, 6.0, 12.0, 7.0 |
+| MLTV | float64 | 0 | 0 | 249 | 0.0, 6.7, 7.1, 6.5, 5.2, 9.5, 7.2, 8.5, 6.8, 5.6 |
 | DL | float64 | 0 | 0 | 15 | 0.0, 1.0, 2.0, 4.0, 3.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | DS | float64 | 0 | 0 | 2 | 0.0, 1.0 |
 | DP | float64 | 0 | 0 | 5 | 0.0, 1.0, 2.0, 3.0, 4.0 |
 | DR | float64 | 0 | 0 | 1 | 0.0 |
-| Width | float64 | 0 | 0 | 154 | 39.0, 102.0, 27.0, 31.0, 90.0, 98.0, 83.0, 22.0, 96.0, 42.0 |
+| Width | float64 | 0 | 0 | 154 | 39.0, 102.0, 27.0, 31.0, 98.0, 90.0, 22.0, 83.0, 96.0, 42.0 |
 | Min | float64 | 0 | 0 | 109 | 50.0, 52.0, 71.0, 120.0, 60.0, 68.0, 67.0, 103.0, 51.0, 62.0 |
 | Max | float64 | 0 | 0 | 86 | 157.0, 171.0, 158.0, 156.0, 159.0, 152.0, 178.0, 154.0, 172.0, 165.0 |
 | Nmax | float64 | 0 | 0 | 18 | 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 0.0, 8.0, 9.0 |
-| Nzeros | float64 | 0 | 0 | 9 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 8.0, 10.0 |
+| Nzeros | float64 | 0 | 0 | 9 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 10.0, 8.0, 7.0 |
 | Mode | float64 | 0 | 0 | 88 | 133.0, 136.0, 150.0, 142.0, 148.0, 144.0, 129.0, 143.0, 125.0, 126.0 |
 | Mean | float64 | 0 | 0 | 103 | 143.0, 144.0, 135.0, 141.0, 140.0, 132.0, 133.0, 145.0, 136.0, 147.0 |
 | Median | float64 | 0 | 0 | 95 | 146.0, 137.0, 142.0, 145.0, 147.0, 141.0, 151.0, 134.0, 149.0, 143.0 |
@@ -362,9 +365,9 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | NSP | 1 | 1.0 | 1655 | 77.85 |
 | NSP | 2 | 2.0 | 295 | 13.88 |
 | NSP | 3 | 3.0 | 176 | 8.28 |
-| Tendency | 1 | 0.0 | 1115 | 52.45 |
-| Tendency | 2 | 1.0 | 846 | 39.79 |
-| Tendency | 3 | -1.0 | 165 | 7.76 |
+| Tendency | 1 | symmetric | 1115 | 52.45 |
+| Tendency | 2 | right asymmetric | 846 | 39.79 |
+| Tendency | 3 | left asymmetric | 165 | 7.76 |
 | patient_id | 1 | 6be4bb9797f6 | 54 | 2.54 |
 | patient_id | 2 | 8ca98716a316 | 53 | 2.49 |
 | patient_id | 3 | a8e224f4ea68 | 40 | 1.88 |
@@ -384,4 +387,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:3cf33ab6e94e30a4ba7e3399cd7dc2c02b8f5936a542984303b22ff6c7abaa9d` |
+| stale | yes: the definition now gives checksum `v2:8a93e06b45209ff943287426d7b8f75548761102fa2ddbec2614afd161eaaa02` |

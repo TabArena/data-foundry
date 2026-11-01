@@ -41,6 +41,8 @@ Has multiple possible classes (lesion or others). Decide for one that is reasona
 
 CC (2026-11-01, Lennart): marks on the review board of PR #37: pain and mucous_membranes stay unordered as partial orders, noted in the definition.
 
+CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 13 coded columns carry their words.
+
 ## Reference
 
 ?

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: in_vehicle_coupon_recommendation
 container_format: 2
-checksum: v2:636bf1615fc6f379956052830e36fe5c84c704a57e54474de25ea4ff7122d754
+checksum: v2:8e8945537632b0fb823e97860f06b5d64dd6e10b39d7e887e75e351e3df587df
 build:
   uuid: 01a111fc-e38e-7ad4-90c9-b80013f7640e
   checksum: v2:cdd74cb8121009f4ed1bc57984fff0bdc1db9da0b6bdb2b832dc53dd0698ee73
@@ -76,7 +76,7 @@ decisions: []
 
 Binary classification of `AcceptCoupon`, scored with `roc_auc` on grouped splits by `respondent`. 12,684 rows and 24 features. Source: Other (2017).
 
-Built as `01a111fc-e38e-7ad4-90c9-b80013f7640e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:636bf1615fc6f379956052830e36fe5c84c704a57e54474de25ea4ff7122d754`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e38e-7ad4-90c9-b80013f7640e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8e8945537632b0fb823e97860f06b5d64dd6e10b39d7e887e75e351e3df587df`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -160,7 +160,7 @@ Only curators run `build`, when the dataset ships.
 <summary>Feature types: 16 categorical, 8 ordinal, 0 string, 0 datetime</summary>
 
 - categorical (16): `respondent`, `expiration`, `destination`, `passenger`, `weather`, `coupon`, `gender`, `maritalStatus`, `has_children`, `occupation`, `car`, `toCoupon_GEQ15min`, `toCoupon_GEQ25min`, `direction_same`, `direction_opp`, `AcceptCoupon`
-- ordinal (8): `age (below21 < 21 < 26 < 31 < 36 < 41 < 46 < 50plus)`, `education (Some High School < High School Graduate < Some college - no degree < Associates degree < Bachelors degree < Graduate degree (Masters or Doctorate))`, `income (Less than $12500 < $12500 - $24999 < $25000 - $37499 < $37500 - $49999 < $50000 - $62499 < $62500 - $74999 < $75000 - $87499 < $87500 - $99999 < $100000 or More)`, `Bar (never < less1 < 1~3 < 4~8 < gt8)`, `CoffeeHouse (never < less1 < 1~3 < 4~8 < gt8)`, `CarryAway (never < less1 < 1~3 < 4~8 < gt8)`, `RestaurantLessThan20 (never < less1 < 1~3 < 4~8 < gt8)`, `Restaurant20To50 (never < less1 < 1~3 < 4~8 < gt8)`
+- ordinal (8): `age (below 21 < 21 to 25 < 26 to 30 < 31 to 35 < 36 to 40 < 41 to 45 < 46 to 49 < 50 or older)`, `education (Some High School < High School Graduate < Some college - no degree < Associates degree < Bachelors degree < Graduate degree (Masters or Doctorate))`, `income (Less than $12500 < $12500 - $24999 < $25000 - $37499 < $37500 - $49999 < $50000 - $62499 < $62500 - $74999 < $75000 - $87499 < $87500 - $99999 < $100000 or More)`, `Bar (never < less1 < 1~3 < 4~8 < gt8)`, `CoffeeHouse (never < less1 < 1~3 < 4~8 < gt8)`, `CarryAway (never < less1 < 1~3 < 4~8 < gt8)`, `RestaurantLessThan20 (never < less1 < 1~3 < 4~8 < gt8)`, `Restaurant20To50 (never < less1 < 1~3 < 4~8 < gt8)`
 - string (0): none
 - datetime (0): none
 
@@ -189,11 +189,11 @@ The first 5 of 12,684 rows of the final frame (random rows: the frame is shuffle
 
 | AcceptCoupon | destination | passenger | weather | temperature | time | coupon | expiration | gender | age | maritalStatus | has_children |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Yes | Home | Alone | Sunny | 80 | 18 | Coffee House | 1d | Female | 36 | Single | 1 |
-| Yes | Home | Partner | Sunny | 30 | 22 | Restaurant(&lt;20) | 2h | Male | below21 | Unmarried partner | 0 |
-| No | No Urgent Place | Friend(s) | Sunny | 55 | 22 | Bar | 2h | Female | 21 | Married partner | 1 |
-| Yes | Work | Alone | Rainy | 55 | 7 | Carry out & Take away | 1d | Male | 36 | Married partner | 1 |
-| No | No Urgent Place | Partner | Sunny | 55 | 14 | Bar | 1d | Female | 21 | Married partner | 0 |
+| Yes | Home | Alone | Snowy | 30 | 18 | Coffee House | 1d | Male | 21 to 25 | Single | 0 |
+| No | No Urgent Place | Partner | Sunny | 80 | 10 | Coffee House | 1d | Male | 21 to 25 | Unmarried partner | 0 |
+| No | No Urgent Place | Friend(s) | Sunny | 80 | 22 | Coffee House | 1d | Female | 50 or older | Married partner | 1 |
+| No | Work | Alone | Rainy | 55 | 7 | Carry out & Take away | 2h | Male | 36 to 40 | Single | 0 |
+| Yes | No Urgent Place | Friend(s) | Sunny | 55 | 14 | Carry out & Take away | 1d | Male | 26 to 30 | Single | 0 |
 
 ## Curation notes
 
@@ -207,6 +207,9 @@ The first 5 of 12,684 rows of the final frame (random rows: the frame is shuffle
 - The respondent id is not shipped with the data. The raw file lists each respondent's answers as a consecutive block with identical first-part answers, so a block of the same profile is one respondent: 587 blocks, 517 of them with 22 rows, against 652 accepted surveys in the paper, so a few blocks likely merge two adjacent respondents with identical profiles, which only makes the grouping stricter. The paper reports out-of-sample AUC from 5-fold testing (Table 3) without saying whether folds were split by respondent; a random split would be a warm start.
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31, CLEAN-14): 8 columns are ordered categories in
   the order of the source's codebook (`ORDINAL_LEVELS`).
+- Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+  each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
+  words (`CODE_LABELS`), in the same order.
 
 ## Splits
 
@@ -279,7 +282,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | coupon | category | 0 | 0 | 5 | Coffee House, Restaurant(&lt;20), Carry out & Take away, Bar, Restaurant(20-50) |
 | expiration | category | 0 | 0 | 2 | 1d, 2h |
 | gender | category | 0 | 0 | 2 | Female, Male |
-| age | category | 0 | 0 | 8 | 21, 26, 31, 50plus, 36, 41, 46, below21 |
+| age | category | 0 | 0 | 8 | 21 to 25, 26 to 30, 31 to 35, 50 or older, 36 to 40, 41 to 45, 46 to 49, below … |
 | maritalStatus | category | 0 | 0 | 5 | Married partner, Single, Unmarried partner, Divorced, Widowed |
 | has_children | category | 0 | 0 | 2 | 0, 1 |
 | education | category | 0 | 0 | 6 | Some college - no degree, Bachelors degree, Graduate degree (Masters or Doctora… |
@@ -344,11 +347,11 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | RestaurantLessThan20 | 3 | less1 | 2093 | 16.5 |
 | RestaurantLessThan20 | 4 | gt8 | 1285 | 10.13 |
 | RestaurantLessThan20 | 5 | never | 220 | 1.73 |
-| age | 1 | 21 | 2653 | 20.92 |
-| age | 2 | 26 | 2559 | 20.18 |
-| age | 3 | 31 | 2039 | 16.08 |
-| age | 4 | 50plus | 1788 | 14.1 |
-| age | 5 | 36 | 1319 | 10.4 |
+| age | 1 | 21 to 25 | 2653 | 20.92 |
+| age | 2 | 26 to 30 | 2559 | 20.18 |
+| age | 3 | 31 to 35 | 2039 | 16.08 |
+| age | 4 | 50 or older | 1788 | 14.1 |
+| age | 5 | 36 to 40 | 1319 | 10.4 |
 | car | 1 | &lt;NA> | 12576 | 99.15 |
 | car | 2 | Mazda5 | 22 | 0.17 |
 | car | 3 | do not drive | 22 | 0.17 |
@@ -393,4 +396,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:636bf1615fc6f379956052830e36fe5c84c704a57e54474de25ea4ff7122d754` |
+| stale | yes: the definition now gives checksum `v2:8e8945537632b0fb823e97860f06b5d64dd6e10b39d7e887e75e351e3df587df` |

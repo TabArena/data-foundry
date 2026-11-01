@@ -88,6 +88,8 @@ CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in
 
 **Assessment (AI, 2026-11-01):** the benchmark STRABLE (https://arxiv.org/abs/2605.12292) carries this record's data as "California Housing": Mismatch: the paper describes the 1990 census California Housing (camnugent link), but the raw file is TextTabBench's cf_house_train.csv (Kaggle 'California House Prices' competition, 2020 Zillow listings) and the target is 'Total interior livable area', not the sale price. Records: california_house_prices_2020 (Yes, target Sold Price) and calif_houses (No, Duplicate of it, TexTabBench tag). Tagged STRABLE on 2026-11-01.
 
+CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 3 scores are numbers (Elementary School Score, Middle School Score, High School Score).
+
 ## Reference
 
 Kaggle

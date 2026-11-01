@@ -7,11 +7,8 @@ from pathlib import Path
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
-# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
-# them). An open-ended level holds everything beyond it.
-ORDINAL_LEVELS = {
-    "Application_order": [0, 1, 2, 3, 4, 5, 6, 9],
-}
+# Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
+SCORES = ["Application_order"]
 
 
 class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
@@ -77,6 +74,9 @@ class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
         - Partial order, left unordered (2026-11-01, CLEAN-14): `Previous_qualification`, `Mothers_qualification` and
           `Fathers_qualification` lie on the Portuguese education ladder, but the pre- and post-Bologna degrees are ties
           and the old-system courses sit beside the year levels, so there is no single line.
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 1 scores with no words per level are
+          numbers (`SCORES`): `Application_order`.
     """
 
     # Task
@@ -356,11 +356,12 @@ class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
             for c in data.columns
         ]
         df = data
+        # scores with no words per level are numbers (CLEAN-14)
+        df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
-            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "Marital_status",
                 "Application_mode",
