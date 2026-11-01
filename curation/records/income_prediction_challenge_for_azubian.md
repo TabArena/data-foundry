@@ -4,7 +4,7 @@ name: income-prediction-challenge-for-azubian
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> 2nd Tier
-priority: 2
+priority: 1
 decision_markers:
 - Duplicate
 tags:
@@ -44,3 +44,5 @@ Zindi competition to predict whether an individual earns above or below an incom
 ---
 
 predict if an individual earns above or below an income threshold
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `folktables_acs_income` (TBD -> 2nd Tier, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

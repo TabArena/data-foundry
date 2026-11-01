@@ -12,6 +12,7 @@ tags:
 - 2nd Tier / Scientific Discovery
 collections:
 - CARTE/TARTE
+- MulTaBench
 source_links:
 - https://sites.google.com/site/anhaidgroup/useful-stuff/the-magellan-data-repository?authuser=0
 - https://huggingface.co/datasets/inria-soda/carte-benchmark

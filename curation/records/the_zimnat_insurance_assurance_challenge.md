@@ -44,3 +44,5 @@ A Zindi challenge (Zimnat, Zimbabwe) to predict when an insurance policy will la
 ---
 
 predict when an insurance policy will lapse in Zimbabwe
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `prudential_life_insurance_assessment` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.

@@ -39,3 +39,5 @@ type_adapter_id: curation-record-v1
 - Priority: gap - (no thin value), use case - (generic), source - (origin not named), shape + (2,920 rows, about 2,000 to train), risk - (unknown origin, likely a cut of another table).
 
 A Zindi 'speoau-energy-data-hackathon' with no details in the record. Energy hackathons frequently turn out to be consumption/generation forecasting, which would be out of scope, but it could also be a fixed predictive task. There is too little information to judge the target, modality, or split regime. A human must inspect the Zindi competition to confirm whether it is forecasting (reject) or a genuine fixed-target tabular regression/classification.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `pasion_horizontal_pv_power_12_sites` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

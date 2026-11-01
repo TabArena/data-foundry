@@ -4,7 +4,7 @@ name: MIMIC-IV
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> 2nd Tier
-priority: 2
+priority: 1
 decision_markers:
 - Needs extensive data wrangling
 tags:
@@ -47,3 +47,5 @@ MIMIC-IV is the large PhysioNet critical-care relational database (many tables t
 ---
 
 Another MIMIC dataset. Need to figure out which version(s) to use and how, or if even possible.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `pulse_oximetry_sao2_correction` (TBD -> Yes, priority 2), `mimic_iv_ed_triage` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

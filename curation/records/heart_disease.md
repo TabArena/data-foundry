@@ -69,6 +69,8 @@ CC (2026-10-27, Lennart): review of PR #20, marks on REVIEW.md. Fit `approximate
 
 CC (2026-10-27, Lennart): verdict ship, nothing open after the review of PR #20. To be built on the curator's ask.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `promise_cta_obstructive_cad` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @article{detrano1989international,

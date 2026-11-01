@@ -47,6 +47,8 @@ The Moneyball MLB stats dataset (1962-2012, OpenML 41021), estimating runs score
 
 CC: "Baseball dataset that estimates the runs scored. Might be relevant task. Might require temporal split, but need to understand the task better. In general this is clearly not a predictive performance task but an analytics task. Linear model best in TabRepo. Could include to also cover this bias"
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `lahman_team_seasons_runs` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Kaggle (https://www.kaggle.com/datasets/wduckett/moneyball-mlb-stats-19622012/data), originally from The Analytics Edge course on EdX (https://www.edx.org/learn/analytics/massachusetts-institute-of-technology-the-analytics-edge). Data collected from baseball-reference.com

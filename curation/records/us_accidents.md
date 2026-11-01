@@ -13,6 +13,7 @@ tags:
 collections:
 - CARTE/TARTE
 - TabSTAR
+- MulTaBench
 original_source: Kaggle
 year: '2019'
 required_split:

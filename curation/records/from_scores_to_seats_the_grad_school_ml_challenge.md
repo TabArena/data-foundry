@@ -39,3 +39,5 @@ type_adapter_id: curation-record-v1
 - Priority: gap + (education thin), use case 0, source 0 (a two-day hackathon page), shape 0 (size unknown), risk - (provenance and target).
 
 Zindi competition with no comments; the name suggests predicting graduate-school admission/placement ('seats') from applicant scores, an education-domain tabular classification or regression task with a clear target. This would be representative real-world tabular ML if the data is genuine applicant records. Insufficient detail to confirm the exact target, size, and whether the data is synthetic/handmade. A human must inspect the competition data to confirm the target definition, problem type, and that it is not an artificial/generated set.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `gradcafe_graduate_admissions` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

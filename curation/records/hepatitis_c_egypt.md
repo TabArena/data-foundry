@@ -46,6 +46,8 @@ CC (2026-10-26, Lennart): issue 3: "mark this for later dataset searches in the 
 
 **Assessment (AI, 2026-10-26):** the open issues of 2026-10-07 are settled and removed from this record. No column depends on another, the label included, the values are flat over their ranges, and the stage cannot be predicted from any subset: a generated file or one with values replaced column by column; the paper's 99.48% (abstract) cannot come from it. **For a later search:** the real records may exist with the creators UCI lists (Sanaa Kamal, Mohamed ElEleimy, Doaa Hegazy, Mahmoud Nasr; Kamal et al. ran genotype-4 cohorts with RNA at weeks 4 and 12, end of treatment and 24 weeks after, 2005 and 2007); the paper is DOI 10.1109/ICENCO.2017.8289800 (closed access).
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nhanes_liver_elastography_fibrosis` (TBD -> Yes, priority 2), `halt_c_hcv_cirrhosis_labs` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 A novel model based on non invasive methods for prediction of liver fibrosis

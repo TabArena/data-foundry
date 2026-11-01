@@ -4,7 +4,7 @@ name: eICU Collaborative Research Database
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> 2nd Tier
-priority: 3
+priority: 2
 decision_markers:
 - Needs extensive data wrangling
 tags:
@@ -41,3 +41,5 @@ type_adapter_id: curation-record-v1
 
 
 The eICU Collaborative Research Database (PhysioNet) is a large multi-center ICU relational database with many tables (patients, vitals, labs, diagnoses), not a single curated predictive table. Real tabular tasks (e.g., ICU mortality, length-of-stay) can be derived from it, but doing so requires substantial wrangling, cohort definition, and a patient-grouped split, and it is credentialed-access (data-use agreement). It is already flagged 2nd Tier / '?'. A human must decide on a specific extracted task and target, handle the credentialing/access, and define the join and grouping before this could be promoted.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `eicu_crd_2020_2021` (TBD -> 2nd Tier, priority 1), `gossis_icu_hospital_mortality` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

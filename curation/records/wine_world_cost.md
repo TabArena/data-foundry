@@ -14,6 +14,7 @@ tags:
 - Free Text (Sentences)
 collections:
 - TexTabBench
+- STRABLE
 original_source: Other
 year: '2023'
 domain: business & marketing
@@ -42,3 +43,5 @@ Scraped from the web
 **Assessment (AI, 2026-10-21):** metric now `Metric.from_context("rmsle", target_transform="log")` instead of the fallback rmse on the log target: a bottle price's error matters relative to the price; the target still ships as log, and RMSLE is computed after the inverse, on the original scale (MET-3). Needs a rebuild to reach the container.
 
 CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `alko_wine_price_list` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

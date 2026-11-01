@@ -52,6 +52,8 @@ CC (2026-10-27, Lennart): marker Selection Bias, from the AI review of PR #16: t
 
 CC (2026-10-27, Lennart): fit stays direct: the setting, a university clinic, sees the same mostly young people (USE-8, amended on the review of PR #16); the Selection Bias marker stays.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `therlid_infrared_vs_contact_temperature` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Infrared Thermography for Measuring Elevated Body Temperature: Clinical Accuracy, Calibration, and Evaluation

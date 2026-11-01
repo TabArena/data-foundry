@@ -13,6 +13,7 @@ tags:
 collections:
 - TabArena Reject
 - TabSTAR
+- TabBench-Bio
 year: '2003'
 source_links:
 - https://www.openml.org/d/41157
@@ -28,6 +29,8 @@ CC: "Part of the NIPS 2003 feature selection challenge. Original task was change
 A lot of preprocessing was done to obtain the version of the dataset that is given. Some steps involved using the whole available set, like aligning the peaks of the spectra.
 
 We should, if at all, use the original source. The original website where the challenge creators got the data from is down.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `cancerseek_blood_cancer_detection` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference
 

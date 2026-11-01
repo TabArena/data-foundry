@@ -16,6 +16,7 @@ collections:
 - TabArena Reject
 - TabSTAR
 - AutoML_MM
+- MulTaBench
 original_source: UCI
 year: '2015'
 required_split:
@@ -83,6 +84,8 @@ CC (2026-10-26, Lennart): issue 10: "oke keep regression": the share count stays
 **Assessment (AI, 2026-10-26):** both settled; no open issue is left, so the folder's REVIEW.md is removed.
 
 CC (2026-10-26, Lennart): verdict ship.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `news_popularity_multiple_social_media` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference
 

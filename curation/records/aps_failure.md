@@ -47,6 +47,8 @@ CC (2026-10-06, Lennart): Kept in TabArena v0.2 after the task-probe review (fla
 
 CC (2026-10-21, Lennart): the declared metric stays as it is (`cost_matrix`: a false alarm costs 10, a missed failure 500, as the IDA 2016 challenge scored; cross-dataset item "Metrics still to settle").
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `scania_component_x` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 10.24432/C5V60Q

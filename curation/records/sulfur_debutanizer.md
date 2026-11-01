@@ -26,6 +26,8 @@ Time series dataset, both from the same source. Check if duplicate or unique dat
 
 (https://www.sciencedirect.com/science/article/pii/S0967066104000899?casa_token=WKPCkXH-9vsAAAAA:OB7RKY2AJXv0d-A9rZuBztPpuFV2B8IlXSeIpix0CISbZoUPCasyhd6U2l79Fu7Sb0j8pig6qw -)
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `mining_flotation_silica_quality` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Fortuna, L., Graziani, S., Rizzo, A., Xibilia, M.G. "Soft Sensors for Monitoring and Control of Industrial Processes" (Springer 2007)

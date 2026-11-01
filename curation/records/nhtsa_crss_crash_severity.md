@@ -4,7 +4,7 @@ name: NHTSA Crash Report Sampling System (CRSS), crash injury severity
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> Yes
-priority: 3
+priority: 2
 decision_markers:
 - Needs extensive data wrangling
 tags:
@@ -46,6 +46,8 @@ NHTSA's nationally representative probability sample of police crash reports, in
 To decide: crash-level target (MAX_SEV, 5 imbalanced classes, or injury vs none) from crash / vehicle / driver descriptors known from the scene report; drop outcome fields (HARM_EV after the fact, tow, EMS). The file carries survey weights (WEIGHT) and a stratified design; an unweighted classification is a different task from NHTSA's estimates, same caveat as `higgsml_2014`. Yearly files -> temporal split, mind coding changes across years. NHTSA pages returned 403 here, so the download layout was not checked. Data not inspected.
 
 Opened 2026-09-23 as the injury-severity counterpart to `us_accidents` (rejected: its Severity is a traffic-delay code). Police crash reports carry the injury outcome the first-responder / crash-severity use case needs; the target is the standard one in road-safety research, unlike the gender target that sank `road_safety`.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `stats19_collision_severity` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference
 

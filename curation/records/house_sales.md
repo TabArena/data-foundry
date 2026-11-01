@@ -69,6 +69,8 @@ CC (2026-10-26, Lennart): on ames_housing issue 7 (option (c), "do (c)"): drop t
 
 CC (2026-10-26, Lennart): verdict ship.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `cook_county_residential_sales` (TBD -> Yes, priority 3), `king_county_home_sales_1999_2025` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 https://www.kaggle.com/datasets/harlfoxem/housesalesprediction

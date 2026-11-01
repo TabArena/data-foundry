@@ -38,6 +38,8 @@ CC (2026-09-30, Lennart): **Retired: the label is readable from sample-processin
 
 CC: "Link provided in the survey are outdated, I think I found another version. D: Downloadable under low resolution seldi-tof datasets. The number of csv files matches the number of samples so we just need to merge everything into one table. Classes are given in folder names"
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `plco_ovarian_cancer_screening` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @article{petricoin2002serum,

@@ -49,6 +49,8 @@ Use version from source
 
 Home Equity Loans
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `freddie_mac_single_family_default` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @book{baesens2016credit,

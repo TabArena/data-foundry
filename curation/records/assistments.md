@@ -4,7 +4,7 @@ name: ASSISTments
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> 2nd Tier
-priority: 3
+priority: 2
 decision_markers:
 - No Good Target / Scientific Discovery
 - Time-series (Classification)
@@ -54,6 +54,8 @@ CC: ""Unsure, but might be this dataset: https://www.kaggle.com/datasets/nicolas
 Also an unclear predictive task""
 
 Need to check the splits correctly and maybe recreate the data
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `riiid_answer_correctness` (TBD -> 2nd Tier, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference
 

@@ -47,6 +47,8 @@ CC (2026-10-30, Lennart): the Stata missing codes `.a` and `.b` become missing v
 
 CC (2026-10-30, Lennart): `teacher_duration` is dropped: the minutes the teacher's rating form was open, a timer of the data collection like the `duration_elom` timers, whose little signal follows the survey round (CLEAN-22). The notes now match the code on the assessor's id (`id_enumerator`), which is dropped with the other ids: the curation note, `known` and `fit_reason` had said it was kept.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `thrive_by_five_index_2024` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 DataDrive2030. ELOM and Thrive by Five Index 2016-2023, Merged Data [dataset]. Version 1. Cape Town: DataDrive2030 [producer], 2024. Cape Town: DataFirst [distributor], 2024. DOI: https://doi.org/10.25828/WG0D-Y909

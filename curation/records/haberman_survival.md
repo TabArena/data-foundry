@@ -41,6 +41,8 @@ represents a real-world problem and the setup is very simplistic and weird (esse
 plus a temporal component) — hence `Trivial` / `Outdated` / `Not Representative`. The "could add it and
 later remove" note above is superseded.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `rotterdam_breast_cancer` (TBD -> Yes, priority 2), `metabric_breast_cancer_clinical` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 UCI

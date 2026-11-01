@@ -35,6 +35,8 @@ The data looks real, but then also a bit too equally distributed everything. Mor
 
 CC (2026-10-01, Lennart): This upload's `satisfaction_2015.xlsx` was tested during the leak audit of `customer_satisfaction_in_airline` (retired; details there). The passenger ratings are generated: rating columns are copied from one another within customer segments (e.g. wifi = gate location in 95.2% of 39,191 satisfied loyal business travellers in Business class; 27 segment-pairs of unrelated items agree on more than 90% of rows, against at most 68% in a real airline survey). Only the flight distances and delays look like real US flight records. The second file, `satisfaction.xlsx`, is a manipulated copy of it (misnamed rating columns, replaced distances, rule-based relabelling). The source questions on Kaggle (2018, 25 votes) were never answered. Evidence for a No with AHDS + Missing source information; verdict left to the curator.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `brazil_airport_passenger_satisfaction` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Kaggle

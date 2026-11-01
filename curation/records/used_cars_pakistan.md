@@ -4,13 +4,14 @@ name: Used Cars Pakistan
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> Yes
-priority: 2
+priority: 1
 tags:
 - Free Text (Short)
 - New IID
 - AI-Filled (Verify)
 collections:
 - CARTE/TARTE
+- MulTaBench
 original_source: Kaggle
 year: '2021'
 domain: business & marketing
@@ -47,3 +48,5 @@ Used-car listings scraped from pakwheels.com (Pakistan, ~2021), a genuine real-w
 used cars data
 
 FE / string preprocessing problem, not free text handling
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `pakwheels_used_cars_2022` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

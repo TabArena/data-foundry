@@ -24,3 +24,5 @@ type_adapter_id: curation-record-v1
 Could be used to forecast flights/seats/passengers (just one, all other would be leaking)
 
 But might also just be a forecasting task without tabular... unsure
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `bts_t100_domestic_segment` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

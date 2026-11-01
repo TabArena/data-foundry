@@ -57,6 +57,8 @@ Data is missing timestamps, so it is a forced IID task
 
 CC (2026-10-21, Lennart): the metric is precision_at_k with k_fraction 0.5, precision at the median score as Flogard & Mengshoel 2022 report it.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `osha_inspection_violations` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 A dataset for efforts towards achieving the sustainable development goal of safe working environments

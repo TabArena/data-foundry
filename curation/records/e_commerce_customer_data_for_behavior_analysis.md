@@ -17,3 +17,5 @@ type_adapter_id: curation-record-v1
 ## Comments
 
 "is a synthetic dataset generated using"
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `ijcai15_repeat_buyers` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

@@ -25,6 +25,8 @@ Data has an ID column, which likely makes it grouped?
 
 Very likely based on eye tracking data to predicting something related to schizophrenia
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `bsnip1_psychosis_eye_movement` (TBD -> 2nd Tier, priority 1). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 https://pubmed.ncbi.nlm.nih.gov/9147594/
