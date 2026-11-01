@@ -1,6 +1,0 @@
-name: qsar_fish_toxicity
-holder: Lennart
-stage: add
-claimed_at: '2026-11-01T20:31:51Z'
-expires_at: '2026-11-08T20:31:51Z'
-note: 'SMILES only from the authors'' releases (CLEAN-24, PR #15)'
