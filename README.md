@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-01 17:43 UTC: 130 claim(s) (Andrej 25, Lennart 83, Myunghwan 22).
+As of 2026-11-01 18:14 UTC: 131 claim(s) (Andrej 25, Lennart 84, Myunghwan 22).
 
 ## Andrej
 
@@ -107,6 +107,7 @@ As of 2026-11-01 17:43 UTC: 130 claim(s) (Andrej 25, Lennart 83, Myunghwan 22).
 | `open_university_learning_analytics_dataset` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `predict_students_dropout_and_academic_success` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `pva_revenue_prediction_kddcup98` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
+| `qsar_tid_11` | add | 2026-11-01 | 2026-11-08 | scaffold-grouped split from ChEMBL 17 structures (SPLIT-31) |
 | `rain_in_australia` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `regensburg_pediatric_appendicitis` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `rossmann_store_sales` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
