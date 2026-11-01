@@ -51,6 +51,8 @@ CC (2026-10-21, Lennart): drop the `2ndTierData` tag ("we have this now with use
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — Scraped Kaggle dataset with no task, competition or paper; no metric defined.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `roast` (the README lists their levels).
+
 ## Reference
 
 Kaggle

@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import openml
-from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary, decode
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -80,6 +80,8 @@ class Jm1(AbstractCuratedDataset):
         - We selected this dataset as representative of a set of predictive modeling tasks of software engineering (other examples of such tasks are available on OpenML under the names mozilla4, pc1, pc2, pc3, mc1, kc1, kc2). This dataset was selected as it has the largest sample size.
         - We drop duplicates. 25% of the rows share their code-metric vector with another row (669 groups, mostly trivial modules such as 173 copies of a 4-line, complexity-1 function), so a random split puts copies on both sides. We drop exact duplicate rows (1,973) and then every copy of a metric vector that appears with both labels (88 vectors, 176 rows): 10,885 -> 8,736 rows.
         - The source URL is jm1.arff of the PROMISE repository, donated in 2004 by Tim Menzies from the NASA Metrics Data Program; it answers over plain http but gives 404 over https, and the Wayback Machine holds the same file. We read OpenML dataset 1053, whose ARFF is byte-identical to it (see the download description).
+        - The target (2026-11-01, CLEAN-25): `defects` ships its classes as words (True means defects). Binary: "Yes" is
+          the event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -101,4 +103,6 @@ class Jm1(AbstractCuratedDataset):
         df = raw.drop_duplicates()
         features = [c for c in df.columns if c != self.task_metadata.target_column_name]
         df = df[~df.duplicated(subset=features, keep=False)]
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"False": "No", "True": "Yes"}})
         return df.reset_index(drop=True)

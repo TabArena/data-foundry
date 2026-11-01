@@ -5,7 +5,58 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode, set_missing
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "temperature_of_extremities": ["cold", "cool", "normal", "warm"],
+    "peripheral_pulse": ["absent", "reduced", "normal", "increased"],
+    "capillary_refill_time": ["< 3 seconds", ">= 3 seconds"],  # open-ended
+    "peristalsis": ["absent", "hypomotile", "normal", "hypermotile"],
+    "abdominal_distension": ["none", "slight", "moderate", "severe"],
+    "nasogastric_tube": ["none", "slight", "significant"],
+    "nasogastric_reflux": ["none", "< 1 liter", "> 1 liter"],  # open-ended
+    "rectal_exam_feces": ["absent", "decreased", "normal", "increased"],
+}
+
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "temperature_of_extremities": {"1": "normal", "2": "warm", "3": "cool", "4": "cold"},
+    "peripheral_pulse": {"1": "normal", "2": "increased", "3": "reduced", "4": "absent"},
+    "capillary_refill_time": {"1": "< 3 seconds", "2": ">= 3 seconds"},
+    "peristalsis": {"1": "hypermotile", "2": "normal", "3": "hypomotile", "4": "absent"},
+    "abdominal_distension": {"1": "none", "2": "slight", "3": "moderate", "4": "severe"},
+    "nasogastric_tube": {"1": "none", "2": "slight", "3": "significant"},
+    "nasogastric_reflux": {"1": "none", "2": "> 1 liter", "3": "< 1 liter"},
+    "rectal_exam_feces": {"1": "normal", "2": "increased", "3": "decreased", "4": "absent"},
+    "mucous_membranes": {
+        "1": "normal pink",
+        "2": "bright pink",
+        "3": "pale pink",
+        "4": "pale cyanotic",
+        "5": "bright red / injected",
+        "6": "dark cyanotic",
+    },
+    "pain": {
+        "1": "alert, no pain",
+        "2": "depressed",
+        "3": "intermittent mild pain",
+        "4": "intermittent severe pain",
+        "5": "continuous severe pain",
+    },
+    "abdomen": {
+        "1": "normal",
+        "2": "other",
+        "3": "firm feces in the large intestine",
+        "4": "distended small intestine",
+        "5": "distended large intestine",
+    },
+    "abdominocentesis_appearance": {"1": "clear", "2": "cloudy", "3": "serosanguinous"},
+    "age": {"1": "adult", "9": "young (< 6 months)"},
+}
 
 
 class HorseColicSurvival(AbstractCuratedDataset):
@@ -67,6 +118,17 @@ class HorseColicSurvival(AbstractCuratedDataset):
         - We keep only the first instance (hospital number) per horse, as they can be treated multiple times and otherwise leaks information about the target.
         - We use the target "outcome" to model a task where we aim to predict if the horse survives or not. We drop cases that have not outcome recorded.
         - We keep the duplicates occurring in the data.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 8 columns are ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 8 of them decoded from the source's codes
+          into its words (`CODE_LABELS`, 2026-11-01); codes that mean unknown are missing (CLEAN-10).
+        - Partial order, left unordered (2026-11-01, CLEAN-14): `pain`: the codebook says it "should NOT be treated as
+          ordered"; alert (1) < intermittent mild (3) < intermittent severe (4) < continuous severe pain (5) is a line,
+          and depressed (2) is off it. `mucous_membranes` has two lines from normal pink (1): pallor and cyanosis (3 < 4
+          < 6) and congestion (2 < 5).
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 8 ordered codes carry their codebook's
+          words (`CODE_LABELS`), in the same order; 5 unordered codes carry their words: `mucous_membranes`, `pain`,
+          `abdomen`, `abdominocentesis_appearance`, `age`.
     """
 
     # Task
@@ -131,11 +193,23 @@ class HorseColicSurvival(AbstractCuratedDataset):
             ]
         )
         df["outcome"] = df["outcome"].map({1: "Lived", 2: "Died", 3: "Euthanized"})
+        # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
+        # CLEAN-14): don't know, refused, not asked, other
+        df = set_missing(
+            df,
+            {
+                "capillary_refill_time": [3.0],
+            },
+        )
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
+                "age",
                 "temperature_of_extremities",
                 "peripheral_pulse",
                 "mucous_membranes",

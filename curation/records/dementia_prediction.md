@@ -44,7 +44,15 @@ AT: No objection, but we need to quickly talk about how we proceed with medical 
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — the OASIS-2 paper reports group analyses, no prediction metric.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): ordinal scales shipped as numbers, left as numbers for the curator's review: `SES`.
+
+CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 1 ordinal scales shipped as numbers are ordered categories (point 3).
+
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `oasis3_dementia_status` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
+CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 1 scores are numbers (SES).
+
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target is an ordered category, no_dementia < very_mild_AD < mild_AD.
 
 ## Reference
 

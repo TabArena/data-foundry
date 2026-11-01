@@ -53,4 +53,10 @@ CC (2026-10-21, Lennart): record the SPLIT-9 / SPLIT-14 reading and the SPLIT-10
 
 CC (2026-10-21, Lennart): the metric is the roc_auc fallback, not the paper's balanced accuracy.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `emp_length` (the README lists their levels); their codes that mean unknown (don't know, refused, not asked) are missing in `emp_length` (CLEAN-10).
+
 **Assessment (AI, 2026-11-01):** the benchmark STRABLE (https://arxiv.org/abs/2605.12292) carries this record's data as "Lending Club Loan": Raw file Lending-Club-Loan-Dataset-2007_2011.csv from TextTabBench. Paper says 'interest rate'; config target is loan_status (binary). Tagged STRABLE on 2026-11-01.
+
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): counts with a cut end are numbers: emp_length.
+
+CC (2026-11-01, Lennart): counts with a cut end stay ordered categories of the source's levels, the cut end a level of its own (CLEAN-14): the lossless form, chosen from the context rather than by model runs; the same day's numbers with censoring flags are reverted.

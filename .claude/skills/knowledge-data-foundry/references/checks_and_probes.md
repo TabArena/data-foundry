@@ -80,12 +80,15 @@ K=.claude/skills/knowledge-data-foundry/scripts
   source's codebook from the definition's first UCI or OpenML link (types and descriptions, matched by column name) and
   flags, strongest first: a categorical column the codebook or the name calls a count or an amount (`quantity_words`),
   one of numbers the codebook types as numeric (`codebook_numeric`), a numeric column the codebook types as categorical
-  (`codebook_categorical`), a categorical column whose levels look like a count (`count_like`: 0 or 1 upwards, the first
-  ten all there, rarer as they grow), a numeric column named as a code (`code_name`), and any other categorical column
-  of numbers (`numeric_levels`, mostly codes). The few levels that are no number in a column of numbers are listed:
-  often proxy missing codes (`.b`, `-3`) that made a count categorical (CLEAN-10). UCI types coded answers as `Integer`
-  too, and names often differ from the codebook's (the output says how many matched): read the codebook where they do. A
-  flag is a question; the meaning decides.
+  (`codebook_categorical`), an unordered category whose levels look like a scale (`ordinal_like`: bands, ranges, open
+  ends, scale words, or a codebook that says ordinal, grade or stage), a level with an open end (`open_end`: `<1`,
+  `>20`, `3+`, `50plus`, `gt8`, or a codebook's "three and more"; named also on an ordered category, so the open end
+  stays visible), a categorical column whose levels look like a count (`count_like`: 0 or 1 upwards, the first ten all
+  there, rarer as they grow), a numeric column named as a code (`code_name`), and any other categorical column of
+  numbers (`numeric_levels`, mostly codes). An ordered category raises no flag but `open_end`. The few levels that are
+  no number in a column of numbers are listed: often proxy missing codes (`.b`, `-3`) that made a count categorical
+  (CLEAN-10). UCI types coded answers as `Integer` too, and names often differ from the codebook's (the output says how
+  many matched): read the codebook where they do. A flag is a question; the meaning decides.
 * `tuned_results.py`: the per-fold BeyondArena results of tuned and default methods cached under
   `~/.cache/tabarena/artifacts/` (`methods/<method>/results/hpo_results.parquet`), set against a dummy on the same
   splits of the shipped container; `--feature auto` adds the raw-feature test of TP-4. The runs used the shipped

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: indian_liver_patient_dataset
 container_format: 2
-checksum: v2:5b183c51880349471149b63deb5be17519d24d5d21b54dfe2091ec998dc30f6e
+checksum: v2:eabb643e6a3e5b1176e330ef47d173eb770a77398f89e3c9982f55a645649c3c
 build:
   uuid: 01a111fc-e244-78f8-9686-1c2a0bf3b820
   checksum: v2:e7039f8157260832229136963282d84e47ed2500e1bf7067d3d6f1b20c7e8a85
@@ -69,7 +69,7 @@ decisions: []
 
 Binary classification of `Selector`, scored with `roc_auc` on IID splits. 583 rows and 10 features. Source: UCI (2012).
 
-Built as `01a111fc-e244-78f8-9686-1c2a0bf3b820` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5b183c51880349471149b63deb5be17519d24d5d21b54dfe2091ec998dc30f6e`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e244-78f8-9686-1c2a0bf3b820` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:eabb643e6a3e5b1176e330ef47d173eb770a77398f89e3c9982f55a645649c3c`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -177,16 +177,18 @@ The first 5 of 583 rows of the final frame (random rows: the frame is shuffled).
 
 | Selector | Age | Gender | TB | DB | Alkphos | Sgpt | Sgot | TP | ALB | A/G |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 66 | Female | 2.9 | 1.3 | 168 | 21 | 38 | 5.5 | 1.8 | 0.4 |
-| 2 | 45 | Male | 1.3 | 0.6 | 166 | 49 | 42 | 5.6 | 2.5 | 0.8 |
-| 1 | 60 | Male | 2 | 1.1 | 664 | 52 | 104 | 6 | 2.1 | 0.53 |
-| 2 | 22 | Male | 0.9 | 0.3 | 179 | 18 | 21 | 6.7 | 3.7 | 1.2 |
-| 2 | 24 | Female | 0.7 | 0.2 | 188 | 11 | 10 | 5.5 | 2.3 | 0.71 |
+| Yes | 26 | Female | 0.9 | 0.2 | 154 | 16 | 12 | 7 | 3.5 | 1 |
+| Yes | 34 | Male | 4.1 | 2 | 289 | 875 | 731 | 5 | 2.7 | 1.1 |
+| Yes | 50 | Male | 0.9 | 0.3 | 901 | 23 | 17 | 6.2 | 3.5 | 1.2 |
+| Yes | 38 | Male | 3.1 | 1.6 | 253 | 80 | 406 | 6.8 | 3.9 | 1.3 |
+| Yes | 51 | Male | 2.9 | 1.3 | 482 | 22 | 34 | 7 | 2.4 | 0.5 |
 
 ## Curation notes
 
 We keep the data as is as it does not require any further cleaning.
 Note, the data contains a few (n=13) duplicates, that are likely naturally occurring duplicates given the features.
+- The target (2026-11-01, CLEAN-25): `Selector` ships its classes as words (1 means a liver patient (UCI)).
+  Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
@@ -278,16 +280,16 @@ Default splits.
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | Gender | category | 0 | 0 | 2 | Male, Female |
-| Selector | category | 0 | 0 | 2 | 1, 2 |
+| Selector | category | 0 | 0 | 2 | Yes, No |
 | A/G | float64 | 4 | 0.69 | 69 | 1.0, 0.8, 0.9, 0.7, 1.1, 1.2, 0.6, 0.5, 1.3, 1.4 |
 | TB | float64 | 0 | 0 | 113 | 0.8, 0.7, 0.9, 0.6, 1.0, 1.1, 1.8, 1.4, 1.3, 1.7 |
-| DB | float64 | 0 | 0 | 80 | 0.2, 0.1, 0.3, 0.8, 0.4, 0.5, 0.6, 1.0, 1.3, 0.7 |
-| TP | float64 | 0 | 0 | 58 | 7.0, 6.0, 6.8, 6.9, 6.2, 7.1, 7.2, 8.0, 6.4, 6.1 |
+| DB | float64 | 0 | 0 | 80 | 0.2, 0.1, 0.3, 0.8, 0.4, 0.5, 0.6, 1.0, 1.3, 1.6 |
+| TP | float64 | 0 | 0 | 58 | 7.0, 6.0, 6.8, 6.9, 6.2, 7.1, 7.2, 8.0, 6.4, 7.3 |
 | ALB | float64 | 0 | 0 | 40 | 3.0, 4.0, 2.9, 3.1, 3.2, 3.9, 2.7, 2.5, 3.5, 2.0 |
-| Age | int64 | 0 | 0 | 72 | 60, 45, 50, 38, 42, 48, 32, 55, 65, 40 |
-| Alkphos | int64 | 0 | 0 | 263 | 298, 198, 215, 195, 180, 190, 182, 145, 158, 218 |
-| Sgpt | int64 | 0 | 0 | 152 | 25, 20, 22, 21, 28, 18, 30, 48, 15, 24 |
-| Sgot | int64 | 0 | 0 | 177 | 23, 21, 20, 30, 28, 22, 25, 24, 32, 34 |
+| Age | int64 | 0 | 0 | 72 | 60, 45, 50, 38, 42, 32, 48, 55, 65, 40 |
+| Alkphos | int64 | 0 | 0 | 263 | 198, 215, 298, 195, 180, 190, 158, 182, 145, 218 |
+| Sgpt | int64 | 0 | 0 | 152 | 25, 20, 22, 18, 28, 21, 30, 15, 48, 24 |
+| Sgot | int64 | 0 | 0 | 177 | 23, 20, 21, 30, 28, 22, 25, 24, 34, 32 |
 
 </details>
 
@@ -295,8 +297,8 @@ Default splits.
 
 | Selector | count | pct |
 |---|---|---|
-| 1 | 416 | 71.36 |
-| 2 | 167 | 28.64 |
+| Yes | 416 | 71.36 |
+| No | 167 | 28.64 |
 
 ### Numeric features
 
@@ -318,8 +320,8 @@ Default splits.
 |---|---|---|---|---|
 | Gender | 1 | Male | 441 | 75.64 |
 | Gender | 2 | Female | 142 | 24.36 |
-| Selector | 1 | 1 | 416 | 71.36 |
-| Selector | 2 | 2 | 167 | 28.64 |
+| Selector | 1 | Yes | 416 | 71.36 |
+| Selector | 2 | No | 167 | 28.64 |
 
 ## Build
 
@@ -332,4 +334,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:5b183c51880349471149b63deb5be17519d24d5d21b54dfe2091ec998dc30f6e` |
+| stale | yes: the definition now gives checksum `v2:eabb643e6a3e5b1176e330ef47d173eb770a77398f89e3c9982f55a645649c3c` |

@@ -22,7 +22,9 @@ For every column of the cleaned frame (load it through
 3. Its dtype and cleaning against `cleaning_features.md`: by meaning, proxy missing values, impossible values,
    encodings reversed, identifiers dropped or turned into their meaning. Run the dtype probe
    (`.claude/skills/knowledge-data-foundry/scripts/dtype_probes.py <name> --out <run folder>`) and answer each column
-   it flags: a count or a measured quantity typed categorical, or a code typed numeric, is a cleaning problem.
+   it flags: a count or a measured quantity typed categorical, or a code typed numeric, is a cleaning problem. An
+   ordinal scale is an ordered category (`ordinal` in `_feature_types`): check its order against the codebook (the
+   order of the codes is often reversed), and that its codes for unknown answers are missing.
 4. A verdict: fine, leak (rule, strength, remedy), cleaning problem (rule, remedy), or question for the curator.
 
 Never edit a repository file. Return the column table (column | meaning | known at prediction? | dtype and cleaning |

@@ -45,6 +45,8 @@ CC (2026-10-01, Lennart): Leak audit: deduplicated to be on the safe side. 25% o
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `unified_bug_dataset` (TBD -> 2nd Tier, priority 2), `apachejit` (TBD -> Yes, priority 2), `smartshark_release_defect_prediction` (TBD -> Yes, priority 3); a related task: `apachejit` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (True means defects).
+
 ## Reference
 
 https://openscience.us/repo/defect/

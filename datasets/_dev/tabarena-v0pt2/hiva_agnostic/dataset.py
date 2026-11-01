@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary, decode
 
 
 class HivaAgnostic(AbstractCuratedDataset):
@@ -64,6 +64,8 @@ class HivaAgnostic(AbstractCuratedDataset):
         - We use the challenge's training (3,845 compounds, 135 active) and validation compounds (384, 14 active; labels in ValidAgnos.zip), as `hiva.param` lists them. The test labels (38,449 compounds) were never released. The validation compounds were added on 2026-10-14.
         - We drop the 188 descriptors that copy an earlier one; until 2026-10-14 a fixed list dropped 99 of them. 23 compounds repeat another's descriptors, always with the same label (3 of them across training and validation), and stay.
           Why they stay (checked 2026-10-21 against the challenge's prior-knowledge release, which gives the same 4,229 compounds as structures with their NCI NSC numbers, in another order): every compound has its own NSC number, so no compound is entered twice. Of the 4,156 structures that RDKit reads, 7 repeat another's exact structure under a new NSC number, 9 ignoring stereochemistry and 19 counting salt forms of one parent. That is fewer than the 23 repeated descriptor vectors, so at least 4 of the 23 are different compounds that the 1,617 binary descriptors cannot tell apart. The two releases share no key, so the 23 cannot be matched one by one. All 46 rows are inactive.
+        - The target (2026-11-01, CLEAN-25): `CompoundActive` ships its classes as words (1 is the active compound).
+          Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -99,4 +101,6 @@ class HivaAgnostic(AbstractCuratedDataset):
         # Drop the descriptors that copy an earlier one (188 of 1,617)
         df = df.loc[:, ~df.T.duplicated().to_numpy()]
         df["CompoundActive"] = y[0]
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"-1": "No", "1": "Yes"}})
         return df.astype("category")

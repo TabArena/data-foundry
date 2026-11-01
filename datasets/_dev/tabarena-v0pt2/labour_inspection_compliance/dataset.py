@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
 
 
 class LabourInspectionCompliance(AbstractCuratedDataset):
@@ -71,6 +71,8 @@ class LabourInspectionCompliance(AbstractCuratedDataset):
         - There are lot of undescribed numeric values. Thus, we do some general purpose preprocessing and drop all columns with less than 5 not nan values
         - The data has no dates, although the task is temporal and the inspections span January 2012 to June 2019 (per the Dataverse description). Without the inspection dates, we must treat the task as IID.
         - Metric: precision at the median score (k = 50% of the test fold), which the paper calls the most important statistic; the same section calls accuracy or AUC also important, and the median cut is the paper's choice, not a stated inspection capacity (curator call, Lennart 2026-10-21).
+        - The target (2026-11-01, CLEAN-25): `NonCompliance` ships its classes as words (1 is the event). Binary: "Yes"
+          is the event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -140,6 +142,8 @@ class LabourInspectionCompliance(AbstractCuratedDataset):
         )
         # Drop duplicated columns
         df = df.loc[:, ~df.T.duplicated()]
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

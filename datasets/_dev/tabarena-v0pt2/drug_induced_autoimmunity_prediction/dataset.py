@@ -12,6 +12,7 @@ from data_foundry.v2 import (
     Grouping,
     Metric,
     TaskSummary,
+    decode,
     drop_columns,
     murcko_scaffolds,
 )
@@ -78,6 +79,8 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
         - `SMILES` dropped, as in every SMILES dataset (2026-10-14): the source's RDKit descriptors carry the structure, and next to them the SMILES as text (character n-grams) lowers LightGBM's ROC AUC from 0.835 to 0.810, on 15 of 15 splits.
         - Scaffold-grouped splits (2026-10-19), not random ones: under random splits about a third of the test drugs have a close relative in training with the same label, and a nearest-neighbour fingerprint lookup without a model reaches ROC AUC 0.822 against TabPFN's 0.854; with whole scaffolds held out, TabPFN 0.768, HGB 0.737, RF 0.724, LR 0.687 (generic scaffolds, `~/claude_jobs/dia_review/`). The use case screens new candidates, which come from series not yet seen, and scaffold splits are the standard for this: the Therapeutics Data Commons ADMET group splits all its endpoints by scaffold, among them drug-induced liver injury, a drug-level label like this one (Huang et al. 2021, NeurIPS Datasets and Benchmarks, arXiv:2102.09548). The source validated on random splits (its test file is as similar to its training file as a random split is), so our scores are lower than the paper's AUC 0.88-0.89 by design. The groups are the Bemis-Murcko scaffolds (Bemis and Murcko 1996, J Med Chem 39(15):2887-2893): 443 groups, the largest 41 drugs (benzene), 10 with both labels. The 53 drugs without a ring each form their own group (390 ring scaffolds plus these 53): they share no skeleton, only 2 have a close relative among them (Tanimoto >= 0.7), and their nearest neighbour's label agrees at the base rate (0.925).
         - Duplicates dropped: without the SMILES, 9 pairs of rows share every descriptor, all stereoisomers, which 2D descriptors do not tell apart (PubChem): quinine and quinidine, and 8 drugs entered twice with other stereo marks (lovastatin, fluticasone propionate, enalapril, fluvastatin, lisinopril, pravastatin, carbidopa, streptomycin), 3 pairs across the source's two files. We keep one row of the 8 pairs with one label and drop both streptomycin rows (one positive, one negative), as for qsar_oral_toxicity: 587 drugs, 140 positive (decision table).
+        - The target (2026-11-01, CLEAN-25): `Label` ships its classes as words (1 is the event). Binary: "Yes" is the
+          event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -125,6 +128,8 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
         # Stereoisomers share every 2D descriptor: one row per pair with one label, none of a pair with two
         features = df.columns.drop([self.target, "scaffold"])
         df = df.drop_duplicates(subset=[*features, self.target])
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df[~df.duplicated(subset=features, keep=False)]
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

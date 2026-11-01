@@ -39,3 +39,5 @@ Andrej: Not in TabRepo, but seems like a good task
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC (area under the ROC curve), per task; the ranking averaged churn, appetency and up-selling AUC (Guyon et al. 2009, Analysis of the KDD Cup 2009, JMLR W&CP 7; https://kdd.org/kdd-cup/view/kdd-cup-2009).
 
 CC (2026-10-27, Lennart): marker Anonymized, from the AI review of PR #17: the definition carries the Anonymized data tag; Orange released Var1 to Var230 with hidden meanings and scrambled categories, so it cannot be checked that they were known before the purchase (LEAK-32 names this case).
+
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).

@@ -14,6 +14,7 @@ from data_foundry.v2 import (
     TaskSummary,
     Temporal,
     TemporalSplits,
+    decode,
     drop_columns,
 )
 
@@ -62,6 +63,64 @@ CODE_COLUMNS = (
     "regionidzip",
 )
 """Numeric codes of a fixed set (counties, regions, the type ids of the data dictionary): categories."""
+
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "architecturalstyletypeid": {
+        "2": "bungalow",
+        "3": "Cape Cod",
+        "7": "contemporary",
+        "8": "conventional",
+        "10": "French Provincial",
+        "21": "ranch/rambler",
+    },
+    "typeconstructiontypeid": {"4": "concrete", "6": "frame", "10": "metal", "13": "masonry"},
+    "airconditioningtypeid": {
+        "1": "central",
+        "3": "evaporative cooler",
+        "5": "none",
+        "9": "refrigeration",
+        "11": "wall unit",
+        "13": "yes",
+    },
+    "heatingorsystemtypeid": {
+        "1": "baseboard",
+        "2": "central",
+        "6": "forced air",
+        "7": "floor/wall",
+        "10": "gravity",
+        "11": "heat pump",
+        "12": "hot water",
+        "13": "none",
+        "14": "other",
+        "18": "radiant",
+        "20": "solar",
+        "24": "yes",
+    },
+    "propertylandusetypeid": {
+        "31": "commercial/office/residential mixed used",
+        "47": "store/office (mixed use)",
+        "246": "duplex (2 units, any combination)",
+        "247": "triplex (3 units, any combination)",
+        "248": "quadruplex (4 units, any combination)",
+        "260": "residential general",
+        "261": "single family residential",
+        "263": "mobile home",
+        "264": "townhouse",
+        "265": "cluster home",
+        "266": "condominium",
+        "267": "cooperative",
+        "269": "planned unit development",
+        "275": "manufactured, modular, prefabricated homes",
+    },
+    "buildingclasstypeid": {
+        "3": "non-combustible exterior walls (brick, concrete, block), combustible interior and roof",
+        "4": "wood or wood and steel frames",
+    },
+    "fips": {"6037": "Los Angeles County", "6059": "Orange County", "6111": "Ventura County"},
+}
 
 
 class ZillowPrize(AbstractCuratedDataset):
@@ -156,6 +215,10 @@ class ZillowPrize(AbstractCuratedDataset):
         - `CODE_COLUMNS` (fips, the region ids and the type ids of the data dictionary), `buildingqualitytypeid`, `propertycountylandusecode` and `propertyzoningdesc` are categories.
         - `census_tract` (CLEAN-14, CC 2026-10-26): the census tract-and-block code is four nested parts (state and county, tract, block group, block; the raw code `060378001.011002` is county 06037, tract 8001.01, block 1002). We keep the tract as one category, its 11-digit ID (06037800101; 3,030 tracts, a median of 40 sales each, at most 0.2% of a window's test rows on a tract unseen in training), and drop `rawcensustractandblock` and `censustractandblock`: the county part is `fips`, and the block group (8,334 levels) and the block (55,601, 19-30% of the test rows unseen) are near-identifiers whose location the coordinates hold. No top solution is public; the most-voted kernels kept the codes numeric or dropped them. With LightGBM's own category handling the tract category scores below the numeric code (MAE 0.06876 against 0.06848), a model question, not a reason for the encoding.
         - Duplicate rows, kept: 7 rows repeat another row exactly and 39 more repeat another row's features with another logerror. They are separate sales of separate parcels, such as units of one building.
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 7 unordered codes carry their words:
+          `architecturalstyletypeid`, `typeconstructiontypeid`, `airconditioningtypeid`, `heatingorsystemtypeid`,
+          `propertylandusetypeid`, `buildingclasstypeid`, `fips`.
     """
 
     # Task
@@ -278,7 +341,7 @@ class ZillowPrize(AbstractCuratedDataset):
         digits = code.map(lambda x: f"{x:.6f}" if pd.notna(x) else None)
         df["census_tract"] = digits.str.split(".").str[0].str.zfill(9) + digits.str.split(".").str[1].str.slice(0, 2)
 
-        return drop_columns(
+        df = drop_columns(
             df,
             [
                 "parcelid",
@@ -289,6 +352,9 @@ class ZillowPrize(AbstractCuratedDataset):
                 "censustractandblock",  # the same code as an integer
             ],
         )
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
+        return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(

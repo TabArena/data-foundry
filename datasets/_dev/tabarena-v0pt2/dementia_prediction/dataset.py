@@ -7,6 +7,16 @@ from pathlib import Path
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary
 
+# Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
+SCORES = ["SES"]
+
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "CDR": ["no_dementia", "very_mild_AD", "mild_AD"],
+}
+
 
 class DementiaPrediction(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -73,6 +83,11 @@ class DementiaPrediction(AbstractCuratedDataset):
         - CDR and Group are both the same target variable. CDR is the Clinical Dementia Rating (0 = no dementia, 0.5 = very mild AD, 1 = mild AD, 2 = moderate AD), which determines the group variable. 31 of the 150 subjects change their rating across visits (the 'Converted' group). We make this a task to predict for a patient (at any given time point of a scan) their dementia rating. The rating is ordinal but discrete, so we treat it as a classification problem (not regression). We drop cases with moderate_AD (n=3), as we do not have enough data on this class to include them in our prediction task.
         - We drop the group variable (Nondemented / Demented / Converted, derived from the ratings over the visits) and the time of the scan (visit number, MR delay). We predict each visit's rating from the subject's sex, age, years of education (EDUC), socioeconomic status (SES, 19 missing), the Mini-Mental State Examination score of the same visit (MMSE, 2 missing; a separate cognitive test, not derived from the rating) and three measures from the visit's MRI scan: estimated total intracranial volume (eTIV), normalized whole-brain volume (nWBV) and the atlas scaling factor (ASF, which is 1755 / eTIV, kept as in the source).
         - We also drop the constant hand column.
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 1 scores with no words per level are
+          numbers (`SCORES`): `SES`.
+        - The target (2026-11-01, CLEAN-25): `CDR` ships its classes as words, no_dementia < very_mild_AD < mild_AD (the
+          Clinical Dementia Rating's order (CDR 0, 0.5, 1)).
     """
 
     # Task
@@ -118,7 +133,9 @@ class DementiaPrediction(AbstractCuratedDataset):
         df["CDR"] = df["CDR"].replace({0.5: "very_mild_AD", 1: "mild_AD", 2: "moderate_AD", 0: "no_dementia"})
         df = df[df["CDR"] != "moderate_AD"]
         df = df.sample(frac=1, random_state=42).sort_values(by=["Subject ID"], kind="stable").reset_index(drop=True)
+        # scores with no words per level are numbers (CLEAN-14)
+        df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(categorical=["M/F", "Subject ID"])
+        return FeatureTypes(ordinal=ORDINAL_LEVELS, categorical=["M/F", "Subject ID"])

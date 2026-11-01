@@ -5,7 +5,150 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "INF_ANAM": ["zero", "one", "two", "three and more"],  # open-ended
+    "STENOK_AN": [
+        "never",
+        "during the last year",
+        "one year ago",
+        "two years ago",
+        "three years ago",
+        "4-5 years ago",
+        "more than 5 years ago",
+    ],  # open-ended
+    "IBS_POST": ["none", "exertional angina pectoris", "unstable angina pectoris"],
+    "DLIT_AG": [
+        "no arterial hypertension",
+        "one year",
+        "two years",
+        "three years",
+        "four years",
+        "five years",
+        "6-10 years",
+        "more than 10 years",
+    ],  # open-ended
+    "ant_im": [
+        "no infarct in this location",
+        "QRS has no changes",
+        "QRS like QR-complex",
+        "QRS like Qr-complex",
+        "QRS like QS-complex",
+    ],
+    "lat_im": [
+        "no infarct in this location",
+        "QRS has no changes",
+        "QRS like QR-complex",
+        "QRS like Qr-complex",
+        "QRS like QS-complex",
+    ],
+    "inf_im": [
+        "no infarct in this location",
+        "QRS has no changes",
+        "QRS like QR-complex",
+        "QRS like Qr-complex",
+        "QRS like QS-complex",
+    ],
+    "post_im": [
+        "no infarct in this location",
+        "QRS has no changes",
+        "QRS like QR-complex",
+        "QRS like Qr-complex",
+        "QRS like QS-complex",
+    ],
+    "TIME_B_S": [
+        "less than 2 hours",
+        "2-4 hours",
+        "4-6 hours",
+        "6-8 hours",
+        "8-12 hours",
+        "12-24 hours",
+        "more than 1 day",
+        "more than 2 days",
+        "more than 3 days",
+    ],  # open-ended
+}
+
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "INF_ANAM": {"0": "zero", "1": "one", "2": "two", "3": "three and more"},
+    "STENOK_AN": {
+        "0": "never",
+        "1": "during the last year",
+        "2": "one year ago",
+        "3": "two years ago",
+        "4": "three years ago",
+        "5": "4-5 years ago",
+        "6": "more than 5 years ago",
+    },
+    "IBS_POST": {"0": "none", "1": "exertional angina pectoris", "2": "unstable angina pectoris"},
+    "DLIT_AG": {
+        "0": "no arterial hypertension",
+        "1": "one year",
+        "2": "two years",
+        "3": "three years",
+        "4": "four years",
+        "5": "five years",
+        "6": "6-10 years",
+        "7": "more than 10 years",
+    },
+    "ZSN_A": {
+        "0": "no chronic heart failure",
+        "1": "stage I",
+        "2": "stage IIA (right ventricular systolic dysfunction)",
+        "3": "stage IIA (left ventricular systolic dysfunction)",
+        "4": "stage IIB (left and right ventricular systolic dysfunction)",
+    },
+    "ant_im": {
+        "0": "no infarct in this location",
+        "1": "QRS has no changes",
+        "2": "QRS like QR-complex",
+        "3": "QRS like Qr-complex",
+        "4": "QRS like QS-complex",
+    },
+    "lat_im": {
+        "0": "no infarct in this location",
+        "1": "QRS has no changes",
+        "2": "QRS like QR-complex",
+        "3": "QRS like Qr-complex",
+        "4": "QRS like QS-complex",
+    },
+    "inf_im": {
+        "0": "no infarct in this location",
+        "1": "QRS has no changes",
+        "2": "QRS like QR-complex",
+        "3": "QRS like Qr-complex",
+        "4": "QRS like QS-complex",
+    },
+    "post_im": {
+        "0": "no infarct in this location",
+        "1": "QRS has no changes",
+        "2": "QRS like QR-complex",
+        "3": "QRS like Qr-complex",
+        "4": "QRS like QS-complex",
+    },
+    "TIME_B_S": {
+        "1": "less than 2 hours",
+        "2": "2-4 hours",
+        "3": "4-6 hours",
+        "4": "6-8 hours",
+        "5": "8-12 hours",
+        "6": "12-24 hours",
+        "7": "more than 1 day",
+        "8": "more than 2 days",
+        "9": "more than 3 days",
+    },
+    "SEX": {"0": "female", "1": "male"},
+}
+
+
+# Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
+SCORES = ["FK_STENOK", "GB"]
 
 
 class Mic(AbstractCuratedDataset):
@@ -68,6 +211,16 @@ class Mic(AbstractCuratedDataset):
         - We treat "?" as missing values.
         - We dropped the "id" column.
         - We reversed the ordinal encoding of the target feature.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 9 columns are ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 9 of them decoded from the source's codes
+          into its words (`CODE_LABELS`, 2026-11-01).
+        - Partial order, left unordered (2026-11-01, CLEAN-14): `ZSN_A` (chronic heart failure) has two lines of
+          severity, 0 < 1 < 2 < 4 and 0 < 1 < 3 < 4 (UCI 579: "partially ordered"): 2 and 3 are stage IIA of the right
+          and of the left ventricle, 4 both.
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 9 ordered codes carry their codebook's
+          words (`CODE_LABELS`), in the same order; 2 unordered codes carry their words: `ZSN_A`, `SEX`; 2 scores with
+          no words per level are numbers (`SCORES`): `FK_STENOK`, `GB`.
     """
 
     # Task
@@ -252,18 +405,21 @@ class Mic(AbstractCuratedDataset):
                 7: "ventricular_fibrillation",
             }
         )
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
+        # scores with no words per level are numbers (CLEAN-14)
+        df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "SEX",
                 "INF_ANAM",
                 "STENOK_AN",
-                "FK_STENOK",
                 "IBS_POST",
                 "IBS_NASL",
-                "GB",
                 "SIM_GIPERT",
                 "DLIT_AG",
                 "ZSN_A",

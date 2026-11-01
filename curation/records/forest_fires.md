@@ -49,6 +49,10 @@ CC (2026-10-06, Lennart): Kept in TabArena v0.2 as a valid task after the task-p
 
 CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `month` (a partial order); `day` (a partial order).
+
+CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 2 calendar or compass cycles ordered.
+
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `fpa_fod_attributes_wildfire_size` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference

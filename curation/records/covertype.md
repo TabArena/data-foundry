@@ -56,6 +56,10 @@ CC (2026-10-01, Lennart): Back to IID splits on the full data (all 7 cover types
 
 CC (2026-10-21, Lennart): Fallback log loss, not the paper's accuracy.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `Soil_ClimaticZone` (a partial order).
+
+CC (2026-11-01, Lennart): marks on the review board of PR #37: Soil_ClimaticZone stays unordered (a second dimension within the altitude belts), noted in the definition.
+
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `fia_forest_type` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference

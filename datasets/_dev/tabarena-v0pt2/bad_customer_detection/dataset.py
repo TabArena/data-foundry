@@ -7,6 +7,19 @@ from pathlib import Path
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "education": [
+        "Incomplete secondary education",
+        "Secondary education",
+        "Secondary special education",
+        "Incomplete higher education",
+        "Higher education",
+        "PhD degree",
+    ],
+}
+
 
 class BadCustomerDetection(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -60,6 +73,11 @@ class BadCustomerDetection(AbstractCuratedDataset):
     curation_comments = """
         - We renamed the values of the target variable to be more descriptive.
         - Note: The original source of the data is still to be clarified (open item in the curation record).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Cycle (2026-11-01, CLEAN-14, Lennart's rule): `month` (1-12) stays a number. A weekday or a month is a
+          position in a continuous cycle (weekday 1.5 is Monday noon), and the source ships it as a number; named
+          weekdays and months are ordered categories instead.
     """
 
     # Task
@@ -82,6 +100,7 @@ class BadCustomerDetection(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "sex",
                 "education",

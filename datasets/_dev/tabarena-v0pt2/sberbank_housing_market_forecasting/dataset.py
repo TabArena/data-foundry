@@ -4,13 +4,19 @@ from __future__ import annotations
 
 import zipfile
 from pathlib import Path
-from typing import TYPE_CHECKING
 
+import pandas as pd
 import polars as pl
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
-
-if TYPE_CHECKING:
-    import pandas as pd
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    decode,
+    set_missing,
+)
 
 MONTHLY = [
     "oil_urals",
@@ -129,6 +135,31 @@ LAGS = {"1mo": MONTHLY, "3mo": QUARTERLY, "1y": YEARLY}
 SUFFIX = {"1mo": "_lag_1m", "3mo": "_lag_1q", "1y": "_lag_1y"}
 
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "ecology": ["poor", "satisfactory", "good", "excellent"],
+}
+
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "material": {
+        "1": "panel",
+        "2": "brick",
+        "3": "wood",
+        "4": "mass concrete",
+        "5": "breezeblock",
+        "6": "mass concrete plus brick",
+    },
+}
+
+
+# Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
+SCORES = ["state"]
+
+
 class SberbankHousingMarketForecasting(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="What will a Moscow flat sell for, per square metre?",
@@ -210,6 +241,12 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         - We drop the ID column as it does not provide information.
         - Note, the dataset contains a lot of spatial feature and even more already decoded spatial information (like distances to various points of interest).
         - We keep the 1,126 sales whose build_year is later than the year of sale (Lennart, 2026-10-14; until then they were dropped as errors). 1,124 were sold 0 to 4 years before it, which fits flats sold before completion; 2 have a build_year coded from a range (such as 20052009), kept as it is.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing
+          (CLEAN-10).
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 1 unordered codes carry their words:
+          `material`; 1 scores with no words per level are numbers (`SCORES`): `state`.
     """
 
     # Task
@@ -300,14 +337,29 @@ class SberbankHousingMarketForecasting(AbstractCuratedDataset):
         data = data.drop(columns=["0_6_all", "7_14_all", "id"])
         data = data.reset_index(drop=True)
         df = data
+        # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
+        # CLEAN-14): don't know, refused, not asked, other
+        df = set_missing(
+            df,
+            {
+                "state": [33.0],
+                "ecology": ["no data"],
+            },
+        )
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
+        # scores with no words per level are numbers (CLEAN-14)
+        df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
-                # 1-4; the one row with 33 (id 10092, likely a typo for 3) also has the range-coded build_year
-                # 20052009; both values are kept as they are
-                "state",
+                # 1-4, ordinal; the one row with 33 (id 10092, likely a typo for 3; it also has the range-coded
+                # build_year 20052009) is missing (ORDINAL_LEVELS)
+                # the metro station's id, like the other station ids (point 4, 2026-10-31)
+                "ID_metro",
                 "ID_railroad_station_walk",
                 "ID_railroad_station_avto",
                 "ID_big_road1",

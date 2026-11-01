@@ -59,6 +59,8 @@ CC (2026-10-21, Lennart): the metric is precision_at_k with k_fraction 0.5, prec
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `osha_inspection_violations` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
 ## Reference
 
 A dataset for efforts towards achieving the sustainable development goal of safe working environments

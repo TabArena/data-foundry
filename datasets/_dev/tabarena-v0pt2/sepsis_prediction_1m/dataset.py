@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, decode
 
 
 class SepsisPrediction1m(AbstractCuratedDataset):
@@ -92,6 +92,8 @@ class SepsisPrediction1m(AbstractCuratedDataset):
         - Prediction point and scoring: each row is one patient-hour with only that hour's measurements, and SepsisLabel is 1 from 6 hours before sepsis onset onward, so the task is "sepsis within the next 6 hours" at every hour. No row encodes the time left in the stay. The leak risk lies in the evaluation: the test set holds complete patient records, and septic records end shortly after onset, so a method that looks at a patient's later rows (record length, last Hour/ICULOS) learns the outcome. Each hour is predicted from its own row only: no feature may combine a patient's rows (record length, last Hour/ICULOS, aggregates over the stay). Scoring uses the PhysioNet 2019 utility per patient over its ordered hours, not independent rows.
         - Patient_ID is the group column. We store it as a category, so the README's list of column types shows it
           (as it shows the target), but it is group metadata, not a model feature: the 42 features leave it out.
+        - The target (2026-11-01, CLEAN-25): `SepsisLabel` ships its classes as words (1 is the event). Binary: "Yes" is
+          the event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -144,6 +146,8 @@ class SepsisPrediction1m(AbstractCuratedDataset):
         df["Patient_ID"] = codes
         df["Gender"] = df["Gender"].replace({0: "Female", 1: "Male"})
         df = df.drop(columns=["Unnamed: 0"])
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

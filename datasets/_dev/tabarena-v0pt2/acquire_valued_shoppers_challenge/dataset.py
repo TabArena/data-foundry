@@ -16,6 +16,7 @@ from data_foundry.v2 import (
     TaskSummary,
     Temporal,
     TemporalSplits,
+    decode,
     drop_columns,
 )
 
@@ -83,6 +84,8 @@ class AcquireValuedShoppersChallenge(AbstractCuratedDataset):
         We follow the preprocessing from TabRed https://github.com/yandex-research/tabred/tree/main/preprocessing#ecom-offers-acquire-valued-shoppers-by-dmdave (which follows a top solution https://github.com/MLWave/kaggle_acquire-valued-shoppers-challenge).
 
         - The preprocessing by TabRed collapses customer groups into single entries per customer. So we go from grouped-temporal data to only temporal data. Future work could look into a version without preprocessing.
+        - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
+          event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -220,6 +223,8 @@ class AcquireValuedShoppersChallenge(AbstractCuratedDataset):
                 "has_bought_company_1",
             ],
         )
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

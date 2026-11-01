@@ -669,3 +669,24 @@ def test_dtype_probe_reads_the_uci_and_openml_codebooks(dtype_probe):
     assert dtype_probe.codebook_api_url("https://archive.ics.uci.edu/dataset/222/bank+marketing").endswith("id=222")
     assert dtype_probe.codebook_api_url("https://www.openml.org/search?type=data&id=1461").endswith("/1461")
     assert dtype_probe.codebook_api_url("https://www.kaggle.com/c/porto-seguro") is None
+
+
+def test_dtype_probe_flags_scales_and_open_ends(dtype_probe):
+    """Bands and open ends look like a scale; an ordered category raises only its open end; colours raise nothing."""
+    df = pd.DataFrame(
+        {
+            "experience": pd.Categorical(["<1", "1", "2", ">20", "3"]),
+            "bar": pd.Categorical(["never", "less1", "1~3", "4~8", "gt8"]),
+            "quality": pd.Categorical(["Ex", "Gd", "TA", "Fa", "Po"]),
+            "colour": pd.Categorical(["red", "blue", "green", "red", "blue"]),
+            "mi": pd.Categorical(
+                ["0", "1", "2", "3 or more", "1"], categories=["0", "1", "2", "3 or more"], ordered=True
+            ),
+        }
+    )
+    flags = _flags(dtype_probe.column_table(df))
+    assert flags["experience"][:2] == ["ordinal_like", "open_end"]
+    assert flags["bar"][:2] == ["ordinal_like", "open_end"]
+    assert flags["quality"] == ["ordinal_like"]
+    assert flags["colour"] == []
+    assert flags["mi"] == ["open_end"]

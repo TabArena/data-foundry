@@ -78,6 +78,9 @@ class Covertype(AbstractCuratedDataset):
         - We add the column names in the correct way.
         - We reverse the one-hot encoding of the Wilderness_Area and Soil_Type features, and add human-readable descriptions for these features. Moreover, we add the climatic and geologic zones categorical features for each soil type based on the codes.
         - We reverse the ordinal encoding of the class name.
+        - Partial order, left unordered (2026-11-01, CLEAN-14): `Soil_ClimaticZone`: the altitude belts are ordered
+          (lower montane < montane < subalpine < alpine), but the dry and the mixed zones within a belt are a second
+          dimension.
     """
 
     # Task

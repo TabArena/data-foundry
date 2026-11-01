@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: hiva_agnostic
 container_format: 2
-checksum: v2:316a7481719241aec75fbb8a51d0ca2aa3952fbffeed6e989e2850f2056ece64
+checksum: v2:2dbdedd6ae260b471bce6d28ffd379a2da0cc069c6115eaa622e2c0f57359e72
 build:
   uuid: 01a13a7d-c4ee-761a-9292-ce1cd880e6c6
   checksum: v2:ce9fc12404d0aa0571b58de3e58925c06ff333bba14ab50bdfcba71338248ce4
@@ -67,7 +67,7 @@ decisions: []
 
 Binary classification of `CompoundActive`, scored with `balanced_accuracy` on IID splits. 4,229 rows and 1,429 features. Source: Other (2007).
 
-Built as `01a13a7d-c4ee-761a-9292-ce1cd880e6c6` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:316a7481719241aec75fbb8a51d0ca2aa3952fbffeed6e989e2850f2056ece64`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c4ee-761a-9292-ce1cd880e6c6` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:2dbdedd6ae260b471bce6d28ffd379a2da0cc069c6115eaa622e2c0f57359e72`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -175,11 +175,11 @@ The first 5 of 4,229 rows of the final frame (random rows: the frame is shuffled
 
 | CompoundActive | molecule_structure_property_1 | molecule_structure_property_2 | molecule_structure_property_3 | molecule_structure_property_4 | molecule_structure_property_5 | molecule_structure_property_6 | molecule_structure_property_7 | molecule_structure_property_8 | molecule_structure_property_9 | molecule_structure_property_10 | molecule_structure_property_11 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| -1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| -1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| -1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| -1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| -1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| Yes | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| No | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| No | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| No | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| No | 0 | 0 | 0 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
 
 ## Curation notes
 
@@ -187,6 +187,8 @@ The first 5 of 4,229 rows of the final frame (random rows: the frame is shuffled
 - We use the challenge's training (3,845 compounds, 135 active) and validation compounds (384, 14 active; labels in ValidAgnos.zip), as `hiva.param` lists them. The test labels (38,449 compounds) were never released. The validation compounds were added on 2026-10-14.
 - We drop the 188 descriptors that copy an earlier one; until 2026-10-14 a fixed list dropped 99 of them. 23 compounds repeat another's descriptors, always with the same label (3 of them across training and validation), and stay.
   Why they stay (checked 2026-10-21 against the challenge's prior-knowledge release, which gives the same 4,229 compounds as structures with their NCI NSC numbers, in another order): every compound has its own NSC number, so no compound is entered twice. Of the 4,156 structures that RDKit reads, 7 repeat another's exact structure under a new NSC number, 9 ignoring stereochemistry and 19 counting salt forms of one parent. That is fewer than the 23 repeated descriptor vectors, so at least 4 of the 23 are different compounds that the 1,617 binary descriptors cannot tell apart. The two releases share no key, so the 23 cannot be matched one by one. All 46 rows are inactive.
+- The target (2026-11-01, CLEAN-25): `CompoundActive` ships its classes as words (1 is the active compound).
+  Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
@@ -290,8 +292,8 @@ Default splits.
 
 | CompoundActive | count | pct |
 |---|---|---|
-| -1 | 4080 | 96.48 |
-| 1 | 149 | 3.52 |
+| No | 4080 | 96.48 |
+| Yes | 149 | 3.52 |
 
 ### Numeric features
 
@@ -304,8 +306,8 @@ No numeric features to summarize.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| CompoundActive | 1 | -1 | 4080 | 96.48 |
-| CompoundActive | 2 | 1 | 149 | 3.52 |
+| CompoundActive | 1 | No | 4080 | 96.48 |
+| CompoundActive | 2 | Yes | 149 | 3.52 |
 | molecule_structure_property_1 | 1 | 0 | 4184 | 98.94 |
 | molecule_structure_property_1 | 2 | 1 | 45 | 1.06 |
 | molecule_structure_property_10 | 1 | 0 | 4158 | 98.32 |
@@ -380,4 +382,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:316a7481719241aec75fbb8a51d0ca2aa3952fbffeed6e989e2850f2056ece64` |
+| stale | yes: the definition now gives checksum `v2:2dbdedd6ae260b471bce6d28ffd379a2da0cc069c6115eaa622e2c0f57359e72` |

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: santander_customer_satisfaction
 container_format: 2
-checksum: v2:fcbdfca95b30d471e928997238637d9e92f2b20bd9515087ebfb7abbd1ebe9ca
+checksum: v2:e65b9981d0a6c4c15a5401a722b7e9d271f40c04bac089e49ad619c58cf4d6e8
 build:
   uuid: 01a111fc-12c0-72fc-95ab-3a7ad03daa2b
   checksum: v2:d5f915868cfcb2e0753992af307356871db8faaaea391a911fb35064a7c1aa19
@@ -69,7 +69,7 @@ decisions: []
 
 Binary classification of `TARGET`, scored with `roc_auc` on IID splits. 71,080 rows and 307 features. Source: Kaggle (2016).
 
-Built as `01a111fc-12c0-72fc-95ab-3a7ad03daa2b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:fcbdfca95b30d471e928997238637d9e92f2b20bd9515087ebfb7abbd1ebe9ca`, so the build is stale. See [Build](#build).
+Built as `01a111fc-12c0-72fc-95ab-3a7ad03daa2b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:e65b9981d0a6c4c15a5401a722b7e9d271f40c04bac089e49ad619c58cf4d6e8`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -177,11 +177,11 @@ The first 5 of 71,080 rows of the final frame (random rows: the frame is shuffle
 
 | TARGET | var3 | var15 | imp_ent_var16_ult1 | imp_op_var39_comer_ult1 | imp_op_var39_comer_ult3 | imp_op_var40_comer_ult1 | imp_op_var40_comer_ult3 | imp_op_var40_efect_ult1 | imp_op_var40_efect_ult3 | imp_op_var40_ult1 | imp_op_var41_comer_ult1 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 2 | 40 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 0 | 211 | 50 | 0 | 2341.08 | 7742.76 | 2341.08 | 7699.98 | 0 | 0 | 0 | 0 |
-| 0 | 2 | 23 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 0 | 2 | 32 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 0 | 2 | 23 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| No | 2 | 23 | 240 | 233.16 | 233.16 | 0 | 0 | 0 | 0 | 0 | 233.16 |
+| No | 2 | 24 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| No | 2 | 40 | 0 | 135 | 208.08 | 0 | 0 | 0 | 0 | 0 | 135 |
+| No | 2 | 23 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| No | 2 | 44 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 
 ## Curation notes
 
@@ -193,6 +193,8 @@ We start with the train.csv from Kaggle.
 - We drop duplicates as their origin is unclear and they could create data leaks when splitting the training data.
 - We replace -999999 in var3 with with nan.
 - We keep the data otherwise as it. Several columns might be categorical and contain encoded nan values but we are not able to determine this due to anonymization.
+- The target (2026-11-01, CLEAN-25): `TARGET` ships its classes as words (1 is the event). Binary: "Yes" is the
+  event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
@@ -216,7 +218,7 @@ Default splits.
 
 0 error(s), 1 warning(s), 0 info (26 checks run, plus the dataset's own checks).
 
-- **warning** `dataset_pure_feature_value`: 5 feature value(s) determine the class on their own: ind_var13_largo_0 = 1: 773 rows, 99.7% TARGET=0 (overall 96.2%); ind_var13_largo = 1: 760 rows, 99.7% TARGET=0 (overall 96.2%); delta_num_aport_var13_1y3 = -1.0: 1,675 rows, 99.7% TARGET=0 (overall 96.2%); num_aport_var13_hace3 = 3: 1,565 rows, 99.7% TARGET=0 (overall 96.2%); num_meses_var13_corto_ult3 = 3: 1,332 rows, 99.7% TARGET=0 (overall 96.2%). (hint: Often a leak: a column derived from the outcome or recorded after it. Check the column's documentation; drop it if so, otherwise accept the warning with the reason.)
+- **warning** `dataset_pure_feature_value`: 5 feature value(s) determine the class on their own: ind_var13_largo_0 = 1: 773 rows, 99.7% TARGET=No (overall 96.2%); ind_var13_largo = 1: 760 rows, 99.7% TARGET=No (overall 96.2%); delta_num_aport_var13_1y3 = -1.0: 1,675 rows, 99.7% TARGET=No (overall 96.2%); num_aport_var13_hace3 = 3: 1,565 rows, 99.7% TARGET=No (overall 96.2%); num_meses_var13_corto_ult3 = 3: 1,332 rows, 99.7% TARGET=No (overall 96.2%). (hint: Often a leak: a column derived from the outcome or recorded after it. Check the column's documentation; drop it if so, otherwise accept the warning with the reason.)
 
 ## Data checks
 
@@ -283,10 +285,10 @@ Default splits.
 | ind_var9_ult1 | category | 0 | 0 | 2 | 0, 1 |
 | ind_var43_emit_ult1 | category | 0 | 0 | 2 | 0, 1 |
 | ind_var43_recib_ult1 | category | 0 | 0 | 2 | 0, 1 |
-| TARGET | category | 0 | 0 | 2 | 0, 1 |
+| TARGET | category | 0 | 0 | 2 | No, Yes |
 | var3 | float64 | 107 | 0.15 | 207 | 2.0, 8.0, 9.0, 3.0, 1.0, 13.0, 7.0, 4.0, 12.0, 6.0 |
 | imp_ent_var16_ult1 | float64 | 0 | 0 | 596 | 0.0, 300.0, 150.0, 600.0, 900.0, 3.0, 450.0, 60.0, 1500.0, 90.0 |
-| imp_op_var39_comer_ult1 | float64 | 0 | 0 | 7551 | 0.0, 30.0, 60.0, 15.0, 90.0, 45.0, 4.5, 150.0, 120.0, 2.67 |
+| imp_op_var39_comer_ult1 | float64 | 0 | 0 | 7551 | 0.0, 30.0, 60.0, 15.0, 90.0, 45.0, 4.5, 120.0, 150.0, 300.0 |
 
 (248 more rows not shown)
 
@@ -296,8 +298,8 @@ Default splits.
 
 | TARGET | count | pct |
 |---|---|---|
-| 0 | 68368 | 96.18 |
-| 1 | 2712 | 3.82 |
+| No | 68368 | 96.18 |
+| Yes | 2712 | 3.82 |
 
 ### Numeric features
 
@@ -378,8 +380,8 @@ Default splits.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| TARGET | 1 | 0 | 68368 | 96.18 |
-| TARGET | 2 | 1 | 2712 | 3.82 |
+| TARGET | 1 | No | 68368 | 96.18 |
+| TARGET | 2 | Yes | 2712 | 3.82 |
 | ind_var1 | 1 | 0 | 70794 | 99.6 |
 | ind_var1 | 2 | 1 | 286 | 0.4 |
 | ind_var10_ult1 | 1 | 0 | 64932 | 91.35 |
@@ -454,4 +456,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:fcbdfca95b30d471e928997238637d9e92f2b20bd9515087ebfb7abbd1ebe9ca` |
+| stale | yes: the definition now gives checksum `v2:e65b9981d0a6c4c15a5401a722b7e9d271f40c04bac089e49ad619c58cf4d6e8` |

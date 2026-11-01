@@ -84,6 +84,7 @@ class MyDataset(AbstractCuratedDataset):
             categorical=["colour"],                # the classification target is added automatically
             string=["description"],
             datetime={"date": "%Y-%m-%d"},         # or a list of names (format inferred)
+            ordinal={"condition": ["poor", "fair", "good"]},  # an ordinal scale, lowest level first (CLEAN-14)
         )
 
     def _decisions(self, raw, df) -> list[Decision]:           # optional: Decisions
@@ -123,7 +124,8 @@ Do not re-implement any of this.
 * Defaults: `stratify_on` is the target for classification; set it only to deviate. `metric` has no default: it is
   required, and `Metric.fallback(reason=...)` resolves to the problem type's `roc_auc`, `log_loss` or `rmse` at build.
 * After `_clean`: it casts the columns `_feature_types` names (a dict gives datetime formats; unused categories are
-  removed; a classification target becomes a category without being listed), then fixes the row order: the rows in
+  removed; a classification target becomes a category without being listed; an `ordinal` column is an ordered
+  category, also when `categorical` names it too), then fixes the row order: the rows in
   the order of their content (a hash of each row, so the order `_clean` returns does not matter), then a stable sort by
   the time column for a temporal task, otherwise a shuffle with seed 42 (`shuffle = False` keeps the order of `_clean`,
   with a reason in `curation_comments`), then `reset_index`. Never shuffle, sort or `reset_index` yourself, and never
@@ -279,16 +281,26 @@ The order the collection's definitions converge on. Emit the steps that plausibl
 
 ```python
 # 1. Load (+ merge multiple tables on their key, following the source's own joins).
-# 2. Rename columns and the target to meaningful names; fix typos, strip special characters. Binary targets get
-#    readable labels: df[target] = df[target].map({1: "Yes", 0: "No"})
+# 2. Rename columns and the target to meaningful names; fix typos, strip special characters. The target's classes
+#    are words (CLEAN-25): binary "No"/"Yes" with "Yes" the event the task predicts,
+#    `df = decode(df, {self.target: {0: "No", 1: "Yes"}})`; a multiclass target the source's class names, ordered
+#    (`ordinal={target: [...]}`) when they form a scale.
 # 3. TODO(verify): drop uninformative identifiers. To keep an id but hide its names (a group id), use
 #    `anonymize_ids(df[col])`, never random ids: `uuid4()` changes the data on every run.
-# 4. TODO(verify): reverse ordinal codes and true one-hot blocks, restore the labels (`df[col].map({...})`); yes/no
-#    flags that can be set together stay separate columns.
+# 4. TODO(verify): reverse ordinal codes and true one-hot blocks, restore the labels; yes/no flags that can be set
+#    together stay separate columns. A code the codebook names in words is decoded into the words (CLEAN-12), after
+#    step 5's `set_missing`: `df = decode(df, CODE_LABELS)` with `CODE_LABELS = {col: {code: "label"}}` at module
+#    level (a code without a label raises).
 # 5. TODO(verify): proxy missing values and impossible values to NaN, keeping the rows:
 #       df = df.replace({"?": np.nan, " ": np.nan})     # UCI style
 #       df[col] = df[col].replace(-1, np.nan)           # sentinel style (-1, -9, -999, 999999)
-# 6. Dtypes by meaning, named in `_feature_types` (not cast here); no `object` column survives. Cast mid-way with
+#       df = set_missing(df, {"q7": [8, 9]})           # survey codes: don't know, refused, not asked
+# 6. Dtypes by meaning, named in `_feature_types` (not cast here); no `object` column survives. An ordinal scale
+#    whose levels the codebook names in words (decoded in step 4), or bands, or a count with an open end, is
+#    `ordinal={col: [levels, lowest first]}`, in the order of the codebook (not the order of the codes: it is often
+#    reversed); a value that is no level raises, so the codes outside the scale that mean unknown go to `set_missing`
+#    first, and a state of its own (no basement) is placed by CLEAN-14. A score with no words per level (a 1-10
+#    rating, a points total) stays a number (CLEAN-14). Cast mid-way with
 #    `cast_dtypes` only when a later step needs the dtype. A SMILES column becomes RDKit descriptors and is dropped:
 #       df = pd.concat([df, rdkit_descriptors(df["SMILES"])], axis=1)   # `rdkit_*` columns
 #    then check for rows that are now copies (stereoisomers).
