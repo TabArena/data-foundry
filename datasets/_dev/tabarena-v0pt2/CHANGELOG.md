@@ -63,6 +63,86 @@ record, audit or PR that motivated it.
 - `BENCHMARK_CHANGES_TODO.md`: new section "Encodings and their caches" (one cache contract for every encoding, the
   encoding's compute time added on top of the benchmark record, and no SMILES column into the text embedding).
 
+## 2026-11-01, targets in words; counts with a cut end stay ordered categories (PR #37)
+
+- The target rule (CLEAN-25; Lennart: "yes decode the targets too ... provide orderd cateogricals for the targets of
+  all classification datasets"): a classification target ships its classes as words. All 109 classification targets
+  checked; 34 were codes. 30 binary targets are "No"/"Yes" with "Yes" the event (gallstone_disease's 0 is gallstones
+  present, anes_voting_2026's 2 is voted, hepatitis_survival_prediction's 1 is death, indian_liver_patient_dataset's 1
+  a liver patient); "Yes" sorts second, the positive class of every metric. Four multiclass targets carry the source's
+  class names (cardiotocography, eryhemato_squamous_disease, forensic_glass_identification, hepatitis_c_prediction).
+  Ordered targets where the classes form a scale: cardiotocography (normal < suspect < pathologic),
+  dementia_prediction (no dementia < very mild < mild), hepatitis_c_prediction (blood donor < hepatitis < fibrosis <
+  cirrhosis). Nominal targets and targets with a state outside a scale (open_university's "Withdrawn") stay
+  unordered; `otto`'s anonymized classes keep their names. BENCHMARK_CHANGES_TODO: align probability columns to the
+  container's categories by name.
+- Counts with a cut end stay ordered categories of the source's levels, the cut end a level of its own (CLEAN-14,
+  made explicit; Lennart: "keep what makes sense from the context and not lose the information if possible, so that
+  might be ordered categorical as an only option"). For a few hours they were numbers (the cut end at its bound) with
+  censoring flags; tested on hr_analytics and lending_club, the flag moved no model by more than half a percent, and
+  the curator chose the lossless form without deciding types by model runs. The 13 columns (hr_analytics
+  `experience` and `last_new_job`, lending_club `emp_length`, student_portuguese `failures`, mic `INF_ANAM`, ANES
+  VCF0138 and VCF9122, six early_learning_predictors counts) are as before.
+- Decoding changes the rows' content, and the row order of a shuffled task follows the content (`order_rows`):
+  the IID splits of the decoded datasets will differ from today's containers at the next build.
+  forensic_glass_identification's new order puts the nominal target's codes at rho -0.21 with position, a chance
+  outcome (0.4% of shuffles): the warning is accepted with that reason. `dataset check` on the 40 definitions: no
+  error; against main no new warning. Not built.
+
+## 2026-11-01, codes decoded into the codebook's words; scores without words are numbers (PR #37)
+
+- The curator's rule (Lennart: "if we can replace the numbers with a description that is obviously not continous then
+  orderd categorical makes sense, otherwise in some cases the numeric version would make more sense"; on a 1-10 school
+  rating: "1.5 is well defined more or less"): a code whose codebook says in words what each level is carries the
+  words; a score or rating with no words per level, or words only at its two ends, is a number; bands keep their band
+  text. CLEAN-12 and CLEAN-14 amended; `decode(df, CODE_LABELS)` in the v2 API (a code without a label raises), after
+  `set_missing`.
+- Six agents read the codebooks for every coded column of 44 definitions
+  (`local-data-warehouse/_runs/2026-10-30_ordinal/decode/`). In 29 definitions 377 coded columns now carry their
+  words (BI-RADS density "almost entirely fatty" to "extremely dense", ames' ratings "very poor" to "very excellent",
+  the ANES codes, coil_2000's percentage and guilder bands,
+  early_learning_predictors' answers), and 54 scores and ratings are numbers again (california_house_prices_2020's
+  school ratings, miami_housing's `structure_quality`, eryhemato_squamous_disease's ten findings, student_portuguese's
+  1-5 ratings, the ANES 7-point scales with words only at the ends, cirrhosis' stage, ljubljana's degree of
+  malignancy). 395 ordinal columns in 53 definitions. Left as codes: anonymized and undocumented codes (amex, ieee
+  except `id_14`, porto_seguro, the STEG data, alfa_battle), 0/1 flags, the targets, website_phishing's signals (the
+  curator kept their codes), and the cases put to the curator on the dataset sheets.
+- Found by reading the words: pva_revenue_prediction_kddcup98's `DOMAIN_ses` read the urban scheme's codes 2 and 3
+  as average and lowest (6,504 and 5,270 rows); each row is read by its own scheme now. ljubljana_breast_cancer's
+  bands are ordered categories of the bands, not their midpoints. ANES: VCF0130's 0 is religion not ascertained or not
+  asked (missing); age 0, the thermometers' 98/99 and 998/999 and other codes that mean unknown are missing (CLEAN-10).
+  Undocumented codes are missing: early_learning_predictors (`pra_cotlands_visits`, `pra_free_play`,
+  `pra_free_play_outdoor`, `obs_water`, `pri_bank` 0), credit_card_clients_default `MARRIAGE` 0, pva `AGEFLAG` blank
+  and `GENDER` A, C and Unknown.
+- The curator's answers on the ANES sheet: church attendance in 2024 reads the filter's "No" (stored as 9) as never,
+  except the short form; 2020's VCF0130a recovers never from VCF0130; "all of life" is the respondent's age, so
+  VCF9001 is a number and VCF9002 bands those rows by age; the 40 master-code columns carry the appendix's words.
+  CLEAN-12 has a table of what ships as words and what as numbers.
+- `dataset check` on the 29 definitions: no error; against main three warnings fewer and none new. Not built.
+
+## 2026-11-01, the curator's second marks on PR #37: cycles, partial orders, two cleanings (PR #37)
+
+- Cycles (Lennart: "if there is a concept such as 1.5 of the scale that is reasonably between 1 and 2 (like half day),
+  then a number makes sense as the true measure is continuous", and "there is weekday 1.5 which is between monday and
+  tuesday"): a weekday, a month or an hour is a position in a continuous cycle. Shipped as numbers it is a number:
+  5g_energy_consumption `weekday_number` (a category since 2026-10-31) and rossmann_store_sales `DayOfWeek` (an
+  unordered category before) are numbers again; bad_customer_detection `month`, miami_housing `month_sold`,
+  rossmann_store_sales `CompetitionOpenSinceMonth` and mobile_churn `month` stay numbers (ordered for a few hours
+  today, then reverted when the curator asked why weekdays differ from days). Shipped as names it stays an ordered
+  category (forest_fires, garments, home_credit, hotel_booking_demand, rain_in_australia). CLEAN-14 amended.
+- Partial orders stay unordered, and the definition says so and names the lines (Lennart): notes added to mic,
+  horse_colic_survival, audiology_diagnosis, predict_students_dropout_and_academic_success, covertype, force_2020,
+  rossmann_store_sales, kick, fiat_500 and distribution_transformers_at_cauca_department. CLEAN-14 amended.
+- clock_protein_toxicity: the two molecules the descriptor software failed on are dropped (169 molecules remain): -1
+  counts of acidic and basic groups, 62-68 descriptors at 0 that at least 95% of the other molecules have non-zero, and
+  9-18% of their descriptors outside the others' 1-99% range (0.7% for a typical molecule). The source gives no
+  structures, so they cannot be recomputed; an exception to CLEAN-11 (Lennart).
+- early_learning_predictors: `language_match` ("Assessment language matches home", 0/1) held the enumerator's reason
+  in place of the answer in 16 rows; each explains why the child was assessed in another language than at home, so
+  they are 0 (CLEAN-11).
+- 442 ordinal columns in 58 definitions. `dataset check` on the 16 definitions changed today: no error, no warning.
+  The review board's dataset sheets are rebuilt from the definitions as they stand. Not built.
+
 ## 2026-11-01, `marketing_campaign` retired: the iFood hiring case's mock data (issue #38)
 
 - `marketing_campaign` is retired: `No (Retired)` with `AHDS` (SEL-16, PROV-3), Lennart's "Don't ship" on the review
@@ -77,6 +157,88 @@ record, audit or PR that motivated it.
   `Missing source information`.
 - PR #37 still edits this folder (ordinal typing); its changes to `dataset.py` and the generated `README.md` lapse
   with the retirement.
+
+## 2026-10-31, the curator's marks on PR #37's review board applied (PR #37)
+
+- A level outside a scale that is a state of its own (no basement, not prescribed, no checking account): the column
+  is ordered, and the state is missing when the column has no other missing value, else the lowest level (Lennart:
+  "In data foundry, we want to keep the right state independent of what the downstream benchmark does"). The 35
+  columns left unordered for such a state are ordered now. By meaning, a state that is simply not on the scale (Other,
+  a mixed electrical system, BI-RADS 0 "needs more imaging", a calm wind, a lapsed registration, heloc's "all other"
+  and no bureau record) is missing even where the column has other missing values (18 columns), and ANES's "all of
+  life" residence is the top level. distribution_transformers' `client_type` stays unordered (commercial, industrial
+  and official clients beside the residential strata 1-6).
+- The ordinal scales the sources ship as numbers are ordered categories too (point 3: 164 columns, and the 3 of low
+  confidence below), as the right state of the data; that AutoGluon's preprocessing drops the order is a benchmark
+  TODO (`BENCHMARK_CHANGES_TODO.md`). Months, weekdays and wind directions are ordered in their usual order (10
+  columns; the wrap is not shown).
+  heart_disease's `cp` is ordered by how typical the angina is (asymptomatic < non-anginal pain < atypical < typical
+  angina), from the clinical logic, not the outcome; for the same reason miami_housing's `structure_quality` (a 1-5
+  quality code without labels, doubted for the high prices of the homes rated 3) is ordered by its codes.
+  early_learning_predictors' `child_stunted` is ordered.
+- Codes shipped as numbers are categories (point 4): early_learning_predictors' 18 answer codes, 5g_energy_consumption
+  `weekday_number`, sdss_17 `cam_col`, home_credit_default_stability_1m `max_persontype_1072L`, anes_voting_2026
+  `VCF0104` and sberbank's `ID_metro`; brazilian_ecommerce's zip prefixes stay numbers (nearby prefixes are nearby
+  places). ieee_fraud_detection's `TransactionID` is dropped: a row number in time order (Spearman 1.0 with
+  `TransactionDT`), an identifier (CLEAN-3).
+- Placed by meaning: infrared_thermography_temperature's age band 21-30 between 21-25 and 26-30; hotel_booking_demand's
+  Undefined meal is SC (the paper: "Undefined/SC - no meal package"); heloc's two delinquency scales ordered by the
+  FICO data dictionary, their unknown, all-other and no-record codes missing.
+- Labels (Lennart: "we want the right labels in all cases"): credit_g's source is UCI 573 (South German Credit,
+  Groemping 2019), every code labelled from its code table, 57 coded values and 10 typos in amount or age corrected, 9
+  ordinal scales. immoscout_german_house_prices' `Condition`, `Furnishing_quality`, `Type` and `Heating` carry
+  ImmoScout24's own codes: the scrape's English labels are permuted, the missing value swapped with a real level in
+  each column; 3,548 of the houses match an April 2020 scrape that keeps the codes, and each label maps to one code
+  for 93-100% of its matches. `Furnishing_quality` is then ordered; `Condition` stays unordered (a partial order).
+- The orders of low confidence checked again without the label: regensburg_pediatric_appendicitis'
+  `Appendix_Wall_Layers` (intact < partially raised < raised, from the German record of the 2021 release; `upset`, 1
+  child, missing) and `Perfusion` (by blood flow, no < hypoperfused < present < hyperperfused) ordered, with a note
+  that a blank `Perfusion` also means unremarkable in this file; website_phishing's `SFH` ordered, with a note on
+  which end is phishy; churn_telco_south_asia's user types, the STEG `reading_remarque` and marketing_campaign's
+  `Education` unordered with a note.
+- gallstone_disease's `Comorbidity`: the undocumented 2 (1 row) and 3 (2 rows) recoded to 1, as each row lists one
+  disease; the rows kept (CLEAN-11). Cloud cover 9 (sky obscured, the cloud amount cannot be estimated) missing in
+  ashrae_great_energy_predictor_iii_1m and rain_in_australia (CLEAN-10). amex_non_iid_1m's `D_87` became constant
+  with the -1 fix of 2026-10-30 (1 or missing, as in AMEX's data), a warning the entry below missed: accepted with
+  its reason.
+- 443 ordinal columns in 59 definitions. CLEAN-14 rewritten with the marks; Cases rows for CLEAN-3, 10, 11, 12 and
+  14. `dataset check` on the 67 changed definitions: no error, and against main two warnings fewer and none new. Not
+  built.
+
+## 2026-10-30, ordinal scales typed in order; counts with an open end; proxy missing codes; credit_g relabelled (PR #37)
+
+- Ordinal type: `FeatureTypes(ordinal={col: [levels, lowest first]})` casts a column to an ordered category (a value
+  that is no level raises), and `set_missing(df, {col: codes})` sets the codes outside a scale that mean unknown to
+  missing. The container already kept the order; the README lists ordinal columns with their levels. An ordinal
+  column may also be named among the categorical ones.
+- 220 ordinal scales in 39 definitions are ordered categories now, in the order of each source's codebook (often not
+  the order of the codes): seven agents read the codebooks for 1,980 candidate columns of 95 datasets
+  (`local-data-warehouse/_runs/2026-10-30_ordinal/`). anes_voting_2026's 20 likes-dislikes indices and counts are
+  numbers. Codes outside a scale that mean unknown (don't know, refused, not asked, undocumented codes) are missing.
+  Left unordered, for the curator's review board: 39 columns with a level outside the scale that is a state of its own
+  (no basement, not prescribed, no checking account), partial orders, cycles and orders of low confidence. Left as
+  they are: 167 ordinal scales shipped as numbers (point 3) and 22 codes shipped as numbers (point 4).
+- Counts with an open end ("3 or more", "> 20") are one ordered level, with no indicator column; the dtype probe flags
+  them (`open_end`) and unordered scales (`ordinal_like`). CLEAN-14 amended (Lennart); the handling is the AI's
+  proposal under review.
+- Experiment (unordered categories against the codes in order, an open end with an indicator, and the open level as
+  missing with an indicator; LightGBM, a linear model and TabPFN v3.5 on the shipped splits): on 55 datasets the codes
+  in order lowered LightGBM's error against unordered categories by 1.56% on average (median 0.12%; 12 datasets better
+  beyond two standard errors, 3 worse), most on small clinical tables of grades (eryhemato_squamous_disease 31%,
+  audiology_diagnosis 15%, cirrhosis_patient_survival_prediction 11%, mic 7%); a linear model on the bare codes lost
+  where a scale is not monotone in the target (mean -1.04%; 11 better, 13 worse). On the 20 datasets with an open end
+  the ordered level did best for LightGBM (+0.68%; with an indicator +0.58%; the open level as missing with an indicator
+  +0.38%, worse than the ordered level on 11 of 20). TabPFN v3.5 (public weights, on SkyPilot) gains less from the
+  order, as it handles unordered categories well: +0.25% on average over the 55 datasets (10 better, 6 worse, most on
+  ames_housing, 4.7%), and on the 20 with an open end the ordered level did best again (+0.46%; with an indicator
+  +0.37%; missing with an indicator +0.34%, worse than the ordered level on 12 of 20).
+- Found along the way: credit_g relabelled by the corrected code table (Groemping 2019, UCI 573; Statlog's german.doc
+  is wrong for 8 columns, the codes match one to one); amex_non_iid_1m's -1 in raddar's 55 integer columns and
+  clock_protein_toxicity's -1 counts are missing; immoscout_german_house_prices' `Condition` and
+  `Furnishing_quality` labels are permuted in the scrape (noted, unordered); ashrae's cloud cover 9 (sky obscured)
+  noted as rain_in_australia does; early_learning_predictors cleaned (two spellings of Normal merged, a date, three
+  copies dropped, 26 free-text columns as strings; 739 features, its one warning gone).
+- `dataset check` on the 43 changed definitions: no new error or warning. Not built.
 
 ## 2026-10-30, `early_learning_predictors`: Stata missing codes, 44 counts and amounts numeric, a timer dropped (PR #35)
 

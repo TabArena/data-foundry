@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sdss_17
 container_format: 2
-checksum: v2:854d506c723c1e7954c86989006648d10b8564d498bf996c5634acf2078a1e73
+checksum: v2:26f97be6681072d004290ff8d2f46af22b5b90c3f4395c5a81d1972b632ddcbf
 build:
   uuid: 01a111fc-9499-7f77-abbe-45c6b8ec8291
   checksum: v2:23581aaf9a00d579de3f759616f9da199f4b250322ed730303150c7cfbc18d0d
@@ -22,9 +22,8 @@ data:
   n_rows: 99999
   n_features: 8
   dtypes:
-    category: 1
+    category: 2
     float64: 7
-    int64: 1
   n_test_dataset_rows: null
 task:
   target: ObjectType
@@ -68,7 +67,7 @@ decisions: []
 
 Multiclass classification of `ObjectType`, scored with `log_loss` on IID splits. 99,999 rows and 8 features. Source: Other (2021).
 
-Built as `01a111fc-9499-7f77-abbe-45c6b8ec8291` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:854d506c723c1e7954c86989006648d10b8564d498bf996c5634acf2078a1e73`, so the build is stale. See [Build](#build).
+Built as `01a111fc-9499-7f77-abbe-45c6b8ec8291` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:26f97be6681072d004290ff8d2f46af22b5b90c3f4395c5a81d1972b632ddcbf`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -145,9 +144,9 @@ Only curators run `build`, when the dataset ships.
 | reason | SDSS DR17 (Abdurro'uf et al. 2022) is a data release with no prediction task or metric; the Kaggle 'Stellar Classification Dataset - SDSS17' is a dataset page, not a competition, with no evaluation metric. Our task (photometric classification, redshift/plate/fiber dropped) also differs from the SDSS pipeline's spectroscopic classification. |
 
 <details>
-<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
 
-- categorical (1): `ObjectType`
+- categorical (2): `cam_col`, `ObjectType`
 - string (0): none
 - datetime (0): none
 
@@ -221,6 +220,7 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| cam_col | category | 0 | 0 | 6 | 4, 3, 5, 2, 1, 6 |
 | ObjectType | category | 0 | 0 | 3 | GALAXY, STAR, QSO |
 | alpha | float64 | 0 | 0 | 99999 | 157.0985, 43.0757, 144.5135, 154.4966, 111.1102, 35.0845, 140.2722, 36.9024, 17… |
 | delta | float64 | 0 | 0 | 99999 | 63.1304, -7.5349, 37.2579, 24.6082, 0.0705, -3.9517, 50.5194, 0.4787, 50.9034, … |
@@ -229,7 +229,6 @@ Default splits.
 | r | float64 | 0 | 0 | 91901 | 24.802, 24.802, 24.802, 20.7224, 20.7466, 20.7653, 21.4462, 20.7558, 19.6175, 2… |
 | i | float64 | 0 | 0 | 92019 | 24.3618, 24.3618, 18.6331, 20.1935, 19.7921, 20.6777, 17.3595, 19.76, 20.4693, … |
 | z | float64 | 1 | 0 | 92006 | 22.8269, 22.8269, 22.8269, 22.8269, 19.5495, 17.8716, 19.5089, 19.9115, 19.0602… |
-| cam_col | int64 | 0 | 0 | 6 | 4, 3, 5, 2, 1, 6 |
 
 ### Target distribution
 
@@ -250,7 +249,6 @@ Default splits.
 | r | 99999 | 19.6457 | 1.85476 | 9.82207 | 29.5719 |
 | i | 99999 | 19.0848 | 1.75788 | 9.4699 | 32.1415 |
 | z | 99998 | 18.7689 | 1.76595 | 9.61233 | 29.3837 |
-| cam_col | 99999 | 3.51163 | 1.58691 | 1 | 6 |
 
 ### Categorical features
 
@@ -259,6 +257,11 @@ Default splits.
 | ObjectType | 1 | GALAXY | 59444 | 59.44 |
 | ObjectType | 2 | STAR | 21594 | 21.59 |
 | ObjectType | 3 | QSO | 18961 | 18.96 |
+| cam_col | 1 | 4 | 19573 | 19.57 |
+| cam_col | 2 | 3 | 18851 | 18.85 |
+| cam_col | 3 | 5 | 18537 | 18.54 |
+| cam_col | 4 | 2 | 17116 | 17.12 |
+| cam_col | 5 | 1 | 13227 | 13.23 |
 
 ## Build
 
@@ -271,4 +274,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:854d506c723c1e7954c86989006648d10b8564d498bf996c5634acf2078a1e73` |
+| stale | yes: the definition now gives checksum `v2:26f97be6681072d004290ff8d2f46af22b5b90c3f4395c5a81d1972b632ddcbf` |

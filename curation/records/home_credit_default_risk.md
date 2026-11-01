@@ -44,6 +44,14 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 **Assessment (AI, 2026-10-26):** an open doubt under CLEAN-14, from the cross-dataset item of 2026-10-21: the 10 `CC_NAME_CONTRACT_STATUS_*` min/max aggregates were typed categorical and then reverted to numeric as aggregates over the card history, but the max of a one-hot status reads as "ever had this status", a yes/no flag by meaning. Typing them categorical is the curator's call.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `NAME_EDUCATION_TYPE` (the README lists their levels); left unordered: `WEEKDAY_APPR_PROCESS_START` (a partial order); ordinal scales shipped as numbers, left as numbers for the curator's review: `REGION_RATING_CLIENT`, `REGION_RATING_CLIENT_W_CITY`.
+
+CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 2 ordinal scales shipped as numbers are ordered categories (point 3); 1 calendar or compass cycles ordered.
+
+CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 2 scores are numbers (REGION_RATING_CLIENT, REGION_RATING_CLIENT_W_CITY).
+
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
 ## Reference
 
 Anna Montoya, inversion, KirillOdintsov, and Martin Kotek. Home Credit Default Risk. https://kaggle.com/competitions/home-credit-default-risk, 2018. Kaggle.

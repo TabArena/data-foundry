@@ -13,6 +13,7 @@ from data_foundry.v2 import (
     Metric,
     TaskSummary,
     canonical_smiles,
+    decode,
     scaffold_groups,
 )
 
@@ -75,6 +76,8 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
         - The source's 176 RDKit descriptors leave (2026-11-01): RDKit computed them from the same SMILES, and the recommended encoding reproduces them (the full RDKit set scores as they do, above), so shipping both would give a model the structure twice.
         - Scaffold-grouped splits (2026-10-19), not random ones: under random splits about a third of the test drugs have a close relative in training with the same label, and a nearest-neighbour fingerprint lookup without a model reaches ROC AUC 0.822 against TabPFN's 0.854; with whole scaffolds held out, TabPFN 0.768, HGB 0.737, RF 0.724, LR 0.687 (generic scaffolds, `~/claude_jobs/dia_review/`). The use case screens new candidates, which come from series not yet seen, and scaffold splits are the standard for this: the Therapeutics Data Commons ADMET group splits all its endpoints by scaffold, among them drug-induced liver injury, a drug-level label like this one (Huang et al. 2021, NeurIPS Datasets and Benchmarks, arXiv:2102.09548). The source validated on random splits (its test file is as similar to its training file as a random split is), so our scores are lower than the paper's AUC 0.88-0.89 by design. The groups are the Bemis-Murcko scaffolds (Bemis and Murcko 1996, J Med Chem 39(15):2887-2893): 443 groups, the largest 41 drugs (benzene), 10 with both labels. The 53 drugs without a ring each form their own group (390 ring scaffolds plus these 53): they share no skeleton, only 2 have a close relative among them (Tanimoto >= 0.7), and their nearest neighbour's label agrees at the base rate (0.925). The groups come from `scaffold_groups` since 2026-11-01, as in qsar_bioconcentration and qsar_oral_toxicity: the same 443 groups as the definition's own code before, under other group names, so the drugs fall into other folds.
         - Duplicates dropped: 9 pairs of rows are one structure once the stereo marks are set aside (the same 18 rows that share every one of the source's descriptors), stereoisomers a 2D encoding does not tell apart (PubChem): quinine and quinidine, and 8 drugs entered twice with other stereo marks (lovastatin, fluticasone propionate, enalapril, fluvastatin, lisinopril, pravastatin, carbidopa, streptomycin), 3 pairs across the source's two files. We keep one row of the 8 pairs with one label and drop both streptomycin rows (one positive, one negative), as for qsar_oral_toxicity: 587 drugs, 140 positive (decision table).
+        - The target (2026-11-01, CLEAN-25): `Label` ships its classes as words (1 is the event). Binary: "Yes" is the
+          event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -111,6 +114,8 @@ class DrugInducedAutoimmunityPrediction(AbstractCuratedDataset):
         # The structure ships as a SMILES column (`smiles_columns`), in RDKit's canonical form; the source's RDKit
         # descriptors of it leave, since the recommended encoding reproduces them (curation_comments)
         df = pd.DataFrame({"SMILES": canonical_smiles(raw["SMILES"]), self.target: raw[self.target]})
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         # The split groups: the chemical series (Bemis-Murcko scaffold); no ring, or a scaffold above a tenth, alone
         df = df.assign(scaffold=scaffold_groups(df["SMILES"]))
         # Stereoisomers are one structure to a 2D encoding: one row per pair with one label, none of a pair with two

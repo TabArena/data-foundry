@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: anes_voting_2026
 container_format: 2
-checksum: v2:a49bc9004c29f7a4f645e007f1bebdd7c108a95fc52d91fc4c079301b0dddf5a
+checksum: v2:6127b41ec3846c5435b6042a07a532cf9f8b0a3489aea0528773e1e12c8cd270
 build:
   uuid: 01a111fb-cb34-797a-ba46-5305a0c33af4
   checksum: v2:68b50d2a440c41001df168da2140a54131d4bde60c6aed028178881555c35d42
@@ -22,8 +22,8 @@ data:
   n_rows: 48587
   n_features: 261
   dtypes:
-    category: 245
-    float64: 17
+    category: 215
+    float64: 47
   n_test_dataset_rows: null
 task:
   target: VCF0702
@@ -70,7 +70,7 @@ decisions: []
 
 Binary classification of `VCF0702`, scored with `roc_auc` on temporal splits by `VCF0004`. 48,587 rows and 261 features. Source: Other (2026).
 
-Built as `01a111fb-cb34-797a-ba46-5305a0c33af4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:a49bc9004c29f7a4f645e007f1bebdd7c108a95fc52d91fc4c079301b0dddf5a`, so the build is stale. See [Build](#build).
+Built as `01a111fb-cb34-797a-ba46-5305a0c33af4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6127b41ec3846c5435b6042a07a532cf9f8b0a3489aea0528773e1e12c8cd270`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -150,9 +150,10 @@ Only curators run `build`, when the dataset ships.
 | reason | ANES (the data's first publication) defines no prediction task. TableShift (Gardner et al. 2023), which defined the voting task, scores accuracy for every task of its benchmark, a house convention, not a choice from the decision; our task differs (temporal year splits, pre-election items only) and 78% voted, so accuracy at 0.5 is coarse. Original rejected: TableShift accuracy. roc_auc is the binary fallback. |
 
 <details>
-<summary>Feature types: 245 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 150 categorical, 65 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (245): `VCF0110`, `VCF0105a`, `VCF0105b`, `VCF0106`, `VCF0107`, `VCF0108`, `VCF0109`, `VCF0111`, `VCF0112`, `VCF0113`, `VCF0114`, `VCF0115`, `VCF0116`, `VCF0118`, `VCF0126`, `VCF0127`, `VCF0127a`, `VCF0127b`, `VCF0130`, `VCF0130a`, `VCF0132`, `VCF0134`, `VCF0135`, `VCF0137`, `VCF0138`, `VCF0138a`, `VCF0138b`, `VCF0138c`, `VCF0138d`, `VCF0140`, `VCF0140a`, `VCF0143`, `VCF0146`, `VCF0147`, `VCF0148`, `VCF0148a`, `VCF0149`, `VCF0150`, `VCF0151`, `VCF0152`, `VCF0154a`, `VCF0154b`, `VCF0155`, `VCF0156`, `VCF0157`, `VCF0170d`, `VCF0301`, `VCF0302`, `VCF0303`, `VCF0305`, `VCF0310`, `VCF0311`, `VCF0314`, `VCF0315`, `VCF0316`, `VCF0317`, `VCF0318`, `VCF0319`, `VCF0320`, `VCF0321`, `VCF0322`, `VCF0323`, `VCF0324`, `VCF0338`, `VCF0339`, `VCF0341`, `VCF0350`, `VCF0351`, `VCF0353`, `VCF0354`, `VCF0355`, `VCF0356`, `VCF0357`, `VCF0358`, `VCF0359`, `VCF0360`, `VCF0361`, `VCF0362`, `VCF0365`, `VCF0366`, `VCF0367`, `VCF0368`, `VCF0369`, `VCF0370`, `VCF0371`, `VCF0372`, `VCF0373`, `VCF0374`, `VCF0375a`, `VCF0375b`, `VCF0376a`, `VCF0376b`, `VCF0377a`, `VCF0377b`, `VCF0378a`, `VCF0378b`, `VCF0379a`, `VCF0379b`, `VCF0380`, `VCF0381a`, `VCF0381b`, `VCF0382a`, `VCF0382b`, `VCF0383a`, `VCF0383b`, `VCF0384a`, `VCF0384b`, `VCF0385a`, `VCF0385b`, `VCF0386`, `VCF0387a`, `VCF0387b`, `VCF0388a`, `VCF0388b`, `VCF0389a`, `VCF0389b`, `VCF0390a`, `VCF0390b`, `VCF0391a`, `VCF0391b`, `VCF0392`, `VCF0393a`, `VCF0393b`, `VCF0394a`, `VCF0394b`, `VCF0395a`, `VCF0395b`, `VCF0396a`, `VCF0396b`, `VCF0397a`, `VCF0397b`, `VCF0401`, `VCF0402`, `VCF0403`, `VCF0404`, `VCF0405`, `VCF0406`, `VCF0407`, `VCF0408`, `VCF0409`, `VCF0410`, `VCF0411`, `VCF0450`, `VCF0451`, `VCF0475`, `VCF0476a`, `VCF0476b`, `VCF0477a`, `VCF0477b`, `VCF0478a`, `VCF0478b`, `VCF0479a`, `VCF0479b`, `VCF0480a`, `VCF0480b`, `VCF0481`, `VCF0482a`, `VCF0482b`, `VCF0483a`, `VCF0483b`, `VCF0484a`, `VCF0484b`, `VCF0485a`, `VCF0485b`, `VCF0486a`, `VCF0486b`, `VCF0487`, `VCF0488a`, `VCF0488b`, `VCF0489a`, `VCF0489b`, `VCF0490a`, `VCF0490b`, `VCF0491a`, `VCF0491b`, `VCF0492a`, `VCF0492b`, `VCF0493`, `VCF0494a`, `VCF0494b`, `VCF0495a`, `VCF0495b`, `VCF0496a`, `VCF0496b`, `VCF0497a`, `VCF0497b`, `VCF0498a`, `VCF0498b`, `VCF0702`, `VCF0713`, `VCF0714`, `VCF0834`, `VCF0839`, `VCF0842`, `VCF0843`, `VCF0850`, `VCF0870`, `VCF0871`, `VCF0872`, `VCF9001`, `VCF9002`, `VCF9009`, `VCF9028`, `VCF9029`, `VCF9033`, `VCF9035`, `VCF9044`, `VCF9044a`, `VCF9045`, `VCF9073`, `VCF9077`, `VCF9081`, `VCF9085`, `VCF9086`, `VCF9089`, `VCF9093`, `VCF9094`, `VCF9122`, `VCF9209`, `VCF9210`, `VCF9211`, `VCF9212`, `VCF9213`, `VCF9214`, `VCF9215`, `VCF9216`, `VCF9217`, `VCF9218`, `VCF9220`, `VCF9222`, `VCF9224`, `VCF9225`, `VCF9226`, `VCF9238`, `VCF9239`, `VCF9243`, `VCF9244`, `VCF9265`, `VCF9266`, `VCF9277`, `VCF9278`, `VCF9279`, `VCF9280`, `VCF9281`, `VCF9282`
+- categorical (150): `VCF0104`, `VCF0105a`, `VCF0105b`, `VCF0106`, `VCF0107`, `VCF0108`, `VCF0109`, `VCF0112`, `VCF0113`, `VCF0115`, `VCF0116`, `VCF0118`, `VCF0126`, `VCF0127`, `VCF0127a`, `VCF0127b`, `VCF0132`, `VCF0134`, `VCF0135`, `VCF0137`, `VCF0143`, `VCF0146`, `VCF0147`, `VCF0148`, `VCF0148a`, `VCF0149`, `VCF0150`, `VCF0151`, `VCF0152`, `VCF0154a`, `VCF0154b`, `VCF0156`, `VCF0157`, `VCF0170d`, `VCF0302`, `VCF0358`, `VCF0359`, `VCF0360`, `VCF0361`, `VCF0370`, `VCF0371`, `VCF0372`, `VCF0373`, `VCF0374`, `VCF0375a`, `VCF0375b`, `VCF0376a`, `VCF0376b`, `VCF0377a`, `VCF0377b`, `VCF0378a`, `VCF0378b`, `VCF0379a`, `VCF0379b`, `VCF0380`, `VCF0381a`, `VCF0381b`, `VCF0382a`, `VCF0382b`, `VCF0383a`, `VCF0383b`, `VCF0384a`, `VCF0384b`, `VCF0385a`, `VCF0385b`, `VCF0386`, `VCF0387a`, `VCF0387b`, `VCF0388a`, `VCF0388b`, `VCF0389a`, `VCF0389b`, `VCF0390a`, `VCF0390b`, `VCF0391a`, `VCF0391b`, `VCF0392`, `VCF0393a`, `VCF0393b`, `VCF0394a`, `VCF0394b`, `VCF0395a`, `VCF0395b`, `VCF0396a`, `VCF0396b`, `VCF0397a`, `VCF0397b`, `VCF0450`, `VCF0475`, `VCF0476a`, `VCF0476b`, `VCF0477a`, `VCF0477b`, `VCF0478a`, `VCF0478b`, `VCF0479a`, `VCF0479b`, `VCF0480a`, `VCF0480b`, `VCF0481`, `VCF0482a`, `VCF0482b`, `VCF0483a`, `VCF0483b`, `VCF0484a`, `VCF0484b`, `VCF0485a`, `VCF0485b`, `VCF0486a`, `VCF0486b`, `VCF0487`, `VCF0488a`, `VCF0488b`, `VCF0489a`, `VCF0489b`, `VCF0490a`, `VCF0490b`, `VCF0491a`, `VCF0491b`, `VCF0492a`, `VCF0492b`, `VCF0493`, `VCF0494a`, `VCF0494b`, `VCF0495a`, `VCF0495b`, `VCF0496a`, `VCF0496b`, `VCF0497a`, `VCF0497b`, `VCF0498a`, `VCF0498b`, `VCF0702`, `VCF0713`, `VCF0714`, `VCF9028`, `VCF9029`, `VCF9044`, `VCF9217`, `VCF9218`, `VCF9222`, `VCF9224`, `VCF9243`, `VCF9265`, `VCF9277`, `VCF9278`, `VCF9279`, `VCF9280`, `VCF9281`, `VCF9282`
+- ordinal (65): `VCF0110 (grade school or less (0-8 grades) < high school (12 grades or fewer, incl. non-college training) < some college (13 grades or more, no degree) < college or advanced degree)`, `VCF0111 (rural, small towns, outlying and adjacent areas < suburban areas < central cities)`, `VCF0114 (0-16 percentile < 17-33 percentile < 34-67 percentile < 68-95 percentile < 96-100 percentile)`, `VCF0130a (never < a few times a year < once or twice a month < almost every week < every week, once a week < every week, more than once a week)`, `VCF0138 (none < one < two < three or more)`, `VCF0140 (8 grades or less < 9-12 grades, no diploma or equivalency < 12 grades, diploma or equivalency < 12 grades, diploma or equivalency plus non-academic training < some college, no degree; junior or community college degree (AA) < BA level degrees; advanced degrees)`, `VCF0140a (8 grades or less < 9-12 grades, no diploma or equivalency < 12 grades, diploma or equivalency < 12 grades, diploma or equivalency plus non-academic training < some college, no degree; junior or community college degree (AA) < BA level degrees < advanced degrees incl. LLB)`, `VCF0301 (strong Democrat < weak Democrat < independent - Democrat < independent - independent < independent - Republican < weak Republican < strong Republican)`, `VCF0303 (Democrats (including leaners) < independents < Republicans (including leaners))`, `VCF0305 (independent < leaning independent < weak partisan < strong partisan)`, `VCF0310 (not much interested < somewhat interested < very much interested)`, `VCF0311 (don't care very much < care a good deal)`, `VCF0314 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0315 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0318 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0319 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0338 (not well at all < not too well < quite well < extremely well)`, `VCF0339 (not well at all < not too well < quite well < extremely well)`, `VCF0341 (not well at all < not too well < quite well < extremely well)`, `VCF0350 (not well at all < not too well < quite well < extremely well)`, `VCF0351 (not well at all < not too well < quite well < extremely well)`, `VCF0353 (not well at all < not too well < quite well < extremely well)`, `VCF0354 (not well at all < not too well < quite well < extremely well)`, `VCF0355 (not well at all < not too well < quite well < extremely well)`, `VCF0356 (not well at all < not too well < quite well < extremely well)`, `VCF0357 (not well at all < not too well < quite well < extremely well)`, `VCF0362 (not well at all < not too well < quite well < extremely well)`, `VCF0365 (not well at all < not too well < quite well < extremely well)`, `VCF0366 (not well at all < not too well < quite well < extremely well)`, `VCF0367 (not well at all < not too well < quite well < extremely well)`, `VCF0368 (not well at all < not too well < quite well < extremely well)`, `VCF0369 (not well at all < not too well < quite well < extremely well)`, `VCF0401 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0402 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0405 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0406 (no mentions < one mention < two mentions < three mentions < four mentions < five mentions)`, `VCF0451 (approve strongly < approve not strongly < disapprove not strongly < disapprove strongly)`, `VCF0850 (a book written by men, not the Word of God < the Word of God, but not everything in it to be taken literally < the actual Word of God, to be taken literally, word for word)`, `VCF0870 (better < stayed same < worse)`, `VCF0871 (much better < somewhat better < stayed same < somewhat worse < much worse)`, `VCF0872 (get better < stay about the same < get worse)`, `VCF9009 (approve strongly < approve not strongly < disapprove not strongly < disapprove strongly)`, `VCF9044a (better < same (haven't made much difference) < worse)`, `VCF9045 (weaker < same < stronger)`, `VCF9122 (one < two < three < four < five < six < seven or more)`, `VCF9209 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9210 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9211 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9212 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9213 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9214 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9215 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9216 (not well at all < slightly well < moderately well < very well < extremely well)`, `VCF9220 (gotten better < stayed the same < gotten worse)`, `VCF9225 (better < stayed same < worse)`, `VCF9226 (much better < somewhat better < same < somewhat worse < much worse)`, `VCF9238 (more difficult < keep these rules about the same < make it easier)`, `VCF9239 (not at all important < not too important < somewhat important < very important < extremely important)`, `VCF9244 (never < once in a while < about half the time < most of the time < always)`, `VCF0102 (17-24 < 25-34 < 35-44 < 45-54 < 55-64 < 65-74 < 75-99 and over)`, `VCF0103 (before 1895 < 1895-1910 < 1911-1926 < 1927-1942 < 1943-1958 < 1959-1974 < 1975-1990 < 1991-present)`, `VCF0130 (no religious preference < never < a few times a year < once or twice a month < almost every week < every week)`, `VCF0155 (not much at all < somewhat < a lot)`, `VCF9002 (4 years or less < 5-9 years < 10-19 years < 20-29 years < 30 or more years)`, `VCF9266 (English more < both equally (bilingual) < Spanish more)`
 - string (0): none
 - datetime (0): none
 
@@ -180,11 +181,11 @@ The first 5 of 48,587 rows of the final frame (the oldest rows: the frame is sor
 
 | VCF0702 | VCF0004 | VCF0101 | VCF0102 | VCF0103 | VCF0104 | VCF0105a | VCF0105b | VCF0106 | VCF0107 | VCF0108 | VCF0109 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 1948 | nan | 4 | 7 | 2 | 1 | 1 | 1 | nan | nan | nan |
-| 2 | 1948 | nan | 4 | 7 | 1 | 1 | 1 | 1 | nan | nan | nan |
-| 2 | 1948 | nan | 4 | 7 | 1 | 1 | 1 | 1 | nan | nan | nan |
-| 1 | 1948 | nan | 4 | 7 | 2 | 1 | 1 | 1 | nan | nan | nan |
-| 2 | 1948 | nan | 5 | 8 | 1 | 1 | 1 | 1 | nan | nan | nan |
+| No | 1948 | nan | 65-74 | before 1895 | female | white non-Hispanic | white non-Hispanic | white non-Hispanic | nan | nan | nan |
+| Yes | 1948 | nan | 25-34 | 1911-1926 | male | white non-Hispanic | white non-Hispanic | white non-Hispanic | nan | nan | nan |
+| Yes | 1948 | nan | 45-54 | 1895-1910 | female | white non-Hispanic | white non-Hispanic | white non-Hispanic | nan | nan | nan |
+| Yes | 1948 | nan | 45-54 | 1895-1910 | female | white non-Hispanic | white non-Hispanic | white non-Hispanic | nan | nan | nan |
+| Yes | 1948 | nan | 45-54 | 1895-1910 | female | white non-Hispanic | white non-Hispanic | white non-Hispanic | nan | nan | nan |
 
 ## Curation notes
 
@@ -205,6 +206,35 @@ The first 5 of 48,587 rows of the final frame (the oldest rows: the frame is sor
 - Note: Ideally, we would select different feature sets per data split, depending on feature availability. However, for simplicity, we just keep all features.
 - Note: We considered keeping the unique respondent identifier in the data, because otherwise models that are able to reconstruct this information would unfairly benefit. However, for now we drop the identifier since it is not a desirable predictive feature for the given task, because the goal is generalization to the population, not memorizing individual behavior.
 - Metric: the fallback ROC AUC, not TableShift's accuracy (Lennart, 2026-10-21; metric spec).
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 65 columns are
+  ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`); 65 of them decoded from the
+  source's codes into its words (`CODE_LABELS`, 2026-11-01); 4 hold a state outside the scale, placed by the
+  curator's rule (missing when the column has no other missing value, else the lowest level; a state that is
+  simply not on the scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10); 20 counts
+  and indices stored as text are numbers.
+- Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+  each level is carries the words, a score without them is a number): 65 ordered codes carry their codebook's
+  words (`CODE_LABELS`), in the same order; 92 unordered codes carry their words: `VCF0385b`, `VCF0391b`,
+  `VCF0397b`, `VCF0379b`, `VCF0486b`, `VCF0384b`, `VCF0390b`, `VCF0492b`, `VCF0396b`, `VCF0480b`, `VCF0498b`,
+  `VCF0378b`, `VCF0485b`, `VCF0491b`, `VCF0383b`, `VCF0389b`, `VCF0479b`, `VCF0497b`, `VCF0395b`, `VCF0377b`,
+  `VCF0484b`, `VCF0490b`, `VCF0478b`, `VCF0382b`, `VCF0496b`, `VCF0388b`, `VCF0394b`, `VCF0376b`, `VCF0483b`,
+  `VCF0104`, `VCF0105a`, `VCF0105b`, `VCF0106`, `VCF0107`, `VCF0108`, `VCF0112`, `VCF0113`, `VCF0115`,
+  `VCF0151`, `VCF0116`, `VCF0118`, `VCF0126`, `VCF0127`, `VCF0127a`, `VCF0127b`, `VCF0134`, `VCF0135`,
+  `VCF0137`, `VCF0146`, `VCF0147`, `VCF0148`, `VCF0148a`, `VCF0149`, `VCF0150`, `VCF0154b`, `VCF0156`,
+  `VCF0157`, `VCF0302`, `VCF0358`, `VCF0359`, `VCF0360`, `VCF0361`, `VCF0370`, `VCF0371`, `VCF0372`, `VCF0373`,
+  `VCF0450`, `VCF0713`, `VCF0714`, `VCF9028`, `VCF9029`, `VCF9044`, `VCF9217`, `VCF9218`, `VCF9222`, `VCF9277`,
+  `VCF9279`, `VCF0109`, `VCF0132`, `VCF0152`, `VCF0154a`, `VCF0375b`, `VCF0381b`, `VCF0387b`, `VCF0393b`,
+  `VCF0476b`, `VCF0477b`, `VCF0482b`, `VCF0488b`, `VCF0489b`, `VCF0494b`, `VCF0495b`; 12 scores with no words
+  per level are numbers (`SCORES`): `VCF0834`, `VCF0839`, `VCF0842`, `VCF0843`, `VCF9073`, `VCF9077`, `VCF9081`,
+  `VCF9085`, `VCF9086`, `VCF9089`, `VCF9093`, `VCF9094`.
+- Decode follow-ups (2026-11-01, the curator's answers on the review board): the 40 master-code columns (`...a`)
+  carry the appendix's words, their don't-know codes missing; church attendance in 2024 reads the filter's "No"
+  (stored as 9) as never, except the short form that did not ask, and in 2020 VCF0130a recovers never from
+  VCF0130; "all of life" is the respondent's age, so VCF9001 (years in the community) is a number and VCF9002
+  places those rows in their age's band. Left as they are: the like-dislike mention counts, whose 0 also holds
+  don't know (splitting it needs each count's filter, a few hundred rows each).
+- The target (2026-11-01, CLEAN-25): `VCF0702` ships its classes as words (2 means voted (ANES codebook)).
+  Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
@@ -241,66 +271,66 @@ We use each of the last 9 years once as test data, using all prior data as train
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| VCF0385a | category | 48345 | 99.5 | 115 | 931, 981, 805, 801, 906, 986, 602, 606, 1107, 838 |
-| VCF0385b | category | 48345 | 99.5 | 9 | 33, 32, 34, 35, 31, 12, 40, 11, 24 |
-| VCF0391a | category | 48323 | 99.46 | 100 | 601, 806, 801, 1101, 1106, 609, 901, 934, 837, 835 |
-| VCF0391b | category | 48323 | 99.46 | 9 | 33, 34, 32, 31, 12, 35, 11, 40, 23 |
-| VCF0397a | category | 48235 | 99.28 | 144 | 1209, 907, 1206, 1234, 987, 933, 916, 964, 1027, 939 |
-| VCF0397b | category | 48235 | 99.28 | 10 | 33, 35, 34, 32, 31, 12, 11, 40, 21, 24 |
-| VCF0379a | category | 48201 | 99.21 | 122 | 915, 801, 1233, 906, 1229, 986, 805, 1205, 133, 1213 |
-| VCF0379b | category | 48201 | 99.21 | 9 | 33, 35, 32, 34, 12, 11, 31, 40, 23 |
-| VCF0486a | category | 48023 | 98.84 | 161 | 801, 402, 702, 446, 505, 304, 986, 1107, 504, 216 |
-| VCF0486b | category | 48023 | 98.84 | 11 | 33, 23, 32, 34, 24, 21, 31, 22, 40, 35 |
-| VCF0384a | category | 47984 | 98.76 | 181 | 602, 805, 906, 1107, 931, 986, 801, 606, 122, 1023 |
-| VCF0384b | category | 47984 | 98.76 | 11 | 33, 32, 31, 34, 35, 11, 12, 40, 22, 23 |
-| VCF0390a | category | 47966 | 98.72 | 161 | 1106, 806, 901, 930, 801, 938, 980, 1101, 827, 601 |
-| VCF0390b | category | 47966 | 98.72 | 9 | 33, 32, 34, 31, 12, 35, 11, 40, 23 |
-| VCF0492a | category | 47876 | 98.54 | 161 | 201, 609, 801, 930, 401, 1106, 1101, 901, 934, 806 |
-| VCF0492b | category | 47876 | 98.54 | 11 | 33, 23, 21, 34, 32, 31, 40, 22, 24, 35 |
-| VCF0396a | category | 47840 | 98.46 | 193 | 1209, 1206, 1234, 933, 1106, 122, 964, 610, 832, 987 |
-| VCF0396b | category | 47840 | 98.46 | 12 | 33, 35, 32, 34, 12, 31, 11, 40, 24, 21 |
-| VCF0480a | category | 47771 | 98.32 | 188 | 801, 609, 401, 915, 901, 446, 938, 413, 1233, 1002 |
-| VCF0480b | category | 47771 | 98.32 | 11 | 33, 23, 32, 35, 31, 34, 24, 21, 40, 22 |
-| VCF0498a | category | 47717 | 98.21 | 212 | 1209, 1101, 900, 402, 702, 801, 1106, 939, 602, 901 |
-| VCF0498b | category | 47717 | 98.21 | 11 | 33, 34, 23, 35, 32, 24, 31, 22, 21, 40 |
-| VCF0378a | category | 47696 | 98.17 | 167 | 1233, 1205, 915, 938, 906, 805, 963, 801, 924, 1213 |
-| VCF0378b | category | 47697 | 98.17 | 9 | 33, 35, 32, 34, 12, 11, 31, 40, 23 |
-| VCF0485a | category | 47380 | 97.52 | 224 | 402, 304, 201, 702, 446, 931, 505, 801, 1107, 313 |
-| VCF0485b | category | 47381 | 97.52 | 12 | 33, 23, 21, 34, 22, 24, 32, 40, 31, 35 |
-| VCF0491a | category | 47195 | 97.14 | 220 | 201, 401, 609, 930, 1106, 801, 938, 1101, 217, 218 |
-| VCF0491b | category | 47195 | 97.14 | 11 | 33, 23, 21, 34, 32, 31, 40, 22, 24, 35 |
-| VCF0383a | category | 47138 | 97.02 | 253 | 805, 606, 906, 931, 602, 122, 1107, 986, 838, 801 |
-| VCF0383b | category | 47138 | 97.02 | 12 | 33, 32, 31, 12, 35, 34, 11, 40, 24, 23 |
-| VCF0389a | category | 47056 | 96.85 | 237 | 1106, 930, 601, 806, 901, 837, 801, 934, 938, 1101 |
-| VCF0389b | category | 47057 | 96.85 | 12 | 33, 32, 34, 31, 12, 35, 11, 40, 23, 21 |
-| VCF0479a | category | 47012 | 96.76 | 233 | 401, 801, 609, 201, 542, 915, 938, 601, 1205, 1233 |
-| VCF0479b | category | 47012 | 96.76 | 12 | 33, 23, 35, 32, 31, 34, 21, 24, 40, 22 |
-| VCF0497a | category | 46959 | 96.65 | 247 | 1209, 402, 505, 1234, 1206, 901, 702, 939, 1101, 916 |
-| VCF0497b | category | 46959 | 96.65 | 12 | 33, 35, 34, 23, 24, 32, 31, 22, 40, 21 |
-| VCF0395a | category | 46788 | 96.3 | 252 | 1209, 1234, 1206, 933, 964, 122, 1106, 1214, 939, 602 |
-| VCF0395b | category | 46788 | 96.3 | 11 | 33, 35, 32, 34, 12, 31, 11, 40, 24, 23 |
-| VCF0377a | category | 46569 | 95.85 | 218 | 1233, 1205, 938, 906, 915, 1026, 1213, 909, 801, 805 |
-| VCF0377b | category | 46570 | 95.85 | 10 | 33, 35, 32, 12, 34, 11, 31, 40, 23, 22 |
-| VCF0484a | category | 45865 | 94.4 | 308 | 402, 304, 931, 505, 217, 1107, 702, 201, 313, 801 |
-| VCF0484b | category | 45865 | 94.4 | 12 | 33, 23, 21, 22, 34, 24, 32, 40, 31, 35 |
-| VCF0490a | category | 45578 | 93.81 | 296 | 401, 201, 217, 1106, 609, 1101, 930, 801, 709, 218 |
-| VCF0490b | category | 45578 | 93.81 | 11 | 33, 23, 34, 21, 31, 32, 40, 22, 24, 35 |
-| VCF0478a | category | 45545 | 93.74 | 286 | 938, 401, 801, 1205, 609, 915, 1233, 201, 601, 421 |
-| VCF0478b | category | 45546 | 93.74 | 11 | 33, 23, 35, 32, 34, 21, 31, 24, 40, 22 |
-| VCF0382a | category | 45479 | 93.6 | 311 | 805, 606, 906, 602, 931, 815, 122, 838, 986, 801 |
-| VCF0382b | category | 45479 | 93.6 | 12 | 33, 32, 31, 12, 35, 34, 11, 40, 23, 22 |
-| VCF0496a | category | 45435 | 93.51 | 334 | 1209, 402, 505, 1234, 939, 702, 602, 907, 916, 1206 |
-| VCF0496b | category | 45436 | 93.51 | 11 | 33, 34, 23, 35, 24, 22, 31, 21, 32, 40 |
-| VCF0388a | category | 45393 | 93.43 | 284 | 601, 806, 1106, 930, 816, 605, 801, 1209, 934, 907 |
-| VCF0388b | category | 45396 | 93.43 | 12 | 33, 32, 34, 31, 35, 12, 11, 40, 23, 22 |
-| VCF0394a | category | 44843 | 92.29 | 311 | 1209, 933, 1206, 1234, 122, 939, 1214, 602, 1106, 816 |
-| VCF0394b | category | 44843 | 92.29 | 12 | 33, 35, 32, 12, 34, 31, 11, 40, 23, 24 |
-| VCF0376b | category | 44565 | 91.72 | 12 | 33, 35, 32, 12, 11, 34, 40, 31, 23, 21 |
-| VCF0376a | category | 44558 | 91.71 | 264 | 1205, 1233, 1213, 938, 805, 906, 915, 934, 831, 1207 |
-| VCF0483a | category | 43517 | 89.57 | 359 | 402, 304, 505, 931, 217, 313, 216, 1107, 1189, 805 |
-| VCF0483b | category | 43518 | 89.57 | 12 | 33, 23, 21, 22, 34, 24, 32, 40, 31, 35 |
-| VCF0477a | category | 43428 | 89.38 | 323 | 401, 1205, 938, 801, 1233, 201, 609, 915, 500, 934 |
-| VCF0477b | category | 43428 | 89.38 | 12 | 33, 23, 35, 32, 21, 34, 24, 40, 31, 22 |
+| VCF0385a | category | 48345 | 99.5 | 115 | tax policy --Anti lower taxes; for higher taxes, public morality --Permissive/n… |
+| VCF0385b | category | 48345 | 99.5 | 9 | domestic policies, government activity/philosophy, foreign policies, group conn… |
+| VCF0391a | category | 48323 | 99.46 | 100 | good/Efficient/Businesslike administration; balanced budget; lower/wouldn't inc… |
+| VCF0391b | category | 48323 | 99.46 | 9 | domestic policies, foreign policies, government activity/philosophy, government… |
+| VCF0397a | category | 48235 | 99.28 | 144 | big Business/Corporate rich/The rich individuals/People with power/Wall Street/… |
+| VCF0397b | category | 48235 | 99.28 | 10 | domestic policies, group connections, foreign policies, government activity/phi… |
+| VCF0379a | category | 48201 | 99.21 | 122 | aid to education --Pro, general assessment of ideas/policies/stands (unspecifie… |
+| VCF0379b | category | 48201 | 99.21 | 9 | domestic policies, group connections, government activity/philosophy, foreign p… |
+| VCF0486a | category | 48023 | 98.84 | 161 | general assessment of ideas/policies/stands (unspecified), dishonest/Insincere;… |
+| VCF0486b | category | 48023 | 98.84 | 11 | domestic policies, candidate personal qualities, government activity/philosophy… |
+| VCF0384a | category | 47984 | 98.76 | 181 | bad/Inefficient/Unbusinesslike administration; wasteful; "bureaucratic"; defici… |
+| VCF0384b | category | 47984 | 98.76 | 11 | domestic policies, government activity/philosophy, government management, forei… |
+| VCF0390a | category | 47966 | 98.72 | 161 | strong military position/Preparedness/Weapons systems/Pentagon spending/Overkil… |
+| VCF0390b | category | 47966 | 98.72 | 9 | domestic policies, government activity/philosophy, foreign policies, government… |
+| VCF0492a | category | 47876 | 98.54 | 161 | general reference to him as "a good/bad man or a good/bad guy"; respondent has … |
+| VCF0492b | category | 47876 | 98.54 | 11 | domestic policies, candidate personal qualities, candidate experience, ability,… |
+| VCF0396a | category | 47840 | 98.46 | 193 | big Business/Corporate rich/The rich individuals/People with power/Wall Street/… |
+| VCF0396b | category | 47840 | 98.46 | 12 | domestic policies, group connections, government activity/philosophy, foreign p… |
+| VCF0480a | category | 47771 | 98.32 | 188 | general assessment of ideas/policies/stands (unspecified), general assessment o… |
+| VCF0480b | category | 47771 | 98.32 | 11 | domestic policies, candidate personal qualities, government activity/philosophy… |
+| VCF0498a | category | 47717 | 98.21 | 212 | big Business/Corporate rich/The rich individuals/People with power/Wall Street/… |
+| VCF0498b | category | 47717 | 98.21 | 11 | domestic policies, foreign policies, candidate personal qualities, group connec… |
+| VCF0378a | category | 47696 | 98.17 | 167 | poor people/needy people/handicapped/disabled; the unemployed -- Pro, aid to ed… |
+| VCF0378b | category | 47697 | 98.17 | 9 | domestic policies, group connections, government activity/philosophy, foreign p… |
+| VCF0485a | category | 47380 | 97.52 | 224 | dishonest/Insincere; breaks promises; no integrity; doesn't mean what he says; … |
+| VCF0485b | category | 47381 | 97.52 | 12 | domestic policies, candidate personal qualities, candidate experience, ability,… |
+| VCF0491a | category | 47195 | 97.14 | 220 | general reference to him as "a good/bad man or a good/bad guy"; respondent has … |
+| VCF0491b | category | 47195 | 97.14 | 11 | domestic policies, candidate personal qualities, candidate experience, ability,… |
+| VCF0383a | category | 47139 | 97.02 | 252 | for government activity; believe government should take care of things; for big… |
+| VCF0383b | category | 47138 | 97.02 | 12 | domestic policies, government activity/philosophy, government management, party… |
+| VCF0389a | category | 47056 | 96.85 | 237 | strong military position/Preparedness/Weapons systems/Pentagon spending/Overkil… |
+| VCF0389b | category | 47057 | 96.85 | 12 | domestic policies, government activity/philosophy, foreign policies, government… |
+| VCF0479a | category | 47012 | 96.76 | 233 | general assessment of ideas/policies/stands (unspecified), honest/Sincere; keep… |
+| VCF0479b | category | 47012 | 96.76 | 12 | domestic policies, candidate personal qualities, group connections, government … |
+| VCF0497a | category | 46959 | 96.65 | 247 | big Business/Corporate rich/The rich individuals/People with power/Wall Street/… |
+| VCF0497b | category | 46959 | 96.65 | 12 | domestic policies, group connections, foreign policies, candidate personal qual… |
+| VCF0395a | category | 46788 | 96.3 | 252 | big Business/Corporate rich/The rich individuals/People with power/Wall Street/… |
+| VCF0395b | category | 46788 | 96.3 | 11 | domestic policies, group connections, government activity/philosophy, foreign p… |
+| VCF0377a | category | 46569 | 95.85 | 218 | poor people/needy people/handicapped/disabled; the unemployed -- Pro, common ma… |
+| VCF0377b | category | 46570 | 95.85 | 10 | domestic policies, group connections, government activity/philosophy, party cha… |
+| VCF9266 | category | 46168 | 95.02 | 3 | English more, Spanish more, both equally (bilingual) |
+| VCF0484a | category | 45865 | 94.4 | 308 | dishonest/Insincere; breaks promises; no integrity; doesn't mean what he says; … |
+| VCF0484b | category | 45865 | 94.4 | 12 | domestic policies, candidate personal qualities, candidate experience, ability,… |
+| VCF0490a | category | 45578 | 93.81 | 296 | honest/Sincere; keeps promises; man of integrity; means what he says; fair; not… |
+| VCF0490b | category | 45578 | 93.81 | 11 | domestic policies, candidate personal qualities, foreign policies, candidate ex… |
+| VCF0478a | category | 45545 | 93.74 | 286 | wages/Salaries/Income/Employment--higher/better under him/them, honest/Sincere;… |
+| VCF0478b | category | 45546 | 93.74 | 11 | domestic policies, candidate personal qualities, group connections, government … |
+| VCF0382a | category | 45481 | 93.61 | 309 | for government activity; believe government should take care of things; for big… |
+| VCF0382b | category | 45479 | 93.6 | 12 | domestic policies, government activity/philosophy, government management, party… |
+| VCF0496a | category | 45435 | 93.51 | 334 | big Business/Corporate rich/The rich individuals/People with power/Wall Street/… |
+| VCF0496b | category | 45436 | 93.51 | 11 | domestic policies, foreign policies, candidate personal qualities, group connec… |
+| VCF0388a | category | 45393 | 93.43 | 284 | good/Efficient/Businesslike administration; balanced budget; lower/wouldn't inc… |
+| VCF0388b | category | 45396 | 93.43 | 12 | domestic policies, government activity/philosophy, foreign policies, government… |
+| VCF0394a | category | 44843 | 92.29 | 311 | big Business/Corporate rich/The rich individuals/People with power/Wall Street/… |
+| VCF0394b | category | 44843 | 92.29 | 12 | domestic policies, group connections, government activity/philosophy, party cha… |
+| VCF0376b | category | 44565 | 91.72 | 12 | domestic policies, group connections, government activity/philosophy, party cha… |
+| VCF0376a | category | 44558 | 91.71 | 264 | common man/People/Little people/Working people--Pro, poor people/needy people/h… |
+| VCF0483a | category | 43517 | 89.57 | 359 | dishonest/Insincere; breaks promises; no integrity; doesn't mean what he says; … |
+| VCF0483b | category | 43518 | 89.57 | 12 | domestic policies, candidate personal qualities, candidate experience, ability,… |
+| VCF0477a | category | 43428 | 89.38 | 323 | honest/Sincere; keeps promises; man of integrity; means what he says; fair; not… |
 
 (202 more rows not shown)
 
@@ -310,105 +340,135 @@ We use each of the last 9 years once as test data, using all prior data as train
 
 | VCF0702 | count | pct |
 |---|---|---|
-| 2 | 37880 | 77.96 |
-| 1 | 10707 | 22.04 |
+| Yes | 37880 | 77.96 |
+| No | 10707 | 22.04 |
 
 ### Numeric features
 
 <details>
-<summary>Show the table (17 rows)</summary>
+<summary>Show the table (47 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | VCF0004 | 48587 | 1997.46 | 22.8987 | 1948 | 2024 |
-| VCF0101 | 48011 | 47.5444 | 18.2336 | 0 | 99 |
-| VCF0102 | 48587 | 3.80711 | 1.79409 | 0 | 7 |
-| VCF0103 | 48587 | 4.04094 | 1.73286 | 0 | 8 |
-| VCF0104 | 48587 | 1.54387 | 0.503134 | 0 | 3 |
-| VCF0218 | 35211 | 53.7387 | 29.6122 | -8 | 99 |
-| VCF0222 | 6484 | 56.7101 | 21.624 | 0 | 99 |
-| VCF0224 | 35211 | 48.0165 | 29.3925 | -8 | 99 |
-| VCF0290 | 30257 | 75.3103 | 150.682 | 0 | 999 |
-| VCF0291 | 30257 | 79.666 | 157.415 | 2 | 999 |
-| VCF0412 | 35795 | 54.5783 | 39.1714 | 0 | 999 |
-| VCF0413 | 35795 | 78.9748 | 158.589 | 2 | 999 |
-| VCF0414 | 35795 | 58.0063 | 22.2432 | 0 | 99 |
-| VCF0415 | 35795 | 189.92 | 333.372 | 2 | 999 |
-| VCF0429 | 28901 | 54.1238 | 30.1478 | -8 | 99 |
-| VCF1015 | 43057 | 32.896 | 19.418 | 0 | 99 |
-| VCF9123 | 18671 | 18.7068 | 32.7096 | 1 | 99 |
+| VCF0101 | 47200 | 48.3613 | 17.2821 | 17 | 99 |
+| VCF0138a | 7840 | 0.245153 | 0.583265 | 0 | 4 |
+| VCF0138b | 7839 | 0.1652 | 0.446566 | 0 | 3 |
+| VCF0138c | 7839 | 0.165837 | 0.448753 | 0 | 4 |
+| VCF0138d | 7839 | 0.163924 | 0.457753 | 0 | 4 |
+| VCF0218 | 34462 | 52.791 | 29.1794 | 0 | 97 |
+| VCF0222 | 6057 | 53.7936 | 19.2713 | 0 | 97 |
+| VCF0224 | 34423 | 46.892 | 28.71 | 0 | 97 |
+| VCF0290 | 29413 | 50.8438 | 14.8223 | 0 | 97 |
+| VCF0291 | 29413 | 53.305 | 24.0399 | 2 | 99 |
+| VCF0316 | 21138 | 0.233702 | 1.75833 | -5 | 5 |
+| VCF0317 | 21138 | 1.94361 | 1.8577 | 0 | 10 |
+| VCF0320 | 21138 | -0.0947109 | 1.68578 | -5 | 5 |
+| VCF0321 | 21138 | 1.77283 | 1.80786 | 0 | 10 |
+| VCF0322 | 21138 | 0.328413 | 2.95885 | -10 | 10 |
+| VCF0323 | 21138 | 3.71643 | 3.30811 | 0 | 20 |
+| VCF0324 | 21138 | 0.170782 | 1.57963 | -9 | 8 |
+| VCF0403 | 21880 | 0.141545 | 2.21813 | -5 | 5 |
+| VCF0404 | 21880 | 2.39145 | 1.85704 | 0 | 10 |
+| VCF0407 | 21880 | 0.121481 | 2.32208 | -5 | 5 |
+| VCF0408 | 21880 | 2.57057 | 1.90348 | 0 | 10 |
+| VCF0409 | 21880 | 0.020064 | 3.97215 | -10 | 10 |
+| VCF0410 | 21880 | 4.96202 | 3.28481 | 0 | 20 |
+| VCF0411 | 21880 | -0.179113 | 1.83133 | -9 | 8 |
+| VCF0412 | 34748 | 51.9597 | 15.3584 | 0 | 97 |
+| VCF0413 | 34791 | 52.4384 | 27.7476 | 2 | 99 |
+| VCF0414 | 29972 | 50.1903 | 14.6733 | 0 | 97 |
+| VCF0415 | 30614 | 53.1194 | 25.4236 | 2 | 99 |
+| VCF0429 | 27646 | 52.1264 | 29.2821 | 0 | 97 |
+| VCF0834 | 15159 | 2.64595 | 1.92166 | 1 | 7 |
+| VCF0839 | 27546 | 4.24152 | 1.7157 | 1 | 7 |
+| VCF0842 | 12562 | 3.15181 | 1.93303 | 1 | 7 |
+| VCF0843 | 24134 | 4.28748 | 1.66026 | 1 | 7 |
+| VCF1015 | 42976 | 32.7714 | 19.2229 | 0 | 77 |
+| VCF9001 | 26511 | 21.8673 | 18.9413 | 0 | 90 |
+| VCF9033 | 12394 | 3.5635 | 2.94127 | 0 | 7 |
+| VCF9035 | 12368 | 3.97768 | 2.74833 | 0 | 7 |
+| VCF9073 | 13724 | 4.40644 | 1.72927 | 1 | 7 |
+| VCF9077 | 8523 | 2.94016 | 1.88235 | 1 | 7 |
+| VCF9081 | 13105 | 3.6013 | 1.4925 | 1 | 7 |
+| VCF9085 | 26088 | 2.65747 | 1.65537 | 1 | 7 |
+| VCF9086 | 29588 | 5.27072 | 1.51503 | 1 | 7 |
+| VCF9089 | 13425 | 5.2692 | 1.45828 | 1 | 7 |
+| VCF9093 | 26014 | 5.51499 | 1.61678 | 1 | 7 |
+| VCF9094 | 29668 | 2.93488 | 1.6803 | 1 | 7 |
+| VCF9123 | 16062 | 5.66449 | 5.13168 | 1 | 48 |
 
 </details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (1,217 rows)</summary>
+<summary>Show the table (982 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| VCF0105a | 1 | 1 | 36812 | 75.77 |
-| VCF0105a | 2 | 2 | 5453 | 11.22 |
-| VCF0105a | 3 | 5 | 3904 | 8.04 |
-| VCF0105a | 4 | 6 | 901 | 1.85 |
-| VCF0105a | 5 | 3 | 806 | 1.66 |
-| VCF0105b | 1 | 1 | 36812 | 75.77 |
-| VCF0105b | 2 | 2 | 5453 | 11.22 |
-| VCF0105b | 3 | 3 | 3904 | 8.04 |
-| VCF0105b | 4 | 4 | 2105 | 4.33 |
-| VCF0105b | 5 | 9 | 285 | 0.59 |
-| VCF0106 | 1 | 1 | 36812 | 75.77 |
-| VCF0106 | 2 | 3 | 6009 | 12.37 |
-| VCF0106 | 3 | 2 | 5453 | 11.22 |
-| VCF0106 | 4 | 9 | 285 | 0.59 |
-| VCF0106 | 5 | 0 | 28 | 0.06 |
-| VCF0107 | 1 | 7 | 32609 | 67.11 |
-| VCF0107 | 2 | &lt;NA> | 12032 | 24.76 |
-| VCF0107 | 3 | 1 | 1999 | 4.11 |
-| VCF0107 | 4 | 3 | 1287 | 2.65 |
-| VCF0107 | 5 | 2 | 378 | 0.78 |
-| VCF0108 | 1 | 2 | 32564 | 67.02 |
-| VCF0108 | 2 | &lt;NA> | 12032 | 24.76 |
-| VCF0108 | 3 | 1 | 3798 | 7.82 |
-| VCF0108 | 4 | 9 | 137 | 0.28 |
-| VCF0108 | 5 | 8 | 53 | 0.11 |
-| VCF0109 | 1 | &lt;NA> | 30716 | 63.22 |
-| VCF0109 | 2 | 877 | 4053 | 8.34 |
-| VCF0109 | 3 | 290 | 2098 | 4.32 |
-| VCF0109 | 4 | 862 | 1574 | 3.24 |
-| VCF0109 | 5 | 190 | 1399 | 2.88 |
-| VCF0110 | 1 | 2 | 16797 | 34.57 |
-| VCF0110 | 2 | 4 | 13748 | 28.3 |
-| VCF0110 | 3 | 3 | 12799 | 26.34 |
-| VCF0110 | 4 | 1 | 4838 | 9.96 |
-| VCF0110 | 5 | 0 | 405 | 0.83 |
-| VCF0111 | 1 | &lt;NA> | 26620 | 54.79 |
-| VCF0111 | 2 | 3 | 8272 | 17.03 |
-| VCF0111 | 3 | 2 | 7553 | 15.55 |
-| VCF0111 | 4 | 1 | 5450 | 11.22 |
-| VCF0111 | 5 | 0 | 692 | 1.42 |
-| VCF0112 | 1 | 3 | 17175 | 35.35 |
-| VCF0112 | 2 | 2 | 12499 | 25.72 |
-| VCF0112 | 3 | 4 | 9574 | 19.7 |
-| VCF0112 | 4 | 1 | 8763 | 18.04 |
+| VCF0102 | 1 | 35-44 | 9100 | 18.73 |
+| VCF0102 | 2 | 25-34 | 8792 | 18.1 |
+| VCF0102 | 3 | 45-54 | 8083 | 16.64 |
+| VCF0102 | 4 | 55-64 | 7890 | 16.24 |
+| VCF0102 | 5 | 65-74 | 6439 | 13.25 |
+| VCF0103 | 1 | 1943-1958 | 12492 | 25.71 |
+| VCF0103 | 2 | 1959-1974 | 9318 | 19.18 |
+| VCF0103 | 3 | 1927-1942 | 7113 | 14.64 |
+| VCF0103 | 4 | 1975-1990 | 6471 | 13.32 |
+| VCF0103 | 5 | 1911-1926 | 5807 | 11.95 |
+| VCF0104 | 1 | female | 26521 | 54.58 |
+| VCF0104 | 2 | male | 21943 | 45.16 |
+| VCF0104 | 3 | &lt;NA> | 114 | 0.23 |
+| VCF0104 | 4 | other | 9 | 0.02 |
+| VCF0105a | 1 | white non-Hispanic | 36812 | 75.77 |
+| VCF0105a | 2 | black non-Hispanic | 5453 | 11.22 |
+| VCF0105a | 3 | Hispanic | 3904 | 8.04 |
+| VCF0105a | 4 | other or multiple races, non-Hispanic | 901 | 1.85 |
+| VCF0105a | 5 | Asian or Pacific Islander, non-Hispanic | 806 | 1.66 |
+| VCF0105b | 1 | white non-Hispanic | 36812 | 75.77 |
+| VCF0105b | 2 | black non-Hispanic | 5453 | 11.22 |
+| VCF0105b | 3 | Hispanic | 3904 | 8.04 |
+| VCF0105b | 4 | other or multiple races, non-Hispanic | 2105 | 4.33 |
+| VCF0105b | 5 | &lt;NA> | 313 | 0.64 |
+| VCF0106 | 1 | white non-Hispanic | 36812 | 75.77 |
+| VCF0106 | 2 | other | 6009 | 12.37 |
+| VCF0106 | 3 | black non-Hispanic | 5453 | 11.22 |
+| VCF0106 | 4 | &lt;NA> | 313 | 0.64 |
+| VCF0107 | 1 | no, not Hispanic | 32609 | 67.11 |
+| VCF0107 | 2 | &lt;NA> | 12200 | 25.11 |
+| VCF0107 | 3 | yes, Mexican, Mexican-American or Chicano | 1999 | 4.11 |
+| VCF0107 | 4 | yes, other Hispanic | 1287 | 2.65 |
+| VCF0107 | 5 | yes, Puerto Rican | 378 | 0.78 |
+| VCF0108 | 1 | no, not Hispanic | 32564 | 67.02 |
+| VCF0108 | 2 | &lt;NA> | 12225 | 25.16 |
+| VCF0108 | 3 | yes, Hispanic | 3798 | 7.82 |
+| VCF0109 | 1 | &lt;NA> | 31301 | 64.42 |
+| VCF0109 | 2 | 'American', 'just American', none, neither, or not ascertained | 4053 | 8.34 |
+| VCF0109 | 3 | German; also Pennsylvania Dutch | 2098 | 4.32 |
+| VCF0109 | 4 | Black; Negro; American Black; African American | 1574 | 3.24 |
+| VCF0109 | 5 | Irish (not specified as from Northern Ireland, Ulster--22) | 1399 | 2.88 |
+| VCF0110 | 1 | high school (12 grades or fewer, incl. non-college training) | 16797 | 34.57 |
+| VCF0110 | 2 | college or advanced degree | 13748 | 28.3 |
+| VCF0110 | 3 | some college (13 grades or more, no degree) | 12799 | 26.34 |
+| VCF0110 | 4 | grade school or less (0-8 grades) | 4838 | 9.96 |
+| VCF0110 | 5 | &lt;NA> | 405 | 0.83 |
+| VCF0111 | 1 | &lt;NA> | 27312 | 56.21 |
+| VCF0111 | 2 | rural, small towns, outlying and adjacent areas | 8272 | 17.03 |
+| VCF0111 | 3 | suburban areas | 7553 | 15.55 |
+| VCF0111 | 4 | central cities | 5450 | 11.22 |
+| VCF0112 | 1 | South | 17175 | 35.35 |
+| VCF0112 | 2 | North Central | 12499 | 25.72 |
+| VCF0112 | 3 | West | 9574 | 19.7 |
+| VCF0112 | 4 | Northeast | 8763 | 18.04 |
 | VCF0112 | 5 | &lt;NA> | 576 | 1.19 |
-| VCF0113 | 1 | 2 | 30042 | 61.83 |
-| VCF0113 | 2 | 1 | 13015 | 26.79 |
+| VCF0113 | 1 | Nonsouth | 30042 | 61.83 |
+| VCF0113 | 2 | South | 13015 | 26.79 |
 | VCF0113 | 3 | &lt;NA> | 5530 | 11.38 |
-| VCF0114 | 1 | 3 | 14794 | 30.45 |
-| VCF0114 | 2 | 4 | 12178 | 25.06 |
-| VCF0114 | 3 | 1 | 7760 | 15.97 |
-| VCF0114 | 4 | 2 | 7474 | 15.38 |
-| VCF0114 | 5 | 0 | 2566 | 5.28 |
-| VCF0115 | 1 | &lt;NA> | 25554 | 52.59 |
-| VCF0115 | 2 | 3 | 6801 | 14 |
-| VCF0115 | 3 | 1 | 5430 | 11.18 |
-| VCF0115 | 4 | 6 | 4607 | 9.48 |
-| VCF0115 | 5 | 2 | 3949 | 8.13 |
-| VCF0116 | 1 | 1 | 24531 | 50.49 |
-| VCF0116 | 2 | &lt;NA> | 7840 | 16.14 |
+| VCF0114 | 1 | 34-67 percentile | 14794 | 30.45 |
+| VCF0114 | 2 | 68-95 percentile | 12178 | 25.06 |
 
-(1,157 more rows not shown)
+(922 more rows not shown)
 
 </details>
 
@@ -423,4 +483,4 @@ We use each of the last 9 years once as test data, using all prior data as train
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:a49bc9004c29f7a4f645e007f1bebdd7c108a95fc52d91fc4c079301b0dddf5a` |
+| stale | yes: the definition now gives checksum `v2:6127b41ec3846c5435b6042a07a532cf9f8b0a3489aea0528773e1e12c8cd270` |

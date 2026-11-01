@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: heart_failure_followup_survival
 container_format: 2
-checksum: v2:59ac7613cf8927293cd25642e978a5de3a5cd0dfdcbdc8e0c45bc94a8062a217
+checksum: v2:bbf2cece518cd96c0547da5ab4b6715fc1c9a1e1b06c459774aa6658a084a3ac
 build:
   uuid: 01a111fc-aabc-7a8e-a658-bf88e5751de1
   checksum: v2:66c2f80349b67a92deaa7355d0d759f8a9c6fdffc0af9ae20100475c318d07c5
@@ -68,7 +68,7 @@ decisions: []
 
 Binary classification of `DEATH_EVENT`, scored with `roc_auc` on IID splits. 299 rows and 11 features. Source: Other (2017).
 
-Built as `01a111fc-aabc-7a8e-a658-bf88e5751de1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:59ac7613cf8927293cd25642e978a5de3a5cd0dfdcbdc8e0c45bc94a8062a217`, so the build is stale. See [Build](#build).
+Built as `01a111fc-aabc-7a8e-a658-bf88e5751de1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:bbf2cece518cd96c0547da5ab4b6715fc1c9a1e1b06c459774aa6658a084a3ac`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -177,11 +177,11 @@ The first 5 of 299 rows of the final frame (random rows: the frame is shuffled).
 
 | DEATH_EVENT | age | anaemia | creatinine_phosphokinase | diabetes | ejection_fraction | high_blood_pressure | platelets | serum_creatinine | serum_sodium | sex | smoking |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 60 | 0 | 320 | 0 | 35 | 0 | 133000 | 1.4 | 139 | 1 | 0 |
-| 1 | 45 | 0 | 2442 | 1 | 30 | 0 | 334000 | 1.1 | 139 | 1 | 0 |
-| 0 | 55 | 0 | 1820 | 0 | 38 | 0 | 270000 | 1.2 | 139 | 0 | 0 |
-| 1 | 80 | 0 | 805 | 0 | 38 | 0 | 263358 | 1.1 | 134 | 1 | 0 |
-| 0 | 70 | 0 | 93 | 0 | 35 | 0 | 185000 | 1.1 | 134 | 1 | 1 |
+| No | 42 | 0 | 582 | 0 | 60 | 0 | 263358 | 1.18 | 137 | 0 | 0 |
+| No | 60 | 1 | 737 | 0 | 60 | 1 | 210000 | 1.5 | 135 | 1 | 1 |
+| No | 57 | 1 | 115 | 0 | 25 | 1 | 181000 | 1.1 | 144 | 1 | 0 |
+| Yes | 49 | 0 | 789 | 0 | 20 | 1 | 319000 | 1.1 | 136 | 1 | 1 |
+| No | 65 | 1 | 68 | 1 | 60 | 1 | 304000 | 0.8 | 140 | 1 | 0 |
 
 ## Curation notes
 
@@ -189,6 +189,8 @@ We use the data as is from UCI.
 
 - We keep all features of the dataset. The study that introduced the dataset also curated a subset of features. We leave it to the pipeline to select the relevant features for the task.
 - We drop the "time" feature. It is the follow-up period in days (4-285; Chicco & Jurman 2020, Table 1: "Follow-up period"), and DEATH_EVENT is "If the patient died during the follow-up period". Follow-up ends at death or at censoring, so a short follow-up means an early death: the value is only known after the outcome (alone it gives ROC AUC 0.84). The paper's analysis that includes it is not a prediction-time setup.
+- The target (2026-11-01, CLEAN-25): `DEATH_EVENT` ships its classes as words (1 is the event). Binary: "Yes" is
+  the event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
@@ -283,11 +285,11 @@ Default splits.
 | high_blood_pressure | category | 0 | 0 | 2 | 0, 1 |
 | sex | category | 0 | 0 | 2 | 1, 0 |
 | smoking | category | 0 | 0 | 2 | 0, 1 |
-| DEATH_EVENT | category | 0 | 0 | 2 | 0, 1 |
-| age | float64 | 0 | 0 | 47 | 60.0, 50.0, 65.0, 70.0, 45.0, 55.0, 75.0, 58.0, 53.0, 63.0 |
-| platelets | float64 | 0 | 0 | 176 | 263358.03, 305000.0, 235000.0, 279000.0, 221000.0, 228000.0, 255000.0, 226000.0… |
-| serum_creatinine | float64 | 0 | 0 | 40 | 1.0, 1.1, 0.9, 1.2, 0.8, 1.3, 0.7, 1.18, 1.7, 1.4 |
-| creatinine_phosphokinase | int64 | 0 | 0 | 208 | 582, 129, 66, 84, 231, 47, 68, 115, 60, 69 |
+| DEATH_EVENT | category | 0 | 0 | 2 | No, Yes |
+| age | float64 | 0 | 0 | 47 | 60.0, 50.0, 65.0, 70.0, 45.0, 55.0, 75.0, 53.0, 58.0, 63.0 |
+| platelets | float64 | 0 | 0 | 176 | 263358.03, 271000.0, 228000.0, 226000.0, 221000.0, 237000.0, 235000.0, 305000.0… |
+| serum_creatinine | float64 | 0 | 0 | 40 | 1.0, 1.1, 0.9, 0.8, 1.2, 1.3, 0.7, 1.18, 1.7, 1.4 |
+| creatinine_phosphokinase | int64 | 0 | 0 | 208 | 582, 129, 66, 68, 47, 84, 69, 115, 60, 59 |
 | ejection_fraction | int64 | 0 | 0 | 17 | 35, 38, 40, 25, 30, 60, 50, 45, 20, 55 |
 | serum_sodium | int64 | 0 | 0 | 27 | 136, 137, 140, 134, 138, 139, 135, 132, 141, 142 |
 
@@ -297,8 +299,8 @@ Default splits.
 
 | DEATH_EVENT | count | pct |
 |---|---|---|
-| 0 | 203 | 67.89 |
-| 1 | 96 | 32.11 |
+| No | 203 | 67.89 |
+| Yes | 96 | 32.11 |
 
 ### Numeric features
 
@@ -318,8 +320,8 @@ Default splits.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| DEATH_EVENT | 1 | 0 | 203 | 67.89 |
-| DEATH_EVENT | 2 | 1 | 96 | 32.11 |
+| DEATH_EVENT | 1 | No | 203 | 67.89 |
+| DEATH_EVENT | 2 | Yes | 96 | 32.11 |
 | anaemia | 1 | 0 | 170 | 56.86 |
 | anaemia | 2 | 1 | 129 | 43.14 |
 | diabetes | 1 | 0 | 174 | 58.19 |
@@ -344,4 +346,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:59ac7613cf8927293cd25642e978a5de3a5cd0dfdcbdc8e0c45bc94a8062a217` |
+| stale | yes: the definition now gives checksum `v2:bbf2cece518cd96c0547da5ab4b6715fc1c9a1e1b06c459774aa6658a084a3ac` |

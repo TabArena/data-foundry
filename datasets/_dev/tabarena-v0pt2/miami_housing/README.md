@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: miami_housing
 container_format: 2
-checksum: v2:8107b7bcd2a77bf943daffbd52c6d435bb828a3873ec54d5ea39b5458859b579
+checksum: v2:8f97f3bd10609030d1d24d2658213934c0b701f3a235c96f4077d13c1ef2b0eb
 build:
   uuid: 01a111fc-b2f3-70cf-951c-6cf119716e45
   checksum: v2:bd320b218fcee1f7a1671353adce650be061341a6b03d25957fdd692a9e8b59c
@@ -67,7 +67,7 @@ decisions: []
 
 Regression of `SALE_PRC`, scored with `rmsle` on IID splits. 13,776 rows and 15 features. Source: OpenML (2021).
 
-Built as `01a111fc-b2f3-70cf-951c-6cf119716e45` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8107b7bcd2a77bf943daffbd52c6d435bb828a3873ec54d5ea39b5458859b579`, so the build is stale. See [Build](#build).
+Built as `01a111fc-b2f3-70cf-951c-6cf119716e45` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8f97f3bd10609030d1d24d2658213934c0b701f3a235c96f4077d13c1ef2b0eb`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -194,6 +194,15 @@ The first 5 of 13,776 rows of the final frame (random rows: the frame is shuffle
 - The file first appeared on OpenML (43093, uploaded 2021-09-24, creator Steven C. Bourassa, citing Mayer et
   al. 2021). Kaggle deepcontractor/miami-housing-dataset copies its description and names openml.org as its
   source, and OpenML 44983 (2022) copies Kaggle.
+- `structure_quality` ("quality of the structure", OpenML 43093, codes 1-5 without labels) is an ordered
+  category in the order of its codes (2026-10-31, CLEAN-14; the curator's marks: the order comes from the
+  context and logic, not from the target, so the high prices of the 16 homes rated 3 do not move it).
+- Cycle (2026-11-01, CLEAN-14, Lennart's rule): `month_sold` (1-12) stays a number. A weekday or a month is a
+  position in a continuous cycle (weekday 1.5 is Monday noon), and the source ships it as a number; named
+  weekdays and months are ordered categories instead.
+- Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+  each level is carries the words, a score without them is a number): 1 scores with no words per level are
+  numbers (`SCORES`): `structure_quality`.
 
 ## Splits
 
@@ -295,4 +304,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8107b7bcd2a77bf943daffbd52c6d435bb828a3873ec54d5ea39b5458859b579` |
+| stale | yes: the definition now gives checksum `v2:8f97f3bd10609030d1d24d2658213934c0b701f3a235c96f4077d13c1ef2b0eb` |

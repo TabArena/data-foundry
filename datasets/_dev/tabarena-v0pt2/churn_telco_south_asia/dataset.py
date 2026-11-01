@@ -89,6 +89,9 @@ class ChurnTelcoSouthAsia(AbstractCuratedDataset):
         - Note: the September favourite network moves towards ufone, among active subscribers more (decision table). The share rises with calls in both classes (lowest to highest fifth: 0.40 to 0.93 active, 0.18 to 0.80 churned), so it follows activity, not a recording that differs by class.
         - Note: churn_telco_south_asia_duplicate (DSN Telecoms Churn 2018) is this file with renamed networks.
         - Year: 2017, the first publication; the data were collected in 2015.
+        - Left unordered (2026-10-31, CLEAN-14, the curator's marks): `aug_user_type` and `sep_user_type` are a 2G or 3G
+          subscription (data card); `Other` (374 subscribers, the same in both months, while 103 move between 2G and 3G)
+          is undocumented and uses data like the 2G users, so it is not 4G. Two levels on the scale and one off it.
     """
 
     # Task

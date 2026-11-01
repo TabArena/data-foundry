@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: numerai28_6
 container_format: 2
-checksum: v2:4a953b9f4d38fa18a1d401b348dbd5ab8298d5f0e28b0911aa116f535e3f8b3c
+checksum: v2:4c7b92391265a27b3e65d09351911f191dfa205a6e78b9b8cf8407a977601544
 build: null
 build_stale: false
 data:
@@ -55,7 +55,7 @@ decisions:
 
 Binary classification of `target`, scored with `log_loss` on IID splits. 96,320 rows and 21 features. Source: Kaggle (2016).
 
-Not built yet. The current definition gives checksum `v2:4a953b9f4d38fa18a1d401b348dbd5ab8298d5f0e28b0911aa116f535e3f8b3c`.
+Not built yet. The current definition gives checksum `v2:4c7b92391265a27b3e65d09351911f191dfa205a6e78b9b8cf8407a977601544`.
 
 ## In brief
 
@@ -158,11 +158,11 @@ The first 5 of 96,320 rows of the final frame (random rows: the frame is shuffle
 
 | target | feature1 | feature2 | feature3 | feature4 | feature5 | feature6 | feature7 | feature8 | feature9 | feature10 | feature11 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 0.137662 | 0.11692 | 0.709185 | 0.558363 | 0.593242 | 0.896635 | 0.120619 | 0.0995988 | 0.121654 | 0.184497 | 0.132656 |
-| 1 | 0.101246 | 0.909969 | 0.998058 | 0.144859 | 0.982405 | 0.35814 | 0.547488 | 0.179918 | 0.0178703 | 0.0478126 | 0.527072 |
-| 1 | 0.943612 | 0.97461 | 0.951359 | 0.292123 | 0.90852 | 0.128237 | 0.216783 | 0.226488 | 0.00434585 | 0.0782896 | 0.954155 |
-| 0 | 0.00510868 | 0.169178 | 0.186719 | 0.167962 | 0.169485 | 0.640182 | 0.323662 | 0.277309 | 0.038411 | 0.0255051 | 0.108826 |
-| 0 | 0.896329 | 0.516082 | 0.138107 | 0.380373 | 0.157674 | 0.528049 | 0.490694 | 0.809373 | 0.579735 | 0.522117 | 0.838742 |
+| Yes | 0.242941 | 0.266103 | 0.0388815 | 0.925181 | 0.0158985 | 0.389845 | 0.0322022 | 0.0524166 | 0.0574593 | 0.00824973 | 0.368096 |
+| No | 0.346118 | 0.605793 | 0.858821 | 0.672717 | 0.854797 | 0.00316181 | 0.498482 | 0.412355 | 0.341944 | 0.53724 | 0.118249 |
+| No | 0.413177 | 0.609836 | 0.548686 | 0.347879 | 0.335132 | 0.843976 | 0.982764 | 0.429415 | 0.241731 | 0.189451 | 0.292666 |
+| No | 0.0492032 | 0.322596 | 0.124477 | 0.312068 | 0.16597 | 0.51117 | 0.171201 | 0.178907 | 0.34886 | 0.668435 | 0.299242 |
+| Yes | 0.176987 | 0.911458 | 0.665634 | 0.599874 | 0.827735 | 0.548494 | 0.116568 | 0.132276 | 0.1504 | 0.475339 | 0.138477 |
 
 ## Curation notes
 
@@ -178,6 +178,8 @@ We start with numerai_training_data.csv from Numerai's own Kaggle dataset (owner
 - Not OpenML 23517 (numerai28.6), although the record carries that name: OpenML's file holds 72,404 rows (36,605 / 35,798) of the same 21-feature design and shares no feature row with the Kaggle file, so it is another 2016 training sample. We use the data owner's Kaggle upload.
 - Anomaly: every feature uses one global set of 1,000 values, each used by 73-118 rows, unevenly spaced over [0, 1], plus an exact 0.0 held by one row in 17 features; Numerai's encryption quantised them. One global set means the values carry no week fingerprint. The target rate per value varies by SD 0.051-0.058 against 0.051 binomial, the excess explained by the features' own monotone signal.
 - Potential leak, kept on purpose (LEAK-30): the values are equal-frequency quantile bins fitted on a larger population that holds our test rows. The counts per value are far more even than sampling would give (variance over mean 0.29-0.37 on all 21 features, against 1.0), which fits bins built over about 140,000 rows of which this file is a sample (OpenML 23517's 72,404 disjoint rows give the same estimate). No raw values exist, so the transform cannot be refitted per fold; a bin edge carries almost no information about one row's label, and we do not rescale.
+- The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
+  event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
@@ -230,28 +232,28 @@ The release has no era or date. Blocks of the raw file order carry no week struc
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| target | category | 0 | 0 | 2 | 1, 0 |
-| feature1 | float64 | 0 | 0 | 1000 | 0.0111, 0.5142, 0.9093, 0.9859, 0.6838, 0.3563, 0.9137, 0.3542, 0.0992, 0.9235 |
-| feature2 | float64 | 0 | 0 | 1000 | 0.8774, 0.6097, 0.2245, 0.6695, 0.9277, 0.5526, 0.44, 0.3145, 0.928, 0.4919 |
-| feature3 | float64 | 0 | 0 | 1001 | 0.4912, 0.9594, 0.4922, 0.9652, 0.0389, 0.7815, 0.5156, 0.9266, 0.8328, 0.1896 |
-| feature4 | float64 | 0 | 0 | 1001 | 0.8043, 0.9993, 0.9686, 0.5133, 0.8395, 0.3785, 0.1074, 0.8174, 0.9968, 0.6296 |
-| feature5 | float64 | 0 | 0 | 1001 | 0.4448, 0.9085, 0.8593, 0.8992, 0.9384, 0.6, 0.5952, 0.4986, 0.9755, 0.1932 |
-| feature6 | float64 | 0 | 0 | 1000 | 0.0385, 0.7418, 0.0494, 0.1325, 0.2798, 0.108, 0.2419, 0.975, 0.3299, 0.0798 |
-| feature7 | float64 | 0 | 0 | 1001 | 0.0221, 0.9652, 0.0502, 0.0378, 0.8825, 0.4141, 0.1001, 0.2168, 0.9487, 0.8292 |
-| feature8 | float64 | 0 | 0 | 1001 | 0.4734, 0.9881, 0.8135, 0.6842, 0.9237, 0.2306, 0.4532, 0.4798, 0.3985, 0.2673 |
-| feature9 | float64 | 0 | 0 | 1001 | 0.7842, 0.0465, 0.5017, 0.0126, 0.0089, 0.0824, 0.0169, 0.9233, 0.2436, 0.1155 |
-| feature10 | float64 | 0 | 0 | 1001 | 0.0304, 0.0301, 0.0099, 0.8728, 0.0089, 0.0374, 0.5466, 0.0428, 0.6429, 0.9234 |
-| feature11 | float64 | 0 | 0 | 1001 | 0.8974, 0.8769, 0.528, 0.1595, 0.5983, 0.3984, 0.8564, 0.9392, 0.6305, 0.925 |
-| feature12 | float64 | 0 | 0 | 1001 | 0.0083, 0.0155, 0.0644, 0.0213, 0.0339, 0.0627, 0.274, 0.3589, 0.5645, 0.9725 |
-| feature13 | float64 | 0 | 0 | 1001 | 0.5606, 0.1041, 0.9742, 0.661, 0.4259, 0.9741, 0.0304, 0.3567, 0.952, 0.3815 |
-| feature14 | float64 | 0 | 0 | 1001 | 0.6992, 0.7226, 0.6212, 0.5566, 0.483, 0.0241, 0.5563, 0.6107, 0.943, 0.4473 |
-| feature15 | float64 | 0 | 0 | 1000 | 0.0118, 0.5564, 0.015, 0.1957, 0.2652, 0.815, 0.7056, 0.9903, 0.6973, 0.1286 |
-| feature16 | float64 | 0 | 0 | 1001 | 0.9207, 0.1594, 0.2419, 0.9148, 0.8111, 0.3451, 0.0654, 0.8596, 0.9076, 0.0565 |
-| feature17 | float64 | 0 | 0 | 1001 | 0.3544, 0.2069, 0.8197, 0.0106, 0.5986, 0.0031, 0.6601, 0.9176, 0.6944, 0.4424 |
-| feature18 | float64 | 0 | 0 | 1001 | 0.5451, 0.4959, 0.6969, 0.4318, 0.4359, 0.1918, 0.9982, 0.9549, 0.6135, 0.5095 |
-| feature19 | float64 | 0 | 0 | 1001 | 0.3837, 0.0549, 0.9023, 0.9334, 0.8924, 0.4896, 0.9148, 0.0713, 0.871, 0.9627 |
-| feature20 | float64 | 0 | 0 | 1001 | 0.9464, 0.1189, 0.9361, 0.1506, 0.0266, 0.3974, 0.0983, 0.2949, 0.0575, 0.4647 |
-| feature21 | float64 | 0 | 0 | 1001 | 0.403, 0.5537, 0.8906, 0.6125, 0.3693, 0.0903, 0.784, 0.6636, 0.4491, 0.5912 |
+| target | category | 0 | 0 | 2 | Yes, No |
+| feature1 | float64 | 0 | 0 | 1000 | 0.0111, 0.5142, 0.9093, 0.9859, 0.6838, 0.3542, 0.9137, 0.3563, 0.4273, 0.6323 |
+| feature2 | float64 | 0 | 0 | 1000 | 0.8774, 0.9277, 0.2245, 0.6097, 0.6695, 0.3145, 0.5526, 0.928, 0.44, 0.9233 |
+| feature3 | float64 | 0 | 0 | 1001 | 0.4912, 0.9652, 0.9594, 0.4922, 0.0389, 0.7815, 0.5156, 0.1896, 0.8328, 0.9266 |
+| feature4 | float64 | 0 | 0 | 1001 | 0.8043, 0.9993, 0.9686, 0.1074, 0.5133, 0.3785, 0.8395, 0.8174, 0.5069, 0.0946 |
+| feature5 | float64 | 0 | 0 | 1001 | 0.4448, 0.9085, 0.6, 0.8992, 0.9384, 0.8593, 0.5952, 0.9755, 0.0243, 0.4986 |
+| feature6 | float64 | 0 | 0 | 1000 | 0.7418, 0.0385, 0.0494, 0.1325, 0.2798, 0.108, 0.2419, 0.0339, 0.0017, 0.0798 |
+| feature7 | float64 | 0 | 0 | 1001 | 0.0221, 0.9652, 0.0378, 0.0502, 0.1001, 0.2168, 0.4141, 0.8825, 0.9487, 0.0141 |
+| feature8 | float64 | 0 | 0 | 1001 | 0.4734, 0.8135, 0.9881, 0.2306, 0.4532, 0.9237, 0.4798, 0.6842, 0.2673, 0.3985 |
+| feature9 | float64 | 0 | 0 | 1001 | 0.7842, 0.0465, 0.0089, 0.0126, 0.5017, 0.0169, 0.9233, 0.0824, 0.0361, 0.0412 |
+| feature10 | float64 | 0 | 0 | 1001 | 0.0304, 0.0099, 0.0301, 0.0089, 0.8728, 0.0374, 0.6429, 0.0428, 0.5466, 0.9234 |
+| feature11 | float64 | 0 | 0 | 1001 | 0.528, 0.8769, 0.8974, 0.3984, 0.1595, 0.5983, 0.8564, 0.9392, 0.6305, 0.925 |
+| feature12 | float64 | 0 | 0 | 1001 | 0.0083, 0.0155, 0.0644, 0.0213, 0.0339, 0.9725, 0.5645, 0.274, 0.0627, 0.4407 |
+| feature13 | float64 | 0 | 0 | 1001 | 0.1041, 0.5606, 0.661, 0.4259, 0.9742, 0.9741, 0.0304, 0.3815, 0.3567, 0.952 |
+| feature14 | float64 | 0 | 0 | 1001 | 0.6992, 0.483, 0.5566, 0.7226, 0.6212, 0.6107, 0.4473, 0.0241, 0.5563, 0.943 |
+| feature15 | float64 | 0 | 0 | 1000 | 0.0118, 0.5564, 0.1957, 0.015, 0.2652, 0.9903, 0.6973, 0.7056, 0.815, 0.0949 |
+| feature16 | float64 | 0 | 0 | 1001 | 0.9207, 0.9148, 0.2419, 0.1594, 0.8111, 0.3451, 0.9076, 0.0565, 0.0654, 0.8596 |
+| feature17 | float64 | 0 | 0 | 1001 | 0.3544, 0.8197, 0.2069, 0.5986, 0.0106, 0.0031, 0.6601, 0.4424, 0.6944, 0.9176 |
+| feature18 | float64 | 0 | 0 | 1001 | 0.5451, 0.4959, 0.1918, 0.9982, 0.6969, 0.4359, 0.4318, 0.6135, 0.5095, 0.9549 |
+| feature19 | float64 | 0 | 0 | 1001 | 0.3837, 0.9023, 0.0549, 0.0713, 0.9627, 0.9334, 0.871, 0.4896, 0.9148, 0.8924 |
+| feature20 | float64 | 0 | 0 | 1001 | 0.9464, 0.1189, 0.9361, 0.0266, 0.1506, 0.3974, 0.4647, 0.0575, 0.0983, 0.1905 |
+| feature21 | float64 | 0 | 0 | 1001 | 0.403, 0.5537, 0.6125, 0.3693, 0.8906, 0.0903, 0.6636, 0.4491, 0.5912, 0.784 |
 
 </details>
 
@@ -259,8 +261,8 @@ The release has no era or date. Blocks of the raw file order carry no week struc
 
 | target | count | pct |
 |---|---|---|
-| 1 | 48658 | 50.52 |
-| 0 | 47662 | 49.48 |
+| Yes | 48658 | 50.52 |
+| No | 47662 | 49.48 |
 
 ### Numeric features
 
@@ -297,8 +299,8 @@ The release has no era or date. Blocks of the raw file order carry no week struc
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| target | 1 | 1 | 48658 | 50.52 |
-| target | 2 | 0 | 47662 | 49.48 |
+| target | 1 | Yes | 48658 | 50.52 |
+| target | 2 | No | 47662 | 49.48 |
 
 ## Build
 

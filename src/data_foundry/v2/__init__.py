@@ -37,7 +37,7 @@ from data_foundry.v2.encodings import (
     recommended_encodings,
 )
 from data_foundry.v2.metrics import Metric, score, scorer
-from data_foundry.v2.preprocessing import anonymize_ids, cast_dtypes, drop_columns, order_rows
+from data_foundry.v2.preprocessing import anonymize_ids, cast_dtypes, decode, drop_columns, order_rows, set_missing
 from data_foundry.v2.registry import discover_datasets, get_dataset, load_definition
 from data_foundry.v2.report import read_report
 from data_foundry.v2.splits import SplitPlan, Splits, Temporal, TemporalSplits
@@ -65,6 +65,7 @@ __all__ = [
     "canonical_smiles",
     "cast_dtypes",
     "clean_text",
+    "decode",
     "discover_datasets",
     "drop_columns",
     "encode_datetime",
@@ -83,5 +84,6 @@ __all__ = [
     "scaffold_groups",
     "score",
     "scorer",
+    "set_missing",
     "workbench",
 ]

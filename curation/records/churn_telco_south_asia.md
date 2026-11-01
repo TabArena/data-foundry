@@ -49,6 +49,10 @@ CC (2026-10-21, Lennart): option (a) of the consistency check on one-snapshot ch
 
 CC (2026-10-21, Lennart): the fallback metric stays (`roc_auc`; the first publication could not be read, so no metric is known; cross-dataset item "Metrics still to settle").
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `aug_user_type` (low confidence); `sep_user_type` (low confidence).
+
+CC (2026-10-31, Lennart): marks on the review board of PR #37: the user types left unordered with a note (Other is undocumented and not 4G).
+
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `orange_belgium_churn_uplift` (TBD -> Yes, priority 2); a related task: `bulgarian_telecom_business_churn` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference

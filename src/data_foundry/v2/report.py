@@ -377,9 +377,12 @@ def _dataset_section(result: CurationResult, fm: dict[str, Any]) -> list[str]:
         ("string", [c for c in types.string if c in present]),
         ("datetime", [f"{c} ({f})" if f else c for c, f in types.datetime_formats.items() if c in present]),
     ]
+    ordinal = [f"{c} ({' < '.join(map(str, levels))})" for c, levels in types.ordinal.items() if c in present]
+    if ordinal:  # listed only where a dataset has an ordinal column, so the other READMEs stay as they are
+        groups.insert(1, ("ordinal", ordinal))
     smiles = [c for c in result.dataset.smiles_columns if c in present]
     if smiles:  # listed only where there are any, so every other README stays as it was
-        groups.insert(2, ("smiles", smiles))
+        groups.insert([kind for kind, _ in groups].index("string") + 1, ("smiles", smiles))
     lines = [
         f"- {kind} ({len(cols)}): {', '.join(f'`{c}`' for c in cols) if cols else 'none'}" for kind, cols in groups
     ]

@@ -191,6 +191,10 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
         - Anomaly: 29,121 train invoices are dated after the challenge first ran (20-22 September 2019), up to
           2019-12-07, so the dates may be shifted. The cut uses the data's dates.
         - Note: Zindi's rules forbid redistribution; the Kaggle mirror states "other".
+        - Left unordered (2026-10-31, CLEAN-14, the curator's marks): `reading_remarque` is the agent's note on the
+          reading (Zindi: "If the counter shows something wrong, the agent gives a bad score"); the codes 6-9 are not
+          described and their use changes over time (7 only up to 1995, 8 and 9 from 1996, 9 replacing 6 from 2012), so
+          which end is bad is unknown.
     """
 
     # Task

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
 
 
 class SouthAfricaCoronaryHeartDisease(AbstractCuratedDataset):
@@ -66,6 +66,8 @@ class SouthAfricaCoronaryHeartDisease(AbstractCuratedDataset):
 
         - We remove the row id column.
         - The data is a retrospective sample of males from the CORIS study (cases with coronary heart disease and controls). Hastie, Tibshirani & Friedman (The Elements of Statistical Learning, 2nd ed., Sec. 5.2.2, p. 148) note: "These measurements were made sometime after the patients suffered a heart attack, and in many cases they had already benefited from a healthier diet and lifestyle". Some risk factors of the cases (e.g. sbp, obesity) were therefore measured after the outcome. This weakens their signal rather than leaking the target (dropping sbp and obesity changes ROC AUC from 0.774 to 0.778), so we keep all features.
+        - The target (2026-11-01, CLEAN-25): `chd` ships its classes as words (1 is the event). Binary: "Yes" is the
+          event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -82,6 +84,8 @@ class SouthAfricaCoronaryHeartDisease(AbstractCuratedDataset):
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
         df = df.drop(columns=["row.names"])
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

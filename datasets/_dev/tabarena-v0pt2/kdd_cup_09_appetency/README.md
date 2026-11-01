@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: kdd_cup_09_appetency
 container_format: 2
-checksum: v2:4a1455964e647308cb4459490a65692d4a39a94d2c881b07d2b9498504232227
+checksum: v2:9208f9df41f3442cff00c9826834872d1f0e840849dd1e6a6ace1565744f05ba
 build:
   uuid: 01a111fc-4f06-781e-a57e-d46ef749395b
   checksum: v2:f99cbecc7a799657e482596d74f37ad7f8e519b0d70e9c29428a5beee4d00b7e
@@ -70,7 +70,7 @@ decisions: []
 
 Binary classification of `Appetency`, scored with `roc_auc` on IID splits. 50,000 rows and 212 features. Source: Other (2009).
 
-Built as `01a111fc-4f06-781e-a57e-d46ef749395b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:4a1455964e647308cb4459490a65692d4a39a94d2c881b07d2b9498504232227`, so the build is stale. See [Build](#build).
+Built as `01a111fc-4f06-781e-a57e-d46ef749395b` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9208f9df41f3442cff00c9826834872d1f0e840849dd1e6a6ace1565744f05ba`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -176,11 +176,11 @@ The first 5 of 50,000 rows of the final frame (random rows: the frame is shuffle
 
 | Appetency | Var1 | Var2 | Var3 | Var4 | Var5 | Var6 | Var7 | Var9 | Var10 | Var11 | Var12 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| -1 | nan | nan | nan | nan | nan | 1470 | 7 | nan | nan | nan | nan |
-| -1 | nan | nan | nan | nan | nan | 847 | 7 | nan | nan | nan | nan |
-| -1 | nan | 0 | 0 | nan | nan | nan | nan | nan | nan | 8 | nan |
-| 1 | nan | nan | nan | nan | nan | 385 | 0 | nan | nan | nan | nan |
-| -1 | nan | nan | nan | nan | nan | 238 | 7 | nan | nan | nan | nan |
+| No | nan | nan | nan | nan | nan | 1085 | 0 | nan | nan | nan | nan |
+| Yes | nan | nan | nan | nan | nan | 238 | 0 | nan | nan | nan | nan |
+| No | nan | nan | nan | nan | nan | 1218 | 0 | nan | nan | nan | nan |
+| No | nan | nan | nan | nan | nan | 1680 | 7 | nan | nan | nan | nan |
+| No | nan | nan | nan | nan | nan | 987 | 7 | nan | nan | nan | nan |
 
 ## Curation notes
 
@@ -189,6 +189,8 @@ The first 5 of 50,000 rows of the final frame (random rows: the frame is shuffle
 - We dropped empty columns: "Var8", "Var15", "Var20", "Var31", "Var32", "Var39", "Var42", "Var48", "Var52", "Var55", "Var79", "Var141", "Var167", "Var169", "Var175", "Var185", "Var209", "Var230".
 - Anomaly: the feature names and categorical feature values have no semantic meaning.
 - Anomaly: this dataset has many missing values.
+- The target (2026-11-01, CLEAN-25): `Appetency` ships its classes as words (1 is the event). Binary: "Yes" is
+  the event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
@@ -213,7 +215,7 @@ Default splits.
 0 error(s), 2 warning(s), 0 info (26 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_constant_column`: 5 constant column(s) (1 distinct non-null value): ['Var118', 'Var191', 'Var213', 'Var215', 'Var224']. (hint: Drop them unless the constant is meaningful for the task.)
-- **warning** `dataset_pure_feature_value`: 4 feature value(s) determine the class on their own: Var197 = z32l: 939 rows, 99.6% Appetency=-1 (overall 98.2%); Var210 = g5HH: 1,527 rows, 100.0% Appetency=-1 (overall 98.2%); Var216 = NGZ_12K: 656 rows, 99.5% Appetency=-1 (overall 98.2%); Var226 = me1d: 1,265 rows, 100.0% Appetency=-1 (overall 98.2%). (hint: Often a leak: a column derived from the outcome or recorded after it. Check the column's documentation; drop it if so, otherwise accept the warning with the reason.)
+- **warning** `dataset_pure_feature_value`: 4 feature value(s) determine the class on their own: Var197 = z32l: 939 rows, 99.6% Appetency=No (overall 98.2%); Var210 = g5HH: 1,527 rows, 100.0% Appetency=No (overall 98.2%); Var216 = NGZ_12K: 656 rows, 99.5% Appetency=No (overall 98.2%); Var226 = me1d: 1,265 rows, 100.0% Appetency=No (overall 98.2%). (hint: Often a leak: a column derived from the outcome or recorded after it. Check the column's documentation; drop it if so, otherwise accept the warning with the reason.)
 
 ## Data checks
 
@@ -262,25 +264,25 @@ Default splits.
 | Var226 | category | 0 | 0 | 23 | FSa2, Qu4f, WqMG, szEZ, 7P5s, fKCe, Aoh3, 5Acm, 453m, xb3V |
 | Var227 | category | 0 | 0 | 7 | RAYp, ZI9m, 6fzt, 02N6s8f, nIGXDli, vJ_w8kB, nIGjgSB |
 | Var228 | category | 0 | 0 | 30 | F2FyR07IdsN7I, 55YFVY9, ib5G6X1eUxUn6, R4y5gQQWY8OodqDV, xwM2aC7IdeMC0, TCU50_Y… |
-| Appetency | category | 0 | 0 | 2 | -1, 1 |
-| Var92 | float64 | 49829 | 99.66 | 169 | 8225.0, 0.0, 23730.0, 406378.0, 110271.0, 58324.0, 16121.0, 98602.0, 42560.0, 3… |
+| Appetency | category | 0 | 0 | 2 | No, Yes |
+| Var92 | float64 | 49829 | 99.66 | 169 | 0.0, 8225.0, 453845.0, 229929.0, 2688.0, 183722.0, 513002.0, 1865367.0, 490.0, … |
 | Var118 | float64 | 49829 | 99.66 | 1 | 3.0 |
-| Var64 | float64 | 49762 | 99.52 | 233 | 12960.0, 0.0, 16432.47, 33669.27, 14434.38, 2289.42, 16986.87, 46726.38, 49486.… |
-| Var190 | float64 | 49667 | 99.33 | 328 | 0.0, 12960.0, 10828.53, 1419.12, 41687.73, 17258.49, 920.88, 25938.99, 25764.84… |
-| Var45 | float64 | 49656 | 99.31 | 343 | 2985.64, 1660.72, 5121.56, 17666.2, 8674.22, 2614.66, 9379.16, 1599.4, 14926.16… |
-| Var102 | float64 | 49549 | 99.1 | 445 | 0.0, 25920.0, 51840.0, 22.5, 76695.58, 5612.22, 22029.75, 21267.18, 14147.28, 5… |
-| Var12 | float64 | 49442 | 98.88 | 22 | 0.0, 8.0, 16.0, 24.0, 32.0, 40.0, 48.0, 72.0, 56.0, 80.0 |
-| Var62 | float64 | 49442 | 98.88 | 12 | 0.0, 9.0, 18.0, 27.0, 45.0, 72.0, 81.0, 288.0, 63.0, 441.0 |
-| Var98 | float64 | 49442 | 98.88 | 115 | 0.0, 345600.0, 4580.0, 22632.0, 86988.0, 2108.0, 145204.0, 3792.0, 61028.0, 378… |
-| Var56 | float64 | 49354 | 98.71 | 195 | 0.0, 432000.0, 864000.0, 253675.0, 2040.0, 139640.0, 1970575.0, 140340.0, 16352… |
+| Var64 | float64 | 49762 | 99.52 | 233 | 12960.0, 0.0, 13454.82, 52710.93, 74626.11, 27172.17, 170.55, 17406.9, 2997.54,… |
+| Var190 | float64 | 49667 | 99.33 | 328 | 0.0, 12960.0, 7030.17, 49821.12, 41687.73, 1465.92, 9336.06, 16388.19, 11886.12… |
+| Var45 | float64 | 49656 | 99.31 | 343 | 2985.64, 3458.18, 15165.9, 3852.04, 8634.22, 3008.06, 12546.42, 10611.52, 96.74… |
+| Var102 | float64 | 49549 | 99.1 | 445 | 0.0, 51840.0, 22.5, 25920.0, 4933.35, 79586.01, 129.15, 75733.29, 8007.57, 1623… |
+| Var12 | float64 | 49442 | 98.88 | 22 | 0.0, 8.0, 16.0, 24.0, 32.0, 40.0, 48.0, 80.0, 104.0, 72.0 |
+| Var62 | float64 | 49442 | 98.88 | 12 | 0.0, 9.0, 18.0, 27.0, 45.0, 72.0, 288.0, 36.0, 90.0, 441.0 |
+| Var98 | float64 | 49442 | 98.88 | 115 | 0.0, 345600.0, 4580.0, 24080.0, 151704.0, 4288.0, 135236.0, 80660.0, 205524.0, … |
+| Var56 | float64 | 49354 | 98.71 | 195 | 0.0, 432000.0, 864000.0, 791395.0, 37535.0, 343805.0, 2671145.0, 137525.0, 3012… |
 | Var89 | float64 | 49354 | 98.71 | 16 | 0.0, 6.0, 12.0, 24.0, 18.0, 30.0, 42.0, 90.0, 36.0, 72.0 |
 | Var178 | float64 | 49354 | 98.71 | 30 | 0.0, 5.0, 10.0, 15.0, 20.0, 25.0, 40.0, 35.0, 30.0, 45.0 |
 | Var63 | float64 | 49306 | 98.61 | 48 | 0.0, 6.0, 12.0, 24.0, 18.0, 36.0, 30.0, 42.0, 48.0, 60.0 |
-| Var66 | float64 | 49306 | 98.61 | 100 | 0.0, 16.0, 12.0, 20.0, 4.0, 8.0, 24.0, 68.0, 28.0, 44.0 |
-| Var136 | float64 | 49306 | 98.61 | 534 | 0.0, 172800.0, 1209600.0, 5122.86, 47167.6, 137506.0, 38232.2, 71646.8, 223096.… |
-| Var156 | float64 | 49306 | 98.61 | 100 | 0.0, 28.0, 21.0, 35.0, 7.0, 14.0, 42.0, 119.0, 49.0, 77.0 |
+| Var66 | float64 | 49306 | 98.61 | 100 | 0.0, 16.0, 12.0, 20.0, 4.0, 8.0, 68.0, 28.0, 24.0, 44.0 |
+| Var136 | float64 | 49306 | 98.61 | 534 | 0.0, 172800.0, 1209600.0, 149992.4, 382.066, 28194.0, 21138.0, 25376.0, 6440.0,… |
+| Var156 | float64 | 49306 | 98.61 | 100 | 0.0, 28.0, 21.0, 35.0, 7.0, 14.0, 119.0, 49.0, 42.0, 77.0 |
 | Var1 | float64 | 49298 | 98.6 | 18 | 0.0, 8.0, 16.0, 24.0, 32.0, 40.0, 48.0, 56.0, 72.0, 128.0 |
-| Var9 | float64 | 49298 | 98.6 | 100 | 0.0, 8.0, 6.0, 10.0, 2.0, 4.0, 12.0, 34.0, 14.0, 22.0 |
+| Var9 | float64 | 49298 | 98.6 | 100 | 0.0, 8.0, 6.0, 10.0, 2.0, 4.0, 14.0, 34.0, 12.0, 16.0 |
 | Var29 | float64 | 49298 | 98.6 | 2 | 0.0, 2.0 |
 | Var30 | float64 | 49298 | 98.6 | 13 | 5.0, 0.0, 10.0, 15.0, 20.0, 25.0, 30.0, 45.0, 35.0, 60.0 |
 | Var41 | float64 | 49298 | 98.6 | 36 | 0.0, 7.0, 14.0, 21.0, 28.0, 35.0, 42.0, 56.0, 49.0, 77.0 |
@@ -293,8 +295,8 @@ Default splits.
 
 | Appetency | count | pct |
 |---|---|---|
-| -1 | 49110 | 98.22 |
-| 1 | 890 | 1.78 |
+| No | 49110 | 98.22 |
+| Yes | 890 | 1.78 |
 
 ### Numeric features
 
@@ -375,8 +377,8 @@ Default splits.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| Appetency | 1 | -1 | 49110 | 98.22 |
-| Appetency | 2 | 1 | 890 | 1.78 |
+| Appetency | 1 | No | 49110 | 98.22 |
+| Appetency | 2 | Yes | 890 | 1.78 |
 | Var191 | 1 | &lt;NA> | 48917 | 97.83 |
 | Var191 | 2 | r__I | 1083 | 2.17 |
 | Var192 | 1 | qFpmfo8zhV | 385 | 0.77 |
@@ -451,4 +453,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:4a1455964e647308cb4459490a65692d4a39a94d2c881b07d2b9498504232227` |
+| stale | yes: the definition now gives checksum `v2:9208f9df41f3442cff00c9826834872d1f0e840849dd1e6a6ace1565744f05ba` |

@@ -10,7 +10,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits, decode
 
 
 def set_table_dtypes(df):
@@ -145,6 +145,13 @@ def aggregate_features(df):
     return [df.sort(keys, maintain_order=True).group_by("case_id", maintain_order=True).agg(exprs)]
 
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "first_empl_employedtotal_800L": ["LESS_ONE", "MORE_ONE", "MORE_FIVE"],  # open-ended
+}
+
+
 class HomeCreditDefaultStability1m(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="Will a client default on the loan Home Credit is deciding on?",
@@ -214,6 +221,10 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
         - We drop case_id as it is already collapsed and thus does not contain extra information.
         - We cast all object and string columns to be categorical. Note that they are anonymized and string preprocessing likely does not add a lot of value as a result.
         - We drop name-related columns as they do not hold relevant information. These were otherwise dropped as high-cardinality string columns in TabRed or on Kaggle.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+        - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
+          event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -351,6 +362,8 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
                 "first_employername_160M",
             ]
         )
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
@@ -358,6 +371,8 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
         # isbidproduct_1095L is a yes/no flag by its name: categorical (CLEAN-14); the aggregates stay numeric even
         # where only 0 and 1 occur
         return FeatureTypes(
-            categorical=[*(c for c in text_cols if c != "date_decision"), "isbidproduct_1095L"],
+            ordinal=ORDINAL_LEVELS,
+            # max_persontype_1072L is a person-type code, not a quantity (point 4, 2026-10-31)
+            categorical=[*(c for c in text_cols if c != "date_decision"), "isbidproduct_1095L", "max_persontype_1072L"],
             datetime={"date_decision": "%Y-%m-%d"},
         )

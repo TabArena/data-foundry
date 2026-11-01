@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: distribution_transformers_at_cauca_department
 container_format: 2
-checksum: v2:29cf06b167eca9d3c6d6c16225d6e70b284ab42f4536dd0837e3454262dad8a8
+checksum: v2:37f4b3af55a9597ddd326ff249be0707615ab578cba384558f06dc6905194873
 build: null
 build_stale: false
 data:
@@ -66,7 +66,7 @@ decisions:
 
 Binary classification of `burned`, scored with `roc_auc` on IID splits. 15,873 rows and 12 features. Source: Other (2021).
 
-Not built yet. The current definition gives checksum `v2:29cf06b167eca9d3c6d6c16225d6e70b284ab42f4536dd0837e3454262dad8a8`.
+Not built yet. The current definition gives checksum `v2:37f4b3af55a9597ddd326ff249be0707615ab578cba384558f06dc6905194873`.
 
 ## In brief
 
@@ -212,6 +212,8 @@ We start with Dataset_Year_2020.xlsx of version 4 of the Mendeley Data release b
 - Columns are renamed to snake_case, and the label to burned (Yes / No).
 - Duplicates kept: 140 rows repeat an earlier row once power and mounting are dropped, 86% with one user and 96% with no low-voltage network: different transformers with identical coarse attributes.
 - The lightning densities (one value per area) are features, not groups, as a transformer's area is known. A same-year area effect, which the random split could reward, is absent: last year's burn rate of the area predicts the 2020 burns better than the same year's.
+- Partial order, left unordered (2026-11-01, CLEAN-14): `client_type`: the residential strata 1-6 are ordered,
+  but commercial, industrial and official clients are a second dimension.
 
 ## Splits
 

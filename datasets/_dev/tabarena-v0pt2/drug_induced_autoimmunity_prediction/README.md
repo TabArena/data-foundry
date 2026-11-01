@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: drug_induced_autoimmunity_prediction
 container_format: 2
-checksum: v2:f0f6be25545b346539ab1ae8d600a230da8b2892cebb9ea30f17747cbcf6ec52
+checksum: v2:97cd77a3eed2d46e68dbca134cd1c814092fa55249667cc0e5b4ac7bae24a648
 build:
   uuid: 01a13aff-7235-73c3-932c-785cd540127b
   checksum: v2:8b265d2d3eddb7add77dc45cb583a5b314652160191f2bb7923a2256ac744c09
@@ -77,7 +77,7 @@ decisions:
 
 Binary classification of `Label`, scored with `roc_auc` on grouped splits by `scaffold`. 587 rows and 1 features. Source: UCI (2025).
 
-Built as `01a13aff-7235-73c3-932c-785cd540127b` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:f0f6be25545b346539ab1ae8d600a230da8b2892cebb9ea30f17747cbcf6ec52`, so the build is stale. See [Build](#build).
+Built as `01a13aff-7235-73c3-932c-785cd540127b` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:97cd77a3eed2d46e68dbca134cd1c814092fa55249667cc0e5b4ac7bae24a648`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -186,11 +186,11 @@ The first 5 of 587 rows of the final frame (random rows: the frame is shuffled).
 
 | Label | SMILES | scaffold |
 |---|---|---|
-| 1 | CC(C)NC\[C@H\](O)COc1ccc(COCCOC(C)C)cc1 | c1ccccc1 |
-| 0 | CN(C)C\[C@H\](c1ccc(O)cc1)C1(O)CCCCC1 | c1ccc(CC2CCCCC2)cc1 |
-| 0 | O=C(CCCc1ccccc1)OCC(COC(=O)CCCc1ccccc1)… | O=C(CCCc1ccccc1)OCC(COC(=O)CCCc1ccccc1)… |
-| 0 | CCCc1c2oc(C(=O)O)cc(=O)c2cc2c(=O)cc(C(=… | O=c1cc\[nH\]c2cc3occc(=O)c3cc12 |
-| 1 | C\[C@H\]1c2cccc(O)c2C(\[O-\])=C2C(=O)\[C@\]3(… | C=C1C(=O)CC2CC3Cc4ccccc4C=C3C(=O)C2C1=O |
+| No | C=CC\[N+\]1(\[C@H\]2C\[C@@H\]3\[C@@H\]4CC\[C@@H\]… | C1CC\[NH+\](C2CC3CCC4C5CC(N6CCOCC6)CCC5CC… |
+| No | Cc1ccccc1N1C(=O)c2cc(S(N)(=O)=O)c(Cl)cc… | O=C1c2ccccc2NCN1c1ccccc1 |
+| No | CC1(C)N=C(N)N=C(N)N1OCCCOc1cc(Cl)c(Cl)c… | C1=NC=NCN1OCCCOc1ccccc1 |
+| No | C=C1CCN(\[C@@H\](C)\[C@\](O)(Cn2cncn2)c2ccc… | C=C1CCN(CC(Cn2cncn2)c2ccccc2)CC1 |
+| No | CC#C\[C@\]1(O)CC\[C@@H\]2\[C@@H\]3CCC4=CC(=O)… | O=C1C=C2CCC3C(=C2CC1)C(c1ccccc1)CC1CCCC… |
 
 ## Curation notes
 
@@ -201,6 +201,8 @@ We start with the dataset from UCI.
 - The source's 176 RDKit descriptors leave (2026-11-01): RDKit computed them from the same SMILES, and the recommended encoding reproduces them (the full RDKit set scores as they do, above), so shipping both would give a model the structure twice.
 - Scaffold-grouped splits (2026-10-19), not random ones: under random splits about a third of the test drugs have a close relative in training with the same label, and a nearest-neighbour fingerprint lookup without a model reaches ROC AUC 0.822 against TabPFN's 0.854; with whole scaffolds held out, TabPFN 0.768, HGB 0.737, RF 0.724, LR 0.687 (generic scaffolds, `~/claude_jobs/dia_review/`). The use case screens new candidates, which come from series not yet seen, and scaffold splits are the standard for this: the Therapeutics Data Commons ADMET group splits all its endpoints by scaffold, among them drug-induced liver injury, a drug-level label like this one (Huang et al. 2021, NeurIPS Datasets and Benchmarks, arXiv:2102.09548). The source validated on random splits (its test file is as similar to its training file as a random split is), so our scores are lower than the paper's AUC 0.88-0.89 by design. The groups are the Bemis-Murcko scaffolds (Bemis and Murcko 1996, J Med Chem 39(15):2887-2893): 443 groups, the largest 41 drugs (benzene), 10 with both labels. The 53 drugs without a ring each form their own group (390 ring scaffolds plus these 53): they share no skeleton, only 2 have a close relative among them (Tanimoto >= 0.7), and their nearest neighbour's label agrees at the base rate (0.925). The groups come from `scaffold_groups` since 2026-11-01, as in qsar_bioconcentration and qsar_oral_toxicity: the same 443 groups as the definition's own code before, under other group names, so the drugs fall into other folds.
 - Duplicates dropped: 9 pairs of rows are one structure once the stereo marks are set aside (the same 18 rows that share every one of the source's descriptors), stereoisomers a 2D encoding does not tell apart (PubChem): quinine and quinidine, and 8 drugs entered twice with other stereo marks (lovastatin, fluticasone propionate, enalapril, fluvastatin, lisinopril, pravastatin, carbidopa, streptomycin), 3 pairs across the source's two files. We keep one row of the 8 pairs with one label and drop both streptomycin rows (one positive, one negative), as for qsar_oral_toxicity: 587 drugs, 140 positive (decision table).
+- The target (2026-11-01, CLEAN-25): `Label` ships its classes as words (1 is the event). Binary: "Yes" is the
+  event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
@@ -295,7 +297,7 @@ One group is a chemical scaffold: the drugs that share one Bemis-Murcko scaffold
 | largest group | 7.0% of the rows |
 | test groups per fold | 139 to 153 |
 | groups of two or more rows with a single label | 82.7% |
-| label variance explained by the group | 0.87 (shuffled groups: 0.72) |
+| label variance explained by the group | 0.87 (shuffled groups: 0.75) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
@@ -337,16 +339,16 @@ A 2D encoding carries no stereochemistry, so each pair differs only in the stere
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| Label | category | 0 | 0 | 2 | 0, 1 |
-| SMILES | string | 0 | 0 | 587 | FC(F)O\[C@H\](Cl)C(F)(F)F, CC(C)NC\[C@H\](O)COc1ccc(COCCOC(C)C)cc1, CN(C)C\[C@H\](c1c… |
-| scaffold | string | 0 | 0 | 443 | c1ccccc1, O=C1C=CC2C(=C1)CCC1C3CCCC3CCC21, C1=CC(c2ccccc2)C=CN1, O=C1C=C2CCC3C4… |
+| Label | category | 0 | 0 | 2 | No, Yes |
+| SMILES | string | 0 | 0 | 587 | O=C(NCCO\[N+\](=O)\[O-\])c1cccnc1, C=CC\[N+\]1(\[C@H\]2C\[C@@H\]3\[C@@H\]4CC\[C@@H\]5C\[C@H\](O… |
+| scaffold | string | 0 | 0 | 443 | c1ccccc1, O=C1C=CC2C(=C1)CCC1C3CCCC3CCC21, O=C1C=CC2C(=C1)CCC1C2CCC2C1CC1OCOC12… |
 
 ### Target distribution
 
 | Label | count | pct |
 |---|---|---|
-| 0 | 447 | 76.15 |
-| 1 | 140 | 23.85 |
+| No | 447 | 76.15 |
+| Yes | 140 | 23.85 |
 
 ### Numeric features
 
@@ -359,18 +361,18 @@ No numeric features to summarize.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| Label | 1 | 0 | 447 | 76.15 |
-| Label | 2 | 1 | 140 | 23.85 |
-| SMILES | 1 | FC(F)O\[C@H\](Cl)C(F)(F)F | 1 | 0.17 |
-| SMILES | 2 | CC(C)NC\[C@H\](O)COc1ccc(COCCOC(C)C)cc1 | 1 | 0.17 |
-| SMILES | 3 | CN(C)C\[C@H\](c1ccc(O)cc1)C1(O)CCCCC1 | 1 | 0.17 |
-| SMILES | 4 | O=C(CCCc1ccccc1)OCC(COC(=O)CCCc1ccccc1)OC(=O)CCCc1ccccc1 | 1 | 0.17 |
-| SMILES | 5 | CCCc1c2oc(C(=O)O)cc(=O)c2cc2c(=O)cc(C(=O)O)n(CC)c12 | 1 | 0.17 |
+| Label | 1 | No | 447 | 76.15 |
+| Label | 2 | Yes | 140 | 23.85 |
+| SMILES | 1 | O=C(NCCO\[N+\](=O)\[O-\])c1cccnc1 | 1 | 0.17 |
+| SMILES | 2 | C=CC\[N+\]1(\[C@H\]2C\[C@@H\]3\[C@@H\]4CC\[C@@H\]5C\[C@H\](O)\[C@@H\](N6CCOCC6... | 1 | 0.17 |
+| SMILES | 3 | Cc1ccccc1N1C(=O)c2cc(S(N)(=O)=O)c(Cl)cc2N\[C@H\]1C | 1 | 0.17 |
+| SMILES | 4 | CC1(C)N=C(N)N=C(N)N1OCCCOc1cc(Cl)c(Cl)cc1Cl | 1 | 0.17 |
+| SMILES | 5 | C=C1CCN(\[C@@H\](C)\[C@\](O)(Cn2cncn2)c2ccc(F)cc2F)CC1 | 1 | 0.17 |
 | scaffold | 1 | c1ccccc1 | 41 | 6.98 |
 | scaffold | 2 | O=C1C=CC2C(=C1)CCC1C3CCCC3CCC21 | 12 | 2.04 |
-| scaffold | 3 | C1=CC(c2ccccc2)C=CN1 | 6 | 1.02 |
-| scaffold | 4 | O=C1C=C2CCC3C4CCCC4CCC3C2CC1 | 6 | 1.02 |
-| scaffold | 5 | O=C1C=CC2C(=C1)CCC1C2CCC2C1CC1OCOC12 | 6 | 1.02 |
+| scaffold | 3 | O=C1C=CC2C(=C1)CCC1C2CCC2C1CC1OCOC12 | 6 | 1.02 |
+| scaffold | 4 | C1=CC(c2ccccc2)C=CN1 | 6 | 1.02 |
+| scaffold | 5 | O=C1C=C2CCC3C4CCCC4CCC3C2CC1 | 6 | 1.02 |
 
 </details>
 
@@ -385,4 +387,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | de9e6adde48a58047e4e9a41f249e28507e48ed3-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:f0f6be25545b346539ab1ae8d600a230da8b2892cebb9ea30f17747cbcf6ec52` |
+| stale | yes: the definition now gives checksum `v2:97cd77a3eed2d46e68dbca134cd1c814092fa55249667cc0e5b4ac7bae24a648` |

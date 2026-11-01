@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: forensic_glass_identification
 container_format: 2
-checksum: v2:6acc44ecffc8dd138ae567418d016cd6bca823b3ee306e6cc143415c4fb33bc3
+checksum: v2:1e3d1e0ca04774c9bf4d1d5167cd418b7ce0aa030f49cf7c9bffe11dafa049d8
 build:
   uuid: 01a111fc-a27d-7f21-999e-eb82f18aaf21
   checksum: v2:de970f5266371fcd98c9a0f2deba0e93336a1f4adbc1ecf3539b8445cc24c18b
@@ -58,7 +58,12 @@ bundle_checks:
   warnings: []
   infos:
   - dataset_duplicate_rows
-  accepted: {}
+  accepted:
+    dataset_row_order_leaks_target: The row order is the definition's fixed shuffle,
+      which depends on the rows' contents; decoding the target into the glass types'
+      names (2026-11-01) reshuffled the 214 rows, and the category codes of this nominal
+      target now correlate with position at rho -0.21, an outcome 0.4% of random shuffles
+      reach. The source file is not sorted by type in this frame.
 decisions: []
 ---
 
@@ -68,7 +73,7 @@ decisions: []
 
 Multiclass classification of `Type_of_glass`, scored with `log_loss` on IID splits. 214 rows and 9 features. Source: UCI (1987).
 
-Built as `01a111fc-a27d-7f21-999e-eb82f18aaf21` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6acc44ecffc8dd138ae567418d016cd6bca823b3ee306e6cc143415c4fb33bc3`, so the build is stale. See [Build](#build).
+Built as `01a111fc-a27d-7f21-999e-eb82f18aaf21` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1e3d1e0ca04774c9bf4d1d5167cd418b7ce0aa030f49cf7c9bffe11dafa049d8`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -173,11 +178,11 @@ The first 5 of 214 rows of the final frame (random rows: the frame is shuffled).
 
 | Type_of_glass | RI | Na | Mg | Al | Si | K | Ca | Ba | Fe |
 |---|---|---|---|---|---|---|---|---|---|
-| 2 | 1.51707 | 13.48 | 3.48 | 1.71 | 72.52 | 0.62 | 7.99 | 0 | 0 |
-| 3 | 1.5161 | 13.42 | 3.4 | 1.22 | 72.69 | 0.59 | 8.32 | 0 | 0 |
-| 2 | 1.51851 | 13.2 | 3.63 | 1.07 | 72.83 | 0.57 | 8.41 | 0.09 | 0.17 |
-| 6 | 1.51969 | 14.56 | 0 | 0.56 | 73.48 | 0 | 11.22 | 0 | 0 |
-| 3 | 1.5161 | 13.33 | 3.53 | 1.34 | 72.67 | 0.56 | 8.33 | 0 | 0 |
+| headlamps | 1.51732 | 14.95 | 0 | 1.8 | 72.99 | 0 | 8.61 | 1.55 | 0 |
+| containers | 1.52151 | 11.03 | 1.71 | 1.56 | 73.44 | 0.58 | 11.62 | 0 | 0 |
+| headlamps | 1.51719 | 14.75 | 0 | 2 | 73.02 | 0 | 8.53 | 1.59 | 0.08 |
+| headlamps | 1.51613 | 13.88 | 1.78 | 1.79 | 73.1 | 0 | 8.67 | 0.76 | 0 |
+| building windows non float processed | 1.5241 | 13.83 | 2.9 | 1.17 | 71.15 | 0.08 | 10.79 | 0 | 0 |
 
 ## Curation notes
 
@@ -185,6 +190,8 @@ We start with the data from UCI.
 
 - We drop the ID column, as it is a just a row identifier and does not contain any useful information for modeling.
 - The data contains one naturally occurring duplicate.
+- The target (2026-11-01, CLEAN-25): `Type_of_glass` ships its classes as words (glass.names, 11. Type of
+  glass).
 
 ## Splits
 
@@ -266,33 +273,37 @@ Default splits.
 
 - **info** `dataset_duplicate_rows`: 1 exact duplicate row(s) (0.5% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 
+Accepted on purpose:
+
+- `dataset_row_order_leaks_target`: The row order is the definition's fixed shuffle, which depends on the rows' contents; decoding the target into the glass types' names (2026-11-01) reshuffled the 214 rows, and the category codes of this nominal target now correlate with position at rho -0.21, an outcome 0.4% of random shuffles reach. The source file is not sorted by type in this frame.
+
 ## Data checks
 
 ### Feature summary
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| Type_of_glass | category | 0 | 0 | 6 | 2, 1, 7, 3, 5, 6 |
-| RI | float64 | 0 | 0 | 178 | 1.5215, 1.5159, 1.5165, 1.5197, 1.5178, 1.5175, 1.5218, 1.5167, 1.5177, 1.5176 |
-| Na | float64 | 0 | 0 | 142 | 13.02, 13.0, 13.21, 12.85, 13.33, 12.86, 13.64, 13.24, 12.79, 13.41 |
-| Mg | float64 | 0 | 0 | 94 | 0.0, 3.48, 3.54, 3.58, 3.52, 3.62, 3.66, 3.56, 3.57, 3.61 |
-| Al | float64 | 0 | 0 | 118 | 1.54, 1.19, 1.43, 1.29, 1.23, 1.56, 1.28, 1.35, 1.36, 1.33 |
-| Si | float64 | 0 | 0 | 133 | 73.11, 73.1, 72.86, 73.28, 72.99, 72.95, 73.08, 72.97, 73.01, 72.67 |
-| K | float64 | 0 | 0 | 65 | 0.0, 0.57, 0.56, 0.6, 0.58, 0.61, 0.64, 0.59, 0.62, 0.54 |
-| Ca | float64 | 0 | 0 | 143 | 8.03, 8.43, 8.79, 9.57, 8.44, 8.6, 8.52, 9.85, 8.83, 8.53 |
-| Ba | float64 | 0 | 0 | 34 | 0.0, 0.09, 1.57, 0.11, 1.59, 0.64, 0.61, 1.55, 0.54, 0.63 |
-| Fe | float64 | 0 | 0 | 32 | 0.0, 0.17, 0.24, 0.09, 0.1, 0.11, 0.07, 0.28, 0.12, 0.16 |
+| Type_of_glass | category | 0 | 0 | 6 | building windows non float processed, building windows float processed, headlam… |
+| RI | float64 | 0 | 0 | 178 | 1.5159, 1.5165, 1.5215, 1.5217, 1.5161, 1.5162, 1.5159, 1.5181, 1.5178, 1.5177 |
+| Na | float64 | 0 | 0 | 142 | 13.21, 13.02, 13.0, 12.86, 13.64, 13.33, 13.24, 12.85, 13.72, 13.48 |
+| Mg | float64 | 0 | 0 | 94 | 0.0, 3.54, 3.58, 3.48, 3.52, 3.62, 3.56, 3.66, 3.5, 3.61 |
+| Al | float64 | 0 | 0 | 118 | 1.54, 1.19, 1.23, 1.29, 1.43, 1.56, 1.35, 1.36, 1.28, 1.62 |
+| Si | float64 | 0 | 0 | 133 | 72.99, 73.1, 73.28, 72.86, 73.11, 73.21, 73.01, 72.87, 72.67, 72.64 |
+| K | float64 | 0 | 0 | 65 | 0.0, 0.57, 0.56, 0.6, 0.58, 0.64, 0.61, 0.59, 0.54, 0.55 |
+| Ca | float64 | 0 | 0 | 143 | 8.03, 8.43, 8.79, 8.44, 9.57, 8.67, 8.53, 8.52, 8.21, 8.38 |
+| Ba | float64 | 0 | 0 | 34 | 0.0, 1.59, 0.64, 0.09, 1.57, 0.11, 1.55, 1.64, 0.81, 0.76 |
+| Fe | float64 | 0 | 0 | 32 | 0.0, 0.17, 0.24, 0.09, 0.1, 0.11, 0.28, 0.07, 0.22, 0.12 |
 
 ### Target distribution
 
 | Type_of_glass | count | pct |
 |---|---|---|
-| 2 | 76 | 35.51 |
-| 1 | 70 | 32.71 |
-| 7 | 29 | 13.55 |
-| 3 | 17 | 7.94 |
-| 5 | 13 | 6.07 |
-| 6 | 9 | 4.21 |
+| building windows non float processed | 76 | 35.51 |
+| building windows float processed | 70 | 32.71 |
+| headlamps | 29 | 13.55 |
+| vehicle windows float processed | 17 | 7.94 |
+| containers | 13 | 6.07 |
+| tableware | 9 | 4.21 |
 
 ### Numeric features
 
@@ -312,11 +323,11 @@ Default splits.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| Type_of_glass | 1 | 2 | 76 | 35.51 |
-| Type_of_glass | 2 | 1 | 70 | 32.71 |
-| Type_of_glass | 3 | 7 | 29 | 13.55 |
-| Type_of_glass | 4 | 3 | 17 | 7.94 |
-| Type_of_glass | 5 | 5 | 13 | 6.07 |
+| Type_of_glass | 1 | building windows non float processed | 76 | 35.51 |
+| Type_of_glass | 2 | building windows float processed | 70 | 32.71 |
+| Type_of_glass | 3 | headlamps | 29 | 13.55 |
+| Type_of_glass | 4 | vehicle windows float processed | 17 | 7.94 |
+| Type_of_glass | 5 | containers | 13 | 6.07 |
 
 ## Build
 
@@ -329,4 +340,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6acc44ecffc8dd138ae567418d016cd6bca823b3ee306e6cc143415c4fb33bc3` |
+| stale | yes: the definition now gives checksum `v2:1e3d1e0ca04774c9bf4d1d5167cd418b7ce0aa030f49cf7c9bffe11dafa049d8` |

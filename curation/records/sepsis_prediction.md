@@ -37,6 +37,8 @@ CC (2026-10-01, Lennart): Leak audit: the data is fine; the scoring has to chang
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source normalized_early_detection_utility — PhysioNet/CinC Challenge 2019 normalized utility score (Reyna et al. 2020, Early prediction of sepsis from clinical data: the PhysioNet/Computing in Cardiology Challenge 2019, Crit Care Med 48(2):210-217; https://physionet.org/content/challenge-2019/1.0.0/); inputs {"group": "Patient_ID", "order": "Hour"}.
 
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
 ## Reference
 
 Kaggle / PhysioNet

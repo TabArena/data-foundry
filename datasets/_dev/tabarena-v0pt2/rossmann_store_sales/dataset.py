@@ -66,10 +66,16 @@ class RossmannStoreSales(AbstractCuratedDataset):
         - The competition used 48 days for testing. The description says "Rossmann store managers are tasked with predicting their daily sales for up to six weeks in advance". Therefore, we define the same horizon for defining our test splits and add one day between train/test as a planning gap.
         - We transform the date column to datetime format.
         - We exclude days when the store is closed since they all have zero sales and are trivial to predict. We drop the Open column.
-        - We assign categorical data type to the Store column and the DayOfWeek column.
+        - We assign categorical data type to the Store column.
         - For the train data, the # of customers per day is given, which is not available at the prediction point for the test data. The 1st-place solution says that one model variation computed recent-history features on the number of customers instead of sales, and also used store-level aggregates such as average sales per customer. However this would mean that we have to define split-specific splits. Since many high performing solutions did not utilize customer information, we drop the column.
         - The StateHoliday column has two encodings for the entry 0, one as number and one as object. We combine them into one category.
         - The Kaggle test file covers 2015-08-01 to 2015-09-17 (48 days) for 856 of the 1,115 stores; the train file covers 2013-01-01 to 2015-07-31 (942 days) for all 1,115 (from the v1 exploration, counted 2026-10-22).
+        - Partial order, left unordered (2026-11-01, CLEAN-14): `Assortment`: a (basic) is the lowest, but whether b
+          (extra) is below or above c (extended) is not stated.
+        - Cycle (2026-11-01, CLEAN-14, Lennart's rule): `DayOfWeek` (1-7, an unordered category before) and
+          `CompetitionOpenSinceMonth` (1-12) are numbers. A weekday or a month is a position in a continuous cycle
+          (weekday 1.5 is Monday noon), and the source ships it as a number; named weekdays and months are ordered
+          categories instead.
     """
 
     # Task
@@ -119,7 +125,6 @@ class RossmannStoreSales(AbstractCuratedDataset):
         return FeatureTypes(
             categorical=[
                 "Store",
-                "DayOfWeek",
                 "StateHoliday",
                 "StoreType",
                 "Assortment",

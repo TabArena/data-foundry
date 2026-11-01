@@ -6,7 +6,28 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, SplitPlan, TaskSummary, Temporal
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, SplitPlan, TaskSummary, Temporal, decode
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "DepositType": ["No Deposit     ", "Refundable     ", "Non Refund     "],
+    "Meal": ["SC       ", "BB       ", "HB       ", "FB       "],
+    "ArrivalDateMonth": [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+    ],
+}
 
 
 class HotelBookingDemand(AbstractCuratedDataset):
@@ -85,6 +106,13 @@ class HotelBookingDemand(AbstractCuratedDataset):
         - Anomaly: The first recorded month for the city hotels shows an unusually high amount of cancellations.
         - Cancellations rise over the period (from the v1 exploration, counted 2026-10-22 on the cleaned data, by arrival year): city 23.5% (2015, from July), 30.3% (2016), 35.1% (2017, to August); resort 20.7%, 23.7%, 30.3%, with a summer peak (resort 31-38% in July-August 2016 and 2017). The city anomaly above is July 2015 with 61% cancelled. LeadTime has a long tail: median 57 days, p90 209, max 737.
         - ReservationStatus equals the target (Canceled or No-Show for every cancelled booking, Check-Out for every other one), and ReservationStatusDate tells it too: every booking whose last status change is after the arrival date was not cancelled (57,364), every one changed before arrival was (22,250; median 41 days before arrival, 28% more than 90 days before). Both are dropped after splitting (from the v1 exploration, counted 2026-10-22).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 are calendar or compass cycles, in
+          their usual order (the wrap is not shown); 1 hold a state outside the scale, placed by the curator's rule
+          (missing when the column has no other missing value, else the lowest level; a state that is simply not on the
+          scale, such as Other, is missing).
+        - The target (2026-11-01, CLEAN-25): `IsCanceled` ships its classes as words (1 is the event). Binary: "Yes" is
+          the event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -143,10 +171,15 @@ class HotelBookingDemand(AbstractCuratedDataset):
         df = df.drop(columns=["BookingChanges", "AssignedRoomType", "RequiredCarParkingSpaces"])
         for col in ["Agent", "Company"]:  # "NULL" (space-padded) means no agent / no company
             df[col] = df[col].astype(str).str.strip().replace("NULL", np.nan)
+        # the paper: "Undefined/SC - no meal package": one level
+        df["Meal"] = df["Meal"].replace({"Undefined": "SC       "})
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "Country",
                 "ArrivalDateMonth",
@@ -240,8 +273,8 @@ class HotelBookingDemand(AbstractCuratedDataset):
 
             print(f"\n=== Step {split} ===")
             print("Train size:", len(train_idx), "| Test size:", len(test_idx))
-            print("Train target mean:", df.loc[train_idx, target_col].astype(int).mean())
-            print("Test target mean:", df.loc[test_idx, target_col].astype(int).mean())
+            print("Train share cancelled:", df.loc[train_idx, target_col].eq("Yes").mean())
+            print("Test share cancelled:", df.loc[test_idx, target_col].eq("Yes").mean())
 
             assert len(set(train_idx).intersection(set(test_idx))) == 0, "Train and test indices overlap!"
             assert test_df["arrival_date"].max() < pred_date + pd.DateOffset(months=3), (

@@ -13,6 +13,10 @@ from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSu
 SAME_SALE_ROWS = 51
 
 
+# Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
+SCORES = ["Elementary School Score", "Middle School Score", "High School Score"]
+
+
 class CaliforniaHousePrices2020(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="What price will a California home sell for, given its listing?",
@@ -89,6 +93,9 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
         - We fixed one entry that had a negative value for garage space, likely due to a typo. This error still exists on the website.
         - We drop the 2,480 homes (6.0%) whose last sale is on or after their listing date: the listing describes an earlier sale, and 125 of them give the price we predict as the last sale price. They were 5-6% of each test window but about half its squared error (LightGBM RMSE 0.196 with them, 0.140 without). Listings older than 6 months before the sale stay (Lennart, 2026-10-14).
         - After all the above preprocessing, 63 homes appear more than once (same address, ZIP code and year built; 130 rows). 51 pairs give the same sold price a median 61 Kaggle IDs apart: one sale scraped twice, of which we keep the newest entry. The other 28 rows are sales at another price (a resale, or another unit at an address without a unit number) and stay, as an earlier sale is history under the temporal split (Lennart, 2026-10-21: "we want to keep real repeats, as houses can be sold several times").
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 3 scores with no words per level are
+          numbers (`SCORES`): `Elementary School Score`, `Middle School Score`, `High School Score`.
     """
 
     # Task
@@ -231,6 +238,8 @@ class CaliforniaHousePrices2020(AbstractCuratedDataset):
         df[self.task_metadata.target_column_name] = np.log1p(df[self.task_metadata.target_column_name])
         # Rest time_index (to avoid gaps from dropping rows)
         df = df.drop(columns=["time_index"]).reset_index().rename(columns={"index": "time_index"})
+        # scores with no words per level are numbers (CLEAN-14)
+        df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
