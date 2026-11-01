@@ -4,6 +4,24 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-10-31 (Tunisian dataset accepted, Myunghwan)
+
+- Accepted `tunisian_fraud_detection_challenge` for a later requested build, including its retrospective investigation use and four annual fiscal-cohort tests.
+- Accepted the six-timestamp and annual-window encoding warnings with explicit reasons; updated the record to `Temporal (NON-IID)`. Rows, labels, predictors, metric and split memberships are unchanged.
+- Closed all dataset review issues and retained their full history privately. The existing reservation remains active until integration. No build or publication performed.
+
+## 2026-10-31 (Tunisian retrospective task clarified, Myunghwan)
+
+- Accepted retrospective investigation as the use of archived annual dossiers; fiscal-cohort tests do not simulate past operational refits. Target, predictors, rows and split membership are unchanged.
+- Checked the matched-source test mirror: all non-target training columns are supplied and all retained predictors contain observations. No additional schema exclusion follows. Historical timing remains unverified.
+- Closed review issue 1; overall inclusion, annual-time warning reasons and the record's split-field reconciliation remain open.
+
+## 2026-10-31 (Tunisian tax adjustment qualified, Myunghwan)
+
+- Added `tunisian_fraud_detection_challenge` for annual principal tax-adjustment estimation on the supplied log scale with source RMSE. Keep21,295taxpayer-years and103features after identity/redundancy cleaning; test all four eligible cohorts2015–2018.
+- Full actual-data probes and independent review support nontrivial cohort signal. Historical feature/label availability and sample selection remain explicit limitations; no causal deployment claim or final scientific acceptance. The review was subsequently settled on 2026-10-31; its full evidence is preserved in the private curation run.
+- Two annual-time warnings remain unaccepted. No saved container build, source publication or rule amendment.
+
 ## 2026-10-23 (claims move to a live board)
 
 - `GETTING_STARTED.md` (section 7) describes the new claims: a branch `claims` of the repository that every curator

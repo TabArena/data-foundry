@@ -220,6 +220,7 @@ not accepted in the definition.
 | [`taiwanese_bankruptcy_prediction`](taiwanese_bankruptcy_prediction/) | IID | 6,819 | 92 | 3 x 3 | not built |  |
 | [`thyroid_discordant`](thyroid_discordant/) | IID | 3,711 | 26 | 10 x 3 | not built |  |
 | [`tour_travels_churn`](tour_travels_churn/) | IID | 954 | 6 | 10 x 3 | not built | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows`, `meta_bibtex_latex_hazard` |
+| [`tunisian_fraud_detection_challenge`](tunisian_fraud_detection_challenge/) | temporal | 21,295 | 103 | 4 x 1 | not built |  |
 | [`video_transcoding_time_prediction`](video_transcoding_time_prediction/) | grouped | 68,784 | 18 | 3 x 3 | not built |  |
 | [`website_phishing`](website_phishing/) | IID | 1,250 | 9 | 10 x 3 | not built | `dataset_duplicate_rows`, `dataset_conflicting_duplicate_rows` |
 | [`wids_diabetes_mellitus`](wids_diabetes_mellitus/) | IID | 127,358 | 181 | 3 x 3 | not built |  |
