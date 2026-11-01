@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-01 16:50 UTC: 127 claim(s) (Andrej 25, Lennart 80, Myunghwan 22).
+As of 2026-11-01 17:29 UTC: 129 claim(s) (Andrej 25, Lennart 82, Myunghwan 22).
 
 ## Andrej
 
@@ -81,6 +81,7 @@ As of 2026-11-01 16:50 UTC: 127 claim(s) (Andrej 25, Lennart 80, Myunghwan 22).
 | `garments_worker_productivity` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `heart_disease` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `heloc` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
+| `hiva_agnostic` | add | 2026-11-01 | 2026-11-08 | add-dataset: nci_aids_antiviral_screen against hiva_agnostic (same NCI AIDS screen) |
 | `home_credit_default_risk` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `home_credit_default_stability` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `horse_colic_survival` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
@@ -99,6 +100,7 @@ As of 2026-11-01 16:50 UTC: 127 claim(s) (Andrej 25, Lennart 80, Myunghwan 22).
 | `miami_housing` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `mic` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `mobile_churn` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
+| `nci_aids_antiviral_screen` | add | 2026-11-01 | 2026-11-08 | add-dataset: nci_aids_antiviral_screen against hiva_agnostic (same NCI AIDS screen) |
 | `obesity_estimation` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `online_shoppers_purchasing_intention_dataset` | add | 2026-11-01 | 2026-11-08 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
 | `open_university_learning_analytics_dataset` | add | 2026-10-30 | 2026-11-06 | Ordinal typing, censored levels and proxy missing codes (branch ordinal-and-censored-levels) |
