@@ -145,7 +145,9 @@ class QsarBioconcentration(AbstractCuratedDataset):
         - Prediction point: an organic chemical whose bioconcentration in fish has not been measured, before a fish test. Its structure (the SMILES) and the descriptors computed from it are known; the measured BCF, and so the class read from it, are not.
         - Target: bioconcentration_mechanism, the class of the file, named as on the old UCI page. The class is a rule on the measured logBCF and the experimental logKOW: with the 2015 table's logKOW, a band of 0.5 log units around the TGD line gives the file's class for 600 of the 607 shipped chemicals with a logKOW of at least 1 (thresholds inferred from the data). The 2015 table gives a logKOW for 773 of the 776 chemicals, measured for 651 and predicted for 122; the band gives the file's class for 72% of the 122, and below a logKOW of 1 the class is mostly lipid storage by convention.
         - logBCF dropped: it is the measurement the class is read from and is not known for a new chemical. MLOGP, the calculated logKOW among the authors' descriptors, does not complete the rule in its place (decision table). The regression on logBCF is the file's other task (OpenML 46586); we ship the class, the task the paper models (Lennart, CC 2026-10-26).
-        - logKOW (Lennart, CC 2026-10-26, USE-6 and USE-3): the assessor of the use case holds the chemical's logKOW, a cheap lab test that REACH requires from 1 tonne a year and the first tier of the bioaccumulation screen, before any fish test. We add it from the authors' 2015 table with `logKOW_type` (measured for 652 chemicals, predicted for 122), matched on the CAS numbers of the cell and the logBCF both tables list; 2 chemicals have no match and stay missing. Where the 2015 table has no experimental value it carries a consensus prediction, not a measurement: "Experimental KOW values were obtained from VEGA log P dataset. If no experimental value was provided, a consensus KOW was predicted, as suggested by (Cronin and Livingstone, 2004)" (Grisoni et al. 2015, Sec. 3.1; read 2026-11-01). The decimals of the 122 predicted values agree: 64% of them are exact thirds of three-decimal numbers, the mean of three model predictions. `logKOW_type` marks which rows are which, so a user can drop the predicted ones; they stay because an assessor without a measurement would likewise use a predicted logKOW (USE-6). It is no leak: alone it scores macro ROC AUC 0.659, and the class still needs the measured BCF. RDKit's MolLogP, a logKOW computed from the structure, stays among the descriptors.
+        - logKOW (Lennart, CC 2026-10-26, USE-6 and USE-3): the assessor of the use case holds the chemical's logKOW, a cheap lab test that REACH requires from 1 tonne a year and the first tier of the bioaccumulation screen, before any fish test. We add it from the authors' 2015 table, matched on the CAS numbers of the cell and the logBCF both tables list; 2 chemicals have no match and stay missing. Where the 2015 table has no experimental value it carries a consensus prediction, not a measurement: "Experimental KOW values were obtained from VEGA log P dataset. If no experimental value was provided, a consensus KOW was predicted, as suggested by (Cronin and Livingstone, 2004)" (Grisoni et al. 2015, Sec. 3.1; read 2026-11-01), so the column is a measurement for 652 chemicals and a prediction for 122. The decimals agree: 64% of the predicted values are exact thirds of three-decimal numbers, the mean of three model predictions. Every value ships, because an assessor without a measurement would likewise use a predicted logKOW (USE-6).
+        - logKOW_type is not shipped (Lennart, CC 2026-11-02, CLEAN-22): the flag that marked measured against predicted was added on 2026-10-26 so a user could drop the predicted rows. What takes it out of "keep every relevant feature" is not its size but what it is: it records how the authors filled their 2015 table, not a property of the chemical, the shape of `early_learning_predictors`' `teacher_duration` (CLEAN-22, 2026-10-30). It carries nothing a model can use either, measured on 2026-11-02 over the 30 splits with untuned LightGBM on the recommended encoding (macro ROC AUC): 0.534 alone against 0.5 for chance, nothing at all on top of the structure (0.6806 with it, 0.6806 without it), -0.0013 in the full model. The logKOW itself is worth +0.0121 over the encoding alone, better on 22 of 30 splits, which is why it stays. The provenance is this note and decision table 4; the price is that the 122 predicted rows are no longer identifiable from the shipped frame, so the logKOW ships as 84% measurement and 16% consensus prediction with no marker on the row (CLEAN-24's "measured properties stay" is qualified for it).
+        - No leak in either column (checked 2026-11-02): the class is a band around the TGD line through the measured logBCF, which is dropped, and the logKOW alone scores macro ROC AUC 0.629. The band reproduces the shipped class for 94.7% of the rows with a measured logKOW but for only 72.5% of the 122 predicted ones, so the value we ship for those rows is not the number the authors read their label from. The class shares do differ by provenance (lipid storage 61% of the measured rows, 48% of the predicted ones), which is what the flag's 0.534 measures: which chemicals get a logP measured, not which mechanism they have. RDKit's MolLogP, a logKOW computed from the structure, is in the recommended encoding, and a model on that encoding predicts the table's logKOW out of fold at R-squared 0.877, mean absolute error 0.44 log units against a spread of 1.86.
         - Dropped CAS (registry numbers, an identifier) and Set (the authors' random 75/25 split).
         - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01): the repaired SMILES in RDKit's canonical form (`canonical_smiles`; no salts here), declared in `smiles_columns`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts). From 2026-10-14 to 2026-11-01 the definition shipped RDKit's 193 varying descriptors in place of the string. The 9 descriptors do not tell positional isomers apart (61 chemicals share them with another, 14 of those with another class); in the recommended encoding every chemical has its own values (decision table). Default LightGBM's macro ROC AUC on the first 15 of our splits: 0.745 with the 9, 0.757 with RDKit's descriptors added (better on 12 of 15 splits); the MACCS keys next to the descriptors change it by -0.003 (LightGBM) and +0.009 (random forest; 2026-11-01). The SMILES read as text (character n-grams) lowered LightGBM's macro ROC AUC from 0.735 to 0.723 next to the 9 descriptors (run of 2026-10-14, settings not recorded).
         - Repaired rows, 6: three pairs carry each other's SMILES and descriptors (benzene and cyclohexane, naphthalene and tetralin, chlorobenzene and chlorocyclohexane; CAS numbers looked up in Wikidata and PubChem). The BCF and the class belong to the CAS number, as the 2015 table lists all six with their right SMILES and the file's logBCF, and the descriptors follow the SMILES, so we swap the SMILES and the 9 descriptors back within each pair.
@@ -193,14 +195,14 @@ class QsarBioconcentration(AbstractCuratedDataset):
         # The split groups: the chemical series (Bemis-Murcko scaffold); no ring or the bare benzene ring alone
         df = df.assign(scaffold=scaffold_groups(df["SMILES"]))
         # CAS is an identifier, Set the authors' random split, logBCF the measurement the class is read from; the
-        # authors selected their 9 descriptors on labelled chemicals of our test folds (curation_comments)
-        return drop_columns(df, ["CAS", "Set", "Class", "logBCF", *DESCRIPTORS])
+        # authors selected their 9 descriptors on labelled chemicals of our test folds; logKOW_type records how the
+        # authors filled their table, not a property of the chemical (CLEAN-22, curation_comments)
+        return drop_columns(df, ["CAS", "Set", "Class", "logBCF", "logKOW_type", *DESCRIPTORS])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # logKOW stays numeric and its type is a category; the SMILES is typed by `smiles_columns`; the target
-        # becomes a category.
+        # logKOW stays numeric; the SMILES is typed by `smiles_columns`; the target becomes a category.
         del df
-        return FeatureTypes(categorical=["logKOW_type"])
+        return FeatureTypes()
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         kept = _swap_back_structures(raw.rename(columns={"B02[C-N]": "B02(C-N)", "F04[C-O]": "F04(C-O)"}))
@@ -239,6 +241,10 @@ class QsarBioconcentration(AbstractCuratedDataset):
                 "the recommended SMILES encoding": _shared_descriptors(encoded, encoded_columns, self.target),
             }
         )
+        provenance = pd.crosstab(
+            kept["logKOW_type"].fillna("no match in the 2015 table").rename("the logKOW is"),
+            kept["Class"].map(CLASS_LABELS).rename("class"),
+        )
         return [
             Decision(
                 "The class is the target; logBCF is dropped",
@@ -263,6 +269,17 @@ class QsarBioconcentration(AbstractCuratedDataset):
                 "(RDKit's 2D descriptors, the MACCS keys and the ECFP4 counts) every chemical has its own values. The SMILES read as "
                 "text adds nothing next to descriptors (CHANGELOG, 2026-10-14), so it is typed as a structure.",
                 isomers,
+            ),
+            Decision(
+                "The logKOW ships without its provenance flag",
+                "`logKOW` is a measurement for 652 chemicals and the authors' consensus prediction for 122, and two "
+                "chemicals have no row in the 2015 table. The `logKOW_type` column that marked which is which is not "
+                "shipped: it records how the authors filled their 2015 table rather than a property of the chemical "
+                "(CLEAN-22, curation_comments), and it carries macro ROC AUC 0.534 alone against 0.5 for chance, "
+                "nothing on top of the structure (0.6806 with it and without it) and -0.0013 in the full model, "
+                "where `logKOW` itself is worth +0.0121. The split by class is below, and it is the only record of "
+                "it: which rows are the predicted ones cannot be read from the shipped frame.",
+                provenance,
             ),
         ]
 

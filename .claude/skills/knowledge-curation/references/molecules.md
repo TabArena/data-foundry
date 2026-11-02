@@ -35,9 +35,17 @@ PubChem CID, ChEMBL ID, NSC, DTXSID), or descriptor or fingerprint columns compu
   program: RDKit cannot recompute Pipeline Pilot's FCFP6 bits (qsar_tid_11: no source bit matched exactly by any RDKit
   bit, at any position).
 * **Calculated against measured properties.** MLOGP, ALOGP, XLogP and KOWWIN calculate logP from the structure; an
-  experimental logKOW is measured. One column can mix both. qsar_bioconcentration's `logKOW_type` marks them: its
-  `pred` values are, by their decimals, means of three predictions (64% of 402 are exact thirds of 3-decimal numbers).
-  The paper that would name the models is paywalled.
+  experimental logKOW is measured. One column can mix both: qsar_bioconcentration's logKOW is a measurement for 652
+  chemicals and a consensus prediction for 122, which the source paper states ("Experimental KOW values were obtained
+  from VEGA log P dataset. If no experimental value was provided, a consensus KOW was predicted", Grisoni et al. 2015,
+  Sec. 3.1, read 2026-11-01) and the decimals confirm (64% of the predicted values are exact thirds of three-decimal
+  numbers, the mean of three predictions). Keep the mixed column when the actor of the use case would also reach for a
+  prediction (USE-6), and say in the notes which rows are which. A per-row flag is not the place for it: it records
+  how the source filled its table rather than a property of the molecule, so it leaves under CLEAN-22 and the
+  provenance goes into the curation comments and a decision table, as qsar_bioconcentration's `logKOW_type` did on
+  2026-11-02 (Lennart). Measure such a flag before trusting either story about it - that one scored macro ROC AUC
+  0.534 against 0.5 for chance and nothing at all on top of the structure, which answers the leak question it was
+  raised under.
 * **The Bemis-Murcko scaffold** is the ring systems and the chains linking them, with side chains removed. A molecule
   without a ring has none.
 
@@ -127,14 +135,20 @@ The task is going from the structure to a prediction (Lennart, 2026-11-01). So:
 * **Labels are often thresholds on a measured value:** LD50 at most 50 mg/kg for "very toxic", at most 11 µg per bee
   (the US EPA's threshold). Keep the source's class. A continuous alternative (logBCF, pXC50) is the record's note or a
   task of its own.
-* **Expert conclusions stay as the source draws them.** The NCI screen's CA/CM/CI are three classes, not the binary
-  merge MoleculeNet and OGB use (CLEAN-17).
+* **Expert conclusions ship at the resolution the field reads them at.** Keep the source's classes, and merge them
+  only by an established convention of the field, with the merge tested (CLEAN-17). The NCI screen concludes CA, CM or
+  CI; four independent releases over eighteen years merge CA and CM into one active class (the 2007 HIVA challenge,
+  MoleculeNet, OGB's `ogbg-molhiv`, ChemPile), and that binary call is what a screening team acts on, so
+  `nci_aids_antiviral_screen` ships it (Lennart, 2026-11-02). What a merge gives up belongs in a decision table: there
+  the two active classes are a potency scale, which the log selectivity index separates at ROC AUC 0.948.
 * **Censored values are no regression target.** The NCI screen's EC50 was not reached in 38,048 of 39,365 rows.
 * **Impossible values leave** (qsar_tid_11's pXC50 of -6.24). Values that are medians over many sources are noted.
 * **Metrics:**
   * The Milano group reports the non-error rate (balanced accuracy) as its house measure, not one deliberate choice, so
     the fallback applies (MET-5).
-  * MoleculeNet and OGB score ROC-AUC on a binary label, so a three-class task falls back to log loss (MET-11).
+  * MoleculeNet and OGB score ROC-AUC on the active-against-inactive label. A dataset that ships that same label
+    takes the metric with it (MET-4); one that keeps finer classes scores a different target, and falls back to log
+    loss (MET-11).
 
 ## Sources and provenance
 

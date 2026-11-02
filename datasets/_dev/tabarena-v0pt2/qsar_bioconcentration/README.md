@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_bioconcentration
 container_format: 2
-checksum: v2:5f1622538ee353d3e8a95819817c35f4767b85aee483068b98aea187b1dddb79
+checksum: v2:80f365ab12d7cb063677737936002ebb43a7165affdf549f1d3d967ccb505a10
 build: null
 build_stale: false
 data:
   n_rows: 776
-  n_features: 3
+  n_features: 2
   dtypes:
-    category: 2
+    category: 1
     float64: 1
     string: 2
   n_test_dataset_rows: null
@@ -59,15 +59,16 @@ decisions:
 - The class is the target; logBCF is dropped
 - Swapped structures are repaired, three wrong structures dropped
 - The structure ships as a SMILES column, the 9 descriptors leave
+- The logKOW ships without its provenance flag
 ---
 
 # qsar_bioconcentration
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `bioconcentration_mechanism`, scored with `log_loss` on grouped splits by `scaffold`. 776 rows and 3 features. Source: UCI (2016).
+Multiclass classification of `bioconcentration_mechanism`, scored with `log_loss` on grouped splits by `scaffold`. 776 rows and 2 features. Source: UCI (2016).
 
-Not built yet. The current definition gives checksum `v2:5f1622538ee353d3e8a95819817c35f4767b85aee483068b98aea187b1dddb79`.
+Not built yet. The current definition gives checksum `v2:80f365ab12d7cb063677737936002ebb43a7165affdf549f1d3d967ccb505a10`.
 
 ## In brief
 
@@ -137,7 +138,7 @@ Only curators run `build`, when the dataset ships.
 | license | CC BY 4.0 |
 | data_tags | Non-IID, Grouped |
 | reference | grisoni2016investigating,grisoni2015qsar |
-| rows x columns | 776 x 5 |
+| rows x columns | 776 x 4 |
 | task.target | bioconcentration_mechanism |
 | task.problem_type | multiclass_classification |
 | task.metric | log_loss |
@@ -156,9 +157,9 @@ Only curators run `build`, when the dataset ships.
 | reason | Grisoni et al. 2016 report the non-error rate (NER, balanced accuracy) with per-class sensitivity, specificity and precision, the Milano group's house measure, at argmax with no costs. Original rejected: NER. log_loss is the multiclass fallback. |
 
 <details>
-<summary>Feature types: 2 categorical, 0 string, 1 smiles, 0 datetime</summary>
+<summary>Feature types: 1 categorical, 0 string, 1 smiles, 0 datetime</summary>
 
-- categorical (2): `logKOW_type`, `bioconcentration_mechanism`
+- categorical (1): `bioconcentration_mechanism`
 - string (0): none
 - smiles (1): `SMILES`
 - datetime (0): none
@@ -195,13 +196,13 @@ Only curators run `build`, when the dataset ships.
 
 The first 5 of 776 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
 
-| bioconcentration_mechanism | SMILES | logKOW | logKOW_type | scaffold |
-|---|---|---|---|---|
-| lipid storage | O=\[N+\](\[O-\])c1ccccc1O | 1.79 | measured | single: O=\[N+\](\[O-\])c1ccccc1O |
-| lipid storage | COP(=S)(OC)Oc1cc(Cl)c(I)cc1Cl | 5.51 | measured | single: COP(=S)(OC)Oc1cc(Cl)c(I)cc1Cl |
-| metabolized or eliminated | CCc1ccc(-c2ccccc2)cc1 | 4.71033 | predicted | c1ccc(-c2ccccc2)cc1 |
-| metabolized or eliminated | O=\[N+\](\[O-\])c1cc(Cl)c(Cl)c(Cl)c1Cl | 3.93 | measured | single: O=\[N+\](\[O-\])c1cc(Cl)c(Cl)c(Cl)c… |
-| additional storage sites | Clc1ccc(Cl)c(-c2cc(Cl)c(Cl)c(Cl)c2Cl)c1 | 7.19 | measured | c1ccc(-c2ccccc2)cc1 |
+| bioconcentration_mechanism | SMILES | logKOW | scaffold |
+|---|---|---|---|
+| lipid storage | CC(C)N(C(=O)SCC(Cl)=C(Cl)Cl)C(C)C | 4.6 | single: CC(C)N(C(=O)SCC(Cl)=C(Cl)Cl)C(C… |
+| metabolized or eliminated | Clc1c(Cl)c(Cl)c2c(oc3c(Cl)c(Cl)c(Cl)c(C… | 8.6 | c1ccc2c(c1)oc1ccccc12 |
+| lipid storage | CCC(C)Nc1c(\[N+\](=O)\[O-\])cc(C(C)(C)C)cc1… | 4.93 | single: CCC(C)Nc1c(\[N+\](=O)\[O-\])cc(C(C)… |
+| lipid storage | Clc1cccc(Cl)c1-c1c(Cl)cccc1Cl | 5.94 | c1ccc(-c2ccccc2)cc1 |
+| metabolized or eliminated | Clc1cc(Cl)c2c(c1Cl)Oc1ccccc1O2 | 6.35 | c1ccc2c(c1)Oc1ccccc1O2 |
 
 ## Curation notes
 
@@ -210,7 +211,9 @@ We start with Grisoni_et_al_2016_EnvInt88.csv from UCI 510: 779 organic chemical
 - Prediction point: an organic chemical whose bioconcentration in fish has not been measured, before a fish test. Its structure (the SMILES) and the descriptors computed from it are known; the measured BCF, and so the class read from it, are not.
 - Target: bioconcentration_mechanism, the class of the file, named as on the old UCI page. The class is a rule on the measured logBCF and the experimental logKOW: with the 2015 table's logKOW, a band of 0.5 log units around the TGD line gives the file's class for 600 of the 607 shipped chemicals with a logKOW of at least 1 (thresholds inferred from the data). The 2015 table gives a logKOW for 773 of the 776 chemicals, measured for 651 and predicted for 122; the band gives the file's class for 72% of the 122, and below a logKOW of 1 the class is mostly lipid storage by convention.
 - logBCF dropped: it is the measurement the class is read from and is not known for a new chemical. MLOGP, the calculated logKOW among the authors' descriptors, does not complete the rule in its place (decision table). The regression on logBCF is the file's other task (OpenML 46586); we ship the class, the task the paper models (Lennart, CC 2026-10-26).
-- logKOW (Lennart, CC 2026-10-26, USE-6 and USE-3): the assessor of the use case holds the chemical's logKOW, a cheap lab test that REACH requires from 1 tonne a year and the first tier of the bioaccumulation screen, before any fish test. We add it from the authors' 2015 table with `logKOW_type` (measured for 652 chemicals, predicted for 122), matched on the CAS numbers of the cell and the logBCF both tables list; 2 chemicals have no match and stay missing. Where the 2015 table has no experimental value it carries a consensus prediction, not a measurement: "Experimental KOW values were obtained from VEGA log P dataset. If no experimental value was provided, a consensus KOW was predicted, as suggested by (Cronin and Livingstone, 2004)" (Grisoni et al. 2015, Sec. 3.1; read 2026-11-01). The decimals of the 122 predicted values agree: 64% of them are exact thirds of three-decimal numbers, the mean of three model predictions. `logKOW_type` marks which rows are which, so a user can drop the predicted ones; they stay because an assessor without a measurement would likewise use a predicted logKOW (USE-6). It is no leak: alone it scores macro ROC AUC 0.659, and the class still needs the measured BCF. RDKit's MolLogP, a logKOW computed from the structure, stays among the descriptors.
+- logKOW (Lennart, CC 2026-10-26, USE-6 and USE-3): the assessor of the use case holds the chemical's logKOW, a cheap lab test that REACH requires from 1 tonne a year and the first tier of the bioaccumulation screen, before any fish test. We add it from the authors' 2015 table, matched on the CAS numbers of the cell and the logBCF both tables list; 2 chemicals have no match and stay missing. Where the 2015 table has no experimental value it carries a consensus prediction, not a measurement: "Experimental KOW values were obtained from VEGA log P dataset. If no experimental value was provided, a consensus KOW was predicted, as suggested by (Cronin and Livingstone, 2004)" (Grisoni et al. 2015, Sec. 3.1; read 2026-11-01), so the column is a measurement for 652 chemicals and a prediction for 122. The decimals agree: 64% of the predicted values are exact thirds of three-decimal numbers, the mean of three model predictions. Every value ships, because an assessor without a measurement would likewise use a predicted logKOW (USE-6).
+- logKOW_type is not shipped (Lennart, CC 2026-11-02, CLEAN-22): the flag that marked measured against predicted was added on 2026-10-26 so a user could drop the predicted rows. What takes it out of "keep every relevant feature" is not its size but what it is: it records how the authors filled their 2015 table, not a property of the chemical, the shape of `early_learning_predictors`' `teacher_duration` (CLEAN-22, 2026-10-30). It carries nothing a model can use either, measured on 2026-11-02 over the 30 splits with untuned LightGBM on the recommended encoding (macro ROC AUC): 0.534 alone against 0.5 for chance, nothing at all on top of the structure (0.6806 with it, 0.6806 without it), -0.0013 in the full model. The logKOW itself is worth +0.0121 over the encoding alone, better on 22 of 30 splits, which is why it stays. The provenance is this note and decision table 4; the price is that the 122 predicted rows are no longer identifiable from the shipped frame, so the logKOW ships as 84% measurement and 16% consensus prediction with no marker on the row (CLEAN-24's "measured properties stay" is qualified for it).
+- No leak in either column (checked 2026-11-02): the class is a band around the TGD line through the measured logBCF, which is dropped, and the logKOW alone scores macro ROC AUC 0.629. The band reproduces the shipped class for 94.7% of the rows with a measured logKOW but for only 72.5% of the 122 predicted ones, so the value we ship for those rows is not the number the authors read their label from. The class shares do differ by provenance (lipid storage 61% of the measured rows, 48% of the predicted ones), which is what the flag's 0.534 measures: which chemicals get a logP measured, not which mechanism they have. RDKit's MolLogP, a logKOW computed from the structure, is in the recommended encoding, and a model on that encoding predicts the table's logKOW out of fold at R-squared 0.877, mean absolute error 0.44 log units against a spread of 1.86.
 - Dropped CAS (registry numbers, an identifier) and Set (the authors' random 75/25 split).
 - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01): the repaired SMILES in RDKit's canonical form (`canonical_smiles`; no salts here), declared in `smiles_columns`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts). From 2026-10-14 to 2026-11-01 the definition shipped RDKit's 193 varying descriptors in place of the string. The 9 descriptors do not tell positional isomers apart (61 chemicals share them with another, 14 of those with another class); in the recommended encoding every chemical has its own values (decision table). Default LightGBM's macro ROC AUC on the first 15 of our splits: 0.745 with the 9, 0.757 with RDKit's descriptors added (better on 12 of 15 splits); the MACCS keys next to the descriptors change it by -0.003 (LightGBM) and +0.009 (random forest; 2026-11-01). The SMILES read as text (character n-grams) lowered LightGBM's macro ROC AUC from 0.735 to 0.723 next to the 9 descriptors (run of 2026-10-14, settings not recorded).
 - Repaired rows, 6: three pairs carry each other's SMILES and descriptors (benzene and cyclohexane, naphthalene and tetralin, chlorobenzene and chlorocyclohexane; CAS numbers looked up in Wikidata and PubChem). The BCF and the class belong to the CAS number, as the 2015 table lists all six with their right SMILES and the file's logBCF, and the descriptors follow the SMILES, so we swap the SMILES and the 9 descriptors back within each pair.
@@ -281,8 +284,8 @@ One group is a chemical series: the chemicals that share one Bemis-Murcko scaffo
 | largest group | 8.2% of the rows |
 | test groups per fold | 166 to 200 |
 | groups of two or more rows with a single label | 28.6% |
-| nearest neighbour in the same group | 4.0% of the rows (chance: 1.0%) |
-| label variance explained by the group | 0.73 (shuffled groups: 0.71) |
+| nearest neighbour in the same group | 4.3% of the rows (chance: 1.0%) |
+| label variance explained by the group | 0.73 (shuffled groups: 0.73) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
@@ -325,6 +328,16 @@ The 9 descriptors do not tell positional isomers apart; in the recommended encod
 | chemicals sharing their descriptors with another | 61 | 0 |
 | of them in groups with more than one class | 14 | 0 |
 
+### 4. The logKOW ships without its provenance flag
+
+`logKOW` is a measurement for 652 chemicals and the authors' consensus prediction for 122, and two chemicals have no row in the 2015 table. The `logKOW_type` column that marked which is which is not shipped: it records how the authors filled their 2015 table rather than a property of the chemical (CLEAN-22, curation_comments), and it carries macro ROC AUC 0.534 alone against 0.5 for chance, nothing on top of the structure (0.6806 with it and without it) and -0.0013 in the full model, where `logKOW` itself is worth +0.0121. The split by class is below, and it is the only record of it: which rows are the predicted ones cannot be read from the shipped frame.
+
+| the logKOW is | additional storage sites | lipid storage | metabolized or eliminated |
+|---|---|---|---|
+| measured | 49 | 398 | 205 |
+| no match in the 2015 table | 0 | 1 | 1 |
+| predicted | 15 | 59 | 48 |
+
 ## Bundle checks
 
 0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
@@ -336,10 +349,9 @@ The 9 descriptors do not tell positional isomers apart; in the recommended encod
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| logKOW_type | category | 2 | 0.26 | 2 | measured, predicted |
 | bioconcentration_mechanism | category | 0 | 0 | 3 | lipid storage, metabolized or eliminated, additional storage sites |
-| logKOW | float64 | 2 | 0.26 | 518 | 3.2, 3.4, 4.0, 3.09, 3.05, 2.18, 5.1, 3.56, 2.3, 4.38 |
-| SMILES | string | 0 | 0 | 776 | Oc1ccccc1-c1ccccc1, O=\[N+\](\[O-\])c1ccccc1O, COP(=S)(OC)Oc1cc(Cl)c(I)cc1Cl, CCc1c… |
+| logKOW | float64 | 2 | 0.26 | 518 | 3.2, 3.4, 3.09, 4.0, 5.1, 2.84, 2.9, 4.3, 3.69, 3.31 |
+| SMILES | string | 0 | 0 | 776 | Clc1ccc(Oc2ccc(Cl)cc2Cl)cc1, CC(C)N(C(=O)SCC(Cl)=C(Cl)Cl)C(C)C, Clc1c(Cl)c(Cl)c… |
 | scaffold | string | 0 | 0 | 558 | c1ccc(-c2ccccc2)cc1, c1ccc2ccccc2c1, c1ccc(Oc2ccccc2)cc1, c1ccc(Cc2ccccc2)cc1, … |
 
 ### Target distribution
@@ -359,21 +371,18 @@ The 9 descriptors do not tell positional isomers apart; in the recommended encod
 ### Categorical features
 
 <details>
-<summary>Show the table (16 rows)</summary>
+<summary>Show the table (13 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| SMILES | 1 | Oc1ccccc1-c1ccccc1 | 1 | 0.13 |
-| SMILES | 2 | O=\[N+\](\[O-\])c1ccccc1O | 1 | 0.13 |
-| SMILES | 3 | COP(=S)(OC)Oc1cc(Cl)c(I)cc1Cl | 1 | 0.13 |
-| SMILES | 4 | CCc1ccc(-c2ccccc2)cc1 | 1 | 0.13 |
-| SMILES | 5 | O=\[N+\](\[O-\])c1cc(Cl)c(Cl)c(Cl)c1Cl | 1 | 0.13 |
+| SMILES | 1 | Clc1ccc(Oc2ccc(Cl)cc2Cl)cc1 | 1 | 0.13 |
+| SMILES | 2 | CC(C)N(C(=O)SCC(Cl)=C(Cl)Cl)C(C)C | 1 | 0.13 |
+| SMILES | 3 | Clc1c(Cl)c(Cl)c2c(oc3c(Cl)c(Cl)c(Cl)c(Cl)c32)c1Cl | 1 | 0.13 |
+| SMILES | 4 | CCC(C)Nc1c(\[N+\](=O)\[O-\])cc(C(C)(C)C)cc1\[N+\](=O)\[O-\] | 1 | 0.13 |
+| SMILES | 5 | Clc1cccc(Cl)c1-c1c(Cl)cccc1Cl | 1 | 0.13 |
 | bioconcentration_mechanism | 1 | lipid storage | 458 | 59.02 |
 | bioconcentration_mechanism | 2 | metabolized or eliminated | 254 | 32.73 |
 | bioconcentration_mechanism | 3 | additional storage sites | 64 | 8.25 |
-| logKOW_type | 1 | measured | 652 | 84.02 |
-| logKOW_type | 2 | predicted | 122 | 15.72 |
-| logKOW_type | 3 | &lt;NA> | 2 | 0.26 |
 | scaffold | 1 | c1ccc(-c2ccccc2)cc1 | 64 | 8.25 |
 | scaffold | 2 | c1ccc2ccccc2c1 | 24 | 3.09 |
 | scaffold | 3 | c1ccc(Oc2ccccc2)cc1 | 21 | 2.71 |

@@ -4,6 +4,80 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-11-02, `nci_aids_antiviral_screen` ships the field's binary target; `hiva_agnostic` retired (PR #15)
+
+The curator's marks on the review page of 2026-11-02, applied.
+
+- **`nci_aids_antiviral_screen`: the two active conclusions merge into one active class.** The target is now
+  `active_in_screen` (Yes/No, Yes the event) instead of the screen's three conclusions, and the metric follows it
+  from the `log_loss` fallback to `roc_auc`, declared as taken from the context. CLEAN-17 permits the merge because
+  the convention is established and the merge is tested: the 2007 HIVA challenge, MoleculeNet, OGB's `ogbg-molhiv`
+  and ChemPile all define this target on this file, over eighteen years, and it is the call a screening team acts on
+  (USE-5). 41,140 compounds, 1,404 active (3.4%) against 39,736 inactive. The merge keeps 7 compounds the three-class
+  framing dropped as conflicting (concluded CA under one registry number and CM under another), so the LEAK-20
+  conflict set falls from 46 compounds / 119 rows to 39 / 104; the ordered typing of the conclusions goes (CLEAN-25:
+  a binary target is not ordered). The potency scale the two active classes form stays in decision table 2, with the
+  selectivity-index measurement, so nothing that argued for the three classes is lost from the definition.
+  - Everything the prose quotes was measured again on the new frame: 20,774 scaffold groups (15,994 of them one
+    compound, the bare benzene ring 5.1%); 15.5% of the test compounds of repeat 0 have a training analog at
+    Tanimoto 0.7 or more against 32.0% under a random split (medians 0.517 and 0.606), 78.1% have one above 0.4;
+    ROC AUC 0.80 (0.78 to 0.82) over the nine splits, untuned LightGBM on the recommended encoding. The NSC
+    submission-batch experiment was re-run on the merged target: grouping the batches away as well moves ROC AUC
+    from 0.802 to 0.800, inside the fold spread, so the dependency stays disclosed rather than split away (SPLIT-30).
+  - `dataset check` clean (0 errors, 0 warnings); the task and leak probes raise no flag (random forest ROC AUC
+    0.817, LightGBM 0.806, the best single feature 0.641).
+  - The metric was confirmed in the second round of the same day: `ship` on the review page with the declared metric
+    marked as declared, now that the declaration is `roc_auc`. The folder's `REVIEW.md` goes with the last open
+    issue; the review panel's reports stay in the run folder of 2026-11-01. The record is `Yes`, `WIP (DF)` and
+    `checked_by: Lennart`, which is also the curator's verification of the AI screening of 2026-10-31 (it had never
+    been through the screening queue); the claim stays until the work reaches `main`.
+  - Two small edits came out of the consistency check of that round: the metric's reason now cites MET-4 by analogy
+    and says why the origin is `context` and not `original` (our source is the DTP release, which scores nothing),
+    and the review panel's screening chemist gets a second caveat into `curation_comments` before the file goes -
+    the library is the compounds the DTP held by 1999, so a prospective hit rate on a modern deck would be lower and
+    the model is triage in front of the plates, not a gate. `dataset check` clean again (0 errors, 0 warnings).
+- **`hiva_agnostic` removed from the working copy, retired as a duplicate.** The 2007 Agnostic Learning vs. Prior
+  Knowledge challenge's cut of this same screen: 4,229 compounds as 1,617 anonymous ChemTK bits. The linking run of
+  2026-11-01 recovered the registry number behind its rows (97% with confidence) and every one of its labels agrees
+  with the NCI file; its three parts are 42,678 compounds against the screen's structure-bearing 42,682, so it adds
+  no compound and no label the full release lacks, and the one thing it does add is a 2006 representation nobody can
+  recompute (PROV-6). The record is `No (Retired)` with `Duplicate`, `Outdated` and the existing `Anonymized`;
+  `v2_path` cleared, `WIP (DF)` and the claim dropped, while `DF: Yes`, the collection tags and the shipped
+  BeyondArena and TabArena v0.1 containers stay. The duplicate pointer from `hiv_qsar` moves to
+  `nci_aids_antiviral_screen`, with the OpenML 1039 chain spelled out.
+- **`qsar_bioconcentration`: `logKOW` stays, `logKOW_type` goes.** The curator's question of the second round was
+  what the table's logKOW is worth against RDKit's own logP, and whether keeping it next to `logKOW_type` leaks.
+  Measured over the 30 splits with untuned LightGBM on the recommended encoding: the table's `logKOW` is worth
+  +0.0121 macro ROC AUC over the encoding alone (better on 22 of 30 splits, -0.0241 log loss on 21 of 30), while
+  `logKOW_type` is worth -0.0013 and adds nothing at all on top of the structure (0.6806 with and without it). Alone,
+  `logKOW` scores 0.629 against 0.594 for RDKit's `MolLogP` and 0.628 for its 16 logP-related descriptors together; a
+  model on the encoding predicts the table's `logKOW` out of fold at R-squared 0.877, mean absolute error 0.44 log
+  units. No leak in either: the flag carries macro ROC AUC 0.534 by itself against 0.5 for chance, and its class
+  shares (lipid storage 61% of the measured rows, 48% of the predicted ones) say which chemicals get a logP measured,
+  not which mechanism they have.
+  - On that the curator kept `logKOW` and asked for `logKOW_type` to go, "unless this creates any problems". It did
+    create one: CLEAN-22 is a Must and lets a column leave for what it is, never for how little it adds, and three
+    shipped datasets keep exactly this kind of flag (`pva_revenue_prediction_kddcup98`'s `AGEFLAG`, `DATASRCE` and
+    `LIFESRC`, `thyroid_discordant`'s five `*_measured`, `sf_permit_time`'s `point_source`). Put to the curator with
+    four ways out, the answer was to drop it with the fact stated: `logKOW_type` records how the authors filled their
+    2015 table, not a property of the chemical, which is the shape of `early_learning_predictors`' `teacher_duration`
+    (CLEAN-22, 2026-10-30), where the flags that stay sit in the actor's own record. Written as a CLEAN-22 Cases row,
+    kind `applied`; a Must takes no exception line.
+  - The shipped frame is now 776 rows and 2 features, the `SMILES` and the `logKOW`. What the 122 predicted rows are
+    is no longer readable from the data, so the counts and their split by class became decision table 4 of the
+    README, and CLEAN-24's "measured properties stay (qsar_bioconcentration's logKOW)" gained the qualifier that a
+    column mixing a measurement with a prediction of the same property stays whole under USE-6. `dataset check`
+    clean (0 errors, 0 warnings); the task probes raise no flag (random forest macro ROC AUC 0.678, LightGBM 0.689,
+    best single feature 0.589) and the leak probes none (all features 0.705, shallow tree 0.581, no exact feature
+    copy across the split, 1-NN agreement 0.621 against a chance of 0.462). The `REVIEW.md` goes with the issue.
+  - `molecules.md`'s bullet on calculated against measured properties said the paper naming the prediction models is
+    paywalled; it was read on 2026-11-01 and is quoted now, and the bullet says where the provenance of a mixed
+    column belongs: the notes and a decision table, not a per-row flag.
+- **Knowledge files.** `molecules.md` said flatly that the NCI screen's three conclusions stay as the source draws
+  them; it now states CLEAN-17's actual test and records this decision, and its metric bullet distinguishes shipping
+  the field's label from keeping finer classes. Cases rows added under CLEAN-17 (the merge) and PROV-6 (the structure
+  release wins over a fingerprint build of the same rows, the shape of the three pairs flagged 2026-10-31).
+
 ## 2026-11-01, `nci_aids_antiviral_screen` added: the NCI DTP AIDS antiviral screen (PR #15)
 
 - Added as `datasets/_dev/tabarena-v0pt2/nci_aids_antiviral_screen/`: 41,133 compounds of the NCI Developmental

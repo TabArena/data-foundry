@@ -40,14 +40,17 @@ CONCLUSIONS = {
     "CM": "confirmed moderately active",
     "CI": "confirmed inactive",
 }
-"""The screen's three conclusions, named as on the DTP page."""
+"""The screen's three conclusions, named as on the DTP page; read for the decision tables."""
+
+ACTIVE_CODES = ("CA", "CM")
+"""The two conclusions that count as active. Every published task on this file merges them (CLEAN-17)."""
 
 
 class NciAidsAntiviralScreen(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question=(
-            "Does a compound protect human cells from HIV in the US National Cancer Institute's antiviral screen, and "
-            "how strongly: confirmed active, moderately active or inactive, judged from its structure alone?"
+            "Does a compound protect human cells from HIV in the US National Cancer Institute's antiviral screen, "
+            "judged from its structure alone?"
         ),
         use_case=(
             "For example, a medicinal chemistry team ranks compounds it has not tested by their predicted anti-HIV "
@@ -55,12 +58,13 @@ class NciAidsAntiviralScreen(AbstractCuratedDataset):
         ),
         row=(
             "One compound of the NCI's AIDS antiviral screen with a public structure and the screen's conclusion (May "
-            "2004 release): 41,133 compounds, salt forms of one compound counted once, without the compounds tested "
-            "with different conclusions."
+            "2004 release): 41,140 compounds, salt forms of one compound counted once, without the compounds the "
+            "screen concluded both active and inactive."
         ),
         predicted=(
-            "The screen's conclusion, read by trained staff from the compound's dose-response curves in infected "
-            "cells: confirmed active (0.9%), confirmed moderately active (2.5%) or confirmed inactive (96.6%)."
+            "Whether the screen concluded the compound active, read by trained staff from its dose-response curves "
+            "in infected cells: active (3.4%, the confirmed active and confirmed moderately active of the source "
+            "merged) or inactive (96.6%)."
         ),
         known=(
             "The compound's two-dimensional structure as tested, counter-ions included, without stereochemistry (the "
@@ -71,17 +75,16 @@ class NciAidsAntiviralScreen(AbstractCuratedDataset):
             "compound belongs to a series the model has not seen. Compounds without a ring are held out one by one."
         ),
         changes=(
-            "We keep the screen's three conclusions, where other benchmarks merge the two active ones; join them to "
-            "the structures by the NCI's compound number; read the structure file's charge code 4 as the +1 it means; "
-            "drop structures RDKit cannot read and the stereochemistry "
-            "the source did not draw; keep one row per compound (salt forms merged) and drop compounds tested with "
-            "different conclusions; and split by series."
+            "We merge the screen's two active conclusions into one active class, as every published task on this "
+            "file does; join the conclusions to the structures by the NCI's compound number; read the structure "
+            "file's charge code 4 as the +1 it means; drop structures RDKit cannot read and the "
+            "stereochemistry the source did not draw; keep one row per compound, salt forms merged; and split by series."
         ),
         fit="direct",
         fit_reason=(
             "The structure is known before a compound is screened, the label is the screen's own conclusion, and a "
-            "held-out series stands for a series not yet tested: 15.3% of the test compounds have a close analog in "
-            "training (Tanimoto 0.7 or more), against 32.4% under a random split. Compounds submitted together "
+            "held-out series stands for a series not yet tested: 15.5% of the test compounds have a close analog in "
+            "training (Tanimoto 0.7 or more), against 32.0% under a random split. Compounds submitted together "
             "(consecutive NSC numbers) are not held out, a dependency kept on purpose that the splits comment "
             "measures."
         ),
@@ -134,34 +137,38 @@ class NciAidsAntiviralScreen(AbstractCuratedDataset):
         We start with aids_conc_may04.txt (the screen's conclusion for 43,850 compounds, May 2004) and AIDO99SD (42,687 structures as an SD file, October 1999) from the NCI Developmental Therapeutics Program's AIDS Antiviral Screen page, joined by NSC number, the NCI's compound id.
 
         - Prediction point: a compound before it is screened. Its structure is known; the EC50 and IC50 of the screen, measured in the dose-response experiments the conclusion is read from, are not, so neither file is joined (only the decision tables read them).
-        - Target: `screen_conclusion`, the screen's three conclusions (confirmed active, confirmed moderately active, confirmed inactive), "determined by inspection of individual dose response curves and is an overall judgment by trained personnel" (DTP page). The page states no thresholds, and the assay paper (Weislow et al. 1989) defines the assay, not the conclusions: it gives the primary screen's protocol ("we have implemented, as our high-flux primary anti-HIV-1 screen, the cell-free virus protocol ... using the HIV-1 (RF) virus with the CEM-SS host cell") and the rule the word "confirmed" comes from ("If a test substance shows at least 30% protection against virus-induced cytopathic effects in the host cells, the microculture XTT antiviral assay is repeated"), while the words "moderately" and "category" do not occur in it. The boundary between the two active classes is a DTP reporting convention that no publication we found states; what can be checked is that it tracks the source's own released numbers: on the 387 actives for which both an EC50 and an IC50 were reached (178 CA, 209 CM), the log10 selectivity index (IC50 over EC50) separates CA from CM at ROC AUC 0.948 and one threshold on it (1.07, a selectivity index of about 12) reproduces 89.7% of the labels; potency alone (the EC50) gives 0.915; and only 83 of the 42,038 CI compounds (0.2%) reached an EC50 at all. Kept as three classes (CLEAN-17), typed as an ordered category inactive < moderately active < active (CLEAN-25): the two active classes differ in potency (decision table: the EC50 was reached for 84.6% of CA and 40.7% of CM compounds, median log10 EC50 -6.08 and -4.55 M), and models tell them apart from the structure (ROC AUC 0.77 for CA against CM among the actives, 0.73 to 0.82 over the 9 shipped splits; untuned LightGBM on the recommended encoding, 1,407 columns, after the charge repair). MoleculeNet, OGB and HIVA merge CA and CM: as a binary task the same recipe gives 41,140 compounds, 1,404 active (3.4%), and the shipped compounds score ROC AUC 0.81 (0.79 to 0.83) for active against inactive on the same splits and encoding.
+        - Target: `active_in_screen`, Yes when the screen concluded the compound active. The screen concludes confirmed active (CA), confirmed moderately active (CM) or confirmed inactive (CI), "determined by inspection of individual dose response curves and is an overall judgment by trained personnel" (DTP page); CA and CM merge into one active class, the target every published task on this file defines and the call a screening team acts on (CLEAN-17 as the convention of the field, USE-5; Lennart, 2026-11-02). The merge is the field's, not ours: the 2007 HIVA challenge, MoleculeNet (Wu et al. 2018), OGB's `ogbg-molhiv` and ChemPile all define it, over eighteen years. Measured on the shipped frame: 41,140 compounds, 1,404 active (3.4%), ROC AUC 0.80 (0.78 to 0.82) over the nine splits, untuned LightGBM on the recommended encoding (1,407 columns); MoleculeNet publishes 0.756 to 0.792 on its cut. What the merge gives up is in decision table 2: the two active classes are a potency scale, and the boundary between them is a DTP reporting convention that no publication we found states. It is not unverifiable, though: on the 387 actives for which both an EC50 and an IC50 were reached (178 CA, 209 CM), the log10 selectivity index (IC50 over EC50) separates CA from CM at ROC AUC 0.948 and one threshold on it (1.07, a selectivity index of about 12) reproduces 89.7% of the labels; potency alone (the EC50) gives 0.915; and models tell the two apart from the structure at ROC AUC 0.77. Keeping the three classes instead would ship 41,133 compounds (386 CA, 1,011 CM, 39,736 CI) and score a different target from every published task on this file, so its metric would fall back to log loss (MET-11); the recipe and its numbers stay here either way. The active against inactive line, unlike the CA/CM one, is documented: Weislow et al. 1989 gives the primary screen's protocol ("we have implemented, as our high-flux primary anti-HIV-1 screen, the cell-free virus protocol ... using the HIV-1 (RF) virus with the CEM-SS host cell") and the rule the word "confirmed" comes from ("If a test substance shows at least 30% protection against virus-induced cytopathic effects in the host cells, the microculture XTT antiviral assay is repeated"), and only 83 of the 42,038 CI compounds (0.2%) reached an EC50 at all, against 84.6% of CA and 40.7% of CM.
         - What the conclusion is a judgment about: the XTT assay reads protection of the host cells from the virus, and its paper names its false-positive modes, "nonspecific reduction of XTT by test compounds", "poorly understood drug-cell-XTT interactions" and "human error", with the rare "restoration of XTT formazan production (protection against viral cytopathic effects) without suppression of virus replication" (Weislow et al. 1989). Some actives can therefore be artefacts of the assay rather than antivirals, and a model fitted here predicts this screen, artefacts included. The task probes are a hint of it: the best single feature is RDKit's azide count on 3 of the 9 splits and its azo count on 2, two redox-active groups; whether they mark real actives or the assay's non-specific reduction of XTT is not settled here. No single feature is a shortcut to the task (skill 0.019 against the best family's 0.166).
+        - Note on what a score here stands for: the library is the compounds the DTP held by 1999, so a model learns 1990s chemistry. Against a modern screening deck the hit rate would be lower than the 3.4% here, and the task is triage in front of the plates rather than a gate (the review panel's screening chemist, 2026-11-01).
         - Not a regression on the EC50: the page calls the EC50 and IC50 "computer generated averages and don't necessarily capture everything that was considered when making the judgement", and the EC50 was not reached in 38,048 of the 39,365 rows (censored at the highest concentration).
         - The join: 42,682 of the 43,850 conclusions have a structure (5 structures have no conclusion). The 1,168 without one are 26.5% active (3.5% of those with one): 254 were registered after the structure release (NSC above 706,805), and PubChem's DTP/NCI records of 25 sampled active ones hold no structure either (aurintricarboxylic acid polymer fractions, polyoxometalates, interferon-alpha, an oligonucleotide), substances without the small-molecule structure the task reads.
         - Reading the structures: the records lack the `M  END` line that closes an SD connection table; `_read_structures` adds it. The charge column has to be read as the file writes it: code 4, which V2000 defines as a doublet radical, sits on the motifs the file also writes code 3 (+1) on, four-bonded phosphorus (538 atoms against 81 with code 3), bare sodium (426 against 25) and bare potassium (24 against 11); and the file writes codes 8, 9 and -1 as well, which V2000 does not define, so its charge column is not the strict format. Read as V2000, those atoms come out neutral and RDKit fills the free valence with hydrogens the file does not draw (`[NaH]`, `[PH](c1ccccc1)(c1ccccc1)c1ccccc1`), so code 4 is read as +1 before the block is sanitized (`_plus_one_charge_codes`, PROV-13). It changes 723 records, 690 of the shipped compounds (50 CA, 66 CM, 554 CI), and makes 2 unreadable ones readable. RDKit still rejects the valences of 607 records (513 hold a metal, 69 more boron; a charged chlorine or oxygen bonded to it), which are dropped (1 CA, 15 CM, 591 CI). The 1,455 readable structures with a metal stay as the source draws them (coordination bonds as charged bonds, such as a copper -3 with three oxygens +1).
         - The repaired records are not charge-balanced: 631 of the 723 read net +1 and 42 net +2, because the source draws the partner anion protonated (a sodium phosphonate as the free acid beside `[Na+]`, NSC 224131) or draws no counter-ion at all (a phosphonium without its halide, NSC 4763). Deprotonating to balance them would be a fix of our own invention, not the source's drawing, so the drawing stays as published (P5 over P6).
         - Stereochemistry removed: "No stereochemical information was used in the build" of the 3D coordinates (DTP page), so the stereo RDKit reads from them (25,366 of 42,080 structures) is arbitrary; the shipped SMILES carries none, so it is also the key of rows a 2D encoding cannot tell apart.
         - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), declared in `smiles_columns`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts: 1,407 columns on these compounds). The values are RDKit's canonical form (`canonical_smiles`) of the whole structure as published, every fragment kept. The NSC and the CAS RN are dropped (identifiers; 999-99-9 marks an unknown CAS RN). The draft of the same day shipped RDKit's descriptors in place of the string; on that draft's encoding (383 descriptor columns, before the charge repair) the whole structure scored as well as its largest fragment (untuned LightGBM log loss 0.1563 against 0.1578, ROC AUC 0.908 against 0.898 for confirmed active against the rest; 2 seeds x 3 scaffold-grouped folds).
-        - Salt forms and copies (LEAK-19, LEAK-20): 3,130 of the 42,075 readable structures hold more than one fragment (counter-ions, which the file draws as bare cations such as `[Na+]`, solvents, complex partners). Salt forms of one compound are merged on the structure without RDKit's list of common salts and solvents (`FragmentRemover`: halides, metal ions, water, sulfate, ammonia, mesylate and others; organic counter-ions stay). The largest fragment is no such key here: in 57 groups (136 compounds) it would merge different compounds, such as dicyclohexylamine salts of different acids or crown-ether complexes of different tin compounds. 1,706 readable compounds share the key with another; the 46 compounds tested with different conclusions are dropped, all 119 rows (decision table), and of the others the first NSC is kept (823 rows dropped). 41,133 compounds remain: 386 CA, 1,011 CM, 39,736 CI, no two with one SMILES. 549 of them keep an organic counter-ion or a second component; the largest fragment of 47 of these is shipped as a compound of its own (a free form or another salt), 26 of them in another scaffold group, so a few near copies can sit across the split.
-        - Split (SPLIT-31 as amended): grouped on the Bemis-Murcko scaffold of the compound, its structure without common salts and solvents (`scaffold_groups`): 20,772 groups, 15,993 compounds alone (1,566 without a ring, 3.8%) and 4,779 series of 2 to 2,086. No scaffold holds a tenth of the compounds, so the bare benzene ring (2,086, 5.1%) stays one group. Under the groups 15.3% of the test compounds of repeat 0 have a training analog at Tanimoto 0.7 or more (Morgan radius 2, 2,048 bits, on the structure without its salts; median nearest 0.516), against 32.4% under a random split (0.607); for the actives 29.2% against 49.8%. MoleculeNet and OGB split this screen by scaffold too, and a scaffold split leaves this screen similar across the split either way: 76.9% of our test compounds have a training compound above Tanimoto 0.4, against the 56% Lo-Hi (Steshin 2023, Sec. 5.2) measured on MoleculeNet's cut, so the test side is a series not yet tested, not a new chemical class. The NSC number counts submission batches that the groups do not hold out; the splits comment has the numbers.
-        - Note: `hiva_agnostic` is the 2007 Agnostic Learning vs. Prior Knowledge challenge's cut of these compounds: its 4,229 labelled and 38,449 test compounds make 42,678, against the 42,682 conclusions with a structure here, and both are 3.52% active (149 of 4,229; 1,503 of 42,682). This release labels every compound and keeps the three conclusions; the curator decides which of the two ships (PROV-6).
+        - Salt forms and copies (LEAK-19, LEAK-20): 3,130 of the 42,075 readable structures hold more than one fragment (counter-ions, which the file draws as bare cations such as `[Na+]`, solvents, complex partners). Salt forms of one compound are merged on the structure without RDKit's list of common salts and solvents (`FragmentRemover`: halides, metal ions, water, sulfate, ammonia, mesylate and others; organic counter-ions stay). The largest fragment is no such key here: in 57 groups (136 compounds) it would merge different compounds, such as dicyclohexylamine salts of different acids or crown-ether complexes of different tin compounds. 1,706 readable compounds share the key with another; the 39 compounds the screen concluded both active and inactive are dropped, all 104 rows (decision table), and of the others the first NSC is kept (831 rows dropped). 41,140 compounds remain: 1,404 active (390 CA, 1,014 CM) and 39,736 inactive, no two with one SMILES. 549 of them keep an organic counter-ion or a second component; the largest fragment of 49 of these is shipped as a compound of its own (a free form or another salt), 28 of them in another scaffold group, so a few near copies can sit across the split.
+        - Split (SPLIT-31 as amended): grouped on the Bemis-Murcko scaffold of the compound, its structure without common salts and solvents (`scaffold_groups`): 20,774 groups, 15,994 compounds alone (1,566 without a ring, 3.8%) and 4,780 series of 2 to 2,086. No scaffold holds a tenth of the compounds, so the bare benzene ring (2,086, 5.1%) stays one group. Under the groups 15.5% of the test compounds of repeat 0 have a training analog at Tanimoto 0.7 or more (Morgan radius 2, 2,048 bits, on the structure without its salts; median nearest 0.517), against 32.0% under a random split (0.606); for the actives 30.0% against 48.3%. MoleculeNet and OGB split this screen by scaffold too, and a scaffold split leaves this screen similar across the split either way: 78.1% of our test compounds have a training compound above Tanimoto 0.4, against the 56% Lo-Hi (Steshin 2023, Sec. 5.2) measured on MoleculeNet's cut, so the test side is a series not yet tested, not a new chemical class. The NSC number counts submission batches that the groups do not hold out; the splits comment has the numbers.
+        - Note: `hiva_agnostic` was the 2007 Agnostic Learning vs. Prior Knowledge challenge's cut of these compounds: its 4,229 labelled and 38,449 test compounds make 42,678, against the 42,682 conclusions with a structure here, and both are 3.52% active (149 of 4,229; 1,503 of 42,682). A linking run on 2026-11-01 recovered the NSC number behind its rows from their bits (97% with confidence) and every one of its 4,229 labels agrees with this file, so it adds no compound and no label; what it added was one 2006 ChemTK representation nobody can recompute. It is retired as a duplicate of this release (PROV-6; Lennart, 2026-11-02), and its BeyondArena and TabArena v0.1 containers stay as shipped.
         - Note: MoleculeNet's HIV.csv (41,127 compounds: 404 CA, 1,039 CM, 39,684 CI) is this SD file read by an older RDKit, salts and the stereo of the coordinates kept, and it carries the charge-code artefact repaired here: 413 `[NaH]`, 24 `[KH]` and 254 `[PH]` against 16 `[Na+]`, 11 `[K+]` and 56 `[P+]` (PROV-15, a problem of that copy; another collection's version is no reason to keep ours damaged, EV-4). So after the repair our structures differ from MoleculeNet's, and from OGB's `ogbg-molhiv` built on it, on the 690 compounds the repair touched: 40,385 of MoleculeNet's 41,116 InChIKey skeletons are among ours, where 41,077 were before the repair. Its conclusions agree with ours for 40,311 of the 40,343 stereo-free SMILES both hold; the other 32 are structures entered here under several NSC numbers with different conclusions, of which MoleculeNet kept one.
         - Licence: the DTP page states no terms.
     """
 
     # Task
-    target = "screen_conclusion"
-    problem_type = "multiclass_classification"
-    metric = Metric.fallback(
+    target = "active_in_screen"
+    problem_type = "binary_classification"
+    metric = Metric.from_context(
+        "roc_auc",
         reason=(
-            "The DTP release scores nothing: the screen concludes per compound. The benchmarks that defined a task "
-            "on it merge CA and CM into one active class: MoleculeNet (Wu et al. 2018) and OGB score ROC-AUC on that "
-            "binary label under a scaffold split ('for ogbg-molhiv, we use ROC-AUC for evaluation', "
-            "ogb.stanford.edu/docs/graphprop), and the 2007 HIVA challenge ranked its binary cut by the balanced error "
-            "rate. Both score a different target from the one shipped here: a ROC-AUC or a balanced error rate on CA "
-            "and CM merged does not score how well the two active classes are told apart, and a metric keeps its "
-            "meaning only when the target does (MET-2, third bullet). A macro or one-vs-rest ROC AUC is well defined "
-            "on three classes, but it is not what either source scored. log_loss is the multiclass fallback (MET-11)."
+            "The DTP release scores nothing: the screen concludes per compound, and the page names no metric. The "
+            "benchmarks that defined a task on this file all score the active-against-inactive label shipped here, "
+            "and all but one score it by ROC-AUC: MoleculeNet (Wu et al. 2018) and OGB under a scaffold split ('for "
+            "ogbg-molhiv, we use ROC-AUC for evaluation', ogb.stanford.edu/docs/graphprop), and ChemPile likewise; "
+            "the 2007 HIVA challenge ranked its cut by the balanced error rate, which needs a threshold none of them "
+            "fixes. So the target is theirs and the metric is theirs (MET-4 by analogy: the origin is `context` and not `original`, since our source is the DTP release, which scores nothing); roc_auc is also what a screening team "
+            "reads, since it ranks compounds for the next plate rather than classifying them, and it is unmoved by "
+            "the 3.4% base rate. One caveat on comparing numbers: reading the source's charge code as the +1 it means "
+            "leaves our structures different from MoleculeNet's, and from OGB's built on it, on 690 "
+            "compounds, so a score here is close to but not literally the ogbg-molhiv leaderboard's (PROV-15)."
         ),
     )
 
@@ -177,9 +184,9 @@ class NciAidsAntiviralScreen(AbstractCuratedDataset):
     splits_comment = """
         Grouped splits on the Bemis-Murcko scaffold of the compound (its structure without common salts and solvents): all compounds of one series stay on one side, so a model predicts compounds of a series it has not seen; compounds without a ring are held out one by one. The bare benzene ring (5.1% of the compounds) is one group, below the tenth of the compounds above which a scaffold counts as no series. Compounds with similar but not identical scaffolds can be on both sides.
 
-        The split still leaves the test compounds close to the training ones: 76.9% of the test compounds of repeat 0 have a training compound above Tanimoto 0.4 (86.5% of the actives), the median nearest is 0.516, and 15.3% have one at 0.7 or more (Morgan radius 2, 2,048 bits, on the structure without its salts). Lo-Hi (Steshin 2023, arXiv 2310.06399, Sec. 5.2) measured the same on MoleculeNet's cut of this screen, "56% of HIV test molecules have a train neighbor with a Tanimoto similarity > 0.4", and concludes it is unsuitable for hit identification. So the scores stand for a compound of a series that has not been tested; finding a chemical class nobody has seen is a harder task than this split measures.
+        The split still leaves the test compounds close to the training ones: 78.1% of the test compounds of repeat 0 have a training compound above Tanimoto 0.4 (87.7% of the actives), the median nearest is 0.517, and 15.5% have one at 0.7 or more (Morgan radius 2, 2,048 bits, on the structure without its salts). Lo-Hi (Steshin 2023, arXiv 2310.06399, Sec. 5.2) measured the same on MoleculeNet's cut of this screen, "56% of HIV test molecules have a train neighbor with a Tanimoto similarity > 0.4", and concludes it is unsuitable for hit identification. So the scores stand for a compound of a series that has not been tested; finding a chemical class nobody has seen is a harder task than this split measures.
 
-        Potential leak, kept on purpose: the NSC number counts the compounds in the order they were registered, so neighbouring numbers are usually analogs submitted together. For two consecutive NSC numbers P(the next compound is active | this one is active) is 0.343 against a base rate of 0.034, and still 0.283 when the two sit in different scaffold groups; 81.6% of the test compounds of repeat 0 have a training compound within 5 NSC numbers, 7.6% one that is also a close analog (11.3% of the actives). The batch stays out of the group key because the NSC number is not shipped (the one feature column is the structure), so no model can recognise a submission batch; the only channel is structural resemblance, which the series grouping already holds out. Holding the batches out as well (the series key plus every NSC-adjacent pair that is also a close analog) lowers macro ROC AUC from 0.8215 to 0.8184, inside the 0.012 to 0.013 standard deviation over the folds (untuned LightGBM over the nine splits, measured on the frame before the charge repair); grouping whole runs of consecutive numbers instead gives 0.7961 with a fold spread of 0.023, and makes the folds uneven. sarcoma discloses its tissue source site the same way instead of grouping on it. Revisit if a release ships the NSC number or another submission key as a column.
+        Potential leak, kept on purpose: the NSC number counts the compounds in the order they were registered, so neighbouring numbers are usually analogs submitted together. For two consecutive NSC numbers P(the next compound is active | this one is active) is 0.343 against a base rate of 0.034, and still 0.283 when the two sit in different scaffold groups; 81.9% of the test compounds of repeat 0 have a training compound within 5 NSC numbers, 7.5% one that is also a close analog (10.0% of the actives). The batch stays out of the group key because the NSC number is not shipped (the one feature column is the structure), so no model can recognise a submission batch; the only channel is structural resemblance, which the series grouping already holds out. Holding the batches out as well (the series key plus every pair of consecutive NSC numbers that is also a close analog) moves ROC AUC from 0.802 to 0.800, inside the 0.012 to 0.025 standard deviation over the folds (untuned LightGBM on the recommended encoding over the nine splits, 2026-11-02); a looser batch key (NSC numbers within 2 at Tanimoto 0.5 or more) gives 0.787 with a fold spread of 0.020, and makes the folds uneven (11,547 to 17,917 test compounds). sarcoma discloses its tissue source site the same way instead of grouping on it. Revisit if a release ships the NSC number or another submission key as a column.
     """
 
     smiles_columns = ("SMILES",)
@@ -201,9 +208,12 @@ class NciAidsAntiviralScreen(AbstractCuratedDataset):
         df = raw["conclusions"].merge(raw["structures"], on="NSC", how="inner", validate="one_to_one")
         # Structures whose valences RDKit rejects (mostly metal complexes and boron compounds)
         df = df[df["smiles"].ne("")]
-        df = df.assign(**{self.target: df["Conclusion"].map(CONCLUSIONS)})
+        # The screen's two active conclusions merge into one active class, as every published task on this file
+        # does (CLEAN-17); the three conclusions stay in the decision tables
+        active = df["Conclusion"].isin(ACTIVE_CODES)
+        df = df.assign(**{self.target: active.map({True: "Yes", False: "No"})})
         # Salt forms and copies of one compound (the structure without common salts and solvents, LEAK-19): compounds
-        # tested with different conclusions are dropped, the others keep the row of their first NSC number
+        # the screen concluded both active and inactive are dropped, the others keep the row of their first NSC
         df = _one_row_per_compound(df, self.target)
         # The structure as tested, salts included, ships as a SMILES column (`smiles_columns`) in RDKit's canonical
         # form; its stereo, read from coordinates built without any, was removed in `_read_structures`
@@ -217,26 +227,26 @@ class NciAidsAntiviralScreen(AbstractCuratedDataset):
         )
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # The SMILES is typed by `smiles_columns`. The target is an ordered category (CLEAN-25): the screen's three
-        # conclusions are a potency scale, inactive < moderately active < active (decision table 2).
+        # The SMILES is typed by `smiles_columns`; the binary target needs no typing. The potency scale the three
+        # conclusions form is in decision table 2, not in the shipped label.
         del df
-        return FeatureTypes(
-            ordinal={self.target: ["confirmed inactive", "confirmed moderately active", "confirmed active"]}
-        )
+        return FeatureTypes()
 
     def _decisions(self, raw: dict[str, pd.DataFrame], df: pd.DataFrame) -> list[Decision]:
         conclusions = raw["conclusions"]
         joined = conclusions.merge(raw["structures"], on="NSC", how="left")
         readable = joined[joined["smiles"].fillna("").ne("")]
+        readable = readable.assign(active=readable["Conclusion"].isin(ACTIVE_CODES).map({True: "Yes", False: "No"}))
         n_conclusions = readable.groupby("compound")["Conclusion"].transform("nunique")
-        kept = _one_row_per_compound(readable, "Conclusion")
+        n_outcomes = readable.groupby("compound")["active"].transform("nunique")
+        kept = _one_row_per_compound(readable, "active")
         order = list(CONCLUSIONS)
         steps = pd.DataFrame(
             {
                 "conclusions": conclusions["Conclusion"].value_counts(),
                 "with a structure (NSC)": joined.loc[joined["smiles"].notna(), "Conclusion"].value_counts(),
                 "structure read by RDKit": readable["Conclusion"].value_counts(),
-                "compound with one conclusion": readable.loc[n_conclusions.eq(1), "Conclusion"].value_counts(),
+                "compound with one outcome": readable.loc[n_outcomes.eq(1), "Conclusion"].value_counts(),
                 "shipped, one per compound": kept["Conclusion"].value_counts(),
             }
         ).reindex(order)
@@ -261,9 +271,9 @@ class NciAidsAntiviralScreen(AbstractCuratedDataset):
         potency.index = [f"{CONCLUSIONS[code]} ({code})" for code in potency.index]
         potency.index.name = "conclusion"
 
-        active = readable.assign(active=readable["Conclusion"].isin(["CA", "CM"]))
-        binary = _one_row_per_compound(active, "active")
-        mixed = readable[n_conclusions.gt(1)]
+        three_class = _one_row_per_compound(readable, "Conclusion")
+        merged_in = readable.loc[n_conclusions.gt(1) & n_outcomes.eq(1), "compound"].nunique()
+        mixed = readable[n_outcomes.gt(1)]
         combination = mixed.groupby("compound")["Conclusion"].agg(lambda codes: " and ".join(sorted(set(codes))))
         conflicts = pd.DataFrame(
             {
@@ -282,21 +292,26 @@ class NciAidsAntiviralScreen(AbstractCuratedDataset):
                 steps,
             ),
             Decision(
-                "The three conclusions are kept",
-                "The two active classes differ in how potent the compound is: the moderately active compounds reach "
-                "their EC50 (half protection of the infected cells) less often and at higher concentrations, and "
-                "their IC50 (half growth inhibition of uninfected cells) lies closer to it. The EC50 and IC50 are "
-                "averages per highest tested concentration; a compound counts as reached when one average is not "
-                "censored at the highest concentration. They are evidence only, never features. Merged into one "
-                f"active class, as MoleculeNet, OGB and HIVA do, the recipe gives {len(binary):,} compounds, "
-                f"{int(binary['active'].sum()):,} of them active.",
+                "The two active conclusions are merged",
+                "The screen concludes confirmed active (CA), confirmed moderately active (CM) or confirmed inactive "
+                "(CI); the shipped label is CA and CM against CI, the target every published task on this file "
+                "defines (MoleculeNet, OGB's ogbg-molhiv, the 2007 HIVA challenge, ChemPile) and the call a "
+                "screening team acts on. What the merge gives up is in the table: the two active classes differ in "
+                "how potent the compound is, as the moderately active ones reach their EC50 (half protection of the "
+                "infected cells) less often and at higher concentrations, and their IC50 (half growth inhibition of "
+                "uninfected cells) lies closer to it. The EC50 and IC50 are averages per highest tested "
+                "concentration; a compound counts as reached when one average is not censored at the highest "
+                "concentration. They are evidence only, never features. Keeping the three conclusions instead would "
+                f"ship {len(three_class):,} compounds (386 CA, 1,011 CM, 39,736 CI): {merged_in} fewer, the "
+                "compounds concluded CA under one NSC number and CM under another, which have one outcome here but "
+                "no single conclusion there.",
                 potency,
             ),
             Decision(
-                "Compounds tested with different conclusions are dropped",
-                "A salt and its free form, or one compound under two NSC numbers, that the screen concluded "
-                "differently: one compound with no single conclusion, so all its rows go (LEAK-20). CA, CM and CI are "
-                "the screen's codes.",
+                "Compounds concluded both active and inactive are dropped",
+                "A salt and its free form, or one compound under two NSC numbers, that the screen concluded active "
+                "once and inactive once: one compound with no single outcome, so all its rows go (LEAK-20). CA, CM "
+                "and CI are the screen's codes; a compound concluded CA and CM stays, since both are active.",
                 conflicts,
             ),
         ]
