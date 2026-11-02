@@ -158,6 +158,12 @@ def report_frontmatter(result: CurationResult, *, previous: dict[str, Any] | Non
             "group_labels": task.group_labels,
             "group_time_on": task.group_time_on,
             "grouping": grouping,
+            # only for a dataset that has them, so every other README's front matter stays as it was
+            **(
+                {"semantic_columns": {c.column: c.semantic_type for c in task.semantic_columns}}
+                if getattr(task, "semantic_columns", None)
+                else {}
+            ),
         },
         "splits": {
             "n_repeats": len(splits_meta.splits),
@@ -357,7 +363,7 @@ def _dataset_section(result: CurationResult, fm: dict[str, Any]) -> list[str]:
     if meta.version_from_unique_name:
         rows.append(("version of", meta.version_from_unique_name))
     rows += [("rows x columns", f"{df.shape[0]:,} x {df.shape[1]:,}")]
-    skip = ("grouping", "metric_origin", "scoring_columns")
+    skip = ("grouping", "metric_origin", "scoring_columns", "semantic_columns")
     rows += [(f"task.{k}", v) for k, v in fm["task"].items() if v is not None and k not in skip]
     out = ["## Dataset and task", "", _table(pd.DataFrame(rows, columns=["field", "value"]), full=True), ""]
     out += _metric_block(container.task_metadata)
@@ -374,6 +380,9 @@ def _dataset_section(result: CurationResult, fm: dict[str, Any]) -> list[str]:
     ordinal = [f"{c} ({' < '.join(map(str, levels))})" for c, levels in types.ordinal.items() if c in present]
     if ordinal:  # listed only where a dataset has an ordinal column, so the other READMEs stay as they are
         groups.insert(1, ("ordinal", ordinal))
+    smiles = [c for c in result.dataset.smiles_columns if c in present]
+    if smiles:  # listed only where there are any, so every other README stays as it was
+        groups.insert([kind for kind, _ in groups].index("string") + 1, ("smiles", smiles))
     lines = [
         f"- {kind} ({len(cols)}): {', '.join(f'`{c}`' for c in cols) if cols else 'none'}" for kind, cols in groups
     ]

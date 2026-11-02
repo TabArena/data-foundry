@@ -9,11 +9,13 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
+tags:
+- Non-IID (Grouped)
 original_source: UCI
 year: '2015'
 domain: chemistry & material science
 required_split:
-- Random (IID)
+- Grouped (NON-IID)
 source_links:
 - https://www.openml.org/search?type=data&id=44970
 - https://doi.org/10.24432/C5JG7B
@@ -41,6 +43,19 @@ CC (2026-10-21, Lennart): one domain for the molecule-property datasets (the inp
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — Cassotti et al. 2015 report R2/Q2 with RMSE on training and external sets; rmse is the regression fallback.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `adore_aquatic_toxicity` (TBD -> Yes, priority 3), `aquatic_toxicity_lunghini_consensus` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
+CC (2026-11-01, Lennart): go ahead for the structure-recoverable datasets: ship the SMILES only, as for qsar_tid_11. The authors' descriptors are one modelling choice; the benchmark encodes the structure.
+
+**Assessment (AI, 2026-11-01):** the structures are recoverable and the link is exact. The authors' own workbook (Milano Chemometrics, `toxicity_data_fish.xlsx`) holds the same 908 rows in the same order as the UCI file, with CAS-RN, SMILES, their train/test split, LC50 and the same 6 descriptors; all 6 are identical on every row. The 6 descriptors leave, which also settles the mild optimism they carried (a genetic algorithm chose them on 726 chemicals that overlap our test folds, LEAK-31). The target now comes from the workbook at full precision: the UCI file rounds LC50 to 3 decimals (every row differs by at most 0.0005). `SMILES` is the one feature; the split is scaffold-grouped (786 groups). The 24% of rows that shared a descriptor vector have distinct structures. Task probes, 30 splits: LightGBM R^2 0.640, random forest 0.614, no flags.
+
+CC (2026-11-02, Lennart): on the target's precision, carried to the curator in the handover document as a change
+that was not an instruction: "the changes look good". LC50 comes from the authors' own workbook at full precision
+instead of the UCI file's three decimals; every row moves by at most 0.0005, and the workbook is the table the
+structures come from anyway.
+
+CC (2026-11-02, Lennart): on how the Milano workbook was downloaded ("freeware with proper reference", fetched
+through a public link rather than the authors' notification form): "that is okay for now, we can note it but it is
+not blocking us here". Noted here; regularise before this ships outside the group.
 
 ## Reference
 

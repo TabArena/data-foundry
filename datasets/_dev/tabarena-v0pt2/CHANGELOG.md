@@ -4,6 +4,208 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-11-02, `nci_aids_antiviral_screen` ships the field's binary target; `hiva_agnostic` retired (PR #15)
+
+The curator's marks on the review page of 2026-11-02, applied.
+
+- **`nci_aids_antiviral_screen`: the two active conclusions merge into one active class.** The target is now
+  `active_in_screen` (Yes/No, Yes the event) instead of the screen's three conclusions, and the metric follows it
+  from the `log_loss` fallback to `roc_auc`, declared as taken from the context. CLEAN-17 permits the merge because
+  the convention is established and the merge is tested: the 2007 HIVA challenge, MoleculeNet, OGB's `ogbg-molhiv`
+  and ChemPile all define this target on this file, over eighteen years, and it is the call a screening team acts on
+  (USE-5). 41,140 compounds, 1,404 active (3.4%) against 39,736 inactive. The merge keeps 7 compounds the three-class
+  framing dropped as conflicting (concluded CA under one registry number and CM under another), so the LEAK-20
+  conflict set falls from 46 compounds / 119 rows to 39 / 104; the ordered typing of the conclusions goes (CLEAN-25:
+  a binary target is not ordered). The potency scale the two active classes form stays in decision table 2, with the
+  selectivity-index measurement, so nothing that argued for the three classes is lost from the definition.
+  - Everything the prose quotes was measured again on the new frame: 20,774 scaffold groups (15,994 of them one
+    compound, the bare benzene ring 5.1%); 15.5% of the test compounds of repeat 0 have a training analog at
+    Tanimoto 0.7 or more against 32.0% under a random split (medians 0.517 and 0.606), 78.1% have one above 0.4;
+    ROC AUC 0.80 (0.78 to 0.82) over the nine splits, untuned LightGBM on the recommended encoding. The NSC
+    submission-batch experiment was re-run on the merged target: grouping the batches away as well moves ROC AUC
+    from 0.802 to 0.800, inside the fold spread, so the dependency stays disclosed rather than split away (SPLIT-30).
+  - `dataset check` clean (0 errors, 0 warnings); the task and leak probes raise no flag (random forest ROC AUC
+    0.817, LightGBM 0.806, the best single feature 0.641).
+  - The metric was confirmed in the second round of the same day: `ship` on the review page with the declared metric
+    marked as declared, now that the declaration is `roc_auc`. The folder's `REVIEW.md` goes with the last open
+    issue; the review panel's reports stay in the run folder of 2026-11-01. The record is `Yes`, `WIP (DF)` and
+    `checked_by: Lennart`, which is also the curator's verification of the AI screening of 2026-10-31 (it had never
+    been through the screening queue); the claim stays until the work reaches `main`.
+  - Two small edits came out of the consistency check of that round: the metric's reason now cites MET-4 by analogy
+    and says why the origin is `context` and not `original` (our source is the DTP release, which scores nothing),
+    and the review panel's screening chemist gets a second caveat into `curation_comments` before the file goes -
+    the library is the compounds the DTP held by 1999, so a prospective hit rate on a modern deck would be lower and
+    the model is triage in front of the plates, not a gate. `dataset check` clean again (0 errors, 0 warnings).
+- **`hiva_agnostic` removed from the working copy, retired as a duplicate.** The 2007 Agnostic Learning vs. Prior
+  Knowledge challenge's cut of this same screen: 4,229 compounds as 1,617 anonymous ChemTK bits. The linking run of
+  2026-11-01 recovered the registry number behind its rows (97% with confidence) and every one of its labels agrees
+  with the NCI file; its three parts are 42,678 compounds against the screen's structure-bearing 42,682, so it adds
+  no compound and no label the full release lacks, and the one thing it does add is a 2006 representation nobody can
+  recompute (PROV-6). The record is `No (Retired)` with `Duplicate`, `Outdated` and the existing `Anonymized`;
+  `v2_path` cleared, `WIP (DF)` and the claim dropped, while `DF: Yes`, the collection tags and the shipped
+  BeyondArena and TabArena v0.1 containers stay. The duplicate pointer from `hiv_qsar` moves to
+  `nci_aids_antiviral_screen`, with the OpenML 1039 chain spelled out.
+- **`qsar_biodeg`: the external validation set is screened, and the note says why it is not more of this dataset.**
+  The curator asked for the 670 chemicals of the paper's `External validation` sheet to be screened. They are their
+  own candidate, `ready_biodegradability_mansouri_external` (`TBD -> 2nd Tier`, priority 2): the 1,055 here were
+  curated from NITE/MITI, those 670 were "constructed from two data sources, Cheng et al. and the Canadian DSL
+  database" (Chakravarti and Alla, arXiv 1808.04456, Table 1, whose 356/699 and 191/479 match both sheets exactly),
+  and only 8 of their 670 canonical structures occur here, one with the opposite class. Definition note only, no
+  change to the data; `dataset check` clean.
+- **`qsar_bioconcentration`: `logKOW` stays, `logKOW_type` goes.** The curator's question of the second round was
+  what the table's logKOW is worth against RDKit's own logP, and whether keeping it next to `logKOW_type` leaks.
+  Measured over the 30 splits with untuned LightGBM on the recommended encoding: the table's `logKOW` is worth
+  +0.0121 macro ROC AUC over the encoding alone (better on 22 of 30 splits, -0.0241 log loss on 21 of 30), while
+  `logKOW_type` is worth -0.0013 and adds nothing at all on top of the structure (0.6806 with and without it). Alone,
+  `logKOW` scores 0.629 against 0.594 for RDKit's `MolLogP` and 0.628 for its 16 logP-related descriptors together; a
+  model on the encoding predicts the table's `logKOW` out of fold at R-squared 0.877, mean absolute error 0.44 log
+  units. No leak in either: the flag carries macro ROC AUC 0.534 by itself against 0.5 for chance, and its class
+  shares (lipid storage 61% of the measured rows, 48% of the predicted ones) say which chemicals get a logP measured,
+  not which mechanism they have.
+  - On that the curator kept `logKOW` and asked for `logKOW_type` to go, "unless this creates any problems". It did
+    create one: CLEAN-22 is a Must and lets a column leave for what it is, never for how little it adds, and three
+    shipped datasets keep exactly this kind of flag (`pva_revenue_prediction_kddcup98`'s `AGEFLAG`, `DATASRCE` and
+    `LIFESRC`, `thyroid_discordant`'s five `*_measured`, `sf_permit_time`'s `point_source`). Put to the curator with
+    four ways out, the answer was to drop it with the fact stated: `logKOW_type` records how the authors filled their
+    2015 table, not a property of the chemical, which is the shape of `early_learning_predictors`' `teacher_duration`
+    (CLEAN-22, 2026-10-30), where the flags that stay sit in the actor's own record. Written as a CLEAN-22 Cases row,
+    kind `applied`; a Must takes no exception line.
+  - The shipped frame is now 776 rows and 2 features, the `SMILES` and the `logKOW`. What the 122 predicted rows are
+    is no longer readable from the data, so the counts and their split by class became decision table 4 of the
+    README, and CLEAN-24's "measured properties stay (qsar_bioconcentration's logKOW)" gained the qualifier that a
+    column mixing a measurement with a prediction of the same property stays whole under USE-6. `dataset check`
+    clean (0 errors, 0 warnings); the task probes raise no flag (random forest macro ROC AUC 0.678, LightGBM 0.689,
+    best single feature 0.589) and the leak probes none (all features 0.705, shallow tree 0.581, no exact feature
+    copy across the split, 1-NN agreement 0.621 against a chance of 0.462). The `REVIEW.md` goes with the issue.
+  - `molecules.md`'s bullet on calculated against measured properties said the paper naming the prediction models is
+    paywalled; it was read on 2026-11-01 and is quoted now, and the bullet says where the provenance of a mixed
+    column belongs: the notes and a decision table, not a per-row flag.
+- **Knowledge files.** `molecules.md` said flatly that the NCI screen's three conclusions stay as the source draws
+  them; it now states CLEAN-17's actual test and records this decision, and its metric bullet distinguishes shipping
+  the field's label from keeping finer classes. Cases rows added under CLEAN-17 (the merge) and PROV-6 (the structure
+  release wins over a fingerprint build of the same rows, the shape of the three pairs flagged 2026-10-31).
+
+## 2026-11-01, `nci_aids_antiviral_screen` added: the NCI DTP AIDS antiviral screen (PR #15)
+
+- Added as `datasets/_dev/tabarena-v0pt2/nci_aids_antiviral_screen/`: 41,133 compounds of the NCI Developmental
+  Therapeutics Program's AIDS antiviral screen (May 2004 conclusions joined to the 1999 structure file by registry
+  number), each one a structure and the screen's own conclusion — confirmed active 386, confirmed moderately active
+  1,011, confirmed inactive 39,736. The structure is the only feature, as a `SMILES` column (CLEAN-24 as amended);
+  the split is scaffold-grouped (20,772 groups, 15,993 of them one compound, the bare benzene ring 5.1%); the metric
+  is the `log_loss` fallback, since both the source's metrics score a merged binary target (MET-2, MET-11). The
+  target ships as an ordered scale (CLEAN-25). `dataset check` clean; the task, leak, group and dtype probes raise no
+  flag on 5 or 9 splits.
+- A full review panel ran (claim, column and split auditors, domain practitioner, blind reviewer, precedent checker,
+  advocate and critic with one rebuttal each, mediator, editor). Its settled changes are applied:
+  - **The source's charge field is now read.** The file marks cations with a code the reader dropped, so 690 shipped
+    compounds carried a hydrogen atom that is nowhere in the file (a sodium counter-ion as sodium hydride, a
+    phosphonium centre as a neutral five-bonded phosphorus). The file's own usage settles the meaning: it writes that
+    code and the ordinary +1 code on the same motifs (four-bonded phosphorus 538 against 81, bare sodium 426 against
+    25), and it is not strict V2000. The repair recovered 2 of the 609 unreadable records and merged 6 duplicate
+    keys, so the count is 41,133; the measured effect on scores is nil. MoleculeNet's copy carries the same artefact,
+    so our structures now differ from MoleculeNet's and OGB's on those 690 compounds (PROV-15, EV-4).
+  - **The NSC submission-batch dependency is disclosed, not split away** (SPLIT-30, LEAK-38 format, precedent
+    sarcoma): compounds registered consecutively share activity far above chance (0.343 against a 0.034 base rate,
+    0.283 across scaffold groups), but the registry number is not shipped, so no model can see it, and grouping the
+    batches away costs macro ROC AUC 0.8215 to 0.8184, inside the fold spread.
+  - The metric reason, the quoted numbers and the encoding description were corrected; all were measured again on the
+    repaired data and the shipped 1,407-column encoding.
+- **Weislow et al. 1989 was read** (the curator supplied the PDF): it defines the soluble-formazan assay, the primary
+  screen's protocol, and the rule that a compound showing at least 30% protection is re-tested — which is where the
+  word "confirmed" in the labels comes from. It does not define the three conclusions; "moderately" and "category" do
+  not occur in it. So the CA/CM boundary is a DTP reporting convention, and PROV-17 no longer applies. The boundary is
+  instead visible in the source's released files: on the 387 actives where both an EC50 and an IC50 were reached, the
+  selectivity index separates CA from CM at ROC AUC 0.948 and one threshold reproduces 89.7% of the labels. On that
+  evidence the fit reads `direct`.
+- Open for the curator in the folder's `REVIEW.md`: the target framing (the three conclusions against the field's
+  binary active/inactive cut, which MoleculeNet, OGB, HIVA and ChemPile use), and the retirement of `hiva_agnostic`
+  (PROV-6), the 2007 challenge cut of this same screen. Not built.
+
+## 2026-11-01, three QSAR datasets ship the structure instead of the authors' descriptors (PR #15)
+
+The structures the UCI copies left out come from the authors' own releases, so these three follow CLEAN-24 as amended
+(the task goes from the structure to a prediction; the descriptors are one modelling choice of the authors). In each
+case the authors' file is the shipped file plus the structures, row for row, which the definition asserts when it
+loads: every shared column is identical on every row, so the link needs no key.
+
+- `qsar_biodeg`: the paper's supporting information (`ci4000213_si_001.xlsx`, sheet `Train+Test`; taken from the
+  Internet Archive, since pubs.acs.org refuses a command-line download) holds the same 1,055 rows in the same order,
+  with CAS-RN, SMILES, the class and all 41 descriptors. The Dragon descriptors leave; `SMILES` is the one feature;
+  scaffold-grouped, 872 groups. Three stereoisomer pairs stay (maleic/fumaric acid, sorbitol/mannitol,
+  dieldrin/endrin), each agreeing on its class and sharing a scaffold. Task probes, 30 splits: random forest ROC AUC
+  0.929, LightGBM 0.928, no flags. The sheet `External validation` holds 670 further chemicals (657 new): a candidate
+  of its own, noted in the record.
+- `qsar_fish_toxicity`: the authors' workbook (`toxicity_data_fish.xlsx`, Milano Chemometrics) holds the same 908 rows
+  in the same order, with the 6 descriptors identical on every row. They leave, which also settles the mild optimism
+  they carried (chosen by a genetic algorithm on 726 chemicals that overlap our test folds, LEAK-31). The target now
+  comes from the workbook at full precision; the UCI file rounds LC50 to 3 decimals. Scaffold-grouped, 786 groups.
+  Task probes: LightGBM R^2 0.640, random forest 0.614, no flags.
+- `qsar_aquatic_toxicity`: the authors' workbook (`toxicity_data.xlsx`) holds the same 546 rows in the same order,
+  with the 8 descriptors and LC50 identical on every row. They leave, which settles the kept potential leak the record
+  named (LEAK-31). Scaffold-grouped, 463 groups. Task probes: LightGBM R^2 0.573, random forest 0.548, no flags.
+- Not recoverable, so they keep their descriptors: `bioresponse` (anonymous, scaled descriptors, no identifiers) and
+  `clock_protein_toxicity` (internal codes; the structures exist only as drawings in a Word figure).
+- All three: `dataset check` clean, records carry the CC and an Assessment, CLEAN-24's Cases row added. Not built.
+
+## 2026-11-01, SMILES ship as typed structure columns; recommended encodings for SMILES, dates and text (PR #15)
+
+- CLEAN-24 amended (Lennart, 2026-11-01; path C of the discussion doc "SMILES Handling in Data Foundry and TabArena
+  v0.2"): a molecule's structure ships as a SMILES column, listed in the definition's new `smiles_columns`, and the
+  container records it in `task_metadata.semantic_columns` (`SemanticColumn`, type `smiles`, with the recommended
+  encoding's spec id), so a benchmark encodes it as a structure and never as text. Definitions no longer ship RDKit
+  descriptors in place of the string. Until TabArena reads the field, it must not pass such a column to its text
+  embedding (`BENCHMARK_CHANGES_TODO.md`).
+- The recommended encodings (`data_foundry.v2.encodings`, `recommended_encodings()`): a SMILES as RDKit's 2D
+  descriptors with the 166 MACCS keys and the ECFP4 counts (`encode_smiles`, spec
+  `rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1`; the ECFP4 counts added by default since they helped once, on qsar_tid_11,
+  Lennart: "just one pipeline choice that we can later investigate"); a date as skrub's
+  `DatetimeEncoder(add_weekday=True, periodic_encoding="circular")`, as BeyondArena (`encode_datetime`); text as TF-IDF
+  fitted on the training rows and as e5-small-v2 sentence embeddings, both to be checked (`encode_text_tfidf`,
+  `encode_text_e5`). New extra `encodings` (skrub, sentence-transformers). The probes encode SMILES columns this way
+  (`dataset_io.py`); the bundle check `dataset_smiles_column` parses them with the pinned RDKit, and a SMILES column
+  raises no `dataset_identifier_column`.
+- `apistox`: `SMILES` ships (RDKit's canonical form; 17 strings change) in place of RDKit's 199 descriptors. The 141
+  salts and complexes stay as published: the largest fragment would make 86 rows copies of another (triclopyr and
+  picloram triethylammonium both reduce to triethylamine), so `canonical_smiles` keeps every fragment by default. Rows
+  and windows unchanged.
+- `qsar_bioconcentration`: `SMILES` ships in place of RDKit's 193 descriptors; logKOW stays. The isomer decision table
+  now compares the authors' 9 descriptors with the recommended encoding (every chemical has its own values).
+- `qsar_oral_toxicity`: `SMILES` is the one feature, in place of RDKit's 208 descriptors and the authors' 1,024 ECFP
+  bits (Lennart: the bits are one modelling choice, as for qsar_tid_11); the accepted `dataset_pure_feature_value`
+  warning on `rdkit_fr_Ar_COO` leaves with that column. Copies are found on the 2D structure instead of the bit vector
+  (720 exact copies, 20 structures with both classes, 10 tautomer pairs by InChIKey): 11,116 chemicals (933 very
+  toxic), 11 more than before, since bit collisions had joined different chemicals.
+- `drug_induced_autoimmunity_prediction`: `SMILES` ships typed as a structure (Andrej kept it as a plain string on
+  2026-10-26), and the source's 176 RDKit descriptors leave, since the recommended encoding reproduces them (scaffold-
+  grouped ROC AUC 0.771 against 0.772 with LightGBM) and adds the MACCS keys (0.796). The stereoisomer pairs are found
+  on the stereo-free SMILES: the same 9 pairs, 587 drugs, 140 positive. The accepted `dataset_identifier_column`
+  warning leaves.
+- `qsar_tid_11`: the ChEMBL 17 structure ships as `SMILES`, the one feature; the authors' 1,024 FCFP6 bits leave as one
+  modelling choice (Lennart: "the real task here is going from smiles to a prediction"). RDKit recomputes none of them
+  exactly. LightGBM R^2 on the scaffold splits: 0.645 with the bits, 0.601 with the recommended encoding, 0.658 with
+  RDKit's ECFP4 counts added to it. The 474 stereoisomer rows stay (own potencies, 2026-10-21 decision); the two
+  duplicate-row warnings are gone.
+- All five: `dataset check` clean. Records carry the CC and an Assessment. Not built.
+
+## 2026-11-01, scaffold groups: `qsar_tid_11` grouped from ChEMBL 17 structures, `drug_induced_autoimmunity_prediction` on `scaffold_groups`
+
+- `qsar_tid_11`: scaffold-grouped splits in place of random ones (Lennart, 2026-11-01; SPLIT-31 as amended). The file
+  carries ChEMBL compound ids, and ChEMBL 17's structure table (`chembl_17_chemreps.txt.gz`, the release the data was
+  drawn from, a new raw file with its download command and checksum) gives every one its structure; the definition
+  cuts out the file's compounds once (`prepared_raw_files`) and joins them on `MOLECULE_CHEMBL_ID`. 2,529 groups for
+  5,704 compounds (21 ring-less alone, the bare benzene ring 2%). Close training analogs of the test compounds fall
+  from 79.7% to 59.2%; on the definition's splits LightGBM's R^2 is 0.747 under IID and 0.657 grouped, and the task
+  probes raise no flag (on the fingerprint alone; the structure joins the features in the entry above). Rows
+  unchanged (5,704). Record:
+  [`curation/records/qsar_tid_11.md`](../../../curation/records/qsar_tid_11.md). `dataset check` clean otherwise. Not
+  built.
+- `drug_induced_autoimmunity_prediction`: the split groups come from `scaffold_groups`, the helper of
+  qsar_bioconcentration and qsar_oral_toxicity, in place of the definition's own scaffold code. The groups are the same
+  443 (the bare benzene ring holds 7%, under the tenth that would split it), but their names change, so the drugs fall
+  into other folds. `dataset check` clean. Not built.
+- `BENCHMARK_CHANGES_TODO.md`: new section "Encodings and their caches" (one cache contract for every encoding, the
+  encoding's compute time added on top of the benchmark record, and no SMILES column into the text embedding).
+
 ## 2026-11-01, targets in words; counts with a cut end stay ordered categories (PR #37)
 
 - The target rule (CLEAN-25; Lennart: "yes decode the targets too ... provide orderd cateogricals for the targets of
@@ -343,6 +545,20 @@ record, audit or PR that motivated it.
 - No container changes: the task summary is not stored in the container. The regenerated READMEs of the first four
   also show the checksum the current code gives (their builds were already stale; the checksum is the same with the
   old text), and the infrared README no longer lists the `REVIEW.md` that was deleted on 2026-10-21.
+
+## 2026-10-26, `drug_induced_autoimmunity_prediction`: the SMILES stays in the data (PR #15)
+
+- `drug_induced_autoimmunity_prediction`: `SMILES` is kept as a string feature instead of being dropped (177
+  features instead of 176; 587 rows and the scaffold groups unchanged). The source's descriptors lose structure a
+  model can use: next to them, MACCS keys computed from the SMILES lift the scaffold-grouped ROC AUC of TabPFN 3.5
+  from 0.803 to 0.826 and of a random forest from 0.770 to 0.795 (`~/claude_jobs/dia_review/`), so we ship the
+  string rather than one chosen fingerprint. This overrides, for this dataset only, the 2026-10-14 rule of dropping
+  the SMILES in every SMILES dataset.
+- `drug_induced_autoimmunity_prediction`: `dataset_identifier_column` accepted (one SMILES per row): the structure
+  is the input of the task, not a row id, as for `phiusil_phishing`. The stereoisomer de-duplication still compares
+  the descriptors only, so the same 9 pairs are found. Follows Andrej's decision in the record
+  [`curation/records/drug_induced_autoimmunity_prediction.md`](../../../curation/records/drug_induced_autoimmunity_prediction.md).
+  `dataset check` clean. Not built.
 
 ## 2026-10-26, the cross-dataset REVIEW.md retired; README trimmed
 

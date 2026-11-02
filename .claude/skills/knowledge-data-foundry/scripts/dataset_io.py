@@ -8,6 +8,11 @@ one recorded in the definition's ``README.md``, or one rebuilt from the definiti
 The scoring columns (``task.scoring_columns``: the inputs of the metric, such as Numerai's ``era``) are never model
 inputs, so they are dropped from the frame the probes see, unless one is also the target, a group column or the time
 column, which the probes take by name. ``ProbeInput.scoring_cols`` lists the ones dropped.
+
+A SMILES column (``task.semantic_columns`` of type ``smiles``) enters the probes in the recommended encoding
+(``data_foundry.v2.chemistry.encode_smiles``: RDKit's 2D descriptors, the MACCS keys and the ECFP4 counts, columns
+``<column>__rdkit_<name>``, ``<column>__maccs_<i>`` and ``<column>__ecfp4_<i>``), as a benchmark would give it to a model, not as text.
+``encode_smiles=False`` keeps the string (the blind reviewer's clean room). ``ProbeInput.smiles_cols`` lists them.
 """
 
 from __future__ import annotations
@@ -41,6 +46,7 @@ class ProbeInput:
         origin: ``built`` (the container of the README build record), ``rebuilt`` (a container rebuilt from the
             definition) or ``definition`` (the definition's frame and split plan, no container).
         scoring_cols: The scoring columns dropped from ``df`` (metric inputs, never features).
+        smiles_cols: The SMILES columns of the task, encoded in ``df`` unless loaded with ``encode_smiles=False``.
     """
 
     df: pd.DataFrame
@@ -52,6 +58,7 @@ class ProbeInput:
     time_on: str | None
     origin: str
     scoring_cols: tuple[str, ...] = ()
+    smiles_cols: tuple[str, ...] = ()
 
     @property
     def group_cols(self) -> list[str]:
@@ -88,11 +95,30 @@ def _without_scoring_columns(df: pd.DataFrame, task: Any) -> tuple[pd.DataFrame,
     return (df.drop(columns=list(drop)) if drop else df), drop
 
 
-def from_definition(ds: AbstractCuratedDataset) -> ProbeInput:
+def _with_encoded_smiles(df: pd.DataFrame, task: Any, *, encode: bool) -> tuple[pd.DataFrame, tuple[str, ...]]:
+    """``df`` with each SMILES column replaced by its recommended encoding (in place of the column), and their names."""
+    smiles = tuple(
+        c.column
+        for c in getattr(task, "semantic_columns", None) or ()
+        if c.semantic_type == "smiles" and c.column in df.columns
+    )
+    if not encode or not smiles:
+        return df, smiles
+    import pandas as pd  # noqa: PLC0415
+    from data_foundry.v2.chemistry import encode_smiles  # noqa: PLC0415 - RDKit only for datasets with SMILES
+
+    parts = []
+    for column in df.columns:
+        parts.append(encode_smiles(df[column], prefix=f"{column}__") if column in smiles else df[[column]])
+    return pd.concat(parts, axis=1), smiles
+
+
+def from_definition(ds: AbstractCuratedDataset, *, encode_smiles: bool = True) -> ProbeInput:
     """The definition's frame and split plan, rebuilt from the raw files (no container)."""
     plan = ds.make_splits()
     task = ds.task_metadata
     df, scoring = _without_scoring_columns(plan.df, task)
+    df, smiles = _with_encoded_smiles(df, task, encode=encode_smiles)
     return ProbeInput(
         df=df,
         target=task.target_column_name,
@@ -103,13 +129,15 @@ def from_definition(ds: AbstractCuratedDataset) -> ProbeInput:
         time_on=task.time_on,
         origin="definition",
         scoring_cols=scoring,
+        smiles_cols=smiles,
     )
 
 
-def from_container(container: CuratedContainer, origin: str) -> ProbeInput:
+def from_container(container: CuratedContainer, origin: str, *, encode_smiles: bool = True) -> ProbeInput:
     """A container's frame, task and shipped splits."""
     task = container.task_metadata
     df, scoring = _without_scoring_columns(container.dataset, task)
+    df, smiles = _with_encoded_smiles(df, task, encode=encode_smiles)
     return ProbeInput(
         df=df,
         target=task.target_column_name,
@@ -120,15 +148,17 @@ def from_container(container: CuratedContainer, origin: str) -> ProbeInput:
         time_on=task.time_on,
         origin=origin,
         scoring_cols=scoring,
+        smiles_cols=smiles,
     )
 
 
-def load(name: str, root: Path | str, *, built: bool) -> ProbeInput:
+def load(name: str, root: Path | str, *, built: bool, encode_smiles: bool = True) -> ProbeInput:
     """The container of ``name``: with ``built``, the one recorded in its ``README.md``'s build record (when there is
     one), else rebuilt from the definition.
     """
     if built:
         build = (read_report(Path(root) / name / "README.md") or {}).get("build") or {}
         if build.get("path"):
-            return from_container(CuratedContainer.load(resolve_warehouse_dir() / build["path"]), "built")
-    return from_container(definition(name, root).to_container(), "rebuilt")
+            container = CuratedContainer.load(resolve_warehouse_dir() / build["path"])
+            return from_container(container, "built", encode_smiles=encode_smiles)
+    return from_container(definition(name, root).to_container(), "rebuilt", encode_smiles=encode_smiles)

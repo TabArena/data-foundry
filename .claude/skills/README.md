@@ -136,6 +136,8 @@ run `data-foundry-curation claims claim <names>`. The details:
   case, honest evaluation, faithful data, worth benchmarking, the expert state), rule strengths (Must, Should, Weigh),
   the tensions between rules and how they are settled, exceptions and amendments.
   [evidence.md](knowledge-curation/references/evidence.md) says what counts as evidence and what a probe flag can mean.
+  [molecules.md](knowledge-curation/references/molecules.md) is the guide to molecule datasets (SMILES, salts, scaffold
+  splits, structures recovered from a release).
 * [knowledge-data-foundry](knowledge-data-foundry/SKILL.md): how this repository does it (records, the dashboard,
   `dataset.py`, the working copy, builds) and the house rules.
 * The dashboard's Guidelines page renders both.

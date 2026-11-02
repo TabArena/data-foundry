@@ -4,7 +4,14 @@ from __future__ import annotations
 
 import pandas as pd
 import pytest
-from data_foundry.v2 import DatasetDefinitionError, chemistry, murcko_scaffolds, rdkit_descriptors, scaffold_groups
+from data_foundry.v2 import (
+    DatasetDefinitionError,
+    Encoding,
+    chemistry,
+    murcko_scaffolds,
+    rdkit_descriptors,
+    scaffold_groups,
+)
 
 pytest.importorskip("rdkit")
 
@@ -90,3 +97,69 @@ def test_scaffold_groups_keep_a_scaffold_below_the_share_together() -> None:
     out = scaffold_groups(smiles, max_share=0.6)
 
     assert out.iloc[0] == out.iloc[1] == out.iloc[2] == "c1ccccc1"
+
+
+def test_encode_smiles_gives_every_descriptor_the_maccs_keys_and_the_ecfp4_counts_per_molecule() -> None:
+    """The recommended encoding: the same columns for any molecules, one row per value, each distinct SMILES once."""
+    smiles = pd.Series(["CCO", "c1ccccc1", "CCO"], index=[7, 8, 9])
+    out = chemistry.encode_smiles(smiles)
+
+    assert list(out.index) == [7, 8, 9]
+    maccs = [c for c in out.columns if c.startswith("maccs_")]
+    descriptors = [c for c in out.columns if c.startswith("rdkit_")]
+    assert maccs == [f"maccs_{i}" for i in range(1, 167)]
+    ecfp4 = [c for c in out.columns if c.startswith("ecfp4_")]
+    assert ecfp4 == [f"ecfp4_{i}" for i in range(1024)]
+    assert len(descriptors) + len(maccs) + len(ecfp4) == out.shape[1]
+    assert (out[ecfp4].dtypes == "int16").all()
+    assert out.loc[7, ecfp4].sum() > 0
+    assert "rdkit_Ipc_log10" in descriptors
+    assert "rdkit_Ipc" not in descriptors
+    assert (out[maccs].dtypes == "int8").all()
+    assert (out[descriptors].dtypes == "float64").all()
+    pd.testing.assert_series_equal(out.loc[7], out.loc[9], check_names=False)
+    # no column is dropped for being constant: two molecules give the same columns as many
+    assert list(chemistry.encode_smiles(pd.Series(["CCO"])).columns) == list(out.columns)
+
+
+def test_encode_smiles_prefix_and_missing_values() -> None:
+    """A prefix names the columns; a missing SMILES gives a row of missing values (nullable MACCS keys)."""
+    out = chemistry.encode_smiles(pd.Series(["CCO", None], dtype="string"), prefix="SMILES__")
+
+    assert out.columns[0].startswith("SMILES__rdkit_")
+    assert out.iloc[1].isna().all()
+    assert out["SMILES__maccs_1"].dtype == "Int8"
+    assert out["SMILES__ecfp4_0"].dtype == "Int16"
+
+
+def test_the_default_encoding_names_rdkit_and_its_revision() -> None:
+    """The spec id keys a cache: the encoding's name, the pinned RDKit release and the revision."""
+    encoding = chemistry.DEFAULT_SMILES_ENCODING
+
+    assert encoding.id == f"rdkit2d-maccs-ecfp4-rdkit{chemistry.RDKIT_VERSION}-r1"
+    with pytest.raises(ValueError, match="Unknown SMILES encoding"):
+        chemistry.encode_smiles(pd.Series(["CCO"]), Encoding(kind="smiles", name="other", revision=1, description=""))
+
+
+def test_canonical_smiles_keeps_fragments_and_stereochemistry_unless_asked() -> None:
+    """Every fragment and the stereo marks stay by default; equal molecules get one string; missing stays missing."""
+    smiles = pd.Series(["N[C@@H](C)C(=O)O.Cl", "C[C@H](N)C(=O)O", "OCC", None], index=[3, 4, 5, 6], name="SMILES")
+    out = chemistry.canonical_smiles(smiles)
+
+    assert out.dtype == "string"
+    assert out.name == "SMILES"
+    assert list(out.index) == [3, 4, 5, 6]
+    assert "Cl" in out[3]
+    assert "@" in out[4]
+    assert out[5] == "CCO"
+    assert pd.isna(out[6])
+    stripped = chemistry.canonical_smiles(smiles, largest_fragment=True)
+    assert stripped[3] == stripped[4] == out[4]
+    flat = chemistry.canonical_smiles(pd.Series(["C[C@H](N)C(=O)O", "C[C@@H](N)C(=O)O"]), stereo=False)
+    assert flat[0] == flat[1]
+    assert "@" not in flat[0]
+
+
+def test_invalid_smiles_lists_the_values_rdkit_cannot_parse() -> None:
+    """Each unparseable value once; missing values are not checked."""
+    assert chemistry.invalid_smiles(pd.Series(["CCO", "C1CC", None, "C1CC"])) == ["C1CC"]

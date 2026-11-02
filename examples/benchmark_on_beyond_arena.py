@@ -30,7 +30,10 @@ The two container formats score differently:
   reference) and the scoring columns, the metric's inputs that are never features. The features are
   ``feature_columns(container)`` (no target, group or scoring column), and ``scorer(container)`` scores the test
   rows by the spec, taking the scoring columns' values by row index. The model is a histogram gradient boosting
-  model, which takes numeric and categorical columns; other columns (strings, datetimes) are left out here.
+  model, which takes numeric and categorical columns; other columns (strings, datetimes) are left out here. A SMILES
+  column (``semantic_columns(container, "smiles")``) is a molecule's structure: it enters in the recommended encoding
+  (``data_foundry.v2.chemistry.encode_smiles``, RDKit's 2D descriptors, the MACCS keys and the ECFP4 counts; RDKit is in the ``build``
+  extra), never as text.
 
 Requires ``scikit-learn>=1.4`` (for :func:`sklearn.metrics.root_mean_squared_error`).
 """
@@ -43,7 +46,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from data_foundry.collections import BEYOND_ARENA
-from data_foundry.curation_container import CuratedContainer, feature_columns
+from data_foundry.curation_container import CuratedContainer, feature_columns, semantic_columns
 from data_foundry.schema import as_column_list
 from data_foundry.v2.metrics import scorer
 from sklearn.ensemble import HistGradientBoostingClassifier, HistGradientBoostingRegressor, RandomForestRegressor
@@ -73,7 +76,15 @@ def benchmark_by_spec(container: CuratedContainer) -> list[float]:
     task = container.task_metadata
     spec = task.objective_metric
     target_name = task.target_column_name
-    features = [c for c in feature_columns(container) if _usable(df[c])]
+    smiles = semantic_columns(container, "smiles")
+    features = [c for c in feature_columns(container) if c not in smiles]
+    if smiles:  # a molecule's structure: the recommended encoding, never text
+        from data_foundry.v2.chemistry import encode_smiles  # noqa: PLC0415 - RDKit only for SMILES datasets
+
+        encoded = [encode_smiles(df[c], prefix=f"{c}__") for c in smiles]
+        df = pd.concat([df, *encoded], axis=1)
+        features += [c for frame in encoded for c in frame.columns]
+    features = [c for c in features if _usable(df[c])]
     score = scorer(container)  # score(y_true, y_pred, row_index): looks up the scoring columns by row index
     labels = list(df[target_name].cat.categories) if task.problem_type != "regression" else None
     print(f"Metric: {spec.name} ({spec.origin}; takes {spec.prediction}; ", end="")

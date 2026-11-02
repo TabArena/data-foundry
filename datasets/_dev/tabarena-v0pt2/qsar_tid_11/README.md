@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_tid_11
 container_format: 2
-checksum: v2:15f43a316d7bdeb2bdcf6b1d2ff122686da40c0637281f3af8ad56fff79c6a47
+checksum: v2:bb1320cafcb43ffac6e73e98932ac703bef8dba234d5bc67f4b5c1e339cf358c
 build:
   uuid: 01a111fc-77d3-7128-8497-210288cab270
   checksum: v2:6aced922d7a0d199fe8637391bf863bc500c5c50733d7ca006d3a0643874bde3
@@ -20,10 +20,10 @@ build:
 build_stale: true
 data:
   n_rows: 5704
-  n_features: 1024
+  n_features: 1
   dtypes:
-    category: 1024
     float64: 1
+    string: 2
   n_test_dataset_rows: null
 task:
   target: MEDIAN_PXC50
@@ -31,13 +31,22 @@ task:
   metric: rmse
   metric_origin: source
   scoring_columns: null
-  split_regime: iid
+  split_regime: grouped_non_iid
   stratify_on: null
   time_on: null
-  group_on: null
-  group_labels: null
+  group_on: scaffold
+  group_labels: per_sample
   group_time_on: null
-  grouping: null
+  grouping:
+    prediction_unit: row
+    aggregation: null
+    context: none
+    n_groups: 2529
+    test_groups_per_fold:
+      min: 843
+      max: 843
+  semantic_columns:
+    SMILES: smiles
 splits:
   n_repeats: 3
   n_folds: 3
@@ -47,17 +56,15 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 3802
-    max: 3803
+    min: 3654
+    max: 3909
   n_test:
-    min: 1901
-    max: 1902
+    min: 1795
+    max: 2050
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - dataset_duplicate_rows
-  - dataset_conflicting_duplicate_rows
+  warnings: []
   infos: []
   accepted: {}
 decisions: []
@@ -67,9 +74,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `MEDIAN_PXC50`, scored with `rmse` on IID splits. 5,704 rows and 1,024 features. Source: OpenML (2015).
+Regression of `MEDIAN_PXC50`, scored with `rmse` on grouped splits by `scaffold`. 5,704 rows and 1 features. Source: OpenML (2015).
 
-Built as `01a111fc-77d3-7128-8497-210288cab270` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:15f43a316d7bdeb2bdcf6b1d2ff122686da40c0637281f3af8ad56fff79c6a47`, so the build is stale. See [Build](#build).
+Built as `01a111fc-77d3-7128-8497-210288cab270` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:bb1320cafcb43ffac6e73e98932ac703bef8dba234d5bc67f4b5c1e339cf358c`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -81,13 +88,13 @@ Built as `01a111fc-77d3-7128-8497-210288cab270` on 2026-10-06, but `dataset.py` 
 
 **Predicted.** The compound's median measured potency, as the negative log of the concentration that gives half the effect; higher means more potent.
 
-**Known at prediction time.** A 1,024-bit fingerprint of the molecule's structure (which circular substructures it contains).
+**Known at prediction time.** The compound's chemical structure, as a SMILES string.
 
-**What the test data stands for.** Random compounds, so close relatives of a test compound can be in training. The file is roughly in ChEMBL ID order, with the mean activity drifting along it; the shuffle removes this order.
+**What the test data stands for.** Whole chemical series (compounds sharing a ring skeleton) are held out, so the test data stands for compounds of series not measured yet.
 
-**Our changes to the source.** We drop one row with a negative activity value, judged a data error, and 37 rows that are salt forms of a compound already in the data.
+**Our changes to the source.** We drop one row with a negative activity value, judged a data error, and 37 rows that are salt forms of a compound already in the data, replace the authors' fingerprint with the compound's structure from ChEMBL 17, and split by chemical series instead of at random.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The fingerprint comes from the structure alone, which is all a chemist has before synthesis, and held-out compounds stand for unmeasured ones. The activities are medians over measurements of many sources.
+> **Use case fit: direct (the rows, features and split mirror the use case).** The structure is all a chemist has before synthesis, and held-out series stand for new ones. The activities are medians over measurements of many sources.
 
 ## Files in this folder
 
@@ -108,7 +115,13 @@ Built as `01a111fc-77d3-7128-8497-210288cab270` on 2026-10-06, but `dataset.py` 
 We download the dataset from OpenML to a predefined folder.
 
 mkdir -p local-data-warehouse/qsar_tid_11/ && wget -P local-data-warehouse/qsar_tid_11/ https://www.openml.org/data/download/1674848/11.arff
+
+The compounds' structures, for the SMILES column and the scaffold groups of the split, come from ChEMBL 17's structure table (133,574,872 bytes, sha256 484009d05a2b1a4af714b18f76f329b69fcce806044ebcca7695efa30d58b44e); the definition cuts out this file's compounds once (chembl_17_structures_tid11.csv).
+
+wget -P local-data-warehouse/qsar_tid_11/ https://ftp.ebi.ac.uk/pub/databases/chembl/ChEMBLdb/releases/chembl_17/chembl_17_chemreps.txt.gz
 ```
+
+On first use, `_prepare_raw_files` writes `chembl_17_structures_tid11.csv` into the same folder.
 
 Then, from the repository root:
 
@@ -127,13 +140,15 @@ Only curators run `build`, when the dataset ships.
 | year | 2015 |
 | domain | chemistry & material science |
 | license | Public Domain |
-| data_tags | IID |
+| data_tags | Non-IID, Grouped |
 | reference | olier2018meta |
-| rows x columns | 5,704 x 1,025 |
+| rows x columns | 5,704 x 3 |
 | task.target | MEDIAN_PXC50 |
 | task.problem_type | regression |
 | task.metric | rmse |
-| task.split_regime | iid |
+| task.split_regime | grouped_non_iid |
+| task.group_on | scaffold |
+| task.group_labels | per_sample |
 
 **Metric**
 
@@ -146,10 +161,11 @@ Only curators run `build`, when the dataset ships.
 | definition | RMSE of MEDIAN_PXC50 (pXC50, already a -log10 scale). |
 
 <details>
-<summary>Feature types: 1024 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 0 categorical, 0 string, 1 smiles, 0 datetime</summary>
 
-- categorical (1024): `FCFP6_1024_0`, `FCFP6_1024_1`, `FCFP6_1024_2`, `FCFP6_1024_3`, `FCFP6_1024_4`, `FCFP6_1024_5`, `FCFP6_1024_6`, `FCFP6_1024_7`, `FCFP6_1024_8`, `FCFP6_1024_9`, `FCFP6_1024_10`, `FCFP6_1024_11`, `FCFP6_1024_12`, `FCFP6_1024_13`, `FCFP6_1024_14`, `FCFP6_1024_15`, `FCFP6_1024_16`, `FCFP6_1024_17`, `FCFP6_1024_18`, `FCFP6_1024_19`, `FCFP6_1024_20`, `FCFP6_1024_21`, `FCFP6_1024_22`, `FCFP6_1024_23`, `FCFP6_1024_24`, `FCFP6_1024_25`, `FCFP6_1024_26`, `FCFP6_1024_27`, `FCFP6_1024_28`, `FCFP6_1024_29`, `FCFP6_1024_30`, `FCFP6_1024_31`, `FCFP6_1024_32`, `FCFP6_1024_33`, `FCFP6_1024_34`, `FCFP6_1024_35`, `FCFP6_1024_36`, `FCFP6_1024_37`, `FCFP6_1024_38`, `FCFP6_1024_39`, `FCFP6_1024_40`, `FCFP6_1024_41`, `FCFP6_1024_42`, `FCFP6_1024_43`, `FCFP6_1024_44`, `FCFP6_1024_45`, `FCFP6_1024_46`, `FCFP6_1024_47`, `FCFP6_1024_48`, `FCFP6_1024_49`, `FCFP6_1024_50`, `FCFP6_1024_51`, `FCFP6_1024_52`, `FCFP6_1024_53`, `FCFP6_1024_54`, `FCFP6_1024_55`, `FCFP6_1024_56`, `FCFP6_1024_57`, `FCFP6_1024_58`, `FCFP6_1024_59`, `FCFP6_1024_60`, `FCFP6_1024_61`, `FCFP6_1024_62`, `FCFP6_1024_63`, `FCFP6_1024_64`, `FCFP6_1024_65`, `FCFP6_1024_66`, `FCFP6_1024_67`, `FCFP6_1024_68`, `FCFP6_1024_69`, `FCFP6_1024_70`, `FCFP6_1024_71`, `FCFP6_1024_72`, `FCFP6_1024_73`, `FCFP6_1024_74`, `FCFP6_1024_75`, `FCFP6_1024_76`, `FCFP6_1024_77`, `FCFP6_1024_78`, `FCFP6_1024_79`, `FCFP6_1024_80`, `FCFP6_1024_81`, `FCFP6_1024_82`, `FCFP6_1024_83`, `FCFP6_1024_84`, `FCFP6_1024_85`, `FCFP6_1024_86`, `FCFP6_1024_87`, `FCFP6_1024_88`, `FCFP6_1024_89`, `FCFP6_1024_90`, `FCFP6_1024_91`, `FCFP6_1024_92`, `FCFP6_1024_93`, `FCFP6_1024_94`, `FCFP6_1024_95`, `FCFP6_1024_96`, `FCFP6_1024_97`, `FCFP6_1024_98`, `FCFP6_1024_99`, `FCFP6_1024_100`, `FCFP6_1024_101`, `FCFP6_1024_102`, `FCFP6_1024_103`, `FCFP6_1024_104`, `FCFP6_1024_105`, `FCFP6_1024_106`, `FCFP6_1024_107`, `FCFP6_1024_108`, `FCFP6_1024_109`, `FCFP6_1024_110`, `FCFP6_1024_111`, `FCFP6_1024_112`, `FCFP6_1024_113`, `FCFP6_1024_114`, `FCFP6_1024_115`, `FCFP6_1024_116`, `FCFP6_1024_117`, `FCFP6_1024_118`, `FCFP6_1024_119`, `FCFP6_1024_120`, `FCFP6_1024_121`, `FCFP6_1024_122`, `FCFP6_1024_123`, `FCFP6_1024_124`, `FCFP6_1024_125`, `FCFP6_1024_126`, `FCFP6_1024_127`, `FCFP6_1024_128`, `FCFP6_1024_129`, `FCFP6_1024_130`, `FCFP6_1024_131`, `FCFP6_1024_132`, `FCFP6_1024_133`, `FCFP6_1024_134`, `FCFP6_1024_135`, `FCFP6_1024_136`, `FCFP6_1024_137`, `FCFP6_1024_138`, `FCFP6_1024_139`, `FCFP6_1024_140`, `FCFP6_1024_141`, `FCFP6_1024_142`, `FCFP6_1024_143`, `FCFP6_1024_144`, `FCFP6_1024_145`, `FCFP6_1024_146`, `FCFP6_1024_147`, `FCFP6_1024_148`, `FCFP6_1024_149`, `FCFP6_1024_150`, `FCFP6_1024_151`, `FCFP6_1024_152`, `FCFP6_1024_153`, `FCFP6_1024_154`, `FCFP6_1024_155`, `FCFP6_1024_156`, `FCFP6_1024_157`, `FCFP6_1024_158`, `FCFP6_1024_159`, `FCFP6_1024_160`, `FCFP6_1024_161`, `FCFP6_1024_162`, `FCFP6_1024_163`, `FCFP6_1024_164`, `FCFP6_1024_165`, `FCFP6_1024_166`, `FCFP6_1024_167`, `FCFP6_1024_168`, `FCFP6_1024_169`, `FCFP6_1024_170`, `FCFP6_1024_171`, `FCFP6_1024_172`, `FCFP6_1024_173`, `FCFP6_1024_174`, `FCFP6_1024_175`, `FCFP6_1024_176`, `FCFP6_1024_177`, `FCFP6_1024_178`, `FCFP6_1024_179`, `FCFP6_1024_180`, `FCFP6_1024_181`, `FCFP6_1024_182`, `FCFP6_1024_183`, `FCFP6_1024_184`, `FCFP6_1024_185`, `FCFP6_1024_186`, `FCFP6_1024_187`, `FCFP6_1024_188`, `FCFP6_1024_189`, `FCFP6_1024_190`, `FCFP6_1024_191`, `FCFP6_1024_192`, `FCFP6_1024_193`, `FCFP6_1024_194`, `FCFP6_1024_195`, `FCFP6_1024_196`, `FCFP6_1024_197`, `FCFP6_1024_198`, `FCFP6_1024_199`, `FCFP6_1024_200`, `FCFP6_1024_201`, `FCFP6_1024_202`, `FCFP6_1024_203`, `FCFP6_1024_204`, `FCFP6_1024_205`, `FCFP6_1024_206`, `FCFP6_1024_207`, `FCFP6_1024_208`, `FCFP6_1024_209`, `FCFP6_1024_210`, `FCFP6_1024_211`, `FCFP6_1024_212`, `FCFP6_1024_213`, `FCFP6_1024_214`, `FCFP6_1024_215`, `FCFP6_1024_216`, `FCFP6_1024_217`, `FCFP6_1024_218`, `FCFP6_1024_219`, `FCFP6_1024_220`, `FCFP6_1024_221`, `FCFP6_1024_222`, `FCFP6_1024_223`, `FCFP6_1024_224`, `FCFP6_1024_225`, `FCFP6_1024_226`, `FCFP6_1024_227`, `FCFP6_1024_228`, `FCFP6_1024_229`, `FCFP6_1024_230`, `FCFP6_1024_231`, `FCFP6_1024_232`, `FCFP6_1024_233`, `FCFP6_1024_234`, `FCFP6_1024_235`, `FCFP6_1024_236`, `FCFP6_1024_237`, `FCFP6_1024_238`, `FCFP6_1024_239`, `FCFP6_1024_240`, `FCFP6_1024_241`, `FCFP6_1024_242`, `FCFP6_1024_243`, `FCFP6_1024_244`, `FCFP6_1024_245`, `FCFP6_1024_246`, `FCFP6_1024_247`, `FCFP6_1024_248`, `FCFP6_1024_249`, `FCFP6_1024_250`, `FCFP6_1024_251`, `FCFP6_1024_252`, `FCFP6_1024_253`, `FCFP6_1024_254`, `FCFP6_1024_255`, `FCFP6_1024_256`, `FCFP6_1024_257`, `FCFP6_1024_258`, `FCFP6_1024_259`, `FCFP6_1024_260`, `FCFP6_1024_261`, `FCFP6_1024_262`, `FCFP6_1024_263`, `FCFP6_1024_264`, `FCFP6_1024_265`, `FCFP6_1024_266`, `FCFP6_1024_267`, `FCFP6_1024_268`, `FCFP6_1024_269`, `FCFP6_1024_270`, `FCFP6_1024_271`, `FCFP6_1024_272`, `FCFP6_1024_273`, `FCFP6_1024_274`, `FCFP6_1024_275`, `FCFP6_1024_276`, `FCFP6_1024_277`, `FCFP6_1024_278`, `FCFP6_1024_279`, `FCFP6_1024_280`, `FCFP6_1024_281`, `FCFP6_1024_282`, `FCFP6_1024_283`, `FCFP6_1024_284`, `FCFP6_1024_285`, `FCFP6_1024_286`, `FCFP6_1024_287`, `FCFP6_1024_288`, `FCFP6_1024_289`, `FCFP6_1024_290`, `FCFP6_1024_291`, `FCFP6_1024_292`, `FCFP6_1024_293`, `FCFP6_1024_294`, `FCFP6_1024_295`, `FCFP6_1024_296`, `FCFP6_1024_297`, `FCFP6_1024_298`, `FCFP6_1024_299`, `FCFP6_1024_300`, `FCFP6_1024_301`, `FCFP6_1024_302`, `FCFP6_1024_303`, `FCFP6_1024_304`, `FCFP6_1024_305`, `FCFP6_1024_306`, `FCFP6_1024_307`, `FCFP6_1024_308`, `FCFP6_1024_309`, `FCFP6_1024_310`, `FCFP6_1024_311`, `FCFP6_1024_312`, `FCFP6_1024_313`, `FCFP6_1024_314`, `FCFP6_1024_315`, `FCFP6_1024_316`, `FCFP6_1024_317`, `FCFP6_1024_318`, `FCFP6_1024_319`, `FCFP6_1024_320`, `FCFP6_1024_321`, `FCFP6_1024_322`, `FCFP6_1024_323`, `FCFP6_1024_324`, `FCFP6_1024_325`, `FCFP6_1024_326`, `FCFP6_1024_327`, `FCFP6_1024_328`, `FCFP6_1024_329`, `FCFP6_1024_330`, `FCFP6_1024_331`, `FCFP6_1024_332`, `FCFP6_1024_333`, `FCFP6_1024_334`, `FCFP6_1024_335`, `FCFP6_1024_336`, `FCFP6_1024_337`, `FCFP6_1024_338`, `FCFP6_1024_339`, `FCFP6_1024_340`, `FCFP6_1024_341`, `FCFP6_1024_342`, `FCFP6_1024_343`, `FCFP6_1024_344`, `FCFP6_1024_345`, `FCFP6_1024_346`, `FCFP6_1024_347`, `FCFP6_1024_348`, `FCFP6_1024_349`, `FCFP6_1024_350`, `FCFP6_1024_351`, `FCFP6_1024_352`, `FCFP6_1024_353`, `FCFP6_1024_354`, `FCFP6_1024_355`, `FCFP6_1024_356`, `FCFP6_1024_357`, `FCFP6_1024_358`, `FCFP6_1024_359`, `FCFP6_1024_360`, `FCFP6_1024_361`, `FCFP6_1024_362`, `FCFP6_1024_363`, `FCFP6_1024_364`, `FCFP6_1024_365`, `FCFP6_1024_366`, `FCFP6_1024_367`, `FCFP6_1024_368`, `FCFP6_1024_369`, `FCFP6_1024_370`, `FCFP6_1024_371`, `FCFP6_1024_372`, `FCFP6_1024_373`, `FCFP6_1024_374`, `FCFP6_1024_375`, `FCFP6_1024_376`, `FCFP6_1024_377`, `FCFP6_1024_378`, `FCFP6_1024_379`, `FCFP6_1024_380`, `FCFP6_1024_381`, `FCFP6_1024_382`, `FCFP6_1024_383`, `FCFP6_1024_384`, `FCFP6_1024_385`, `FCFP6_1024_386`, `FCFP6_1024_387`, `FCFP6_1024_388`, `FCFP6_1024_389`, `FCFP6_1024_390`, `FCFP6_1024_391`, `FCFP6_1024_392`, `FCFP6_1024_393`, `FCFP6_1024_394`, `FCFP6_1024_395`, `FCFP6_1024_396`, `FCFP6_1024_397`, `FCFP6_1024_398`, `FCFP6_1024_399`, `FCFP6_1024_400`, `FCFP6_1024_401`, `FCFP6_1024_402`, `FCFP6_1024_403`, `FCFP6_1024_404`, `FCFP6_1024_405`, `FCFP6_1024_406`, `FCFP6_1024_407`, `FCFP6_1024_408`, `FCFP6_1024_409`, `FCFP6_1024_410`, `FCFP6_1024_411`, `FCFP6_1024_412`, `FCFP6_1024_413`, `FCFP6_1024_414`, `FCFP6_1024_415`, `FCFP6_1024_416`, `FCFP6_1024_417`, `FCFP6_1024_418`, `FCFP6_1024_419`, `FCFP6_1024_420`, `FCFP6_1024_421`, `FCFP6_1024_422`, `FCFP6_1024_423`, `FCFP6_1024_424`, `FCFP6_1024_425`, `FCFP6_1024_426`, `FCFP6_1024_427`, `FCFP6_1024_428`, `FCFP6_1024_429`, `FCFP6_1024_430`, `FCFP6_1024_431`, `FCFP6_1024_432`, `FCFP6_1024_433`, `FCFP6_1024_434`, `FCFP6_1024_435`, `FCFP6_1024_436`, `FCFP6_1024_437`, `FCFP6_1024_438`, `FCFP6_1024_439`, `FCFP6_1024_440`, `FCFP6_1024_441`, `FCFP6_1024_442`, `FCFP6_1024_443`, `FCFP6_1024_444`, `FCFP6_1024_445`, `FCFP6_1024_446`, `FCFP6_1024_447`, `FCFP6_1024_448`, `FCFP6_1024_449`, `FCFP6_1024_450`, `FCFP6_1024_451`, `FCFP6_1024_452`, `FCFP6_1024_453`, `FCFP6_1024_454`, `FCFP6_1024_455`, `FCFP6_1024_456`, `FCFP6_1024_457`, `FCFP6_1024_458`, `FCFP6_1024_459`, `FCFP6_1024_460`, `FCFP6_1024_461`, `FCFP6_1024_462`, `FCFP6_1024_463`, `FCFP6_1024_464`, `FCFP6_1024_465`, `FCFP6_1024_466`, `FCFP6_1024_467`, `FCFP6_1024_468`, `FCFP6_1024_469`, `FCFP6_1024_470`, `FCFP6_1024_471`, `FCFP6_1024_472`, `FCFP6_1024_473`, `FCFP6_1024_474`, `FCFP6_1024_475`, `FCFP6_1024_476`, `FCFP6_1024_477`, `FCFP6_1024_478`, `FCFP6_1024_479`, `FCFP6_1024_480`, `FCFP6_1024_481`, `FCFP6_1024_482`, `FCFP6_1024_483`, `FCFP6_1024_484`, `FCFP6_1024_485`, `FCFP6_1024_486`, `FCFP6_1024_487`, `FCFP6_1024_488`, `FCFP6_1024_489`, `FCFP6_1024_490`, `FCFP6_1024_491`, `FCFP6_1024_492`, `FCFP6_1024_493`, `FCFP6_1024_494`, `FCFP6_1024_495`, `FCFP6_1024_496`, `FCFP6_1024_497`, `FCFP6_1024_498`, `FCFP6_1024_499`, `FCFP6_1024_500`, `FCFP6_1024_501`, `FCFP6_1024_502`, `FCFP6_1024_503`, `FCFP6_1024_504`, `FCFP6_1024_505`, `FCFP6_1024_506`, `FCFP6_1024_507`, `FCFP6_1024_508`, `FCFP6_1024_509`, `FCFP6_1024_510`, `FCFP6_1024_511`, `FCFP6_1024_512`, `FCFP6_1024_513`, `FCFP6_1024_514`, `FCFP6_1024_515`, `FCFP6_1024_516`, `FCFP6_1024_517`, `FCFP6_1024_518`, `FCFP6_1024_519`, `FCFP6_1024_520`, `FCFP6_1024_521`, `FCFP6_1024_522`, `FCFP6_1024_523`, `FCFP6_1024_524`, `FCFP6_1024_525`, `FCFP6_1024_526`, `FCFP6_1024_527`, `FCFP6_1024_528`, `FCFP6_1024_529`, `FCFP6_1024_530`, `FCFP6_1024_531`, `FCFP6_1024_532`, `FCFP6_1024_533`, `FCFP6_1024_534`, `FCFP6_1024_535`, `FCFP6_1024_536`, `FCFP6_1024_537`, `FCFP6_1024_538`, `FCFP6_1024_539`, `FCFP6_1024_540`, `FCFP6_1024_541`, `FCFP6_1024_542`, `FCFP6_1024_543`, `FCFP6_1024_544`, `FCFP6_1024_545`, `FCFP6_1024_546`, `FCFP6_1024_547`, `FCFP6_1024_548`, `FCFP6_1024_549`, `FCFP6_1024_550`, `FCFP6_1024_551`, `FCFP6_1024_552`, `FCFP6_1024_553`, `FCFP6_1024_554`, `FCFP6_1024_555`, `FCFP6_1024_556`, `FCFP6_1024_557`, `FCFP6_1024_558`, `FCFP6_1024_559`, `FCFP6_1024_560`, `FCFP6_1024_561`, `FCFP6_1024_562`, `FCFP6_1024_563`, `FCFP6_1024_564`, `FCFP6_1024_565`, `FCFP6_1024_566`, `FCFP6_1024_567`, `FCFP6_1024_568`, `FCFP6_1024_569`, `FCFP6_1024_570`, `FCFP6_1024_571`, `FCFP6_1024_572`, `FCFP6_1024_573`, `FCFP6_1024_574`, `FCFP6_1024_575`, `FCFP6_1024_576`, `FCFP6_1024_577`, `FCFP6_1024_578`, `FCFP6_1024_579`, `FCFP6_1024_580`, `FCFP6_1024_581`, `FCFP6_1024_582`, `FCFP6_1024_583`, `FCFP6_1024_584`, `FCFP6_1024_585`, `FCFP6_1024_586`, `FCFP6_1024_587`, `FCFP6_1024_588`, `FCFP6_1024_589`, `FCFP6_1024_590`, `FCFP6_1024_591`, `FCFP6_1024_592`, `FCFP6_1024_593`, `FCFP6_1024_594`, `FCFP6_1024_595`, `FCFP6_1024_596`, `FCFP6_1024_597`, `FCFP6_1024_598`, `FCFP6_1024_599`, `FCFP6_1024_600`, `FCFP6_1024_601`, `FCFP6_1024_602`, `FCFP6_1024_603`, `FCFP6_1024_604`, `FCFP6_1024_605`, `FCFP6_1024_606`, `FCFP6_1024_607`, `FCFP6_1024_608`, `FCFP6_1024_609`, `FCFP6_1024_610`, `FCFP6_1024_611`, `FCFP6_1024_612`, `FCFP6_1024_613`, `FCFP6_1024_614`, `FCFP6_1024_615`, `FCFP6_1024_616`, `FCFP6_1024_617`, `FCFP6_1024_618`, `FCFP6_1024_619`, `FCFP6_1024_620`, `FCFP6_1024_621`, `FCFP6_1024_622`, `FCFP6_1024_623`, `FCFP6_1024_624`, `FCFP6_1024_625`, `FCFP6_1024_626`, `FCFP6_1024_627`, `FCFP6_1024_628`, `FCFP6_1024_629`, `FCFP6_1024_630`, `FCFP6_1024_631`, `FCFP6_1024_632`, `FCFP6_1024_633`, `FCFP6_1024_634`, `FCFP6_1024_635`, `FCFP6_1024_636`, `FCFP6_1024_637`, `FCFP6_1024_638`, `FCFP6_1024_639`, `FCFP6_1024_640`, `FCFP6_1024_641`, `FCFP6_1024_642`, `FCFP6_1024_643`, `FCFP6_1024_644`, `FCFP6_1024_645`, `FCFP6_1024_646`, `FCFP6_1024_647`, `FCFP6_1024_648`, `FCFP6_1024_649`, `FCFP6_1024_650`, `FCFP6_1024_651`, `FCFP6_1024_652`, `FCFP6_1024_653`, `FCFP6_1024_654`, `FCFP6_1024_655`, `FCFP6_1024_656`, `FCFP6_1024_657`, `FCFP6_1024_658`, `FCFP6_1024_659`, `FCFP6_1024_660`, `FCFP6_1024_661`, `FCFP6_1024_662`, `FCFP6_1024_663`, `FCFP6_1024_664`, `FCFP6_1024_665`, `FCFP6_1024_666`, `FCFP6_1024_667`, `FCFP6_1024_668`, `FCFP6_1024_669`, `FCFP6_1024_670`, `FCFP6_1024_671`, `FCFP6_1024_672`, `FCFP6_1024_673`, `FCFP6_1024_674`, `FCFP6_1024_675`, `FCFP6_1024_676`, `FCFP6_1024_677`, `FCFP6_1024_678`, `FCFP6_1024_679`, `FCFP6_1024_680`, `FCFP6_1024_681`, `FCFP6_1024_682`, `FCFP6_1024_683`, `FCFP6_1024_684`, `FCFP6_1024_685`, `FCFP6_1024_686`, `FCFP6_1024_687`, `FCFP6_1024_688`, `FCFP6_1024_689`, `FCFP6_1024_690`, `FCFP6_1024_691`, `FCFP6_1024_692`, `FCFP6_1024_693`, `FCFP6_1024_694`, `FCFP6_1024_695`, `FCFP6_1024_696`, `FCFP6_1024_697`, `FCFP6_1024_698`, `FCFP6_1024_699`, `FCFP6_1024_700`, `FCFP6_1024_701`, `FCFP6_1024_702`, `FCFP6_1024_703`, `FCFP6_1024_704`, `FCFP6_1024_705`, `FCFP6_1024_706`, `FCFP6_1024_707`, `FCFP6_1024_708`, `FCFP6_1024_709`, `FCFP6_1024_710`, `FCFP6_1024_711`, `FCFP6_1024_712`, `FCFP6_1024_713`, `FCFP6_1024_714`, `FCFP6_1024_715`, `FCFP6_1024_716`, `FCFP6_1024_717`, `FCFP6_1024_718`, `FCFP6_1024_719`, `FCFP6_1024_720`, `FCFP6_1024_721`, `FCFP6_1024_722`, `FCFP6_1024_723`, `FCFP6_1024_724`, `FCFP6_1024_725`, `FCFP6_1024_726`, `FCFP6_1024_727`, `FCFP6_1024_728`, `FCFP6_1024_729`, `FCFP6_1024_730`, `FCFP6_1024_731`, `FCFP6_1024_732`, `FCFP6_1024_733`, `FCFP6_1024_734`, `FCFP6_1024_735`, `FCFP6_1024_736`, `FCFP6_1024_737`, `FCFP6_1024_738`, `FCFP6_1024_739`, `FCFP6_1024_740`, `FCFP6_1024_741`, `FCFP6_1024_742`, `FCFP6_1024_743`, `FCFP6_1024_744`, `FCFP6_1024_745`, `FCFP6_1024_746`, `FCFP6_1024_747`, `FCFP6_1024_748`, `FCFP6_1024_749`, `FCFP6_1024_750`, `FCFP6_1024_751`, `FCFP6_1024_752`, `FCFP6_1024_753`, `FCFP6_1024_754`, `FCFP6_1024_755`, `FCFP6_1024_756`, `FCFP6_1024_757`, `FCFP6_1024_758`, `FCFP6_1024_759`, `FCFP6_1024_760`, `FCFP6_1024_761`, `FCFP6_1024_762`, `FCFP6_1024_763`, `FCFP6_1024_764`, `FCFP6_1024_765`, `FCFP6_1024_766`, `FCFP6_1024_767`, `FCFP6_1024_768`, `FCFP6_1024_769`, `FCFP6_1024_770`, `FCFP6_1024_771`, `FCFP6_1024_772`, `FCFP6_1024_773`, `FCFP6_1024_774`, `FCFP6_1024_775`, `FCFP6_1024_776`, `FCFP6_1024_777`, `FCFP6_1024_778`, `FCFP6_1024_779`, `FCFP6_1024_780`, `FCFP6_1024_781`, `FCFP6_1024_782`, `FCFP6_1024_783`, `FCFP6_1024_784`, `FCFP6_1024_785`, `FCFP6_1024_786`, `FCFP6_1024_787`, `FCFP6_1024_788`, `FCFP6_1024_789`, `FCFP6_1024_790`, `FCFP6_1024_791`, `FCFP6_1024_792`, `FCFP6_1024_793`, `FCFP6_1024_794`, `FCFP6_1024_795`, `FCFP6_1024_796`, `FCFP6_1024_797`, `FCFP6_1024_798`, `FCFP6_1024_799`, `FCFP6_1024_800`, `FCFP6_1024_801`, `FCFP6_1024_802`, `FCFP6_1024_803`, `FCFP6_1024_804`, `FCFP6_1024_805`, `FCFP6_1024_806`, `FCFP6_1024_807`, `FCFP6_1024_808`, `FCFP6_1024_809`, `FCFP6_1024_810`, `FCFP6_1024_811`, `FCFP6_1024_812`, `FCFP6_1024_813`, `FCFP6_1024_814`, `FCFP6_1024_815`, `FCFP6_1024_816`, `FCFP6_1024_817`, `FCFP6_1024_818`, `FCFP6_1024_819`, `FCFP6_1024_820`, `FCFP6_1024_821`, `FCFP6_1024_822`, `FCFP6_1024_823`, `FCFP6_1024_824`, `FCFP6_1024_825`, `FCFP6_1024_826`, `FCFP6_1024_827`, `FCFP6_1024_828`, `FCFP6_1024_829`, `FCFP6_1024_830`, `FCFP6_1024_831`, `FCFP6_1024_832`, `FCFP6_1024_833`, `FCFP6_1024_834`, `FCFP6_1024_835`, `FCFP6_1024_836`, `FCFP6_1024_837`, `FCFP6_1024_838`, `FCFP6_1024_839`, `FCFP6_1024_840`, `FCFP6_1024_841`, `FCFP6_1024_842`, `FCFP6_1024_843`, `FCFP6_1024_844`, `FCFP6_1024_845`, `FCFP6_1024_846`, `FCFP6_1024_847`, `FCFP6_1024_848`, `FCFP6_1024_849`, `FCFP6_1024_850`, `FCFP6_1024_851`, `FCFP6_1024_852`, `FCFP6_1024_853`, `FCFP6_1024_854`, `FCFP6_1024_855`, `FCFP6_1024_856`, `FCFP6_1024_857`, `FCFP6_1024_858`, `FCFP6_1024_859`, `FCFP6_1024_860`, `FCFP6_1024_861`, `FCFP6_1024_862`, `FCFP6_1024_863`, `FCFP6_1024_864`, `FCFP6_1024_865`, `FCFP6_1024_866`, `FCFP6_1024_867`, `FCFP6_1024_868`, `FCFP6_1024_869`, `FCFP6_1024_870`, `FCFP6_1024_871`, `FCFP6_1024_872`, `FCFP6_1024_873`, `FCFP6_1024_874`, `FCFP6_1024_875`, `FCFP6_1024_876`, `FCFP6_1024_877`, `FCFP6_1024_878`, `FCFP6_1024_879`, `FCFP6_1024_880`, `FCFP6_1024_881`, `FCFP6_1024_882`, `FCFP6_1024_883`, `FCFP6_1024_884`, `FCFP6_1024_885`, `FCFP6_1024_886`, `FCFP6_1024_887`, `FCFP6_1024_888`, `FCFP6_1024_889`, `FCFP6_1024_890`, `FCFP6_1024_891`, `FCFP6_1024_892`, `FCFP6_1024_893`, `FCFP6_1024_894`, `FCFP6_1024_895`, `FCFP6_1024_896`, `FCFP6_1024_897`, `FCFP6_1024_898`, `FCFP6_1024_899`, `FCFP6_1024_900`, `FCFP6_1024_901`, `FCFP6_1024_902`, `FCFP6_1024_903`, `FCFP6_1024_904`, `FCFP6_1024_905`, `FCFP6_1024_906`, `FCFP6_1024_907`, `FCFP6_1024_908`, `FCFP6_1024_909`, `FCFP6_1024_910`, `FCFP6_1024_911`, `FCFP6_1024_912`, `FCFP6_1024_913`, `FCFP6_1024_914`, `FCFP6_1024_915`, `FCFP6_1024_916`, `FCFP6_1024_917`, `FCFP6_1024_918`, `FCFP6_1024_919`, `FCFP6_1024_920`, `FCFP6_1024_921`, `FCFP6_1024_922`, `FCFP6_1024_923`, `FCFP6_1024_924`, `FCFP6_1024_925`, `FCFP6_1024_926`, `FCFP6_1024_927`, `FCFP6_1024_928`, `FCFP6_1024_929`, `FCFP6_1024_930`, `FCFP6_1024_931`, `FCFP6_1024_932`, `FCFP6_1024_933`, `FCFP6_1024_934`, `FCFP6_1024_935`, `FCFP6_1024_936`, `FCFP6_1024_937`, `FCFP6_1024_938`, `FCFP6_1024_939`, `FCFP6_1024_940`, `FCFP6_1024_941`, `FCFP6_1024_942`, `FCFP6_1024_943`, `FCFP6_1024_944`, `FCFP6_1024_945`, `FCFP6_1024_946`, `FCFP6_1024_947`, `FCFP6_1024_948`, `FCFP6_1024_949`, `FCFP6_1024_950`, `FCFP6_1024_951`, `FCFP6_1024_952`, `FCFP6_1024_953`, `FCFP6_1024_954`, `FCFP6_1024_955`, `FCFP6_1024_956`, `FCFP6_1024_957`, `FCFP6_1024_958`, `FCFP6_1024_959`, `FCFP6_1024_960`, `FCFP6_1024_961`, `FCFP6_1024_962`, `FCFP6_1024_963`, `FCFP6_1024_964`, `FCFP6_1024_965`, `FCFP6_1024_966`, `FCFP6_1024_967`, `FCFP6_1024_968`, `FCFP6_1024_969`, `FCFP6_1024_970`, `FCFP6_1024_971`, `FCFP6_1024_972`, `FCFP6_1024_973`, `FCFP6_1024_974`, `FCFP6_1024_975`, `FCFP6_1024_976`, `FCFP6_1024_977`, `FCFP6_1024_978`, `FCFP6_1024_979`, `FCFP6_1024_980`, `FCFP6_1024_981`, `FCFP6_1024_982`, `FCFP6_1024_983`, `FCFP6_1024_984`, `FCFP6_1024_985`, `FCFP6_1024_986`, `FCFP6_1024_987`, `FCFP6_1024_988`, `FCFP6_1024_989`, `FCFP6_1024_990`, `FCFP6_1024_991`, `FCFP6_1024_992`, `FCFP6_1024_993`, `FCFP6_1024_994`, `FCFP6_1024_995`, `FCFP6_1024_996`, `FCFP6_1024_997`, `FCFP6_1024_998`, `FCFP6_1024_999`, `FCFP6_1024_1000`, `FCFP6_1024_1001`, `FCFP6_1024_1002`, `FCFP6_1024_1003`, `FCFP6_1024_1004`, `FCFP6_1024_1005`, `FCFP6_1024_1006`, `FCFP6_1024_1007`, `FCFP6_1024_1008`, `FCFP6_1024_1009`, `FCFP6_1024_1010`, `FCFP6_1024_1011`, `FCFP6_1024_1012`, `FCFP6_1024_1013`, `FCFP6_1024_1014`, `FCFP6_1024_1015`, `FCFP6_1024_1016`, `FCFP6_1024_1017`, `FCFP6_1024_1018`, `FCFP6_1024_1019`, `FCFP6_1024_1020`, `FCFP6_1024_1021`, `FCFP6_1024_1022`, `FCFP6_1024_1023`
+- categorical (0): none
 - string (0): none
+- smiles (1): `SMILES`
 - datetime (0): none
 
 </details>
@@ -173,24 +189,51 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 5,704 rows of the final frame (random rows: the frame is shuffled); 12 of 1,025 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 5,704 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
 
-| MEDIAN_PXC50 | FCFP6_1024_0 | FCFP6_1024_1 | FCFP6_1024_2 | FCFP6_1024_3 | FCFP6_1024_4 | FCFP6_1024_5 | FCFP6_1024_6 | FCFP6_1024_7 | FCFP6_1024_8 | FCFP6_1024_9 | FCFP6_1024_10 |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| 9.553 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 |
-| 8.301 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 |
-| 5 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 5.699 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| 5.167 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 1 | 0 | 0 | 0 |
+| MEDIAN_PXC50 | SMILES | scaffold |
+|---|---|---|
+| 5.573 | N=C(N)c1ccc(Oc2ccc(Oc3ccc(C(=N)N)cc3)cc… | c1ccc(Oc2ccc(Oc3ccccc3)cc2)cc1 |
+| 8.921 | Cc1ccnc(CNC(=O)Cn2c(C)cnc(NCC(F)(F)c3cc… | O=C(Cn1ccnc(NCCc2ccccc2)c1=O)NCc1ccccn1 |
+| 8.208 | Cl.Cn1c(CNC(=O)\[C@@H\]2C=CCN2C(=O)\[C@@H\]… | O=C(NCc1ccc\[nH\]1)C1C=CCN1C(=O)CCC1CCCCC1 |
+| 8.886 | O=C1COc2ccc(Cl)cc2CNC(=O)\[C@@H\]2CCCN2C(… | O=C1COc2ccccc2CNC(=O)C2CCCN2C(=O)C(C2CC… |
+| 4 | N=C(N)NCCCC(C=O)NC(=O)CNC(=O)\[C@H\](CCCN… | c1ccc2ccccc2c1 |
 
 ## Curation notes
 
 - The target is ChEMBL target 11, human prothrombin (thrombin, CHEMBL204), named by OpenML's original data URL.
 - OpenML (uploaded 2015-10-06, creators the Meta-QSAR team) is the first publication; the Mendeley Data release
   (doi:10.17632/spwgrcnjdg.1) came in 2020 and computes the fingerprints with RDKit instead of Pipeline Pilot.
-- We drop the "MOLECULE_CHEMBL_ID" column.
+- We drop the "MOLECULE_CHEMBL_ID" column after it has served the join to the structures.
 - The file lists the compounds roughly in ChEMBL ID order, and the mean activity drifts along it (6.8 in the
   first tenth, 5.6 in the ninth); the standard shuffle removes this order.
+- Scaffold-grouped splits (Lennart, 2026-11-01; SPLIT-31 as amended), in place of random ones. The rows carry
+  ChEMBL compound ids, and ChEMBL 17, the release the data was drawn from, holds the structure of every one
+  (its InChIKey equals today's ChEMBL for all 5,505 ids still served). The groups are the Bemis-Murcko
+  scaffolds of those structures (`scaffold_groups`): 2,529 groups for 5,704 compounds, 21 compounds without a
+  ring alone, the largest group the bare benzene ring with 117 compounds (2%), 89 groups of 10 or more holding
+  1,751 compounds. Counter-ions carry no ring here: stripping the 549 salts to their largest fragment changes
+  no scaffold. A random split gave 79.7% of the test compounds a close training analog (Tanimoto >= 0.7,
+  Morgan radius 2, 2,048 bits; median nearest 0.81), the scaffold groups 59.2% (median 0.73), and untuned
+  LightGBM's RMSE rises from 0.794 to 0.920 (3 x 3 folds, 2026-11-01 run). On the definition's splits the
+  group probe gives LightGBM R^2 0.747 under IID and 0.657 grouped, and the task probes raise no flag
+  (LightGBM R^2 0.66, random forest 0.62, linear 0.48: the families still separate). Of the 356 fingerprint vectors
+  that repeat (802 rows; the repeated-fingerprint bullet below), 303 lie within one scaffold and now stay on
+  one side; 53 vectors (128 rows) span two or more scaffolds, analogs whose ring systems differ in a way the
+  fingerprint does not see.
+- The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01): ChEMBL 17's SMILES in RDKit's
+  canonical form (`canonical_smiles`; the 549 salts as ChEMBL records them), declared in `smiles_columns`, so a
+  benchmark encodes it as a structure and never as text; the recommended encoding is
+  `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts). The source's
+  1,024 FCFP6 bits leave (Lennart, 2026-11-01: "the real task here is going from smiles to a prediction, the
+  bits are just one possible modelling choice by the authors"). RDKit computes the same kind of fingerprint, but
+  not these columns: with its closest settings (radius 3, feature invariants, 1,024 bits) no source bit is
+  matched exactly by any RDKit bit, at any position. A benchmark computes its own encoding of the structure.
+  On the scaffold splits LightGBM's R^2 was 0.66 on the bits alone and 0.68 with the encoded structure added.
+- Stereoisomers stay (as the repeated-fingerprint decision below): 474 rows in 217 groups share one structure
+  once the stereo marks are set aside, each with its own measured potency (range within a group: median 0.45,
+  up to 4.48 pXC50). The SMILES keeps the stereo marks; the recommended 2D encoding does not tell them apart.
+  Each group shares a scaffold, so it stays on one side of the split. No two rows share a SMILES.
 - Only one row has a negative value (-6.24) and is thus extremely out-of-distribution, which is likely results from the target being log scaled in the original domain. We remove this row as it is unclear if this is a scaling or labeling error, but we judge it is in all cases a data artifact.
 - Why the row may leave (CLEAN-11, CLEAN-15): a pXC50 of -6.24 is a half-effect concentration of 10^6.24 mol/L, about 1.7 million mol/L, which no substance reaches (pure water is 55 mol/L). The value is impossible, so the target is missing and the row drops. It does not meet CLEAN-11's clause for an extreme target in the training period only: the split is random, and the source does not name the row.
 - We do not log scale the target (it could make sense for this distribution), as the original label is already log transformed.
@@ -206,107 +249,64 @@ The first 5 of 5,704 rows of the final frame (random rows: the frame is shuffled
   ChEMBL ids with one ChEMBL parent (molecule_hierarchy), the same fingerprint and nearly the same target
   (median sd 0.04 within a pair; 0.006 in the 31 pairs that make up a whole vector). The rule does not read
   the target: we keep the parent's own row (in the one pair without it, the lowest ChEMBL id). The ids are
-  embedded as SALT_FORM_COPIES, since the raw file has no structures.
-- The 1,024 fingerprint bits are 0/1 presence flags (OpenML stores them as floats): integers typed categorical, the house form for 0/1 presence flags (CLEAN-14; Lennart, 2026-10-21).
+  embedded as SALT_FORM_COPIES: the parent links come from ChEMBL's molecule_hierarchy, which neither the
+  raw file nor ChEMBL 17's structure table carries.
 
 ## Splits
 
-Default splits.
+Grouped splits on the Bemis-Murcko scaffold: all compounds of one series stay on one side, so a model predicts compounds of a series it has not seen; compounds without a ring are held out one by one. Compounds with similar but not identical scaffolds can be on both sides.
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 3,802 to 3,803 rows, test 1,901 to 1,902 rows.
+3 repeat(s) x 3 fold(s) with seed 4267; train 3,654 to 3,909 rows, test 1,795 to 2,050 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 3802 | 1902 |
-| 0 | 1 | 3803 | 1901 |
-| 0 | 2 | 3803 | 1901 |
-| 1 | 0 | 3802 | 1902 |
-| 1 | 1 | 3803 | 1901 |
-| 1 | 2 | 3803 | 1901 |
-| 2 | 0 | 3802 | 1902 |
-| 2 | 1 | 3803 | 1901 |
-| 2 | 2 | 3803 | 1901 |
+| 0 | 0 | 3784 | 1920 |
+| 0 | 1 | 3724 | 1980 |
+| 0 | 2 | 3900 | 1804 |
+| 1 | 0 | 3769 | 1935 |
+| 1 | 1 | 3909 | 1795 |
+| 1 | 2 | 3730 | 1974 |
+| 2 | 0 | 3852 | 1852 |
+| 2 | 1 | 3654 | 2050 |
+| 2 | 2 | 3902 | 1802 |
+
+## Group structure
+
+One group is a chemical series: the compounds that share one Bemis-Murcko scaffold (ring systems and the chains linking them; Bemis and Murcko 1996), computed with RDKit from the compound's ChEMBL 17 structure. A compound without a ring is a group of its own, and so would be each compound of a scaffold holding more than a tenth of the compounds (SPLIT-31; none here: the bare benzene ring holds 2%). A medicinal chemist screens candidates that often come from a series not yet measured on the target, so whole series are held out. Each row is one prediction, made from the compound's structure alone.
+
+| field | value |
+|---|---|
+| group column | `scaffold` |
+| labels | per_sample |
+| order inside a group | none |
+| prediction unit | row |
+| known about a group when predicting | none |
+
+| statistic | value |
+|---|---|
+| groups | 2,529 |
+| rows per group (min / median / max) | 1 / 1.0 / 117 |
+| largest group | 2.1% of the rows |
+| test groups per fold | 843 |
+| groups of two or more rows with a single label | 12.2% |
+| label variance explained by the group | 0.84 (shuffled groups: 0.46) |
+
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Bundle checks
 
-0 error(s), 2 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
-- **warning** `dataset_duplicate_rows`: 99 exact duplicate row(s) (1.7% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
-- **warning** `dataset_conflicting_duplicate_rows`: 347 row(s) (6.1%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
 ## Data checks
 
 ### Feature summary
 
-<details>
-<summary>Show the table (1,025 rows)</summary>
-
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| FCFP6_1024_0 | category | 0 | 0 | 2 | 1, 0 |
-| FCFP6_1024_1 | category | 0 | 0 | 2 | 1, 0 |
-| FCFP6_1024_2 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_3 | category | 0 | 0 | 2 | 1, 0 |
-| FCFP6_1024_4 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_5 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_6 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_7 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_8 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_9 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_10 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_11 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_12 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_13 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_14 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_15 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_16 | category | 0 | 0 | 2 | 1, 0 |
-| FCFP6_1024_17 | category | 0 | 0 | 2 | 1, 0 |
-| FCFP6_1024_18 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_19 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_20 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_21 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_22 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_23 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_24 | category | 0 | 0 | 2 | 1, 0 |
-| FCFP6_1024_25 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_26 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_27 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_28 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_29 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_30 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_31 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_32 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_33 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_34 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_35 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_36 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_37 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_38 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_39 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_40 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_41 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_42 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_43 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_44 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_45 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_46 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_47 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_48 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_49 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_50 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_51 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_52 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_53 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_54 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_55 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_56 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_57 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_58 | category | 0 | 0 | 2 | 0, 1 |
-| FCFP6_1024_59 | category | 0 | 0 | 2 | 0, 1 |
-
-(965 more rows not shown)
-
-</details>
+| MEDIAN_PXC50 | float64 | 0 | 0 | 1379 | 4.301, 5.0, 5.301, 5.398, 4.0, 4.959, 4.678, 5.602, 4.523, 6.0 |
+| SMILES | string | 0 | 0 | 5704 | Cc1cc(C(=O)CSc2nnnn2C)c(C)n1-c1cccc(F)c1, N=C(N)c1ccc(Oc2ccc(Oc3ccc(C(=N)N)cc3)… |
+| scaffold | string | 0 | 0 | 2529 | c1ccccc1, c1ccc(Oc2cccc(Oc3ccccc3)n2)cc1, O=C(Nc1ccc(-c2ccccc2)cc1)c1ccnn1-c1cc… |
 
 ### Target distribution
 
@@ -322,75 +322,18 @@ Default splits.
 
 ### Categorical features
 
-<details>
-<summary>Show the table (2,048 rows)</summary>
-
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| FCFP6_1024_0 | 1 | 1 | 5700 | 99.93 |
-| FCFP6_1024_0 | 2 | 0 | 4 | 0.07 |
-| FCFP6_1024_1 | 1 | 1 | 5578 | 97.79 |
-| FCFP6_1024_1 | 2 | 0 | 126 | 2.21 |
-| FCFP6_1024_10 | 1 | 0 | 5651 | 99.07 |
-| FCFP6_1024_10 | 2 | 1 | 53 | 0.93 |
-| FCFP6_1024_100 | 1 | 0 | 5656 | 99.16 |
-| FCFP6_1024_100 | 2 | 1 | 48 | 0.84 |
-| FCFP6_1024_1000 | 1 | 0 | 5558 | 97.44 |
-| FCFP6_1024_1000 | 2 | 1 | 146 | 2.56 |
-| FCFP6_1024_1001 | 1 | 0 | 5389 | 94.48 |
-| FCFP6_1024_1001 | 2 | 1 | 315 | 5.52 |
-| FCFP6_1024_1002 | 1 | 0 | 5377 | 94.27 |
-| FCFP6_1024_1002 | 2 | 1 | 327 | 5.73 |
-| FCFP6_1024_1003 | 1 | 0 | 5191 | 91.01 |
-| FCFP6_1024_1003 | 2 | 1 | 513 | 8.99 |
-| FCFP6_1024_1004 | 1 | 0 | 5515 | 96.69 |
-| FCFP6_1024_1004 | 2 | 1 | 189 | 3.31 |
-| FCFP6_1024_1005 | 1 | 0 | 5345 | 93.71 |
-| FCFP6_1024_1005 | 2 | 1 | 359 | 6.29 |
-| FCFP6_1024_1006 | 1 | 0 | 5634 | 98.77 |
-| FCFP6_1024_1006 | 2 | 1 | 70 | 1.23 |
-| FCFP6_1024_1007 | 1 | 0 | 4837 | 84.8 |
-| FCFP6_1024_1007 | 2 | 1 | 867 | 15.2 |
-| FCFP6_1024_1008 | 1 | 0 | 5635 | 98.79 |
-| FCFP6_1024_1008 | 2 | 1 | 69 | 1.21 |
-| FCFP6_1024_1009 | 1 | 0 | 5508 | 96.56 |
-| FCFP6_1024_1009 | 2 | 1 | 196 | 3.44 |
-| FCFP6_1024_101 | 1 | 0 | 5495 | 96.34 |
-| FCFP6_1024_101 | 2 | 1 | 209 | 3.66 |
-| FCFP6_1024_1010 | 1 | 0 | 5389 | 94.48 |
-| FCFP6_1024_1010 | 2 | 1 | 315 | 5.52 |
-| FCFP6_1024_1011 | 1 | 0 | 5613 | 98.4 |
-| FCFP6_1024_1011 | 2 | 1 | 91 | 1.6 |
-| FCFP6_1024_1012 | 1 | 0 | 5493 | 96.3 |
-| FCFP6_1024_1012 | 2 | 1 | 211 | 3.7 |
-| FCFP6_1024_1013 | 1 | 0 | 5380 | 94.32 |
-| FCFP6_1024_1013 | 2 | 1 | 324 | 5.68 |
-| FCFP6_1024_1014 | 1 | 0 | 4935 | 86.52 |
-| FCFP6_1024_1014 | 2 | 1 | 769 | 13.48 |
-| FCFP6_1024_1015 | 1 | 0 | 5577 | 97.77 |
-| FCFP6_1024_1015 | 2 | 1 | 127 | 2.23 |
-| FCFP6_1024_1016 | 1 | 0 | 5417 | 94.97 |
-| FCFP6_1024_1016 | 2 | 1 | 287 | 5.03 |
-| FCFP6_1024_1017 | 1 | 0 | 5350 | 93.79 |
-| FCFP6_1024_1017 | 2 | 1 | 354 | 6.21 |
-| FCFP6_1024_1018 | 1 | 0 | 4722 | 82.78 |
-| FCFP6_1024_1018 | 2 | 1 | 982 | 17.22 |
-| FCFP6_1024_1019 | 1 | 0 | 4805 | 84.24 |
-| FCFP6_1024_1019 | 2 | 1 | 899 | 15.76 |
-| FCFP6_1024_102 | 1 | 0 | 5476 | 96 |
-| FCFP6_1024_102 | 2 | 1 | 228 | 4 |
-| FCFP6_1024_1020 | 1 | 0 | 5417 | 94.97 |
-| FCFP6_1024_1020 | 2 | 1 | 287 | 5.03 |
-| FCFP6_1024_1021 | 1 | 0 | 5576 | 97.76 |
-| FCFP6_1024_1021 | 2 | 1 | 128 | 2.24 |
-| FCFP6_1024_1022 | 1 | 0 | 5616 | 98.46 |
-| FCFP6_1024_1022 | 2 | 1 | 88 | 1.54 |
-| FCFP6_1024_1023 | 1 | 0 | 5664 | 99.3 |
-| FCFP6_1024_1023 | 2 | 1 | 40 | 0.7 |
-
-(1,988 more rows not shown)
-
-</details>
+| SMILES | 1 | Cc1cc(C(=O)CSc2nnnn2C)c(C)n1-c1cccc(F)c1 | 1 | 0.02 |
+| SMILES | 2 | N=C(N)c1ccc(Oc2ccc(Oc3ccc(C(=N)N)cc3)cc2)cc1 | 1 | 0.02 |
+| SMILES | 3 | Cc1ccnc(CNC(=O)Cn2c(C)cnc(NCC(F)(F)c3ccccc3)c2=O)c1F | 1 | 0.02 |
+| SMILES | 4 | Cl.Cn1c(CNC(=O)\[C@@H\]2C=CCN2C(=O)\[C@@H\](CC2CCCCC2)NCC(=O)O)ccc1C... | 1 | 0.02 |
+| SMILES | 5 | O=C1COc2ccc(Cl)cc2CNC(=O)\[C@@H\]2CCCN2C(=O)\[C@@H\](C2CCCCC2)NC(=O)... | 1 | 0.02 |
+| scaffold | 1 | c1ccccc1 | 117 | 2.05 |
+| scaffold | 2 | c1ccc(Oc2cccc(Oc3ccccc3)n2)cc1 | 88 | 1.54 |
+| scaffold | 3 | O=C(Nc1ccc(-c2ccccc2)cc1)c1ccnn1-c1ccccc1 | 61 | 1.07 |
+| scaffold | 4 | O=C(Nc1ccccc1C(=O)Nc1ccccc1)c1cc2ccccc2s1 | 47 | 0.82 |
+| scaffold | 5 | O=C(Cn1c(-c2ccccc2)cncc1=O)NCc1ccccc1 | 34 | 0.6 |
 
 ## Build
 
@@ -403,4 +346,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:15f43a316d7bdeb2bdcf6b1d2ff122686da40c0637281f3af8ad56fff79c6a47` |
+| stale | yes: the definition now gives checksum `v2:bb1320cafcb43ffac6e73e98932ac703bef8dba234d5bc67f4b5c1e339cf358c` |

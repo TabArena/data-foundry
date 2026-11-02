@@ -129,6 +129,54 @@ recommend:
 * Until TabArena scores at the group unit, the three group-unit datasets are scored per row; the metadata says what
   the right unit is, and nothing is held back.
 
+## Encodings and their caches
+
+Added 2026-11-01 (Lennart: "introduce caching for all encodings in a nice way, which we should anyhow revisit for
+tabarena-v0.2 with good time keeping and adding it on top of the benchmark record").
+
+- [ ] **One cache contract for every precomputed encoding.** Today only the semantic-text embedding is cached
+  (`tabarena.benchmark.preprocessing.text_cache`: a value -> vector parquet per task, keyed by the encoder spec id
+  `<model>-d<dim>-r<revision>`, shipped inside the container as `tabarena_text_cache_<id>.parquet`, loader modes
+  `require` / `auto` / `off`). Generalise it so any expensive or version-sensitive encoding (text embeddings, a
+  SMILES encoding if we adopt one, later others) uses the same keying, versioning, shipping and loader modes, rather
+  than one module per encoding.
+- [ ] **Time keeping for cached encodings: count it in the fit time.** Under the bundle default
+  `text_cache_mode="require"` the embeddings are computed once by `generate_text_cache`, outside every timed fit, and
+  their cost is recorded nowhere: a method on a text task gets the embedding for free. Measure each cache's compute
+  time when it is made (total and per value, with the encoder spec and the hardware), store it with the cache, and add
+  it to each method's fit time (the test rows' share to its inference time) in the benchmark record, as if the method
+  had computed the encoding itself (Lennart, 2026-11-01). Note it in the record's description of the timing, so a
+  reader knows cached preprocessing is included.
+- [ ] **SMILES columns: encode them as structures (Data Foundry side done, 2026-11-01).** A v0.2 container now ships a
+  molecule's structure as a `string` column listed in `task_metadata.semantic_columns`
+  (`data_foundry.schema.SemanticColumn`: `column`, `semantic_type` `smiles`, `description`,
+  `recommended_encoding`, e.g. `rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1`); `data_foundry.curation_container.semantic_columns
+  (container, "smiles")` lists them. Datasets: apistox, drug_induced_autoimmunity_prediction, qsar_bioconcentration,
+  qsar_oral_toxicity, qsar_tid_11 (and the molecule candidates to come). TabArena needs, in this order:
+  - **A guard first.** The model-agnostic pipeline marks every pandas `string` column as text
+    (`StringFixAsTypeFeatureGenerator`) and embeds it with Qwen3-Embedding-8B at 32 dimensions. On `apistox` that
+    embedding of the SMILES scored no better than no structure at all (ROC AUC 0.78-0.81 against 0.70-0.82; ECFP4
+    bits or character n-grams 0.83-0.85; record, 2026-10-07). Until the generator below exists, the adapter must drop a
+    semantic column (or encode it as below), never pass it on as text.
+  - **The adapter** passes `semantic_columns` into the task, and the pipeline maps them to an AutoGluon special type
+    `smiles` (`FeatureMetadata` takes any special-type name); the text generators exclude it.
+  - **A SMILES feature generator** with the recommended encoding (`data_foundry.v2.chemistry.encode_smiles`: RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts, one row per molecule; Data Foundry is already a dependency) or TabArena's own,
+    cached by value under the encoding's id on the cache contract above, so a fit needs no RDKit.
+    The recommended encoding is wide (about 1,400 columns, the ECFP4 counts added by default because they helped once:
+    qsar_tid_11's LightGBM R^2 from 0.601 to 0.658): "just one pipeline choice that we can later investigate for the
+    benchmark", and a feature selection step may follow it (Lennart, 2026-11-01).
+  - Whether a method may read the raw SMILES with its own encoder on the main leaderboard is open (Lennart,
+    2026-11-01: "we keep this discussion for later").
+- [ ] **Recommended encodings of dates and text (`data_foundry.v2.encodings`, `recommended_encodings()`).** Dates: skrub's
+  `DatetimeEncoder(add_weekday=True, periodic_encoding="circular")`, as BeyondArena and `tabarena_default` do today
+  (`encode_datetime`). Text: TF-IDF fitted on the training rows (words, or character 2- to 5-grams for one-token
+  values), reduced by SVD (`encode_text_tfidf`), and `intfloat/e5-small-v2` sentence embeddings (`encode_text_e5`):
+  neither wins everywhere, so check both (Lennart, 2026-11-01). TabArena v0.2 embeds text with Qwen3-Embedding-8B at
+  32 dimensions; compare it with both on the text datasets before fixing the default.
+- [ ] **Every default preprocessing step can be switched off** per method (Lennart, 2026-11-01: "in general, all
+  preprocessing may be disable-able"): a method that brings its own encoding of SMILES, text or dates gets the raw
+  column.
+
 ## Ordinal features
 
 - [ ] **Keep the order of an ordered category in the pipeline, and give it to the models.** v0.2 containers store

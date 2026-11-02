@@ -8,9 +8,11 @@ data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
 - BeyondArena
-suggestion: 'Yes'
+suggestion: No (Retired)
 decision_markers:
 - Anonymized
+- Duplicate
+- Outdated
 year: '2007'
 domain: chemistry & material science
 required_split:
@@ -19,7 +21,6 @@ problem_type: Binary Classification
 source_links:
 - https://www.openml.org/search?type=data&id=1039
 notebook_path: datasets/beyond_iid/old_iid/hiva_agnostic/hiva_agnostic.ipynb
-v2_path: datasets/_dev/tabarena-v0pt2/hiva_agnostic/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -62,6 +63,19 @@ CC (2026-10-27, Lennart): marker Anonymized, from the AI review of PR #17: the a
 **Assessment (AI, 2026-11-01):** ChemPile's "hiv" is the record `nci_aids_antiviral_screen`, now tagged ChemPile.
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the active compound).
+
+CC (2026-11-02, Lennart): "Yes retire it as described" (review page, `nci_aids_antiviral_screen` issue 2). Retired as
+a duplicate of `nci_aids_antiviral_screen`, the NCI DTP AIDS antiviral screen this is the 2007 challenge's cut of
+(PROV-6). The full release ships instead: it labels every compound and carries the structures, where this cut is
+4,229 compounds as 1,617 anonymous bits from ChemTK 4.1.1 that nobody can recompute for a new compound. The folder
+leaves the TabArena v0.2 working copy and `v2_path` is cleared; `DF: Yes`, the collection tags and the shipped
+BeyondArena and TabArena v0.1 containers stay, as for `churn` and the three `heart_disease_*` records.
+
+**Assessment (AI, 2026-11-02):** the evidence for "no compound and no label this release lacks": a linking run on
+2026-11-01 recovered the NSC number behind each row by matching the bits against structure features, 97% of rows with
+confidence, and every one of the 4,229 labels agrees with the NCI file; the three parts together are 42,678
+compounds, which is the screen's structure-bearing set of 42,682 less four. `Anonymized` is kept alongside `Duplicate`
+and `Outdated`: it is true of the data and half the reason the cut is outdated.
 
 ## Reference
 

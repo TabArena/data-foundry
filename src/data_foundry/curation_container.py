@@ -66,6 +66,19 @@ def feature_columns(container: CuratedContainer) -> list[str]:
     return [c for c in container.dataset.columns if c not in excluded]
 
 
+def semantic_columns(container: CuratedContainer, semantic_type: str | None = None) -> list[str]:
+    """The features that need an encoding of their own (:class:`~data_foundry.schema.SemanticColumn`), in frame order:
+    every one, or those of ``semantic_type`` (``smiles``). Encode them by their type, never as text; for ``smiles``,
+    e.g. ``data_foundry.v2.chemistry.encode_smiles(container.dataset[column], prefix=f"{column}__")``. A format-1
+    container has none.
+    """
+    task = container.task_metadata
+    wanted = {
+        c.column for c in getattr(task, "semantic_columns", None) or () if semantic_type in (None, c.semantic_type)
+    }
+    return [c for c in container.dataset.columns if c in wanted]
+
+
 @dataclass
 class CuratedContainer:
     """Schema for a collection of curated items, ready to be used by others."""

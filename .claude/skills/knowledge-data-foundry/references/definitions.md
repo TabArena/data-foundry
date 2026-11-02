@@ -252,6 +252,12 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
 * The task attributes: IID needs nothing beyond `target` and `problem_type` (set `stratify_on = None` only with a
   reason). Temporal: `temporal = Temporal(on=..., splits=TemporalSplits(...))`. Grouped: `grouping = Grouping(...)`.
   A task is grouped or temporal, never both; an order inside groups is `Grouping(time_on=...)`.
+* `smiles_columns = ("SMILES",)`: the features that hold a molecule's structure (CLEAN-24). They are cast to `string`,
+  stay features, and the container records them as semantic columns of type `smiles` with the recommended encoding's
+  spec id (`semantic_columns(container, "smiles")` lists them; a benchmark encodes them, never as text). Leave them
+  out of `_feature_types`. The recommended encodings of every kind of column (SMILES, dates, text) are in
+  `data_foundry.v2.encodings` (`recommended_encodings()`): RDKit's 2D descriptors with the MACCS keys and the ECFP4 counts for a SMILES,
+  skrub's `DatetimeEncoder` as BeyondArena for a date, TF-IDF and e5 sentence embeddings for text (check both).
 
 ### `curation_comments`
 
@@ -301,9 +307,12 @@ The order the collection's definitions converge on. Emit the steps that plausibl
 #    reversed); a value that is no level raises, so the codes outside the scale that mean unknown go to `set_missing`
 #    first, and a state of its own (no basement) is placed by CLEAN-14. A score with no words per level (a 1-10
 #    rating, a points total) stays a number (CLEAN-14). Cast mid-way with
-#    `cast_dtypes` only when a later step needs the dtype. A SMILES column becomes RDKit descriptors and is dropped:
-#       df = pd.concat([df, rdkit_descriptors(df["SMILES"])], axis=1)   # `rdkit_*` columns
-#    then check for rows that are now copies (stereoisomers).
+#    `cast_dtypes` only when a later step needs the dtype.
+#    A SMILES column ships as a structure (CLEAN-24), listed in
+#    the class attribute `smiles_columns = ("SMILES",)` (not in `_feature_types`), in RDKit's canonical form:
+#       df["SMILES"] = canonical_smiles(df["SMILES"])   # salts as published; stereo kept
+#    then check for rows that are copies to a 2D encoding: `canonical_smiles(df["SMILES"], stereo=False).duplicated()`.
+#    The benchmark encodes it (recommended: `encode_smiles`, RDKit's 2D descriptors, the MACCS keys and the ECFP4 counts).
 # 7. TODO(verify): drop constant, all-missing and duplicated columns.
 # 8. TODO(verify): drop leaking features (the traps below; leak_checks.md). The most common step in the collection.
 # 9. TODO(verify): duplicate rows: decide and document (leak_checks.md, Copies across the split (LEAK-16 to LEAK-21)).

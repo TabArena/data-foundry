@@ -464,6 +464,8 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
         return
 
     constant, all_missing, id_like, unused_categories, sentinel_hits, string_missing = [], [], [], [], [], []
+    # a structure (a SMILES column) is unique per molecule by nature: an input, not a row id
+    semantic = {c.column for c in getattr(ctx.task, "semantic_columns", None) or ()}
     for column in df.columns:
         series = df[column]
         n_unique = series.nunique(dropna=True)
@@ -473,7 +475,8 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
             constant.append(column)
 
         is_labelish = isinstance(series.dtype, pd.CategoricalDtype) or series.dtype == "string"
-        if column != ctx.target and is_labelish and n_unique == ctx.n_rows and ctx.n_rows > 1:
+        unique_per_row = n_unique == ctx.n_rows and ctx.n_rows > 1
+        if column != ctx.target and column not in semantic and is_labelish and unique_per_row:
             id_like.append(column)
 
         if isinstance(series.dtype, pd.CategoricalDtype):
@@ -541,6 +544,56 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
             hint="If it encodes 'missing', replace it with `np.nan` (curation guidelines); if it is a real value, "
             "ignore this finding.",
         )
+
+
+@_check
+def _check_dataset_smiles_columns(ctx: _Ctx) -> Iterator[CheckResult]:
+    """A SMILES column (a :class:`~data_foundry.schema.SemanticColumn` of type ``smiles``) is present, a ``string``
+    column, and every value parses with the pinned RDKit; a missing structure is flagged.
+    """
+    df = ctx.df
+    columns = [c.column for c in getattr(ctx.task, "semantic_columns", None) or () if c.semantic_type == "smiles"]
+    if df is None or not columns:
+        return
+    for column in columns:
+        if column not in df.columns:
+            yield CheckResult("dataset_smiles_column", "error", f"The SMILES column `{column}` is not in the frame.")
+            continue
+        if df[column].dtype != "string":
+            yield CheckResult(
+                "dataset_smiles_column",
+                "error",
+                f"The SMILES column `{column}` is {df[column].dtype}, not string.",
+                hint="List it in the definition's `smiles_columns` only (not in `_feature_types`).",
+            )
+            continue
+        missing = int(df[column].isna().sum())
+        if missing:
+            yield CheckResult(
+                "dataset_smiles_column",
+                "warning",
+                f"{missing:,} row(s) have no structure in the SMILES column `{column}`.",
+                hint="A molecule dataset without the molecule: drop the rows or say why they stay.",
+            )
+        try:
+            from data_foundry.v2.chemistry import invalid_smiles  # noqa: PLC0415 - RDKit is optional
+
+            invalid = invalid_smiles(df[column])
+        except Exception as exc:  # noqa: BLE001 - RDKit missing or another release: report, do not fail
+            yield CheckResult(
+                "dataset_smiles_unchecked",
+                "info",
+                f"The SMILES column `{column}` was not parsed: {exc}",
+                hint="Install the `build` extra (the pinned RDKit) to check it.",
+            )
+            continue
+        if invalid:
+            yield CheckResult(
+                "dataset_smiles_column",
+                "error",
+                f"RDKit cannot parse {len(invalid):,} value(s) of the SMILES column `{column}`, e.g. {invalid[:3]}.",
+                hint="Repair or drop them in `_clean`; ship `canonical_smiles(...)`.",
+            )
 
 
 @_check
