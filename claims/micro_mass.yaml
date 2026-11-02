@@ -1,0 +1,6 @@
+name: micro_mass
+holder: Lennart
+stage: add
+claimed_at: '2026-11-02T15:34:38Z'
+expires_at: '2026-11-09T15:34:38Z'
+note: 'Spectra as typed feature groups with recommended encodings (PR #21, branch spectral-preprocessing)'

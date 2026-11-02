@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-02 15:06 UTC: 54 claim(s) (Andrej 26, Lennart 6, Myunghwan 22).
+As of 2026-11-02 15:34 UTC: 56 claim(s) (Andrej 26, Lennart 8, Myunghwan 22).
 
 ## Andrej
 
@@ -42,6 +42,8 @@ As of 2026-11-02 15:06 UTC: 54 claim(s) (Andrej 26, Lennart 6, Myunghwan 22).
 | `1000_cameras` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
 | `facebook_recruiting_human_or_robot` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `fl2000` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
+| `micro_mass` | add | 2026-11-02 | 2026-11-09 | Spectra as typed feature groups with recommended encodings (PR #21, branch spectral-preprocessing) |
+| `pancreatic_cancer_mouse_detection` | add | 2026-11-02 | 2026-11-09 | Spectra as typed feature groups with recommended encodings (PR #21, branch spectral-preprocessing) |
 | `secom_semiconductor_yield` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `zeosyn_zeolite_synthesis` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `zindi_weekendz_laduma_analytics_football_league_winners_prediction_challenge` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
