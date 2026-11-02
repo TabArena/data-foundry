@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-02 17:39 UTC: 54 claim(s) (Andrej 26, Lennart 6, Myunghwan 22).
+As of 2026-11-02 18:26 UTC: 53 claim(s) (Andrej 25, Lennart 6, Myunghwan 22).
 
 ## Andrej
 
@@ -16,7 +16,6 @@ As of 2026-11-02 17:39 UTC: 54 claim(s) (Andrej 26, Lennart 6, Myunghwan 22).
 | `blogfeedback` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
 | `boreal_postfire_lichen_biomass` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
 | `cape_floristic_region_family_cover` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
-| `crms_phragmites_cover` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
 | `frempl_french_motor_personal_line` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
 | `liberty_mutual_fire_peril_loss_cost` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
 | `loan_default_prediction_imperial_college` | add | 2026-11-01 | 2026-11-08 | add-dataset, zero-inflated batch |
