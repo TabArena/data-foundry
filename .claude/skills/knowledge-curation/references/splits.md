@@ -101,7 +101,8 @@ predicts for known entities, and a question when the use case is a new entity (U
 
 **SPLIT-14 (Must).** A temporal task has at least 3 windows, and no window's train side holds less than 50% of the
 data. Why: a smaller train side is too unlike the real application. A task that cannot meet it ships under SPLIT-8
-(Lennart, 2026-10-21).
+(Lennart, 2026-10-21). Windows that share one train side count as one window: a new test window means a refit, so
+each window trains on what is known before it (Andrej, 2026-11-02).
 
 **SPLIT-15 (Should).** Roll the windows back from the newest data: as many windows as an IID or grouped task of that
 size would get folds. Then check that the windows are still meaningful (SPLIT-16 to SPLIT-18).
@@ -235,9 +236,11 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-10 | zillow_prize | a one-month gap: training is every sale before the preceding month, since Zillow receives sales with a delay (review of 2026-10-20) | applied |
 | SPLIT-10 | melbourne_housing_market | no gap, measured: every weekly sheet from August 2017 holds as many sales as the companion file read up to October 2018 (558 of 558 on 17 March 2018), and the newest window's mean residual is +0.009 against -0.013 to +0.022 (2026-10-21, Lennart: a gap only if the newest months show selection) | applied |
 | SPLIT-9, SPLIT-10 | nyc_taxi_trip_duration_1m, pkdd_15_taxi_trip_time_prediction_ii_1m, cooking_time_1m, maps_router_eta_1m, delivery_eta_1m | trip and order times in weekly or monthly windows: the training rows whose trip or order ends after the window start are counted per window, and a one-day gap is set where any are (nyc 77-127 per window, pkdd 8-48, cooking_time 108-172, maps_router_eta 578-656; 0 after); delivery_eta_1m has none, its orders stop overnight (2026-10-21, Lennart) | applied |
+| SPLIT-10 | pricing_game_2016_french_fleet | no gap: no report dates, and rows are cut at 31 December, so even a 1-day gap before the January window leaves 50.2% of the rows and a month 48.7%; the bound is simulated in the notes. Serves SPLIT-14 (2026-11-02, Andrej) | exception |
 | SPLIT-10 | ames_housing, perth_house_prices | proposed amendment, due at the third exception of this reason (principles.md, "Exceptions and amendments"): "No gap is needed when the label's delay is shorter than the resolution of the time column (sales dated by month) and the newest period shows no selection by the outcome (its mean residual within the other windows' range)." Both exceptions rest on these two facts; alfa_battle_2_0_task_2 and lending_club depart for another reason (SPLIT-14's floor) and do not count (proposed 2026-10-26 from the consistency check on ames_housing; open for Lennart) | proposed |
 | SPLIT-12 | house_sales, perth_house_prices, ames_housing, zillow_prize, melbourne_housing_market | no window length for the whole family: each keeps the horizon of its own source or refit cadence (three weeks; one month, spaced; two months; one month after a one-month gap; three weekly sheets), since "different task might forecast differently long" and "we dont need to force the same split" (2026-10-21, Lennart) | applied |
 | SPLIT-14 | california_house_prices_2020 | `min_train_fraction=0.25` let the oldest window train on 25% of the rows; its windows now train on 50%, 67% and 83% (2026-10-21) | applied |
+| SPLIT-14, SPLIT-11 | pricing_game_2016_french_fleet | three four-month windows of 2013 that all trained on 2011-2012 do not count as three windows; each window now trains on the periods closed before it starts (64%, 71%, 78% of the rows) (2026-11-02, Andrej) | amendment |
 | SPLIT-16 (TP-9) | seismic_bumps | 49 positives in the newest half, 0-5 per window: `Too Small`, no fallback to an IID split | applied |
 | SPLIT-17 | coffee_rating_prediction | 26 monthly windows of 2-72 reviews doubled the confidence interval of a model comparison; 13 two-month windows hold 54-115 | applied |
 | SPLIT-18 | climate_model_weather_forecasting | weather test windows of one to two weeks at most | applied |

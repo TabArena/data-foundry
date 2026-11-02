@@ -4,6 +4,25 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-11-02, pricing_game_2016_french_fleet: the claim charge as target (no container built)
+
+- Target `claim` (a claim in the period) replaced by `claim_charge`, the period's claim charges summed with the 537 net
+  negative totals (IDA recoveries) set to 0: the curator's call after a measurement (the charge beats the length alone
+  on every window, all its signal is claim frequency). `problem_type` regression, metric `normalized_gini` as a stand-in
+  for the game's market, as in `pricing_game_2017_french_mtpl`; `task_target_value_dominant` accepted (zero-inflated);
+  notes, decisions and figures rewritten. The record gets `Two-Regime Zeros` back. Issues 2 and 3 leave the
+  folder's `REVIEW.md`; issue 4 asks the curator to confirm the switch. [Record](../../../curation/records/pricing_game_2016_french_fleet.md).
+
+## 2026-11-02, pricing_game_2016_french_fleet: expanding windows (no container built)
+
+- The three four-month windows of 2013 now each train on every period closed before the window starts (78%, 71%, 64%
+  of the rows) instead of all on 2011-2012: the curator's call on issue 2 ("whenever we have different test sets, we
+  would be retraining"), with SPLIT-14 amended in `splits.md` (windows that share one train side count as one).
+  `period_end` stays in the cleaned frame for the split and is dropped from the shipped one; `Temporal` horizon 4
+  months; the `meta_time_horizon_mismatch` acceptance removed. No gap (issue 3, an exception to SPLIT-10). Window
+  figures, the split comment and the metric reason re-measured; check, task and leak probes clean. README.md
+  regenerated. [Record](../../../curation/records/pricing_game_2016_french_fleet.md).
+
 ## 2026-10-26, the cross-dataset REVIEW.md retired; README trimmed
 
 - `REVIEW.md` (the working copy's cross-dataset items, 61, of which 58 resolved and kept only because the review page
