@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Grouping,
     Metric,
+    Smiles,
     TaskSummary,
     canonical_smiles,
     scaffold_groups,
@@ -61,7 +62,7 @@ class QsarFishToxicity(AbstractCuratedDataset):
     source = "UCI"
     source_url = "https://doi.org/10.24432/C5JG7B"
     license = "CC BY 4.0"
-    smiles_columns = ("SMILES",)
+    special_features = (Smiles(column="SMILES"),)
     download_description = """
         We download the data from the UCI repository and unzip it to a predefined folder.
 
@@ -89,7 +90,7 @@ class QsarFishToxicity(AbstractCuratedDataset):
         }
     """
     curation_comments = """
-        - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), in RDKit's canonical form (`canonical_smiles`; no salts or mixtures here), declared in `smiles_columns`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts).
+        - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), in RDKit's canonical form (`canonical_smiles`; no salts or mixtures here), declared in `special_features`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts).
         - The authors' 6 descriptors leave (Lennart, 2026-11-01, as for qsar_tid_11: the task goes from the structure to a prediction, and the descriptors are one modelling choice of the authors). This also removes the mild optimism they carried: a genetic algorithm chose them on the paper's 726 training chemicals, which overlap our test folds (LEAK-31).
         - The structures come from the authors' own workbook, which the UCI copy left out. It is the same 908 rows in the same order: every one of the 6 descriptors is identical on all 908 rows (the CSV's rounding aside, LC50 too), so the link is exact and needs no key. All 908 SMILES parse, and no two are the same chemical, with or without stereochemistry.
         - The target comes from the workbook as well: the UCI file rounds LC50 to 3 decimals (every row differs by at most 0.0005), the workbook gives it at full precision.
@@ -134,7 +135,7 @@ class QsarFishToxicity(AbstractCuratedDataset):
         assert np.allclose(uci[DESCRIPTORS].to_numpy(float), authors[DESCRIPTORS].to_numpy(float)), (
             "the authors' workbook and the UCI file differ in a descriptor"
         )
-        # The structure ships as a SMILES column (`smiles_columns`), in RDKit's canonical form; the authors' 6
+        # The structure ships as a SMILES column (`special_features`), in RDKit's canonical form; the authors' 6
         # descriptors leave, one modelling choice of the structure (curation_comments)
         df = pd.DataFrame(
             {"SMILES": canonical_smiles(authors["SMILES"]), self.target: authors["LC50[-LOG(mol/L)]"].astype(float)}
@@ -143,6 +144,6 @@ class QsarFishToxicity(AbstractCuratedDataset):
         return df.assign(scaffold=scaffold_groups(df["SMILES"]))
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # the SMILES is typed by `smiles_columns`; the target stays numeric
+        # the SMILES is typed by `special_features`; the target stays numeric
         del df
         return FeatureTypes()

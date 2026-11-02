@@ -100,6 +100,9 @@ def score(data: pd.DataFrame, y: pd.Series, pairs: list, *, regression: bool, n_
 def fit_score(x_train, x_test, y_train, y_test, classes, *, regression: bool, n_jobs: int) -> float:
     """One untuned LightGBM fit, scored as in ``score``."""
     model = (lgb.LGBMRegressor if regression else lgb.LGBMClassifier)(n_estimators=200, verbose=-1, n_jobs=n_jobs)
+    # LightGBM refuses names with JSON characters (a spectrum's `M/Z:800.32`); the fit needs no names
+    names = [f"f{i}" for i in range(x_train.shape[1])]
+    x_train, x_test = x_train.set_axis(names, axis=1), x_test.set_axis(names, axis=1)
     model.fit(x_train, y_train)
     if regression:
         return r2_score(y_test, model.predict(x_test))

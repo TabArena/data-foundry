@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_tid_11
 container_format: 2
-checksum: v2:bb1320cafcb43ffac6e73e98932ac703bef8dba234d5bc67f4b5c1e339cf358c
+checksum: v2:d3100ce05bbf6bb3524ca512395502dbddf93948e09802f296d38856cabe9e70
 build:
   uuid: 01a111fc-77d3-7128-8497-210288cab270
   checksum: v2:6aced922d7a0d199fe8637391bf863bc500c5c50733d7ca006d3a0643874bde3
@@ -45,8 +45,8 @@ task:
     test_groups_per_fold:
       min: 843
       max: 843
-  semantic_columns:
-    SMILES: smiles
+  special_features:
+    SMILES: smiles, one column; encoding required; recommended encoding rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1
 splits:
   n_repeats: 3
   n_folds: 3
@@ -76,7 +76,7 @@ decisions: []
 
 Regression of `MEDIAN_PXC50`, scored with `rmse` on grouped splits by `scaffold`. 5,704 rows and 1 features. Source: OpenML (2015).
 
-Built as `01a111fc-77d3-7128-8497-210288cab270` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:bb1320cafcb43ffac6e73e98932ac703bef8dba234d5bc67f4b5c1e339cf358c`, so the build is stale. See [Build](#build).
+Built as `01a111fc-77d3-7128-8497-210288cab270` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d3100ce05bbf6bb3524ca512395502dbddf93948e09802f296d38856cabe9e70`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -161,12 +161,12 @@ Only curators run `build`, when the dataset ships.
 | definition | RMSE of MEDIAN_PXC50 (pXC50, already a -log10 scale). |
 
 <details>
-<summary>Feature types: 0 categorical, 0 string, 1 smiles, 0 datetime</summary>
+<summary>Feature types: 0 categorical, 0 string, 0 datetime, smiles `SMILES`</summary>
 
 - categorical (0): none
 - string (0): none
-- smiles (1): `SMILES`
 - datetime (0): none
+- special feature `SMILES`: smiles, one column; encoding required; recommended encoding rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1
 
 </details>
 
@@ -222,7 +222,7 @@ The first 5 of 5,704 rows of the final frame (random rows: the frame is shuffled
   one side; 53 vectors (128 rows) span two or more scaffolds, analogs whose ring systems differ in a way the
   fingerprint does not see.
 - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01): ChEMBL 17's SMILES in RDKit's
-  canonical form (`canonical_smiles`; the 549 salts as ChEMBL records them), declared in `smiles_columns`, so a
+  canonical form (`canonical_smiles`; the 549 salts as ChEMBL records them), declared in `special_features`, so a
   benchmark encodes it as a structure and never as text; the recommended encoding is
   `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts). The source's
   1,024 FCFP6 bits leave (Lennart, 2026-11-01: "the real task here is going from smiles to a prediction, the
@@ -346,4 +346,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:bb1320cafcb43ffac6e73e98932ac703bef8dba234d5bc67f4b5c1e339cf358c` |
+| stale | yes: the definition now gives checksum `v2:d3100ce05bbf6bb3524ca512395502dbddf93948e09802f296d38856cabe9e70` |

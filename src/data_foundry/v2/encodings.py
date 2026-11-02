@@ -1,8 +1,9 @@
 """Recommended encodings for the columns a tabular model cannot take as they are (Lennart, 2026-11-01).
 
-Data Foundry ships such columns as they are, typed by what they hold: a date as ``datetime``, free text as
-``string``, a molecule as a SMILES column (a definition's ``smiles_columns``, recorded in the container as a
-:class:`~data_foundry.schema.SemanticColumn`). It does not encode them in the data. It recommends how to encode them,
+Data Foundry ships such columns as they are, typed by what they hold: a date as ``datetime`` and free text as
+``string`` (their dtype says what they are), and what a dtype cannot say as a special feature (a definition's
+``special_features``, recorded in the container as :class:`~data_foundry.schema.SpecialFeature`): a molecule's SMILES
+column, a spectrum's group of columns. It does not encode them in the data. It recommends how to encode them,
 so a benchmark can do it the same way for every method (and cache it), and so this repository's tests of a dataset
 see what a model would see. A benchmark may use these encodings, take inspiration from them, or use its own.
 
@@ -14,6 +15,10 @@ smiles    ``rdkit2d-maccs-ecfp4`` (:func:`~data_foundry.v2.chemistry.encode_smil
 datetime  ``skrub-datetime`` (:func:`encode_datetime`)  skrub's ``DatetimeEncoder(add_weekday=True,
           periodic_encoding="circular")``, as BeyondArena and TabArena's ``tabarena_default`` pipeline
 text      ``tfidf-svd`` (:func:`encode_text_tfidf`) and ``e5-small-v2`` (:func:`encode_text_e5`): check both
+spectrum  by technique and state (:func:`~data_foundry.v2.special.encodings_for`): a raw mass spectrum
+          ``ms-sqrt-sg21-snip100-tic`` (MALDIquant's steps; DRIAMS's and Cromwell's chains the candidates to
+          compare), any other ``spectrum-as-is``; a vibrational spectrum also ``vib-als-snv`` (RamanBench's
+          linear-model default): check both
 ========  ========================================  ==========================================================
 
 Text has two recommendations because neither wins everywhere: TF-IDF fitted on the training rows reads the words (or
@@ -21,15 +26,17 @@ the character n-grams of codes and identifiers) of this dataset, while a sentenc
 dataset cannot teach. Compare both on a dataset with text.
 
 Each encoding has an :class:`Encoding` spec whose ``id`` names it, the library release that fixes its values when
-there is one, and a revision: a cache of encoded values is keyed by it. The SMILES and e5 encodings give one row per
-distinct value (cacheable by value); TF-IDF is fitted on the training rows of each split. The libraries are optional:
+there is one, and a revision: a cache of encoded values is keyed by it. Its ``scope`` says what a cache holds: one row
+per distinct ``value`` (SMILES, dates, e5), one per ``row`` with no fitting (spectra), or a fit per ``split`` on its
+training rows (TF-IDF). A special feature is encoded through one entry point,
+:func:`~data_foundry.v2.special.encode_special_feature`, whatever its kind. The libraries are optional:
 RDKit is in the ``build`` extra, skrub and sentence-transformers in the ``encodings`` extra.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 import numpy as np
 import pandas as pd
@@ -43,13 +50,15 @@ class Encoding:
     """A fixed encoding of one kind of column into numeric columns, identified by :attr:`id`."""
 
     kind: str
-    """The kind of column it encodes: ``smiles``, ``datetime`` or ``text``."""
+    """The kind of column it encodes: ``smiles``, ``datetime``, ``text`` or ``spectrum`` (a group of columns)."""
     name: str
     """What it computes, e.g. ``rdkit2d-maccs-ecfp4``."""
     revision: int
     """Bumped for any change that alters the values or the columns."""
     description: str
     """The columns it makes, for the container and a benchmark's cache."""
+    scope: Literal["value", "row", "split"]
+    """What a cache holds: one row per distinct ``value``, one per ``row`` (no fitting), or a fit per ``split``."""
     library: str | None = None
     """The library release that fixes its values (``rdkit2026.03.6``), when one is pinned."""
 
@@ -60,6 +69,7 @@ class Encoding:
 
 
 DATETIME_ENCODING = Encoding(
+    scope="value",
     kind="datetime",
     name="skrub-datetime",
     revision=1,
@@ -79,6 +89,7 @@ ONE_TOKEN_SHARE = 0.9
 """A text column whose values are a single token in at least this share of rows is read by character n-grams."""
 
 TEXT_TFIDF_ENCODING = Encoding(
+    scope="split",
     kind="text",
     name="tfidf-svd",
     revision=1,
@@ -94,6 +105,7 @@ E5_MODEL = "intfloat/e5-small-v2"
 """The sentence-transformer of :data:`TEXT_E5_ENCODING` (384 dimensions)."""
 
 TEXT_E5_ENCODING = Encoding(
+    scope="value",
     kind="text",
     name="e5-small-v2",
     revision=1,
@@ -106,13 +118,30 @@ TEXT_E5_ENCODING = Encoding(
 
 
 def recommended_encodings() -> dict[str, tuple[Encoding, ...]]:
-    """The recommended encodings by kind of column (``smiles``, ``datetime``, ``text``); text has two, check both."""
+    """Every registered encoding by kind: ``datetime`` and ``text`` (by dtype), ``smiles`` and ``spectrum`` (special
+    features). Text has two to compare. Which encodings fit one special feature, the recommended one first, depends on
+    it (a spectrum's technique and state): :func:`~data_foundry.v2.special.encodings_for`.
+    """
     from data_foundry.v2.chemistry import DEFAULT_SMILES_ENCODING  # noqa: PLC0415 - chemistry imports this module
+    from data_foundry.v2.spectra import (  # noqa: PLC0415 - spectra imports this module
+        AS_IS_ENCODING,
+        CROMWELL_LOG2_ENCODING,
+        DRIAMS_ENCODING,
+        MS_RAW_ENCODING,
+        VIBRATIONAL_ALS_SNV_ENCODING,
+    )
 
     return {
         "smiles": (DEFAULT_SMILES_ENCODING,),
         "datetime": (DATETIME_ENCODING,),
         "text": (TEXT_TFIDF_ENCODING, TEXT_E5_ENCODING),
+        "spectrum": (
+            MS_RAW_ENCODING,
+            DRIAMS_ENCODING,
+            CROMWELL_LOG2_ENCODING,
+            AS_IS_ENCODING,
+            VIBRATIONAL_ALS_SNV_ENCODING,
+        ),
     }
 
 

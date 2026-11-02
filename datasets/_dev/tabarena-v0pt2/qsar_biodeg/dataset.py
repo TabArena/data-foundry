@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Grouping,
     Metric,
+    Smiles,
     TaskSummary,
     canonical_smiles,
     scaffold_groups,
@@ -60,7 +61,7 @@ class QsarBiodeg(AbstractCuratedDataset):
     source = "UCI"
     source_url = "https://doi.org/10.24432/C5H60M"
     license = "CC BY 4.0"
-    smiles_columns = ("SMILES",)
+    special_features = (Smiles(column="SMILES"),)
     download_description = """
         mkdir -p local-data-warehouse/qsar_biodeg/ && wget -P local-data-warehouse/qsar_biodeg/ https://archive.ics.uci.edu/static/public/254/qsar+biodegradation.zip && unzip local-data-warehouse/qsar_biodeg/qsar+biodegradation.zip -d local-data-warehouse/qsar_biodeg/ && rm local-data-warehouse/qsar_biodeg/qsar+biodegradation.zip
 
@@ -88,7 +89,7 @@ class QsarBiodeg(AbstractCuratedDataset):
         - biodeg.csv has no header row, so we read it with `header=None` and keep the first chemical: 1,055 rows,
           356 readily biodegradable, as on UCI.
         - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), in RDKit's canonical form
-          (`canonical_smiles`; no salts or mixtures here), declared in `smiles_columns`, so a benchmark encodes it as a
+          (`canonical_smiles`; no salts or mixtures here), declared in `special_features`, so a benchmark encodes it as a
           structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's
           2D descriptors, the 166 MACCS keys and the ECFP4 counts).
         - The authors' 41 descriptors leave (Lennart, 2026-11-01, as for qsar_tid_11: the task goes from the structure
@@ -153,7 +154,7 @@ class QsarBiodeg(AbstractCuratedDataset):
         assert (uci.iloc[:, -1].astype(str).to_numpy() == authors["Class"].astype(str).to_numpy()).all(), (
             "the supporting information and the UCI file differ in the class"
         )
-        # The structure ships as a SMILES column (`smiles_columns`), in RDKit's canonical form; the authors' 41
+        # The structure ships as a SMILES column (`special_features`), in RDKit's canonical form; the authors' 41
         # descriptors leave, one modelling choice of the structure (curation_comments)
         df = pd.DataFrame(
             {
@@ -166,6 +167,6 @@ class QsarBiodeg(AbstractCuratedDataset):
         return df.assign(scaffold=scaffold_groups(df["SMILES"]))
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # the SMILES is typed by `smiles_columns`; the target becomes a category
+        # the SMILES is typed by `special_features`; the target becomes a category
         del df
         return FeatureTypes()

@@ -160,8 +160,8 @@ def report_frontmatter(result: CurationResult, *, previous: dict[str, Any] | Non
             "grouping": grouping,
             # only for a dataset that has them, so every other README's front matter stays as it was
             **(
-                {"semantic_columns": {c.column: c.semantic_type for c in task.semantic_columns}}
-                if getattr(task, "semantic_columns", None)
+                {"special_features": {f.name: _special_feature_summary(f) for f in task.special_features}}
+                if getattr(task, "special_features", None)
                 else {}
             ),
         },
@@ -363,7 +363,7 @@ def _dataset_section(result: CurationResult, fm: dict[str, Any]) -> list[str]:
     if meta.version_from_unique_name:
         rows.append(("version of", meta.version_from_unique_name))
     rows += [("rows x columns", f"{df.shape[0]:,} x {df.shape[1]:,}")]
-    skip = ("grouping", "metric_origin", "scoring_columns", "semantic_columns")
+    skip = ("grouping", "metric_origin", "scoring_columns", "special_features")
     rows += [(f"task.{k}", v) for k, v in fm["task"].items() if v is not None and k not in skip]
     out = ["## Dataset and task", "", _table(pd.DataFrame(rows, columns=["field", "value"]), full=True), ""]
     out += _metric_block(container.task_metadata)
@@ -380,16 +380,33 @@ def _dataset_section(result: CurationResult, fm: dict[str, Any]) -> list[str]:
     ordinal = [f"{c} ({' < '.join(map(str, levels))})" for c, levels in types.ordinal.items() if c in present]
     if ordinal:  # listed only where a dataset has an ordinal column, so the other READMEs stay as they are
         groups.insert(1, ("ordinal", ordinal))
-    smiles = [c for c in result.dataset.smiles_columns if c in present]
-    if smiles:  # listed only where there are any, so every other README stays as it was
-        groups.insert([kind for kind, _ in groups].index("string") + 1, ("smiles", smiles))
     lines = [
         f"- {kind} ({len(cols)}): {', '.join(f'`{c}`' for c in cols) if cols else 'none'}" for kind, cols in groups
     ]
+    # listed only where there are any, so every other README stays as it was; a group from its first to its last column
+    special = getattr(container.task_metadata, "special_features", None) or []
+    for f in special:
+        where = f"; columns `{f.columns[0]}` to `{f.columns[-1]}`" if f.layout == "group" else ""
+        lines.append(f"- special feature `{f.name}`: {_special_feature_summary(f)}{where}")
     counts = ", ".join(f"{len(cols)} {kind}" for kind, cols in groups)
+    if special:
+        counts += ", " + ", ".join(f"{f.kind} `{f.name}`" for f in special)
     out += _details(f"Feature types: {counts}", "\n".join(lines))
     out += _details("BibTeX", _fence(meta.academic_reference_bibtex, "bibtex"))
     return out
+
+
+def _special_feature_summary(feature: Any) -> str:
+    """One line on a special feature: its kind, layout and size, a spectrum's axis, the recommended encoding."""
+    size = "one column" if feature.layout == "column" else f"a group of {len(feature.columns):,} columns"
+    spectrum = feature.details
+    extra = (
+        f" ({spectrum.technique}, {spectrum.state}, {spectrum.axis_unit} {spectrum.axis[0]:g} to {spectrum.axis[-1]:g})"
+        if spectrum is not None
+        else ""
+    )
+    need = "encoding required" if feature.encoding_required else "numbers a model can read"
+    return f"{feature.kind}, {size}{extra}; {need}; recommended encoding {feature.recommended_encoding}"
 
 
 METRIC_ORIGINS = {

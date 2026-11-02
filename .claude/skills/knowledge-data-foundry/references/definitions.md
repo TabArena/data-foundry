@@ -252,12 +252,22 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
 * The task attributes: IID needs nothing beyond `target` and `problem_type` (set `stratify_on = None` only with a
   reason). Temporal: `temporal = Temporal(on=..., splits=TemporalSplits(...))`. Grouped: `grouping = Grouping(...)`.
   A task is grouped or temporal, never both; an order inside groups is `Grouping(time_on=...)`.
-* `smiles_columns = ("SMILES",)`: the features that hold a molecule's structure (CLEAN-24). They are cast to `string`,
-  stay features, and the container records them as semantic columns of type `smiles` with the recommended encoding's
-  spec id (`semantic_columns(container, "smiles")` lists them; a benchmark encodes them, never as text). Leave them
-  out of `_feature_types`. The recommended encodings of every kind of column (SMILES, dates, text) are in
-  `data_foundry.v2.encodings` (`recommended_encodings()`): RDKit's 2D descriptors with the MACCS keys and the ECFP4 counts for a SMILES,
-  skrub's `DatetimeEncoder` as BeyondArena for a date, TF-IDF and e5 sentence embeddings for text (check both).
+* `special_features = (...)`: the model inputs that need handling beyond their dtype, declared like the target
+  (`data_foundry.v2.special`). Each entry is one special feature, in one of two layouts:
+  * **one column**, a `SpecialColumn`: `Smiles(column="SMILES")`, a molecule's structure (CLEAN-24), cast to `string`;
+  * **a group of columns** that hold one object together, a `SpecialColumnGroup`: `Spectrum(name="serum_ms",
+    prefix="M/Z:", unit="m/z", technique="mass_spectrometry", state="raw", description=...)`, one numeric column per
+    position on a spectrum's axis, named `<prefix><position>` (CLEAN-26). `technique` is `mass_spectrometry`, `raman`,
+    `infrared` or `near_infrared`; `state` is `raw`, `processed` or `peaks`, as the source left it; `unit` is `bin`
+    when the source gives no axis ([spectra.md](../../knowledge-curation/references/spectra.md)).
+
+  The columns stay features; leave them out of `_feature_types`. The container records each entry in
+  `task_metadata.special_features` (`SpecialFeature`: name, kind, layout, columns, `encoding_required`, the recommended
+  encoding, a spectrum's details); `special_features(container, kind)` lists them and `encode_special_feature(df,
+  feature)` encodes one in place of its columns. A new kind (a shipped embedding, a sequence) is one class in
+  `data_foundry.v2.special`'s registry, never a new definition attribute. The recommended encodings of dates and text
+  are in `data_foundry.v2.encodings` (`recommended_encodings()`): skrub's `DatetimeEncoder` as BeyondArena for a date,
+  TF-IDF and e5 sentence embeddings for text (check both).
 
 ### `curation_comments`
 
@@ -308,11 +318,14 @@ The order the collection's definitions converge on. Emit the steps that plausibl
 #    first, and a state of its own (no basement) is placed by CLEAN-14. A score with no words per level (a 1-10
 #    rating, a points total) stays a number (CLEAN-14). Cast mid-way with
 #    `cast_dtypes` only when a later step needs the dtype.
-#    A SMILES column ships as a structure (CLEAN-24), listed in
-#    the class attribute `smiles_columns = ("SMILES",)` (not in `_feature_types`), in RDKit's canonical form:
+#    A SMILES column ships as a structure (CLEAN-24), declared in
+#    `special_features = (Smiles(column="SMILES"),)` (not in `_feature_types`), in RDKit's canonical form:
 #       df["SMILES"] = canonical_smiles(df["SMILES"])   # salts as published; stereo kept
 #    then check for rows that are copies to a 2D encoding: `canonical_smiles(df["SMILES"], stereo=False).duplicated()`.
 #    The benchmark encodes it (recommended: `encode_smiles`, RDKit's 2D descriptors, the MACCS keys and the ECFP4 counts).
+#    A spectrum ships as published (CLEAN-26): name its columns `<prefix><position>` and declare it in
+#    `special_features` as `Spectrum(name=..., prefix=..., ...)`; never smooth, correct, normalise or align it here:
+#    the benchmark encodes it row by row.
 # 7. TODO(verify): drop constant, all-missing and duplicated columns.
 # 8. TODO(verify): drop leaking features (the traps below; leak_checks.md). The most common step in the collection.
 # 9. TODO(verify): duplicate rows: decide and document (leak_checks.md, Copies across the split (LEAK-16 to LEAK-21)).

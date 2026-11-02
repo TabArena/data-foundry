@@ -2,16 +2,18 @@
 
 See :mod:`data_foundry.v2.dataset` for the interface, :mod:`data_foundry.v2.preprocessing` for the standard
 steps, :mod:`data_foundry.v2.splits` for the split protocol, :mod:`data_foundry.v2.metrics` for the metrics and
-their scorers, :mod:`data_foundry.v2.chemistry` for SMILES columns, :mod:`data_foundry.v2.registry` for discovery and
-:mod:`data_foundry.v2.report` for the generated ``README.md``.
+their scorers, :mod:`data_foundry.v2.chemistry` for SMILES columns, :mod:`data_foundry.v2.spectra` for spectra,
+:mod:`data_foundry.v2.special` for special features (what a definition declares in ``special_features``),
+:mod:`data_foundry.v2.registry` for discovery and :mod:`data_foundry.v2.report` for the generated ``README.md``.
 """
 
 from __future__ import annotations
 
-from data_foundry.schema import Grouping, ScoringColumn, SemanticColumn
+from data_foundry.schema import Grouping, ScoringColumn, SpecialFeature, SpectrumDetails
 from data_foundry.utils.dtypes import object_columns
 from data_foundry.v2.chemistry import (
     DEFAULT_SMILES_ENCODING,
+    Smiles,
     canonical_smiles,
     encode_smiles,
     invalid_smiles,
@@ -40,6 +42,8 @@ from data_foundry.v2.metrics import Metric, score, scorer
 from data_foundry.v2.preprocessing import anonymize_ids, cast_dtypes, decode, drop_columns, order_rows, set_missing
 from data_foundry.v2.registry import discover_datasets, get_dataset, load_definition
 from data_foundry.v2.report import read_report
+from data_foundry.v2.special import SpecialColumn, SpecialColumnGroup, encode_special_feature, encodings_for
+from data_foundry.v2.spectra import Spectrum, encode_spectrum, spectrum_encoding
 from data_foundry.v2.splits import SplitPlan, Splits, Temporal, TemporalSplits
 from data_foundry.v2.workbench import workbench
 
@@ -55,7 +59,12 @@ __all__ = [
     "Grouping",
     "Metric",
     "ScoringColumn",
-    "SemanticColumn",
+    "Smiles",
+    "SpecialColumn",
+    "SpecialColumnGroup",
+    "SpecialFeature",
+    "Spectrum",
+    "SpectrumDetails",
     "SplitPlan",
     "Splits",
     "TaskSummary",
@@ -70,8 +79,11 @@ __all__ = [
     "drop_columns",
     "encode_datetime",
     "encode_smiles",
+    "encode_special_feature",
+    "encode_spectrum",
     "encode_text_e5",
     "encode_text_tfidf",
+    "encodings_for",
     "get_dataset",
     "invalid_smiles",
     "load_definition",
@@ -85,5 +97,6 @@ __all__ = [
     "score",
     "scorer",
     "set_missing",
+    "spectrum_encoding",
     "workbench",
 ]

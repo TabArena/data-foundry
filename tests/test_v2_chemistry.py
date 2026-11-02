@@ -138,7 +138,9 @@ def test_the_default_encoding_names_rdkit_and_its_revision() -> None:
 
     assert encoding.id == f"rdkit2d-maccs-ecfp4-rdkit{chemistry.RDKIT_VERSION}-r1"
     with pytest.raises(ValueError, match="Unknown SMILES encoding"):
-        chemistry.encode_smiles(pd.Series(["CCO"]), Encoding(kind="smiles", name="other", revision=1, description=""))
+        chemistry.encode_smiles(
+            pd.Series(["CCO"]), Encoding(kind="smiles", name="other", revision=1, description="", scope="value")
+        )
 
 
 def test_canonical_smiles_keeps_fragments_and_stereochemistry_unless_asked() -> None:

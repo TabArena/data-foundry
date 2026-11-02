@@ -46,6 +46,8 @@ CC (2026-10-12, Lennart): Kept in TabArena v0.2 after the task-probe review (fla
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `driams_antimicrobial_resistance` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
+CC (2026-11-02, Lennart): The spectrum is declared as a spectrum (`spectra`, CLEAN-26; PR #21) in the state the instrument's software left it, a VITEK MS peak list on 1,300 fixed bins (`peaks`); the m/z of the bins is not published, so the axis is the bin number. The recommended encoding leaves a peak list as it is, so models see the same values as before; the constant and copied bins stay dropped.
+
 ## Reference
 
 Mahé et al. (2014). Automatic identification of mixed bacterial species fingerprints in a MALDI-TOF mass-spectrum. Bioinformatics.

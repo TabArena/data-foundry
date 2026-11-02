@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: apistox
 container_format: 2
-checksum: v2:8704368ca845cd6b5fe5a71286a840cc8acc8c1a6f0814f3bff88f49d2e1e503
+checksum: v2:bad6a85aff1bdb73872e004002def2e064eb040ee7952336cd53733202a72875
 build:
   uuid: 01a13aff-7eeb-7f10-a83c-d760795b95d5
   checksum: v2:4c9968a68e1fd44ad36321446c0f615efb90a4d08f86232d8866a31435f263e4
@@ -39,8 +39,8 @@ task:
   group_labels: null
   group_time_on: null
   grouping: null
-  semantic_columns:
-    SMILES: smiles
+  special_features:
+    SMILES: smiles, one column; encoding required; recommended encoding rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1
 splits:
   n_repeats: 4
   n_folds: 1
@@ -73,7 +73,7 @@ decisions:
 
 Binary classification of `toxic_to_bees`, scored with `roc_auc` on temporal splits by `first_publication_year`. 1,035 rows and 6 features. Source: Other (2024).
 
-Built as `01a13aff-7eeb-7f10-a83c-d760795b95d5` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:8704368ca845cd6b5fe5a71286a840cc8acc8c1a6f0814f3bff88f49d2e1e503`, so the build is stale. See [Build](#build).
+Built as `01a13aff-7eeb-7f10-a83c-d760795b95d5` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:bad6a85aff1bdb73872e004002def2e064eb040ee7952336cd53733202a72875`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -156,12 +156,12 @@ Only curators run `build`, when the dataset ships.
 | reason | Adamczyk et al. 2025 (ApisTox, Scientific Data) recommend reporting AUROC and MCC together; no single deciding metric (MET-5). MCC needs a threshold the source does not fix. roc_auc is the binary fallback and the paper's threshold-free metric. |
 
 <details>
-<summary>Feature types: 5 categorical, 0 string, 1 smiles, 0 datetime</summary>
+<summary>Feature types: 5 categorical, 0 string, 0 datetime, smiles `SMILES`</summary>
 
 - categorical (5): `herbicide`, `fungicide`, `insecticide`, `other_agrochemical`, `toxic_to_bees`
 - string (0): none
-- smiles (1): `SMILES`
 - datetime (0): none
+- special feature `SMILES`: smiles, one column; encoding required; recommended encoding rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1
 
 </details>
 
@@ -203,7 +203,7 @@ We start with dataset_final.csv of ApisTox from Zenodo (record 13350981): 1,035 
 - Target: `toxic_to_bees` is the file's `label`, "Yes" when the LD50 is at most 11 µg per bee, the US EPA threshold (Methods, Eq. 1).
 - Dropped as recorded with or after the test: `ppdb_level` (the same LD50 cut at 1 and 100 µg), `toxicity_type` (the route with the strongest measured toxicity) and `source` (the database the label came from, which a new candidate does not have).
 - Dropped as identifiers: `name`, `CID` and `CAS`.
-- The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), declared in `smiles_columns`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts). The values are RDKit's canonical form of the source's SMILES (`canonical_smiles`; 17 strings change). Every fragment is kept: 141 compounds are salts or complexes, and stripping them to the largest fragment would make 86 rows copies of another, among them triclopyr and picloram triethylammonium, which both reduce to triethylamine. From 2026-10-14 to 2026-11-01 the definition shipped RDKit's 199 varying descriptors in place of the string. Mean ROC AUC on the 4 windows, LightGBM / random forest: 0.79 / 0.71 with the flags and the year, 0.83 / 0.82 adding the descriptors; the MACCS keys next to them change it by -0.006 / +0.004 (2026-11-01). The SMILES read as text adds 0.010 to LightGBM (character n-grams, standard error 0.023), and the default text embedding of TabArena v0.2 nothing (Assessment of 2026-10-07).
+- The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), declared in `special_features`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts). The values are RDKit's canonical form of the source's SMILES (`canonical_smiles`; 17 strings change). Every fragment is kept: 141 compounds are salts or complexes, and stripping them to the largest fragment would make 86 rows copies of another, among them triclopyr and picloram triethylammonium, which both reduce to triethylamine. From 2026-10-14 to 2026-11-01 the definition shipped RDKit's 199 varying descriptors in place of the string. Mean ROC AUC on the 4 windows, LightGBM / random forest: 0.79 / 0.71 with the flags and the year, 0.83 / 0.82 adding the descriptors; the MACCS keys next to them change it by -0.006 / +0.004 (2026-11-01). The SMILES read as text adds 0.010 to LightGBM (character n-grams, standard error 0.023), and the default text embedding of TabArena v0.2 nothing (Assessment of 2026-10-07).
 - The four agrochemical flags stay numeric 0/1. All four at 0 is the source's "'unknown' pesticide type" (Methods), so we set those 55 rows to missing. They are more often toxic (29 of 55, against 27% of the rest), and the flags were read in 2024, not at each compound's year.
 - We rename `year` to `first_publication_year`: the year of the earliest article PubChem links to the CID, else the PubChem record's creation date, so some compounds are dated late. We keep the source's years; dropping the affected compounds moves a window's ROC AUC by at most 0.044.
 - Note: salts and mixtures of one active substance are separate rows, as in the source, so some test compounds have their parent on the training side. Under a temporal split this is the substance's own history; leaving them out costs at most 0.034 ROC AUC.
@@ -327,4 +327,4 @@ New compounds are few in recent years, so ten years is the shortest window that 
 | data_foundry_version | 0.0.5 |
 | git_sha | de9e6adde48a58047e4e9a41f249e28507e48ed3-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8704368ca845cd6b5fe5a71286a840cc8acc8c1a6f0814f3bff88f49d2e1e503` |
+| stale | yes: the definition now gives checksum `v2:bad6a85aff1bdb73872e004002def2e064eb040ee7952336cd53733202a72875` |

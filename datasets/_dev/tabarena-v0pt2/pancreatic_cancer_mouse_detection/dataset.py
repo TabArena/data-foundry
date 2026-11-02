@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Spectrum, TaskSummary
 
 
 class PancreaticCancerMouseDetection(AbstractCuratedDataset):
@@ -73,6 +73,7 @@ class PancreaticCancerMouseDetection(AbstractCuratedDataset):
         - We label the samples based on name of the folder they are located in: "PanINCTL" are the littermate control mice, "03-PanIN" the compound-mutant mice with pancreatic intraepithelial neoplasia (PanIN), preinvasive lesions with "no evidence of invasive or metastatic disease" (Hingorani et al. 2003). The target is therefore `HasPanIN`, not cancer.
         - Anomaly: the download holds 181 serum spectra (80 PanIN, 101 control) from 73 mouse IDs (35 PanIN, 38 control); the paper reports 191 spectra after quality control (80 PanIN, 111 control) from 72 mice (33 compound mutants, 39 littermate controls). The 10 missing spectra are controls, and no mouse ID occurs in both classes; the difference cannot be resolved without the authors.
         - The file names encode the class: the third token is `02` for every control file and `03` for every PanIN file, some with a `t` suffix of unknown meaning (42 of 101 control and 24 of 80 PanIN files; it is not the paper's training/blinded-test split). We take the label from the folder and the mouse ID from the second token; the class code never enters the features.
+        - The spectrum ships raw, as the NCI-FDA page publishes it, and is declared as one (`special_features`, CLEAN-26, 2026-11-02): the container records its 6,771 columns in m/z order, and a benchmark encodes it row by row, by default with MALDIquant's steps (square root, Savitzky-Golay smoothing, SNIP baseline, total ion current). Processing the spectra lifts every model tested by 0.07 to 0.13 ROC AUC (PR #21, Andrej, 2026-10-21); the page itself recommends "appropriate normalization, baseline correction, and alignment prior to any such analysis".
     """
 
     # Task
@@ -89,6 +90,21 @@ class PancreaticCancerMouseDetection(AbstractCuratedDataset):
         definition="""
             One group is a mouse; its rows are serum samples from 1 to 6 bleeds, collected "as independent events" at least 5 days apart (Hingorani et al. 2003). The use case is a serum test for the preinvasive state, so each sample is one prediction, made from that sample alone. The paper split the samples at random, ignoring the mice; holding out whole mice simulates testing a new patient.
         """,
+    )
+
+    special_features = (
+        Spectrum(
+            name="serum_ms",
+            prefix="M/Z:",
+            unit="m/z",
+            technique="mass_spectrometry",
+            state="raw",
+            description=(
+                "The serum's mass spectrum from the NCI-FDA Clinical Proteomics Program's high-resolution SELDI-TOF "
+                "study sets: intensities (ion counts) in 6,771 bins of 400 ppm from m/z 800 to 11,993, unprocessed, "
+                "so each spectrum keeps its own baseline and intensity scale."
+            ),
+        ),
     )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

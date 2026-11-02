@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_biodeg
 container_format: 2
-checksum: v2:6f5c37714de28bf4487816c5763b3788bd36e1e3799233ff375e3d00df90b348
+checksum: v2:364b152176bbd3249a161dbdd530f6aa45be221bb47ad2e46612eb0cdd8c8eaf
 build:
   uuid: 01a13a7d-c2bf-742d-b04d-f9b569da1f3d
   checksum: v2:5d0dcabbc947ec79fe0e230bddca7b95568e2a8cc0ce95f85fb21a9c114d1739
@@ -45,8 +45,8 @@ task:
     test_groups_per_fold:
       min: 283
       max: 297
-  semantic_columns:
-    SMILES: smiles
+  special_features:
+    SMILES: smiles, one column; encoding required; recommended encoding rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1
 splits:
   n_repeats: 10
   n_folds: 3
@@ -76,7 +76,7 @@ decisions: []
 
 Binary classification of `Biodegradable`, scored with `roc_auc` on grouped splits by `scaffold`. 1,055 rows and 1 features. Source: UCI (2013).
 
-Built as `01a13a7d-c2bf-742d-b04d-f9b569da1f3d` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:6f5c37714de28bf4487816c5763b3788bd36e1e3799233ff375e3d00df90b348`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2bf-742d-b04d-f9b569da1f3d` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:364b152176bbd3249a161dbdd530f6aa45be221bb47ad2e46612eb0cdd8c8eaf`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -161,12 +161,12 @@ Only curators run `build`, when the dataset ships.
 | reason | Mansouri et al. 2013 report error rate / NER with sensitivity and specificity, the group's house measure, without a decision threshold or costs. Original rejected: NER (balanced accuracy). roc_auc is the binary fallback. |
 
 <details>
-<summary>Feature types: 1 categorical, 0 string, 1 smiles, 0 datetime</summary>
+<summary>Feature types: 1 categorical, 0 string, 0 datetime, smiles `SMILES`</summary>
 
 - categorical (1): `Biodegradable`
 - string (0): none
-- smiles (1): `SMILES`
 - datetime (0): none
+- special feature `SMILES`: smiles, one column; encoding required; recommended encoding rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1
 
 </details>
 
@@ -205,7 +205,7 @@ The first 5 of 1,055 rows of the final frame (random rows: the frame is shuffled
 - biodeg.csv has no header row, so we read it with `header=None` and keep the first chemical: 1,055 rows,
   356 readily biodegradable, as on UCI.
 - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), in RDKit's canonical form
-  (`canonical_smiles`; no salts or mixtures here), declared in `smiles_columns`, so a benchmark encodes it as a
+  (`canonical_smiles`; no salts or mixtures here), declared in `special_features`, so a benchmark encodes it as a
   structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's
   2D descriptors, the 166 MACCS keys and the ECFP4 counts).
 - The authors' 41 descriptors leave (Lennart, 2026-11-01, as for qsar_tid_11: the task goes from the structure
@@ -357,4 +357,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6f5c37714de28bf4487816c5763b3788bd36e1e3799233ff375e3d00df90b348` |
+| stale | yes: the definition now gives checksum `v2:364b152176bbd3249a161dbdd530f6aa45be221bb47ad2e46612eb0cdd8c8eaf` |

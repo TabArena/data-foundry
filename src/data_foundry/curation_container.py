@@ -21,6 +21,7 @@ from data_foundry.schema import (
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadata,
     PredictiveMLTaskMetadataV2,
+    SpecialFeature,
     as_column_list,
     resolve_warehouse_dir,
 )
@@ -66,17 +67,15 @@ def feature_columns(container: CuratedContainer) -> list[str]:
     return [c for c in container.dataset.columns if c not in excluded]
 
 
-def semantic_columns(container: CuratedContainer, semantic_type: str | None = None) -> list[str]:
-    """The features that need an encoding of their own (:class:`~data_foundry.schema.SemanticColumn`), in frame order:
-    every one, or those of ``semantic_type`` (``smiles``). Encode them by their type, never as text; for ``smiles``,
-    e.g. ``data_foundry.v2.chemistry.encode_smiles(container.dataset[column], prefix=f"{column}__")``. A format-1
-    container has none.
+def special_features(container: CuratedContainer, kind: str | None = None) -> list[SpecialFeature]:
+    """The model inputs that need handling beyond their dtype (:class:`~data_foundry.schema.SpecialFeature`): every
+    one, or those of ``kind`` (``smiles``, ``spectrum``). Each is one column (a SMILES, ``layout == "column"``) or a
+    group of columns encoded together (a spectrum, ``layout == "group"``); its columns are in ``feature.columns``.
+    Encode one with ``data_foundry.v2.special.encode_special_feature(container.dataset, feature)``; where
+    ``feature.encoding_required`` the raw values are no model input. A format-1 container has none.
     """
-    task = container.task_metadata
-    wanted = {
-        c.column for c in getattr(task, "semantic_columns", None) or () if semantic_type in (None, c.semantic_type)
-    }
-    return [c for c in container.dataset.columns if c in wanted]
+    features = getattr(container.task_metadata, "special_features", None) or ()
+    return [f for f in features if kind in (None, f.kind)]
 
 
 @dataclass

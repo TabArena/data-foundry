@@ -3,6 +3,7 @@ unique_name: pancreatic_cancer_mouse_detection
 name: NCI Pancreatic
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
@@ -37,6 +38,8 @@ CC (2026-10-06, Lennart): Kept in TabArena v0.2 as a valid tiny, high-dimensiona
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — the paper reports sensitivity and specificity at its classifier's operating point, with no single threshold-free metric.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `debernardi_urinary_pancreatic_cancer` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
+CC (2026-11-02, Lennart): The serum spectrum is declared as a spectrum (`spectra`, CLEAN-26; PR #21, Andrej's proposal): it ships raw as the NCI-FDA page publishes it (6,771 bins of 400 ppm, m/z 800 to 11,993), the container records the bins in m/z order as a feature group, and the benchmark encodes it row by row, by default with MALDIquant's steps (square root, Savitzky-Golay over 21 points, SNIP baseline, total ion current). On the 60 shipped splits the default lifts the tree models by 0.10 to 0.15 ROC AUC, PLS-DA by 0.06 and TabPFN v3.5 by 0.03 (0.659 to 0.690); logistic regression loses 0.02. A reconstruction of PR #21's own chain, which ends in a log, scores higher for TabPFN (0.716) and the linear models; the default stays the published workflow. Full resolution: the width is the benchmark's feature-limit step's job.
 
 ## Reference
 

@@ -142,7 +142,9 @@ merged into PROV-1 and PROV-2 on 2026-10-19.)
 
 * **Engineered acoustic measures the field uses as the instrument** (+, SEL-15): jitter and shimmer in the Parkinsons
   voice data can be in scope.
-* **Raw spectral bins** (−, SEL-15): they lean out.
+* **A spectrum** (SEL-15, amended 2026-11-02, Lennart): a measured spectrum is a reading of the entity, and declared as
+  one (CLEAN-26) the benchmark encodes it as the field does; it is in scope unless a spectrum model is clearly better
+  (SEL-12). It was "raw spectral bins lean out" until the spectra had a declared type and a default encoding.
 * **Clear provenance** (+): a strong sign of a good dataset; the factor is weighed under PROV-1
   ([provenance.md](provenance.md), Weighed factors).
 
