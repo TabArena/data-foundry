@@ -45,6 +45,13 @@ The curator's marks on the review page of 2026-11-02, applied.
   `v2_path` cleared, `WIP (DF)` and the claim dropped, while `DF: Yes`, the collection tags and the shipped
   BeyondArena and TabArena v0.1 containers stay. The duplicate pointer from `hiv_qsar` moves to
   `nci_aids_antiviral_screen`, with the OpenML 1039 chain spelled out.
+- **`qsar_biodeg`: the external validation set is screened, and the note says why it is not more of this dataset.**
+  The curator asked for the 670 chemicals of the paper's `External validation` sheet to be screened. They are their
+  own candidate, `ready_biodegradability_mansouri_external` (`TBD -> 2nd Tier`, priority 2): the 1,055 here were
+  curated from NITE/MITI, those 670 were "constructed from two data sources, Cheng et al. and the Canadian DSL
+  database" (Chakravarti and Alla, arXiv 1808.04456, Table 1, whose 356/699 and 191/479 match both sheets exactly),
+  and only 8 of their 670 canonical structures occur here, one with the opposite class. Definition note only, no
+  change to the data; `dataset check` clean.
 - **`qsar_bioconcentration`: `logKOW` stays, `logKOW_type` goes.** The curator's question of the second round was
   what the table's logKOW is worth against RDKit's own logP, and whether keeping it next to `logKOW_type` leaks.
   Measured over the 30 splits with untuned LightGBM on the recommended encoding: the table's `logKOW` is worth

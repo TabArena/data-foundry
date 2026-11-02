@@ -72,6 +72,11 @@ CC (2026-11-01, Lennart): ship the SMILES only, as for qsar_tid_11: the authors'
 
 **Assessment (AI, 2026-11-01):** the 1,024 ECFP bits (Dragon 7) leave; `SMILES` is the one feature. The copies are now found on the 2D structure (`canonical_smiles(..., stereo=False)`) instead of the bit vector: 720 exact copies, the 20 structures with both classes (52 rows) and 10 tautomer pairs by InChIKey leave, so 11,116 chemicals remain (933 very toxic), 11 more than before, since bit collisions had joined different chemicals. Scaffold groups: 7,481 (2,579 ring-less and 1,973 bare-benzene chemicals alone).
 
+CC (2026-11-02, Lennart): on the de-duplication change of 2026-11-01, carried to the curator in the handover
+document as a change that was not an instruction: "the changes look good". The copies are found on the 2D structure
+instead of the published ECFP bit vector, which moves the shipped row count from 11,105 to 11,116: the old key
+merged chemicals whose bit vectors collided rather than chemicals that are the same.
+
 ## Reference
 
 @article{ballabio2019integrated,

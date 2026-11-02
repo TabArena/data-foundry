@@ -135,3 +135,6 @@ wrote 4 on 2026-11-01, so the number already sat a step above its line before th
 been revisited at a review ship (sarcoma, 2026-10-22, changed its problem type and kept 3), so the number is left
 for the curator. `international_stroke_trial_outcome`, the other open multiclass-against-binary framing (flagged
 2026-10-31), is the sibling to decide the same way.
+
+CC (2026-11-02, Lennart): on the priority after the binary merge removed the multiclass gap it partly rested on:
+"4 is ok". It stays at 4; the corrected factor line is in the assessment above.

@@ -58,6 +58,10 @@ CC (2026-11-01, Lennart): go ahead for the structure-recoverable datasets: ship 
 
 **Assessment (AI, 2026-11-01):** the structures are recoverable and the link is exact. The authors' own workbook (Milano Chemometrics, `toxicity_data.xlsx`) holds the same 546 rows in the same order as the UCI file, with CAS-RN, SMILES, their train/test split, LC50 and the same 8 descriptors; all 8 and LC50 are identical on every row. The 8 descriptors leave, which settles the kept potential leak the record named: a genetic algorithm chose them by their fit to the measured toxicity of chemicals in our test folds (LEAK-31), and no such selection reaches the features now. `SMILES` is the one feature; the split is scaffold-grouped (463 groups). Task probes, 30 splits: LightGBM R^2 0.573, random forest 0.548, no flags.
 
+CC (2026-11-02, Lennart): on how the Milano workbook the structures come from was downloaded ("freeware with proper
+reference", fetched through a public link rather than the authors' notification form): "that is okay for now, we can
+note it but it is not blocking us here". Noted here; regularise before this ships outside the group.
+
 ## Reference
 
 @article{cassotti2014prediction,

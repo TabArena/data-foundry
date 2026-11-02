@@ -103,8 +103,11 @@ class QsarBiodeg(AbstractCuratedDataset):
           chemicals with distinct structures, as in qsar_tid_11; a 2D encoding cannot tell them apart, and each pair
           shares a scaffold, so they never straddle the split.
         - Not used here: the supporting information's "External validation" sheet holds 670 further chemicals with
-          structures and classes (657 of them new to this set). That is a candidate of its own, not an extension of
-          the dataset UCI publishes.
+          structures and classes. They are not more of this dataset. The 1,055 here were curated from NITE/MITI,
+          while those 670 were "constructed from two data sources, Cheng et al. and the Canadian DSL database"
+          (Chakravarti and Alla, arXiv 1808.04456, Table 1, whose counts match both sheets), and only 8 of their 670
+          canonical structures occur here, one of them with the opposite class. They are screened as their own
+          candidate, `ready_biodegradability_mansouri_external` (2026-11-02).
         - Split (CLEAN-24, SPLIT-31 as amended): grouped on the Bemis-Murcko scaffold of the structure
           (`scaffold_groups`); chemicals without a ring, and those of a scaffold holding more than a tenth of the set,
           are groups of their own. A screener judges an untested chemical, often of a series not yet measured, so whole

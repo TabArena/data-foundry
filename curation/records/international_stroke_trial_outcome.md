@@ -42,3 +42,7 @@ type_adapter_id: curation-record-v1
 - Adds: A medical multiclass prognosis task with a grouped structure (hospital, country) and mixed categorical and numeric features
 
 **Assessment (AI, 2026-10-31):** cleanup flag of the data-scouting run: the same IST file, a 4-class and a binary framing of one outcome (`international_stroke_trial`; PROV-6). The curator keeps one, or both as distinct tasks.
+
+CC (2026-11-02, Lennart): raised from `nci_aids_antiviral_screen`'s review as the collection's other open
+multiclass-against-binary framing (flagged 2026-10-31), now that the NCI screen ships the binary target: "it is fine
+and does not matter too much, either priority is fine". No change; the framing stays as the record has it.

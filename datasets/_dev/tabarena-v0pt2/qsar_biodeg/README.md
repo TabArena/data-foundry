@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_biodeg
 container_format: 2
-checksum: v2:75bbdbd38993d63c6a51e9109fd15b959168e4d84d7681553d29ee75e7d2aee5
+checksum: v2:6f5c37714de28bf4487816c5763b3788bd36e1e3799233ff375e3d00df90b348
 build:
   uuid: 01a13a7d-c2bf-742d-b04d-f9b569da1f3d
   checksum: v2:5d0dcabbc947ec79fe0e230bddca7b95568e2a8cc0ce95f85fb21a9c114d1739
@@ -76,7 +76,7 @@ decisions: []
 
 Binary classification of `Biodegradable`, scored with `roc_auc` on grouped splits by `scaffold`. 1,055 rows and 1 features. Source: UCI (2013).
 
-Built as `01a13a7d-c2bf-742d-b04d-f9b569da1f3d` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:75bbdbd38993d63c6a51e9109fd15b959168e4d84d7681553d29ee75e7d2aee5`, so the build is stale. See [Build](#build).
+Built as `01a13a7d-c2bf-742d-b04d-f9b569da1f3d` on 2026-10-14, but `dataset.py` has changed since: it now gives checksum `v2:6f5c37714de28bf4487816c5763b3788bd36e1e3799233ff375e3d00df90b348`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -220,8 +220,11 @@ The first 5 of 1,055 rows of the final frame (random rows: the frame is shuffled
   chemicals with distinct structures, as in qsar_tid_11; a 2D encoding cannot tell them apart, and each pair
   shares a scaffold, so they never straddle the split.
 - Not used here: the supporting information's "External validation" sheet holds 670 further chemicals with
-  structures and classes (657 of them new to this set). That is a candidate of its own, not an extension of
-  the dataset UCI publishes.
+  structures and classes. They are not more of this dataset. The 1,055 here were curated from NITE/MITI,
+  while those 670 were "constructed from two data sources, Cheng et al. and the Canadian DSL database"
+  (Chakravarti and Alla, arXiv 1808.04456, Table 1, whose counts match both sheets), and only 8 of their 670
+  canonical structures occur here, one of them with the opposite class. They are screened as their own
+  candidate, `ready_biodegradability_mansouri_external` (2026-11-02).
 - Split (CLEAN-24, SPLIT-31 as amended): grouped on the Bemis-Murcko scaffold of the structure
   (`scaffold_groups`); chemicals without a ring, and those of a scaffold holding more than a tenth of the set,
   are groups of their own. A screener judges an untested chemical, often of a series not yet measured, so whole
@@ -354,4 +357,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | f93df193827f5244586b178fd7199efb86d66359 |
 | libraries | {'python': '3.12.3', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:75bbdbd38993d63c6a51e9109fd15b959168e4d84d7681553d29ee75e7d2aee5` |
+| stale | yes: the definition now gives checksum `v2:6f5c37714de28bf4487816c5763b3788bd36e1e3799233ff375e3d00df90b348` |
