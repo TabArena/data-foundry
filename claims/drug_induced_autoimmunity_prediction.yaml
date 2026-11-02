@@ -1,0 +1,6 @@
+name: drug_induced_autoimmunity_prediction
+holder: Lennart
+stage: add
+claimed_at: '2026-11-02T17:19:30Z'
+expires_at: '2026-11-09T17:19:30Z'
+note: 'special_features: SMILES and spectra under one declaration (PR #21, branch spectral-preprocessing)'
