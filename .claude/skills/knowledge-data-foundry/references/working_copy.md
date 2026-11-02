@@ -3,8 +3,8 @@
 `datasets/_dev/tabarena-v0pt2/` holds one v2 folder per dataset of TabArena v0.2 ([definitions.md](definitions.md)),
 plus:
 
-* `README.md`: how to rebuild, and the table of datasets with their UUIDs, generated between the
-  `<!-- datasets:start/end -->` markers by `.claude/skills/knowledge-data-foundry/scripts/readme_table.py`;
+* `README.md`: how to rebuild. It carried a generated table of every dataset and its UUID until the curator
+  trimmed it on 2026-10-27 (PR #32); what a dataset is and whether it is built is in its own folder's `README.md`;
 * `GETTING_STARTED.md`: the way in for a new curator;
 * `CHANGELOG.md`: the dated log of every change, newest first;
 * `BENCHMARK_CHANGES_TODO.md`: what the TabArena harness still needs (group columns, per-group scoring, metrics);
@@ -13,7 +13,7 @@ plus:
 ## Rules
 
 * Every change to the copy (an edited definition or helper file, an added or removed dataset, a re-run that makes a
-  new container) gets a dated `CHANGELOG.md` entry. A new, removed or rebuilt dataset also refreshes the README table.
+  new container) gets a dated `CHANGELOG.md` entry.
 * A dataset retired to `No (Retired)` or `No` is removed from the copy (its definition stays in the git history), and
   its record's `v2_path` is cleared in the same change ([records.md](records.md)).
 * New work is v2 only. The BeyondArena notebooks are Data Foundry v1; never add or re-curate a dataset with v1
@@ -43,7 +43,7 @@ scripts) stays in the local run folder `local-data-warehouse/_runs/<date>_<run>/
 container with a new UUID under the warehouse (`<warehouse>/<unique_name>/<uuid>/`, or
 `<version_of>/versions/<uuid>/` for a `_1m` version), verifies the export, and records the UUID, checksum and git
 commit in the README front matter. There is no v0.2 collection in the registry yet: record the UUID in a dated
-CHANGELOG entry, refresh the README table, and never add it to `BEYOND_ARENA_UUIDS`. A build happens only when the
+CHANGELOG entry and never add it to `BEYOND_ARENA_UUIDS`. A build happens only when the
 curator asks; `dataset check` gives the same container without saving. How to rebuild and verify many
 datasets at once: [rebuild.md](rebuild.md).
 

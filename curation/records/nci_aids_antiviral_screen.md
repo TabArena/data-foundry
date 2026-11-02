@@ -4,8 +4,7 @@ name: NCI DTP AIDS Antiviral Screen data (aids_conc_may04, with the AIDO99SD str
 checked_by:
 - Lennart
 data_foundry_status:
-- WIP (DF)
-claimed_by: Lennart
+- 'DF: Yes'
 suggestion: 'Yes'
 priority: 4
 tags:
@@ -138,3 +137,7 @@ for the curator. `international_stroke_trial_outcome`, the other open multiclass
 
 CC (2026-11-02, Lennart): on the priority after the binary merge removed the multiclass gap it partly rested on:
 "4 is ok". It stays at 4; the corrected factor line is in the assessment above.
+
+CC (2026-11-02, Lennart): PR #15 is merged, so the dataset is in Data Foundry: `DF: Yes`, and the claim is released
+(board and record). The definition is `datasets/_dev/tabarena-v0pt2/nci_aids_antiviral_screen/`; nothing is built
+yet, and the build waits for the curator's ask together with the other molecule datasets.

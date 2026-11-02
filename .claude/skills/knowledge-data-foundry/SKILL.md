@@ -35,7 +35,7 @@ The scripts are in [scripts/](scripts/):
 * for the pipeline: `benchmark_coverage.py` (the accepted set per domain, problem type and regime, for screening
   priorities), `clean_room.py` (the blind reviewer's folder) and `decision_register.py` (the decisions grouped by rule,
   with the consistency flags);
-* for a rebuild: `build_all.py`, `build_one.py`, `compare_builds.py`, `minimal_inputs.py`, `readme_table.py`.
+* for a rebuild: `build_all.py`, `build_one.py`, `compare_builds.py`, `minimal_inputs.py`.
 
 ## House rules
 
