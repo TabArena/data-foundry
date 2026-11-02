@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-02 10:37 UTC: 56 claim(s) (Andrej 27, Lennart 7, Myunghwan 22).
+As of 2026-11-02 10:41 UTC: 54 claim(s) (Andrej 25, Lennart 7, Myunghwan 22).
 
 ## Andrej
 
@@ -15,7 +15,6 @@ As of 2026-11-02 10:37 UTC: 56 claim(s) (Andrej 27, Lennart 7, Myunghwan 22).
 | `basque_offshore_ctd_chlorophyll` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
 | `blogfeedback` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
 | `boreal_postfire_lichen_biomass` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
-| `california_residential_property_insurance_wildfire` | triage | 2026-11-02 | 2026-11-09 | screening |
 | `cape_floristic_region_family_cover` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
 | `crms_phragmites_cover` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
 | `frempl_french_motor_personal_line` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
@@ -28,7 +27,6 @@ As of 2026-11-02 10:37 UTC: 56 claim(s) (Andrej 27, Lennart 7, Myunghwan 22).
 | `pricing_game_2016_french_fleet` | add | 2026-11-01 | 2026-11-08 | add-dataset, zero-inflated batch |
 | `pricing_game_2017_french_mtpl` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
 | `rand_health_insurance_experiment_doctor_visits` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
-| `spanish_homeowners_motor_insurance_2010_2014` | triage | 2026-11-02 | 2026-11-09 | screening |
 | `spanish_motor_insurance_2015_2018` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
 | `spanish_motor_insurance_coverage_level_2022_2024` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
 | `thailand_road_accident_register_2019_2022` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
