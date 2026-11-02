@@ -5,7 +5,30 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "FCVC": ["never", "sometimes", "always"],
+    "NCP": ["between 1 and 2", "three", "more than three"],  # open-ended
+    "CAEC": ["no", "Sometimes", "Frequently", "Always"],
+    "CH2O": ["less than a liter", "between 1 and 2 L", "more than 2 L"],  # open-ended
+    "FAF": ["I do not have", "1 or 2 days", "2 or 4 days", "4 or 5 days"],
+    "TUE": ["0-2 hours", "3-5 hours", "more than 5 hours"],  # open-ended
+    "CALC": ["no", "Sometimes", "Frequently", "Always"],
+}
+
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "FCVC": {"1": "never", "2": "sometimes", "3": "always"},
+    "NCP": {"1": "between 1 and 2", "3": "three", "4": "more than three"},
+    "CH2O": {"1": "less than a liter", "2": "between 1 and 2 L", "3": "more than 2 L"},
+    "FAF": {"0": "I do not have", "1": "1 or 2 days", "2": "2 or 4 days", "3": "4 or 5 days"},
+    "TUE": {"0": "0-2 hours", "1": "3-5 hours", "2": "more than 5 hours"},
+}
 
 
 class ObesityEstimation(AbstractCuratedDataset):
@@ -69,11 +92,23 @@ class ObesityEstimation(AbstractCuratedDataset):
         - We use only the real data, throwing away the SMOTE samples. The real answers are the first 498 rows: their class counts equal Fig. 1 of the data paper (Palechor & De la Hoz 2019), and all its Normal_Weight rows are among them. A filter on whole-number values would let in 15 synthetic rows, so we cut by position.
         - We drop the 10 exact copies among the 498 real rows (8 groups; one answer set appears 4 times), leaving 488. Each copy repeats all 16 answers, age, height to the centimetre and weight to the kilogram, and 4 groups are neighbouring rows, so they are one person sending the form again; Fig. 1 counts them.
         - We make the task a regression task, re-creating the body mass values underlying the discretized obesity levels, and drop weight and height which leak the target partially. Thus, we create a regression task of estimating the body mass of individuals based on their eating habits and other questions from the questionnaire. The original task is trivial to solve due to the leak and thus not interesting.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 7 columns are ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 5 of them decoded from the source's codes
+          into its words (`CODE_LABELS`, 2026-11-01).
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 5 ordered codes carry their codebook's
+          words (`CODE_LABELS`), in the same order.
     """
 
     # Task
     target = "BodyMass"
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason=(
+            "The source is a data descriptor for a 7-class obesity-level task with no defined evaluation metric, and "
+            "we changed the task to BMI regression (weight and height dropped), so no source metric applies."
+        )
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "ObesityDataSet_raw_and_data_sinthetic.csv")
@@ -88,10 +123,13 @@ class ObesityEstimation(AbstractCuratedDataset):
         # Creat real target
         df["BodyMass"] = df["Weight"] / (df["Height"] ** 2)
         df = df.drop(columns=["Height", "Weight", "NObeyesdad"])
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "Gender",
                 "family_history_with_overweight",

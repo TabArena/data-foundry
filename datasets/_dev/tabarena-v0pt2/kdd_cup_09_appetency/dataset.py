@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
 
 
 class KddCup09Appetency(AbstractCuratedDataset):
@@ -60,11 +60,21 @@ class KddCup09Appetency(AbstractCuratedDataset):
         - We dropped empty columns: "Var8", "Var15", "Var20", "Var31", "Var32", "Var39", "Var42", "Var48", "Var52", "Var55", "Var79", "Var141", "Var167", "Var169", "Var175", "Var185", "Var209", "Var230".
         - Anomaly: the feature names and categorical feature values have no semantic meaning.
         - Anomaly: this dataset has many missing values.
+        - The target (2026-11-01, CLEAN-25): `Appetency` ships its classes as words (1 is the event). Binary: "Yes" is
+          the event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
     target = "Appetency"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original=("AUC (area under the ROC curve), per task; the ranking averaged churn, appetency and up-selling AUC"),
+        reference=(
+            "Guyon et al. 2009, Analysis of the KDD Cup 2009, JMLR W&CP 7; https://kdd.org/kdd-cup/view/kdd-cup-2009"
+        ),
+        definition="ROC AUC of the appetency score on the test customers.",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "orange_small_train.data", sep="\t")
@@ -96,6 +106,8 @@ class KddCup09Appetency(AbstractCuratedDataset):
             "Var230",
         ]
         df.drop(columns=empty_cols, inplace=True)
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"-1": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

@@ -6,7 +6,21 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
+
+# Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
+SCORES = [
+    "erythema",
+    "scaling",
+    "definite borders",
+    "itching",
+    "koebner phenomenon",
+    "polygonal papules",
+    "follicular papules",
+    "oral mucosal involvement",
+    "knee and elbow involvement",
+    "scalp involvement",
+]
 
 
 class EryhematoSquamousDisease(AbstractCuratedDataset):
@@ -34,10 +48,12 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
             "We drop the 22 findings from the biopsy and keep the clinical examination; with the biopsy the task is "
             "close to solved."
         ),
-        fit="direct",
+        fit="approximate",
         fit_reason=(
             "The clinical findings come before the biopsy and the label is the confirmed diagnosis, so the task is "
-            "the differential the source describes. It is small and old."
+            "the differential the source describes. But the patients look like typical cases rather than a clinic's: "
+            "93% of those with lichen planus have mouth lesions and no other patient does, against 19% to 63% in "
+            "clinic series. It is small and old."
         ),
     )
 
@@ -72,11 +88,23 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
         - We keep only the clinical features: the 10 clinical findings graded 0 to 3, family history and age. The source describes two steps: "Patients were first evaluated clinically with 12 features. Afterwards, skin samples were taken for the evaluation of 22 histopathological features." With the 22 histopathological features the task is close to solved (a logistic model reaches macro ROC AUC 0.999 and 97% accuracy on the shipped splits); the task here is the clinical differential before the biopsy (macro ROC AUC 0.98, 87% accuracy), where seborrheic dermatitis, pityriasis rosea and chronic dermatitis are the hard cases.
         - We encode all features but age as categorical, since they are ordinal features in nature.
         - We ensure missing values in age are encoded as NaN.
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 10 scores with no words per level are
+          numbers (`SCORES`): `erythema`, `scaling`, `definite borders`, `itching`, `koebner phenomenon`, `polygonal
+          papules`, `follicular papules`, `oral mucosal involvement`, `knee and elbow involvement`, `scalp involvement`.
+        - The target (2026-11-01, CLEAN-25): `class` ships its classes as words (dermatology.names, 9. Class
+          Distribution).
     """
 
     # Task
     target = "class"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Guevenir et al. 1998 report cross-validated accuracy of VFI5, without costs between the six diagnoses; we "
+            "use the 12 clinical features only. Original rejected: accuracy. log_loss is the multiclass fallback."
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         feature_names = [
@@ -136,6 +164,22 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
         ]
         df = raw[[*clinical, self.target]].copy()
         df["age"] = df["age"].replace("?", np.nan).astype(float)
+        # scores with no words per level are numbers (CLEAN-14)
+        df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
+        # the target's classes in words (CLEAN-25): the source's class names
+        df = decode(
+            df,
+            {
+                self.target: {
+                    "1": "psoriasis",
+                    "2": "seborrheic dermatitis",
+                    "3": "lichen planus",
+                    "4": "pityriasis rosea",
+                    "5": "chronic dermatitis",
+                    "6": "pityriasis rubra pilaris",
+                }
+            },
+        )
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

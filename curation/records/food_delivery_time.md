@@ -51,6 +51,10 @@ split instead. The temporal tag reflects that open question, not the protocol th
 
 CC (2026-10-14, Lennart): Flip the signs, keep the (0, 0) rows and document the synthetic offsets.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — Kaggle dataset without a competition or paper; the data card states the task but no metric.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `meituan_food_delivery_time` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 https://www.kaggle.com/datasets/rajatkumar30/food-delivery-time

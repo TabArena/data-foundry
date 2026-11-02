@@ -7,7 +7,7 @@ suggestion: TBD -> 2nd Tier
 decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 collections:
 - New (BeyondArena)
 domain: medical & healthcare
@@ -34,3 +34,5 @@ The original data is likely simulated or created ("synthetic data modeled after 
 Data looks good to use. Has some feature engineering in this version.
 
 Unclear how to split, need to check but random might work. Furthermore, the target is kind of weird and might be treated as a different task or needs scaling"
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `ny_sparcs_inpatient_length_of_stay` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

@@ -36,6 +36,8 @@ Lennart: Yes, if the groups are not a problem and we do not have repeated employ
 
 Andrej: Fits criteria
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — Area Under Receiver Operating Characteristic Curve (https://www.kaggle.com/competitions/amazon-employee-access-challenge (Kaggle API evaluationMetric)).
+
 ## Reference
 
 https://www.kaggle.com/c/amazon-employee-access-challenge

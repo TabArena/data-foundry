@@ -7,7 +7,10 @@ from pathlib import Path
 import arff
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+
+# Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
+SCORES = ["structure_quality"]
 
 
 class MiamiHousing(AbstractCuratedDataset):
@@ -71,11 +74,25 @@ class MiamiHousing(AbstractCuratedDataset):
         - The file first appeared on OpenML (43093, uploaded 2021-09-24, creator Steven C. Bourassa, citing Mayer et
           al. 2021). Kaggle deepcontractor/miami-housing-dataset copies its description and names openml.org as its
           source, and OpenML 44983 (2022) copies Kaggle.
+        - `structure_quality` ("quality of the structure", OpenML 43093, codes 1-5 without labels) is an ordered
+          category in the order of its codes (2026-10-31, CLEAN-14; the curator's marks: the order comes from the
+          context and logic, not from the target, so the high prices of the 16 homes rated 3 do not move it).
+        - Cycle (2026-11-01, CLEAN-14, Lennart's rule): `month_sold` (1-12) stays a number. A weekday or a month is a
+          position in a continuous cycle (weekday 1.5 is Monday noon), and the source ships it as a number; named
+          weekdays and months are ordered categories instead.
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 1 scores with no words per level are
+          numbers (`SCORES`): `structure_quality`.
     """
 
     # Task
     target = "SALE_PRC"
     problem_type = "regression"
+    metric = Metric.from_context(
+        "rmsle",
+        reason="Mayer et al. 2021 (SSRN) could not be read; the abstract names only 'predictive performance'. For a sale price the error that matters is relative to the price, so RMSLE on the price.",
+        target_transform="log",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         with open(f"{raw_dir}/miami2016.arff") as f:
@@ -88,6 +105,8 @@ class MiamiHousing(AbstractCuratedDataset):
         df = df.drop_duplicates(subset=["PARCELNO"])
         df = df.drop(columns=["PARCELNO"])
         df[self.task_metadata.target_column_name] = np.log(df[self.task_metadata.target_column_name])
+        # scores with no words per level are numbers (CLEAN-14)
+        df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

@@ -9,11 +9,12 @@ decision_markers:
 - No Good Target (yet)
 tags:
 - Free Text (Short)
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - Non-IID (Grouped)
 - New IID
 collections:
 - CARTE/TARTE
+- STRABLE
 source_links:
 - https://www.kaggle.com/datasets/markusschmitz/museums
 source_row: 499

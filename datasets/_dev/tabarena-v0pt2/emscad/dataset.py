@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, anonymize_ids, decode
 
 CONTACT_PATTERN = r"#(?:EMAIL|PHONE|URL)_[0-9a-f]{8,}#"
 """EMSCAD masks e-mails, phones and URLs as ``#(EMAIL|PHONE|URL)_Keyed_SHA2#``, so one hash is one contact."""
@@ -60,6 +60,21 @@ def poster_groups(df: pd.DataFrame) -> pd.Series:
     roots = pd.Series([find(i) for i in range(len(df))], index=df.index)
     first_job = df["job_id"].groupby(roots).transform("min")
     return anonymize_ids(first_job.astype(str))
+
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "required_experience": [
+        "Not Applicable",
+        "Internship",
+        "Entry level",
+        "Associate",
+        "Mid-Senior level",
+        "Director",
+        "Executive",
+    ],
+}
 
 
 class Emscad(AbstractCuratedDataset):
@@ -143,11 +158,24 @@ class Emscad(AbstractCuratedDataset):
         - We removed job listings with non english texts (138 rows).
         - We do not subsample the data, as a result, the data is heavily imbalanced.
         - We found no relation of job_id with a timestamp and even found cases where a lower job_id has a description claiming to be a job from 2014 (so the end of the collection period). Thus, we do dropped job_id as it does not contain any signal.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed
+          by the curator's rule (missing when the column has no other missing value, else the lowest level; a state that
+          is simply not on the scale, such as Other, is missing).
+        - The target (2026-11-01, CLEAN-25): `fraudulent` ships its classes as words (1 is the event). Binary: "Yes" is
+          the event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
     target = "fraudulent"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Vidros et al. 2017 report accuracy with precision, recall and F-measure on a balanced 450/450 sample; the "
+            "release we ship is 4.6% fraudulent, so the paper's accuracy does not carry over (MET-2), and no threshold or"
+            " costs are fixed. Original rejected: accuracy on the 1:1 sample. roc_auc is the binary fallback."
+        ),
+    )
     grouping = Grouping(
         on="poster_group",
         labels="per_sample",
@@ -365,10 +393,13 @@ class Emscad(AbstractCuratedDataset):
         # Group ads of the same poster (used for the splits only)
         df["poster_group"] = poster_groups(df)
         df = df.drop(columns=["job_id"])
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "poster_group",
                 "telecommuting",

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
 
 
 class BodyDensityPrediction(AbstractCuratedDataset):
@@ -68,6 +68,12 @@ class BodyDensityPrediction(AbstractCuratedDataset):
     # Task
     target = "Density"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmse",
+        original="standard error of estimate (SEE) of the prediction equation, with R / R^2",
+        reference="Penrose, Nelson & Fisher 1985, Med Sci Sports Exerc 17(2):189; Johnson 1996, 'Fitting Percentage of Body Fat to Simple Body Measurements', Journal of Statistics Education 4(1) (StatLib bodyfat)",
+        definition="root mean squared error of the predicted body density (g/cm3)",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "bodyfat.csv")

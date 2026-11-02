@@ -38,6 +38,8 @@ The test data is before and after the train time, so they checked for both in th
 
 Unclear if this is a good task. Seems like a paper where they just wanted to show that it is possible and they did. Unclear if this is a real task otherwise....
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `hpdmobile_home_occupancy` (TBD -> Yes, priority 3), `robod_room_occupancy` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Accurate occupancy detection of an office room from light, temperature, humidity and CO2 measurements using statistical learning models

@@ -9,6 +9,7 @@ data_foundry_status:
 suggestion: 'Yes'
 decision_markers:
 - Data Quality Issue
+- Selection Bias
 tags:
 - Tiny Data
 collections:
@@ -47,6 +48,14 @@ TODO: remove height / weight, make regression task, remove SMOTE samples
 **Assessment (AI, 2026-10-14):** the 498 real rows hold 10 exact copies in 8 groups (rows 97/98, 105/106, 208/209, 466/467, 295/309, 282/460, 443/496, and 145/174/179/184). Each repeats all 16 answers, age, height to the centimetre and weight to the kilogram. Of the 14 rows that repeat another row's answers, 10 also repeat height and weight, which different people would almost never do, and two more are neighbouring rows that differ only in height (rows 420/421: 1.85 and 1.84 m), like a corrected resubmission. So they are the same person sending the web form again.
 
 CC (2026-10-14, Lennart): Drop the duplicates: 488 rows.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — The source is a data descriptor for a 7-class obesity-level task with no defined evaluation metric, and we changed the task to BMI regression (weight and height dropped), so no source metric applies.
+
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 7 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `FCVC`, `NCP`, `CAEC`, `CH2O`, `FAF`, `TUE`, `CALC` (the README lists their levels).
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nhanes_bmi_from_habits` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
+CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 5 coded columns carry their words.
 
 ## Reference
 

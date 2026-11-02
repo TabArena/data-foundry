@@ -11,9 +11,11 @@ says what is measured and when each flag is raised) on each dataset's shipped sp
 and, for a task scored per group (``Grouping(prediction_unit="group")``), the grouping's aggregation and
 ``time_on``. ``--all`` probes every definition under ``--root``; ``--built`` reads the container recorded in each
 ``README.md``'s build record instead of rebuilding the frame from the raw files. ``--splits`` sets the splits probed
-(default: up to 30 for small data, else 5), ``--max-rows`` caps each train and test side, ``--no-text`` leaves text
-columns out instead of encoding them, ``--n-jobs`` sets the threads per model and ``--jobs`` the datasets probed in
-parallel. ``--out DIR`` writes one JSON per dataset and ``summary.md`` there.
+(default: up to 30 for small data, else 5), ``--max-rows`` caps each train and test side (default 200,000; a
+temporal task's train side keeps its newest rows), ``--no-text`` leaves text columns out instead of encoding them,
+``--n-jobs`` sets the threads per model and ``--jobs`` the datasets probed in parallel (a sweep of the working copy
+with ``--jobs 8`` takes about 2-3 hours, at most about 13 GB per job). ``--out DIR`` writes one JSON per dataset
+and ``summary.md`` there.
 
 The flags are questions for the curator, not verdicts; how to answer each one:
 ``.claude/skills/knowledge-curation/references/task_probes.md``. The numbers are indicative (untuned models); a flag is
@@ -119,7 +121,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", type=Path, default=Path("datasets/_dev/tabarena-v0pt2"))
     parser.add_argument("--built", action="store_true", help="Read the built containers (README build record).")
     parser.add_argument("--splits", type=int, help="Splits to probe (default: up to 30 for small data, else 5).")
-    parser.add_argument("--max-rows", type=int, default=50_000)
+    parser.add_argument("--max-rows", type=int, default=task.MAX_ROWS)
     parser.add_argument("--no-text", action="store_true", help="Leave text columns out instead of encoding them.")
     parser.add_argument("--n-jobs", type=int, default=8, help="Threads per model.")
     parser.add_argument("--jobs", type=int, default=1, help="Datasets probed in parallel.")

@@ -7,10 +7,11 @@ suggestion: TBD -> 2nd Tier
 decision_markers:
 - No Good Target (yet)
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - New IID
 collections:
 - CARTE/TARTE
+- MulTaBench
 source_links:
 - https://www.kaggle.com/datasets/skamlo/wine-price-on-polish-market
 - wina.pl

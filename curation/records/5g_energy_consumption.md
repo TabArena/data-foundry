@@ -34,3 +34,17 @@ type_adapter_id: curation-record-v1
 Would require grouped-temporal split, but not possible due to data size
 
 We could do a grouped split as a validation study, but this would not exactly correspond to the actual task
+
+CC (2026-10-21, Lennart): the declared metric documents the original use case's metric; overrule it only when it is biased or wrong (evidence from the paper); keep the note of the original metric (TP-6 amended).
+
+**Assessment (AI, 2026-10-21):** metric stays `mape`: the challenge ranked the private leaderboard by weighted MAPE, the weights (higher for new stations or configurations) given in its test file (Zindi evaluation page). Here every test station is new and the weights are not in the released data, so unweighted MAPE is the nearest listed metric. The notes now name WMAPE. Needs a rebuild to reach the container (notes only).
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: stand_in mape — stands in for Weighted MAPE (WMAPE), Zindi private leaderboard: false: the per-row WMAPE weights come with the test file and are not published; every test station here is new, so unweighted mape is the closest stand-in (https://zindi.africa/competitions/aiml-for-5g-energy-consumption-modelling).
+
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): codes shipped as numbers, left for the curator's review: `weekday_number`.
+
+CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): weekday_number a category.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `cetin_ran_base_station_energy` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
+CC (2026-11-01, Lennart): marks on the review board of PR #37: weekday_number is a number again (a position in the week's continuous cycle, shipped as a number: the curator's cycle rule).

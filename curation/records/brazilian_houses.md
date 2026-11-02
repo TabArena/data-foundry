@@ -27,6 +27,8 @@ CC: "need to be careful: don't use leaking features and log-transform target (if
 
 Temporal index or timestamp is missing. Cannot split as a temporal task, but it is clearly a temporal task (like many of the other house price datasets). Without more information, this task can be at best used for some time-invariant feature importance that would also not mean a lot in real life.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `sao_paulo_itbi_transactions` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 ?

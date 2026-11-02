@@ -7,7 +7,7 @@ checked_by:
 suggestion: 'No'
 decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 collections:
 - TabArena Reject
 - CARTE/TARTE

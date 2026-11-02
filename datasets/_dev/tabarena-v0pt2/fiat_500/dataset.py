@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class Fiat500(AbstractCuratedDataset):
@@ -63,11 +63,19 @@ class Fiat500(AbstractCuratedDataset):
         - Crawl date: not stated. The file was uploaded on 2020-04-07, and age_in_days counts "from the time the dataset has been created" (data card).
         - Filter: not stated. The file name ends in "_filtered", but neither the data card nor the author's notebooks say what was removed.
         - We keep one row per car, its first listing (1,434 rows): 104 rows repeat the model, engine power, age, mileage and owners of another. 18 are exact copies, most 12-14 rows after the first (the crawler saw the listing on two result pages), and one car with an odd mileage such as 9,248 km appears at up to 9 places a median 396 km apart, mostly at one price (Lennart, 2026-10-14).
+        - Partial order, left unordered (2026-11-01, CLEAN-14): `model`: pop is the base trim; lounge and sport are both
+          above it but not ranked against each other.
     """
 
     # Task
     target = "price"
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason=(
+            "Kaggle dataset without a competition or paper; the data card says only 'to train myself and test regression "
+            "algorithms', no metric named"
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/automobile_dot_it_used_fiat_500_in_Italy_dataset_filtered.csv")

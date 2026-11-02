@@ -25,3 +25,5 @@ Data from the game League of Legends. Technically real data, but not a real pred
 It might have temporal relationships in the data due to seasons or so, need to check via match ID
 
 I feel we could use it, but am also not sure.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `oracles_elixir_lol_pro_matches` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

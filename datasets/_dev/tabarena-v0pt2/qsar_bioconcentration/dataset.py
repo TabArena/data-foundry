@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import numpy as np
@@ -10,13 +11,23 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Grouping,
+    Metric,
     TaskSummary,
+    canonical_smiles,
     drop_columns,
-    rdkit_descriptors,
+    encode_smiles,
+    scaffold_groups,
 )
 
 RAW_FILE = "Grisoni_et_al_2016_EnvInt88.csv"
 """The UCI file: CAS, SMILES, the authors' Train/Test set, 9 Dragon descriptors, the class and logBCF."""
+
+KOW_FILE = "1-s2.0-S0045653515000879-mmc2.xlsx"
+"""The authors' 2015 BCF table (Chemosphere SI): CAS, SMILES, logBCF, logKOW and whether it is measured or predicted."""
+
+CAS_NUMBER = re.compile(r"\d{2,7}-\d{2}-\d")
+"""A CAS registry number; a cell of either table can hold several."""
 
 CLASS_LABELS = {1: "lipid storage", 2: "additional storage sites", 3: "metabolized or eliminated"}
 """The three mechanistic classes, as the old UCI page names them."""
@@ -58,23 +69,31 @@ class QsarBioconcentration(AbstractCuratedDataset):
         ),
         predicted=(
             "The mechanism class, read from the measured bioconcentration and the measured octanol-water "
-            "partitioning: lipid storage (59%), metabolised or eliminated (33%), or additional storage sites (8%)."
+            "partitioning: lipid storage (59%), metabolized or eliminated (33%), or additional storage sites (8%)."
         ),
-        known="The chemical's structure, as the source's nine descriptors and 193 more computed with RDKit.",
+        known=(
+            "The chemical's structure (a SMILES string) and its "
+            "octanol-water partition coefficient (logKOW) from the authors' table, measured for 84% of the chemicals "
+            "and predicted for the rest."
+        ),
         split=(
-            "Random chemicals, one row each, as in the source's random split; the file has no chemical families for a"
-            " stricter split."
+            "Whole chemical series are held out: chemicals that share a ring skeleton stay on one side, so a test "
+            "chemical belongs to a family the model has not seen. Chemicals without a ring and those whose skeleton "
+            "is the bare benzene ring (a third of the set) are held out one by one."
         ),
         changes=(
-            "We drop the measured bioconcentration factor the class is read from, swap back the structures of three "
+            "We split by chemical series instead of at random, drop the measured bioconcentration factor the class is "
+            "read from and the nine descriptors the authors "
+            "selected on labelled chemicals, add the logKOW from the authors' "
+            "2015 table, swap back the structures of three "
             "pairs of chemicals that carried each other's, and drop three chemicals with another chemical's "
-            "structure; we replace the structure's text by RDKit's descriptors of it."
+            "structure; the structure ships in RDKit's canonical form."
         ),
         fit="direct",
         fit_reason=(
-            "The structure and its descriptors are known before a fish test, and a held-out chemical is an untested "
-            "one. The authors chose the nine descriptors on chemicals that also sit in our test folds, which may "
-            "favour those slightly."
+            "The structure, its descriptors and the logKOW are known before a fish test, and a held-out chemical "
+            "stands for an untested one of a series not yet measured: 6.4% of the test chemicals have a close analog "
+            "in training (Tanimoto 0.7 or more), against 12.6% under a random split."
         ),
     )
 
@@ -92,6 +111,13 @@ class QsarBioconcentration(AbstractCuratedDataset):
         mkdir -p local-data-warehouse/qsar_bioconcentration && wget -P local-data-warehouse/qsar_bioconcentration/ https://archive.ics.uci.edu/static/public/510/qsar+bioconcentration+classes+dataset.zip && unzip local-data-warehouse/qsar_bioconcentration/qsar+bioconcentration+classes+dataset.zip -d local-data-warehouse/qsar_bioconcentration/ && rm local-data-warehouse/qsar_bioconcentration/qsar+bioconcentration+classes+dataset.zip
 
         sha256 of Grisoni_et_al_2016_EnvInt88.csv: 5bfd2d11afcd725e31bdc60be0cd1d7989024a00463ed9fd91d8951254cdc104
+
+        The logKOW comes from the authors' 2015 BCF table, supplementary data 2 of Grisoni et al. 2015 (Chemosphere
+        127:171-179) on Elsevier's server, which states no licence for it (downloaded 2026-10-26):
+
+        wget -O local-data-warehouse/qsar_bioconcentration/1-s2.0-S0045653515000879-mmc2.xlsx https://ars.els-cdn.com/content/image/1-s2.0-S0045653515000879-mmc2.xlsx
+
+        sha256 of 1-s2.0-S0045653515000879-mmc2.xlsx: 537874779929946820c175542650266a53a70d3d4f0b90c34c01658a5ee5ce8b
     """
     bibtex = """
         @article{grisoni2016investigating,
@@ -114,29 +140,47 @@ class QsarBioconcentration(AbstractCuratedDataset):
         }
     """
     curation_comments = """
-        We start with Grisoni_et_al_2016_EnvInt88.csv from UCI 510: 779 organic chemicals with CAS number, SMILES, the authors' Train/Test set, 9 Dragon descriptors, the mechanistic class and the measured fish logBCF. The authors' 2015 BCF table (Chemosphere SI), which adds the experimental logKOW, is evidence only.
+        We start with Grisoni_et_al_2016_EnvInt88.csv from UCI 510: 779 organic chemicals with CAS number, SMILES, the authors' Train/Test set, 9 Dragon descriptors, the mechanistic class and the measured fish logBCF. From the authors' 2015 BCF table (Chemosphere SI) we add the logKOW.
 
         - Prediction point: an organic chemical whose bioconcentration in fish has not been measured, before a fish test. Its structure (the SMILES) and the descriptors computed from it are known; the measured BCF, and so the class read from it, are not.
-        - Target: bioconcentration_mechanism, the class of the file, named as on the old UCI page. The class is a rule on the measured logBCF and the experimental logKOW: with the 2015 table's logKOW, a band of 0.5 log units around the TGD line gives the file's class for 600 of the 607 shipped chemicals with a logKOW of at least 1 (thresholds inferred from the data).
-        - logBCF dropped: it is the measurement the class is read from and is not known for a new chemical. MLOGP, the calculated logKOW among the descriptors, does not complete the rule in its place (decision table). The regression on logBCF is the file's other task (OpenML 46586); we ship the class, which the paper models and the 9 descriptors were selected for.
+        - Target: bioconcentration_mechanism, the class of the file, named as on the old UCI page. The class is a rule on the measured logBCF and the experimental logKOW: with the 2015 table's logKOW, a band of 0.5 log units around the TGD line gives the file's class for 600 of the 607 shipped chemicals with a logKOW of at least 1 (thresholds inferred from the data). The 2015 table gives a logKOW for 773 of the 776 chemicals, measured for 651 and predicted for 122; the band gives the file's class for 72% of the 122, and below a logKOW of 1 the class is mostly lipid storage by convention.
+        - logBCF dropped: it is the measurement the class is read from and is not known for a new chemical. MLOGP, the calculated logKOW among the authors' descriptors, does not complete the rule in its place (decision table). The regression on logBCF is the file's other task (OpenML 46586); we ship the class, the task the paper models (Lennart, CC 2026-10-26).
+        - logKOW (Lennart, CC 2026-10-26, USE-6 and USE-3): the assessor of the use case holds the chemical's logKOW, a cheap lab test that REACH requires from 1 tonne a year and the first tier of the bioaccumulation screen, before any fish test. We add it from the authors' 2015 table, matched on the CAS numbers of the cell and the logBCF both tables list; 2 chemicals have no match and stay missing. Where the 2015 table has no experimental value it carries a consensus prediction, not a measurement: "Experimental KOW values were obtained from VEGA log P dataset. If no experimental value was provided, a consensus KOW was predicted, as suggested by (Cronin and Livingstone, 2004)" (Grisoni et al. 2015, Sec. 3.1; read 2026-11-01), so the column is a measurement for 652 chemicals and a prediction for 122. The decimals agree: 64% of the predicted values are exact thirds of three-decimal numbers, the mean of three model predictions. Every value ships, because an assessor without a measurement would likewise use a predicted logKOW (USE-6).
+        - logKOW_type is not shipped (Lennart, CC 2026-11-02, CLEAN-22): the flag that marked measured against predicted was added on 2026-10-26 so a user could drop the predicted rows. What takes it out of "keep every relevant feature" is not its size but what it is: it records how the authors filled their 2015 table, not a property of the chemical, the shape of `early_learning_predictors`' `teacher_duration` (CLEAN-22, 2026-10-30). It carries nothing a model can use either, measured on 2026-11-02 over the 30 splits with untuned LightGBM on the recommended encoding (macro ROC AUC): 0.534 alone against 0.5 for chance, nothing at all on top of the structure (0.6806 with it, 0.6806 without it), -0.0013 in the full model. The logKOW itself is worth +0.0121 over the encoding alone, better on 22 of 30 splits, which is why it stays. The provenance is this note and decision table 4; the price is that the 122 predicted rows are no longer identifiable from the shipped frame, so the logKOW ships as 84% measurement and 16% consensus prediction with no marker on the row (CLEAN-24's "measured properties stay" is qualified for it).
+        - No leak in either column (checked 2026-11-02): the class is a band around the TGD line through the measured logBCF, which is dropped, and the logKOW alone scores macro ROC AUC 0.629. The band reproduces the shipped class for 94.7% of the rows with a measured logKOW but for only 72.5% of the 122 predicted ones, so the value we ship for those rows is not the number the authors read their label from. The class shares do differ by provenance (lipid storage 61% of the measured rows, 48% of the predicted ones), which is what the flag's 0.534 measures: which chemicals get a logP measured, not which mechanism they have. RDKit's MolLogP, a logKOW computed from the structure, is in the recommended encoding, and a model on that encoding predicts the table's logKOW out of fold at R-squared 0.877, mean absolute error 0.44 log units against a spread of 1.86.
         - Dropped CAS (registry numbers, an identifier) and Set (the authors' random 75/25 split).
-        - The structure: RDKit's 2D descriptors of the repaired SMILES as `rdkit_*` columns (`rdkit_descriptors`, RDKit 2026.03.6), 193 of the 217, the others constant here or copies. The 9 descriptors do not tell positional isomers apart (61 chemicals share them with another, 14 of those with another class); with RDKit's added, every chemical has its own values (decision table). LightGBM's macro ROC AUC on our splits: 0.735 with the 9, 0.752 with RDKit's added (better on 13 of 15 splits).
-        - `SMILES` dropped, as in every SMILES dataset (2026-10-14): next to the 9 descriptors the SMILES as text (character n-grams) lowers LightGBM's macro ROC AUC from 0.735 to 0.723.
+        - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01): the repaired SMILES in RDKit's canonical form (`canonical_smiles`; no salts here), declared in `smiles_columns`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts). From 2026-10-14 to 2026-11-01 the definition shipped RDKit's 193 varying descriptors in place of the string. The 9 descriptors do not tell positional isomers apart (61 chemicals share them with another, 14 of those with another class); in the recommended encoding every chemical has its own values (decision table). Default LightGBM's macro ROC AUC on the first 15 of our splits: 0.745 with the 9, 0.757 with RDKit's descriptors added (better on 12 of 15 splits); the MACCS keys next to the descriptors change it by -0.003 (LightGBM) and +0.009 (random forest; 2026-11-01). The SMILES read as text (character n-grams) lowered LightGBM's macro ROC AUC from 0.735 to 0.723 next to the 9 descriptors (run of 2026-10-14, settings not recorded).
         - Repaired rows, 6: three pairs carry each other's SMILES and descriptors (benzene and cyclohexane, naphthalene and tetralin, chlorobenzene and chlorocyclohexane; CAS numbers looked up in Wikidata and PubChem). The BCF and the class belong to the CAS number, as the 2015 table lists all six with their right SMILES and the file's logBCF, and the descriptors follow the SMILES, so we swap the SMILES and the 9 descriptors back within each pair.
         - Dropped rows, 3: triticonazole and two dioxins carry the structure of another chemical and have no partner row to repair them from.
-        - Renamed B02[C-N] and F04[C-O] to B02(C-N) and F04(C-O), since LightGBM and XGBoost refuse square brackets in feature names.
-        - Split: IID, one row per distinct chemical, as in the source's random split. The file holds no key of chemical families for a stricter split.
-        - Note: the authors selected the 9 descriptors on their 584 training chemicals, which sit in our test folds too. A random forest scores macro AUC 0.064 higher on those chemicals than on the authors' test chemicals (one-sided p = 0.06 against random subsets), and logistic regression shows no gap (0.003), so we keep it (as home_credit_default_risk).
-        - Note: TabSTAR's annotation (OpenML 46585) swaps the names of classes 2 and 3. Our labels follow the old UCI page and the rule: class 2 lies above the TGD line.
+        - Split (Lennart, CC 2026-10-26, SPLIT-31 as amended): grouped on the Bemis-Murcko scaffold (the ring skeleton) of the repaired SMILES (`scaffold_groups`). The 42 congener series (260 chemicals, such as 64 biphenyls and 24 naphthalenes) and the other shared skeletons stay on one side; chemicals without a ring (104) and those whose skeleton is the bare benzene ring (262, 34%: more than a tenth of the set and no series) are groups of their own. A random split put relatives on both sides: a random forest scored macro ROC AUC 0.779 on test chemicals whose scaffold was in training and 0.655 on the others; under the groups 6.4% of the test chemicals have a training analog at Tanimoto 0.7 or more (Morgan radius 2, 2,048 bits), against 12.6% at random. The source split at random; qsar_oral_toxicity and drug_induced_autoimmunity_prediction group on the scaffold too.
+        - The authors' 9 Dragon descriptors are dropped (Lennart, CC 2026-10-26, LEAK-31): the authors selected them on their 584 training chemicals, which sit in our test folds too. They come from Dragon 6 (commercial software), and the pool they were selected from is not published. Removing them costs nothing measurable: a random forest scores macro ROC AUC 0.760 with them and 0.759 without on 30 of our splits (paired -0.002, SE 0.001); MLOGP among them was a calculated logKOW, which the measured logKOW and RDKit's MolLogP now carry.
     """
 
     # Task
     target = "bioconcentration_mechanism"
     problem_type = "multiclass_classification"
+    smiles_columns = ("SMILES",)
+    metric = Metric.fallback(
+        reason="Grisoni et al. 2016 report the non-error rate (NER, balanced accuracy) with per-class sensitivity, specificity and precision, the Milano group's house measure, at argmax with no costs. Original rejected: NER. log_loss is the multiclass fallback."
+    )
+
+    grouping = Grouping(
+        on="scaffold",
+        labels="per_sample",
+        prediction_unit="row",
+        context="none",
+        definition="""
+            One group is a chemical series: the chemicals that share one Bemis-Murcko scaffold (ring systems and the chains linking them; Bemis and Murcko 1996), computed with RDKit from the repaired SMILES. A chemical without a ring, or with the bare benzene ring (34% of the set, more than a tenth), is a group of its own (SPLIT-31). An assessor estimates the bioconcentration of an untested chemical, often of a series not yet measured, so whole series are held out. Each row is one prediction, made from the chemical's descriptors and logKOW alone.
+        """,
+    )
+    splits_comment = """
+        Grouped splits on the Bemis-Murcko scaffold: all chemicals of one series stay on one side, so a model predicts chemicals of a series it has not seen; chemicals without a ring and those with the bare benzene ring are held out one by one. Chemicals with similar but not identical scaffolds can be on both sides.
+    """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         # UTF-8 with a byte-order mark and CRLF line ends; a CAS cell can hold several numbers in quotes
-        return pd.read_csv(raw_dir / RAW_FILE, encoding="utf-8-sig")
+        chemicals = pd.read_csv(raw_dir / RAW_FILE, encoding="utf-8-sig")
+        return _join_logkow(chemicals, pd.read_excel(raw_dir / KOW_FILE, dtype={"CAS": str}))
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
@@ -146,13 +190,18 @@ class QsarBioconcentration(AbstractCuratedDataset):
         # the SMILES of these rows, and the descriptors computed from it, is another chemical than their CAS number
         df = df[~df["CAS"].isin(WRONG_STRUCTURE)]
         df = df.assign(**{self.target: df["Class"].map(CLASS_LABELS)})
-        # The structure as numbers: RDKit's 2D descriptors in place of the SMILES (data_foundry.v2.chemistry)
-        df = pd.concat([df, rdkit_descriptors(df["SMILES"])], axis=1)
-        # CAS is an identifier, Set the authors' random split, logBCF the measurement the class is read from
-        return drop_columns(df, ["CAS", "Set", "Class", "logBCF", "SMILES"])
+        # The structure ships as a SMILES column (`smiles_columns`), in RDKit's canonical form
+        df["SMILES"] = canonical_smiles(df["SMILES"])
+        # The split groups: the chemical series (Bemis-Murcko scaffold); no ring or the bare benzene ring alone
+        df = df.assign(scaffold=scaffold_groups(df["SMILES"]))
+        # CAS is an identifier, Set the authors' random split, logBCF the measurement the class is read from; the
+        # authors selected their 9 descriptors on labelled chemicals of our test folds; logKOW_type records how the
+        # authors filled their table, not a property of the chemical (CLEAN-22, curation_comments)
+        return drop_columns(df, ["CAS", "Set", "Class", "logBCF", "logKOW_type", *DESCRIPTORS])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # all features are descriptors (floats and counts); the target becomes a category
+        # logKOW stays numeric; the SMILES is typed by `smiles_columns`; the target becomes a category.
+        del df
         return FeatureTypes()
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
@@ -183,20 +232,26 @@ class QsarBioconcentration(AbstractCuratedDataset):
                 for cas, (name, other) in WRONG_STRUCTURE.items()
             ]
         ).set_index("CAS")
-        rdkit_columns = [column for column in df.columns if column.startswith("rdkit_")]
+        encoded = pd.concat([encode_smiles(df["SMILES"]), df[self.target]], axis=1)
+        encoded_columns = list(encoded.columns.drop(self.target))
+        source = kept.assign(**{self.target: kept["Class"].map(CLASS_LABELS)})
         isomers = pd.DataFrame(
             {
-                "the 9 descriptors": _shared_descriptors(df, DESCRIPTORS, self.target),
-                "with RDKit's descriptors": _shared_descriptors(df, [*DESCRIPTORS, *rdkit_columns], self.target),
+                "the authors' 9 descriptors (dropped)": _shared_descriptors(source, DESCRIPTORS, self.target),
+                "the recommended SMILES encoding": _shared_descriptors(encoded, encoded_columns, self.target),
             }
+        )
+        provenance = pd.crosstab(
+            kept["logKOW_type"].fillna("no match in the 2015 table").rename("the logKOW is"),
+            kept["Class"].map(CLASS_LABELS).rename("class"),
         )
         return [
             Decision(
                 "The class is the target; logBCF is dropped",
                 "The class is a band of 0.5 log units around the BCF that the TGD equation expects from the "
                 "experimental logKOW, so logBCF gives the class away and is not known for a new chemical. With the "
-                "authors' experimental logKOW (2015 table, not in the file) the band gives the class of 600 of 607 "
-                "chemicals with logKOW of at least 1; with MLOGP, the calculated logKOW among the features, it gives "
+                "authors' experimental logKOW (2015 table, now a feature) the band gives the class of 600 of 607 "
+                "chemicals with logKOW of at least 1; with MLOGP, the calculated logKOW among the authors' descriptors, it gives "
                 "the class of 471 of 776 (the diagonal of the table), so no descriptor completes the rule once logBCF "
                 "is gone.",
                 rule,
@@ -209,18 +264,29 @@ class QsarBioconcentration(AbstractCuratedDataset):
                 structure,
             ),
             Decision(
-                "SMILES replaced by RDKit's descriptors",
-                "The 9 descriptors do not tell positional isomers apart; with RDKit's 2D descriptors of the SMILES "
-                "every chemical has its own values, and the SMILES as text adds nothing next to descriptors "
-                "(CHANGELOG, 2026-10-14).",
+                "The structure ships as a SMILES column, the 9 descriptors leave",
+                "The 9 descriptors do not tell positional isomers apart; in the recommended encoding of the SMILES "
+                "(RDKit's 2D descriptors, the MACCS keys and the ECFP4 counts) every chemical has its own values. The SMILES read as "
+                "text adds nothing next to descriptors (CHANGELOG, 2026-10-14), so it is typed as a structure.",
                 isomers,
+            ),
+            Decision(
+                "The logKOW ships without its provenance flag",
+                "`logKOW` is a measurement for 652 chemicals and the authors' consensus prediction for 122, and two "
+                "chemicals have no row in the 2015 table. The `logKOW_type` column that marked which is which is not "
+                "shipped: it records how the authors filled their 2015 table rather than a property of the chemical "
+                "(CLEAN-22, curation_comments), and it carries macro ROC AUC 0.534 alone against 0.5 for chance, "
+                "nothing on top of the structure (0.6806 with it and without it) and -0.0013 in the full model, "
+                "where `logKOW` itself is worth +0.0121. The split by class is below, and it is the only record of "
+                "it: which rows are the predicted ones cannot be read from the shipped frame.",
+                provenance,
             ),
         ]
 
 
 def _shared_descriptors(df: pd.DataFrame, columns: list[str], target: str) -> pd.Series:
     """How many chemicals share all of ``columns`` with another chemical, and how many of them differ in class."""
-    groups = df.groupby(columns, sort=False, dropna=False)[target]
+    groups = df.groupby(columns, sort=False, dropna=False, observed=True)[target]  # 0/1 flags are categories
     size, n_classes = groups.transform("size"), groups.transform("nunique")
     return pd.Series(
         {
@@ -229,6 +295,24 @@ def _shared_descriptors(df: pd.DataFrame, columns: list[str], target: str) -> pd
             "chemicals sharing their descriptors with another": int(size.gt(1).sum()),
             "of them in groups with more than one class": int(n_classes.gt(1).sum()),
         }
+    )
+
+
+def _join_logkow(chemicals: pd.DataFrame, table: pd.DataFrame) -> pd.DataFrame:
+    """Add the 2015 table's logKOW and its type to each chemical: the row that shares a CAS number and the logBCF.
+
+    Both tables list the same measured logBCF per chemical, which picks the row where a CAS number occurs twice; a
+    chemical with no such row, or more than one, gets a missing logKOW.
+    """
+    numbers = table["CAS"].astype(str).map(lambda cell: set(CAS_NUMBER.findall(cell)) | {cell.strip()})
+    kow, kind = [], []
+    for cas, logbcf in zip(chemicals["CAS"], chemicals["logBCF"], strict=True):
+        own = set(CAS_NUMBER.findall(cas)) | {cas.strip()}
+        rows = table[numbers.map(lambda n, own=own: bool(n & own)) & (table["logBCF"] - logbcf).abs().lt(0.006)]
+        kow.append(rows["LogKOW"].iloc[0] if len(rows) == 1 else np.nan)
+        kind.append(rows["KOW type"].iloc[0] if len(rows) == 1 else np.nan)
+    return chemicals.assign(
+        logKOW=kow, logKOW_type=pd.Series(kind, index=chemicals.index).map({"exp": "measured", "pred": "predicted"})
     )
 
 

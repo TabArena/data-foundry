@@ -45,10 +45,11 @@ a temporal task. Do not fall back to an IID split for a non-stationary sequence 
 alternative to try (SPLIT-17; [splits.md](splits.md), "How many windows"). Marker: `Too Small`. Cases: seismic_bumps (49
 positives in the newest half, 0-5 per window; Lennart, 2026-09-30).
 
-**TP-6 (Must).** Keep two questions apart: is the task valid, and is it the best version? A valid task stays. A
-better version the source itself defines (a stage it describes, the scoring it uses) replaces the current one:
-eryhemato before the biopsy (features from a later stage: USE-4 in [use_case.md](use_case.md)). A fix of our own
-invention (dropping near-ties, a label merge made from names) is not a better version.
+**TP-6 (Must; amended 2026-10-21, Lennart).** Keep two questions apart: is the task valid, and is it the best
+version? A valid task stays. A better version the source itself defines (a stage it describes) replaces the current
+one: eryhemato before the biopsy (features from a later stage: USE-4 in [use_case.md](use_case.md)). A fix of our own
+invention (dropping near-ties, a label merge made from names) is not a better version. Which metric scores the task,
+and how the data is matched to it, is [metrics.md](metrics.md) (MET).
 
 **TP-7 (Must).** When the definition builds the target itself (merged or dropped classes), use an established
 convention, test each candidate (classes per test fold after dropping duplicates, signal, how rule-like the label
@@ -62,11 +63,19 @@ class of the source's own labels whose rows carry about their share of the loss 
 4.8% of a random forest's log loss). A class that a grouped split leaves out of a fold because few groups hold it is
 not a small class (force_2020: Halite, 14,711 rows in 4 wells). Marker: `Too Small`.
 
-**TP-10 (Must).** A panel with one series per entity (a meter, a store, a station) can look like time-series
-forecasting, which is out of scope (SEL-10, [selection.md](selection.md)). It is a tabular task when a model on the
-features clearly beats each entity's naive forecast on the shipped windows and the source's top solutions used no lagged
-target: such "tabular forecasting" tasks exist where people want to generalise across entities. How to test it: Methods,
-"A forecasting-like task". Cases: ashrae_great_energy_predictor_iii (2026-10-15).
+**TP-10 (Must; amended 2026-10-22, Lennart, on g_research_crypto_forecasting, and 2026-10-26, on rain_in_australia).** A panel with one series per entity
+(a meter, a store, a station, a coin) can look like time-series forecasting, which is out of scope (SEL-10,
+[selection.md](selection.md)). It is a tabular task when both legs hold: (1) a model on the features clearly beats each
+entity's naive forecast on the shipped windows, measured by the task's declared metric (a correlation metric where the
+source scores one); (2) the source's top solutions are tabular models on point-in-time features, and no feature is a
+lag of the target column itself, apart from its last observation when it is known at the prediction point and the
+actor reads it (trailing returns or other summaries of the series up to the prediction point are allowed). Amended
+2026-10-26 (Lennart, on rain_in_australia's 9 am rain reading, the label of the day before): "we are allowed to keep
+this if we can compute it and it makes sense to know the last observation". Leg 1 then carries the test: the model
+must clearly beat the forecasts built from the series itself. Such "tabular forecasting" tasks exist where people want to generalise across entities. How to test it:
+Methods, "A forecasting-like task". Cases: ashrae_great_energy_predictor_iii (2026-10-15),
+g_research_crypto_forecasting (2026-10-22), rain_in_australia (2026-10-26). stock and appliances_energy_prediction stay retired: their context and
+data show forecasting tasks (Lennart, 2026-10-22).
 
 ## Methods
 
@@ -136,11 +145,13 @@ window.
 
 The rule for a hit (a question, decided by the context and the use case, never by the gap alone) is SPLIT-30, with
 SPLIT-29 and SPLIT-31, in [splits.md](splits.md), "Hidden groups in an IID task". The probe ranks columns with repeated
-values by how much a row's label follows from the other rows with that value, beyond what the value says about unseen
-values. Among those that look like an entity (attributes that stay fixed within a value, or a label the value nearly
-fixes) it measures untuned LightGBM on a random split against a split by the column. It tests the same way keys of all
-columns but one (composite keys) and clusters of rows that agree on almost every column (near copies). Its docstring has
-the thresholds.
+values (categorical, text and numeric; since 2026-10-21 floats too, not only whole numbers, so a value computed once per
+entity, such as a wind-tunnel run's boundary-layer thickness, is a candidate) by how much a row's label follows from the
+other rows with that value, beyond what the value says about unseen values. Among those that look like an entity
+(attributes that stay fixed within a value, or a label the value nearly fixes) it measures untuned LightGBM on a random
+split against a split by the column. It tests the same way keys of all columns but one (composite keys), clusters of
+rows that agree on almost every column (near copies) and an exact key on each normalised text column (text keys). Its
+docstring has the thresholds.
 
 **Near copies cover a group that no single column holds, in a wide table.** Each row becomes a set of tokens (a
 quantile bin or a value per column, without the values most rows have), and two rows are near copies when their
@@ -151,7 +162,31 @@ the same random folds with each cluster moved into one fold. Read a near-copy hi
 what the rows of a cluster share (the salt forms of one parent structure, one company inspected again, one client's
 invoices) and take the group key from there, never from the clusters (SPLIT-24 in [splits.md](splits.md) bars
 similarity clusters).
-A table with fewer than 10 informative columns has no near copies.
+When no row has 10 informative columns the check does not run, and the output says `not run` (before 2026-10-21 it
+read 0.0%): no evidence either way, as on huntprohibited_1m (9 features), where exact keys on the description later
+found a copy in train for 1.4-4.9% of the test ads. A text column is one token, so an edited copy of a text never
+counts here; the text keys cover it.
+
+**Text keys cover a text posted again.** For each string column whose values have a median of at least 3 words, the
+probe normalises the text (NFKC, lower case, every run of characters other than letters and digits as one space) and
+groups the rows with the same text: an exact key from the data, which SPLIT-24 allows. Texts held by more than 100 rows
+(boilerplate) are left single. The output (`(text: <column>)`) gives the keys, the rows that share one, `s_id` and, for
+an IID task, the gap against the random folds with each key moved into one fold (the gap models read no text, so the
+gap comes from the other columns of the repeated rows); for a temporal task, the test rows whose text is on the training
+side. A text key catches a copy with other capitals, punctuation or spacing, not one with a word changed. A string
+column that is a candidate of its own (a title, a company profile) is left to the column check.
+
+Sweep of 2026-10-21 (173 built containers, the grouped ones as if IID), before and after floats became candidates (a
+candidate now also needs 20 values held by two rows or more, so a sparse spectrum bin with one repeated 0 is none) and
+the text keys came in. New hits: airfoil_self_noise `suction-side-displacement-thickness` (105 values for 106 runs;
+gap 0.123, next to its known `run`), drug_induced_autoimmunity_prediction `SMR_VSA10` and `SMR_VSA7` (IID, 587
+molecules; gaps 0.172 and 0.112 of a random-split skill of 0.657), and in grouped datasets early_learning_predictors
+`pri_fees_amount_pv`, force_2020 `FORMATION` and `Y_LOC` (a well's location) and sepsis_prediction_1m `Age` and
+`HospAdmTime` (constant per patient). lgd stays without a candidate: its loan-to-value ratio has 1.3 rows per value. No
+text key is a hit: emscad's `description`, `requirements` and `benefits` keys hold 17-29% of the rows with gaps of
+0.019-0.032 (its known group already holds them out), huntprohibited_1m's `description` 3.3% (gap 0.001),
+mercari_price_suggestion's `name` 28% (gap 0.000); consumer_complaints_1m's narrative is a column candidate. The
+near-copy check does not run on 32 of the 173 datasets (airfoil_self_noise, lgd, huntprohibited_1m, mercari among them).
 
 **Composite keys cover an entity measured more than once.** Rows identical in every column but one are one entity at
 another age, dose, time or frequency. concrete_compressive_strength's 1,030 tests are 428 mixes (the seven ingredient
@@ -210,7 +245,7 @@ most 58 s (2.5M rows); a sweep of all 184 definitions with 10 jobs of 2 threads 
 | covertype | `Soil_Type` (40 values) | no action (2026-10-06) | every location has a known soil type; its two "attributes" are zones derived from it |
 | mutual_funds_india | `sub_category` (38 values) | no action (2026-10-06) | a new fund has a known sub-category |
 | superconductivity | `range_atomic_radius` (repeated compositions) | grouped by composition (2026-10-06) | the features come from the composition alone and a model is used for compositions without a measured temperature; a random split gave 35% of the test rows an identical row in train. Key: element shares from `unique_m.csv` (15,164 compositions; joins `Dy1Ir2Rh2B4`/`Dy1Rh2Ir2B4` and `V2Zr1`/`V66.6Zr33.3`). Gap on Tc at most 0.009 R², ranking unchanged: the use case decided, not the gap. Not by element set (a new family is a different task) |
-| airfoil_self_noise | none until 2026-10-14; then `(all but frequency)`, the same groups. The single-column check missed the run because it only takes floats that are whole numbers: the thickness column alone separates 104 of the 106 runs (review panel, 2026-10-19) | grouped by wind-tunnel run (2026-10-06), then by setup, one chord at one angle with all its speeds (2026-10-20) | 106 runs (chord x angle x velocity), each a measured spectrum of 8-19 bands stored as one block; a random 3-fold split puts two thirds of a run's other bands in train (62.5% is the share of rows whose nearest neighbour is in the same run). R² random / by run with the angle numeric: extra trees 0.946 / 0.850, LightGBM 0.937 / 0.840 (as shipped, angle categorical, by run: 0.819 / 0.813). Found by reading the source, not by the probe |
+| airfoil_self_noise | none until 2026-10-14; then `(all but frequency)`, the same groups. The single-column check missed the run because it only takes floats that are whole numbers: the thickness column alone separates 104 of the 106 runs (review panel, 2026-10-19); since 2026-10-21 floats are candidates and the thickness is a hit (gap 0.123) | grouped by wind-tunnel run (2026-10-06), then by setup, one chord at one angle with all its speeds (2026-10-20) | 106 runs (chord x angle x velocity), each a measured spectrum of 8-19 bands stored as one block; a random 3-fold split puts two thirds of a run's other bands in train (62.5% is the share of rows whose nearest neighbour is in the same run). R² random / by run with the angle numeric: extra trees 0.946 / 0.850, LightGBM 0.937 / 0.840 (as shipped, angle categorical, by run: 0.819 / 0.813). Found by reading the source, not by the probe |
 | concrete_compressive_strength | `(all but Age)` (428 mixes; 2026-10-14) | grouped by mix (2026-10-14) | a mix is its seven ingredient amounts and 182 mixes are tested at several ages; a random split gave 73% of the test rows their mix in train at another age. R² random / by mix: LightGBM 0.925 / 0.874, MLP 0.916 / 0.838, ridge 0.816 / 0.804, the ranking changes. The use case designs a new mix. Missed by the column and near-copy checks |
 | account_debt_south_africa | none (the eight municipalities have no column; they show as blocks of the file) | IID kept, tagged `ForcedIIDFromTemporal` (2026-10-12) | a municipality scores its own accounts, so its level is known; held out by file position, LightGBM ROC AUC falls from 0.877 to 0.843 (blocks of 2,500 rows) and 0.786 (thirds of the file), recorded in a bullet. One extract without dates: the status at the extract stands in for a forecast |
 
@@ -280,7 +315,7 @@ through `check_frame`).
 
 Precedents: how a rule was applied. They never change a rule; an exception is listed with the fact that set it apart.
 The rows come from the v0.2 review of the flagged datasets (from 2026-10-05) and the reviews since; Flags are the
-task-probe flags the decision answers.
+task-probe flags the decision answers. The decisions on metrics (2026-10-21) are in [metrics.md](metrics.md), Cases.
 
 | Rule | Dataset | Flags | Decision | Decisive evidence | Kind |
 |---|---|---|---|---|---|
@@ -296,16 +331,18 @@ task-probe flags the decision answers.
 | TP-4 | aps_failure | one_feature | kept (2026-10-06) | the per-split single feature (AUC 0.970) stays below all 20 configurations; AUC near its ceiling | applied |
 | TP-5 | musk | no_spread, unstable | kept (2026-10-06) | 13 musk and 21 non-musk molecules per fold: a tiny-data task | applied |
 | TP-1 | pancreatic_cancer_mouse_detection | unstable | kept (2026-10-06) | foundation models above AUC 0.5 on all their folds; the `t` file suffix is an open question in the record | applied |
+| TP-1 | heart_disease | unstable | kept (2026-10-27) | one atypical hospital: Long Beach is the hardest under every split, in-site too, while the linear model beats the class shares at all three; re-check with tuned results after the build; no amendment for grouped tasks for now (Lennart) | applied |
 | TP-2 | amex_non_iid_1m | no_spread | kept (2026-10-06) | strong methods converge at AUC 0.95 on 1.5M rows | applied |
 | TP-2 | acquire_valued_shoppers_challenge | no_spread | kept (2026-10-06) | a real task with a low ceiling (best AUC 0.654, 12 of 21 tied) | applied |
 | TP-3 | coil_2000, marketing_campaign, naticusdroid_android_permissions_dataset | no_spread | kept (2026-10-06) | tuned methods separate: at most 2 of 29 tied with the best | applied |
 | TP-3 | gallstone_disease, indian_liver_patient_dataset, mercedes_benz_greener_manufacturing | no_spread | kept (2026-10-06) | tuned methods spread | applied |
 | TP-1 | mercari_price_suggestion | no_spread | kept (2026-10-06) | the probe left its text out: R² 0.06 without, 0.67 with it | applied |
 | TP-1 | coffee_rating_prediction, garments_worker_productivity | unstable | kept (2026-10-06) | tree models beat the mean in 13 of 13 and 28-29 of 30 windows | applied |
-| TP-2 | heart_disease_cleveland | no_spread | kept (2026-10-06) | a real task with clear signal (AUC 0.91); little room between methods is the noise of a small task | applied |
+| TP-2 | heart_disease_cleveland | no_spread | kept (2026-10-06) | a real task with clear signal (AUC 0.91); little room between methods is the noise of a small task; retired 2026-10-21 as a duplicate of heart_disease, not on this flag | applied |
 | TP-1 | consumer_complaints_1m | unstable | kept (2026-10-06, rebuild sweep) | best probe model above the dummy in 3 of 3 windows (AUC 0.90); the standard error of 0.060 over 3 windows is drift, not a missing signal; all 21 BeyondArena configurations beat the dummy | applied |
 | TP-3 | electric_motor_temperature_prediction | no_spread | kept (2026-10-06, rebuild sweep) | R^2 0.94-0.97 for every probe model, a gap 3 folds cannot test; tuned RMSE 1.77-3.52 on BeyondArena | applied |
 | TP-4 | expresso_churn_prediction_1m | one_feature | kept (2026-10-07) | active days (REGULARITY, AUC 0.890) are the natural core of a churn task; on the full 1M/500k folds untuned LightGBM beats it on 3 of 3 (0.903 against 0.890) | applied |
+| TP-4 | thyroid_discordant | none (the marker came from a curation comment and was never tested) | `Trivial` removed (2026-10-22, Lennart) | `FTI`, the best single feature on all 30 training sides, ROC AUC 0.822 against 0.974 for a random forest, lower on 30 of 30 splits | applied |
 | TP-2 | mortgage | drift_baseline (one_feature before the macro-lag fix) | kept (2026-10-07) | the previous quarter's class shares (log loss 0.134) match untuned models on 50k sampled rows; on the full training side LightGBM beats them in 3 of 3 quarters (0.120/0.132/0.136 against 0.125/0.137/0.139) and ranks loans within a quarter (AUC 0.56-0.72) | applied |
 | TP-2 | rosbank1 | no_spread | kept (2026-10-07) | 3 monthly windows of 63-123 clients cannot test a LightGBM - linear gap of 0.045 AUC (paired SE 0.036); all models beat the dummy in 3 of 3; no longer history in the release (as electric_motor_temperature_prediction) | applied |
 | TP-2 | apistox | unstable (no_spread before the SMILES encoding) | kept (2026-10-07; 2026-10-12 with RDKit descriptors; 2026-10-14 without the SMILES) | above the dummy in 4 of 4 windows; the standard error (0.117 for the linear model on SMILES TF-IDF, 0.065 for LightGBM with the RDKit descriptors, 0.066 without the SMILES) is window-to-window variation of a small temporal task (as consumer_complaints_1m) | applied |
@@ -317,7 +354,11 @@ task-probe flags the decision answers.
 | TP-8 | micro_mass, asp_potassco_classification | few_minority | kept (2026-10-12) | the grouped split makes fold sizes uneven (B. thuringiensis 2-6 spectra from 8 strains, h3-n1 1-17 runs from 9 instance groups): 18% and 1.7% of the test rows, 25% and 3.9% of a random forest's log loss | applied |
 | TP-8, TP-1 | force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition | few_minority, no_spread | kept (2026-10-12) | Anhydrite (1,807 rows, 10 wells) and Halite (14,711 rows, 4 wells) each miss one of 3 well-grouped test folds, accepted as `splits_test_class_missing`; no_spread comes from untuned LightGBM diverging (log loss 2.77), while random forest (0.744) and linear (0.989) spread against the class shares (1.284) | applied |
 | TP-3 | hr_analytics | no_spread | kept (2026-10-14) | rebuilt from the hackathon's own train file (Kaggle's copy added 2,623 test rows labelled 1 and gave 0.80); the real labels give ROC AUC 0.62-0.63 for every family (LightGBM +0.012 over random forest, paired SE 0.006): a real signal with a low ceiling | applied |
+| TP-3 | open_university_learning_analytics_dataset | no_spread | kept pending tuned results (2026-10-22, Lennart) | after the weight-0 TMA change, default models on all 9 grouped splits reach log-loss skill 0.173 (random forest), 0.170 (LightGBM), 0.162 (logistic regression); random forest leads by 0.011 (paired SE 0.009); every family beats the class shares on every split | re-check with the first tuned run |
 | TP-10 | ashrae_great_energy_predictor_iii | none (a forecasting-like panel) | in scope as one task (2026-10-15) | RMSE on log kWh per window: the best naive forecast 1.393 / 1.273 / 1.372; default LightGBM (100 trees) loses to it, 1.444 / 1.403 / 1.448; LightGBM with 1,000 trees wins, 1.261 / 1.176 / 1.223; models per site do about the same as one model; the top five teams used no lagged readings | applied |
+| TP-10 | g_research_crypto_forecasting | none (a forecasting-like panel) | in scope as one task (2026-10-22, Lennart; the rule amended) | weighted Pearson per window +0.040 / +0.052 / +0.045, every 95% day-block interval above the coin's mean (-0.002 / +0.007 / +0.008); the top three solutions were LightGBM on the coins' trailing 60-900-minute returns against the market, no lag of the target column; no top solution used a sequence model (LSTM) or ARIMA | applied |
+| TP-10 | rain_in_australia | none (a forecasting-like panel) | in scope as one task, the 9 am rain reading kept (2026-10-26, Lennart; leg 2 amended) | ROC AUC on the 9 windows then shipped: all features 0.849; the best forecast from the location's own rain series 0.752 (a regression of the amount with a > 1 mm rule), its classifier 0.754, persistence 0.661; the full model ahead in 9 of 9 windows; without Rainfall and RainToday 0.847 | applied |
+| TP-10 | stock, appliances_energy_prediction | none (not probed again) | stay retired, `Time-series (Forecasting)` (2026-10-22, Lennart) | the amendment (leg 1 by the declared metric, trailing summaries allowed) reopens neither: "we know from the context and data state that these are indeed forecasting tasks" | applied |
 | TP-9 | seismic_bumps | none (temporal windows) | retired, `Too Small` (2026-09-30, Lennart) | the honest split is temporal; the test windows come from the newest half, which holds 49 of the 170 positives: 30 windows of 43 shifts have 0-5 positives each (6 have none), and 3 or 2 windows (14-26 positives each) still give ROC AUC intervals of about ±0.1 to ±0.14 per window | applied |
 
 ## In Data Foundry

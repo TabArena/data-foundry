@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
 
 
 class BloodTransfusion(AbstractCuratedDataset):
@@ -66,6 +66,9 @@ class BloodTransfusion(AbstractCuratedDataset):
     # Task
     target = "DonatedBloodInMarch2007"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason="The paper fits an RFMTC (Bernoulli sequence) model and compares predicted with actual response across donor groups and against plain RFM; no per-donor metric is named in what is accessible (full text paywalled). The ranking of donors to contact fits ROC AUC.",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/transfusion.data")

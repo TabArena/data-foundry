@@ -37,6 +37,20 @@ Moreover, this is not sold prices (as immoscout shows only prices you can ask to
 
 **Assessment (AI, 2026-10-14):** the data first appeared on Kaggle as the dataset `german-house-prices` (the 2020 notebook above reads `/kaggle/input/german-house-prices/germany_housing_data_14.07.2020.csv`). It is deleted and its owner could not be found, so the source stays Kaggle and the download stays the OpenML copy (43342, collection date 14-07-2020, the Kaggle card's text). The year is now 2020, the scrape date, instead of 2019.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — A scraped Kaggle dataset (since deleted) and its OpenML copy; neither defines a task or metric. RMSE on the log price is the obvious choice for price prediction.
+
+**Assessment (AI, 2026-10-21):** metric now `Metric.from_context("rmsle", target_transform="log")` instead of the fallback rmse on the log target: an asking price's error matters relative to the price; the target still ships as log, and RMSLE is computed after the inverse, on the original scale (MET-3). Needs a rebuild to reach the container.
+
+CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
+
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `Energy_efficiency_class` (the README lists their levels); left unordered: `Furnishing_quality` (low confidence); `Condition` (a partial order); Condition and Furnishing_quality labels are permuted in the scrape ("dilapidated": 1,137 houses, median year built 2010, the highest median price; "as new": 11, 1870, the lowest; Furnishing "refined" the oldest and cheapest); the German labels are lost, so both stay unordered with a note. Options for the curator: swap the two clear levels, neutral codes, or keep..
+
+CC (2026-10-31, Lennart): marks on the review board of PR #37: Condition, Furnishing_quality, Type and Heating relabelled with ImmoScout24's own codes, found by matching 3,548 houses to an April 2020 scrape that keeps them (each label permuted, the missing value swapped with a real level in each column); Furnishing_quality then ordered.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `rwi_geo_red_houses_for_sale` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
+CC (2026-11-01, Lennart): keep this dataset as fixed in PR #37 (ImmoScout24's codes restored); the April 2020 scrape it was matched against is a new record, germany_housing_rent_and_price_apr_20, screened as a candidate to replace this one.
+
 ## Reference
 
 Kaggle / OpenML

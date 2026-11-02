@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
 
 
 class ClockProteinToxicity(AbstractCuratedDataset):
@@ -17,10 +17,10 @@ class ClockProteinToxicity(AbstractCuratedDataset):
         ),
         row=(
             "One small molecule designed for the functional domains of CRY1, a core protein of the circadian clock "
-            "(171 molecules, Gul et al. 2021)."
+            "(169 of the study's 171 molecules, Gul et al. 2021)."
         ),
         predicted=(
-            "Whether the molecule was found toxic (56 of the 171 were); the data page does not say how toxicity was "
+            "Whether the molecule was found toxic (55 of the 169 were); the data page does not say how toxicity was "
             "tested."
         ),
         known="1,117 molecular descriptors computed from the molecule's structure.",
@@ -58,11 +58,24 @@ class ClockProteinToxicity(AbstractCuratedDataset):
     """
     curation_comments = """
         - We remove duplicated columns (same values for all rows).
+        - Two molecules are dropped (one toxic, one not): the descriptor software failed on them. `nAcid` and `nBase`
+          (counts of acidic and basic groups) are -1 in both, a count no molecule has; each also has 62-68 descriptors
+          at 0 that are non-zero in at least 95% of the other molecules (MLFER, WTPT, MAXDP/MAXDN, DELS) and 9-18% of
+          its descriptors outside the others' 1-99% range (0.7% for a typical molecule). The source gives no
+          structures, so they cannot be recomputed. Exception to CLEAN-11, which keeps a row with an impossible value:
+          here the row's features are not the molecule's (Lennart, 2026-11-01; set missing on 2026-10-30 before).
     """
 
     # Task
     target = "Toxic"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason=(
+            "Gul et al. 2021 compare classifiers by 10-fold CV accuracy only (Table 2), without a "
+            "threshold or costs, on 171 molecules (33% toxic). Original rejected: accuracy (MET-6, coarse"
+            " on 171 rows). roc_auc is the binary fallback."
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "data.csv")
@@ -162,4 +175,7 @@ class ClockProteinToxicity(AbstractCuratedDataset):
             "nFG12Ring",
         ]
         df = df.drop(columns=duplicate_columns)
-        return df
+        # the descriptor software failed on two molecules: -1 counts of acidic and basic groups, and many descriptors at
+        # 0 that the other molecules have (curation notes)
+        failed = df["nAcid"].eq(-1) | df["nBase"].eq(-1)
+        return df[~failed]

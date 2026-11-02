@@ -6,12 +6,13 @@ checked_by:
 - Mustafa
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 - Out-of-scope Task (CTR/RecSys/Ranking)
 tags:
 - Free Text (Sentences)
 collections:
 - CARTE/TARTE
+- MulTaBench
 year: '2017'
 domain: business & marketing
 source_links:

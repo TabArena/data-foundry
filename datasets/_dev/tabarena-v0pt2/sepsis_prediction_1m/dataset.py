@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, decode
 
 
 class SepsisPrediction1m(AbstractCuratedDataset):
@@ -92,12 +92,28 @@ class SepsisPrediction1m(AbstractCuratedDataset):
         - Prediction point and scoring: each row is one patient-hour with only that hour's measurements, and SepsisLabel is 1 from 6 hours before sepsis onset onward, so the task is "sepsis within the next 6 hours" at every hour. No row encodes the time left in the stay. The leak risk lies in the evaluation: the test set holds complete patient records, and septic records end shortly after onset, so a method that looks at a patient's later rows (record length, last Hour/ICULOS) learns the outcome. Each hour is predicted from its own row only: no feature may combine a patient's rows (record length, last Hour/ICULOS, aggregates over the stay). Scoring uses the PhysioNet 2019 utility per patient over its ordered hours, not independent rows.
         - Patient_ID is the group column. We store it as a category, so the README's list of column types shows it
           (as it shows the target), but it is group metadata, not a model feature: the 42 features leave it out.
+        - The target (2026-11-01, CLEAN-25): `SepsisLabel` ships its classes as words (1 is the event). Binary: "Yes" is
+          the event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
     target = "SepsisLabel"
     problem_type = "binary_classification"
-    metric = "PhysioNet2019UtilityFunction"  # https://github.com/physionetchallenges/evaluation-2019/blob/master/evaluate_sepsis_score.py
+    metric = Metric.source(
+        "normalized_early_detection_utility",
+        original="PhysioNet/CinC Challenge 2019 normalized utility score",
+        reference=(
+            "Reyna et al. 2020, Early prediction of sepsis from clinical data: the PhysioNet/Computing in "
+            "Cardiology Challenge 2019, Crit Care Med 48(2):210-217; "
+            "https://physionet.org/content/challenge-2019/1.0.0/"
+        ),
+        definition=(
+            "sum over patient-hours of the PhysioNet/CinC 2019 utility of the hard alarm (TP rises 0 -> 1 "
+            "from t-12 h to t-6 h, falls to 0 at t+3 h; FN 0 -> -2 from t-6 h to t+3 h; FP -0.05; TN 0), "
+            "normalised as (U - U_no_alarm) / (U_best - U_no_alarm)"
+        ),
+        inputs={"group": "Patient_ID", "order": "Hour"},
+    )
     grouping = Grouping(
         on="Patient_ID",
         labels="per_sample",
@@ -130,6 +146,8 @@ class SepsisPrediction1m(AbstractCuratedDataset):
         df["Patient_ID"] = codes
         df["Gender"] = df["Gender"].replace({0: "Female", 1: "Male"})
         df = df.drop(columns=["Unnamed: 0"])
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

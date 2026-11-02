@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, object_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode, object_columns
 
 
 class HomesiteQuoteConversion(AbstractCuratedDataset):
@@ -26,11 +26,12 @@ class HomesiteQuoteConversion(AbstractCuratedDataset):
             "Random quotes, as in the competition, whose test quotes cover the same dates; TabRed split this data by "
             "date instead."
         ),
-        fit="approximate",
+        fit="direct",
         fit_reason=(
-            "Two anonymised fields look like a status code filled in after the quote: one combination holds 99.3% "
-            "buyers, another 0.14%. They are kept, as Homesite released them and their meaning cannot be checked (ROC"
-            " AUC 0.965 with them, 0.915 without)."
+            "Random quotes mirror Homesite's task of scoring its quotes. Two anonymised fields look like a status "
+            "code filled in after the quote (one combination holds 99.3% buyers, another 0.14%; ROC AUC 0.965 with "
+            "them, 0.915 without). They are kept, as Homesite released them and their meaning cannot be checked, and "
+            "noted; a kept leak does not make the fit approximate (USE-8 as amended 2026-10-21)."
         ),
     )
 
@@ -68,11 +69,19 @@ class HomesiteQuoteConversion(AbstractCuratedDataset):
         - We drop the ID number and constant columns.
         - We replace -1 with NaN (https://www.kaggle.com/competitions/homesite-quote-conversion/discussion/17417) and keep ordinals as numeric features following TabRed's preprocessing.
         - Potential leak, kept on purpose: "PropertyField37" x "PersonalField12" looks like a status code that may be filled after the quote. (Y, 1-4) holds 20,008 quotes of which 99.3% converted (40.6% of all conversions), while (Y, 5) holds 54,769 quotes of which 0.14% converted. Dropping both fields lowers LightGBM ROC AUC from 0.965 to 0.915. We keep them because the fields are anonymised and the meaning cannot be checked, Homesite set the competition up with them (the official test data has the same fields), and the Kaggle discussions do not flag them. Revisit if the fields are ever documented.
+        - The target (2026-11-01, CLEAN-25): `QuoteConversion_Flag` ships its classes as words (1 is the event). Binary:
+          "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
     target = "QuoteConversion_Flag"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="AUC (area under the ROC curve)",
+        reference="https://www.kaggle.com/competitions/homesite-quote-conversion/overview/evaluation",
+        definition="Area under the ROC curve between predicted probability of QuoteConversion_Flag and the observed label.",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "train.csv")
@@ -237,6 +246,8 @@ class HomesiteQuoteConversion(AbstractCuratedDataset):
                 "GeographicField10B",
             ]
         )
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

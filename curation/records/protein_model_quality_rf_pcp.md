@@ -4,6 +4,7 @@ name: RF-PCP (quality assessment of modeled protein structures, CASP and decoy s
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> Yes
+priority: 3
 tags:
 - AI-Filled (Verify)
 - Non-IID (Grouped)
@@ -25,6 +26,15 @@ type_adapter_id: curation-record-v1
 ## Comments
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata and notes below were drafted by an AI assistant from the release files and the paper's abstract; a human must verify them before relying on them.**
+
+**Screening (AI, 2026-10-22):** `TBD -> Yes`, priority 3: predict the quality (RMSD, TM-score or GDT_TS) of a modelled protein structure without its native, from six physicochemical properties; the decoy file names give the target protein, so the split can be grouped by target.
+- Source: Rana, Sharma, Bhattacharya, Shukla, "Quality assessment of modeled protein structure using physicochemical properties", J Bioinform Comput Biol 13(2):1550005, April 2015 (doi:10.1142/S0219720015500055), with the authors' release on SourceForge (project rf-pcp, RF-PCP-DataSet.zip, 5.3 MB, 2014-08-18, user psrana; no licence stated). The abstract (Crossref): "a total of 95,091 modeled structures of 4896 native targets", features "total surface area, euclidean distance (ED), total empirical energy, secondary structure penalty (SS), sequence length (SL), and pair number (PN)", targets RMSD, TM-score and GDT_TS, k-fold cross-validation over structures. As published (per the old note, not re-opened): a full file of ~100k rows and CASP5-9 / CASP10 files with PDB-ID, RMSD, TM, GDT and the six features.
+- Use case: a structure-prediction group or a CASP assessor ranks the candidate models of a new target before its native structure is known; fit approximate (the paper says the method makes "the prediction faster and inexpensive" but names no actor or decision); regime grouped by target protein because a new target has none of its decoys in training (the leak that retired `physiochemical_protein`).
+- Siblings and duplicates: `physiochemical_protein` (UCI 2013, the same group's earlier file, `No (Retired)` by Lennart on 2026-10-06 because no copy has target ids; the CC line names RF-PCP as a candidate to triage) and `physiochemical_protein_duplicate`; this release has other features and cannot be joined to the UCI rows, so it is a distinct dataset (PROV-7). External collections: none found.
+- Papers and pages: the 2015 paper above; Pathak, Rana et al., Int J Data Mining and Bioinformatics (online 2015-11, RMSD <= 5 A with the same six properties) used the same features.
+- Metric: the paper reports RMSE, correlation, R^2 and accuracy (within +-0.1) for each of the three targets, none ranked, so the fallback `rmse` on the chosen target (MET-5); inputs none.
+- Risks for /add-dataset: which target to ship (GDT_TS or TM-score, the bounded scores QA methods predict, against RMSD of the UCI file); the rows mix CASP decoys with classic decoy sets and native structures (RMSD 0, not known at prediction time for a new target); Energy outliers up to 7e11; SL and PN near-constant within a target; six coarse features that structure-based deep QA models have since replaced (`Outdated` question, SEL-12 boundary).
+- Priority: gap + (biology & life sciences and the grouped regime are thin), use case 0 (no actor named by the source), source +, shape +, risk - (target choice, natives, outdated features).
 
 **What it is (AI, 2026-10-06).** The supplement of Rana, Sharma, Bhattacharya and Shukla (2015), "Quality assessment of modeled protein structure using physicochemical properties" (J Bioinform Comput Biol 13(2):1550005): predict the RMSD, TM-score and GDT_TS of a modeled protein structure, without its native structure, from six physicochemical properties (total surface area, Euclidean distance, total empirical energy, secondary structure penalty, sequence length, pair number). The abstract reports "95,091 modeled structures of 4896 native targets" and k-fold cross-validation over the structures (random forest best, R^2 0.92 for RMSD). The files are on SourceForge (project rf-pcp, registered 2014-08-18, RF-PCP-DataSet.zip, 5.3 MB): RF-PCP-Full-dataset.csv (99,987 rows), RF-PCP-Training-Testing-CASP-5-9.csv (92,597) and RF-PCP-Validation-CASP-10.csv (5,119), with the columns PDB-ID, RMSD, TM, GDT, Area, ED, Energy, SS, SL and PN.
 

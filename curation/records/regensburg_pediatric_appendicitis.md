@@ -39,6 +39,14 @@ Great case of a dataset where there is a vision model and a tabular baseline (RF
 
 **Assessment (AI, 2026-10-14):** The data first appeared on Zenodo (Regensburg Pediatric Appendicitis Dataset v1.0, 2023-02-23, concept DOI 10.5281/zenodo.7669214; the definition downloads v1.03, 10.5281/zenodo.7711412), five days before the paper's preprint (arXiv 2302.14460). UCI 938 is a later copy whose metadata names the Zenodo DOI as its source, so the original source is Other, as in the definition. The old UCI link carried the wrong slug (`toxicity`); id 938 is this dataset.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Marcinkevics et al. 2024 report AUROC and AUPR side by side per target; neither is named as the criterion. roc_auc is the binary fallback.
+
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 7 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `Ketones_in_Urine`, `RBC_in_Urine`, `WBC_in_Urine`, `Peritonitis`, `Appendicolith`, `Perforation`, `Appendicular_Abscess` (the README lists their levels); left unordered: `Appendix_Wall_Layers` (low confidence); `Perfusion` (low confidence).
+
+CC (2026-10-31, Lennart): marks on the review board of PR #37: Appendix_Wall_Layers ordered intact < partially raised < raised (the German record of the 2021 release; upset, 1 child, missing) and Perfusion ordered by blood flow no < hypoperfused < present < hyperperfused; a blank Perfusion also means unremarkable in this file (noted).
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `pecarn_pediatric_head_trauma_citbi` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @article{marcinkevivcs2024interpretable,

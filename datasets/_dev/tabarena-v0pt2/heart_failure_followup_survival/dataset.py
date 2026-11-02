@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode, drop_columns
 
 
 class HeartFailureFollowupSurvival(AbstractCuratedDataset):
@@ -63,11 +63,16 @@ class HeartFailureFollowupSurvival(AbstractCuratedDataset):
 
         - We keep all features of the dataset. The study that introduced the dataset also curated a subset of features. We leave it to the pipeline to select the relevant features for the task.
         - We drop the "time" feature. It is the follow-up period in days (4-285; Chicco & Jurman 2020, Table 1: "Follow-up period"), and DEATH_EVENT is "If the patient died during the follow-up period". Follow-up ends at death or at censoring, so a short follow-up means an early death: the value is only known after the outcome (alone it gives ROC AUC 0.84). The paper's analysis that includes it is not a prediction-time setup.
+        - The target (2026-11-01, CLEAN-25): `DEATH_EVENT` ships its classes as words (1 is the event). Binary: "Yes" is
+          the event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
     target = "DEATH_EVENT"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason="Ahmad et al. 2017 (first publication) score a Cox model by time-dependent ROC AUC, which needs the follow-up time we drop (leak); Chicco & Jurman 2020 (the binary task we ship) rank by MCC at threshold 0.5, a default threshold, not a decision (MET-6). roc_auc is the binary fallback.",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "heart_failure_clinical_records_dataset.csv")
@@ -77,6 +82,8 @@ class HeartFailureFollowupSurvival(AbstractCuratedDataset):
         df = raw
         # Follow-up time ends at death or censoring, so it is known only after the outcome
         df = drop_columns(df, ["time"])
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

@@ -7,6 +7,8 @@ data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+decision_markers:
+- Anonymized
 tags:
 - Larger IID Data
 collections:
@@ -31,6 +33,8 @@ type_adapter_id: curation-record-v1
 CC: "Distinguish products in 10 groups based on 93 features. Competition not won through leaks, but test-time adaptation helped. In general seems like a good tabular data task for random splits. Kaggle licence forbids distribution, but as the data is on OpenML with 'Unknown' license. Although this is one of the best datasets we might not be able to use it."
 
 **Assessment (AI, 2026-10-14):** 9 classes, not 10: the training file's `target` holds Class_1 to Class_9 (61,878 products) and the competition's sample submission has nine class columns.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source log_loss — multi-class logarithmic loss, the competition's evaluation metric (Kaggle evaluation page).
 
 ## Reference
 

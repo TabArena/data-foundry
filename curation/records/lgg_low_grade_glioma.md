@@ -6,6 +6,7 @@ checked_by:
 suggestion: 'No'
 decision_markers:
 - Data Quality Issue
+- Anonymized
 tags:
 - Tiny Data
 collections:

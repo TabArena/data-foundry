@@ -1,6 +1,6 @@
 ---
 name: knowledge-curation
-description: "Reference knowledge, no workflow: how we decide whether a tabular dataset belongs in TabArena and how we curate it, independent of the tooling, as ranked rules with IDs and strengths. The principles and how to decide (rank, Must / Should / Weigh, tensions, exceptions, consistent judgement), ethics and scope, the use case and prediction point, leaks, IID / grouped / temporal splits, sources and duplicates, whether a task is trivial or too small, cleaning and features; plus evidence and reading probes, the verification checklist, writing for the curator, and a general probe library. Load it when advising on any of these, or when a workflow skill (/screen-candidates, /review-screened-candidates, /add-dataset, /review-added-datasets) points to one of its files."
+description: "Reference knowledge, no workflow: how we decide whether a tabular dataset belongs in TabArena and how we curate it, independent of the tooling, as ranked rules with IDs and strengths. The principles and how to decide (rank, Must / Should / Weigh, tensions, exceptions, consistent judgement), ethics and scope, the use case and prediction point, leaks, IID / grouped / temporal splits, sources and duplicates, whether a task is trivial or too small, which metric scores it, cleaning and features; a guide to molecule datasets (SMILES, salts, scaffolds); plus evidence and reading probes, the verification checklist, writing for the curator, and a general probe library. Load it when advising on any of these, or when a workflow skill (/screen-candidates, /review-screened-candidates, /add-dataset, /review-added-datasets) points to one of its files."
 user-invocable: false
 ---
 
@@ -24,6 +24,7 @@ Weigh); cite them. Read [principles.md](references/principles.md) first.
 | 4 | P4 honest evaluation: splits | [splits.md](references/splits.md) | `SPLIT` | deciding or checking a split |
 | 5 | P5 faithful, unique data | [provenance.md](references/provenance.md) | `PROV` | tracing a source or a duplicate, judging whether data is generated |
 | 6 | P6 worth benchmarking | [task_probes.md](references/task_probes.md) | `TP` | before proposing `Trivial` or `Too Small`, or answering a task-probe flag |
+| 6b | P6 worth benchmarking: the metric | [metrics.md](references/metrics.md) | `MET` | choosing or checking the metric a dataset declares: whose metric to trust, threshold metrics, cost matrices, the target's scale, matching the data to the metric, names and implementations |
 | 7 | P7 the expert state | [cleaning_features.md](references/cleaning_features.md) | `CLEAN` | writing or reviewing the cleaning of a dataset |
 
 Procedure, at every rank:
@@ -33,6 +34,12 @@ Procedure, at every rank:
 | [evidence.md](references/evidence.md) | `EV` | weighing evidence, settling a disputed fact, reading a probe flag |
 | [verification.md](references/verification.md) | | the last step of every workflow: the checklist and which stage runs which check |
 | [writing.md](references/writing.md) | | writing anything the curator will read: comments, notes, issues, the judgment record, reports |
+
+Domain guides, which add no rules but show how the rules above apply to one kind of data:
+
+| File | Read it when |
+|---|---|
+| [molecules.md](references/molecules.md) | a dataset's rows are molecules (a SMILES, a structure file, molecule identifiers, or descriptor or fingerprint columns computed from a structure): what ships, copies and salts, scaffold splits, recovering structures, the pitfalls and the measured evidence |
 
 The general probe methods (leak, task, group, hidden-group and generated-data probes, as functions on a frame, a
 target and splits) are in [scripts/](scripts/); the commands that run them on a Data Foundry dataset are in the sibling

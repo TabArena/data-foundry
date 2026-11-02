@@ -297,7 +297,7 @@ data-foundry/
 │   └── examples/toy_container/  # tiny ready-to-load CuratedContainer shipped in-package
 ├── curation/                 # the curation log (git-tracked data) — records/*.md + vocabularies.yaml
 ├── datasets/                 # dataset definitions; see datasets/README.md
-│   ├── _template/            # the template `dataset new` copies (dataset.py + explore.ipynb)
+│   ├── _template/            # the template `dataset new` copies (dataset.py)
 │   ├── _dev/                 # work in progress; `tabarena-v0pt2/` is the TabArena v0.2 working copy
 │   ├── _maintenance/         # deprecated, suspended and out-of-scope datasets, the old TabArena v0.1 re-curation
 │   └── beyond_iid/           # the shipped BeyondArena notebooks (v1), pinned by `final_uuid_list.py`

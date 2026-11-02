@@ -6,12 +6,13 @@ checked_by:
 - Mustafa
 suggestion: 'No'
 decision_markers:
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - Free Text (Sentences)
 - Non-IID (Temporal)
 collections:
 - CARTE/TARTE
+- MulTaBench
 year: '2023'
 domain: business & marketing
 source_links:

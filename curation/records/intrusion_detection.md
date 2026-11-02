@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - Needs extensive data wrangling
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - Non-IID (Temporal)
 - Non-IID (Grouped)

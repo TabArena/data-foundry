@@ -40,6 +40,8 @@ Paper talks a lot about the data https://cgi.cse.unsw.edu.au/~reports/papers/990
 
 R version is without missing values and only 27552 data points?
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `aemo_nem_electricity_price_direction` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @article{harries1999splice,

@@ -9,6 +9,8 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
+decision_markers:
+- Selection Bias
 original_source: UCI
 year: '2016'
 required_split:
@@ -33,6 +35,10 @@ Potential issue: Temporal
 Lennart: Could be used without temporal connection
 
 Andrej: task can be conceptualized s.t. the features are time-invariant. Only need to think about whether it is feasible to combine the year datasets or to choose one. If the latter I would use the year with the most observations. Also might reverse the feature engineering.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — AUC, as reported by Zieba, Tomczak & Tomczak (2016), Expert Systems with Applications 58, 93-101.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `american_companies_bankruptcy` (TBD -> Yes, priority 2), `v4finbench_corporate_distress` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference
 

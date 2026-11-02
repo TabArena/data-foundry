@@ -5,7 +5,22 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode, set_missing
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "EDUCATION": ["high school", "university", "graduate school"],
+}
+
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "EDUCATION": {"1": "graduate school", "2": "university", "3": "high school"},
+    "MARRIAGE": {"1": "married", "2": "single", "3": "others"},
+    "SEX": {"1": "male", "2": "female"},
+}
 
 
 class CreditCardClientsDefault(AbstractCuratedDataset):
@@ -60,11 +75,28 @@ class CreditCardClientsDefault(AbstractCuratedDataset):
         - We rename the target variable and restore the original class names.
         - We drop the "ID" column.
         - Anomaly: the data has temporal features but the task is time-invariant.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them decoded from the source's codes
+          into its words (`CODE_LABELS`, 2026-11-01); 1 hold a state outside the scale, placed by the curator's rule
+          (missing when the column has no other missing value, else the lowest level; a state that is simply not on the
+          scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
+          words (`CODE_LABELS`), in the same order; 2 unordered codes carry their words: `MARRIAGE`, `SEX`.
     """
 
     # Task
     target = "DefaultOnPaymentNextMonth"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="area ratio of the lift (cumulative gains) chart; error rate reported alongside",
+        reference="Yeh & Lien 2009, Expert Systems with Applications 36(2):2473-2480",
+        definition=(
+            "area ratio = area between model gains curve and baseline / area between ideal curve and baseline = Gini "
+            "= 2*ROC AUC - 1, so ranking equals roc_auc"
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_excel(raw_dir / "default of credit card clients.xls", skiprows=[0])
@@ -76,10 +108,23 @@ class CreditCardClientsDefault(AbstractCuratedDataset):
         target_feature = "DefaultOnPaymentNextMonth"
         df = df.rename(columns={"default payment next month": target_feature})
         df[target_feature] = df[target_feature].map({1: "Yes", 0: "No"})
+        # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
+        # CLEAN-14): don't know, refused, not asked, other
+        df = set_missing(
+            df,
+            {
+                "EDUCATION": [0, 5, 6, 4],
+            },
+        )
+        # codes the codebook leaves without words, or a question that did not apply (CLEAN-10)
+        df = set_missing(df, {"MARRIAGE": [0.0]})
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "SEX",
                 "MARRIAGE",

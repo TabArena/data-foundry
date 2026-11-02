@@ -8,15 +8,19 @@ data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
 - BeyondArena
-suggestion: 'Yes'
+suggestion: No (Retired)
+decision_markers:
+- Anonymized
+- Duplicate
+- Outdated
 year: '2007'
+domain: chemistry & material science
 required_split:
 - Random (IID)
 problem_type: Binary Classification
 source_links:
 - https://www.openml.org/search?type=data&id=1039
 notebook_path: datasets/beyond_iid/old_iid/hiva_agnostic/hiva_agnostic.ipynb
-v2_path: datasets/_dev/tabarena-v0pt2/hiva_agnostic/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -37,6 +41,41 @@ Andrej: Might consider to restore it to be a 3-class problem
 **Assessment (AI, 2026-10-14):** the challenge split the screen's 42,678 compounds into training (3,845, 135 active), validation (384, 14 active) and test (38,449, labels never released), as `hiva.param` lists them. The validation compounds have the same 1,617 descriptors; their labels are in ValidAgnos.zip, which the download already fetched. The fixed list of dropped descriptors removed 99 of the 191 copies in the training file; the definition now drops every descriptor that copies an earlier one over all 4,229 compounds (188).
 
 CC (2026-10-14, Lennart): Add the 384 validation compounds (4,229 compounds, 149 active).
+
+CC (2026-10-21, Lennart): one domain for the molecule-property datasets (the input is the molecule): "chemistry & material science", for all ten QSAR siblings.
+
+CC (2026-10-21, Lennart): 0/1 presence flags are categorical ("Assuming it is binary, the categorical dtype might be best?"); CLEAN-14 amended. The bits were checked to hold only 0 and 1.
+
+**Assessment (AI, 2026-10-21):** on the 23 repeated descriptor vectors (crosscut item x2-1, Lennart: "IF the copies dont make any sense from a task use case, we should drop them"). The challenge's prior-knowledge release gives the same 4,229 compounds as structures with NCI NSC numbers: every NSC number is distinct, so no compound is entered twice. Of the 4,156 structures RDKit reads, 7 repeat another's exact structure, 9 ignoring stereochemistry, 19 counting salt forms of one parent; fewer than 23, so at least 4 of the copies are different compounds the descriptors cannot tell apart. The two releases share no key, so the copies cannot be matched one by one. Kept, with this reason in curation_comments; the curator has the call.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source balanced_accuracy — BER (balanced error rate) = 0.5*(b/(a+b) + c/(c+d)); final ranking by test BER; AUC also reported (= 1-BER for hard predictions) (https://www.agnostic.inf.ethz.ch/evaluation.php ; Guyon et al. 2007 IJCNN, doi 10.1109/IJCNN.2007.4371065).
+
+CC (2026-10-21, Lennart): the 23 repeated descriptor vectors stay: they are distinct screened compounds (every NSC number distinct), not copies of one compound ("IF the copies dont make any sense from a task use case, we should drop them"); LEAK-19 as written.
+
+CC (2026-10-21, Lennart): the declared metric stays as it is (`balanced_accuracy`; the challenge most likely ranked by the balanced error rate, not verified; cross-dataset item "Metrics still to settle").
+
+CC (2026-10-27, Lennart): marker Anonymized, from the AI review of PR #17: the agnostic track of the challenge gives the 1,617 binary structure descriptors without names (the prior knowledge track had the structures instead), so their meaning cannot be checked; the definition's fit_reason says so. Data tag Anonymized added to the definition.
+
+**Assessment (AI, 2026-10-31):** the benchmark ChemPile (https://arxiv.org/abs/2505.12534) carries a related version, "hiv", not this record's data, so no collection tag: NCI Developmental Therapeutics Program AIDS Antiviral Screen (released 1999-2004), curated by MoleculeNet (Wu et al. 2018). Related records: hiva_agnostic ('DF: Yes', the 2007 Agnostic Learning challenge subset of the same screen with 1,617 anonymized descriptors) and hiv_qsar (OpenML 1039, marked Duplicate, 'No'). This config is the full screen with SMILES rather than the challenge subset, which is also what scout_0
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nci_aids_antiviral_screen` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
+**Assessment (AI, 2026-11-01):** ChemPile's "hiv" is the record `nci_aids_antiviral_screen`, now tagged ChemPile.
+
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the active compound).
+
+CC (2026-11-02, Lennart): "Yes retire it as described" (review page, `nci_aids_antiviral_screen` issue 2). Retired as
+a duplicate of `nci_aids_antiviral_screen`, the NCI DTP AIDS antiviral screen this is the 2007 challenge's cut of
+(PROV-6). The full release ships instead: it labels every compound and carries the structures, where this cut is
+4,229 compounds as 1,617 anonymous bits from ChemTK 4.1.1 that nobody can recompute for a new compound. The folder
+leaves the TabArena v0.2 working copy and `v2_path` is cleared; `DF: Yes`, the collection tags and the shipped
+BeyondArena and TabArena v0.1 containers stay, as for `churn` and the three `heart_disease_*` records.
+
+**Assessment (AI, 2026-11-02):** the evidence for "no compound and no label this release lacks": a linking run on
+2026-11-01 recovered the NSC number behind each row by matching the bits against structure features, 97% of rows with
+confidence, and every one of the 4,229 labels agrees with the NCI file; the three parts together are 42,678
+compounds, which is the screen's structure-bearing set of 42,682 less four. `Anonymized` is kept alongside `Duplicate`
+and `Outdated`: it is true of the data and half the reason the cut is outdated.
 
 ## Reference
 

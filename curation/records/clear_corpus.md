@@ -11,6 +11,8 @@ decision_markers:
 - NLP (Text)
 collections:
 - CARTE/TARTE
+- MulTaBench
+- STRABLE
 source_links:
 - https://www.commonlit.org/blog/introducing-the-clear-corpus-an-open-dataset-to-advance-research-28ff8cfea84a/
 - https://docs.google.com/spreadsheets/d/1sfsZhhP2umXXtmEP_NRErxLuwgN98TyH7LWOq3j07O0/edit?gid=971821388#gid=971821388

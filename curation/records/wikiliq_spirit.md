@@ -10,6 +10,7 @@ decision_markers:
 - No Good Target (yet)
 collections:
 - CARTE/TARTE
+- MulTaBench
 source_links:
 - https://www.kaggle.com/datasets/limtis/wikiliq-dataset
 - https://wikiliq.org/

@@ -8,10 +8,11 @@ checked_by:
 suggestion: 'No'
 decision_markers:
 - Wrong Domain / Source Modality
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 - NLP (Text)
 collections:
 - TabSTAR
+- MulTaBench
 source_links:
 - https://www.kaggle.com/datasets/nicapotato/womens-ecommerce-clothing-reviews/
 - https://arxiv.org/abs/1805.03687

@@ -6,7 +6,8 @@ curation log. Run them from the repository root, for example `python examples/lo
 | Script | What it shows | Needs |
 |---|---|---|
 | [`load_curated_container.py`](load_curated_container.py) | Load a container and print its identity, data, metadata (both container formats) and extra files. Defaults to the toy container shipped with the package. | nothing |
-| [`benchmark_on_beyond_arena.py`](benchmark_on_beyond_arena.py) | Train a random forest on every outer split of one BeyondArena dataset, dropping the group column from the features. | network (first run), scikit-learn |
+| [`benchmark_on_beyond_arena.py`](benchmark_on_beyond_arena.py) | Train a model on every outer split of one dataset, dropping the group column from the features. A BeyondArena (format 1) dataset is scored by RMSE; a format-2 container (`--container <folder>`) by its metric spec through `scorer(container)`, with the scoring columns dropped from the features (`feature_columns`). | network (first run), scikit-learn |
+| [`read_metric_without_data_foundry.py`](read_metric_without_data_foundry.py) | Read a container's metric spec and scoring columns from `task_metadata.*.json` with plain `json` and pandas, and score a dummy prediction with scikit-learn; imports nothing from `data_foundry`. Defaults to the toy container. | pandas, scikit-learn |
 | [`data_foundry_data_regimes.py`](data_foundry_data_regimes.py) | One IID, two grouped (`per_group`, `per_sample`) and one temporal dataset side by side: how the regime shows up in the metadata. | network (first run) |
 | [`download_all_beyond_arena_datasets.py`](download_all_beyond_arena_datasets.py) | The registered collections, then the whole BeyondArena collection downloaded once (`prefetch`) and every checksum verified. | network, several GB |
 | [`curation_records.py`](curation_records.py) | Read, filter, edit and snapshot the curation log (`curation/records/`) from code. | a repository checkout |

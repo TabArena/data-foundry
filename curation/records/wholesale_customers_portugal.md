@@ -5,7 +5,7 @@ checked_by:
 - Lennart
 suggestion: TBD -> 2nd Tier
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - Tiny Data
 collections:
 - TabSTAR

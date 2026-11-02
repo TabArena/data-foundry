@@ -27,11 +27,15 @@ gotchas that look like blockers but aren't — lives in
     the local dashboard (`.venv/bin/python -m data_foundry.curation.cli serve`) on its Screening queue,
   * add a dataset — `/add-dataset`
     ([`.claude/skills/add-dataset/SKILL.md`](.claude/skills/add-dataset/SKILL.md)): the v2 folder (`dataset.py`
-    class + `explore.ipynb` + generated `README.md`, API in `src/data_foundry/v2/`), checks and probes, then a review
+    class + generated `README.md`, API in `src/data_foundry/v2/`), checks and probes, then a review
     panel of agents (`.claude/agents/`); the open questions go into the folder's `REVIEW.md`; also "is X ready?",
   * the curator reviews what was added — `/review-added-datasets`
     ([`.claude/skills/review-added-datasets/SKILL.md`](.claude/skills/review-added-datasets/SKILL.md)): the review
     page from the `REVIEW.md` files; the curator's decisions are checked for consistency and applied.
+* **Claims (who works on what):** a live board on the remote's `claims` branch, pushed directly
+  (`data-foundry-curation claims list|claim|release`,
+  [`claims.md`](.claude/skills/knowledge-data-foundry/references/claims.md)). Claim records before working on them
+  and leave the ones another curator holds alone; the SessionStart hook lists the board, a PreToolUse hook warns.
 * **Builds** happen only on the curator's ask
   ([`rebuild.md`](.claude/skills/knowledge-data-foundry/references/rebuild.md)). Otherwise you touch code to extend
   the package (`src/data_foundry/`) and update examples (`examples/`) when an API changes.
@@ -41,12 +45,11 @@ gotchas that look like blockers but aren't — lives in
   human ask.
 * **TabArena v0.2 working copy:** `datasets/_dev/tabarena-v0pt2/` holds one
   v2 folder per dataset of TabArena v0.2 (migrated from the BeyondArena notebooks
-  and rebuilt on 2026-10-02; its `README.md` has the table of datasets and UUIDs and
-  how to rebuild them, its `GETTING_STARTED.md` the way in for a new curator). Every change there (edited definition or helper file, added or
-  removed dataset, a re-run that makes a new container) gets a dated entry in its
-  `CHANGELOG.md`, and a new, removed or rebuilt dataset also updates the table in its
-  `README.md`. A dataset retired to `No (Retired)` is removed from the copy. Open questions for the curator live in
-  a folder's `REVIEW.md` until they are settled.
+  and rebuilt on 2026-10-02; its `README.md` says how to rebuild them, its
+  `GETTING_STARTED.md` is the way in for a new curator). Every change there (edited definition or helper file, added
+  or removed dataset, a re-run that makes a new container) gets a dated entry in its
+  `CHANGELOG.md`. A dataset retired to `No (Retired)` is removed from the copy. Open questions for the curator live
+  in a folder's `REVIEW.md` until they are settled.
 * **v2 only for new work:** every new dataset is a v2 folder. The BeyondArena notebooks are Data Foundry v1;
   never add or re-curate a dataset with v1. [DATA_FOUNDRY_V1.md](DATA_FOUNDRY_V1.md) is the one page about v1.
 * **Writing style:** AGENTS.md ends with "AI Writing Tropes to Avoid" — it
@@ -69,8 +72,14 @@ both container formats.
   `examples/data_foundry_data_regimes.py`.
 * **Fit a model:** iterate `container.experiment_metadata.splits` as `{repeat: {fold: (train_idx,
   test_idx)}}` and never re-split or shuffle; the splits encode the regime (IID / temporal / grouped).
-  Score with `task_metadata.objective_metric_name` (`rmse`, `roc_auc`, `log_loss`). Features can be
-  categorical, string or datetime, so pick a model that takes mixed dtypes. See
-  `examples/benchmark_on_beyond_arena.py`.
+  Format 2 (`container.format_version == 2`): score by the spec `task_metadata.objective_metric` with
+  `data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`, and take the inputs from
+  `feature_columns(container)` (`data_foundry.curation_container`), which drops the target, the group and the
+  scoring columns (`task_metadata.scoring_columns`: metric inputs such as an era, never features). Format 1
+  (BeyondArena): score with `task_metadata.objective_metric_name` (`rmse`, `roc_auc`, `log_loss`). Features can be
+  categorical, string or datetime, so pick a model that takes mixed dtypes. A SMILES column
+  (`semantic_columns(container, "smiles")`) is a molecule: encode it with `data_foundry.v2.chemistry.encode_smiles`
+  (or your own), never as text; `data_foundry.v2.encodings` has the recommended encodings of dates and text too. See
+  `examples/benchmark_on_beyond_arena.py`; without Data Foundry, `examples/read_metric_without_data_foundry.py`.
 
 See [AGENTS.md](AGENTS.md) for the long form.

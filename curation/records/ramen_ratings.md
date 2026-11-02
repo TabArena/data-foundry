@@ -8,9 +8,11 @@ decision_markers:
 - No Good Target (yet)
 tags:
 - New IID
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 collections:
 - CARTE/TARTE
+- MulTaBench
+- STRABLE
 source_links:
 - https://www.kaggle.com/datasets/ankanhore545/top-ramen-ratings-2022
 - https://www.theramenrater.com/

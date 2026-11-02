@@ -6,7 +6,7 @@ from pathlib import Path
 
 import arff
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary
 
 
 class PolishCompaniesBankruptcy(AbstractCuratedDataset):
@@ -72,6 +72,12 @@ class PolishCompaniesBankruptcy(AbstractCuratedDataset):
     # Task
     target = "company_bankrupt"
     problem_type = "binary_classification"
+    metric = Metric.source(
+        "roc_auc",
+        original="AUC (area under the ROC curve)",
+        reference="Zieba, Tomczak & Tomczak, Ensemble boosted trees with synthetic features generation in application to bankruptcy prediction, Expert Systems with Applications 58 (2016) 93-101",
+        definition="ROC AUC of bankrupt vs not, per forecasting-year file.",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         with open(raw_dir / "5year.arff") as f:

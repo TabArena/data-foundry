@@ -9,9 +9,12 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
+tags:
+- Non-IID (Grouped)
 year: '2015'
+domain: chemistry & material science
 required_split:
-- Random (IID)
+- Grouped (NON-IID)
 problem_type: Regression
 source_links:
 - https://www.openml.org/search?type=data&id=3050
@@ -35,3 +38,31 @@ Potential issue: We are no domain experts
 Lennart: tend towards yes - hard to tell if domain is appropiate. The papers and meta-learning use this still and it might be outdated but tabular is sitll a strong baseline (even once they have deep learning method as for other bio applicaiton domains)
 
 Andrej: Not in TabRepo, need to clarify
+
+CC (2026-10-21, Lennart): one domain for the molecule-property datasets (the input is the molecule): "chemistry & material science", for all ten QSAR siblings.
+
+CC (2026-10-21, Lennart): 0/1 presence flags are categorical ("Assuming it is binary, the categorical dtype might be best?"); CLEAN-14 amended. The bits were checked to hold only 0 and 1.
+
+CC (2026-10-21, Lennart): CLEAN-11 amended: a row whose target the source names as not the task's quantity, or a single extreme target in the training period only, may leave, with the source's words.
+
+**Assessment (AI, 2026-10-21):** the dropped row (pXC50 -6.24) does not meet the amended clause (the split is random, so there is no training period, and the source does not name the row), but it is an impossible value: a half-effect concentration of about 1.7 million mol/L. Under CLEAN-11 the target becomes missing and the row leaves by CLEAN-15; the reason is now in curation_comments.
+
+CC (2026-10-21, Lennart): "Yes, follow your recommendation" on the repeated fingerprints: keep the repeated FCFP vectors (different ChEMBL compounds) with the reason written down, and drop the salt-form copies of one parent as LEAK-19 does in qsar_oral_toxicity.
+
+**Assessment (AI, 2026-10-21):** every one of the 5,742 rows has its own ChEMBL id; 870 rows sit in 387 repeated fingerprint vectors. ChEMBL's molecule_hierarchy (API) traced 798 of them (72 ids are no longer in ChEMBL): stereoisomers (179 vectors) and analogs (125 vectors) stay as different compounds with their own potency. Untuned LightGBM RMSE: random 0.765, grouped on the vector 0.781, one row per vector 0.757; a vector-mate mean gives 0.798. Salt forms: 37 pairs of ids share one ChEMBL parent and one vector (31 of them are a whole vector, target sd median 0.006; 6 sit in larger vectors; median sd over all 37 is 0.04). The definition drops the 37 non-parent rows by an embedded id list (SALT_FORM_COPIES; the raw file has no structures), keeping the parent's row or, in the one pair without it, the lowest ChEMBL id; the target is not read. Rows 5,741 -> 5,704. dataset check: 0 errors, 2 warnings (99 exact duplicate rows, 347 rows sharing features with another target). Evidence: local-data-warehouse/_runs/2026-10-21_crosscut/cleaning_features/ (tid11_repeated_chembl.csv, tid11_salt_drop.csv, scripts/tid11_salt_drop.py).
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — Average root mean squared error (RMSE) with 10-fold cross-validation (Olier et al. 2018, Meta-QSAR, Machine Learning 107:285-311, doi:10.1007/s10994-017-5685-x, Sec. 2.3 (arXiv:1709.03854)).
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `papyrus_bioactivity` (TBD -> Yes, priority 2), `chembl36_kinase_bioactivity` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
+**Assessment (AI, 2026-11-01):** a scaffold split is possible (SPLIT-31 as amended): ChEMBL 17, the release the data was drawn from, holds the structure of all 5,742 compound ids of the file (`chembl_17_chemreps.txt.gz`; the InChIKey equals today's ChEMBL for all 5,505 ids still served). Bemis-Murcko scaffolds (`scaffold_groups`): 2,529 groups for 5,704 compounds, 21 ring-less compounds alone, the largest group the bare benzene ring (117, 2%). Random against scaffold split: test compounds with a close training analog (Tanimoto >= 0.7, Morgan r2 2,048 bits) 79.7% against 59.2%; untuned LightGBM RMSE 0.794 against 0.920 (3 x 3 folds). Of the 356 repeated fingerprint vectors, 303 lie within one scaffold. Evidence: `local-data-warehouse/_runs/2026-11-01_scaffold_checks/qsar_tid_11/`.
+
+CC (2026-11-01, Lennart): go ahead with the scaffold split. The definition joins each compound's ChEMBL 17 structure on `MOLECULE_CHEMBL_ID` and groups on the scaffold; `required_split` is now `Grouped (NON-IID)`. Not built.
+
+CC (2026-11-01, Lennart): SMILES ship as a typed structure column, not pre-encoded and never as text (path C of the discussion doc "SMILES Handling in Data Foundry and TabArena v0.2" (https://claude.ai/artifact/6r49WpR9Uard5ogo7qK4rB)): the benchmark encodes it; the recommended encoding in Data Foundry is RDKit's 2D descriptors with the MACCS keys.
+
+**Assessment (AI, 2026-11-01):** the definition now ships the ChEMBL 17 structure as `SMILES` (RDKit's canonical form, salts as ChEMBL records them) in `smiles_columns`, next to the source's 1,024 FCFP bits, which stay since the recommended encoding does not reproduce Pipeline Pilot's fingerprint. With the structure in the frame the two duplicate-row warnings are gone (rows that share a fingerprint differ in their structure).
+
+CC (2026-11-01, Lennart): ship the SMILES only: "the real task here is going from smiles to a prediction, the bits are just one possible modelling choice by the authors".
+
+**Assessment (AI, 2026-11-01):** the authors' 1,024 FCFP6 bits leave; `SMILES` is the one feature. RDKit cannot recompute those exact bits (with its closest settings no source bit is matched exactly by any RDKit bit). LightGBM R^2 on the 9 scaffold splits: authors' bits 0.645; the recommended encoding (RDKit 2D + MACCS) 0.601; RDKit's FCFP6-like bits 0.628; the recommended encoding with RDKit's FCFP6-like bits 0.640, with RDKit's ECFP4 counts 0.658 (better than the authors' bits on 8 of 9 splits). The 474 stereoisomer rows (217 groups, potency range median 0.45 pXC50) stay, as decided on 2026-10-21; no two rows share a SMILES. Evidence: `local-data-warehouse/_runs/2026-11-01_scaffold_checks/qsar_tid_11/encodings_compare.txt`.

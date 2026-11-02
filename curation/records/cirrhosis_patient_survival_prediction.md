@@ -52,6 +52,14 @@ CC (2026-10-14, Lennart): New task: death or liver transplant within 5 years of 
 
 CC (2026-10-14, Lennart): The 5-year task has a good target: marker `No Good Target (yet)` and the open `?` in required_split removed.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — The source is a survival study (Cox model); our binary 5-year label is a derived task with no defined metric. The 5-year c-statistic used for GLOBE / Mayo risk scores equals ROC AUC on a binary label, so roc_auc also follows from context.
+
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 2 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `Edema`, `Stage` (the README lists their levels).
+
+CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 1 scores are numbers (Stage).
+
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
 ## Reference
 
 Fleming, T.R. and Harrington, D.P. (1991) Counting Processes and Survival Analysis. Wiley Series in Probability and Mathematical Statistics: Applied Probability and Statistics, John Wiley and Sons Inc., New York.

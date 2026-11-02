@@ -5,7 +5,767 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    TaskSummary,
+    decode,
+    drop_columns,
+    set_missing,
+)
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "child_years_in_programme": ["1st year in the programme", "2nd year in programme", "3rd year in programme"],
+    "pqa_curriculum_literacy": [
+        "Inadequate: Few appropriate language activities. E.g. Practitioner rarely reads",
+        "Basic: Some of the following language/literacy activities – daily story, some ap",
+        "Good: Daily story with active child participation and discussion. E.g. children",
+    ],
+    "pqa_curriculum_ncf": [
+        "Inadequate: No evidence that programme supports NCF aims.",
+        "Basic: Learning programme focuses on some of the ELDAs and is mostly development",
+        "Good: Learning programme used covers all the ELDAs and activities are developmen",
+    ],
+    "pqa_curriculum_numeracy": [
+        "Inadequate: Few or no appropriate maths activities, staff do not show children h",
+        "Basic: Some practitioner initiated and directed maths activities including numbe",
+        "Good: Frequent number songs, rhymes, games. Children encouraged to count objects",
+    ],
+    "pqa_environment_accessible": [
+        "Inadequate: Few or no materials are accessible to children.",
+        "Basic: Some materials are easily accessible for children.",
+        "Good: All materials are laid out so that children can easily access them.",
+    ],
+    "pqa_environment_appropriate": [
+        "Inadequate: Many materials are not appropriate for the developmental level and i",
+        "Basic: Most materials match the developmental level and interests of children 4",
+        "Good: Materials provide for a range of developmental levels and interests includ",
+    ],
+    "pqa_environment_areas": [
+        "Inadequate: There are no or fewer than 3 organised learning areas.",
+        "Basic: Three learning areas set out for children to play in (alone or with other",
+        "Good: There are 4 or more learning areas arranged so children can use them, quie",
+    ],
+    "pqa_environment_open": [
+        "Inadequate: No open ended materials.",
+        "Basic: At least 1 example of open ended materials in each of 2 learning areas.",
+        "Good: At least 2 examples of open ended materials in each of 3 learning areas.",
+    ],
+    "pqa_environment_outdoor": [
+        "Inadequate: Few or no outdoor equipment/opportunities.",
+        "Basic: Some outdoor equipment to promote different kinds of movement.",
+        "Good: A variety of small and large equipment to promote different kinds of movem",
+    ],
+    "pqa_environment_variety": [
+        "Inadequate: Insufficient materials in any or all areas. E.g. children have to wa",
+        "Basic: Some materials for all learning areas. E.g. children don’t have to wait b",
+        "Good: Enough and variety of materials in all learning areas - more than 2 activi",
+    ],
+    "pqa_relationships_acknowledge": [
+        "Inadequate: Staff do not use encouragement to acknowledge children’s efforts or",
+        "Basic: Staff sometimes use encouragement (at least 2 instances observed with 2 d",
+        "Good: Staff regularly use encouragement to acknowledge individual children’s eff",
+    ],
+    "pqa_relationships_discipline": [
+        "Inadequate: No positive discipline observed or expectations may not be age appropriate.",
+        "Basic: No harsh methods used, control maintained, expectations age appropriate.",
+        "Good: Effective use of non-punitive methods, staff apply rules consistently, children supported to solve conflicts for themselves, express how they are feeling.",
+    ],
+    "pqa_relationships_peers": [
+        "Inadequate: Children are discouraged from interacting (e.g. not allowed to choos",
+        "Basic: Peer interaction encouraged (e.g. free choice of who to play with), negat",
+        "Good: Staff help children develop good social behaviours, provide activities tha",
+    ],
+    "pqa_relationships_staff": [
+        "Inadequate: Staff are not responsive to or involved with children (ignore or jus",
+        "Basic: Friendly atmosphere, some positive interactions and response to individua",
+        "Good: Frequent positive interaction, warm contact, relaxed and pleasant atmosphe",
+    ],
+    "pqa_teaching_choice": [
+        "Inadequate: Staff direct how children use materials and carry out activities (e.",
+        "Basic: Children make at least 2 choices independent of practitioner direction ab",
+        "Good: Children make 3 or more choices during playtime (independent of practition",
+    ],
+    "pqa_teaching_engagement": [
+        "Inadequate: Staff do not engage to support and extend children’s learning. Inter",
+        "Basic: Staff engage with one or two children to extend their learning using one",
+        "Good: Staff regularly engage to extend children’s learning using a variety of te",
+    ],
+    "pqa_teaching_participation": [
+        "Inadequate: In large group activities staff do not ask children to offer ideas o",
+        "Basic: Children sometimes contribute or participate at own developmental levels",
+        "Good: Children contribute their own ideas and participate at own developmental l",
+    ],
+    "pqa_teaching_questions": [
+        "Inadequate: No open ended questions to extend children’s thinking (only one word",
+        "Basic: Some questions to encourage children to reflect on an activity or idea. E",
+        "Good: Many questions to encourage children to reflect on actions and ideas in mu",
+    ],
+    "pqa_teaching_support": [
+        "Inadequate: Staff do not support children to do things for themselves or encoura",
+        "Basic: Practitioner sometimes supports children to do things for themselves and",
+        "Good: Practitioner regularly supports children to do things for themselves and t",
+    ],
+    "gr_ecd": ["almost none", "0-25%", "25-50%", "50-75%", "almost all"],
+    "obs_booknumber": [
+        "none or almost none",
+        "less than 50",
+        "50-100 books",
+        "100-250 books",
+        "more than 250 books",
+    ],  # open-ended
+    "obs_condition_equipment": [
+        "bad (mostly broken and unused)",
+        "okay (some in working condition)",
+        "fine (mostly in working condition)",
+        "very good",
+    ],
+    "obs_infrastructure": [
+        "strong state of disrepair",
+        "moderate signs of disrepair",
+        "minor signs of disrepair",
+        "well maintained",
+    ],
+    "obs_material_display": [
+        "no, there is nothing against the walls",
+        "yes, but of poor quality and not relevant to the age group",
+        "yes, of average quality and relevant to the age group",
+        "yes, stimulating and appropriate",
+    ],
+    "plan": [
+        "no",
+        "yes, details provided for the main activities in the week",
+        "yes, details provided for the activities each day",
+    ],
+    "pqa_assessment_observation": [
+        "inadequate: no observation record, or the observation book is not in regular use",
+        "basic: a regular observation record/book with some written indication of remedial activities",
+        "good: many and varied observations of children's progress and a range of activities to remediate difficulties/facilitate holistic development",
+    ],
+    "pqa_assessment_systematic": [
+        "inadequate: there is no systematic child assessment",
+        "basic: assessments done at least twice a year, using a standard format, and filed for reference",
+        "good: assessments using a standard format updated regularly, children with difficulties assessed more often",
+    ],
+    "pqa_curriculum_balance": [
+        "inadequate: either free play or whole group activities predominate",
+        "basic: both free play and whole group activities each day and some small group times",
+        "good: substantial free play indoors and outdoors, story, music and ring time daily and regular small group teaching",
+    ],
+    "pqa_curriculum_plan": [
+        "inadequate: no evidence of planning used to organise learning activities",
+        "basic: planning books and the playroom reflect a planned and integrated approach",
+        "good: plans are applied, taking into account children's interests and developmental appropriateness",
+    ],
+    "pra_adequacy_materials": ["inadequate", "somewhat adequate", "adequate", "good", "excellent"],
+    "pra_cotlands_support": ["neutral", "very satisfied", "extremely satisfied"],
+    "pra_cotlands_visits": ["1 time", "4 times", "more than 10 times"],  # open-ended
+    "pra_education": [
+        "below Grade 12/matric",
+        "matric/National Senior Certificate",
+        "certificate",
+        "diploma",
+        "undergraduate degree",
+        "postgraduate degree",
+    ],
+    "pra_engaged": ["seldom", "sometimes", "often"],
+    "pra_free_play": ["30 minutes or less", "up to 1 hour", "up to 2 hours", "more than 3 hours"],  # open-ended
+    "pra_free_play_outdoor": ["30 minutes or less", "up to 1 hour", "up to 2 hours", "up to 3 hours"],
+    "pra_grade": ["school not attended", "grade 8", "grade 9", "grade 10", "grade 11", "grade 12"],
+    "pra_letcee_support_cluster": ["not satisfied", "neutral", "very satisfied", "extremely satisfied"],
+    "pra_letcee_support_coach": ["not satisfied", "neutral", "very satisfied"],
+    "pra_motivate_mentoring": ["disagree strongly", "disagree a little", "agree a little", "agree strongly"],
+    "pra_motivate_recognition": ["disagree strongly", "disagree a little", "agree a little", "agree strongly"],
+    "pra_motivate_support": ["disagree strongly", "disagree a little", "agree a little", "agree strongly"],
+    "pra_ntataise_attendance": ["5 times", "7 times", "8 times", "9 times", "more than 10 times"],  # open-ended
+    "pra_ntataise_support": ["slightly satisfied", "neutral", "very satisfied", "extremely satisfied"],
+    "pra_ntataise_visits": [
+        "2 times",
+        "3 times",
+        "4 times",
+        "5 times",
+        "7 times",
+        "8 times",
+        "more than 10 times",
+    ],  # open-ended
+    "pra_tuc_support": ["not satisfied", "neutral", "very satisfied", "extremely satisfied"],
+    "pra_tuc_visits": [
+        "1 time",
+        "2 times",
+        "4 times",
+        "5 times",
+        "7 times",
+        "10 times",
+        "more than 10 times",
+    ],  # open-ended
+    "pri_covid_staff_salaries": [
+        "no, not able to pay them at all",
+        "no, had to reduce their salaries",
+        "yes, salaries have remained the same",
+    ],
+    "pri_education": [
+        "below Grade 12/matric",
+        "matric/National Senior Certificate",
+        "certificate",
+        "diploma",
+        "undergraduate degree",
+        "postgraduate degree",
+    ],
+    "pri_fees_paid_proportion": [
+        "none of the parents",
+        "only a few parents",
+        "about half of the parents",
+        "most parents, but not all",
+        "all parents",
+    ],
+    "pri_food_parents_afternoon": ["none", "some", "all"],
+    "pri_food_parents_breakfast": ["none", "some", "all"],
+    "pri_food_parents_lunch": ["none", "some", "all"],
+    "pri_food_parents_morning": ["none", "some", "all"],
+    "pri_parents_activities": ["no, no one", "yes, only one or two", "yes, some parents", "yes, most parents"],
+    "pri_parents_contact": ["no, no one", "yes, only one or two", "yes, some parents", "yes, most parents"],
+    "pri_parents_frequency": ["never", "annually", "quarterly", "monthly", "weekly"],
+    "pri_registered_dsd": ["not registered", "in process", "conditionally registered", "fully registered"],
+    "pri_registered_partial": ["not registered", "in process", "conditionally registered", "fully registered"],
+    "pri_registered_programme": ["not registered", "in process", "conditionally registered", "fully registered"],
+    "pri_same_language": [
+        "none of the children",
+        "less than half of the children",
+        "more than half of the children",
+        "all children",
+    ],
+    "pri_separate": [
+        "no, all ages learning and playing together",
+        "yes, grouped by age but using the same space",
+        "yes, grouped by age and divided into different rooms",
+    ],
+    "pri_staff_employed": [
+        "less than half of the number of previous years",
+        "more than half of the number of previous years",
+        "about the same number as previous years",
+        "more staff than previous years",
+    ],
+    "pri_support_dbe": ["never", "once", "twice", "three times", "more than three times"],  # open-ended
+    "pri_support_dsd": ["never", "once", "twice", "three times", "more than three times"],  # open-ended
+    "pri_support_frequency": ["once a year", "once a term", "once a month", "once a week"],
+    "pri_support_municipality": ["never", "once", "twice", "three times", "more than three times"],  # open-ended
+    "pri_support_ngo": ["never", "once", "twice", "three times", "more than three times"],  # open-ended
+    "rating": [
+        "no books at all",
+        "lack of books, few books, or dated books",
+        "lots of books but not clearly used",
+        "lots of books and clearly used",
+    ],
+    "teacher_emotional_appropriate": ["not true", "sometimes true", "often true"],
+    "teacher_emotional_confidence": ["not true", "sometimes true", "often true"],
+    "teacher_emotional_independent": ["not true", "sometimes true", "often true"],
+    "teacher_emotional_selfstarter": ["not true", "sometimes true", "often true"],
+    "teacher_emotional_understand": ["not true", "sometimes true", "often true"],
+    "teacher_social_assistance": ["none of the time", "a little of the time", "most of the time", "all of the time"],
+    "teacher_social_cooperate": ["none of the time", "a little of the time", "most of the time", "all of the time"],
+    "teacher_social_ideas": ["none of the time", "a little of the time", "most of the time", "all of the time"],
+    "teacher_social_initiative": ["none of the time", "a little of the time", "most of the time", "all of the time"],
+    "teacher_social_nonaggressive": ["none of the time", "a little of the time", "most of the time", "all of the time"],
+    "teacher_social_peers": ["none of the time", "a little of the time", "most of the time", "all of the time"],
+    "teacher_emotional_adjust": ["not true", "sometimes true", "often true"],
+    "child_stunted": ["Severely stunted", "Moderately stunted", "Normal"],
+    "pra_salary": [
+        "R0",
+        "less than R500 per month",
+        "R500 – R749",
+        "R750 – R999",
+        "R1000 – R1249",
+        "R1250 – R1499",
+        "R1500 – R1999",
+        "R2000 – R2499",
+        "R2500 – R2999",
+        "R3000 – R3499",
+        "R3500 – R3999",
+        "R4000 – R4449",
+        "R5000 – R5999",
+        "more than R6000",
+    ],
+    "pra_cotlands_attendance": ["1 time", "more than 10 times"],
+    "pra_lesedi_support": ["neutral", "very satisfied"],
+    "pra_letcee_clubsupport": ["neutral", "very satisfied"],
+}
+
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "gr_ecd": {"0": "almost none", "1": "0-25%", "2": "25-50%", "3": "50-75%", "4": "almost all"},
+    "obs_booknumber": {
+        "1": "none or almost none",
+        "2": "less than 50",
+        "3": "50-100 books",
+        "4": "100-250 books",
+        "5": "more than 250 books",
+    },
+    "obs_condition_equipment": {
+        "1": "bad (mostly broken and unused)",
+        "2": "okay (some in working condition)",
+        "3": "fine (mostly in working condition)",
+        "4": "very good",
+    },
+    "obs_infrastructure": {
+        "1": "strong state of disrepair",
+        "2": "moderate signs of disrepair",
+        "3": "minor signs of disrepair",
+        "4": "well maintained",
+    },
+    "obs_material_display": {
+        "0": "no, there is nothing against the walls",
+        "1": "yes, but of poor quality and not relevant to the age group",
+        "2": "yes, of average quality and relevant to the age group",
+        "3": "yes, stimulating and appropriate",
+    },
+    "plan": {
+        "0": "no",
+        "1": "yes, details provided for the activities each day",
+        "2": "yes, details provided for the main activities in the week",
+    },
+    "pqa_assessment_observation": {
+        "0": "inadequate: no observation record, or the observation book is not in regular use",
+        "1": "basic: a regular observation record/book with some written indication of remedial activities",
+        "2": "good: many and varied observations of children's progress and a range of activities to remediate difficulties/facilitate holistic development",
+    },
+    "pqa_assessment_systematic": {
+        "0": "inadequate: there is no systematic child assessment",
+        "1": "basic: assessments done at least twice a year, using a standard format, and filed for reference",
+        "2": "good: assessments using a standard format updated regularly, children with difficulties assessed more often",
+    },
+    "pqa_curriculum_balance": {
+        "0": "inadequate: either free play or whole group activities predominate",
+        "1": "basic: both free play and whole group activities each day and some small group times",
+        "2": "good: substantial free play indoors and outdoors, story, music and ring time daily and regular small group teaching",
+    },
+    "pqa_curriculum_plan": {
+        "0": "inadequate: no evidence of planning used to organise learning activities",
+        "1": "basic: planning books and the playroom reflect a planned and integrated approach",
+        "2": "good: plans are applied, taking into account children's interests and developmental appropriateness",
+    },
+    "pra_adequacy_materials": {
+        "1": "inadequate",
+        "2": "somewhat adequate",
+        "3": "adequate",
+        "4": "good",
+        "5": "excellent",
+    },
+    "pra_cotlands_support": {"3": "neutral", "4": "very satisfied", "5": "extremely satisfied"},
+    "pra_cotlands_visits": {"1": "1 time", "4": "4 times", "11": "more than 10 times"},
+    "pra_education": {
+        "1": "below Grade 12/matric",
+        "2": "matric/National Senior Certificate",
+        "3": "certificate",
+        "4": "diploma",
+        "5": "undergraduate degree",
+        "6": "postgraduate degree",
+    },
+    "pra_engaged": {"1": "seldom", "2": "sometimes", "3": "often"},
+    "pra_free_play": {"1": "30 minutes or less", "2": "up to 1 hour", "3": "up to 2 hours", "5": "more than 3 hours"},
+    "pra_free_play_outdoor": {
+        "1": "30 minutes or less",
+        "2": "up to 1 hour",
+        "3": "up to 2 hours",
+        "4": "up to 3 hours",
+    },
+    "pra_grade": {
+        "0": "school not attended",
+        "8": "grade 8",
+        "9": "grade 9",
+        "10": "grade 10",
+        "11": "grade 11",
+        "12": "grade 12",
+    },
+    "pra_letcee_support_cluster": {
+        "1": "not satisfied",
+        "3": "neutral",
+        "4": "very satisfied",
+        "5": "extremely satisfied",
+    },
+    "pra_letcee_support_coach": {"1": "not satisfied", "3": "neutral", "4": "very satisfied"},
+    "pra_motivate_mentoring": {
+        "1": "disagree strongly",
+        "2": "disagree a little",
+        "3": "agree a little",
+        "4": "agree strongly",
+    },
+    "pra_motivate_recognition": {
+        "1": "disagree strongly",
+        "2": "disagree a little",
+        "3": "agree a little",
+        "4": "agree strongly",
+    },
+    "pra_motivate_support": {
+        "1": "disagree strongly",
+        "2": "disagree a little",
+        "3": "agree a little",
+        "4": "agree strongly",
+    },
+    "pra_ntataise_attendance": {
+        "5": "5 times",
+        "7": "7 times",
+        "8": "8 times",
+        "9": "9 times",
+        "11": "more than 10 times",
+    },
+    "pra_ntataise_support": {
+        "2": "slightly satisfied",
+        "3": "neutral",
+        "4": "very satisfied",
+        "5": "extremely satisfied",
+    },
+    "pra_ntataise_visits": {
+        "2": "2 times",
+        "3": "3 times",
+        "4": "4 times",
+        "5": "5 times",
+        "7": "7 times",
+        "8": "8 times",
+        "11": "more than 10 times",
+    },
+    "pra_tuc_support": {"1": "not satisfied", "3": "neutral", "4": "very satisfied", "5": "extremely satisfied"},
+    "pra_tuc_visits": {
+        "1": "1 time",
+        "2": "2 times",
+        "4": "4 times",
+        "5": "5 times",
+        "7": "7 times",
+        "10": "10 times",
+        "11": "more than 10 times",
+    },
+    "pri_covid_staff_salaries": {
+        "0": "no, not able to pay them at all",
+        "1": "no, had to reduce their salaries",
+        "2": "yes, salaries have remained the same",
+    },
+    "pri_education": {
+        "1": "below Grade 12/matric",
+        "2": "matric/National Senior Certificate",
+        "3": "certificate",
+        "4": "diploma",
+        "5": "undergraduate degree",
+        "6": "postgraduate degree",
+    },
+    "pri_fees_paid_proportion": {
+        "0": "none of the parents",
+        "1": "only a few parents",
+        "2": "about half of the parents",
+        "3": "most parents, but not all",
+        "4": "all parents",
+    },
+    "pri_food_parents_afternoon": {"0": "none", "1": "some", "2": "all"},
+    "pri_food_parents_breakfast": {"0": "none", "1": "some", "2": "all"},
+    "pri_food_parents_lunch": {"0": "none", "1": "some", "2": "all"},
+    "pri_food_parents_morning": {"0": "none", "1": "some", "2": "all"},
+    "pri_parents_activities": {
+        "0": "no, no one",
+        "1": "yes, only one or two",
+        "2": "yes, some parents",
+        "3": "yes, most parents",
+    },
+    "pri_parents_contact": {
+        "0": "no, no one",
+        "1": "yes, only one or two",
+        "2": "yes, some parents",
+        "3": "yes, most parents",
+    },
+    "pri_parents_frequency": {"0": "never", "1": "weekly", "2": "monthly", "3": "quarterly", "4": "annually"},
+    "pri_registered_dsd": {
+        "1": "fully registered",
+        "2": "conditionally registered",
+        "3": "in process",
+        "4": "not registered",
+    },
+    "pri_registered_partial": {
+        "1": "fully registered",
+        "2": "conditionally registered",
+        "3": "in process",
+        "4": "not registered",
+    },
+    "pri_registered_programme": {
+        "1": "fully registered",
+        "2": "conditionally registered",
+        "3": "in process",
+        "4": "not registered",
+    },
+    "pri_same_language": {
+        "1": "all children",
+        "2": "more than half of the children",
+        "3": "less than half of the children",
+        "4": "none of the children",
+    },
+    "pri_separate": {
+        "0": "no, all ages learning and playing together",
+        "1": "yes, grouped by age but using the same space",
+        "2": "yes, grouped by age and divided into different rooms",
+    },
+    "pri_staff_employed": {
+        "1": "more staff than previous years",
+        "2": "about the same number as previous years",
+        "3": "more than half of the number of previous years",
+        "4": "less than half of the number of previous years",
+    },
+    "pri_support_dbe": {"0": "never", "1": "once", "2": "twice", "3": "three times", "4": "more than three times"},
+    "pri_support_dsd": {"0": "never", "1": "once", "2": "twice", "3": "three times", "4": "more than three times"},
+    "pri_support_municipality": {
+        "0": "never",
+        "1": "once",
+        "2": "twice",
+        "3": "three times",
+        "4": "more than three times",
+    },
+    "pri_support_ngo": {"0": "never", "1": "once", "2": "twice", "3": "three times", "4": "more than three times"},
+    "pri_support_frequency": {"1": "once a year", "2": "once a term", "3": "once a month", "4": "once a week"},
+    "rating": {
+        "0": "no books at all",
+        "1": "lack of books, few books, or dated books",
+        "2": "lots of books but not clearly used",
+        "3": "lots of books and clearly used",
+    },
+    "teacher_emotional_appropriate": {"0": "not true", "1": "sometimes true", "2": "often true"},
+    "teacher_emotional_confidence": {"0": "not true", "1": "sometimes true", "2": "often true"},
+    "teacher_emotional_independent": {"0": "not true", "1": "sometimes true", "2": "often true"},
+    "teacher_emotional_selfstarter": {"0": "not true", "1": "sometimes true", "2": "often true"},
+    "teacher_emotional_understand": {"0": "not true", "1": "sometimes true", "2": "often true"},
+    "teacher_social_assistance": {
+        "1": "none of the time",
+        "2": "a little of the time",
+        "3": "most of the time",
+        "4": "all of the time",
+    },
+    "teacher_social_cooperate": {
+        "1": "none of the time",
+        "2": "a little of the time",
+        "3": "most of the time",
+        "4": "all of the time",
+    },
+    "teacher_social_ideas": {
+        "1": "none of the time",
+        "2": "a little of the time",
+        "3": "most of the time",
+        "4": "all of the time",
+    },
+    "teacher_social_initiative": {
+        "1": "none of the time",
+        "2": "a little of the time",
+        "3": "most of the time",
+        "4": "all of the time",
+    },
+    "teacher_social_nonaggressive": {
+        "1": "none of the time",
+        "2": "a little of the time",
+        "3": "most of the time",
+        "4": "all of the time",
+    },
+    "teacher_social_peers": {
+        "1": "none of the time",
+        "2": "a little of the time",
+        "3": "most of the time",
+        "4": "all of the time",
+    },
+    "teacher_emotional_adjust": {"0": "not true", "1": "sometimes true", "2": "often true"},
+    "gr_1_tt": {
+        "1": "all children at school every day",
+        "4": "alternate days of the week",
+        "5": "10-day cycle (3 days one week, 2 days the following week)",
+    },
+    "grade_r": {"0": "no", "1": "yes, and I was able to see them", "2": "yes, but I was not able to see them"},
+    "obs_building": {
+        "1": "conventional, brick or block with tile or zinc roof",
+        "2": "traditional, mortar or mud walls with zinc or thatch roof",
+        "3": "shipping container",
+        "4": "prefab building",
+        "5": "informal housing (shack)",
+    },
+    "obs_cooking_census": {
+        "0": "none",
+        "1": "electricity",
+        "2": "gas",
+        "5": "paraffin",
+        "6": "coal or wood",
+        "97": "other",
+    },
+    "obs_heating_census": {
+        "0": "none",
+        "1": "electricity",
+        "2": "gas",
+        "4": "solar",
+        "5": "paraffin",
+        "6": "coal or wood",
+        "97": "other",
+    },
+    "obs_lighting_census": {
+        "0": "none",
+        "1": "electricity",
+        "2": "gas",
+        "3": "candles",
+        "4": "solar",
+        "5": "paraffin",
+        "97": "other",
+    },
+    "obs_water": {
+        "1": "tap water in the building",
+        "2": "tap water on-site, outside the building",
+        "3": "public or communal tap off-site",
+        "4": "bore-hole water on-site",
+        "5": "rain water tank on-site",
+        "97": "other",
+    },
+    "pra_class_language": {
+        "1": "Afrikaans",
+        "2": "English",
+        "3": "isiNdebele",
+        "4": "isiXhosa",
+        "5": "isiZulu",
+        "6": "Sepedi",
+        "7": "Setswana",
+        "8": "Sesotho",
+        "9": "Siswati",
+        "10": "Tshivenda",
+        "11": "Xitsonga",
+    },
+    "pra_job": {"1": "principal/matron", "2": "supervisor", "3": "practitioner/teacher", "4": "assistant practitioner"},
+    "pra_previous": {
+        "1": "working in another school/ECD programme",
+        "2": "self-employed",
+        "3": "in school/studying",
+        "4": "not employed, but looking for work",
+        "5": "working in another industry/sector",
+        "97": "other",
+    },
+    "pra_shape": {"1": "rectangle", "2": "L-shaped", "3": "circle"},
+    "pri_bank": {"1": "yes", "2": "no, principal uses his/her own bank account"},
+    "pri_facilities": {
+        "1": "school",
+        "2": "the ECD programme",
+        "3": "religious institution",
+        "4": "community centre",
+        "5": "not-for-profit organisation",
+        "6": "municipality",
+        "7": "other government institution (not municipality)",
+        "8": "the person in charge of the programme",
+        "9": "another private individual",
+        "10": "private business",
+        "97": "other",
+    },
+    "pri_land": {
+        "1": "school",
+        "2": "the ECD programme",
+        "3": "religious institution",
+        "4": "community centre",
+        "5": "not-for-profit organisation",
+        "6": "municipality",
+        "7": "other government institution (not municipality)",
+        "8": "the person in charge of the programme",
+        "9": "another private individual",
+        "10": "private business",
+        "97": "other",
+        "11": "communal land (traditional)",
+    },
+    "pri_kitchen": {
+        "0": "no kitchen or meal preparation area",
+        "1": "yes, separated from the children",
+        "2": "no, not separated from the children",
+    },
+    "pri_location": {
+        "1": "in someone's house",
+        "2": "in the garage of someone's house",
+        "3": "at a church/mosque/place of worship",
+        "4": "at a community hall/centre",
+        "5": "a municipal building",
+        "6": "an ECD centre",
+        "97": "other",
+    },
+    "pri_meal_prep": {
+        "1": "a cook employed by the programme",
+        "2": "volunteers/someone from the community",
+        "3": "EPWP worker",
+        "5": "practitioners",
+        "97": "other",
+    },
+    "pra_agency_choice": {
+        "1": "agree with the 1st statement much more than with the 2nd",
+        "2": "agree with the 2nd statement much more than with the 1st",
+        "3": "agree with both statements equally",
+        "4": "disagree with both statements equally",
+    },
+    "pra_agency_explore": {
+        "1": "agree with the 1st statement much more than with the 2nd",
+        "2": "agree with the 2nd statement much more than with the 1st",
+        "3": "agree with both statements equally",
+        "4": "disagree with both statements equally",
+    },
+    "pra_agency_learn": {
+        "1": "agree with the 1st statement much more than with the 2nd",
+        "2": "agree with the 2nd statement much more than with the 1st",
+        "3": "agree with both statements equally",
+        "4": "disagree with both statements equally",
+    },
+    "pra_agency_order": {
+        "1": "agree with the 1st statement much more than with the 2nd",
+        "2": "agree with the 2nd statement much more than with the 1st",
+        "3": "agree with both statements equally",
+        "4": "disagree with both statements equally",
+    },
+    "pra_agency_play": {
+        "1": "agree with the 1st statement much more than with the 2nd",
+        "2": "agree with the 2nd statement much more than with the 1st",
+        "3": "agree with both statements equally",
+        "4": "disagree with both statements equally",
+    },
+    "pra_agency_questions": {
+        "1": "agree with the 1st statement much more than with the 2nd",
+        "2": "agree with the 2nd statement much more than with the 1st",
+        "3": "agree with both statements equally",
+        "4": "disagree with both statements equally",
+    },
+    "pra_agency_understand": {
+        "1": "agree with the 1st statement much more than with the 2nd",
+        "2": "agree with the 2nd statement much more than with the 1st",
+        "3": "agree with both statements equally",
+        "4": "disagree with both statements equally",
+    },
+    "pra_salary": {
+        "0": "R0",
+        "1": "less than R500 per month",
+        "2": "R500 – R749",
+        "3": "R750 – R999",
+        "4": "R1000 – R1249",
+        "5": "R1250 – R1499",
+        "6": "R1500 – R1999",
+        "7": "R2000 – R2499",
+        "8": "R2500 – R2999",
+        "9": "R3000 – R3499",
+        "10": "R3500 – R3999",
+        "11": "R4000 – R4449",
+        "12": "R5000 – R5999",
+        "13": "more than R6000",
+    },
+    "pra_cotlands_attendance": {"1": "1 time", "11": "more than 10 times"},
+    "pra_lesedi_support": {"3": "neutral", "4": "very satisfied"},
+    "pra_letcee_clubsupport": {"3": "neutral", "4": "very satisfied"},
+    "pri_internet_source": {"1": "ADSL/LAN cable", "2": "Wi-Fi router"},
+    "pri_mobile": {"1": "based at a specific location", "2": "moves from place to place"},
+    "pra_gender": {"1": "male", "2": "female"},
+}
+
+
+# Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
+SCORES = [
+    "quintile",
+    "pra_class_space_2",
+    "pra_satisfaction_support",
+    "ses_cat",
+    "ses_proxy",
+    "teacher_familiarity_with_child",
+    "teacher_selfcare_total",
+]
 
 
 class EarlyLearningPredictors(AbstractCuratedDataset):
@@ -27,9 +787,9 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
             " motor development, numeracy, cognition and executive function, literacy and language)."
         ),
         known=(
-            "743 features: the child's age, sex, birth date, grant, stunting, languages and years in the programme; "
+            "739 features: the child's age, sex, birth date, grant, stunting, languages and years in the programme; "
             "the facility's registration, staff, building, equipment and observed practice; teacher and parent "
-            "questionnaires; and the person who did the assessment. Many are missing for whole survey rounds."
+            "questionnaires. Many are missing for whole survey rounds."
         ),
         split=(
             "Whole facilities are held out, so the test data stands for facilities never surveyed; the source's "
@@ -37,13 +797,13 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
         ),
         changes=(
             "We drop the parts and other versions of the score, another child assessment, the home-learning survey "
-            "(mostly missing) and the survey year, and split by facility."
+            "(mostly missing), the survey year, the assessor's id and the timers of the data collection, and split by "
+            "facility."
         ),
         fit="approximate",
         fit_reason=(
-            "The source's question is explanatory. As a forecast, some surveys were made after the assessment, the "
-            "assessor is kept as a feature though known only at the assessment, and the rows mix survey rounds with "
-            "different questions."
+            "The source's question is explanatory. As a forecast, some surveys were made after the assessment, and the "
+            "rows mix survey rounds with different questions."
         ),
     )
 
@@ -89,6 +849,23 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
         - We drop all samples with a missing target.
         - Due to most samples having missing values, we drop all "HOME LEARNING ENVIRONMENT DATA" features. This mostly aligns with the Zindi challenge, except that the features hle_ind, quintile_used, and ses_proxy were kept. We keep the latter two, because they are not missing for all samples and are derived from other; not-HLE features.
         - We drop all features with 100% missing values and one unique value.
+        - Cleaning of 2026-10-30 (CLEAN-5, CLEAN-14): `child_stunted`'s "Normal HAZ" (2016-2022) and "Normal" (2023) are
+          one level spelled two ways, merged as "Normal"; `pra_dob` is a date (`%d%b%Y`); `pri_calc_time_open` and
+          `pri_calc_time_close` ("HH:MM") are present only where the hour and minute columns are and equal to them, so
+          they are dropped, as is `certificate_registration_npo`, a copy of `certificate_register`; 26 columns of the
+          enumerators' free text (the "other" answers and the explanations of flagged measurements) are strings.
+        - `language_match` ("Assessment language matches home", DataFirst V1328; 1 for 14,813 children, 0 for 6) holds
+          the enumerator's reason in place of the answer in 16 rows. Each reason explains why the child was assessed in
+          another language than at home (English at an English school or on the principal's request, a child who
+          answers in Sesotho where the parents speak Zulu), so they are a "no": 0 (2026-11-01, CLEAN-11; Lennart asked
+          to find out what they mean rather than keep them as categories).
+        - `.a` and `.b` are Stata's extended missing values, exported to the CSV as text (2,388 and 29 cells after the
+          target filter, only in the 2020-2022 rounds). They occur only where the question was asked (all 40 `.a` of
+          the DSD subsidy amount are programmes that receive it), while a skipped question is blank, so they are
+          unanswered questions; the source does not say which code is which. They become missing values. The 46
+          columns that held them are counts, rand amounts per month, a year and a timer in minutes, `numeric` in the
+          source's codebook: they are numbers, no longer categories (CLEAN-10, CLEAN-14; issue #36). The timer,
+          `teacher_duration`, is dropped (below).
         - We drop all indicator columns.
         - We drop some repeated columns, such as age_group_label.
         - Because all features could generally be available at prediction time, even if would not be ideal effort-wise, we keep all features that don't leak the target or are otherwise problematic.
@@ -96,15 +873,46 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
         - Additional description of the target: The ELOM 4 & 5 Years Assessment Tool measures whether preschool children are on track for their age in key areas of development. It is a standardised tool that measures performance across five key developmental domains for children aged 50 to 59 months and 60 to 69 months. The scoring assesses a child in 23 items, across five domains, namely: gross motor development, fine motor development, emergent numeracy and mathematics, cognition and executive functioning, and emergent literacy and language. These five domains form part of the direct assessment.
         - Note: We keep some features that were not in the zindi challenge, such as the teacher and parent questionnaires, because they are potentially predictive and could be available at prediction time. Moreover, some columns present in the zindi challenge (like latitude and longitude) are not available.
         - Note: The data consists of a few subsets with partially distinct features collected. This might not represent a real task, but we don't know for sure, so we keep all samples.
-        - Note: The enumerator_id is a control variable of the data collection rather than a factor that should be used for prediction. However, it is predictive and explains noise in the target, so we keep it as a feature.
+        - The assessor's id (`id_enumerator`) is a control variable of the data collection rather than a factor that
+          should be used for prediction, so we drop it with the other ids, although it is predictive and explains
+          noise in the target.
+        - We drop `teacher_duration`, the minutes the teacher's socio-emotional rating form was open (DataFirst's
+          codebook: "Teacher SEF duration in minutes"): a timer of the data collection, like the three `duration_elom`
+          timers dropped above, not a property of the child, the teacher or the facility. It exists only in the
+          2020-2022 rounds (26% of the children); 39% of its values are 0 (93% in the 2020 round, 50% in 2021, 28% in
+          2022) and 1.4% exceed a day, up to 29 days. Its Spearman correlation with the score is -0.06, and what signal
+          it has follows the round (the 0-minute forms, mostly of 2020, score 50.1 against 48.1 overall), which we drop
+          as `data_year` (2026-10-30, Lennart).
         - Note: There are strong patterns of missingness within the data, due to different uses of various tools and measurements across subgroups
         - Anomaly: Many missing values
+        - Feature families by column name (from the v1 exploration, counted 2026-10-22 on the cleaned data, 745 columns; a column can match more than one): pri 258, obs 161, pra 149, count_ 74, pqa 35, child 25, teacher 22. 576 columns are also in the Zindi train file, 136 more are pra/pqa/pri/obs columns not in it, and 33 others are new (among them the target, child_total_elom; Zindi calls it target). 102 Zindi columns are not in our data, among them latitude, longitude, the ward, municipality and province ids and the date columns. 80% of the cells are missing and every row has a missing value.
         - Anomaly: This is a highly underspecified task, leaving a lot of data cleaning to the user/model.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 86 columns are
+          ordered categories in the order of the source's codebook (`ORDINAL_LEVELS`); 66 of them decoded from the
+          source's codes into its words (`CODE_LABELS`, 2026-11-01); codes that mean unknown are missing (CLEAN-10).
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 66 ordered codes carry their codebook's
+          words (`CODE_LABELS`), in the same order; 27 unordered codes carry their words: `gr_1_tt`, `grade_r`,
+          `obs_building`, `obs_cooking_census`, `obs_heating_census`, `obs_lighting_census`, `obs_water`,
+          `pra_class_language`, `pra_job`, `pra_previous`, `pra_shape`, `pri_bank`, `pri_facilities`, `pri_land`,
+          `pri_kitchen`, `pri_location`, `pri_meal_prep`, `pra_agency_choice`, `pra_agency_explore`, `pra_agency_learn`,
+          `pra_agency_order`, `pra_agency_play`, `pra_agency_questions`, `pra_agency_understand`, `pri_internet_source`,
+          `pri_mobile`, `pra_gender`; 7 scores with no words per level are numbers (`SCORES`): `quintile`,
+          `pra_class_space_2`, `pra_satisfaction_support`, `ses_cat`, `ses_proxy`, `teacher_familiarity_with_child`,
+          `teacher_selfcare_total`.
     """
 
     # Task
     target = "child_total_elom"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmse",
+        original="Root Mean Squared Error (Zindi error_metric root_mean_squared_error)",
+        reference=(
+            "https://zindi.africa/competitions/datadrive2030-early-learning-predictors-challenge (API field error_metric)"
+        ),
+        definition="RMSE of the child's total ELOM score.",
+    )
     grouping = Grouping(
         on="id_facility",
         labels="per_sample",
@@ -122,6 +930,13 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
         df = df.loc[~df["child_total_elom"].isna()]
+        df["child_stunted"] = df["child_stunted"].replace({"Normal HAZ": "Normal"})  # 2016-2022 and 2023 spellings
+        # the enumerator's reason why the assessment was not in the home language, written in place of a 0 (notes)
+        answer = df["language_match"]
+        df["language_match"] = answer.where(answer.isin(["0", "1"]) | answer.isna(), "0")
+        # Stata's extended missing values `.a` and `.b`, exported as text, made 46 numeric columns text (curation notes)
+        coded = [col for col in df.columns if df[col].isin([".a", ".b"]).any()]
+        df[coded] = df[coded].replace({".a": None, ".b": None}).apply(pd.to_numeric)
         leaky_cols = [col for col in df.columns if "result" in col]
         leaky_cols += [col for col in df.columns if "domain" in col]
         leaky_cols += [col for col in df.columns if "child_score" in col]
@@ -188,13 +1003,83 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "teacher_date",
                 # repeats `child_age_group`
                 "age_group_label",
+                # "HH:MM" text, present only where the hour and minute columns are, and equal to them
+                "pri_calc_time_open",
+                "pri_calc_time_close",
+                # a copy of `certificate_register` in every row
+                "certificate_registration_npo",
+                # how long the teacher's rating form was open: a timer of the data collection (curation notes)
+                "teacher_duration",
             ],
         )
+        # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
+        # CLEAN-14): don't know, refused, not asked, other
+        df = set_missing(
+            df,
+            {
+                "child_years_in_programme": ["Don't know"],
+                "gr_ecd": [5.0],
+                "pra_education": [97.0],
+                "pra_grade": [14.0],
+                "pra_satisfaction_support": [0.0],
+                "pri_parents_activities": [97.0],
+                "pri_parents_contact": [97.0],
+                "pri_parents_frequency": [97.0],
+                "pri_registered_dsd": [5.0],
+                "pri_registered_partial": [5.0],
+                "pri_registered_programme": [5.0],
+                "pri_support_frequency": [97.0],
+            },
+        )
+        # codes the codebook leaves without words, or a question that did not apply (CLEAN-10)
+        df = set_missing(
+            df,
+            {
+                "pra_cotlands_visits": [0.0],
+                "pra_free_play": [0.0],
+                "pra_free_play_outdoor": [0.0],
+                "obs_water": [0.0],
+                "pri_bank": [0.0],
+            },
+        )
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
+        # scores with no words per level are numbers (CLEAN-14)
+        df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=(
+                "pri_mobile",
+                "pri_internet_source",
+                "pra_agency_understand",
+                "pra_agency_questions",
+                "pra_agency_play",
+                "pra_agency_order",
+                "pra_agency_learn",
+                "pra_agency_explore",
+                "pra_agency_choice",
+                # answer codes stored as numbers (building, water and energy source, owner, language, job; point 4)
+                "gr_1_tt",
+                "grade_r",
+                "obs_building",
+                "obs_cooking_census",
+                "obs_heating_census",
+                "obs_lighting_census",
+                "obs_water",
+                "pra_class_language",
+                "pra_job",
+                "pra_previous",
+                "pra_shape",
+                "pri_bank",
+                "pri_facilities",
+                "pri_kitchen",
+                "pri_land",
+                "pri_location",
+                "pri_meal_prep",
+                "programme",
                 "child_gender",
                 "child_age_group",
                 "child_attends",
@@ -211,38 +1096,10 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pre_covid",
                 "prov_best",
                 "certificate_register",
-                "certificate_registration_npo",
                 "certificate_registration_partial",
                 "certificate_registration_program",
-                "count_register_gender",
-                "count_register_gender_female",
-                "count_register_gender_male",
-                "count_register_gender_other",
-                "count_register_race_african",
-                "count_register_race_coloured",
-                "count_register_race_indian",
-                "count_register_race_other",
-                "count_register_race_white",
-                "count_register_year_2013",
-                "count_register_year_2014",
-                "count_register_year_2015",
-                "count_register_year_2016",
-                "count_register_year_2017",
-                "count_register_year_2018",
-                "count_register_year_2019",
-                "count_register_year_2020",
-                "count_register_year_2021",
-                "count_staff_gender_male",
-                "count_staff_gender_other",
-                "count_staff_qual_nqf4_5",
-                "count_staff_qual_nqf6_9",
-                "count_staff_qual_skills",
-                "count_staff_salary",
-                "count_staff_salary_paid",
-                "count_staff_salary_unpaid",
                 "facility_type",
                 "health",
-                "healthother",
                 "library_access",
                 "obs_access",
                 "obs_access_disability_0",
@@ -289,7 +1146,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "obs_handwashing_3",
                 "obs_handwashing_97",
                 "obs_handwashing_friendly",
-                "obs_handwashingother",
                 "obs_hazard",
                 "obs_hazard_0",
                 "obs_hazard_1",
@@ -339,7 +1195,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "obs_materials_8",
                 "obs_materials_9",
                 "obs_materials_97",
-                "obs_materialsother",
                 "obs_menu_compliance",
                 "obs_menu_display",
                 "obs_menu_same",
@@ -389,8 +1244,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "obs_toilets_children",
                 "obs_toilets_gender",
                 "obs_water_running",
-                "obs_water_running_none",
-                "obs_waterother",
                 "position_other",
                 "position_other_reason",
                 "pqa_class",
@@ -418,9 +1271,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pqa_teaching_participation",
                 "pqa_teaching_questions",
                 "pqa_teaching_support",
-                "pra_class_size_large",
-                "pra_class_space_large",
-                "pra_class_space_small",
                 "pra_clearance_ncp",
                 "pra_clearance_police",
                 "pra_cohort_0",
@@ -430,8 +1280,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pra_cohort_4",
                 "pra_cohort_5",
                 "pra_cohort_6",
-                "pra_dob",
-                "pra_education_other",
                 "pra_gender",
                 "pra_groupings_1",
                 "pra_groupings_2",
@@ -450,7 +1298,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pra_ncf_trainer_4",
                 "pra_ncf_trainer_5",
                 "pra_ncf_trainer_97",
-                "pra_ncf_trainerother",
                 "pra_ncf_training",
                 "pra_on_time",
                 "pra_online_training",
@@ -463,14 +1310,12 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pra_plan_4yrs_3",
                 "pra_plan_4yrs_4",
                 "pra_plan_4yrs_97",
-                "pra_plan_4yrs_other",
                 "pra_plan_5yrs_1",
                 "pra_plan_5yrs_2",
                 "pra_plan_5yrs_3",
                 "pra_plan_5yrs_4",
                 "pra_plan_5yrs_5",
                 "pra_plan_5yrs_97",
-                "pra_plan_5yrs_other",
                 "pra_plan_approved",
                 "pra_plan_ncf",
                 "pra_plans_0",
@@ -486,7 +1331,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pra_qualification_6",
                 "pra_qualification_7",
                 "pra_qualification_97",
-                "pra_qualification_other",
                 "pra_special_referrals",
                 "pra_special_training",
                 "pra_training_0",
@@ -497,17 +1341,7 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pra_training_5",
                 "pra_training_6",
                 "pri_aftercare",
-                "pri_amount_funding_dbe",
-                "pri_amount_funding_doh",
-                "pri_amount_funding_donations",
-                "pri_amount_funding_dsd",
-                "pri_amount_funding_fees",
-                "pri_amount_funding_fundraising",
-                "pri_amount_funding_other",
                 "pri_attendance_usual",
-                "pri_calc_time_close",
-                "pri_calc_time_open",
-                "pri_capacity",
                 "pri_clinic_travel_1",
                 "pri_clinic_travel_2",
                 "pri_clinic_travel_3",
@@ -521,7 +1355,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pri_covid_awareness_3",
                 "pri_covid_awareness_4",
                 "pri_covid_awareness_97",
-                "pri_covid_awareness_other",
                 "pri_covid_fund_applied",
                 "pri_covid_fund_received",
                 "pri_covid_precautions",
@@ -532,7 +1365,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pri_covid_precautions_5",
                 "pri_covid_precautions_6",
                 "pri_covid_precautions_97",
-                "pri_covid_precautions_other",
                 "pri_dsd_conditional_1",
                 "pri_dsd_conditional_10",
                 "pri_dsd_conditional_2",
@@ -544,7 +1376,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pri_dsd_conditional_8",
                 "pri_dsd_conditional_9",
                 "pri_dsd_conditional_97",
-                "pri_dsd_conditional_other",
                 "pri_dsd_previous",
                 "pri_dsd_unregistered_1",
                 "pri_dsd_unregistered_10",
@@ -560,19 +1391,8 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pri_dsd_unregistered_8",
                 "pri_dsd_unregistered_9",
                 "pri_dsd_unregistered_97",
-                "pri_dsd_unregistered_other",
-                "pri_dsd_year",
-                "pri_expense_admin",
-                "pri_expense_food",
-                "pri_expense_maintenance",
-                "pri_expense_materials",
-                "pri_expense_other",
-                "pri_expense_rent",
-                "pri_expense_staff",
                 "pri_expenseother",
                 "pri_fees",
-                "pri_fees_amount_0_1",
-                "pri_fees_amount_2_3",
                 "pri_fees_exceptions",
                 "pri_fees_exceptions_other",
                 "pri_fees_free",
@@ -583,7 +1403,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pri_food_donor_3",
                 "pri_food_donor_4",
                 "pri_food_donor_97",
-                "pri_food_donorother",
                 "pri_food_guidance",
                 "pri_food_type_0",
                 "pri_food_type_1",
@@ -608,8 +1427,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pri_funding_salary_3",
                 "pri_funding_salary_4",
                 "pri_funding_salary_97",
-                "pri_funding_salaryother",
-                "pri_fundingother",
                 "pri_garden",
                 "pri_health_0",
                 "pri_health_1",
@@ -624,7 +1441,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pri_internet_user_2",
                 "pri_internet_user_3",
                 "pri_internet_user_4",
-                "pri_landother",
                 "pri_language",
                 "pri_library",
                 "pri_library_material_1",
@@ -648,7 +1464,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pri_money_2",
                 "pri_money_3",
                 "pri_money_97",
-                "pri_moneyother",
                 "pri_network",
                 "pri_network_type_1",
                 "pri_network_type_2",
@@ -664,8 +1479,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pri_qualification_6",
                 "pri_qualification_7",
                 "pri_qualification_97",
-                "pri_qualificationother",
-                "pri_reason_register_year",
                 "pri_records_0",
                 "pri_records_1",
                 "pri_records_2",
@@ -684,7 +1497,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pri_staff_changes_reasons_5",
                 "pri_staff_changes_reasons_6",
                 "pri_staff_changes_reasons_97",
-                "pri_staff_changes_reasonsother",
                 "pri_subsidy",
                 "pri_support",
                 "pri_support_provider_1",
@@ -693,7 +1505,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pri_support_provider_4",
                 "pri_support_provider_5",
                 "pri_support_provider_97",
-                "pri_support_providerother",
                 "pri_transport",
                 "pri_zoning",
                 "professionals_practitioners",
@@ -702,10 +1513,42 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "sanitation_educators_3",
                 "sanitation_learners",
                 "urban",
-                "teacher_duration",
                 "teacher_emotional_met",
                 "teacher_selfcare_met",
                 "teacher_social_met",
+                # yes/no questions by their name (CLEAN-14)
+                "pra_breadwinner",
+                "pra_letcee_club",
+                "pri_funding_subsidy",
             ),
-            datetime={"child_dob": "%d%b%Y"},
+            # enumerators' free text: the "other" answers and the explanations of flagged measurements
+            string=(
+                "healthother",
+                "obs_handwashingother",
+                "obs_materialsother",
+                "obs_water_running_none",
+                "obs_waterother",
+                "pra_class_size_large",
+                "pra_class_space_large",
+                "pra_class_space_small",
+                "pra_education_other",
+                "pra_ncf_trainerother",
+                "pra_plan_4yrs_other",
+                "pra_plan_5yrs_other",
+                "pra_qualification_other",
+                "pri_covid_awareness_other",
+                "pri_covid_precautions_other",
+                "pri_dsd_conditional_other",
+                "pri_dsd_unregistered_other",
+                "pri_food_donorother",
+                "pri_funding_salaryother",
+                "pri_fundingother",
+                "pri_landother",
+                "pri_moneyother",
+                "pri_qualificationother",
+                "pri_reason_register_year",
+                "pri_staff_changes_reasonsother",
+                "pri_support_providerother",
+            ),
+            datetime={"child_dob": "%d%b%Y", "pra_dob": "%d%b%Y"},
         )

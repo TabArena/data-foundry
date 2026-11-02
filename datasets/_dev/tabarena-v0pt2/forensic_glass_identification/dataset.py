@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Metric, TaskSummary, decode
 
 
 class ForensicGlassIdentification(AbstractCuratedDataset):
@@ -59,11 +59,23 @@ class ForensicGlassIdentification(AbstractCuratedDataset):
 
         - We drop the ID column, as it is a just a row identifier and does not contain any useful information for modeling.
         - The data contains one naturally occurring duplicate.
+        - The target (2026-11-01, CLEAN-25): `Type_of_glass` ships its classes as words (glass.names, 11. Type of
+          glass).
     """
 
     # Task
+    accepted_check_warnings = {
+        "dataset_row_order_leaks_target": "The row order is the definition's fixed shuffle, which depends on the rows' contents; decoding the target into the glass types' names (2026-11-01) reshuffled the 214 rows, and the category codes of this nominal target now correlate with position at rho -0.21, an outcome 0.4% of random shuffles reach. The source file is not sorted by type in this frame.",
+    }
+
     target = "Type_of_glass"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason=(
+            "The source defines no metric for the 6-class task; its only result (Spiehler's BEAGLE vs NN vs DA "
+            "comparison) counts incorrect answers for a different, binary target (float vs non-float processed windows)."
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         columns = ["Id", "RI", "Na", "Mg", "Al", "Si", "K", "Ca", "Ba", "Fe", "Type_of_glass"]
@@ -73,4 +85,18 @@ class ForensicGlassIdentification(AbstractCuratedDataset):
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
         df = df.drop(columns=["Id"])
+        # the target's classes in words (CLEAN-25): the source's class names
+        df = decode(
+            df,
+            {
+                self.target: {
+                    "1": "building windows float processed",
+                    "2": "building windows non float processed",
+                    "3": "vehicle windows float processed",
+                    "5": "containers",
+                    "6": "tableware",
+                    "7": "headlamps",
+                }
+            },
+        )
         return df

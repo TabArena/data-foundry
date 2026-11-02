@@ -42,6 +42,10 @@ CC (2026-10-06, Lennart): Grouped by wind-tunnel run (was IID). The 1,503 rows a
 
 CC (2026-10-20, Lennart): Grouped by setup, one chord length at one angle of attack with all its speeds (33 groups; was by run), as the review panel recommended and like concrete_compressive_strength's grouping by mix: under the run split 91.5% of the test runs had their setup in training at another speed. The scaled target is kept as the report's eq. 19 level, named as such. Year 1989 and source the NASA report RP-1218: its Figs. 11-43 plot every measured value (the target and the thickness are its formulas of them), and UCI's 2014 file was digitised from them, so it is a copy (PROV-9 amended). `attack-angle` is numeric now. Rebuild on the curator's ask.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — The NASA report builds semi-empirical prediction methods and compares spectra visually; neither it nor the UCI page defines an evaluation metric.
+
+**Assessment (AI, 2026-10-21):** the hidden-group probe now takes float columns (Lennart, 2026-10-21); in that day's sweep the suction-side displacement thickness is a hit (105 values for 106 runs, gap 0.123), next to the known run key. The question raised on 2026-10-20 in the working copy's cross-dataset review is closed.
+
 ## Reference
 
 Brooks, Thomas F., D. Stuart Pope, and Michael A. Marcolini. Airfoil self-noise and prediction. NASA Reference Publication 1218 (L-16528), NASA Langley Research Center, 1989. https://ntrs.nasa.gov/citations/19890016302

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class BankCustomerChurn(AbstractCuratedDataset):
@@ -39,6 +39,7 @@ class BankCustomerChurn(AbstractCuratedDataset):
     domain = "business & marketing"
     source = "Kaggle"
     source_url = "https://www.kaggle.com/datasets/gauravtopre/bank-customer-churn-dataset"
+    data_tags = ("ForcedIIDFromTemporal",)
     license = None  # Kaggle says "Other (specified in description)", and the description names none
     download_description = """
         We download the data from Kaggle to a .csv file in a predefined folder.
@@ -56,6 +57,7 @@ class BankCustomerChurn(AbstractCuratedDataset):
     """
     curation_comments = """
         - We remove the customer_id column.
+        - The split is forced (ForcedIIDFromTemporal, SPLIT-8): a bank would train on customers whose leaving is known by an earlier date and score its current customers, but the file is one undated snapshot. A dated window would test a model on customers of a later period, after shifts in balances, products and the bank's offers; the cost cannot be measured here. Recover dates if the source turns up.
     """
 
     accepted_check_warnings = {
@@ -68,6 +70,9 @@ class BankCustomerChurn(AbstractCuratedDataset):
     # Task
     target = "churn"
     problem_type = "binary_classification"
+    metric = Metric.fallback(
+        reason="Kaggle dataset (likely a course dataset) with no stated task metric; no first publication",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "Bank Customer Churn Prediction.csv")

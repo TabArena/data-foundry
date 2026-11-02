@@ -25,3 +25,5 @@ Contains one comment column that is empty 87% of the time. Most of the comments 
 Contains some cases with comments (but mostly empty); so not fully text.
 
 Clearly survey data, no ground truth or objective target from just the survey data. So unclear how to create a predictive task.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nsduh_mental_health_treatment` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

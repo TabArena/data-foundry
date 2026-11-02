@@ -13,6 +13,7 @@ tags:
 collections:
 - TabSTAR
 - AutoML_MM
+- MulTaBench
 original_source: OpenML
 source_links:
 - https://www.openml.org/search?type=data&id=46656&sort=runs&status=active

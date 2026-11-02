@@ -25,3 +25,7 @@ source_links:
 source_row: 521
 type_adapter_id: curation-record-v1
 ---
+
+## Comments
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `us_accounting_fraud_aaer` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.

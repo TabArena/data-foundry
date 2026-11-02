@@ -7,6 +7,8 @@ data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+decision_markers:
+- Anonymized
 tags:
 - Non-IID (Grouped)
 collections:
@@ -41,6 +43,16 @@ TODO: decide if add groupby features or not -> add not and leave it to the pipel
 CC (2026-10-02, Lennart): The per-customer prediction is the latest statement's (`aggregation="last"`), with every statement of the customer available to a model (`context="all_rows"`). The competition asks for one prediction per customer, its label comes from the 18 months after the latest statement, and its test set holds each customer's full history (top solutions aggregated features over all statements). The label is one value per customer, the same on every statement, so `max` over statements does not express "default once, always default": it lets an old statement speak for a default 18 months after the newest one. LightGBM per statement on the grouped folds, scored per customer: `last` ROC AUC 0.958 / amex metric 0.780, `max` 0.949 / 0.745, `mean` 0.946 / 0.720, unaggregated rows ROC AUC 0.938.
 
 CC (2026-10-06, Lennart): Kept as it is after the task-probe review (flag `no_spread`). Scored per customer at the latest statement, the linear model, random forest and LightGBM all reach ROC AUC 0.95 (skill +0.898 to +0.907, standard deviation under 0.01 over the folds), and `P_2` alone reaches skill +0.82; on BeyondArena (the shipped version, one holdout per statement) TabPFN-3.5 reaches AUC 0.947 and the median method 0.943. Strong methods converging on a large, well-engineered credit dataset is expected; with 1.5M rows small gaps can still be real.
+
+CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: the 20 anonymized features that hold only 0 and 1 (found on the data in `_feature_types`).
+
+CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer from the semantic context, keep it a number, this is a real-world bias. We want to make things categorical if we know from the context they are indeed such" (CLEAN-14, amended again). Reverted: the 20 anonymized features that hold only 0 and 1 stay numeric (no semantic context).
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source gini_top_capture {"top_fraction": 0.04, "negative_weight": 20} — AmEx competition metric M = 0.5*(G + D) (https://www.kaggle.com/competitions/amex-default-prediction/overview/evaluation).
+
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): -1, raddar's missing value in the 55 integer columns that hold it (on the same rows across blocks), set back to missing (CLEAN-10)..
+
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
 
 ## Reference
 

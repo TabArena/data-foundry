@@ -142,7 +142,8 @@ AI_FILLED_TAG: str = "AI-Filled (Verify)"
 COLLECTION_TAGS: tuple[str, ...] = ("TabArena (v0.1)", "BeyondArena")
 """``data_foundry_status`` values denoting membership in one of *our* shipped collections."""
 WIP_STATUSES: tuple[str, ...] = ("WIP (DF)", "WIP (Triage)")
-"""``data_foundry_status`` values that claim a record: someone is working on it, named in ``claimed_by``."""
+"""``data_foundry_status`` values that claim a record: someone is working on it, named in ``claimed_by`` (a mirror of
+the claims board, :mod:`data_foundry.curation.claims`)."""
 ACCEPTED_SUGGESTIONS: tuple[str, ...] = ("Yes", "Yes (Disagreement)")
 """``suggestion`` values that count as "accepted for inclusion".
 
@@ -162,7 +163,10 @@ did ship); this verdict marks that it would no longer be included.
 """
 
 
-@pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
+# `validate_assignment` so a wrong type is refused where it is written, not where the file is read back: a
+# plain string assigned to a list field used to be written out and the record would then not load
+# (`required_split`, 2026-11-01).
+@pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid", validate_assignment=True))
 class CurationRecord:
     """One candidate dataset's curation/triage state.
 
@@ -180,7 +184,8 @@ class CurationRecord:
     data_foundry_status: list[str] = pydantic.Field(default_factory=list)
     claimed_by: str | None = None
     """The curator who holds the record's WIP claim (:data:`WIP_STATUSES`). Set and cleared together with the WIP
-    state; it reaches the main branch on its own, ahead of the work, so other curators see the claim."""
+    state, as a mirror of the live claims board (:mod:`data_foundry.curation.claims`), which is where other curators
+    see the claim at once; the record carries it to ``main`` with the work."""
     suggestion: str | None = None
     priority: int | None = pydantic.Field(default=None, ge=1, le=5)
     """How urgently a curator should verify the screening and send the record to ``/add-dataset``: 5 first, 1 last.

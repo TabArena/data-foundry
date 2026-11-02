@@ -6,9 +6,10 @@ How a batch of records is worked by parallel agents on this machine, and the lim
 ## A batch of records
 
 When the curator names several records or a dashboard filter (for example "every record with `suggestion = Yes`,
-`data_foundry_status` without `DF: Yes`, `claimed_by` empty, `checked_by` without `AI (UNVERIFIED)`"):
+`data_foundry_status` without `DF: Yes`, unclaimed, `checked_by` without `AI (UNVERIFIED)`"):
 
-1. List the matching records first and skip any claimed by another curator.
+1. List the matching records first, then claim them in one call (`claims claim <names> --note "<run>"`,
+   [claims.md](claims.md)) and work only on the ones it claimed: a skipped name is held by another curator.
 2. Group them into units, one per source (records that share a download are one unit).
 3. Per unit, one agent does the work with the data in hand (download, definition, `dataset check`, the probes), a
    second agent verifies the result against

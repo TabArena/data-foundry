@@ -7,7 +7,7 @@ suggestion: TBD -> 2nd Tier
 decision_markers:
 - No Good Target (yet)
 tags:
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 collections:
 - New (BeyondArena)
 original_source: Kaggle

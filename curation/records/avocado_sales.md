@@ -7,7 +7,7 @@ suggestion: 'No'
 decision_markers:
 - Wrong Domain / Source Modality
 - Time-series (Forecasting)
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 tags:
 - Non-IID (Temporal)
 collections:

@@ -10,9 +10,12 @@ from data_foundry.schema import (
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadata,
     PredictiveMLTaskMetadataV2,
+    SemanticColumn,
     resolve_warehouse_dir,
 )
 from data_foundry.utils.checksum import encode_pydantic_metadata
+
+from tests.test_bundle_checks import make_spec
 
 
 @pytest.fixture
@@ -64,8 +67,9 @@ def test_dataset_metadata_license_string(base_dataset_metadata_kwargs):
         ["Non-IID", "Temporal"],
         ["Grouped", "Spatial"],
         ["IID", "Anonymized"],
-        ["IID", "2ndTierData"],
+        ["IID", "2ndTierData"],  # retired, but old containers carry it and must still load
         ["ForcedIIDFromTemporal"],
+        ["Non-IID", "Grouped", "ForcedGroupedFromTemporal"],
         ["WrongDomain"],
         ["GroupedTemporal"],
     ],
@@ -359,6 +363,14 @@ def test_predictive_splits_metadata_time_gap_is_left_out_of_the_checksum_while_u
     assert b"time_gap" not in encode_pydantic_metadata(plain)
 
 
+def test_predictive_splits_metadata_time_gap_in_minutes():
+    splits = {0: {0: ([0, 1], [2, 3])}}
+    sm = PredictiveMLSplitsMetadata(splits_comment="temporal", splits=splits, time_gap=15, time_gap_unit="minutes")
+    assert (sm.time_gap, sm.time_gap_unit) == (15, "minutes")
+    with pytest.raises(pydantic.ValidationError):
+        PredictiveMLSplitsMetadata(splits_comment="temporal", splits=splits, time_gap=15, time_gap_unit="seconds")
+
+
 def test_predictive_splits_metadata_multi_fold():
     splits = {
         0: {0: ([0, 1, 2], [3, 4]), 1: ([0, 3, 4], [1, 2])},
@@ -496,7 +508,7 @@ def test_format_2_task_reads_the_group_fields_from_the_grouping():
     task = PredictiveMLTaskMetadataV2(
         target_column_name="y",
         problem_type="binary_classification",
-        objective_metric_name="metric",
+        objective_metric=make_spec(),
         grouping=Grouping(on=["a", "b"], labels="per_sample", time_on="t"),
     )
     assert (task.group_on, task.group_labels, task.group_time_on) == (["a", "b"], "per_sample", "t")
@@ -511,3 +523,31 @@ def test_format_1_task_takes_no_grouping():
             objective_metric_name="metric",
             grouping=Grouping(on="g", labels="per_sample"),
         )
+
+
+@pytest.mark.parametrize(
+    ("semantic", "grouping", "match"),
+    [
+        (["s", "s"], None, "twice"),
+        (["y"], None, "is a feature"),
+        (["g"], Grouping(on="g", labels="per_sample"), "is a feature"),
+    ],
+)
+def test_semantic_columns_are_features_listed_once(semantic, grouping, match):
+    """A semantic column is listed once and is never the target, the time, a group or a scoring column."""
+    with pytest.raises((ValueError, pydantic.ValidationError), match=match):
+        PredictiveMLTaskMetadataV2(
+            target_column_name="y",
+            problem_type="binary_classification",
+            objective_metric=make_spec(),
+            grouping=grouping,
+            semantic_columns=[
+                SemanticColumn(column=c, semantic_type="smiles", description="a molecule") for c in semantic
+            ],
+        )
+
+
+def test_a_semantic_column_takes_only_a_known_type():
+    """The semantic types are a closed vocabulary."""
+    with pytest.raises(pydantic.ValidationError, match="smiles"):
+        SemanticColumn(column="s", semantic_type="protein", description="a sequence")

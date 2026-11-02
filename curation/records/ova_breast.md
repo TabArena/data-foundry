@@ -13,6 +13,7 @@ tags:
 collections:
 - TabArena Reject
 - TabSTAR
+- TabBench-Bio
 year: '2010'
 source_links:
 - https://www.openml.org/d/1128
@@ -39,6 +40,8 @@ Can we get all 9 original classes/datasets labels back from OpenML backup:
  OVA_Breast: 1128, OVA_Colon 1161, OVA_Endometrium 1142, OVA_Kidney 1134, OVA_Lung 1130, OVA_Omentum 1139, OVA_Ovary 1166, OVA_Prostate 1146, OVA_Uterus 1138
 
 We only have the "small" data with 10k features after unsupervised feature selection from the original 50k. Original source is lost and 10k makes sense to use in the application as far as I would say.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `expo_tumor_tissue_of_origin` (TBD -> Yes, priority 2), `tcga_pancancer_tumor_type` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference
 

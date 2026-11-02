@@ -35,6 +35,8 @@ Lennart: No objection
 
 Andrej: Time-invariant features, may not be representative anymore, but still valid
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — Kaggle's evaluation: AUC.
+
 ## Reference
 
 https://www.kaggle.com/competitions/GiveMeSomeCredit/overview

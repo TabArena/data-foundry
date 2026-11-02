@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
 
 class Sdss17(AbstractCuratedDataset):
@@ -76,6 +76,14 @@ class Sdss17(AbstractCuratedDataset):
     # Task
     target = "ObjectType"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason=(
+            "SDSS DR17 (Abdurro'uf et al. 2022) is a data release with no prediction task or metric; the "
+            "Kaggle 'Stellar Classification Dataset - SDSS17' is a dataset page, not a competition, with no "
+            "evaluation metric. Our task (photometric classification, redshift/plate/fiber dropped) also "
+            "differs from the SDSS pipeline's spectroscopic classification."
+        ),
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(f"{raw_dir}/star_classification.csv")
@@ -104,3 +112,7 @@ class Sdss17(AbstractCuratedDataset):
             ]
         )
         return df
+
+    def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
+        # cam_col names which of the six camera columns took the image: a code, not a quantity (point 4, 2026-10-31)
+        return FeatureTypes(categorical=["cam_col"])

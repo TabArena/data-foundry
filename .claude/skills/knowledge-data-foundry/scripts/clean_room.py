@@ -9,7 +9,8 @@ Loads the v2 definition of ``<unique_name>`` through ``dataset_io.py`` (its cura
 the raw files; ``--built`` reads the container of the README's build record instead) and the curation record for its
 source links, and writes two files:
 
-* ``DIR/data.parquet``: the curated frame with the target. A frame with more than ``--max-rows`` rows is a random
+* ``DIR/data.parquet``: the curated frame with the target, without the scoring columns (metric inputs, never
+  features; ``dataset_io.py`` drops them). A frame with more than ``--max-rows`` rows is a random
   sample of that many rows (seed 0, original order kept), and ``task.md`` says so.
 * ``DIR/task.md``: the target column, the problem type, rows x columns, the regime (IID, grouped with the group
   column, temporal with the time column), the number of folds or test windows, and the source links.
@@ -105,7 +106,12 @@ def write(name: str, out: Path, *, root: Path, records: Path, max_rows: int, bui
     """Write ``data.parquet`` and ``task.md`` for ``name`` into ``out``; return what was written."""
     folder, folder_root = _folder(name, root, records)
     ds = dataset_io.definition(folder, folder_root)
-    data = dataset_io.load(folder, folder_root, built=True) if built else dataset_io.from_definition(ds)
+    # the blind reviewer sees a SMILES as shipped, not in our encoding
+    data = (
+        dataset_io.load(folder, folder_root, built=True, encode_smiles=False)
+        if built
+        else dataset_io.from_definition(ds, encode_smiles=False)
+    )
     links = source_links(name, records, type(ds))
     df = data.df
     rows = len(df)

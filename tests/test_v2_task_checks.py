@@ -8,6 +8,8 @@ from data_foundry.curation_container import CuratedContainer
 from data_foundry.schema import DatasetMetadata, PredictiveMLSplitsMetadata, PredictiveMLTaskMetadataV2
 from data_foundry.v2.task_checks import task_findings
 
+from tests.test_bundle_checks import make_spec
+
 
 def _container(y: list, splits: dict, problem_type: str) -> CuratedContainer:
     df = pd.DataFrame({"x": np.arange(len(y), dtype=float), "y": y})
@@ -29,7 +31,7 @@ def _container(y: list, splits: dict, problem_type: str) -> CuratedContainer:
             curation_comments=None,
         ),
         task_metadata=PredictiveMLTaskMetadataV2(
-            target_column_name="y", problem_type=problem_type, objective_metric_name="m"
+            target_column_name="y", problem_type=problem_type, objective_metric=make_spec(problem_type)
         ),
         experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="toy", splits=splits),
         uuid="u",

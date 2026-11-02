@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary
 
 
 class Dataset5gEnergyConsumption(AbstractCuratedDataset):
@@ -78,6 +78,7 @@ class Dataset5gEnergyConsumption(AbstractCuratedDataset):
         - With this setup, the task is development of predictive models for network optimization where models need to generalize to new unseen base station configurations and estimate their energy consumption under similar conditions (during the same time period).
         - For preprocessing, we orient on a top solution from the Zindi challenge: https://github.com/ITU-AI-ML-in-5G-Challenge/5G-Energy-Consumption-Modelling-Solution-Team-Farzi-Data-Scientists/tree/main.
         - Note that the competition also used mostly samples from the known BS as the test set, but weighted unknown base stations higher in evaluation.
+        - Metric: unweighted `mape` stands in for the challenge's WMAPE, whose per-row weights come with the unpublished test file (metric spec).
         - The data itself is time-series. However, because we predict entirely unseen base stations in a per-sample fashion, the row-wise dependencies resulting from the temporal components cannot be used to improve performance unless the task is treated as transductive learning.
         - Following the Zindi solution, we merge the three given tables and use the Cell0 information only from the cell level table. In addition, we merge the Cell1 information since it contains information as well which might be useful in a grouped split setting.
         - Following the Zindi solution, we derive calendar features (`day`, `hour`, `weekday`) and drop the absolute timestamp.
@@ -85,12 +86,28 @@ class Dataset5gEnergyConsumption(AbstractCuratedDataset):
         - Anomaly: The raw files cover one week only, 2023-01-01 01:00 to 2023-01-08 00:00 (168 hours).
         - Anomaly: The source does not state the energy unit. `Energy` runs from 0.75 to exactly 100, and every value is a multiple of 100/669, so the values were rescaled to a maximum of 100.
         - Note: The station id `BS` stays in the data as the group column, which is split metadata, not a model feature. Every test station is unseen in training, so as a feature it would be an unknown category without information.
+        - Cycle (2026-11-01, CLEAN-14, Lennart's rule): `weekday_number` (0 Monday to 6 Sunday, from the timestamps) is
+          a number again (a category on 2026-10-31). A weekday or a month is a position in a continuous cycle (weekday
+          1.5 is Monday noon), and the source ships it as a number; named weekdays and months are ordered categories
+          instead.
     """
 
     # Task
     target = "Energy"
     problem_type = "regression"
-    metric = "mape"
+    metric = Metric.stand_in(
+        "mape",
+        original="Weighted MAPE (WMAPE), Zindi private leaderboard",
+        reason=(
+            "false: the per-row WMAPE weights come with the test file and are not published; every test "
+            "station here is new, so unweighted mape is the closest stand-in"
+        ),
+        reference="https://zindi.africa/competitions/aiml-for-5g-energy-consumption-modelling",
+        definition=(
+            "Mean absolute percentage error of energy per row; the original weights each test row by whether "
+            "its base station / configuration is new"
+        ),
+    )
     grouping = Grouping(
         on="BS",
         labels="per_sample",

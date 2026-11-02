@@ -7,6 +7,8 @@ data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+decision_markers:
+- Selection Bias
 tags:
 - Tiny Data
 - New IID
@@ -45,6 +47,14 @@ From going through the project, let us try to use the version from my collaborat
 Basic preprocessing: https://github.com/CarolaHeinzel/BGA-Classification/blob/main/CrossValidation_Code/run_convert_excel_data.py, All data is categorical, target Population
 
 Relevant classes we should have: 09. Russia - Russian        British in England and Scotland        Finnish in Finland        France        Iberian population in Spain        Italy        Turkey        Utah Residents (CEPH) with N & W European ancestry
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — Heinzel et al. 2025 compare models by ROC AUC, accuracy and log loss (repository README); which one decides was not verified (full text not read). log_loss is the multiclass fallback and one of the reported metrics.
+
+CC (2026-10-21, Lennart): biogeographical_ancestry: roc_auc stays (the paper's metric); declared as the source's metric, one-vs-rest macro ROC AUC over the populations.
+
+CC (2026-10-21, Lennart): correction to the line above: log loss stays; ROC AUC does not make sense as a good metric for this multiclass task.
+
+CC (2026-10-27, Lennart): marker Selection Bias, from the AI review of PR #16: each population comes from one reference project (1000 Genomes or HGDP), so the classes were collected apart and project differences coincide with the label (failed calls occur only in the HGDP groups, as the fit_reason says); the reference donors were chosen for their ancestry, not drawn from case samples.
 
 ## Reference
 

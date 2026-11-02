@@ -35,6 +35,12 @@ Lennart: No objection
 
 Andrej: Need to clarify source
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Kaggle dataset (not a competition) with no stated task metric; the original source is unknown (open item in the record).
+
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `education` (the README lists their levels).
+
+CC (2026-11-01, Lennart): marks on the review board of PR #37: month stays a number (a position in the year's continuous cycle, shipped as a number: the curator's cycle rule).
+
 ## Reference
 
 https://www.kaggle.com/datasets/podsyp/is-this-a-good-customer

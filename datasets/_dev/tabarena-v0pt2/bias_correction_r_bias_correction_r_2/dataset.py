@@ -10,6 +10,7 @@ from data_foundry.v2 import (
     AbstractCuratedDataset,
     Decision,
     FeatureTypes,
+    Metric,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -146,12 +147,14 @@ class BiasCorrectionRBiasCorrectionR2(AbstractCuratedDataset):
           that tuned single models beat the per-station MOS.
         - Anomaly: UCI and the paper's Table 1 give `LDAPS_CC1`-`LDAPS_CC4` (cloud cover) and `LDAPS_PPT1`-`LDAPS_PPT4`
           (precipitation) in "%", but the cloud covers lie between 0 and 0.98. We keep the values as published.
-        - Note: the paper scores with R^2, bias and RMSE (Sec. 3.3); we keep the default RMSE.
     """
 
     # Task
     target = "Next_Tmin"
     problem_type = "regression"
+    metric = Metric.fallback(
+        reason="Cho et al. 2020 report R^2, bias and RMSE side by side (Sec. 3.3) without naming one as the criterion; rmse is the regression fallback (and one of the reported metrics).",
+    )
 
     # Splits
     temporal = Temporal(on="Date", splits=TemporalSplits(window=7, unit="days", n_windows=9, gap=1))

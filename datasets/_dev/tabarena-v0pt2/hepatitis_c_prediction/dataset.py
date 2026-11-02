@@ -5,9 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode, drop_columns
 
 ROUNDED_LABS = ["ALB", "ALT", "AST", "BIL", "CREA", "GGT", "PROT"]
+
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "Category": ["blood donor", "hepatitis", "fibrosis", "cirrhosis"],
+}
 
 
 class HepatitisCPrediction(AbstractCuratedDataset):
@@ -70,11 +77,16 @@ class HepatitisCPrediction(AbstractCuratedDataset):
         - The hepatitis related classes were defined in the paper, but the blood donor class is not mentioned in it. It seems the paper might be related to a different task than the UCI release in the end. But it has the same features. Thus, after looking more into it, we adjust the classes. We drop the "suspect Blood Donor" class as we cannot map it to being part of a reasonable task. We thus treat the task as predicting whether a patient has one of three versions of hepatitis, or is "just" a blood donor.
         - The donor and patient rows were recorded under different precision conventions in the UCI source: ALB and BIL are whole numbers in about 100% of patient rows but about 10% of donor rows, CREA the other way round, and ALP is missing only for patients. These format cues alone separate patients from donors (ROC AUC 0.9997). We round ALB, ALT, AST, BIL, CREA, GGT and PROT to integers for all rows (at most +-0.5 on values in the tens to hundreds; BIL, the smallest, changes by 2.6% in the median) and drop ALP. CHE and CHOL are single-digit values without a class difference in precision, so they stay as recorded.
         - There are no exact or near duplicates (minimum standardised nearest-neighbour distance 0.20), so there is no evidence of several rows per patient.
+        - The target (2026-11-01, CLEAN-25): `Category` ships its classes as words, blood donor < hepatitis < fibrosis <
+          cirrhosis (the source's own labels without their code; ordered by the course of the disease).
     """
 
     # Task
     target = "Category"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason="Hoffmann et al. 2018 report overall and per-class accuracy under leave-one-out; 88% donors, so accuracy is dominated by donor vs patient; the suspect-donor class is dropped (MET-2). Original rejected: accuracy. log_loss is the multiclass fallback.",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "hcvdat0.csv")
@@ -90,10 +102,23 @@ class HepatitisCPrediction(AbstractCuratedDataset):
         # class difference, so they stay as recorded.
         df[ROUNDED_LABS] = df[ROUNDED_LABS].round(0)
         df = drop_columns(df, ["ALP"])  # missing only for patients (0 of 533 donors)
+        # the target's classes in words (CLEAN-25): the source's class names
+        df = decode(
+            df,
+            {
+                self.target: {
+                    "0=Blood Donor": "blood donor",
+                    "1=Hepatitis": "hepatitis",
+                    "2=Fibrosis": "fibrosis",
+                    "3=Cirrhosis": "cirrhosis",
+                }
+            },
+        )
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "Sex",
             ],

@@ -9,9 +9,10 @@ decision_markers:
 tags:
 - Free Text (Short)
 - New IID
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 collections:
 - CARTE/TARTE
+- MulTaBench
 source_links:
 - https://sites.google.com/site/anhaidgroup/useful-stuff/the-magellan-data-repository?authuser=0
 - https://huggingface.co/datasets/inria-soda/carte-benchmark

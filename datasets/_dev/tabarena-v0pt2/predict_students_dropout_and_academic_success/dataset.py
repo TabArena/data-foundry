@@ -5,7 +5,10 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+
+# Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
+SCORES = ["Application_order"]
 
 
 class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
@@ -66,11 +69,20 @@ class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
         - We renamed the target variable and fixed some typos in the feature names.
         - We reversed the ordinal encoding of all categorical features.
         - We removed whitespaces and special characters from the feature names.
+        - Partial order, left unordered (2026-11-01, CLEAN-14): `Previous_qualification`, `Mothers_qualification` and
+          `Fathers_qualification` lie on the Portuguese education ladder, but the pre- and post-Bologna degrees are ties
+          and the old-system courses sit beside the year levels, so there is no single line.
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 1 scores with no words per level are
+          numbers (`SCORES`): `Application_order`.
     """
 
     # Task
     target = "AcademicOutcome"
     problem_type = "multiclass_classification"
+    metric = Metric.fallback(
+        reason="UCI page and the data paper define no task metric; the first-publication case study compares classifiers on several scores (likely F1 given the class imbalance) without a declared task metric. Not verified in full text."
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         data = pd.read_csv(raw_dir / "data.csv", sep=";")
@@ -342,6 +354,8 @@ class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
             for c in data.columns
         ]
         df = data
+        # scores with no words per level are numbers (CLEAN-14)
+        df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

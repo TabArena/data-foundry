@@ -27,4 +27,11 @@ type_adapter_id: curation-record-v1
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
+**Screening (AI, 2026-10-22):** `No` (`Time-series (Forecasting)`, SEL-10): the source asks for the future values of one exchange-rate series over a two-week horizon.
+- Source: Zindi "Exchange Rate Forecasting Challenge" (IndabaX Nigeria with Miva University), 2024-05-10 to 05-29, 81 participants; one file `Competition_data.csv` of dated closing rates (submission columns `Date`, `Close`).
+- Task: "build a time series or machine learning model that will accurately forecast what the naira rate against the dollar will be in the next 2 weeks, ranging from May 22, 2024, to June 4, 2024"; "This is a real-time forecasting challenge".
+- Metric: Zindi's Evaluation page, Root Mean Squared Error.
+- Siblings: other forecasting re-screens (`cryptocurrency_closing_price_prediction`, `airqo_ugandan_air_quality_forecast_challenge`) went the same way.
+- Reject check (AI, 2026-10-22): stands. Zindi API (https://zindi.africa/competitions/exchange-rate-forecasting-challenge): 'forecast what the naira rate against the dollar will be in the next 2 weeks, ranging from May 22, 2024, to June 4, 2024' and 'This is a real-time forecasting challenge'. The only data file is Competition_data.csv and the submission has Date and Close, so this is one series forecast over a horizon (SEL-10).
+
 Zindi 'Exchange Rate Forecasting Challenge' is, by name, a financial time-series forecasting task predicting future exchange-rate values over a horizon, which is explicitly excluded from the benchmark. Excluded as Time-series (Forecasting); a human need only confirm it is true horizon forecasting rather than a fixed predictive task needing only a temporal split.

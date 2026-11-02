@@ -12,6 +12,7 @@ tags:
 collections:
 - TabArena Reject
 - TabRed
+- tabular-dl-more-data
 original_source: Kaggle
 year: '2024'
 domain: environmental science & climate
@@ -35,6 +36,10 @@ Was downsampled/filtered by TabRed via preprocessing
 Maybe not a super relevant task for tabular models.... need to make a judgment call. Given it was used in TabRed, I would say we can go for it now but might need to remove it later
 
 TabRed uses 1 month refit horizon. For weather this is a bit much. I would argue for one or two weeks at most?
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — RMSE, Rubachev et al. 2025, TabReD (ICLR), https://arxiv.org/abs/2406.19380; Shifts weather (Malinin et al. 2021) also uses RMSE.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `shifts_weather_temperature` (TBD -> 2nd Tier, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference
 

@@ -4,6 +4,7 @@ name: NHTSA Crash Report Sampling System (CRSS), crash injury severity
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> Yes
+priority: 2
 decision_markers:
 - Needs extensive data wrangling
 tags:
@@ -31,11 +32,22 @@ type_adapter_id: curation-record-v1
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
+**Screening (AI, 2026-10-22):** `TBD -> Yes`, priority 3: NHTSA's documented national sample of police crash reports with the injury outcome on every crash, a thin domain; the use case is ours, and the release is three tables to join.
+- Source: NHTSA National Center for Statistics and Analysis, Crash Report Sampling System, data years 2016 onward (replaced NASS-GES in 2016); about 50,000 police crash reports a year drawn by a three-stage probability sample from 6-7 million, about 120 coded elements per report, imputation for missing items, survey weights (DOT HS 812 795; DOT HS 812 688). As published: yearly ACCIDENT / VEHICLE / PERSON (and further) files, CSV and SAS; crash-level maximum injury severity (KABCO) and per-person injury severity. US government work. The NHTSA pages answer 403 to automated fetches, so the file layout and the MAX_SEV coding were not read.
+- Use case: no actor named by the source (CRSS exists for national estimates, not prediction). Closest real decision: triage of a crash from what is known at notification (automatic crash notification, the EMS level to dispatch), or a road-safety agency scoring crash configurations; fit approximate, since police-coded fields are filled after the scene. Regime temporal: yearly releases, coding changes across years (SPLIT-6).
+- Siblings and duplicates: `fars` (NHTSA fatal-crash census, Lennart `TBD -> 2nd Tier`, a different system and no severity spread), `nyc_motor_vehicle_collisions` and `chicago_traffic_crashes` (AI `TBD -> Yes`, city police crash tables, the same use-case family: the curator may want one or two of the three), `us_accidents` (Lennart `No`, its Severity is a delay code; this record was opened as its injury-severity counterpart), `road_safety` (`No`). External collections: none found.
+- Papers and pages: DOT HS 812 688 (design overview, analytic guidance), DOT HS 812 795 (CRSS 2016 sample design), CRSS Analytical User's Manual 2016-2022 (DOT HS 813 557); injury-severity models on CRSS/GES are common in road-safety research. No competition.
+- Metric: none found (NHTSA's manuals and the CRSS pages define estimation, not a prediction task; no competition), so the fallback: `log_loss` for the KABCO classes, or `roc_auc` if framed as injury vs none (MET-1, MET-8, MET-11). Inputs: none; the survey weight `WEIGHT` ships and must not be a feature (MET-2: decide whether an unweighted score is the task).
+- Risks for /add-dataset: outcome fields recorded after the crash (harmful events, towing, EMS arrival and hospital times, person-level injury fields that define the target) must go (LEAK-10); the crash-level target needs a join from PERSON or the MAX_SEV field; imputed values are flagged by NHTSA (`*_IM` columns) and need a policy; coding changes across years (PROV-13).
+- Priority: gap + (social science thin), use case 0 (the source names no actor), source + (NHTSA manuals), shape + (about 50k crashes a year, mixed types, temporal), risk - (three-table join, post-crash fields).
+
 NHTSA's nationally representative probability sample of police crash reports, in place since data year 2016 when it replaced NASS-GES; target sample "about 50,000" police accident reports a year drawn from the ~7 million issued annually (NHTSA, "Crash Report Sampling System: Design Overview, Analytic Guidance", DOT HS 812 688; 2016 file: 47,515 eligible PCRs). Annual releases as ACCIDENT / VEHICLE / PERSON tables (SAS + CSV) with a crash-level maximum injury severity (KABCO) and per-person injury severity; US government work, public domain. Sibling `fars` (fatal-crash census, OpenML/PMLB copy of unknown vintage) is a different NHTSA system; CRSS covers all severities, which is what makes it a severity task.
 
 To decide: crash-level target (MAX_SEV, 5 imbalanced classes, or injury vs none) from crash / vehicle / driver descriptors known from the scene report; drop outcome fields (HARM_EV after the fact, tow, EMS). The file carries survey weights (WEIGHT) and a stratified design; an unweighted classification is a different task from NHTSA's estimates, same caveat as `higgsml_2014`. Yearly files -> temporal split, mind coding changes across years. NHTSA pages returned 403 here, so the download layout was not checked. Data not inspected.
 
 Opened 2026-09-23 as the injury-severity counterpart to `us_accidents` (rejected: its Severity is a traffic-delay code). Police crash reports carry the injury outcome the first-responder / crash-severity use case needs; the target is the standard one in road-safety research, unlike the gender target that sank `road_safety`.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `stats19_collision_severity` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference
 

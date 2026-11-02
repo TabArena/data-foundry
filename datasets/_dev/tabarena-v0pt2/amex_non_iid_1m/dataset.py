@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, decode
 
 
 class AmexNonIid1m(AbstractCuratedDataset):
@@ -72,12 +72,28 @@ class AmexNonIid1m(AbstractCuratedDataset):
     """
     curation_comments = """
         We start with the raw data from Kaggle and do not apply any further preprocessing to simulate a pipeline that can handle raw non-IID grouped data.
+        - Missing values: raddar's integer re-encoding writes a missing value as -1. In the 55 integer columns that hold
+          -1 (int8 and int16, among them the categorical D_64, D_66, D_68, B_30, B_38, D_114, D_116, D_117, D_120 and
+          D_126), -1 is the minimum, no cell is missing, and the -1 cells fall on the same rows across blocks (the same
+          176,716 rows in D_113 to D_125, 101,548 in D_103, D_107, D_129, D_139, D_143 and D_145, 2,016 in B_16 to
+          B_38). `_clean` sets them back to missing (CLEAN-10, 2026-10-30).
+        - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
+          event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
     target = "target"
     problem_type = "binary_classification"
-    metric = "amex_metric"
+    metric = Metric.source(
+        "gini_top_capture",
+        original="AmEx competition metric M = 0.5*(G + D)",
+        reference="https://www.kaggle.com/competitions/amex-default-prediction/overview/evaluation",
+        definition=(
+            "Mean of the normalized Gini (G) and the default rate captured in the top 4% of predictions (D), "
+            "both with negatives weighted 20x for the competition's 5% subsampling of non-defaults."
+        ),
+        params={"top_fraction": 0.04, "negative_weight": 20},
+    )
     grouping = Grouping(
         on="customer_ID",
         labels="per_group",
@@ -86,7 +102,7 @@ class AmexNonIid1m(AbstractCuratedDataset):
         aggregation="last",
         context="all_rows",
         definition="""
-            One group is a customer; its rows are its monthly statements (1 to 13). The task is "to predict, for each customer_ID, the probability of a future payment default", with the label "calculated by observing 18 months performance window after the latest credit card statement" (AmEx Default Prediction, Kaggle). So one prediction per customer, made at its latest statement (`S_2`) from all its statements, which are all in the past at that point; the Kaggle test customers are disjoint from the training customers. The competition scores `amex_metric` per customer.
+            One group is a customer; its rows are its monthly statements (1 to 13). The task is "to predict, for each customer_ID, the probability of a future payment default", with the label "calculated by observing 18 months performance window after the latest credit card statement" (AmEx Default Prediction, Kaggle). So one prediction per customer, made at its latest statement (`S_2`) from all its statements, which are all in the past at that point; the Kaggle test customers are disjoint from the training customers. The competition scores its metric (`gini_top_capture`) per customer.
         """,
     )
 
@@ -95,6 +111,8 @@ class AmexNonIid1m(AbstractCuratedDataset):
     accepted_check_warnings = {
         "splits_rows_never_tested": "The v2 protocol caps each test fold at 500k rows; the grouped folds of the 1.5M-row "
         "frame overshoot by whole groups, so 325 rows (0.02%) are trimmed from a test fold (2026-10-01).",
+        "dataset_constant_column": "D_87 is 1 or missing, as in AMEX's original data (1 in 3,865 of 5.5M statements); "
+        "raddar's -1 is its missing value (CLEAN-10, 2026-10-30), so whether it is present is the column's information.",
     }
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -103,6 +121,9 @@ class AmexNonIid1m(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
+        # raddar's integer columns code a missing value as -1 (curation notes)
+        for col in [c for c in df.columns if pd.api.types.is_integer_dtype(df[c]) and (df[c] == -1).any()]:
+            df[col] = df[col].where(df[col].ne(-1)).astype("float32")
         df.S_2 = pd.to_datetime(df.S_2)
         df = df.sort_values(["customer_ID", "S_2"], kind="stable")
         df = df.set_index("customer_ID")
@@ -113,6 +134,8 @@ class AmexNonIid1m(AbstractCuratedDataset):
         df.target = df.target.astype("int8")
         del targets
         df = df.reset_index().reset_index(drop=True)
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

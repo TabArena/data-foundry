@@ -6,7 +6,21 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "item_condition_id": ["poor", "fair", "good", "like new", "new"],
+}
+
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "item_condition_id": {"1": "new", "2": "like new", "3": "good", "4": "fair", "5": "poor"},
+    "shipping": {"0": "paid by buyer", "1": "paid by seller"},
+}
 
 
 class MercariPriceSuggestion(AbstractCuratedDataset):
@@ -60,16 +74,30 @@ class MercariPriceSuggestion(AbstractCuratedDataset):
     curation_comments = """
         We start from the Kaggle competition dataset.
 
-        - We log1p scale the target to match the target metric of the competition by default RMSE.
+        - We log1p scale the target; the metric is the competition's RMSLE on the price, computed after the inverse (`target_transform="log1p"`).
         - The dataset was solved by Kaggle experts by tabular models and a lot of custom string preprocessing. So it is a great use case to test encoding pipelines! The dataset also has mostly string data.
         - The task was treated and solved as an IID task on Kaggle.
         - We replace "No description yet" with NaN.
         - We take the full data (about 1.48M rows after de-duplication) with 3-fold cross-validation, so every fold trains on about 990k rows. Until 2026-10 a `mercari_price_suggestion_1m` version sub-sampled it to one 1M / 250k split.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them decoded from the source's codes
+          into its words (`CODE_LABELS`, 2026-11-01).
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
+          words (`CODE_LABELS`), in the same order; 1 unordered codes carry their words: `shipping`.
     """
 
     # Task
     target = "price"
     problem_type = "regression"
+    metric = Metric.source(
+        "rmsle",
+        original="Root Mean Squared Logarithmic Error",
+        reference="https://www.kaggle.com/competitions/mercari-price-suggestion-challenge/overview/evaluation",
+        definition="sqrt(mean((log1p(p) - log1p(a))^2)) of the price in US dollars, computed after the inverse of the "
+        "shipped log1p(price)",
+        target_transform="log1p",
+    )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         df = pd.read_csv(raw_dir / "train.tsv", sep="\t")
@@ -82,10 +110,13 @@ class MercariPriceSuggestion(AbstractCuratedDataset):
         df["item_description"] = df["item_description"].replace("No description yet", np.nan)
         # Drop duplicates
         df = df.drop_duplicates()
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "item_condition_id",
                 "shipping",

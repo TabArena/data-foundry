@@ -15,6 +15,8 @@ tags:
 collections:
 - TexTabBench
 - TabSTAR
+- MulTaBench
+- STRABLE
 original_source: Kaggle
 year: '2017'
 domain: business & marketing
@@ -37,3 +39,15 @@ Mercari (Japanese shopping app); a lot of signal from text preprocessing (plus b
 Not sure how useful the name is given the existence of the description, also not sure about category — it could be split into categorical columns but would maybe have way too many.
 
 CC (2026-10-06, Lennart): Kept after the task-probe review: the `no_spread` flag is an artefact of the probe, which leaves text columns out (R^2 0.06 for every family without the 4 text columns). With its text, on BeyondArena (the shipped `_1m` version, one holdout split) the best method (TabPFN-3.5) reaches R^2 0.670 and the median 0.603.
+
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — the competition's RMSLE, as RMSE on the shipped log1p(price) (Kaggle evaluation page).
+
+**Assessment (AI, 2026-10-21):** metric now `Metric.source("rmsle", target_transform="log1p")` instead of rmse on the log1p target: the competition's RMSLE on the price, computed after the inverse of the shipped log1p (MET-3); the score is the same number as before. Needs a rebuild to reach the container.
+
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `item_condition_id` (the README lists their levels).
+
+**Assessment (AI, 2026-11-01):** the benchmark MulTaBench (https://arxiv.org/abs/2605.10616) carries this record's data as "Mercari Marketplace": Text-tabular; AutoML Multimodal 100K subsample (OpenML 46660) of the 2017 Mercari Kaggle competition. Tagged MulTaBench on 2026-11-01.
+
+**Assessment (AI, 2026-11-01):** the benchmark STRABLE (https://arxiv.org/abs/2605.12292) carries this record's data as "Mercari Price Prediction": Raw file mercari_train.tsv from TextTabBench. Subsampled by STRABLE to 75,000 rows. Tagged STRABLE on 2026-11-01.
+
+CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 2 coded columns carry their words.

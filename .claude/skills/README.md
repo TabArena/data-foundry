@@ -37,15 +37,17 @@ Two stages, and in each one the AI works first and you verify:
 
 ### `/screen-candidates`: a quick first pass
 
-* **When:** you found a dataset; the backlog needs a pass; you want to know what to look at next; "check X" on a record
-  that has no dataset folder yet.
+* **When:** you found a dataset; you are looking for datasets on a task or domain; the backlog needs a pass; you want
+  to know what to look at next; "check X" on a record that has no dataset folder yet.
 * **You type:** `/screen-candidates https://www.kaggle.com/datasets/<owner>/<slug>`, `/screen-candidates
-  some_record,another_record`, or `/screen-candidates` alone for every record without a verdict.
+  some_record,another_record`, `/screen-candidates find datasets on <task or domain>`, or `/screen-candidates` alone
+  for every record without a verdict.
 * **Claude:** reads the source and the web (nothing is downloaded beyond a preview, nothing built); writes into each
   record what the next stage needs (first publication, the data as published, the use case, the likely split, papers,
-  related records and duplicates, risks); rejects the obvious cases (unethical, generated, non-tabular, forecasting,
-  duplicate, unknown source, no use case) after a second agent tried to refute each reject; gives every other record
-  `TBD -> Yes` or `TBD -> 2nd Tier` and a priority from 1 (last) to 5 (first).
+  related records and duplicates, risks); for new candidates, data scouts look for better data for the same task (a
+  larger or newer dataset), and each one they find is screened as a new record; rejects the obvious cases (unethical,
+  generated, non-tabular, forecasting, duplicate, unknown source, no use case) after a second agent tried to refute
+  each reject; gives every other record `TBD -> Yes` or `TBD -> 2nd Tier` and a priority from 1 (last) to 5 (first).
 * **You see:** the records in the dashboard's Screening queue, marked 🤖 until you verify them. A single name gets a
   deeper pass (the paper's text, Kaggle discussions, related records).
 * **Next:** `/review-screened-candidates`.
@@ -86,6 +88,8 @@ Two stages, and in each one the AI works first and you verify:
 | You want to | Do |
 |---|---|
 | add a dataset you found | `/screen-candidates <link>`, then `/review-screened-candidates` |
+| find datasets on a task or domain | `/screen-candidates find datasets on <task or domain>` |
+| have better data searched for a dataset we have | tag its record `Search for better data`, then `/screen-candidates <name>` |
 | know what to look at next | `/review-screened-candidates` (the queue is sorted by priority) |
 | get a dataset you accepted into the benchmark | `/add-dataset <name>` |
 | know whether a dataset is ready | `/add-dataset <name>` on its folder (a re-check) |
@@ -111,8 +115,19 @@ one side (definitions in [`.claude/agents/`](../agents/)):
 | review editor | reads `REVIEW.md` as you would and fixes what is unclear |
 
 A full panel costs on the order of a million tokens per dataset; for a re-check after a small change Claude runs a
-smaller one. In stage 1, two agents help: a screener for batches and a reject checker that argues against every quick
-`No`.
+smaller one. In stage 1, three agents help: a screener for batches, a reject checker that argues against every quick
+`No`, and data scouts that look for new datasets.
+
+## Who works on what
+
+A claim says "I am working on this dataset now" (its record and its folder). Claims live on the branch `claims` of
+the repository, pushed directly, so everyone sees them within seconds:
+[the board on GitHub](https://github.com/TabArena/data-foundry/blob/claims/README.md), the Claimed by column of the
+dashboard, and the agents (a hook lists the board at the start of each session and warns before an agent edits a
+dataset someone else holds). The commands claim before they work and skip what someone else holds. Set your name once
+with `git config data-foundry.curator <Name>`; to claim by hand, pick your name in the dashboard's Claimed by cell or
+run `data-foundry-curation claims claim <names>`. The details:
+[claims.md](knowledge-data-foundry/references/claims.md).
 
 ## Where the rules are
 
@@ -121,6 +136,8 @@ smaller one. In stage 1, two agents help: a screener for batches and a reject ch
   case, honest evaluation, faithful data, worth benchmarking, the expert state), rule strengths (Must, Should, Weigh),
   the tensions between rules and how they are settled, exceptions and amendments.
   [evidence.md](knowledge-curation/references/evidence.md) says what counts as evidence and what a probe flag can mean.
+  [molecules.md](knowledge-curation/references/molecules.md) is the guide to molecule datasets (SMILES, salts, scaffold
+  splits, structures recovered from a release).
 * [knowledge-data-foundry](knowledge-data-foundry/SKILL.md): how this repository does it (records, the dashboard,
   `dataset.py`, the working copy, builds) and the house rules.
 * The dashboard's Guidelines page renders both.

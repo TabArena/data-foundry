@@ -40,6 +40,18 @@ other, never both at once. After investigation we shipped the classification ver
 `problem_type` records `Binary Classification` and the curated dataset comes from
 `pva_revenue_prediction_kddcup98_clf.ipynb`, not from the regression notebook next to it.
 
+**Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: stand_in roc_auc — the KDD Cup 98 net revenue of the mailing (sum of TARGET_D - $0.68 over mailed donors) needs the donation amount, which our binary-response task drops (cup98doc.txt).
+
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 6 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `SOLP3`, `SOLIH`, `RFA_2F`, `RFA_2A`, `GEOCODE2`, `DOMAIN_ses` (the README lists their levels); left unordered: `MDMAUD_recency` (a level outside the scale is a state of its own); `MDMAUD_frequency` (a level outside the scale is a state of its own); `MDMAUD_amount` (a level outside the scale is a state of its own); ordinal scales shipped as numbers, left as numbers for the curator's review: `INCOME`, `WEALTH1`, `WEALTH2`.
+
+CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 3 ordinal scales shipped as numbers are ordered categories (point 3); 3 columns with a state outside the scale ordered, the state placed by the rule.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `springleaf_marketing_response` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
+CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 5 coded columns carry their words; 3 scores are numbers (INCOME, WEALTH1, WEALTH2); DOMAIN_ses read row by row in the dictionary's two schemes (urban codes 2 and 3 were misread); AGEFLAG blank and GENDER A, C and Unknown missing.
+
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
 ## Reference
 
 Website / readme

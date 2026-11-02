@@ -5,12 +5,11 @@ checked_by:
 - Alex
 - Gioia
 - AI (UNVERIFIED)
+- Myunghwan
 claimed_by:
 - Lennart
 - Andrej
-- Mustafa
-- Alex
-- Gioia
+- Myunghwan
 data_foundry_status:
 - 'DF: Yes'
 - WIP (DF)
@@ -35,7 +34,7 @@ decision_markers:
 - Time-series (Classification)
 - Outdated
 - No Good Target (yet)
-- No Good Target  / Scientific Discovery
+- No Good Target / Scientific Discovery
 - Data Quality Issue
 - Trivial
 - Image
@@ -46,6 +45,9 @@ decision_markers:
 - Ethical Issue
 - Too Small
 - Not Representative
+- Selection Bias
+- Anonymized
+- Class-dependent Recording
 - Not Available (from Paper))
 - Data Requested
 - Time-series (Regression)
@@ -56,7 +58,7 @@ tags:
 - AI-Filled (Verify)
 - Non-IID (Temporal)
 - Tiny Data
-- 2nd Tier / Scientfic Discovery
+- 2nd Tier / Scientific Discovery
 - New IID
 - Non-IID (Grouped)
 - Random (IID)
@@ -67,6 +69,8 @@ tags:
 - '?'
 - Multi-target
 - Many class
+- Search for better data
+- Revisit later
 collections:
 - New (BeyondArena)
 - TabArena Reject
@@ -78,6 +82,12 @@ collections:
 - FS Benchmark
 - AutoML_MM
 - TexTabBench Extra
+- STRABLE
+- MulTaBench
+- RamanBench
+- TabBench-Bio
+- ChemPile
+- tabular-dl-more-data
 - Vectorizing Strings
 - TabArena Submission
 - New

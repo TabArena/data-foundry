@@ -32,6 +32,8 @@ Missing source (but mainly, because it is a bad dataset in general: Only 350 uni
 
 Data has no time index or allow for a split either.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `swan_sf_solar_flare` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Bradshaw, G. (1989). Solar flare data set. http://archive.ics.uci.edu/ml/datasets/solar+ flare.

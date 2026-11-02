@@ -7,10 +7,11 @@ Usage, from the repository root::
         [--tldr <yaml>] [--extra-crosscut <yaml>]
 
 Writes ``<out>/data.json`` and ``<out>/review_page.html`` (``assets/review_page.html`` with the data embedded).
-Per record the page embeds the report's section, the definition's ``dataset.py``, ``task_summary`` and generated
-``README.md`` (for a retired definition: from the last commit that still had it) and the curation record, as they
-are at build time. The report format is ``references/review_file_format.md``; a report that does not follow it stops
-the build with the section and the line.
+Per record the page embeds the report's section, the definition's ``dataset.py``, ``task_summary``, declared
+``metric`` (with its scoring columns; the Use case tab shows it) and generated ``README.md`` (for a retired
+definition: from the last commit that still had it) and the curation record, as they are at build time. The report
+format is ``references/review_file_format.md``; a report that does not follow it stops the build with the section
+and the line.
 
 The page lists the records in review order (``review_order``): the record's ``priority`` from 5 down to 1, records
 without one last, then the fewest open marks first, then the name.
@@ -55,6 +56,7 @@ except ImportError:  # pragma: no cover - depends on the environment
     )
 
 from data_foundry.v2.dataset import TaskSummary
+from data_foundry.v2.metrics import Metric
 from data_foundry.v2.registry import load_definition
 from data_foundry.v2.report import read_report
 
@@ -663,6 +665,54 @@ def render(text: str) -> str:
     return MD.render(text.strip()) if text.strip() else ""
 
 
+TURN = re.compile(
+    r"^(?:- )?\*\*(?:(?P<ai>Answer|Consistency check) \(AI, (?P<ai_date>\d{4}-\d{2}-\d{2})\)[^*]*"
+    r"|(?P<close>Resolved|Deferred) \((?P<close_date>\d{4}-\d{2}-\d{2})(?:, (?P<close_who>[^)]+))?\)"
+    r"|(?P<who>[A-Z][a-z]+) \((?P<who_date>\d{4}-\d{2}-\d{2})(?:, (?P<mark>[^)]+))?\)):\*\*\s*",
+)
+"""A turn of the conversation on an issue or item, at the start of a line: the AI's answer or consistency check,
+the curator's note, or the label that closes it."""
+
+
+def _thread(text: str) -> dict[str, Any]:
+    """An issue's or item's text split into the original and the turns after it, each rendered.
+
+    The original is everything before the first turn label; each turn runs to the next label. The page shows the turns
+    as a conversation under the original text, so the curator sees who said what, and when.
+    """
+    body: list[str] = []
+    turns: list[dict[str, Any]] = []
+    for line in text.splitlines():
+        m = TURN.match(line)
+        if m:
+            if m["ai"]:
+                turn = {"who": "ai", "kind": m["ai"].lower(), "date": m["ai_date"]}
+            elif m["close"]:
+                turn = {
+                    "who": "closed",
+                    "kind": m["close"].lower(),
+                    "date": m["close_date"],
+                    "by": m["close_who"] or "",
+                }
+            else:
+                turn = {
+                    "who": "curator",
+                    "kind": "note",
+                    "date": m["who_date"],
+                    "mark": m["mark"] or "",
+                    "by": m["who"],
+                }
+            turn["lines"] = [line[m.end() :]]
+            turns.append(turn)
+        elif turns:
+            turns[-1]["lines"].append(line)
+        else:
+            body.append(line)
+    for turn in turns:
+        turn["html"] = render(_dedent(turn.pop("lines")))
+    return {"html": render("\n".join(body)), "thread": turns}
+
+
 def _frontmatter(text: str | None) -> tuple[dict, str]:
     m = re.match(r"^---\n(.*?)\n---\n(.*)$", text or "", re.S)
     return ((yaml.safe_load(m.group(1)) or {}), m.group(2)) if m else ({}, text or "")
@@ -734,11 +784,12 @@ def _decided(path: Path) -> dict | None:
 
 
 def _meta(regime: str | None, problem: str | None, report: dict, *, retired: bool) -> dict:
-    """The facts the eyebrow shows: split regime, problem type, rows, whether the definition is built or retired."""
+    """The facts the eyebrow shows: split regime, problem type, rows, features, whether it is built or retired."""
     return {
         "regime": regime,
         "problem": problem,
         "rows": (report.get("data") or {}).get("n_rows"),
+        "features": (report.get("data") or {}).get("n_features"),
         "built": bool((report.get("build") or {}).get("uuid")),
         "retired": retired,
     }
@@ -775,6 +826,37 @@ def _summary_from_source(code: str) -> dict | None:
                 "fields": fields,
             }
     return None
+
+
+METRIC_KEYS = ("name", "origin", "original", "reference", "definition", "reason", "params", "inputs")
+"""The fields of a metric spec the Use case tab shows."""
+
+
+def _metric_from_class(cls: Any) -> dict | None:
+    """The definition's declared metric as the container's spec would hold it, with its scoring columns."""
+    metric = getattr(cls, "metric", None)
+    if not isinstance(metric, Metric):
+        return None
+    try:
+        spec = metric.spec(cls.problem_type)
+    except ValueError:
+        return None
+    out = {k: spec.get(k) for k in METRIC_KEYS}
+    out["scoring_columns"] = [
+        {"column": c.column, "role": c.role, "used_by": c.used_by, "description": c.description}
+        for c in getattr(cls, "scoring_columns", ()) or ()
+    ]
+    return {**out, "source": "definition"}
+
+
+def _metric_from_front(task: dict) -> dict | None:
+    """The metric of a README's frontmatter (``task.metric``, ``task.metric_origin``, ``task.scoring_columns``)."""
+    if not task.get("metric"):
+        return None
+    out: dict[str, Any] = dict.fromkeys(METRIC_KEYS)
+    out.update(name=task["metric"], origin=task.get("metric_origin"))
+    out["scoring_columns"] = [{"column": c} for c in task.get("scoring_columns") or ()]
+    return {**out, "source": "readme"}
 
 
 def _sentence(text: str) -> str:
@@ -871,10 +953,12 @@ def _live_definition(where: _Repo, name: str, folder: str) -> dict[str, Any]:
     if cls.dataset_metadata.unique_name != folder:
         raise BuildError(f"{where.wc}/{folder}/dataset.py names `{cls.dataset_metadata.unique_name}`, not `{folder}`")
     regime = "grouped" if cls.grouping is not None else "temporal" if cls.temporal is not None else "iid"
+    front = read_report(where.root / folder / "README.md")
     return {
         "code": definition.read_text(),
         "summary": _summary_from_class(cls),
-        "meta": _meta(regime, cls.problem_type, read_report(where.root / folder / "README.md"), retired=False),
+        "metric": _metric_from_class(cls) or _metric_from_front(front.get("task") or {}),
+        "meta": _meta(regime, cls.problem_type, front, retired=False),
         "readme": _readme(where.root / folder, f"{where.wc}/{folder}", where.github),
     }
 
@@ -900,6 +984,7 @@ def _retired_definition(where: _Repo, name: str, folder: str) -> dict[str, Any]:
     return {
         "code": code,
         "summary": _summary_from_source(code) if code else None,
+        "metric": _metric_from_front(task),
         "meta": meta,
         "retiredCommit": _git(where.repo, "rev-parse", "--short", commit).stdout.strip(),
         "retiredDate": removed_on,
@@ -928,7 +1013,7 @@ def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: di
     if not record_path.is_file():
         raise BuildError(f"{name}: no curation record {RECORDS_DIR}/{name}.md")
     retired = bool(folder) and not (where.root / folder).is_dir()
-    files: dict[str, Any] = {"code": None, "summary": None, "meta": None, "readme": None}
+    files: dict[str, Any] = {"code": None, "summary": None, "metric": None, "meta": None, "readme": None}
     if folder:
         files.update(_retired_definition(where, name, folder) if retired else _live_definition(where, name, folder))
     if files["summary"] is None and name in tldr:
@@ -949,7 +1034,7 @@ def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: di
             {
                 "n": it["n"],
                 "titleHtml": MD.renderInline(it["title_md"]),
-                "html": render(it["body_md"]),
+                **_thread(it["body_md"]),
                 "resolved": it["resolved"],
             }
             for it in rec["items"]
@@ -965,6 +1050,7 @@ def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: di
         "record": _record(record_path),
         "decided": decided,
         "summary": files["summary"],
+        "metric": files["metric"],
         "meta": files["meta"],
         "readme": files["readme"],
         "retiredCommit": files.get("retiredCommit"),
@@ -980,7 +1066,7 @@ def _crosscut(report: dict[str, Any], extra: Path | None) -> list[dict[str, Any]
                 {
                     "id": it["id"],
                     "titleHtml": MD.renderInline(it["title_md"]),
-                    "html": render(it["body_md"]),
+                    **_thread(it["body_md"]),
                     "resolved": it["resolved"],
                 }
                 for it in sec["items"]
