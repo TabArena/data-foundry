@@ -276,6 +276,25 @@ become copies once the stereochemistry is gone (`canonical_smiles(..., stereo=Fa
 stereoisomers apart). Cases: apistox, drug_induced_autoimmunity_prediction, qsar_bioconcentration,
 qsar_oral_toxicity, qsar_tid_11.
 
+### Spectra
+
+**CLEAN-26 (Should; 2026-11-02, Lennart, on Andrej's PR #21).** A spectrum ships as the source publishes it, one
+numeric column per position on its axis, and is declared as a spectrum, never processed in the data: the definition
+lists it in `spectra` (the columns `<prefix><position>`, the unit, the technique, and the state the source left it in:
+`raw`, `processed` or `peaks`), the container records it as a feature group, and the benchmark encodes it row by row,
+as it encodes a SMILES, a date or text. The processing has free choices (window, baseline method, normalisation), so
+written into the data one of them becomes the task and a method that processes spectra itself loses the signal. The
+recommended encoding follows the field's published default, never a tuning on our folds: MALDIquant's steps for a raw
+mass spectrum (square root, Savitzky-Golay over 21 points, SNIP baseline, total ion current), the spectrum as it is
+for a peak list or a processed spectrum, and for a vibrational spectrum (Raman, infrared, near-infrared) the spectrum as
+it is, with RamanBench's linear-model default (ALS baseline, SNV) the alternative to check. Raw mass spectra need the
+processing: on pancreatic_cancer_mouse_detection it lifts the tree models by 0.10 to 0.15 ROC AUC and TabPFN v3.5 by
+0.03; vibrational spectra may not: RamanBench's leading methods (TabPFN v2.5, TabICL v2) read the raw spectra. The steps that fit across spectra
+(alignment, peak detection and binning) are no per-row default. Keep the whole range the source publishes; dropping
+constant or copied bins is fine, cropping a range is a modelling choice. Spectra of one sample, specimen, strain or
+patient are one group (SPLIT-23, SPLIT-29). Guide: [spectra.md](spectra.md). Cases: pancreatic_cancer_mouse_detection,
+micro_mass.
+
 ## Weighed factors
 
 * **Rows that are a sentinel in every feature** (keep or drop): they can be the real population (an applicant without
@@ -343,9 +362,12 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | CLEAN-24 | qsar_tid_11 | SMILES only: the authors' FCFP6 bits leave as one modelling choice; RDKit recomputes none of them exactly; LightGBM R^2 on the scaffold splits 0.645 with the bits, 0.601 with the recommended encoding, 0.658 with RDKit's ECFP4 counts added to it (2026-11-01, Lennart) | applied |
 | CLEAN-24 | qsar_oral_toxicity | SMILES only: the published ECFP bits (Dragon 7) leave as one modelling choice; the copies are found on the 2D structure instead of the bit vector, 11,116 chemicals (11 more: bit collisions had joined different chemicals) (2026-11-01, Lennart) | applied |
 | CLEAN-24 | qsar_biodeg, qsar_fish_toxicity, qsar_aquatic_toxicity | SMILES only: the structures the UCI copies left out come from the authors' own releases (the paper's supporting information; the Milano Chemometrics workbooks), the same rows in the same order, every descriptor identical, so the link needs no key; the Dragon descriptors leave, which also settles the descriptor-selection leaks of the two toxicity sets (LEAK-31) (2026-11-01, Lennart) | applied |
+| CLEAN-26 | pancreatic_cancer_mouse_detection | the raw SELDI-TOF serum spectrum (6,771 bins of 400 ppm) ships as published and is declared `raw`; the benchmark's default is MALDIquant's steps: on the 60 shipped splits the tree models gain 0.10 to 0.15 ROC AUC, PLS-DA 0.06 and TabPFN v3.5 0.03 (0.659 to 0.690), logistic regression loses 0.02; PR #21's own chain, which ends in a log, scores higher for TabPFN (0.716) and the linear models, and the default stays the published workflow (2026-11-02, Lennart) | applied |
+| CLEAN-26 | micro_mass | the VITEK MS peak list (1,300 bins, the m/z of each not published) is declared `peaks` with the bin number as its axis; the default leaves a peak list as it is; the constant and copied bins stay dropped (2026-11-02, Lennart) | applied |
 
 ## In Data Foundry
 
-The order of these steps in `_clean`, the helpers (`drop_columns`, `canonical_smiles`, `anonymize_ids`) and the
-bundle checks that catch what is missed: [definitions.md](../../knowledge-data-foundry/references/definitions.md),
+A spectrum is declared in `spectra = (Spectrum(...),)`; its encodings are in `data_foundry.v2.spectra`
+([spectra.md](spectra.md), "In Data Foundry"). The order of these steps in `_clean`, the helpers (`drop_columns`,
+`canonical_smiles`, `anonymize_ids`) and the bundle checks that catch what is missed: [definitions.md](../../knowledge-data-foundry/references/definitions.md),
 "The preprocessing recipe".

@@ -13,6 +13,11 @@ A SMILES column (``task.semantic_columns`` of type ``smiles``) enters the probes
 (``data_foundry.v2.chemistry.encode_smiles``: RDKit's 2D descriptors, the MACCS keys and the ECFP4 counts, columns
 ``<column>__rdkit_<name>``, ``<column>__maccs_<i>`` and ``<column>__ecfp4_<i>``), as a benchmark would give it to a model, not as text.
 ``encode_smiles=False`` keeps the string (the blind reviewer's clean room). ``ProbeInput.smiles_cols`` lists them.
+
+A spectrum (``task.feature_groups`` of type ``spectrum``) enters the probes in its recommended encoding
+(``data_foundry.v2.spectra.encode_spectrum``: a raw mass spectrum through MALDIquant's steps, any other as it is), the
+same columns with new values, as a benchmark would give it to a model. ``encode_spectra=False`` keeps the values as
+shipped (the clean room). ``ProbeInput.spectra`` lists the spectra by name.
 """
 
 from __future__ import annotations
@@ -47,6 +52,7 @@ class ProbeInput:
             definition) or ``definition`` (the definition's frame and split plan, no container).
         scoring_cols: The scoring columns dropped from ``df`` (metric inputs, never features).
         smiles_cols: The SMILES columns of the task, encoded in ``df`` unless loaded with ``encode_smiles=False``.
+        spectra: The spectra of the task by name, encoded in ``df`` unless loaded with ``encode_spectra=False``.
     """
 
     df: pd.DataFrame
@@ -59,6 +65,7 @@ class ProbeInput:
     origin: str
     scoring_cols: tuple[str, ...] = ()
     smiles_cols: tuple[str, ...] = ()
+    spectra: tuple[str, ...] = ()
 
     @property
     def group_cols(self) -> list[str]:
@@ -113,12 +120,28 @@ def _with_encoded_smiles(df: pd.DataFrame, task: Any, *, encode: bool) -> tuple[
     return pd.concat(parts, axis=1), smiles
 
 
-def from_definition(ds: AbstractCuratedDataset, *, encode_smiles: bool = True) -> ProbeInput:
+def _with_encoded_spectra(df: pd.DataFrame, task: Any, *, encode: bool) -> tuple[pd.DataFrame, tuple[str, ...]]:
+    """``df`` with each spectrum's columns in its recommended encoding (same columns), and the spectra's names."""
+    groups = [g for g in getattr(task, "feature_groups", None) or () if g.semantic_type == "spectrum"]
+    if not encode or not groups:
+        return df, tuple(g.name for g in groups)
+    from data_foundry.v2.spectra import encode_spectrum  # noqa: PLC0415
+
+    df = df.copy()
+    for g in groups:
+        df[g.columns] = encode_spectrum(df[g.columns], g.axis, g.recommended_encoding)
+    return df, tuple(g.name for g in groups)
+
+
+def from_definition(
+    ds: AbstractCuratedDataset, *, encode_smiles: bool = True, encode_spectra: bool = True
+) -> ProbeInput:
     """The definition's frame and split plan, rebuilt from the raw files (no container)."""
     plan = ds.make_splits()
-    task = ds.task_metadata
+    task = ds.task_metadata_for(plan.df)
     df, scoring = _without_scoring_columns(plan.df, task)
     df, smiles = _with_encoded_smiles(df, task, encode=encode_smiles)
+    df, spectra = _with_encoded_spectra(df, task, encode=encode_spectra)
     return ProbeInput(
         df=df,
         target=task.target_column_name,
@@ -130,14 +153,18 @@ def from_definition(ds: AbstractCuratedDataset, *, encode_smiles: bool = True) -
         origin="definition",
         scoring_cols=scoring,
         smiles_cols=smiles,
+        spectra=spectra,
     )
 
 
-def from_container(container: CuratedContainer, origin: str, *, encode_smiles: bool = True) -> ProbeInput:
+def from_container(
+    container: CuratedContainer, origin: str, *, encode_smiles: bool = True, encode_spectra: bool = True
+) -> ProbeInput:
     """A container's frame, task and shipped splits."""
     task = container.task_metadata
     df, scoring = _without_scoring_columns(container.dataset, task)
     df, smiles = _with_encoded_smiles(df, task, encode=encode_smiles)
+    df, spectra = _with_encoded_spectra(df, task, encode=encode_spectra)
     return ProbeInput(
         df=df,
         target=task.target_column_name,
@@ -149,10 +176,13 @@ def from_container(container: CuratedContainer, origin: str, *, encode_smiles: b
         origin=origin,
         scoring_cols=scoring,
         smiles_cols=smiles,
+        spectra=spectra,
     )
 
 
-def load(name: str, root: Path | str, *, built: bool, encode_smiles: bool = True) -> ProbeInput:
+def load(
+    name: str, root: Path | str, *, built: bool, encode_smiles: bool = True, encode_spectra: bool = True
+) -> ProbeInput:
     """The container of ``name``: with ``built``, the one recorded in its ``README.md``'s build record (when there is
     one), else rebuilt from the definition.
     """
@@ -160,5 +190,6 @@ def load(name: str, root: Path | str, *, built: bool, encode_smiles: bool = True
         build = (read_report(Path(root) / name / "README.md") or {}).get("build") or {}
         if build.get("path"):
             container = CuratedContainer.load(resolve_warehouse_dir() / build["path"])
-            return from_container(container, "built", encode_smiles=encode_smiles)
-    return from_container(definition(name, root).to_container(), "rebuilt", encode_smiles=encode_smiles)
+            return from_container(container, "built", encode_smiles=encode_smiles, encode_spectra=encode_spectra)
+    container = definition(name, root).to_container()
+    return from_container(container, "rebuilt", encode_smiles=encode_smiles, encode_spectra=encode_spectra)

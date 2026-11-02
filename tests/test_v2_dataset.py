@@ -13,6 +13,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+from data_foundry.curation_container import CuratedContainer, feature_columns, feature_groups
 from data_foundry.schema import DATA_FOUNDRY_WAREHOUSE_ENV
 from data_foundry.v2 import (
     AbstractCuratedDataset,
@@ -37,6 +38,7 @@ from data_foundry.v2 import (
 )
 from data_foundry.v2.cli import add_dataset_parser
 from data_foundry.v2.dataset import PREPARED_MARKER, _categories_like, _gap, _horizon, _prepare_code_hash
+from data_foundry.v2.spectra import MS_RAW_ENCODING
 from data_foundry.v2.splits import temporal_window_splits
 
 DEFINITION = '''
@@ -1434,3 +1436,95 @@ def test_an_ordinal_column_may_also_be_named_categorical(tmp_path: Path, warehou
     write_definition(tmp_path / "datasets", body=body)
     result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
     assert result.container.dataset["colour"].cat.ordered
+
+
+SPECTRUM_DECLARATION = (
+    "    spectra = (\n"
+    '        Spectrum(name="toy_ms", prefix="mz_", unit="m/z", technique="mass_spectrometry", state="raw",\n'
+    '                 description="A generated spectrum."),\n'
+    "    )\n"
+)
+SPECTRUM_COLUMNS = (
+    "        for position in (900.5, 1000, 1100.25, *range(1200, 1240)):  # written out of axis order\n"
+    '            df[f"mz_{position}"] = (df["row_id"] % 7 + position / 100).astype(float)\n'
+)
+
+
+def _spectrum_definition(**changes: str) -> str:
+    body = (
+        DEFINITION.format(name="toy_ds", comment="Toy data.")
+        .replace("TaskSummary, drop_columns", "Spectrum, TaskSummary, drop_columns")
+        .replace(
+            '    metric = Metric.fallback(reason="the toy data is generated; it has no source metric")\n',
+            '    metric = Metric.fallback(reason="the toy data is generated; it has no source metric")\n'
+            + SPECTRUM_DECLARATION,
+        )
+        .replace(
+            '        return drop_columns(df, ["row_id"])',
+            SPECTRUM_COLUMNS + '        return drop_columns(df, ["row_id"])',
+        )
+    )
+    for old, new in changes.items():
+        body = body.replace(old, new)
+    return body
+
+
+def test_a_spectrum_ships_as_numbers_and_is_recorded_as_a_feature_group(tmp_path: Path, warehouse: Path) -> None:
+    """``spectra`` keeps the columns as numeric features and records them in axis order, with their positions and the
+    recommended encoding; the record survives a save and a load, and the README names the spectrum.
+    """
+    del warehouse
+    folder = write_definition(tmp_path / "datasets", body=_spectrum_definition())
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    assert result.ok, result.bundle_report.summary()
+    container = result.container
+    (group,) = feature_groups(container, "spectrum")
+    assert feature_groups(container, "other") == []
+    assert group.columns[:3] == ["mz_900.5", "mz_1000", "mz_1100.25"]
+    assert group.axis[:3] == [900.5, 1000.0, 1100.25]
+    assert len(group.columns) == 43
+    assert (group.technique, group.state, group.recommended_encoding) == (
+        "mass_spectrometry",
+        "raw",
+        MS_RAW_ENCODING.id,
+    )
+    assert set(group.columns) <= set(feature_columns(container))
+    assert all(container.dataset[c].dtype == "float64" for c in group.columns)
+    assert "feature group:         toy_ms (spectrum, mass_spectrometry, raw; 43 columns" in container.describe()
+    text = (folder / "README.md").read_text()
+    assert "- spectrum `toy_ms` (43 numeric columns): `mz_900.5` to `mz_1239`" in text
+    assert "feature_groups:" in text
+    loaded = CuratedContainer.load(container.save(tmp_path / "saved"))
+    assert loaded.task_metadata.feature_groups == container.task_metadata.feature_groups
+
+
+@pytest.mark.parametrize(
+    ("changes", "match"),
+    [
+        ({'FeatureTypes(categorical=["colour"])': 'FeatureTypes(categorical=["colour", "mz_1000"])'}, "spectrum"),
+        ({'prefix="mz_"': 'prefix="nm_"'}, "0 column"),
+        ({'df[f"mz_{position}"]': 'df[f"mz_{position}x"]'}, "no number"),
+        ({SPECTRUM_DECLARATION: SPECTRUM_DECLARATION.replace("(\n", "[\n").replace("    )\n", "    ]\n")}, "tuple"),
+    ],
+)
+def test_a_spectrum_declared_wrong_is_refused(tmp_path: Path, warehouse: Path, changes, match) -> None:
+    """A spectrum column typed in ``_feature_types``, a prefix that matches nothing, a position that is no number and a
+    list instead of a tuple are each refused with a message naming the problem.
+    """
+    del warehouse
+    write_definition(tmp_path / "datasets", body=_spectrum_definition(**changes))
+    with pytest.raises(DatasetDefinitionError, match=match):
+        get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+
+
+def test_a_spectrum_with_missing_intensities_is_flagged(tmp_path: Path, warehouse: Path) -> None:
+    """The bundle check warns about spectra with a missing intensity."""
+    del warehouse
+    body = _spectrum_definition(
+        **{SPECTRUM_COLUMNS: SPECTRUM_COLUMNS + '        df.loc[df["row_id"] == 3, "mz_1000"] = float("nan")\n'}
+    )
+    write_definition(tmp_path / "datasets", body=body)
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    warnings = [r for r in result.bundle_report.results if r.slug == "dataset_spectrum" and r.severity == "warning"]
+    assert warnings, result.bundle_report.summary()
+    assert "1 row(s)" in warnings[0].message

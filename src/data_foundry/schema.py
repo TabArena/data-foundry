@@ -308,6 +308,63 @@ class SemanticColumn:
     """The spec id of the encoding Data Foundry recommends, e.g. ``rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1``."""
 
 
+FeatureGroupType = Literal["spectrum"]
+"""What a :class:`FeatureGroup` holds: ``spectrum``, one spectrum per row, a column per position on its axis."""
+
+SpectrumTechnique = Literal["mass_spectrometry", "raman", "infrared", "near_infrared"]
+"""How a spectrum was measured: by mass spectrometry (an m/z axis) or a vibrational spectroscopy (Raman, infrared,
+near-infrared: a wavenumber or wavelength axis)."""
+
+SpectrumState = Literal["raw", "processed", "peaks"]
+"""What the source did to a spectrum before publishing it: nothing (``raw``, the instrument's intensities with their
+baseline and scale), a correction or normalisation (``processed``), or a peak list on fixed bins (``peaks``)."""
+
+
+@pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
+class FeatureGroup:
+    """Model features that together hold one object, in a fixed order along an axis: a spectrum.
+
+    Each column is a number a model can read as it is, so a pipeline that knows nothing of the group still runs; a
+    benchmark that does encodes the columns together, row by row, with the ``recommended_encoding`` or its own
+    (:func:`~data_foundry.curation_container.feature_groups` lists them; for a spectrum the encodings are in
+    :mod:`data_foundry.v2.spectra`). A definition declares a spectrum in ``spectra``.
+    """
+
+    name: str
+    """The group's name, e.g. ``serum_ms``."""
+    semantic_type: FeatureGroupType
+    """What the group holds (``spectrum``)."""
+    columns: list[str]
+    """The columns of the frame, in axis order."""
+    axis: list[float]
+    """The position of each column on the axis, strictly increasing (an m/z, a wavenumber, a bin number)."""
+    axis_unit: str
+    """The unit of :attr:`axis`: ``m/z``, ``cm-1``, ``nm``, or ``bin`` when the source does not give the positions."""
+    description: str
+    """What the group is: the instrument, the range and the resolution, and what the source did to the values."""
+    technique: SpectrumTechnique | None = None
+    """How a spectrum was measured; required for a spectrum."""
+    state: SpectrumState | None = None
+    """What the source did to a spectrum before publishing it; required for a spectrum."""
+    recommended_encoding: str | None = None
+    """The spec id of the encoding Data Foundry recommends, e.g. ``ms-sqrt-sg21-snip100-tic-r1``."""
+
+    def __post_init__(self):
+        """Validate the columns against the axis, and a spectrum's technique and state."""
+        if len(self.columns) < 2:
+            raise ValueError(f"Feature group {self.name!r} needs at least two columns, got {len(self.columns)}.")
+        if len(set(self.columns)) != len(self.columns):
+            raise ValueError(f"Feature group {self.name!r} lists a column twice.")
+        if len(self.axis) != len(self.columns):
+            raise ValueError(
+                f"Feature group {self.name!r} has {len(self.columns)} columns but {len(self.axis)} axis positions."
+            )
+        if any(b <= a for a, b in zip(self.axis, self.axis[1:], strict=False)):
+            raise ValueError(f"The axis of feature group {self.name!r} is not strictly increasing.")
+        if self.semantic_type == "spectrum" and (self.technique is None or self.state is None):
+            raise ValueError(f"Spectrum {self.name!r} needs its technique and state.")
+
+
 # TODO: fields that might be cool to add in the future
 #   - derived_from (to check for duplicates)
 #   - dataset_version (unlikely, we track versions of these files in code repos?)
@@ -671,6 +728,8 @@ class PredictiveMLTaskMetadataV2:
     """The columns the metric needs (:class:`ScoringColumn`): kept in the frame, never model features."""
     semantic_columns: list[SemanticColumn] = dataclasses.field(default_factory=list)
     """Features that need an encoding of their own (:class:`SemanticColumn`, e.g. a SMILES column): never text."""
+    feature_groups: list[FeatureGroup] = dataclasses.field(default_factory=list)
+    """Features that together hold one object (:class:`FeatureGroup`, e.g. a spectrum): encoded together, row by row."""
 
     type_adapter_id: str = "predictive-ml-task-mold-v2"
     """Identifies container format 2."""
@@ -697,6 +756,7 @@ class PredictiveMLTaskMetadataV2:
         if self.target_column_name in scoring:
             raise ValueError(f"The target column ({self.target_column_name!r}) cannot be a scoring column.")
         self._check_semantic_columns(scoring)
+        self._check_feature_groups(scoring)
         aggregation = self.grouping.aggregation if self.grouping is not None else None
         if aggregation == "any" and self.problem_type != "binary_classification":
             raise ValueError(
@@ -718,6 +778,22 @@ class PredictiveMLTaskMetadataV2:
             raise ValueError(
                 f"A semantic column is a feature; {sorted(not_features & set(semantic))} is the target, the time, a "
                 "group or a scoring column.",
+            )
+
+    def _check_feature_groups(self, scoring: list[str]) -> None:
+        """Feature groups have distinct names and hold features only, each in one group and in no semantic column."""
+        names = [g.name for g in self.feature_groups]
+        if len(set(names)) != len(names):
+            raise ValueError(f"feature_groups uses a name twice: {names}.")
+        grouped = [c for g in self.feature_groups for c in g.columns]
+        if len(set(grouped)) != len(grouped):
+            raise ValueError("A column is in two feature groups.")
+        not_features = {self.target_column_name, self.time_on, *as_column_list(self.group_on), *scoring}
+        clash = (not_features | {c.column for c in self.semantic_columns}) & set(grouped)
+        if clash:
+            raise ValueError(
+                f"A feature group holds features only; {sorted(clash)[:5]} is the target, the time, a group, a scoring "
+                "or a semantic column.",
             )
 
     @property
@@ -768,6 +844,12 @@ class PredictiveMLTaskMetadataV2:
             lines.append(
                 f"  semantic column:       {semantic.column} ({semantic.semantic_type}; a feature, never text; "
                 f"recommended encoding {semantic.recommended_encoding})"
+            )
+        for group in self.feature_groups:
+            kind = ", ".join(str(v) for v in (group.semantic_type, group.technique, group.state) if v)
+            lines.append(
+                f"  feature group:         {group.name} ({kind}; {len(group.columns):,} columns, {group.axis_unit} "
+                f"{group.axis[0]:g} to {group.axis[-1]:g}; recommended encoding {group.recommended_encoding})"
             )
         grouping = self.grouping
         if grouping is not None:

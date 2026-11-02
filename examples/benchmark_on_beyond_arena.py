@@ -33,7 +33,9 @@ The two container formats score differently:
   model, which takes numeric and categorical columns; other columns (strings, datetimes) are left out here. A SMILES
   column (``semantic_columns(container, "smiles")``) is a molecule's structure: it enters in the recommended encoding
   (``data_foundry.v2.chemistry.encode_smiles``, RDKit's 2D descriptors, the MACCS keys and the ECFP4 counts; RDKit is in the ``build``
-  extra), never as text.
+  extra), never as text. A spectrum (``feature_groups(container, "spectrum")``) is already numbers; it enters in its
+  recommended encoding (``data_foundry.v2.spectra.encode_spectrum``: a raw mass spectrum through MALDIquant's steps,
+  any other as it is), the same columns with new values.
 
 Requires ``scikit-learn>=1.4`` (for :func:`sklearn.metrics.root_mean_squared_error`).
 """
@@ -46,7 +48,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from data_foundry.collections import BEYOND_ARENA
-from data_foundry.curation_container import CuratedContainer, feature_columns, semantic_columns
+from data_foundry.curation_container import CuratedContainer, feature_columns, feature_groups, semantic_columns
 from data_foundry.schema import as_column_list
 from data_foundry.v2.metrics import scorer
 from sklearn.ensemble import HistGradientBoostingClassifier, HistGradientBoostingRegressor, RandomForestRegressor
@@ -84,6 +86,13 @@ def benchmark_by_spec(container: CuratedContainer) -> list[float]:
         encoded = [encode_smiles(df[c], prefix=f"{c}__") for c in smiles]
         df = pd.concat([df, *encoded], axis=1)
         features += [c for frame in encoded for c in frame.columns]
+    spectra = feature_groups(container, "spectrum")
+    if spectra:  # each spectrum row by row, in its recommended encoding; no fitting, so no leak across the folds
+        from data_foundry.v2.spectra import encode_spectrum  # noqa: PLC0415 - scipy only for spectra
+
+        df = df.copy()
+        for group in spectra:
+            df[group.columns] = encode_spectrum(df[group.columns], group.axis, group.recommended_encoding)
     features = [c for c in features if _usable(df[c])]
     score = scorer(container)  # score(y_true, y_pred, row_index): looks up the scoring columns by row index
     labels = list(df[target_name].cat.categories) if task.problem_type != "regression" else None

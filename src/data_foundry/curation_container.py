@@ -16,6 +16,7 @@ from uuid6 import uuid7
 
 from data_foundry.schema import (
     DatasetMetadata,
+    FeatureGroup,
     Grouping,
     MultilineStr,
     PredictiveMLSplitsMetadata,
@@ -77,6 +78,16 @@ def semantic_columns(container: CuratedContainer, semantic_type: str | None = No
         c.column for c in getattr(task, "semantic_columns", None) or () if semantic_type in (None, c.semantic_type)
     }
     return [c for c in container.dataset.columns if c in wanted]
+
+
+def feature_groups(container: CuratedContainer, semantic_type: str | None = None) -> list[FeatureGroup]:
+    """The groups of features that hold one object together (:class:`~data_foundry.schema.FeatureGroup`): every one,
+    or those of ``semantic_type`` (``spectrum``). Their columns are numeric features a model can read as they are; to
+    encode a spectrum as one, e.g. ``data_foundry.v2.spectra.encode_spectrum(container.dataset[group.columns],
+    group.axis, group.recommended_encoding)``. A format-1 container has none.
+    """
+    groups = getattr(container.task_metadata, "feature_groups", None) or ()
+    return [g for g in groups if semantic_type in (None, g.semantic_type)]
 
 
 @dataclass

@@ -6,6 +6,7 @@ from data_foundry.schema import (
     DATA_FOUNDRY_WAREHOUSE_ENV,
     DEFAULT_LOCAL_DATA_DIR,
     DatasetMetadata,
+    FeatureGroup,
     Grouping,
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadata,
@@ -551,3 +552,57 @@ def test_a_semantic_column_takes_only_a_known_type():
     """The semantic types are a closed vocabulary."""
     with pytest.raises(pydantic.ValidationError, match="smiles"):
         SemanticColumn(column="s", semantic_type="protein", description="a sequence")
+
+
+def _group(name="ms", columns=("a", "b", "c"), axis=(1.0, 2.0, 3.0), **kw) -> FeatureGroup:
+    fields = {"technique": "mass_spectrometry", "state": "raw"} | kw
+    return FeatureGroup(
+        name=name,
+        semantic_type="spectrum",
+        columns=list(columns),
+        axis=list(axis),
+        axis_unit="m/z",
+        description="a spectrum",
+        **fields,
+    )
+
+
+@pytest.mark.parametrize(
+    ("kw", "match"),
+    [
+        ({"columns": ("a",), "axis": (1.0,)}, "two columns"),
+        ({"columns": ("a", "a")}, "twice"),
+        ({"axis": (1.0, 2.0)}, "3 columns but 2"),
+        ({"axis": (1.0, 3.0, 2.0)}, "increasing"),
+        ({"state": None}, "technique and state"),
+    ],
+)
+def test_a_feature_group_needs_an_increasing_axis_per_column(kw, match):
+    """A feature group has two columns or more, each once, one increasing axis position each; a spectrum names its
+    technique and state.
+    """
+    with pytest.raises((ValueError, pydantic.ValidationError), match=match):
+        _group(**kw)
+
+
+@pytest.mark.parametrize(
+    ("groups", "semantic", "match"),
+    [
+        ([_group(), _group(columns=("d", "e"), axis=(1.0, 2.0))], [], "name twice"),
+        ([_group(), _group(name="other", columns=("c", "d"), axis=(1.0, 2.0))], [], "two feature groups"),
+        ([_group(columns=("a", "y"), axis=(1.0, 2.0))], [], "features only"),
+        ([_group()], ["b"], "features only"),
+    ],
+)
+def test_feature_groups_hold_features_each_once(groups, semantic, match):
+    """Feature groups have distinct names; a column is in one group at most, and never the target or a semantic
+    column.
+    """
+    with pytest.raises((ValueError, pydantic.ValidationError), match=match):
+        PredictiveMLTaskMetadataV2(
+            target_column_name="y",
+            problem_type="binary_classification",
+            objective_metric=make_spec(),
+            feature_groups=groups,
+            semantic_columns=[SemanticColumn(column=c, semantic_type="smiles", description="m") for c in semantic],
+        )

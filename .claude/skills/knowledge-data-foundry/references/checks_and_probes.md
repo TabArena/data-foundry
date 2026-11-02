@@ -38,7 +38,10 @@ in the README's build record) through `dataset_io.py` and call it. The probes us
 the definition changed the target, run the same checks on the source's labels in a scratch notebook (`ds = workbench()`).
 A SMILES column (`smiles_columns`) enters every probe in the recommended encoding (`encode_smiles`: RDKit's 2D
 descriptors, the MACCS keys and the ECFP4 counts), as a benchmark would give it to a model; the blind reviewer's clean room keeps the
-string. The bundle check `dataset_smiles_column` parses every SMILES with the pinned RDKit.
+string. The bundle check `dataset_smiles_column` parses every SMILES with the pinned RDKit. A spectrum (`spectra`)
+enters every probe in its recommended encoding (`encode_spectrum`: the same columns, a raw mass spectrum through
+MALDIquant's steps), and the clean room keeps it as shipped; the bundle check `dataset_spectrum` checks that its
+columns are present, numeric and finite, and warns about missing intensities.
 
 ```bash
 K=.claude/skills/knowledge-data-foundry/scripts

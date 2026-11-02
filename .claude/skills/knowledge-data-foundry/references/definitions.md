@@ -258,6 +258,14 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
   out of `_feature_types`. The recommended encodings of every kind of column (SMILES, dates, text) are in
   `data_foundry.v2.encodings` (`recommended_encodings()`): RDKit's 2D descriptors with the MACCS keys and the ECFP4 counts for a SMILES,
   skrub's `DatetimeEncoder` as BeyondArena for a date, TF-IDF and e5 sentence embeddings for text (check both).
+* `spectra = (Spectrum(name="serum_ms", prefix="M/Z:", unit="m/z", technique="mass_spectrometry", state="raw",
+  description=...),)`: a spectrum among the features (CLEAN-26), one numeric column per position, named
+  `<prefix><position>`. The columns stay numbers as published; the build records them in axis order as a feature group
+  with the recommended encoding (`feature_groups(container, "spectrum")` lists them; `data_foundry.v2.spectra` has the
+  encodings: MALDIquant's steps for a raw mass spectrum, the spectrum as it is otherwise). `technique` is
+  `mass_spectrometry`, `raman`, `infrared` or `near_infrared`; `state` is `raw`, `processed` or `peaks`, as the source
+  left it; `unit` is `bin` when the source gives no axis. Leave the columns out of `_feature_types`
+  ([spectra.md](../../knowledge-curation/references/spectra.md)).
 
 ### `curation_comments`
 
@@ -313,6 +321,8 @@ The order the collection's definitions converge on. Emit the steps that plausibl
 #       df["SMILES"] = canonical_smiles(df["SMILES"])   # salts as published; stereo kept
 #    then check for rows that are copies to a 2D encoding: `canonical_smiles(df["SMILES"], stereo=False).duplicated()`.
 #    The benchmark encodes it (recommended: `encode_smiles`, RDKit's 2D descriptors, the MACCS keys and the ECFP4 counts).
+#    A spectrum ships as published (CLEAN-26): name its columns `<prefix><position>` and declare it in `spectra`;
+#    never smooth, correct, normalise or align it here: the benchmark encodes it row by row.
 # 7. TODO(verify): drop constant, all-missing and duplicated columns.
 # 8. TODO(verify): drop leaking features (the traps below; leak_checks.md). The most common step in the collection.
 # 9. TODO(verify): duplicate rows: decide and document (leak_checks.md, Copies across the split (LEAK-16 to LEAK-21)).

@@ -47,7 +47,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import pandas as pd
 
@@ -88,6 +88,10 @@ from data_foundry.v2.preprocessing import (
     order_rows,
 )
 from data_foundry.v2.splits import SPLIT_RANDOM_STATE, SplitPlan, Splits, Temporal
+
+if TYPE_CHECKING:
+    from data_foundry.schema import FeatureGroup
+    from data_foundry.v2.spectra import Spectrum
 
 DEFINITION_FILENAME = "dataset.py"
 """The file that holds a dataset's definition, one per dataset folder."""
@@ -328,6 +332,13 @@ class AbstractCuratedDataset(ABC):
     container as :class:`~data_foundry.schema.SemanticColumn` (type ``smiles``, with the recommended encoding's spec
     id), so a benchmark encodes them as structures and never reads them as text. Ship the form
     :func:`~data_foundry.v2.chemistry.canonical_smiles` gives; leave them out of :meth:`_feature_types`."""
+    spectra: ClassVar[tuple[Spectrum, ...]] = ()
+    """Spectra among the features (CLEAN-26): ``Spectrum(name=..., prefix=..., unit=..., technique=..., state=...,
+    description=...)`` (:class:`~data_foundry.v2.spectra.Spectrum`), whose columns are ``<prefix><position>``. They
+    stay numeric features as published, and the container records each as a
+    :class:`~data_foundry.schema.FeatureGroup` (the columns in axis order, the positions, the recommended encoding), so
+    a benchmark can encode the spectrum as one; never process them in ``_clean``. Leave them out of
+    :meth:`_feature_types`."""
     stratify_on: ClassVar[Any] = AUTO
     """Column(s) to stratify on. Default: the target for classification, nothing for regression."""
     grouping: ClassVar[Grouping | None] = None
@@ -556,6 +567,7 @@ class AbstractCuratedDataset(ABC):
             declared["grouping.time_on"] = as_column_list(self.grouping.time_on)
         declared["scoring_columns"] = [c.column for c in task.scoring_columns]
         declared["smiles_columns"] = list(self.smiles_columns)
+        self.feature_groups(df)  # every spectrum's prefix matches at least two columns with a position
         declared["metric inputs"] = list(task.objective_metric.inputs.values())
         for attribute, columns in declared.items():
             missing = [c for c in columns if c not in df.columns]
@@ -612,6 +624,13 @@ class AbstractCuratedDataset(ABC):
                 "types it; leave it out of `_feature_types`."
             )
             raise DatasetDefinitionError(msg)
+        spectral = {c for group in self.feature_groups(df) for c in group.columns}
+        if listed & spectral:
+            msg = (
+                f"{type(self).__name__}: {sorted(listed & spectral)[:5]} is a column of a spectrum (`spectra`), a "
+                "number; leave it out of `_feature_types`."
+            )
+            raise DatasetDefinitionError(msg)
         if self.problem_type != "regression" and self.target not in listed and self.target in df.columns:
             types = FeatureTypes(
                 categorical=(*types.categorical, self.target),
@@ -620,6 +639,16 @@ class AbstractCuratedDataset(ABC):
                 ordinal=types.ordinal,
             )
         return types
+
+    def feature_groups(self, df: pd.DataFrame) -> list[FeatureGroup]:
+        """The container's record of the definition's ``spectra`` for the columns of ``df``, in declaration order."""
+        return [spectrum.feature_group(df.columns) for spectrum in self.spectra]
+
+    def task_metadata_for(self, df: pd.DataFrame) -> PredictiveMLTaskMetadataV2:
+        """:attr:`task_metadata` with the feature groups of ``df`` (the spectra's columns depend on the frame)."""
+        if not self.spectra:
+            return self.task_metadata
+        return dataclasses.replace(self.task_metadata, feature_groups=self.feature_groups(df))
 
     @property
     def df(self) -> pd.DataFrame:
@@ -814,7 +843,7 @@ class AbstractCuratedDataset(ABC):
             return CuratedContainer(
                 dataset=plan.df,
                 dataset_metadata=self.dataset_metadata,
-                task_metadata=self.task_metadata,
+                task_metadata=self.task_metadata_for(plan.df),
                 experiment_metadata=splits_metadata,
                 test_dataset=test,
                 version_comment=self.dataset_metadata.version_comment,
@@ -1369,6 +1398,14 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         fail("`scoring_columns` must be a tuple of `ScoringColumn(...)`.")
     if isinstance(cls.smiles_columns, str) or not all(isinstance(c, str) for c in cls.smiles_columns):
         fail("`smiles_columns` must be a tuple of column names.")
+    from data_foundry.v2.spectra import Spectrum  # noqa: PLC0415 - spectra imports this module
+
+    if not isinstance(cls.spectra, tuple) or not all(isinstance(s, Spectrum) for s in cls.spectra):
+        fail("`spectra` must be a tuple of `Spectrum(...)`.")
+    if len({s.name for s in cls.spectra}) != len(cls.spectra) or len({s.prefix for s in cls.spectra}) != len(
+        cls.spectra
+    ):
+        fail("two `spectra` share a name or a prefix.")
     if cls.temporal is not None and not isinstance(cls.temporal, Temporal):
         fail("`temporal` must be a `Temporal(...)`.")
     if cls.grouping is not None and cls.temporal is not None:

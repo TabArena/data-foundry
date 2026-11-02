@@ -466,6 +466,8 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
     constant, all_missing, id_like, unused_categories, sentinel_hits, string_missing = [], [], [], [], [], []
     # a structure (a SMILES column) is unique per molecule by nature: an input, not a row id
     semantic = {c.column for c in getattr(ctx.task, "semantic_columns", None) or ()}
+    # a spectrum's intensity of 999 is a reading like any other, not a code for a missing value
+    spectral = {c for g in getattr(ctx.task, "feature_groups", None) or () for c in g.columns}
     for column in df.columns:
         series = df[column]
         n_unique = series.nunique(dropna=True)
@@ -488,7 +490,8 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
             if hits:
                 string_missing.append((column, sorted(hits)))
 
-        if pd.api.types.is_numeric_dtype(series) and not pd.api.types.is_bool_dtype(series) and n_unique > 2:
+        numeric = pd.api.types.is_numeric_dtype(series) and not pd.api.types.is_bool_dtype(series)
+        if numeric and n_unique > 2 and column not in spectral:
             value_counts = series.value_counts(dropna=True)
             if len(value_counts):
                 most_common = float(value_counts.index[0])
@@ -593,6 +596,57 @@ def _check_dataset_smiles_columns(ctx: _Ctx) -> Iterator[CheckResult]:
                 "error",
                 f"RDKit cannot parse {len(invalid):,} value(s) of the SMILES column `{column}`, e.g. {invalid[:3]}.",
                 hint="Repair or drop them in `_clean`; ship `canonical_smiles(...)`.",
+            )
+
+
+@_check
+def _check_dataset_spectra(ctx: _Ctx) -> Iterator[CheckResult]:
+    """A spectrum (a :class:`~data_foundry.schema.FeatureGroup` of type ``spectrum``) has its columns in the frame,
+    each numeric and finite; a missing value is flagged, and a negative intensity in a raw mass spectrum noted.
+    """
+    df = ctx.df
+    groups = [g for g in getattr(ctx.task, "feature_groups", None) or () if g.semantic_type == "spectrum"]
+    if df is None or not groups:
+        return
+    for group in groups:
+        absent = [c for c in group.columns if c not in df.columns]
+        if absent:
+            yield CheckResult(
+                "dataset_spectrum",
+                "error",
+                f"Spectrum `{group.name}`: {len(absent):,} column(s) are not in the frame, e.g. {absent[:3]}.",
+            )
+            continue
+        values = df[group.columns]
+        not_numeric = [
+            c for c in group.columns if not pd.api.types.is_numeric_dtype(values[c]) or values[c].dtype == bool
+        ]
+        if not_numeric:
+            yield CheckResult(
+                "dataset_spectrum",
+                "error",
+                f"Spectrum `{group.name}`: {len(not_numeric):,} column(s) are not numeric, e.g. {not_numeric[:3]}.",
+                hint="A spectrum's columns are intensities; leave them out of `_feature_types`.",
+            )
+            continue
+        array = values.to_numpy(dtype="float64", na_value=np.nan)
+        missing = int(np.isnan(array).any(axis=1).sum())
+        if missing:
+            yield CheckResult(
+                "dataset_spectrum",
+                "warning",
+                f"Spectrum `{group.name}`: {missing:,} row(s) have a missing intensity; the processing encodings "
+                "return such a spectrum as missing.",
+                hint="Drop the rows or say in the curation notes why they stay.",
+            )
+        if np.isinf(array).any():
+            yield CheckResult("dataset_spectrum", "error", f"Spectrum `{group.name}` has infinite intensities.")
+        if group.technique == "mass_spectrometry" and group.state == "raw" and np.nanmin(array) < 0:
+            yield CheckResult(
+                "dataset_spectrum_negative",
+                "info",
+                f"Spectrum `{group.name}`: {int((array < 0).any(axis=1).sum()):,} raw mass spectra have negative "
+                "intensities; the recommended encoding counts them as 0 before the square root.",
             )
 
 

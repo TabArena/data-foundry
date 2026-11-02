@@ -4,6 +4,51 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-11-02, spectra declared as feature groups with recommended encodings (PR #21)
+
+Andrej's proposal in PR #21 (a default preprocessing for spectra in the evaluation pipeline, the data kept as
+published), built on the path the SMILES columns took in PR #15. New rule CLEAN-26 and the guide
+`knowledge-curation/references/spectra.md`; the weighed factor "raw spectral bins lean out" under SEL-15 is amended:
+a declared spectrum is in scope unless a spectrum model is clearly better (SEL-12).
+
+- **Package.** A definition declares a spectrum in `spectra = (Spectrum(...),)`: its columns `<prefix><position>`, the
+  unit, the technique (`mass_spectrometry`, `raman`, `infrared`, `near_infrared`) and the state the source left it in
+  (`raw`, `processed`, `peaks`). The container records it in `task_metadata.feature_groups` (`FeatureGroup`: the
+  columns in axis order, the positions, the recommended encoding's spec id); `feature_groups(container, "spectrum")`
+  lists them. The columns stay numeric features, so a pipeline that ignores the groups runs as before.
+  `data_foundry.v2.spectra` has the encodings, each per spectrum with no fitting:
+  - `ms-sqrt-sg21-snip100-tic-r1` for a raw mass spectrum: MALDIquant's vignette steps (square root, Savitzky-Golay
+    over 21 points, SNIP baseline over 100 iterations, total ion current);
+  - `spectrum-as-is-r1` for a peak list, a processed spectrum and a vibrational spectrum, since RamanBench's leading
+    methods read raw spectra;
+  - `vib-als-snv-r1`, RamanBench's linear-model default (ALS baseline, SNV), the alternative to check on the first
+    vibrational datasets.
+  A new bundle check `dataset_spectrum`; the sentinel check skips spectrum bins (pancreatic's bin at m/z 6,496 holds
+  999 ion counts in 1.7% of the spectra, a reading); the probes see a spectrum in its recommended encoding, the clean
+  room as shipped.
+- **`pancreatic_cancer_mouse_detection`:** the serum spectrum is declared `raw` (`serum_ms`, 6,771 bins of 400 ppm, m/z
+  800 to 11,993). The data is unchanged; the README's bundle checks lose the sentinel warning.
+- **`micro_mass`:** the spectrum is declared `peaks` (`vitek_ms_peaks`, 1,082 of the 1,300 bins, the bin number as the
+  axis since the source gives no m/z). The data is unchanged.
+- **Measured** on pancreatic's 60 shipped splits, ROC AUC, raw bins / the recommended encoding / a reconstruction of
+  PR #21's chain (smoothing over 11 bins, a rolling-minimum baseline, division by the total, a log; the PR gives no
+  polynomial order or window, so order 2 and 101 bins). In parentheses, the splits where the default beats raw:
+
+  | Model | Raw | Recommended | PR #21's chain |
+  |---|---|---|---|
+  | TabPFN v3.5 | 0.659 | 0.690 (44/60) | 0.716 |
+  | HistGradientBoosting | 0.585 | 0.685 (55/60) | 0.642 |
+  | LightGBM | 0.577 | 0.676 (53/60) | 0.649 |
+  | Random forest | 0.536 | 0.681 (60/60) | 0.657 |
+  | PLS-DA, 5 components | 0.635 | 0.691 (47/60) | 0.713 |
+  | Logistic regression | 0.663 | 0.646 (26/60) | 0.708 |
+
+  The default stays the published workflow; PR #21's log suits TabPFN and the linear models better, which is one
+  decision for all raw mass spectra (open with the curator). TabPFN ran on one GPU (SkyPilot managed job 29360);
+  scripts and per-split results in `local-data-warehouse/_runs/2026-11-02_spectra/`.
+- **Benchmark:** `BENCHMARK_CHANGES_TODO.md`, "Spectra (feature groups)".
+- Not rebuilt; both builds were already stale.
+
 ## 2026-11-02, `nci_aids_antiviral_screen` ships the field's binary target; `hiva_agnostic` retired (PR #15)
 
 The curator's marks on the review page of 2026-11-02, applied.

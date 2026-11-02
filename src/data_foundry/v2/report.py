@@ -164,6 +164,16 @@ def report_frontmatter(result: CurationResult, *, previous: dict[str, Any] | Non
                 if getattr(task, "semantic_columns", None)
                 else {}
             ),
+            **(
+                {
+                    "feature_groups": {
+                        g.name: f"{g.semantic_type} ({g.technique}, {g.state}; {len(g.columns)} columns)"
+                        for g in task.feature_groups
+                    }
+                }
+                if getattr(task, "feature_groups", None)
+                else {}
+            ),
         },
         "splits": {
             "n_repeats": len(splits_meta.splits),
@@ -363,7 +373,7 @@ def _dataset_section(result: CurationResult, fm: dict[str, Any]) -> list[str]:
     if meta.version_from_unique_name:
         rows.append(("version of", meta.version_from_unique_name))
     rows += [("rows x columns", f"{df.shape[0]:,} x {df.shape[1]:,}")]
-    skip = ("grouping", "metric_origin", "scoring_columns", "semantic_columns")
+    skip = ("grouping", "metric_origin", "scoring_columns", "semantic_columns", "feature_groups")
     rows += [(f"task.{k}", v) for k, v in fm["task"].items() if v is not None and k not in skip]
     out = ["## Dataset and task", "", _table(pd.DataFrame(rows, columns=["field", "value"]), full=True), ""]
     out += _metric_block(container.task_metadata)
@@ -386,7 +396,17 @@ def _dataset_section(result: CurationResult, fm: dict[str, Any]) -> list[str]:
     lines = [
         f"- {kind} ({len(cols)}): {', '.join(f'`{c}`' for c in cols) if cols else 'none'}" for kind, cols in groups
     ]
+    # a spectrum's columns are numbers; one line per spectrum, from its first to its last column
+    spectra = getattr(container.task_metadata, "feature_groups", None) or []
+    for g in spectra:
+        lines.append(
+            f"- spectrum `{g.name}` ({len(g.columns):,} numeric columns): `{g.columns[0]}` to `{g.columns[-1]}`, "
+            f"{g.axis_unit} {g.axis[0]:g} to {g.axis[-1]:g}; {g.technique}, {g.state}; recommended encoding "
+            f"`{g.recommended_encoding}`"
+        )
     counts = ", ".join(f"{len(cols)} {kind}" for kind, cols in groups)
+    if spectra:
+        counts += ", " + ", ".join(f"spectrum {g.name} ({len(g.columns):,})" for g in spectra)
     out += _details(f"Feature types: {counts}", "\n".join(lines))
     out += _details("BibTeX", _fence(meta.academic_reference_bibtex, "bibtex"))
     return out

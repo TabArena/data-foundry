@@ -18,14 +18,22 @@ from data_foundry.v2.encodings import (
 )
 
 
-def test_the_recommendations_cover_smiles_dates_and_text_with_two_text_encodings() -> None:
-    """One encoding for SMILES and dates; two for text, to be compared."""
+def test_the_recommendations_cover_smiles_dates_text_and_spectra_with_two_text_encodings() -> None:
+    """One encoding for SMILES and dates; two for text, to be compared; one per kind of spectrum, two for a
+    vibrational one.
+    """
     recommended = recommended_encodings()
 
-    assert set(recommended) == {"smiles", "datetime", "text"}
+    spectra = {"mass_spectrum", "processed_spectrum", "vibrational_spectrum"}
+    assert set(recommended) == {"smiles", "datetime", "text", *spectra}
     assert recommended["datetime"] == (DATETIME_ENCODING,)
     assert recommended["text"] == (TEXT_TFIDF_ENCODING, TEXT_E5_ENCODING)
-    assert all(encoding.kind == kind for kind, specs in recommended.items() for encoding in specs)
+    assert len(recommended["vibrational_spectrum"]) == 2
+    assert all(
+        encoding.kind == ("spectrum" if kind in spectra else kind)
+        for kind, specs in recommended.items()
+        for encoding in specs
+    )
     assert recommended["smiles"][0].id.startswith("rdkit2d-maccs-ecfp4-rdkit")
 
 

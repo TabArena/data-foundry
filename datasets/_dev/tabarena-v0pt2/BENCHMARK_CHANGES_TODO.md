@@ -177,6 +177,35 @@ tabarena-v0.2 with good time keeping and adding it on top of the benchmark recor
   preprocessing may be disable-able"): a method that brings its own encoding of SMILES, text or dates gets the raw
   column.
 
+## Spectra (feature groups)
+
+Added 2026-11-02 (PR #21, Andrej's proposal, with Lennart's decisions: spectra as typed feature groups, full
+resolution, the field's published defaults). Data Foundry side done; nothing changes for a pipeline that ignores the
+groups, since the bins stay numeric features.
+
+- [ ] **Read `feature_groups` in the adapter.** A v0.2 container lists its spectra in `task_metadata.feature_groups`
+  (`data_foundry.schema.FeatureGroup`: `name`, `semantic_type` `spectrum`, `columns` in axis order, `axis`,
+  `axis_unit`, `technique`, `state` `raw` / `processed` / `peaks`, `recommended_encoding`);
+  `data_foundry.curation_container.feature_groups(container, "spectrum")` lists them. Datasets:
+  pancreatic_cancer_mouse_detection (raw SELDI-TOF, 6,771 bins) and micro_mass (a VITEK MS peak list, 1,082 bins);
+  about 40 Raman, infrared and near-infrared candidates are queued. Map the columns to an AutoGluon special type
+  `spectrum`, one group per spectrum.
+- [ ] **A spectrum feature generator** that encodes each group row by row with its `recommended_encoding`
+  (`data_foundry.v2.spectra.encode_spectrum(frame, group.axis, group.recommended_encoding)`): for a raw mass spectrum
+  MALDIquant's steps (`ms-sqrt-sg21-snip100-tic-r1`), for anything else the columns as they are
+  (`spectrum-as-is-r1`). No fitting, no labels, so the same values in every split; it costs milliseconds per spectrum,
+  so it needs no cache, but its time counts in each method's fit time like the cached encodings. Switchable per
+  method: a method that processes spectra itself gets the raw bins.
+- [ ] **Width goes to the feature-limit step**, not to the encoding: the encodings keep every bin (Lennart,
+  2026-11-02). Averaging adjacent bins costs little (PR #21: TabPFN 3.5 0.733 against 0.725 with 8-bin averages on
+  pancreatic) if a model needs fewer columns.
+- [ ] **PLS-DA as a reference method for spectra.** It is the field's usual linear method, and on raw mass spectra it
+  ranks differently from the tabular models (PR #21: third on the raw bins, first on the processed ones).
+- [ ] **Vibrational spectra: check both encodings on the first datasets.** RamanBench (arXiv:2605.02003) ran its
+  leading methods (AutoGluon 1.5, TabPFN v2.5, TabICL v2) on the raw spectra and preprocessed only for its chemometric
+  baselines, so the default is the spectrum as it is; `vib-als-snv-r1` (an ALS baseline and SNV, RamanBench's
+  linear-model default) is the alternative to measure when the first Raman or infrared dataset is added.
+
 ## Ordinal features
 
 - [ ] **Keep the order of an ordered category in the pipeline, and give it to the models.** v0.2 containers store
