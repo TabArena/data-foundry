@@ -261,9 +261,10 @@ permutes the feature order when it runs.
 ### Molecules
 
 **CLEAN-24 (Should; amended 2026-11-01, Lennart).** A molecule's structure ships as a SMILES column marked as a
-structure, never as plain text and never pre-encoded: the definition lists it in `smiles_columns` (RDKit's canonical
-form, `canonical_smiles`), the container records it as a semantic column of type `smiles` with the recommended
-encoding, and the benchmark encodes it, as it encodes dates and text. The recommended encoding is RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts (`encode_smiles`, one pinned RDKit); a benchmark may use its own. A SMILES read as
+structure, never as plain text and never pre-encoded: the definition declares it as a special feature in one column,
+`special_features = (Smiles(column="SMILES"),)` (RDKit's canonical form, `canonical_smiles`), the container records it
+as a special feature of kind `smiles` with the recommended encoding, and the benchmark encodes it, as it encodes dates
+and text. The recommended encoding is RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts (`encode_smiles`, one pinned RDKit); a benchmark may use its own. A SMILES read as
 text adds nothing (character n-grams: -0.025 to +0.010 ROC AUC next to descriptors; a text embedding: nothing on
 apistox), a fixed encoding of the structure does, and the MACCS keys add 0.02 on drug_induced_autoimmunity_prediction
 without costing more than 0.006 elsewhere. Source columns computed from the same structure are one modelling choice of
@@ -280,8 +281,9 @@ qsar_oral_toxicity, qsar_tid_11.
 
 **CLEAN-26 (Should; 2026-11-02, Lennart, on Andrej's PR #21).** A spectrum ships as the source publishes it, one
 numeric column per position on its axis, and is declared as a spectrum, never processed in the data: the definition
-lists it in `spectra` (the columns `<prefix><position>`, the unit, the technique, and the state the source left it in:
-`raw`, `processed` or `peaks`), the container records it as a feature group, and the benchmark encodes it row by row,
+declares it as a special feature in a group of columns, `special_features = (Spectrum(name=..., prefix=..., ...),)` (the
+columns `<prefix><position>`, the unit, the technique, and the state the source left it in: `raw`, `processed` or
+`peaks`), the container records it as a special feature of kind `spectrum`, and the benchmark encodes it row by row,
 as it encodes a SMILES, a date or text. The processing has free choices (window, baseline method, normalisation), so
 written into the data one of them becomes the task and a method that processes spectra itself loses the signal. The
 recommended encoding follows the field's published default, never a tuning on our folds: MALDIquant's steps for a raw
@@ -368,7 +370,9 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 
 ## In Data Foundry
 
-A spectrum is declared in `spectra = (Spectrum(...),)`; its encodings are in `data_foundry.v2.spectra`
-([spectra.md](spectra.md), "In Data Foundry"). The order of these steps in `_clean`, the helpers (`drop_columns`,
+A SMILES and a spectrum are special features, declared in `special_features` (`Smiles(column=...)`, one column;
+`Spectrum(name=..., prefix=...)`, a group of columns; `data_foundry.v2.special`); their encodings are in
+`data_foundry.v2.chemistry` and `data_foundry.v2.spectra` ([molecules.md](molecules.md) and [spectra.md](spectra.md),
+"In Data Foundry"). The order of these steps in `_clean`, the helpers (`drop_columns`,
 `canonical_smiles`, `anonymize_ids`) and the bundle checks that catch what is missed: [definitions.md](../../knowledge-data-foundry/references/definitions.md),
 "The preprocessing recipe".

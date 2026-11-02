@@ -5,9 +5,16 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 import pytest
-from data_foundry.v2 import Spectrum, encode_spectrum, spectra, spectrum_encoding
-from data_foundry.v2.dataset import DatasetDefinitionError
+from data_foundry.v2 import (
+    Spectrum,
+    encode_special_feature,
+    encode_spectrum,
+    encodings_for,
+    spectra,
+    spectrum_encoding,
+)
 from data_foundry.v2.encodings import recommended_encodings
+from data_foundry.v2.special import SpecialFeatureError
 from data_foundry.v2.spectra import (
     AS_IS_ENCODING,
     CROMWELL_FILTER,
@@ -108,21 +115,54 @@ def test_the_default_follows_the_technique_and_the_state() -> None:
     assert spectrum_encoding("mass_spectrometry", "raw") == MS_RAW_ENCODING
     assert spectrum_encoding("mass_spectrometry", "peaks") == AS_IS_ENCODING
     assert spectrum_encoding("raman", "raw") == AS_IS_ENCODING
-    encodings = recommended_encodings()
-    assert encodings["mass_spectrum"] == (MS_RAW_ENCODING, DRIAMS_ENCODING, CROMWELL_LOG2_ENCODING)
-    assert encodings["vibrational_spectrum"] == (AS_IS_ENCODING, VIBRATIONAL_ALS_SNV_ENCODING)
+
+    def record(technique: str, state: str):
+        spectrum = Spectrum(name="s", prefix="x_", unit="nm", technique=technique, state=state, description="d")
+        return spectrum.record(["x_1", "x_2"])
+
+    assert encodings_for(record("mass_spectrometry", "raw")) == (
+        MS_RAW_ENCODING,
+        DRIAMS_ENCODING,
+        CROMWELL_LOG2_ENCODING,
+    )
+    assert encodings_for(record("mass_spectrometry", "peaks")) == (AS_IS_ENCODING,)
+    assert encodings_for(record("raman", "raw")) == (AS_IS_ENCODING, VIBRATIONAL_ALS_SNV_ENCODING)
+    assert set(recommended_encodings()["spectrum"]) == set(spectra.SPECTRUM_ENCODINGS.values())
+    assert all(e.scope == "row" for e in spectra.SPECTRUM_ENCODINGS.values())
     assert MS_RAW_ENCODING.id == "ms-sqrt-sg21-snip100-tic-r1"
 
 
 def test_a_spectrum_reads_its_columns_in_axis_order() -> None:
     """The declaration finds its columns by prefix, orders them by position and refuses two equal positions."""
-    spectrum = Spectrum("s", prefix="cm_", unit="cm-1", technique="raman", state="raw", description="d")
-    columns, axis = spectrum.columns(["id", "cm_1200", "cm_400.5", "cm_800", "y"])
-    assert (columns, axis) == (["cm_400.5", "cm_800", "cm_1200"], [400.5, 800.0, 1200.0])
-    group = spectrum.feature_group(["cm_1", "cm_2"])
-    assert (group.semantic_type, group.recommended_encoding) == ("spectrum", AS_IS_ENCODING.id)
-    with pytest.raises(DatasetDefinitionError, match="same position"):
-        spectrum.columns(["cm_1", "cm_1.0"])
+    spectrum = Spectrum(name="s", prefix="cm_", unit="cm-1", technique="raman", state="raw", description="d")
+    columns, details = spectrum.resolve(["id", "cm_1200", "cm_400.5", "cm_800", "y"])
+    assert (columns, details.axis) == (["cm_400.5", "cm_800", "cm_1200"], [400.5, 800.0, 1200.0])
+    record = spectrum.record(["cm_1", "cm_2"])
+    assert (record.kind, record.layout, record.recommended_encoding) == ("spectrum", "group", AS_IS_ENCODING.id)
+    with pytest.raises(SpecialFeatureError, match="same position"):
+        spectrum.resolve(["cm_1", "cm_1.0"])
+
+
+def test_encode_special_feature_replaces_the_columns_where_they_stand() -> None:
+    """A spectrum keeps its columns with new values, the other columns untouched; an encoding that is no candidate of
+    the feature is refused.
+    """
+    frame, _ = _spectra()
+    frame.insert(0, "id", range(len(frame)))
+    frame["y"] = 1
+    spectrum = Spectrum(name="s", prefix="mz_", unit="m/z", technique="mass_spectrometry", state="raw", description="d")
+    feature = spectrum.record(frame.columns)
+    out = encode_special_feature(frame, feature)
+    assert list(out.columns) == list(frame.columns)
+    assert out["id"].tolist() == frame["id"].tolist()
+    np.testing.assert_allclose(
+        out[feature.columns].to_numpy(),
+        encode_spectrum(frame[feature.columns], feature.details.axis, MS_RAW_ENCODING).to_numpy(),
+    )
+    driams = encode_special_feature(frame, feature, DRIAMS_ENCODING.id)
+    assert not np.allclose(driams[feature.columns].to_numpy(), out[feature.columns].to_numpy())
+    with pytest.raises(ValueError, match="no encoding of"):
+        encode_special_feature(frame, feature, VIBRATIONAL_ALS_SNV_ENCODING)
 
 
 def test_driams_removes_the_baseline_twice_and_the_scale() -> None:

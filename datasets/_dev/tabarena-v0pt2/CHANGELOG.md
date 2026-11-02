@@ -4,6 +4,32 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-11-02, special features: SMILES and spectra under one declaration (PR #21)
+
+Lennart: the metadata for SMILES and spectra should be one general form, declared like the target column, so later
+kinds (a shipped embedding, a sequence) fit without a new attribute or field. `smiles_columns` (PR #15) and `spectra`
+(earlier today) are replaced by one attribute, and `task_metadata.semantic_columns` and `feature_groups` by one list.
+No container had been built with either.
+
+- **Definitions** declare `special_features = (...)`. Each entry is one special feature in one of two layouts: one
+  column, `Smiles(column="SMILES")` (a `SpecialColumn`), or a group of columns that hold one object together,
+  `Spectrum(name="serum_ms", prefix="M/Z:", ...)` (a `SpecialColumnGroup`). The 9 SMILES definitions (apistox,
+  drug_induced_autoimmunity_prediction, nci_aids_antiviral_screen, qsar_aquatic_toxicity, qsar_bioconcentration,
+  qsar_biodeg, qsar_fish_toxicity, qsar_oral_toxicity, qsar_tid_11) and the two spectra (pancreatic_cancer_mouse_detection,
+  micro_mass) moved over; their data and splits are unchanged. A definition that still sets `smiles_columns` or
+  `spectra` is refused with a pointer to `special_features`.
+- **The container** lists each in `task_metadata.special_features` (`SpecialFeature`: name, kind, layout, columns,
+  `encoding_required`, the recommended encoding, and `details` for what the kind adds: a spectrum's axis, unit,
+  technique, state). `special_features(container, kind)` lists them, and
+  `data_foundry.v2.special.encode_special_feature(df, feature)` encodes one in place of its columns, whatever the
+  kind. `encodings_for(feature)` gives the candidates, the recommended one first.
+- **One registry by kind** (`data_foundry.v2.special`): each kind fixes its layout, the dtype it casts to, its bundle
+  checks and its encodings. The two kind-specific bundle checks became one, `dataset_special_feature`, which runs
+  each kind's checks under their old slugs (27 checks per dataset instead of 28). Every `Encoding` now declares its
+  cache `scope`: `value`, `row` or `split`.
+- **READMEs:** the front matter's `semantic_columns` and `feature_groups` become `special_features`, and the feature
+  list gets one line per special feature. `dataset check` is clean on all 11.
+
 ## 2026-11-02, raw mass spectra: two published candidate encodings; the default left to the benchmark (PR #21)
 
 The literature names no single best preprocessing of a raw mass spectrum, and the default is a benchmark choice

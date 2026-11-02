@@ -1,13 +1,15 @@
 """Spectra in tabular data: how a definition declares one, and its recommended encodings (CLEAN-26, 2026-11-02).
 
 A spectrum ships as the source publishes it: one column per position on its axis (an m/z, a wavenumber, a bin), named
-``<prefix><position>``. The definition declares it in ``spectra = (Spectrum(...),)``, and the container records it as a
-:class:`~data_foundry.schema.FeatureGroup` of type ``spectrum``: the columns in axis order, their positions, the
-technique and what the source did to the values (``raw``, ``processed`` or ``peaks``). Each column stays a numeric
-feature, so a model can read the bins as they are; a benchmark that knows the group encodes the spectrum row by row
-instead, with the recommended encoding or its own. The processing has free choices (window, baseline method), so it
-belongs in the benchmark, where every method gets the same default and a method can switch it off, not in the data
-(PR #21, Andrej Tschalzev, 2026-10-21).
+``<prefix><position>``. The definition declares it as a special feature in a group of columns,
+``special_features = (Spectrum(name=..., prefix=..., ...),)``, and the container records it as a
+:class:`~data_foundry.schema.SpecialFeature` of kind ``spectrum`` (layout ``group``): the columns in axis order and
+:class:`~data_foundry.schema.SpectrumDetails` (their positions, the unit, the technique and what the source did to the
+values: ``raw``, ``processed`` or ``peaks``). Each column stays a numeric feature, so a model can read the bins as they
+are; a benchmark that knows the feature encodes the spectrum row by row instead, with the recommended encoding or its
+own (:func:`~data_foundry.v2.special.encode_special_feature`). The processing has free choices (window, baseline
+method), so it belongs in the benchmark, where every method gets the same default and a method can switch it off, not
+in the data (PR #21, Andrej Tschalzev, 2026-10-21).
 
 =========================================  ===============================  =======================================
 spectrum                                   recommended (:func:`spectrum_encoding`)  what it computes
@@ -61,16 +63,21 @@ default is the spectrum as it is, with ALS and SNV the alternative to check on t
 from __future__ import annotations
 
 import math
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Iterator, Sequence
 from dataclasses import dataclass
+from typing import TYPE_CHECKING, ClassVar
 
 import numpy as np
 import pandas as pd
 
-from data_foundry.schema import FeatureGroup, SpectrumState, SpectrumTechnique
+from data_foundry.schema import SpectrumDetails, SpectrumState, SpectrumTechnique
 from data_foundry.v2._optional import import_build_dependency
-from data_foundry.v2.dataset import DatasetDefinitionError
 from data_foundry.v2.encodings import Encoding
+from data_foundry.v2.special import SpecialColumnGroup, SpecialFeatureError
+
+if TYPE_CHECKING:
+    from data_foundry.bundle_checks import CheckResult
+    from data_foundry.schema import SpecialFeature
 
 MS_HALF_WINDOW = 10
 """MALDIquant's ``halfWindowSize`` for the Savitzky-Golay smoothing: a 21-point window (the vignette's value)."""
@@ -115,6 +122,7 @@ ALS_ITERATIONS = 10
 """RamanBench's reweighting iterations of the baseline."""
 
 MS_RAW_ENCODING = Encoding(
+    scope="row",
     kind="spectrum",
     name=f"ms-sqrt-sg{2 * MS_HALF_WINDOW + 1}-snip{MS_SNIP_ITERATIONS}-tic",
     revision=1,
@@ -129,6 +137,7 @@ MS_RAW_ENCODING = Encoding(
 """The recommended encoding of a raw mass spectrum."""
 
 DRIAMS_ENCODING = Encoding(
+    scope="row",
     kind="spectrum",
     name=f"ms-driams-sqrt-sg{2 * MS_HALF_WINDOW + 1}-snip20-snip100-tic",
     revision=1,
@@ -144,6 +153,7 @@ DRIAMS_ENCODING = Encoding(
 spectra."""
 
 CROMWELL_LOG2_ENCODING = Encoding(
+    scope="row",
     kind="spectrum",
     name="ms-cromwell-udwt-mm-tic-log2",
     revision=1,
@@ -160,6 +170,7 @@ CROMWELL_LOG2_ENCODING = Encoding(
 chain follows."""
 
 AS_IS_ENCODING = Encoding(
+    scope="row",
     kind="spectrum",
     name="spectrum-as-is",
     revision=1,
@@ -168,6 +179,7 @@ AS_IS_ENCODING = Encoding(
 """The recommended encoding of a processed spectrum or a peak list, and of a vibrational spectrum."""
 
 VIBRATIONAL_ALS_SNV_ENCODING = Encoding(
+    scope="row",
     kind="spectrum",
     name="vib-als-snv",
     revision=1,
@@ -186,38 +198,34 @@ SPECTRUM_ENCODINGS = {
 """Every spectrum encoding, by spec id."""
 
 
-@dataclass(frozen=True)
-class Spectrum:
-    """A definition's declaration of a spectrum: its columns are ``<prefix><position>`` (CLEAN-26).
+@dataclass(frozen=True, kw_only=True)
+class Spectrum(SpecialColumnGroup):
+    """A special feature in a group of columns: one spectrum per row, its columns ``<prefix><position>`` (CLEAN-26),
+    e.g. ``special_features = (Spectrum(name="serum_ms", prefix="M/Z:", unit="m/z", technique="mass_spectrometry",
+    state="raw", description=...),)``.
 
     The build takes every column whose name starts with ``prefix``, reads the rest of the name as the position on the
-    axis, orders the columns by it and records them as a :class:`~data_foundry.schema.FeatureGroup` with the
-    recommended encoding (:func:`spectrum_encoding`). Leave the columns out of ``_feature_types``: they are numbers.
+    axis, orders the columns by it and records them with :class:`~data_foundry.schema.SpectrumDetails` and the
+    recommended encoding (:func:`spectrum_encoding`). The columns stay numbers as published; leave them out of
+    ``_feature_types``.
     """
 
-    name: str
-    """The spectrum's name in the container, e.g. ``serum_ms``."""
-    prefix: str
-    """The start of every column name of the spectrum, e.g. ``M/Z:`` for ``M/Z:800.32``."""
+    kind: ClassVar[str] = "spectrum"
+    encoding_required: ClassVar[bool] = False
     unit: str
     """The unit of the positions: ``m/z``, ``cm-1``, ``nm``, or ``bin`` when the source gives only a bin number."""
     technique: SpectrumTechnique
     """How it was measured: ``mass_spectrometry``, ``raman``, ``infrared`` or ``near_infrared``."""
     state: SpectrumState
     """What the source did to it: ``raw``, ``processed`` or ``peaks``."""
-    description: str
-    """The instrument, the range and the resolution, and what the source did to the values."""
 
-    def columns(self, names: Iterable[str]) -> tuple[list[str], list[float]]:
-        """The spectrum's columns among ``names``, in axis order, and their positions.
+    def resolve(self, names: Iterable[str]) -> tuple[list[str], SpectrumDetails]:
+        """The spectrum's columns among ``names``, in axis order, and their details.
 
         Raises:
-            DatasetDefinitionError: Fewer than two columns match, a position does not parse, or two are equal.
+            SpecialFeatureError: Fewer than two columns match, a position does not parse, or two are equal.
         """
-        matched = [n for n in names if isinstance(n, str) and n.startswith(self.prefix)]
-        if len(matched) < 2:
-            msg = f"Spectrum {self.name!r}: {len(matched)} column(s) start with {self.prefix!r}; a spectrum needs two."
-            raise DatasetDefinitionError(msg)
+        matched = self.matched(names)
         positions = {}
         for name in matched:
             try:
@@ -226,30 +234,69 @@ class Spectrum:
                 position = math.nan
             if not math.isfinite(position):
                 msg = f"Spectrum {self.name!r}: the position of column {name!r} after {self.prefix!r} is no number."
-                raise DatasetDefinitionError(msg)
+                raise SpecialFeatureError(msg)
             positions[name] = position
         ordered = sorted(matched, key=positions.__getitem__)
         axis = [positions[n] for n in ordered]
         if len(set(axis)) != len(axis):
             msg = f"Spectrum {self.name!r}: two columns have the same position on the axis."
-            raise DatasetDefinitionError(msg)
-        return ordered, axis
+            raise SpecialFeatureError(msg)
+        return ordered, SpectrumDetails(axis=axis, axis_unit=self.unit, technique=self.technique, state=self.state)
 
-    def feature_group(self, names: Iterable[str]) -> FeatureGroup:
-        """The container's record of the spectrum, for the columns ``names`` of the frame."""
-        columns, axis = self.columns(names)
-        encoding = spectrum_encoding(self.technique, self.state)
-        return FeatureGroup(
-            name=self.name,
-            semantic_type="spectrum",
-            columns=columns,
-            axis=axis,
-            axis_unit=self.unit,
-            technique=self.technique,
-            state=self.state,
-            description=f"{self.description} Recommended encoding: {encoding.description}",
-            recommended_encoding=encoding.id,
-        )
+    @classmethod
+    def encodings(cls, feature: SpecialFeature) -> tuple[Encoding, ...]:
+        """By technique and state: a raw mass spectrum's three published candidates (the placeholder default first),
+        a processed one or a peak list as it is, a vibrational spectrum as it is or with ALS and SNV.
+        """
+        details = feature.details
+        if details.technique == "mass_spectrometry":
+            if details.state == "raw":
+                return (MS_RAW_ENCODING, DRIAMS_ENCODING, CROMWELL_LOG2_ENCODING)
+            return (AS_IS_ENCODING,)
+        return (AS_IS_ENCODING, VIBRATIONAL_ALS_SNV_ENCODING)
+
+    @classmethod
+    def encode(cls, frame: pd.DataFrame, feature: SpecialFeature, encoding: Encoding) -> pd.DataFrame:
+        """The spectrum's columns with the encoded values."""
+        return encode_spectrum(frame, feature.details.axis, encoding)
+
+    @classmethod
+    def check(cls, df: pd.DataFrame, feature: SpecialFeature) -> Iterator[CheckResult]:
+        """Every column is numeric and finite; a missing value is flagged, a negative raw mass intensity noted."""
+        from data_foundry.bundle_checks import CheckResult  # noqa: PLC0415 - bundle_checks loads the kinds lazily
+
+        values = df[feature.columns]
+        not_numeric = [
+            c for c in feature.columns if not pd.api.types.is_numeric_dtype(values[c]) or values[c].dtype == bool
+        ]
+        if not_numeric:
+            yield CheckResult(
+                "dataset_spectrum",
+                "error",
+                f"Spectrum `{feature.name}`: {len(not_numeric):,} column(s) are not numeric, e.g. {not_numeric[:3]}.",
+                hint="A spectrum's columns are intensities; leave them out of `_feature_types`.",
+            )
+            return
+        array = values.to_numpy(dtype="float64", na_value=np.nan)
+        missing = int(np.isnan(array).any(axis=1).sum())
+        if missing:
+            yield CheckResult(
+                "dataset_spectrum",
+                "warning",
+                f"Spectrum `{feature.name}`: {missing:,} row(s) have a missing intensity; the processing encodings "
+                "return such a spectrum as missing.",
+                hint="Drop the rows or say in the curation notes why they stay.",
+            )
+        if np.isinf(array).any():
+            yield CheckResult("dataset_spectrum", "error", f"Spectrum `{feature.name}` has infinite intensities.")
+        details = feature.details
+        if details.technique == "mass_spectrometry" and details.state == "raw" and np.nanmin(array) < 0:
+            yield CheckResult(
+                "dataset_spectrum_negative",
+                "info",
+                f"Spectrum `{feature.name}`: {int((array < 0).any(axis=1).sum()):,} raw mass spectra have negative "
+                "intensities; the recommended encoding counts them as 0 before the square root.",
+            )
 
 
 def spectrum_encoding(technique: str, state: str) -> Encoding:
@@ -363,7 +410,7 @@ def encode_spectrum(frame: pd.DataFrame, axis: Sequence[float], encoding: Encodi
     """A spectrum in ``encoding``: the same rows and columns as ``frame`` (its columns in axis order), new values.
 
     ``encoding`` is an :class:`~data_foundry.v2.encodings.Encoding` of this module or its spec id (a container's
-    ``FeatureGroup.recommended_encoding``). A row with a missing value comes out missing, except as it is.
+    ``SpecialFeature.recommended_encoding``). A row with a missing value comes out missing, except as it is.
 
     Raises:
         ValueError: An unknown encoding, an axis that does not match the columns, or too few columns to smooth.

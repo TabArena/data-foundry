@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: nci_aids_antiviral_screen
 container_format: 2
-checksum: v2:248f27b3ef1070d61caff51bd196b2081b516409306f4fc045ecf3bec60565d0
+checksum: v2:e1a0c36d0052db410eae746468c117d4b7f9b6f83a06bee8724534e6e1c54df1
 build: null
 build_stale: false
 data:
@@ -32,8 +32,8 @@ task:
     test_groups_per_fold:
       min: 6887
       max: 6953
-  semantic_columns:
-    SMILES: smiles
+  special_features:
+    SMILES: smiles, one column; encoding required; recommended encoding rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1
 splits:
   n_repeats: 3
   n_folds: 3
@@ -66,7 +66,7 @@ decisions:
 
 Binary classification of `active_in_screen`, scored with `roc_auc` on grouped splits by `scaffold`. 41,140 rows and 1 features. Source: GOV Website (2004).
 
-Not built yet. The current definition gives checksum `v2:248f27b3ef1070d61caff51bd196b2081b516409306f4fc045ecf3bec60565d0`.
+Not built yet. The current definition gives checksum `v2:e1a0c36d0052db410eae746468c117d4b7f9b6f83a06bee8724534e6e1c54df1`.
 
 ## In brief
 
@@ -159,12 +159,12 @@ Only curators run `build`, when the dataset ships.
 | reason | The DTP release scores nothing: the screen concludes per compound, and the page names no metric. The benchmarks that defined a task on this file all score the active-against-inactive label shipped here, and all but one score it by ROC-AUC: MoleculeNet (Wu et al. 2018) and OGB under a scaffold split ('for ogbg-molhiv, we use ROC-AUC for evaluation', ogb.stanford.edu/docs/graphprop), and ChemPile likewise; the 2007 HIVA challenge ranked its cut by the balanced error rate, which needs a threshold none of them fixes. So the target is theirs and the metric is theirs (MET-4 by analogy: the origin is `context` and not `original`, since our source is the DTP release, which scores nothing); roc_auc is also what a screening team reads, since it ranks compounds for the next plate rather than classifying them, and it is unmoved by the 3.4% base rate. One caveat on comparing numbers: reading the source's charge code as the +1 it means leaves our structures different from MoleculeNet's, and from OGB's built on it, on 690 compounds, so a score here is close to but not literally the ogbg-molhiv leaderboard's (PROV-15). |
 
 <details>
-<summary>Feature types: 1 categorical, 0 string, 1 smiles, 0 datetime</summary>
+<summary>Feature types: 1 categorical, 0 string, 0 datetime, smiles `SMILES`</summary>
 
 - categorical (1): `active_in_screen`
 - string (0): none
-- smiles (1): `SMILES`
 - datetime (0): none
+- special feature `SMILES`: smiles, one column; encoding required; recommended encoding rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1
 
 </details>
 
@@ -218,7 +218,7 @@ We start with aids_conc_may04.txt (the screen's conclusion for 43,850 compounds,
 - Reading the structures: the records lack the `M  END` line that closes an SD connection table; `_read_structures` adds it. The charge column has to be read as the file writes it: code 4, which V2000 defines as a doublet radical, sits on the motifs the file also writes code 3 (+1) on, four-bonded phosphorus (538 atoms against 81 with code 3), bare sodium (426 against 25) and bare potassium (24 against 11); and the file writes codes 8, 9 and -1 as well, which V2000 does not define, so its charge column is not the strict format. Read as V2000, those atoms come out neutral and RDKit fills the free valence with hydrogens the file does not draw (`[NaH]`, `[PH](c1ccccc1)(c1ccccc1)c1ccccc1`), so code 4 is read as +1 before the block is sanitized (`_plus_one_charge_codes`, PROV-13). It changes 723 records, 690 of the shipped compounds (50 CA, 66 CM, 554 CI), and makes 2 unreadable ones readable. RDKit still rejects the valences of 607 records (513 hold a metal, 69 more boron; a charged chlorine or oxygen bonded to it), which are dropped (1 CA, 15 CM, 591 CI). The 1,455 readable structures with a metal stay as the source draws them (coordination bonds as charged bonds, such as a copper -3 with three oxygens +1).
 - The repaired records are not charge-balanced: 631 of the 723 read net +1 and 42 net +2, because the source draws the partner anion protonated (a sodium phosphonate as the free acid beside `[Na+]`, NSC 224131) or draws no counter-ion at all (a phosphonium without its halide, NSC 4763). Deprotonating to balance them would be a fix of our own invention, not the source's drawing, so the drawing stays as published (P5 over P6).
 - Stereochemistry removed: "No stereochemical information was used in the build" of the 3D coordinates (DTP page), so the stereo RDKit reads from them (25,366 of 42,080 structures) is arbitrary; the shipped SMILES carries none, so it is also the key of rows a 2D encoding cannot tell apart.
-- The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), declared in `smiles_columns`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts: 1,407 columns on these compounds). The values are RDKit's canonical form (`canonical_smiles`) of the whole structure as published, every fragment kept. The NSC and the CAS RN are dropped (identifiers; 999-99-9 marks an unknown CAS RN). The draft of the same day shipped RDKit's descriptors in place of the string; on that draft's encoding (383 descriptor columns, before the charge repair) the whole structure scored as well as its largest fragment (untuned LightGBM log loss 0.1563 against 0.1578, ROC AUC 0.908 against 0.898 for confirmed active against the rest; 2 seeds x 3 scaffold-grouped folds).
+- The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), declared in `special_features`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts: 1,407 columns on these compounds). The values are RDKit's canonical form (`canonical_smiles`) of the whole structure as published, every fragment kept. The NSC and the CAS RN are dropped (identifiers; 999-99-9 marks an unknown CAS RN). The draft of the same day shipped RDKit's descriptors in place of the string; on that draft's encoding (383 descriptor columns, before the charge repair) the whole structure scored as well as its largest fragment (untuned LightGBM log loss 0.1563 against 0.1578, ROC AUC 0.908 against 0.898 for confirmed active against the rest; 2 seeds x 3 scaffold-grouped folds).
 - Salt forms and copies (LEAK-19, LEAK-20): 3,130 of the 42,075 readable structures hold more than one fragment (counter-ions, which the file draws as bare cations such as `[Na+]`, solvents, complex partners). Salt forms of one compound are merged on the structure without RDKit's list of common salts and solvents (`FragmentRemover`: halides, metal ions, water, sulfate, ammonia, mesylate and others; organic counter-ions stay). The largest fragment is no such key here: in 57 groups (136 compounds) it would merge different compounds, such as dicyclohexylamine salts of different acids or crown-ether complexes of different tin compounds. 1,706 readable compounds share the key with another; the 39 compounds the screen concluded both active and inactive are dropped, all 104 rows (decision table), and of the others the first NSC is kept (831 rows dropped). 41,140 compounds remain: 1,404 active (390 CA, 1,014 CM) and 39,736 inactive, no two with one SMILES. 549 of them keep an organic counter-ion or a second component; the largest fragment of 49 of these is shipped as a compound of its own (a free form or another salt), 28 of them in another scaffold group, so a few near copies can sit across the split.
 - Split (SPLIT-31 as amended): grouped on the Bemis-Murcko scaffold of the compound, its structure without common salts and solvents (`scaffold_groups`): 20,774 groups, 15,994 compounds alone (1,566 without a ring, 3.8%) and 4,780 series of 2 to 2,086. No scaffold holds a tenth of the compounds, so the bare benzene ring (2,086, 5.1%) stays one group. Under the groups 15.5% of the test compounds of repeat 0 have a training analog at Tanimoto 0.7 or more (Morgan radius 2, 2,048 bits, on the structure without its salts; median nearest 0.517), against 32.0% under a random split (0.606); for the actives 30.0% against 48.3%. MoleculeNet and OGB split this screen by scaffold too, and a scaffold split leaves this screen similar across the split either way: 78.1% of our test compounds have a training compound above Tanimoto 0.4, against the 56% Lo-Hi (Steshin 2023, Sec. 5.2) measured on MoleculeNet's cut, so the test side is a series not yet tested, not a new chemical class. The NSC number counts submission batches that the groups do not hold out; the splits comment has the numbers.
 - Note: `hiva_agnostic` was the 2007 Agnostic Learning vs. Prior Knowledge challenge's cut of these compounds: its 4,229 labelled and 38,449 test compounds make 42,678, against the 42,682 conclusions with a structure here, and both are 3.52% active (149 of 4,229; 1,503 of 42,682). A linking run on 2026-11-01 recovered the NSC number behind its rows from their bits (97% with confidence) and every one of its 4,229 labels agrees with this file, so it adds no compound and no label; what it added was one 2006 ChemTK representation nobody can recompute. It is retired as a duplicate of this release (PROV-6; Lennart, 2026-11-02), and its BeyondArena and TabArena v0.1 containers stay as shipped.

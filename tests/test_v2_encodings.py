@@ -18,29 +18,29 @@ from data_foundry.v2.encodings import (
 )
 
 
-def test_the_recommendations_cover_smiles_dates_text_and_spectra_with_two_text_encodings() -> None:
-    """One encoding for SMILES and dates; two for text, to be compared; one per kind of spectrum, two for a
-    vibrational one.
+def test_the_registry_lists_every_encoding_by_kind_with_its_cache_scope() -> None:
+    """One encoding for SMILES and dates, two for text to be compared, five for spectra (which fit one spectrum depends
+    on it); each declares what a cache holds.
     """
     recommended = recommended_encodings()
 
-    spectra = {"mass_spectrum", "processed_spectrum", "vibrational_spectrum"}
-    assert set(recommended) == {"smiles", "datetime", "text", *spectra}
+    assert set(recommended) == {"smiles", "datetime", "text", "spectrum"}
     assert recommended["datetime"] == (DATETIME_ENCODING,)
     assert recommended["text"] == (TEXT_TFIDF_ENCODING, TEXT_E5_ENCODING)
-    assert len(recommended["vibrational_spectrum"]) == 2
-    assert all(
-        encoding.kind == ("spectrum" if kind in spectra else kind)
-        for kind, specs in recommended.items()
-        for encoding in specs
-    )
+    assert len(recommended["spectrum"]) == 5
+    assert all(encoding.kind == kind for kind, specs in recommended.items() for encoding in specs)
+    assert (TEXT_TFIDF_ENCODING.scope, TEXT_E5_ENCODING.scope, DATETIME_ENCODING.scope) == ("split", "value", "value")
+    assert recommended["smiles"][0].scope == "value"
     assert recommended["smiles"][0].id.startswith("rdkit2d-maccs-ecfp4-rdkit")
 
 
 def test_the_spec_id_names_the_encoding_the_library_and_the_revision() -> None:
     """The id leaves out a library that is not pinned."""
-    assert Encoding(kind="text", name="x", revision=2, description="").id == "x-r2"
-    assert Encoding(kind="smiles", name="x", revision=1, description="", library="rdkit1").id == "x-rdkit1-r1"
+    assert Encoding(kind="text", name="x", revision=2, description="", scope="value").id == "x-r2"
+    assert (
+        Encoding(kind="smiles", name="x", revision=1, description="", scope="value", library="rdkit1").id
+        == "x-rdkit1-r1"
+    )
 
 
 def test_encode_datetime_uses_skrub_with_the_weekday_and_circular_parts() -> None:

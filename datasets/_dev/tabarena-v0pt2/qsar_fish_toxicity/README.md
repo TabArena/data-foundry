@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_fish_toxicity
 container_format: 2
-checksum: v2:00985a7c97cc4d011a448aec0d7941c0d2c659d891a98d3b3043efa6fcfe24a2
+checksum: v2:813d92bc0e96de406d70ca0ab54e4248c716e0b09864177527c8f2e9caa3937a
 build:
   uuid: 01a111fc-ec16-7add-afb7-17f93dcaa3d4
   checksum: v2:297b99361a9cc29da5a134ae105ce939b6ec1774224cf656311f0d38d2993253
@@ -45,8 +45,8 @@ task:
     test_groups_per_fold:
       min: 262
       max: 262
-  semantic_columns:
-    SMILES: smiles
+  special_features:
+    SMILES: smiles, one column; encoding required; recommended encoding rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1
 splits:
   n_repeats: 10
   n_folds: 3
@@ -76,7 +76,7 @@ decisions: []
 
 Regression of `LC50`, scored with `rmse` on grouped splits by `scaffold`. 908 rows and 1 features. Source: UCI (2015).
 
-Built as `01a111fc-ec16-7add-afb7-17f93dcaa3d4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:00985a7c97cc4d011a448aec0d7941c0d2c659d891a98d3b3043efa6fcfe24a2`, so the build is stale. See [Build](#build).
+Built as `01a111fc-ec16-7add-afb7-17f93dcaa3d4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:813d92bc0e96de406d70ca0ab54e4248c716e0b09864177527c8f2e9caa3937a`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -163,12 +163,12 @@ Only curators run `build`, when the dataset ships.
 | reason | Cassotti et al. 2015 report R2/Q2 with RMSE on training and external sets; rmse is the regression fallback. |
 
 <details>
-<summary>Feature types: 0 categorical, 0 string, 1 smiles, 0 datetime</summary>
+<summary>Feature types: 0 categorical, 0 string, 0 datetime, smiles `SMILES`</summary>
 
 - categorical (0): none
 - string (0): none
-- smiles (1): `SMILES`
 - datetime (0): none
+- special feature `SMILES`: smiles, one column; encoding required; recommended encoding rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1
 
 </details>
 
@@ -204,7 +204,7 @@ The first 5 of 908 rows of the final frame (random rows: the frame is shuffled).
 
 ## Curation notes
 
-- The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), in RDKit's canonical form (`canonical_smiles`; no salts or mixtures here), declared in `smiles_columns`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts).
+- The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), in RDKit's canonical form (`canonical_smiles`; no salts or mixtures here), declared in `special_features`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts).
 - The authors' 6 descriptors leave (Lennart, 2026-11-01, as for qsar_tid_11: the task goes from the structure to a prediction, and the descriptors are one modelling choice of the authors). This also removes the mild optimism they carried: a genetic algorithm chose them on the paper's 726 training chemicals, which overlap our test folds (LEAK-31).
 - The structures come from the authors' own workbook, which the UCI copy left out. It is the same 908 rows in the same order: every one of the 6 descriptors is identical on all 908 rows (the CSV's rounding aside, LC50 too), so the link is exact and needs no key. All 908 SMILES parse, and no two are the same chemical, with or without stereochemistry.
 - The target comes from the workbook as well: the UCI file rounds LC50 to 3 decimals (every row differs by at most 0.0005), the workbook gives it at full precision.
@@ -331,4 +331,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:00985a7c97cc4d011a448aec0d7941c0d2c659d891a98d3b3043efa6fcfe24a2` |
+| stale | yes: the definition now gives checksum `v2:813d92bc0e96de406d70ca0ab54e4248c716e0b09864177527c8f2e9caa3937a` |

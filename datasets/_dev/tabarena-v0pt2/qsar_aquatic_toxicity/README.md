@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_aquatic_toxicity
 container_format: 2
-checksum: v2:27084ac8b2d6ca33237c35cd54234ccd79cddf6462e90f6fbb0ce3b41e2ec5e5
+checksum: v2:bcecc1e94f1f5c8856e87d0a1e5a770065eb85014b8298ce7fb8a96494813bf0
 build:
   uuid: 01a111fc-b7f2-70ec-b160-9c69d2d62b73
   checksum: v2:4f769b0dcc94908ac9ccffb008629f74efd0f80a1d9d641b36aa2b226ea925e6
@@ -45,8 +45,8 @@ task:
     test_groups_per_fold:
       min: 154
       max: 155
-  semantic_columns:
-    SMILES: smiles
+  special_features:
+    SMILES: smiles, one column; encoding required; recommended encoding rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1
 splits:
   n_repeats: 20
   n_folds: 3
@@ -76,7 +76,7 @@ decisions: []
 
 Regression of `LC50`, scored with `rmse` on grouped splits by `scaffold`. 546 rows and 1 features. Source: UCI (2014).
 
-Built as `01a111fc-b7f2-70ec-b160-9c69d2d62b73` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:27084ac8b2d6ca33237c35cd54234ccd79cddf6462e90f6fbb0ce3b41e2ec5e5`, so the build is stale. See [Build](#build).
+Built as `01a111fc-b7f2-70ec-b160-9c69d2d62b73` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:bcecc1e94f1f5c8856e87d0a1e5a770065eb85014b8298ce7fb8a96494813bf0`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -163,12 +163,12 @@ Only curators run `build`, when the dataset ships.
 | reason | Cassotti et al. 2014 report Q2 (cv and external) with RMSE; r2 and rmse rank models the same within a fold. rmse is the regression fallback. |
 
 <details>
-<summary>Feature types: 0 categorical, 0 string, 1 smiles, 0 datetime</summary>
+<summary>Feature types: 0 categorical, 0 string, 0 datetime, smiles `SMILES`</summary>
 
 - categorical (0): none
 - string (0): none
-- smiles (1): `SMILES`
 - datetime (0): none
+- special feature `SMILES`: smiles, one column; encoding required; recommended encoding rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1
 
 </details>
 
@@ -206,7 +206,7 @@ The first 5 of 546 rows of the final frame (random rows: the frame is shuffled).
 
 We start with the data from UCI and add the structures from the authors' own workbook.
 
-- The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), in RDKit's canonical form (`canonical_smiles`; no salts or mixtures here), declared in `smiles_columns`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts).
+- The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), in RDKit's canonical form (`canonical_smiles`; no salts or mixtures here), declared in `special_features`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts).
 - The authors' 8 descriptors leave (Lennart, 2026-11-01, as for qsar_tid_11: the task goes from the structure to a prediction, and the descriptors are one modelling choice of the authors). This also settles the kept potential leak the record and `fit_reason` named: a genetic algorithm chose the eight by their fit to the measured toxicity of chemicals that sit in our test folds (LEAK-31), and with the structure shipped no such selection reaches the features.
 - The structures come from the authors' own workbook, which the UCI copy left out. It is the same 546 rows in the same order: all 8 descriptors and LC50 are identical on every row, so the link is exact and needs no key. All 546 SMILES parse, and no two are the same chemical, with or without stereochemistry.
 - Split (CLEAN-24, SPLIT-31 as amended): grouped on the Bemis-Murcko scaffold of the structure (`scaffold_groups`); chemicals without a ring, and those of a scaffold holding more than a tenth of the set, are groups of their own. An assessor estimates the toxicity of an untested chemical, often of a series not yet measured, so whole series are held out; qsar_bioconcentration, qsar_oral_toxicity, qsar_fish_toxicity and qsar_tid_11 group the same way. The source split at random.
@@ -361,4 +361,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:27084ac8b2d6ca33237c35cd54234ccd79cddf6462e90f6fbb0ce3b41e2ec5e5` |
+| stale | yes: the definition now gives checksum `v2:bcecc1e94f1f5c8856e87d0a1e5a770065eb85014b8298ce7fb8a96494813bf0` |

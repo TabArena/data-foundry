@@ -1,8 +1,9 @@
 """Molecules in tabular data: SMILES columns, their recommended encoding, and the scaffolds of a scaffold split.
 
-A molecule's structure ships as a SMILES column, declared in the definition's ``smiles_columns`` (CLEAN-24 as amended
-on 2026-11-01): the container marks it as a semantic column (:class:`~data_foundry.schema.SemanticColumn`, type
-``smiles``), so a benchmark encodes it as a structure instead of reading it as text. A tabular model gains nothing
+A molecule's structure ships as a SMILES column, declared in the definition's ``special_features`` as
+``Smiles(column="SMILES")`` (CLEAN-24 as amended on 2026-11-01): the container records it as a special feature of kind
+``smiles`` (:class:`~data_foundry.schema.SpecialFeature`, one column, encoding required), so a benchmark encodes it
+as a structure instead of reading it as text. A tabular model gains nothing
 from a SMILES read as text (character n-grams or a text embedding; the working copy's CHANGELOG, 2026-10-14, and
 apistox's record, 2026-10-07), but it does from a fixed encoding of the structure. :func:`canonical_smiles` gives the
 form a definition ships: RDKit's canonical SMILES, every fragment and the stereochemistry kept. Salts stay as
@@ -31,12 +32,21 @@ leaves Mordred out; revisit it for all SMILES datasets at once, with a gain meas
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, ClassVar
+
 import numpy as np
 import pandas as pd
 
 from data_foundry.v2._optional import import_build_dependency
 from data_foundry.v2.dataset import DatasetDefinitionError
 from data_foundry.v2.encodings import Encoding
+from data_foundry.v2.special import SpecialColumn
+
+if TYPE_CHECKING:
+    from data_foundry.bundle_checks import CheckResult
+    from data_foundry.schema import SpecialFeature
 
 RDKIT_VERSION = "2026.03.6"
 """The RDKit release the descriptors are computed with (pinned in the ``build`` extra); another version is an
@@ -139,6 +149,7 @@ MACCS_KEYS = 166
 """The MACCS keys in RDKit's fingerprint (its bit 0 is unused and left out)."""
 
 DEFAULT_SMILES_ENCODING = Encoding(
+    scope="value",
     kind="smiles",
     name="rdkit2d-maccs-ecfp4",
     revision=1,
@@ -197,6 +208,82 @@ def encode_smiles(smiles: pd.Series, encoding: Encoding = DEFAULT_SMILES_ENCODIN
         out[counts.columns] = out[counts.columns].astype("Int16")
     out.index = smiles.index
     return out.add_prefix(prefix)
+
+
+@dataclass(frozen=True, kw_only=True)
+class Smiles(SpecialColumn):
+    """A special feature in one column: a molecule's structure as a SMILES string (CLEAN-24), e.g.
+    ``special_features = (Smiles(column="SMILES"),)``.
+
+    The build casts the column to ``string``; ship the form :func:`canonical_smiles` gives. The raw string is no model
+    input (``encoding_required``): the recommended encoding is :func:`encode_smiles`. Leave the column out of
+    ``_feature_types``.
+    """
+
+    kind: ClassVar[str] = "smiles"
+    encoding_required: ClassVar[bool] = True
+    dtype: ClassVar[str | None] = "string"
+    description: str | None = None
+    """What the column holds, when it differs from the default (RDKit's canonical SMILES as the definition ships it)."""
+
+    def describe(self) -> str:
+        """The definition's description, or the default."""
+        return self.description or (
+            "A molecule's structure as a SMILES string (RDKit's canonical SMILES; salts and stereochemistry as the "
+            "definition ships them). Encode it as a structure, never as text."
+        )
+
+    @classmethod
+    def encodings(cls, feature: SpecialFeature) -> tuple[Encoding, ...]:
+        """The recommended encoding (one so far)."""
+        del feature
+        return (DEFAULT_SMILES_ENCODING,)
+
+    @classmethod
+    def encode(cls, frame: pd.DataFrame, feature: SpecialFeature, encoding: Encoding) -> pd.DataFrame:
+        """The descriptor and fingerprint columns of the SMILES, named ``<column>__<name>``."""
+        (column,) = feature.columns
+        return encode_smiles(frame[column], encoding, prefix=f"{column}__")
+
+    @classmethod
+    def check(cls, df: pd.DataFrame, feature: SpecialFeature) -> Iterator[CheckResult]:
+        """The column is ``string``, a missing structure is flagged, and every value parses with the pinned RDKit."""
+        from data_foundry.bundle_checks import CheckResult  # noqa: PLC0415 - bundle_checks loads the kinds lazily
+
+        (column,) = feature.columns
+        if df[column].dtype != "string":
+            yield CheckResult(
+                "dataset_smiles_column",
+                "error",
+                f"The SMILES column `{column}` is {df[column].dtype}, not string.",
+                hint="Declare it in the definition's `special_features` only (not in `_feature_types`).",
+            )
+            return
+        missing = int(df[column].isna().sum())
+        if missing:
+            yield CheckResult(
+                "dataset_smiles_column",
+                "warning",
+                f"{missing:,} row(s) have no structure in the SMILES column `{column}`.",
+                hint="A molecule dataset without the molecule: drop the rows or say why they stay.",
+            )
+        try:
+            invalid = invalid_smiles(df[column])
+        except Exception as exc:  # noqa: BLE001 - RDKit missing or another release: report, do not fail
+            yield CheckResult(
+                "dataset_smiles_unchecked",
+                "info",
+                f"The SMILES column `{column}` was not parsed: {exc}",
+                hint="Install the `build` extra (the pinned RDKit) to check it.",
+            )
+            return
+        if invalid:
+            yield CheckResult(
+                "dataset_smiles_column",
+                "error",
+                f"RDKit cannot parse {len(invalid):,} value(s) of the SMILES column `{column}`, e.g. {invalid[:3]}.",
+                hint="Repair or drop them in `_clean`; ship `canonical_smiles(...)`.",
+            )
 
 
 MAX_SCAFFOLD_SHARE = 0.1

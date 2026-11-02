@@ -77,9 +77,10 @@ both container formats.
   `feature_columns(container)` (`data_foundry.curation_container`), which drops the target, the group and the
   scoring columns (`task_metadata.scoring_columns`: metric inputs such as an era, never features). Format 1
   (BeyondArena): score with `task_metadata.objective_metric_name` (`rmse`, `roc_auc`, `log_loss`). Features can be
-  categorical, string or datetime, so pick a model that takes mixed dtypes. A SMILES column
-  (`semantic_columns(container, "smiles")`) is a molecule: encode it with `data_foundry.v2.chemistry.encode_smiles`
-  (or your own), never as text; `data_foundry.v2.encodings` has the recommended encodings of dates and text too. See
+  categorical, string or datetime, so pick a model that takes mixed dtypes. A special feature
+  (`special_features(container)`: a SMILES column, a spectrum's group of columns) is encoded by its kind:
+  `data_foundry.v2.special.encode_special_feature(df, feature)` (or your own), a SMILES never as text;
+  `data_foundry.v2.encodings` has the recommended encodings of dates and text too. See
   `examples/benchmark_on_beyond_arena.py`; without Data Foundry, `examples/read_metric_without_data_foundry.py`.
 
 See [AGENTS.md](AGENTS.md) for the long form.

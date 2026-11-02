@@ -464,10 +464,9 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
         return
 
     constant, all_missing, id_like, unused_categories, sentinel_hits, string_missing = [], [], [], [], [], []
-    # a structure (a SMILES column) is unique per molecule by nature: an input, not a row id
-    semantic = {c.column for c in getattr(ctx.task, "semantic_columns", None) or ()}
-    # a spectrum's intensity of 999 is a reading like any other, not a code for a missing value
-    spectral = {c for g in getattr(ctx.task, "feature_groups", None) or () for c in g.columns}
+    # a special feature's columns are checked by its kind: a SMILES is unique per molecule by nature (an input, not a
+    # row id), and a spectrum's intensity of 999 is a reading, not a code for a missing value
+    special = {c for f in getattr(ctx.task, "special_features", None) or () for c in f.columns}
     for column in df.columns:
         series = df[column]
         n_unique = series.nunique(dropna=True)
@@ -478,7 +477,7 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
 
         is_labelish = isinstance(series.dtype, pd.CategoricalDtype) or series.dtype == "string"
         unique_per_row = n_unique == ctx.n_rows and ctx.n_rows > 1
-        if column != ctx.target and column not in semantic and is_labelish and unique_per_row:
+        if column != ctx.target and column not in special and is_labelish and unique_per_row:
             id_like.append(column)
 
         if isinstance(series.dtype, pd.CategoricalDtype):
@@ -491,7 +490,7 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
                 string_missing.append((column, sorted(hits)))
 
         numeric = pd.api.types.is_numeric_dtype(series) and not pd.api.types.is_bool_dtype(series)
-        if numeric and n_unique > 2 and column not in spectral:
+        if numeric and n_unique > 2 and column not in special:
             value_counts = series.value_counts(dropna=True)
             if len(value_counts):
                 most_common = float(value_counts.index[0])
@@ -550,104 +549,28 @@ def _check_dataset_columns_quality(ctx: _Ctx) -> Iterator[CheckResult]:
 
 
 @_check
-def _check_dataset_smiles_columns(ctx: _Ctx) -> Iterator[CheckResult]:
-    """A SMILES column (a :class:`~data_foundry.schema.SemanticColumn` of type ``smiles``) is present, a ``string``
-    column, and every value parses with the pinned RDKit; a missing structure is flagged.
+def _check_dataset_special_features(ctx: _Ctx) -> Iterator[CheckResult]:
+    """Every special feature (:class:`~data_foundry.schema.SpecialFeature`) has its columns in the frame, then passes
+    its kind's checks: a SMILES column is ``string`` and parses with the pinned RDKit, a spectrum's columns are numeric
+    and finite (:mod:`data_foundry.v2.special`).
     """
     df = ctx.df
-    columns = [c.column for c in getattr(ctx.task, "semantic_columns", None) or () if c.semantic_type == "smiles"]
-    if df is None or not columns:
+    features = getattr(ctx.task, "special_features", None) or ()
+    if df is None or not features:
         return
-    for column in columns:
-        if column not in df.columns:
-            yield CheckResult("dataset_smiles_column", "error", f"The SMILES column `{column}` is not in the frame.")
-            continue
-        if df[column].dtype != "string":
-            yield CheckResult(
-                "dataset_smiles_column",
-                "error",
-                f"The SMILES column `{column}` is {df[column].dtype}, not string.",
-                hint="List it in the definition's `smiles_columns` only (not in `_feature_types`).",
-            )
-            continue
-        missing = int(df[column].isna().sum())
-        if missing:
-            yield CheckResult(
-                "dataset_smiles_column",
-                "warning",
-                f"{missing:,} row(s) have no structure in the SMILES column `{column}`.",
-                hint="A molecule dataset without the molecule: drop the rows or say why they stay.",
-            )
-        try:
-            from data_foundry.v2.chemistry import invalid_smiles  # noqa: PLC0415 - RDKit is optional
+    from data_foundry.v2.special import special_feature_kind  # noqa: PLC0415 - v2 builds on this module
 
-            invalid = invalid_smiles(df[column])
-        except Exception as exc:  # noqa: BLE001 - RDKit missing or another release: report, do not fail
-            yield CheckResult(
-                "dataset_smiles_unchecked",
-                "info",
-                f"The SMILES column `{column}` was not parsed: {exc}",
-                hint="Install the `build` extra (the pinned RDKit) to check it.",
-            )
-            continue
-        if invalid:
-            yield CheckResult(
-                "dataset_smiles_column",
-                "error",
-                f"RDKit cannot parse {len(invalid):,} value(s) of the SMILES column `{column}`, e.g. {invalid[:3]}.",
-                hint="Repair or drop them in `_clean`; ship `canonical_smiles(...)`.",
-            )
-
-
-@_check
-def _check_dataset_spectra(ctx: _Ctx) -> Iterator[CheckResult]:
-    """A spectrum (a :class:`~data_foundry.schema.FeatureGroup` of type ``spectrum``) has its columns in the frame,
-    each numeric and finite; a missing value is flagged, and a negative intensity in a raw mass spectrum noted.
-    """
-    df = ctx.df
-    groups = [g for g in getattr(ctx.task, "feature_groups", None) or () if g.semantic_type == "spectrum"]
-    if df is None or not groups:
-        return
-    for group in groups:
-        absent = [c for c in group.columns if c not in df.columns]
+    for feature in features:
+        absent = [c for c in feature.columns if c not in df.columns]
         if absent:
             yield CheckResult(
-                "dataset_spectrum",
+                "dataset_special_feature",
                 "error",
-                f"Spectrum `{group.name}`: {len(absent):,} column(s) are not in the frame, e.g. {absent[:3]}.",
+                f"Special feature `{feature.name}` ({feature.kind}): {len(absent):,} column(s) are not in the frame, "
+                f"e.g. {absent[:3]}.",
             )
             continue
-        values = df[group.columns]
-        not_numeric = [
-            c for c in group.columns if not pd.api.types.is_numeric_dtype(values[c]) or values[c].dtype == bool
-        ]
-        if not_numeric:
-            yield CheckResult(
-                "dataset_spectrum",
-                "error",
-                f"Spectrum `{group.name}`: {len(not_numeric):,} column(s) are not numeric, e.g. {not_numeric[:3]}.",
-                hint="A spectrum's columns are intensities; leave them out of `_feature_types`.",
-            )
-            continue
-        array = values.to_numpy(dtype="float64", na_value=np.nan)
-        missing = int(np.isnan(array).any(axis=1).sum())
-        if missing:
-            yield CheckResult(
-                "dataset_spectrum",
-                "warning",
-                f"Spectrum `{group.name}`: {missing:,} row(s) have a missing intensity; the processing encodings "
-                "return such a spectrum as missing.",
-                hint="Drop the rows or say in the curation notes why they stay.",
-            )
-        if np.isinf(array).any():
-            yield CheckResult("dataset_spectrum", "error", f"Spectrum `{group.name}` has infinite intensities.")
-        if group.technique == "mass_spectrometry" and group.state == "raw" and np.nanmin(array) < 0:
-            yield CheckResult(
-                "dataset_spectrum_negative",
-                "info",
-                f"Spectrum `{group.name}`: {int((array < 0).any(axis=1).sum()):,} raw mass spectra have negative "
-                "intensities; the recommended encoding counts them as 0 before the square root.",
-            )
+        yield from special_feature_kind(feature.kind).check(df, feature)
 
 
 @_check

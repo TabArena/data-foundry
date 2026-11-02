@@ -35,8 +35,9 @@ or bins numbered along one.
 * Name the columns `<prefix><position>` (`M/Z:800.32`, `cm_1001.5`) so the build reads the axis from the names. When
   the source gives the axis in a separate file, build the names from it. When it gives no axis, number the bins
   (`unit="bin"`, micro_mass).
-* Declare the spectrum in `spectra` with its technique and state. The container records it as a feature group: the
-  columns in axis order, their positions, the unit, the technique, the state and the recommended encoding.
+* Declare the spectrum in `special_features` as a group of columns, `Spectrum(name=..., prefix=..., unit=...,
+  technique=..., state=...)`. The container records it as a special feature of kind `spectrum`: the columns in axis
+  order, their positions, the unit, the technique, the state and the recommended encoding.
 * Dropping bins that are constant or copy another bin is fine (micro_mass: 1,300 to 1,082); the recorded axis keeps the
   positions of the bins that remain. Cutting a range off is a modelling choice: keep what the source publishes.
 * Spectra from instruments with different grids need one grid. Prefer the source's own common grid; an interpolation
@@ -109,13 +110,15 @@ spectra, so they are no per-row default.
 
 ## In Data Foundry
 
-* `spectra = (Spectrum(name=..., prefix=..., unit=..., technique=..., state=..., description=...),)` on the
-  definition (`data_foundry.v2.Spectrum`); leave the columns out of `_feature_types`. The build records each as a
-  `FeatureGroup` in `task_metadata.feature_groups` with the recommended encoding's spec id.
-* `feature_groups(container, "spectrum")` (`data_foundry.curation_container`) lists them;
-  `encode_spectrum(frame, group.axis, group.recommended_encoding)` (`data_foundry.v2.spectra`) encodes one;
-  `spectrum_encoding(technique, state)` gives the default and `recommended_encodings()` lists every encoding.
-* The bundle check `dataset_spectrum`: the columns are present, numeric and finite; missing values are a warning.
+* `special_features = (Spectrum(name=..., prefix=..., unit=..., technique=..., state=..., description=...),)` on the
+  definition (`data_foundry.v2.Spectrum`, a special feature in a group of columns); leave the columns out of
+  `_feature_types`. The build records each as a `SpecialFeature` of kind `spectrum` (layout `group`, with
+  `SpectrumDetails`) in `task_metadata.special_features`, with the recommended encoding's spec id.
+* `special_features(container, "spectrum")` (`data_foundry.curation_container`) lists them;
+  `encode_special_feature(df, feature)` (`data_foundry.v2.special`) encodes one in place of its columns, and
+  `encodings_for(feature)` gives its candidates, the recommended one first. `encode_spectrum(frame, axis, encoding)`
+  (`data_foundry.v2.spectra`) is the encoder underneath.
+* The bundle check `dataset_spectrum`: the columns are numeric and finite; missing values are a warning.
 * The probes see a spectrum in its recommended encoding; the blind reviewer's clean room sees it as shipped
   ([checks_and_probes.md](../../knowledge-data-foundry/references/checks_and_probes.md)).
 * What TabArena still has to do: `datasets/_dev/tabarena-v0pt2/BENCHMARK_CHANGES_TODO.md`, "Spectra".

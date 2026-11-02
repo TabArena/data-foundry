@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: pancreatic_cancer_mouse_detection
 container_format: 2
-checksum: v2:f298b47818a1a850805ec9ed82c1dba10c82415ad1cf4f5792f4021b25a3b0d1
+checksum: v2:375c5f4914156b5b80d9f68ba5183be50657c48c0a7b13e169318e4908da87d1
 build:
   uuid: 01a111fc-4ee4-7a63-9a02-e4ac045fac79
   checksum: v2:59cb0f0821d490ba01b3fac29a19152347d6c9626d569ac6c6d994a23c47d014
@@ -45,8 +45,9 @@ task:
     test_groups_per_fold:
       min: 24
       max: 25
-  feature_groups:
-    serum_ms: spectrum (mass_spectrometry, raw; 6771 columns)
+  special_features:
+    serum_ms: spectrum, a group of 6,771 columns (mass_spectrometry, raw, m/z 800
+      to 11992.9); numbers a model can read; recommended encoding ms-sqrt-sg21-snip100-tic-r1
 splits:
   n_repeats: 20
   n_folds: 3
@@ -76,7 +77,7 @@ decisions: []
 
 Binary classification of `HasPanIN`, scored with `roc_auc` on grouped splits by `mouse_id`. 181 rows and 6,771 features. Source: Other (2003).
 
-Built as `01a111fc-4ee4-7a63-9a02-e4ac045fac79` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f298b47818a1a850805ec9ed82c1dba10c82415ad1cf4f5792f4021b25a3b0d1`, so the build is stale. See [Build](#build).
+Built as `01a111fc-4ee4-7a63-9a02-e4ac045fac79` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:375c5f4914156b5b80d9f68ba5183be50657c48c0a7b13e169318e4908da87d1`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -161,12 +162,12 @@ Only curators run `build`, when the dataset ships.
 | reason | The paper reports sensitivity and specificity at its classifier's operating point, a pair with no single threshold-free metric; roc_auc summarises both over thresholds. |
 
 <details>
-<summary>Feature types: 2 categorical, 0 string, 0 datetime, spectrum serum_ms (6,771)</summary>
+<summary>Feature types: 2 categorical, 0 string, 0 datetime, spectrum `serum_ms`</summary>
 
 - categorical (2): `mouse_id`, `HasPanIN`
 - string (0): none
 - datetime (0): none
-- spectrum `serum_ms` (6,771 numeric columns): `M/Z:800.0` to `M/Z:11992.908`, m/z 800 to 11992.9; mass_spectrometry, raw; recommended encoding `ms-sqrt-sg21-snip100-tic-r1`
+- special feature `serum_ms`: spectrum, a group of 6,771 columns (mass_spectrometry, raw, m/z 800 to 11992.9); numbers a model can read; recommended encoding ms-sqrt-sg21-snip100-tic-r1; columns `M/Z:800.0` to `M/Z:11992.908`
 
 </details>
 
@@ -207,7 +208,7 @@ The task in the original data is grouped as multiple serums per mouse were taken
 - We label the samples based on name of the folder they are located in: "PanINCTL" are the littermate control mice, "03-PanIN" the compound-mutant mice with pancreatic intraepithelial neoplasia (PanIN), preinvasive lesions with "no evidence of invasive or metastatic disease" (Hingorani et al. 2003). The target is therefore `HasPanIN`, not cancer.
 - Anomaly: the download holds 181 serum spectra (80 PanIN, 101 control) from 73 mouse IDs (35 PanIN, 38 control); the paper reports 191 spectra after quality control (80 PanIN, 111 control) from 72 mice (33 compound mutants, 39 littermate controls). The 10 missing spectra are controls, and no mouse ID occurs in both classes; the difference cannot be resolved without the authors.
 - The file names encode the class: the third token is `02` for every control file and `03` for every PanIN file, some with a `t` suffix of unknown meaning (42 of 101 control and 24 of 80 PanIN files; it is not the paper's training/blinded-test split). We take the label from the folder and the mouse ID from the second token; the class code never enters the features.
-- The spectrum ships raw, as the NCI-FDA page publishes it, and is declared as one (`spectra`, CLEAN-26, 2026-11-02): the container records its 6,771 columns in m/z order, and a benchmark encodes it row by row, by default with MALDIquant's steps (square root, Savitzky-Golay smoothing, SNIP baseline, total ion current). Processing the spectra lifts every model tested by 0.07 to 0.13 ROC AUC (PR #21, Andrej, 2026-10-21); the page itself recommends "appropriate normalization, baseline correction, and alignment prior to any such analysis".
+- The spectrum ships raw, as the NCI-FDA page publishes it, and is declared as one (`special_features`, CLEAN-26, 2026-11-02): the container records its 6,771 columns in m/z order, and a benchmark encodes it row by row, by default with MALDIquant's steps (square root, Savitzky-Golay smoothing, SNIP baseline, total ion current). Processing the spectra lifts every model tested by 0.07 to 0.13 ROC AUC (PR #21, Andrej, 2026-10-21); the page itself recommends "appropriate normalization, baseline correction, and alignment prior to any such analysis".
 
 ## Splits
 
@@ -309,7 +310,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -488,4 +489,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:f298b47818a1a850805ec9ed82c1dba10c82415ad1cf4f5792f4021b25a3b0d1` |
+| stale | yes: the definition now gives checksum `v2:375c5f4914156b5b80d9f68ba5183be50657c48c0a7b13e169318e4908da87d1` |

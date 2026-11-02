@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Grouping,
     Metric,
+    Smiles,
     TaskSummary,
     canonical_smiles,
     scaffold_groups,
@@ -151,7 +152,7 @@ class QsarTid11(AbstractCuratedDataset):
           one side; 53 vectors (128 rows) span two or more scaffolds, analogs whose ring systems differ in a way the
           fingerprint does not see.
         - The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01): ChEMBL 17's SMILES in RDKit's
-          canonical form (`canonical_smiles`; the 549 salts as ChEMBL records them), declared in `smiles_columns`, so a
+          canonical form (`canonical_smiles`; the 549 salts as ChEMBL records them), declared in `special_features`, so a
           benchmark encodes it as a structure and never as text; the recommended encoding is
           `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts). The source's
           1,024 FCFP6 bits leave (Lennart, 2026-11-01: "the real task here is going from smiles to a prediction, the
@@ -185,7 +186,7 @@ class QsarTid11(AbstractCuratedDataset):
     # Task
     target = "MEDIAN_PXC50"
     problem_type = "regression"
-    smiles_columns = ("SMILES",)
+    special_features = (Smiles(column="SMILES"),)
     metric = Metric.source(
         "rmse",
         original="Average root mean squared error (RMSE) with 10-fold cross-validation",
@@ -241,13 +242,13 @@ class QsarTid11(AbstractCuratedDataset):
         # The split groups: the chemical series (Bemis-Murcko scaffold); no ring, or a scaffold above a tenth, alone.
         # Counter-ions carry no ring here, so a salt's scaffold is its parent's.
         df = df.assign(scaffold=scaffold_groups(df["SMILES"]))
-        # The structure ships as a SMILES column (`smiles_columns`), in RDKit's canonical form; the authors' FCFP6
+        # The structure ships as a SMILES column (`special_features`), in RDKit's canonical form; the authors' FCFP6
         # bits leave, one modelling choice of the structure (curation_comments)
         return pd.DataFrame(
             {"SMILES": canonical_smiles(df["SMILES"]), "MEDIAN_PXC50": df["MEDIAN_PXC50"], "scaffold": df["scaffold"]}
         )
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # the SMILES is typed by `smiles_columns`; the target stays numeric
+        # the SMILES is typed by `special_features`; the target stays numeric
         del df
         return FeatureTypes()

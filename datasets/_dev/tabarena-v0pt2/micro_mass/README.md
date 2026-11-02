@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: micro_mass
 container_format: 2
-checksum: v2:c5c28160ff8325d17b2f664ab183808d1496dc37d267c7c424068109a3a70074
+checksum: v2:2d27efa12a31b37ea297e7e75788185b92d17b2347e2540cebd9ef41962ec8b5
 build:
   uuid: 01a111fc-8b57-73f7-bb59-b6d7ab7a6881
   checksum: v2:802ebb029c52182c5bbf583d95742b4b602e695db08e9507413476054f2d48a2
@@ -45,8 +45,9 @@ task:
     test_groups_per_fold:
       min: 71
       max: 71
-  feature_groups:
-    vitek_ms_peaks: spectrum (mass_spectrometry, peaks; 1082 columns)
+  special_features:
+    vitek_ms_peaks: spectrum, a group of 1,082 columns (mass_spectrometry, peaks,
+      bin 3 to 1300); numbers a model can read; recommended encoding spectrum-as-is-r1
 splits:
   n_repeats: 20
   n_folds: 3
@@ -77,7 +78,7 @@ decisions: []
 
 Multiclass classification of `Species`, scored with `hierarchical_balanced_accuracy` on grouped splits by `Strain`. 571 rows and 1,082 features. Source: UCI (2013).
 
-Built as `01a111fc-8b57-73f7-bb59-b6d7ab7a6881` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c5c28160ff8325d17b2f664ab183808d1496dc37d267c7c424068109a3a70074`, so the build is stale. See [Build](#build).
+Built as `01a111fc-8b57-73f7-bb59-b6d7ab7a6881` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2d27efa12a31b37ea297e7e75788185b92d17b2347e2540cebd9ef41962ec8b5`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -156,12 +157,12 @@ Only curators run `build`, when the dataset ships.
 | inputs | group: `Strain` |
 
 <details>
-<summary>Feature types: 2 categorical, 0 string, 0 datetime, spectrum vitek_ms_peaks (1,082)</summary>
+<summary>Feature types: 2 categorical, 0 string, 0 datetime, spectrum `vitek_ms_peaks`</summary>
 
 - categorical (2): `Strain`, `Species`
 - string (0): none
 - datetime (0): none
-- spectrum `vitek_ms_peaks` (1,082 numeric columns): `peak_list_spectra_bin_3` to `peak_list_spectra_bin_1300`, bin 3 to 1300; mass_spectrometry, peaks; recommended encoding `spectrum-as-is-r1`
+- special feature `vitek_ms_peaks`: spectrum, a group of 1,082 columns (mass_spectrometry, peaks, bin 3 to 1300); numbers a model can read; recommended encoding spectrum-as-is-r1; columns `peak_list_spectra_bin_3` to `peak_list_spectra_bin_1300`
 
 </details>
 
@@ -202,7 +203,7 @@ We use the pure spectra version (without mixing) and replicate a grouped-based t
 - We drop columns with the same value across all samples.
 - We drop constant columns (all 0).
 - Each strain has one species; the 20 species have 7 to 20 strains each (median 10; Escherichia coli 20, Haemophilus influenzae 18, Enterobacter cloacae 16; from the v1 exploration, counted 2026-10-22).
-- The spectrum is declared as one (`spectra`, CLEAN-26, 2026-11-02) in the state the instrument's software left it: a peak list on 1,300 fixed bins ("pre-processed by the standard algorithm used for routine (culture-based) bacterial identification, which provided a peak-list representation", the archive's README). The m/z of the bins is not published, so the axis is the bin number; the recommended encoding leaves a peak list as it is.
+- The spectrum is declared as one (`special_features`, CLEAN-26, 2026-11-02) in the state the instrument's software left it: a peak list on 1,300 fixed bins ("pre-processed by the standard algorithm used for routine (culture-based) bacterial identification, which provided a peak-list representation", the archive's README). The m/z of the bins is not published, so the axis is the bin number; the recommended encoding leaves a peak list as it is.
 
 ## Splits
 
@@ -304,7 +305,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (28 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
 
 - **info** `task_metric_input_is_model_input`: The metric's input column(s) ['Strain'] are also given to the models (a feature, the group or the time column); they are not scoring columns. (hint: Declare a column as a `ScoringColumn` only when it exists for scoring alone and must not be a feature.)
 
@@ -510,4 +511,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c5c28160ff8325d17b2f664ab183808d1496dc37d267c7c424068109a3a70074` |
+| stale | yes: the definition now gives checksum `v2:2d27efa12a31b37ea297e7e75788185b92d17b2347e2540cebd9ef41962ec8b5` |

@@ -64,7 +64,7 @@ class MicroMass(AbstractCuratedDataset):
         - We drop columns with the same value across all samples.
         - We drop constant columns (all 0).
         - Each strain has one species; the 20 species have 7 to 20 strains each (median 10; Escherichia coli 20, Haemophilus influenzae 18, Enterobacter cloacae 16; from the v1 exploration, counted 2026-10-22).
-        - The spectrum is declared as one (`spectra`, CLEAN-26, 2026-11-02) in the state the instrument's software left it: a peak list on 1,300 fixed bins ("pre-processed by the standard algorithm used for routine (culture-based) bacterial identification, which provided a peak-list representation", the archive's README). The m/z of the bins is not published, so the axis is the bin number; the recommended encoding leaves a peak list as it is.
+        - The spectrum is declared as one (`special_features`, CLEAN-26, 2026-11-02) in the state the instrument's software left it: a peak list on 1,300 fixed bins ("pre-processed by the standard algorithm used for routine (culture-based) bacterial identification, which provided a peak-list representation", the archive's README). The m/z of the bins is not published, so the axis is the bin number; the recommended encoding leaves a peak list as it is.
     """
 
     # Task
@@ -93,7 +93,7 @@ class MicroMass(AbstractCuratedDataset):
         """,
     )
 
-    spectra = (
+    special_features = (
         Spectrum(
             name="vitek_ms_peaks",
             prefix="peak_list_spectra_bin_",

@@ -69,7 +69,6 @@ from data_foundry.schema import (
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadataV2,
     ScoringColumn,
-    SemanticColumn,
     as_column_list,
     resolve_warehouse_dir,
 )
@@ -90,8 +89,8 @@ from data_foundry.v2.preprocessing import (
 from data_foundry.v2.splits import SPLIT_RANDOM_STATE, SplitPlan, Splits, Temporal
 
 if TYPE_CHECKING:
-    from data_foundry.schema import FeatureGroup
-    from data_foundry.v2.spectra import Spectrum
+    from data_foundry.schema import SpecialFeature
+    from data_foundry.v2.special import SpecialFeatureSpec
 
 DEFINITION_FILENAME = "dataset.py"
 """The file that holds a dataset's definition, one per dataset folder."""
@@ -327,18 +326,19 @@ class AbstractCuratedDataset(ABC):
     """The columns the metric needs (``ScoringColumn(column=..., role=..., used_by=..., description=...)``, e.g.
     Numerai's ``era`` as the ``group`` of a per-era correlation): kept in the frame, never model features. Each one is
     an input of the metric (``Metric.source(..., inputs={"group": "era"})``)."""
-    smiles_columns: ClassVar[tuple[str, ...]] = ()
-    """Features that hold a molecule's structure as a SMILES string (CLEAN-24): cast to ``string`` and recorded in the
-    container as :class:`~data_foundry.schema.SemanticColumn` (type ``smiles``, with the recommended encoding's spec
-    id), so a benchmark encodes them as structures and never reads them as text. Ship the form
-    :func:`~data_foundry.v2.chemistry.canonical_smiles` gives; leave them out of :meth:`_feature_types`."""
-    spectra: ClassVar[tuple[Spectrum, ...]] = ()
-    """Spectra among the features (CLEAN-26): ``Spectrum(name=..., prefix=..., unit=..., technique=..., state=...,
-    description=...)`` (:class:`~data_foundry.v2.spectra.Spectrum`), whose columns are ``<prefix><position>``. They
-    stay numeric features as published, and the container records each as a
-    :class:`~data_foundry.schema.FeatureGroup` (the columns in axis order, the positions, the recommended encoding), so
-    a benchmark can encode the spectrum as one; never process them in ``_clean``. Leave them out of
-    :meth:`_feature_types`."""
+    special_features: ClassVar[tuple[SpecialFeatureSpec, ...]] = ()
+    """Model inputs that need handling beyond their dtype, declared like the target. Each entry is one special
+    feature, in one of two layouts (:mod:`data_foundry.v2.special`):
+
+    * one column (:class:`~data_foundry.v2.special.SpecialColumn`): ``Smiles(column="SMILES")``, a molecule's
+      structure (CLEAN-24), cast to ``string``; ship the form :func:`~data_foundry.v2.chemistry.canonical_smiles`
+      gives;
+    * a group of columns that hold one object together (:class:`~data_foundry.v2.special.SpecialColumnGroup`):
+      ``Spectrum(name="serum_ms", prefix="M/Z:", unit="m/z", technique=..., state=..., description=...)``, one column
+      per position on a spectrum's axis, named ``<prefix><position>`` (CLEAN-26); never process them in ``_clean``.
+
+    The container records each as a :class:`~data_foundry.schema.SpecialFeature` (kind, layout, columns, the
+    recommended encoding), so a benchmark encodes it by its kind. Leave the columns out of :meth:`_feature_types`."""
     stratify_on: ClassVar[Any] = AUTO
     """Column(s) to stratify on. Default: the target for classification, nothing for regression."""
     grouping: ClassVar[Grouping | None] = None
@@ -566,8 +566,7 @@ class AbstractCuratedDataset(ABC):
             declared["grouping.on"] = as_column_list(self.grouping.on)
             declared["grouping.time_on"] = as_column_list(self.grouping.time_on)
         declared["scoring_columns"] = [c.column for c in task.scoring_columns]
-        declared["smiles_columns"] = list(self.smiles_columns)
-        self.feature_groups(df)  # every spectrum's prefix matches at least two columns with a position
+        self.special_feature_records(df)  # every declared special feature finds its columns
         declared["metric inputs"] = list(task.objective_metric.inputs.values())
         for attribute, columns in declared.items():
             missing = [c for c in columns if c not in df.columns]
@@ -592,7 +591,7 @@ class AbstractCuratedDataset(ABC):
             df,
             categorical=[c for c in types.categorical if c in present or order],
             ordinal={c: levels for c, levels in types.ordinal.items() if c in present or order},
-            string=[c for c in (*types.string, *self.smiles_columns) if c in present or order],
+            string=[c for c in (*types.string, *self._special_columns(df, "string")) if c in present or order],
             datetime={c: f for c, f in types.datetime_formats.items() if c in present or order},
         )
         df = canonical_nans(canonical_dtypes(df))
@@ -618,17 +617,11 @@ class AbstractCuratedDataset(ABC):
                 ordinal=types.ordinal,
             )
         listed = {*types.categorical, *types.string, *types.datetime_formats, *types.ordinal}
-        if listed & set(self.smiles_columns):
+        special = set(self._special_columns(df))
+        if listed & special:
             msg = (
-                f"{type(self).__name__}: {sorted(listed & set(self.smiles_columns))} is in `smiles_columns`, which "
-                "types it; leave it out of `_feature_types`."
-            )
-            raise DatasetDefinitionError(msg)
-        spectral = {c for group in self.feature_groups(df) for c in group.columns}
-        if listed & spectral:
-            msg = (
-                f"{type(self).__name__}: {sorted(listed & spectral)[:5]} is a column of a spectrum (`spectra`), a "
-                "number; leave it out of `_feature_types`."
+                f"{type(self).__name__}: {sorted(listed & special)[:5]} is a column of a special feature "
+                "(`special_features`), which types it; leave it out of `_feature_types`."
             )
             raise DatasetDefinitionError(msg)
         if self.problem_type != "regression" and self.target not in listed and self.target in df.columns:
@@ -640,15 +633,38 @@ class AbstractCuratedDataset(ABC):
             )
         return types
 
-    def feature_groups(self, df: pd.DataFrame) -> list[FeatureGroup]:
-        """The container's record of the definition's ``spectra`` for the columns of ``df``, in declaration order."""
-        return [spectrum.feature_group(df.columns) for spectrum in self.spectra]
+    def special_feature_records(self, df: pd.DataFrame) -> list[SpecialFeature]:
+        """The container's records of the definition's ``special_features`` for the columns of ``df``, in order.
+
+        Raises:
+            DatasetDefinitionError: A special feature does not find its columns in ``df``.
+        """
+        from data_foundry.v2.special import SpecialFeatureError  # noqa: PLC0415 - special imports this module's users
+
+        try:
+            return [spec.record(df.columns) for spec in self.special_features]
+        except SpecialFeatureError as error:
+            raise DatasetDefinitionError(f"{type(self).__name__}: {error}") from error
+
+    def _special_columns(self, df: pd.DataFrame, dtype: str | None = None) -> list[str]:
+        """The columns of the special features in ``df`` (only those whose kind casts to ``dtype``, when given)."""
+        specs = [s for s in self.special_features if dtype is None or s.dtype == dtype]
+        names = list(df.columns)
+        return [c for spec in specs for c in self._resolve(spec, names)]
+
+    def _resolve(self, spec: SpecialFeatureSpec, names: list[str]) -> list[str]:
+        from data_foundry.v2.special import SpecialFeatureError  # noqa: PLC0415
+
+        try:
+            return spec.resolve(names)[0]
+        except SpecialFeatureError as error:
+            raise DatasetDefinitionError(f"{type(self).__name__}: {error}") from error
 
     def task_metadata_for(self, df: pd.DataFrame) -> PredictiveMLTaskMetadataV2:
-        """:attr:`task_metadata` with the feature groups of ``df`` (the spectra's columns depend on the frame)."""
-        if not self.spectra:
+        """:attr:`task_metadata` with the special features of ``df`` (a group's columns depend on the frame)."""
+        if not self.special_features:
             return self.task_metadata
-        return dataclasses.replace(self.task_metadata, feature_groups=self.feature_groups(df))
+        return dataclasses.replace(self.task_metadata, special_features=self.special_feature_records(df))
 
     @property
     def df(self) -> pd.DataFrame:
@@ -1280,29 +1296,8 @@ def _build_metadata(cls: type[AbstractCuratedDataset]) -> tuple[DatasetMetadata,
         time_on=cls.temporal.on if cls.temporal is not None else None,
         grouping=grouping,
         scoring_columns=[dataclasses.replace(c, description=clean_text(c.description)) for c in cls.scoring_columns],
-        semantic_columns=_smiles_semantic_columns(cls.smiles_columns),
     )
     return dataset, task
-
-
-def _smiles_semantic_columns(columns: tuple[str, ...]) -> list[SemanticColumn]:
-    """The container's record of a definition's ``smiles_columns``, naming the recommended encoding."""
-    if not columns:
-        return []
-    from data_foundry.v2.chemistry import DEFAULT_SMILES_ENCODING  # noqa: PLC0415 - chemistry imports this module
-
-    description = (
-        "A molecule's structure as a SMILES string (RDKit's canonical SMILES; salts and stereochemistry as the "
-        "definition ships them). Encode it as a structure, never as text; recommended: "
-        "data_foundry.v2.chemistry.encode_smiles "
-        f"({DEFAULT_SMILES_ENCODING.description})"
-    )
-    return [
-        SemanticColumn(
-            column=c, semantic_type="smiles", description=description, recommended_encoding=DEFAULT_SMILES_ENCODING.id
-        )
-        for c in columns
-    ]
 
 
 def metric_spec(metric: Metric, problem_type: str) -> MetricSpec:
@@ -1396,16 +1391,16 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         isinstance(c, ScoringColumn) for c in cls.scoring_columns
     ):
         fail("`scoring_columns` must be a tuple of `ScoringColumn(...)`.")
-    if isinstance(cls.smiles_columns, str) or not all(isinstance(c, str) for c in cls.smiles_columns):
-        fail("`smiles_columns` must be a tuple of column names.")
-    from data_foundry.v2.spectra import Spectrum  # noqa: PLC0415 - spectra imports this module
+    from data_foundry.v2.special import SpecialFeatureSpec  # noqa: PLC0415 - the kinds import this module
 
-    if not isinstance(cls.spectra, tuple) or not all(isinstance(s, Spectrum) for s in cls.spectra):
-        fail("`spectra` must be a tuple of `Spectrum(...)`.")
-    if len({s.name for s in cls.spectra}) != len(cls.spectra) or len({s.prefix for s in cls.spectra}) != len(
-        cls.spectra
-    ):
-        fail("two `spectra` share a name or a prefix.")
+    moved = [a for a in ("smiles_columns", "spectra") if a in vars(cls)]
+    if moved:
+        fail(f"{', '.join(moved)}: declare it in `special_features` (`Smiles(column=...)`, `Spectrum(...)`).")
+    specs = cls.special_features
+    if not isinstance(specs, tuple) or not all(isinstance(s, SpecialFeatureSpec) for s in specs):
+        fail("`special_features` must be a tuple of special features (`Smiles(column=...)`, `Spectrum(...)`).")
+    if len({s.feature_name for s in specs}) != len(specs):
+        fail("two `special_features` share a name.")
     if cls.temporal is not None and not isinstance(cls.temporal, Temporal):
         fail("`temporal` must be a `Temporal(...)`.")
     if cls.grouping is not None and cls.temporal is not None:

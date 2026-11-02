@@ -188,16 +188,18 @@ The task is going from the structure to a prediction (Lennart, 2026-11-01). So:
 
 ## In Data Foundry
 
-* **A definition:** `smiles_columns = ("SMILES",)`, with the column written by `canonical_smiles(...)`. Options:
+* **A definition:** `special_features = (Smiles(column="SMILES"),)`, a special feature in one column, written by
+  `canonical_smiles(...)`. Options:
   `largest_fragment=True` (check what it keeps first) and `stereo=False` (the copy key). The split groups come from
   `scaffold_groups(...)`.
   * Reference definitions: qsar_oral_toxicity (copies by structure and InChIKey, a repair, a prepared raw file),
     qsar_tid_11 (structures recovered from a ChEMBL release), drug_induced_autoimmunity_prediction (stereo pairs),
     nci_aids_antiviral_screen (an SD file, salts, unreadable records), apistox (a temporal molecule task).
   * The recipe: [definitions.md](../../knowledge-data-foundry/references/definitions.md), "The preprocessing recipe
-    (`_clean`)", step 6, and the `smiles_columns` bullet of "Field mapping".
-* **The container** records the column in `task_metadata.semantic_columns` (type `smiles`, the recommended encoding's
-  id); `semantic_columns(container, "smiles")` lists it.
+    (`_clean`)", step 6, and the `special_features` bullet of "Field mapping".
+* **The container** records the column in `task_metadata.special_features` (kind `smiles`, layout `column`, encoding
+  required, the recommended encoding's id); `special_features(container, "smiles")` lists it, and
+  `encode_special_feature(df, feature)` (`data_foundry.v2.special`) encodes it.
 * **Encodings:** `encode_smiles` and `DEFAULT_SMILES_ENCODING` (`data_foundry.v2.chemistry`); the date and text
   encodings and `recommended_encodings()` are in `data_foundry.v2.encodings`.
 * **Checks:** the bundle check `dataset_smiles_column` parses every value with the pinned RDKit, and a SMILES column

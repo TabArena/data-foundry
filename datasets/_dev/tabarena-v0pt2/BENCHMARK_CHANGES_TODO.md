@@ -129,6 +129,31 @@ recommend:
 * Until TabArena scores at the group unit, the three group-unit datasets are scored per row; the metadata says what
   the right unit is, and nothing is held back.
 
+## Special features: one contract for every kind
+
+Added 2026-11-02 (Lennart: one general form "like the target column", not a field per kind, so that later kinds such
+as a shipped embedding fit without new fields). Data Foundry side done.
+
+- [ ] **Read `task_metadata.special_features` in the adapter, whatever the kind.** A v0.2 container lists every model
+  input that needs handling beyond its dtype as a `data_foundry.schema.SpecialFeature`:
+  - `name`; `kind` (`smiles`, `spectrum`; more later);
+  - `layout`: `column`, one column (a SMILES), or `group`, several columns in a fixed order encoded together (a
+    spectrum);
+  - `columns`; `encoding_required`, true when the raw values are no model input (a SMILES string), false when they
+    are numbers a model can read (a spectrum's intensities);
+  - `recommended_encoding`, a spec id; `details`, what the kind adds (a spectrum's axis, unit, technique, state).
+
+  `data_foundry.curation_container.special_features(container, kind=None)` lists them, and
+  `data_foundry.v2.special.encode_special_feature(df, feature, encoding=None)` replaces a feature's columns by their
+  encoding, where they stand. `encodings_for(feature)` gives the candidates, the recommended one first. Map each
+  feature to an AutoGluon special type named by its `kind` (`FeatureMetadata` takes any name), with one generator per
+  kind that calls the entry point.
+- [ ] **The guard is generic:** a feature with `encoding_required` is encoded or left out, never passed on as its
+  dtype (a SMILES as text). A feature without it may go to a model as it is when the method switches the encoding off.
+- [ ] **Caching follows `Encoding.scope`:** `value` (one row per distinct value: SMILES, e5, dates), `row` (one per row,
+  no fitting: spectra; cheap, no cache needed) or `split` (fitted on each split's training rows: TF-IDF). The cache
+  contract below keys every cached encoding by its spec id.
+
 ## Encodings and their caches
 
 Added 2026-11-01 (Lennart: "introduce caching for all encodings in a nice way, which we should anyhow revisit for
@@ -147,19 +172,19 @@ tabarena-v0.2 with good time keeping and adding it on top of the benchmark recor
   it to each method's fit time (the test rows' share to its inference time) in the benchmark record, as if the method
   had computed the encoding itself (Lennart, 2026-11-01). Note it in the record's description of the timing, so a
   reader knows cached preprocessing is included.
-- [ ] **SMILES columns: encode them as structures (Data Foundry side done, 2026-11-01).** A v0.2 container now ships a
-  molecule's structure as a `string` column listed in `task_metadata.semantic_columns`
-  (`data_foundry.schema.SemanticColumn`: `column`, `semantic_type` `smiles`, `description`,
-  `recommended_encoding`, e.g. `rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1`); `data_foundry.curation_container.semantic_columns
-  (container, "smiles")` lists them. Datasets: apistox, drug_induced_autoimmunity_prediction, qsar_bioconcentration,
-  qsar_oral_toxicity, qsar_tid_11 (and the molecule candidates to come). TabArena needs, in this order:
+- [ ] **SMILES columns: encode them as structures (Data Foundry side done, 2026-11-01; since 2026-11-02 a special
+  feature of kind `smiles`, layout `column`, `encoding_required`).** A v0.2 container ships a molecule's structure as
+  a `string` column listed in `task_metadata.special_features` (recommended encoding e.g.
+  `rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1`); `special_features(container, "smiles")` lists them. Datasets: apistox,
+  drug_induced_autoimmunity_prediction, nci_aids_antiviral_screen, the five qsar_* sets (and the molecule candidates
+  to come). TabArena needs, in this order:
   - **A guard first.** The model-agnostic pipeline marks every pandas `string` column as text
     (`StringFixAsTypeFeatureGenerator`) and embeds it with Qwen3-Embedding-8B at 32 dimensions. On `apistox` that
     embedding of the SMILES scored no better than no structure at all (ROC AUC 0.78-0.81 against 0.70-0.82; ECFP4
     bits or character n-grams 0.83-0.85; record, 2026-10-07). Until the generator below exists, the adapter must drop a
-    semantic column (or encode it as below), never pass it on as text.
-  - **The adapter** passes `semantic_columns` into the task, and the pipeline maps them to an AutoGluon special type
-    `smiles` (`FeatureMetadata` takes any special-type name); the text generators exclude it.
+    special feature with `encoding_required` (or encode it as below), never pass it on as text.
+  - **The adapter** passes `special_features` into the task, and the pipeline maps them to AutoGluon special types by
+    kind (`smiles` here); the text generators exclude them.
   - **A SMILES feature generator** with the recommended encoding (`data_foundry.v2.chemistry.encode_smiles`: RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts, one row per molecule; Data Foundry is already a dependency) or TabArena's own,
     cached by value under the encoding's id on the cache contract above, so a fit needs no RDKit.
     The recommended encoding is wide (about 1,400 columns, the ECFP4 counts added by default because they helped once:
@@ -177,21 +202,18 @@ tabarena-v0.2 with good time keeping and adding it on top of the benchmark recor
   preprocessing may be disable-able"): a method that brings its own encoding of SMILES, text or dates gets the raw
   column.
 
-## Spectra (feature groups)
+## Spectra
 
-Added 2026-11-02 (PR #21, Andrej's proposal, with Lennart's decisions: spectra as typed feature groups, full
-resolution, the field's published defaults). Data Foundry side done; nothing changes for a pipeline that ignores the
-groups, since the bins stay numeric features.
+Added 2026-11-02 (PR #21, Andrej's proposal, with Lennart's decisions: spectra as special features in a group of
+columns, full resolution, the field's published defaults). Data Foundry side done; nothing changes for a pipeline that
+ignores them, since the bins stay numeric features.
 
-- [ ] **Read `feature_groups` in the adapter.** A v0.2 container lists its spectra in `task_metadata.feature_groups`
-  (`data_foundry.schema.FeatureGroup`: `name`, `semantic_type` `spectrum`, `columns` in axis order, `axis`,
-  `axis_unit`, `technique`, `state` `raw` / `processed` / `peaks`, `recommended_encoding`);
-  `data_foundry.curation_container.feature_groups(container, "spectrum")` lists them. Datasets:
-  pancreatic_cancer_mouse_detection (raw SELDI-TOF, 6,771 bins) and micro_mass (a VITEK MS peak list, 1,082 bins);
-  about 40 Raman, infrared and near-infrared candidates are queued. Map the columns to an AutoGluon special type
-  `spectrum`, one group per spectrum.
-- [ ] **A spectrum feature generator** that encodes each group row by row with its `recommended_encoding`
-  (`data_foundry.v2.spectra.encode_spectrum(frame, group.axis, group.recommended_encoding)`): for a raw mass spectrum
+- [ ] **Spectra are special features of kind `spectrum`** (layout `group`, `encoding_required` false), read through the
+  contract above: `special_features(container, "spectrum")`; `details` holds the axis, its unit, the technique and
+  the state (`raw` / `processed` / `peaks`). Datasets: pancreatic_cancer_mouse_detection (raw SELDI-TOF, 6,771 bins)
+  and micro_mass (a VITEK MS peak list, 1,082 bins); about 40 Raman, infrared and near-infrared candidates are queued.
+- [ ] **A spectrum feature generator** that encodes each spectrum row by row with its `recommended_encoding`
+  (`encode_special_feature(df, feature)`, `data_foundry.v2.special`): for a raw mass spectrum
   MALDIquant's steps (`ms-sqrt-sg21-snip100-tic-r1`), for anything else the columns as they are
   (`spectrum-as-is-r1`). No fitting, no labels, so the same values in every split; it costs milliseconds per spectrum,
   so it needs no cache, but its time counts in each method's fit time like the cached encodings. Switchable per
