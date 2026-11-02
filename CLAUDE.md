@@ -45,12 +45,11 @@ gotchas that look like blockers but aren't — lives in
   human ask.
 * **TabArena v0.2 working copy:** `datasets/_dev/tabarena-v0pt2/` holds one
   v2 folder per dataset of TabArena v0.2 (migrated from the BeyondArena notebooks
-  and rebuilt on 2026-10-02; its `README.md` has the table of datasets and UUIDs and
-  how to rebuild them, its `GETTING_STARTED.md` the way in for a new curator). Every change there (edited definition or helper file, added or
-  removed dataset, a re-run that makes a new container) gets a dated entry in its
-  `CHANGELOG.md`, and a new, removed or rebuilt dataset also updates the table in its
-  `README.md`. A dataset retired to `No (Retired)` is removed from the copy. Open questions for the curator live in
-  a folder's `REVIEW.md` until they are settled.
+  and rebuilt on 2026-10-02; its `README.md` says how to rebuild them, its
+  `GETTING_STARTED.md` is the way in for a new curator). Every change there (edited definition or helper file, added
+  or removed dataset, a re-run that makes a new container) gets a dated entry in its
+  `CHANGELOG.md`. A dataset retired to `No (Retired)` is removed from the copy. Open questions for the curator live
+  in a folder's `REVIEW.md` until they are settled.
 * **v2 only for new work:** every new dataset is a v2 folder. The BeyondArena notebooks are Data Foundry v1;
   never add or re-curate a dataset with v1. [DATA_FOUNDRY_V1.md](DATA_FOUNDRY_V1.md) is the one page about v1.
 * **Writing style:** AGENTS.md ends with "AI Writing Tropes to Avoid" — it

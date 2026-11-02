@@ -136,7 +136,7 @@ Apply that mark only once the curator has answered; apply the others now. Never 
   use, close a settled item in the working copy's `REVIEW.md` with a `**Resolved (<date>):**` label instead of
   deleting it: the page stores its marks by position.
 
-Every change to the working copy gets its dated `CHANGELOG.md` entry, and a removed dataset leaves the README table
+Every change to the working copy gets its dated `CHANGELOG.md` entry
 ([working_copy.md](../knowledge-data-foundry/references/working_copy.md)). Run `pytest -q`, `ruff` on changed Python
 and `validate` before offering the commit; commits and pushes need the curator's ask. When the session ends, offer the
 register's report on the decisions of the day (`decision_register.py --since <date>`).
