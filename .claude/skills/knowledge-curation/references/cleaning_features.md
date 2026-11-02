@@ -285,7 +285,8 @@ lists it in `spectra` (the columns `<prefix><position>`, the unit, the technique
 as it encodes a SMILES, a date or text. The processing has free choices (window, baseline method, normalisation), so
 written into the data one of them becomes the task and a method that processes spectra itself loses the signal. The
 recommended encoding follows the field's published default, never a tuning on our folds: MALDIquant's steps for a raw
-mass spectrum (square root, Savitzky-Golay over 21 points, SNIP baseline, total ion current), the spectrum as it is
+mass spectrum (square root, Savitzky-Golay over 21 points, SNIP baseline, total ion current; a placeholder, since the
+literature names no best pipeline and the benchmark picks among the registered published candidates), the spectrum as it is
 for a peak list or a processed spectrum, and for a vibrational spectrum (Raman, infrared, near-infrared) the spectrum as
 it is, with RamanBench's linear-model default (ALS baseline, SNV) the alternative to check. Raw mass spectra need the
 processing: on pancreatic_cancer_mouse_detection it lifts the tree models by 0.10 to 0.15 ROC AUC and TabPFN v3.5 by

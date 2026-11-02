@@ -5,11 +5,14 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 import pytest
-from data_foundry.v2 import Spectrum, encode_spectrum, spectrum_encoding
+from data_foundry.v2 import Spectrum, encode_spectrum, spectra, spectrum_encoding
 from data_foundry.v2.dataset import DatasetDefinitionError
 from data_foundry.v2.encodings import recommended_encodings
 from data_foundry.v2.spectra import (
     AS_IS_ENCODING,
+    CROMWELL_FILTER,
+    CROMWELL_LOG2_ENCODING,
+    DRIAMS_ENCODING,
     MS_RAW_ENCODING,
     VIBRATIONAL_ALS_SNV_ENCODING,
     snip_baseline,
@@ -106,7 +109,7 @@ def test_the_default_follows_the_technique_and_the_state() -> None:
     assert spectrum_encoding("mass_spectrometry", "peaks") == AS_IS_ENCODING
     assert spectrum_encoding("raman", "raw") == AS_IS_ENCODING
     encodings = recommended_encodings()
-    assert encodings["mass_spectrum"] == (MS_RAW_ENCODING,)
+    assert encodings["mass_spectrum"] == (MS_RAW_ENCODING, DRIAMS_ENCODING, CROMWELL_LOG2_ENCODING)
     assert encodings["vibrational_spectrum"] == (AS_IS_ENCODING, VIBRATIONAL_ALS_SNV_ENCODING)
     assert MS_RAW_ENCODING.id == "ms-sqrt-sg21-snip100-tic-r1"
 
@@ -120,3 +123,44 @@ def test_a_spectrum_reads_its_columns_in_axis_order() -> None:
     assert (group.semantic_type, group.recommended_encoding) == ("spectrum", AS_IS_ENCODING.id)
     with pytest.raises(DatasetDefinitionError, match="same position"):
         spectrum.columns(["cm_1", "cm_1.0"])
+
+
+def test_driams_removes_the_baseline_twice_and_the_scale() -> None:
+    """DRIAMS's steps: the baseline is gone, every row has unit area, and rows that differ only in scale come out the
+    same.
+    """
+    frame, axis = _spectra()
+    values = encode_spectrum(frame, axis, DRIAMS_ENCODING).to_numpy()
+    assert (values >= 0).all()
+    area = ((values[:, 1:] + values[:, :-1]) / 2 * np.diff(axis)).sum(axis=1)
+    np.testing.assert_allclose(area, 1.0)
+    np.testing.assert_allclose(values[0], values[3], atol=1e-3 * values.max())
+    assert not np.allclose(values, encode_spectrum(frame, axis, MS_RAW_ENCODING).to_numpy())
+
+
+def test_the_cromwell_wavelet_is_orthonormal_and_inverts_without_a_threshold(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The Daubechies filter has unit norm and is orthogonal to its even shifts, and the undecimated transform
+    reconstructs a spectrum exactly when no coefficient is thresholded (a length padded to a multiple of 1,024).
+    """
+    h = np.asarray(CROMWELL_FILTER)
+    assert h.sum() == pytest.approx(np.sqrt(2))
+    assert (h**2).sum() == pytest.approx(1.0)
+    assert all(abs((h[: -2 * m] * h[2 * m :]).sum()) < 1e-12 for m in (1, 2, 3))
+    x = np.random.default_rng(0).normal(size=(2, 1500)).cumsum(axis=1)
+    monkeypatch.setattr(spectra, "CROMWELL_THRESHOLD", 0.0)
+    np.testing.assert_allclose(spectra._cromwell_denoise(x), x, atol=1e-9)
+
+
+def test_cromwell_denoises_and_ends_on_a_log2_scale_free_of_the_intensity_scale() -> None:
+    """Cromwell's chain removes most of the noise, gives finite log2 values, and rows that differ only in scale come
+    out the same.
+    """
+    frame, axis = _spectra(n=1200)
+    noisy = frame + np.random.default_rng(1).normal(scale=0.5, size=frame.shape) * np.arange(1, 5)[:, None]
+    denoised = spectra._cromwell_denoise(noisy.to_numpy())
+    assert np.abs(denoised - frame.to_numpy()).mean() < 0.5 * np.abs(noisy.to_numpy() - frame.to_numpy()).mean()
+    values = encode_spectrum(frame, axis, CROMWELL_LOG2_ENCODING).to_numpy()
+    assert np.isfinite(values).all()
+    np.testing.assert_allclose(values[0], values[3], atol=1e-6)
+    with pytest.raises(ValueError, match="too few"):
+        encode_spectrum(frame.iloc[:, :300], axis[:300], CROMWELL_LOG2_ENCODING)

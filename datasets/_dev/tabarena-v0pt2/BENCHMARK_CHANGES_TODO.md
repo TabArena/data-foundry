@@ -196,6 +196,48 @@ groups, since the bins stay numeric features.
   (`spectrum-as-is-r1`). No fitting, no labels, so the same values in every split; it costs milliseconds per spectrum,
   so it needs no cache, but its time counts in each method's fit time like the cached encodings. Switchable per
   method: a method that processes spectra itself gets the raw bins.
+- [ ] **Decide the default encoding of a raw mass spectrum: a benchmark choice** (Lennart, 2026-11-02). The literature
+  names no single best pipeline:
+  - Cruz-Marcelo et al. 2008 (Bioinformatics 24:2129): "none of the methods show uniformly better performances".
+  - Wegdam et al. 2009 (Proteome Science 7:19): "No pre-processing method significantly outperforms the other", "the
+    settings for pre-processing parameters lead to large differences in classification accuracy", and "We advocate
+    the evaluation over a range of parameter settings"; the classifier mattered more than the preprocessing.
+  - Meuleman et al. 2008 (BMC Bioinformatics 9:88): normalising helps, and scaling by a spread beats scaling by a mean.
+
+  There are two published traditions, the square root and the log, and three candidates are registered in
+  `data_foundry.v2.spectra` (`recommended_encodings()["mass_spectrum"]`, the placeholder default first):
+  - `ms-sqrt-sg21-snip100-tic-r1`: the MALDIquant vignette (Gibb and Strimmer 2012); the placeholder default.
+  - `ms-driams-sqrt-sg21-snip20-snip100-tic-r1`: DRIAMS's settings (Weis et al. 2022, Nature Medicine; their script
+    `DRIAMS-A_2015_preprocessed.r` in BorgwardtLab/maldi_amr), the largest machine-learning study on MALDI-TOF
+    spectra. Their trim to 2,000-20,000 Da and 3 Da bins change the columns, so they belong to the width step below.
+  - `ms-cromwell-udwt-mm-tic-log2-r1`: the log tradition of SELDI-TOF analysis. Cromwell's wavelet denoising and
+    monotone-minimum baseline (Coombes et al. 2005, Proteomics 5:4107; MD Anderson's MATLAB code), then the total ion
+    current and log2 as in Cromwell's and Ciphergen's pipelines (Wegdam et al. 2009). PR #21's own chain is close to
+    it.
+
+  The procedure, fixed before any result is seen:
+  - Candidates are published workflows only, with the raw bins as the reference. No setting is tuned on the
+    benchmark's folds.
+  - Datasets: every raw mass-spectrum dataset of the benchmark, at least two or three. Today only
+    pancreatic_cancer_mouse_detection; next the DRIAMS candidate and the NCI-FDA prostate SELDI set.
+  - Models: three families, a foundation model (TabPFN), gradient boosting, and a linear model or PLS-DA.
+  - Criterion: the mean normalised score over datasets and families; the candidate that hurts no family against the
+    raw bins wins ties. Then the most cited, then the simplest.
+  - Every method can switch the encoding off.
+
+  What one dataset shows so far, pancreatic (60 shipped splits, ROC AUC, 2026-11-02), and why it is not enough:
+
+  | Model | Raw | MALDIquant | DRIAMS | Cromwell log2 | PR #21's chain (reconstructed) |
+  |---|---|---|---|---|---|
+  | TabPFN v3.5 | 0.659 | 0.690 | not run | not run | 0.716 |
+  | HistGradientBoosting | 0.585 | 0.685 | 0.628 | 0.604 | 0.642 |
+  | LightGBM | 0.577 | 0.676 | 0.624 | 0.604 | 0.649 |
+  | Random forest | 0.536 | 0.681 | 0.663 | 0.591 | 0.657 |
+  | PLS-DA, 5 components | 0.635 | 0.691 | 0.646 | 0.639 | 0.713 |
+  | Logistic regression | 0.663 | 0.646 | 0.603 | 0.628 | 0.708 |
+
+  The DRIAMS and Cromwell settings were made for spectra at the instrument's full resolution; pancreatic's are binned
+  at 400 ppm, which may be why they trail here.
 - [ ] **Width goes to the feature-limit step**, not to the encoding: the encodings keep every bin (Lennart,
   2026-11-02). Averaging adjacent bins costs little (PR #21: TabPFN 3.5 0.733 against 0.725 with 8-bin averages on
   pancreatic) if a model needs fewer columns.

@@ -18,6 +18,13 @@ mass spectrum, ``raw``                     ``ms-sqrt-sg21-snip100-tic``     MALD
                                                                             (21 points, order 3), SNIP baseline
                                                                             (100 iterations) removed, divided by
                                                                             the total ion current
+mass spectrum, ``raw``, candidates          ``ms-driams-sqrt-sg21-snip20-     DRIAMS's MALDIquant steps (Weis et al.
+to compare                                 snip100-tic``                    2022): as above, the SNIP baseline
+                                                                            removed twice (20, then 100 iterations)
+                                           ``ms-cromwell-udwt-mm-tic-log2``  Cromwell's denoising and baseline
+                                                                            (Coombes et al. 2005): an undecimated
+                                                                            wavelet transform, a monotone minimum;
+                                                                            then the total ion current and log2
 mass spectrum ``peaks`` or ``processed``;  ``spectrum-as-is``               the columns unchanged
 a vibrational spectrum (Raman, infrared,
 near-infrared)
@@ -32,6 +39,13 @@ Every encoding works on one spectrum at a time, with no fitting and no labels: i
 the same row in every split, and returns the same columns with new values. MALDIquant's later steps (aligning the
 spectra on common peaks, detecting peaks and binning them) fit across spectra, so they are left out of a per-row
 default.
+
+The default for a raw mass spectrum is a placeholder until the benchmark decides it: the comparison studies find no
+pipeline that wins everywhere and large effects of the settings (Cruz-Marcelo et al. 2008; Wegdam et al. 2009,
+"We advocate the evaluation over a range of parameter settings"). The three raw mass-spectrum encodings are the
+published candidates of the two traditions, the square root (MALDIquant, DRIAMS) and the log (Cromwell, Ciphergen);
+``recommended_encodings()["mass_spectrum"]`` lists them, the default first. How the benchmark decides is in the working
+copy's ``BENCHMARK_CHANGES_TODO.md``, "Spectra".
 
 The evidence on pancreatic_cancer_mouse_detection (raw SELDI-TOF serum spectra, split by mouse): PR #21's own chain
 lifted every model by 0.07 to 0.13 ROC AUC on 12 folds (2026-10-21). On the 60 shipped splits (2026-11-02),
@@ -67,6 +81,30 @@ MS_POLYORDER = 3
 MS_SNIP_ITERATIONS = 100
 """MALDIquant's SNIP iterations (the vignette's value); the window shrinks from 100 to 1, MALDIquant's default."""
 
+DRIAMS_SNIP_ITERATIONS = (20, MS_SNIP_ITERATIONS)
+"""DRIAMS's two baseline removals: ``removeBaseline(removeBaseline(spectra, method="SNIP", iterations=20))``, the outer
+call with MALDIquant's default of 100 iterations (``DRIAMS-A_2015_preprocessed.r`` in BorgwardtLab/maldi_amr)."""
+
+CROMWELL_FILTER = (
+    0.2303778133088964,
+    0.7148465705529154,
+    0.6308807679298587,
+    -0.0279837694168599,
+    -0.1870348117190931,
+    0.0308413818355607,
+    0.0328830116668852,
+    -0.0105974017850690,
+)
+"""The Daubechies scaling filter with 8 coefficients, normalised to sum sqrt(2): the Rice Wavelet Toolbox's
+``daubcqf(8)``, which Cromwell's ``waveletSmoothAndBaselineCorrect`` uses."""
+
+CROMWELL_LEVELS = 10
+"""Cromwell's wavelet levels (its default ``L = 10``, blocks of 1,024 points)."""
+
+CROMWELL_THRESHOLD = 6.0
+"""Cromwell's threshold multiple of the finest level's median absolute coefficient divided by 0.67 (its example value;
+"we typically use thresholds in the range of 4-10")."""
+
 ALS_LAMBDA = 1e5
 """RamanBench's smoothness of the asymmetric least squares baseline (``prep_bl_lam``)."""
 
@@ -90,6 +128,37 @@ MS_RAW_ENCODING = Encoding(
 )
 """The recommended encoding of a raw mass spectrum."""
 
+DRIAMS_ENCODING = Encoding(
+    kind="spectrum",
+    name=f"ms-driams-sqrt-sg{2 * MS_HALF_WINDOW + 1}-snip20-snip100-tic",
+    revision=1,
+    description=(
+        "DRIAMS's preprocessing of a raw MALDI-TOF spectrum (Weis et al. 2022, Nature Medicine; their MALDIquant "
+        "script), per spectrum: the square root, Savitzky-Golay smoothing (21 points, order 3), the SNIP baseline "
+        "removed twice (20 iterations, then MALDIquant's default 100), then division by the total ion current. Their "
+        "trim to 2,000-20,000 Da and 3 Da bins change the columns, so they are left to the benchmark. Same columns, "
+        "new values; a spectrum with a missing value comes out missing."
+    ),
+)
+"""A candidate for raw mass spectra: the MALDIquant settings of the largest machine-learning study on MALDI-TOF
+spectra."""
+
+CROMWELL_LOG2_ENCODING = Encoding(
+    kind="spectrum",
+    name="ms-cromwell-udwt-mm-tic-log2",
+    revision=1,
+    description=(
+        "Cromwell's denoising and baseline (Coombes et al. 2005, Proteomics; MD Anderson's MATLAB code), per spectrum: "
+        "padded by reflecting its end to a multiple of 1,024 points, an undecimated wavelet transform (Daubechies, 8 "
+        "coefficients, 10 levels) whose detail coefficients are hard-thresholded at 6 times the finest level's median "
+        "absolute coefficient / 0.67, inverted and cut back; the monotone minimum (the lowest value so far, from the "
+        "first point) subtracted; divided by the total ion current; values of 0 set to half the spectrum's smallest "
+        "positive value (Ciphergen's rule, Wegdam et al. 2009), then log2. Same columns, new values."
+    ),
+)
+"""A candidate for raw mass spectra: the log tradition of SELDI-TOF analysis (Cromwell, Ciphergen), which PR #21's own
+chain follows."""
+
 AS_IS_ENCODING = Encoding(
     kind="spectrum",
     name="spectrum-as-is",
@@ -110,7 +179,10 @@ VIBRATIONAL_ALS_SNV_ENCODING = Encoding(
 )
 """The alternative encoding of a vibrational spectrum: check it next to the spectrum as it is."""
 
-SPECTRUM_ENCODINGS = {e.id: e for e in (MS_RAW_ENCODING, AS_IS_ENCODING, VIBRATIONAL_ALS_SNV_ENCODING)}
+SPECTRUM_ENCODINGS = {
+    e.id: e
+    for e in (MS_RAW_ENCODING, DRIAMS_ENCODING, CROMWELL_LOG2_ENCODING, AS_IS_ENCODING, VIBRATIONAL_ALS_SNV_ENCODING)
+}
 """Every spectrum encoding, by spec id."""
 
 
@@ -219,6 +291,50 @@ def _total_ion_current(values: np.ndarray, axis: np.ndarray) -> np.ndarray:
     return ((values[:, 1:] + values[:, :-1]) / 2.0 * np.diff(axis)).sum(axis=1)
 
 
+def _per_tic(values: np.ndarray, axis: np.ndarray) -> np.ndarray:
+    """Each row divided by its total ion current; a row of zeros stays zeros."""
+    tic = _total_ion_current(values, axis)[:, None]
+    return np.divide(values, tic, out=np.zeros_like(values), where=tic > 0)
+
+
+def _cromwell_denoise(values: np.ndarray) -> np.ndarray:
+    """Cromwell's wavelet denoising of each row, as the Rice Wavelet Toolbox's ``denoise(x, daubcqf(8), 1, [0 t 0 1 L
+    0])`` computes it: the undecimated transform (circular, the filters spread by 2 per level), every detail
+    coefficient at or below the threshold set to 0, the inverse transform (each level's two branches averaged).
+    """
+    n = values.shape[1]
+    block = 2**CROMWELL_LEVELS
+    needs = -n % block
+    if needs > n:
+        msg = f"Cromwell's denoising pads by reflection to a multiple of {block} points; {n} columns are too few."
+        raise ValueError(msg)
+    x = np.concatenate([values, values[:, n - needs :][:, ::-1]], axis=1) if needs else values.copy()
+    low = np.asarray(CROMWELL_FILTER)
+    high = np.array([(-1) ** k * low[len(low) - 1 - k] for k in range(len(low))])
+    approx, details = x, []
+    for level in range(CROMWELL_LEVELS):
+        step = 2**level
+        shifted = [np.roll(approx, -step * k, axis=1) for k in range(len(low))]
+        details.append(sum(g * part for g, part in zip(high, shifted, strict=True)))
+        approx = sum(h * part for h, part in zip(low, shifted, strict=True))
+    threshold = CROMWELL_THRESHOLD * np.median(np.abs(details[0]), axis=1, keepdims=True) / 0.67
+    details = [np.where(np.abs(d) > threshold, d, 0.0) for d in details]
+    for level in reversed(range(CROMWELL_LEVELS)):
+        step = 2**level
+        approx = 0.5 * sum(
+            h * np.roll(approx, step * k, axis=1) + g * np.roll(details[level], step * k, axis=1)
+            for k, (h, g) in enumerate(zip(low, high, strict=True))
+        )
+    return approx[:, :n]
+
+
+def _log2_positive(values: np.ndarray) -> np.ndarray:
+    """log2 of each row, its values of 0 or below set first to half its smallest positive value (Ciphergen's rule)."""
+    positive = np.where(values > 0, values, np.inf).min(axis=1, keepdims=True)
+    floor = np.where(np.isfinite(positive), positive / 2, 1.0)
+    return np.log2(np.where(values > 0, values, floor))
+
+
 def als_baseline(values: np.ndarray, lam: float = ALS_LAMBDA, p: float = ALS_P, n_iter: int = ALS_ITERATIONS):
     """The asymmetric least squares baseline of each row (Eilers and Boelens 2005), as RamanBench computes it."""
     sparse = import_build_dependency("scipy.sparse")
@@ -265,14 +381,18 @@ def encode_spectrum(frame: pd.DataFrame, axis: Sequence[float], encoding: Encodi
     values = frame.to_numpy(dtype="float64", na_value=np.nan)
     complete = np.isfinite(values).all(axis=1)
     out = np.full_like(values, np.nan)
-    if spec == MS_RAW_ENCODING:
+    if spec in (MS_RAW_ENCODING, DRIAMS_ENCODING):
         if values.shape[1] < 2 * MS_HALF_WINDOW + 1:
             msg = f"A raw mass spectrum needs {2 * MS_HALF_WINDOW + 1} columns to smooth, got {values.shape[1]}."
             raise ValueError(msg)
-        smoothed = _savitzky_golay(_sqrt(values[complete]), MS_HALF_WINDOW, MS_POLYORDER)
-        corrected = smoothed - snip_baseline(smoothed)
-        tic = _total_ion_current(corrected, positions)
-        out[complete] = np.divide(corrected, tic[:, None], out=np.zeros_like(corrected), where=tic[:, None] > 0)
+        corrected = _savitzky_golay(_sqrt(values[complete]), MS_HALF_WINDOW, MS_POLYORDER)
+        for iterations in (MS_SNIP_ITERATIONS,) if spec == MS_RAW_ENCODING else DRIAMS_SNIP_ITERATIONS:
+            corrected = corrected - snip_baseline(corrected, iterations)
+        out[complete] = _per_tic(corrected, positions)
+    elif spec == CROMWELL_LOG2_ENCODING:
+        smoothed = _cromwell_denoise(values[complete])
+        corrected = smoothed - np.minimum.accumulate(smoothed, axis=1)
+        out[complete] = _log2_positive(_per_tic(corrected, positions))
     else:  # VIBRATIONAL_ALS_SNV_ENCODING
         rows = values[complete]
         out[complete] = _snv(rows - als_baseline(rows))

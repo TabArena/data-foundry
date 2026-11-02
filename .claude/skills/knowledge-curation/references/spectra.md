@@ -58,6 +58,8 @@ same values in every split. The defaults follow the field's published workflows,
 | Spectrum | Recommended (spec id) | Steps |
 |---|---|---|
 | mass, `raw` | `ms-sqrt-sg21-snip100-tic-r1` | MALDIquant's vignette (Gibb and Strimmer 2012): square root, Savitzky-Golay over 21 points (order 3), SNIP baseline (100 iterations) removed, divided by the total ion current |
+| mass, `raw`, candidates to compare | `ms-driams-sqrt-sg21-snip20-snip100-tic-r1` | DRIAMS's settings (Weis et al. 2022): as above, the SNIP baseline removed twice (20, then 100 iterations) |
+| | `ms-cromwell-udwt-mm-tic-log2-r1` | Cromwell's wavelet denoising and monotone-minimum baseline (Coombes et al. 2005), then the total ion current and log2 (the Cromwell and Ciphergen pipelines, Wegdam et al. 2009) |
 | mass, `peaks` or `processed` | `spectrum-as-is-r1` | none: the source already processed it |
 | vibrational (Raman, infrared, near-infrared) | `spectrum-as-is-r1`, and check `vib-als-snv-r1` | RamanBench's linear-model default: asymmetric least squares baseline (lambda 1e5, p 0.01, 10 iterations), then the standard normal variate |
 
@@ -80,8 +82,14 @@ spectra, so they are no per-row default.
   rolling-minimum baseline, division by the total, a log) is reconstructed: the PR names no polynomial order or
   rolling window (order 2 and 101 bins here). It beats MALDIquant's steps for TabPFN (on 44 of 60 splits) and the
   linear models, likely through its log; MALDIquant's steps suit the trees better. PR #21 measured TabPFN 3.5 at 0.656
-  raw and 0.733 processed on its own 12 folds. The default stays the published workflow; a change to it is one
-  decision for all raw mass spectra, with evidence from more than one dataset.
+  raw and 0.733 processed on its own 12 folds. On these binned spectra the DRIAMS and Cromwell candidates trail
+  MALDIquant's steps for every CPU model (0.59 to 0.66).
+* **The raw mass-spectrum default is the benchmark's choice.** The comparison studies find no pipeline that wins
+  everywhere (Cruz-Marcelo et al. 2008; Wegdam et al. 2009: "the settings for pre-processing parameters lead to large
+  differences in classification accuracy"). There are two published traditions, the square root (MALDIquant, DRIAMS)
+  and the log (Cromwell, Ciphergen, and PR #21's chain). MALDIquant's steps stay the placeholder until the benchmark
+  compares the three registered candidates on every raw mass-spectrum dataset and three model families, by a rule
+  fixed in advance (`BENCHMARK_CHANGES_TODO.md`, "Spectra").
 * **Vibrational spectra may not.** RamanBench (arXiv:2605.02003, 77 datasets, 325,862 spectra): the leading methods
   (AutoGluon 1.5, then TabPFN v2.5 and TabICL v2) read the raw spectra; the baseline and SNV were the chemometric
   baselines' convention (PLS: smoothing, baseline and SNV; the linear model: baseline and SNV; kNN: SNV). No foundation

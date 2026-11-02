@@ -15,8 +15,9 @@ datetime  ``skrub-datetime`` (:func:`encode_datetime`)  skrub's ``DatetimeEncode
           periodic_encoding="circular")``, as BeyondArena and TabArena's ``tabarena_default`` pipeline
 text      ``tfidf-svd`` (:func:`encode_text_tfidf`) and ``e5-small-v2`` (:func:`encode_text_e5`): check both
 spectrum  by technique and state (:func:`~data_foundry.v2.spectra.spectrum_encoding`): a raw mass spectrum
-          ``ms-sqrt-sg21-snip100-tic`` (MALDIquant's steps), any other ``spectrum-as-is``; a vibrational spectrum
-          also ``vib-als-snv`` (RamanBench's linear-model default): check both
+          ``ms-sqrt-sg21-snip100-tic`` (MALDIquant's steps; DRIAMS's and Cromwell's chains the candidates to
+          compare), any other ``spectrum-as-is``; a vibrational spectrum also ``vib-als-snv`` (RamanBench's
+          linear-model default): check both
 ========  ========================================  ==========================================================
 
 Text has two recommendations because neither wins everywhere: TF-IDF fitted on the training rows reads the words (or
@@ -111,11 +112,14 @@ TEXT_E5_ENCODING = Encoding(
 def recommended_encodings() -> dict[str, tuple[Encoding, ...]]:
     """The recommended encodings by kind of column (``smiles``, ``datetime``, ``text``) or of spectrum
     (``mass_spectrum`` raw, ``processed_spectrum``: a processed mass spectrum or a peak list, ``vibrational_spectrum``:
-    Raman, infrared, near-infrared). Text and vibrational spectra have two, check both; the first is the default.
+    Raman, infrared, near-infrared). Text, raw mass spectra and vibrational spectra have several to compare; the first
+    is the default (for a raw mass spectrum a placeholder until the benchmark decides).
     """
     from data_foundry.v2.chemistry import DEFAULT_SMILES_ENCODING  # noqa: PLC0415 - chemistry imports this module
     from data_foundry.v2.spectra import (  # noqa: PLC0415 - spectra imports this module
         AS_IS_ENCODING,
+        CROMWELL_LOG2_ENCODING,
+        DRIAMS_ENCODING,
         MS_RAW_ENCODING,
         VIBRATIONAL_ALS_SNV_ENCODING,
     )
@@ -124,7 +128,7 @@ def recommended_encodings() -> dict[str, tuple[Encoding, ...]]:
         "smiles": (DEFAULT_SMILES_ENCODING,),
         "datetime": (DATETIME_ENCODING,),
         "text": (TEXT_TFIDF_ENCODING, TEXT_E5_ENCODING),
-        "mass_spectrum": (MS_RAW_ENCODING,),
+        "mass_spectrum": (MS_RAW_ENCODING, DRIAMS_ENCODING, CROMWELL_LOG2_ENCODING),
         "processed_spectrum": (AS_IS_ENCODING,),
         "vibrational_spectrum": (AS_IS_ENCODING, VIBRATIONAL_ALS_SNV_ENCODING),
     }

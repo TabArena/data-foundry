@@ -4,6 +4,26 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-11-02, raw mass spectra: two published candidate encodings; the default left to the benchmark (PR #21)
+
+The literature names no single best preprocessing of a raw mass spectrum, and the default is a benchmark choice
+(Lennart). Two candidates are registered next to the MALDIquant placeholder, each from the authors' own code:
+
+- `ms-driams-sqrt-sg21-snip20-snip100-tic-r1`, DRIAMS's settings (Weis et al. 2022, BorgwardtLab/maldi_amr): the
+  square root, Savitzky-Golay over 21 points, the SNIP baseline removed twice (20, then MALDIquant's default of 100
+  iterations), the total ion current. Their trim and 3 Da bins are left to the benchmark's width step.
+- `ms-cromwell-udwt-mm-tic-log2-r1`, the log tradition. Cromwell's wavelet denoising (MD Anderson's MATLAB code;
+  Daubechies filter with 8 coefficients, 10 levels, hard threshold at 6 times the finest level's median absolute
+  coefficient / 0.67) and its monotone-minimum baseline, then the total ion current and log2. Values of 0 are first
+  set to half the spectrum's smallest positive value, Ciphergen's rule. The undecimated transform is checked to
+  reconstruct a spectrum exactly without a threshold.
+
+`BENCHMARK_CHANGES_TODO.md` ("Spectra") has the decision procedure, fixed in advance, with the citations (Cruz-Marcelo
+et al. 2008, Wegdam et al. 2009, Meuleman et al. 2008). A sanity run on pancreatic's 60 splits (CPU models, ROC AUC):
+DRIAMS 0.60 to 0.66 and Cromwell 0.59 to 0.64, below MALDIquant's steps (0.65 to 0.69) for every model. Both sets of
+settings were made for spectra at the instrument's full resolution, and pancreatic's are binned at 400 ppm. One
+dataset decides nothing. No dataset changes.
+
 ## 2026-11-02, spectra declared as feature groups with recommended encodings (PR #21)
 
 Andrej's proposal in PR #21 (a default preprocessing for spectra in the evaluation pipeline, the data kept as
