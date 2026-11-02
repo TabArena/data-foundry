@@ -12,8 +12,11 @@ The open review issues live in git, next to what they are about:
 report into the review page. When a file breaks a rule below, the collector stops and names the file and the line.
 Fix the file, not the scripts.
 
-A review file holds only what is still open. When the curator settles an issue, the decision goes to the definition
-and the record, and the issue leaves the file; a REVIEW.md without issues and field rows is deleted. How to write an
+A review file keeps every issue, so the page shows how each dataset was decided. When the curator settles an issue,
+the decision goes to the definition and the record, and the issue stays in the file with a closing
+`**Resolved (<date>, <who>):**` turn that states the decision; the page hides it behind "Show resolved issues". A
+REVIEW.md is never deleted, so a decided dataset stays on the page (Andrej, 2026-11-02). A settled record-field row
+leaves the file. How to write an
 issue (evidence, links, what is no evidence) is in
 [`../../knowledge-curation/references/writing.md`](../../knowledge-curation/references/writing.md); the
 REVIEW.md convention of the working copy in
@@ -66,8 +69,6 @@ lands on it.
 
 The collector stops on:
 
-* an issue with a `**Resolved (...)**` or `**Deferred (...)**` label, or a title that starts with either word:
-  settled issues leave the file;
 * a line inside an issue that starts with a block label of the report (`**Data:**`, `**Split:**`, `**Task:**`,
   `**Verification:**`, ...): the page would read it as a new block;
 * a number used twice.
@@ -122,8 +123,7 @@ Blind review: would benchmark; main concern the year column. Debate: agreed on t
 * The panel holds no marks and no numbers: what the curator decides stays in the issues, which name the panel where
   it matters ("the critic disputes this"). No issue holds a line that starts with `**Review panel:**`: that line
   opens the panel and ends the issues.
-* The panel leaves with the file. While the file has open issues or field rows, the panel stays as the run wrote
-  it; when the last one is settled, the file and its panel are deleted. A panel alone does not keep a file.
+* The panel stays as the run wrote it, also once every issue is resolved.
 * Only a REVIEW.md has a panel; the open-issues block of a record without a folder has none.
 
 The collector stops on a second panel, a block label after the panel, a panel without its summary, text between the
@@ -165,7 +165,7 @@ After the title come only `### <section>` headings, each with items written as t
 from its bullet to the next one; its title is its bold lead or its first sentence. The page stores the curator's
 mark under the id `x<section>-<item>`, both counted from 0 in file order. So while a page is in use, close a settled
 item with a `**Resolved (<date>):**` label (the page hides it) instead of deleting it, and add new items at the end
-of a section and new sections at the end. Closed items are deleted when the next page starts.
+of a section and new sections at the end. Closed items stay, so the decisions remain on the page.
 
 ## The collected report
 

@@ -4,6 +4,13 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-11-02, pricing_game_2016_french_fleet: shipped (no container built)
+
+- The curator's verdict: ship. Issue 4 (the claim charge as target) and the metric confirmed as implemented; the
+  metric is this dataset's own call (MET-10 amended in `metrics.md`: no family call on the metric, in doubt for
+  diversity). The folder's `REVIEW.md` keeps issues 2-4 as resolved, so the review page keeps the dataset and its
+  decisions. [Record](../../../curation/records/pricing_game_2016_french_fleet.md).
+
 ## 2026-11-02, pricing_game_2016_french_fleet: the claim charge as target (no container built)
 
 - Target `claim` (a claim in the period) replaced by `claim_charge`, the period's claim charges summed with the 537 net

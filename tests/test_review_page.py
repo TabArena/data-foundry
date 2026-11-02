@@ -116,13 +116,6 @@ def _broken_copy(tmp_path: Path, file: str, old: str, new: str) -> tuple[Path, P
 @pytest.mark.parametrize(
     ("file", "old", "new", "line", "message"),
     [
-        (
-            "working_copy/airfoil_self_noise/REVIEW.md",
-            "1. **Keep",
-            "1. **Resolved (2026-10-02): keep",
-            15,
-            "is closed (Resolved or Deferred)",
-        ),
         ("working_copy/airfoil_self_noise/REVIEW.md", "   alternative.\n", "alternative.\n**Split:** x\n", 17, "label"),
         (
             "working_copy/airfoil_self_noise/REVIEW.md",
@@ -213,7 +206,7 @@ def test_working_copy_review_files_collect_and_parse(crv, brp, tmp_path):
     assert [row["name"] for row in report["rows"]] == [e.name for e in collected.entries]
     for e in collected.entries:
         assert report["rows"][[r["name"] for r in report["rows"]].index(e.name)]["outcome"] == e.cell
-        assert all(not it["resolved"] for it in report["records"][e.name]["items"])
+        assert [it["n"] for it in report["records"][e.name]["items"]] == e.numbers
 
 
 def test_fixture_report_builds_the_page(brp, tmp_path):

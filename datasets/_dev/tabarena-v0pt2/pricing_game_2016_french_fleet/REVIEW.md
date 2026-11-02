@@ -1,8 +1,8 @@
 # pricing_game_2016_french_fleet
 
-**Outcome:** added. The AI recommends shipping it. Settled on 2026-11-02: the `exposure` fix, the expanding windows
+**Outcome:** added. Shipped (the curator's verdict of 2026-11-02). Settled on 2026-11-02: the `exposure` fix, the expanding windows
 (SPLIT-11; SPLIT-14 amended so that windows sharing one train side count as one) with no gap (an exception to
-SPLIT-10), and the switch of the target to the claim charge per period (implemented; issue 4 asks you to confirm it).
+SPLIT-10), and the switch of the target to the claim charge per period (issue 4).
 The organisers' own files of the 2016 actuarial pricing game: 87,228 periods of cover of fleet vehicles of a French
 insurer, 2011-2013; the target is the period's claim charges summed, net IDA recoveries set to 0 (0 for 95.7% of the
 periods); the features are the rating classes and the length of cover known at the period's start; three four-month
@@ -20,9 +20,91 @@ for every period; the metric is a stand-in for the game's market; the statements
 corrected; the windows train on an expanding side; the target is the claim charge, not the claim indicator; every
 window figure is re-measured. The panel's sections describe the definition before these changes.
 
-**Main points:** Confirm the claim charge as the target, as implemented (4).
+**Main points:** Nothing open; every issue below is resolved (2, 3, 4), and issue 1, the `exposure` fix, is in the record.
 
 **Issues for Andrej:**
+
+2. **Count three windows of 2013 on one training side as SPLIT-14's windows?** SPLIT-14 (Must) asks a temporal task
+   for at least 3 windows, each training on at least 50% of the rows. The three windows are September-December,
+   May-August and January-April 2013, newest first. All three train on the same closed years 2011-2012 (64.4%). The
+   letter is met, but the windows are three slices of one test year, not three refits walking back in time. No dataset
+   has done this before.
+   * What it does to the task: rows are cut at 31 December, so a period that starts in September lasts at most four
+     months. Each window therefore holds one cohort of period lengths, and its score ranks within that cohort. After
+     the `exposure` fix the window mean runs below the pooled 2013 score (untuned LightGBM 0.626 against 0.669), and
+     the newest window holds 7% of the vehicle-years and 123 positives (standard error about 0.027), yet counts for a
+     third. The game's 2014 file has the same three cohorts, so the windows mirror the year the game priced.
+   * Implemented: (a) the three windows with the SPLIT-11 exception, and a first Cases row under SPLIT-14.
+   * Alternatives: (b) SPLIT-8, `ForcedGroupedFromTemporal` by contract. After the fix it scores 0.666-0.667 against
+     0.669 for the pooled test year, no more optimistic, but it mixes the training and test years. It also falls under
+     your how_much_did_it_rain call ("if the data is temporal but a temporal split is not possible ... reject it");
+     on 2026-11-02 you shipped forced grouped splits (SPLIT-8 amended), so (b) would ship. (c)
+     Amend SPLIT-14 to require distinct training sides; this dataset then goes to (b).
+     wisconsin_local_government_property_insurance_fund's issue 1 proposes a SPLIT-14 amendment the other way (two
+     yearly windows ship); decide the two readings together.
+   * For (a):
+     * the start dates are daily, and SPLIT-8 applies only when "the release cannot give the windows SPLIT-14 asks
+       for";
+     * a tariff is fit once a year, and the game priced a whole year from the closed years (SPLIT-12, SPLIT-19). That
+       fact supports the fixed training side, recorded as an exception to SPLIT-11 (Should, expanding windows);
+     * a training side growing into 2013 would add only the short 2013 periods already closed, selected by their early
+       end, and its scores are not decisive (after the fix 0.621 against 0.613 for May-August, 0.584 against 0.589 for
+       September-December).
+   * For (b): spanish coverage, pricing_game_2017_french_mtpl and frempl, each with one valid annual window, went to
+     SPLIT-8. Three windows on one refit are one evaluation of one year.
+
+   Recommendation: (a). Decision: (a), (b) or (c)?
+
+   **Andrej (2026-11-02, discuss):** I don't want to have the same training data and different test sets. We assume
+   that whenever we have different test sets, we would be retraining. Given one test period we test the same model.
+
+   **Answer (AI, 2026-11-02):** Your note rules out (a). It is a general rule, so it reads as (c): an amendment to
+   SPLIT-14 ("windows that share one training side count as one window"); with one valid window this dataset would go
+   to (b), the forced grouped split by contract.
+
+   **Andrej (2026-11-02, discuss):** Why don't you employ a rolling window approach, e.g. with three splits with a
+   forecasting horizon of four months each and all training data from before, possibly with a planning gap
+
+   **Answer (AI, 2026-11-02):** It works; the objection above was overstated. (d) Expanding windows (SPLIT-11): each
+   four-month window trains on every period closed before it starts (78%, 71%, 64% of the rows). The closed 2013
+   periods are the ones cut short, as a refit on that day would see them; scores barely move (0.621 against 0.613 for
+   May-August, 0.584 against 0.589 for September-December). A planning gap fits only the two later windows: any gap
+   before January drops the periods that run to 31 December 2012 (a day leaves 50.2% of the rows, a month 48.7%).
+   Each window tests only the four months to the next refit, not all later data: the test sets stay disjoint and each
+   period is scored by the model in use when it starts.
+
+   **Andrej (2026-11-02, discuss):** Do (d)
+
+   **Resolved (2026-11-02, Andrej):** (d), expanding four-month windows without a gap, with SPLIT-14 amended (windows
+   that share one train side count as one window). Implemented and re-measured; record CC of 2026-11-02.
+
+3. **Train without a gap for late-reported claims (implemented), an exception to SPLIT-10?** A claim enters the data
+   only once it is reported, and the files give no report dates. A 2013 tariff fit at the start of the year would have
+   missed some claims of late 2012. SPLIT-10 (Should) asks for a gap of about that delay between the training and test
+   sides; the split has none.
+   * What it does to the task: the training labels of late-2012 periods are slightly more complete than a real
+     insurer's, a possible slight optimism.
+   * Evidence: rows are cut at 31 December, so even a 1-day gap removes the 12,417 periods that run to 31 December
+     2012 and leaves 50.2% of the rows in training, at the floor; a 1-month gap, nearer a claim's reporting delay,
+     leaves 48.7%, below SPLIT-14's floor. After the fix, simulated reporting delays of 30 and 90 days lower the window
+     mean from 0.626 to 0.624 and 0.622, and a tariff fit on the periods closed by 1 October 2012 scores 0.620 against
+     0.626 (simulations: there are no report dates). Claims per vehicle-year are flat across the years (LEAK-24
+     holds).
+   * Rule: the tension row "unmatured training labels against the training floor" departs from SPLIT-10 for SPLIT-14's
+     floor and records an exception. After alfa_battle_2_0_task_2 and lending_club (Lennart, 2026-10-21),
+     avito_demand_prediction_1m (its issue 2) and wisconsin (its issue 1 (a)) propose the same in this run, so the
+     amendment principles.md asks for at the third was due. You declined the SPLIT-10 amendment on 2026-11-02
+     (avito_demand_prediction_1m issue 4), so this is an exception of its own. spanish_motor_insurance_2015_2018 now has
+     a gap and does not count toward it.
+   * Implemented: (a) no gap, the bound stated in the notes, and an exception to SPLIT-10 that serves SPLIT-14.
+   * Alternative: (b) set a gap: the training side falls below the floor, SPLIT-8 applies, and the dataset meets issue
+     2's (b).
+
+   Recommendation: (a), as an exception to SPLIT-10 that serves SPLIT-14.
+   Decision: (a) or (b)?
+
+   **Resolved (2026-11-02, Andrej):** (a), no gap, an exception to SPLIT-10 that serves SPLIT-14 (splits.md Cases);
+   the simulated delay bound is in the notes.
 
 4. **Confirm the claim charge per period as the target (implemented)?** The record chose the claim indicator on
    2026-10-30; on 2026-11-02 you followed the AI's suggestion to switch, after a measurement.
@@ -39,6 +121,9 @@ window figure is re-measured. The panel's sections describe the definition befor
      length), with the measured reason in the notes: the charge adds only noise.
 
    Recommendation: (a), as implemented. Decision: (a) or (b)?
+
+   **Resolved (2026-11-02, Andrej):** (a), the claim charge as implemented; the metric kept as declared, decided for
+   this dataset alone (MET-10 as amended: no family call on the metric, in doubt for diversity). Verdict: ship.
 
 **Review panel:** ship after changes (mediator). Claim audit: 48 claims, 39 hold, 7 refuted (5 fixed in the definition:
 the length called known at the start, the test that could not fail, Decision 1 and the metric origin; 2 record fields

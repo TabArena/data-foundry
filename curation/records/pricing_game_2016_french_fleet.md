@@ -141,6 +141,10 @@ frequency: a Poisson model of the claim count ranks the charges at 0.202 / 0.271
 claimants has R^2 -0.06 to -0.02. 95.7% of the targets are 0; the clip of 537 net negative totals raises the total cost
 by 4.3%.
 
+CC (2026-11-02, Andrej): ship. The claim charge as target confirmed as implemented (issue 4 (a)); the metric checked
+and kept as declared (`normalized_gini`, a stand-in for the game's market, as pricing_game_2017_french_mtpl). The metric
+is this dataset's own call, not a family one ("It is case by case and when in doubt we go for diversity", MET-10).
+
 ## Reference
 
 CASdatasets (Dutang C., Charpentier A.), `pg16trainpol`, `pg16trainclaim`, `pg16test`, second pricing game (Charpentier A., Elie R., Jakubowicz J.), French Institute of Actuaries, 8 November 2016. https://github.com/dutangc/CASdatasets/blob/master/man/pricingame.Rd; https://actinfo.hypotheses.org/69

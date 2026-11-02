@@ -157,7 +157,9 @@ overrule it (MET-5, MET-4). Cases: sepsis_survival_minimal_clinical_records (PR 
 * the resolution on our folds: a hard-label score on a few dozen test units moves in steps of a few percent (musk: 34
   molecules per fold);
 * the ceiling: a metric near its best for every method no longer tells methods apart;
-* whether our task is still the source's (MET-2): changed classes or balance weaken the source's claim.
+* whether our task is still the source's (MET-2): changed classes or balance weaken the source's claim;
+* diversity: the metric is chosen per dataset, never as one call for a family of datasets, and when the call stays in
+  doubt, the metric that adds diversity to the collection wins (Andrej, 2026-11-02).
 
 ### How to declare it
 
@@ -218,6 +220,7 @@ and wait for the curator; the others are decided.
 
 | Rule | Dataset | Decision | Decisive evidence | Kind |
 |---|---|---|---|---|
+| MET-10 | pricing_game_2016_french_fleet, the insurance tables of the zero-inflated batch | no family call on the metric: each table's metric is decided on its own, and in doubt for diversity (2026-11-02, Andrej) | the curator, declining a family-wide Gini form (frempl issue 4, spanish coverage issue 3) | amendment |
 | MET-4 | zillow_prize | `mae`, the competition's metric (2026-10-21) | Kaggle scored MAE on logerror; RMSE had been kept as the house default; 0.38% of the rows (absolute logerror above 1) hold 49.9% of the squared error | applied |
 | MET-4, MET-12 | g_research_crypto_forecasting_1m | `weighted_pearsonr`, each row weighted by its asset's `Weight` (a scoring column), the competition's metric (2026-10-21) | Kaggle scored a Pearson correlation weighted by asset; under RMSE more signal can lose (on the splits of 2026-10-20 a model correlating 0.058 scored R^2 -0.0090, one correlating 0.049 +0.0004) | applied |
 | MET-4, MET-12 | amex_non_iid_1m | `gini_top_capture` (top 4%, negatives weighted 20), per customer | the competition's M = 0.5 (G + D); the dataset-named `amex_metric` renamed; the official pandas code is slow on 460k customers | proposed |

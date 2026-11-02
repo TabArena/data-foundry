@@ -111,8 +111,10 @@ Apply that mark only once the curator has answered; apply the others now. Never 
   before changing anything. A settled issue's decision goes into `dataset.py` (code and `curation_comments`) and into
   the record: the curator's decision as a dated `CC (<date>, <curator>):` line (the curator's words or a faithful
   short form), Claude's evidence as an `**Assessment (AI, <date>):**` line, through the store API
-  ([records.md](../knowledge-data-foundry/references/records.md)). Then the issue leaves the `REVIEW.md` (or the
-  record's open-issues block); a `REVIEW.md` with no issue and no field row left is deleted, and so is an empty block.
+  ([records.md](../knowledge-data-foundry/references/records.md)). Then the issue gets a closing
+  `**Resolved (<date>, <curator>):**` turn with the decision and stays in the `REVIEW.md` (or the record's open-issues
+  block): never delete an issue or a `REVIEW.md`, the page keeps every dataset so the curator can look back at its
+  decisions (Andrej, 2026-11-02).
 * **Record fields:** `update` sets the record's field to the definition's value; `keep` leaves the record as it is.
   Either way the row leaves the `REVIEW.md`.
 * **The metric:** `ok` keeps the declared metric (a CC line in the record says it was checked); `change` changes

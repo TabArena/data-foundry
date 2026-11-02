@@ -143,14 +143,6 @@ def _check_issues(path: Path, start: int, lines: list[str]) -> tuple[str, list[i
         if n in seen:
             raise ReviewFileError(path, at[k], f"issue {n} appears twice; the marks are stored by number")
         seen.add(n)
-    for k, it in enumerate(items):
-        if it["resolved"]:
-            raise ReviewFileError(
-                path,
-                at[k],
-                f"issue {it['n']} is closed (Resolved or Deferred); a settled issue leaves the file, its decision goes "
-                "to the definition and the record",
-            )
     return text, numbers
 
 
@@ -268,7 +260,7 @@ def parse_review_file(path: Path, folder: str) -> Entry:
     if "issues" in blocks:
         issues, numbers = _check_issues(path, blocks["issues"].start + 1, blocks["issues"].lines)
     if not numbers and not fields:
-        raise ReviewFileError(path, None, "no open issue and no record field; delete the file")
+        raise ReviewFileError(path, None, "no issue and no record field; a settled issue stays, labelled Resolved")
     panel, roles = _check_panel(path, lines, blocks.get("panel"))
     outcome = blocks["outcome"].text
     cell = _first_sentence(outcome)
