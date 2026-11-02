@@ -4,6 +4,8 @@ name: swmotorcycle (CASdatasets) / dataOhlsson (insuranceData) / mccase (Ohlsson
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> 2nd Tier
+decision_markers:
+- Not Representative
 tags:
 - AI-Filled (Verify)
 - Two-Regime Zeros
@@ -44,6 +46,8 @@ test fold of a 3-fold split, and the cells are rating-factor aggregates, not pol
 62,036 rows and 656 with claims; the file has 64,548 rows (62,474 with positive exposure) and 670 with claims (666
 with positive exposure). Licence: GPL (>= 2) (CASdatasets), GPL-2 (insuranceData). To check: drop or keep the
 zero-exposure rows, and whether the cost per policy year is the better target.
+
+CC (2026-10-20, Andrej): 2nd Tier with `Not Representative`: the rows are rating-factor aggregates, not policies (zero-inflated screening review, policy question 4; the same call as `brazilian_vehicle_insurance_autoseg_2011`).
 
 ## Reference
 

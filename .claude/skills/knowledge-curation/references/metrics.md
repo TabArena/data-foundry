@@ -57,10 +57,16 @@ origin (MET-11); none is left to a silent default.
 **MET-2 (Must).** Match the data, the metric and the real task. Before declaring a metric, check on the shipped data
 that:
 * its unit of evaluation exists in our data: per row, per patient, per customer, per era, per week, per instance;
-* every input it needs ships as a column and is never a feature (a group, a time, a weight, an onset hour), and the
-  test fold holds what the metric reads: whole patient stays for a per-patient utility, several eras or weeks per
-  window for a per-era correlation or a slope over weeks, enough positives for the top k, every class the cost
-  matrix names;
+* every input it needs ships as a column and is never a feature (a group, a time, a weight, an onset hour), except
+  an input known at the prediction point for train and test rows alike, which may stay a feature and also be the
+  metric's group or weight (amended 2026-11-02, Andrej; merged from two clauses at the third case of the day):
+  the task's time column as the group, which the models get as the time column anyway (blogfeedback: the test day
+  groups Hits@10); a weight (liberty_mutual_fire_peril_loss_cost: the sum insured `var11`, which the host gave every
+  team as a policy characteristic; "I want to score with the feature and also keep it as a feature assuming it to be
+  known during train and test time as input for the model"); the row's taxon as the group
+  (noaa_afsc_bottom_trawl_survey_cpue: each species' map counts once). The test fold holds what the metric reads:
+  whole patient stays for a per-patient utility, several eras or weeks per window for a per-era correlation or a
+  slope over weeks, enough positives for the top k, every class the cost matrix names;
 * the metric means on our task what it meant on the source's: same target, same classes, same class balance. A task
   we changed (classes merged or dropped, a balanced sample replaced by the full release, duplicates removed) keeps
   the source's metric only when its meaning survives the change.
@@ -244,6 +250,10 @@ and wait for the curator; the others are decided.
 | MET-7 | coil_2000 | `precision_at_k` kept (2026-10-21, Lennart) | CoIL 2000 counted the policy owners among the 800 customers selected from 4,000 | applied |
 | MET-4 | rossmann_store_sales | `rmspe` kept (2026-10-21, Lennart) | Kaggle scored RMSPE, now a custom metric of `data_foundry.v2.metrics` | applied |
 | MET-1, MET-11 | churn_telco_south_asia | fallback `roc_auc` kept (2026-10-21, Lennart) | the first publication (closed access) could not be read; no metric is known | applied |
+| MET-2, MET-1, MET-12 | blogfeedback | `mean_group_top_k_overlap` (k = 10) with the time column `basetime_day` as its group, Buza's Hits@10 per test day (2026-11-02, Andrej) | the source scores each test day's top 10; the day is the time column, which the models get in any case, so MET-2's "never a feature" does not cover it | amendment |
+| MET-2, MET-4 | liberty_mutual_fire_peril_loss_cost | the competition's `normalized_weighted_gini` with `var11` as its weight and as a feature (2026-11-02, Andrej) | `var11`, the sum insured, is a policy characteristic the host shipped in the test file for every team, set at underwriting and known for train and test rows alike; on a weighted Gini the best order is by expected loss whatever the weights, and as a feature it moved an untuned model's score by -0.010 (within fold noise) | amendment |
+| MET-2, MET-11, MET-13 | noaa_afsc_bottom_trawl_survey_cpue | stand-in `mean_group_normalized_rmse` with `taxon` as its group and as a feature: per taxon RMSE on counts over the taxon's spread in the window, averaged. The source scores one RMSE per species (TM-459); pooled over 11 taxa, walleye pollock and rock sole held 79-93% of the squared error and the pooled score picked the model worst for the other maps (1.72 times a taxon's spread, against 1.08 for the taxon mean). Within a taxon a fixed divisor ranks models as RMSE does; only the equal weight per species' map is ours, as each EFH map is drawn per species (2026-11-02, Andrej: "I follow your suggestions") | applied |
+| MET-2, MET-3, MET-11 | spanish_motor_insurance_coverage_level_2022_2024 | context `normalized_weighted_gini` on the cost per year on risk: the target becomes `log1p(total_incurred / actual_exposure)` and the recorded time on risk ships as the scoring column `actual_exposure` (the weight), while the corrected `total_exposure` stays the feature. The first definition to change a target to a per-exposure rate. Under the row Gini on the year cost the time on risk alone scored 0.177 to 0.221; weighted, -0.035 to 0.010. Unlike australian_vehicle_insurance_2004_2005 (row Gini), the located cancellation cut is fixed in the feature, so the weight does not reward it (2026-11-02, Andrej: "Use exposure-weighted Gini on annualised claim costs for this dataset") | applied |
 
 ## In Data Foundry
 

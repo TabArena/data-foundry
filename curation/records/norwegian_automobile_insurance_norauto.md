@@ -40,6 +40,8 @@ The decisive fact is the feature space: the four rating factors form only 142 di
 exposure, which tests little that a GLM tariff does not. Licence: GPL (>= 2) (CASdatasets). To check: whether tuned
 methods spread at all on it (task probes), which would overturn this.
 
+**Consistency check (AI, 2026-10-20):** your call on norauto (2nd Tier with `Not Representative`, as a rating-cell aggregate; policy question 4 of the zero-inflated review) rests on a premise the review page got wrong: each row here is a policy, and the 142 cells come from the four rating factors, not from aggregation. The closest pair, `thailand_road_accident_fatalities_2015` (individual crashes in 1,165 coarse cells), is 2nd Tier without the marker. What sets norauto apart? (a) Four rating factors are far fewer than any current motor tariff uses, the "features practitioners no longer use" of the marker, recorded as its reason; (b) treat it like the Thai table: 2nd Tier without the marker, pending the TP-3 probes; (c) reopen the Thai table to add the marker; (d) amend: give `Not Representative` a written meaning that covers coarse-cell tables.
+
 ## Reference
 
 CASdatasets (Dutang C., Charpentier A.), `norauto`: "Unknown Norwegian insurer", downloaded from the University of

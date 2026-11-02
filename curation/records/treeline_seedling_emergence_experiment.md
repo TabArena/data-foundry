@@ -2,13 +2,11 @@
 unique_name: treeline_seedling_emergence_experiment
 name: Alpine treeline seedlings / seedling emergence and survival under alpine vegetation, French Alps (2014)
 checked_by:
-- AI (UNVERIFIED)
+- Andrej
 suggestion: 'No'
 decision_markers:
 - No Good Target / Scientific Discovery
-- Too Small
 tags:
-- AI-Filled (Verify)
 - Two-Regime Zeros
 original_source: Other
 year: '2017'
@@ -20,14 +18,37 @@ original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://doi.org/10.5061/dryad.ff574
 - https://doi.org/10.1111/oik.04377
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
 
 **⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+
+**Screening (AI, 2026-10-27):** `No` (`No Good Target / Scientific Discovery`, SEL-3, USE-2): a single-site sowing
+experiment whose columns are all design keys or counts. The Dryad usage notes list "Date = date of monitoring
+FreeDays = number of days after snowmelt Block = experimental block Treat = treatments: C = Control = bare-ground plots;
+Sh = shading = covered by shade roofs; V = full vegetation, V2 = intermediate vegetation", species, "Row = row in
+plot", "Sown = number of seeds sown" and the dead, alive and germinated counts (https://doi.org/10.5061/dryad.ff574).
+- Source: Loranger, Zotz and Bader 2017 (Oikos 126:1625-1636); Dryad deposit of 2017-05-03, CC0: emergence and
+  survival CSV (14 KB), mortality CSV (3 KB), carbohydrate and biomass TXT (25 KB), all keyed by the same block,
+  treatment and species codes; one site at 2100 m in the French Alps. Not downloaded (Dryad answers 401 to file
+  requests).
+- Deciding reason: the features are the assigned treatment, the block, the species, the row and the date, with no
+  habitat covariate, so a per-row prediction is the mean of its treatment, species and block, the effect the paper
+  estimates (SEL-3, USE-2). The aim, from the Dryad abstract (which ranks below the usage notes, PROV-16): "We aimed to
+  understand the relative importance of these two types of interaction in different vegetation structures for treeline
+  regeneration dynamics"; its closing "When developing predictive models of treeline dynamics, all these 'local'
+  aspects should be incorporated" is advice, not a task.
+- `Too Small` dropped: the 2026-10-19 pass set it from an estimated row count, not from the task's folds (TP-5).
+- Siblings and duplicates: none for the data; designed experiments of the same batch as for
+  `clarkia_greenhouse_reciprocal_transplant_fitness`. External collections: none found.
+- Papers and pages: the Oikos paper was not read (paywalled; Unpaywall: closed).
+- Metric: none found.
+- Reject check (AI, 2026-10-27): stands. SEL-3 (Must). The usage notes list only design columns (Date, FreeDays, Block,
+  Treat, Species, Row) and counts (Sown, Dead, Alive, Germ_All) at one site (https://doi.org/10.5061/dryad.ff574).
+
+CC (2026-10-30, Andrej): `No`, as screened (verified on the zero-inflated screening review page).
 
 Emergence and survival of tree seedlings sown into alpine grassland at the treeline (Loranger, Zotz and Bader 2017).
 Dryad abstract: "Effects of herbaceous alpine vegetation on seedling emergence ... were studied in a field experiment

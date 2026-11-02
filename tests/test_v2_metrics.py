@@ -60,6 +60,7 @@ EXPECTED = {
     "median_absolute_error": (Y_REG, P_REG, skm.median_absolute_error(Y_REG, P_REG)),
     "pearsonr": (Y_REG, P_REG, scipy.stats.pearsonr(Y_REG, P_REG).statistic),
     "spearmanr": (Y_REG, P_REG, scipy.stats.spearmanr(Y_REG, P_REG).statistic),
+    "mean_poisson_deviance": (Y_REG, P_REG, skm.mean_poisson_deviance(Y_REG, P_REG)),
 }
 
 
@@ -363,3 +364,63 @@ def test_target_transform_round_trips_through_json() -> None:
     del dumped["objective_metric"]["target_transform"]
     assert adapter.validate_python(dumped).objective_metric.target_transform == "identity"
     assert any("target_transform" in line for line in spec.describe_lines())
+
+
+# --- mean_poisson_deviance: scikit-learn's semantics, an optional floor, the inverse of a log1p target ---------------
+
+
+def test_mean_poisson_deviance_by_hand_and_on_counts_with_zeros() -> None:
+    """2 * (y log(y / p) - y + p) per row, the y log(y / p) term 0 at y = 0; equal to scikit-learn on counts."""
+    spec = metric_spec(Metric.source("mean_poisson_deviance", reference="x"), "regression")
+    # y = 0, p = 2: 2 * 2 = 4; y = 2, p = 1: 2 * (2 log 2 - 1); y = 3, p = 3: 0
+    expected = (4 + 2 * (2 * np.log(2) - 1) + 0) / 3
+    assert score(spec, [0, 2, 3], [2, 1, 3]) == pytest.approx(expected, rel=1e-12)
+    rng = np.random.default_rng(5)
+    counts = rng.poisson(rng.gamma(0.3, 20, 2000)) * rng.binomial(1, 0.4, 2000)  # zero-inflated counts
+    pred = rng.gamma(1.0, 5.0, 2000) + 1e-3
+    assert score(spec, counts, pred) == pytest.approx(skm.mean_poisson_deviance(counts, pred), rel=1e-12)
+
+
+def test_mean_poisson_deviance_refuses_what_scikit_learn_refuses_unless_floored() -> None:
+    """A prediction <= 0 or a negative target is an error, as in scikit-learn; min_prediction floors predictions."""
+    plain = metric_spec(Metric.source("mean_poisson_deviance", reference="x"), "regression")
+    with pytest.raises(ValueError, match="strictly positive y_pred"):
+        score(plain, [0, 1, 2], [0.0, 1.0, 2.0])
+    with pytest.raises(ValueError, match="strictly positive y_pred"):
+        score(plain, [-1, 1, 2], [1.0, 1.0, 2.0])
+    floored = metric_spec(
+        Metric.source("mean_poisson_deviance", reference="x", params={"min_prediction": 0.01}), "regression"
+    )
+    y, p = np.array([0, 1, 5]), np.array([-3.0, 0.0, 4.0])
+    assert score(floored, y, p) == pytest.approx(skm.mean_poisson_deviance(y, np.maximum(p, 0.01)), rel=1e-12)
+    assert score(floored, [1, 2], [1.0, 2.0]) == pytest.approx(0.0, abs=1e-15)  # the floor leaves larger p alone
+    for bad in (0, -1, float("inf"), "0.01", True):
+        with pytest.raises(ValueError, match="min_prediction"):
+            Metric.source("mean_poisson_deviance", params={"min_prediction": bad})
+
+
+def test_mean_poisson_deviance_of_a_log1p_target_scores_the_count() -> None:
+    """With target_transform="log1p" the metric scores expm1 of the shipped values and predictions: the count, with
+    the floor applied on the count scale (a log1p model's prediction of 0 or below is a count of 0 or below).
+    """
+    rng = np.random.default_rng(6)
+    counts = rng.poisson(rng.gamma(0.5, 10, 1000)) * rng.binomial(1, 0.5, 1000)
+    log_pred = np.log1p(rng.gamma(1.0, 5.0, 1000)) + rng.normal(scale=0.5, size=1000)  # some below 0
+    assert (log_pred <= 0).any()
+    spec = metric_spec(
+        Metric.stand_in(
+            "mean_poisson_deviance",
+            original="a likelihood",
+            reason="a point prediction",
+            reference="x",
+            params={"min_prediction": 0.01},
+            target_transform="log1p",
+        ),
+        "regression",
+    )
+    expected = skm.mean_poisson_deviance(counts, np.maximum(np.expm1(log_pred), 0.01))
+    assert score(spec, np.log1p(counts), log_pred) == pytest.approx(expected, rel=1e-12)
+    # without the floor the same predictions fail, as scikit-learn does on a count of 0 or below
+    bare = metric_spec(Metric.source("mean_poisson_deviance", reference="x", target_transform="log1p"), "regression")
+    with pytest.raises(ValueError, match="strictly positive y_pred"):
+        score(bare, np.log1p(counts), log_pred)

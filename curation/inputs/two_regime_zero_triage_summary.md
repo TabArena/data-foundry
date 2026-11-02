@@ -242,3 +242,84 @@ Open for the curator:
 * Of the four, only the Spanish table and brvehins1 have the raw sum insured needed for the Chubb recipe (raw total
   loss, log sum-insured exposure as a feature, then divide); LGPIF has `BCcov` per entity-year, and Liberty Mutual has
   the insured value only inside its target.
+
+# Policy calls of 2026-10-30
+
+Andrej's answers to the eight policy questions of the zero-inflated screening review (the page of 2026-10-27), and what
+was applied. Every record named got an `Assessment (AI, 2026-10-30)` note under its screening block; no verdict,
+priority or marker changed, and the records stay `AI (UNVERIFIED)` until verified one by one.
+
+1. **Species-abundance mapping (no rule; per dataset).** Andrej asked whether the ecology rejects rest on a rule in `main` or on one the
+   AI added. Both: the eight rejects of the experiment group rest on SEL-3 and USE-2, which read the same on `main`
+   (precedent `mice_protein_trisomy_discriminant`, retired by Lennart on 2026-10-01 because its classes are the
+   experimental design), and the two of the small-sample group on TP-5. The line between a designed experiment or
+   single-site effect study (No) and a multi-site survey with habitat covariates (kept as a mapping task, read under
+   SEL-2, as `covertype`) is the AI's reading of 2026-10-27 and is written in no rule. It kept 21 records rather than
+   rejecting any. Andrej's call: "I don't think there is new rule to build here. These are per dataset judgement
+   calls and if a dataset is useful for a predictive application although the data was collected for something
+   else, then this is fine." That is SEL-2's reading of the scope rules, so no rule changes: the 21 surveys keep
+   their screened verdicts and are judged one by one, and the experiment rejects stand on their own facts (inputs
+   that are only the design), open to a per-record overturn. A note in each of the 21 records.
+2. **Coded zeros (no rule).** "We don't care. We want to add any relevant predictive task, independent if it is zero
+   inflated or not." How a source codes its zeros (below-LOQ codes, trace as 0, gap fills, stock-outs, closed without
+   payment) is no reason for a No or a lower priority; it is a cleaning choice at /add-dataset. Notes in the 13 records
+   the question named. No verdict or priority in them rested on the zeros alone, and no reject in the batch rested on
+   zero-inflation.
+3. **Insurance targets (no family convention).** "I want you to suggest judgement calls based on the references for
+   each dataset and your knowledge on what is common or should be done for a dataset of a specific domain." The calls
+   are suggested per record (table below); the reasoning they share:
+   * Exposure. A time exposure (part of a year) is a feature, as in the `fremtpl2` call: the period is known when the
+     policy is priced, and a model given it can learn what a GLM's offset imposes. A sum insured is a feature too, the
+     size of the risk (LGPIF coverage). A target that is already a ratio to the insured value (Liberty Mutual) holds
+     its exposure. Rating cells (AUTOSEG) take a per-exposure target with the exposure as the metric's weight, as
+     rating-cell tables are modelled (Ohlsson and Johansson).
+   * Negative amounts. Set to 0 where they are recoveries and not the period's loss: freMPL (only with `ClaimInd` = 0),
+     the pricing games' recourse totals (AIcrowd did so for the 2017 portfolio). The Spanish 2022-2024 authors already
+     left them out.
+   * Metric. The source's metric first: the normalized Gini (Allstate, Liberty Mutual weighted by `var11`), RMSE
+     (AIcrowd's leaderboard), the Gini against the fund's premium (LGPIF, Frees, Lee and Yang 2016). Without one, the
+     suggestion is the normalized Gini as a context metric (MET-11): insurance compares pricing models by the Gini
+     index of the ordered Lorenz curve (Frees, Meyers and Cummings 2011, 2014; Yang, Qian and Zou, arXiv 1508.06378, on
+     Tweedie boosting), the insurers that ran Kaggle competitions chose it, and it scores any model's predictions.
+     RMSE on raw amounts follows a few large claims: on the probed tables a model ranks claimants at AUC 0.6-0.8 but
+     reaches R^2 of about 0 on the raw scale, so RMSE ranks every model near the mean. The Tweedie or Poisson deviance,
+     the actuarial loss for pure premiums, needs strictly positive predictions, which a model trained on squared error
+     does not give, so it is no benchmark metric without a clipping rule. The Gini's limit: it ignores the price level
+     (a model off by a constant factor scores the same), which pricing sets separately. One custom metric (MET-13)
+     serves Allstate, which needs it anyway, and every table that takes it as context. NFIP is no pricing task: a case
+     reserve in dollars, so `rmse`.
+
+   | Record | Target | Exposure | Negatives | Metric |
+   |---|---|---|---|---|
+   | `australian_vehicle_insurance_2004_2005` | `claimcst0` | feature (0-1 years) | none | Gini (context) |
+   | `frempl_french_motor_personal_line` | `ClaimAmount`, freMPL5-9 stacked | feature | set to 0 | Gini (context) |
+   | `pricing_game_2015_french_mtpl` | `Indtppd` + `Indtpbi` | `Expdays` / 365, feature | none | Gini (stand-in for the market) |
+   | `pricing_game_2016_french_fleet` | charge per vehicle-period | feature | set to 0 | Gini (stand-in) |
+   | `pricing_game_2017_french_mtpl` | Year-0 total, CASdatasets release | none (whole years) | set to 0 | Gini (stand-in); `rmse` for the AIcrowd release |
+   | `spanish_motor_insurance_coverage_level_2022_2024` | `total_incurred` | `total_exposure`, feature | removed by the authors | Gini (context) |
+   | `spanish_motor_insurance_2015_2018` | `Cost_claims_year` | none; complete years kept | none | Gini (context) |
+   | `wisconsin_local_government_property_insurance_fund` | `y` | log coverage, feature | none | Gini against `Premium` (source) |
+   | `allstate_claim_prediction_challenge` | `Claim_Amount` | none | none | normalized Gini (source) |
+   | `liberty_mutual_fire_peril_loss_cost` | as published | inside the target; `var11` a scoring column | none | weighted normalized Gini (source) |
+   | `autoclaim_sas_motor_insurance` | `CLM_AMT` | none | none | Gini (context) |
+   | `autoseg_brazilian_motor_insurance_statistics` | indemnity per vehicle-year (if built) | metric weight | unknown | exposure-weighted `rmse` |
+   | `nfip_redacted_flood_claims` | building + contents paid at filing | coverage, feature | none | `rmse` (reserve in dollars) |
+4. **The `Two-Regime Zeros` tag.** "If the low value is by far the most frequent one and independent of the remaining
+   target distribution, then we can treat it as two regime zero, otherwise not." Measured on the five records the
+   question named: removed from `carbonfluxbench_flux_tower_upscaling` (no value above 1.1% of site-days),
+   `basque_offshore_ctd_chlorophyll` (the minimum 0.03 holds 3.5% against 1.9% for the next value, a reporting floor of
+   2018-11 to 2022-09), `unisolar_la_trobe_pv_generation` (night is missing; the minimum almost never occurs) and
+   `how_much_did_it_rain_ii` (the mode, 0.254 mm, is one gauge tip followed by two, three and four tips at 10%, 6% and
+   6%); kept on `basque_offshore_bivalve_biotoxins` (the non-detect code holds 67% of okadaic acid and 55% of
+   yessotoxin, the quantified values lie above it). Most other tagged records have an exact-zero spike in a
+   continuous target, which meets the definition. To check at /add-dataset: `freiburg_urban_mammal_camera_trap_events`
+   (every row of the file is a detection; the zeros appear only in the station-session counts the record proposes)
+   and the count targets whose zero may be only the first step of the count (`korea_bee_sting_injuries_district_year`,
+   23.4% zeros; `rand_health_insurance_experiment_doctor_visits`, 31.2%).
+5. **French motor portfolios (left as is).** No cap: each of the four is judged on its own record.
+6. **rossmann against M5 (left as is).** M5 keeps its screened `No`, to be verified as a record; rossmann is not
+   reopened.
+7. **Post-click conversion (left as is).** SEL-9 keeps its wording; criteo's reject rests on SEL-2 and the TalkingData
+   precedent.
+8. **Data on request (left as is).** No requests sent and no `Data Requested` marker set; the four records keep their
+   screened verdicts.

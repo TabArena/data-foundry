@@ -52,6 +52,8 @@ itself may be the better candidate: semester files from 2006-H2 (at least to 202
 temporal split and a clean join of exposure and claims. `brvehins2` is the same 2011 data aggregated by city, without
 gender and age. Licence: GPL (>= 2) for CASdatasets. To check: the AUTOSEG files, the repeated cells.
 
+CC (2026-10-20, Andrej): 2nd Tier with `Not Representative`: the rows are rating-factor aggregates, not policies (zero-inflated screening review, policy question 4; the same call as `swedish_motorcycle_insurance_wasa`).
+
 ## Reference
 
 CASdatasets (Dutang C., Charpentier A.), `brvehins1a`-`brvehins1e`, "Two Brazilian datasets for vehicle insurance",

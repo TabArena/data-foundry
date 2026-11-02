@@ -2,13 +2,12 @@
 unique_name: yellowstone_lake_benthic_invertebrates_carcass_experiment
 name: Fish carcass / Yellowstone Lake benthic invertebrates (lake trout carcass treatment, BACI experiment)
 checked_by:
-- AI (UNVERIFIED)
+- Andrej
 suggestion: 'No'
 decision_markers:
 - No Good Target / Scientific Discovery
 - Too Small
 tags:
-- AI-Filled (Verify)
 - Two-Regime Zeros
 original_source: Other
 year: '2022'
@@ -20,14 +19,39 @@ original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://doi.org/10.5061/dryad.c866t1g9m
 - https://doi.org/10.1002/aff2.72
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
 
 **⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+
+**Screening (AI, 2026-10-27):** `No` (`No Good Target / Scientific Discovery`, SEL-3): a before-after-control-impact
+field experiment at four sites, published to test a treatment effect; its inputs are the design.
+- Source: Briggs et al., Dryad doi:10.5061/dryad.c866t1g9m (2022-09-21, CC0): invertebrate abundance and biomass
+  workbooks by sample and taxon, plus four dissolved-oxygen logger workbooks and a README (file list from Dryad's
+  metadata API, 2026-10-27; not downloaded, Dryad refuses automated downloads); paper Briggs et al. 2022, Aquaculture,
+  Fish and Fisheries 2:470-483 (read in the accepted PDF on montana.edu).
+- Use case: none. Dryad abstract: "We conducted a field experiment during one ice-free season at four sites in
+  Yellowstone Lake to investigate the non-target effects of carcass treatment on benthic invertebrates"; paper,
+  Introduction (last paragraph): "to determine how carcass treatment to suppress lake trout embryos affects
+  invertebrate communities"; Sec. 2.4: "To determine if invertebrate density and biomass changed in response to carcass
+  treatment, we assessed the interaction between time ... and treatment", tested at alpha 0.1 "because of variation
+  expected from such a large-scale experiment with low replication". Two treated sites (Flat Mountain Hump, Snipe
+  Point) and two controls, triplicate samples on three monthly and four biweekly dates (Sec. 2.3): the inputs are
+  site, date, treatment and period, fixed by the design, and the oxygen loggers record the treatment's own mechanism.
+  As in `mice_protein_trisomy_discriminant` (retired, Lennart, 2026-10-01: the classes are the experimental design and
+  the sources test group differences), no decision is made from a prediction per sample; the Park Service decides on
+  carcass treatment from the effect estimate.
+- Siblings and duplicates: none (grep Yellowstone, lake trout, carcass). External collections: none.
+- Metric: none (no task).
+- `Too Small` stays as a concern: about 84 samples from four sites, though with no task there are no splits to count
+  (TP-5).
+- Reject check (AI, 2026-10-27): stands. SEL-3 (Must). The source calls it "a field experiment during one ice-free
+  season at four sites", two treated and two controls in triplicate, analysed for a treatment effect
+  (https://datadryad.org/dataset/doi:10.5061/dryad.c866t1g9m).
+
+CC (2026-10-30, Andrej): `No`, as screened (verified on the zero-inflated screening review page).
 
 Benthic invertebrate density and biomass around lake trout carcass deposits in Yellowstone Lake (Briggs et al. 2022).
 A before-after-control-impact experiment at 4 sites (2 carcass, 2 control), triplicate samples on 3 monthly

@@ -2,12 +2,12 @@
 unique_name: eclipse_bug_data_zimmermann
 name: 'Eclipse Bug Data (Zimmermann, Premraj & Zeller, PROMISE 2007), release 2.0a: Eclipse 2.0, 2.1, 3.0'
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> 2nd Tier
+- Andrej
+suggestion: TBD -> Yes
+priority: 3
 decision_markers:
 - Outdated
 tags:
-- AI-Filled (Verify)
 - Two-Regime Zeros
 - Non-IID (Temporal)
 original_source: Website
@@ -20,14 +20,51 @@ source_links:
 - https://www.st.cs.uni-saarland.de/softevo/bug-data/eclipse/
 - http://web.archive.org/web/20260918052843/https://www.st.cs.uni-saarland.de/softevo/bug-data/eclipse/
 - https://doi.org/10.1109/PROMISE.2007.10
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
 
 **⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-20 from a web search for zero-inflated regression candidates, the source pages and, where the notes say so, the downloaded data. A human must verify the suggestion, the metadata and the notes before relying on them.**
+
+**Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 3: file-level post-release defect counts for three
+Eclipse releases with about 200 code metrics, a real cross-release task, but three releases give one valid temporal
+window and the code is from 2002-2004.
+- Source: Zimmermann, Premraj and Zeller, "Predicting Defects for Eclipse", PROMISE 2007 (Saarland University); data
+  release 2.0a (2007-12-28) at st.cs.uni-saarland.de/softevo/bug-data/eclipse/ (no answer on 2026-10-20 nor on
+  2026-10-27; Wayback copy in the links). As published (Sec. 3.2): "one file for each level (files, packages) and
+  release (2.0, 2.1, 3.0)", with pre- and post-release defect counts, complexity metrics and AST node counts. The earlier AI triage (2026-10-20) measured 6,729 / 7,888 / 10,593 file rows with 85.5% / 89.2% /
+  85.2% zero `post` (max 31).
+- Target: `post`, "The number of non-trivial defects that were reported in the first six months after release" (Sec.
+  3.2); the zeros are observed.
+- Use case: Sec. 3.3: "Which files/packages have defects (a classification problem)? And which are the files/packages
+  with the most defects (a ranking problem)? Having reliable predictions for both supports allocation of resources
+  for quality assurance (such as testing) to parts of a system that are most defect-prone." Sec. 4.2: "We tested the
+  models across releases of Eclipse". At a release, QA ranks files for testing from their metrics and pre-release
+  defects; fit direct with a split by release.
+- Regime: temporal by release (SPLIT-6), with files recurring across releases (56-67% of a release's files exist in an
+  earlier one, earlier triage; SPLIT-13). Three releases allow one window above the 50% floor (train 2.0 + 2.1, test
+  3.0: 58% of the file rows), so SPLIT-14 is not met and the task ships forced grouped by file under SPLIT-8, with the
+  3.0 window as the check. Earlier probe (untuned LightGBM): ROC AUC 0.79 for any post-release defect across releases
+  (0.87 at random), R^2 0.09 on log1p defects among defective files (train 2.0 + 2.1, test 3.0).
+- Siblings and duplicates: `bug_prediction_dataset_dambros` (classes of Eclipse 3.4 components, Mylyn and Lucene; not
+  a duplicate); `jm1` (Yes, TabArena v0.1), `defect_data` and `mozilla4` (2nd Tier, `Outdated`, Lennart). External
+  collections: the PROMISE workshop's repository; the Unified Bug Dataset (Ferenc et al. 2020) merges five public Java
+  bug datasets, which ones was not confirmed.
+- Papers and pages: the PROMISE 2007 paper (read; its Table 2 counts and the pre/post Spearman of 0.907 in Table 3
+  predate the 2.0a corrections, where the earlier triage measured 0.33-0.39).
+- Metric: for the count target, Spearman correlation (Sec. 3.3.2: "To measure the quality of such a ranking, we
+  recommend using the Spearman correlation"); for a binary framing, precision, recall and accuracy at a 0.5 cut (Sec.
+  3.3.1, 4.2), several threshold metrics, so the fallback (MET-5, MET-6). Inputs none.
+- Risks for /add-dataset: use release 2.0a only; `pre` is known at release and stays (USE-6); files rather than
+  packages (the unit testers act on); the forced split (SPLIT-14, SPLIT-8); the site does "not allow redistribution of
+  the archive" (no criterion, EV-4).
+- Priority: gap 0, use case + (the paper names the QA allocation decision and tests across releases), source + (paper
+  and release page), shape + (25,210 file-releases, about 200 metrics, three releases), risk - (one valid temporal
+  window, files overlapping across releases).
+
+CC (2026-10-30, Andrej): `TBD -> Yes`, priority 3 (the AI screening had `TBD -> 2nd Tier`, priority 3; zero-inflated
+screening review page).
 
 Eclipse Bug Data of Zimmermann, Premraj and Zeller (Saarland University, release 2.0a of 2007-12-28): for each file
 and package of Eclipse 2.0, 2.1 and 3.0, the non-trivial defects reported in the six months before (`pre`) and after

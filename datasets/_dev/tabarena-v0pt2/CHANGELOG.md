@@ -4,6 +4,71 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-11-02, two datasets shipped (no container built)
+
+- The curator's verdict: ship, for noaa_afsc_bottom_trawl_survey_cpue and
+  spanish_motor_insurance_coverage_level_2022_2024 (issue 5: the task kept). Their `REVIEW.md` files keep the issues as
+  resolved.
+
+## 2026-11-02, spanish_motor_insurance_coverage_level_2022_2024: exposure-weighted Gini (no container built)
+
+- On the curator's marks (REVIEW.md issues 3 and 4): the target is the cost per year on risk,
+  `log1p_incurred_per_exposure_year` (`total_incurred` over the recorded time on risk), scored by
+  `normalized_weighted_gini` with the recorded time on risk as weight. That time ships as the scoring column
+  `actual_exposure`, never a feature; the corrected `total_exposure` stays the feature, and the cancellation fix is
+  unchanged.
+- The two kept late values are reworded ("no consistent score gain detected in the tested comparisons", no bound
+  claimed, a revisit condition), premiums unrounded.
+- New issue 5: on the new metric an untuned plain model scores below the premium alone.
+
+## 2026-11-02, noaa_afsc_bottom_trawl_survey_cpue: 11 taxa, two-year windows (no container built)
+
+- On the curator's marks: one row per haul and taxon for 11 groundfish taxa, `taxon` a categorical feature, in place
+  of rex sole alone (391,048 rows, 52.5% zeros). Atheresthes and Lepidopsetta each group the species codes the survey
+  told apart only later. The catches of 14 more species codes are downloaded one query per code (FOSS refuses `$in`).
+- Split: nine two-year windows (2025-2026 back to 2009-2010), each trained on every earlier survey, no gap: an
+  exception to SPLIT-10 (splits.md Cases), in place of three five-year windows with a two-year gap.
+- Metric: `mean_group_normalized_rmse` (new in `data_foundry.v2.metrics`, with tests), RMSE on counts per taxon over
+  the taxon's spread, averaged, a stand-in for the review's RMSE per species, `taxon` its group and a feature (MET-2
+  amended). Flathead sole joins Bering flounder and unidentified Hippoglossoides as one taxon (391,044 rows).
+  `dataset check` and the probes are clean.
+
+## 2026-11-02, four datasets shipped; walmart held (no container built)
+
+- The curator's verdict: ship, for australian_vehicle_insurance_2004_2005, liberty_mutual_fire_peril_loss_cost,
+  wisconsin_local_government_property_insurance_fund and spanish_homeowners_motor_insurance_2010_2014 (issue 1 (a):
+  the 13 rating fields kept after the leak check). Their `REVIEW.md` files keep the issues as resolved.
+- walmart_sales_in_stormy_weather: don't ship for now; the record stays `TBD -> Yes`, the folder unbuilt.
+- wadden_sea_sibes_macoma_abundance: the leak test across the station-grouped split finds no leak (no station or row
+  on both sides; nearby stations of the same year merged into one group move R^2 by at most -0.006); the same survey's
+  other stations carry 0.085 R^2, the map's own input. `elevation_m_nap` joined from Rijkswaterstaat's vaklodingen
+  (the latest survey on or before each sample; R^2 +0.033, 9 of 9 folds); the interpolated sediment kept; record
+  `year` 2024. A container would need a rebuild.
+
+## 2026-11-02, the curator's afternoon marks on the zero-inflated review (no container built)
+
+- wisconsin_local_government_property_insurance_fund: the forced grouped split, which leaked its years' claim level,
+  is replaced by three expanding yearly windows without a gap (test 2008, 2009, 2010; train 40.6%, 60.6%, 80.3%); the
+  2008 window is below SPLIT-14's floor on the curator's call (splits.md Cases). `PolicyNum` becomes an input (known
+  members); record `year` 2017.
+- liberty_mutual_fire_peril_loss_cost: `var11` stays a feature and the competition Gini's weight; MET-2 amended
+  (metrics.md), `definitions.md` and the `MetricSpec.inputs` docstring aligned, one test added.
+- australian_vehicle_insurance_2004_2005: the book's claims corrected from the pages the curator read (de Jong and
+  Heller 2008, Table 1.6, Sec. 7.3-7.6, 8.3, 10.4-10.5); the Gini confirmed for this table; every issue resolved.
+- spanish_homeowners_motor_insurance_2010_2014: issues 2-5 resolved as implemented (no gap, the Gini, the frozen ages,
+  two warnings accepted); a nine-test leak check of the once-read rating fields finds no gain, and
+  `Policy_PaymentMethodA` gets a potential-leak note; issue 1 stays open for the curator.
+- walmart_sales_in_stormy_weather: `TBD -> 2nd Tier` to `TBD -> Yes` (TP-10 the only open reason); the folder stays.
+
+## 2026-11-02, spanish_homeowners_motor_insurance_2010_2014 added (no container built)
+
+- New v2 folder from the curator's `Yes` of 2026-11-02 (Guillen, Bolancé, Frees and Valdez, Mendeley
+  10.17632/vfchtm5y7j.1, CC BY 4.0): a customer's coming-year home claim cost at renewal, 122,935 customer-years.
+  Target `Claims2` as log1p, `normalized_gini` on the amount from context; test years 2012, 2013 and 2014 on expanding
+  windows without a gap. The year's own outcomes are dropped, prior-year claims added. The full review panel ran;
+  five issues are open in the folder's `REVIEW.md`.
+  [Record](../../../curation/records/spanish_homeowners_motor_insurance_2010_2014.md).
+
 ## 2026-11-02, pricing_game_2016_french_fleet: shipped (no container built)
 
 - The curator's verdict: ship. Issue 4 (the claim charge as target) and the metric confirmed as implemented; the
@@ -29,6 +94,67 @@ record, audit or PR that motivated it.
   months; the `meta_time_horizon_mismatch` acceptance removed. No gap (issue 3, an exception to SPLIT-10). Window
   figures, the split comment and the metric reason re-measured; check, task and leak probes clean. README.md
   regenerated. [Record](../../../curation/records/pricing_game_2016_french_fleet.md).
+
+## 2026-11-02, the curator's cross-dataset marks on the zero-inflated review (no container built)
+
+- Forced splits (SPLIT-8 amended: a forced grouped split ships; a forced IID split ships only when the leak test
+  across the random split finds none): `frempl_french_motor_personal_line`,
+  `rand_health_insurance_experiment_doctor_visits`, `spanish_motor_insurance_coverage_level_2022_2024`, `pricing_game_2017_french_mtpl` and
+  `allstate_claim_prediction_challenge_1m` ship grouped; `australian_vehicle_insurance_2004_2005` and
+  `liberty_mutual_fire_peril_loss_cost` ship IID, no leak measured across their random splits. Each `dataset.py`
+  split note names the call; the forced-split issue leaves each `REVIEW.md`.
+- Time on risk cut short by the outcome: one LEAK-10 case (removed or fixed where the data locates it, kept with its
+  measured size where not) for `australian_vehicle_insurance_2004_2005` (kept), `frempl_french_motor_personal_line`
+  and `pricing_game_2016_french_fleet` (fixed) and `spanish_motor_insurance_coverage_level_2022_2024` (located part
+  fixed, the rest kept); notes in the four `dataset.py`.
+- `noaa_storm_events_damage`: LEAK-25 amended so the $0 entries stay (a mix that follows a reporting unit shipped as a
+  feature, with a measured signal beyond it); notes updated, issue 1 resolved.
+- TP-10 stays as written: `crms_phragmites_cover` goes to `No` (`Time-series (Forecasting)`) and
+  `walmart_sales_in_stormy_weather` to `TBD -> 2nd Tier` in their records; both folders stay until the curator's
+  dataset verdict. `basque_offshore_bivalve_biotoxins`'s note on leg 1 updated.
+- SPLIT-10 amendment declined (`avito_demand_prediction_1m` issue 4): the no-gap departures of avito,
+  `pricing_game_2016_french_fleet` and `wisconsin_local_government_property_insurance_fund` stay per-dataset
+  exceptions, their pointers rewritten.
+- `australian_vehicle_insurance_2004_2005`: the claim cost stays in dollars, the log1p tables keep log1p (issue 5).
+- README.md of the nine changed definitions regenerated by `dataset check`.
+- Count metrics (zi-count-metric): `mean_poisson_deviance` added to `data_foundry.v2.metrics` (scikit-learn's
+  metric, an optional `min_prediction` floor on the original scale, tested against scikit-learn and through a log1p
+  `target_transform`). `nantucket_sound_sea_duck_aerial_survey_counts` declares it as a stand-in for its source's
+  likelihood, floored at 0.01 ducks (issue 2 resolved); `wadden_sea_sibes_macoma_abundance` (issue 3) and
+  `pennsylvania_oak_hickory_regeneration_experiment` (issue 4) keep `rmse`, a note in each `dataset.py`.
+- Hits@10 (zi-hits10): `mean_group_top_k_overlap` added to the library (per group, the share of the k highest true
+  values among the k highest predictions, ties by their expected share; tested against Buza's definition as a
+  loop). `blogfeedback` declares it as the source's metric, k = 10, the test day `basetime_day` as its group,
+  replacing the RMSLE stand-in (issue 3 resolved); MET-2 amended in metrics.md for the time column used as the
+  metric's group. README.md of the four definitions regenerated by `dataset check`.
+
+## 2026-11-01, 25 folders added from the zero-inflated screening (no container built)
+
+- Added by /add-dataset with the full review panel, one folder per `Yes` of the zero-inflated screening
+  (curation/inputs/two_regime_zero_triage_summary.md, the curator's calls of 2026-10-30). Each folder's `REVIEW.md`
+  holds the open questions; none is built yet.
+  - Insurance: `allstate_claim_prediction_challenge_1m`, `australian_vehicle_insurance_2004_2005`,
+    `frempl_french_motor_personal_line`, `liberty_mutual_fire_peril_loss_cost`, `pricing_game_2016_french_fleet`,
+    `pricing_game_2017_french_mtpl`, `rand_health_insurance_experiment_doctor_visits`,
+    `spanish_motor_insurance_2015_2018`, `spanish_motor_insurance_coverage_level_2022_2024`,
+    `wisconsin_local_government_property_insurance_fund`.
+  - Ecology and environment: `basque_offshore_bivalve_biotoxins`, `basque_offshore_ctd_chlorophyll`,
+    `boreal_postfire_lichen_biomass`, `cape_floristic_region_family_cover`, `crms_phragmites_cover`,
+    `nantucket_sound_sea_duck_aerial_survey_counts`, `noaa_afsc_bottom_trawl_survey_cpue`,
+    `pennsylvania_oak_hickory_regeneration_experiment`, `wadden_sea_sibes_macoma_abundance`.
+  - Others: `avito_demand_prediction_1m`, `blogfeedback`, `loan_default_prediction_imperial_college`,
+    `noaa_storm_events_damage`, `thailand_road_accident_register_2019_2022`, `walmart_sales_in_stormy_weather`.
+- Recommended not to ship as they stand: `basque_offshore_bivalve_biotoxins` (`Too Small`), `crms_phragmites_cover`
+  (TP-10, unless amended), `noaa_storm_events_damage` (LEAK-25, unless amended) and `walmart_sales_in_stormy_weather`
+  (`TBD -> 2nd Tier`, then TP-10). The others are recommended to ship, several only if the family call on forced splits
+  (SPLIT-8 against the how_much_did_it_rain `No`) keeps them.
+- `sweden_depth_to_bedrock` got no folder: its features need a manual order from Lantmäteriet, so it went to
+  `2nd Tier` under the curator's rule of 2026-11-01.
+- Metric library (`data_foundry.v2.metrics`): `normalized_gini` and `normalized_weighted_gini` treat tied predictions
+  as one group (the mean over the orderings of the ties), so a constant prediction scores 0 and the score no longer
+  depends on row order; without ties the official value is unchanged. New metric `ordered_lorenz_gini` (Frees, Meyers
+  and Cummings 2011), the Gini of the losses ordered by the relativity against a base premium, declared by
+  `wisconsin_local_government_property_insurance_fund`. Tests in `tests/test_v2_metrics_custom.py`.
 
 ## 2026-10-26, the cross-dataset REVIEW.md retired; README trimmed
 

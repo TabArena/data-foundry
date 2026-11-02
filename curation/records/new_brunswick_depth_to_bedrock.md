@@ -2,13 +2,13 @@
 unique_name: new_brunswick_depth_to_bedrock
 name: New Brunswick depth-to-bedrock (Pennell et al. 2026; provincial borehole, well, drillhole and outcrop points)
 checked_by:
-- AI (UNVERIFIED)
+- Andrej
 suggestion: TBD -> 2nd Tier
+priority: 2
 decision_markers:
-- Not Available (from Paper))
 - Needs extensive data wrangling
+- Available on Request
 tags:
-- AI-Filled (Verify)
 - Two-Regime Zeros
 - Non-IID (Grouped)
 original_source: GOV Website
@@ -21,14 +21,59 @@ original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://doi.org/10.1016/j.geoderma.2025.117651
 - https://doi.org/10.3390/rs13214210
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
 
 **⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+
+**Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 2: depth to bedrock at a point from LiDAR terrain and
+geology covariates, with outcrops as true zeros, is a real mapping task, but no table is deposited and a rebuild from
+the provincial databases is heavy.
+- Source: Pennell, Comeau, Zhang, Feng and Heung (2026), Geoderma 465:117651 (gold open access, CC BY-NC-ND 4.0,
+  online 8 December 2025 per Crossref; not read: ScienceDirect returned 403 and the Elsevier API only metadata). Its
+  predecessor Furze et al. (2021), Remote Sensing 13:4210 (read): DTB from "publicly available soil profiles, boreholes,
+  drill holes, well logs, and outcrop transects (n = 203,238)" (abstract); Sec. 2.5.3: "The result was 398 covariates
+  for 176,658 DTB observations"; Table 2: outcrops 126,849 (77%), all from NBERD transects. Its Data Availability
+  Statement: "The data used for this study can be downloaded from the following sources" (LiDAR, drillholes,
+  boreholes, pedons, site cards, well logs on GeoNB and provincial portals); the outcrop transects are not in the list.
+- Target and zeros: DTB in m; an outcrop is an observed 0. Furze Sec. 2.2: outcrops are "on-ground transects conducted
+  throughout the province to locate areas in which bedrock was exposed at the surface", while positive depths come
+  from drilling and wells, so zero against positive also tracks the programme that measured the point.
+- Use case: Furze Sec. 1: DTB serves "water supplies, mineral exploration, road building, and forest management"; for
+  example a provincial forestry or road planner reading depth at a site without a borehole. No actor named; fit
+  approximate (a point stands for a 10 m map cell). Regime grouped (spatial blocks), since a map serves places without
+  a measurement (SPLIT-4); Furze "split 70:30 for model development and validation" (abstract), not by area (a claim,
+  SPLIT-5).
+- Siblings and duplicates: `sweden_depth_to_bedrock` (the same task in another country, not a duplicate); soil-mapping
+  precedents `lucas_topsoil` (TBD -> Yes) and `wosis_soil_profiles` (TBD -> 2nd Tier), both AI drafts. External
+  collections: none found.
+- Papers and pages: Pennell et al. 2026 (not read); Furze et al. 2021 (read).
+- Metric: the 2026 paper not read; Furze reports R², MAE and RMSE side by side (abstract), so the fallback `rmse`
+  (MET-5) unless the 2026 paper ranks by one.
+- Risks for /add-dataset: the 2026 paper's data statement is unread (ask the curator for the PDF, PROV-17); a rebuild
+  joins GeoNB point databases with 10 m LiDAR rasters; maybe a label-derived feature: Furze computes distances "to the
+  rock outcrop locations" (Sec. 2.5.1; covariate `Out_Dist`), which are 0 on every outcrop if those locations are the
+  zero-labelled points (LEAK); PCA over all covariates (LEAK-30, weak); Furze dropped the well logs "due to
+  inconsistencies" (Sec. 2.3). Open policy question: whether mapping a field property from covariates counts as a
+  prediction task (the family's species-abundance mapping question, by analogy).
+- Markers: `Not Available (from Paper))` dropped: the observations are public at their sources (Furze's statement) and
+  a table on request is no reason for a marker (EV-4); `Needs extensive data wrangling` stays.
+- Priority: gap 0, use case 0 (applications named, no actor), source + (provincial databases documented by two papers),
+  shape + (about 177k points, hundreds of covariates, spatial), risk - (no table, heavy rebuild, a possible
+  label-derived covariate).
+
+**Assessment (AI, 2026-10-30):** The family's question on species-abundance mapping is settled without a new rule
+(Andrej, 2026-10-30, policy question 1 of the zero-inflated review: "I don't think there is new rule to build here.
+These are per dataset judgement calls and if a dataset is useful for a predictive application although the data was
+collected for something else, then this is fine"), as SEL-2 already reads the scope rules: this record is judged on its
+own use case. The verdict and priority stay.
+
+CC (2026-10-30, Andrej): `TBD -> 2nd Tier`, priority 2, as screened (verified on the zero-inflated screening review
+page).
+
+CC (2026-10-30, Andrej): "Rebuild is heavy": why it stays 2nd Tier while `sweden_depth_to_bedrock` goes to `Yes`.
 
 Depth-to-bedrock (DTB) mapping for New Brunswick with explicit zeros at bedrock outcrops (Pennell, Comeau, Zhang,
 Feng and Heung, Geoderma 465:117651, online December 2025). Its points come from public provincial databases
