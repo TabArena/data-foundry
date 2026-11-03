@@ -12,8 +12,11 @@ The open review issues live in git, next to what they are about:
 report into the review page. When a file breaks a rule below, the collector stops and names the file and the line.
 Fix the file, not the scripts.
 
-A review file holds only what is still open. When the curator settles an issue, the decision goes to the definition
-and the record, and the issue leaves the file; a REVIEW.md without issues and field rows is deleted. How to write an
+A review file keeps every issue, so the page shows how each dataset was decided. When the curator settles an issue,
+the decision goes to the definition and the record, and the issue stays in the file with a closing
+`**Resolved (<date>, <who>):**` turn that states the decision; the page hides it behind "Show resolved issues". A
+REVIEW.md is never deleted, so a decided dataset stays on the page (Andrej, 2026-11-02). A settled record-field row
+leaves the file. How to write an
 issue (evidence, links, what is no evidence) is in
 [`../../knowledge-curation/references/writing.md`](../../knowledge-curation/references/writing.md); the
 REVIEW.md convention of the working copy in
@@ -49,9 +52,32 @@ no local path goes into a review file. A statement that the current `dataset.py`
 ### Issues
 
 Each issue starts with `N. ` at the start of a line; its other lines are indented by three spaces (or blank). The
-title is the bold text at the start (`1. **Keep the target in decibels?** The source ...`), or else the first
-sentence. An issue keeps its `Implemented:` and `Alternative:` parts, their numbers and the public links to its
-evidence. An answer to the curator's question goes into the issue as `**Answer (AI, <date>):**`; it does not close
+title is the bold question at the start (`1. **Keep the target in decibels?**`), alone on its line. Then come, in
+this order:
+
+1. The bullets of [writing.md](../../knowledge-curation/references/writing.md) ("Questions and issues for the
+   curator"), each opened by its bold lead: `**Problem:**` (at most three sub-bullets of one sentence each), the optional `**Background:**`,
+   `**Effect on the task:**`,
+   `**Experiments:**`, `**Consistency:**`, `**Panel:**`, `**Unknown:**` (and any other bold lead that helps), then
+   `**Options:**` with its table and `**Recommendation:**`, which ends with `**Decision:**` and the question. No
+   paragraph of prose outside a bullet.
+2. Optionally `**Notes for the AI:**` at the start of a line: what Claude needs to apply a decision (the code, the
+   exact record or exception text, the probes to re-run). It runs to the footnotes or the end of the issue's text.
+3. The footnotes, `[^key]: <text>` at the start of a line (continuation lines indented), referenced as `[^key]` in
+   the text: every rule ID, rule wording and quoted earlier call. The page numbers them by first reference.
+
+The options table has the columns `| | Option | What it does | Pro | Con |`, one row per option, a letter in the
+first column, `(implemented)` on the row the definition has now. Every issue has two rows or more. Several points in
+one cell are separated by `; `: the page shows them as bullets (green for Pro, red for Con) and tags the implemented
+row and the row the `**Recommendation:**` names by its letter. A rule ID belongs in
+a footnote or the notes for the AI, never in the bullets or the title. The page shows the problem, then every other bullet before the options in a closed box "Details" (its summary
+lists their leads), then the options and the recommendation. It shows the footnotes in a closed box
+"Rules and references" (a click on a reference opens it) and the notes in a closed box "Notes for the AI". The same
+holds for the open-issues block of a record and for a cross-dataset item. The collector warns (and still writes
+the report) for an open issue without the three required bullets or the table, with a problem of more than three bullets or a bullet of more than one sentence, or
+with a rule ID in its text.
+
+An issue keeps the public links to its evidence. An answer to the curator's question goes into the issue as `**Answer (AI, <date>):**`; it does not close
 the issue. Write the curator's note that prompted it just before, at the start of a line, as
 `**Lennart (<date>, <mark>):** <the note, in their words>`. The page shows an issue or a cross-dataset item as a
 conversation: the original text, then one box per turn, each starting at a line that opens with one of these labels:
@@ -66,8 +92,6 @@ lands on it.
 
 The collector stops on:
 
-* an issue with a `**Resolved (...)**` or `**Deferred (...)**` label, or a title that starts with either word:
-  settled issues leave the file;
 * a line inside an issue that starts with a block label of the report (`**Data:**`, `**Split:**`, `**Task:**`,
   `**Verification:**`, ...): the page would read it as a new block;
 * a number used twice.
@@ -122,8 +146,7 @@ Blind review: would benchmark; main concern the year column. Debate: agreed on t
 * The panel holds no marks and no numbers: what the curator decides stays in the issues, which name the panel where
   it matters ("the critic disputes this"). No issue holds a line that starts with `**Review panel:**`: that line
   opens the panel and ends the issues.
-* The panel leaves with the file. While the file has open issues or field rows, the panel stays as the run wrote
-  it; when the last one is settled, the file and its panel are deleted. A panel alone does not keep a file.
+* The panel stays as the run wrote it, also once every issue is resolved.
 * Only a REVIEW.md has a panel; the open-issues block of a record without a folder has none.
 
 The collector stops on a second panel, a block label after the panel, a panel without its summary, text between the
@@ -139,8 +162,19 @@ A record that was not added has no folder for a REVIEW.md. Its open issues are o
 **Open issues (AI, 2026-10-01):** not added; duplicate. The files are the 2,000 rows of `churn_telco_south_asia`
 with renamed values.
 
-1. **Leave it out as a duplicate?** Every row matches a row of `churn_telco_south_asia` once the values are
-   renamed.
+1. **Leave it out as a duplicate?**
+
+   * **Problem:** Every row matches a row of `churn_telco_south_asia` once the values are renamed[^1].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Leave out (implemented) | the record gets `No` | no copy in the benchmark | none found |
+     | B | Add it | a second folder | none found | the same rows twice |
+
+   * **Recommendation:** A. **Decision:** A or B?
+
+   [^1]: **PROV-3** (Must): the data is real, not a real table someone reworked (relabelled, columns renamed).
 ```
 
 The lead after the label must start with `not added`. Its first sentence is the outcome on the page (category "Not
@@ -165,7 +199,7 @@ After the title come only `### <section>` headings, each with items written as t
 from its bullet to the next one; its title is its bold lead or its first sentence. The page stores the curator's
 mark under the id `x<section>-<item>`, both counted from 0 in file order. So while a page is in use, close a settled
 item with a `**Resolved (<date>):**` label (the page hides it) instead of deleting it, and add new items at the end
-of a section and new sections at the end. Closed items are deleted when the next page starts.
+of a section and new sections at the end. Closed items stay, so the decisions remain on the page.
 
 ## The collected report
 
@@ -192,8 +226,9 @@ checks that every issue it read arrives there.
   `## Across datasets`); every other `##` section holds `### <unique_name>` sections.
 * The outcome cell sets the category: starting with `not added`, Not added (no folder); containing `recommended`,
   Rec. not to ship; otherwise To ship. `added as `<folder>`` names the folder. A folder gone from the working copy is
-  shown from the last commit that still had its `dataset.py`, marked retired. A record whose `suggestion` starts
-  with `No` is shown as "Decided: verify" whatever the outcome says.
+  shown from the last commit that still had its `dataset.py`, marked retired; `collect_reviews.py --names` reads
+  its `REVIEW.md` from the last commit that had it, so a retired dataset stays on the page. A record whose
+  `suggestion` starts with `No` is shown as "Decided: verify" whatever the outcome says.
 * In a record section, a bold label at the start of a line opens a block: `**Outcome:**`, `**Record judgment:**`,
   `**Issues for <anyone>:**` (or `**Issues:**`, `**Open questions:**`), and the run-log labels the builder still
   reads (`**Data:**`, `**Definition:**`, `**Checks:**`, `**Probes:**`, `**Verification:**`, `**Fix round:**`,
@@ -252,8 +287,26 @@ the block above). The REVIEW.md reads:
 
 **Issues for the curator:**
 
-1. **Keep the target in decibels?** The source reports the scaled sound pressure level in dB; a log scale is the
-   alternative.
+1. **Keep the target in decibels?**
+
+   * **Problem:**
+     - The target is the sound pressure level in decibels, as NASA reports it.
+     - Should it get a further log?
+   * **Background:** Decibels are already a log scale, so a further log changes how errors on loud and quiet
+     airfoils are weighed[^1].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Decibels (implemented) | target as published | the unit engineers use | none found |
+     | B | Log of decibels | target transformed | none found | a log of a log scale |
+
+   * **Recommendation:** A, the source's unit. **Decision:** A or B?
+
+   **Notes for the AI:** on B, set `target_transform` in `dataset.py` and re-run `dataset check`.
+
+   [^1]: **MET-3** (Must): the score is on the scale the task means, the source's; the target may ship on the
+     scale a practitioner models it on.
 
 **Review panel:** ship (mediator). Claim audit: 2 claims, 2 hold. Blind review: would benchmark; main concern the
 decibel scale. Debate: agreed on the random split; disputed: the target scale (issue 1).
