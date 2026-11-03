@@ -421,6 +421,7 @@ marker records where a record stands, not an issue of the data.
 | `Class-dependent Recording` | the classes were measured, formatted or filled differently, so the recording can give the label away; on kept datasets once fixed, as on retired ones | LEAK-13 to LEAK-15, LEAK-39, LEAK-40 ([leak_checks.md](leak_checks.md)) |
 | `Not Available (from Paper))` | a paper's data that is not public and cannot be obtained | none |
 | `Data Requested` | state marker: the data or its source was requested from the authors or owners, and the answer is pending | none |
+| `Available on Request` | state marker: the data exists but is obtainable only by a request to its holder (a form, an e-mail to the authors, the sponsor's written approval), and the request has not been made yet. The verdict stays on the merits, `TBD -> Yes` until the data is in hand (Andrej, 2026-10-30: "Data on request shall be a TBD"), so access alone decides no verdict | none (EV-4, [evidence.md](evidence.md)) |
 | `Time-series (Regression)` | regression on a stream of readings (hourly or per-minute measurements), between a temporal task and forecasting | none (SEL-10 and SEL-11 decide which; SPLIT-7 in [splits.md](splits.md) when no timestamp survived) |
 | `Robotics (RL)` | data of a control task (a robot arm, an aircraft), solved with control or reinforcement learning rather than as a prediction | none |
 | `TBD` | state marker: the markers are still to be decided; found on `TBD -> Yes` and `TBD -> 2nd Tier` records | none |

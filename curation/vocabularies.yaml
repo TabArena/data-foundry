@@ -50,6 +50,7 @@ decision_markers:
 - Class-dependent Recording
 - Not Available (from Paper))
 - Data Requested
+- Available on Request
 - Time-series (Regression)
 - Robotics (RL)
 - TBD
@@ -69,6 +70,7 @@ tags:
 - '?'
 - Multi-target
 - Many class
+- Two-Regime Zeros
 - Search for better data
 - Revisit later
 collections:
