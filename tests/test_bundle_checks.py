@@ -934,6 +934,28 @@ def test_feature_columns_drop_target_group_and_scoring_columns(group_metric):
     assert feature_columns(make_grouped_container()) == ["feat_num"]
 
 
+def test_weight_that_is_also_a_feature_stays_a_model_input_and_weighs_the_score():
+    """A weight known for every row at the prediction point (liberty's ``var11``, the sum insured) is an input of
+    the metric without a ``ScoringColumn``: the models get it, and the scorer reads it by row index (MET-2).
+    """
+    from data_foundry.curation_container import feature_columns
+    from data_foundry.v2.metrics import score, scorer
+
+    df = make_iid_frame()
+    rng = np.random.default_rng(1)
+    df["size"] = rng.uniform(1.0, 5.0, size=len(df))
+    df["target"] = np.where(rng.random(len(df)) < 0.3, rng.exponential(size=len(df)), 0.0)
+    spec = _spec("normalized_weighted_gini", inputs={"weight": "size"})
+    container = make_v2_container(df, spec=spec, problem_type="regression")
+    assert feature_columns(container) == ["feat_num", "feat_cat", "size"]
+    assert metric_findings(container) == {"task_metric_input_is_model_input": "info"}
+    test_idx = np.arange(0, len(df), 2)
+    y_test, y_pred = df["target"].to_numpy()[test_idx], df["feat_num"].to_numpy()[test_idx]
+    weighted = scorer(container)(y_test, y_pred, test_idx)
+    assert weighted == pytest.approx(score(spec, y_test, y_pred, weight=df["size"].to_numpy()[test_idx]))
+    assert weighted != pytest.approx(score(spec, y_test, y_pred, weight=np.ones(len(test_idx))))
+
+
 def test_target_transform_that_overflows_is_an_error():
     """A log transform on a target whose exp overflows is not the scale the target ships on."""
     df = make_iid_frame()

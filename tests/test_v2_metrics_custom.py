@@ -7,6 +7,8 @@ its source. Each metric is also checked on a small case computed by hand. The 1M
 
 from __future__ import annotations
 
+import itertools
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -14,7 +16,7 @@ from data_foundry.schema import ScoringColumn
 from data_foundry.v2.dataset import metric_spec
 from data_foundry.v2.metrics import METRICS, Metric, dummy_prediction, score
 from scipy import stats
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import mean_squared_error, roc_auc_score
 
 from tests.test_bundle_checks import make_iid_frame, make_v2_container, metric_findings
 
@@ -218,6 +220,132 @@ def test_gini_top_capture_by_hand() -> None:
     assert score(_spec("gini_top_capture", "binary_classification"), y, s) == pytest.approx(1.0)
 
 
+# --- normalized_gini (Allstate 2011) and normalized_weighted_gini (Liberty Mutual 2014) ----------------------------
+
+
+def kaggle_gini(actual, pred):
+    """The normalized Gini reference code posted on Kaggle (Ben Hamner; reused by the insurance competitions)."""
+
+    def gini(actual, pred):
+        assert len(actual) == len(pred)
+        all = np.asarray(np.c_[actual, pred, np.arange(len(actual))], dtype=float)  # noqa: A001 (as published)
+        all = all[np.lexsort((all[:, 2], -1 * all[:, 1]))]  # noqa: A001
+        total_losses = all[:, 0].sum()
+        gini_sum = all[:, 0].cumsum().sum() / total_losses
+        gini_sum -= (len(actual) + 1) / 2.0
+        return gini_sum / len(actual)
+
+    return gini(actual, pred) / gini(actual, actual)
+
+
+def liberty_normalized_weighted_gini(solution, weights, submission):
+    """Liberty Mutual Fire Peril's corrected weighted Gini (forum thread 9880); ``DataFrame.sort`` became
+    ``sort_values``.
+    """
+
+    def weighted_gini(solution, weights, submission):
+        df = pd.DataFrame({"solution": solution, "weights": weights, "submission": submission})
+        df = df.sort_values("submission", ascending=False)
+        df["random"] = (df.weights / df.weights.sum()).cumsum()
+        total_pos = (df.solution * df.weights).sum()
+        df["cumPosFound"] = (df.solution * df.weights).cumsum()
+        df["Lorentz"] = df.cumPosFound / total_pos
+        return sum(df.Lorentz[1:].values * (df.random[:-1])) - sum(df.Lorentz[:-1].values * (df.random[1:]))  # noqa: PD011
+
+    return weighted_gini(solution, weights, submission) / weighted_gini(solution, weights, solution)
+
+
+@pytest.mark.parametrize("seed", [0, 1, 2])
+def test_normalized_gini_equals_the_kaggle_code(seed: int) -> None:
+    rng = np.random.default_rng(seed)
+    n = 20000
+    y = np.where(rng.uniform(size=n) < 0.05, rng.lognormal(7, 1.5, n), 0.0)
+    p = 0.3 * (y > 0) + rng.uniform(size=n)
+    assert score(_spec("normalized_gini", "regression"), y, p) == pytest.approx(kaggle_gini(y, p), rel=1e-10)
+
+
+def test_normalized_gini_by_hand() -> None:
+    # sorted by p: losses 1, 3, 2, 0, 0 -> cumulative shares sum to 23 / 6, minus (5 + 1) / 2, over 5: 1 / 6;
+    # perfect order 3, 2, 1, 0, 0 -> 26 / 6 - 3 = 4 / 3, over 5: 4 / 15; ratio 0.625
+    value = score(_spec("normalized_gini", "regression"), [1, 0, 3, 0, 2], [0.9, 0.1, 0.8, 0.2, 0.5])
+    assert value == pytest.approx(0.625)
+
+
+@pytest.mark.parametrize("seed", [0, 1, 2])
+def test_normalized_weighted_gini_equals_the_liberty_code(seed: int) -> None:
+    rng = np.random.default_rng(seed)
+    n = 20000
+    y = np.where(rng.uniform(size=n) < 0.01, rng.exponential(2.0, n), 0.0)
+    w = rng.uniform(0.1, 5.0, n)
+    p = 0.5 * (y > 0) + rng.uniform(size=n)
+    spec = _spec("normalized_weighted_gini", "regression", inputs={"weight": "w"})
+    official = liberty_normalized_weighted_gini(y, w, p)
+    assert score(spec, y, p, weight=w) == pytest.approx(official, rel=1e-10)
+
+
+def test_normalized_ginis_score_a_constant_prediction_zero() -> None:
+    rng = np.random.default_rng(0)
+    y = np.where(rng.uniform(size=5000) < 0.05, rng.lognormal(7, 1.5, 5000), 0.0)
+    w = rng.uniform(0.1, 5.0, 5000)
+    assert score(_spec("normalized_gini", "regression"), y, np.ones_like(y)) == pytest.approx(0.0, abs=1e-12)
+    spec = _spec("normalized_weighted_gini", "regression", inputs={"weight": "w"})
+    assert score(spec, y, np.ones_like(y), weight=w) == pytest.approx(0.0, abs=1e-12)
+
+
+def test_normalized_ginis_average_tied_predictions_over_their_orderings() -> None:
+    # the official codes break ties by row order; the library scores the mean over all orderings of the tied rows
+    y = np.array([0.0, 3.0, 0.0, 1.0, 2.0, 0.0])
+    w = np.array([1.0, 2.0, 0.5, 4.0, 1.0, 3.0])
+    p = np.array([0.7, 0.2, 0.2, 0.2, 0.9, 0.7])
+    orders = [list(o) for o in itertools.permutations(range(6))]  # every row order, each one official value
+    official = [kaggle_gini(y[o], p[o]) for o in orders]
+    weighted = [liberty_normalized_weighted_gini(y[o], w[o], p[o]) for o in orders]
+    assert score(_spec("normalized_gini", "regression"), y, p) == pytest.approx(np.mean(official), rel=1e-12)
+    spec = _spec("normalized_weighted_gini", "regression", inputs={"weight": "w"})
+    assert score(spec, y, p, weight=w) == pytest.approx(np.mean(weighted), rel=1e-12)
+
+
+def frees_ordered_lorenz_gini(loss, base, score):
+    """Frees, Meyers and Cummings (2011), eq. (2.2): 1 - 2 x the area under the ordered Lorenz curve, the rows sorted
+    by ascending relativity score / base, x the cumulative share of the base premium, y the cumulative share of the
+    losses (trapezoids between the points).
+    """
+    order = np.argsort(score / base, kind="stable")
+    x = np.r_[0.0, np.cumsum(base[order])] / base.sum()
+    y = np.r_[0.0, np.cumsum(loss[order])] / loss.sum()
+    return 1.0 - 2.0 * float(np.sum((x[1:] - x[:-1]) * (y[1:] + y[:-1]) / 2.0))
+
+
+@pytest.mark.parametrize("seed", [0, 1, 2])
+def test_ordered_lorenz_gini_equals_frees_formula(seed: int) -> None:
+    rng = np.random.default_rng(seed)
+    n = 5000
+    base = rng.lognormal(7, 1, n)
+    y = np.where(rng.uniform(size=n) < 0.1, rng.lognormal(8, 1.5, n), 0.0)
+    p = base * np.exp(0.5 * (y > 0) + rng.normal(0, 1, n))
+    spec = _spec("ordered_lorenz_gini", "regression", inputs={"weight": "Premium"})
+    official = frees_ordered_lorenz_gini(y, base, p)
+    assert score(spec, y, p, weight=base) == pytest.approx(official, rel=1e-10)
+
+
+def test_ordered_lorenz_gini_by_hand_and_on_the_base() -> None:
+    # equal premiums, relativities in the losses' order: x 0, .25, .5, .75, 1 and y 0, 0, 0, .25, 1 give an area of
+    # 0.1875 under the curve, so 1 - 2 x 0.1875 = 0.625; a score proportional to the base scores 0
+    spec = _spec("ordered_lorenz_gini", "regression", inputs={"weight": "Premium"})
+    base = np.array([1.0, 1.0, 1.0, 1.0])
+    loss = np.array([0.0, 0.0, 1.0, 3.0])
+    assert score(spec, loss, base * np.array([1, 2, 3, 4]), weight=base) == pytest.approx(0.625)
+    base = np.array([100.0, 300.0, 50.0, 800.0])
+    assert score(spec, loss, 2.5 * base, weight=base) == pytest.approx(0.0, abs=1e-12)
+
+
+def test_normalized_weighted_gini_host_test_case() -> None:
+    # the host's check in thread 9880: "should now score -0.821428571428572"
+    spec = _spec("normalized_weighted_gini", "regression", inputs={"weight": "var11"})
+    value = score(spec, [0, 0, 1, 0, 1], [0.1, 0.4, 0.3, 1.2, 0.0], weight=[1, 2, 5, 4, 3])
+    assert value == pytest.approx(-0.821428571428572, rel=1e-12)
+
+
 # --- weighted_pearsonr ---------------------------------------------------------------------------------------------
 
 
@@ -340,6 +468,56 @@ def test_mean_group_pearsonr_plain_equals_per_group_scipy_and_by_hand() -> None:
         Metric.source("mean_group_pearsonr", params={"method": "spearman"})
 
 
+# --- mean_group_normalized_rmse ------------------------------------------------------------------------------------
+# No official code: the reference is scikit-learn's RMSE and numpy's population standard deviation, group by group.
+
+
+def _normalized_rmse_reference(y_true, y_pred, group) -> float:
+    frame = pd.DataFrame({"y": y_true, "p": y_pred, "g": group})
+    ratios = [
+        np.sqrt(mean_squared_error(d["y"], d["p"])) / np.std(d["y"])
+        for _, d in frame.groupby("g")
+        if np.std(d["y"]) > 0
+    ]
+    return float(np.mean(ratios))
+
+
+@pytest.mark.parametrize("seed", [0, 1, 2])
+def test_mean_group_normalized_rmse_equals_per_group_sklearn(seed: int) -> None:
+    rng = np.random.default_rng(seed)
+    n = 20_000
+    group = rng.integers(0, 11, n)
+    scale = np.exp(rng.uniform(0, 9, 11))[group]  # groups on scales four orders of magnitude apart, as species counts
+    y = rng.poisson(0.5, n) * scale * rng.lognormal(size=n)
+    y_pred = np.clip(y + rng.normal(scale=scale), 0, None)
+    spec = _spec("mean_group_normalized_rmse", "regression", inputs={"group": "taxon"})
+    value = score(spec, y, y_pred, group=group)
+    assert value == pytest.approx(_normalized_rmse_reference(y, y_pred, group), rel=1e-9)
+
+
+def test_mean_group_normalized_rmse_by_hand() -> None:
+    spec = _spec("mean_group_normalized_rmse", "regression", inputs={"group": "taxon"})
+    # a: y 0, 2 (sd 1), errors 1, 1 -> 1; b: y 0, 200 (sd 100), errors 0, 0 -> 0; c: constant, left out -> mean 0.5
+    value = score(spec, [0, 2, 0, 200, 5, 5], [1, 1, 0, 200, 4, 9], group=list("aabbcc"))
+    assert value == pytest.approx(0.5)
+    # the scale of a group does not change its vote: group b multiplied by 1000 scores the same
+    assert score(spec, [0, 2, 0, 200_000], [1, 1, 0, 200_000], group=list("aabb")) == pytest.approx(0.5)
+
+
+def test_mean_group_normalized_rmse_is_fast_on_one_million_rows() -> None:
+    import time  # noqa: PLC0415
+
+    rng = np.random.default_rng(0)
+    n = 1_000_000
+    y = rng.lognormal(size=n)
+    spec = _spec("mean_group_normalized_rmse", "regression", inputs={"group": "taxon"})
+    start = time.perf_counter()
+    score(spec, y, y + rng.normal(size=n), group=rng.integers(0, 1000, n))
+    elapsed = time.perf_counter() - start
+    print(f"mean_group_normalized_rmse on 1M rows, 1000 groups: {elapsed:.3f} s")
+    assert elapsed < 5
+
+
 # --- hierarchical_balanced_accuracy --------------------------------------------------------------------------------
 
 
@@ -457,6 +635,96 @@ def test_par_k_by_hand() -> None:
         Metric.source("par_k")
     with pytest.raises(ValueError, match="takes the params"):  # the spec-level target_transform is the one way
         Metric.source("par_k", params={"cutoff": 100, "target_transform": "log"})
+
+
+# --- mean_group_top_k_overlap (Buza's Hits@10 per day) ---------------------------------------------------------------
+# Buza 2014, Feedback Prediction for Blogs, Sec. 5.1: "For each day of the test data we consider 10 blog pages that
+# were predicted to have the largest number of feedbacks. We count how many out of these pages are among the 10 pages
+# that received the largest number of feedbacks in the reality. We call this evaluation measure Hits@10 and we average
+# Hits@10 for all the days of the test data." No code is published; the reference is that text, as a loop.
+
+
+def buza_hits_at_k(y_true, y_pred, day, k=10, true_order=None, pred_order=None) -> float:
+    """Hits@k averaged over the days, ties broken by the given row orders (default: the row position)."""
+    n = len(y_true)
+    true_order = np.arange(n) if true_order is None else true_order
+    pred_order = np.arange(n) if pred_order is None else pred_order
+    hits = []
+    for d in pd.unique(day):
+        rows = np.flatnonzero(day == d)
+        top_pred = rows[np.lexsort((pred_order[rows], -y_pred[rows]))[:k]]
+        top_true = rows[np.lexsort((true_order[rows], -y_true[rows]))[:k]]
+        hits.append(len(set(top_pred) & set(top_true)))
+    return float(np.mean(hits))
+
+
+def _blog_days(seed: int, n_days: int = 20, per_day: int = 120):
+    rng = np.random.default_rng(seed)
+    day = np.repeat(np.arange(n_days), per_day)
+    comments = rng.negative_binomial(0.3, 0.05, len(day)).astype(float)  # many zeros, a long tail, ties
+    noise = rng.normal(scale=1.0, size=len(day))
+    return comments, day, noise
+
+
+@pytest.mark.parametrize("seed", [0, 1, 2])
+def test_mean_group_top_k_overlap_equals_buza_hits_at_10_without_ties(seed: int) -> None:
+    """Without ties the metric times k is Buza's Hits@10, the strict count; rows shuffled, days in any order."""
+    comments, day, noise = _blog_days(seed)
+    y = comments + np.random.default_rng(seed + 10).uniform(0, 1e-3, len(comments))  # break the ties in the truth
+    pred = np.log1p(y) + noise
+    shuffle = np.random.default_rng(seed).permutation(len(y))
+    spec = _spec("mean_group_top_k_overlap", "regression", params={"k": 10}, inputs={"group": "day"})
+    value = score(spec, y[shuffle], pred[shuffle], group=day[shuffle])
+    assert 10 * value == pytest.approx(buza_hits_at_k(y, pred, day), rel=1e-12)
+
+
+def test_mean_group_top_k_overlap_takes_the_expected_share_over_tie_breaks() -> None:
+    """With ties at either cut-off the score is the mean of Buza's count over every way to break them (enumerated)."""
+    rng = np.random.default_rng(3)
+    y = rng.integers(0, 3, 10).astype(float)  # heavy ties in the truth
+    pred = rng.integers(0, 4, 10).astype(float)  # and in the predictions
+    day = np.repeat([0, 1], 5)
+    k = 2
+    exact = []
+    for perm_day0 in itertools.permutations(range(5)):
+        for perm_pred in itertools.permutations(range(5)):
+            order_true = np.concatenate([perm_day0, perm_day0])  # the same tie-breaks on both days: still uniform
+            order_pred = np.concatenate([perm_pred, perm_pred])
+            exact.append(buza_hits_at_k(y, pred, day, k, order_true, order_pred))
+    spec = _spec("mean_group_top_k_overlap", "regression", params={"k": k}, inputs={"group": "d"})
+    assert k * score(spec, y, pred, group=day) == pytest.approx(np.mean(exact), rel=1e-12)
+    # the strict loop by row position, and counting every tie at the cut-off as a hit, bracket it (6.52 and 6.68)
+    comments, day20, noise = _blog_days(4)
+    pred20 = np.round(np.log1p(comments) + noise)  # tied predictions too
+    spec10 = _spec("mean_group_top_k_overlap", "regression", params={"k": 10}, inputs={"group": "d"})
+    expected = 10 * score(spec10, comments, pred20, group=day20)
+    strict = [
+        buza_hits_at_k(comments, pred20, day20, 10, r.permutation(len(day20)), r.permutation(len(day20)))
+        for r in (np.random.default_rng(i) for i in range(400))
+    ]
+    assert np.mean(strict) == pytest.approx(expected, abs=0.05)
+
+
+def test_mean_group_top_k_overlap_by_hand() -> None:
+    """Small days counted by hand: a plain overlap, a tie at the cut-off, a day smaller than k, a constant."""
+    spec = _spec("mean_group_top_k_overlap", "regression", params={"k": 2}, inputs={"group": "d"})
+    # day a: true top 2 = rows 0, 1; predicted top 2 = rows 0, 2 -> 1 of 2. day b: the same top 2 -> 2 of 2.
+    y = [9, 8, 1, 0, 5, 7, 6, 0]
+    p = [3, 1, 2, 0, 0.5, 0.9, 0.8, 0.1]
+    d = ["a"] * 4 + ["b"] * 4
+    assert score(spec, y, p, group=d) == pytest.approx((0.5 + 1.0) / 2)
+    # a tie at the cut-off: day a's predictions 3, 2, 2, 0 -> row 0 in, rows 1 and 2 each in with probability 1/2
+    assert score(spec, y, [3, 2, 2, 0, 0.5, 0.9, 0.8, 0.1], group=d) == pytest.approx(((1 + 0.5) / 2 + 1.0) / 2)
+    # a day with fewer rows than k takes its size as k: x's one row is its own top (1); y: true top 7, 5, predicted
+    # top 2, 5 -> 1 of 2
+    assert score(spec, [1, 5, 2, 7], [0, 1, 2, 0], group=["x", "y", "y", "y"]) == pytest.approx((1.0 + 0.5) / 2)
+    # a constant prediction finds k / n of the top on average
+    assert score(spec, [4, 3, 2, 1], [0, 0, 0, 0], group=[0, 0, 0, 0]) == pytest.approx(0.5)
+    with pytest.raises(ValueError, match="missing param"):
+        Metric.source("mean_group_top_k_overlap")
+    for bad in (0, 2.5, True):
+        with pytest.raises(ValueError, match="k is a positive integer"):
+            Metric.source("mean_group_top_k_overlap", params={"k": bad})
 
 
 # --- normalized_early_detection_utility (PhysioNet/CinC 2019) ------------------------------------------------------
@@ -628,8 +896,13 @@ def test_every_custom_metric_documents_itself() -> None:
                 "gini_stability",
                 "gini_top_capture",
                 "hierarchical_balanced_accuracy",
+                "mean_group_normalized_rmse",
                 "mean_group_pearsonr",
+                "mean_group_top_k_overlap",
                 "normalized_early_detection_utility",
+                "normalized_gini",
+                "normalized_weighted_gini",
+                "ordered_lorenz_gini",
                 "par_k",
                 "precision_at_k",
                 "rmspe",
@@ -650,6 +923,7 @@ _CHECK_PARAMS = {
     "precision_at_k": {"k_fraction": 0.2},
     "average_precision_at_k": {"k_fraction": 0.1},
     "par_k": {"cutoff": 5000},
+    "mean_group_top_k_overlap": {"k": 10},
 }
 
 
