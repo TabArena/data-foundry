@@ -97,6 +97,14 @@ re-read).
 
 CC (2026-11-02, Andrej): LEAK-25 amended as issue 1 proposed, and the dataset ships as changed: a mix whose recording follows a reporting unit shipped as a feature may be kept, case by case, with a note giving the unit's spread and drift and fit approximate, when the task keeps a measured signal beyond the reporting unit, the period and the place; the source's own 'not recorded' flag is dropped where it is used. `Data Quality Issue` leaves the record (nothing left to mark); the `Yes` stands.
 
+CC (2026-11-03, Andrej): the hazards no one sends a damage assessor for are dropped (issue 2 (B), the domain practitioner's list: marine types, drought, heat, cold, fog, rip current, funnel cloud, waterspout, high surf): "I go with your suggested change". RMSLE stays (issue 3 (A)).
+
+CC (2026-11-03, Andrej): no storm-level input (issue 4 (A)); counts of a storm's entries added no measurable signal and partly carry the label.
+
+CC (2026-11-03, Andrej): issue 5, B ("I go with your change"): the use case is the planner's, as in Diaz and Joseph (2019): the damage of storm events estimated for disaster planning, not the triage of a storm's counties; data, split and metric unchanged.
+
+CC (2026-11-03, Andrej): ship (review page verdict) with the planning use case of issue 5; the declared metric, RMSLE from context, checked.
+
 ## Reference
 
 NOAA National Centers for Environmental Information. Storm Events Database, bulk CSV files 1950-2026.

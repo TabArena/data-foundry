@@ -130,7 +130,7 @@ class PricingGame2017FrenchMtpl(AbstractCuratedDataset):
         - What the total covers: every guarantee of the policy's cover, so liability alone only for Mini (8.6% of the policies, 2.0% of the claim cost); Maxi (64.5% of the policies, 83.4% of the cost) adds damage, theft and glass. 843 claims are exactly 1,236.00 EUR and 75 exactly 618.00 EUR, the flat amount of the French inter-insurer IRSA convention for material damage and its half; the negative claims are the other side of the convention, a recovery when the client was not liable (median -516, 99.7% above -1,236). Whether the amounts are paid or incurred, and at what evaluation date, is not stated.
         - Amount, not a claim indicator, unlike pricing_game_2016_french_fleet: these are euros with a full tail (largest total 141,828), the pure premium the game priced, where pg16's charges are scaled by one constant and stop at 8,565.
         - 1,116 negative policy totals (-1,864 to -0.02) set to 0, as the AI suggested (record, 2026-10-30) and as frempl_french_motor_personal_line does; AIcrowd set the same totals to 0 on this portfolio. The reason: Tweedie and Poisson losses, the usual ones for a pure premium, need a non-negative target. The clip raises the total claim cost by 4.8% (Mini 12.5%, Maxi 4.3%). The total is clipped, not each claim: 213 policies mix positive and negative claims (80 net below 0). 88.9% of the targets are then 0.
-        - Raw amount, not log1p: the normalized Gini ranks by expected loss, which squared error on the amount estimates. Untuned, 9 shipped splits: random forest 0.298 on the amount, 0.297 on log1p (the amount ahead on 6 of 9, +0.002 +- 0.004); LightGBM 0.248 and 0.251 (log1p ahead on 3 of 9, +0.003 +- 0.012): no clear edge, so the estimand decides. As australian_vehicle_insurance_2004_2005; frempl_french_motor_personal_line ships log1p.
+        - Raw amount, not log1p: the Tweedie deviance scores the expected claim cost in euros, its level included, and a log1p fit transformed back prices policies at about 1% of their cost (deviance skill -5.1, below a constant prediction). Under the normalized Gini the scale made no clear difference (untuned, 9 shipped splits: random forest 0.298 on the amount, 0.297 on log1p; LightGBM 0.248 and 0.251). frempl_french_motor_personal_line ships log1p with a Gini. **Exception to CLEAN-16 (2026-11-03, Andrej):** a metric that scores the level in euros, which a log1p fit loses.
         - Only the claim part carries signal (repeat 0): untuned LightGBM ranks claims at AUC 0.611, a severity model scores R^2 -0.036 on the claimants (-0.018 on log amounts), and the true claim indicator times the claimants' mean reaches R^2 0.158. The largest total, 141,828, is 1.2% of all claim cost; kept.
         - `pol_bonus` is the bonus-malus at the start of the year: to Year 1 it rises by 24-25% for 1,230 policies with a Year-0 claim and 373 without (pg17testyear1), the French rule after a claim (Sec. 4.5); alone it ranks Year-0 claims at AUC 0.518.
         - Made missing, rows kept: `drv_age2` and `drv_age_lic2`, 0 exactly for the 66,814 policies without a second driver ("When not, this age is 0", Sec. 4.15); a licence held longer than the driver has lived (111 years for 24 first and 768 second drivers, 2 other first drivers; the rules warn of "some outliers", Sec. 4.19); a licence that, by the driver's age, was taken before 16 (8 first drivers, at 5 to 15, and 2 second drivers, at 8 and 10; CLEAN-11, as caracas_cervical_cancer); `vh_weight` of 0 (3,744) and the 7,901 kg of one Peugeot 205 (the other 1,384 weigh 740 to 1,300 kg), and `vh_value` of 0 (2). `vh_cyl` of 0 stays: the 5 vehicles are electric (`vh_fuel` "Hybrid"). `vh_age` is missing for one policy, as published.
@@ -148,7 +148,7 @@ class PricingGame2017FrenchMtpl(AbstractCuratedDataset):
     target = TARGET
     problem_type = "regression"
     metric = Metric.stand_in(
-        "normalized_gini",
+        "mean_tweedie_deviance",
         original=(
             "each player's profit over Years 1 to 4 in simulated markets of 10 players: the premiums minus the losses "
             "of the clients it won, each client choosing among the three cheapest offers, a player whose losses pass "
@@ -156,18 +156,18 @@ class PricingGame2017FrenchMtpl(AbstractCuratedDataset):
         ),
         reason=(
             "The market needs the other players' premiums and the claims of Years 1 to 4, which the release does not "
-            "hold, so the profit cannot be computed. In a market a player wins the clients it prices lowest, so "
-            "its profit rests on ranking the risks; the normalized Gini scores that ranking (Frees, Meyers and "
-            "Cummings 2011, JASA 106:1085-1098; the metric of the insurers' Kaggle competitions, Allstate 2011 and "
-            "Liberty Mutual 2014). It is blind to any monotone transform of the predictions, their level and their "
-            "steepness, which the game's bankruptcy rule tested. Closeness measured in simulated Year-1 markets under "
-            "the game's Rule 2 on the shipped splits, models as players: across a mixed field of models the Gini "
-            "follows the profit order at a Kendall tau of 0.12 to 0.59, a Poisson or Tweedie deviance at 0.58 to "
-            "0.79 (means per market variant); among six strong, comparable learners the Gini leads (0.91 against "
-            "0.69). RMSE on the amount follows a few large claims: untuned LightGBM reaches R^2 -0.09 to -0.006 on the "
-            "9 shipped splits while "
-            "it ranks claims at AUC 0.611."
+            "hold, so the profit cannot be computed. A player wins the clients it prices lowest and goes bankrupt when "
+            "its losses pass 170% of its premiums, so its profit rests on both the order and the level of its "
+            "premiums. The mean Tweedie deviance at power 1.5 (a compound Poisson-gamma cost, the actuarial loss for a "
+            "pure premium with many zero claims) scores both; a prediction below 1 EUR counts as 1 EUR. Closeness "
+            "measured in simulated Year-1 markets under the game's Rule 2 on the shipped splits, models as players: "
+            "across a mixed field of models a Poisson or Tweedie deviance follows the profit order at a Kendall tau of "
+            "0.58 to 0.79, the normalized Gini at 0.12 to 0.59 (means per market variant), as the Gini is blind to any "
+            "monotone transform of the predictions: a steeper copy of the best model ties the top Gini (0.317) and "
+            "earns less than a flat premium. Among six strong, comparable learners the Gini leads (0.91 against "
+            "0.69). Chosen over the Gini by the curator (Andrej, 2026-11-03)."
         ),
+        params={"power": 1.5, "min_prediction": 1.0},
         reference="http://web.archive.org/web/20190919092227/http://freakonometrics.free.fr/PG3/3rdPricingGame.pdf",
     )
     grouping = Grouping(

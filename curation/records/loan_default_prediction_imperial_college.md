@@ -124,6 +124,16 @@ competition only.
 
 **Assessment (AI, 2026-11-01):** added as `datasets/_dev/tabarena-v0pt2/loan_default_prediction_imperial_college/` by /add-dataset with the full review panel; the open questions are in its `REVIEW.md`. Recommend shipping as changed; issues 1 to 3 (the precautionary block, the gap, the metric's origin) are weighings, none a reason for `No`. Corrections to the Assessment above: "f275 = f274^2" holds in only 0.42% of rows (rank correlation 0.967); "both leaks resolved: drop the eight aggregates" was incomplete: the panel found 28 columns that record the entity's previous loan's loss after the fact (f221: ROC AUC 0.993) and f468, f471, f536, which record the loan's own period, so 33 measured leak columns go, 7 more as a precaution (the six and f533). The screening's iranian_churn concern is refuted: a chain's last row has a loss as often as its other rows (9.42% against 9.38%). Measured: the hurdle model's normalized Gini 0.196 (0.146 to 0.230), above 0 on 9 of 9 windows. `Data Quality Issue` stays until your mark on its removal. Priority 1: gap 0 (nothing thin), use case 0 (ours, fit approximate), source 0 (a data page; lender and fields anonymised), shape + (105,471 loans, 638 features, temporal), risk - (leak timing inferred on anonymised fields; issue 1 open).
 
+CC (2026-11-03, Andrej): issue 1, A: f529-f531, f533-f535 and f537 stay dropped with f527/f528 as one block.
+
+**Exception to LEAK-10 (2026-11-03, Andrej):** unlike online_shoppers `PageValues` and account_debt_south_africa, kept once the data showed them behaving like history, the block stays out: aggregates of the same hidden x as two measured leaks (f527, f528), and with anonymised fields a test without labels is indirect. Serves P4 (honest evaluation) over P7.
+
+CC (2026-11-03, Andrej): issue 2, A: the gap of 5,800 loans stays. Issue 3, B: "We go with B and can change the rule. If the source metric is bad we don't want to use it." The normalized Gini is declared from context under MET-11 as amended (an overruled source metric, the task making one obvious), not as an exception.
+
+CC (2026-11-03, Andrej): ship (review page verdict); the declared metric, the normalized Gini from context, checked.
+
+CC (2026-11-03, Andrej): the check warning `task_target_value_dominant` accepted: "for these tasks this is natural and a core challenge" (zero-inflated target).
+
 ## Reference
 
 Imperial College London and Kaggle (2014). Loan Default Prediction - Imperial College London. Kaggle research

@@ -3,20 +3,16 @@ unique_name: basque_offshore_bivalve_biotoxins
 name: Marine biotoxin benchmark (marine-ml-benchmark "biotoxin") / biotoxins in bivalves, Mendexa offshore aquaculture (AZTI)
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
-suggestion: 'Yes'
-priority: 1
+suggestion: 'No'
 decision_markers:
-- Needs extensive data wrangling
+- Too Small
 tags:
 - Two-Regime Zeros
-original_source: Github
+original_source: Other
 year: '2025'
 domain: environmental science & climate
 required_split:
-- '?'
+- Temporal (NON-IID)
 problem_type: Regression
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
@@ -27,7 +23,6 @@ source_links:
 - https://github.com/zhm12305/marine-ml-benchmark
 - https://doi.org/10.1371/journal.pone.0351325
 - https://doi.org/10.5281/zenodo.19510440
-v2_path: datasets/_dev/tabarena-v0pt2/basque_offshore_bivalve_biotoxins/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -107,6 +102,8 @@ flag with the limit of quantification as their value, i.e. non-detects coded at 
 zero-inflated (often zero or near-zero)" (Sec. 2.1.1) describes LOQ-coded non-detects, not zeros.
 
 **Assessment (AI, 2026-11-01):** added as `datasets/_dev/tabarena-v0pt2/basque_offshore_bivalve_biotoxins/` by /add-dataset with the full review panel; the open questions are in its `REVIEW.md`. Recommend `No` (`Too Small`), to revisit when AZTI publishes seasons after 2023: on leak-free inputs (plankton surveys at least 7 days old) the windows hold 6/7/0 exceedances of 160 and the quiet window fails TP-10 (its issue 1). The target is now built (the regulated okadaic-acid group), so `No Good Target (yet)` goes; `original_data_state` is a join of three tables. Correction to the Assessment above: yessotoxin has 125 values above 0.06, not 129. Priority 1: gap 0, use case 0, source +, shape 0 (280 samples), risk - (recommendation not to ship).
+
+CC (2026-11-03, Andrej): `No` (`Too Small`), as the review recommended: "I follow your suggestion to retire the dataset." The three test windows hold 6, 7 and 0 samples above the EU limit; to revisit when AZTI publishes seasons after 2023. The record fields take the definition's values (`original_source` Other, `required_split` Temporal). The v2 folder left the working copy; its last definition is in the run folder of 2026-11-03, the committed one in 902011b3.
 
 ## Reference
 

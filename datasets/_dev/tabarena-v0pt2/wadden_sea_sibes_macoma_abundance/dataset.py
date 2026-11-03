@@ -230,6 +230,11 @@ class WaddenSeaSibesMacomaAbundance(AbstractCuratedDataset):
         ),
         target_transform="log1p",
     )
+    accepted_check_warnings = {
+        "task_target_value_dominant": (
+            "56.0% zeros: samples without a Baltic tellin (Andrej, 2026-11-03: zero-inflated targets are natural for these tasks and a core challenge)."
+        ),
+    }
     grouping = Grouping(
         on="station",
         labels="per_sample",

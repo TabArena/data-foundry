@@ -31,76 +31,173 @@ remove the `Data Quality Issue` marker (it stays until your mark).
 
 **Issues for Andrej:**
 
-1. **Keep f533 and the six aggregates out as one block, or restore all seven?** On 2026-11-01 you accepted the AI's
-   Assessment, which dropped f529-f531, f534, f535 and f537 as siblings of the golden features f527/f528 before any test
-   of the six; we added f533 to the block. Each row is one period of a hidden entity, and these columns are running
-   averages of a hidden value x updated once per period. f527/f528 average in x of the loan's own period, the period in
-   which its loss arises, which is how they give the loss away. Two tests that use no labels find no such sign in the
-   six: their changes track the own period's change of x as weakly as ordinary columns do (rank correlation 0.02-0.21),
-   and among their highest values (rows without a loss) the own period's x changed hardly more often than the previous
-   period's. f533 behaves the same (own 69% against previous 63% of its highest values; f529 69% against 62%). In f468,
-   f471 and f536 the own period's x changed in 86-100% of their highest values against 33% of all rows without a loss,
-   so those three are dropped.
-   * What it does to the task: nothing measurable. Restoring all seven moves the Gini by -0.021, +0.010 and -0.011 and
+1. **Keep f533 and the six aggregates out as one block, or restore all seven?**
+
+   * **Problem:**
+     - Six running averages of a hidden value x were dropped, with f533 added, as siblings of the leaking golden
+       features f527/f528, before any test of the six.
+     - Tests without labels since find no sign of a leak in the seven.
+     - Keep them out as one block, or restore them?
+   * **Background:** each row is one period of a hidden entity, and these columns are running averages of a hidden value
+     x updated once per period. The golden features f527/f528 average in x of the loan's own period, the period in
+     which its loss arises, which is how they give the loss away. On 2026-11-01 you accepted the AI's Assessment, which
+     dropped f529-f531, f534, f535 and f537 as siblings of f527/f528 before any test of the six; we added f533 to the
+     block.
+   * **Experiments:** two tests that use no labels find no such sign in the six: their changes track the own period's
+     change of x as weakly as ordinary columns do (rank correlation 0.02-0.21), and among their highest values (rows
+     without a loss) the own period's x changed hardly more often than the previous period's. f533 behaves the same
+     (own 69% against previous 63% of its highest values; f529 69% against 62%). In f468, f471 and f536 the own
+     period's x changed in 86-100% of their highest values against 33% of all rows without a loss, so those three are
+     dropped.
+   * **Effect on the task:** nothing measurable. Restoring all seven moves the Gini by -0.021, +0.010 and -0.011 and
      the ROC AUC for a loss by 0.000, +0.003 and +0.006 on 3 windows, within noise.
-   * Rule: LEAK-10 (Must, P4) lists "an aggregate that may include the row's own outcome"; CLEAN-22 (Must, P7) drops a
-     column only for what it is. P4 outranks P7, so the drop is defensible.
-   * Precedent: online_shoppers `PageValues` and account_debt_south_africa's billing totals (Lennart, 2026-10-26) were
-     kept once the data showed them behaving like history.
-   * Implemented: (a) the seven stay dropped as one block, recorded as an exception to the precedent: they are
-     aggregates of the same hidden x as two measured leaks, and with anonymised fields a test without labels is
-     indirect. Alternative: (b) restore all seven with a `Potential leak, kept on purpose:` note.
+   * **Consistency:** a feature may not be an aggregate that may include the row's own outcome[^1a], while a column
+     leaves only for what it is[^1b]; honest evaluation outranks cleaning, so the drop is defensible[^1c]. Against it:
+     online_shoppers `PageValues` and account_debt_south_africa's billing totals were kept once the data showed them
+     behaving like history[^1d].
+   * **Options:**
 
-   **Consistency check (AI, 2026-11-01):** the drop of the six you accepted differs from `PageValues` and account_debt
-   (kept, Lennart, 2026-10-26). What sets them apart? (a) the shared hidden x above, recorded as an exception; (b) treat
-   them like `PageValues` and restore them; (c) reopen `PageValues` and account_debt; (d) amend LEAK-10 so that the
-   siblings of a measured leaking aggregate go with it.
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Drop the seven as one block (implemented) | f529-f531, f533-f535, f537 stay out, recorded as an exception to the precedent | aggregates of the same hidden x as two measured leaks; with anonymised fields a test without labels is indirect | departs from `PageValues` and account_debt |
+     | B | Restore all seven | the seven come back with a note that they are kept on purpose | follows the precedent; the tests without labels find no sign | they share x with two measured leaks |
 
-   Recommendation: (a), the block as one exception (advocate and critic agree). Decision: (a), (b), (c) or (d)?
+   * **Recommendation:** A, the block as one exception: they average the same hidden x as two measured leaks, and with
+     anonymised fields a test without labels is indirect (advocate and critic agree). **Decision:** A or B?
 
-2. **Keep the 5,800-loan gap, or ship without a gap as an exception?** A lender that refits its model knows only the
-   outcomes of loans that have ended; a loss settles after the loan's term (terms "vary by a factor from 1 to 3") and
-   the workout. Without dates that delay cannot be sized in rows.
-   * Evidence: on the 9 windows the gap changes the Gini by -0.002 and the ROC AUC for a loss by -0.003 on average,
-     against training up to the window (the panel found the newest 5,800 training loans worth no more to a model than
-     the oldest 5,800, on 2 windows). The release holds only completed loans, so no label in the file is pending: the
-     gap stands for the delay a refitting lender faces, not for missing labels.
-   * Rule: SPLIT-10 (Should) asks for a gap of about the label's delay; a departure needs a fact that sets the case
-     apart. lending_club's fact (a gap of the delay leaves less than SPLIT-14's 50% for training) does not hold here:
-     with the gap the oldest window trains on 51.8% of the rows. The only candidate fact, a term long against the file's
-     unknown span, is inferred.
-   * Implemented: (a) a gap of 5,800 loans with 9 windows of 5,000 loans (461-527 losses each); the advocate's proposal,
-     conceded by the critic. Alternative: (b) no gap with 9 windows of 5,800 loans, recorded as an exception to SPLIT-10
-     with the inferred fact and the measured effect (not "as lending_club"); you declined the SPLIT-10 amendment for labels that
-     mature longer than the training floor allows on 2026-11-02 (avito_demand_prediction_1m issue 4), so it would be an
-     exception of its own. With (a) no exception is needed.
+   **Notes for the AI:** on A, record the exception with this fact: "aggregates of the same hidden x as two measured
+   leaks (f527, f528), and with anonymised fields a test without labels is indirect". On B, restore the seven in
+   `_clean` with a `Potential leak, kept on purpose:` note. f468, f471 and f536 stay dropped either way.
 
-   Recommendation: (a): it removes a departure instead of resting one on an inferred fact, at no measurable cost.
-   Decision: (a) or (b)?
+   [^1a]: **LEAK-10** (Must, P4): a feature holds only what existed at the prediction point; out goes, among others,
+     "an aggregate that may include the row's own outcome". Amended 2026-10-26 (Lennart): a window sum stays when the
+     data shows it does not move with the outcome, case by case.
+   [^1b]: **CLEAN-22** (Must, P7): columns leave for what they are (a leak, an identifier, a copy, the measurement
+     that defines the label), never for how many there are.
+   [^1c]: principles.md ranks **P4** (honest evaluation, validity) above **P7** (the expert state, quality).
+   [^1d]: Lennart, 2026-10-26: online_shoppers `PageValues` and account_debt_south_africa's billing totals kept.
 
-3. **Declare the normalized Gini as `context`, or go to the fallback `rmse`?** The competition scored MAE. Without the
-   golden features MAE's best prediction is 0 for nearly every loan: predicting 0 scores 0.800 and every model trained
-   on the loss scores worse, so MAE is overruled (MET-2, MET-4). The question is the label and, behind it, the metric.
-   * Rule: MET-11 (Must) gives every metric one origin. `stand_in` (as built) needs an original that cannot be computed
-     and a close replacement; MAE can be computed and the Gini is no close version of it. `context` is written for a
-     source with no metric; `fallback` covers a source metric the task would not use and gives `rmse`. Neither label was
-     written for an overruled competition metric with an obvious task metric.
-   * For `context`: your policy call 3 of 2026-10-30 (loss costs are compared by the Gini of the ordered Lorenz curve;
-     the batch's insurance tables declare it as `context`, not yet ruled); credit practice selects a risk model by its
-     Gini; the host's aim was to "flag the worst of the population".
-   * For `rmse`: the tension row in principles.md (an overruled competition metric goes to the fallback) and
-     african_credit_scoring_challenge (Lennart, 2026-10-26); it scores the loss level, and it tells the hurdle model
-     from LightGBM on the loss apart at least as clearly as the Gini (a difference of 2.2-2.8 standard errors under RMSE
-     against 1.1-2.1 under the Gini, on 3 windows). Against it: the largest 1% of the errors hold 71-82% of the squared
-     error, and the hurdle model's R^2 is 0.006 (above the training mean on 8 of 9 windows).
-   * Implemented: (a) `context`, with `use_case` narrowed to ranking for portfolio entry (the Gini ignores the level).
-     Alternative: (b) the fallback `rmse`, with `use_case` back to pricing.
+   **Consistency check (AI, 2026-11-01):**
 
-   Recommendation: (a) with the amendment: MET-11's `context` also covers a source metric overruled under MET-2 or
-   MET-4. This dataset would be its only case so far (the four insurance tables, australian_vehicle, frempl and both
-   spanish_motor tables, declare `context` because their sources fix no metric; african_credit_scoring_challenge went to
-   the fallback), so the alternative to an amendment is a one-dataset exception to a Must, recorded with the fact that
-   MAE's optimum is 0 here. Decision: (a), (a) with the amendment, or (b)?
+   * **Checked:** the drop of the six you accepted differs from `PageValues` and account_debt, both kept[^1e].
+   * **Asked:** what sets them apart?
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | The shared hidden x (implemented) | the block stays dropped, recorded as an exception | no rule changes | an exception to a precedent |
+     | B | Treat them like `PageValues` | the seven are restored | follows the precedent | they share x with two measured leaks |
+     | C | Reopen `PageValues` and account_debt | the two earlier calls are decided again | one reading for all three | reopens settled datasets |
+     | D | Amend the leak rule | the siblings of a measured leaking aggregate go with it[^1f] | a standing rule, no exception | a rule change for one case so far |
+
+   * **Recommendation:** A, the block as one exception (advocate and critic agree). **Decision:** A, B, C or D?
+
+   [^1e]: Lennart, 2026-10-26: online_shoppers `PageValues` and account_debt_south_africa's billing totals kept.
+   [^1f]: **LEAK-10** (Must): would gain a clause that the siblings of a measured leaking aggregate leave with it.
+
+   **Resolved (2026-11-03, Andrej):** A, the seven stay dropped as one block, recorded as an exception to LEAK-10's
+   precedent (`PageValues`, account_debt) with the fact that sets it apart: aggregates of the same hidden x as two measured leaks (f527, f528), and with anonymised fields a test without labels is indirect. In the record, the
+   dataset's notes and the Cases table of `leak_checks.md`.
+
+2. **Keep the 5,800-loan gap, or ship without a gap as an exception?**
+
+   * **Problem:**
+     - A refitting lender knows only the outcomes of loans that have ended; a loss settles after the loan's term and the
+       workout.
+     - The split leaves a gap of 5,800 loans for that delay, which without dates cannot be sized in rows.
+     - Keep it, or ship without a gap?
+   * **Background:** loan terms "vary by a factor from 1 to 3". The release holds only completed loans, so no label in
+     the file is pending: the gap stands for the delay a refitting lender faces.
+   * **Experiments:** on the 9 windows the gap changes the Gini by -0.002 and the ROC AUC for a loss by -0.003 on
+     average, against training up to the window (the panel found the newest 5,800 training loans worth no more to a
+     model than the oldest 5,800, on 2 windows).
+   * **Consistency:** the rules ask for a gap of about the label's delay, and a departure needs a fact that sets the
+     case apart[^2a]. lending_club's fact (a gap of the delay leaves less than the 50% training floor[^2b]) does not
+     hold here: with the gap the oldest window trains on 51.8% of the rows. The only candidate fact, a term long
+     against the file's unknown span, is inferred. You declined the amendment for labels that mature longer than the
+     training floor allows[^2c], so B would be an exception of its own.
+   * **Panel:** A is the advocate's proposal, conceded by the critic.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Gap of 5,800 loans (implemented) | 5,800 loans left out between train and each of 9 test windows of 5,000 loans (461-527 losses each) | no exception needed | none measurable (Gini -0.002) |
+     | B | No gap | train runs up to each of 9 test windows of 5,800 loans, recorded as an exception with the inferred fact and the measured effect (not "as lending_club") | trains up to the window | an exception resting on an inferred fact |
+
+   * **Recommendation:** A: it removes a departure instead of resting one on an inferred fact, at no measurable cost.
+     **Decision:** A or B?
+
+   **Notes for the AI:** A is `TemporalSplits(window=5000, unit="rows", n_windows=9, gap=5800)` in `dataset.py`. On
+   B, set `window=5800` without the gap and record an exception to SPLIT-10 stating the inferred fact and the measured
+   effect, not "as lending_club".
+
+   [^2a]: **SPLIT-10** (Should): when a label is known only some time after its row, train on the rows whose outcome
+     is known by the window's start, with a gap of about the label's delay; a departure is recorded as an exception
+     with the fact that sets the case apart.
+   [^2b]: **SPLIT-14** (Must): a temporal task has at least 3 windows, and no window's train side holds less than 50%
+     of the data. lending_club departed from SPLIT-10 for this floor (Lennart, 2026-10-21).
+   [^2c]: Andrej, 2026-11-02, avito_demand_prediction_1m issue 4: the SPLIT-10 amendment for labels that mature longer
+     than the training floor allows was declined.
+
+   **Resolved (2026-11-03, Andrej):** A, the gap of 5,800 loans, as implemented; no exception needed.
+
+3. **Declare the normalized Gini as `context`, or go to the fallback `rmse`?**
+
+   * **Problem:**
+     - The competition scored MAE, but here predicting 0 beats every model trained on the loss, so MAE is
+       overruled[^3a].
+     - The question is the label of the metric's origin and, behind it, the metric: the Gini as `context`, or the
+       fallback `rmse`.
+   * **Background:** without the golden features MAE's best prediction is 0 for nearly every loan: predicting 0 scores
+     0.800 and every model trained on the loss scores worse.
+   * **The labels:** every metric names one origin[^3b]. `stand_in` (as built) needs an original that cannot be
+     computed and a close replacement; MAE can be computed and the Gini is no close version of it. `context` is
+     written for a source with no metric; `fallback` covers a source metric the task would not use and gives `rmse`.
+     Neither label was written for an overruled competition metric with an obvious task metric.
+   * **Experiments:** on 3 windows `rmse` tells the hurdle model from LightGBM on the loss apart at least as clearly as
+     the Gini (a difference of 2.2-2.8 standard errors under RMSE against 1.1-2.1 under the Gini). The largest 1% of
+     the errors hold 71-82% of the squared error, and the hurdle model's R^2 is 0.006 (above the training mean on 8 of
+     9 windows).
+   * **Consistency:** for `context`: your policy call 3 of 2026-10-30[^3c]; the four insurance tables
+     (australian_vehicle, frempl and both spanish_motor tables) declare `context` because their sources fix no metric.
+     For `rmse`: principles.md sends an overruled competition metric to the fallback[^3d], and
+     african_credit_scoring_challenge went there (Lennart, 2026-10-26). This dataset would be the only case of a
+     `context` after an overruled source metric so far.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | `context`, as an exception (implemented) | scores the normalized Gini, its `context` origin recorded as a one-dataset exception; `use_case` narrowed to ranking for portfolio entry (the Gini ignores the level) | credit practice selects a risk model by its Gini; the host's aim was to "flag the worst of the population" | a one-dataset exception to a Must |
+     | B | `context` with an amendment | scores the Gini as in A, and the rule's `context` origin is amended to also cover a source metric overruled for a mismatch with the task or for bias | no exception | a rule change for one case so far |
+     | C | Fallback `rmse` | scores `rmse` (origin `fallback`); `use_case` back to pricing | follows african_credit_scoring_challenge; scores the loss level; separates the two models at least as well | largest 1% of errors hold 71-82% of the squared error |
+
+   * **Recommendation:** B, so the label rests on the rule instead of a one-dataset exception to a Must.
+     **Decision:** A, B or C?
+
+   **Notes for the AI:** A records a one-dataset exception to MET-11 with the fact that MAE's optimum is 0 here. B
+   amends the `context` bullet of MET-11 in `.claude/skills/knowledge-curation/references/metrics.md` to also cover a
+   source metric overruled under MET-2 or MET-4, with this dataset as its case. C declares `rmse` with origin
+   `fallback` and sets `use_case` back to pricing.
+
+   [^3a]: **MET-2** (Must): match the data, the metric and the real task. **MET-4** (Should): a competition's
+     leaderboard metric is declared, and is overruled only by MET-2 or on evidence that it is biased or wrong for the
+     use case, written in the notes with its numbers.
+   [^3b]: **MET-11** (Must): every metric has one origin. `stand-in`: the source's unique metric cannot be computed on
+     our data and the closest computable metric replaces it. `context`: the source defines no metric, but the task
+     makes one obvious. `fallback`: the source defines no metric, or none the task would use in practice, and the task
+     makes none obvious; roc_auc, log_loss or rmse by problem type.
+   [^3c]: Andrej, 2026-10-30, policy call 3: loss costs are compared by the Gini of the ordered Lorenz curve; the
+     batch's insurance tables declare it as `context` (not yet ruled).
+   [^3d]: principles.md, tension "The source's metric against a better metric for the same goal": the source's metric
+     when it is a competition's or one deliberate choice that suits the decision; otherwise the fallback.
+
+   **Andrej (2026-11-03, change):** We go with B and can change the rule. If the source metric is bad we don't want
+   to use it.
+
+   **Resolved (2026-11-03, Andrej):** B. MET-11's `context` now also covers a source metric overruled under MET-2
+   or MET-4 when the task makes one metric obvious (`metrics.md`, with this dataset as its case; the matching
+   tension in `principles.md` updated). The Gini stays declared from context, no longer as an exception;
+   african_credit_scoring_challenge is not reopened (its fallback `roc_auc` is the obvious metric there too).
 
 **Review panel:** ship after changes (mediator). Claim audit: 30 claims, 22 hold, 4 refuted and 2 partly refuted (fixed
 in the definition; the two record claims at hand-over), 1 circular (replaced by a test that can fail), 1 untested (the

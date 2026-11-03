@@ -3,12 +3,9 @@ unique_name: cape_floristic_region_family_cover
 name: Cape Floristic Region plant-family cover (ZIB_data, Crassulaceae and Restionaceae)
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
-suggestion: 'Yes'
-priority: 1
+suggestion: 'No'
 decision_markers:
+- No Good Target / Scientific Discovery
 - Data Quality Issue
 tags:
 - Two-Regime Zeros
@@ -17,7 +14,7 @@ original_source: Github
 year: '2021'
 domain: biology & life sciences
 required_split:
-- Random (IID)
+- Grouped (NON-IID)
 problem_type: Regression
 original_data_state: One Table
 source_links:
@@ -26,7 +23,6 @@ source_links:
 - https://doi.org/10.1007/s13253-022-00516-z
 - https://arxiv.org/abs/2112.07249
 - https://github.com/beckytang/ZIB_data/tree/97da77c9c87434e85bba0e081fa27b148a2df9a9
-v2_path: datasets/_dev/tabarena-v0pt2/cape_floristic_region_family_cover/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -88,6 +84,8 @@ the paper says "we do not address the notion of 1-inflation". To check: what 0.9
 the target, and spatial blocks instead of random splits. The repository has no licence file.
 
 **Assessment (AI, 2026-11-01):** added as `datasets/_dev/tabarena-v0pt2/cape_floristic_region_family_cover/` by /add-dataset with the full review panel; the open questions are in its `REVIEW.md`. Recommend shipping with the 21 plots at 0.99 kept and whole 1-minute climate cells held out (104 cells, keyed on two climate columns). Measured, superseding two readings above: in all 23 Baviaanskloof plots with both families between 0 and 0.99 the two covers share one per-plot denominator, so the target is a relative cover of undocumented scale and 0.99 a cap or a code, not "probably full cover recoded"; the plots whose covers sum above 1 follow from that denominator, not from overlapping canopies. The Dryad species file needs a manual download (not checked). The pinned commit is added to the links. `Data Quality Issue` stays until your mark on issue 1. Priority 1: gap 0, use case 0, source +, shape 0 (180 plots), risk - (the 0.99 coding decides the model ranking).
+
+CC (2026-11-03, Andrej): `No` (`No Good Target / Scientific Discovery`), as the review recommended: "I follow your suggestion not to ship." No actor and no decision (a methods paper's example table), a label relative to an undocumented per-plot quantity, and climate and position only. `required_split` takes the definition's value. The v2 folder left the working copy; its last definition is in the run folder of 2026-11-03, the committed one in 902011b3.
 
 ## Reference
 

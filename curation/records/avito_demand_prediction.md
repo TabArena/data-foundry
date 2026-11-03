@@ -3,13 +3,11 @@ unique_name: avito_demand_prediction
 name: Avito Demand Prediction Challenge (Kaggle 2018, deal_probability)
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
-suggestion: 'Yes'
+suggestion: TBD -> 2nd Tier
 priority: 2
 decision_markers:
 - No Good Target (yet)
+- Out-of-scope Task (CTR/RecSys/Ranking)
 tags:
 - Two-Regime Zeros
 - Non-IID (Temporal)
@@ -22,7 +20,6 @@ required_split:
 problem_type: Regression
 source_links:
 - https://www.kaggle.com/competitions/avito-demand-prediction
-v2_path: datasets/_dev/tabarena-v0pt2/avito_demand_prediction_1m/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -87,6 +84,8 @@ which would reopen the case.
 **Assessment (AI, 2026-11-01):** added as `datasets/_dev/tabarena-v0pt2/avito_demand_prediction_1m/` by /add-dataset with the full review panel; the open questions are in its `REVIEW.md`. Recommend shipping; only the SEL-3 call on Avito's undocumented deal score can turn it to `No` (its issue 1; of 983 groups of identical reposts with a positive ad, 859 carry different labels, so the label follows each ad). `user_id` ships as a categorical. The 2026-10-20 scores above (RMSE 0.2264 and 0.2238, AUC 0.81) were on another split and are superseded by the definition's. Priority 2: gap 0, use case 0 (fit approximate), source +, shape +, risk - (SEL-3 open).
 
 CC (2026-11-02, Andrej): the SPLIT-10 amendment for labels that mature longer than the training floor allows is not adopted (issue 4): SPLIT-10 stays as written, and each no-gap departure for SPLIT-14's floor (avito's issue 2, pricing_game_2016_french_fleet, wisconsin_local_government_property_insurance_fund) is decided as an exception of its own.
+
+CC (2026-11-03, Andrej): don't ship for now, 2nd Tier (avito_demand_prediction_1m): "Since this is recsys/CTR, we move it to 2nd tier for now. Also, add the click prediction tag". The vocabulary has no click-prediction tag; the marker `Out-of-scope Task (CTR/RecSys/Ranking)` is added as its closest entry. The v2 folder left the working copy; its last definition is in the run folder of 2026-11-03, the committed one in 902011b3.
 
 ## Reference
 

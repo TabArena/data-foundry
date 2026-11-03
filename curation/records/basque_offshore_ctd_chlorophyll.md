@@ -3,18 +3,14 @@ unique_name: basque_offshore_ctd_chlorophyll
 name: Hydrographic benchmark (marine-ml-benchmark "hydrographic") / CTD profiles at Mendexa offshore aquaculture (AZTI)
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
-suggestion: 'Yes'
-priority: 2
+suggestion: 'No'
 decision_markers:
-- No Good Target (yet)
-original_source: Github
+- No Good Target / Scientific Discovery
+original_source: Other
 year: '2025'
 domain: environmental science & climate
 required_split:
-- Grouped (NON-IID)
+- Temporal (NON-IID)
 problem_type: Regression
 original_data_state: One Table
 source_links:
@@ -24,7 +20,6 @@ source_links:
 - '# Derivative: Zhou et al. 2026 cross-dataset benchmark (GitHub code, PLOS ONE paper)'
 - https://github.com/zhm12305/marine-ml-benchmark
 - https://doi.org/10.1371/journal.pone.0351325
-v2_path: datasets/_dev/tabarena-v0pt2/basque_offshore_ctd_chlorophyll/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -99,6 +94,8 @@ Zero mechanism, confirmed from the data: none, chlorophyll has no exact zeros (m
 clearly established" is generous; the target has no zero regime at all.
 
 **Assessment (AI, 2026-11-01):** added as `datasets/_dev/tabarena-v0pt2/basque_offshore_ctd_chlorophyll/` by /add-dataset with the full review panel; the open questions are in its `REVIEW.md`. Recommend shipping with the fill of a survey whose fluorometer failed as the use case (its issue 1; otherwise `No` + `No Good Target / Scientific Discovery`). Re-split temporal after the panel (nine windows of two survey days, 2022-09 to 2023-12) with the station's last measured chlorophyll as a feature. Correction to the 2026-10-30 Assessment above: 0.03 ug/l is a reporting floor of 2018-11-19 to 2022-09-12 (287 bins in 25 casts, against 37 at 0.04), not "the low end of a continuous spread"; the tag's removal stands (3.5% against 1.9%). Priority 2: gap 0, use case 0, source + (AZTI data descriptor), shape +, risk - (the use case is a validity call).
+
+CC (2026-11-03, Andrej): `No` (`No Good Target / Scientific Discovery`): "The resons to not ship this dataset outweigh the reasons to ship, it seems like this is a made up task." The record fields take the definition's values (`original_source` Other, `required_split` Temporal). The v2 folder left the working copy; its last definition is in the run folder of 2026-11-03, the committed one in 902011b3.
 
 ## Reference
 

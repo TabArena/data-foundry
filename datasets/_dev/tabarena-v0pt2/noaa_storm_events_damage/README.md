@@ -2,11 +2,11 @@
 report_format: data-foundry-report-v2
 unique_name: noaa_storm_events_damage
 container_format: 2
-checksum: v2:d4e734d45d0c212990fce66029fdf2690ca678d9cc980b2c39cbab1fa128e652
+checksum: v2:9389fd3f7bd89f0ecf7fd289a1ab5c342e528c7bbc81f9a4a003e404f2244be2
 build: null
 build_stale: false
 data:
-  n_rows: 999757
+  n_rows: 843144
   n_features: 13
   dtypes:
     category: 7
@@ -35,11 +35,11 @@ splits:
   time_gap: 3
   time_gap_unit: months
   n_train:
-    min: 822297
-    max: 938113
+    min: 702587
+    max: 793017
   n_test:
-    min: 54706
-    max: 57699
+    min: 44056
+    max: 45870
 bundle_checks:
   ok: true
   errors: []
@@ -48,7 +48,7 @@ bundle_checks:
   - dataset_duplicate_rows
   - dataset_conflicting_duplicate_rows
   accepted:
-    task_target_value_dominant: 'Zero-inflated: 73% of the entries are $0, kept as
+    task_target_value_dominant: 'Zero-inflated: 68% of the entries are $0, kept as
       entered; part of the zeros are unestimated damage (13 of 121 EF4 and EF5 tornado
       segments at $0; kept under LEAK-25 as amended, Andrej, 2026-11-02).'
 decisions:
@@ -60,19 +60,19 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `log1p_property_damage_usd`, scored with `rmsle` on temporal splits by `begin_time`. 999,757 rows and 13 features. Source: GOV Website (2026).
+Regression of `log1p_property_damage_usd`, scored with `rmsle` on temporal splits by `begin_time`. 843,144 rows and 13 features. Source: GOV Website (2026).
 
-Not built yet. The current definition gives checksum `v2:d4e734d45d0c212990fce66029fdf2690ca678d9cc980b2c39cbab1fa128e652`.
+Not built yet. The current definition gives checksum `v2:9389fd3f7bd89f0ecf7fd289a1ab5c342e528c7bbc81f9a4a003e404f2244be2`.
 
 ## In brief
 
 **Question.** How much property damage, in dollars, did a storm event reported by the US National Weather Service cause in one county or forecast zone?
 
-**Use case.** For example, a state emergency manager, once a storm has passed and its first reports are in, ranks the counties it hit by expected property damage to decide where to send damage-assessment teams first, before any survey or official estimate arrives.
+**Use case.** For example, a state hazard-mitigation planner estimates the property damage of storm events from what is known about each event before its damage is assessed (its type, place, season, size and cause), to plan where disaster resources and mitigation go, as Diaz and Joseph (2019) do for tornadoes "for science-informed tornado disaster planning".
 
-**One row.** One event of the NWS Storm Data archive in one US county, forecast zone or marine zone, 2007-2025 (thunderstorm wind, hail, flood, tornado, winter storm and 49 other types), with a damage entry.
+**One row.** One event of the NWS Storm Data archive in one US county or forecast zone, 2007-2025 (thunderstorm wind, hail, flood, tornado, winter storm and 29 other types), with a damage entry; the hazards no one sends a damage assessor for are left out.
 
-**Predicted.** The property damage the NWS office entered for the event, in nominal dollars, shipped as log(1 + dollars); 73% of the entries are $0.
+**Predicted.** The property damage the NWS office entered for the event, in nominal dollars, shipped as log(1 + dollars); 68% of the entries are $0.
 
 **Known at prediction time.** The event type, the place (state, county or zone, forecast office, where county events began), when it began and how long it lasted (not for tornadoes), a measured wind speed or the hail size, whether a wind report was measured or a damage report, and a flood's cause. The first report says whether damage was seen; some types are entered only with damage (3.5-4.0% of test rows).
 
@@ -80,7 +80,7 @@ Not built yet. The current definition gives checksum `v2:d4e734d45d0c212990fce66
 
 **Our changes to the source.** We drop the entries without a damage figure and 1,072 double entries. We drop the narratives, the tornado rating and path, the end point, the casualties, the crop damage, the reporter and the hurricane category, and blank the wind speeds estimated from the damage and the tornado durations: all written from the damage, with it or after it. Wind speed and hail size get one column each.
 
-> **Use case fit: approximate (a stand-in with a known gap).** Storm Data entries, made weeks later, stand in for the first reports; tornado types come from damage surveys; a row is one event in one county segment, while the decision is per county and storm. The label is the preparer's rough estimate, and a $0 means no damage or no estimate made, by a convention that differs by office and drifts over the years. No exposure (population, buildings) is given.
+> **Use case fit: approximate (a stand-in with a known gap).** A planner plans for kinds of events, while a row is one event in one county segment, described by Storm Data entries made weeks later (tornado types from damage surveys). The label is the preparer's rough estimate, and a $0 means no damage or no estimate made, by a convention that differs by office and drifts over the years. No exposure (population, buildings) is given.
 
 ## Files in this folder
 
@@ -131,7 +131,7 @@ Only curators run `build`, when the dataset ships.
 | license | Public Domain |
 | data_tags | Non-IID, Temporal, Spatial |
 | reference | ncei_storm_events_database |
-| rows x columns | 999,757 x 14 |
+| rows x columns | 843,144 x 14 |
 | task.target | log1p_property_damage_usd |
 | task.problem_type | regression |
 | task.metric | rmsle |
@@ -174,15 +174,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 999,757 rows of the final frame (the oldest rows: the frame is sorted by `begin_time`); 12 of 14 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 843,144 rows of the final frame (the oldest rows: the frame is sorted by `begin_time`); 12 of 14 columns, the target first. Cells are cut at 40 characters.
 
 | log1p_property_damage_usd | state | event_type | cz_type | wfo | magnitude_type | flood_cause | begin_lat | begin_lon | begin_time | duration_hours | county_zone |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | TEXAS | Drought | Z | FWD | nan | nan | nan | nan | 2007-01-01 00:00:00 | 743.983 | 48Z156 |
-| 0 | TEXAS | Drought | Z | SJT | nan | nan | nan | nan | 2007-01-01 00:00:00 | 743.983 | 48Z073 |
-| 0 | MINNESOTA | Drought | Z | FGF | nan | nan | nan | nan | 2007-01-01 00:00:00 | 743.983 | 27Z008 |
-| 0 | COLORADO | Drought | Z | GJT | nan | nan | nan | nan | 2007-01-01 00:00:00 | 743.983 | 08Z002 |
-| 0 | WISCONSIN | Drought | Z | DLH | nan | nan | nan | nan | 2007-01-01 00:00:00 | 743.983 | 55Z004 |
+| 9.21044 | INDIANA | Flood | C | IND | nan | Heavy Rain | 38.68 | -87.52 | 2007-01-01 00:00:00 | 706.567 | 18C083 |
+| 9.21044 | INDIANA | Flood | C | IND | nan | Heavy Rain | 39.47 | -87.4 | 2007-01-01 00:00:00 | 659.667 | 18C167 |
+| 0 | INDIANA | Flood | C | PAH | nan | Heavy Rain | 38.5 | -87.28 | 2007-01-01 00:00:00 | 638 | 18C125 |
+| 0 | WISCONSIN | Winter Storm | Z | DLH | nan | nan | nan | nan | 2007-01-01 00:00:00 | 5 | 55Z004 |
+| 7.6014 | NEW YORK | Winter Weather | Z | BTV | nan | nan | nan | nan | 2007-01-01 00:00:00 | 6 | 36Z029 |
 
 ## Curation notes
 
@@ -191,6 +191,8 @@ We start with the yearly details files 2007-2025 of NOAA NCEI's Storm Events Dat
 - Prediction point: a storm has passed, the event has ended and is logged from the first reports (type, place, begin and end time, a measured wind speed or the hail size, whether damage was seen), before any damage survey, claim or damage estimate. Every column is checked against it. Strong Wind, Lightning and Thunderstorm Wind below 50 kt enter Storm Data only when they result in "a fatality, injury, or damage" (NWSI 10-1605, Sec. 29, 45 and 46): 3.5-4.0% of the test rows, 95-96% of them with damage. They stay, since the first report says whether damage was seen (LEAK-37). The numbers below are untuned LightGBM (400 trees) on the shipped features, trained on 2007 to September 2023 and tested on 2024, RMSE on the log1p target: 2.626 as shipped (scratch, 2026-11-01).
 - Target: `DAMAGE_PROPERTY`, coded as a number and a magnitude letter ("10.00K" = $10,000), parsed to dollars and shipped as log1p (`log1p_property_damage_usd`); the metric is computed on the dollars (`target_transform="log1p"`). Nominal dollars as entered, not adjusted for inflation.
 - Rows without a damage figure (blank `DAMAGE_PROPERTY`, 18% of the 1,225,290 events 2007-2025) have no target and are dropped. We read the blank as the "no information available" box ("either check the 'no information available' box, or make an estimate. The lone exception is for flood events", NWSI 10-1605, Sec. 2.7, p. 11): an inference, since the export of the box is not documented; Flood and Flash Flood have 26 blanks, all in 2007, and none from 2008 on. A $0 entry stays a 0. The curator's call (Andrej, 2026-10-30, zero-inflated review): "We don't care. We want to add any relevant predictive task, independent if it is zero inflated or not"; reading it as making $0 against blank a cleaning choice is the AI's.
+- Dropped as no assessment decision (USE-1; Andrej, 2026-11-03, review issue 2, the domain practitioner's list): every marine type and drought, heat, excessive heat, cold/wind chill, extreme cold/wind chill, dense fog, freezing fog, rip current, funnel cloud, waterspout and high surf: 156,767 entries with a damage figure (15.7%), 99.1% of them $0, with 0.5% of the dollars. The event type alone predicts their zeros, so they made the task look easier; the rows left are the hazards whose damage is assessed and planned for. On the rows left untuned LightGBM scores RMSLE 2.67, 2.93 and 2.94 (2025, 2024, 2023) against 4.05, 4.28 and 4.20 for a constant.
+- No storm-level input (review issue 4): the number of a storm's entries and counties (`EPISODE_ID`) changes untuned LightGBM's RMSLE by -0.010 to +0.001 counted over all its entries, and by -0.012 to +0.017 counted over the types entered whatever the damage (strong wind, lightning and thunderstorm wind under 50 kt enter Storm Data only with damage, 3.3% of the entries), so it adds no measurable signal and would carry part of the label.
 - Anomaly: a $0 mixes "no damage" with "no estimate made" (13 of 121 EF4 and EF5 tornado segments, and 17.3% of EF2 and above, are at $0), and the mix is office practice: among Thunderstorm Wind entries the share at $0 runs from 7% to 91% between the 10th and 90th percentile of the 107 offices with 100 or more entries (decision table). It drifts: an office's 2024 share predicts its 2025 share at r 0.958 and its 2007-2016 share at r 0.575, and 30.5% of 82 offices moved by more than 0.2 from 2007-2021 to 2023-2025. The line between $0 and blank moves inside an office too: from 2007-2010 to 2022-2025, 70% of the rise in an office's Thunderstorm Wind blanks came out of its $0 entries (98 offices). The office (`wfo`) is a feature, so a model can learn the practice; it is not repaired. Kept under LEAK-25 as amended for this case (Andrej, 2026-11-02): a mix whose recording follows a reporting unit shipped as a feature stays, with the unit's spread and drift in the notes and fit approximate, as the task keeps a measured signal beyond the office, the period and the place; the blanks, the source's own 'not recorded' box, are dropped.
 - History: from 2007 on. In the files of 2000-2005, 70% to 72% of the events have no damage figure, 61% in 2006 (the year the files move from the PDS to the CSV entry format; in 2006 the PDS rows are 71.3% blank, floods 63.3%, the CSV rows 0.1%), then 7.3% in 2007, rising to 22-24% in 2022-2025, so the kept rows change composition; the positive damage drifts down within the kept years too (median of Thunderstorm Wind $5,000 in 2007-2017, $2,000 in 2025).
 - Dropped, written from the damage or recorded with it (LEAK-10): the narratives (the episode narrative is not read, the event narrative only finds double entries), `TOR_F_SCALE` (the Enhanced Fujita rating "describes the strength of the tornado based on the amount and type of damage", format document p. 4), `TOR_LENGTH`, `TOR_WIDTH` and the `TOR_OTHER_*` continuation fields (the path from the damage survey), the end point `END_LAT`, `END_LON`, `END_RANGE`, `END_AZIMUTH`, `END_LOCATION` (for a tornado the end of the surveyed path, for a wind swath "within the county where the wind damage swath exists", NWSI 10-1605, Sec. 46.1, p. A-68), the injuries and deaths, and the crop damage. Measured: with the rating, the path and the end point the RMSE falls from 2.626 to 2.596 (tornado rows 4.796 to 4.107); with the casualties and the crop damage to 2.561; two flags read off the event narrative (a dollar amount, a damage word such as "roof" or "downed") give 2.559.
@@ -211,13 +213,13 @@ We start with the yearly details files 2007-2025 of NOAA NCEI's Storm Events Dat
 
 A model refit at the start of each year estimates the damage of that year's events; the yearly cadence is ours (NCEI releases monthly). The test windows are the calendar years 2025, 2024 and 2023 (newest first), each a full cycle of the storm seasons (tornadoes in spring, hurricanes in autumn, winter storms), since storm damage is strongly seasonal and a shorter window would test one season. Each window trains on every earlier event from 2007 on except the last three months before it: a Storm Data month is certified "no later than 60 days after the end of the month" (NWSI 10-1605, Sec. 3), and NCEI's public files are "updated monthly with up to a 120 day delay possible" (C00510). In archived releases a month first appears complete 75-80 days after its end (the 2025 file of 16 January 2026 holds all of October 2025 and no November), so at a refit on 1 January the public files hold the events through September. Offices and counties recur across the years (SPLIT-13): the model estimates the damage of new events in known places.
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 822,297 to 938,113 rows, test 54,706 to 57,699 rows. Prediction horizon: 1 years. Gap between train and test: 3 months.
+3 repeat(s) x 1 fold(s) with seed 4267; train 702,587 to 793,017 rows, test 44,056 to 45,870 rows. Prediction horizon: 1 years. Gap between train and test: 3 months.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
-| 0 | 0 | 938113 | 55904 | 2007-01-01 00:00:00 | 2024-09-30 22:30:00 | 2025-01-01 00:00:00 | 2025-12-31 23:40:00 |
-| 1 | 0 | 884043 | 54706 | 2007-01-01 00:00:00 | 2023-09-30 21:35:00 | 2024-01-01 00:00:00 | 2024-12-31 23:20:00 |
-| 2 | 0 | 822297 | 57699 | 2007-01-01 00:00:00 | 2022-09-30 20:47:00 | 2023-01-01 00:00:00 | 2023-12-31 05:35:00 |
+| 0 | 0 | 793017 | 45870 | 2007-01-01 00:00:00 | 2024-09-30 22:30:00 | 2025-01-01 00:00:00 | 2025-12-31 23:40:00 |
+| 1 | 0 | 749875 | 44255 | 2007-01-01 00:00:00 | 2023-09-30 21:35:00 | 2024-01-01 00:00:00 | 2024-12-31 23:20:00 |
+| 2 | 0 | 702587 | 44056 | 2007-01-01 00:00:00 | 2022-09-30 20:47:00 | 2023-01-01 00:00:00 | 2023-12-30 23:00:00 |
 
 ## Decisions
 
@@ -257,12 +259,12 @@ Offices differ widely in how often they enter $0 for the same event type, and th
 
 0 error(s), 0 warning(s), 2 info (26 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicate_rows`: 5,450 exact duplicate row(s) (0.5% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
-- **info** `dataset_conflicting_duplicate_rows`: 582 row(s) (0.1%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+- **info** `dataset_duplicate_rows`: 5,266 exact duplicate row(s) (0.6% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
+- **info** `dataset_conflicting_duplicate_rows`: 577 row(s) (0.1%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
 Accepted on purpose:
 
-- `task_target_value_dominant`: Zero-inflated: 73% of the entries are $0, kept as entered; part of the zeros are unestimated damage (13 of 121 EF4 and EF5 tornado segments at $0; kept under LEAK-25 as amended, Andrej, 2026-11-02).
+- `task_target_value_dominant`: Zero-inflated: 68% of the entries are $0, kept as entered; part of the zeros are unestimated damage (13 of 121 EF4 and EF5 tornado segments at $0; kept under LEAK-25 as amended, Andrej, 2026-11-02).
 
 ## Data checks
 
@@ -273,20 +275,20 @@ Accepted on purpose:
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| flood_cause | category | 874632 | 87.48 | 7 | Heavy Rain, Heavy Rain / Snow Melt, Heavy Rain / Tropical System, Heavy Rain / … |
-| magnitude_type | category | 638604 | 63.88 | 4 | EG, MG, MS, ES |
-| state | category | 0 | 0 | 69 | TEXAS, ILLINOIS, IOWA, MISSOURI, VIRGINIA, KENTUCKY, KANSAS, NEBRASKA, CALIFORN… |
-| event_type | category | 0 | 0 | 54 | Thunderstorm Wind, Hail, Flash Flood, Winter Weather, High Wind, Flood, Winter … |
+| flood_cause | category | 718019 | 85.16 | 7 | Heavy Rain, Heavy Rain / Snow Melt, Heavy Rain / Tropical System, Heavy Rain / … |
+| magnitude_type | category | 509961 | 60.48 | 4 | EG, MG, MS, ES |
+| state | category | 0 | 0 | 55 | TEXAS, IOWA, ILLINOIS, MISSOURI, VIRGINIA, KANSAS, PENNSYLVANIA, KENTUCKY, NEW … |
+| event_type | category | 0 | 0 | 34 | Thunderstorm Wind, Hail, Flash Flood, Winter Weather, High Wind, Flood, Winter … |
 | cz_type | category | 0 | 0 | 2 | C, Z |
-| wfo | category | 0 | 0 | 123 | PAH, PHI, DMX, LWX, FWD, SHV, JAN, SGF, AKQ, MEG |
-| county_zone | category | 0 | 0 | 8135 | 87Z552, 17C031, 04C013, 08C041, 42C003, 56Z110, 48C439, 19C153, 29C077, 01C077 |
-| begin_time | datetime64\[ns\] | 0 | 0 | 545073 | 2012-07-01 00:00:00, 2012-08-01 00:00:00, 2012-09-01 00:00:00, 2012-10-01 00:00… |
-| wind_speed_kt | float64 | 894754 | 89.5 | 119 | 50.0, 52.0, 51.0, 35.0, 56.0, 53.0, 54.0, 55.0, 36.0, 57.0 |
-| hail_size_in | float64 | 849634 | 84.98 | 123 | 1.0, 0.75, 0.88, 1.75, 1.25, 1.5, 2.0, 2.75, 2.5, 3.0 |
-| begin_lat | float64 | 372756 | 37.28 | 126729 | 37.27, 41.02, 37.17, 41.92, 41.13, 37.04, 36.97, 41.23, 37.18, 37.12 |
-| begin_lon | float64 | 372756 | 37.28 | 172345 | -93.8, -87.57, -81.92, -90.03, -93.2, -94.35, -80.21, -93.29, -92.45, -92.4 |
-| duration_hours | float64 | 23615 | 2.36 | 7449 | 0.0, 0.0833, 0.0167, 743.9833, 0.0333, 2.0, 1.0, 6.0, 3.0, 8.0 |
-| log1p_property_damage_usd | float64 | 0 | 0 | 1880 | 0.0, 6.9088, 8.5174, 9.2104, 7.6014, 8.0067, 10.8198, 10.1267, 9.9035, 9.6159 |
+| wfo | category | 0 | 0 | 123 | PAH, PHI, DMX, LWX, JAN, SGF, FWD, RNK, OUN, SHV |
+| county_zone | category | 0 | 0 | 7697 | 17C031, 04C013, 08C041, 42C003, 56Z110, 48C439, 19C153, 29C077, 01C077, 40C143 |
+| begin_time | datetime64\[ns\] | 0 | 0 | 508378 | 2011-02-01 00:00:00, 2011-05-01 00:00:00, 2015-02-01 00:00:00, 2019-06-01 00:00… |
+| wind_speed_kt | float64 | 763563 | 90.56 | 119 | 50.0, 52.0, 51.0, 56.0, 53.0, 54.0, 55.0, 35.0, 57.0, 58.0 |
+| hail_size_in | float64 | 693507 | 82.25 | 123 | 1.0, 0.75, 0.88, 1.75, 1.25, 1.5, 2.0, 2.75, 2.5, 3.0 |
+| begin_lat | float64 | 253692 | 30.09 | 122108 | 37.27, 41.02, 41.13, 41.23, 37.18, 37.17, 41.03, 37.12, 41.6, 36.87 |
+| begin_lon | float64 | 253692 | 30.09 | 168134 | -93.8, -93.2, -94.35, -93.29, -92.45, -92.4, -92.66, -92.92, -97.15, -94.42 |
+| duration_hours | float64 | 23615 | 2.8 | 7226 | 0.0, 0.0833, 0.0167, 0.0333, 2.0, 1.0, 3.0, 6.0, 0.1667, 24.0 |
+| log1p_property_damage_usd | float64 | 0 | 0 | 1867 | 0.0, 6.9088, 8.5174, 9.2104, 7.6014, 8.0067, 10.8198, 10.1267, 9.9035, 9.6159 |
 
 </details>
 
@@ -294,18 +296,18 @@ Accepted on purpose:
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 72.98 | 1.292 | 1.071 | 17.277 | 1.041 | log1p | 1.75782e+06 | 1.21107e+06 | lognormal |
+| 0 | 0 | 68.13 | 1.038 | 0.815 | 19.078 | 1.146 | log1p | 1.74804e+06 | 1.18734e+06 | lognormal |
 
 ### Numeric features
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| begin_lat | 627001 | 37.585 | 5.22851 | -14.4 | 70.5029 |
-| begin_lon | 627001 | -90.2074 | 11.4987 | -171.033 | 171.366 |
-| log1p_property_damage_usd | 999757 | 2.44084 | 4.15659 | 0 | 23.5565 |
-| duration_hours | 976142 | 42.0064 | 147.193 | 0 | 743.983 |
-| hail_size_in | 150123 | 1.17476 | 0.493332 | 0.13 | 7.75 |
-| wind_speed_kt | 105003 | 50.6129 | 10.4438 | 17 | 149 |
+| begin_lat | 589452 | 37.8213 | 4.98192 | -14.4 | 70.5029 |
+| begin_lon | 589452 | -90.5268 | 11.5554 | -171.033 | 171.366 |
+| log1p_property_damage_usd | 843144 | 2.87631 | 4.36783 | 0 | 23.5565 |
+| duration_hours | 819529 | 10.4753 | 48.1166 | 0 | 743.983 |
+| hail_size_in | 149637 | 1.17508 | 0.4935 | 0.13 | 7.75 |
+| wind_speed_kt | 79581 | 53.8418 | 9.32148 | 17 | 149 |
 
 ### Categorical features
 
@@ -314,43 +316,43 @@ Accepted on purpose:
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| begin_time | 1 | 2012-07-01 00:00:00 | 772 | 0.08 |
-| begin_time | 2 | 2012-08-01 00:00:00 | 717 | 0.07 |
-| begin_time | 3 | 2012-09-01 00:00:00 | 705 | 0.07 |
-| begin_time | 4 | 2012-10-01 00:00:00 | 688 | 0.07 |
-| begin_time | 5 | 2012-12-01 00:00:00 | 623 | 0.06 |
-| county_zone | 1 | 87Z552 | 1943 | 0.19 |
-| county_zone | 2 | 17C031 | 1837 | 0.18 |
-| county_zone | 3 | 04C013 | 1836 | 0.18 |
-| county_zone | 4 | 08C041 | 1634 | 0.16 |
-| county_zone | 5 | 42C003 | 1565 | 0.16 |
-| cz_type | 1 | C | 595259 | 59.54 |
-| cz_type | 2 | Z | 404498 | 40.46 |
-| event_type | 1 | Thunderstorm Wind | 261454 | 26.15 |
-| event_type | 2 | Hail | 149637 | 14.97 |
-| event_type | 3 | Flash Flood | 74914 | 7.49 |
-| event_type | 4 | Winter Weather | 54685 | 5.47 |
-| event_type | 5 | High Wind | 53486 | 5.35 |
-| flood_cause | 1 | &lt;NA> | 874632 | 87.48 |
-| flood_cause | 2 | Heavy Rain | 113459 | 11.35 |
-| flood_cause | 3 | Heavy Rain / Snow Melt | 5848 | 0.58 |
-| flood_cause | 4 | Heavy Rain / Tropical System | 3255 | 0.33 |
-| flood_cause | 5 | Heavy Rain / Burn Area | 1281 | 0.13 |
-| magnitude_type | 1 | &lt;NA> | 638604 | 63.88 |
-| magnitude_type | 2 | EG | 254988 | 25.5 |
-| magnitude_type | 3 | MG | 98558 | 9.86 |
-| magnitude_type | 4 | MS | 6445 | 0.64 |
-| magnitude_type | 5 | ES | 1162 | 0.12 |
-| state | 1 | TEXAS | 80506 | 8.05 |
-| state | 2 | ILLINOIS | 38873 | 3.89 |
-| state | 3 | IOWA | 37814 | 3.78 |
-| state | 4 | MISSOURI | 36957 | 3.7 |
-| state | 5 | VIRGINIA | 30525 | 3.05 |
-| wfo | 1 | PAH | 32220 | 3.22 |
-| wfo | 2 | PHI | 24119 | 2.41 |
-| wfo | 3 | DMX | 21063 | 2.11 |
-| wfo | 4 | LWX | 20652 | 2.07 |
-| wfo | 5 | FWD | 19861 | 1.99 |
+| begin_time | 1 | 2011-02-01 00:00:00 | 301 | 0.04 |
+| begin_time | 2 | 2011-05-01 00:00:00 | 266 | 0.03 |
+| begin_time | 3 | 2015-02-01 00:00:00 | 259 | 0.03 |
+| begin_time | 4 | 2019-06-01 00:00:00 | 249 | 0.03 |
+| begin_time | 5 | 2019-05-01 00:00:00 | 229 | 0.03 |
+| county_zone | 1 | 17C031 | 1832 | 0.22 |
+| county_zone | 2 | 04C013 | 1818 | 0.22 |
+| county_zone | 3 | 08C041 | 1623 | 0.19 |
+| county_zone | 4 | 42C003 | 1565 | 0.19 |
+| county_zone | 5 | 56Z110 | 1559 | 0.18 |
+| cz_type | 1 | C | 589601 | 69.93 |
+| cz_type | 2 | Z | 253543 | 30.07 |
+| event_type | 1 | Thunderstorm Wind | 261454 | 31.01 |
+| event_type | 2 | Hail | 149637 | 17.75 |
+| event_type | 3 | Flash Flood | 74914 | 8.89 |
+| event_type | 4 | Winter Weather | 54685 | 6.49 |
+| event_type | 5 | High Wind | 53486 | 6.34 |
+| flood_cause | 1 | &lt;NA> | 718019 | 85.16 |
+| flood_cause | 2 | Heavy Rain | 113459 | 13.46 |
+| flood_cause | 3 | Heavy Rain / Snow Melt | 5848 | 0.69 |
+| flood_cause | 4 | Heavy Rain / Tropical System | 3255 | 0.39 |
+| flood_cause | 5 | Heavy Rain / Burn Area | 1281 | 0.15 |
+| magnitude_type | 1 | &lt;NA> | 509961 | 60.48 |
+| magnitude_type | 2 | EG | 252451 | 29.94 |
+| magnitude_type | 3 | MG | 73180 | 8.68 |
+| magnitude_type | 4 | MS | 6401 | 0.76 |
+| magnitude_type | 5 | ES | 1151 | 0.14 |
+| state | 1 | TEXAS | 60683 | 7.2 |
+| state | 2 | IOWA | 33479 | 3.97 |
+| state | 3 | ILLINOIS | 32727 | 3.88 |
+| state | 4 | MISSOURI | 32010 | 3.8 |
+| state | 5 | VIRGINIA | 29362 | 3.48 |
+| wfo | 1 | PAH | 21300 | 2.53 |
+| wfo | 2 | PHI | 20797 | 2.47 |
+| wfo | 3 | DMX | 18432 | 2.19 |
+| wfo | 4 | LWX | 17916 | 2.12 |
+| wfo | 5 | JAN | 16827 | 2 |
 
 </details>
 

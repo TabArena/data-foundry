@@ -44,11 +44,13 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - task_target_value_dominant
+  warnings: []
   infos:
   - task_metric_input_is_model_input
-  accepted: {}
+  accepted:
+    task_target_value_dominant: '52% zeros: hauls that caught none of the row''s taxon
+      (Andrej, 2026-11-03: zero-inflated targets are natural for these tasks and a
+      core challenge).'
 decisions:
 - 'The 11 taxa: where each is caught'
 - The 2025 GOA hauls are placed in the strata of the 1984 design
@@ -311,10 +313,13 @@ Share of hauls with a catch of each taxon by performance code: the code is recor
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (26 checks run, plus the dataset's own checks).
 
-- **warning** `task_target_value_dominant`: The target value 0 holds 52% of the rows. (hint: A cap (a censored value), a placeholder for missing, or a zero-inflated target: say which in `curation_comments`, drop censored or placeholder rows, or accept it with the reason.)
 - **info** `task_metric_input_is_model_input`: The metric's input column(s) ['taxon'] are also given to the models (a feature, the group or the time column); they are not scoring columns. (hint: Declare a column as a `ScoringColumn` only when it exists for scoring alone and must not be a feature.)
+
+Accepted on purpose:
+
+- `task_target_value_dominant`: 52% zeros: hauls that caught none of the row's taxon (Andrej, 2026-11-03: zero-inflated targets are natural for these tasks and a core challenge).
 
 ## Data checks
 

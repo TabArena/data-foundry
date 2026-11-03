@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: loan_default_prediction_imperial_college
 container_format: 2
-checksum: v2:ce072dcdcecb1ac0fd26e7fb9caf2c4d7be76f093940f21c44e4ab5bd27feca7
+checksum: v2:babaf19c2c28604074213f0b9b9518f5b3ae698fdd1c39f70bb298d800d8d9da
 build: null
 build_stale: false
 data:
@@ -45,10 +45,12 @@ bundle_checks:
   errors: []
   warnings:
   - dataset_missing_value_sentinel
-  - task_target_value_dominant
   infos:
   - dataset_duplicates_skipped
-  accepted: {}
+  accepted:
+    task_target_value_dominant: '90.7% zeros: loans with no loss (no default, or a
+      default fully recovered) (Andrej, 2026-11-03: zero-inflated targets are natural
+      for these tasks and a core challenge).'
 decisions:
 - Running aggregates that include the loan's own period are dropped
 - Columns filled in after the previous loan's outcome are dropped
@@ -60,7 +62,7 @@ decisions:
 
 Regression of `loss`, scored with `normalized_gini` on temporal splits by `time_index`. 105,471 rows and 638 features. Source: Kaggle (2014).
 
-Not built yet. The current definition gives checksum `v2:ce072dcdcecb1ac0fd26e7fb9caf2c4d7be76f093940f21c44e4ab5bd27feca7`.
+Not built yet. The current definition gives checksum `v2:babaf19c2c28604074213f0b9b9518f5b3ae698fdd1c39f70bb298d800d8d9da`.
 
 ## In brief
 
@@ -182,7 +184,7 @@ We start with train_v2.csv from the Kaggle research competition "Loan Default Pr
 
 - Prediction point: when the loan is granted. The host: "each row containing the header fact corresponds to ex-ante information available on either the individual getting the loan, based on his personal features, on his history, etc or on the loan" (Arnaud de Servigny, topic 6862). The data contradict that label for three groups of columns, dropped below.
 - Target `loss`, as the source ships it: "loss = loss given default = scaled number between 0 and 100" (Will Cukierski, topic 6862), the share of a notional of 100 that was lost; "a few loans where there has been full recovery are with a zero loss" (topic 6862), so a 0 is either no default or a default fully recovered. 95,688 zeros (90.7%) and 9,783 losses of 1 to 100 (whole numbers, median 5); no missing values. The host: "There is no after and before. These transactions are all completed." (topic 6871), so no label is pending. Zero inflation is the task (Andrej, 2026-10-30: "We want to add any relevant predictive task, independent if it is zero inflated or not").
-- Dropped, LEAK-10 (an aggregate that may include the row's own outcome): f527 and f528, topic 7115's "golden features". Rows of one hidden entity link from period to period: f521 rises by 1 and the row's f274 - f271 equals the earlier row's f527 (73,319 links). f274 holds the entity's hidden value x of the previous period: the next row's f274 equals the earlier row's x (within 0.5) on 97.3% of the links. f527 averages in x of the loan's own period, in which x changes for 99.99% of the loans with a loss against 33.1% of the others; f528 moves with the own period's x too (Spearman 0.75 with its change, 0.44 with the previous period's). Their changes from the earlier row separate losses at ROC AUC 0.973 (f528) and 0.931 (f527). With them go, as one block, the six related aggregates the curator dropped (f529-f531, f534, f535, f537; Andrej, CC 2026-11-01) and f533, which behaves like them; two label-free tests do not show the seven carrying the own period (open question in REVIEW.md).
+- Dropped, LEAK-10 (an aggregate that may include the row's own outcome): f527 and f528, topic 7115's "golden features". Rows of one hidden entity link from period to period: f521 rises by 1 and the row's f274 - f271 equals the earlier row's f527 (73,319 links). f274 holds the entity's hidden value x of the previous period: the next row's f274 equals the earlier row's x (within 0.5) on 97.3% of the links. f527 averages in x of the loan's own period, in which x changes for 99.99% of the loans with a loss against 33.1% of the others; f528 moves with the own period's x too (Spearman 0.75 with its change, 0.44 with the previous period's). Their changes from the earlier row separate losses at ROC AUC 0.973 (f528) and 0.931 (f527). With them go, as one block, the six related aggregates the curator dropped (f529-f531, f534, f535, f537; Andrej, CC 2026-11-01) and f533, which behaves like them; two label-free tests do not show the seven carrying the own period. **Exception to LEAK-10 (2026-11-03, Andrej):** the block stays out, unlike online_shoppers `PageValues` and account_debt_south_africa, because they are aggregates of the same hidden x as two measured leaks (f527, f528), and with anonymised fields a test without labels is indirect.
 - Dropped, LEAK-10 (filled in after the fact): f221 and 26 related columns (f211, f212, f214-f217, f222, f224, f251, f252, f254, f261, f262, f264, f271-f275, f277, f538, f539, f568, f569, f577, f578) and f278, which give away the loss of the entity's previous loan. A loan granted 1-10 loans earlier cannot have run its term, yet on those 8,083 links f221's level gives its loss at ROC AUC 0.993, as on links over 1,000 loans apart (0.998), and f278's change keeps 0.72-0.75 at short gaps (`_decisions`, second table). So they were filled in once the earlier loan's outcome was known, as `WheelType` in kick. Their copies f225-f227, f255-f257 and f265-f267 go as copies.
 - Dropped, LEAK-10: f468, f471 and f536, whose top values record the loan's own period. Among the loss-free linked rows in their top 0.1%, x changed in the own period in 31 of 36, 34 of 34 and 27 of 27 cases against 33.3% overall, while the previous period changed at its base rate; of 953 column tails under the same test only these and f13 stand out.
 - Potential leak, kept on purpose (LEAK-38, LEAK-32): f615 and f617 give the previous loan's loss at ROC AUC 0.65-0.68 when it was granted 1-10 loans earlier and 0.91-0.95 when over 1,000 loans earlier: the signal grows with distance, as history that arrives over time would, and the 0.65 at short gaps is the remaining risk. f13's low values go with a change of x in the own period (in 100%, 94%, 89%, 76%, 62% and 52% of the loss-free linked rows at f13 = 2 to 7, against 33%, in every quintile of the period counter f521, the link gap and the maturity f4), but as a smooth gradient: over all rows its label-free ROC AUC for an own-period change is 0.658, next to ordinary columns (f68 0.657, f596 0.650), and it does not scale with the size of the change (Spearman -0.09 in its low values, 0.59 in f536's top tail), so it reads as a predictor of the period's event, not a field written from it. The changes of f519, f520, f523 and f526 lean to the own period (label-free 0.613 against 0.532), and dropping them changes nothing. Revisit if the host's field list becomes public.
@@ -195,7 +197,7 @@ We start with train_v2.csv from the Kaggle research competition "Loan Default Pr
 - Note: the host says "Each observation is a single loan" (Will Cukierski, topic 6862), yet the links put 88% of the rows into 19,453 chains of one hidden entity (32,152 with the single rows); what the entity is is not stated (the host names the track record of the people involved in the lending). A loss does not end a chain: 70.3% of the loans with a loss have a later row, and a chain's last row has a loss as often as its other rows (9.42% against 9.38%), so the features do not summarise a window that ends at the outcome, as in iranian_churn (retired 2026-10-01).
 - Note: the data page's standardisation and de-trending, and the host's "Several of the factors displayed integrate some clustering of the corresponding features per range of maturity" (topic 6978), may be statistics over all rows of train and test; with anonymised fields this is the known risk of the `Anonymized` tag (LEAK-32), no action. Probe 16 finds no clear sign: 83 columns lie in [0, 1], but most hold many rows at both ends (a median of 138 rows at 1), like shares rather than min-max scaling, and one column (f775) has mean 0 and SD 1.
 - On the shipped columns no change from the entity's earlier row passes ROC AUC 0.595 for the row's own loss, and none of the 203,203 pairwise differences passes 0.647 (on 15,000 rows; the best single column 0.633).
-- Metric, the normalized Gini of the loss, declared from context in place of the competition's MAE (Kaggle API: "Mean Absolute Error"; MET-2, MET-4's overrule clause, MET-11; open question in REVIEW.md). The leaderboard was won with the golden features we drop, which give 9.6-11.3% of a window's loans a default probability above 1/2, so a loss is the median of their outcome, MAE's optimum. Without them 0-0.06% pass 1/2 and MAE's optimum is 0 for nearly every loan: on the 9 windows predicting 0 scores MAE 0.800, LightGBM with the MAE objective 0.800 (it predicts 0), a hurdle model P(loss) x E[loss | loss] 1.466, and the same model with the golden features 0.543. The Gini scores the ranking by expected loss that the portfolio choice acts on (the host: "You are indeed looking to flag the worst of the population", topic 6978): 0 for any constant, 0.196 (0.146 to 0.230) for the hurdle model, 0.132 for LightGBM on the loss, 0.978 with the golden features. RMSE, the fallback, scores the level too and separates the hurdle model from LightGBM on the loss at least as well as the Gini (paired bootstrap z 2.2-2.8 against 1.1-2.1 on 3 windows), but the largest 1% of the errors hold 71-82% of its sum of squares and the hurdle model's R^2 is 0.006 (-0.000 to 0.014; above the training mean on 8 of 9 windows). The Gini ignores the level of the loss, which a price needs; a separate calibration sets it. Untuned LightGBM, 400 trees.
+- Metric, the normalized Gini of the loss, declared from context in place of the competition's MAE (Kaggle API: "Mean Absolute Error"; MET-2, MET-4's overrule clause; MET-11's `context`, amended for an overruled source metric, CC 2026-11-03, Andrej). The leaderboard was won with the golden features we drop, which give 9.6-11.3% of a window's loans a default probability above 1/2, so a loss is the median of their outcome, MAE's optimum. Without them 0-0.06% pass 1/2 and MAE's optimum is 0 for nearly every loan: on the 9 windows predicting 0 scores MAE 0.800, LightGBM with the MAE objective 0.800 (it predicts 0), a hurdle model P(loss) x E[loss | loss] 1.466, and the same model with the golden features 0.543. The Gini scores the ranking by expected loss that the portfolio choice acts on (the host: "You are indeed looking to flag the worst of the population", topic 6978): 0 for any constant, 0.196 (0.146 to 0.230) for the hurdle model, 0.132 for LightGBM on the loss, 0.978 with the golden features. RMSE, the fallback, scores the level too and separates the hurdle model from LightGBM on the loss at least as well as the Gini (paired bootstrap z 2.2-2.8 against 1.1-2.1 on 3 windows), but the largest 1% of the errors hold 71-82% of its sum of squares and the hurdle model's R^2 is 0.006 (-0.000 to 0.014; above the training mean on 8 of 9 windows). The Gini ignores the level of the loss, which a price needs; a separate calibration sets it. Untuned LightGBM, 400 trees.
 - Note: the task probes flag no_signal, drift_baseline and unstable, all on R^2 (untuned LightGBM -0.012, the best family, linear, -0.002, on 5 windows), which a few large losses drive. The zero-inflated check (task_probes.md, as for forest_fires) finds both stages learnable, unlike forest_fires: on the 9 windows a loss is ranked at ROC AUC 0.69-0.73 and its size among the loans with a loss at R^2 0.45-0.61 on log1p, and an oracle that knows which loans have a loss reaches R^2 0.30-0.40; the hurdle model's normalized Gini is above 0 on 9 of 9 windows (TP-2: a small but real signal, kept). Each window holds 461 to 527 losses, and the newest window's mean loss (0.813) is no lower than the others' (0.730-0.846), so no sign of losses still open.
 
 ## Splits
@@ -250,11 +252,14 @@ ROC AUC for the loss of the entity's previous loan, by how many loans earlier it
 
 ## Bundle checks
 
-0 error(s), 2 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+0 error(s), 1 warning(s), 1 info (26 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_missing_value_sentinel`: 9 numeric column(s) are dominated by a sentinel-looking value: f72=-1 (8.7%), f586=-1 (8.1%), f587=-1 (8.1%), f588=-1 (7.5%), f648=-1 (10.3%). (hint: If it encodes 'missing', replace it with `np.nan` (curation guidelines); if it is a real value, ignore this finding.)
-- **warning** `task_target_value_dominant`: The target value 0 holds 91% of the rows. (hint: A cap (a censored value), a placeholder for missing, or a zero-inflated target: say which in `curation_comments`, drop censored or placeholder rows, or accept it with the reason.)
 - **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 67,395,969 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
+
+Accepted on purpose:
+
+- `task_target_value_dominant`: 90.7% zeros: loans with no loss (no default, or a default fully recovered) (Andrej, 2026-11-03: zero-inflated targets are natural for these tasks and a core challenge).
 
 ## Data checks
 

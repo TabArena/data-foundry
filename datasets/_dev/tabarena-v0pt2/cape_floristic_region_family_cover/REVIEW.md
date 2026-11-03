@@ -54,75 +54,160 @@ climate grid cells instead of the paper's random split (issue 2).
 
 **Issues for Andrej:**
 
-1. **Keep the 21 plots at 0.99?** The target is the family's cover as released, 0 to 0.99. 21 plots (11.7%, 20 in
-   Baviaanskloof) hold exactly 0.99 and none lies above it; the next values are 0.986, 0.961 and 0.949. Neither the
-   paper nor the repository says what 0.99 is. Two readings fit: full cover recoded below 1 (the paper models cover on
-   [0, 1)), or a cap, min(x, 0.99), on a value that can exceed 1. For the cap: in all 23 Baviaanskloof plots with both
-   families between 0 and 0.99, the two covers are exact fractions with the same denominator (or a multiple of it),
-   such as 55/372 and 175/372 in BK_113, and that denominator varies from 31 to 2,626 between plots. So the value is
-   relative to some quantity counted per plot, not a share of the 50 m2, and it can exceed 1: the two family covers of
-   BK_3 sum to 1.74 with neither at 0.99, and CP_2 sits at 0.99 in both. RMSE reads 0.99 as an exact value either way.
-   * What it changes: the 21 plots are 12% of the test plots and carry 36% of an untuned random forest's squared
-     error. With them, the forest has the lowest RMSE of four untuned models on 34 of 60 splits and a hurdle model
-     (one model for whether the family is present, one for its cover where present) on 18; with the 21 plots kept in
-     training but left out of the test score, the hurdle model wins 45 and the forest 3. So which model ranks first
-     here turns on 21 values whose meaning is unknown.
-   * For keeping: they are 21 of the 25 values at or above 0.8, most of the succulent-dense sites the use case looks
-     for; a classifier trained on other cells finds them at ROC AUC 0.88; dropped from the data, they take the forest's
-     skill from 0.48 to 0.19 on the remaining 159 rows (re-measured on the 104-cell folds).
-   * For dropping: houses dropped its capped prices although its notes gave the reason used here for keeping, and
-     under the cap reading these plots are censored (the true value is 0.99 or more, by an unknown amount), as houses'
-     prices at 500,001 were.
-   * Not checked: the authors' Baviaanskloof survey on Dryad (https://doi.org/10.5061/dryad.kk174, CC0) may hold the
-     species covers, but its file downloads only by hand, and its surveys are dated 1991/92 and 2011/12, so it may not
-     hold these plots. The Cape Point survey on figshare (https://doi.org/10.6084/m9.figshare.4737358) counts
-     individuals, from which cover cannot be rebuilt.
-   * Rule: LEAK-26 (Must) allows dropping the capped rows or documenting the cap; USE-5 (Must) lets a label of
-     undocumented construction ship at fit approximate with a note only when it cannot be checked (diabetes_3). The
-     one check left is the Dryad file, a single 3.4 MB CSV (CC0) that needs a download in a browser and may not hold
-     these plots. The mediator counts it as not reachable; the critic asks that you make that call, so choosing keep
-     or drop records that you decline the check; the advocate's rebuttal put the download or one email to the authors
-     before the build. This departs from houses on the facts above: 11.7% of the rows here against 4.7% there, and a
-     task that keeps its signal there and loses most of it here. The advocate and the critic both accept the keep; the
-     critic asked the note to say that these plots decide which model wins, and it does.
-   * Implemented: kept; the notes describe the target and the cap as above, with these numbers. Cost: the score
-     treats 0.99 as exact though it may be censored, and these plots decide the ranking.
-   * Alternative: drop the 21 plots, as houses (cost: 159 rows, three values above 0.9 left, most of the signal gone);
-     or hold the dataset until you fetch the Dryad file or the authors answer, and repair the target from it if it
-     holds these plots (PROV-13; cost: a delay, and the file may not hold these plots).
+1. **Keep the 21 plots at 0.99?**
 
-   Recommendation: keep. Decision: keep with the note, drop the 21 plots, or check the origin first?
+   * **Problem:**
+     - The target is the family's cover as released, 0 to 0.99, and 21 plots (11.7%) hold exactly 0.99.
+     - Neither the paper nor the repository says whether 0.99 is full cover recoded below 1 or a cap.
+     - If a cap, these plots are censored: keep or drop them?
+   * **Background:** 20 of the 21 plots are in Baviaanskloof, and none lies above 0.99; the next values are 0.986,
+     0.961 and 0.949. Two readings fit: full cover recoded below 1 (the paper models cover on [0, 1)), or a cap,
+     min(x, 0.99), on a value that can exceed 1. For the cap: in all 23 Baviaanskloof plots with both
+     families between 0 and 0.99, the two covers are exact fractions with the same denominator (or a multiple of it),
+     such as 55/372 and 175/372 in BK_113, and that denominator varies from 31 to 2,626 between plots. So the value
+     is relative to some quantity counted per plot, not a share of the 50 m2, and it can exceed 1: the two family
+     covers of BK_3 sum to 1.74 with neither at 0.99, and CP_2 sits at 0.99 in both. RMSE reads 0.99 as an exact
+     value either way. A capped target is either dropped at the cap or the cap documented[^1]; a label whose
+     construction is undocumented ships as an approximate fit with a note only when it cannot be checked[^2].
+   * **Effect on the task:** the 21 plots are 12% of the test plots and carry 36% of an untuned random forest's
+     squared error. Which model ranks first here turns on 21 values whose meaning is unknown.
+   * **Experiments:** with the 21 plots, the forest has the lowest RMSE of four untuned models on 34 of 60 splits and
+     a hurdle model (one model for whether the family is present, one for its cover where present) on 18; with the
+     21 plots kept in training but left out of the test score, the hurdle model wins 45 and the forest 3. Dropped
+     from the data, they take the forest's skill from 0.48 to 0.19 on the remaining 159 rows (re-measured on the
+     104-cell folds). A classifier trained on other cells finds them at ROC AUC 0.88.
+   * **For keeping:** they are 21 of the 25 values at or above 0.8, most of the succulent-dense sites the use case
+     looks for, and they carry most of the signal (above).
+   * **For dropping:** houses dropped its capped prices although its notes gave the reason used here for keeping, and
+     under the cap reading these plots are censored (the true value is 0.99 or more, by an unknown amount), as
+     houses' prices at 500,001 were.
+   * **Consistency:** this departs from houses on the facts above: 11.7% of the rows here against 4.7% there, and a
+     task that keeps its signal there and loses most of it here. Shipping an unchecked label with a note follows
+     diabetes_3[^3].
+   * **Unknown:** the authors' Baviaanskloof survey on Dryad (https://doi.org/10.5061/dryad.kk174, CC0), a single
+     3.4 MB CSV, may hold the species covers, but its file downloads only by hand, and its surveys are dated 1991/92
+     and 2011/12, so it may not hold these plots. The Cape Point survey on figshare
+     (https://doi.org/10.6084/m9.figshare.4737358) counts individuals, from which cover cannot be rebuilt. The Dryad
+     file is the one check left.
+   * **Panel:** the mediator counts the Dryad file as not reachable; the critic asks that you make that call, so
+     choosing keep or drop records that you decline the check; the advocate's rebuttal put the download or one email
+     to the authors before the build. The advocate and the critic both accept the keep; the critic asked the note to
+     say that these plots decide which model wins, and it does.
+   * **Options:**
 
-2. **Hold out climate grid cells, unlike covertype and houses?** The paper scores random splits of the Baviaanskloof
-   plots, "a training set of 99 locations and a test set of 20 locations" (Sec. 5.3, p. 15). The definition holds out
-   whole cells of the 1-minute climate grids (about 1.9 x 1.5 km): all plots of a cell stay on one side, so no
-   surveyed plot of a test plot's own cell is in training.
-   * What it changes: the Baviaanskloof plots (two thirds of the rows) are clustered, a median 0.5 km from the nearest
-     one, and nearby plots have alike covers (Pearson 0.58-0.66 under 1 km, about 0 beyond 4 km). A random site of the
-     surveyed area is a median 1.63 km from a plot. Random folds put test plots 0.73 km from training, cell folds
-     1.69 km. A random forest's skill (1 minus its squared error over that of the training mean) falls from 0.53
-     (random) to 0.48 (cells); a nearest-neighbour model on the coordinates alone falls to the level of the mean in
-     Baviaanskloof (skill 0.16 to -0.01). A random split lets a model score by copying the cover of a surveyed plot a
-     few hundred metres away, which a map of an unsurveyed site cannot do; the cells take that away and leave the
-     climate signal. At Cape Point the cells are stricter than mapping (0.92 km against 0.43 km), at little cost.
-   * Precedents: covertype ships a random split of its 30 x 30 m forest cells for mapping inside the studied areas
-     (Lennart, 2026-10-01: no coordinates, and a split by area had only 3 groups; and on 2026-06-23, "one would collect
-     samples randomly across the studied area, and afterwards try to fill the gaps", which assumes plots spread at
-     random, unlike these); houses ships random block groups (Lennart: "spatial information are not leaking"; your
-     remark: "Currently, we do not include spatial data as non-iid. Might change that"); open_soil_data (not added,
-     Lennart, 2026-09-23) named a spatial split the regime for mapping from points. What sets this case apart:
-     coordinates and exact cells, and a clustered sample, so a random split tests at less than half the distance a map
-     faces. It would be the first dataset grouped on a spatial grid key; if you accept, a SPLIT-24 case and a row in
-     the Tensions table follow.
-   * Rule: SPLIT-1 (Must; the curator picks the split the application needs), SPLIT-5 (Must; a paper's split is a
-     claim to check), SPLIT-24 (Must; the key is exact: plots with the same two 1-minute values share a grid pixel).
-     The advocate and the critic agree on the cells.
-   * Implemented: grouped on the 1-minute cell, 20 x 3 folds.
-   * Alternative: the paper's random split with the optimism stated, as covertype; or 2-minute blocks, which match
-     sites in unsurveyed cells (Baviaanskloof test plots 2.28 km from training, such sites 2.03 km from a plot) but
-     are pessimistic at Cape Point (1.31 km against 0.43 km); the forest's skill falls to 0.42.
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep with the note (implemented) | the 21 plots stay, scored as an exact 0.99; the notes give both readings of 0.99 and say that these plots decide which model wins | keeps most of the signal and the succulent-dense sites | the score treats 0.99 as exact though it may be censored; these plots decide the ranking |
+     | B | Drop the 21 plots, as houses | 159 rows left, three of them above 0.9 | follows houses; no censored values scored | most of the signal gone (forest skill 0.48 to 0.19) |
+     | C | Check the origin first | hold the dataset until you fetch the Dryad file or the authors answer; repair the target from it if it holds these plots[^4] | settles what 0.99 is | a delay, and the file may not hold these plots |
 
-   Recommendation: cells. Decision: cells, random, or 2-minute blocks?
+   * **Recommendation:** A, keep: the 21 plots are most of the succulent-dense sites the use case looks for and carry
+     most of the signal. **Decision:** A, B or C?
+
+   [^1]: **LEAK-26** (Must): a target capped at a maximum: drop the capped rows or document the cap.
+   [^2]: **USE-5** (Must): a label from a named publication whose construction is undocumented and cannot be checked
+     may ship with `fit="approximate"` and a note naming the gap.
+   [^3]: **USE-5** case diabetes_3 (Lennart, 2026-10-21).
+   [^4]: **PROV-13** (Must): when a release is damaged, check whether the origin has the clean data, and repair or
+     rebuild from the origin when it has them.
+
+   **Andrej (2026-11-03, change):** I follow your suggestion not to ship
+
+   **Resolved (2026-11-03, Andrej):** moot: the dataset is retired (issue 3).
+
+2. **Hold out climate grid cells, unlike covertype and houses?**
+
+   * **Problem:**
+     - The paper scores random splits of the Baviaanskloof plots.
+     - The definition holds out whole cells of the 1-minute climate grids instead, because the plots are clustered and a
+       random split lets a model copy the cover of a surveyed plot nearby.
+     - Which split ships?
+   * **Background:** the paper's split is "a training set of 99 locations and a test set of 20 locations" (Sec. 5.3,
+     p. 15). A paper's split is a claim to check against the task[^5], and the split is the one the application
+     needs[^6]. A cell of the 1-minute grids is about 1.9 x 1.5 km: all plots of a cell stay on one side, so no surveyed plot of a test plot's own cell is in
+     training. The key is exact: plots with the same two 1-minute values share a grid pixel[^7].
+   * **Effect on the task:** the Baviaanskloof plots (two thirds of the rows) are clustered, a median 0.5 km from the
+     nearest one, and nearby plots have alike covers (Pearson 0.58-0.66 under 1 km, about 0 beyond 4 km). A random
+     site of the surveyed area is a median 1.63 km from a plot. Random folds put test plots 0.73 km from training,
+     cell folds 1.69 km. A random split lets a model score by copying the cover of a surveyed plot a few hundred
+     metres away, which a map of an unsurveyed site cannot do; the cells take that away and leave the climate signal.
+     At Cape Point the cells are stricter than mapping (0.92 km against 0.43 km), at little cost.
+   * **Experiments:** a random forest's skill (1 minus its squared error over that of the training mean) falls from
+     0.53 (random) to 0.48 (cells); a nearest-neighbour model on the coordinates alone falls to the level of the mean
+     in Baviaanskloof (skill 0.16 to -0.01).
+   * **Consistency:** covertype ships a random split of its 30 x 30 m forest cells for mapping inside the studied
+     areas[^8], which assumes plots spread at random, unlike these; houses ships random block groups[^9];
+     open_soil_data (not added) named a spatial split the regime for mapping from points[^10]. What sets this case
+     apart: coordinates and exact cells, and a clustered sample, so a random split tests at less than half the
+     distance a map faces. It would be the first dataset grouped on a spatial grid key.
+   * **Panel:** the advocate and the critic agree on the cells.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 1-minute cells (implemented) | grouped on the 1-minute cell (104 cells), 20 x 3 folds; Baviaanskloof test plots 1.69 km from training | about the distance a map faces (1.63 km); keeps the climate signal | the first spatial grid key; stricter than mapping at Cape Point |
+     | B | The paper's random split, as covertype | random folds, the optimism stated in the notes; test plots 0.73 km from training | the source's split; follows covertype and houses | under half the distance a map faces |
+     | C | 2-minute blocks | grouped on 2-minute blocks; Baviaanskloof test plots 2.28 km from training | matches sites in unsurveyed cells (2.03 km from a plot) | pessimistic at Cape Point (1.31 km against 0.43 km); forest skill falls to 0.42 |
+
+   * **Recommendation:** A, cells: test plots sit about as far from training as an unsurveyed site from a plot (1.69
+     against 1.63 km), and the climate signal stays. **Decision:** A, B or C?
+
+   **Notes for the AI:** on A, add a SPLIT-24 case and a row in the Tensions table.
+
+   [^5]: **SPLIT-5** (Must): the split a paper prescribes is a claim to check against the task design and the data.
+   [^6]: **SPLIT-1** (Must): the split mirrors the real application, and the curator picks the one it needs.
+   [^7]: **SPLIT-24** (Must): group on a true group id or one constructed exactly from the data.
+   [^8]: covertype: Lennart, 2026-10-01 (no coordinates, and a split by area had only 3 groups); and 2026-06-23:
+     "one would collect samples randomly across the studied area, and afterwards try to fill the gaps".
+   [^9]: houses: Lennart, "spatial information are not leaking"; Andrej: "Currently, we do not include spatial data
+     as non-iid. Might change that".
+   [^10]: open_soil_data: Lennart, 2026-09-23.
+
+   **Andrej (2026-11-03, change):** I follow your suggestion not to ship
+
+   **Resolved (2026-11-03, Andrej):** moot: the dataset is retired (issue 3).
+
+3. **Is this a valid predictive task?**
+
+   * **Problem:**
+     - No actor and no decision: the source is a methods paper whose example table "enables prediction to unobserved
+       sites"; the reserve ecologist in the use case is our wording.
+     - The label cannot be checked: the cover is relative to a per-plot quantity the source does not document, and
+       0.99 is a cap or a code.
+     - The inputs are four climate grids and the position, without the rock, terrain and fire history the paper ties
+       the family to.
+   * **Background:** your doubt holds on these facts. A model does learn something (random forest skill 0.48 over the
+     training mean on unseen cells), but a signal is no use case[^3a].
+   * **Consistency:** basque_offshore_ctd_chlorophyll went `No` today as a made-up task[^3b]. The habitat maps that
+     stay are made by a named actor for a named decision on a documented count: noaa_afsc_bottom_trawl_survey_cpue
+     (essential fish habitat reviews), wadden_sea_sibes_macoma_abundance (the source's own assessment maps). Here the
+     actor, the decision and the label's meaning are all missing, which sets cape apart from those.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Ship (implemented) | as now; fit approximate | a measured signal at unseen sites; a published zero-inflated example | no actor or decision; a label of undocumented scale; climate and position only |
+     | B | `No` with `No Good Target / Scientific Discovery` | the record is `No`, the claim released, the folder leaves | as basque_offshore_ctd_chlorophyll; nothing ours in the task | loses a small zero-inflated regression |
+
+   * **Recommendation:** B: with no actor, no decision and a label whose scale nobody documents, the task is ours, not
+     the source's. Issues 1 and 2 are then moot. **Decision:** A or B?
+
+   **Notes for the AI:** on B, retire as records.md says (`No`, the marker, no priority, `v2_path` cleared, claim
+   released, CHANGELOG).
+
+   [^3a]: **USE-1** (Must): a use case is an actor, a moment and a decision. **USE-2** (Must): a task no decision fits
+     is out, marker `No Good Target / Scientific Discovery`.
+   [^3b]: Andrej, 2026-11-03, basque_offshore_ctd_chlorophyll: "it seems like this is a made up task".
+
+   **Andrej (2026-11-03, dataset note):** Are you sure this is a valid predictive task? Doesn't seem like it is from my
+   POV
+
+   **Andrej (2026-11-03, change; metric ok; dataset note):** I follow your suggestion not to ship
+
+   **Resolved (2026-11-03, Andrej):** B, don't ship: the record is `No` with `No Good Target / Scientific Discovery`
+   (the screening's `Data Quality Issue` kept: the label's scale is undocumented) and no priority, its `v2_path`
+   cleared and its claim released; `required_split` takes the definition's value (Grouped); the folder leaves the
+   working copy (copies of its last files in the run folder of 2026-11-03, `cape_retired/`).
 
 **Review panel:** ship after changes (mediator). Claim audit: 29 claims, 22 hold (3 of them reworded), 3 refuted (the
 0.99 wording and `BioClimMAP30s`, both fixed in the notes; the figshare survey as a repair source), the target as an

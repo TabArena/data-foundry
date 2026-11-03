@@ -48,45 +48,111 @@ ICPSR 6439 to settle the origin and the year (2)? Rename it to say spending (3)?
 
 **Issues for Andrej:**
 
-2. **Can you download ICPSR 6439 (it needs a login)?** The definition reads Cameron and Trivedi's extract
-   (`randdata.dta`) and gives the experiment's public-use files, ICPSR 6439, as the origin, with the year 1995. Nobody
-   has read ICPSR 6439: it answered 403 to two panel agents and to the mediator on 2026-11-01. The extract has damage
-   of its own: in six columns, missing values were filled with a site mean; its coinsurance code disagrees with the
-   file's own derived columns; and its variable labels are cut at 32 characters. PROV-13 (Must) asks to check the
-   origin before cleaning around such damage. For SUPPORT2, Lennart downloaded ICPSR 2957 with a login (2026-10-12).
-   * What it changes: after the changes above, nothing in the task waits on it. The fills are set to missing from the
-     data, and `family_income` (label cut off: "income based on annual income r...") is dropped because nobody can tell
-     whether it averages later years (LEAK-10, Must). The codebook would settle that, so the column could come back.
-     It would also give the plan and site labels, the coinsurance coding, the price base of the dollars and the year.
-   * The year (PROV-9, Must): SUPPORT2 took its extract's year, 2003, because ICPSR "does not hold every value we
-     ship" (Lennart, 2026-10-26). If ICPSR 6439 holds the person-year values we ship, 1995 stands. If not, the year is
-     the extract's first publication (Cameron and Trivedi's data page for Microeconometrics, 2005, or 2002 if the file
-     first came out with Deb and Trivedi's paper), `source_url` is that page, and ICPSR becomes the second citation.
-   * The critic holds that the origin counts as unreachable only after your login fails; the advocate accepts a
-     note if you cannot log in. Both agree on the year rule above.
-   * Implemented: the year 1995 and the ICPSR link are kept until the check, and the notes say ICPSR 6439 has not been
-     read. Alternative: if you cannot log in, keep the dataset with that note and take the extract's year, as for
-     SUPPORT2. The "repair against cleaning around damage" tension row allows a note when the origin cannot be reached.
+2. **Can you download ICPSR 6439 (it needs a login)?**
 
-   Recommendation: try the login. The codebook and the file list settle the year, the income and the labels in one
-   pass. Decision: (a) you download it, or (b) you cannot: keep with the note and take the extract's year?
+   * **Problem:**
+     - The definition names the experiment's public-use files, ICPSR 6439, as the origin (year 1995), but nobody has
+       read them: ICPSR needs a login.
+     - The origin has to be checked before we clean around damage in the extract we read[^r1].
+     - Can you download it?
+   * **Background:** The definition reads Cameron and Trivedi's extract (`randdata.dta`) and gives the experiment's
+     public-use files, ICPSR 6439, as the origin, with the year 1995. ICPSR 6439 answered 403 to two panel agents and
+     to the mediator on 2026-11-01. The extract has damage of its own:
+     - in six columns, missing values were filled with a site mean;
+     - its coinsurance code disagrees with the file's own derived columns;
+     - its variable labels are cut at 32 characters.
+   * **Effect on the task:** after the changes above, nothing in the task waits on it.
+     - The fills are set to missing from the data.
+     - `family_income` (label cut off: "income based on annual income r...") is dropped because nobody can tell whether
+       it averages later years, and a feature may hold only what was known at the prediction point[^r2]. The codebook
+       would settle that, so the column could come back.
+     - The codebook would also give the plan and site labels, the coinsurance coding, the price base of the dollars
+       and the year.
+   * **Consistency:** the year is that of the first publication of the rows we ship[^r3]. SUPPORT2, whose origin
+     Lennart downloaded from ICPSR with a login, took its extract's year, 2003, because ICPSR did not hold every value
+     we ship[^r4].
+     - If ICPSR 6439 holds the person-year values we ship, 1995 stands.
+     - If not, the year is the extract's first publication (Cameron and Trivedi's data page for Microeconometrics,
+       2005, or 2002 if the file first came out with Deb and Trivedi's paper), `source_url` is that page, and ICPSR
+       becomes the second citation.
+   * **Panel:** the critic holds that the origin counts as unreachable only after your login fails; the advocate
+     accepts a note if you cannot log in. Both agree on the year rule above.
+   * **Options:**
 
-3. **Rename the dataset to say spending?** The `unique_name`, the folder and the class say "doctor visits", from the
-   screening's first target. The dataset predicts next year's medical spending in dollars, and the visit count is only
-   a feature, so a user looking for a count task would pick it by mistake. records.md keeps names stable, because a
-   rename breaks links and review marks. This dataset has no UUID and no review marks yet, so a rename costs least
-   now. Lennart has done both: mic_duplicate was renamed in place, and ames_housing got a new record under its new
-   name (2026-10-26).
-   * Implemented: the name is kept; the record's title, the task summary and the notes say medical spending.
-   * Alternative: rename the record, the folder and the class to `rand_health_insurance_experiment_medical_spending`
-     now, and update the claims board, the triage summary and the MEPS record (the working copy's README table has no
-     row for it yet).
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Wait for the check (implemented) | year 1995 and the ICPSR link kept; the notes say ICPSR 6439 has not been read | nothing in the task waits on it | the year and `family_income` stay open |
+     | B | You download ICPSR 6439 | the codebook and the file list settle the year, the income and the labels | one pass settles all three | needs your login |
+     | C | You cannot log in | keep the dataset with the note and take the extract's year, as for SUPPORT2 | allowed when the origin cannot be reached[^r5] | `family_income` stays out; the extract's damage is cleaned around unchecked |
 
-   * pricing_game_2017_french_mtpl issue 4 asks the same kind of question: a name that misdescribes the target, there
-     taken from the source's title ("MTPL"), here from the screening's first target. Answer both the same way unless a
-     fact differs; here none of the rename's cost has arisen yet (no UUID, no marks).
+   * **Recommendation:** B, try the login: the codebook and the file list settle the year, the income and the labels
+     in one pass. **Decision:** B (you download it), or C (you cannot: keep with the note and take the extract's
+     year)?
 
-   Recommendation: rename now, before a UUID is assigned; the advocate and the critic agree. Decision: rename or keep?
+   **Notes for the AI:** on B, check whether ICPSR 6439 holds the person-year values we ship (year 1995 if so, else
+   as C), read the label of `family_income` (restore it if it does not average later years), and take the plan and
+   site labels, the coinsurance coding and the price base of the dollars from the codebook. On C, set the year to
+   2005 (2002 if the file first came out with Deb and Trivedi's paper), `source_url` to Cameron and Trivedi's data
+   page, ICPSR 6439 as the second citation, and keep the note that ICPSR 6439 has not been read.
+
+   [^r1]: **PROV-13** (Must): when a release is damaged, check whether the origin has the clean data before keeping
+     the damage or retiring the dataset, and repair or rebuild from the origin when it has them.
+   [^r2]: **LEAK-10** (Must): a feature holds only what existed at the prediction point and never gives the target
+     away; out goes, among others, a column recorded after the outcome.
+   [^r3]: **PROV-9** (Must): the year is the year of the first publication that holds the rows, not the collection
+     period and not the date of the copy we download.
+   [^r4]: SUPPORT2: Lennart downloaded ICPSR 2957 with a login (2026-10-12), and took the extract's year, 2003,
+     because ICPSR "does not hold every value we ship" (Lennart, 2026-10-26).
+   [^r5]: The tension "repair against cleaning around damage" (principles.md; PROV-13, CLEAN-1): repair or rebuild
+     from the origin first; when the origin cannot be reached, keep with a note or retire.
+
+   **Andrej (2026-11-03, change):** We don't ship
+
+   **Resolved (2026-11-03, Andrej):** moot: the dataset stays out (`TBD -> 2nd Tier`, 2026-11-03).
+
+3. **Rename the dataset to say spending?**
+
+   * **Problem:**
+     - The `unique_name`, the folder and the class say "doctor visits", from the screening's first target.
+     - The dataset predicts next year's medical spending in dollars, and the visit count is only a feature, so a user
+       looking for a count task would pick it by mistake.
+   * **Cost:** names are kept stable, because a rename breaks links and review marks[^n1]. This dataset has no UUID
+     and no review marks yet, so a rename costs least now.
+   * **Consistency:**
+     - Lennart has done both: mic_duplicate was renamed in place, and ames_housing got a new record under its new
+       name[^n2].
+     - pricing_game_2017_french_mtpl issue 4 asks the same kind of question: a name that misdescribes the target, there
+       taken from the source's title ("MTPL"), here from the screening's first target. Answer both the same way unless
+       a fact differs; here none of the rename's cost has arisen yet (no UUID, no marks).
+   * **Panel:** the advocate and the critic agree on renaming now.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the name (implemented) | the record's title, the task summary and the notes say medical spending | no rename | the name says doctor visits; a user looking for a count task picks it by mistake |
+     | B | Rename to `rand_health_insurance_experiment_medical_spending` | record, folder and class renamed now | the name says the target; cheapest before a UUID and marks exist | the references to the old name need updating |
+
+   * **Recommendation:** B, rename now: the name says doctor visits for a spending target, and before a UUID and
+     review marks exist a rename costs least. **Decision:** rename (B) or keep (A)?
+
+   **Notes for the AI:** on B, rename the record, the folder and the class to
+   `rand_health_insurance_experiment_medical_spending`, and update the claims board, the triage summary and the MEPS
+   record (the working copy's README table has no row for it yet).
+
+   [^n1]: House rule in records.md (knowledge-data-foundry): names stay stable, because a rename breaks links and
+     review marks.
+   [^n2]: mic_duplicate renamed in place; ames_housing given a new record under its new name (Lennart, 2026-10-26).
+
+   **Andrej (2026-11-03, dataset note):** Change the verdict to 2nd tier. The target is a bit made up and the data is
+   quite outdated. Could generally be considered, but currently there are better options
+
+   **Resolved (2026-11-03, Andrej):** not shipped for now: the record is `TBD -> 2nd Tier`, its `v2_path` cleared and
+   its claim released; the folder leaves the working copy (copies of its last files in the run folder of 2026-11-03,
+   `rand_retired/`). The rename (this issue) falls away with it.
+
+   **Andrej (2026-11-03, change):** We don't ship
+
+   **Resolved (2026-11-03, Andrej):** moot: the dataset stays out (`TBD -> 2nd Tier`, 2026-11-03).
 
 **Review panel:** ship after changes (mediator). Claim audit: 41 claims, 32 hold, 5 refuted and 2 refuted in part (the
 notes corrected, the record's marker, metric line and name; the name is issue 3), 1 contested (the missing SPLIT-8 tag,

@@ -78,6 +78,18 @@ review page).
 
 **Assessment (AI, 2026-11-01):** added as `datasets/_dev/tabarena-v0pt2/spanish_motor_insurance_2015_2018/` by /add-dataset with the full review panel; the open questions are in its `REVIEW.md`. Recommend shipping; issue 1 (the task changed from renewal pricing to new-business pricing for customers with one policy) could still turn it to `No`. A policy's later yearly rows hold a remnant of earlier claims, not the year's own (0.9% have a claim after a claim-free year, against about a third of first years), so only first years are kept (25,665 rows, 5 monthly test windows of 2017). Changes after the panel: the 5,069 renewals never in force and `Payment` dropped, a 12-month gap before each window. Corrections to the notes above: PROV-6 and PROV-7 against the 2022-2024 sibling are settled as not a duplicate, closing the screening's call for the curator; "the zero is an observed claim-free policy-year" held for 83% of the zeros, not all (17% were years without cover). The screening's renewal use case and the Assessment's target and exposure lines wait for your mark on issue 1. Priority 3: gap + (insurance thin), use case 0 (fit approximate), source + (data article and variable sheet), shape + (25,665 rows, temporal), risk - (the premium alone ranks as well as any method; the task is open).
 
+CC (2026-11-03, Andrej): the task as built is confirmed (issue 1 (A) in spanish_motor_insurance_2015_2018): each policy's first year, the pricing of a new contract, not renewal pricing over all policy-years.
+
+CC (2026-11-03, Andrej): `Value_vehicle` stays (issue 3 (A)): "we can add to the comment that we assume that the value changes proportionally".
+
+CC (2026-11-03, Andrej): no request to the authors now (issue 4): "Write a comment that we could do this for a future version, but now go with the task as we have it for simplicity".
+
+**Assessment (AI, 2026-11-03):** the screening lines above describe renewal pricing over all policy-years; what ships is new-business pricing on each policy's first year (issue 1), so they are superseded.
+
+CC (2026-11-03, Andrej): every first year is kept, with the customer's other policies in force at the start in place of the calendar-year count (issue 2, design S): "Good, we can ship S with 5 splits." Ship, re-checking `Trivial` on the first benchmark run (issue 5): "With design S we can ship."
+
+CC (2026-11-03, Andrej): the check warning `task_target_value_dominant` accepted: "for these tasks this is natural and a core challenge" (zero-inflated target).
+
 ## Reference
 
 Segura-Gisbert J., Lledó J., Pavía J.M. (2025). Dataset of an actual motor vehicle insurance portfolio. European Actuarial Journal 15:241-253. https://doi.org/10.1007/s13385-024-00398-0

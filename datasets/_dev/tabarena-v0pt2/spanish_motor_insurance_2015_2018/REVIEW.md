@@ -40,60 +40,80 @@ rows starting December 2016 to July 2017 are in no split); the ages are computed
 
 The record's screening and Assessment lines still describe renewal pricing. They are updated once issue 1 is decided.
 
-**Main points:** Confirm new-business pricing on first years and the filter to customers with one policy (the debate's
-open point); keep `Value_vehicle`; ask the authors for their raw data; ship before tuned results settle `Trivial`.
+**Main points:** all issues resolved on 2026-11-03: first-year pricing (1), every first year kept with the
+customer's other policies in force at the start (2, design S), `Value_vehicle` kept (3), no request to the authors now
+(4), ship and re-check `Trivial` (5).
 
 **Issues for Andrej:**
 
-1. **Confirm the task as built: pricing a new contract from its first year (implemented), not renewal pricing over all
-   policy-years?**
-   Your `Yes` (2026-10-30) was given on the screening's task: at renewal, an insurer sets next year's premium, with one
-   row per policy-year. The release does not support that task. A policy's later yearly rows do not record that year's
-   claims. They record a shrinking remnant of earlier ones:
-   - after a claim-free year, only 0.9% of the next years have a claim (133 of 14,980 years with cover), against about
-     a third of first years;
-   - after a year with claims, the count falls in 99.9% of cases;
-   - last year's count alone ranks the later rows at a Gini of 0.86.
+1. **Confirm the task as built: pricing a new contract from its first year, not renewal pricing over all policy-years?**
 
-   A model trained on these rows would learn last year's claims, not next year's risk. The 2022-2024 release of the same
-   research group shows 17.4% after a claim-free year, so the defect belongs to this release. That figure counts claims
-   as here: a next year with a recorded claim after a year with none (of 145,964 years). The 2022-2024 file's precedent
-   check counts claim cost instead, a next year with a cost above 0 after a year without one, and finds 14.6% (of
-   149,929 years); that release records some claims at zero cost. In this release the two counts coincide, since a
-   year's cost is 0 exactly when its claim count is.
-   * Rule: USE-5 (Must). Rows whose label is found from the data to be another quantity are dropped (rain_in_australia
-     and ames_housing; Lennart, 2026-10-26). corporate_credit_rating was retired only because its bad labels could not
-     be located; here they can be. Your `Yes` decides which task is built, so the changed task needs your
-     confirmation. The fit is approximate (USE-8).
-   * Implemented: each policy's first year only, so every test row is a new contract. Training also holds older
-     contracts' first year in the release (a renewal, November 2015 to November 2016). The blind reviewer flagged the
-     mix; the panel kept those rows for training, since the test rows are the ones the use case names. `use_case`: the
-     insurer refines its quoted premium for a new contract (USE-6). The data article names "pricing mechanisms for new
-     business" among the uses (Sec. 1).
-   * Alternative: retire with `Data Quality Issue` until the authors' raw data (issue 4) restores the renewal years.
+   * **Problem:**
+     - Your `Yes` (2026-10-30) was given on renewal pricing over all policy-years, but a policy's later yearly rows do
+       not record that year's claims.
+     - So the definition keeps each policy's first year only, the pricing of a new contract.
+     - Confirm the changed task, or retire the dataset?
+   * **Background:** the screening's task: at renewal, an insurer sets next year's premium, with one row per
+     policy-year. The release does not support that task. A policy's later yearly rows record a shrinking remnant of
+     earlier claims, so a model trained on these rows would learn last year's claims, not next year's risk.
+   * **Experiments:**
+     - After a claim-free year, only 0.9% of the next years have a claim (133 of 14,980 years with cover), against
+       about a third of first years.
+     - After a year with claims, the count falls in 99.9% of cases.
+     - Last year's count alone ranks the later rows at a Gini of 0.86.
+     - The 2022-2024 release of the same research group shows 17.4% after a claim-free year, so the defect belongs to
+       this release. That figure counts claims as here: a next year with a recorded claim after a year with none (of
+       145,964 years). The 2022-2024 file's precedent check counts claim cost instead, a next year with a cost above 0
+       after a year without one, and finds 14.6% (of 149,929 years); that release records some claims at zero cost. In
+       this release the two counts coincide, since a year's cost is 0 exactly when its claim count is.
+   * **Consistency:** rows whose label the data shows to be another quantity are dropped[^s1], as in rain_in_australia
+     and ames_housing[^s2]. corporate_credit_rating was retired only because its bad labels could not be located; here
+     they can be. Your `Yes` decides which task is built, so the changed task needs your confirmation.
+   * **Effect on the task:** every test row is a new contract. Training also holds older contracts' first year in the
+     release (a renewal, November 2015 to November 2016). The data mirrors the use case only approximately[^s3].
+   * **Panel:** the blind reviewer flagged the mix of new and renewed contracts in training; the panel kept those rows
+     for training, since the test rows are the ones the use case names.
+   * **Options:**
 
-   Recommendation: confirm. Decision: confirm, or retire?
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Each policy's first year only (implemented) | every test row is a new contract; `use_case`: the insurer refines its quoted premium for a new contract[^s4] | labels are that year's claims; the data article names "pricing mechanisms for new business" among the uses (Sec. 1) | not the task your `Yes` was given on; training mixes in renewals |
+     | B | Retire with `Data Quality Issue` | the dataset does not ship until the authors' raw data (issue 4) restores the renewal years | could come back as the renewal task | no dataset in the meantime |
 
-2. **Keep only customers with no other policy at the insurer (implemented), or keep every first year with a note?**
-   A policy's claims move with the claims of the same customer's other policies running at the same time:
-   - Among first years that have such a policy in the sample, 80% have a claim when that policy has one and 6% when it
-     does not (2,493 rows; 35% across all first years).
-   - Of the 1,532 such pairs (a first year and the same customer's other policy, overlapping by more than 180 days),
-     1,519 insure different vehicles.
-   - The link grows with the number of days the two years overlap. The same customer's years more than 180 days apart
-     show only a mild link (21% against 12%).
-   - For customers with no other policy in the sample, claims per row grow in proportion to `Policies_in_force`, the
-     customer's number of policies: 0.65, 1.15, 1.61, 2.01 and 2.46 for 1 to 5 or more (over all first rows, the
-     README's table gives 0.64 to 3.15).
-   - The costs are not copies. Within a pair they are unrelated, and at every count each claimant row carries a
-     full-size cost (863 to 1,002 on average).
+   * **Recommendation:** A, confirm: a first year's label is that year's claims, and the data article names pricing
+     for new business among its uses. **Decision:** confirm (A), or retire (B)?
 
-   The release cannot say whether claims are booked to every policy of the customer, or whether such customers really
-   claim together. Only the authors can (issue 4).
-   * Effect: if claims are booked across policies, rows with two or more policies carry the other policies' claims.
-     These are 31% of the rows and 45% of the test rows, and a model scores them by `Policies_in_force`. With every
-     first year kept, almost all of a model's gain over the premium comes from that count (logistic regression, the
-     mediator's run):
+   [^s1]: **USE-5** (Must): predict what the actor acts on, and check how the source built its label before accepting
+     it; a label checked and found to be another quantity than the one the actor acts on still fails (Lennart,
+     2026-10-21, diabetes_3).
+   [^s2]: rain_in_australia and ames_housing (Lennart, 2026-10-26).
+   [^s3]: **USE-8** (Must): write how closely the data mirrors the use case; approximate means a stand-in with a known
+     gap, named as such.
+   [^s4]: **USE-6** (Must): anything known at the prediction point is a legitimate input, including a number the
+     company itself computed; a company's own estimate made before the outcome is an input, and the model refines it.
+
+   **Resolved (2026-11-03, Andrej):** A, the task as built: each policy's first year, the pricing of a new contract.
+
+2. **Keep only customers with no other policy at the insurer, or keep every first year with a note?**
+
+   * **Problem:**
+     - A policy's claims move with the claims of the same customer's other policies running at the same time.
+     - If claims are booked across policies, rows with two or more policies carry the other policies' claims.
+   * **Experiments:**
+     - Among first years that have such a policy in the sample, 80% have a claim when that policy has one and 6% when
+       it does not (2,493 rows; 35% across all first years).
+     - Of the 1,532 such pairs (a first year and the same customer's other policy, overlapping by more than 180 days),
+       1,519 insure different vehicles.
+     - The link grows with the number of days the two years overlap. The same customer's years more than 180 days
+       apart show only a mild link (21% against 12%).
+     - For customers with no other policy in the sample, claims per row grow in proportion to `Policies_in_force`,
+       the customer's number of policies: 0.65, 1.15, 1.61, 2.01 and 2.46 for 1 to 5 or more (over all first rows,
+       the README's table gives 0.64 to 3.15).
+     - The costs are not copies. Within a pair they are unrelated, and at every count each claimant row carries a
+       full-size cost (863 to 1,002 on average).
+   * **Effect on the task:** if claims are booked across policies, those rows are 31% of the rows and 45% of the test
+     rows, and a model scores them by `Policies_in_force`. With every first year kept, almost all of a model's gain
+     over the premium comes from that count (logistic regression, the mediator's run):
 
      | inputs | Gini |
      |---|---|
@@ -103,81 +123,272 @@ open point); keep `Value_vehicle`; ask the authors for their raw data; ship befo
      | all features | 0.233 |
 
      A tariff learned from these rows would charge customers with several policies for the way claims are booked.
-   * Rule: USE-5 (Must). The critic: a label checked and found to be another quantity still fails, so those rows go.
-     The advocate: the rule that assigns claims to policies is undocumented and each policy's money is its own, so the
-     label ships `approximate` with a note (as diabetes_3). The mediator sided with the critic, for four reasons:
-     - the check was made;
-     - the pattern is the same kind as in issue 1: found from the data, mechanism unknown, rows dropped;
-     - the remedy ladder puts a fix of the definition before a note;
-     - PROV-13 asks for the origin to be checked before a suspected damage is kept.
-   * Implemented: keep the rows with `Policies_in_force == 1` (25,665 rows; 2,385 test rows, 117-195 claims per window)
-     and drop the column, which is then constant. `use_case` names customers with no other policy.
-     - Cost: 31% of the rows and 45% of the test rows go, and the premium alone then ranks as well as any method tried
-       (issue 5).
-     - The count covers the calendar year, so customers who add a policy later in the year go too. They claim at the
-       same rate as the rest (31.2% against 31.2%).
-   * Alternative: keep all 37,090 first years.
-     - The `Policies_in_force` note says the count also tracks claims that occur together on a customer's policies.
-     - The count loses the 2,865 policies written later in the year that can be found in the sample (LEAK-10 fixes a
-       late value it can locate); the later policies outside the sample stay, under a `Potential leak, kept on
-       purpose:` note.
-     - `fit_reason` names the gap.
+   * **Unknown:** the release cannot say whether claims are booked to every policy of the customer, or whether such
+     customers really claim together. Only the authors can (issue 4).
+   * **Panel:**
+     - The critic: a label checked and found to be another quantity still fails, so those rows go[^p1].
+     - The advocate: the rule that assigns claims to policies is undocumented and each policy's money is its own, so
+       the label ships as an approximate fit with a note (as diabetes_3)[^p2].
+     - The mediator sided with the critic, for four reasons: the check was made; the pattern is the same kind as in
+       issue 1 (found from the data, mechanism unknown, rows dropped); the remedy ladder puts a fix of the definition
+       before a note[^p3]; and the origin has to be checked before a suspected damage is kept[^p4].
+   * **Options:**
 
-   Recommendation: the filter; revisit it if the authors show that claims are booked per policy. Decision: filter, or
-   note?
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Customers with no other policy (implemented) | keeps the rows with `Policies_in_force == 1` (25,665 rows; 2,385 test rows, 117-195 claims per window) and drops the column, then constant; `use_case` names customers with no other policy | no row can carry another policy's claims | 31% of the rows and 45% of the test rows go, and the premium alone then ranks as well as any method tried (issue 5); the count covers the calendar year, so customers who add a policy later in the year go too (they claim at the same rate, 31.2% against 31.2%) |
+     | B | Every first year, with a note | keeps all 37,090 first years; the `Policies_in_force` note says the count also tracks claims that occur together on a customer's policies; `fit_reason` names the gap | keeps every customer | a tariff learned from it charges for the way claims are booked; needs the authors' check first (issue 4) |
 
-3. **Keep `Value_vehicle`, a valuation of 31 December 2019 (implemented)?**
-   The variable sheet gives the "Market value of the vehicle on 31/12/2019", a date after every year in the data. It
-   is one value per policy, a property of the vehicle, and it does not move with the claims (measured on the shipped
-   rows):
-   - the type, age, power, size and weight explain 97% of its log;
-   - what is left of it after those characteristics ranks the policies with a claim at ROC AUC 0.497, no better than
-     chance (0.492 for a cost over 2,000);
-   - no vehicle was registered after its row's start.
-   * Rule: LEAK-10 (Must), its clause on attributes looked up later "unless the data shows they did not change". You
-     decide that clause case by case (amended 2026-10-26). This follows onlinenewspopularity (kept on a traced test).
-   * Implemented: kept, with a `Potential leak, kept on purpose:` note and a condition to revisit it (a release with the
-     value at each renewal). `fit_reason` names it as kept, not as a gap (USE-8).
-   * Alternative: drop it. It costs nothing measurable: untuned LightGBM ranks the 5 windows at 0.140 without it and
-     0.116 with it, inside one window's noise (bootstrap SE 0.08-0.11).
+   * **Recommendation:** A, the filter, so that no row can carry another policy's claims; revisit it if the authors
+     show that claims are booked per policy.
+     **Decision:** filter (A), or note (B)?
 
-   Recommendation: keep. Decision: keep, or drop?
+   **Notes for the AI:** on B, the count loses the 2,865 policies written later in the year that can be found in the
+   sample (LEAK-10 fixes a late value it can locate); the later policies outside the sample stay, under a
+   `Potential leak, kept on purpose:` note; `fit_reason` names the gap. PROV-13 requires the authors' request
+   (issue 4) before this note.
+
+   [^p1]: **USE-5** (Must): a label checked and found to be another quantity than the one the actor acts on still
+     fails (Lennart, 2026-10-21, diabetes_3).
+   [^p2]: **USE-5** (Must): a label from a named publication whose construction is undocumented and cannot be
+     checked may ship with `fit="approximate"` and a note naming the gap.
+   [^p3]: The remedy ladder (principles.md): take the mildest remedy that resolves the problem: repair from the
+     origin; fix the definition (drop, lag, filter, re-split, re-target); keep it with a documented note; exclude.
+   [^p4]: **PROV-13** (Must): when a release is damaged, check whether the origin has the clean data before keeping
+     the damage or retiring the dataset.
+
+   **Andrej (2026-11-03, discuss):** This feels like something there could be better options for. We want to prevent
+   leaks, have a task that is realistic, and at the same time use as many of our samples as possible. How can we
+   achieve that best?
+
+   **Answer (AI, 2026-11-03):**
+
+   * **Problem:**
+     - The best of the designs tried keeps every first year (37,090 rows, 45% more test rows) and replaces the
+       insurer's calendar-year count by what is known when the contract starts: how many of the customer's other
+       policies in the sample are in force that day.
+     - It uses nothing from after the start, the split stays the same, and TabPFN beats the premium in all 5 windows.
+     - What it does not settle is the label: if the insurer books a claim on every policy of a customer, the rows of
+       customers with several policies carry claims of their other cars; only the authors could say.
+   * **Why the old count leaks:** `Policies_in_force` counts the calendar year, so it includes policies a customer adds
+     after the contract starts. Those customers claim at 48.9% in their first year, against 31.4% for customers with
+     one policy and 22.8% for customers who already had another policy in force: adding a policy after a claim (a
+     replacement car) would explain it, and a count that sees it reads the future.
+   * **Experiments:** the 5 windows as shipped (August to December 2017, 12-month gap), normalized Gini on the amount;
+     TabPFN with its default settings on a GPU (Slurm), untuned LightGBM beside it:
+
+     | Design | Rows | Test rows per window | TabPFN | LightGBM | Premium alone | Windows TabPFN beats the premium |
+     |---|---|---|---|---|---|---|
+     | A: customers with one policy (implemented) | 25,665 | 477 | 0.185 | 0.165 | 0.234 | 1 of 5 |
+     | E: train on every first year, test on one-policy customers | 37,090 | 477 | 0.169 | 0.130 | 0.234 | 1 of 5 |
+     | C: every first year, no count | 37,090 | 872 | 0.171 | 0.119 | 0.162 | 2 of 5 |
+     | S: every first year, other policies in force at the start | 37,090 | 872 | 0.221 | 0.146 | 0.162 | 5 of 5 |
+     | B: every first year, the calendar-year count | 37,090 | 872 | 0.217 | 0.189 | 0.162 | 4 of 5 |
+
+     - Within each kind of customer the premium still ranks about as well as TabPFN (one-policy customers 0.234 against
+       0.162); design S's lead comes from ranking the kinds of customers against each other, by the count known at
+       the start.
+     - More training rows alone do not help the one-policy customers (E against A).
+   * **Unknown:** whether claims are booked across a customer's policies. Rows with another policy running at the
+     same time claim together (80% when that policy claims, 6% when not), yet those customers claim less overall.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Customers with one policy (implemented) | 25,665 rows, the count dropped | no row can carry another policy's claims | 31% of the rows go; the premium leads in 4 of 5 windows |
+     | S | Every first year, count at the start | 37,090 rows; `Policies_in_force` replaced by the customer's other sampled policies in force at the start | all rows; nothing from after the start; TabPFN beats the premium in every window | if claims are booked across policies, some labels carry other cars' claims |
+     | B | Every first year, the calendar-year count | as the panel's option B | all rows | the count sees policies added after a claim |
+
+   * **Recommendation:** S: it meets all three of your aims, and the label question stays as a note until a later
+     version asks the authors (issue 4). **Decision:** A, S or B?
+
+   **Notes for the AI:** script `designs.py` (frames and LightGBM), `tabpfn_windows.py` and `tabpfn_subsets.py`
+   (Slurm jobs 1342221 and 1342226) in the run folder of 2026-11-03 (spanish/). On S: build `other_policies_at_start`
+   in `_clean` from the raw rows (a customer is a birth date and a licence date; another policy of the customer with
+   cover on the row's start), drop `Policies_in_force`, rewrite the filter bullet, `use_case`, `row` and the notes,
+   re-run `dataset check` and the leak probe on Slurm.
+
+   **Andrej (2026-11-03, discuss):** How many different splits do we get that way?
+
+   **Answer (AI, 2026-11-03):**
+
+   * **Problem:**
+     - Five, the same as now: one test window per month from August to December 2017.
+     - Design S adds customers, not dates, so the windows stay where the 12-month gap and the rule that a window
+       trains on at least half the rows put them; July 2017 would train on 45% of the rows (50% now).
+     - What changes is the size of each window: about twice the test rows and claims.
+   * **Experiments:** monthly windows, training on the rows that started at least 12 months before the window:
+
+     | Window | Test rows now (A) | Claims now (A) | Test rows with S | Claims with S | Share of rows in training, S |
+     |---|---|---|---|---|---|
+     | 2017-12 | 569 | 195 | 973 | 371 | 73% |
+     | 2017-11 | 477 | 153 | 922 | 337 | 71% |
+     | 2017-10 | 538 | 149 | 938 | 325 | 64% |
+     | 2017-09 | 393 | 117 | 763 | 261 | 58% |
+     | 2017-08 | 408 | 136 | 766 | 276 | 53% |
+     | 2017-07 (below the floor) | 479 | 130 | 885 | 284 | 45% |
+
+     - More splits would need shorter windows (half months: about 10 windows of 400 to 500 rows under S) or a lower
+       floor than the rule's half of the rows; neither adds data, and shorter windows are noisier.
+   * **Recommendation:** unchanged, S, with the five monthly windows: the same splits, with twice the claims per test
+     window. **Decision:** A, S or B?
+
+   **Andrej (2026-11-03, discuss):** Good, we can ship S with 5 splits.
+
+   **Resolved (2026-11-03, Andrej):** S. Every first year is kept (37,090 rows); `Policies_in_force` is replaced by
+   `other_policies_at_start`, the customer's other sampled policies with cover running on the row's start; the five
+   monthly windows stay. `use_case`, `row`, `known`, `changes`, `fit_reason`, the notes, the splits comment and the
+   third decision are rewritten; `dataset check` and the leak probe re-run on Slurm.
+
+3. **Keep `Value_vehicle`, a valuation of 31 December 2019?**
+
+   * **Problem:**
+     - The variable sheet gives the "Market value of the vehicle on 31/12/2019", a date after every year in the data.
+     - It is one value per policy, a property of the vehicle.
+     - A value looked up after the outcome stays only when the data shows it did not change, and you decide that case by
+       case[^v1].
+   * **Experiments:** it does not move with the claims (measured on the shipped rows):
+     - the type, age, power, size and weight explain 97% of its log;
+     - what is left of it after those characteristics ranks the policies with a claim at ROC AUC 0.497, no better than
+       chance (0.492 for a cost over 2,000);
+     - no vehicle was registered after its row's start;
+     - dropping it costs nothing measurable: untuned LightGBM ranks the 5 windows at 0.140 without it and 0.116 with
+       it, inside one window's noise (bootstrap SE 0.08-0.11).
+   * **Consistency:** follows onlinenewspopularity (kept on a traced test)[^v2].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep (implemented) | kept with a `Potential leak, kept on purpose:` note and a condition to revisit it (a release with the value at each renewal); `fit_reason` names it as kept, not as a gap[^v3] | the data shows it does not move with the claims | a value dated after every year in the data |
+     | B | Drop | `Value_vehicle` removed | no late value; costs nothing measurable | loses a property of the vehicle |
+
+   * **Recommendation:** A, keep: the data shows it does not move with the claims. **Decision:** keep (A), or drop
+     (B)?
+
+   [^v1]: **LEAK-10** (Must): a feature holds only what existed at the prediction point; out go attributes looked up
+     after the outcome, "unless the data shows they did not change". The curator decides that clause case by case
+     (amended 2026-10-26).
+   [^v2]: onlinenewspopularity: its counts read at a later pull were kept because the part that can be traced showed
+     no gain (LEAK-10, Lennart, "go with (a)").
+   [^v3]: **USE-8** (Must): a potential leak kept on purpose does not by itself make a fit approximate.
+
+   **Andrej (2026-11-03, ok):** This should be fine, we can add to the comment that we assume that the value changes
+   proportionally
+
+   **Resolved (2026-11-03, Andrej):** A, kept; the note now says we assume the value changes in proportion between
+   the year's start and the valuation date, so the 2019 value ranks the vehicles as their value at the time would.
 
 4. **Ask the authors for their pre-cleaned raw data?**
-   The article offers "the pre-cleaned raw data" (Sec. 1). It would show how claims are assigned to years and to a
-   customer's policies. That settles issue 2, and it could bring back the renewal years of issue 1 and the customers
-   with several policies. The 2022-2024 sibling's REVIEW.md asks nothing that this request would settle; ask about it
-   too only if it turns out to be the same insurer, which neither article says. An agent cannot send it.
-   * Rule: PROV-13 (Must): check the origin before keeping a damage or retiring a dataset. With the filters above, the
-     damaged rows are dropped, not kept, so the request does not block shipping. It is required before the note of
-     issue 2's alternative.
-   * Implemented: nothing sent; the dataset ships on the filters of issues 1 and 2. Alternative: no request; the
-     filters then stay for good and the renewal years stay out.
-   * No precedent. In the zero-inflated review (policy question 8, 2026-10-30) you sent no requests for records whose
-     data is only on request; this asks for the rows behind a table already released.
 
-   Recommendation: send it, and ship in the meantime. Decision: send it, or not?
+   * **Problem:**
+     - The article offers "the pre-cleaned raw data" (Sec. 1), which would show how claims are assigned to years and
+       to a customer's policies.
+     - That settles issue 2, and it could bring back the renewal years of issue 1 and the customers with several
+       policies.
+     - An agent cannot send the request: will you write to the authors?
+   * **Effect on the task:** with the filters above, the damaged rows are dropped, not kept, so the request does not
+     block shipping. It is required before the note of issue 2's option B[^a1].
+   * **Consistency:**
+     - No precedent. In the zero-inflated review you sent no requests for records whose data is only on request[^a2];
+       this asks for the rows behind a table already released.
+     - The 2022-2024 sibling's REVIEW.md asks nothing that this request would settle; ask about it too only if it
+       turns out to be the same insurer, which neither article says.
+   * **Options:**
 
-5. **Ship now and re-check `Trivial` on the first benchmark run (implemented), or hold until tuned results exist?**
-   `Trivial` (TP-4) means that one raw input matches or beats the methods in every test window. Here that input is
-   `Premium`, the insurer's own price and the natural core of a pricing task (USE-6).
-   - On the shipped design (normalized Gini, mean of the 5 windows), the premium alone ranks at 0.234, ridge and
-     logistic models at 0.230, and a LightGBM tuned on an inner time split at 0.176. The premium leads the best method
-     in 3 of 5 windows and loses October and August.
-   - With every first year kept, it leads in 1 of 5 (0.162 against 0.235), but there the gain comes from
-     `Policies_in_force` (issue 2).
-   - These models are proxies. The benchmark's tuned methods have not run (TP-1).
-   * Rule: TP-4 and TP-1 (Must), TP-2 (Should). `Trivial` is not proven on either design. This reads TP-4 as
-     wisconsin_local_government_property_insurance_fund (this run) and sepsis_survival did. The critic would call the
-     dataset `Trivial` unless tuned methods beat the premium in every window, which reverses TP-4's burden of proof.
-     Both sides asked for tuned results before shipping.
-   * Implemented: ship. On the first benchmark run, retire it as `Trivial` if the premium alone matches or beats the
-     tuned methods in every window.
-   * Alternative: keep it out of the collection until the benchmark's tuned methods have run on this dataset alone.
-   * For your weighing: whichever design ships, the dataset mostly tests how well a model uses the insurer's own
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Nothing sent yet (implemented) | the dataset ships on the filters of issues 1 and 2 | ships now | issue 2 stays unsettled |
+     | B | Send it, ship in the meantime | you ask the authors; the dataset ships on the filters until they answer | could settle issue 2 and bring back the renewal years and the customers with several policies | needs you to write; an agent cannot send it |
+     | C | No request | the filters stay for good | no effort | the renewal years and the customers with several policies stay out |
+
+   * **Recommendation:** B, send it, and ship in the meantime: the answer could settle issue 2, and shipping does not
+     wait on it. **Decision:** send it (B), or not (C)?
+
+   [^a1]: **PROV-13** (Must): check the origin before keeping a damage or retiring a dataset.
+   [^a2]: Zero-inflated review, policy question 8 (2026-10-30).
+
+   **Andrej (2026-11-03, ok):** Write a comment that we could do this for a future version, but now go with the task as
+   we have it for simplicity
+
+   **Resolved (2026-11-03, Andrej):** A, no request now; the notes say a future version could ask the authors for the
+   pre-cleaned raw data and bring back the renewal years and the customers with several policies.
+
+5. **Ship now and re-check `Trivial` on the first benchmark run, or hold until tuned results exist?**
+
+   * **Problem:**
+     - `Trivial` means that one raw input matches or beats the methods in every test window[^t1].
+     - Here that input is `Premium`, the insurer's own price and the natural core of a pricing task[^t2].
+   * **Experiments:**
+     - On the shipped design (normalized Gini, mean of the 5 windows), the premium alone ranks at 0.234, ridge and
+       logistic models at 0.230, and a LightGBM tuned on an inner time split at 0.176. The premium leads the best
+       method in 3 of 5 windows and loses October and August.
+     - With every first year kept, it leads in 1 of 5 (0.162 against 0.235), but there the gain comes from
+       `Policies_in_force` (issue 2).
+     - These models are proxies. The benchmark's tuned methods have not run[^t3].
+   * **Consistency:** `Trivial` is not proven on either design, and a task stays until a concrete reason to retire it
+     is found[^t4]. This reads the `Trivial` rule as wisconsin_local_government_property_insurance_fund (this run) and
+     sepsis_survival did.
+   * **Panel:** the critic would call the dataset `Trivial` unless tuned methods beat the premium in every window,
+     which reverses the rule's burden of proof. Both sides asked for tuned results before shipping.
+   * **For your weighing:** whichever design ships, the dataset mostly tests how well a model uses the insurer's own
      premium. The other rating factors add little beyond it.
+   * **Options:**
 
-   Recommendation: ship and re-check. Decision: ship and re-check, or hold?
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Ship and re-check (implemented) | on the first benchmark run, retire it as `Trivial` if the premium alone matches or beats the tuned methods in every window | the burden of proof stays on `Trivial` | ships before the tuned results both sides asked for |
+     | B | Hold | kept out of the collection until the benchmark's tuned methods have run on this dataset alone | tuned results before shipping | the dataset waits for a separate run |
+
+   * **Recommendation:** A, ship and re-check: `Trivial` is not proven, and a task stays until a concrete reason to
+     retire it is found. **Decision:** ship and re-check (A), or hold (B)?
+
+   [^t1]: **TP-4** (Must): `Trivial` needs proof. Read what the dominant feature means first: the natural core of a
+     task (a listed price for a sale price) is expected to dominate. Then the raw feature has to match or beat the
+     methods fold by fold.
+   [^t2]: **USE-6** (Must): anything known at the prediction point is a legitimate input, including a number the
+     company itself computed; the model refines it.
+   [^t3]: **TP-1** (Must): a flag is a question, not a verdict; the probes fit untuned models, so check every flag
+     against the benchmark's tuned methods before acting on it.
+   [^t4]: **TP-2** (Should): a small but real signal is no reason to retire; retire, fix or keep a task for a
+     concrete reason found in the task itself, and until one is found, the task stays.
+
+   **Andrej (2026-11-03, discuss):** Do the necessary analysis. You can also use a better model like TabPFN, trained on
+   a GPU to test this
+
+   **Answer (AI, 2026-11-03):**
+
+   * **Problem:**
+     - TabPFN (default settings, on an A100) does not beat the premium alone on the shipped design: 0.185 against
+       0.234 over the 5 windows, ahead only in August.
+     - It is not `Trivial` by the rule, which needs the premium to match or beat the methods in every window, but it
+       is close.
+     - On design S of issue 2 TabPFN beats the premium in every window (0.221 against 0.162).
+   * **Experiments:** per window, normalized Gini on the amount:
+
+     | Window | Premium alone (A) | TabPFN (A) | Premium alone (S) | TabPFN (S) |
+     |---|---|---|---|---|
+     | 2017-08 | 0.199 | 0.281 | 0.177 | 0.330 |
+     | 2017-09 | 0.311 | 0.275 | 0.244 | 0.277 |
+     | 2017-10 | 0.408 | 0.288 | 0.258 | 0.275 |
+     | 2017-11 | 0.129 | 0.027 | 0.076 | 0.135 |
+     | 2017-12 | 0.123 | 0.052 | 0.054 | 0.086 |
+
+     - On one-policy customers the premium stays ahead under either design (0.234 against 0.162 to 0.185), so a model
+       adds little to the insurer's own price for them.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Ship and re-check (implemented) | re-check `Trivial` on the first benchmark run | a tuned method beats the premium in at least one window | on design A the premium leads in 4 of 5 windows |
+     | B | Hold | wait for the benchmark's tuned methods | tuned results first | the dataset waits |
+
+   * **Recommendation:** A, ship and re-check, best together with design S of issue 2, where TabPFN beats the premium
+     in every window. **Decision:** A or B?
+
+   **Andrej (2026-11-03, discuss):** With design S we can ship.
+
+   **Resolved (2026-11-03, Andrej):** A, ship with design S and re-check `Trivial` on the first benchmark run; the
+   notes give the TabPFN and premium scores per window.
 
 **Review panel:** ship after changes (mediator). Claim audit: 43 claims, 27 hold, 14 refuted in whole or in part (the
 years without cover, the claims shared across a customer's policies, the late part of `Policies_in_force` and text

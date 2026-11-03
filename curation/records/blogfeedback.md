@@ -3,17 +3,14 @@ unique_name: blogfeedback
 name: BlogFeedback / Blog comment volume prediction (Buza 2014, UCI 304)
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
-suggestion: 'Yes'
+suggestion: TBD -> 2nd Tier
 priority: 3
 tags:
 - Two-Regime Zeros
 - Non-IID (Temporal)
 - Many features
-original_source: UCI
-year: '2014'
+original_source: Other
+year: '2012'
 domain: technology & internet
 required_split:
 - Temporal (NON-IID)
@@ -25,7 +22,6 @@ source_links:
 - https://doi.org/10.1007/978-3-319-01595-8_16
 - http://www.cs.bme.hu/~buza/blogdata.zip
 - http://www.cs.bme.hu/~buza/pdfs/gfkl2012_blogs.pdf
-v2_path: datasets/_dev/tabarena-v0pt2/blogfeedback/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -105,6 +101,12 @@ access, not read) for the crawl, the aggregates and its top-10 metric (Hits@10).
 CC (2026-11-02, Andrej): metric (REVIEW.md issue 3, cross-dataset item zi-hits10): "add the metric and the MET-2 note". Buza's Hits@10 per test day is the metric, with the test day as its group; MET-2 does not cover the time column used as the metric's group.
 
 **Assessment (AI, 2026-11-02):** applied. `mean_group_top_k_overlap` (per group, the share of the k highest true values among the k highest predictions, averaged over the groups; ties at a cut-off counted by their expected share, so the score does not depend on row order) is in `data_foundry.v2.metrics`, tested against Buza's definition as a loop (equal without ties, and equal to the mean over every tie-break on a small case). The definition declares it as the source's metric, `Metric.source("mean_group_top_k_overlap", params={"k": 10}, inputs={"group": "basetime_day"})`, replacing the RMSLE stand-in; the score is Hits@10 / 10. Check on the shipped windows: a sort by the last 24 hours' comments finds 5.25, 6.02 and 5.29 of each day's top 10, a constant prediction 0.8-0.9 (the issue's 5.6 counted ties at the 10th place as hits). MET-2 amended in metrics.md (Cases row, kind `amendment`). `dataset check`: 0 errors.
+
+CC (2026-11-03, Andrej): `year` 2012 and `original_source` `Other` take the definition's values (review page field rows): Buza's release of 2012 is the first publication, UCI's 2014 copy has the same bytes.
+
+CC (2026-11-03, Andrej): nine test windows of 6 days, as SPLIT-15 gives a task of this size, not three of 20 (issue 2 (B) in blogfeedback): "With the given sample size we would prioritize 9 folds". No exception to SPLIT-15 is recorded.
+
+CC (2026-11-03, Andrej): don't ship for now, 2nd Tier (issue 1 (C) in blogfeedback): "I choose option C for now and mark this dataset as 2nd Tier". The post text behind the 178 word flags cannot be recovered (no post id, URL or date in the release), and without it the curator reads the task as text classification rather than a tabular task. The v2 folder left the working copy; its last definition (nine 6-day windows) is in the run folder of 2026-11-03, the committed one in 902011b3.
 
 ## Reference
 

@@ -55,80 +55,270 @@ fit, the notes on the target and on the zeros of 2006-03-06, the metric's origin
 on the date and the wording slips. The numbers here are measured on the block splits of the changed definition, so
 some differ from the panel's, which used single segments (R^2 0.18 against 0.25).
 
-**Main points:** Confirm the split by 4.5 km grid blocks (issue 1); keep the long-tailed duck as the target (3);
-accept the zero warning (4). Settled on 2026-11-02: the metric is the mean Poisson deviance (issue 2, closed).
-
-**Record fields that disagree with the definition:**
-
-- `required_split`: record `Temporal (NON-IID)`, definition `Grouped (NON-IID)`.
-- `tag`: record `Non-IID (Temporal)`, definition `Non-IID (Grouped)`.
+**Main points:** the split holds out whole transects as the field does (1, resolved 2026-11-03) and the zero warning
+is accepted (4, resolved); the metric is the mean Poisson deviance (2, closed 2026-11-02). Left: one model over the
+three species groups (3, answered: keep the long-tailed duck alone) and the few-groups warning of the new split.
 
 **Issues for Andrej:**
 
-1. **Confirm whole 4.5 km blocks of the survey grid as the test unit?** The test rows should stand for the squares
-   the plane did not fly. The first build held out single 1.5 km segments; the flights run north-south, so a
-   held-out segment's two neighbours on the same flight line, flown minutes apart that day, stayed in training. After
-   the panel, blocks of 3 x 3 segments are held out with all their survey days. Your CC was given on the screening's
-   temporal split (later winters from earlier ones).
-   * What it changes: under single segments, 95% of test rows had a training square flown the same day within 1.5 km,
+1. **Confirm whole 4.5 km blocks of the survey grid as the test unit?**
+
+   * **Problem:**
+     - The test rows should stand for the squares the plane did not fly.
+     - Which unit is held out: blocks of 3 x 3 segments with all their survey days (now), single 1.5 km segments (the
+       first build), or whole transect columns?
+     - Your CC was given on a temporal split instead.
+   * **Background:** The first build held out single 1.5 km segments; the flights run north-south, so a held-out
+     segment's two neighbours on the same flight line, flown minutes apart that day, stayed in training. After the
+     panel, blocks of 3 x 3 segments are held out with all their survey days. Your CC was given on the screening's
+     temporal split (later winters from earlier ones).
+   * **Experiments:** under single segments, 95% of test rows had a training square flown the same day within 1.5 km,
      against 43% of the survey days of the 50 squares never flown (all on the grid's border) and 43% under blocks
      (36-51% per fold). Those neighbours made about 30% of the score: R^2 on log1p 0.251, and 0.177 with only them
      removed from training (removing as many random rows: 0.247). Blocks score 0.18 (folds 0.09-0.26).
-   * For blocks: a test block has a same-day flown square within 1.5 km as often as a never-flown square does (43%
-     each), and blocks are built exactly from the grid (SPLIT-24). The field holds out whole transects ([BOEM
-     2018-010](https://espis.boem.gov/final%20reports/BOEM_2018-010.pdf), Sec. 2.5.6), which is alternative (b). The
-     advocate and the critic agree on blocks.
-   * Why not temporal: neither the covariates nor a segment's own past predict a later winter (R^2 0.04 and 0.025 on
-     log1p; TP-10 leg 1, which asks a model on the features to clearly beat each entity's naive forecast, fails, so it
-     would be `No` under SEL-10), and the source maps the winters it surveyed, never a later one
+   * **Effect on the task:** the day's level stays known. The score leans on the same survey day's counts in other
+     squares (alone R^2 0.13 of LightGBM's 0.18 on the block splits), which anyone filling in a surveyed day has, and
+     the field's models carry the survey as an effect (BOEM Sec. 2.4). The source's maps, though, are drawn for dates
+     without a survey (Figs. 4-6). Tested that way (a new square on a date not in training), no model beats the
+     training mean on the count (LightGBM R^2 -0.077 on log1p), so that framing would be `No`[^1e]. No panel agent
+     argues for it.
+   * **Why not temporal:** neither the covariates nor a segment's own past predict a later winter (R^2 0.04 and 0.025
+     on log1p). A model on the features does not clearly beat each segment's naive forecast, so a split by winter would
+     make it forecasting, which is out of scope (`No`)[^1c]. The source maps the winters it surveyed, never a later one
      ([paper](https://doi.org/10.1002/ece3.4738), Sec. 2.5).
-   * The day's level stays known: the score leans on the same survey day's counts in other squares (alone R^2 0.13 of
-     LightGBM's 0.18 on the block splits), which anyone filling in a surveyed day has, and the field's models carry the
-     survey as an effect (BOEM Sec. 2.4). The source's maps, though, are drawn for dates without a survey (Figs. 4-6).
-     Tested that way (a new square on a date not in training), no model beats the training mean on the count (LightGBM
-     R^2 -0.077 on log1p), so that framing would be `No` (SPLIT-28). No panel agent argues for it.
-   * Rule: SPLIT-1, SPLIT-3 and USE-10 (Must; the regime is your pick); SPLIT-24. Precedent: airfoil_self_noise
-     (SPLIT-1 Cases), re-grouped when 91.5% of test runs had a close neighbour in training.
-   * Implemented: 3 x 3 grid blocks, 60 groups, 3 repeats of 3 folds.
-   * Alternative (a): single segments with a note on the optimism. Cost: a measured 30% overstatement of how well
-     models fill gaps.
-   * Alternative (b): whole transect columns, 24 groups, as BOEM. Cost: on the count no model beats the training
-     mean (RMSE better on 3 of 9 folds).
-   * Alternative (c): a warm start. 80% of the unflown segment-days belong to squares flown on other days, whose own
-     counts a gap filler would use; group by transect column and survey day (R^2 0.28-0.30). Cost: it rewrites the
-     question.
+   * **Consistency:** the split mirrors the application, and the regime is your pick[^1a]. Blocks are built exactly
+     from the grid[^1d]. airfoil_self_noise was re-grouped when 91.5% of its test runs had a close neighbour in
+     training[^1b]. The field holds out whole transects ([BOEM
+     2018-010](https://espis.boem.gov/final%20reports/BOEM_2018-010.pdf), Sec. 2.5.6), which is option C.
+   * **Panel:** the advocate and the critic agree on blocks.
+   * **Options:**
 
-   Recommendation: blocks. Decision: blocks, (a), (b) or (c)?
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 3 x 3 grid blocks (implemented) | holds out blocks of 3 x 3 segments (60 groups) with all their survey days; 3 repeats of 3 folds | a test block has a same-day flown square within 1.5 km as often as a never-flown square does (43% each); exact from the grid | the field holds out whole transects instead |
+     | B | Single segments | holds out single 1.5 km segments, as the first build, with a note on the optimism | the highest score (0.251) | a measured 30% overstatement of how well models fill gaps |
+     | C | Whole transect columns | holds out whole north-south transect columns (24 groups), as BOEM | the field's practice | on the count no model beats the training mean (RMSE better on 3 of 9 folds) |
+     | D | Warm start | holds out one transect column on one survey day, so a square's other survey days stay in training (R^2 0.28-0.30) | 80% of the unflown segment-days belong to squares flown on other days, whose own counts a gap filler would use | it rewrites the question |
 
-3. **Keep the long-tailed duck as the one target of these surveys?** The source models three groups apart (common
-   eider, scoters of four species pooled, long-tailed duck); we ship one.
-   * What it changes: which birds the task is about; the other two are left out.
-   * For the long-tailed duck: more signal than the eider on held-out blocks (untuned LightGBM R^2 0.18 on log1p, eider
-     -0.08) and fewer zeros (57% against 75%). The scoters reach 0.20, but one raft of 70,000 holds 67% of their squared
-     deviation, so an error on their count would come down to one row. The choice read all rows, test folds included
-     (CLEAN-8), as the species pick of noaa_afsc_bottom_trawl_survey_cpue did.
-   * Against: the eider's largest counts dominate less (its 10 largest hold 70% of the squared deviation, against
-     84%), and the surveys, flown by day, miss most of the long-tailed duck's use of the Sound (MMS 2009-020).
-   * Rule: USE-5 holds for each group; the choice is a weighing, as noaa_afsc issue 1.
-   * Implemented: the long-tailed duck.
-   * Alternative: the eider, or a second group as a sibling dataset with its own task (PROV-7). Cost: the eider scores
-     below the training mean on held-out blocks (R^2 -0.08 on log1p), so it would likely fail TP-2; a sibling shares the
-     rows and covariates.
+   * **Recommendation:** A, blocks: a test block has a same-day flown square within 1.5 km in training no more often
+     than a never-flown square does (43% each). **Decision:** A, B, C or D?
 
-   Recommendation: keep the long-tailed duck. Decision: keep it, the eider, or add a sibling?
+   [^1a]: **SPLIT-1** (Must): the split mirrors the real-world application, and the curator picks it. **SPLIT-3**
+     (Must): a non-IID task is grouped or temporal, never both; the use case decides. **USE-10** (Must): decide from
+     the use case whether the entity is new or known before choosing the split.
+   [^1b]: airfoil_self_noise, a case under **SPLIT-1**.
+   [^1c]: **TP-10** (Must): a panel with one series per entity is a tabular task only when (leg 1) a model on the
+     features clearly beats each entity's naive forecast on the shipped windows, among other conditions; leg 1 fails
+     here. **SEL-10** (Must): time-series forecasting is out of scope.
+   [^1d]: **SPLIT-24** (Must): group on a true group id, or on one constructed exactly from the data; never on a
+     similarity-threshold cluster.
+   [^1e]: **SPLIT-28** (Must): a regression task whose models all score below the mean on unseen groups has no signal
+     across groups; then the use case has to allow known groups, or the dataset goes.
 
-4. **Accept the warning `task_target_value_dominant` with the reason below?** The check warns that one value, zero,
-   holds 57.1% of the target. Here a zero is an observed absence: a strip the plane flew with no long-tailed duck on
-   the water ("assumed our survey design led to a low incidence of false zeros", Sec. 2.2), not a cap, a placeholder
-   or a missing count. One known gap, 800 ducks absent on 2006-03-06, is noted (LEAK-25).
-   * What it changes: nothing in the data; the reason is stored in `accepted_check_warnings`.
-   * Rule: your zero policy (2026-10-30, question 2), as accepted across this batch (avito_demand_prediction_1m,
-     australian_vehicle_insurance_2004_2005).
-   * Implemented: not accepted; adding it is your step (add-dataset step 6).
-   * Alternative: none proposed.
+   **Andrej (2026-11-03, discuss):** We should definitely use what the field uses. We should stay as realistic and
+   close to the real application as possible.
 
-   Recommendation: accept with the reason "57.1% zeros: observed absences, a flown strip without a long-tailed duck on
-   the water". Decision: accept with this reason?
+   **Resolved (2026-11-03, Andrej):** C, whole transect columns, the field's practice (BOEM 2018-010, Sec. 2.5.6): the
+   group column is now `transect_column`, 24 columns of the source's grid. The "no model beats the mean" above was
+   measured on RMSE; on the declared metric, the mean Poisson deviance, a Poisson LightGBM beats the training mean on 9
+   of 9 folds (4.2% of its deviance explained, against 7.9% under blocks; 3 repeats of 3 folds, Slurm). `dataset check`
+   is clean but for `groups_test_groups_few` (8 transects per test fold), which needs your call.
+
+3. **Keep the long-tailed duck as the one target of these surveys?**
+
+   * **Problem:**
+     - The source models three groups apart (common eider, scoters of four species pooled, long-tailed duck); we ship
+       one.
+   * **Effect on the task:** it sets which birds the task is about; the other two are left out.
+   * **Experiments:** on held-out blocks the long-tailed duck has more signal than the eider (untuned LightGBM R^2 0.18
+     on log1p, eider -0.08) and fewer zeros (57% against 75%). The scoters reach 0.20, but one raft of 70,000 holds 67%
+     of their squared deviation, so an error on their count would come down to one row. The eider's largest counts
+     dominate less (its 10 largest hold 70% of the squared deviation, against 84% for the long-tailed duck).
+   * **Consistency:** each group is a target the actor could act on, so the choice is a weighing[^3a], as in
+     noaa_afsc_bottom_trawl_survey_cpue issue 1. The choice read all rows, test folds included, which counts as
+     ordinary cleaning[^3b], as the species pick of noaa_afsc_bottom_trawl_survey_cpue did.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Long-tailed duck (implemented) | the target stays the long-tailed duck count | the most signal of the three on held-out blocks; fewer zeros | its largest counts dominate more; the surveys, flown by day, miss most of its use of the Sound (MMS 2009-020) |
+     | B | Common eider | the target becomes the common eider count | its largest counts dominate less | below the training mean on held-out blocks (R^2 -0.08 on log1p), so it likely has no signal to keep it on[^3c] |
+     | C | A second group as a sibling | adds a sibling dataset with the eider or the scoters as its target, on the same rows[^3d] | the source's other groups covered | shares the rows and covariates |
+
+   * **Recommendation:** A, keep the long-tailed duck: it has more signal on held-out blocks than the eider, and its
+     score does not rest on one raft as the scoters' does. **Decision:** A, B or C?
+
+   [^3a]: **USE-5** (Must): predict what the actor would act on, at the resolution they act on it; it holds for each
+     group.
+   [^3b]: **CLEAN-8** (Must): choosing which columns or categories to keep by counts over the whole table is ordinary
+     cleaning that follows the task's best practice.
+   [^3c]: **TP-2** (Should): a small but real signal is no reason to retire; the eider's score suggests none.
+   [^3d]: **PROV-7** (Must): records that share a source but give different tasks are not duplicates; the comments
+     say why they are distinct.
+
+   **Andrej (2026-11-03, discuss):** Can't we predict both at the same time with one model, by using an additional
+   feature for the species and concatenating?
+
+   **Answer (AI, 2026-11-03):**
+
+   * **Problem:**
+     - We can: one row per segment-day and species group, the group as a feature, as noaa_afsc_bottom_trawl_survey_cpue
+       ships its taxa.
+     - Measured under the transect split, one model over the three groups predicts the long-tailed duck worse than a
+       model of it alone, and the other groups no better.
+     - The field also models the groups apart (the source fits one hurdle model per group), and a pooled score would
+       be decided by the scoters' raft of 70,000 unless the metric scores each group against its own level.
+   * **Experiments:** Poisson LightGBM, transect columns, 3 repeats of 3 folds; share of the training mean's Poisson
+     deviance explained per group (folds above the mean, of 9):
+
+     | Group | Its own model | One model over the three groups |
+     |---|---|---|
+     | long-tailed duck | 0.042 (9) | -0.081 (2) |
+     | common eider | 0.054 (6) | 0.064 (7) |
+     | scoters | 0.169 (6) | 0.150 (8) |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Long-tailed duck alone (implemented) | one target, as now | the steadiest signal (above the mean on 9 of 9 folds); as the field models a group | the other groups left out |
+     | B | The three groups stacked | one row per segment-day and group, the group a feature; a metric that scores each group against its own level (new in the library) | one model for the Sound's sea ducks | the long-tailed duck falls below the mean; a new metric; scores swing with one scoter raft |
+     | C | The three groups as sibling datasets | one dataset per group, each its own model | the field's practice for every group | three datasets on the same rows; the eider and the scoters above the mean on 6 of 9 folds only |
+
+   * **Recommendation:** A: one model over the groups costs the long-tailed duck its signal, and the field fits each
+     group on its own. **Decision:** A, B or C?
+
+   **Notes for the AI:** script `nantucket/designs.py` and its log in the run folder of 2026-11-03.
+
+   **Andrej (2026-11-03, discuss):** Your experiments were too weak. Try with TabPFN
+
+   **Answer (AI, 2026-11-03):**
+
+   * **Problem:**
+     - Rerun with TabPFN (A100, Slurm) on the same transect-column folds, 3 repeats x 3 folds, scored per species by
+       D^2 under the mean Poisson deviance against that species' training mean.
+     - Fit on the count (its predicted mean), TabPFN is far stronger than LightGBM, and every species keeps more
+       signal alone than stacked; the long-tailed duck loses half of it stacked.
+     - Fit on log1p, every design falls below the mean (the back-transform loses the large flocks), so the count
+       scale is the one that counts.
+   * **Experiments:** D^2, mean over 9 folds (folds above the training mean):
+
+     | Group | Own model | Stacked model | LightGBM own (earlier) |
+     |---|---|---|---|
+     | long-tailed duck | 0.153 (9 of 9) | 0.074 (7 of 9) | 0.042 |
+     | common eider | 0.219 (9 of 9) | 0.217 (9 of 9) | 0.054 |
+     | scoters | 0.346 (9 of 9) | 0.316 (9 of 9) | 0.169 |
+
+   * **New fact for the target choice:** the long-tailed duck was picked because LightGBM found more signal for it
+     than for the eider. With TabPFN the eider (0.219) and the scoters (0.346) both hold more than the long-tailed
+     duck (0.153). Stacking is still no gain, but if you want the target re-chosen on this, say so and I will set
+     the options (the scoters' single raft of 70,000 is the known risk).
+
+   * **Recommendation:** A, unchanged and now firmer: with a strong model the long-tailed duck alone keeps twice the
+     signal it keeps stacked, and no species gains from stacking. **Decision:** A or B?
+
+   **Notes for the AI:** script `nantucket/tabpfn_designs.py`, data `nantucket/prep.py`, results
+   `nantucket/tabpfn_designs.csv` in the run folder of 2026-11-03 (Slurm job 1343021).
+
+   **Andrej (2026-11-03, discuss):** Since this is now clear, would it make sense to use different birds as different
+   splits?
+
+   **Answer (AI, 2026-11-03):**
+
+   * **Problem:**
+     - Read as three datasets, one per species: they share every row, every input and the map decision, and differ
+       only in the counted species, which our duplicate rule counts as a duplicate unless it adds a distinct task[^3x].
+     - Each would weigh the same survey three times in the benchmark, while the long-tailed duck is the species the
+       source's siting question at Horseshoe Shoal was about.
+     - Read as holding out a species to test on it: no planner maps one species from the others, so no use case.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | One dataset, the long-tailed duck (implemented) | as now | the source's siting species; one survey counted once | the eider and the scoters show more signal with TabPFN (0.219, 0.346 against 0.153) |
+     | B | Three datasets, one per species | the eider and the scoters added as their own folders, same split and metric | each species' map is its own product in the source | three near-copies of one survey; needs a distinct-task reason under the duplicate rule |
+     | C | One dataset, another species | the target becomes the scoters or the eider | more signal | the scoters' one raft of 70,000; the eider's 75% zeros; not the siting species |
+
+   * **Recommendation:** A: the three are one survey and one decision, so one dataset; the long-tailed duck is the
+     species the source's question was about and keeps a clear signal (9 of 9 folds). **Decision:** A, B or C?
+
+   [^3x]: **PROV-6** (Must): versions or cuts of one dataset, a swapped target among them, are duplicates when
+     neither adds a distinct task. **PROV-7** (Must): records that share a source but give different tasks are not.
+
+   **Andrej (2026-11-03, discuss):** You didn't get it. I mean one dataset, but the train test splits being different
+   targets, since they represent the same task
+
+   **Answer (AI, 2026-11-03):**
+
+   * **Problem:**
+     - Yes, that can be built: the table holds each segment-day three times, once per species group, with a
+       `species` column and the count of that species as the target; each split trains and tests on one species
+       only, so a model never mixes them.
+     - The splits: the 3 transect-column repeats x 3 folds for each species, 27 splits in all, the same transects held
+       out for every species; the score per split is the mean Poisson deviance of that species.
+     - It is one task (map a sea duck's abundance from the survey) scored on three species, and the survey is counted
+       once; with TabPFN each species' split beats its training mean on 9 of 9 folds (D^2 0.153, 0.219, 0.346).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Long-tailed duck only (implemented) | as now, 7,751 rows, 9 splits | the usual shape; the source's siting species | uses one of the three counts |
+     | B | One dataset, a species per split | 23,253 rows (7,751 x 3) with `species`; 27 splits, each on one species | your design; one task scored on all three species; the survey counted once | the first dataset whose splits differ in target; the scoters' raft of 70,000 sits in their splits; anyone who ignores the splits would pool species |
+
+   * **Recommendation:** B: it scores the one task on all three species without counting the survey three times, and
+     each species keeps a clear signal. I would record it as a first in the splits knowledge, and check that the
+     bundle checks read a per-species frame sensibly. **Decision:** A or B?
+
+   **Notes for the AI:** on B, override `_make_splits` (custom splits: for each species, the rows of that species
+   only, folds from the transect columns as now), add `species` as a categorical feature, rebuild the target as the
+   row's species count, and rewrite the task summary, notes and `splits_comment`; run `dataset check` and the probes
+   on Slurm, the probes per species.
+
+   **Andrej (2026-11-03, change):** I realized that this is a multi-target task.
+
+   **Resolved (2026-11-03, Andrej):** the data hold three distinct targets per segment-day (long-tailed duck, eider,
+   scoters); the dataset goes to 2nd Tier and does not ship (dataset note below), so no single target is chosen.
+
+4. **Accept the warning `task_target_value_dominant` with the reason below?**
+
+   * **Problem:**
+     - The check warns that one value, zero, holds 57.1% of the target.
+     - Here a zero is an observed absence: a strip the plane flew with no long-tailed duck on the water, not a cap, a
+       placeholder or a missing count.
+     - Accept the warning with that reason?
+   * **Background:** The source on its zeros: "assumed our survey design led to a low incidence of false zeros" (Sec.
+     2.2). One known gap, 800 ducks absent on 2006-03-06, is noted[^4a].
+   * **Effect on the task:** nothing in the data; the reason is stored in `accepted_check_warnings`.
+   * **Consistency:** your zero policy, as accepted across this batch (avito_demand_prediction_1m,
+     australian_vehicle_insurance_2004_2005)[^4b].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Not accepted (implemented) | the warning stays open; adding it is your step | none proposed | the warning stays on the dataset |
+     | B | Accept with the reason | the reason goes into `accepted_check_warnings` | follows the zero policy and the batch | none proposed |
+
+   * **Recommendation:** B, accept with the reason "57.1% zeros: observed absences, a flown strip without a
+     long-tailed duck on the water". **Decision:** accept with this reason (B)?
+
+   **Notes for the AI:** on B, add `task_target_value_dominant` with the reason above to `accepted_check_warnings` in
+   `dataset.py` (add-dataset step 6) and re-run `dataset check`.
+
+   [^4a]: **LEAK-25** (Must): "no event" mixed with "not recorded" is a censoring bias; the one known gap is noted.
+   [^4b]: Andrej, 2026-10-30, question 2 (the zero policy).
+
+   **Andrej (2026-11-03, change):** We accept since this is a totally valid zero-inflated regression task
+
+   **Resolved (2026-11-03, Andrej):** B, `task_target_value_dominant` accepted in `accepted_check_warnings` with the
+   reason above.
+
+   **Andrej (2026-11-03, dataset note; metric ok):** I realized that this is a multi-target task. Therefore I
+   declare it 2nd tier and don't ship
+
+   **Resolved (2026-11-03, Andrej):** don't ship: the record is `TBD -> 2nd Tier` with the `Multi-target` tag, its
+   `v2_path` cleared and its claim released; the folder leaves the working copy (copies of its last files, with the
+   transect split, in the run folder of 2026-11-03, `nantucket_retired/`). It can come back if the format gets
+   multi-target tasks.
 
 **Review panel:** ship after changes (mediator). Claim audit: 54 claims, 39 hold, 13 refuted or partly refuted (fixed in
 the definition; the record's four at hand-over), 1 metric concern (issue 2), 1 untested. Blind review: include with

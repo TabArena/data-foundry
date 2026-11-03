@@ -52,54 +52,195 @@ file (practitioner).
 For the curator: issue 2 (drop the hazards nobody assesses, a weighing
 call), issue 3 (RMSLE or a within-storm score, a weighing call), issue 4 (the storm's size as an input, a probe first).
 
-**Main points:** Drop the hazards nobody sends an assessor for (issue 2); keep
-RMSLE or score within each storm (issue 3); add the storm's size as an input (issue 4).
+**Main points:** all issues resolved on 2026-11-03: the unassessed hazards dropped (2), RMSLE stays (3), no
+storm-size input (4).
 
 **Issues for Andrej:**
 
-2. **Drop the hazards nobody sends an assessor for?** With the use case narrowed to the emergency manager's triage,
-   about a fifth of the rows have no assessment decision behind them: marine zones, drought, heat, cold, fog, rip
-   current, funnel cloud, waterspout and high surf. They are 19.8% of the 2024 rows, 99.7% of them at $0, with 0.07% of
-   the dollars.
-   * What it does: the event type alone predicts these zeros, so they make the task look easier and RMSLE rewards
-     predicting 0 on them; the rows the manager decides on are the others.
-   * For dropping: USE-1 checks every row filter against the use case; the domain practitioner and the critic suggest
-     it. No one argues for keeping them (the advocate calls the drop optional); which hazards an emergency manager
-     assesses is a domain judgement, and the list is the practitioner's.
-   * Rule: USE-1 (Must, P3), a weighing of which rows the decision covers. No precedent.
-   * Implemented: all 54 event types.
-   * Alternative: drop the listed types (about 20% of the rows).
+2. **Drop the hazards nobody sends an assessor for?**
 
-   Recommendation: drop them. Decision: drop or keep?
+   * **Problem:**
+     - With the use case narrowed to the emergency manager's triage, about a fifth of the rows are hazards with no
+       assessment decision behind them, nearly all at $0.
+     - Every row filter is checked against the use case, so this is a weighing of which rows the decision covers[^a1].
+   * **Background:** The hazards: marine zones, drought, heat, cold, fog, rip current, funnel cloud, waterspout and
+     high surf. They are 19.8% of the 2024 rows, 99.7% of them at $0, with 0.07% of the dollars.
+   * **Effect on the task:** the event type alone predicts these zeros, so they make the task look easier and RMSLE
+     rewards predicting 0 on them; the rows the manager decides on are the others.
+   * **Consistency:** no precedent.
+   * **Panel:** the domain practitioner and the critic suggest dropping them. No one argues for keeping them (the
+     advocate calls the drop optional). Which hazards an emergency manager assesses is a domain judgement, and the list
+     is the practitioner's.
+   * **Options:**
 
-3. **Keep RMSLE, or score within each storm?** RMSLE scores every row on its own; the manager ranks the counties of
-   one storm. A within-storm score (`mean_group_pearsonr`: the correlation between predicted and entered dollars inside
-   each storm, averaged over storms, with the storm id `EPISODE_ID` shipped as a scoring column and never as a feature)
-   holds the office fixed, since one office enters each storm, so the $0 habit counts less.
-   * Evidence: on 2024, RMSLE and the within-storm score pick the same model. The insurance siblings' normalized Gini
-     picks a model that ranks a storm's counties worse, so it is no option here.
-   * Against the within-storm score: storms whose rows are all $0 drop out (59.9% of the 2024 storms with five or more
-     rows), and so do storms where a model predicts one value for every row, so a model can skip hard storms.
-   * Rule: MET-1 (Must, P6: the metric the real task would use) and MET-11 (context), a weighing call. Precedents:
-     diamonds and onlinenewspopularity (RMSLE by context); neither had a mass at zero.
-   * The advocate and the critic keep RMSLE; the domain practitioner prefers the within-storm score.
-   * Implemented: RMSLE; its reason says that 37-47% of the error falls on the $0 entries.
-   * Alternative: `mean_group_pearsonr` by `EPISODE_ID`.
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | All 54 event types (implemented) | every hazard stays | no domain list to defend | about 20% of rows are zeros the event type predicts; RMSLE rewards predicting 0 on them |
+     | B | Drop the listed types | the rows of the nine hazard types (marine zones, drought, heat and six more) go, about 20% of the rows | the rows match the manager's decision | the list is one practitioner's domain judgement |
 
-   Recommendation: keep RMSLE. Decision: keep RMSLE or switch?
+   * **Recommendation:** B, drop them: no one argues for keeping them, and the rest are the rows the manager decides
+     on. **Decision:** A (keep) or B (drop)?
 
-4. **Add the storm's size as an input?** Once a storm has passed, the manager knows how many counties it hit. The
-   domain practitioner proposes the number of events and counties per storm (`EPISODE_ID`); the mediator did not take
-   it up.
-   * For: an input the actor reads from other rows of the same release, which CLEAN-19 (Should, amended 2026-10-26,
-     rain_in_australia) builds.
-   * Against: Storm Data's county segments and which events get entered depend on the damage (domain practitioner;
-     some types enter only with damage), so a count per storm partly carries the label. Not measured.
-   * Implemented: no storm-level input. Alternative: events and counties per `EPISODE_ID`, counted over all entries
-     including the blanks.
+   **Notes for the AI:** the types to drop on B: marine zones, drought, heat, cold, fog, rip current, funnel cloud,
+   waterspout, high surf (the practitioner's list); the rule is USE-1 (Must, P3).
 
-   Recommendation: not now: add it only after a leak probe shows the counts carry no label signal (LEAK-10 before
-   CLEAN-19). Decision: add, probe first, or not?
+   [^a1]: **USE-1** (Must, principle P3, a real use case): a use case is an actor, a moment and a decision; every
+     column, filter, target and split choice is checked against it.
+
+   **Andrej (2026-11-03, change):** I go with your suggested change
+
+   **Resolved (2026-11-03, Andrej):** B. Every marine type and drought, heat, excessive heat, the two cold types, the
+   two fog types, rip current, funnel cloud, waterspout and high surf are dropped: 156,767 entries (15.7%), 99.1% at
+   $0, 0.5% of the dollars. 843,144 rows and 34 event types remain, 68% at $0. RMSLE rises to 2.67, 2.93 and 2.94
+   (constant 4.05, 4.28, 4.20), as the easy zeros are gone. `dataset check` clean (Slurm).
+
+3. **Keep RMSLE, or score within each storm?**
+
+   * **Problem:**
+     - RMSLE scores every row on its own; the manager ranks the counties of one storm.
+     - Switch to a within-storm score (`mean_group_pearsonr`), which holds the reporting office fixed so the $0 habit
+       counts less?
+     - This is a weighing call.
+   * **Background:** `mean_group_pearsonr` is the correlation between predicted and entered dollars inside each storm,
+     averaged over storms, with the storm id `EPISODE_ID` shipped as a scoring column and never as a feature. It holds
+     the office fixed since one office enters each storm. The metric has to score the decision of the use case at the
+     unit the actor acts on[^b1]; RMSLE was chosen from the context of the task[^b2].
+   * **Experiments:** on 2024, RMSLE and the within-storm score pick the same model. The insurance siblings'
+     normalized Gini picks a model that ranks a storm's counties worse, so it is no option here. RMSLE's reason in the
+     definition says that 37-47% of the error falls on the $0 entries.
+   * **Effect on the task:** under the within-storm score, storms whose rows are all $0 drop out (59.9% of the 2024
+     storms with five or more rows), and so do storms where a model predicts one value for every row, so a model can
+     skip hard storms.
+   * **Consistency:** diamonds and onlinenewspopularity score RMSLE by context; neither had a mass at zero.
+   * **Panel:** the advocate and the critic keep RMSLE; the domain practitioner prefers the within-storm score.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | RMSLE (implemented) | scores every row on its own | picks the same model as the within-storm score on 2024; every storm counts | 37-47% of the error falls on the $0 entries |
+     | B | `mean_group_pearsonr` by `EPISODE_ID` | scores the ranking of counties inside each storm | the manager's unit; holds the office fixed, so the $0 habit counts less | all-$0 storms (59.9% of 2024 storms with 5+ rows) and constant-prediction storms drop out, so a model can skip hard storms |
+
+   * **Recommendation:** A, keep RMSLE: both scores pick the same model on 2024, and the within-storm score lets a
+     model skip hard storms. **Decision:** A (keep RMSLE) or B (switch)?
+
+   **Notes for the AI:** on B, ship `EPISODE_ID` as a scoring column (never a feature) and declare
+   `mean_group_pearsonr` grouped by it; the rules are MET-1 (Must, P6) and MET-11 (context).
+
+   [^b1]: **MET-1** (Must, principle P6, worth benchmarking): the declared metric scores the real task, the decision
+     of the use case at the unit the actor acts on, the way a practitioner would choose a model for it.
+   [^b2]: **MET-11** (Must), origin "context": the source defines no metric but the task makes one obvious, and the
+     reason says why (Lennart, 2026-10-21, diamonds: a price's error matters relative to the price, so `rmsle`).
+
+   **Resolved (2026-11-03, Andrej):** A, RMSLE stays.
+
+4. **Add the storm's size as an input?**
+
+   * **Problem:**
+     - Once a storm has passed, the manager knows how many counties it hit.
+     - The domain practitioner proposes the number of events and counties per storm (`EPISODE_ID`); the mediator did not
+       take it up.
+     - We build an input the actor reads at the prediction point from other rows of the same release[^c1].
+   * **Effect on the task:** Storm Data's county segments and which events get entered depend on the damage (domain
+     practitioner; some types enter only with damage), so a count per storm partly carries the label. A feature must
+     never give the target away[^c2].
+   * **Unknown:** not measured; a leak probe on the counts would settle whether they carry label signal.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | No storm-level input (implemented) | no column on the storm's size | no risk of a label carried by the counts | the manager knows the storm's size and the model does not |
+     | B | Add the counts now | adds two columns: events and counties per `EPISODE_ID`, counted over all entries including the blanks | an input the actor has | the counts partly carry the label; not measured |
+     | C | Probe first | add the counts of B only if a leak probe shows no label signal | settles the leak before adding | a probe to run |
+
+   * **Recommendation:** A for now, and C to add it: only after a leak probe shows the counts carry no label signal,
+     since the leak rule comes before the rule on building features[^c3]. **Decision:** A (not), B (add) or C (probe
+     first)?
+
+   **Notes for the AI:** on B or C, count events and counties per `EPISODE_ID` over all entries including the blanks;
+   for C, run a leak probe on the two counts before adding them (LEAK-10 before CLEAN-19).
+
+   [^c1]: **CLEAN-19** (Should, amended 2026-10-26, Lennart, on rain_in_australia): we build a feature when it is an
+     input the actor reads at the prediction point from other rows of the same release, kept only where known by then.
+   [^c2]: **LEAK-10** (Must): a feature holds only what existed at the prediction point and never gives the target
+     away; a part, a consequence or another encoding of the target is out.
+   [^c3]: **LEAK-10** (Must) is checked before **CLEAN-19** (Should): a built feature must first pass the leak rule.
+
+   **Andrej (2026-11-03, discuss):** If the counts partially carry the label, is this a leak or signal?
+
+   **Answer (AI, 2026-11-03):**
+
+   * **Problem:**
+     - Both, in different parts: the storm's real size is a signal the manager has, but some entries exist only
+       because there was damage, and counting those counts the label.
+     - Measured, neither part matters: the counts change RMSLE by about 0.01 either way, so they add nothing.
+     - So the safe call is no storm-level input.
+   * **Background:** Storm Data enters strong wind, lightning and thunderstorm wind under 50 kt only when they did
+     damage (3.3% of the entries). A count over all of a storm's entries rises with them, so part of it is a
+     consequence of the damage; a count over the other types follows the storm's size, which the first reports show.
+   * **Experiments:** untuned LightGBM on log1p, RMSLE per test year (lower is better), on the rows left after issue 2:
+
+     | Input | 2025 | 2024 | 2023 |
+     |---|---|---|---|
+     | no storm size (implemented) | 2.671 | 2.931 | 2.940 |
+     | entries and counties of the storm, all types | 2.661 | 2.928 | 2.941 |
+     | entries and counties of the types entered whatever the damage | 2.659 | 2.948 | 2.951 |
+
+     The label part is too small to show, and the size adds no measurable signal either.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | No storm-level input (implemented) | as now | nothing that can carry the label | none measured |
+     | B | Counts over the types entered whatever the damage | two columns per storm | the storm's size as the manager sees it | no gain measured; still counts entries finalised after the storm |
+
+   * **Recommendation:** A: the counts add nothing measurable, and the all-types count carries part of the label.
+     **Decision:** A or B?
+
+   **Notes for the AI:** script `noaa_storm/storm_size.py` in the run folder of 2026-11-03 (Slurm job 1342406).
+
+   **Resolved (2026-11-03, Andrej):** A, no storm-level input; the notes give the measurement.
+
+5. **Is the task real, or did we make it up?**
+
+   * **Problem:**
+     - The data and the label are real, and so is predicting the label: Diaz and Joseph (2019, Weather and Climate
+       Extremes 25:100216) predict exactly this field from these entries, "for science-informed tornado disaster
+       planning".
+     - The moment is ours: no source names an emergency manager ranking a storm's counties by the NWS figure.
+     - So the task is real as a damage model for planning and approximate as the triage we wrote; the `fit_reason`
+       names the gaps of the second.
+   * **Background:** local managers triage from 911 calls and their own reports, and the NWS figure comes back weeks
+     later, partly built from those reports (domain practitioner; NWSI 10-1605 Sec. 2.7).
+   * **Consistency:** basque_offshore_ctd_chlorophyll went `No` as a made-up task today: there no source named any use
+     for predicting the channel and no one had predicted it for a use[^5a]. Here a peer-reviewed study predicts the
+     same label, and the published loss records built from it (SHELDUS, behind FEMA's National Risk Index) are used
+     for planning. That is the fact that sets this case apart.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Ship with the triage use case (implemented) | as now; fit approximate | a concrete actor and moment, and the split and inputs follow it; the label is modelled in the literature | the triage moment is our framing; the manager decides from other sources |
+     | B | Ship with the planning use case | the use case becomes the published one: a planner estimates the damage of an event of this type and size in a county; split and inputs unchanged | the use case of the literature, nothing ours | a planner uses aggregate losses more than an estimate per event |
+     | C | `No` with `No Good Target / Scientific Discovery` | retire as basque_offshore_ctd_chlorophyll | no framing of ours | the published use of this label is not weighed |
+
+   * **Recommendation:** B: the same data, split and score, with the use case the literature gives, so nothing in the
+     task is ours; the `fit_reason` keeps the gaps. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, rewrite `task_summary.use_case`, `fit_reason` and `known` (the inputs a planner has
+   are the same entries), and check that `splits_comment` reads with a planner refitting each year. On C, retire as
+   records.md says.
+
+   [^5a]: **USE-1** (Must): a use case is an actor, a moment and a decision. **USE-2** (Must): a task no decision fits
+     is out, marker `No Good Target / Scientific Discovery`. basque_offshore_ctd_chlorophyll, Andrej, 2026-11-03: "it
+     seems like this is a made up task".
+
+   **Andrej (2026-11-03, dataset note):** One last question before we ship: Is this even a real task opr did we make it
+   up?
+
+   **Andrej (2026-11-03, change):** I go with your change
+
+   **Resolved (2026-11-03, Andrej):** B: `use_case` is the planner's (Diaz and Joseph 2019), `fit_reason` names the
+   gaps for a planner; data, split and metric unchanged. `dataset check` clean (Slurm).
 
 **Review panel:** ship after changes if LEAK-25 is amended, otherwise `No` (mediator). Claim audit: 44 claims, 29 hold
 (3 with a caveat), 11 refuted (2 in part; all fixed in the definition, the LEAK-25 part is issue 1), 4 untested (older

@@ -30,6 +30,72 @@ describes Frees et al. and Allstate as they are; the book's later sections are m
 
 **Issues for Andrej:**
 
+1. **Ship this forced random split, or treat it like how_much_did_it_rain?** An insurer fits its tariff on past
+   policies and prices next year's, so the task is temporal by its use case. The release has no dates and no policy
+   ids, so the test folds are random policies of the same period. SPLIT-8 (Must) ships such a task as IID with the tag
+   "forced from temporal" (`ForcedIIDFromTemporal`). On 2026-10-30 you sent how_much_did_it_rain to `No` ("if the data
+   is temporal but a temporal split is not possible, we cannot split the data and reject it") and said "Forced IID is
+   to be avoided at all costs"; SPLIT-8 itself was left unchanged. Your `Yes` here was given on a record that read
+   "Regime IID"; the split was tagged as forced when the dataset was added.
+   * What it does to the task: models are tested on policies of the same observation period, not on a later year. A
+     later year's change in the claim level would not move the Gini, which ignores the level; a change in the mix of
+     policies or in what drives claims is not tested. The cost cannot be measured: the data covers one period of
+     about a year.
+   * What may set it apart (measured): each row is a distinct policy; the hidden-group probe finds nothing; no policy
+     is split into two rows (116 pairs of identical rating factors sum to 365 days, against 102 on average for other
+     sums); a split that keeps identical feature rows together scores as the random one (Gini 0.194 and 0.208 against
+     0.182 and 0.205); the claims show no dependence along the file's order, and training on earlier quarters of the
+     file to test on the next shows no drop (0.168, 0.189, 0.208 against 0.127, 0.174, 0.181 for random splits;
+     single splits, and whether the file order is time is unknown). how_much_did_it_rain's `No` named a leak: hours
+     of the same storm on both sides of a random split. No such channel is found here.
+   * The advocate reads these facts as setting the case apart; the critic accepts the facts but says only you can say
+     whether they meet "at all costs". The precedent check flags the same.
+   * Implemented: (a) IID tagged `ForcedIIDFromTemporal`, with the facts above in the notes. Alternatives: (b) `No`,
+     like how_much_did_it_rain (frempl_french_motor_personal_line, same run and same tag, would follow); (c) reopen
+     how_much_did_it_rain under SPLIT-8 as written; (d) amend SPLIT-8 ("forced IID only where rows share no unit or
+     period outcome", or "forced IID is a reject"), which reaches the 17 forced-IID datasets of the working copy.
+
+   Recommendation: (a). Decision: (a), (b), (c) or (d)?
+
+   *Restored on 2026-11-03 from the panel's draft: the issue was removed when settled, before the rule that settled issues stay (2026-11-02).*
+
+   **Resolved (2026-11-02, Andrej):** the forced IID split ships (issue 1 (a)): "Forced group splits should be fine.
+   Regarding forced IID, did you make sure there are no leaks? Whenever there are no leaks we can ship." Recorded in
+   SPLIT-8 (amended 2026-11-02: a forced grouped split ships; a forced IID split ships only when the leak test across
+   the random split finds none).
+
+2. **Keep the time in force (`exposure`) as a feature, now that some claims are known to cut it short?** Every policy
+   is a one-year contract. `exposure` is the share of that year the data observed (1 to 365 days, median 163; 1.9%
+   are full years), and a policy ends early after some claims, most clearly when the car is written off. The AI's
+   suggestion of 2026-10-30 in the record called it "the contracted period, known when the policy is priced"; that
+   reading was wrong and is corrected.
+   * What it does to the task: at a real quote the time is one year for every policy, so it ranks nothing. In the
+     benchmark each test policy comes with its observed time, which alone earns 0.168 of the best Gini, 0.205. The
+     part cut short after a claim does not help a model; it lowers the score.
+   * Evidence (9 shipped splits): short policies claim more per year (147 more claims than expected at 0.2 years or
+     less; the 193 claims of at least 80% of the car's value have a median time of 0.37 years against 0.65). A model
+     given the time only as a proportional effect, which cannot use that excess, scores 0.1833 against 0.1824 with
+     the time as a free feature (paired SE 0.0059). Giving the written-off policies their uncut time raises the Gini
+     from 0.182 to 0.31 (18 of 18 runs).
+   * Rule: LEAK-10 (Must) is triggered; LEAK-11 (Should, narrows LEAK-10) keeps a late value that weakens the signal,
+     with a note. That sets it apart from heart_failure, whose follow-up `time` (ending at death) was dropped because
+     it carried the signal (ROC AUC 0.90 to 0.75 without it). Your fremtpl2 call (2026-10-20) kept `Exposure` as a
+     feature, not a divisor, for the same pricing practice; its reason, a contracted period known at pricing, does
+     not carry here. The advocate and the critic both keep it.
+   * Implemented: kept, with the note rewritten. Alternatives: drop it (best Gini 0.205 to 0.130; it removes the time
+     on risk, the core of a claim cost); or predict the cost per policy-year with the time only as the metric's
+     weight, as actuaries do, which Data Foundry cannot train for yet (without a training weight one claim on a
+     one-day policy counts as up to $5.2M a year) and which belongs with issue 4.
+
+   Recommendation: keep. Decision: keep or drop?
+
+   *Restored on 2026-11-03 from the panel's draft: the issue was removed when settled, before the rule that settled issues stay (2026-11-02).*
+
+   **Resolved (2026-11-02, Andrej):** `exposure` kept as a feature with its note (issue 2); recorded as the LEAK-10
+   case for time on risk cut short by the outcome (leak_checks.md, Mechanisms table): the cut is removed or fixed
+   where the data locates it, kept with its measured size where it cannot. Here the cut cannot be located (no dates),
+   and the traced part lowers the Gini (offset-only 0.1833 against 0.1824 free; uncut write-offs 0.31).
+
 3. **Can you get de Jong and Heller (2008)?** Only the book's first chapter and its contents were read; its companion
    website and the Internet Archive were offline on 2026-11-01. The notes' statements on what the book does with this
    table (logistic regression with an exposure correction, Sec. 7.3-7.4; Tweedie and zero-adjusted inverse Gaussian
@@ -120,6 +186,28 @@ describes Frees et al. and Allstate as they are; the book's later sections are m
    **Resolved (2026-11-02, Andrej):** the normalized Gini as a context metric, decided for this table (MET-10 as amended
    2026-11-02: no family call on the metric); the screening's `rmse` fallback is struck in the record. The four tables
    named above decide their own metric.
+
+5. **Ship the claim cost in dollars or as log1p, decided once for the three insurance tables?** This table ships the
+   raw cost; frempl and spanish, from the same run and with the same Gini on dollars, ship log(1 + cost)
+   (`target_transform="log1p"`), and no reason for the difference is recorded. The Gini is computed on dollars either
+   way; only what a model is trained on changes.
+   * Effect (9 splits): log1p lifts squared-error boosting by +0.028 to +0.034 (two probes, better on 7 to 9 of 9),
+     from below the time-alone baseline (0.163 against 0.168) to above it. The best model, a Tweedie GLM, is fit on
+     dollars (0.205).
+   * For dollars: insurers model the cost in dollars with a Tweedie model and a log link (CAS Monograph 5, Sec.
+     2.7.3), a scale MET-3 (Must) allows. For log1p: CLEAN-16 (Should) logs a skewed positive target by default, case
+     by case, and the family stays aligned. The advocate prefers dollars, the column audit log1p; the critic asks for
+     one call for the three.
+   * Implemented: dollars. Alternatives: log1p here (one line; the target renamed `log1p_claim_cost`); or frempl and
+     spanish reopened to dollars, with the Tweedie practice recorded as the reason.
+
+   Recommendation: one scale for the three; log1p follows the rule's default and the siblings, dollars needs the
+   reason recorded. Decision: dollars or log1p?
+
+   *Restored on 2026-11-03 from the panel's draft: the issue was removed when settled, before the rule that settled issues stay (2026-11-02).*
+
+   **Resolved (2026-11-02, Andrej):** the target scale as each file implements it (issue 5): this table ships the
+   claim cost in dollars, the log1p tables keep log1p.
 
 **Review panel:** ship after changes (mediator). Claim audit: 37 claims, 30 hold, 5 refuted (all fixed in the
 text), 2 untested (whether the costs are paid or incurred; the book's later sections). Blind review: exclude as

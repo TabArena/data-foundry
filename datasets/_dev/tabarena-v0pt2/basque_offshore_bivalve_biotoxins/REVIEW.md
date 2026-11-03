@@ -41,82 +41,160 @@ that names what sets it apart (issue 1); if kept, the unit of the 50% floor (2) 
 
 **Issues for Andrej:**
 
-1. **Retire as `Too Small`, or keep as a tiny temporal task?** The test windows come from the newest half of the
-   data (SPLIT-14). It holds the end of the 2021 episode, the 2022 episode and a quiet year: 6, 7 and 0 samples above
-   the EU limit of 160, and 12, 11 and 2 values above the non-detect code, in windows of 37, 42 and 59 samples. No
-   split that keeps half the data for training avoids a quiet newest window, since the last exceedance is on
-   2022-05-23.
-   * What it does: a benchmark would rank methods on 3 or 4 peak samples per toxic window (74-91% of the squared
-     error) and, in the quiet window, on how close a model stays to the code 40, far below any decision. Of the 13
-     test exceedances, 3 are onsets (after a last result at or below the limit); for the other 10 the farm is
+1. **Retire as `Too Small`, or keep as a tiny temporal task?**
+
+   * **Problem:**
+     - The test windows come from the newest half of the data, since every window trains on at least half of it[^1a].
+     - The three windows hold only 6, 7 and 0 samples above the EU limit of 160.
+     - Are these enough to score methods, or is the dataset `Too Small`?
+   * **Background:** the newest half holds the end of the 2021 episode, the 2022 episode and a quiet year: 6, 7 and
+     0 samples above the EU limit of 160, and 12, 11 and 2 values above the non-detect code, in windows of 37, 42 and
+     59 samples. No split that keeps half the data for training avoids a quiet newest window, since the last
+     exceedance is on 2022-05-23. An exceedance target is no way out: the newest window holds no exceedance.
+   * **Effect on the task:** a benchmark would rank methods on 3 or 4 peak samples per toxic window (74-91% of the
+     squared error) and, in the quiet window, on how close a model stays to the code 40, far below any decision. Of
+     the 13 test exceedances, 3 are onsets (after a last result at or below the limit); for the other 10 the farm is
      already closed.
-   * For retiring (the critic; the blind reviewer would exclude it unless some cut gives each window a toxic
-     season, and none does): seismic_bumps was retired with 14 to 26 positives per window, more than here. The
-     ROC AUC for the limit is 0.98 [0.90, 1.00] and 0.87 [0.74, 0.99] in the toxic windows, intervals about as wide
-     as seismic's ±0.1 to ±0.14. The tuned model's gain over the training mean is not clear of 0 in either toxic
-     window ([-2.1, 43.3] and [-7.9, 41.1] ug/kg). In the quiet window the farm's last result, nearly always the
-     code, scores RMSE 7.2 ug/kg against 19 to 27 for every model tried (gain of tuned LightGBM [-21.0, -4.7]), so
-     the test that this is tabular and not forecasting (TP-10) fails there.
-   * For keeping (the advocate): the target is graded, so every sample is scored; the model ranks the exceedances
-     (AUC lower bounds 0.90 and 0.74) and beats the farm's last result and its monthly profile on point estimates in
-     both toxic windows; small real tasks are kept (musk). Two of the advocate's further points do not survive the
-     changes: the quiet year scored false closures on 2 predictions above 160 before them and on none after; and the
-     okadaic-acid-producing plankton added to a model on the farm's own series before them (pooled gain
-     [3.5, 20.6]) but not after ([-15.1, 10.4]; all inputs together [-18.2, 23.0]).
-   * The task probe finds LightGBM, a random forest and a linear model within two standard errors of each other over
-     the three windows, so it gives no ground to keep under TP-3 ("if tuned methods spread, keep").
-   * An exceedance target is no way out: the newest window holds no exceedance.
-   * Rule: TP-9 and TP-10 are Musts and each decides alone, however real the task (principles.md, step 4). The quiet
-     window fails TP-10 only because it holds nothing to predict, TP-9's fact. The outside inputs add nothing
-     measurable over the farm's own series ([-18.2, 23.0]), and the windows are too thin to tell tabular from
-     forecasting (the critic), so the marker is `Too Small`, not `Time-series (Forecasting)`: one decision. It follows
-     seismic_bumps; a keep departs from it and sets the precedent for the zero-inflated batch. Your `Yes`, priority 1
-     (2026-10-30) was a screening call; a probed finding supersedes it (principles.md, "Precedence in the process"),
-     so the call is yours again. The lean to `Too Small` rests on the few events per window, not on the coded zeros
-     (your policy call 2 of 2026-10-30).
-   * TP-10's leg 1 is read here as holding on point estimates in the toxic windows, with no interval clear of 0.
-     On 2026-11-02 you kept TP-10 as written (crms_phragmites_cover issue 1): no 2-standard-error line was
-     adopted, so a keep is judged on the rule's "clearly beats" against the forecasts built from the farm's own
-     series, which these point estimates do not show clearly.
-   * Implemented: the definition ships as a tiny temporal task (three windows on the row floor, 37 / 42 / 59
-     samples). This decision changes only the verdict and the marker; a keep also needs issues 2 and 3 and a TP-9
-     Cases row.
-   * Recommendation: `No` with `Too Small`. Alternative: keep, recorded as a TP-9 case (or an amendment saying what
-     "the target's spread" means for a regression with a dominant value) that names the fact setting it apart from
-     seismic_bumps.
+   * **Experiments:** the ROC AUC for the limit is 0.98 [0.90, 1.00] and 0.87 [0.74, 0.99] in the toxic windows. The
+     tuned model's gain over the training mean is not clear of 0 in either toxic window ([-2.1, 43.3] and
+     [-7.9, 41.1] ug/kg). In the quiet window the farm's last result, nearly always the code, scores RMSE 7.2 ug/kg
+     against 19 to 27 for every model tried (gain of tuned LightGBM [-21.0, -4.7]), so the test that this is tabular
+     and not forecasting fails there[^1b]. The outside inputs add nothing measurable over the farm's own series
+     ([-18.2, 23.0]). The task probe finds LightGBM, a random forest and a linear model within two standard errors of
+     each other over the three windows, so it gives no ground to keep under the rule that a spread of tuned methods
+     keeps a dataset[^1c].
+   * **Panel:** for retiring, the critic (the blind reviewer would exclude it unless some cut gives each window a
+     toxic season, and none does): seismic_bumps was retired with 14 to 26 positives per window, more than here, and
+     the AUC intervals above are about as wide as seismic's ±0.1 to ±0.14. For keeping, the advocate: the target is
+     graded, so every sample is scored; the model ranks the exceedances (AUC lower bounds 0.90 and 0.74) and beats
+     the farm's last result and its monthly profile on point estimates in both toxic windows; small real tasks are
+     kept (musk). Two of the advocate's further points do not survive the changes: the quiet year scored false
+     closures on 2 predictions above 160 before them and on none after; and the okadaic-acid-producing plankton added
+     to a model on the farm's own series before them (pooled gain [3.5, 20.6]) but not after ([-15.1, 10.4]; all
+     inputs together [-18.2, 23.0]).
+   * **Rules:** too few events per test window and a task that is not tabular are each enough to retire, however
+     real the task[^1d]. The quiet window fails the tabular test only because it holds nothing to predict, which is
+     the too-few-events fact. The outside inputs add nothing measurable, and the windows are too thin to tell tabular
+     from forecasting (the critic), so the marker is `Too Small`, not `Time-series (Forecasting)`: one decision. The
+     lean to `Too Small` rests on the few events per window, not on the coded zeros (your policy call 2 of
+     2026-10-30).
+   * **Consistency:** retiring follows seismic_bumps; a keep departs from it and sets the precedent for the
+     zero-inflated batch. Your `Yes`, priority 1 (2026-10-30) was a screening call; a probed finding supersedes
+     it[^1e], so the call is yours again. The tabular test's first leg (a model on the features clearly beats the
+     farm's own naive forecast) is read here as holding on point estimates in the toxic windows, with no interval
+     clear of 0. You kept that test as written on 2026-11-02, with no 2-standard-error line[^1f], so a keep is judged
+     on "clearly beats" against the forecasts built from the farm's own series, which these point estimates do not
+     show clearly.
+   * **Options:**
 
-2. **Count the 50% training floor in rows or in sampling days?** Only if kept. SPLIT-14 (Must) asks that no window
-   train on less than 50% of the data without naming the unit. Your decisions so far count rows
-   (california_house_prices_2020, alfa_battle_2_0_task_2, lending_club).
-   * Implemented: rows. The windows start 2021-06-07, 2021-11-30 and 2022-07-04, 35 sampling days each, and the
-     oldest trains on 140 samples (50.0%) after the 7-day gap. Cost: the first window holds 37 samples and the test
-     13 exceedances instead of 23.
-   * Alternative: sampling days, as built (the oldest window trained on 45% of the samples, 44% with the gap), by
-     amending SPLIT-14 to count distinct time values when windows are cut in them; the ground is that a mussel and an
-     oyster sample of the same day share one survey and one cast. kick (50% of its purchase dates, 48.7% of its rows;
-     never reviewed) is the same case: it stays as it is under days and is re-split under rows.
-   * Days put the tail of the 2022 episode into the quiet window, where tuned LightGBM then beats the last result
-     (RMSE 39.7 against 68.7); rows leave it in training, and the model loses (19.7 against 7.2). Days would let the
-     dataset pass TP-10 on point estimates in all three windows. Choosing the unit for that picks the split for the
-     score, which P4 over P6 forbids (forest_fires).
-   * Recommendation: rows.
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep as a tiny temporal task (implemented) | three test windows of 37 / 42 / 59 samples (training floor counted in rows); needs issues 2 and 3 and a case recorded against seismic_bumps | a graded target scores every sample; the model ranks the exceedances and beats the last result on point estimates in the toxic windows | no gain clear of 0; the quiet window is lost to the farm's last result; departs from seismic_bumps |
+     | B | `No` with `Too Small` | verdict and marker change; to revisit when AZTI publishes seasons after 2023 | follows seismic_bumps | a real task on faithful data leaves the benchmark |
 
-3. **Score the level by RMSE or by RMSLE?** Only if kept. The source defines no metric, so `rmse` on ug/kg is the
-   fallback (MET-8, Should); RMSLE would be a context metric (MET-11), allowed only when the task makes it obvious.
-   * Implemented: `rmse`, with the ROC AUC and recall at 160 per window in the notes (tuned LightGBM recalls 5 of 6
-     and 3 of 7 exceedances in the toxic windows, the farm's last result 6 of 6 and 4 of 7).
-   * For RMSLE (the domain practitioner, the critic): the RMSE is set by peaks far above the limit, where the farm is
-     closed anyway, and peaks swing 2 to 4 times within days (456, 1005 and 307 ug/kg at the Mussel Farm on 19, 21
-     and 24 May 2021); an area reopens after two results below 160 (Reg. (EU) 2019/627, Art. 63), so the peak's size
-     does not set how long a closure lasts.
-   * For RMSE (the advocate): the default (MET-8), and the sibling basque_offshore_ctd_chlorophyll uses it.
-   * Bearing on issue 1, not on the metric (MET-1 asks what scores the task; the advocate does not argue from it):
-     under RMSLE the model loses to the farm's last result in the quiet window (0.35 against 0.12) and, on windows
-     cut in sampling days, in the 2022 window (0.75 against 0.64).
-   * Would settle it: the methods of the source team's own study, Revilla et al. 2025
-     (https://doi.org/10.1016/j.rsma.2025.104556), which nobody on the panel could open. If you can open it, its
-     methods settle this issue; otherwise `rmse` stands as the fallback.
-   * Recommendation: `rmse`.
+   * **Recommendation:** B, `No` with `Too Small`: the windows hold too few events to score. **Decision:** A or B?
+
+   **Notes for the AI:** this decision changes only the verdict and the marker. A keep also needs issues 2 and 3 and a
+   TP-9 Cases row (or an amendment saying what "the target's spread" means for a regression with a dominant value)
+   that names the fact setting it apart from seismic_bumps.
+
+   [^1a]: **SPLIT-14** (Must): a temporal task has at least 3 windows, and no window's train side holds less than
+     50% of the data.
+   [^1b]: **TP-10** (Must): a panel with one series per entity is a tabular task, not forecasting, when both legs
+     hold: (1) a model on the features clearly beats each entity's naive forecast on the shipped windows, by the
+     declared metric; (2) the source's top solutions are tabular models on point-in-time features, with no lag of the
+     target beyond its last observation known at the prediction point.
+   [^1c]: **TP-3** (Must): if tuned methods spread, keep the dataset.
+   [^1d]: **TP-9** (Must): when the test windows of a temporal task hold a handful of positives (or of the target's
+     spread) or none, the scores are noise and the dataset is `Too Small`. With **TP-10** (Must, footnote above),
+     each decides alone: principles.md, "How to decide", step 4: independent failures are not conflicts, and every
+     Must has to hold.
+   [^1e]: principles.md, "Precedence in the process": a later stage's measured finding supersedes an earlier stage's
+     reading; a screening verdict is provisional until the dataset is added and probed.
+   [^1f]: Andrej, 2026-11-02, crms_phragmites_cover issue 1: TP-10 kept as written; no 2-standard-error line adopted.
+
+   **Andrej (2026-11-03, change):** I follow your suggestion to retire the dataset
+
+   **Resolved (2026-11-03, Andrej):** don't ship, as recommended: the record is `No` with `Too Small` and no priority,
+   its `v2_path` cleared and its claim released; the record fields take the definition's values (`original_source`
+   Other, `required_split` Temporal); the folder leaves the working copy (copies of its last files in the run
+   folder of 2026-11-03, `basque_bivalve_retired/`). To revisit when AZTI publishes seasons after 2023.
+
+2. **Count the 50% training floor in rows or in sampling days?**
+
+   * **Problem:**
+     - Only if the dataset is kept (issue 1).
+     - No window may train on less than 50% of the data, and the rule does not name the unit[^2a].
+     - A mussel and an oyster sample of the same day share one survey and one cast.
+   * **Effect on the task:** days put the tail of the 2022 episode into the quiet window, where tuned LightGBM then
+     beats the last result (RMSE 39.7 against 68.7); rows leave it in training, and the model loses (19.7 against
+     7.2). Days would let the dataset pass the tabular test on point estimates in all three windows. Choosing the
+     unit for that picks the split for the score, which the ranking of an honest split above the score forbids
+     (forest_fires)[^2b].
+   * **Consistency:** your decisions so far count rows (california_house_prices_2020, alfa_battle_2_0_task_2,
+     lending_club). kick (50% of its purchase dates, 48.7% of its rows; never reviewed) is the same case: it stays as
+     it is under days and is re-split under rows.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Rows (implemented) | windows start 2021-06-07, 2021-11-30 and 2022-07-04, 35 sampling days each; the oldest trains on 140 samples (50.0%) after the 7-day gap | follows your decisions; does not pick the split for the score | the first window holds 37 samples, and the test 13 exceedances instead of 23 |
+     | B | Sampling days, as built | the oldest window trains on 45% of the samples (44% with the gap); the floor rule amended to count distinct time values when windows are cut in them | same-day samples share one survey and one cast; 23 test exceedances | picks the split that passes the tabular test; amends the rule |
+
+   * **Recommendation:** A, rows: it follows your decisions so far and does not pick the split for the score.
+     **Decision:** A or B?
+
+   **Notes for the AI:** kick is the same case: under A it is re-split in rows, under B it stays as it is. On B, amend
+   SPLIT-14 in `splits.md` to count distinct time values when windows are cut in them.
+
+   [^2a]: **SPLIT-14** (Must): a temporal task has at least 3 windows, and no window's train side holds less than
+     50% of the data.
+   [^2b]: principles.md, Tensions, "The right split against the score" (P4 over P6): the split follows the
+     application; a small signal under it is no reason to retire (forest_fires).
+
+   **Andrej (2026-11-03, change):** I follow your suggestion to retire the dataset
+
+   **Resolved (2026-11-03, Andrej):** moot: the dataset is retired (issue 1); no split is kept and SPLIT-14 is not
+   amended.
+
+3. **Score the level by RMSE or by RMSLE?**
+
+   * **Problem:**
+     - Only if the dataset is kept (issue 1).
+     - The source defines no metric, so `rmse` on ug/kg is the fallback[^3a]; RMSLE would be a metric taken from the
+       context, allowed only when the task makes it obvious[^3b].
+   * **Experiments:** the notes carry the ROC AUC and recall at 160 per window: tuned LightGBM recalls 5 of 6 and 3 of
+     7 exceedances in the toxic windows, the farm's last result 6 of 6 and 4 of 7. Bearing on issue 1, not on the
+     metric (the metric is chosen by what scores the task[^3c], and the advocate does not argue from this): under
+     RMSLE the model loses to the farm's last result in the quiet window (0.35 against 0.12) and, on windows cut in
+     sampling days, in the 2022 window (0.75 against 0.64).
+   * **Panel:** for RMSLE (the domain practitioner, the critic): the RMSE is set by peaks far above the limit, where
+     the farm is closed anyway, and peaks swing 2 to 4 times within days (456, 1005 and 307 ug/kg at the Mussel Farm
+     on 19, 21 and 24 May 2021); an area reopens after two results below 160 (Reg. (EU) 2019/627, Art. 63), so the
+     peak's size does not set how long a closure lasts. For RMSE (the advocate): the default, and the sibling
+     basque_offshore_ctd_chlorophyll uses it.
+   * **Unknown:** the methods of the source team's own study, Revilla et al. 2025
+     (https://doi.org/10.1016/j.rsma.2025.104556), which nobody on the panel could open, would settle it. If you can
+     open it, its methods settle this issue; otherwise `rmse` stands as the fallback.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | `rmse` on ug/kg (implemented) | scored by the fallback `rmse`, with the ROC AUC and recall at 160 per window in the notes | the default; as the sibling dataset | set by peaks far above the limit, where the farm is closed anyway |
+     | B | `rmsle` | scored by `rmsle`, a metric taken from the context | the peak's size does not set how long a closure lasts | needs a context the task makes obvious |
+
+   * **Recommendation:** A, `rmse`: the source defines no metric, and without the source team's study the fallback
+     stands. **Decision:** A or B?
+
+   [^3a]: **MET-8** (Should): with no metric fixed by the source, the fallback for regression is `rmse`.
+   [^3b]: **MET-11** (Must), context origin: the source defines no metric, but the task makes one obvious, so the
+     default would score the wrong thing; only when the context is clear, otherwise the fallback.
+   [^3c]: **MET-1** (Must): the declared metric scores the real task, the decision of the use case, the way a
+     practitioner would have chosen a model for it.
+
+   **Andrej (2026-11-03, change; metric ok; dataset note):** I follow your suggestion to retire the dataset
+
+   **Resolved (2026-11-03, Andrej):** moot: the dataset is retired (issue 1).
 
 **Review panel:** don't ship: `No` with `Too Small`, to revisit when AZTI publishes seasons after 2023 (mediator).
 Claim audit: 38 claims, 21 hold, 7 hold in part, 8 refuted (fixed in the definition or the record), 2 untested. Blind

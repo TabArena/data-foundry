@@ -208,6 +208,11 @@ class SpanishMotorInsuranceCoverageLevel20222024(AbstractCuratedDataset):
             ),
         ),
     )
+    accepted_check_warnings = {
+        "task_target_value_dominant": (
+            "88.1% zeros: policy-years without a claim cost (Andrej, 2026-11-03: zero-inflated targets are natural for these tasks and a core challenge)."
+        ),
+    }
     grouping = Grouping(
         on="insured_id",
         labels="per_sample",

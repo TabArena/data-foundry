@@ -51,11 +51,12 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - task_target_value_dominant
+  warnings: []
   infos:
   - groups_not_clustered
-  accepted: {}
+  accepted:
+    task_target_value_dominant: '88.1% zeros: policy-years without a claim cost (Andrej,
+      2026-11-03: zero-inflated targets are natural for these tasks and a core challenge).'
 decisions:
 - The policy's status at year end is dropped
 - '`vehicle_age` holds the years since licensing'
@@ -332,10 +333,13 @@ A portfolio policy, and any policy in a later year in the file, is in force from
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (26 checks run, plus the dataset's own checks).
 
-- **warning** `task_target_value_dominant`: The target value 0 holds 88% of the rows. (hint: A cap (a censored value), a placeholder for missing, or a zero-inflated target: say which in `curation_comments`, drop censored or placeholder rows, or accept it with the reason.)
 - **info** `groups_not_clustered`: Rows are no closer to their own group than chance (0.6% of nearest neighbours vs 0.0%), and the group explains no more of the label than shuffled groups (0.53 vs 0.52). (hint: The grouping may not be needed: compare IID and grouped scores with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.)
+
+Accepted on purpose:
+
+- `task_target_value_dominant`: 88.1% zeros: policy-years without a claim cost (Andrej, 2026-11-03: zero-inflated targets are natural for these tasks and a core challenge).
 
 ## Data checks
 

@@ -13,45 +13,137 @@ Changes made after the review panel (AI, 2026-11-01): the temporal re-split and 
 
 **Issues for Andrej:**
 
-1. **Is filling a survey whose fluorometer failed a real use case?** No source names a use for predicting this chlorophyll channel. The data descriptor (Solaun et al. 2025, https://doi.org/10.1016/j.dib.2025.111736) names trends, toxin limits, shellfish management and bloom early warning, all for the series as a whole. Zhou et al. 2026 picked the target for a cross-dataset benchmark. The use case is our wording: when a survey's fluorometer fails, AZTI estimates that survey's chlorophyll profile from the other channels of the same casts and the station's earlier surveys, and reports it to the shellfish managers and the mussel farm. If that moment is no real decision, the benchmark ranks models on a reading no actor waits for, and the dataset goes (USE-1, USE-2, Must). Whether the moment is real is a weighing. AZTI could settle it by saying whether a survey without chlorophyll is ever reported with an estimate; the request of issue 2 can ask.
+1. **Is filling a survey whose fluorometer failed a real use case?**
 
-   For keeping:
-   - Chlorophyll virtual sensors are an established method (SOCA-CHL, Sauzède et al. 2016). SOCA-CHL also takes satellite chlorophyll, which this table lacks (domain practitioner), so it backs the method more than this moment.
-   - The sensors on this package fail one channel at a time. Five casts in the release lost a whole channel (PAR, oxygen, salinity, temperature), each on a single survey.
-   - Refit on every earlier survey, the model beats carrying the last survey's profile forward, the fill a team would make without a model: 0.485 against 0.617 ug/l, better in 7 of 9 windows.
+   * **Problem:**
+     - No source names a use for predicting this chlorophyll channel.
+     - Our use case: when a survey's fluorometer fails, AZTI estimates that survey's chlorophyll from the other channels
+       and earlier surveys.
+     - If that moment is no real decision, the dataset goes[^1a]; whether it is real is a weighing.
+   * **Background:** the data descriptor (Solaun et al. 2025, https://doi.org/10.1016/j.dib.2025.111736) names
+     trends, toxin limits, shellfish management and bloom early warning, all for the series as a whole. Zhou et al.
+     2026 picked the target for a cross-dataset benchmark. The use case is our wording: when a survey's fluorometer
+     fails, AZTI estimates that survey's chlorophyll profile from the other channels of the same casts and the
+     station's earlier surveys, and reports it to the shellfish managers and the mussel farm. If that moment is no
+     real decision, the benchmark ranks models on a reading no actor waits for: a task needs an actor, a moment and a
+     decision, and a task no decision fits is out[^1a].
+   * **Effect on the task:** the use case sets the split: at the fill only the station's earlier surveys are
+     known[^1b]. The builder had held out random survey days, which kept each test day's later surveys in training:
+     that is a fill made in hindsight, and no source practice supports it. The new windows hold two survey days each,
+     about a monthly refit; their scores are in the outcome's Value line.
+   * **For keeping:** chlorophyll virtual sensors are an established method (SOCA-CHL, Sauzède et al. 2016); SOCA-CHL
+     also takes satellite chlorophyll, which this table lacks (domain practitioner), so it backs the method more than
+     this moment. The sensors on this package fail one channel at a time: five casts in the release lost a whole
+     channel (PAR, oxygen, salinity, temperature), each on a single survey. Refit on every earlier survey, the model
+     beats carrying the last survey's profile forward, the fill a team would make without a model: 0.485 against
+     0.617 ug/l, better in 7 of 9 windows.
+   * **For retiring:** in ten years the fluorometer never failed in this release; the one bin without chlorophyll
+     lacks every channel. AZTI publishes the channels that did fail as no data and fills none of them.
+   * **Consistency:** glioma_grading_clinical_and_mutation_features went `No` + `No Good Target / Scientific
+     Discovery`[^1c]. In glioma the grade exists before the DNA features, so a model could only cross-check a known
+     label. Here the channels exist exactly when the chlorophyll is missing. The two cases share only that no source
+     names the use. Your scope call of 2026-10-30 on the species surveys points toward keeping[^1d].
+   * **Unknown:** AZTI could settle it by saying whether a survey without chlorophyll is ever reported with an
+     estimate; the request of issue 2 can ask.
+   * **Options:**
 
-   For retiring:
-   - In ten years the fluorometer never failed in this release. The one bin without chlorophyll lacks every channel.
-   - AZTI publishes the channels that did fail as no data and fills none of them.
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | The fill of a failed survey as the use case (implemented) | the fill at the survey; temporal windows of two survey days, each trained on every earlier survey | an established method; the channels exist exactly when the chlorophyll is missing; beats carrying the last survey forward in 7 of 9 windows | our wording; the fluorometer never failed in the release, and AZTI fills no failed channel |
+     | B | Treat it like glioma | verdict `No` + `No Good Target / Scientific Discovery`; the folder leaves | follows glioma | the fact that sets this case apart is not used |
 
-   Precedent: glioma_grading_clinical_and_mutation_features went `No` + `No Good Target / Scientific Discovery` (Lennart, 2026-10-26, "too far-fetched"). In glioma the grade exists before the DNA features, so a model could only cross-check a known label. Here the channels exist exactly when the chlorophyll is missing. The two cases share only that no source names the use. Your call of 2026-10-30 on the species surveys, a scope call under SEL-2 ("if a dataset is useful for a predictive application although the data was collected for something else, then this is fine") points toward keeping.
+   * **Recommendation:** A, keep, and record as the fact that sets it apart from glioma that the other channels exist
+     exactly when the chlorophyll is missing. **Decision:** accept the fill of a failed survey as the use case (A), or
+     retire the dataset (B)?
 
-   Implemented: the use case is the fill at the survey, so the split now mirrors it (USE-3, USE-10, SPLIT-3). The builder had held out random survey days, which kept each test day's later surveys in training: that is a fill made in hindsight, and no source practice supports it. The new windows hold two survey days each, about a monthly refit; their scores are in the outcome's Value line.
+   **Notes for the AI:** on A, record the fact as a Cases row under USE-1. The split change made for A follows USE-3,
+   USE-10 and SPLIT-3. On B, the verdict `No` with `No Good Target / Scientific Discovery` (USE-1, USE-2), and the
+   folder leaves the working copy.
 
-   Alternative: treat it like glioma. The verdict becomes `No` + `No Good Target / Scientific Discovery`, and the folder leaves.
+   [^1a]: **USE-1** (Must): a use case is an actor, a moment and a decision, written down before anything else.
+     **USE-2** (Must): a task no decision fits is out; marker `No Good Target / Scientific Discovery`.
+   [^1b]: **USE-3** (Must): name the prediction point, when the model is used and what is known then. **USE-10**
+     (Must): decide from the use case whether the entity is new or known before choosing the split; for a known one,
+     its history is legitimate, the split is temporal and the previous outcome is a feature. **SPLIT-3** (Must): a
+     task is grouped or temporal, never both, and the use case decides which.
+   [^1c]: Lennart, 2026-10-26, glioma_grading_clinical_and_mutation_features: "too far-fetched".
+   [^1d]: Andrej, 2026-10-30, a scope call under **SEL-2** (Must; let the use case decide whether a scope rule
+     applies): "if a dataset is useful for a predictive application although the data was collected for something
+     else, then this is fine".
 
-   Recommendation: keep, and record as the fact that sets it apart from glioma that the other channels exist exactly when the chlorophyll is missing (a Cases row under USE-1). Decision: accept the fill of a failed survey as the use case, or retire the dataset.
+2. **Ask AZTI for the fluorometer's calibration history?**
 
-2. **Ask AZTI for the fluorometer's calibration history?** The fluorometer may have been swapped or recalibrated during 2014-2023, so the same water could read differently in different years (EV-6: the evidence is circumstantial):
-   - The value 0.03 ug/l is a floor that appears only from 2018-11-19 to 2022-09-12 (287 bins in 25 casts, none before or after).
-   - The casts' minima jump from 0.03 on 2022-09-12 to 0.44 and 0.47 on 2022-10-03.
-   - In the same period, the relation between light transmission and chlorophyll below 10 m changes sign.
+   * **Problem:**
+     - The fluorometer may have been swapped or recalibrated during 2014-2023, so the same water could read differently
+       in different years.
+     - The evidence is circumstantial[^2a], and the release does not record the instrument's history.
+     - Ask AZTI for it, or keep only a note?
+   * **Background:** the value 0.03 ug/l is a floor that appears only from 2018-11-19 to 2022-09-12 (287 bins in 25
+     casts, none before or after); the casts' minima jump from 0.03 on 2022-09-12 to 0.44 and 0.47 on 2022-10-03; in
+     the same period, the relation between light transmission and chlorophyll below 10 m changes sign.
+   * **Unknown:** the descriptor names two CTD models but no fluorometer model, calibration or dates, so the data
+     cannot tell an instrument change from a change in the sea.
+   * **Effect on the task:** if these are instrument periods, models partly learn which period a date falls in, and
+     they miss an unannounced recalibration: on the new windows, the model predicts about 1.7 times too low over the
+     seven survey days after the step (2022-10-03 to 2023-03-13). For the fill, the series' own reading is still what
+     AZTI would report, and the target is what the actor acts on[^2b], so this is no reason to exclude the dataset
+     today. The rule is to repair from the origin first[^2c].
+   * **Options:**
 
-   The descriptor names two CTD models but no fluorometer model, calibration or dates. So the data cannot tell an instrument change from a change in the sea. If these are instrument periods, models partly learn which period a date falls in, and they miss an unannounced recalibration: on the new windows, the model predicts about 1.7 times too low over the seven survey days after the step (2022-10-03 to 2023-03-13). For the fill, the series' own reading is still what AZTI would report (USE-5, Must), so this is no reason to exclude the dataset today. The rule is to repair from the origin first (PROV-13, Must).
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | A note only (implemented) | a note with these numbers in the curation comments and `fit_reason` | nothing to wait for | a possible instrument change stays unrepaired |
+     | B | Write to AZTI, keep the note meanwhile | ask for the CTD and fluorometer history, and whether a survey without chlorophyll is ever reported with an estimate (issue 1) | a correction would repair the target from the origin; the answer bears on issue 1 | costs only a wait: nothing ships differently until they answer |
 
-   Implemented: a note with these numbers in the curation comments and `fit_reason`.
+   * **Recommendation:** B, send the request and keep the note meanwhile: a correction would repair the target from
+     the origin, and nothing ships differently while we wait. **Decision:** send it (B) or not (A)?
 
-   Alternative: write to AZTI for the CTD and fluorometer history, and ask whether a survey without chlorophyll is ever reported with an estimate (issue 1). It costs only a wait: nothing ships differently until they answer. If they have a correction, the target is repaired from it. If they confirm periods with no correction, USE-5 is weighed again.
+   **Notes for the AI:** on an answer, if AZTI has a correction, repair the target from it (PROV-13). If they confirm
+   periods with no correction, weigh USE-5 again.
 
-   Recommendation: send the request, and keep the note meanwhile. Decision: send it or not.
+   [^2a]: **EV-6** (Should): say which evidence is proof (a test that could have refuted the claim) and which is
+     circumstantial.
+   [^2b]: **USE-5** (Must): predict what the actor would act on, at the resolution they act on it.
+   [^2c]: **PROV-13** (Must): when a release is damaged, check whether the origin has the clean data before keeping
+     the damage or retiring the dataset, and repair or rebuild from the origin when it has them.
 
-3. **Score the error in ug/l (`rmse`) or the relative error (`rmsle`)?** No source has a metric for this task. Zhou's R^2 was chosen to compare datasets, on a copy without the blooms (MET-1, MET-2). So the fallback `rmse` on ug/l is declared. It weighs bloom values heavily: the bloom window of March 2023 alone makes up a third of the averaged score (1.51 ug/l there, against 0.23-0.58 in the other windows). The domain practitioner prefers `rmsle`, for two reasons. Ocean-colour work scores chlorophyll on a log scale. And `rmsle` acts like an absolute error below about 1 ug/l and like a relative one in blooms. On the new windows the two metrics agree on which predictors beat which. MET-11 allows a metric from context only when the task makes it obvious, and the panel splits on that: the advocate, the critic and the claim auditor keep `rmse`, because the managers act on blooms.
+3. **Score the error in ug/l (`rmse`) or the relative error (`rmsle`)?**
 
-   Implemented: `rmse` on ug/l (fallback); a few bloom casts decide the ranking.
+   * **Problem:**
+     - No source has a metric for this task, so the fallback `rmse` on ug/l is declared.
+     - It weighs bloom values heavily, so a few bloom casts decide the ranking.
+     - Keep it, or score the relative error (`rmsle`)?
+   * **Background:** Zhou's R^2 was chosen to compare datasets, on a copy without the blooms, so it does not score
+     this task on these data[^3a]. The bloom window of March 2023 alone makes up a third of the averaged `rmse` (1.51
+     ug/l there, against 0.23-0.58 in the other windows).
+   * **Experiments:** on the new windows the two metrics agree on which predictors beat which.
+   * **Panel:** the domain practitioner prefers `rmsle`, for two reasons: ocean-colour work scores chlorophyll on a
+     log scale, and `rmsle` acts like an absolute error below about 1 ug/l and like a relative one in blooms. A metric
+     from the context is allowed only when the task makes it obvious[^3b], and the panel splits on that: the advocate,
+     the critic and the claim auditor keep `rmse`, because the managers act on blooms.
+   * **Consistency:** `rmsle` from context was declared for brazilian_ecommerce and melbourne_housing_market.
+   * **Options:**
 
-   Alternative: `rmsle` from context (MET-11), as declared for brazilian_ecommerce and melbourne_housing_market. It spreads the weight over the whole range (the 0.03 floor bins carry 2% of its error), but it needs a context the panel does not agree is clear.
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | `rmse` on ug/l (implemented) | scored by the fallback, the error in ug/l | the managers act on blooms | a few bloom casts decide the ranking |
+     | B | `rmsle` from context | scored by the relative error, a metric taken from the context | spreads the weight over the whole range (the 0.03 floor bins carry 2% of its error); the scale of ocean-colour work | needs a context the panel does not agree is clear |
 
-   Recommendation: keep `rmse`. Decision: keep it or switch.
+   * **Recommendation:** A, keep `rmse`: the managers act on blooms, and the panel does not agree that the context
+     makes `rmsle` clear. **Decision:** keep it (A) or switch (B)?
+
+   [^3a]: **MET-1** (Must): the declared metric scores the real task, the decision of the use case. **MET-2** (Must):
+     match the data, the metric and the real task.
+   [^3b]: **MET-11** (Must), context origin: the source defines no metric, but the task makes one obvious; only when
+     the context is clear, otherwise the fallback.
+
+   **Andrej (2026-11-03, dataset note):** The resons to not ship this dataset outweigh the reasons to ship, it seems
+   like this is a made up task.
+
+   **Resolved (2026-11-03, Andrej):** don't ship: the record is `No` with `No Good Target / Scientific Discovery` and no
+   priority, its `v2_path` cleared and its claim released; the record fields take the definition's values
+   (`original_source` Other, `required_split` Temporal); the folder leaves the working copy (copies of its last files in
+   the run folder of 2026-11-03, `basque_ctd_retired/`).
 
 **Review panel:** ship after changes, if the fill of a survey whose fluorometer failed is accepted as the use case (mediator). Claim audit: 48 claims, 36 hold, 9 refuted (7 fixed in the definition; 2 in the record, the `original_source` field row and the 2026-10-30 Assessment, to correct at hand-over), 3 untested. Blind review: would exclude (borderline); main concern that no decision depends on predicting the channel and that the date tracks calibration periods. Debate: agreed on the temporal re-split with the last survey as a feature, the notes and keeping `rmse` (the domain practitioner prefers `rmsle`, issue 3); disputed: whether the failed-survey fill is a use case (issue 1).
 

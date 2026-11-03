@@ -24,6 +24,49 @@ window figure is re-measured. The panel's sections describe the definition befor
 
 **Issues for Andrej:**
 
+1. **Give each period that ends early the length known at its start (implemented), as in frempl?** `exposure` is a
+   period's length in vehicle-years. 57.4% of the periods (58.2% in 2013) end before 31 December at a cut nobody
+   scheduled; only 0.8% end at a contract anniversary. Their length is known only once they end. With
+   `period_start` a feature, the realised length also gave back the end date the definition dropped.
+   * What it did to the task: a model saw time on risk that the insurer cannot know when it prices. The realised length
+     adds ROC AUC +0.040 / +0.055 / +0.052 over the length known at the start, which is a quarter to a third of the
+     skill above chance. The early ends also go with claims: the rate ratio is 1.22 [1.12, 1.33] once the rating
+     classes are accounted for, and vehicles that leave for good have 0.137 claims per vehicle-year against 0.111.
+   * The definition's evidence for the keep was a 31-December flag. That flag is fixed by the start and the length on
+     99.5% of rows, so the test could not fail.
+   * Implemented: (a) every early end gets the length to 31 December (/366 in 2012). Periods that end at a contract
+     anniversary keep theirs. Cost: LightGBM falls from 0.672 to 0.623 (window mean), and the covariates still beat the
+     length alone on every window.
+   * What the fix leaves: the target still counts claims over the cover actually earned. A model can therefore gain a
+     little by guessing how long a vehicle stays, a fair expectation at pricing. The actuary's rate times the scheduled
+     length scores 0.610 and the direct model 0.623, so the stay is about a tenth of the skill.
+   * Alternative: (b) keep the realised length. Under LEAK-10 (Must) that is an amendment for time on risk in
+     insurance tables, not a kept-leak note. It would reach frempl (issue 2),
+     spanish_motor_insurance_coverage_level_2022_2024, australian_vehicle_insurance_2004_2005 (issue 2) and fremtpl2
+     together.
+     * For (b): fleet premiums are revised at the period's end for the vehicles that came in and went out, so actuaries
+       condition on earned vehicle-years. The game's own 2014 file gives realised lengths, and a simulation shows the
+       gain is the time at risk, not outcome information.
+     * Against (b): LEAK-38 (Lennart, 2026-10-22, kick) rejects the host's test file as a reason. LEAK-10's clause of
+       2026-10-26 blanks late values that can be located. The practice supports the time at risk in the scoring, not
+       as an input.
+   * The advocate argued (b), then conceded; the critic, the column audit and the precedent check argue (a). The
+     domain practitioner accepted the keep as a named leak, before its gain was measured.
+   * Precedent: the fix follows frempl's fix and spanish's. It departs from your fremtpl2 call (2026-10-20: "The
+     contracted period is known at pricing (a mid-year cancellation also shortens it)"). Two facts set this case apart:
+     the dates locate every early end here, and LEAK-10's clause of 2026-10-26 is newer than that call. The policy row
+     of 2026-10-30 ("exposure: feature") still holds, because the length known at pricing stays a feature.
+
+   Recommendation: (a), decided together with frempl's issue 2. Decision: (a) confirm, or (b) amend LEAK-10 for the
+   insurance family?
+
+   *Restored on 2026-11-03 from the panel's draft: the issue was removed when settled, before the rule that settled issues stay (2026-11-02).*
+
+   **Resolved (2026-11-02, Andrej):** the `exposure` fix confirmed (issue 1 (a)): every period gets its length from
+   the start to 31 December; recorded as the LEAK-10 case for time on risk cut short by the outcome (leak_checks.md,
+   Mechanisms table): the cut is removed or fixed where the data locates it, kept with its measured size where it
+   cannot.
+
 2. **Count three windows of 2013 on one training side as SPLIT-14's windows?** SPLIT-14 (Must) asks a temporal task
    for at least 3 windows, each training on at least 50% of the rows. The three windows are September-December,
    May-August and January-April 2013, newest first. All three train on the same closed years 2011-2012 (64.4%). The

@@ -120,6 +120,8 @@ CC (2026-11-02, Andrej): record field `year` set to the definition's 2024 (pinne
 
 **Assessment (AI, 2026-11-02):** marks applied. Leak test across the station-grouped split (untuned LightGBM, 3x3 shipped folds, R^2 0.376 on log1p): no test row has a feature copy in training; merging stations within 50/100/250 m into one group moves R^2 by +0.000/-0.002/-0.006; 6.8% of test rows have a same-year training sample within 100 m against 14.5% of map pixels; removing the test year's training rows costs R^2 0.085 against 0.002 for as many random rows (9 of 9), the same survey's other stations being the map's own input, not a leak; training only on years up to the test year scores 0.317 against 0.299 for as many random rows (later years add rows, not the outcome); no input is built from another row's outcome. Elevation (`elevation_m_nap`, latest vaklodingen survey of the station's 20 m cell on or before the sample's date) adds R^2 +0.033 (9 of 9 folds) and lowers RMSE on the density 872.8 to 863.9. Not forced, so no SPLIT-8 Cases entry. Needs a rebuild to ship.
 
+CC (2026-11-03, Andrej): the check warning `task_target_value_dominant` accepted: "for these tasks this is natural and a core challenge" (zero-inflated target).
+
 ## Reference
 
 Lyashevska O., Brus D.J., van der Meer J. (2016). Mapping species abundance by a spatial zero-inflated Poisson model:

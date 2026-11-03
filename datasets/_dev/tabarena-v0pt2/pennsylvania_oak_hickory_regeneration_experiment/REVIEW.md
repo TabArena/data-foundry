@@ -36,92 +36,270 @@ count (39% of the plots empty in 2014 stay empty, against 12% of the others).
 Weighed: a CC0 deposit of a randomised experiment +; 24 sites -; the treatment, which is the decision, barely moves
 the score -. Left for Andrej: issues 1 to 3.
 
-**Main points:** Keep `Yes` on the reworded use case and drop the `No Good Target / Scientific Discovery` marker
-(issue 1); stratify the site folds by state forest (2); accept the few-groups warning, whose numbers follow 2 (3).
-Settled on 2026-11-02: RMSE on the count stays (issue 4, closed).
+**Main points:** `Yes`, the marker dropped (1, resolved 2026-11-03); RMSE stays (4, closed 2026-11-02). Left: which
+generalisation the split tests and the shared period (2, answered: new sites, stratified, tagged forced); the size and
+the few-groups warning (3, answered).
 
 **Issues for Andrej:**
 
-1. **Drop the `No Good Target / Scientific Discovery` marker from this `Yes`, although the treatment, which is the
-   decision, barely moves the score?** The use case is a forester choosing among deer fence, lime and herbicide from
-   a pre-treatment inventory. The data holds that inventory beside randomised treatments, which sets it apart from
-   the experiments you rejected (inputs that are only the design). But with one microplot per treatment at each site,
-   the score rewards forecasting how many seedlings a new site's plots will hold far more than choosing the
-   treatment.
-   * What it changes: models are ranked on forecasting a plot's regeneration from its 2014 inventory. A model that
-     ignored the treatment would rank almost as high.
-   * Evidence: the 2014 count alone gives R^2 0.22 of the random forest's 0.27; the treatment flags add 0.018 (SE
-     0.003). Within a site the random forest explains R^2 0.037, and it picks the observed best treatment of a site
+1. **Drop the `No Good Target / Scientific Discovery` marker, although the treatment barely moves the score?**
+
+   * **Problem:**
+     - The marker flags a table without a genuine predictive target[^p1].
+     - Here the use case is a forester choosing among deer fence, lime and herbicide, but the score rewards forecasting
+       a new site's seedling counts far more than choosing the treatment.
+     - Keep the marker for that, or drop it?
+   * **Background:** the forester chooses from a pre-treatment inventory. The data holds that inventory beside
+     randomised treatments, which sets it apart from the experiments you rejected (inputs that are only the design).
+     But with one microplot per treatment at each site, the score rewards forecasting how many seedlings a new site's
+     plots will hold far more than choosing the treatment, which is the decision. The target counts every tree
+     species, red maple and black birch included, where a forester acts on desirable oak and hickory; the deposit has
+     no species split.
+   * **Effect on the task:** models are ranked on forecasting a plot's regeneration from its 2014 inventory. A model
+     that ignored the treatment would rank almost as high.
+   * **Experiments:** the 2014 count alone gives R^2 0.22 of the random forest's 0.27; the treatment flags add 0.018
+     (SE 0.003). Within a site the random forest explains R^2 0.037, and it picks the observed best treatment of a site
      30.8% of the time with the flags and 30.0% without (chance 14%). SILVAH, the US Forest Service's prescription
-     system for these forests, calls a plot stocked when its seedlings pass a threshold that rises with deer
-     pressure. On that call at held-out sites (a diagnostic; nothing is declared), carrying the 2014 count forward
-     does as well as every untuned model or better: best in the mediator's and the critic's runs, 0.124 against 0.123
-     for the best model in the advocate's. The target counts every tree species, red maple and black birch included,
-     where a forester acts on desirable oak and hickory; the deposit has no species split.
-   * For keeping `Yes` and dropping the marker: USE-2 (Must) excludes only a task no decision fits, and one fits.
-     The funders, the Game Commission and DCNR's Bureau of Forestry, state a management aim
+     system for these forests, calls a plot stocked when its seedlings pass a threshold that rises with deer pressure.
+     On that call at held-out sites (a diagnostic; nothing is declared), carrying the 2014 count forward does as well
+     as every untuned model or better: best in the mediator's and the critic's runs, 0.124 against 0.123 for the best
+     model in the advocate's.
+   * **Rules:** the rules on a genuine predictive target and on a decision fitting the task hold[^p1][^p2]; the rules
+     on the use case and on naming its fit are met by the reworded text[^p3][^p4]; the rest is a weighing of the fit.
+   * **For dropping the marker:** a task is out only when no decision fits it, and one fits[^p2]. The funders, the
+     Game Commission and DCNR's Bureau of Forestry, state a management aim
      ([Penn State release](https://www.psu.edu/news/research/story/deer-seedlings-and-soil-ph-influence-local-forest-regeneration)),
      and the abstract's main finding, that outcomes depended on initial seedling abundance, is the kind of effect a
-     treatment model needs. USE-8 makes the marker the one for fit None, and the fit is approximate. Markers whose
-     concern a test refuted were removed before (thyroid_discordant, Lennart, 2026-10-22; ames_housing and
-     house_prices_nominal, 2026-10-26; ghcn_daily_precipitation, yours, 2026-10-30). Here the test bears the concern
-     out in part, so these are not like cases. The like cases are the four `Yes` records under "Rule": boreal, rand
-     and noaa keep the marker, while crms's REVIEW.md removes it as a record change without a mark (USE-8, fit
-     approximate). Your answer here settles all five. The advocate and the critic both keep `Yes`.
-   * For keeping the marker: your accepted screening kept it "as the marker of the concern", and the concern is
-     borne out in part, since the decision is barely scored. `selection.md` allows a concern marker on a `Yes`.
-   * Rule: SEL-3 and USE-2 (Must, hold); USE-1 and USE-8 (Must, met by the reworded text); the rest is a weighing of
-     the fit. Decide alike with boreal_postfire_lichen_biomass, rand_health_insurance_experiment_doctor_visits,
-     noaa_storm_events_damage and crms_phragmites_cover, which carry the same marker on a `Yes`.
-   * Implemented: `Yes`, the use case reworded to the forecast that is scored, fit approximate; the marker still on
-     the record.
-   * Alternative (a): keep the marker as the concern. Alternative (b): `No` with the marker, if a forecast with the
-     treatment as a weak input is not the task you accepted. No agent argues for (b).
-   * A repair, if wanted later: the crews counted every species by height class (Sec. 2.3), so the authors hold the
-     tallies for a target of desirable stems, and the 2014 basal area. No request was sent (your policy call 8).
+     treatment model needs. The marker is the one for a task no decision fits, and the fit here is approximate[^p4].
+   * **For keeping the marker:** your accepted screening kept it as the marker of the concern[^p5], and the concern is
+     borne out in part, since the decision is barely scored. A concern marker on a `Yes` is allowed[^p6].
+   * **Consistency:** markers whose concern a test refuted were removed before (thyroid_discordant, ames_housing,
+     house_prices_nominal, ghcn_daily_precipitation)[^p7]. Here the test bears the concern out in part, so these are
+     not like cases. The like cases are four `Yes` records with the same marker: boreal_postfire_lichen_biomass,
+     rand_health_insurance_experiment_doctor_visits and noaa_storm_events_damage keep it, while crms_phragmites_cover's
+     REVIEW.md removes it as a record change without a mark (fit approximate). Your answer here settles all five.
+   * **Panel:** the advocate and the critic both keep `Yes`. No agent argues for `No`.
+   * **Later repair:** the crews counted every species by height class (Sec. 2.3), so the authors hold the tallies for
+     a target of desirable stems, and the 2014 basal area. No request was sent[^p8].
+   * **Options:**
 
-   Recommendation: keep `Yes` and drop the marker. Decision: drop the marker, keep it (a), or `No` (b)?
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | `Yes`, marker kept (implemented) | use case reworded to the forecast that is scored, fit approximate; the marker stays as the concern | flags that the decision is barely scored | the marker belongs to a task no decision fits, and one fits |
+     | B | `Yes`, marker dropped | use case and fit as in A; the marker is removed from the record | the record matches the approximate fit | the concern is borne out in part and no longer flagged |
+     | C | `No` with the marker | the record is set to `No` with the marker; the dataset does not ship | fits if a forecast with the treatment as a weak input is not the task you accepted | no agent argues for it; a decision fits |
 
-2. **Stratify the site folds by state forest?** Each fold holds out 8 whole sites, drawn without regard to forest.
-   The forests differ: Rothrock has about three times the deer (7.9-9.2 against 2.8-3.3 per km^2) and both sites
-   with very many seedlings.
-   * What it changes: in 15 of 60 test folds one forest has at most 2 of the 8 sites, and in one fold none, so that
-     model trains on 12 sites of one forest and 4 of the other; a deployed model trains on 12 and 12. A fold's count
-     RMSE is 13.8 when neither dense site is in it and 35.3 when both are (10 of 60 folds).
-   * With `stratify_on = "state_forest"` every test fold holds 3-5 sites of each forest. The standard deviation of
-     count RMSE across folds falls from 8.24 to 4.97 (across repeats from 2.30 to 1.81), and the two dense sites
-     share a test fold 2 times in 60.
-   * For: the training sides come closer to the 12 and 12 sites the deployed model sees (the advocate; SPLIT-1,
-     Must, holds either way, so this is a weighing). Against: no rule asks for it, no grouped regression of the
-     working copy uses it yet, and the critic calls it optional. The score rises; that is no reason either way
-     (SPLIT-21).
-   * Implemented: the default grouped folds.
-   * Alternative: `stratify_on = "state_forest"`. Cost: a first for a grouped regression; the probe numbers in the
-     notes are measured again.
+   * **Recommendation:** B, keep `Yes` and drop the marker: a decision fits, and the fit is approximate, not none.
+     **Decision:** A (keep the marker), B (drop it) or C (`No`)?
 
-   Recommendation: stratify. Decision: stratify, or keep the default folds?
+   **Notes for the AI:** apply the answer alike to boreal_postfire_lichen_biomass,
+   rand_health_insurance_experiment_doctor_visits, noaa_storm_events_damage and crms_phragmites_cover, which carry the
+   same marker on a `Yes`. Rules in play: SEL-3 and USE-2 (Must, hold); USE-1 and USE-8 (Must, met by the reworded
+   text).
 
-3. **Accept `groups_test_groups_few` with the reason below?** The check warns that a test fold holds only 8 sites, so
-   a score rests on few independent units. TP-5 (Must) holds: this is a regression with 85-88 scored microplots per
-   test fold, and several model families beat the baseline at unseen sites (SPLIT-27; SPLIT-28 not triggered). The
-   reason proposed for `accepted_check_warnings`: "All 24 sites of the study; holding out a site stands for a stand
-   never followed. Each test fold scores 85-88 microplots of 8 sites, each site holding every treatment combination
-   once beside 2-4 controls. The signal across sites is real: ridge, random forest, LightGBM and kNN reach R^2 0.148,
-   0.336, 0.272 and 0.223 on log1p at unseen sites; the random forest beats the mean count on 56 of 60 shipped splits
-   and scores 0.354 against at most 0.006 with the target shuffled. On the count, one site of the 8 holds about half
-   of a fold's squared error."
-   * Precedents: airfoil_self_noise (33 setups, 11 per fold) and open_university_learning_analytics_dataset (22
-     presentations, 6-9 per fold), accepted on 2026-10-20 on the same evidence.
+   [^p1]: **SEL-3** (Must): the dataset is published for a predictive task with an observed outcome or an expert
+     annotation as target; a table without a genuine predictive target is out. Marker:
+     `No Good Target / Scientific Discovery`.
+   [^p2]: **USE-2** (Must): a task no decision fits is out; its marker is `No Good Target / Scientific Discovery`, the
+     fit None of USE-8.
+   [^p3]: **USE-1** (Must): a use case is an actor, a moment and a decision, and every choice is checked against it.
+   [^p4]: **USE-8** (Must): the record names the fit, Direct, Approximate (a stand-in with a known gap, named) or None
+     (no decision fits; the marker of USE-2).
+   [^p5]: The accepted screening of this record kept the marker "as the marker of the concern".
+   [^p6]: `selection.md`: "A marker can be a provisional guess of a concern ..., so `Yes` with a concern marker is not
+     a contradiction: read the comments."
+   [^p7]: Markers removed where a test refuted the concern: thyroid_discordant (Lennart, 2026-10-22); ames_housing and
+     house_prices_nominal (2026-10-26); ghcn_daily_precipitation (Andrej, 2026-10-30).
+   [^p8]: Andrej's policy call 8 of 2026-10-30 (data on request, left as is): no requests sent.
+
+   **Andrej (2026-11-03, change):** I go with your suggestion
+
+   **Resolved (2026-11-03, Andrej):** B, `Yes` with the marker removed from this record. The note's suggestion to apply
+   it to the other records with the marker is not followed: each is decided on its own.
+
+2. **Stratify the site folds by state forest?**
+
+   * **Problem:**
+     - Each fold holds out 8 whole sites, drawn without regard to forest.
+     - The forests differ: Rothrock has about three times the deer (7.9-9.2 against 2.8-3.3 per km^2) and both sites
+       with very many seedlings.
+   * **Effect on the task:** in 15 of 60 test folds one forest has at most 2 of the 8 sites, and in one fold none, so
+     that model trains on 12 sites of one forest and 4 of the other; a deployed model trains on 12 and 12. A fold's
+     count RMSE is 13.8 when neither dense site is in it and 35.3 when both are (10 of 60 folds).
+   * **Experiments:** with stratification by state forest every test fold holds 3-5 sites of each forest. The standard
+     deviation of count RMSE across folds falls from 8.24 to 4.97 (across repeats from 2.30 to 1.81), and the two
+     dense sites share a test fold 2 times in 60. The score rises; that is no reason either way[^q2].
+   * **Consistency:** no grouped regression of the working copy uses it yet, so it would be a first.
+   * **Panel:** the advocate: the training sides come closer to the 12 and 12 sites the deployed model sees. The
+     critic calls it optional. The split mirrors the application either way, so this is a weighing; no rule asks for
+     it[^q1].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Default grouped folds (implemented) | 8 sites per fold, drawn without regard to forest | no rule asks for more; the usual grouped split | 15 of 60 folds unbalance the forests; fold RMSE swings with the dense sites |
+     | B | Stratify by state forest | 3-5 sites of each forest in every test fold | training sides closer to the deployed 12 and 12; fold spread 8.24 to 4.97 | a first for a grouped regression; the probe numbers are measured again |
+
+   * **Recommendation:** B, stratify: every test fold then holds 3-5 sites of each forest, so the training sides come
+     closer to the 12 and 12 sites a deployed model trains on. **Decision:** A (default folds) or B (stratify)?
+
+   **Notes for the AI:** on B, set `stratify_on = "state_forest"` in `dataset.py`, measure the probe numbers in the
+   notes again, and update the numbers of issue 3's reason. Rules: SPLIT-1 (Must, holds either way), SPLIT-21.
+
+   [^q1]: **SPLIT-1** (Must): the split is the one that most closely mirrors the real-world application.
+   [^q2]: **SPLIT-21** (Must): a split design is not decided from a comparison of scores over a few test folds.
+
+   **Andrej (2026-11-03, discuss):** We should go with the real world task decision, not something that is good for the
+   benchmark. In the task, do we want to generalize to new forests? To different sites of one forest?
+
+   **Andrej (2026-11-03, dataset note):** Could there be temporal leakage with a grouped split?
+
+   **Answer (AI, 2026-11-03):**
+
+   * **Problem:**
+     - The real task is a state forester planning treatments for stands of the state forests, almost all of them not
+       in this study: new sites, and mostly in forests other than these two.
+     - With two forests, new forests cannot be tested: holding one out leaves 2 splits and trains on 12 sites of the
+       other forest. So the closest test is new sites in the two forests, with both forests in training, as a model
+       built from this study would be.
+     - Stratifying keeps every training side close to that model (both forests, 8 sites each against 12); it is the
+       real-world reason for B, not the steadier scores.
+   * **Temporal leakage:** no test label leaks in time: every row's inputs are from 2014 and its target from 2021, so
+     no row's outcome is known before another row's prediction point. What training and test share is the period:
+     the weather and deer of 2014-2021 at the same two forests. A forester forecasting from 2025 has no 2025-2032
+     outcomes to learn from, so the scores are optimistic by whatever those years shared. One cohort cannot measure
+     it; the honest label is a forced split, `ForcedGroupedFromTemporal`, which the definition does not carry yet.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | New sites, default folds (implemented) | 8 sites per fold, drawn without regard to forest | new sites, as the task needs | in 15 of 60 folds one forest has at most 2 test sites, so training is lopsided unlike a model built from the study |
+     | B | New sites, stratified by forest | 3-5 sites of each forest in every test fold | training sides like the model a forester would use (both forests) | a first for a grouped regression |
+     | C | New forest | one forest held out | the generalisation a state-wide forester needs | 2 splits only, trains on one forest's 12 sites; below the three-fold minimum |
+
+     In every option: tag the split `ForcedGroupedFromTemporal` and name the shared period and the two forests in
+     `fit_reason`.
+   * **Recommendation:** B with the forced tag: new sites with both forests in training is the closest the data comes
+     to the forester's task. **Decision:** A, B or C?
+
+   **Andrej (2026-11-03, discuss):** Why is "a first for a grouped regression" a con?
+
+   **Answer (AI, 2026-11-03):**
+
+   * **Problem:**
+     - It is no con on the merits: being new breaks no rule, and the library supports it (the forest is one value per
+       site, so the folds stratify whole sites).
+     - I listed it because a first sets a precedent the next grouped regressions are measured against; that belongs
+       under consistency, not as a cost of B.
+     - B has no real con found; the option row now says so.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | New sites, default folds (implemented) | 8 sites per fold, drawn without regard to forest | new sites, as the task needs | in 15 of 60 folds one forest has at most 2 test sites, so training is lopsided unlike a model built from the study |
+     | B | New sites, stratified by forest | 3-5 sites of each forest in every test fold | training sides like the model a forester would use (both forests) | none found; it is the first grouped regression with stratified folds, a precedent for the next |
+     | C | New forest | one forest held out | the generalisation a state-wide forester needs | 2 splits only, trains on one forest's 12 sites; below the three-fold minimum |
+
+     In every option: tag the split `ForcedGroupedFromTemporal` and name the shared period and the two forests in
+     `fit_reason`.
+   * **Recommendation:** B with the forced tag, unchanged. **Decision:** A, B or C?
+
+   **Andrej (2026-11-03, change):** I go with B
+
+   **Resolved (2026-11-03, Andrej):** B: the site folds are stratified by state forest (`stratify_on`), every test
+   fold holds 3-5 sites of each forest, and the split carries the `ForcedGroupedFromTemporal` tag with the shared
+   years named in `fit_reason`. Measured again: fold spread of count RMSE 4.98 (8.24 before); random forest R^2
+   0.29 on log1p, better than the mean count on 56 of 60 splits. The check's warning on `stratify_on` for a
+   regression is accepted with its reason.
+
+3. **Accept `groups_test_groups_few` with the reason below?**
+
+   * **Problem:**
+     - The check warns that a test fold holds only 8 sites, so a score rests on few independent units.
+     - Accept the warning with a reason, or call the dataset too small?
+   * **Background:** the dataset is too small only with a handful of scored units per test fold; this is a regression with 85-88 scored
+     microplots per test fold, so it is not[^r1]. Several model families beat the baseline at unseen sites[^r2], so the
+     rule for a regression without signal across groups is not triggered[^r3].
+   * **Effect on the task:** nothing in the data or the score; the reason tells a reader that each fold's score rests
+     on 8 sites, one of which carries about half the count-scale error.
+   * **Consistency:** airfoil_self_noise (33 setups, 11 per fold) and open_university_learning_analytics_dataset (22
+     presentations, 6-9 per fold) were accepted on 2026-10-20 on the same evidence.
      south_nation_riparian_birds_insect_emergence, which the record's Assessment cites, is no size precedent: it had
      one row per site, and your reason for its `No` was "No good target".
-   * If issue 2 changes the folds, the numbers in the reason follow.
-   * What it changes: nothing in the data or the score; the reason tells a reader that each fold's score rests on 8
-     sites, one of which carries about half the count-scale error.
-   * Implemented: `accepted_check_warnings` left empty, as the add stage leaves it for you.
-   * Alternative: leave the warning open (the check keeps flagging it), or `No` with `Too Small`, which TP-5 does not
-     support here.
+   * **Depends on:** if issue 2 changes the folds, the numbers in the reason follow.
+   * **Options:**
 
-   Recommendation: accept. Decision: accept with this reason?
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Warning left open (implemented) | `accepted_check_warnings` empty, as the add stage leaves it for you | none found | the check keeps flagging it |
+     | B | Accept with the reason | the reason in the notes goes into `accepted_check_warnings` | a reader learns each fold rests on 8 sites | none found |
+     | C | `No` with `Too Small` | the record is set to `No` with the marker `Too Small`; the dataset does not ship | none found | the size rule does not support it here |
+
+   * **Recommendation:** B, accept: each test fold scores 85-88 microplots and several model families beat the
+     baseline at unseen sites, so the dataset is not too small. **Decision:** B (accept with this reason), A or C?
+
+   **Notes for the AI:** the reason proposed for `accepted_check_warnings`: "All 24 sites of the study; holding out a
+   site stands for a stand never followed. Each test fold scores 85-88 microplots of 8 sites, each site holding every
+   treatment combination once beside 2-4 controls. The signal across sites is real: ridge, random forest, LightGBM and
+   kNN reach R^2 0.14, 0.29, 0.23 and 0.15 on log1p at unseen sites (forest-stratified splits, 2026-11-03); the
+   random forest beats the mean count on 56 of 60 shipped splits and scores at most 0.03 with the site means
+   shuffled. On the count, one site of the
+   8 holds about half of a fold's squared error." Rules: TP-5 (Must, holds), SPLIT-27, SPLIT-28 (not triggered).
+
+   [^r1]: **TP-5** (Must): `Too Small` means a handful of units per test fold, counted in the unit the task is scored
+     on; a small dataset as such is a tiny-data task like the others.
+   [^r2]: **SPLIT-27** (Should): before calling a small grouped task unlearnable, judge it with several model families
+     scored per group, against the baseline, with a permutation test across groups.
+   [^r3]: **SPLIT-28** (Must): a regression whose models all score below the mean on unseen groups has no signal
+     across groups; then the use case has to allow known groups, or the dataset goes.
+
+   **Andrej (2026-11-03, discuss):** I am not quite sure how many groups and actual samples we have and how realistic
+   the given sample size is for the task
+
+   **Answer (AI, 2026-11-03):**
+
+   * **Problem:**
+     - 24 sites (12 per forest) and 261 microplots, 9 to 11 per site; 18% of the microplots have no seedling.
+     - The split is 3 folds of 8 sites, repeated 20 times: each test fold scores 85-88 microplots, each training side
+       16 sites and about 174 microplots.
+     - For the task the size is realistic as a study, small as a model: a forester's program would have more stands,
+       and each fold's score rests on 8 sites, one of which carries about half the count error.
+   * **Experiments:** the signal at unseen sites is real: a random forest reaches R^2 0.34 on log1p and beats the mean
+     count on 56 of 60 splits; with the target shuffled it scores at most 0.006.
+   * **Recommendation:** unchanged, B, accept the warning with the reason: small, but a tiny-data task with a real
+     signal, not one with a handful of units per fold. **Decision:** B, A or C?
+
+   **Andrej (2026-11-03, discuss):** But to me it seems like there is huge leakage because we score the same forests on
+   the same dates, right?
+
+   **Answer (AI, 2026-11-03):**
+
+   * **Problem:**
+     - Yes, the test shares the forests and the years with training: no test label is in training, but the 2014-2021
+       weather, deer and seed crops are, and a forester forecasting a later cohort would not have them.
+     - Its size cannot be measured with one cohort; the forest alone explains 6% of the log count's variance (the
+       site 52%), so most of what a model learns is site-to-site, but a shared year can also act through the soil
+       and stand inputs.
+     - Oak regeneration swings with seed years and deer, so the effect is probably not small: "huge" cannot be shown
+       or ruled out.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Ship as forced grouped (implemented with issue 2) | the `ForcedGroupedFromTemporal` tag; `fit_reason` names the shared years; the warning accepted with the reason | new sites are tested; the optimism is named | the score answers "a new stand in the same years", not the forester's next cohort |
+     | B | `No` with `Not Representative` | the record is `No`, the claim released, the folder leaves | no score that overstates the forester's forecast | loses a randomised field experiment; the same shared-period fact holds for other single-campaign surveys we keep |
+
+   * **Recommendation:** A, ship as forced: the shared period is optimism we name, not a test label in training, and
+     a single campaign is the usual shape of field data (nantucket's transects also share their survey days with
+     training). If you read the real task as the next cohort only, B is consistent. **Decision:** A or B?
+
+   **Andrej (2026-11-03, discuss; verdict don't ship):** Since it is both too small and not representative, I lean
+   towards rejecting it now.
+
+   **Resolved (2026-11-03, Andrej):** don't ship: the record is `No` with `Too Small` and `Not Representative` (24
+   sites and one 2014-2021 cohort, so the score cannot test a forecast of a later cohort) and no priority, its
+   `v2_path` cleared and its claim released; the folder leaves the working copy (copies of its last files, with
+   today's stratified split, in the run folder of 2026-11-03, `pennsylvania_retired/`).
 
 **Review panel:** ship after changes (mediator). Claim audit: 41 claims, 31 hold, 3 hold only in part (wording, now
 fixed), 5 refuted (four record readings the add stage superseded, passed to the record, and the README's Mn unit,

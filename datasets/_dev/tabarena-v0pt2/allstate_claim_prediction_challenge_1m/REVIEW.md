@@ -39,84 +39,421 @@ Changes made after the review panel (AI, 2026-11-01):
 - Record, at hand-over (no mark needed): the Assessment's "Exposure: none (rows are vehicle-years)" now says none is
   published and some rows are part years.
 
-**Main points:** Confirm dropping 2007 (2) and `household_vehicles`
-(3), and keep the Gini regression although one fold is within the noise of chance (4).
+**Main points:** all issues resolved on 2026-11-03: 2007 stays dropped (2), the dataset is the 2006 renewal book with
+the 2005 history (3), the Gini regression stays (4), and households are sampled and dealt to folds at random (5).
+Verdict: ship.
 
 **Issues for Andrej:**
 
-2. **Drop the 2007 rows (implemented), or keep them and drop only `Calendar_Year`?** Bodily-injury claims are paid over
-   years, and the release gives no date at which the amounts were read. In 2007 the claim rate and the median claim
-   match the earlier years, but the large claims are missing: claims above 2,000 are 0.43% of claims against 1.31% and
-   1.26% in 2005 and 2006, in every vehicle-age band and each of the three largest makes, and the shortfall grows
-   toward the tail (2007 against 2005: 1.01 at the median, 0.59 at the 99.9th percentile). That is what unsettled
-   claims look like (LEAK-24, Must: a target cut short in the newest period is cut where follow-up is complete).
-   * What it did to the benchmark: the test folds mixed three years, so a model gained by learning each year's claim
-     level from other households of the same year. Before the drop, a predictor that knew only the year scored 0.055
-     to 0.058, as much as the probe model on two of three folds (MET-2, Must: the competition scored one year at a
-     time, and a rating for next year has no year to rank).
-   * Evidence for the drop: on the rebuilt folds the model's pooled score exceeds its score within each year by
-     -0.000 to +0.001, so the bonus is gone; a year-only predictor scores 0.001 to 0.026, within about one spread of
-     random predictions. Dropping only `Calendar_Year` left +0.001 to +0.003, positive in 8 of 9 runs, as the year
-     stays readable through other columns. The drop costs no rows of the budget (8.5M rows remain for the 1.5M
-     sample), and in the mediator's sample no measurable score; on the rebuilt folds the score fell to 0.053 / 0.054 /
-     0.022, of which the drop of issue 3 explains 0.015 to 0.020 and fold-to-fold noise the rest (issue 4). In the
-     mediator's experiment (same changes, its own 1.5M
-     sample) the model scored 0.050 / 0.089 / 0.050 after the drop against 0.072 / 0.052 / 0.040 with 2007 kept and the
-     year column dropped.
-   * Against: the newest labelled year is lost. The critic notes that Allstate scored 2008 and 2009, years younger than
-     2007 is here, and that a step at 2007 with no change between 2005 and 2006 fits a change in Allstate's adjustment
-     as well; no date can settle it. The domain practitioner would keep 2007 with a year factor.
-   * Precedent: follows sf_permit_time (cut where follow-up is complete). It departs from the reading recommended for
-     frempl issue 3 (keep amounts of unknown valuation date); what sets it apart is a shortfall measured across years
-     and a cut that costs no rows of the budget, where frempl has one year.
-   * Implemented: 2007 dropped, `Calendar_Year` kept. Alternative: keep 2007, drop `Calendar_Year`, and record
-     "LEAK-24 not shown violated" with the tail figures in `fit_reason` (a small year bonus remains).
+2. **Drop the 2007 rows, or keep them and drop only `Calendar_Year`?**
 
-   Recommendation: keep the drop. Decision: drop 2007, or keep it without `Calendar_Year`?
+   * **Problem:**
+     - Bodily-injury claims are paid over years, and the release gives no date at which the amounts were read.
+     - In 2007, the newest year, the claim rate and the median claim match the earlier years but the large claims are
+       missing, as with unsettled claims.
+     - Drop 2007, or keep it?
+   * **Background:** claims above 2,000 are 0.43% of claims in 2007 against 1.31% and 1.26% in 2005 and 2006, in
+     every vehicle-age band and each of the three largest makes, and the shortfall grows toward the tail (2007
+     against 2005: 1.01 at the median, 0.59 at the 99.9th percentile). A target cut short in the newest period is cut
+     where follow-up is complete[^2a].
+   * **Effect on the task:** the test folds mixed three years, so a model gained by learning each year's claim level
+     from other households of the same year. Before the drop, a predictor that knew only the year scored 0.055 to
+     0.058, as much as the probe model on two of three folds. The metric has to match the real task: the competition
+     scored one year at a time, and a rating for next year has no year to rank[^2b].
+   * **Experiments:** on the rebuilt folds the model's pooled score exceeds its score within each year by -0.000 to
+     +0.001, so the bonus is gone; a year-only predictor scores 0.001 to 0.026, within about one spread of random
+     predictions. Dropping only `Calendar_Year` left +0.001 to +0.003, positive in 8 of 9 runs, as the year stays
+     readable through other columns. The drop costs no rows of the budget (8.5M rows remain for the 1.5M sample),
+     and in the mediator's sample no measurable score. On the rebuilt folds the score fell to 0.053 / 0.054 / 0.022,
+     of which the drop of issue 3 explains 0.015 to 0.020 and fold-to-fold noise the rest (issue 4). In the
+     mediator's experiment (same changes, its own 1.5M sample) the model scored 0.050 / 0.089 / 0.050 after the drop
+     against 0.072 / 0.052 / 0.040 with 2007 kept and the year column dropped.
+   * **Panel:** against the drop, the critic notes that Allstate scored 2008 and 2009, years younger than 2007 is
+     here, and that a step at 2007 with no change between 2005 and 2006 fits a change in Allstate's adjustment as
+     well. The domain practitioner would keep 2007 with a year factor.
+   * **Unknown:** whether the step is unsettled claims or a change in Allstate's adjustment; no date can settle it.
+   * **Consistency:** follows sf_permit_time (cut where follow-up is complete). It departs from the reading
+     recommended for frempl issue 3 (keep amounts of unknown valuation date); what sets it apart is a shortfall
+     measured across years and a cut that costs no rows of the budget, where frempl has one year.
+   * **Options:**
 
-3. **Drop `household_vehicles` (implemented), or replace it by the household's vehicle count of the previous year?**
-   We built the column to replace the source's `Vehicle`: the household's vehicles insured in the calendar year. But the
-   file lists every vehicle insured at any time in the year, so the count includes cars added after the rating, among
-   them replacements after the row's own crash. Vehicles already insured the year before claim at 1.17% in a year when
-   the household's count rose, and at 0.72% otherwise; in years with a short-lived extra car the rate is 0.98% against
-   0.72%. On the earlier folds the column added 0.015 to 0.020 Gini, about a quarter of the score (LEAK-10, Must; its
-   2026-10-26 clause: late values that cannot be located row by row go when they may carry a gain, a case-by-case call
-   of yours). The pricing_game_2017 count it cited comes from a start-of-year policy file, so that precedent does not
-   carry.
-   * Implemented: dropped; `Vehicle` stays dropped, as it carries the same count. The drop takes part of the signal: the
-     third rebuilt fold now scores within the noise of chance (issue 4), and the mediator's sample with the same changes
-     scored 0.050 to 0.089, so fold-to-fold noise does the rest. Alternative: the previous year's count, known at the
-     rating and built without labels, which kept +0.006 to +0.013 on three years; with 2007 dropped it is missing for
-     every 2005 row (47.5%) and every new household.
-   * The advocate and the critic accept either; the drop follows kick and 2_month_survival_rate_prediction.
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Drop 2007, keep `Calendar_Year` (implemented) | rows of 2005-2006 only; the year stays a feature | the test folds no longer reward knowing each year's claim level; cut where follow-up looks complete; no rows of the budget lost | the newest labelled year is lost |
+     | B | Keep 2007, drop `Calendar_Year` | rows of all three years; the year column dropped; the tail figures in `fit_reason` | keeps the newest year; fits the critic's reading of the step | knowing the year still adds a little (+0.001 to +0.003); 2007's large claims stay short |
 
-   Recommendation: keep the drop. Decision: drop, or the previous year's count?
+   * **Recommendation:** A, keep the drop: the shortfall is measured across years and the cut costs no rows of the
+     budget. **Decision:** drop 2007 (A), or keep it without `Calendar_Year` (B)?
+
+   **Notes for the AI:** on B, keep 2007, drop `Calendar_Year`, and record "LEAK-24 not shown violated" with the tail
+   figures in `fit_reason`.
+
+   **Andrej (2026-11-03, ok):** We can drop 2007 because we still have 1 million of samples and the current limit is
+   1M. We might reconsider this decision for a future version.
+
+   **Resolved (2026-11-03, Andrej):** (A), 2007 stays dropped and `Calendar_Year` stays a feature; to reconsider in a
+   future version. The drop rests on the unsettled 2007 claims and the year bonus, not on the row limit: 2007 can
+   come back with settled amounts (re-sourced) or a test that shows the shortfall gone, as keeping it without
+   `Calendar_Year` still left +0.001 to +0.003 from knowing the year. Recorded in the record's CC line.
+
+   [^2a]: **LEAK-24** (Must): a target right-censored in the newest periods (a duration or a final status cut by the
+     download date) is cut where follow-up is complete, or re-sourced from an archive with settled labels.
+   [^2b]: **MET-2** (Must): match the data, the metric and the real task; the metric's unit of evaluation has to
+     exist in our data.
+
+3. **Drop `household_vehicles`, or replace it by the household's vehicle count of the previous year?**
+
+   * **Problem:**
+     - Our feature `household_vehicles` counts the household's vehicles insured at any time in the calendar year, so it
+       includes cars added after the rating, among them replacements after the row's own crash.
+     - Drop it, or use the household's count of the previous year?
+   * **Background:** we built `household_vehicles` to replace the source's `Vehicle`: the household's vehicles
+     insured in the calendar year. But the file lists every vehicle insured at any time in the year. Vehicles already
+     insured the year before claim at 1.17% in a year when the household's count rose, and at 0.72% otherwise; in
+     years with a short-lived extra car the rate is 0.98% against 0.72%. A feature may hold only what existed at the
+     prediction point[^3a], and late values that cannot be located row by row go when they may carry a gain, a
+     case-by-case call of yours[^3b].
+   * **Effect on the task:** on the earlier folds the column added 0.015 to 0.020 Gini, about a quarter of the score.
+   * **Experiments:** the drop takes part of the signal: the third rebuilt fold now scores within the noise of chance
+     (issue 4), and the mediator's sample with the same changes scored 0.050 to 0.089, so fold-to-fold noise does the
+     rest. The previous year's count kept +0.006 to +0.013 on three years.
+   * **Consistency:** the pricing_game_2017 count it cited comes from a start-of-year policy file, so that precedent
+     does not carry. The drop follows kick and 2_month_survival_rate_prediction.
+   * **Panel:** the advocate and the critic accept either.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Drop (implemented) | `household_vehicles` dropped; `Vehicle` stays dropped, as it carries the same count | no count from after the rating | takes part of the signal; the third fold is within the noise of chance |
+     | B | The previous year's count | the household's vehicle count of the previous year as a feature | known at the rating, built without labels; kept +0.006 to +0.013 on three years | with 2007 dropped, missing for every 2005 row (47.5%) and every new household |
+
+   * **Recommendation:** A, keep the drop: the count includes cars added after the rating, and the previous year's
+     count would be missing for 47.5% of the rows. **Decision:** drop (A), or the previous year's count (B)?
+
+   [^3a]: **LEAK-10** (Must): a feature holds only what existed at the prediction point and never gives the target
+     away.
+   [^3b]: **LEAK-10**, clause amended 2026-10-26 (Lennart), a case-by-case judgment of the curator, never a default:
+     a value read at a later pull goes where its late cells can be located (they are blanked); where they cannot be
+     located row by row, the values go when they may carry a gain, and stay with a note only when the part that can
+     be traced shows none.
+
+   **Andrej (2026-11-03, discuss):** Can't we just make the assumption that the added cars are known at rating time?
+   Or can we find out added cars somehow?
+
+   **Answer (AI, 2026-11-03):**
+
+   * **Problem:**
+     - The count can't be assumed known at rating, because it rises after the household's own crashes.
+     - Cars added during the year can't be found either, since the file has no dates within a year.
+     - What can be found is which cars were already insured the year before, and that is known at rating.
+   * **Background:**
+     - The assumption would hold for the cars on the policy at the renewal. But the whole-year count also counts
+       cars added later, and those include replacements after the row's own crash.
+     - Measured on 2006: a car already insured in 2005 claims at 1.05% in a year when its household's count rose,
+       and at 0.77% when it did not. So the count carries part of the outcome, and assuming it known would ship
+       that link[^3c].
+     - `Vehicle` numbers are not stable across years (data page), but a car can be matched to the year before by
+       household, model year and submodel: 61.9% of the 2006 rows are cars insured in 2005 too.
+     - 2005 is the first year of the file, so its rows (47.5% of the shipped rows) have no year before.
+   * **Experiments:** rows of 2006, households split in half, untuned LightGBM, one split (random predictions: SD
+     0.013), normalized Gini on the amount:
+
+     | Features | Gini |
+     |---|---|
+     | shipped | 0.075 |
+     | + the whole-year count and `Vehicle` (your assumption) | 0.080 |
+     | + the previous year's count and the count of cars carried over from it | 0.086 |
+
+     The counts known at rating carry at least as much as the whole-year count, without the link to the outcome.
+     The earlier panel measured +0.006 to +0.013 for the previous year's count on three years.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Drop (implemented) | no household count | nothing from after the rating | loses a signal an insurer has at renewal |
+     | B | Counts known at rating | the household's count of the previous year and the count of its cars carried over from it, as features | known at the renewal, built without labels; +0.011 here | missing for every 2005 row (no year before) and every new household |
+     | C | Assume the whole-year count known | `household_vehicles` back as a feature | what Kaggle's players had | the count rises after the household's crashes, so it carries part of the outcome |
+
+   * **Recommendation:** B: it keeps what an insurer knows at the renewal and leaves out what happens after it. A
+     new household with no count is also the real case for new business. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, build `prev_year_vehicles` (rows of the household in the previous calendar year) and
+   `carried_vehicles` (this year's cars of the household matched to the previous year on household, model year and
+   submodel) in `_clean` from the raw file before the sampling, missing where no previous year exists; a bullet with
+   the 1.05% against 0.77% figure; re-run `dataset check` and the leak probe.
+
+   [^3c]: **LEAK-10** (Must): a feature holds only what existed at the prediction point and never gives the target
+     away.
+
+   **Andrej (2026-11-03, discuss):** If the count is missing for every 2005 row, would it make sense to only use 2006
+   households because we would also be able to sample 1.5 million samples from this year?
+
+   **Answer (AI, 2026-11-03):**
+
+   * **Problem:**
+     - Yes: 2006 alone has 4.45 million vehicle-years, so the 1.5 million rows can all come from 2006, with 2005 as
+       the history an insurer holds at the 2006 renewal.
+     - Every row then has the history features (missing only for the 27% of rows whose household is new, the real
+       case for new business), and the year column goes.
+     - This also answers issue 4 (the claim history) and your general note (what an insurer knows at the rating).
+   * **What an insurer knows at the 2006 renewal, from this file:**
+     - The vehicle's and the policy's characteristics (as now).
+     - Whether the household was insured in 2005, its vehicle count in 2005, and how many of this year's cars were
+       already insured then; whether this car was insured in 2005.
+     - The household's and this car's claim counts of 2005, and the 2005 claim amounts as paid so far.
+     - Not usable: the whole-year count of 2006 (it rises after the household's own crashes, issue 3), and the 2005
+       amounts as the file gives them, read years later, so larger than what the insurer saw at the renewal[^3d].
+   * **Experiments:** rows of 2006, 1.5 million rows of whole households drawn at random, three folds by household,
+     untuned LightGBM on log1p (random predictions: SD 0.019 to 0.032 per fold):
+
+     | Features | Gini on the amount | Claim yes/no ranking |
+     |---|---|---|
+     | vehicle and policy only | 0.104 / 0.053 / 0.025 | 0.116 / 0.112 / 0.117 |
+     | + the 2005 history, counts | 0.101 / 0.046 / 0.021 | 0.126 / 0.134 / 0.137 |
+     | + the 2005 history, counts and amounts | 0.105 / 0.060 / 0.026 | 0.127 / 0.135 / 0.142 |
+
+     - The history ranks claims better on every fold (+0.010 to +0.022).
+     - On the amount the change stays within the noise: a few large claims decide that score (issue 4).
+     - The 2006 claim rate is 1.50% for a household that claimed in 2005, 0.78% for a known household without a
+       claim and 0.50% for a new household.
+   * **Unknown:** the rating date within the year is not published, so a 2005 claim reported after an early 2006
+     renewal counts as known; the share of such claims cannot be measured.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 2005 and 2006, no history (implemented) | as now | two years of rows | no history; the insurer's main renewal signal untested |
+     | B | 2006 renewal book with the 2005 history (counts) | rows of 2006 only; the six history features above; `Calendar_Year` goes | every input known at the renewal; history for 73% of rows | one year of rows; the 2006 renewal date unknown |
+     | C | B plus the 2005 claim amounts | B, and the household's 2005 claim amount | slightly higher scores | the amounts were read years after the renewal; an insurer saw less |
+
+   * **Recommendation:** B: it is the task as an insurer meets it at renewal, and it leaves out the 2005 amounts,
+     which the file gives at a later valuation than the insurer had. **Decision:** A, B or C?
+
+   **Notes for the AI:** script and log `renewal_2006.py` / `.log` in the run folder of 2026-11-03 (allstate/). On B:
+   the history built in `_clean` from the 2005 rows before the sampling (vehicles matched on household, model year
+   and submodel), missing where the household is new; `required_split` and tag unchanged (still forced from
+   temporal: one labelled target year); rewrite the task summary, the notes and the decisions; re-run `dataset check`
+   and the leak probe.
+
+   [^3d]: **LEAK-10** (Must): a feature holds only what existed at the prediction point; a value read at a later pull
+     goes where it may carry a gain.
+
+   **Andrej (2026-11-03, change):** I go with your recommendation of 2006 renewal book with the 2005 history (counts)
+
+   **Resolved (2026-11-03, Andrej):** B. The rows are the 4.4 million vehicle-years of 2006, 1.5 million of whole
+   households sampled; five columns from 2005 (the household's vehicles and claims, its cars carried over, whether
+   this car was insured and its claims), the 0/1 flag categorical; `Calendar_Year` goes; the 2005 amounts stay out,
+   because bodily-injury amounts grow for years after the renewal. The split stays by household, forced from
+   temporal with one target year. `dataset check` gives 0 errors and 0 warnings; the leak probe on the shipped folds
+   finds no feature that scores alone (all at or below the mean on log1p R^2), and 33.9% of the test rows have an
+   exact feature copy in training, against 84% before the history set households apart.
 
 4. **Keep the regression scored by the competition's Gini, although one of the three folds scores within the noise of
-   a random prediction?** The normalized Gini scores how well the predictions order the vehicle-years by claim amount
-   (1 a perfect order, 0 a random one). On the rebuilt folds untuned LightGBM scores 0.053 / 0.054 / 0.022; random
-   predictions average -0.002 to 0.004 with a standard deviation of 0.019 to 0.025 over draws, so the third fold is
-   about one standard deviation above chance and the other two more than two. The panel judged the signal on stronger
-   numbers (0.096 / 0.051 / 0.058 before the changes); dropping `household_vehicles` (issue 3) and 2007 (issue 2)
-   lowered it.
-   * What it does to the benchmark: with a standard error of 0.022 to 0.029 per fold, two methods must differ by about
-     0.03 before three folds tell them apart (MET-10), and on a fold like the third a method's score is mostly noise.
-   * Evidence that the signal is real (TP-2, Should: a small but real signal is no reason to retire): a regularised
+   a random prediction?**
+
+   * **Problem:**
+     - After the drops of issues 2 and 3, untuned LightGBM scores a normalized Gini of 0.053 / 0.054 / 0.022 on the
+       three folds, and the third is about one standard deviation above random predictions.
+     - Keep the competition's Gini regression, or switch to a claim classification scored by ROC AUC?
+   * **Background:** the normalized Gini scores how well the predictions order the vehicle-years by claim amount (1
+     a perfect order, 0 a random one). On the rebuilt folds random predictions average -0.002 to 0.004 with a
+     standard deviation of 0.019 to 0.025 over draws, so the third fold is about one standard deviation above chance
+     and the other two more than two. The panel judged the signal on stronger numbers (0.096 / 0.051 / 0.058 before
+     the changes); dropping `household_vehicles` (issue 3) and 2007 (issue 2) lowered it.
+   * **Effect on the task:** with a standard error of 0.022 to 0.029 per fold, two methods must differ by about 0.03
+     before three folds tell them apart[^4a], and on a fold like the third a method's score is mostly noise.
+   * **Experiments:** the signal is real, and a small but real signal is no reason to retire[^4b]: a regularised
      classifier of whether a claim occurs ranks the amounts above chance on every fold (0.065 / 0.060 / 0.039);
      trained on 2005 and scored on 2006, the rebuilt rows reach 0.064; the three folds' mean, 0.043, is three to four
-     times the spread of a random three-fold mean. No tuned results exist yet (TP-1, Must: a flag is checked against
-     the benchmark's tuned methods).
-   * Precedent: pricing_game_2016_french_fleet became a claim classification scored by ROC AUC on 2026-10-30, on your
-     question, because its claim amounts carried no signal. Here too the amount among claimants carried none (R^2
-     below 0 on the folds before the changes) and a claim classifier ranks the amounts better than the regression on
-     every rebuilt fold. What sets this one apart: Allstate fixed the Gini on the amount for its competition (MET-4,
-     Should); pricing_game_2016's source fixed no metric.
-   * Implemented: the regression on log1p, scored by the Gini on the amount, with the noise in the notes. Alternative:
-     a claim classification scored by ROC AUC (standard error about 0.005 per fold by the blind reviewer's estimate,
-     its proposal), which drops the claim size the competition scored and departs from MET-4.
+     times the spread of a random three-fold mean.
+   * **Unknown:** no tuned results exist yet, and a flag is checked against the benchmark's tuned methods before
+     acting on it[^4c].
+   * **Consistency:** pricing_game_2016_french_fleet became a claim classification scored by ROC AUC on 2026-10-30,
+     on your question, because its claim amounts carried no signal. Here too the amount among claimants carried none
+     (R^2 below 0 on the folds before the changes), and a claim classifier ranks the amounts better than the
+     regression on every rebuilt fold. What sets this one apart: Allstate fixed the Gini on the amount for its
+     competition, and a competition's metric is declared[^4d]; pricing_game_2016's source fixed no metric.
+   * **Options:**
 
-   Recommendation: keep, and revisit under TP-1 when tuned results exist (reframe if tuned methods do not beat a
-   random prediction on every fold). Decision: keep the Gini regression, or a claim classification?
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Gini regression (implemented) | target the claim amount as log1p, scored by the Gini on the amount; the noise stated in the notes | the competition's metric; keeps the claim size | one fold within the noise of chance; methods must differ by about 0.03 |
+     | B | Claim classification by ROC AUC | target: whether a claim occurs (yes/no), scored by ROC AUC | standard error about 0.005 per fold (the blind reviewer's estimate; its proposal) | drops the claim size the competition scored; departs from the competition's metric |
+
+   * **Recommendation:** A, as the competition's own metric on a signal that is real, and revisit when tuned results
+     exist (reframe if tuned methods do not beat a random prediction on every fold). **Decision:** keep the Gini regression (A), or a claim classification (B)?
+
+   **Notes for the AI:** the revisit is under TP-1, once tuned results exist; B departs from MET-4.
+
+   [^4a]: **MET-10** (Weigh): the factors on a borderline call between the source's metric and the fallback, among
+     them the source's track record (a competition first) and the metric's resolution on our folds.
+   [^4b]: **TP-2** (Should): a small but real signal is no reason to retire, and neither is a cutoff on the best
+     skill.
+   [^4c]: **TP-1** (Must): a flag is a question, not a verdict; the probes fit untuned models, so every flag is
+     checked against the benchmark's tuned methods before acting on it.
+   [^4d]: **MET-4** (Should): a competition's leaderboard metric is the source's metric and is declared; it is
+     overruled only by MET-2 or on evidence that it is biased or wrong for the use case.
+
+   **Andrej (2026-11-03, discuss):** I am leaning towards A, but first explain to me why the reported competition
+   results on the kaggle leaderboard are so much better than the ones that you report here
+
+   **Answer (AI, 2026-11-03):**
+
+   * **Problem:**
+     - The final leaderboard reads 0.2016 (Matt C), 0.1955 (Owen) and 0.1698 (third), with the tenth at 0.1385, against
+       0.022 to 0.054 on our folds.
+     - Most of the gap is likely the claim amounts of Kaggle's test years, not better models: the Gini on the amount
+       drops sharply when a few large claims dominate.
+     - Kaggle's test years were newer than 2007, whose large claims were already missing.
+   * **Background:**
+     - The Gini on the amount weighs each claim by its size. One large claim the model did not rank high costs as
+       much as many small ones ranked well.
+     - Kaggle scored 2009 (the private board), two years newer than 2007. On 2007, the newest labelled year, the
+       claims above 2,000 were a third as frequent as in 2005-2006 (issue 2). If 2009's amounts were read as early,
+       their tail was shorter still, and the score moves toward that of a claim yes/no ranking.
+     - Kaggle's players also had information our folds leave out: the household's claims of earlier years (53% of
+       the test households were in the training file) and the household's whole-year vehicle count (issue 3).
+     - Huangfu (2015), with a temporal holdout on 2007 and no ensembles, reached 0.080: our level, not Kaggle's.
+   * **Experiments:** rows of 2006, households split in half, one untuned LightGBM, one split (random predictions:
+     SD 0.013). The same predictions, scored against different versions of the target:
+
+     | Features | Amount | Amount capped at the 99th / 90th / 50th percentile of claims | Claim yes/no |
+     |---|---|---|---|
+     | shipped | 0.075 | 0.083 / 0.103 / 0.131 | 0.147 |
+     | + Kaggle's extra information (whole-year counts, claim history) | 0.091 | 0.101 / 0.118 / 0.149 | 0.170 |
+
+     - The extra information adds 0.016.
+     - A shorter tail adds up to 0.07: on a target of claims without their size, the same model scores 0.147.
+     - Tuning and ensembles are the rest (the top teams blended many models). Our folds are lower again (0.022 to
+       0.054) because they train on 1M rows, not 2.2M.
+   * **Unknown:** the 2008 and 2009 amounts were never published, so how short their tail was cannot be
+     measured; the explanation rests on the 2007 shortfall and this experiment.
+   * **Effect on the decision:** the Gini on the amount is the competition's metric, but on settled amounts it is
+     noisier than Kaggle's numbers suggest. That is the weakness option B answers: a claim yes/no target scores
+     about twice as high and much more stably. A still scores what Allstate asked for.
+   * **Recommendation:** unchanged, A, as you lean, and revisit when tuned results exist. **Decision:** A (Gini on the
+     amount) or B (claim yes/no by ROC AUC)?
+
+   **Notes for the AI:** the experiment's script is in the run folder of 2026-11-03 (kaggle_gap.py, kaggle_tail.py);
+   on A, add the leaderboard comparison to `fit_reason` in two sentences.
+
+   **Andrej (2026-11-03, discuss):** If the household's claims of earlier years play such a big role, why do we not
+   use it? I feel like you did not think this task through.
+
+   **Answer (AI, 2026-11-03):**
+
+   * **Problem:**
+     - You are right: the claim history is what an insurer prices a renewal on, and we left it out because the 2005
+       rows had no year before, instead of making 2006 the year we predict.
+     - Issue 3's option B now builds the history from 2005 for rows of 2006: the household's and the car's claim
+       counts, whether each was insured, and the vehicle counts.
+     - It ranks claims better on every fold, but on the amount the gain stays within the noise.
+   * **Experiments:** see issue 3 (claim yes/no ranking 0.112-0.117 without the history, 0.126-0.137 with it; the
+     Gini on the amount 0.025-0.104 either way).
+   * **Effect on this issue:** the Gini on the amount stays noisy with or without the history (one fold at 0.021 to
+     0.026 again), because a few large claims decide it. Issue 5 asks whether sampling more claims should fix that.
+   * **Recommendation:** unchanged, A (the competition's Gini on the amount), now on issue 3's B. **Decision:** A or
+     B?
+
+   **Andrej (2026-11-03, discuss):** Let's go with A
+
+   **Resolved (2026-11-03, Andrej):** A, the competition's normalized Gini on the amount, the regression on log1p.
+   `fit_reason` and the notes now give the leaderboard comparison; the revisit once tuned results exist stays.
+
+5. **Sample more households with claims than random sampling gives?**
+
+   * **Problem:**
+     - Of the 4.45 million vehicle-years of 2006 we can ship 1.5 million, and a random draw of households keeps
+       0.71% claims, about 3,500 per test fold.
+     - A draw that takes every household with a claim first triples the claims, but the test folds then stand for a
+       book with three times the real claim rate.
+   * **Effect on the task:** the Gini on the amount is the share of the claim cost each prediction ranks at the top;
+     with more claims among fewer zeros it weighs the order among claims more and the order of claims above
+     no-claims less, so its value means something other than on the book[^5a].
+   * **Experiments:** rows of 2006, 1.5 million rows, three folds by household, untuned LightGBM:
+
+     | Sample | Claims per test fold | Random predictions SD | Gini, vehicle and policy only | Gini, + history counts |
+     |---|---|---|---|---|
+     | households at random | 3,505-3,572 (0.71%) | 0.019-0.032 | 0.104 / 0.053 / 0.025 | 0.101 / 0.046 / 0.021 |
+     | every claim household, then random ones | 10,491-10,621 (2.11%) | 0.011-0.014 | 0.064 / 0.053 / 0.075 | 0.073 / 0.065 / 0.091 |
+
+     - The enriched folds are about twice as stable, and the history's gain shows above their noise.
+     - The enriched sample takes whole claim households, so a household with a claim also brings its cars without
+       one: the no-claim rows over-represent households that claimed.
+   * **Consistency:** every sub-sampled version so far keeps the natural rate (whole groups at random, or rows
+     stratified on the target), so the test folds stand for the source's population[^5b].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Households at random (implemented) | the natural claim rate in train and test | the scores stand for the real book; as every other sub-sampled version | about 3,500 claims per test fold; noisy Gini on the amount |
+     | B | Every claim household first | all 31,690 claims of 2006, then random households to 1.5 million rows | three times the claims; half the noise | test folds at three times the real claim rate; no-claim rows biased toward claim households; the metric means something else |
+
+   * **Recommendation:** A: a benchmark's test folds should stand for the population the model is used on, and a
+     model that wants more weight on claims can reweight its own training rows. B's gain in stability is real, so it
+     is the option if you value telling methods apart above the natural rate. **Decision:** A or B?
+
+   **Notes for the AI:** the second half of the note is answered by issue 3's answer (option B). The experiment is
+   `renewal_2006.py` in the run folder of 2026-11-03. On B: a custom sampling, not `subsample_frame`; state it in
+   `version_comment`.
+
+   [^5a]: **MET-2** (Must): match the data, the metric and the real task; the metric means on our task what it meant
+     on the source's: same target, same classes, same class balance.
+   [^5b]: definitions.md, "Larger than the row budget": a larger frame is sub-sampled to 1.5M rows, rows stratified
+     on the target or whole groups.
+
+   **Andrej (2026-11-03, discuss, on the dataset):** One independent point, if we have so much data and do sampling
+   here, would it make sense to sample more of the samples with claims than we get with random sampling? I believe
+   you did not think this task through. Make it as realistic as possible using all available information that an
+   insurance company would have at train and test time points.
+
+   **Andrej (2026-11-03, discuss):** I would suggest the following:
+   - Use three splits
+   - First do three fold CV on households with claims such that they are randomly distributed across the three folds.
+   - Then do 3-fold CV where we randomly distribute the non-claimed households
+
+   **Answer (AI, 2026-11-03):**
+
+   * **Problem:**
+     - Dealing the claim households evenly over the three folds, then the others at random, keeps the natural claim
+       rate and changes only which fold a household lands in.
+     - Measured on the 2006 renewal book, it does not make the folds steadier, because a random deal already gives
+       every fold about the same number of claims and the same share of the claim cost.
+     - If you meant it together with taking every claim household first (option B above), the stability comes from B's
+       sample, and the even deal adds nothing to it.
+   * **Experiments:** 1.5 million rows of 2006 drawn as shipped (10,687 claims), the 2005 history as features,
+     untuned LightGBM, three seeds of three folds each, normalized Gini on the amount:
+
+     | How households go to the folds | Claims per test fold | Share of the claim cost | Gini over 9 folds: mean, spread (SD), range |
+     |---|---|---|---|
+     | at random (implemented) | 3,456-3,669 | 0.320-0.356 | 0.070, 0.019, 0.046-0.103 |
+     | claim households spread evenly (your proposal) | 3,510-3,630 | 0.313-0.347 | 0.064, 0.025, 0.028-0.101 |
+     | spread evenly by claim size (none, small, medium, top 10%) | 3,488-3,681 | 0.309-0.360 | 0.067, 0.017, 0.049-0.099 |
+
+     - All three spreads are the same within their own noise, so the Gini's noise comes from how the model ranks a
+       few large claims, not from how many claims a fold holds.
+   * **Effect on the task:** stratifying needs a household label built from the target in the frame, which may not ship
+     as a feature; the library would need a way to stratify on a column it then drops[^5c].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Households at random (implemented) | natural claim rate; households dealt to folds at random | the scores stand for the real book; as every other sub-sampled version | about 3,500 claims per test fold; noisy Gini |
+     | B | Natural sample, claim households dealt evenly | your proposal on the shipped sample | claims per fold equal by design | no steadier folds (spread 0.025 against 0.019); needs a library change |
+     | C | Every claim household first, dealt evenly | all 31,690 claims of 2006, then other households to 1.5 million rows | half the noise (random predictions 0.011-0.014 against 0.019-0.032) | test folds at three times the real claim rate; no-claim rows biased toward claim households |
+
+   * **Recommendation:** A: the even deal brings no stability on the real book, and C buys its stability with a book
+     three times as claim-prone as Allstate's. **Decision:** A, B or C?
+
+   **Notes for the AI:** script and log `stratified_folds.py` / `.log` in the run folder of 2026-11-03 (allstate/).
+   On B or C: `stratify_on` takes a column of the frame, and `feature_columns` would ship it; add a non-shipped
+   stratification key to the library first.
+
+   [^5c]: **LEAK-10** (Must): a feature never gives the target away; the house check `task_stratify_*` takes only the
+     target or a discrete feature.
+
+   **Resolved (2026-11-03, Andrej):** A, households drawn at random and dealt to the folds at random, as implemented.
+   Verdict: ship.
 
 **Review panel:** ship after changes (mediator). Claim audit: 33 claims, 19 hold, 8 refuted in whole or part (7 fixed
 in the definition, the eighth was the builder's report), 1 mixed, 1 record disagreement, 4 untested. Blind review:

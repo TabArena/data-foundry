@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: frempl_french_motor_personal_line
 container_format: 2
-checksum: v2:4c72eae479917194ad8d1fc8d075e21590377f020c71f7ed1c3e8df44be2d67c
+checksum: v2:7c5725bf2ce8e6da1c5fd19f3e393d69a79a5c37af534eee3c69d4972ff509a8
 build: null
 build_stale: false
 data:
@@ -10,29 +10,31 @@ data:
   n_features: 16
   dtypes:
     category: 5
-    float64: 2
-    int64: 11
+    float64: 3
+    int32: 1
+    int64: 10
   n_test_dataset_rows: null
 task:
   target: log1p_claim_amount
   problem_type: regression
-  metric: normalized_gini
+  metric: ordered_lorenz_gini
   metric_origin: context
-  scoring_columns: null
+  scoring_columns:
+  - exposure_at_start
   split_regime: grouped_non_iid
   stratify_on: null
   time_on: null
-  group_on: policy_chain
+  group_on: policy_component
   group_labels: per_sample
   group_time_on: null
   grouping:
     prediction_unit: row
     aggregation: null
     context: none
-    n_groups: 80831
+    n_groups: 68857
     test_groups_per_fold:
-      min: 26943
-      max: 26944
+      min: 22952
+      max: 22953
 splits:
   n_repeats: 3
   n_folds: 3
@@ -42,11 +44,11 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 76653
-    max: 76903
+    min: 76623
+    max: 76874
   n_test:
-    min: 38252
-    max: 38502
+    min: 38281
+    max: 38532
 bundle_checks:
   ok: true
   errors: []
@@ -54,7 +56,6 @@ bundle_checks:
   infos:
   - dataset_duplicate_rows
   - dataset_conflicting_duplicate_rows
-  - groups_not_clustered
   accepted:
     task_target_value_dominant: 'Zero-inflated by nature: the claim amount is 0 for
       90.6% of the records, those with no claim (89.7%) or with a not-at-fault claim
@@ -63,16 +64,16 @@ bundle_checks:
 decisions:
 - Records that ended with no continuation take the length known at their start
 - Negative claim amounts are set to 0
-- The consecutive records of a policy stay on one side of the split
+- The records of a policy stay on one side of the split
 ---
 
 # frempl_french_motor_personal_line
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `log1p_claim_amount`, scored with `normalized_gini` on grouped splits by `policy_chain`. 115,155 rows and 16 features. Source: Other (2014).
+Regression of `log1p_claim_amount`, scored with `ordered_lorenz_gini` on grouped splits by `policy_component`. 115,155 rows and 16 features. Source: Other (2014).
 
-Not built yet. The current definition gives checksum `v2:4c72eae479917194ad8d1fc8d075e21590377f020c71f7ed1c3e8df44be2d67c`.
+Not built yet. The current definition gives checksum `v2:7c5725bf2ce8e6da1c5fd19f3e393d69a79a5c37af534eee3c69d4972ff509a8`.
 
 ## In brief
 
@@ -86,7 +87,7 @@ Not built yet. The current definition gives checksum `v2:4c72eae479917194ad8d1fc
 
 **Known at prediction time.** The driver's age, gender, marital status and socio-professional category, the licence age, the vehicle use and a km limit, the bonus-malus, a risk area, the claims of the four preceding years by type, the out-of-use periods in those years, and the period's length in whole months: up to 31 December, or to the next record when the contract changed.
 
-**What the test data stands for.** Policies held out: a policy's consecutive records in one sample file stay on one side, so the test data stands for other policies' periods in the same year; a tariff is applied to next year's policies, which a release of one year cannot test.
+**What the test data stands for.** Policies held out: a policy's records, in one sample file or across them, stay on one side, so the test data stands for other policies' periods in the same year; a tariff is applied to next year's policies, which a release of one year cannot test.
 
 **Our changes to the source.** We stacked five samples of the portfolio that share one schema, dropped 45 exact copies, set 967 negative amounts to 0, gave the 25,131 records that ended early with no continuation the length known at their start, rounded every length to whole months, and dropped the record dates and the claim indicator.
 
@@ -153,23 +154,32 @@ Only curators run `build`, when the dataset ships.
 | license | GPL (>= 2) |
 | data_tags | Non-IID, Grouped, ForcedGroupedFromTemporal |
 | reference | Dutang2026CASdatasets |
-| rows x columns | 115,155 x 18 |
+| rows x columns | 115,155 x 19 |
 | task.target | log1p_claim_amount |
 | task.problem_type | regression |
-| task.metric | normalized_gini |
+| task.metric | ordered_lorenz_gini |
 | task.split_regime | grouped_non_iid |
-| task.group_on | policy_chain |
+| task.group_on | policy_component |
 | task.group_labels | per_sample |
 
 **Metric**
 
 | field | value |
 |---|---|
-| name | `normalized_gini` (custom; takes value; higher is better) |
+| name | `ordered_lorenz_gini` (custom; takes value; higher is better) |
 | origin | context: obvious from the task: the source defines no metric |
-| definition | G(y, p) / G(y, y), G = (sum of the cumulative share of the losses sorted by descending p - (n + 1) / 2) / n (tied p averaged over their orderings, so a constant p scores 0; the Kaggle code takes row order) |
-| reason | CASdatasets defines no task or metric for freMPL (the freMPL page, NEWS), and no paper that defines a task on these tables was found. In insurance pricing, models are compared by the Gini index of an ordered Lorenz curve of losses: Frees, Meyers and Cummings (2011, JASA 106:1085-1098) order the policies by the relativity of a score to the premium, Liberty Mutual's Kaggle competition (2014) scored a weighted Gini, and Allstate's (2011), whose rows were whole vehicle-years, the row Gini declared here. This Gini scores the period's total cost, its length included: the length alone scores 0.277 of a model's 0.332 (untuned LightGBM, the 9 shipped splits), and the 802,620 claim moves the fold that holds it by about 0.10 (0.23 to 0.25 with it, 0.34 without). RMSE on the amount follows a few large claims: even the true claim indicator times the claimants' mean reaches R^2 0.02 to 0.15 by fold, untuned LightGBM fit on the amount -0.10 to 0.00, while it ranks claims at AUC 0.67. The Gini ignores the price level, which pricing sets separately. |
+| definition | twice the area between the ordered Lorenz curve and the diagonal: rows sorted by the relativity p / B (B the base premium, the weight), x the cumulative share of B, y the cumulative share of the losses y; 0 when p adds nothing to B (tied relativities form one step) |
+| reason | CASdatasets defines no task or metric for freMPL (the freMPL page, NEWS), and no paper that defines a task on these tables was found. Tariffs are compared by the Gini index of an ordered Lorenz curve of losses (Frees, Meyers and Cummings 2011, JASA 106:1085-1098; CAS Monograph 5, sec. 7.2.4): records sorted by predicted cost per year of cover, the cumulative share of the exposure against the cumulative share of the losses. The base is the feature `Exposure` before its rounding (`exposure_at_start`): the length known at the start for records that ended alone, whose early end often follows a claim (with their realised length as base a constant prediction scored 0.184); continued records keep their realised length in the base as in the feature, so the ratio stays neutral (with the known-at-start length there, the length alone would score 0.176 of a model's 0.249). The length alone scores 0.028 here, where the row Gini gave it 0.277 of a model's 0.319 (Andrej, 2026-11-03, review issue 4: C). Not normalized: 0 is an order no better than the base, the same cost per year for every record. On the 9 shipped splits untuned LightGBM scores 0.147 (0.052 to 0.179), random predictions 0.049 on average (0.015 to 0.104), the same models' row Gini 0.324. |
+| inputs | weight: `exposure_at_start` |
 | target scale | ships on the `log1p` scale for modelling; scored on the original scale after the inverse of `log1p` |
+
+**Scoring columns**
+
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+
+| column | role | how the metric uses it | model input |
+|---|---|---|---|
+| `exposure_at_start` | weight | ordered_lorenz_gini: the record's length in years as the feature `Exposure` holds it before its rounding to months (known at the start except for continued records, as in the feature): records are sorted by prediction / exposure_at_start and the cumulative share of the losses is set against the cumulative share of this exposure. Never a feature. | never a feature |
 
 <details>
 <summary>Feature types: 5 categorical, 0 string, 0 datetime</summary>
@@ -198,15 +208,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 115,155 rows of the final frame (random rows: the frame is shuffled); 12 of 18 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 115,155 rows of the final frame (random rows: the frame is shuffled); 12 of 19 columns, the target first. Cells are cut at 40 characters.
 
 | log1p_claim_amount | Exposure | LicAge | Gender | MariStat | SocioCateg | VehUsage | DrivAge | HasKmLimit | ClaimNbResp | ClaimNbNonResp | ClaimNbParking |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0.166667 | 376 | Female | Other | CSP55 | Private+trip to office | 50 | 0 | 1 | 0 | 0 |
-| 0 | 0.0833333 | 463 | Female | Alone | CSP37 | Private | 59 | 0 | 0 | 0 | 0 |
-| 0 | 0.583333 | 372 | Female | Other | CSP60 | Private | 61 | 0 | 0 | 1 | 0 |
-| 0 | 1 | 444 | Female | Other | CSP50 | Private+trip to office | 55 | 1 | 0 | 1 | 1 |
-| 0 | 0.25 | 319 | Male | Other | CSP50 | Private+trip to office | 46 | 0 | 0 | 0 | 0 |
+| 0 | 0.5 | 251 | Female | Other | CSP37 | Private | 52 | 0 | 0 | 1 | 0 |
+| 5.86031 | 0.666667 | 104 | Male | Other | CSP50 | Private+trip to office | 30 | 0 | 0 | 0 | 1 |
+| 0 | 0.666667 | 87 | Female | Alone | CSP50 | Private+trip to office | 25 | 0 | 1 | 0 | 0 |
+| 0 | 0.25 | 240 | Female | Alone | CSP55 | Private+trip to office | 39 | 0 | 0 | 0 | 0 |
+| 6.4828 | 0.75 | 412 | Male | Other | CSP50 | Professional | 53 | 0 | 1 | 0 | 0 |
 
 ## Curation notes
 
@@ -215,14 +225,14 @@ We start with freMPL5 to freMPL9 of CASdatasets 1.2-1, five samples of one Frenc
 - Prediction point: the start of a record, a period of cover with fixed rating factors, when the insurer prices it. The rating factors, the claim counts of the four preceding years and the bonus-malus are known then; the claims of the period are not. A record ends at the end of 2004 (48%) or when the contract changes or ends. 38% of the records start on 1 January, the calendar cut of the release rather than a pricing event, so a record holds the factors in force over its period.
 - Year: the data sets entered CASdatasets on 9 September 2014 ("freMPL1.rda 09/09/2014" to "freMPL10.rda 09/09/2014" in the dated data list of the package's NEWS, version 1.0-7, the oldest in its GitHub repository).
 - Which files: freMPL5 to freMPL9 share 20 columns in one order and one coding, so they are stacked without a file column (115,200 records). They are samples of one portfolio drawn differently, sharing policies across files: the claim rate runs from 7.7% (freMPL9) to 10.0% by file, and a model tells each file from the others at a one-vs-rest AUC of 0.57 to 0.64. But a model trained on four files ranks the claims of the fifth like random folds do (claim AUC 0.690 against 0.687), and a new record has no file. freMPL1 to freMPL4 and freMPL10 are left out: freMPL1 repeats 39% of its contracts and their claim amounts in freMPL5 to freMPL9, freMPL2 to freMPL4 hold amounts derived from freMPL1's claims, and freMPL10 has another column list (measured on 1.2-1 in the curation record, 2026-10-20; not re-measured here). Each file's size is a round number (16,000 to 32,400 records), so each is a sample of a chosen size; why the samples were cut is undocumented.
-- 45 exact copies dropped (89 records share all 20 columns, their dates included, with another record; 10 of the copies within a file, 35 across files): a copy over this many columns is a collection artefact, not a second record (LEAK-18). Once the dates are dropped and the length is rounded to months, 391 records repeat another record's features and amount (124 of them in the same chain), and 49 share the features with another amount: records of the same profile and length in other periods of 2004, kept (LEAK-18); 0.3% to 0.4% of each test fold has its features in the training side.
+- 45 exact copies dropped (89 records share all 20 columns, their dates included, with another record; 10 of the copies within a file, 35 across files): a copy over this many columns is a collection artefact, not a second record (LEAK-18). Once the dates are dropped and the length is rounded to months, 391 records repeat another record's features and amount (124 of them in the same within-file chain), and 49 share the features with another amount: records of the same profile and length in other periods of 2004, kept (LEAK-18); 0.3% to 0.4% of each test fold had its features in the training side on the earlier chain folds, 0.1% to 0.2% on the shipped component folds.
 - 967 negative amounts (0.84% of the records, -1,948 to -2) set to 0. Every one has `ClaimInd` = 0, but they are claims of the period: of the 246 with a next record, 95.1% are followed by a rise of the not-at-fault claim counter (after 0.19% of the zero amounts and 18.6% of the positive ones), so they are not-at-fault claims whose recourse covered the payment, with no net claim cost to the period. They are -2.4% of the net claim cost. AIcrowd's pricing game of 2020-21 set negative totals to 0 on the 2017 game's portfolio.
 - `ClaimInd` dropped: the claim indicator of the same period, 1 exactly where the amount is positive (a part of the target).
 - `RecordBeg` and `RecordEnd` dropped. `Exposure` is the record's length in years, (end - start) / 365 within 0.006, an open record ending on 31 December. The end of a record is not known when it starts, and the exact value of `Exposure` alone gave it away: its three decimals told a record that ended early from an open one at AUC 0.91 (0.61 once rounded to months).
-- `Exposure` of the 25,131 records (21.8%) that end before 31 December with no continuation in their file is set to the length known at their start, the `Exposure` of the open records that start the same day (every start day has some); then every `Exposure` is rounded to whole months, 0 for the 3,964 records shorter than half a month (LEAK-10, LEAK-7). Their end was not foreseen, and claims drive it: they hold 20.7% of the exposure but 38.9% of the claim cost (837 per exposure-year against 311 for open records) and 66 of the 109 largest claims. On the shipped folds the fix raises the normalized Gini from 0.281 to 0.332 and lowers the claim AUC from 0.689 to 0.673, both on 9 of 9 splits (untuned LightGBM): the realised length ranked claim occurrence too well and hid the large claims that ended their contracts. The rounding costs nothing (0.330 and 0.673 with three decimals) and stops the decimals from marking a record that continued (AUC 0.92 to 0.71). This departs from the curator's call for fremtpl2 (CC 2026-10-20, `Exposure` kept as recorded) and from the AI's suggested call of 2026-10-30: here the dates locate the early ends row by row, which fremtpl2's data cannot, and the shipped value encoded them. Confirmed by the curator (Andrej, 2026-11-02) and recorded as the LEAK-10 case for time on risk cut short by the outcome: the cut is fixed where the data locates it.
+- `Exposure` of the 25,131 records (21.8%) that end before 31 December with no continuation in their file is set to the length known at their start, the `Exposure` of the open records that start the same day (every start day has some); then every `Exposure` is rounded to whole months, 0 for the 3,964 records shorter than half a month (LEAK-10, LEAK-7). Their end was not foreseen, and claims drive it: they hold 20.7% of the exposure but 38.9% of the claim cost (837 per exposure-year against 311 for open records) and 66 of the 109 largest claims. On the earlier folds by within-file chain the fix raises the row Gini from 0.281 to 0.332 and lowers the claim AUC from 0.689 to 0.673, both on 9 of 9 splits (untuned LightGBM): the realised length ranked claim occurrence too well and hid the large claims that ended their contracts. The rounding costs nothing (0.330 and 0.673 with three decimals) and stops the decimals from marking a record that continued (AUC 0.92 to 0.71). This departs from the curator's call for fremtpl2 (CC 2026-10-20, `Exposure` kept as recorded) and from the AI's suggested call of 2026-10-30: here the dates locate the early ends row by row, which fremtpl2's data cannot, and the shipped value encoded them. Confirmed by the curator (Andrej, 2026-11-02) and recorded as the LEAK-10 case for time on risk cut short by the outcome: the cut is fixed where the data locates it.
 - Potential leak, kept on purpose: the 34,324 records that end early and continue in the next record of their file (the contract changed) keep their realised length, known only at their end. Some changes follow a claim (a vehicle replaced): these records cost 407 per exposure-year against 311 for open records. They stay because a change is often planned (the bonus-malus steps down at the change, as at an anniversary) and the release cannot tell the planned changes from the others. Revisit if a release gives the contracted term or why a record ended.
-- Note: `Exposure` stays a feature: the period is known when a policy is priced, and pricing models take it as known (a GLM offset). Added to the other features it lifts the claim AUC from 0.565 to 0.673 (untuned LightGBM, the 9 shipped splits); as a raw score it ranks claims at 0.654 and losses at a normalized Gini of 0.277, against 0.332 for a model on all features, which beats it on 9 of 9 splits, so the task is no lookup of the length (TP-4).
-- Policy chains, the group column `policy_chain` (never a feature): a policy whose contract changed in 2004 has several consecutive records. 34,324 records (30%) continue in the next row of their file (the same profile, starting the day the record ends, the driver's age the same or one more; 1 such link by chance with the rows shuffled), which gives 80,831 chains of 1 to 6 records. A later record's claim counters include the earlier record's claim, so in the training side it would tell a test record's claim; the folds keep each chain on one side (SPLIT-9; the numbers are in the splits comment).
+- Note: `Exposure` stays a feature: the period is known when a policy is priced, and pricing models take it as known (a GLM offset). Added to the other features it lifts the claim AUC from 0.565 to 0.673 (untuned LightGBM, the 9 shipped splits); as a raw score it ranks claims at 0.654 and losses at a row Gini of 0.277, against 0.332 for a model on all features (earlier chain folds; under the shipped metric the length alone scores 0.028 against 0.147), which beats it on 9 of 9 splits, so the task is no lookup of the length (TP-4).
+- Policy components, the group column `policy_component` (never a feature; Andrej, 2026-11-03, review issue 1: B, the most conservative key): a policy whose contract changed in 2004 has several records. 34,324 records (30%) continue in the next row of their file (the same profile, starting the day the record ends, the driver's age the same or one more; 1 such link by chance with the rows shuffled), and 10,292 more continue only in another sample file (the same profile and dates, the licence age advanced by the months between the starts within one). Every record joined to another by either link is in one component: 68,857 components of 1 to 13 records, 85,124 records in components of two or more. A later record's claim counters include the earlier record's claim, so in the training side it would tell a test record's claim; the folds keep each component on one side (SPLIT-9). Links across files match about 1% by chance; a chance link only puts two policies in one group, which makes the split stricter (SPLIT-24, exactness weighed against coverage).
 - The claim counts are taken at each record's start: at least one rises at the next record after 95% of the claims and after 2.3% of the other records, so they hold the history known when the record starts and never its own claim.
 - Target `log1p_claim_amount`, log1p of `ClaimAmount` ("Total claim amount of the guarantee"), the scale a model of a skewed amount is fit on; the metric is computed on the amount (`target_transform="log1p"`, MET-3). 90.6% of the records are 0: no claim, or a not-at-fault claim whose recourse covered the payment (89.7% as published, plus the 0.84% negative amounts set to 0). Only the claim part carries signal: on the three shipped folds of the first repeat a claim model ranks claims at AUC 0.67, but a severity model scores R^2 -0.20 to -0.01 on the claimants (-0.02 to -0.01 on log amounts), and even the true claim indicator times the claimants' mean explains only 2% to 15% of the variance of the amount. Which guarantee the amount covers is not named, but the counter that rises after a claim shows every counted type: of the 2,361 claims followed by exactly one counter rise, 40% raise the windscreen counter, 28% the at-fault one, 17% the not-at-fault one, 9% parking and 6% fire-theft. Whether the amounts are paid or incurred, and when they were valued, is not stated.
 - Dtypes: `Gender`, `MariStat`, `SocioCateg` (the union of the five files' codes, 46 CSP codes, 23 of them with fewer than 10 records), `VehUsage` and the yes/no flag `HasKmLimit` categorical; `RiskArea` stays a number, as shipped (the source: "Unknown risk area between 1 and 13, possibly ordered"); ages, counts, `BonusMalus` and `Exposure` (in years, whole months) numeric.
@@ -232,8 +242,8 @@ We start with freMPL5 to freMPL9 of CASdatasets 1.2-1, five samples of one Frenc
 
 ## Splits
 
-Default splits, grouped by policy chain (`policy_chain`): a policy's consecutive records in one sample file
-stay on one side (80,831 chains for 115,155 records). A tariff is fit on past policy-years and applied to the
+Default splits, grouped by policy component (`policy_component`): a policy's records, in one sample file or
+across them, stay on one side (68,857 components for 115,155 records). A tariff is fit on past policy-years and applied to the
 next year's policies, so the task is temporal by its use case, but the release holds one year (records within
 2004), so held-out policies of the same year stand in for next year's (ForcedGroupedFromTemporal, SPLIT-8).
 Windows inside 2004 can train only on records whose period had ended by the cutoff: 13% to 39% of the rows for
@@ -244,38 +254,39 @@ fifth of each test fold had one, and its claim counters rose after 87% of the te
 0.9% of the others. A lookup that finds such a record among the training rows from the features alone took a
 LightGBM model from a normalized Gini of 0.303 to 0.395 on the same test rows when those later records stayed
 in training (3 of 3 folds, before the `Exposure` fix); LightGBM alone reads one row at a time and scores the
-same either way. Grouping costs nothing measured: untuned LightGBM scores a Gini of 0.332 and a claim AUC of
-0.673 on these folds, 0.329 and 0.673 on random ones. Residual: 10,292 records continue only in another file,
-which the chains do not join. On the shipped folds the same lookup ranks claims at AUC 0.51 and lowers the
-model's Gini on 8 of 9 splits; a lookup without the length, which the fix replaced for many of those records,
-reaches AUC 0.53 and moves the Gini by -0.02 to +0.01 (3 splits). Shipped forced on the curator's call
-(Andrej, 2026-11-02: "Forced group splits should be fine"). The leak test across the split (SPLIT-8, 2026-11-02)
-finds none: the 0.37% of test rows whose features are in training agree on a claim less than the base rate (84%
+same either way. Grouping costs nothing measured: on the earlier folds by within-file chain untuned LightGBM
+scored a row Gini of 0.332 and a claim AUC of 0.673, 0.329 and 0.673 on random ones, and the component key
+against the chain 0.2785 against 0.2827 (before the fix); on the shipped component folds it scores a row Gini
+of 0.324 and a claim AUC of 0.668. The component also joins the 10,292 records that continue only in another
+file, which the chains left apart; under the chains a lookup of such a record had ranked claims at AUC 0.51.
+Shipped forced on the curator's call (Andrej, 2026-11-02: "Forced group splits should be fine"). The leak test
+across the split (SPLIT-8, 2026-11-02, on the chain folds) finds none, and the leak probe on the component
+folds flags nothing (2026-11-03): the 0.37% of test rows whose features were in training agree on a claim less than the base rate (84%
 against 91%), and the training side's mean outcome of the test row's start month (and risk area by month) moves
 the Gini by -0.0005 on average; dropping the test rows' own quarter from training costs no more than dropping as
 many random rows.
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 76,653 to 76,903 rows, test 38,252 to 38,502 rows.
+3 repeat(s) x 3 fold(s) with seed 4267; train 76,623 to 76,874 rows, test 38,281 to 38,532 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 76828 | 38327 |
-| 0 | 1 | 76653 | 38502 |
-| 0 | 2 | 76829 | 38326 |
-| 1 | 0 | 76720 | 38435 |
-| 1 | 1 | 76903 | 38252 |
-| 1 | 2 | 76687 | 38468 |
-| 2 | 0 | 76765 | 38390 |
-| 2 | 1 | 76751 | 38404 |
-| 2 | 2 | 76794 | 38361 |
+| 0 | 0 | 76634 | 38521 |
+| 0 | 1 | 76802 | 38353 |
+| 0 | 2 | 76874 | 38281 |
+| 1 | 0 | 76835 | 38320 |
+| 1 | 1 | 76623 | 38532 |
+| 1 | 2 | 76852 | 38303 |
+| 2 | 0 | 76674 | 38481 |
+| 2 | 1 | 76787 | 38368 |
+| 2 | 2 | 76849 | 38306 |
 
 ## Group structure
 
-One group is a policy chain: a record and the records that continue it in the next rows of its sample file (the same six profile columns, starting the day the previous record ends, the driver's age the same or one year more), numbered in the raw order before the dates are dropped; 80,831 chains of 1 to 6 records, 31,862 of them with two or more. The release has no policy id. The use case prices a period when it starts: a later record of the policy does not exist yet, and its claim counters include the earlier record's claim, so all records of a chain stay on one side (SPLIT-9). Each record is one prediction, made from its own row. The 10,292 records that continue only in another sample file are not joined: links across files rest on equal profiles and dates with tolerances on the ages, and about 1% of them match by chance (SPLIT-24).
+One group is a policy component: a record and every record that may continue it, in the next row of its sample file or in another file (the same six profile columns, starting the day the other ends, the driver's age the same or one year more, the licence age advanced by the months between the starts within one), joined transitively; 68,857 components of 1 to 13 records, 85,124 records in components of two or more. The release has no policy id. The use case prices a period when it starts: a later record of the policy does not exist yet, and its claim counters include the earlier record's claim, so all records of a component stay on one side (SPLIT-9). Each record is one prediction, made from its own row. About 1% of the links across files match by chance; such a link only joins two policies into one group, the conservative side (SPLIT-24; Andrej, 2026-11-03: the most conservative key).
 
 | field | value |
 |---|---|
-| group column | `policy_chain` |
+| group column | `policy_component` |
 | labels | per_sample |
 | order inside a group | none |
 | prediction unit | row |
@@ -283,13 +294,13 @@ One group is a policy chain: a record and the records that continue it in the ne
 
 | statistic | value |
 |---|---|
-| groups | 80,831 |
-| rows per group (min / median / max) | 1 / 1.0 / 6 |
+| groups | 68,857 |
+| rows per group (min / median / max) | 1 / 2.0 / 13 |
 | largest group | 0.0% of the rows |
-| test groups per fold | 26,943 to 26,944 |
-| groups of two or more rows with a single label | 82.9% |
-| nearest neighbour in the same group | 1.8% of the rows (chance: 0.0%) |
-| label variance explained by the group | 0.73 (shuffled groups: 0.71) |
+| test groups per fold | 22,952 to 22,953 |
+| groups of two or more rows with a single label | 81.5% |
+| nearest neighbour in the same group | 2.1% of the rows (chance: 0.0%) |
+| label variance explained by the group | 0.62 (shuffled groups: 0.60) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
@@ -318,26 +329,32 @@ Every negative amount belongs to a record with `ClaimInd` = 0, yet the not-at-fa
 | positive | 10869 | 1 | 2731 | 508 | 0.186 |
 | zero | 103319 | 0 | 31347 | 58 | 0.0019 |
 
-### 3. The consecutive records of a policy stay on one side of the split
+### 3. The records of a policy stay on one side of the split
 
-A record continues in the next row of its file when the profile is the same, it starts the day the previous one ends and the driver's age is the same or one more. A later record's claim counters include the earlier record's claim: under random records, a lookup on the features alone lifted a LightGBM model's normalized Gini by 0.09 on the same test rows, a gain that went with those later records. Each chain is one group (`policy_chain`).
+A record continues another, in the next row of its file or in another file, when the profile is the same, it starts the day the other ends and the driver's age is the same or one more (across files also the licence age advanced by the months between the starts). A later record's claim counters include the earlier record's claim: under random records, a lookup on the features alone lifted a LightGBM model's normalized Gini by 0.09 on the same test rows, a gain that went with those later records. Every record joined by such a link is in one group (`policy_component`), the most conservative key (Andrej, 2026-11-03).
 
-| records in the chain | chains |
+| records in the component | components |
 |---|---|
-| 1 | 48969 |
-| 2 | 29589 |
-| 3 | 2108 |
-| 4 | 144 |
-| 5 | 18 |
-| 6 | 3 |
+| 1 | 30031 |
+| 2 | 33425 |
+| 3 | 4069 |
+| 4 | 916 |
+| 5 | 237 |
+| 6 | 108 |
+| 7 | 39 |
+| 8 | 17 |
+| 9 | 3 |
+| 10 | 4 |
+| 11 | 3 |
+| 12 | 4 |
+| 13 | 1 |
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 3 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (26 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicate_rows`: 124 exact duplicate row(s) (0.1% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
+- **info** `dataset_duplicate_rows`: 25 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **info** `dataset_conflicting_duplicate_rows`: 2 row(s) (0.0%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
-- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (1.8% of nearest neighbours vs 0.0%), and the group explains no more of the label than shuffled groups (0.73 vs 0.71). (hint: The grouping may not be needed: compare IID and grouped scores with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.)
 
 Accepted on purpose:
 
@@ -348,7 +365,7 @@ Accepted on purpose:
 ### Feature summary
 
 <details>
-<summary>Show the table (18 rows)</summary>
+<summary>Show the table (19 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
@@ -358,8 +375,10 @@ Accepted on purpose:
 | VehUsage | category | 0 | 0 | 4 | Private+trip to office, Private, Professional, Professional run |
 | HasKmLimit | category | 0 | 0 | 2 | 0, 1 |
 | Exposure | float64 | 0 | 0 | 13 | 1.0, 0.25, 0.0833, 0.5, 0.1667, 0.75, 0.3333, 0.4167, 0.5833, 0.6667 |
+| exposure_at_start | float64 | 0 | 0 | 758 | 1.0, 0.083, 0.749, 0.166, 0.499, 0.333, 0.249, 0.833, 0.583, 0.666 |
 | log1p_claim_amount | float64 | 0 | 0 | 8625 | 0.0, 7.2581, 4.6404, 8.3728, 4.5883, 7.3546, 7.9249, 7.6798, 8.353, 7.3348 |
-| LicAge | int64 | 0 | 0 | 844 | 408, 420, 451, 432, 372, 300, 288, 444, 150, 313 |
+| policy_component | int32 | 0 | 0 | 68857 | 28210, 17491, 15945, 270, 33075, 1267, 12498, 7880, 2549, 749 |
+| LicAge | int64 | 0 | 0 | 844 | 408, 420, 451, 432, 372, 288, 300, 444, 150, 313 |
 | DrivAge | int64 | 0 | 0 | 80 | 55, 54, 56, 57, 53, 32, 52, 51, 37, 38 |
 | ClaimNbResp | int64 | 0 | 0 | 6 | 0, 1, 2, 3, 4, 5 |
 | ClaimNbNonResp | int64 | 0 | 0 | 8 | 0, 1, 2, 3, 4, 5, 6, 7 |
@@ -369,7 +388,6 @@ Accepted on purpose:
 | OutUseNb | int64 | 0 | 0 | 6 | 0, 1, 2, 3, 4, 5 |
 | RiskArea | int64 | 0 | 0 | 13 | 7, 10, 6, 9, 11, 5, 8, 4, 3, 2 |
 | BonusMalus | int64 | 0 | 0 | 104 | 50, 80, 90, 85, 76, 72, 68, 57, 64, 60 |
-| policy_chain | int64 | 0 | 0 | 80831 | 60909, 79646, 146, 77438, 49616, 2895, 58511, 63986, 47301, 8860 |
 
 </details>
 
@@ -377,12 +395,12 @@ Accepted on purpose:
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 90.56 | 2.995 | 2.82 | 3.999 | 0.353 | log1p | 63052.2 | 1.4645e+10 | exponential |
+| 0 | 0 | 90.56 | 2.995 | 2.82 | 3.999 | 0.353 | log1p | 63052.2 | 1.46451e+10 | exponential |
 
 ### Numeric features
 
 <details>
-<summary>Show the table (13 rows)</summary>
+<summary>Show the table (14 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -397,7 +415,8 @@ Accepted on purpose:
 | OutUseNb | 115155 | 0.255681 | 0.694329 | 0 | 5 |
 | RiskArea | 115155 | 7.87344 | 2.21402 | 1 | 13 |
 | BonusMalus | 115155 | 59.2644 | 15.4111 | 50 | 195 |
-| policy_chain | 115155 | 40779.6 | 23498.3 | 1 | 80831 |
+| policy_component | 115155 | 33188.6 | 20034 | 0 | 68856 |
+| exposure_at_start | 115155 | 0.537809 | 0.326444 | 0.001 | 1 |
 | log1p_claim_amount | 115155 | 0.631127 | 1.99963 | 0 | 13.5956 |
 
 </details>

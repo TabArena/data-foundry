@@ -8,8 +8,6 @@ data_foundry_status:
 claimed_by: Andrej
 suggestion: 'Yes'
 priority: 3
-decision_markers:
-- No Good Target / Scientific Discovery
 tags:
 - Two-Regime Zeros
 original_source: Other
@@ -90,6 +88,16 @@ pushback: "Verified strict match" and "Core: Yes" rest on the hurdle model, whic
 Paper text not read (Wiley 403). Licence: CC0.
 
 **Assessment (AI, 2026-11-01):** added as `datasets/_dev/tabarena-v0pt2/boreal_postfire_lichen_biomass/` by /add-dataset with the full review panel; the open questions are in its `REVIEW.md`. Recommend shipping as changed: the caribou range-plan biologist named as the actor, the NT plots grouped by burn area and the SK plots per plot (216 groups), three NT plots' coordinates repaired from the site sheet. Superseding the screening's guesses above: 516 plots and 2,010 quadrats; fetched from Dryad's version zips without a token (the 2022 revision of the NT sheet), not "Dryad answers 401". The marker `No Good Target / Scientific Discovery` stays until your mark on issue 1. Priority 3: gap 0, use case 0 (fit approximate), source + (CC0 deposits and a paper), shape +, risk 0.
+
+CC (2026-11-03, Andrej): the two duplicate-row warnings are accepted as worded (issue 3 (A) in boreal_postfire_lichen_biomass).
+
+CC (2026-11-03, Andrej): read Greuel et al. (2021) through Wiley's HTML page (issue 4): stand age by tree-ring dating, a pooled volume allometry with no significant variation across ecoprovinces, Saskatchewan's total heights adjusted by a live-to-total ratio of 0.76, an observed-versus-fitted R2 of 0.18 without held-out evaluation, no explanation of the missing plots: "We can now replace the blanket warning with specific references for confirmed claims."
+
+**Assessment (AI, 2026-11-03):** the paper is read from the publisher's PDF (Wayback Machine copy of 2021-07-16); the notes now cite it by section, and the claim that the two regions convert cover differently is removed (one pooled allometry; 12.633 is its volume slope in kg/ha). Its stated aim is the task itself: "accurately predicting the availability of lichen forage under current and future fire regimes".
+
+CC (2026-11-03, Andrej): ship after the changes (verdict). Issue 1 (A): the paper's own forecast with the range-plan actor and the burn-area split; the `No Good Target / Scientific Discovery` marker is removed, as the paper's predictive aim answers it. Issue 2 (A): the tree-ring stand age stays. Issue 5 (A): kg/ha, decided for this task alone ("I go with your recommendation"). Issue 6 (A): RMSE on kg/ha ("We can keep RMSE in this case").
+
+CC (2026-11-03, Andrej): ship (verdict); the metric, RMSE on kg/ha, checked.
 
 ## Reference
 

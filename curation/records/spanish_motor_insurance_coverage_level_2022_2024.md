@@ -110,6 +110,8 @@ CC (2026-11-02, Andrej): metric (issue 3): "Use exposure-weighted Gini on annual
 
 CC (2026-11-02, Andrej): ship. Every issue of the REVIEW is resolved: the exposure-weighted Gini on the cost per year on risk, marked as declared (issue 3, the metric row), both late values kept with notes and the premiums unrounded (4), the task kept although an untuned plain model scores below the premium alone (5).
 
+CC (2026-11-03, Andrej): the check warning `task_target_value_dominant` accepted: "for these tasks this is natural and a core challenge" (zero-inflated target).
+
 ## Reference
 
 Espinosa, P., Lledó, J., Atance, D. (2026). A detailed dataset of motor insurance policies with coverage-specific

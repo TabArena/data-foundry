@@ -27,73 +27,196 @@ posts they only rise between a post's base times, so they are counted at each ba
 Issue` marker is to go at hand-over, though other `Yes` records keep theirs: selection.md defines it as damage that
 cannot be repaired, and the leak and the copies are repaired here.
 
-**Main points:** Drop the 178 word flags Buza chose by their link to the comments, or keep them with a note (issue 1)?
-Confirm three 20-day test windows as an exception to SPLIT-15 (2)? Settled on 2026-11-02: the score is the source's
-daily top-10 measure, now in the metric library (issue 3, closed).
-
-**Record fields that disagree with the definition:**
-
-- `year`: record `2014`, definition `2012`.
-- `original_source`: record `UCI`, definition `Other`.
+**Main points:** the word flags and whether the task still holds without the post text (issue 1, answered); the
+metric's name and scale (4, new). Settled: nine windows of 6 days (2, 2026-11-03); the score is the source's daily
+top-10 measure (3, 2026-11-02); the record's `year` and source take the definition's values (2026-11-03).
 
 **Issues for Andrej:**
 
-1. **Drop the word flags, or keep them with a note?** The data has 200 yes/no columns, one per word, that say whether
-   a post contains it (178 remain after copies were dropped); the words are not named. Buza's chapter (footnote 1)
-   chose them as "the 200 most discriminative words": for each word, the gap in average comments between posts with
-   and without it. That is a choice made with the target, on posts the chapter does not name. Had the test days of
-   2012 been among them, the columns would carry a hint of the test outcomes.
-   * What it does to the task: measured, the words add nothing. Per window (days 41-60 / 21-40 / 1-20; untuned
-     LightGBM, 2 seeds, after the changes above), RMSLE is 0.674 / 0.570 / 0.621 with the words and 0.672 / 0.571 /
-     0.617 without; the daily top-10 hits are 6.03 / 7.25 / 6.55 with and 6.30 / 7.25 / 6.68 without. In Buza's
-     Table 1 the text features lower his top-10 score for 6 of 7 models.
-   * Which posts chose them cannot be checked. Buza's word score, recomputed here, is positive for 70.7% of the
-     testable words on the training rows and 58.5% on the test rows. A word chosen on some posts shows its gap most
-     often on those posts, so this leans toward a choice on the training crawl, but it is circumstantial (EV-6).
-   * Rule: LEAK-31 (Should): "keep with a note when small, remove it when we can", and a selection the source
-     published is decided case by case (Lennart, 2026-10-21). A weighing call.
-   * Precedent: all three LEAK-31 cases were removed; the closest, qsar_bioconcentration, dropped the authors' 9
-     chosen descriptors, worth +0.002 (2026-10-26). The advocate argues to keep: the flags are the only text in the
-     data, a monitoring desk reads the text, and qsar_bioconcentration still had RDKit descriptors of the same
-     molecules after the 9 were dropped. The critic argues to drop: nothing sets this case apart from
-     qsar_bioconcentration, and a note would record a suspicion nobody can check.
-   * Implemented: kept, with a `Potential leak, kept on purpose:` note (the selection, the drop test, revisit if
-     Buza's word list becomes known), named in `fit_reason`. In the 22% of rows without text (23% of training and 20%
-     of test rows), a flag of 0 means unknown, not absent; the flags stay 0 there, and the missing `post_length` marks
-     those rows.
-   * Alternative: drop the 178 columns. No score changes; 63 features remain, and the `Anonymized` data tag goes.
+1. **Drop the word flags, or keep them with a note?**
 
-   Recommendation: drop, like qsar_bioconcentration; keep only if you take the training-crawl reading as the fact that
-   sets this case apart. Buza's word list would settle it. Decision: drop or keep?
+   * **Problem:**
+     - The data has 178 yes/no word columns that Buza chose by their link to the comments, on posts his chapter does not
+       name.
+     - Had the test days of 2012 been among them, the columns would carry a hint of the test outcomes.
+     - Drop them, or keep them with a note?
+   * **Background:** the data has 200 yes/no columns, one per word, that say whether a post contains it (178 remain
+     after copies were dropped); the words are not named. Footnote 1 of Buza's chapter says he chose them as "the 200
+     most discriminative words": for each word, the gap in average comments between posts with and without it. That
+     is a choice made with the target. Such a selection is measured, kept with a note when its effect is small and
+     removed when we can; one the source published is decided case by case, so this is a weighing call[^1]. In the
+     22% of rows without text (23% of training and 20% of test rows), a flag of 0 means unknown, not absent; the
+     flags stay 0 there, and the missing `post_length` marks those rows.
+   * **Effect on the task:** measured, the words add nothing (numbers below).
+   * **Experiments:** per window (days 41-60 / 21-40 / 1-20; untuned LightGBM, 2 seeds, after the panel's changes),
+     RMSLE is 0.674 / 0.570 / 0.621 with the words and 0.672 / 0.571 / 0.617 without; the daily top-10 hits are
+     6.03 / 7.25 / 6.55 with and 6.30 / 7.25 / 6.68 without. In Buza's Table 1 the text features lower his top-10
+     score for 6 of 7 models.
+   * **Unknown:** which posts chose the words cannot be checked. Buza's word score, recomputed here, is positive for
+     70.7% of the testable words on the training rows and 58.5% on the test rows. A word chosen on some posts shows
+     its gap most often on those posts, so this leans toward a choice on the training crawl, but it is circumstantial
+     evidence, not proof[^2]. Buza's word list would settle it.
+   * **Consistency:** all three earlier cases of such a selection were removed[^3]. The closest, qsar_bioconcentration,
+     dropped the authors' 9 chosen descriptors, worth +0.002 (2026-10-26).
+   * **Panel:** the advocate argues to keep: the flags are the only text in the data, a monitoring desk reads the
+     text, and qsar_bioconcentration still had RDKit descriptors of the same molecules after the 9 were dropped. The
+     critic argues to drop: nothing sets this case apart from qsar_bioconcentration, and a note would record a
+     suspicion nobody can check.
+   * **Options:**
 
-2. **Confirm three test windows of 20 days?** SPLIT-15 (Should) gives a temporal task as many windows as an IID task
-   of its size gets folds: 9 (3 repeats of 3 folds) for 56,239 rows. The definition cuts the 60 test days into 3
-   windows of 20 days, each trained on the 2010-2011 crawl and the earlier test days. The builder's reason, the
-   source's split (SPLIT-19), decides nothing: the source trains once and tests all 60 days, one window, which
-   SPLIT-14 (Must) forbids. `splits_comment` now gives the reasons below.
-   * What it does to the task: each window tests a model refit up to 20 days earlier; nine windows would refit every 6
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep with a note (implemented) | the 178 word flags stay as features, with a note on the selection named in `fit_reason` | the only text in the data | a note records a suspicion nobody can check; departs from qsar_bioconcentration |
+     | B | Drop the 178 flags | 63 features remain, the `Anonymized` data tag goes; no score changes | follows qsar_bioconcentration | the data loses its only text |
+
+   * **Recommendation:** B: the words add nothing measurable, and all three earlier selections of this kind were
+     removed, qsar_bioconcentration the closest. A only if you take the training-crawl reading as the fact that sets
+     this case apart; Buza's word list would settle it. **Decision:** A or B?
+
+   **Notes for the AI:** A is in the definition as a `Potential leak, kept on purpose:` note (the selection, the drop
+   test, revisit if Buza's word list becomes known), named in `fit_reason`. On B, drop the 178 word columns and the
+   `Anonymized` data tag.
+
+   [^1]: **LEAK-31** (Should): supervised feature selection on the full labelled set is measured, kept with a note
+     when small and removed when we can; a selection the source published is decided case by case (Lennart,
+     2026-10-21).
+   [^2]: **EV-6** (Should): a claim is proven only by a test that could have refuted it; circumstantial evidence is
+     named as such and reported as a "maybe", with the test that would settle it.
+   [^3]: The **LEAK-31** cases: home_credit_default_risk (2026-10-19), qsar_bioconcentration (2026-10-26) and
+     numerai_v5_2_1m (2026-10-26).
+
+   **Andrej (2026-11-03, discuss):** Is the original post accessible as text and can be added as a column? I believe
+   without the actual source, this is not a meaningful tabular task anymore, but rather text classification
+
+   **Answer (AI, 2026-11-03):**
+
+   * **Problem:**
+     - The post text cannot be added: the release holds no post id, URL, blog name or date, so no post can be found
+       again.
+     - The question is whether the task still holds without it.
+     - The measurements say yes, because the text carries almost none of the signal.
+   * **Background:**
+     - Buza's own zip of 2012, byte-identical to UCI's, holds only the 281 numbers per row. His chapter names no
+       release of the crawled pages. Only he could say whether the crawl still exists, by asking him.
+     - What predicts the next day's comments is how a post has been drawing comments so far: its comments in the
+       last 24 and 48 hours, their change, the parents' comments, and the blog's history. The text came in only as
+       the 178 word flags.
+   * **Experiments** (untuned LightGBM, the three earlier 20-day windows):
+     - A sort by the last 24 hours' comments alone finds 5.6 of each day's 10 most-commented posts; the model finds
+       6.6 with or without the word flags (6.61 with, 6.74 without).
+     - In Buza's own Table 1 the text features lower the score for 6 of 7 models.
+     - So the task is to predict the comments from their dynamics: a tabular task. Text classification would need
+       text that predicts, and here it does not.
+   * **Options:** as above, plus retiring the dataset:
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the flags with a note (implemented) | the 178 word flags stay | the only trace of the text | a selection made with the target; adds nothing |
+     | B | Drop the flags | 63 features remain: comment dynamics, the blog's history, length, weekday | a tabular task of comment dynamics, no selection made with the target | the data keeps no trace of the text |
+     | C | Don't ship | the record set to `No` | no task whose source data was text | loses a task whose signal is in the counts, not the text |
+
+   * **Recommendation:** B: the comment dynamics carry the task, and the word flags add nothing and were chosen with
+     the target. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, drop the 178 word columns and the `Anonymized` data tag, re-run `dataset check`. On C,
+   retire as records.md says.
+
+   **Andrej (2026-11-03, change):** I choose option C for now and mark this dataset as 2nd Tier
+
+   **Resolved (2026-11-03, Andrej):** C, not shipped for now: the record is `TBD -> 2nd Tier`, its `v2_path` cleared
+   and its claim released; the folder leaves the working copy (copies of its last files in the run folder of
+   2026-11-03, `blogfeedback_retired/`).
+
+2. **Confirm three test windows of 20 days?**
+
+   * **Problem:**
+     - The definition cuts the 60 test days into 3 windows of 20 days, each trained on the 2010-2011 crawl and the
+       earlier test days.
+     - The rules give as many windows as an IID task of this size gets folds[^4]: 9 for 56,239 rows.
+     - Confirm 3 as an exception?
+   * **Background:** the 9 are 3 repeats of 3 folds. The builder's reason, that the source defines the split[^5],
+     decides nothing: the source trains once and tests all 60 days, one window, and a temporal task needs at least
+     3[^6]. `splits_comment` now gives the reasons below.
+   * **Effect on the task:** each window tests a model refit up to 20 days earlier; nine windows would refit every 6
      days, closer to a daily service that retrains often. Nine windows add no test rows: the crawl has a single date
      value, so only the 7,036 rows of the test days can ever be test rows, and nine windows cut them into pieces of
      about 700.
-   * Why 3 holds by the rules: SPLIT-12 (Should: the horizon comes from the source, such as its own test period)
-     stands before SPLIT-15 in splits.md and wins at equal strength. The source predicts 60 days from one training
-     run, and 20 days is the longest window that still gives three. Under Hits@10, the declared metric, a 20-day
-     window measures a difference between two models with a standard error of 0.26 hits a day, a 6-day window with 0.48,
-     while the gaps between models are about 0.5.
-   * The advocate and the critic both accept 3 windows; both dropped the argument from the heavy tail, which held only
-     for RMSE on raw counts.
-   * Precedent: onlinenewspopularity and zillow_prize ship 9 windows, but their data is dated over its whole range, so
-     more windows add test rows; rossmann_store_sales takes its window length from the source's 6-week horizon
-     (SPLIT-12), but at 844,392 rows SPLIT-15 also gives it 3 windows, so it is no precedent for fewer. This would be
-     the first exception to SPLIT-15.
-   * Implemented: 3 windows of 20 days, and for the record: `Exception to SPLIT-15 (2026-11-01, Andrej): the training
-     crawl is one undated time value, so only the 60 test days can be test rows, and the source predicts all 60 from
-     one training run; 20 days is the longest window that gives SPLIT-14's three. Serves P4: the split mirrors the
-     source's deployment (SPLIT-12).`
-   * Alternative: 9 windows of 6 days (`TemporalSplits(window=6, unit="unique", n_windows=9)`), which leaves days 1-6
-     untested, or 10 windows to use all 60 days.
+   * **Experiments:** under Hits@10, the declared metric, a 20-day window measures a difference between two models
+     with a standard error of 0.26 hits a day, a 6-day window with 0.48, while the gaps between models are about 0.5.
+   * **Rules:** the rule that takes the horizon from the source, such as its own test period[^7], stands before the
+     rule on the number of windows in splits.md and wins at equal strength. The source predicts 60 days from one
+     training run, and 20 days is the longest window that still gives three.
+   * **Panel:** the advocate and the critic both accept 3 windows; both dropped the argument from the heavy tail,
+     which held only for RMSE on raw counts.
+   * **Consistency:** onlinenewspopularity and zillow_prize ship 9 windows, but their data is dated over its whole
+     range, so more windows add test rows. rossmann_store_sales takes its window length from the source's 6-week
+     horizon, but at 844,392 rows the window-count rule also gives it 3 windows, so it is no precedent for fewer.
+     This would be the first exception to the window-count rule.
+   * **Options:**
 
-   Recommendation: confirm the exception. Decision: 3 windows with the exception, or 9?
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 3 windows of 20 days, with an exception (implemented) | the 60 test days in 3 windows, each a model refit up to 20 days earlier | mirrors the source's one training run; standard error 0.26 | the first exception to the window-count rule |
+     | B | 9 windows of 6 days | the newest 54 test days in 9 windows, each a model refit up to 6 days earlier; days 1-6 untested | follows the window-count rule; closer to a service that retrains often | test pieces of about 700 rows; standard error 0.48 against gaps of about 0.5 |
+     | C | 10 windows | the 60 test days in 10 windows of 6 days; as B, but all 60 days tested | follows the window-count rule; uses all 60 days | as B |
+
+   * **Recommendation:** A, confirm the exception: it mirrors the source's one training run, and a 20-day window
+     measures model differences with a standard error of 0.26 hits a day against 0.48 for 6 days. **Decision:** A, B
+     or C?
+
+   **Notes for the AI:** the exception for the record, as implemented: `Exception to SPLIT-15 (2026-11-01, Andrej):
+   the training crawl is one undated time value, so only the 60 test days can be test rows, and the source predicts
+   all 60 from one training run; 20 days is the longest window that gives SPLIT-14's three. Serves P4: the split
+   mirrors the source's deployment (SPLIT-12).` On B: `TemporalSplits(window=6, unit="unique", n_windows=9)`.
+
+   [^4]: **SPLIT-15** (Should): roll the windows back from the newest data, as many windows as an IID or grouped task
+     of that size would get folds.
+   [^5]: **SPLIT-19** (Should): when the source defines the split (a competition's or a paper's official periods),
+     follow it; it is still a claim to check.
+   [^6]: **SPLIT-14** (Must): a temporal task has at least 3 windows, and no window's train side holds less than 50%
+     of the data.
+   [^7]: **SPLIT-12** (Should): the horizon is a human judgment from the source (how far ahead the actor predicts,
+     the competition's own test window, the refit cadence); choose the test windows to match it.
+
+   **Andrej (2026-11-03, change):** With the given sample size we would prioritize 9 folds
+
+   **Resolved (2026-11-03, Andrej):** (B), nine windows of 6 days over the newest 54 test days (train 49,835 to
+   55,331 rows, test 621 to 908 rows per window). `splits_comment` and the task summary say so, and that the notes'
+   measurements were taken on the earlier 20-day windows; no exception to SPLIT-15. `dataset check`: 0 errors, the
+   one warning as before.
+
+4. **The metric: is it Buza's Hits@10, and under which name?**
+
+   * **Problem:**
+     - You asked whether the declared metric is exactly the source's.
+     - It is, apart from its scale and a tie rule: the library reports the share of the day's top 10 found (Hits@10 /
+       10), where Buza reports the count (0 to 10).
+     - Its name, `mean_group_top_k_overlap`, describes the computation, not the source.
+   * **Background:**
+     - Buza (Sec. 5.1): for each test day, the 10 posts predicted to draw the most comments; Hits@10 counts how many
+       are among the day's 10 most-commented, averaged over the days. The library computes the same overlap per day
+       and averages it, divided by 10.
+     - At a tie at the 10th place, the library takes the expected overlap over the ways to break it. That rule is
+       ours; without ties the score is exactly Buza's divided by 10 (a test checks it).
+     - Only this dataset uses the metric, so a rename touches one definition, the library and its tests.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `mean_group_top_k_overlap` (implemented) | the share, 0 to 1 | a name that says the computation; a scale like other shares | not the source's name or scale |
+     | B | Rename to `hits_at_k`, report the count | `hits_at_k` with k = 10 returns Hits@10, 0 to 10 | the source's name and scale; numbers read as in Buza's Table 1 | a rename of a metric in the library |
+     | C | Rename to `hits_at_k`, keep the share | the source's name, the share 0 to 1 | the source's name | the name says hits but the scale is a share |
+
+   * **Recommendation:** B: the score then reads as in the source (6.6 hits a day, Buza's Table 1 on the same scale).
+     **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, rename in `src/data_foundry/v2/metrics.py` (definition, docstring list of custom
+   metrics), drop the division by k, update `tests/test_v2_metrics_custom.py` and blogfeedback's metric and notes.
+
+   **Andrej (2026-11-03, metric mark, discuss):** Is this exactly the source metric? If yes, let's discuss
+   alternative names for it, if not, why didn't you use the source metric?
+
+   **Answer (AI, 2026-11-03):** this issue answers it: the bullets and the options above.
 
 **Review panel:** ship after changes (mediator). Claim audit: 54 claims, 38 hold, 11 refuted (fixed), 2 partly refuted
 (noted), 1 superseded, 1 weighing call (the metric, now the RMSLE stand-in) and 1 untested (when the parents' comments

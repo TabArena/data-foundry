@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: nantucket_sound_sea_duck_aerial_survey_counts
 container_format: 2
-checksum: v2:56c0c38c6d547a3a617208c5cbe56174bb606bcd16d42588967f9a490296afc2
+checksum: v2:ea564bfd0da067e8b35006488270f2bf58ea39e7991be99d67aaca0b1b3962fc
 build: null
 build_stale: false
 data:
@@ -22,17 +22,17 @@ task:
   split_regime: grouped_non_iid
   stratify_on: null
   time_on: null
-  group_on: grid_block
+  group_on: transect_column
   group_labels: per_sample
   group_time_on: null
   grouping:
     prediction_unit: row
     aggregation: null
     context: none
-    n_groups: 60
+    n_groups: 24
     test_groups_per_fold:
-      min: 20
-      max: 20
+      min: 8
+      max: 8
 splits:
   n_repeats: 3
   n_folds: 3
@@ -42,18 +42,21 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 4928
-    max: 5414
+    min: 4735
+    max: 5801
   n_test:
-    min: 2337
-    max: 2823
+    min: 1950
+    max: 3016
 bundle_checks:
   ok: true
   errors: []
   warnings:
-  - task_target_value_dominant
+  - groups_test_groups_few
   infos: []
-  accepted: {}
+  accepted:
+    task_target_value_dominant: '57.1% zeros: observed absences, a flown strip without
+      a long-tailed duck on the water (Andrej, 2026-11-03: a valid zero-inflated regression
+      task).'
 decisions:
 - The long-tailed duck as the target
 ---
@@ -62,9 +65,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `log1p_long_tailed_duck_count`, scored with `mean_poisson_deviance` on grouped splits by `grid_block`. 7,751 rows and 20 features. Source: Other (2019).
+Regression of `log1p_long_tailed_duck_count`, scored with `mean_poisson_deviance` on grouped splits by `transect_column`. 7,751 rows and 20 features. Source: Other (2019).
 
-Not built yet. The current definition gives checksum `v2:56c0c38c6d547a3a617208c5cbe56174bb606bcd16d42588967f9a490296afc2`.
+Not built yet. The current definition gives checksum `v2:ea564bfd0da067e8b35006488270f2bf58ea39e7991be99d67aaca0b1b3962fc`.
 
 ## In brief
 
@@ -78,9 +81,9 @@ Not built yet. The current definition gives checksum `v2:56c0c38c6d547a3a617208c
 
 **Known at prediction time.** The segment's position and seabed (elevation, sediment grain, seafloor relief, tidal currents, distance to land, a ferry route), ocean colour and modelled sea temperatures, the winter and its NAO index, the day of the winter and the length of strip flown.
 
-**What the test data stands for.** Whole 4.5 km blocks of the source's grid (3 x 3 segments) are held out with all their survey days, so a test square stands for a square the plane did not fly: 43% of test rows have a square flown the same day within 1.5 km in training, as do 43% of the never-flown squares' survey days. Other squares flown that day are in training.
+**What the test data stands for.** Whole north-south transects (columns of the source's 1.5 km grid) are held out with all their survey days, as the field validates (BOEM 2018-010, Sec. 2.5.6), so a test square stands for a line the plane did not fly; the other transects flown that day are in training.
 
-**Our changes to the source.** We took the long-tailed duck from the source's three species groups, rebuilt the authors' table from their unscaled covariates (their analysis files standardise every column over all rows), and hold out blocks of the grid, where the source fitted on all rows.
+**Our changes to the source.** We took the long-tailed duck from the source's three species groups, rebuilt the authors' table from their unscaled covariates (their analysis files standardise every column over all rows), and hold out whole transects, where the source fitted on all rows.
 
 > **Use case fit: approximate (a stand-in with a known gap).** One daytime strip count on one survey day stands for the seasonal density per square that planners read off the source's maps, and for this species it misses most of the birds, which are largely absent from the Sound by day (Allison, Perkins & Perry 2009, MMS 2009-020). The strip length is known for a test row, where a map sets 1.5 km.
 
@@ -139,7 +142,7 @@ Only curators run `build`, when the dataset ships.
 | task.problem_type | regression |
 | task.metric | mean_poisson_deviance |
 | task.split_regime | grouped_non_iid |
-| task.group_on | grid_block |
+| task.group_on | transect_column |
 | task.group_labels | per_sample |
 
 **Metric**
@@ -158,7 +161,7 @@ Only curators run `build`, when the dataset ships.
 <details>
 <summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
 
-- categorical (3): `grid_block`, `winter`, `ferry_route_within_1km`
+- categorical (3): `transect_column`, `winter`, `ferry_route_within_1km`
 - string (0): none
 - datetime (0): none
 
@@ -187,11 +190,11 @@ The first 5 of 7,751 rows of the final frame (random rows: the frame is shuffled
 
 | log1p_long_tailed_duck_count | utm19n_easting_m | utm19n_northing_m | transect_km | winter | day_of_winter | sst_winter_mean_c | sst_month_c | sst_month_relative_c | bottom_temp_summer_c | chlorophyll_a_mg_m3 | cdom_absorbance |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1.09861 | 410259 | 4.58687e+06 | 1.50378 | 2003/04 | 43 | 4.88273 | 2.09191 | 0.207454 | 16.0481 | 4.2208 | 3.81209 |
-| 0 | 401259 | 4.60337e+06 | 0.744044 | 2003/04 | -15 | 4.70025 | 5.87118 | -0.142814 | 16.7531 | 4.16159 | 3.86487 |
-| 4.94876 | 414759 | 4.59287e+06 | 1.50008 | 2003/04 | 99 | 5.0829 | 4.9085 | -0.71196 | 14.5733 | 3.61788 | 3.12991 |
-| 0 | 399759 | 4.58537e+06 | 0.0698899 | 2003/04 | 22 | 4.78129 | 2.8049 | -0.184789 | 17.3533 | 4.28702 | 3.96386 |
-| 0 | 383259 | 4.58387e+06 | 1.50054 | 2003/04 | 22 | 4.97033 | 3.11784 | 0.128146 | 17.1239 | 4.52159 | 3.58435 |
+| 0 | 392259 | 4.59887e+06 | 1.50092 | 2003/04 | 55 | 4.71908 | 1.6052 | -0.279256 | 17.0969 | 4.30111 | 3.98214 |
+| 2.3979 | 393759 | 4.60037e+06 | 1.50023 | 2004/05 | 38 | 4.76252 | 1.70636 | -0.328175 | 16.8067 | 4.58898 | 3.6232 |
+| 2.3979 | 398259 | 4.58087e+06 | 1.50567 | 2003/04 | 99 | 4.75281 | 5.8469 | 0.22644 | 17.3309 | 4.08236 | 4.17697 |
+| 0 | 392259 | 4.60337e+06 | 0.673495 | 2005/06 | -10 | 5.13093 | 6.57061 | -0.102708 | 17.1393 | 4.45282 | 3.59411 |
+| 0 | 399759 | 4.58837e+06 | 1.50083 | 2003/04 | -26 | 4.82402 | 5.98166 | -0.0323334 | 16.7097 | 4.34828 | 3.82291 |
 
 ## Curation notes
 
@@ -200,8 +203,8 @@ We start with the data frames env.segs (the 504 segments x 30 survey dates, with
 - Prediction point: after the last survey of 2005/06 (spring 2006), when the source fitted one model on all 30 surveys and drew its maps; for each survey day, the long-tailed ducks in the squares the plane did not fly. Known then are the covariates of the source's Table 1 (the 2002-2006 ocean-colour means and the 2003-2005 tidal means included), the winter, the day and the strip length. Distribution mapping, as the source describes it, uses such models "to predict utilization of un-sampled areas or time periods based on biophysical habitat features" (Introduction); the decision it names is siting: "marine spatial planners must carefully consider the most appropriate information to use when deciding, for example, where to place marine protected areas or offshore wind energy developments" (Sec. 4.2).
 - Survey days, not map dates: the source's maps give every segment "predicted on 10 evenly-spaced dates from 15 November through 1 April in each winter" (Figs. 4-6), which are not survey days, and planners read the seasonal value per square. The task fills in a surveyed day, whose level the model learns from the other squares flown that day, as the field validates such models (BOEM 2018-010, Sec. 2.4: the survey as a random effect; Sec. 2.5.6: cross-validation stratified by transect). On the block splits the survey day's training mean alone reaches R^2 0.13 on log1p, against 0.18 for untuned LightGBM, and LightGBM without the winter, the day, the NAO index and the monthly sea temperatures -0.001 (9 splits). A new square on a date not in training (segments and survey dates held out together) scores -0.077, below the training mean (-0.007; review panel).
 - Regime: grouped, not the temporal split the screening proposed (later winters from earlier ones). The regime follows the source's maps of the surveyed winters; it never forecasts a later one ("Since additional test data were not available for our study area, we used a pseudo R2 measure of the explained variation", Sec. 2.5). A forecast of a later winter fails TP-10 leg 1, so a temporal task would be `No` under SEL-10: trained on 2003/04-2004/05 and tested on the three parts of 2005/06, neither the covariates nor a segment's own past predict it (best untuned model R^2 0.04 on log1p, the segment's past mean 0.025; RMSE on the count 105.9 against 106.6 for the past mean).
-- Group: 3 x 3 blocks of the source's 1.5 km grid (`grid_block`, 4.5 km squares; 60 blocks of 2 to 193 rows), built exactly from the coordinates (SPLIT-24): each segment's column and row counted from the grid's south-west cell, divided by 3. Transects run north-south about 2.5 km apart (Sec. 2.1.2), so a single held-out segment kept its neighbours on the same flight line, flown minutes apart, in training: 95% of its test rows had a square flown the same day within 1.5 km in training, against 43% of the survey days of the 50 squares never flown (all on the grid's border), and removing only those same-day north-south neighbours from training took R^2 on log1p from 0.251 to 0.177 (as many random rows: 0.247; review panel, 40 draws). Under blocks, 43% of test rows have such a square (36% to 51% per split). Untuned on the block splits: random forest R^2 0.20 on log1p, LightGBM 0.18, a linear model 0.06, the day of the winter alone 0.13 (task probe, 5 of the 9 splits); LightGBM on all 9: 0.18 (0.09 to 0.26, Spearman 0.45). The probes are in the run folder 2026-10-30_zero_inflated_add.
-- Target: the long-tailed duck (LTDU), one of the three groups the source models apart, chosen on all rows, test folds included (the Decision). On the block splits untuned LightGBM reaches R^2 0.18 on log1p for it and -0.08 for the common eider, which has 75.1% zeros ("no eiders were detected in 75% of segment observations", Sec. 2.2) and counts up to 30,000. The scoters pool four codes (SUSC, WWSC, BLSC, UNSC in R/create_final_data.R; "we pooled all scoter observations", Sec. 2.1.2) and reach 0.20 on log1p, but one raft of 70,000 holds 67% of their squared deviation from the mean on the count. Long-tailed duck: 57.1% zeros; the other counts have a median of 7, counts of 100 or more (3.6% of them) hold 45% of the ducks, up to 3,000, and the 10 largest counts hold 84% of the squared deviation. Shipped as log1p, scored on the count (`target_transform="log1p"`).
+- Group: the transect column (`transect_column`), a column of the source's 1.5 km grid, along which the plane flies north-south (Sec. 2.1.2); 24 columns, built exactly from the coordinates (SPLIT-24). The field validates by holding out whole transects (BOEM 2018-010, Sec. 2.5.6), and the curator chose the field's practice (Andrej, 2026-11-03, review issue 1: "We should definitely use what the field uses"). Single held-out segments kept their neighbours on the same flight line, flown minutes apart, in training (95% of test rows had a square flown the same day within 1.5 km; without only those neighbours R^2 on log1p fell from 0.251 to 0.177); 3 x 3 blocks of the grid were the panel's alternative. On the declared metric, the mean Poisson deviance, untuned LightGBM with a Poisson loss explains 4.2% of the training mean's deviance under transect columns (0.8% to 12.8%, above the mean on 9 of 9 folds of 3 repeats), against 7.9% under 3 x 3 blocks (review, 2026-11-03).
+- Target: the long-tailed duck (LTDU), one of the three groups the source models apart, chosen on all rows, test folds included (the Decision). On the earlier 3 x 3 block splits untuned LightGBM reached R^2 0.18 on log1p for it and -0.08 for the common eider, which has 75.1% zeros ("no eiders were detected in 75% of segment observations", Sec. 2.2) and counts up to 30,000. The scoters pool four codes (SUSC, WWSC, BLSC, UNSC in R/create_final_data.R; "we pooled all scoter observations", Sec. 2.1.2) and reach 0.20 on log1p, but one raft of 70,000 holds 67% of their squared deviation from the mean on the count. Long-tailed duck: 57.1% zeros; the other counts have a median of 7, counts of 100 or more (3.6% of them) hold 45% of the ducks, up to 3,000, and the 10 largest counts hold 84% of the squared deviation. Shipped as log1p, scored on the count (`target_transform="log1p"`).
 - The counts are of ducks on the water, the quantity a habitat map wants. The same flights' raw sightings are archived at NOAA NCEI (accession 0115356, dataset MassAudNanAerial, 39,559 records, August 2002 to March 2006), and the deposit equals NCEI's in-strip long-tailed duck count minus the birds marked flying on 3,609 of the 3,612 segment-days with the species in either (the daily ratio is 1.000 on every day of 2003/04 and 2004/05 but one, 0.996). NCEI has no behaviour field for 2005/06; there the deposit lacks two flocks, 711 ducks on 2006-02-08 and 800 on 2006-03-06 (zero bullet), probably flying birds, not shown. NCEI holds 7 more winter survey days (2004/05: 2; 2005/06: 5), which the paper's "30 ... standardized aerial strip-transect surveys" (Sec. 2.1.2) leave out without a stated reason; they are not in the deposit and not added.
 - Daytime use only: the team that flew these surveys wrote that they were flown "during daylight hours when the vast majority of LTDUs are absent from the Sound" (Allison, Perkins & Perry 2009, MMS 2009-020). The counts miss the night roosting and the dawn and dusk commute that the species' siting question at Horseshoe Shoal was about; a reason for `fit="approximate"`, not a change to the data.
 - A zero is a flown strip without a long-tailed duck on the water; the authors "assumed our survey design led to a low incidence of false zeros" (Sec. 2.2), though "our survey methods did not address potential undercounting of individuals that were diving during flyovers" (Sec. 2.1.2). One known gap: NCEI places 800 long-tailed ducks on transect 11-10 on 2006-03-06 (13:04-13:06, one position, all in segment 329), which are in no deposit row and not in the authors' own sighting table (GIS/Survey/obs_poly.dbf); the segment holds a zero that day. The sightings share one position, so no rule locates the rest of that pass, and the rows stay (LEAK-25).
@@ -216,29 +219,29 @@ We start with the data frames env.segs (the 504 segments x 30 survey dates, with
 
 ## Splits
 
-Default grouped splits on `grid_block`, 3 x 3 blocks of the source's 1.5 km grid: every survey day of a block's segments stays on one side (20 test blocks and 2,337 to 2,823 test rows per split). A test square stands for a square the plane did not fly that day: 43% of test rows have a square flown the same day within 1.5 km in training, as 43% of the survey days of the never-flown squares do; single held-out segments had 95%, and those same-day neighbours on the flight line made about 30% of their score. The other squares flown on the same day are in training, so the model learns the day's level from them, as anyone filling in a surveyed day can. Grouped rather than temporal: the regime follows the source's maps of the surveyed winters; a forecast of a later winter fails TP-10 leg 1, so a temporal task would be `No` under SEL-10 (curation_comments).
+Default grouped splits on `transect_column`, whole north-south transects of the source's 1.5 km grid with all their survey days, as the field validates (BOEM 2018-010, Sec. 2.5.6; Andrej, 2026-11-03). A test column stands for a transect the plane did not fly; the other transects flown that day are in training, so the model learns the day's level from them. On the mean Poisson deviance a Poisson LightGBM beats the training mean on 9 of 9 folds of 3 repeats (4.2% of its deviance explained). Grouped rather than temporal: the regime follows the source's maps of the surveyed winters; a forecast of a later winter fails TP-10 leg 1, so a temporal task would be `No` under SEL-10 (curation_comments).
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 4,928 to 5,414 rows, test 2,337 to 2,823 rows.
+3 repeat(s) x 3 fold(s) with seed 4267; train 4,735 to 5,801 rows, test 1,950 to 3,016 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 5364 | 2387 |
-| 0 | 1 | 5210 | 2541 |
-| 0 | 2 | 4928 | 2823 |
-| 1 | 0 | 5153 | 2598 |
-| 1 | 1 | 5096 | 2655 |
-| 1 | 2 | 5253 | 2498 |
-| 2 | 0 | 5414 | 2337 |
-| 2 | 1 | 4984 | 2767 |
-| 2 | 2 | 5104 | 2647 |
+| 0 | 0 | 5557 | 2194 |
+| 0 | 1 | 4894 | 2857 |
+| 0 | 2 | 5051 | 2700 |
+| 1 | 0 | 5665 | 2086 |
+| 1 | 1 | 5102 | 2649 |
+| 1 | 2 | 4735 | 3016 |
+| 2 | 0 | 5801 | 1950 |
+| 2 | 1 | 4936 | 2815 |
+| 2 | 2 | 4765 | 2986 |
 
 ## Group structure
 
-One group is a block of 3 x 3 segments of the source's 1.5 km grid over Nantucket Sound, a 4.5 km square (60 blocks hold flown segment-days, 2 to 193 rows each); its key is each segment's column and row counted from the grid's south-west cell and divided by 3, exact from the coordinates. Held out with all its survey days, a block stands for squares the plane did not fly on a survey day. The transects run north-south about 2.5 km apart, and 43% of the test rows have a square flown that day within 1.5 km in training, as 43% of the survey days of the 50 squares never flown (all on the grid's border) do; single held-out segments had one on 95%, their neighbours on the same flight line. The other squares flown on the same day stay in training, so the day's level is learnable from them, as in the field's validation (BOEM 2018-010, Sec. 2.4 and 2.5.6). The source fitted on all rows and validated in sample (Smith et al. 2019, Sec. 2.5). Each segment-day is one prediction.
+One group is a transect column: a column of the source's 1.5 km grid over Nantucket Sound, flown north-south (24 columns), its key each segment's column counted from the grid's south-west cell, exact from the coordinates. Held out with all its survey days, a column stands for a transect the plane did not fly, the unit the field holds out to validate its models (BOEM 2018-010, Sec. 2.5.6). The other transects flown on the same day stay in training, so the day's level is learnable from them. The source fitted on all rows and validated in sample (Smith et al. 2019, Sec. 2.5). Each segment-day is one prediction.
 
 | field | value |
 |---|---|
-| group column | `grid_block` |
+| group column | `transect_column` |
 | labels | per_sample |
 | order inside a group | none |
 | prediction unit | row |
@@ -246,13 +249,13 @@ One group is a block of 3 x 3 segments of the source's 1.5 km grid over Nantucke
 
 | statistic | value |
 |---|---|
-| groups | 60 |
-| rows per group (min / median / max) | 2 / 158.5 / 193 |
-| largest group | 2.5% of the rows |
-| test groups per fold | 20 |
-| groups of two or more rows with a single label | 3.3% |
-| nearest neighbour in the same group | 87.1% of the rows (chance: 2.0%) |
-| label variance explained by the group | 0.07 (shuffled groups: 0.01) |
+| groups | 24 |
+| rows per group (min / median / max) | 17 / 343.5 / 506 |
+| largest group | 6.5% of the rows |
+| test groups per fold | 8 |
+| groups of two or more rows with a single label | 0.0% |
+| nearest neighbour in the same group | 88.2% of the rows (chance: 5.0%) |
+| label variance explained by the group | 0.04 (shuffled groups: 0.00) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
@@ -272,7 +275,11 @@ The source models three groups apart. We take the long-tailed duck for its signa
 
 0 error(s), 1 warning(s), 0 info (26 checks run, plus the dataset's own checks).
 
-- **warning** `task_target_value_dominant`: The target value 0 holds 57% of the rows. (hint: A cap (a censored value), a placeholder for missing, or a zero-inflated target: say which in `curation_comments`, drop censored or placeholder rows, or accept it with the reason.)
+- **warning** `groups_test_groups_few`: A test fold holds 8 groups (8-8 per fold, 24 groups in all): a score per group rests on few independent units, and a score per row on not many more. (hint: Keep the dataset only if its signal across groups is real (`.claude/skills/knowledge-data-foundry/scripts/group_probes.py`), and accept the warning with that reason.)
+
+Accepted on purpose:
+
+- `task_target_value_dominant`: 57.1% zeros: observed absences, a flown strip without a long-tailed duck on the water (Andrej, 2026-11-03: a valid zero-inflated regression task).
 
 ## Data checks
 
@@ -285,23 +292,23 @@ The source models three groups apart. We take the long-tailed duck for its signa
 |---|---|---|---|---|---|
 | winter | category | 0 | 0 | 3 | 2003/04, 2004/05, 2005/06 |
 | ferry_route_within_1km | category | 0 | 0 | 2 | no, yes |
-| grid_block | category | 0 | 0 | 60 | 1_1, 3_2, 1_2, 3_1, 3_3, 2_4, 2_3, 1_5, 4_2, 4_3 |
-| utm19n_easting_m | float64 | 0 | 0 | 24 | 390759.4766, 395259.4766, 386259.4766, 399759.4766, 407259.4766, 408759.4766, 4… |
+| transect_column | category | 0 | 0 | 24 | c07, c10, c04, c13, c19, c18, c21, c01, c15, c16 |
+| utm19n_easting_m | float64 | 0 | 0 | 24 | 390759.4766, 395259.4766, 386259.4766, 399759.4766, 408759.4766, 407259.4766, 4… |
 | utm19n_northing_m | float64 | 0 | 0 | 23 | 4592871.9372, 4594371.9372, 4597371.9372, 4598871.9372, 4595871.9372, 4585371.9… |
-| transect_km | float64 | 0 | 0 | 7644 | 1.5005, 1.5004, 1.5001, 1.5002, 1.5014, 1.5001, 1.5006, 1.5002, 1.5001, 1.5 |
-| sst_winter_mean_c | float64 | 0 | 0 | 1274 | 5.2178, 4.7989, 5.0069, 5.0966, 4.9571, 4.8136, 4.7904, 5.2128, 4.7946, 5.1375 |
-| sst_month_c | float64 | 0 | 0 | 4686 | 5.9545, 6.1092, 6.0164, 5.9806, 6.1754, 1.9028, 1.5443, 6.1728, 1.9246, 5.9725 |
-| sst_month_relative_c | float64 | 0 | 0 | 4686 | -0.0595, 0.0952, 0.0024, -0.0334, 0.1614, 0.0184, -0.3402, 0.1588, 0.0401, -0.0… |
-| bottom_temp_summer_c | float64 | 0 | 0 | 1274 | 16.8687, 17.3255, 16.7868, 16.5848, 17.1922, 17.2615, 17.3437, 16.4022, 17.3501… |
-| chlorophyll_a_mg_m3 | float64 | 0 | 0 | 454 | 4.8241, 3.9962, 4.1004, 6.0067, 4.4308, 4.707, 4.1058, 4.5369, 5.2294, 5.1456 |
-| cdom_absorbance | float64 | 0 | 0 | 454 | 3.629, 4.0624, 4.2614, 4.525, 4.4041, 3.9724, 4.1013, 4.3817, 3.8003, 4.0902 |
-| sediment_grain_size_phi | float64 | 0 | 0 | 454 | 0.6043, 1.0035, 0.7215, 0.6723, 1.0378, -0.618, 0.5017, 0.653, 0.8195, -0.7839 |
-| seabed_elevation_m | float64 | 0 | 0 | 454 | -8.0644, -10.5846, -12.4318, -2.2087, -14.5819, -14.1556, -13.6258, -12.147, -6… |
-| distance_to_land_km | float64 | 0 | 0 | 450 | 8.215, 10.441, 6.7407, 2.1479, 8.114, 6.6172, 0.6896, 2.7038, 9.6118, 2.9292 |
-| seafloor_surface_area_ratio | float64 | 0 | 0 | 454 | 1.0001, 1.0002, 1.0004, 1.0002, 1.0002, 1.0001, 1.0004, 1.0004, 1.0002, 1.0005 |
-| tidal_velocity_bottom_mean_m_s | float64 | 0 | 0 | 454 | 0.0281, 0.0169, 0.0188, 0.054, 0.038, 0.0512, 0.0255, 0.0416, 0.0193, 0.066 |
-| tidal_velocity_sd_m_s | float64 | 0 | 0 | 454 | 0.1984, 0.2089, 0.1937, 0.2849, 0.2132, 0.3456, 0.1881, 0.2951, 0.1992, 0.3909 |
-| stratification_log10 | float64 | 0 | 0 | 454 | 4.3248, 4.6485, 4.4848, 2.436, 4.0327, 3.8221, 5.0021, 3.7281, 4.6697, 2.9188 |
+| transect_km | float64 | 0 | 0 | 7644 | 1.5005, 1.5004, 1.5001, 1.5002, 1.5001, 1.5, 1.5014, 1.5001, 1.5002, 1.5006 |
+| sst_winter_mean_c | float64 | 0 | 0 | 1274 | 5.1718, 4.8136, 4.8394, 5.1375, 4.7904, 4.7946, 4.8302, 5.2178, 5.2128, 5.0966 |
+| sst_month_c | float64 | 0 | 0 | 4686 | 5.9545, 1.6267, 6.5965, 5.9241, 6.0083, 5.9565, 6.0236, 6.4185, 6.0438, 5.9691 |
+| sst_month_relative_c | float64 | 0 | 0 | 4686 | -0.0595, -0.2577, 0.5825, -0.0899, -0.0057, -0.0575, 0.0096, 0.4046, 0.0298, -0… |
+| bottom_temp_summer_c | float64 | 0 | 0 | 1274 | 16.4617, 17.2615, 17.3453, 16.969, 17.3437, 17.3501, 17.1876, 16.8687, 16.4022,… |
+| chlorophyll_a_mg_m3 | float64 | 0 | 0 | 454 | 6.0067, 4.5822, 3.9962, 4.5369, 4.6882, 4.1004, 4.1058, 4.8241, 5.2294, 5.1456 |
+| cdom_absorbance | float64 | 0 | 0 | 454 | 4.525, 4.4533, 4.0624, 4.3817, 4.5144, 4.2614, 4.1013, 3.629, 3.8003, 4.0902 |
+| sediment_grain_size_phi | float64 | 0 | 0 | 454 | 0.6723, 0.1209, 1.0035, 0.653, 0.1669, 0.7215, 0.5017, 0.6043, 0.8195, -0.7839 |
+| seabed_elevation_m | float64 | 0 | 0 | 454 | -2.2087, -9.7834, -10.5846, -12.147, -10.858, -12.4318, -13.6258, -8.0644, -6.9… |
+| distance_to_land_km | float64 | 0 | 0 | 450 | 8.215, 10.441, 6.7407, 9.6118, 3.6316, 5.1223, 7.1273, 2.9998, 8.114, 0.6896 |
+| seafloor_surface_area_ratio | float64 | 0 | 0 | 454 | 1.0002, 1.0003, 1.0002, 1.0004, 1.0002, 1.0004, 1.0004, 1.0001, 1.0002, 1.0005 |
+| tidal_velocity_bottom_mean_m_s | float64 | 0 | 0 | 454 | 0.054, 0.0338, 0.0169, 0.0416, 0.0676, 0.0188, 0.0255, 0.0281, 0.0193, 0.066 |
+| tidal_velocity_sd_m_s | float64 | 0 | 0 | 454 | 0.2849, 0.2857, 0.2089, 0.2951, 0.2878, 0.1937, 0.1881, 0.1984, 0.1992, 0.3909 |
+| stratification_log10 | float64 | 0 | 0 | 454 | 2.436, 3.6887, 4.6485, 3.7281, 2.6633, 4.4848, 5.0021, 4.3248, 4.6697, 2.9188 |
 | nao_winter | float64 | 0 | 0 | 3 | -0.09, 0.38, -0.87 |
 | log1p_long_tailed_duck_count | float64 | 0 | 0 | 170 | 0.0, 1.0986, 1.6094, 0.6931, 2.3979, 1.3863, 1.7918, 1.9459, 2.1972, 2.5649 |
 | day_of_winter | int64 | 0 | 0 | 28 | -22, -15, 38, 55, 61, -43, -10, 59, 53, 99 |
@@ -349,11 +356,11 @@ The source models three groups apart. We take the long-tailed duck for its signa
 |---|---|---|---|---|
 | ferry_route_within_1km | 1 | no | 6784 | 87.52 |
 | ferry_route_within_1km | 2 | yes | 967 | 12.48 |
-| grid_block | 1 | 1_1 | 193 | 2.49 |
-| grid_block | 2 | 3_2 | 189 | 2.44 |
-| grid_block | 3 | 1_2 | 188 | 2.43 |
-| grid_block | 4 | 3_1 | 186 | 2.4 |
-| grid_block | 5 | 3_3 | 185 | 2.39 |
+| transect_column | 1 | c07 | 506 | 6.53 |
+| transect_column | 2 | c10 | 503 | 6.49 |
+| transect_column | 3 | c04 | 493 | 6.36 |
+| transect_column | 4 | c13 | 461 | 5.95 |
+| transect_column | 5 | c19 | 457 | 5.9 |
 | winter | 1 | 2003/04 | 3189 | 41.14 |
 | winter | 2 | 2004/05 | 2720 | 35.09 |
 | winter | 3 | 2005/06 | 1842 | 23.76 |

@@ -56,90 +56,148 @@ note (issue 1), and ship 2019-2022 or rebuild to 2025 (issue 2).
 
 **Issues for Andrej:**
 
-3. **Accept the severity screen as what sets this task apart from glioma_grading_clinical_and_mutation_features?** When
-   a crash is in the register, its deaths are in the same record, so read literally the model predicts a count already
-   on file. glioma_grading_clinical_and_mutation_features was set to `No` on that fact (Lennart, 2026-10-26: "a model
-   can only cross-check a label that already exists"). The definition now reads the task as the severity part of
-   network screening: a road agency needs the expected deaths of a crash given where, when and how it happened, and no
-   record holds that expectation, only one realised count.
-   * What it changes: this reading makes every field entered with the crash an input, the officer's cause included
-     (issue 1), with an approximate fit (one crash against a decision per section and year, no traffic exposure). A
-     first-report reading (deaths not yet known) would drop the cause and needs an actor no source names.
-   * Evidence: the Highway Safety Manual's relative severity index (ch. 4) and the rural roads department's equivalent
-     accident number rank sites by expected severity; the domain practitioner would use the model "as a severity
-     screen", and the blind reviewer reached the same reading on its own. The register has no first-report snapshot:
-     every field is entered in one record, a median 53 days after the crash.
-   * Rule: USE-1 and USE-3 (Must). Precedent: departs from glioma_grading_clinical_and_mutation_features with the fact
-     named. noaa_storm_events_damage (same run, not yet decided) puts its prediction point at the first report and
-     drops the fields written with the outcome; the mediator separates them by when the actor acts (a storm damage
-     estimate before the survey, a road agency after the crash is recorded). Your call becomes the Cases row for
-     incident registers.
-   * The critic first asked for a first-report point and accepted the severity screen as the milder remedy.
-   * Implemented: the severity screen in the prediction-point bullet, `use_case`, `known` and `fit_reason`.
-   * Alternative: a first-report prediction point, dropping `presumed_cause` (R^2 0.171 to 0.166); or `No` (No Good
-     Target / Scientific Discovery), as glioma_grading_clinical_and_mutation_features.
+3. **Accept the severity screen as what sets this task apart from glioma_grading_clinical_and_mutation_features?**
 
-   Recommendation: accept the severity screen. Decision: accept it, move to a first report, or retire?
+   * **Problem:** when a crash is in the register, its deaths are in the same record, so read literally the model
+     predicts a count already on file. glioma_grading_clinical_and_mutation_features was set to `No` on that
+     fact[^g1]. The definition reads the task instead as a road agency's severity screen: does that set it apart?
+   * **Background:** the severity screen is the severity part of network screening: a road agency needs the expected
+     deaths of a crash given where, when and how it happened, and no record holds that expectation, only one realised
+     count. The actor, the moment and what is known then decide the task[^g2].
+   * **Effect on the task:** this reading makes every field entered with the crash an input, the officer's cause
+     included (issue 1), with an approximate fit (one crash against a decision per section and year, no traffic
+     exposure). A first-report reading (deaths not yet known) would drop the cause and needs an actor no source names.
+   * **Evidence:**
+     - The Highway Safety Manual's relative severity index (ch. 4) and the rural roads department's equivalent
+       accident number rank sites by expected severity.
+     - The domain practitioner would use the model "as a severity screen", and the blind reviewer reached the same
+       reading on its own.
+     - The register has no first-report snapshot: every field is entered in one record, a median 53 days after the
+       crash.
+   * **Consistency:**
+     - Departs from glioma_grading_clinical_and_mutation_features, with the fact that sets it apart named above.
+     - noaa_storm_events_damage (same run, not yet decided) puts its prediction point at the first report and drops
+       the fields written with the outcome; the mediator separates them by when the actor acts (a storm damage
+       estimate before the survey, a road agency after the crash is recorded).
+     - Your call becomes the Cases row for incident registers.
+   * **Panel:** the critic first asked for a first-report point and accepted the severity screen as the milder
+     remedy.
+   * **Options:**
 
-1. **Keep the officer's presumed cause and collision type?** The reporting officer enters the presumed cause (53
-   codes, such as speeding or drunk driving) and the kind of collision in the same record as the deaths, a median 27
-   days after a fatal crash. If knowing that someone died changes what the officer writes, a model learns the
-   officer's habit, and an agency ranking road sections by it would rank how crashes were written up, not how they
-   happened. The question arises under the severity-screen reading (issue 3); a first-report reading drops the cause
-   anyway.
-   * What it changes: R^2 0.171 with both fields, 0.166 without the cause, 0.162 without both (ROC AUC for any death
-     0.840, 0.838, 0.833; 9 windows, untuned LightGBM).
-   * The trace: on the highways, outside the New Year and Songkran campaign days (when police test drivers for alcohol
-     widely), crashes coded drunk driving are fatal in 21% of cases against 11% for the rest; on campaign days, 12%
-     against 12%. That fits alcohol tests made because someone died.
-   * Against a leak: given the crash's hour, weekend, year, first vehicle, collision type, road layout and vehicle
-     count, the off-campaign odds ratio falls from 2.10 to 1.17 (95% CI 0.88-1.57, approximate). Blanking the two
-     drunk-driving codes on the 530 crashes that carry them off the campaign days loses nothing (R^2 +0.001 to +0.003
-     over 3 seeds); the most those rows could carry is R^2 0.0015 (an oracle bound), about one standard error, so the
-     gain at stake is small either way. The cause's gain comes from codes read at the scene (cutting in, running a
-     signal, illegal overtaking, driving the wrong way: fatal in 20-48%). Speeding is the default code (75% of crashes
-     without a death, 69% with one). The collision type is a fact of the scene; its blanks follow the agency.
-   * Rule: LEAK-10 (Must). Its second clause (2026-10-26) keeps values whose late part cannot be located row by row
-     only when the part that can be traced shows no gain, and leaves each such keep to you. Precedents:
-     onlinenewspopularity (kept on that test) and distribution_transformers_at_cauca_department (dropped: the gain
-     could sit on the changed rows). This call sets the precedent for the contributing-factor fields of
-     nyc_motor_vehicle_collisions, chicago_traffic_crashes and nhtsa_crss_crash_severity.
-   * The advocate and the critic agree on keeping; the critic asked to drop the cause and withdrew after his own
-     conditional test.
-   * Implemented: both kept, with a `Potential leak, kept on purpose:` note (the mechanism, these numbers, and a
-     revisit if the task moves to the first report of a crash, before the deaths are known, or a TRAMS codebook dates
-     the cause).
-   * Alternative: drop `presumed_cause` (R^2 0.171 to 0.166), or both fields (0.162).
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Severity screen (implemented) | the prediction-point bullet, `use_case`, `known` and `fit_reason` read the task as a road agency's severity screen; every field entered with the crash is an input | a use the Highway Safety Manual and the practitioner name; no record holds the expected deaths | approximate fit (one crash against a decision per section and year, no traffic exposure) |
+     | B | First-report prediction point | the prediction point moves to the first report, before the deaths are known; drops `presumed_cause` (R^2 0.171 to 0.166) | no field written with the deaths | needs an actor no source names; the register has no first-report snapshot |
+     | C | `No` (No Good Target / Scientific Discovery) | the dataset is retired, as glioma_grading_clinical_and_mutation_features | the same call as glioma_grading_clinical_and_mutation_features | no dataset |
 
-   Recommendation: keep both. Decision: keep, drop the cause, or drop both?
+   * **Recommendation:** A, accept the severity screen: the Highway Safety Manual and the practitioner name that use,
+     and no record holds the expected deaths it needs. **Decision:** accept it (A), move to a first report (B), or
+     retire (C)?
 
-2. **Ship 2019-2022, or rebuild to 2019-2025?** The dataset holds the years the record names. The ministry's snapshot
-   also holds 2023 to 2025, about 70,000 more crashes, so the test windows end almost four years before the snapshot.
-   * What it changes: an agency refitting today would train on 2019-2025 and score 2026 crashes; the 2021-2022
+   [^g1]: glioma_grading_clinical_and_mutation_features (Lennart, 2026-10-26): "a model can only cross-check a label
+     that already exists".
+   [^g2]: **USE-1** (Must): a use case is an actor, a moment and a decision; check every column, filter, target and
+     split choice against it. **USE-3** (Must): name the prediction point, when the model is used and what is known
+     then; a value that did not exist at that point is a leak.
+
+1. **Keep the officer's presumed cause and collision type?**
+
+   * **Problem:** the reporting officer enters the presumed cause and the kind of collision in the same record as the
+     deaths, a median 27 days after a fatal crash. If knowing that someone died changes what the officer writes, a
+     model learns the officer's habit. Keep both fields, or drop them?
+   * **Background:** the presumed cause has 53 codes, such as speeding or drunk driving. An agency ranking road
+     sections by such a model would rank how crashes were written up, not how they happened. The question arises
+     under the severity-screen reading (issue 3); a first-report reading drops the cause anyway.
+   * **Experiments:**
+     - What it changes: R^2 0.171 with both fields, 0.166 without the cause, 0.162 without both (ROC AUC for any death
+       0.840, 0.838, 0.833; 9 windows, untuned LightGBM).
+     - The trace: on the highways, outside the New Year and Songkran campaign days (when police test drivers for
+       alcohol widely), crashes coded drunk driving are fatal in 21% of cases against 11% for the rest; on campaign
+       days, 12% against 12%. That fits alcohol tests made because someone died.
+     - Against a leak: given the crash's hour, weekend, year, first vehicle, collision type, road layout and vehicle
+       count, the off-campaign odds ratio falls from 2.10 to 1.17 (95% CI 0.88-1.57, approximate).
+     - Blanking the two drunk-driving codes on the 530 crashes that carry them off the campaign days loses nothing
+       (R^2 +0.001 to +0.003 over 3 seeds); the most those rows could carry is R^2 0.0015 (an oracle bound), about one
+       standard error, so the gain at stake is small either way.
+     - The cause's gain comes from codes read at the scene (cutting in, running a signal, illegal overtaking, driving
+       the wrong way: fatal in 20-48%). Speeding is the default code (75% of crashes without a death, 69% with one).
+       The collision type is a fact of the scene; its blanks follow the agency.
+   * **Consistency:**
+     - A value whose late part cannot be located row by row stays only when the part that can be traced shows no
+       gain, and each such keep is yours to decide[^c1].
+     - Precedents: onlinenewspopularity (kept on that test) and distribution_transformers_at_cauca_department
+       (dropped: the gain could sit on the changed rows).
+     - This call sets the precedent for the contributing-factor fields of nyc_motor_vehicle_collisions,
+       chicago_traffic_crashes and nhtsa_crss_crash_severity.
+   * **Panel:** the advocate and the critic agree on keeping; the critic asked to drop the cause and withdrew after
+     his own conditional test.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep both (implemented) | both kept, with a `Potential leak, kept on purpose:` note | the traced part shows no gain; R^2 0.171 | a trace that fits alcohol tests made because someone died |
+     | B | Drop `presumed_cause` | the cause goes, the collision type stays | no officer's cause | R^2 0.171 to 0.166; loses the codes read at the scene |
+     | C | Drop both fields | the cause and the collision type go | no field written by the officer | R^2 0.171 to 0.162; the collision type is a fact of the scene |
+
+   * **Recommendation:** A, keep both: the part of the cause that can be traced shows no gain. **Decision:** keep (A), drop the cause (B), or drop both (C)?
+
+   **Notes for the AI:** the implemented note gives the mechanism, these numbers, and a revisit if the task moves to
+   the first report of a crash, before the deaths are known, or a TRAMS codebook dates the cause.
+
+   [^c1]: **LEAK-10** (Must), its second clause (amended 2026-10-26, Lennart): a value read at a later pull goes where
+     its late cells can be located; where they cannot be located row by row, the values go when they may carry a gain
+     and stay with a note only when the part that can be traced shows none; each such keep is a case-by-case call of
+     the curator.
+
+2. **Ship 2019-2022, or rebuild to 2019-2025?**
+
+   * **Problem:** the dataset holds the years the record names. The ministry's snapshot also holds 2023 to 2025, about
+     70,000 more crashes, so the test windows end almost four years before the snapshot.
+   * **Effect on the task:** an agency refitting today would train on 2019-2025 and score 2026 crashes; the 2021-2022
      windows stand in for that. Two of the nine fall in the low-traffic months of 2021 (about 1,250 crashes a month
      against 1,450-1,640 in 2022).
-   * For extending (the advocate's lean): 2024 and 2025 use the 2019-2022 codes (99.9-100% of labels), about 47,700
-     crashes. 2023 recodes only the site and the cause (7.5% and 20% of its labels exist earlier, against 94% of its
-     collision types), so it can join with those fields blank for the year, as
-     force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition masked values without a checked
-     conversion (CLEAN-21). Its 1,641 crashes entered two or three times agree on deaths in every case. The newest
-     windows would be 2024-2025. noaa_storm_events_damage and crms_phragmites_cover (this run, not yet decided) test
-     on their newest years.
-   * For keeping (the critic's lean): this version meets every Must, and the record you marked `Yes` is named
-     2019-2022 (its links list the 2019-2026 files, and the screening measured 2025). The extension is a new dataset:
-     a new name, new windows and a new review, with a year of road layout, slope and cause blank, 448 conflicting dates
-     among the 2023 repeats to resolve, and late-2025 crashes still arriving at the snapshot (10% of crashes reach the
-     register after eight months, mostly without a death), which the rebuild must check (LEAK-24).
-   * Rule: SPLIT-11 and SPLIT-20 (Should) want the newest, most representative windows and a history chosen from the
-     use case; no rule fixes which years of a growing register to take, so this is a weighing call. Dropping 2019 is
-     no way out: the two oldest windows would train on 49% and 46% of the rows (SPLIT-14, Must).
-   * Implemented: 2019-2022; the notes give this reason and say the extension is open.
-   * Alternative: rebuild as a 2019-2025 dataset (2023's site and cause blank, its repeats dropped, windows in
-     2024-2025), which replaces this one.
+   * **For extending** (the advocate's lean):
+     - 2024 and 2025 use the 2019-2022 codes (99.9-100% of labels), about 47,700 crashes.
+     - 2023 recodes only the site and the cause (7.5% and 20% of its labels exist earlier, against 94% of its
+       collision types), so it can join with those fields blank for the year, as
+       force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition masked values without a
+       checked conversion[^y1].
+     - Its 1,641 crashes entered two or three times agree on deaths in every case.
+     - The newest windows would be 2024-2025. noaa_storm_events_damage and crms_phragmites_cover (this run, not yet
+       decided) test on their newest years.
+   * **For keeping** (the critic's lean):
+     - This version meets every hard rule, and the record you marked `Yes` is named 2019-2022 (its links list the
+       2019-2026 files, and the screening measured 2025).
+     - The extension is a new dataset: a new name, new windows and a new review, with a year of road layout, slope and
+       cause blank, and 448 conflicting dates among the 2023 repeats to resolve.
+     - Late-2025 crashes are still arriving at the snapshot (10% of crashes reach the register after eight months,
+       mostly without a death), which the rebuild must check[^y2].
+   * **Weighing:** the newest, most representative windows and a history chosen from the use case are wanted[^y3]; no
+     rule fixes which years of a growing register to take, so this is a weighing call. Dropping 2019 is no way out:
+     the two oldest windows would train on 49% and 46% of the rows, below the minimum[^y4].
+   * **Panel:** split (advocate: extend now; critic: ship this, extend later).
+   * **Options:**
 
-   Recommendation: rebuild to 2019-2025 now: the extension is feasible and the notes leave it open, and after shipping
-   it would replace a shipped dataset and need the same review (PROV-6). The panel is split (advocate: extend now;
-   critic: ship this, extend later). Decision: keep 2019-2022, or rebuild to 2025?
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 2019-2022 (implemented) | ships the 2019-2022 crashes, test windows in 2021-2022; the notes say the extension is open | meets every hard rule; the years of the record you marked `Yes` | test windows end almost four years before the snapshot; two of nine in the low-traffic months of 2021 |
+     | B | Rebuild as 2019-2025 | 2023's site and cause blank, its repeats dropped, windows in 2024-2025; replaces this one | newest windows; feasible now | a new name, windows and review; late-2025 crashes to check |
+
+   * **Recommendation:** B, rebuild to 2019-2025 now: the extension is feasible and the notes leave it open, and after
+     shipping it would replace a shipped dataset and need the same review[^y5]. **Decision:** keep 2019-2022 (A), or
+     rebuild to 2025 (B)?
+
+   [^y1]: **CLEAN-21** (Should): one unit and one scale per column; when a feature's scale changes over time, put it on
+     one scale with the conversion the source or the measuring body publishes.
+   [^y2]: **LEAK-24** (Must): a target right-censored in the newest periods is cut where follow-up is complete, or
+     re-sourced from an archive with settled labels; compare two downloads first.
+   [^y3]: **SPLIT-11** (Should): train on everything before the window; the first split is the newest window, the
+     most representative. **SPLIT-20** (Should): decide what the train side holds from the use case, the history a
+     model refit at each window would train on, and check whether the newest windows fall in an atypical season.
+   [^y4]: **SPLIT-14** (Must): a temporal task has at least 3 windows, and no window's train side holds less than 50%
+     of the data.
+   [^y5]: **PROV-6** (Must): different versions or cuts of one underlying dataset are duplicates when neither adds a
+     distinct task, such as added or dropped rows.
 
 **Review panel:** ship after changes (mediator). Claim audit: 48 claims, 38 hold, 5 refuted or refuted in part (all
 about the notes, all fixed), 4 untested, 1 superseded. Blind review: would include with minor changes; its main

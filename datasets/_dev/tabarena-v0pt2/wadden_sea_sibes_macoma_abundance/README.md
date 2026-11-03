@@ -50,12 +50,13 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - task_target_value_dominant
+  warnings: []
   infos:
   - dataset_duplicate_rows
   - dataset_conflicting_duplicate_rows
-  accepted: {}
+  accepted:
+    task_target_value_dominant: '56.0% zeros: samples without a Baltic tellin (Andrej,
+      2026-11-03: zero-inflated targets are natural for these tasks and a core challenge).'
 decisions:
 - 2008 samples without any fauna record dropped, later ones kept as zeros
 - Samples with Tellinoidea dropped
@@ -300,11 +301,14 @@ SIBES counts tellinoids below 3 mm at the superfamily level, Macoma balthica inc
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 2 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (26 checks run, plus the dataset's own checks).
 
-- **warning** `task_target_value_dominant`: The target value 0 holds 56% of the rows. (hint: A cap (a censored value), a placeholder for missing, or a zero-inflated target: say which in `curation_comments`, drop censored or placeholder rows, or accept it with the reason.)
 - **info** `dataset_duplicate_rows`: 57 exact duplicate row(s) (0.1% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **info** `dataset_conflicting_duplicate_rows`: 60 row(s) (0.1%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+
+Accepted on purpose:
+
+- `task_target_value_dominant`: 56.0% zeros: samples without a Baltic tellin (Andrej, 2026-11-03: zero-inflated targets are natural for these tasks and a core challenge).
 
 ## Data checks
 

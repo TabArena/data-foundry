@@ -10,12 +10,12 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - Two-Regime Zeros
-- Larger IID Data
+- Non-IID (Grouped)
 original_source: Other
 year: '2014'
 domain: insurance
 required_split:
-- Random (IID)
+- Grouped (NON-IID)
 problem_type: Regression
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
@@ -134,6 +134,18 @@ CC (2026-11-02, Andrej): the forced grouped split ships (issue 5 (a)): "Forced g
 CC (2026-11-02, Andrej): the `Exposure` fix confirmed (issue 2 (a)): the 25,131 records that end early without a continuation get the length known at their start, every `Exposure` rounded to months; recorded as the LEAK-10 case for time on risk cut short by the outcome (leak_checks.md, Mechanisms table): the cut is removed or fixed where the data locates it, kept with its measured size where it cannot.
 
 **Assessment (AI, 2026-11-02):** the leak test across the forced grouped split (SPLIT-8 as amended 2026-11-02) finds none, on the 9 shipped splits with untuned LightGBM. Shared rows and units: 0.37% of each test fold has its 16 features in the training side, and those copies agree on a claim less often than the base rate (84% against 91%); the group probe finds no IID-grouped gap (R^2 0.025 both) and the hidden-group probe no other key (gaps -0.001 to +0.003); the 10,292 records whose policy continues only in another file, the one link the chains leave open, give nothing away (the successor lookup ranks claims at AUC 0.51 and lowers the Gini on 8 of 9 splits). Shared period (2004, by start month): the training side's mean claim rate and amount per start month and per risk area and start month, added as features, move the Gini by -0.0005 on average (-0.015 to +0.014) and the claim AUC by +0.0003; removing from training the test rows' own quarter costs no more than removing as many random rows (Gini -0.000, AUC +0.0005 on average, 12 fold-quarters). Features from other rows' outcomes: none in the column audit; the claim counters and bonus-malus hold the policy's own history, its earlier records in the same chain. how_much_did_it_rain's `No` named a measured period shock on both sides; none is found here.
+
+CC (2026-11-03, Andrej): the record takes the definition's split, `Grouped (NON-IID)`, and the tag `Non-IID (Grouped)` in place of `Larger IID Data` (record-field rows in frempl_french_motor_personal_line).
+
+CC (2026-11-03, Andrej): the claim amounts stay as published with the note on their unknown basis and valuation date (issue 3 (A)).
+
+**Assessment (AI, 2026-11-03):** the exposure-weighted Gini chosen in issue 4 (B) leaks as first worded: with the realised length as the base, a constant prediction scores 0.184 on the shipped splits, because records that ended early (often by their claim) have a short realised length. Not applied; the row Gini stays until the curator chooses; the base known at the start scores the length alone at 0 (model 0.137).
+
+CC (2026-11-03, Andrej): the folds are grouped by the cross-file policy component, the most conservative key (issue 1 (B)): "I choose B".
+
+CC (2026-11-03, Andrej): the metric is the exposure-weighted Gini of the ordered Lorenz curve with the length known at the start as its base (issue 4 (C)): "I go with your option C".
+
+CC (2026-11-03, Andrej): ship (verdict); the metric, the exposure-weighted Gini with the length known at the start as its base, checked.
 
 ## Reference
 

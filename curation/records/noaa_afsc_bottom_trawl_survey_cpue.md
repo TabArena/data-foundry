@@ -133,6 +133,8 @@ CC (2026-11-02, Andrej): "I follow your suggestions. Please don't forget to prop
 
 CC (2026-11-02, Andrej): ship. Every issue of the REVIEW is resolved: 11 taxa in one table with the taxon as a feature (issue 1), nine two-year windows without a gap (2), RMSE taken per taxon over its spread and averaged, marked as declared (3, the metric row).
 
+CC (2026-11-03, Andrej): the check warning `task_target_value_dominant` accepted: "for these tasks this is natural and a core challenge" (zero-inflated target).
+
 ## Reference
 
 Laman E.A., Rooper C.N., Rooney S.C., Turner K.A., Cooper D.W., Zimmermann M. (2017). Model-based essential fish

@@ -3,28 +3,25 @@ unique_name: nantucket_sound_sea_duck_aerial_survey_counts
 name: Nantucket Sound sea-duck abundance / aerial strip-transect counts of long-tailed ducks, scoters and eiders, 2003-2006
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
-suggestion: 'Yes'
+suggestion: TBD -> 2nd Tier
 priority: 2
 decision_markers:
 - Needs extensive data wrangling
 tags:
 - Two-Regime Zeros
-- Non-IID (Temporal)
+- Non-IID (Grouped)
+- Multi-target
 original_source: Other
 year: '2019'
 domain: biology & life sciences
 required_split:
-- Temporal (NON-IID)
+- Grouped (NON-IID)
 problem_type: Regression
 original_data_state: Other
 source_links:
 - https://doi.org/10.5061/dryad.1vm20t6
 - https://doi.org/10.1002/ece3.4738
 - https://arxiv.org/abs/1705.00644
-v2_path: datasets/_dev/tabarena-v0pt2/nantucket_sound_sea_duck_aerial_survey_counts/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -101,6 +98,12 @@ precedents went No). Split: later winters from earlier ones. Licence: CC0.
 CC (2026-11-02, Andrej): metric (REVIEW.md issue 2, cross-dataset item zi-count-metric): "add `mean_poisson_deviance` to the library, nantucket declares it, wadden and pennsylvania keep theirs". The mean Poisson deviance on the count replaces RMSE, a stand-in for the source's out-of-bag likelihood.
 
 **Assessment (AI, 2026-11-02):** applied. `mean_poisson_deviance` (scikit-learn's metric, with an optional `min_prediction` floor) is in `data_foundry.v2.metrics` with tests against scikit-learn; the definition declares `Metric.stand_in("mean_poisson_deviance", params={"min_prediction": 0.01}, target_transform="log1p")`: predictions are inverted from log1p to the count and floored at 0.01 ducks, the floor the review panel measured with, so a model predicting no ducks still scores (scikit-learn refuses a prediction of 0). On the block splits the Poisson fit was 9.8% below the training mean on 9 of 9 splits and the log1p tree fits 13-15% above it, where RMSE put both within 0.2% of the mean. `dataset check`: 0 errors. Set apart from wadden and pennsylvania, which keep RMSE: this source names one count-likelihood criterion.
+
+CC (2026-11-03, Andrej): the split holds out whole transect columns, the field's practice (issue 1): "We should definitely use what the field uses. We should stay as realistic and close to the real application as possible." The zero warning is accepted (issue 4): "We accept since this is a totally valid zero-inflated regression task".
+
+CC (2026-11-03, Andrej): the record takes the definition's `required_split` (Grouped (NON-IID)) and tag (Non-IID (Grouped)), after the split by transect columns.
+
+CC (2026-11-03, Andrej): 2nd Tier, not shipped: "I realized that this is a multi-target task. Therefore I declare it 2nd tier and don't ship." Each segment-day holds three distinct counts (long-tailed duck, eider, scoters), which the source models one by one; the format ships one target per dataset. Tag `Multi-target` added. The v2 folder left the working copy; its last definition (transect-column split, Poisson deviance, TabPFN per species D^2 0.153 / 0.219 / 0.346) is in the run folder of 2026-11-03, the committed one in 902011b3.
 
 ## Reference
 

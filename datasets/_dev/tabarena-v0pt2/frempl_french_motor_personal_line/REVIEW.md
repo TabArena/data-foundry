@@ -21,105 +21,272 @@ valid windows stated in `splits_comment` (SPLIT-8), the metric reason and the ne
 re-measured on the shipped folds. The record's screening lines the data refutes (the year, the chain links, the file
 sizes, "near-random slices", the negatives) are corrected at hand-over and need no mark.
 
-**Main points:** Confirm keeping amounts whose valuation date is unknown (3), the grouping key (1), and the Gini form
-for the insurance family (4). The `required_split` and `tag` rows follow the shipped grouped split.
-
-**Record fields that disagree with the definition:**
-
-- `required_split`: record `Random (IID)`, definition `Grouped (NON-IID)`.
-- `tag`: record `Larger IID Data`, definition `Non-IID (Grouped)`.
+**Main points:** all issues resolved on 2026-11-03: the amounts stay with their note (3), the folds are grouped by the
+cross-file policy component (1), and the metric is the exposure-weighted Gini with the length known at the start as
+its base (4). The record takes the grouped split and tag. Verdict: ship (2026-11-03).
 
 **Issues for Andrej:**
 
-3. **Keep the claim amounts although their basis and valuation date are not stated?** The source says "Total claim
-   amount of the guarantee" and no more. It does not say whether the amounts are paid or incurred (paid plus reserves),
-   or when they were valued. Claims late in 2004 may have been valued before they settled (LEAK-24: a target cut short
-   in the newest period).
-   * Evidence, circumstantial (EV-6): claimants whose record runs to the end of the year have lower amounts (median
-     749) than those whose record ended earlier (799 to 1,086 by quarter). That fits immature year-end claims, and it
-     also fits claims that end a contract (theft, write-off). One year of data cannot separate the two.
-   * Effect: if year-end claims were valued before they settled, the records that run to 31 December carry too low an
-     amount in training and test alike, so the benchmark asks for the cost as valued, not the final cost an insurer
-     prices; the grouped folds put the same mix on both sides.
-   * Rule: LEAK-24 (Must), not shown violated; USE-5. The fit stays approximate. Follows the USE-5 cases
+3. **Keep the claim amounts although their basis and valuation date are not stated?**
+
+   * **Problem:**
+     - The source says "Total claim amount of the guarantee" and no more.
+     - It does not say whether the amounts are paid or incurred (paid plus reserves), or when they were valued.
+     - Claims late in 2004 may have been valued before they settled: a target cut short in the newest period[^3a].
+   * **Effect on the task:** if year-end claims were valued before they settled, the records that run to 31 December
+     carry too low an amount in training and test alike, so the benchmark asks for the cost as valued, not the final
+     cost an insurer prices; the grouped folds put the same mix on both sides.
+   * **Experiments:** circumstantial evidence only[^3b]: claimants whose record runs to the end of the year have lower
+     amounts (median 749) than those whose record ended earlier (799 to 1,086 by quarter). That fits immature year-end
+     claims, and it also fits claims that end a contract (theft, write-off).
+   * **Unknown:** one year of data cannot separate the two readings. The CASdatasets maintainers (Dutang, Charpentier)
+     are the people to ask (option B).
+   * **Consistency:** the rule on targets cut short is not shown violated[^3a]. A label whose construction the source
+     leaves undocumented ships with an approximate fit and a note naming the gap[^3c]. This follows
      blood_tests_drink_prediction and mobile_churn (the quantity known, its recording not), as do the australian and
      spanish drafts.
-   * Implemented: kept, with the gap in the fit reason. Alternative: ask the CASdatasets maintainers (Dutang,
-     Charpentier) before shipping.
+   * **Options:**
 
-   Recommendation: keep with the note. Decision: keep, or ask first?
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep with the note (implemented) | amounts as published; the unknown basis and valuation date named in the fit reason | follows the precedents; ships now | the target may be the cost as valued, not the final cost |
+     | B | Ask the maintainers first | shipping waits for Dutang and Charpentier | could settle paid or incurred, and the valuation date | shipping waits on an answer |
 
-1. **Group the folds by policy chain (implemented), or by the cross-file policy component?** The release has no policy
-   id, but a policy whose contract changed during 2004 has several records: 34,324 records continue in the next row of
-   their file (same profile, starting the day the previous one ends; 1 such link by chance with the rows shuffled). A
-   later record's claim counters include the earlier record's claim: they rise after 87% of its claims and after 0.9% of
-   its non-claims. Under random folds, about 8,000 training rows per fold were later records of a test record. An
-   insurer pricing the test record could not have them: they did not exist yet. The choice left is the key: the chain
-   joins records only within a file (exactly, 1 chance link); the cross-file component also joins the 10,292 records
-   that continue in another file. After the `Exposure` fix those unjoined records no longer give claims away (the
-   lookup defined below ranks them at AUC 0.51 and lowers the Gini on 8 of 9 splits), so the component would close a
-   path that is no longer measured.
-   * Evidence (paired, same test rows, random folds, before the `Exposure` fix): give a model a lookup that finds,
-     among the training rows, the record that looks like the test record's next one (same profile, licence age
+   * **Recommendation:** A, keep with the note: one year of data cannot settle the question, and an undocumented label
+     ships with a note, as blood_tests_drink_prediction and mobile_churn did. **Decision:** A or B?
+
+   [^3a]: **LEAK-24** (Must): a target right-censored in the newest periods (a duration or a final status cut by the
+     download date) is cut where follow-up is complete, or re-sourced from an archive with settled labels.
+   [^3b]: **EV-6** (Should): say which evidence is proof (a test that could have refuted the claim) and which is
+     circumstantial.
+   [^3c]: **USE-5** (Must): a label from a named publication whose construction is undocumented and cannot be checked
+     may ship with `fit="approximate"` and a note naming the gap. Cases under this clause: blood_tests_drink_prediction,
+     mobile_churn.
+
+   **Resolved (2026-11-03, Andrej):** A, the amounts stay as published with the note on their unknown basis and
+   valuation date.
+
+1. **Group the folds by policy chain, or by the cross-file policy component?**
+
+   * **Problem:**
+     - The folds are grouped by policy, since a policy's later records give an earlier record's claim away, but the
+       release has no policy id.
+     - The choice is the key: the exact chain within a file, or a cross-file component that also joins 10,292 records.
+   * **Background:** a policy whose contract changed during 2004 has several records:
+     34,324 records continue in the next row of their file (same profile, starting the day the previous one ends; 1
+     such link by chance with the rows shuffled). A later record's claim counters include the earlier record's claim:
+     they rise after 87% of its claims and after 0.9% of its non-claims. Under random folds, about 8,000 training rows
+     per fold were later records of a test record. An insurer pricing the test record could not have them: they did
+     not exist yet. A shortcut that can be measured is always removed, so the folds are grouped by policy[^1a][^1b].
+     The choice left is the key: the chain joins records only within a file (exactly, 1 chance link); the cross-file
+     component also joins the 10,292 records that continue in another file.
+   * **Experiments:** paired, same test rows, random folds, before the `Exposure` fix. Give a model a lookup that
+     finds, among the training rows, the record that looks like the test record's next one (same profile, licence age
      advanced by the record's length) and checks whether its counters rose. It scores a Gini of 0.395 against 0.280
      without the lookup. Drop those later records from training and the gain falls to 0.013 (3/3 folds). LightGBM
      alone scores the same either way, because it reads one row at a time; that is why the split auditor's test found
-     no effect. Whether in-context models such as TabPFN take this path is untested.
-   * Rule: SPLIT-9 (Must) and its tension row ("a shortcut that can be measured is always removed"), with LEAK-5.
-     SPLIT-8 names the regime: grouped by the entity, `ForcedGroupedFromTemporal`. Grouping costs nothing measured
-     (untuned LightGBM on the shipped frame: Gini 0.332 grouped against 0.329 random, claim AUC 0.673 both). It matches
-     pricing_game_2017_french_mtpl (grouped by client) and spanish_motor_insurance_coverage_level_2022_2024 (grouped by
-     policy). The key rests on SPLIT-24 (Must): a true id or one constructed exactly, never a similarity match. The
-     chain meets it; whether the component, with its age tolerances and about 1% chance links, does is the reading you
-     decide.
-   * Implemented: one group per chain of consecutive rows in a file (80,831 groups), a key built exactly from the raw
-     order (SPLIT-24, as in_vehicle_coupon_recommendation). On the shipped folds the lookup now lowers the model's Gini
-     on 8 of 9 splits (by 0.038 on average): the fix gave many unjoined records the length known at their start, which
-     breaks the lookup's match; a lookup that leaves the length out ranks claims at AUC 0.53 and moves the Gini by
-     -0.02 to +0.01 (3 splits).
-   * Alternative: group on policy components that also join records across files (68,882 groups). Before the fix, the
-     lookup's signal was then gone (lookup alone AUC 0.507 against 0.545 by chain), at no measured cost (Gini 0.2785
-     against 0.2827). After the fix the chain leaves about as little, so the gain from the component key is now small.
-     The links across files rest on equal profiles and dates with age tolerances, and about 1% of them match by chance
-     (SPLIT-24: exactness against coverage).
-   * The advocate and the critic recommend the chain. The split auditor preferred random records; the paired test
-     above settles that.
+     no effect. Grouping costs nothing measured (untuned LightGBM on the shipped frame: Gini 0.332 grouped against
+     0.329 random, claim AUC 0.673 both).
+   * **After the fix:** on the shipped folds (chain key) the lookup now lowers the model's Gini on 8 of 9 splits (by
+     0.038 on average): the fix gave many unjoined records the length known at their start, which breaks the lookup's
+     match. The lookup ranks those unjoined records' claims at AUC 0.51; a lookup that leaves the length out ranks
+     claims at AUC 0.53 and moves the Gini by -0.02 to +0.01 (3 splits). So the unjoined records no longer give claims
+     away, and the component would close a path that is no longer measured.
+   * **Component key:** before the fix, the lookup's signal was gone under it (lookup alone AUC 0.507 against 0.545 by
+     chain), at no measured cost (Gini 0.2785 against 0.2827). After the fix the chain leaves about as little, so the
+     gain from the component key is now small.
+   * **Consistency:** grouping matches pricing_game_2017_french_mtpl (grouped by client) and
+     spanish_motor_insurance_coverage_level_2022_2024 (grouped by policy). A group key must be a true id or one built
+     exactly from the data, never a similarity match[^1c]. The chain meets it, built exactly from the raw order as in
+     in_vehicle_coupon_recommendation.
+   * **Panel:** the advocate and the critic recommend the chain. The split auditor preferred random records; the paired
+     test above settles that.
+   * **Unknown:** whether in-context models such as TabPFN take the lookup path is untested. Whether the component,
+     with its age tolerances and about 1% chance links, counts as built exactly is the reading you decide[^1c].
+   * **Options:**
 
-   Recommendation: the chain. Decision: chain, or component?
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Policy chain (implemented) | one group per chain of consecutive rows in a file, 80,831 groups | exact key, 1 chance link | leaves the 10,292 cross-file continuations unjoined |
+     | B | Cross-file policy component | also joins records across files, 68,882 groups | closes the cross-file path, at no measured cost | links rest on equal profiles and dates with age tolerances, about 1% by chance; gain now small |
 
-4. **Keep the row Gini (implemented), or score the exposure-weighted Gini on the cost per year, for the whole
-   insurance family?** The declared Gini (the form of Allstate's Kaggle competition) sorts the records by predicted
-   claim cost and counts each record once, whatever its length (1 day to 1 year). So sorting the records by length
-   alone already scores 0.277 of the model's 0.332 (83%, the 9 shipped splits, after the fix of issue 2): the metric
-   rewards knowing which records are long nearly as much as which are risky. An actuary compares tariffs by a Gini that
-   sorts by predicted cost per year of cover and counts each record by its exposure (CAS Monograph 5, sec. 7.2.4;
-   Liberty Mutual's competition also weighted). There, length alone scores about 0, and the fold scores vary less (SD
-   0.027 against 0.069 on the shipped splits).
-   * Both forms rank the model with the length above the one without it (9 of 9 shipped splits row, 6 of 9 weighted),
-     so the row form does not fail MET-1; the choice is a weighing (MET-11, MET-10). The critic withdrew its MET-1
-     objection on that measurement.
-   * Implemented: the row Gini, its reason corrected (what the cited sources score, the length's share, the swing of
-     about 0.10 from one claim).
-   * Alternative: the exposure-weighted Gini on the cost per year, with the realised `Exposure` as a scoring column and
-     never a feature (MET-2). The library now has it: `ordered_lorenz_gini` (added on 2026-11-01 for
-     wisconsin_local_government_property_insurance_fund) sorts by prediction / base with the base in the `weight` role,
-     here the realised `Exposure`, where `normalized_weighted_gini` sorts by the raw prediction; it is not normalized.
-     The alternative needs the same answer for australian_vehicle_insurance_2004_2005 and
+   * **Recommendation:** A, the chain: it is an exact key, and after the `Exposure` fix the records it leaves unjoined
+     no longer give claims away. **Decision:** A or B?
+
+   **Notes for the AI:** the chain is the group column `policy_chain` in `dataset.py`, the regime
+   `ForcedGroupedFromTemporal` (SPLIT-8). The splits comment and the Grouping text hold the numbers above.
+
+   [^1a]: **SPLIT-9** (Must): a training row whose label is not yet known at the prediction point must not be in
+     train. Its tension row in principles.md: "a shortcut that can be measured is always removed". With **LEAK-5**
+     (Must): never argue "not a leak" because models would predict the same; ask whether the stored values depend on
+     the test rows.
+   [^1b]: **SPLIT-8** (Must): a task temporal by its use case whose release cannot give valid windows ships in the
+     closest regime that keeps the rows, tagged as forced from temporal; here grouped by the entity,
+     `ForcedGroupedFromTemporal`.
+   [^1c]: **SPLIT-24** (Must): group on a true group id, or on one constructed exactly from the data; never on a
+     similarity-threshold cluster. Here exactness weighs against coverage. Cases include in_vehicle_coupon_recommendation.
+
+   **Andrej (2026-11-03, discuss):** What is the most conservative option that is the safest to not leak? Also, why
+   can't we do a temporal split via a reconstructed time feature?
+
+   **Answer (AI, 2026-11-03):**
+
+   * **Problem:**
+     - The most conservative key is B, the cross-file policy component: it joins every record that may be a later
+       record of the same policy, also across the five sample files, so no later record of a test policy stays in
+       training.
+     - Its chance links (about 1%) only put two unrelated policies into one group, which makes the split stricter,
+       never leakier, so the exactness worry of the rule is about cost, and the cost measured is nothing.
+     - A temporal split is possible from the record dates, but within one year it trains on few and unusual records.
+   * **Why not a temporal split:**
+     - The release covers 2004 only, and a record's claim is known when its period ends. Most records run to
+       31 December, so at a cutoff inside 2004 the only records with a known label are those that already ended:
+       13%, 26% and 39% of the rows at 1 April, 1 July and 1 October.
+     - Those are the contracts that ended early, often because of the claim or a change of car, not the book an
+       insurer trains on; and the windows fall below the rule that a window trains on at least half the rows[^1d].
+     - On the next three months' records they rank claims at AUC 0.55, 0.59 and 0.62, against 0.60, 0.59 and 0.62
+       for as many random records, so they test nothing a grouped split does not.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Policy chain (implemented) | one group per chain of consecutive rows in a file, 80,831 groups | exact key | leaves 10,292 cross-file continuations unjoined |
+     | B | Cross-file policy component | also joins records across files, 68,882 groups | the most conservative key; closes the cross-file path; costs nothing measured (Gini 0.2785 against 0.2827) | about 1% of the links join unrelated policies, which only makes the split stricter |
+     | C | Temporal windows inside 2004 | train on the records ended before a cutoff, test on the next three months | follows time | trains on 13% to 39% of the rows, all early-ended contracts; below the half-the-rows rule |
+
+   * **Recommendation:** B: you ask for the safest key, it is, and it costs nothing measured. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, build the component in `_clean` from the raw order and dates as the panel did (age
+   tolerances as in its script), restate the group counts in the Grouping text and `splits_comment`, re-run
+   `dataset check` and the leak probe.
+
+   [^1d]: **SPLIT-14** (Must): a temporal window trains on at least half of the rows.
+
+   **Andrej (2026-11-03, change):** I choose B
+
+   **Resolved (2026-11-03, Andrej):** B. The group column is now `policy_component`: records joined where one may
+   continue another, in the next row of its file or in another file (same profile, starting the day the other ends,
+   driver's age the same or one more, licence age advanced by the months between the starts within one), 68,857
+   components of 1 to 13 records. `dataset check` is clean; the leak probe on the new folds flags nothing (no feature
+   alone above 0.025 R^2 on log1p, 0.2% of test rows with an exact feature copy in training).
+
+4. **Keep the row Gini, or score the exposure-weighted Gini on the cost per year, for the whole insurance family?**
+
+   * **Problem:**
+     - The declared Gini counts each record once, whatever its length (1 day to 1 year).
+     - An actuary compares tariffs by a Gini that sorts by predicted cost per year of cover and counts each record by
+       its exposure.
+     - Which form scores this table?
+   * **Background:** the declared Gini is the form of Allstate's Kaggle competition and sorts the records by predicted
+     claim cost. The actuary's form is that of CAS Monograph 5, sec. 7.2.4; Liberty Mutual's competition also
+     weighted.
+   * **Effect on the task:** the row Gini rewards knowing which records are long nearly as much as which are risky.
+   * **Experiments:** on the 9 shipped splits, after the fix of issue 2, sorting the records by length alone already
+     scores 0.277 of the model's 0.332 (83%). Under the weighted form, length alone scores about 0, and the fold scores
+     vary less (SD 0.027 against 0.069). Both forms rank the model with the length above the one without it (9 of 9
+     splits row, 6 of 9 weighted), so the row form still scores the real task and the choice is a weighing[^4a]. The
+     critic withdrew its objection on that measurement.
+   * **Consistency:** the weighted form needs the same answer for australian_vehicle_insurance_2004_2005 and
      spanish_motor_insurance_coverage_level_2022_2024. pricing_game_2017_french_mtpl is unaffected: every row is a whole
      policy-year, so the two forms coincide (its issue 2); pricing_game_2016_french_fleet is binary, scored by ROC AUC.
-   * Factors: the practitioner's metric and the better resolution favour the weighted form; a scoring column counts
-     against it. Capping the losses at 50,000 (the practitioner's other suggestion: fold SD 0.044 to
-     0.012) is not proposed: it changes the recorded target, and CLEAN-11 keeps the 802,620 claim (precedent check,
-     qsar_tid_11).
+   * **Panel:** the domain practitioner and the advocate recommend the weighted form; the critic leaves the form to
+     you. The practitioner's metric and the better resolution favour the weighted form; a scoring column counts
+     against it.
+   * **Not proposed:** capping the losses at 50,000 (the practitioner's other suggestion: fold SD 0.044 to 0.012). It
+     changes the recorded target, and unusual values stay, so the 802,620 claim is kept (precedent check,
+     qsar_tid_11)[^4c].
+   * **Options:**
 
-   Recommendation: the weighted form, decided once for the family (the domain practitioner and the advocate; the critic
-   leaves the form to you). Shipping frempl does not wait for it: the row Gini stays until you choose.
-   Decision: row or weighted Gini?
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Row Gini (implemented) | sorts by predicted claim cost, each record counts once; its reason corrected (what the cited sources score, the length's share, the swing of about 0.10 from one claim) | no scoring column | length alone scores 83% of the model's Gini; fold SD 0.069 |
+     | B | Exposure-weighted Gini on the cost per year | sorts by predicted cost per year, weights each record by its realised `Exposure`, a scoring column and never a feature[^4b] | the practitioner's metric; length alone scores about 0; fold SD 0.027 | a scoring column; not normalized; asks the same of the australian and spanish tables |
 
-   **Answer (AI, 2026-11-02):** No family decision on the metric (Andrej, 2026-11-02, while reviewing
-   pricing_game_2016_french_fleet: "It is case by case and when in doubt we go for diversity"; MET-10 as amended). The
-   question is now this table's alone: the row Gini or the exposure-weighted Gini for frempl, on its own evidence; when in doubt,
-   the form the collection has fewer of.
+   * **Recommendation:** B, decided once for the family: it is the practitioner's metric, length alone scores about 0
+     under it, and its fold scores vary less (SD 0.027 against 0.069). Shipping frempl does not wait for it: the row Gini stays
+     until you choose. **Decision:** A or B?
+
+   **Notes for the AI:** B uses `ordered_lorenz_gini` (added on 2026-11-01 for
+   wisconsin_local_government_property_insurance_fund): it sorts by prediction / base with the base in the `weight`
+   role, here the realised `Exposure`, where `normalized_weighted_gini` sorts by the raw prediction.
+
+   [^4a]: **MET-1** (Must): the declared metric scores the real task, the way a practitioner would choose a model
+     for it; the row form passes it. The choice then falls under **MET-11** (Must: every metric has one origin, named
+     in the notes) and **MET-10** (Weigh: the factors on a borderline call, among them the source's track record and
+     the resolution on our folds).
+   [^4b]: **MET-2** (Must): every input the metric needs ships as a column and is never a feature.
+   [^4c]: **CLEAN-11** (Should): impossible values become missing; values that are only unusual stay. Precedent check:
+     qsar_tid_11.
+
+   **Answer (AI, 2026-11-02):**
+
+   * **Found:** there is no family decision on the metric: you decided case by case while reviewing
+     pricing_game_2016_french_fleet, with diversity when in doubt[^4d].
+   * **Now:** the question is this table's alone: A or B for frempl, on its own evidence; when in doubt, the form the
+     collection has fewer of.
+
+   [^4d]: Andrej, 2026-11-02, on pricing_game_2016_french_fleet: "It is case by case and when in doubt we go for
+     diversity"; **MET-10** as amended: the metric is chosen per dataset, never as one call for a family of datasets,
+     and when the call stays in doubt, the metric that adds diversity to the collection wins.
+
+   **Andrej (2026-11-03, change):** We go with B. But that you say 'asks the same of the australian and spanish
+   tables' as a con is something I don't understand. We don't care about other tables, only what is the best decision
+   for this one. Also, please explain why not normalized is a con
+
+   **Answer (AI, 2026-11-03):**
+
+   * **Problem:**
+     - Before applying B I measured it on the shipped splits, and B as written leaks: it divides by the realised
+       length, which is not known when a record starts, so even a constant prediction scores 0.184.
+     - The fix is a different base, the length known at the start (the feature `Exposure`): then the length alone
+       scores 0 and the model 0.137.
+     - B is therefore not applied; the row Gini stays until you choose between the options below.
+   * **Your two questions:**
+     - The other tables: you are right, they are no reason for or against a choice here; that con is removed.
+     - Not normalized: it is no real con. The weighted Gini is not divided by the best possible score, so its top
+       value differs from fold to fold; models are still ranked the same within a fold, and only the mean over
+       folds mixes slightly different scales. I listed it wrongly.
+   * **Why B leaks:** a record that ended early, often because of its claim (a write-off, a theft), has a short
+     realised length. Dividing any prediction by that length ranks those records high, so the metric itself reads
+     the end of the record that the features were cleaned of (issue 2). The panel measured "length alone about 0"
+     before that cleaning, when the feature still was the realised length.
+   * **Experiments:** untuned LightGBM on the 9 shipped splits:
+
+     | Scoring | Model | Length alone | Constant prediction | Model without the length | Spread of the model (SD) |
+     |---|---|---|---|---|---|
+     | row Gini (A) | 0.319 | 0.277 | 0 | not measured | 0.067 |
+     | weighted, realised length as base (B) | 0.233 | 0.203 | 0.184 | 0.246 | 0.042 |
+     | weighted, length known at the start as base (C) | 0.137 | 0.000 | not measured (see Resolved) | 0.170 | 0.036 |
+
+     - Under C a model scores only for ranking the cost per year of cover, which is what an actuary compares
+       tariffs by; the length alone earns nothing.
+     - C's base is the length known at the start, rounded to whole months in the feature; the scoring column takes it
+       unrounded, so no record has a base of 0.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Row Gini (implemented) | sorts by predicted claim cost, each record counts once | no scoring column | the length alone scores 0.277 of the model's 0.319; fold SD 0.067 |
+     | B | Weighted, realised length as base | as first proposed | the panel's form | leaks the record's end: a constant prediction scores 0.184 |
+     | C | Weighted, length known at the start as base | sorts by prediction / the length known at the start, weights by it; a scoring column, never a feature | the actuary's metric; length alone and a constant score 0; fold SD 0.036 | a scoring column that repeats a feature's value unrounded |
+
+   * **Recommendation:** C: it is the practitioner's metric without the leak. **Decision:** A, B or C?
+
+   **Notes for the AI:** on C, `Metric.from_context("ordered_lorenz_gini", inputs={"weight": "exposure_at_start"})`
+   with a `ScoringColumn` `exposure_at_start` (the known-at-start length before the month rounding); the measurement
+   script is `frempl/weighted_gini.py` in the run folder of 2026-11-03.
+
+   **Andrej (2026-11-03, change):** I go with your option C
+
+   **Resolved (2026-11-03, Andrej):** C. The metric is `ordered_lorenz_gini` with the scoring column
+   `exposure_at_start` as its base. On the shipped component folds untuned LightGBM scores 0.147 (0.052 to 0.179),
+   random predictions 0.049 on average (0.015 to 0.104), the same models' row Gini 0.324. A correction to the answer
+   above: under C the zero point is a prediction proportional to the length known at the start (the same cost per
+   year for every record), not a constant one; a constant total cost per record ranks short records first and was not
+   measured. The metric reason says so.
+   The base is the feature `Exposure` before its rounding, as measured for C: continued records keep their realised
+   length in it, as in the feature (the leak kept on purpose in issue 2), so their ratio stays neutral. Checked on
+   2026-11-03: with the known-at-start length for them too, the length alone would score 0.176 of a model's 0.249.
 
 **Review panel:** ship after changes (mediator). Claim audit: 39 claims, 26 hold, 4 refuted and 3 refuted in part (all
 fixed or reworded), 3 refuted in the record only, 3 untested. Blind review: include with changes; its main concerns are

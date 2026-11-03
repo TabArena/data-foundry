@@ -145,8 +145,8 @@ class Blogfeedback(AbstractCuratedDataset):
             "blog's posts in the training crawl."
         ),
         split=(
-            "The test data is the 60 days of February and March 2012 in three windows of 20 days; each window trains "
-            "on the 2010-2011 crawl and the test days before it."
+            "The test data is the newest 54 of the 60 days of February and March 2012, in nine windows of 6 days; each "
+            "window trains on the 2010-2011 crawl and the test days before it."
         ),
         changes=(
             "For the training rows we recompute the blog statistics from the blog's other posts, since as published "
@@ -210,7 +210,7 @@ class Blogfeedback(AbstractCuratedDataset):
         - CLEAN-10: `post_length` 0 (23% of training and 20% of test rows, never with a word) is a text-extraction gap: 100 blogs without text in any row hold 90% of them. It becomes missing, as do the parents' comments without a parent (a stored 0).
         - CLEAN-5: dropped 4 constant columns (three blog minimums; `parent_comments_min`, a broken source column) and 24 copies (two blog minimums; 22 word flags equal to `word_003`). The weekday blocks become `basetime_weekday` and `publication_weekday` (CLEAN-13; Monday first, checked against the file dates); the 0/1 word flags are categorical (CLEAN-14).
         - `basetime_day` is the time column and a feature: the test file's day (1 = 1 February 2012), 0 for the undated training crawl. It is also the metric's group, a test day (MET-2 does not cover the time column used as the metric's group; Andrej, 2026-11-02).
-        - Metric (MET-1; MET-7, the source fixes k = 10 a day): Buza's Hits@10 per test day, as `mean_group_top_k_overlap` with k = 10 and the day as the group (CC 2026-11-02, Andrej); the score is Hits@10 / 10, and the target's log1p does not change a ranking. It replaces the RMSLE stand-in of the review panel, which pooled rows across days (Kendall tau 0.61-0.88 per window against Hits@10), and RMSE on the count, which follows a few viral posts (the top 1% of test rows hold 66-93% of its squared error) and rated a sort by the last day's comments (5.6 hits a day) below the training mean (0.9). Each window has 20 test days, each with at least 10 posts that get comments.
+        - Metric (MET-1; MET-7, the source fixes k = 10 a day): Buza's Hits@10 per test day, as `mean_group_top_k_overlap` with k = 10 and the day as the group (CC 2026-11-02, Andrej); the score is Hits@10 / 10, and the target's log1p does not change a ranking. It replaces the RMSLE stand-in of the review panel, which pooled rows across days (Kendall tau 0.61-0.88 per window against Hits@10), and RMSE on the count, which follows a few viral posts (the top 1% of test rows hold 66-93% of its squared error) and rated a sort by the last day's comments (5.6 hits a day) below the training mean (0.9). Each window has 6 test days, each with at least 10 posts that get comments.
         - TP-10, untuned LightGBM, seed 0: RMSLE 0.622 against 0.756 for the best per-post rule (last-24-hour comments times a factor fitted on the training side), and 0.94 more of each day's top 10 than a sort by last-24-hour comments (paired SE 0.25-0.27 per window); better in 3 of 3 windows on both. Leg 2: `comments_24h_to_48h_before` and `comments_change_24h` are the source's window counts over a life of at most 72 hours, summaries of the series up to the prediction point (g_research_crypto_forecasting, rain_in_australia).
     """
 
@@ -231,12 +231,12 @@ class Blogfeedback(AbstractCuratedDataset):
         target_transform="log1p",
     )
     splits_comment = """
-        UCI ships a temporally disjoint split: an undated training crawl with base times in 2010-2011 and 60 daily test files of February and March 2012 (UCI: use "the provided, temporally disjoint train and test splits"); the source trains once on the crawl and predicts all 60 test days (chapter Sec. 5.1). We keep it and cut the 60 test days into three windows: days 41-60, 21-40 and 1-20 (12 to 31 March, 21 February to 11 March, 1 to 20 February), newest first, with 2,564, 2,225 and 2,247 test rows; each trains on the training crawl and every earlier test day (53,675, 51,450 and 49,203 rows). A row's label is known 24 hours after its base time, at the next day's base time, so no gap is needed. Three windows of 20 days, not the nine SPLIT-15 gives a task of this size (an exception for the curator to confirm): the horizon comes from the source, which predicts 60 days from one training run (SPLIT-12), and 20 days is the longest window that still gives SPLIT-14's three. The crawl is a single time value, so only the 7,036 rows of the test days can be test rows, and nine windows would cut them into pieces of about 700 without adding any; for the same reason the training history cannot be trimmed to a recent stretch (SPLIT-20).
+        UCI ships a temporally disjoint split: an undated training crawl with base times in 2010-2011 and 60 daily test files of February and March 2012 (UCI: use "the provided, temporally disjoint train and test splits"); the source trains once on the crawl and predicts all 60 test days (chapter Sec. 5.1). We keep it and cut the newest 54 test days into nine windows of 6 days, newest first, as many windows as SPLIT-15 gives a task of this size (Andrej, 2026-11-03: "With the given sample size we would prioritize 9 folds"); each trains on the training crawl and every earlier test day, and test days 1 to 6 (1 to 6 February) are only ever training rows. A row's label is known 24 hours after its base time, at the next day's base time, so no gap is needed. Each window is a model refit up to 6 days earlier, a service that retrains weekly; the source refits once for 60 days. The crawl is a single time value, so only the 7,036 rows of the test days can be test rows (about 700 per window); for the same reason the training history cannot be trimmed to a recent stretch (SPLIT-20). Under Hits@10 a 6-day window measures a difference between two models with a standard error of about 0.48 hits a day (0.26 for 20 days), so the nine windows are read together. The measurements in the curation notes were taken on the earlier three windows of 20 days (days 41-60, 21-40 and 1-20).
     """
     temporal = Temporal(
         on="basetime_day",
-        splits=TemporalSplits(window=20, unit="unique", n_windows=3),
-        horizon=20,
+        splits=TemporalSplits(window=6, unit="unique", n_windows=9),
+        horizon=6,
         horizon_unit="days",
     )
 

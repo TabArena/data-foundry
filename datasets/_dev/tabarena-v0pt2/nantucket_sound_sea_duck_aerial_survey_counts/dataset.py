@@ -19,7 +19,6 @@ from data_foundry.v2 import (
 SPECIES_GROUP = "LTDU"  # long-tailed duck, one of the source's three groups (COEI, SCOT, LTDU); see curation_comments
 WINTER_LABELS = {2003: "2003/04", 2004: "2004/05", 2005: "2005/06"}
 GRID_M = 1500.0  # the side of a segment of the source's grid (504 cells on a 24 x 24 lattice)
-BLOCK = 3  # segments per side of a held-out block (4.5 km)
 RENAME = {
     "x": "utm19n_easting_m",
     "y": "utm19n_northing_m",
@@ -71,15 +70,14 @@ class NantucketSoundSeaDuckAerialSurveyCounts(AbstractCuratedDataset):
             "day of the winter and the length of strip flown."
         ),
         split=(
-            "Whole 4.5 km blocks of the source's grid (3 x 3 segments) are held out with all their survey days, so a "
-            "test square stands for a square the plane did not fly: 43% of test rows have a square flown the same "
-            "day within 1.5 km in training, as do 43% of the never-flown squares' survey days. Other squares flown "
-            "that day are in training."
+            "Whole north-south transects (columns of the source's 1.5 km grid) are held out with all their survey "
+            "days, as the field validates (BOEM 2018-010, Sec. 2.5.6), so a test square stands for a line the plane "
+            "did not fly; the other transects flown that day are in training."
         ),
         changes=(
             "We took the long-tailed duck from the source's three species groups, rebuilt the authors' table from "
             "their unscaled covariates (their analysis files standardise every column over all rows), and hold out "
-            "blocks of the grid, where the source fitted on all rows."
+            "whole transects, where the source fitted on all rows."
         ),
         fit="approximate",
         fit_reason=(
@@ -129,8 +127,8 @@ class NantucketSoundSeaDuckAerialSurveyCounts(AbstractCuratedDataset):
         - Prediction point: after the last survey of 2005/06 (spring 2006), when the source fitted one model on all 30 surveys and drew its maps; for each survey day, the long-tailed ducks in the squares the plane did not fly. Known then are the covariates of the source's Table 1 (the 2002-2006 ocean-colour means and the 2003-2005 tidal means included), the winter, the day and the strip length. Distribution mapping, as the source describes it, uses such models "to predict utilization of un-sampled areas or time periods based on biophysical habitat features" (Introduction); the decision it names is siting: "marine spatial planners must carefully consider the most appropriate information to use when deciding, for example, where to place marine protected areas or offshore wind energy developments" (Sec. 4.2).
         - Survey days, not map dates: the source's maps give every segment "predicted on 10 evenly-spaced dates from 15 November through 1 April in each winter" (Figs. 4-6), which are not survey days, and planners read the seasonal value per square. The task fills in a surveyed day, whose level the model learns from the other squares flown that day, as the field validates such models (BOEM 2018-010, Sec. 2.4: the survey as a random effect; Sec. 2.5.6: cross-validation stratified by transect). On the block splits the survey day's training mean alone reaches R^2 0.13 on log1p, against 0.18 for untuned LightGBM, and LightGBM without the winter, the day, the NAO index and the monthly sea temperatures -0.001 (9 splits). A new square on a date not in training (segments and survey dates held out together) scores -0.077, below the training mean (-0.007; review panel).
         - Regime: grouped, not the temporal split the screening proposed (later winters from earlier ones). The regime follows the source's maps of the surveyed winters; it never forecasts a later one ("Since additional test data were not available for our study area, we used a pseudo R2 measure of the explained variation", Sec. 2.5). A forecast of a later winter fails TP-10 leg 1, so a temporal task would be `No` under SEL-10: trained on 2003/04-2004/05 and tested on the three parts of 2005/06, neither the covariates nor a segment's own past predict it (best untuned model R^2 0.04 on log1p, the segment's past mean 0.025; RMSE on the count 105.9 against 106.6 for the past mean).
-        - Group: 3 x 3 blocks of the source's 1.5 km grid (`grid_block`, 4.5 km squares; 60 blocks of 2 to 193 rows), built exactly from the coordinates (SPLIT-24): each segment's column and row counted from the grid's south-west cell, divided by 3. Transects run north-south about 2.5 km apart (Sec. 2.1.2), so a single held-out segment kept its neighbours on the same flight line, flown minutes apart, in training: 95% of its test rows had a square flown the same day within 1.5 km in training, against 43% of the survey days of the 50 squares never flown (all on the grid's border), and removing only those same-day north-south neighbours from training took R^2 on log1p from 0.251 to 0.177 (as many random rows: 0.247; review panel, 40 draws). Under blocks, 43% of test rows have such a square (36% to 51% per split). Untuned on the block splits: random forest R^2 0.20 on log1p, LightGBM 0.18, a linear model 0.06, the day of the winter alone 0.13 (task probe, 5 of the 9 splits); LightGBM on all 9: 0.18 (0.09 to 0.26, Spearman 0.45). The probes are in the run folder 2026-10-30_zero_inflated_add.
-        - Target: the long-tailed duck (LTDU), one of the three groups the source models apart, chosen on all rows, test folds included (the Decision). On the block splits untuned LightGBM reaches R^2 0.18 on log1p for it and -0.08 for the common eider, which has 75.1% zeros ("no eiders were detected in 75% of segment observations", Sec. 2.2) and counts up to 30,000. The scoters pool four codes (SUSC, WWSC, BLSC, UNSC in R/create_final_data.R; "we pooled all scoter observations", Sec. 2.1.2) and reach 0.20 on log1p, but one raft of 70,000 holds 67% of their squared deviation from the mean on the count. Long-tailed duck: 57.1% zeros; the other counts have a median of 7, counts of 100 or more (3.6% of them) hold 45% of the ducks, up to 3,000, and the 10 largest counts hold 84% of the squared deviation. Shipped as log1p, scored on the count (`target_transform="log1p"`).
+        - Group: the transect column (`transect_column`), a column of the source's 1.5 km grid, along which the plane flies north-south (Sec. 2.1.2); 24 columns, built exactly from the coordinates (SPLIT-24). The field validates by holding out whole transects (BOEM 2018-010, Sec. 2.5.6), and the curator chose the field's practice (Andrej, 2026-11-03, review issue 1: "We should definitely use what the field uses"). Single held-out segments kept their neighbours on the same flight line, flown minutes apart, in training (95% of test rows had a square flown the same day within 1.5 km; without only those neighbours R^2 on log1p fell from 0.251 to 0.177); 3 x 3 blocks of the grid were the panel's alternative. On the declared metric, the mean Poisson deviance, untuned LightGBM with a Poisson loss explains 4.2% of the training mean's deviance under transect columns (0.8% to 12.8%, above the mean on 9 of 9 folds of 3 repeats), against 7.9% under 3 x 3 blocks (review, 2026-11-03).
+        - Target: the long-tailed duck (LTDU), one of the three groups the source models apart, chosen on all rows, test folds included (the Decision). On the earlier 3 x 3 block splits untuned LightGBM reached R^2 0.18 on log1p for it and -0.08 for the common eider, which has 75.1% zeros ("no eiders were detected in 75% of segment observations", Sec. 2.2) and counts up to 30,000. The scoters pool four codes (SUSC, WWSC, BLSC, UNSC in R/create_final_data.R; "we pooled all scoter observations", Sec. 2.1.2) and reach 0.20 on log1p, but one raft of 70,000 holds 67% of their squared deviation from the mean on the count. Long-tailed duck: 57.1% zeros; the other counts have a median of 7, counts of 100 or more (3.6% of them) hold 45% of the ducks, up to 3,000, and the 10 largest counts hold 84% of the squared deviation. Shipped as log1p, scored on the count (`target_transform="log1p"`).
         - The counts are of ducks on the water, the quantity a habitat map wants. The same flights' raw sightings are archived at NOAA NCEI (accession 0115356, dataset MassAudNanAerial, 39,559 records, August 2002 to March 2006), and the deposit equals NCEI's in-strip long-tailed duck count minus the birds marked flying on 3,609 of the 3,612 segment-days with the species in either (the daily ratio is 1.000 on every day of 2003/04 and 2004/05 but one, 0.996). NCEI has no behaviour field for 2005/06; there the deposit lacks two flocks, 711 ducks on 2006-02-08 and 800 on 2006-03-06 (zero bullet), probably flying birds, not shown. NCEI holds 7 more winter survey days (2004/05: 2; 2005/06: 5), which the paper's "30 ... standardized aerial strip-transect surveys" (Sec. 2.1.2) leave out without a stated reason; they are not in the deposit and not added.
         - Daytime use only: the team that flew these surveys wrote that they were flown "during daylight hours when the vast majority of LTDUs are absent from the Sound" (Allison, Perkins & Perry 2009, MMS 2009-020). The counts miss the night roosting and the dawn and dusk commute that the species' siting question at Horseshoe Shoal was about; a reason for `fit="approximate"`, not a change to the data.
         - A zero is a flown strip without a long-tailed duck on the water; the authors "assumed our survey design led to a low incidence of false zeros" (Sec. 2.2), though "our survey methods did not address potential undercounting of individuals that were diving during flyovers" (Sec. 2.1.2). One known gap: NCEI places 800 long-tailed ducks on transect 11-10 on 2006-03-06 (13:04-13:06, one position, all in segment 329), which are in no deposit row and not in the authors' own sighting table (GIS/Survey/obs_poly.dbf); the segment holds a zero that day. The sightings share one position, so no rule locates the rest of that pass, and the rows stay (LEAK-25).
@@ -169,17 +167,24 @@ class NantucketSoundSeaDuckAerialSurveyCounts(AbstractCuratedDataset):
         target_transform="log1p",
     )
     grouping = Grouping(
-        on="grid_block",
+        on="transect_column",
         labels="per_sample",
         prediction_unit="row",
         context="none",
         definition="""
-            One group is a block of 3 x 3 segments of the source's 1.5 km grid over Nantucket Sound, a 4.5 km square (60 blocks hold flown segment-days, 2 to 193 rows each); its key is each segment's column and row counted from the grid's south-west cell and divided by 3, exact from the coordinates. Held out with all its survey days, a block stands for squares the plane did not fly on a survey day. The transects run north-south about 2.5 km apart, and 43% of the test rows have a square flown that day within 1.5 km in training, as 43% of the survey days of the 50 squares never flown (all on the grid's border) do; single held-out segments had one on 95%, their neighbours on the same flight line. The other squares flown on the same day stay in training, so the day's level is learnable from them, as in the field's validation (BOEM 2018-010, Sec. 2.4 and 2.5.6). The source fitted on all rows and validated in sample (Smith et al. 2019, Sec. 2.5). Each segment-day is one prediction.
+            One group is a transect column: a column of the source's 1.5 km grid over Nantucket Sound, flown north-south (24 columns), its key each segment's column counted from the grid's south-west cell, exact from the coordinates. Held out with all its survey days, a column stands for a transect the plane did not fly, the unit the field holds out to validate its models (BOEM 2018-010, Sec. 2.5.6). The other transects flown on the same day stay in training, so the day's level is learnable from them. The source fitted on all rows and validated in sample (Smith et al. 2019, Sec. 2.5). Each segment-day is one prediction.
         """,
     )
     splits_comment = """
-        Default grouped splits on `grid_block`, 3 x 3 blocks of the source's 1.5 km grid: every survey day of a block's segments stays on one side (20 test blocks and 2,337 to 2,823 test rows per split). A test square stands for a square the plane did not fly that day: 43% of test rows have a square flown the same day within 1.5 km in training, as 43% of the survey days of the never-flown squares do; single held-out segments had 95%, and those same-day neighbours on the flight line made about 30% of their score. The other squares flown on the same day are in training, so the model learns the day's level from them, as anyone filling in a surveyed day can. Grouped rather than temporal: the regime follows the source's maps of the surveyed winters; a forecast of a later winter fails TP-10 leg 1, so a temporal task would be `No` under SEL-10 (curation_comments).
+        Default grouped splits on `transect_column`, whole north-south transects of the source's 1.5 km grid with all their survey days, as the field validates (BOEM 2018-010, Sec. 2.5.6; Andrej, 2026-11-03). A test column stands for a transect the plane did not fly; the other transects flown that day are in training, so the model learns the day's level from them. On the mean Poisson deviance a Poisson LightGBM beats the training mean on 9 of 9 folds of 3 repeats (4.2% of its deviance explained). Grouped rather than temporal: the regime follows the source's maps of the surveyed winters; a forecast of a later winter fails TP-10 leg 1, so a temporal task would be `No` under SEL-10 (curation_comments).
     """
+
+    accepted_check_warnings = {
+        "task_target_value_dominant": (
+            "57.1% zeros: observed absences, a flown strip without a long-tailed duck on the water (Andrej, "
+            "2026-11-03: a valid zero-inflated regression task)."
+        ),
+    }
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
         return {
@@ -202,14 +207,13 @@ class NantucketSoundSeaDuckAerialSurveyCounts(AbstractCuratedDataset):
         count = pd.Series(ltdu.reindex(key).to_numpy(), index=df.index).fillna(0.0)
         df[self.target] = np.log1p(count)
 
-        # 3. The group: blocks of 3 x 3 segments, from each segment's column and row on the source's grid, counted from
-        #    its south-west cell (the offsets are whole multiples of 1.5 km).
+        # 3. The group: the transect column, each segment's column on the source's grid counted from its south-west
+        #    cell (the offsets are whole multiples of 1.5 km); the plane flies the columns north-south.
         col = (df["x"] - env["x"].min()) / GRID_M
         row = (df["y"] - env["y"].min()) / GRID_M
         assert np.allclose(col, col.round())
         assert np.allclose(row, row.round())
-        col, row = col.round().astype(int) // BLOCK, row.round().astype(int) // BLOCK
-        df["grid_block"] = col.astype(str) + "_" + row.astype(str)
+        df["transect_column"] = "c" + col.round().astype(int).astype(str).str.zfill(2)
 
         # 4. Readable names and labels.
         df = df.rename(columns=RENAME)
@@ -221,7 +225,7 @@ class NantucketSoundSeaDuckAerialSurveyCounts(AbstractCuratedDataset):
         return drop_columns(df, ["seg", "xkm", "ykm", "date"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        return FeatureTypes(categorical=["grid_block", "winter", "ferry_route_within_1km"])
+        return FeatureTypes(categorical=["transect_column", "winter", "ferry_route_within_1km"])
 
     def _decisions(self, raw: dict[str, pd.DataFrame], df: pd.DataFrame) -> list[Decision]:
         env, obs = raw["env"], raw["obs"]

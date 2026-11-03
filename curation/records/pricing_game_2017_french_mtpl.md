@@ -105,6 +105,12 @@ CC (2026-11-02, Andrej): the forced grouped split ships (issue 1 (a); the record
 
 **Assessment (AI, 2026-11-02):** the leak test across the forced grouped split (SPLIT-8 as amended 2026-11-02) finds none, on the 9 shipped splits with untuned LightGBM (Tweedie), base Gini 0.223 +- 0.016. (1) Shared rows and hidden groups: no test row has an exact copy on the training side, nor a near copy (every feature but commune, value and weight); keys that link rows of different clients carry nothing: a household proxy (commune and first driver's age, sex and licence age) links 4.2% of test rows and a vehicle proxy (commune, model, age, value) 0.85%, and their training-side mean target as a feature changes the Gini by -0.000 +- 0.004 and +0.003 +- 0.004; the client's own other vehicles, removed from training on random folds, change it by -0.002 +- 0.003 (split audit). (2) Shared period: the file is one year, so every split shares it; the training side's same-year mean target of the test row's department or commune (out of fold) changes the Gini by -0.005 +- 0.010 and -0.005 +- 0.005, and removing from training the rows of half the test communes, against as many random rows, changes it by +0.008 +- 0.029: no shared local shock. (3) Features from other rows' outcomes: only `client_n_vehicles` (a count of policies, no outcome; drop-one -0.000 +- 0.009) and `pol_bonus` (start-of-year value, column audit) span rows; the bonus of a policy without a claim tells whether a sibling claimed at AUC 0.516. how_much_did_it_rain's `No` named a measured leak; none is found here.
 
+CC (2026-11-03, Andrej): the metric is the mean Tweedie deviance (power 1.5, predictions floored at 1 EUR) as the stand-in for the game's profit, not the normalized Gini (issue 2 (B) in pricing_game_2017_french_mtpl): "Use mean_tweedie_deviance and implement it in the library". Added to the metric library under scikit-learn's name.
+
+CC (2026-11-03, Andrej): the name `pricing_game_2017_french_mtpl` stays (issue 4 (A)): the source's own title; the notes say the target sums every guarantee of the cover.
+
+CC (2026-11-03, Andrej): ship (verdict). The target stays in euros (issue 3 (A)), an exception to CLEAN-16: the deviance scores the predicted cost's level in euros, where a Gini scores only the order; the metric, the mean Tweedie deviance, checked.
+
 ## Reference
 
 CASdatasets (Dutang C., Charpentier A.), `pg17trainpol`, `pg17trainclaim`, `pg17testyear1`-`pg17testyear4`,

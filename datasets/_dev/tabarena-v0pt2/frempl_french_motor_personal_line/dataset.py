@@ -6,7 +6,18 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, Metric, TaskSummary, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    ScoringColumn,
+    TaskSummary,
+    drop_columns,
+)
+from scipy.sparse import coo_matrix
+from scipy.sparse.csgraph import connected_components
 
 # The five samples of the portfolio that share one schema (CASdatasets freMPL5 to freMPL9).
 FILES = (5, 6, 7, 8, 9)
@@ -48,6 +59,26 @@ def _continues_next(raw: pd.DataFrame) -> pd.Series:
     )
 
 
+def _policy_components(df: pd.DataFrame, link: pd.Series) -> np.ndarray:
+    """The policy component of each record of ``df`` (rows in file order): records are joined where one may continue
+    the other, in the next row of its file (``link``) or in any of the five files: the same profile, starting the day
+    the other ends, the driver's age the same or one more, the licence age advanced by the months between the two
+    starts within one month.
+    """
+    pos = np.arange(len(df))
+    rec = df[[*PROFILE, "DrivAge", "LicAge"]].assign(
+        pos=pos, beg=pd.to_datetime(df["RecordBeg"]).to_numpy(), end=pd.to_datetime(df["RecordEnd"]).to_numpy()
+    )
+    m = rec[rec["end"].notna()].merge(rec, left_on=[*PROFILE, "end"], right_on=[*PROFILE, "beg"], suffixes=("", "_n"))
+    months = (m["end"].dt.year - m["beg"].dt.year) * 12 + (m["end"].dt.month - m["beg"].dt.month)
+    m = m[(m["DrivAge_n"] - m["DrivAge"]).between(0, 1) & ((m["LicAge_n"] - m["LicAge"] - months).abs() <= 1)]
+    nxt = pos[link.to_numpy()]
+    i = np.concatenate([m["pos"].to_numpy(), nxt])
+    j = np.concatenate([m["pos_n"].to_numpy(), nxt + 1])
+    graph = coo_matrix((np.ones(len(i)), (i, j)), shape=(len(df), len(df)))
+    return connected_components(graph, directed=False)[1]
+
+
 class FremplFrenchMotorPersonalLine(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question=(
@@ -76,7 +107,7 @@ class FremplFrenchMotorPersonalLine(AbstractCuratedDataset):
             "the next record when the contract changed."
         ),
         split=(
-            "Policies held out: a policy's consecutive records in one sample file stay on one side, so the test data "
+            "Policies held out: a policy's records, in one sample file or across them, stay on one side, so the test data "
             "stands for other policies' periods in the same year; a tariff is applied to next year's policies, which "
             "a release of one year cannot test."
         ),
@@ -145,14 +176,14 @@ class FremplFrenchMotorPersonalLine(AbstractCuratedDataset):
         - Prediction point: the start of a record, a period of cover with fixed rating factors, when the insurer prices it. The rating factors, the claim counts of the four preceding years and the bonus-malus are known then; the claims of the period are not. A record ends at the end of 2004 (48%) or when the contract changes or ends. 38% of the records start on 1 January, the calendar cut of the release rather than a pricing event, so a record holds the factors in force over its period.
         - Year: the data sets entered CASdatasets on 9 September 2014 ("freMPL1.rda 09/09/2014" to "freMPL10.rda 09/09/2014" in the dated data list of the package's NEWS, version 1.0-7, the oldest in its GitHub repository).
         - Which files: freMPL5 to freMPL9 share 20 columns in one order and one coding, so they are stacked without a file column (115,200 records). They are samples of one portfolio drawn differently, sharing policies across files: the claim rate runs from 7.7% (freMPL9) to 10.0% by file, and a model tells each file from the others at a one-vs-rest AUC of 0.57 to 0.64. But a model trained on four files ranks the claims of the fifth like random folds do (claim AUC 0.690 against 0.687), and a new record has no file. freMPL1 to freMPL4 and freMPL10 are left out: freMPL1 repeats 39% of its contracts and their claim amounts in freMPL5 to freMPL9, freMPL2 to freMPL4 hold amounts derived from freMPL1's claims, and freMPL10 has another column list (measured on 1.2-1 in the curation record, 2026-10-20; not re-measured here). Each file's size is a round number (16,000 to 32,400 records), so each is a sample of a chosen size; why the samples were cut is undocumented.
-        - 45 exact copies dropped (89 records share all 20 columns, their dates included, with another record; 10 of the copies within a file, 35 across files): a copy over this many columns is a collection artefact, not a second record (LEAK-18). Once the dates are dropped and the length is rounded to months, 391 records repeat another record's features and amount (124 of them in the same chain), and 49 share the features with another amount: records of the same profile and length in other periods of 2004, kept (LEAK-18); 0.3% to 0.4% of each test fold has its features in the training side.
+        - 45 exact copies dropped (89 records share all 20 columns, their dates included, with another record; 10 of the copies within a file, 35 across files): a copy over this many columns is a collection artefact, not a second record (LEAK-18). Once the dates are dropped and the length is rounded to months, 391 records repeat another record's features and amount (124 of them in the same within-file chain), and 49 share the features with another amount: records of the same profile and length in other periods of 2004, kept (LEAK-18); 0.3% to 0.4% of each test fold had its features in the training side on the earlier chain folds, 0.1% to 0.2% on the shipped component folds.
         - 967 negative amounts (0.84% of the records, -1,948 to -2) set to 0. Every one has `ClaimInd` = 0, but they are claims of the period: of the 246 with a next record, 95.1% are followed by a rise of the not-at-fault claim counter (after 0.19% of the zero amounts and 18.6% of the positive ones), so they are not-at-fault claims whose recourse covered the payment, with no net claim cost to the period. They are -2.4% of the net claim cost. AIcrowd's pricing game of 2020-21 set negative totals to 0 on the 2017 game's portfolio.
         - `ClaimInd` dropped: the claim indicator of the same period, 1 exactly where the amount is positive (a part of the target).
         - `RecordBeg` and `RecordEnd` dropped. `Exposure` is the record's length in years, (end - start) / 365 within 0.006, an open record ending on 31 December. The end of a record is not known when it starts, and the exact value of `Exposure` alone gave it away: its three decimals told a record that ended early from an open one at AUC 0.91 (0.61 once rounded to months).
-        - `Exposure` of the 25,131 records (21.8%) that end before 31 December with no continuation in their file is set to the length known at their start, the `Exposure` of the open records that start the same day (every start day has some); then every `Exposure` is rounded to whole months, 0 for the 3,964 records shorter than half a month (LEAK-10, LEAK-7). Their end was not foreseen, and claims drive it: they hold 20.7% of the exposure but 38.9% of the claim cost (837 per exposure-year against 311 for open records) and 66 of the 109 largest claims. On the shipped folds the fix raises the normalized Gini from 0.281 to 0.332 and lowers the claim AUC from 0.689 to 0.673, both on 9 of 9 splits (untuned LightGBM): the realised length ranked claim occurrence too well and hid the large claims that ended their contracts. The rounding costs nothing (0.330 and 0.673 with three decimals) and stops the decimals from marking a record that continued (AUC 0.92 to 0.71). This departs from the curator's call for fremtpl2 (CC 2026-10-20, `Exposure` kept as recorded) and from the AI's suggested call of 2026-10-30: here the dates locate the early ends row by row, which fremtpl2's data cannot, and the shipped value encoded them. Confirmed by the curator (Andrej, 2026-11-02) and recorded as the LEAK-10 case for time on risk cut short by the outcome: the cut is fixed where the data locates it.
+        - `Exposure` of the 25,131 records (21.8%) that end before 31 December with no continuation in their file is set to the length known at their start, the `Exposure` of the open records that start the same day (every start day has some); then every `Exposure` is rounded to whole months, 0 for the 3,964 records shorter than half a month (LEAK-10, LEAK-7). Their end was not foreseen, and claims drive it: they hold 20.7% of the exposure but 38.9% of the claim cost (837 per exposure-year against 311 for open records) and 66 of the 109 largest claims. On the earlier folds by within-file chain the fix raises the row Gini from 0.281 to 0.332 and lowers the claim AUC from 0.689 to 0.673, both on 9 of 9 splits (untuned LightGBM): the realised length ranked claim occurrence too well and hid the large claims that ended their contracts. The rounding costs nothing (0.330 and 0.673 with three decimals) and stops the decimals from marking a record that continued (AUC 0.92 to 0.71). This departs from the curator's call for fremtpl2 (CC 2026-10-20, `Exposure` kept as recorded) and from the AI's suggested call of 2026-10-30: here the dates locate the early ends row by row, which fremtpl2's data cannot, and the shipped value encoded them. Confirmed by the curator (Andrej, 2026-11-02) and recorded as the LEAK-10 case for time on risk cut short by the outcome: the cut is fixed where the data locates it.
         - Potential leak, kept on purpose: the 34,324 records that end early and continue in the next record of their file (the contract changed) keep their realised length, known only at their end. Some changes follow a claim (a vehicle replaced): these records cost 407 per exposure-year against 311 for open records. They stay because a change is often planned (the bonus-malus steps down at the change, as at an anniversary) and the release cannot tell the planned changes from the others. Revisit if a release gives the contracted term or why a record ended.
-        - Note: `Exposure` stays a feature: the period is known when a policy is priced, and pricing models take it as known (a GLM offset). Added to the other features it lifts the claim AUC from 0.565 to 0.673 (untuned LightGBM, the 9 shipped splits); as a raw score it ranks claims at 0.654 and losses at a normalized Gini of 0.277, against 0.332 for a model on all features, which beats it on 9 of 9 splits, so the task is no lookup of the length (TP-4).
-        - Policy chains, the group column `policy_chain` (never a feature): a policy whose contract changed in 2004 has several consecutive records. 34,324 records (30%) continue in the next row of their file (the same profile, starting the day the record ends, the driver's age the same or one more; 1 such link by chance with the rows shuffled), which gives 80,831 chains of 1 to 6 records. A later record's claim counters include the earlier record's claim, so in the training side it would tell a test record's claim; the folds keep each chain on one side (SPLIT-9; the numbers are in the splits comment).
+        - Note: `Exposure` stays a feature: the period is known when a policy is priced, and pricing models take it as known (a GLM offset). Added to the other features it lifts the claim AUC from 0.565 to 0.673 (untuned LightGBM, the 9 shipped splits); as a raw score it ranks claims at 0.654 and losses at a row Gini of 0.277, against 0.332 for a model on all features (earlier chain folds; under the shipped metric the length alone scores 0.028 against 0.147), which beats it on 9 of 9 splits, so the task is no lookup of the length (TP-4).
+        - Policy components, the group column `policy_component` (never a feature; Andrej, 2026-11-03, review issue 1: B, the most conservative key): a policy whose contract changed in 2004 has several records. 34,324 records (30%) continue in the next row of their file (the same profile, starting the day the record ends, the driver's age the same or one more; 1 such link by chance with the rows shuffled), and 10,292 more continue only in another sample file (the same profile and dates, the licence age advanced by the months between the starts within one). Every record joined to another by either link is in one component: 68,857 components of 1 to 13 records, 85,124 records in components of two or more. A later record's claim counters include the earlier record's claim, so in the training side it would tell a test record's claim; the folds keep each component on one side (SPLIT-9). Links across files match about 1% by chance; a chance link only puts two policies in one group, which makes the split stricter (SPLIT-24, exactness weighed against coverage).
         - The claim counts are taken at each record's start: at least one rises at the next record after 95% of the claims and after 2.3% of the other records, so they hold the history known when the record starts and never its own claim.
         - Target `log1p_claim_amount`, log1p of `ClaimAmount` ("Total claim amount of the guarantee"), the scale a model of a skewed amount is fit on; the metric is computed on the amount (`target_transform="log1p"`, MET-3). 90.6% of the records are 0: no claim, or a not-at-fault claim whose recourse covered the payment (89.7% as published, plus the 0.84% negative amounts set to 0). Only the claim part carries signal: on the three shipped folds of the first repeat a claim model ranks claims at AUC 0.67, but a severity model scores R^2 -0.20 to -0.01 on the claimants (-0.02 to -0.01 on log amounts), and even the true claim indicator times the claimants' mean explains only 2% to 15% of the variance of the amount. Which guarantee the amount covers is not named, but the counter that rises after a claim shows every counted type: of the 2,361 claims followed by exactly one counter rise, 40% raise the windscreen counter, 28% the at-fault one, 17% the not-at-fault one, 9% parking and 6% fire-theft. Whether the amounts are paid or incurred, and when they were valued, is not stated.
         - Dtypes: `Gender`, `MariStat`, `SocioCateg` (the union of the five files' codes, 46 CSP codes, 23 of them with fewer than 10 records), `VehUsage` and the yes/no flag `HasKmLimit` categorical; `RiskArea` stays a number, as shipped (the source: "Unknown risk area between 1 and 13, possibly ordered"); ages, counts, `BonusMalus` and `Exposure` (in years, whole months) numeric.
@@ -172,34 +203,49 @@ class FremplFrenchMotorPersonalLine(AbstractCuratedDataset):
     target = TARGET
     problem_type = "regression"
     metric = Metric.from_context(
-        "normalized_gini",
+        "ordered_lorenz_gini",
         reason=(
             "CASdatasets defines no task or metric for freMPL (the freMPL page, NEWS), and no paper that defines a "
-            "task on these tables was found. In insurance pricing, models are compared by the Gini index of an "
-            "ordered Lorenz curve of losses: Frees, Meyers and Cummings (2011, JASA 106:1085-1098) order the "
-            "policies by the relativity of a score to the premium, Liberty Mutual's Kaggle competition (2014) scored "
-            "a weighted Gini, and Allstate's (2011), whose rows were whole vehicle-years, the row Gini declared here. "
-            "This Gini scores the period's total cost, its length included: the length alone scores 0.277 of a "
-            "model's 0.332 (untuned LightGBM, the 9 shipped splits), and the 802,620 claim moves the fold that holds "
-            "it by about 0.10 (0.23 to 0.25 with it, 0.34 without). RMSE on the amount follows a few large claims: "
-            "even the true claim indicator times the claimants' mean reaches R^2 0.02 to 0.15 by fold, untuned "
-            "LightGBM fit on the amount -0.10 to 0.00, while it ranks claims at AUC 0.67. The Gini ignores the price "
-            "level, which pricing sets separately."
+            "task on these tables was found. Tariffs are compared by the Gini index of an ordered Lorenz curve of "
+            "losses (Frees, Meyers and Cummings 2011, JASA 106:1085-1098; CAS Monograph 5, sec. 7.2.4): records "
+            "sorted by predicted cost per year of cover, the cumulative share of the exposure against the cumulative "
+            "share of the losses. The base is the feature `Exposure` before its rounding (`exposure_at_start`): the "
+            "length known at the start for records that ended alone, whose early end often follows a claim (with "
+            "their realised length as base a constant prediction scored 0.184); continued records keep their realised "
+            "length in the base as in the feature, so the ratio stays neutral (with the known-at-start length there, "
+            "the length alone would score 0.176 of a model's 0.249). The length alone scores 0.028 here, where the "
+            "row Gini gave it 0.277 of a model's 0.319 (Andrej, 2026-11-03, review issue 4: C). Not normalized: 0 is an order "
+            "no better than the base, the same cost per year for every record. On the 9 shipped splits untuned "
+            "LightGBM scores 0.147 (0.052 to 0.179), random predictions 0.049 on average (0.015 to 0.104), the same "
+            "models' row Gini 0.324."
         ),
+        inputs={"weight": "exposure_at_start"},
         target_transform="log1p",
     )
+    scoring_columns = (
+        ScoringColumn(
+            column="exposure_at_start",
+            role="weight",
+            used_by="ordered_lorenz_gini",
+            description=(
+                "the record's length in years as the feature `Exposure` holds it before its rounding to months (known "
+                "at the start except for continued records, as in the feature): records are sorted by prediction / exposure_at_start and the cumulative share of the "
+                "losses is set against the cumulative share of this exposure. Never a feature."
+            ),
+        ),
+    )
     grouping = Grouping(
-        on="policy_chain",
+        on="policy_component",
         labels="per_sample",
         prediction_unit="row",
         context="none",
         definition="""
-            One group is a policy chain: a record and the records that continue it in the next rows of its sample file (the same six profile columns, starting the day the previous record ends, the driver's age the same or one year more), numbered in the raw order before the dates are dropped; 80,831 chains of 1 to 6 records, 31,862 of them with two or more. The release has no policy id. The use case prices a period when it starts: a later record of the policy does not exist yet, and its claim counters include the earlier record's claim, so all records of a chain stay on one side (SPLIT-9). Each record is one prediction, made from its own row. The 10,292 records that continue only in another sample file are not joined: links across files rest on equal profiles and dates with tolerances on the ages, and about 1% of them match by chance (SPLIT-24).
+            One group is a policy component: a record and every record that may continue it, in the next row of its sample file or in another file (the same six profile columns, starting the day the other ends, the driver's age the same or one year more, the licence age advanced by the months between the starts within one), joined transitively; 68,857 components of 1 to 13 records, 85,124 records in components of two or more. The release has no policy id. The use case prices a period when it starts: a later record of the policy does not exist yet, and its claim counters include the earlier record's claim, so all records of a component stay on one side (SPLIT-9). Each record is one prediction, made from its own row. About 1% of the links across files match by chance; such a link only joins two policies into one group, the conservative side (SPLIT-24; Andrej, 2026-11-03: the most conservative key).
         """,
     )
     splits_comment = """
-        Default splits, grouped by policy chain (`policy_chain`): a policy's consecutive records in one sample file
-        stay on one side (80,831 chains for 115,155 records). A tariff is fit on past policy-years and applied to the
+        Default splits, grouped by policy component (`policy_component`): a policy's records, in one sample file or
+        across them, stay on one side (68,857 components for 115,155 records). A tariff is fit on past policy-years and applied to the
         next year's policies, so the task is temporal by its use case, but the release holds one year (records within
         2004), so held-out policies of the same year stand in for next year's (ForcedGroupedFromTemporal, SPLIT-8).
         Windows inside 2004 can train only on records whose period had ended by the cutoff: 13% to 39% of the rows for
@@ -210,13 +256,14 @@ class FremplFrenchMotorPersonalLine(AbstractCuratedDataset):
         0.9% of the others. A lookup that finds such a record among the training rows from the features alone took a
         LightGBM model from a normalized Gini of 0.303 to 0.395 on the same test rows when those later records stayed
         in training (3 of 3 folds, before the `Exposure` fix); LightGBM alone reads one row at a time and scores the
-        same either way. Grouping costs nothing measured: untuned LightGBM scores a Gini of 0.332 and a claim AUC of
-        0.673 on these folds, 0.329 and 0.673 on random ones. Residual: 10,292 records continue only in another file,
-        which the chains do not join. On the shipped folds the same lookup ranks claims at AUC 0.51 and lowers the
-        model's Gini on 8 of 9 splits; a lookup without the length, which the fix replaced for many of those records,
-        reaches AUC 0.53 and moves the Gini by -0.02 to +0.01 (3 splits). Shipped forced on the curator's call
-        (Andrej, 2026-11-02: "Forced group splits should be fine"). The leak test across the split (SPLIT-8, 2026-11-02)
-        finds none: the 0.37% of test rows whose features are in training agree on a claim less than the base rate (84%
+        same either way. Grouping costs nothing measured: on the earlier folds by within-file chain untuned LightGBM
+        scored a row Gini of 0.332 and a claim AUC of 0.673, 0.329 and 0.673 on random ones, and the component key
+        against the chain 0.2785 against 0.2827 (before the fix); on the shipped component folds it scores a row Gini
+        of 0.324 and a claim AUC of 0.668. The component also joins the 10,292 records that continue only in another
+        file, which the chains left apart; under the chains a lookup of such a record had ranked claims at AUC 0.51.
+        Shipped forced on the curator's call (Andrej, 2026-11-02: "Forced group splits should be fine"). The leak test
+        across the split (SPLIT-8, 2026-11-02, on the chain folds) finds none, and the leak probe on the component
+        folds flags nothing (2026-11-03): the 0.37% of test rows whose features were in training agree on a claim less than the base rate (84%
         against 91%), and the training side's mean outcome of the test row's start month (and risk area by month) moves
         the Gini by -0.0005 on average; dropping the test rows' own quarter from training costs no more than dropping as
         many random rows.
@@ -245,9 +292,10 @@ class FremplFrenchMotorPersonalLine(AbstractCuratedDataset):
         start = pd.to_datetime(df["RecordBeg"], format="%Y-%m-%d")
         end = pd.to_datetime(df["RecordEnd"], format="%Y-%m-%d").fillna(pd.Timestamp("2005-01-01"))
         assert ((end - start).dt.days / 365 - df["Exposure"]).abs().max() < 0.007
-        # 5. The policy chain, the group column: a record and the records that continue it in the next rows of its file.
+        # 5. The policy component, the group column: a record and every record that may continue it, in the next row
+        #    of its file or in another file (issue 1, B).
         link = _continues_next(df)
-        df["policy_chain"] = (~link.groupby(df["file"]).shift(1, fill_value=False).astype(bool)).cumsum()
+        df["policy_component"] = _policy_components(df, link)
         # 6. A record that ended before 31 December with no continuation takes the length known at its start: the
         #    Exposure of the open records that start the same day (else the days to 1 January 2005 / 365, at most 1).
         #    Every Exposure is then rounded to whole months, so its decimals do not tell how a record ended.
@@ -256,6 +304,10 @@ class FremplFrenchMotorPersonalLine(AbstractCuratedDataset):
         known_at_start = df["Exposure"].where(open_record).groupby(start).transform("median").fillna(to_year_end)
         ended_alone = ~open_record & ~link
         df.loc[ended_alone, "Exposure"] = known_at_start[ended_alone]
+        #    The metric's base is the feature's length before the rounding (issue 4, C): known at the start for open
+        #    records and those that ended alone; for continued records the realised length, as in the feature (a leak
+        #    kept on purpose), so the ratio of the two stays neutral. A scoring column, never a feature.
+        df["exposure_at_start"] = df["Exposure"]
         df["Exposure"] = (df["Exposure"] * 12).round() / 12
         df = drop_columns(df, ["ClaimInd", "RecordBeg", "RecordEnd", "file"])
         # 7. The target on the log1p scale (the metric inverts it: target_transform="log1p").
@@ -299,13 +351,13 @@ class FremplFrenchMotorPersonalLine(AbstractCuratedDataset):
         negatives["share of those with a next record"] = (
             negatives["not_at_fault_rise"] / negatives["with_next_record"]
         ).round(4)
-        chain = (~link.groupby(records["file"]).shift(1, fill_value=False).astype(bool)).cumsum()
+        component = pd.Series(_policy_components(records, link))
         sizes = (
-            chain.value_counts()
+            component.value_counts()
             .value_counts()
             .sort_index(kind="stable")
-            .rename_axis("records in the chain")
-            .rename("chains")
+            .rename_axis("records in the component")
+            .rename("components")
         )
         return [
             Decision(
@@ -325,12 +377,14 @@ class FremplFrenchMotorPersonalLine(AbstractCuratedDataset):
                 negatives,
             ),
             Decision(
-                "The consecutive records of a policy stay on one side of the split",
-                "A record continues in the next row of its file when the profile is the same, it starts the day the "
-                "previous one ends and the driver's age is the same or one more. A later record's claim counters "
+                "The records of a policy stay on one side of the split",
+                "A record continues another, in the next row of its file or in another file, when the profile is the "
+                "same, it starts the day the other ends and the driver's age is the same or one more (across files "
+                "also the licence age advanced by the months between the starts). A later record's claim counters "
                 "include the earlier record's claim: under random records, a lookup on the features alone lifted a "
                 "LightGBM model's normalized Gini by 0.09 on the same test rows, a gain that went with those later "
-                "records. Each chain is one group (`policy_chain`).",
+                "records. Every record joined by such a link is in one group (`policy_component`), the most "
+                "conservative key (Andrej, 2026-11-03).",
                 sizes,
             ),
         ]

@@ -3,10 +3,7 @@ unique_name: rand_health_insurance_experiment_doctor_visits
 name: RAND Health Insurance Experiment next-year medical spending (statsmodels randhie / Cameron & Trivedi extract), 1974-1982
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
-suggestion: 'Yes'
+suggestion: TBD -> 2nd Tier
 priority: 2
 decision_markers:
 - No Good Target / Scientific Discovery
@@ -25,7 +22,6 @@ source_links:
 - https://www.statsmodels.org/dev/datasets/generated/randhie.html
 - http://cameron.econ.ucdavis.edu/mmabook/mmadata.html
 - https://doi.org/10.3886/ICPSR06439.v1
-v2_path: datasets/_dev/tabarena-v0pt2/rand_health_insurance_experiment_doctor_visits/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -88,6 +84,10 @@ public domain"; ICPSR lists no access restriction for 6439.
 CC (2026-11-02, Andrej): the forced grouped split ships (issue 1 (a)): "Forced group splits should be fine. Regarding forced IID, did you make sure there are no leaks? Whenever there are no leaks we can ship." Recorded in SPLIT-8 (amended 2026-11-02: a forced grouped split ships; a forced IID split ships only when the leak test across the random split finds none).
 
 **Assessment (AI, 2026-11-02):** the leak test across the forced grouped split (3x3 family folds) finds none. Shared rows: no feature row recurs across the split; a person-level key (the baseline values and the birth cohort, age minus study year) links 0.2% of test rows to a training row, and those rows' spending tracks the test target at correlation 0.04; the hidden-group probe finds no group; neighbouring families in person-id order are no more alike than random pairs (residual correlation 0.014 against 0.000 +- 0.022). Shared period: adding the training side's mean target of the test row's site and study year (leave-own-family-out on the training side) changes R2 by -0.004 (LightGBM, SE 0.002) and +0.000 (ridge), a placebo cell mean by -0.000; the study-year mean alone by -0.011 and -0.002. Features from other rows' outcomes: none (column audit: every feature is the row's own year t or its enrolment baseline; `family_income`, the one open timing, is dropped). how_much_did_it_rain's `No` named a measured shared-period leak; none is found here.
+
+CC (2026-11-03, Andrej): 2nd Tier: "The target is a bit made up and the data is quite outdated. Could generally be considered, but currently there are better options". The v2 folder left the working copy; its last definition is in the run folder of 2026-11-03, the committed one in 902011b3.
+
+CC (2026-11-03, Andrej): issues 2 and 3: "We don't ship"; moot with the dataset out (`TBD -> 2nd Tier` stays).
 
 ## Reference
 

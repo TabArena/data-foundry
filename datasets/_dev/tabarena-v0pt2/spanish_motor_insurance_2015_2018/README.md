@@ -2,17 +2,17 @@
 report_format: data-foundry-report-v2
 unique_name: spanish_motor_insurance_2015_2018
 container_format: 2
-checksum: v2:602ee4a80b989403cbd48b19323bf252f797e61c564562abc1e35c21166859e0
+checksum: v2:1bf7baa39481082aa53c23d16726483c409c4ebccdc7dfa4d2757cec9d4ba51c
 build: null
 build_stale: false
 data:
-  n_rows: 25665
-  n_features: 17
+  n_rows: 37090
+  n_features: 18
   dtypes:
     category: 5
     datetime64[ns]: 1
     float64: 7
-    int64: 5
+    int64: 6
   n_test_dataset_rows: null
 task:
   target: log1p_cost_claims_year
@@ -36,57 +36,61 @@ splits:
   time_gap: 12
   time_gap_unit: months
   n_train:
-    min: 14845
-    max: 20153
+    min: 19629
+    max: 27043
   n_test:
-    min: 393
-    max: 569
+    min: 763
+    max: 973
 bundle_checks:
   ok: true
   errors: []
   warnings:
   - splits_rows_unused
-  - task_target_value_dominant
   infos:
   - dataset_duplicate_rows
-  accepted: {}
+  - dataset_conflicting_duplicate_rows
+  accepted:
+    task_target_value_dominant: '65% zeros: policy-years without a claim cost (Andrej,
+      2026-11-03: zero-inflated targets are natural for these tasks and a core challenge).'
 decisions:
 - Only each policy's first year in the release is a task row
 - Years that start in 2018 are dropped
-- Only customers with one policy in force are kept
+- The calendar-year count of policies is replaced by the policies in force at the
+  start
 ---
 
 # spanish_motor_insurance_2015_2018
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `log1p_cost_claims_year`, scored with `normalized_gini` on temporal splits by `period_start`. 25,665 rows and 17 features. Source: Other (2023).
+Regression of `log1p_cost_claims_year`, scored with `normalized_gini` on temporal splits by `period_start`. 37,090 rows and 18 features. Source: Other (2023).
 
-Not built yet. The current definition gives checksum `v2:602ee4a80b989403cbd48b19323bf252f797e61c564562abc1e35c21166859e0`.
+Not built yet. The current definition gives checksum `v2:1bf7baa39481082aa53c23d16726483c409c4ebccdc7dfa4d2757cec9d4ba51c`.
 
 ## In brief
 
 **Question.** What will a Spanish motor policy cost the insurer in claims in its first year, from the vehicle, the driver and the quoted premium?
 
-**Use case.** A Spanish motor insurer writing a new contract for a customer with no other policy at the insurer refines its quoted premium: it estimates the first year's claim cost from the rating factors and the quote, to find the risks the quote prices too high or too low. The data article names pricing mechanisms for new business among the uses.
+**Use case.** A Spanish motor insurer writing a new contract refines its quoted premium: it estimates the first year's claim cost from the rating factors and the quote, to find the risks the quote prices too high or too low. The data article names pricing mechanisms for new business among the uses.
 
-**One row.** One policy's first year of cover in the release, at an unnamed Spanish non-life insurer, for a customer with one policy in force: a new contract written from November 2015 to December 2017, or for an older contract its year renewed from November 2015 to November 2016 (25,665 policies; cars, vans, motorbikes and farm vehicles).
+**One row.** One policy's first year of cover in the release, at an unnamed Spanish non-life insurer: a new contract written from November 2015 to December 2017, or for an older contract its year renewed from November 2015 to November 2016 (37,090 policies; cars, vans, motorbikes and farm vehicles).
 
-**Predicted.** The year's claim cost, payments plus reserves, in euros: 0 for 67% of the policies. Shipped as log1p, scored on the amount.
+**Predicted.** The year's claim cost, payments plus reserves, in euros: 0 for 65% of the policies. Shipped as log1p, scored on the amount.
 
-**Known at prediction time.** The vehicle (type, age, power, engine size, value, doors, fuel, size and weight), the driver's age and years licensed, a second driver, rural or urban area, the sales channel, the contract's age and the year's premium.
+**Known at prediction time.** The vehicle (type, age, power, engine size, value, doors, fuel, size and weight), the driver's age and years licensed, a second driver, rural or urban area, the sales channel, the contract's age, the customer's other policies in force at the start and the year's premium.
 
 **What the test data stands for.** Five monthly windows, August to December 2017, each trained on the policy-years that had ended by the window's start, so the test data stands for the new contracts of a coming month, priced from the claims the insurer already knows in full.
 
-**Our changes to the source.** We keep only each policy's first year in the release (the later yearly rows hold a shrinking remnant of its claims) and only customers with one policy in force (a customer's concurrent policies claim together). We drop renewals never in force, years starting in 2018 (claims stop then) and the columns read at the policy's end (claim history, lapses, seniority, payment method).
+**Our changes to the source.** We keep only each policy's first year in the release (the later yearly rows hold a shrinking remnant of its claims) and replace the insurer's count of the customer's policies over the calendar year by the policies in force at the start. We drop renewals never in force, years starting in 2018 (claims stop then) and the columns read at the policy's end (claim history, lapses, seniority, payment method).
 
-> **Use case fit: approximate (a stand-in with a known gap).** Real new contracts with the insurer's rating factors and premium. But the cover bought, the driver's claims history and the territory are missing; the carry-over of claims between years is undocumented; customers with several policies are left out; 1,236 years cut short by a lapse count as full (the cut is known only at the end); the sample's design is not described. The 2019 vehicle value is kept on purpose.
+> **Use case fit: approximate (a stand-in with a known gap).** Real new contracts with the insurer's rating factors and premium. But the cover bought, the driver's claims history and the territory are missing; the carry-over of claims between years is undocumented; whether claims are booked across a customer's policies is unknown; 1,236 years cut short by a lapse count as full; the sample's design is not described. The 2019 vehicle value is kept on purpose.
 
 ## Files in this folder
 
 | file | what it is |
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
+| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/spanish_motor_insurance_2015_2018.md`](../../../../curation/records/spanish_motor_insurance_2015_2018.md)
@@ -135,7 +139,7 @@ Only curators run `build`, when the dataset ships.
 | license | CC BY 4.0 |
 | data_tags | Non-IID, Temporal |
 | reference | seguragisbert2025motor |
-| rows x columns | 25,665 x 18 |
+| rows x columns | 37,090 x 19 |
 | task.target | log1p_cost_claims_year |
 | task.problem_type | regression |
 | task.metric | normalized_gini |
@@ -181,15 +185,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 25,665 rows of the final frame (the oldest rows: the frame is sorted by `period_start`); 12 of 18 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 37,090 rows of the final frame (the oldest rows: the frame is sorted by `period_start`); 12 of 19 columns, the target first. Cells are cut at 40 characters.
 
 | log1p_cost_claims_year | period_start | Distribution_channel | Premium | Type_risk | Area | Second_driver | Power | Cylinder_capacity | Value_vehicle | N_doors | Type_fuel |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 3.97199 | 2015-11-02 00:00:00 | broker | 282.11 | passenger car | rural | no | 69 | 998 | 13150 | 5 | petrol |
-| 0 | 2015-11-02 00:00:00 | agent | 479.2 | passenger car | rural | no | 140 | 1997 | 25100 | 5 | petrol |
-| 0 | 2015-11-02 00:00:00 | agent | 310.47 | van | rural | no | 90 | 1997 | 18825 | 5 | diesel |
-| 0 | 2015-11-02 00:00:00 | agent | 215.55 | passenger car | rural | no | 105 | 1461 | 23320 | 5 | diesel |
-| 0 | 2015-11-02 00:00:00 | agent | 374.13 | passenger car | urban | no | 100 | 1995 | 20400 | 4 | diesel |
+| 6.34739 | 2015-11-02 00:00:00 | agent | 299.53 | passenger car | rural | no | 100 | 1598 | 17490 | 5 | petrol |
+| 0 | 2015-11-02 00:00:00 | agent | 254.83 | passenger car | urban | no | 75 | 1390 | 12070 | 3 | petrol |
+| 4.56539 | 2015-11-02 00:00:00 | agent | 334.54 | passenger car | urban | no | 110 | 2688 | 42800 | 2 | petrol |
+| 3.99912 | 2015-11-02 00:00:00 | agent | 268.26 | passenger car | rural | no | 155 | 2198 | 30790 | 5 | diesel |
+| 0 | 2015-11-02 00:00:00 | agent | 298.64 | passenger car | rural | no | 102 | 1595 | 20230 | 3 | petrol |
 
 ## Curation notes
 
@@ -198,10 +202,10 @@ We start with "Motor vehicle insurance data.csv" of Mendeley Data 5cxyb5fp4f, ve
 - Prediction point: the start of a policy's year of cover, when the insurer prices it: for a new contract the day it is written, for an older contract its renewal. The vehicle, the driver and the year's premium are known then; the year's claims are not. Sec. 3: "Each row represents an insurance policy that is automatically renewed annually"; the rows of a policy are consecutive years (each starts on the previous row's next renewal).
 - Year: version 1 of the Mendeley record was published on 10 August 2023 with the same rows; version 2 (30 July 2024) sets 3,416 cells of Distribution_channel that read "00/01/1900" to 0.
 - Years without cover are dropped (USE-7): 5,069 first rows of complete years (12.0%) are an older contract's renewal that never came into force, with `Date_lapse` on the year's start (4,971) or before it (98). Each is its policy's last row, no day of it is at risk, and it holds 14 claims (0.3%). The rule reads the dates, not the label (LEAK-25), as spanish_motor_insurance_coverage_level_2022_2024 drops its years without time at risk.
-- Only each policy's first row in the release is kept (37,090 of the 58,990 complete years with cover). The later rows hold almost no new claim: after a year without claims, 0.9% of the next years have one (133 of 14,980), against 33% of the first rows of older contracts and 38% of new contracts; after a year with claims, the count is below the previous year's in 99.9% of the next years (6,911 of 6,920). 96.5% of the later rows' claim cost sits on rows that follow a year with claims, and the previous year's claim count alone ranks the later rows at a normalized Gini of 0.86. So a later row's cost is a shrinking remnant of the first year's claims (likely the same claims still open, with that year's payments and reserves), not the year's new risk; the source does not explain it, and the 2022-2024 release of the same group shows 17.4% after a claim-free year, so the defect is this release's. The first rows behave like a year's claims: for older contracts the claim share stays at 32-35% in every renewal month from November 2015 to November 2016. (USE-5, PROV-13: the authors offer "the pre-cleaned raw data", Sec. 1, which might show the claims by year.)
+- Only each policy's first row in the release is kept (37,090 of the 58,990 complete years with cover). The later rows hold almost no new claim: after a year without claims, 0.9% of the next years have one (133 of 14,980), against 33% of the first rows of older contracts and 38% of new contracts; after a year with claims, the count is below the previous year's in 99.9% of the next years (6,911 of 6,920). 96.5% of the later rows' claim cost sits on rows that follow a year with claims, and the previous year's claim count alone ranks the later rows at a normalized Gini of 0.86. So a later row's cost is a shrinking remnant of the first year's claims (likely the same claims still open, with that year's payments and reserves), not the year's new risk; the source does not explain it, and the 2022-2024 release of the same group shows 17.4% after a claim-free year, so the defect is this release's. The first rows behave like a year's claims: for older contracts the claim share stays at 32-35% in every renewal month from November 2015 to November 2016. (USE-5, PROV-13: the authors offer "the pre-cleaned raw data", Sec. 1, which might show the claims by year. A future version could ask them for it and bring back the renewal years and the customers with several policies; for simplicity this version ships the task as built and sends no request; Andrej, 2026-11-03, review issue 4.)
 - Years that start in 2018 are dropped (35,815 rows, 11,343 of them first rows): the data "includes claims up to 2018" and "the most recent claims exhibit a run-off with pending developments" (Sec. 3), so a year renewed in 2018 is cut short; the claim share of first rows falls from 28-39% for new contracts written in each month of 2017 to 0.5% for those written in October and November 2018 (LEAK-24, the record's suggested call).
-- Only customers with one policy in force are kept (`Policies_in_force` 1, "policies held by the insured in the insurance entity during the reference period"; 25,665 of 37,090 rows), and the column, then constant, goes (USE-5). A policy's claims move with those of the same customer's other policies running at the same time: among 2,493 first rows that have such a policy in the sample (a customer matched on birth and licence dates), 80% claim when that policy claims and 6% when it does not, 1,519 of 1,532 such pairs insure different vehicles, and the link grows with the days the two years overlap, while the same customer's years more than 180 days apart give 21% against 12%. Claims per row grow with the count (0.64, 0.95, 1.28, 1.76 and 3.15 for one to five or more policies) while the cost per claimant stays at 730-910, so the costs are not one claim split across policies; the release cannot tell claims booked across a customer's policies from customers who claim together (EV-1). With every first year kept, a model's gain over the premium came almost entirely from the count. The count covers the calendar year, so customers who add a policy later in the year go too; they claim at the same rate as the rest (31.2% against 31.2%), so the filter does not select on the outcome. Revisit if the authors show that claims are booked per policy (PROV-13).
-- Target `log1p_cost_claims_year`, log1p of `Cost_claims_year` ("Total cost of claims for the insurance policy during the current year"; Sec. 3: "The Cost_claims_year variable includes both payments and reserves"), the scale a model of a skewed amount is fit on; the metric is computed on the amount (`target_transform="log1p"`, MET-3), as in frempl_french_motor_personal_line and spanish_motor_insurance_coverage_level_2022_2024. No negative amounts; the smallest positive cost is 40.05. 67.2% of the rows cost 0, exactly those with `N_claims_year` 0.
+- `Policies_in_force` ("policies held by the insured in the insurance entity during the reference period") is replaced by `other_policies_at_start`, the customer's other policies in the sample with a year of cover running on the row's start (a customer is a birth date and a licence date; no customer id is published): 0 for 34,591 rows, 1 for 2,244, 2 to 6 for 255 (Andrej, 2026-11-03, review issue 2: design S, keeping every first year). The calendar-year count also counts the policies a customer adds later in the year: in the five test windows those customers claim at 48.9% in their first year against 31.4% for customers with one policy, so a count that sees them reads the future (LEAK-10). A first year claims at 36.4% with no other policy running at its start, 21.3% with one and 16.1% with two or more. Note: a policy's claims move with those of the same customer's other policies running at the same time (among 2,493 first rows with such a policy in the sample, 80% claim when that policy claims and 6% when it does not; 1,519 of 1,532 such pairs insure different vehicles), and the release cannot tell claims booked across a customer's policies from customers who claim together (EV-1); a future version could ask the authors (PROV-13). Customers with several policies were first left out (25,665 rows); the count known at the start keeps all 37,090 without a feature from after it.
+- Target `log1p_cost_claims_year`, log1p of `Cost_claims_year` ("Total cost of claims for the insurance policy during the current year"; Sec. 3: "The Cost_claims_year variable includes both payments and reserves"), the scale a model of a skewed amount is fit on; the metric is computed on the amount (`target_transform="log1p"`, MET-3), as in frempl_french_motor_personal_line and spanish_motor_insurance_coverage_level_2022_2024. No negative amounts; the smallest positive cost is 40.05. 64.6% of the rows cost 0, exactly those with `N_claims_year` 0.
 - Why log1p and not the raw amount (MET-3): untuned LightGBM ranks the 5 shipped windows at a mean Gini of 0.116 fit on log1p, about the 0.121 of a Tweedie loss on the amount (the actuarial loss) and above the 0.073 of squared error on the amount. The Gini is computed on the amount either way.
 - Only the claim part carries signal (the hurdle check of task_probes.md, 5 shipped windows): a claim is ranked at ROC AUC 0.56 to 0.62, while a severity model on the claimants reaches R^2 -0.12 to -0.04 on log costs and below 0 on the costs, and the true claim indicator times the claimants' mean explains 8% to 19% of the variance of the amount. A hurdle model (claim probability times severity) ranks at a mean Gini of 0.115, the direct log1p model at 0.116.
 - Dropped as parts of the target: `N_claims_year` (the year's claim count, 0 exactly where the cost is 0).
@@ -212,8 +216,8 @@ We start with "Motor vehicle insurance data.csv" of Mendeley Data 5cxyb5fp4f, ve
 - Impossible values made missing (CLEAN-11): a driving licence dated after the year's start (12 rows, their `years_licensed`) and a contract dated after it (8 rows, their `contract_years`; 5 of them start in 2017, the only first rows after November 2016 that are not new contracts).
 - A block without vehicle data (CLEAN-10): 30 rows (29 motorbikes, 1 farm vehicle) have a power of 0 horsepower and no fuel type; the power is made missing and the fuel stays missing.
 - The codes get the labels of the variable sheet: `Distribution_channel` (agent, broker), `Type_risk` (motorbike, van, passenger car, agricultural vehicle), `Area` (rural, urban; urban is over 30,000 inhabitants), `Second_driver` (no, yes) and `Type_fuel` (petrol, diesel); all categorical. `Length` is missing for every motorbike, 135 of the 139 farm vehicles, 180 cars and 62 vans; it stays missing. `N_doors` is 0 for motorbikes, as recorded.
-- Note: `Premium`, the year's net premium (Sec. 3: "after deducting taxes but including both internal (administrative) and external (commercial) expenses"), is kept: the insurer's own price, set when the year starts (USE-6), and the natural core of the task, not a lookup (TP-4). The premium alone ranks the 5 windows at a mean Gini of 0.234; of the models tried, ridge and logistic regression reach 0.230, a LightGBM tuned on an inner time split 0.176 and untuned LightGBM 0.116, and the premium matches or beats the best of them in 3 of the 5 windows (not in August and October 2017). It does not follow the year's claims: after a claim-free year the median change of the premium to the next year is +0.5% whether or not the new year has a claim, against +2.0% after a year with claims (all rows of the release).
-- Potential leak, kept on purpose: `Value_vehicle` is the "Market value of the vehicle on 31/12/2019" (variable sheet), a valuation after every year in the data. It is a property of the vehicle, the same in every row of a policy, and not of the policy's claims: the vehicle's type, age, power, engine size, doors, fuel, size and weight explain 97% of the log value, and the rest does not rank the policies with a claim (ROC AUC 0.497; 0.492 for a cost over 2,000), so it does not move with the claims. Without it, untuned LightGBM ranks the 5 windows at 0.140, against 0.116 with it, inside one window's noise. Revisit if the source gives the value at each renewal.
+- Note: `Premium`, the year's net premium (Sec. 3: "after deducting taxes but including both internal (administrative) and external (commercial) expenses"), is kept: the insurer's own price, set when the year starts (USE-6), and the natural core of the task, not a lookup (TP-4). The premium alone ranks the 5 windows at a mean Gini of 0.162; TabPFN (default settings, on a GPU) reaches 0.221 and beats it in all 5 windows (0.330, 0.277, 0.275, 0.135, 0.086 against 0.177, 0.244, 0.258, 0.076, 0.054, August to December 2017), untuned LightGBM 0.146. Within customers with one policy the premium still leads (0.234 against 0.162 for TabPFN): a model's gain comes from ranking customers by their other policies at the start. Shipped on the curator's call, to re-check `Trivial` on the first benchmark run (Andrej, 2026-11-03, review issue 5). It does not follow the year's claims: after a claim-free year the median change of the premium to the next year is +0.5% whether or not the new year has a claim, against +2.0% after a year with claims (all rows of the release).
+- Potential leak, kept on purpose: `Value_vehicle` is the "Market value of the vehicle on 31/12/2019" (variable sheet), a valuation after every year in the data. It is a property of the vehicle, the same in every row of a policy, and not of the policy's claims: the vehicle's type, age, power, engine size, doors, fuel, size and weight explain 97% of the log value, and the rest does not rank the policies with a claim (ROC AUC 0.497; 0.492 for a cost over 2,000), so it does not move with the claims. Without it, untuned LightGBM ranks the 5 windows at 0.140, against 0.116 with it, inside one window's noise. We assume that a vehicle's value changes in proportion between the year's start and the valuation date, so the 2019 value ranks the vehicles as their value at the time would (Andrej, 2026-11-03, review issue 3). Revisit if the source gives the value at each renewal.
 - Note: two rows are identical in every column (two policies, claim-free, written in February 2016, training side only): distinct policies (a fleet of identical vehicles, or two policies of one holder), kept (LEAK-18).
 - Anomaly: 1,726 positive costs (8.8% of all positive costs in the release, 258 of the 264 at this amount in the claim-type sample are "negligence") are exactly 882, and 91 are 1,764: a flat amount, as the CICOS agreement between Spanish insurers sets (spanish_motor_insurance_coverage_level_2022_2024 has 882 in 2022). Kept as recorded.
 - Anomaly: 77 of the 139 farm vehicles share one of four combinations of engine size, weight and value (27, 22, 15 and 13 rows), each across vehicles registered from 1978 to 1998 or later, and every farm vehicle has 0 doors: fill values, not measurements (CLEAN-10). Kept as recorded; farm vehicles are 0.5% of the rows.
@@ -225,24 +229,26 @@ We start with "Motor vehicle insurance data.csv" of Mendeley Data 5cxyb5fp4f, ve
 A new-business price is refit on the policy-years whose claims are known and applied to the next contracts:
 5 test windows of one calendar month, December 2017 back to August 2017, newest first, each trained on the
 policy-years that had ended by the window's start, that is those that started at least twelve months before
-it (58-79% of the rows; the newest window trains on November 2015 to November 2016). A year's claims are
+it (53-73% of the rows; the newest window trains on November 2015 to November 2016). A year's claims are
 known only when it ends, hence the 12-month gap (SPLIT-10); July 2017 would train on less than half of the
-rows (SPLIT-14). The 3,127 rows that start from December 2016 to July 2017 fall in every window's gap and
-are in no split. The test windows hold new contracts only (393 to 569 a month, 117 to 195 with a claim);
-the older contracts' first years in the release start before December 2016 and train only. Every model tried
-ranks November and December 2017 at -0.06 to 0.13 (October: up to 0.46), with no sign of run-off in their
-labels; they stay (SPLIT-21). One window's Gini has a bootstrap standard error of 0.08 to 0.11. Without the
-gap, untuned LightGBM ranks the same windows at a mean Gini of 0.141, against 0.116 with it.
+rows (45%, SPLIT-14). The 5,685 rows that start from December 2016 to July 2017 fall in every window's gap
+and are in no split. The test windows hold new contracts only (766 to 973 a month, 261 to 371 with a claim);
+the older contracts' first years in the release start before December 2016 and train only. TabPFN ranks the
+windows at 0.330, 0.277, 0.275, 0.135 and 0.086 (August to December), with no sign of run-off in the newest
+labels; they stay (SPLIT-21). Keeping every customer (design S of the review, 2026-11-03) leaves the windows
+where they were and about doubles each window's claims against the earlier one-policy design (117 to 195).
+On that earlier design one window's Gini had a bootstrap standard error of 0.08 to 0.11, and without the gap
+untuned LightGBM ranked the windows at a mean Gini of 0.141, against 0.116 with it.
 
-5 repeat(s) x 1 fold(s) with seed 4267; train 14,845 to 20,153 rows, test 393 to 569 rows. Prediction horizon: 1 months. Gap between train and test: 12 months.
+5 repeat(s) x 1 fold(s) with seed 4267; train 19,629 to 27,043 rows, test 763 to 973 rows. Prediction horizon: 1 months. Gap between train and test: 12 months.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
-| 0 | 0 | 20153 | 569 | 2015-11-02 00:00:00 | 2016-11-30 00:00:00 | 2017-12-01 00:00:00 | 2017-12-31 00:00:00 |
-| 1 | 0 | 19649 | 477 | 2015-11-02 00:00:00 | 2016-10-31 00:00:00 | 2017-11-01 00:00:00 | 2017-11-30 00:00:00 |
-| 2 | 0 | 17973 | 538 | 2015-11-02 00:00:00 | 2016-09-30 00:00:00 | 2017-10-01 00:00:00 | 2017-10-31 00:00:00 |
-| 3 | 0 | 16342 | 393 | 2015-11-02 00:00:00 | 2016-08-31 00:00:00 | 2017-09-01 00:00:00 | 2017-09-30 00:00:00 |
-| 4 | 0 | 14845 | 408 | 2015-11-02 00:00:00 | 2016-07-31 00:00:00 | 2017-08-01 00:00:00 | 2017-08-31 00:00:00 |
+| 0 | 0 | 27043 | 973 | 2015-11-02 00:00:00 | 2016-11-30 00:00:00 | 2017-12-01 00:00:00 | 2017-12-31 00:00:00 |
+| 1 | 0 | 26221 | 922 | 2015-11-02 00:00:00 | 2016-10-31 00:00:00 | 2017-11-01 00:00:00 | 2017-11-30 00:00:00 |
+| 2 | 0 | 23882 | 938 | 2015-11-02 00:00:00 | 2016-09-30 00:00:00 | 2017-10-01 00:00:00 | 2017-10-31 00:00:00 |
+| 3 | 0 | 21673 | 763 | 2015-11-02 00:00:00 | 2016-08-31 00:00:00 | 2017-09-01 00:00:00 | 2017-09-30 00:00:00 |
+| 4 | 0 | 19629 | 766 | 2015-11-02 00:00:00 | 2016-07-31 00:00:00 | 2017-08-01 00:00:00 | 2017-08-31 00:00:00 |
 
 ## Decisions
 
@@ -279,9 +285,9 @@ Claims stop at the end of 2018, so the claim share falls for years that start in
 | 2018Q3 | 0.118 | 0 | 0.04 |
 | 2018Q4 | 0.005 | 0 | 0.01 |
 
-### 3. Only customers with one policy in force are kept
+### 3. The calendar-year count of policies is replaced by the policies in force at the start
 
-The claims per row grow with the customer's policies in force while the cost per claimant stays flat: the claims of a customer's concurrent policies move together. Rows: the first rows of complete years with cover; the task keeps those with one policy.
+The claims per row grow with the customer's policies in force over the calendar year while the cost per claimant stays flat; that count also sees the policies added later in the year, after a claim among them. The task keeps every first year and gives the customer's other policies in force at the row's start. Rows: the first rows of complete years with cover.
 
 | policies in force (5 = 5 or more) | rows | share_with_a_claim | claims_per_row | cost_per_claimant |
 |---|---|---|---|---|
@@ -293,39 +299,44 @@ The claims per row grow with the customer's policies in force while the cost per
 
 ## Bundle checks
 
-0 error(s), 2 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+0 error(s), 1 warning(s), 2 info (26 checks run, plus the dataset's own checks).
 
-- **warning** `splits_rows_unused`: 3,127 row(s) (12.2%) appear in no train and no test set. (hint: Expected for temporal splits (rows inside a planning gap or before the earliest train cut); for IID/grouped splits it means the splits do not cover the data — consider dropping the unused rows so the shipped frame matches what is evaluated.)
-- **warning** `task_target_value_dominant`: The target value 0 holds 67% of the rows. (hint: A cap (a censored value), a placeholder for missing, or a zero-inflated target: say which in `curation_comments`, drop censored or placeholder rows, or accept it with the reason.)
-- **info** `dataset_duplicate_rows`: 1 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
+- **warning** `splits_rows_unused`: 5,685 row(s) (15.3%) appear in no train and no test set. (hint: Expected for temporal splits (rows inside a planning gap or before the earliest train cut); for IID/grouped splits it means the splits do not cover the data — consider dropping the unused rows so the shipped frame matches what is evaluated.)
+- **info** `dataset_duplicate_rows`: 2 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
+- **info** `dataset_conflicting_duplicate_rows`: 1 row(s) (0.0%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+
+Accepted on purpose:
+
+- `task_target_value_dominant`: 65% zeros: policy-years without a claim cost (Andrej, 2026-11-03: zero-inflated targets are natural for these tasks and a core challenge).
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (18 rows)</summary>
+<summary>Show the table (19 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| Type_fuel | category | 30 | 0.12 | 2 | diesel, petrol |
+| Type_fuel | category | 601 | 1.62 | 2 | diesel, petrol |
 | Distribution_channel | category | 0 | 0 | 2 | agent, broker |
 | Type_risk | category | 0 | 0 | 4 | passenger car, van, motorbike, agricultural vehicle |
 | Area | category | 0 | 0 | 2 | rural, urban |
 | Second_driver | category | 0 | 0 | 2 | no, yes |
-| period_start | datetime64\[ns\] | 0 | 0 | 787 | 2016-07-01 00:00:00, 2016-04-01 00:00:00, 2016-10-01 00:00:00, 2016-08-01 00:00… |
-| Length | float64 | 2095 | 8.16 | 940 | 3.953, 4.315, 4.276, 3.822, 4.03, 3.85, 3.916, 4.11, 4.184, 4.174 |
-| Power | float64 | 30 | 0.12 | 228 | 90.0, 110.0, 75.0, 100.0, 105.0, 60.0, 70.0, 115.0, 140.0, 80.0 |
-| years_licensed | float64 | 12 | 0.05 | 60 | 10.0, 9.0, 11.0, 8.0, 12.0, 15.0, 13.0, 16.0, 17.0, 18.0 |
-| contract_years | float64 | 8 | 0.03 | 35 | 0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 5.0, 7.0, 8.0, 9.0 |
-| Premium | float64 | 0 | 0 | 17678 | 101.7, 43.93, 100.28, 117.68, 101.69, 129.95, 108.14, 115.47, 109.96, 110.19 |
-| Value_vehicle | float64 | 0 | 0 | 6348 | 11910.0, 28451.91, 18943.0, 12450.0, 20670.0, 16550.0, 19790.0, 20700.0, 12500.… |
-| log1p_cost_claims_year | float64 | 0 | 0 | 5696 | 0.0, 6.7833, 3.972, 3.9693, 3.9336, 3.9308, 4.2211, 4.2232, 4.1814, 4.1793 |
-| Cylinder_capacity | int64 | 0 | 0 | 564 | 1896, 1560, 1997, 1598, 1461, 1870, 1390, 1753, 1995, 1398 |
+| period_start | datetime64\[ns\] | 0 | 0 | 789 | 2016-07-01 00:00:00, 2016-10-01 00:00:00, 2016-03-01 00:00:00, 2016-04-01 00:00… |
+| Length | float64 | 3581 | 9.65 | 1043 | 3.953, 4.315, 4.276, 3.822, 4.11, 4.03, 3.916, 3.85, 4.174, 3.995 |
+| Power | float64 | 601 | 1.62 | 247 | 90.0, 110.0, 75.0, 100.0, 105.0, 60.0, 115.0, 70.0, 140.0, 120.0 |
+| contract_years | float64 | 26 | 0.07 | 36 | 0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 5.0, 7.0, 8.0, 9.0 |
+| years_licensed | float64 | 22 | 0.06 | 60 | 10.0, 9.0, 11.0, 12.0, 15.0, 13.0, 8.0, 16.0, 26.0, 18.0 |
+| Premium | float64 | 0 | 0 | 23253 | 43.93, 101.7, 75.25, 100.28, 101.69, 117.68, 121.92, 108.14, 109.96, 115.47 |
+| Value_vehicle | float64 | 0 | 0 | 7883 | 18943.0, 28451.91, 19100.0, 12500.0, 11910.0, 20670.0, 42920.0, 20300.0, 12450.… |
+| log1p_cost_claims_year | float64 | 0 | 0 | 8634 | 0.0, 6.7833, 3.9693, 3.972, 3.9308, 3.9336, 4.2211, 4.2232, 4.1793, 7.4759 |
+| Cylinder_capacity | int64 | 0 | 0 | 682 | 1896, 1560, 1997, 1598, 1461, 1870, 1390, 1753, 1995, 49 |
 | N_doors | int64 | 0 | 0 | 6 | 5, 3, 4, 0, 2, 6 |
-| Weight | int64 | 0 | 0 | 1280 | 1205, 1290, 1090, 1250, 1320, 1165, 1200, 1025, 1300, 1155 |
-| driver_age | int64 | 0 | 0 | 62 | 39, 37, 38, 36, 40, 43, 35, 34, 45, 46 |
-| vehicle_age | int64 | 0 | 0 | 62 | 10, 12, 11, 13, 9, 14, 15, 16, 8, 17 |
+| Weight | int64 | 0 | 0 | 1418 | 1205, 1320, 1290, 1165, 1250, 1090, 1200, 1300, 1155, 1430 |
+| other_policies_at_start | int64 | 0 | 0 | 7 | 0, 1, 2, 3, 4, 6, 5 |
+| driver_age | int64 | 0 | 0 | 62 | 39, 37, 48, 40, 38, 49, 45, 36, 43, 46 |
+| vehicle_age | int64 | 0 | 0 | 65 | 11, 12, 10, 13, 9, 14, 15, 16, 8, 17 |
 
 </details>
 
@@ -333,27 +344,28 @@ The claims per row grow with the customer's policies in force while the cost per
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 67.16 | 0.967 | 0.779 | 7.869 | 0.801 | log1p | 59590.4 | 45175.6 | lognormal |
+| 0 | 0 | 64.62 | 0.845 | 0.66 | 8.213 | 0.833 | log1p | 92577.4 | 62774.6 | lognormal |
 
 ### Numeric features
 
 <details>
-<summary>Show the table (12 rows)</summary>
+<summary>Show the table (13 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| Premium | 25665 | 320.095 | 135.91 | 40.14 | 2797.51 |
-| Power | 25635 | 93.1877 | 34.3196 | 4 | 490 |
-| Cylinder_capacity | 25665 | 1622.75 | 552.72 | 49 | 6788 |
-| Value_vehicle | 25665 | 18070.4 | 8457.95 | 270.46 | 189958 |
-| N_doors | 25665 | 4.13762 | 1.4259 | 0 | 6 |
-| Length | 23570 | 4.23585 | 0.382987 | 2.47 | 8.218 |
-| Weight | 25665 | 1188.1 | 406.925 | 50 | 5455 |
-| contract_years | 25657 | 2.59551 | 3.89571 | 0 | 36 |
-| driver_age | 25665 | 45.7023 | 13.0139 | 18 | 95 |
-| years_licensed | 25653 | 22.9864 | 12.5066 | 0 | 61 |
-| vehicle_age | 25665 | 11.141 | 5.94804 | 0 | 63 |
-| log1p_cost_claims_year | 25665 | 1.88936 | 2.80513 | 0 | 12.4717 |
+| Premium | 37090 | 313.267 | 141.186 | 40.14 | 2797.51 |
+| Power | 36489 | 94.4703 | 35.3709 | 4 | 560 |
+| Cylinder_capacity | 37090 | 1624.58 | 601.355 | 49 | 6788 |
+| Value_vehicle | 37090 | 18437.5 | 9198.76 | 270.46 | 220676 |
+| N_doors | 37090 | 4.07172 | 1.50333 | 0 | 6 |
+| Length | 33509 | 4.25434 | 0.395847 | 2.47 | 8.218 |
+| Weight | 37090 | 1193.48 | 454.419 | 43 | 7300 |
+| other_policies_at_start | 37090 | 0.0760582 | 0.305452 | 0 | 6 |
+| contract_years | 37064 | 2.19315 | 3.6405 | 0 | 36 |
+| driver_age | 37090 | 46.0066 | 12.7678 | 18 | 95 |
+| years_licensed | 37068 | 23.4551 | 12.3761 | 0 | 61 |
+| vehicle_age | 37090 | 11.5023 | 6.70672 | 0 | 67 |
+| log1p_cost_claims_year | 37090 | 2.04131 | 2.86579 | 0 | 12.4717 |
 
 </details>
 
@@ -364,24 +376,24 @@ The claims per row grow with the customer's policies in force while the cost per
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| Area | 1 | rural | 18263 | 71.16 |
-| Area | 2 | urban | 7402 | 28.84 |
-| Distribution_channel | 1 | agent | 13223 | 51.52 |
-| Distribution_channel | 2 | broker | 12442 | 48.48 |
-| Second_driver | 1 | no | 22825 | 88.93 |
-| Second_driver | 2 | yes | 2840 | 11.07 |
-| Type_fuel | 1 | diesel | 15896 | 61.94 |
-| Type_fuel | 2 | petrol | 9739 | 37.95 |
-| Type_fuel | 3 | &lt;NA> | 30 | 0.12 |
-| Type_risk | 1 | passenger car | 20632 | 80.39 |
-| Type_risk | 2 | van | 3176 | 12.37 |
-| Type_risk | 3 | motorbike | 1718 | 6.69 |
-| Type_risk | 4 | agricultural vehicle | 139 | 0.54 |
-| period_start | 1 | 2016-07-01 00:00:00 | 257 | 1 |
-| period_start | 2 | 2016-04-01 00:00:00 | 222 | 0.86 |
-| period_start | 3 | 2016-10-01 00:00:00 | 220 | 0.86 |
-| period_start | 4 | 2016-08-01 00:00:00 | 210 | 0.82 |
-| period_start | 5 | 2016-03-01 00:00:00 | 204 | 0.79 |
+| Area | 1 | rural | 26765 | 72.16 |
+| Area | 2 | urban | 10325 | 27.84 |
+| Distribution_channel | 1 | agent | 20016 | 53.97 |
+| Distribution_channel | 2 | broker | 17074 | 46.03 |
+| Second_driver | 1 | no | 32510 | 87.65 |
+| Second_driver | 2 | yes | 4580 | 12.35 |
+| Type_fuel | 1 | diesel | 22963 | 61.91 |
+| Type_fuel | 2 | petrol | 13526 | 36.47 |
+| Type_fuel | 3 | &lt;NA> | 601 | 1.62 |
+| Type_risk | 1 | passenger car | 29150 | 78.59 |
+| Type_risk | 2 | van | 4723 | 12.73 |
+| Type_risk | 3 | motorbike | 2927 | 7.89 |
+| Type_risk | 4 | agricultural vehicle | 290 | 0.78 |
+| period_start | 1 | 2016-07-01 00:00:00 | 324 | 0.87 |
+| period_start | 2 | 2016-10-01 00:00:00 | 275 | 0.74 |
+| period_start | 3 | 2016-03-01 00:00:00 | 268 | 0.72 |
+| period_start | 4 | 2016-04-01 00:00:00 | 268 | 0.72 |
+| period_start | 5 | 2016-08-01 00:00:00 | 258 | 0.7 |
 
 </details>
 

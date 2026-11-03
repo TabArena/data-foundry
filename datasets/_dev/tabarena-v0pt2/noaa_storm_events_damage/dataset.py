@@ -27,6 +27,21 @@ IDS = ("EVENT_ID", "EPISODE_ID")
 MAGNITUDE_LETTER = {"K": 1e3, "M": 1e6, "B": 1e9}
 # MAGNITUDE is the hail size in inches for these types and a wind speed in knots for the others (format document)
 HAIL_TYPES = ("Hail", "Marine Hail")
+# Hazards no one sends a damage assessor for (the domain practitioner's list, review issue 2): marine zones, drought,
+# heat, cold, fog, rip current, funnel cloud, waterspout and high surf.
+UNASSESSED = (
+    "Drought",
+    "Heat",
+    "Excessive Heat",
+    "Cold/Wind Chill",
+    "Extreme Cold/Wind Chill",
+    "Dense Fog",
+    "Freezing Fog",
+    "Rip Current",
+    "Funnel Cloud",
+    "Waterspout",
+    "High Surf",
+)
 # Wind speeds the preparer estimated from the damage: gust (EG) and sustained (ES), NWSI 10-1605 Sec. 46.3
 ESTIMATED = ("EG", "ES")
 
@@ -51,17 +66,19 @@ class NoaaStormEventsDamage(AbstractCuratedDataset):
             "cause in one county or forecast zone?"
         ),
         use_case=(
-            "For example, a state emergency manager, once a storm has passed and its first reports are in, ranks the "
-            "counties it hit by expected property damage to decide where to send damage-assessment teams first, "
-            "before any survey or official estimate arrives."
+            "For example, a state hazard-mitigation planner estimates the property damage of storm events from what "
+            "is known about each event before its damage is assessed (its type, place, season, size and cause), to "
+            "plan where disaster resources and mitigation go, as Diaz and Joseph (2019) do for tornadoes "
+            '"for science-informed tornado disaster planning".'
         ),
         row=(
-            "One event of the NWS Storm Data archive in one US county, forecast zone or marine zone, 2007-2025 "
-            "(thunderstorm wind, hail, flood, tornado, winter storm and 49 other types), with a damage entry."
+            "One event of the NWS Storm Data archive in one US county or forecast zone, 2007-2025 (thunderstorm wind, "
+            "hail, flood, tornado, winter storm and 29 other types), with a damage entry; the hazards no one sends a "
+            "damage assessor for are left out."
         ),
         predicted=(
             "The property damage the NWS office entered for the event, in nominal dollars, shipped as log(1 + "
-            "dollars); 73% of the entries are $0."
+            "dollars); 68% of the entries are $0."
         ),
         known=(
             "The event type, the place (state, county or zone, forecast office, where county events began), when it "
@@ -81,9 +98,9 @@ class NoaaStormEventsDamage(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "Storm Data entries, made weeks later, stand in for the first reports; tornado types come from damage "
-            "surveys; a row is one event in one county segment, while the decision is per county and storm. The label "
-            "is the preparer's rough estimate, and a $0 means no damage or no estimate made, by a convention that "
+            "A planner plans for kinds of events, while a row is one event in one county segment, described by "
+            "Storm Data entries made weeks later (tornado types from damage surveys). The label is the preparer's "
+            "rough estimate, and a $0 means no damage or no estimate made, by a convention that "
             "differs by office and drifts over the years. No exposure (population, buildings) is given."
         ),
     )
@@ -124,6 +141,8 @@ class NoaaStormEventsDamage(AbstractCuratedDataset):
         - Prediction point: a storm has passed, the event has ended and is logged from the first reports (type, place, begin and end time, a measured wind speed or the hail size, whether damage was seen), before any damage survey, claim or damage estimate. Every column is checked against it. Strong Wind, Lightning and Thunderstorm Wind below 50 kt enter Storm Data only when they result in "a fatality, injury, or damage" (NWSI 10-1605, Sec. 29, 45 and 46): 3.5-4.0% of the test rows, 95-96% of them with damage. They stay, since the first report says whether damage was seen (LEAK-37). The numbers below are untuned LightGBM (400 trees) on the shipped features, trained on 2007 to September 2023 and tested on 2024, RMSE on the log1p target: 2.626 as shipped (scratch, 2026-11-01).
         - Target: `DAMAGE_PROPERTY`, coded as a number and a magnitude letter ("10.00K" = $10,000), parsed to dollars and shipped as log1p (`log1p_property_damage_usd`); the metric is computed on the dollars (`target_transform="log1p"`). Nominal dollars as entered, not adjusted for inflation.
         - Rows without a damage figure (blank `DAMAGE_PROPERTY`, 18% of the 1,225,290 events 2007-2025) have no target and are dropped. We read the blank as the "no information available" box ("either check the 'no information available' box, or make an estimate. The lone exception is for flood events", NWSI 10-1605, Sec. 2.7, p. 11): an inference, since the export of the box is not documented; Flood and Flash Flood have 26 blanks, all in 2007, and none from 2008 on. A $0 entry stays a 0. The curator's call (Andrej, 2026-10-30, zero-inflated review): "We don't care. We want to add any relevant predictive task, independent if it is zero inflated or not"; reading it as making $0 against blank a cleaning choice is the AI's.
+        - Dropped as no assessment decision (USE-1; Andrej, 2026-11-03, review issue 2, the domain practitioner's list): every marine type and drought, heat, excessive heat, cold/wind chill, extreme cold/wind chill, dense fog, freezing fog, rip current, funnel cloud, waterspout and high surf: 156,767 entries with a damage figure (15.7%), 99.1% of them $0, with 0.5% of the dollars. The event type alone predicts their zeros, so they made the task look easier; the rows left are the hazards whose damage is assessed and planned for. On the rows left untuned LightGBM scores RMSLE 2.67, 2.93 and 2.94 (2025, 2024, 2023) against 4.05, 4.28 and 4.20 for a constant.
+        - No storm-level input (review issue 4): the number of a storm's entries and counties (`EPISODE_ID`) changes untuned LightGBM's RMSLE by -0.010 to +0.001 counted over all its entries, and by -0.012 to +0.017 counted over the types entered whatever the damage (strong wind, lightning and thunderstorm wind under 50 kt enter Storm Data only with damage, 3.3% of the entries), so it adds no measurable signal and would carry part of the label.
         - Anomaly: a $0 mixes "no damage" with "no estimate made" (13 of 121 EF4 and EF5 tornado segments, and 17.3% of EF2 and above, are at $0), and the mix is office practice: among Thunderstorm Wind entries the share at $0 runs from 7% to 91% between the 10th and 90th percentile of the 107 offices with 100 or more entries (decision table). It drifts: an office's 2024 share predicts its 2025 share at r 0.958 and its 2007-2016 share at r 0.575, and 30.5% of 82 offices moved by more than 0.2 from 2007-2021 to 2023-2025. The line between $0 and blank moves inside an office too: from 2007-2010 to 2022-2025, 70% of the rise in an office's Thunderstorm Wind blanks came out of its $0 entries (98 offices). The office (`wfo`) is a feature, so a model can learn the practice; it is not repaired. Kept under LEAK-25 as amended for this case (Andrej, 2026-11-02): a mix whose recording follows a reporting unit shipped as a feature stays, with the unit's spread and drift in the notes and fit approximate, as the task keeps a measured signal beyond the office, the period and the place; the blanks, the source's own 'not recorded' box, are dropped.
         - History: from 2007 on. In the files of 2000-2005, 70% to 72% of the events have no damage figure, 61% in 2006 (the year the files move from the PDS to the CSV entry format; in 2006 the PDS rows are 71.3% blank, floods 63.3%, the CSV rows 0.1%), then 7.3% in 2007, rising to 22-24% in 2022-2025, so the kept rows change composition; the positive damage drifts down within the kept years too (median of Thunderstorm Wind $5,000 in 2007-2017, $2,000 in 2025).
         - Dropped, written from the damage or recorded with it (LEAK-10): the narratives (the episode narrative is not read, the event narrative only finds double entries), `TOR_F_SCALE` (the Enhanced Fujita rating "describes the strength of the tornado based on the amount and type of damage", format document p. 4), `TOR_LENGTH`, `TOR_WIDTH` and the `TOR_OTHER_*` continuation fields (the path from the damage survey), the end point `END_LAT`, `END_LON`, `END_RANGE`, `END_AZIMUTH`, `END_LOCATION` (for a tornado the end of the surveyed path, for a wind swath "within the county where the wind damage swath exists", NWSI 10-1605, Sec. 46.1, p. A-68), the injuries and deaths, and the crop damage. Measured: with the rating, the path and the end point the RMSE falls from 2.626 to 2.596 (tornado rows 4.796 to 4.107); with the casualties and the crop damage to 2.561; two flags read off the event narrative (a dollar amount, a damage word such as "roof" or "downed") give 2.559.
@@ -161,7 +180,7 @@ class NoaaStormEventsDamage(AbstractCuratedDataset):
     )
     accepted_check_warnings = {
         "task_target_value_dominant": (
-            "Zero-inflated: 73% of the entries are $0, kept as entered; part of the zeros are unestimated damage "
+            "Zero-inflated: 68% of the entries are $0, kept as entered; part of the zeros are unestimated damage "
             "(13 of 121 EF4 and EF5 tornado segments at $0; kept under LEAK-25 as amended, Andrej, 2026-11-02)."
         ),
     }
@@ -189,6 +208,8 @@ class NoaaStormEventsDamage(AbstractCuratedDataset):
         dollars = _dollars(df["DAMAGE_PROPERTY"])
         df = df[dollars.notna()].copy()
         df[TARGET] = np.log1p(dollars[dollars.notna()])
+        # The hazards no one assesses go: the listed types and every marine type (review issue 2).
+        df = df[~(df["EVENT_TYPE"].isin(UNASSESSED) | df["EVENT_TYPE"].str.startswith("Marine "))]
         # 2. Double entries: equal to another row in every column but the ids, event narrative included (LEAK-19)
         df = df.drop_duplicates(subset=[c for c in df.columns if c not in IDS], keep="first")
         # 3. Times: begin as a datetime, end as the duration in hours (local standard time, as published)

@@ -3,13 +3,10 @@ unique_name: pennsylvania_oak_hickory_regeneration_experiment
 name: Oak-hickory forest regeneration / deer fencing x lime x herbicide experiment, central Pennsylvania, 2014-2021
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
-suggestion: 'Yes'
-priority: 2
+suggestion: 'No'
 decision_markers:
-- No Good Target / Scientific Discovery
+- Too Small
+- Not Representative
 original_source: Other
 year: '2024'
 domain: biology & life sciences
@@ -20,7 +17,6 @@ original_data_state: One Table
 source_links:
 - https://doi.org/10.5061/dryad.z8w9ghxnk
 - https://doi.org/10.1139/cjfr-2024-0034
-v2_path: datasets/_dev/tabarena-v0pt2/pennsylvania_oak_hickory_regeneration_experiment/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -85,6 +81,12 @@ difference target, and the source states it is a designed test of treatments. Li
 CC (2026-11-02, Andrej): metric (REVIEW.md issue 4, cross-dataset item zi-count-metric): `rmse` on the seedling count kept, neither RMSLE nor the Poisson deviance.
 
 **Assessment (AI, 2026-11-02):** applied; the fallback `rmse` stays, with a note in `curation_comments`. The source's AIC stays read as an in-sample model choice, so the origin stays fallback, not a stand-in for a likelihood as at nantucket_sound_sea_duck_aerial_survey_counts.
+
+CC (2026-11-03, Andrej): `Yes` on the reworded use case, and the `No Good Target / Scientific Discovery` marker is removed (issue 1 (B) in pennsylvania_oak_hickory_regeneration_experiment): "I go with your suggestion".
+
+CC (2026-11-03, Andrej): issue 2, B: site folds stratified by state forest, tagged `ForcedGroupedFromTemporal` (training and test share the 2014-2021 years). Issue 3 asked whether scoring the same forests on the same dates leaks; answered on the review page.
+
+CC (2026-11-03, Andrej): `No` (`Too Small`, `Not Representative`): "Since it is both too small and not representative, I lean towards rejecting it now." 24 sites in two forests and one 2014-2021 cohort: training and test share the years' weather, deer and seed crops, so the score cannot test the forester's forecast of a later cohort. The v2 folder left the working copy; its last definition (with the forest-stratified split of today) is in the run folder of 2026-11-03, the committed one in 902011b3.
 
 ## Reference
 

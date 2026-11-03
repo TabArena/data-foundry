@@ -46,55 +46,80 @@ of its own.
 
 **Issues for Andrej:**
 
-1. **Record SEL-3 as met for Avito's deal score?** SEL-3 (Must) asks that the target be "an observed outcome or an
-   expert annotation". Avito calls `deal_probability` "the likelihood that an ad actually sold something" and never
-   said how it is computed: the welcome thread asks three times and gets no answer
-   (https://www.kaggle.com/competitions/avito-demand-prediction/discussion/55299). Your `Yes` of 2026-10-30 was given
-   on a record whose Assessment calls the label "not an observed outcome (criterion 3)" and which still carries
-   `No Good Target (yet)`. A Must has no exceptions, so the label either meets SEL-3 for a stated reason, or the rule
-   changes, or the dataset goes.
-   * What the label is (measured on the 1.5M ads): in services (4.3% of the ads) its 22 values are all fractions k/n
-     with n at most 8, like a share of a few counted events. In goods it sits on category-level values: 0.80323 on
-     46,668 personal-item ads, 0.76786 on 26,474 electronics ads; 41.8% of the positive goods ads share a value with
-     1,000 ads or more.
-   * It is decided per ad, after posting: 4,490 groups of identical reposts (same seller, title, description, price,
-     category and town) hold 983 groups with a positive ad. In 859 of them (87%) the copies differ: a zero beside a
-     positive in 698, two or more positive values in 198. In the 511 two-ad groups with one zero and one positive,
-     the zero falls on the later copy in only 46%, so it does not look like Avito blocking the duplicate
-     (circumstantial, EV-6: a seller may delete the first copy, which is also an event after posting).
-   * Avito cannot observe a deal: deals happen off the platform, and its seller team uses contacts as the proxy
-     (https://habr.com/ru/articles/879680).
-   * What it does to the task: models are scored against Avito's assessment of each ad's outcome, on Avito's scale per
+1. **Record Avito's deal score as an observed outcome or an expert annotation?**
+
+   * **Problem:**
+     - The target has to be an observed outcome or an expert annotation[^1a].
+     - Avito calls `deal_probability` "the likelihood that an ad actually sold something" and never said how it is
+       computed.
+     - So the label either meets the rule for a stated reason, or the rule changes, or the dataset goes.
+   * **Background:** the welcome thread asks three times how it is computed and gets no answer
+     (https://www.kaggle.com/competitions/avito-demand-prediction/discussion/55299). Your `Yes` of 2026-10-30 was given
+     on a record whose Assessment calls the label "not an observed outcome (criterion 3)" and which still carries
+     `No Good Target (yet)`. The rule is a Must and has no exceptions.
+   * **Sources:** Avito cannot observe a deal: deals happen off the platform, and its seller team uses contacts as the
+     proxy (https://habr.com/ru/articles/879680).
+   * **Experiments:** what the label is, measured on the 1.5M ads: in services (4.3% of the ads) its 22 values are all
+     fractions k/n with n at most 8, like a share of a few counted events. In goods it sits on category-level values:
+     0.80323 on 46,668 personal-item ads, 0.76786 on 26,474 electronics ads; 41.8% of the positive goods ads share a
+     value with 1,000 ads or more. It is decided per ad, after posting: 4,490 groups of identical reposts (same seller,
+     title, description, price, category and town) hold 983 groups with a positive ad. In 859 of them (87%) the copies
+     differ: a zero beside a positive in 698, two or more positive values in 198. In the 511 two-ad groups with one zero
+     and one positive, the zero falls on the later copy in only 46%, so it does not look like Avito blocking the
+     duplicate (circumstantial evidence[^1b]: a seller may delete the first copy, which is also an event after posting).
+   * **Effect on the task:** models are scored against Avito's assessment of each ad's outcome, on Avito's scale per
      category; part of the error is learning that scale. If Avito's score is a calibrated probability, ranking models
-     by RMSE against it gives the same order as scoring them against the real deals (MET-8). That supports the metric,
-     not SEL-3.
-   * The advocate reads the label as the host's annotation of each ad's outcome, the best target this actor can have
-     (SEL-2: the use case decides how a scope rule is read). The critic accepts the repost fact, notes that a few
-     category levels make it weaker than an agency's rating, and leaves the call to you.
-   * Precedent: corporate_issuer_credit_rating, the rebuild Lennart asked for (record of 2026-10-16, no folder yet),
-     takes an agency's own rating as the target; diabetes_3 and alfa_battle_2_0_task_2 settle the approximate fit
-     (USE-5, USE-8), not SEL-3.
-   * Implemented: the label shipped as released, fit approximate; the target bullet and the target decision carry the
-     services rates, the goods levels and the repost check, and the target bullet and `fit_reason` say that Avito
-     cannot observe a deal. The record keeps `No Good Target (yet)` until you decide.
-   * Alternatives: (a) SEL-3 holds: "the host's record of each ad's outcome after posting, on its published 0-1 scale;
-     identical reposts carry different labels in 859 of 983 groups with a positive ad", and the marker goes; cost: the
-     reading becomes the precedent for every label a host scores and publishes as ground truth;
-     (b) amend SEL-3 to admit a host's published assessment of an outcome it cannot observe, which reaches other
-     datasets; (c) `No` with `No Good Target / Scientific Discovery`. What would settle it: Avito's definition of the
-     score, which no page found gives.
+     by RMSE against it gives the same order as scoring them against the real deals[^1c]. That supports the metric,
+     not the target.
+   * **Panel:** the advocate reads the label as the host's annotation of each ad's outcome, the best target this actor
+     can have, since the use case decides how a scope rule is read[^1d]. The critic accepts the repost fact, notes
+     that a few category levels make it weaker than an agency's rating, and leaves the call to you.
+   * **Consistency:** corporate_issuer_credit_rating, the rebuild Lennart asked for (record of 2026-10-16, no folder
+     yet), takes an agency's own rating as the target; diabetes_3 and alfa_battle_2_0_task_2 settle the approximate
+     fit[^1e], not whether the target is an observed outcome.
+   * **Unknown:** Avito's definition of the score would settle it; no page found gives it.
+   * **Options:**
 
-   Recommendation: (a). Decision: (a), (b) or (c)?
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | The rule is met (implemented) | label shipped as released, fit approximate; the record states the reason and loses the marker `No Good Target (yet)` | the repost fact shows a label decided per ad after posting; nothing changes in the dataset | the reading becomes the precedent for every label a host scores and publishes as ground truth |
+     | B | Amend the rule | the label rule amended to admit a host's published assessment of an outcome it cannot observe; the dataset as in A | the case is named in the rule | reaches other datasets |
+     | C | Retire | verdict `No` with `No Good Target / Scientific Discovery`; the dataset leaves | the label rule stays as written | the host's own data and named task are lost |
 
-2. **Confirm the split without a gap?** SPLIT-10 (Should) puts a gap of about the label's delay between training and
-   test, because a model refit when a window starts knows only the labels that have arrived. The split has none, so the
-   newest training days carry labels Avito would not yet have.
-   * The delay: undocumented, but long. Of the competition's supplementary ads activated on 15 March, 96.0% were still
-     listed more than 3 days later and 89.4% on 28 March (`periods_train.csv`; being listed is not a deal, and these
-     are not the training ads). The third-place team left a 4-day gap
+   * **Recommendation:** A: identical reposts carry different labels, so the label is decided per ad after posting.
+     **Decision:** A, B or C?
+
+   **Notes for the AI:** the definition implements A already: the target bullet and the target decision carry the
+   services rates, the goods levels and the repost check, and the target bullet and `fit_reason` say that Avito cannot
+   observe a deal. The record keeps `No Good Target (yet)` until the curator decides. On A, record SEL-3 as met with
+   the reason "the host's record of each ad's outcome after posting, on its published 0-1 scale; identical reposts
+   carry different labels in 859 of 983 groups with a positive ad", and remove the marker. On B, amend SEL-3 in
+   `selection.md`. On C, the verdict `No` with `No Good Target / Scientific Discovery`.
+
+   [^1a]: **SEL-3** (Must): the dataset is published for a predictive task, and the target is an observed outcome or
+     an expert annotation; a table without a genuine predictive target is out.
+   [^1b]: **EV-6** (Should): say which evidence is proof (a test that could have refuted the claim) and which is
+     circumstantial.
+   [^1c]: **MET-8** (Should): for the same goal prefer the probabilities; with no metric fixed by the source, the
+     fallback for regression is `rmse`.
+   [^1d]: **SEL-2** (Must): when a scope rule seems to exclude a dataset, check how the prediction is made in
+     practice, and let the use case decide (Lennart, 2026-10-15).
+   [^1e]: **USE-5** (Must): a label from a named publication whose construction is undocumented may ship with
+     `fit="approximate"` and a note naming the gap. **USE-8** (Must): write how closely the data mirrors the use
+     case, its fit (direct, approximate or none).
+
+2. **Confirm the split without a gap?**
+
+   * **Problem:**
+     - When a label arrives some time after its row, a model refit when a window starts knows only the labels that have
+       arrived, so a gap of about the label's delay goes between training and test[^2a].
+     - The split has none, so the newest training days carry labels Avito would not yet have.
+   * **Label delay:** undocumented, but long. Of the competition's supplementary ads activated on 15 March, 96.0% were
+     still listed more than 3 days later and 89.4% on 28 March (`periods_train.csv`; being listed is not a deal, and
+     these are not the training ads). The third-place team left a 4-day gap
      (https://www.kaggle.com/competitions/avito-demand-prediction/discussion/59885).
-   * Why no gap: the release covers 14 days, and SPLIT-14 (Must) wants three windows, each trained on at least half
-     the ads. Any gap of 4 days or more breaks that at every window width:
+   * **Why no gap:** the release covers 14 days, and a temporal task needs three windows, each trained on at least
+     half the ads[^2b]. Any gap of 4 days or more breaks that at every window width:
 
      | Windows | Gap | Training share, newest to oldest |
      |---|---|---|
@@ -103,23 +128,51 @@ of its own.
      | 1 day | 3 days | 71%, 64%, 57% |
      | 1 day | 4 days | 64%, 57%, 49.97% |
 
-   * What it costs: at equal training size a 3-day gap moves RMSE by 0.0002 (the draft's 0.0008-0.0012 was mostly
+   * **Experiments:** at equal training size a 3-day gap moves RMSE by 0.0002 (the draft's 0.0008-0.0012 was mostly
      smaller training sets), so the scores here are optimistic by about 0.0002 RMSE against a model that skips the 3
-     newest days (about 0.001 on the Value line's scale, where LightGBM and a linear model differ by 0.037). SPLIT-9
-     (Must) holds: reposts can move a window by 0.00006 RMSE at most, and the seller's labels act as a lasting trait (an
-     8-day history ending 4 days before the window keeps 91% of the gain of the most recent 8 days).
-   * Rule and precedent: the departure serves SPLIT-14, as principles.md's Tensions row "unmatured training labels
-     against the training floor" settles it. It is the third exception of this reason after alfa_battle_2_0_task_2 (gap
-     0 although a partial gap was possible, Lennart, 2026-10-26) and lending_club. You declined the SPLIT-10
-     amendment on 2026-11-02 (issue 4), so this is an exception of its own.
-     ames_housing and perth_house_prices depart for another reason and do not count. The advocate and the critic both
-     recommend it.
-   * Implemented: (a) no gap, written as an exception to SPLIT-10 that serves SPLIT-14, with the delay and the shares
-     above. Alternative: (b) one-day windows with a 3-day gap. It meets SPLIT-14 but covers 3 days of a delay of weeks
-     (the partial gap passed over for alfa), and the windows cover three weekdays instead of six; on the same days it
-     costs 0.0001-0.0009 RMSE.
+     newest days (about 0.001 on the Value line's scale, where LightGBM and a linear model differ by 0.037). The rule
+     against training labels unknown at the prediction point holds[^2c]: reposts can move a window by 0.00006 RMSE at
+     most, and the seller's labels act as a lasting trait (an 8-day history ending 4 days before the window keeps 91% of
+     the gain of the most recent 8 days).
+   * **Consistency:** the departure serves the training floor, as the principles settle the tension between unmatured
+     training labels and the training floor[^2d]. It is the third exception of this reason after
+     alfa_battle_2_0_task_2 (gap 0 although a partial gap was possible[^2e]) and lending_club. You declined the
+     amendment of the gap rule on 2026-11-02 (issue 4), so this is an exception of its own. ames_housing and
+     perth_house_prices depart for another reason and do not count.
+   * **Panel:** the advocate and the critic both recommend it.
+   * **Options:**
 
-   Recommendation: (a). Decision: (a) or (b)?
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | No gap (implemented) | three two-day windows without a gap, recorded as an exception with the delay and the shares above | meets the training floor; windows cover six weekdays; costs about 0.0002 RMSE of optimism | the newest training days carry labels Avito would not yet have |
+     | B | One-day windows with a 3-day gap | three one-day windows, each with a 3-day gap after its training days | meets the training floor | covers 3 days of a delay of weeks (the partial gap passed over for alfa); three weekdays instead of six; costs 0.0001-0.0009 RMSE on the same days |
+
+   * **Recommendation:** A: it meets the training floor over six weekdays for about 0.0002 RMSE of optimism.
+     **Decision:** A or B?
+
+   **Notes for the AI:** A is written in the definition as an exception to SPLIT-10 that serves SPLIT-14, with the
+   delay and the training shares above. SPLIT-9 holds (the reposts and the seller history above).
+
+   [^2a]: **SPLIT-10** (Should; applies SPLIT-9): when a label is known only some time after its row, train on the
+     rows whose outcome is known by the window's start, with a gap of about the label's delay between train and test.
+   [^2b]: **SPLIT-14** (Must): a temporal task has at least 3 windows, and no window's train side holds less than 50%
+     of the data.
+   [^2c]: **SPLIT-9** (Must): a training row whose label is not yet known at the prediction point must not be in
+     train.
+   [^2d]: principles.md, Tensions, "Unmatured training labels against the training floor": SPLIT-9 is met by removing
+     the measurable shortcut; the diffuse rest falls under SPLIT-10 (Should), departed from for SPLIT-14's 50% floor
+     and recorded as an exception (alfa_battle_2_0_task_2, lending_club; Lennart, 2026-10-21).
+   [^2e]: Lennart, 2026-10-26, alfa_battle_2_0_task_2: gap 0 although a partial gap was possible.
+
+   **Andrej (2026-11-03, change):** Moved to 2nd tier
+
+   **Andrej (2026-11-03, dataset note):** Since this is recsys/CTR, we move it to 2nd tier for now. Also, add the click
+   prediction tag
+
+   **Resolved (2026-11-03, Andrej):** not shipped for now: the record is `TBD -> 2nd Tier` with the marker
+   `Out-of-scope Task (CTR/RecSys/Ranking)` (the vocabulary has no click-prediction tag; this marker is its closest
+   entry), its `v2_path` cleared and its claim released; the folder leaves the working copy (copies of its last files in
+   the run folder of 2026-11-03, `avito_retired/`). Issue 1 (ok) and the metric mark (change) stand with the move.
 
 **Review panel:** ship after changes (mediator). Claim audit: 50 claims, 34 hold, 12 refuted (all fixed: the
 seller drop by shipping `user_id`, the rest in the text), 3 untested (whether Avito's models learned from deals, the

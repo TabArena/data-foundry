@@ -4,6 +4,212 @@ Every change to this folder gets an entry here, newest first: edited definitions
 datasets, and re-runs that produce a new container (give the new UUID). Say what changed and why, and link the
 record, audit or PR that motivated it.
 
+## 2026-11-03, zero-inflated targets accepted (no container built)
+
+- `task_target_value_dominant` accepted with the meaning of the zeros in loan_default_prediction_imperial_college,
+  noaa_afsc_bottom_trawl_survey_cpue, spanish_motor_insurance_2015_2018,
+  spanish_motor_insurance_coverage_level_2022_2024 and wadden_sea_sibes_macoma_abundance (Andrej: "for these tasks
+  this is natural and a core challenge"); READMEs regenerated.
+
+## 2026-11-03, nantucket_sound_sea_duck_aerial_survey_counts removed (no container built)
+
+- The curator moved it to 2nd Tier: a multi-target task (three species counts per segment-day; the format ships one
+  target). The record is `TBD -> 2nd Tier` with the `Multi-target` tag, its `v2_path` cleared and its claim
+  released; the folder leaves the working copy with its `REVIEW.md` (commit 902011b3; copies of today's files, with
+  the transect split, in the run folder). It had no row in the README table. The per-species split design is not
+  built.
+
+## 2026-11-03, nantucket per-species splits proposed (no container built)
+
+- nantucket_sound_sea_duck_aerial_survey_counts issue 3: the curator's design (one dataset, each split on one species)
+  answered with a concrete layout (23,253 rows with `species`, 27 splits); the AI recommends it; not built yet.
+- rand_health_insurance_experiment_doctor_visits (retired): issues 2 and 3 closed as moot in the record.
+- nantucket: the record takes the definition's `required_split` and tag (Grouped).
+
+## 2026-11-03, cape_floristic_region_family_cover and pennsylvania_oak_hickory_regeneration_experiment removed (no container built)
+
+- cape_floristic_region_family_cover: the curator's verdict is `No` (`No Good Target / Scientific Discovery`, with
+  the screening's `Data Quality Issue`), as the review recommended: no actor, no decision, a label of undocumented
+  scale. `required_split` takes the definition's value.
+- pennsylvania_oak_hickory_regeneration_experiment: `No` (`Too Small`, `Not Representative`): 24 sites and one
+  cohort, so the score cannot test a forecast of a later cohort. Today's stratified split goes with it.
+- Both: no priority, claims released, folders leave the working copy with their `REVIEW.md` (commit 902011b3;
+  copies of today's files in the run folder); neither had a row in the README table.
+- loan_default_prediction_imperial_college and noaa_storm_events_damage: ship verdicts recorded in their records.
+- nantucket_sound_sea_duck_aerial_survey_counts issue 3: one dataset per species answered (the AI recommends one).
+
+## 2026-11-03, pennsylvania folds stratified by forest; noaa_storm as a planning task (no container built)
+
+- pennsylvania_oak_hickory_regeneration_experiment: issue 2 (B): site folds stratified by state forest
+  (`stratify_on`, the check's warning on it accepted), tagged `ForcedGroupedFromTemporal`; `fit_reason` names the
+  shared years; the probe numbers in the notes measured again (Slurm); README regenerated. Issue 3 answered (the
+  shared forests and years are optimism, not a test label in training).
+- noaa_storm_events_damage: issue 5 (B): the use case is the planner's (Diaz and Joseph 2019), `fit_reason`
+  shortened; data, split and metric unchanged; README regenerated.
+
+## 2026-11-03, loan_default metric under amended MET-11; cape asked (no container built)
+
+- loan_default_prediction_imperial_college: issue 2 settled (A, the 5,800-loan gap stays); issue 3 settled (B): the
+  normalized Gini is declared from context under MET-11 as amended today for an overruled source metric
+  (`metrics.md`, `principles.md`), no longer as an exception; notes reworded, README regenerated.
+- cape_floristic_region_family_cover: a new issue 3 answers whether the task is valid (no actor, no decision, a label
+  of undocumented scale; the AI recommends `No`).
+- nantucket_sound_sea_duck_aerial_survey_counts issue 3 answered with TabPFN (Slurm): no species gains from one
+  stacked model; TabPFN finds more signal for the eider and the scoters than for the long-tailed duck.
+
+## 2026-11-03, basque_offshore_bivalve_biotoxins removed (no container built)
+
+- The curator's verdict is `No` with `Too Small`, as the review recommended ("I follow your suggestion to retire the
+  dataset"): the three test windows hold 6, 7 and 0 samples above the EU limit. No priority; the record fields take
+  the definition's values (`original_source` Other, `required_split` Temporal); claim released; the folder leaves the
+  working copy with its `REVIEW.md` (commit 902011b3; copies of today's files in the run folder). It had no row in the
+  README table.
+- noaa_storm_events_damage: a new issue 5 answers whether the task is real (the label is predicted in the literature
+  for planning; the triage moment is ours). pennsylvania_oak_hickory_regeneration_experiment issue 2 answered: being
+  the first stratified grouped regression is no con of option B.
+- loan_default_prediction_imperial_college issue 1 settled (A): f529-f531, f533-f535 and f537 stay dropped with
+  f527/f528, recorded as an exception to LEAK-10's precedent in the notes, the record and `leak_checks.md`; README
+  regenerated.
+
+## 2026-11-03, review problems as bullets
+
+- The problem of every open issue in the `REVIEW.md` files is now at most three bullets of one sentence each, as the
+  curator asked (writing.md); the sentences are the same, no fact or decision changed.
+
+## 2026-11-03, thailand_road_accident_register_2019_2022 removed
+
+- The curator's verdict: don't ship. On issue 3 the curator chose (C): with the deaths in the same record as the
+  crash, the model predicts a count already on file, as for glioma_grading_clinical_and_mutation_features. The record is
+  `No` (`No Good Target / Scientific Discovery`), its `v2_path` cleared and its claim released; the folder leaves the
+  working copy with its `REVIEW.md`. The definition is in commit 902011b3. It had no row in the README table.
+
+## 2026-11-03, blogfeedback: nine test windows
+
+- Nine windows of 6 days over the newest 54 test days replace three of 20 days (issue 2, Andrej: "With the given
+  sample size we would prioritize 9 folds"); `splits_comment` and the task summary say so. `dataset check`: 0 errors,
+  the one accepted warning as before; README regenerated. The record's `year` (2012) and `original_source` (`Other`)
+  take the definition's values. Issue 1 is answered and a new issue 4 asks about the metric's name and scale.
+
+## 2026-11-03, basque_offshore_ctd_chlorophyll removed; nantucket by transect; settled issues restored (no container built)
+
+- basque_offshore_ctd_chlorophyll removed: the curator's verdict is `No` ("it seems like this is a made up task"),
+  marker `No Good Target / Scientific Discovery`, no priority; the record fields take the definition's values; claim
+  released; the folder leaves the working copy (commit 902011b3; copies of today's files in the run folder).
+- nantucket_sound_sea_duck_aerial_survey_counts: the group is now the transect column (24 north-south transects),
+  the field's validation unit (issue 1); the zero warning is accepted (issue 4); `dataset check` run (Slurm).
+- noaa_storm_events_damage: issue 4 settled, no storm-level input.
+- australian_vehicle_insurance_2004_2005 issues 1, 2 and 5 and pricing_game_2016_french_fleet issue 1 are back in
+  their `REVIEW.md` with a Resolved turn from the record's CC: they were removed when settled, before the rule that
+  settled issues stay (2026-11-02).
+
+## 2026-11-03, rand_health_insurance_experiment_doctor_visits removed; noaa_storm_events_damage narrowed (no container built)
+
+- rand_health_insurance_experiment_doctor_visits removed: the curator moved it to 2nd Tier ("the target is a bit made
+  up and the data is quite outdated"). The record is `TBD -> 2nd Tier`, its `v2_path` cleared and its claim released;
+  the folder leaves the working copy with its `REVIEW.md` (commit 902011b3; copies of today's files in the run folder).
+- noaa_storm_events_damage: the hazards no one sends a damage assessor for are dropped (issue 2 (B)): 156,767 entries,
+  99.1% at $0; 843,144 rows remain. RMSLE stays (issue 3). Issue 4 (a storm-size input) answered with a measurement:
+  no gain either way. `dataset check` clean (Slurm).
+- pennsylvania_oak_hickory_regeneration_experiment: `Yes` with the `No Good Target / Scientific Discovery` marker
+  removed (issue 1 (B)); issues 2 and 3 answered (new sites, stratified by forest, tagged forced; the size); the
+  definition is unchanged.
+
+## 2026-11-03, avito_demand_prediction_1m removed (no container built)
+
+- The curator's verdict: don't ship for now, 2nd Tier, as a recommender / click-through task. The record is
+  `TBD -> 2nd Tier` with the marker `Out-of-scope Task (CTR/RecSys/Ranking)`, its `v2_path` cleared and its claim
+  released; the folder leaves the working copy with its `REVIEW.md` (the definition is in commit 902011b3; copies of
+  today's files in the run folder). It had no row in the README table.
+
+## 2026-11-03, spanish_motor_insurance_2015_2018: every first year kept (no container built)
+
+- Design S (issue 2, Andrej): the filter to customers with one policy is gone (37,090 rows instead of 25,665), and
+  `Policies_in_force`, a calendar-year count that also sees policies added later, is replaced by
+  `other_policies_at_start`. Same five monthly windows, about twice the claims each. Issue 5: ship and re-check
+  `Trivial`. Texts and the third decision rewritten.
+- frempl_french_motor_personal_line: the metric reason now says what the base is (the feature `Exposure` before
+  rounding, the realised length for continued records as in the feature); stale fold figures relabelled.
+- pricing_game_2016_french_fleet: two sentences no longer call pricing_game_2017's metric a Gini; README regenerated.
+
+## 2026-11-03, spanish_motor_insurance_2015_2018: curator's marks (no container built)
+
+- Issues 1, 3 and 4 settled as implemented (Andrej): first-year pricing; `Value_vehicle` kept, the note now assumes its
+  value changes in proportion over time; no request to the authors now, the note names it for a future version.
+  Issues 2 and 5 answered with five row designs scored by TabPFN on a GPU (Slurm) and LightGBM; open.
+
+## 2026-11-03, blogfeedback removed; ship verdicts (no container built)
+
+- blogfeedback removed: the curator's verdict is don't ship for now, 2nd Tier (issue 1 (C)): the post text behind
+  the word flags cannot be recovered, and without it the curator reads the task as text classification. The record
+  is `TBD -> 2nd Tier`, its `v2_path` cleared and its claim released; the folder leaves the working copy with its
+  `REVIEW.md` (the definition is in commit 902011b3; today's nine-window version is in the run folder). It had no row
+  in the README table.
+- Ship verdicts (Andrej): allstate_claim_prediction_challenge_1m (issue 5 (A), households at random),
+  boreal_postfire_lichen_biomass, frempl_french_motor_personal_line and pricing_game_2017_french_mtpl (issue 3 (A),
+  euros, recorded as an exception to CLEAN-16 in cleaning_features.md). The claims stay until the work goes to `main`.
+
+## 2026-11-03, frempl: grouped by policy component, exposure-weighted Gini (no container built)
+
+- frempl_french_motor_personal_line: the group column is now `policy_component`, records joined across the sample
+  files as well as within them (68,857 groups; issue 1 (B), Andrej). The metric is `ordered_lorenz_gini` with the new
+  scoring column `exposure_at_start`, the length known when a record starts (issue 4 (C), Andrej). Notes, grouping
+  text, splits comment and the third decision rewritten; `dataset check` clean, README regenerated, leak probe clean.
+
+## 2026-11-03, boreal: curator's marks (no container built)
+
+- boreal_postfire_lichen_biomass: ship after the changes (Andrej). Issues 1, 2, 5 and 6 settled as implemented: the
+  paper's forecast with the burn-area split, the tree-ring stand age, kg/ha and RMSE; the metric reason and two notes
+  say why. The record's `No Good Target / Scientific Discovery` marker is removed. `dataset check` clean.
+
+## 2026-11-03, frempl: curator's marks (no container built)
+
+- frempl_french_motor_personal_line: the record takes the grouped split and tag; the amounts' note stays (issue 3).
+  The exposure-weighted Gini chosen in issue 4 was not applied: measured on the shipped splits, its realised-length
+  base lets a constant prediction score 0.184, so the review asks for the base known at the start instead; the
+  definition is unchanged. Issue 1 answered (the cross-file component as the most conservative key; why no temporal
+  split inside 2004).
+
+## 2026-11-03, allstate as the 2006 renewal book; boreal against the paper (no container built)
+
+- allstate_claim_prediction_challenge_1m: rebuilt as the 2006 renewal book (issue 3 (B), Andrej). The rows are the
+  4.4M vehicle-years of 2006 (1.5M of whole households sampled); 2005 gives five history columns
+  (`household_vehicles_2005`, `household_claims_2005`, `household_vehicles_carried`, `vehicle_insured_2005`,
+  `vehicle_claims_2005`), counts only; `Calendar_Year` goes. The competition's Gini stays (issue 4 (A)). Task summary,
+  notes, grouping text, splits comment and decisions rewritten; `dataset check` clean, README regenerated, leak probe
+  clean. Issue 5 (sampling and dealing households to folds) answered with a fold experiment, open.
+- boreal_postfire_lichen_biomass: the notes cite Greuel et al. (2021) by section instead of marking it unread (issue 4,
+  Andrej); the claim of two regional conversions is replaced by the paper's pooled allometry and Saskatchewan's 0.76
+  live-height ratio; the metric reason gives the paper's in-sample R^2. The two duplicate-row warnings are accepted
+  (issue 3). `dataset check` clean, README regenerated. Issues 1, 2 and 5 answered, a new issue 6 on R^2 against
+  RMSE; all open.
+
+## 2026-11-03, curator's marks on allstate and pricing_game_2017 (no container built)
+
+- pricing_game_2017_french_mtpl: the metric is now `mean_tweedie_deviance` (power 1.5, predictions floored at 1
+  EUR), the stand-in for the game's profit, replacing the normalized Gini (issue 2, Andrej). The metric is new in
+  `src/data_foundry/v2/metrics.py`, under scikit-learn's name, with tests. The target stays in euros, and issue 3
+  asks the curator to confirm that; the name stays (issue 4). `dataset check` is clean and the README is regenerated.
+- allstate_claim_prediction_challenge_1m: dropping 2007 is confirmed (issue 2); the decision's note says 2007 can
+  come back with settled amounts. Issues 3 and 4 are answered in its `REVIEW.md` and stay open.
+  A second round of answers proposes rebuilding it as the 2006 renewal book with the 2005 claim history (issue 3,
+  option B) and asks in a new issue 5 whether to sample claim households first; the definition is unchanged.
+- pricing_game_2016_french_fleet: the metric reason no longer calls the Gini "the stand-in of
+  pricing_game_2017_french_mtpl"; it now names what sets pg16 apart (one uniform price factor). Text only.
+
+## 2026-11-03, review issues in the new shape
+
+- The open issues of 16 `REVIEW.md` files of the zero-inflated batch are rewritten in the issue shape the curator
+  asked for (writing.md, "Questions and issues for the curator"): bullets, an options table with pros and cons, the
+  rules in footnotes, the text for Claude in `**Notes for the AI:**`. No fact, number or decision changed; issue
+  numbers and the curator's notes are as they were. No definition changed.
+
+## 2026-11-02, crms_phragmites_cover removed
+
+- The curator confirmed the record's `No` (`Time-series (Forecasting)`, TP-10 as written) on the review page, so the
+  folder leaves the working copy with its `REVIEW.md`; the record's `v2_path` is cleared, its `year` (2026) and
+  `required_split` (`Temporal (NON-IID)`) take the definition's values, and the claim is released. The definition is
+  in commit 902011b3.
+
 ## 2026-11-02, two datasets shipped (no container built)
 
 - The curator's verdict: ship, for noaa_afsc_bottom_trawl_survey_cpue and

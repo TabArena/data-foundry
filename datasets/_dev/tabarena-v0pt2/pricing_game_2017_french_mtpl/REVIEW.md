@@ -25,72 +25,176 @@ of Tweedie and Poisson losses (+4.8% on total cost); the notes say the target su
 the IRSA flat amounts; licence ages implying a licence before 16 and one 7,901 kg weight made missing, `vh_model` joined
 to the make, the commune typed as text; counts and citations corrected.
 
-**Main points:** Gini or Tweedie deviance as the stand-in for the game's
-profit (2), the target scale that follows it (3), and the name (4).
+**Main points:** all issues resolved on 2026-11-03: the deviance is in (2), euros stay (3) and the name stays (4).
+Verdict: ship.
 
 **Issues for Andrej:**
 
-2. **Keep the normalized Gini as the stand-in for the game's profit, or score the mean Tweedie deviance?** The game
-   scored each player's profit in simulated markets, which needs the other players' premiums and later claims, so a
-   stand-in is declared (MET-11, Must: "the closest computable metric", its closeness "measured on the shipped splits
-   where possible"). The Gini scores how well the predictions order the policies by claim cost; it ignores every
-   monotone change of the predictions, so a book priced a third too low or with relativities twice too steep scores like
-   the best tariff. The Tweedie deviance (power 1.5) scores both the order and the level of the expected cost, the
-   actuarial loss for pure premiums.
-   * Evidence (simulated markets under the game's Rule 2 on the shipped splits, built by the claim auditor and the
-     domain practitioner, run again after the changes): across a mixed field of models the Gini follows profit at a rank
-     correlation (Kendall tau) of 0.12 to 0.59, a deviance at 0.58 to 0.79 (means per market variant). Among six strong,
-     comparable learners the Gini leads, 0.91 against 0.69. A steeper copy of the best model ties the top Gini (0.317)
-     and earns less than a flat premium (-6.55 against -6.40 EUR per policy offered).
-   * What it does to the task: under the Gini a miscalibrated model can win (LightGBM with a Tweedie loss prices
+2. **Keep the normalized Gini as the stand-in for the game's profit, or score the mean Tweedie deviance?**
+
+   * **Problem:**
+     - The game scored each player's profit in simulated markets, which needs the other players' premiums and later
+       claims, so a stand-in is declared.
+     - Which one: the normalized Gini, which scores only how the predictions order policies by claim cost, or the
+       Tweedie deviance, which scores order and level?
+   * **Background:** the stand-in is the closest computable metric, with its closeness measured on the shipped splits
+     where possible[^s1]. The Gini ignores every monotone change of the predictions, so a book priced a third too low
+     or with relativities twice too steep scores like the best tariff. The Tweedie deviance (power 1.5) scores both
+     the order and the level of the expected cost, the actuarial loss for pure premiums.
+   * **Experiments:** simulated markets under the game's Rule 2 on the shipped splits, built by the claim auditor and
+     the domain practitioner, run again after the changes. Across a mixed field of models the Gini follows profit at a
+     rank correlation (Kendall tau) of 0.12 to 0.59, a deviance at 0.58 to 0.79 (means per market variant). Among six
+     strong, comparable learners the Gini leads, 0.91 against 0.69. A steeper copy of the best model ties the top Gini
+     (0.317) and earns less than a flat premium (-6.55 against -6.40 EUR per policy offered).
+   * **Effect on the task:** under the Gini a miscalibrated model can win (LightGBM with a Tweedie loss prices
      held-out clients at 0.64 to 0.75 of their claims and still beats squared-error LightGBM, 0.258 against 0.248).
      Under the deviance such a model loses; the deviance needs predictions floored at a stated value (1 EUR), a
      parameter of the metric.
-   * The library has no Tweedie or Poisson deviance today; adding `mean_tweedie_deviance` (scikit-learn's name) is one
-     metric for the family (MET-12, MET-13). The objection in the policy calls of 2026-10-30 (positive predictions
-     needed) was the AI's suggested reasoning; the floor answers it.
-   * frempl issue 4 (row or exposure-weighted Gini, for the family) does not move this dataset: every row is a whole
-     policy-year, so the two forms coincide (an inference; the release does not say so).
-   * Implemented: the Gini, its reason corrected with the measured closeness. Alternative: the Tweedie deviance
-     (p = 1.5, floor 1 EUR), which also fixes issue 3 to euros.
-   * This departs from australian's issue 4 recommendation (confirm the Gini for the context tables). What sets this one
+   * **Cost:** the library has no Tweedie or Poisson deviance today; adding `mean_tweedie_deviance` (scikit-learn's
+     name) is one metric for the family[^s2]. The objection in the policy calls of 2026-10-30 (positive predictions
+     needed) was the AI's suggested reasoning; the floor answers it[^s3].
+   * **Consistency:** frempl issue 4 (row or exposure-weighted Gini, for the family) does not move this dataset: every
+     row is a whole policy-year, so the two forms coincide (an inference; the release does not say so). The deviance
+     departs from australian's issue 4 recommendation (confirm the Gini for the context tables). What sets this one
      apart: it is a stand-in for a profit that could be simulated and measured, where the context tables have no
-     original to measure against. The advocate keeps the Gini on the strong-learner result; the critic and the domain
-     practitioner prefer the deviance.
+     original to measure against.
+   * **Panel:** the advocate keeps the Gini on the strong-learner result; the critic and the domain practitioner prefer
+     the deviance.
+   * **Options:**
 
-   Recommendation: the Tweedie deviance for this dataset, since a benchmark meets a mixed field where it is the closer
-   proxy. Shipping does not wait: the Gini stays until `mean_tweedie_deviance` is in the library. Decision: Gini or
-   Tweedie deviance?
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Normalized Gini (implemented) | scores the order only; its reason corrected with the measured closeness | leads among strong learners (0.91 against 0.69); in the library | follows profit at 0.12 to 0.59 in a mixed field; a miscalibrated model can win |
+     | B | Mean Tweedie deviance (p = 1.5, floor 1 EUR) | scores order and level; also fixes issue 3 to euros | follows profit at 0.58 to 0.79 in a mixed field; the actuarial loss | not in the library yet; a floor parameter |
 
-3. **Train on euros or on log1p (follows issue 2)?** The target ships in euros; CLEAN-16 (Should) logs a skewed target
-   by default, and frempl, both Spanish tables, allstate_1m and liberty_mutual_fire_peril_loss_cost ship log1p with the
-   Gini on the amount. The scale changes only what a model is trained on. Measured on the 9 splits: random forest 0.298
-   on euros against 0.297 on log1p (euros ahead on 6 of 9), LightGBM 0.248 against 0.251 (log1p ahead on 3 of 9), so no
-   fact specific to this dataset favours euros under the Gini. Under a deviance, euros are needed: a log1p fit
-   transformed back prices policies at about 1% of their cost (deviance skill -5.1, where skill is the share of a
-   constant prediction's deviance a model removes and below 0 means worse than the constant).
-   * Implemented: euros. Alternative: log1p with `target_transform="log1p"` (one line), as australian's issue 5
-     recommends for the family with this dataset following.
-   * If issue 2 keeps the Gini and this stays in euros, it is an exception to CLEAN-16 without a fact of its own (the
+   * **Recommendation:** B for this dataset: a benchmark meets a mixed field of models, and there the deviance follows
+     profit more closely (0.58 to 0.79 against 0.12 to 0.59).
+     Shipping does not wait: the Gini stays until `mean_tweedie_deviance` is in the library. **Decision:** A (Gini) or
+     B (Tweedie deviance)?
+
+   **Notes for the AI:** on B, add `mean_tweedie_deviance` (power 1.5, the 1 EUR floor as a parameter) to the metric
+   library (MET-12, MET-13), switch the definition's metric, and keep the target in euros (issue 3).
+
+   [^s1]: **MET-11** (Must), origin "stand-in": the source has a metric that cannot be computed on our data, and "the
+     closest computable metric" replaces it, its closeness "measured on the shipped splits where possible".
+   [^s2]: **MET-12** (Must): standard metrics carry their scikit-learn style names, one spelling across the
+     collection. **MET-13** (Must): a custom metric ships in the shared metric library with the dataset that needs it.
+   [^s3]: Policy calls of 2026-10-30 (Andrej), call 3 on insurance targets: the AI's suggested reasoning said the
+     Tweedie or Poisson deviance needs strictly positive predictions.
+
+   **Andrej (2026-11-03, change):** Use mean_tweedie_deviance and implement it in the library
+
+   **Answer (AI, 2026-11-03):**
+
+   * Implemented (B). `mean_tweedie_deviance` is in the metric library under scikit-learn's name, as a standard
+     metric: the power is a required param, and `min_prediction` optionally floors the predictions, as the Poisson
+     deviance already allowed. It is tested against scikit-learn (by hand at power 1.5, on zero-heavy costs, and at
+     power 1, where it equals the Poisson deviance).
+   * The definition declares it as the stand-in, with power 1.5 and a floor of 1 EUR. The metric's reason now
+     states why order and level both matter for the game's profit, and the measured closeness (0.58 to 0.79 against
+     0.12 to 0.59 for the Gini).
+   * The target stays in euros, which the deviance needs; issue 3 below asks you to confirm that.
+   * `dataset check`: 0 errors, 0 warnings; the README is regenerated.
+
+   **Resolved (2026-11-03, Andrej):** (B), the mean Tweedie deviance (power 1.5, floor 1 EUR) as the stand-in for the
+   game's profit; added to the metric library.
+
+3. **Train on euros or on log1p (follows issue 2)?**
+
+   * **Problem:**
+     - The target ships in euros.
+     - A skewed positive target is logged by default[^t1], and frempl, both Spanish tables, allstate_1m and
+       liberty_mutual_fire_peril_loss_cost ship log1p with the Gini on the amount.
+     - The scale changes only what a model is trained on.
+   * **Experiments:** on the 9 splits, random forest 0.298 on euros against 0.297 on log1p (euros ahead on 6 of 9),
+     LightGBM 0.248 against 0.251 (log1p ahead on 3 of 9), so no fact specific to this dataset favours euros under the
+     Gini. Under a deviance, euros are needed: a log1p fit transformed back prices policies at about 1% of their cost
+     (deviance skill -5.1, where skill is the share of a constant prediction's deviance a model removes and below 0
+     means worse than the constant).
+   * **Consistency:** australian's issue 5 recommends log1p for the family, with this dataset following. If issue 2
+     keeps the Gini and this stays in euros, it is a departure from the log default without a fact of its own (the
      pure-premium reason holds for the whole family); with australian also in dollars (its issue 5), an amendment of
-     CLEAN-16 would be due. wisconsin's dollars rest on a different fact (its metric divides by the premium).
+     that rule would be due. wisconsin's dollars rest on a different fact (its metric divides by the premium).
+   * **Options:**
 
-   Recommendation: euros with the deviance (an exception to CLEAN-16: the metric scores the level in euros, MET-3);
-   log1p if the Gini stays. Decision: euros or log1p?
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Euros (implemented) | the target stays the amount in euros | needed under a deviance; the scale it scores | under the Gini, a departure from the log default with no fact of its own |
+     | B | log1p | trained on log1p of the amount | the log default and the family's choice | under a deviance, prices policies at about 1% of their cost |
 
-4. **Keep the name `pricing_game_2017_french_mtpl`?** "MTPL" (motor third-party liability) comes from the CASdatasets
-   title, but the target sums every guarantee of the cover: only the Mini cover (8.6% of policies) is liability alone,
-   and Maxi (64.5% of policies, 83.4% of the claim cost) includes damage, theft and glass. The task summary describes it
-   correctly as "a French car insurance policy".
-   * Implemented: the name kept, the notes say what the target covers. Alternative: rename to
-     `pricing_game_2017_french_motor` (record, folder and links change).
-   * A weighing: the source's own title and the cost of a rename against a name that misdescribes most policies. The
-     advocate keeps it; the domain practitioner would rename; the critic leaves it to you.
-   * rand_health_insurance_experiment_doctor_visits issue 3 asks the same kind of question (a name that misdescribes the
-     target, there taken from the screening's first target, here from the source's title); answer both the same way
-     unless a fact differs.
+   * **Recommendation:** A with the deviance (the metric scores the level in euros[^t2]); B if the Gini stays.
+     **Decision:** A (euros) or B (log1p)?
 
-   Recommendation: keep the name. Decision: keep or rename?
+   **Notes for the AI:** on B, `target_transform="log1p"` (one line). On A with the deviance, record an exception to
+   CLEAN-16: the metric scores the level in euros (MET-3). On A with the Gini, an amendment of CLEAN-16 would be due.
+
+   [^t1]: **CLEAN-16** (Should): log a skewed positive target (prices, durations, counts) when the source has not,
+     case by case.
+   [^t2]: **MET-3** (Must): the declared metric is on the scale the task means, the source's; the target may ship on
+     the scale a practitioner models it on.
+
+   **Andrej (2026-11-03, discuss):** How does the recommendation change now that we score deviance?
+
+   **Answer (AI, 2026-11-03):**
+
+   * **Problem:**
+     - With the deviance chosen in issue 2, the question is whether the target ships in euros or as log1p.
+     - The recommendation does not change: it was already A (euros) under a deviance, and euros is what ships.
+   * **Background:** the deviance scores the predicted claim cost in euros, its level included. A model trained on
+     log1p learns the average of the logged cost; transformed back, that is far below the average cost, since about
+     89% of the policies have no claim. Under the Gini the scale did not matter, because the Gini looks only at the
+     order.
+   * **Experiments:** a log1p fit transformed back prices policies at about 1% of their cost and scores worse than
+     a constant prediction (deviance skill -5.1); a fit in euros scores above the constant on all 9 splits (skill
+     about +0.05, mediator).
+   * **Consistency:** the other insurance tables ship log1p with a Gini, where the scale changes nothing that is
+     scored. This one differs because its metric scores the level in euros, which sets it apart from the default
+     to log a skewed target[^t3].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Euros (implemented) | the target stays the claim cost in euros | what the deviance scores; a model trained on it can be scored as is | departs from the default to log a skewed target, with a stated reason |
+     | B | log1p | trained on log1p, scored after the inverse | the default for skewed targets, as in the family | the back-transformed prediction prices policies at about 1% of their cost; worse than a constant |
+
+   * **Recommendation:** A, keep euros: the metric scores the level in euros, and a log1p fit loses it.
+     **Decision:** confirm euros (A), or log1p (B)?
+
+   **Notes for the AI:** on A, record it under the outcome of the cross-dataset item zi-target-scale (2026-11-03
+   answer): under the amended CLEAN-16 there, or as an exception (the fact: the metric scores the level in euros,
+   MET-3), with a Cases row in cleaning_features.md.
+
+   [^t3]: **CLEAN-16** (Should), see [^t1]; departing from a Should for one dataset is an exception recorded with the
+     fact that sets the case apart (principles.md, "Exceptions and amendments").
+
+   **Resolved (2026-11-03, Andrej):** A, euros. Recorded as an exception to CLEAN-16 in cleaning_features.md
+   ("Cases"): the deviance scores the predicted cost's level in euros, where a Gini scores only the order.
+
+4. **Keep the name `pricing_game_2017_french_mtpl`?**
+
+   * **Problem:**
+     - "MTPL" (motor third-party liability) comes from the CASdatasets title, but the target sums every guarantee of the
+       cover, and only 8.6% of policies are liability alone.
+     - A weighing: the source's own title and the cost of a rename against a name that misdescribes most policies.
+   * **Background:** only the Mini cover (8.6% of policies) is liability alone, and Maxi (64.5% of policies, 83.4% of
+     the claim cost) includes damage, theft and glass. The task summary describes it correctly as "a French car
+     insurance policy".
+   * **Consistency:** rand_health_insurance_experiment_doctor_visits issue 3 asks the same kind of question (a name
+     that misdescribes the target, there taken from the screening's first target, here from the source's title); answer
+     both the same way unless a fact differs.
+   * **Panel:** the advocate keeps it; the domain practitioner would rename; the critic leaves it to you.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the name (implemented) | no rename; the notes say what the target covers | the source's own title; no rename | misdescribes most policies |
+     | B | Rename to `pricing_game_2017_french_motor` | record, folder and links change | names what the target covers | the cost of a rename |
+
+   * **Recommendation:** A, keep the name: it is the source's own title, and the notes say what the target covers.
+     **Decision:** A (keep) or B (rename)?
+
+   **Resolved (2026-11-03, Andrej):** (A), the name stays `pricing_game_2017_french_mtpl`, the source's own title; the
+   notes say what the target covers.
 
 **Review panel:** ship after changes (mediator). Claim audit: 32 claims, 27 hold (one with a caveat, now fixed); 1
 refuted (the licence anomaly counts, fixed), 3 overstated or partly refuted (the 14,243 claims in the rules, "the

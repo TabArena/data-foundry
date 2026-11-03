@@ -3,11 +3,9 @@ unique_name: thailand_road_accident_register_2019_2022
 name: Thailand road accidents 2019-2022 (Ministry of Transport) / thailand-road-accident-2019-2022 (Kaggle)
 checked_by:
 - Andrej
-data_foundry_status:
-- WIP (DF)
-claimed_by: Andrej
-suggestion: 'Yes'
-priority: 3
+suggestion: 'No'
+decision_markers:
+- No Good Target / Scientific Discovery
 tags:
 - Non-IID (Temporal)
 original_source: GOV Website
@@ -21,7 +19,6 @@ source_links:
 - https://datagov.mot.go.th/dataset/roadaccident
 - '# Kaggle copy of 2019-2022, translated to English (thaweewatboy, 2023)'
 - https://www.kaggle.com/datasets/thaweewatboy/thailand-road-accident-2019-2022
-v2_path: datasets/_dev/tabarena-v0pt2/thailand_road_accident_register_2019_2022/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -66,6 +63,8 @@ CC (2026-10-30, Andrej): `Yes`, priority 5 (the AI screening had `TBD -> Yes`, p
 review page).
 
 **Assessment (AI, 2026-11-01):** added as `datasets/_dev/tabarena-v0pt2/thailand_road_accident_register_2019_2022/` by /add-dataset with the full review panel; the open questions are in its `REVIEW.md`. Recommend shipping after the panel's text changes (made). The task is read as the severity part of road-network screening (the Highway Safety Manual's relative severity index), which its issue 3 asks you to accept as what sets it apart from glioma_grading_clinical_and_mutation_features. Corrections to the screening above: a paper on the register exists (EECSS 2024, now the metric's context); the measured ROC AUC for any death is 0.840/0.833, not 0.83/0.81. `Two-Regime Zeros` removed under your definition of 2026-10-30: a count model given the features predicts 89.2% zeros against 89.0% observed, so the zero is the first step of the count, as for how_much_did_it_rain_ii (a CC restores it). Priority 3 (your 5 of 2026-10-30 was set before the measurements): gap + (social science), use case 0 (fit approximate), source +, shape +, risk - (issue 3 is a validity call that can retire it).
+
+CC (2026-11-03, Andrej): don't ship (review page verdict): issue 3 (C) of thailand_road_accident_register_2019_2022, `No` (`No Good Target / Scientific Discovery`), as glioma_grading_clinical_and_mutation_features: once a crash is in the register its deaths are in the same record, so the model predicts a count already on file, and the severity-screen reading was not accepted ("We do C"). Issues 1 and 2 and the metric are moot ("Doesn't matter since we don't ship"). The folder leaves the working copy; the definition is in commit 902011b3.
 
 ## Reference
 

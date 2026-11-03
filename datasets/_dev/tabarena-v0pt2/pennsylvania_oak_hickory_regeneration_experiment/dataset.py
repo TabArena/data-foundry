@@ -83,11 +83,10 @@ class PennsylvaniaOakHickoryRegenerationExperiment(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "A pre-treatment inventory beside randomised treatments fits a regeneration forecast, with gaps: all tree "
-            "species are counted, where a forester acts on desirable oak and hickory; with one microplot per "
-            "treatment per site, the treatment's effect is weakly identified; treatments were applied per 8.6 m2 "
-            "plot, not per stand, the herbicide non-selective; the file has no pre-treatment overstory, deer impact "
-            "or fern cover; only two forests and one 2014-2021 cohort."
+            "A forester acts on oak and hickory, but all tree species are counted; one microplot per treatment per "
+            "site weakly identifies the treatment's effect, applied per plot, not per stand; no overstory, deer "
+            "impact or fern cover; two forests and one 2014-2021 cohort, so training and test share the years' "
+            "weather, deer and seed crops, which a later cohort's forecast would not."
         ),
     )
 
@@ -98,7 +97,7 @@ class PennsylvaniaOakHickoryRegenerationExperiment(AbstractCuratedDataset):
     source = "Other"  # the Dryad deposit of Begley-Miller et al. (2024), published 2024-09-25
     source_url = "https://doi.org/10.5061/dryad.z8w9ghxnk"
     license = "CC0 1.0"  # stated on the Dryad deposit
-    data_tags = ()
+    data_tags = ("ForcedGroupedFromTemporal",)
     download_description = """
         The data is the Dryad deposit doi:10.5061/dryad.z8w9ghxnk (version of 2024-09-25, CC0). Dryad's per-file API answers 401 without a token and its web download answers 403 to scripts, but the version download of its API redirects without a token to a zip of both files; their SHA-256 digests equal those Dryad lists (checked 2026-11-01).
         mkdir -p local-data-warehouse/pennsylvania_oak_hickory_regeneration_experiment && cd local-data-warehouse/pennsylvania_oak_hickory_regeneration_experiment
@@ -133,8 +132,8 @@ class PennsylvaniaOakHickoryRegenerationExperiment(AbstractCuratedDataset):
         - The flags `fence`, `lime` and `herbicide` are Yes/No categories (CLEAN-14); `state_forest` stays (Rothrock 7.9-9.2 deer/km2, Bald Eagle 2.8-3.3 in 2018-2019, Sec. 2.1), known for any stand.
         - Note: the fence alone is always microplot 5 (Sec. 2.2), so fence against control is not randomised over positions; the other six combinations are randomised over microplots 6 to 11, and every combination appears once per site. The fences were "maintained yearly at the time of data collection, except in 2020" (Sec. 2.2), so `fence` records the assignment, not seven years of exclusion.
         - No duplicate rows.
-        - Probes (2026-11-01, untuned, shipped splits): random forest R^2 0.28 on the log1p target and RMSE 17.7 seedlings on the count, better than the mean count (23.3) on 30 of 30 splits, than the back-transformed mean of log1p on 24 of 30, and than the mean on the log scale on 28 of 30; the treatment flags add R^2 0.018 (paired SE 0.003, positive on 93% of splits), the change in log count ranging from +0.48 under the fence alone to -0.37 under herbicide alone. On stocking calls at held-out sites (SILVAH's thresholds, a diagnostic only), no untuned model beats carrying the 2014 count forward (review panel), so the treatment's effect is weakly identified (named in `fit_reason`). The 2014 count of the same seedlings is the strongest single input (R^2 0.22 alone), the natural core of the task. Held out by site, LightGBM loses R^2 0.14 against random microplots; site means hold 52% of the target's variance.
-        - Note: the metric is RMSE on the count, which one or two dense sites per fold decide (MET-10): one test site of 8 holds a median half of the random forest's squared error (up to 76%; 21% on log1p), and 14 of 60 test folds hold no microplot with 69 or more seedlings. A linear model fit on log1p can score in the thousands after the inverse (ridge: count RMSE 2,543 over 30 splits), from a few extrapolated predictions (review panel, 2026-11-01). RMSE kept (CC 2026-11-02, Andrej): the fallback, AIC read as an in-sample model choice, not a score of predictions; not RMSLE and not the Poisson deviance nantucket_sound_sea_duck_aerial_survey_counts takes for its source's likelihood criterion.
+        - Probes (2026-11-03, untuned, the forest-stratified splits, 60): random forest R^2 0.29 on the log1p target (LightGBM 0.23, kNN 0.15, ridge 0.14; with the site means shuffled across sites at most 0.03) and RMSE 16.9 seedlings on the count, better than the mean count (23.3) on 56 of 60 splits. On the earlier unstratified splits (2026-11-01, 30): better than the mean count on 30 of 30, than the back-transformed mean of log1p on 24 of 30, and than the mean on the log scale on 28 of 30; the treatment flags add R^2 0.018 (paired SE 0.003, positive on 93% of splits), the change in log count ranging from +0.48 under the fence alone to -0.37 under herbicide alone. On stocking calls at held-out sites (SILVAH's thresholds, a diagnostic only), no untuned model beats carrying the 2014 count forward (review panel), so the treatment's effect is weakly identified (named in `fit_reason`). The 2014 count of the same seedlings is the strongest single input (R^2 0.22 alone), the natural core of the task. Held out by site, LightGBM loses R^2 0.14 against random microplots; site means hold 52% of the target's variance.
+        - Note: the metric is RMSE on the count, which one or two dense sites per fold decide (MET-10): one test site of 8 holds a median 47% of the random forest's squared error (up to 72%; stratified splits), and 9 of 60 test folds hold no microplot with 69 or more seedlings. A linear model fit on log1p can score in the thousands after the inverse (ridge: count RMSE 2,543 over 30 splits), from a few extrapolated predictions (review panel, 2026-11-01). RMSE kept (CC 2026-11-02, Andrej): the fallback, AIC read as an in-sample model choice, not a score of predictions; not RMSLE and not the Poisson deviance nantucket_sound_sea_duck_aerial_survey_counts takes for its source's likelihood criterion.
     """
 
     # Task
@@ -158,8 +157,15 @@ class PennsylvaniaOakHickoryRegenerationExperiment(AbstractCuratedDataset):
             One group is a sampling site: one of 24 locations drawn at random from 100 in the Rothrock and Bald Eagle state forests, a network of 11 plots within 110 x 52 m (Sec. 2.1-2.2), with 9 to 11 microplots in the file. Microplots of a site share soil, overstory and deer pressure; the authors include "Site ... as a random intercept effect to account for potential similarities among microplots within a sampling site" (Sec. 2.4). The use case is a stand that has not been followed: its whole pre-treatment inventory is known when predicting (context "all_rows"), none of its outcomes. Each microplot is one prediction.
         """,
     )
+    stratify_on = "state_forest"
+    accepted_check_warnings = {
+        "task_stratify_on_regression": (
+            "`state_forest` is a discrete feature with two values, one per site: the site folds are balanced on the "
+            "forest so every training side has both (Andrej, 2026-11-03, issue 2)."
+        ),
+    }
     splits_comment = """
-        Default grouped splits on the site: all microplots of a site stay on one side, so a test fold stands for 8 stands never followed, each with every treatment combination once beside 2-4 controls. The test sites are new sites of the Rothrock and Bald Eagle state forests, all followed over the same 2014-2021 years, so the score does not cover other forests or later years. Stricter than the source, which fits all 24 sites with site as a random effect.
+        Grouped splits on the site, stratified by state forest (CC 2026-11-03, Andrej, issue 2): all microplots of a site stay on one side, and every test fold holds 3-5 sites of each forest, so each training side has both forests, as a model built from the study would. A test fold stands for 8 stands never followed, each with every treatment combination once beside 2-4 controls. Forced grouped: the real task forecasts a later cohort, which one cohort cannot test. The test sites are new sites of the Rothrock and Bald Eagle state forests, all followed over the same 2014-2021 years, so the score does not cover other forests or later years. Stricter than the source, which fits all 24 sites with site as a random effect.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

@@ -16,7 +16,7 @@ Validity:
 * SPLIT-1/SPLIT-4 triggered, fixed: re-split on the burn area (issue 1).
 * PROV-13 triggered, fixed: three plots' coordinates repaired from the authors' site sheet.
 * PROV-8 holds: the download is Dryad's own version zips, which the repair needs.
-* PROV-17 holds: the paper is unread, and every claim about it is marked unverified (issue 4).
+* PROV-16 holds: the paper is read (issue 4, resolved 2026-11-03); the notes cite it by section.
 
 Value: TP-2, a small real signal. Under the burn-area split an untuned random forest has skill (1 - MSE / MSE of the
 training mean) +0.12, above 0 on 28 of 30 splits (the task probe's forest: 200 trees, min_samples_leaf 2, a square root
@@ -34,147 +34,382 @@ no decision are made (Mediator, "Changes to make now"). `dataset check` gives 0 
 The numbers below are measured on the changed definition and its 30 shipped splits (untuned) unless marked as the
 panel's.
 
-**Main points:** Confirm the range-plan actor and the split by burn area (issue 1); keep the field-dated stand age (2);
-accept two duplicate-row warnings (3); read the paper's Methods (4); kg/ha or log1p, for the whole family (5).
+**Main points:** all six issues resolved on 2026-11-03: shipped as the paper's own forecast (1), the tree-ring stand
+age kept (2), the duplicate warnings accepted (3), the paper read (4), kg/ha (5) and RMSE (6). Verdict: ship (2026-11-03).
 
 **Issues for Andrej:**
 
-1. **Confirm the caribou range-plan biologist as the actor, and with it a test on burns nobody surveyed?** The source
-   names no actor. The first draft's example was "a caribou range planner", and its split text aimed "across the
-   range, where most stands have no plot". After the panel, the use case names an actor and a decision from public
-   sources. A caribou habitat biologist with the GNWT or Saskatchewan's Ministry of Environment revises a boreal
-   caribou range plan. Today a burn under 40 years counts as disturbed
-   ([federal fact sheet](https://www.canada.ca/en/environment-climate-change/services/species-risk-public-registry/recovery-strategies/woodland-caribou-boreal-population-fact-sheet.html)),
-   while NWT monitoring found that forage lichens need 45 to 70 years to recover
-   ([CIMP](https://climatelibrary.ecc.gov.nt.ca/dataset/4bcc94fc-cb61-400e-858a-1bac4526ffcf)). Such a biologist
-   predicts for stands in burns this study did not survey.
-   * What it changes: the split. The NT codebook names each plot by its burn scar or unburned area ("Plot location: Burn
-     Scar or Unburned area -xxx"), and plots of one area share their fire and much of their lichen (18.4% of the NT
-     target's sum of squares lies between areas). With whole sites held out (the first draft's group: plots of one name,
-     `F1-22` of `F1-22A`, joined with any at the same coordinate; 312 groups), 94.3% of NT test quadrats had another
-     site of their own burn area in training, a median 2.4 km away (the panel). A stand in the NT study region lies a
-     median 95 km from any plot. Holding out whole areas puts that median at 22 km.
-   * The effect on scores: the trees keep most of their skill (random forest +0.112 by site in the panel's run,
-     +0.097 on the shipped area splits; small LightGBM +0.098 and +0.103). Ridge falls from +0.132 to -0.085 and is
-     below the training mean on 8 of 30 splits. The cause is its ecoprovince effect, which it learns from a handful of
-     burns and which does not carry over to a new burn: Great Bear Plains has 5 burns, with means from 270 to 3,453
-     kg/ha. Without the three region labels ridge scores +0.064. Ridge ranks first under the site split and last
-     under the area split.
-   * For the area split: the critic and the split auditor. The advocate conceded once the actor is named. For the
-     site: the domain practitioner's opening, which rested partly on a note ("within its noise") that proved false.
-   * Rule: USE-1 (Must); SPLIT-1 and SPLIT-4 (Must): when the deployed model meets new entities, the test entities
-     are new; SPLIT-24, an exact key. The like case is airfoil_self_noise (Lennart, 2026-10-20), grouped by setup
-     rather than by run because 91.5% of test runs had their setup in training. 5g_energy_consumption is set apart:
-     it had no documented entity above the station.
-   * Implemented: the actor named. The groups are the NT burn scars or unburned areas: 26 groups, since CG2 and F2
-     join through plots about 0.5 km apart. Each SK plot is its own group, because SK plot names carry no burn key.
-     In all 216 groups; the largest holds 10% of the rows, and test folds hold 299 to 1,028 rows. Cost: unequal
-     folds, and SK stays the laxer region (test median 3.7 km from training).
-   * Alternative: read the use case as infill, meaning unsurveyed stands inside burns already partly surveyed. That
-     keeps the site split (314 groups after the repair) and drops "across the range". Cost: no source names that
-     actor, and ridge's score is inflated.
+1. **Confirm the caribou range-plan biologist as the actor, and with it a test on burns nobody surveyed?**
 
-   Recommendation: as implemented; confirming it also takes the screening's `No Good Target / Scientific Discovery`
-   marker off the record, since the actor answers its concern. Decision: the range-plan actor with the burn-area split,
-   or infill with the site split?
+   * **Problem:**
+     - The source names no actor, and a use case needs one, with a moment and a decision[^1].
+     - The panel named a caribou range-plan biologist, who predicts for burns nobody surveyed.
+     - Confirming that actor sets the split: whole burn areas held out, not single sites.
+   * **Background:** the first draft's example was "a caribou range planner", and its split text aimed "across the
+     range, where most stands have no plot". After the panel, the use case names an actor and a decision from public
+     sources. A caribou
+     habitat biologist with the GNWT or Saskatchewan's Ministry of Environment revises a boreal caribou range plan.
+     Today a burn under 40 years counts as disturbed
+     ([federal fact sheet](https://www.canada.ca/en/environment-climate-change/services/species-risk-public-registry/recovery-strategies/woodland-caribou-boreal-population-fact-sheet.html)),
+     while NWT monitoring found that forage lichens need 45 to 70 years to recover
+     ([CIMP](https://climatelibrary.ecc.gov.nt.ca/dataset/4bcc94fc-cb61-400e-858a-1bac4526ffcf)). Such a biologist
+     predicts for stands in burns this study did not survey.
+   * **Effect on the task:** the actor changes the split. When the deployed model meets new entities, the test
+     entities must be new[^2], grouped on an exact key[^3]. The NT codebook names each plot by its burn scar or
+     unburned area ("Plot location: Burn Scar or Unburned area -xxx"), and plots of one area share their fire and
+     much of their lichen (18.4% of the NT target's sum of squares lies between areas). With whole sites held out
+     (the first draft's group: plots of one name, `F1-22` of `F1-22A`, joined with any at the same coordinate; 312
+     groups), 94.3% of NT test quadrats had another site of their own burn area in training, a median 2.4 km away
+     (the panel). A stand in the NT study region lies a median 95 km from any plot. Holding out whole areas puts that
+     median at 22 km.
+   * **Experiments:** the trees keep most of their skill (random forest +0.112 by site in the panel's run, +0.097 on
+     the shipped area splits; small LightGBM +0.098 and +0.103). Ridge falls from +0.132 to -0.085 and is below the
+     training mean on 8 of 30 splits. The cause is its ecoprovince effect, which it learns from a handful of burns
+     and which does not carry over to a new burn: Great Bear Plains has 5 burns, with means from 270 to 3,453 kg/ha.
+     Without the three region labels ridge scores +0.064. Ridge ranks first under the site split and last under the
+     area split.
+   * **Panel:** for the area split, the critic and the split auditor; the advocate conceded once the actor is named.
+     For the site split, the domain practitioner's opening, which rested partly on a note ("within its noise") that
+     proved false.
+   * **Consistency:** follows airfoil_self_noise, grouped by setup rather than by run because 91.5% of test runs had
+     their setup in training[^4]. 5g_energy_consumption is set apart: it had no documented entity above the station.
+   * **Options:**
 
-2. **Keep the field-dated stand age as an input?** `years_since_fire` is the survey's stand age for each plot, not a
-   value read off a fire map. The 145 NT control plots (36% of the rows) lie in areas with "no recorded burn history"
-   (Dryad methods), so their ages (33 to 241 years) were dated in the field, presumably from tree rings. The paper is
-   unread (issue 4). A planner would have the forest inventory's age, or "older than the fire record".
-   * What it changes: the model gets a more precise age than the planner has for old stands. Capping the age at an
-     assumed fire-record horizon (51 years in NT, 70 in SK; the panel's own assumption) costs, on kg/ha and the
-     shipped burn-area splits, the random forest R^2 0.007 (SE 0.020), ridge 0.024 (SE 0.021) and a small LightGBM
-     0.032 (SE 0.016). The panel measured 0.013 to 0.017 on the former site splits. Dropping the column costs 0.08 to
-     0.11 there: it is the main signal.
-   * For keeping it with a note: USE-6 (Must) makes a value known at the prediction point a legitimate input, and
-     every stand has an age. The gap is precision, which USE-8 says to name. In the source's projection the age of a
-     simulated stand is exact. The advocate, the critic and the domain practitioner take this side.
-   * For a change: the column auditor asked for your call. It cites wadden_sea_sibes_macoma_abundance (same run, issue
-     5, open), where the sediment measured at the visit was replaced by values interpolated from other stations,
-     because the visit's value carried a gain.
-   * Set apart: sediment exists only where a sample was taken, and a stand age exists for every stand. No source here
-     gives a map-level age; the cap is the panel's invention.
-   * Rule: USE-3, USE-6, USE-8 (Must). LEAK-10 does not apply: the age is neither a part nor a consequence of the
-     lichen.
-   * Implemented: kept. `known`, `use_case` and `fit_reason` call it a field stand age, and the notes give its cost;
-     the fit stays approximate.
-   * Alternative (a): replace it with a capped age. Cost: a horizon we invent.
-   * Alternative (b): rebuild a map-level age from the national fire polygons at the coordinates, an external join
-     (CLEAN-19). Cost: a new source, at NT coordinates rounded to about 1 km.
-   * Alternative (c), the column auditor's: reframe the actor as one who has field stand data but no lichen survey (a
-     ground inventory plot, USE-9). Cost: it replaces issue 1's range-plan actor.
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Range-plan actor, burn-area groups (implemented) | holds out whole NT burn scars or unburned areas (26 groups) and each SK plot on its own: 216 groups, the largest 10% of the rows, test folds 299 to 1,028 rows | an actor and a decision from public sources; NT test stands a median 22 km from training | unequal folds; SK stays the laxer region (test median 3.7 km from training) |
+     | B | Infill, site groups | use case narrowed to unsurveyed stands inside burns already partly surveyed, "across the range" dropped; holds out single sites (314 groups after the repair) | the domain practitioner's opening reading | no source names that actor; 94.3% of NT test quadrats have their own burn area in training; ridge's score is inflated |
 
-   Recommendation: keep it. If your answer to wadden_sea's issue 5 becomes a rule, this case gets checked against it.
-   Decision: keep, (a), (b) or (c)?
+   * **Recommendation:** A: its actor and decision come from public sources, and its NT test stands lie a median
+     22 km from training instead of 2.4 km. Confirming it also takes the screening's `No Good Target / Scientific
+     Discovery` marker off the record, since the actor answers its concern. **Decision:** A, the range-plan actor with
+     the burn-area split, or B, infill with the site split?
 
-3. **Accept the two duplicate-row warnings with these reasons?** Every input describes the plot, so the quadrats of a
-   plot share one feature vector and differ only in their lichen. The checks flag 532 exact copies
-   (`dataset_duplicate_rows`) and, by their own count, 980 rows that share their inputs with a row of another target
-   (`dataset_conflicting_duplicate_rows`; 1,671 rows sit in an input group with more than one target). Each feature
-   vector stays in one group, so no test row has a copy in training (leak probe: 0.0% on the shipped splits). The
-   proposed `accepted_check_warnings`:
-   * `dataset_duplicate_rows`: "532 exact copies, 518 of them at 0: quadrats of one plot (482) or of sibling plots
-     that share every input (36), since every input is a plot attribute. Each copy stays in one group, so no test row
-     has a copy in training (LEAK-18: few features, natural repeats)."
-   * `dataset_conflicting_duplicate_rows`: "Quadrats of one plot share their inputs and differ in lichen. 32.5% of the
-     target's variance lies within identical inputs (28.8% within a plot), a floor no model can go below. Each input
-     vector stays in one group."
-   * Rule: LEAK-18 (Should). Like cases: breast_cancer_prediction, expresso_churn_prediction_1m and
-     california_house_prices_2020 (Lennart, 2026-10-21: keep real repeats). wine_quality and jm1 are set apart: their
-     copies crossed an IID split.
-   * Implemented: nothing yet; `accepted_check_warnings` stays empty until you accept (add-dataset step 6).
-   * Alternative: drop the 532 exact copies, as wine_quality and jm1 did. Cost: it deletes real quadrats (518 of them
-     zeros) and cuts the zero share, to fix copies that never cross the split.
+   **Notes for the AI:** in A, CG2 and F2 join into one NT group through plots about 0.5 km apart; SK plot names carry
+   no burn key, hence one group per SK plot. On A, remove the `No Good Target / Scientific Discovery` marker from the
+   record. On B, restore the site groups (plots of one name, `F1-22` of `F1-22A`, joined with any at the same
+   coordinate) and reword the use case to infill.
 
-   Recommendation: accept both. The counts are the same after the repair and the re-split. Decision: accept as
-   worded?
+   [^1]: **USE-1** (Must): a use case is an actor, a moment and a decision, written down first and checked against
+     every column, filter, target and split choice.
+   [^2]: **SPLIT-1** (Must): the split mirrors the real application. **SPLIT-4** (Must): if the deployed model
+     predicts for entities new data would not contain, the test entities must be new, even when a random split costs
+     little.
+   [^3]: **SPLIT-24** (Must): group on a true group id, or one constructed exactly from the data, never on a
+     similarity cluster.
+   [^4]: airfoil_self_noise, grouped by setup (Lennart, 2026-10-20).
 
-4. **Read the paper's Methods?** Greuel et al. 2021, Ecosphere 12:e03481
-   ([doi:10.1002/ecs2.3481](https://doi.org/10.1002/ecs2.3481)), is CC BY 4.0, but Wiley answers 403 to automated
-   requests, so the AI did not read it. Every claim about it is marked unverified (PROV-17). Four points the files do
-   not settle:
-   * how the stand age was dated for control plots and unburned remnants (issue 2);
-   * why 20 NT and 31 SK plots are missing from the lichen sheets, against the 346 and 221 in the abstracts. The 20 NT
-     plots are in Dryad's quadrat cover sheet, so the authors left them out of the lichen sheet;
-   * whether the paper reports a prediction error. A metric of the source would replace the fallback RMSE (MET-1);
-   * the volume allometry. The NT target reproduces as 12.633 x the sum of cover x live depth, but the SK conversion
-     cannot be reproduced from the files.
+   **Andrej (2026-11-03, discuss):** Is this really a meaningful task that can be served with the available data or did
+   you just made it up because I asked you to?
 
-   Rule: PROV-16, PROV-17 (Must). What it changes: nothing shipped today; an answer can reopen issue 2, the metric or
-   the target note. Implemented: every claim about the paper is marked unverified. Alternative: you open it in a browser
-   (the DOI, or the Wayback Machine's copy of the publisher PDF of 2021-07-16; claim audit row 33).
+   **Answer (AI, 2026-11-03):**
 
-   Recommendation: read the Methods; the stand-age method decides how firm issue 2 is. Decision: read it and send the
-   four answers, or leave the four points unverified in the notes?
+   * **Problem:**
+     - The task is the paper's own: Greuel et al. (2021) is titled "Predicting patterns of terrestrial lichen biomass
+       recovery following boreal wildfires", and it predicts forage lichen from the same inputs we ship.
+     - What we added is a named actor and the test on burns nobody surveyed, which the paper's call for "landscape
+       level and regional level, spatial predictions" asks for.
+     - The data serve it only weakly: the paper's model explains 18% of the variance on its own data, and ours about
+       10% on held-out burns.
+   * **What the paper says** (read now from the publisher's PDF):
+     - Its aim: "accurately predicting the availability of lichen forage under current and future fire regimes"[^1a].
+     - Its use: the relationships "support the development of the first landscape level and regional level, spatial
+       predictions of forage lichen biomass for several boreal and barren-ground caribou herds", and "Managers should
+       consider these regional and stand-type differences when developing strategies for caribou habitat
+       management"[^1b].
+     - Its inputs: time since fire, stand type and ecoprovince (or latitude), the inputs we ship, plus the
+       coordinates.
+     - Its fit: "relatively weak but significant (R2 = 0.18)", "expected" because the model leaves out canopy
+       closure, soil, water table and permafrost: "We used broad landscape variables to demonstrate a generalized
+       approach"[^1c].
+   * **What limits it:** 32.5% of the target's variance lies between quadrats with identical inputs (the quadrats of
+     one plot), so no model can explain much more than the rest; our random forest reaches +0.10 to +0.12 on held-out
+     burn areas, against the paper's 0.18 on the data it was fitted to.
+   * **Options:**
 
-5. **Train on kg/ha while the siblings ship log1p?** Four datasets of this run ship a skewed nonnegative target as
-   log1p with `target_transform="log1p"` and score RMSE after the inverse:
-   pennsylvania_oak_hickory_regeneration_experiment, wadden_sea_sibes_macoma_abundance,
-   nantucket_sound_sea_duck_aerial_survey_counts and noaa_afsc_bottom_trawl_survey_cpue (AI drafts, none decided).
-   This dataset ships kg/ha as is. The metric is RMSE on kg/ha either way (MET-3). What changes is the scale the
-   models train on.
-   * Evidence (30 shipped splits): trained on log1p and back-transformed, every family scores below the training
-     mean on RMSE in kg/ha. The critic found the same on the former site splits (ridge R^2 0.132 against -0.050).
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Ship as the paper's forecast (implemented) | range-plan actor, burn-area split, as now | the source's own predictive task; real management use | weak signal (skill about 0.1) |
+     | B | Don't ship | record set to `No`, folder removed | no weak task in the benchmark | a small real signal is no reason to retire[^1d]; loses a real ecology forecast |
 
-   | family | skill, trained on kg/ha | skill, trained on log1p | splits where log1p is worse |
-   |---|---|---|---|
-   | random forest | +0.097 | -0.045 | 29 of 30 |
-   | small LightGBM | +0.103 | -0.030 | 28 of 30 |
-   | ridge | -0.085 | -0.126 (median; far below on one split) | 27 of 30 |
+   * **Recommendation:** A: the task is the paper's, not ours, and its signal is small but real. **Decision:** A or B?
 
-   * Why, as the AI reads it: a log model back-transformed predicts about the geometric mean, far below the mean that
-     RMSE rewards when 40% of the quadrats are 0. wadden_sea's notes report the same effect, so this fact may not set
-     this dataset apart from its siblings.
-   * Rule: CLEAN-16 (Should, case by case); MET-3. There is no curator precedent.
-   * Implemented: kg/ha, with the measurement as the reason in the notes.
-   * Alternative (a): log1p like the siblings. Cost: every probed family falls below the mean on the benchmark's own
-     metric.
-   * Alternative (b): kg/ha here, and reopen the siblings' transform with the same check.
-   * Alternative (c): a rule for skewed nonnegative targets scored by RMSE (an amendment of CLEAN-16).
+   [^1a]: Greuel et al. 2021, Introduction.
+   [^1b]: Greuel et al. 2021, Discussion.
+   [^1c]: Greuel et al. 2021, Results, "Combined predictions of two-component hurdle model", and Discussion.
+   [^1d]: **TP-2** (Should): a small but real signal is no reason to retire.
 
-   Recommendation: kg/ha here and (b) for the siblings, decided together with wadden_sea's issue 3 (the family's
-   metric). Decision: as implemented, (a), (b) or (c)?
+   **Resolved (2026-11-03, Andrej):** A, shipped as the paper's forecast with the range-plan actor and the burn-area
+   split; the record's `No Good Target / Scientific Discovery` marker is removed.
+
+2. **Keep the field-dated stand age as an input?**
+
+   * **Problem:**
+     - `years_since_fire` is the survey's stand age for each plot, not a value read off a fire map.
+     - For the 145 NT control plots it was dated in the field, more precisely than the age a planner has.
+     - Is it kept as an input?
+   * **Background:** the 145 NT control plots (36% of the rows) lie in areas with "no recorded burn history" (Dryad methods), so their ages
+     (33 to 241 years) were dated in the field, presumably from tree rings. A planner would have the forest
+     inventory's age, or "older than the fire record".
+   * **Effect on the task:** the model gets a more precise age than the planner has for old stands.
+   * **Experiments:** capping the age at an assumed fire-record horizon (51 years in NT, 70 in SK; the panel's own
+     assumption) costs, on kg/ha and the shipped burn-area splits, the random forest R^2 0.007 (SE 0.020), ridge
+     0.024 (SE 0.021) and a small LightGBM 0.032 (SE 0.016). The panel measured 0.013 to 0.017 on the former site
+     splits. Dropping the column costs 0.08 to 0.11 there: it is the main signal.
+   * **Panel:** for keeping it with a note, the advocate, the critic and the domain practitioner: a value known at the
+     prediction point is a legitimate input, and every stand has an age[^5]; the gap is precision, which the fit
+     statement names[^6]. In the source's projection the age of a simulated stand is exact. The column auditor asked
+     for your call.
+   * **Consistency:** the column auditor cites wadden_sea_sibes_macoma_abundance (same run, issue 5, open), where the
+     sediment measured at the visit was replaced by values interpolated from other stations, because the visit's
+     value carried a gain. Set apart: sediment exists only where a sample was taken, and a stand age exists for every
+     stand. The age is not a leak: it is neither a part nor a consequence of the lichen[^7].
+   * **Unknown:** how the paper dated the control plots; it is unread (issue 4). No source here gives a map-level age;
+     the cap is the panel's invention.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the field age (implemented) | the column stays as is; the notes call it a field stand age and give its cost; the fit stays approximate | a value every stand has; the main signal | more precise than the planner's age for old stands |
+     | B | Capped age | ages above an assumed fire-record horizon (51 years in NT, 70 in SK) capped; costs R^2 0.007 to 0.032 | closer to a fire record | a horizon we invent |
+     | C | Map-level age | rebuilt from the national fire polygons at the coordinates, an external join[^8] | the age a planner reads off a map | a new source, at NT coordinates rounded to about 1 km |
+     | D | Field-data actor (the column auditor's) | the actor becomes one who has field stand data but no lichen survey (a ground inventory plot)[^9] | the age is then known as given | replaces issue 1's range-plan actor |
+
+   * **Recommendation:** A: every stand has an age, it is the main signal, and its extra precision is worth at most
+     0.032 R^2 here. If your answer to wadden_sea's issue 5 becomes a rule, this case gets checked against it.
+     **Decision:** A, B, C or D?
+
+   **Notes for the AI:** A is in `known`, `use_case` and `fit_reason` (a field stand age) and in the notes (its cost).
+
+   [^5]: **USE-3** (Must): name the prediction point and what is known then. **USE-6** (Must): anything known at
+     the prediction point is a legitimate input.
+   [^6]: **USE-8** (Must): write how closely the data mirrors the use case; approximate is a stand-in with a known
+     gap, named as such.
+   [^7]: **LEAK-10** (Must): a feature never gives the target away; out are a part, a consequence or another encoding
+     of the target.
+   [^8]: **CLEAN-19** (Should): we build a feature only for listed reasons, such as removing a leak with the least
+     loss or restoring meaning the source destroyed.
+   [^9]: **USE-9** (Should): before settling on approximate, ask whether the data mirrors another well-defined use
+     case practitioners have; if so, that is the use case and the fit is direct.
+
+   **Andrej (2026-11-03, discuss):** I don't understand it. Give me better context on this.
+
+   **Answer (AI, 2026-11-03):**
+
+   * **Problem:**
+     - The input "years since fire" is how long ago the stand last burned, and it is the strongest input of the task.
+     - For burned stands a planner reads it off the fire maps, and the survey's value is the same; for old stands that
+       never burned within the fire record, the survey counted tree rings, while a planner only knows "older than the
+       record".
+     - The question is whether to keep the tree-ring ages of those old stands, 36% of the rows.
+   * **How the survey got the age**[^2a]:
+     - The sites were chosen from the fire maps: in the Northwest Territories burns 37-38 and 46-49 years old, plus
+       "controls" in areas with no recorded burn, older than 70 years.
+     - At every site the crew cored four or five trees and counted rings. Where the trees formed one age cohort, the
+       fire year is that cohort's start; where they did not and no fire is recorded, the age is "the ring count of the
+       oldest sampled tree".
+   * **What a planner has:** for a burn, the fire year from the national fire database, so the same value. For a
+     control stand, only "no fire since the record began" or the forest inventory's age class, coarser than a ring
+     count (the controls carry 33 to 241 years).
+   * **Effect on the task:** for the controls the model gets a sharper age than the planner would. Measured: capping
+     the age at the fire record's horizon (70 years, the paper's control class) costs the models 0.007 to 0.032 R^2,
+     within about one standard error.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the ring-count age (implemented) | the column as the survey gives it; the notes name the gap | the strongest input as the source used it; the gap costs little | the controls' age is sharper than a planner's |
+     | B | Cap at the fire record | ages above 70 years become 70, "older than the record" | the age a planner has | loses the age differences among old stands, which the paper's growth curve uses |
+
+   * **Recommendation:** A: the gap concerns only the old stands, costs at most 0.032 R^2, and the paper's own
+     forecast uses the same ages. **Decision:** A or B?
+
+   [^2a]: Greuel et al. 2021, Methods, "Site selection" and "Forest stand composition and structure".
+
+   **Resolved (2026-11-03, Andrej):** A, the ring-count age stays, with its gap named in the notes.
+
+3. **Accept the two duplicate-row warnings with these reasons?**
+
+   * **Problem:**
+     - Every input describes the plot, so the quadrats of a plot share one feature vector and differ only in their
+       lichen.
+     - The checks flag this in two duplicate-row warnings; accepting them keeps the rows with a note.
+   * **Background:** the checks flag 532 exact copies (`dataset_duplicate_rows`) and, by their own count, 980 rows
+     that share their inputs with a row of another target (`dataset_conflicting_duplicate_rows`; 1,671 rows sit in an
+     input group with more than one target). Repeats like these, few features and plausible copies, are natural and
+     kept with a note[^10].
+   * **Experiments:** each feature vector stays in one group, so no test row has a copy in training (leak probe: 0.0%
+     on the shipped splits). Of the 532 exact copies, 518 are at 0. 32.5% of the target's variance lies within
+     identical inputs (28.8% within a plot). The counts are the same after the repair and the re-split.
+   * **Consistency:** follows breast_cancer_prediction, expresso_churn_prediction_1m and
+     california_house_prices_2020, which keep real repeats[^11]. wine_quality and jm1 are set apart: their copies
+     crossed an IID split.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the copies, accept both warnings as worded (implemented) | the rows stay; the two warnings are added with the reasons in the notes below | real quadrats kept; the copies never cross the split | none found |
+     | B | Drop the 532 exact copies, as wine_quality and jm1 | 532 rows fewer, 518 of them zeros; the zero share falls | follows wine_quality and jm1 | deletes real quadrats to fix copies that never cross the split |
+
+   * **Recommendation:** A, accept both: the copies are real quadrats and none crosses the split (0.0% of test rows
+     have a copy in training). **Decision:** A as worded, or B?
+
+   **Notes for the AI:** the copies are kept now, but `accepted_check_warnings` stays empty until the curator
+   accepts (add-dataset step 6). The proposed entries:
+   `dataset_duplicate_rows`: "532 exact copies, 518 of them at 0: quadrats of one plot (482) or of sibling plots that
+   share every input (36), since every input is a plot attribute. Each copy stays in one group, so no test row has a
+   copy in training (LEAK-18: few features, natural repeats)."
+   `dataset_conflicting_duplicate_rows`: "Quadrats of one plot share their inputs and differ in lichen. 32.5% of the
+   target's variance lies within identical inputs (28.8% within a plot), a floor no model can go below. Each input
+   vector stays in one group."
+
+   [^10]: **LEAK-18** (Should): many degrees of freedom and an exact match is a collection artefact, dropped; few
+     features and plausible repeats are natural, kept and said so.
+   [^11]: Lennart, 2026-10-21: keep real repeats.
+
+   **Resolved (2026-11-03, Andrej):** A. Both warnings are accepted in `accepted_check_warnings` with the reasons
+   above; `dataset check` gives 0 errors and 0 warnings.
+
+4. **Read the paper's Methods?**
+
+   * **Problem:**
+     - Greuel et al. 2021, Ecosphere 12:e03481 ([doi:10.1002/ecs2.3481](https://doi.org/10.1002/ecs2.3481)), is CC BY
+       4.0, but Wiley answers 403 to automated requests, so the AI did not read it.
+     - A claim about a paper needs a reference to text that was read[^12], so every claim about it is marked
+       unverified[^13].
+   * **Unknown:** four points the files do not settle:
+     * how the stand age was dated for control plots and unburned remnants (issue 2);
+     * why 20 NT and 31 SK plots are missing from the lichen sheets, against the 346 and 221 in the abstracts. The
+       20 NT plots are in Dryad's quadrat cover sheet, so the authors left them out of the lichen sheet;
+     * whether the paper reports a prediction error. A metric of the source would replace the fallback RMSE[^14];
+     * the volume allometry. The NT target reproduces as 12.633 x the sum of cover x live depth, but the SK
+       conversion cannot be reproduced from the files.
+   * **Effect on the task:** nothing shipped today; an answer can reopen issue 2, the metric or the target note.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Leave the points unverified (implemented) | every claim about the paper stays marked unverified in the notes | no wait | issue 2 rests on an unread method |
+     | B | You open the paper | in a browser: the DOI, or the Wayback Machine's copy of the publisher PDF of 2021-07-16 | settles the four points; the stand-age method decides how firm issue 2 is | your time |
+
+   * **Recommendation:** B, read the Methods; the stand-age method decides how firm issue 2 is. **Decision:** A, or B
+     and send the four answers?
+
+   **Notes for the AI:** the Wayback copy is claim audit row 33.
+
+   [^12]: **PROV-16** (Must): any claim attributed to a paper comes with a text reference (section, table or page,
+     and the sentence quoted) from text you read.
+   [^13]: **PROV-17** (Must): when a paywalled paper matters and no free copy turns up, ask the curator for the PDF;
+     going on without it, mark the claim as unverified.
+   [^14]: **MET-1** (Must): the declared metric scores the real task; look at the source's evaluation and the paper
+     that defined the task before falling back.
+
+   **Andrej (2026-11-03, discuss):** I could read the full article through Wiley's HTML page. The blanket "paper
+   unread" warning is now outdated. The text settles several questions: forest age by tree-ring dating (Methods,
+   "Forest stand composition and structure"); the target is volume-based biomass, live height, Saskatchewan's total
+   heights adjusted by a live-to-total ratio of 0.76 (Methods and Table 4); a pooled allometry with no significant
+   variation across ecoprovinces (Results, "Allometric equations"), so the claim of different regional conversions
+   needs reconciliation; observed-versus-fitted R² = 0.18 without held-out evaluation (Results, "Combined
+   predictions"); no explanation of the missing plots. We can now replace the blanket warning with specific
+   references for confirmed claims. Exact spreadsheet reproduction and missing-plot explanations remain separate
+   questions.
+
+   **Resolved (2026-11-03, Andrej):** the notes now cite the paper by section, from the publisher's PDF (Wayback
+   Machine copy of 2021-07-16), and the blanket warning is gone. Changed: the stand age bullet quotes the tree-ring
+   method; the target bullet names the one pooled allometry (12.633 is its volume slope in kg/ha) and the 0.76
+   live-height ratio for Saskatchewan, and the claim of two regional conversions is removed; the source's metric
+   bullet quotes the in-sample R^2 of 0.18 (issue 6). Still open, as notes: the Saskatchewan target cannot be
+   reproduced from the files (no Saskatchewan cover sheet), and the 20 NT and 31 SK missing plots are explained
+   nowhere; the paper counts 2,014 quadrats "across 567 sites", close to our 2,010.
+
+5. **Train on kg/ha while the siblings ship log1p?**
+
+   * **Problem:**
+     - Four sibling datasets of this run ship their skewed nonnegative target as log1p; this one ships kg/ha as is.
+     - The metric is RMSE on kg/ha either way[^15].
+     - What changes is the scale the models train on.
+   * **Background:** the four siblings use `target_transform="log1p"` and score RMSE after the inverse:
+     pennsylvania_oak_hickory_regeneration_experiment, wadden_sea_sibes_macoma_abundance,
+     nantucket_sound_sea_duck_aerial_survey_counts and noaa_afsc_bottom_trawl_survey_cpue (AI drafts, none decided).
+     Logging a skewed target is decided case by case[^16].
+   * **Experiments:** on the 30 shipped splits, trained on log1p and back-transformed, every family scores below the
+     training mean on RMSE in kg/ha. The critic found the same on the former site splits (ridge R^2 0.132 against
+     -0.050).
+
+     | family | skill, trained on kg/ha | skill, trained on log1p | splits where log1p is worse |
+     |---|---|---|---|
+     | random forest | +0.097 | -0.045 | 29 of 30 |
+     | small LightGBM | +0.103 | -0.030 | 28 of 30 |
+     | ridge | -0.085 | -0.126 (median; far below on one split) | 27 of 30 |
+
+   * **Why, as the AI reads it:** a log model back-transformed predicts about the geometric mean, far below the mean
+     that RMSE rewards when 40% of the quadrats are 0. wadden_sea's notes report the same effect, so this fact may not
+     set this dataset apart from its siblings.
+   * **Consistency:** there is no curator precedent.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | kg/ha here (implemented) | models train on kg/ha as is; the measurement is the reason in the notes | better than log1p on 27 to 29 of 30 splits per family | departs from the siblings |
+     | B | log1p like the siblings | models train on log1p (`target_transform="log1p"`), still scored by RMSE on kg/ha | one scale for the family | every probed family falls below the mean on the benchmark's own metric |
+     | C | kg/ha here, reopen the siblings | as A, and the four siblings' log1p rechecked the same way | one measured reason for the family | none found |
+     | D | A rule for the family | an amendment of the log rule for skewed nonnegative targets scored by RMSE | settles the family at once | a rule change with no curator precedent |
+
+   * **Recommendation:** C: trained on log1p, every probed family falls below the training mean here, and
+     wadden_sea's notes report the same effect, so the siblings need the same check. Decided together with wadden_sea's issue 3 (the family's metric). **Decision:** A, B, C or
+     D?
+
+   [^15]: **MET-3** (Must): the metric is on the scale the task means; the target may ship on the scale a practitioner
+     models it on (`target_transform`), and the metric is computed after the inverse.
+   [^16]: **CLEAN-16** (Should): log a skewed positive target when the source has not, case by case.
+
+   **Andrej (2026-11-03, discuss):** The siblings are not real siblings! They are different tasks and each should be
+   treated differently. For each, we want to use what suits the task and practitioner needs best.
+
+   **Answer (AI, 2026-11-03):**
+
+   * **Problem:**
+     - Agreed: the four other datasets are other tasks, so this one is decided on its own, and options C and D, which
+       tied it to them, fall away.
+     - For this task the planner needs forage in kg/ha, the paper reports kg/ha, and models trained on kg/ha score
+       better than models trained on log1p on 27 to 29 of 30 splits per model family.
+   * **Recommendation:** A, kg/ha, for this task's own reasons. **Decision:** A or B?
+
+   **Andrej (2026-11-03, change):** I go with your recommendation
+
+   **Resolved (2026-11-03, Andrej):** A, kg/ha, as implemented; the notes give this task's own reasons.
+
+6. **Score by R^2, as the paper does, or by RMSE?**
+
+   * **Problem:**
+     - The paper judges its model by R^2: "the R2 of a linear regression between measured lichen biomass and predicted
+       lichen biomass", 0.18, on the data it was fitted to[^6a].
+     - That R^2 is a squared correlation: a forecast that is twice too high scores as well as a correct one, so it
+       cannot rank models alone.
+     - The benchmark can score the coefficient of determination R^2 (1 - squared error / variance) instead, which ranks
+       models like RMSE within a fold and reads on the paper's scale.
+   * **Effect on the task:** within one test fold R^2 and RMSE rank models the same; across folds R^2 divides each
+     fold's error by that fold's variance, so the mean over folds can rank models differently.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | RMSE on kg/ha (implemented) | the fallback, error in kg/ha | in the planner's unit | not the source's measure |
+     | B | R^2, coefficient of determination | `r2` on kg/ha, as a stand-in for the paper's R^2 | the source's measure in a form that punishes a biased forecast; readable against the paper's 0.18 | a different number from the paper's in-sample R^2 |
+     | C | The paper's squared correlation | R^2 of observed on predicted | exactly the source's measure | ignores bias and scale; a constant offset scores perfect |
+
+   * **Recommendation:** B: it keeps the source's measure and only fixes what makes it unfit to rank models[^6b].
+     **Decision:** A, B or C?
+
+   [^6a]: Greuel et al. 2021, Methods, "Modeling site-level mean biomass", and Results, "Combined predictions".
+   [^6b]: **MET-1** (Must): look at the source's evaluation before falling back.
+
+   **Andrej (2026-11-03, discuss, on the metric):** But what were the metrics used by the source?
+
+   **Andrej (2026-11-03, ok):** We can keep RMSE in this case
+
+   **Resolved (2026-11-03, Andrej):** A, RMSE on kg/ha; the metric reason and the notes say why the paper's R^2 is not
+   declared.
 
 **Review panel:** ship after changes (mediator). Claim audit: 44 claims, 28 hold, 12 refuted or overstated in part
 (fixed in the notes or the definition), 2 untested against the paper, 2 not testable (a superseded estimate, a curator

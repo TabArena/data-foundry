@@ -247,6 +247,22 @@ def _mean_poisson_deviance(y_true, y_pred, *, params=None, **_):
     return _sklearn_metrics().mean_poisson_deviance(np.asarray(y_true, dtype=float), p)
 
 
+def _check_tweedie(params: Mapping[str, Any]) -> None:
+    _require(params, "power")
+    power = params["power"]
+    if isinstance(power, bool) or not isinstance(power, (int, float)) or not (power <= 0 or 1 <= power < math.inf):
+        raise ValueError(f"power is a number <= 0 or >= 1, as in scikit-learn, not {power!r}.")
+    _check_min_prediction(params)
+
+
+def _mean_tweedie_deviance(y_true, y_pred, *, params, **_):
+    """scikit-learn's mean Tweedie deviance at ``params["power"]``; ``min_prediction`` first floors the predictions."""
+    p = np.asarray(y_pred, dtype=float)
+    if "min_prediction" in params:
+        p = np.maximum(p, float(params["min_prediction"]))
+    return _sklearn_metrics().mean_tweedie_deviance(np.asarray(y_true, dtype=float), p, power=float(params["power"]))
+
+
 @dataclass(frozen=True)
 class MetricDef:
     """One metric of the registry: what it takes and how it is computed.
@@ -523,6 +539,24 @@ METRICS: dict[str, MetricDef] = {
                 "error, as in scikit-learn"
             },
             check_params=_check_min_prediction,
+        ),
+        MetricDef(
+            "mean_tweedie_deviance",
+            _REG,
+            "value",
+            _LOWER,
+            _mean_tweedie_deviance,
+            "sklearn.metrics.mean_tweedie_deviance",
+            "mean(2 * (max(y, 0)^(2-q) / ((1-q)(2-q)) - y p^(1-q) / (1-q) + p^(2-q) / (2-q))) at power q (1 < q < 2: "
+            "a compound Poisson-gamma cost, zeros allowed); q = 0 is the squared error, 1 Poisson, 2 gamma; p > 0 "
+            "(a smaller p raises an error unless min_prediction floors it)",
+            params={
+                "power": "the Tweedie power q, required (1.5 for a pure premium with many zero claims)",
+                "min_prediction": "optional floor on the predictions, on the original scale (after the inverse of "
+                "target_transform): a smaller prediction counts as this value. Without it a prediction <= 0 is an "
+                "error, as in scikit-learn",
+            },
+            check_params=_check_tweedie,
         ),
     )
 }
