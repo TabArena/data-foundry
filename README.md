@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-03 15:12 UTC: 52 claim(s) (Andrej 22, Lennart 6, Myunghwan 24).
+As of 2026-11-03 15:21 UTC: 51 claim(s) (Andrej 21, Lennart 6, Myunghwan 24).
 
 ## Andrej
 
@@ -23,7 +23,6 @@ As of 2026-11-03 15:12 UTC: 52 claim(s) (Andrej 22, Lennart 6, Myunghwan 24).
 | `pennsylvania_oak_hickory_regeneration_experiment` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
 | `pricing_game_2016_french_fleet` | add | 2026-11-01 | 2026-11-08 | add-dataset, zero-inflated batch |
 | `pricing_game_2017_french_mtpl` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
-| `rand_health_insurance_experiment_doctor_visits` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
 | `spanish_homeowners_motor_insurance_2010_2014` | add | 2026-11-02 | 2026-11-09 | add-dataset |
 | `spanish_motor_insurance_2015_2018` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
 | `spanish_motor_insurance_coverage_level_2022_2024` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
