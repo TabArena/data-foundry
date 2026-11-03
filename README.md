@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-03 18:40 UTC: 46 claim(s) (Andrej 16, Lennart 6, Myunghwan 24).
+As of 2026-11-03 22:36 UTC: 46 claim(s) (Andrej 16, Lennart 6, Myunghwan 24).
 
 ## Andrej
 
@@ -54,7 +54,7 @@ As of 2026-11-03 18:40 UTC: 46 claim(s) (Andrej 16, Lennart 6, Myunghwan 24).
 | `economic_well_being_prediction_challenge` | triage | 2026-10-28 | 2026-11-04 | Next Myunghwan curation batch: highest remaining eligible priority 3; existing screening dossiers await curator review. Reservation only; no scientific acceptance or build. |
 | `eucalyptus` | review | 2026-10-23 | 2026-11-04 | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
 | `fannie_mae_single_family_loan_performance` | triage | 2026-10-31 | 2026-11-07 | Curator-requested triage of PR39 priority-4 candidates with 10M+ source observations. |
-| `fugaku_hpc_job_failure` | add | 2026-11-03 | 2026-11-10 | Curator accepted screening: add original zero/nonzero exit-state prediction at submission; data qualification and full review panel. |
+| `fugaku_hpc_job_failure` | add | 2026-11-03 | 2026-11-10 | Curator ship accepted; build/reload/traced-input reproduction complete: 2,500,499 rows, 388 predictors. Local commits 89bd0cd9 and b466ac80 on fugaku-build-20261103; not pushed. Retain ownership pending upstream integration. First tuned benchmark must recheck model-family separation, simple/user-history baselines, probability quality and label-maturity/reporting latency. |
 | `geoai_ground_level_no2_estimation_challenge` | triage | 2026-10-28 | 2026-11-06 | Curator accepted as implemented with documented label-QC, regional and observed-day coverage limits. Built and verified: 82,051 rows, 11 predictors, station-held-out 3x3 folds; reload and traced-input reproduction passed with zero warnings. Local commits 7b2837b and 8cba4df on geoai-no2-curation; not pushed or submitted. Retain Myunghwan ownership pending upstream integration; existing stage preserved by gateway. |
 | `loan_default_prediction_challenge` | triage | 2026-10-28 | 2026-11-04 | Next Myunghwan curation batch: highest remaining eligible priority 3; existing screening dossiers await curator review. Reservation only; no scientific acceptance or build. |
 | `lt_vehicle_loan_default_prediction` | review | 2026-10-23 | 2026-11-04 | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |

@@ -2,5 +2,5 @@ name: fugaku_hpc_job_failure
 holder: Myunghwan
 stage: add
 claimed_at: '2026-11-03T07:59:15Z'
-expires_at: '2026-11-10T07:59:15Z'
-note: 'Curator accepted screening: add original zero/nonzero exit-state prediction at submission; data qualification and full review panel.'
+expires_at: '2026-11-10T22:36:23Z'
+note: 'Curator ship accepted; build/reload/traced-input reproduction complete: 2,500,499 rows, 388 predictors. Local commits 89bd0cd9 and b466ac80 on fugaku-build-20261103; not pushed. Retain ownership pending upstream integration. First tuned benchmark must recheck model-family separation, simple/user-history baselines, probability quality and label-maturity/reporting latency.'
