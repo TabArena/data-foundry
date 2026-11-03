@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -271,6 +272,85 @@ def test_clean_room_on_airfoil(clean_room, tmp_path):
     assert "https://doi.org/10.24432/C5VW2C" in task
     for note in ("wind tunnel", "wind-tunnel", "engineer", "airfoil_self_noise"):  # task summary, comments, name
         assert note not in task.lower()
+
+
+def test_participant_markdown_adds_the_prediction_point_and_metric(clean_room):
+    """The kit's task.md: the clean room's facts, the prediction point, the metric, the groups, the files."""
+    data = _probe_input(clean_room, "grouped_non_iid", grouping=SimpleNamespace(on="g"))
+    task = {
+        "metric": {"name": "rmse", "prediction": "value", "params": {}, "greater_is_better": False},
+        "grouping": {"prediction_unit": "row", "aggregation": None, "context": "none"},
+        "scoring_columns": [],
+    }
+    text = clean_room.participant_markdown(data, ["https://example.org/data"], task, "the policy is quoted.")
+    assert "- Prediction point: the prediction is made when the policy is quoted." in text
+    assert "- Metric: `rmse` on a `value` prediction; lower is better." in text
+    assert "The group column is not a feature." in text
+    assert "holds every row" in text
+    assert text.index("## Files") < text.index("## Source links")
+
+
+def test_participant_kit_path_is_checked(clean_room, tmp_path):
+    """The sandbox hook allows only paths with a participant_kit component, so the script refuses any other."""
+    with pytest.raises(SystemExit, match="participant_kit"):
+        clean_room.write_participant("x", tmp_path / "kit", root=tmp_path, records=tmp_path, prediction_point="now")
+
+
+def test_participant_score_aggregates_per_group(clean_room, tmp_path):
+    """score.py scores one prediction per group when the task says so, as the package's scorer does."""
+    kit = tmp_path / "participant_kit"
+    kit.mkdir()
+    frame = pd.DataFrame({"g": list("aabbcc"), "x": range(6), "y": [1.0, 1.0, 2.0, 2.0, 4.0, 4.0]})
+    frame.to_parquet(kit / "data.parquet")
+    rows = [(0, 0, "train", i) for i in (0, 1)] + [(0, 0, "test", i) for i in (2, 3, 4, 5)]
+    pd.DataFrame(rows, columns=["repeat", "fold", "side", "row"]).to_parquet(kit / "splits.parquet")
+    grouping = {"on": "g", "labels": "per_group", "time_on": None, "prediction_unit": "group", "aggregation": "mean"}
+    task = {
+        "target": "y",
+        "group_columns": ["g"],
+        "grouping": {**grouping, "context": "none"},
+        "metric": {"name": "rmse", "kind": "standard", "prediction": "value", "params": {}, "inputs": {}},
+    }
+    (kit / "task.json").write_text(json.dumps(task))
+    (kit / "metrics.py").write_text(clean_room.METRICS_PY.read_text())
+    (kit / "score.py").write_text(clean_room.SCORE_PY)
+    spec = importlib.util.spec_from_file_location("kit_score", kit / "score.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert module.features() == ["x"]
+    assert module.splits() == [("r0f0", [0, 1], [2, 3, 4, 5])]
+    # Group b: mean 3.0 against 2.0; group c: mean 4.0 against 4.0. Two groups, not four rows.
+    value = module.score(np.array([2.0, 2.0, 4.0, 4.0]), np.array([2.0, 4.0, 3.0, 5.0]), [2, 3, 4, 5])
+    assert value == pytest.approx(np.sqrt((1.0**2 + 0.0**2) / 2))
+
+
+HEPATITIS_RAW = REPO / "local-data-warehouse" / "hepatitis_c_prediction" / "hcvdat0.csv"
+
+
+@pytest.mark.skipif(not HEPATITIS_RAW.exists(), reason="the raw files of hepatitis_c_prediction are not downloaded")
+def test_participant_kit_on_hepatitis(clean_room, tmp_path):
+    """The real definition: every row, the shipped splits, a metric without our notes, and a score.py that runs."""
+    out = tmp_path / "participant_kit"
+    clean_room.write_participant(
+        "hepatitis_c_prediction",
+        out,
+        root=REPO / "datasets" / "_dev" / "tabarena-v0pt2",
+        records=REPO / "curation" / "records",
+        prediction_point="a laboratory physician reads a blood panel",
+    )
+    names = sorted(p.name for p in out.iterdir())
+    assert names == ["data.parquet", "metrics.py", "score.py", "splits.parquet", "task.json", "task.md", "work"]
+    task = json.loads((out / "task.json").read_text())
+    assert task["metric"]["name"] == "log_loss"
+    assert "reason" not in task["metric"]
+    assert "origin" not in task["metric"]
+    splits = pd.read_parquet(out / "splits.parquet")
+    assert set(splits["side"]) == {"train", "test"}
+    assert splits["row"].max() < len(pd.read_parquet(out / "data.parquet"))
+    for note in ("donor rows", "round", "MET-2", "hepatitis_c_prediction"):  # curation comments, metric reason, name
+        assert note not in (out / "task.md").read_text()
+    run = subprocess.run([sys.executable, "-I", "score.py"], cwd=out, capture_output=True, text=True, check=True)
+    assert run.stdout.startswith("r0f0: train ")
 
 
 # --------------------------------------------------------------------------- decision_register

@@ -69,7 +69,7 @@ The custom agents in `.claude/agents/` and the stage that uses them:
 |---|---|
 | Screen | `candidate-screener` (a batch of records), `reject-checker` (tries to refute each fast reject), `data-scout` (better data for new candidates, or datasets for a task the curator asks for) |
 | Add | `dataset-builder` (one source unit of a batch) |
-| Add: the review panel ([review_panel.md](../../add-dataset/references/review_panel.md)) | `claim-auditor`, `column-auditor`, `split-auditor`, `domain-practitioner`, `blind-reviewer`, `precedent-checker`, then `advocate` and `critic`, then `mediator`, then `review-editor` |
+| Add: the review panel ([review_panel.md](../../add-dataset/references/review_panel.md)) | `claim-auditor`, `column-auditor`, `split-auditor`, `domain-practitioner`, `blind-reviewer`, `task-gamer`, `precedent-checker`, then `advocate` and `critic`, then `mediator`, then `review-editor` |
 | Both review skills | `precedent-checker`, on the curator's decisions before they are applied |
 
 Subagents do not start subagents: the main session runs every panel. Limits of the machine: [agent_runs.md](agent_runs.md).

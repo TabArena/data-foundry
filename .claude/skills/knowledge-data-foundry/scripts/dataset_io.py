@@ -112,9 +112,9 @@ def _with_encoded_special_features(
     return df, names
 
 
-def from_definition(ds: AbstractCuratedDataset, *, encode_special: bool = True) -> ProbeInput:
-    """The definition's frame and split plan, rebuilt from the raw files (no container)."""
-    plan = ds.make_splits()
+def from_definition(ds: AbstractCuratedDataset, plan: Any = None, *, encode_special: bool = True) -> ProbeInput:
+    """The definition's frame and split plan, rebuilt from the raw files (no container); ``plan``: one already made."""
+    plan = plan if plan is not None else ds.make_splits()
     task = ds.task_metadata_for(plan.df)
     df, scoring = _without_scoring_columns(plan.df, task)
     df, special = _with_encoded_special_features(df, task, encode=encode_special)

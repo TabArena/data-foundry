@@ -109,6 +109,7 @@ one side (definitions in [`.claude/agents/`](../agents/)):
 | split auditor | whether the train/test split mirrors how the model would be used |
 | domain practitioner | the task through the eyes of the person who would use it: is it real? |
 | blind reviewer | the data and its source only, without any of our notes or rules: an outside view |
+| task gamer | plays a participant out to win, with only the data, the splits and the metric: every way to beat an honest model with information a deployed model would not have |
 | precedent checker | how similar datasets were decided before, and whether this one is consistent |
 | advocate and critic | argue for and against shipping, from the evidence above, then answer each other once |
 | mediator | settles what the rules settle, and hands you the calls that are yours |
