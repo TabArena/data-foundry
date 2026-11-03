@@ -162,8 +162,10 @@ and the editor) for a re-check after a small change. Say which tier ran.
    `dataset check` and the probes it touches.
 2. Write `REVIEW.md` ([review file format](../review-added-datasets/references/review_file_format.md)): the outcome as a
    judgment record ([principles.md](../knowledge-curation/references/principles.md)), the main points, the record fields
-   that disagree with the definition, the issues in rank order (validity first, Must first), each with the rule ID,
-   the evidence and the decision needed ([writing.md](../knowledge-curation/references/writing.md)), and the
+   that disagree with the definition, the issues in rank order (validity first, Must first), each in the issue shape
+   of [writing.md](../knowledge-curation/references/writing.md): bullets for the problem, the effect, the experiments
+   and the consistency with other datasets, a table of the options with pros and cons, the recommendation and the
+   decision, the rules in footnotes and what Claude needs to apply it in `**Notes for the AI:**`; and the
    `**Review panel:**` block with each agent's full report.
 3. The `review-editor` agent reads the draft as the curator would; apply its fixes.
 4. Add a dated CHANGELOG entry for the new folder, and an `**Assessment (AI, <date>):**` line in the record. Never
