@@ -1,6 +1,6 @@
 ---
 name: add-dataset
-description: "Add a dataset to the TabArena v0.2 working copy and attack it before the curator sees it: builds the v2 folder (one dataset.py class and a generated README.md) from the curation record and the source, loops on dataset check and the leak, task and group probes until clean, runs the verification checklist, then a review panel of agents (claim auditor, column and split auditors, domain practitioner, a blind reviewer without our notes, precedent checker, an advocate and a critic, a mediator, an editor), and leaves the open questions, ranked, in the folder's REVIEW.md. Use for an accepted record (`Yes`), for a batch on a dashboard filter, or to re-check an existing folder (\"is X ready / leaky / correct?\"). The curator reviews the result with /review-added-datasets. v2 only; never builds a container."
+description: "Add a dataset to the TabArena v0.2 working copy and attack it before the curator sees it: builds the v2 folder (one dataset.py class and a generated README.md) from the curation record and the source, loops on dataset check and the leak, task and group probes until clean, runs the verification checklist, then a review panel of agents (claim auditor, column and split auditors, domain practitioner, a blind reviewer without our notes, a task gamer that tries to beat the task as a participant would, precedent checker, an advocate and a critic, a mediator, an editor), and leaves the open questions, ranked, in the folder's REVIEW.md. Use for an accepted record (`Yes`), for a batch on a dashboard filter, or to re-check an existing folder (\"is X ready / leaky / correct?\"). The curator reviews the result with /review-added-datasets. v2 only; never builds a container."
 argument-hint: "<unique_name | dashboard filter> [--panel full|focused]"
 user-invocable: true
 ---
@@ -161,8 +161,10 @@ and the editor) for a re-check after a small change. Say which tier ran.
    `dataset check` and the probes it touches.
 2. Write `REVIEW.md` ([review file format](../review-added-datasets/references/review_file_format.md)): the outcome as a
    judgment record ([principles.md](../knowledge-curation/references/principles.md)), the main points, the record fields
-   that disagree with the definition, the issues in rank order (validity first, Must first), each with the rule ID,
-   the evidence and the decision needed ([writing.md](../knowledge-curation/references/writing.md)), and the
+   that disagree with the definition, the issues in rank order (validity first, Must first), each in the issue shape
+   of [writing.md](../knowledge-curation/references/writing.md): bullets for the problem, the effect, the experiments
+   and the consistency with other datasets, a table of the options with pros and cons, the recommendation and the
+   decision, the rules in footnotes and what Claude needs to apply it in `**Notes for the AI:**`; and the
    `**Review panel:**` block with each agent's full report.
 3. The `review-editor` agent reads the draft as the curator would; apply its fixes.
 4. Add a dated CHANGELOG entry for the new folder, and an `**Assessment (AI, <date>):**` line in the record. Never

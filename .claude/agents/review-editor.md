@@ -15,8 +15,12 @@ Check:
 
 * The outcome is a judgment record: verdict, then validity, value, quality, the weighed factors, what is left for the
   curator.
-* Every issue states the problem in plain words (terms defined), its effect on the real task, the evidence, what was
-  implemented and the alternative, and the decision needed. One decision per issue.
+* Every issue states the problem in plain words (terms defined), its effect on the real task, the evidence, and the
+  decision needed, in the issue shape of `writing.md`: bullets with bold leads (no paragraph of prose), an options
+  table with what each option does and its pros and cons (the implemented row marked), a recommendation ending in
+  `**Decision:**`. One decision per issue.
+* The bullets read without the rules: every rule ID, rule wording and quoted earlier call is in a footnote, and
+  what only Claude needs (code, record text, exception wording) is in `**Notes for the AI:**`.
 * The issues are in rank order: validity first, Must first, then by effect.
 * Every sentence of the outcome and the panel summary is backed by an issue or a panel report.
 * Nothing is raised that would change no decision; nothing the curator must decide is buried in a panel report.
