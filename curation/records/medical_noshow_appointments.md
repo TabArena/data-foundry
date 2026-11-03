@@ -35,6 +35,8 @@ It seems to be used a lot and has rather reasonable data. Unclear source still, 
 
 This might be a better version of the data with a source and real: https://data.mendeley.com/datasets/wm6w2fvkfj/1?"
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `medical_appointments_no_show_itajai` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Kaggle

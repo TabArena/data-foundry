@@ -16,6 +16,8 @@ tags:
 collections:
 - AutoML_MM
 - TabSTAR
+- MulTaBench
+- STRABLE
 original_source: Other
 year: '2021'
 domain: business & marketing
@@ -77,6 +79,16 @@ CC (2026-10-21, Lennart): We want to keep real repeats, as houses can be sold se
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source rmse — RMSLE, the competition's evaluation metric, as RMSE on log1p(Sold Price).
 
 **Assessment (AI, 2026-10-21):** metric now `Metric.source("rmsle", target_transform="log1p")` instead of rmse on the log1p target: the competition's RMSLE on the sale price, computed after the inverse of the shipped log1p (MET-3); the score is the same number as before. Needs a rebuild to reach the container.
+
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): ordinal scales shipped as numbers, left as numbers for the curator's review: `Elementary School Score`, `Middle School Score`, `High School Score`.
+
+CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 3 ordinal scales shipped as numbers are ordered categories (point 3).
+
+**Assessment (AI, 2026-11-01):** the benchmark MulTaBench (https://arxiv.org/abs/2605.10616) carries this record's data as "California Prices": Extended release (admitted on Joint Signal only), not one of the 40 benchmark datasets. Target binned by MulTaBench, not the source's own target. Text-tabular (OpenML 46669); the record ships the price as a regression. Tagged MulTaBench on 2026-11-01.
+
+**Assessment (AI, 2026-11-01):** the benchmark STRABLE (https://arxiv.org/abs/2605.12292) carries this record's data as "California Housing": Mismatch: the paper describes the 1990 census California Housing (camnugent link), but the raw file is TextTabBench's cf_house_train.csv (Kaggle 'California House Prices' competition, 2020 Zillow listings) and the target is 'Total interior livable area', not the sale price. Records: california_house_prices_2020 (Yes, target Sold Price) and calif_houses (No, Duplicate of it, TexTabBench tag). Tagged STRABLE on 2026-11-01.
+
+CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 3 scores are numbers (Elementary School Score, Middle School Score, High School Score).
 
 ## Reference
 

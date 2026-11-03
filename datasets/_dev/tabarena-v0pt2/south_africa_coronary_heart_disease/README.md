@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: south_africa_coronary_heart_disease
 container_format: 2
-checksum: v2:1d26b23249c83eb16cf4aa663e250c1a2f7d916804f0fba0d0af69ad3e03226a
+checksum: v2:fce21343e9f191b74890f6e3046cad68ecef86aa16adbbc377046febeb66d21e
 build:
   uuid: 01a111fc-ed62-786a-ac41-9c1deb571902
   checksum: v2:7f6c2ba73134b6cf44a868d9e6fe1d685a8ad2e86ae07edaec5ed3716f59c7c9
@@ -68,7 +68,7 @@ decisions: []
 
 Binary classification of `chd`, scored with `roc_auc` on IID splits. 462 rows and 9 features. Source: Other (2001).
 
-Built as `01a111fc-ed62-786a-ac41-9c1deb571902` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1d26b23249c83eb16cf4aa663e250c1a2f7d916804f0fba0d0af69ad3e03226a`, so the build is stale. See [Build](#build).
+Built as `01a111fc-ed62-786a-ac41-9c1deb571902` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:fce21343e9f191b74890f6e3046cad68ecef86aa16adbbc377046febeb66d21e`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -175,11 +175,11 @@ The first 5 of 462 rows of the final frame (random rows: the frame is shuffled).
 
 | chd | sbp | tobacco | ldl | adiposity | famhist | typea | obesity | alcohol | age |
 |---|---|---|---|---|---|---|---|---|---|
-| 1 | 140 | 8.6 | 3.9 | 32.16 | Present | 52 | 28.51 | 11.11 | 64 |
-| 0 | 134 | 12.5 | 2.73 | 39.35 | Absent | 48 | 35.58 | 0 | 48 |
-| 0 | 126 | 1.8 | 6.22 | 19.71 | Absent | 65 | 24.81 | 0.69 | 31 |
-| 0 | 109 | 1.2 | 6.14 | 29.26 | Absent | 47 | 24.72 | 10.46 | 40 |
-| 0 | 134 | 2 | 3.66 | 14.69 | Absent | 52 | 21.03 | 2.06 | 37 |
+| No | 134 | 3 | 3.17 | 17.91 | Absent | 35 | 26.37 | 15.12 | 27 |
+| No | 214 | 0.4 | 5.98 | 31.72 | Absent | 64 | 28.45 | 0 | 58 |
+| Yes | 112 | 0.6 | 5.28 | 25.71 | Absent | 55 | 27.02 | 27.77 | 38 |
+| No | 120 | 5.5 | 3.51 | 23.23 | Absent | 46 | 22.4 | 90.31 | 43 |
+| No | 136 | 6.6 | 6.08 | 32.74 | Absent | 64 | 33.28 | 2.72 | 49 |
 
 ## Curation notes
 
@@ -187,6 +187,8 @@ We start with the data from Kaggle.
 
 - We remove the row id column.
 - The data is a retrospective sample of males from the CORIS study (cases with coronary heart disease and controls). Hastie, Tibshirani & Friedman (The Elements of Statistical Learning, 2nd ed., Sec. 5.2.2, p. 148) note: "These measurements were made sometime after the patients suffered a heart attack, and in many cases they had already benefited from a healthier diet and lifestyle". Some risk factors of the cases (e.g. sbp, obesity) were therefore measured after the outcome. This weakens their signal rather than leaking the target (dropping sbp and obesity changes ROC AUC from 0.774 to 0.778), so we keep all features.
+- The target (2026-11-01, CLEAN-25): `chd` ships its classes as words (1 is the event). Binary: "Yes" is the
+  event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
@@ -274,22 +276,22 @@ Default splits.
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | famhist | category | 0 | 0 | 2 | Absent, Present |
-| chd | category | 0 | 0 | 2 | 0, 1 |
-| tobacco | float64 | 0 | 0 | 214 | 0.0, 6.0, 3.0, 0.4, 4.0, 4.5, 4.2, 1.5, 2.0, 12.0 |
-| ldl | float64 | 0 | 0 | 329 | 3.57, 4.37, 3.95, 4.16, 3.58, 3.3, 2.4, 3.98, 6.06, 4.9 |
-| adiposity | float64 | 0 | 0 | 408 | 29.3, 30.79, 27.55, 21.1, 28.61, 23.88, 32.03, 16.38, 16.64, 17.2 |
-| obesity | float64 | 0 | 0 | 400 | 24.86, 26.09, 27.29, 24.7, 22.01, 22.59, 25.99, 28.4, 24.98, 22.51 |
-| alcohol | float64 | 0 | 0 | 249 | 0.0, 2.06, 0.51, 8.23, 11.11, 14.4, 8.33, 43.2, 3.81, 1.03 |
-| sbp | int64 | 0 | 0 | 62 | 134, 136, 128, 132, 124, 118, 126, 130, 138, 122 |
-| typea | int64 | 0 | 0 | 54 | 52, 57, 50, 54, 49, 56, 60, 61, 55, 47 |
-| age | int64 | 0 | 0 | 49 | 16, 17, 58, 55, 61, 59, 60, 49, 53, 45 |
+| chd | category | 0 | 0 | 2 | No, Yes |
+| tobacco | float64 | 0 | 0 | 214 | 0.0, 6.0, 3.0, 0.4, 4.0, 4.2, 4.5, 1.5, 0.6, 1.2 |
+| ldl | float64 | 0 | 0 | 329 | 3.95, 3.57, 4.37, 3.3, 3.58, 4.16, 2.4, 4.99, 2.44, 6.06 |
+| adiposity | float64 | 0 | 0 | 408 | 30.79, 27.55, 29.3, 21.1, 25.73, 16.64, 12.13, 34.34, 35.36, 20.47 |
+| obesity | float64 | 0 | 0 | 400 | 26.09, 24.86, 22.51, 22.01, 22.59, 21.94, 25.99, 24.98, 27.29, 28.4 |
+| alcohol | float64 | 0 | 0 | 249 | 0.0, 2.06, 0.51, 11.11, 8.23, 43.2, 14.4, 8.33, 1.03, 12.86 |
+| sbp | int64 | 0 | 0 | 62 | 134, 136, 128, 132, 118, 124, 126, 130, 138, 122 |
+| typea | int64 | 0 | 0 | 54 | 52, 57, 54, 50, 49, 60, 56, 61, 55, 47 |
+| age | int64 | 0 | 0 | 49 | 16, 17, 58, 55, 59, 61, 60, 49, 53, 45 |
 
 ### Target distribution
 
 | chd | count | pct |
 |---|---|---|
-| 0 | 302 | 65.37 |
-| 1 | 160 | 34.63 |
+| No | 302 | 65.37 |
+| Yes | 160 | 34.63 |
 
 ### Numeric features
 
@@ -308,8 +310,8 @@ Default splits.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| chd | 1 | 0 | 302 | 65.37 |
-| chd | 2 | 1 | 160 | 34.63 |
+| chd | 1 | No | 302 | 65.37 |
+| chd | 2 | Yes | 160 | 34.63 |
 | famhist | 1 | Absent | 270 | 58.44 |
 | famhist | 2 | Present | 192 | 41.56 |
 
@@ -324,4 +326,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:1d26b23249c83eb16cf4aa663e250c1a2f7d916804f0fba0d0af69ad3e03226a` |
+| stale | yes: the definition now gives checksum `v2:fce21343e9f191b74890f6e3046cad68ecef86aa16adbbc377046febeb66d21e` |

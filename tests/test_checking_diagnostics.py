@@ -304,7 +304,9 @@ def test_time_key_that_is_scoring_only_does_not_become_a_predictor(origin):
     )
     splits = {0: {0: ([0], [1])}}
     if origin == "definition":
-        ds = SimpleNamespace(make_splits=lambda: SimpleNamespace(df=frame, splits=splits), task_metadata=task)
+        ds = SimpleNamespace(
+            make_splits=lambda: SimpleNamespace(df=frame, splits=splits), task_metadata_for=lambda _df: task
+        )
         data = cli.dataset_io.from_definition(ds)
     else:
         container = SimpleNamespace(

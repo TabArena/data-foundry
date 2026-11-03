@@ -12,6 +12,7 @@ tags:
 - Free Text (Sentences)
 collections:
 - TexTabBench
+- STRABLE
 original_source: Kaggle
 year: '2021'
 domain: business & marketing

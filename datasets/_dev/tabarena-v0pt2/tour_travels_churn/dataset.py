@@ -5,7 +5,13 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "AnnualIncomeClass": ["Low Income", "Middle Income", "High Income"],
+}
 
 
 class TourTravelsChurn(AbstractCuratedDataset):
@@ -56,6 +62,10 @@ class TourTravelsChurn(AbstractCuratedDataset):
 
         - The split is forced (ForcedIIDFromTemporal, SPLIT-8): the company would train on customers whose churn is known by an earlier date and score its current ones, but the file is one undated snapshot. A dated window would test a model on a later season's customers, whose bookings and services may differ; the cost cannot be measured here.
         - Source (PROV-2 as amended, Lennart 2026-10-21): the first upload is a bare Kaggle upload that names no origin. It is kept for now, case by case, because the data looks sound (the generated-data probe raises no flag: no rule leaves, 71% of the 21 column pairs dependent, no uniform column, 2026-10-21) and the upload is a source to point to; the risk is taken knowingly ("if the data looks good enough even without a good source but there is a source, we want to keep it for now and risk it"). The gap is in the approximate fit.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+        - The target (2026-11-01, CLEAN-25): `Target` ships its classes as words (1 is the event). Binary: "Yes" is the
+          event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -69,8 +79,15 @@ class TourTravelsChurn(AbstractCuratedDataset):
         df = pd.read_csv(raw_dir / "Customertravel.csv")
         return df
 
+    def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
+        df = raw
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
+        return df
+
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "FrequentFlyer",
                 "AnnualIncomeClass",

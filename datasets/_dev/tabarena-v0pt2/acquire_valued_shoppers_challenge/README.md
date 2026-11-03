@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: acquire_valued_shoppers_challenge
 container_format: 2
-checksum: v2:cf9fa9b89682c83f472f09c5e922142523b0cae7e02c805862b1723abc9a4cb2
+checksum: v2:3f944ee3e46d3f386a66ae9555d154d22cd973009ff5565b46767c33fa1e3d6f
 build:
   uuid: 01a111fd-7588-73e4-bf55-26fb6336c1f4
   checksum: v2:9dc30949c1f564c5e25257b74de5c366d1b95c4e22542a831003512e79ab64cd
@@ -73,7 +73,7 @@ decisions: []
 
 Binary classification of `target`, scored with `roc_auc` on temporal splits by `offerdate`. 160,057 rows and 111 features. Source: Kaggle (2014).
 
-Built as `01a111fd-7588-73e4-bf55-26fb6336c1f4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:cf9fa9b89682c83f472f09c5e922142523b0cae7e02c805862b1723abc9a4cb2`, so the build is stale. See [Build](#build).
+Built as `01a111fd-7588-73e4-bf55-26fb6336c1f4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3f944ee3e46d3f386a66ae9555d154d22cd973009ff5565b46767c33fa1e3d6f`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -184,17 +184,19 @@ The first 5 of 160,057 rows of the final frame (the oldest rows: the frame is so
 
 | target | total_spend | offervalue | offerdate | day_of_week | day_of_month | day_of_year | has_bought_company | has_bought_company_q | has_bought_company_a | has_bought_category | has_bought_category_q |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 2033.16 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 0 | 0 | 0 | 0 | 0 |
-| 0 | 321.51 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 0 | 0 | 0 | 2 | 2 |
-| 1 | 600.07 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 0 | 0 | 0 | 1 | 1 |
-| 0 | 3323.46 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 0 | 0 | 0 | 1 | 1 |
-| 1 | 749.88 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 0 | 0 | 0 | 2 | 2 |
+| No | 1849.54 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 0 | 0 | 0 | 4 | 4 |
+| No | 1013.41 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 0 | 0 | 0 | 1 | 1 |
+| No | 372.86 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 0 | 0 | 0 | 1 | 1 |
+| Yes | 349.81 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 0 | 0 | 0 | 1 | 1 |
+| Yes | 2103.07 | 1 | 2013-03-01 00:00:00 | 5 | 1 | 60 | 0 | 0 | 0 | 1 | 1 |
 
 ## Curation notes
 
 We follow the preprocessing from TabRed https://github.com/yandex-research/tabred/tree/main/preprocessing#ecom-offers-acquire-valued-shoppers-by-dmdave (which follows a top solution https://github.com/MLWave/kaggle_acquire-valued-shoppers-challenge).
 
 - The preprocessing by TabRed collapses customer groups into single entries per customer. So we go from grouped-temporal data to only temporal data. Future work could look into a version without preprocessing.
+- The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
+  event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
@@ -226,7 +228,7 @@ Expanding-window temporal splits: 5 test window(s) of 5 days, walking back from 
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| target | category | 0 | 0 | 2 | 0, 1 |
+| target | category | 0 | 0 | 2 | No, Yes |
 | never_bought_company | category | 0 | 0 | 2 | 0.0, 1.0 |
 | never_bought_category | category | 0 | 0 | 2 | 0.0, 1.0 |
 | never_bought_brand | category | 0 | 0 | 2 | 1.0, 0.0 |
@@ -234,7 +236,7 @@ Expanding-window temporal splits: 5 test window(s) of 5 days, walking back from 
 | has_bought_brand_category | category | 0 | 0 | 2 | 0.0, 1.0 |
 | has_bought_brand_company | category | 0 | 0 | 2 | 0.0, 1.0 |
 | offerdate | datetime64\[ns\] | 0 | 0 | 56 | 2013-03-25 00:00:00, 2013-03-26 00:00:00, 2013-04-24 00:00:00, 2013-03-27 00:00… |
-| total_spend | float64 | 0 | 0 | 147140 | 712.46, 6058.08, 3421.26, 1372.02, 1571.94, 2908.68, 1191.5, 5121.55, 1817.89, … |
+| total_spend | float64 | 0 | 0 | 147140 | 712.46, 3164.14, 2974.93, 4347.78, 1191.5, 3755.49, 2919.63, 936.96, 935.33, 51… |
 | offervalue | float64 | 0 | 0 | 6 | 1.0, 0.75, 2.0, 1.5, 1.25, 3.0 |
 | has_bought_company_q | float64 | 0 | 0 | 284 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | has_bought_company_a | float64 | 0 | 0 | 14128 | 0.0, 2.0, 2.99, 1.0, 3.99, 3.0, 4.0, 4.99, 5.0, 1.99 |
@@ -245,10 +247,10 @@ Expanding-window temporal splits: 5 test window(s) of 5 days, walking back from 
 | has_bought_company_q_3 | float64 | 0 | 0 | 25 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 8.0, 6.0, 7.0, 10.0 |
 | has_bought_company_a_3 | float64 | 0 | 0 | 327 | 0.0, 3.99, 4.99, 3.0, 2.99, 3.49, 4.0, 1.0, 4.49, 5.99 |
 | has_bought_category_q_3 | float64 | 0 | 0 | 25 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0, 8.0 |
-| has_bought_category_a_3 | float64 | 0 | 0 | 369 | 0.0, 2.99, 4.99, 3.99, 2.5, 5.99, 3.49, 5.0, 3.69, 1.99 |
+| has_bought_category_a_3 | float64 | 0 | 0 | 369 | 0.0, 2.99, 4.99, 3.99, 2.5, 3.49, 5.99, 5.0, 3.69, 1.99 |
 | has_bought_brand_q_3 | float64 | 0 | 0 | 23 | 0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 5.0, 7.0, 8.0, 10.0 |
-| has_bought_brand_a_3 | float64 | 0 | 0 | 279 | 0.0, 3.99, 2.99, 3.49, 5.0, 4.99, 3.0, 2.5, 4.29, 5.99 |
-| has_bought_company_q_7 | float64 | 0 | 0 | 39 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 10.0, 8.0 |
+| has_bought_brand_a_3 | float64 | 0 | 0 | 279 | 0.0, 3.99, 2.99, 3.49, 5.0, 4.99, 3.0, 2.5, 4.29, 4.49 |
+| has_bought_company_q_7 | float64 | 0 | 0 | 39 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0 |
 | has_bought_company_a_7 | float64 | 0 | 0 | 855 | 0.0, 3.99, 4.99, 2.99, 3.0, 3.49, 2.0, 4.0, 1.99, 1.0 |
 | has_bought_category_q_7 | float64 | 0 | 0 | 41 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 10.0 |
 | has_bought_category_a_7 | float64 | 0 | 0 | 890 | 0.0, 4.99, 2.99, 3.99, 3.69, 3.49, 2.5, 5.99, 2.79, 3.0 |
@@ -295,8 +297,8 @@ Expanding-window temporal splits: 5 test window(s) of 5 days, walking back from 
 
 | target | count | pct |
 |---|---|---|
-| 0 | 116619 | 72.86 |
-| 1 | 43438 | 27.14 |
+| No | 116619 | 72.86 |
+| Yes | 43438 | 27.14 |
 
 ### Numeric features
 
@@ -394,8 +396,8 @@ Expanding-window temporal splits: 5 test window(s) of 5 days, walking back from 
 | offerdate | 3 | 2013-04-24 00:00:00 | 9044 | 5.65 |
 | offerdate | 4 | 2013-03-27 00:00:00 | 7896 | 4.93 |
 | offerdate | 5 | 2013-04-23 00:00:00 | 7554 | 4.72 |
-| target | 1 | 0 | 116619 | 72.86 |
-| target | 2 | 1 | 43438 | 27.14 |
+| target | 1 | No | 116619 | 72.86 |
+| target | 2 | Yes | 43438 | 27.14 |
 
 </details>
 
@@ -410,4 +412,4 @@ Expanding-window temporal splits: 5 test window(s) of 5 days, walking back from 
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:cf9fa9b89682c83f472f09c5e922142523b0cae7e02c805862b1723abc9a4cb2` |
+| stale | yes: the definition now gives checksum `v2:3f944ee3e46d3f386a66ae9555d154d22cd973009ff5565b46767c33fa1e3d6f` |

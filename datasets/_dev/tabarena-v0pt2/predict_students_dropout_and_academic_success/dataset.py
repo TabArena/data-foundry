@@ -7,6 +7,9 @@ from pathlib import Path
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
 
+# Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
+SCORES = ["Application_order"]
+
 
 class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -66,6 +69,12 @@ class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
         - We renamed the target variable and fixed some typos in the feature names.
         - We reversed the ordinal encoding of all categorical features.
         - We removed whitespaces and special characters from the feature names.
+        - Partial order, left unordered (2026-11-01, CLEAN-14): `Previous_qualification`, `Mothers_qualification` and
+          `Fathers_qualification` lie on the Portuguese education ladder, but the pre- and post-Bologna degrees are ties
+          and the old-system courses sit beside the year levels, so there is no single line.
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 1 scores with no words per level are
+          numbers (`SCORES`): `Application_order`.
     """
 
     # Task
@@ -345,6 +354,8 @@ class PredictStudentsDropoutAndAcademicSuccess(AbstractCuratedDataset):
             for c in data.columns
         ]
         df = data
+        # scores with no words per level are numbers (CLEAN-14)
+        df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

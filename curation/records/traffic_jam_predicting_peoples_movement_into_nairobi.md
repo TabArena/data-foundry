@@ -4,7 +4,7 @@ name: traffic-jam-predicting-peoples-movement-into-nairobi
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> 2nd Tier
-priority: 2
+priority: 1
 decision_markers:
 - TBD
 tags:
@@ -40,3 +40,5 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (transport demand, temporal regime not thin), use case + (operator and decision named by the source), source + (company data, variables documented on the competition page), shape 0 (some thousands of rides but five features that only index the series), risk - (forecasting-like, SEL-10 / TP-10).
 
 A well-known Zindi 'Traffic Jam: Predicting People's Movement into Nairobi' challenge, where the task is to predict the number of seats/tickets sold for bus rides into Nairobi from route and time features. This is a concrete tabular regression with a clear count target, plausibly fitting the benchmark scope, with a temporal structure (ride dates) suggesting a temporal split. A human should confirm the exact target (seats sold per ride), the modality is tabular, dataset size, and the correct split regime. Provisionally a plausible Yes.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `antt_interstate_bus_ticket_sales` (TBD -> 2nd Tier, priority 1). Each is screened in its own record; this record's verdict stays the curator's.

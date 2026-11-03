@@ -54,6 +54,8 @@ CC (2026-10-26, Lennart): verdict ship.
 
 CC (2026-10-27, Lennart): marker Anonymized, from the AI review of PR #17: the definition carries the Anonymized data tag; the 21 features are encrypted, regularized numbers in [0, 1], and what they measure, their timing and the target's horizon are hidden.
 
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
 ## Reference
 
 Kaggle

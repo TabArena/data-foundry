@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: cardiotocography
 container_format: 2
-checksum: v2:c5a0b9f3a4ef42d4768e2f3122b753f6ccb71e929904b524c0b2e68ff29d288f
+checksum: v2:9217c249835d9bf5d4fcd84b4be5c04da9746756371a7c141da23d6ee114dabe
 build:
   uuid: 01a111fc-7d1e-7b12-8cc7-298d2fc12820
   checksum: v2:732dddb0e814a5736c664898ca5254d54ea242cee222a20e2e5a126a2636a504
@@ -22,8 +22,8 @@ data:
   n_rows: 2126
   n_features: 22
   dtypes:
-    category: 2
-    float64: 22
+    category: 3
+    float64: 21
   n_test_dataset_rows: null
 task:
   target: NSP
@@ -54,11 +54,11 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 1285
-    max: 1520
+    min: 1229
+    max: 1521
   n_test:
-    min: 606
-    max: 841
+    min: 605
+    max: 897
 bundle_checks:
   ok: true
   errors: []
@@ -77,7 +77,7 @@ decisions: []
 
 Multiclass classification of `NSP`, scored with `log_loss` on grouped splits by `patient_id`. 2,126 rows and 22 features. Source: UCI (2010).
 
-Built as `01a111fc-7d1e-7b12-8cc7-298d2fc12820` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c5a0b9f3a4ef42d4768e2f3122b753f6ccb71e929904b524c0b2e68ff29d288f`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7d1e-7b12-8cc7-298d2fc12820` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9217c249835d9bf5d4fcd84b4be5c04da9746756371a7c141da23d6ee114dabe`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -154,9 +154,10 @@ Only curators run `build`, when the dataset ships.
 | reason | UCI page defines no task metric; the SisPorto 2.0 paper describes the analysis program and expert agreement, not a prediction benchmark. |
 
 <details>
-<summary>Feature types: 2 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 1 categorical, 2 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (2): `patient_id`, `NSP`
+- categorical (1): `patient_id`
+- ordinal (2): `Tendency (left asymmetric < symmetric < right asymmetric)`, `NSP (normal < suspect < pathologic)`
 - string (0): none
 - datetime (0): none
 
@@ -183,11 +184,11 @@ The first 5 of 2,126 rows of the final frame (random rows: the frame is shuffled
 
 | NSP | LB | AC | FM | UC | ASTV | MSTV | ALTV | MLTV | DL | DS | DP |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 142 | 1 | 3 | 1 | 55 | 1.3 | 10 | 15.5 | 2 | 0 | 0 |
-| 2 | 144 | 0 | 10 | 0 | 75 | 0.3 | 67 | 4.2 | 0 | 0 | 0 |
-| 1 | 136 | 0 | 0 | 4 | 51 | 0.6 | 28 | 6.2 | 0 | 0 | 0 |
-| 1 | 122 | 0 | 0 | 1 | 26 | 1.3 | 4 | 9.8 | 0 | 0 | 0 |
-| 1 | 128 | 4 | 6 | 3 | 29 | 1.6 | 0 | 7.1 | 4 | 0 | 0 |
+| normal | 128 | 5 | 11 | 5 | 26 | 2 | 0 | 8.2 | 5 | 0 | 1 |
+| normal | 126 | 5 | 0 | 4 | 27 | 1.3 | 0 | 5.6 | 0 | 0 | 0 |
+| normal | 122 | 0 | 0 | 5 | 24 | 1.5 | 0 | 10.6 | 3 | 0 | 0 |
+| normal | 120 | 5 | 0 | 11 | 50 | 1.6 | 7 | 8.1 | 2 | 0 | 0 |
+| normal | 147 | 9 | 11 | 3 | 71 | 0.7 | 0 | 9.5 | 0 | 0 | 0 |
 
 ## Curation notes
 
@@ -197,48 +198,56 @@ We use the data from UCI and the 3 class problem of predicting NSP as it is more
 - Each row is a segment (sample `b` to `e`) of one exam file, and 1,706 of the 1,774 consecutive segment pairs within a file overlap, so the rows of a file must stay together. The patient ID above the file is our guess, no source documents it: we strip the trailing number of a named file (`Aast_1` ... `Aast_14` -> `Aast`), each numbered file (`S0001027.dat`) stays alone. This gives 176 IDs for 352 files; 61 IDs merge 2 to 14 files and 10 span exam dates 50 to 1,139 days apart, so a stem is likely initials and may hold two women or two pregnancies. Merging too much only makes the split stricter; a woman under two IDs (similar stems such as `Mcslr`/`Mcslrc`, or a numbered file) would put her separate exams on both sides, but never overlapping segments.
 - The raw data has dates and the start and end index of the recording. We drop these as they are not relevant for the predictive task and would not be available for test samples.
 - We drop all other columns that represent the label.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them decoded from the source's codes
+  into its words (`CODE_LABELS`, 2026-11-01).
+- Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+  each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
+  words (`CODE_LABELS`), in the same order.
+- The target (2026-11-01, CLEAN-25): `NSP` ships its classes as words, normal < suspect < pathologic (CTG.xls,
+  sheet Description: 'NSP | Normal=1; Suspect=2; Pathologic=3').
 
 ## Splits
 
 Default splits.
 
-10 repeat(s) x 3 fold(s) with seed 4267; train 1,285 to 1,520 rows, test 606 to 841 rows.
+10 repeat(s) x 3 fold(s) with seed 4267; train 1,229 to 1,521 rows, test 605 to 897 rows.
 
 <details>
 <summary>Show all 30 splits</summary>
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 1499 | 627 |
-| 0 | 1 | 1450 | 676 |
-| 0 | 2 | 1303 | 823 |
+| 0 | 0 | 1427 | 699 |
+| 0 | 1 | 1504 | 622 |
+| 0 | 2 | 1321 | 805 |
 | 1 | 0 | 1432 | 694 |
 | 1 | 1 | 1370 | 756 |
 | 1 | 2 | 1450 | 676 |
-| 2 | 0 | 1445 | 681 |
-| 2 | 1 | 1433 | 693 |
-| 2 | 2 | 1374 | 752 |
-| 3 | 0 | 1447 | 679 |
-| 3 | 1 | 1520 | 606 |
-| 3 | 2 | 1285 | 841 |
-| 4 | 0 | 1480 | 646 |
-| 4 | 1 | 1309 | 817 |
-| 4 | 2 | 1463 | 663 |
-| 5 | 0 | 1438 | 688 |
-| 5 | 1 | 1497 | 629 |
-| 5 | 2 | 1317 | 809 |
-| 6 | 0 | 1439 | 687 |
-| 6 | 1 | 1498 | 628 |
-| 6 | 2 | 1315 | 811 |
-| 7 | 0 | 1490 | 636 |
-| 7 | 1 | 1445 | 681 |
+| 2 | 0 | 1427 | 699 |
+| 2 | 1 | 1472 | 654 |
+| 2 | 2 | 1353 | 773 |
+| 3 | 0 | 1426 | 700 |
+| 3 | 1 | 1497 | 629 |
+| 3 | 2 | 1329 | 797 |
+| 4 | 0 | 1521 | 605 |
+| 4 | 1 | 1229 | 897 |
+| 4 | 2 | 1502 | 624 |
+| 5 | 0 | 1464 | 662 |
+| 5 | 1 | 1476 | 650 |
+| 5 | 2 | 1312 | 814 |
+| 6 | 0 | 1392 | 734 |
+| 6 | 1 | 1439 | 687 |
+| 6 | 2 | 1421 | 705 |
+| 7 | 0 | 1497 | 629 |
+| 7 | 1 | 1438 | 688 |
 | 7 | 2 | 1317 | 809 |
-| 8 | 0 | 1414 | 712 |
-| 8 | 1 | 1420 | 706 |
-| 8 | 2 | 1418 | 708 |
-| 9 | 0 | 1404 | 722 |
-| 9 | 1 | 1486 | 640 |
-| 9 | 2 | 1362 | 764 |
+| 8 | 0 | 1406 | 720 |
+| 8 | 1 | 1412 | 714 |
+| 8 | 2 | 1434 | 692 |
+| 9 | 0 | 1424 | 702 |
+| 9 | 1 | 1476 | 650 |
+| 9 | 2 | 1352 | 774 |
 
 </details>
 
@@ -261,7 +270,7 @@ One group is a patient, as far as the file names identify one; its rows are segm
 | largest group | 2.5% of the rows |
 | test groups per fold | 56 to 62 |
 | groups of two or more rows with a single label | 62.1% |
-| nearest neighbour in the same group | 66.6% of the rows (chance: 0.8%) |
+| nearest neighbour in the same group | 68.0% of the rows (chance: 0.8%) |
 | label variance explained by the group | 0.50 (shuffled groups: 0.08) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
@@ -283,30 +292,30 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| NSP | category | 0 | 0 | 3 | 1.0, 2.0, 3.0 |
+| Tendency | category | 0 | 0 | 3 | symmetric, right asymmetric, left asymmetric |
+| NSP | category | 0 | 0 | 3 | normal, suspect, pathologic |
 | patient_id | category | 0 | 0 | 176 | 6be4bb9797f6, 8ca98716a316, a8e224f4ea68, cbb8f049c20b, 7b2d930bb3f0, fd828194e… |
-| LB | float64 | 0 | 0 | 48 | 133.0, 130.0, 122.0, 138.0, 125.0, 128.0, 120.0, 144.0, 142.0, 132.0 |
+| LB | float64 | 0 | 0 | 48 | 133.0, 130.0, 122.0, 138.0, 125.0, 128.0, 120.0, 142.0, 144.0, 132.0 |
 | AC | float64 | 0 | 0 | 22 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
-| FM | float64 | 0 | 0 | 96 | 0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 7.0, 5.0, 8.0, 10.0 |
+| FM | float64 | 0 | 0 | 96 | 0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 5.0, 7.0, 8.0, 10.0 |
 | UC | float64 | 0 | 0 | 19 | 0.0, 3.0, 4.0, 1.0, 2.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
-| ASTV | float64 | 0 | 0 | 75 | 60.0, 58.0, 65.0, 63.0, 64.0, 61.0, 51.0, 62.0, 22.0, 25.0 |
+| ASTV | float64 | 0 | 0 | 75 | 60.0, 58.0, 65.0, 64.0, 63.0, 61.0, 51.0, 62.0, 22.0, 25.0 |
 | MSTV | float64 | 0 | 0 | 57 | 0.8, 0.5, 1.3, 0.4, 0.7, 0.9, 0.6, 1.2, 1.5, 1.0 |
 | ALTV | float64 | 0 | 0 | 87 | 0.0, 1.0, 2.0, 5.0, 4.0, 3.0, 8.0, 6.0, 12.0, 10.0 |
-| MLTV | float64 | 0 | 0 | 249 | 0.0, 7.1, 6.7, 5.2, 6.5, 9.5, 8.5, 7.2, 6.8, 5.6 |
+| MLTV | float64 | 0 | 0 | 249 | 0.0, 7.1, 6.7, 6.5, 5.2, 9.5, 6.8, 7.2, 8.5, 5.6 |
 | DL | float64 | 0 | 0 | 15 | 0.0, 1.0, 2.0, 4.0, 3.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | DS | float64 | 0 | 0 | 2 | 0.0, 1.0 |
 | DP | float64 | 0 | 0 | 5 | 0.0, 1.0, 2.0, 3.0, 4.0 |
 | DR | float64 | 0 | 0 | 1 | 0.0 |
-| Width | float64 | 0 | 0 | 154 | 39.0, 102.0, 27.0, 31.0, 90.0, 98.0, 83.0, 22.0, 96.0, 42.0 |
+| Width | float64 | 0 | 0 | 154 | 39.0, 102.0, 27.0, 31.0, 98.0, 90.0, 83.0, 22.0, 96.0, 42.0 |
 | Min | float64 | 0 | 0 | 109 | 50.0, 52.0, 71.0, 120.0, 60.0, 68.0, 67.0, 103.0, 51.0, 62.0 |
-| Max | float64 | 0 | 0 | 86 | 157.0, 171.0, 158.0, 156.0, 159.0, 152.0, 178.0, 154.0, 172.0, 165.0 |
+| Max | float64 | 0 | 0 | 86 | 157.0, 171.0, 158.0, 156.0, 159.0, 152.0, 154.0, 178.0, 165.0, 153.0 |
 | Nmax | float64 | 0 | 0 | 18 | 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 0.0, 8.0, 9.0 |
-| Nzeros | float64 | 0 | 0 | 9 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 8.0, 10.0 |
-| Mode | float64 | 0 | 0 | 88 | 133.0, 136.0, 150.0, 142.0, 148.0, 144.0, 129.0, 143.0, 125.0, 126.0 |
-| Mean | float64 | 0 | 0 | 103 | 143.0, 144.0, 135.0, 141.0, 140.0, 132.0, 133.0, 145.0, 136.0, 147.0 |
-| Median | float64 | 0 | 0 | 95 | 146.0, 137.0, 142.0, 145.0, 147.0, 141.0, 151.0, 134.0, 149.0, 143.0 |
+| Nzeros | float64 | 0 | 0 | 9 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 7.0, 10.0, 8.0 |
+| Mode | float64 | 0 | 0 | 88 | 133.0, 150.0, 136.0, 142.0, 148.0, 144.0, 129.0, 143.0, 125.0, 126.0 |
+| Mean | float64 | 0 | 0 | 103 | 143.0, 144.0, 135.0, 141.0, 140.0, 132.0, 145.0, 133.0, 136.0, 147.0 |
+| Median | float64 | 0 | 0 | 95 | 146.0, 142.0, 137.0, 145.0, 147.0, 151.0, 141.0, 134.0, 149.0, 143.0 |
 | Variance | float64 | 0 | 0 | 133 | 1.0, 0.0, 2.0, 3.0, 4.0, 5.0, 8.0, 6.0, 7.0, 9.0 |
-| Tendency | float64 | 0 | 0 | 3 | 0.0, 1.0, -1.0 |
 
 </details>
 
@@ -314,14 +323,14 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | NSP | count | pct |
 |---|---|---|
-| 1 | 1655 | 77.85 |
-| 2 | 295 | 13.88 |
-| 3 | 176 | 8.28 |
+| normal | 1655 | 77.85 |
+| suspect | 295 | 13.88 |
+| pathologic | 176 | 8.28 |
 
 ### Numeric features
 
 <details>
-<summary>Show the table (22 rows)</summary>
+<summary>Show the table (21 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -346,22 +355,29 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | Mean | 2126 | 134.611 | 15.5936 | 73 | 182 |
 | Median | 2126 | 138.09 | 14.4666 | 77 | 186 |
 | Variance | 2126 | 18.8081 | 28.9776 | 0 | 269 |
-| Tendency | 2126 | 0.32032 | 0.610829 | -1 | 1 |
 
 </details>
 
 ### Categorical features
 
+<details>
+<summary>Show the table (11 rows)</summary>
+
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| NSP | 1 | 1.0 | 1655 | 77.85 |
-| NSP | 2 | 2.0 | 295 | 13.88 |
-| NSP | 3 | 3.0 | 176 | 8.28 |
+| NSP | 1 | normal | 1655 | 77.85 |
+| NSP | 2 | suspect | 295 | 13.88 |
+| NSP | 3 | pathologic | 176 | 8.28 |
+| Tendency | 1 | symmetric | 1115 | 52.45 |
+| Tendency | 2 | right asymmetric | 846 | 39.79 |
+| Tendency | 3 | left asymmetric | 165 | 7.76 |
 | patient_id | 1 | 6be4bb9797f6 | 54 | 2.54 |
 | patient_id | 2 | 8ca98716a316 | 53 | 2.49 |
 | patient_id | 3 | a8e224f4ea68 | 40 | 1.88 |
 | patient_id | 4 | cbb8f049c20b | 37 | 1.74 |
 | patient_id | 5 | 7b2d930bb3f0 | 36 | 1.69 |
+
+</details>
 
 ## Build
 
@@ -374,4 +390,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c5a0b9f3a4ef42d4768e2f3122b753f6ccb71e929904b524c0b2e68ff29d288f` |
+| stale | yes: the definition now gives checksum `v2:9217c249835d9bf5d4fcd84b4be5c04da9746756371a7c141da23d6ee114dabe` |

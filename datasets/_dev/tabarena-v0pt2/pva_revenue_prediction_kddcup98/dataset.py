@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode, set_missing
 
 DATE_COLUMNS = [
     "ADATE_2",
@@ -119,6 +119,71 @@ STRING_COLUMNS = [
 """Free-text and high-cardinality code columns, kept as strings."""
 
 
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "SOLP3": [
+        "Do Not Solicit or Mail",
+        "one solicitation per year",
+        "two solicitations per year",
+        "twelve solicitations per year",
+        "can be mailed (Default)",
+    ],  # open-ended
+    "SOLIH": [
+        "Do Not Solicit",
+        "one solicitation per year",
+        "two solicitations per year",
+        "three solicitations per year",
+        "four solicitations per year",
+        "five solicitations per year",
+        "six solicitations per year",
+        "twelve solicitations per year",
+        "can be mailed (Default)",
+    ],  # open-ended
+    "RFA_2F": [
+        "one gift in the period of recency",
+        "two gifts in the period of recency",
+        "three gifts in the period of recency",
+        "four or more gifts in the period of recency",
+    ],  # open-ended
+    "RFA_2A": ["$5.00 - $9.99", "$10.00 - $14.99", "$15.00 - $24.99", "$25.00 and above"],  # open-ended
+    "GEOCODE2": ["D", "C", "B", "A"],
+    "DOMAIN_ses": ["Lowest SES", "Below average SES", "Average SES", "Above average SES", "Highest SES"],
+    "MDMAUD_recency": ["Dormant Donor", "Inactive Donor", "Lapsed Donor", "Current Donor"],
+    "MDMAUD_frequency": [
+        "One gift in the period of recency",
+        "Two-Four gifts in the period of recency",
+        "Five+ gifts in the period of recency",
+    ],  # open-ended
+    "MDMAUD_amount": [
+        "Less than $100 (Low Dollar)",
+        "$100-499 (Core)",
+        "$500-999 (Major)",
+        "$1,000+ (Top)",
+    ],  # open-ended
+}
+
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "RFA_2F": {
+        "1": "one gift in the period of recency",
+        "2": "two gifts in the period of recency",
+        "3": "three gifts in the period of recency",
+        "4": "four or more gifts in the period of recency",
+    },
+    "RFA_2A": {"D": "$5.00 - $9.99", "E": "$10.00 - $14.99", "F": "$15.00 - $24.99", "G": "$25.00 and above"},
+    "AGEFLAG": {"Exact": "exact", "Inferred from Date of Birth Field": "inferred from date of birth field"},
+    "GENDER": {"Male": "male", "Female": "female", "Joint Account, unknown gender": "joint account, unknown gender"},
+    "PVASTATE": {"P": "PVA state"},
+}
+
+
+# Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
+SCORES = ["INCOME", "WEALTH1", "WEALTH2"]
+
+
 class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="Will a lapsed donor give to a veterans' charity in response to its renewal mailing?",
@@ -187,6 +252,22 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
         - We resolve the ordinal encoding and nan encoding for all columns.
         - Note, that data has a lot of features that contain data from a similar origin that was transformed into individual columns.
         - We do not decode the promotion codes across years but keep them as string columns as it would blow up the dimensionality too much otherwise.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 9 columns are ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 2 of them decoded from the source's codes
+          into its words (`CODE_LABELS`, 2026-11-01); 3 hold a state outside the scale, placed by the curator's rule
+          (missing when the column has no other missing value, else the lowest level; a state that is simply not on the
+          scale, such as Other, is missing); codes that mean unknown are missing (CLEAN-10).
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 2 ordered codes carry their codebook's
+          words (`CODE_LABELS`), in the same order; 3 unordered codes carry their words: `AGEFLAG`, `GENDER`,
+          `PVASTATE`; 3 scores with no words per level are numbers (`SCORES`): `INCOME`, `WEALTH1`, `WEALTH2`.
+        - `DOMAIN_ses` (2026-11-01, CLEAN-12): the dictionary codes the neighbourhood's socio-economic status in two
+          schemes, "1 = Highest SES 2 = Average SES 3 = Lowest SES (except for Urban communities, where 1 = Highest SES,
+          2 = Above average SES, 3 = Below average SES, 4 = Lowest SES.)" (cup98dic.txt). Each row is read by its own
+          scheme, on one line: lowest < below average < average < above average < highest. Before, urban codes 2 and 3
+          (6,504 and 5,270 rows) were read as average and lowest, and code 4 had a coined label.
+        - The target (2026-11-01, CLEAN-25): `TARGET_B` ships its classes as words (1 is the event). Binary: "Yes" is
+          the event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -335,12 +416,9 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
             "T": "Town",
             "R": "Rural",
         }
-        ses_map = {
-            "1": "Highest SES",
-            "2": "Average SES",
-            "3": "Lowest SES",
-            "4": "Lower Lowest SES in Urban communities",  # weird name to show it is lower as otherwise we would need to rename 2 and 3 only for urban cases, but this should be fine.
-        }
+        # the dictionary's two schemes for the second byte: urban neighbourhoods have four levels, the others three
+        ses_map = {"1": "Highest SES", "2": "Average SES", "3": "Lowest SES"}
+        urban_ses_map = {"1": "Highest SES", "2": "Above average SES", "3": "Below average SES", "4": "Lowest SES"}
         # Handle DOB (YYMM; 0 = no birth date on file)
         dob = df["DOB"].fillna(0).astype(int)
         df = df[(dob == 0) | (dob % 100 != 0)]  # drop the 2 rows with month 00; DOB 0 becomes missing below
@@ -411,7 +489,7 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
         b1 = b.str[0]
         b2 = b.str[1]
         df["DOMAIN_urbanicity"] = b1.map(urbanicity_map)
-        df["DOMAIN_ses"] = b2.map(ses_map)
+        df["DOMAIN_ses"] = b2.map(ses_map).where(b1 != "U", b2.map(urban_ses_map))
         df = df.drop(columns=["DOMAIN"])
         # Cluster fix nan
         df["CLUSTER"] = df["CLUSTER"].replace(" ", np.nan)  # Likely not Ordinal
@@ -484,10 +562,29 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
         )
         for c in STRING_COLUMNS:
             df[c] = df[c].replace(" ", np.nan)
+        # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
+        # CLEAN-14): don't know, refused, not asked, other
+        df = set_missing(
+            df,
+            {
+                "MDMAUD_recency": ["Not applicable"],
+                "MDMAUD_frequency": ["Not applicable"],
+                "MDMAUD_amount": ["Not applicable"],
+            },
+        )
+        # codes the codebook leaves without words, or a question that did not apply (CLEAN-10)
+        df = set_missing(df, {"AGEFLAG": [" "], "GENDER": ["A", "C", "Unknown"]})
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
+        # scores with no words per level are numbers (CLEAN-14)
+        df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "PVASTATE",
                 "MAILCODE",

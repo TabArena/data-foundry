@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Decision, Metric, TaskSummary, decode
 
 N_ORDER_BLOCKS = 10
 """File-order blocks for the decision table on hidden weeks (the raw file's row order)."""
@@ -71,6 +71,8 @@ class Numerai286(AbstractCuratedDataset):
         - Not OpenML 23517 (numerai28.6), although the record carries that name: OpenML's file holds 72,404 rows (36,605 / 35,798) of the same 21-feature design and shares no feature row with the Kaggle file, so it is another 2016 training sample. We use the data owner's Kaggle upload.
         - Anomaly: every feature uses one global set of 1,000 values, each used by 73-118 rows, unevenly spaced over [0, 1], plus an exact 0.0 held by one row in 17 features; Numerai's encryption quantised them. One global set means the values carry no week fingerprint. The target rate per value varies by SD 0.051-0.058 against 0.051 binomial, the excess explained by the features' own monotone signal.
         - Potential leak, kept on purpose (LEAK-30): the values are equal-frequency quantile bins fitted on a larger population that holds our test rows. The counts per value are far more even than sampling would give (variance over mean 0.29-0.37 on all 21 features, against 1.0), which fits bins built over about 140,000 rows of which this file is a sample (OpenML 23517's 72,404 disjoint rows give the same estimate). No raw values exist, so the transform cannot be refitted per fold; a bin edge carries almost no information about one row's label, and we do not rescale.
+        - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
+          event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -88,6 +90,12 @@ class Numerai286(AbstractCuratedDataset):
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         return pd.read_csv(raw_dir / "numerai_training_data.csv")
+
+    def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
+        df = raw
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
+        return df
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         features = [c for c in raw.columns if c != "target"]

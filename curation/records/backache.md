@@ -25,3 +25,5 @@ https://www.openml.org/search?type=data&status=active&id=463
 https://lib.stat.cmu.edu/datasets/backache
 
 We could make a judgment call and count it as valid as it was used by statlib
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `pregnancy_pelvic_girdle_pain_sydney` (TBD -> 2nd Tier, priority 1). Each is screened in its own record; this record's verdict stays the curator's.

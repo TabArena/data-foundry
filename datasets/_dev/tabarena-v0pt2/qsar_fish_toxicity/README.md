@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_fish_toxicity
 container_format: 2
-checksum: v2:8c37ff8a1e098fbb96d23a507b5ee9135077c241ac8c5d38cd79e05f4d38b260
+checksum: v2:813d92bc0e96de406d70ca0ab54e4248c716e0b09864177527c8f2e9caa3937a
 build:
   uuid: 01a111fc-ec16-7add-afb7-17f93dcaa3d4
   checksum: v2:297b99361a9cc29da5a134ae105ce939b6ec1774224cf656311f0d38d2993253
@@ -20,10 +20,10 @@ build:
 build_stale: true
 data:
   n_rows: 908
-  n_features: 6
+  n_features: 1
   dtypes:
-    float64: 5
-    int64: 2
+    float64: 1
+    string: 2
   n_test_dataset_rows: null
 task:
   target: LC50
@@ -31,13 +31,22 @@ task:
   metric: rmse
   metric_origin: fallback
   scoring_columns: null
-  split_regime: iid
+  split_regime: grouped_non_iid
   stratify_on: null
   time_on: null
-  group_on: null
-  group_labels: null
+  group_on: scaffold
+  group_labels: per_sample
   group_time_on: null
-  grouping: null
+  grouping:
+    prediction_unit: row
+    aggregation: null
+    context: none
+    n_groups: 786
+    test_groups_per_fold:
+      min: 262
+      max: 262
+  special_features:
+    SMILES: smiles, one column; encoding required; recommended encoding rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1
 splits:
   n_repeats: 10
   n_folds: 3
@@ -47,18 +56,16 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 605
-    max: 606
+    min: 577
+    max: 630
   n_test:
-    min: 302
-    max: 303
+    min: 278
+    max: 331
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - dataset_conflicting_duplicate_rows
-  infos:
-  - dataset_duplicate_rows
+  warnings: []
+  infos: []
   accepted: {}
 decisions: []
 ---
@@ -67,9 +74,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `LC50`, scored with `rmse` on IID splits. 908 rows and 6 features. Source: UCI (2015).
+Regression of `LC50`, scored with `rmse` on grouped splits by `scaffold`. 908 rows and 1 features. Source: UCI (2015).
 
-Built as `01a111fc-ec16-7add-afb7-17f93dcaa3d4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8c37ff8a1e098fbb96d23a507b5ee9135077c241ac8c5d38cd79e05f4d38b260`, so the build is stale. See [Build](#build).
+Built as `01a111fc-ec16-7add-afb7-17f93dcaa3d4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:813d92bc0e96de406d70ca0ab54e4248c716e0b09864177527c8f2e9caa3937a`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -81,11 +88,13 @@ Built as `01a111fc-ec16-7add-afb7-17f93dcaa3d4` on 2026-10-06, but `dataset.py` 
 
 **Predicted.** The concentration that kills half the test fish within 96 hours, as minus the log of moles per litre, so higher means more toxic.
 
-**Known at prediction time.** Six molecular descriptors computed from the structure: an information index, a matrix-based index, an autocorrelation of ionisation potential, two counts of carbon atom types, and the predicted octanol-water partition coefficient.
+**Known at prediction time.** The chemical's structure, as a SMILES string.
 
-**What the test data stands for.** Random chemicals, so the test data stands for chemicals not yet tested.
+**What the test data stands for.** Whole chemical series are held out: chemicals that share a ring skeleton stay on one side, so a test chemical belongs to a family the model has not seen. Chemicals without a ring are held out one by one.
 
-> **Use case fit: direct (the rows, features and split mirror the use case).** The descriptors come from the structure alone, which is all a toxicologist has for an untested chemical. 24% of the rows share all six descriptors with another row: isomers whose toxicity differs but which look identical to the model.
+**Our changes to the source.** We add each chemical's structure from the authors' own workbook and ship it in place of their six descriptors, take the target from the same workbook at full precision, and split by chemical series instead of at random.
+
+> **Use case fit: direct (the rows, features and split mirror the use case).** The structure is all a toxicologist has for an untested chemical, and a held-out series stands for a family not yet tested.
 
 ## Files in this folder
 
@@ -106,6 +115,15 @@ Built as `01a111fc-ec16-7add-afb7-17f93dcaa3d4` on 2026-10-06, but `dataset.py` 
 We download the data from the UCI repository and unzip it to a predefined folder.
 
 mkdir -p local-data-warehouse/qsar_fish_toxicity/ && wget -P local-data-warehouse/qsar_fish_toxicity/ https://archive.ics.uci.edu/static/public/504/qsar+fish+toxicity.zip && unzip local-data-warehouse/qsar_fish_toxicity/qsar+fish+toxicity.zip -d local-data-warehouse/qsar_fish_toxicity/
+
+The structures come from the authors' own release, which UCI left out: the Excel file of the Milano
+Chemometrics group's page https://michem.unimib.it/download/data/acute-aquatic-toxicity-to-fish/ (a RAR archive
+behind a notification form; the form page links the file on Google Drive, downloaded 2026-11-01). It holds
+CAS-RN, SMILES, the authors' train/test split, LC50 and the same 6 descriptors, in the UCI file's row order.
+The page states: "The dataset is freeware and may be used if proper reference is given to the authors."
+
+toxicity_data_fish.xlsx (90,196 bytes), sha256
+98ae9433bcf8ffd5b32b3954a9571a4ec97d2d93f66119c9e36b8130925be721
 ```
 
 Then, from the repository root:
@@ -125,13 +143,15 @@ Only curators run `build`, when the dataset ships.
 | year | 2015 |
 | domain | chemistry & material science |
 | license | CC BY 4.0 |
-| data_tags | IID |
+| data_tags | Non-IID, Grouped |
 | reference | cassotti2015similarity |
-| rows x columns | 908 x 7 |
+| rows x columns | 908 x 3 |
 | task.target | LC50 |
 | task.problem_type | regression |
 | task.metric | rmse |
-| task.split_regime | iid |
+| task.split_regime | grouped_non_iid |
+| task.group_on | scaffold |
+| task.group_labels | per_sample |
 
 **Metric**
 
@@ -143,11 +163,12 @@ Only curators run `build`, when the dataset ships.
 | reason | Cassotti et al. 2015 report R2/Q2 with RMSE on training and external sets; rmse is the regression fallback. |
 
 <details>
-<summary>Feature types: 0 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 0 categorical, 0 string, 0 datetime, smiles `SMILES`</summary>
 
 - categorical (0): none
 - string (0): none
 - datetime (0): none
+- special feature `SMILES`: smiles, one column; encoding required; recommended encoding rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1
 
 </details>
 
@@ -173,70 +194,94 @@ Only curators run `build`, when the dataset ships.
 
 The first 5 of 908 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
 
-| LC50 | CIC0 | SM1_Dz(Z) | GATS1i | NdsCH | NdssC | MLOGP |
-|---|---|---|---|---|---|---|
-| 5.104 | 4.532 | 0.405 | 1.189 | 2 | 3 | 4.639 |
-| 2.92 | 1.5 | 0.83 | 1.891 | 0 | 0 | 1.817 |
-| 6.236 | 3.098 | 0.93 | 1.075 | 0 | 0 | 2.702 |
-| 6.416 | 2.351 | 1.586 | 1.25 | 0 | 4 | 3.659 |
-| 5.262 | 3.001 | 0.651 | 0.781 | 0 | 0 | 4.203 |
+| LC50 | SMILES | scaffold |
+|---|---|---|
+| 4.42337 | CC(C)CC=O | single: CC(C)CC=O |
+| 3.99516 | Oc1ccccc1Cl | single: Oc1ccccc1Cl |
+| 6.08252 | CCOP(=O)(OCC)OP(=O)(OCC)OCC | single: CCOP(=O)(OCC)OP(=O)(OCC)OCC |
+| 1.77659 | Cc1cocn1 | c1cocn1 |
+| 4.67362 | Clc1ccccc1-c1ccccc1 | c1ccc(-c2ccccc2)cc1 |
 
 ## Curation notes
 
-- We assigned descriptive column names following the original dataset documentation.
-- 24% of the rows share all six descriptors with another row, but LC50 differs within every shared vector: they are distinct chemicals (isomers) the descriptors cannot tell apart, not repeated measurements, so we keep them.
-- The six descriptors were chosen by a genetic algorithm on the paper's training set (726 of the 908 chemicals), which overlaps our test folds: a mild optimism we cannot measure. No descriptor is derived from the target.
+- The structure ships as `SMILES` (CLEAN-24 as amended, Lennart, 2026-11-01), in RDKit's canonical form (`canonical_smiles`; no salts or mixtures here), declared in `special_features`, so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts).
+- The authors' 6 descriptors leave (Lennart, 2026-11-01, as for qsar_tid_11: the task goes from the structure to a prediction, and the descriptors are one modelling choice of the authors). This also removes the mild optimism they carried: a genetic algorithm chose them on the paper's 726 training chemicals, which overlap our test folds (LEAK-31).
+- The structures come from the authors' own workbook, which the UCI copy left out. It is the same 908 rows in the same order: every one of the 6 descriptors is identical on all 908 rows (the CSV's rounding aside, LC50 too), so the link is exact and needs no key. All 908 SMILES parse, and no two are the same chemical, with or without stereochemistry.
+- The target comes from the workbook as well: the UCI file rounds LC50 to 3 decimals (every row differs by at most 0.0005), the workbook gives it at full precision.
+- 24% of the rows share all six of the authors' descriptors with another row, but their structures differ: isomers the descriptors could not tell apart. With the structure shipped the pairs are distinguishable, which is one more reason the descriptors leave.
+- Split (CLEAN-24, SPLIT-31 as amended): grouped on the Bemis-Murcko scaffold of the structure (`scaffold_groups`); chemicals without a ring, and those of a scaffold holding more than a tenth of the set, are groups of their own. An assessor estimates the toxicity of an untested chemical, often of a series not yet measured, so whole series are held out; qsar_bioconcentration, qsar_oral_toxicity and qsar_tid_11 group the same way. The source split at random.
 
 ## Splits
 
-Default splits.
+Grouped splits on the Bemis-Murcko scaffold: all chemicals of one series stay on one side, so a model predicts chemicals of a series it has not seen; chemicals without a ring are held out one by one. Chemicals with similar but not identical scaffolds can be on both sides.
 
-10 repeat(s) x 3 fold(s) with seed 4267; train 605 to 606 rows, test 302 to 303 rows.
+10 repeat(s) x 3 fold(s) with seed 4267; train 577 to 630 rows, test 278 to 331 rows.
 
 <details>
 <summary>Show all 30 splits</summary>
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 605 | 303 |
-| 0 | 1 | 605 | 303 |
-| 0 | 2 | 606 | 302 |
-| 1 | 0 | 605 | 303 |
-| 1 | 1 | 605 | 303 |
-| 1 | 2 | 606 | 302 |
-| 2 | 0 | 605 | 303 |
-| 2 | 1 | 605 | 303 |
-| 2 | 2 | 606 | 302 |
-| 3 | 0 | 605 | 303 |
-| 3 | 1 | 605 | 303 |
-| 3 | 2 | 606 | 302 |
-| 4 | 0 | 605 | 303 |
-| 4 | 1 | 605 | 303 |
-| 4 | 2 | 606 | 302 |
-| 5 | 0 | 605 | 303 |
-| 5 | 1 | 605 | 303 |
-| 5 | 2 | 606 | 302 |
-| 6 | 0 | 605 | 303 |
-| 6 | 1 | 605 | 303 |
-| 6 | 2 | 606 | 302 |
-| 7 | 0 | 605 | 303 |
-| 7 | 1 | 605 | 303 |
-| 7 | 2 | 606 | 302 |
-| 8 | 0 | 605 | 303 |
-| 8 | 1 | 605 | 303 |
-| 8 | 2 | 606 | 302 |
-| 9 | 0 | 605 | 303 |
-| 9 | 1 | 605 | 303 |
-| 9 | 2 | 606 | 302 |
+| 0 | 0 | 603 | 305 |
+| 0 | 1 | 618 | 290 |
+| 0 | 2 | 595 | 313 |
+| 1 | 0 | 615 | 293 |
+| 1 | 1 | 577 | 331 |
+| 1 | 2 | 624 | 284 |
+| 2 | 0 | 612 | 296 |
+| 2 | 1 | 617 | 291 |
+| 2 | 2 | 587 | 321 |
+| 3 | 0 | 618 | 290 |
+| 3 | 1 | 601 | 307 |
+| 3 | 2 | 597 | 311 |
+| 4 | 0 | 617 | 291 |
+| 4 | 1 | 591 | 317 |
+| 4 | 2 | 608 | 300 |
+| 5 | 0 | 597 | 311 |
+| 5 | 1 | 614 | 294 |
+| 5 | 2 | 605 | 303 |
+| 6 | 0 | 604 | 304 |
+| 6 | 1 | 582 | 326 |
+| 6 | 2 | 630 | 278 |
+| 7 | 0 | 607 | 301 |
+| 7 | 1 | 609 | 299 |
+| 7 | 2 | 600 | 308 |
+| 8 | 0 | 626 | 282 |
+| 8 | 1 | 592 | 316 |
+| 8 | 2 | 598 | 310 |
+| 9 | 0 | 600 | 308 |
+| 9 | 1 | 599 | 309 |
+| 9 | 2 | 617 | 291 |
 
 </details>
 
+## Group structure
+
+One group is a chemical series: the chemicals that share one Bemis-Murcko scaffold (ring systems and the chains linking them; Bemis and Murcko 1996), computed with RDKit from the structure. A chemical without a ring, or one of a scaffold that holds more than a tenth of the set, is a group of its own (SPLIT-31). A toxicologist estimates the fish toxicity of an untested chemical, often of a series not yet measured, so whole series are held out. Each row is one prediction, made from the chemical's structure alone.
+
+| field | value |
+|---|---|
+| group column | `scaffold` |
+| labels | per_sample |
+| order inside a group | none |
+| prediction unit | row |
+| known about a group when predicting | none |
+
+| statistic | value |
+|---|---|
+| groups | 786 |
+| rows per group (min / median / max) | 1 / 1.0 / 25 |
+| largest group | 2.8% of the rows |
+| test groups per fold | 262 |
+| groups of two or more rows with a single label | 0.0% |
+| label variance explained by the group | 0.93 (shuffled groups: 0.90) |
+
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+
 ## Bundle checks
 
-0 error(s), 1 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
-- **warning** `dataset_conflicting_duplicate_rows`: 132 row(s) (14.5%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
-- **info** `dataset_duplicate_rows`: 1 exact duplicate row(s) (0.1% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 
 ## Data checks
 
@@ -244,35 +289,36 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| CIC0 | float64 | 0 | 0 | 502 | 2.126, 3.08, 2.377, 2.508, 3.252, 2.834, 2.08, 2.479, 3.739, 3.332 |
-| SM1_Dz(Z) | float64 | 0 | 0 | 186 | 0.223, 0.134, 0.405, 0.331, 0.0, 0.693, 0.56, 0.496, 0.251, 0.83 |
-| GATS1i | float64 | 0 | 0 | 557 | 0.941, 0.954, 0.938, 0.871, 1.179, 1.571, 1.6, 1.189, 1.583, 1.288 |
-| MLOGP | float64 | 0 | 0 | 559 | 0.8, 1.701, 1.748, 2.604, 1.064, 0.202, 1.442, 1.587, 2.193, 3.291 |
-| LC50 | float64 | 0 | 0 | 827 | 4.208, 3.513, 3.979, 3.66, 3.926, 3.47, 3.92, 3.112, 3.782, 4.737 |
-| NdsCH | int64 | 0 | 0 | 5 | 0, 1, 2, 4, 3 |
-| NdssC | int64 | 0 | 0 | 7 | 0, 1, 2, 3, 4, 6, 5 |
+| LC50 | float64 | 0 | 0 | 907 | 4.2084, 1.0885, 4.7476, 3.2458, 1.8418, 4.6637, 2.3708, 3.4484, 6.483, 3.9739 |
+| SMILES | string | 0 | 0 | 908 | CCCSCCC, CC(C)CC=O, Oc1ccccc1Cl, CCOP(=O)(OCC)OP(=O)(OCC)OCC, Cc1cocn1, Clc1ccc… |
+| scaffold | string | 0 | 0 | 786 | c1ccncc1, c1ccc(Oc2ccccc2)cc1, c1ccc(Cc2ccccc2)cc1, C1CCCCC1, c1ccc2ccccc2c1, c… |
 
 ### Target distribution
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | 0.252 | -2.464 | 2.119 | 0.222 | log | 4364.7 | 777554 | exponential |
+| 0 | 0 | 0 | 0.252 | -2.465 | 2.119 | 0.223 | log | 4364.7 | 777994 | exponential |
 
 ### Numeric features
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| CIC0 | 908 | 2.89813 | 0.756088 | 0.667 | 5.926 |
-| SM1_Dz(Z) | 908 | 0.628468 | 0.428459 | 0 | 2.171 |
-| GATS1i | 908 | 1.29359 | 0.394303 | 0.396 | 2.92 |
-| NdsCH | 908 | 0.229075 | 0.605335 | 0 | 4 |
-| NdssC | 908 | 0.485683 | 0.861279 | 0 | 6 |
-| MLOGP | 908 | 2.10929 | 1.43318 | -2.884 | 6.515 |
-| LC50 | 908 | 4.06443 | 1.4557 | 0.053 | 9.612 |
+| LC50 | 908 | 4.06444 | 1.4557 | 0.0528763 | 9.6117 |
 
 ### Categorical features
 
-No categorical/object features to summarize.
+| column | rank | value | count | pct |
+|---|---|---|---|---|
+| SMILES | 1 | CCCSCCC | 1 | 0.11 |
+| SMILES | 2 | CC(C)CC=O | 1 | 0.11 |
+| SMILES | 3 | Oc1ccccc1Cl | 1 | 0.11 |
+| SMILES | 4 | CCOP(=O)(OCC)OP(=O)(OCC)OCC | 1 | 0.11 |
+| SMILES | 5 | Cc1cocn1 | 1 | 0.11 |
+| scaffold | 1 | c1ccncc1 | 25 | 2.75 |
+| scaffold | 2 | c1ccc(Oc2ccccc2)cc1 | 11 | 1.21 |
+| scaffold | 3 | c1ccc(Cc2ccccc2)cc1 | 11 | 1.21 |
+| scaffold | 4 | C1CCCCC1 | 10 | 1.1 |
+| scaffold | 5 | c1ccc2ccccc2c1 | 9 | 0.99 |
 
 ## Build
 
@@ -285,4 +331,4 @@ No categorical/object features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8c37ff8a1e098fbb96d23a507b5ee9135077c241ac8c5d38cd79e05f4d38b260` |
+| stale | yes: the definition now gives checksum `v2:813d92bc0e96de406d70ca0ab54e4248c716e0b09864177527c8f2e9caa3937a` |

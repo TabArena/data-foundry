@@ -37,6 +37,8 @@ CC (2026-10-16, Lennart): retired for now. The release z-scored every feature ov
 
 **Assessment (AI, 2026-10-16):** I had called the scaling harmless because it uses no labels and leaves the predictions of tree models, and of models that standardise each feature on the train side, unchanged. That was too narrow. Every stored value depends on the test rows: from the training rows alone, a test fold's mean of each feature is minus n_train/n_test times the training mean of its z-scores, and its variance follows the same way, so each split shows the model the test patients' distribution, which no deployed model has. A model that does not rescale every feature on its training rows also sees values shifted by the test rows. MLOmics publishes neither unscaled values nor the scaling constants (GitHub issue #3), so the fix is a rebuild from the source. The folder left the working copy on 2026-10-16; the definition is in git at commit 2475ea2.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `gse39582_colon_cancer_mmr_cin` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Z. Yang, R. Kotoge, X. Piao, Z. Chen, L. Zhu, P. Gao, Y. Matsubara, Y. Sakurai, and J. Sun. MLOmics: Cancer multi-omics database for machine learning. Scientific Data, 12(1):1–9, 2025.

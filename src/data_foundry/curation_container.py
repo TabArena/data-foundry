@@ -21,6 +21,7 @@ from data_foundry.schema import (
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadata,
     PredictiveMLTaskMetadataV2,
+    SpecialFeature,
     as_column_list,
     resolve_warehouse_dir,
 )
@@ -64,6 +65,17 @@ def feature_columns(container: CuratedContainer) -> list[str]:
     excluded = {task.target_column_name, *as_column_list(task.group_on)}
     excluded.update(c.column for c in getattr(task, "scoring_columns", None) or ())
     return [c for c in container.dataset.columns if c not in excluded]
+
+
+def special_features(container: CuratedContainer, kind: str | None = None) -> list[SpecialFeature]:
+    """The model inputs that need handling beyond their dtype (:class:`~data_foundry.schema.SpecialFeature`): every
+    one, or those of ``kind`` (``smiles``, ``spectrum``). Each is one column (a SMILES, ``layout == "column"``) or a
+    group of columns encoded together (a spectrum, ``layout == "group"``); its columns are in ``feature.columns``.
+    Encode one with ``data_foundry.v2.special.encode_special_feature(container.dataset, feature)``; where
+    ``feature.encoding_required`` the raw values are no model input. A format-1 container has none.
+    """
+    features = getattr(container.task_metadata, "special_features", None) or ()
+    return [f for f in features if kind in (None, f.kind)]
 
 
 @dataclass

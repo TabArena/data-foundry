@@ -16,7 +16,10 @@ you: the evidence reports, both opening briefs, both rebuttals, `dataset.py`, th
    that it is a conflict and not an independent failure (every Must has to hold on its own). Apply the remedy ladder.
 3. A point the rules leave open (a weighing of factors) is not yours to settle: give it to the curator with each side's
    best evidence and what would settle it.
-4. Consistency: use the precedent checker's report. A recommendation that departs from a precedent names the fact that
+4. The task gamer's exploits come without rule IDs: map each to its rule and to the definition's `Potential leak,
+   kept on purpose:` notes and accepted warnings, and say whether it is new or known. A known exploit is an issue
+   only when its measured gain differs from what the note says.
+5. Consistency: use the precedent checker's report. A recommendation that departs from a precedent names the fact that
    sets this case apart, or becomes a question for the curator.
 
 Return, in this order:

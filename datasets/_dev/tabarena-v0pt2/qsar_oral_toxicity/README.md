@@ -2,16 +2,15 @@
 report_format: data-foundry-report-v2
 unique_name: qsar_oral_toxicity
 container_format: 2
-checksum: v2:475dd940d055cf3da7eb2d8bd00b3681c1213efae9bd7c47e38c93af669bbd49
+checksum: v2:bfb9989ad5eaedf909cd2169e09a75421dbae512bfb94ad08b3e8a8457ac8746
 build: null
 build_stale: false
 data:
-  n_rows: 11105
-  n_features: 1232
+  n_rows: 11116
+  n_features: 1
   dtypes:
-    category: 1025
-    float64: 208
-    string: 1
+    category: 1
+    string: 2
   n_test_dataset_rows: null
 task:
   target: very_toxic
@@ -29,10 +28,12 @@ task:
     prediction_unit: row
     aggregation: null
     context: none
-    n_groups: 7474
+    n_groups: 7481
     test_groups_per_fold:
-      min: 2473
-      max: 2507
+      min: 2471
+      max: 2512
+  special_features:
+    SMILES: smiles, one column; encoding required; recommended encoding rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1
 splits:
   n_repeats: 3
   n_folds: 3
@@ -42,21 +43,17 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 7187
-    max: 7740
+    min: 7307
+    max: 7571
   n_test:
-    min: 3365
-    max: 3918
+    min: 3545
+    max: 3809
 bundle_checks:
   ok: true
   errors: []
   warnings: []
   infos: []
-  accepted:
-    dataset_pure_feature_value: 'rdkit_fr_Ar_COO = 1 (one aromatic carboxylic acid
-      group) marks 212 chemicals, 1 of them very toxic: a fragment count of the QSAR-ready
-      structure, computed before any animal test, so it cannot carry the outcome;
-      aromatic acids are rarely acutely lethal (Lennart, 2026-10-21).'
+  accepted: {}
 decisions:
 - The package's three sets, of which UCI holds two
 - Copies of a parent structure dropped
@@ -67,9 +64,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `very_toxic`, scored with `roc_auc` on grouped splits by `scaffold`. 11,105 rows and 1,232 features. Source: Other (2019).
+Binary classification of `very_toxic`, scored with `roc_auc` on grouped splits by `scaffold`. 11,116 rows and 1 features. Source: Other (2019).
 
-Not built yet. The current definition gives checksum `v2:475dd940d055cf3da7eb2d8bd00b3681c1213efae9bd7c47e38c93af669bbd49`.
+Not built yet. The current definition gives checksum `v2:bfb9989ad5eaedf909cd2169e09a75421dbae512bfb94ad08b3e8a8457ac8746`.
 
 ## In brief
 
@@ -81,11 +78,11 @@ Not built yet. The current definition gives checksum `v2:475dd940d055cf3da7eb2d8
 
 **Predicted.** Whether the swallowed dose that kills half of the rats is 50 mg per kg of body weight or less, the top acute oral hazard category (8% are very toxic). A quarter of the chemicals carry that category without a measured dose.
 
-**Known at prediction time.** The chemical's structure, with salts, solvents and stereochemistry removed, as 1,024 on/off fingerprint bits and 208 descriptors computed from it.
+**Known at prediction time.** The chemical's structure, with salts, solvents and stereochemistry removed, as a SMILES string.
 
 **What the test data stands for.** Whole chemical series are held out: chemicals that share a ring skeleton stay on one side, so a test chemical belongs to a family the model has not seen. Chemicals without a ring and those whose skeleton is the bare benzene ring are held out one by one. Salt forms and hydrates of one compound are kept once.
 
-**Our changes to the source.** We add the project's evaluation set to the calibration set UCI holds, compute descriptors from the structure in place of its text, and drop exact copies, the fingerprints that occur with both classes and second rows of a parent structure, and split by chemical series; the source fixed one training, test and evaluation set.
+**Our changes to the source.** We add the project's evaluation set to the calibration set UCI holds, ship the structure as a SMILES string in place of the authors' fingerprint, drop exact copies, the structures that occur with both classes and second rows of a compound, and split by chemical series; the source fixed one training, test and evaluation set.
 
 > **Use case fit: approximate (a stand-in with a known gap).** The screening is simulated: the test rows are tested chemicals, held out by series but still closer to the training chemicals than the untested ones a screener faces (16.3% against 11.0% have a close analog, Tanimoto 0.7 or more; 24.7% under a random split). The score follows that distance (random forest ROC AUC 0.715 for distant chemicals, 0.945 for close ones, under the random split).
 
@@ -146,7 +143,7 @@ Only curators run `build`, when the dataset ships.
 | license | Freeware, to be used with a reference to the paper (the package's readme); the UCI copy is CC BY 4.0 |
 | data_tags | Non-IID, Grouped |
 | reference | ballabio2019integrated,mansouri2021catmos |
-| rows x columns | 11,105 x 1,234 |
+| rows x columns | 11,116 x 3 |
 | task.target | very_toxic |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
@@ -165,11 +162,12 @@ Only curators run `build`, when the dataset ships.
 | reason | Ballabio et al. 2019 report the non-error rate with sensitivity and specificity, the group's house measure, without costs; 8.4% very toxic. Original rejected: NER. roc_auc is the binary fallback. |
 
 <details>
-<summary>Feature types: 1025 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 1 categorical, 0 string, 0 datetime, smiles `SMILES`</summary>
 
-- categorical (1025): `ecfp_1`, `ecfp_2`, `ecfp_3`, `ecfp_4`, `ecfp_5`, `ecfp_6`, `ecfp_7`, `ecfp_8`, `ecfp_9`, `ecfp_10`, `ecfp_11`, `ecfp_12`, `ecfp_13`, `ecfp_14`, `ecfp_15`, `ecfp_16`, `ecfp_17`, `ecfp_18`, `ecfp_19`, `ecfp_20`, `ecfp_21`, `ecfp_22`, `ecfp_23`, `ecfp_24`, `ecfp_25`, `ecfp_26`, `ecfp_27`, `ecfp_28`, `ecfp_29`, `ecfp_30`, `ecfp_31`, `ecfp_32`, `ecfp_33`, `ecfp_34`, `ecfp_35`, `ecfp_36`, `ecfp_37`, `ecfp_38`, `ecfp_39`, `ecfp_40`, `ecfp_41`, `ecfp_42`, `ecfp_43`, `ecfp_44`, `ecfp_45`, `ecfp_46`, `ecfp_47`, `ecfp_48`, `ecfp_49`, `ecfp_50`, `ecfp_51`, `ecfp_52`, `ecfp_53`, `ecfp_54`, `ecfp_55`, `ecfp_56`, `ecfp_57`, `ecfp_58`, `ecfp_59`, `ecfp_60`, `ecfp_61`, `ecfp_62`, `ecfp_63`, `ecfp_64`, `ecfp_65`, `ecfp_66`, `ecfp_67`, `ecfp_68`, `ecfp_69`, `ecfp_70`, `ecfp_71`, `ecfp_72`, `ecfp_73`, `ecfp_74`, `ecfp_75`, `ecfp_76`, `ecfp_77`, `ecfp_78`, `ecfp_79`, `ecfp_80`, `ecfp_81`, `ecfp_82`, `ecfp_83`, `ecfp_84`, `ecfp_85`, `ecfp_86`, `ecfp_87`, `ecfp_88`, `ecfp_89`, `ecfp_90`, `ecfp_91`, `ecfp_92`, `ecfp_93`, `ecfp_94`, `ecfp_95`, `ecfp_96`, `ecfp_97`, `ecfp_98`, `ecfp_99`, `ecfp_100`, `ecfp_101`, `ecfp_102`, `ecfp_103`, `ecfp_104`, `ecfp_105`, `ecfp_106`, `ecfp_107`, `ecfp_108`, `ecfp_109`, `ecfp_110`, `ecfp_111`, `ecfp_112`, `ecfp_113`, `ecfp_114`, `ecfp_115`, `ecfp_116`, `ecfp_117`, `ecfp_118`, `ecfp_119`, `ecfp_120`, `ecfp_121`, `ecfp_122`, `ecfp_123`, `ecfp_124`, `ecfp_125`, `ecfp_126`, `ecfp_127`, `ecfp_128`, `ecfp_129`, `ecfp_130`, `ecfp_131`, `ecfp_132`, `ecfp_133`, `ecfp_134`, `ecfp_135`, `ecfp_136`, `ecfp_137`, `ecfp_138`, `ecfp_139`, `ecfp_140`, `ecfp_141`, `ecfp_142`, `ecfp_143`, `ecfp_144`, `ecfp_145`, `ecfp_146`, `ecfp_147`, `ecfp_148`, `ecfp_149`, `ecfp_150`, `ecfp_151`, `ecfp_152`, `ecfp_153`, `ecfp_154`, `ecfp_155`, `ecfp_156`, `ecfp_157`, `ecfp_158`, `ecfp_159`, `ecfp_160`, `ecfp_161`, `ecfp_162`, `ecfp_163`, `ecfp_164`, `ecfp_165`, `ecfp_166`, `ecfp_167`, `ecfp_168`, `ecfp_169`, `ecfp_170`, `ecfp_171`, `ecfp_172`, `ecfp_173`, `ecfp_174`, `ecfp_175`, `ecfp_176`, `ecfp_177`, `ecfp_178`, `ecfp_179`, `ecfp_180`, `ecfp_181`, `ecfp_182`, `ecfp_183`, `ecfp_184`, `ecfp_185`, `ecfp_186`, `ecfp_187`, `ecfp_188`, `ecfp_189`, `ecfp_190`, `ecfp_191`, `ecfp_192`, `ecfp_193`, `ecfp_194`, `ecfp_195`, `ecfp_196`, `ecfp_197`, `ecfp_198`, `ecfp_199`, `ecfp_200`, `ecfp_201`, `ecfp_202`, `ecfp_203`, `ecfp_204`, `ecfp_205`, `ecfp_206`, `ecfp_207`, `ecfp_208`, `ecfp_209`, `ecfp_210`, `ecfp_211`, `ecfp_212`, `ecfp_213`, `ecfp_214`, `ecfp_215`, `ecfp_216`, `ecfp_217`, `ecfp_218`, `ecfp_219`, `ecfp_220`, `ecfp_221`, `ecfp_222`, `ecfp_223`, `ecfp_224`, `ecfp_225`, `ecfp_226`, `ecfp_227`, `ecfp_228`, `ecfp_229`, `ecfp_230`, `ecfp_231`, `ecfp_232`, `ecfp_233`, `ecfp_234`, `ecfp_235`, `ecfp_236`, `ecfp_237`, `ecfp_238`, `ecfp_239`, `ecfp_240`, `ecfp_241`, `ecfp_242`, `ecfp_243`, `ecfp_244`, `ecfp_245`, `ecfp_246`, `ecfp_247`, `ecfp_248`, `ecfp_249`, `ecfp_250`, `ecfp_251`, `ecfp_252`, `ecfp_253`, `ecfp_254`, `ecfp_255`, `ecfp_256`, `ecfp_257`, `ecfp_258`, `ecfp_259`, `ecfp_260`, `ecfp_261`, `ecfp_262`, `ecfp_263`, `ecfp_264`, `ecfp_265`, `ecfp_266`, `ecfp_267`, `ecfp_268`, `ecfp_269`, `ecfp_270`, `ecfp_271`, `ecfp_272`, `ecfp_273`, `ecfp_274`, `ecfp_275`, `ecfp_276`, `ecfp_277`, `ecfp_278`, `ecfp_279`, `ecfp_280`, `ecfp_281`, `ecfp_282`, `ecfp_283`, `ecfp_284`, `ecfp_285`, `ecfp_286`, `ecfp_287`, `ecfp_288`, `ecfp_289`, `ecfp_290`, `ecfp_291`, `ecfp_292`, `ecfp_293`, `ecfp_294`, `ecfp_295`, `ecfp_296`, `ecfp_297`, `ecfp_298`, `ecfp_299`, `ecfp_300`, `ecfp_301`, `ecfp_302`, `ecfp_303`, `ecfp_304`, `ecfp_305`, `ecfp_306`, `ecfp_307`, `ecfp_308`, `ecfp_309`, `ecfp_310`, `ecfp_311`, `ecfp_312`, `ecfp_313`, `ecfp_314`, `ecfp_315`, `ecfp_316`, `ecfp_317`, `ecfp_318`, `ecfp_319`, `ecfp_320`, `ecfp_321`, `ecfp_322`, `ecfp_323`, `ecfp_324`, `ecfp_325`, `ecfp_326`, `ecfp_327`, `ecfp_328`, `ecfp_329`, `ecfp_330`, `ecfp_331`, `ecfp_332`, `ecfp_333`, `ecfp_334`, `ecfp_335`, `ecfp_336`, `ecfp_337`, `ecfp_338`, `ecfp_339`, `ecfp_340`, `ecfp_341`, `ecfp_342`, `ecfp_343`, `ecfp_344`, `ecfp_345`, `ecfp_346`, `ecfp_347`, `ecfp_348`, `ecfp_349`, `ecfp_350`, `ecfp_351`, `ecfp_352`, `ecfp_353`, `ecfp_354`, `ecfp_355`, `ecfp_356`, `ecfp_357`, `ecfp_358`, `ecfp_359`, `ecfp_360`, `ecfp_361`, `ecfp_362`, `ecfp_363`, `ecfp_364`, `ecfp_365`, `ecfp_366`, `ecfp_367`, `ecfp_368`, `ecfp_369`, `ecfp_370`, `ecfp_371`, `ecfp_372`, `ecfp_373`, `ecfp_374`, `ecfp_375`, `ecfp_376`, `ecfp_377`, `ecfp_378`, `ecfp_379`, `ecfp_380`, `ecfp_381`, `ecfp_382`, `ecfp_383`, `ecfp_384`, `ecfp_385`, `ecfp_386`, `ecfp_387`, `ecfp_388`, `ecfp_389`, `ecfp_390`, `ecfp_391`, `ecfp_392`, `ecfp_393`, `ecfp_394`, `ecfp_395`, `ecfp_396`, `ecfp_397`, `ecfp_398`, `ecfp_399`, `ecfp_400`, `ecfp_401`, `ecfp_402`, `ecfp_403`, `ecfp_404`, `ecfp_405`, `ecfp_406`, `ecfp_407`, `ecfp_408`, `ecfp_409`, `ecfp_410`, `ecfp_411`, `ecfp_412`, `ecfp_413`, `ecfp_414`, `ecfp_415`, `ecfp_416`, `ecfp_417`, `ecfp_418`, `ecfp_419`, `ecfp_420`, `ecfp_421`, `ecfp_422`, `ecfp_423`, `ecfp_424`, `ecfp_425`, `ecfp_426`, `ecfp_427`, `ecfp_428`, `ecfp_429`, `ecfp_430`, `ecfp_431`, `ecfp_432`, `ecfp_433`, `ecfp_434`, `ecfp_435`, `ecfp_436`, `ecfp_437`, `ecfp_438`, `ecfp_439`, `ecfp_440`, `ecfp_441`, `ecfp_442`, `ecfp_443`, `ecfp_444`, `ecfp_445`, `ecfp_446`, `ecfp_447`, `ecfp_448`, `ecfp_449`, `ecfp_450`, `ecfp_451`, `ecfp_452`, `ecfp_453`, `ecfp_454`, `ecfp_455`, `ecfp_456`, `ecfp_457`, `ecfp_458`, `ecfp_459`, `ecfp_460`, `ecfp_461`, `ecfp_462`, `ecfp_463`, `ecfp_464`, `ecfp_465`, `ecfp_466`, `ecfp_467`, `ecfp_468`, `ecfp_469`, `ecfp_470`, `ecfp_471`, `ecfp_472`, `ecfp_473`, `ecfp_474`, `ecfp_475`, `ecfp_476`, `ecfp_477`, `ecfp_478`, `ecfp_479`, `ecfp_480`, `ecfp_481`, `ecfp_482`, `ecfp_483`, `ecfp_484`, `ecfp_485`, `ecfp_486`, `ecfp_487`, `ecfp_488`, `ecfp_489`, `ecfp_490`, `ecfp_491`, `ecfp_492`, `ecfp_493`, `ecfp_494`, `ecfp_495`, `ecfp_496`, `ecfp_497`, `ecfp_498`, `ecfp_499`, `ecfp_500`, `ecfp_501`, `ecfp_502`, `ecfp_503`, `ecfp_504`, `ecfp_505`, `ecfp_506`, `ecfp_507`, `ecfp_508`, `ecfp_509`, `ecfp_510`, `ecfp_511`, `ecfp_512`, `ecfp_513`, `ecfp_514`, `ecfp_515`, `ecfp_516`, `ecfp_517`, `ecfp_518`, `ecfp_519`, `ecfp_520`, `ecfp_521`, `ecfp_522`, `ecfp_523`, `ecfp_524`, `ecfp_525`, `ecfp_526`, `ecfp_527`, `ecfp_528`, `ecfp_529`, `ecfp_530`, `ecfp_531`, `ecfp_532`, `ecfp_533`, `ecfp_534`, `ecfp_535`, `ecfp_536`, `ecfp_537`, `ecfp_538`, `ecfp_539`, `ecfp_540`, `ecfp_541`, `ecfp_542`, `ecfp_543`, `ecfp_544`, `ecfp_545`, `ecfp_546`, `ecfp_547`, `ecfp_548`, `ecfp_549`, `ecfp_550`, `ecfp_551`, `ecfp_552`, `ecfp_553`, `ecfp_554`, `ecfp_555`, `ecfp_556`, `ecfp_557`, `ecfp_558`, `ecfp_559`, `ecfp_560`, `ecfp_561`, `ecfp_562`, `ecfp_563`, `ecfp_564`, `ecfp_565`, `ecfp_566`, `ecfp_567`, `ecfp_568`, `ecfp_569`, `ecfp_570`, `ecfp_571`, `ecfp_572`, `ecfp_573`, `ecfp_574`, `ecfp_575`, `ecfp_576`, `ecfp_577`, `ecfp_578`, `ecfp_579`, `ecfp_580`, `ecfp_581`, `ecfp_582`, `ecfp_583`, `ecfp_584`, `ecfp_585`, `ecfp_586`, `ecfp_587`, `ecfp_588`, `ecfp_589`, `ecfp_590`, `ecfp_591`, `ecfp_592`, `ecfp_593`, `ecfp_594`, `ecfp_595`, `ecfp_596`, `ecfp_597`, `ecfp_598`, `ecfp_599`, `ecfp_600`, `ecfp_601`, `ecfp_602`, `ecfp_603`, `ecfp_604`, `ecfp_605`, `ecfp_606`, `ecfp_607`, `ecfp_608`, `ecfp_609`, `ecfp_610`, `ecfp_611`, `ecfp_612`, `ecfp_613`, `ecfp_614`, `ecfp_615`, `ecfp_616`, `ecfp_617`, `ecfp_618`, `ecfp_619`, `ecfp_620`, `ecfp_621`, `ecfp_622`, `ecfp_623`, `ecfp_624`, `ecfp_625`, `ecfp_626`, `ecfp_627`, `ecfp_628`, `ecfp_629`, `ecfp_630`, `ecfp_631`, `ecfp_632`, `ecfp_633`, `ecfp_634`, `ecfp_635`, `ecfp_636`, `ecfp_637`, `ecfp_638`, `ecfp_639`, `ecfp_640`, `ecfp_641`, `ecfp_642`, `ecfp_643`, `ecfp_644`, `ecfp_645`, `ecfp_646`, `ecfp_647`, `ecfp_648`, `ecfp_649`, `ecfp_650`, `ecfp_651`, `ecfp_652`, `ecfp_653`, `ecfp_654`, `ecfp_655`, `ecfp_656`, `ecfp_657`, `ecfp_658`, `ecfp_659`, `ecfp_660`, `ecfp_661`, `ecfp_662`, `ecfp_663`, `ecfp_664`, `ecfp_665`, `ecfp_666`, `ecfp_667`, `ecfp_668`, `ecfp_669`, `ecfp_670`, `ecfp_671`, `ecfp_672`, `ecfp_673`, `ecfp_674`, `ecfp_675`, `ecfp_676`, `ecfp_677`, `ecfp_678`, `ecfp_679`, `ecfp_680`, `ecfp_681`, `ecfp_682`, `ecfp_683`, `ecfp_684`, `ecfp_685`, `ecfp_686`, `ecfp_687`, `ecfp_688`, `ecfp_689`, `ecfp_690`, `ecfp_691`, `ecfp_692`, `ecfp_693`, `ecfp_694`, `ecfp_695`, `ecfp_696`, `ecfp_697`, `ecfp_698`, `ecfp_699`, `ecfp_700`, `ecfp_701`, `ecfp_702`, `ecfp_703`, `ecfp_704`, `ecfp_705`, `ecfp_706`, `ecfp_707`, `ecfp_708`, `ecfp_709`, `ecfp_710`, `ecfp_711`, `ecfp_712`, `ecfp_713`, `ecfp_714`, `ecfp_715`, `ecfp_716`, `ecfp_717`, `ecfp_718`, `ecfp_719`, `ecfp_720`, `ecfp_721`, `ecfp_722`, `ecfp_723`, `ecfp_724`, `ecfp_725`, `ecfp_726`, `ecfp_727`, `ecfp_728`, `ecfp_729`, `ecfp_730`, `ecfp_731`, `ecfp_732`, `ecfp_733`, `ecfp_734`, `ecfp_735`, `ecfp_736`, `ecfp_737`, `ecfp_738`, `ecfp_739`, `ecfp_740`, `ecfp_741`, `ecfp_742`, `ecfp_743`, `ecfp_744`, `ecfp_745`, `ecfp_746`, `ecfp_747`, `ecfp_748`, `ecfp_749`, `ecfp_750`, `ecfp_751`, `ecfp_752`, `ecfp_753`, `ecfp_754`, `ecfp_755`, `ecfp_756`, `ecfp_757`, `ecfp_758`, `ecfp_759`, `ecfp_760`, `ecfp_761`, `ecfp_762`, `ecfp_763`, `ecfp_764`, `ecfp_765`, `ecfp_766`, `ecfp_767`, `ecfp_768`, `ecfp_769`, `ecfp_770`, `ecfp_771`, `ecfp_772`, `ecfp_773`, `ecfp_774`, `ecfp_775`, `ecfp_776`, `ecfp_777`, `ecfp_778`, `ecfp_779`, `ecfp_780`, `ecfp_781`, `ecfp_782`, `ecfp_783`, `ecfp_784`, `ecfp_785`, `ecfp_786`, `ecfp_787`, `ecfp_788`, `ecfp_789`, `ecfp_790`, `ecfp_791`, `ecfp_792`, `ecfp_793`, `ecfp_794`, `ecfp_795`, `ecfp_796`, `ecfp_797`, `ecfp_798`, `ecfp_799`, `ecfp_800`, `ecfp_801`, `ecfp_802`, `ecfp_803`, `ecfp_804`, `ecfp_805`, `ecfp_806`, `ecfp_807`, `ecfp_808`, `ecfp_809`, `ecfp_810`, `ecfp_811`, `ecfp_812`, `ecfp_813`, `ecfp_814`, `ecfp_815`, `ecfp_816`, `ecfp_817`, `ecfp_818`, `ecfp_819`, `ecfp_820`, `ecfp_821`, `ecfp_822`, `ecfp_823`, `ecfp_824`, `ecfp_825`, `ecfp_826`, `ecfp_827`, `ecfp_828`, `ecfp_829`, `ecfp_830`, `ecfp_831`, `ecfp_832`, `ecfp_833`, `ecfp_834`, `ecfp_835`, `ecfp_836`, `ecfp_837`, `ecfp_838`, `ecfp_839`, `ecfp_840`, `ecfp_841`, `ecfp_842`, `ecfp_843`, `ecfp_844`, `ecfp_845`, `ecfp_846`, `ecfp_847`, `ecfp_848`, `ecfp_849`, `ecfp_850`, `ecfp_851`, `ecfp_852`, `ecfp_853`, `ecfp_854`, `ecfp_855`, `ecfp_856`, `ecfp_857`, `ecfp_858`, `ecfp_859`, `ecfp_860`, `ecfp_861`, `ecfp_862`, `ecfp_863`, `ecfp_864`, `ecfp_865`, `ecfp_866`, `ecfp_867`, `ecfp_868`, `ecfp_869`, `ecfp_870`, `ecfp_871`, `ecfp_872`, `ecfp_873`, `ecfp_874`, `ecfp_875`, `ecfp_876`, `ecfp_877`, `ecfp_878`, `ecfp_879`, `ecfp_880`, `ecfp_881`, `ecfp_882`, `ecfp_883`, `ecfp_884`, `ecfp_885`, `ecfp_886`, `ecfp_887`, `ecfp_888`, `ecfp_889`, `ecfp_890`, `ecfp_891`, `ecfp_892`, `ecfp_893`, `ecfp_894`, `ecfp_895`, `ecfp_896`, `ecfp_897`, `ecfp_898`, `ecfp_899`, `ecfp_900`, `ecfp_901`, `ecfp_902`, `ecfp_903`, `ecfp_904`, `ecfp_905`, `ecfp_906`, `ecfp_907`, `ecfp_908`, `ecfp_909`, `ecfp_910`, `ecfp_911`, `ecfp_912`, `ecfp_913`, `ecfp_914`, `ecfp_915`, `ecfp_916`, `ecfp_917`, `ecfp_918`, `ecfp_919`, `ecfp_920`, `ecfp_921`, `ecfp_922`, `ecfp_923`, `ecfp_924`, `ecfp_925`, `ecfp_926`, `ecfp_927`, `ecfp_928`, `ecfp_929`, `ecfp_930`, `ecfp_931`, `ecfp_932`, `ecfp_933`, `ecfp_934`, `ecfp_935`, `ecfp_936`, `ecfp_937`, `ecfp_938`, `ecfp_939`, `ecfp_940`, `ecfp_941`, `ecfp_942`, `ecfp_943`, `ecfp_944`, `ecfp_945`, `ecfp_946`, `ecfp_947`, `ecfp_948`, `ecfp_949`, `ecfp_950`, `ecfp_951`, `ecfp_952`, `ecfp_953`, `ecfp_954`, `ecfp_955`, `ecfp_956`, `ecfp_957`, `ecfp_958`, `ecfp_959`, `ecfp_960`, `ecfp_961`, `ecfp_962`, `ecfp_963`, `ecfp_964`, `ecfp_965`, `ecfp_966`, `ecfp_967`, `ecfp_968`, `ecfp_969`, `ecfp_970`, `ecfp_971`, `ecfp_972`, `ecfp_973`, `ecfp_974`, `ecfp_975`, `ecfp_976`, `ecfp_977`, `ecfp_978`, `ecfp_979`, `ecfp_980`, `ecfp_981`, `ecfp_982`, `ecfp_983`, `ecfp_984`, `ecfp_985`, `ecfp_986`, `ecfp_987`, `ecfp_988`, `ecfp_989`, `ecfp_990`, `ecfp_991`, `ecfp_992`, `ecfp_993`, `ecfp_994`, `ecfp_995`, `ecfp_996`, `ecfp_997`, `ecfp_998`, `ecfp_999`, `ecfp_1000`, `ecfp_1001`, `ecfp_1002`, `ecfp_1003`, `ecfp_1004`, `ecfp_1005`, `ecfp_1006`, `ecfp_1007`, `ecfp_1008`, `ecfp_1009`, `ecfp_1010`, `ecfp_1011`, `ecfp_1012`, `ecfp_1013`, `ecfp_1014`, `ecfp_1015`, `ecfp_1016`, `ecfp_1017`, `ecfp_1018`, `ecfp_1019`, `ecfp_1020`, `ecfp_1021`, `ecfp_1022`, `ecfp_1023`, `ecfp_1024`, `very_toxic`
+- categorical (1): `very_toxic`
 - string (0): none
 - datetime (0): none
+- special feature `SMILES`: smiles, one column; encoding required; recommended encoding rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1
 
 </details>
 
@@ -203,15 +201,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 11,105 rows of the final frame (random rows: the frame is shuffled); 12 of 1,234 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 11,116 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
 
-| very_toxic | ecfp_1 | ecfp_2 | ecfp_3 | ecfp_4 | ecfp_5 | ecfp_6 | ecfp_7 | ecfp_8 | ecfp_9 | ecfp_10 | ecfp_11 |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| No | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| Yes | 0 | 0 | 0 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
-| No | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| No | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| No | 1 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
+| very_toxic | SMILES | scaffold |
+|---|---|---|
+| No | CCCCCCCC\[N+\](C)(C)\[O-\] | single: CCCCCCCC\[N+\](C)(C)\[O-\] |
+| No | CSC(C)(C)CN=O | single: CSC(C)(C)CN=O |
+| No | CN(C)C1c2ccccc2NC(=O)c2ccccc21 | O=C1Nc2ccccc2Cc2ccccc21 |
+| No | CN1CCN(C2=Cc3ccccc3Sc3ccc(Cl)cc32)CC1 | C1=C(N2CCNCC2)c2ccccc2Sc2ccccc21 |
+| No | CC(C)(C)c1cc(O)ccc1O | single: CC(C)(C)c1cc(O)ccc1O |
 
 ## Curation notes
 
@@ -220,37 +218,36 @@ We start with vt_data.mat of the authors' package: the very toxic (VT) endpoint 
 - Prediction point: a chemical without an acute oral toxicity test, before any animal test. Every feature is computed from its QSAR-ready structure (salts, solvents and stereochemistry removed), so all of them exist at prediction time.
 - Target: `very_toxic` is "Yes" when the rat oral LD50 is 50 mg/kg or less (the package's class 1, the UCI file's "positive"; paper, Sec. 2.1; CATMoS Methods, "LD50<=50mg/kg"). On the evaluation set the label equals the project's EPA category 1 on all 2,894 rows and `LD50 <= 50` on every row that carries a dose; 2,845 of the kept chemicals (26%) carry the category without a point LD50.
 - Reading the raw file: MATLAB stores the text fields as `string` objects, which `scipy.io.loadmat` leaves undecoded, so `_prepare_raw_files` reads them out of the file's subsystem data (the decoder is documented in `_matlab_strings`) and writes bits, class and text per chemical into vt_data_02.csv. Checks of that step: the decoded "very toxic" field agrees with the `class_*` vectors on all 11,886 rows; the InChIKey has the right shape on every row and is reproduced by RDKit from the row's own SMILES for 99.8% of rows (99.99% on the skeleton, the one exception being the repaired silicon carbide below), so the SMILES is the structure the row is about; the evaluation rows match the project's public `validationset.txt` by its RowID on all 2,894 rows, with the same InChIKey, class and QSAR-ready SMILES, and the calibration rows match `trainingset_171130.txt` by CASRN (8,837) or, where a CASRN was mangled into a date by spreadsheet software, by InChIKey (155), with 100% class agreement.
-- Features, the fingerprint: binary extended connectivity fingerprints (paper, Sec. 2.2) computed with Dragon 7 (Sec. 2.7), radius 2 with 2 bits per fragment, the package's ECFP_1024_02 block (the variant its models use for this endpoint), 1,024 hashed bits, named `ecfp_1` to `ecfp_1024` in file order and typed categorical, the house form for 0/1 presence flags (CLEAN-14; Lennart, 2026-10-21). No bit is constant and no two bits are equal.
-- Features, the structure: RDKit's 2D descriptors of the QSAR-ready SMILES as `rdkit_*` columns (`rdkit_descriptors`, RDKit 2026.03.6), 208 of the 217, the others constant here or copies; values RDKit cannot compute (partial charges and BCUT descriptors of 12 chemicals) are missing. They decide: default LightGBM's ROC AUC over the 9 shipped splits is 0.885 on the bits alone and 0.901 with the descriptors added (better on 9 of 9 splits); the descriptors alone give 0.897, a random forest (500 trees) on repeat 0 0.901 against 0.912.
-- `rdkit_Ipc_log10`: RDKit's information content of the molecular graph grows exponentially with the molecule (five chemicals above 1e38, the largest 6e166), beyond any float32 pipeline, so `rdkit_descriptors` ships it as log10(1 + Ipc) for every SMILES dataset (Lennart, 2026-10-21); a tree model sees the same order.
-- `smiles` dropped, as in every SMILES dataset (2026-10-14).
-- Repaired row, 1: the QSAR-ready SMILES of silicon carbide (CASRN 409-21-2) gives silicon five bonds and no toolkit reads it; we use PubChem's structure for that CASRN. Its bits stay the package's.
-- 122 of the kept QSAR-ready structures still carry stereo markers, which the fingerprint ignores (two stereo forms can share a vector).
-- Duplicates dropped: the salt forms, hydrates and stereoisomers of one compound share the QSAR-ready parent structure and so the bit vector (594 repeated vectors over 1,314 rows; a few are hash collisions of different chemicals rather than one parent). We drop the 732 exact copies and then every row of the 20 bit vectors that occur with both classes (52 rows), as for wine_quality and jm1; nine parents still keep two rows with different vectors (tautomer or salt entries, all "No"), of which we drop the later row, so a test chemical never has its parent structure in train. 11,105 chemicals remain (931 very toxic, 8.4%; decision tables). The source kept the copies: 237 evaluation rows repeat a calibration vector (236 repeat a calibration InChIKey).
+- The authors' fingerprint leaves (Lennart, 2026-11-01, as for qsar_tid_11: the task goes from the structure to a prediction, and the bits are one modelling choice of the authors): 1,024 binary extended connectivity bits (paper, Sec. 2.2) computed with Dragon 7 (Sec. 2.7), radius 2 with 2 bits per fragment, the package's ECFP_1024_02 block. Until 2026-11-01 they shipped as `ecfp_1` to `ecfp_1024`; the definition still reads them, to check the package against the UCI file.
+- The structure ships as `SMILES`, the one feature: the QSAR-ready SMILES in RDKit's canonical form (`canonical_smiles`), declared in `special_features` (CLEAN-24 as amended, Lennart, 2026-11-01), so a benchmark encodes it as a structure and never as text; the recommended encoding is `data_foundry.v2.chemistry.encode_smiles` (RDKit's 2D descriptors, `Ipc` as log10(1 + Ipc) since the largest reaches 6e166, the 166 MACCS keys and the ECFP4 counts). Measured before 2026-11-01 on the shipped splits: default LightGBM's ROC AUC was 0.885 on the authors' bits, 0.897 on RDKit's descriptors alone and 0.901 on both; the MACCS keys next to bits and descriptors changed it by +0.009 (LightGBM) and -0.003 (random forest).
+- Accepted on 2026-10-21 and now outside the frame: the descriptor `rdkit_fr_Ar_COO` = 1 (one aromatic carboxylic acid group) marks 212 chemicals, 1 of them very toxic, a pure feature value; a fragment count of the QSAR-ready structure, computed before any animal test, so it cannot carry the outcome (Lennart, 2026-10-21). The recommended encoding still holds it.
+- Repaired row, 1: the QSAR-ready SMILES of silicon carbide (CASRN 409-21-2) gives silicon five bonds and no toolkit reads it; we use PubChem's structure for that CASRN.
+- 83 of the kept QSAR-ready structures still carry stereo marks (double-bond geometry); a 2D encoding ignores them.
+- Duplicates dropped, by structure (since 2026-11-01; by bit vector before): the salt forms, hydrates and stereoisomers of one compound share the QSAR-ready parent structure, the same 2D structure once the stereo marks are set aside (`canonical_smiles(..., stereo=False)`; 605 repeated structures over 1,345 rows). We drop the 720 exact copies and then every row of the 20 structures that occur with both classes (52 rows), as for wine_quality and jm1; ten compounds still keep two rows that are one InChIKey (tautomers the SMILES writes differently, all "No"), of which we drop the later row, so a test chemical never has its parent structure in train. 11,116 chemicals remain (933 very toxic, 8.4%; decision tables), 11 more than with the bit vectors, whose collisions had joined different chemicals. The source kept the copies: 233 evaluation rows repeat a calibration structure.
 - Note: the class depends on the counter-ion in some cases (sodium and potassium cyanide are very toxic, silver cyanide is not), which the parent structure does not show.
-- Split (Lennart, CC 2026-10-26, SPLIT-31 as amended; reopened from IID): grouped on the Bemis-Murcko scaffold of the QSAR-ready SMILES (`scaffold_groups`), 3 folds with 3 repeats. Chemicals without a ring (2,577, 23%) and those whose skeleton is the bare benzene ring (1,969, 18%: more than a tenth of the set and no series) are groups of their own. Since the extension of 2026-10-21 every row has its own QSAR-ready structure (InChIKey reproduced for 99.8%), so the scaffold is exact; the earlier reason for IID, structures linked by row order, no longer holds. All three source sets are random draws ("without supervised sampling of the chemicals based on structures", Mansouri et al. 2021), and the package's fixed training and test sets are not kept.
+- Split (Lennart, CC 2026-10-26, SPLIT-31 as amended; reopened from IID): grouped on the Bemis-Murcko scaffold of the QSAR-ready SMILES (`scaffold_groups`), 3 folds with 3 repeats. Chemicals without a ring (2,579, 23%) and those whose skeleton is the bare benzene ring (1,973, 18%: more than a tenth of the set and no series) are groups of their own. Since the extension of 2026-10-21 every row has its own QSAR-ready structure (InChIKey reproduced for 99.8%), so the scaffold is exact; the earlier reason for IID, structures linked by row order, no longer holds. All three source sets are random draws ("without supervised sampling of the chemicals based on structures", Mansouri et al. 2021), and the package's fixed training and test sets are not kept.
 - Note: the score depends on how close a test chemical is to the training chemicals, the applicability domain of any QSAR model (random forest ROC AUC 0.715 below a Tanimoto similarity of 0.5 to the nearest training chemical, 9.6% of test rows, and 0.945 above 0.7). Chemotypes carry part of that: held out by their Murcko scaffold (2,577 acyclic chemicals each its own group, benzenes grouped) a random forest fell from 0.900 to 0.852 over 2 x 3 folds, with the model ranking unchanged (2026-10-21).
 - Fit: approximate (Lennart, 2026-10-21: "a more simulated use case than a direct real case"). The test chemicals are members of the tested reference set; the untested chemicals of the project's 48,137-chemical prediction set have fewer close analogs: 11.0% at Tanimoto 0.7 or more (Morgan radius 2, 2,048 bits; median nearest similarity 0.486), against 16.3% for the test chemicals under the scaffold groups (median 0.519) and 24.7% under a random split (0.573).
-- Scope: the features are a vectorised molecular graph, as in qsar_tid_11. On repeat 0 of the shipped splits a random forest on the bits (ROC AUC 0.901) and LightGBM (0.885) match a similarity-weighted nearest-neighbour model of the paper's N3 kind (Tanimoto, weight sim^10: 0.893).
+- Scope: the input is the molecular structure, as in qsar_tid_11. Before 2026-11-01, on repeat 0 of the shipped splits, a random forest on the authors' bits (ROC AUC 0.901) and LightGBM (0.885) match a similarity-weighted nearest-neighbour model of the paper's N3 kind (Tanimoto, weight sim^10: 0.893).
 - Licence: the package's readme states it is freeware to be used with a reference to the paper; the UCI copy of the two calibration sets is CC BY 4.0.
 
 ## Splits
 
 Grouped splits on the Bemis-Murcko scaffold: all chemicals of one series stay on one side, so a model predicts chemicals of a series it has not seen; chemicals without a ring and those with the bare benzene ring are held out one by one. Chemicals with similar but not identical scaffolds can be on both sides.
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 7,187 to 7,740 rows, test 3,365 to 3,918 rows.
+3 repeat(s) x 3 fold(s) with seed 4267; train 7,307 to 7,571 rows, test 3,545 to 3,809 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 7389 | 3716 |
-| 0 | 1 | 7577 | 3528 |
-| 0 | 2 | 7244 | 3861 |
-| 1 | 0 | 7277 | 3828 |
-| 1 | 1 | 7311 | 3794 |
-| 1 | 2 | 7622 | 3483 |
-| 2 | 0 | 7187 | 3918 |
-| 2 | 1 | 7283 | 3822 |
-| 2 | 2 | 7740 | 3365 |
+| 0 | 0 | 7311 | 3805 |
+| 0 | 1 | 7350 | 3766 |
+| 0 | 2 | 7571 | 3545 |
+| 1 | 0 | 7318 | 3798 |
+| 1 | 1 | 7500 | 3616 |
+| 1 | 2 | 7414 | 3702 |
+| 2 | 0 | 7491 | 3625 |
+| 2 | 1 | 7434 | 3682 |
+| 2 | 2 | 7307 | 3809 |
 
 ## Group structure
 
@@ -266,12 +263,11 @@ One group is a chemical series: the chemicals that share one Bemis-Murcko scaffo
 
 | statistic | value |
 |---|---|
-| groups | 7,474 |
+| groups | 7,481 |
 | rows per group (min / median / max) | 1 / 1.0 / 135 |
 | largest group | 1.2% of the rows |
-| test groups per fold | 2,473 to 2,507 |
+| test groups per fold | 2,471 to 2,512 |
 | groups of two or more rows with a single label | 85.8% |
-| nearest neighbour in the same group | 26.7% of the rows (chance: 0.1%) |
 | label variance explained by the group | 0.80 (shuffled groups: 0.68) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
@@ -290,262 +286,77 @@ The training and test sets of the package's ECFP_1024_02 block equal the UCI fil
 
 ### 2. Copies of a parent structure dropped
 
-The bits are computed from the QSAR-ready parent structure, so salts, hydrates and stereoisomers of one compound share the bit vector (a few repeated vectors are hash collisions of different chemicals instead). One row per vector is kept, and vectors with both classes are dropped, which leaves 11,114 chemicals before the rows of the next decision.
+The QSAR-ready structure drops salts and solvents, and a 2D encoding drops the stereo marks, so salts, hydrates and stereoisomers of one compound are one structure. One row per structure is kept, and structures with both classes are dropped, which leaves 11,126 chemicals before the rows of the next decision.
 
-| rows of the package | rows | distinct bit vectors | distinct InChIKeys | very toxic rows | rows kept |
+| rows of the package | rows | distinct structures | distinct InChIKeys | very toxic rows | rows kept |
 |---|---|---|---|---|---|
-| bit vector occurs once | 10520 | 10520 | 10515 | 908 | 10520 |
-| repeated bit vector, one class | 1314 | 594 | 606 | 49 | 594 |
-| repeated bit vector, both classes | 52 | 20 | 20 | 27 | 0 |
-| total | 11886 | 11134 | 11141 | 984 | 11114 |
+| structure occurs once | 10541 | 10541 | 10535 | 910 | 10541 |
+| repeated structure, one class | 1293 | 585 | 586 | 47 | 585 |
+| repeated structure, both classes | 52 | 20 | 20 | 27 | 0 |
+| total | 11886 | 11146 | 11141 | 984 | 11126 |
 
 ### 3. Parents that survive twice reduced to one row
 
-The InChIKeys of the QSAR-ready structures show parents in two kept rows whose bits differ (a free acid and its salt or tautomer under two CASRNs). We keep the first row of each, so 11,105 chemicals remain.
+The InChIKeys of the QSAR-ready structures show compounds in two kept rows whose SMILES differ (tautomers under two CASRNs). We keep the first row of each, so 11,116 chemicals remain.
 
-| InChIKey | row kept | row dropped | bits in common | very toxic |
-|---|---|---|---|---|
-| BGRDGMRNKXEXQD-UHFFFAOYSA-N | train 123-33-1 | validation 5716-15-4 | 22 | False |
-| ZFSLODLOARCGLH-UHFFFAOYSA-N | train 3047-33-4 | validation 108-80-5 | 0 | False |
-| KQPKPCNLIDLUMF-UHFFFAOYSA-N | train 309-43-3 | train 76-73-3 | 69 | False |
-| AWYFNIZYMPNGAI-UHFFFAOYSA-N | train 07/10/3566 | train 9006-42-2 | 16 | False |
-| DDBREPKUVSBGFI-UHFFFAOYSA-N | train 50-06-6 | test 57-30-7 | 70 | False |
-| CEJLBZWIKQJOAT-UHFFFAOYSA-N | train 51580-86-0 | test 2893-78-9 | 34 | False |
-| NXFQHRVNIOXGAQ-UHFFFAOYSA-N | train 54-87-5 | validation 67-20-9 | 71 | False |
-| VIROVYVQCGLCII-UHFFFAOYSA-N | train 57-43-2 | train 64-43-7 | 62 | False |
-| YXIWHUQXZSMYRE-UHFFFAOYSA-N | train 5902-85-2 | test 149-30-4 | 26 | False |
+| InChIKey | row kept | row dropped | SMILES kept | SMILES dropped | very toxic |
+|---|---|---|---|---|---|
+| BGRDGMRNKXEXQD-UHFFFAOYSA-N | train 123-33-1 | validation 5716-15-4 | O=C1NNC(=O)C=C1 | OC1C=CC(=O)NN=1 | False |
+| PVTHJAPFENJVNC-UHFFFAOYSA-N | train 19408-46-9 | validation 6980-18-3 | CC1OC(OC2C(O)C(O)C(O)C(O)C2O)C(N)CC1N\C(=N)\C(O)=O | [H]/N=C(/NC1CC(N)C(OC1C)OC1C(O)C(O)C(O)C(O)C1O)\C(O)=O | False |
+| ZFSLODLOARCGLH-UHFFFAOYSA-N | train 3047-33-4 | validation 108-80-5 | O=C1NC(=O)NC(=O)N1 | OC1N=C(O)N=C(O)N=1 | False |
+| KQPKPCNLIDLUMF-UHFFFAOYSA-N | train 309-43-3 | train 76-73-3 | CCCC(C)C1(CC=C)C(=O)NC(O)=NC1=O | CCCC(C)C1(CC=C)C(=O)NC(=O)NC1=O | False |
+| AWYFNIZYMPNGAI-UHFFFAOYSA-N | train 07/10/3566 | train 9006-42-2 | SC(S)=NCCN=C(S)S | SC(=S)NCCNC(S)=S | False |
+| DDBREPKUVSBGFI-UHFFFAOYSA-N | train 50-06-6 | test 57-30-7 | CCC1(c2ccccc2)C(=O)NC(=O)NC1=O | CCC1(C(=O)NC(O)=NC1=O)c1ccccc1 | False |
+| CEJLBZWIKQJOAT-UHFFFAOYSA-N | train 51580-86-0 | test 2893-78-9 | OC1=NC(=O)N(Cl)C(=O)N1Cl | ClN1C(=O)NC(=O)N(Cl)C1=O | False |
+| NXFQHRVNIOXGAQ-UHFFFAOYSA-N | train 54-87-5 | validation 67-20-9 | OC1=NC(=O)CN1N=Cc1ccc(o1)[N+]([O-])=O | [O-][N+](=O)C1=CC=C(C=NN2CC(=O)NC2=O)O1 | False |
+| VIROVYVQCGLCII-UHFFFAOYSA-N | train 57-43-2 | train 64-43-7 | CCC1(CCC(C)C)C(=O)NC(=O)NC1=O | CCC1(CCC(C)C)C(=O)NC(O)=NC1=O | False |
+| YXIWHUQXZSMYRE-UHFFFAOYSA-N | train 5902-85-2 | test 149-30-4 | S=C1Nc2ccccc2S1 | Sc1nc2ccccc2s1 | False |
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
-
-Accepted on purpose:
-
-- `dataset_pure_feature_value`: rdkit_fr_Ar_COO = 1 (one aromatic carboxylic acid group) marks 212 chemicals, 1 of them very toxic: a fragment count of the QSAR-ready structure, computed before any animal test, so it cannot carry the outcome; aromatic acids are rarely acutely lethal (Lennart, 2026-10-21).
 
 ## Data checks
 
 ### Feature summary
 
-<details>
-<summary>Show the table (1,234 rows)</summary>
-
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| ecfp_1 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_2 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_3 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_4 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_5 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_6 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_7 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_8 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_9 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_10 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_11 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_12 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_13 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_14 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_15 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_16 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_17 | category | 0 | 0 | 2 | 1, 0 |
-| ecfp_18 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_19 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_20 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_21 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_22 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_23 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_24 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_25 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_26 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_27 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_28 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_29 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_30 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_31 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_32 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_33 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_34 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_35 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_36 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_37 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_38 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_39 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_40 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_41 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_42 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_43 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_44 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_45 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_46 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_47 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_48 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_49 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_50 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_51 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_52 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_53 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_54 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_55 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_56 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_57 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_58 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_59 | category | 0 | 0 | 2 | 0, 1 |
-| ecfp_60 | category | 0 | 0 | 2 | 0, 1 |
-
-(1,174 more rows not shown)
-
-</details>
+| very_toxic | category | 0 | 0 | 2 | No, Yes |
+| SMILES | string | 0 | 0 | 11116 | COc1cc(\[N+\](=O)\[O-\])ccc1N=NC(C(C)=O)C(=O)Nc1cc(Cl)ccc1OC, CCCCCCCC\[N+\](C)(C)\[O-… |
+| scaffold | string | 0 | 0 | 7481 | c1ccc2\[nH\]cnc2c1, c1ccncc1, C1CCCCC1, c1ccc2ccccc2c1, c1ccc(Cc2ccccc2)cc1, c1cc… |
 
 ### Target distribution
 
 | very_toxic | count | pct |
 |---|---|---|
-| No | 10174 | 91.62 |
-| Yes | 931 | 8.38 |
+| No | 10183 | 91.61 |
+| Yes | 933 | 8.39 |
 
 ### Numeric features
 
-<details>
-<summary>Show the table (208 rows)</summary>
-
-| index | count | mean | std | min | max |
-|---|---|---|---|---|---|
-| rdkit_MaxAbsEStateIndex | 11105 | 9.86588 | 3.00929 | 0 | 17.4275 |
-| rdkit_MinAbsEStateIndex | 11105 | 0.310024 | 0.395217 | 0 | 7.90275 |
-| rdkit_MinEStateIndex | 11105 | -0.877695 | 1.54113 | -9.81028 | 2.83333 |
-| rdkit_qed | 11105 | 0.559213 | 0.190438 | 0.00728333 | 0.946515 |
-| rdkit_SPS | 11105 | 15.467 | 8.78447 | 0 | 80.9524 |
-| rdkit_MolWt | 11105 | 275.975 | 158.738 | 16.043 | 6045.77 |
-| rdkit_HeavyAtomMolWt | 11105 | 258.461 | 149.952 | 12.011 | 5661.72 |
-| rdkit_ExactMolWt | 11105 | 275.542 | 158.524 | 16.0313 | 6041.59 |
-| rdkit_NumValenceElectrons | 11105 | 100.358 | 58.862 | 8 | 2314 |
-| rdkit_MaxPartialCharge | 11093 | 0.248563 | 0.128282 | -0.0775579 | 1.05205 |
-| rdkit_MinPartialCharge | 11093 | -0.389276 | 0.100126 | -0.754004 | -0.0148265 |
-| rdkit_MaxAbsPartialCharge | 11093 | 0.400532 | 0.0986519 | 0.029653 | 1.05205 |
-| rdkit_MinAbsPartialCharge | 11093 | 0.23815 | 0.113701 | 3.30088e-05 | 0.576052 |
-| rdkit_FpDensityMorgan1 | 11105 | 1.15312 | 0.328615 | 0.134146 | 2 |
-| rdkit_FpDensityMorgan2 | 11105 | 1.73509 | 0.423728 | 0.243902 | 2.78571 |
-| rdkit_FpDensityMorgan3 | 11105 | 2.21371 | 0.522889 | 0.333333 | 3.45455 |
-| rdkit_BCUT2D_MWHI | 11093 | 25.8792 | 15.4806 | 12.011 | 126.932 |
-| rdkit_BCUT2D_MWLOW | 11093 | 10.165 | 0.33273 | 8.813 | 15.8173 |
-| rdkit_BCUT2D_CHGHI | 11093 | 2.17991 | 0.221362 | -0.0775579 | 3.32332 |
-| rdkit_BCUT2D_CHGLO | 11093 | -2.13977 | 0.182426 | -2.81161 | -0.0775579 |
-| rdkit_BCUT2D_LOGPHI | 11093 | 2.23667 | 0.228179 | 0.1441 | 3.1257 |
-| rdkit_BCUT2D_LOGPLOW | 11093 | -2.18429 | 0.240592 | -3.61277 | 0.1441 |
-| rdkit_BCUT2D_MRHI | 11093 | 6.4396 | 1.3317 | 2.503 | 14.2817 |
-| rdkit_BCUT2D_MRLOW | 11093 | 0.12933 | 0.45663 | -1.11299 | 4.82616 |
-| rdkit_AvgIpc | 11105 | 2.36992 | 0.483459 | 0 | 4.31947 |
-| rdkit_BalabanJ | 11105 | 2.58105 | 0.773314 | 0 | 8.21094 |
-| rdkit_BertzCT | 11105 | 489.187 | 453.091 | 0 | 18664.9 |
-| rdkit_Chi0 | 11105 | 13.5985 | 7.85967 | 0 | 313.87 |
-| rdkit_Chi0n | 11105 | 10.7432 | 6.35201 | 0 | 232.295 |
-| rdkit_Chi0v | 11105 | 11.4979 | 6.46083 | 0 | 238.478 |
-| rdkit_Chi1 | 11105 | 8.76152 | 5.21224 | 0 | 198.197 |
-| rdkit_Chi1n | 11105 | 6.0786 | 3.83517 | 0 | 131.692 |
-| rdkit_Chi1v | 11105 | 6.83725 | 4.04223 | 0 | 136.881 |
-| rdkit_Chi2n | 11105 | 4.50999 | 3.14643 | 0 | 98.546 |
-| rdkit_Chi2v | 11105 | 5.44377 | 3.54506 | 0 | 101.722 |
-| rdkit_Chi3n | 11105 | 2.97948 | 2.32404 | 0 | 62.2678 |
-| rdkit_Chi3v | 11105 | 3.73173 | 2.76058 | 0 | 64.987 |
-| rdkit_Chi4n | 11105 | 1.99706 | 1.76856 | 0 | 39.9574 |
-| rdkit_Chi4v | 11105 | 2.56965 | 2.26484 | 0 | 41.879 |
-| rdkit_HallKierAlpha | 11105 | -1.3483 | 1.34175 | -42.39 | 4.43 |
-| rdkit_Ipc_log10 | 11105 | 4.13929 | 2.95799 | 0 | 166.767 |
-| rdkit_Kappa1 | 11105 | 14.1523 | 8.57706 | 0 | 354.649 |
-| rdkit_Kappa2 | 11105 | 6.49011 | 4.7883 | 0 | 180.464 |
-| rdkit_Kappa3 | 11105 | 8.7413 | 202.655 | -322.836 | 17602.1 |
-| rdkit_LabuteASA | 11105 | 112.563 | 63.6249 | 8.73925 | 2440.89 |
-| rdkit_PEOE_VSA1 | 11105 | 9.62454 | 11.3969 | 0 | 452.57 |
-| rdkit_PEOE_VSA10 | 11105 | 5.81893 | 9.19182 | -0.0619016 | 291.564 |
-| rdkit_PEOE_VSA11 | 11105 | 2.62922 | 5.51821 | 0 | 155.946 |
-| rdkit_PEOE_VSA12 | 11105 | 2.00715 | 5.77998 | 0 | 300.804 |
-| rdkit_PEOE_VSA13 | 11105 | 1.73091 | 4.21583 | 0 | 60.7088 |
-| rdkit_PEOE_VSA14 | 11105 | 3.72868 | 5.74882 | 0 | 96.4035 |
-| rdkit_PEOE_VSA2 | 11105 | 4.88219 | 6.48372 | 0 | 212.175 |
-| rdkit_PEOE_VSA3 | 11105 | 3.0044 | 5.38426 | 0 | 259.399 |
-| rdkit_PEOE_VSA4 | 11105 | 2.26353 | 6.38458 | 0 | 118.541 |
-| rdkit_PEOE_VSA5 | 11105 | 1.94347 | 5.88638 | 0 | 92.8075 |
-| rdkit_PEOE_VSA6 | 11105 | 25.5628 | 25.2461 | 0 | 290.446 |
-| rdkit_PEOE_VSA7 | 11105 | 26.6409 | 21.665 | 0 | 444.882 |
-| rdkit_PEOE_VSA8 | 11105 | 12.5725 | 12.3901 | 0 | 228.584 |
-| rdkit_PEOE_VSA9 | 11105 | 9.77776 | 11.3846 | 0 | 303.917 |
-| rdkit_SMR_VSA1 | 11105 | 12.687 | 13.1523 | 0 | 421.034 |
-
-(148 more rows not shown)
-
-</details>
+No numeric features to summarize.
 
 ### Categorical features
 
 <details>
-<summary>Show the table (2,055 rows)</summary>
+<summary>Show the table (12 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| ecfp_1 | 1 | 0 | 8709 | 78.42 |
-| ecfp_1 | 2 | 1 | 2396 | 21.58 |
-| ecfp_10 | 1 | 0 | 10907 | 98.22 |
-| ecfp_10 | 2 | 1 | 198 | 1.78 |
-| ecfp_100 | 1 | 0 | 10881 | 97.98 |
-| ecfp_100 | 2 | 1 | 224 | 2.02 |
-| ecfp_1000 | 1 | 0 | 10747 | 96.78 |
-| ecfp_1000 | 2 | 1 | 358 | 3.22 |
-| ecfp_1001 | 1 | 0 | 9716 | 87.49 |
-| ecfp_1001 | 2 | 1 | 1389 | 12.51 |
-| ecfp_1002 | 1 | 0 | 10852 | 97.72 |
-| ecfp_1002 | 2 | 1 | 253 | 2.28 |
-| ecfp_1003 | 1 | 0 | 10578 | 95.25 |
-| ecfp_1003 | 2 | 1 | 527 | 4.75 |
-| ecfp_1004 | 1 | 0 | 10528 | 94.8 |
-| ecfp_1004 | 2 | 1 | 577 | 5.2 |
-| ecfp_1005 | 1 | 0 | 10162 | 91.51 |
-| ecfp_1005 | 2 | 1 | 943 | 8.49 |
-| ecfp_1006 | 1 | 0 | 10872 | 97.9 |
-| ecfp_1006 | 2 | 1 | 233 | 2.1 |
-| ecfp_1007 | 1 | 0 | 10680 | 96.17 |
-| ecfp_1007 | 2 | 1 | 425 | 3.83 |
-| ecfp_1008 | 1 | 0 | 8266 | 74.43 |
-| ecfp_1008 | 2 | 1 | 2839 | 25.57 |
-| ecfp_1009 | 1 | 0 | 9154 | 82.43 |
-| ecfp_1009 | 2 | 1 | 1951 | 17.57 |
-| ecfp_101 | 1 | 0 | 10084 | 90.81 |
-| ecfp_101 | 2 | 1 | 1021 | 9.19 |
-| ecfp_1010 | 1 | 0 | 10460 | 94.19 |
-| ecfp_1010 | 2 | 1 | 645 | 5.81 |
-| ecfp_1011 | 1 | 0 | 10262 | 92.41 |
-| ecfp_1011 | 2 | 1 | 843 | 7.59 |
-| ecfp_1012 | 1 | 0 | 10717 | 96.51 |
-| ecfp_1012 | 2 | 1 | 388 | 3.49 |
-| ecfp_1013 | 1 | 0 | 10600 | 95.45 |
-| ecfp_1013 | 2 | 1 | 505 | 4.55 |
-| ecfp_1014 | 1 | 0 | 10592 | 95.38 |
-| ecfp_1014 | 2 | 1 | 513 | 4.62 |
-| ecfp_1015 | 1 | 0 | 10677 | 96.15 |
-| ecfp_1015 | 2 | 1 | 428 | 3.85 |
-| ecfp_1016 | 1 | 0 | 10439 | 94 |
-| ecfp_1016 | 2 | 1 | 666 | 6 |
-| ecfp_1017 | 1 | 0 | 10900 | 98.15 |
-| ecfp_1017 | 2 | 1 | 205 | 1.85 |
-| ecfp_1018 | 1 | 0 | 9329 | 84.01 |
-| ecfp_1018 | 2 | 1 | 1776 | 15.99 |
-| ecfp_1019 | 1 | 0 | 8467 | 76.24 |
-| ecfp_1019 | 2 | 1 | 2638 | 23.76 |
-| ecfp_102 | 1 | 0 | 7134 | 64.24 |
-| ecfp_102 | 2 | 1 | 3971 | 35.76 |
-| ecfp_1020 | 1 | 0 | 10862 | 97.81 |
-| ecfp_1020 | 2 | 1 | 243 | 2.19 |
-| ecfp_1021 | 1 | 0 | 10852 | 97.72 |
-| ecfp_1021 | 2 | 1 | 253 | 2.28 |
-| ecfp_1022 | 1 | 0 | 10868 | 97.87 |
-| ecfp_1022 | 2 | 1 | 237 | 2.13 |
-| ecfp_1023 | 1 | 0 | 10861 | 97.8 |
-| ecfp_1023 | 2 | 1 | 244 | 2.2 |
-| ecfp_1024 | 1 | 0 | 10917 | 98.31 |
-| ecfp_1024 | 2 | 1 | 188 | 1.69 |
-
-(1,995 more rows not shown)
+| SMILES | 1 | COc1cc(\[N+\](=O)\[O-\])ccc1N=NC(C(C)=O)C(=O)Nc1cc(Cl)ccc1OC | 1 | 0.01 |
+| SMILES | 2 | CCCCCCCC\[N+\](C)(C)\[O-\] | 1 | 0.01 |
+| SMILES | 3 | CSC(C)(C)CN=O | 1 | 0.01 |
+| SMILES | 4 | CN(C)C1c2ccccc2NC(=O)c2ccccc21 | 1 | 0.01 |
+| SMILES | 5 | CN1CCN(C2=Cc3ccccc3Sc3ccc(Cl)cc32)CC1 | 1 | 0.01 |
+| scaffold | 1 | c1ccc2\[nH\]cnc2c1 | 135 | 1.21 |
+| scaffold | 2 | c1ccncc1 | 124 | 1.12 |
+| scaffold | 3 | C1CCCCC1 | 121 | 1.09 |
+| scaffold | 4 | c1ccc2ccccc2c1 | 115 | 1.03 |
+| scaffold | 5 | c1ccc(Cc2ccccc2)cc1 | 94 | 0.85 |
+| very_toxic | 1 | No | 10183 | 91.61 |
+| very_toxic | 2 | Yes | 933 | 8.39 |
 
 </details>
 

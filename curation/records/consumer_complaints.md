@@ -13,6 +13,8 @@ tags:
 - Free Text (Sentences)
 collections:
 - TexTabBench
+- MulTaBench
+- STRABLE
 original_source: GOV Website
 year: '2026'
 domain: finance

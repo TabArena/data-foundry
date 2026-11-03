@@ -62,6 +62,12 @@ CC (2026-10-22, Lennart): issue 1: (a), drop `WheelType` and `WheelTypeID` under
 
 **Assessment (AI, 2026-10-22):** the four fields are dropped in `_clean`, with the conditional tests in the notes (WheelType: 1.2% predicted missing for bad buys, 24.9% observed; PRIMEUNIT/AUCGUART from October 2010: 42.3% predicted filled for bad buys, 7.8% observed) and why the host's test file does not keep them. LEAK-38's scope is amended (only fields whose timing cannot be tested) and a LEAK-10 mechanisms row names kick and expresso. LightGBM on the 9 windows: ROC AUC 0.750 with WheelType, 0.677 without (2026-10-21 run). REVIEW.md removed. Not built yet.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `Size` (a partial order).
+
+CC (2026-11-01, Lennart): marks on the review board of PR #37: Size stays unordered (chains within body types), noted in the definition.
+
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
 ## Reference
 
 faysal, Will Adams, and Will Cukierski. Don't Get Kicked!. https://kaggle.com/competitions/DontGetKicked, 2011. Kaggle.

@@ -24,3 +24,5 @@ Distributions look a bit too fake
 "It is simulated on the basis of demographic statistics from the US Census Bureau, according to the book from which it is from." from a Kaggle user.
 
 I agree, remove now
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `meps_health_expenditure` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

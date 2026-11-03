@@ -17,3 +17,5 @@ type_adapter_id: curation-record-v1
 ## Comments
 
 Data distributions look fake again; "file contains dataset created for simulating a customer conversion prediction"
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `hillstrom_email_campaign` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

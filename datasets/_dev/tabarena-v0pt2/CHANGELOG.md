@@ -1,5 +1,440 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-02, special features: SMILES and spectra under one declaration (PR #21)
+
+Lennart: the metadata for SMILES and spectra should be one general form, declared like the target column, so later
+kinds (a shipped embedding, a sequence) fit without a new attribute or field. `smiles_columns` (PR #15) and `spectra`
+(earlier today) are replaced by one attribute, and `task_metadata.semantic_columns` and `feature_groups` by one list.
+No container had been built with either.
+
+- **Definitions** declare `special_features = (...)`. Each entry is one special feature in one of two layouts: one
+  column, `Smiles(column="SMILES")` (a `SpecialColumn`), or a group of columns that hold one object together,
+  `Spectrum(name="serum_ms", prefix="M/Z:", ...)` (a `SpecialColumnGroup`). The 9 SMILES definitions (apistox,
+  drug_induced_autoimmunity_prediction, nci_aids_antiviral_screen, qsar_aquatic_toxicity, qsar_bioconcentration,
+  qsar_biodeg, qsar_fish_toxicity, qsar_oral_toxicity, qsar_tid_11) and the two spectra (pancreatic_cancer_mouse_detection,
+  micro_mass) moved over; their data and splits are unchanged. A definition that still sets `smiles_columns` or
+  `spectra` is refused with a pointer to `special_features`.
+- **The container** lists each in `task_metadata.special_features` (`SpecialFeature`: name, kind, layout, columns,
+  `encoding_required`, the recommended encoding, and `details` for what the kind adds: a spectrum's axis, unit,
+  technique, state). `special_features(container, kind)` lists them, and
+  `data_foundry.v2.special.encode_special_feature(df, feature)` encodes one in place of its columns, whatever the
+  kind. `encodings_for(feature)` gives the candidates, the recommended one first.
+- **One registry by kind** (`data_foundry.v2.special`): each kind fixes its layout, the dtype it casts to, its bundle
+  checks and its encodings. The two kind-specific bundle checks became one, `dataset_special_feature`, which runs
+  each kind's checks under their old slugs (27 checks per dataset instead of 28). Every `Encoding` now declares its
+  cache `scope`: `value`, `row` or `split`.
+- **READMEs:** the front matter's `semantic_columns` and `feature_groups` become `special_features`, and the feature
+  list gets one line per special feature. `dataset check` is clean on all 11.
+
+## 2026-11-02, raw mass spectra: two published candidate encodings; the default left to the benchmark (PR #21)
+
+The literature names no single best preprocessing of a raw mass spectrum, and the default is a benchmark choice
+(Lennart). Two candidates are registered next to the MALDIquant placeholder, each from the authors' own code:
+
+- `ms-driams-sqrt-sg21-snip20-snip100-tic-r1`, DRIAMS's settings (Weis et al. 2022, BorgwardtLab/maldi_amr): the
+  square root, Savitzky-Golay over 21 points, the SNIP baseline removed twice (20, then MALDIquant's default of 100
+  iterations), the total ion current. Their trim and 3 Da bins are left to the benchmark's width step.
+- `ms-cromwell-udwt-mm-tic-log2-r1`, the log tradition. Cromwell's wavelet denoising (MD Anderson's MATLAB code;
+  Daubechies filter with 8 coefficients, 10 levels, hard threshold at 6 times the finest level's median absolute
+  coefficient / 0.67) and its monotone-minimum baseline, then the total ion current and log2. Values of 0 are first
+  set to half the spectrum's smallest positive value, Ciphergen's rule. The undecimated transform is checked to
+  reconstruct a spectrum exactly without a threshold.
+
+`BENCHMARK_CHANGES_TODO.md` ("Spectra") has the decision procedure, fixed in advance, with the citations (Cruz-Marcelo
+et al. 2008, Wegdam et al. 2009, Meuleman et al. 2008). A sanity run on pancreatic's 60 splits (CPU models, ROC AUC):
+DRIAMS 0.60 to 0.66 and Cromwell 0.59 to 0.64, below MALDIquant's steps (0.65 to 0.69) for every model. Both sets of
+settings were made for spectra at the instrument's full resolution, and pancreatic's are binned at 400 ppm. One
+dataset decides nothing. No dataset changes.
+
+## 2026-11-02, spectra declared as feature groups with recommended encodings (PR #21)
+
+Andrej's proposal in PR #21 (a default preprocessing for spectra in the evaluation pipeline, the data kept as
+published), built on the path the SMILES columns took in PR #15. New rule CLEAN-26 and the guide
+`knowledge-curation/references/spectra.md`; the weighed factor "raw spectral bins lean out" under SEL-15 is amended:
+a declared spectrum is in scope unless a spectrum model is clearly better (SEL-12).
+
+- **Package.** A definition declares a spectrum in `spectra = (Spectrum(...),)`: its columns `<prefix><position>`, the
+  unit, the technique (`mass_spectrometry`, `raman`, `infrared`, `near_infrared`) and the state the source left it in
+  (`raw`, `processed`, `peaks`). The container records it in `task_metadata.feature_groups` (`FeatureGroup`: the
+  columns in axis order, the positions, the recommended encoding's spec id); `feature_groups(container, "spectrum")`
+  lists them. The columns stay numeric features, so a pipeline that ignores the groups runs as before.
+  `data_foundry.v2.spectra` has the encodings, each per spectrum with no fitting:
+  - `ms-sqrt-sg21-snip100-tic-r1` for a raw mass spectrum: MALDIquant's vignette steps (square root, Savitzky-Golay
+    over 21 points, SNIP baseline over 100 iterations, total ion current);
+  - `spectrum-as-is-r1` for a peak list, a processed spectrum and a vibrational spectrum, since RamanBench's leading
+    methods read raw spectra;
+  - `vib-als-snv-r1`, RamanBench's linear-model default (ALS baseline, SNV), the alternative to check on the first
+    vibrational datasets.
+  A new bundle check `dataset_spectrum`; the sentinel check skips spectrum bins (pancreatic's bin at m/z 6,496 holds
+  999 ion counts in 1.7% of the spectra, a reading); the probes see a spectrum in its recommended encoding, the clean
+  room as shipped.
+- **`pancreatic_cancer_mouse_detection`:** the serum spectrum is declared `raw` (`serum_ms`, 6,771 bins of 400 ppm, m/z
+  800 to 11,993). The data is unchanged; the README's bundle checks lose the sentinel warning.
+- **`micro_mass`:** the spectrum is declared `peaks` (`vitek_ms_peaks`, 1,082 of the 1,300 bins, the bin number as the
+  axis since the source gives no m/z). The data is unchanged.
+- **Measured** on pancreatic's 60 shipped splits, ROC AUC, raw bins / the recommended encoding / a reconstruction of
+  PR #21's chain (smoothing over 11 bins, a rolling-minimum baseline, division by the total, a log; the PR gives no
+  polynomial order or window, so order 2 and 101 bins). In parentheses, the splits where the default beats raw:
+
+  | Model | Raw | Recommended | PR #21's chain |
+  |---|---|---|---|
+  | TabPFN v3.5 | 0.659 | 0.690 (44/60) | 0.716 |
+  | HistGradientBoosting | 0.585 | 0.685 (55/60) | 0.642 |
+  | LightGBM | 0.577 | 0.676 (53/60) | 0.649 |
+  | Random forest | 0.536 | 0.681 (60/60) | 0.657 |
+  | PLS-DA, 5 components | 0.635 | 0.691 (47/60) | 0.713 |
+  | Logistic regression | 0.663 | 0.646 (26/60) | 0.708 |
+
+  The default stays the published workflow; PR #21's log suits TabPFN and the linear models better, which is one
+  decision for all raw mass spectra (open with the curator). TabPFN ran on one GPU (SkyPilot managed job 29360);
+  scripts and per-split results in `local-data-warehouse/_runs/2026-11-02_spectra/`.
+- **Benchmark:** `BENCHMARK_CHANGES_TODO.md`, "Spectra (feature groups)".
+- Not rebuilt; both builds were already stale.
+
+## 2026-11-02, `nci_aids_antiviral_screen` ships the field's binary target; `hiva_agnostic` retired (PR #15)
+
+The curator's marks on the review page of 2026-11-02, applied.
+
+- **`nci_aids_antiviral_screen`: the two active conclusions merge into one active class.** The target is now
+  `active_in_screen` (Yes/No, Yes the event) instead of the screen's three conclusions, and the metric follows it
+  from the `log_loss` fallback to `roc_auc`, declared as taken from the context. CLEAN-17 permits the merge because
+  the convention is established and the merge is tested: the 2007 HIVA challenge, MoleculeNet, OGB's `ogbg-molhiv`
+  and ChemPile all define this target on this file, over eighteen years, and it is the call a screening team acts on
+  (USE-5). 41,140 compounds, 1,404 active (3.4%) against 39,736 inactive. The merge keeps 7 compounds the three-class
+  framing dropped as conflicting (concluded CA under one registry number and CM under another), so the LEAK-20
+  conflict set falls from 46 compounds / 119 rows to 39 / 104; the ordered typing of the conclusions goes (CLEAN-25:
+  a binary target is not ordered). The potency scale the two active classes form stays in decision table 2, with the
+  selectivity-index measurement, so nothing that argued for the three classes is lost from the definition.
+  - Everything the prose quotes was measured again on the new frame: 20,774 scaffold groups (15,994 of them one
+    compound, the bare benzene ring 5.1%); 15.5% of the test compounds of repeat 0 have a training analog at
+    Tanimoto 0.7 or more against 32.0% under a random split (medians 0.517 and 0.606), 78.1% have one above 0.4;
+    ROC AUC 0.80 (0.78 to 0.82) over the nine splits, untuned LightGBM on the recommended encoding. The NSC
+    submission-batch experiment was re-run on the merged target: grouping the batches away as well moves ROC AUC
+    from 0.802 to 0.800, inside the fold spread, so the dependency stays disclosed rather than split away (SPLIT-30).
+  - `dataset check` clean (0 errors, 0 warnings); the task and leak probes raise no flag (random forest ROC AUC
+    0.817, LightGBM 0.806, the best single feature 0.641).
+  - The metric was confirmed in the second round of the same day: `ship` on the review page with the declared metric
+    marked as declared, now that the declaration is `roc_auc`. The folder's `REVIEW.md` goes with the last open
+    issue; the review panel's reports stay in the run folder of 2026-11-01. The record is `Yes`, `WIP (DF)` and
+    `checked_by: Lennart`, which is also the curator's verification of the AI screening of 2026-10-31 (it had never
+    been through the screening queue); the claim stays until the work reaches `main`.
+  - Two small edits came out of the consistency check of that round: the metric's reason now cites MET-4 by analogy
+    and says why the origin is `context` and not `original` (our source is the DTP release, which scores nothing),
+    and the review panel's screening chemist gets a second caveat into `curation_comments` before the file goes -
+    the library is the compounds the DTP held by 1999, so a prospective hit rate on a modern deck would be lower and
+    the model is triage in front of the plates, not a gate. `dataset check` clean again (0 errors, 0 warnings).
+- **`hiva_agnostic` removed from the working copy, retired as a duplicate.** The 2007 Agnostic Learning vs. Prior
+  Knowledge challenge's cut of this same screen: 4,229 compounds as 1,617 anonymous ChemTK bits. The linking run of
+  2026-11-01 recovered the registry number behind its rows (97% with confidence) and every one of its labels agrees
+  with the NCI file; its three parts are 42,678 compounds against the screen's structure-bearing 42,682, so it adds
+  no compound and no label the full release lacks, and the one thing it does add is a 2006 representation nobody can
+  recompute (PROV-6). The record is `No (Retired)` with `Duplicate`, `Outdated` and the existing `Anonymized`;
+  `v2_path` cleared, `WIP (DF)` and the claim dropped, while `DF: Yes`, the collection tags and the shipped
+  BeyondArena and TabArena v0.1 containers stay. The duplicate pointer from `hiv_qsar` moves to
+  `nci_aids_antiviral_screen`, with the OpenML 1039 chain spelled out.
+- **`qsar_biodeg`: the external validation set is screened, and the note says why it is not more of this dataset.**
+  The curator asked for the 670 chemicals of the paper's `External validation` sheet to be screened. They are their
+  own candidate, `ready_biodegradability_mansouri_external` (`TBD -> 2nd Tier`, priority 2): the 1,055 here were
+  curated from NITE/MITI, those 670 were "constructed from two data sources, Cheng et al. and the Canadian DSL
+  database" (Chakravarti and Alla, arXiv 1808.04456, Table 1, whose 356/699 and 191/479 match both sheets exactly),
+  and only 8 of their 670 canonical structures occur here, one with the opposite class. Definition note only, no
+  change to the data; `dataset check` clean.
+- **`qsar_bioconcentration`: `logKOW` stays, `logKOW_type` goes.** The curator's question of the second round was
+  what the table's logKOW is worth against RDKit's own logP, and whether keeping it next to `logKOW_type` leaks.
+  Measured over the 30 splits with untuned LightGBM on the recommended encoding: the table's `logKOW` is worth
+  +0.0121 macro ROC AUC over the encoding alone (better on 22 of 30 splits, -0.0241 log loss on 21 of 30), while
+  `logKOW_type` is worth -0.0013 and adds nothing at all on top of the structure (0.6806 with and without it). Alone,
+  `logKOW` scores 0.629 against 0.594 for RDKit's `MolLogP` and 0.628 for its 16 logP-related descriptors together; a
+  model on the encoding predicts the table's `logKOW` out of fold at R-squared 0.877, mean absolute error 0.44 log
+  units. No leak in either: the flag carries macro ROC AUC 0.534 by itself against 0.5 for chance, and its class
+  shares (lipid storage 61% of the measured rows, 48% of the predicted ones) say which chemicals get a logP measured,
+  not which mechanism they have.
+  - On that the curator kept `logKOW` and asked for `logKOW_type` to go, "unless this creates any problems". It did
+    create one: CLEAN-22 is a Must and lets a column leave for what it is, never for how little it adds, and three
+    shipped datasets keep exactly this kind of flag (`pva_revenue_prediction_kddcup98`'s `AGEFLAG`, `DATASRCE` and
+    `LIFESRC`, `thyroid_discordant`'s five `*_measured`, `sf_permit_time`'s `point_source`). Put to the curator with
+    four ways out, the answer was to drop it with the fact stated: `logKOW_type` records how the authors filled their
+    2015 table, not a property of the chemical, which is the shape of `early_learning_predictors`' `teacher_duration`
+    (CLEAN-22, 2026-10-30), where the flags that stay sit in the actor's own record. Written as a CLEAN-22 Cases row,
+    kind `applied`; a Must takes no exception line.
+  - The shipped frame is now 776 rows and 2 features, the `SMILES` and the `logKOW`. What the 122 predicted rows are
+    is no longer readable from the data, so the counts and their split by class became decision table 4 of the
+    README, and CLEAN-24's "measured properties stay (qsar_bioconcentration's logKOW)" gained the qualifier that a
+    column mixing a measurement with a prediction of the same property stays whole under USE-6. `dataset check`
+    clean (0 errors, 0 warnings); the task probes raise no flag (random forest macro ROC AUC 0.678, LightGBM 0.689,
+    best single feature 0.589) and the leak probes none (all features 0.705, shallow tree 0.581, no exact feature
+    copy across the split, 1-NN agreement 0.621 against a chance of 0.462). The `REVIEW.md` goes with the issue.
+  - `molecules.md`'s bullet on calculated against measured properties said the paper naming the prediction models is
+    paywalled; it was read on 2026-11-01 and is quoted now, and the bullet says where the provenance of a mixed
+    column belongs: the notes and a decision table, not a per-row flag.
+- **Knowledge files.** `molecules.md` said flatly that the NCI screen's three conclusions stay as the source draws
+  them; it now states CLEAN-17's actual test and records this decision, and its metric bullet distinguishes shipping
+  the field's label from keeping finer classes. Cases rows added under CLEAN-17 (the merge) and PROV-6 (the structure
+  release wins over a fingerprint build of the same rows, the shape of the three pairs flagged 2026-10-31).
+
+## 2026-11-01, `nci_aids_antiviral_screen` added: the NCI DTP AIDS antiviral screen (PR #15)
+
+- Added as `datasets/_dev/tabarena-v0pt2/nci_aids_antiviral_screen/`: 41,133 compounds of the NCI Developmental
+  Therapeutics Program's AIDS antiviral screen (May 2004 conclusions joined to the 1999 structure file by registry
+  number), each one a structure and the screen's own conclusion — confirmed active 386, confirmed moderately active
+  1,011, confirmed inactive 39,736. The structure is the only feature, as a `SMILES` column (CLEAN-24 as amended);
+  the split is scaffold-grouped (20,772 groups, 15,993 of them one compound, the bare benzene ring 5.1%); the metric
+  is the `log_loss` fallback, since both the source's metrics score a merged binary target (MET-2, MET-11). The
+  target ships as an ordered scale (CLEAN-25). `dataset check` clean; the task, leak, group and dtype probes raise no
+  flag on 5 or 9 splits.
+- A full review panel ran (claim, column and split auditors, domain practitioner, blind reviewer, precedent checker,
+  advocate and critic with one rebuttal each, mediator, editor). Its settled changes are applied:
+  - **The source's charge field is now read.** The file marks cations with a code the reader dropped, so 690 shipped
+    compounds carried a hydrogen atom that is nowhere in the file (a sodium counter-ion as sodium hydride, a
+    phosphonium centre as a neutral five-bonded phosphorus). The file's own usage settles the meaning: it writes that
+    code and the ordinary +1 code on the same motifs (four-bonded phosphorus 538 against 81, bare sodium 426 against
+    25), and it is not strict V2000. The repair recovered 2 of the 609 unreadable records and merged 6 duplicate
+    keys, so the count is 41,133; the measured effect on scores is nil. MoleculeNet's copy carries the same artefact,
+    so our structures now differ from MoleculeNet's and OGB's on those 690 compounds (PROV-15, EV-4).
+  - **The NSC submission-batch dependency is disclosed, not split away** (SPLIT-30, LEAK-38 format, precedent
+    sarcoma): compounds registered consecutively share activity far above chance (0.343 against a 0.034 base rate,
+    0.283 across scaffold groups), but the registry number is not shipped, so no model can see it, and grouping the
+    batches away costs macro ROC AUC 0.8215 to 0.8184, inside the fold spread.
+  - The metric reason, the quoted numbers and the encoding description were corrected; all were measured again on the
+    repaired data and the shipped 1,407-column encoding.
+- **Weislow et al. 1989 was read** (the curator supplied the PDF): it defines the soluble-formazan assay, the primary
+  screen's protocol, and the rule that a compound showing at least 30% protection is re-tested — which is where the
+  word "confirmed" in the labels comes from. It does not define the three conclusions; "moderately" and "category" do
+  not occur in it. So the CA/CM boundary is a DTP reporting convention, and PROV-17 no longer applies. The boundary is
+  instead visible in the source's released files: on the 387 actives where both an EC50 and an IC50 were reached, the
+  selectivity index separates CA from CM at ROC AUC 0.948 and one threshold reproduces 89.7% of the labels. On that
+  evidence the fit reads `direct`.
+- Open for the curator in the folder's `REVIEW.md`: the target framing (the three conclusions against the field's
+  binary active/inactive cut, which MoleculeNet, OGB, HIVA and ChemPile use), and the retirement of `hiva_agnostic`
+  (PROV-6), the 2007 challenge cut of this same screen. Not built.
+
+## 2026-11-01, three QSAR datasets ship the structure instead of the authors' descriptors (PR #15)
+
+The structures the UCI copies left out come from the authors' own releases, so these three follow CLEAN-24 as amended
+(the task goes from the structure to a prediction; the descriptors are one modelling choice of the authors). In each
+case the authors' file is the shipped file plus the structures, row for row, which the definition asserts when it
+loads: every shared column is identical on every row, so the link needs no key.
+
+- `qsar_biodeg`: the paper's supporting information (`ci4000213_si_001.xlsx`, sheet `Train+Test`; taken from the
+  Internet Archive, since pubs.acs.org refuses a command-line download) holds the same 1,055 rows in the same order,
+  with CAS-RN, SMILES, the class and all 41 descriptors. The Dragon descriptors leave; `SMILES` is the one feature;
+  scaffold-grouped, 872 groups. Three stereoisomer pairs stay (maleic/fumaric acid, sorbitol/mannitol,
+  dieldrin/endrin), each agreeing on its class and sharing a scaffold. Task probes, 30 splits: random forest ROC AUC
+  0.929, LightGBM 0.928, no flags. The sheet `External validation` holds 670 further chemicals (657 new): a candidate
+  of its own, noted in the record.
+- `qsar_fish_toxicity`: the authors' workbook (`toxicity_data_fish.xlsx`, Milano Chemometrics) holds the same 908 rows
+  in the same order, with the 6 descriptors identical on every row. They leave, which also settles the mild optimism
+  they carried (chosen by a genetic algorithm on 726 chemicals that overlap our test folds, LEAK-31). The target now
+  comes from the workbook at full precision; the UCI file rounds LC50 to 3 decimals. Scaffold-grouped, 786 groups.
+  Task probes: LightGBM R^2 0.640, random forest 0.614, no flags.
+- `qsar_aquatic_toxicity`: the authors' workbook (`toxicity_data.xlsx`) holds the same 546 rows in the same order,
+  with the 8 descriptors and LC50 identical on every row. They leave, which settles the kept potential leak the record
+  named (LEAK-31). Scaffold-grouped, 463 groups. Task probes: LightGBM R^2 0.573, random forest 0.548, no flags.
+- Not recoverable, so they keep their descriptors: `bioresponse` (anonymous, scaled descriptors, no identifiers) and
+  `clock_protein_toxicity` (internal codes; the structures exist only as drawings in a Word figure).
+- All three: `dataset check` clean, records carry the CC and an Assessment, CLEAN-24's Cases row added. Not built.
+
+## 2026-11-01, SMILES ship as typed structure columns; recommended encodings for SMILES, dates and text (PR #15)
+
+- CLEAN-24 amended (Lennart, 2026-11-01; path C of the discussion doc "SMILES Handling in Data Foundry and TabArena
+  v0.2"): a molecule's structure ships as a SMILES column, listed in the definition's new `smiles_columns`, and the
+  container records it in `task_metadata.semantic_columns` (`SemanticColumn`, type `smiles`, with the recommended
+  encoding's spec id), so a benchmark encodes it as a structure and never as text. Definitions no longer ship RDKit
+  descriptors in place of the string. Until TabArena reads the field, it must not pass such a column to its text
+  embedding (`BENCHMARK_CHANGES_TODO.md`).
+- The recommended encodings (`data_foundry.v2.encodings`, `recommended_encodings()`): a SMILES as RDKit's 2D
+  descriptors with the 166 MACCS keys and the ECFP4 counts (`encode_smiles`, spec
+  `rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1`; the ECFP4 counts added by default since they helped once, on qsar_tid_11,
+  Lennart: "just one pipeline choice that we can later investigate"); a date as skrub's
+  `DatetimeEncoder(add_weekday=True, periodic_encoding="circular")`, as BeyondArena (`encode_datetime`); text as TF-IDF
+  fitted on the training rows and as e5-small-v2 sentence embeddings, both to be checked (`encode_text_tfidf`,
+  `encode_text_e5`). New extra `encodings` (skrub, sentence-transformers). The probes encode SMILES columns this way
+  (`dataset_io.py`); the bundle check `dataset_smiles_column` parses them with the pinned RDKit, and a SMILES column
+  raises no `dataset_identifier_column`.
+- `apistox`: `SMILES` ships (RDKit's canonical form; 17 strings change) in place of RDKit's 199 descriptors. The 141
+  salts and complexes stay as published: the largest fragment would make 86 rows copies of another (triclopyr and
+  picloram triethylammonium both reduce to triethylamine), so `canonical_smiles` keeps every fragment by default. Rows
+  and windows unchanged.
+- `qsar_bioconcentration`: `SMILES` ships in place of RDKit's 193 descriptors; logKOW stays. The isomer decision table
+  now compares the authors' 9 descriptors with the recommended encoding (every chemical has its own values).
+- `qsar_oral_toxicity`: `SMILES` is the one feature, in place of RDKit's 208 descriptors and the authors' 1,024 ECFP
+  bits (Lennart: the bits are one modelling choice, as for qsar_tid_11); the accepted `dataset_pure_feature_value`
+  warning on `rdkit_fr_Ar_COO` leaves with that column. Copies are found on the 2D structure instead of the bit vector
+  (720 exact copies, 20 structures with both classes, 10 tautomer pairs by InChIKey): 11,116 chemicals (933 very
+  toxic), 11 more than before, since bit collisions had joined different chemicals.
+- `drug_induced_autoimmunity_prediction`: `SMILES` ships typed as a structure (Andrej kept it as a plain string on
+  2026-10-26), and the source's 176 RDKit descriptors leave, since the recommended encoding reproduces them (scaffold-
+  grouped ROC AUC 0.771 against 0.772 with LightGBM) and adds the MACCS keys (0.796). The stereoisomer pairs are found
+  on the stereo-free SMILES: the same 9 pairs, 587 drugs, 140 positive. The accepted `dataset_identifier_column`
+  warning leaves.
+- `qsar_tid_11`: the ChEMBL 17 structure ships as `SMILES`, the one feature; the authors' 1,024 FCFP6 bits leave as one
+  modelling choice (Lennart: "the real task here is going from smiles to a prediction"). RDKit recomputes none of them
+  exactly. LightGBM R^2 on the scaffold splits: 0.645 with the bits, 0.601 with the recommended encoding, 0.658 with
+  RDKit's ECFP4 counts added to it. The 474 stereoisomer rows stay (own potencies, 2026-10-21 decision); the two
+  duplicate-row warnings are gone.
+- All five: `dataset check` clean. Records carry the CC and an Assessment. Not built.
+
+## 2026-11-01, scaffold groups: `qsar_tid_11` grouped from ChEMBL 17 structures, `drug_induced_autoimmunity_prediction` on `scaffold_groups`
+
+- `qsar_tid_11`: scaffold-grouped splits in place of random ones (Lennart, 2026-11-01; SPLIT-31 as amended). The file
+  carries ChEMBL compound ids, and ChEMBL 17's structure table (`chembl_17_chemreps.txt.gz`, the release the data was
+  drawn from, a new raw file with its download command and checksum) gives every one its structure; the definition
+  cuts out the file's compounds once (`prepared_raw_files`) and joins them on `MOLECULE_CHEMBL_ID`. 2,529 groups for
+  5,704 compounds (21 ring-less alone, the bare benzene ring 2%). Close training analogs of the test compounds fall
+  from 79.7% to 59.2%; on the definition's splits LightGBM's R^2 is 0.747 under IID and 0.657 grouped, and the task
+  probes raise no flag (on the fingerprint alone; the structure joins the features in the entry above). Rows
+  unchanged (5,704). Record:
+  [`curation/records/qsar_tid_11.md`](../../../curation/records/qsar_tid_11.md). `dataset check` clean otherwise. Not
+  built.
+- `drug_induced_autoimmunity_prediction`: the split groups come from `scaffold_groups`, the helper of
+  qsar_bioconcentration and qsar_oral_toxicity, in place of the definition's own scaffold code. The groups are the same
+  443 (the bare benzene ring holds 7%, under the tenth that would split it), but their names change, so the drugs fall
+  into other folds. `dataset check` clean. Not built.
+- `BENCHMARK_CHANGES_TODO.md`: new section "Encodings and their caches" (one cache contract for every encoding, the
+  encoding's compute time added on top of the benchmark record, and no SMILES column into the text embedding).
+
+## 2026-11-01, targets in words; counts with a cut end stay ordered categories (PR #37)
+
+- The target rule (CLEAN-25; Lennart: "yes decode the targets too ... provide orderd cateogricals for the targets of
+  all classification datasets"): a classification target ships its classes as words. All 109 classification targets
+  checked; 34 were codes. 30 binary targets are "No"/"Yes" with "Yes" the event (gallstone_disease's 0 is gallstones
+  present, anes_voting_2026's 2 is voted, hepatitis_survival_prediction's 1 is death, indian_liver_patient_dataset's 1
+  a liver patient); "Yes" sorts second, the positive class of every metric. Four multiclass targets carry the source's
+  class names (cardiotocography, eryhemato_squamous_disease, forensic_glass_identification, hepatitis_c_prediction).
+  Ordered targets where the classes form a scale: cardiotocography (normal < suspect < pathologic),
+  dementia_prediction (no dementia < very mild < mild), hepatitis_c_prediction (blood donor < hepatitis < fibrosis <
+  cirrhosis). Nominal targets and targets with a state outside a scale (open_university's "Withdrawn") stay
+  unordered; `otto`'s anonymized classes keep their names. BENCHMARK_CHANGES_TODO: align probability columns to the
+  container's categories by name.
+- Counts with a cut end stay ordered categories of the source's levels, the cut end a level of its own (CLEAN-14,
+  made explicit; Lennart: "keep what makes sense from the context and not lose the information if possible, so that
+  might be ordered categorical as an only option"). For a few hours they were numbers (the cut end at its bound) with
+  censoring flags; tested on hr_analytics and lending_club, the flag moved no model by more than half a percent, and
+  the curator chose the lossless form without deciding types by model runs. The 13 columns (hr_analytics
+  `experience` and `last_new_job`, lending_club `emp_length`, student_portuguese `failures`, mic `INF_ANAM`, ANES
+  VCF0138 and VCF9122, six early_learning_predictors counts) are as before.
+- Decoding changes the rows' content, and the row order of a shuffled task follows the content (`order_rows`):
+  the IID splits of the decoded datasets will differ from today's containers at the next build.
+  forensic_glass_identification's new order puts the nominal target's codes at rho -0.21 with position, a chance
+  outcome (0.4% of shuffles): the warning is accepted with that reason. `dataset check` on the 40 definitions: no
+  error; against main no new warning. Not built.
+
+## 2026-11-01, codes decoded into the codebook's words; scores without words are numbers (PR #37)
+
+- The curator's rule (Lennart: "if we can replace the numbers with a description that is obviously not continous then
+  orderd categorical makes sense, otherwise in some cases the numeric version would make more sense"; on a 1-10 school
+  rating: "1.5 is well defined more or less"): a code whose codebook says in words what each level is carries the
+  words; a score or rating with no words per level, or words only at its two ends, is a number; bands keep their band
+  text. CLEAN-12 and CLEAN-14 amended; `decode(df, CODE_LABELS)` in the v2 API (a code without a label raises), after
+  `set_missing`.
+- Six agents read the codebooks for every coded column of 44 definitions
+  (`local-data-warehouse/_runs/2026-10-30_ordinal/decode/`). In 29 definitions 377 coded columns now carry their
+  words (BI-RADS density "almost entirely fatty" to "extremely dense", ames' ratings "very poor" to "very excellent",
+  the ANES codes, coil_2000's percentage and guilder bands,
+  early_learning_predictors' answers), and 54 scores and ratings are numbers again (california_house_prices_2020's
+  school ratings, miami_housing's `structure_quality`, eryhemato_squamous_disease's ten findings, student_portuguese's
+  1-5 ratings, the ANES 7-point scales with words only at the ends, cirrhosis' stage, ljubljana's degree of
+  malignancy). 395 ordinal columns in 53 definitions. Left as codes: anonymized and undocumented codes (amex, ieee
+  except `id_14`, porto_seguro, the STEG data, alfa_battle), 0/1 flags, the targets, website_phishing's signals (the
+  curator kept their codes), and the cases put to the curator on the dataset sheets.
+- Found by reading the words: pva_revenue_prediction_kddcup98's `DOMAIN_ses` read the urban scheme's codes 2 and 3
+  as average and lowest (6,504 and 5,270 rows); each row is read by its own scheme now. ljubljana_breast_cancer's
+  bands are ordered categories of the bands, not their midpoints. ANES: VCF0130's 0 is religion not ascertained or not
+  asked (missing); age 0, the thermometers' 98/99 and 998/999 and other codes that mean unknown are missing (CLEAN-10).
+  Undocumented codes are missing: early_learning_predictors (`pra_cotlands_visits`, `pra_free_play`,
+  `pra_free_play_outdoor`, `obs_water`, `pri_bank` 0), credit_card_clients_default `MARRIAGE` 0, pva `AGEFLAG` blank
+  and `GENDER` A, C and Unknown.
+- The curator's answers on the ANES sheet: church attendance in 2024 reads the filter's "No" (stored as 9) as never,
+  except the short form; 2020's VCF0130a recovers never from VCF0130; "all of life" is the respondent's age, so
+  VCF9001 is a number and VCF9002 bands those rows by age; the 40 master-code columns carry the appendix's words.
+  CLEAN-12 has a table of what ships as words and what as numbers.
+- `dataset check` on the 29 definitions: no error; against main three warnings fewer and none new. Not built.
+
+## 2026-11-01, the curator's second marks on PR #37: cycles, partial orders, two cleanings (PR #37)
+
+- Cycles (Lennart: "if there is a concept such as 1.5 of the scale that is reasonably between 1 and 2 (like half day),
+  then a number makes sense as the true measure is continuous", and "there is weekday 1.5 which is between monday and
+  tuesday"): a weekday, a month or an hour is a position in a continuous cycle. Shipped as numbers it is a number:
+  5g_energy_consumption `weekday_number` (a category since 2026-10-31) and rossmann_store_sales `DayOfWeek` (an
+  unordered category before) are numbers again; bad_customer_detection `month`, miami_housing `month_sold`,
+  rossmann_store_sales `CompetitionOpenSinceMonth` and mobile_churn `month` stay numbers (ordered for a few hours
+  today, then reverted when the curator asked why weekdays differ from days). Shipped as names it stays an ordered
+  category (forest_fires, garments, home_credit, hotel_booking_demand, rain_in_australia). CLEAN-14 amended.
+- Partial orders stay unordered, and the definition says so and names the lines (Lennart): notes added to mic,
+  horse_colic_survival, audiology_diagnosis, predict_students_dropout_and_academic_success, covertype, force_2020,
+  rossmann_store_sales, kick, fiat_500 and distribution_transformers_at_cauca_department. CLEAN-14 amended.
+- clock_protein_toxicity: the two molecules the descriptor software failed on are dropped (169 molecules remain): -1
+  counts of acidic and basic groups, 62-68 descriptors at 0 that at least 95% of the other molecules have non-zero, and
+  9-18% of their descriptors outside the others' 1-99% range (0.7% for a typical molecule). The source gives no
+  structures, so they cannot be recomputed; an exception to CLEAN-11 (Lennart).
+- early_learning_predictors: `language_match` ("Assessment language matches home", 0/1) held the enumerator's reason
+  in place of the answer in 16 rows; each explains why the child was assessed in another language than at home, so
+  they are 0 (CLEAN-11).
+- 442 ordinal columns in 58 definitions. `dataset check` on the 16 definitions changed today: no error, no warning.
+  The review board's dataset sheets are rebuilt from the definitions as they stand. Not built.
+
+## 2026-11-01, `marketing_campaign` retired: the iFood hiring case's mock data (issue #38)
+
+- `marketing_campaign` is retired: `No (Retired)` with `AHDS` (SEL-16, PROV-3), Lennart's "Don't ship" on the review
+  page of issue #38. The folder is removed and the record's `v2_path` cleared; `DF: Yes`, the collection tags and the
+  BeyondArena container stay, as for `churn` and `healthcare_insurance_expenses`.
+- Why: the Kaggle file is, cell for cell, the sample data of the iFood Data Analyst Case, a hiring test whose PDF
+  says the data "mocks metainformation on the customer" of a made-up company. Its constant columns reproduce the
+  case's campaign figures, and the data carries a generator's marks that reach the label: identical customers with
+  different labels, a uniform `Recency` unrelated to spend, flat joining dates, `MntFishProducts` on a 1.3 grid, and
+  planted values. The evidence is in the record's Assessment of this date.
+- `customer_personality_analysis`, the same file, keeps its `No`; `Duplicate` of `marketing_campaign` replaces
+  `Missing source information`.
+- PR #37 still edits this folder (ordinal typing); its changes to `dataset.py` and the generated `README.md` lapse
+  with the retirement.
+
+## 2026-10-31, the curator's marks on PR #37's review board applied (PR #37)
+
+- A level outside a scale that is a state of its own (no basement, not prescribed, no checking account): the column
+  is ordered, and the state is missing when the column has no other missing value, else the lowest level (Lennart:
+  "In data foundry, we want to keep the right state independent of what the downstream benchmark does"). The 35
+  columns left unordered for such a state are ordered now. By meaning, a state that is simply not on the scale (Other,
+  a mixed electrical system, BI-RADS 0 "needs more imaging", a calm wind, a lapsed registration, heloc's "all other"
+  and no bureau record) is missing even where the column has other missing values (18 columns), and ANES's "all of
+  life" residence is the top level. distribution_transformers' `client_type` stays unordered (commercial, industrial
+  and official clients beside the residential strata 1-6).
+- The ordinal scales the sources ship as numbers are ordered categories too (point 3: 164 columns, and the 3 of low
+  confidence below), as the right state of the data; that AutoGluon's preprocessing drops the order is a benchmark
+  TODO (`BENCHMARK_CHANGES_TODO.md`). Months, weekdays and wind directions are ordered in their usual order (10
+  columns; the wrap is not shown).
+  heart_disease's `cp` is ordered by how typical the angina is (asymptomatic < non-anginal pain < atypical < typical
+  angina), from the clinical logic, not the outcome; for the same reason miami_housing's `structure_quality` (a 1-5
+  quality code without labels, doubted for the high prices of the homes rated 3) is ordered by its codes.
+  early_learning_predictors' `child_stunted` is ordered.
+- Codes shipped as numbers are categories (point 4): early_learning_predictors' 18 answer codes, 5g_energy_consumption
+  `weekday_number`, sdss_17 `cam_col`, home_credit_default_stability_1m `max_persontype_1072L`, anes_voting_2026
+  `VCF0104` and sberbank's `ID_metro`; brazilian_ecommerce's zip prefixes stay numbers (nearby prefixes are nearby
+  places). ieee_fraud_detection's `TransactionID` is dropped: a row number in time order (Spearman 1.0 with
+  `TransactionDT`), an identifier (CLEAN-3).
+- Placed by meaning: infrared_thermography_temperature's age band 21-30 between 21-25 and 26-30; hotel_booking_demand's
+  Undefined meal is SC (the paper: "Undefined/SC - no meal package"); heloc's two delinquency scales ordered by the
+  FICO data dictionary, their unknown, all-other and no-record codes missing.
+- Labels (Lennart: "we want the right labels in all cases"): credit_g's source is UCI 573 (South German Credit,
+  Groemping 2019), every code labelled from its code table, 57 coded values and 10 typos in amount or age corrected, 9
+  ordinal scales. immoscout_german_house_prices' `Condition`, `Furnishing_quality`, `Type` and `Heating` carry
+  ImmoScout24's own codes: the scrape's English labels are permuted, the missing value swapped with a real level in
+  each column; 3,548 of the houses match an April 2020 scrape that keeps the codes, and each label maps to one code
+  for 93-100% of its matches. `Furnishing_quality` is then ordered; `Condition` stays unordered (a partial order).
+- The orders of low confidence checked again without the label: regensburg_pediatric_appendicitis'
+  `Appendix_Wall_Layers` (intact < partially raised < raised, from the German record of the 2021 release; `upset`, 1
+  child, missing) and `Perfusion` (by blood flow, no < hypoperfused < present < hyperperfused) ordered, with a note
+  that a blank `Perfusion` also means unremarkable in this file; website_phishing's `SFH` ordered, with a note on
+  which end is phishy; churn_telco_south_asia's user types, the STEG `reading_remarque` and marketing_campaign's
+  `Education` unordered with a note.
+- gallstone_disease's `Comorbidity`: the undocumented 2 (1 row) and 3 (2 rows) recoded to 1, as each row lists one
+  disease; the rows kept (CLEAN-11). Cloud cover 9 (sky obscured, the cloud amount cannot be estimated) missing in
+  ashrae_great_energy_predictor_iii_1m and rain_in_australia (CLEAN-10). amex_non_iid_1m's `D_87` became constant
+  with the -1 fix of 2026-10-30 (1 or missing, as in AMEX's data), a warning the entry below missed: accepted with
+  its reason.
+- 443 ordinal columns in 59 definitions. CLEAN-14 rewritten with the marks; Cases rows for CLEAN-3, 10, 11, 12 and
+  14. `dataset check` on the 67 changed definitions: no error, and against main two warnings fewer and none new. Not
+  built.
+
 ## 2026-10-31 (Tunisian build verified, Myunghwan)
 
 - Built `tunisian_fraud_detection_challenge` as format 2: UUID `01a19475-b104-7ff0-82db-ed3aeb71f3a7`, checksum `v2:84d2d72d5ffe91a80168cd461f4367b63635ee74467d97d96c89e6de9ce57972`, from clean definition commit `4bc27fd6d8b49f8c9c16446bb7e85132ce90943b`.
@@ -23,6 +458,98 @@
 - Added `tunisian_fraud_detection_challenge` for annual principal tax-adjustment estimation on the supplied log scale with source RMSE. Keep21,295taxpayer-years and103features after identity/redundancy cleaning; test all four eligible cohorts2015–2018.
 - Full actual-data probes and independent review support nontrivial cohort signal. Historical feature/label availability and sample selection remain explicit limitations; no causal deployment claim or final scientific acceptance. The review was subsequently settled on 2026-10-31; its full evidence is preserved in the private curation run.
 - Two annual-time warnings remain unaccepted. No saved container build, source publication or rule amendment.
+
+## 2026-10-30, ordinal scales typed in order; counts with an open end; proxy missing codes; credit_g relabelled (PR #37)
+
+- Ordinal type: `FeatureTypes(ordinal={col: [levels, lowest first]})` casts a column to an ordered category (a value
+  that is no level raises), and `set_missing(df, {col: codes})` sets the codes outside a scale that mean unknown to
+  missing. The container already kept the order; the README lists ordinal columns with their levels. An ordinal
+  column may also be named among the categorical ones.
+- 220 ordinal scales in 39 definitions are ordered categories now, in the order of each source's codebook (often not
+  the order of the codes): seven agents read the codebooks for 1,980 candidate columns of 95 datasets
+  (`local-data-warehouse/_runs/2026-10-30_ordinal/`). anes_voting_2026's 20 likes-dislikes indices and counts are
+  numbers. Codes outside a scale that mean unknown (don't know, refused, not asked, undocumented codes) are missing.
+  Left unordered, for the curator's review board: 39 columns with a level outside the scale that is a state of its own
+  (no basement, not prescribed, no checking account), partial orders, cycles and orders of low confidence. Left as
+  they are: 167 ordinal scales shipped as numbers (point 3) and 22 codes shipped as numbers (point 4).
+- Counts with an open end ("3 or more", "> 20") are one ordered level, with no indicator column; the dtype probe flags
+  them (`open_end`) and unordered scales (`ordinal_like`). CLEAN-14 amended (Lennart); the handling is the AI's
+  proposal under review.
+- Experiment (unordered categories against the codes in order, an open end with an indicator, and the open level as
+  missing with an indicator; LightGBM, a linear model and TabPFN v3.5 on the shipped splits): on 55 datasets the codes
+  in order lowered LightGBM's error against unordered categories by 1.56% on average (median 0.12%; 12 datasets better
+  beyond two standard errors, 3 worse), most on small clinical tables of grades (eryhemato_squamous_disease 31%,
+  audiology_diagnosis 15%, cirrhosis_patient_survival_prediction 11%, mic 7%); a linear model on the bare codes lost
+  where a scale is not monotone in the target (mean -1.04%; 11 better, 13 worse). On the 20 datasets with an open end
+  the ordered level did best for LightGBM (+0.68%; with an indicator +0.58%; the open level as missing with an indicator
+  +0.38%, worse than the ordered level on 11 of 20). TabPFN v3.5 (public weights, on SkyPilot) gains less from the
+  order, as it handles unordered categories well: +0.25% on average over the 55 datasets (10 better, 6 worse, most on
+  ames_housing, 4.7%), and on the 20 with an open end the ordered level did best again (+0.46%; with an indicator
+  +0.37%; missing with an indicator +0.34%, worse than the ordered level on 12 of 20).
+- Found along the way: credit_g relabelled by the corrected code table (Groemping 2019, UCI 573; Statlog's german.doc
+  is wrong for 8 columns, the codes match one to one); amex_non_iid_1m's -1 in raddar's 55 integer columns and
+  clock_protein_toxicity's -1 counts are missing; immoscout_german_house_prices' `Condition` and
+  `Furnishing_quality` labels are permuted in the scrape (noted, unordered); ashrae's cloud cover 9 (sky obscured)
+  noted as rain_in_australia does; early_learning_predictors cleaned (two spellings of Normal merged, a date, three
+  copies dropped, 26 free-text columns as strings; 739 features, its one warning gone).
+- `dataset check` on the 43 changed definitions: no new error or warning. Not built.
+
+## 2026-10-30, `early_learning_predictors`: Stata missing codes, 44 counts and amounts numeric, a timer dropped (PR #35)
+
+- `.a` and `.b` are Stata's extended missing values, exported to the CSV as text in 46 columns (2,388 and 29 cells
+  after the target filter, only in the 2020-2022 rounds). They occur only where the question was asked (all 40 `.a` of
+  the DSD subsidy amount are programmes that said they receive it), while a skipped question is blank, so they are
+  unanswered questions; neither the codebook nor the DDI metadata defines them. `_clean` sets them to missing and
+  makes the 46 columns numbers (45 survive the cleaning; `count_aftercare` is dropped later), and they leave
+  `categorical`: the `count_register_*` and `count_staff_*` counts, the `pri_amount_*`, `pri_expense_*` and
+  `pri_fees_*` amounts in rand per month, `pri_capacity`, `pri_dsd_year` and `teacher_duration` (minutes), all
+  `numeric` in DataFirst's codebook. The other categorical columns stay: multi-select answers such as `health` and
+  `obs_hazard`, free text, 0/1 flags.
+- `teacher_duration` is dropped (Lennart): the minutes the teacher's socio-emotional rating form was open, a timer of
+  the data collection like the three `duration_elom` timers dropped before, no property of the child or the facility.
+  It exists only in 2020-2022 (26% of the children), 39% of its values are 0 (93% in the 2020 round) and 1.4% exceed
+  a day, up to 29 days; its Spearman correlation with the score is -0.06, and what signal it has follows the survey
+  round, which is dropped as `data_year`. CLEAN-22 Cases row. Without it, one more pair of rows is an exact copy (3)
+  and one more feature vector carries two scores (30 rows).
+- Notes made to match the code: the assessor's id (`id_enumerator`) is dropped with the other ids, as the code has
+  done since the migration, so the curation note no longer says it is kept, `known` no longer lists the assessor and
+  `fit_reason` no longer names it as a gap; `changes` names both drops. 742 features.
+- Raised by Adrian in issue #36 (on the BeyondArena notebook, whose typing the v2 definition had copied) and found by
+  the dtype sweep the same day. CC line in the record, CLEAN-10 Cases row. `dataset check`: 0 errors, the one warning
+  it had before (`certificate_register` and `certificate_registration_npo` are copies). Not built.
+
+## 2026-10-30, a dtype probe and one sweep of every definition; `qsar_biodeg`'s fragment counts numeric (PR #35)
+
+- Why `bank_marketing` went unnoticed: CLEAN-14 already said a count stays numeric, but only the `/add-dataset` panel
+  (checklist P7, the column auditor) applies it, and most folders came from the BeyondArena notebooks without one. The
+  0/1 sweep of 2026-10-21 looked only at columns holding 0 and 1.
+- New probe: `dtype_probes.py` (knowledge-data-foundry) on `curation_probes/dtypes.py` (knowledge-curation). Per
+  column, it compares the dtype with the values, the name and the source's codebook (read from UCI's and OpenML's APIs
+  through the definition's source link) and flags the columns to look at. The meaning decides. CLEAN-14, P7, the column
+  auditor and step 5 of `/add-dataset` now run it.
+- CLEAN-14 amended (Lennart): an ordinal scale is decided case by case, categorical by default; a column whose meaning
+  is unknown is looked up before it is typed.
+- `qsar_biodeg`: `N073_chemical_substructure` and `C026_chemical_substructure` are numeric. They are the atom-centred
+  fragments N-073 and C-026, which count the atoms of that type (0 to 3 and 0 to 12); the definition had typed them
+  categorical while their meaning was unknown. The curation note on "numeric-ordinal" features is replaced. CC line in
+  the record, CLEAN-14 Cases row. `dataset check`: 0 errors, 0 warnings. Not built.
+- The sweep, once, over the 163 definitions (outputs in `local-data-warehouse/_runs/2026-10-30_dtype_sweep/`): 489
+  flagged columns in 48 datasets, 358 of them only `numeric_levels` (codes, ids). Beyond the two datasets above,
+  the findings went to the curator and nothing else changed here: `early_learning_predictors` (45 counts and amounts
+  typed categorical, with Stata missing codes `.a` and `.b` among the numbers), counts with open ends typed
+  categorical (`mic`'s `INF_ANAM`, `hr_analytics`' `experience`), ordinal scales typed numeric (`gallstone_disease`'s
+  HFA, `ljubljana_breast_cancer`'s bin midpoints, `in_vehicle_coupon_recommendation`'s `time`) and codes typed numeric
+  (`sberbank_housing_market_forecasting`'s `ID_metro`, `brazilian_ecommerce`'s zip prefixes,
+  `ieee_fraud_detection`'s `TransactionID`).
+
+## 2026-10-30, `bank_marketing`: `campaign` and `previous` numeric again (issue #34)
+
+- `campaign` (contacts in this campaign, 1-63) and `previous` (contacts before it, 0-275) are counts, as the UCI
+  description gives them, and leave `categorical` in `_feature_types` (CLEAN-14: a count stays numeric). The BeyondArena
+  notebook had typed them categorical (48 and 41 levels), and the migration to v2 carried that over; TabArena v0.1 had
+  them numeric. Raised by Adrian in issue #34; Lennart's decision is a CC line in the record and a CLEAN-14 Cases row.
+- `dataset check`: no new findings; the README now lists both as int64. Not built: the container
+  `01a111fc-7c2d-7441-b859-646c9bfbf380` still has them as categories until the next build.
 
 ## 2026-10-30 - Verified Lusaka and RF-PCP builds
 
@@ -224,6 +751,20 @@ record, audit or PR that motivated it.
 - No container changes: the task summary is not stored in the container. The regenerated READMEs of the first four
   also show the checksum the current code gives (their builds were already stale; the checksum is the same with the
   old text), and the infrared README no longer lists the `REVIEW.md` that was deleted on 2026-10-21.
+
+## 2026-10-26, `drug_induced_autoimmunity_prediction`: the SMILES stays in the data (PR #15)
+
+- `drug_induced_autoimmunity_prediction`: `SMILES` is kept as a string feature instead of being dropped (177
+  features instead of 176; 587 rows and the scaffold groups unchanged). The source's descriptors lose structure a
+  model can use: next to them, MACCS keys computed from the SMILES lift the scaffold-grouped ROC AUC of TabPFN 3.5
+  from 0.803 to 0.826 and of a random forest from 0.770 to 0.795 (`~/claude_jobs/dia_review/`), so we ship the
+  string rather than one chosen fingerprint. This overrides, for this dataset only, the 2026-10-14 rule of dropping
+  the SMILES in every SMILES dataset.
+- `drug_induced_autoimmunity_prediction`: `dataset_identifier_column` accepted (one SMILES per row): the structure
+  is the input of the task, not a row id, as for `phiusil_phishing`. The stereoisomer de-duplication still compares
+  the descriptors only, so the same 9 pairs are found. Follows Andrej's decision in the record
+  [`curation/records/drug_induced_autoimmunity_prediction.md`](../../../curation/records/drug_induced_autoimmunity_prediction.md).
+  `dataset check` clean. Not built.
 
 ## 2026-10-26, the cross-dataset REVIEW.md retired; README trimmed
 

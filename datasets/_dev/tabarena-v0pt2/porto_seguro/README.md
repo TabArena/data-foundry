@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: porto_seguro
 container_format: 2
-checksum: v2:df80aa2a1697cf3beed8433b7ea945123ba8204ccfafd23c97f96a684a3bb90b
+checksum: v2:8a63057586bb639244d266c9c64a314f61b71797ae232411def334a927b67d41
 build:
   uuid: 01a111fb-fc94-70f9-9598-6ab89e8b220d
   checksum: v2:8f647d10da8ad0b5f14091489e40c4d88dfa457607fd1f474e1f49d68b23d72e
@@ -68,7 +68,7 @@ decisions: []
 
 Binary classification of `target`, scored with `roc_auc` on IID splits. 595,206 rows and 37 features. Source: Kaggle (2017).
 
-Built as `01a111fb-fc94-70f9-9598-6ab89e8b220d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:df80aa2a1697cf3beed8433b7ea945123ba8204ccfafd23c97f96a684a3bb90b`, so the build is stale. See [Build](#build).
+Built as `01a111fb-fc94-70f9-9598-6ab89e8b220d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8a63057586bb639244d266c9c64a314f61b71797ae232411def334a927b67d41`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -176,11 +176,11 @@ The first 5 of 595,206 rows of the final frame (random rows: the frame is shuffl
 
 | target | ps_ind_01 | ps_ind_02_cat | ps_ind_03 | ps_ind_04_cat | ps_ind_05_cat | ps_ind_06_bin | ps_ind_07_bin | ps_ind_08_bin | ps_ind_09_bin | ps_ind_10_bin | ps_ind_11_bin |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 1 | 2 | 2 | 1 | 0 | 0 | 0 | 0 | 1 | 0 | 0 |
-| 0 | 1 | 1 | 3 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 |
-| 0 | 7 | 1 | 5 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
-| 0 | 1 | 1 | 3 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 |
-| 0 | 0 | 1 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
+| No | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
+| No | 0 | 3 | 4 | 0 | 0 | 1 | 0 | 0 | 0 | 0 | 0 |
+| No | 0 | 2 | 0 | 0 | 6 | 0 | 0 | 1 | 0 | 0 | 0 |
+| No | 5 | 2 | 1 | 0 | 4 | 0 | 0 | 1 | 0 | 0 | 0 |
+| No | 1 | 1 | 6 | 1 | 0 | 0 | 1 | 0 | 0 | 0 | 0 |
 
 ## Curation notes
 
@@ -192,6 +192,8 @@ We start with the train.csv from Kaggle.
 - In general, the 2nd and 3rd place did a lot of interesting feature engineering for interactions. We do not copy these as the data is clean as it is.
 - We drop the index as it seems to be uninformative for this dataset.
 - There exist only 6 duplicates in the training data. We drop them as the portion is too small to be meaningful.
+- The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
+  event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
@@ -227,7 +229,7 @@ Default splits.
 | ps_ind_02_cat | category | 216 | 0.04 | 4 | 1.0, 2.0, 3.0, 4.0 |
 | ps_car_01_cat | category | 107 | 0.02 | 12 | 11.0, 7.0, 6.0, 10.0, 4.0, 9.0, 5.0, 8.0, 3.0, 0.0 |
 | ps_ind_04_cat | category | 83 | 0.01 | 2 | 0.0, 1.0 |
-| target | category | 0 | 0 | 2 | 0, 1 |
+| target | category | 0 | 0 | 2 | No, Yes |
 | ps_ind_06_bin | category | 0 | 0 | 2 | 0, 1 |
 | ps_ind_07_bin | category | 0 | 0 | 2 | 0, 1 |
 | ps_ind_08_bin | category | 0 | 0 | 2 | 0, 1 |
@@ -264,8 +266,8 @@ Default splits.
 
 | target | count | pct |
 |---|---|---|
-| 0 | 573513 | 96.36 |
-| 1 | 21693 | 3.64 |
+| No | 573513 | 96.36 |
+| Yes | 21693 | 3.64 |
 
 ### Numeric features
 
@@ -372,4 +374,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:df80aa2a1697cf3beed8433b7ea945123ba8204ccfafd23c97f96a684a3bb90b` |
+| stale | yes: the definition now gives checksum `v2:8a63057586bb639244d266c9c64a314f61b71797ae232411def334a927b67d41` |

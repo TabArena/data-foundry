@@ -46,6 +46,8 @@ CC (2026-10-21, Lennart): proposal accepted: the fallback rmse on the log transc
 
 CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `x264_ugc_encoding_time` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @inproceedings{deneke2014video,

@@ -99,3 +99,5 @@ CC (2026-10-26, Lennart): issue 2: drop the trips that end within 100 m of their
 CC (2026-10-26, Lennart): verdict ship.
 
 **Assessment (AI, 2026-10-26):** what the encoding is worth here, from the review panel of 2026-10-20 (before the 100 m cut): LightGBM (300 trees, learning rate 0.1, 63 leaves, one fit per split) scored R^2 0.503 / 0.482 / 0.498 on the June / May / April windows with the local hour, weekday and day of year, and 0.483 / 0.452 / 0.462 with AutoGluon's date parts.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `chicago_taxi_trip_duration` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

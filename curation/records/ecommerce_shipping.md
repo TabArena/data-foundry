@@ -45,6 +45,8 @@ Conclusion: the file is generated, not a company export. Proposed verdict No (Re
 
 CC (2026-10-01, Lennart): **Retired (No (Retired), AHDS + Missing source information).** Main reason: two of the columns are fill patterns of the row counter, so the file is generated, not a company export. `Warehouse_block` is fully determined by `ID mod 6` (cycle D, F, A, B, C, F) and `Mode_of_Shipment` by the position in a 137-ID cycle (22 Flight, 93 Ship, 22 Road); not one of the 10,999 rows breaks either pattern. Supporting: the target is generated in two ID blocks (IDs 1-3,135 all late; after that AUC 0.506), and the source cannot be traced (the cited GitHub project does not exist; the uploader never answered the source question). Removed from the TabArena v0.2 working copy; the shipped TabArena v0.1 notebook is unchanged.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `usaid_scms_shipment_delivery` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 https://www.kaggle.com/datasets/prachi13/customer-analytics

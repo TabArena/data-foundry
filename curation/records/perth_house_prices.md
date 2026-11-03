@@ -64,3 +64,5 @@ CC (2026-10-26, Lennart): the declared metric, RMSLE on the price, is checked as
 **Assessment (AI, 2026-10-26):** applied: `UNIT` (1,060 unit rows), windows every third month back from December 2020 (367-569 test sales, train 22,065-32,678 rows), the SPLIT-10 exception in the splits comment. `dataset check` clean; task probes (9 windows): LightGBM R² 0.860, linear 0.756, no flag. No open issue is left, so the folder's REVIEW.md is removed.
 
 CC (2026-10-26, Lennart): verdict ship.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `perth_property_prices_2024` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

@@ -48,6 +48,8 @@ CC (2026-10-21, Lennart): "no it also bind to what experts did by default, so ag
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source r2 — the competition's R^2 (Kaggle evaluation page).
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `bosch_production_line_performance` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 https://www.kaggle.com/competitions/mercedes-benz-greener-manufacturing

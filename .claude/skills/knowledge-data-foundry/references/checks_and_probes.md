@@ -36,6 +36,12 @@ The probe methods are the general library in
 [`../scripts/`](../scripts/), load a Data Foundry dataset (its definition, or with `--built` the built container named
 in the README's build record) through `dataset_io.py` and call it. The probes use the shipped target and splits; when
 the definition changed the target, run the same checks on the source's labels in a scratch notebook (`ds = workbench()`).
+A special feature (`special_features`) enters every probe in its recommended encoding (`encode_special_feature`), as
+a benchmark would give it to a model: a SMILES as RDKit's 2D descriptors, the MACCS keys and the ECFP4 counts, a
+spectrum as its columns with the encoded values; the blind reviewer's clean room keeps the values as shipped. The
+bundle check `dataset_special_feature` finds each feature's columns and runs its kind's checks:
+`dataset_smiles_column` parses every SMILES with the pinned RDKit, `dataset_spectrum` checks that a spectrum's columns
+are numeric and finite and warns about missing intensities.
 
 ```bash
 K=.claude/skills/knowledge-data-foundry/scripts
@@ -44,18 +50,22 @@ K=.claude/skills/knowledge-data-foundry/scripts
 .venv/bin/python $K/group_probes.py <unique_name> [--repeats 3] [--permutations 100]
 .venv/bin/python $K/hidden_groups.py <unique_name> [--built] [--include-grouped] [--out DIR]     # or --all
 .venv/bin/python $K/generated_probes.py <unique_name> [--built] [--out DIR]                     # or --all
+.venv/bin/python $K/dtype_probes.py <unique_name> [--codebook URL] [--no-fetch] [--out DIR]    # or --all --jobs 4
 .venv/bin/python $K/duplicate_contamination.py <unique_name> [--built] [--row-details] [--losses packet.json] [--out result.json]
 .venv/bin/python $K/label_maturity.py <unique_name> [--built] --positive-label '"Yes"' --reference-start YYYY-MM-DD --reference-end YYYY-MM-DD [--min-rate-ratio 0.9] [--out result.json]
 .venv/bin/python $K/tuned_results.py <unique_name> [--feature auto]
 ```
 
-* `leak_probes.py`: probes 1-6 and 14 of the leak table (all features, each feature alone, missing indicators, drop
-  one, exact copies across the split with and without string and datetime columns, each long string column alone as
+* `leak_probes.py`: probes 1-6, 14, 17 and 18 of the leak table (all features, each feature alone, missing indicators,
+  drop one, exact copies across the split with and without string and datetime columns, each long string column alone as
   text (TF-IDF + SVD on the train side, character n-grams for one-token strings), nearest-neighbour agreement and the
   label-free distance score, a depth-2 and depth-3 tree on the label), with untuned LightGBM on the first shipped
   splits. With more columns than `--max-single-features` only the most informative enter the single-feature fits, and
   the output says how many were screened out, so a 49,000-column omics table takes minutes. A multiclass ROC AUC is the
-  mean over the classes present in the test fold. Group columns are never features.
+  mean over the classes present in the test fold. Group columns are never features. For a classification task it also
+  scores the number format alone (probe 17), and, when the raw file is one table holding the target column, counts per
+  column and class the cells on a straight line between their neighbours in the raw file's order (probe 18: gaps filled
+  by interpolation).
 * `task_probes.py`: dummy baselines against three untuned model families (a fourth on more than 1,000 inputs:
   `selected_linear`, the linear model on the 500 inputs a univariate F-test picks on each train side), on every shipped
   split up to 30 for a dataset of at most 5,000 scored units and the first 5 otherwise, scored per group for a
@@ -74,6 +84,19 @@ K=.claude/skills/knowledge-data-foundry/scripts
   evidence either way, not 0%.
 * `generated_probes.py`: the four marks of generated data (`formula`, `rule_leaves`, `independent_columns`,
   `uniform_within_class`).
+* `dtype_probes.py`: is each column typed by its meaning (CLEAN-14), on the frame the split step leaves. It reads the
+  source's codebook from the definition's first UCI or OpenML link (types and descriptions, matched by column name) and
+  flags, strongest first: a categorical column the codebook or the name calls a count or an amount (`quantity_words`),
+  one of numbers the codebook types as numeric (`codebook_numeric`), a numeric column the codebook types as categorical
+  (`codebook_categorical`), an unordered category whose levels look like a scale (`ordinal_like`: bands, ranges, open
+  ends, scale words, or a codebook that says ordinal, grade or stage), a level with an open end (`open_end`: `<1`,
+  `>20`, `3+`, `50plus`, `gt8`, or a codebook's "three and more"; named also on an ordered category, so the open end
+  stays visible), a categorical column whose levels look like a count (`count_like`: 0 or 1 upwards, the first ten all
+  there, rarer as they grow), a numeric column named as a code (`code_name`), and any other categorical column of
+  numbers (`numeric_levels`, mostly codes). An ordered category raises no flag but `open_end`. The few levels that are
+  no number in a column of numbers are listed: often proxy missing codes (`.b`, `-3`) that made a count categorical
+  (CLEAN-10). UCI types coded answers as `Integer` too, and names often differ from the codebook's (the output says how
+  many matched): read the codebook where they do. A flag is a question; the meaning decides.
 * `duplicate_contamination.py`: all shipped folds, without row sampling or model fits. Counts exact predictor
   profiles in train for each test row, split by same/different labels and one/two-or-more matches. Target, declared
   group and scoring columns are excluded; dates and text predictors are retained. `--exclude` explicitly changes

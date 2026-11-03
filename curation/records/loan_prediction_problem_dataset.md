@@ -24,3 +24,5 @@ Unclear data source and state.
 Not enough information and data looks quite fake. Moreover it says practice task.
 
 Given that we are missing this information, we exclude it.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `hmda_mortgage_application_decision` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

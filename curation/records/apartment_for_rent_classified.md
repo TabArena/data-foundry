@@ -21,3 +21,5 @@ type_adapter_id: curation-record-v1
 ## Comments
 
 Classified seems to have no meaning. Another house price prediction dataset, also text is boilerplate with text starting with the location and sometimes showing the real description. Moreover, text clearly contains the prices almost always. Unclear source
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `immoscout24_germany_rental_offers` (TBD -> 2nd Tier, priority 1). Each is screened in its own record; this record's verdict stays the curator's.

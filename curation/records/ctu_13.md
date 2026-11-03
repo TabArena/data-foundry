@@ -55,6 +55,8 @@ CC (2026-10-27, Myunghwan): "so in this case, we decide no for this dataset". Re
 
 **Assessment (AI, 2026-10-29):** Preserve the already applied curator rejection. The actual-data review retained 799,689 labelled records after excluding unknown/background annotations and unsupported infected-source annotations. The shallow two-port rule gave ROC AUC 0.852 in the first fold, close to the separate train-only LightGBM result of 0.858, with the other folds nearly perfect. Representations and training caps differed, so this is a case-specific low-headroom judgment, not a completed matched/tuned TP-4 proof. No Trivial or proven-leak marker is added. The unshipped draft and review were archived, the v2 pointer cleared, and the official claim released. Raw data, probes and the independent panel are preserved locally. Earlier screening text above is historical, not the current verdict.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `ctu_sme_11` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Garcia, S., Grill, M., Stiborek, J., Zunino, A., "An empirical comparison of botnet detection methods", Computers & Security 45:100-123, 2014.

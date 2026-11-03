@@ -121,6 +121,9 @@ class MobileChurn(AbstractCuratedDataset):
         - Duplicates kept: 9 rows are exact copies, and 8 feature vectors occur with both labels.
         - Anomaly: negative amounts in seven spending and top-up columns (refunds or corrections); kept as published.
         - Note: the licence is "unknown" (Kaggle data card, OpenML 44231). The year 2019 is that of the Kaggle upload; the data are from 2013.
+        - Cycle (2026-11-01, CLEAN-14, Lennart's rule): `month`, the record month (6 to 8), stays a number. A weekday or
+          a month is a position in a continuous cycle (weekday 1.5 is Monday noon), and the source ships it as a number;
+          named weekdays and months are ordered categories instead.
     """
 
     # Task

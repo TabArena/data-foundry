@@ -40,3 +40,5 @@ type_adapter_id: curation-record-v1
 - Priority: gap - (sport, under Other), use case - (no decision named), source - (a competition page, masked data, no codebook found), shape - (few hundred games, event joins), risk - (in-match statistics).
 
 A Zindi football challenge to predict league/match winners; the record has no detail, so it is unclear whether this is a per-match outcome classification (in scope) or a ranking/forecasting-of-future-results framing (out of scope). Sports outcome data is typically split across multiple match/team tables needing joins and often demands a temporal split to avoid leakage. Given the ambiguity it belongs in 2nd Tier pending inspection. A human must verify the exact target (match result vs league winner vs ranking), the temporal/grouped split needs, table structure, and size.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `football_match_probability_prediction` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.

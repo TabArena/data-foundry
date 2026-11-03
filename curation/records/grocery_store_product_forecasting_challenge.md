@@ -4,7 +4,7 @@ name: grocery-store-product-forecasting-challenge
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> 2nd Tier
-priority: 2
+priority: 1
 decision_markers:
 - Time-series (Forecasting)
 tags:
@@ -43,3 +43,5 @@ Zindi competition whose stated task is to forecast the number of products sold p
 ---
 
 forecast the number of products sold per store per week for a local grocery store
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `favorita_store_sales` (TBD -> 2nd Tier, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

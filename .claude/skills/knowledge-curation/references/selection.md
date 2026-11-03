@@ -142,7 +142,9 @@ merged into PROV-1 and PROV-2 on 2026-10-19.)
 
 * **Engineered acoustic measures the field uses as the instrument** (+, SEL-15): jitter and shimmer in the Parkinsons
   voice data can be in scope.
-* **Raw spectral bins** (−, SEL-15): they lean out.
+* **A spectrum** (SEL-15, amended 2026-11-02, Lennart): a measured spectrum is a reading of the entity, and declared as
+  one (CLEAN-26) the benchmark encodes it as the field does; it is in scope unless a spectrum model is clearly better
+  (SEL-12). It was "raw spectral bins lean out" until the spectra had a declared type and a default encoding.
 * **Clear provenance** (+): a strong sign of a good dataset; the factor is weighed under PROV-1
   ([provenance.md](provenance.md), Weighed factors).
 
@@ -161,7 +163,7 @@ above 5 (first version, 2026-10-19, to be tuned; it orders the review of added d
 | A clear use case | the source names who acts on the prediction and the decision, and the fit is direct (USE-1, USE-8, [use_case.md](use_case.md)); a use case the curation wrote ("for example a lender") does not count |
 | A strong source | the first publisher documents the data (a paper, a codebook, an institution's page) (PROV-1, PROV-8, [provenance.md](provenance.md)) |
 | A good shape | comfortably above `Too Small` (about 1,000 units and 5 features or more, a first guess), with a mix of feature types or a grouped or temporal structure |
-| A known risk (minus one) | a likely leak, heavy joins across tables, or an unclear target; once added, also an open issue that raises one of these or damage that may not be repairable, a duplicate, or the recommendation not to ship |
+| A known risk (minus one) | a likely leak, heavy joins across tables, an unclear target, or better data found for the same task (screened as its own record); once added, also an open issue that raises one of these or damage that may not be repairable, a duplicate, or the recommendation not to ship |
 
 A rejected record (`No`) has no priority. The factors only order the queue: a record with priority 1 is still a
 candidate, and a high priority never stands in for a check of the rules. Within one priority the review of added
@@ -249,6 +251,16 @@ on a hard task, is not trivial and no reason to retire (TP-2). Under class imbal
 class is no evidence in either direction ([evidence.md](evidence.md), EV-5; Lennart, 2026-09-23): judge learnability
 with ROC AUC or log loss against the class prior, and fit a quick gradient-boosting model on the features known at
 prediction time when the data loads (`us_accidents`: its published "78% accuracy" settled nothing).
+
+### Small or dated, and the task is still done today
+
+A small or dated dataset whose task still matters may have better data: a larger or newer public dataset with the same
+target and use case, and features of the same kind known at the prediction point, not necessarily column for column.
+Screening looks for it (`/screen-candidates`, step 3, "Better data for the same task"), with data scouts whenever new
+candidates come in. A hit from another source is its own record, not a `Duplicate` (PROV-4); a newer release of the
+same source is a version (PROV-6), and the curator decides which one enters. The old record is not rejected
+automatically: it keeps the verdict its own data earns. Cases: `body_density_prediction` (252 men, 1985) and NHANES
+DXA body fat (21,768 people); `hepatitis_c_egypt`, tagged `Search for better data` (Lennart, 2026-10-26).
 
 ### Selection bias
 
@@ -406,6 +418,7 @@ marker records where a record stands, not an issue of the data.
 | `Not Representative` | the task or its setup does not represent the real application (features practitioners no longer use for the task, a prediction no decision rests on); a selective sample is `Selection Bias` | none |
 | `Selection Bias` | the rows are not drawn from the population the use case predicts for (cases and controls collected apart, only typical or confirmed cases, a volunteer or teaching collection, objects picked for measurement when the use case predicts for the others); a concern flag, usually on `Yes` records | none (Patterns, "Selection bias") |
 | `Anonymized` | feature names or values replaced on purpose (symbols, `var_<n>`, hashed codes), so what a column measures, its timing and leaks cannot be checked; a concern flag, no exclusion reason; goes with the definition's `Anonymized` data tag | none (Patterns, "Anonymized data") |
+| `Class-dependent Recording` | the classes were measured, formatted or filled differently, so the recording can give the label away; on kept datasets once fixed, as on retired ones | LEAK-13 to LEAK-15, LEAK-39, LEAK-40 ([leak_checks.md](leak_checks.md)) |
 | `Not Available (from Paper))` | a paper's data that is not public and cannot be obtained | none |
 | `Data Requested` | state marker: the data or its source was requested from the authors or owners, and the answer is pending | none |
 | `Time-series (Regression)` | regression on a stream of readings (hourly or per-minute measurements), between a temporal task and forecasting | none (SEL-10 and SEL-11 decide which; SPLIT-7 in [splits.md](splits.md) when no timestamp survived) |

@@ -10,6 +10,8 @@ from data_foundry.schema import (
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadata,
     PredictiveMLTaskMetadataV2,
+    SpecialFeature,
+    SpectrumDetails,
     resolve_warehouse_dir,
 )
 from data_foundry.utils.checksum import encode_pydantic_metadata
@@ -521,4 +523,78 @@ def test_format_1_task_takes_no_grouping():
             problem_type="binary_classification",
             objective_metric_name="metric",
             grouping=Grouping(on="g", labels="per_sample"),
+        )
+
+
+def _smiles(column="s") -> SpecialFeature:
+    return SpecialFeature(
+        name=column, kind="smiles", layout="column", columns=[column], description="a molecule", encoding_required=True
+    )
+
+
+def _spectrum(name="ms", columns=("a", "b", "c"), axis=(1.0, 2.0, 3.0), **kw) -> SpecialFeature:
+    details = SpectrumDetails(axis=list(axis), axis_unit="m/z", technique="mass_spectrometry", state="raw")
+    fields = {"layout": "group", "details": details} | kw
+    return SpecialFeature(
+        name=name,
+        kind="spectrum",
+        columns=list(columns),
+        description="a spectrum",
+        encoding_required=False,
+        **fields,
+    )
+
+
+@pytest.mark.parametrize(
+    ("make", "match"),
+    [
+        (lambda: _spectrum(columns=("a",), axis=(1.0,)), "two columns"),
+        (lambda: _spectrum(columns=("a", "a"), axis=(1.0, 2.0)), "twice"),
+        (lambda: _spectrum(axis=(1.0, 2.0)), "3 columns but 2"),
+        (lambda: _spectrum(axis=(1.0, 3.0, 2.0)), "increasing"),
+        (lambda: _spectrum(details=None), "needs its details"),
+        (lambda: _spectrum(layout="column"), "'group' layout"),
+        (
+            lambda: SpecialFeature(
+                name="s", kind="smiles", layout="column", columns=["a", "b"], description="", encoding_required=True
+            ),
+            "one column",
+        ),
+        (
+            lambda: SpecialFeature(
+                name="p", kind="protein", layout="column", columns=["p"], description="", encoding_required=True
+            ),
+            "smiles",
+        ),
+    ],
+)
+def test_a_special_feature_matches_its_kind(make, match):
+    """A special feature's layout follows its kind: one column for a SMILES, two or more for a spectrum, which also
+    needs one increasing axis position per column; the kinds are a closed vocabulary.
+    """
+    with pytest.raises((ValueError, pydantic.ValidationError), match=match):
+        make()
+
+
+@pytest.mark.parametrize(
+    ("features", "grouping", "match"),
+    [
+        ([_smiles(), _smiles()], None, "name twice"),
+        ([_spectrum(), _spectrum(name="other", columns=("c", "d"), axis=(1.0, 2.0))], None, "two special features"),
+        ([_smiles("y")], None, "is a feature"),
+        ([_spectrum(columns=("a", "g"), axis=(1.0, 2.0))], Grouping(on="g", labels="per_sample"), "is a feature"),
+        ([_spectrum(), _smiles("b")], None, "two special features"),
+    ],
+)
+def test_special_features_are_features_each_column_once(features, grouping, match):
+    """Special features have distinct names; a column is in one special feature at most, and never the target, the
+    time, a group or a scoring column.
+    """
+    with pytest.raises((ValueError, pydantic.ValidationError), match=match):
+        PredictiveMLTaskMetadataV2(
+            target_column_name="y",
+            problem_type="binary_classification",
+            objective_metric=make_spec(),
+            grouping=grouping,
+            special_features=features,
         )

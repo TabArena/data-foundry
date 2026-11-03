@@ -36,6 +36,8 @@ Prediction uses caste and gender
 
 Time: "Description: Records the time or session related to the exam or data collection. This field can be useful for tracking trends over time or correlating performance with specific examination sessions." from Kaggle? -> that is likely a ChatGPT description of the column not its real meaning. Need to check for duplicates without the column and its meaning in the data
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `enem_entrance_exam_scores` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 UCI

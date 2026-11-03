@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
 
 
 class IndianLiverPatientDataset(AbstractCuratedDataset):
@@ -60,6 +60,8 @@ class IndianLiverPatientDataset(AbstractCuratedDataset):
     curation_comments = """
         We keep the data as is as it does not require any further cleaning.
         Note, the data contains a few (n=13) duplicates, that are likely naturally occurring duplicates given the features.
+        - The target (2026-11-01, CLEAN-25): `Selector` ships its classes as words (1 means a liver patient (UCI)).
+          Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -79,6 +81,12 @@ class IndianLiverPatientDataset(AbstractCuratedDataset):
             header=None,
             names=["Age", "Gender", "TB", "DB", "Alkphos", "Sgpt", "Sgot", "TP", "ALB", "A/G", "Selector"],
         )
+        return df
+
+    def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
+        df = raw
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"1": "Yes", "2": "No"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

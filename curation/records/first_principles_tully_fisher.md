@@ -30,3 +30,5 @@ Andrej: too small
 `first_principles_*` are artificial datasets generated from physical first-principles formulas (PMLB) — excluded as artificial/simulated.
 
 CC (2026-10-20, Lennart): year 1977 and source Tully and Fisher (A&A 54, 661), not PMLB: PMLB's file was read off Fig. 5(a) of that paper (its metadata says so), so it is a copy (PROV-9). The data is real, the measured rotation widths and luminosities of 18 galaxies, so the note above on `first_principles_*` and the `AHDS` marker do not apply to it; the marker is now `Too Small`, the reason both curators gave. Still `No`: 18 rows, 6 per test fold (TP-5).
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `cosmicflows4_tully_fisher` (TBD -> 2nd Tier, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

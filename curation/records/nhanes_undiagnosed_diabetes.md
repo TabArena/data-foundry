@@ -32,6 +32,8 @@ CC (2026-10-15, Lennart): new candidate, asked for as the screening task that `c
 - Open for `/add-dataset`: HbA1c "shifted to higher values" in 2007-2010 after an instrument change, with no correction (GHB_E analytic note; positives 2.8% to 4.1%); 2021-2023 dropped the family-history question (MCQ_L note) and gestational diabetes; the 2017-March 2020 files (new SEQNs, replacing 2017-2018: 6,743 adults, 284 positives) keep it; activity questions changed in 2007 and 2021; race/ethnicity as a feature; no survey weights.
 - Unique: `nhanes_age_prediction` (UCI 887) is a 2013-2014 subset with an age-group target. Licence: US public-use data.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `knhanes_undiagnosed_diabetes` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Bang H, Edwards AM, Bomback AS, et al. Development and validation of a patient self-assessment score for diabetes risk. Ann Intern Med. 2009;151(11):775-783.

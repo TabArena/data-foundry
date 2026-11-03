@@ -1,6 +1,6 @@
 ---
 name: add-dataset
-description: "Add a dataset to the TabArena v0.2 working copy and attack it before the curator sees it: builds the v2 folder (one dataset.py class and a generated README.md) from the curation record and the source, loops on dataset check and the leak, task and group probes until clean, runs the verification checklist, then a review panel of agents (claim auditor, column and split auditors, domain practitioner, a blind reviewer without our notes, precedent checker, an advocate and a critic, a mediator, an editor), and leaves the open questions, ranked, in the folder's REVIEW.md. Use for an accepted record (`Yes`), for a batch on a dashboard filter, or to re-check an existing folder (\"is X ready / leaky / correct?\"). The curator reviews the result with /review-added-datasets. v2 only; never builds a container."
+description: "Add a dataset to the TabArena v0.2 working copy and attack it before the curator sees it: builds the v2 folder (one dataset.py class and a generated README.md) from the curation record and the source, loops on dataset check and the leak, task and group probes until clean, runs the verification checklist, then a review panel of agents (claim auditor, column and split auditors, domain practitioner, a blind reviewer without our notes, a task gamer that tries to beat the task as a participant would, precedent checker, an advocate and a critic, a mediator, an editor), and leaves the open questions, ranked, in the folder's REVIEW.md. Use for an accepted record (`Yes`), for a batch on a dashboard filter, or to re-check an existing folder (\"is X ready / leaky / correct?\"). The curator reviews the result with /review-added-datasets. v2 only; never builds a container."
 argument-hint: "<unique_name | dashboard filter> [--panel full|focused]"
 user-invocable: true
 ---
@@ -133,8 +133,9 @@ runs the pipeline, the checks and `_decisions` without saving, and writes `READM
 data (`ds = workbench()` in a scratch notebook or script, never committed), re-run, read the README diff. Stop when there are no errors and every warning is fixed or
 proposed for acceptance with a reason. Run `dataset check` again after every `ruff --fix`.
 
-Then run the leak probes and the task probes, the group probes for a grouped task and the hidden-group probe for an
-IID one ([checks_and_probes.md](../knowledge-data-foundry/references/checks_and_probes.md)). Read every flag by
+Then run the leak probes and the task probes, the group probes for a grouped task, the hidden-group probe for an
+IID one and the dtype probe ([checks_and_probes.md](../knowledge-data-foundry/references/checks_and_probes.md)): every
+column it flags gets its meaning from the codebook, and its dtype from CLEAN-14. Read every flag by
 [evidence.md](../knowledge-curation/references/evidence.md), "Reading a probe": the highest-ranked reading first. A
 leak gets the mildest remedy that removes it (drop, lag, filter, re-split) with the deciding number in a bullet; a
 task-probe flag is answered by the rules of [task_probes.md](../knowledge-curation/references/task_probes.md).

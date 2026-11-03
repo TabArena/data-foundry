@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import subprocess
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -271,6 +272,85 @@ def test_clean_room_on_airfoil(clean_room, tmp_path):
     assert "https://doi.org/10.24432/C5VW2C" in task
     for note in ("wind tunnel", "wind-tunnel", "engineer", "airfoil_self_noise"):  # task summary, comments, name
         assert note not in task.lower()
+
+
+def test_participant_markdown_adds_the_prediction_point_and_metric(clean_room):
+    """The kit's task.md: the clean room's facts, the prediction point, the metric, the groups, the files."""
+    data = _probe_input(clean_room, "grouped_non_iid", grouping=SimpleNamespace(on="g"))
+    task = {
+        "metric": {"name": "rmse", "prediction": "value", "params": {}, "greater_is_better": False},
+        "grouping": {"prediction_unit": "row", "aggregation": None, "context": "none"},
+        "scoring_columns": [],
+    }
+    text = clean_room.participant_markdown(data, ["https://example.org/data"], task, "the policy is quoted.")
+    assert "- Prediction point: the prediction is made when the policy is quoted." in text
+    assert "- Metric: `rmse` on a `value` prediction; lower is better." in text
+    assert "The group column is not a feature." in text
+    assert "holds every row" in text
+    assert text.index("## Files") < text.index("## Source links")
+
+
+def test_participant_kit_path_is_checked(clean_room, tmp_path):
+    """The sandbox hook allows only paths with a participant_kit component, so the script refuses any other."""
+    with pytest.raises(SystemExit, match="participant_kit"):
+        clean_room.write_participant("x", tmp_path / "kit", root=tmp_path, records=tmp_path, prediction_point="now")
+
+
+def test_participant_score_aggregates_per_group(clean_room, tmp_path):
+    """score.py scores one prediction per group when the task says so, as the package's scorer does."""
+    kit = tmp_path / "participant_kit"
+    kit.mkdir()
+    frame = pd.DataFrame({"g": list("aabbcc"), "x": range(6), "y": [1.0, 1.0, 2.0, 2.0, 4.0, 4.0]})
+    frame.to_parquet(kit / "data.parquet")
+    rows = [(0, 0, "train", i) for i in (0, 1)] + [(0, 0, "test", i) for i in (2, 3, 4, 5)]
+    pd.DataFrame(rows, columns=["repeat", "fold", "side", "row"]).to_parquet(kit / "splits.parquet")
+    grouping = {"on": "g", "labels": "per_group", "time_on": None, "prediction_unit": "group", "aggregation": "mean"}
+    task = {
+        "target": "y",
+        "group_columns": ["g"],
+        "grouping": {**grouping, "context": "none"},
+        "metric": {"name": "rmse", "kind": "standard", "prediction": "value", "params": {}, "inputs": {}},
+    }
+    (kit / "task.json").write_text(json.dumps(task))
+    (kit / "metrics.py").write_text(clean_room.METRICS_PY.read_text())
+    (kit / "score.py").write_text(clean_room.SCORE_PY)
+    spec = importlib.util.spec_from_file_location("kit_score", kit / "score.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    assert module.features() == ["x"]
+    assert module.splits() == [("r0f0", [0, 1], [2, 3, 4, 5])]
+    # Group b: mean 3.0 against 2.0; group c: mean 4.0 against 4.0. Two groups, not four rows.
+    value = module.score(np.array([2.0, 2.0, 4.0, 4.0]), np.array([2.0, 4.0, 3.0, 5.0]), [2, 3, 4, 5])
+    assert value == pytest.approx(np.sqrt((1.0**2 + 0.0**2) / 2))
+
+
+HEPATITIS_RAW = REPO / "local-data-warehouse" / "hepatitis_c_prediction" / "hcvdat0.csv"
+
+
+@pytest.mark.skipif(not HEPATITIS_RAW.exists(), reason="the raw files of hepatitis_c_prediction are not downloaded")
+def test_participant_kit_on_hepatitis(clean_room, tmp_path):
+    """The real definition: every row, the shipped splits, a metric without our notes, and a score.py that runs."""
+    out = tmp_path / "participant_kit"
+    clean_room.write_participant(
+        "hepatitis_c_prediction",
+        out,
+        root=REPO / "datasets" / "_dev" / "tabarena-v0pt2",
+        records=REPO / "curation" / "records",
+        prediction_point="a laboratory physician reads a blood panel",
+    )
+    names = sorted(p.name for p in out.iterdir())
+    assert names == ["data.parquet", "metrics.py", "score.py", "splits.parquet", "task.json", "task.md", "work"]
+    task = json.loads((out / "task.json").read_text())
+    assert task["metric"]["name"] == "log_loss"
+    assert "reason" not in task["metric"]
+    assert "origin" not in task["metric"]
+    splits = pd.read_parquet(out / "splits.parquet")
+    assert set(splits["side"]) == {"train", "test"}
+    assert splits["row"].max() < len(pd.read_parquet(out / "data.parquet"))
+    for note in ("donor rows", "round", "MET-2", "hepatitis_c_prediction"):  # curation comments, metric reason, name
+        assert note not in (out / "task.md").read_text()
+    run = subprocess.run([sys.executable, "-I", "score.py"], cwd=out, capture_output=True, text=True, check=True)
+    assert run.stdout.startswith("r0f0: train ")
 
 
 # --------------------------------------------------------------------------- decision_register
@@ -552,3 +632,141 @@ def test_task_probe_run_on_a_capped_temporal_task(task_probe):
     full_share = y[:800].mean()  # the dummy predicts the whole train side's class share, not the capped rows'
     expected = -(y[800:1_000] * np.log(full_share) + (1 - y[800:1_000]) * np.log(1 - full_share)).mean()
     assert result["per_split"]["dummy_loss"][0] == pytest.approx(expected, abs=1e-4)
+
+
+@pytest.fixture(scope="module")
+def leak_probe():
+    """curation_probes.leak, imported through leak_probes.py; it needs LightGBM, so the tests skip without it."""
+    pytest.importorskip("lightgbm")
+    return _import("leak_probes").leak
+
+
+def test_leak_probe_written_decimals(leak_probe):
+    """Decimals as written: trailing zeros do not count, interpolated values carry many, missing stays missing."""
+    values = pd.Series([2.5, 3.0, 0.215, np.nan, 27.28571429, 0.001, 1234.5])
+    got = leak_probe.written_decimals(values)
+    assert got.isna().tolist() == [False, False, False, True, False, False, False]
+    assert got.dropna().tolist() == [1, 0, 3, 8, 3, 1]
+
+
+def test_leak_probe_straight_line_fills(leak_probe):
+    """A run of interpolated cells and a single fine-step fill are found; a single round step is not."""
+    values = pd.Series([5.0, 7.3, 8.2, 9.1, 10.0, 4.4, 1.0, 1.215, 1.43, 3.0, 1.0, 1.5, 2.0, 0.3])
+    assert list(np.flatnonzero(leak_probe.straight_line_fills(values))) == [2, 3, 7]
+
+
+def test_leak_probe_fill_counts_per_class(leak_probe):
+    """In a class-sorted table, fills in one class's block are counted for that class only."""
+    rng = np.random.default_rng(0)
+    a = rng.normal(20, 5, 60).round(1)
+    a[10:20] = np.linspace(a[9], a[20], 12)[1:-1]  # ten cells filled between rows 9 and 20
+    raw = pd.DataFrame({"y": [0] * 30 + [1] * 30, "a": a, "b": rng.normal(size=60)})
+    assert leak_probe.fill_counts(raw, "y") == {"a": {"0": 10, "1": 0}}
+
+
+def test_leak_probe_run_scores_the_number_format(leak_probe):
+    """One class written in whole numbers, the other to one decimal: the format alone gives the class away."""
+    rng = np.random.default_rng(2)
+    n = 400
+    y = np.repeat([0, 1], n // 2)
+    x = rng.normal(50, 10, n)
+    x = np.where(y == 1, x.round(0), x.round(1) + 0.05 * (x.round(1) % 1 == 0))
+    df = pd.DataFrame({"x": x, "noise": rng.normal(size=n).round(3), "y": y})
+    idx = rng.permutation(n)
+    splits = [(idx[:300], idx[300:]), (idx[100:], idx[:100])]
+    result = leak_probe.run(df, "y", "binary_classification", splits, n_splits=2, n_jobs=1)
+    assert result["format_alone"] > 0.95
+    assert next(iter(result["format_single"])) == "x"
+
+
+@pytest.fixture(scope="module")
+def dtype_probe():
+    """curation_probes.dtypes, imported through dtype_probes.py."""
+    pytest.importorskip("joblib")
+    return _import("dtype_probes").dtypes
+
+
+def _flags(table: pd.DataFrame) -> dict[str, list[str]]:
+    return dict(zip(table["column"], table["flags"], strict=True))
+
+
+def test_dtype_probe_flags_a_count_typed_categorical(dtype_probe):
+    """bank_marketing's case: a count typed categorical, named a count by the codebook and shaped like one."""
+    rng = np.random.default_rng(0)
+    n = 2_000
+    df = pd.DataFrame(
+        {
+            "campaign": pd.Categorical(np.minimum(rng.geometric(0.35, n), 40)),
+            "city": pd.Categorical(rng.choice([3073, 3046, 6056, 98103], n)),
+            "job": pd.Categorical(rng.choice(["admin.", "services", "retired"], n)),
+            "num_children": pd.Categorical(rng.choice(["0", "1", "2", "3", ".b"], n)),
+            "flag_n": pd.Categorical(rng.choice([0, 1], n)),
+            "balance": rng.normal(1_000, 300, n).round(),
+            "zip_code": rng.choice([10115, 20095, 80331], n),
+            "y": rng.integers(0, 2, n),
+        }
+    )
+    codebook = {
+        "campaign": {"type": "Integer", "description": "number of contacts performed during this campaign"},
+        "zip_code": {"type": "Categorical", "description": None},
+    }
+    table = dtype_probe.column_table(df, exclude=["y"], codebook=codebook)
+    flags = _flags(table)
+    assert flags["campaign"] == ["quantity_words", "codebook_numeric", "count_like"]
+    assert flags["city"] == ["numeric_levels"]
+    assert flags["job"] == []
+    assert flags["balance"] == []
+    assert flags["flag_n"] == []
+    assert flags["num_children"] == ["quantity_words"]  # a count with a proxy missing code among its levels
+    assert table.set_index("column").loc["num_children", "other_levels"] == [".b"]
+    assert flags["zip_code"] == ["codebook_categorical", "code_name"]
+    assert "y" not in flags
+    assert list(dtype_probe.flagged(table)["column"]) == ["campaign", "num_children", "zip_code", "city"]
+
+
+def test_dtype_probe_flagged_with_nothing_flagged(dtype_probe):
+    """No flag gives an empty table, not the rows back (pandas adopts the index of a Series set on an empty frame)."""
+    table = dtype_probe.column_table(pd.DataFrame({"a": [1.5, 2.5, 3.5], "b": pd.Categorical(["x", "y", "x"])}))
+    assert dtype_probe.flagged(table).empty
+
+
+def test_dtype_probe_reads_the_uci_and_openml_codebooks(dtype_probe):
+    """UCI's variable table, its numbered free text when the table has no names, and OpenML's feature list."""
+    uci = {"data": {"variables": [{"name": "campaign", "type": "Integer", "description": "number of contacts"}]}}
+    assert dtype_probe.codebook_from_uci(uci) == {"campaign": {"type": "Integer", "description": "number of contacts"}}
+    info = "41 molecular descriptors:\n25) B03[C-Cl]: Presence/absence of C - Cl\n26) N-073: Ar2NH / Ar3N / R..N..R\n"
+    unnamed = {"data": {"variables": [{"name": " ", "type": " "}], "additional_info": {"variable_info": info}}}
+    book = dtype_probe.codebook_from_uci(unnamed)
+    assert book["N-073"] == {"type": None, "description": "Ar2NH / Ar3N / R..N..R"}
+    assert dtype_probe.match_codebook(["N073_chemical_substructure", "nN"], book) == {
+        "N073_chemical_substructure": book["N-073"]
+    }
+    day = {"day": {"type": "Categorical", "description": "day of the week"}}
+    assert dtype_probe.match_codebook(["days_since_prev_obs"], day) == {}  # a prefix only up to a separator
+    assert dtype_probe.match_codebook(["day_name"], day) == {"day_name": day["day"]}
+    openml = {"data_features": {"feature": [{"name": "V13", "data_type": "numeric"}]}}
+    assert dtype_probe.codebook_from_openml(openml) == {"V13": {"type": "numeric", "description": None}}
+    assert dtype_probe.codebook_api_url("https://archive.ics.uci.edu/dataset/222/bank+marketing").endswith("id=222")
+    assert dtype_probe.codebook_api_url("https://www.openml.org/search?type=data&id=1461").endswith("/1461")
+    assert dtype_probe.codebook_api_url("https://www.kaggle.com/c/porto-seguro") is None
+
+
+def test_dtype_probe_flags_scales_and_open_ends(dtype_probe):
+    """Bands and open ends look like a scale; an ordered category raises only its open end; colours raise nothing."""
+    df = pd.DataFrame(
+        {
+            "experience": pd.Categorical(["<1", "1", "2", ">20", "3"]),
+            "bar": pd.Categorical(["never", "less1", "1~3", "4~8", "gt8"]),
+            "quality": pd.Categorical(["Ex", "Gd", "TA", "Fa", "Po"]),
+            "colour": pd.Categorical(["red", "blue", "green", "red", "blue"]),
+            "mi": pd.Categorical(
+                ["0", "1", "2", "3 or more", "1"], categories=["0", "1", "2", "3 or more"], ordered=True
+            ),
+        }
+    )
+    flags = _flags(dtype_probe.column_table(df))
+    assert flags["experience"][:2] == ["ordinal_like", "open_end"]
+    assert flags["bar"][:2] == ["ordinal_like", "open_end"]
+    assert flags["quality"] == ["ordinal_like"]
+    assert flags["colour"] == []
+    assert flags["mi"] == ["open_end"]

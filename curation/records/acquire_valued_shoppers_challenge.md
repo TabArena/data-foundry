@@ -40,6 +40,10 @@ CC (2026-10-06, Lennart): Kept as a real task after the task-probe review (flag 
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — Area Under Receiver Operating Characteristic Curve (https://www.kaggle.com/competitions/acquire-valued-shoppers-challenge (Kaggle API evaluationMetric)).
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `ijcai15_repeat_buyers` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
 ## Reference
 
 DMDave, Todd B, and Will Cukierski. Acquire Valued Shoppers Challenge. https://kaggle.com/competitions/acquire-valued-shoppers-challenge, 2014. Kaggle.

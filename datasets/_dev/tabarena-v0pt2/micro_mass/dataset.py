@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Spectrum, TaskSummary
 
 
 class MicroMass(AbstractCuratedDataset):
@@ -64,6 +64,7 @@ class MicroMass(AbstractCuratedDataset):
         - We drop columns with the same value across all samples.
         - We drop constant columns (all 0).
         - Each strain has one species; the 20 species have 7 to 20 strains each (median 10; Escherichia coli 20, Haemophilus influenzae 18, Enterobacter cloacae 16; from the v1 exploration, counted 2026-10-22).
+        - The spectrum is declared as one (`special_features`, CLEAN-26, 2026-11-02) in the state the instrument's software left it: a peak list on 1,300 fixed bins ("pre-processed by the standard algorithm used for routine (culture-based) bacterial identification, which provided a peak-list representation", the archive's README). The m/z of the bins is not published, so the axis is the bin number; the recommended encoding leaves a peak list as it is.
     """
 
     # Task
@@ -90,6 +91,21 @@ class MicroMass(AbstractCuratedDataset):
         definition="""
             One group is a bacterial strain; its rows are technical replicate MALDI-TOF spectra (213 strains with 1 to 6 spectra, 20 species). The use case is identifying the species of an isolated colony from one spectrum (Mahé et al. 2014), so each spectrum is one prediction, made from that spectrum alone. Vervier et al. 2015 hold out one strain at a time and average the accuracy per strain, then per species.
         """,
+    )
+
+    special_features = (
+        Spectrum(
+            name="vitek_ms_peaks",
+            prefix="peak_list_spectra_bin_",
+            unit="bin",
+            technique="mass_spectrometry",
+            state="peaks",
+            description=(
+                "The colony's MALDI-TOF mass spectrum (VITEK MS) as the instrument's routine identification software "
+                "leaves it: a peak list on 1,300 fixed bins, numbered because the source gives no m/z per bin; the "
+                "bins that are constant or copy another bin are dropped."
+            ),
+        ),
     )
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:

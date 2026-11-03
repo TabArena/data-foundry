@@ -31,6 +31,8 @@ No time information to create a temporal split.
 
 Very likely not representative of tasks currently used to estimate this performance / in general empirical performance models
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `fugaku_hpc_job_failure` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Luis Torgo (ltorgo@ncc.up.pt) at http://www.ncc.up.pt/~ltorgo/Regression/DataSets.html

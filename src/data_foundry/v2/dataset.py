@@ -47,7 +47,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import pandas as pd
 
@@ -87,6 +87,10 @@ from data_foundry.v2.preprocessing import (
     order_rows,
 )
 from data_foundry.v2.splits import SPLIT_RANDOM_STATE, SplitPlan, Splits, Temporal
+
+if TYPE_CHECKING:
+    from data_foundry.schema import SpecialFeature
+    from data_foundry.v2.special import SpecialFeatureSpec
 
 DEFINITION_FILENAME = "dataset.py"
 """The file that holds a dataset's definition, one per dataset folder."""
@@ -143,11 +147,17 @@ class FeatureTypes:
         categorical: Columns cast to ``category`` (fixed, finite value sets); unused categories are removed.
         string: Columns cast to ``string`` (free text, high-cardinality text).
         datetime: Columns parsed with ``pd.to_datetime``; a mapping gives a per-column format.
+        ordinal: Columns cast to an ordered ``category``, as a mapping column -> its levels, lowest first (an ordinal
+            scale: a grade, a rating, a stage, bands, a count with an open end). Every value must be one of the
+            levels or missing (`set_missing` turns the codes outside the scale into missing values); unused levels
+            are removed. A column listed here is ordinal even when ``categorical`` lists it too, which is handy when
+            ``categorical`` is computed.
     """
 
     categorical: tuple[str, ...] | list[str] = ()
     string: tuple[str, ...] | list[str] = ()
     datetime: tuple[str, ...] | list[str] | dict[str, str | None] = ()
+    ordinal: dict[str, tuple | list] = field(default_factory=dict)
 
     @property
     def datetime_formats(self) -> dict[str, str | None]:
@@ -316,6 +326,19 @@ class AbstractCuratedDataset(ABC):
     """The columns the metric needs (``ScoringColumn(column=..., role=..., used_by=..., description=...)``, e.g.
     Numerai's ``era`` as the ``group`` of a per-era correlation): kept in the frame, never model features. Each one is
     an input of the metric (``Metric.source(..., inputs={"group": "era"})``)."""
+    special_features: ClassVar[tuple[SpecialFeatureSpec, ...]] = ()
+    """Model inputs that need handling beyond their dtype, declared like the target. Each entry is one special
+    feature, in one of two layouts (:mod:`data_foundry.v2.special`):
+
+    * one column (:class:`~data_foundry.v2.special.SpecialColumn`): ``Smiles(column="SMILES")``, a molecule's
+      structure (CLEAN-24), cast to ``string``; ship the form :func:`~data_foundry.v2.chemistry.canonical_smiles`
+      gives;
+    * a group of columns that hold one object together (:class:`~data_foundry.v2.special.SpecialColumnGroup`):
+      ``Spectrum(name="serum_ms", prefix="M/Z:", unit="m/z", technique=..., state=..., description=...)``, one column
+      per position on a spectrum's axis, named ``<prefix><position>`` (CLEAN-26); never process them in ``_clean``.
+
+    The container records each as a :class:`~data_foundry.schema.SpecialFeature` (kind, layout, columns, the
+    recommended encoding), so a benchmark encodes it by its kind. Leave the columns out of :meth:`_feature_types`."""
     stratify_on: ClassVar[Any] = AUTO
     """Column(s) to stratify on. Default: the target for classification, nothing for regression."""
     grouping: ClassVar[Grouping | None] = None
@@ -543,6 +566,7 @@ class AbstractCuratedDataset(ABC):
             declared["grouping.on"] = as_column_list(self.grouping.on)
             declared["grouping.time_on"] = as_column_list(self.grouping.time_on)
         declared["scoring_columns"] = [c.column for c in task.scoring_columns]
+        self.special_feature_records(df)  # every declared special feature finds its columns
         declared["metric inputs"] = list(task.objective_metric.inputs.values())
         for attribute, columns in declared.items():
             missing = [c for c in columns if c not in df.columns]
@@ -566,7 +590,8 @@ class AbstractCuratedDataset(ABC):
         df = cast_dtypes(
             df,
             categorical=[c for c in types.categorical if c in present or order],
-            string=[c for c in types.string if c in present or order],
+            ordinal={c: levels for c, levels in types.ordinal.items() if c in present or order},
+            string=[c for c in (*types.string, *self._special_columns(df, "string")) if c in present or order],
             datetime={c: f for c, f in types.datetime_formats.items() if c in present or order},
         )
         df = canonical_nans(canonical_dtypes(df))
@@ -584,12 +609,62 @@ class AbstractCuratedDataset(ABC):
         if not isinstance(types, FeatureTypes):
             msg = f"{type(self).__name__}: `_feature_types` must return a FeatureTypes."
             raise DatasetDefinitionError(msg)
-        listed = {*types.categorical, *types.string, *types.datetime_formats}
+        if types.ordinal:  # an ordinal column may also be named among the categorical ones; it is ordinal
+            types = FeatureTypes(
+                categorical=[c for c in types.categorical if c not in types.ordinal],
+                string=types.string,
+                datetime=types.datetime,
+                ordinal=types.ordinal,
+            )
+        listed = {*types.categorical, *types.string, *types.datetime_formats, *types.ordinal}
+        special = set(self._special_columns(df))
+        if listed & special:
+            msg = (
+                f"{type(self).__name__}: {sorted(listed & special)[:5]} is a column of a special feature "
+                "(`special_features`), which types it; leave it out of `_feature_types`."
+            )
+            raise DatasetDefinitionError(msg)
         if self.problem_type != "regression" and self.target not in listed and self.target in df.columns:
             types = FeatureTypes(
-                categorical=(*types.categorical, self.target), string=types.string, datetime=types.datetime
+                categorical=(*types.categorical, self.target),
+                string=types.string,
+                datetime=types.datetime,
+                ordinal=types.ordinal,
             )
         return types
+
+    def special_feature_records(self, df: pd.DataFrame) -> list[SpecialFeature]:
+        """The container's records of the definition's ``special_features`` for the columns of ``df``, in order.
+
+        Raises:
+            DatasetDefinitionError: A special feature does not find its columns in ``df``.
+        """
+        from data_foundry.v2.special import SpecialFeatureError  # noqa: PLC0415 - special imports this module's users
+
+        try:
+            return [spec.record(df.columns) for spec in self.special_features]
+        except SpecialFeatureError as error:
+            raise DatasetDefinitionError(f"{type(self).__name__}: {error}") from error
+
+    def _special_columns(self, df: pd.DataFrame, dtype: str | None = None) -> list[str]:
+        """The columns of the special features in ``df`` (only those whose kind casts to ``dtype``, when given)."""
+        specs = [s for s in self.special_features if dtype is None or s.dtype == dtype]
+        names = list(df.columns)
+        return [c for spec in specs for c in self._resolve(spec, names)]
+
+    def _resolve(self, spec: SpecialFeatureSpec, names: list[str]) -> list[str]:
+        from data_foundry.v2.special import SpecialFeatureError  # noqa: PLC0415
+
+        try:
+            return spec.resolve(names)[0]
+        except SpecialFeatureError as error:
+            raise DatasetDefinitionError(f"{type(self).__name__}: {error}") from error
+
+    def task_metadata_for(self, df: pd.DataFrame) -> PredictiveMLTaskMetadataV2:
+        """:attr:`task_metadata` with the special features of ``df`` (a group's columns depend on the frame)."""
+        if not self.special_features:
+            return self.task_metadata
+        return dataclasses.replace(self.task_metadata, special_features=self.special_feature_records(df))
 
     @property
     def df(self) -> pd.DataFrame:
@@ -784,7 +859,7 @@ class AbstractCuratedDataset(ABC):
             return CuratedContainer(
                 dataset=plan.df,
                 dataset_metadata=self.dataset_metadata,
-                task_metadata=self.task_metadata,
+                task_metadata=self.task_metadata_for(plan.df),
                 experiment_metadata=splits_metadata,
                 test_dataset=test,
                 version_comment=self.dataset_metadata.version_comment,
@@ -1316,6 +1391,16 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         isinstance(c, ScoringColumn) for c in cls.scoring_columns
     ):
         fail("`scoring_columns` must be a tuple of `ScoringColumn(...)`.")
+    from data_foundry.v2.special import SpecialFeatureSpec  # noqa: PLC0415 - the kinds import this module
+
+    moved = [a for a in ("smiles_columns", "spectra") if a in vars(cls)]
+    if moved:
+        fail(f"{', '.join(moved)}: declare it in `special_features` (`Smiles(column=...)`, `Spectrum(...)`).")
+    specs = cls.special_features
+    if not isinstance(specs, tuple) or not all(isinstance(s, SpecialFeatureSpec) for s in specs):
+        fail("`special_features` must be a tuple of special features (`Smiles(column=...)`, `Spectrum(...)`).")
+    if len({s.feature_name for s in specs}) != len(specs):
+        fail("two `special_features` share a name.")
     if cls.temporal is not None and not isinstance(cls.temporal, Temporal):
         fail("`temporal` must be a `Temporal(...)`.")
     if cls.grouping is not None and cls.temporal is not None:

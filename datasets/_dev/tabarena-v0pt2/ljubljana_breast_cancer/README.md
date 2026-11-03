@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ljubljana_breast_cancer
 container_format: 2
-checksum: v2:2c34c4544f84ad3444a3977c410bc7670b31a598f68844317403cfd7a427b2e2
+checksum: v2:89e4902d692682bcdd32f0c213677cc4cf0094250a3c7979300fce20e39d6b9f
 build:
   uuid: 01a111fc-e2f6-79bc-bc94-8e4779cb09a2
   checksum: v2:508446586dd8f14426f8e258ce24cc2bf1bffffc37ca3b2cdcc672f4edb8d7e0
@@ -22,8 +22,7 @@ data:
   n_rows: 286
   n_features: 9
   dtypes:
-    category: 6
-    float64: 3
+    category: 9
     int64: 1
   n_test_dataset_rows: null
 task:
@@ -70,7 +69,7 @@ decisions: []
 
 Binary classification of `Class`, scored with `roc_auc` on IID splits. 286 rows and 9 features. Source: UCI (1988).
 
-Built as `01a111fc-e2f6-79bc-bc94-8e4779cb09a2` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2c34c4544f84ad3444a3977c410bc7670b31a598f68844317403cfd7a427b2e2`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e2f6-79bc-bc94-8e4779cb09a2` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:89e4902d692682bcdd32f0c213677cc4cf0094250a3c7979300fce20e39d6b9f`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -82,7 +81,7 @@ Built as `01a111fc-e2f6-79bc-bc94-8e4779cb09a2` on 2026-10-06, but `dataset.py` 
 
 **Predicted.** Whether the cancer recurred (30% did); the source states no time window.
 
-**Known at prediction time.** Age, tumour size and number of affected lymph nodes in bands (given as band midpoints), menopausal status, whether the tumour broke through a node's capsule, malignancy grade (1-3), breast and quadrant, and whether radiotherapy was given.
+**Known at prediction time.** Age, tumour size and number of affected lymph nodes in bands, menopausal status, whether the tumour broke through a node's capsule, malignancy grade (1-3), breast and quadrant, and whether radiotherapy was given.
 
 **What the test data stands for.** Random patients, so the test data stands for new patients of the same clinic and period.
 
@@ -145,9 +144,10 @@ Only curators run `build`, when the dataset ships.
 | reason | Every 1986-1988 paper on the data (Michalski et al., Clark & Niblett, Cestnik et al.) reports accuracy only, without costs or a threshold; 30% recurrence on 286 rows. Original rejected: accuracy. roc_auc is the binary fallback. |
 
 <details>
-<summary>Feature types: 6 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 6 categorical, 3 ordinal, 0 string, 0 datetime</summary>
 
 - categorical (6): `menopause`, `node-caps`, `breast`, `breast-quad`, `irradiat`, `Class`
+- ordinal (3): `tumor-size (0-4 < 5-9 < 10-14 < 15-19 < 20-24 < 25-29 < 30-34 < 35-39 < 40-44 < 45-49 < 50-54)`, `inv-nodes (0-2 < 3-5 < 6-8 < 9-11 < 12-14 < 15-17 < 24-26)`, `age (20-29 < 30-39 < 40-49 < 50-59 < 60-69 < 70-79)`
 - string (0): none
 - datetime (0): none
 
@@ -174,19 +174,23 @@ The first 5 of 286 rows of the final frame (random rows: the frame is shuffled).
 
 | Class | age | menopause | tumor-size | inv-nodes | node-caps | deg-malig | breast | breast-quad | irradiat |
 |---|---|---|---|---|---|---|---|---|---|
-| no-recurrence-events | 44.5 | ge40 | 32 | 1 | no | 2 | left | left_up | yes |
-| no-recurrence-events | 54.5 | premeno | 27 | 1 | no | 2 | left | left_low | no |
-| no-recurrence-events | 64.5 | ge40 | 17 | 1 | no | 2 | left | left_low | no |
-| no-recurrence-events | 34.5 | premeno | 32 | 7 | yes | 2 | right | right_up | no |
-| recurrence-events | 64.5 | ge40 | 22 | 25 | yes | 3 | left | left_low | yes |
+| no-recurrence-events | 50-59 | ge40 | 20-24 | 0-2 | no | 1 | right | left_low | no |
+| no-recurrence-events | 40-49 | premeno | 25-29 | 0-2 | no | 3 | right | left_up | yes |
+| no-recurrence-events | 40-49 | premeno | 20-24 | 3-5 | no | 2 | right | left_low | no |
+| recurrence-events | 50-59 | premeno | 30-34 | 0-2 | no | 3 | left | right_up | no |
+| no-recurrence-events | 50-59 | ge40 | 30-34 | 0-2 | no | 1 | right | right_up | no |
 
 ## Curation notes
 
 We start with the data from UCI.
 
 - We encode missing values as np.nan instead of "?".
-- We turn the bands of age, tumour size and number of affected lymph nodes (e.g. "40-49") into numbers: each band becomes its midpoint (age 24.5 to 74.5, tumour size 2 to 52, nodes 1 to 25). The source gives only the bands, so the exact values cannot be recovered.
+- Age, tumour size and the number of affected lymph nodes ship as bands ("40-49"); they are ordered categories of
+  the bands (`ORDINAL_LEVELS`). Until 2026-11-01 each band was its midpoint (age 24.5 to 74.5), a number the
+  source does not give (CLEAN-14, the curator's rule on bands).
 - We keep duplicates as they seem naturally occurring.
+- `deg-malig`, the degree of malignancy 1-3, has no words per level in the source: a number (`SCORES`;
+  2026-11-01, CLEAN-14, the curator's rule).
 
 ## Splits
 
@@ -278,12 +282,12 @@ Default splits.
 | node-caps | category | 8 | 2.8 | 2 | no, yes |
 | breast-quad | category | 1 | 0.35 | 5 | left_low, left_up, right_up, right_low, central |
 | Class | category | 0 | 0 | 2 | no-recurrence-events, recurrence-events |
+| age | category | 0 | 0 | 6 | 50-59, 40-49, 60-69, 30-39, 70-79, 20-29 |
 | menopause | category | 0 | 0 | 3 | premeno, ge40, lt40 |
+| tumor-size | category | 0 | 0 | 11 | 30-34, 25-29, 20-24, 15-19, 10-14, 40-44, 35-39, 50-54, 0-4, 5-9 |
+| inv-nodes | category | 0 | 0 | 7 | 0-2, 3-5, 6-8, 9-11, 15-17, 12-14, 24-26 |
 | breast | category | 0 | 0 | 2 | left, right |
 | irradiat | category | 0 | 0 | 2 | no, yes |
-| age | float64 | 0 | 0 | 6 | 54.5, 44.5, 64.5, 34.5, 74.5, 24.5 |
-| tumor-size | float64 | 0 | 0 | 11 | 32.0, 27.0, 22.0, 17.0, 12.0, 42.0, 37.0, 52.0, 2.0, 7.0 |
-| inv-nodes | float64 | 0 | 0 | 7 | 1.0, 4.0, 7.0, 10.0, 16.0, 13.0, 25.0 |
 | deg-malig | int64 | 0 | 0 | 3 | 2, 3, 1 |
 
 ### Target distribution
@@ -297,20 +301,22 @@ Default splits.
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| age | 286 | 51.1434 | 10.1182 | 24.5 | 74.5 |
-| tumor-size | 286 | 26.4056 | 10.5296 | 2 | 52 |
-| inv-nodes | 286 | 2.57343 | 3.4519 | 1 | 25 |
 | deg-malig | 286 | 2.04895 | 0.738217 | 1 | 3 |
 
 ### Categorical features
 
 <details>
-<summary>Show the table (17 rows)</summary>
+<summary>Show the table (32 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | Class | 1 | no-recurrence-events | 201 | 70.28 |
 | Class | 2 | recurrence-events | 85 | 29.72 |
+| age | 1 | 50-59 | 96 | 33.57 |
+| age | 2 | 40-49 | 90 | 31.47 |
+| age | 3 | 60-69 | 57 | 19.93 |
+| age | 4 | 30-39 | 36 | 12.59 |
+| age | 5 | 70-79 | 6 | 2.1 |
 | breast | 1 | left | 152 | 53.15 |
 | breast | 2 | right | 134 | 46.85 |
 | breast-quad | 1 | left_low | 110 | 38.46 |
@@ -318,6 +324,11 @@ Default splits.
 | breast-quad | 3 | right_up | 33 | 11.54 |
 | breast-quad | 4 | right_low | 24 | 8.39 |
 | breast-quad | 5 | central | 21 | 7.34 |
+| inv-nodes | 1 | 0-2 | 213 | 74.48 |
+| inv-nodes | 2 | 3-5 | 36 | 12.59 |
+| inv-nodes | 3 | 6-8 | 17 | 5.94 |
+| inv-nodes | 4 | 9-11 | 10 | 3.5 |
+| inv-nodes | 5 | 15-17 | 6 | 2.1 |
 | irradiat | 1 | no | 218 | 76.22 |
 | irradiat | 2 | yes | 68 | 23.78 |
 | menopause | 1 | premeno | 150 | 52.45 |
@@ -326,6 +337,11 @@ Default splits.
 | node-caps | 1 | no | 222 | 77.62 |
 | node-caps | 2 | yes | 56 | 19.58 |
 | node-caps | 3 | &lt;NA> | 8 | 2.8 |
+| tumor-size | 1 | 30-34 | 60 | 20.98 |
+| tumor-size | 2 | 25-29 | 54 | 18.88 |
+| tumor-size | 3 | 20-24 | 50 | 17.48 |
+| tumor-size | 4 | 15-19 | 30 | 10.49 |
+| tumor-size | 5 | 10-14 | 28 | 9.79 |
 
 </details>
 
@@ -340,4 +356,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:2c34c4544f84ad3444a3977c410bc7670b31a598f68844317403cfd7a427b2e2` |
+| stale | yes: the definition now gives checksum `v2:89e4902d692682bcdd32f0c213677cc4cf0094250a3c7979300fce20e39d6b9f` |

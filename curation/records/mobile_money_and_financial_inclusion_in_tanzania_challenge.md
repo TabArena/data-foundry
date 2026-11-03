@@ -4,7 +4,7 @@ name: mobile-money-and-financial-inclusion-in-tanzania-challenge
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> Yes
-priority: 2
+priority: 1
 decision_markers:
 - TBD
 tags:
@@ -39,3 +39,5 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (finance has 17 accepted), use case 0 (actor and decision named, fit approximate), source + (FSDT's FinScope survey, a codebook ships), shape + (about 10,000 respondents, mixed demographic features), risk - (survey data, usage questions as leaks, the curator's FinScope precedent).
 
 A Zindi competition on mobile money and financial inclusion in Tanzania, with no description in the record. Financial-inclusion challenges are typically tabular classification (e.g., predicting account ownership or mobile-money usage from survey/demographic features), which would be in scope, but the exact target is unknown. There is too little info to reject, so this is a TBD. A human must open the competition to confirm the target, problem type, size, and split regime.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `global_findex_2025` (TBD -> 2nd Tier, priority 2), `finscope_tanzania_2023` (TBD -> 2nd Tier, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

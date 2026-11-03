@@ -38,3 +38,5 @@ CC (2026-10-19, Lennart): ship. The Department of Education's files, not OpenML 
 CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags": every 0/1 flag (a feature holding only 0 and 1, plus missing values; booleans too) is categorical (CLEAN-14, amended). Typed categorical here: MAIN, DISTANCEONLY.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — The Scorecard release defines no prediction task; TableShift binarizes the rate at 0.5 and scores accuracy, a different target from ours.
+
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 3 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `PREDDEG`, `HIGHDEG`, `ADMCON7` (the README lists their levels); their codes that mean unknown (don't know, refused, not asked) are missing in `PREDDEG`, `ADMCON7` (CLEAN-10).

@@ -163,7 +163,10 @@ did ship); this verdict marks that it would no longer be included.
 """
 
 
-@pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
+# `validate_assignment` so a wrong type is refused where it is written, not where the file is read back: a
+# plain string assigned to a list field used to be written out and the record would then not load
+# (`required_split`, 2026-11-01).
+@pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid", validate_assignment=True))
 class CurationRecord:
     """One candidate dataset's curation/triage state.
 

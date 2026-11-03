@@ -40,7 +40,7 @@ dashboard also shows as "Start here".
 4. You review it      /review-added-datasets: a page with each dataset's use case, its open issues, the panel's
                       reports and files; you set a verdict per dataset and a mark per issue, Claude checks them for
                       consistency with earlier decisions and applies them
-5. Build              on your ask ("rebuild X"): new containers (UUIDs), the CHANGELOG entry and the README table
+5. Build              on your ask ("rebuild X"): new containers (UUIDs) and the CHANGELOG entry
 ```
 
 Steps 2 and 4 are yours; Claude never commits, pushes or builds without your go-ahead. Sections 5 and 6 describe
@@ -79,7 +79,7 @@ More: [`datasets/README.md`](../../README.md) (the tree), [`CONTRIBUTING_DATASET
 
 | File | What it holds |
 |---|---|
-| [`README.md`](README.md) | The table of datasets (regime, size, splits, UUID, open warnings) and how to rebuild them. |
+| [`README.md`](README.md) | How to rebuild the datasets. What each one is, and whether it is built, is in its own folder's `README.md`. |
 | [`CHANGELOG.md`](CHANGELOG.md) | Every change to the folder, newest first. Add an entry with each PR. |
 | [`BENCHMARK_CHANGES_TODO.md`](BENCHMARK_CHANGES_TODO.md) | What the TabArena harness has to change for these datasets. |
 
@@ -159,7 +159,7 @@ approximate). The steps are in [`CONTRIBUTING_DATASETS.md`](../../../CONTRIBUTIN
    (dated `CC (<date>, <name>):` lines), retires what you rejected, writes the CHANGELOG entry, answers your
    questions on the page, removes the settled issues from `REVIEW.md` and republishes the page with only what is
    still open. Repeat until every dataset has a verdict.
-4. The shipped datasets are built when you ask ("rebuild X and Y"; new UUIDs, the README table, the CHANGELOG),
+4. The shipped datasets are built when you ask ("rebuild X and Y"; new UUIDs and the CHANGELOG),
    and the containers they replace are deleted once the new build is verified. Then commit and open the PR; it sets
    `DF: Yes` on the shipped records and releases their claims.
 

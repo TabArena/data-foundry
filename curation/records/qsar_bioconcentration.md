@@ -75,6 +75,55 @@ CC (2026-10-26, Lennart): issue 10, option (d): SPLIT-31 amended, molecule datas
 
 CC (2026-10-26, Lennart): verdict ship.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `bcf_lunghini_2019` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
+CC (2026-11-01, Lennart): SMILES ship as a typed structure column, not pre-encoded and never as text (path C of the discussion doc "SMILES Handling in Data Foundry and TabArena v0.2" (https://claude.ai/artifact/6r49WpR9Uard5ogo7qK4rB)): the benchmark encodes it; the recommended encoding in Data Foundry is RDKit's 2D descriptors with the MACCS keys.
+
+**Assessment (AI, 2026-11-01):** the definition now ships `SMILES` (RDKit's canonical form of the repaired SMILES) in `smiles_columns` and no longer RDKit's 193 descriptors; logKOW stays. In the recommended encoding every chemical has its own values. MACCS keys next to the descriptors: -0.003 (LightGBM) / +0.009 (random forest) macro ROC AUC.
+
+CC (2026-11-02, Lennart): the declared metric checked and kept as declared (review page).
+
+CC (2026-11-02, Lennart): on the review page, issue 1: "ok keep logkow for now, but remove logkow_type  and then
+ship the dateaset unless this creates any problems", and on the consistency check that followed, "go with (a)".
+Applied. `logKOW` stays, all 774 values, which confirms the first half of the CC of 2026-10-26; `logKOW_type` leaves
+the frame, which revises its second half. The shipped frame is the `SMILES` and the `logKOW`, 776 rows and 2
+features. The review closes and the folder's `REVIEW.md` goes.
+
+**Assessment (AI, 2026-11-02):** the fact that takes `logKOW_type` out of CLEAN-22's "keep every relevant feature"
+is what it is, not what it is worth: it records how the authors filled their 2015 table, not a property of the
+chemical, which is the shape of `early_learning_predictors`' `teacher_duration` (CLEAN-22, 2026-10-30, a timer of
+the data collection). That distinguishes it from the provenance flags the collection keeps, which sit in the actor's
+own record: `pva_revenue_prediction_kddcup98`'s `AGEFLAG`, `DATASRCE` and `LIFESRC`, `thyroid_discordant`'s five
+`*_measured` and `sf_permit_time`'s `point_source`. Written as a Cases row under CLEAN-22, kind `applied`; CLEAN-22
+is a Must and takes no exception line.
+
+The effect sizes are not the reason and are recorded for the leak question the column was raised under, measured
+over the 30 scaffold-grouped splits with untuned LightGBM on the recommended SMILES encoding (macro ROC AUC):
+`logKOW_type` scores 0.534 alone against 0.5 for chance, adds nothing at all on top of the structure (0.6806 with
+it, 0.6806 without it) and is worth -0.0013 in the full model. `logKOW` itself is worth +0.0121 over the encoding
+alone, better on 22 of 30 splits and -0.0241 in log loss on 21 of 30; as the only feature it scores 0.629 where
+RDKit's `MolLogP` scores 0.594, though RDKit's 16 logP-related descriptors together reach 0.628, and a model on the
+encoding reproduces the table's logKOW out of fold at R-squared 0.877 (mean absolute error 0.44 log units against a
+spread of 1.86). So the column is a real measurement that the structure nearly, but not quite, recovers.
+
+No leak in either, which was the worry behind the question: the class is a band around the TGD line through the
+measured logBCF, which is dropped, and the band reproduces the shipped class for 94.7% of the rows with a measured
+logKOW but for only 72.5% of the 122 predicted ones, so the value shipped for those rows is not the number the
+authors read their label from. The class shares differ by provenance (lipid storage 61% of the measured rows, 48%
+of the predicted ones), and that is exactly what the flag's 0.534 measures: which chemicals get a logP measured, not
+which mechanism they have.
+
+What it costs, written down because it is not recoverable: the 122 predicted rows can no longer be told apart in the
+shipped frame, so `logKOW` ships as 84% measurement and 16% the authors' consensus prediction with no marker on the
+row. The counts and their split by class are decision table 4 of the README and a bullet of `curation_comments`, and
+CLEAN-24's "measured properties stay (qsar_bioconcentration's logKOW)" now carries the qualifier that a column
+mixing a measurement with a prediction of the same property stays whole under USE-6.
+
+Verified on the final definition: `dataset check` 0 errors and 0 warnings (27 checks), 776 rows and 2 features; the
+task probes raise no flag (random forest macro ROC AUC 0.678, LightGBM 0.689, best single feature 0.589, smallest
+test class 9 rows) and the leak probes none (all features 0.705, shallow tree 0.581, no test row with an exact
+feature copy in training, 1-NN label agreement 0.621 against a chance of 0.462).
+
 ## Reference
 
 @article{grisoni2016investigating,

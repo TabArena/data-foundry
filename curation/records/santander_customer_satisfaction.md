@@ -38,6 +38,8 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — Area Under Receiver Operating Characteristic Curve (https://www.kaggle.com/competitions/santander-customer-satisfaction (Kaggle API evaluationMetric)).
 
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
 ## Reference
 
 Soraya_Jimenez and Will Cukierski. Santander Customer Satisfaction. https://kaggle.com/competitions/santander-customer-satisfaction, 2016. Kaggle.

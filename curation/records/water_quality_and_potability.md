@@ -36,6 +36,8 @@ CC (2026-10-22, Lennart): the update is correct: keep `No`, with `AHDS` added to
 
 **Assessment (AI, 2026-10-22):** `AHDS` added (the first upload's source field reads "Synthetically generated"; TDS is 50 times the conductivity and 1,277 of 1,278 "potable" samples exceed the WHO TDS maximum). Open-issues block removed.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `minnesota_well_arsenic` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 https://www.kaggle.com/datasets/uom190346a/water-quality-and-potability

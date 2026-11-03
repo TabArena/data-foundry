@@ -4,7 +4,7 @@ name: 2025-accra-mobility-prediction-hackathon-powered
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> 2nd Tier
-priority: 2
+priority: 1
 tags:
 - AI-Filled (Verify)
 collections:
@@ -38,3 +38,5 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0, use case + (Yango's ETA), source 0, shape + (a month of trips with time and weather), risk - (a sibling of the Lusaka task; keep one city).
 
 Zindi mobility-prediction hackathon for Accra (the Yango-family ride-hailing series). These challenges generally forecast transport demand/mobility over time and space, which falls under excluded time-series forecasting and is RecSys/operations-adjacent. The record has no comments or descriptive fields to confirm the precise target. A human must check whether the task is a fixed predictive label per row (possibly viable) versus a demand-over-horizon forecast (excluded).
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `chicago_rideshare_trip_duration` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

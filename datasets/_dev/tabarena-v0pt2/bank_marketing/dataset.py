@@ -5,7 +5,13 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, set_missing
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "education": ["primary", "secondary", "tertiary"],
+}
 
 
 class BankMarketing(AbstractCuratedDataset):
@@ -63,6 +69,12 @@ class BankMarketing(AbstractCuratedDataset):
     curation_comments = """
         - We removed the "duration" feature following its original description to obtain a "realistic predictive model".
         - We further remove the "month" and "day_of_week" features, as they also relate to the last contact -- which is not available in a real-world scenario.
+        - `campaign` and `previous` are counts of contacts (UCI: "number of contacts performed during this campaign",
+          "... before this campaign"), so they stay numeric. The BeyondArena notebook typed them categorical (48 and
+          41 levels), which lost the order and left the high counts as rare levels (issue #34).
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing
+          (CLEAN-10).
     """
 
     # Task
@@ -104,10 +116,19 @@ class BankMarketing(AbstractCuratedDataset):
         data.columns = feature_names
         df = data
         df = df.drop(columns=["day", "month", "duration"])
+        # codes outside a scale that mean unknown, and states outside it placed as missing (CLEAN-10,
+        # CLEAN-14): don't know, refused, not asked, other
+        df = set_missing(
+            df,
+            {
+                "education": ["unknown"],
+            },
+        )
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "job",
                 "marital",
@@ -116,8 +137,6 @@ class BankMarketing(AbstractCuratedDataset):
                 "housing",
                 "loan",
                 "contact",
-                "campaign",
-                "previous",
                 "poutcome",
             ],
         )
