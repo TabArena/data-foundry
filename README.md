@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-02 18:26 UTC: 53 claim(s) (Andrej 25, Lennart 6, Myunghwan 22).
+As of 2026-11-03 05:12 UTC: 55 claim(s) (Andrej 25, Lennart 6, Myunghwan 24).
 
 ## Andrej
 
@@ -58,10 +58,12 @@ As of 2026-11-02 18:26 UTC: 53 claim(s) (Andrej 25, Lennart 6, Myunghwan 22).
 | `chicago_traffic_crashes` | triage | 2026-10-29 | 2026-11-05 | Selected by Myunghwan as the next large-scale candidate (about 1.1 million crashes). Reservation for screening review; no scientific inclusion or build decision. |
 | `cps88wages` | review | 2026-10-23 | 2026-11-04 | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
 | `dataset_from_uncertainty_guided_model_selection_for_tabular_foundation_models_in_biomolecule_efficacy_prediction` | review | 2026-10-23 | 2026-11-04 | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
+| `desi_dr1_star_galaxy_quasar` | triage | 2026-11-03 | 2026-11-10 | PR39 large-scale candidates: Fugaku selected first after verifying dataset CC BY 4.0; screening in progress. DESI reserved as fallback. Scientific verdicts remain provisional. |
 | `duolingo_spaced_repetition_recall` | triage | 2026-10-31 | 2026-11-07 | Curator-requested triage of PR39 priority-4 candidates with 10M+ source observations. |
 | `economic_well_being_prediction_challenge` | triage | 2026-10-28 | 2026-11-04 | Next Myunghwan curation batch: highest remaining eligible priority 3; existing screening dossiers await curator review. Reservation only; no scientific acceptance or build. |
 | `eucalyptus` | review | 2026-10-23 | 2026-11-04 | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
 | `fannie_mae_single_family_loan_performance` | triage | 2026-10-31 | 2026-11-07 | Curator-requested triage of PR39 priority-4 candidates with 10M+ source observations. |
+| `fugaku_hpc_job_failure` | triage | 2026-11-03 | 2026-11-10 | PR39 large-scale candidates: Fugaku selected first after verifying dataset CC BY 4.0; screening in progress. DESI reserved as fallback. Scientific verdicts remain provisional. |
 | `geoai_ground_level_no2_estimation_challenge` | triage | 2026-10-28 | 2026-11-06 | Curator accepted as implemented with documented label-QC, regional and observed-day coverage limits. Built and verified: 82,051 rows, 11 predictors, station-held-out 3x3 folds; reload and traced-input reproduction passed with zero warnings. Local commits 7b2837b and 8cba4df on geoai-no2-curation; not pushed or submitted. Retain Myunghwan ownership pending upstream integration; existing stage preserved by gateway. |
 | `loan_default_prediction_challenge` | triage | 2026-10-28 | 2026-11-04 | Next Myunghwan curation batch: highest remaining eligible priority 3; existing screening dossiers await curator review. Reservation only; no scientific acceptance or build. |
 | `lt_vehicle_loan_default_prediction` | review | 2026-10-23 | 2026-11-04 | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |

@@ -1,0 +1,6 @@
+name: fugaku_hpc_job_failure
+holder: Myunghwan
+stage: triage
+claimed_at: '2026-11-03T05:12:37Z'
+expires_at: '2026-11-10T05:12:37Z'
+note: 'PR39 large-scale candidates: Fugaku selected first after verifying dataset CC BY 4.0; screening in progress. DESI reserved as fallback. Scientific verdicts remain provisional.'
