@@ -4,7 +4,7 @@ name: Delivery Rider Response Challenge by GalsenAI
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> 2nd Tier
-priority: 2
+priority: 1
 decision_markers:
 - Out-of-scope Task (CTR/RecSys/Ranking)
 tags:
@@ -44,3 +44,5 @@ Zindi/GalsenAI IndabaX Senegal 2021 challenge whose stated goal is to predict th
 ---
 
 predict who is the best delivery rider for an order placed via logistics company Sendy
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `meituan_courier_order_acceptance` (TBD -> 2nd Tier, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

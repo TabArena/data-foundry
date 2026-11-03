@@ -59,6 +59,8 @@ Sometimes, the datasets are also merged: https://www.kaggle.com/datasets/ziya07/
 
 Finally, there is so much data on these kinds of tasks (as they are somewhat easy to get?) that it is unclear if this should be part of our benchmark or its own thing (see https://arxiv.org/pdf/2504.17977)
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `unified_bug_dataset` (TBD -> 2nd Tier, priority 2), `apachejit` (TBD -> Yes, priority 2), `smartshark_release_defect_prediction` (TBD -> Yes, priority 3); a related task: `apachejit` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 https://openscience.us/ext/menzies.us/pdf/03blind.pdf

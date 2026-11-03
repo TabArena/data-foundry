@@ -4,7 +4,7 @@ name: 2025-maputo-mobility-prediction-hackathon-powered-by-yango
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> 2nd Tier
-priority: 2
+priority: 1
 tags:
 - AI-Filled (Verify)
 collections:
@@ -38,3 +38,5 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0, use case + (Yango's ETA), source 0 (the page contradicts itself on the month), shape + (a month of trips with time and weather), risk - (a sibling of the Lusaka task; keep one city).
 
 Zindi mobility-prediction hackathon for Maputo, explicitly powered by Yango (a ride-hailing platform), so the task is almost certainly ride/trip demand forecasting. That is excluded forecasting and operations/RecSys-adjacent rather than a fixed tabular classification/regression task. The record contains no descriptive content. A human must verify the actual target and split regime before any reconsideration.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `chicago_rideshare_trip_duration` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

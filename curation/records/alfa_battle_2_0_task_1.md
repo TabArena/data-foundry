@@ -44,6 +44,8 @@ Who held the files, if someone asks: the pytorch-lifestream team (Sber AI Lab; c
 
 CC (2026-10-07, Lennart): No: the task-1 data cannot be found anywhere (see the second search above).
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `sber_mbd_product_propensity` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Booster

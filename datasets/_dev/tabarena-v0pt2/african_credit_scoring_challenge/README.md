@@ -147,7 +147,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
 | reason | Original rejected (MET-4's overrule clause, Lennart 2026-10-26): Zindi's leaderboard F1 on hard 0/1 labels. The host's goal is default probabilities binned into risk grades, the forum shows the F1 was gamed, and with about 20 defaults per window one default moves F1 by about 0.05. roc_auc is the binary fallback. |
 

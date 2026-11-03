@@ -24,3 +24,5 @@ type_adapter_id: curation-record-v1
 Unclear where the data comes from and the features do not seem to allow for a good target/use case
 
 Could be transformed into a non-IID prediction task I would say. But it was mostly used for scientific discovery. Unclear how to handle, mark as TBD for now
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `nhamcs_ed_hospitalization` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

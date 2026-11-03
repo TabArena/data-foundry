@@ -36,3 +36,5 @@ type_adapter_id: curation-record-v1
 - Priority: gap - (no thin value as a list), use case - (per source), source - (a review, not the publisher), shape - (no table), risk 0. The old `Missing source information` is dropped: the review names its sources.
 
 An entry pointing only to an arXiv paper section on 'sports bet datasets', with no fields, target, or description in the record. Sports-betting data is frequently framed as odds/ranking or outcome prediction with temporal structure, and the vague 'datasets' framing suggests it may be a collection rather than one well-defined predictive task. There is not enough information to decide scope, uniqueness, or modality. A human must read the arXiv source to identify whether a concrete, well-targeted tabular classification/regression task exists and whether it risks ranking/CTR-style framing.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `open_international_soccer_database` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

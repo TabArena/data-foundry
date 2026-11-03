@@ -13,6 +13,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+from data_foundry.curation_container import CuratedContainer, feature_columns, special_features
 from data_foundry.schema import DATA_FOUNDRY_WAREHOUSE_ENV
 from data_foundry.v2 import (
     AbstractCuratedDataset,
@@ -23,6 +24,7 @@ from data_foundry.v2 import (
     Temporal,
     TemporalSplits,
     cast_dtypes,
+    decode,
     discover_datasets,
     drop_columns,
     get_dataset,
@@ -30,11 +32,13 @@ from data_foundry.v2 import (
     object_columns,
     order_rows,
     read_report,
+    set_missing,
     splits as protocol,
     workbench,
 )
 from data_foundry.v2.cli import add_dataset_parser
 from data_foundry.v2.dataset import PREPARED_MARKER, _categories_like, _gap, _horizon, _prepare_code_hash
+from data_foundry.v2.spectra import MS_RAW_ENCODING
 from data_foundry.v2.splits import temporal_window_splits
 
 DEFINITION = '''
@@ -1286,3 +1290,248 @@ def test_scoring_columns_are_kept_out_of_the_features(tmp_path: Path, warehouse:
 def test_the_template_metric_is_a_placeholder_the_checks_catch() -> None:
     template = (Path(__file__).resolve().parents[1] / "datasets" / "_template" / "dataset.py").read_text()
     assert 'metric = Metric.fallback(reason="TODO(verify):' in template
+
+
+def test_a_smiles_special_feature_ships_as_a_typed_structure(tmp_path: Path, warehouse: Path) -> None:
+    """``Smiles(column=...)`` in ``special_features`` casts the column to string, keeps it a feature, and records it as
+    a one-column special feature with the recommended encoding; its one value per row is no identifier warning."""
+    pytest.importorskip("rdkit")
+    del warehouse
+    from data_foundry.v2.chemistry import DEFAULT_SMILES_ENCODING
+
+    body = (
+        DEFINITION.format(name="toy_ds", comment="Toy data.")
+        .replace(
+            '    metric = Metric.fallback(reason="the toy data is generated; it has no source metric")\n',
+            '    metric = Metric.fallback(reason="the toy data is generated; it has no source metric")\n'
+            '    special_features = (Smiles(column="SMILES"),)\n',
+        )
+        .replace("TaskSummary, drop_columns", "Smiles, TaskSummary, drop_columns")
+        .replace(
+            '        return drop_columns(df, ["row_id"])',
+            '        df["SMILES"] = "C" * 1 + df["row_id"].map(lambda i: "C" * int(i)) + "O"\n'
+            '        return drop_columns(df, ["row_id"])',
+        )
+    )
+    folder = write_definition(tmp_path / "datasets", body=body)
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    assert result.ok, result.bundle_report.summary()
+    container = result.container
+    assert container.dataset["SMILES"].dtype == "string"
+    assert "SMILES" in feature_columns(container)
+    (feature,) = special_features(container)
+    assert special_features(container, "smiles") == [feature]
+    assert special_features(container, "spectrum") == []
+    assert (feature.name, feature.kind, feature.layout, feature.columns) == ("SMILES", "smiles", "column", ["SMILES"])
+    assert feature.encoding_required
+    assert feature.recommended_encoding == DEFAULT_SMILES_ENCODING.id
+    slugs = {r.slug for r in result.bundle_report.results}
+    assert "dataset_identifier_column" not in slugs
+    assert "special feature:       SMILES (smiles, column of 1" in container.describe()
+    text = (folder / "README.md").read_text()
+    assert "- special feature `SMILES`: smiles, one column; encoding required" in text
+    assert "special_features:" in text
+    saved = container.save(tmp_path / "saved")
+    loaded = CuratedContainer.load(saved)
+    assert loaded.task_metadata.special_features == container.task_metadata.special_features
+
+    typed_twice = body.replace(
+        'FeatureTypes(categorical=["colour"])', 'FeatureTypes(categorical=["colour"], string=["SMILES"])'
+    )
+    write_definition(tmp_path / "datasets", body=typed_twice)
+    with pytest.raises(DatasetDefinitionError, match="special feature"):
+        get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+
+
+def test_a_smiles_column_rdkit_cannot_parse_is_an_error(tmp_path: Path, warehouse: Path) -> None:
+    """The bundle check parses every SMILES with the pinned RDKit."""
+    pytest.importorskip("rdkit")
+    del warehouse
+    body = (
+        DEFINITION.format(name="toy_ds", comment="Toy data.")
+        .replace(
+            '    metric = Metric.fallback(reason="the toy data is generated; it has no source metric")\n',
+            '    metric = Metric.fallback(reason="the toy data is generated; it has no source metric")\n'
+            '    special_features = (Smiles(column="SMILES"),)\n',
+        )
+        .replace("TaskSummary, drop_columns", "Smiles, TaskSummary, drop_columns")
+        .replace(
+            '        return drop_columns(df, ["row_id"])',
+            '        df["SMILES"] = df["row_id"].map(lambda i: "C1CC" if i == 0 else "CCO")\n'
+            '        return drop_columns(df, ["row_id"])',
+        )
+    )
+    write_definition(tmp_path / "datasets", body=body)
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    errors = [r for r in result.bundle_report.results if r.slug == "dataset_smiles_column" and r.severity == "error"]
+    assert errors, result.bundle_report.summary()
+    assert "C1CC" in errors[0].message
+
+
+def test_ordinal_columns_are_ordered_categories_with_the_given_levels() -> None:
+    df = pd.DataFrame({"grade": ["mild", None, "severe", "mild"], "n": [0.0, 2.0, 1.0, np.nan]})
+    out = cast_dtypes(df, ordinal={"grade": ["none", "mild", "moderate", "severe"], "n": [0, 1, 2, 3]})
+    assert out["grade"].cat.ordered
+    assert list(out["grade"].cat.categories) == ["mild", "severe"]  # unused levels removed, the order kept
+    assert out["grade"].cat.categories.dtype == object
+    assert list(out["n"].cat.categories) == [0, 1, 2]
+    assert out["n"].isna().tolist() == [False, False, False, True]
+
+
+def test_an_ordinal_value_outside_the_levels_raises() -> None:
+    df = pd.DataFrame({"grade": ["mild", "unknown"]})
+    with pytest.raises(ValueError, match="unknown"):
+        cast_dtypes(df, ordinal={"grade": ["mild", "severe"]})
+    with pytest.raises(ValueError, match="more than one dtype"):
+        cast_dtypes(df, categorical=["grade"], ordinal={"grade": ["mild", "unknown"]})
+
+
+def test_ordinal_columns_keep_their_order_in_container_and_report(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    body = DEFINITION.format(name="toy_ds", comment="x").replace(
+        'return FeatureTypes(categorical=["colour"])',
+        'return FeatureTypes(ordinal={{"colour": ["blue", "green", "red"]}})'.replace("{{", "{").replace("}}", "}"),
+    )
+    folder = write_definition(tmp_path / "datasets", body=body)
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    colour = result.container.dataset["colour"]
+    assert colour.cat.ordered
+    assert list(colour.cat.categories) == ["blue", "green", "red"]
+    text = (folder / "README.md").read_text()
+    assert "Feature types: 1 categorical, 1 ordinal" in text  # the target y, then colour
+    assert "`colour (blue < green < red)`" in text
+
+
+def test_set_missing_turns_codes_into_missing_values() -> None:
+    df = pd.DataFrame({"a": ["1", "8", "9", None], "b": [1, -1, 2, 3]})
+    out = set_missing(df, {"a": ["8", "9"], "b": [-1]})
+    assert out["a"].isna().tolist() == [False, True, True, True]
+    assert out["b"].isna().tolist() == [False, True, False, False]
+    with pytest.raises(KeyError, match="c"):
+        set_missing(df, {"c": [1]})
+
+
+def test_decode_replaces_codes_by_their_words() -> None:
+    df = pd.DataFrame({"density": [1.0, 4.0, None, 2.0], "job": ["1", "2", "1", None]})
+    # a code matches however it is written: 1.0 by "1", "1" by 1
+    labels = {
+        "density": {"1": "almost entirely fatty", 2: "scattered", 4.0: "extremely dense"},
+        "job": {1: "a", 2: "b"},
+    }
+    out = decode(df, labels)
+    assert out["density"].tolist()[:2] == ["almost entirely fatty", "extremely dense"]
+    assert out["density"].isna().tolist() == [False, False, True, False]
+    assert out["job"].tolist()[:3] == ["a", "b", "a"]
+    with pytest.raises(ValueError, match="without a label"):
+        decode(df, {"density": {1: "x"}})
+    with pytest.raises(KeyError, match="c"):
+        decode(df, {"c": {1: "x"}})
+
+
+def test_an_ordinal_column_may_also_be_named_categorical(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    body = DEFINITION.format(name="toy_ds", comment="x").replace(
+        'return FeatureTypes(categorical=["colour"])',
+        'return FeatureTypes(categorical=["colour"], ordinal={{"colour": ["blue", "green", "red"]}})'.replace(
+            "{{", "{"
+        ).replace("}}", "}"),
+    )
+    write_definition(tmp_path / "datasets", body=body)
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    assert result.container.dataset["colour"].cat.ordered
+
+
+SPECTRUM_DECLARATION = (
+    "    special_features = (\n"
+    '        Spectrum(name="toy_ms", prefix="mz_", unit="m/z", technique="mass_spectrometry", state="raw",\n'
+    '                 description="A generated spectrum."),\n'
+    "    )\n"
+)
+SPECTRUM_COLUMNS = (
+    "        for position in (900.5, 1000, 1100.25, *range(1200, 1240)):  # written out of axis order\n"
+    '            df[f"mz_{position}"] = (df["row_id"] % 7 + position / 100).astype(float)\n'
+)
+
+
+def _spectrum_definition(**changes: str) -> str:
+    body = (
+        DEFINITION.format(name="toy_ds", comment="Toy data.")
+        .replace("TaskSummary, drop_columns", "Spectrum, TaskSummary, drop_columns")
+        .replace(
+            '    metric = Metric.fallback(reason="the toy data is generated; it has no source metric")\n',
+            '    metric = Metric.fallback(reason="the toy data is generated; it has no source metric")\n'
+            + SPECTRUM_DECLARATION,
+        )
+        .replace(
+            '        return drop_columns(df, ["row_id"])',
+            SPECTRUM_COLUMNS + '        return drop_columns(df, ["row_id"])',
+        )
+    )
+    for old, new in changes.items():
+        body = body.replace(old, new)
+    return body
+
+
+def test_a_spectrum_ships_as_numbers_and_is_recorded_as_a_group(tmp_path: Path, warehouse: Path) -> None:
+    """``Spectrum(...)`` in ``special_features`` keeps the columns as numeric features and records them as a group in
+    axis order, with their positions and the recommended encoding; the record survives a save and a load, and the
+    README names the spectrum.
+    """
+    del warehouse
+    folder = write_definition(tmp_path / "datasets", body=_spectrum_definition())
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    assert result.ok, result.bundle_report.summary()
+    container = result.container
+    (group,) = special_features(container, "spectrum")
+    assert special_features(container, "smiles") == []
+    assert (group.layout, group.encoding_required) == ("group", False)
+    assert group.columns[:3] == ["mz_900.5", "mz_1000", "mz_1100.25"]
+    assert group.details.axis[:3] == [900.5, 1000.0, 1100.25]
+    assert len(group.columns) == 43
+    assert (group.details.technique, group.details.state, group.recommended_encoding) == (
+        "mass_spectrometry",
+        "raw",
+        MS_RAW_ENCODING.id,
+    )
+    assert set(group.columns) <= set(feature_columns(container))
+    assert all(container.dataset[c].dtype == "float64" for c in group.columns)
+    assert "special feature:       toy_ms (spectrum, group of 43; mass_spectrometry, raw" in container.describe()
+    text = (folder / "README.md").read_text()
+    assert "- special feature `toy_ms`: spectrum, a group of 43 columns (mass_spectrometry, raw" in text
+    assert "columns `mz_900.5` to `mz_1239`" in text
+    assert "special_features:" in text
+    loaded = CuratedContainer.load(container.save(tmp_path / "saved"))
+    assert loaded.task_metadata.special_features == container.task_metadata.special_features
+
+
+@pytest.mark.parametrize(
+    ("changes", "match"),
+    [
+        ({'FeatureTypes(categorical=["colour"])': 'FeatureTypes(categorical=["colour", "mz_1000"])'}, "special"),
+        ({'prefix="mz_"': 'prefix="nm_"'}, "0 column"),
+        ({'df[f"mz_{position}"]': 'df[f"mz_{position}x"]'}, "no number"),
+        ({SPECTRUM_DECLARATION: SPECTRUM_DECLARATION.replace("(\n", "[\n").replace("    )\n", "    ]\n")}, "tuple"),
+        ({"    special_features = (\n": "    spectra = (\n"}, "declare it in `special_features`"),
+    ],
+)
+def test_a_spectrum_declared_wrong_is_refused(tmp_path: Path, warehouse: Path, changes, match) -> None:
+    """A spectrum column typed in ``_feature_types``, a prefix that matches nothing, a position that is no number and a
+    list instead of a tuple are each refused with a message naming the problem; so is the retired ``spectra``.
+    """
+    del warehouse
+    write_definition(tmp_path / "datasets", body=_spectrum_definition(**changes))
+    with pytest.raises(DatasetDefinitionError, match=match):
+        get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+
+
+def test_a_spectrum_with_missing_intensities_is_flagged(tmp_path: Path, warehouse: Path) -> None:
+    """The bundle check warns about spectra with a missing intensity."""
+    del warehouse
+    body = _spectrum_definition(
+        **{SPECTRUM_COLUMNS: SPECTRUM_COLUMNS + '        df.loc[df["row_id"] == 3, "mz_1000"] = float("nan")\n'}
+    )
+    write_definition(tmp_path / "datasets", body=body)
+    result = get_dataset(tmp_path / "datasets", "toy_ds").check(verbose=False)
+    warnings = [r for r in result.bundle_report.results if r.slug == "dataset_spectrum" and r.severity == "warning"]
+    assert warnings, result.bundle_report.summary()
+    assert "1 row(s)" in warnings[0].message

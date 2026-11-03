@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: horse_colic_survival
 container_format: 2
-checksum: v2:042efb51016a634587ad17c5c23443bd61a558b1bd6c963926b79c5978a9847c
+checksum: v2:6b186530ec3c711869107f0fb07afa946d8ec163e186f0a8e4c865c76149efd0
 build:
   uuid: 01a111fc-df0b-7d08-9ad5-3bfee18c9b55
   checksum: v2:3edea035ca49ff4f42bfa2eb137a98817c67387f49f0fb111c2fd7cf979fa727
@@ -22,9 +22,8 @@ data:
   n_rows: 344
   n_features: 20
   dtypes:
-    category: 13
+    category: 14
     float64: 7
-    int64: 1
   n_test_dataset_rows: null
 task:
   target: outcome
@@ -70,7 +69,7 @@ decisions: []
 
 Multiclass classification of `outcome`, scored with `log_loss` on IID splits. 344 rows and 20 features. Source: UCI (1989).
 
-Built as `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:042efb51016a634587ad17c5c23443bd61a558b1bd6c963926b79c5978a9847c`, so the build is stale. See [Build](#build).
+Built as `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6b186530ec3c711869107f0fb07afa946d8ec163e186f0a8e4c865c76149efd0`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -142,14 +141,15 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `log_loss` (standard; takes proba; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | mean of -log p(true class) |
 | reason | The UCI donation (McLeish & Cecile, 1989) defines no metric; its stated class attribute is the surgical lesion (attr 24), not the outcome we predict, and no paper defines an evaluation for the outcome task. |
 
 <details>
-<summary>Feature types: 13 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 6 categorical, 8 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (13): `temperature_of_extremities`, `peripheral_pulse`, `mucous_membranes`, `capillary_refill_time`, `pain`, `peristalsis`, `abdominal_distension`, `nasogastric_tube`, `nasogastric_reflux`, `rectal_exam_feces`, `abdomen`, `abdominocentesis_appearance`, `outcome`
+- categorical (6): `age`, `mucous_membranes`, `pain`, `abdomen`, `abdominocentesis_appearance`, `outcome`
+- ordinal (8): `temperature_of_extremities (cold < cool < normal < warm)`, `peripheral_pulse (absent < reduced < normal < increased)`, `capillary_refill_time (< 3 seconds < >= 3 seconds)`, `peristalsis (absent < hypomotile < normal < hypermotile)`, `abdominal_distension (none < slight < moderate < severe)`, `nasogastric_tube (none < slight < significant)`, `nasogastric_reflux (none < < 1 liter < > 1 liter)`, `rectal_exam_feces (absent < decreased < normal < increased)`
 - string (0): none
 - datetime (0): none
 
@@ -176,11 +176,11 @@ The first 5 of 344 rows of the final frame (random rows: the frame is shuffled);
 
 | outcome | age | rectal_temperature | pulse | respiratory_rate | temperature_of_extremities | peripheral_pulse | mucous_membranes | capillary_refill_time | pain | peristalsis | abdominal_distension |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Euthanized | 1 | nan | 40 | 16 | nan | nan | nan | 1 | nan | nan | nan |
-| Died | 9 | 38.1 | 136 | 48 | 3 | 3 | 3 | 1 | 5 | 1 | 3 |
-| Died | 1 | nan | nan | nan | nan | nan | nan | nan | nan | nan | nan |
-| Lived | 9 | nan | nan | nan | nan | nan | nan | nan | nan | nan | nan |
-| Lived | 1 | 38.9 | 44 | 14 | 3 | 1 | 1 | 1 | 2 | 3 | 2 |
+| Lived | adult | nan | 112 | 13 | cold | absent | pale cyanotic | &lt; 3 seconds | depressed | hypomotile | none |
+| Lived | adult | 37.8 | 42 | 40 | normal | normal | normal pink | &lt; 3 seconds | alert, no pain | hypomotile | none |
+| Died | adult | 38.9 | 80 | 44 | cool | reduced | pale pink | >= 3 seconds | depressed | hypomotile | moderate |
+| Lived | young (&lt; 6 months) | 39.5 | 84 | 30 | nan | nan | nan | &lt; 3 seconds | nan | nan | nan |
+| Lived | adult | 38.6 | 42 | 34 | warm | normal | pale cyanotic | nan | depressed | hypomotile | none |
 
 ## Curation notes
 
@@ -191,6 +191,17 @@ We start with the data from UCI and merge the train and test data.
 - We keep only the first instance (hospital number) per horse, as they can be treated multiple times and otherwise leaks information about the target.
 - We use the target "outcome" to model a task where we aim to predict if the horse survives or not. We drop cases that have not outcome recorded.
 - We keep the duplicates occurring in the data.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 8 columns are ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`); 8 of them decoded from the source's codes
+  into its words (`CODE_LABELS`, 2026-11-01); codes that mean unknown are missing (CLEAN-10).
+- Partial order, left unordered (2026-11-01, CLEAN-14): `pain`: the codebook says it "should NOT be treated as
+  ordered"; alert (1) < intermittent mild (3) < intermittent severe (4) < continuous severe pain (5) is a line,
+  and depressed (2) is off it. `mucous_membranes` has two lines from normal pink (1): pallor and cyanosis (3 < 4
+  < 6) and congestion (2 < 5).
+- Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+  each level is carries the words, a score without them is a number): 8 ordered codes carry their codebook's
+  words (`CODE_LABELS`), in the same order; 5 unordered codes carry their words: `mucous_membranes`, `pain`,
+  `abdomen`, `abdominocentesis_appearance`, `age`.
 
 ## Splits
 
@@ -282,27 +293,27 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| abdominocentesis_appearance | category | 182 | 52.91 | 3 | 2.0, 3.0, 1.0 |
-| abdomen | category | 137 | 39.83 | 5 | 5.0, 4.0, 1.0, 2.0, 3.0 |
-| nasogastric_reflux | category | 127 | 36.92 | 3 | 1.0, 3.0, 2.0 |
-| nasogastric_tube | category | 126 | 36.63 | 3 | 2.0, 1.0, 3.0 |
-| rectal_exam_feces | category | 123 | 35.76 | 4 | 4.0, 1.0, 3.0, 2.0 |
-| peripheral_pulse | category | 82 | 23.84 | 4 | 1.0, 3.0, 4.0, 2.0 |
-| temperature_of_extremities | category | 64 | 18.6 | 4 | 3.0, 1.0, 2.0, 4.0 |
-| abdominal_distension | category | 64 | 18.6 | 4 | 1.0, 3.0, 2.0, 4.0 |
-| pain | category | 62 | 18.02 | 5 | 3.0, 2.0, 5.0, 1.0, 4.0 |
-| peristalsis | category | 50 | 14.53 | 4 | 3.0, 4.0, 1.0, 2.0 |
-| mucous_membranes | category | 48 | 13.95 | 6 | 1.0, 3.0, 4.0, 2.0, 5.0, 6.0 |
-| capillary_refill_time | category | 37 | 10.76 | 3 | 1.0, 2.0, 3.0 |
+| abdominocentesis_appearance | category | 182 | 52.91 | 3 | cloudy, serosanguinous, clear |
+| abdomen | category | 137 | 39.83 | 5 | distended large intestine, distended small intestine, normal, other, firm feces… |
+| nasogastric_reflux | category | 127 | 36.92 | 3 | none, &lt; 1 liter, > 1 liter |
+| nasogastric_tube | category | 126 | 36.63 | 3 | slight, none, significant |
+| rectal_exam_feces | category | 123 | 35.76 | 4 | absent, normal, decreased, increased |
+| peripheral_pulse | category | 82 | 23.84 | 4 | normal, reduced, absent, increased |
+| temperature_of_extremities | category | 64 | 18.6 | 4 | cool, normal, warm, cold |
+| abdominal_distension | category | 64 | 18.6 | 4 | none, moderate, slight, severe |
+| pain | category | 62 | 18.02 | 5 | intermittent mild pain, depressed, continuous severe pain, alert, no pain, inte… |
+| peristalsis | category | 50 | 14.53 | 4 | hypomotile, absent, hypermotile, normal |
+| mucous_membranes | category | 48 | 13.95 | 6 | normal pink, pale pink, pale cyanotic, bright pink, bright red / injected, dark… |
+| capillary_refill_time | category | 39 | 11.34 | 2 | &lt; 3 seconds, >= 3 seconds |
+| age | category | 0 | 0 | 2 | adult, young (&lt; 6 months) |
 | outcome | category | 0 | 0 | 3 | Lived, Died, Euthanized |
-| nasogastric_reflux_ph | float64 | 281 | 81.69 | 24 | 2.0, 5.0, 7.0, 6.5, 5.5, 6.0, 4.5, 3.0, 4.0, 7.5 |
-| abdominocentesis_total_protein | float64 | 220 | 63.95 | 44 | 2.0, 1.0, 3.9, 2.8, 5.0, 3.4, 3.6, 1.4, 4.3, 2.6 |
-| respiratory_rate | float64 | 67 | 19.48 | 40 | 20.0, 24.0, 12.0, 16.0, 30.0, 40.0, 36.0, 28.0, 32.0, 18.0 |
+| nasogastric_reflux_ph | float64 | 281 | 81.69 | 24 | 2.0, 5.0, 7.0, 6.5, 5.5, 6.0, 4.5, 4.0, 7.5, 3.0 |
+| abdominocentesis_total_protein | float64 | 220 | 63.95 | 44 | 2.0, 1.0, 2.8, 3.9, 5.0, 2.6, 4.3, 3.4, 3.6, 1.4 |
+| respiratory_rate | float64 | 67 | 19.48 | 40 | 20.0, 24.0, 12.0, 16.0, 30.0, 40.0, 36.0, 28.0, 32.0, 60.0 |
 | rectal_temperature | float64 | 65 | 18.9 | 40 | 38.0, 38.2, 38.3, 38.5, 37.8, 37.5, 38.1, 38.6, 38.4, 37.7 |
-| total_protein | float64 | 40 | 11.63 | 83 | 6.5, 7.0, 7.5, 6.0, 65.0, 6.6, 6.7, 6.8, 6.2, 7.2 |
+| total_protein | float64 | 40 | 11.63 | 83 | 6.5, 7.5, 7.0, 65.0, 6.6, 6.0, 6.8, 6.7, 6.2, 7.2 |
 | packed_cell_volume | float64 | 35 | 10.17 | 54 | 37.0, 45.0, 44.0, 35.0, 50.0, 40.0, 43.0, 36.0, 47.0, 38.0 |
-| pulse | float64 | 24 | 6.98 | 54 | 48.0, 60.0, 40.0, 44.0, 88.0, 42.0, 52.0, 72.0, 120.0, 100.0 |
-| age | int64 | 0 | 0 | 2 | 1, 9 |
+| pulse | float64 | 24 | 6.98 | 54 | 48.0, 60.0, 40.0, 44.0, 42.0, 88.0, 120.0, 52.0, 72.0, 100.0 |
 
 </details>
 
@@ -318,7 +329,6 @@ Default splits.
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| age | 344 | 1.60465 | 2.1177 | 1 | 9 |
 | rectal_temperature | 279 | 38.1272 | 0.719895 | 35.4 | 40.8 |
 | pulse | 320 | 70.8125 | 28.4997 | 30 | 184 |
 | respiratory_rate | 277 | 30.6823 | 18.0503 | 8 | 96 |
@@ -330,69 +340,70 @@ Default splits.
 ### Categorical features
 
 <details>
-<summary>Show the table (59 rows)</summary>
+<summary>Show the table (60 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | abdomen | 1 | &lt;NA> | 137 | 39.83 |
-| abdomen | 2 | 5.0 | 88 | 25.58 |
-| abdomen | 3 | 4.0 | 53 | 15.41 |
-| abdomen | 4 | 1.0 | 25 | 7.27 |
-| abdomen | 5 | 2.0 | 23 | 6.69 |
-| abdominal_distension | 1 | 1.0 | 93 | 27.03 |
-| abdominal_distension | 2 | 3.0 | 79 | 22.97 |
-| abdominal_distension | 3 | 2.0 | 70 | 20.35 |
+| abdomen | 2 | distended large intestine | 88 | 25.58 |
+| abdomen | 3 | distended small intestine | 53 | 15.41 |
+| abdomen | 4 | normal | 25 | 7.27 |
+| abdomen | 5 | other | 23 | 6.69 |
+| abdominal_distension | 1 | none | 93 | 27.03 |
+| abdominal_distension | 2 | moderate | 79 | 22.97 |
+| abdominal_distension | 3 | slight | 70 | 20.35 |
 | abdominal_distension | 4 | &lt;NA> | 64 | 18.6 |
-| abdominal_distension | 5 | 4.0 | 38 | 11.05 |
+| abdominal_distension | 5 | severe | 38 | 11.05 |
 | abdominocentesis_appearance | 1 | &lt;NA> | 182 | 52.91 |
-| abdominocentesis_appearance | 2 | 2.0 | 58 | 16.86 |
-| abdominocentesis_appearance | 3 | 3.0 | 56 | 16.28 |
-| abdominocentesis_appearance | 4 | 1.0 | 48 | 13.95 |
-| capillary_refill_time | 1 | 1.0 | 220 | 63.95 |
-| capillary_refill_time | 2 | 2.0 | 85 | 24.71 |
-| capillary_refill_time | 3 | &lt;NA> | 37 | 10.76 |
-| capillary_refill_time | 4 | 3.0 | 2 | 0.58 |
-| mucous_membranes | 1 | 1.0 | 92 | 26.74 |
-| mucous_membranes | 2 | 3.0 | 72 | 20.93 |
-| mucous_membranes | 3 | 4.0 | 48 | 13.95 |
+| abdominocentesis_appearance | 2 | cloudy | 58 | 16.86 |
+| abdominocentesis_appearance | 3 | serosanguinous | 56 | 16.28 |
+| abdominocentesis_appearance | 4 | clear | 48 | 13.95 |
+| age | 1 | adult | 318 | 92.44 |
+| age | 2 | young (&lt; 6 months) | 26 | 7.56 |
+| capillary_refill_time | 1 | &lt; 3 seconds | 220 | 63.95 |
+| capillary_refill_time | 2 | >= 3 seconds | 85 | 24.71 |
+| capillary_refill_time | 3 | &lt;NA> | 39 | 11.34 |
+| mucous_membranes | 1 | normal pink | 92 | 26.74 |
+| mucous_membranes | 2 | pale pink | 72 | 20.93 |
+| mucous_membranes | 3 | pale cyanotic | 48 | 13.95 |
 | mucous_membranes | 4 | &lt;NA> | 48 | 13.95 |
-| mucous_membranes | 5 | 2.0 | 37 | 10.76 |
-| nasogastric_reflux | 1 | 1.0 | 130 | 37.79 |
+| mucous_membranes | 5 | bright pink | 37 | 10.76 |
+| nasogastric_reflux | 1 | none | 130 | 37.79 |
 | nasogastric_reflux | 2 | &lt;NA> | 127 | 36.92 |
-| nasogastric_reflux | 3 | 3.0 | 45 | 13.08 |
-| nasogastric_reflux | 4 | 2.0 | 42 | 12.21 |
+| nasogastric_reflux | 3 | &lt; 1 liter | 45 | 13.08 |
+| nasogastric_reflux | 4 | > 1 liter | 42 | 12.21 |
 | nasogastric_tube | 1 | &lt;NA> | 126 | 36.63 |
-| nasogastric_tube | 2 | 2.0 | 111 | 32.27 |
-| nasogastric_tube | 3 | 1.0 | 83 | 24.13 |
-| nasogastric_tube | 4 | 3.0 | 24 | 6.98 |
+| nasogastric_tube | 2 | slight | 111 | 32.27 |
+| nasogastric_tube | 3 | none | 83 | 24.13 |
+| nasogastric_tube | 4 | significant | 24 | 6.98 |
 | outcome | 1 | Lived | 215 | 62.5 |
 | outcome | 2 | Died | 79 | 22.97 |
 | outcome | 3 | Euthanized | 50 | 14.53 |
-| pain | 1 | 3.0 | 77 | 22.38 |
-| pain | 2 | 2.0 | 72 | 20.93 |
+| pain | 1 | intermittent mild pain | 77 | 22.38 |
+| pain | 2 | depressed | 72 | 20.93 |
 | pain | 3 | &lt;NA> | 62 | 18.02 |
-| pain | 4 | 5.0 | 46 | 13.37 |
-| pain | 5 | 1.0 | 44 | 12.79 |
-| peripheral_pulse | 1 | 1.0 | 139 | 40.41 |
-| peripheral_pulse | 2 | 3.0 | 108 | 31.4 |
+| pain | 4 | continuous severe pain | 46 | 13.37 |
+| pain | 5 | alert, no pain | 44 | 12.79 |
+| peripheral_pulse | 1 | normal | 139 | 40.41 |
+| peripheral_pulse | 2 | reduced | 108 | 31.4 |
 | peripheral_pulse | 3 | &lt;NA> | 82 | 23.84 |
-| peripheral_pulse | 4 | 4.0 | 10 | 2.91 |
-| peripheral_pulse | 5 | 2.0 | 5 | 1.45 |
-| peristalsis | 1 | 3.0 | 139 | 40.41 |
-| peristalsis | 2 | 4.0 | 89 | 25.87 |
+| peripheral_pulse | 4 | absent | 10 | 2.91 |
+| peripheral_pulse | 5 | increased | 5 | 1.45 |
+| peristalsis | 1 | hypomotile | 139 | 40.41 |
+| peristalsis | 2 | absent | 89 | 25.87 |
 | peristalsis | 3 | &lt;NA> | 50 | 14.53 |
-| peristalsis | 4 | 1.0 | 46 | 13.37 |
-| peristalsis | 5 | 2.0 | 20 | 5.81 |
+| peristalsis | 4 | hypermotile | 46 | 13.37 |
+| peristalsis | 5 | normal | 20 | 5.81 |
 | rectal_exam_feces | 1 | &lt;NA> | 123 | 35.76 |
-| rectal_exam_feces | 2 | 4.0 | 91 | 26.45 |
-| rectal_exam_feces | 3 | 1.0 | 61 | 17.73 |
-| rectal_exam_feces | 4 | 3.0 | 56 | 16.28 |
-| rectal_exam_feces | 5 | 2.0 | 13 | 3.78 |
-| temperature_of_extremities | 1 | 3.0 | 123 | 35.76 |
-| temperature_of_extremities | 2 | 1.0 | 87 | 25.29 |
+| rectal_exam_feces | 2 | absent | 91 | 26.45 |
+| rectal_exam_feces | 3 | normal | 61 | 17.73 |
+| rectal_exam_feces | 4 | decreased | 56 | 16.28 |
+| rectal_exam_feces | 5 | increased | 13 | 3.78 |
+| temperature_of_extremities | 1 | cool | 123 | 35.76 |
+| temperature_of_extremities | 2 | normal | 87 | 25.29 |
 | temperature_of_extremities | 3 | &lt;NA> | 64 | 18.6 |
-| temperature_of_extremities | 4 | 2.0 | 39 | 11.34 |
-| temperature_of_extremities | 5 | 4.0 | 31 | 9.01 |
+| temperature_of_extremities | 4 | warm | 39 | 11.34 |
+| temperature_of_extremities | 5 | cold | 31 | 9.01 |
 
 </details>
 
@@ -407,4 +418,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:042efb51016a634587ad17c5c23443bd61a558b1bd6c963926b79c5978a9847c` |
+| stale | yes: the definition now gives checksum `v2:6b186530ec3c711869107f0fb07afa946d8ec163e186f0a8e4c865c76149efd0` |

@@ -20,6 +20,8 @@ implements. The overview for people is the [skills README](../README.md).
 | The dashboard: running and restarting it, its filters, pills, pins and links | [dashboard.md](references/dashboard.md) | starting it or explaining it to a curator |
 | The v2 definition: the folder, `dataset.py`, the base class, `task_summary`, field mapping, `curation_comments`, the `_clean` recipe, `Grouping` / `Temporal` / `TemporalSplits`, `_1m` versions, traps, bundle-check slugs, `_decisions`, recording decisions, reference definitions, the harness | [definitions.md](references/definitions.md) | writing or reviewing a `dataset.py` |
 | Running `dataset check` and the probes, and the checks only Data Foundry has (pointers, template, README) | [checks_and_probes.md](references/checks_and_probes.md) | verifying a definition |
+| Molecule datasets: `Smiles(column=...)` in `special_features`, `canonical_smiles`, `scaffold_groups`, `encode_smiles` and the recommended encodings, the SMILES check, structures recovered from a release | knowledge-curation [molecules.md](../knowledge-curation/references/molecules.md), "In Data Foundry" | a dataset has a SMILES, a structure file or molecule identifiers |
+| Spectrum datasets: `Spectrum(name=..., prefix=...)` in `special_features`, `encode_spectrum` and the recommended encodings, the spectrum check | knowledge-curation [spectra.md](../knowledge-curation/references/spectra.md), "In Data Foundry" | a dataset's features are a spectrum (intensities along an m/z, wavenumber or wavelength axis, or numbered bins) |
 | The TabArena v0.2 working copy: CHANGELOG and README rules, `REVIEW.md`, builds, the local warehouse, superseded containers | [working_copy.md](references/working_copy.md) | changing anything under `datasets/_dev/tabarena-v0pt2/` |
 | Rebuilding the working copy and verifying the build (only when the curator asks) | [rebuild.md](references/rebuild.md) | the curator asks for a rebuild |
 | Reaching sources: the Kaggle command line, PubChem, Zindi, SEC EDGAR, paywalls | [sources_access.md](references/sources_access.md) | a page does not load |
@@ -29,12 +31,12 @@ implements. The overview for people is the [skills README](../README.md).
 The scripts are in [scripts/](scripts/):
 
 * the probe entry points `leak_probes.py`, `task_probes.py`, `group_probes.py`, `hidden_groups.py`,
-  `generated_probes.py` (they load a Data Foundry dataset through `dataset_io.py` and call the general probe library
-  of `knowledge-curation`), `tuned_results.py` and `check_collection_bundles.py`;
+  `generated_probes.py`, `dtype_probes.py` (they load a Data Foundry dataset through `dataset_io.py` and call the
+  general probe library of `knowledge-curation`), `tuned_results.py` and `check_collection_bundles.py`;
 * for the pipeline: `benchmark_coverage.py` (the accepted set per domain, problem type and regime, for screening
-  priorities), `clean_room.py` (the blind reviewer's folder) and `decision_register.py` (the decisions grouped by rule,
+  priorities), `clean_room.py` (the blind reviewer's folder, and with `--participant` the task gamer's kit) and `decision_register.py` (the decisions grouped by rule,
   with the consistency flags);
-* for a rebuild: `build_all.py`, `build_one.py`, `compare_builds.py`, `minimal_inputs.py`, `readme_table.py`.
+* for a rebuild: `build_all.py`, `build_one.py`, `compare_builds.py`, `minimal_inputs.py`.
 
 ## House rules
 

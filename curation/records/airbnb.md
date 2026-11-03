@@ -12,6 +12,7 @@ tags:
 - AI-Filled (Verify)
 collections:
 - TexTabBench
+- MulTaBench
 domain: business & marketing
 problem_type: Regression
 source_links:

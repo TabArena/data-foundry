@@ -232,6 +232,9 @@ class Force2020WellWellLogAndLithofaciesDatasetForMachineLearningCompetition(Abs
         - Anomaly: the labels are a hand interpretation; the organisers put the reachable accuracy near 80% (repository blog post, p. 9).
         - Metric: the competition's penalty matrix scores the hard labels (the spec); the top three teams trained on multiclass log loss (technical retrospective in the repository, p. 3-4).
         - No duplicate rows or repeated (WELL, DEPTH_MD) pairs.
+        - Partial order, left unordered (2026-11-01, CLEAN-14): `GROUP`: the groups stack by geological age, but
+          regional equivalents that never occur in the same well (Viking, Tyne and Boknfjord in the Upper Jurassic, for
+          example) have no order between them.
     """
 
     # Task

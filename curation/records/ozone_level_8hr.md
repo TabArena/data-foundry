@@ -27,6 +27,8 @@ Use one of the datasets; 1h seems to be the harder task based on paper results. 
 
 Needs more thought and time to read the paper to understand how to model this correctly and if it is not just a forecasting dataset
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `aq_bench_ozone_metrics` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Forecasting skewed biased stochastic ozone days: analyses, solutions and beyond, Knowledge and Information Systems, Vol. 14, No. 3, 2008.

@@ -5,7 +5,37 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "gcs_eyes_apache": ["none", "to pain", "to speech", "spontaneous"],
+    "gcs_motor_apache": ["none", "extension", "abnormal flexion", "withdrawal", "localises pain", "obeys commands"],
+    "gcs_verbal_apache": ["none", "incomprehensible sounds", "inappropriate words", "confused", "oriented"],
+}
+
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "gcs_eyes_apache": {"1": "none", "2": "to pain", "3": "to speech", "4": "spontaneous"},
+    "gcs_motor_apache": {
+        "1": "none",
+        "2": "extension",
+        "3": "abnormal flexion",
+        "4": "withdrawal",
+        "5": "localises pain",
+        "6": "obeys commands",
+    },
+    "gcs_verbal_apache": {
+        "1": "none",
+        "2": "incomprehensible sounds",
+        "3": "inappropriate words",
+        "4": "confused",
+        "5": "oriented",
+    },
+}
 
 
 class WidsDiabetesMellitus(AbstractCuratedDataset):
@@ -68,6 +98,14 @@ class WidsDiabetesMellitus(AbstractCuratedDataset):
         - Several Kaggle experts also re-computed the BMI. We also noticed that for 2770 rows, the BMI did not match the real BMI based on the weight and height. We drop all of these cases, as it is unclear to us what the cause of this error is. Given the small fraction, there is either a data entry error, or some values got corrected manually.
         - We found and dropped three duplicated columns that provided no new information.
         - We keep medical codes as string, as these could be more meaningfully decoded.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 3 columns are ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 3 of them decoded from the source's codes
+          into its words (`CODE_LABELS`, 2026-11-01).
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 3 ordered codes carry their codebook's
+          words (`CODE_LABELS`), in the same order.
+        - The target (2026-11-01, CLEAN-25): `diabetes_mellitus` ships its classes as words (1 is the event). Binary:
+          "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -118,10 +156,15 @@ class WidsDiabetesMellitus(AbstractCuratedDataset):
             max_val = df[f].max()
             clip_f = f + "_clipped"
             df[clip_f] = (df[f] == min_val) | (df[f] == max_val)
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "hospital_id",
                 "icu_id",

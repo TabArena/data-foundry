@@ -25,3 +25,5 @@ Also survival task as it seems. Plus a scientific discovery task, so likely no g
 keep as 2nd tier for future investigation
 
 In TabSTAR BONE_MARROW_TRANSPLANT_CHILDREN
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `cibmtr_pediatric_dri_allo_hct` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

@@ -30,6 +30,8 @@ Data is also modeled as a survival task. Moreover, features seem to be repeated 
 
 Data use case too special, and wrong task (survival), and too old to use for now
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `apachejit` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 PROMISE repository web page http://promisedata.org/repository .

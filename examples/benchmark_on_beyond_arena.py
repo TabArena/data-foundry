@@ -30,7 +30,11 @@ The two container formats score differently:
   reference) and the scoring columns, the metric's inputs that are never features. The features are
   ``feature_columns(container)`` (no target, group or scoring column), and ``scorer(container)`` scores the test
   rows by the spec, taking the scoring columns' values by row index. The model is a histogram gradient boosting
-  model, which takes numeric and categorical columns; other columns (strings, datetimes) are left out here.
+  model, which takes numeric and categorical columns; other columns (strings, datetimes) are left out here. A special
+  feature (``special_features(container)``: a molecule's SMILES column, a spectrum's group of columns) enters in its
+  recommended encoding (``data_foundry.v2.special.encode_special_feature``): a SMILES as RDKit's 2D descriptors, the
+  MACCS keys and the ECFP4 counts (RDKit is in the ``build`` extra), never as text; a spectrum as the same columns with
+  the encoded values.
 
 Requires ``scikit-learn>=1.4`` (for :func:`sklearn.metrics.root_mean_squared_error`).
 """
@@ -43,7 +47,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from data_foundry.collections import BEYOND_ARENA
-from data_foundry.curation_container import CuratedContainer, feature_columns
+from data_foundry.curation_container import CuratedContainer, feature_columns, special_features
 from data_foundry.schema import as_column_list
 from data_foundry.v2.metrics import scorer
 from sklearn.ensemble import HistGradientBoostingClassifier, HistGradientBoostingRegressor, RandomForestRegressor
@@ -73,7 +77,17 @@ def benchmark_by_spec(container: CuratedContainer) -> list[float]:
     task = container.task_metadata
     spec = task.objective_metric
     target_name = task.target_column_name
-    features = [c for c in feature_columns(container) if _usable(df[c])]
+    features = feature_columns(container)
+    special = special_features(container)
+    if special:  # each in its recommended encoding, in place of its columns: a SMILES never as text
+        from data_foundry.v2.special import encode_special_feature  # noqa: PLC0415 - RDKit or scipy by kind
+
+        before = list(df.columns)
+        for feature in special:
+            df = encode_special_feature(df, feature)
+        replaced = {c for f in special for c in f.columns} - set(df.columns)
+        features = [c for c in features if c not in replaced] + [c for c in df.columns if c not in before]
+    features = [c for c in features if _usable(df[c])]
     score = scorer(container)  # score(y_true, y_pred, row_index): looks up the scoring columns by row index
     labels = list(df[target_name].cat.categories) if task.problem_type != "regression" else None
     print(f"Metric: {spec.name} ({spec.origin}; takes {spec.prediction}; ", end="")

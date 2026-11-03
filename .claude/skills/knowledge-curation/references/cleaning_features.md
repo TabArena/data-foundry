@@ -65,13 +65,39 @@ across the split (LEAK-16 to LEAK-21)). A row whose target the source names as n
 the source's words. A single extreme target in the training period only may leave with the source's words or where
 experts of the field drop such a value by default, decided case by case. Rows that are a sentinel in every
 feature are a decision of their own (Weighed factors). Cases: caracas_cervical_cancer, churn_telco_south_asia,
-heart_disease_va_long_beach, thyroid_discordant, sdss_17, ames_housing, mercedes_benz_greener_manufacturing,
+heart_disease, thyroid_discordant, sdss_17, ames_housing, mercedes_benz_greener_manufacturing,
 qsar_tid_11.
 
 ### Undo destroyed meaning
 
-**CLEAN-12 (Should).** Reverse ordinal codes and one-hot blocks into categories with their labels, join dates split
-across columns, and split ids that encode a group and a session. This kind of reconstruction is always welcome.
+**CLEAN-12 (Should; amended 2026-11-01, Lennart, on the PR #37 review: "we can often replace the numbers with a
+better description of the code but we did not do so so far").** Reverse ordinal codes and one-hot blocks into
+categories with their labels, join dates split across columns, and split ids that encode a group and a session. This
+kind of reconstruction is always welcome. A code whose codebook says in words what it means is decoded into those
+words: an ordered code into an ordered category of the words (CLEAN-14), a nominal code (a job, a building type, a
+water source) into a category of the words. The number was only how the file stored the level. A code with no words
+(an id, a detector column, an anonymized code) stays as shipped. A decoded scale is read once more for a level that
+mixes a state with "not asked" (ANES's church attendance 0 holds people without a religion in 1970-1988 and the
+short-form interviews of 1992-1996 that did not ask): split it by what the data shows (the survey year), else
+missing. In `dataset.py`: `CODE_LABELS = {col: {code: label}}` and `decode(df, CODE_LABELS)` after `set_missing`; a
+code without a label raises.
+
+What ships as words and what as numbers, in short (Lennart, 2026-11-01: "let us get a general rule for this"):
+
+| The column is | It ships as |
+|---|---|
+| a code the source names in words, level by level (a grade, a type, an answer, a band) | the words; ordered when the scale is |
+| a measurement with no cut end: a count, an amount, a size, a duration, an hour or weekday of a cycle | a number |
+| a count or band the source cuts at an end ("three or more", ">20", "10+ years") | an ordered category of the source's levels, the cut end a level of its own (CLEAN-14) |
+| a classification target | its classes in words; binary "No"/"Yes" with "Yes" the event (CLEAN-25) |
+| a score or rating with no words per level, or words only at its two ends | a number (CLEAN-14) |
+| a code with no words anywhere (an id, a detector number, an anonymized or undocumented code) | the code, as a category |
+| a 0/1 flag | 0/1, as a category (CLEAN-14) |
+| a code that only means unknown (don't know, refused, not asked) | missing (CLEAN-10) |
+
+A column that still ships as a number while its source has words for it is a gap to close, not a choice. The
+type follows from the source and its context, never from model runs: choosing a dtype case by case by running
+models is "a too strong choice" (Lennart, 2026-11-01); keep what the context says and lose no information.
 
 **CLEAN-13 (Must; narrows CLEAN-12; amended 2026-10-22, Lennart, on mortgage and onlinenewspopularity).** A block is
 one-hot only when every row has exactly one flag set, or at most one with a reference level: the rows with no flag set
@@ -85,7 +111,9 @@ caracas_cervical_cancer (Lennart, 2026-10-15); mortgage, onlinenewspopularity (r
 every 0/1 flag of the working copy: "we should have one clear way to treat 0/1 flags"; amended again the same day,
 when the literal reading had typed counts and anonymized descriptors categorical: "no if we can infer from the
 semantic context, keep it a number, this is a real-world bias. We want to make things categorical if we know from the
-context they are indeed such").** Categorical for a fixed, finite set of values (inferred from the description and the
+context they are indeed such"; amended 2026-10-30, Lennart, on bank_marketing and qsar_biodeg: "ordinal scales are
+case-by-case, they could be either but generally we know they are not numeric so categorical might be the safer
+bet").** Categorical for a fixed, finite set of values (inferred from the description and the
 context), string for free text and high-cardinality values, datetime for dates (`YYYY-MM-DD` where possible;
 reconstruct numerically encoded dates as far as the information allows), numeric for everything else. A 0/1 column is
 categorical when its meaning (the codebook, its name, the source) says it is a yes/no flag (`waterfront`,
@@ -93,6 +121,70 @@ categorical when its meaning (the codebook, its name, the source) says it is a y
 missing values); a boolean column too. A count or a measured quantity stays numeric even when only 0 and 1 occur (an
 RDKit fragment count, `NoOfURLRedirect`, `mosque_count_500`, an aggregate over a history). With no semantic context
 (anonymized or opaque descriptors) a 0/1 column stays as the source ships it, numeric. A constant column is no flag.
+An ordinal scale (a grade, a stage, binned ranges, answers on a survey scale) is no measured quantity: it is decided
+case by case, categorical by default. A column whose meaning is unknown is looked up (the codebook, the paper, the
+descriptor software's manual) before it is typed: qsar_biodeg's two atom-centred fragments were typed categorical as
+"no idea what this might be", and they are counts. Test: the dtype probe (`dtype_probes.py`,
+[checks_and_probes.md](../../knowledge-data-foundry/references/checks_and_probes.md)) lists the columns whose dtype
+disagrees with their values, their name or the source's codebook; the meaning decides.
+
+An ordinal scale is an ordered category, in the order its codebook gives (often not the order of its codes):
+`FeatureTypes(ordinal={col: [levels, lowest first]})` (amended 2026-10-30, Lennart: "Update now going forward for all
+relevant datasets"). The order comes from the scale's meaning, never from the target (2026-10-31, Lennart: "we keep the
+ordinal from the context and logic, not from target information"). The curator's marks of 2026-10-31 and 2026-11-01:
+
+* A scale the source ships as numbers is typed by what the source says its levels are (Lennart, 2026-11-01: "if we
+  can replace the numbers with a description that is obviously not continous then orderd categorical makes sense,
+  otherwie in some cases the numeric version would make more sense"). The test: does the source say in words what
+  each level is?
+  * Yes, every level: the codes are decoded into the words (CLEAN-12) and ordered, lowest first (BI-RADS density from
+    "almost entirely fatty" to "extremely dense", a parent's education from "none" to "higher education").
+  * No: a score or rating with no words per level, with words only at its two ends ("1 = strongly disagree ... 7 =
+    strongly agree"), or whose meaning the context does not give (a 1-10 rating, a quality score, a points total, an
+    index) is a number, as shipped, like a count. A value between two levels means something, as for the cycles below
+    (Lennart, on a 1-10 school rating: "it seems less likley that this should be categorical as 1.5 is well defined
+    more or less").
+  * Bands of a quantity ("21-25", "1-10%", "3 or more") are ordered categories with the band labels, decoded where
+    the file stores a band's number.
+  The order is the right state of the data whatever the benchmark's pipeline does with it ("In data foundry, we want
+  to keep the right state independent of what the downstream benchmark does", Lennart, 2026-10-31); that the
+  pipeline drops the order today is a pipeline change to make (BENCHMARK_CHANGES_TODO.md).
+* A level outside the scale that means unknown (don't know, refused, not asked, an undocumented code) is missing
+  (CLEAN-10). A level outside it that is a state of its own (no basement, not prescribed, never, no checking account)
+  is missing when the column has no other missing value, else the lowest level (Lennart: "making it ordered and setting
+  it to nan might be the best option, unless there is another nan value then we can just set it to the lowest ordered
+  element"). An ordered category has no way to mark one level as outside its order: missing or a place in the line are
+  the two options. Placed by meaning instead (the AI's reading, 2026-10-31): a state that is simply not on the scale
+  (Other, a mixed system, an incomplete assessment, a question that does not apply) is missing in every case, as the
+  lowest level would rank it below every other; a state at the top of a scale goes there (a residence of "all of
+  life"); a synonym of a level is that level; an overlapping band sits by its midpoint. A state that is a second
+  dimension (non-residential client types beside residential strata) keeps the column unordered.
+* A count or a band scale that the source cuts at an end ("three or more", "<1" ... "20" ">20", "10+ years", "50plus")
+  ships as an ordered category of the source's own levels: the cut end is one level of its own, labelled as the source
+  labels it, with no extra column (Lennart, 2026-11-01: "we should rather keep what makes sense from the context and
+  not lose the information if possible, so that might be ordered categorical as an only option"). It is the one
+  lossless form in one column: the exact values stay levels, the order is kept, and the cut end stays what the source
+  says, where a number would invent a value (21 years for ">20") and need a flag to undo it. A model that wants a
+  number reads the levels' order. A count with no cut stays a number; bands of a quantity ("21-25", "1-10%") are
+  ordered categories as well. The dtype probe names every open end (`open_end`), and the definition says what it holds.
+  For a while on 2026-11-01 these counts were numbers with a censoring flag; the flag moved no model by more than half
+  a percent either way on hr_analytics and lending_club (and on the 20 open-end datasets of the 2026-10-30 run an
+  indicator added nothing over the ordered level), so the lossless form stays.
+* A cycle of time or direction (the hour, the weekday, the day of the month, the month, a compass direction) is a
+  continuous position: a value between two others means something (Lennart, 2026-11-01: "if there is a concept such
+  as 1.5 of the scale that is reasonably between 1 and 2 (like half day), then a number makes sense as the true measure
+  is continuous, but if it is a cycle of categoricals it likely needs to be ordered", and "there is weekday 1.5 which is
+  between monday and tuesday"). Shipped as numbers it stays a number, whatever its unit (a weekday 0-6 or 1-7, a month
+  1-12, degrees). Shipped as names (mon, January, NNE, Quarter1) it is an ordered category in the cycle's usual order,
+  from Monday, January or North, with the wrap not shown; the names are not turned into numbers, which would choose a
+  start and a spacing the source did not give.
+* A partial order (two lines of severity, levels the source does not rank against each other) stays unordered, and
+  the definition's notes say so and name the lines (Lennart, 2026-11-01: such columns "should just stay a categorical
+  for the sake now, but also flagged as such in our notes"): an ordered category needs one line through every level.
+  An order still unclear after the sources are checked stays unordered, with a note.
+* A code the source ships as a number (an id, a type code, a detector column) is a category, unless its digits carry
+  meaning a model can use (zip code prefixes, whose nearby values are nearby places); a running row number is an
+  identifier (CLEAN-3).
 
 ### The target
 
@@ -106,6 +198,24 @@ convention of the field, with the merge tested (TP-7): [task_probes.md](task_pro
 
 **CLEAN-18 (Should).** Remove a `Multi-target` tag when the dataset predicts one target ([selection.md](selection.md),
 "Reading decision markers and optional fields").
+
+**CLEAN-25 (Should; 2026-11-01, Lennart: "yes decode the targets too ... provide orderd cateogricals for the targets
+of all classification datasets (if that exists / can be infered maybe?)").** A classification target ships its
+classes as words, like every coded column (CLEAN-12):
+
+* Binary: "No" / "Yes", with "Yes" the event the task predicts (default, fraud, death, a diagnosis), whatever the
+  source's codes are (gallstone_disease's 0 means gallstones present, ANES's 2 means voted). "Yes" sorts second, so it
+  is the positive class of every metric (`labels[1]`) and of a harness that sorts the classes. A binary target the
+  source already names in words keeps them ("negative" / "positive", "Active" / "Churned"). Where its event sorts
+  first (lending_club's "Defaulted" before "Fully Paid", credit_g's "bad" before "good"), ROC AUC and log loss score
+  the same either way, and a metric that needs the event names it in its params (credit_g's cost matrix labels). A
+  binary target is not typed ordered.
+* Multiclass: the source's class names. When the classes form a scale (normal < suspect < pathologic, no dementia <
+  very mild < mild, blood donor < hepatitis < fibrosis < cirrhosis), the target is an ordered category in the scale's
+  order (`FeatureTypes(ordinal={target: [...]})`), by meaning, never by the class sizes. Nominal classes (diseases,
+  species, glass types) and classes with a state outside the scale ("Withdrawn" beside fail < pass < distinction) stay
+  unordered. A consumer aligns its probability columns to the container's categories by name (the examples do).
+* A target with no words in the source (anonymized classes such as `Class_1` ... `Class_9`) keeps them.
 
 ### Features we build
 
@@ -150,11 +260,43 @@ permutes the feature order when it runs.
 
 ### Molecules
 
-**CLEAN-24 (Should).** A molecule's structure (SMILES) ships as RDKit's 2D descriptors from one pinned RDKit for every
-dataset, and the SMILES string is dropped; descriptors the source ships stay next to them. As text the SMILES adds
-nothing to the descriptors, and the benchmark needs no chemistry step of its own. Check for rows that become copies
-once the stereochemistry is gone (stereoisomers share every 2D descriptor). Cases: apistox,
-drug_induced_autoimmunity_prediction, qsar_bioconcentration (2026-10-14).
+**CLEAN-24 (Should; amended 2026-11-01, Lennart).** A molecule's structure ships as a SMILES column marked as a
+structure, never as plain text and never pre-encoded: the definition declares it as a special feature in one column,
+`special_features = (Smiles(column="SMILES"),)` (RDKit's canonical form, `canonical_smiles`), the container records it
+as a special feature of kind `smiles` with the recommended encoding, and the benchmark encodes it, as it encodes dates
+and text. The recommended encoding is RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts (`encode_smiles`, one pinned RDKit); a benchmark may use its own. A SMILES read as
+text adds nothing (character n-grams: -0.025 to +0.010 ROC AUC next to descriptors; a text embedding: nothing on
+apistox), a fixed encoding of the structure does, and the MACCS keys add 0.02 on drug_induced_autoimmunity_prediction
+without costing more than 0.006 elsewhere. Source columns computed from the same structure are one modelling choice of
+the authors and leave, whether or not the recommended encoding reproduces them exactly (Lennart, 2026-11-01: "the real
+task here is going from smiles to a prediction"): drug_induced_autoimmunity_prediction's RDKit descriptors,
+qsar_tid_11's FCFP6 bits, qsar_oral_toxicity's ECFP bits, the Dragon descriptors of qsar_biodeg,
+qsar_fish_toxicity and qsar_aquatic_toxicity. Measured properties stay (qsar_bioconcentration's logKOW), and a column that mixes a measurement with a prediction of the same property stays whole when the actor of the use case would also reach for the prediction (USE-6; that logKOW is 84% measured and 16% the authors' consensus prediction). Salts stay as published: salt forms of one
+compound are a decision of their own (LEAK-19), since the largest fragment is no salt stripper. Check for rows that
+become copies once the stereochemistry is gone (`canonical_smiles(..., stereo=False)`: a 2D encoding does not tell
+stereoisomers apart). Cases: apistox, drug_induced_autoimmunity_prediction, qsar_bioconcentration,
+qsar_oral_toxicity, qsar_tid_11.
+
+### Spectra
+
+**CLEAN-26 (Should; 2026-11-02, Lennart, on Andrej's PR #21).** A spectrum ships as the source publishes it, one
+numeric column per position on its axis, and is declared as a spectrum, never processed in the data: the definition
+declares it as a special feature in a group of columns, `special_features = (Spectrum(name=..., prefix=..., ...),)` (the
+columns `<prefix><position>`, the unit, the technique, and the state the source left it in: `raw`, `processed` or
+`peaks`), the container records it as a special feature of kind `spectrum`, and the benchmark encodes it row by row,
+as it encodes a SMILES, a date or text. The processing has free choices (window, baseline method, normalisation), so
+written into the data one of them becomes the task and a method that processes spectra itself loses the signal. The
+recommended encoding follows the field's published default, never a tuning on our folds: MALDIquant's steps for a raw
+mass spectrum (square root, Savitzky-Golay over 21 points, SNIP baseline, total ion current; a placeholder, since the
+literature names no best pipeline and the benchmark picks among the registered published candidates), the spectrum as it is
+for a peak list or a processed spectrum, and for a vibrational spectrum (Raman, infrared, near-infrared) the spectrum as
+it is, with RamanBench's linear-model default (ALS baseline, SNV) the alternative to check. Raw mass spectra need the
+processing: on pancreatic_cancer_mouse_detection it lifts the tree models by 0.10 to 0.15 ROC AUC and TabPFN v3.5 by
+0.03; vibrational spectra may not: RamanBench's leading methods (TabPFN v2.5, TabICL v2) read the raw spectra. The steps that fit across spectra
+(alignment, peak detection and binning) are no per-row default. Keep the whole range the source publishes; dropping
+constant or copied bins is fine, cropping a range is a modelling choice. Spectra of one sample, specimen, strain or
+patient are one group (SPLIT-23, SPLIT-29). Guide: [spectra.md](spectra.md). Cases: pancreatic_cancer_mouse_detection,
+micro_mass.
 
 ## Weighed factors
 
@@ -170,11 +312,17 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | CLEAN-1 | ashrae_great_energy_predictor_iii | the readings in kWh from the data owners' raw release (the competition kept each site's own unit); meters at 0 for 48 hours or more in their operating season and readings stuck for a week or more dropped; 94.5% of the 2016 rows dropped are on the first-place team's hand-made list of bad readings (2026-10-15) | applied |
 | CLEAN-2 | nyc_taxi_trip_duration_1m, pkdd_15_taxi_trip_time_prediction_ii_1m | no hour column, though the pickup hour carries much of the signal (nyc: LightGBM RMSE 0.357-0.381 with the hour, 0.414-0.441 with AutoGluon's date parts): a datetime's encoding is the pipeline's, and the v0.2 runs keep the hour; nothing to change while they do (2026-10-21, Lennart) | applied |
 | CLEAN-7 | sf_permit_time, home_credit_default_risk | under LEAK-29 in [leak_checks.md](leak_checks.md), Cases | applied |
+| CLEAN-3 | ieee_fraud_detection | `TransactionID` is a row number, consecutive and in the order of the transaction time (rank correlation 1.0): an identifier, dropped; the time is `day` (2026-10-31, Lennart's marks on codes shipped as numbers) | applied |
 | CLEAN-8 | rosbank1, alfa_battle_2_0_task_2, anes_voting_2026 | columns or categories kept by counts over the whole table, as ordinary cleaning (2026-10-19, Lennart) | applied |
 | CLEAN-10 | house_sales | `yr_renovated` = 0 ("never renovated" in the source) set to missing, so missing means never renovated; the fact that sets it apart from bank_marketing's `pdays = -1` and ames_housing's no-remodel coding: a 0 in a year column misleads a linear model as a year, and after the as-of-sale rebuild missing has no other meaning in the column (2026-10-22, Lennart) | exception |
+| CLEAN-10 | early_learning_predictors | Stata's extended missing values `.a` and `.b`, exported to the CSV as text (2,388 and 29 cells in 46 columns), set to missing: they occur only where the question was asked, while a skipped question is blank, so they are unanswered questions, and the source does not define them. The 46 columns, `numeric` in the codebook (counts, rand amounts, a year, minutes), had been categories because of them (CLEAN-14) (2026-10-30, Lennart, issue #36) | applied |
+| CLEAN-10 | amex_non_iid_1m, clock_protein_toxicity, anes_voting_2026 | -1 in raddar's 55 integer columns of amex (its missing value, on the same rows across blocks), -1 for the counts nAcid and nBase in 2 molecules (dropped on 2026-11-01, CLEAN-11), and ANES's survey codes for don't know, refused and not asked (with the undocumented 2024 -1 of 197 respondents) set to missing (2026-10-30); ashrae's and rain_in_australia's cloud cover 9 (sky obscured: the cloud amount cannot be estimated) first kept with a note, then set to missing by the general rule, as a calm wind's direction is (2026-10-31, Lennart's marks) | applied |
+| CLEAN-11 | gallstone_disease | `Comorbidity` is 0 or 1 in the paper; three rows hold an undocumented 2 or 3, each with one of the listed diseases: recoded to 1, the rows kept (the curator had asked whether to drop them; CLEAN-11 keeps rows; 2026-10-31) | applied |
+| CLEAN-11 | clock_protein_toxicity | two molecules dropped: the descriptor software failed on them (-1 counts of acidic and basic groups, 62-68 descriptors at 0 that at least 95% of the other molecules have non-zero, 9-18% of the descriptors outside the others' 1-99% range against 0.7%), and the source gives no structures to recompute them; the row's features are not the molecule's (2026-11-01, Lennart) | exception |
+| CLEAN-11 | early_learning_predictors | `language_match` (0/1): the enumerator's reason written in place of the answer in 16 rows, each explaining why the child was assessed in another language than at home, recoded to 0 (2026-11-01, Lennart: find out what they mean rather than keep them as categories) | applied |
 | CLEAN-11 | caracas_cervical_cancer | a first intercourse after the current age, an STD diagnosed longer ago than the patient's age: missing | applied |
 | CLEAN-11 | churn_telco_south_asia | a negative network age or an undocumented code: missing | applied |
-| CLEAN-11 | heart_disease_va_long_beach | `chol == 0`: missing | applied |
+| CLEAN-11 | heart_disease (Long Beach, first as heart_disease_va_long_beach) | `chol == 0`: missing | applied |
 | CLEAN-11 | thyroid_discordant | `age = 455`: missing | applied |
 | CLEAN-11 | sdss_17 | `-9999`: missing | applied |
 | CLEAN-11 | ames_housing (record house_prices_nominal until 2026-10-26) | De Cock's three partial sales over 4,000 sq ft, which he calls "Partial Sales that likely don't represent actual market values" (2011, p. 4), all in the training rows: dropped with his words; the case that prompted the amendment (2026-10-21, Lennart) | applied |
@@ -182,14 +330,22 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | CLEAN-11 | qsar_tid_11 | one pXC50 of -6.24, a half-effect concentration of about 1.7 million mol/L: impossible, so the target is missing and the row leaves by CLEAN-15; the training-period clause does not apply to a random split (2026-10-21, Lennart) | applied |
 | CLEAN-11 | mortgage | 38 balances that put the source's own LTV above 300% (570,000 on an original 60,495): impossible, missing before lagging, so the 37 lagged LTVs above 300% and the balances and ratios built from them are missing (2026-10-22, Lennart) | applied |
 | CLEAN-12 | perth_house_prices | a `UNIT` flag from the address's unit number ("10/23 ..."), the property type the upload dropped; `ADDRESS` kept as text; the first flag derived from free text (2026-10-26, Lennart) | applied |
+| CLEAN-12 | credit_g, immoscout_german_house_prices | credit_g switched to UCI 573 (South German Credit, Groemping 2019), the corrected Statlog data: Statlog's german.doc labels 8 columns wrongly, and UCI 573 corrects 57 coded values and 10 typos in amount or age; every code labelled by its code table (2026-10-31, Lennart: "we want the right labels in all cases"); immoscout's `Condition`, `Furnishing_quality`, `Type` and `Heating` labels are permuted in the scrape, the missing value swapped with a real level in each: ImmoScout24's own codes restored by matching 3,548 houses to an April 2020 scrape that keeps them (93-100% of each label's matches on one code), `Furnishing_quality` then ordered (2026-10-31, Lennart's marks: "find out more") | applied |
+| CLEAN-12 | pva_revenue_prediction_kddcup98, anes_voting_2026, ljubljana_breast_cancer and 26 more | codes decoded into the codebook's words (377 columns in 29 definitions, the curator's rule of 2026-11-01); pva's `DOMAIN_ses` read the urban scheme's codes as the other scheme's and is read row by row now; ljubljana's bands are band text, not midpoints; ANES codes that only mean unknown are missing in the unordered codes too (CLEAN-10); anonymized and undocumented codes, 0/1 flags and the targets stay codes (2026-11-01, Lennart) | applied |
 | CLEAN-13 | caracas_cervical_cancer | each STD type is its own question, and 9 patients have two or three: one category per flag; one category of combinations would need 14 levels, 9 of them with 1-3 patients (2026-10-15, Lennart) | applied |
 | CLEAN-13 | mortgage, onlinenewspopularity | `real_estate_type` (three property flags, 19.5% of rows with none) and `data_channel` (six channel flags) merged into one category with the reference level `other` for rows with no flag; at most one flag is set in every row, so the merge is lossless (2026-10-22, Lennart; the rule's wording amended) | applied |
 | CLEAN-14 | qsar_oral_toxicity, hiva_agnostic, qsar_tid_11 | fingerprint bits and binary structure descriptors, checked to hold only 0 and 1, typed categorical (int64, category and float64 before) (2026-10-21, Lennart) | applied |
 | CLEAN-14 | every 0/1 flag of the working copy (35 definitions, e.g. framingham_heart_study_fhs, phiusil_phishing, bioresponse, home_credit_default_risk, zillow_prize) | first applied on the data: every feature holding only 0 and 1 typed categorical, counts and anonymized descriptors included; revised the same day by meaning: flags kept categorical (`waterfront`, `male`, `Promo`, `FLAG_DOCUMENT_*`, santander's `ind_var*` indicators, zillow's presence flags), counts reverted to numeric (RDKit fragment counts, `NoOfURLRedirect`, `mosque_count_*`, coil_2000's policy counts, cardiotocography's `DS`, home credit aggregates), anonymized descriptors reverted (amex_non_iid_1m, ieee_fraud_detection's V columns, bioresponse, homesite_quote_conversion's fields); the case that prompted the second amendment (2026-10-21, Lennart) | applied |
 | CLEAN-14 | zillow_prize | the census tract-and-block code as one categorical `census_tract` (11-digit tract ID, 3,030 levels); the block group and block parts (8,334 and 55,601 levels) dropped as near-identifiers, the county part being `fips` (2026-10-26, Lennart) | applied |
+| CLEAN-14 | bank_marketing | `campaign` and `previous`, the contacts with a client in this and in earlier campaigns (1-63 and 0-275), typed categorical by the BeyondArena notebook (48 and 41 levels): counts, so numeric, as the UCI description gives them; the 0/1 sweep of 2026-10-21 looked only at columns holding 0 and 1 (2026-10-30, Lennart, issue #34) | applied |
+| CLEAN-14 | qsar_biodeg | `N073_chemical_substructure` and `C026_chemical_substructure`, the atom-centred fragments N-073 and C-026 (counts of atoms of that type, 0-3 and 0-12), typed categorical while their meaning was unknown: counts, so numeric; found by the dtype probe's sweep (2026-10-30, Lennart) | applied |
+| CLEAN-14 | 60 definitions, revised by the decode rule of 2026-11-01 below (e.g. mic, eryhemato_squamous_disease, diamonds, ames_housing, anes_voting_2026, student_portuguese_performance, coil_2000, early_learning_predictors, heart_disease) | the ordinal scales as ordered categories in their codebook's order, those the sources ship as numbers too (167 columns); the states outside a scale placed by the curator's rule; calendar and compass cycles ordered; heart_disease's chest-pain type ordered by the typicality of angina, not by the outcome, and miami_housing's unlabelled 1-5 `structure_quality` by its codes, not by its prices; codes shipped as numbers as categories (sberbank ID_metro, early_learning_predictors' 18 answer codes), zip prefixes kept as numbers; partial orders unordered with a note; the orders of low confidence checked again without the label (regensburg's wall layers and perfusion and website_phishing's `SFH` ordered; churn_telco's user type, the STEG reading remark and marketing_campaign's `Education` unordered with a note) (2026-10-30 and the curator's marks of 2026-10-31, Lennart) | applied |
+| CLEAN-14 | 5g_energy_consumption, bad_customer_detection, miami_housing, rossmann_store_sales, mobile_churn; mic, horse_colic_survival, audiology_diagnosis, predict_students_dropout_and_academic_success, covertype, force_2020, kick, fiat_500, distribution_transformers_at_cauca_department | the cycle rule: weekdays and months shipped as numbers are numbers (`weekday_number`, `month`, `month_sold`, `CompetitionOpenSinceMonth`, rossmann's `DayOfWeek`, an unordered category before), named ones ordered categories; first written to order the numbered ones too, revised the same day ("there is weekday 1.5 which is between monday and tuesday"); the partial orders noted with their lines in each definition (2026-11-01, Lennart) | applied |
+| CLEAN-14 | california_house_prices_2020, miami_housing, eryhemato_squamous_disease, student_portuguese_performance, anes_voting_2026 and 13 more | scores and ratings with no words per level, or words only at their ends, are numbers again (54 columns: school ratings 1-10, `structure_quality`, the ten 0-3 findings, 1-5 ratings, 7-point scales, a histologic stage, a degree of malignancy); labelled scales ordered by their words; reverses the 2026-10-31 typing of every scale shipped as numbers as an ordered category (2026-11-01, Lennart: "if we can replace the numbers with a description that is obviously not continous then orderd categorical makes sense") | applied |
 | CLEAN-16 | pricing_game_2017_french_mtpl | the claim cost ships in euros, not log1p: its metric, the mean Tweedie deviance, scores the predicted cost's level in euros, and a log1p fit transformed back priced policies at about 1% of their cost (deviance skill -5.1 against about +0.05 in euros); the fact that sets it apart from the insurance tables shipped on log1p is a metric that scores the level, where a Gini scores only the order (2026-11-03, Andrej) | exception |
 | CLEAN-17 | audiology_diagnosis | classes merged by a convention of the field, and the merge tested (TP-7) | applied |
 | CLEAN-17 | force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition | the Basement class (103 rows, all in well 16/4-1) dropped: a class that lives in one group cannot be on the train and the test side of a split by that group; the other 11 classes occur in at least 4 wells; the first class dropped for living in one group (2026-10-21, Lennart) | applied |
+| CLEAN-17 | nci_aids_antiviral_screen | the screen's three conclusions (CA, CM, CI) merged into active against inactive: four independent releases over eighteen years define that target on this file (the 2007 HIVA challenge, MoleculeNet, OGB's `ogbg-molhiv`, ChemPile), it is the call a screening team acts on (USE-5), and the merge is measured (41,140 compounds, 1,404 active, ROC AUC 0.78 to 0.82 over the nine splits); the potency scale the two active classes form stays in a decision table, and the metric follows the target from the log loss fallback to roc_auc (MET-4) (2026-11-02, Lennart) | applied |
 | CLEAN-19 | alfa_battle_2_0_task_2 | the features the 1st, 4th and 9th place solutions have in common (513 aggregates over the restored ruble amounts) replace the organisers' 127 (untuned LightGBM 0.787 / 0.771 / 0.772 against 0.774 / 0.757 / 0.763 on the three windows) (2026-10-13, Lennart); the top solutions' features are the better of the two, so they are taken and not merged with the organisers' (CLEAN-19 as amended 2026-10-21, Lennart) | applied |
 | CLEAN-19 | mortgage | a column joined from outside the source: Freddie Mac's 30-year mortgage rate (FRED MORTGAGE30US), the mean of the previous calendar quarter, and the loan's lagged rate minus it (the refinance incentive a payoff model uses); dated periods make the join exact; the first such join, so siblings with dated periods take the same treatment (2026-10-22, Lennart) | applied |
 | CLEAN-19 | rain_in_australia | the other locations' 9 am Rainfall, Pressure9am and Humidity9am of the same day (143 columns), each kept only where that location's 9 am comes no later than the row's own under both clock and standard time; ROC AUC 0.850 to 0.870 on the 9 windows then shipped (paired SE 0.0045, better in 8 of 9) (2026-10-26, Lennart; the rule amended) | applied |
@@ -203,10 +359,21 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | CLEAN-21 | zillow_prize | `buildingqualitytypeid` of 2017 mapped onto the 2016 scale with the map the data shows, confirmed on all 1.94M parcels with a code in both files; no published conversion exists (2026-10-26, Lennart) | exception |
 | CLEAN-21 | rosbank1 | amounts in each transaction's own currency (57 codes, up to 35.8 million dong) converted to rubles at the Bank of Russia's official rate in force on the transaction's day, the measuring body's conversion; the ISO numeric reading of the codes checked on the data (converted, the median POS purchase is 355-3,346 rubles in every currency, against 500 in rubles); the 0.3% of transactions in currencies the Bank did not quote then are masked, not converted from another source (2026-10-26, Lennart) | applied |
 | CLEAN-22 | coad_colon_adenocarcinoma | ships 36,355 features; its report had weighed one model's 50,000-feature cap (2026-10-15, Lennart) | applied |
-| CLEAN-24 | apistox, drug_induced_autoimmunity_prediction, qsar_bioconcentration | the SMILES as text next to the descriptors: -0.025 to +0.010 ROC AUC; the string is dropped (2026-10-14) | applied |
+| CLEAN-22 | early_learning_predictors | `teacher_duration`, the minutes the teacher's rating form was open, leaves as a timer of the data collection, like the three `duration_elom` timers the definition already dropped: no property of the child or the facility, 39% zeros and forms open for up to 29 days, and its little signal (Spearman -0.06 with the score) follows the survey round, which is dropped (2026-10-30, Lennart) | applied |
+| CLEAN-22 | qsar_bioconcentration | `logKOW_type` (measured against predicted) leaves, though it is no leak, no identifier, no copy and not the measurement the label is read from: it records how the authors filled their 2015 table, not a property of the chemical, the `teacher_duration` shape above. The effect sizes are not the reason and are given for the leak question it was raised under: 0.534 macro ROC AUC alone against 0.5 for chance, nothing on top of the structure (0.6806 with it and without it), -0.0013 in the full model. Distinguished from the provenance flags that stay, which are in the actor's own record: pva_revenue_prediction_kddcup98's `AGEFLAG`, `DATASRCE` and `LIFESRC`, thyroid_discordant's five `*_measured`, sf_permit_time's `point_source`. The price is that the 122 predicted rows are no longer identifiable, so CLEAN-24's "measured properties stay" is qualified above (2026-11-02, Lennart) | applied |
+| CLEAN-24 | apistox, drug_induced_autoimmunity_prediction, qsar_bioconcentration | the SMILES as text next to the descriptors: -0.025 to +0.010 ROC AUC; the string is dropped (2026-10-14); superseded by the amendment below | applied |
+| CLEAN-24 | apistox, drug_induced_autoimmunity_prediction, qsar_bioconcentration, qsar_oral_toxicity, qsar_tid_11 | the amendment: the SMILES ships as a typed structure column and the benchmark encodes it (recommended: RDKit's 2D descriptors with the MACCS keys and the ECFP4 counts); the shipped RDKit descriptors leave, drug_induced's source descriptors too (reproduced: 0.771 against 0.772 LightGBM ROC AUC); apistox keeps its 141 salts, since the largest fragment turns triclopyr and picloram triethylammonium into triethylamine (2026-11-01, Lennart; discussion doc "SMILES Handling in Data Foundry and TabArena v0.2") | applied |
+| CLEAN-24 | qsar_tid_11 | SMILES only: the authors' FCFP6 bits leave as one modelling choice; RDKit recomputes none of them exactly; LightGBM R^2 on the scaffold splits 0.645 with the bits, 0.601 with the recommended encoding, 0.658 with RDKit's ECFP4 counts added to it (2026-11-01, Lennart) | applied |
+| CLEAN-24 | qsar_oral_toxicity | SMILES only: the published ECFP bits (Dragon 7) leave as one modelling choice; the copies are found on the 2D structure instead of the bit vector, 11,116 chemicals (11 more: bit collisions had joined different chemicals) (2026-11-01, Lennart) | applied |
+| CLEAN-24 | qsar_biodeg, qsar_fish_toxicity, qsar_aquatic_toxicity | SMILES only: the structures the UCI copies left out come from the authors' own releases (the paper's supporting information; the Milano Chemometrics workbooks), the same rows in the same order, every descriptor identical, so the link needs no key; the Dragon descriptors leave, which also settles the descriptor-selection leaks of the two toxicity sets (LEAK-31) (2026-11-01, Lennart) | applied |
+| CLEAN-26 | pancreatic_cancer_mouse_detection | the raw SELDI-TOF serum spectrum (6,771 bins of 400 ppm) ships as published and is declared `raw`; the benchmark's default is MALDIquant's steps: on the 60 shipped splits the tree models gain 0.10 to 0.15 ROC AUC, PLS-DA 0.06 and TabPFN v3.5 0.03 (0.659 to 0.690), logistic regression loses 0.02; PR #21's own chain, which ends in a log, scores higher for TabPFN (0.716) and the linear models, and the default stays the published workflow (2026-11-02, Lennart) | applied |
+| CLEAN-26 | micro_mass | the VITEK MS peak list (1,300 bins, the m/z of each not published) is declared `peaks` with the bin number as its axis; the default leaves a peak list as it is; the constant and copied bins stay dropped (2026-11-02, Lennart) | applied |
 
 ## In Data Foundry
 
-The order of these steps in `_clean`, the helpers (`drop_columns`, `rdkit_descriptors`, `anonymize_ids`) and the
-bundle checks that catch what is missed: [definitions.md](../../knowledge-data-foundry/references/definitions.md),
+A SMILES and a spectrum are special features, declared in `special_features` (`Smiles(column=...)`, one column;
+`Spectrum(name=..., prefix=...)`, a group of columns; `data_foundry.v2.special`); their encodings are in
+`data_foundry.v2.chemistry` and `data_foundry.v2.spectra` ([molecules.md](molecules.md) and [spectra.md](spectra.md),
+"In Data Foundry"). The order of these steps in `_clean`, the helpers (`drop_columns`,
+`canonical_smiles`, `anonymize_ids`) and the bundle checks that catch what is missed: [definitions.md](../../knowledge-data-foundry/references/definitions.md),
 "The preprocessing recipe".

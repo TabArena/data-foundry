@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: predict_students_dropout_and_academic_success
 container_format: 2
-checksum: v2:d126bf00778bd6070c8d010c1b2d8b52e1046e278d53039924461867e61edc8c
+checksum: v2:039eae3aba61758fc2f7f9345e6650666d6fba8be509a6f782d0a810b6438075
 build:
   uuid: 01a111fc-b7bd-7c0b-a919-1a848957caf4
   checksum: v2:29ca775f9fd8e27edc7509838682f54ddfd2065cad22627f86c60139287afe39
@@ -68,7 +68,7 @@ decisions: []
 
 Multiclass classification of `AcademicOutcome`, scored with `log_loss` on IID splits. 4,424 rows and 36 features. Source: UCI (2021).
 
-Built as `01a111fc-b7bd-7c0b-a919-1a848957caf4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d126bf00778bd6070c8d010c1b2d8b52e1046e278d53039924461867e61edc8c`, so the build is stale. See [Build](#build).
+Built as `01a111fc-b7bd-7c0b-a919-1a848957caf4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:039eae3aba61758fc2f7f9345e6650666d6fba8be509a6f782d0a810b6438075`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -138,7 +138,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `log_loss` (standard; takes proba; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | mean of -log p(true class) |
 | reason | UCI page and the data paper define no task metric; the first-publication case study compares classifiers on several scores (likely F1 given the class imbalance) without a declared task metric. Not verified in full text. |
 
@@ -184,6 +184,12 @@ The first 5 of 4,424 rows of the final frame (random rows: the frame is shuffled
 - We renamed the target variable and fixed some typos in the feature names.
 - We reversed the ordinal encoding of all categorical features.
 - We removed whitespaces and special characters from the feature names.
+- Partial order, left unordered (2026-11-01, CLEAN-14): `Previous_qualification`, `Mothers_qualification` and
+  `Fathers_qualification` lie on the Portuguese education ladder, but the pre- and post-Bologna degrees are ties
+  and the old-system courses sit beside the year levels, so there is no single line.
+- Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+  each level is carries the words, a score without them is a number): 1 scores with no words per level are
+  numbers (`SCORES`): `Application_order`.
 
 ## Splits
 
@@ -377,4 +383,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:d126bf00778bd6070c8d010c1b2d8b52e1046e278d53039924461867e61edc8c` |
+| stale | yes: the definition now gives checksum `v2:039eae3aba61758fc2f7f9345e6650666d6fba8be509a6f782d0a810b6438075` |

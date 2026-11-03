@@ -54,3 +54,5 @@ Lennart: too small
 Andrej: too small
 
 Highly related to `sleuth_case2002` (Sleuth textbook datasets).
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `fio_homeowners_insurance_zip_2018_2022` (TBD -> 2nd Tier, priority 3); a related task: `hmda_mortgage_application_decision` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

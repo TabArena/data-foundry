@@ -2,14 +2,13 @@
 unique_name: customer_personality_analysis
 name: Customer_Personality_Analysis
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 suggestion: 'No'
 decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
-- Missing source information
+- Duplicate
 tags:
 - 2nd Tier / Scientific Discovery
-- AI-Filled (Verify)
 collections:
 - TabArena Reject
 year: '2021'
@@ -21,8 +20,6 @@ original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/imakash3011/customer-personality-analysis/data
 source_row: 812
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -51,6 +48,12 @@ Well-known Kaggle 'Customer Personality Analysis' marketing dataset (~2240 rows,
 ---
 
 CC: "Looks like a nice dataset, but source is not entirely clear to me. Also might be more a clustering task than predictive task? - could make it a predictive task using the following feature as target: Response: 1 if customer accepted the offer in the last campaign, 0 otherwise. However, we don't know enough about the time when the features were collected, so rather not use this task"
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `x5_retailhero_sms_response` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
+**Assessment (AI, 2026-11-01):** the source is traced (issue #38): the upload is the iFood Data Analyst Case's `ml_project1_data.csv` (https://github.com/nailson/ifood-data-business-analyst-test), cell for cell the same file as `marketing_campaign`, so `Duplicate` of it (PROV-4) replaces `Missing source information`.
+
+CC (2026-11-01, Lennart): `marketing_campaign`, the same file, is retired as generated data (review page of issue #38), so this reject stands: `No` with `AHDS` and `Duplicate`.
 
 ## Reference
 

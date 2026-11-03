@@ -2,12 +2,22 @@
 
 from __future__ import annotations
 
-import re
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "tumor-size": ["0-4", "5-9", "10-14", "15-19", "20-24", "25-29", "30-34", "35-39", "40-44", "45-49", "50-54"],
+    "inv-nodes": ["0-2", "3-5", "6-8", "9-11", "12-14", "15-17", "24-26"],
+    "age": ["20-29", "30-39", "40-49", "50-59", "60-69", "70-79"],
+}
+
+
+# Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
+SCORES = ["deg-malig"]
 
 
 class LjubljanaBreastCancer(AbstractCuratedDataset):
@@ -23,7 +33,7 @@ class LjubljanaBreastCancer(AbstractCuratedDataset):
         ),
         predicted="Whether the cancer recurred (30% did); the source states no time window.",
         known=(
-            "Age, tumour size and number of affected lymph nodes in bands (given as band midpoints), menopausal "
+            "Age, tumour size and number of affected lymph nodes in bands, menopausal "
             "status, whether the tumour broke through a node's capsule, malignancy grade (1-3), breast and quadrant, "
             "and whether radiotherapy was given."
         ),
@@ -60,8 +70,12 @@ class LjubljanaBreastCancer(AbstractCuratedDataset):
         We start with the data from UCI.
 
         - We encode missing values as np.nan instead of "?".
-        - We turn the bands of age, tumour size and number of affected lymph nodes (e.g. "40-49") into numbers: each band becomes its midpoint (age 24.5 to 74.5, tumour size 2 to 52, nodes 1 to 25). The source gives only the bands, so the exact values cannot be recovered.
+        - Age, tumour size and the number of affected lymph nodes ship as bands ("40-49"); they are ordered categories of
+          the bands (`ORDINAL_LEVELS`). Until 2026-11-01 each band was its midpoint (age 24.5 to 74.5), a number the
+          source does not give (CLEAN-14, the curator's rule on bands).
         - We keep duplicates as they seem naturally occurring.
+        - `deg-malig`, the degree of malignancy 1-3, has no words per level in the source: a number (`SCORES`;
+          2026-11-01, CLEAN-14, the curator's rule).
     """
 
     # Task
@@ -94,33 +108,13 @@ class LjubljanaBreastCancer(AbstractCuratedDataset):
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         df = raw
 
-        def interval_midpoint(x):
-            """Convert strings like '10-19' -> 14.5 (mean of the bounds, not rounded),
-            '?' / NaN -> NaN, already-numeric -> as-is.
-            """
-            if pd.isna(x):
-                return np.nan
-            if isinstance(x, (int, float, np.integer, np.floating)):
-                return x
-
-            s = str(x).strip()
-            if s in {"?", ""}:
-                return np.nan
-
-            m = re.fullmatch(r"(\d+)\s*-\s*(\d+)", s)
-            if not m:
-                return np.nan  # or return s if you prefer to keep non-interval values
-
-            a = int(m.group(1))
-            b = int(m.group(2))
-            return (a + b) / 2
-
-        for c in ["age", "tumor-size", "inv-nodes"]:
-            df[c] = df[c].map(interval_midpoint)
+        # scores with no words per level are numbers (CLEAN-14)
+        df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "menopause",
                 "node-caps",

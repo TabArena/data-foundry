@@ -9,6 +9,8 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
+decision_markers:
+- Anonymized
 original_source: Other
 year: '2016'
 required_split:
@@ -44,6 +46,8 @@ CC (2026-10-06, Lennart): Kept in TabArena v0.2 after the task-probe review (fla
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source cost_matrix {"labels": ["neg", "pos"], "matrix": [[0, 10], [500, 0]], "prediction": "proba"} — Total cost = Cost_1 * #false positives + Cost_2 * #false negatives (IDA 2016 Industrial Challenge) (https://web.archive.org/web/20161011/http://ida2016.blogs.dsv.su.se/ ; UCI https://doi.org/10.24432/C5V60Q (aps_failure_description.txt)).
 
 CC (2026-10-21, Lennart): the declared metric stays as it is (`cost_matrix`: a false alarm costs 10, a missed failure 500, as the IDA 2016 challenge scored; cross-dataset item "Metrics still to settle").
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `scania_component_x` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference
 

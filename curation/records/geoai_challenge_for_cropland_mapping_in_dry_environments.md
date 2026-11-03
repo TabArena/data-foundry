@@ -29,3 +29,5 @@ Winning solution: https://zindi.africa/learn/winning-solution-to-the-geoai-cropl
 https://zindi.africa/competitions/geoai-challenge-for-cropland-mapping-in-dry-environments/discussions/29401
 challenge
 Domain: agriculture
+
+**Assessment (AI, 2026-10-31):** cleanup flag of the data-scouting run: consistency: the run rejected `cropharvest_crop_noncrop` and `cropmapil_orchard_type` as `Image` (SEL-13, every feature a satellite band); this record is the counter-precedent and should get the same call or a fact that sets it apart.

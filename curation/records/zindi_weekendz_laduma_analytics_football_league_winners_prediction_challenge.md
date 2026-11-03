@@ -3,6 +3,9 @@ unique_name: zindi_weekendz_laduma_analytics_football_league_winners_prediction_
 name: zindi-weekendz-laduma-analytics-football-league-winners-prediction-challenge
 checked_by:
 - AI (UNVERIFIED)
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Lennart
 suggestion: TBD -> 2nd Tier
 priority: 1
 decision_markers:
@@ -40,3 +43,5 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (sport, under Other), use case 0 (no decision), source 0 (masked, a weekend hackathon), shape - (few hundred games), risk - (in-match statistics, duplicate with the rerun).
 
 This Zindi Weekendz challenge asks to predict football league match/winners outcomes, a sports-results prediction task. It could be framed as a genuine classification (win/draw/loss) but Zindi Weekendz datasets are typically very small and the task usually requires a temporal split since matches occur in sequence. The record provides no size, features, or exact target. A human must inspect dataset size, the target definition, and the split regime; provisionally 2nd Tier given likely small size.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `football_match_probability_prediction` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.

@@ -56,6 +56,10 @@ CC (2026-10-22, Lennart): issue 2: confirm the drop of the SIM cards never activ
 
 CC (2026-10-26, Lennart): verdict ship.
 
+CC (2026-11-01, Lennart): marks on the review board of PR #37: month, the record month, stays a number (the curator's cycle rule).
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `orange_belgium_churn_uplift` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Kaggle

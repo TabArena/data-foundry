@@ -5,7 +5,28 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "Hepatic Fat Accumulation (HFA)": ["no fat accumulation", "mild", "moderate", "severe", "very severe"],
+}
+
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "Hepatic Fat Accumulation (HFA)": {
+        "0": "no fat accumulation",
+        "1": "mild",
+        "2": "moderate",
+        "3": "severe",
+        "4": "very severe",
+    },
+    "Gender": {"0": "male", "1": "female"},
+    "Comorbidity": {"0": "none", "1": "any"},
+}
 
 
 class GallstoneDisease(AbstractCuratedDataset):
@@ -64,6 +85,18 @@ class GallstoneDisease(AbstractCuratedDataset):
     """
     curation_comments = """
         We use the data without any further curation.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them decoded from the source's codes
+          into its words (`CODE_LABELS`, 2026-11-01).
+        - `Comorbidity` is "any comorbidity", 0 or 1, as the paper describes it: all 217 rows with 0 have none of the
+          four listed diseases (CAD, hypothyroidism, hyperlipidemia, diabetes), and the 1s have one, two, or another
+          condition. Three rows hold an undocumented 2 (1 row) or 3 (2 rows), each with exactly one listed disease: an
+          entry error for 1, recoded to 1; the rows stay (CLEAN-11; the curator's marks of 2026-10-31).
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
+          words (`CODE_LABELS`), in the same order; 2 unordered codes carry their words: `Gender`, `Comorbidity`.
+        - The target (2026-11-01, CLEAN-25): `Gallstone Status` ships its classes as words (0 means gallstones present
+          (UCI)). Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -77,8 +110,19 @@ class GallstoneDisease(AbstractCuratedDataset):
         df = pd.read_excel(raw_dir / "dataset-uci.xlsx", sheet_name="dataset", engine="calamine")
         return df
 
+    def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
+        # Comorbidity is 0 (none) or 1 (any); the three 2 and 3 have one of the listed diseases each (curation notes)
+        df = raw
+        df["Comorbidity"] = df["Comorbidity"].replace({2: 1, 3: 1})
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "Yes", "1": "No"}})
+        return df
+
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "Coronary Artery Disease (CAD)",
                 "Hypothyroidism",

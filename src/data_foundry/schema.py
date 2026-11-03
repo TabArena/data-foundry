@@ -213,8 +213,9 @@ class MetricSpec:
     origin: MetricOrigin
     """``source`` (what the competition or paper scored), ``stand_in`` (the closest computable metric to an original
     that cannot be computed, named in ``original``), ``context`` (the source defines no metric, but the task makes one
-    obvious, e.g. a relative error for a price; why in ``reason``) or ``fallback`` (the source defines no metric and
-    none is obvious: roc_auc / log_loss / rmse by problem type, the reason in ``reason``)."""
+    obvious, e.g. a relative error for a price; why in ``reason``) or ``fallback`` (the source defines no metric the
+    task would use in practice, and none is obvious: roc_auc / log_loss / rmse by problem type, the reason in
+    ``reason``)."""
     params: dict[str, Any] = dataclasses.field(default_factory=dict)
     """JSON values only: a cost matrix, ``k``, the shape of a transform."""
     inputs: dict[str, str] = dataclasses.field(default_factory=dict)
@@ -281,6 +282,101 @@ class ScoringColumn:
     description: str
     """What the column is and how the metric uses it, e.g. "the week a row belongs to; the metric is the mean of the
     per-era correlations"."""
+
+
+SpecialFeatureKind = Literal["smiles", "spectrum"]
+"""What a :class:`SpecialFeature` holds: ``smiles``, a molecule's structure as a SMILES string (one column), or
+``spectrum``, one spectrum per row (a group of columns, one per position on its axis)."""
+
+SpecialFeatureLayout = Literal["column", "group"]
+"""How a :class:`SpecialFeature` is stored: in one ``column``, or in a ``group`` of columns, in a fixed order, that
+hold one object together and are encoded together."""
+
+SpectrumTechnique = Literal["mass_spectrometry", "raman", "infrared", "near_infrared"]
+"""How a spectrum was measured: by mass spectrometry (an m/z axis) or a vibrational spectroscopy (Raman, infrared,
+near-infrared: a wavenumber or wavelength axis)."""
+
+SpectrumState = Literal["raw", "processed", "peaks"]
+"""What the source did to a spectrum before publishing it: nothing (``raw``, the instrument's intensities with their
+baseline and scale), a correction or normalisation (``processed``), or a peak list on fixed bins (``peaks``)."""
+
+
+@pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
+class SpectrumDetails:
+    """What a ``spectrum`` special feature adds to its columns: where each sits on the axis and how it was measured."""
+
+    axis: list[float]
+    """The position of each column on the axis, strictly increasing (an m/z, a wavenumber, a bin number)."""
+    axis_unit: str
+    """The unit of :attr:`axis`: ``m/z``, ``cm-1``, ``nm``, or ``bin`` when the source does not give the positions."""
+    technique: SpectrumTechnique
+    """How the spectrum was measured."""
+    state: SpectrumState
+    """What the source did to the spectrum before publishing it."""
+
+    def __post_init__(self):
+        """The axis is strictly increasing."""
+        if any(b <= a for a, b in zip(self.axis, self.axis[1:], strict=False)):
+            raise ValueError("A spectrum's axis is not strictly increasing.")
+
+
+SPECIAL_FEATURE_LAYOUTS: dict[str, str] = {"smiles": "column", "spectrum": "group"}
+"""The layout of each kind: a SMILES is one column, a spectrum a group of columns."""
+
+
+@pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
+class SpecialFeature:
+    """A model input that needs handling beyond its dtype: one column (a SMILES) or a group of columns that hold one
+    object together (a spectrum), recorded like the target and the scoring columns are.
+
+    The columns stay in the frame and stay features (:func:`~data_foundry.curation_container.feature_columns`). A
+    benchmark encodes a special feature by its :attr:`kind`, with the :attr:`recommended_encoding` or its own
+    (:func:`~data_foundry.curation_container.special_features` lists them;
+    :func:`data_foundry.v2.special.encode_special_feature` encodes one). Where :attr:`encoding_required` is true the
+    raw values are no model input (a SMILES read as text adds nothing): encode the feature or leave it out. A
+    definition declares its special features in ``special_features``.
+    """
+
+    name: str
+    """The special feature's name: its column for a ``column`` layout, e.g. ``SMILES``; a name such as ``serum_ms``
+    for a ``group``."""
+    kind: SpecialFeatureKind
+    """What it holds (``smiles``, ``spectrum``)."""
+    layout: SpecialFeatureLayout
+    """``column`` (one column) or ``group`` (several columns, in order, encoded together); fixed by the kind."""
+    columns: list[str]
+    """Its columns in the frame: one for a ``column`` layout, two or more in order (a spectrum's axis order) for a
+    ``group``."""
+    description: str
+    """What it is: the form of the values, the instrument, what the source did to them."""
+    encoding_required: bool
+    """Whether the raw values are unusable as model inputs (a SMILES string) rather than usable numbers (a spectrum's
+    intensities)."""
+    recommended_encoding: str | None = None
+    """The spec id of the encoding Data Foundry recommends, e.g. ``rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1``."""
+    details: SpectrumDetails | None = None
+    """What the kind adds: :class:`SpectrumDetails` for a ``spectrum``, nothing for a ``smiles``."""
+
+    def __post_init__(self):
+        """The layout matches the kind and the number of columns, and the details match the kind."""
+        if self.layout != SPECIAL_FEATURE_LAYOUTS[self.kind]:
+            raise ValueError(f"A {self.kind} special feature has the {SPECIAL_FEATURE_LAYOUTS[self.kind]!r} layout.")
+        if len(set(self.columns)) != len(self.columns):
+            raise ValueError(f"Special feature {self.name!r} lists a column twice.")
+        if self.layout == "column" and len(self.columns) != 1:
+            raise ValueError(f"Special feature {self.name!r} is one column; got {len(self.columns)}.")
+        if self.layout == "group" and len(self.columns) < 2:
+            raise ValueError(f"Special feature {self.name!r} is a group and needs two columns or more.")
+        if self.kind == "spectrum":
+            if self.details is None:
+                raise ValueError(f"Spectrum {self.name!r} needs its details (axis, unit, technique, state).")
+            if len(self.details.axis) != len(self.columns):
+                raise ValueError(
+                    f"Spectrum {self.name!r} has {len(self.columns)} columns but {len(self.details.axis)} axis "
+                    "positions."
+                )
+        elif self.details is not None:
+            raise ValueError(f"A {self.kind} special feature takes no details.")
 
 
 # TODO: fields that might be cool to add in the future
@@ -644,6 +740,9 @@ class PredictiveMLTaskMetadataV2:
     prediction unit, the aggregation and the context. The group column is metadata, never a model feature."""
     scoring_columns: list[ScoringColumn] = dataclasses.field(default_factory=list)
     """The columns the metric needs (:class:`ScoringColumn`): kept in the frame, never model features."""
+    special_features: list[SpecialFeature] = dataclasses.field(default_factory=list)
+    """Model inputs that need handling beyond their dtype (:class:`SpecialFeature`): one column (a SMILES) or a group
+    of columns (a spectrum), each encoded by its kind."""
 
     type_adapter_id: str = "predictive-ml-task-mold-v2"
     """Identifies container format 2."""
@@ -669,6 +768,7 @@ class PredictiveMLTaskMetadataV2:
             raise ValueError(f"scoring_columns lists a column twice: {scoring}.")
         if self.target_column_name in scoring:
             raise ValueError(f"The target column ({self.target_column_name!r}) cannot be a scoring column.")
+        self._check_special_features(scoring)
         aggregation = self.grouping.aggregation if self.grouping is not None else None
         if aggregation == "any" and self.problem_type != "binary_classification":
             raise ValueError(
@@ -678,6 +778,21 @@ class PredictiveMLTaskMetadataV2:
             raise ValueError(
                 f"aggregation={aggregation!r} selects the row with the lowest / highest predicted value: it needs a "
                 f"regression target, got {self.problem_type!r}.",
+            )
+
+    def _check_special_features(self, scoring: list[str]) -> None:
+        """Special features have distinct names and hold features only, each column in one special feature at most."""
+        names = [f.name for f in self.special_features]
+        if len(set(names)) != len(names):
+            raise ValueError(f"special_features uses a name twice: {names}.")
+        columns = [c for f in self.special_features for c in f.columns]
+        if len(set(columns)) != len(columns):
+            raise ValueError("A column is in two special features.")
+        not_features = {self.target_column_name, self.time_on, *as_column_list(self.group_on), *scoring} - {None}
+        if not_features & set(columns):
+            raise ValueError(
+                f"A special feature is a feature; {sorted(not_features & set(columns))[:5]} is the target, the time, a "
+                "group or a scoring column.",
             )
 
     @property
@@ -723,6 +838,18 @@ class PredictiveMLTaskMetadataV2:
             lines.append(
                 f"  scoring column:        {scoring.column} (role {scoring.role}, used by {scoring.used_by}; never a "
                 f"feature): {scoring.description}"
+            )
+        for feature in self.special_features:
+            spectrum = feature.details
+            where = (
+                f"; {spectrum.technique}, {spectrum.state}, {spectrum.axis_unit} {spectrum.axis[0]:g} to "
+                f"{spectrum.axis[-1]:g}"
+                if spectrum is not None
+                else ""
+            )
+            lines.append(
+                f"  special feature:       {feature.name} ({feature.kind}, {feature.layout} of "
+                f"{len(feature.columns):,}{where}; recommended encoding {feature.recommended_encoding})"
             )
         grouping = self.grouping
         if grouping is not None:

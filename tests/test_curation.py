@@ -111,6 +111,37 @@ def test_an_out_of_range_priority_fails_to_parse(value: object) -> None:
         _record("a", priority=value)
 
 
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("required_split", "Grouped (NON-IID)"),
+        ("tags", "Non-IID (Grouped)"),
+        ("decision_markers", "Duplicate"),
+        ("checked_by", "Lennart"),
+        ("priority", 9),
+        ("priority", "high"),
+    ],
+)
+def test_a_wrong_value_is_refused_where_it_is_assigned(field: str, value: object) -> None:
+    """A list field assigned a plain string used to be written out and the record would then not load.
+
+    The write is where the mistake is, so that is where it is refused (``required_split``, 2026-11-01).
+    """
+    rec = _record("a")
+    with pytest.raises(pydantic.ValidationError):
+        setattr(rec, field, value)
+    assert getattr(rec, field) == getattr(_record("a"), field), "the field keeps its old value"
+
+
+def test_a_saved_record_always_loads_back(tmp_path) -> None:
+    """Whatever passes assignment can be written and read again: the round trip is what validation protects."""
+    rec = _record("a", comments="A first note.")
+    rec.required_split = ["Grouped (NON-IID)"]
+    rec.priority = 3
+    rec.comments += "\n\nCC (2026-11-01, Lennart): a second note."
+    assert load_record(save_record(rec, tmp_path)) == rec
+
+
 def test_describe_shows_the_priority(sample_record: CurationRecord) -> None:
     """The one-record summary lists the priority under its label."""
     line = next(ln for ln in sample_record.describe().splitlines() if ln.strip().startswith("Priority:"))

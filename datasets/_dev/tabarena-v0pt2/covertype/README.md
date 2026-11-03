@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: covertype
 container_format: 2
-checksum: v2:ab131f0f08a8995112fabc6d9a62cc035a9fedc078f047ca0f514044c083ae4f
+checksum: v2:a13a10e255fc35113af86db5124e2e87595eb5deadf665faeed4fba4be7e3c23
 build:
   uuid: 01a111fc-5b2f-72b3-983a-85ec312c2e8f
   checksum: v2:8b59376d1ce32c48c1fb0023a14c193e8fe1b640c393153f40f15361b6c541da
@@ -67,7 +67,7 @@ decisions: []
 
 Multiclass classification of `Cover_Type`, scored with `log_loss` on IID splits. 581,012 rows and 14 features. Source: UCI (1998).
 
-Built as `01a111fc-5b2f-72b3-983a-85ec312c2e8f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ab131f0f08a8995112fabc6d9a62cc035a9fedc078f047ca0f514044c083ae4f`, so the build is stale. See [Build](#build).
+Built as `01a111fc-5b2f-72b3-983a-85ec312c2e8f` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:a13a10e255fc35113af86db5124e2e87595eb5deadf665faeed4fba4be7e3c23`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -138,7 +138,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `log_loss` (standard; takes proba; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | mean of -log p(true class) |
 | reason | Blackard & Dean 1999 report accuracy on 7 cover types, but name no costs between types and two types hold 85% of the cells; a threshold metric without a source threshold is not used (MET-6, MET-8; Lennart, 2026-10-21). |
 
@@ -195,6 +195,9 @@ Other steps:
 - We add the column names in the correct way.
 - We reverse the one-hot encoding of the Wilderness_Area and Soil_Type features, and add human-readable descriptions for these features. Moreover, we add the climatic and geologic zones categorical features for each soil type based on the codes.
 - We reverse the ordinal encoding of the class name.
+- Partial order, left unordered (2026-11-01, CLEAN-14): `Soil_ClimaticZone`: the altitude belts are ordered
+  (lower montane < montane < subalpine < alpine), but the dry and the mixed zones within a belt are a second
+  dimension.
 
 ## Splits
 
@@ -311,4 +314,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:ab131f0f08a8995112fabc6d9a62cc035a9fedc078f047ca0f514044c083ae4f` |
+| stale | yes: the definition now gives checksum `v2:a13a10e255fc35113af86db5124e2e87595eb5deadf665faeed4fba4be7e3c23` |

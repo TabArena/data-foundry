@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: heloc
 container_format: 2
-checksum: v2:247565ef577c0554bcbc0d5f93c888e1fcb06f0d9156405b27a77c524699123c
+checksum: v2:e39d86bfdb6dace0c6d21a8cc13d172123a6b800cf74f6b2e5f9186713ba1d56
 build:
   uuid: 01a111fc-afbf-7df2-bc38-76e6a79a64eb
   checksum: v2:f1b2524f366bfcbe0131c9d2c31b7e9aa23c751f6f5c361a361b5066e114b1ba
@@ -22,8 +22,8 @@ data:
   n_rows: 10459
   n_features: 23
   dtypes:
-    category: 1
-    int64: 23
+    category: 3
+    int64: 21
   n_test_dataset_rows: null
 task:
   target: RiskPerformance
@@ -70,7 +70,7 @@ decisions: []
 
 Binary classification of `RiskPerformance`, scored with `roc_auc` on IID splits. 10,459 rows and 23 features. Source: Other (2018).
 
-Built as `01a111fc-afbf-7df2-bc38-76e6a79a64eb` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:247565ef577c0554bcbc0d5f93c888e1fcb06f0d9156405b27a77c524699123c`, so the build is stale. See [Build](#build).
+Built as `01a111fc-afbf-7df2-bc38-76e6a79a64eb` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:e39d86bfdb6dace0c6d21a8cc13d172123a6b800cf74f6b2e5f9186713ba1d56`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -140,14 +140,15 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
 | reason | The challenge defined no predictive scoring rule: judging criteria were not announced in advance and mixed an empirical evaluation with qualitative judging of explanations; only accuracy figures (~72-74%) were reported for entries. |
 
 <details>
-<summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 1 categorical, 2 ordinal, 0 string, 0 datetime</summary>
 
 - categorical (1): `RiskPerformance`
+- ordinal (2): `MaxDelq2PublicRecLast12M (derogatory comment < 120+ days delinquent < 90 days delinquent < 60 days delinquent < 30 days delinquent < current and never delinquent)`, `MaxDelqEver (derogatory comment < 120+ days delinquent < 90 days delinquent < 60 days delinquent < 30 days delinquent < current and never delinquent)`
 - string (0): none
 - datetime (0): none
 
@@ -174,17 +175,25 @@ The first 5 of 10,459 rows of the final frame (random rows: the frame is shuffle
 
 | RiskPerformance | ExternalRiskEstimate | MSinceOldestTradeOpen | MSinceMostRecentTradeOpen | AverageMInFile | NumSatisfactoryTrades | NumTrades60Ever2DerogPubRec | NumTrades90Ever2DerogPubRec | PercentTradesNeverDelq | MSinceMostRecentDelq | MaxDelq2PublicRecLast12M | MaxDelqEver |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| Bad | 73 | 41 | 10 | 23 | 7 | 0 | 0 | 100 | -7 | 7 | 8 |
-| Good | -9 | -9 | -9 | -9 | -9 | -9 | -9 | -9 | -9 | -9 | -9 |
-| Good | 87 | 177 | 10 | 82 | 9 | 0 | 0 | 100 | -7 | 7 | 8 |
-| Good | 90 | 332 | 14 | 145 | 8 | 0 | 0 | 100 | -7 | 7 | 8 |
-| Bad | 57 | 89 | 2 | 48 | 25 | 1 | 1 | 89 | 2 | 4 | 2 |
+| Bad | 83 | 284 | 34 | 93 | 9 | 0 | 0 | 100 | -7 | current and never delinquent | current and never delinquent |
+| Bad | 75 | 60 | 20 | 32 | 13 | 0 | 0 | 100 | -7 | current and never delinquent | current and never delinquent |
+| Good | 64 | 329 | 11 | 102 | 36 | 2 | 2 | 100 | -7 | nan | current and never delinquent |
+| Bad | -9 | -9 | -9 | -9 | -9 | -9 | -9 | -9 | -9 | nan | nan |
+| Good | 86 | 275 | 13 | 87 | 18 | 0 | 0 | 100 | -7 | current and never delinquent | current and never delinquent |
 
 ## Curation notes
 
 - Label: "Bad" means the applicant was 90 days past due or worse at least once in the 24 months after the account was opened; "Good" means never more than 90 days overdue (FICO's challenge description, as reproduced in the AIX360 HELOC tutorial; FICO's challenge page now redirects).
 - The applicants requested a credit line of $5,000 to $150,000 (same source).
 - Anomaly: the dataset has time-related features. However, the task and features are preprocessed to be time-invariant.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 2 columns are ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`); 2 of them decoded from the source's codes
+  into its words (`CODE_LABELS`, 2026-11-01)`MaxDelq2PublicRecLast12M` and `MaxDelqEver` are ordered categories,
+  from a derogatory comment to current and never delinquent (FICO data dictionary); their codes for unknown
+  delinquency, "all other" and no bureau record (-9) are missing.
+- Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+  each level is carries the words, a score without them is a number): 2 ordered codes carry their codebook's
+  words (`CODE_LABELS`), in the same order.
 
 ## Splits
 
@@ -221,9 +230,11 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| MaxDelq2PublicRecLast12M | category | 3957 | 37.83 | 6 | current and never delinquent, 30 days delinquent, derogatory comment, 60 days d… |
+| MaxDelqEver | category | 720 | 6.88 | 6 | current and never delinquent, 30 days delinquent, 60 days delinquent, derogator… |
 | RiskPerformance | category | 0 | 0 | 2 | Bad, Good |
 | ExternalRiskEstimate | int64 | 0 | 0 | 61 | -9, 65, 66, 68, 73, 72, 70, 63, 75, 69 |
-| MSinceOldestTradeOpen | int64 | 0 | 0 | 526 | -9, -8, 132, 178, 150, 176, 165, 183, 162, 172 |
+| MSinceOldestTradeOpen | int64 | 0 | 0 | 526 | -9, -8, 178, 132, 150, 176, 165, 183, 158, 162 |
 | MSinceMostRecentTradeOpen | int64 | 0 | 0 | 112 | 2, 3, 4, 5, 1, 6, -9, 7, 8, 9 |
 | AverageMInFile | int64 | 0 | 0 | 237 | -9, 71, 79, 74, 68, 80, 75, 84, 70, 63 |
 | NumSatisfactoryTrades | int64 | 0 | 0 | 74 | -9, 18, 15, 16, 22, 19, 13, 14, 21, 20 |
@@ -231,9 +242,7 @@ Default splits.
 | NumTrades90Ever2DerogPubRec | int64 | 0 | 0 | 17 | 0, 1, -9, 2, 3, 4, 5, 6, 7, 9 |
 | PercentTradesNeverDelq | int64 | 0 | 0 | 72 | 100, -9, 96, 97, 95, 94, 93, 92, 88, 90 |
 | MSinceMostRecentDelq | int64 | 0 | 0 | 87 | -7, -9, 1, 2, 3, 4, 5, -8, 6, 8 |
-| MaxDelq2PublicRecLast12M | int64 | 0 | 0 | 10 | 7, 6, 4, -9, 0, 5, 3, 1, 2, 9 |
-| MaxDelqEver | int64 | 0 | 0 | 8 | 8, 6, 5, 2, -9, 4, 3, 7 |
-| NumTotalTrades | int64 | 0 | 0 | 88 | -9, 15, 16, 17, 22, 20, 24, 21, 13, 18 |
+| NumTotalTrades | int64 | 0 | 0 | 88 | -9, 15, 16, 17, 22, 20, 24, 21, 18, 13 |
 | NumTradesOpeninLast12M | int64 | 0 | 0 | 19 | 1, 0, 2, 3, 4, -9, 5, 6, 7, 8 |
 | PercentInstallTrades | int64 | 0 | 0 | 96 | -9, 33, 50, 29, 25, 38, 20, 36, 40, 27 |
 | MSinceMostRecentInqexcl7days | int64 | 0 | 0 | 28 | 0, -7, 1, -9, -8, 2, 3, 4, 5, 6 |
@@ -258,7 +267,7 @@ Default splits.
 ### Numeric features
 
 <details>
-<summary>Show the table (23 rows)</summary>
+<summary>Show the table (21 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -271,8 +280,6 @@ Default splits.
 | NumTrades90Ever2DerogPubRec | 10459 | -0.142843 | 2.3674 | -9 | 19 |
 | PercentTradesNeverDelq | 10459 | 86.6615 | 25.9996 | -9 | 100 |
 | MSinceMostRecentDelq | 10459 | 6.76241 | 20.5013 | -9 | 83 |
-| MaxDelq2PublicRecLast12M | 10459 | 4.92829 | 3.75628 | -9 | 9 |
-| MaxDelqEver | 10459 | 5.51018 | 3.97118 | -9 | 8 |
 | NumTotalTrades | 10459 | 20.857 | 14.5809 | -9 | 104 |
 | NumTradesOpeninLast12M | 10459 | 1.25308 | 3.06868 | -9 | 19 |
 | PercentInstallTrades | 10459 | 32.1665 | 20.1286 | -9 | 100 |
@@ -290,10 +297,25 @@ Default splits.
 
 ### Categorical features
 
+<details>
+<summary>Show the table (12 rows)</summary>
+
 | column | rank | value | count | pct |
 |---|---|---|---|---|
+| MaxDelq2PublicRecLast12M | 1 | current and never delinquent | 4223 | 40.38 |
+| MaxDelq2PublicRecLast12M | 2 | &lt;NA> | 3957 | 37.83 |
+| MaxDelq2PublicRecLast12M | 3 | 30 days delinquent | 1612 | 15.41 |
+| MaxDelq2PublicRecLast12M | 4 | derogatory comment | 336 | 3.21 |
+| MaxDelq2PublicRecLast12M | 5 | 60 days delinquent | 224 | 2.14 |
+| MaxDelqEver | 1 | current and never delinquent | 4532 | 43.33 |
+| MaxDelqEver | 2 | 30 days delinquent | 2868 | 27.42 |
+| MaxDelqEver | 3 | 60 days delinquent | 968 | 9.26 |
+| MaxDelqEver | 4 | derogatory comment | 739 | 7.07 |
+| MaxDelqEver | 5 | &lt;NA> | 720 | 6.88 |
 | RiskPerformance | 1 | Bad | 5459 | 52.19 |
 | RiskPerformance | 2 | Good | 5000 | 47.81 |
+
+</details>
 
 ## Build
 
@@ -306,4 +328,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:247565ef577c0554bcbc0d5f93c888e1fcb06f0d9156405b27a77c524699123c` |
+| stale | yes: the definition now gives checksum `v2:e39d86bfdb6dace0c6d21a8cc13d172123a6b800cf74f6b2e5f9186713ba1d56` |

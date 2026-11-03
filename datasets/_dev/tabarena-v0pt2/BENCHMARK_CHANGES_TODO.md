@@ -77,7 +77,7 @@ side (metadata, checks, the dataset review) is tracked in the curation records a
 
   | Metric | Kind, prediction | Datasets |
   |---|---|---|
-  | `roc_auc` | standard, proba | 78: 51 fallbacks, 25 from the source (porto_seguro's normalized Gini among them), 2 stand-ins; `*` anes_voting_2026, heart_disease_cleveland, heart_disease_hungary, heart_disease_va_long_beach, hepatitis_survival_prediction, home_credit_default_stability_1m, lending_club, sepsis_survival_minimal_clinical_records |
+  | `roc_auc` | standard, proba | 76: 49 fallbacks, 25 from the source (porto_seguro's normalized Gini among them), 2 stand-ins; `*` anes_voting_2026, heart_disease (the three Detrano hospitals, merged on 2026-10-21), hepatitis_survival_prediction, home_credit_default_stability_1m, lending_club, sepsis_survival_minimal_clinical_records |
   | `rmse` | standard, value | 45: 27 fallbacks, 18 from the source (RMSLE as `rmse` on a log1p target included); `*` video_transcoding_time_prediction |
   | `log_loss` | standard, proba | 26: 22 fallbacks, 2 from the source, 2 stand-ins; `*` covertype, hepatitis_c_prediction |
   | `mae` | standard, value | allstate_claims_severity, forest_fires, wine_quality, zillow_prize; stand-in for `*` corporate_credit_rating_cat_data_set_ratings_raitings |
@@ -129,6 +129,163 @@ recommend:
 * Until TabArena scores at the group unit, the three group-unit datasets are scored per row; the metadata says what
   the right unit is, and nothing is held back.
 
+## Special features: one contract for every kind
+
+Added 2026-11-02 (Lennart: one general form "like the target column", not a field per kind, so that later kinds such
+as a shipped embedding fit without new fields). Data Foundry side done.
+
+- [ ] **Read `task_metadata.special_features` in the adapter, whatever the kind.** A v0.2 container lists every model
+  input that needs handling beyond its dtype as a `data_foundry.schema.SpecialFeature`:
+  - `name`; `kind` (`smiles`, `spectrum`; more later);
+  - `layout`: `column`, one column (a SMILES), or `group`, several columns in a fixed order encoded together (a
+    spectrum);
+  - `columns`; `encoding_required`, true when the raw values are no model input (a SMILES string), false when they
+    are numbers a model can read (a spectrum's intensities);
+  - `recommended_encoding`, a spec id; `details`, what the kind adds (a spectrum's axis, unit, technique, state).
+
+  `data_foundry.curation_container.special_features(container, kind=None)` lists them, and
+  `data_foundry.v2.special.encode_special_feature(df, feature, encoding=None)` replaces a feature's columns by their
+  encoding, where they stand. `encodings_for(feature)` gives the candidates, the recommended one first. Map each
+  feature to an AutoGluon special type named by its `kind` (`FeatureMetadata` takes any name), with one generator per
+  kind that calls the entry point.
+- [ ] **The guard is generic:** a feature with `encoding_required` is encoded or left out, never passed on as its
+  dtype (a SMILES as text). A feature without it may go to a model as it is when the method switches the encoding off.
+- [ ] **Caching follows `Encoding.scope`:** `value` (one row per distinct value: SMILES, e5, dates), `row` (one per row,
+  no fitting: spectra; cheap, no cache needed) or `split` (fitted on each split's training rows: TF-IDF). The cache
+  contract below keys every cached encoding by its spec id.
+
+## Encodings and their caches
+
+Added 2026-11-01 (Lennart: "introduce caching for all encodings in a nice way, which we should anyhow revisit for
+tabarena-v0.2 with good time keeping and adding it on top of the benchmark record").
+
+- [ ] **One cache contract for every precomputed encoding.** Today only the semantic-text embedding is cached
+  (`tabarena.benchmark.preprocessing.text_cache`: a value -> vector parquet per task, keyed by the encoder spec id
+  `<model>-d<dim>-r<revision>`, shipped inside the container as `tabarena_text_cache_<id>.parquet`, loader modes
+  `require` / `auto` / `off`). Generalise it so any expensive or version-sensitive encoding (text embeddings, a
+  SMILES encoding if we adopt one, later others) uses the same keying, versioning, shipping and loader modes, rather
+  than one module per encoding.
+- [ ] **Time keeping for cached encodings: count it in the fit time.** Under the bundle default
+  `text_cache_mode="require"` the embeddings are computed once by `generate_text_cache`, outside every timed fit, and
+  their cost is recorded nowhere: a method on a text task gets the embedding for free. Measure each cache's compute
+  time when it is made (total and per value, with the encoder spec and the hardware), store it with the cache, and add
+  it to each method's fit time (the test rows' share to its inference time) in the benchmark record, as if the method
+  had computed the encoding itself (Lennart, 2026-11-01). Note it in the record's description of the timing, so a
+  reader knows cached preprocessing is included.
+- [ ] **SMILES columns: encode them as structures (Data Foundry side done, 2026-11-01; since 2026-11-02 a special
+  feature of kind `smiles`, layout `column`, `encoding_required`).** A v0.2 container ships a molecule's structure as
+  a `string` column listed in `task_metadata.special_features` (recommended encoding e.g.
+  `rdkit2d-maccs-ecfp4-rdkit2026.03.6-r1`); `special_features(container, "smiles")` lists them. Datasets: apistox,
+  drug_induced_autoimmunity_prediction, nci_aids_antiviral_screen, the five qsar_* sets (and the molecule candidates
+  to come). TabArena needs, in this order:
+  - **A guard first.** The model-agnostic pipeline marks every pandas `string` column as text
+    (`StringFixAsTypeFeatureGenerator`) and embeds it with Qwen3-Embedding-8B at 32 dimensions. On `apistox` that
+    embedding of the SMILES scored no better than no structure at all (ROC AUC 0.78-0.81 against 0.70-0.82; ECFP4
+    bits or character n-grams 0.83-0.85; record, 2026-10-07). Until the generator below exists, the adapter must drop a
+    special feature with `encoding_required` (or encode it as below), never pass it on as text.
+  - **The adapter** passes `special_features` into the task, and the pipeline maps them to AutoGluon special types by
+    kind (`smiles` here); the text generators exclude them.
+  - **A SMILES feature generator** with the recommended encoding (`data_foundry.v2.chemistry.encode_smiles`: RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts, one row per molecule; Data Foundry is already a dependency) or TabArena's own,
+    cached by value under the encoding's id on the cache contract above, so a fit needs no RDKit.
+    The recommended encoding is wide (about 1,400 columns, the ECFP4 counts added by default because they helped once:
+    qsar_tid_11's LightGBM R^2 from 0.601 to 0.658): "just one pipeline choice that we can later investigate for the
+    benchmark", and a feature selection step may follow it (Lennart, 2026-11-01).
+  - Whether a method may read the raw SMILES with its own encoder on the main leaderboard is open (Lennart,
+    2026-11-01: "we keep this discussion for later").
+- [ ] **Recommended encodings of dates and text (`data_foundry.v2.encodings`, `recommended_encodings()`).** Dates: skrub's
+  `DatetimeEncoder(add_weekday=True, periodic_encoding="circular")`, as BeyondArena and `tabarena_default` do today
+  (`encode_datetime`). Text: TF-IDF fitted on the training rows (words, or character 2- to 5-grams for one-token
+  values), reduced by SVD (`encode_text_tfidf`), and `intfloat/e5-small-v2` sentence embeddings (`encode_text_e5`):
+  neither wins everywhere, so check both (Lennart, 2026-11-01). TabArena v0.2 embeds text with Qwen3-Embedding-8B at
+  32 dimensions; compare it with both on the text datasets before fixing the default.
+- [ ] **Every default preprocessing step can be switched off** per method (Lennart, 2026-11-01: "in general, all
+  preprocessing may be disable-able"): a method that brings its own encoding of SMILES, text or dates gets the raw
+  column.
+
+## Spectra
+
+Added 2026-11-02 (PR #21, Andrej's proposal, with Lennart's decisions: spectra as special features in a group of
+columns, full resolution, the field's published defaults). Data Foundry side done; nothing changes for a pipeline that
+ignores them, since the bins stay numeric features.
+
+- [ ] **Spectra are special features of kind `spectrum`** (layout `group`, `encoding_required` false), read through the
+  contract above: `special_features(container, "spectrum")`; `details` holds the axis, its unit, the technique and
+  the state (`raw` / `processed` / `peaks`). Datasets: pancreatic_cancer_mouse_detection (raw SELDI-TOF, 6,771 bins)
+  and micro_mass (a VITEK MS peak list, 1,082 bins); about 40 Raman, infrared and near-infrared candidates are queued.
+- [ ] **A spectrum feature generator** that encodes each spectrum row by row with its `recommended_encoding`
+  (`encode_special_feature(df, feature)`, `data_foundry.v2.special`): for a raw mass spectrum
+  MALDIquant's steps (`ms-sqrt-sg21-snip100-tic-r1`), for anything else the columns as they are
+  (`spectrum-as-is-r1`). No fitting, no labels, so the same values in every split; it costs milliseconds per spectrum,
+  so it needs no cache, but its time counts in each method's fit time like the cached encodings. Switchable per
+  method: a method that processes spectra itself gets the raw bins.
+- [ ] **Decide the default encoding of a raw mass spectrum: a benchmark choice** (Lennart, 2026-11-02). The literature
+  names no single best pipeline:
+  - Cruz-Marcelo et al. 2008 (Bioinformatics 24:2129): "none of the methods show uniformly better performances".
+  - Wegdam et al. 2009 (Proteome Science 7:19): "No pre-processing method significantly outperforms the other", "the
+    settings for pre-processing parameters lead to large differences in classification accuracy", and "We advocate
+    the evaluation over a range of parameter settings"; the classifier mattered more than the preprocessing.
+  - Meuleman et al. 2008 (BMC Bioinformatics 9:88): normalising helps, and scaling by a spread beats scaling by a mean.
+
+  There are two published traditions, the square root and the log, and three candidates are registered in
+  `data_foundry.v2.spectra` (`recommended_encodings()["mass_spectrum"]`, the placeholder default first):
+  - `ms-sqrt-sg21-snip100-tic-r1`: the MALDIquant vignette (Gibb and Strimmer 2012); the placeholder default.
+  - `ms-driams-sqrt-sg21-snip20-snip100-tic-r1`: DRIAMS's settings (Weis et al. 2022, Nature Medicine; their script
+    `DRIAMS-A_2015_preprocessed.r` in BorgwardtLab/maldi_amr), the largest machine-learning study on MALDI-TOF
+    spectra. Their trim to 2,000-20,000 Da and 3 Da bins change the columns, so they belong to the width step below.
+  - `ms-cromwell-udwt-mm-tic-log2-r1`: the log tradition of SELDI-TOF analysis. Cromwell's wavelet denoising and
+    monotone-minimum baseline (Coombes et al. 2005, Proteomics 5:4107; MD Anderson's MATLAB code), then the total ion
+    current and log2 as in Cromwell's and Ciphergen's pipelines (Wegdam et al. 2009). PR #21's own chain is close to
+    it.
+
+  The procedure, fixed before any result is seen:
+  - Candidates are published workflows only, with the raw bins as the reference. No setting is tuned on the
+    benchmark's folds.
+  - Datasets: every raw mass-spectrum dataset of the benchmark, at least two or three. Today only
+    pancreatic_cancer_mouse_detection; next the DRIAMS candidate and the NCI-FDA prostate SELDI set.
+  - Models: three families, a foundation model (TabPFN), gradient boosting, and a linear model or PLS-DA.
+  - Criterion: the mean normalised score over datasets and families; the candidate that hurts no family against the
+    raw bins wins ties. Then the most cited, then the simplest.
+  - Every method can switch the encoding off.
+
+  What one dataset shows so far, pancreatic (60 shipped splits, ROC AUC, 2026-11-02), and why it is not enough:
+
+  | Model | Raw | MALDIquant | DRIAMS | Cromwell log2 | PR #21's chain (reconstructed) |
+  |---|---|---|---|---|---|
+  | TabPFN v3.5 | 0.659 | 0.690 | not run | not run | 0.716 |
+  | HistGradientBoosting | 0.585 | 0.685 | 0.628 | 0.604 | 0.642 |
+  | LightGBM | 0.577 | 0.676 | 0.624 | 0.604 | 0.649 |
+  | Random forest | 0.536 | 0.681 | 0.663 | 0.591 | 0.657 |
+  | PLS-DA, 5 components | 0.635 | 0.691 | 0.646 | 0.639 | 0.713 |
+  | Logistic regression | 0.663 | 0.646 | 0.603 | 0.628 | 0.708 |
+
+  The DRIAMS and Cromwell settings were made for spectra at the instrument's full resolution; pancreatic's are binned
+  at 400 ppm, which may be why they trail here.
+- [ ] **Width goes to the feature-limit step**, not to the encoding: the encodings keep every bin (Lennart,
+  2026-11-02). Averaging adjacent bins costs little (PR #21: TabPFN 3.5 0.733 against 0.725 with 8-bin averages on
+  pancreatic) if a model needs fewer columns.
+- [ ] **PLS-DA as a reference method for spectra.** It is the field's usual linear method, and on raw mass spectra it
+  ranks differently from the tabular models (PR #21: third on the raw bins, first on the processed ones).
+- [ ] **Vibrational spectra: check both encodings on the first datasets.** RamanBench (arXiv:2605.02003) ran its
+  leading methods (AutoGluon 1.5, TabPFN v2.5, TabICL v2) on the raw spectra and preprocessed only for its chemometric
+  baselines, so the default is the spectrum as it is; `vib-als-snv-r1` (an ALS baseline and SNV, RamanBench's
+  linear-model default) is the alternative to measure when the first Raman or infrared dataset is added.
+
+## Ordinal features
+
+- [ ] **Keep the order of an ordered category in the pipeline, and give it to the models.** v0.2 containers store
+  ordinal scales as ordered categories (`CategoricalDtype(levels, ordered=True)`): the curated state, whatever the
+  benchmark does with it (Lennart, 2026-10-31: "In data foundry, we want to keep the right state independent of what the
+  downstream benchmark does"). Since 2026-10-31 that includes the 167 scales the sources ship as numbers (ratings,
+  grades, bands), so this change is due before the next benchmark run. Two steps. The preprocessing (TabArena's, used as
+  in BeyondArena going forward) must keep the order: AutoGluon's `CategoryFeatureGenerator` rebuilds every category
+  unordered (`pd.Categorical(X[col], categories=...)`). And the models must be told: for example the codes in order as a
+  number for the tree models, with the categories kept for a model that wants them. Without it, the scales shipped as
+  numbers reach the models as unordered categories, which raised LightGBM's error by 6.0% on
+  student_portuguese_performance, 4.8% on breast_cancer_prediction and 3.9% on gallstone_disease (TabPFN v3.5 barely
+  changes). With the order, LightGBM's error fell by 1.56% on average over 55 datasets (12 better, 3 worse), up to 31%
+  on eryhemato_squamous_disease; TabPFN v3.5's by 0.25% (10 better, 6 worse); a linear model on the bare codes loses
+  where a scale is not monotone in the target (run of 2026-10-30, the shipped splits).
+
 ## Library version
 
 - [ ] **Require the data-foundry release that carries the v0.2 metadata.** v0.2 containers store
@@ -150,3 +307,12 @@ recommend:
   readings (DCAL 10,006.8, DRHO -7,429.3 and others) the task probe's LightGBM gives 0.872 and no longer diverges, so
   extreme values were the likely trigger. Left for later (Lennart, 2026-10-21: "we dont need to check the benchmark
   case, we can do that later, it is fine as is for now").
+
+## Ordered targets and the positive class (2026-11-01, PR #37)
+
+Classification targets ship their classes as words now (CLEAN-25). Binary targets are "No"/"Yes" with "Yes" the
+event, so sorting the classes gives the right positive class. Three multiclass targets are ordered categories whose
+category order is not the sorted order (cardiotocography: normal < suspect < pathologic; dementia_prediction;
+hepatitis_c_prediction): the harness must align its probability columns to the container's categories by class name
+(as `examples/benchmark_on_beyond_arena.py` does with `reindex(columns=labels)`), never by position after sorting.
+

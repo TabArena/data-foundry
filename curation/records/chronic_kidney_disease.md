@@ -33,6 +33,8 @@ Looks good.
 
 All models achieve perfect score. Likely some grouped data leakage that is not visible in the data itself.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nhanes_ckd_screening` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 ?

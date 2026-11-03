@@ -26,3 +26,5 @@ No information at all from PMLB. Likely not a real task and thus hard to say if 
 Found on UCI. It already has some features missing. It is a wine origin prediction from the 90s. Likely trivial as RF can perfectly solve it according to UCI.
 
 Given all of this, I would veto to skip it, also due to its age
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `north_macedonian_wine_varieties` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

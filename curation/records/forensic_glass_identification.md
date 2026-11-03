@@ -39,6 +39,8 @@ CC (2026-10-12, Lennart): Kept in TabArena v0.2 after the task-probe review (fla
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — the source defines no metric for the 6-class task; its only result (Spiehler's comparison) counts errors on a different, binary target.
 
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships its class names.
+
 ## Reference
 
 UCI

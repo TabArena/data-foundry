@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, anonymize_ids
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, anonymize_ids, decode
 
 RESPONDENT_COLUMNS = [
     "gender",
@@ -23,6 +23,62 @@ RESPONDENT_COLUMNS = [
     "Restaurant20To50",
 ]
 """Answers to the survey's first part (demographics and habits), asked once per respondent."""
+
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "age": [
+        "below 21",
+        "21 to 25",
+        "26 to 30",
+        "31 to 35",
+        "36 to 40",
+        "41 to 45",
+        "46 to 49",
+        "50 or older",
+    ],  # open-ended
+    "education": [
+        "Some High School",
+        "High School Graduate",
+        "Some college - no degree",
+        "Associates degree",
+        "Bachelors degree",
+        "Graduate degree (Masters or Doctorate)",
+    ],
+    "income": [
+        "Less than $12500",
+        "$12500 - $24999",
+        "$25000 - $37499",
+        "$37500 - $49999",
+        "$50000 - $62499",
+        "$62500 - $74999",
+        "$75000 - $87499",
+        "$87500 - $99999",
+        "$100000 or More",
+    ],  # open-ended
+    "Bar": ["never", "less1", "1~3", "4~8", "gt8"],  # open-ended
+    "CoffeeHouse": ["never", "less1", "1~3", "4~8", "gt8"],  # open-ended
+    "CarryAway": ["never", "less1", "1~3", "4~8", "gt8"],  # open-ended
+    "RestaurantLessThan20": ["never", "less1", "1~3", "4~8", "gt8"],  # open-ended
+    "Restaurant20To50": ["never", "less1", "1~3", "4~8", "gt8"],  # open-ended
+}
+
+
+# The codebook's words for coded columns, decoded in `_clean` after the codes that mean unknown are missing
+# (CLEAN-12; the curator's rule of 2026-11-01).
+CODE_LABELS = {
+    "age": {
+        "below21": "below 21",
+        "21": "21 to 25",
+        "26": "26 to 30",
+        "31": "31 to 35",
+        "36": "36 to 40",
+        "41": "41 to 45",
+        "46": "46 to 49",
+        "50plus": "50 or older",
+    },
+}
 
 
 class InVehicleCouponRecommendation(AbstractCuratedDataset):
@@ -49,9 +105,9 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "The answers are stated intentions about imagined trips, given in one survey sitting, not coupons "
-            "accepted while driving, and the respondents are rebuilt from the file order (587 against the paper's 652"
-            " surveys)."
+            "The answers are stated intentions about imagined trips, given in one survey sitting by Mechanical Turk "
+            "volunteers, not coupons accepted by the drivers of a recommender, and the respondents are rebuilt from "
+            "the file order (587 against the paper's 652 surveys)."
         ),
     )
 
@@ -88,6 +144,12 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
         - Anomaly: the numeric features in the dataset are low-cardinality (<25)
         - We simulate a cold-start model (as used before a recommender has any history for a user): predict whether a person accepts a coupon from their profile, stated habits and the scenario, for people not seen in training. The data is a survey (Wang et al. 2017, Sec. 6.2): each MTurk respondent first gave demographics and preferences, then answered hypothetical driving scenarios (22 per person in the file, 19 fixed questionnaire versions), all in one sitting and without timestamps, so there is no real interaction history for a warm-start setting. A random split puts about two-thirds of each person's other answers in train, which lets a model learn that person's tendency to say yes (ROC AUC 0.83 random vs 0.76 grouped; leak audit 2026-09-24).
         - The respondent id is not shipped with the data. The raw file lists each respondent's answers as a consecutive block with identical first-part answers, so a block of the same profile is one respondent: 587 blocks, 517 of them with 22 rows, against 652 accepted surveys in the paper, so a few blocks likely merge two adjacent respondents with identical profiles, which only makes the grouping stricter. The paper reports out-of-sample AUC from 5-fold testing (Table 3) without saying whether folds were split by respondent; a random split would be a warm start.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 8 columns are ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 of them decoded from the source's codes
+          into its words (`CODE_LABELS`, 2026-11-01).
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 1 ordered codes carry their codebook's
+          words (`CODE_LABELS`), in the same order.
     """
 
     # Task
@@ -141,10 +203,13 @@ class InVehicleCouponRecommendation(AbstractCuratedDataset):
         # Drop constant columns
         df = df.drop(columns=["toCoupon_GEQ5min"])
         df = df.rename(columns={"passanger": "passenger"})
+        # the codebook's words for its codes (CLEAN-12)
+        df = decode(df, CODE_LABELS)
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "respondent",
                 "expiration",

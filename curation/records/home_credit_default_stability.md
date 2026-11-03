@@ -48,6 +48,14 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 CC (2026-10-21, Lennart): the metric is roc_auc as a stand-in for the competition's Gini Stability, whose slope term is noise on our 5-10 week test windows.
 
+**Assessment (AI, 2026-10-27):** no `Anonymized` marker (review of PR #17). Kaggle masked the values of the columns ending in `M` (116 of the 718 merged columns: district, zip code, employer, education, contract status, reject and cancel reasons), but every column is described in the competition's `feature_definitions.csv`, so what a column measures and when it is known can be checked; other categories are readable (`OWNED`, `MARRIED`). This is the selection.md case of documented columns with coded category values, as amazon_employee_access. The definition's `known` now says which categories are masked instead of "the categories are anonymized codes".
+
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `first_empl_employedtotal_800L` (the README lists their levels); codes shipped as numbers, left for the curator's review: `max_persontype_1072L`.
+
+CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): max_persontype_1072L a category.
+
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
+
 ## Reference
 
 Daniel Herman, Tomas Jelinek, Walter Reade, Maggie Demkin, and Addison Howard. Home Credit - Credit Risk Model Stability. https://kaggle.com/competitions/home-credit-credit-risk-model-stability, 2024. Kaggle.

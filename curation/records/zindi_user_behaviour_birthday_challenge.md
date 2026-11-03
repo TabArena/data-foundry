@@ -40,3 +40,5 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0 (technology & internet, binary, temporal not thin), use case 0 (no decision named), source 0 (masked, a competition page), shape + (six tables with dates), risk - (forecasting-like panel, heavy joins).
 
 This Zindi 'user behaviour birthday challenge' record has only a name and data link, with no comments describing the target. Based on the name it concerns user-behaviour modeling, which could be a legitimate classification/regression but might also be a recommendation or engagement-prediction task that is out of scope. There is too little information to decide the task type, target, modality, or size. A human must open the source to determine the target and protocol; provisionally 2nd Tier.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `meta_kaggle_user_monthly_activity` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

@@ -8,6 +8,12 @@ one recorded in the definition's ``README.md``, or one rebuilt from the definiti
 The scoring columns (``task.scoring_columns``: the inputs of the metric, such as Numerai's ``era``) are never model
 inputs, so they are dropped from the frame the probes see, unless one is also the target, a group column or the time
 column, which the probes take by name. ``ProbeInput.scoring_cols`` lists the ones dropped.
+
+A special feature (``task.special_features``) enters the probes in its recommended encoding
+(``data_foundry.v2.special.encode_special_feature``), as a benchmark would give it to a model: a SMILES column as its
+descriptor and fingerprint columns (``<column>__rdkit_<name>``, ``<column>__maccs_<i>``, ``<column>__ecfp4_<i>``),
+never as text; a spectrum's columns with the encoded values. ``encode_special=False`` keeps the values as shipped (the
+blind reviewer's clean room). ``ProbeInput.special_features`` lists them by name.
 """
 
 from __future__ import annotations
@@ -41,6 +47,8 @@ class ProbeInput:
         origin: ``built`` (the container of the README build record), ``rebuilt`` (a container rebuilt from the
             definition) or ``definition`` (the definition's frame and split plan, no container).
         scoring_cols: The scoring columns dropped from ``df`` (metric inputs, never features).
+        special_features: The task's special features by name, encoded in ``df`` unless loaded with
+            ``encode_special=False``.
     """
 
     df: pd.DataFrame
@@ -52,6 +60,7 @@ class ProbeInput:
     time_on: str | None
     origin: str
     scoring_cols: tuple[str, ...] = ()
+    special_features: tuple[str, ...] = ()
 
     @property
     def group_cols(self) -> list[str]:
@@ -88,11 +97,27 @@ def _without_scoring_columns(df: pd.DataFrame, task: Any) -> tuple[pd.DataFrame,
     return (df.drop(columns=list(drop)) if drop else df), drop
 
 
-def from_definition(ds: AbstractCuratedDataset) -> ProbeInput:
-    """The definition's frame and split plan, rebuilt from the raw files (no container)."""
-    plan = ds.make_splits()
-    task = ds.task_metadata
+def _with_encoded_special_features(
+    df: pd.DataFrame, task: Any, *, encode: bool
+) -> tuple[pd.DataFrame, tuple[str, ...]]:
+    """``df`` with each special feature in its recommended encoding (in place of its columns), and their names."""
+    features = [f for f in getattr(task, "special_features", None) or () if all(c in df.columns for c in f.columns)]
+    names = tuple(f.name for f in features)
+    if not encode or not features:
+        return df, names
+    from data_foundry.v2.special import encode_special_feature  # noqa: PLC0415 - RDKit only for SMILES datasets
+
+    for feature in features:
+        df = encode_special_feature(df, feature)
+    return df, names
+
+
+def from_definition(ds: AbstractCuratedDataset, plan: Any = None, *, encode_special: bool = True) -> ProbeInput:
+    """The definition's frame and split plan, rebuilt from the raw files (no container); ``plan``: one already made."""
+    plan = plan if plan is not None else ds.make_splits()
+    task = ds.task_metadata_for(plan.df)
     df, scoring = _without_scoring_columns(plan.df, task)
+    df, special = _with_encoded_special_features(df, task, encode=encode_special)
     return ProbeInput(
         df=df,
         target=task.target_column_name,
@@ -103,13 +128,15 @@ def from_definition(ds: AbstractCuratedDataset) -> ProbeInput:
         time_on=task.time_on,
         origin="definition",
         scoring_cols=scoring,
+        special_features=special,
     )
 
 
-def from_container(container: CuratedContainer, origin: str) -> ProbeInput:
+def from_container(container: CuratedContainer, origin: str, *, encode_special: bool = True) -> ProbeInput:
     """A container's frame, task and shipped splits."""
     task = container.task_metadata
     df, scoring = _without_scoring_columns(container.dataset, task)
+    df, special = _with_encoded_special_features(df, task, encode=encode_special)
     return ProbeInput(
         df=df,
         target=task.target_column_name,
@@ -120,15 +147,17 @@ def from_container(container: CuratedContainer, origin: str) -> ProbeInput:
         time_on=task.time_on,
         origin=origin,
         scoring_cols=scoring,
+        special_features=special,
     )
 
 
-def load(name: str, root: Path | str, *, built: bool) -> ProbeInput:
+def load(name: str, root: Path | str, *, built: bool, encode_special: bool = True) -> ProbeInput:
     """The container of ``name``: with ``built``, the one recorded in its ``README.md``'s build record (when there is
     one), else rebuilt from the definition.
     """
     if built:
         build = (read_report(Path(root) / name / "README.md") or {}).get("build") or {}
         if build.get("path"):
-            return from_container(CuratedContainer.load(resolve_warehouse_dir() / build["path"]), "built")
-    return from_container(definition(name, root).to_container(), "rebuilt")
+            container = CuratedContainer.load(resolve_warehouse_dir() / build["path"])
+            return from_container(container, "built", encode_special=encode_special)
+    return from_container(definition(name, root).to_container(), "rebuilt", encode_special=encode_special)

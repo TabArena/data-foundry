@@ -4,7 +4,7 @@ name: financial-inclusion-in-africa-for-botswana
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> Yes
-priority: 2
+priority: 1
 tags:
 - AI-Filled (Verify)
 collections:
@@ -51,3 +51,5 @@ Zindi 'Financial Inclusion in Africa' task: predict whether an individual has/us
 ---
 
 Predict whether a person has a bank account
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `global_findex_2025` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

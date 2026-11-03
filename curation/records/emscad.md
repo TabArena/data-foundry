@@ -15,6 +15,7 @@ tags:
 collections:
 - TexTabBench
 - TabSTAR
+- MulTaBench
 original_source: Other
 year: '2017'
 domain: business & marketing
@@ -45,6 +46,14 @@ Also contains non-English text (at least German, didn't check yet for more); tit
 CC (2026-10-14, Lennart): No ForcedIIDFromTemporal tag: the grouped split already marks the task as Non-IID. The dates are lost, though they could have been used for modelling too.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Vidros et al. 2017 report accuracy with precision, recall and F-measure on a balanced 450/450 sample, while the shipped release is 4.6% fraudulent and no threshold or costs are fixed (MET-2, MET-6).
+
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): left unordered: `required_experience` (a level outside the scale is a state of its own); `required_education` (a partial order).
+
+CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): 1 columns with a state outside the scale ordered, the state placed by the rule.
+
+**Assessment (AI, 2026-11-01):** the benchmark MulTaBench (https://arxiv.org/abs/2605.10616) carries this record's data as "Fake Job Postings": Text-tabular; EMSCAD (Vidros et al. 2017) via OpenML 46655. Paper notes no significant TAR gain here. Tagged MulTaBench on 2026-11-01.
+
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
 
 ## Reference
 

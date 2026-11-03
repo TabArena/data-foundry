@@ -11,6 +11,7 @@ suggestion: Yes (Disagreement)
 decision_markers:
 - Wrong Domain / Source Modality
 - Not Representative
+- Selection Bias
 tags:
 - Tiny Data
 collections:

@@ -7,6 +7,8 @@ data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+decision_markers:
+- Selection Bias
 tags:
 - Tiny Data
 - New IID
@@ -51,6 +53,8 @@ Relevant classes we should have: 09. Russia - Russian        British in England 
 CC (2026-10-21, Lennart): biogeographical_ancestry: roc_auc stays (the paper's metric); declared as the source's metric, one-vs-rest macro ROC AUC over the populations.
 
 CC (2026-10-21, Lennart): correction to the line above: log loss stays; ROC AUC does not make sense as a good metric for this multiclass task.
+
+CC (2026-10-27, Lennart): marker Selection Bias, from the AI review of PR #16: each population comes from one reference project (1000 Genomes or HGDP), so the classes were collected apart and project differences coincide with the label (failed calls occur only in the HGDP groups, as the fit_reason says); the reference donors were chosen for their ancestry, not drawn from case samples.
 
 ## Reference
 

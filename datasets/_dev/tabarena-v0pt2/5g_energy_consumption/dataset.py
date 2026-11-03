@@ -86,6 +86,10 @@ class Dataset5gEnergyConsumption(AbstractCuratedDataset):
         - Anomaly: The raw files cover one week only, 2023-01-01 01:00 to 2023-01-08 00:00 (168 hours).
         - Anomaly: The source does not state the energy unit. `Energy` runs from 0.75 to exactly 100, and every value is a multiple of 100/669, so the values were rescaled to a maximum of 100.
         - Note: The station id `BS` stays in the data as the group column, which is split metadata, not a model feature. Every test station is unseen in training, so as a feature it would be an unknown category without information.
+        - Cycle (2026-11-01, CLEAN-14, Lennart's rule): `weekday_number` (0 Monday to 6 Sunday, from the timestamps) is
+          a number again (a category on 2026-10-31). A weekday or a month is a position in a continuous cycle (weekday
+          1.5 is Monday noon), and the source ships it as a number; named weekdays and months are ordered categories
+          instead.
     """
 
     # Task

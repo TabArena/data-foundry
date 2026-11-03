@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: kick
 container_format: 2
-checksum: v2:c6d54e7749c774e40077f06f93d43810dc3afc6a554004bfd0927911031ea206
+checksum: v2:72cec1fb3f2b6f0d0b62537e0c2d60ed80f03dc5c604ba7e5e955105470127b4
 build:
   uuid: 01a111fc-8ab4-7b2f-9955-2cc583c9e979
   checksum: v2:56fbaf6a01bb708925bcfc79ee4891d3ee2b707defd7ce843852e2521bbc17ae
@@ -73,7 +73,7 @@ decisions:
 
 Binary classification of `IsBadBuy`, scored with `roc_auc` on temporal splits by `PurchDate`. 72,983 rows and 28 features. Source: Kaggle (2011).
 
-Built as `01a111fc-8ab4-7b2f-9955-2cc583c9e979` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c6d54e7749c774e40077f06f93d43810dc3afc6a554004bfd0927911031ea206`, so the build is stale. See [Build](#build).
+Built as `01a111fc-8ab4-7b2f-9955-2cc583c9e979` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:72cec1fb3f2b6f0d0b62537e0c2d60ed80f03dc5c604ba7e5e955105470127b4`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -182,11 +182,11 @@ The first 5 of 72,983 rows of the final frame (the oldest rows: the frame is sor
 
 | IsBadBuy | PurchDate | Auction | VehYear | VehicleAge | Make | Model | Trim | SubModel | Color | Transmission | VehOdo |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1 | 2009-01-05 00:00:00 | MANHEIM | 2006 | 3 | FORD | FREESTYLE AWD V6 3.0 | SE | 4D CUV 3.0L SE | GREEN | AUTO | 72672 |
-| 0 | 2009-01-05 00:00:00 | MANHEIM | 2003 | 6 | CHEVROLET | 1500 SILVERADO PICKU | W/T | EXT CAB 5.3L LS | SILVER | AUTO | 73099 |
-| 0 | 2009-01-05 00:00:00 | MANHEIM | 2004 | 5 | CHEVROLET | IMPALA 3.4L V6 SFI | Bas | 4D SEDAN | WHITE | AUTO | 88286 |
-| 0 | 2009-01-05 00:00:00 | MANHEIM | 2003 | 6 | ISUZU | AXIOM 4WD V6 3.5L V6 | S | 4D SPORT UTILITY S | BLUE | AUTO | 90614 |
-| 0 | 2009-01-05 00:00:00 | MANHEIM | 2006 | 3 | CHEVROLET | IMPALA 3.5L V6 SFI | LS | 4D SEDAN LS | BLUE | AUTO | 78113 |
+| No | 2009-01-05 00:00:00 | MANHEIM | 2005 | 4 | JEEP | LIBERTY 4WD V6 3.7L | Spo | 4D SUV | BLACK | AUTO | 74525 |
+| No | 2009-01-05 00:00:00 | MANHEIM | 2005 | 4 | CHEVROLET | IMPALA 3.4L V6 SFI | Bas | 4D SEDAN | WHITE | AUTO | 81408 |
+| No | 2009-01-05 00:00:00 | MANHEIM | 2007 | 2 | CHEVROLET | IMPALA V6 3.5L V6 SF | LT | 4D SEDAN LT 3.5L | GREY | AUTO | 74834 |
+| No | 2009-01-05 00:00:00 | MANHEIM | 2005 | 4 | CHRYSLER | PT CRUISER 2.4L I4 D | Tou | 2D CONVERTIBLE | GOLD | AUTO | 58522 |
+| No | 2009-01-05 00:00:00 | MANHEIM | 2006 | 3 | CHEVROLET | TRAILBLAZER EXT 4WD | LS | 4D SUV 4.2L | WHITE | AUTO | 69456 |
 
 ## Curation notes
 
@@ -199,6 +199,11 @@ The first 5 of 72,983 rows of the final frame (the oldest rows: the frame is sor
 - Leak, dropped (LEAK-10; Lennart, 2026-10-22, consistent with expresso_churn_prediction's REGION): "WheelType" and "WheelTypeID" were most likely filled in after the outcome. WheelType is missing for 24.9% of bad buys and 1.5% of good ones, in every band of vehicle age, odometer and price; a model of the missingness from the auction covariates, fit on good buys, predicts 1.2% missing for the bad buys; within auction and purchase date the missing flag alone still separates bad buys (ROC AUC 0.572), while the missing flags of the other columns stay at 0.49-0.54. Its whole value is the flag: LightGBM on the 9 temporal windows (300 trees, mean ROC AUC) 0.750 with the columns, 0.677 without.
 - Leak, dropped (LEAK-10; same decision): "PRIMEUNIT" and "AUCGUART" (filled on the same rows, about 95% missing). From October 2010 they are filled for 32.7% of good buys and 7.8% of bad ones; a model of the fill from the auction covariates, fit on good buys, predicts 42.3% filled for the bad buys; within auction and purchase date the flag gives ROC AUC 0.632. These months fall in the last test windows.
 - The host's test file carries all four fields the same way (WheelType missing for 4.5% of the Kaggle test rows against 4.3% of train; PRIMEUNIT filled for 46.0% in December 2010), so the competition's task had them. We drop them anyway because that test file is a holdout from the same snapshot, taken after the outcomes; at a real auction no car has been kicked back yet. If the recording process is ever documented as known at the auction, they can come back.
+- Partial order, left unordered (2026-11-01, CLEAN-14): `Size` runs in chains within body types (COMPACT <
+  MEDIUM < LARGE cars, SMALL < MEDIUM < LARGE SUV, SMALL < LARGE TRUCK); CROSSOVER, SPECIALTY, SPORTS and VAN
+  are body types off those chains.
+- The target (2026-11-01, CLEAN-25): `IsBadBuy` ships its classes as words (1 is the event). Binary: "Yes" is
+  the event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
@@ -269,7 +274,7 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 | Nationality | category | 5 | 0.01 | 4 | AMERICAN, OTHER ASIAN, TOP LINE ASIAN, OTHER |
 | Size | category | 5 | 0.01 | 12 | MEDIUM, LARGE, MEDIUM SUV, COMPACT, VAN, LARGE TRUCK, SMALL SUV, SPECIALTY, CRO… |
 | TopThreeAmericanName | category | 5 | 0.01 | 4 | GM, CHRYSLER, FORD, OTHER |
-| IsBadBuy | category | 0 | 0 | 2 | 0, 1 |
+| IsBadBuy | category | 0 | 0 | 2 | No, Yes |
 | Auction | category | 0 | 0 | 3 | MANHEIM, OTHER, ADESA |
 | Make | category | 0 | 0 | 33 | CHEVROLET, DODGE, FORD, CHRYSLER, PONTIAC, KIA, SATURN, NISSAN, HYUNDAI, JEEP |
 | Model | category | 0 | 0 | 1063 | PT CRUISER, IMPALA, TAURUS, CALIBER, CARAVAN GRAND FWD V6, MALIBU 4C, TAURUS 3.… |
@@ -289,7 +294,7 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 | VehBCost | float64 | 0 | 0 | 2072 | 7500.0, 6500.0, 7200.0, 6000.0, 4200.0, 7000.0, 8000.0, 7800.0, 7100.0, 7400.0 |
 | VehYear | int64 | 0 | 0 | 10 | 2006, 2005, 2007, 2004, 2008, 2003, 2002, 2001, 2009, 2010 |
 | VehicleAge | int64 | 0 | 0 | 10 | 4, 3, 5, 2, 6, 7, 1, 8, 9, 0 |
-| VehOdo | int64 | 0 | 0 | 39947 | 77995, 75009, 75371, 71225, 67464, 79015, 71762, 75530, 71823, 79215 |
+| VehOdo | int64 | 0 | 0 | 39947 | 77995, 75009, 71225, 75371, 67464, 79015, 79600, 89362, 88958, 77011 |
 | WarrantyCost | int64 | 0 | 0 | 281 | 920, 1974, 2152, 1389, 1215, 1155, 803, 728, 1503, 1086 |
 
 </details>
@@ -298,8 +303,8 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 
 | IsBadBuy | count | pct |
 |---|---|---|
-| 0 | 64007 | 87.7 |
-| 1 | 8976 | 12.3 |
+| No | 64007 | 87.7 |
+| Yes | 8976 | 12.3 |
 
 ### Numeric features
 
@@ -344,8 +349,8 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 | Color | 3 | BLUE | 10347 | 14.18 |
 | Color | 4 | GREY | 7887 | 10.81 |
 | Color | 5 | BLACK | 7627 | 10.45 |
-| IsBadBuy | 1 | 0 | 64007 | 87.7 |
-| IsBadBuy | 2 | 1 | 8976 | 12.3 |
+| IsBadBuy | 1 | No | 64007 | 87.7 |
+| IsBadBuy | 2 | Yes | 8976 | 12.3 |
 | IsOnlineSale | 1 | 0 | 71138 | 97.47 |
 | IsOnlineSale | 2 | 1 | 1845 | 2.53 |
 | Make | 1 | CHEVROLET | 17248 | 23.63 |
@@ -407,4 +412,4 @@ Most locations are seen on many purchase dates, so there is no clean set of unse
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c6d54e7749c774e40077f06f93d43810dc3afc6a554004bfd0927911031ea206` |
+| stale | yes: the definition now gives checksum `v2:72cec1fb3f2b6f0d0b62537e0c2d60ed80f03dc5c604ba7e5e955105470127b4` |

@@ -11,6 +11,7 @@ tags:
 - Free Text (Sentences)
 collections:
 - TabSTAR
+- MulTaBench
 source_links:
 - https://www.kaggle.com/datasets/tylerx/melbourne-airbnb-open-data
 - https://www.openml.org/search?type=data&id=46665

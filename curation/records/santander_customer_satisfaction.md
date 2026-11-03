@@ -7,6 +7,8 @@ data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+decision_markers:
+- Anonymized
 tags:
 - Larger IID Data
 collections:
@@ -35,6 +37,8 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer from the semantic context, keep it a number, this is a real-world bias. We want to make things categorical if we know from the context they are indeed such" (CLEAN-14, amended again). Kept categorical: the 56 ind_var columns, indicators by their name, now an explicit list.
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — Area Under Receiver Operating Characteristic Curve (https://www.kaggle.com/competitions/santander-customer-satisfaction (Kaggle API evaluationMetric)).
+
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
 
 ## Reference
 

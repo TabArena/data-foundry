@@ -4,7 +4,7 @@ name: Medicare Inpatient Cost
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> 2nd Tier
-priority: 2
+priority: 1
 decision_markers:
 - No Good Target (yet)
 tags:
@@ -46,3 +46,5 @@ CMS Medicare inpatient hospitals summary by provider and service, a real governm
 CC: "Has some cool data but is just a listing of data without a real task. So it might not be useful for a benchmark or tell us much. It could still be used but maybe is not a great signal.
 
 But make sure to remove all the leakage from the columns due to several things being an indicator of each other (like payment)"
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `ny_sparcs_inpatient_length_of_stay` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

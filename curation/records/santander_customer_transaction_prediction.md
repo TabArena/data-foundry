@@ -7,6 +7,8 @@ data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+decision_markers:
+- Anonymized
 tags:
 - Larger IID Data
 collections:
@@ -33,6 +35,8 @@ CC (2026-09-30, Lennart): **Leak fixed: dropped the 400 `var_i_has_one`/`has_zer
 CC: "Interesting dataset, but not on OpenML. License allows to use the data for research, but not distribute it - so we have an API issue."
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — Area Under Receiver Operating Characteristic Curve (https://www.kaggle.com/competitions/santander-customer-transaction-prediction (Kaggle API evaluationMetric)).
+
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
 
 ## Reference
 

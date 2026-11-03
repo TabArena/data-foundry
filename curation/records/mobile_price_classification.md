@@ -29,6 +29,8 @@ Lennart: Only time invariant features, seems reasonable otherwise
 
 Andrej: Source unclear, split unclear,
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `gsmarena_phone_specifications_price` (TBD -> 2nd Tier, priority 1). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 https://www.kaggle.com/datasets/iabhishekofficial/mobile-price-classification

@@ -43,6 +43,8 @@ CC (2026-10-01, Lennart): **Retired (No (Retired), Data Quality Issue): the feat
 - LightGBM AUC 0.986 (typical churn tasks: about 0.7-0.85). Not fixable: the file has no dates or monthly series to re-anchor everyone at a common prediction date, and scale-free usage ratios from the same window still give AUC 0.982.
 - Removed from the TabArena v0.2 working copy; the shipped notebook is unchanged.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `orange_belgium_churn_uplift` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Keramati, A., & Ardabili, S. M. (2011). Churn analysis for an Iranian mobile operator. Telecommunications Policy, 35(4), 344-356.

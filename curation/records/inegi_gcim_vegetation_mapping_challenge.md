@@ -4,7 +4,7 @@ name: inegi-gcim-vegetation-mapping-challenge
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> 2nd Tier
-priority: 2
+priority: 1
 decision_markers:
 - No Good Target (yet)
 - Data Quality Issue
@@ -46,3 +46,5 @@ The stated task is a label-cleaning / weak-supervision meta-task: build a model 
 ---
 
 propose and develop a robust and accurate machine learning model that can help to clean and improve training data, either identifying outliers (wrong or suspicious labels), or even suggesting a more plausible label in the given test data
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `oemc_eu_land_cover_classification` (TBD -> 2nd Tier, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

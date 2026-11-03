@@ -14,6 +14,7 @@ tags:
 - Free Text (Sentences)
 collections:
 - TabSTAR
+- MulTaBench
 source_links:
 - https://www.kaggle.com/datasets/PromptCloudHQ/imdb-data
 source_row: 19

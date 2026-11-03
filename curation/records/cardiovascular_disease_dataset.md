@@ -53,3 +53,5 @@ Also see TabArena comments on it""
 CC: ""Uploaded by Matthias Feurer - not much information; from Kaggle, seems like a real task without much more information
 
 At the same time see the Kaggle discussions no one knows the source and it might be synthetic data due to outliers. Remove due to missing source information""
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nhanes_cvd_mortality` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

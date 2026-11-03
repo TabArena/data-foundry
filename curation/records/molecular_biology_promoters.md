@@ -23,3 +23,5 @@ type_adapter_id: curation-record-v1
 Very old data about genes and sequences, maybe partially handmade or rule-based. The original paper had 260 cases, but this data has fewer. In general, not enough information and too old to judge if we really want to benchmark for this.
 
 Moreover the data seems to usually string data/sequences that is not fully tabular or was truncated somehow for this dataset.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `ecoli_sigma70_promoters_regulondb` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

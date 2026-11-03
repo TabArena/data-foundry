@@ -70,6 +70,8 @@ Class shift then, or need to change prediction task?
 
 Only could use the official split, otherwise no temporal information?
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `luflow_intrusion_detection` (TBD -> 2nd Tier, priority 2), `ugr16_isp_netflow_intrusion` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Cost-based Modeling and Evaluation for Data Mining With Application to Fraud and Intrusion Detection: Results from the JAM Project by Salvatore J. Stolfo, Wei Fan, Wenke Lee, Andreas Prodromidis, and Philip K. Chan.

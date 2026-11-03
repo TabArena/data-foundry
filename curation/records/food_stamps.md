@@ -26,3 +26,5 @@ As a result, the task seems not to be representative for real-world grouped data
 
 Moreover, we can create many other tasks from this data (see Unemployment, Income, Public Health Insurance
 )
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `acs_food_stamps_2014_2024` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

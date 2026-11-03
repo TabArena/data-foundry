@@ -84,3 +84,5 @@ uploaded 2018):
 * 195 OpenML severity rows name policies missing from `freMTPL2freq`. The current CASdatasets copy (GitHub, 26,444
   severity rows) is the OpenML table without exactly those 195.
 * Siblings: `bemtpl97`, `frempl_french_motor_personal_line` (a different French portfolio).
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `eumtpl` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.

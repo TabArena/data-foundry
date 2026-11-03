@@ -11,6 +11,7 @@ tags:
 - New IID
 collections:
 - CARTE/TARTE
+- MulTaBench
 source_links:
 - https://www.kaggle.com/datasets/skamlo/wine-price-on-polish-market
 - wina.pl

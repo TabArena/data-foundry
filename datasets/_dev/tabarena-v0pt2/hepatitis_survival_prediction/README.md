@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: hepatitis_survival_prediction
 container_format: 2
-checksum: v2:9c727603eaaa1370441b4ece0a933f6dc21b5df0ef90c1826a97673c2ca41ab0
+checksum: v2:c182ff451f664cde96b96e6a2ae1ff2aa0bb4e39169b682fad4bc3dbf856158a
 build:
   uuid: 01a111fc-dbca-7d8e-ab0c-322d3d816ede
   checksum: v2:e5f418acc726ff4069f2858bd41186d414d654e9036eccd7a1a2cbb368cd9ef4
@@ -67,7 +67,7 @@ decisions: []
 
 Binary classification of `class`, scored with `roc_auc` on IID splits. 155 rows and 19 features. Source: UCI (1988).
 
-Built as `01a111fc-dbca-7d8e-ab0c-322d3d816ede` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9c727603eaaa1370441b4ece0a933f6dc21b5df0ef90c1826a97673c2ca41ab0`, so the build is stale. See [Build](#build).
+Built as `01a111fc-dbca-7d8e-ab0c-322d3d816ede` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c182ff451f664cde96b96e6a2ae1ff2aa0bb4e39169b682fad4bc3dbf856158a`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -137,7 +137,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
 | reason | Efron & Gong 1981/1986 study how to estimate the error rate of Gregory's logistic rule on these 155 patients: a statistics-methods paper, not a decision; 32 deaths, so accuracy is coarse. Original rejected: error rate. roc_auc is the binary fallback. |
 
@@ -172,11 +172,11 @@ The first 5 of 155 rows of the final frame (random rows: the frame is shuffled);
 
 | class | age | sex | steroid | antivirals | fatigue | malaise | anorexia | liver_big | liver_firm | spleen_palpable | spiders |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 2 | 30 | 1 | 2 | 2 | 1 | 2 | 2 | 2 | 2 | 2 | 2 |
-| 1 | 62 | 1 | 1 | 2 | 1 | 1 | 2 | nan | nan | 2 | 2 |
-| 1 | 50 | 1 | 2 | 2 | 1 | 2 | 2 | 2 | 1 | 1 | 2 |
-| 2 | 23 | 1 | 2 | 2 | 2 | 2 | 2 | nan | nan | nan | nan |
-| 2 | 62 | 2 | 2 | 2 | 1 | 1 | 2 | 2 | 1 | 2 | 1 |
+| Yes | 39 | 1 | 1 | 1 | 1 | 1 | 2 | 2 | 1 | 2 | 2 |
+| No | 54 | 1 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 |
+| No | 48 | 1 | 2 | 2 | 1 | 1 | 1 | 2 | 1 | 2 | 1 |
+| No | 22 | 1 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 | 2 |
+| No | 25 | 2 | 1 | 1 | 2 | 2 | 2 | 2 | 2 | 2 | 2 |
 
 ## Curation notes
 
@@ -186,6 +186,8 @@ We start with the data from UCI.
 - We convert numeric features to float and categorical features to category dtype.
 - The target stays coded as in the UCI file: 1 = died (32 patients), 2 = lived (123); the names file lists the classes as "DIE, LIVE" in this order.
 - Prediction point: not stated. The inputs (examination, blood tests, biopsy histology) imply the patient's work-up; the UCI names file gives neither when they were recorded nor the follow-up period for death.
+- The target (2026-11-01, CLEAN-25): `class` ships its classes as words (1 means the patient died (UCI: 1 DIE, 2
+  LIVE)). Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
@@ -285,16 +287,16 @@ Default splits.
 | fatigue | category | 1 | 0.65 | 2 | 1, 2 |
 | malaise | category | 1 | 0.65 | 2 | 2, 1 |
 | anorexia | category | 1 | 0.65 | 2 | 2, 1 |
-| class | category | 0 | 0 | 2 | 2, 1 |
+| class | category | 0 | 0 | 2 | No, Yes |
 | sex | category | 0 | 0 | 2 | 1, 2 |
 | antivirals | category | 0 | 0 | 2 | 2, 1 |
 | histology | category | 0 | 0 | 2 | 1, 2 |
-| protime | float64 | 67 | 43.23 | 44 | 100.0, 74.0, 46.0, 66.0, 85.0, 41.0, 54.0, 90.0, 52.0, 57.0 |
-| alk_phosphate | float64 | 29 | 18.71 | 83 | 85.0, 81.0, 62.0, 78.0, 75.0, 135.0, 100.0, 120.0, 102.0, 155.0 |
-| albumin | float64 | 16 | 10.32 | 29 | 4.0, 4.2, 4.4, 3.8, 3.9, 4.1, 4.3, 3.3, 3.5, 2.9 |
-| bilirubin | float64 | 6 | 3.87 | 34 | 1.0, 0.7, 0.9, 0.8, 0.6, 1.2, 1.5, 1.3, 2.0, 4.6 |
-| sgot | float64 | 4 | 2.58 | 84 | 20.0, 60.0, 30.0, 55.0, 28.0, 18.0, 75.0, 24.0, 68.0, 38.0 |
-| age | float64 | 0 | 0 | 49 | 30.0, 34.0, 38.0, 36.0, 51.0, 39.0, 50.0, 42.0, 28.0, 54.0 |
+| protime | float64 | 67 | 43.23 | 44 | 100.0, 46.0, 66.0, 85.0, 74.0, 52.0, 41.0, 54.0, 57.0, 31.0 |
+| alk_phosphate | float64 | 29 | 18.71 | 83 | 85.0, 62.0, 81.0, 135.0, 100.0, 75.0, 78.0, 120.0, 76.0, 70.0 |
+| albumin | float64 | 16 | 10.32 | 29 | 4.0, 4.2, 3.8, 4.4, 4.1, 3.9, 4.3, 3.5, 3.3, 2.9 |
+| bilirubin | float64 | 6 | 3.87 | 34 | 1.0, 0.7, 0.9, 0.8, 0.6, 1.2, 1.5, 1.3, 4.6, 2.0 |
+| sgot | float64 | 4 | 2.58 | 84 | 20.0, 60.0, 55.0, 30.0, 28.0, 18.0, 75.0, 68.0, 44.0, 69.0 |
+| age | float64 | 0 | 0 | 49 | 34.0, 38.0, 30.0, 36.0, 39.0, 51.0, 50.0, 45.0, 42.0, 44.0 |
 
 </details>
 
@@ -302,8 +304,8 @@ Default splits.
 
 | class | count | pct |
 |---|---|---|
-| 2 | 123 | 79.35 |
-| 1 | 32 | 20.65 |
+| No | 123 | 79.35 |
+| Yes | 32 | 20.65 |
 
 ### Numeric features
 
@@ -331,8 +333,8 @@ Default splits.
 | ascites | 1 | 2 | 130 | 83.87 |
 | ascites | 2 | 1 | 20 | 12.9 |
 | ascites | 3 | &lt;NA> | 5 | 3.23 |
-| class | 1 | 2 | 123 | 79.35 |
-| class | 2 | 1 | 32 | 20.65 |
+| class | 1 | No | 123 | 79.35 |
+| class | 2 | Yes | 32 | 20.65 |
 | fatigue | 1 | 1 | 100 | 64.52 |
 | fatigue | 2 | 2 | 54 | 34.84 |
 | fatigue | 3 | &lt;NA> | 1 | 0.65 |
@@ -375,4 +377,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:9c727603eaaa1370441b4ece0a933f6dc21b5df0ef90c1826a97673c2ca41ab0` |
+| stale | yes: the definition now gives checksum `v2:c182ff451f664cde96b96e6a2ae1ff2aa0bb4e39169b682fad4bc3dbf856158a` |

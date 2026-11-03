@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: dementia_prediction
 container_format: 2
-checksum: v2:8bbc58d49213993b6e0e09cd0a63abb906491ed9dd57de7639e090572abbb78a
+checksum: v2:2253ca4a65170098889271e57551e46ab8832eca5f495802b0345fd980aff85c
 build:
   uuid: 01a111fc-d5b5-7da4-8ffe-99dd2600b6e0
   checksum: v2:9ddc612f5674f4b595dfba519a28785aa6b30e0cf85e35380aab666fff024a7c
@@ -75,7 +75,7 @@ decisions: []
 
 Multiclass classification of `CDR`, scored with `log_loss` on grouped splits by `Subject ID`. 370 rows and 8 features. Source: Other (2010).
 
-Built as `01a111fc-d5b5-7da4-8ffe-99dd2600b6e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:8bbc58d49213993b6e0e09cd0a63abb906491ed9dd57de7639e090572abbb78a`, so the build is stale. See [Build](#build).
+Built as `01a111fc-d5b5-7da4-8ffe-99dd2600b6e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2253ca4a65170098889271e57551e46ab8832eca5f495802b0345fd980aff85c`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -149,14 +149,15 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `log_loss` (standard; takes proba; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | mean of -log p(true class) |
 | reason | The OASIS-2 paper describes the data and reports group analyses, no prediction task or metric; the Mendeley copy's paper is a later reuse, not the first publication |
 
 <details>
-<summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 2 categorical, 1 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (3): `M/F`, `Subject ID`, `CDR`
+- categorical (2): `M/F`, `Subject ID`
+- ordinal (1): `CDR (no_dementia < very_mild_AD < mild_AD)`
 - string (0): none
 - datetime (0): none
 
@@ -198,6 +199,11 @@ We start with the data from Mendeley.
 - CDR and Group are both the same target variable. CDR is the Clinical Dementia Rating (0 = no dementia, 0.5 = very mild AD, 1 = mild AD, 2 = moderate AD), which determines the group variable. 31 of the 150 subjects change their rating across visits (the 'Converted' group). We make this a task to predict for a patient (at any given time point of a scan) their dementia rating. The rating is ordinal but discrete, so we treat it as a classification problem (not regression). We drop cases with moderate_AD (n=3), as we do not have enough data on this class to include them in our prediction task.
 - We drop the group variable (Nondemented / Demented / Converted, derived from the ratings over the visits) and the time of the scan (visit number, MR delay). We predict each visit's rating from the subject's sex, age, years of education (EDUC), socioeconomic status (SES, 19 missing), the Mini-Mental State Examination score of the same visit (MMSE, 2 missing; a separate cognitive test, not derived from the rating) and three measures from the visit's MRI scan: estimated total intracranial volume (eTIV), normalized whole-brain volume (nWBV) and the atlas scaling factor (ASF, which is 1755 / eTIV, kept as in the source).
 - We also drop the constant hand column.
+- Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+  each level is carries the words, a score without them is a number): 1 scores with no words per level are
+  numbers (`SCORES`): `SES`.
+- The target (2026-11-01, CLEAN-25): `CDR` ships its classes as words, no_dementia < very_mild_AD < mild_AD (the
+  Clinical Dementia Rating's order (CDR 0, 0.5, 1)).
 
 ## Splits
 
@@ -365,4 +371,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:8bbc58d49213993b6e0e09cd0a63abb906491ed9dd57de7639e090572abbb78a` |
+| stale | yes: the definition now gives checksum `v2:2253ca4a65170098889271e57551e46ab8832eca5f495802b0345fd980aff85c` |

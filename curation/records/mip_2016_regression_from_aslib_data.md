@@ -24,6 +24,8 @@ CC: "algorithm runtime performance data. Was part of a challenge. Sounds good. B
 We already have two datasets from AsLib, we can add more later if we really want to.
 Moreover, for these the task is a bit unclear as they treat multi-label as regression task but it is hard to know if that is the optimal solution (instead of pairwise, etc). We could include all kinds of versions in the future, but again, too much of the same might add a negative bias.
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `mittelmann_miplib2017_solver_runtimes` (TBD -> 2nd Tier, priority 1). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Part of Open Algorithm Challenge 2017 ("Mira").

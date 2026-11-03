@@ -148,7 +148,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
 | reason | Dietterich et al. 1997 report per-molecule accuracy (10-fold CV), as all multiple-instance work does: a habit without costs; 34 molecules per test fold, so accuracy moves in steps of about 3% (MET-10). Original rejected: accuracy. roc_auc is the binary fallback, per molecule (aggregation any). |
 

@@ -10,6 +10,7 @@ data_foundry_status:
 suggestion: 'Yes'
 decision_markers:
 - Data Quality Issue
+- Anonymized
 tags:
 - Non-IID (Temporal)
 collections:
@@ -46,6 +47,14 @@ CC (2026-10-21, Lennart): "yes we should have one clear way to treat 0/1 flags":
 CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer from the semantic context, keep it a number, this is a real-world bias. We want to make things categorical if we know from the context they are indeed such" (CLEAN-14, amended again). Reverted: V1, V14, V41, V65, V88, V107 stay numeric (anonymized Vesta features).
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: source roc_auc — Area under the ROC curve (https://www.kaggle.com/competitions/ieee-fraud-detection/overview/evaluation).
+
+CC (2026-10-27, Lennart): marker Anonymized, from the AI review of PR #17: the definition carries the Anonymized data tag; Vesta masked most fields (V1 to V339, C, D, M and id_ columns, card1 to card6), so their meaning and timing cannot be checked one by one (LEAK-32 names this case).
+
+CC (2026-10-31, Lennart): marks on the review board of PR #37 (ordinal scales in the codebook's order, also when shipped as numbers; a state outside a scale missing when the column has no other missing value, else the lowest level; cycles ordered; codes shipped as numbers as categories): TransactionID dropped: a row number in time order, an identifier (CLEAN-3).
+
+CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 1 coded columns carry their words.
+
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
 
 ## Reference
 

@@ -43,6 +43,10 @@ CC (2026-10-21, Lennart): diamonds ships the price in dollars and is scored by R
 
 CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 3 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `cut`, `color`, `clarity` (the README lists their levels).
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `brilliant_earth_diamond_prices` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Ggplot2: Elegant Graphics for Data Analysis

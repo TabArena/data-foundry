@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: emscad
 container_format: 2
-checksum: v2:9a86aa528387c833fbe7041486276e9fc62fe957021b2d75121c35eacdab4a1a
+checksum: v2:95ecd6297a35d369fe5c164009942d74c1d9a21b809c4e6fcf102a7b41133406
 build:
   uuid: 01a111fc-7ebc-7346-942e-09517a07829e
   checksum: v2:9b052a25b58d29e3edbdc3fb43d5480da80e75d90658e58f32ec216c64f27cc0
@@ -82,7 +82,7 @@ decisions: []
 
 Binary classification of `fraudulent`, scored with `roc_auc` on grouped splits by `poster_group`. 16,116 rows and 17 features. Source: Other (2017).
 
-Built as `01a111fc-7ebc-7346-942e-09517a07829e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9a86aa528387c833fbe7041486276e9fc62fe957021b2d75121c35eacdab4a1a`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7ebc-7346-942e-09517a07829e` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:95ecd6297a35d369fe5c164009942d74c1d9a21b809c4e6fcf102a7b41133406`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -159,14 +159,15 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
 | reason | Vidros et al. 2017 report accuracy with precision, recall and F-measure on a balanced 450/450 sample; the release we ship is 4.6% fraudulent, so the paper's accuracy does not carry over (MET-2), and no threshold or costs are fixed. Original rejected: accuracy on the 1:1 sample. roc_auc is the binary fallback. |
 
 <details>
-<summary>Feature types: 10 categorical, 8 string, 0 datetime</summary>
+<summary>Feature types: 9 categorical, 1 ordinal, 8 string, 0 datetime</summary>
 
-- categorical (10): `poster_group`, `telecommuting`, `has_company_logo`, `has_questions`, `employment_type`, `required_experience`, `required_education`, `industry`, `function`, `fraudulent`
+- categorical (9): `poster_group`, `telecommuting`, `has_company_logo`, `has_questions`, `employment_type`, `required_education`, `industry`, `function`, `fraudulent`
+- ordinal (1): `required_experience (Not Applicable < Internship < Entry level < Associate < Mid-Senior level < Director < Executive)`
 - string (8): `title`, `location`, `department`, `salary_range`, `company_profile`, `description`, `requirements`, `benefits`
 - datetime (0): none
 
@@ -196,11 +197,11 @@ The first 5 of 16,116 rows of the final frame (random rows: the frame is shuffle
 
 | fraudulent | title | location | department | salary_range | company_profile | description | requirements | benefits | telecommuting | has_company_logo | has_questions |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | Carrier Sales Representative | US, CA, Fresno | Carrier Sales |  |  | Company DescriptionCargoBarn is a third… | Very strong individuals with Bachelor’s… | We offer excellent benefits including Q… | 0 | 1 | 1 |
-| 1 | Data Center Migration App Lead for FULL… | US, PA, Harrisburg |  | 0-0 |  | Data Center Migration Application Lead … |  |  | 0 | 0 | 0 |
-| 0 | Team Leader | GB, , | Edinburgh |  | Social Care Alba is the highest graded … | Job DescriptionWe are looking to recrui… |  | TEN REASONS TO JOIN US: 1. Variety of h… | 0 | 1 | 1 |
-| 0 | Project Engineer- New Product Developme… | US, NV, Las Vegas |  |  | Vx Group is a Business Leadership and M… | Do you love to design new products? Are… | BS in Mechanical Engineering or equival… |  | 0 | 0 | 1 |
-| 0 | Class Teacher, Primary Years V1 | SG, 01, |  | 6000-10000 | Situated on a spacious, leafy campus wi… | For August 2015:Early Years and Primary… | Relevant degree and teaching qualificat… | Three year contractCompetitive salary10… | 0 | 1 | 1 |
+| No | Front Desk Receptionist (Chiropractic O… | US, TX, Fort Worth |  | 25000-40000 | River Oaks Chiropractic Clinic has been… | River Oaks Chiropractic Clinic is looki… | Must Be Bilingual.Experience working fr… | Competitive salary is based on talent a… | 0 | 1 | 1 |
+| No | Customer Service Technical Specialist | US, OK, Tulsa |  |  | Novitex Enterprise Solutions, formerly … | The Customer Service Technical Speciali… | Required Qualifications:Minimum 1 year … |  | 0 | 1 | 0 |
+| No | Materials Manager | US, IL, Melrose Park | Materials |  | Kappa Search, Inc. is one of the leadin… | Hiring a materials manager for a leadin… | 5+ years planning in manufacturing2+ ye… | Full time, direct hire. Some reloaction… | 0 | 1 | 1 |
+| No | looking for sales agent with firearms p… | US, FL, Orlando | sales |  |  | We are looking for a young energetic sa… | The person must have a good knowledge o… |  | 0 | 0 | 1 |
+| No | Branch Manager | US, CA, Los Angeles |  |  |  | Branch Manager / Sales and Operations G… |  |  | 0 | 0 | 1 |
 
 ## Curation notes
 
@@ -219,6 +220,12 @@ No details are given on how the subsampling was done. Moreover, duplicates were 
 - We removed job listings with non english texts (138 rows).
 - We do not subsample the data, as a result, the data is heavily imbalanced.
 - We found no relation of job_id with a timestamp and even found cases where a lower job_id has a description claiming to be a job from 2014 (so the end of the collection period). Thus, we do dropped job_id as it does not contain any signal.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`); 1 hold a state outside the scale, placed
+  by the curator's rule (missing when the column has no other missing value, else the lowest level; a state that
+  is simply not on the scale, such as Other, is missing).
+- The target (2026-11-01, CLEAN-25): `fraudulent` ships its classes as words (1 is the event). Binary: "Yes" is
+  the event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
@@ -260,8 +267,8 @@ One group is a poster (an account); its rows are its job ads. The use case is a 
 | largest group | 3.3% of the rows |
 | test groups per fold | 1,476 to 1,484 |
 | groups of two or more rows with a single label | 99.8% |
-| nearest neighbour in the same group | 1.3% of the rows (chance: 0.4%) |
-| label variance explained by the group | 0.99 (shuffled groups: 0.28) |
+| nearest neighbour in the same group | 0.5% of the rows (chance: 0.4%) |
+| label variance explained by the group | 0.99 (shuffled groups: 0.27) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
@@ -292,7 +299,7 @@ Accepted on purpose:
 | telecommuting | category | 0 | 0 | 2 | 0, 1 |
 | has_company_logo | category | 0 | 0 | 2 | 1, 0 |
 | has_questions | category | 0 | 0 | 2 | 0, 1 |
-| fraudulent | category | 0 | 0 | 2 | 0, 1 |
+| fraudulent | category | 0 | 0 | 2 | No, Yes |
 | poster_group | category | 0 | 0 | 4441 | 6aa2bada80ce, 39ca2d8837ef, 06784f88d03a, b002f36a7266, a33917b00886, c3585b60b… |
 | salary_range_max | float64 | 14675 | 91.06 | 119 | 50000.0, 100000.0, 80000.0, 60000.0, 70000.0, 120000.0, 90000.0, 65000.0, 15000… |
 | salary_range | string | 13387 | 83.07 | 872 | 0-0, 40000-50000, 30000-40000, 45000-67000, 35000-45000, 80000-100000, 70000-90… |
@@ -310,8 +317,8 @@ Accepted on purpose:
 
 | fraudulent | count | pct |
 |---|---|---|
-| 0 | 15379 | 95.43 |
-| 1 | 737 | 4.57 |
+| No | 15379 | 95.43 |
+| Yes | 737 | 4.57 |
 
 ### Numeric features
 
@@ -343,16 +350,16 @@ Accepted on purpose:
 | department | 5 | Operations | 266 | 1.65 |
 | description | 1 | The International Broadcaster shall properly complete all daily ... | 31 | 0.19 |
 | description | 2 | As an Outside Sales Representative, you must have excellent sale... | 21 | 0.13 |
-| description | 3 | We are currently recruiting for an exciting Sales &amp; Customer... | 20 | 0.12 |
+| description | 3 | We are seeking individuals to be connected with companies who ar... | 20 | 0.12 |
 | description | 4 | As a Delivery Driver, you will operate your truck and deliver bu... | 20 | 0.12 |
-| description | 5 | We are seeking individuals to be connected with companies who ar... | 20 | 0.12 |
+| description | 5 | We are currently recruiting for an exciting Sales &amp; Customer... | 20 | 0.12 |
 | employment_type | 1 | Full-time | 10879 | 67.5 |
 | employment_type | 2 | &lt;NA> | 3195 | 19.83 |
 | employment_type | 3 | Contract | 826 | 5.13 |
 | employment_type | 4 | Part-time | 764 | 4.74 |
 | employment_type | 5 | Temporary | 233 | 1.45 |
-| fraudulent | 1 | 0 | 15379 | 95.43 |
-| fraudulent | 2 | 1 | 737 | 4.57 |
+| fraudulent | 1 | No | 15379 | 95.43 |
+| fraudulent | 2 | Yes | 737 | 4.57 |
 | function | 1 | &lt;NA> | 5450 | 33.82 |
 | function | 2 | Information Technology | 1702 | 10.56 |
 | function | 3 | Sales | 1356 | 8.41 |
@@ -402,4 +409,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:9a86aa528387c833fbe7041486276e9fc62fe957021b2d75121c35eacdab4a1a` |
+| stale | yes: the definition now gives checksum `v2:95ecd6297a35d369fe5c164009942d74c1d9a21b809c4e6fcf102a7b41133406` |

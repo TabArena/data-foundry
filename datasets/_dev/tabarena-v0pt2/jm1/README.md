@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: jm1
 container_format: 2
-checksum: v2:d35a8ae9ee694a94fc3b42b991ecc6c0f4991d4ad673d4792ff3b73c36392d14
+checksum: v2:9982a695734f66884d861cebfce95c7e698b8e52ffc3263e859d4e751383e98a
 build:
   uuid: 01a111fc-b2fb-721e-9fd2-4f7373b53bca
   checksum: v2:bc8ba9ad339045c44c01315e91b4c963a87914574576a3c1bd368d478f4efd5e
@@ -68,7 +68,7 @@ decisions: []
 
 Binary classification of `defects`, scored with `roc_auc` on IID splits. 8,736 rows and 21 features. Source: Other (2004).
 
-Built as `01a111fc-b2fb-721e-9fd2-4f7373b53bca` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d35a8ae9ee694a94fc3b42b991ecc6c0f4991d4ad673d4792ff3b73c36392d14`, so the build is stale. See [Build](#build).
+Built as `01a111fc-b2fb-721e-9fd2-4f7373b53bca` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9982a695734f66884d861cebfce95c7e698b8e52ffc3263e859d4e751383e98a`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -148,7 +148,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
 | reason | Menzies & Di Stefano 2004 report probability of detection (PD) and of false alarm (PF) at operating points, a trade-off with no fixed threshold or combined score; the ROC curve is PD against PF. roc_auc is the binary fallback. |
 
@@ -183,17 +183,19 @@ The first 5 of 8,736 rows of the final frame (random rows: the frame is shuffled
 
 | defects | loc | v(g) | ev(g) | iv(g) | n | v | l | d | i | e | b |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| False | 14 | 2 | 1 | 2 | 41 | 160.18 | 0.22 | 4.5 | 35.6 | 720.82 | 0.05 |
-| False | 25 | 3 | 1 | 3 | 36 | 150.12 | 0.09 | 11 | 13.65 | 1651.29 | 0.05 |
-| False | 76 | 4 | 4 | 4 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| False | 51 | 9 | 1 | 6 | 106 | 552.2 | 0.04 | 22.94 | 24.07 | 12668.2 | 0.18 |
-| False | 17 | 2 | 1 | 1 | 37 | 162.52 | 0.2 | 4.92 | 33.01 | 800.08 | 0.05 |
+| No | 17 | 3 | 1 | 3 | 41 | 187.98 | 0.16 | 6.07 | 30.96 | 1141.33 | 0.06 |
+| No | 17 | 2 | 1 | 2 | 52 | 220.89 | 0.1 | 9.9 | 22.31 | 2186.83 | 0.07 |
+| No | 21 | 3 | 1 | 3 | 82 | 406.24 | 0.12 | 8.39 | 48.44 | 3406.91 | 0.14 |
+| No | 7 | 1 | 1 | 1 | 11 | 34.87 | 0.4 | 2.5 | 13.95 | 87.17 | 0.01 |
+| No | 5 | 1 | 1 | 1 | 11 | 38.05 | 0.29 | 3.5 | 10.87 | 133.19 | 0.01 |
 
 ## Curation notes
 
 - We selected this dataset as representative of a set of predictive modeling tasks of software engineering (other examples of such tasks are available on OpenML under the names mozilla4, pc1, pc2, pc3, mc1, kc1, kc2). This dataset was selected as it has the largest sample size.
 - We drop duplicates. 25% of the rows share their code-metric vector with another row (669 groups, mostly trivial modules such as 173 copies of a 4-line, complexity-1 function), so a random split puts copies on both sides. We drop exact duplicate rows (1,973) and then every copy of a metric vector that appears with both labels (88 vectors, 176 rows): 10,885 -> 8,736 rows.
 - The source URL is jm1.arff of the PROMISE repository, donated in 2004 by Tim Menzies from the NASA Metrics Data Program; it answers over plain http but gives 404 over https, and the Wayback Machine holds the same file. We read OpenML dataset 1053, whose ARFF is byte-identical to it (see the download description).
+- The target (2026-11-01, CLEAN-25): `defects` ships its classes as words (True means defects). Binary: "Yes" is
+  the event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
@@ -227,24 +229,24 @@ Default splits.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| defects | category | 0 | 0 | 2 | False, True |
+| defects | category | 0 | 0 | 2 | No, Yes |
 | uniq_Op | float64 | 5 | 0.06 | 68 | 0.0, 11.0, 12.0, 13.0, 14.0, 9.0, 10.0, 15.0, 16.0, 8.0 |
-| uniq_Opnd | float64 | 5 | 0.06 | 171 | 0.0, 6.0, 7.0, 8.0, 10.0, 11.0, 12.0, 5.0, 9.0, 13.0 |
+| uniq_Opnd | float64 | 5 | 0.06 | 171 | 0.0, 6.0, 7.0, 10.0, 8.0, 11.0, 12.0, 5.0, 9.0, 13.0 |
 | total_Op | float64 | 5 | 0.06 | 581 | 0.0, 15.0, 11.0, 13.0, 19.0, 26.0, 21.0, 17.0, 16.0, 10.0 |
-| total_Opnd | float64 | 5 | 0.06 | 468 | 0.0, 10.0, 7.0, 6.0, 8.0, 14.0, 13.0, 15.0, 19.0, 16.0 |
+| total_Opnd | float64 | 5 | 0.06 | 468 | 0.0, 10.0, 7.0, 6.0, 8.0, 14.0, 13.0, 15.0, 16.0, 19.0 |
 | branchCount | float64 | 5 | 0.06 | 146 | 3.0, 1.0, 5.0, 7.0, 9.0, 11.0, 13.0, 15.0, 17.0, 19.0 |
 | loc | float64 | 0 | 0 | 365 | 11.0, 17.0, 15.0, 12.0, 14.0, 19.0, 7.0, 22.0, 10.0, 18.0 |
 | v(g) | float64 | 0 | 0 | 108 | 2.0, 1.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 |
 | ev(g) | float64 | 0 | 0 | 74 | 1.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0 |
 | iv(g) | float64 | 0 | 0 | 82 | 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 |
-| n | float64 | 0 | 0 | 806 | 0.0, 27.0, 29.0, 41.0, 25.0, 22.0, 14.0, 38.0, 24.0, 19.0 |
-| v | float64 | 0 | 0 | 3989 | 0.0, 48.43, 50.19, 60.94, 83.76, 66.61, 34.87, 110.36, 46.51, 51.89 |
+| n | float64 | 0 | 0 | 806 | 0.0, 27.0, 29.0, 41.0, 22.0, 25.0, 14.0, 24.0, 38.0, 19.0 |
+| v | float64 | 0 | 0 | 3989 | 0.0, 48.43, 50.19, 60.94, 83.76, 34.87, 66.61, 46.51, 39.86, 51.89 |
 | l | float64 | 0 | 0 | 55 | 0.0, 0.04, 0.03, 0.05, 0.06, 0.02, 0.07, 0.08, 0.09, 0.11 |
-| d | float64 | 0 | 0 | 2694 | 0.0, 2.5, 3.0, 2.0, 4.0, 9.0, 3.5, 6.0, 8.0, 5.0 |
-| i | float64 | 0 | 0 | 4265 | 0.0, 12.8, 11.23, 5.33, 14.34, 17.79, 17.17, 24.38, 13.45, 16.14 |
-| e | float64 | 0 | 0 | 6964 | 0.0, 12.0, 99.66, 225.85, 174.36, 31.02, 54.0, 149.49, 175.66, 87.17 |
+| d | float64 | 0 | 0 | 2694 | 0.0, 2.5, 2.0, 3.0, 4.0, 9.0, 3.5, 6.0, 8.0, 5.0 |
+| i | float64 | 0 | 0 | 4265 | 0.0, 12.8, 11.23, 5.33, 14.34, 13.45, 24.38, 17.79, 17.17, 16.14 |
+| e | float64 | 0 | 0 | 6964 | 0.0, 12.0, 99.66, 225.85, 31.02, 174.36, 54.0, 175.66, 149.49, 145.3 |
 | b | float64 | 0 | 0 | 310 | 0.0, 0.02, 0.03, 0.04, 0.06, 0.05, 0.07, 0.08, 0.09, 0.01 |
-| t | float64 | 0 | 0 | 6749 | 0.0, 0.67, 9.69, 12.55, 5.54, 6.92, 1.72, 7.75, 3.0, 9.25 |
+| t | float64 | 0 | 0 | 6749 | 0.0, 0.67, 9.69, 12.55, 5.54, 6.92, 1.72, 3.0, 7.75, 8.3 |
 | lOCode | float64 | 0 | 0 | 291 | 0.0, 10.0, 9.0, 6.0, 13.0, 7.0, 8.0, 5.0, 4.0, 14.0 |
 | lOComment | float64 | 0 | 0 | 88 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
 | lOBlank | float64 | 0 | 0 | 95 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
@@ -256,8 +258,8 @@ Default splits.
 
 | defects | count | pct |
 |---|---|---|
-| False | 6817 | 78.03 |
-| True | 1919 | 21.97 |
+| No | 6817 | 78.03 |
+| Yes | 1919 | 21.97 |
 
 ### Numeric features
 
@@ -294,8 +296,8 @@ Default splits.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| defects | 1 | False | 6817 | 78.03 |
-| defects | 2 | True | 1919 | 21.97 |
+| defects | 1 | No | 6817 | 78.03 |
+| defects | 2 | Yes | 1919 | 21.97 |
 
 ## Build
 
@@ -308,4 +310,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:d35a8ae9ee694a94fc3b42b991ecc6c0f4991d4ad673d4792ff3b73c36392d14` |
+| stale | yes: the definition now gives checksum `v2:9982a695734f66884d861cebfce95c7e698b8e52ffc3263e859d4e751383e98a` |

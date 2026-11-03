@@ -138,7 +138,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `log_loss` (standard; takes proba; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | mean of -log p(true class) |
 | reason | Horton & Nakai 1996 report cross-validated accuracy (81% over 8 sites), a field habit without costs; we keep 5 of the 8 sites, so the figure's meaning changed (MET-2). Original rejected: accuracy. log_loss is the multiclass fallback. |
 

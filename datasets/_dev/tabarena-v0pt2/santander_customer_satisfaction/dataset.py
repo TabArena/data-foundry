@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
 
 
 class SantanderCustomerSatisfaction(AbstractCuratedDataset):
@@ -65,6 +65,8 @@ class SantanderCustomerSatisfaction(AbstractCuratedDataset):
         - We drop duplicates as their origin is unclear and they could create data leaks when splitting the training data.
         - We replace -999999 in var3 with with nan.
         - We keep the data otherwise as it. Several columns might be categorical and contain encoded nan values but we are not able to determine this due to anonymization.
+        - The target (2026-11-01, CLEAN-25): `TARGET` ships its classes as words (1 is the event). Binary: "Yes" is the
+          event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -95,6 +97,8 @@ class SantanderCustomerSatisfaction(AbstractCuratedDataset):
         df = df.drop_duplicates(subset=df.columns.difference([self.task_metadata.target_column_name]))
         # Replace -999999 with np.nan
         df["var3"] = df["var3"].replace(-999999, np.nan)
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

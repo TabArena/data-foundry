@@ -4,7 +4,7 @@ name: Kyoto 2006+ (Kyoto University Honeypot Traffic)
 checked_by:
 - AI (UNVERIFIED)
 suggestion: TBD -> 2nd Tier
-priority: 2
+priority: 1
 decision_markers:
 - TBD
 tags:
@@ -41,6 +41,8 @@ type_adapter_id: curation-record-v1
 Session-level records extracted with Bro 2.4 from Kyoto University's honeypots and darknet sensors, as daily files covering 2006-11-01 to 2015-12-31. The traffic is genuinely observed, so criterion 4B is not the problem here — the target is.
 
 **The label is another detector's output.** The canonical page describes the current release as "Bro 2.4 based session extraction. Based on new IDS detection result", i.e. rows are labelled by what the deployed IDS/AV flagged, not by verified ground truth, so a model trained on it distils an IDS rather than learning intrusion. Second concern: the page's "Deployed systems" list separates the honeypots from a mail server and a web crawler, so benign vs attack may track which host received the traffic. Both need checking against the format document linked from the page before this moves either way (Song et al., BADGERS 2011, not read).
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `luflow_intrusion_detection` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference
 

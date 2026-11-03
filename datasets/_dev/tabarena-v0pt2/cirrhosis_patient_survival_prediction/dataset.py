@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, decode, drop_columns
 
 FIVE_YEARS = 5 * 365.25  # days; N_Days is whole days, so an event on day 1,826 or earlier is within 5 years
 LAST_TRIAL_ID = 312  # IDs 1-312 are the trial patients, 313-418 the patients outside the trial
@@ -20,6 +20,17 @@ def _cohort(raw: pd.DataFrame) -> pd.DataFrame:
     newest_first = raw.sort_values("ID", ascending=False, kind="stable")
     covered = newest_first.groupby(newest_first["ID"].le(LAST_TRIAL_ID))["N_Days"].cummax().ge(FIVE_YEARS)
     return pd.DataFrame({"event": event, "followed": followed, "covered": covered.reindex(raw.index)})
+
+
+# The ordinal scales, lowest level first, from the source's codebook (curation notes; the README lists
+# them). An open-ended level holds everything beyond it.
+ORDINAL_LEVELS = {
+    "Edema": ["N", "S", "Y"],
+}
+
+
+# Scores and ratings with no words per level: numbers, as the source ships them (CLEAN-14).
+SCORES = ["Stage"]
 
 
 class CirrhosisPatientSurvivalPrediction(AbstractCuratedDataset):
@@ -101,6 +112,13 @@ class CirrhosisPatientSurvivalPrediction(AbstractCuratedDataset):
         - We drop ID, and N_Days and Status, which define the label.
         - The other columns are the baseline values taken at registration (the follow-up visits are in the separate pbcseq file), so all stay. The 66 patients outside the trial have no drug, ascites, hepatomegaly, spiders, copper, alkaline phosphatase or SGOT; these stay missing.
         - Until 2026-10-14 the task regressed the log time to death over the 161 patients who died. That is right truncation: a patient registered in 1982-84 entered only with a death within about 3 years (median 1.86 years, against 3.98 for 1974-76), so the label partly measured the calendar window.
+        - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+          categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+        - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
+          each level is carries the words, a score without them is a number): 1 scores with no words per level are
+          numbers (`SCORES`): `Stage`.
+        - The target (2026-11-01, CLEAN-25): `death_or_transplant_within_5y` ships its classes as words (1 is the
+          event). Binary: "Yes" is the event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -126,17 +144,21 @@ class CirrhosisPatientSurvivalPrediction(AbstractCuratedDataset):
         df = df.loc[keep]
         df["death_or_transplant_within_5y"] = cohort.loc[keep, "event"].astype(int)
         df = drop_columns(df, ["ID", "N_Days", "Status"])
+        # scores with no words per level are numbers (CLEAN-14)
+        df[SCORES] = df[SCORES].astype("object").apply(pd.to_numeric)
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
+            ordinal=ORDINAL_LEVELS,
             categorical=[
                 "Drug",
                 "Ascites",
                 "Hepatomegaly",
                 "Spiders",
                 "Edema",
-                "Stage",
                 "Sex",
             ],
         )

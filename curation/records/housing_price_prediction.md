@@ -34,6 +34,8 @@ First source is lying about it being from websites. The second source points to 
 
 From all I can find, it just seems to be a synthetic dataset or from some India website source that cannot be found anymore
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `cook_county_residential_sales` (TBD -> Yes, priority 3), `king_county_home_sales_1999_2025` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Kaggle

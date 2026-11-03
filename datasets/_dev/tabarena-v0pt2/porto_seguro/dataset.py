@@ -6,7 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, decode
 
 
 class PortoSeguro(AbstractCuratedDataset):
@@ -65,6 +65,8 @@ class PortoSeguro(AbstractCuratedDataset):
         - In general, the 2nd and 3rd place did a lot of interesting feature engineering for interactions. We do not copy these as the data is clean as it is.
         - We drop the index as it seems to be uninformative for this dataset.
         - There exist only 6 duplicates in the training data. We drop them as the portion is too small to be meaningful.
+        - The target (2026-11-01, CLEAN-25): `target` ships its classes as words (1 is the event). Binary: "Yes" is the
+          event, the class that sorts second, so it is the metrics' positive class.
     """
 
     # Task
@@ -92,6 +94,8 @@ class PortoSeguro(AbstractCuratedDataset):
         df = df.drop(columns=["id"])
         # Drop duplicates w/o target
         df = df.drop_duplicates(subset=[col for col in df.columns if col != self.task_metadata.target_column_name])
+        # the target's classes in words (CLEAN-25): "Yes" is the event the task predicts
+        df = decode(df, {self.target: {"0": "No", "1": "Yes"}})
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

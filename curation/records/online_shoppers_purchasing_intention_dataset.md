@@ -50,6 +50,12 @@ CC (2026-10-01, Lennart): Leak audit: kept `PageValues`, dropped the February-Ma
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Sakar et al. 2019 report accuracy, TPR, TNR and F1 (F1 stressed over accuracy, full text paywalled); no fixed threshold or costs. Original rejected: F1. roc_auc is the binary fallback.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `Month` (the README lists their levels).
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `ga_merchandise_store_sessions` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
+CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (True means revenue).
+
 ## Reference
 
 Real-time prediction of online shoppers’ purchasing intention using multilayer perceptron and LSTM recurrent neural networks

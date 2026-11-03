@@ -24,6 +24,8 @@ After post-hoc: Deterministic. The larger part of the samples follows a determin
 
 - abalone: Deterministic. The larger part of the samples follows a deterministic function. The authors were only able to determine the age (target) using the method described in the metadata. For ~60% the samples follow a deterministic function derived from biological research."
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `ices_datras_fish_age` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Original owners of database: Marine Resources Division Marine Research Laboratories - Taroona Department of Primary Industry and Fisheries, Tasmania GPO Box 619F, Hobart, Tasmania 7001, Australia

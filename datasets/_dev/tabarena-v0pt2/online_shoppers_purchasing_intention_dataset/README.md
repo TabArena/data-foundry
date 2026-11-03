@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: online_shoppers_purchasing_intention_dataset
 container_format: 2
-checksum: v2:037e40bb70512711476623b602c473eae84383842f04d6d78b42950e18b5c2c2
+checksum: v2:3a134cceff4c6641bad92674a5b6c4a5cc299c16dc923993a159b9ade7c8f606
 build:
   uuid: 01a111fc-b5f1-748b-a755-99b0a7c15a25
   checksum: v2:97076c1ab7ef8a7b53470378967dcdb5fc10d5358da47b31dbcde92a3b9a5ec2
@@ -69,7 +69,7 @@ decisions: []
 
 Binary classification of `Revenue`, scored with `roc_auc` on IID splits. 6,875 rows and 16 features. Source: UCI (2018).
 
-Built as `01a111fc-b5f1-748b-a755-99b0a7c15a25` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:037e40bb70512711476623b602c473eae84383842f04d6d78b42950e18b5c2c2`, so the build is stale. See [Build](#build).
+Built as `01a111fc-b5f1-748b-a755-99b0a7c15a25` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3a134cceff4c6641bad92674a5b6c4a5cc299c16dc923993a159b9ade7c8f606`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -141,14 +141,15 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `roc_auc` (standard; takes proba; higher is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | area under the ROC curve |
 | reason | Sakar et al. 2019 report accuracy, TPR, TNR and F1 (F1 stressed over accuracy, full text paywalled); no fixed threshold or costs. Original rejected: F1. roc_auc is the binary fallback. |
 
 <details>
-<summary>Feature types: 8 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 7 categorical, 1 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (8): `Month`, `OperatingSystems`, `Browser`, `Region`, `TrafficType`, `VisitorType`, `Weekend`, `Revenue`
+- categorical (7): `OperatingSystems`, `Browser`, `Region`, `TrafficType`, `VisitorType`, `Weekend`, `Revenue`
+- ordinal (1): `Month (June < Jul < Aug < Sep < Oct < Nov < Dec)`
 - string (0): none
 - datetime (0): none
 
@@ -178,11 +179,11 @@ The first 5 of 6,875 rows of the final frame (random rows: the frame is shuffled
 
 | Revenue | Administrative | Administrative_Duration | Informational | Informational_Duration | ProductRelated | ProductRelated_Duration | BounceRates | ExitRates | PageValues | Month | OperatingSystems |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| False | 0 | 0 | 0 | 0 | 5 | 168 | 0.04 | 0.08 | 0 | Nov | 3 |
-| False | 4 | 53.2 | 0 | 0 | 14 | 496.967 | 0 | 0.00980392 | 0 | Oct | 2 |
-| False | 0 | 0 | 0 | 0 | 5 | 614.75 | 0 | 0.0733333 | 0 | Dec | 2 |
-| True | 1 | 5 | 0 | 0 | 6 | 119.6 | 0 | 0.0142857 | 0 | Jul | 2 |
-| False | 8 | 279.267 | 0 | 0 | 16 | 453.4 | 0 | 0.0114035 | 0 | Jul | 3 |
+| Yes | 0 | 0 | 0 | 0 | 4 | 123.3 | 0 | 0 | 67.9893 | Oct | 1 |
+| No | 0 | 0 | 0 | 0 | 16 | 277.3 | 0.0125 | 0.0416667 | 0 | Nov | 2 |
+| Yes | 6 | 186.667 | 2 | 100.8 | 11 | 347.4 | 0 | 0.015 | 0 | Aug | 3 |
+| Yes | 3 | 32 | 2 | 9 | 16 | 1760.6 | 0 | 0.0333333 | 0 | Nov | 2 |
+| No | 1 | 28.2 | 0 | 0 | 20 | 679.567 | 0 | 0.00634921 | 0 | Nov | 2 |
 
 ## Curation notes
 
@@ -190,6 +191,10 @@ The first 5 of 6,875 rows of the final frame (random rows: the frame is shuffled
 - We keep only the sessions from June to December (6,875 of 12,330). "PageValues" is meant as a historical Google Analytics metric per page, stored and updated at regular intervals, averaged over the pages a session visits (Sakar et al. 2019, Sec. 2.1). In February, March and May, however, every one of the 560 buyers has PageValues > 0 and PageValues alone separates buyers with ROC AUC 0.974, so these values most likely include the session's own purchase (the page-value table was probably computed over that period). From June on, 27% of buyers have PageValues = 0 and its AUC is 0.814, as expected for a historical page metric. We keep PageValues and drop the early months; this cannot be proven from the data, as a change in site tracking would leave a similar pattern.
 - We drop "SpecialDay": it is non-zero only in February and May, so it is constant on the kept months.
 - We keep the IID split: each session belongs to a different user, sampled over one year (Sakar et al. 2019, Sec. 2.1), and only the month is known.
+- Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
+  categories in the order of the source's codebook (`ORDINAL_LEVELS`).
+- The target (2026-11-01, CLEAN-25): `Revenue` ships its classes as words (True means revenue). Binary: "Yes" is
+  the event, the class that sorts second, so it is the metrics' positive class.
 
 ## Splits
 
@@ -231,13 +236,13 @@ Default splits.
 | TrafficType | category | 0 | 0 | 15 | 2, 1, 3, 13, 4, 10, 8, 20, 5, 6 |
 | VisitorType | category | 0 | 0 | 3 | Returning_Visitor, New_Visitor, Other |
 | Weekend | category | 0 | 0 | 2 | False, True |
-| Revenue | category | 0 | 0 | 2 | False, True |
-| Administrative_Duration | float64 | 0 | 0 | 2504 | 0.0, 5.0, 4.0, 11.0, 6.0, 7.0, 12.0, 9.0, 8.0, 19.0 |
-| Informational_Duration | float64 | 0 | 0 | 964 | 0.0, 9.0, 6.0, 8.0, 7.0, 11.0, 10.0, 12.0, 5.0, 13.0 |
-| ProductRelated_Duration | float64 | 0 | 0 | 6046 | 0.0, 8.0, 11.0, 17.0, 7.0, 15.0, 12.0, 18.0, 96.0, 22.0 |
+| Revenue | category | 0 | 0 | 2 | No, Yes |
+| Administrative_Duration | float64 | 0 | 0 | 2504 | 0.0, 5.0, 4.0, 11.0, 6.0, 7.0, 12.0, 9.0, 8.0, 21.0 |
+| Informational_Duration | float64 | 0 | 0 | 964 | 0.0, 9.0, 6.0, 8.0, 7.0, 10.0, 11.0, 5.0, 12.0, 13.0 |
+| ProductRelated_Duration | float64 | 0 | 0 | 6046 | 0.0, 8.0, 11.0, 7.0, 17.0, 15.0, 12.0, 96.0, 22.0, 18.0 |
 | BounceRates | float64 | 0 | 0 | 1438 | 0.0, 0.2, 0.0667, 0.0167, 0.0286, 0.05, 0.0333, 0.0125, 0.02, 0.0182 |
 | ExitRates | float64 | 0 | 0 | 3268 | 0.2, 0.05, 0.0333, 0.1, 0.0667, 0.025, 0.04, 0.0167, 0.02, 0.0286 |
-| PageValues | float64 | 0 | 0 | 1673 | 0.0, 42.2931, 21.2113, 16.1586, 42.4225, 10.999, 78.5696, 87.903, 34.04, 9.0848 |
+| PageValues | float64 | 0 | 0 | 1673 | 0.0, 42.2931, 40.2782, 14.1274, 58.9242, 87.903, 40.4014, 10.999, 16.1586, 78.5… |
 | Administrative | int64 | 0 | 0 | 27 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 | Informational | int64 | 0 | 0 | 14 | 0, 1, 2, 3, 4, 5, 6, 7, 9, 8 |
 | ProductRelated | int64 | 0 | 0 | 302 | 1, 3, 2, 4, 7, 8, 6, 5, 10, 11 |
@@ -248,8 +253,8 @@ Default splits.
 
 | Revenue | count | pct |
 |---|---|---|
-| False | 5527 | 80.39 |
-| True | 1348 | 19.61 |
+| No | 5527 | 80.39 |
+| Yes | 1348 | 19.61 |
 
 ### Numeric features
 
@@ -292,8 +297,8 @@ Default splits.
 | Region | 3 | 4 | 656 | 9.54 |
 | Region | 4 | 2 | 577 | 8.39 |
 | Region | 5 | 7 | 426 | 6.2 |
-| Revenue | 1 | False | 5527 | 80.39 |
-| Revenue | 2 | True | 1348 | 19.61 |
+| Revenue | 1 | No | 5527 | 80.39 |
+| Revenue | 2 | Yes | 1348 | 19.61 |
 | TrafficType | 1 | 2 | 2615 | 38.04 |
 | TrafficType | 2 | 1 | 1356 | 19.72 |
 | TrafficType | 3 | 3 | 893 | 12.99 |
@@ -318,4 +323,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:037e40bb70512711476623b602c473eae84383842f04d6d78b42950e18b5c2c2` |
+| stale | yes: the definition now gives checksum `v2:3a134cceff4c6641bad92674a5b6c4a5cc299c16dc923993a159b9ade7c8f606` |

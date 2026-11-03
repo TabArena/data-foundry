@@ -26,3 +26,5 @@ survey about IT jobs (2020), participants often had categories to pick from but 
 Data clearly has wrong entries and some of them need to be cleared (salary errors and nan values)
 
 The original survey https://docs.google.com/forms/d/e/1FAIpQLSdPDpjEN98tazCLOQ7xxgK84DZeanC8wI_akPyKOeW3HwBhuA/viewform is for the most part either numerical or (multi-)categorical, but in the categorical columns you can also provide your own "other" answer if the given ones don't fit, we can argue whether these columns e.g. Position are free text or not, but for now I will count such as not
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `dol_lca_h1b_offered_wages` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.

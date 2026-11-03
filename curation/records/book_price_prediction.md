@@ -13,6 +13,7 @@ tags:
 collections:
 - TabSTAR
 - AutoML_MM
+- MulTaBench
 original_source: Website
 year: '2019'
 domain: business & marketing
@@ -34,6 +35,8 @@ Book Price Prediction
 Unclear how much price can be predicted and depends on the features, needs to be investigated. Plus unclear if text helps. Maybe price needs inflation adjustment? Could get more data from the internet for this? Unclear if it is a real task but was used as such in a competition.
 
 has titles, authors, edition, genre, and category as entities but synopsis as sentences of free text
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `amazon_book_prices_2023` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference
 

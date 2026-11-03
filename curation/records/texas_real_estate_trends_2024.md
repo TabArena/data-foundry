@@ -33,6 +33,8 @@ Seems to not include temporal information, plus all from one year so it might be
 
 Keep as 2nd tier for now due to text and temporal uncertainty
 
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `austin_tx_house_listings` (TBD -> 2nd Tier, priority 1). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 Kaggle

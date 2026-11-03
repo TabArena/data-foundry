@@ -43,6 +43,12 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback roc_auc — Gul et al. 2021 compare classifiers by 10-fold CV accuracy only (Table 2), without a threshold or costs, on 171 molecules (33% toxic). Original rejected: accuracy (MET-6, coarse on 171 rows). roc_auc is the binary fallback.
 
+**Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): nAcid and nBase, both -1 in the same 2 molecules (no count), set to missing (CLEAN-10, CLEAN-11)..
+
+CC (2026-11-01, Lennart): marks on the review board of PR #37: the two molecules the descriptor software failed on are dropped (-1 counts, 62-68 descriptors at 0 that the other molecules have, no structures to recompute them); an exception to CLEAN-11.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `ncats_cytotoxicity_profiling` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.
+
 ## Reference
 
 @article{gul2021structure,

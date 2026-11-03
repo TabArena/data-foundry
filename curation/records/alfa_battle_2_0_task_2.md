@@ -9,6 +9,7 @@ suggestion: 'Yes'
 priority: 2
 decision_markers:
 - Needs extensive data wrangling
+- Anonymized
 tags:
 - Non-IID (Temporal)
 - Review Prio 1 (Atlas)
@@ -65,6 +66,8 @@ CC (2026-10-26, Lennart): the declared metric, ROC AUC, is checked as declared.
 **Assessment (AI, 2026-10-26):** the three issues are settled as implemented; a SPLIT-9 Cases row records issue 1 with the fact that sets it apart from ieee. One caveat from the precedent check: the timing test (95.1% / 45.5%) was never run on ieee_fraud_detection; if ieee shows the same timing, its keep would be the one to reopen. No open issue is left, so the folder's REVIEW.md is removed.
 
 CC (2026-10-26, Lennart): verdict ship.
+
+**Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found a related task: `alfa_bank_credit_history_default` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
 
 ## Reference
 
