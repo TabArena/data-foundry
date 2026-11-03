@@ -58,6 +58,15 @@ we could still use it with their official test splits and different training set
 
 "base time" is only related to the delta from when the post was made, not the overall time.
 
+**Assessment (AI, 2026-10-30):** found while checking `blogfeedback` (the same design, reused by Singh et al. 2015): the
+25 page aggregates are computed in-sample in each file. Variant_1 rows match statistics over Variant_1 100%, and the
+test rows match statistics over the test file itself 100% (over Variant_1 0.1%), so the test features are computed with
+the test period, the window of the targets (LEAK-10). They cannot be rebuilt from training history: only 42.5% of test
+rows match a Variant_1 page on the page features f1-f4. Dropping the 25 aggregates is a cheap fix (untuned LightGBM,
+Variant_1 -> test, 3 seeds: AUC for any comment 0.904 -> 0.906, R^2 on log1p 0.736 -> 0.724); page "talking about" (f3)
+is a crawl-time snapshot too, and dropping it also costs about 0.003 AUC. Recommend dropping both at /add-dataset; the
+curator has the call.
+
 ## Reference
 
 @INPROCEEDINGS{Sing1503:Comment,
