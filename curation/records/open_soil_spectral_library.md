@@ -12,6 +12,7 @@ tags:
 - Many features
 - Multi-target
 - Non-IID (Grouped)
+- Spectral Data
 collections:
 - New (BeyondArena)
 original_source: Website

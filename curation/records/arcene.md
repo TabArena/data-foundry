@@ -10,6 +10,7 @@ decision_markers:
 tags:
 - Non-IID (Grouped)
 - Tiny Data
+- Spectral Data
 collections:
 - TabArena Reject
 - TabSTAR
