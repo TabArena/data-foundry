@@ -3,11 +3,14 @@ unique_name: chicago_traffic_crashes
 name: Chicago Traffic Crashes - Crashes (CPD E-Crash)
 checked_by:
 - Myunghwan
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 3
+decision_markers:
+- Class-dependent Recording
 tags:
 - Non-IID (Temporal)
 collections:
@@ -22,7 +25,7 @@ original_data_state: One Table
 source_links:
 - https://data.cityofchicago.org/Transportation/Traffic-Crashes-Crashes/85ca-t3if
 - https://data.cityofchicago.org/resource/85ca-t3if.json
-v2_path: datasets/_dev/tabarena-v0pt2/chicago_traffic_crashes_1m/dataset.py
+v2_path: datasets/_dev/tabarena-v0pt2/chicago_traffic_crashes/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -59,8 +62,6 @@ CC (2026-10-29, Myunghwan): Keep the five discussed crash-condition fields in th
 
 CC (2026-10-29, Myunghwan): Issue 1: It's fine. Historical label is fine. This is a reasonable approximation. Issue 2: Yes, this is fine. We are now predicting more based on "closer to fact" information than "timely avaialbe" information. OK for this approximation. Issue 3: What decision do we need? does it matter? Issue 4: OK Issues 1/2/4 accepted; issue 3 remains discussion, not a final ship or build request.
 
-**Exception to SPLIT-10 (2026-10-29, Myunghwan):** accept final-snapshot police injury labels as a reasonable retrospective approximation because no historical label versions or amendment times are available. Serves P3/USE-8: faithfully state the accepted approximate task rather than fabricate a maturation gap. Strict notification eligibility remains; this does not reproduce labels available at historical refits or use the training-floor rationale of alfa/lending.
-
 **Assessment (AI, 2026-10-29):** Applied accepted historical-label and closer-to-fact framing, preserved injury/report outcome exclusions, and accepted only dataset_missing_value_label for physical DEVICE_CONDITION=MISSING. Executable cleaning, features, labels, metric and split methods are unchanged. The speed question is whether to retain the posted road limit or remove/reconstruct it; recommend retaining it without guessed 99/default conversion. Recent matched zero rates weaken the specific proposed default mechanism; incremental predictive effect of dropping speed was not measured. Its coding caveat is not a demonstrated leakage defect. Issue 3 and overall inclusion remain open; settled choices are not reopened.
 
 **Assessment (AI, 2026-10-29):** Review answers 1/2/4 applied and rechecked: closer-to-fact scene approximation and final-snapshot labels accepted, with the bounded SPLIT-10 exception recorded. Physical-MISSING warning accepted with its exact source reason; regenerated native report has 0 errors, 0 unaccepted warnings, 1 accepted warning and 2 informational findings. Independent module-AST review confirms unchanged model inputs, labels, cleaning, metric and all split/model-determining code; prior native model and data-identity evidence reused without refitting. Current issue 3 contains the speed question and answer, recommending retention without guessed code conversions. It is not an item-3 acceptance or overall ship mark. Final inclusion/build/commit remain undecided; actual human answers and before/after application evidence retained.
@@ -76,6 +77,14 @@ CC (2026-10-29, Myunghwan): "now move to the build". Build the accepted Chicago 
 CC (2026-10-29, Myunghwan): "add this to the current PR". Add the accepted and verified Chicago dataset to the existing PR #33, keeping its prior ten datasets and all settled scientific choices.
 
 **Assessment (AI, 2026-10-29):** Integrating the exact accepted definition and built report into the existing eleven-dataset PR. Preserved native build UUID 01a18a0b-6aa8-726f-a33a-75044860edbf and its truthful original working-tree provenance. The saved container verifies and reproduces from the frozen input; raw data and containers remain outside Git. The source addition preserves prior datasets, checks and build metadata.
+
+CC (2026-11-04, Lennart): a one-month gap between train and test for labels amended after a refit ("yes follow the recommendation"; SPLIT-10), which replaces Myunghwan's exception of 2026-10-29; the injury classes are an ordered target on the KABCO scale ("Yes order them"; CLEAN-25); the `Class-dependent Recording` marker is set ("add it"): the crash time is floored to the hour because exact-hour recording differs by injury (LEAK-13: 8.21% of injured against 13.07% of uninjured on-scene reports). The metric is checked as declared.
+
+**Assessment (AI, 2026-11-04):** the changes were checked on a fresh export of the portal (2026-11-04, 1,097,215 rows against the 1,097,209 of 2026-10-29); the export URL stops working on 2026-12-22, so a rebuild should pin a snapshot. Leak probe 13 finds no fall at the release end; the share of "REPORTED, NOT EVIDENT" rises in 2026Q2-Q3 (z +3.3 to +3.5), read as drift. The probe does not measure the amendment delay, so the gap rests on the 30-day convention for counting traffic deaths.
+
+CC (2026-11-04, Lennart): the five condition fields (weather, lighting, road surface, traffic control device and device condition) are dropped (LEAK-10), and training starts on 2017-09-01, when citywide coverage starts (SPLIT-20). No training side then exceeds one million rows, so the dataset ships unsampled as `chicago_traffic_crashes` (the folder is renamed from `chicago_traffic_crashes_1m`; 998,117 crashes). The note on `lighting_condition`'s partial order (issue 6) falls away with the field.
+
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the measurements behind each mark (log loss on the three newest windows: 0.4960 without the five fields, 0.4921 with them; 0.49201 from 2017-09 against 0.49214 from 2013), and all are settled.
 
 ## Reference
 

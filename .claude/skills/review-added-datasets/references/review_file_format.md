@@ -123,7 +123,9 @@ Blind review: would benchmark; main concern the year column. Debate: agreed on t
   it matters ("the critic disputes this"). No issue holds a line that starts with `**Review panel:**`: that line
   opens the panel and ends the issues.
 * The panel leaves with the file. While the file has open issues or field rows, the panel stays as the run wrote
-  it; when the last one is settled, the file and its panel are deleted. A panel alone does not keep a file.
+  it; when the last one is settled, the file and its panel are deleted, after the record has the panel's summary
+  line (`**Assessment (AI, <date>):** review panel (<tier>):`, /add-dataset Step 8). A panel alone does not keep a
+  file.
 * Only a REVIEW.md has a panel; the open-issues block of a record without a folder has none.
 
 The collector stops on a second panel, a block label after the panel, a panel without its summary, text between the

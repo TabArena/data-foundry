@@ -3,6 +3,7 @@ unique_name: tunisian_fraud_detection_challenge
 name: Tunisian Fraud Detection Challenge
 checked_by:
 - Myunghwan
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Myunghwan
@@ -60,3 +61,11 @@ A Zindi competition to detect tax fraud using the Tunisian Ministry of Finance's
 ---
 
 Detect tax fraud using the Ministry of Finance of Tunisia's data
+
+CC (2026-11-04, Lennart): the declared metric (RMSE, the competition's) is checked as declared (PR #33 review).
+
+CC (2026-11-04, Lennart): the `Anonymized` data tag is dropped ("drop it"): only the taxpayer id was replaced; the columns are named.
+
+CC (2026-11-04, Lennart): fiscal year 2018 is cut (LEAK-24, "do the change"), leaving three yearly windows 2015-2017; its three 2018-only VAT columns leave with it. The retrospective ranking stays ("okay let us keep it"). The source is Zindi's own file: Lennart's download (2026-11-04) is byte-identical to the file used, so no re-sourcing; the download description gives its SHA-256.
+
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled.

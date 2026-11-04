@@ -3,6 +3,7 @@ unique_name: airqo_low_cost_air_quality_monitor_calibration_challenge
 name: airqo-low-cost-air-quality-monitor-calibration-challenge
 checked_by:
 - Myunghwan
+- Lennart
 data_foundry_status:
 - WIP (DF)
 claimed_by: Myunghwan
@@ -59,3 +60,13 @@ All rows and unverified sensor2-zero states remain. Two isolated reference disag
 **CC (2026-10-28, Myunghwan):** "ship Low-cost calibration". Approved the presented retrospective calibration definition for shipping, retaining all source rows, reference PM2.5, source RMSE and site-balanced random 3 x 3 folds. In the presented review this accepts issue 1's discrete-site stratification warning acknowledgment. Source-quality and represented-site limitations remain. Build and repository integration require a separate request.
 
 **Assessment (AI, 2026-10-28):** The independent consistency check found no unexplained rule departure or new exception. Accepted the discrete non-target site-balancing warning without changing rows, predictors, target, metric or fold memberships. Closed review issue 1; its original wording and full panel reports remain preserved in the review history. Scientific ship acceptance does not grant data redistribution rights.
+
+CC (2026-11-04, Lennart): the 500 hours where both sensor-2 channels read exactly 0 (all at USEmbassy, 2019-11-18 to 2019-12-17) have both channels set missing; the rows stay (CLEAN-11).
+
+**Assessment (AI, 2026-11-04):** 15 more hours of the same outage have sensor 2 at 0.02-2.9, under 10% of sensor 1, while elsewhere the ratio is at least 0.63 (its 0.1% quantile); extending the rule to them is open. The raw files come from a public GitHub mirror (otoosakyidavid, commit 2ec3e256) whose Train.csv matches the definition's SHA-256 and the byte count Zindi's API lists.
+
+CC (2026-11-04, Lennart): the reference's single-hour spikes are set missing by a rule, a reference hour above 3 times both low-cost PM2.5 channels and above 3 times both neighbouring hours, and their rows leave ("yes follow the recommendaiton ... mark it well in the dataset notes"; CLEAN-11, CLEAN-15): 5 hours, four at Nakawa in October 2020 and one at Makerere in February 2021. `landform_90m` is decoded into the ALOS catalogue's words ("decode and do as you recommend"; CLEAN-12). The metric is checked as declared.
+
+CC (2026-11-04, Lennart): the split is temporal, three monthly windows over the newest season (December 2020 to February 2021), each trained on every earlier hour ("ok (a)"): AirQo corrects new readings with models retrained periodically, by season, and random folds gave the model the neighbouring reference hours. It replaces the site-balanced random folds of 2026-10-28.
+
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled. Train sides 8,207-10,093 hours, test months 834-1,049; `dataset check` passes.

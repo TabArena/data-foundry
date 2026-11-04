@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: protein_model_quality_rf_pcp
 container_format: 2
-checksum: v2:9c815361646dd91564cc761b59da41b5dd13244b9911968281ce056688cc1d7a
+checksum: v2:364c09f8b7cd90080e9c816432d4b8503bfb2f395afd1bf3a58367516aabb6f5
 build:
   uuid: 01a18ba2-013a-7001-a61c-686e78b112d7
   checksum: v2:9c815361646dd91564cc761b59da41b5dd13244b9911968281ce056688cc1d7a
@@ -17,20 +17,20 @@ build:
     pyarrow: 26.0.0
     scikit-learn: 1.7.2
     polars: 2.0.0
-build_stale: false
+build_stale: true
 data:
   n_rows: 95094
   n_features: 6
   dtypes:
     category: 1
-    float64: 4
-    int64: 3
+    float64: 5
+    int64: 2
   n_test_dataset_rows: null
 task:
   target: GDT
   problem_type: regression
-  metric: rmse
-  metric_origin: fallback
+  metric: mean_group_pearsonr
+  metric_origin: context
   scoring_columns: null
   split_regime: grouped_non_iid
   stratify_on: null
@@ -64,7 +64,8 @@ bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos: []
+  infos:
+  - task_metric_input_is_model_input
   accepted: {}
 decisions: []
 ---
@@ -73,15 +74,15 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `GDT`, scored with `rmse` on grouped splits by `protein_id`. 95,094 rows and 6 features. Source: Other (2014).
+Regression of `GDT`, scored with `mean_group_pearsonr` on grouped splits by `protein_id`. 95,094 rows and 6 features. Source: Other (2014).
 
-Built as `01a18ba2-013a-7001-a61c-686e78b112d7` on 2026-10-30. See [Build](#build).
+Built as `01a18ba2-013a-7001-a61c-686e78b112d7` on 2026-10-30, but `dataset.py` has changed since: it now gives checksum `v2:364c09f8b7cd90080e9c816432d4b8503bfb2f395afd1bf3a58367516aabb6f5`, so the build is stale. See [Build](#build).
 
 ## In brief
 
 **Question.** What fraction of reference residues aligns within the source's four GDT distance tolerances?
 
-**Use case.** For example, a structural-biology researcher estimates a generated model's accuracy before the experimental reference is available, to assess accuracy before planning further structural work.
+**Use case.** A structural-biology researcher ranks the candidate models generated for one protein before the experimental reference is available, to choose which to refine; scored by the correlation per protein.
 
 **One row.** One of 95,094 protein-structure candidate rows in the author's mixed CASP5-10 and classic-decoy release; 4,893 explicitly named native reference structures are excluded from this candidate population.
 
@@ -141,7 +142,7 @@ Only curators run `build`, when the dataset ships.
 | rows x columns | 95,094 x 8 |
 | task.target | GDT |
 | task.problem_type | regression |
-| task.metric | rmse |
+| task.metric | mean_group_pearsonr |
 | task.split_regime | grouped_non_iid |
 | task.group_on | protein_id |
 | task.group_labels | per_sample |
@@ -150,10 +151,11 @@ Only curators run `build`, when the dataset ships.
 
 | field | value |
 |---|---|
-| name | `rmse` (standard; takes value; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
-| definition | sqrt(mean((y - p)^2)) |
-| reason | Rana et al., DOI10.1142/S0219720015500055, complete Section 3 reports RMSE, correlation, squared correlation and tolerance accuracy without one uniquely selected criterion; use regression RMSE. |
+| name | `mean_group_pearsonr` (custom; takes value; higher is better) |
+| origin | context: obvious from the task: the source defines no metric |
+| definition | mean over groups of the Pearson correlation within the group; method='numerai_corr' transforms first as Numerai's CORR |
+| reason | The use case ranks the candidate structures of one target, as CASP's quality assessment scores it per target (CASP10: "the two assessment approaches show different qualities of the methods and we use both of them"). Rana et al. (DOI 10.1142/S0219720015500055) report RMSE, correlation, R2 and tolerance accuracy side by side. Pooled RMSE does not score the decision: each protein's true mean, which orders no candidate, beats LightGBM on it (0.134 against 0.188). Exception to MET-5 (Lennart, 2026-11-04). |
+| inputs | group: `protein_id` |
 
 <details>
 <summary>Feature types: 1 categorical, 0 string, 0 datetime</summary>
@@ -185,11 +187,11 @@ The first 5 of 95,094 rows of the final frame (random rows: the frame is shuffle
 
 | GDT | Area | ED | Energy | SS | SL | PN | protein_id |
 |---|---|---|---|---|---|---|---|
-| 0.364 | 4137.3 | 6716.67 | 2464.9 | 39 | 68 | 481 | pdb:1ctf |
-| 0.3509 | 5661.93 | 2818.38 | 425.151 | 65 | 72 | 148 | pdb:2lv2 |
-| 0.0763 | 20779 | 114857 | 6.7732e+06 | 207 | 349 | 4074 | pdb:4g2a |
-| 0.5897 | 6470.29 | 9483.8 | -1037.14 | 64 | 92 | 551 | pdb:2icp |
-| 0.5346 | 4104.47 | 500.589 | 546.1 | 26 | 65 | 35 | pdb:1sn3 |
+| 0.7516 | 8426.98 | 25336.5 | -340.519 | 41 | 157 | 1519 | pdb:2ha8 |
+| 0.2323 | 7164.69 | 8318.7 | 102219 | 57 | 113 | 521 | pdb:2blk |
+| 0.3047 | 4863.02 | 1454.95 | -401.16 | 36 | 64 | 116 | pdb:1csp |
+| 0.2852 | 5412.57 | 3720.43 | 2523.5 | 41 | 71 | 225 | legacy:smd3 |
+| 0.2 | 6089.39 | 4170.49 | -463.61 | 25 | 75 | 269 | pdb:1bdo |
 
 ## Curation notes
 
@@ -218,9 +220,11 @@ The first 5 of 95,094 rows of the final frame (random rows: the frame is shuffle
   supplied number without complementing it. Some scores exceed the modeled-structure sequence length;
   source coverage versus full-sequence alignment is unverified. No native-reference leakage is demonstrated.
   The retrieved archive has no feature-generation code; row-level generation was not reconstructed.
-- ED equals zero with positive PN in 71 rows; PN equals zero with positive ED in 63. The source
-  does not settle whether these 134 inconsistencies are sentinels or a different pair definition; retain
-  supplied values rather than inventing missing-value codes.
+- ED is a sum of pair distances over the PN pairs, and PN is fixed by the sequence (constant within protein
+  and sequence length in 1,146 of 1,249 cells). A sum over one or more pairs cannot be 0, and a sum over no
+  pairs cannot be positive, so ED = 0 with PN > 0 (71 rows) and PN = 0 with ED > 0 (63 rows) become missing
+  and the rows stay (CLEAN-11; Lennart, 2026-11-04). Each of those rows has a same-protein, same-length
+  sibling with the value positive.
 - Energy is signed in the release despite absolute-sum prose; retain signs and extreme finite values.
   Neither a large magnitude nor a negative energy is itself proof of a recording error or leakage.
 - Protein keys come from source filenames. CASP keys use T identifiers, case-normalized; classic sets use
@@ -231,11 +235,16 @@ The first 5 of 95,094 rows of the final frame (random rows: the frame is shuffle
 - Official CASP pages map 339 observed targets to experimental PDB accessions, none shared with classic
   targets. Three further identities are confirmed by exact sequences and retain original keys, with no
   colliding aliases. This is not a sequence-family split.
-- The primary objective estimates absolute per-structure quality. No top-one model-selection utility,
-  protein-family-disjoint generalization or performance on modern structure generators is claimed.
-- RMSE is a fallback after inspecting the complete paper's Section 3, which reports RMSE, correlation,
-  squared correlation and tolerance-based accuracy without a unique selection criterion. Our diagnostic
-  R-squared uses 1-SSE/SST; the paper's squared Pearson correlation is a different quantity.
+- The metric (Lennart, 2026-11-04; exception to MET-5): `mean_group_pearsonr` on `protein_id`, the
+  correlation within each protein averaged over proteins, as CASP scores quality assessment per target. The
+  paper reports RMSE, correlation, R2 and tolerance accuracy side by side; pooled RMSE rewards a protein's
+  typical quality, and each protein's true mean, which orders no candidate, beats LightGBM on it (0.134
+  against 0.188). Each test fold holds 148-149 proteins with a median of 103-113 candidates, none under 5.
+- `Energy` stays as supplied (Lennart, 2026-11-04): the extreme positive values (up to 7e11) are ProSEE's
+  output for unminimized models whose atoms overlap, continuous with the rest and carrying signal (mean GDT_TS
+  0.339 against 0.398), so unusual rather than impossible (CLEAN-11). `SS` has no bound the source gives.
+- Outdated (Lennart, 2026-11-04): six global descriptors of 2002-2012 server models; since CASP15 the
+  standard is the predictor's own confidence (pLDDT). Kept as a small grouped biology task, with no new features.
 - First release is the August 2014 source archive; the paper appeared online in December 2014 and in 2015.
   The year denotes the first release, not the paper's issue year. No source metadata is overwritten silently.
 
@@ -279,15 +288,16 @@ A group collects candidates for one canonical protein. CASP uses T identifiers a
 | largest group | 4.0% of the rows |
 | test groups per fold | 148 to 149 |
 | groups of two or more rows with a single label | 0.0% |
-| nearest neighbour in the same group | 82.7% of the rows (chance: 0.9%) |
+| nearest neighbour in the same group | 82.0% of the rows (chance: 0.9%) |
 | label variance explained by the group | 0.56 (shuffled groups: 0.00) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
 
+- **info** `task_metric_input_is_model_input`: The metric's input column(s) ['protein_id'] are also given to the models (a feature, the group or the time column); they are not scoring columns. (hint: Declare a column as a `ScoringColumn` only when it exists for scoring alone and must not be a feature.)
 
 ## Data checks
 
@@ -295,14 +305,14 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| protein_id | category | 0 | 0 | 445 | pdb:1ctf, pdb:1ig5, pdb:1igd, pdb:1eh2, pdb:1trl, pdb:1dkt, pdb:1beo, pdb:1nkl,… |
-| Area | float64 | 0 | 0 | 88247 | 11958.3, 4474.95, 11202.0, 10584.8, 4840.76, 6557.65, 11728.3, 13537.8, 12190.5… |
-| ED | float64 | 0 | 0 | 91260 | 0.0, 2651.35, 2722.54, 2845.74, 2704.97, 5851.83, 4689.29, 3422.7, 2296.32, 416… |
-| Energy | float64 | 0 | 0 | 87495 | -1128.3, -1352.9, -1095.0, -1011.4, -1139.4, -1109.4, -1187.2, -1141.5, -1049.6… |
+| protein_id | category | 0 | 0 | 445 | pdb:1ctf, pdb:1ig5, pdb:1igd, pdb:1eh2, pdb:1trl, pdb:1dkt, pdb:1nkl, pdb:1beo,… |
+| ED | float64 | 71 | 0.07 | 91259 | 2651.35, 2722.54, 2845.74, 2704.97, 5851.83, 3422.7, 4689.29, 4296.85, 37899.4,… |
+| PN | float64 | 63 | 0.07 | 706 | 481.0, 165.0, 222.0, 371.0, 167.0, 342.0, 226.0, 115.0, 87.0, 1014.0 |
+| Area | float64 | 0 | 0 | 88247 | 11958.3, 9885.67, 13537.8, 4474.95, 11728.3, 5449.85, 11664.2, 11202.0, 4709.24… |
+| Energy | float64 | 0 | 0 | 87495 | -1128.3, -1352.9, -1011.4, -1109.4, -1139.4, -1095.0, -1049.6, -1261.5, -1345.9… |
 | GDT | float64 | 0 | 0 | 8515 | 0.25, 0.3125, 0.375, 0.5, 0.2813, 0.3, 0.2857, 0.2727, 0.2917, 0.2465 |
 | SS | int64 | 0 | 0 | 394 | 11, 38, 33, 45, 39, 13, 14, 36, 15, 17 |
 | SL | int64 | 0 | 0 | 435 | 76, 62, 68, 79, 100, 56, 65, 98, 55, 72 |
-| PN | int64 | 0 | 0 | 707 | 481, 165, 222, 371, 167, 342, 226, 115, 87, 1014 |
 
 ### Target distribution
 
@@ -315,11 +325,11 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
 | Area | 95094 | 8025.73 | 4455.45 | 2453.47 | 66819.2 |
-| ED | 95094 | 25947.5 | 64772.2 | 0 | 1.61443e+06 |
+| ED | 95023 | 25966.9 | 64792.5 | 46.3885 | 1.61443e+06 |
 | Energy | 95094 | 1.73758e+08 | 7.36838e+09 | -15906 | 6.9813e+11 |
 | SS | 95094 | 59.8075 | 61.1657 | 0 | 471 |
 | SL | 95094 | 124.682 | 86.9602 | 24 | 739 |
-| PN | 95094 | 1047.87 | 1880.7 | 0 | 20860 |
+| PN | 95031 | 1048.56 | 1881.13 | 5 | 20860 |
 | GDT | 95094 | 0.395136 | 0.202377 | 0.0116 | 1 |
 
 ### Categorical features
@@ -343,3 +353,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | ea35638cb7c9dc88ff6b7f6f6316594207a68393 |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
+| stale | yes: the definition now gives checksum `v2:364c09f8b7cd90080e9c816432d4b8503bfb2f395afd1bf3a58367516aabb6f5` |

@@ -1051,7 +1051,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       h += '<h3 class="sec">' + esc(s.title).replace(/`([^`]+)`/g, "<code>$1</code>") + '</h3><ol class="items">';
       shown.forEach((it) => {
         const st = S.crosscut[it.id] || {};
-        h += '<li class="item' + (it.resolved ? " resolved" : "") + '"><div class="item-top"><span class="num">' + esc(it.id.split("-")[1] * 1 + 1) + "</span><h4>" + it.titleHtml +
+        h += '<li class="item' + (it.resolved ? " resolved" : "") + '"><div class="item-top"><span class="num">' + (s.items.indexOf(it) + 1) + "</span><h4>" + it.titleHtml +
           (st.d ? '<span class="statepill" data-v="' + esc(st.d) + '">' + esc(X_LABEL[st.d]) + "</span>" : "") + yourTurn(it) + "</h4></div>" +
           '<div class="seg small">' + segHtml(X_OPTS, st.d, "x", ' data-id="' + esc(it.id) + '"' + ro) + "</div>" +
           origLabel(it) + '<div class="body md clamp">' + it.html + "</div>" +

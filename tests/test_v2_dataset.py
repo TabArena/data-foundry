@@ -345,6 +345,8 @@ def _define(**attrs: object) -> type[AbstractCuratedDataset]:
     [
         ({"domain": "not a domain"}, "invalid metadata"),
         ({"accepted_check_warnings": {"dataset_identifier_column": " "}}, "needs a reason"),
+        ({"year": "Unverified"}, "is not a year"),
+        ({"year": "Unknown (survey 1988)"}, "is not a year"),
         ({"temporal": Temporal(on="t")}, "needs `Temporal\\(splits=TemporalSplits"),
         (
             {"temporal": Temporal(on="t", splits=TemporalSplits(window=None, unit="unique", n_windows=3))},

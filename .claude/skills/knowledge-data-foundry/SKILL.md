@@ -34,8 +34,9 @@ The scripts are in [scripts/](scripts/):
   `generated_probes.py`, `dtype_probes.py` (they load a Data Foundry dataset through `dataset_io.py` and call the
   general probe library of `knowledge-curation`), `tuned_results.py` and `check_collection_bundles.py`;
 * for the pipeline: `benchmark_coverage.py` (the accepted set per domain, problem type and regime, for screening
-  priorities), `clean_room.py` (the blind reviewer's folder, and with `--participant` the task gamer's kit) and `decision_register.py` (the decisions grouped by rule,
-  with the consistency flags);
+  priorities), `clean_room.py` (the blind reviewer's folder, and with `--participant` the task gamer's kit),
+  `decision_register.py` (the decisions grouped by rule, with the consistency flags) and `priority_factors.py` (the
+  two measured factors of a record's priority, the gap and the shape);
 * for a rebuild: `build_all.py`, `build_one.py`, `compare_builds.py`, `minimal_inputs.py`.
 
 ## House rules

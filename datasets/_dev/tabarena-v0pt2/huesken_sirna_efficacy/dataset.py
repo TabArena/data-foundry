@@ -139,7 +139,7 @@ class SirnaEfficacy(AbstractCuratedDataset):
         fit="approximate",
         fit_reason="This tests pre-assay efficacy prediction within one reporter system. Transfer to endogenous expression, other cell systems, dosing or therapeutic outcomes is not established.",
     )
-    unique_name = "dataset_from_uncertainty_guided_model_selection_for_tabular_foundation_models_in_biomolecule_efficacy_prediction"
+    unique_name = "huesken_sirna_efficacy"
     year = "2005"
     domain = "biology & life sciences"
     source = "Other"
@@ -164,21 +164,31 @@ class SirnaEfficacy(AbstractCuratedDataset):
     curation_comments = """
         Start with the corrected Huesken supplementary Table 3 and target inserts in Table 2, not model-generated labels from the withdrawn early supplement.
 
+        - Sequence input, special encoding deferred (Lennart, 2026-11-04, issue 1 (b)): the positions, trimer counts and 24 descriptors ship as built. The record is tagged `Revisit later` to check whether to drop it, as the other protein and sequence models were (SEL-12, modality), or to declare a `Sequence` special feature when a second sequence dataset arrives.
         - Prediction point: before synthesis and the reporter assay. The candidate guide and target sequence are known; assay measurements, NAS identifiers and original train/test flags are never features (USE-3, LEAK-10).
         - All 2,431 original guide sequences and activities are retained. OligoFormer's raw copy contains 2,361 exact activity matches but omits all 70 UBE2H guides; its processed label also divides by the observed maximum, 1.341. Neither omission nor this extra scaling is carried over (PROV-13, MET-3).
         - The original Table 3 footnote specifies a linear assay-control normalization: positive control 0.900, negative control 0.354. Values above one remain measured normalized values, never clipped or called probabilities. The 2005 corrigendum (doi:10.1038/nbt1005-1315a) replaced predicted scores with these measured activities.
         - Group on the exact source species and gene symbol recovered by reverse-complement matching to Table 2. There are 30 observed gene groups in 34 published inserts; both Mmp7 inserts remain one gene group. Two ambiguous guide matches are resolved from Table 3 species flags: NAS 18412 is rodent (Rn P2rx2), NAS 19819 human (Hs P2RX3). The copy incorrectly gives NAS 18412 the human target window; it is repaired from the original, without using labels or row order (SPLIT-24, PROV-13).
         - Restore both DNA overhang bases as categorical positions, distinct from the RNA positions. The target window is 19 binding bases plus 19 flanking bases on either side. X means outside the insert; N and R retain the source's unresolved base codes in the positional features. Fixed trimer counts map N/R to X; no sequence is guessed.
         - Thermodynamic and composition descriptors use the 19 RNA bases and the fixed OligoFormer preprocessing constants. Categorical positions preserve the sequence; the redundant published one-hot encoding is left to the learner. Drop only constant and exactly duplicated feature columns, in a deterministic order (CLEAN-8). The ten explicit yes/no sequence descriptor flags are categorical; counts and continuous descriptors remain numeric (CLEAN-14). The terminal descriptor follows the inherited executable convention, round(DG[first] - DG[last] + 0.45*(sign(first)+sign(last)), 2), where sign is +1 for AC/AG/UC/UG, -1 for GA/GU/CA/CU, and 0 otherwise. This differs from the printed Li Appendix A terminal correction; DH uses -14.88 for GC rather than the printed -14.882. These fixed operational descriptors are retained, not asserted to be exact reproductions of the printed physical formula.
-        - RMSE is an evidence-limited fallback: no unique original selection criterion was established in the material obtained. The generated generic fallback gloss is not proof that the original source defined no metric; the original full methods were not retrieved. See the metric reason for the actual sources checked.
+        - The metric is the correlation within each target gene, averaged over genes (`mean_group_pearsonr`; Lennart, 2026-11-04, exception to MET-5): the use case ranks guides within a gene, and the literature reports pooled correlation, MAE or AUC without a unique criterion. Both RMSE and the per-gene correlation pick LightGBM over ridge (97% and 80% of folds).
         - The grouped task tests a new gene in this reporter assay. It does not certify efficacy on endogenous targets, unfamiliar experimental conditions or clinical outcomes. All original random train/test flags are discarded in favor of gene-held-out evaluation (SPLIT-4, SPLIT-5). Pooled RMSE measures activity magnitude accuracy, not demonstrated within-gene top-k selection success; no synthesis budget or decision threshold is invented.
 
-        - CC (2026-10-26, Myunghwan): accepted the small-gene warning for this add-stage task because individual siRNAs have varying measured activities and sufficient test-row support. Even five test genes can be acceptable in this case; retain the qualified ten-gene native folds. This is a case-specific warning acceptance, not a new minimum-group rule. The separate final ship verdict was explicitly given by Myunghwan on 2026-10-28. Grouped evaluation targets an unseen species/gene ID with no measured candidates (cold start); OOD here names that unseen-entity evaluation, not a separately established shift in assay conditions.
+        - CC (2026-10-26, Myunghwan): accepted the small-gene warning for this add-stage task. Lennart (2026-11-04) put it as the case where the group is a large set of observations over which we want to generalize, so that from the context a few groups suffice (as for a few hospitals), and a case-by-case call, not a minimum-group rule; the native ten-gene folds stay. The separate final ship verdict was explicitly given by Myunghwan on 2026-10-28. Grouped evaluation targets an unseen species/gene ID with no measured candidates (cold start); OOD here names that unseen-entity evaluation, not a separately established shift in assay conditions.
     """
     target = "normalized_inhibitory_activity"
     problem_type = "regression"
-    metric = Metric.fallback(
-        reason="Checked Huesken's publisher abstract and corrected Tables 2/3, its two corrigenda, and Li et al. 2025 (arXiv:2510.02476, Tables 1-3). The later paper reports MAE and Pearson correlation side by side without one unique selection criterion. The original full methods could not be retrieved; its abstract's Pearson headline alone does not establish a deliberate unique metric (MET-5). Use regression fallback RMSE on the original published activity scale."
+    metric = Metric.from_context(
+        "mean_group_pearsonr",
+        reason=(
+            "The decision is which guides to synthesize for a new gene, a ranking inside the gene. The later papers "
+            "(OligoFormer, siDPT; Li et al. 2025) report pooled correlation, MAE or AUC without one unique selection "
+            "criterion (MET-5), and Huesken's full methods could not be retrieved. Pooled RMSE still rewards a gene's "
+            "mean (knowing it cuts RMSE from 0.1582 to 0.1378); the per-gene correlation scores the ranking. Both "
+            "metrics pick the same model family on the shipped folds (Kendall tau 0.64 over nine models). Exception to "
+            "MET-5 (Lennart, 2026-11-04)."
+        ),
+        inputs={"group": "target_gene"},
     )
     grouping = Grouping(
         on="target_gene",
@@ -187,9 +197,9 @@ class SirnaEfficacy(AbstractCuratedDataset):
         context="none",
         definition="One group is the exact species and gene symbol of a Table 2 target insert, matched to each guide and its target context. Both inserts of Rn Mmp7 share a group. The source designed a genome-wide siRNA library; the intended use predicts individual candidate efficacy for a target gene with no measured candidates. Thirty observed genes are held out whole; guide and target sequences are known, assay labels are not.",
     )
-    splits_comment = "Default repeated three-fold group protocol on whole species/gene labels; 30 genes provide 10 unseen genes per test fold. Individual siRNAs are prediction units. This replaces the original random training/test allocation and keeps the two Mmp7 inserts together. Row scoring gives larger candidate panels more weight. Repeats reuse the same thirty genes; split variation and standard errors are descriptive, not thirty independent biological experiments."
+    splits_comment = "Default repeated three-fold group protocol on whole species/gene labels; 30 genes provide 10 unseen genes per test fold. Individual siRNAs are prediction units. This replaces the original random training/test allocation and keeps the two Mmp7 inserts together. Genes weigh equally in the score. Repeats reuse the same thirty genes; split variation and standard errors are descriptive, not thirty independent biological experiments."
     accepted_check_warnings = {
-        "groups_test_groups_few": "Accepted 2026-10-26, Myunghwan: 30 genes are sufficient for this per-siRNA continuous-activity task when test-row support is adequate; even five held-out genes can be acceptable in this case. The unchanged native folds hold ten genes and 648-942 rows, and several model families show held-out-gene signal. Repeats reuse the same genes; no universal row-count-only sufficiency rule or broader assay transfer is asserted."
+        "groups_test_groups_few": "Accepted (Myunghwan 2026-10-26; reworded by Lennart 2026-11-04): a group here is a target gene, a large group of observations (81 siRNAs on average: 2,431 over 30 genes) over which we want to generalize, and from the context a few such groups suffice, as when generalizing over a few hospitals (heart_disease stayed grouped with 3). The folds hold ten genes and 648-942 rows, and several model families show held-out-gene signal. Repeats reuse the same genes, so the spread across repeats is descriptive, not thirty independent experiments."
     }
 
     def _load_raw(self, raw_dir: Path):

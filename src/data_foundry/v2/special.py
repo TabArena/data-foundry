@@ -189,7 +189,7 @@ def special_feature_kind(kind: str) -> type[SpecialFeatureSpec]:
 
 def encodings_for(feature: SpecialFeature) -> tuple[Encoding, ...]:
     """The candidate encodings of a special feature, the recommended one first (a raw mass spectrum has three
-    published candidates, a vibrational spectrum two, a SMILES one).
+    published candidates, a vibrational spectrum four, a SMILES one).
     """
     return special_feature_kind(feature.kind).encodings(feature)
 

@@ -905,7 +905,7 @@ def _extra_crosscut(path: Path) -> list[dict]:
                 {
                     "id": str(it["id"]),
                     "titleHtml": MD.renderInline(str(it["title"])),
-                    "html": render(text),
+                    **_thread(text),
                     "resolved": _is_resolved(text, str(it["title"])),
                 },
             )

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: 2024_lusaka_mobility_prediction_hackathon
 container_format: 2
-checksum: v2:d29faf5b7c7e325f96158a7de2b8b8c6e7188219ec8a2fdc09f0819317c1c40f
+checksum: v2:18d4837b2155dbb4250ed770fd68b52b4a0bd86c459a7c3662909da7e86ec24b
 build:
   uuid: 01a18ba1-f606-7d63-916c-bd52aa2af8d3
   checksum: v2:d29faf5b7c7e325f96158a7de2b8b8c6e7188219ec8a2fdc09f0819317c1c40f
@@ -17,9 +17,9 @@ build:
     pyarrow: 26.0.0
     scikit-learn: 1.7.2
     polars: 2.0.0
-build_stale: false
+build_stale: true
 data:
-  n_rows: 112739
+  n_rows: 110375
   n_features: 9
   dtypes:
     category: 1
@@ -48,11 +48,11 @@ splits:
   time_gap: 1
   time_gap_unit: days
   n_train:
-    min: 67298
-    max: 96981
+    min: 65901
+    max: 94929
   n_test:
-    min: 11380
-    max: 16385
+    min: 11141
+    max: 16059
 bundle_checks:
   ok: true
   errors: []
@@ -68,9 +68,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `Target`, scored with `rmse` on temporal splits by `trip_start`. 112,739 rows and 9 features. Source: Zindi (2024).
+Regression of `Target`, scored with `rmse` on temporal splits by `trip_start`. 110,375 rows and 9 features. Source: Zindi (2024).
 
-Built as `01a18ba1-f606-7d63-916c-bd52aa2af8d3` on 2026-10-30. See [Build](#build).
+Built as `01a18ba1-f606-7d63-916c-bd52aa2af8d3` on 2026-10-30, but `dataset.py` has changed since: it now gives checksum `v2:18d4837b2155dbb4250ed770fd68b52b4a0bd86c459a7c3662909da7e86ec24b`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -78,7 +78,7 @@ Built as `01a18ba1-f606-7d63-916c-bd52aa2af8d3` on 2026-10-30. See [Build](#buil
 
 **Use case.** At trip start, a ride-hailing app estimates travel time to inform the passenger. A model is refit every four days using completed earlier trips.
 
-**One row.** One labeled trip from the 2024 Lusaka challenge's participant mirror: 112,739 trips with start times. The files record January 2023 and early February, despite the source description saying January 2024.
+**One row.** One labeled trip from the 2024 Lusaka challenge's participant mirror: 110,375 trips with start times that end at least 100 m from their start. The files record January 2023 and early February, despite the source description saying January 2024.
 
 **Predicted.** The actual trip duration in minutes, unchanged from the source target.
 
@@ -86,7 +86,7 @@ Built as `01a18ba1-f606-7d63-916c-bd52aa2af8d3` on 2026-10-30. See [Build](#buil
 
 **What the test data stands for.** Three four-day periods beginning January 21, 25 and 29 on the recorded 2023 calendar. Training contains trips starting at least one day before each period.
 
-**Our changes to the source.** Remove actual traveled distance, trip ID and duplicate date; exclude 21 trips without start times; replace random-row evaluation with chronological windows and use earlier-hour weather.
+**Our changes to the source.** Remove actual traveled distance, trip ID and duplicate date; exclude 21 trips without start times and 2,364 that end within 100 m of their start; replace random-row evaluation with chronological windows and use earlier-hour weather.
 
 > **Use case fit: approximate (a stand-in with a known gap).** Recorded destination and straight-line distance stand in for the planned route endpoints. Their capture time and weather publication latency are undocumented. The sample year conflicts with its description, and only a participant copy was accessible.
 
@@ -133,11 +133,11 @@ Only curators run `build`, when the dataset ships.
 |---|---|
 | source | Zindi: https://zindi.world/competitions/2024-lusaka-mobility-prediction-hackathon |
 | year | 2024 |
-| domain | technology & internet |
+| domain | industry & manufacturing |
 | license | Zindi Competition Rules (Yango private property) |
 | data_tags | Non-IID, Temporal, Spatial, Anonymized |
 | reference | yango2024lusaka |
-| rows x columns | 112,739 x 10 |
+| rows x columns | 110,375 x 10 |
 | task.target | Target |
 | task.problem_type | regression |
 | task.metric | rmse |
@@ -180,7 +180,7 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 112,739 rows of the final frame (the oldest rows: the frame is sorted by `trip_start`). Cells are cut at 40 characters.
+The first 5 of 110,375 rows of the final frame (the oldest rows: the frame is sorted by `trip_start`). Cells are cut at 40 characters.
 
 | Target | origin_lat | origin_lon | destination_lat | destination_lon | str_distance_km | trip_start | precipitation_type | prev_hour_precipitation_mm | temperature_C |
 |---|---|---|---|---|---|---|---|---|---|
@@ -197,13 +197,14 @@ We start with Train.csv and Lusaka_weather.csv from the participant mirror pinne
 - Prediction point: trip start, to estimate minutes to the destination. Actual traveled distance is removed because it is measured over the completed trip. The inspected participant-copy starter includes it; that is not evidence it exists at departure (USE-3, LEAK-10).
 - Endpoint approximation: the source says endpoint coordinates are geomasked and straight-line distance uses the original points. It does not state when the destination was captured. Recorded destination and straight-line distance stand in for the requested destination, as in the NYC taxi precedent; direct prospective availability is not certified.
 - Cohort and provenance: the source describes January 2024, while the pinned trip timestamps run from 2023-01-01 to early 2023-02-01 and the weather and inspected participant-copy starter notebook identify January 2023. We preserve the supplied dates and publication year 2024; no calendar shift or original-byte equality is asserted. Only labeled Train.csv is used; competition test labels are not available.
-- Rows: drop only the 21 missing start timestamps, which cannot be assigned honestly to chronological windows. The remaining 112,739 trips have complete positive targets. The source already removed very short trips using an unspecified threshold; that selection cannot be undone.
-- Features: drop trip_id and the duplicate day-only start column. Keep coordinates and straight-line kilometers numeric; no route-distance or speed feature is calculated. Keep zero straight-line distance and all durations, including long rides, because neither the source nor the inspected values proves they are errors.
+- Rows: drop the 21 missing start timestamps, which cannot be assigned honestly to chronological windows. The source already removed very short trips using an unspecified threshold; that selection cannot be undone.
+- We drop the 2,364 trips (2.1% of the 112,739 with a start; 1.3 to 2.9% on every day) whose straight-line distance from start to end is under 0.1 km (Lennart, 2026-11-04: "drop them, this is not a relevant prediction goal here imo"; USE-7, the 100 m radius of nyc_taxi_trip_duration_1m and pkdd_15_taxi_trip_time_prediction_ii_1m): nobody books a ride to their own pickup point, so these rows lack the destination the ETA acts on. The cut is on an input known at booking, not on the target, and exact although the coordinates are masked, because the source computes `str_distance_km` from the original points. These trips are not short: median 22.1 minutes against 10.8 for the others, 93% over 5 minutes, median travelled distance 4.5 km (round trips), and they held 16% of the target's squared spread. 110,375 trips remain, with complete positive targets.
+- Features: drop trip_id and the duplicate day-only start column. Keep coordinates and straight-line kilometers numeric; no route-distance or speed feature is calculated. Keep all durations, including long rides, because neither the source nor the inspected values proves they are errors.
 - Weather: map the exact hourly record at floor(trip_start)-1 hour, never the current-hour record. This is a conservative lag on supplied hourly measurements, not a verified publication delay. No future fill or date/year correction is used. The weather's row counter/date/time are join metadata, not predictors; precipitation type is categorical. Missing earlier weather remains missing.
 - Metric: source RMSE on actual minutes, with identity target transform. No target-based filtering or logarithm is introduced.
 - Split: chronological four-day windows with a one-day training gap. Every observed duration is under one day, so the gap puts observed training trip ends before refit; reporting delay beyond trip completion is not known. The participant copy's train/test files interpolate throughout the same month; our evaluation instead tests later trips.
 - Curator decision (2026-10-29, Myunghwan): "approximate version is fine." Accept the documented endpoint and earlier-hour weather stand-ins; capture/publication and reporting timing remain unverified rather than certified by acceptance.
-- Source/calendar decision (2026-10-29, Myunghwan): "if timestamps between trips and weather algined, it's ok. this is the source we have to live with." The supplied trip/weather calendars align in 2023, with an exact preceding-hour match for 112,716 rides and 23 out-of-coverage rides retaining missing weather. Preserve the supplied dates and identified participant copy; organizer-original equality, actual timezone and the reason for the 2024 narrative remain unverified.
+- Source/calendar decision (2026-10-29, Myunghwan): "if timestamps between trips and weather algined, it's ok. this is the source we have to live with." The supplied trip/weather calendars align in 2023, with an exact preceding-hour match for 110,352 of the kept rides and 23 out-of-coverage rides retaining missing weather. Preserve the supplied dates and identified participant copy; organizer-original equality, actual timezone and the reason for the 2024 narrative remain unverified.
 - Scope: one released city/month, with masked locations and uncertain endpoint timing. The last test period has a partial final day because the file ends early February 1; this does not establish all-season, other-city or complete four-day deployment performance.
 
 ## Splits
@@ -215,27 +216,29 @@ observed trip lasts less than 24 hours, so training trips finish before each tes
 label reporting delay and original cohort extraction/follow-up timing are undocumented. A fourth
 earlier four-day window would violate the half-data training floor after this gap. The latest window ends
 February 2 but only has observations through early February 1. No performance was used to choose windows.
-Missing starts are excluded; other rows, target units and dates are preserved.
+Missing starts and trips ending within 100 m of their start are excluded; other rows, target units and dates
+are preserved.
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 67,298 to 96,981 rows, test 11,380 to 16,385 rows. Prediction horizon: 4 days. Gap between train and test: 1 days.
+3 repeat(s) x 1 fold(s) with seed 4267; train 65,901 to 94,929 rows, test 11,141 to 16,059 rows. Prediction horizon: 4 days. Gap between train and test: 1 days.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
-| 0 | 0 | 96981 | 11380 | 2023-01-01 02:03:12 | 2023-01-27 23:59:31 | 2023-01-29 00:00:27 | 2023-02-01 02:09:45 |
-| 1 | 0 | 81656 | 16385 | 2023-01-01 02:03:12 | 2023-01-23 23:59:32 | 2023-01-25 00:00:35 | 2023-01-28 23:59:51 |
-| 2 | 0 | 67298 | 13943 | 2023-01-01 02:03:12 | 2023-01-19 23:59:26 | 2023-01-21 00:00:28 | 2023-01-24 23:58:31 |
+| 0 | 0 | 94929 | 11141 | 2023-01-01 02:03:12 | 2023-01-27 23:59:31 | 2023-01-29 00:00:27 | 2023-02-01 02:09:45 |
+| 1 | 0 | 79929 | 16059 | 2023-01-01 02:03:12 | 2023-01-23 23:59:32 | 2023-01-25 00:00:35 | 2023-01-28 23:59:51 |
+| 2 | 0 | 65901 | 13635 | 2023-01-01 02:03:12 | 2023-01-19 23:59:26 | 2023-01-21 00:00:28 | 2023-01-24 23:58:31 |
 
 ## Decisions
 
 ### 1. Source dates and chronological row eligibility
 
-Dates are preserved despite the description's 2024 claim; missing starts cannot support temporal tests.
+Dates are preserved despite the description's 2024 claim; missing starts cannot support temporal tests; a trip ending within 100 m of its start has no destination a passenger would book.
 
 | quantity | value |
 |---|---|
 | labeled raw rows | 112760 |
-| kept rows | 112739 |
+| kept rows | 110375 |
 | missing start | 21 |
+| start, straight line under 0.1 km | 2364 |
 | recorded minimum | 2023-01-01 02:03:12 |
 | recorded maximum | 2023-02-01 02:09:45 |
 
@@ -251,7 +254,7 @@ Use only an exact prior-hour weather row, and compare the one-day gap with obser
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -261,47 +264,47 @@ Use only an exact prior-hour weather row, and compare the one-day gap with obser
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | precipitation_type | category | 23 | 0.02 | 2 | Rain, No precipitation |
-| trip_start | datetime64\[ns\] | 0 | 0 | 109788 | 2023-01-01 18:33:21, 2023-01-01 19:50:08, 2023-01-01 21:46:22, 2023-01-03 08:41… |
+| trip_start | datetime64\[ns\] | 0 | 0 | 107545 | 2023-01-12 18:13:33, 2023-01-20 18:24:30, 2023-01-11 20:09:57, 2023-01-08 17:39… |
 | prev_hour_precipitation_mm | float64 | 23 | 0.02 | 530 | 0.0, 0.0005, 0.001, 0.0553, 0.0176, 0.0315, 0.0381, 0.0019, 0.0372, 0.0248 |
 | temperature_C | float64 | 23 | 0.02 | 471 | 24.17, 23.49, 20.34, 22.25, 24.34, 21.59, 24.63, 24.57, 24.71, 20.21 |
-| origin_lat | float64 | 0 | 0 | 112739 | -15.4568, -15.4171, -15.3796, -15.4604, -15.3976, -15.3904, -15.4598, -15.3522,… |
-| origin_lon | float64 | 0 | 0 | 112739 | 28.3515, 28.3141, 28.3901, 28.289, 28.3092, 28.322, 28.2841, 28.3252, 28.297, 2… |
-| destination_lat | float64 | 0 | 0 | 112739 | -15.4431, -15.4467, -15.3691, -15.4721, -15.4535, -15.3968, -15.4473, -15.3907,… |
-| destination_lon | float64 | 0 | 0 | 112739 | 28.305, 28.32, 28.3777, 28.2821, 28.345, 28.3874, 28.2797, 28.3211, 28.3008, 28… |
-| str_distance_km | float64 | 0 | 0 | 9803 | 1.148, 0.018, 1.271, 0.011, 0.006, 1.108, 1.247, 1.202, 1.088, 0.02 |
-| Target | float64 | 0 | 0 | 4275 | 6.95, 7.7, 7.08, 6.1, 8.63, 7.48, 6.4, 6.45, 9.65, 5.8 |
+| origin_lat | float64 | 0 | 0 | 110375 | -15.4551, -15.4568, -15.4171, -15.3796, -15.4604, -15.3976, -15.3904, -15.3739,… |
+| origin_lon | float64 | 0 | 0 | 110375 | 28.31, 28.3515, 28.3141, 28.3901, 28.289, 28.3092, 28.322, 28.3608, 28.3274, 28… |
+| destination_lat | float64 | 0 | 0 | 110375 | -15.4484, -15.4431, -15.4467, -15.3691, -15.4721, -15.4535, -15.3968, -15.3668,… |
+| destination_lon | float64 | 0 | 0 | 110375 | 28.3446, 28.305, 28.32, 28.3777, 28.2821, 28.345, 28.3874, 28.3795, 28.3202, 28… |
+| str_distance_km | float64 | 0 | 0 | 9703 | 1.148, 1.271, 1.247, 1.108, 1.088, 1.202, 0.973, 1.241, 1.102, 1.011 |
+| Target | float64 | 0 | 0 | 4018 | 6.95, 7.7, 7.08, 8.63, 6.1, 6.45, 7.48, 6.4, 8.43, 8.02 |
 
 ### Target distribution
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | 7.155 | 0.16 | 160.993 | 0.474 | log | 823725 | 778339 | lognormal |
+| 0 | 0 | 0 | 7.322 | 0.116 | 138.395 | 0.457 | log | 800808 | 754687 | lognormal |
 
 ### Numeric features
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| origin_lat | 112739 | -15.4166 | 0.0303705 | -15.5152 | -15.3222 |
-| origin_lon | 112739 | 28.3119 | 0.0353249 | 28.2172 | 28.4721 |
-| destination_lat | 112739 | -15.4164 | 0.0322231 | -15.5175 | -15.3188 |
-| destination_lon | 112739 | 28.313 | 0.0364591 | 28.2021 | 28.475 |
-| str_distance_km | 112739 | 2.60376 | 2.05365 | 0 | 21.619 |
-| Target | 112739 | 14.1592 | 12.6883 | 1.02 | 788.07 |
-| prev_hour_precipitation_mm | 112716 | 0.716746 | 1.39885 | 0 | 11.7807 |
-| temperature_C | 112716 | 22.4583 | 2.39866 | 17.29 | 28.45 |
+| origin_lat | 110375 | -15.4166 | 0.0302763 | -15.5152 | -15.3222 |
+| origin_lon | 110375 | 28.3117 | 0.0352299 | 28.2172 | 28.4721 |
+| destination_lat | 110375 | -15.4164 | 0.0321728 | -15.5175 | -15.3188 |
+| destination_lon | 110375 | 28.3128 | 0.0363968 | 28.2021 | 28.475 |
+| str_distance_km | 110375 | 2.65878 | 2.04045 | 0.1 | 21.619 |
+| Target | 110375 | 13.7995 | 11.7641 | 1.02 | 788.07 |
+| prev_hour_precipitation_mm | 110352 | 0.715721 | 1.39827 | 0 | 11.7807 |
+| temperature_C | 110352 | 22.4535 | 2.39847 | 17.29 | 28.45 |
 
 ### Categorical features
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| precipitation_type | 1 | Rain | 97834 | 86.78 |
-| precipitation_type | 2 | No precipitation | 14882 | 13.2 |
+| precipitation_type | 1 | Rain | 95712 | 86.72 |
+| precipitation_type | 2 | No precipitation | 14640 | 13.26 |
 | precipitation_type | 3 | &lt;NA> | 23 | 0.02 |
-| trip_start | 1 | 2023-01-01 18:33:21 | 3 | 0 |
-| trip_start | 2 | 2023-01-01 19:50:08 | 3 | 0 |
-| trip_start | 3 | 2023-01-01 21:46:22 | 3 | 0 |
-| trip_start | 4 | 2023-01-03 08:41:14 | 3 | 0 |
-| trip_start | 5 | 2023-01-03 15:37:49 | 3 | 0 |
+| trip_start | 1 | 2023-01-12 18:13:33 | 3 | 0 |
+| trip_start | 2 | 2023-01-20 18:24:30 | 3 | 0 |
+| trip_start | 3 | 2023-01-11 20:09:57 | 3 | 0 |
+| trip_start | 4 | 2023-01-08 17:39:58 | 3 | 0 |
+| trip_start | 5 | 2023-01-12 14:58:51 | 3 | 0 |
 
 ## Build
 
@@ -314,3 +317,4 @@ Use only an exact prior-hour weather row, and compare the one-day gap with obser
 | data_foundry_version | 0.0.5 |
 | git_sha | ea35638cb7c9dc88ff6b7f6f6316594207a68393 |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
+| stale | yes: the definition now gives checksum `v2:18d4837b2155dbb4250ed770fd68b52b4a0bd86c459a7c3662909da7e86ec24b` |

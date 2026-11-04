@@ -3,11 +3,14 @@ unique_name: protein_model_quality_rf_pcp
 name: RF-PCP (quality assessment of modeled protein structures, CASP and decoy sets)
 checked_by:
 - Myunghwan
+- Lennart
 data_foundry_status:
 - WIP (DF)
 claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 2
+decision_markers:
+- Outdated
 tags:
 - AI-Filled (Verify)
 - Non-IID (Grouped)
@@ -64,6 +67,16 @@ Priority 2 balances traceable source and grouped biological coverage against unr
 - Rows: CASP decoys only, or all decoy sets; the native structures are trivially perfect (RMSD 0), and in a new-target setting the native is not known.
 - Features: six only; Energy reaches 7e11 (outliers to check); SL and PN are constant within most CASP targets (80% and 71%), so they identify the protein, which is fine under a grouped split.
 - One PDB-ID occurs twice in the full file.
+
+CC (2026-11-04, Lennart): impossible descriptor values become missing ("Yes, mark them as missing"). Applied to ED = 0 with PN > 0 (71 rows) and PN = 0 with ED > 0 (63 rows); the rows stay (CLEAN-11). Energy is open: its extreme values are the tool's output for unminimized models (REVIEW.md issue 2).
+
+**Exception to MET-5 (2026-11-04, Lennart):** the metric is `mean_group_pearsonr` on `protein_id` (origin context) instead of the RMSE fallback for a paper that reports several metrics ("yes new metric is better"). Fact: the use case ranks the candidates of one protein, and pooled RMSE rewards each protein's typical quality: the per-protein true mean, which orders no candidate, beats LightGBM on it (0.134 against 0.188), while CASP scores quality assessment per target. Serves P6: scored by the metric the real task would use (MET-1).
+
+CC (2026-11-04, Lennart): `Energy` stays as supplied ("keep as is"); the ED/PN zeros stay missing. `Outdated` is set ("ok agree"): six global descriptors of 2002-2012 server models, while CASP15 on uses the predictor's own pLDDT; kept as a small grouped biology task with no new features. Not a SMILES case: a protein model is a 3D structure, and shipping structures would make it a structure task (SEL-12).
+
+CC (2026-11-04, Lennart): the per-protein correlation stands as implemented (REVIEW.md issue 1 closed).
+
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled.
 
 ## Reference
 

@@ -14,6 +14,12 @@ A special feature (``task.special_features``) enters the probes in its recommend
 descriptor and fingerprint columns (``<column>__rdkit_<name>``, ``<column>__maccs_<i>``, ``<column>__ecfp4_<i>``),
 never as text; a spectrum's columns with the encoded values. ``encode_special=False`` keeps the values as shipped (the
 blind reviewer's clean room). ``ProbeInput.special_features`` lists them by name.
+
+With ``raw=True``, ``from_definition`` also gives the raw state: ``ProbeInput.raw``, the table ``_load_raw`` returns
+(in source order, before ``_clean``), and ``ProbeInput.raw_rows``, the raw position of each row of ``df`` (the lineage
+of ``process(lineage=True)``), or None when the rows cannot be traced (``ProbeInput.raw_note`` says why). The probes of
+the raw state (``leak_probes.py --raw``) read row order, the rows ``_clean`` removed, the columns it dropped and the
+copies before deduplication from them.
 """
 
 from __future__ import annotations
@@ -22,12 +28,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+import numpy as np
+import pandas as pd
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.schema import as_column_list, resolve_warehouse_dir
 from data_foundry.v2 import discover_datasets, load_definition, read_report
 
 if TYPE_CHECKING:
-    import pandas as pd
     from data_foundry.schema import Grouping
     from data_foundry.v2 import AbstractCuratedDataset
 
@@ -52,6 +59,10 @@ class ProbeInput:
         feature_cols: The exact model inputs (after special-feature encoding): no target, group or scoring
             column, even when a scoring column stays in ``df`` as the time key.
             None for manually constructed legacy inputs.
+        raw: With ``from_definition(..., raw=True)``: the raw table in source order (``_load_raw``), or None when the
+            raw data is not one table.
+        raw_rows: The raw position of each row of ``df``, or None when the rows cannot be traced.
+        raw_note: How the rows were traced, or why not.
     """
 
     df: pd.DataFrame
@@ -65,6 +76,9 @@ class ProbeInput:
     scoring_cols: tuple[str, ...] = ()
     special_features: tuple[str, ...] = ()
     feature_cols: tuple[str, ...] | None = None
+    raw: pd.DataFrame | None = None
+    raw_rows: np.ndarray | None = None
+    raw_note: str = ""
 
     @property
     def group_cols(self) -> list[str]:
@@ -125,13 +139,19 @@ def _with_encoded_special_features(
     return df, names
 
 
-def from_definition(ds: AbstractCuratedDataset, plan: Any = None, *, encode_special: bool = True) -> ProbeInput:
-    """The definition's frame and split plan, rebuilt from the raw files (no container); ``plan``: one already made."""
+def from_definition(
+    ds: AbstractCuratedDataset, plan: Any = None, *, encode_special: bool = True, raw: bool = False
+) -> ProbeInput:
+    """The definition's frame and split plan, rebuilt from the raw files (no container); ``plan``: one already made.
+
+    ``raw`` adds the raw state (``ProbeInput.raw``, ``raw_rows``, ``raw_note``; see the module docstring).
+    """
     plan = plan if plan is not None else ds.make_splits()
     task = ds.task_metadata_for(plan.df)
     df, scoring = _without_scoring_columns(plan.df, task)
     df, special = _with_encoded_special_features(df, task, encode=encode_special)
     excluded = _excluded_columns(task)
+    table, rows, note = _raw_state(ds, plan.df) if raw else (None, None, "")
     return ProbeInput(
         df=df,
         target=task.target_column_name,
@@ -144,7 +164,42 @@ def from_definition(ds: AbstractCuratedDataset, plan: Any = None, *, encode_spec
         scoring_cols=scoring,
         special_features=special,
         feature_cols=tuple(c for c in df.columns if c not in excluded),
+        raw=table,
+        raw_rows=rows,
+        raw_note=note,
     )
+
+
+def _raw_state(ds: AbstractCuratedDataset, frame: pd.DataFrame) -> tuple[pd.DataFrame | None, np.ndarray | None, str]:
+    """The raw table, the raw position of each row of ``frame`` (the split plan's frame) and how it was traced."""
+    table = ds.raw
+    if not isinstance(table, pd.DataFrame):
+        return None, None, "the raw data is not one table"
+    processed, _test, lineage = ds.process(lineage=True)
+    if lineage.rows is None:
+        return table, None, lineage.note
+    at = _row_positions(frame, processed)
+    if at is None:
+        return table, None, f"{lineage.note}, but the split step reorders the rows it keeps"
+    return table, lineage.rows[at], lineage.note
+
+
+def _row_positions(frame: pd.DataFrame, processed: pd.DataFrame) -> np.ndarray | None:
+    """The position in ``processed`` of each row of ``frame``: the same frame, or one the split step sub-sampled
+    keeping the row order (``subsample_frame``); None when the rows of ``frame`` are not in ``processed``'s order.
+    """
+    if len(frame) == len(processed) and frame.equals(processed):
+        return np.arange(len(processed))
+    want = pd.util.hash_pandas_object(frame, index=False).to_numpy()
+    have = pd.util.hash_pandas_object(processed[frame.columns], index=False).to_numpy()
+    out, j = np.empty(len(want), dtype=np.int64), 0
+    for i, value in enumerate(want):  # both in the same order: a two-pointer merge
+        while j < len(have) and have[j] != value:
+            j += 1
+        if j == len(have):
+            return None
+        out[i], j = j, j + 1
+    return out
 
 
 def from_container(container: CuratedContainer, origin: str, *, encode_special: bool = True) -> ProbeInput:

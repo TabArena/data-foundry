@@ -83,9 +83,9 @@ warnings: new, or known (a known one counts only when its measured size differs 
 ## Phase D: the editor
 
 The main session applies the changes that need no decision, writes `REVIEW.md` (SKILL step 8), and gives the draft to
-`review-editor`, which reads it cold as the curator would: is every issue's problem, effect, evidence and decision clear,
-are the issues in rank order, is every sentence of the summary backed by the details, is anything raised that would
-change no decision? The main session applies its fixes.
+`review-editor`, which reads it cold as the curator would: is every issue's problem, effect, evidence and decision
+clear, are the issues in rank order, is every sentence of the summary backed by the details, is anything raised that
+would change no decision? The main session applies its fixes.
 
 ## What lands in REVIEW.md
 

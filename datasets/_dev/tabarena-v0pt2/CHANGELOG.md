@@ -1,5 +1,125 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-04 (last), PR #33 review: the siRNA dataset
+
+- `dataset_from_uncertainty_guided_model_selection_for_tabular_foundation_models_in_biomolecule_efficacy_prediction` is
+  now `huesken_sirna_efficacy` (folder, record and `unique_name`): the old name was the 2025 reuse paper's title, and the
+  data are Huesken et al. 2005. The other names of the batch were checked and stay. The raw tables were rebuilt from the
+  original supplement (PDF checksums match) and the definition checks clean.
+- `huesken_sirna_efficacy`: the metric is `mean_group_pearsonr` on `target_gene` (an exception to MET-5, the second after
+  RF-PCP); the preprocessing stays with the descriptors, and the record is tagged `Revisit later` (SEL-12). Its REVIEW.md
+  is gone. `fremtpl2` is settled too (exposure above a year and counts of 5 to 16 kept, notes name both; three warnings
+  accepted with reasons), and its REVIEW.md is gone. Myunghwan's claims on cps88wages, eucalyptus, the youth dataset and
+  the old siRNA name were released.
+- Its `groups_test_groups_few` acceptance is reworded in Lennart's terms (a group is a large set of observations to
+  generalize over, so a few groups suffice, as for hospitals). Data, splits and metric are unchanged.
+
+## 2026-11-04 (late night), PR #33 review: Lennart's sixth round of marks
+
+- `airqo_low_cost_air_quality_monitor_calibration_challenge`: temporal, three monthly windows over the newest season
+  (December 2020 to February 2021), each trained on every earlier hour; the site-stratified random folds are gone. Its
+  REVIEW.md is gone.
+- `fremtpl2`: the IID split and the 2022 counts settled; exposure above one year and the 5-16 claim counts are answered
+  on its REVIEW.md.
+- The package: two more encodings for vibrational spectra, `vib-snv-r1` and `vib-sg11-d1-r1` (a Savitzky-Golay first
+  derivative, 11 points, order 2); the recommended encoding is still the spectrum as it is. spectra.md and CLEAN-26
+  say each technique registers its field's standard candidates. No container metadata changes.
+
+## 2026-11-04 (night), PR #33 review: Lennart's fifth round of marks
+
+- `chicago_traffic_crashes_1m` is now `chicago_traffic_crashes` (folder renamed): the five condition fields are
+  dropped (LEAK-10) and training starts on 2017-09-01 (SPLIT-20), so no training side exceeds one million rows and the
+  task ships unsampled, 998,117 crashes.
+- `predictive_insights_youth_income_prediction_challenge` leaves the working copy: `No` for now with `Data Quality
+  Issue` (round 3 coded from the outcome, no codebook).
+- `airqo_low_cost_air_quality_monitor_calibration_challenge`: `landform_90m` decoded into the ALOS catalogue's words;
+  five single-hour reference spikes, caught by a rule (above 3 times both channels and both neighbouring hours), dropped.
+- `sendy_logistics_challenge`: the fit stays approximate under the forced-IID split; its REVIEW.md is gone.
+
+## 2026-11-04 (evening), PR #33 review: Lennart's fourth round of marks
+
+- `tunisian_fraud_detection_challenge`: fiscal year 2018 is cut (LEAK-24), leaving three yearly windows (2015-2017)
+  and 20,930 rows; its three 2018-only VAT columns leave with it. Lennart's own Zindi download is byte-identical to the
+  file used, and its SHA-256 is now in the download description.
+- `open_soil_spectral_library`: the metric is the source's cross-validation metric, `rmsle` on the log1p target; the
+  600 cm-1 bin (a fill in 53 spectra) is dropped for every row, so the spectrum runs from 602 to 4,000 cm-1.
+- `medical_facility_operational_data`: the expected-delay table stays, with a LEAK-38 note.
+- `sendy_logistics_challenge`: the two weekdays are numbers.
+- `bemtpl97` and `fremtpl2`: `mean_poisson_deviance` takes `min_prediction`, and both state 1e-6.
+- `lt_vehicle_loan_default_prediction`: the zero gap stands under SPLIT-10 as amended (no gap where the collection
+  covers the delay and measurement shows no shortcut or selection); ames_housing and perth_house_prices become
+  applications of it.
+- The settled REVIEW.md files are gone: Lusaka, beMTPL97, L&T, Medical, OSSL, RF-PCP, Tunisian. Xente's block closes.
+- The skills: SPLIT-10 amended; MET-13 says how a floor is set; spectra.md says how to find fill values at an edge bin.
+
+## 2026-11-04 (later), PR #33 review: Lennart's second and third rounds of marks
+
+- **Out of the working copy:** `cps88wages` (`TBD -> 2nd Tier`, like the salary records) and `eucalyptus` (`No`,
+  `No Good Target / Scientific Discovery`). The metric `mean_absolute_log1p_error` left the library with CPS88.
+- **Added:** `fremtpl2`, built like `bemtpl97` (IID with `ForcedIIDFromTemporal`, fit approximate, the source's
+  Poisson deviance, the 2022 CASdatasets counts); no review panel ran.
+- **Changed definitions** (rows and splits as stated; every build stays stale):
+  - `ai4d_lab_tanzania_tourism_classification_challenge` ships.
+  - `sendy_logistics_challenge`: the source's task, pickup to arrival at pickup, the competition's RMSE, the rider id
+    and the earlier clocks as inputs; 21,201 rows, the outcome filter and its CLEAN-11 exception withdrawn.
+  - `protein_model_quality_rf_pcp`: `mean_group_pearsonr` on `protein_id` (an exception to MET-5); `Outdated` set.
+  - `chicago_traffic_crashes_1m`: a one-month gap (Myunghwan's SPLIT-10 exception withdrawn), the KABCO-ordered
+    target; the record gets `Class-dependent Recording`.
+  - `bemtpl97`: `coverage` ordered, the `ForcedIIDFromTemporal` tag, the notes cut.
+  - `tunisian_fraud_detection_challenge`: the `Anonymized` tag dropped.
+  - `2024_lusaka_mobility_prediction_hackathon`: 2,364 trips under 100 m straight-line dropped (110,375 remain); domain
+    `industry & manufacturing`.
+  - `airqo_low_cost_air_quality_monitor_calibration_challenge`: the 500 hours of zeros on both sensor-2 channels
+    missing.
+  - `lt_vehicle_loan_default_prediction`: the approval decision as the use case; the zero gap measured (no shortcut
+    through recent labels), its recording open.
+  - `medical_facility_operational_data`: F1-F3 only (82,001 visits), `DayOfWeek` and `Month` numeric.
+  - `predictive_insights_youth_income_prediction_challenge`: `Survey_date` and `Round` no longer inputs; ordered mark
+    bands, `Birthmonth` numeric, Target No / Yes, `Schoolquintile`'s 0 missing.
+  - `open_soil_spectral_library`: the 1,701 MIR bins declared as a `Spectrum` (renamed `mir_<n>`); the target ships
+    log1p with the transform.
+- **The package:** `mean_poisson_deviance` floors predicted means at machine epsilon, as `log_loss` clips (MET-13 says
+  so). `process(lineage=True)` and leak probes 19-21 read the raw state (`leak_probes.py --raw`), and probe 13 reads
+  1 January dates as years and bins rank-like time columns.
+- **The skills:** the review panel's summary is a fixed record line that outlives the REVIEW.md; HUMAN_REVIEW.md is
+  gone; the register knows the `MET` rules; `tests/test_skill_files.py` sweeps the skill files (line width, rule heads,
+  Cases tables, cited IDs, indexes), and 35 long lines are re-wrapped.
+- **Records without a folder:** `book_price_prediction` `TBD -> 2nd Tier`; `xente_fraud_detection_challenge` `No` for
+  now with `Data Quality Issue` (USE-5: a review-threshold label); `ctu_13` closed.
+
+## 2026-11-04, PR #33 review: Lennart's first marks applied
+
+- `ai4d_lab_tanzania_tourism_classification_challenge`: the target `cost_category` is ordered, Lower Cost < Low Cost
+  < Normal Cost < High Cost < Higher Cost < Highest Cost (CLEAN-25), and `age_group` ordered bands (CLEAN-14).
+  `dataset check` passes; the rows and splits are unchanged.
+- `cps88wages`: no definition change in substance. `score()` lost its branch for `mean_absolute_log1p_error`, so a
+  log1p-shipped wage goes through the same inverse as every other target, and the metric takes log1p again; the note
+  says so. Its `dataset check` passes.
+- The package: `MetricDef.prediction_domain` (`positive` for `mean_poisson_deviance`) replaces the metric-name check
+  in the bundle check and in `examples/read_metric_without_data_foundry.py`.
+- The probes: the PR's duplicate-contamination tool is part of leak probe 5 (every split, by label and number of
+  copies), and leak probe 13 has its first general tool (`target_by_period`: binary, multiclass, regression and count
+  targets against the band of the earlier periods). The PR's two modules, their CLIs and `checking_diagnostics.md`
+  are gone; probe 4's reading is main's again.
+- The records, by Lennart's marks: `online_retail` and `online_retail_ii` `No` (`No Good Target / Scientific
+  Discovery`); `ctu_13` and `ctu_sme_11` `No` (`AHDS`, SEL-16). The decision register reads wrapped rule heads, so
+  CLEAN-11, CLEAN-12, CLEAN-14 and CLEAN-25 count as defined again.
+- `sendy_logistics_challenge`: `Distance (KM)` stays, now with a `Potential leak, kept on purpose:` note (LEAK-38)
+  quoting the dictionary's "Distance covered".
+- `protein_model_quality_rf_pcp`: `ED` = 0 with `PN` > 0 (71 rows) and `PN` = 0 with `ED` > 0 (63 rows) become
+  missing (CLEAN-11); the rows stay. `Energy` is unchanged while its bound is open.
+- `cps88wages` and `eucalyptus`: year 2001 each, the best guess of the first publication. PROV-9 now says the year is
+  always a year (Lennart), and a definition whose `year` is not four digits no longer loads.
+- No container was built: every build of the 15 stays stale until the folders you ship are rebuilt.
+
+## 2026-11-03, PR #33 merged with main for Lennart's review; open issues in 15 REVIEW.md files
+
+- Main merged into Myunghwan's PR #33 (local branch `pr33-review`). The README is main's again: the PR had re-added
+  the dataset table, whose rule #41 dropped, and five build notes that are in the entries below.
+- A light review of the 15 added folders and of the five records decided without a folder left the open questions
+  in each folder's `REVIEW.md` and in an open-issues block of `online_retail`, `book_price_prediction`, `ctu_13`,
+  `fremtpl2` and `xente_fraud_detection_challenge`. No definition, row or split changed.
+
 ## 2026-11-02, special features: SMILES and spectra under one declaration (PR #21)
 
 Lennart: the metadata for SMILES and spectra should be one general form, declared like the target column, so later

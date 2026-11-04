@@ -19,6 +19,10 @@ MIRROR_COMMIT = "2fa7817be0740ea1739143ea6e61a28d6cf1462d"
 COORDINATES = ("origin_lat", "origin_lon", "destination_lat", "destination_lon")
 WEATHER_COLUMNS = ("precipitation_type", "prev_hour_precipitation_mm", "temperature_C")
 
+MIN_STRAIGHT_LINE_KM = 0.1
+"""A trip that ends closer to its start has no destination a passenger would book (Lennart, 2026-11-04; the radius of
+nyc_taxi_trip_duration_1m and pkdd_15_taxi_trip_time_prediction_ii_1m)."""
+
 
 class LusakaMobility2024(AbstractCuratedDataset):
     task_summary = TaskSummary(
@@ -28,7 +32,8 @@ class LusakaMobility2024(AbstractCuratedDataset):
             "A model is refit every four days using completed earlier trips."
         ),
         row=(
-            "One labeled trip from the 2024 Lusaka challenge's participant mirror: 112,739 trips with start times. "
+            "One labeled trip from the 2024 Lusaka challenge's participant mirror: 110,375 trips with start times "
+            "that end at least 100 m from their start. "
             "The files record January 2023 and early February, despite the source description saying January 2024."
         ),
         predicted="The actual trip duration in minutes, unchanged from the source target.",
@@ -42,8 +47,9 @@ class LusakaMobility2024(AbstractCuratedDataset):
             "Training contains trips starting at least one day before each period."
         ),
         changes=(
-            "Remove actual traveled distance, trip ID and duplicate date; exclude 21 trips without start times; "
-            "replace random-row evaluation with chronological windows and use earlier-hour weather."
+            "Remove actual traveled distance, trip ID and duplicate date; exclude 21 trips without start times and "
+            "2,364 that end within 100 m of their start; replace random-row evaluation with chronological windows "
+            "and use earlier-hour weather."
         ),
         fit="approximate",
         fit_reason=(
@@ -54,7 +60,7 @@ class LusakaMobility2024(AbstractCuratedDataset):
     )
     unique_name = "2024_lusaka_mobility_prediction_hackathon"
     year = "2024"
-    domain = "technology & internet"
+    domain = "industry & manufacturing"
     source = "Zindi"
     source_url = "https://zindi.world/competitions/2024-lusaka-mobility-prediction-hackathon"
     license = "Zindi Competition Rules (Yango private property)"
@@ -86,13 +92,14 @@ class LusakaMobility2024(AbstractCuratedDataset):
         - Prediction point: trip start, to estimate minutes to the destination. Actual traveled distance is removed because it is measured over the completed trip. The inspected participant-copy starter includes it; that is not evidence it exists at departure (USE-3, LEAK-10).
         - Endpoint approximation: the source says endpoint coordinates are geomasked and straight-line distance uses the original points. It does not state when the destination was captured. Recorded destination and straight-line distance stand in for the requested destination, as in the NYC taxi precedent; direct prospective availability is not certified.
         - Cohort and provenance: the source describes January 2024, while the pinned trip timestamps run from 2023-01-01 to early 2023-02-01 and the weather and inspected participant-copy starter notebook identify January 2023. We preserve the supplied dates and publication year 2024; no calendar shift or original-byte equality is asserted. Only labeled Train.csv is used; competition test labels are not available.
-        - Rows: drop only the 21 missing start timestamps, which cannot be assigned honestly to chronological windows. The remaining 112,739 trips have complete positive targets. The source already removed very short trips using an unspecified threshold; that selection cannot be undone.
-        - Features: drop trip_id and the duplicate day-only start column. Keep coordinates and straight-line kilometers numeric; no route-distance or speed feature is calculated. Keep zero straight-line distance and all durations, including long rides, because neither the source nor the inspected values proves they are errors.
+        - Rows: drop the 21 missing start timestamps, which cannot be assigned honestly to chronological windows. The source already removed very short trips using an unspecified threshold; that selection cannot be undone.
+        - We drop the 2,364 trips (2.1% of the 112,739 with a start; 1.3 to 2.9% on every day) whose straight-line distance from start to end is under 0.1 km (Lennart, 2026-11-04: "drop them, this is not a relevant prediction goal here imo"; USE-7, the 100 m radius of nyc_taxi_trip_duration_1m and pkdd_15_taxi_trip_time_prediction_ii_1m): nobody books a ride to their own pickup point, so these rows lack the destination the ETA acts on. The cut is on an input known at booking, not on the target, and exact although the coordinates are masked, because the source computes `str_distance_km` from the original points. These trips are not short: median 22.1 minutes against 10.8 for the others, 93% over 5 minutes, median travelled distance 4.5 km (round trips), and they held 16% of the target's squared spread. 110,375 trips remain, with complete positive targets.
+        - Features: drop trip_id and the duplicate day-only start column. Keep coordinates and straight-line kilometers numeric; no route-distance or speed feature is calculated. Keep all durations, including long rides, because neither the source nor the inspected values proves they are errors.
         - Weather: map the exact hourly record at floor(trip_start)-1 hour, never the current-hour record. This is a conservative lag on supplied hourly measurements, not a verified publication delay. No future fill or date/year correction is used. The weather's row counter/date/time are join metadata, not predictors; precipitation type is categorical. Missing earlier weather remains missing.
         - Metric: source RMSE on actual minutes, with identity target transform. No target-based filtering or logarithm is introduced.
         - Split: chronological four-day windows with a one-day training gap. Every observed duration is under one day, so the gap puts observed training trip ends before refit; reporting delay beyond trip completion is not known. The participant copy's train/test files interpolate throughout the same month; our evaluation instead tests later trips.
         - Curator decision (2026-10-29, Myunghwan): "approximate version is fine." Accept the documented endpoint and earlier-hour weather stand-ins; capture/publication and reporting timing remain unverified rather than certified by acceptance.
-        - Source/calendar decision (2026-10-29, Myunghwan): "if timestamps between trips and weather algined, it's ok. this is the source we have to live with." The supplied trip/weather calendars align in 2023, with an exact preceding-hour match for 112,716 rides and 23 out-of-coverage rides retaining missing weather. Preserve the supplied dates and identified participant copy; organizer-original equality, actual timezone and the reason for the 2024 narrative remain unverified.
+        - Source/calendar decision (2026-10-29, Myunghwan): "if timestamps between trips and weather algined, it's ok. this is the source we have to live with." The supplied trip/weather calendars align in 2023, with an exact preceding-hour match for 110,352 of the kept rides and 23 out-of-coverage rides retaining missing weather. Preserve the supplied dates and identified participant copy; organizer-original equality, actual timezone and the reason for the 2024 narrative remain unverified.
         - Scope: one released city/month, with masked locations and uncertain endpoint timing. The last test period has a partial final day because the file ends early February 1; this does not establish all-season, other-city or complete four-day deployment performance.
     """
     target = "Target"
@@ -121,7 +128,8 @@ class LusakaMobility2024(AbstractCuratedDataset):
         label reporting delay and original cohort extraction/follow-up timing are undocumented. A fourth
         earlier four-day window would violate the half-data training floor after this gap. The latest window ends
         February 2 but only has observations through early February 1. No performance was used to choose windows.
-        Missing starts are excluded; other rows, target units and dates are preserved.
+        Missing starts and trips ending within 100 m of their start are excluded; other rows, target units and dates
+        are preserved.
     """
     accepted_check_warnings = {}
 
@@ -132,7 +140,8 @@ class LusakaMobility2024(AbstractCuratedDataset):
     def _clean(self, raw: dict[str, pd.DataFrame]) -> pd.DataFrame:
         trips = raw["trips"]
         start = pd.to_datetime(trips["lcl_start_transporting_dttm"], format="ISO8601", errors="coerce")
-        df = trips.loc[start.notna(), [*COORDINATES, "str_distance_km", "Target"]].copy()
+        keep = start.notna() & (trips["str_distance_km"] >= MIN_STRAIGHT_LINE_KM)
+        df = trips.loc[keep, [*COORDINATES, "str_distance_km", "Target"]].copy()
         df["trip_start"] = start.loc[df.index]
         key = df["trip_start"].dt.floor("h") - pd.Timedelta(hours=1)
         weather = raw["weather"].copy()
@@ -148,23 +157,29 @@ class LusakaMobility2024(AbstractCuratedDataset):
 
     def _decisions(self, raw: dict[str, pd.DataFrame], df: pd.DataFrame) -> list[Decision]:
         trips = raw["trips"]
+        has_start = pd.to_datetime(trips["lcl_start_transporting_dttm"], format="ISO8601", errors="coerce").notna()
         return [
             Decision(
                 title="Source dates and chronological row eligibility",
-                why="Dates are preserved despite the description's 2024 claim; missing starts cannot support temporal tests.",
+                why=(
+                    "Dates are preserved despite the description's 2024 claim; missing starts cannot support temporal "
+                    "tests; a trip ending within 100 m of its start has no destination a passenger would book."
+                ),
                 evidence=pd.DataFrame(
                     {
                         "quantity": [
                             "labeled raw rows",
                             "kept rows",
                             "missing start",
+                            f"start, straight line under {MIN_STRAIGHT_LINE_KM} km",
                             "recorded minimum",
                             "recorded maximum",
                         ],
                         "value": [
                             str(len(trips)),
                             str(len(df)),
-                            str(len(trips) - len(df)),
+                            str(int((~has_start).sum())),
+                            str(int((has_start & (trips["str_distance_km"] < MIN_STRAIGHT_LINE_KM)).sum())),
                             str(df.trip_start.min()),
                             str(df.trip_start.max()),
                         ],

@@ -1,17 +1,16 @@
 ---
-unique_name: dataset_from_uncertainty_guided_model_selection_for_tabular_foundation_models_in_biomolecule_efficacy_prediction
-name: Dataset from Uncertainty-Guided Model Selection for Tabular Foundation Models in Biomolecule Efficacy Prediction
+unique_name: huesken_sirna_efficacy
+name: Huesken siRNA efficacy
 checked_by:
 - Myunghwan
-data_foundry_status:
-- WIP (DF)
-claimed_by: Myunghwan
+- Lennart
 suggestion: 'Yes'
 priority: 3
 decision_markers:
 - Data Requested
 tags:
 - Non-IID (Grouped)
+- Revisit later
 collections:
 - New (BeyondArena)
 year: '2005'
@@ -23,7 +22,7 @@ original_data_state: One Table
 source_links:
 - https://arxiv.org/abs/2510.02476
 - https://doi.org/10.1038/nbt1118
-v2_path: datasets/_dev/tabarena-v0pt2/dataset_from_uncertainty_guided_model_selection_for_tabular_foundation_models_in_biomolecule_efficacy_prediction/dataset.py
+v2_path: datasets/_dev/tabarena-v0pt2/huesken_sirna_efficacy/dataset.py
 source_row: 865
 type_adapter_id: curation-record-v1
 ---
@@ -72,3 +71,11 @@ CC (2026-10-26, Myunghwan): Metadata `tag`: update; Non-IID (Grouped), meaning u
 CC (2026-10-26, Myunghwan): Metadata `year`: update; 2005 original-source year.
 
 **Assessment (AI, 2026-10-26):** Applied the actual curator approval and accepted `groups_test_groups_few` with the case-specific rationale and multi-family grouped evidence. No fixed minimum number of genes is imposed for this row-level continuous target; no blanket row-count-only rule is introduced. The unchanged folds have ten test genes and 648-942 records. Confirmed grouped cold start; SPLIT-2 already covers unseen IDs under Non-IID (Grouped), with no separate OOD vocabulary. Year/tag choices are applied only where explicitly marked; unanswered rows remain in REVIEW. Exact data, dtypes, target, metric and ordered split memberships are preserved, so completed model qualification is reused. Scientific approval does not authorize build, commit or redistribution.
+
+CC (2026-11-04, Lennart): renamed `huesken_sirna_efficacy` from `dataset_from_uncertainty_guided_model_selection_for_tabular_foundation_models_in_biomolecule_efficacy_prediction`, the title of the 2025 paper that reused the data, since what ships is Huesken et al. 2005 (PROV-1, PROV-8; "give it a proper name"); the other names of the PR #33 batch were checked and stay. The few-groups acceptance is reworded in his words: a group is a large set of observations over which we want to generalize, so from the context a few groups suffice, as for a few hospitals.
+
+**Exception to MET-5 (2026-11-04, Lennart):** the metric is `mean_group_pearsonr` on `target_gene` (origin context) instead of the RMSE fallback for papers that report several metrics ("change"). Fact: the use case ranks guides within a gene, and pooled RMSE rewards a gene's mean (knowing each gene's mean cuts it from 0.1582 to 0.1378), while the literature reports pooled correlation, MAE or AUC with no unique criterion; both metrics pick LightGBM over ridge. Serves P6: scored by the metric the real task would use (MET-1).
+
+CC (2026-11-04, Lennart): sequence encoding: "go ahead with (b)": the preprocessing stays here, with the descriptors, and the record is tagged `Revisit later` "to check if we should drop it like we did for other protein models" (SEL-12) or to declare a sequence kind later.
+
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran; the issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled. Only `splice` and this dataset are sequence tables in the working copy; pure-sequence candidates were mostly rejected under SEL-12.

@@ -3,11 +3,10 @@ unique_name: predictive_insights_youth_income_prediction_challenge
 name: predictive-insights-youth-income-prediction-challenge
 checked_by:
 - Myunghwan
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Myunghwan
-suggestion: 'Yes'
-priority: 3
+- Lennart
+suggestion: 'No'
+decision_markers:
+- Data Quality Issue
 collections:
 - New (BeyondArena)
 original_source: Zindi
@@ -19,7 +18,6 @@ problem_type: Binary Classification
 source_links:
 - https://zindi.africa/competitions/predictive-insights-youth-income-prediction-challenge/data
 - https://zindi.africa/competitions/predictive-insights-youth-income-prediction-challenge
-v2_path: datasets/_dev/tabarena-v0pt2/predictive_insights_youth_income_prediction_challenge/dataset.py
 source_row: 889
 type_adapter_id: curation-record-v1
 ---
@@ -78,3 +76,9 @@ predict if a young person in South Africa is employed
 CC (2026-10-27, Myunghwan): “OK. finish tabarena-add-dataset on this.” Accepted the final reviewed 4,017-row, eighteen-predictor employment task and completion of the add stage. Retain Survey_date and allowed redundant Round, keep Person_id/Tenure excluded, preserve the original target/population/source ROC AUC and conditional coincident-profile retention. Accept the documented approximate-fit and forced-IID scope; align required_split to Random (IID). Build, commit, push and publication are not requested.
 
 **Assessment (AI, 2026-10-27):** Final acceptance applied. The actual approval and scoped marks were saved against review snapshot6816dd6ea3ed55d55be5b11ccf1fc47dfa27dc392f57f52bf804654c31cd0e7d before application. Independent final consistency review read the fresh decision register and found no rule/precedent conflict or reflection need. Final scientific inclusion is now accepted; all case-specific review issues and the split-field disagreement are resolved. Current eighteen-input qualification remains valid: zero errors/unaccepted warnings, one accepted duplicate warning, no task flags, exact all-nine-fold metric/source alignment verified, minimum363employed/testfold, linearROC_AUC0.8015/RF0.7992/LGBM0.7955. Current equal-profile sensitivity0.7933 versusIID0.7939 supports the saved bounded coincidence decision. Source timing/horizon/ascertainment and newest-wave shift remain accepted limitations; no timing proof is invented. Only decision prose changes in the recipe; full numerical input/fold identity is verified before evidence reuse. The closed REVIEW and full panel history are archived privately, and the empty live REVIEW is removed under the workflow. Official ownership and original claim stage remain preserved; no DF:Yes/main integration or build/commit is claimed.
+
+CC (2026-11-04, Lennart): `Survey_date` and `Round` are no longer inputs under the random split ("drop"). The dtype rules are applied ("apply"): ordered mark bands, `Birthmonth` a number, the target No / Yes, `Schoolquintile`'s 0 missing; its order is open (REVIEW.md issue 3).
+
+CC (2026-11-04, Lennart): `No` for now, with `Data Quality Issue`: "the finding hints at too many dataset errors and the general weird setup is problematic, do not ship the datasets and mark it as no for now". The folder leaves the working copy. Revisit if the host publishes the codebook it announced, or settled labels with the survey rounds coded alike.
+
+**Assessment (AI, 2026-11-04):** the label is the employment status at the next survey round, 6 or 12 months on (the host, discussions 17783 and 17621), not the stated horizon. Round 3 looks coded from the outcome: 240 of its 251 "other" respondents are employed against none of 434 unemployed, studying or programme respondents, and `Status` alone separates its classes at ROC AUC 0.979 (0.64-0.74 in the other rounds). Tenure is filled only for the employed there. No codebook was ever posted.

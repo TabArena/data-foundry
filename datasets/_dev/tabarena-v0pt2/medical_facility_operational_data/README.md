@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: medical_facility_operational_data
 container_format: 2
-checksum: v2:ff6dbfb16def447738e6df8805220dc831c23aea18a5a2b485851864f6b1f5d3
+checksum: v2:35b11bccfcb83e4b8960f4f66c1c33428e28acf79b10a7840017a1e54c35ce0b
 build:
   uuid: 01a18629-f249-7ee4-b713-033fd2de1d79
   checksum: v2:ff6dbfb16def447738e6df8805220dc831c23aea18a5a2b485851864f6b1f5d3
@@ -17,13 +17,13 @@ build:
     pyarrow: 26.0.0
     scikit-learn: 1.7.2
     polars: 2.0.0
-build_stale: false
+build_stale: true
 data:
-  n_rows: 130431
-  n_features: 88
+  n_rows: 82001
+  n_features: 87
   dtypes:
-    category: 8
-    float64: 37
+    category: 6
+    float64: 38
     int64: 44
   n_test_dataset_rows: null
 task:
@@ -43,16 +43,16 @@ splits:
   n_repeats: 9
   n_folds: 1
   random_state: 4267
-  time_horizon: 7300
+  time_horizon: 4523
   time_horizon_unit: steps
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 65217
-    max: 123199
+    min: 41002
+    max: 77435
   n_test:
-    min: 7228
-    max: 7264
+    min: 4546
+    max: 4565
 bundle_checks:
   ok: true
   errors: []
@@ -62,34 +62,34 @@ bundle_checks:
   - dataset_conflicting_duplicate_rows
   accepted: {}
 decisions:
-- All source facilities and target meanings
+- 'One meaning of the target: the scheduled facilities F1-F3'
 ---
 
 # medical_facility_operational_data
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `Wait`, scored with `mae` on temporal splits by `arrival_order`. 130,431 rows and 88 features. Source: Other (2020).
+Regression of `Wait`, scored with `mae` on temporal splits by `arrival_order`. 82,001 rows and 87 features. Source: Other (2020).
 
-Built as `01a18629-f249-7ee4-b713-033fd2de1d79` on 2026-10-29. See [Build](#build).
+Built as `01a18629-f249-7ee4-b713-033fd2de1d79` on 2026-10-29, but `dataset.py` has changed since: it now gives checksum `v2:35b11bccfcb83e4b8960f4f66c1c33428e28acf79b10a7840017a1e54c35ce0b`, so the build is stale. See [Build](#build).
 
 ## In brief
 
-**Question.** What delay or waiting time, in minutes, will this patient's imaging visit have at this facility?
+**Question.** How many minutes after its scheduled time will this patient's imaging exam start at this facility?
 
-**Use case.** At patient arrival, imaging operations staff estimate exam-start delay or waiting time using the current workflow and known appointment plan.
+**Use case.** At patient arrival, imaging operations staff estimate the exam-start delay against the appointment from the current workflow and the known appointment plan.
 
-**One row.** One of 130,431 visits across all four source worksheets F1-F4, with facility identity as categorical context.
+**One row.** One of 82,001 visits of the three scheduled facilities F1-F3, with the facility as context.
 
-**Predicted.** The original Wait in minutes: signed exam-start minus scheduled time for F1-F3, arrival-to-start waiting for F4. Negative scheduled delays and zero waits remain.
+**Predicted.** The exam start minus the scheduled time, in minutes, signed: an exam that starts early has a negative delay.
 
-**Known at prediction time.** Facility, current queue/resource state, completion-driven histories, published time features and planned appointment demand. Exact updater and estimator fitting provenance remain incomplete.
+**Known at prediction time.** Facility, current queue and resource state, histories of completed exams, the source's time features, the appointment plan and the source's per-exam-type delay and duration estimates. How those estimates were made is not documented.
 
-**What the test data stands for.** Nine expanding windows in the common anonymized source event order; training arrivals and exam starts precede each test start. Common-day consistency supports this approximate ordering, without proving intra-day clock synchronization or real calendar cadence.
+**What the test data stands for.** Nine windows of later visits in time order, each trained on the visits whose exam had begun before the window. The anonymised timestamps are one shift of the real clock for all facilities, and every window has thousands of training visits of each facility.
 
-**Our changes to the source.** Stack all four source sheets and add facility. Remove artificial timestamps from model inputs, retain legitimate scheduled demand and elapsed active-exam extrema, and mask the unavailable F4 last-visit flag. Retain ordinary per-visit MAE in each test window and the standard equal mean of nine window scores after curator review of facility imbalance.
+**Our changes to the source.** Only the scheduled facilities: the walk-in facility F4 measures another quantity (the wait from arrival) and is left out. The timestamps only order the rows and are no inputs.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The source defines real operational delay/wait tasks and the workbook is authenticated. Ordering and feature-estimator provenance have explicit limits. The curator accepted the approximate source-order split and retained ordinary MAE; final scientific inclusion is approved by Myunghwan.
+> **Use case fit: approximate (a stand-in with a known gap).** The source's own delay task on the facilities' own records, in time order. The gaps: the visits ship without real dates, so the windows count events, not days, and the source does not document how its per-exam-type estimates were made.
 
 ## Files in this folder
 
@@ -117,7 +117,7 @@ Workbook SHA256 153cff36b4bbf2d972f415c00a786ae5d5e65557ae23b0379fd33efb69060f2e
 This workbook is byte-identical to Kaggle mirror version 1, updated 2021-02-10:
 https://www.kaggle.com/api/v1/datasets/download/weirdolucifer/medical-facility-operational-data?datasetVersionNumber=1
 Mirror archive SHA256 d2427f01c225122fd406bcd28d55e78439e60a1465f7514caf22e593ebd9f256.
-Read all four worksheets F1-F4 and preserve their facility identity. Counts differ from the related PLOS analytical cohort; exact cohort equivalence is not claimed. Dataverse retrieval returned HTTP 403, but primary author workbook identity is verified independently.
+Read the four worksheets F1-F4; the definition keeps the scheduled facilities F1-F3. Counts differ from the related PLOS analytical cohort; exact cohort equivalence is not claimed. Dataverse retrieval returned HTTP 403, but primary author workbook identity is verified independently.
 ```
 
 Then, from the repository root:
@@ -139,7 +139,7 @@ Only curators run `build`, when the dataset ships.
 | license | CC0: Public Domain (Kaggle mirror; original terms not independently retrieved) |
 | data_tags | Non-IID, Temporal, Anonymized |
 | reference | Pianykh2020,Crowley2020 |
-| rows x columns | 130,431 x 89 |
+| rows x columns | 82,001 x 88 |
 | task.target | Wait |
 | task.problem_type | regression |
 | task.metric | mae |
@@ -154,12 +154,12 @@ Only curators run `build`, when the dataset ships.
 | origin | source: the source's metric |
 | original | Mean absolute error in minutes, evaluated separately for source facilities. |
 | reference | https://medicalanalytics.group/operational-data-challenge/ |
-| definition | Source MAE formula in minutes on all held-out visits within each window, summarized by the standard equal mean of nine window MAEs. Retained after Myunghwan's 2026-10-28 conditional acceptance of the observed imbalance and verification of deliberate source MAE. The source does not prescribe cross-facility or across-window weighting; no facility normalization is applied. |
+| definition | Source MAE formula in minutes on all held-out visits within each window, summarized by the standard equal mean of nine window MAEs. The source does not prescribe cross-facility or across-window weighting; no facility normalization is applied. |
 
 <details>
-<summary>Feature types: 8 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 6 categorical, 0 string, 0 datetime</summary>
 
-- categorical (8): `facility`, `IsLast`, `IsFirst`, `NoneInProgress`, `NoneCompleted`, `NoneInLine`, `DayOfWeek`, `Month`
+- categorical (6): `facility`, `IsLast`, `IsFirst`, `NoneInProgress`, `NoneCompleted`, `NoneInLine`
 - string (0): none
 - datetime (0): none
 
@@ -187,7 +187,7 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 130,431 rows of the final frame (the oldest rows: the frame is sorted by `arrival_order`); 12 of 89 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 82,001 rows of the final frame (the oldest rows: the frame is sorted by `arrival_order`); 12 of 88 columns, the target first. Cells are cut at 40 characters.
 
 | Wait | SumHowEarlyWaiting | AvgHowEarlyWaiting | LineCount0Strict | SumWaits | LineCount0 | LineCount1 | LineCount2 | LineCount3 | LineCount4 | FlowCount2 | FlowCount4 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -199,139 +199,137 @@ The first 5 of 130,431 rows of the final frame (the oldest rows: the frame is so
 
 ## Curation notes
 
-- Final curator verdict (2026-10-28, Myunghwan): "ship this". Accept all four facilities, 130,431 visits, 88 predictors including facility, original signed delay/wait targets, the accepted nine approximate source-order windows and ordinary MAE with equal window averaging. Earlier notes below preserve the review history. Source-clock, calendar-cadence, estimator-fitting and booking-lineage limitations remain disclosed.
-- Curator decision (2026-10-28, Myunghwan): "Is MAE the main metric from the original task? If so, our current imbalance is somewhat acceptable." The primary author explicitly uses MAE. Retain the implemented per-visit MAE and proposed equal mean of nine test-window MAEs; accept the measured facility imbalance. This resolves scoring, not final inclusion.
-- Curator decision (2026-10-28, Myunghwan): "accept this split". Accept the exact nine common source-event-order windows across all four facilities, observed training labels and tied arrivals, with the disclosed synchronization/calendar limits. This accepts the approximation; it does not verify a real shared clock or settle scoring or final inclusion.
-We start with all four worksheets F1-F4 of the authenticated author workbook WaitData.Published.xlsx.
+We start with worksheets F1-F3 of the authenticated author workbook WaitData.Published.xlsx (all four sheets are read; F4 is left out).
 
-- Curator scope: all-facility prediction with facility as meaningful categorical context. The earlier F4-only definition did not fulfill the saved instruction. All 130,431 source visits and original Wait values are retained; no final ship is inferred from this redo.
-- Prediction point: arrival, before the imaging exam starts. F1-F3 Wait is signed exam-start minus scheduled time; F4 Wait is exam-start minus arrival. All targets agree with source timestamp diagnostics within one minute. Keep valid negatives and zeros, without log transform, clipping or outcome rescaling.
-- Facility is the source worksheet ID, not a fabricated patient/entity ID. Use neutral F1-F4 labels: the author code and a separate PLOS cohort disagree on F1/F2 modality labels. All groups remain represented; no unseen-facility generalization is claimed.
-- Stack the union of published columns; absent facility-specific fields remain structurally missing, never fabricated zeros. Preserve AvgDelayForDay and AvgWaitForDay as separate source fields. Numeric counts stay numeric; facility, flags, source weekday and month are categorical.
-- Remove all three artificial timestamp columns from model inputs. Arrival/start timestamps survive only until ordering and label-availability construction. A dense global arrival-order rank is the temporal variable; no real dates, time gaps or calendar features are reconstructed from fictitious timestamps.
-- Across 413 artificial scheduled days represented by all facilities, source DayOfYear, Month and DayOfWeek agree without conflict. Their common weekday displacement corroborates common-day alignment. The source permits sorting, but exact intra-day cross-facility alignment and authentic calendar cadence remain unverified; the global-order candidate is approximate and explicitly reviewed.
-- Planned demand is allowed at arrival: scheduled counts in the following 30/60 minutes, next-slot/hour bookings, and source expected completion/delay estimates are not realized future outcomes merely because they refer to later appointments. Exact expected-duration fitting lineage remains unverified without demonstrated future-label fitting.
-- Retain IsLast for scheduled F1-F3: it exactly identifies the last scheduled appointment time and can be known from the plan; source booking-version snapshots are not supplied. Mask it for walk-in F4, whose pseudo-schedule/last-visit availability is not established. IsFirst and current-state flags are retained with the source operational context.
-- Restore mintime and maxtime in all facilities. The dictionary's daily-wait wording is contradicted by exact current active-exam elapsed-state identities: zero with no exams, both equal SumInProgress with one exam, min+max equals that sum with two, and no count/sum envelope violations in all 130,431 visits. Stable-population increments also track elapsed minutes; F4 has 11/9 small min/max transition residuals among 10,214 cases. No full-day target-extrema interpretation or future leak is inferred.
-- Operational history is not the current patient's target. Across all facilities no recent-history field changes during same-day transitions with unchanged completion count; independently linked completed exams support signed end-minus-scheduled histories. Daily source target means match already-begun visits outside source missing-calendar rows; the three recent-window AvgWaitLastW fields instead average already-begun arrival-to-start waits in every facility, not the signed scheduled target. Exact updater/default/reset rules remain incompletely documented, so this supports availability without claiming complete generator reconstruction.
-- Source MAE is deliberate in the author challenge and paper comparisons. Its source evaluates facilities separately and does not prescribe a pooled all-facility scorer. The curator conditionally accepted the observed imbalance if MAE was the original objective; the author challenge confirms this. Retain ordinary per-visit MAE within each window and the standard equal mean across nine windows. This combined weighting is the retained benchmark composition, not an official source aggregation. Equal-window averaging differs from pooling all held-out visits; facility-level errors remain diagnostics. The author's code historically labels an RMSE calculation MSE; our reported RMSE and squared errors use their standard definitions.
-- All source negatives, repeated operational states and missing values remain unless a demonstrated defect requires repair. The old F4-only model results are historical for that feature inventory; the restored extrema and all-facility task receive fresh diagnostics.
+- Prediction point: arrival, before the exam starts. Wait is the exam start minus the scheduled time, signed, and agrees with the source timestamps within one minute in every row. Valid negatives and zeros stay, without log transform, clipping or rescaling.
+- One meaning of the target (Lennart, 2026-11-04): only the scheduled facilities F1-F3 (82,001 visits). F4's Wait is another quantity, the wait from arrival of walk-in patients (CLEAN-21, USE-5; Crowley et al. 2020 model delay and wait separately); a dataset of its own is a separate decision. AvgWaitForDay exists only on F4 and goes with it.
+- Facility is the source worksheet ID, kept as context; neutral F1-F3 labels, as the author code and the PLOS cohort disagree on the modality names. No unseen-facility generalization is claimed.
+- Dtypes: counts and sums numeric; facility and the four yes/no flags categorical. DayOfWeek (1-7) and Month (1-12) ship as numbers and stay numbers, like DayOfYear (CLEAN-14, the cycle rule of 2026-11-01).
+- The three artificial timestamps are no inputs. The arrival and start timestamps order the rows and decide which labels are known, then are dropped; a dense arrival-order rank is the time column. The sheets list the visits in exactly reverse arrival order.
+- The anonymisation is one shift of the real clock for all facilities: in every row the fictitious arrival time of day is the source's StartTime plus 60 minutes, DayOfWeek differs from the fictitious weekday by one constant offset and DayOfYear from the fictitious day of the year by 2 or 3 days (leap years), and the facilities agree on all 459 shared days. So the common arrival order is the real order across facilities, to the minute.
+- Planned demand is allowed at arrival: scheduled counts in the following 30/60 minutes, next-slot/hour bookings and the source's per-exam-type estimates refer to the plan, not to realised outcomes. How the estimates were made is not documented.
+- Potential leak, kept on purpose (LEAK-38; Lennart, 2026-11-04: "keep them"): `ExpectedDelayNextExam` and the sums built from it (`SumDelayWaitingByExamCode`) are one fixed table of expected delay per exam type (49, 215 and 195 values at F1-F3, reused over the whole period), of undocumented origin and reference period. They do not match the realised delays (a median gap of 6.0-11.7 minutes for a patient waiting alone), and dropping them changes LightGBM's MAE by 0.01-0.02 minutes, within seed noise. Revisit if the authors document the table.
+- IsLast stays: it identifies the last scheduled appointment of the day and is known from the plan; booking-version snapshots are not supplied.
+- mintime and maxtime stay. The dictionary's daily-wait wording is contradicted by exact identities with the exams in progress (zero with none, both equal SumInProgress with one, min+max equals it with two, no count/sum envelope violations): they are elapsed times of the active exams, not the day's extremes.
+- Operational history is not the current patient's target: no recent-history field changes between arrivals without a completed exam, and linked completed exams support the signed end-minus-scheduled histories; exact updater/default rules remain incompletely documented.
+- Source MAE is deliberate in the author challenge and paper comparisons, per facility. We score per-visit MAE in each window and the equal mean of the nine window scores (Myunghwan, 2026-10-28), not an official source aggregation. The author code labels an RMSE calculation MSE; our RMSE uses the standard definition.
+- All source negatives, repeated operational states and missing values remain.
 
 ## Splits
 
-Curator-accepted approximate global source-event-order evaluation, newest window first. Start after at least half of all visits
-have both arrived and begun their exams; divide the remaining distinct arrival instants into nine windows,
-keeping timestamp ties intact. Every train arrival and begin precedes its test start. All facilities occur in
-every train/test, with their actual support reported; the minimum mature train is 65,217/130,431 (50.00115%).
-About 7,300 source events is a typical cohort width, not a real calendar forecast horizon or label-maturity gap.
-Shared-day calendar-feature consistency supports common anonymous ordering, without proving intra-day clock
-equivalence or the paper's calendar cadence. No held-out-facility or new-patient guarantee is asserted.
+Expanding windows in the common arrival order of F1-F3, newest window first. Start after at least half of all
+visits have both arrived and begun their exams; divide the remaining distinct arrival instants into nine windows
+of about 4,523, keeping timestamp ties intact. Every train arrival and begin precedes its test start. Every
+window has training visits of each facility from before it (at least 24,461 of F1, 8,326 of F2 and 8,215 of
+F3) and 702 to 2,108 test visits of each; the minimum train is 41,002 of 82,001. The timestamps are one shift of
+the real clock for all facilities, so the order is real time; a window is about six to seven weeks of the shifted
+calendar, not a calendar-based horizon. No held-out-facility or new-patient guarantee is asserted.
 
-9 repeat(s) x 1 fold(s) with seed 4267; train 65,217 to 123,199 rows, test 7,228 to 7,264 rows. Prediction horizon: 7300 steps.
+9 repeat(s) x 1 fold(s) with seed 4267; train 41,002 to 77,435 rows, test 4,546 to 4,565 rows. Prediction horizon: 4523 steps.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
-| 0 | 0 | 123199 | 7228 | 0 | 121564 | 121568 | 128705 |
-| 1 | 0 | 115927 | 7264 | 0 | 114423 | 114431 | 121567 |
-| 2 | 0 | 108670 | 7259 | 0 | 107288 | 107293 | 114430 |
-| 3 | 0 | 101431 | 7237 | 0 | 100152 | 100156 | 107292 |
-| 4 | 0 | 94172 | 7254 | 0 | 93016 | 93018 | 100155 |
-| 5 | 0 | 86939 | 7246 | 0 | 85879 | 85881 | 93017 |
-| 6 | 0 | 79690 | 7240 | 0 | 78740 | 78743 | 85880 |
-| 7 | 0 | 72452 | 7242 | 0 | 71602 | 71606 | 78742 |
-| 8 | 0 | 65217 | 7239 | 0 | 64464 | 64469 | 71605 |
+| 0 | 0 | 77435 | 4553 | 0 | 76954 | 76960 | 81483 |
+| 1 | 0 | 72888 | 4551 | 0 | 72433 | 72437 | 76959 |
+| 2 | 0 | 68326 | 4559 | 0 | 67910 | 67913 | 72436 |
+| 3 | 0 | 63784 | 4546 | 0 | 63387 | 63390 | 67912 |
+| 4 | 0 | 59236 | 4550 | 0 | 58859 | 58866 | 63389 |
+| 5 | 0 | 54678 | 4552 | 0 | 54338 | 54343 | 58865 |
+| 6 | 0 | 50112 | 4564 | 0 | 49807 | 49819 | 54342 |
+| 7 | 0 | 45565 | 4555 | 0 | 45293 | 45296 | 49818 |
+| 8 | 0 | 41002 | 4565 | 0 | 40772 | 40773 | 45295 |
 
 ## Decisions
 
-### 1. All source facilities and target meanings
+### 1. One meaning of the target: the scheduled facilities F1-F3
 
-Preserve original signed scheduled delay for F1-F3 and nonnegative arrival waiting for F4, with facility as context. Ordinary per-visit MAE and standard equal-window averaging are retained after review of facility contributions.
+Ship the signed exam-start delay against the appointment of F1-F3, with facility as context. F4's Wait is the walk-in wait from arrival, another quantity, and is left out (Lennart, 2026-11-04).
 
-| facility | visits | negative targets | zero targets | median minutes | p99 minutes | standard deviation minutes |
-|---|---|---|---|---|---|---|
-| F1 | 42766 | 16052 | 1360 | 4 | 53 | 18.2968 |
-| F2 | 15652 | 4397 | 269 | 12 | 94 | 30.988 |
-| F3 | 23583 | 8432 | 244 | 12 | 113.18 | 48.2991 |
-| F4 | 48430 | 0 | 547 | 6 | 32 | 6.65419 |
+| facility | shipped | target meaning | visits | negative targets | zero targets | median minutes | p99 minutes | standard deviation minutes |
+|---|---|---|---|---|---|---|---|---|
+| F1 | True | start minus scheduled | 42766 | 16052 | 1360 | 4 | 53 | 18.2968 |
+| F2 | True | start minus scheduled | 15652 | 4397 | 269 | 12 | 94 | 30.988 |
+| F3 | True | start minus scheduled | 23583 | 8432 | 244 | 12 | 113.18 | 48.2991 |
+| F4 | False | start minus arrival | 48430 | 0 | 547 | 6 | 32 | 6.65419 |
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicate_rows`: 12 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
-- **info** `dataset_conflicting_duplicate_rows`: 242 row(s) (0.2%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+- **info** `dataset_duplicate_rows`: 6 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
+- **info** `dataset_conflicting_duplicate_rows`: 108 row(s) (0.1%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (89 rows)</summary>
+<summary>Show the table (88 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| IsLast | category | 48430 | 37.13 | 2 | 0.0, 1.0 |
-| DayOfWeek | category | 32 | 0.02 | 7 | 5.0, 4.0, 3.0, 2.0, 6.0, 7.0, 1.0 |
-| Month | category | 32 | 0.02 | 12 | 5.0, 4.0, 6.0, 1.0, 3.0, 7.0, 12.0, 2.0, 11.0, 10.0 |
+| IsLast | category | 0 | 0 | 2 | 0, 1 |
 | IsFirst | category | 0 | 0 | 2 | 0, 1 |
 | NoneInProgress | category | 0 | 0 | 2 | 0, 1 |
 | NoneCompleted | category | 0 | 0 | 2 | 0, 1 |
 | NoneInLine | category | 0 | 0 | 2 | 0, 1 |
-| facility | category | 0 | 0 | 4 | F4, F1, F3, F2 |
-| AvgWaitForDay | float64 | 82001 | 62.87 | 14660 | 0.0, 5.0, 6.0, 4.0, 7.0, 5.5, 3.0, 4.5, 8.0, 5.3333 |
-| SumHowEarlyWaiting | float64 | 48430 | 37.13 | 1151 | 0.0, 29.0, 30.0, 33.0, 24.0, 28.0, 39.0, 21.0, 23.0, 38.0 |
-| AvgHowEarlyWaiting | float64 | 48430 | 37.13 | 325 | 0.0, 33.0, 28.0, 38.0, 32.0, 24.0, 26.0, 27.0, 23.0, 30.0 |
-| LineCount0Strict | float64 | 48430 | 37.13 | 15 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
-| SchFlowCount2 | float64 | 48430 | 37.13 | 9 | 4.0, 3.0, 0.0, 5.0, 2.0, 1.0, 6.0, 7.0, 8.0 |
-| SchFlowCount4 | float64 | 48430 | 37.13 | 14 | 8.0, 0.0, 7.0, 2.0, 9.0, 6.0, 3.0, 10.0, 4.0, 5.0 |
-| FutFlowCount2 | float64 | 48430 | 37.13 | 9 | 4.0, 3.0, 5.0, 2.0, 1.0, 0.0, 6.0, 7.0, 8.0 |
-| FutFlowCount4 | float64 | 48430 | 37.13 | 14 | 8.0, 7.0, 2.0, 9.0, 6.0, 3.0, 10.0, 4.0, 5.0, 1.0 |
-| DelayCount | float64 | 48430 | 37.13 | 62 | 0.0, 1.0, 2.0, 5.0, 3.0, 6.0, 4.0, 7.0, 8.0, 9.0 |
-| DelayCountLastHour | float64 | 48430 | 37.13 | 15 | 0.0, 2.0, 1.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
-| NeuroCount | float64 | 48430 | 37.13 | 8 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0 |
-| AbdominalCount | float64 | 48430 | 37.13 | 16 | 0.0, 1.0, 2.0, 3.0, 5.0, 4.0, 6.0, 7.0, 8.0, 9.0 |
-| VascularCount | float64 | 48430 | 37.13 | 7 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 |
-| CardiacCount | float64 | 48430 | 37.13 | 5 | 0.0, 1.0, 2.0, 3.0, 4.0 |
-| AfterSlot | float64 | 48430 | 37.13 | 128 | 3.0, 2.0, 5.0, 12.0, 9.0, 7.0, 4.0, 1.0, 11.0, 14.0 |
-| SumWaitByTaskTypeLine | float64 | 48430 | 37.13 | 914 | 0.0, 16.0, 32.0, 33.0, 17.0, 48.0, 49.0, 50.0, 58.0, 64.0 |
-| AvgWaitByTaskTypeLine | float64 | 48430 | 37.13 | 1766 | 0.0, 16.0, 17.0, 16.5, 16.3333, 18.0, 58.0, 61.0, 16.6667, 16.25 |
-| DelayedInLine | float64 | 48430 | 37.13 | 12 | 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 |
-| ExpectedDelayNextExam | float64 | 48430 | 37.13 | 446 | 6.4225, 6.2071, 19.2911, 15.272, 6.4456, 6.8852, 5.9743, 8.0056, 16.9882, 8.4003 |
-| AvgDelayForDay | float64 | 48430 | 37.13 | 19295 | 0.0, 1.0, -1.0, 2.0, -2.0, 3.0, -3.0, 4.0, -6.0, 5.0 |
-| NumAddOnsToday | float64 | 48430 | 37.13 | 14 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
-| NumAddOnsLastW2 | float64 | 48430 | 37.13 | 8 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0 |
-| NumScheduledNextSlot | float64 | 48430 | 37.13 | 9 | 2.0, 1.0, 4.0, 5.0, 3.0, 6.0, 7.0, 0.0, 8.0 |
-| NumScheduledNextW2 | float64 | 48430 | 37.13 | 14 | 1.0, 0.0, 2.0, 3.0, 5.0, 4.0, 6.0, 7.0, 8.0, 9.0 |
-| SumTimeToCompleteNextSlot | float64 | 48430 | 37.13 | 249 | 37.0, 30.0, 33.0, 36.0, 17.0, 16.0, 35.0, 50.0, 34.0, 32.0 |
-| SumTimeToCompleteNextW2 | float64 | 48430 | 37.13 | 402 | 0.0, 37.0, 16.0, 30.0, 50.0, 32.0, 36.0, 35.0, 14.0, 47.0 |
-| WithContrastCountWaiting | float64 | 48430 | 37.13 | 14 | 0.0, 3.0, 4.0, 2.0, 5.0, 1.0, 6.0, 7.0, 8.0, 9.0 |
-| WithAndWithoutContrastCountWaiting | float64 | 48430 | 37.13 | 7 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 |
-| WithContrastCountInProgress | float64 | 48430 | 37.13 | 7 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 |
-| WithAndWithoutContrastCountInProgress | float64 | 48430 | 37.13 | 6 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 |
-| DayOfYear | float64 | 32 | 0.02 | 346 | 198.0, 170.0, 178.0, 347.0, 156.0, 129.0, 115.0, 135.0, 192.0, 65.0 |
-| StartTime | float64 | 0 | 0 | 714 | 9.9833, 9.6833, 10.5667, 10.1333, 9.9667, 9.7833, 9.9, 9.85, 9.5667, 9.45 |
-| StartTime2 | float64 | 0 | 0 | 714 | 99.6669, 93.7669, 111.6544, 102.6844, 99.3344, 95.7136, 98.01, 97.0225, 91.5211… |
-| StartTime3 | float64 | 0 | 0 | 714 | 995.0082, 907.9765, 1179.8151, 1040.5356, 990.0331, 936.3981, 970.299, 955.6716… |
-| StartTime4 | float64 | 0 | 0 | 1078 | 9933.4985, 8792.2387, 9867.3292, 9161.0941, 9605.9601, 9413.3655, 8376.1114, 79… |
-| SumDelayWaitingByExamCode | float64 | 0 | 0 | 40908 | 0.0, 6.4225, 6.2071, 5.7546, 5.9743, 14.4775, 13.9174, 12.6296, 12.3969, 14.2831 |
-| AvgAgePeopleWaiting | float64 | 0 | 0 | 73736 | 0.0, 91.3484, 37.0586, 23.4798, 94.8172, 37.2416, 84.7639, 84.2656, 62.8501, 61… |
-| Wait | int64 | 0 | 0 | 507 | 3, 4, 2, 5, 6, 7, 8, 1, 9, 10 |
-| SumWaits | int64 | 0 | 0 | 756 | 0, 2, 3, 1, 4, 5, 6, 7, 8, 9 |
-| LineCount0 | int64 | 0 | 0 | 23 | 1, 0, 2, 3, 4, 5, 6, 7, 8, 9 |
-| LineCount1 | int64 | 0 | 0 | 23 | 1, 0, 2, 3, 4, 5, 6, 7, 8, 9 |
-| LineCount2 | int64 | 0 | 0 | 23 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
-| LineCount3 | int64 | 0 | 0 | 23 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
-| LineCount4 | int64 | 0 | 0 | 23 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
-| FlowCount2 | int64 | 0 | 0 | 25 | 4, 3, 2, 0, 5, 1, 6, 7, 8, 9 |
-| FlowCount4 | int64 | 0 | 0 | 45 | 8, 7, 2, 0, 6, 9, 3, 5, 1, 10 |
-| mintime | int64 | 0 | 0 | 212 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
-| maxtime | int64 | 0 | 0 | 278 | 0, 8, 7, 6, 9, 10, 5, 11, 4, 12 |
-| AheadCount | int64 | 0 | 0 | 201 | 0, 3, 2, 7, 8, 12, 6, 11, 16, 17 |
-| ThoracicCount | int64 | 0 | 0 | 15 | 0, 1, 4, 3, 5, 2, 6, 7, 8, 9 |
-| PediatricCount | int64 | 0 | 0 | 9 | 0, 1, 2, 3, 4, 5, 6, 7, 8 |
-| MSKCount | int64 | 0 | 0 | 27 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
+| facility | category | 0 | 0 | 3 | F1, F3, F2 |
+| SumHowEarlyWaiting | float64 | 0 | 0 | 1151 | 0.0, 29.0, 30.0, 33.0, 24.0, 28.0, 39.0, 21.0, 23.0, 38.0 |
+| AvgHowEarlyWaiting | float64 | 0 | 0 | 325 | 0.0, 33.0, 28.0, 38.0, 32.0, 24.0, 26.0, 27.0, 23.0, 30.0 |
+| LineCount0Strict | float64 | 0 | 0 | 15 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
+| SchFlowCount2 | float64 | 0 | 0 | 9 | 4.0, 3.0, 0.0, 5.0, 2.0, 1.0, 6.0, 7.0, 8.0 |
+| SchFlowCount4 | float64 | 0 | 0 | 14 | 8.0, 0.0, 7.0, 2.0, 9.0, 6.0, 3.0, 10.0, 4.0, 5.0 |
+| FutFlowCount2 | float64 | 0 | 0 | 9 | 4.0, 3.0, 5.0, 2.0, 1.0, 0.0, 6.0, 7.0, 8.0 |
+| FutFlowCount4 | float64 | 0 | 0 | 14 | 8.0, 7.0, 2.0, 9.0, 6.0, 3.0, 10.0, 4.0, 5.0, 1.0 |
+| DelayCount | float64 | 0 | 0 | 62 | 0.0, 1.0, 2.0, 5.0, 3.0, 6.0, 4.0, 7.0, 8.0, 9.0 |
+| DelayCountLastHour | float64 | 0 | 0 | 15 | 0.0, 2.0, 1.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
+| NeuroCount | float64 | 0 | 0 | 8 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0 |
+| AbdominalCount | float64 | 0 | 0 | 16 | 0.0, 1.0, 2.0, 3.0, 5.0, 4.0, 6.0, 7.0, 8.0, 9.0 |
+| VascularCount | float64 | 0 | 0 | 7 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 |
+| CardiacCount | float64 | 0 | 0 | 5 | 0.0, 1.0, 2.0, 3.0, 4.0 |
+| AfterSlot | float64 | 0 | 0 | 128 | 3.0, 2.0, 5.0, 12.0, 9.0, 7.0, 4.0, 1.0, 11.0, 14.0 |
+| StartTime | float64 | 0 | 0 | 710 | 9.7833, 9.0, 8.45, 9.85, 12.9333, 9.9667, 8.0, 9.5667, 9.0333, 9.45 |
+| StartTime2 | float64 | 0 | 0 | 710 | 95.7136, 81.0, 71.4025, 97.0225, 167.2711, 99.3344, 64.0, 91.5211, 81.6011, 89.… |
+| StartTime3 | float64 | 0 | 0 | 710 | 936.3981, 729.0, 603.3511, 955.6716, 2163.3729, 990.0331, 512.0, 875.5518, 737.… |
+| StartTime4 | float64 | 0 | 0 | 1063 | 9161.0941, 6561.0, 9413.3655, 5098.317, 4096.0, 9867.3292, 8376.1114, 6658.7404… |
+| SumWaitByTaskTypeLine | float64 | 0 | 0 | 914 | 0.0, 16.0, 32.0, 33.0, 17.0, 48.0, 49.0, 50.0, 58.0, 64.0 |
+| AvgWaitByTaskTypeLine | float64 | 0 | 0 | 1766 | 0.0, 16.0, 17.0, 16.5, 16.3333, 18.0, 58.0, 61.0, 16.6667, 16.25 |
+| DelayedInLine | float64 | 0 | 0 | 12 | 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0 |
+| SumDelayWaitingByExamCode | float64 | 0 | 0 | 25434 | 0.0, 6.4225, 6.2071, 5.7546, 5.9743, 12.6296, 12.3969, 12.1771, 11.9617, 12.1814 |
+| ExpectedDelayNextExam | float64 | 0 | 0 | 446 | 6.4225, 6.2071, 19.2911, 15.272, 6.4456, 6.8852, 5.9743, 8.0056, 16.9882, 8.4003 |
+| AvgAgePeopleWaiting | float64 | 0 | 0 | 53302 | 0.0, 37.0586, 23.4798, 94.8172, 37.2416, 84.2656, 84.7639, 53.4155, 68.1533, 61… |
+| DayOfWeek | float64 | 1 | 0 | 7 | 4.0, 3.0, 6.0, 5.0, 2.0, 7.0, 1.0 |
+| Month | float64 | 1 | 0 | 12 | 5.0, 7.0, 6.0, 4.0, 11.0, 3.0, 1.0, 12.0, 2.0, 10.0 |
+| DayOfYear | float64 | 1 | 0 | 346 | 137.0, 198.0, 206.0, 177.0, 347.0, 200.0, 333.0, 142.0, 130.0, 136.0 |
+| AvgDelayForDay | float64 | 0 | 0 | 19295 | 0.0, 1.0, -1.0, 2.0, -2.0, 3.0, -3.0, 4.0, -6.0, 5.0 |
+| NumAddOnsToday | float64 | 0 | 0 | 14 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0 |
+| NumAddOnsLastW2 | float64 | 0 | 0 | 8 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0 |
+| NumScheduledNextSlot | float64 | 0 | 0 | 9 | 2.0, 1.0, 4.0, 5.0, 3.0, 6.0, 7.0, 0.0, 8.0 |
+| NumScheduledNextW2 | float64 | 0 | 0 | 14 | 1.0, 0.0, 2.0, 3.0, 5.0, 4.0, 6.0, 7.0, 8.0, 9.0 |
+| SumTimeToCompleteNextSlot | float64 | 0 | 0 | 249 | 37.0, 30.0, 33.0, 36.0, 17.0, 16.0, 35.0, 50.0, 34.0, 32.0 |
+| SumTimeToCompleteNextW2 | float64 | 0 | 0 | 402 | 0.0, 37.0, 16.0, 30.0, 50.0, 32.0, 36.0, 35.0, 14.0, 47.0 |
+| WithContrastCountWaiting | float64 | 0 | 0 | 14 | 0.0, 3.0, 4.0, 2.0, 5.0, 1.0, 6.0, 7.0, 8.0, 9.0 |
+| WithAndWithoutContrastCountWaiting | float64 | 0 | 0 | 7 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 |
+| WithContrastCountInProgress | float64 | 0 | 0 | 7 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0 |
+| WithAndWithoutContrastCountInProgress | float64 | 0 | 0 | 6 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 |
+| Wait | int64 | 0 | 0 | 507 | 4, 0, 5, 6, 3, 1, 2, -1, -2, 7 |
+| SumWaits | int64 | 0 | 0 | 756 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 13 |
+| LineCount0 | int64 | 0 | 0 | 18 | 1, 2, 0, 3, 4, 5, 6, 7, 8, 9 |
+| LineCount1 | int64 | 0 | 0 | 17 | 1, 2, 0, 3, 4, 5, 6, 7, 8, 9 |
+| LineCount2 | int64 | 0 | 0 | 18 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
+| LineCount3 | int64 | 0 | 0 | 17 | 0, 2, 1, 3, 4, 5, 6, 7, 8, 9 |
+| LineCount4 | int64 | 0 | 0 | 16 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
+| FlowCount2 | int64 | 0 | 0 | 11 | 3, 4, 2, 0, 1, 5, 6, 7, 8, 9 |
+| FlowCount4 | int64 | 0 | 0 | 16 | 8, 7, 2, 0, 6, 9, 3, 5, 1, 4 |
+| mintime | int64 | 0 | 0 | 205 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
+| maxtime | int64 | 0 | 0 | 275 | 0, 29, 28, 25, 26, 27, 31, 30, 32, 24 |
+| AheadCount | int64 | 0 | 0 | 76 | 0, 3, 2, 7, 8, 12, 11, 6, 17, 16 |
+| ThoracicCount | int64 | 0 | 0 | 15 | 0, 4, 3, 5, 6, 2, 7, 1, 8, 9 |
+| PediatricCount | int64 | 0 | 0 | 3 | 0, 1, 2 |
+| MSKCount | int64 | 0 | 0 | 7 | 0, 1, 2, 3, 4, 5, 6 |
+| NumScannersUsedToday | int64 | 0 | 0 | 7 | 6, 2, 0, 1, 5, 3, 4 |
 
-(29 more rows not shown)
+(28 more rows not shown)
 
 </details>
 
@@ -339,112 +337,100 @@ Preserve original signed scheduled delay for F1-F3 and nonnegative arrival waiti
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 24 | -1.816 | nan | 670.72 | nan | log1p | 742000 | 730716 | lognormal |
+| 0 | 0 | 37.5 | -1.478 | nan | 1040.43 | nan | log1p | 422021 | 427320 | exponential |
 
 ### Numeric features
 
 <details>
-<summary>Show the table (81 rows)</summary>
+<summary>Show the table (82 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| Wait | 130431 | 7.29533 | 25.8983 | -497 | 360 |
+| Wait | 82001 | 6.97979 | 32.2558 | -497 | 360 |
 | SumHowEarlyWaiting | 82001 | 136.015 | 173.928 | -156 | 1563 |
 | AvgHowEarlyWaiting | 82001 | 35.736 | 32.7785 | -87 | 523 |
 | LineCount0Strict | 82001 | 2.01637 | 2.05357 | 0 | 14 |
-| SumWaits | 130431 | 58.4269 | 96.2448 | 0 | 1032 |
-| LineCount0 | 130431 | 2.59339 | 2.47427 | 0 | 22 |
-| LineCount1 | 130431 | 2.57749 | 2.48234 | 0 | 22 |
-| LineCount2 | 130431 | 2.53318 | 2.48438 | 0 | 22 |
-| LineCount3 | 130431 | 2.45813 | 2.49127 | 0 | 22 |
-| LineCount4 | 130431 | 2.36166 | 2.49145 | 0 | 22 |
-| FlowCount2 | 130431 | 4.6099 | 3.80153 | 0 | 24 |
-| FlowCount4 | 130431 | 8.90796 | 7.17479 | 0 | 44 |
+| SumWaits | 82001 | 83.1375 | 112.069 | 0 | 1032 |
+| LineCount0 | 82001 | 2.78581 | 2.46296 | 0 | 17 |
+| LineCount1 | 82001 | 2.77344 | 2.48147 | 0 | 18 |
+| LineCount2 | 82001 | 2.73788 | 2.50143 | 0 | 17 |
+| LineCount3 | 82001 | 2.64865 | 2.52503 | 0 | 18 |
+| LineCount4 | 82001 | 2.54752 | 2.5417 | 0 | 15 |
+| FlowCount2 | 82001 | 2.68606 | 1.82105 | 0 | 10 |
+| FlowCount4 | 82001 | 5.12443 | 3.2517 | 0 | 15 |
 | SchFlowCount2 | 82001 | 2.86826 | 1.84324 | 0 | 8 |
 | SchFlowCount4 | 82001 | 5.37032 | 3.40964 | 0 | 13 |
 | FutFlowCount2 | 82001 | 3.13906 | 1.70164 | 0 | 8 |
 | FutFlowCount4 | 82001 | 6.10212 | 3.03621 | 0 | 13 |
 | DelayCount | 82001 | 14.1087 | 11.6735 | 0 | 61 |
 | DelayCountLastHour | 82001 | 3.20639 | 2.52633 | 0 | 14 |
-| mintime | 130431 | 6.58297 | 11.6482 | 0 | 300 |
-| maxtime | 130431 | 23.5228 | 27.1539 | 0 | 311 |
-| AheadCount | 130431 | 38.5876 | 33.9048 | 0 | 200 |
-| ThoracicCount | 130431 | 0.812959 | 1.92422 | 0 | 14 |
-| PediatricCount | 130431 | 0.214888 | 0.58921 | 0 | 8 |
+| mintime | 82001 | 8.52741 | 13.3064 | 0 | 279 |
+| maxtime | 82001 | 28.5619 | 29.1102 | 0 | 311 |
+| AheadCount | 82001 | 24.49 | 17.31 | 0 | 75 |
+| ThoracicCount | 82001 | 1.24339 | 2.3096 | 0 | 14 |
+| PediatricCount | 82001 | 0.0100365 | 0.101136 | 0 | 2 |
 | NeuroCount | 82001 | 0.373386 | 0.790582 | 0 | 7 |
 | AbdominalCount | 82001 | 3.03824 | 2.79505 | 0 | 15 |
 | VascularCount | 82001 | 0.369495 | 0.673303 | 0 | 6 |
 | CardiacCount | 82001 | 0.0397068 | 0.245762 | 0 | 4 |
-| MSKCount | 130431 | 1.86062 | 2.90746 | 0 | 26 |
-| NumScannersUsedToday | 130431 | 5.28059 | 2.96563 | 0 | 9 |
-| SumInProgress | 130431 | 43.9256 | 50.6646 | 0 | 808 |
-| BeforeSlot | 130431 | 11.5375 | 15.7497 | 0 | 418 |
+| MSKCount | 82001 | 0.372105 | 0.672264 | 0 | 6 |
+| NumScannersUsedToday | 82001 | 3.64775 | 2.15295 | 0 | 6 |
+| SumInProgress | 82001 | 55.0849 | 56.1263 | 0 | 808 |
+| BeforeSlot | 82001 | 15.8715 | 17.8732 | 0 | 418 |
 | AfterSlot | 82001 | 16.2121 | 13.1638 | 0 | 342 |
-| Median5 | 130431 | 24.3555 | 20.86 | -347 | 207 |
-| MostRecent1 | 130431 | 25.1326 | 31.4034 | -492 | 371 |
-| MostRecent2 | 130431 | 24.3629 | 31.334 | -415 | 342 |
-| MostRecent3 | 130431 | 23.7519 | 30.7471 | -492 | 323 |
-| MostRecent4 | 130431 | 22.9135 | 30.4416 | -415 | 357 |
-| MostRecent5 | 130431 | 22.3795 | 30.5503 | -405 | 340 |
-| StartTime | 130431 | 11.4026 | 2.59542 | 6.38333 | 20.2333 |
-| StartTime2 | 130431 | 136.756 | 61.1497 | 40.7469 | 409.388 |
-| StartTime3 | 130431 | 1717.19 | 1126.52 | 260.101 | 8283.28 |
-| StartTime4 | 130431 | 22441.5 | 19157.1 | 1660.31 | 167598 |
+| Median5 | 82001 | 30.8992 | 23.5217 | -347 | 207 |
+| MostRecent1 | 82001 | 31.4659 | 36.9387 | -492 | 371 |
+| MostRecent2 | 82001 | 30.5012 | 37.0606 | -415 | 342 |
+| MostRecent3 | 82001 | 29.4669 | 36.4153 | -492 | 323 |
+| MostRecent4 | 82001 | 28.2285 | 36.1613 | -415 | 357 |
+| MostRecent5 | 82001 | 27.4387 | 36.2986 | -405 | 340 |
+| StartTime | 82001 | 11.4573 | 2.77544 | 6.38333 | 20.2333 |
+| StartTime2 | 82001 | 138.974 | 65.3644 | 40.7469 | 409.388 |
+| StartTime3 | 82001 | 1772.66 | 1205.88 | 260.101 | 8283.28 |
+| StartTime4 | 82001 | 23586.1 | 20565.9 | 1660.31 | 167598 |
 | SumWaitByTaskTypeLine | 82001 | 132.956 | 173.159 | 0 | 1065 |
 | AvgWaitByTaskTypeLine | 82001 | 33.6899 | 26.5828 | 0 | 132 |
-| SumTimeToCompleteInProgress | 130431 | 110.01 | 105.703 | 0 | 1251 |
+| SumTimeToCompleteInProgress | 82001 | 142.773 | 116.118 | 0 | 1251 |
 | DelayedInLine | 82001 | 1.72724 | 1.20924 | 0 | 11 |
-| SumDelayWaitingByExamCode | 130431 | 33.5798 | 39.0032 | -212.812 | 340.932 |
-| SumDelayWaitingInLine | 130431 | -29.8154 | 85.4828 | -1005 | 449 |
-| SumDelayInProgress | 130431 | 10.9537 | 44.4445 | -601 | 346 |
+| SumDelayWaitingByExamCode | 82001 | 33.4861 | 39.8889 | -212.812 | 259.544 |
+| SumDelayWaitingInLine | 82001 | -52.8986 | 99.2158 | -1005 | 449 |
+| SumDelayInProgress | 82001 | 8.24878 | 52.6282 | -601 | 346 |
 | ExpectedDelayNextExam | 82001 | 11.6125 | 6.14981 | -229 | 74 |
-| AvgAgePeopleWaiting | 130431 | 49.4009 | 25.2877 | 0 | 100.832 |
-| DayOfYear | 130399 | 172.469 | 105.306 | 2 | 365 |
-| InProgressSize | 130431 | 2.70388 | 1.90129 | 0 | 13 |
-| AvgWaitLastK1Customers | 130431 | 23.3693 | 20.9784 | -121 | 139 |
-| AvgWaitLastK2Customers | 130431 | 21.7667 | 18.6196 | -65 | 120 |
-| AvgWaitLastK3Customers | 130431 | 20.0952 | 16.9199 | -43 | 104 |
-| NumCompletedToday | 130431 | 34.1304 | 33.6654 | 0 | 200 |
-| NumCompletedInLastW1 | 130431 | 4.4078 | 3.91472 | 0 | 24 |
-| NumCompletedInLastW2 | 130431 | 8.47655 | 7.32499 | 0 | 44 |
-| NumCompletedInLastW3 | 130431 | 15.6213 | 13.677 | 0 | 76 |
+| AvgAgePeopleWaiting | 82001 | 50.1851 | 23.2024 | 0 | 100.832 |
+| DayOfWeek | 82000 | 4.03935 | 1.39802 | 1 | 7 |
+| Month | 82000 | 6.34576 | 3.45506 | 1 | 12 |
+| DayOfYear | 82000 | 177.655 | 105.543 | 2 | 365 |
+| InProgressSize | 82001 | 2.65998 | 1.92038 | 0 | 13 |
+| AvgWaitLastK1Customers | 82001 | 29.1079 | 24.0959 | -121 | 139 |
+| AvgWaitLastK2Customers | 82001 | 26.7447 | 21.4442 | -65 | 120 |
+| AvgWaitLastK3Customers | 82001 | 24.2553 | 19.6192 | -43 | 104 |
+| NumCompletedToday | 82001 | 20.0404 | 16.8937 | 0 | 75 |
+| NumCompletedInLastW1 | 82001 | 2.44247 | 1.93168 | 0 | 15 |
 
-(21 more rows not shown)
+(22 more rows not shown)
 
 </details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (25 rows)</summary>
+<summary>Show the table (13 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| DayOfWeek | 1 | 5.0 | 28220 | 21.64 |
-| DayOfWeek | 2 | 4.0 | 28112 | 21.55 |
-| DayOfWeek | 3 | 3.0 | 26725 | 20.49 |
-| DayOfWeek | 4 | 2.0 | 23745 | 18.21 |
-| DayOfWeek | 5 | 6.0 | 23582 | 18.08 |
-| IsFirst | 1 | 0 | 126636 | 97.09 |
-| IsFirst | 2 | 1 | 3795 | 2.91 |
-| IsLast | 1 | 0.0 | 79835 | 61.21 |
-| IsLast | 2 | &lt;NA> | 48430 | 37.13 |
-| IsLast | 3 | 1.0 | 2166 | 1.66 |
-| Month | 1 | 5.0 | 13428 | 10.3 |
-| Month | 2 | 4.0 | 12835 | 9.84 |
-| Month | 3 | 6.0 | 12696 | 9.73 |
-| Month | 4 | 1.0 | 12145 | 9.31 |
-| Month | 5 | 3.0 | 12111 | 9.29 |
-| NoneCompleted | 1 | 0 | 118984 | 91.22 |
-| NoneCompleted | 2 | 1 | 11447 | 8.78 |
-| NoneInLine | 1 | 0 | 105582 | 80.95 |
-| NoneInLine | 2 | 1 | 24849 | 19.05 |
-| NoneInProgress | 1 | 0 | 113068 | 86.69 |
-| NoneInProgress | 2 | 1 | 17363 | 13.31 |
-| facility | 1 | F4 | 48430 | 37.13 |
-| facility | 2 | F1 | 42766 | 32.79 |
-| facility | 3 | F3 | 23583 | 18.08 |
-| facility | 4 | F2 | 15652 | 12 |
+| IsFirst | 1 | 0 | 78719 | 96 |
+| IsFirst | 2 | 1 | 3282 | 4 |
+| IsLast | 1 | 0 | 79835 | 97.36 |
+| IsLast | 2 | 1 | 2166 | 2.64 |
+| NoneCompleted | 1 | 0 | 71961 | 87.76 |
+| NoneCompleted | 2 | 1 | 10040 | 12.24 |
+| NoneInLine | 1 | 0 | 68547 | 83.59 |
+| NoneInLine | 2 | 1 | 13454 | 16.41 |
+| NoneInProgress | 1 | 0 | 70113 | 85.5 |
+| NoneInProgress | 2 | 1 | 11888 | 14.5 |
+| facility | 1 | F1 | 42766 | 52.15 |
+| facility | 2 | F3 | 23583 | 28.76 |
+| facility | 3 | F2 | 15652 | 19.09 |
 
 </details>
 
@@ -459,3 +445,4 @@ Preserve original signed scheduled delay for F1-F3 and nonnegative arrival waiti
 | data_foundry_version | 0.0.5 |
 | git_sha | 6d189a922994ddb0221c8249d07552d4df8af88b |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
+| stale | yes: the definition now gives checksum `v2:35b11bccfcb83e4b8960f4f66c1c33428e28acf79b10a7840017a1e54c35ce0b` |

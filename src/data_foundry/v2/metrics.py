@@ -39,7 +39,7 @@ custom metrics against their official code, vendored in ``tests/test_v2_metrics_
 
 The custom metrics (``kind="custom"``): ``cost_matrix``, ``precision_at_k``, ``average_precision_at_k``, ``rmspe``,
 ``gini_top_capture``, ``weighted_pearsonr``, ``mean_group_pearsonr``, ``hierarchical_balanced_accuracy``,
-``mean_absolute_log1p_error``, ``gini_stability``, ``par_k`` and ``normalized_early_detection_utility``. Each
+``gini_stability``, ``par_k`` and ``normalized_early_detection_utility``. Each
 :class:`MetricDef` holds its formula,
 its reference, its prediction kind, its input roles and its params. A metric with inputs takes the values of the
 scored rows by role: ``group`` (rows of one unit: an era, a patient, an instance), ``order`` (sorts rows in time: a
@@ -223,6 +223,25 @@ def _value_metric(func_name: str) -> Callable:
     return fn
 
 
+def _poisson_deviance(y_true, y_pred, *, params=None, **_):
+    """``mean_poisson_deviance`` with the predicted means floored at ``params["min_prediction"]`` (default machine
+    epsilon, as ``log_loss`` clips its probabilities): a mean at or below 0 is no valid Poisson mean, and in practice
+    a model's output is clipped at a small mean before it is scored. A dataset states its floor in the definition,
+    below the smallest plausible mean. NaN and infinite predictions still raise.
+    """
+    floor = float((params or {}).get("min_prediction", np.finfo(float).eps))
+    y_pred = np.asarray(y_pred, dtype=float)
+    y_pred = np.where(np.isfinite(y_pred), np.maximum(y_pred, floor), y_pred)
+    return _sklearn_metrics().mean_poisson_deviance(np.asarray(y_true, dtype=float), y_pred)
+
+
+def _check_min_prediction(params: Mapping[str, Any]) -> None:
+    if "min_prediction" in params:
+        value = params["min_prediction"]
+        if not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
+            raise ValueError(f"min_prediction is a finite number above 0, not {value!r}.")
+
+
 def _correlation(func_name: str) -> Callable:
     def fn(y_true, y_pred, **_):
         result = getattr(_scipy_stats(), func_name)(np.asarray(y_true, dtype=float), np.asarray(y_pred, dtype=float))
@@ -249,6 +268,9 @@ class MetricDef:
         predictions: Other prediction kinds it takes, chosen by ``params["prediction"]``.
         check_params: Raises a ValueError on invalid params (a missing matrix, a bad ``k``).
         reference: Where the metric is defined, and the official implementation it is tested against.
+        prediction_domain: The values a ``value`` prediction must take, on the original scale: ``None`` (any finite
+            value) or ``positive`` (an expected mean, as for ``mean_poisson_deviance``). The metric-computes check
+            draws its test predictions in this domain.
     """
 
     name: str
@@ -264,6 +286,7 @@ class MetricDef:
     predictions: tuple[str, ...] = ()
     check_params: Callable[[Mapping[str, Any]], None] | None = field(default=None, compare=False)
     reference: str | None = None
+    prediction_domain: str | None = None
 
     def prediction_for(self, params: Mapping[str, Any] | None) -> str:
         """The prediction kind under ``params``: :attr:`prediction`, or ``params["prediction"]`` when the metric
@@ -287,8 +310,8 @@ class MetricDef:
             self.check_params(params)
 
 
-def _standard(name, problem_types, prediction, greater_is_better, fn, implementation, definition) -> MetricDef:
-    return MetricDef(name, tuple(problem_types), prediction, greater_is_better, fn, implementation, definition)
+def _standard(name, problem_types, prediction, greater_is_better, fn, implementation, definition, **extra) -> MetricDef:
+    return MetricDef(name, tuple(problem_types), prediction, greater_is_better, fn, implementation, definition, **extra)
 
 
 _BIN = ("binary_classification",)
@@ -422,9 +445,14 @@ METRICS: dict[str, MetricDef] = {
             _REG,
             "value",
             _LOWER,
-            _value_metric("mean_poisson_deviance"),
-            "sklearn.metrics.mean_poisson_deviance",
-            "2*mean(y*log(y/p)-y+p); finite y>=0 and p>0; 0*log(0/p)=0",
+            _poisson_deviance,
+            "sklearn.metrics.mean_poisson_deviance, the predictions floored at min_prediction",
+            "2*mean(y*log(y/p)-y+p); finite y>=0; p below min_prediction (default machine epsilon) counts as it",
+            prediction_domain="positive",
+            params={
+                "min_prediction": "predictions below it count as it; a finite number above 0 (default: machine epsilon)"
+            },
+            check_params=_check_min_prediction,
         ),
         _standard(
             "rmse",
@@ -514,15 +542,6 @@ METRICS: dict[str, MetricDef] = {
 # selected algorithm) is aggregated by the caller as the task's grouping declares, except where the metric itself
 # defines the per-group step (``par_k``, ``mean_group_pearsonr``, ...). Each is tested against the official or
 # reference implementation in ``tests/test_v2_metrics_custom.py``.
-
-
-def _mean_absolute_log1p_error(y_true, y_pred, **_):
-    y_true = np.asarray(y_true, dtype=float)
-    y_pred = np.asarray(y_pred, dtype=float)
-    # A clipping floor would change the chosen error cost.
-    if any(not np.isfinite(v).all() or (v <= -1).any() for v in (y_true, y_pred)):
-        raise ValueError("mean_absolute_log1p_error needs finite values greater than -1.")
-    return _sklearn_metrics().mean_absolute_error(np.log1p(y_true), np.log1p(y_pred))
 
 
 def _require(params: Mapping[str, Any], *names: str) -> None:
@@ -929,15 +948,6 @@ _TOP_K_PARAMS = {
 }
 
 _CUSTOM_METRICS = (
-    _custom(
-        "mean_absolute_log1p_error",
-        _REG,
-        "value",
-        _LOWER,
-        _mean_absolute_log1p_error,
-        "mean(|log1p(y) - log1p(p)|); finite y and p greater than -1, without clipping",
-        "numpy.log1p followed by sklearn.metrics.mean_absolute_error; context-selected CPS88 prediction loss",
-    ),
     _custom(
         "cost_matrix",
         _CLF,
@@ -1394,7 +1404,9 @@ def score(spec: Any, y_true: Any, y_pred: Any, *, labels: Any = None, **inputs: 
             :class:`Metric` (resolved, or local).
         y_true: The true values of the scored rows, on the scale the target ships on.
         y_pred: The predictions (see the module docstring for the ``proba`` / ``label`` / ``value`` conventions), on
-            the shipped scale; a spec's ``target_transform`` is inverted on both before the metric.
+            the shipped scale; a spec's ``target_transform`` is inverted on both before the metric. There are no
+            metric-specific branches here: a metric that needs another scale takes it itself (``rmsle``), so the
+            inverse is the same for every metric.
         labels: The class labels in the order of the probability columns (classification); default the sorted
             classes of ``y_true``.
         **inputs: The values of the spec's input columns for the scored rows, by role (``group=...``).
@@ -1410,9 +1422,6 @@ def score(spec: Any, y_true: Any, y_pred: Any, *, labels: Any = None, **inputs: 
         raise ValueError(f"metric {fields['name']!r} needs the input(s) {missing} (pass them by role).")
     y_true = np.asarray(y_true)
     transform = fields.get("target_transform") or "identity"
-    if transform == "log1p" and fn is _mean_absolute_log1p_error:
-        # Cancel log1p(expm1(z)) before overflow or rounding a very negative inverse to -1.
-        return float(_sklearn_metrics().mean_absolute_error(y_true, y_pred))
     if transform != "identity":  # the target ships transformed for modelling: score on the original scale
         if transform not in INVERSE_TRANSFORMS:
             raise ValueError(f"target_transform is one of {TARGET_TRANSFORMS}, not {transform!r}.")
@@ -1529,10 +1538,17 @@ def to_sklearn_scorer(spec: Any, *, labels: Any = None) -> Callable[..., float]:
     )
 
 
-def dummy_prediction(prediction: str, y_train: Any, n: int, *, labels: Any = None, seed: int = 0) -> np.ndarray:
+def dummy_prediction(
+    prediction: str, y_train: Any, n: int, *, labels: Any = None, seed: int = 0, domain: str | None = None
+) -> np.ndarray:
     """A random prediction for ``n`` rows that matches the kind: draws of the training values (``label`` /
     ``value``) or random probabilities over ``labels`` (``proba``; a vector for two classes). Used to check that a
     metric computes on every split; not a baseline.
+
+    ``domain="positive"`` (a metric's :attr:`MetricDef.prediction_domain`) replaces the draws at or below zero by the
+    mean of the positive training values (1 if there are none): an observed count of 0 is a valid label but not a
+    valid expected mean. A positive value on the shipped scale is positive on the original scale under every
+    ``target_transform``.
     """
     rng = np.random.default_rng(seed)
     y_train = np.asarray(y_train)
@@ -1541,7 +1557,13 @@ def dummy_prediction(prediction: str, y_train: Any, n: int, *, labels: Any = Non
         proba = rng.dirichlet(np.ones(len(labels)), size=n)
         return proba[:, 1] if len(labels) == 2 else proba
     if prediction in ("label", "value"):
-        return rng.choice(y_train, size=n, replace=True)
+        draws = rng.choice(y_train, size=n, replace=True)
+        if domain == "positive":
+            positive = y_train[y_train > 0]
+            draws = np.where(draws > 0, draws, positive.mean() if len(positive) else 1.0)
+        elif domain is not None:
+            raise ValueError(f"domain is None or 'positive', not {domain!r}.")
+        return draws
     raise ValueError(f"prediction is one of {PREDICTIONS}, not {prediction!r}.")
 
 

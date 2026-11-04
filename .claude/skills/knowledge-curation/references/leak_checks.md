@@ -75,13 +75,13 @@ Repair or rebuild damaged data from its origin before keeping it: PROV-13 in [pr
 Out: a column recorded after the outcome; attributes looked up after the outcome (a property's current record for a
 past sale), unless the data shows they did not change; a part, a consequence or another encoding of the target; a
 feature computed from the window that defines the target, even when its value is known at snapshot time, unless the
-data shows the window's values do not move with the outcome given the covariates known at the prediction point; a value fitted
-from the same measurement that gives the label; targeting or pointing ids that encode pre-selection or the observation
-date; a same-day value that depends on the day's outcome; missingness that encodes the outcome; an aggregate that may
-include the row's own outcome. Fix it in the definition the smallest way (LEAK-7), else drop it; when the features
-summarise a window that ends at the outcome and no common prediction point can be rebuilt, retire. Test: the codebook
-(LEAK-2) and probes 1 to 4. Cases: the Mechanisms table under Cases.
-Two clauses, amended 2026-10-26 (Lennart), each a case-by-case judgment of the curator, never a default:
+data shows the window's values do not move with the outcome given the covariates known at the prediction point; a value
+fitted from the same measurement that gives the label; targeting or pointing ids that encode pre-selection or the
+observation date; a same-day value that depends on the day's outcome; missingness that encodes the outcome; an aggregate
+that may include the row's own outcome. Fix it in the definition the smallest way (LEAK-7), else drop it; when the
+features summarise a window that ends at the outcome and no common prediction point can be rebuilt, retire. Test: the
+codebook (LEAK-2) and probes 1 to 4. Cases: the Mechanisms table under Cases. Two clauses, amended 2026-10-26 (Lennart),
+each a case-by-case judgment of the curator, never a default:
 * A window sum stays when the data shows it does not move with the outcome once the covariates known at the
   prediction point are accounted for (account_debt_south_africa's billing totals; "keep them, amend it but make clear
   this needs case by case curator judgement"). A value that encodes the target's own quantity, or that falls in the
@@ -172,8 +172,8 @@ to the file (PROV-13), not an ambiguous label.
 ### Selection and censoring
 
 **LEAK-22 (Must).** When the cohort holds rows that cannot have the outcome, follow the paper's cohort. Cases:
-diabetes_130_us. A competing event after the prediction point (a death from another cause within the horizon) is no such row:
-the row stays with the label it had, No, since the risk a patient faces includes it; dropping it selects the cohort
+diabetes_130_us. A competing event after the prediction point (a death from another cause within the horizon) is no such
+row: the row stays with the label it had, No, since the risk a patient faces includes it; dropping it selects the cohort
 on the future (framingham_heart_study_fhs, 251 deaths, Lennart, 2026-10-22).
 
 **LEAK-23 (Must).** A target over only the rows with the event, with follow-up ending on one date (right truncation),
@@ -282,15 +282,8 @@ Reading the probes:
 * The string overlap compares exact values: the same molecule written as two SMILES strings, or the same text with
   other whitespace, does not count. Canonicalise (RDKit for SMILES) before comparing when the overlap matters (probe
   5; LEAK-16).
-* On extremely imbalanced targets, near-pure majority categories can reflect the base rate. For each suspicious
-  value, compare label rates within that value against all other values, their difference or ratio, and information
-  gain from binary membership in that value (mutual information), with supporting counts (probe 4; EV-3;
-  amazon_employee_access, aps_failure). Substantial supported information gain is a potential leakage or memorization
-  signal to investigate, not evidence against leakage. High cardinality alone neither implies this signal nor
-  explains it away; sparse categories can inflate empirical whole-feature information gain. Read suspicious-value
-  associations alongside source timing and training-only lookup behavior: mixed labels or partial lookup coverage
-  do not clear a suspected leak. Association alone does not establish its mechanism; legitimate history can also be
-  informative (LEAK-34, TP-4).
+* A pure-value flag on a heavily imbalanced target (base rates of 94-98%: amazon_employee_access, aps_failure) is
+  usually an ordinary category effect (probe 4; EV-3).
 * A near-saturated score alone is not a leak (diamonds R^2 0.993 and splice AUC 0.99+ showed none). Run the probes and
   report what they found (EV-3).
 * A claimed problem gets a second check that tries to refute it with its own code (EV-6). In the audit all 15 findings
@@ -324,27 +317,53 @@ The numbers compare the shipped data with a suspected fix; they are not leaderbo
 | 2 | Each feature alone | one column comes close to the full model | heart_failure `time` alone 0.84; sdss `redshift`, STAR against the rest 0.998; online_shoppers `PageValues` 0.974 (Feb-May) |
 | 3 | A missing-value indicator alone; the target rate when missing and when present | missingness predicts the label | mic: rows missing `NA_R_3_n` are 95% deaths (base rate 16%); kick: missing `WheelType` 70.5% bad buys (9.7% otherwise) |
 | 4 | Pure values: a value, or present against missing, with at least 100 rows and at least 99.5% one class | a value that occurs with one class only | kickstarter `profile_blurb` (0 of 69,970 failed projects); hotel `RequiredCarParkingSpaces = 1` (0 cancellations); airline `Seat comfort = 0` (99.8% satisfied) |
-| 5 | The share of test rows whose feature vector has an exact copy in train, without and with the string and datetime columns; for long string columns, the share of test values seen in train | a large share, above all with the same label | maternal_health_risk 74%; wine_quality 24%; qsar_bioconcentration 5.4% on the nine descriptors but 0% with the SMILES (isomers the descriptors do not tell apart) |
+| 5 | The share of test rows whose feature vector has an exact copy in train, on every shipped split, without and with the string and datetime columns, split by label (the same label only, another label only, each with one copy or two or more, both labels); for long string columns, the share of test values seen in train (`leak_probes.py`) | a large share, above all with the same label | maternal_health_risk 74%; wine_quality 24%; qsar_bioconcentration 5.4% on the nine descriptors but 0% with the SMILES (isomers the descriptors do not tell apart) |
 | 6 | 1-NN label agreement (closest tenth, all, chance); each row's distance to its nearest other row as a label-free score | near-copies agree on the label almost always (reposts, re-scans); the distance alone comes close to the full model (class-conditional generation) | emscad 0.998 among near-copies; homeq distance alone 0.923 (full model 0.975) |
 | 7 | Separate two subgroups that share a label (two sources, two clinical groups, donors and patients) | they separate far better than the label does: a source or batch signal | prostate Benign against NED 0.997; hepatitis_c donor against patient 1.000 from four formatting flags |
 | 8 | Features in a range where no signal can exist | they predict the label | prostate m/z < 1 Da: AUC 0.81-0.85 |
 | 9 | Number formats by class (share of whole numbers, decimals, units) | the formats differ by class | hepatitis_c `ALB`, `BIL` whole numbers in about 100% of patient rows, 10% of donor rows |
-| 10 | Row order: the target by position in the raw file, next-row label match; a time index against the date and against any sort key | the order is temporal or sorted by the target, or the "time" index follows another key | seismic_bumps next-row match 2,583 of 2,583; california time index Spearman 1.000 with the address rank, 0.003 with `Listed On` |
+| 10 | Row order: the target by position in the raw file, next-row label match (`leak_probes.py --raw`); a time index against the date and against any sort key | the order is temporal or sorted by the target, or the "time" index follows another key | seismic_bumps next-row match 2,583 of 2,583; california time index Spearman 1.000 with the address rank, 0.003 with `Listed On` |
 | 11 | Entity overlap: the share of test rows whose entity (respondent, company profile, location, CPU and GPU) is in train; the IID score against the grouped score | a large overlap and a large drop | in_vehicle 0.83 to 0.75; emscad 0.99 to 0.94; video_game_fps: every test CPU and GPU in train |
 | 12 | Temporal: rows and minority-class rows per test window | a handful of positives ([task_probes.md](task_probes.md), TP-9), or under about 50 test rows ([splits.md](splits.md), SPLIT-17) | seismic_bumps 0-5 positives per window; ghana rain from 3-6 farmer-days per window; coffee monthly windows of 2-72 rows |
-| 13 | The target by period (rows, p50, p90, max), and the same for two downloads of the source | the newest periods lose their slow or late cases: right-censoring | sf_permit_time 2025 p90 rose from 97 to 160 days between the Feb and Oct 2026 downloads; consumer_complaints Jan 2026: 318 rows, 87% one class |
+| 13 | The target by period (rows per day, an event rate, the class shares, p50 and p90, a count's zero share) against the band of the earlier periods (`leak_probes.py`), and the same for two downloads of the source | the newest periods lose their slow or late cases: right-censoring | sf_permit_time 2025 p90 rose from 97 to 160 days between the Feb and Oct 2026 downloads; consumer_complaints Jan 2026: 318 rows, 87% one class |
 | 14 | A simple formula or lookup for the target; a shallow tree on the label | R^2 near 1; a depth-2 or depth-3 tree close to the full model | video_game_fps: log FPS = game + CPU + GPU, R^2 0.99998; audiology's cochlear diagnoses: two history answers decide 139 of 147 |
 | 15 | The generated-data tests of PROV-3 ([provenance.md](provenance.md), "Is the data generated?"; the scope is SEL-16) | see there | ecommerce_shipping, customer_satisfaction_in_airline, homeq_default_prediction |
 | 16 | Every block of columns: mean 0 and SD 1, or min 0 and max 1, over the whole table | the source scaled over all rows, test rows included | coad_colon_adenocarcinoma (z-scores over 260 patients); credit_card_customers (clipped at whole-file percentiles) |
 | 17 | The number format alone: the decimals each value of a float column is written with, all columns together and the best three alone (`leak_probes.py`) | the format scores far above chance | gallstone_disease 0.949 (best alone: GFR 0.802, two decimals for 80% of those without gallstones and 15% of those with; CRP 0.783; obesity % 0.708, another definition in the second route); 0.666 after LEAK-13 and LEAK-39, nearly all from CRP's exact zeros (0.682), real low values |
 | 18 | Cells on a straight line between the cells above and below, per column and class, in the raw file's order (`leak_probes.py`) | many such cells, in one class more than the other: gaps filled by interpolation. Runs of round values are found too; the values tell them apart | gallstone_disease: vitamin D 77 cells, all without gallstones; visceral muscle area 36, all with; GFR 14. Also flagged, and measured: ECF/TBW 8 (each equals the rounded 100 x ECW / TBW) |
+| 19 | The rows `_clean` removes, against the kept ones: the class shares, or the target's median and mean shift (`leak_probes.py --raw`) | the removed rows differ by their target: a filter on the outcome | protein_model_quality_rf_pcp: the 4,893 native references removed all score GDT_TS 1 (mean shift +3.0 SD), by design |
+| 20 | Each raw column the definition drops, alone against the shipped target on the shipped splits (`leak_probes.py --raw`) | a dropped column scores well alone: say why it is out, and check that no kept column carries it | protein_model_quality_rf_pcp: `TM` R^2 0.87 and `RMSD` 0.84, other quality scores of the same model, rightly dropped |
+| 21 | Exact copies in the raw table, before `_clean`: rows equal in every column but the target and the identifiers, by label (`leak_probes.py --raw`) | copies the definition removed, or the source's own repeats it kept (set against probe 5) | ai4d_lab_tanzania_tourism_classification_challenge: 2,018 of 18,506 rows in 718 groups, 370 with more than one label |
 
-## Detailed checks for release-boundary labels and repeated profiles
+### The raw state (probes 10, 18 to 21)
 
-[Checking diagnostics](checking_diagnostics.md) expands probes 5 and 13: an explicit
-window/end-buffer grid for delayed event labels, and exact profile-overlap counts by
-label and multiplicity on every shipped fold. These produce evidence for the existing
-rules; they do not trim, group, reject or accept a dataset automatically.
+These probes read the table `_load_raw` returns, before `_clean`, in the source's row order. Through the lineage of
+`process(lineage=True)`, the raw position of each curated row, they also read what `_clean` did: the rows it removed
+and the columns it dropped. The trace is a column added to a one-table raw frame, or its index when `_clean` selects
+columns. It counts only when the traced run returns the same frame as the plain one. A raw frame of several tables, or
+a `_clean` that loses both (a merge that resets the index), gives no lineage, and the output says so. Probe 10 needs
+the raw order only; probes 19 and 20 need the lineage.
+
+### Probes 5 and 13
+
+Probe 5 compares exact profiles on every shipped split, each test row against the training side, over the model inputs
+without and with the string and datetime columns (the target, the groups and the scoring columns are never inputs),
+unrounded, with missing values equal to each other. A test row in several repeats counts each time, so the shares are of
+test evaluations, not of entities, and an equal profile does not show that two rows are one entity (LEAK-17 asks for the
+id). Copies of the same label are what a lookup memorises; copies of another label are a label ambiguity or too few
+inputs (LEAK-20); many repeats of a few coarse features can be natural (LEAK-18). Where a lookup shortcut is suspected,
+score a train-only lookup of the profile against the model on the same folds and metric.
+
+Probe 13 (`target_by_period`) puts the rows in periods and sets each statistic of the newest periods against the band
+the earlier ones give: the median and the spread of every run of as many consecutive earlier periods, so a drop is
+read against the history's own variation. Dates that all fall on 1 January are years, and a rank (an integer time
+column with about one row per value, such as an arrival order) is cut into equal-count periods by its order. It
+follows the vintage curves of credit risk, the claims development of insurance (incurred but not reported) and the
+administrative censoring of survival data: a label known only some time after the prediction point is missing in the
+newest periods, so an event rate, an upper quantile or the row count falls at the end and nowhere else. Act on a fall at
+the end: cut before the first period out of band, or compare a second download (LEAK-24). A clean result answers
+censoring at the release end only; whether a model refit at a window's start would have known each training label is
+SPLIT-10's question, and a changing case mix can hide or mimic a drop.
 
 ## Cases
 

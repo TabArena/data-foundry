@@ -58,7 +58,8 @@ anes_voting_2026 (Lennart, 2026-10-19).
 real missing values when the encoding can be inferred from the description and the context. Keep a code and say why
 when it means something ("not previously contacted").
 
-**CLEAN-11 (Should; amended 2026-10-21, Lennart, on ames_housing, mercedes_benz_greener_manufacturing and qsar_tid_11).** Impossible values become missing, and the row stays. Values that are only unusual stay. A row leaves
+**CLEAN-11 (Should; amended 2026-10-21, Lennart, on ames_housing, mercedes_benz_greener_manufacturing and
+qsar_tid_11).** Impossible values become missing, and the row stays. Values that are only unusual stay. A row leaves
 only when it is no task row (USE-7, [use_case.md](use_case.md)) or a copy ([leak_checks.md](leak_checks.md), Copies
 across the split (LEAK-16 to LEAK-21)). A row whose target the source names as not the task's quantity may leave, with
 the source's words. A single extreme target in the training period only may leave with the source's words or where
@@ -193,7 +194,8 @@ ordinal from the context and logic, not from target information"). The curator's
 and name the column after the transform (`log_days_to_death`).
 
 **CLEAN-17 (Should).** Keep rare classes of the source's labels (TP-8), and merge classes only by an established
-convention of the field, with the merge tested (TP-7): [task_probes.md](task_probes.md). Cases: audiology_diagnosis, force_2020 (a class in one group only).
+convention of the field, with the merge tested (TP-7): [task_probes.md](task_probes.md). Cases: audiology_diagnosis,
+force_2020 (a class in one group only).
 
 **CLEAN-18 (Should).** Remove a `Multi-target` tag when the dataset predicts one target ([selection.md](selection.md),
 "Reading decision markers and optional fields").
@@ -233,8 +235,8 @@ classes as words, like every coded column (CLEAN-12):
   rain_in_australia: "add the features to do this task as it looks good with only 9am is not later setting").
 
 Cases: alfa_battle_2_0_task_2 (Lennart, 2026-10-13; reason added 2026-10-21), rain_in_australia (2026-10-26),
-african_credit_scoring_challenge and rosbank1 (2026-10-26). Exceptions (a per-entity history kept as rows that a row model uses):
-amex_non_iid (2026-10-02), fraud_detection_in_electricity_and_gas_consumption_1m (2026-10-26).
+african_credit_scoring_challenge and rosbank1 (2026-10-26). Exceptions (a per-entity history kept as rows that a row
+model uses): amex_non_iid (2026-10-02), fraud_detection_in_electricity_and_gas_consumption_1m (2026-10-26).
 
 **CLEAN-20 (Must).** Copy the top solutions' preprocessing, not their exploits: no step that uses a test-set leak, a
 metric quirk or a feature computed over all rows with their labels (LEAK-28), even when it won the competition. Cases:
@@ -263,18 +265,20 @@ permutes the feature order when it runs.
 structure, never as plain text and never pre-encoded: the definition declares it as a special feature in one column,
 `special_features = (Smiles(column="SMILES"),)` (RDKit's canonical form, `canonical_smiles`), the container records it
 as a special feature of kind `smiles` with the recommended encoding, and the benchmark encodes it, as it encodes dates
-and text. The recommended encoding is RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts (`encode_smiles`, one pinned RDKit); a benchmark may use its own. A SMILES read as
-text adds nothing (character n-grams: -0.025 to +0.010 ROC AUC next to descriptors; a text embedding: nothing on
-apistox), a fixed encoding of the structure does, and the MACCS keys add 0.02 on drug_induced_autoimmunity_prediction
-without costing more than 0.006 elsewhere. Source columns computed from the same structure are one modelling choice of
-the authors and leave, whether or not the recommended encoding reproduces them exactly (Lennart, 2026-11-01: "the real
-task here is going from smiles to a prediction"): drug_induced_autoimmunity_prediction's RDKit descriptors,
-qsar_tid_11's FCFP6 bits, qsar_oral_toxicity's ECFP bits, the Dragon descriptors of qsar_biodeg,
-qsar_fish_toxicity and qsar_aquatic_toxicity. Measured properties stay (qsar_bioconcentration's logKOW), and a column that mixes a measurement with a prediction of the same property stays whole when the actor of the use case would also reach for the prediction (USE-6; that logKOW is 84% measured and 16% the authors' consensus prediction). Salts stay as published: salt forms of one
-compound are a decision of their own (LEAK-19), since the largest fragment is no salt stripper. Check for rows that
-become copies once the stereochemistry is gone (`canonical_smiles(..., stereo=False)`: a 2D encoding does not tell
-stereoisomers apart). Cases: apistox, drug_induced_autoimmunity_prediction, qsar_bioconcentration,
-qsar_oral_toxicity, qsar_tid_11.
+and text. The recommended encoding is RDKit's 2D descriptors, the 166 MACCS keys and the ECFP4 counts (`encode_smiles`,
+one pinned RDKit); a benchmark may use its own. A SMILES read as text adds nothing (character n-grams: -0.025 to +0.010
+ROC AUC next to descriptors; a text embedding: nothing on apistox), a fixed encoding of the structure does, and the
+MACCS keys add 0.02 on drug_induced_autoimmunity_prediction without costing more than 0.006 elsewhere. Source columns
+computed from the same structure are one modelling choice of the authors and leave, whether or not the recommended
+encoding reproduces them exactly (Lennart, 2026-11-01: "the real task here is going from smiles to a prediction"):
+drug_induced_autoimmunity_prediction's RDKit descriptors, qsar_tid_11's FCFP6 bits, qsar_oral_toxicity's ECFP bits, the
+Dragon descriptors of qsar_biodeg, qsar_fish_toxicity and qsar_aquatic_toxicity. Measured properties stay
+(qsar_bioconcentration's logKOW), and a column that mixes a measurement with a prediction of the same property stays
+whole when the actor of the use case would also reach for the prediction (USE-6; that logKOW is 84% measured and 16% the
+authors' consensus prediction). Salts stay as published: salt forms of one compound are a decision of their own
+(LEAK-19), since the largest fragment is no salt stripper. Check for rows that become copies once the stereochemistry is
+gone (`canonical_smiles(..., stereo=False)`: a 2D encoding does not tell stereoisomers apart). Cases: apistox,
+drug_induced_autoimmunity_prediction, qsar_bioconcentration, qsar_oral_toxicity, qsar_tid_11.
 
 ### Spectra
 
@@ -287,15 +291,17 @@ as it encodes a SMILES, a date or text. The processing has free choices (window,
 written into the data one of them becomes the task and a method that processes spectra itself loses the signal. The
 recommended encoding follows the field's published default, never a tuning on our folds: MALDIquant's steps for a raw
 mass spectrum (square root, Savitzky-Golay over 21 points, SNIP baseline, total ion current; a placeholder, since the
-literature names no best pipeline and the benchmark picks among the registered published candidates), the spectrum as it is
-for a peak list or a processed spectrum, and for a vibrational spectrum (Raman, infrared, near-infrared) the spectrum as
-it is, with RamanBench's linear-model default (ALS baseline, SNV) the alternative to check. Raw mass spectra need the
+literature names no best pipeline and the benchmark picks among the registered published candidates), the spectrum as it
+is for a peak list or a processed spectrum, and for a vibrational spectrum (Raman, infrared, near-infrared) the spectrum
+as it is, with RamanBench's linear-model default (ALS baseline, SNV), SNV alone and a Savitzky-Golay first derivative
+the candidates to compare. Each technique registers the standard preprocessing candidates of its field, with fixed
+published settings, so a benchmark can run them all and select (Lennart, 2026-11-04). Raw mass spectra need the
 processing: on pancreatic_cancer_mouse_detection it lifts the tree models by 0.10 to 0.15 ROC AUC and TabPFN v3.5 by
-0.03; vibrational spectra may not: RamanBench's leading methods (TabPFN v2.5, TabICL v2) read the raw spectra. The steps that fit across spectra
-(alignment, peak detection and binning) are no per-row default. Keep the whole range the source publishes; dropping
-constant or copied bins is fine, cropping a range is a modelling choice. Spectra of one sample, specimen, strain or
-patient are one group (SPLIT-23, SPLIT-29). Guide: [spectra.md](spectra.md). Cases: pancreatic_cancer_mouse_detection,
-micro_mass.
+0.03; vibrational spectra may not: RamanBench's leading methods (TabPFN v2.5, TabICL v2) read the raw spectra. The steps
+that fit across spectra (alignment, peak detection and binning) are no per-row default. Keep the whole range the source
+publishes; dropping constant or copied bins is fine, cropping a range is a modelling choice. Spectra of one sample,
+specimen, strain or patient are one group (SPLIT-23, SPLIT-29). Guide: [spectra.md](spectra.md). Cases:
+pancreatic_cancer_mouse_detection, micro_mass.
 
 ## Weighed factors
 
@@ -319,7 +325,6 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | CLEAN-11 | gallstone_disease | `Comorbidity` is 0 or 1 in the paper; three rows hold an undocumented 2 or 3, each with one of the listed diseases: recoded to 1, the rows kept (the curator had asked whether to drop them; CLEAN-11 keeps rows; 2026-10-31) | applied |
 | CLEAN-11 | clock_protein_toxicity | two molecules dropped: the descriptor software failed on them (-1 counts of acidic and basic groups, 62-68 descriptors at 0 that at least 95% of the other molecules have non-zero, 9-18% of the descriptors outside the others' 1-99% range against 0.7%), and the source gives no structures to recompute them; the row's features are not the molecule's (2026-11-01, Lennart) | exception |
 | CLEAN-11 | early_learning_predictors | `language_match` (0/1): the enumerator's reason written in place of the answer in 16 rows, each explaining why the child was assessed in another language than at home, recoded to 0 (2026-11-01, Lennart: find out what they mean rather than keep them as categories) | applied |
-| CLEAN-11 | sendy_logistics_challenge | Myunghwan approved excluding total placement-to-arrival duration >24 hours and straight-line average speed >100 km/h: two exceptional preconfirmation delays dominated 39.31% of prior fixed-model squared error; zero speed exclusions. Explicit outcome-conditioned ordinary-delivery cohort, not proven bad labels or eligibility known at placement; serves P3/P4 (2026-10-29) | exception |
 | CLEAN-11 | caracas_cervical_cancer | a first intercourse after the current age, an STD diagnosed longer ago than the patient's age: missing | applied |
 | CLEAN-11 | churn_telco_south_asia | a negative network age or an undocumented code: missing | applied |
 | CLEAN-11 | heart_disease (Long Beach, first as heart_disease_va_long_beach) | `chol == 0`: missing | applied |

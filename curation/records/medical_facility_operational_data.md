@@ -3,6 +3,7 @@ unique_name: medical_facility_operational_data
 name: Medical Facility Operational Data
 checked_by:
 - Myunghwan
+- Lennart
 data_foundry_status:
 - WIP (DF)
 claimed_by: Myunghwan
@@ -73,3 +74,11 @@ CC (2026-10-26, Myunghwan): Proceed with add-dataset for Medical Facility Operat
 CC (2026-10-27 UTC, Myunghwan): Asked whether concerns/review/decisions remained, then said “yes, let’s check” after the agent proposed source verification and supported technical repair with affected checks. This authorizes the direct follow-up investigation; it is not an inclusion, build or commit decision.
 
 **Follow-up assessment (AI, 2026-10-27 UTC):** Supersedes the earlier unverified mirror/history-availability findings. The primary author archive linked by the Nature Machine Intelligence companion article contains a workbook byte-identical to the checked Kaggle copy (SHA256 153cff36b4bbf2d972f415c00a786ae5d5e65557ae23b0379fd33efb69060f2e). Inspected Matlab code imports precomputed features and evaluates Wait models, rather than generating features. New diagnostics reconstruct elapsed queue state in 48,408/48,430 rows, each wait-window mean in 48,399/48,430, and signed in-progress begin-minus-schedule delays in all 7,684 linked singleton active exams. All nine recent-history fields stay fixed over 22,800 unchanged-completion-count transitions; the five-value vector shifts correctly in all 13,093 single-completion transitions. Signed completion-delay interpretation fits all 9,888 linked completions; exact end timestamps/updater and full Median5/last-K arithmetic/default conventions remain unverified. Expected-time values behave as elapsed plus a fixed patient component and fail realized-duration identities; exact fitting provenance remains unverified, with no measured future-label fitting. The 31 missing-calendar visits explain all mean residuals and contain all queue residuals; retain source visits/missingness with that diagnostic limitation. Keep the exact feature inventory, values, types and nine mature-label splits; correct semantics and primary provenance. Focused independent claim/column/mediator/editor review supplements the preserved full original panel. Remaining limitations: source feature estimator lineage, sorting-only calendar and unclaimed PLOS analytical-cohort equivalence. Only inclusion with the disclosed order-only cadence remains a curator judgment; no new factual approval gates.
+
+CC (2026-11-04, Lennart): one meaning of `Wait` per dataset: the scheduled delay of F1-F3 ships here (82,001 visits), F4's walk-in wait is left out ("follow the recommendation"); a temporal split, not a grouped one ("ensure that a temporal, not a grouped split is the goal here"); `DayOfWeek` and `Month` are numbers ("follow the rule", CLEAN-14). The metric is checked as declared. F4 has no record of its own; it would need its own curation.
+
+**Assessment (AI, 2026-11-04):** the split is temporal as the source works: Crowley et al. (2020) train on six consecutive months per facility and test on "a further consecutive two weeks"; nothing holds out a facility. The source order is real time: every sheet lists its visits in reverse arrival order, the fictitious arrival time equals `StartTime` plus 60 minutes in all 130,431 rows, and the facilities agree on all 459 shared days, so the anonymisation is one clock shift for all. Every window has training rows of F1, F2 and F3 from before it (test sides 4,546-4,565).
+
+CC (2026-11-04, Lennart): the expected-delay table stays ("keep them"), with a `Potential leak, kept on purpose:` note (LEAK-38).
+
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled.

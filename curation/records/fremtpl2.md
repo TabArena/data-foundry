@@ -3,9 +3,8 @@ unique_name: fremtpl2
 name: freMTPL2
 checked_by:
 - Myunghwan
-data_foundry_status:
-- 'DF: Suspended'
-suggestion: TBD -> Yes
+- Lennart
+suggestion: 'Yes'
 priority: 3
 original_source: Other
 domain: insurance
@@ -18,6 +17,7 @@ source_links:
 - https://dutangc.github.io/CASdatasets/reference/freMTPL.html
 - https://cas.uqam.ca/pub/web/CASdatasets-manual.pdf
 - https://doi.org/10.2139/ssrn.3164764
+v2_path: datasets/_dev/tabarena-v0pt2/fremtpl2/dataset.py
 source_row: 1044
 type_adapter_id: curation-record-v1
 ---
@@ -46,3 +46,13 @@ CC (2026-10-28, Myunghwan): Hold freMTPL2, not reject it. Missing timing informa
 **Assessment (AI, 2026-10-29):** Preserve the applied hold as TBD -> Yes with DF: Suspended, not No or scientific acceptance. Every released IDpol is distinct; identical rating profiles do not establish contract identity. The requested zero/non-zero association check found weak positive within-profile dependence (pair correlation about 0.017; 131 both-positive pairs versus 81.79 expected under the stated profile-size-stratified null), not a causal linkage finding. The approved task intent remains original uncapped ClaimNb with Exposure as a predictor and source count Poisson deviance. The annualized/capped implementation is an unapproved historical draft, omitted from this PR along with its v2 pointer; it is not a qualified version of the approved count task. The official active reservation was released. No automatic restart, refit, build or acceptance follows the hold.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `eumtpl` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
+CC (2026-11-04, Lennart): `Yes`, added like beMTPL97 rather than held ("dont hold, add them and we can review them case by case"; on beMTPL97: "do (a) and ship both"): IID with the `ForcedIIDFromTemporal` tag (SPLIT-8). `eumtpl` is screened later ("we can screen that task later, this is fine for now without it, if it is a duplicate raise this again").
+
+**Assessment (AI, 2026-11-04):** review panel (none): built through /add-dataset steps 0-6, no panel. 677,991 policies, the 2022 CASdatasets counts, `VehAge` 99/100 missing; `dataset check` passes and the probes flag nothing. Consecutive `IDpol` blocks look like consecutive years (48-60% of rows reappear one block later); the open questions are in the folder's REVIEW.md.
+
+CC (2026-11-04, Lennart): IID with the Forced tag stays ("follow the recommendation"; the inferred links between `IDpol` blocks are not the source's key and change the score by nothing), and the claim counts are the 2022 CASdatasets version ("use the newer version"). The metric is checked as declared.
+
+CC (2026-11-04, Lennart): resolved as implemented: exposure above one year is kept (two policy ranges recording whole contract periods) and the counts of 5 to 16 are kept uncapped (seven of the eight are one profile); both are named in the definition's notes.
+
+**Assessment (AI, 2026-11-04):** review panel (none): built through /add-dataset steps 0-6 and checked against the literature (Noll et al.; Wüthrich and Merz 2023 Sec. 13.1); no panel ran, and all its issues are settled.

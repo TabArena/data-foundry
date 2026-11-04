@@ -3,6 +3,7 @@ unique_name: bemtpl97
 name: beMTPL97
 checked_by:
 - Myunghwan
+- Lennart
 data_foundry_status:
 - WIP (DF)
 claimed_by: Myunghwan
@@ -66,3 +67,11 @@ CC (2026-10-26, Myunghwan): "yes, expected claim count should matter, so poisson
 **Assessment (AI, 2026-10-28):** The independent consistency check supports applying this overall verdict without another task choice. Existing local curator dispositions remain distinct from source verification or shared-rule amendments. No definition, scorer, data, fold or warning acceptance was changed by this final verdict.
 
 **Maintenance (AI, 2026-10-29):** Publication-privacy cleanup removes acquisition/process details from descriptive metadata. Native format-2 rebuild `01a18ad7-0bb6-7938-bc7e-98a4b50a8804` verifies on reload and reproduces from its single traced raw input. Every data row, target, scoring semantics and all nine folds exactly match the previous build; only descriptive metadata changes the checksum. Prior containers and scientific decisions are preserved.
+
+CC (2026-11-04, Lennart): `coverage` is ordered TPL < TPL+ < TPL++ (CLEAN-14); the notes are cut to the decisions; beMTPL97 and freMTPL2 are treated alike, shipped IID with the `ForcedIIDFromTemporal` tag (SPLIT-8): "do (a) and ship both". The Poisson scorer floors predicted means at machine epsilon ("I also argue for a floor in the scorer"). The fit stays approximate while the consistency check is open (REVIEW.md issue 1).
+
+**Assessment (AI, 2026-11-04):** the metric is the source's: Henckaerts et al. (arXiv:1904.10890v3, Sec. 3.2 Eq. 5, Algorithm 3) tune and test by the mean Poisson deviance of the claim count against exposure times frequency, unweighted; their treeML code and the freMTPL2 case study compute the same. Exposure is an offset, not a weight.
+
+CC (2026-11-04, Lennart): the fit stays approximate under the `ForcedIIDFromTemporal` tag, as freMTPL2 and the 20 other forced-IID definitions ("(b)"). The Poisson scorer clips predicted means at a stated floor, `min_prediction=1e-6`, two orders below the smallest plausible mean ("I think being worse than the dummy only due to clipping is misguided, in pratice we would also clip to a reasonable number"); MET-13 says so.
+
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled.

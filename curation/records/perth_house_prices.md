@@ -66,3 +66,5 @@ CC (2026-10-26, Lennart): the declared metric, RMSLE on the price, is checked as
 CC (2026-10-26, Lennart): verdict ship.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `perth_property_prices_2024` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
+CC (2026-11-04, Lennart): SPLIT-10 is amended (on lt_vehicle_loan_default_prediction): no gap is needed where the collection covers the label's delay and the measurements show no shortcut and no selection at the release end. The no-gap call here is now an application of the rule, not an exception; the line above stays as its history.

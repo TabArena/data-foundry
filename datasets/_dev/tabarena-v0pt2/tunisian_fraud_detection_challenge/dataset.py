@@ -31,11 +31,11 @@ class TunisianFraudDetectionChallenge(AbstractCuratedDataset):
             "cross-checks to prioritize records for further investigation using estimated logged adjustment severity. "
             "The scored adjustment is withheld; this retrospective exercise does not reproduce a model refit at each fiscal-year start."
         ),
-        row="One anonymized taxpayer-year in the supplied Ministry of Finance challenge training release: 21,295 rows, 12,387 taxpayers, fiscal years 2013–2018.",
+        row="One anonymized taxpayer-year in the supplied Ministry of Finance challenge training release: 21,295 rows of fiscal years 2013–2018, of which the 20,930 of 2013–2017 ship (2018 is cut).",
         predicted="The source-provided log(1 + principal tax adjustment) label. Penalties are not the target. Underlying currency denomination is unspecified.",
         known="Taxpayer legal/activity/obligation categories, filed VAT amounts and credits, customs/government-payment aggregates, and third-party income/invoice cross-checks, as supplied in the contest dossier. Registry/refund revisions and historical extraction cutoffs remain unverified.",
-        split="Train on every observed earlier fiscal year and test on 2018, 2017, 2016 and 2015 separately. Both recurring and newly observed taxpayers occur. This measures transfer to later fiscal cohorts using retrospective training labels; it does not date audit completion or reproduce past operational refits.",
-        changes="Keep every labeled row and supplied target. Remove row/taxpayer identifiers, duplicate fiscal year, twelve zero-with-block-missingness columns and two exact financial copies. Cast codes as categories and fiscal year as datetime.",
+        split="Train on every observed earlier fiscal year and test on 2017, 2016 and 2015 separately. Both recurring and newly observed taxpayers occur. This measures transfer to later fiscal cohorts using retrospective training labels; it does not date audit completion or reproduce past operational refits.",
+        changes="Cut fiscal year 2018 (365 rows), whose inspections were still open at the extract; keep the other labeled rows and supplied targets. Remove row/taxpayer identifiers, duplicate fiscal year, twelve zero-with-block-missingness columns and two exact financial copies. Cast codes as categories and fiscal year as datetime.",
         fit="approximate",
         fit_reason="The original supervision task and annual dossiers are documented; Myunghwan accepts retrospective investigation. Exact feature extraction, inspection selection and audit/label-availability dates are absent. This historical cohort comparison does not establish causal deployment, all-taxpayer screening yield, or recovered money per inspection.",
     )
@@ -45,10 +45,12 @@ class TunisianFraudDetectionChallenge(AbstractCuratedDataset):
     source = "Zindi"
     source_url = "https://zindi.world/competitions/tunisian-fraud-detection"
     license = "Zindi competition rules; redistribution restricted"
-    data_tags = ("Anonymized",)
     download_description = """
         Obtain the authorized Train.csv and VariableDescription.csv from
-        https://zindi.world/competitions/tunisian-fraud-detection/data and place them in
+        https://zindi.world/competitions/tunisian-fraud-detection/data (login; Lennart's download of 2026-11-04 is
+        byte-identical to the participant mirrors' SupCom copy: Train.csv SHA-256
+        8946058bd60847cf49eb372963d05f47022c1fb820ab323227304a88aa0faa02, VariableDescription.csv SHA-256
+        763bfdfe8774643eb3342b3e2c0935801f81c545ea9908bb64174195092b81f8) and place them in
         local-data-warehouse/tunisian_fraud_detection_challenge/. The supplied named files were preserved byte-for-byte
         under these canonical names; SOURCE_MANIFEST.json records identities. Only Train.csv supplies benchmark rows and labels. A separate private test-file inspection informs the predictor schema; no test rows or submission labels enter this definition.
         The related Sup'Com challenge is a later rerun of this source family, not another independent dataset.
@@ -66,7 +68,8 @@ class TunisianFraudDetectionChallenge(AbstractCuratedDataset):
         - CC (2026-10-31, Myunghwan): Retrospective prediction is acceptable: looking back can identify more records worth investigating. An analyst uses archived annual dossiers with the scored adjustment withheld and historical training labels already held. This does not claim that a model was fitted at the beginning of each fiscal year. The release has no extraction, inspection, notification or label-availability dates; original timing and revisions remain unverified. This settled the retrospective task framing; final inclusion was subsequently accepted on 2026-10-31.
         - Train.csv has 21,295 unique taxpayer-years from 12,387 IDs over 2013–2018. Keep every label unchanged: log(1 + principal adjustment), as described in challenge discussion 448, including 5,402 zeros, no missing/negative labels and range 0–23.5913. Dictionary RES_MNTRED names the principal target; excluded penalty RES_MNTRET is not a predictor. Zero does not establish a completed negative inspection, legal intent or national prevalence. The underlying currency unit and cohort-selection mechanism are unknown.
         - Source RMSE scores the supplied log labels. target_transform is identity because this recipe applies no transform; no inverse or second log is used. This score is not monetary RMSE, recovered revenue or net benefit per audit. The later Sup'Com release belongs to the same source family, not an independent dataset.
-        - Retrospective evaluation uses all four eligible annual tests, newest first: 2018/2017/2016/2015 with train/test counts 20,930/365; 19,301/1,629; 16,201/3,100; 11,833/4,368. Earlier windows fail the half-release training floor. January 1 represents fiscal-year cohorts, not actual event dates. Fiscal order tests transfer across accounting cohorts, not historical model-refit feasibility. No delay is invented from a model score; if a past operational refit is later claimed, outcome availability must be established and the protocol reassessed.
+        - Fiscal year 2018 is cut (LEAK-24; Lennart, 2026-11-04: "do the change"): its nonzero adjustments have a median 1.2 log units below 2013-2017 (about 3 times smaller, Mann-Whitney p = 6e-16), within every taxpayer category, and leak probe 13 puts it out of band (median z -6.7), while 2017 is in band (p = 0.8). It fits inspections still open at the 2019 extract. Its three 2018-form VAT rate columns (`TVA_CA072018`, `TVA_CA132018`, `TVA_CA192018`) are constant without it and leave. The use case stays the retrospective ranking of inspected dossiers (Lennart: "okay let us keep it").
+        - Retrospective evaluation uses three annual tests, newest first: 2017/2016/2015 with train/test counts 19,301/1,629; 16,201/3,100; 11,833/4,368. Earlier windows fail the half-release training floor. January 1 represents fiscal-year cohorts, not actual event dates. Fiscal order tests transfer across accounting cohorts, not historical model-refit feasibility. No delay is invented from a model score; if a past operational refit is later claimed, outcome availability must be established and the protocol reassessed.
         - Drop id and CTR_MATFIS as administrative identifiers, RES_ANNIMP as an exact fiscal-year copy, twelve zero-when-observed columns whose block-missingness survives elsewhere, TVA_ACHNDD as a copy of TVA_ACHSUS, and SND_MNTPAY_E as a copy of SND_MNTTAX_E. No row is filtered; retained values and NaNs are not imputed, clipped or rescaled. No taxpayer/label aggregates are constructed.
         - Tax office, taxpayer category, legal form, activity and obligation/status codes are categorical; obligations are not all binary. Retain the 63 undocumented CTR_CESSAT code-2 rows as an uninterpreted category; CTR_RATISS codes 0/2 are not decoded. Months 1–12 stay numeric. Customs/invoice block missingness is not universally no activity. SND_MNTAIR_I/A are undefined in the dictionary and TVA_CRDFIN has an inconsistent initial-credit description.
         - Contest input check: a participant-maintained SupCom mirror has 7,517 test rows and all 120 raw non-target columns in training order; its training Git blob exactly matches the supplied Train.csv. All 103 retained predictors are present and none is wholly missing in test. Refund/regularization fields contain observed nonzero test values. Target alone is absent; this yields no further schema-based exclusion. Zero-when-observed removals describe the labeled benchmark release, not universal constants: TVA_CRDREP varies in the contest test file. The test covers every fiscal year 2013–2018, so our four annual holdouts are a separate cross-cohort evaluation, not the contest holdout. The original host test download was not authenticated. Test presence is an input contract, not evidence of historical as-of timing or freedom from outcome-derived revisions.
@@ -86,10 +89,10 @@ class TunisianFraudDetectionChallenge(AbstractCuratedDataset):
     )
     temporal = Temporal(
         on="fiscal_year",
-        splits=TemporalSplits(window=1, unit="years", cutoffs=(2015, 2016, 2017, 2018)),
+        splits=TemporalSplits(window=1, unit="years", cutoffs=(2015, 2016, 2017)),
     )
     splits_comment = """
-        Four one-calendar-year cohort windows, newest first: 2018, 2017, 2016, 2015. Each model trains on every observed
+        Three one-calendar-year cohort windows, newest first: 2017, 2016, 2015 (fiscal year 2018 is cut, LEAK-24). Each model trains on every observed
         earlier fiscal cohort using retrospective training labels, with the scored cohort labels withheld. January 1 represents an annual
         accounting cohort, not a verified audit date. Both known and new taxpayers occur in this retrospective investigation
         setting. These are fiscal-cohort transfer tests, not models refitted at historical year starts. Audit-completion
@@ -119,6 +122,11 @@ class TunisianFraudDetectionChallenge(AbstractCuratedDataset):
         df = df.drop(
             columns=["id", "CTR_MATFIS", "RES_ANNIMP", "TVA_ACHNDD", "SND_MNTPAY_E", *ZERO_WITH_BLOCK_MISSINGNESS]
         )
+        # Fiscal year 2018 holds the inspections closed before the 2019 extract: about 3 times smaller adjustments,
+        # out of band in leak probe 13 (LEAK-24; Lennart, 2026-11-04).
+        df = df.loc[df["EXE_EXERCI"].ne(2018)]
+        # Three VAT rates of the 2018 return form are filled only in fiscal 2018, so they are constant without it.
+        df = df.drop(columns=["TVA_CA072018", "TVA_CA132018", "TVA_CA192018"])
         df["EXE_EXERCI"] = pd.to_datetime(df["EXE_EXERCI"].astype("string"), format="%Y")
         return df.rename(columns={"EXE_EXERCI": "fiscal_year"})
 

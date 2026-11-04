@@ -366,11 +366,20 @@ def test_target_transform_round_trips_through_json() -> None:
     assert any("target_transform" in line for line in spec.describe_lines())
 
 
-@pytest.mark.parametrize("bad", [0.0, -1.0, np.nan, np.inf, -np.inf])
-def test_poisson_deviance_rejects_invalid_expected_means(bad) -> None:
-    """Computability probes must not weaken the real scorer's strict domain."""
+@pytest.mark.parametrize("bad", [np.nan, np.inf, -np.inf])
+def test_poisson_deviance_rejects_non_finite_means(bad) -> None:
+    """A NaN or infinite prediction raises: the floor covers only finite means at or below zero."""
     with pytest.raises(ValueError, match=r"deviance|NaN|infinity"):
         score(Metric.source("mean_poisson_deviance"), [0, 1, 3], [0.2, bad, 2.0])
+
+
+@pytest.mark.parametrize("low", [0.0, -1.0, 1e-300])
+def test_poisson_deviance_floors_means_at_machine_epsilon(low) -> None:
+    """A mean at or below zero scores as machine epsilon, the large loss the deviance gives a near-zero mean."""
+    eps = np.finfo(float).eps
+    expected = skm.mean_poisson_deviance([0, 1, 3], [0.2, eps, 2.0])
+    assert score(Metric.source("mean_poisson_deviance"), [0, 1, 3], [0.2, low, 2.0]) == pytest.approx(expected)
+    assert expected > 20  # a claim predicted at about zero is heavily penalised, not dropped
 
 
 def test_poisson_deviance_matches_source_likelihood_with_zero_observations() -> None:
@@ -383,3 +392,16 @@ def test_poisson_deviance_matches_source_likelihood_with_zero_observations() -> 
     assert score(Metric.source("mean_poisson_deviance"), [0], [0.25]) == pytest.approx(0.5)
     with pytest.raises(ValueError, match="deviance"):
         score(Metric.source("mean_poisson_deviance"), [-1, 0], [1, 1])
+
+
+def test_poisson_deviance_floor_is_a_stated_param() -> None:
+    """A definition states its floor; a prediction below it counts as it, and an invalid floor is refused."""
+    spec = Metric.source("mean_poisson_deviance", params={"min_prediction": 1e-6})
+    expected = skm.mean_poisson_deviance([0, 1, 3], [0.2, 1e-6, 2.0])
+    assert score(spec, [0, 1, 3], [0.2, -1.0, 2.0]) == pytest.approx(expected)
+    assert score(spec, [0, 1, 3], [0.2, 0.5, 2.0]) == pytest.approx(
+        skm.mean_poisson_deviance([0, 1, 3], [0.2, 0.5, 2.0])
+    )
+    for bad in (0, -1e-6, float("nan")):
+        with pytest.raises(ValueError, match="min_prediction"):
+            Metric.source("mean_poisson_deviance", params={"min_prediction": bad})

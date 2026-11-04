@@ -265,10 +265,13 @@ ignores them, since the bins stay numeric features.
   pancreatic) if a model needs fewer columns.
 - [ ] **PLS-DA as a reference method for spectra.** It is the field's usual linear method, and on raw mass spectra it
   ranks differently from the tabular models (PR #21: third on the raw bins, first on the processed ones).
-- [ ] **Vibrational spectra: check both encodings on the first datasets.** RamanBench (arXiv:2605.02003) ran its
+- [ ] **Vibrational spectra: check the encodings on the first datasets.** RamanBench (arXiv:2605.02003) ran its
   leading methods (AutoGluon 1.5, TabPFN v2.5, TabICL v2) on the raw spectra and preprocessed only for its chemometric
-  baselines, so the default is the spectrum as it is; `vib-als-snv-r1` (an ALS baseline and SNV, RamanBench's
-  linear-model default) is the alternative to measure when the first Raman or infrared dataset is added.
+  baselines, so the default is the spectrum as it is. Three alternatives are registered (2026-11-04, Lennart: "one can
+  add all and select as needed"): `vib-als-snv-r1` (an ALS baseline and SNV, RamanBench's linear-model default),
+  `vib-snv-r1` and `vib-sg11-d1-r1` (a Savitzky-Golay first derivative, 11 points, order 2). On OSSL's infrared
+  spectra LightGBM went from 1.74 (as it is) to 1.33, 1.39 and 1.24 RMSE in percent; measure them on each spectrum
+  dataset before choosing a default.
 
 ## Ordinal features
 

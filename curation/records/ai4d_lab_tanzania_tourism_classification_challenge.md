@@ -88,3 +88,11 @@ One challenge used the cost as a regression task on 2020 data with 6476 rows, th
 **Assessment (AI, 2026-10-28):** The independent consistency check supports applying this overall verdict without another task choice. Existing local curator dispositions remain distinct from source verification or shared-rule amendments. No definition, scorer, data, fold or warning acceptance was changed by this final verdict.
 
 **Maintenance (AI, 2026-10-29):** Publication-privacy cleanup removes acquisition/process details from descriptive metadata. Native format-2 rebuild `01a18ad4-f6a0-759d-a526-da34a2568066` verifies on reload and reproduces from its single traced raw input. Every data row, target, scoring semantics and all nine folds exactly match the previous build; only descriptive metadata changes the checksum. Prior containers and scientific decisions are preserved.
+
+CC (2026-11-04, Lennart): the target `cost_category` is an ordered category, Lower Cost < Low Cost < Normal Cost < High Cost < Higher Cost < Highest Cost ("order please"), and `age_group` ordered bands ("yes use ordered categories"); CLEAN-25, CLEAN-14. The metric (log loss, the leaderboard's) is checked as declared.
+
+**Assessment (AI, 2026-11-04):** the source lists the six classes alphabetically and gives no boundaries; Lower and Low are read as comparatives, as High < Higher < Highest are (the reading is in the definition's notes). `dataset check` passes with both orders.
+
+CC (2026-11-04, Lennart): ship, with the ordered `cost_category` and `age_group` ("sounds good, we are ready to ship"). The build is a separate ask.
+
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; the PR #33 review page (a light static review of the definition, README and record) raised the two typing issues, both settled.

@@ -63,19 +63,20 @@ class of the source's own labels whose rows carry about their share of the loss 
 4.8% of a random forest's log loss). A class that a grouped split leaves out of a fold because few groups hold it is
 not a small class (force_2020: Halite, 14,711 rows in 4 wells). Marker: `Too Small`.
 
-**TP-10 (Must; amended 2026-10-22, Lennart, on g_research_crypto_forecasting, and 2026-10-26, on rain_in_australia).** A panel with one series per entity
-(a meter, a store, a station, a coin) can look like time-series forecasting, which is out of scope (SEL-10,
-[selection.md](selection.md)). It is a tabular task when both legs hold: (1) a model on the features clearly beats each
-entity's naive forecast on the shipped windows, measured by the task's declared metric (a correlation metric where the
-source scores one); (2) the source's top solutions are tabular models on point-in-time features, and no feature is a
-lag of the target column itself, apart from its last observation when it is known at the prediction point and the
-actor reads it (trailing returns or other summaries of the series up to the prediction point are allowed). Amended
-2026-10-26 (Lennart, on rain_in_australia's 9 am rain reading, the label of the day before): "we are allowed to keep
-this if we can compute it and it makes sense to know the last observation". Leg 1 then carries the test: the model
-must clearly beat the forecasts built from the series itself. Such "tabular forecasting" tasks exist where people want to generalise across entities. How to test it:
-Methods, "A forecasting-like task". Cases: ashrae_great_energy_predictor_iii (2026-10-15),
-g_research_crypto_forecasting (2026-10-22), rain_in_australia (2026-10-26). stock and appliances_energy_prediction stay retired: their context and
-data show forecasting tasks (Lennart, 2026-10-22).
+**TP-10 (Must; amended 2026-10-22, Lennart, on g_research_crypto_forecasting, and 2026-10-26, on rain_in_australia).** A
+panel with one series per entity (a meter, a store, a station, a coin) can look like time-series forecasting, which is
+out of scope (SEL-10, [selection.md](selection.md)). It is a tabular task when both legs hold: (1) a model on the
+features clearly beats each entity's naive forecast on the shipped windows, measured by the task's declared metric (a
+correlation metric where the source scores one); (2) the source's top solutions are tabular models on point-in-time
+features, and no feature is a lag of the target column itself, apart from its last observation when it is known at the
+prediction point and the actor reads it (trailing returns or other summaries of the series up to the prediction point
+are allowed). Amended 2026-10-26 (Lennart, on rain_in_australia's 9 am rain reading, the label of the day before): "we
+are allowed to keep this if we can compute it and it makes sense to know the last observation". Leg 1 then carries the
+test: the model must clearly beat the forecasts built from the series itself. Such "tabular forecasting" tasks exist
+where people want to generalise across entities. How to test it: Methods, "A forecasting-like task". Cases:
+ashrae_great_energy_predictor_iii (2026-10-15), g_research_crypto_forecasting (2026-10-22), rain_in_australia
+(2026-10-26). stock and appliances_energy_prediction stay retired: their context and data show forecasting tasks
+(Lennart, 2026-10-22).
 
 ## Methods
 
@@ -354,7 +355,7 @@ task-probe flags the decision answers. The decisions on metrics (2026-10-21) are
 | TP-8 | micro_mass, asp_potassco_classification | few_minority | kept (2026-10-12) | the grouped split makes fold sizes uneven (B. thuringiensis 2-6 spectra from 8 strains, h3-n1 1-17 runs from 9 instance groups): 18% and 1.7% of the test rows, 25% and 3.9% of a random forest's log loss | applied |
 | TP-8, TP-1 | force_2020_well_well_log_and_lithofacies_dataset_for_machine_learning_competition | few_minority, no_spread | kept (2026-10-12) | Anhydrite (1,807 rows, 10 wells) and Halite (14,711 rows, 4 wells) each miss one of 3 well-grouped test folds, accepted as `splits_test_class_missing`; no_spread comes from untuned LightGBM diverging (log loss 2.77), while random forest (0.744) and linear (0.989) spread against the class shares (1.284) | applied |
 | TP-3 | hr_analytics | no_spread | kept (2026-10-14) | rebuilt from the hackathon's own train file (Kaggle's copy added 2,623 test rows labelled 1 and gave 0.80); the real labels give ROC AUC 0.62-0.63 for every family (LightGBM +0.012 over random forest, paired SE 0.006): a real signal with a low ceiling | applied |
-| TP-3 | open_university_learning_analytics_dataset | no_spread | kept pending tuned results (2026-10-22, Lennart) | after the weight-0 TMA change, default models on all 9 grouped splits reach log-loss skill 0.173 (random forest), 0.170 (LightGBM), 0.162 (logistic regression); random forest leads by 0.011 (paired SE 0.009); every family beats the class shares on every split | re-check with the first tuned run |
+| TP-3 | open_university_learning_analytics_dataset | no_spread | kept pending tuned results, to re-check with the first tuned run (2026-10-22, Lennart) | after the weight-0 TMA change, default models on all 9 grouped splits reach log-loss skill 0.173 (random forest), 0.170 (LightGBM), 0.162 (logistic regression); random forest leads by 0.011 (paired SE 0.009); every family beats the class shares on every split | applied |
 | TP-10 | ashrae_great_energy_predictor_iii | none (a forecasting-like panel) | in scope as one task (2026-10-15) | RMSE on log kWh per window: the best naive forecast 1.393 / 1.273 / 1.372; default LightGBM (100 trees) loses to it, 1.444 / 1.403 / 1.448; LightGBM with 1,000 trees wins, 1.261 / 1.176 / 1.223; models per site do about the same as one model; the top five teams used no lagged readings | applied |
 | TP-10 | g_research_crypto_forecasting | none (a forecasting-like panel) | in scope as one task (2026-10-22, Lennart; the rule amended) | weighted Pearson per window +0.040 / +0.052 / +0.045, every 95% day-block interval above the coin's mean (-0.002 / +0.007 / +0.008); the top three solutions were LightGBM on the coins' trailing 60-900-minute returns against the market, no lag of the target column; no top solution used a sequence model (LSTM) or ARIMA | applied |
 | TP-10 | rain_in_australia | none (a forecasting-like panel) | in scope as one task, the 9 am rain reading kept (2026-10-26, Lennart; leg 2 amended) | ROC AUC on the 9 windows then shipped: all features 0.849; the best forecast from the location's own rain series 0.752 (a regression of the amount with a > 1 mm rule), its classifier 0.754, persistence 0.661; the full model ahead in 9 of 9 windows; without Rainfall and RainToday 0.847 | applied |

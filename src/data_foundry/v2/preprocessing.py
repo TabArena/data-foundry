@@ -244,14 +244,19 @@ def order_rows(df: pd.DataFrame, *, time_on: str | None, shuffle: bool) -> pd.Da
     """
     if not shuffle and time_on is None:
         return df.reset_index(drop=True)
+    return df.iloc[order_positions(df, time_on=time_on, shuffle=shuffle)].reset_index(drop=True)
+
+
+def order_positions(df: pd.DataFrame, *, time_on: str | None, shuffle: bool) -> np.ndarray:
+    """The positions :func:`order_rows` puts the rows of ``df`` in: ``order_rows(df)`` is ``df.iloc[positions]``."""
     # positions first, then one copy of the frame (a `_1m` source can be tens of GB)
     positions = content_order(df) if shuffle else np.arange(len(df))
     if time_on is not None:
         times = df[time_on].iloc[positions].reset_index(drop=True)
         positions = positions[times.sort_values(kind="stable").index.to_numpy()]
-    else:  # the same permutation as `df.sample(frac=1, random_state=...)`: it depends only on the length
+    elif shuffle:  # the same permutation as `df.sample(frac=1, random_state=...)`: it depends only on the length
         positions = pd.Series(positions).sample(frac=1, random_state=SHUFFLE_RANDOM_STATE).to_numpy()
-    return df.iloc[positions].reset_index(drop=True)
+    return positions
 
 
 def content_order(df: pd.DataFrame) -> np.ndarray:

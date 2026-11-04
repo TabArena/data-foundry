@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sendy_logistics_challenge
 container_format: 2
-checksum: v2:de47fa29784e3225f35fd7700d297905b233fab9369501a4d222bcca2baad69f
+checksum: v2:ca88e7f56236d985c7f49d21b9be4f9ce3cd612134aac2fa10bd4fc72bf502f8
 build:
   uuid: 01a18a16-1f77-7fc2-b293-c8d8ca2eeefc
   checksum: v2:de47fa29784e3225f35fd7700d297905b233fab9369501a4d222bcca2baad69f
@@ -17,21 +17,21 @@ build:
     pyarrow: 26.0.0
     scikit-learn: 1.7.2
     polars: 2.0.0
-build_stale: false
+build_stale: true
 data:
-  n_rows: 21199
-  n_features: 13
+  n_rows: 21201
+  n_features: 19
   dtypes:
     category: 4
     float64: 6
-    int32: 1
-    int64: 3
+    int32: 4
+    int64: 6
   n_test_dataset_rows: null
 task:
-  target: Time from Placement to Arrival
+  target: Time from Pickup to Arrival
   problem_type: regression
   metric: rmse
-  metric_origin: stand_in
+  metric_origin: source
   scoring_columns: null
   split_regime: iid
   stratify_on: null
@@ -49,10 +49,10 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 14132
-    max: 14133
+    min: 14134
+    max: 14134
   n_test:
-    min: 7066
+    min: 7067
     max: 7067
 bundle_checks:
   ok: true
@@ -67,27 +67,27 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `Time from Placement to Arrival`, scored with `rmse` on IID splits. 21,199 rows and 13 features. Source: Zindi (2019).
+Regression of `Time from Pickup to Arrival`, scored with `rmse` on IID splits. 21,201 rows and 19 features. Source: Zindi (2019).
 
-Built as `01a18a16-1f77-7fc2-b293-c8d8ca2eeefc` on 2026-10-29. See [Build](#build).
+Built as `01a18a16-1f77-7fc2-b293-c8d8ca2eeefc` on 2026-10-29, but `dataset.py` has changed since: it now gives checksum `v2:ca88e7f56236d985c7f49d21b9be4f9ce3cd612134aac2fa10bd4fc72bf502f8`, so the build is stale. See [Build](#build).
 
 ## In brief
 
-**Question.** When an order is placed, how many seconds until its recorded delivery arrival?
+**Question.** When a Sendy rider has picked up a parcel in Nairobi, how many seconds until the rider arrives at the destination?
 
-**Use case.** Sendy customer-communication and delivery-planning staff estimate the customer's total wait at order placement, to communicate an expected arrival and plan deliveries.
+**Use case.** Sendy tells the customer an arrival time once the rider has the parcel, and plans the rider's next orders from it.
 
-**One row.** One of 21,199 retained labelled completed express motorbike delivery orders in Nairobi from the 2019 Sendy challenge, restricted to recorded total duration at most 24 hours and straight-line average speed at most 100 km/h. Cancelled, failed and longer-duration orders are not evaluated.
+**One row.** One completed express motorbike delivery order in Nairobi from the 2019 Sendy challenge (21,201 orders, the labelled training file).
 
-**Predicted.** Seconds from order placement to recorded destination arrival, including dispatch, pickup and delivery. This revises the contest's pickup-to-arrival target.
+**Predicted.** The seconds from the pickup to the arrival at the destination, both as the rider marks them in the app, as the source gives it. Riders often mark the pickup late, so 2.6% of the labels are 10 seconds or less.
 
-**Known at prediction time.** Customer identifier, platform and customer type, placement day/weekday/clock, endpoint coordinates and source weather matched to placement. Source distance is retained following curator review and measured consistency checks; its calculation and recording time remain unverified. No rider identity, later event information or rider-table summaries are predictors.
+**Known at prediction time.** The customer, their platform and type, the rider, the day, weekday and time of the order's placement and of the rider's confirmation, the times of the rider's arrival at the pickup and of the pickup, the pickup and destination coordinates, the source's distance and the weather at placement.
 
-**What the test data stands for.** Three repeats of three random folds over the same release, with recurring customers permitted. Full dates are absent; future-period performance and historical label availability cannot be tested.
+**What the test data stands for.** Three repeats of three random folds over the same release; customers and riders recur. The release has the day of the month but no month or year, so later periods cannot be held out.
 
-**Our changes to the source.** Reconstruct total duration from placement and arrival calendar/clock fields; exclude recorded totals above 24 hours and straight-line average speeds above 100 km/h, as approved by Myunghwan. This removes two long orders and zero additional speed cases. Remove later events, rider identity, original target, order number and constant vehicle type. Parse only placement time as seconds after midnight.
+**Our changes to the source.** The rider table the competition offered is left out, since its order counts, tenure and ratings were taken after these orders.
 
-> **Use case fit: approximate (a stand-in with a known gap).** Evaluation is limited to an outcome-selected completed-order cohort and comparable orders in this release; missing full dates and unsupported Order No chronology prevent future-period testing. Recorded arrival is not independently validated, and source distance timing and exact weather alignment remain undocumented.
+> **Use case fit: approximate (a stand-in with a known gap).** The source's own task at its moment, with what is known then. The label is the riders' marks, and the late pickup marks make some labels near zero; random folds over one release stand in for future orders.
 
 ## Files in this folder
 
@@ -132,8 +132,8 @@ Only curators run `build`, when the dataset ships.
 | license | Zindi competition terms; no standalone open-data licence specified |
 | data_tags | IID, ForcedIIDFromTemporal, Anonymized, Spatial |
 | reference | sendy2019logistics |
-| rows x columns | 21,199 x 14 |
-| task.target | Time from Placement to Arrival |
+| rows x columns | 21,201 x 20 |
+| task.target | Time from Pickup to Arrival |
 | task.problem_type | regression |
 | task.metric | rmse |
 | task.split_regime | iid |
@@ -143,16 +143,15 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `rmse` (standard; takes value; lower is better) |
-| origin | stand_in: a stand-in for the source's metric, which cannot be computed |
-| original | Root Mean Squared Error on pickup-to-arrival seconds |
+| origin | source: the source's metric |
+| original | Root Mean Squared Error on Time from Pickup to Arrival, in seconds |
 | reference | https://zindi.world/competitions/sendy-logistics-challenge |
 | definition | sqrt(mean((y - p)^2)) |
-| reason | The task now predicts placement-to-arrival duration. Retain squared error in seconds for the same ETA goal, as accepted after eligibility filtering and scoring review; this is not the original contest target. |
 
 <details>
 <summary>Feature types: 4 categorical, 0 string, 0 datetime</summary>
 
-- categorical (4): `User Id`, `Platform Type`, `Personal or Business`, `Placement - Weekday (Mo = 1)`
+- categorical (4): `User Id`, `Rider Id`, `Platform Type`, `Personal or Business`
 - string (0): none
 - datetime (0): none
 
@@ -175,92 +174,80 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 21,199 rows of the final frame (random rows: the frame is shuffled); 12 of 14 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 21,201 rows of the final frame (random rows: the frame is shuffled); 12 of 20 columns, the target first. Cells are cut at 40 characters.
 
-| Time from Placement to Arrival | User Id | Platform Type | Personal or Business | Placement - Day of Month | Placement - Weekday (Mo = 1) | Distance (KM) | Temperature | Precipitation in millimeters | Pickup Lat | Pickup Long | Destination Lat |
+| Time from Pickup to Arrival | User Id | Rider Id | Platform Type | Personal or Business | Placement - Day of Month | Placement - Weekday (Mo = 1) | Confirmation - Day of Month | Confirmation - Weekday (Mo = 1) | Distance (KM) | Temperature | Precipitation in millimeters |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 2391 | User_Id_1363 | 3 | Business | 14 | 5 | 8 | 22 | nan | -1.30041 | 36.8297 | -1.25742 |
-| 3907 | User_Id_1355 | 2 | Personal | 23 | 7 | 18 | 23.8 | nan | -1.21257 | 36.7964 | -1.29399 |
-| 2667 | User_Id_3300 | 3 | Business | 2 | 4 | 16 | nan | nan | -1.22966 | 36.8438 | -1.3036 |
-| 2768 | User_Id_1568 | 3 | Business | 21 | 4 | 7 | 22.4 | nan | -1.28974 | 36.8227 | -1.25519 |
-| 2507 | User_Id_2154 | 3 | Business | 30 | 2 | 5 | 27.6 | nan | -1.29089 | 36.823 | -1.27657 |
+| 1116 | User_Id_3080 | Rider_Id_19 | 3 | Business | 30 | 1 | 30 | 1 | 8 | 22.4 | nan |
+| 1371 | User_Id_2523 | Rider_Id_318 | 3 | Business | 26 | 2 | 26 | 2 | 3 | 31.2 | nan |
+| 1896 | User_Id_393 | Rider_Id_177 | 3 | Business | 18 | 1 | 18 | 1 | 11 | 21.4 | nan |
+| 1213 | User_Id_3221 | Rider_Id_434 | 3 | Business | 21 | 4 | 21 | 4 | 5 | 30.8 | nan |
+| 1328 | User_Id_1835 | Rider_Id_322 | 1 | Personal | 31 | 4 | 31 | 4 | 5 | 21.8 | nan |
 
 ## Curation notes
 
-- Prediction point: order placement, before rider confirmation or assignment. This is the revised task
-  whose task, filters, retained distance, split and RMSE were accepted by Myunghwan on 2026-10-29
-  after final review-added-datasets ("yes, ship"). Build and commit require a separate request.
-- The original contest predicted pickup-to-arrival seconds. The revised target is destination clock minus
-  placement clock plus 86,400 times their calendar-day difference. The original source has 21,199 same-day,
-  one next-day and one two-day case, all agreeing with weekday differences; all retained orders are same-day. Month/year is missing; this assumes the recorded event dates
-  fall in the same calendar month and does not reconstruct a global chronology.
-- CC (2026-10-29, Myunghwan): exclude total placement-to-arrival durations above 86,400 seconds and
-  straight-line endpoint average speeds above 100 km/h. Strict inequalities retain equality at either boundary.
-  Haversine distance uses radius 6,371.0088 km and is divided by total duration, never the pickup leg or source Distance.
-  Of 21,201 source rows, two exceed 24 hours; zero exceed 100 km/h. Retain 21,199 rows with unchanged targets.
-- Exception to CLEAN-11 (2026-10-29, Myunghwan): restrict this benchmark to ordinary completed deliveries;
-  two exceptional preconfirmation delays contributed 39.31% of squared error in the prior fixed-model check.
-  Serves P3/P4: state the restricted ETA application and evaluation population honestly. This is not proof that
-  excluded labels are erroneous. Eligibility depends on the outcome and is not known at order placement.
-  No raw records are deleted, no retained labels are corrected or capped, and no speed/eligibility flag is a predictor.
-- The 547 original pickup legs of at most ten seconds show median recorded pickup waiting of 1,505 seconds
-  followed by three seconds of delivery. This supports late pickup marking, not row-level proof of true arrival.
-  The revised target does not use the intermediate pickup timestamp. The winner interview describes this mechanism:
-  https://zindi.world/learn/meet-the-winners-of-the-sendy-logisitics-challenge .
-- Residual concern: a 100-second total spans endpoints 2.49 km apart (source distance 6 km); another 38 orders
-  with the same endpoints have median total 1,868.5 seconds. Geographic comparisons do not verify GPS arrival.
-  Two totals of 87,075 and 180,156 seconds are dominated by 81,736 and 176,725 seconds before confirmation.
-  These excluded cases may be actual dispatch delays; scheduled delivery or erroneous placement dates remain unverified.
-- Drop all confirmation, pickup-arrival, pickup and destination-arrival input fields, the original target,
-  Rider Id, unique Order No and constant Vehicle Type. Destination events are used only to construct the label.
-  Select predictors explicitly; no elapsed future-stage duration or timing-derived quality flag is a feature.
-- Riders.csv has only changing counts, tenure and ratings beyond its key; no eligible static fields and no join.
-  Customer identity already in the orders is a categorical input. Platform, customer type and weekday are categorical.
-- CC (2026-10-29, Myunghwan): retain source distance when it behaves consistently; exact definition is not
-  by itself a reason for omission. Filtered Train and original Test have median 8 km and correlations 0.952/0.953
-  to straight-line endpoint distance. All below-straight-line shortfalls are under 1 km, compatible with
-  integer precision but not proof of the convention. Repeated routes vary; a fixed routing method is not verified.
-  Source distance routing/as-of remains undocumented. No later-only measurement has been demonstrated;
-  revisit if provenance establishes post-placement travel-dependent values. Ablation does not establish timing.
-- Weather is source-described as matched to placement and measured every three hours. Exact past-only versus
-  nearest-sample alignment is undocumented. Missing weather remains missing; no imputation or zero filling.
-- Five confirmation clocks precede placement by 1-42 seconds; these future confirmation fields are excluded.
-  No reliable corrected placement or arrival timestamps exist in the supplied release.
-- CC (2026-10-29, Myunghwan): retain RMSE in original seconds after the approved filters.
-  The target and its tail are changed; the original leaderboard task is not reproduced. The standard RMSE
-  score is a stand-in for the revised total-duration task, with its large-error emphasis retained. No target transform, clipping or winsorization.
-- The 7,068 original test orders lack destination-arrival labels and are not scored. Full raw files and hashes
-  are retained locally. The 2025 archive export date is not an observation date. Raw data is not redistributed.
+We start with Train.csv of the Zindi Sendy Logistics Challenge (21,201 labelled orders).
+
+- Prediction point: the rider has picked up the parcel, the source's task (Lennart, 2026-11-04: switch to
+  the source task). It replaces our placement-to-arrival target, two thirds of whose variance came before
+  the parcel moved, from the wait for a rider, which no input describes.
+- Target: `Time from Pickup to Arrival` in seconds, as the source gives it; it equals the destination
+  clock minus the pickup clock in every row.
+- Inputs: the events up to pickup. Each clock (placement, confirmation, arrival at the pickup, pickup) is
+  parsed to seconds after midnight; the day of month and weekday of placement and of confirmation stay.
+- The two weekdays (1-7) are numbers, a cycle as rossmann's `DayOfWeek` (CLEAN-14; Lennart, 2026-11-04).
+  Those of arrival at the pickup and of pickup equal the confirmation's in every row and are dropped as
+  copies.
+- `Rider Id` and `User Id` are categorical inputs: the rider and the customer are known at pickup (924
+  riders; 99.4% of the test file's orders have a rider seen in training).
+- Dropped: the arrival-at-destination fields (they make the label), the unique `Order No` and the
+  constant `Vehicle Type`.
+- Riders.csv stays out: it is not as-of. Every rider's `No_Of_Orders` is at least their orders in Train
+  and Test, so the counts, tenure and ratings were taken after these orders.
+- Anomaly: 547 legs of 10 s or less (2.6%; 740 of 60 s or less) stay as the source's labels (CLEAN-11):
+  riders mark the pickup late, when they arrive
+  (https://zindi.world/learn/meet-the-winners-of-the-sendy-logisitics-challenge).
+- No row is dropped. The two multi-day orders, Order_No_2800 and Order_No_3530, waited 22.7 and 49.1 h
+  for confirmation; their pickup legs, 2,640 and 1,854 s at about 15 km/h, are ordinary. The longest leg
+  is 7,883 s, and none passes 3 h.
+- Anomaly: five confirmation clocks precede placement by 1-42 s; kept as recorded.
+- Potential leak, kept on purpose (LEAK-38; Lennart, 2026-11-04): the dictionary reads "Distance covered (KM) -
+  The distance from Pickup to Destination", which a trip records at arrival, while a distance Sendy computes
+  when it prices the order is known at placement; the page does not say which. It tracks the straight line
+  (correlation 0.952) and lowers RMSE from 789.6 to 761.5 s on the pickup task (first repeat). Revisit if a
+  source shows it is the distance travelled.
+- Weather is matched to placement by the source and measured every three hours; missing values stay
+  missing.
+- Metric: the source's RMSE in seconds, with no target transform.
+- Test.csv's 7,068 orders have no labels and are not used.
 
 ## Splits
 
-Default repeated random folds over labelled completed orders; recurring customers are permitted.
-Riders may recur in the source population but rider identity is excluded from predictors at placement.
-CC (2026-10-29, Myunghwan): a supported order sequence would permit a cutoff; otherwise accept random
-evaluation with limited value. Across all 28,269 original Train/Test orders, numeric Order No sorting has day/weekday adjacency 0.669% versus random 0.693%; clocks lack forward progression. No supported chronological sequence was found.
-Full dates and a supported chronological index are unavailable. This is a same-release approximation,
-forced from temporal (SPLIT-8), not a test of future periods or entirely unseen riders/customers.
-The competition's unlabelled test rows are excluded from scored evaluation. Temporal optimism is unmeasured.
-If a later source release supplies full dates, recover chronological windows and recheck that training
-outcomes were available by each prediction cutoff before interpreting later-period performance.
+Default repeated random folds over the labelled orders; customers and riders recur, as both are known at
+pickup. A temporal split is not possible: the release has the day of the month and the weekday but no month
+or year. CC (2026-10-29, Myunghwan): a supported order sequence would permit a cutoff; otherwise accept
+random evaluation with limited value. Sorting by the number in `Order No` gives day/weekday adjacency of
+0.669% against 0.693% at random over all 28,269 Train/Test orders, so it holds no chronology. The split is
+forced from temporal (SPLIT-8) and does not test future periods. If a later release supplies full dates,
+build chronological windows.
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 14,132 to 14,133 rows, test 7,066 to 7,067 rows.
+3 repeat(s) x 3 fold(s) with seed 4267; train 14,134 rows, test 7,067 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 14132 | 7067 |
-| 0 | 1 | 14133 | 7066 |
-| 0 | 2 | 14133 | 7066 |
-| 1 | 0 | 14132 | 7067 |
-| 1 | 1 | 14133 | 7066 |
-| 1 | 2 | 14133 | 7066 |
-| 2 | 0 | 14132 | 7067 |
-| 2 | 1 | 14133 | 7066 |
-| 2 | 2 | 14133 | 7066 |
+| 0 | 0 | 14134 | 7067 |
+| 0 | 1 | 14134 | 7067 |
+| 0 | 2 | 14134 | 7067 |
+| 1 | 0 | 14134 | 7067 |
+| 1 | 1 | 14134 | 7067 |
+| 1 | 2 | 14134 | 7067 |
+| 2 | 0 | 14134 | 7067 |
+| 2 | 1 | 14134 | 7067 |
+| 2 | 2 | 14134 | 7067 |
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -268,24 +255,30 @@ outcomes were available by each prediction cutoff before interpreting later-peri
 ### Feature summary
 
 <details>
-<summary>Show the table (14 rows)</summary>
+<summary>Show the table (20 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | User Id | category | 0 | 0 | 3186 | User_Id_393, User_Id_2330, User_Id_3647, User_Id_1500, User_Id_635, User_Id_868… |
+| Rider Id | category | 0 | 0 | 924 | Rider_Id_726, Rider_Id_576, Rider_Id_523, Rider_Id_101, Rider_Id_205, Rider_Id_… |
 | Platform Type | category | 0 | 0 | 4 | 3, 1, 2, 4 |
 | Personal or Business | category | 0 | 0 | 2 | Business, Personal |
-| Placement - Weekday (Mo = 1) | category | 0 | 0 | 7 | 4, 5, 2, 3, 1, 6, 7 |
-| Precipitation in millimeters | float64 | 20647 | 97.4 | 54 | 2.0, 1.9, 0.9, 1.1, 3.0, 3.1, 2.1, 2.9, 1.0, 3.9 |
-| Temperature | float64 | 4366 | 20.6 | 188 | 24.7, 22.4, 23.8, 23.7, 24.6, 23.6, 25.2, 22.5, 27.3, 24.8 |
-| Pickup Lat | float64 | 0 | 0 | 3665 | -1.2552, -1.2571, -1.3167, -1.3009, -1.3004, -1.2584, -1.2726, -1.2909, -1.2794… |
+| Precipitation in millimeters | float64 | 20649 | 97.4 | 54 | 2.0, 1.9, 0.9, 1.1, 3.0, 3.1, 2.1, 2.9, 1.0, 3.9 |
+| Temperature | float64 | 4366 | 20.59 | 188 | 24.7, 22.4, 23.8, 23.7, 24.6, 23.6, 25.2, 22.5, 27.3, 24.5 |
+| Pickup Lat | float64 | 0 | 0 | 3666 | -1.2552, -1.2571, -1.3167, -1.3009, -1.3004, -1.2584, -1.2726, -1.2909, -1.2794… |
 | Pickup Long | float64 | 0 | 0 | 3656 | 36.7822, 36.7951, 36.8302, 36.8282, 36.8297, 36.8048, 36.7947, 36.823, 36.8254,… |
-| Destination Lat | float64 | 0 | 0 | 5302 | -1.3004, -1.2552, -1.2638, -1.2657, -1.2601, -1.2571, -1.2628, -1.3064, -1.2991… |
-| Destination Long | float64 | 0 | 0 | 5267 | 36.8297, 36.7822, 36.793, 36.8089, 36.8238, 36.7951, 36.7818, 36.752, 36.7529, … |
-| Placement - Seconds after midnight | int32 | 0 | 0 | 15686 | 53842, 51851, 37903, 46263, 50779, 34863, 47084, 52013, 52794, 37796 |
-| Placement - Day of Month | int64 | 0 | 0 | 31 | 8, 7, 13, 14, 6, 28, 4, 18, 15, 11 |
+| Destination Lat | float64 | 0 | 0 | 5302 | -1.3004, -1.2552, -1.2638, -1.2657, -1.2601, -1.2628, -1.2571, -1.3064, -1.2991… |
+| Destination Long | float64 | 0 | 0 | 5267 | 36.8297, 36.7822, 36.793, 36.8238, 36.8089, 36.7818, 36.7951, 36.752, 36.7529, … |
+| Placement - Seconds after midnight | int32 | 0 | 0 | 15686 | 46263, 50779, 53842, 34863, 51851, 37903, 46580, 36829, 52243, 47084 |
+| Confirmation - Seconds after midnight | int32 | 0 | 0 | 15742 | 35812, 56880, 52117, 43379, 56870, 54733, 52866, 43458, 56701, 40898 |
+| Arrival at Pickup - Seconds after midnight | int32 | 0 | 0 | 15767 | 54161, 52324, 46973, 52961, 51011, 35769, 36137, 57698, 50377, 48082 |
+| Pickup - Seconds after midnight | int32 | 0 | 0 | 15690 | 52090, 39200, 40768, 43460, 54391, 44207, 58222, 57099, 58510, 46309 |
+| Placement - Day of Month | int64 | 0 | 0 | 31 | 8, 7, 13, 14, 6, 28, 18, 4, 15, 11 |
+| Placement - Weekday (Mo = 1) | int64 | 0 | 0 | 7 | 4, 5, 2, 3, 1, 6, 7 |
+| Confirmation - Day of Month | int64 | 0 | 0 | 31 | 8, 7, 13, 14, 6, 28, 18, 4, 15, 11 |
+| Confirmation - Weekday (Mo = 1) | int64 | 0 | 0 | 7 | 4, 5, 2, 3, 1, 6, 7 |
 | Distance (KM) | int64 | 0 | 0 | 45 | 8, 5, 6, 4, 7, 9, 10, 3, 11, 14 |
-| Time from Placement to Arrival | int64 | 0 | 0 | 6406 | 2657, 2283, 2138, 2532, 3003, 2419, 2416, 3104, 2560, 3405 |
+| Time from Pickup to Arrival | int64 | 0 | 0 | 4067 | 2, 3, 4, 5, 7, 1, 6, 8, 10, 1424 |
 
 </details>
 
@@ -293,22 +286,33 @@ outcomes were available by each prediction cutoff before interpreting later-peri
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | 1.398 | -0.243 | 3.27435e+06 | 0.257 | log | 388538 | 375427 | lognormal |
+| 0 | 0 | 0 | 1.202 | -3.29 | 974704 | 1.425 | log | 354078 | 600564 | exponential |
 
 ### Numeric features
 
+<details>
+<summary>Show the table (16 rows)</summary>
+
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| Placement - Day of Month | 21199 | 15.6539 | 8.79927 | 1 | 31 |
-| Distance (KM) | 21199 | 9.50653 | 5.66921 | 1 | 49 |
-| Temperature | 16833 | 23.2588 | 3.61593 | 11.2 | 32.1 |
+| Placement - Day of Month | 21201 | 15.6537 | 8.79892 | 1 | 31 |
+| Placement - Weekday (Mo = 1) | 21201 | 3.24008 | 1.5673 | 1 | 7 |
+| Confirmation - Day of Month | 21201 | 15.6538 | 8.79889 | 1 | 31 |
+| Confirmation - Weekday (Mo = 1) | 21201 | 3.24022 | 1.56723 | 1 | 7 |
+| Distance (KM) | 21201 | 9.50653 | 5.66896 | 1 | 49 |
+| Temperature | 16835 | 23.2589 | 3.61577 | 11.2 | 32.1 |
 | Precipitation in millimeters | 552 | 7.9058 | 17.09 | 0.1 | 99.1 |
-| Pickup Lat | 21199 | -1.28147 | 0.030506 | -1.4383 | -1.14717 |
-| Pickup Long | 21199 | 36.8113 | 0.0374741 | 36.6536 | 36.991 |
-| Destination Lat | 21199 | -1.28258 | 0.0348247 | -1.4303 | -1.03023 |
-| Destination Long | 21199 | 36.8112 | 0.0447221 | 36.6066 | 37.0168 |
-| Placement - Seconds after midnight | 21199 | 46182.4 | 9090.53 | 436 | 82021 |
-| Time from Placement to Arrival | 21199 | 3510.81 | 1809.52 | 100 | 16322 |
+| Pickup Lat | 21201 | -1.28147 | 0.0305071 | -1.4383 | -1.14717 |
+| Pickup Long | 21201 | 36.8113 | 0.0374726 | 36.6536 | 36.991 |
+| Destination Lat | 21201 | -1.28258 | 0.0348236 | -1.4303 | -1.03023 |
+| Destination Long | 21201 | 36.8112 | 0.0447206 | 36.6066 | 37.0168 |
+| Time from Pickup to Arrival | 21201 | 1556.92 | 987.271 | 1 | 7883 |
+| Placement - Seconds after midnight | 21201 | 46182.7 | 9090.21 | 436 | 82021 |
+| Confirmation - Seconds after midnight | 21201 | 46615.9 | 9139.33 | 515 | 82762 |
+| Arrival at Pickup - Seconds after midnight | 21201 | 47392.4 | 9146.49 | 731 | 83400 |
+| Pickup - Seconds after midnight | 21201 | 48136.6 | 9131.67 | 2992 | 83621 |
+
+</details>
 
 ### Categorical features
 
@@ -317,17 +321,17 @@ outcomes were available by each prediction cutoff before interpreting later-peri
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| Personal or Business | 1 | Business | 17382 | 81.99 |
-| Personal or Business | 2 | Personal | 3817 | 18.01 |
-| Placement - Weekday (Mo = 1) | 1 | 4 | 4228 | 19.94 |
-| Placement - Weekday (Mo = 1) | 2 | 5 | 3993 | 18.84 |
-| Placement - Weekday (Mo = 1) | 3 | 2 | 3958 | 18.67 |
-| Placement - Weekday (Mo = 1) | 4 | 3 | 3823 | 18.03 |
-| Placement - Weekday (Mo = 1) | 5 | 1 | 3788 | 17.87 |
-| Platform Type | 1 | 3 | 18052 | 85.15 |
+| Personal or Business | 1 | Business | 17384 | 82 |
+| Personal or Business | 2 | Personal | 3817 | 18 |
+| Platform Type | 1 | 3 | 18054 | 85.16 |
 | Platform Type | 2 | 1 | 2147 | 10.13 |
 | Platform Type | 3 | 2 | 980 | 4.62 |
 | Platform Type | 4 | 4 | 20 | 0.09 |
+| Rider Id | 1 | Rider_Id_726 | 247 | 1.17 |
+| Rider Id | 2 | Rider_Id_576 | 223 | 1.05 |
+| Rider Id | 3 | Rider_Id_523 | 199 | 0.94 |
+| Rider Id | 4 | Rider_Id_101 | 183 | 0.86 |
+| Rider Id | 5 | Rider_Id_205 | 182 | 0.86 |
 | User Id | 1 | User_Id_393 | 645 | 3.04 |
 | User Id | 2 | User_Id_2330 | 322 | 1.52 |
 | User Id | 3 | User_Id_3647 | 312 | 1.47 |
@@ -347,3 +351,4 @@ outcomes were available by each prediction cutoff before interpreting later-peri
 | data_foundry_version | 0.0.5 |
 | git_sha | b58e9ac9185941edb42d19f681fe534aad8ec734 |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
+| stale | yes: the definition now gives checksum `v2:ca88e7f56236d985c7f49d21b9be4f9ce3cd612134aac2fa10bd4fc72bf502f8` |

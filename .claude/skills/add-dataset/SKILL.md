@@ -130,8 +130,9 @@ uvx ruff@0.15.15 check --fix datasets/_dev/tabarena-v0pt2/<unique_name>/dataset.
 ```
 
 runs the pipeline, the checks and `_decisions` without saving, and writes `README.md`. Resolve the TODOs, look at the
-data (`ds = workbench()` in a scratch notebook or script, never committed), re-run, read the README diff. Stop when there are no errors and every warning is fixed or
-proposed for acceptance with a reason. Run `dataset check` again after every `ruff --fix`.
+data (`ds = workbench()` in a scratch notebook or script, never committed), re-run, read the README diff. Stop when
+there are no errors and every warning is fixed or proposed for acceptance with a reason. Run `dataset check` again after
+every `ruff --fix`.
 
 Then run the leak probes and the task probes, the group probes for a grouped task, the hidden-group probe for an
 IID one and the dtype probe ([checks_and_probes.md](../knowledge-data-foundry/references/checks_and_probes.md)): every
@@ -146,8 +147,8 @@ Run every check of [verification.md](../knowledge-curation/references/verificati
 with evidence and the rule IDs. The "Metric" row checks the declared spec against the source: open the `reference`
 and confirm it names this metric (the `original`) with these params; for a fallback, that the reason says where we
 looked; that the `task_metric_*` checks are clean (the metric computes on every fold, its inputs are scoring columns,
-not features); and that a custom metric's tests against the official code pass. Fix what can be fixed now (re-run `dataset check` after each fix); everything else
-becomes a draft issue for step 8.
+not features); and that a custom metric's tests against the official code pass. Fix what can be fixed now (re-run
+`dataset check` after each fix); everything else becomes a draft issue for step 8.
 
 ## Step 7: The review panel
 
@@ -166,8 +167,12 @@ and the editor) for a re-check after a small change. Say which tier ran.
    the evidence and the decision needed ([writing.md](../knowledge-curation/references/writing.md)), and the
    `**Review panel:**` block with each agent's full report.
 3. The `review-editor` agent reads the draft as the curator would; apply its fixes.
-4. Add a dated CHANGELOG entry for the new folder, and an `**Assessment (AI, <date>):**` line in the record. Never
-   build: a build is the curator's call ([rebuild.md](../knowledge-data-foundry/references/rebuild.md)).
+4. Add a dated CHANGELOG entry for the new folder, and the panel's summary in the record, one line in a fixed form:
+   `**Assessment (AI, <date>):** review panel (<tier>): <the mediator's recommendation>; disputed: <the points, by
+   rule ID>; for the curator: issues <n>-<m>.` The panel's reports leave with the `REVIEW.md` once its issues are
+   settled, so this line is what keeps the panel in the curation history (Lennart, 2026-11-04: "we want all our
+   history of curation be documented and readable going forward (in a good format and in short, but not lost!)").
+   Never build: a build is the curator's call ([rebuild.md](../knowledge-data-foundry/references/rebuild.md)).
 5. Set the record's `priority` again from what was measured, so the review page puts the most important datasets
    first ([selection.md](../knowledge-curation/references/selection.md), "Priority"): `priority_factors.py <name>`
    (in `knowledge-data-foundry/scripts/`) gives the gap and the shape; judge the use case, the source and the risk

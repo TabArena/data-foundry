@@ -36,8 +36,8 @@ class RfPcp(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="What fraction of reference residues aligns within the source's four GDT distance tolerances?",
         use_case=(
-            "For example, a structural-biology researcher estimates a generated model's accuracy before the "
-            "experimental reference is available, to assess accuracy before planning further structural work."
+            "A structural-biology researcher ranks the candidate models generated for one protein before the "
+            "experimental reference is available, to choose which to refine; scored by the correlation per protein."
         ),
         row=(
             "One of 95,094 protein-structure candidate rows in the author's mixed CASP5-10 and classic-decoy "
@@ -111,9 +111,11 @@ class RfPcp(AbstractCuratedDataset):
           supplied number without complementing it. Some scores exceed the modeled-structure sequence length;
           source coverage versus full-sequence alignment is unverified. No native-reference leakage is demonstrated.
           The retrieved archive has no feature-generation code; row-level generation was not reconstructed.
-        - ED equals zero with positive PN in 71 rows; PN equals zero with positive ED in 63. The source
-          does not settle whether these 134 inconsistencies are sentinels or a different pair definition; retain
-          supplied values rather than inventing missing-value codes.
+        - ED is a sum of pair distances over the PN pairs, and PN is fixed by the sequence (constant within protein
+          and sequence length in 1,146 of 1,249 cells). A sum over one or more pairs cannot be 0, and a sum over no
+          pairs cannot be positive, so ED = 0 with PN > 0 (71 rows) and PN = 0 with ED > 0 (63 rows) become missing
+          and the rows stay (CLEAN-11; Lennart, 2026-11-04). Each of those rows has a same-protein, same-length
+          sibling with the value positive.
         - Energy is signed in the release despite absolute-sum prose; retain signs and extreme finite values.
           Neither a large magnitude nor a negative energy is itself proof of a recording error or leakage.
         - Protein keys come from source filenames. CASP keys use T identifiers, case-normalized; classic sets use
@@ -124,21 +126,31 @@ class RfPcp(AbstractCuratedDataset):
         - Official CASP pages map 339 observed targets to experimental PDB accessions, none shared with classic
           targets. Three further identities are confirmed by exact sequences and retain original keys, with no
           colliding aliases. This is not a sequence-family split.
-        - The primary objective estimates absolute per-structure quality. No top-one model-selection utility,
-          protein-family-disjoint generalization or performance on modern structure generators is claimed.
-        - RMSE is a fallback after inspecting the complete paper's Section 3, which reports RMSE, correlation,
-          squared correlation and tolerance-based accuracy without a unique selection criterion. Our diagnostic
-          R-squared uses 1-SSE/SST; the paper's squared Pearson correlation is a different quantity.
+        - The metric (Lennart, 2026-11-04; exception to MET-5): `mean_group_pearsonr` on `protein_id`, the
+          correlation within each protein averaged over proteins, as CASP scores quality assessment per target. The
+          paper reports RMSE, correlation, R2 and tolerance accuracy side by side; pooled RMSE rewards a protein's
+          typical quality, and each protein's true mean, which orders no candidate, beats LightGBM on it (0.134
+          against 0.188). Each test fold holds 148-149 proteins with a median of 103-113 candidates, none under 5.
+        - `Energy` stays as supplied (Lennart, 2026-11-04): the extreme positive values (up to 7e11) are ProSEE's
+          output for unminimized models whose atoms overlap, continuous with the rest and carrying signal (mean GDT_TS
+          0.339 against 0.398), so unusual rather than impossible (CLEAN-11). `SS` has no bound the source gives.
+        - Outdated (Lennart, 2026-11-04): six global descriptors of 2002-2012 server models; since CASP15 the
+          standard is the predictor's own confidence (pLDDT). Kept as a small grouped biology task, with no new features.
         - First release is the August 2014 source archive; the paper appeared online in December 2014 and in 2015.
           The year denotes the first release, not the paper's issue year. No source metadata is overwritten silently.
     """
     target = "GDT"
     problem_type = "regression"
-    metric = Metric.fallback(
+    metric = Metric.from_context(
+        "mean_group_pearsonr",
         reason=(
-            "Rana et al., DOI10.1142/S0219720015500055, complete Section 3 reports RMSE, correlation, "
-            "squared correlation and tolerance accuracy without one uniquely selected criterion; use regression RMSE."
+            "The use case ranks the candidate structures of one target, as CASP's quality assessment scores it per "
+            'target (CASP10: "the two assessment approaches show different qualities of the methods and we use both of '
+            'them"). Rana et al. (DOI 10.1142/S0219720015500055) report RMSE, correlation, R2 and tolerance accuracy '
+            "side by side. Pooled RMSE does not score the decision: each protein's true mean, which orders no candidate, "
+            "beats LightGBM on it (0.134 against 0.188). Exception to MET-5 (Lennart, 2026-11-04)."
         ),
+        inputs={"group": "protein_id"},
     )
     grouping = Grouping(
         on="protein_id",
@@ -173,7 +185,12 @@ class RfPcp(AbstractCuratedDataset):
             raise ValueError("RF-PCP grouping requires the reviewed protein identity map")
         aliases = json.loads(mapping_bytes)
         df["protein_id"] = df["protein_id"].map(lambda key: aliases.get(key, key))
-        return df[["Area", "ED", "Energy", "SS", "SL", "PN", self.target, "protein_id"]]
+        df = df[["Area", "ED", "Energy", "SS", "SL", "PN", self.target, "protein_id"]]
+        # A sum of distances over one or more pairs is positive, and no pairs give no distance (CLEAN-11).
+        no_distance, no_pairs = df["ED"].eq(0) & df["PN"].gt(0), df["PN"].eq(0) & df["ED"].gt(0)
+        df.loc[no_distance, "ED"] = float("nan")
+        df.loc[no_pairs, "PN"] = float("nan")
+        return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(categorical=["protein_id"])

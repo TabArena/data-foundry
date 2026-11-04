@@ -3,6 +3,7 @@ unique_name: open_soil_spectral_library
 name: Open Soil Spectral Library (OSSL) / KSSL MIR soil spectra
 checked_by:
 - Myunghwan
+- Lennart
 data_foundry_status:
 - WIP (DF)
 claimed_by: Myunghwan
@@ -77,6 +78,14 @@ CC (2026-10-27, Myunghwan): Finish add-dataset work and then move to review-adde
 **CC (2026-10-28, Myunghwan):** "ship all". Approved this dataset for shipping in the five-dataset final added-dataset review (beMTPL97, Eucalyptus, Tanzania tourism, CPS88 wages and OSSL), on the exact presented definition with previously settled task choices and disclosed limitations retained. This is scientific acceptance for a separately requested build; it does not authorize build, commit or publication.
 
 **Assessment (AI, 2026-10-28):** The independent consistency check supports applying this overall verdict without another task choice. Existing local curator dispositions remain distinct from source verification or shared-rule amendments. No definition, scorer, data, fold or warning acceptance was changed by this final verdict.
+
+CC (2026-11-04, Lennart): the 1,701 MIR bins are declared as a spectrum ("delacre it"): renamed `mir_<n>`, `Spectrum(name="mir_spectrum", prefix="mir_", unit="cm-1", technique="infrared", state="raw")` (CLEAN-26). The target ships on the source's scale, log1p with the transform ("Follow the source metric and scale"); the metric on it is open (REVIEW.md issues 2-3).
+
+**Assessment (AI, 2026-11-04):** with the spectrum declared, ALS + SNV improves LightGBM from 1.74 to 1.33 % RMSE on all three folds (repeat 0, untuned); a Savitzky-Golay first derivative, not registered, gives 1.24. LightGBM then beats ridge, which reverses the earlier 5,000-row diagnostic. `state="raw"` holds: KSSL exports averaged absorbance on the 600-4000 cm-1 grid and OSSL applies SNV only inside its models.
+
+CC (2026-11-04, Lennart): the metric is the source's cross-validation metric, `rmsle` on the log1p target ("follow the recommendation, following the source"); the group description stands; the 600 cm-1 bin, a fill in 53 spectra, is dropped for every row ("do (b), document how to find this in the skills going forward"), and spectra.md now says how to find edge fill values.
+
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled.
 
 ## Reference
 

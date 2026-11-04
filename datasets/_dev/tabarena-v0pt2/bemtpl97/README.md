@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bemtpl97
 container_format: 2
-checksum: v2:c453db381a0392e96b56e809e924cb0be3d0c3f4cf1087235d06d69a97aab978
+checksum: v2:8b670a9c5fadf73c68f37c8a35b2ccc2b348ebb3f1bace6be918358581967079
 build:
   uuid: 01a18ad7-0bb6-7938-bc7e-98a4b50a8804
   checksum: v2:c453db381a0392e96b56e809e924cb0be3d0c3f4cf1087235d06d69a97aab978
@@ -17,7 +17,7 @@ build:
     pyarrow: 26.0.0
     scikit-learn: 1.7.2
     polars: 2.0.0
-build_stale: false
+build_stale: true
 data:
   n_rows: 163212
   n_features: 13
@@ -77,7 +77,7 @@ decisions:
 
 Regression of `nclaims`, scored with `mean_poisson_deviance` on IID splits. 163,212 rows and 13 features. Source: GitHub (2020).
 
-Built as `01a18ad7-0bb6-7938-bc7e-98a4b50a8804` on 2026-10-30. See [Build](#build).
+Built as `01a18ad7-0bb6-7938-bc7e-98a4b50a8804` on 2026-10-30, but `dataset.py` has changed since: it now gives checksum `v2:8b670a9c5fadf73c68f37c8a35b2ccc2b348ebb3f1bace6be918358581967079`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -91,11 +91,11 @@ Built as `01a18ad7-0bb6-7938-bc7e-98a4b50a8804` on 2026-10-30. See [Build](#buil
 
 **Known at prediction time.** The source describes policyholder, vehicle, coverage, claim-history and municipality characteristics at policy start. This benchmark additionally supplies realized insured duration, whose availability at quotation is unresolved. Exposure is the fraction of the year actually insured; longer coverage gives more opportunity for claims.
 
-**What the test data stands for.** Random policyholders are held out, representing comparable unseen customers in the released portfolio.
+**What the test data stands for.** Random policyholders are held out, representing comparable unseen customers of the same year; the release has no dates, so no later year can be held out.
 
 **Our changes to the source.** We keep the original claim count and exclude the identifier and other same-period outcome fields.
 
-> **Use case fit: approximate (a stand-in with a known gap).** Realized exposure can reflect later cancellation and is retained by explicit curator choice; its availability at policy start is unresolved. Source large-claim preprocessing is documented, but excluded identities and complete-policy removal are unverified. This task does not establish full-portfolio or future-year performance.
+> **Use case fit: approximate (a stand-in with a known gap).** The policies carry no dates, so random policyholders of 1997 stand in for the next year's customers an insurer prices. Realized exposure is kept on purpose, although it can reflect a cancellation later in the year. The release's selection: the 19 policies whose average claim cost exceeds EUR 81,000 (0.1% of 18,295 claimants) are most likely removed.
 
 ## Files in this folder
 
@@ -138,7 +138,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2020 |
 | domain | insurance |
 | license | GPL (>= 2), declared by CASdatasets; insurer-specific terms not verified |
-| data_tags | IID, Spatial |
+| data_tags | IID, Spatial, ForcedIIDFromTemporal |
 | reference | Henckaerts2020TreeMLData,Henckaerts2020Boosting |
 | rows x columns | 163,212 x 14 |
 | task.target | nclaims |
@@ -154,12 +154,14 @@ Only curators run `build`, when the dataset ships.
 | origin | source: the source's metric |
 | original | Mean Poisson deviance of observed claims against expected observed-period claim counts |
 | reference | https://github.com/henckr/treeML/blob/2ee8accc6df49168bd865cdf49efa1b7a5c8f4de/treeML.Rmd#L641-L657 |
-| definition | 2*mean(y*log(y/mu)-y+mu); zero y log term is zero; finite y>=0 and expected means mu>0 |
+| definition | 2*mean(y*log(y/mu)-y+mu); zero y log term is zero; finite y>=0; mu below 1e-6 counts as 1e-6 |
+| params | {'min_prediction': 1e-06} |
 
 <details>
-<summary>Feature types: 6 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 5 categorical, 1 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (6): `coverage`, `sex`, `fuel`, `use`, `fleet`, `postcode`
+- categorical (5): `sex`, `fuel`, `use`, `fleet`, `postcode`
+- ordinal (1): `coverage (TPL < TPL+ < TPL++)`
 - string (0): none
 - datetime (0): none
 
@@ -201,20 +203,17 @@ The first 5 of 163,212 rows of the final frame (random rows: the frame is shuffl
 
 ## Curation notes
 
-We start with data/beMTPL97.rda from CASdatasets commit 227fb56b8734bdb7c0327a41180e01d2ddaeaf26, exactly equal as a parsed table to the pinned author's mtpl_data.rds. Normalize reader-produced column labels to Python strings so sklearn recognizes feature names; their text and all values stay unchanged.
+We start with data/beMTPL97.rda from CASdatasets commit 227fb56b8734bdb7c0327a41180e01d2ddaeaf26, equal as a parsed table to the pinned author's mtpl_data.rds; column labels become Python strings.
 
-- Prediction point: quotation/policy start is the intended application. [Binning manuscript](https://roelverbelen.netlify.app/publication/binning/binning.pdf), section 2, p. 4: "The risk factors are registered at the start of the policy period". Realized exposure is not established as known then; the fit remains approximate.
-- Curator decision (2026-10-23, Myunghwan): retain original nclaims 0-5 as numeric regression and random policyholders. The earlier RMSE choice was superseded by the 2026-10-26 decision below. No annualization, log, clipping, binning, weighting, offset or row selection. Exposure remains a predictor because longer coverage permits more claims. Drop id and the same-period outcomes claim, amount and average; nclaims is never a predictor.
-- Potential leak, kept on purpose: expo measures actual insured time, one day to one year, which can reflect later cancellation. It stays by explicit curator choice. No event/cancellation timestamps ship, so neither the probes nor the source's policy-start risk-factor description verifies quotation-time exposure. Revisit if timing records become available.
-- Keep sex for historical research by curator choice; this establishes no fairness or suitability for commercial pricing. Keep postcode nominal and both municipality coordinates. The other categories are coverage, sex, fuel, use and fleet; ages, bonus-malus, power, exposure and coordinates remain numeric.
-- Keep all 163,212 distinct source policyholders, including legitimate coarse-profile repetitions: 133 extra exact rows, 168 extra predictor-profile copies and 35 conflicting profiles involving 70 rows (35 is also the checker's excess-row statistic). Matching profiles do not establish repeated people. The IID hidden-group probe found no hit; 147,308 rows lacked enough informative tokens for its near-copy comparison, so coverage is limited.
-- Keep all 144,936 zero-claim outcomes unchanged; 5 is an observed maximum, not our cap. Source-release selection remains: the earlier manuscript has 163,231 policies and its severity analysis excludes 19 high-cost cases (section 3.2, p. 11: "For 19 records the average claim cost exceeds this threshold", EUR 81,000). The [later paper](https://arxiv.org/pdf/1904.10890v3), section 4.1, p. 14, documents large-claim exclusion. This release has 18,276 claimants, but excluded identities cannot be checked against the unavailable extraction. Apply no extra tail filter.
-- Year 2020 is the verified author data commit of 30 April 2020, not observation year 1997; earliest public distribution is unverified. CASdatasets declares GPL (>= 2); insurer-specific terms and original extraction records remain unavailable. The earlier RMSE choice is historical; the curator-selected source metric is now mean Poisson deviance on expected observed-period counts.
-- Curator decision (2026-10-26, Myunghwan): supersede only RMSE with source mean Poisson deviance. Predict expected claim count over the recorded insured period against original nclaims. Keep all released rows, expo as a predictor, and the existing IID folds; no target transform, annualization, weighting, clipping, binning or extra row filter. The score particularly penalizes near-zero means when claims occur; this is not a general preference for every small absolute error.
-- Scoring protocol (AI, 2026-10-26): require strictly positive finite expected counts for the sklearn scorer and fixed-model diagnostics. This is an implementation protocol, not an additional verbatim curator instruction. The source likelihood zero-mean limits are documented below.
-- Source score: Henckaerts et al., arXiv:1904.10890v3, sections 3.2, 4.1 and 4.5; pinned treeML.Rmd lines 641-657 defines -2 times the mean Poisson log-likelihood ratio and scores nclaims against predicted frequency times expo. Our predictions already are expected counts, so exposure is not a separate scoring input. Use 2*mean(y*log(y/mu)-y+mu), with y*log(y/mu)=0 at y=0. sklearn requires finite y>=0 and finite mu>0. The source zero-mean limit is zero at y=0 and infinity at y>0; no clipping, epsilon floor or invalid-row omission is permitted.
-- Bounded Poisson qualification, revalidated after integration: same 163,212 rows and nine original IID folds, train-only preprocessing, fixed configurations, no HPO. All predicted means are finite and strictly positive without clipping. Mean Poisson deviance: training-mean dummy 0.551734632; poisson_linear 0.547592694 (9/9 wins), poisson_lightgbm 0.528534431 (9/9 wins), poisson_forest 0.529093723 (9/9 wins), bm_only_poisson 0.549323188 (9/9 wins), expo_only_poisson 0.551113166 (9/9 wins). These saved predictions were subsequently rescored against the integrated portable source scorer after verifying identical rows and all nine folds. No model refits are implied by that integration recheck. Official RMSE task-probe flags and old tuned rankings are not reused as Poisson evidence.
-- Direct integration follow-up (2026-10-26): register the sklearn-backed source metric and use domain-valid positive means for the library's synthetic computability test. Real model predictions remain subject to the strict scorer domain; no clipping, zero-label alteration, warning waiver or failed-score omission. Retained fixed-model predictions are reused only after exact row, target, fold and source-loss checks.
+- Prediction point: the quotation at policy start. [Binning manuscript](https://roelverbelen.netlify.app/publication/binning/binning.pdf), Sec. 2, p. 4: "The risk factors are registered at the start of the policy period and remain constant during this period".
+- Target: the original nclaims, 0 to 5, as a count regression on every policyholder; no annualization, cap, weight or offset. We drop id and the same-period outcomes claim, amount and average.
+- Potential leak, kept on purpose: expo, the share of 1997 the policy was in force (one day to one year), is shorter when the policyholder "surrendered the policy during the year" (p. 4), so it can record a later cancellation. It stays as the exposure the source puts into the expected count; a Poisson fit on log(expo) alone scores 0.5470 against the training mean's 0.5517 (nine folds). Revisit if policy dates become available.
+- Metric: the source's mean Poisson deviance of nclaims against the predicted expected count, by which it tunes and compares its frequency models ([arXiv:1904.10890v3](https://arxiv.org/pdf/1904.10890v3), Sec. 3.2 Eq. 5, Algorithm 3, Sec. 4.5; treeML.Rmd lines 641-657 score nclaims against frequency times expo). Exposure enters through the prediction, so it is neither a weight nor a scoring column. A predicted mean below 1e-6 counts as 1e-6 (Lennart, 2026-11-04: "in pratice we would also clip to a reasonable number"): one day of exposure at a 3% claim frequency is about 1e-4, so the floor sits two orders below the smallest plausible mean; a NaN or infinite prediction raises.
+- Dtypes: coverage is ordered, TPL < TPL+ < TPL++ (plus limited, then comprehensive material damage; CLEAN-14); sex, fuel, use, fleet and postcode are nominal; the rest stay numeric. sex stays by curator choice, for research on a 1997 tariff.
+- Copies kept: each row is a distinct source policyholder; the 133 extra exact rows and 35 conflicting profiles are coarse rating profiles that coincide (the IID hidden-group probe found none, though 147,308 rows were too sparse to compare).
+- Selection by the release: the manuscript has 163,231 policies, 19 of them with an average claim cost above EUR 81,000 (Sec. 3.2, p. 11); the release has 163,212, so it most likely dropped those 19. No further filter.
+- Split forced IID from temporal (ForcedIIDFromTemporal, SPLIT-8): an insurer fits on past policy years and prices the next, but the release is one undated year, so the cost cannot be measured. A later year would test the drift of claim frequency; recover one if a release has it.
+- Year 2020: the author's data commit of 30 April 2020, the earliest public copy found; the observation year is 1997. CASdatasets declares GPL (>= 2); the insurer's terms are not stated.
 
 ## Splits
 
@@ -254,7 +253,7 @@ The source documents unique policyholders. Coarse characteristics and zero-heavy
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicate_rows`: 133 exact duplicate row(s) (0.1% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **info** `dataset_conflicting_duplicate_rows`: 35 row(s) (0.0%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
@@ -274,7 +273,7 @@ Accepted on purpose:
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | nclaims | Int32 | 0 | 0 | 6 | 0, 1, 2, 3, 4, 5 |
-| ageph | Int32 | 0 | 0 | 78 | 43, 49, 47, 50, 51, 45, 39, 42, 38, 41 |
+| ageph | Int32 | 0 | 0 | 78 | 43, 49, 47, 50, 51, 45, 39, 38, 42, 41 |
 | bm | Int32 | 0 | 0 | 23 | 0, 1, 5, 2, 4, 11, 10, 9, 6, 7 |
 | power | Int32 | 0 | 0 | 178 | 55, 40, 66, 44, 33, 43, 47, 51, 65, 60 |
 | agec | Int32 | 0 | 0 | 49 | 6, 8, 7, 2, 4, 3, 9, 5, 10, 11 |
@@ -346,3 +345,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 6b2e70b5b795a373a3ae71006b8db8e471eabe9f-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
+| stale | yes: the definition now gives checksum `v2:8b670a9c5fadf73c68f37c8a35b2ccc2b348ebb3f1bace6be918358581967079` |

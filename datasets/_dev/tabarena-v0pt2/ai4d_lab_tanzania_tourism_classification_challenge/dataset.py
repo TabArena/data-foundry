@@ -19,7 +19,8 @@ class Ai4dLabTanzaniaTourismClassificationChallenge(AbstractCuratedDataset):
         ),
         row="One labeled tourist survey record in the 2022 competition's training file (18,506 records).",
         predicted=(
-            "The original cost_category: Low Cost, Lower Cost, Normal Cost, High Cost, Higher Cost or Highest Cost. "
+            "The original cost_category, ordered Lower Cost < Low Cost < Normal Cost < High Cost < Higher Cost < "
+            "Highest Cost. "
             "The release does not document monetary boundaries or the expenditure basis."
         ),
         known=(
@@ -88,6 +89,10 @@ class Ai4dLabTanzaniaTourismClassificationChallenge(AbstractCuratedDataset):
         - Merge the evident Widlife Tourism spelling (5,988 training rows) into Wildlife Tourism (2,283 rows).
         - Merge UAE (187 rows) into UNITED ARAB EMIRATES and BURGARIA (2 rows) into BULGARIA, both already
           present in the source. Other country distinctions stay as published.
+        - Types (2026-11-04, Lennart; CLEAN-25, CLEAN-14): cost_category is an ordered category, Lower Cost < Low
+          Cost < Normal Cost < High Cost < Higher Cost < Highest Cost. The source lists the classes alphabetically
+          and gives no boundaries; Lower and Low are read as comparatives, as High < Higher < Highest are.
+          age_group is ordered bands (<18 < 18-24 < 25-44 < 45-64 < 65+). The party counts and nights stay numbers.
         - Retain ordinary missing values. Both party counts are set missing for 94 records with a zero total;
           a tourist record cannot describe a party with no people. No positive counts or night outliers are clipped.
         - Source coding limits: 142 Independent records have a Yes package inclusion, while 104 Package Tour records
@@ -140,7 +145,11 @@ class Ai4dLabTanzaniaTourismClassificationChallenge(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         numeric = {"total_female", "total_male", "night_mainland", "night_zanzibar"}
-        return FeatureTypes(categorical=[c for c in df if c not in numeric and c != self.target])
+        ordinal = {
+            self.target: ["Lower Cost", "Low Cost", "Normal Cost", "High Cost", "Higher Cost", "Highest Cost"],
+            "age_group": ["<18", "18-24", "25-44", "45-64", "65+"],
+        }
+        return FeatureTypes(ordinal=ordinal, categorical=[c for c in df if c not in numeric and c not in ordinal])
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
         records = []

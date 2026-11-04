@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: tunisian_fraud_detection_challenge
 container_format: 2
-checksum: v2:84d2d72d5ffe91a80168cd461f4367b63635ee74467d97d96c89e6de9ce57972
+checksum: v2:6dd387c1c3031fb9f9fcc8d588787cc0c2fe930aa9e20e3e7e83e906c4d28f8d
 build:
   uuid: 01a19475-b104-7ff0-82db-ed3aeb71f3a7
   checksum: v2:84d2d72d5ffe91a80168cd461f4367b63635ee74467d97d96c89e6de9ce57972
@@ -17,14 +17,14 @@ build:
     pyarrow: 26.0.0
     scikit-learn: 1.7.2
     polars: 2.0.0
-build_stale: false
+build_stale: true
 data:
-  n_rows: 21295
-  n_features: 103
+  n_rows: 20930
+  n_features: 100
   dtypes:
     category: 23
     datetime64[ns]: 1
-    float64: 80
+    float64: 77
   n_test_dataset_rows: null
 task:
   target: target
@@ -40,7 +40,7 @@ task:
   group_time_on: null
   grouping: null
 splits:
-  n_repeats: 4
+  n_repeats: 3
   n_folds: 1
   random_state: 4267
   time_horizon: 1
@@ -49,9 +49,9 @@ splits:
   time_gap_unit: null
   n_train:
     min: 11833
-    max: 20930
+    max: 19301
   n_test:
-    min: 365
+    min: 1629
     max: 4368
 bundle_checks:
   ok: true
@@ -74,9 +74,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `target`, scored with `rmse` on temporal splits by `fiscal_year`. 21,295 rows and 103 features. Source: Zindi (2019).
+Regression of `target`, scored with `rmse` on temporal splits by `fiscal_year`. 20,930 rows and 100 features. Source: Zindi (2019).
 
-Built as `01a19475-b104-7ff0-82db-ed3aeb71f3a7` on 2026-11-01. See [Build](#build).
+Built as `01a19475-b104-7ff0-82db-ed3aeb71f3a7` on 2026-11-01, but `dataset.py` has changed since: it now gives checksum `v2:6dd387c1c3031fb9f9fcc8d588787cc0c2fe930aa9e20e3e7e83e906c4d28f8d`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -84,15 +84,15 @@ Built as `01a19475-b104-7ff0-82db-ed3aeb71f3a7` on 2026-11-01. See [Build](#buil
 
 **Use case.** For example, a Tunisian tax-control analyst looks back over archived annual returns and administrative cross-checks to prioritize records for further investigation using estimated logged adjustment severity. The scored adjustment is withheld; this retrospective exercise does not reproduce a model refit at each fiscal-year start.
 
-**One row.** One anonymized taxpayer-year in the supplied Ministry of Finance challenge training release: 21,295 rows, 12,387 taxpayers, fiscal years 2013–2018.
+**One row.** One anonymized taxpayer-year in the supplied Ministry of Finance challenge training release: 21,295 rows of fiscal years 2013–2018, of which the 20,930 of 2013–2017 ship (2018 is cut).
 
 **Predicted.** The source-provided log(1 + principal tax adjustment) label. Penalties are not the target. Underlying currency denomination is unspecified.
 
 **Known at prediction time.** Taxpayer legal/activity/obligation categories, filed VAT amounts and credits, customs/government-payment aggregates, and third-party income/invoice cross-checks, as supplied in the contest dossier. Registry/refund revisions and historical extraction cutoffs remain unverified.
 
-**What the test data stands for.** Train on every observed earlier fiscal year and test on 2018, 2017, 2016 and 2015 separately. Both recurring and newly observed taxpayers occur. This measures transfer to later fiscal cohorts using retrospective training labels; it does not date audit completion or reproduce past operational refits.
+**What the test data stands for.** Train on every observed earlier fiscal year and test on 2017, 2016 and 2015 separately. Both recurring and newly observed taxpayers occur. This measures transfer to later fiscal cohorts using retrospective training labels; it does not date audit completion or reproduce past operational refits.
 
-**Our changes to the source.** Keep every labeled row and supplied target. Remove row/taxpayer identifiers, duplicate fiscal year, twelve zero-with-block-missingness columns and two exact financial copies. Cast codes as categories and fiscal year as datetime.
+**Our changes to the source.** Cut fiscal year 2018 (365 rows), whose inspections were still open at the extract; keep the other labeled rows and supplied targets. Remove row/taxpayer identifiers, duplicate fiscal year, twelve zero-with-block-missingness columns and two exact financial copies. Cast codes as categories and fiscal year as datetime.
 
 > **Use case fit: approximate (a stand-in with a known gap).** The original supervision task and annual dossiers are documented; Myunghwan accepts retrospective investigation. Exact feature extraction, inspection selection and audit/label-availability dates are absent. This historical cohort comparison does not establish causal deployment, all-taxpayer screening yield, or recovered money per inspection.
 
@@ -113,7 +113,10 @@ Built as `01a19475-b104-7ff0-82db-ed3aeb71f3a7` on 2026-11-01. See [Build](#buil
 
 ```text
 Obtain the authorized Train.csv and VariableDescription.csv from
-https://zindi.world/competitions/tunisian-fraud-detection/data and place them in
+https://zindi.world/competitions/tunisian-fraud-detection/data (login; Lennart's download of 2026-11-04 is
+byte-identical to the participant mirrors' SupCom copy: Train.csv SHA-256
+8946058bd60847cf49eb372963d05f47022c1fb820ab323227304a88aa0faa02, VariableDescription.csv SHA-256
+763bfdfe8774643eb3342b3e2c0935801f81c545ea9908bb64174195092b81f8) and place them in
 local-data-warehouse/tunisian_fraud_detection_challenge/. The supplied named files were preserved byte-for-byte
 under these canonical names; SOURCE_MANIFEST.json records identities. Only Train.csv supplies benchmark rows and labels. A separate private test-file inspection informs the predictor schema; no test rows or submission labels enter this definition.
 The related Sup'Com challenge is a later rerun of this source family, not another independent dataset.
@@ -136,9 +139,9 @@ Only curators run `build`, when the dataset ships.
 | year | 2019 |
 | domain | finance |
 | license | Zindi competition rules; redistribution restricted |
-| data_tags | Non-IID, Temporal, Anonymized |
+| data_tags | Non-IID, Temporal |
 | reference | tunisian2019fraud |
-| rows x columns | 21,295 x 104 |
+| rows x columns | 20,930 x 101 |
 | task.target | target |
 | task.problem_type | regression |
 | task.metric | rmse |
@@ -180,15 +183,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 21,295 rows of the final frame (the oldest rows: the frame is sorted by `fiscal_year`); 12 of 104 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 20,930 rows of the final frame (the oldest rows: the frame is sorted by `fiscal_year`); 12 of 101 columns, the target first. Cells are cut at 40 characters.
 
 | target | BCT_CODBUR | CTR_CATEGO_X | FJU_CODFJU | CTR_CESSAT | ACT_CODACT | CTR_OBLDIR | CTR_OBLACP | CTR_OBLRES | CTR_OBLFOP | CTR_OBLTFP | CTR_OBLDCO |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 18.3946 | 401 | M | 22 | 0 | 4229 | 4 | 2 | 2 | 2 | 2 | 1 |
-| 0 | 137 | C | 99 | 0 | 4204 | 4 | 2 | 2 | 2 | 2 | 1 |
-| 12.3677 | 197 | P | 99 | 0 | 6272 | 4 | 2 | 2 | 2 | 2 | 1 |
-| 14.3739 | 409 | M | 22 | 0 | 6418 | 4 | 2 | 2 | 2 | 2 | 1 |
-| 15.1006 | 33 | C | 99 | 0 | 4401 | 4 | 2 | 2 | 2 | 2 | 1 |
+| 0 | 63 | M | 22 | 0 | 4221 | 4 | 2 | 2 | 2 | 2 | 1 |
+| 9.78256 | 62 | M | 22 | 0 | 3304 | 4 | 2 | 2 | 2 | 2 | 1 |
+| 16.6596 | 412 | M | 22 | 0 | 4802 | 4 | 2 | 2 | 2 | 2 | 1 |
+| 20.0263 | 221 | C | 99 | 0 | 3203 | 4 | 2 | 2 | 2 | 2 | 1 |
+| 16.4317 | 14 | M | 22 | 0 | 4813 | 4 | 2 | 2 | 2 | 2 | 1 |
 
 ## Curation notes
 
@@ -196,7 +199,8 @@ The first 5 of 21,295 rows of the final frame (the oldest rows: the frame is sor
 - CC (2026-10-31, Myunghwan): Retrospective prediction is acceptable: looking back can identify more records worth investigating. An analyst uses archived annual dossiers with the scored adjustment withheld and historical training labels already held. This does not claim that a model was fitted at the beginning of each fiscal year. The release has no extraction, inspection, notification or label-availability dates; original timing and revisions remain unverified. This settled the retrospective task framing; final inclusion was subsequently accepted on 2026-10-31.
 - Train.csv has 21,295 unique taxpayer-years from 12,387 IDs over 2013–2018. Keep every label unchanged: log(1 + principal adjustment), as described in challenge discussion 448, including 5,402 zeros, no missing/negative labels and range 0–23.5913. Dictionary RES_MNTRED names the principal target; excluded penalty RES_MNTRET is not a predictor. Zero does not establish a completed negative inspection, legal intent or national prevalence. The underlying currency unit and cohort-selection mechanism are unknown.
 - Source RMSE scores the supplied log labels. target_transform is identity because this recipe applies no transform; no inverse or second log is used. This score is not monetary RMSE, recovered revenue or net benefit per audit. The later Sup'Com release belongs to the same source family, not an independent dataset.
-- Retrospective evaluation uses all four eligible annual tests, newest first: 2018/2017/2016/2015 with train/test counts 20,930/365; 19,301/1,629; 16,201/3,100; 11,833/4,368. Earlier windows fail the half-release training floor. January 1 represents fiscal-year cohorts, not actual event dates. Fiscal order tests transfer across accounting cohorts, not historical model-refit feasibility. No delay is invented from a model score; if a past operational refit is later claimed, outcome availability must be established and the protocol reassessed.
+- Fiscal year 2018 is cut (LEAK-24; Lennart, 2026-11-04: "do the change"): its nonzero adjustments have a median 1.2 log units below 2013-2017 (about 3 times smaller, Mann-Whitney p = 6e-16), within every taxpayer category, and leak probe 13 puts it out of band (median z -6.7), while 2017 is in band (p = 0.8). It fits inspections still open at the 2019 extract. Its three 2018-form VAT rate columns (`TVA_CA072018`, `TVA_CA132018`, `TVA_CA192018`) are constant without it and leave. The use case stays the retrospective ranking of inspected dossiers (Lennart: "okay let us keep it").
+- Retrospective evaluation uses three annual tests, newest first: 2017/2016/2015 with train/test counts 19,301/1,629; 16,201/3,100; 11,833/4,368. Earlier windows fail the half-release training floor. January 1 represents fiscal-year cohorts, not actual event dates. Fiscal order tests transfer across accounting cohorts, not historical model-refit feasibility. No delay is invented from a model score; if a past operational refit is later claimed, outcome availability must be established and the protocol reassessed.
 - Drop id and CTR_MATFIS as administrative identifiers, RES_ANNIMP as an exact fiscal-year copy, twelve zero-when-observed columns whose block-missingness survives elsewhere, TVA_ACHNDD as a copy of TVA_ACHSUS, and SND_MNTPAY_E as a copy of SND_MNTTAX_E. No row is filtered; retained values and NaNs are not imputed, clipped or rescaled. No taxpayer/label aggregates are constructed.
 - Tax office, taxpayer category, legal form, activity and obligation/status codes are categorical; obligations are not all binary. Retain the 63 undocumented CTR_CESSAT code-2 rows as an uninterpreted category; CTR_RATISS codes 0/2 are not decoded. Months 1–12 stay numeric. Customs/invoice block missingness is not universally no activity. SND_MNTAIR_I/A are undefined in the dictionary and TVA_CRDFIN has an inconsistent initial-credit description.
 - Contest input check: a participant-maintained SupCom mirror has 7,517 test rows and all 120 raw non-target columns in training order; its training Git blob exactly matches the supplied Train.csv. All 103 retained predictors are present and none is wholly missing in test. Refund/regularization fields contain observed nonzero test values. Target alone is absent; this yields no further schema-based exclusion. Zero-when-observed removals describe the labeled benchmark release, not universal constants: TVA_CRDREP varies in the contest test file. The test covers every fiscal year 2013–2018, so our four annual holdouts are a separate cross-cohort evaluation, not the contest holdout. The original host test download was not authenticated. Test presence is an input contract, not evidence of historical as-of timing or freedom from outcome-derived revisions.
@@ -205,25 +209,24 @@ The first 5 of 21,295 rows of the final frame (the oldest rows: the frame is sor
 
 ## Splits
 
-Four one-calendar-year cohort windows, newest first: 2018, 2017, 2016, 2015. Each model trains on every observed
+Three one-calendar-year cohort windows, newest first: 2017, 2016, 2015 (fiscal year 2018 is cut, LEAK-24). Each model trains on every observed
 earlier fiscal cohort using retrospective training labels, with the scored cohort labels withheld. January 1 represents an annual
 accounting cohort, not a verified audit date. Both known and new taxpayers occur in this retrospective investigation
 setting. These are fiscal-cohort transfer tests, not models refitted at historical year starts. Audit-completion
 dates remain unavailable; historical point-in-time label maturity is unverified, not assumed.
 One year is the evaluation-window duration, not a promised one-year inspection or adjustment horizon.
 
-4 repeat(s) x 1 fold(s) with seed 4267; train 11,833 to 20,930 rows, test 365 to 4,368 rows. Prediction horizon: 1 years.
+3 repeat(s) x 1 fold(s) with seed 4267; train 11,833 to 19,301 rows, test 1,629 to 4,368 rows. Prediction horizon: 1 years.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
-| 0 | 0 | 20930 | 365 | 2013-01-01 00:00:00 | 2017-01-01 00:00:00 | 2018-01-01 00:00:00 | 2018-01-01 00:00:00 |
-| 1 | 0 | 19301 | 1629 | 2013-01-01 00:00:00 | 2016-01-01 00:00:00 | 2017-01-01 00:00:00 | 2017-01-01 00:00:00 |
-| 2 | 0 | 16201 | 3100 | 2013-01-01 00:00:00 | 2015-01-01 00:00:00 | 2016-01-01 00:00:00 | 2016-01-01 00:00:00 |
-| 3 | 0 | 11833 | 4368 | 2013-01-01 00:00:00 | 2014-01-01 00:00:00 | 2015-01-01 00:00:00 | 2015-01-01 00:00:00 |
+| 0 | 0 | 19301 | 1629 | 2013-01-01 00:00:00 | 2016-01-01 00:00:00 | 2017-01-01 00:00:00 | 2017-01-01 00:00:00 |
+| 1 | 0 | 16201 | 3100 | 2013-01-01 00:00:00 | 2015-01-01 00:00:00 | 2016-01-01 00:00:00 | 2016-01-01 00:00:00 |
+| 2 | 0 | 11833 | 4368 | 2013-01-01 00:00:00 | 2014-01-01 00:00:00 | 2015-01-01 00:00:00 | 2015-01-01 00:00:00 |
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicate_rows`: 7 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **info** `dataset_conflicting_duplicate_rows`: 19 row(s) (0.1%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
@@ -238,7 +241,7 @@ Accepted on purpose:
 ### Feature summary
 
 <details>
-<summary>Show the table (104 rows)</summary>
+<summary>Show the table (101 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
@@ -255,7 +258,7 @@ Accepted on purpose:
 | CTR_CATEGO_X | category | 0 | 0 | 4 | M, C, P, N |
 | FJU_CODFJU | category | 0 | 0 | 16 | 99, 22, 21, 23, 20, 29, 13, 10, 14, 41 |
 | CTR_CESSAT | category | 0 | 0 | 3 | 0, 1, 2 |
-| ACT_CODACT | category | 0 | 0 | 527 | 4204, 4221, 6306, 4101, 3601, 3912, 6307, 6102, 6105, 6271 |
+| ACT_CODACT | category | 0 | 0 | 525 | 4204, 4221, 6306, 4101, 3601, 3912, 6307, 6102, 6105, 4401 |
 | CTR_OBLDIR | category | 0 | 0 | 7 | 4, 8, 6, 5, 1, 2, 9 |
 | CTR_OBLACP | category | 0 | 0 | 2 | 2, 1 |
 | CTR_OBLRES | category | 0 | 0 | 3 | 2, 1, 5 |
@@ -265,45 +268,45 @@ Accepted on purpose:
 | CTR_OBLTVA | category | 0 | 0 | 2 | 2, 3 |
 | CTR_OBLTCL | category | 0 | 0 | 3 | 3, 1, 2 |
 | CTR_RATISS | category | 0 | 0 | 2 | 0, 2 |
-| fiscal_year | datetime64\[ns\] | 0 | 0 | 6 | 2013-01-01 00:00:00, 2014-01-01 00:00:00, 2015-01-01 00:00:00, 2016-01-01 00:00… |
-| SND_MNTPRD_E | float64 | 20064 | 94.22 | 1231 | 156100000.0, 98062353.0, 1262732006.0, 4689768602.0, 171383309.0, 46892203.0, 2… |
-| SND_MNTTAX_E | float64 | 20064 | 94.22 | 82 | 0.0, 23240000.0, 58793132.0, 23097900.0, 38523576.0, 264755600.0, 75131166.0, 8… |
-| FAC_MNTPRI_F | float64 | 19475 | 91.45 | 1816 | 700000.0, 3200000.0, 91235025.0, 5320000.0, 812922552.0, 557283038.0, 17176000.… |
-| FAC_MFODEC_F | float64 | 19475 | 91.45 | 338 | 0.0, 1442140.0, 90412.0, 17390460.0, 11426648.0, 1436924.0, 360500.0, 3883030.0… |
-| FAC_MNTDCO_F | float64 | 19475 | 91.45 | 12 | 0.0, 1995604.0, 18000.0, 1.0, 1000.0, 101210.0, 18.0, 918000.0, 152991161.0, 54… |
-| FAC_MNTTVA_F | float64 | 19475 | 91.45 | 1781 | 0.0, 126000.0, 576000.0, 14777705.0, 957600.0, 146200183.0, 100570482.0, 206112… |
-| FAC_MNTPRI_C | float64 | 19182 | 90.08 | 2016 | 7068360.0, 50055588.0, 26132556.0, 22716768.0, 28279188.0, 57647808.0, 8320980.… |
-| FAC_MFODEC_C | float64 | 19182 | 90.08 | 496 | 0.0, 1858.0, 1130587.0, 641293.0, 1400.0, 117749.0, 4114168.0, 9904.0, 85442288… |
-| FAC_MNTDCO_C | float64 | 19182 | 90.08 | 36 | 0.0, 2500.0, 1000.0, 18000.0, 1200.0, 161663.0, 1845053.0, 216980.0, 310238.0, … |
-| FAC_MNTTVA_C | float64 | 19182 | 90.08 | 1984 | 0.0, 1272300.0, 9009792.0, 4703856.0, 4089024.0, 5090256.0, 10376424.0, 1497780… |
-| SND_MNTPRD_A | float64 | 18396 | 86.39 | 2063 | 1000000.0, 2000000.0, 3000000.0, 4000000.0, 6000000.0, 1500000.0, 8000000.0, 50… |
-| SND_MNTTVA_A | float64 | 18396 | 86.39 | 259 | 0.0, 40858.0, 3304266.0, 3344528.0, 33717483.0, 3144.0, 973830.0, 520913.0, 544… |
-| SND_MNTDRC_A | float64 | 18396 | 86.39 | 11 | 0.0, 25320.0, 5416.0, 6074122.0, 1613439012.0, 257169454.0, 793188421.0, 220609… |
-| SND_MNTTAX_A | float64 | 18396 | 86.39 | 601 | 10000.0, 20000.0, 30000.0, 40000.0, 50000.0, 60000.0, 0.0, 70000.0, 80000.0, 90… |
-| SND_MNTPAY_A | float64 | 18396 | 86.39 | 636 | 10000.0, 20000.0, 30000.0, 40000.0, 50000.0, 60000.0, 0.0, 70000.0, 90000.0, 80… |
-| SND_MNTAIR_A | float64 | 18396 | 86.39 | 22 | 0.0, 15221.0, 392.0, 10638.0, 96216.0, 1188724.0, 107545.0, 88435547.0, 37548.0… |
-| SND_MNTPRD_I | float64 | 17596 | 82.63 | 3695 | 79245285.0, 158490570.0, 15000000.0, 183450066.0, 177385242.0, 8547561.0, 32866… |
-| SND_MNTTVA_I | float64 | 17596 | 82.63 | 3422 | 0.0, 9509434.0, 19018868.0, 11007003.0, 40310794.0, 1561433.0, 46177040.0, 3601… |
-| SND_MNTDRC_I | float64 | 17596 | 82.63 | 696 | 0.0, 60.0, 10.0, 180.0, 120.0, 900.0, 240.0, 360.0, 20.0, 42.0 |
-| SND_MNTTAX_I | float64 | 17596 | 82.63 | 3542 | 10000.0, 20000.0, 30000.0, 40000.0, 60000.0, 50000.0, 120000.0, 70000.0, 90000.… |
-| SND_MNTPAY_I | float64 | 17596 | 82.63 | 3557 | 10000.0, 20000.0, 30000.0, 40000.0, 60000.0, 50000.0, 120000.0, 70000.0, 90000.… |
-| SND_MNTAIR_I | float64 | 17596 | 82.63 | 1661 | 0.0, 241800.0, 430611.0, 1923677078.0, 11480729.0, 4544096.0, 21260807496.0, 32… |
-| ADB_MNTORD | float64 | 15938 | 74.84 | 5210 | 500000.0, 1000000.0, 600000.0, 6000000.0, 2000000.0, 4500000.0, 708000.0, 35000… |
-| AX1_BRTIMP | float64 | 5117 | 24.03 | 324 | 0.0, 24000000.0, 18435258.0, 38328780.0, 19874340.0, 168527004.0, 80935764.0, 2… |
-| AX2_HONORA | float64 | 5117 | 24.03 | 5055 | 0.0, 24000.0, 4000000.0, 500000.0, 2800000.0, 1500000.0, 2000000.0, 8400000.0, … |
-| AX2_LOYERS | float64 | 5117 | 24.03 | 1191 | 0.0, 1200000.0, 3600000.0, 6000000.0, 2400000.0, 1800000.0, 1000000.0, 28320000… |
-| AX3_REVCAP | float64 | 5117 | 24.03 | 4619 | 0.0, 20.0, 500.0, 370.0, 345.0, 1120.0, 15.0, 1390.0, 875.0, 375.0 |
-| AX5_MNTMAR | float64 | 5117 | 24.03 | 9230 | 0.0, 48000.0, 2000000.0, 3000000.0, 5000000.0, 30000000.0, 10000000.0, 3600000.… |
-| TVA_CHAFF6 | float64 | 1690 | 7.94 | 3704 | 0.0, 1200000.0, 12000000.0, 3.0, 15000000.0, 24000000.0, 200000.0, 39000000.0, … |
-| TVA_CHAFF7 | float64 | 1690 | 7.94 | 128 | 0.0, 4.0, 3.0, 8.0, 23493617.0, 3166683.0, 205906.0, 372094.0, 456724.0, 348418… |
-| TVA_CHAF10 | float64 | 1690 | 7.94 | 13 | 0.0, 4.0, 3861224.0, 10000000.0, 96607.0, 25262491.0, 292228.0, 60000.0, 1134.0… |
-| TVA_CHAF12 | float64 | 1690 | 7.94 | 5117 | 0.0, 1200000.0, 3.0, 800000.0, 8000000.0, 2400000.0, 12000000.0, 2000000.0, 480… |
-| TVA_CHAF15 | float64 | 1690 | 7.94 | 194 | 0.0, 4.0, 223520.0, 24684085.0, 955104.0, 1501139.0, 18817179.0, 249748.0, 1400… |
-| TVA_CHAF18 | float64 | 1690 | 7.94 | 10015 | 0.0, 1200000.0, 3000000.0, 12000000.0, 4500000.0, 400000.0, 1500000.0, 2400000.… |
-| TVA_CHAF22 | float64 | 1690 | 7.94 | 1129 | 0.0, 3.0, 4.0, 90900.0, 190475062.0, 171959928.0, 1412466.0, 7469512.0, 1257085… |
-| TVA_CHAF29 | float64 | 1690 | 7.94 | 8 | 0.0, 3.0, 10324.0, 217996.0, 940981.0, 259287.0, 26547.0, 16.0 |
+| fiscal_year | datetime64\[ns\] | 0 | 0 | 5 | 2013-01-01 00:00:00, 2014-01-01 00:00:00, 2015-01-01 00:00:00, 2016-01-01 00:00… |
+| SND_MNTPRD_E | float64 | 19722 | 94.23 | 1208 | 550914146.0, 372300000.0, 4172419.0, 275445000.0, 142533755.0, 58552500.0, 3988… |
+| SND_MNTTAX_E | float64 | 19722 | 94.23 | 82 | 0.0, 75131166.0, 23097900.0, 22746826.0, 18652461.0, 13998538.0, 4161015.0, 264… |
+| FAC_MNTPRI_F | float64 | 19136 | 91.43 | 1791 | 700000.0, 3200000.0, 733847967.0, 361406413.0, 296074960.0, 17281578.0, 3876998… |
+| FAC_MFODEC_F | float64 | 19136 | 91.43 | 335 | 0.0, 7403039.0, 22101.0, 197250.0, 12511658.0, 4483982.0, 843810.0, 170736504.0… |
+| FAC_MNTDCO_F | float64 | 19136 | 91.43 | 11 | 0.0, 18000.0, 1995604.0, 1.0, 1000.0, 918000.0, 101210.0, 18.0, 11288730.0, 547… |
+| FAC_MNTTVA_F | float64 | 19136 | 91.43 | 1755 | 0.0, 126000.0, 576000.0, 5682522.0, 14540850.0, 132092634.0, 63810674.0, 532934… |
+| FAC_MNTPRI_C | float64 | 18884 | 90.22 | 1953 | 7068360.0, 13694664.0, 28279188.0, 23698092.0, 89963412.0, 8320980.0, 22716768.… |
+| FAC_MFODEC_C | float64 | 18884 | 90.22 | 480 | 0.0, 1082177.0, 394654.0, 40725.0, 83848.0, 180817.0, 6712.0, 4082.0, 66432.0, … |
+| FAC_MNTDCO_C | float64 | 18884 | 90.22 | 36 | 0.0, 1000.0, 2500.0, 1200.0, 400.0, 216980.0, 161663.0, 310238.0, 1845053.0, 38… |
+| FAC_MNTTVA_C | float64 | 18884 | 90.22 | 1918 | 0.0, 1272300.0, 5090256.0, 10376424.0, 17510544.0, 1497780.0, 10080000.0, 40890… |
+| SND_MNTPRD_A | float64 | 18077 | 86.37 | 2032 | 1000000.0, 2000000.0, 3000000.0, 4000000.0, 6000000.0, 1500000.0, 8000000.0, 10… |
+| SND_MNTTVA_A | float64 | 18077 | 86.37 | 257 | 0.0, 2366906.0, 7884265.0, 31972217.0, 520919.0, 2324485.0, 85906.0, 1307.0, 14… |
+| SND_MNTDRC_A | float64 | 18077 | 86.37 | 11 | 0.0, 5416.0, 1613439012.0, 257169454.0, 25320.0, 6074122.0, 2206091626.0, 79318… |
+| SND_MNTTAX_A | float64 | 18077 | 86.37 | 587 | 10000.0, 20000.0, 30000.0, 40000.0, 50000.0, 60000.0, 0.0, 70000.0, 80000.0, 90… |
+| SND_MNTPAY_A | float64 | 18077 | 86.37 | 622 | 10000.0, 20000.0, 30000.0, 40000.0, 50000.0, 60000.0, 0.0, 70000.0, 80000.0, 90… |
+| SND_MNTAIR_A | float64 | 18077 | 86.37 | 21 | 0.0, 107545.0, 1188724.0, 37548.0, 1741167.0, 392.0, 14479443.0, 180422.0, 1522… |
+| SND_MNTPRD_I | float64 | 17285 | 82.58 | 3641 | 15000000.0, 79245285.0, 183450066.0, 158490570.0, 208112063.0, 13606066.0, 9107… |
+| SND_MNTTVA_I | float64 | 17285 | 82.58 | 3376 | 0.0, 19018868.0, 9509434.0, 11007003.0, 40245468.0, 130325928.0, 9332844.0, 238… |
+| SND_MNTDRC_I | float64 | 17285 | 82.58 | 687 | 0.0, 60.0, 10.0, 180.0, 900.0, 120.0, 20.0, 360.0, 240.0, 2760.0 |
+| SND_MNTTAX_I | float64 | 17285 | 82.58 | 3495 | 10000.0, 20000.0, 30000.0, 40000.0, 60000.0, 50000.0, 70000.0, 120000.0, 90000.… |
+| SND_MNTPAY_I | float64 | 17285 | 82.58 | 3509 | 10000.0, 20000.0, 30000.0, 40000.0, 60000.0, 50000.0, 120000.0, 70000.0, 140000… |
+| SND_MNTAIR_I | float64 | 17285 | 82.58 | 1641 | 0.0, 1315554.0, 115384178.0, 384693.0, 546064173.0, 8467684.0, 83429882.0, 3292… |
+| ADB_MNTORD | float64 | 15573 | 74.41 | 5210 | 500000.0, 1000000.0, 900000.0, 4500000.0, 350000.0, 600000.0, 6000000.0, 200000… |
+| AX1_BRTIMP | float64 | 5011 | 23.94 | 321 | 0.0, 24000000.0, 18435258.0, 38328780.0, 19874340.0, 23999976.0, 80935764.0, 16… |
+| AX2_HONORA | float64 | 5011 | 23.94 | 4993 | 0.0, 24000.0, 4000000.0, 2800000.0, 500000.0, 8400000.0, 2000000.0, 2500000.0, … |
+| AX2_LOYERS | float64 | 5011 | 23.94 | 1172 | 0.0, 1200000.0, 3600000.0, 6000000.0, 2400000.0, 1000000.0, 28320000.0, 1800000… |
+| AX3_REVCAP | float64 | 5011 | 23.94 | 4544 | 0.0, 20.0, 500.0, 370.0, 345.0, 375.0, 1120.0, 1390.0, 15.0, 875.0 |
+| AX5_MNTMAR | float64 | 5011 | 23.94 | 9113 | 0.0, 48000.0, 2000000.0, 3000000.0, 5000000.0, 3600000.0, 10000000.0, 30000000.… |
+| TVA_CHAFF6 | float64 | 1681 | 8.03 | 3689 | 0.0, 1200000.0, 200000.0, 24000000.0, 12000000.0, 15000000.0, 8111117.0, 200000… |
+| TVA_CHAFF7 | float64 | 1681 | 8.03 | 128 | 0.0, 4.0, 3.0, 8.0, 484676.0, 6.0, 146943.0, 7080.0, 17123900.0, 15125000.0 |
+| TVA_CHAF10 | float64 | 1681 | 8.03 | 13 | 0.0, 4.0, 25262491.0, 3861224.0, 96607.0, 292228.0, 60000.0, 10000000.0, 3.0, 2… |
+| TVA_CHAF12 | float64 | 1681 | 8.03 | 5104 | 0.0, 3.0, 1200000.0, 12000000.0, 800000.0, 2400000.0, 8000000.0, 600000.0, 1050… |
+| TVA_CHAF15 | float64 | 1681 | 8.03 | 194 | 0.0, 4.0, 1213251.0, 230507.0, 45110565.0, 600000.0, 249748.0, 168000.0, 553496… |
+| TVA_CHAF18 | float64 | 1681 | 8.03 | 9966 | 0.0, 1200000.0, 3000000.0, 12000000.0, 400000.0, 4500000.0, 1500000.0, 2400000.… |
+| TVA_CHAF22 | float64 | 1681 | 8.03 | 1129 | 0.0, 3.0, 4.0, 90900.0, 6146719.0, 248614523.0, 65688913.0, 39478439.0, 6335715… |
+| TVA_CHAF29 | float64 | 1681 | 8.03 | 8 | 0.0, 3.0, 10324.0, 217996.0, 259287.0, 16.0, 940981.0, 26547.0 |
 
-(44 more rows not shown)
+(41 more rows not shown)
 
 </details>
 
@@ -311,77 +314,77 @@ Accepted on purpose:
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 25.37 | -0.937 | -1.104 | 50.208 | 1.512 | log1p | 119518 | 5.47807e+15 | exponential |
+| 0 | 0 | 25.33 | -0.943 | -1.107 | 50.224 | 1.511 | log1p | 117574 | 2.5473e+16 | exponential |
 
 ### Numeric features
 
 <details>
-<summary>Show the table (80 rows)</summary>
+<summary>Show the table (77 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| TVA_CHAFF6 | 19605 | 1.64853e+08 | 2.00604e+09 | 0 | 9.6909e+10 |
-| TVA_CHAFF7 | 19605 | 146477 | 5.12175e+06 | 0 | 3.84798e+08 |
-| TVA_CHAF10 | 19605 | 2773.28 | 221824 | 0 | 2.52625e+07 |
-| TVA_CHAF12 | 19605 | 1.85821e+08 | 2.81612e+09 | 0 | 2.02945e+11 |
-| TVA_CHAF15 | 19605 | 317003 | 1.14879e+07 | 0 | 1.32603e+09 |
-| TVA_CHAF18 | 19605 | 1.85224e+09 | 2.05773e+10 | 0 | 1.05081e+12 |
-| TVA_CHAF22 | 19605 | 1.5356e+07 | 4.6195e+08 | 0 | 4.5062e+10 |
-| TVA_CHAF29 | 19605 | 74.2238 | 7145.34 | 0 | 940981 |
-| TVA_TOTDUE | 19605 | 3.92549e+08 | 4.06725e+09 | 0 | 1.89307e+11 |
-| TVA_MOIDEB | 19605 | 1.1948 | 1.15467 | 1 | 12 |
-| TVA_CRDINI | 19605 | 6.61046e+07 | 5.77294e+08 | 0 | 3.53917e+10 |
-| TVA_BASIMB | 19605 | 2.60049e+06 | 6.42185e+07 | 0 | 4.80976e+09 |
-| TVA_DEDIMB | 19605 | 468423 | 1.15628e+07 | 0 | 8.65758e+08 |
-| TVA_BASEQL | 19605 | 2.24074e+08 | 4.8975e+09 | 0 | 2.33014e+11 |
-| TVA_DEDEQL | 19605 | 3.54317e+07 | 7.83171e+08 | 0 | 3.89458e+10 |
-| TVA_BASEQI | 19605 | 9.83621e+07 | 4.46513e+09 | 0 | 5.59485e+11 |
-| TVA_DEDEQI | 19605 | 1.08659e+07 | 2.99361e+08 | 0 | 1.93781e+10 |
-| TVA_BASAUL | 19605 | 1.28586e+09 | 1.18502e+10 | 0 | 5.92084e+11 |
-| TVA_DEDAUL | 19605 | 2.02502e+08 | 1.7786e+09 | 0 | 6.94632e+10 |
-| TVA_BASAUI | 19605 | 5.33859e+08 | 5.35436e+09 | 0 | 3.4663e+11 |
-| TVA_DEDAUI | 19605 | 8.43679e+07 | 7.11658e+08 | 0 | 2.43599e+10 |
-| TVA_BASRSM | 19605 | 4.2995e+07 | 7.55794e+08 | 0 | 7.96594e+10 |
-| TVA_DEDRSM | 19605 | 1.79589e+07 | 2.78045e+08 | 0 | 2.62468e+10 |
-| TVA_RSNRES | 19605 | 3.03561e+06 | 1.10374e+08 | 0 | 8.42081e+09 |
-| TVA_TRSPOR | 19605 | 127721 | 2.5578e+06 | 0 | 1.39125e+08 |
-| TVA_DEDREG | 19605 | 1.24897e+06 | 3.35248e+07 | 0 | 3.81212e+09 |
-| TVA_RESTIT | 19605 | 3.25087e+07 | 4.7088e+08 | 0 | 2.9501e+10 |
-| TVA_MNTPAY | 19605 | 6.84586e+07 | 1.70685e+09 | 0 | 1.07067e+11 |
-| TVA_MOIFIN | 19605 | 11.8494 | 0.992735 | 1 | 12 |
-| TVA_CRDFIN | 19605 | 6.8053e+07 | 6.46866e+08 | 0 | 4.25247e+10 |
-| TVA_ACHSUS | 19605 | 694177 | 3.59519e+07 | 0 | 4.16131e+09 |
-| TVA_ACHEXO | 19605 | 3.15619e+07 | 9.59405e+08 | 0 | 6.49565e+10 |
-| TVA_CAFEXP | 19605 | 4.24723e+08 | 4.92656e+09 | 0 | 3.02716e+11 |
-| TVA_CAFSUS | 19605 | 2.22401e+08 | 3.41381e+09 | 0 | 1.76045e+11 |
-| TVA_CAFEXO | 19605 | 2.69337e+08 | 1.01296e+10 | 0 | 9.3126e+11 |
-| TVA_AACHAB | 19605 | 85057.4 | 5.44747e+06 | 0 | 6.02712e+08 |
-| TVA_CRDBLQ | 19605 | 802183 | 2.40745e+07 | 0 | 1.38098e+09 |
-| TVA_CRDRES | 19605 | 444585 | 1.6459e+07 | 0 | 1.13419e+09 |
-| TVA_CRDRMP | 19605 | 5.63547e+06 | 1.8373e+08 | 0 | 1.10249e+10 |
-| TVA_CRDRMC | 19605 | 5.95725e+06 | 1.85837e+08 | 0 | 1.10249e+10 |
-| TVA_MACHN | 19605 | 3.64496e+06 | 5.28196e+07 | 0 | 3.06541e+09 |
-| TVA_MCESQ | 19605 | 2.50232e+07 | 4.46701e+08 | 0 | 1.95285e+10 |
-| TVA_MTVLSM | 19605 | 1.78005e+06 | 2.0364e+08 | 0 | 2.84484e+10 |
-| TVA_TXVLSM | 19605 | 317759 | 3.66519e+07 | 0 | 5.12071e+09 |
-| TVA_MTALSM | 19605 | 1.70161e+06 | 2.03592e+08 | 0 | 2.84484e+10 |
-| TVA_TXALSM | 19605 | 305594 | 3.66465e+07 | 0 | 5.12071e+09 |
-| TVA_MTORDTVA | 19605 | 2.11811e+06 | 1.4508e+08 | 0 | 1.90244e+10 |
-| TVA_MTDJRTVA | 19605 | 5.53285e+06 | 2.47052e+08 | 0 | 2.9501e+10 |
-| TVA_CA072018 | 19605 | 4.90879e+06 | 2.23834e+08 | 0 | 2.23154e+10 |
-| TVA_CA132018 | 19605 | 455845 | 3.23487e+07 | 0 | 3.94321e+09 |
-| TVA_CA192018 | 19605 | 9.75288e+07 | 7.81303e+09 | 0 | 9.36613e+11 |
+| TVA_CHAFF6 | 19249 | 1.67725e+08 | 2.02435e+09 | 0 | 9.6909e+10 |
+| TVA_CHAFF7 | 19249 | 149186 | 5.16886e+06 | 0 | 3.84798e+08 |
+| TVA_CHAF10 | 19249 | 2824.57 | 223866 | 0 | 2.52625e+07 |
+| TVA_CHAF12 | 19249 | 1.89252e+08 | 2.84193e+09 | 0 | 2.02945e+11 |
+| TVA_CHAF15 | 19249 | 322866 | 1.15936e+07 | 0 | 1.32603e+09 |
+| TVA_CHAF18 | 19249 | 1.88115e+09 | 2.07635e+10 | 0 | 1.05081e+12 |
+| TVA_CHAF22 | 19249 | 1.564e+07 | 4.66198e+08 | 0 | 4.5062e+10 |
+| TVA_CHAF29 | 19249 | 75.5965 | 7211.11 | 0 | 940981 |
+| TVA_TOTDUE | 19249 | 3.78989e+08 | 3.7977e+09 | 0 | 1.89307e+11 |
+| TVA_MOIDEB | 19249 | 1.19622 | 1.15991 | 1 | 12 |
+| TVA_CRDINI | 19249 | 6.61815e+07 | 5.81806e+08 | 0 | 3.53917e+10 |
+| TVA_BASIMB | 19249 | 2.61453e+06 | 6.46376e+07 | 0 | 4.80976e+09 |
+| TVA_DEDIMB | 19249 | 470615 | 1.16348e+07 | 0 | 8.65758e+08 |
+| TVA_BASEQL | 19249 | 2.19606e+08 | 4.87076e+09 | 0 | 2.33014e+11 |
+| TVA_DEDEQL | 19249 | 3.4694e+07 | 7.77534e+08 | 0 | 3.89458e+10 |
+| TVA_BASEQI | 19249 | 9.37649e+07 | 4.47164e+09 | 0 | 5.59485e+11 |
+| TVA_DEDEQI | 19249 | 9.92393e+06 | 2.83776e+08 | 0 | 1.93781e+10 |
+| TVA_BASAUL | 19249 | 1.25451e+09 | 1.13498e+10 | 0 | 5.92084e+11 |
+| TVA_DEDAUL | 19249 | 1.96064e+08 | 1.65096e+09 | 0 | 6.83203e+10 |
+| TVA_BASAUI | 19249 | 5.3568e+08 | 5.3645e+09 | 0 | 3.4663e+11 |
+| TVA_DEDAUI | 19249 | 8.4506e+07 | 7.08534e+08 | 0 | 2.43599e+10 |
+| TVA_BASRSM | 19249 | 4.22099e+07 | 7.59416e+08 | 0 | 7.96594e+10 |
+| TVA_DEDRSM | 19249 | 1.7896e+07 | 2.80042e+08 | 0 | 2.62468e+10 |
+| TVA_RSNRES | 19249 | 2.7015e+06 | 1.03104e+08 | 0 | 8.42081e+09 |
+| TVA_TRSPOR | 19249 | 123828 | 2.51274e+06 | 0 | 1.39125e+08 |
+| TVA_DEDREG | 19249 | 1.16758e+06 | 3.24109e+07 | 0 | 3.81212e+09 |
+| TVA_RESTIT | 19249 | 3.2738e+07 | 4.74448e+08 | 0 | 2.9501e+10 |
+| TVA_MNTPAY | 19249 | 6.33378e+07 | 1.63133e+09 | 0 | 1.07067e+11 |
+| TVA_MOIFIN | 19249 | 11.8515 | 0.990771 | 1 | 12 |
+| TVA_CRDFIN | 19249 | 6.74914e+07 | 6.501e+08 | 0 | 4.25247e+10 |
+| TVA_ACHSUS | 19249 | 688975 | 3.61966e+07 | 0 | 4.16131e+09 |
+| TVA_ACHEXO | 19249 | 3.11294e+07 | 9.6136e+08 | 0 | 6.49565e+10 |
+| TVA_CAFEXP | 19249 | 4.20192e+08 | 4.91122e+09 | 0 | 3.02716e+11 |
+| TVA_CAFSUS | 19249 | 2.23063e+08 | 3.44008e+09 | 0 | 1.76045e+11 |
+| TVA_CAFEXO | 19249 | 2.21494e+08 | 7.7061e+09 | 0 | 7.29589e+11 |
+| TVA_AACHAB | 19249 | 86630.5 | 5.49761e+06 | 0 | 6.02712e+08 |
+| TVA_CRDBLQ | 19249 | 680659 | 2.19289e+07 | 0 | 1.38098e+09 |
+| TVA_CRDRES | 19249 | 417857 | 1.62347e+07 | 0 | 1.13419e+09 |
+| TVA_CRDRMP | 19249 | 4.77887e+06 | 1.6909e+08 | 0 | 1.10249e+10 |
+| TVA_CRDRMC | 19249 | 5.04159e+06 | 1.70326e+08 | 0 | 1.10249e+10 |
+| TVA_MACHN | 19249 | 3.71232e+06 | 5.33035e+07 | 0 | 3.06541e+09 |
+| TVA_MCESQ | 19249 | 2.54852e+07 | 4.508e+08 | 0 | 1.95285e+10 |
+| TVA_MTVLSM | 19249 | 324018 | 1.37948e+07 | 0 | 1.38919e+09 |
+| TVA_TXVLSM | 19249 | 55513.5 | 2.43253e+06 | 0 | 2.50055e+08 |
+| TVA_MTALSM | 19249 | 239041 | 1.3037e+07 | 0 | 1.38919e+09 |
+| TVA_TXALSM | 19249 | 42696.3 | 2.34656e+06 | 0 | 2.50055e+08 |
+| TVA_MTORDTVA | 19249 | 2.15729e+06 | 1.46415e+08 | 0 | 1.90244e+10 |
+| TVA_MTDJRTVA | 19249 | 5.52163e+06 | 2.49157e+08 | 0 | 2.9501e+10 |
 | ADB_MNTORD | 5357 | 5.41812e+08 | 2.80993e+09 | 25523 | 6.81394e+10 |
-| SND_MNTPRD_I | 3699 | 3.58546e+09 | 1.57392e+10 | 48889 | 6.78716e+11 |
-| SND_MNTTVA_I | 3699 | 5.13604e+08 | 1.63174e+09 | 0 | 2.42519e+10 |
-| SND_MNTDRC_I | 3699 | 4.58769e+07 | 7.25449e+08 | 0 | 2.25999e+10 |
-| SND_MNTTAX_I | 3699 | 1.41097e+08 | 6.27767e+08 | 10000 | 1.60589e+10 |
-| SND_MNTPAY_I | 3699 | 6.97417e+08 | 2.4848e+09 | 10000 | 4.78581e+10 |
-| SND_MNTAIR_I | 3699 | 3.94151e+08 | 5.50553e+09 | 0 | 2.15355e+11 |
-| SND_MNTPRD_E | 1231 | 1.64128e+09 | 4.48669e+09 | 43864 | 4.44084e+10 |
-| SND_MNTTAX_E | 1231 | 5.10903e+06 | 4.04521e+07 | 0 | 8.26593e+08 |
+| SND_MNTPRD_I | 3645 | 3.58235e+09 | 1.57755e+10 | 48889 | 6.78716e+11 |
+| SND_MNTTVA_I | 3645 | 5.11293e+08 | 1.6154e+09 | 0 | 2.42519e+10 |
+| SND_MNTDRC_I | 3645 | 4.64936e+07 | 7.30783e+08 | 0 | 2.25999e+10 |
+| SND_MNTTAX_I | 3645 | 1.3371e+08 | 5.12771e+08 | 10000 | 1.34558e+10 |
+| SND_MNTPAY_I | 3645 | 6.88289e+08 | 2.41171e+09 | 10000 | 4.78581e+10 |
+| SND_MNTAIR_I | 3645 | 3.95982e+08 | 5.54275e+09 | 0 | 2.15355e+11 |
+| SND_MNTPRD_E | 1208 | 1.66568e+09 | 4.52517e+09 | 43864 | 4.44084e+10 |
+| SND_MNTTAX_E | 1208 | 5.2063e+06 | 4.08295e+07 | 0 | 8.26593e+08 |
+| SND_MNTPRD_A | 2853 | 8.16307e+09 | 5.2808e+10 | 99113 | 1.10212e+12 |
+| SND_MNTTVA_A | 2853 | 1.90224e+06 | 5.11501e+07 | 0 | 2.59164e+09 |
+| SND_MNTDRC_A | 2853 | 1.70996e+06 | 5.34799e+07 | 0 | 2.20609e+09 |
 
-(20 more rows not shown)
+(17 more rows not shown)
 
 </details>
 
@@ -392,66 +395,66 @@ Accepted on purpose:
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| ACT_CODACT | 1 | 4204 | 1763 | 8.28 |
-| ACT_CODACT | 2 | 4221 | 892 | 4.19 |
-| ACT_CODACT | 3 | 6306 | 789 | 3.71 |
-| ACT_CODACT | 4 | 4101 | 664 | 3.12 |
-| ACT_CODACT | 5 | 3601 | 392 | 1.84 |
-| BCT_CODBUR | 1 | 500 | 825 | 3.87 |
-| BCT_CODBUR | 2 | 700 | 772 | 3.63 |
-| BCT_CODBUR | 3 | 172 | 463 | 2.17 |
-| BCT_CODBUR | 4 | 193 | 449 | 2.11 |
-| BCT_CODBUR | 5 | 137 | 396 | 1.86 |
-| CTR_CATEGO_X | 1 | M | 10889 | 51.13 |
-| CTR_CATEGO_X | 2 | C | 5794 | 27.21 |
-| CTR_CATEGO_X | 3 | P | 4604 | 21.62 |
+| ACT_CODACT | 1 | 4204 | 1741 | 8.32 |
+| ACT_CODACT | 2 | 4221 | 860 | 4.11 |
+| ACT_CODACT | 3 | 6306 | 782 | 3.74 |
+| ACT_CODACT | 4 | 4101 | 657 | 3.14 |
+| ACT_CODACT | 5 | 3601 | 388 | 1.85 |
+| BCT_CODBUR | 1 | 500 | 813 | 3.88 |
+| BCT_CODBUR | 2 | 700 | 761 | 3.64 |
+| BCT_CODBUR | 3 | 172 | 456 | 2.18 |
+| BCT_CODBUR | 4 | 193 | 436 | 2.08 |
+| BCT_CODBUR | 5 | 137 | 395 | 1.89 |
+| CTR_CATEGO_X | 1 | M | 10712 | 51.18 |
+| CTR_CATEGO_X | 2 | C | 5689 | 27.18 |
+| CTR_CATEGO_X | 3 | P | 4521 | 21.6 |
 | CTR_CATEGO_X | 4 | N | 8 | 0.04 |
-| CTR_CESSAT | 1 | 0 | 20325 | 95.44 |
-| CTR_CESSAT | 2 | 1 | 907 | 4.26 |
+| CTR_CESSAT | 1 | 0 | 19971 | 95.42 |
+| CTR_CESSAT | 2 | 1 | 896 | 4.28 |
 | CTR_CESSAT | 3 | 2 | 63 | 0.3 |
-| CTR_OBLACP | 1 | 2 | 20440 | 95.98 |
-| CTR_OBLACP | 2 | 1 | 855 | 4.02 |
-| CTR_OBLASS | 1 | 1.0 | 21284 | 99.95 |
+| CTR_OBLACP | 1 | 2 | 20090 | 95.99 |
+| CTR_OBLACP | 2 | 1 | 840 | 4.01 |
+| CTR_OBLASS | 1 | 1.0 | 20919 | 99.95 |
 | CTR_OBLASS | 2 | &lt;NA> | 10 | 0.05 |
 | CTR_OBLASS | 3 | 2.0 | 1 | 0 |
-| CTR_OBLAUT | 1 | 1.0 | 20857 | 97.94 |
-| CTR_OBLAUT | 2 | 2.0 | 428 | 2.01 |
+| CTR_OBLAUT | 1 | 1.0 | 20497 | 97.93 |
+| CTR_OBLAUT | 2 | 2.0 | 423 | 2.02 |
 | CTR_OBLAUT | 3 | &lt;NA> | 10 | 0.05 |
-| CTR_OBLDCO | 1 | 1 | 21184 | 99.48 |
-| CTR_OBLDCO | 2 | 2 | 111 | 0.52 |
-| CTR_OBLDIR | 1 | 4 | 18394 | 86.38 |
-| CTR_OBLDIR | 2 | 8 | 1988 | 9.34 |
-| CTR_OBLDIR | 3 | 6 | 841 | 3.95 |
+| CTR_OBLDCO | 1 | 1 | 20822 | 99.48 |
+| CTR_OBLDCO | 2 | 2 | 108 | 0.52 |
+| CTR_OBLDIR | 1 | 4 | 18104 | 86.5 |
+| CTR_OBLDIR | 2 | 8 | 1937 | 9.25 |
+| CTR_OBLDIR | 3 | 6 | 817 | 3.9 |
 | CTR_OBLDIR | 4 | 5 | 61 | 0.29 |
 | CTR_OBLDIR | 5 | 1 | 8 | 0.04 |
-| CTR_OBLDLI | 1 | 1.0 | 20479 | 96.17 |
-| CTR_OBLDLI | 2 | 2.0 | 806 | 3.78 |
+| CTR_OBLDLI | 1 | 1.0 | 20129 | 96.17 |
+| CTR_OBLDLI | 2 | 2.0 | 791 | 3.78 |
 | CTR_OBLDLI | 3 | &lt;NA> | 10 | 0.05 |
-| CTR_OBLFOP | 1 | 2 | 19732 | 92.66 |
-| CTR_OBLFOP | 2 | 1 | 1550 | 7.28 |
+| CTR_OBLFOP | 1 | 2 | 19413 | 92.75 |
+| CTR_OBLFOP | 2 | 1 | 1504 | 7.19 |
 | CTR_OBLFOP | 3 | 3 | 10 | 0.05 |
 | CTR_OBLFOP | 4 | 5 | 3 | 0.01 |
-| CTR_OBLRES | 1 | 2 | 20800 | 97.68 |
-| CTR_OBLRES | 2 | 1 | 492 | 2.31 |
+| CTR_OBLRES | 1 | 2 | 20446 | 97.69 |
+| CTR_OBLRES | 2 | 1 | 481 | 2.3 |
 | CTR_OBLRES | 3 | 5 | 3 | 0.01 |
-| CTR_OBLTCL | 1 | 3 | 21112 | 99.14 |
-| CTR_OBLTCL | 2 | 1 | 181 | 0.85 |
+| CTR_OBLTCL | 1 | 3 | 20749 | 99.14 |
+| CTR_OBLTCL | 2 | 1 | 179 | 0.86 |
 | CTR_OBLTCL | 3 | 2 | 2 | 0.01 |
-| CTR_OBLTFP | 1 | 2 | 20191 | 94.82 |
-| CTR_OBLTFP | 2 | 1 | 1094 | 5.14 |
+| CTR_OBLTFP | 1 | 2 | 19863 | 94.9 |
+| CTR_OBLTFP | 2 | 1 | 1057 | 5.05 |
 | CTR_OBLTFP | 3 | 3 | 10 | 0.05 |
-| CTR_OBLTHO | 1 | 1.0 | 21002 | 98.62 |
-| CTR_OBLTHO | 2 | 2.0 | 283 | 1.33 |
+| CTR_OBLTHO | 1 | 1.0 | 20643 | 98.63 |
+| CTR_OBLTHO | 2 | 2.0 | 277 | 1.32 |
 | CTR_OBLTHO | 3 | &lt;NA> | 10 | 0.05 |
-| CTR_OBLTVA | 1 | 2 | 20452 | 96.04 |
-| CTR_OBLTVA | 2 | 3 | 843 | 3.96 |
-| CTR_OBLTVI | 1 | 1.0 | 21240 | 99.74 |
-| CTR_OBLTVI | 2 | 2.0 | 45 | 0.21 |
+| CTR_OBLTVA | 1 | 2 | 20111 | 96.09 |
+| CTR_OBLTVA | 2 | 3 | 819 | 3.91 |
+| CTR_OBLTVI | 1 | 1.0 | 20876 | 99.74 |
+| CTR_OBLTVI | 2 | 2.0 | 44 | 0.21 |
 | CTR_OBLTVI | 3 | &lt;NA> | 10 | 0.05 |
-| CTR_ODTIMB | 1 | 1.0 | 11234 | 52.75 |
-| CTR_ODTIMB | 2 | 2.0 | 10051 | 47.2 |
+| CTR_ODTIMB | 1 | 1.0 | 11021 | 52.66 |
+| CTR_ODTIMB | 2 | 2.0 | 9899 | 47.3 |
 | CTR_ODTIMB | 3 | &lt;NA> | 10 | 0.05 |
-| CTR_OFODEC | 1 | 1.0 | 19341 | 90.82 |
+| CTR_OFODEC | 1 | 1.0 | 19007 | 90.81 |
 
 (20 more rows not shown)
 
@@ -468,3 +471,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 4bc27fd6d8b49f8c9c16446bb7e85132ce90943b |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
+| stale | yes: the definition now gives checksum `v2:6dd387c1c3031fb9f9fcc8d588787cc0c2fe930aa9e20e3e7e83e906c4d28f8d` |

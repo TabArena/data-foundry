@@ -3,6 +3,7 @@ unique_name: 2024_lusaka_mobility_prediction_hackathon
 name: 2024-lusaka-mobility-prediction-hackathon
 checked_by:
 - Myunghwan
+- Lennart
 data_foundry_status:
 - WIP (DF)
 claimed_by: Myunghwan
@@ -12,7 +13,7 @@ collections:
 - New (BeyondArena)
 original_source: Zindi
 year: '2024'
-domain: technology & internet
+domain: industry & manufacturing
 required_split:
 - Temporal (NON-IID)
 problem_type: Regression
@@ -53,3 +54,11 @@ The current measured findings and accepted task above supersede the source-only 
 - Priority: gap 0 (technology & internet, regression and temporal are not thin), use case + (Yango's ETA, named by the source), source 0 (a competition page, no codebook read), shape + (a month of trips with time and weather), risk 0.
 
 A Zindi 'mobility prediction' hackathon for Lusaka with no comments in the record. Mobility-prediction challenges (often ride-hailing/transport demand) typically forecast trips/demand over space and time, which is excluded forecasting rather than a fixed IID/temporal-split tabular task. The record carries essentially no descriptive content, so the verdict is unverified. A human must confirm the exact target and whether it is a one-shot prediction or a multi-step forecast; if it is genuine forecasting it stays No, but if it is a fixed per-trip prediction it could be revisited.
+
+CC (2026-11-04, Lennart): the trips whose start and end lie under 100 m apart in a straight line are dropped ("drop them, this is not a relevant prediction goal here imo"; USE-7, as nyc_taxi_trip_duration_1m): 2,364 of 112,739, 110,375 remain. The domain is `industry & manufacturing`, as the other ride-time tasks ("align it"). The metric, RMSE in minutes, is checked as declared.
+
+**Assessment (AI, 2026-11-04):** the dropped trips are not short rides but round trips: a median of 22.1 minutes (10.8 for the rest), 93% over 5 minutes, and a median of 4.5 km actually driven. They held 16% of the target's squared spread. This supersedes the earlier note that zero straight-line distances are kept.
+
+CC (2026-11-04, Lennart): the trip time stays in minutes, with RMSE ("ok keep minutes"), as the other RMSE-scored ETA datasets.
+
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled.

@@ -93,7 +93,6 @@ read each file) and a `README.txt`. It is a local backup for the user: never add
 
 ## Step 5: update the docs of the working copy
 
-* the dataset table: `.venv/bin/python $K/readme_table.py` (between the `<!-- datasets:start/end -->` markers);
 * the "Rebuild" section of `datasets/_dev/tabarena-v0pt2/README.md`: the date, the number of datasets, the container
   format, and the count and size of the traced raw files;
 * a dated `CHANGELOG.md` entry, newest first: what was rebuilt and why, crashes and their fixes, the open warnings

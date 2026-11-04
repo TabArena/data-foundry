@@ -24,13 +24,14 @@ class LtVehicleLoanDefaultPrediction(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="Will an issued vehicle loan default on its first monthly instalment due date?",
         use_case=(
-            "A lender estimates first-instalment default risk at disbursement, for example to prioritize risk "
-            "monitoring of its issued loans. This cohort cannot validate decisions for rejected applicants."
+            "When a vehicle loan is up for approval at disbursement, the lender scores the borrower's risk of "
+            "defaulting on the first monthly instalment to decide whether to grant it: the organizer's underwriting "
+            "problem, with rejection rates rising as underwriting tightened."
         ),
         row="One issued vehicle loan/customer record; 233,154 labeled records disbursed in August-October 2018.",
         predicted=(
-            "The original binary first-EMI default outcome, using finalized labels regardless of observation time; "
-            "the due-date lag is not supplied."
+            "Whether the borrower defaulted on the first monthly instalment (EMI), the organizer's binary label "
+            "(21.7% defaults); the release does not give the due date."
         ),
         known=(
             "The release supplies loan terms/channel, borrower profile, document flags and bureau score/history. "
@@ -38,9 +39,9 @@ class LtVehicleLoanDefaultPrediction(AbstractCuratedDataset):
             "account scope remain unverified (D2), with no demonstrated leakage."
         ),
         split=(
-            "Nine four-day windows of later issued loans, September 26-October 31, 2018, with earlier disbursals "
-            "for training with zero added training-label gap. Finalized labels are used retrospectively; historical "
-            "operational label availability is not established."
+            "Nine four-day windows of later issued loans, September 26-October 31, 2018, each trained on all earlier "
+            "disbursals with no gap. The outcomes of the last month's training loans were not yet known at a "
+            "window's start; measured, they add little, and nothing through the dealer or staff codes."
         ),
         changes=(
             "Exclude the forbidden customer identifier and constant mobile flag; repair birth-date chronology, "
@@ -49,9 +50,10 @@ class LtVehicleLoanDefaultPrediction(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "This retrospective evaluation follows the curator's disbursement-time task and permits finalized labels "
-            "with zero added training-label gap. It does not establish operational label availability at each "
-            "historical cutoff. Some bureau freeze dates remain unverified, with no demonstrated leakage."
+            "The rows are issued loans only: the approval decision faces every applicant, but the model learns from "
+            "and is scored on the loans L&T approved, so applicants it rejected are untested. The training side "
+            "holds the last month's outcomes, which a refit at the window's start would not yet know. Some bureau "
+            "freeze dates remain unverified, with no demonstrated leakage."
         ),
     )
 
@@ -95,13 +97,14 @@ class LtVehicleLoanDefaultPrediction(AbstractCuratedDataset):
         - Six rows have CREDIT.HISTORY.LENGTH longer than recorded age in completed months (3-100 months); three exceed it by over 24 months. One also has AVERAGE.ACCT.AGE longer by 100 months. None uses the century repair. The dictionary does not settle account scope or which field is wrong; retain with this caveat rather than guessing a repair. This is not evidence of later-populated predictors.
         - AVERAGE.ACCT.AGE and CREDIT.HISTORY.LENGTH are parsed losslessly from years/months to total months, retaining their names. Every labeled value matches the format.
         - Bureau scores marked No Bureau History Available or Not Scored become missing; descriptions remain categorical. Codes 0, 11 and 14-18 encode status. Historical account zeros and 448 primary/61 secondary negative balances stay: no source rule establishes that they are missing or impossible.
+        - PERFORM_CNS.SCORE.DESCRIPTION stays an unordered category (CLEAN-14; Lennart, 2026-11-04): it holds the bureau's risk bands, A-Very Low Risk to M-Very High Risk, beside states outside the scale (No Bureau History Available and six Not Scored: ... reasons), a second dimension. The bands' order is in PERFORM_CNS.SCORE.
         - The dictionary dates PRI/SEC account counts, balances and sanctioned/disbursed totals to disbursement, and NEW.ACCTS.IN.LAST.SIX.MONTHS to the preceding six months. The freeze dates and account scope of weakly anchored score, instalment, delinquency, inquiry and duration fields remain unverified (D2). No later-populated predictor or leakage is demonstrated; names and correlations cannot establish timing.
         - Curator decision (2026-10-26, Myunghwan): retain the currently supplied bureau predictors, including fields with unverified snapshot timing/account scope. Retention is not verification of prediction-time availability. Reopen only for new concrete source or actual-data evidence demonstrating incompatible field timing or a leakage mechanism.
         - No exact feature duplicates or conflicting feature-vector labels occur in the labeled source. UniqueID does not recur; this does not prove distinct real borrowers. No guessed customer grouping is introduced.
         - Temporal evaluation: nine four-day windows, the widest whole-day equal windows fitting the recommended nine above the 50% train floor. Length follows coverage, not scores or an assumed due-date lag. Full-table constant detection approximates the pipeline at each refit.
         - The generated "Prediction horizon: 4 days" denotes only evaluation-cohort width here; the first-instalment due-date lag is not supplied.
-        - Exception to SPLIT-10 (2026-10-23, Myunghwan): zero added gap serves the explicitly retrospective issued-loan cohort task (P3/USE-1), rather than replay of operational historical refits. Historical label availability is not established, and a demonstrated SPLIT-9 shortcut would still require repair.
-        - The curator approved finalized training labels regardless of observation time: use strictly earlier disbursals with zero added training-label gap. Keep the newest labeled cohorts without release-end trimming, following the saved release-boundary diagnostic and curator decision. This retrospective approximation does not establish operational label availability at each historical cutoff; no due-date lag is inferred.
+        - Zero gap (SPLIT-10 as amended 2026-11-04, Lennart): a first instalment falls due about a month after disbursement, so a refit at a window's start would not yet know the outcomes of the loans disbursed in the 30 days before it, 41-60% of each training side. Measured on the nine windows with untuned LightGBM (three seeds): no gap scores 0.0167 ROC AUC above a 30-day gap (0.009-0.033 per window), but a random draw of the no-gap side at the gap side's size keeps only 0.0018 of it, so the gain is mostly training size. It does not run through recent labels of the same supplier, branch, employee or postcode: without those codes the equal-size gain is 0.0039, not smaller, and at equal pool size their last-30-day default rates add 0.0026 ROC AUC (0.0005-0.0051) beyond the older rates on top of a gap model. Nor through the higher default level of late October: ROC AUC is per window, the true daily default rate ranks a window's loans at only 0.503-0.530, and without the disbursal-date features the equal-size gain is 0.0019. A 30-day gap would leave 20-53% of the rows for training (SPLIT-14), one four-day window or three two-day windows from 26 October.
+        - The newest labeled cohorts stay without release-end trimming: October's default rate (23.5%) is above August's (21.6%) and September's (19.2%), so the release end shows no censoring. No due-date lag is inferred.
     """
     target = "loan_default"
     problem_type = "binary_classification"
@@ -116,14 +119,14 @@ class LtVehicleLoanDefaultPrediction(AbstractCuratedDataset):
         splits=TemporalSplits(window=4, unit="days", n_windows=9, min_train_fraction=0.5),
     )
     splits_comment = """
-        Retrospective temporal evaluation windows, newest first: nine adjacent four-day intervals from 2018-09-26 through
-        2018-10-31 (exclusive final boundary 2018-11-01). Every training date precedes its test start. The oldest
-        train holds 117,490 of 233,154 rows (50.39%). Five-day windows allow only seven windows above that floor.
-        The source's November test is unlabeled. Neither the four-day evaluation span nor zero extra gap specifies
-        the first-instalment horizon. By the curator's decision, earlier-disbursal training rows use finalized labels
-        regardless of when those labels became observable, with zero added training-label gap and no release-end
-        trimming. This retrospective evaluation does not establish operational label availability at each
-        historical cutoff.
+        Nine adjacent four-day test windows of issued loans, newest first, from 2018-09-26 through 2018-10-31
+        (exclusive final boundary 2018-11-01), each trained on every loan disbursed before its start, without a gap.
+        The oldest train holds 117,490 of 233,154 rows (50.39%); five-day windows allow only seven windows above that
+        floor. The source's November test is unlabeled. The four-day width follows the coverage, not the first
+        instalment's due date, which the release does not give. That instalment falls due about a month after
+        disbursement, so 41-60% of each training side holds outcomes a refit at the window's start would not yet
+        know. Measured, they add little and nothing through the dealer or staff codes (curation notes, "Zero gap"),
+        while a 30-day gap would leave 20-53% of the rows for training. The newest cohorts stay untrimmed.
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -177,15 +180,10 @@ class LtVehicleLoanDefaultPrediction(AbstractCuratedDataset):
         )
         return [
             Decision(
-                "Retrospective finalized-label convention",
-                "The curator permits finalized labels regardless of observation time, with zero added "
-                "training-label gap and strictly earlier-disbursal training. The newest labeled cohorts are "
-                "retained by the saved release-boundary diagnostic and curator decision. Its August-September reference "
-                "is short and only approximately stable: September's default rate was 88.97% of August's. "
-                "These monthly counts "
-                "are descriptive and do not establish operational label availability at historical cutoffs "
-                "or independently exclude censoring. Bureau freeze dates remain unverified (D2), with no "
-                "demonstrated leakage.",
+                "Zero gap, newest cohorts kept",
+                "Each window trains on every earlier disbursal; the outcomes of its last month's loans add little "
+                "and nothing through the dealer or staff codes (curation notes, 'Zero gap'). October's default "
+                "rate is above August's and September's, so the release end shows no censoring and is not trimmed.",
                 monthly,
             )
         ]

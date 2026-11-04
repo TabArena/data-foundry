@@ -13,17 +13,17 @@ folder's `REVIEW.md`, ranked, with the review panel's reports below them (a reco
 in an open-issues block of the record). This skill collects all open issues into one page, the curator decides on the
 page, and Claude checks and applies the decisions; only then are the accepted datasets built, when the curator asks
 ([rebuild.md](../knowledge-data-foundry/references/rebuild.md)). How decisions are ranked and when an exception is
-reasonable: [principles.md](../knowledge-curation/references/principles.md). The format of the review files, and of the report
-the page is built from: [`references/review_file_format.md`](references/review_file_format.md). Where the files live
-and when they go: [working_copy.md](../knowledge-data-foundry/references/working_copy.md).
+reasonable: [principles.md](../knowledge-curation/references/principles.md). The format of the review files, and of the
+report the page is built from: [`references/review_file_format.md`](references/review_file_format.md). Where the files
+live and when they go: [working_copy.md](../knowledge-data-foundry/references/working_copy.md).
 
-The page shows, per record, a tab row: Use case (the definition's `task_summary`: question, fields, use-case fit; then the
-declared metric with its origin, original, reference and reason, and the curator's mark on it; the tab every record
-opens on), Decisions (only what the curator decides: the numbered issues and the record fields that
-disagree with the definition), Panel (the review panel's reports, the mediator's open), Details (the outcome and the
-record judgment), `dataset.py`, the generated `README.md` and the curation record; below the tabs, the panel's
-recommendation and the verdict box. Other views: the issues that span datasets, and a summary
-of all verdicts. The page embeds a snapshot of every file at build time.
+The page shows, per record, a tab row: Use case (the definition's `task_summary`: question, fields, use-case fit; then
+the declared metric with its origin, original, reference and reason, and the curator's mark on it; the tab every record
+opens on), Decisions (only what the curator decides: the numbered issues and the record fields that disagree with the
+definition), Panel (the review panel's reports, the mediator's open), Details (the outcome and the record judgment),
+`dataset.py`, the generated `README.md` and the curation record; below the tabs, the panel's recommendation and the
+verdict box. Other views: the issues that span datasets, and a summary of all verdicts. The page embeds a snapshot of
+every file at build time.
 
 The rail lists the records by the record's `priority`, 5 first, each priority under its own heading, and within one
 priority the record with the fewest open decisions first: the curator reviews the most important datasets first and
@@ -60,8 +60,8 @@ it is never committed.
 Either way the curator sets a verdict per record (ship / ship after changes / don't ship / discuss; for a record that
 was not added: add it / leave out; for a record that triage already decided: the update is correct / discuss), a
 mark per numbered issue (as implemented / change / discuss) with optional notes, a mark on the declared metric (as
-declared / change / discuss, with a note), a mark per record-field disagreement (take the definition's value / keep the record's value), and a mark per cross-dataset item (go ahead /
-leave as is / discuss).
+declared / change / discuss, with a note), a mark per record-field disagreement (take the definition's value / keep the
+record's value), and a mark per cross-dataset item (go ahead / leave as is / discuss).
 
 * **Local file.** Open `review_page.html` in a browser. The marks are kept in that browser only (localStorage). When
   done, the curator copies them from the Summary view ("Copy decisions (JSON)") and pastes them to Claude or saves
@@ -103,8 +103,8 @@ drifts from the curator's earlier calls on the same rule, or is the third except
 reflection prompt: on the page as an `**Answer (AI, <date>):**` in the issue (Step 5) and in chat, one per decision.
 Apply that mark only once the curator has answered; apply the others now. Never change a mark yourself.
 
-* **A departure the curator confirms** is written as `**Exception to <ID> (<date>, <curator>):**` with the fact that sets
-  the case apart and the higher principle it serves, in the record and in the dataset's notes, and as a row of kind
+*  **A departure the curator confirms** is written as `**Exception to <ID> (<date>, <curator>):**` with the fact that
+  sets the case apart and the higher principle it serves, in the record and in the dataset's notes, and as a row of kind
   `exception` in the Cases table of the rule's file. A departure the curator calls general is an amendment: the rule's
   text changes in its knowledge file. A precedent the curator reopens gets an issue of its own.
 * **Every mark:** do what the mark and its note say; when a note asks a question, answer it on the page (Step 5)
@@ -113,6 +113,9 @@ Apply that mark only once the curator has answered; apply the others now. Never 
   short form), Claude's evidence as an `**Assessment (AI, <date>):**` line, through the store API
   ([records.md](../knowledge-data-foundry/references/records.md)). Then the issue leaves the `REVIEW.md` (or the
   record's open-issues block); a `REVIEW.md` with no issue and no field row left is deleted, and so is an empty block.
+  Before a `REVIEW.md` goes, check that the record keeps the history in short: the panel's summary line
+  (`/add-dataset`, Step 8) and a `CC` line for each settled issue. Write a missing panel line from the file's
+  `**Review panel:**` block before deleting it, and say so when no panel ran.
 * **Record fields:** `update` sets the record's field to the definition's value; `keep` leaves the record as it is.
   Either way the row leaves the `REVIEW.md`.
 * **The metric:** `ok` keeps the declared metric (a CC line in the record says it was checked); `change` changes
@@ -143,10 +146,12 @@ register's report on the decisions of the day (`decision_register.py --since <da
 
 ## Step 5: Update the page
 
-Where the curator asked a question, answer it in the issue as `**Answer (AI, <date>):**`; the issue stays open. Copy each note you acted on into the file first, as `**Lennart (<date>, <mark>):**` in their words, then clear that note on the page (an `update` deleting `note`, with `if_version`; keep the mark), so the note box is empty for the next turn and the conversation keeps the note. Then
-rebuild (Step 1) and republish to the same file path or URL, so the curator sees the current files and only what is
-still open. Never rename records, renumber issues or change cross-dataset ids of a published page: the marks are
-stored under them. A new issue takes the next number after the highest its file has had.
+Where the curator asked a question, answer it in the issue as `**Answer (AI, <date>):**`; the issue stays open. Copy
+each note you acted on into the file first, as `**Lennart (<date>, <mark>):**` in their words, then clear that note on
+the page (an `update` deleting `note`, with `if_version`; keep the mark), so the note box is empty for the next turn and
+the conversation keeps the note. Then rebuild (Step 1) and republish to the same file path or URL, so the curator sees
+the current files and only what is still open. Never rename records, renumber issues or change cross-dataset ids of a
+published page: the marks are stored under them. A new issue takes the next number after the highest its file has had.
 
 ## Rules
 

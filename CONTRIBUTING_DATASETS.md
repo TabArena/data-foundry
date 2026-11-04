@@ -82,7 +82,7 @@ dtypes, accepted warnings) are in [`definitions.md`](.claude/skills/knowledge-da
 
 ## 5. References
 
-For a short explanation of the existing curator decisions and review stages, see [Human review](HUMAN_REVIEW.md).
+What the curator decides at each stage, and how Claude checks it: [the curation skills](.claude/skills/README.md).
 
 * Template: [`datasets/_template/`](datasets/_template/)
 * The v2 package: [`src/data_foundry/v2/`](src/data_foundry/v2/)

@@ -58,6 +58,8 @@ from data_foundry.curation._paths import records_dir, resolve_curation_root, ski
 from data_foundry.curation.store import load_all
 
 if TYPE_CHECKING:
+    from collections.abc import Iterator
+
     from data_foundry.curation.record import CurationRecord
 
 # --------------------------------------------------------------------------- the register's vocabulary (extend here)
@@ -131,10 +133,11 @@ MAX_PAIRS_SHOWN = 6
 TEXT_CHARS = 220
 
 # --------------------------------------------------------------------------- patterns
-ID_ALT = r"(?:SEL|USE|LEAK|SPLIT|PROV|TP|CLEAN|EV)-\d+"
+ID_ALT = r"(?:SEL|USE|LEAK|SPLIT|PROV|TP|CLEAN|EV|MET)-\d+"
 RULE_ID = re.compile(rf"\b{ID_ALT}\b")
 LEGACY_TP = re.compile(r"task_probes\.md`?,?\s+rules?\s+(\d+)(?:\s*(-|\u2013|to|and)\s*(\d+))?")
 DEFINITION = re.compile(rf"^(?:\s*(?:[-*]|\d+\.)\s+)?\*\*({ID_ALT})\b[^*\n]*\*\*")
+DEFINITION_START = re.compile(rf"^(?:\s*(?:[-*]|\d+\.)\s+)?\*\*({ID_ALT})\b")
 STRENGTH = re.compile(rf"\*\*({ID_ALT}) \(([^)]*)\)")
 SERVES = re.compile(rf"\b[Ss]erves\s+(P\d+|{ID_ALT})\b")
 DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
@@ -254,35 +257,40 @@ def rule_ids_in(text: str) -> list[str]:
     return sorted(ids, key=_id_key)
 
 
-def rule_ids_defined(knowledge_dir: Path | str) -> set[str]:
-    """The rule IDs the knowledge files define: ``**LEAK-3 (Must).**`` at the start of a line, outside code fences."""
-    found: set[str] = set()
+def _definition_heads(knowledge_dir: Path | str) -> Iterator[str]:
+    """The heads of the rule definitions (``**LEAK-3 (Must).**`` at the start of a line, outside code fences), each
+    joined across lines until its bold closes, so a head wrapped at 120 characters is still read whole.
+    """
     root = Path(knowledge_dir)
     if not root.exists():
-        return found
+        return
     for path in sorted(root.rglob("*.md")):
         fenced = False
-        for line in path.read_text(encoding="utf-8").splitlines():
+        lines = path.read_text(encoding="utf-8").splitlines()
+        for i, line in enumerate(lines):
             if line.lstrip().startswith("```"):
                 fenced = not fenced
-            elif not fenced and (match := DEFINITION.match(line)):
-                found.add(match.group(1))
-    return found
+            elif not fenced and DEFINITION_START.match(line):
+                head = line
+                for more in lines[i + 1 : i + 12]:  # a head runs to its closing bold, within its paragraph
+                    if DEFINITION.match(head) or not more.strip():
+                        break
+                    head = f"{head} {more.strip()}"
+                if DEFINITION.match(head):
+                    yield head
+
+
+def rule_ids_defined(knowledge_dir: Path | str) -> set[str]:
+    """The rule IDs the knowledge files define: ``**LEAK-3 (Must).**`` at the start of a line, outside code fences."""
+    return {DEFINITION.match(head).group(1) for head in _definition_heads(knowledge_dir)}
 
 
 def rule_strengths(knowledge_dir: Path | str) -> dict[str, str]:
     """The strength each rule ID is defined with, as written (``Must``, ``Should; narrows LEAK-1``, ...)."""
     found: dict[str, str] = {}
-    root = Path(knowledge_dir)
-    if not root.exists():
-        return found
-    for path in sorted(root.rglob("*.md")):
-        fenced = False
-        for line in path.read_text(encoding="utf-8").splitlines():
-            if line.lstrip().startswith("```"):
-                fenced = not fenced
-            elif not fenced and DEFINITION.match(line) and (match := STRENGTH.search(line)):
-                found[match.group(1)] = match.group(2).strip()
+    for head in _definition_heads(knowledge_dir):
+        if match := STRENGTH.search(head):
+            found[match.group(1)] = match.group(2).strip()
     return found
 
 

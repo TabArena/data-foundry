@@ -1132,6 +1132,9 @@ def _metric_computes_findings(ctx: _Ctx, metric: object | None = None) -> Iterat
     target = ctx.df[ctx.target]
     labels = list(target.cat.categories) if isinstance(target.dtype, pd.CategoricalDtype) else None
     prediction = spec.prediction
+    domain = (
+        getattr(METRICS.get(spec.name), "prediction_domain", None) if getattr(spec, "kind", None) != "local" else None
+    )
     y = target.to_numpy()
     failures = []
     for repeat, fold, train_idx, test_idx in ctx.flat_splits:
@@ -1141,11 +1144,9 @@ def _metric_computes_findings(ctx: _Ctx, metric: object | None = None) -> Iterat
         if len(rows) > METRIC_CHECK_TEST_ROWS:
             rows = np.sort(np.random.default_rng(0).choice(rows, METRIC_CHECK_TEST_ROWS, replace=False))
         try:
-            y_pred = dummy_prediction(prediction, y[train_idx], len(rows), labels=labels, seed=repeat * 1000 + fold)
-            if spec.name == "mean_poisson_deviance":
-                # Observed zero counts are valid labels, but not valid expected means for this scorer.
-                unit_mean = {"identity": 1.0, "log": 0.0, "log1p": np.log(2.0), "log10": 0.0}
-                y_pred = np.full(len(rows), unit_mean[spec.target_transform])
+            y_pred = dummy_prediction(
+                prediction, y[train_idx], len(rows), labels=labels, seed=repeat * 1000 + fold, domain=domain
+            )
             inputs = {role: ctx.df[column].to_numpy()[rows] for role, column in spec.inputs.items()}
             with warnings.catch_warnings():  # an undefined score (one class in the test side) is the finding
                 warnings.simplefilter("ignore")

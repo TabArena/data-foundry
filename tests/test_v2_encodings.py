@@ -19,15 +19,15 @@ from data_foundry.v2.encodings import (
 
 
 def test_the_registry_lists_every_encoding_by_kind_with_its_cache_scope() -> None:
-    """One encoding for SMILES and dates, two for text to be compared, five for spectra (which fit one spectrum depends
-    on it); each declares what a cache holds.
+    """One encoding for SMILES and dates, two for text to be compared, seven for spectra (which fit one spectrum
+    depends on it); each declares what a cache holds.
     """
     recommended = recommended_encodings()
 
     assert set(recommended) == {"smiles", "datetime", "text", "spectrum"}
     assert recommended["datetime"] == (DATETIME_ENCODING,)
     assert recommended["text"] == (TEXT_TFIDF_ENCODING, TEXT_E5_ENCODING)
-    assert len(recommended["spectrum"]) == 5
+    assert len(recommended["spectrum"]) == 7
     assert all(encoding.kind == kind for kind, specs in recommended.items() for encoding in specs)
     assert (TEXT_TFIDF_ENCODING.scope, TEXT_E5_ENCODING.scope, DATETIME_ENCODING.scope) == ("split", "value", "value")
     assert recommended["smiles"][0].scope == "value"

@@ -4,12 +4,9 @@ name: eucalyptus
 checked_by:
 - Lennart
 - Myunghwan
-data_foundry_status:
-- WIP (DF)
-claimed_by: Myunghwan
-suggestion: 'Yes'
-priority: 2
+suggestion: 'No'
 decision_markers:
+- No Good Target / Scientific Discovery
 - Outdated
 tags:
 - '?'
@@ -17,7 +14,7 @@ collections:
 - TabArena Reject
 - TabSTAR
 original_source: Other
-year: Unverified
+year: '2001'
 domain: environmental science & climate
 required_split:
 - Random (IID)
@@ -28,7 +25,6 @@ source_links:
 - https://raw.githubusercontent.com/scikit-learn-contrib/category_encoders/78f3165cfdd8e6761e96eaa465e5e661bde9a990/examples/benchmarking_large/datasets/arff-datasets-master/agridata/eucalyptus.arff
 - https://www.openml.org/d/188
 - https://storm.cis.fordham.edu/~gweiss/data-mining/datasets.html
-v2_path: datasets/_dev/tabarena-v0pt2/eucalyptus/dataset.py
 source_row: 611
 type_adapter_id: curation-record-v1
 ---
@@ -70,6 +66,12 @@ CC (2026-10-26, Myunghwan): "if all 5 subjective measurements are missing mostly
 **CC (2026-10-28, Myunghwan):** "ship all". Approved this dataset for shipping in the five-dataset final added-dataset review (beMTPL97, Eucalyptus, Tanzania tourism, CPS88 wages and OSSL), on the exact presented definition with previously settled task choices and disclosed limitations retained. This is scientific acceptance for a separately requested build; it does not authorize build, commit or publication.
 
 **Assessment (AI, 2026-10-28):** The independent consistency check supports applying this overall verdict without another task choice. Existing local curator dispositions remain distinct from source verification or shared-rule amendments. No definition, scorer, data, fold or warning acceptance was changed by this final verdict.
+
+CC (2026-11-04, Lennart): "our setup should never accept unverified year as did here ... it should pick the best guess and maybe add a comment about this but it should be a year in the end" (PROV-9 amended). Year 2001: the WEKA agridatasets jar, first archived 2001-11-07, holds the pinned ARFF byte for byte; no earlier public copy was found. The declared metric (log loss) is checked as declared.
+
+CC (2026-11-04, Lennart): `No`, `No Good Target / Scientific Discovery` (USE-1, SEL-3): "yes, mark it as no". The shipped task rebuilt the assessor's own Utility rating from their scores of the same 1991 assessment, a cross-check of a known label, as glioma_grading was (2026-10-26: "a cross-check of a known label is no use case"); the source's decision, which seedlots to plant for soil conservation, is a ranking from the finished trial, which the table does not pose as a prediction. The folder leaves the working copy.
+
+**Assessment (AI, 2026-11-04):** the 1996 Waikato report gives the purpose as discovery ("determining which attributes contribute most to a good or better result") and Utility as an original 0-5 attribute it only binned; its own trees read Utility off Vig ("vigour less than or equal to 1.3 had a utility rating of 'none'", 43 of 43 shipped rows). A planting-time task (species, seedlot, site) beats the class prior by 4-13% only, and replicates of one seedlot at one site share a class in 22.6% of the 234 cells with several. The original Utility had 94 missing values that the released class does not show. Bulloch (1991) itself was not readable.
 
 ## Reference
 

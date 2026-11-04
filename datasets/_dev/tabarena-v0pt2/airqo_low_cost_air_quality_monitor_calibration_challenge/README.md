@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: airqo_low_cost_air_quality_monitor_calibration_challenge
 container_format: 2
-checksum: v2:636107fbd1ea5a9ed82c2f22679b558d6a776b2332d135e8e742a7512d89bb6c
+checksum: v2:f522ecc85d4df40e4e218b08e8db24e13aac539b7f6f565880873ded416ffb23
 build:
   uuid: 01a18629-ab5f-784f-9679-a007fd54c98a
   checksum: v2:636107fbd1ea5a9ed82c2f22679b558d6a776b2332d135e8e742a7512d89bb6c
@@ -17,9 +17,9 @@ build:
     pyarrow: 26.0.0
     scikit-learn: 1.7.2
     polars: 2.0.0
-build_stale: false
+build_stale: true
 data:
-  n_rows: 10932
+  n_rows: 10927
   n_features: 16
   dtypes:
     category: 2
@@ -33,49 +33,45 @@ task:
   metric: rmse
   metric_origin: source
   scoring_columns: null
-  split_regime: iid
-  stratify_on: site
-  time_on: null
+  split_regime: temporal_non_iid
+  stratify_on: null
+  time_on: created_at
   group_on: null
   group_labels: null
   group_time_on: null
   grouping: null
 splits:
   n_repeats: 3
-  n_folds: 3
+  n_folds: 1
   random_state: 4267
-  time_horizon: null
-  time_horizon_unit: null
+  time_horizon: 1
+  time_horizon_unit: months
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 7288
-    max: 7288
+    min: 8207
+    max: 10093
   n_test:
-    min: 3644
-    max: 3644
+    min: 834
+    max: 1049
 bundle_checks:
   ok: true
   errors: []
   warnings: []
   infos: []
-  accepted:
-    task_stratify_on_regression: Balance random regression folds on the three discrete
-      non-target site categories so each fold represents the same known-site archive
-      population; this does not stratify continuous target values or claim unseen-site
-      evaluation. Myunghwan approved the presented calibration package for shipping
-      on 2026-10-28.
+  accepted: {}
 decisions:
-- Preserve observed readings for retrospective calibration
+- Sensor 2 missing where both its channels read 0
+- Single-hour reference spikes dropped
 ---
 
 # airqo_low_cost_air_quality_monitor_calibration_challenge
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `ref_pm2_5`, scored with `rmse` on IID splits. 10,932 rows and 16 features. Source: Zindi (2021).
+Regression of `ref_pm2_5`, scored with `rmse` on temporal splits by `created_at`. 10,927 rows and 16 features. Source: Zindi (2021).
 
-Built as `01a18629-ab5f-784f-9679-a007fd54c98a` on 2026-10-29. See [Build](#build).
+Built as `01a18629-ab5f-784f-9679-a007fd54c98a` on 2026-10-29, but `dataset.py` has changed since: it now gives checksum `v2:f522ecc85d4df40e4e218b08e8db24e13aac539b7f6f565880873ded416ffb23`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -89,11 +85,11 @@ Built as `01a18629-ab5f-784f-9679-a007fd54c98a` on 2026-10-29. See [Build](#buil
 
 **Known at prediction time.** The recorded hour and site, both low-cost sensors' PM2.5 and PM10 readings, temperature, humidity and site descriptors. Reference values from other hours are not added as predictors.
 
-**What the test data stands for.** Random held-out labeled hours within the represented historical collocations. Sites and nearby times can recur; this tests retrospective correction, not later-month or unseen-site generalization.
+**What the test data stands for.** Three monthly windows over the newest season (December 2020 to February 2021), each trained on every earlier hour: a model refit before each month corrects that month's new readings.
 
-**Our changes to the source.** Use only the labeled Train.csv; retain all rows and values. Drop the opaque row ID, parse the recorded UTC+3 timestamp, and type the site and discrete 90m landform as categorical.
+**Our changes to the source.** Use only the labeled Train.csv and keep all its rows. Drop the opaque row ID, set sensor 2's two channels missing in the 500 hours where both read exactly 0 (a dead channel), parse the recorded UTC+3 timestamp, and type the site and discrete 90m landform as categorical.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The organizer explicitly describes retrospective correction as the initial use. This narrow three-site task does not establish network/device transfer. Exact hourly reference aggregation, upstream filtering and availability timing of weather/site metadata remain unverified.
+> **Use case fit: approximate (a stand-in with a known gap).** AirQo corrects new readings with models retrained periodically, by season; the windows simulate a refit before each month of the newest season. Three sites only, so no network or new-device transfer; hourly reference aggregation and the timing of weather and site metadata remain unverified.
 
 ## Files in this folder
 
@@ -139,14 +135,14 @@ Only curators run `build`, when the dataset ships.
 | year | 2021 |
 | domain | environmental science & climate |
 | license | Zindi competition data terms: private participant use; redistribution to nonparticipants prohibited. |
-| data_tags | IID, Spatial |
+| data_tags | Non-IID, Temporal, Spatial |
 | reference | AirQoCalibration2021 |
-| rows x columns | 10,932 x 17 |
+| rows x columns | 10,927 x 17 |
 | task.target | ref_pm2_5 |
 | task.problem_type | regression |
 | task.metric | rmse |
-| task.split_regime | iid |
-| task.stratify_on | site |
+| task.split_regime | temporal_non_iid |
+| task.time_on | created_at |
 
 **Metric**
 
@@ -184,15 +180,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 10,932 rows of the final frame (random rows: the frame is shuffled); 12 of 17 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 10,927 rows of the final frame (the oldest rows: the frame is sorted by `created_at`); 12 of 17 columns, the target first. Cells are cut at 40 characters.
 
 | ref_pm2_5 | created_at | site | pm2_5 | pm10 | s2_pm2_5 | s2_pm10 | humidity | temp | lat | long | altitude |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 52.4 | 2020-08-23 04:00:00+03:00 | Makerere | 72.6609 | 80.9018 | 66.7227 | 78.1009 | 0.912667 | 18.8333 | 0.333501 | 32.5686 | 1233 |
-| 78 | 2021-01-10 21:00:00+03:00 | Nakawa | 85.7964 | 93.1215 | 85.3392 | 95.2792 | 0.958 | 19.6083 | 0.33174 | 32.6095 | 1191 |
-| 56.6 | 2020-07-27 10:00:00+03:00 | Makerere | 75.7637 | 81.61 | 68.5787 | 78.3538 | 0.759167 | 23.8583 | 0.333501 | 32.5686 | 1233 |
-| 79.6 | 2020-12-29 02:00:00+03:00 | Nakawa | 91.3261 | 103.43 | 91.4932 | 106.992 | 0.9345 | 19.3 | 0.33174 | 32.6095 | 1191 |
-| 105 | 2020-01-21 15:00:00+03:00 | USEmbassy | 82.0567 | 93.4113 | 80.704 | 98.2083 | 0.437273 | 29.6727 | 0.299255 | 32.5927 | 1199 |
+| 89 | 2019-07-25 09:00:00+03:00 | USEmbassy | 76.1204 | 82.675 | 71.9696 | 82.3521 | 0.9735 | 20.575 | 0.299255 | 32.5927 | 1199 |
+| 77 | 2019-07-25 15:00:00+03:00 | USEmbassy | 54.225 | 66.3379 | 52.0771 | 65.7181 | 0.603333 | 26.8417 | 0.299255 | 32.5927 | 1199 |
+| 91 | 2019-07-25 16:00:00+03:00 | USEmbassy | 53.8402 | 66.529 | 51.7559 | 65.4907 | 0.655833 | 26.1333 | 0.299255 | 32.5927 | 1199 |
+| 68 | 2019-07-25 17:00:00+03:00 | USEmbassy | 55.828 | 68.3515 | 52.8033 | 67.0073 | 0.69275 | 25.475 | 0.299255 | 32.5927 | 1199 |
+| 67 | 2019-07-25 18:00:00+03:00 | USEmbassy | 60.667 | 71.0945 | 58.0433 | 71.3072 | 0.740833 | 24.4917 | 0.299255 | 32.5927 | 1199 |
 
 ## Curation notes
 
@@ -210,12 +206,24 @@ We start with all 10,932 labeled rows in the supplied 2021 competition Train.csv
 - Drop ID: it is an opaque, unique row key. Parse created_at as the supplied UTC+3 time without adding
   another three-hour shift. No target lags, leads, reference-neighbor features or full-data label transforms.
 - Treat site and landform_90m as nominal. The source's Google Earth Engine links identify landform_90m as
-  discrete ALOS landform classes and landform_270m as continuous mTPI; its -11 valley value is valid.
+  discrete ALOS landform classes, decoded into the catalogue's words (21 "Upper slope (warm)", 31 "Lower slope
+  (warm)"; CLEAN-12, Lennart 2026-11-04), and landform_270m as continuous mTPI; its -11 valley value is valid.
+- Reference spikes (Lennart, 2026-11-04: "mark it well in the dataset notes"): a reference hour above 3 times
+  both low-cost PM2.5 channels and above 3 times the same site's reference in both neighbouring hours is a
+  single-hour artefact of the reference monitor, set missing and its row dropped (CLEAN-11, CLEAN-15). The
+  rule catches 5 hours: Nakawa 2020-10-03 10:00 (444.0), 2020-10-05 09:00 (176.8), 2020-10-17 09:00 (374.5),
+  2020-10-30 17:00 (150.6) and Makerere 2021-02-17 20:00 (249.1). The two Nakawa hours of the review carried
+  15.3% of a LightGBM's squared error. Spikes lasting several hours, often at two sites at once, stay: they
+  look like real pollution events.
   Keep landform_270m numeric. Keep the original greenness scale because its rescaling is undocumented.
-- Keep ordinary missingness: six humidity and 17 temperature values. Sensor2 PM2.5/PM10 are jointly zero
-  in 500 labeled USEmbassy hours, including long runs. An outage code is not documented, so retain these
-  values without guessing a repair or removing rows; sensor1 remains available. Exact upstream averaging
-  and reference-label construction are unknown; unusual positive values are not proven erroneous.
+- Keep ordinary missingness: six humidity and 17 temperature values. Exact upstream averaging and
+  reference-label construction are unknown; unusual positive values are not proven erroneous.
+- Sensor 2's PM2.5 and PM10 both read exactly 0 in 500 labeled hours, all at USEmbassy between
+  2019-11-18 and 2019-12-17 in 13 runs of 11 to 117 hours; neither channel is 0 anywhere else, and sensor 1
+  never reads below 0.57. In those hours sensor 1 reads a mean PM2.5 of 52 and the reference 59, so the
+  zeros are a dead channel, not clean air. Both sensor-2 channels are set missing for those hours and the
+  rows stay, with sensor 1 and the reference (CLEAN-11: an impossible value becomes missing; Lennart,
+  2026-11-04). The definition raises if the joint zeros no longer number 500.
 - All 16 predictors remain after ID removal. The eight geographic/site descriptors are constant within
   each site and can encode its identity; recurrence is legitimate only for this represented-site task.
   Weather readings at shared clock times agree across sites. No duplicate site-hour or exact predictor copy
@@ -231,6 +239,9 @@ We start with all 10,932 labeled rows in the supplied 2021 competition Train.csv
   21.048 for raw sensor1, 20.296 for a two-sensor linear correction, 16.424 for Ridge, 14.204 for a forest
   and 13.237 for LightGBM. The best single feature, selected within training only, was PM10 (19.298).
   All three model families beat the dummy on every fold; these repeated scores are not independent deployments.
+  These scores, and the 14.13 percent below, predate the 2026-11-04 sensor-2 edit, which reorders the rows
+  and so redraws the folds; on the new folds an untuned LightGBM (time as hours, hour of day, day of year)
+  scores 12.684, and the two Nakawa hours below carry 15.3 percent of its out-of-fold squared error.
 - Two Nakawa references, at 2020-10-03 10:00 and 2020-10-17 09:00 UTC+3 (444.0 and 374.5), disagree
   with both cheap PM2.5 channels (about 35 and 37).
   They account for 14.13 percent of the final LightGBM's repeated out-of-fold squared error. Reference quality
@@ -246,52 +257,56 @@ We start with all 10,932 labeled rows in the supplied 2021 competition Train.csv
 - The pinned leak CLI fails on timezone-aware date selection in this runtime. A local diagnostic compatibility
   run restores its intended datetime exclusion and checks 15 predictors on three folds; it is not a successful
   unchanged CLI run or a timestamp leakage test. The separate full 16-predictor qualification includes time.
-- Myunghwan approved the presented package on 2026-10-28, retaining the site-balanced random folds.
-  Site stratification balances three discrete non-target categories; its regression warning is accepted
-  for this represented-site archive population. Public data redistribution permission
+- The split is temporal (Lennart, 2026-11-04), replacing the site-balanced random folds Myunghwan approved on
+  2026-10-28; see the splits comment. Public data redistribution permission
   is not established by these checks; the source's private-participant restrictions remain in force.
 
 ## Splits
 
-Site-stratified random three-fold cross-validation repeated three times, split seed 4267 and row shuffle 42.
-Test observations are withheld historical hours from the represented collocations. Sites and nearby times
-recur. At the correction moment the archive is already recorded; this does not simulate a model trained only
-before each measured hour. No future-operation, entirely new site or arbitrary new-device claim follows.
+Three one-month windows, newest first: February 2021, January 2021, December 2020, the newest season (Kampala's
+December-February dry season). Each trains on every earlier hour (75-92% of the rows). The source's use is
+correcting new readings in real time with models "retrained periodically ... seasonal" (Adong et al. 2022),
+so the horizon is about one season, and a monthly refit inside it keeps three windows (Lennart, 2026-11-04).
+Random folds over the hourly stream gave the model reference labels of neighbouring hours and scored a third
+better (LightGBM RMSE 14.05 against 18.39 on the same test rows). Makerere joined the collocation in July 2020
+and Nakawa in September 2020, so their test months have five to six months of history.
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 7,288 rows, test 3,644 rows.
+3 repeat(s) x 1 fold(s) with seed 4267; train 8,207 to 10,093 rows, test 834 to 1,049 rows. Prediction horizon: 1 months.
 
-| repeat | fold | n_train | n_test |
-|---|---|---|---|
-| 0 | 0 | 7288 | 3644 |
-| 0 | 1 | 7288 | 3644 |
-| 0 | 2 | 7288 | 3644 |
-| 1 | 0 | 7288 | 3644 |
-| 1 | 1 | 7288 | 3644 |
-| 1 | 2 | 7288 | 3644 |
-| 2 | 0 | 7288 | 3644 |
-| 2 | 1 | 7288 | 3644 |
-| 2 | 2 | 7288 | 3644 |
+| repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
+|---|---|---|---|---|---|---|---|
+| 0 | 0 | 10093 | 834 | 2019-07-25 09:00:00+03:00 | 2021-01-31 22:00:00+03:00 | 2021-02-01 00:00:00+03:00 | 2021-02-28 23:00:00+03:00 |
+| 1 | 0 | 9044 | 1049 | 2019-07-25 09:00:00+03:00 | 2020-12-31 23:00:00+03:00 | 2021-01-01 00:00:00+03:00 | 2021-01-31 22:00:00+03:00 |
+| 2 | 0 | 8207 | 837 | 2019-07-25 09:00:00+03:00 | 2020-11-30 22:00:00+03:00 | 2020-12-01 00:00:00+03:00 | 2020-12-31 23:00:00+03:00 |
 
 ## Decisions
 
-### 1. Preserve observed readings for retrospective calibration
+### 1. Sensor 2 missing where both its channels read 0
 
-Keep all source rows, missing weather and unverified zero-sensor states. The task concerns represented historical collocations; the evidence does not establish arbitrary device transfer.
+Both sensor-2 channels read exactly 0 in 500 USEmbassy hours (2019-11-18 to 2019-12-17) while sensor 1 and the reference show ordinary pollution, so the channel was dead: both are set missing and the rows stay (CLEAN-11; Lennart, 2026-11-04). All other rows and values are kept, including the missing weather.
 
-| site | labeled_hours | sensor2_joint_zero | reference_min | reference_max |
+| site | labeled_hours | sensor2_any_zero | sensor2_both_zero | sensor1_pm2_5_min | sensor1_pm2_5_mean_when_dead | reference_mean_when_dead |
+|---|---|---|---|---|---|---|
+| Makerere | 3107 | 0 | 0 | 2.93 | nan | nan |
+| Nakawa | 1717 | 0 | 0 | 1.18 | nan | nan |
+| USEmbassy | 6108 | 500 | 500 | 0.57 | 52.17 | 59.32 |
+
+### 2. Single-hour reference spikes dropped
+
+Five reference hours read above 3 times both low-cost PM2.5 channels and above 3 times the same site's reference in both neighbouring hours (Nakawa 2020-10-03 10:00: 444.0 against channels of 35 and 36 and neighbours of 47.5 and 86.0). Isolated hours like this fit an artefact of the reference monitor; no input can predict them. They become missing and the rows leave (CLEAN-11, CLEAN-15; Lennart, 2026-11-04), by the rule, not by hand.
+
+| site | created_at | pm2_5 | s2_pm2_5 | ref_pm2_5 |
 |---|---|---|---|---|
-| Makerere | 3107 | 0 | 1.3 | 256.8 |
-| Nakawa | 1717 | 0 | 0.1 | 444 |
-| USEmbassy | 6108 | 500 | 12 | 459 |
+| Nakawa | 2020-10-30 17:00:00+03:00 | 18.9721 | 19.8233 | 150.6 |
+| Makerere | 2021-02-17 20:00:00+03:00 | 51.9507 | 49.4564 | 249.1 |
+| Nakawa | 2020-10-17 09:00:00+03:00 | 36.7626 | 37.7472 | 374.5 |
+| Nakawa | 2020-10-05 09:00:00+03:00 | 20.6468 | 22.187 | 176.8 |
+| Nakawa | 2020-10-03 10:00:00+03:00 | 34.8576 | 35.6951 | 444 |
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
-
-Accepted on purpose:
-
-- `task_stratify_on_regression`: Balance random regression folds on the three discrete non-target site categories so each fold represents the same known-site archive population; this does not stratify continuous target values or claim unseen-site evaluation. Myunghwan approved the presented calibration package for shipping on 2026-10-28.
 
 ## Data checks
 
@@ -303,17 +318,17 @@ Accepted on purpose:
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | site | category | 0 | 0 | 3 | USEmbassy, Makerere, Nakawa |
-| landform_90m | category | 0 | 0 | 2 | 21, 31 |
-| created_at | datetime64\[ns, UTC+03:00\] | 0 | 0 | 9147 | 2020-10-07 13:00:00+03:00, 2021-01-29 12:00:00+03:00, 2020-10-04 22:00:00+03:00… |
-| temp | float64 | 17 | 0.16 | 1577 | 19.2417, 19.025, 20.7917, 19.6083, 20.7333, 20.45, 19.8833, 19.925, 19.3667, 19… |
-| humidity | float64 | 6 | 0.05 | 4288 | 0.9992, 0.9995, 0.9992, 1.0, 0.9993, 0.9988, 0.9994, 0.9997, 0.9978, 0.965 |
-| pm2_5 | float64 | 0 | 0 | 10910 | 28.4675, 32.3214, 14.084, 48.74, 27.1687, 45.9274, 67.4049, 36.4314, 19.2275, 3… |
-| pm10 | float64 | 0 | 0 | 10915 | 60.125, 65.1933, 42.4225, 90.63, 15.2283, 57.77, 63.28, 62.305, 17.65, 20.78 |
-| s2_pm2_5 | float64 | 0 | 0 | 10409 | 0.0, 26.41, 39.23, 38.6048, 35.018, 18.11, 34.2, 50.438, 54.3, 46.41 |
-| s2_pm10 | float64 | 0 | 0 | 10420 | 0.0, 88.5023, 66.9, 24.57, 52.0767, 112.8544, 56.9734, 69.3238, 54.85, 65.4369 |
+| landform_90m | category | 0 | 0 | 2 | Upper slope (warm), Lower slope (warm) |
+| created_at | datetime64\[ns, UTC+03:00\] | 0 | 0 | 9146 | 2021-01-31 01:00:00+03:00, 2020-10-05 13:00:00+03:00, 2021-01-29 12:00:00+03:00… |
+| s2_pm2_5 | float64 | 500 | 4.58 | 10403 | 34.2, 50.438, 34.49, 46.5286, 35.018, 54.3, 25.1633, 18.11, 18.8178, 50.535 |
+| s2_pm10 | float64 | 500 | 4.58 | 10414 | 51.56, 69.3238, 65.4369, 88.5023, 15.586, 20.65, 26.3625, 112.8544, 56.9734, 66… |
+| temp | float64 | 17 | 0.16 | 1577 | 19.2417, 19.025, 20.7917, 19.6083, 20.7333, 19.8833, 20.45, 19.925, 20.7583, 19… |
+| humidity | float64 | 6 | 0.05 | 4288 | 0.9992, 0.9995, 0.9992, 1.0, 0.9993, 0.9988, 0.9994, 0.9997, 0.9978, 0.9098 |
+| pm2_5 | float64 | 0 | 0 | 10905 | 36.7208, 28.4675, 14.084, 47.4236, 67.4049, 19.2275, 31.15, 36.4314, 27.1687, 2… |
+| pm10 | float64 | 0 | 0 | 10910 | 76.87, 103.96, 63.28, 42.98, 62.305, 114.6726, 25.6059, 17.65, 42.4225, 15.2283 |
 | lat | float64 | 0 | 0 | 3 | 0.2993, 0.3335, 0.3317 |
 | long | float64 | 0 | 0 | 3 | 32.5927, 32.5686, 32.6095 |
-| ref_pm2_5 | float64 | 0 | 0 | 1233 | 38.0, 36.0, 27.0, 34.0, 39.0, 37.0, 48.0, 31.0, 42.0, 46.0 |
+| ref_pm2_5 | float64 | 0 | 0 | 1229 | 38.0, 36.0, 27.0, 34.0, 39.0, 48.0, 37.0, 31.0, 42.0, 46.0 |
 | altitude | int64 | 0 | 0 | 3 | 1199, 1233, 1191 |
 | greenness | int64 | 0 | 0 | 3 | 4374, 6340, 5865 |
 | landform_270m | int64 | 0 | 0 | 3 | 14, 28, -11 |
@@ -326,7 +341,7 @@ Accepted on purpose:
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | 2.066 | -1.177 | 1265.26 | 0.477 | log | 108680 | 110302 | exponential |
+| 0 | 0 | 0 | 1.931 | -1.188 | 1236.59 | 0.476 | log | 108588 | 110381 | exponential |
 
 ### Numeric features
 
@@ -335,20 +350,20 @@ Accepted on purpose:
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| pm2_5 | 10932 | 51.5435 | 34.588 | 0.567273 | 335.433 |
-| pm10 | 10932 | 59.7942 | 38.214 | 0.595909 | 407.714 |
-| s2_pm2_5 | 10932 | 48.1835 | 34.2597 | 0 | 330.275 |
-| s2_pm10 | 10932 | 56.7659 | 38.8765 | 0 | 384.627 |
-| humidity | 10926 | 0.824849 | 0.135233 | 0.307167 | 1 |
-| temp | 10915 | 21.9629 | 2.80396 | 16.175 | 30.7818 |
-| lat | 10932 | 0.31409 | 0.0167036 | 0.299255 | 0.333501 |
-| long | 10932 | 32.5885 | 0.0138611 | 32.5686 | 32.6095 |
-| altitude | 10932 | 1207.41 | 16.3693 | 1191 | 1233 |
-| greenness | 10932 | 5166.94 | 904.989 | 4374 | 6340 |
-| landform_270m | 10932 | 14.0524 | 12.4049 | -11 | 28 |
-| population | 10932 | 6990.01 | 1201.84 | 4780 | 8518 |
-| dist_major_road | 10932 | 286.166 | 175.912 | 130 | 500 |
-| ref_pm2_5 | 10932 | 53.0184 | 35.5706 | 0.1 | 459 |
+| pm2_5 | 10927 | 51.5521 | 34.5926 | 0.567273 | 335.433 |
+| pm10 | 10927 | 59.8041 | 38.2186 | 0.595909 | 407.714 |
+| s2_pm2_5 | 10427 | 50.5013 | 33.3721 | 0.00142857 | 330.275 |
+| s2_pm10 | 10427 | 59.4962 | 37.7142 | 0.00142857 | 384.627 |
+| humidity | 10921 | 0.824875 | 0.13524 | 0.307167 | 1 |
+| temp | 10910 | 21.9622 | 2.8043 | 16.175 | 30.7818 |
+| lat | 10927 | 0.314082 | 0.016703 | 0.299255 | 0.333501 |
+| long | 10927 | 32.5885 | 0.0138571 | 32.5686 | 32.6095 |
+| altitude | 10927 | 1207.41 | 16.3682 | 1191 | 1233 |
+| greenness | 10927 | 5166.58 | 905.028 | 4374 | 6340 |
+| landform_270m | 10927 | 14.0603 | 12.3977 | -11 | 28 |
+| population | 10927 | 6990.68 | 1201.28 | 4780 | 8518 |
+| dist_major_road | 10927 | 286.07 | 175.896 | 130 | 500 |
+| ref_pm2_5 | 10927 | 52.915 | 35.1652 | 0.1 | 459 |
 
 </details>
 
@@ -356,16 +371,16 @@ Accepted on purpose:
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| created_at | 1 | 2020-10-07 13:00:00+03:00 | 3 | 0.03 |
-| created_at | 2 | 2021-01-29 12:00:00+03:00 | 3 | 0.03 |
-| created_at | 3 | 2020-10-04 22:00:00+03:00 | 3 | 0.03 |
-| created_at | 4 | 2020-10-06 15:00:00+03:00 | 3 | 0.03 |
-| created_at | 5 | 2021-01-30 02:00:00+03:00 | 3 | 0.03 |
-| landform_90m | 1 | 21 | 9215 | 84.29 |
-| landform_90m | 2 | 31 | 1717 | 15.71 |
-| site | 1 | USEmbassy | 6108 | 55.87 |
-| site | 2 | Makerere | 3107 | 28.42 |
-| site | 3 | Nakawa | 1717 | 15.71 |
+| created_at | 1 | 2021-01-31 01:00:00+03:00 | 3 | 0.03 |
+| created_at | 2 | 2020-10-05 13:00:00+03:00 | 3 | 0.03 |
+| created_at | 3 | 2021-01-29 12:00:00+03:00 | 3 | 0.03 |
+| created_at | 4 | 2020-10-02 14:00:00+03:00 | 3 | 0.03 |
+| created_at | 5 | 2020-10-02 15:00:00+03:00 | 3 | 0.03 |
+| landform_90m | 1 | Upper slope (warm) | 9214 | 84.32 |
+| landform_90m | 2 | Lower slope (warm) | 1713 | 15.68 |
+| site | 1 | USEmbassy | 6108 | 55.9 |
+| site | 2 | Makerere | 3106 | 28.43 |
+| site | 3 | Nakawa | 1713 | 15.68 |
 
 ## Build
 
@@ -378,3 +393,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 6d189a922994ddb0221c8249d07552d4df8af88b |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
+| stale | yes: the definition now gives checksum `v2:f522ecc85d4df40e4e218b08e8db24e13aac539b7f6f565880873ded416ffb23` |

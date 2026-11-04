@@ -3,18 +3,17 @@ unique_name: cps88wages
 name: cps88wages
 checked_by:
 - Myunghwan
-data_foundry_status:
-- WIP (DF)
-claimed_by: Myunghwan
-suggestion: 'Yes'
-priority: 4
+- Lennart
+suggestion: TBD -> 2nd Tier
+priority: 1
 decision_markers:
+- No Good Target (yet)
 - Outdated
 collections:
 - TabArena Reject
 - TabSTAR
 original_source: Other
-year: Unknown (survey 1988)
+year: '2001'
 domain: social science
 required_split:
 - Random (IID)
@@ -24,7 +23,6 @@ source_links:
 - https://www.openml.org/d/44984
 - https://doi.org/10.1007/s001810000059
 - https://search.r-project.org/CRAN/refmans/AER/html/CPS1988.html
-v2_path: datasets/_dev/tabarena-v0pt2/cps88wages/dataset.py
 source_row: 807
 type_adapter_id: curation-record-v1
 ---
@@ -76,6 +74,10 @@ CC (2026-10-26, Myunghwan): Use log1p transformation of weekly wage and mean abs
 **Assessment (AI, 2026-10-28):** The independent consistency check supports applying this overall verdict without another task choice. Existing local curator dispositions remain distinct from source verification or shared-rule amendments. No definition, scorer, data, fold or warning acceptance was changed by this final verdict.
 
 **Maintenance (AI, 2026-10-29):** Publication-privacy cleanup removes acquisition/process details from descriptive metadata. Native format-2 rebuild `01a18ad7-7905-7c46-8544-db56a44113a9` verifies on reload and reproduces from its single traced raw input. Every data row, target, scoring semantics and all nine folds exactly match the previous build; only descriptive metadata changes the checksum. Prior containers and scientific decisions are preserved.
+
+CC (2026-11-04, Lennart, on eucalyptus): the year is always a year, the best guess with a comment, never an accepted gap ("it should pick the best guess and maybe add a comment about this but it should be a year in the end"; PROV-9 amended). Here 2001: Bierens and Ginther published the extract with their 2001 paper, which AER's CPS1988 page names as its source; the survey is from March 1988 (REVIEW.md issue 3, settled).
+
+CC (2026-11-04, Lennart): don't ship; `TBD -> 2nd Tier`, priority 1, with `No Good Target (yet)` and `Outdated`, like the salary records (employee_salaries, ai_jobs_net_salaries, it_salary): "yes do (b), I agree" (REVIEW.md issue 1). It differs from census_income and adult (`No`) in its target, a weekly wage in dollars rather than the binarised >50K label. The folder leaves the working copy, which holds only datasets that ship; a later curation starts again from this record. `mean_absolute_log1p_error`, the custom metric added for it, leaves the metric library with it (no other user).
 
 ## Reference
 

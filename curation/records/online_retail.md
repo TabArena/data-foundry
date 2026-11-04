@@ -34,6 +34,8 @@ CC (2026-10-21, Myunghwan): No for the current Online Retail ledger. "OK. then o
 
 **Assessment (AI, 2026-10-29):** Preserve the earlier screening rejection, previously saved only in a local practice record. The release is an item-level invoice ledger; the inspected source paper analyzes retrospective RFM segments, rather than defining the proposed prospective outcome. A C-prefixed invoice denotes a recorded event, not a verified eventual outcome linked to a particular original purchase; candidate historical matches were absent or ambiguous. Time-series forecasting remains outside the current scope, while a separately specified fixed-horizon tabular task would need its own assessment. Genuine zero outcomes are valid: incomplete follow-up must not become zero activity, and selecting only future-active customers would omit true zeros. These are risks for a hypothetical transformation, not defects proved in an unbuilt task. No transformed samples, model, split, definition or build is added.
 
+CC (2026-11-04, Lennart): the update is correct: `No` (`No Good Target / Scientific Discovery`), and the same outcome for online_retail_ii, the same retailer's ledger: "it should be the same outcome for both. And the core issue here is that they dont have a good target as they are customer segemenation data / use cases, not predictive at all" (PR #33 review).
+
 ## Reference
 
 Data mining for the online retail industry: A case study of RFM model-based customer segmentation using data mining

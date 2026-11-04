@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ai4d_lab_tanzania_tourism_classification_challenge
 container_format: 2
-checksum: v2:2c65c3a0286292fd2d29ca555c06a81da04ff699c35acff9f92ee45578bf9731
+checksum: v2:b913297a32ddc17dbb07ca7428dcb46f5fbea35a830a05edc8da9ea10f9dad9e
 build:
   uuid: 01a18ad4-f6a0-759d-a526-da34a2568066
   checksum: v2:2c65c3a0286292fd2d29ca555c06a81da04ff699c35acff9f92ee45578bf9731
@@ -17,7 +17,7 @@ build:
     pyarrow: 26.0.0
     scikit-learn: 1.7.2
     polars: 2.0.0
-build_stale: false
+build_stale: true
 data:
   n_rows: 18506
   n_features: 19
@@ -80,7 +80,7 @@ decisions:
 
 Multiclass classification of `cost_category`, scored with `log_loss` on IID splits. 18,506 rows and 19 features. Source: Zindi (2022).
 
-Built as `01a18ad4-f6a0-759d-a526-da34a2568066` on 2026-10-30. See [Build](#build).
+Built as `01a18ad4-f6a0-759d-a526-da34a2568066` on 2026-10-30, but `dataset.py` has changed since: it now gives checksum `v2:b913297a32ddc17dbb07ca7428dcb46f5fbea35a830a05edc8da9ea10f9dad9e`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -90,7 +90,7 @@ Built as `01a18ad4-f6a0-759d-a526-da34a2568066` on 2026-10-30. See [Build](#buil
 
 **One row.** One labeled tourist survey record in the 2022 competition's training file (18,506 records).
 
-**Predicted.** The original cost_category: Low Cost, Lower Cost, Normal Cost, High Cost, Higher Cost or Highest Cost. The release does not document monetary boundaries or the expenditure basis.
+**Predicted.** The original cost_category, ordered Lower Cost < Low Cost < Normal Cost < High Cost < Higher Cost < Highest Cost. The release does not document monetary boundaries or the expenditure basis.
 
 **Known at prediction time.** Visitor country, age group and first-trip status; travel party, purpose, activity, information source, tour arrangement, package inclusions and nights on the mainland and Zanzibar. Historical realized plan-like attributes instantiate the specified scenario.
 
@@ -170,9 +170,10 @@ Only curators run `build`, when the dataset ships.
 | definition | mean of -log p(true class) |
 
 <details>
-<summary>Feature types: 16 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 14 categorical, 2 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (16): `country`, `age_group`, `travel_with`, `purpose`, `main_activity`, `info_source`, `tour_arrangement`, `package_transport_int`, `package_accomodation`, `package_food`, `package_transport_tz`, `package_sightseeing`, `package_guided_tour`, `package_insurance`, `first_trip_tz`, `cost_category`
+- categorical (14): `country`, `travel_with`, `purpose`, `main_activity`, `info_source`, `tour_arrangement`, `package_transport_int`, `package_accomodation`, `package_food`, `package_transport_tz`, `package_sightseeing`, `package_guided_tour`, `package_insurance`, `first_trip_tz`
+- ordinal (2): `cost_category (Lower Cost < Low Cost < Normal Cost < High Cost < Higher Cost < Highest Cost)`, `age_group (<18 < 18-24 < 25-44 < 45-64 < 65+)`
 - string (0): none
 - datetime (0): none
 
@@ -218,6 +219,10 @@ We start with the 18,506 labeled rows in Train.csv; the 6,169 unlabeled Test.csv
 - Merge the evident Widlife Tourism spelling (5,988 training rows) into Wildlife Tourism (2,283 rows).
 - Merge UAE (187 rows) into UNITED ARAB EMIRATES and BURGARIA (2 rows) into BULGARIA, both already
   present in the source. Other country distinctions stay as published.
+- Types (2026-11-04, Lennart; CLEAN-25, CLEAN-14): cost_category is an ordered category, Lower Cost < Low
+  Cost < Normal Cost < High Cost < Higher Cost < Highest Cost. The source lists the classes alphabetically
+  and gives no boundaries; Lower and Low are read as comparatives, as High < Higher < Highest are.
+  age_group is ordered bands (<18 < 18-24 < 25-44 < 45-64 < 65+). The party counts and nights stay numbers.
 - Retain ordinary missing values. Both party counts are set missing for 94 records with a zero total;
   a tourist record cannot describe a party with no people. No positive counts or night outliers are clipped.
 - Source coding limits: 142 Independent records have a Yes package inclusion, while 104 Package Tour records
@@ -268,7 +273,7 @@ The observed inputs are coarse visitor and trip descriptors. Their equality, inc
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
 
 Accepted on purpose:
@@ -402,3 +407,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 6b2e70b5b795a373a3ae71006b8db8e471eabe9f-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
+| stale | yes: the definition now gives checksum `v2:b913297a32ddc17dbb07ca7428dcb46f5fbea35a830a05edc8da9ea10f9dad9e` |

@@ -1,4 +1,4 @@
-"""All-facility imaging delay/wait prediction from the authenticated author workbook."""
+"""Scheduled imaging exam-start delay prediction (facilities F1-F3) from the authenticated author workbook."""
 
 from __future__ import annotations
 
@@ -16,18 +16,20 @@ from data_foundry.v2 import (
     Temporal,
 )
 
+SCHEDULED = ("F1", "F2", "F3")
+
 
 class MedicalFacilityOperationalData(AbstractCuratedDataset):
     task_summary = TaskSummary(
-        question="What delay or waiting time, in minutes, will this patient's imaging visit have at this facility?",
-        use_case="At patient arrival, imaging operations staff estimate exam-start delay or waiting time using the current workflow and known appointment plan.",
-        row="One of 130,431 visits across all four source worksheets F1-F4, with facility identity as categorical context.",
-        predicted="The original Wait in minutes: signed exam-start minus scheduled time for F1-F3, arrival-to-start waiting for F4. Negative scheduled delays and zero waits remain.",
-        known="Facility, current queue/resource state, completion-driven histories, published time features and planned appointment demand. Exact updater and estimator fitting provenance remain incomplete.",
-        split="Nine expanding windows in the common anonymized source event order; training arrivals and exam starts precede each test start. Common-day consistency supports this approximate ordering, without proving intra-day clock synchronization or real calendar cadence.",
-        changes="Stack all four source sheets and add facility. Remove artificial timestamps from model inputs, retain legitimate scheduled demand and elapsed active-exam extrema, and mask the unavailable F4 last-visit flag. Retain ordinary per-visit MAE in each test window and the standard equal mean of nine window scores after curator review of facility imbalance.",
+        question="How many minutes after its scheduled time will this patient's imaging exam start at this facility?",
+        use_case="At patient arrival, imaging operations staff estimate the exam-start delay against the appointment from the current workflow and the known appointment plan.",
+        row="One of 82,001 visits of the three scheduled facilities F1-F3, with the facility as context.",
+        predicted="The exam start minus the scheduled time, in minutes, signed: an exam that starts early has a negative delay.",
+        known="Facility, current queue and resource state, histories of completed exams, the source's time features, the appointment plan and the source's per-exam-type delay and duration estimates. How those estimates were made is not documented.",
+        split="Nine windows of later visits in time order, each trained on the visits whose exam had begun before the window. The anonymised timestamps are one shift of the real clock for all facilities, and every window has thousands of training visits of each facility.",
+        changes="Only the scheduled facilities: the walk-in facility F4 measures another quantity (the wait from arrival) and is left out. The timestamps only order the rows and are no inputs.",
         fit="approximate",
-        fit_reason="The source defines real operational delay/wait tasks and the workbook is authenticated. Ordering and feature-estimator provenance have explicit limits. The curator accepted the approximate source-order split and retained ordinary MAE; final scientific inclusion is approved by Myunghwan.",
+        fit_reason="The source's own delay task on the facilities' own records, in time order. The gaps: the visits ship without real dates, so the windows count events, not days, and the source does not document how its per-exam-type estimates were made.",
     )
     unique_name = "medical_facility_operational_data"
     year = "2020"
@@ -47,7 +49,7 @@ class MedicalFacilityOperationalData(AbstractCuratedDataset):
         This workbook is byte-identical to Kaggle mirror version 1, updated 2021-02-10:
         https://www.kaggle.com/api/v1/datasets/download/weirdolucifer/medical-facility-operational-data?datasetVersionNumber=1
         Mirror archive SHA256 d2427f01c225122fd406bcd28d55e78439e60a1465f7514caf22e593ebd9f256.
-        Read all four worksheets F1-F4 and preserve their facility identity. Counts differ from the related PLOS analytical cohort; exact cohort equivalence is not claimed. Dataverse retrieval returned HTTP 403, but primary author workbook identity is verified independently.
+        Read the four worksheets F1-F4; the definition keeps the scheduled facilities F1-F3. Counts differ from the related PLOS analytical cohort; exact cohort equivalence is not claimed. Dataverse retrieval returned HTTP 403, but primary author workbook identity is verified independently.
     """
     bibtex = r"""
         @article{Pianykh2020,
@@ -64,23 +66,21 @@ class MedicalFacilityOperationalData(AbstractCuratedDataset):
         }
     """
     curation_comments = """
-        - Final curator verdict (2026-10-28, Myunghwan): "ship this". Accept all four facilities, 130,431 visits, 88 predictors including facility, original signed delay/wait targets, the accepted nine approximate source-order windows and ordinary MAE with equal window averaging. Earlier notes below preserve the review history. Source-clock, calendar-cadence, estimator-fitting and booking-lineage limitations remain disclosed.
-        - Curator decision (2026-10-28, Myunghwan): "Is MAE the main metric from the original task? If so, our current imbalance is somewhat acceptable." The primary author explicitly uses MAE. Retain the implemented per-visit MAE and proposed equal mean of nine test-window MAEs; accept the measured facility imbalance. This resolves scoring, not final inclusion.
-        - Curator decision (2026-10-28, Myunghwan): "accept this split". Accept the exact nine common source-event-order windows across all four facilities, observed training labels and tied arrivals, with the disclosed synchronization/calendar limits. This accepts the approximation; it does not verify a real shared clock or settle scoring or final inclusion.
-        We start with all four worksheets F1-F4 of the authenticated author workbook WaitData.Published.xlsx.
+        We start with worksheets F1-F3 of the authenticated author workbook WaitData.Published.xlsx (all four sheets are read; F4 is left out).
 
-        - Curator scope: all-facility prediction with facility as meaningful categorical context. The earlier F4-only definition did not fulfill the saved instruction. All 130,431 source visits and original Wait values are retained; no final ship is inferred from this redo.
-        - Prediction point: arrival, before the imaging exam starts. F1-F3 Wait is signed exam-start minus scheduled time; F4 Wait is exam-start minus arrival. All targets agree with source timestamp diagnostics within one minute. Keep valid negatives and zeros, without log transform, clipping or outcome rescaling.
-        - Facility is the source worksheet ID, not a fabricated patient/entity ID. Use neutral F1-F4 labels: the author code and a separate PLOS cohort disagree on F1/F2 modality labels. All groups remain represented; no unseen-facility generalization is claimed.
-        - Stack the union of published columns; absent facility-specific fields remain structurally missing, never fabricated zeros. Preserve AvgDelayForDay and AvgWaitForDay as separate source fields. Numeric counts stay numeric; facility, flags, source weekday and month are categorical.
-        - Remove all three artificial timestamp columns from model inputs. Arrival/start timestamps survive only until ordering and label-availability construction. A dense global arrival-order rank is the temporal variable; no real dates, time gaps or calendar features are reconstructed from fictitious timestamps.
-        - Across 413 artificial scheduled days represented by all facilities, source DayOfYear, Month and DayOfWeek agree without conflict. Their common weekday displacement corroborates common-day alignment. The source permits sorting, but exact intra-day cross-facility alignment and authentic calendar cadence remain unverified; the global-order candidate is approximate and explicitly reviewed.
-        - Planned demand is allowed at arrival: scheduled counts in the following 30/60 minutes, next-slot/hour bookings, and source expected completion/delay estimates are not realized future outcomes merely because they refer to later appointments. Exact expected-duration fitting lineage remains unverified without demonstrated future-label fitting.
-        - Retain IsLast for scheduled F1-F3: it exactly identifies the last scheduled appointment time and can be known from the plan; source booking-version snapshots are not supplied. Mask it for walk-in F4, whose pseudo-schedule/last-visit availability is not established. IsFirst and current-state flags are retained with the source operational context.
-        - Restore mintime and maxtime in all facilities. The dictionary's daily-wait wording is contradicted by exact current active-exam elapsed-state identities: zero with no exams, both equal SumInProgress with one exam, min+max equals that sum with two, and no count/sum envelope violations in all 130,431 visits. Stable-population increments also track elapsed minutes; F4 has 11/9 small min/max transition residuals among 10,214 cases. No full-day target-extrema interpretation or future leak is inferred.
-        - Operational history is not the current patient's target. Across all facilities no recent-history field changes during same-day transitions with unchanged completion count; independently linked completed exams support signed end-minus-scheduled histories. Daily source target means match already-begun visits outside source missing-calendar rows; the three recent-window AvgWaitLastW fields instead average already-begun arrival-to-start waits in every facility, not the signed scheduled target. Exact updater/default/reset rules remain incompletely documented, so this supports availability without claiming complete generator reconstruction.
-        - Source MAE is deliberate in the author challenge and paper comparisons. Its source evaluates facilities separately and does not prescribe a pooled all-facility scorer. The curator conditionally accepted the observed imbalance if MAE was the original objective; the author challenge confirms this. Retain ordinary per-visit MAE within each window and the standard equal mean across nine windows. This combined weighting is the retained benchmark composition, not an official source aggregation. Equal-window averaging differs from pooling all held-out visits; facility-level errors remain diagnostics. The author's code historically labels an RMSE calculation MSE; our reported RMSE and squared errors use their standard definitions.
-        - All source negatives, repeated operational states and missing values remain unless a demonstrated defect requires repair. The old F4-only model results are historical for that feature inventory; the restored extrema and all-facility task receive fresh diagnostics.
+        - Prediction point: arrival, before the exam starts. Wait is the exam start minus the scheduled time, signed, and agrees with the source timestamps within one minute in every row. Valid negatives and zeros stay, without log transform, clipping or rescaling.
+        - One meaning of the target (Lennart, 2026-11-04): only the scheduled facilities F1-F3 (82,001 visits). F4's Wait is another quantity, the wait from arrival of walk-in patients (CLEAN-21, USE-5; Crowley et al. 2020 model delay and wait separately); a dataset of its own is a separate decision. AvgWaitForDay exists only on F4 and goes with it.
+        - Facility is the source worksheet ID, kept as context; neutral F1-F3 labels, as the author code and the PLOS cohort disagree on the modality names. No unseen-facility generalization is claimed.
+        - Dtypes: counts and sums numeric; facility and the four yes/no flags categorical. DayOfWeek (1-7) and Month (1-12) ship as numbers and stay numbers, like DayOfYear (CLEAN-14, the cycle rule of 2026-11-01).
+        - The three artificial timestamps are no inputs. The arrival and start timestamps order the rows and decide which labels are known, then are dropped; a dense arrival-order rank is the time column. The sheets list the visits in exactly reverse arrival order.
+        - The anonymisation is one shift of the real clock for all facilities: in every row the fictitious arrival time of day is the source's StartTime plus 60 minutes, DayOfWeek differs from the fictitious weekday by one constant offset and DayOfYear from the fictitious day of the year by 2 or 3 days (leap years), and the facilities agree on all 459 shared days. So the common arrival order is the real order across facilities, to the minute.
+        - Planned demand is allowed at arrival: scheduled counts in the following 30/60 minutes, next-slot/hour bookings and the source's per-exam-type estimates refer to the plan, not to realised outcomes. How the estimates were made is not documented.
+        - Potential leak, kept on purpose (LEAK-38; Lennart, 2026-11-04: "keep them"): `ExpectedDelayNextExam` and the sums built from it (`SumDelayWaitingByExamCode`) are one fixed table of expected delay per exam type (49, 215 and 195 values at F1-F3, reused over the whole period), of undocumented origin and reference period. They do not match the realised delays (a median gap of 6.0-11.7 minutes for a patient waiting alone), and dropping them changes LightGBM's MAE by 0.01-0.02 minutes, within seed noise. Revisit if the authors document the table.
+        - IsLast stays: it identifies the last scheduled appointment of the day and is known from the plan; booking-version snapshots are not supplied.
+        - mintime and maxtime stay. The dictionary's daily-wait wording is contradicted by exact identities with the exams in progress (zero with none, both equal SumInProgress with one, min+max equals it with two, no count/sum envelope violations): they are elapsed times of the active exams, not the day's extremes.
+        - Operational history is not the current patient's target: no recent-history field changes between arrivals without a completed exam, and linked completed exams support the signed end-minus-scheduled histories; exact updater/default rules remain incompletely documented.
+        - Source MAE is deliberate in the author challenge and paper comparisons, per facility. We score per-visit MAE in each window and the equal mean of the nine window scores (Myunghwan, 2026-10-28), not an official source aggregation. The author code labels an RMSE calculation MSE; our RMSE uses the standard definition.
+        - All source negatives, repeated operational states and missing values remain.
     """
     target = "Wait"
     problem_type = "regression"
@@ -88,17 +88,17 @@ class MedicalFacilityOperationalData(AbstractCuratedDataset):
         "mae",
         original="Mean absolute error in minutes, evaluated separately for source facilities.",
         reference="https://medicalanalytics.group/operational-data-challenge/",
-        definition="Source MAE formula in minutes on all held-out visits within each window, summarized by the standard equal mean of nine window MAEs. Retained after Myunghwan's 2026-10-28 conditional acceptance of the observed imbalance and verification of deliberate source MAE. The source does not prescribe cross-facility or across-window weighting; no facility normalization is applied.",
+        definition="Source MAE formula in minutes on all held-out visits within each window, summarized by the standard equal mean of nine window MAEs. The source does not prescribe cross-facility or across-window weighting; no facility normalization is applied.",
     )
-    temporal = Temporal(on="arrival_order", horizon=7300, horizon_unit="steps")
+    temporal = Temporal(on="arrival_order", horizon=4523, horizon_unit="steps")
     splits_comment = """
-        Curator-accepted approximate global source-event-order evaluation, newest window first. Start after at least half of all visits
-        have both arrived and begun their exams; divide the remaining distinct arrival instants into nine windows,
-        keeping timestamp ties intact. Every train arrival and begin precedes its test start. All facilities occur in
-        every train/test, with their actual support reported; the minimum mature train is 65,217/130,431 (50.00115%).
-        About 7,300 source events is a typical cohort width, not a real calendar forecast horizon or label-maturity gap.
-        Shared-day calendar-feature consistency supports common anonymous ordering, without proving intra-day clock
-        equivalence or the paper's calendar cadence. No held-out-facility or new-patient guarantee is asserted.
+        Expanding windows in the common arrival order of F1-F3, newest window first. Start after at least half of all
+        visits have both arrived and begun their exams; divide the remaining distinct arrival instants into nine windows
+        of about 4,523, keeping timestamp ties intact. Every train arrival and begin precedes its test start. Every
+        window has training visits of each facility from before it (at least 24,461 of F1, 8,326 of F2 and 8,215 of
+        F3) and 702 to 2,108 test visits of each; the minimum train is 41,002 of 82,001. The timestamps are one shift of
+        the real clock for all facilities, so the order is real time; a window is about six to seven weeks of the shifted
+        calendar, not a calendar-based horizon. No held-out-facility or new-patient guarantee is asserted.
     """
     accepted_check_warnings = {}
 
@@ -109,23 +109,13 @@ class MedicalFacilityOperationalData(AbstractCuratedDataset):
         return pd.concat([table.assign(facility=name) for name, table in tables.items()], ignore_index=True, sort=False)
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
-        df = raw.copy()
+        df = raw[raw["facility"].isin(SCHEDULED)].copy()
         df["arrival_order"] = df["x_ArrivalDTTM"].rank(method="dense").astype("int64") - 1
-        df.loc[df["facility"].eq("F4"), "IsLast"] = np.nan
-        return df.drop(columns=["x_ScheduledDTTM"])
+        return df.drop(columns=["x_ScheduledDTTM", "AvgWaitForDay"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
-            categorical=(
-                "facility",
-                "IsLast",
-                "IsFirst",
-                "NoneInProgress",
-                "NoneCompleted",
-                "NoneInLine",
-                "DayOfWeek",
-                "Month",
-            ),
+            categorical=("facility", "IsLast", "IsFirst", "NoneInProgress", "NoneCompleted", "NoneInLine"),
             datetime=("x_ArrivalDTTM", "x_BeginDTTM"),
         )
 
@@ -155,6 +145,8 @@ class MedicalFacilityOperationalData(AbstractCuratedDataset):
             rows.append(
                 {
                     "facility": facility,
+                    "shipped": facility in SCHEDULED,
+                    "target meaning": "start minus scheduled" if facility in SCHEDULED else "start minus arrival",
                     "visits": len(table),
                     "negative targets": int(table.Wait.lt(0).sum()),
                     "zero targets": int(table.Wait.eq(0).sum()),
@@ -165,8 +157,9 @@ class MedicalFacilityOperationalData(AbstractCuratedDataset):
             )
         return [
             Decision(
-                "All source facilities and target meanings",
-                "Preserve original signed scheduled delay for F1-F3 and nonnegative arrival waiting for F4, with facility as context. Ordinary per-visit MAE and standard equal-window averaging are retained after review of facility contributions.",
+                "One meaning of the target: the scheduled facilities F1-F3",
+                "Ship the signed exam-start delay against the appointment of F1-F3, with facility as context. F4's "
+                "Wait is the walk-in wait from arrival, another quantity, and is left out (Lennart, 2026-11-04).",
                 pd.DataFrame(rows).set_index("facility"),
             )
         ]
