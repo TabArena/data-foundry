@@ -11,6 +11,7 @@ tags:
 - AI-Filled (Verify)
 - Many features
 - Multi-target
+- Spectral Data
 collections:
 - RamanBench
 original_source: Other

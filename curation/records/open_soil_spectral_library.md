@@ -12,6 +12,7 @@ priority: 3
 tags:
 - Many features
 - Non-IID (Grouped)
+- Spectral Data
 collections:
 - New (BeyondArena)
 original_source: Website

@@ -13,6 +13,7 @@ suggestion: 'Yes'
 tags:
 - Many features
 - Non-IID (Grouped)
+- Spectral Data
 collections:
 - FS Benchmark
 original_source: Other
