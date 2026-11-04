@@ -13,6 +13,7 @@ tags:
 - Tiny Data
 - Many features
 - Multi-target
+- Spectral Data
 collections:
 - RamanBench
 domain: chemistry & material science

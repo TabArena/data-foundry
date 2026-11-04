@@ -8,6 +8,7 @@ decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 tags:
 - AI-Filled (Verify)
+- Spectral Data
 collections:
 - RamanBench
 source_links:

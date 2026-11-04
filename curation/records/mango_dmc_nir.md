@@ -8,6 +8,7 @@ priority: 2
 tags:
 - AI-Filled (Verify)
 - Non-IID (Temporal)
+- Spectral Data
 original_source: Other
 year: '2020'
 required_split:
