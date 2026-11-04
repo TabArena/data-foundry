@@ -2,5 +2,5 @@ name: economic_well_being_prediction_challenge
 holder: Myunghwan
 stage: triage
 claimed_at: '2026-10-28T03:20:07Z'
-expires_at: '2026-11-10T23:08:13Z'
+expires_at: '2026-11-11T01:13:41Z'
 note: Curator ship accepted. Local build, reload and traced-input reproduction verified (2026-11-03); temporal x unseen-country, 21,454 rows, 16 evaluations. Local branch prepared separately; intentionally not added to existing PR. Retain ownership pending separately authorized publication/integration.
