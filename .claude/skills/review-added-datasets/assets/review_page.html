@@ -282,6 +282,43 @@ textarea.note.big { min-height: 4.2rem; }
 .md table { border-collapse: collapse; font-size: .82rem; font-variant-numeric: tabular-nums; }
 .md th, .md td { border: 1px solid var(--rule); padding: .3rem .5rem; vertical-align: top; text-align: left; }
 .md th { background: var(--surface-2); font-weight: 600; }
+/* An issue's options table: one card-like row per option, the points of a cell as bullets, tags on the
+   implemented and the recommended row */
+.md table.opttab { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 40rem; font-size: .85rem; line-height: 1.45; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.md table.opttab th { background: var(--surface-2); border: 0; border-bottom: 1px solid var(--rule); padding: .45rem .7rem; font-size: .7rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); }
+.md table.opttab td { border: 0; border-top: 1px solid var(--rule); padding: .6rem .7rem; }
+.md table.opttab tbody tr:first-child td { border-top: 0; }
+.md table.opttab col.c-key { width: 2.6rem; }
+.md table.opttab col.c-option { width: 19%; }
+.md table.opttab col.c-pro, .md table.opttab col.c-con { width: 22%; }
+.md table.opttab td.c-key { font: 600 .95rem var(--font-display); color: var(--ink-2); text-align: center; }
+.md table.opttab th.c-pro { color: var(--ok); }
+.md table.opttab th.c-con { color: var(--stop); }
+.md table.opttab td ul { margin: 0; padding-left: 1rem; }
+.md table.opttab td li { margin: 0 0 .2rem; }
+.md table.opttab td li:last-child { margin-bottom: 0; }
+.md table.opttab td li::marker { color: var(--ink-3); }
+.md table.opttab td.c-pro li::marker { color: var(--ok); }
+.md table.opttab td.c-con li::marker { color: var(--stop); }
+.md table.opttab .oname { display: block; }
+.md table.opttab td.c-option { font-weight: 600; }
+.md table.opttab tr.rec td { background: var(--accent-soft); }
+.md table.opttab tr.rec td.c-key { color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.md table.opttab .otag { display: inline-block; margin: .3rem .3rem 0 0; padding: .05rem .45rem; border-radius: 999px; font: 600 .64rem var(--font-body, inherit); text-transform: uppercase; letter-spacing: .05em; border: 1px solid currentColor; }
+.md table.opttab .otag.impl { color: var(--ink-3); }
+.md table.opttab .otag.rec { color: var(--accent); background: var(--surface); }
+/* An issue's footnotes (the rules and references) and its notes for the AI: closed boxes under the text */
+.md details.fnotes, .md details.ainotes { margin: .5rem 0 0; border: 1px solid var(--rule); border-radius: 6px; padding: .25rem .6rem; background: var(--surface-2); max-width: 78ch; }
+.md details.fnotes > summary, .md details.ainotes > summary { font-size: .78rem; font-weight: 600; color: var(--ink-3); text-transform: uppercase; letter-spacing: .04em; }
+/* An issue's details (effect, experiments, consistency, panel): closed between the problem and the options */
+.md details.idetails { margin: .45rem 0 .6rem; border-left: 3px solid var(--rule); padding: .1rem 0 .1rem .7rem; max-width: 78ch; }
+.md details.idetails > summary { font-size: .84rem; font-weight: 600; color: var(--accent); }
+.md details.idetails[open] { border-left-color: var(--accent); }
+.md details.idetails > ul { margin-top: .4rem; }
+.md details.fnotes ol { margin: .3rem 0 .2rem; font-size: .84rem; color: var(--ink-2); }
+.md details.fnotes li.flash { background: var(--accent-soft); border-radius: 3px; }
+.md details.ainotes { font-size: .84rem; color: var(--ink-2); }
+.md sup.fnref button { border: 0; background: none; padding: 0 .1rem; color: var(--accent); cursor: pointer; font: 600 .72rem var(--font-mono); }
 
 /* Fields table */
 .fieldtab { width: 100%; border-collapse: collapse; font-size: .86rem; }
@@ -1214,6 +1251,17 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     if (act === "filter") { ui.filter = b.dataset.f; store("filter", ui.filter); renderFilters(); renderList(); return; }
     if (act === "back") { ui.detailOpen = false; document.getElementById("desk").classList.remove("detail-open"); window.scrollTo(0, 0); return; }
     if (act === "ctab") { showCtab(b.dataset.c); return; }
+    if (act === "fn") {
+      const box = b.closest(".md");
+      const fn = box && Array.from(box.children).find((c) => c.matches("details.fnotes"));
+      if (!fn) return;
+      box.classList.remove("clamp");
+      fn.open = true;
+      fn.querySelectorAll("li.flash").forEach((li) => li.classList.remove("flash"));
+      const li = fn.querySelector('li[data-fn="' + b.dataset.fn + '"]');
+      if (li) { li.classList.add("flash"); li.scrollIntoView({ block: "nearest" }); }
+      return;
+    }
     if (act === "openpanel") { showCtab("panel"); const t = document.getElementById("ct-panel"); if (t) t.scrollIntoView({ block: "start" }); return; }
     if (act === "toggleResolved") {
       ui.showResolved = !ui.showResolved;

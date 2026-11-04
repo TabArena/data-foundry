@@ -12,8 +12,26 @@
 
 **Issues for the curator:**
 
-1. **Keep the target in decibels?** The source reports the scaled sound pressure level in dB; a log scale is the
-   alternative.
+1. **Keep the target in decibels?**
+
+   * **Problem:**
+     - The target is the sound pressure level in decibels, as NASA reports it.
+     - Should it get a further log?
+   * **Background:** Decibels are already a log scale, so a further log changes how errors on loud and quiet
+     airfoils are weighed[^1].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Decibels (implemented) | target as published | the unit engineers use | none found |
+     | B | Log of decibels | target transformed | none found | a log of a log scale |
+
+   * **Recommendation:** A, the source's unit. **Decision:** A or B?
+
+   **Notes for the AI:** on B, set `target_transform` in `dataset.py` and re-run `dataset check`.
+
+   [^1]: **MET-3** (Must): the score is on the scale the task means, the source's; the target may ship on the
+     scale a practitioner models it on.
 
 **Review panel:** ship (mediator). Claim audit: 2 claims, 2 hold. Blind review: would benchmark; main concern the
 decibel scale. Debate: agreed on the random split; disputed: the target scale (issue 1).

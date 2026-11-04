@@ -660,9 +660,171 @@ def _show(repo: Path, commit: str, path: str) -> str | None:
     return shown.stdout if shown.returncode == 0 else None
 
 
-def render(text: str) -> str:
-    """Markdown to HTML (raw HTML in the source is escaped)."""
-    return MD.render(text.strip()) if text.strip() else ""
+FOOTNOTE_DEF = re.compile(r"^\[\^([\w.-]+)\]:\s?(.*)$")
+FOOTNOTE_REF = re.compile(r"\[\^([\w.-]+)\]")
+AI_NOTES = re.compile(r"^\*\*Notes for the AI:\*\*\s*(.*)$")
+
+
+def _cut_notes(text: str) -> tuple[str, str, list[tuple[str, str]]]:
+    """``text`` without its footnote definitions and its ``**Notes for the AI:**`` block, then that block and the
+    definitions (id, markdown) in file order.
+
+    A definition is a line ``[^id]: text`` at the start of a line, with its indented continuation lines. The notes
+    block runs from its label to the end of the text. Fenced code is left alone.
+    """
+    body: list[str] = []
+    notes: list[str] = []
+    defs: list[tuple[str, list[str]]] = []
+    fenced = in_def = in_notes = False
+    for line in text.splitlines():
+        if line.lstrip().startswith("```"):
+            fenced = not fenced
+        m = None if fenced else FOOTNOTE_DEF.match(line)
+        if m:
+            defs.append((m.group(1), [m.group(2)]))
+            in_def = True
+            continue
+        if in_def and line.startswith((" ", "\t")) and line.strip():
+            defs[-1][1].append(line.strip())
+            continue
+        in_def = False
+        n = None if fenced else AI_NOTES.match(line)
+        if n:
+            in_notes = True
+            notes.append(n.group(1))
+        elif in_notes:
+            notes.append(line)
+        else:
+            body.append(line)
+    return "\n".join(body), "\n".join(notes).strip(), [(k, " ".join(v)) for k, v in defs]
+
+
+BULLET_LEAD = re.compile(r"^[*-] \*\*([^*:]+):?\*\*")
+SHOWN_LEADS = {"Problem": 0, "Options": 2, "Recommendation": 2}
+"""The bullets of an issue in view: the problem above the Details box, the options and the recommendation below it.
+Every other bullet (effect, experiments, consistency, panel, ...) goes into the closed Details box."""
+
+
+def _fold(body: str) -> str:
+    """An issue's original text as HTML: the problem, a closed Details box with the other bullets, then the options
+    and the recommendation. A text without a ``**Problem:**`` bullet renders as it is.
+    """
+    parts: list[tuple[int, str, list[str]]] = [(0, "", [])]
+    for line in body.splitlines():
+        m = BULLET_LEAD.match(line)
+        if m:
+            parts.append((SHOWN_LEADS.get(m.group(1).strip(), 1), m.group(1).strip(), [line]))
+        elif line.strip() and not line.startswith((" ", "\t")) and parts[-1][0] == 1:
+            parts.append((2, "", [line]))  # text after a detail bullet stays in view
+        else:
+            parts[-1][2].append(line)
+    if not any(lead == "Problem" for _, lead, _ in parts):
+        return MD.render(body.strip()) if body.strip() else ""
+    groups = ["\n".join(ln for g, _, lines in parts if g == k for ln in lines).strip() for k in range(3)]
+    leads = [lead.lower() for g, lead, _ in parts if g == 1 and lead]
+    out = MD.render(groups[0]) if groups[0] else ""
+    if groups[1]:
+        summary = "Details" + (": " + ", ".join(leads) if leads else "")
+        out += f'<details class="idetails"><summary>{html.escape(summary)}</summary>{MD.render(groups[1])}</details>'
+    return out + (MD.render(groups[2]) if groups[2] else "")
+
+
+TABLE_HTML = re.compile(r"<table>(.*?)</table>", re.DOTALL)
+ROW_HTML = re.compile(r"<tr>(.*?)</tr>", re.DOTALL)
+CELL_HTML = re.compile(r"<(t[hd])>(.*?)</t[hd]>", re.DOTALL)
+CELL_POINTS = re.compile(r";\s+(?![^<]*</code>)")
+RECOMMENDED = re.compile(r"\*\*Recommendation:\*\*\s*\**([A-Z])\b")
+IMPLEMENTED = re.compile(r"\s*\((?:implemented|as implemented)\)", re.IGNORECASE)
+
+
+def _options_tables(out: str, text: str) -> str:
+    """Restyle the options tables (``| | Option | What it does | Pro | Con |``) of a rendered text.
+
+    A table whose header names an ``Option`` column gets the class ``opttab``; a cell with several points separated
+    by ``;`` shows them as bullets; the row marked ``(implemented)`` and the row the text's ``**Recommendation:**``
+    names get a tag each, so the curator sees both without reading the cells.
+    """
+    rec = RECOMMENDED.search(text)
+    recommended = rec.group(1) if rec else ""
+
+    def table(m: re.Match) -> str:
+        rows = ROW_HTML.findall(m.group(1))
+        if not rows or "<th>Option</th>" not in rows[0]:
+            return m.group(0)
+        heads = [c.lower() for _, c in CELL_HTML.findall(rows[0])]
+        option = heads.index("option")
+        names = [f"c-{h.split()[0]}" if h.strip() else "c-key" for h in heads]
+        cols = "".join(f'<col class="{n}">' for n in names)
+        body = []
+        for row in rows[1:]:
+            cells = [c for _, c in CELL_HTML.findall(row)]
+            key = re.sub(r"<[^>]+>", "", cells[0]).strip() if cells else ""
+            tags, classes = [], []
+            if option < len(cells) and IMPLEMENTED.search(cells[option]):
+                cells[option] = IMPLEMENTED.sub("", cells[option])
+                tags.append('<span class="otag impl">implemented</span>')
+                classes.append("impl")
+            if key and key == recommended:
+                tags.append('<span class="otag rec">recommended</span>')
+                classes.append("rec")
+            tds = []
+            for i, cell in enumerate(cells):
+                points = [p for p in CELL_POINTS.split(cell) if p.strip()]
+                if i == 0:
+                    shown = cell
+                elif i == option:
+                    shown = f'<span class="oname">{cell}</span>{"".join(tags)}' if tags else cell
+                elif len(points) > 1:
+                    shown = "<ul>" + "".join(f"<li>{p}</li>" for p in points) + "</ul>"
+                else:
+                    shown = cell
+                tds.append(f'<td class="{names[i] if i < len(names) else ""}">{shown}</td>')
+            body.append(f'<tr class="{" ".join(classes)}">' + "".join(tds) + "</tr>")
+        head = "".join(
+            f'<th class="{n}">{c}</th>' for n, (_, c) in zip(names, CELL_HTML.findall(rows[0]), strict=False)
+        )
+        return (
+            f'<table class="opttab"><colgroup>{cols}</colgroup><thead><tr>{head}</tr></thead>'
+            f"<tbody>{''.join(body)}</tbody></table>"
+        )
+
+    return TABLE_HTML.sub(table, out)
+
+
+def render(text: str, *, fold: bool = False) -> str:
+    """Markdown to HTML (raw HTML in the source is escaped).
+
+    Footnotes (``[^id]`` with a ``[^id]: ...`` line) are numbered by their first reference and shown in a collapsed
+    "Rules and references" box; a ``**Notes for the AI:**`` block, the text meant for Claude, in a collapsed box of
+    its own. The page opens the footnote box when a reference is clicked. ``fold``: an issue's original text, whose
+    bullets other than the problem, the options and the recommendation go into a closed Details box (``_fold``).
+    """
+    if not text.strip():
+        return ""
+    body, notes, defs = _cut_notes(text.strip())
+    out = _options_tables(_fold(body) if fold else (MD.render(body.strip()) if body.strip() else ""), body)
+    if notes:
+        out += '<details class="ainotes"><summary>Notes for the AI</summary>' + MD.render(notes) + "</details>"
+    if not defs:
+        return out
+    known = dict(defs)
+    order: list[str] = []
+    for key in FOOTNOTE_REF.findall(out):
+        if key in known and key not in order:
+            order.append(key)
+    order += [k for k, _ in defs if k not in order]
+
+    def ref(m: re.Match) -> str:
+        key = m.group(1)
+        if key not in known:
+            return m.group(0)
+        n = order.index(key) + 1
+        return f'<sup class="fnref"><button type="button" data-act="fn" data-fn="{n}">{n}</button></sup>'
+
+    out = FOOTNOTE_REF.sub(ref, out)
+    items = "".join(f'<li data-fn="{i}">{MD.renderInline(known[key])}</li>' for i, key in enumerate(order, start=1))
+    summary = f"<summary>Rules and references ({len(order)})</summary>"
+    return out + f'<details class="fnotes">{summary}<ol>{items}</ol></details>'
 
 
 TURN = re.compile(
@@ -710,7 +872,7 @@ def _thread(text: str) -> dict[str, Any]:
             body.append(line)
     for turn in turns:
         turn["html"] = render(_dedent(turn.pop("lines")))
-    return {"html": render("\n".join(body)), "thread": turns}
+    return {"html": render("\n".join(body), fold=True), "thread": turns}
 
 
 def _frontmatter(text: str | None) -> tuple[dict, str]:
@@ -905,7 +1067,7 @@ def _extra_crosscut(path: Path) -> list[dict]:
                 {
                     "id": str(it["id"]),
                     "titleHtml": MD.renderInline(str(it["title"])),
-                    "html": render(text),
+                    **_thread(text),
                     "resolved": _is_resolved(text, str(it["title"])),
                 },
             )
