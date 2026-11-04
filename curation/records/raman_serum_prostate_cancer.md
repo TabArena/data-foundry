@@ -12,6 +12,7 @@ tags:
 - Non-IID (Grouped)
 - Tiny Data
 - Many features
+- Spectral Data
 collections:
 - RamanBench
 original_source: Other

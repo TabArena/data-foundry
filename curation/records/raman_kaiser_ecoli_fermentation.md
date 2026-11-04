@@ -12,6 +12,7 @@ tags:
 - Tiny Data
 - Multi-target
 - Many features
+- Spectral Data
 collections:
 - RamanBench
 original_source: Other

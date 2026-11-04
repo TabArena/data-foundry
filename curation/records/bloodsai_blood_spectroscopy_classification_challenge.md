@@ -9,6 +9,7 @@ decision_markers:
 - TBD
 tags:
 - AI-Filled (Verify)
+- Spectral Data
 collections:
 - New (BeyondArena)
 original_source: Zindi
