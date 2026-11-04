@@ -25,6 +25,14 @@ definition), Panel (the review panel's reports, the mediator's open), Details (t
 verdict box. Other views: the issues that span datasets, and a summary of all verdicts. The page embeds a snapshot of
 every file at build time.
 
+Every issue has the same shape ([`references/review_file_format.md`](references/review_file_format.md), "Issues"):
+bullets for the problem, its effect, the experiments, the consistency with other datasets and the panel's sides, a
+table of the options (what each does, pro, con; the implemented one marked), and the recommendation with the
+decision. The page shows the short problem, a closed Details box with the other bullets, then the options and the
+recommendation. The rules sit in footnotes and what only Claude needs in `**Notes for the AI:**`, both closed on the
+page, so the text reads without them. The collector warns about an open issue that breaks the shape: rewrite it before
+handing the page over.
+
 The rail lists the records by the record's `priority`, 5 first, each priority under its own heading, and within one
 priority the record with the fewest open decisions first: the curator reviews the most important datasets first and
 does not leave quick decisions behind long ones. Records without a priority come last.
@@ -59,7 +67,8 @@ it is never committed.
 
 Either way the curator sets a verdict per record (ship / ship after changes / don't ship / discuss; for a record that
 was not added: add it / leave out; for a record that triage already decided: the update is correct / discuss), a
-mark per numbered issue (as implemented / change / discuss) with optional notes, a mark on the declared metric (as
+mark per numbered issue (as implemented = the options row marked `(implemented)`; change = another row, named by its
+letter in the note, or a change the note describes; discuss) with optional notes, a mark on the declared metric (as
 declared / change / discuss, with a note), a mark per record-field disagreement (take the definition's value / keep the
 record's value), and a mark per cross-dataset item (go ahead / leave as is / discuss).
 
@@ -111,11 +120,10 @@ Apply that mark only once the curator has answered; apply the others now. Never 
   before changing anything. A settled issue's decision goes into `dataset.py` (code and `curation_comments`) and into
   the record: the curator's decision as a dated `CC (<date>, <curator>):` line (the curator's words or a faithful
   short form), Claude's evidence as an `**Assessment (AI, <date>):**` line, through the store API
-  ([records.md](../knowledge-data-foundry/references/records.md)). Then the issue leaves the `REVIEW.md` (or the
-  record's open-issues block); a `REVIEW.md` with no issue and no field row left is deleted, and so is an empty block.
-  Before a `REVIEW.md` goes, check that the record keeps the history in short: the panel's summary line
-  (`/add-dataset`, Step 8) and a `CC` line for each settled issue. Write a missing panel line from the file's
-  `**Review panel:**` block before deleting it, and say so when no panel ran.
+  ([records.md](../knowledge-data-foundry/references/records.md)). Then the issue gets a closing
+  `**Resolved (<date>, <curator>):**` turn with the decision and stays in the `REVIEW.md` (or the record's open-issues
+  block): never delete an issue or a `REVIEW.md`, the page keeps every dataset so the curator can look back at its
+  decisions (Andrej, 2026-11-02).
 * **Record fields:** `update` sets the record's field to the definition's value; `keep` leaves the record as it is.
   Either way the row leaves the `REVIEW.md`.
 * **The metric:** `ok` keeps the declared metric (a CC line in the record says it was checked); `change` changes
@@ -146,12 +154,15 @@ register's report on the decisions of the day (`decision_register.py --since <da
 
 ## Step 5: Update the page
 
-Where the curator asked a question, answer it in the issue as `**Answer (AI, <date>):**`; the issue stays open. Copy
-each note you acted on into the file first, as `**Lennart (<date>, <mark>):**` in their words, then clear that note on
-the page (an `update` deleting `note`, with `if_version`; keep the mark), so the note box is empty for the next turn and
-the conversation keeps the note. Then rebuild (Step 1) and republish to the same file path or URL, so the curator sees
-the current files and only what is still open. Never rename records, renumber issues or change cross-dataset ids of a
-published page: the marks are stored under them. A new issue takes the next number after the highest its file has had.
+Where the curator asked a question, answer it in the issue as `**Answer (AI, <date>):**`; the issue stays open.
+An answer is bullets, never a paragraph: what the curator asked, what was checked and found, and when it puts a new
+choice, the options table and the recommendation as in an issue. Rule IDs go into footnotes of the answer (`[^a1]`,
+defined at its end), what Claude needs into `**Notes for the AI:**`. Copy each note you acted on into the file first, as
+`**Lennart (<date>, <mark>):**` in their words, then clear that note on the page (an `update` deleting `note`, with
+`if_version`; keep the mark), so the note box is empty for the next turn and the conversation keeps the note. Then
+rebuild (Step 1) and republish to the same file path or URL, so the curator sees the current files and only what is
+still open. Never rename records, renumber issues or change cross-dataset ids of a published page: the marks are stored
+under them. A new issue takes the next number after the highest its file has had.
 
 ## Rules
 
@@ -163,5 +174,6 @@ published page: the marks are stored under them. A new issue takes the next numb
   no run report is committed.
 * The page and its data stay under `local-data-warehouse/` and are never committed; the artifact is private until
   the curator shares it.
-* Retired definitions are shown from the last commit that still had their folder; records that were not added show
+* Retired definitions, and their `REVIEW.md` when the record is named in `--names`, are shown from the last commit that
+  still had their folder (a decided dataset never drops off the page); records that were not added show
   only their open issues and their record.

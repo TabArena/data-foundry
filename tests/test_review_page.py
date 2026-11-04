@@ -103,6 +103,29 @@ def test_collector_names_filter(crv, tmp_path):
     assert _collect_fixture(crv, root, records, out, "--names", "no_such_record") == 1
 
 
+@pytest.mark.skipif(shutil.which("git") is None, reason="needs git")
+def test_collector_keeps_a_retired_folder_from_its_last_commit(crv, tmp_path):
+    """A named record whose folder left the working copy is read from the last commit that had its REVIEW.md."""
+    import subprocess  # noqa: PLC0415
+
+    shutil.copytree(REVIEW_FILES, tmp_path / "files")
+    git = ["git", "-C", str(tmp_path / "files"), "-c", "user.name=t", "-c", "user.email=t@t"]
+    subprocess.run([*git, "init", "-q"], check=True)  # noqa: S603 - git on a temporary copy
+    subprocess.run([*git, "add", "-A"], check=True)  # noqa: S603 - git on a temporary copy
+    subprocess.run([*git, "commit", "-q", "-m", "review files"], check=True)  # noqa: S603 - git on a temporary copy
+    root, records = tmp_path / "files" / "working_copy", tmp_path / "files" / "records"
+    shutil.rmtree(root / "airfoil_self_noise" / "__pycache__", ignore_errors=True)
+    subprocess.run([*git, "rm", "-r", "-q", "working_copy/airfoil_self_noise"], check=True)  # noqa: S603 - git on a temporary copy
+    (root / "airfoil_self_noise" / "__pycache__").mkdir(parents=True)  # a leftover cache dir is no folder
+    collected = crv.collect(root, records, ["airfoil_self_noise"])
+    assert [(e.name, e.folder, e.numbers) for e in collected.entries] == [
+        ("airfoil_self_noise", "airfoil_self_noise", [1])
+    ]
+    assert (
+        crv.collect(root, records).entries[0].name == "churn_telco_south_asia_duplicate"
+    )  # without --names: live only
+
+
 def _broken_copy(tmp_path: Path, file: str, old: str, new: str) -> tuple[Path, Path, Path]:
     """A copy of the example review files with one change, and the changed file."""
     shutil.copytree(REVIEW_FILES, tmp_path / "files")
@@ -118,17 +141,16 @@ def _broken_copy(tmp_path: Path, file: str, old: str, new: str) -> tuple[Path, P
     [
         (
             "working_copy/airfoil_self_noise/REVIEW.md",
-            "1. **Keep",
-            "1. **Resolved (2026-10-02): keep",
-            15,
-            "is closed (Resolved or Deferred)",
+            "     scale a practitioner models it on.\n",
+            "     scale a practitioner models it on.\n**Split:** x\n",
+            35,
+            "label",
         ),
-        ("working_copy/airfoil_self_noise/REVIEW.md", "   alternative.\n", "alternative.\n**Split:** x\n", 17, "label"),
         (
             "working_copy/airfoil_self_noise/REVIEW.md",
-            "   alternative.\n",
-            "   alternative.\n1. **Again.**\n",
-            17,
+            "     scale a practitioner models it on.\n",
+            "     scale a practitioner models it on.\n1. **Again.**\n",
+            35,
             "twice",
         ),
         ("working_copy/airfoil_self_noise/REVIEW.md", "**Outcome:** added.", "**Outcome:** added as `x`.", 3, "names"),
@@ -148,36 +170,36 @@ def _broken_copy(tmp_path: Path, file: str, old: str, new: str) -> tuple[Path, P
             "working_copy/airfoil_self_noise/REVIEW.md",
             "issue 1.\n\n</details>\n",
             "issue 1.\n\n</details>\n\n**Review panel:** ship.\n",
-            36,
+            54,
             "a second `**Review panel:**` block",
         ),
         (
             "working_copy/airfoil_self_noise/REVIEW.md",
             "issue 1.\n\n</details>\n",
             "issue 1.\n\n</details>\n\n**Issues for the curator:**\n",
-            36,
+            54,
             "after `**Review panel:**`",
         ),
         (
             "working_copy/airfoil_self_noise/REVIEW.md",
             "| holds | |\n\n</details>\n",
             "| holds | |\n\n",
-            21,
+            39,
             "is not closed",
         ),
-        ("working_copy/airfoil_self_noise/REVIEW.md", "issue 1.\n\n</details>\n", "issue 1.\n", 30, "not closed"),
+        ("working_copy/airfoil_self_noise/REVIEW.md", "issue 1.\n\n</details>\n", "issue 1.\n", 48, "not closed"),
         (
             "working_copy/airfoil_self_noise/REVIEW.md",
             "</details>\n\n<details><summary>Mediator",
             "</details>\n\nStray.\n\n<details><summary>Mediator",
-            30,
+            48,
             "text outside a section",
         ),
         (
             "working_copy/airfoil_self_noise/REVIEW.md",
             "**Review panel:** ship (mediator).",
             "**Review panel:**\n\nship (mediator).",
-            18,
+            36,
             "no summary",
         ),
     ],
@@ -213,7 +235,7 @@ def test_working_copy_review_files_collect_and_parse(crv, brp, tmp_path):
     assert [row["name"] for row in report["rows"]] == [e.name for e in collected.entries]
     for e in collected.entries:
         assert report["rows"][[r["name"] for r in report["rows"]].index(e.name)]["outcome"] == e.cell
-        assert all(not it["resolved"] for it in report["records"][e.name]["items"])
+        assert [it["n"] for it in report["records"][e.name]["items"]] == e.numbers
 
 
 def test_fixture_report_builds_the_page(brp, tmp_path):
@@ -286,7 +308,12 @@ def test_fixture_report_builds_the_page(brp, tmp_path):
         ),
         ("year `2014`, definition `1989`.", "year 2014.", "- `airfoil_self_noise`", "field not understood"),
         ("### Framework (`src/data_foundry/v2/`)\n", "### Framework\nSome intro.\n", "Some intro.", "before the first"),
-        ("   alternative.\n", "   alternative.\n1. **Again.** Twice.\n", "### airfoil_self_noise", "appear twice"),
+        (
+            "     scale a practitioner models it on.\n",
+            "     scale a practitioner models it on.\n1. **Again.** Twice.\n",
+            "### airfoil_self_noise",
+            "appear twice",
+        ),
         ("issue 1.\n\n</details>\n", "issue 1.\n", "<details><summary>Mediator", "not closed"),
         ("<details><summary>Claim audit", "<details open><summary>Claim audit", "<details open>", "on one line"),
     ],
@@ -419,6 +446,7 @@ def test_a_definition_removed_on_a_squash_merged_branch_is_found(brp, tmp_path):
 
 
 def test_thread_splits_the_original_from_the_turns(brp):
+    """An item's text splits into the original and one turn per label."""
     text = (
         "The item proposes a change.\n"
         "**Lennart (2026-10-21, discuss):** Why?\n"
@@ -427,13 +455,134 @@ def test_thread_splits_the_original_from_the_turns(brp):
         "**Resolved (2026-10-22, Lennart):** done."
     )
     out = brp._thread(text)
-    assert "proposes a change" in out["html"] and "Why?" not in out["html"]
+    assert "proposes a change" in out["html"]
+    assert "Why?" not in out["html"]
     who = [(t["who"], t["kind"], t["date"]) for t in out["thread"]]
     assert who == [
         ("curator", "note", "2026-10-21"),
         ("ai", "answer", "2026-10-21"),
         ("closed", "resolved", "2026-10-22"),
     ]
-    assert out["thread"][0]["mark"] == "discuss" and out["thread"][0]["by"] == "Lennart"
+    assert out["thread"][0]["mark"] == "discuss"
+    assert out["thread"][0]["by"] == "Lennart"
     assert "Second line" in out["thread"][1]["html"]
     assert brp._thread("No turns here.")["thread"] == []
+
+
+def test_render_hides_footnotes_and_notes_for_the_ai(brp):
+    """Footnotes are numbered by first reference and closed in a box; the notes for the AI get a closed box too."""
+    text = (
+        "* **Problem:** a later reference[^b] and an earlier one[^a].\n\n"
+        "**Notes for the AI:** drop `x`[^a].\n\n"
+        "[^a]: **LEAK-31** (Should): keep with a note.\n"
+        "[^b]: **SPLIT-15** (Should): as many windows\n"
+        "  as folds."
+    )
+    out = brp.render(text)
+    assert out.index('data-fn="1"') < out.index("earlier one")  # [^b] is referenced first, so it is 1
+    assert '<details class="ainotes"><summary>Notes for the AI</summary>' in out
+    assert "drop <code>x</code>" in out
+    assert "Rules and references (2)" in out
+    assert "as many windows as folds" in out
+    assert "[^" not in out
+    assert "LEAK-31" not in out.split("<details")[0]
+    assert brp.render("No footnote [^z] here.") == "<p>No footnote [^z] here.</p>\n"
+
+
+def test_collector_warns_about_issues_out_of_shape(crv):
+    """An open issue without its bullets or options table, or with a rule ID in its text, is named; a closed one not."""
+    entry = crv.Entry(name="x", folder="x", source=Path("x"), outcome="added", points="", cell="added")
+    entry.issues = (
+        "1. **Old shape?** Per LEAK-10 the column goes.\n\n"
+        "2. **Closed?** Per LEAK-10.\n   **Resolved (2026-11-01, Andrej):** done.\n"
+    )
+    assert crv.shape_warnings(entry) == [
+        "x issue 1: no Problem, Options, Recommendation, options table",
+        "x issue 1: rule IDs in the text (LEAK-10); move them to footnotes",
+    ]
+    fixture = crv.collect(REVIEW_FILES / "working_copy", REVIEW_FILES / "records")
+    assert [w for e in fixture.entries for w in crv.shape_warnings(e)] == []
+
+
+def test_extra_crosscut_items_keep_their_turns_out_of_the_notes(brp, tmp_path):
+    """A notes block in an extra item's original text ends at the first turn, so the curator's note stays visible."""
+    path = tmp_path / "extra.yaml"
+    path.write_text(
+        "- title: S\n  items:\n    - id: x-1\n      title: T\n      md: |\n"
+        "        * **Problem:** p.\n\n        **Notes for the AI:** n.\n\n"
+        "        **Andrej (2026-11-02, discuss):** Why?\n"
+    )
+    item = brp._extra_crosscut(path)[0]["items"][0]
+    assert "Why?" not in item["html"]
+    assert [(t["who"], t["by"]) for t in item["thread"]] == [("curator", "Andrej")]
+
+
+def test_issue_text_folds_the_details_between_problem_and_options(brp):
+    """The problem stays in view, the other bullets go into a closed Details box, the options and the recommendation
+    follow it; footnotes are numbered across all three parts.
+    """
+    text = (
+        "* **Problem:** short[^a].\n"
+        "* **Experiments:** 0.62 against 0.61[^b].\n"
+        "* **Consistency:** like qsar.\n"
+        "* **Options:**\n\n  | | Option |\n  |---|---|\n  | A | keep (implemented) |\n\n"
+        "* **Recommendation:** A. **Decision:** A?\n\n"
+        "[^a]: one.\n[^b]: two."
+    )
+    out = brp._thread(text)["html"]
+    assert out.index("short") < out.index('<details class="idetails">') < out.index("0.62") < out.index("<table")
+    assert "<summary>Details: experiments, consistency</summary>" in out
+    assert out.index("<table") < out.index("Recommendation")
+    assert 'data-fn="2"' in out.split('<details class="fnotes">')[0]
+    assert "idetails" not in brp._thread("* **Asked:** x.\n* **Found:** y.")["html"]  # no problem bullet: no fold
+
+
+def test_options_table_shows_points_as_bullets_and_tags_rows(brp):
+    """An options table gets its own class, a cell's points separated by `;` become bullets (not inside code, not in
+    the option's name), and the implemented and the recommended rows get a tag each; other tables stay as they are.
+    """
+    text = (
+        "* **Problem:** p.\n"
+        "* **Options:**\n\n  | | Option | What it does | Pro | Con |\n  |---|---|---|---|---|\n"
+        "  | A | Keep; as is (implemented) | one change | simple; cheap | `a; b` stays |\n"
+        "  | B | Drop | two | fair | costly; slow |\n\n"
+        "* **Recommendation:** B: because. **Decision:** A or B?"
+    )
+    out = brp._thread(text)["html"]
+    assert '<table class="opttab">' in out
+    rows = out.split("<tr")
+    impl, rec = rows[2], rows[3]
+    assert 'class="impl"' in impl
+    assert "otag impl" in impl
+    assert "(implemented)" not in impl
+    assert '<span class="oname">Keep; as is</span>' in impl
+    assert '<td class="c-pro"><ul><li>simple</li><li>cheap</li></ul></td>' in impl
+    assert '<td class="c-con"><code>a; b</code> stays</td>' in impl
+    assert 'class="rec"' in rec
+    assert "otag rec" in rec
+    assert "<li>costly</li>" in rec
+    assert "opttab" not in brp.render("| a | b |\n|---|---|\n| x; y | z |")
+
+
+def test_collector_warns_about_a_problem_out_of_shape(crv):
+    """A problem is at most PROBLEM_BULLETS bullets of one sentence each; its length in words is free, and neither
+    the footnote markers nor a full stop inside a number end a sentence.
+    """
+
+    def warnings(problem: str) -> list[str]:
+        entry = crv.Entry(name="x", folder="x", source=Path("x"), outcome="added", points="", cell="added")
+        entry.issues = (
+            f"1. **Q?**\n\n   * **Problem:**{problem}\n   * **Options:**\n\n     | | Option |\n     |---|---|\n"
+            "     | A | x |\n\n   * **Recommendation:** A.\n\n   [^1]: r.\n"
+        )
+        return crv.shape_warnings(entry)
+
+    long_sentence = " ".join(["word"] * 80) + " scores 0.62.[^1]"
+    assert warnings(f" {long_sentence}") == []
+    assert warnings("\n     - First, at 0.5.\n     - Second.[^1]\n     - Third?") == []
+    assert warnings("\n     - One. Two.\n     - Three.") == [
+        "x issue 1: no one sentence per problem bullet (1 with more)"
+    ]
+    assert warnings("\n" + "".join(f"     - Point {i}.\n" for i in range(4))) == [
+        "x issue 1: no short problem (4 bullets, at most 3)"
+    ]

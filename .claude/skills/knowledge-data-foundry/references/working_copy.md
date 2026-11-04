@@ -33,9 +33,10 @@ root `datasets/_dev/tabarena-v0pt2/REVIEW.md` while they are open. A record with
 an `**Open issues (AI, date):**` block of the record.
 
 When the curator settles an issue, its decision goes into `dataset.py` (code and `curation_comments`) and the record
-(a `CC` line), and the issue leaves `REVIEW.md`; the file is deleted when it is empty. `/review-added-datasets` builds
-the review page from these files. The process log of a run (what was tried, probe outputs, scraped pages, evidence
-scripts) stays in the local run folder `local-data-warehouse/_runs/<date>_<run>/`, never in git.
+(a `CC` line), and the issue stays in `REVIEW.md` with a closing `**Resolved (<date>, <who>):**` turn; the file is
+never deleted, so the review page keeps every dataset and its decisions (Andrej, 2026-11-02). `/review-added-datasets`
+builds the review page from these files. The process log of a run (what was tried, probe outputs, scraped pages,
+evidence scripts) stays in the local run folder `local-data-warehouse/_runs/<date>_<run>/`, never in git.
 
 ## Builds
 

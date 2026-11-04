@@ -51,6 +51,14 @@ FIELD_RE = re.compile(r"^- `([a-z_]+)`: record `([^`]+)`, definition `([^`]+)`\.
 OPEN_BLOCK_RE = re.compile(r"^\*\*Open issues \(AI, (\d{4}-\d{2}-\d{2})\):\*\*\s*(.*)$")
 ISSUE_START = re.compile(r"^\d+\. ")
 SENTENCE_END = re.compile(r"\.(?=\s|$)")
+RULE_ID = re.compile(r"\b(?:SEL|USE|LEAK|SPLIT|PROV|TP|CLEAN|EV|MET)-\d+\b")
+SHAPE_PARTS = ("**Problem:**", "**Options:**", "**Recommendation:**")
+PROBLEM_BULLETS = 3
+"""The bullets a problem may have, each one sentence: it is the issue's short description (Andrej, 2026-11-03)."""
+SENTENCE_END = re.compile(r"(?<!\be\.g)(?<!\bi\.e)(?<!\bvs)(?<!\bSec)[.?!]\s+(?=[A-Za-z`(\"])")
+"""The end of a sentence inside a bullet: a full stop before the next word, which may be a lowercase name."""
+PROBLEM_RE = re.compile(r"^[*-] \*\*Problem:\*\*(.*?)(?=^[*-] \*\*|^\S|\Z)", re.MULTILINE | re.DOTALL)
+"""The bullets every open issue has (``references/review_file_format.md``, "Issues")."""
 
 
 class ReviewFileError(ValueError):
@@ -143,14 +151,6 @@ def _check_issues(path: Path, start: int, lines: list[str]) -> tuple[str, list[i
         if n in seen:
             raise ReviewFileError(path, at[k], f"issue {n} appears twice; the marks are stored by number")
         seen.add(n)
-    for k, it in enumerate(items):
-        if it["resolved"]:
-            raise ReviewFileError(
-                path,
-                at[k],
-                f"issue {it['n']} is closed (Resolved or Deferred); a settled issue leaves the file, its decision goes "
-                "to the definition and the record",
-            )
     return text, numbers
 
 
@@ -246,13 +246,13 @@ def _check_panel(path: Path, lines: list[str], block: _Block | None) -> tuple[st
     return "\n".join(lines), [s["title"] for s in panel["sections"]]
 
 
-def parse_review_file(path: Path, folder: str) -> Entry:
-    """One dataset's REVIEW.md.
+def parse_review_file(path: Path, folder: str, text: str | None = None) -> Entry:
+    """One dataset's REVIEW.md (``text``: its content, when it comes from a commit and not from ``path``).
 
     Raises:
         ReviewFileError: The file does not follow ``references/review_file_format.md``.
     """
-    lines = path.read_text().splitlines()
+    lines = (path.read_text() if text is None else text).splitlines()
     title = TITLE_RE.match(lines[0]) if lines else None
     if title is None:
         raise ReviewFileError(path, 0, "the file starts with `# <unique_name>` (the record's name)")
@@ -268,7 +268,7 @@ def parse_review_file(path: Path, folder: str) -> Entry:
     if "issues" in blocks:
         issues, numbers = _check_issues(path, blocks["issues"].start + 1, blocks["issues"].lines)
     if not numbers and not fields:
-        raise ReviewFileError(path, None, "no open issue and no record field; delete the file")
+        raise ReviewFileError(path, None, "no issue and no record field; a settled issue stays, labelled Resolved")
     panel, roles = _check_panel(path, lines, blocks.get("panel"))
     outcome = blocks["outcome"].text
     cell = _first_sentence(outcome)
@@ -399,6 +399,73 @@ def _record_entries(root: Path, records: Path, folders: dict[str, Entry]) -> dic
     return entries
 
 
+def _retired_entries(root: Path, records: Path, names: list[str]) -> dict[str, Entry]:
+    """The REVIEW.md of each named record whose folder left the working copy, from the last commit that still had it,
+    so a retired dataset stays on the page with its decisions.
+    """
+    entries: dict[str, Entry] = {}
+    repo = Path(brp._git(root, "rev-parse", "--show-toplevel").stdout.strip())
+    for name in names:
+        record = records / f"{name}.md"
+        if not record.is_file():
+            continue
+        v2_path = load_record(record).v2_path
+        # A retired record has no `v2_path`: its folder was the record's name or its sub-sampled version's.
+        for folder in [Path(v2_path).parent.name] if v2_path else [name, f"{name}_1m"]:
+            if (root / folder / REVIEW_FILE).is_file():
+                break
+            rel = str((root.resolve() / folder / REVIEW_FILE).relative_to(repo))
+            found = brp._last_commit_with(repo, rel)
+            text = brp._show(repo, found[0], rel) if found else None
+            if text is not None:
+                entries[name] = parse_review_file(root / folder / REVIEW_FILE, folder, text)
+                break
+    return entries
+
+
+def _problem_shape(text: str) -> list[str]:
+    """What a problem's text misses of its shape: at most three bullets, one sentence each (the text after the lead
+    counts as one bullet).
+    """
+    text = brp.FOOTNOTE_REF.sub("", text)
+    lead, *rest = re.split(r"^\s*[*-] ", text, flags=re.MULTILINE)
+    bullets = [b for b in [lead, *rest] if b.strip()]
+    out = []
+    if len(bullets) > PROBLEM_BULLETS:
+        out.append(f"short problem ({len(bullets)} bullets, at most {PROBLEM_BULLETS})")
+    long = sum(bool(SENTENCE_END.search(" ".join(b.split()))) for b in bullets)
+    if long:
+        out.append(f"one sentence per problem bullet ({long} with more)")
+    return out
+
+
+def shape_warnings(entry: Entry) -> list[str]:
+    """What the open issues of ``entry`` miss of the issue shape: the bullets, the options table, and rule IDs kept
+    out of the text for the curator (they go into footnotes or the notes for the AI).
+
+    A warning, not an error: closed issues and old files keep the shape they were written in.
+    """
+    out = []
+    for it in brp._split_items(entry.issues)[1]:
+        if it["resolved"]:
+            continue
+        lines = it["body_md"].splitlines()
+        first_turn = next((k for k, ln in enumerate(lines) if brp.TURN.match(ln)), len(lines))
+        body, _, _ = brp._cut_notes("\n".join(lines[:first_turn]))
+        missing = [p.strip("*:") for p in SHAPE_PARTS if p not in body]
+        if not re.search(r"^\s*\|.*\|\s*$", body, re.MULTILINE):
+            missing.append("options table")
+        problem = PROBLEM_RE.search(body)
+        if problem:
+            missing += _problem_shape(problem.group(1))
+        ids = sorted(set(RULE_ID.findall(body + " " + it["title_md"])))
+        if missing:
+            out.append(f"{entry.name} issue {it['n']}: no {', '.join(missing)}")
+        if ids:
+            out.append(f"{entry.name} issue {it['n']}: rule IDs in the text ({', '.join(ids)}); move them to footnotes")
+    return out
+
+
 def collect(root: Path, records: Path, names: list[str] | None = None) -> Collected:
     """Read the review files of the working copy ``root`` and the records in ``records``.
 
@@ -411,6 +478,7 @@ def collect(root: Path, records: Path, names: list[str] | None = None) -> Collec
     entries = _folder_entries(root, records)
     entries.update(_record_entries(root, records, entries))
     if names is not None:
+        entries.update(_retired_entries(root, records, sorted(set(names) - set(entries))))
         unknown = sorted(set(names) - set(entries))
         if unknown:
             raise ReviewFileError(root, None, f"no review file or open-issues block for {unknown}")
@@ -531,6 +599,8 @@ def main(argv: list[str] | None = None) -> int:
         f"field rows {sum(len(e.fields) for e in entries)}, cross-dataset items {collected.across_items}, "
         f"review panels {sum(1 for e in entries if e.panel)}"
     )
+    for warning in (w for e in entries for w in shape_warnings(e)):
+        print(f"warning: {warning}", file=sys.stderr)
     print(f"{args.out} written")
     return 0
 
