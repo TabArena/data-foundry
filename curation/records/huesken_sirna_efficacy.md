@@ -5,7 +5,7 @@ checked_by:
 - Myunghwan
 - Lennart
 suggestion: 'Yes'
-priority: 3
+priority: 4
 decision_markers:
 - Data Requested
 tags:
@@ -79,3 +79,7 @@ CC (2026-11-04, Lennart): renamed `huesken_sirna_efficacy` from `dataset_from_un
 CC (2026-11-04, Lennart): sequence encoding: "go ahead with (b)": the preprocessing stays here, with the descriptors, and the record is tagged `Revisit later` "to check if we should drop it like we did for other protein models" (SEL-12) or to declare a sequence kind later.
 
 **Assessment (AI, 2026-11-04):** review panel (none): no panel ran; the issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled. Only `splice` and this dataset are sequence tables in the working copy; pure-sequence candidates were mostly rejected under SEL-12.
+
+**Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes (mediator; the wording fixes are applied in the definition: the 97%/80% figure restated as 30 of 30 by RMSE and 29 of 30 by the metric, the `Revisit later` text naming its reopening test, notes on redundancy, scope and the gene offset); disputed: whether the unrun CNN gates shipping (SEL-12), the NaN on a constant prediction (MET-2), dropping or noting the redundant guide columns (CLEAN-8); for the curator: issues 4, 5, 6 and 8 (the rule rows moved to the cross-dataset REVIEW.md). Priority 4: gap + (biology & life sciences is thin among the accepted definitions), use case - (fit approximate, reporter assay), source + (Nature Biotechnology supplement as first publication), shape + (2,431 rows, grouped), risk - none (SEL-12 open but it drops only on a positive finding; no leak, no recommendation against shipping). This supersedes the priority 3 and the "direct" fit of the 2026-10-26 and 2026-10-28 lines.
+
+CC (2026-11-04, Lennart): the declared metric is checked and stays as declared (`mean_group_pearsonr` per target gene, the Exception to MET-5 above; second review page).

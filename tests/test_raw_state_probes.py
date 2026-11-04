@@ -74,6 +74,16 @@ def test_a_trace_that_changes_what_clean_returns_is_not_used(tmp_path, warehouse
     _assert_traced(ds, df, lineage.rows)
 
 
+def test_a_clean_that_asserts_the_source_shape_falls_back_to_the_index(tmp_path, warehouse) -> None:  # noqa: F811
+    """A `_clean` that asserts the raw shape fails on the tag column (Tunisian fraud); the index trace is used."""
+    del warehouse
+    raw = _toy(tmp_path).raw
+    ds = _toy(tmp_path, f"        assert df.shape == {raw.shape}\n" + PLAIN_CLEAN)
+    df, _test, lineage = ds.process(lineage=True)
+    assert lineage.note == "traced by the index"
+    _assert_traced(ds, df, lineage.rows)
+
+
 def test_no_lineage_when_clean_drops_the_column_and_resets_the_index(tmp_path, warehouse) -> None:  # noqa: F811
     """Neither trace survives: no lineage, the reason given, the dataset unchanged."""
     del warehouse

@@ -8,7 +8,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Myunghwan
 suggestion: 'Yes'
-priority: 3
+priority: 2
 collections:
 - New (BeyondArena)
 original_source: Zindi
@@ -62,3 +62,5 @@ CC (2026-11-04, Lennart): the trips whose start and end lie under 100 m apart in
 CC (2026-11-04, Lennart): the trip time stays in minutes, with RMSE ("ok keep minutes"), as the other RMSE-scored ETA datasets.
 
 **Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled.
+
+**Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes (LEAK-10 holds for the driven distance, SPLIT-1/SPLIT-9/SPLIT-14 hold, USE-7 applied as nyc and pkdd, USE-8 approximate with no routing-engine route or ETA, MET-4 and MET-2 hold with the RMSE tail written into the notes; the wording fixes are in `dataset.py`. The metric rests on MET-4, the source's own RMSE, not on the other ETA datasets, which score log targets or RMSLE. This supersedes "no panel ran" above and the screening's "no public solution found": the pinned mirror is a participant repository with a starter notebook); disputed: LEAK-10 (weather clock, 3 h lag), CLEAN-11 (20 trips over 3 h; the 19 trips over 120 km/h agreed but change rows); for the curator: issues 3-5. Priority 2: gap 0, use case 0, source 0, shape +, risk 0 (use case: Yango's ETA is named, but the fit is approximate; source: a competition page and dictionary read only through a participant mirror, with a year conflict; risk: the open issues are cleaning and a weak weather-clock question with no measured effect).

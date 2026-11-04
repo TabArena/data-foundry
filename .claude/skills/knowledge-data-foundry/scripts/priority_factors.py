@@ -38,15 +38,26 @@ DF_YES = "DF: Yes"
 NEVER_THIN = frozenset({"other"})
 """Values that name no real category: never thin, left out of the median."""
 FACTORS = ("domain", "problem_type", "regime")
-FEATURE_TYPES = re.compile(r"Feature types: (\d+) categorical, (\d+) string, (\d+) datetime")
-"""The README's count of the declared feature types (the target and the group column are not features)."""
+FEATURE_TYPES = re.compile(r"Feature types: ((?:\d+ [a-z]+)(?:, \d+ [a-z]+)*)")
+"""The README's count of the declared feature types (the target and the group column are not features): categorical,
+an ordinal count only where a dataset has an ordinal column, string and datetime, then any special features."""
+TYPED = ("categorical", "ordinal", "string", "datetime")
+"""The declared feature types other than numeric, in the README's order."""
+
+
+def feature_type_counts(readme: str) -> dict[str, int] | None:
+    """The README's count per declared feature type, or None when it has no ``Feature types`` line."""
+    line = FEATURE_TYPES.search(readme)
+    if not line:
+        return None
+    return {kind: int(n) for n, kind in (pair.split(" ") for pair in line.group(1).split(", "))}
 
 
 def facts(folder: Path) -> dict | None:
     """The definition's domain, problem type and regime and the README's shape, or None before a first check."""
     front = read_report(folder / "README.md")
-    types = FEATURE_TYPES.search((folder / "README.md").read_text()) if front else None
-    if not front or not types:
+    types = feature_type_counts((folder / "README.md").read_text()) if front else None
+    if not front or types is None:
         return None
     task, data = front["task"], front["data"]
     grouping = task.get("grouping") or {}
@@ -57,7 +68,7 @@ def facts(folder: Path) -> dict | None:
         "regime": task["split_regime"],
         "units": grouping["n_groups"] if per_group else data["n_rows"],
         "features": data["n_features"],
-        "non_numeric": [k for k, n in zip(("categorical", "string", "datetime"), types.groups()) if int(n)],
+        "non_numeric": [k for k in TYPED if types.get(k)],
     }
 
 

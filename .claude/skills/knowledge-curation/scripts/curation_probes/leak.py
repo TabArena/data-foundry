@@ -1092,7 +1092,8 @@ def run(  # noqa: PLR0913
     regression = problem_type == "regression"
     y = df[target]
     features = df[list(feature_cols)] if feature_cols is not None else df.drop(columns=[target, *group_cols])
-    X = features.select_dtypes(exclude=["string", "object", "datetime"])
+    # pandas keeps timezone-aware datetimes apart ("datetimetz"); "datetime" alone lets them through to LightGBM
+    X = features.select_dtypes(exclude=["string", "object", "datetime", "datetimetz"])
     rng = np.random.default_rng(0)
     cap = lambda idx: np.sort(rng.choice(idx, min(len(idx), max_rows), replace=False))
     pairs = [(cap(tr), cap(te)) for tr, te in splits][:n_splits]

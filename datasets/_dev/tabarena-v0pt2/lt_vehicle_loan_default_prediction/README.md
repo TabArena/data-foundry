@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: lt_vehicle_loan_default_prediction
 container_format: 2
-checksum: v2:f438b6c4e4d60cda5088c0430758db9557d61047a549f2fbed7ec3bea5b41dd3
+checksum: v2:819cbe505c5de68819c85b15803667dce44cc77bea6d21317f457a27aec84642
 build:
   uuid: 01a18629-d0b7-7fd8-822e-8e4ecd7e315f
   checksum: v2:914c84f7669c61941fadceb89154b7ede84b0fbc94b3807977b4453ab4472095
@@ -70,13 +70,13 @@ decisions:
 
 Binary classification of `loan_default`, scored with `roc_auc` on temporal splits by `DisbursalDate`. 233,154 rows and 38 features. Source: Other (2019).
 
-Built as `01a18629-d0b7-7fd8-822e-8e4ecd7e315f` on 2026-10-29, but `dataset.py` has changed since: it now gives checksum `v2:f438b6c4e4d60cda5088c0430758db9557d61047a549f2fbed7ec3bea5b41dd3`, so the build is stale. See [Build](#build).
+Built as `01a18629-d0b7-7fd8-822e-8e4ecd7e315f` on 2026-10-29, but `dataset.py` has changed since: it now gives checksum `v2:819cbe505c5de68819c85b15803667dce44cc77bea6d21317f457a27aec84642`, so the build is stale. See [Build](#build).
 
 ## In brief
 
 **Question.** Will an issued vehicle loan default on its first monthly instalment due date?
 
-**Use case.** When a vehicle loan is up for approval at disbursement, the lender scores the borrower's risk of defaulting on the first monthly instalment to decide whether to grant it: the organizer's underwriting problem, with rejection rates rising as underwriting tightened.
+**Use case.** When a vehicle loan is up for approval at sanction, just before disbursement, the lender scores the borrower's risk of defaulting on the first monthly instalment to decide whether to grant it: the organizer's underwriting problem, with rejection rates rising as underwriting tightened.
 
 **One row.** One issued vehicle loan/customer record; 233,154 labeled records disbursed in August-October 2018.
 
@@ -84,11 +84,11 @@ Built as `01a18629-d0b7-7fd8-822e-8e4ecd7e315f` on 2026-10-29, but `dataset.py` 
 
 **Known at prediction time.** The release supplies loan terms/channel, borrower profile, document flags and bureau score/history. The dictionary dates certain account aggregates to disbursement; other bureau freeze dates and account scope remain unverified (D2), with no demonstrated leakage.
 
-**What the test data stands for.** Nine four-day windows of later issued loans, September 26-October 31, 2018, each trained on all earlier disbursals with no gap. The outcomes of the last month's training loans were not yet known at a window's start; measured, they add little, and nothing through the dealer or staff codes.
+**What the test data stands for.** Nine four-day windows of later issued loans, September 26-October 31, 2018, each trained on all earlier disbursals with no gap. The outcomes of at least the last month's training loans were not yet known at a window's start; measured, they add little, a small part through recent default rates of the same dealer, branch, employee or postcode.
 
 **Our changes to the source.** Exclude the forbidden customer identifier and constant mobile flag; repair birth-date chronology, numeric history durations and missing bureau scores. The previously inspected supplied November test is unlabeled. The generated four-day prediction-horizon label means evaluation-window width here, not a supplied due-date lag.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The rows are issued loans only: the approval decision faces every applicant, but the model learns from and is scored on the loans L&T approved, so applicants it rejected are untested. The training side holds the last month's outcomes, which a refit at the window's start would not yet know. Some bureau freeze dates remain unverified, with no demonstrated leakage.
+> **Use case fit: approximate (a stand-in with a known gap).** The rows are issued loans only: the model is trained and scored on the loans L&T approved, not every applicant. The label, a missed first EMI on its due date (21.7%), is an early-delinquency proxy for credit loss. The training side holds outcomes of at least the last month, which a refit at the window's start would not yet know. Some bureau freeze dates remain unverified, with no demonstrated leakage.
 
 ## Files in this folder
 
@@ -205,13 +205,13 @@ We start with train.csv and Data Dictionary.xlsx from the original organizer's t
 - AVERAGE.ACCT.AGE and CREDIT.HISTORY.LENGTH are parsed losslessly from years/months to total months, retaining their names. Every labeled value matches the format.
 - Bureau scores marked No Bureau History Available or Not Scored become missing; descriptions remain categorical. Codes 0, 11 and 14-18 encode status. Historical account zeros and 448 primary/61 secondary negative balances stay: no source rule establishes that they are missing or impossible.
 - PERFORM_CNS.SCORE.DESCRIPTION stays an unordered category (CLEAN-14; Lennart, 2026-11-04): it holds the bureau's risk bands, A-Very Low Risk to M-Very High Risk, beside states outside the scale (No Bureau History Available and six Not Scored: ... reasons), a second dimension. The bands' order is in PERFORM_CNS.SCORE.
-- The dictionary dates PRI/SEC account counts, balances and sanctioned/disbursed totals to disbursement, and NEW.ACCTS.IN.LAST.SIX.MONTHS to the preceding six months. The freeze dates and account scope of weakly anchored score, instalment, delinquency, inquiry and duration fields remain unverified (D2). No later-populated predictor or leakage is demonstrated; names and correlations cannot establish timing.
+- The dictionary dates PRI/SEC account counts, balances and sanctioned/disbursed totals to disbursement, and NEW.ACCTS.IN.LAST.SIX.MONTHS to the preceding six months. The freeze dates and account scope of weakly anchored score, instalment, delinquency, inquiry and duration fields remain unverified (D2). No later-populated predictor or leakage is demonstrated; names and correlations cannot establish timing. The bureau record does not count this loan: all 116,950 rows without bureau history are 0 on every PRI field and 94.1% of them have no enquiries, and the overdue and delinquency fields score flat by disbursal month.
 - Curator decision (2026-10-26, Myunghwan): retain the currently supplied bureau predictors, including fields with unverified snapshot timing/account scope. Retention is not verification of prediction-time availability. Reopen only for new concrete source or actual-data evidence demonstrating incompatible field timing or a leakage mechanism.
 - No exact feature duplicates or conflicting feature-vector labels occur in the labeled source. UniqueID does not recur; this does not prove distinct real borrowers. No guessed customer grouping is introduced.
 - Temporal evaluation: nine four-day windows, the widest whole-day equal windows fitting the recommended nine above the 50% train floor. Length follows coverage, not scores or an assumed due-date lag. Full-table constant detection approximates the pipeline at each refit.
 - The generated "Prediction horizon: 4 days" denotes only evaluation-cohort width here; the first-instalment due-date lag is not supplied.
-- Zero gap (SPLIT-10 as amended 2026-11-04, Lennart): a first instalment falls due about a month after disbursement, so a refit at a window's start would not yet know the outcomes of the loans disbursed in the 30 days before it, 41-60% of each training side. Measured on the nine windows with untuned LightGBM (three seeds): no gap scores 0.0167 ROC AUC above a 30-day gap (0.009-0.033 per window), but a random draw of the no-gap side at the gap side's size keeps only 0.0018 of it, so the gain is mostly training size. It does not run through recent labels of the same supplier, branch, employee or postcode: without those codes the equal-size gain is 0.0039, not smaller, and at equal pool size their last-30-day default rates add 0.0026 ROC AUC (0.0005-0.0051) beyond the older rates on top of a gap model. Nor through the higher default level of late October: ROC AUC is per window, the true daily default rate ranks a window's loans at only 0.503-0.530, and without the disbursal-date features the equal-size gain is 0.0019. A 30-day gap would leave 20-53% of the rows for training (SPLIT-14), one four-day window or three two-day windows from 26 October.
-- The newest labeled cohorts stay without release-end trimming: October's default rate (23.5%) is above August's (21.6%) and September's (19.2%), so the release end shows no censoring. No due-date lag is inferred.
+- Zero gap (SPLIT-10 as amended 2026-11-04, Lennart; how to record it is open in REVIEW.md): the release gives no due date. Inferred from "monthly instalment", the first instalment falls due at least about a month after disbursement (1-2 months under fixed EMI dates), so a refit at a window's start would not yet know the outcomes of the loans disbursed in the 30 days before it, 40-60% of each training side. Measured on the nine windows: no gap scores 0.007-0.017 ROC AUC above a 30-day gap, depending on the learner (untuned LightGBM, three seeds: 0.0167, 0.009-0.033 per window). A random draw of the no-gap side at the gap side's size keeps 0.0018 to 0.0051 of it across four learners, 11-44% of the gap's cost; the rest is training size. A small part runs through recent labels of the same supplier, branch, employee or postcode: at equal pool size their last-30-day default rates add 0.0026 ROC AUC (0.0005-0.0051, positive in 9 of 9 windows) beyond the older rates on top of a gap model, at most about 0.005 in other encodings; it does not grow in the newest windows, and no borrower recurs. Not through the higher default level of late October: ROC AUC is per window, the true daily default rate ranks a window's loans at only 0.503-0.530, and without the codes and the disbursal-date features the equal-size gain is 0.0019. On these nine windows a 30-day gap would leave 20-53% of the rows for training (SPLIT-14); three two-day windows from 26 October would meet the 50% floor (50.39-56.27%) with three windows instead of nine (SPLIT-15), all in the month-end surge, and at a 45-day lag no three-window design meets it (best 38.8%). Gap 0 widens the margin between learners (gradient boosting over logistic 0.0035 with a 30-day gap, 0.0079 without; the sign changes in 3 of 9 windows); the mean order holds.
+- The newest labeled cohorts stay without release-end trimming: October's default rate (23.5%) is above August's (21.6%) and September's (19.2%), the rise holds in every risk decile and with and without bureau history, and month-ends rise on mature September labels too, so the release end shows drift (month-end and festive season), not censoring. The organizer scored its November loans on the same label, so October's labels had matured.
 
 ## Splits
 
@@ -219,10 +219,14 @@ Nine adjacent four-day test windows of issued loans, newest first, from 2018-09-
 (exclusive final boundary 2018-11-01), each trained on every loan disbursed before its start, without a gap.
 The oldest train holds 117,490 of 233,154 rows (50.39%); five-day windows allow only seven windows above that
 floor. The source's November test is unlabeled. The four-day width follows the coverage, not the first
-instalment's due date, which the release does not give. That instalment falls due about a month after
-disbursement, so 41-60% of each training side holds outcomes a refit at the window's start would not yet
-know. Measured, they add little and nothing through the dealer or staff codes (curation notes, "Zero gap"),
-while a 30-day gap would leave 20-53% of the rows for training. The newest cohorts stay untrimmed.
+instalment's due date, which the release does not give. Inferred from the monthly instalment, it falls due at
+least about a month after disbursement, so 40-60% of each training side holds outcomes a refit at the
+window's start would not yet know. Measured, they add little, a small part of it through recent default rates
+of the dealer, branch, staff and postcode codes, with no row-level link (curation notes, "Zero gap"). A 30-day
+gap would leave 20-53% of the rows for training on these windows; three two-day windows would meet the floor
+but give up six of the nine. Every test window starts the day after the newest training labels, and 55% of
+the test rows fall in the 20-31 October month-end and festive surge, where defaults run 1.19-1.36 times what
+a model fitted on August-September predicts. The newest cohorts stay untrimmed.
 
 9 repeat(s) x 1 fold(s) with seed 4267; train 117,490 to 212,074 rows, test 4,402 to 23,133 rows. Prediction horizon: 4 days.
 
@@ -242,7 +246,7 @@ while a 30-day gap would leave 20-53% of the rows for training. The newest cohor
 
 ### 1. Zero gap, newest cohorts kept
 
-Each window trains on every earlier disbursal; the outcomes of its last month's loans add little and nothing through the dealer or staff codes (curation notes, 'Zero gap'). October's default rate is above August's and September's, so the release end shows no censoring and is not trimmed.
+Each window trains on every earlier disbursal; the outcomes of its last month's loans add little, a small part of it through recent default rates of the dealer, branch, staff and postcode codes (curation notes, 'Zero gap'). October's default rate is above August's and September's, so the release end shows no censoring and is not trimmed.
 
 | DisbursalDate | rows | defaults |
 |---|---|---|
@@ -427,4 +431,4 @@ Each window trains on every earlier disbursal; the outcomes of its last month's 
 | data_foundry_version | 0.0.5 |
 | git_sha | 6d189a922994ddb0221c8249d07552d4df8af88b |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:f438b6c4e4d60cda5088c0430758db9557d61047a549f2fbed7ec3bea5b41dd3` |
+| stale | yes: the definition now gives checksum `v2:819cbe505c5de68819c85b15803667dce44cc77bea6d21317f457a27aec84642` |

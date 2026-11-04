@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: protein_model_quality_rf_pcp
 container_format: 2
-checksum: v2:364c09f8b7cd90080e9c816432d4b8503bfb2f395afd1bf3a58367516aabb6f5
+checksum: v2:c90df302de708d89e50fca0ab1799479b80e70fe3bcf71ce14ddaece98076de5
 build:
   uuid: 01a18ba2-013a-7001-a61c-686e78b112d7
   checksum: v2:9c815361646dd91564cc761b59da41b5dd13244b9911968281ce056688cc1d7a
@@ -76,25 +76,25 @@ decisions: []
 
 Regression of `GDT`, scored with `mean_group_pearsonr` on grouped splits by `protein_id`. 95,094 rows and 6 features. Source: Other (2014).
 
-Built as `01a18ba2-013a-7001-a61c-686e78b112d7` on 2026-10-30, but `dataset.py` has changed since: it now gives checksum `v2:364c09f8b7cd90080e9c816432d4b8503bfb2f395afd1bf3a58367516aabb6f5`, so the build is stale. See [Build](#build).
+Built as `01a18ba2-013a-7001-a61c-686e78b112d7` on 2026-10-30, but `dataset.py` has changed since: it now gives checksum `v2:c90df302de708d89e50fca0ab1799479b80e70fe3bcf71ce14ddaece98076de5`, so the build is stale. See [Build](#build).
 
 ## In brief
 
 **Question.** What fraction of reference residues aligns within the source's four GDT distance tolerances?
 
-**Use case.** A structural-biology researcher ranks the candidate models generated for one protein before the experimental reference is available, to choose which to refine; scored by the correlation per protein.
+**Use case.** A structural-biology researcher ranks all candidate models generated for one protein, best to worst, before the experimental reference is available; scored by the correlation within each protein.
 
 **One row.** One of 95,094 protein-structure candidate rows in the author's mixed CASP5-10 and classic-decoy release; 4,893 explicitly named native reference structures are excluded from this candidate population.
 
 **Predicted.** Fractional GDT_TS at 1, 2, 4 and 8 angstrom tolerances; higher is better.
 
-**Known at prediction time.** Candidate-structure total solvent-accessible area, cumulative aliphatic C-beta distances, empirical energy, secondary-structure score, sequence length and aliphatic pair count.
+**Known at prediction time.** Candidate-structure total solvent-accessible area, cumulative aliphatic C-beta distances, empirical energy, secondary-structure score, the candidate's residue count and aliphatic pair count. The residue count is fixed per target in CASP6-9 and acts as the target's length; in CASP10 it is the candidate's own length and varies within all 67 targets.
 
 **What the test data stands for.** Whole canonical protein identities are held out. Protein identities are verified for 342 CASP targets: 339 organizer links and three sequence checks. No alias overlaps a classic target.
 
 **Our changes to the source.** Exclude explicitly named native references; recover target keys; retain the original GDT_TS scale and all six supplied descriptors. Myunghwan selected GDT_TS after comparing all three targets.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The original task predicts quality before the experimental reference is known. The historical mix of model generators and unresolved descriptor and alignment conventions limit interpretation.
+> **Use case fit: approximate (a stand-in with a known gap).** The original task predicts quality before the experimental reference is known. Left out are inputs the researcher would have: the generating server and its own model rank, the decoy set, the target's full length. 64% of rows are classic decoy sets, several merged within one protein, and CASP10 descriptors follow another convention than CASP5-9; alignment conventions are unresolved.
 
 ## Files in this folder
 
@@ -154,7 +154,7 @@ Only curators run `build`, when the dataset ships.
 | name | `mean_group_pearsonr` (custom; takes value; higher is better) |
 | origin | context: obvious from the task: the source defines no metric |
 | definition | mean over groups of the Pearson correlation within the group; method='numerai_corr' transforms first as Numerai's CORR |
-| reason | The use case ranks the candidate structures of one target, as CASP's quality assessment scores it per target (CASP10: "the two assessment approaches show different qualities of the methods and we use both of them"). Rana et al. (DOI 10.1142/S0219720015500055) report RMSE, correlation, R2 and tolerance accuracy side by side. Pooled RMSE does not score the decision: each protein's true mean, which orders no candidate, beats LightGBM on it (0.134 against 0.188). Exception to MET-5 (Lennart, 2026-11-04). |
+| reason | The use case ranks the candidate structures of one target, so each target is scored on its own (CASP10's quality assessment reports per-target and pooled correlation side by side). The per-target correlation stands in for the top-1 GDT_TS loss of picking the best model and ranks models the same way. Rana et al. (DOI 10.1142/S0219720015500055) report RMSE, correlation, R2 and tolerance accuracy side by side. Pooled RMSE does not score the decision: each protein's true mean, which orders no candidate, beats LightGBM on it (0.134 against 0.188). Exception to MET-5 (Lennart, 2026-11-04). |
 | inputs | group: `protein_id` |
 
 <details>
@@ -201,10 +201,10 @@ The first 5 of 95,094 rows of the final frame (random rows: the frame is shuffle
   identity-based exclusion of 4,893 native references are accepted; retain 95,094 rows
   and the three documented ambiguous zero-RMSD cases. Preserve source values and the
   historical approximate fit; no modern-generator or protein-family claim is made.
-- On five identical protein-held-out folds, Ridge RMSE is 0.19318568 and training-side-selected
-  LightGBM RMSE is 0.17894541, a 7.37% RMSE reduction. The slight difference from TM-score's
-  7.14% is not evidence of a significant advantage or maximum future improvement.
-  All nine-fold qualification results remain applicable after exact frame/fold equivalence checks.
+- Models differ on the declared metric (TP-3): on the nine shipped splits, untuned LightGBM scores 0.355 and
+  ridge 0.294, LightGBM higher in all nine (review panel, 2026-11-04). The earlier five-fold comparison
+  (ridge RMSE 0.19318568 against LightGBM 0.17894541, 7.37%) was measured for the RMSE fallback and is
+  historical.
 - The author archive has 99,987 complete rows. Exclude 4,893 IDs beginning native_ or ending _native.pdb
   because this candidate
   population scores generated structures. Preserve zero-error generated models; do not filter on labels.
@@ -217,14 +217,22 @@ The first 5 of 95,094 rows of the final frame (random rows: the frame is shuffle
 - Source Sections 2.2 and 2.3 define RMSD in angstroms and TM/GDT as fractional scores. Area is absolute
   solvent-accessible surface area; ED sums aliphatic C-beta distances; PN counts aliphatic residue pairs.
   SS compares STRIDE with PSIPRED. Its equation counts agreement but the prose says mismatch; retain the
-  supplied number without complementing it. Some scores exceed the modeled-structure sequence length;
-  source coverage versus full-sequence alignment is unverified. No native-reference leakage is demonstrated.
+  supplied number without complementing it. 5,620 scores exceed the row's sequence length and 5,414 the
+  largest length in their protein; source coverage versus full-sequence alignment is unverified. No native-reference leakage is demonstrated.
   The retrieved archive has no feature-generation code; row-level generation was not reconstructed.
 - ED is a sum of pair distances over the PN pairs, and PN is fixed by the sequence (constant within protein
   and sequence length in 1,146 of 1,249 cells). A sum over one or more pairs cannot be 0, and a sum over no
   pairs cannot be positive, so ED = 0 with PN > 0 (71 rows) and PN = 0 with ED > 0 (63 rows) become missing
-  and the rows stay (CLEAN-11; Lennart, 2026-11-04). Each of those rows has a same-protein, same-length
-  sibling with the value positive.
+  and the rows stay (CLEAN-11; Lennart, 2026-11-04). 132 of the 134 rows have a same-protein, same-length
+  sibling with the value positive; the other two (CASP10_T0692_FALCON-TOPO_TS5.pdb and
+  CASP10_T0716_sysimm_TS4.pdb) are the only rows of their length in a protein whose other rows are positive.
+- SL counts the residues of the candidate model. In CASP6-9 and the ROSETTA, John2002 and rosetta62 sets it
+  is constant within every target, so it acts as the target's length; in CASP10 it varies within all 67
+  targets (and within 2 of 37 CASP5 targets and 12 classic-set proteins), so it measures the candidate's
+  coverage of a GDT_TS normalised by the target's length. On the CASP10 targets of the shipped splits,
+  ranking by SL alone scores 0.50 on the metric and a row-only LightGBM 0.05 (review panel, 2026-11-04).
+  The full file has 2,259 CASP10 rows that the paper's validation file lacks (66 of 67 targets, median
+  GDT_TS 0.238 against 0.441).
 - Energy is signed in the release despite absolute-sum prose; retain signs and extreme finite values.
   Neither a large magnitude nor a negative energy is itself proof of a recording error or leakage.
 - Protein keys come from source filenames. CASP keys use T identifiers, case-normalized; classic sets use
@@ -236,10 +244,14 @@ The first 5 of 95,094 rows of the final frame (random rows: the frame is shuffle
   targets. Three further identities are confirmed by exact sequences and retain original keys, with no
   colliding aliases. This is not a sequence-family split.
 - The metric (Lennart, 2026-11-04; exception to MET-5): `mean_group_pearsonr` on `protein_id`, the
-  correlation within each protein averaged over proteins, as CASP scores quality assessment per target. The
-  paper reports RMSE, correlation, R2 and tolerance accuracy side by side; pooled RMSE rewards a protein's
-  typical quality, and each protein's true mean, which orders no candidate, beats LightGBM on it (0.134
-  against 0.188). Each test fold holds 148-149 proteins with a median of 103-113 candidates, none under 5.
+  correlation within each protein averaged over proteins, because the use case ranks one protein's
+  candidates. The paper reports RMSE, correlation, R2 and tolerance accuracy side by side; pooled RMSE rewards
+  a protein's typical quality, and each protein's true mean, which orders no candidate, beats LightGBM on it
+  (0.134 against 0.188). The correlation stands in for the top-1 GDT_TS loss (the best candidate's GDT_TS
+  minus the picked one's) that CASP11-14 use to score picking a model; both rank three test models the same
+  way (review panel, 2026-11-04). Each test fold holds 148-149 proteins with a median of 103-113 candidates,
+  at least 13. In the 19 proteins merged across decoy collections (26% of rows), the score partly rewards
+  telling the collections apart, about +0.01 on the fold mean.
 - `Energy` stays as supplied (Lennart, 2026-11-04): the extreme positive values (up to 7e11) are ProSEE's
   output for unminimized models whose atoms overlap, continuous with the rest and carrying signal (mean GDT_TS
   0.339 against 0.398), so unusual rather than impossible (CLEAN-11). `SS` has no bound the source gives.
@@ -254,6 +266,11 @@ Default repeated three-fold grouped evaluation with seed 4267. All rows of each 
 together, including verified same-protein accession aliases. The selected GDT task and preserved target alternatives share test groups;
 membership is verified explicitly.
 All 342 CASP identities are verified; three retain source IDs. Sequence-family independence is not claimed.
+The source's own files train on CASP5-9 and the classic sets and validate on CASP10. Forward windows by CASP
+round (train on all earlier rows, untuned LightGBM, per-protein correlation) score CASP8 0.340, CASP9 0.483
+and CASP10 0.016; through CASP9 they match the grouped folds within 0.03, so the rounds show no drift, and
+CASP10's low score comes from its other descriptor convention (the SL note), not from time. The grouped
+split is kept.
 
 3 repeat(s) x 3 fold(s) with seed 4267; train 58,718 to 70,071 rows, test 25,023 to 36,376 rows.
 
@@ -353,4 +370,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | ea35638cb7c9dc88ff6b7f6f6316594207a68393 |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:364c09f8b7cd90080e9c816432d4b8503bfb2f395afd1bf3a58367516aabb6f5` |
+| stale | yes: the definition now gives checksum `v2:c90df302de708d89e50fca0ab1799479b80e70fe3bcf71ce14ddaece98076de5` |

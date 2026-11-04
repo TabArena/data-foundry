@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bemtpl97
 container_format: 2
-checksum: v2:8b670a9c5fadf73c68f37c8a35b2ccc2b348ebb3f1bace6be918358581967079
+checksum: v2:f12564e04d7567e1cfd4f92e3c77c74e39fc07872b8a9322e92c7e8f96f4d453
 build:
   uuid: 01a18ad7-0bb6-7938-bc7e-98a4b50a8804
   checksum: v2:c453db381a0392e96b56e809e924cb0be3d0c3f4cf1087235d06d69a97aab978
@@ -75,9 +75,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `nclaims`, scored with `mean_poisson_deviance` on IID splits. 163,212 rows and 13 features. Source: GitHub (2020).
+Regression of `nclaims`, scored with `mean_poisson_deviance` on IID splits. 163,212 rows and 13 features. Source: GitHub (2019).
 
-Built as `01a18ad7-0bb6-7938-bc7e-98a4b50a8804` on 2026-10-30, but `dataset.py` has changed since: it now gives checksum `v2:8b670a9c5fadf73c68f37c8a35b2ccc2b348ebb3f1bace6be918358581967079`, so the build is stale. See [Build](#build).
+Built as `01a18ad7-0bb6-7938-bc7e-98a4b50a8804` on 2026-10-30, but `dataset.py` has changed since: it now gives checksum `v2:f12564e04d7567e1cfd4f92e3c77c74e39fc07872b8a9322e92c7e8f96f4d453`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -89,13 +89,13 @@ Built as `01a18ad7-0bb6-7938-bc7e-98a4b50a8804` on 2026-10-30, but `dataset.py` 
 
 **Predicted.** Expected claims during the observed insured period; labels are original nclaims (observed 0-5).
 
-**Known at prediction time.** The source describes policyholder, vehicle, coverage, claim-history and municipality characteristics at policy start. This benchmark additionally supplies realized insured duration, whose availability at quotation is unresolved. Exposure is the fraction of the year actually insured; longer coverage gives more opportunity for claims.
+**Known at prediction time.** The source describes policyholder, vehicle, coverage, claim-history and municipality characteristics at policy start. This benchmark additionally supplies realized insured duration, whose availability at quotation is unresolved. Exposure is the fraction of 1997 actually insured, shorter when a policy started or was surrendered during the year; per insured year, part-year policies claim 1.6 to 2.3 times as often as full-year ones.
 
 **What the test data stands for.** Random policyholders are held out, representing comparable unseen customers of the same year; the release has no dates, so no later year can be held out.
 
 **Our changes to the source.** We keep the original claim count and exclude the identifier and other same-period outcome fields.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The policies carry no dates, so random policyholders of 1997 stand in for the next year's customers an insurer prices. Realized exposure is kept on purpose, although it can reflect a cancellation later in the year. The release's selection: the 19 policies whose average claim cost exceeds EUR 81,000 (0.1% of 18,295 claimants) are most likely removed.
+> **Use case fit: approximate (a stand-in with a known gap).** The policies carry no dates, so random policyholders of 1997 stand in for the next year's customers an insurer prices. Realized exposure is kept on purpose, although it can reflect a cancellation later in the year. The release's selection: it leaves out the 19 policies whose average claim cost exceeds EUR 81,000 (21 claims, 0.1% of all claims).
 
 ## Files in this folder
 
@@ -135,11 +135,11 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | source | GitHub: https://github.com/henckr/treeML/tree/2ee8accc6df49168bd865cdf49efa1b7a5c8f4de |
-| year | 2020 |
+| year | 2019 |
 | domain | insurance |
 | license | GPL (>= 2), declared by CASdatasets; insurer-specific terms not verified |
 | data_tags | IID, Spatial, ForcedIIDFromTemporal |
-| reference | Henckaerts2020TreeMLData,Henckaerts2020Boosting |
+| reference | Antonio2019PricingAnalytics,Henckaerts2020TreeMLData,Henckaerts2020Boosting |
 | rows x columns | 163,212 x 14 |
 | task.target | nclaims |
 | task.problem_type | regression |
@@ -171,6 +171,14 @@ Only curators run `build`, when the dataset ships.
 <summary>BibTeX</summary>
 
 ```bibtex
+@misc{Antonio2019PricingAnalytics,
+  author = {Antonio, Katrien},
+  title = {PE-pricing-analytics: Pricing analytics in R, course material},
+  year = {2019},
+  howpublished = {\url{https://github.com/katrienantonio/PE-pricing-analytics}},
+  note = {First public copy of the portfolio, data/P\&Cdata.txt (163,231 policies), added on 26 September
+          2019; commit 0b279c433de7c8ef46ebf0a33cd70ebd76d2af9e}
+}
 @misc{Henckaerts2020TreeMLData,
   author = {Henckaerts, Roel},
   title = {treeML: Motor third party liability insurance portfolio and code},
@@ -207,13 +215,13 @@ We start with data/beMTPL97.rda from CASdatasets commit 227fb56b8734bdb7c0327a41
 
 - Prediction point: the quotation at policy start. [Binning manuscript](https://roelverbelen.netlify.app/publication/binning/binning.pdf), Sec. 2, p. 4: "The risk factors are registered at the start of the policy period and remain constant during this period".
 - Target: the original nclaims, 0 to 5, as a count regression on every policyholder; no annualization, cap, weight or offset. We drop id and the same-period outcomes claim, amount and average.
-- Potential leak, kept on purpose: expo, the share of 1997 the policy was in force (one day to one year), is shorter when the policyholder "surrendered the policy during the year" (p. 4), so it can record a later cancellation. It stays as the exposure the source puts into the expected count; a Poisson fit on log(expo) alone scores 0.5470 against the training mean's 0.5517 (nine folds). Revisit if policy dates become available.
+- Potential leak, kept on purpose: expo, the share of 1997 the policy was in force (one day to one year), is shorter for policyholders "who started the policy in the course of the year or surrendered the policy before the end of the year" ([arXiv:1904.10890v3](https://arxiv.org/pdf/1904.10890v3), Sec. 4.1). A start is known at quotation, a surrender (often after a claim) is not, and without dates the two cannot be told apart. The source puts exposure into the expected count in proportion (an offset with slope 1); here it is a free feature. Given the other features and a proportional offset, part-year policies claim about 1.4 times the expected count, and using expo freely instead of as an offset gains 0.0036 to 0.0041 of mean Poisson deviance, 16 to 18% of untuned LightGBM's skill over the training mean (3 and 9 folds). Revisit if policy dates become available.
 - Metric: the source's mean Poisson deviance of nclaims against the predicted expected count, by which it tunes and compares its frequency models ([arXiv:1904.10890v3](https://arxiv.org/pdf/1904.10890v3), Sec. 3.2 Eq. 5, Algorithm 3, Sec. 4.5; treeML.Rmd lines 641-657 score nclaims against frequency times expo). Exposure enters through the prediction, so it is neither a weight nor a scoring column. A predicted mean below 1e-6 counts as 1e-6 (Lennart, 2026-11-04: "in pratice we would also clip to a reasonable number"): one day of exposure at a 3% claim frequency is about 1e-4, so the floor sits two orders below the smallest plausible mean; a NaN or infinite prediction raises.
 - Dtypes: coverage is ordered, TPL < TPL+ < TPL++ (plus limited, then comprehensive material damage; CLEAN-14); sex, fuel, use, fleet and postcode are nominal; the rest stay numeric. sex stays by curator choice, for research on a 1997 tariff.
 - Copies kept: each row is a distinct source policyholder; the 133 extra exact rows and 35 conflicting profiles are coarse rating profiles that coincide (the IID hidden-group probe found none, though 147,308 rows were too sparse to compare).
-- Selection by the release: the manuscript has 163,231 policies, 19 of them with an average claim cost above EUR 81,000 (Sec. 3.2, p. 11); the release has 163,212, so it most likely dropped those 19. No further filter.
-- Split forced IID from temporal (ForcedIIDFromTemporal, SPLIT-8): an insurer fits on past policy years and prices the next, but the release is one undated year, so the cost cannot be measured. A later year would test the drift of claim frequency; recover one if a release has it.
-- Year 2020: the author's data commit of 30 April 2020, the earliest public copy found; the observation year is 1997. CASdatasets declares GPL (>= 2); the insurer's terms are not stated.
+- Selection by the release: the manuscript has 163,231 policies, 19 of them with an average claim cost above EUR 81,000 (Sec. 3.2, p. 11). The release is the 2019 copy of those 163,231 rows minus exactly these 19 (all claimants, 21 claims, 0.1% of all claims), the other rows identical and in the same order; the boosting paper evaluates on the 163,212. No further filter.
+- Split forced IID from temporal (ForcedIIDFromTemporal, SPLIT-8): an insurer fits on past policy years and prices the next, but the release is one undated year and its raw order is sorted by postcode, so no row-order window exists and the cost cannot be measured. A later year would test the drift of claim frequency; recover one if a release has it.
+- Year 2019: the first public copy is data/P&Cdata.txt in [katrienantonio/PE-pricing-analytics](https://github.com/katrienantonio/PE-pricing-analytics/tree/0b279c433de7c8ef46ebf0a33cd70ebd76d2af9e), added on 26 September 2019 with all 163,231 policies; we download the author's 2020 release of the 163,212 through CASdatasets. The observation year is 1997. CASdatasets declares GPL (>= 2); the insurer's terms are not stated.
 
 ## Splits
 
@@ -345,4 +353,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 6b2e70b5b795a373a3ae71006b8db8e471eabe9f-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:8b670a9c5fadf73c68f37c8a35b2ccc2b348ebb3f1bace6be918358581967079` |
+| stale | yes: the definition now gives checksum `v2:f12564e04d7567e1cfd4f92e3c77c74e39fc07872b8a9322e92c7e8f96f4d453` |

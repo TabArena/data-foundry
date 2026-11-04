@@ -596,7 +596,12 @@ class AbstractCuratedDataset(ABC):
         reference = self.df
         tried = []
         for how in ("column", "index"):
-            traced = self._clean_traced(raw, how)
+            try:
+                traced = self._clean_traced(raw, how)
+            except Exception as err:  # noqa: BLE001 - a `_clean` check of the source's shape fails on the tagged frame
+                # a real error of the definition is raised again by the untraced `process()` below
+                tried.append(f"`_clean` fails on the frame tagged by the {how} ({type(err).__name__})")
+                continue
             if traced is None:
                 tried.append(f"the {how} does not survive `_clean`")
                 continue
@@ -917,6 +922,7 @@ class AbstractCuratedDataset(ABC):
             plan.df = df
         elif plan.df is not df and self._make_splits is not AbstractCuratedDataset._make_splits:
             plan.df = _drop_unused_categories(plan.df)  # a custom split step that drops rows keeps old levels
+            self._time_changed_in_split = _time_values_changed(df, plan.df, self.task_metadata.time_on)
         if self.splits_comment is not None:
             plan.comment = clean_text(self.splits_comment)
         if not plan.comment:
@@ -1111,6 +1117,19 @@ class AbstractCuratedDataset(ABC):
                 ),
             )
         findings += self._summary_checks()
+        changed = getattr(self, "_time_changed_in_split", 0)
+        if changed:
+            time_on = self.task_metadata.time_on
+            findings.append(
+                CheckResult(
+                    "definition_time_changed_in_split",
+                    "warning",
+                    f"`_make_splits` changes the time column `{time_on}` on {changed:,} rows. The rows were ordered "
+                    "by its values before that step, so within a coarsened period they keep the order of the finer "
+                    "time (the minute of chicago_traffic_crashes, 2026-11-04).",
+                    hint=f"Coarsen `{time_on}` in `_clean`; within a period the rows then follow the content order.",
+                ),
+            )
         if re.search(r"\bTODO\b", str(self.license)):
             findings.append(
                 CheckResult(
@@ -1323,6 +1342,18 @@ def _source(cls: type, name: str) -> str | None:
         return inspect.getsource(getattr(cls, name))
     except (OSError, TypeError):
         return None
+
+
+def _time_values_changed(before: pd.DataFrame, after: pd.DataFrame, time_on: str | None) -> int:
+    """How many rows a custom split step changed the time column on (0 when it kept it, or has no such column).
+
+    The rows are ordered by the time column before ``_make_splits`` runs (:func:`order_rows`), so a split step that
+    floors the time leaves each period in the order of the finer values it meant to hide.
+    """
+    if time_on is None or time_on not in before.columns or time_on not in after.columns or len(before) != len(after):
+        return 0
+    old, new = before[time_on].reset_index(drop=True), after[time_on].reset_index(drop=True)
+    return int((old.ne(new) & old.notna()).sum())
 
 
 def _drop_unused_categories(df: pd.DataFrame) -> pd.DataFrame:

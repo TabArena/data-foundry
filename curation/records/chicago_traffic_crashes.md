@@ -86,6 +86,8 @@ CC (2026-11-04, Lennart): the five condition fields (weather, lighting, road sur
 
 **Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the measurements behind each mark (log loss on the three newest windows: 0.4960 without the five fields, 0.4921 with them; 0.49201 from 2017-09 against 0.49214 from 2013), and all are settled.
 
+**Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes (applied as wording: year 2026 under PROV-9, the 2026-11-04 snapshot and its hash, the measured update delay; the C-class step is in 2023Q4, not 2026Q2-Q3 as the assessment above says); disputed: USE-1, USE-5, LEAK-10/LEAK-38 (`dooring_i`); for the curator: issues 7-11. Priority 3: gap +, use case 0, source +, shape +, risk - (gap: social science and multiclass are thin among the accepted definitions; use case: the source names no actor and the curation's actor fits approximately; source: the City documents the table and the SR1050 form; shape: 998,117 mixed-type temporal rows; risk: the row-order leak of issue 9 and the open framing of issue 7).
+
 ## Reference
 
 City of Chicago Data Portal, Traffic Crashes - Crashes, dataset 85ca-t3if.

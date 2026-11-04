@@ -37,7 +37,14 @@ from data_foundry.v2 import (
     workbench,
 )
 from data_foundry.v2.cli import add_dataset_parser
-from data_foundry.v2.dataset import PREPARED_MARKER, _categories_like, _gap, _horizon, _prepare_code_hash
+from data_foundry.v2.dataset import (
+    PREPARED_MARKER,
+    _categories_like,
+    _gap,
+    _horizon,
+    _prepare_code_hash,
+    _time_values_changed,
+)
 from data_foundry.v2.spectra import MS_RAW_ENCODING
 from data_foundry.v2.splits import temporal_window_splits
 
@@ -158,6 +165,29 @@ def test_standard_steps_drop_cast_and_shuffle(tmp_path: Path, warehouse: Path) -
     raw = pd.read_csv(warehouse / "toy_ds" / "toy.csv")
     assert not df["x1"].reset_index(drop=True).equals(raw["x1"])  # shuffled
     assert sorted(df["x1"]) == sorted(raw["x1"])
+
+
+def test_time_values_changed_counts_what_a_split_step_coarsened() -> None:
+    """chicago_traffic_crashes: `_make_splits` floors the time after the rows were ordered by its full values."""
+    times = pd.Series(pd.to_datetime(["2024-01-01 10:05", "2024-01-01 10:40", "2024-01-01 11:00", None]))
+    before = pd.DataFrame({"t": times, "x": [1, 2, 3, 4]})
+    after = before.assign(t=times.dt.floor("h"))
+    assert _time_values_changed(before, after, "t") == 2  # 11:00 is already whole, the missing time stays missing
+    assert _time_values_changed(before, before.copy(), "t") == 0
+    assert _time_values_changed(before, after.iloc[:2], "t") == 0  # a step that drops rows is not compared
+    assert _time_values_changed(before, after, None) == 0
+
+
+def test_definition_checks_warn_on_a_time_column_changed_in_the_split(tmp_path: Path, warehouse: Path) -> None:
+    """A split step that changed the time column is a warning with the fix in its hint."""
+    del warehouse
+    write_definition(tmp_path / "datasets")
+    ds = get_dataset(tmp_path / "datasets", "toy_ds")
+    assert "definition_time_changed_in_split" not in {r.slug for r in ds._definition_checks()}
+    ds._time_changed_in_split = 5
+    found = {r.slug: r for r in ds._definition_checks()}
+    assert found["definition_time_changed_in_split"].severity == "warning"
+    assert "Coarsen" in found["definition_time_changed_in_split"].hint
 
 
 def test_check_writes_a_deterministic_report(tmp_path: Path, warehouse: Path) -> None:

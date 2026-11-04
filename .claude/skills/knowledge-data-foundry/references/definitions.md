@@ -91,6 +91,11 @@ class MyDataset(AbstractCuratedDataset):
         ...
 ```
 
+A time column a model sees coarser than recorded (crash times to the hour) is coarsened in `_clean`, never in
+`_make_splits`: the rows are ordered by the time column before the split step runs, so a split step that floors it
+leaves each period in the order of the finer values (chicago_traffic_crashes, 2026-11-04); `dataset check` warns
+(`definition_time_changed_in_split`).
+
 Other hooks: `_make_splits(df)` for splits the declarations cannot express (return a `SplitPlan`);
 `_prepare_raw_files(raw_dir)` with `prepared_raw_files = (...)` for a heavy one-off step that writes intermediate
 files into the raw directory (it runs again when a file is missing or when the method, a helper of `dataset.py` it

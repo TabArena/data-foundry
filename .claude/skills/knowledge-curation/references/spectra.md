@@ -110,17 +110,19 @@ spectra, so they are no per-row default.
   leading methods (AutoGluon 1.5, then TabPFN v2.5 and TabICL v2) read the raw spectra; the baseline and SNV were the
   chemometric baselines' convention (PLS: smoothing, baseline and SNV; the linear model: baseline and SNV; kNN: SNV).
   No foundation model or tree was tested on processed spectra. The first such dataset we added,
-  open_soil_spectral_library (KSSL mid-infrared absorbance, 1,701 positions, 75,929 soil layers; organic carbon in
-  percent, RMSE on the three grouped folds of repeat 0, untuned, fitted in percent; 2026-11-04):
+  open_soil_spectral_library (KSSL mid-infrared absorbance, 1,700 positions, 75,929 soil layers; organic carbon on its
+  declared scale, log1p of weight percent, RMSE on log1p on the three grouped folds of repeat 0, untuned; 2026-11-04):
 
   | Model | As it is | ALS + SNV | SNV | SG first derivative |
   |---|---|---|---|---|
-  | LightGBM | 1.74 | 1.33 (3/3) | 1.39 (3/3) | 1.24 (3/3) |
-  | PLS, 30 components | 2.13 | 1.97 (3/3) | 2.15 (0/3) | 1.99 (3/3) |
-  | Ridge | 1.84 | 2.08 (1/3) | 2.17 (0/3) | 2.05 (0/3) |
+  | LightGBM | 0.155 | 0.130 (3/3) | 0.136 (3/3) | 0.118 (3/3) |
+  | PLS, 30 components | 0.158 | 0.164 (0/3) | 0.145 (3/3) | 0.150 (3/3) |
+  | Ridge | 0.142 | 0.146 (0/3) | 0.138 (2/3) | 0.144 (0/3) |
 
   In parentheses the folds on which the encoding beats the spectrum as it is. The tree gains from every candidate, most
-  from the derivative; PLS gains a little from the baseline or the derivative; ridge reads the spectrum best as it is.
+  from the derivative; PLS gains from SNV and the derivative, not from the baseline with SNV; ridge gains a little from
+  SNV alone. (An earlier table fitted in percent read PLS and ridge the other way; the review panel replaced it,
+  2026-11-04.)
   The run computed SNV and the derivative as `vib-snv-r1` and `vib-sg11-d1-r1` do; no foundation model was run. So the
   default stays the spectrum as it is, and the benchmark compares the four on every vibrational dataset
   (`BENCHMARK_CHANGES_TODO.md`, "Spectra").

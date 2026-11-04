@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: tunisian_fraud_detection_challenge
 container_format: 2
-checksum: v2:6dd387c1c3031fb9f9fcc8d588787cc0c2fe930aa9e20e3e7e83e906c4d28f8d
+checksum: v2:edcc7471b86521da68b282aa224b142745f117b4fdd9527c20bf0923dbd8f5bf
 build:
   uuid: 01a19475-b104-7ff0-82db-ed3aeb71f3a7
   checksum: v2:84d2d72d5ffe91a80168cd461f4367b63635ee74467d97d96c89e6de9ce57972
@@ -61,9 +61,9 @@ bundle_checks:
   - dataset_duplicate_rows
   - dataset_conflicting_duplicate_rows
   accepted:
-    task_time_on_few_unique: Only six genuine fiscal-year cohorts exist; four outer
-      windows meet the training floor. Validation must respect the available annual
-      support; finer timestamps are unavailable.
+    task_time_on_few_unique: Only five genuine fiscal-year cohorts exist (2018 is
+      cut); three outer windows meet the training floor. Validation must respect the
+      available annual support; finer timestamps are unavailable.
     meta_time_horizon_mismatch: Every row is an annual cohort represented at January
       1; the one-year horizon denotes the calendar cohort, while observed timestamp
       span is one point. No daily sampling or audit-duration claim is made.
@@ -76,7 +76,7 @@ decisions: []
 
 Regression of `target`, scored with `rmse` on temporal splits by `fiscal_year`. 20,930 rows and 100 features. Source: Zindi (2019).
 
-Built as `01a19475-b104-7ff0-82db-ed3aeb71f3a7` on 2026-11-01, but `dataset.py` has changed since: it now gives checksum `v2:6dd387c1c3031fb9f9fcc8d588787cc0c2fe930aa9e20e3e7e83e906c4d28f8d`, so the build is stale. See [Build](#build).
+Built as `01a19475-b104-7ff0-82db-ed3aeb71f3a7` on 2026-11-01, but `dataset.py` has changed since: it now gives checksum `v2:edcc7471b86521da68b282aa224b142745f117b4fdd9527c20bf0923dbd8f5bf`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -84,7 +84,7 @@ Built as `01a19475-b104-7ff0-82db-ed3aeb71f3a7` on 2026-11-01, but `dataset.py` 
 
 **Use case.** For example, a Tunisian tax-control analyst looks back over archived annual returns and administrative cross-checks to prioritize records for further investigation using estimated logged adjustment severity. The scored adjustment is withheld; this retrospective exercise does not reproduce a model refit at each fiscal-year start.
 
-**One row.** One anonymized taxpayer-year in the supplied Ministry of Finance challenge training release: 21,295 rows of fiscal years 2013–2018, of which the 20,930 of 2013–2017 ship (2018 is cut).
+**One row.** One taxpayer-year (taxpayer id removed) in the supplied Ministry of Finance challenge training release: 21,295 rows of fiscal years 2013–2018, of which the 20,930 of 2013–2017 ship (2018 is cut).
 
 **Predicted.** The source-provided log(1 + principal tax adjustment) label. Penalties are not the target. Underlying currency denomination is unspecified.
 
@@ -92,15 +92,16 @@ Built as `01a19475-b104-7ff0-82db-ed3aeb71f3a7` on 2026-11-01, but `dataset.py` 
 
 **What the test data stands for.** Train on every observed earlier fiscal year and test on 2017, 2016 and 2015 separately. Both recurring and newly observed taxpayers occur. This measures transfer to later fiscal cohorts using retrospective training labels; it does not date audit completion or reproduce past operational refits.
 
-**Our changes to the source.** Cut fiscal year 2018 (365 rows), whose inspections were still open at the extract; keep the other labeled rows and supplied targets. Remove row/taxpayer identifiers, duplicate fiscal year, twelve zero-with-block-missingness columns and two exact financial copies. Cast codes as categories and fiscal year as datetime.
+**Our changes to the source.** Cut fiscal year 2018 (365 rows), whose adjustments are about 3 times smaller, most likely because many of its inspections were still open at the 2019 extract; keep the other labeled rows and supplied targets. Remove row/taxpayer identifiers, duplicate fiscal year, twelve zero-with-block-missingness columns and two exact financial copies. Cast codes as categories and fiscal year as datetime.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The original supervision task and annual dossiers are documented; Myunghwan accepts retrospective investigation. Exact feature extraction, inspection selection and audit/label-availability dates are absent. This historical cohort comparison does not establish causal deployment, all-taxpayer screening yield, or recovered money per inspection.
+> **Use case fit: approximate (a stand-in with a known gap).** The original supervision task and annual dossiers are documented; Myunghwan accepts retrospective investigation. Every row is an inspected taxpayer-year, so the uninspected filers a real screening ranks are never seen (selection). Exact feature extraction, the inspection selection rule and audit/label-availability dates are absent. This historical cohort comparison does not establish causal deployment, all-taxpayer screening yield, or recovered money per inspection.
 
 ## Files in this folder
 
 | file | what it is |
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
+| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/tunisian_fraud_detection_challenge.md`](../../../../curation/records/tunisian_fraud_detection_challenge.md)
@@ -113,12 +114,13 @@ Built as `01a19475-b104-7ff0-82db-ed3aeb71f3a7` on 2026-11-01, but `dataset.py` 
 
 ```text
 Obtain the authorized Train.csv and VariableDescription.csv from
-https://zindi.world/competitions/tunisian-fraud-detection/data (login; Lennart's download of 2026-11-04 is
-byte-identical to the participant mirrors' SupCom copy: Train.csv SHA-256
-8946058bd60847cf49eb372963d05f47022c1fb820ab323227304a88aa0faa02, VariableDescription.csv SHA-256
-763bfdfe8774643eb3342b3e2c0935801f81c545ea9908bb64174195092b81f8) and place them in
-local-data-warehouse/tunisian_fraud_detection_challenge/. The supplied named files were preserved byte-for-byte
-under these canonical names; SOURCE_MANIFEST.json records identities. Only Train.csv supplies benchmark rows and labels. A separate private test-file inspection informs the predictor schema; no test rows or submission labels enter this definition.
+https://zindi.world/competitions/tunisian-fraud-detection/data (login) and place them in
+local-data-warehouse/tunisian_fraud_detection_challenge/. Expected SHA-256: Train.csv
+8946058bd60847cf49eb372963d05f47022c1fb820ab323227304a88aa0faa02, VariableDescription.csv
+763bfdfe8774643eb3342b3e2c0935801f81c545ea9908bb64174195092b81f8. The working copy was fetched on 2026-11-04
+from a public participant mirror (github.com/MohamedNennouche/Tunisian-Fraud-Detection, SUPCOM_Train.csv saved
+as Train.csv; MIRROR_SOURCE.txt beside the files says so); its identity with the Zindi file rests on Lennart's
+statement that his Zindi download of 2026-11-04 is byte-identical. Only Train.csv supplies benchmark rows and labels. A separate private test-file inspection informs the predictor schema; no test rows or submission labels enter this definition.
 The related Sup'Com challenge is a later rerun of this source family, not another independent dataset.
 ```
 
@@ -195,17 +197,19 @@ The first 5 of 20,930 rows of the final frame (the oldest rows: the frame is sor
 
 ## Curation notes
 
-- CC (2026-10-31, Myunghwan): Accepted all remaining choices: the dataset for a later requested build, both annual-time warning reasons, and Temporal (NON-IID) metadata. Temporal evaluation is preferred as closer to scanning a new year. Six annual markers constrain inner validation; January 1 represents each fiscal cohort, not event dates. Preserve the accepted retrospective scope and unknown historical availability.
+- CC (2026-10-31, Myunghwan): Accepted all remaining choices: the dataset for a later requested build, both annual-time warning reasons, and Temporal (NON-IID) metadata. Temporal evaluation is preferred as closer to scanning a new year. Six annual markers (five since the 2018 cut of 2026-11-04) constrain inner validation; January 1 represents each fiscal cohort, not event dates. Preserve the accepted retrospective scope and unknown historical availability.
 - CC (2026-10-31, Myunghwan): Retrospective prediction is acceptable: looking back can identify more records worth investigating. An analyst uses archived annual dossiers with the scored adjustment withheld and historical training labels already held. This does not claim that a model was fitted at the beginning of each fiscal year. The release has no extraction, inspection, notification or label-availability dates; original timing and revisions remain unverified. This settled the retrospective task framing; final inclusion was subsequently accepted on 2026-10-31.
 - Train.csv has 21,295 unique taxpayer-years from 12,387 IDs over 2013–2018. Keep every label unchanged: log(1 + principal adjustment), as described in challenge discussion 448, including 5,402 zeros, no missing/negative labels and range 0–23.5913. Dictionary RES_MNTRED names the principal target; excluded penalty RES_MNTRET is not a predictor. Zero does not establish a completed negative inspection, legal intent or national prevalence. The underlying currency unit and cohort-selection mechanism are unknown.
 - Source RMSE scores the supplied log labels. target_transform is identity because this recipe applies no transform; no inverse or second log is used. This score is not monetary RMSE, recovered revenue or net benefit per audit. The later Sup'Com release belongs to the same source family, not an independent dataset.
-- Fiscal year 2018 is cut (LEAK-24; Lennart, 2026-11-04: "do the change"): its nonzero adjustments have a median 1.2 log units below 2013-2017 (about 3 times smaller, Mann-Whitney p = 6e-16), within every taxpayer category, and leak probe 13 puts it out of band (median z -6.7), while 2017 is in band (p = 0.8). It fits inspections still open at the 2019 extract. Its three 2018-form VAT rate columns (`TVA_CA072018`, `TVA_CA132018`, `TVA_CA192018`) are constant without it and leave. The use case stays the retrospective ranking of inspected dossiers (Lennart: "okay let us keep it").
+- Fiscal year 2018 is cut (LEAK-24; Lennart, 2026-11-04: "do the change"): its nonzero adjustments have a median 1.2 log units below 2013-2017 (about 3 times smaller, Mann-Whitney p = 6e-16), within every taxpayer category, and leak probe 13 puts it out of band (median z -6.7), while 2017 is in band (p = 0.8). It fits inspections still open at the 2019 extract. 2017 stays (review panel, 2026-11-04): zero share 0.249 (2013-2016: 0.236-0.265), nonzero median 15.72 against 15.80 (p = 0.36), and a gradient-boosting mean residual of +0.18, like 2016's, against -0.71 for 2018. Its smaller count (ratio 0.53 to 2016, after 0.95, 0.76 and 0.71) continues a steady fall, so probe 13's count z of -4.6, measured against a flat band, is row selection, not label censoring; the 2017 test cohort holds the inspections that closed fastest. 2013 is left-truncated (45% of its taxpayers have no other year; leave-one-year-out residual -0.41) and is only ever training data (SPLIT-20). Its three 2018-form VAT rate columns (`TVA_CA072018`, `TVA_CA132018`, `TVA_CA192018`) are constant without it and leave. The use case stays the retrospective ranking of inspected dossiers (Lennart: "okay let us keep it").
 - Retrospective evaluation uses three annual tests, newest first: 2017/2016/2015 with train/test counts 19,301/1,629; 16,201/3,100; 11,833/4,368. Earlier windows fail the half-release training floor. January 1 represents fiscal-year cohorts, not actual event dates. Fiscal order tests transfer across accounting cohorts, not historical model-refit feasibility. No delay is invented from a model score; if a past operational refit is later claimed, outcome availability must be established and the protocol reassessed.
-- Drop id and CTR_MATFIS as administrative identifiers, RES_ANNIMP as an exact fiscal-year copy, twelve zero-when-observed columns whose block-missingness survives elsewhere, TVA_ACHNDD as a copy of TVA_ACHSUS, and SND_MNTPAY_E as a copy of SND_MNTTAX_E. No row is filtered; retained values and NaNs are not imputed, clipped or rescaled. No taxpayer/label aggregates are constructed.
-- Tax office, taxpayer category, legal form, activity and obligation/status codes are categorical; obligations are not all binary. Retain the 63 undocumented CTR_CESSAT code-2 rows as an uninterpreted category; CTR_RATISS codes 0/2 are not decoded. Months 1–12 stay numeric. Customs/invoice block missingness is not universally no activity. SND_MNTAIR_I/A are undefined in the dictionary and TVA_CRDFIN has an inconsistent initial-credit description.
-- Contest input check: a participant-maintained SupCom mirror has 7,517 test rows and all 120 raw non-target columns in training order; its training Git blob exactly matches the supplied Train.csv. All 103 retained predictors are present and none is wholly missing in test. Refund/regularization fields contain observed nonzero test values. Target alone is absent; this yields no further schema-based exclusion. Zero-when-observed removals describe the labeled benchmark release, not universal constants: TVA_CRDREP varies in the contest test file. The test covers every fiscal year 2013–2018, so our four annual holdouts are a separate cross-cohort evaluation, not the contest holdout. The original host test download was not authenticated. Test presence is an input contract, not evidence of historical as-of timing or freedom from outcome-derived revisions.
-- Potential leak, kept on purpose: refund/regularization amounts and registry fields may reflect later revisions or verification. All 23 registry fields are invariant across 5,990 repeated taxpayers. The historical declaration form contains corresponding VAT items, some qualified for corrective declarations; statutory refund processes differ. All twelve raw process-field missing masks equal ordinary VAT-return availability (1,690 absent), also within zero/positive-label strata. That refutes an additional conditional blank/fill mechanism, not revisions to observed values. Retain host-released anonymized inputs under LEAK-38 while timing is untestable; revisit on original/as-of returns, audit/extract/notification dates or a measured same-outcome recording mechanism. A confirmed leak requires repair/drop regardless of ablation score.
-- Retain seven excess full-row copies and nineteen excess conflicting-label variants: they are distinct taxpayer-years with sparse financial profiles, within the same fiscal cohort. Thirty-one rows participate in conflicting feature groups. No full-feature copy including fiscal year crosses a cutoff; copies after removing time can be natural recurring profiles and are separately measured. Do not deduplicate different taxpayers or infer independent audit appointments. The shrinking latest cohort (365 rows) and missing-data coverage limit broad generalization.
+- Drop id and CTR_MATFIS as administrative identifiers, RES_ANNIMP as an exact fiscal-year copy, twelve zero-when-observed columns whose block-missingness survives elsewhere, TVA_ACHNDD as a copy of TVA_ACHSUS, and SND_MNTPAY_E as a copy of SND_MNTTAX_E. No row is filtered besides fiscal 2018; retained values and NaNs are not imputed, clipped or rescaled. No taxpayer/label aggregates are constructed.
+- Tax office, taxpayer category, legal form, activity and obligation/status codes are categorical; obligations are not all binary. Retain the 63 undocumented CTR_CESSAT code-2 rows as an uninterpreted category; CTR_RATISS ("ratissage", a control sweep) codes 0/2 are not decoded; FJU_CODFJU 99 (48.8% of rows) is undocumented and kept as a level. Months 1–12 stay numeric. Customs/invoice block missingness is not universally no activity. SND_MNTAIR_I/A are undefined in the dictionary. TVA_CRDFIN is the closing VAT credit, although the dictionary repeats "Crédit Initial": it carries over to the next year's TVA_CRDINI in 89.9% of 6,180 consecutive-year pairs.
+- Contest input check: a participant-maintained SupCom mirror has 7,517 test rows and all 120 raw non-target columns in training order; its training Git blob exactly matches the supplied Train.csv. All retained predictors (100 inputs with fiscal_year since the 2018 cut) are present and none is wholly missing in test. Refund/regularization fields contain observed nonzero test values. Target alone is absent; this yields no further schema-based exclusion. Zero-when-observed removals describe the labeled benchmark release, not universal constants: TVA_CRDREP varies in the contest test file. The test covers every fiscal year 2013–2018, so our three annual holdouts are a separate cross-cohort evaluation, not the contest holdout. The original host test download was not authenticated. Test presence is an input contract, not evidence of historical as-of timing or freedom from outcome-derived revisions.
+- Potential leak, kept on purpose: refund/regularization amounts and registry fields may reflect later revisions or verification. All 23 registry fields are invariant across 5,990 repeated taxpayers. The historical declaration form contains corresponding VAT items, some qualified for corrective declarations; statutory refund processes differ. All twelve raw process-field missing masks equal ordinary VAT-return availability (1,690 absent), also within zero/positive-label strata. That refutes an additional conditional blank mechanism, not revisions to observed values. The registry snapshot includes CTR_CESSAT (cessation status; ceased share 5.5% in 2013, 2.7% in 2017) and CTR_RATISS (control sweep; 233 rows, R² about 0.001). A fill test (filing-time covariates, 5 folds grouped by taxpayer; review panel, 2026-11-04) finds TVA_MTDJRTVA and TVA_MTORDTVA miscalibrated alike for zero and positive labels (observed/predicted 4.03 against 3.61; 14.8 against 12.7 on 22 filled rows), while TVA_RESTIT's fill differs by label (1.30 against 1.03, 95% interval of the gap 0.026-0.042), the revisit trigger below; dropping all three refund fields costs +0.022 RMSE. Only the taxpayer id was replaced, so the columns keep their names (Lennart, 2026-11-04). Retain these host-released inputs under LEAK-38 while timing is untestable; revisit on original/as-of returns, audit/extract/notification dates or a measured same-outcome recording mechanism. A confirmed leak requires repair/drop regardless of ablation score.
+- Retain seven excess full-row copies and nineteen excess conflicting-label variants: they are distinct taxpayer-years with sparse financial profiles, within the same fiscal cohort. Thirty-one rows participate in conflicting feature groups. No full-feature copy including fiscal year crosses a cutoff; copies after removing time can be natural recurring profiles and are separately measured. Do not deduplicate different taxpayers or infer independent audit appointments. The shrinking latest cohort (2017, 1,629 rows) and missing-data coverage limit broad generalization.
+- Taxpayer history across the cutoff (review panel, 2026-11-04; open for the curator): 64-75% of test rows have their taxpayer in training, and the 23 shipped registry columns, invariant within a taxpayer, single out 59.6% of the 12,244 taxpayers on their own although CTR_MATFIS is dropped. Removing the test taxpayers' training rows costs +0.12 to +0.19 RMSE beyond a size-matched removal (3 windows, LightGBM); a participant who links taxpayers and uses their earlier labels gains 0.25-0.56. Consecutive-year labels agree on zero vs nonzero for 86% of pairs (62% if independent), and two years the same distance apart agree as much when the year between them is missing from the data as when it is present (0.794 vs 0.803 two years apart), which fits persistent taxpayer behaviour more than one inspection settling several years; no audit dates exist to settle it.
+- The score: 56-60% of the squared error (HistGradientBoosting, test years 2015-2017) comes from the true zeros, 25% of rows, so RMSE on the log label mostly rewards telling whether an inspection finds anything, not the size of the adjustment.
 
 ## Splits
 
@@ -215,6 +219,8 @@ accounting cohort, not a verified audit date. Both known and new taxpayers occur
 setting. These are fiscal-cohort transfer tests, not models refitted at historical year starts. Audit-completion
 dates remain unavailable; historical point-in-time label maturity is unverified, not assumed.
 One year is the evaluation-window duration, not a promised one-year inspection or adjustment horizon.
+The source's own test file spans every fiscal year 2013-2018 and its labels were never released, so its split
+cannot be followed (SPLIT-19); these windows are our own.
 
 3 repeat(s) x 1 fold(s) with seed 4267; train 11,833 to 19,301 rows, test 1,629 to 4,368 rows. Prediction horizon: 1 years.
 
@@ -233,7 +239,7 @@ One year is the evaluation-window duration, not a promised one-year inspection o
 
 Accepted on purpose:
 
-- `task_time_on_few_unique`: Only six genuine fiscal-year cohorts exist; four outer windows meet the training floor. Validation must respect the available annual support; finer timestamps are unavailable.
+- `task_time_on_few_unique`: Only five genuine fiscal-year cohorts exist (2018 is cut); three outer windows meet the training floor. Validation must respect the available annual support; finer timestamps are unavailable.
 - `meta_time_horizon_mismatch`: Every row is an annual cohort represented at January 1; the one-year horizon denotes the calendar cohort, while observed timestamp span is one point. No daily sampling or audit-duration claim is made.
 
 ## Data checks
@@ -471,4 +477,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 4bc27fd6d8b49f8c9c16446bb7e85132ce90943b |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:6dd387c1c3031fb9f9fcc8d588787cc0c2fe930aa9e20e3e7e83e906c4d28f8d` |
+| stale | yes: the definition now gives checksum `v2:edcc7471b86521da68b282aa224b142745f117b4fdd9527c20bf0923dbd8f5bf` |

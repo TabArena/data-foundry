@@ -317,5 +317,13 @@ Classification targets ship their classes as words now (CLEAN-25). Binary target
 event, so sorting the classes gives the right positive class. Three multiclass targets are ordered categories whose
 category order is not the sorted order (cardiotocography: normal < suspect < pathologic; dementia_prediction;
 hepatitis_c_prediction): the harness must align its probability columns to the container's categories by class name
-(as `examples/benchmark_on_beyond_arena.py` does with `reindex(columns=labels)`), never by position after sorting.
+(as `examples/benchmark_container.py` does with `reindex(columns=labels)`), never by position after sorting.
 
+## Test rows predicted without the other test rows (2026-11-04, PR #33 second review)
+
+- [ ] **Check that a method never reads the other test rows of a split.** medical_facility_operational_data,
+  sepsis_prediction and 5g_energy_consumption carry fields that are history at each row's own arrival; a method that
+  looks at the other test rows of a block (a test-time fit, transductive inference, the test block's own statistics)
+  would see the future. Data Foundry ships a protocol line in each definition and no per-row scorer (Lennart: "we can
+  check if the model cheats"), so the guarantee sits in the benchmark: predict each test row from the training rows and
+  its own row, or check that a method's predictions do not change when the other test rows change.

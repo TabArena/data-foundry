@@ -81,6 +81,7 @@ both container formats.
   (`special_features(container)`: a SMILES column, a spectrum's group of columns) is encoded by its kind:
   `data_foundry.v2.special.encode_special_feature(df, feature)` (or your own), a SMILES never as text;
   `data_foundry.v2.encodings` has the recommended encodings of dates and text too. See
-  `examples/benchmark_on_beyond_arena.py`; without Data Foundry, `examples/read_metric_without_data_foundry.py`.
+  `examples/benchmark_container.py` (format 2) and `examples/benchmark_on_beyond_arena.py` (BeyondArena); without Data
+  Foundry, `examples/read_metric_without_data_foundry.py`.
 
 See [AGENTS.md](AGENTS.md) for the long form.

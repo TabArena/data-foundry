@@ -85,7 +85,11 @@ CC (2026-11-04, Lennart): the 1,701 MIR bins are declared as a spectrum ("delacr
 
 CC (2026-11-04, Lennart): the metric is the source's cross-validation metric, `rmsle` on the log1p target ("follow the recommendation, following the source"); the group description stands; the 600 cm-1 bin, a fill in 53 spectra, is dropped for every row ("do (b), document how to find this in the skills going forward"), and spectra.md now says how to find edge fill values.
 
-**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled.
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled. (superseded 2026-11-04: the full review panel ran in a second pass)
+
+**Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes (text, notes and filing; no row, split or metric change; the definition's text fixes are made: the four texts that said "scored in weight percent", the group description, the shift to later scans and new projects (8-26% worse, LightGBM), the encodings on the declared scale, the layers above 58% organic carbon, which equal the source's measured total carbon); disputed: MET-5 (holds, or departs until its fact is filed), CLEAN-16 (rename by default); settled by the mediator: EV-7 (shift note states the error level only), EV-1 (encoding evidence on the declared scale), CLEAN-11 (high values kept); for the curator: issues 6-10. Priority 3: gap 0, use case 0, source +, shape +, risk 0 (gap: no thin domain, problem type or regime among 107 accepted definitions; use case: the source names the actor, but the fit is approximate, with instrument transfer and later scans untested; risk: no open issue raises a leak, an unclear target or damage).
+
+**Assessment (AI, 2026-11-04):** the CC of 2026-11-04 that cites "REVIEW.md issues 2-3" means issues 2 and 3 of the first PR #33 review page (metric origin, target scale), which never became a file in the folder. `curation_comments` now say that only the three layers above 70% organic carbon were checked against the source's measured total carbon (second-pass panel; Lennart's go-ahead on the review page).
 
 ## Reference
 

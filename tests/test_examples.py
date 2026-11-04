@@ -78,8 +78,10 @@ def _example(name: str):
     return module
 
 
-def _format_2_toy(tmp_path: Path) -> Path:
-    """A regression container scored per era (``mean_group_pearsonr`` on the scoring column ``era``)."""
+def _format_2_toy(tmp_path: Path, extra: dict | None = None) -> Path:
+    """A regression container scored per era (``mean_group_pearsonr`` on the scoring column ``era``); ``extra``
+    adds feature columns (name to values).
+    """
     rng = np.random.default_rng(0)
     n = 120
     df = pd.DataFrame(
@@ -89,6 +91,8 @@ def _format_2_toy(tmp_path: Path) -> Path:
             "era": np.repeat(np.arange(12), n // 12),
         }
     )
+    for name, values in (extra or {}).items():
+        df[name] = values
     df["y"] = df["x1"] + rng.normal(scale=0.5, size=n)
     metric = Metric.source(
         "mean_group_pearsonr", original="per-era correlation", reference="https://example.org", inputs={"group": "era"}
@@ -153,12 +157,44 @@ def test_read_metric_without_data_foundry_on_both_formats(tmp_path, capsys):
     assert "Features: 2 of 4 columns" in out
 
 
-def test_benchmark_example_scores_a_format_2_container_by_its_spec(tmp_path, capsys):
-    """The benchmark example drops the scoring column and scores by scorer(container)."""
+def test_benchmark_container_example_scores_a_format_2_container_by_its_spec(tmp_path, capsys):
+    """The v2 benchmark example drops the scoring column and scores by scorer(container)."""
     pytest.importorskip("sklearn")
-    example = _example("benchmark_on_beyond_arena")
+    example = _example("benchmark_container")
     path = _format_2_toy(tmp_path)
-    scores = example.main(None, "unused", path)
+    scores = example.main(path)
     assert len(scores) == 1
     assert 0.0 < scores[0] <= 1.0  # x1 drives y, so the per-era correlation is positive
     assert "mean_group_pearsonr=" in capsys.readouterr().out
+
+
+def test_benchmark_container_example_encodes_every_feature_type(tmp_path, capsys):
+    """An ordinal by its order, a date and a text column encoded, a categorical as it is; the era is never an input."""
+    pytest.importorskip("sklearn")
+    example = _example("benchmark_container")
+    rng = np.random.default_rng(1)
+    n = 120
+    extra = {
+        "grade": pd.Categorical(rng.choice(["low", "mid", "high"], n), categories=["low", "mid", "high"], ordered=True),
+        "seen": pd.date_range("2024-01-01", periods=n, freq="D"),
+        "note": pd.Series(rng.choice(["red car fast", "blue bike slow", "green bus late"], n), dtype="string"),
+    }
+    container = CuratedContainer.load(_format_2_toy(tmp_path, extra))
+    df, inputs = example.encoded_frame(container)
+    assert "era" not in inputs
+    assert "y" not in inputs
+    assert df["grade"].dtype == float
+    assert set(df["grade"].dropna()) <= {0.0, 1.0, 2.0}
+    assert "seen" not in inputs
+    assert any(c.startswith("seen_") for c in inputs)
+    assert "note" in inputs  # encoded per split, on its training rows
+    scores = example.benchmark(container)
+    assert len(scores) == 1
+    assert "1 text columns encoded per split" in capsys.readouterr().out
+
+
+def test_benchmark_container_example_refuses_a_format_1_container():
+    """A BeyondArena (format 1) container belongs to the other example."""
+    example = _example("benchmark_container")
+    with pytest.raises(SystemExit, match="benchmark_on_beyond_arena"):
+        example.main(get_toy_container_path())

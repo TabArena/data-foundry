@@ -8,7 +8,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Myunghwan
 suggestion: 'Yes'
-priority: 2
+priority: 3
 decision_markers:
 - Outdated
 tags:
@@ -34,11 +34,11 @@ CC (2026-10-29, Myunghwan): Include GDT_TS as a historical tabular quality bench
 
 **Assessment (AI, 2026-10-29):** The author archive has 99,987 rows. A row is a candidate protein structure; the six numeric inputs are surface area, cumulative aliphatic C-beta distances, empirical energy, secondary-structure score, sequence length and aliphatic pair count. Identifiers and both alternative outcomes are excluded from predictors. GDT_TS is the supplied fractional average agreement at 1, 2, 4 and 8 angstrom tolerances. Predict it after candidate generation, before the experimental reference is available.
 
-The source paper fits three separate regressions. Its Section 3 reports multiple measures without a unique criterion, so regression RMSE is the fallback. Our diagnostic R-squared is 1-SSE/SST, whereas the paper reports squared Pearson correlation. Section 4.1 uses tolerance plus/minus 1 angstrom for RMSD and plus/minus 0.1 for TM/GDT. The first archive release is August 2014; the article appeared online in December 2014 and in a 2015 issue.
+The source paper fits three separate regressions. Its Section 3 reports multiple measures without a unique criterion, so regression RMSE is the fallback (superseded 2026-11-04: the metric is `mean_group_pearsonr` on `protein_id`, Exception to MET-5 below). Our diagnostic R-squared is 1-SSE/SST, whereas the paper reports squared Pearson correlation. Section 4.1 uses tolerance plus/minus 1 angstrom for RMSD and plus/minus 0.1 for TM/GDT. The first archive release is August 2014; the article appeared online in December 2014 and in a 2015 issue.
 
 Exclude source IDs beginning native_ or ending _native.pdb by reference identity, not target value. Retain casp5_T0156_1nxj.nNh1.pdb and ROSETTA_1aa2_1aa2h2.pdb despite perfect labels because their reference role is unverified. Retain CASP10_T0676_HOMER_TS2.pdb with RMSD0/GDT0.0116: exact alignment coverage is unavailable, so neither a numerical repair nor deletion is supported. The paper's headline native count is not a measured count of independent protein groups.
 
-SS has an equation/prose disagreement and 5,620 values above modeled sequence length. ED/PN have 134 inconsistent zero combinations under the simple common-pair interpretation. Preserve those values and signed/extreme finite Energy. Feature-generation code and exact row-level alignment outputs were not recovered; no native-dependent feature leakage, sentinel mechanism or supported numerical correction was demonstrated.
+SS has an equation/prose disagreement and 5,620 values above modeled sequence length. ED/PN have 134 inconsistent zero combinations under the simple common-pair interpretation. Preserve those values and signed/extreme finite Energy (superseded 2026-11-04 for ED/PN: the 134 zero combinations are set missing, CC below; Energy stays as supplied). Feature-generation code and exact row-level alignment outputs were not recovered; no native-dependent feature leakage, sentinel mechanism or supported numerical correction was demonstrated.
 
 Source-backed identity checks merge six biological components spanning 14 PDB keys, reducing 453 source keys to 445 canonical proteins. Official CASP links cover 339 targets; three more are sequence-verified. The required hash-checked identity map prevents silently restoring the earlier same-protein alias leak. Nine repeated group-disjoint folds have zero known identity or exact-predictor overlap. Protein-family independence, modern-generator transfer and top-one structure-selection usefulness are not claimed.
 
@@ -76,7 +76,9 @@ CC (2026-11-04, Lennart): `Energy` stays as supplied ("keep as is"); the ED/PN z
 
 CC (2026-11-04, Lennart): the per-protein correlation stands as implemented (REVIEW.md issue 1 closed).
 
-**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled.
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled. (Superseded the same day by the full second-pass panel below.)
+
+**Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes, once the metric is fixed in the library (issue 6), the relaxed natives are excluded (issue 4) and `context` is settled (issue 5), and the definition is rebuilt (USE-7 triggered by 1,011 rosetta62 relaxed natives kept as candidates, the archive's `relaxed_natives/` folder; SPLIT-23 and USE-6 triggered by `context="none"`, a context model scores 0.517 against 0.355; MET-2 and MET-13 triggered by proteins with constant predictions left out of the score, 0.355 to 0.428 without labels; USE-8 wording for CASP10 and EV-6/EV-8 notes fixed in the definition); disputed: the metric fix as a gate (MET-2, MET-13; settled, a gate), what `rn` means (USE-7; settled from the archive), CASP10 as P5 or USE-8 (settled, USE-8), the `Outdated` keep against first_order_theorem_proving (open); for the curator: issues 4-9. Priority 3: gap +, use case 0, source +, shape +, risk - (gap: biology & life sciences is thin among the 107 accepted definitions; use case: the source names no actor and the fit is approximate; source: the Rana et al. 2015 paper and the authors' archive; shape: 95,094 rows, 6 features, 445 protein groups; risk: rows that exist only after the reference, issue 4, and the metric's left-out proteins, issue 6).
 
 ## Reference
 

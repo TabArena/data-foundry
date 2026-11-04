@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: ai4d_lab_tanzania_tourism_classification_challenge
 container_format: 2
-checksum: v2:b913297a32ddc17dbb07ca7428dcb46f5fbea35a830a05edc8da9ea10f9dad9e
+checksum: v2:355c3cf2591a8ec70dc0526fb8b79ee5be9ee71ef02ff8315c6aa71f06a5fc48
 build:
   uuid: 01a18ad4-f6a0-759d-a526-da34a2568066
   checksum: v2:2c65c3a0286292fd2d29ca555c06a81da04ff699c35acff9f92ee45578bf9731
@@ -62,14 +62,17 @@ bundle_checks:
     dataset_duplicate_rows: 'Myunghwan accepted row retention and stratified random
       evaluation on 2026-10-25 after reviewing all nine saved folds: 9.8509% matching
       and 90.1491% nonmatching test evaluations across three repeats. The 965 exact
-      row extras are repeated coarse profiles; they do not establish repeated people.
-      Retain empirical source-row frequencies; respondent/party linkage remains unverified.'
+      row extras are distinct respondents the coarse features cannot tell apart (LEAK-19):
+      361 repeated profiles are Alone and 67.8% of copy groups are larger than their
+      party. A split grouped by profile costs +0.0047 log loss and copy lookups gain
+      nothing. Residual LEAK-17 risk (With Spouse enriched, 44.6% against 27.8%) is
+      bounded at about 0.005.'
     dataset_conflicting_duplicate_rows: Myunghwan accepted retention on 2026-10-25
       after reviewing same- and different-label profile matches. The checker counts
       468 additional distinct feature/label combinations; 410 profiles contain multiple
-      labels (1,324 rows). Identical coarse plans can have different spending categories.
-      No outcome-based deduplication or invented respondent grouping; linkage remains
-      unverified.
+      labels (1,324 rows). On rows linked to the 2020 cut, such profiles have different
+      real spending, so the ambiguity is genuine (LEAK-20). No outcome-based deduplication
+      and no grouping on a feature hash (SPLIT-24).
 decisions:
 - Retain common survey profiles under the accepted evaluation
 ---
@@ -80,7 +83,7 @@ decisions:
 
 Multiclass classification of `cost_category`, scored with `log_loss` on IID splits. 18,506 rows and 19 features. Source: Zindi (2022).
 
-Built as `01a18ad4-f6a0-759d-a526-da34a2568066` on 2026-10-30, but `dataset.py` has changed since: it now gives checksum `v2:b913297a32ddc17dbb07ca7428dcb46f5fbea35a830a05edc8da9ea10f9dad9e`, so the build is stale. See [Build](#build).
+Built as `01a18ad4-f6a0-759d-a526-da34a2568066` on 2026-10-30, but `dataset.py` has changed since: it now gives checksum `v2:355c3cf2591a8ec70dc0526fb8b79ee5be9ee71ef02ff8315c6aa71f06a5fc48`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -90,7 +93,7 @@ Built as `01a18ad4-f6a0-759d-a526-da34a2568066` on 2026-10-30, but `dataset.py` 
 
 **One row.** One labeled tourist survey record in the 2022 competition's training file (18,506 records).
 
-**Predicted.** The original cost_category, ordered Lower Cost < Low Cost < Normal Cost < High Cost < Higher Cost < Highest Cost. The release does not document monetary boundaries or the expenditure basis.
+**Predicted.** The original cost_category, ordered Lower Cost < Low Cost < Normal Cost < High Cost < Higher Cost < Highest Cost. The bands are not published; linked to a 2020 copy of the same survey, they cut the party's total trip spending at about 0.5M, 1M, 5M, 10M and 50M Tanzanian shillings (approximate edges).
 
 **Known at prediction time.** Visitor country, age group and first-trip status; travel party, purpose, activity, information source, tour arrangement, package inclusions and nights on the mainland and Zanzibar. Historical realized plan-like attributes instantiate the specified scenario.
 
@@ -98,7 +101,7 @@ Built as `01a18ad4-f6a0-759d-a526-da34a2568066` on 2026-10-30, but `dataset.py` 
 
 **Our changes to the source.** We drop the opaque tourist identifier, merge the Widlife Tourism spelling into Wildlife Tourism, merge UAE and BURGARIA into their existing country categories, and make both party counts missing when their recorded sum is zero. Original labels and rows stay.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The conditional-plan scenario uses the observed trip attributes, assuming the plan is fulfilled. The release does not specify currency, per-person versus party or trip versus daily expenditure, class thresholds, survey year or respondent/party linkage.
+> **Use case fit: approximate (a stand-in with a known gap).** The conditional-plan scenario uses the observed trip attributes, assuming the plan is fulfilled. A six-band label of party spending is coarser than the amount a planner needs, and its band edges are reconstructed, not published. The release does not give the survey year or respondent/party linkage.
 
 ## Files in this folder
 
@@ -150,7 +153,7 @@ Only curators run `build`, when the dataset ships.
 | year | 2022 |
 | domain | business & marketing |
 | license | CC BY-SA 4.0; publisher also states non-commercial research or education use (competition rules). |
-| data_tags | IID |
+| data_tags | IID, ForcedIIDFromTemporal |
 | reference | Zindi2022TanzaniaTourismClassification |
 | rows x columns | 18,506 x 20 |
 | task.target | cost_category |
@@ -213,38 +216,56 @@ We start with the 18,506 labeled rows in Train.csv; the 6,169 unlabeled Test.csv
 - Prediction point: a visitor supplies visitor context and a proposed trip plan, assumed to occur as specified.
   Nights, activity, party and package attributes are scenario inputs even though recorded in an exit survey.
   package_food denotes package inclusion, not meal consumption. cost_category stays target-only.
-- Keep all six source classes and source Log Loss. Currency, expenditure basis and class thresholds are
-  undocumented in the inspected release; no regression target or monetary boundaries are reconstructed.
+- Keep all six source classes and source Log Loss (MET-4). The release does not state the label's basis; the
+  2020 cut of the same survey ships total_cost ("The total tourist expenditure in TZS"). On 2,401 rows that
+  link uniquely to it, cuts of the party's total cost at 0.5M / 1M / 5M / 10M / 50M TZS reproduce the class
+  for 97.9% (the same cuts per person: 58.9%); class medians run from 250k to 58.0M TZS. The edges are
+  approximate (a third-party copy of the 2020 files). The cost itself exists only for that 4,809-row subset,
+  so the six classes stay (USE-5).
 - Drop Tour_ID (18,506 unique opaque tour_id plus eight alphanumeric characters); no chronology is documented.
 - Merge the evident Widlife Tourism spelling (5,988 training rows) into Wildlife Tourism (2,283 rows).
 - Merge UAE (187 rows) into UNITED ARAB EMIRATES and BURGARIA (2 rows) into BULGARIA, both already
   present in the source. Other country distinctions stay as published.
 - Types (2026-11-04, Lennart; CLEAN-25, CLEAN-14): cost_category is an ordered category, Lower Cost < Low
   Cost < Normal Cost < High Cost < Higher Cost < Highest Cost. The source lists the classes alphabetically
-  and gives no boundaries; Lower and Low are read as comparatives, as High < Higher < Highest are.
-  age_group is ordered bands (<18 < 18-24 < 25-44 < 45-64 < 65+). The party counts and nights stay numbers.
+  and gives no boundaries; Lower and Low are read as comparatives, as High < Higher < Highest are. The
+  linked 2020 costs back the order: Spearman 0.965 for it, 0.945 with Lower and Low swapped. age_group is ordered bands (<18 < 18-24 < 25-44 < 45-64 < 65+). The party counts and nights stay numbers.
 - Retain ordinary missing values. Both party counts are set missing for 94 records with a zero total;
   a tourist record cannot describe a party with no people. No positive counts or night outliers are clipped.
+- travel_with is missing for 1,075 records, 1,045 (97.2%) of them one-person parties; it stays missing, since
+  recoding it to Alone would be a guess (LEAK-8). 54 trips exceed 90 nights in total and one has 371
+  (365 + 6); none is impossible, so all stay (CLEAN-11).
 - Source coding limits: 142 Independent records have a Yes package inclusion, while 104 Package Tour records
   have all seven inclusions No. Among records with both party counts known, 62 Alone records sum above one;
   344 records with a nonmissing non-Alone relationship sum to one. Questionnaire routing and count scope
   are unverified, so retain reported flags and positive counts rather than guess a recoding.
 - Retain all rows and stratified random evaluation, accepted by Myunghwan on 2026-10-25 after reviewing
   repetition evidence. Across all nine folds, 9.8509% of test evaluations match a training profile and
-  90.1491% do not (pooled across three repeats, not distinct people). Identical coarse plans may have
-  different spending; respondent/party linkage remains unverified (LEAK-16/18).
+  90.1491% do not (pooled across three repeats, not distinct people). The copies are distinct respondents
+  the coarse features cannot tell apart, which LEAK-19 keeps with the reason in the notes: 361 repeated
+  profiles are Alone (213 of them with more than one label), and 67.8% of copy groups are larger than their
+  party. A split grouped by feature profile costs +0.0047 log loss (+0.0025 without age_group; LightGBM, one
+  repeat), and out-of-fold copy lookups gain nothing (1.0765 against 1.0755). Residual LEAK-17 risk: With
+  Spouse is enriched among copy rows (44.6% against 27.8%), bounded by that grouped cost of about 0.005.
+  Grouping on a feature hash is not allowed (SPLIT-24), and the release has no respondent/party linkage.
 - The curator-provided official Zindi archive matches all four retained source files exactly.
   Independent authenticated retrieval is not claimed.
   The mmu_2022 source repeats the same description, six-class metric and non-archive file sizes; the existing
-  duplicate record is left unchanged. The 2020 regression competition is a different published task/cut.
+  duplicate record is left unchanged. The 2020 "Tanzania Tourism Prediction" competition (6,476 rows,
+  total_cost) is an earlier subset of the same survey with the raw TZS cost: 72.3% of its 4,809 training
+  rows match a row here, against 23.4% by chance. It is a duplicate version under PROV-6, not shipped. The
+  year stays 2022 (PROV-9): the 2020 file holds neither cost_category nor about 74% of these rows.
 
 ## Splits
 
 Stratified random 3-fold cross-validation with 3 repeats, using benchmark split seed 4267 and row shuffle 42.
 Tests represent held-out visitor/trip records from the represented survey population under the fulfilled-plan scenario.
-No date column or chronological meaning of Tour_ID is documented. Random evaluation follows this use case,
-rather than inferring independence solely from missing timestamps. Repeated respondent/party linkage cannot
-be verified from the release. Similar feature profiles are not asserted to be real respondent groups.
+No date column or chronological meaning of Tour_ID is documented, and the raw row order carries none
+(neighbouring labels agree 0.2211 against 0.2228 by chance). The use case looks forward (a trip before the
+visit), so the split is IID forced from temporal (SPLIT-8): a dated survey wave would test drift of the TZS
+band edges and of the visitor mix; recover it if NBS publishes it. No valid window exists to measure that
+cost. Repeated respondent/party linkage is not in the release; a split grouped by exact feature profile
+costs +0.0047 log loss, and similar profiles are not asserted to be real respondent groups.
 
 3 repeat(s) x 3 fold(s) with seed 4267; train 12,337 to 12,338 rows, test 6,168 to 6,169 rows.
 
@@ -278,8 +299,8 @@ The observed inputs are coarse visitor and trip descriptors. Their equality, inc
 
 Accepted on purpose:
 
-- `dataset_duplicate_rows`: Myunghwan accepted row retention and stratified random evaluation on 2026-10-25 after reviewing all nine saved folds: 9.8509% matching and 90.1491% nonmatching test evaluations across three repeats. The 965 exact row extras are repeated coarse profiles; they do not establish repeated people. Retain empirical source-row frequencies; respondent/party linkage remains unverified.
-- `dataset_conflicting_duplicate_rows`: Myunghwan accepted retention on 2026-10-25 after reviewing same- and different-label profile matches. The checker counts 468 additional distinct feature/label combinations; 410 profiles contain multiple labels (1,324 rows). Identical coarse plans can have different spending categories. No outcome-based deduplication or invented respondent grouping; linkage remains unverified.
+- `dataset_duplicate_rows`: Myunghwan accepted row retention and stratified random evaluation on 2026-10-25 after reviewing all nine saved folds: 9.8509% matching and 90.1491% nonmatching test evaluations across three repeats. The 965 exact row extras are distinct respondents the coarse features cannot tell apart (LEAK-19): 361 repeated profiles are Alone and 67.8% of copy groups are larger than their party. A split grouped by profile costs +0.0047 log loss and copy lookups gain nothing. Residual LEAK-17 risk (With Spouse enriched, 44.6% against 27.8%) is bounded at about 0.005.
+- `dataset_conflicting_duplicate_rows`: Myunghwan accepted retention on 2026-10-25 after reviewing same- and different-label profile matches. The checker counts 468 additional distinct feature/label combinations; 410 profiles contain multiple labels (1,324 rows). On rows linked to the 2020 cut, such profiles have different real spending, so the ambiguity is genuine (LEAK-20). No outcome-based deduplication and no grouping on a feature hash (SPLIT-24).
 
 ## Data checks
 
@@ -407,4 +428,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 6b2e70b5b795a373a3ae71006b8db8e471eabe9f-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:b913297a32ddc17dbb07ca7428dcb46f5fbea35a830a05edc8da9ea10f9dad9e` |
+| stale | yes: the definition now gives checksum `v2:355c3cf2591a8ec70dc0526fb8b79ee5be9ee71ef02ff8315c6aa71f06a5fc48` |

@@ -250,6 +250,16 @@ def participant_task(ds, data: dataset_io.ProbeInput, scoring: list[str]) -> dic
     }
 
 
+def prediction_point_line(prediction_point: str) -> str:
+    """The kit's prediction-point line from a clause ("the policy is quoted") or a whole sentence ("The prediction
+    is made for an hour after ..."), which is kept as written instead of getting a second "the prediction is made".
+    """
+    text = prediction_point.strip().rstrip(".")
+    if text.lower().startswith("the prediction is "):
+        return f"- Prediction point: {text[0].lower()}{text[1:]}."
+    return f"- Prediction point: the prediction is made when {text}."
+
+
 def participant_markdown(data: dataset_io.ProbeInput, links: list[str], task: dict, prediction_point: str) -> str:
     """The ``task.md`` of the participant kit: the clean room's facts, the prediction point, the metric, the files."""
     metric = task["metric"]
@@ -258,7 +268,7 @@ def participant_markdown(data: dataset_io.ProbeInput, links: list[str], task: di
     lines = task_markdown(data, links, rows=len(data.df), sampled=None).rstrip("\n").split("\n")
     at = lines.index("## Source links")
     extra = [
-        f"- Prediction point: the prediction is made when {prediction_point.rstrip('.')}.",
+        prediction_point_line(prediction_point),
         f"- Metric: `{metric['name']}` on a `{metric['prediction']}` prediction{params}; {direction} is better.",
     ]
     if task["grouping"]:

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: huesken_sirna_efficacy
 container_format: 2
-checksum: v2:e1e3a5b6f912eddd99bd67ed5b9010f4f611bb903820d225a71b80eb73289ae1
+checksum: v2:ded42eabb2d4803372b8afc6fb69db924f4ecd6e22b70346b93966f41585ee11
 build:
   uuid: 01a18629-c3f0-7652-a9e8-57307772b909
   checksum: v2:e733528bab0b1071f95ffb17ede5aa335b63b96bb61c7322e86887835bae4f46
@@ -85,7 +85,7 @@ decisions:
 
 Regression of `normalized_inhibitory_activity`, scored with `mean_group_pearsonr` on grouped splits by `target_gene`. 2,431 rows and 266 features. Source: Other (2005).
 
-Built as `01a18629-c3f0-7652-a9e8-57307772b909` on 2026-10-29, but `dataset.py` has changed since: it now gives checksum `v2:e1e3a5b6f912eddd99bd67ed5b9010f4f611bb903820d225a71b80eb73289ae1`, so the build is stale. See [Build](#build).
+Built as `01a18629-c3f0-7652-a9e8-57307772b909` on 2026-10-29, but `dataset.py` has changed since: it now gives checksum `v2:ded42eabb2d4803372b8afc6fb69db924f4ecd6e22b70346b93966f41585ee11`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -164,7 +164,7 @@ Only curators run `build`, when the dataset ships.
 | name | `mean_group_pearsonr` (custom; takes value; higher is better) |
 | origin | context: obvious from the task: the source defines no metric |
 | definition | mean over groups of the Pearson correlation within the group; method='numerai_corr' transforms first as Numerai's CORR |
-| reason | The decision is which guides to synthesize for a new gene, a ranking inside the gene. The later papers (OligoFormer, siDPT; Li et al. 2025) report pooled correlation, MAE or AUC without one unique selection criterion (MET-5), and Huesken's full methods could not be retrieved. Pooled RMSE still rewards a gene's mean (knowing it cuts RMSE from 0.1582 to 0.1378); the per-gene correlation scores the ranking. Both metrics pick the same model family on the shipped folds (Kendall tau 0.64 over nine models). Exception to MET-5 (Lennart, 2026-11-04). |
+| reason | The decision is which guides to synthesize for a new gene, a ranking inside the gene. The later papers (OligoFormer, siDPT; Li et al. 2025) report pooled correlation, MAE or AUC without one unique selection criterion (MET-5), and Huesken's full methods could not be retrieved. Pooled RMSE still rewards a gene's mean (giving LightGBM each test gene's true mean cuts RMSE from 0.1608 to 0.1405, panel re-run); the per-gene correlation scores the ranking. LightGBM beats ridge in 30 of 30 splits by RMSE and 29 of 30 by the per-gene correlation. Exception to MET-5 (Lennart, 2026-11-04). |
 | inputs | group: `target_gene` |
 
 <details>
@@ -205,14 +205,17 @@ The first 5 of 2,431 rows of the final frame (random rows: the frame is shuffled
 
 Start with the corrected Huesken supplementary Table 3 and target inserts in Table 2, not model-generated labels from the withdrawn early supplement.
 
-- Sequence input, special encoding deferred (Lennart, 2026-11-04, issue 1 (b)): the positions, trimer counts and 24 descriptors ship as built. The record is tagged `Revisit later` to check whether to drop it, as the other protein and sequence models were (SEL-12, modality), or to declare a `Sequence` special feature when a second sequence dataset arrives.
+- Sequence input, kept as a tabular task (Lennart, 2026-11-04, issue 1 (b); SEL-12, modality): the positions, trimer counts and 24 descriptors ship as built, and the record is tagged `Revisit later`. Tabular models are competitive on the 30 gene-held-out folds: a tree model on the guide columns alone reaches 0.67 per-gene correlation, and a one-hot ridge 0.621 against 0.652 for all 266 columns. No sequence model was run on these folds. The `splice` table already is a second sequence table, so the earlier trigger for a `Sequence` special feature has fired, but none is declared: the positions are already lossless categoricals. It reopens if a small CNN or LSTM on the one-hot guide and window clearly beats LightGBM on these folds (the test used for african_snake_antivenom); then `No`, `Wrong Domain / Source Modality`.
 - Prediction point: before synthesis and the reporter assay. The candidate guide and target sequence are known; assay measurements, NAS identifiers and original train/test flags are never features (USE-3, LEAK-10).
 - All 2,431 original guide sequences and activities are retained. OligoFormer's raw copy contains 2,361 exact activity matches but omits all 70 UBE2H guides; its processed label also divides by the observed maximum, 1.341. Neither omission nor this extra scaling is carried over (PROV-13, MET-3).
 - The original Table 3 footnote specifies a linear assay-control normalization: positive control 0.900, negative control 0.354. Values above one remain measured normalized values, never clipped or called probabilities. The 2005 corrigendum (doi:10.1038/nbt1005-1315a) replaced predicted scores with these measured activities.
 - Group on the exact source species and gene symbol recovered by reverse-complement matching to Table 2. There are 30 observed gene groups in 34 published inserts; both Mmp7 inserts remain one gene group. Two ambiguous guide matches are resolved from Table 3 species flags: NAS 18412 is rodent (Rn P2rx2), NAS 19819 human (Hs P2RX3). The copy incorrectly gives NAS 18412 the human target window; it is repaired from the original, without using labels or row order (SPLIT-24, PROV-13).
 - Restore both DNA overhang bases as categorical positions, distinct from the RNA positions. The target window is 19 binding bases plus 19 flanking bases on either side. X means outside the insert; N and R retain the source's unresolved base codes in the positional features. Fixed trimer counts map N/R to X; no sequence is guessed.
 - Thermodynamic and composition descriptors use the 19 RNA bases and the fixed OligoFormer preprocessing constants. Categorical positions preserve the sequence; the redundant published one-hot encoding is left to the learner. Drop only constant and exactly duplicated feature columns, in a deterministic order (CLEAN-8). The ten explicit yes/no sequence descriptor flags are categorical; counts and continuous descriptors remain numeric (CLEAN-14). The terminal descriptor follows the inherited executable convention, round(DG[first] - DG[last] + 0.45*(sign(first)+sign(last)), 2), where sign is +1 for AC/AG/UC/UG, -1 for GA/GU/CA/CU, and 0 otherwise. This differs from the printed Li Appendix A terminal correction; DH uses -14.88 for GC rather than the printed -14.882. These fixed operational descriptors are retained, not asserted to be exact reproductions of the printed physical formula.
-- The metric is the correlation within each target gene, averaged over genes (`mean_group_pearsonr`; Lennart, 2026-11-04, exception to MET-5): the use case ranks guides within a gene, and the literature reports pooled correlation, MAE or AUC without a unique criterion. Both RMSE and the per-gene correlation pick LightGBM over ridge (97% and 80% of folds).
+- The metric is the correlation within each target gene, averaged over genes (`mean_group_pearsonr`; Lennart, 2026-11-04, exception to MET-5): the use case ranks guides within a gene, and the literature reports pooled correlation, MAE or AUC without a unique criterion. LightGBM beats ridge in 30 of 30 splits by RMSE and in 29 of 30 by the per-gene correlation.
+- Redundancy kept as published (CLEAN-8): `guide_position_01..19` are the complement of `target_window_position_38..20`, so 19 of the 266 features (7%) restate window positions and an exact-duplicate check does not see it; six of the ten yes/no descriptors (U_1, G_1, C_1, U_2, A_19 and others) repeat a position as one-hot, and DG_1 and DH_1 are near-bijective. Derived columns: 164 trimer counts (64 guide, 100 window) and the 24 descriptors, all fixed functions of the sequence; the 88 categorical features are 78 positions and 10 flags.
+- Gene offset (USE-8): 17.1% of the target variance lies between genes and the metric ignores it. Training on the gene-centred target and dropping the window columns gave 0.6461 to 0.6686 per-gene correlation in a single-seed panel run (about one split SD, indicative); it is honest modelling, not a leak, and the window columns stay because a deployed model knows the gene sequence.
+- Scope (USE-8): one reporter system and 2005 chemistry, no chemically modified siRNA. Only two guide windows cross genes (Hs P2RX3 and Rn P2rx2, 9 shared 20-mers, no exact feature copy across a fold). The raw Table 3 order is autocorrelated (lag-1 0.345 in the target); the shipped row order is shuffled (0.006), and the splits are by gene.
 - The grouped task tests a new gene in this reporter assay. It does not certify efficacy on endogenous targets, unfamiliar experimental conditions or clinical outcomes. All original random train/test flags are discarded in favor of gene-held-out evaluation (SPLIT-4, SPLIT-5). Pooled RMSE measures activity magnitude accuracy, not demonstrated within-gene top-k selection success; no synthesis budget or decision threshold is invented.
 
 - CC (2026-10-26, Myunghwan): accepted the small-gene warning for this add-stage task. Lennart (2026-11-04) put it as the case where the group is a large set of observations over which we want to generalize, so that from the context a few groups suffice (as for a few hospitals), and a case-by-case call, not a minimum-group rule; the native ten-gene folds stay. The separate final ship verdict was explicitly given by Myunghwan on 2026-10-28. Grouped evaluation targets an unseen species/gene ID with no measured candidates (cold start); OOD here names that unseen-entity evaluation, not a separately established shift in assay conditions.
@@ -579,4 +582,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 6d189a922994ddb0221c8249d07552d4df8af88b |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:e1e3a5b6f912eddd99bd67ed5b9010f4f611bb903820d225a71b80eb73289ae1` |
+| stale | yes: the definition now gives checksum `v2:ded42eabb2d4803372b8afc6fb69db924f4ecd6e22b70346b93966f41585ee11` |
