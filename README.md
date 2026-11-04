@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-03 23:08 UTC: 45 claim(s) (Andrej 16, Lennart 6, Myunghwan 23).
+As of 2026-11-04 00:27 UTC: 46 claim(s) (Andrej 16, Lennart 6, Myunghwan 24).
 
 ## Andrej
 
@@ -49,6 +49,7 @@ As of 2026-11-03 23:08 UTC: 45 claim(s) (Andrej 16, Lennart 6, Myunghwan 23).
 | `chicago_traffic_crashes` | triage | 2026-10-29 | 2026-11-05 | Selected by Myunghwan as the next large-scale candidate (about 1.1 million crashes). Reservation for screening review; no scientific inclusion or build decision. |
 | `cps88wages` | review | 2026-10-23 | 2026-11-04 | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
 | `dataset_from_uncertainty_guided_model_selection_for_tabular_foundation_models_in_biomolecule_efficacy_prediction` | review | 2026-10-23 | 2026-11-04 | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
+| `desi_dr1_star_galaxy_quasar` | add | 2026-11-04 | 2026-11-11 | Myunghwan requested DESI add-dataset; label accuracy and systematic class noise require investigation before inclusion. |
 | `duolingo_spaced_repetition_recall` | triage | 2026-10-31 | 2026-11-07 | Curator-requested triage of PR39 priority-4 candidates with 10M+ source observations. |
 | `economic_well_being_prediction_challenge` | triage | 2026-10-28 | 2026-11-10 | Curator ship accepted. Local build, reload and traced-input reproduction verified (2026-11-03); temporal x unseen-country, 21,454 rows, 16 evaluations. Local branch prepared separately; intentionally not added to existing PR. Retain ownership pending separately authorized publication/integration. |
 | `eucalyptus` | review | 2026-10-23 | 2026-11-04 | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
