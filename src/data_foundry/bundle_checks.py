@@ -599,7 +599,9 @@ def _check_dataset_duplicates(ctx: _Ctx) -> Iterator[CheckResult]:
             hashes.setdefault(digest, column)
 
     target_duplicates = [(a, b) for a, b in duplicate_pairs if ctx.target in (a, b)]
-    other_duplicates = [(a, b) for a, b in duplicate_pairs if ctx.target not in (a, b)]
+    # a scoring column may be a copy of a feature the metric also needs (MET-2): not a duplicate to drop
+    scoring = {c.column for c in getattr(ctx.task, "scoring_columns", None) or ()}
+    other_duplicates = [(a, b) for a, b in duplicate_pairs if ctx.target not in (a, b) and not ({a, b} & scoring)]
     if target_duplicates:
         leaking = [b if a == ctx.target else a for a, b in target_duplicates]
         yield CheckResult(
@@ -1031,8 +1033,14 @@ def _metric_spec_findings(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901, PL
     yield from _metric_computes_findings(ctx)
 
 
+_MEAN_DEVIANCES = ("mean_poisson_deviance", "mean_tweedie_deviance")
+"""Metrics minimised by the true mean on the original scale, which a model fit on a transformed target misses."""
+
+
 def _target_transform_findings(ctx: _Ctx) -> Iterator[CheckResult]:
-    """A ``target_transform`` is for a regression target whose inverse is finite on every shipped value."""
+    """A ``target_transform`` is for a regression target whose inverse is finite on every shipped value; a mean
+    deviance warns on one, as a model fit on the transformed scale predicts below the mean.
+    """
     from data_foundry.v2.metrics import INVERSE_TRANSFORMS  # noqa: PLC0415 - data_foundry.v2 imports this module
 
     task = ctx.task
@@ -1046,6 +1054,18 @@ def _target_transform_findings(ctx: _Ctx) -> Iterator[CheckResult]:
             f"`target_transform={transform!r}` is for a regression target; the task is {task.problem_type}.",
         )
         return
+    name = task.objective_metric.name
+    if name in _MEAN_DEVIANCES:
+        yield CheckResult(
+            "task_metric_deviance_on_transformed_target",
+            "warning",
+            f"`{name}` scores the predicted mean on the original scale, but the target ships as "
+            f"`target_transform={transform!r}`: a model fit on that scale predicts about the mean of the transformed "
+            "value, whose inverse falls below the mean (for a log, the geometric mean), so the deviance punishes the "
+            "transform, not the model (pricing_game_2017_french_mtpl: deviance skill -5.1 on log1p, +0.05 in euros).",
+            hint="Ship the target untransformed (CLEAN-16 exception, as pricing_game_2017_french_mtpl), or accept "
+            "the warning with the reason.",
+        )
     if ctx.df is None or ctx.target not in ctx.df.columns:
         return
     values = pd.to_numeric(ctx.df[ctx.target], errors="coerce").to_numpy(dtype=float)
@@ -1073,17 +1093,29 @@ def _scoring_column_findings(ctx: _Ctx) -> Iterator[CheckResult]:
             "error",
             f"Scoring or metric input column(s) {missing} are not in the frame.",
         )
-    # An input may also be a column the task already gives the models (a feature, the group or the time column, e.g.
-    # sat11's instance id or a stay's hour); only a column that exists for scoring alone is a scoring column.
+    # The metric reads the task's own group or time column where it is (sat11's instance id, a stay's hour, a test
+    # day); any other input is a scoring column, and a feature the metric also needs ships a scoring copy (MET-2).
+    task_columns = {
+        *ctx.columns_of(task.group_on),
+        *ctx.columns_of(task.time_on),
+        *ctx.columns_of(task.group_time_on),
+    }
     model_inputs = sorted({c for c in spec.inputs.values() if c not in scoring and c in ctx.df.columns})
-    if model_inputs:
+    own = [c for c in model_inputs if c in task_columns]
+    features = [c for c in model_inputs if c not in task_columns]
+    if own:
         yield CheckResult(
             "task_metric_input_is_model_input",
             "info",
-            f"The metric's input column(s) {model_inputs} are also given to the models (a feature, the group or the "
-            "time column); they are not scoring columns.",
-            hint="Declare a column as a `ScoringColumn` only when it exists for scoring alone and must not be a "
-            "feature.",
+            f"The metric reads the task's group or time column(s) {own} where they are; they are not scoring columns.",
+        )
+    if features:
+        yield CheckResult(
+            "task_metric_input_is_feature",
+            "warning",
+            f"The metric reads feature column(s) {features}: a metric's extra data is a scoring column (MET-2).",
+            hint="Keep the feature and copy it in `_clean` into a scoring column named for its role "
+            "(`var11` -> `var11_weight`); map the metric's input to the copy.",
         )
     as_features = sorted(c for c in scoring if c == task.time_on or c in ctx.columns_of(task.stratify_on))
     if as_features:
