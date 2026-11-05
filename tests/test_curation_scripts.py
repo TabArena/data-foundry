@@ -747,6 +747,7 @@ def test_dtype_probe_flags_a_count_typed_categorical(dtype_probe):
             "flag_n": pd.Categorical(rng.choice([0, 1], n)),
             "balance": rng.normal(1_000, 300, n).round(),
             "zip_code": rng.choice([10115, 20095, 80331], n),
+            "ward_best": rng.integers(1, 130, n).astype(float),
             "y": rng.integers(0, 2, n),
         }
     )
@@ -764,8 +765,9 @@ def test_dtype_probe_flags_a_count_typed_categorical(dtype_probe):
     assert flags["num_children"] == ["quantity_words"]  # a count with a proxy missing code among its levels
     assert table.set_index("column").loc["num_children", "other_levels"] == [".b"]
     assert flags["zip_code"] == ["codebook_categorical", "code_name"]
+    assert flags["ward_best"] == ["code_name"]  # a ward number within its municipality (GitHub issue #48)
     assert "y" not in flags
-    assert list(dtype_probe.flagged(table)["column"]) == ["campaign", "num_children", "zip_code", "city"]
+    assert list(dtype_probe.flagged(table)["column"]) == ["campaign", "num_children", "zip_code", "ward_best", "city"]
 
 
 def test_dtype_probe_flagged_with_nothing_flagged(dtype_probe):

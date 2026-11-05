@@ -118,6 +118,29 @@ For a shipped BeyondArena dataset (the re-check of `/add-dataset` covers v2 defi
    *Bundle Checks* cell with `run_bundle_checks(curated_data, ignore=[...]).raise_if_errors()` before `save()` (each
    `ignore` entry with its reason) and `verify_saved_container(...)` after it.
 
+## Known issues of the shipped containers
+
+`BEYOND_ARENA` pins the containers built in April 2026, and the pins stay: rebuilding a shipped dataset mints a new
+UUID and breaks them. Since then the TabArena v0.2 working copy (`datasets/_dev/tabarena-v0pt2/`) has curated every
+dataset again (the leak audit of 2026-09-24 to 2026-10-01, grouped and temporal splits, types from the codebooks,
+decoded codes). So an old task can still carry a leak or a defect that its v2 folder has fixed: the v2 folder is the
+latest state, and the TabArena v0.2 collection will ship it.
+
+* **Leaks still in the pinned frames**, for example (reported in GitHub issue #48):
+  `santander_customer_transaction_prediction` has the 400 `var_<k>_has_one` / `has_zero` columns, computed from the
+  labels of all rows, so they encode the labels of the test rows; `anes_voting_2026` has 57 post-election items,
+  among them `VCF1005`, built from the respondent's House vote.
+* **Retired since** (record `No (Retired)`, the reason in its `## Comments`), 23 of the 142 pins: `churn`,
+  `customer_satisfaction_in_airline`, `ecommerce_shipping`, `fitness_club`, `ghanas_indigenous_intel`,
+  `hazelnut_spread_contaminant_detection`, `healthcare_insurance_expenses`, `heart_disease_cleveland`,
+  `heart_disease_hungary`, `heart_disease_va_long_beach` (the three merged into `heart_disease`), `hiva_agnostic`,
+  `homeq_default_prediction`, `iranian_churn`, `marketing_campaign`, `maternal_health_risk`,
+  `mice_protein_trisomy_discriminant`, `mutual_funds_india`, `parkinsons_biomedical_voice_measurements`,
+  `physiochemical_protein`, `prostate_cancer_detection`, `seismic_bumps`,
+  `telemonitoring_parkinsons_biomedical_voice_measurements`, `video_game_fps_prediction`.
+* **Changed since:** what changed for any other dataset is in the working copy's
+  [`CHANGELOG.md`](datasets/_dev/tabarena-v0pt2/CHANGELOG.md) (search for its name) and in its record.
+
 ## Maintaining a v1 notebook
 
 * Do not re-run a shipped notebook end to end and re-save: `save()` mints a new UUID and breaks the collection pin.

@@ -31,7 +31,7 @@ Flags, strongest first (``FLAG_ORDER``); "mostly numbers" is a ``numeric_share``
   integer of the first ``MIN_LEVELS`` present, and ``rank_corr`` at most ``RANK_CORR``. Codes numbered by frequency
   (alfa_battle's label-encoded cities) look the same.
 * ``code_name``: numeric with more than two integer values, and a name part that names a code (`id`, `code`, `zip`,
-  `postcode`).
+  `postcode`) or an administrative area (`ward`, `district`, `county`, `municipality`, `province`, `region`).
 * ``numeric_levels``: categorical with more than two levels, mostly numbers, and no stronger flag. Most are codes (zip
   codes, ICD-9 codes, label-encoded ids), but a count whose codebook says nothing plain lands here too: qsar_biodeg's
   `C026` (atom-centred fragments R--CX--R, 0 to 12).
@@ -67,7 +67,22 @@ QUANTITY_WORDS = re.compile(
     r"\b(numbers? of|counts? of|how many|how much|frequency of|quantity of|amount of|no\. of)\b", re.IGNORECASE
 )
 QUANTITY_NAME_PARTS = {"nb", "num", "number", "count", "counts", "cnt", "freq", "times", "amount", "qty", "expense"}
-CODE_NAME_PARTS = {"id", "code", "zip", "zipcode", "postcode", "postal"}
+# administrative areas too: a ward or district number names a place, not a quantity (early_learning_predictors'
+# `ward_best`, GitHub issue #48)
+CODE_NAME_PARTS = {
+    "id",
+    "code",
+    "zip",
+    "zipcode",
+    "postcode",
+    "postal",
+    "ward",
+    "district",
+    "county",
+    "municipality",
+    "province",
+    "region",
+}
 OPEN_LEVEL = re.compile(
     r"^\s*(<=?|>=?|≤|≥)\s*\$?\d|\d\s*\+\s*$|\d\s*<=?\s*$|\d+\s*plus\b|^(gt|lt|ge|le|less|below|above|over|under)\s*\d"
     r"|\b(or more|and more|or over|and over|or older|and older|more than|less than|fewer than)\b",

@@ -266,6 +266,10 @@ class PvaRevenuePredictionKddcup98(AbstractCuratedDataset):
           2 = Above average SES, 3 = Below average SES, 4 = Lowest SES.)" (cup98dic.txt). Each row is read by its own
           scheme, on one line: lowest < below average < average < above average < highest. Before, urban codes 2 and 3
           (6,504 and 5,270 rows) were read as average and lowest, and code 4 had a coined label.
+        - `DOMAIN_urbanicity` stays an unordered category (2026-11-05, Lennart, GitHub issue #48, CLEAN-14): the
+          dictionary lists the first byte of `DOMAIN` as U=Urban, C=City, S=Suburban, T=Town, R=Rural and calls the
+          field "A nominal or symbolic field" (cup98dic.txt); it does not say whether a city neighbourhood is denser
+          than a suburb, so no order is imposed.
         - The target (2026-11-01, CLEAN-25): `TARGET_B` ships its classes as words (1 is the event). Binary: "Yes" is
           the event, the class that sorts second, so it is the metrics' positive class.
     """

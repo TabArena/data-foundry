@@ -51,6 +51,10 @@ CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words w
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships its class names.
 
+CC (2026-11-05, Lennart): GitHub issue #48 review: the 10 clinical scores 0-3 ship as numbers (the source names only the two ends of the scale); `_feature_types` declares only `family history` categorical. The declared metric (log_loss fallback) is checked.
+
+**Assessment (AI, 2026-11-05):** the 2026-11-01 decoding made the scores numbers in `_clean`, but a blanket `_feature_types` (every column but age categorical) cast them back to unordered categories; found by GitHub issue #48. A test now checks that every `SCORES` column ships numeric.
+
 ## Reference
 
 @article{guvenir1998learning,
