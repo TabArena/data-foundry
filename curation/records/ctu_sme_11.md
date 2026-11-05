@@ -2,13 +2,11 @@
 unique_name: ctu_sme_11
 name: 'CTU-SME-11: a labeled dataset with real benign and malicious network traffic mimicking a small medium-size enterprise environment'
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
-priority: 2
+- Lennart
+suggestion: 'No'
 decision_markers:
+- AHDS (Artifical/Handmade/Deterministic/Simulated)
 - Needs extensive data wrangling
-tags:
-- AI-Filled (Verify)
 original_source: Other
 year: '2023'
 domain: technology & internet
@@ -18,8 +16,6 @@ source_links:
 - https://doi.org/10.5281/zenodo.7958259
 - https://dspace.cvut.cz/handle/10467/109254
 - https://www.stratosphereips.org/datasets-overview
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -41,3 +37,7 @@ type_adapter_id: curation-record-v1
 - as published: 99 million expert-labelled Zeek network flows from 11 devices (IoT, desktop, mobile; bare metal and VMs), captured 7 days, 2023-02-20 to 2023-02-26, Prague; 14 tar.bz2 files, 80 GB compressed / 170 ...; target: flow label: benign / malicious / background (plus a descriptive behaviour label); access: open.
 - Why: same lab, same task and label scheme as ctu_13 (real captured traffic, malware run on real hosts, Benign/Malicious/Background), features of the same kind (flow records known when the flow closes); labels put by experts per flow, not by infected-host IP alone
 - Adds: 12 years newer (2023 malware and devices vs 2011), 99M labelled flows, Zeek conn logs instead of 2011 Argus NetFlows, a descriptive label per flow, devices as natural groups (11) and 7 days for a temporal split; CC-BY-4.0. Same caveats as ctu_13: Background means unknown, few groups, very large files
+
+CC (2026-11-04, Lennart): `No`, `AHDS (Artifical/Handmade/Deterministic/Simulated)` (SEL-16), with ctu_13: "This should also affect ctu_sme_11 in that case" (PR #33 review).
+
+**Assessment (AI, 2026-11-04):** the same lab's 7-day experiment that "mimics" a small enterprise (https://zenodo.org/records/7958259): experiment VMs infected with malware and then factory reset, participants "forbidden to use personal accounts", and labels from a NetflowLabeler rule file on IPs, ports, protocol, date and duration (`labels.config`, not read). One Ubuntu VM holds 97.8M of the 99.9M flows. The three honeypots receive real Internet attacks, but there the device carries the class (LEAK-13).

@@ -35,7 +35,9 @@ every uncommitted curation change and offer the commit.
 * `CC (YYYY-MM-DD, Name):` is the curator's decision, with its reasoning. Only for decisions the curator made (in the
   dashboard, in chat, on a review page), and then the fields change with it.
 * `**Assessment (AI, YYYY-MM-DD):**` is the AI's evidence and recommendation ("recommend ...; the curator has the
-  call"). The verdict and markers stay as they are.
+  call"). The verdict and markers stay as they are. The review panel's summary is one such line in a fixed form,
+  `**Assessment (AI, YYYY-MM-DD):** review panel (<tier>): <recommendation>; disputed: ...; for the curator: issues
+  ...`, written by `/add-dataset` (Step 8). It keeps the panel in the record after the `REVIEW.md` is deleted.
 * `**Counter-argument (AI):**` is a disagreement with a documented decision, argued from the data
   ([principles.md](../../knowledge-curation/references/principles.md), "Arguing a call"). The fields stay as they are.
 * `**Screening (AI, YYYY-MM-DD):**` is the dossier `/screen-candidates` writes: the verdict and priority in its first
@@ -100,8 +102,8 @@ record that already has a verdict gets an `**Assessment (AI)**` instead.
 Optional fields left empty are fine ([selection.md](../../knowledge-curation/references/selection.md), "Reading
 decision markers"). A record whose definition is not finished or built may keep an empty `year`, `domain` or
 `required_split`; they are filled when the dataset is built (Lennart, 2026-10-19: zillow_prize,
-distribution_transformers_at_cauca_department). Dropdown values outside `curation/vocabularies.yaml` put the record in the review queue: add a new
-option through the dashboard's ＋ header button or `save_vocabularies`.
+distribution_transformers_at_cauca_department). Dropdown values outside `curation/vocabularies.yaml` put the record in
+the review queue: add a new option through the dashboard's ＋ header button or `save_vocabularies`.
 
 ### `data_foundry_status`
 

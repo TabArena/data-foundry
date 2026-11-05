@@ -91,6 +91,11 @@ class MyDataset(AbstractCuratedDataset):
         ...
 ```
 
+A time column a model sees coarser than recorded (crash times to the hour) is coarsened in `_clean`, never in
+`_make_splits`: the rows are ordered by the time column before the split step runs, so a split step that floors it
+leaves each period in the order of the finer values (chicago_traffic_crashes, 2026-11-04); `dataset check` warns
+(`definition_time_changed_in_split`).
+
 Other hooks: `_make_splits(df)` for splits the declarations cannot express (return a `SplitPlan`);
 `_prepare_raw_files(raw_dir)` with `prepared_raw_files = (...)` for a heavy one-off step that writes intermediate
 files into the raw directory (it runs again when a file is missing or when the method, a helper of `dataset.py` it
@@ -105,22 +110,24 @@ validates, `unique_name` equals the folder name, every accepted warning has a re
 `_make_splits` and a horizon, `subsample_to_budget` needs `version_of` and a `_1m` name, a version needs a
 `version_comment`, `prepared_raw_files` needs `_prepare_raw_files`, a multi-column `stratify_on` is refused (build one
 key in `_clean`), `Temporal(splits=...)` or `subsample_to_budget` together with a custom `_make_splits` is refused, and
-`TemporalSplits` needs `n_windows`, `cutoffs` or `min_train_fraction`. After `_clean`, a declared column that is missing,
-or a group or time column with missing values, stops the run with the attribute's name.
+`TemporalSplits` needs `n_windows`, `cutoffs` or `min_train_fraction`. After `_clean`, a declared column that is
+missing, or a group or time column with missing values, stops the run with the attribute's name.
 
 Keep `print` diagnostics out of the definition: `README.md` records split sizes and time ranges, and `_decisions`
-(or `ds = workbench()` in an uncommitted scratch notebook) is the place for evidence. Keep the `assert`s that guard custom logic. Run `ruff check --fix` and
-`ruff format` on the file (double quotes, import order), then `dataset check` again: a fix can change behaviour (rule
-C416 once rewrote a dict comprehension and broke a repair; it is now in ruff's ignore list).
+(or `ds = workbench()` in an uncommitted scratch notebook) is the place for evidence. Keep the `assert`s that guard
+custom logic. Run `ruff check --fix` and `ruff format` on the file (double quotes, import order), then `dataset check`
+again: a fix can change behaviour (rule C416 once rewrote a dict comprehension and broke a repair; it is now in ruff's
+ignore list).
 
 ## What the base class does
 
 Do not re-implement any of this.
 
-* Metadata: it builds `DatasetMetadata` / `PredictiveMLTaskMetadataV2` (container format 2) from the attributes. Multi-line
-  text (`download_description`, `bibtex`, `curation_comments`, `version_comment`, `splits_comment`) is indented like
-  code and dedented for you. The BibTeX key is parsed from `bibtex` (set `bibtex_key` only when it must differ). The
-  regime tags (`IID`, or `Non-IID` with `Temporal`, `Grouped` or `GroupedTemporal`) are added from the task.
+*  Metadata: it builds `DatasetMetadata` / `PredictiveMLTaskMetadataV2` (container format 2) from the attributes.
+  Multi-line text (`download_description`, `bibtex`, `curation_comments`, `version_comment`, `splits_comment`) is
+  indented like code and dedented for you. The BibTeX key is parsed from `bibtex` (set `bibtex_key` only when it must
+  differ). The regime tags (`IID`, or `Non-IID` with `Temporal`, `Grouped` or `GroupedTemporal`) are added from the
+  task.
 * Defaults: `stratify_on` is the target for classification; set it only to deviate. `metric` has no default: it is
   required, and `Metric.fallback(reason=...)` resolves to the problem type's `roc_auc`, `log_loss` or `rmse` at build.
 * After `_clean`: it casts the columns `_feature_types` names (a dict gives datetime formats; unused categories are
@@ -180,7 +187,8 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
   (PROV-8 in [provenance.md](../../knowledge-curation/references/provenance.md)). `download_description` says where
   the files are downloaded from and names the original when the download is a copy.
 * `year`: the year of that first publication (PROV-9 in
-  [provenance.md](../../knowledge-curation/references/provenance.md)).
+  [provenance.md](../../knowledge-curation/references/provenance.md)), always four digits: when it cannot be pinned,
+  the best guess, with the reason in `curation_comments`. A definition with another value does not load.
 * `data_tags`: context tags only, since listing a regime tag yourself switches the automatic ones off. `"Anonymized"`
   when the source hid what the features are, by replacing their names or values on purpose (common for competition
   data; the record gets the `Anonymized` marker, and the cases without it are in
@@ -227,20 +235,23 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
   `scoring_columns = (ScoringColumn(column="era", role="group", used_by="mean_group_pearsonr", description="the week a
   row belongs to; the metric is the mean of the per-era correlations"),)`. `feature_columns(container)` returns the
   model's inputs without the target, the group column and the scoring columns, and `scorer(container)` takes the
-  scoring columns' values by row index: `scorer(container)(y_test, y_pred, test_idx)`. Before declaring a metric
-  with inputs, check on the data that every test fold holds what it needs (MET-2).
+  scoring columns' values by row index: `scorer(container)(y_test, y_pred, test_idx)`. It reads class probabilities
+  in the sorted order of the classes (scikit-learn's `classes_`), also for an ordered target, whose declared order
+  stays type information; a DataFrame whose columns are the class names is matched by name, and a missing or unknown
+  class name is an error (Lennart, 2026-11-05). Before declaring a metric with inputs, check on the data that every
+  test fold holds what it needs (MET-2).
 
   The build writes the spec into the task metadata as `objective_metric`: `name`, `kind` (`standard`, `custom` or
   `local`), `prediction` (`proba`, `label`, `value`), `greater_is_better`, `origin`, `params`, `inputs`, `original`,
-  `reference`, `definition` (a one-line formula), `reason` and `target_transform`; a reader without Data Foundry can implement the metric
-  from these fields. `describe()` and the README show it with the scoring columns. The bundle checks:
-  `task_metric_undeclared` (a fallback without a reason), `task_metric_unknown`, `task_metric_not_canonical` (an
+  `reference`, `definition` (a one-line formula), `reason` and `target_transform`; a reader without Data Foundry can
+  implement the metric from these fields. `describe()` and the README show it with the scoring columns. The bundle
+  checks: `task_metric_undeclared` (a fallback without a reason), `task_metric_unknown`, `task_metric_not_canonical` (an
   alias), `task_metric_problem_type_mismatch`, `task_metric_unknown_param`, `task_metric_input_missing` (a role the
-  metric needs is not mapped), `task_metric_input_is_model_input` (info: an input that is also a feature, the group or the time column, which is allowed),
-  `task_metric_reference_missing` (a source or stand-in without a link), `task_metric_stand_in_incomplete`,
-  `task_metric_not_computable` (no finite score of a random prediction on some fold), `task_metric_local`,
-  `task_metric_transform_not_regression` and `task_metric_transform_overflow` (the inverse of `target_transform`
-  overflows on a shipped value: the target is not on that scale).
+  metric needs is not mapped), `task_metric_input_is_model_input` (info: an input that is also a feature, the group or
+  the time column, which is allowed), `task_metric_reference_missing` (a source or stand-in without a link),
+  `task_metric_stand_in_incomplete`, `task_metric_not_computable` (no finite score of a random prediction on some fold),
+  `task_metric_local`, `task_metric_transform_not_regression` and `task_metric_transform_overflow` (the inverse of
+  `target_transform` overflows on a shipped value: the target is not on that scale).
   `Metric.local(fn, name=..., prediction=..., greater_is_better=...)` holds code only the definition has; it is for a
   user's own dataset that is never shipped (`build(allow_local_metric=True)`), never for the working copy (MET-13).
 * `download_description`: for a Kaggle dataset `kaggle datasets download <slug> && unzip ... && rm ...`, then the move
@@ -507,8 +518,9 @@ and [cleaning_features.md](../../knowledge-curation/references/cleaning_features
 * A label read off a later stage.
 * Definition bugs the audit found in shipped datasets: a numeric column listed as categorical (a 125k-level category in
   give_me_some_credit); a target stored as `log1p` with metric `rmsle` and no
-  `target_transform`, which logs it again (santander_transaction_value); BibTeX citing a different competition (sberbank_housing_market_forecasting); a tag in
-  `license` (cirrhosis: `"IID"`). Read the class attributes once more for these before handing off.
+  `target_transform`, which logs it again (santander_transaction_value); BibTeX citing a different competition
+  (sberbank_housing_market_forecasting); a tag in `license` (cirrhosis: `"IID"`). Read the class attributes once more
+  for these before handing off.
 
 ## Bundle checks and what to do at scaffold time
 

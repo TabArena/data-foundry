@@ -2,14 +2,20 @@
 unique_name: protein_model_quality_rf_pcp
 name: RF-PCP (quality assessment of modeled protein structures, CASP and decoy sets)
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Myunghwan
+- Lennart
+data_foundry_status:
+- WIP (DF)
+claimed_by: Myunghwan
+suggestion: 'Yes'
 priority: 3
+decision_markers:
+- Outdated
 tags:
 - AI-Filled (Verify)
 - Non-IID (Grouped)
 original_source: Other
-year: '2015'
+year: '2014'
 domain: biology & life sciences
 required_split:
 - Grouped (NON-IID)
@@ -18,12 +24,27 @@ original_data_state: One Table
 source_links:
 - https://sourceforge.net/projects/rf-pcp/files/
 - https://doi.org/10.1142/S0219720015500055
-needs_review:
-- ai_unverified
+v2_path: datasets/_dev/tabarena-v0pt2/protein_model_quality_rf_pcp/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
+
+CC (2026-10-29, Myunghwan): Include GDT_TS as a historical tabular quality benchmark with the documented descriptor uncertainties. Use source year 2014 and retain the paper's 2015 citation. Exclude the 4,893 explicitly named native references; retain the 95,094-row candidate population (superseded 2026-11-05: 94,083 rows, the 1,011 relaxed natives of the rosetta62 set leave too, CC below), including the three documented ambiguous zero-RMSD cases. Preserve all six supplied descriptors and the canonical-protein holdout.
+
+**Assessment (AI, 2026-10-29):** The author archive has 99,987 rows. A row is a candidate protein structure; the six numeric inputs are surface area, cumulative aliphatic C-beta distances, empirical energy, secondary-structure score, sequence length and aliphatic pair count. Identifiers and both alternative outcomes are excluded from predictors. GDT_TS is the supplied fractional average agreement at 1, 2, 4 and 8 angstrom tolerances. Predict it after candidate generation, before the experimental reference is available.
+
+The source paper fits three separate regressions. Its Section 3 reports multiple measures without a unique criterion, so regression RMSE is the fallback (superseded 2026-11-04: the metric is `mean_group_pearsonr` on `protein_id`, Exception to MET-5 below). Our diagnostic R-squared is 1-SSE/SST, whereas the paper reports squared Pearson correlation. Section 4.1 uses tolerance plus/minus 1 angstrom for RMSD and plus/minus 0.1 for TM/GDT. The first archive release is August 2014; the article appeared online in December 2014 and in a 2015 issue.
+
+Exclude source IDs beginning native_ or ending _native.pdb by reference identity, not target value. Retain casp5_T0156_1nxj.nNh1.pdb and ROSETTA_1aa2_1aa2h2.pdb despite perfect labels because their reference role is unverified. Retain CASP10_T0676_HOMER_TS2.pdb with RMSD0/GDT0.0116: exact alignment coverage is unavailable, so neither a numerical repair nor deletion is supported. The paper's headline native count is not a measured count of independent protein groups.
+
+SS has an equation/prose disagreement and 5,620 values above modeled sequence length. ED/PN have 134 inconsistent zero combinations under the simple common-pair interpretation. Preserve those values and signed/extreme finite Energy (superseded 2026-11-04 for ED/PN: the 134 zero combinations are set missing, CC below; Energy stays as supplied). Feature-generation code and exact row-level alignment outputs were not recovered; no native-dependent feature leakage, sentinel mechanism or supported numerical correction was demonstrated.
+
+Source-backed identity checks merge six biological components spanning 14 PDB keys, reducing 453 source keys to 445 canonical proteins. Official CASP links cover 339 targets; three more are sequence-verified. The required hash-checked identity map prevents silently restoring the earlier same-protein alias leak. Nine repeated group-disjoint folds have zero known identity or exact-predictor overlap. Protein-family independence, modern-generator transfer and top-one structure-selection usefulness are not claimed.
+
+On the same five held-out-protein folds, Ridge RMSE0.19318568 versus training-side-selected LightGBM0.17894541 gives a 7.37% reduction. The all-nine-fold LightGBM RMSE is0.17804637 and R-squared0.227478; it beats the training mean in every fold. These are descriptive repeated-fold results, not proof of a significant advantage over TM-score or maximum future improvement. The bounded stronger comparison addresses the untuned no_spread question without promising a benchmark-wide ranking.
+
+Priority 2 balances traceable source and grouped biological coverage against unresolved source conventions and approximate historical fit. The three original targets remain one source family, with only GDT_TS selected. The current measurements and curator decisions supersede the provisional counts, source year, tolerances and target recommendations in the historical screening below.
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata and notes below were drafted by an AI assistant from the release files and the paper's abstract; a human must verify them before relying on them.**
 
@@ -46,6 +67,30 @@ type_adapter_id: curation-record-v1
 - Rows: CASP decoys only, or all decoy sets; the native structures are trivially perfect (RMSD 0), and in a new-target setting the native is not known.
 - Features: six only; Energy reaches 7e11 (outliers to check); SL and PN are constant within most CASP targets (80% and 71%), so they identify the protein, which is fine under a grouped split.
 - One PDB-ID occurs twice in the full file.
+
+CC (2026-11-04, Lennart): impossible descriptor values become missing ("Yes, mark them as missing"). Applied to ED = 0 with PN > 0 (71 rows) and PN = 0 with ED > 0 (63 rows); the rows stay (CLEAN-11). Energy is open: its extreme values are the tool's output for unminimized models (REVIEW.md issue 2).
+
+**Exception to MET-5 (2026-11-04, Lennart):** the metric is `mean_group_pearsonr` on `protein_id` (origin context) instead of the RMSE fallback for a paper that reports several metrics ("yes new metric is better"). Fact: the use case ranks the candidates of one protein, and pooled RMSE rewards each protein's typical quality: the per-protein true mean, which orders no candidate, beats LightGBM on it (0.134 against 0.188), while CASP scores quality assessment per target. Serves P6: scored by the metric the real task would use (MET-1).
+
+CC (2026-11-04, Lennart): `Energy` stays as supplied ("keep as is"); the ED/PN zeros stay missing. `Outdated` is set ("ok agree"): six global descriptors of 2002-2012 server models, while CASP15 on uses the predictor's own pLDDT; kept as a small grouped biology task with no new features. Not a SMILES case: a protein model is a 3D structure, and shipping structures would make it a structure task (SEL-12).
+
+CC (2026-11-04, Lennart): the per-protein correlation stands as implemented (REVIEW.md issue 1 closed).
+
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled. (Superseded the same day by the full second-pass panel below.)
+
+**Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes, once the metric is fixed in the library (issue 6), the relaxed natives are excluded (issue 4) and `context` is settled (issue 5), and the definition is rebuilt (USE-7 triggered by 1,011 rosetta62 relaxed natives kept as candidates, the archive's `relaxed_natives/` folder; SPLIT-23 and USE-6 triggered by `context="none"`, a context model scores 0.517 against 0.355; MET-2 and MET-13 triggered by proteins with constant predictions left out of the score, 0.355 to 0.428 without labels; USE-8 wording for CASP10 and EV-6/EV-8 notes fixed in the definition); disputed: the metric fix as a gate (MET-2, MET-13; settled, a gate), what `rn` means (USE-7; settled from the archive), CASP10 as P5 or USE-8 (settled, USE-8), the `Outdated` keep against first_order_theorem_proving (open); for the curator: issues 4-9. Priority 3: gap +, use case 0, source +, shape +, risk - (gap: biology & life sciences is thin among the 107 accepted definitions; use case: the source names no actor and the fit is approximate; source: the Rana et al. 2015 paper and the authors' archive; shape: 95,094 rows, 6 features, 445 protein groups; risk: rows that exist only after the reference, issue 4, and the metric's left-out proteins, issue 6).
+
+**Assessment (AI, 2026-11-05):** the shared `mean_group_pearsonr` changed on 2026-11-05 (Lennart, huesken_sirna_efficacy issue 6): a group whose target varies but whose predictions are all equal scores 0 instead of being left out; a group with a constant target stays out. Scores of non-constant predictions are unchanged (this is the fix of this record's REVIEW.md issue 6).
+
+CC (2026-11-05, Lennart): the rosetta62 set's 1,011 relaxed natives leave by identity, like the 4,893 named natives (REVIEW.md issue 4, B; USE-7 via CLEAN-11). Their IDs (`rosetta62_<pdb>_rn<pdb>.out.N.pdb`) sit in the folder `relaxed_natives/` of the set's own archive (Zenodo 48780): the experimental structure energy-minimised, which exists only once the reference is known. They held the best candidate in 55 of the 56 rosetta62 proteins. The pattern matches only these rows and none of the three zero-RMSD cases; 94,083 rows and 445 proteins remain. On the declared metric and the nine shipped splits, untuned LightGBM scores 0.322 against ridge 0.272, higher in 9 of 9 (0.355 against 0.294 with the relaxed natives).
+
+CC (2026-11-05, Lennart): the declared metric (`mean_group_pearsonr` on `protein_id`; since 2026-11-05 a protein whose predictions are all equal scores 0) is checked and stays as declared.
+
+CC (2026-11-05, Lennart): `grouping.context="all_rows"` (REVIEW.md issue 5, B, confirmed through issue 9, A, which reopens huesken_sirna_efficacy to follow): the researcher holds all of a target's candidates when ranking them. A context model scores 0.483 against 0.322 for a row-only one (without the relaxed natives).
+
+CC (2026-11-05, Lennart): `Outdated` stays as a note on a kept borderline dataset, now rule SEL-18 (issue 7, D); a Tensions row in principles.md says a measured target scored within groups is no ranking task (issue 8, B).
+
+CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
 
 ## Reference
 

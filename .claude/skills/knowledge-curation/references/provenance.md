@@ -18,7 +18,8 @@ known source: when following every link ends at an anonymous re-upload with no d
 the information needed to decide after a thorough search is `No`, and that is the curation team's call; only the end
 of a search counts ([selection.md](selection.md), "Unknown or unclear source"). PROV-2 keeps, case by case, a sound
 upload whose first platform cannot be traced but that has a source to point to (amended 2026-10-21, Lennart). Marker:
-`Missing source information`. Cases: water_quality_and_potability, 3d_estimation_using_rssi_of_wlan_dataset_complete_1_target, calendardow.
+`Missing source information`. Cases: water_quality_and_potability,
+3d_estimation_using_rssi_of_wlan_dataset_complete_1_target, calendardow.
 
 **PROV-2 (Should; narrows PROV-1).** A source that is plausible but unclear in a detail stays, with a note of what to
 clarify. A bare record of a known origin (a link, no description) is no lack of information either. An upload whose
@@ -77,8 +78,12 @@ the publication's own formulas compute from them: a file digitised from it later
 publication as its source and year. Not the collection period, not the year of a paper
 that only analysed the data, not the BibTeX year of a later citation, not the date of the copy we download (Lennart,
 2026-10-12 and 2026-10-14; figures: Lennart, 2026-10-20, airfoil_self_noise). A source that grows over time (a public
-register, a scraped site, a monthly archive) takes the year of the snapshot we pin. A Kaggle upload that grew over its versions
-is one publication and takes the year of its first version (melbourne_housing_market, 2017; Lennart, 2026-10-22).
+register, a scraped site, a monthly archive) takes the year of the snapshot we pin. A Kaggle upload that grew over its
+versions is one publication and takes the year of its first version (melbourne_housing_market, 2017; Lennart,
+2026-10-22). The year is always a year. When the first publication cannot be pinned, take the best guess the evidence
+gives and say in the notes that it is a guess and why; never `Unknown` or `Unverified`, and never an accepted year
+warning (Lennart, 2026-11-04, on eucalyptus: "it should pick the best guess and maybe add a comment about this but it
+should be a year in the end"). A definition whose `year` is not a year does not load.
 
 **PROV-10 (Must).** The citation is the work that published the data, not a paper that used it.
 

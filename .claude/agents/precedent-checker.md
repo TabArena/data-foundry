@@ -26,5 +26,8 @@ For each decision:
 
 Return per decision: consistent / departs with a stated reason / departs without one / not reasonable under the
 ranking, the precedents with their dates and links, and for every departure without a reason the reflection prompt of
-`principles.md` filled in (one per decision, the AI's best guess at a distinguishing fact as option (a)). Be precise:
+`principles.md` filled in (one per decision, the AI's best guess at a distinguishing fact as option (a)), drafted in
+the issue shape of the review files (`review-added-datasets/references/review_file_format.md`, turns): a one-sentence
+question, `**Problem:**` bullets, an options table with lowercase letters and Pro / Con, a recommendation, the rule IDs
+in footnotes. Be precise:
 flag only real departures and real pairs of similar cases decided differently. Never edit a file.

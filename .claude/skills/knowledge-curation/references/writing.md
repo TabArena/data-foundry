@@ -1,9 +1,9 @@
 # Writing for the curator
 
-Procedure, at every rank. How we write the record comments, the notes on a dataset, the plain-language task summary and the questions for the
-curator. The general style rules (no em dashes, no bold-first bullets, no inflated wording) are the "AI Writing
-Tropes to Avoid" section of [AGENTS.md](../../../../AGENTS.md); they apply to everything below, to docstrings and to
-commit messages.
+Procedure, at every rank. How we write the record comments, the notes on a dataset, the plain-language task summary and
+the questions for the curator. The general style rules (no em dashes, no bold-first bullets, no inflated wording) are
+the "AI Writing Tropes to Avoid" section of [AGENTS.md](../../../../AGENTS.md); they apply to everything below, to
+docstrings and to commit messages.
 
 ## The judgment record
 
@@ -77,12 +77,14 @@ by a bold lead, never a paragraph of prose:
 The page shows the problem, then a closed Details box with every bullet other than the problem, the options and the
 recommendation, then the options and the recommendation (Andrej, 2026-11-03). So the problem, the options table and
 the recommendation must read alone: a curator who never opens Details knows what is decided, what each option does
-and what is recommended. Another bullet with a bold lead is fine when it helps (`**Sources:**`, `**Cost:**`). The options table has the
-columns `| | Option | What it does | Pro | Con |`: a letter (A, B, ...), the option in a few words with
-`(implemented)` on the one the definition has now, what it changes in the dataset (rows, columns, split, score), and
-its pros and cons in a few words each. A cell with several points separates them with `; `, and the page shows them
+and what is recommended. Another bullet with a bold lead is fine when it helps (`**Sources:**`, `**Cost:**`). The
+options table has the columns `| | Option | What it does | Pro | Con |`: a letter (A, B, ...), the option in a few words
+with `(implemented)` on the one the definition has now, what it changes in the dataset (rows, columns, split, score),
+and its pros and cons in a few words each. A cell with several points separates them with `; `, and the page shows them
 as bullets (Andrej, 2026-11-03), so keep a `;` out of a single point. Every issue has at least two rows; the curator's
-mark "as implemented" takes the implemented row, and "change" names the letter.
+mark "as implemented" takes the implemented row, and "change" names the letter. Mark one row `(implemented)` also
+when the question is whether to change something elsewhere (a sibling, a rule): the row that changes nothing is what
+the definition has now, and the page names it on the "As implemented" button.
 
 The text for the curator reads without the rules. Rule IDs, rule wording, the strength of a rule and the curator's
 earlier calls quoted as precedent go into footnotes (`[^1]` in the text, `[^1]: **LEAK-31** (Should): ...` at the

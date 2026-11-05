@@ -76,8 +76,8 @@ commit, PR) and is not hardened for multi-user or public use.
 * **📌 pin** (far-left column) keeps a row visible through any filter and sticks it to
   the top while scrolling. The same column links every row's **curation record (📄)** , 
   its `curation/records/<name>.md` on GitHub: and, for curated datasets, the
-  **curation notebook (📓)** and the **v0.2 definition (🧩)**, read straight from the record's `notebook_path` and `v2_path`; on 🤖 rows it also
-  holds the ✓ verify action.
+  **curation notebook (📓)** and the **v0.2 definition (🧩)**, read straight from the record's `notebook_path` and
+  `v2_path`; on 🤖 rows it also holds the ✓ verify action.
 * **🔗 Copy link** (appears next to **✕ Clear filters** whenever the view is filtered or sorted
   differently from the status order) copies a URL that reopens the exact current view: active pill,
   status constraints, search term, every column filter and the sort are encoded in the hash

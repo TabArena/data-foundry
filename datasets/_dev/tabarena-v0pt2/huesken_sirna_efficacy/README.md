@@ -1,0 +1,587 @@
+---
+report_format: data-foundry-report-v2
+unique_name: huesken_sirna_efficacy
+container_format: 2
+checksum: v2:580102897fa13e09a899db6c6f134a84901bd82ad33b5ce1a32ec2bd91c1244a
+build:
+  uuid: 01a18629-c3f0-7652-a9e8-57307772b909
+  checksum: v2:e733528bab0b1071f95ffb17ede5aa335b63b96bb61c7322e86887835bae4f46
+  built_at: '2026-10-29T05:37:27+00:00'
+  path: dataset_from_uncertainty_guided_model_selection_for_tabular_foundation_models_in_biomolecule_efficacy_prediction/01a18629-c3f0-7652-a9e8-57307772b909
+  data_foundry_version: 0.0.5
+  git_sha: 6d189a922994ddb0221c8249d07552d4df8af88b
+  libraries:
+    python: 3.12.3
+    pandas: 3.1.0
+    numpy: 2.5.4
+    pyarrow: 26.0.0
+    scikit-learn: 1.7.2
+    polars: 2.0.0
+build_stale: true
+data:
+  n_rows: 2431
+  n_features: 247
+  dtypes:
+    category: 70
+    float64: 15
+    int16: 164
+  n_test_dataset_rows: null
+task:
+  target: normalized_inhibitory_activity
+  problem_type: regression
+  metric: mean_group_pearsonr
+  metric_origin: context
+  scoring_columns: null
+  split_regime: grouped_non_iid
+  stratify_on: null
+  time_on: null
+  group_on: target_gene
+  group_labels: per_sample
+  group_time_on: null
+  grouping:
+    prediction_unit: row
+    aggregation: null
+    context: all_rows
+    n_groups: 30
+    test_groups_per_fold:
+      min: 10
+      max: 10
+splits:
+  n_repeats: 10
+  n_folds: 3
+  random_state: 4267
+  time_horizon: null
+  time_horizon_unit: null
+  time_gap: null
+  time_gap_unit: null
+  n_train:
+    min: 1489
+    max: 1783
+  n_test:
+    min: 648
+    max: 942
+bundle_checks:
+  ok: true
+  errors: []
+  warnings: []
+  infos:
+  - task_metric_input_is_model_input
+  accepted:
+    groups_test_groups_few: 'Accepted (Myunghwan 2026-10-26; reworded by Lennart 2026-11-04):
+      a group here is a target gene, a large group of observations (81 siRNAs on average:
+      2,431 over 30 genes) over which we want to generalize, and from the context
+      a few such groups suffice, as when generalizing over a few hospitals (heart_disease
+      stayed grouped with 3). The folds hold ten genes and 648-942 rows, and several
+      model families show held-out-gene signal. Repeats reuse the same genes, so the
+      spread across repeats is descriptive, not thirty independent experiments.'
+decisions:
+- Keep the corrected original library and assay scale
+- Keep unknown sequence bases explicit
+---
+
+# huesken_sirna_efficacy
+
+> Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
+
+Regression of `normalized_inhibitory_activity`, scored with `mean_group_pearsonr` on grouped splits by `target_gene`. 2,431 rows and 247 features. Source: Other (2005).
+
+Built as `01a18629-c3f0-7652-a9e8-57307772b909` on 2026-10-29, but `dataset.py` has changed since: it now gives checksum `v2:580102897fa13e09a899db6c6f134a84901bd82ad33b5ce1a32ec2bd91c1244a`, so the build is stale. See [Build](#build).
+
+## In brief
+
+**Question.** How strongly will a candidate siRNA inhibit its target in the source's reporter assay?
+
+**Use case.** A researcher selects siRNAs to synthesize and test for a gene without previous efficacy measurements, using the candidate guide and the known target insert sequence.
+
+**One row.** One of 2,431 siRNAs in the corrected Huesken 2005 training and test library, with a measured normalized inhibitory activity and an exact match to a published target insert.
+
+**Predicted.** The source's normalized inhibitory activity, on its published scale. Its assay controls map to 0.900 and 0.354; it is not a probability or a percentage and may exceed one.
+
+**Known at prediction time.** The 57-base target window with flanks, which holds the guide's 19 RNA bases as their complement (positions 38 to 20), the guide's two DNA overhang bases, and fixed sequence-derived descriptors. No assay result is used as an input.
+
+**What the test data stands for.** Whole target genes are held out, including both inserts of the same rodent gene. Each candidate is scored individually; target gene labels are excluded from model inputs.
+
+**Our changes to the source.** Restore the 70 UBE2H rows omitted by OligoFormer's 2,361-row file; retain the original target scale and both guide overhang bases. Use categorical nucleotide positions, trimer counts and the published 24 descriptors; the guide's positions 1 to 19 are dropped, as the complement of window positions 38 to 20.
+
+> **Use case fit: approximate (a stand-in with a known gap).** This tests pre-assay efficacy prediction within one reporter system. Transfer to endogenous expression, other cell systems, dosing or therapeutic outcomes is not established.
+
+## Files in this folder
+
+| file | what it is |
+|---|---|
+| [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
+| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
+| [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
+
+- The curation record, with the triage decision and its sources: [`curation/records/huesken_sirna_efficacy.md`](../../../../curation/records/huesken_sirna_efficacy.md)
+- The original source: <https://doi.org/10.1038/nbt1118>
+- The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
+
+## Rebuild
+
+`dataset.py` reads its raw files from `local-data-warehouse/huesken_sirna_efficacy/`. To get them:
+
+```text
+Download Huesken's corrected supplementary Tables 2 and 3, then convert with poppler pdftotext -layout:
+https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fnbt1118/MediaObjects/41587_2005_BFnbt1118_MOESM3_ESM.pdf -> table2.pdf
+https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fnbt1118/MediaObjects/41587_2005_BFnbt1118_MOESM4_ESM.pdf -> table3.pdf
+pdftotext -layout table2.pdf table2.txt
+pdftotext -layout table3.pdf table3.txt
+Place the two text inputs in this dataset's warehouse directory. Two ambiguous guide matches are resolved using the original Table 3 human/rodent membership flags, without using efficacy.
+Verified original PDF SHA256: Table 2 c33063d8621e9318f04d7c8c07ca8e5422b81b336c4a48ac664b3daf26abee8f; Table 3 4d6cbaca93d98fa738659dfaf68875af3039b2061a94aa550b0c5a5b10e83d63.
+```
+
+Then, from the repository root:
+
+```bash
+.venv/bin/python -m data_foundry.curation.cli dataset check datasets/_dev/tabarena-v0pt2/huesken_sirna_efficacy   # pipeline and checks, no UUID; rewrites this page
+.venv/bin/python -m data_foundry.curation.cli dataset build datasets/_dev/tabarena-v0pt2/huesken_sirna_efficacy   # also saves the container and records its UUID
+```
+
+Only curators run `build`, when the dataset ships.
+
+## Dataset and task
+
+| field | value |
+|---|---|
+| source | Other: https://doi.org/10.1038/nbt1118 |
+| year | 2005 |
+| domain | biology & life sciences |
+| license | Not stated for the original supplementary data; publisher rights apply. No explicit redistribution license was found for the original data. |
+| data_tags | Non-IID, Grouped |
+| reference | huesken2005sirna |
+| rows x columns | 2,431 x 249 |
+| task.target | normalized_inhibitory_activity |
+| task.problem_type | regression |
+| task.metric | mean_group_pearsonr |
+| task.split_regime | grouped_non_iid |
+| task.group_on | target_gene |
+| task.group_labels | per_sample |
+
+**Metric**
+
+| field | value |
+|---|---|
+| name | `mean_group_pearsonr` (custom; takes value; higher is better) |
+| origin | context: obvious from the task: the source defines no metric |
+| definition | mean over groups of the Pearson correlation within the group; method='numerai_corr' transforms first as Numerai's CORR |
+| reason | The decision is which guides to synthesize for a new gene, a ranking inside the gene. The later papers (OligoFormer, siDPT; Li et al. 2025) report pooled correlation, MAE or AUC without one unique selection criterion (MET-5), and Huesken's full methods could not be retrieved. Pooled RMSE still rewards a gene's mean (giving LightGBM each test gene's true mean cuts RMSE from 0.1608 to 0.1405, panel re-run); the per-gene correlation scores the ranking. LightGBM beats ridge in 30 of 30 splits by RMSE and 29 of 30 by the per-gene correlation. Exception to MET-5 (Lennart, 2026-11-04). |
+| inputs | group: `target_gene` |
+
+<details>
+<summary>Feature types: 70 categorical, 0 string, 0 datetime</summary>
+
+- categorical (70): `guide_position_20`, `guide_position_21`, `target_window_position_01`, `target_window_position_02`, `target_window_position_03`, `target_window_position_04`, `target_window_position_05`, `target_window_position_06`, `target_window_position_07`, `target_window_position_08`, `target_window_position_09`, `target_window_position_10`, `target_window_position_11`, `target_window_position_12`, `target_window_position_13`, `target_window_position_14`, `target_window_position_15`, `target_window_position_16`, `target_window_position_17`, `target_window_position_18`, `target_window_position_19`, `target_window_position_20`, `target_window_position_21`, `target_window_position_22`, `target_window_position_23`, `target_window_position_24`, `target_window_position_25`, `target_window_position_26`, `target_window_position_27`, `target_window_position_28`, `target_window_position_29`, `target_window_position_30`, `target_window_position_31`, `target_window_position_32`, `target_window_position_33`, `target_window_position_34`, `target_window_position_35`, `target_window_position_36`, `target_window_position_37`, `target_window_position_38`, `target_window_position_39`, `target_window_position_40`, `target_window_position_41`, `target_window_position_42`, `target_window_position_43`, `target_window_position_44`, `target_window_position_45`, `target_window_position_46`, `target_window_position_47`, `target_window_position_48`, `target_window_position_49`, `target_window_position_50`, `target_window_position_51`, `target_window_position_52`, `target_window_position_53`, `target_window_position_54`, `target_window_position_55`, `target_window_position_56`, `target_window_position_57`, `descriptor_U_1`, `descriptor_G_1`, `descriptor_UU_1`, `descriptor_GG_1`, `descriptor_GC_1`, `descriptor_U_2`, `descriptor_C_1`, `descriptor_CC_1`, `descriptor_CG_1`, `descriptor_A_19`, `target_gene`
+- string (0): none
+- datetime (0): none
+
+</details>
+
+<details>
+<summary>BibTeX</summary>
+
+```bibtex
+@article{huesken2005sirna,
+  title={Design of a genome-wide siRNA library using an artificial neural network},
+  author={Huesken, Dieter and Lange, Joerg and Mickanin, Craig and others},
+  journal={Nature Biotechnology}, volume={23}, pages={995--1001}, year={2005}, doi={10.1038/nbt1118}
+}
+```
+
+</details>
+
+## Sample rows
+
+The first 5 of 2,431 rows of the final frame (random rows: the frame is shuffled); 12 of 249 columns, the target first. Cells are cut at 40 characters.
+
+| normalized_inhibitory_activity | guide_position_20 | guide_position_21 | target_window_position_01 | target_window_position_02 | target_window_position_03 | target_window_position_04 | target_window_position_05 | target_window_position_06 | target_window_position_07 | target_window_position_08 | target_window_position_09 |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 0.771 | a | c | A | U | A | A | U | U | U | A | U |
+| 0.508 | g | a | U | C | C | U | G | A | A | G | G |
+| 1.07 | t | g | C | C | C | C | A | G | C | G | C |
+| 1.051 | a | a | U | U | C | C | U | G | A | G | A |
+| 0.666 | g | g | U | A | U | U | U | G | A | G | U |
+
+## Curation notes
+
+Start with the corrected Huesken supplementary Table 3 and target inserts in Table 2, not model-generated labels from the withdrawn early supplement.
+
+- Sequence input, kept as a tabular task (Lennart, 2026-11-04, issue 1 (b); SEL-12, modality): the positions, trimer counts and 24 descriptors ship as built, and the record is tagged `Revisit later`. Tabular models are competitive on the 30 gene-held-out folds: a tree model on the guide columns alone reaches 0.67 per-gene correlation, and a one-hot ridge 0.621 against 0.652 for all 266 columns (before the 19 guide positions left on 2026-11-05). No sequence model was run on these folds. The `splice` table already is a second sequence table, so the earlier trigger for a `Sequence` special feature has fired, but none is declared: the positions are already lossless categoricals. It reopens if a small CNN or LSTM on the one-hot guide and window clearly beats LightGBM on these folds (the test used for african_snake_antivenom); then `No`, `Wrong Domain / Source Modality`.
+- Prediction point: before synthesis and the reporter assay. The candidate guide and target sequence are known; assay measurements, NAS identifiers and original train/test flags are never features (USE-3, LEAK-10).
+- All 2,431 original guide sequences and activities are retained. OligoFormer's raw copy contains 2,361 exact activity matches but omits all 70 UBE2H guides; its processed label also divides by the observed maximum, 1.341. Neither omission nor this extra scaling is carried over (PROV-13, MET-3).
+- The original Table 3 footnote specifies a linear assay-control normalization: positive control 0.900, negative control 0.354. Values above one remain measured normalized values, never clipped or called probabilities. The 2005 corrigendum (doi:10.1038/nbt1005-1315a) replaced predicted scores with these measured activities.
+- Group on the exact source species and gene symbol recovered by reverse-complement matching to Table 2. There are 30 observed gene groups in 34 published inserts; both Mmp7 inserts remain one gene group. Two ambiguous guide matches are resolved from Table 3 species flags: NAS 18412 is rodent (Rn P2rx2), NAS 19819 human (Hs P2RX3). The copy incorrectly gives NAS 18412 the human target window; it is repaired from the original, without using labels or row order (SPLIT-24, PROV-13).
+- Restore both DNA overhang bases as categorical positions, distinct from the RNA positions. The target window is 19 binding bases plus 19 flanking bases on either side. X means outside the insert; N and R retain the source's unresolved base codes in the positional features. Fixed trimer counts map N/R to X; no sequence is guessed.
+- Thermodynamic and composition descriptors use the 19 RNA bases and the fixed OligoFormer preprocessing constants. Categorical positions preserve the sequence; the redundant published one-hot encoding is left to the learner. Drop only constant and exactly duplicated feature columns, in a deterministic order (CLEAN-8). The ten explicit yes/no sequence descriptor flags are categorical; counts and continuous descriptors remain numeric (CLEAN-14). The terminal descriptor follows the inherited executable convention, round(DG[first] - DG[last] + 0.45*(sign(first)+sign(last)), 2), where sign is +1 for AC/AG/UC/UG, -1 for GA/GU/CA/CU, and 0 otherwise. This differs from the printed Li Appendix A terminal correction; DH uses -14.88 for GC rather than the printed -14.882. These fixed operational descriptors are retained, not asserted to be exact reproductions of the printed physical formula.
+- The metric is the correlation within each target gene, averaged over genes (`mean_group_pearsonr`; Lennart, 2026-11-04, exception to MET-5): the use case ranks guides within a gene, and the literature reports pooled correlation, MAE or AUC without a unique criterion. LightGBM beats ridge in 30 of 30 splits by RMSE and in 29 of 30 by the per-gene correlation. A companion measure for the bench decision (Lennart, 2026-11-05, issue 8): the scientist orders 3 to 8 guides per gene, so the precision of the top few guides per gene, or the per-gene Spearman correlation, is closer to what is acted on; the declared metric stays the per-gene Pearson correlation, which picks the same model family. Since 2026-11-05 a gene whose predictions are all equal scores 0 instead of being left out (issue 6), so a constant baseline scores 0.
+- CC (2026-11-05, Lennart): drop `guide_position_01..19` (issue 5, option B; CLEAN-22, a copy leaves): they are the base-by-base complement of `target_window_position_38..20`, so they restated 19 of the 266 features (7%), which an exact-duplicate check does not see. The guide's two DNA overhang bases (`guide_position_20`, `guide_position_21`) stay, and the guide is read from the window. Six of the ten yes/no descriptors (U_1, G_1, C_1, U_2, A_19 and others) still repeat a position as one-hot, and DG_1 and DH_1 are near-bijective; the descriptors stay as published (Lennart, 2026-11-04). Derived columns: 164 trimer counts (64 guide, 100 window) and the 24 descriptors, all fixed functions of the sequence; the 69 categorical features are 59 positions and 10 flags.
+- CC (2026-11-05, Lennart): `grouping.context="all_rows"` (issue 9, B; SPLIT-23; as protein_model_quality_rf_pcp and sat11_hand_algo_runtime): the researcher ranks a gene's candidates together. Measured on the 30 shipped splits, per-gene context adds nothing: untuned LightGBM 0.6708 on the rows alone, 0.6699 with each numeric feature's z-score and rank within its gene and the gene's size (paired SE 0.0025, ahead in 17 of 30); on protein the same recipe adds +0.161. The 2026-11-04 `none` was a panel choice, not a curator call.
+- Gene offset (USE-8): 17.1% of the target variance lies between genes and the metric ignores it. Training on the gene-centred target and dropping the window columns gave 0.6461 to 0.6686 per-gene correlation in a single-seed panel run (about one split SD, indicative); it is honest modelling, not a leak, and the window columns stay because a deployed model knows the gene sequence.
+- Scope (USE-8): one reporter system and 2005 chemistry, no chemically modified siRNA. Only two guide windows cross genes (Hs P2RX3 and Rn P2rx2, 9 shared 20-mers, no exact feature copy across a fold). The raw Table 3 order is autocorrelated (lag-1 0.345 in the target); the shipped row order is shuffled (0.006), and the splits are by gene.
+- The grouped task tests a new gene in this reporter assay. It does not certify efficacy on endogenous targets, unfamiliar experimental conditions or clinical outcomes. All original random train/test flags are discarded in favor of gene-held-out evaluation (SPLIT-4, SPLIT-5). Pooled RMSE measures activity magnitude accuracy, not demonstrated within-gene top-k selection success; no synthesis budget or decision threshold is invented.
+
+- CC (2026-10-26, Myunghwan): accepted the small-gene warning for this add-stage task. Lennart (2026-11-04) put it as the case where the group is a large set of observations over which we want to generalize, so that from the context a few groups suffice (as for a few hospitals), and a case-by-case call, not a minimum-group rule; the native ten-gene folds stay. The separate final ship verdict was explicitly given by Myunghwan on 2026-10-28. Grouped evaluation targets an unseen species/gene ID with no measured candidates (cold start); OOD here names that unseen-entity evaluation, not a separately established shift in assay conditions.
+
+## Splits
+
+Default repeated three-fold group protocol on whole species/gene labels; 30 genes provide 10 unseen genes per test fold. Individual siRNAs are prediction units. This replaces the original random training/test allocation and keeps the two Mmp7 inserts together. Genes weigh equally in the score. Repeats reuse the same thirty genes; split variation and standard errors are descriptive, not thirty independent biological experiments.
+
+10 repeat(s) x 3 fold(s) with seed 4267; train 1,489 to 1,783 rows, test 648 to 942 rows.
+
+<details>
+<summary>Show all 30 splits</summary>
+
+| repeat | fold | n_train | n_test |
+|---|---|---|---|
+| 0 | 0 | 1707 | 724 |
+| 0 | 1 | 1588 | 843 |
+| 0 | 2 | 1567 | 864 |
+| 1 | 0 | 1546 | 885 |
+| 1 | 1 | 1591 | 840 |
+| 1 | 2 | 1725 | 706 |
+| 2 | 0 | 1490 | 941 |
+| 2 | 1 | 1656 | 775 |
+| 2 | 2 | 1716 | 715 |
+| 3 | 0 | 1559 | 872 |
+| 3 | 1 | 1533 | 898 |
+| 3 | 2 | 1770 | 661 |
+| 4 | 0 | 1783 | 648 |
+| 4 | 1 | 1556 | 875 |
+| 4 | 2 | 1523 | 908 |
+| 5 | 0 | 1489 | 942 |
+| 5 | 1 | 1655 | 776 |
+| 5 | 2 | 1718 | 713 |
+| 6 | 0 | 1611 | 820 |
+| 6 | 1 | 1607 | 824 |
+| 6 | 2 | 1644 | 787 |
+| 7 | 0 | 1616 | 815 |
+| 7 | 1 | 1575 | 856 |
+| 7 | 2 | 1671 | 760 |
+| 8 | 0 | 1677 | 754 |
+| 8 | 1 | 1673 | 758 |
+| 8 | 2 | 1512 | 919 |
+| 9 | 0 | 1659 | 772 |
+| 9 | 1 | 1634 | 797 |
+| 9 | 2 | 1569 | 862 |
+
+</details>
+
+## Group structure
+
+One group is the exact species and gene symbol of a Table 2 target insert, matched to each guide and its target context. Both inserts of Rn Mmp7 share a group. The source designed a genome-wide siRNA library; the intended use predicts individual candidate efficacy for a target gene with no measured candidates. Thirty observed genes are held out whole; guide and target sequences are known, assay labels are not. A researcher designs and ranks a gene's candidate guides together, so a model may see all rows of a test gene (`all_rows`).
+
+| field | value |
+|---|---|
+| group column | `target_gene` |
+| labels | per_sample |
+| order inside a group | none |
+| prediction unit | row |
+| known about a group when predicting | all_rows |
+
+| statistic | value |
+|---|---|
+| groups | 30 |
+| rows per group (min / median / max) | 46 / 76.5 / 150 |
+| largest group | 6.2% of the rows |
+| test groups per fold | 10 |
+| groups of two or more rows with a single label | 0.0% |
+| nearest neighbour in the same group | 93.4% of the rows (chance: 3.6%) |
+| label variance explained by the group | 0.17 (shuffled groups: 0.02) |
+
+The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
+
+## Decisions
+
+### 1. Keep the corrected original library and assay scale
+
+Restore the omitted target gene and avoid the processed copy's data-maximum scaling.
+
+| target_gene | count | min | max |
+|---|---|---|---|
+| Hs C6orf110 | 145 | 0 | 1.016 |
+| Hs CDC34 | 57 | 0.232 | 0.893 |
+| Hs FLJ11011 | 78 | 0.389 | 1.252 |
+| Hs HIP2 | 79 | 0.442 | 0.93 |
+| Hs HSPC150 | 77 | 0.438 | 1.145 |
+| Hs NOG | 71 | 0.405 | 1.02 |
+| Hs P2RX3 | 90 | 0.086 | 1.018 |
+| Hs RAB6IP1 | 126 | 0.221 | 0.978 |
+| Hs SOST | 75 | 0.26 | 0.934 |
+| Hs TC10 | 67 | 0.364 | 0.928 |
+| Hs UBE2B | 79 | 0.455 | 0.863 |
+| Hs UBE2C | 76 | 0.116 | 0.975 |
+| Hs UBE2D3 | 78 | 0.236 | 1.045 |
+| Hs UBE2E3 | 79 | 0.287 | 0.948 |
+| Hs UBE2G1 | 79 | 0.295 | 1.042 |
+| Hs UBE2H | 70 | 0.34 | 1.1 |
+| Hs UBE2I | 64 | 0.345 | 0.929 |
+| Hs UBE2J1 | 49 | 0.287 | 1.1 |
+| Hs UBE2L3 | 53 | 0.32 | 1.115 |
+| Hs UBE2L6 | 72 | 0.318 | 1.077 |
+| Hs UBE2M | 76 | 0.417 | 0.921 |
+| Hs UBE2N | 79 | 0.299 | 1.003 |
+| Hs UBE2S | 79 | 0.252 | 0.917 |
+| Hs UBE2V1 | 74 | 0.365 | 0.963 |
+| Hs Ufc1 | 70 | 0.314 | 1.227 |
+| Rn Cacnb1 | 46 | 0.152 | 0.94 |
+| Rn Fxyd6 | 72 | 0.329 | 1.042 |
+| Rn Mmp7 | 150 | 0.002 | 1.341 |
+| Rn P2rx2 | 77 | 0.236 | 0.886 |
+| Rn TCAP | 144 | 0.14 | 1.064 |
+
+### 2. Keep unknown sequence bases explicit
+
+N/R are source uncertainty and X marks insert boundaries; none is inferred from efficacy.
+
+| index | base_occurrences |
+|---|---|
+| N | 11 |
+| R | 5 |
+| X | 1480 |
+
+## Bundle checks
+
+0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
+
+- **info** `task_metric_input_is_model_input`: The metric's input column(s) ['target_gene'] are also given to the models (a feature, the group or the time column); they are not scoring columns. (hint: Declare a column as a `ScoringColumn` only when it exists for scoring alone and must not be a feature.)
+
+Accepted on purpose:
+
+- `groups_test_groups_few`: Accepted (Myunghwan 2026-10-26; reworded by Lennart 2026-11-04): a group here is a target gene, a large group of observations (81 siRNAs on average: 2,431 over 30 genes) over which we want to generalize, and from the context a few such groups suffice, as when generalizing over a few hospitals (heart_disease stayed grouped with 3). The folds hold ten genes and 648-942 rows, and several model families show held-out-gene signal. Repeats reuse the same genes, so the spread across repeats is descriptive, not thirty independent experiments.
+
+## Data checks
+
+### Feature summary
+
+<details>
+<summary>Show the table (249 rows)</summary>
+
+| index | dtype | n_missing | pct_missing | n_unique | examples |
+|---|---|---|---|---|---|
+| guide_position_20 | category | 0 | 0 | 4 | t, g, c, a |
+| guide_position_21 | category | 0 | 0 | 4 | t, g, c, a |
+| target_window_position_01 | category | 0 | 0 | 5 | A, C, G, U, X |
+| target_window_position_02 | category | 0 | 0 | 5 | A, G, C, U, X |
+| target_window_position_03 | category | 0 | 0 | 6 | A, C, G, U, X, R |
+| target_window_position_04 | category | 0 | 0 | 6 | A, C, G, U, X, N |
+| target_window_position_05 | category | 0 | 0 | 5 | C, A, G, U, X |
+| target_window_position_06 | category | 0 | 0 | 5 | A, U, C, G, X |
+| target_window_position_07 | category | 0 | 0 | 5 | A, C, G, U, X |
+| target_window_position_08 | category | 0 | 0 | 7 | A, G, C, U, X, R, N |
+| target_window_position_09 | category | 0 | 0 | 5 | A, G, C, U, X |
+| target_window_position_10 | category | 0 | 0 | 5 | A, G, C, U, X |
+| target_window_position_11 | category | 0 | 0 | 6 | C, A, G, U, X, R |
+| target_window_position_12 | category | 0 | 0 | 6 | A, G, C, U, X, N |
+| target_window_position_13 | category | 0 | 0 | 6 | A, C, G, U, X, N |
+| target_window_position_14 | category | 0 | 0 | 5 | A, C, G, U, X |
+| target_window_position_15 | category | 0 | 0 | 7 | A, C, G, U, X, R, N |
+| target_window_position_16 | category | 0 | 0 | 5 | A, C, G, U, X |
+| target_window_position_17 | category | 0 | 0 | 6 | A, C, G, U, X, N |
+| target_window_position_18 | category | 0 | 0 | 4 | A, C, G, U |
+| target_window_position_19 | category | 0 | 0 | 4 | A, C, G, U |
+| target_window_position_20 | category | 0 | 0 | 4 | A, C, G, U |
+| target_window_position_21 | category | 0 | 0 | 4 | C, G, A, U |
+| target_window_position_22 | category | 0 | 0 | 4 | G, C, A, U |
+| target_window_position_23 | category | 0 | 0 | 4 | C, A, G, U |
+| target_window_position_24 | category | 0 | 0 | 4 | A, C, G, U |
+| target_window_position_25 | category | 0 | 0 | 4 | A, C, G, U |
+| target_window_position_26 | category | 0 | 0 | 4 | A, C, G, U |
+| target_window_position_27 | category | 0 | 0 | 4 | A, C, G, U |
+| target_window_position_28 | category | 0 | 0 | 4 | A, C, G, U |
+| target_window_position_29 | category | 0 | 0 | 4 | A, G, C, U |
+| target_window_position_30 | category | 0 | 0 | 4 | A, C, G, U |
+| target_window_position_31 | category | 0 | 0 | 4 | A, C, G, U |
+| target_window_position_32 | category | 0 | 0 | 4 | A, G, C, U |
+| target_window_position_33 | category | 0 | 0 | 4 | A, C, G, U |
+| target_window_position_34 | category | 0 | 0 | 4 | C, A, G, U |
+| target_window_position_35 | category | 0 | 0 | 4 | A, C, G, U |
+| target_window_position_36 | category | 0 | 0 | 4 | A, C, G, U |
+| target_window_position_37 | category | 0 | 0 | 4 | A, C, G, U |
+| target_window_position_38 | category | 0 | 0 | 4 | A, C, G, U |
+| target_window_position_39 | category | 0 | 0 | 5 | A, G, C, U, X |
+| target_window_position_40 | category | 0 | 0 | 6 | A, C, G, U, X, N |
+| target_window_position_41 | category | 0 | 0 | 5 | A, C, G, U, X |
+| target_window_position_42 | category | 0 | 0 | 5 | A, C, G, U, X |
+| target_window_position_43 | category | 0 | 0 | 6 | A, C, G, U, X, N |
+| target_window_position_44 | category | 0 | 0 | 5 | A, C, G, U, X |
+| target_window_position_45 | category | 0 | 0 | 5 | A, C, G, U, X |
+| target_window_position_46 | category | 0 | 0 | 6 | A, C, G, U, X, N |
+| target_window_position_47 | category | 0 | 0 | 5 | A, C, G, U, X |
+| target_window_position_48 | category | 0 | 0 | 5 | A, C, G, U, X |
+| target_window_position_49 | category | 0 | 0 | 5 | A, C, G, U, X |
+| target_window_position_50 | category | 0 | 0 | 6 | A, C, G, U, X, N |
+| target_window_position_51 | category | 0 | 0 | 5 | C, A, U, G, X |
+| target_window_position_52 | category | 0 | 0 | 6 | A, C, G, U, X, R |
+| target_window_position_53 | category | 0 | 0 | 5 | A, C, G, U, X |
+| target_window_position_54 | category | 0 | 0 | 5 | A, C, U, G, X |
+| target_window_position_55 | category | 0 | 0 | 5 | A, G, C, U, X |
+| target_window_position_56 | category | 0 | 0 | 6 | A, G, C, U, X, N |
+| target_window_position_57 | category | 0 | 0 | 5 | C, A, U, G, X |
+| descriptor_U_1 | category | 0 | 0 | 2 | 0.0, 1.0 |
+
+(189 more rows not shown)
+
+</details>
+
+### Target distribution
+
+| index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 0 | 0.04 | -0.073 | -0.43 | 0.041 | 0.015 | log1p | 3079.5 | 3.59615e+14 | exponential |
+
+### Numeric features
+
+<details>
+<summary>Show the table (179 rows)</summary>
+
+| index | count | mean | std | min | max |
+|---|---|---|---|---|---|
+| guide_trimer_AAA | 2431 | 0.251337 | 0.577861 | 0 | 4 |
+| guide_trimer_AAU | 2431 | 0.243521 | 0.48255 | 0 | 3 |
+| guide_trimer_AAC | 2431 | 0.172768 | 0.402378 | 0 | 2 |
+| guide_trimer_AAG | 2431 | 0.247635 | 0.490621 | 0 | 3 |
+| guide_trimer_AUA | 2431 | 0.215549 | 0.477068 | 0 | 3 |
+| guide_trimer_AUU | 2431 | 0.264912 | 0.49082 | 0 | 3 |
+| guide_trimer_AUC | 2431 | 0.278075 | 0.521955 | 0 | 3 |
+| guide_trimer_AUG | 2431 | 0.311394 | 0.552314 | 0 | 4 |
+| guide_trimer_ACA | 2431 | 0.245989 | 0.518346 | 0 | 4 |
+| guide_trimer_ACU | 2431 | 0.247635 | 0.487255 | 0 | 3 |
+| guide_trimer_ACC | 2431 | 0.187166 | 0.428338 | 0 | 2 |
+| guide_trimer_ACG | 2431 | 0.089675 | 0.307954 | 0 | 3 |
+| guide_trimer_AGA | 2431 | 0.269848 | 0.571972 | 0 | 4 |
+| guide_trimer_AGU | 2431 | 0.221719 | 0.456996 | 0 | 3 |
+| guide_trimer_AGC | 2431 | 0.292061 | 0.54078 | 0 | 5 |
+| guide_trimer_AGG | 2431 | 0.351707 | 0.578877 | 0 | 4 |
+| guide_trimer_UAA | 2431 | 0.164541 | 0.408844 | 0 | 2 |
+| guide_trimer_UAU | 2431 | 0.170712 | 0.419756 | 0 | 3 |
+| guide_trimer_UAC | 2431 | 0.132867 | 0.358371 | 0 | 3 |
+| guide_trimer_UAG | 2431 | 0.206088 | 0.437797 | 0 | 3 |
+| guide_trimer_UUA | 2431 | 0.144385 | 0.369807 | 0 | 2 |
+| guide_trimer_UUU | 2431 | 0.320444 | 0.669554 | 0 | 5 |
+| guide_trimer_UUC | 2431 | 0.402304 | 0.621477 | 0 | 4 |
+| guide_trimer_UUG | 2431 | 0.365282 | 0.574359 | 0 | 3 |
+| guide_trimer_UCA | 2431 | 0.33731 | 0.551618 | 0 | 3 |
+| guide_trimer_UCU | 2431 | 0.422871 | 0.639987 | 0 | 3 |
+| guide_trimer_UCC | 2431 | 0.421637 | 0.631421 | 0 | 4 |
+| guide_trimer_UCG | 2431 | 0.154258 | 0.386582 | 0 | 2 |
+| guide_trimer_UGA | 2431 | 0.341423 | 0.586058 | 0 | 3 |
+| guide_trimer_UGU | 2431 | 0.305636 | 0.55995 | 0 | 3 |
+| guide_trimer_UGC | 2431 | 0.285068 | 0.518564 | 0 | 3 |
+| guide_trimer_UGG | 2431 | 0.427396 | 0.619616 | 0 | 4 |
+| guide_trimer_CAA | 2431 | 0.220074 | 0.469331 | 0 | 2 |
+| guide_trimer_CAU | 2431 | 0.35253 | 0.574808 | 0 | 3 |
+| guide_trimer_CAC | 2431 | 0.275607 | 0.55234 | 0 | 3 |
+| guide_trimer_CAG | 2431 | 0.416701 | 0.627518 | 0 | 3 |
+| guide_trimer_CUA | 2431 | 0.132867 | 0.3752 | 0 | 3 |
+| guide_trimer_CUU | 2431 | 0.36775 | 0.598087 | 0 | 3 |
+| guide_trimer_CUC | 2431 | 0.366104 | 0.622674 | 0 | 4 |
+| guide_trimer_CUG | 2431 | 0.412999 | 0.615088 | 0 | 4 |
+| guide_trimer_CCA | 2431 | 0.376388 | 0.582532 | 0 | 3 |
+| guide_trimer_CCU | 2431 | 0.326615 | 0.561695 | 0 | 3 |
+| guide_trimer_CCC | 2431 | 0.229535 | 0.565074 | 0 | 4 |
+| guide_trimer_CCG | 2431 | 0.161662 | 0.429119 | 0 | 3 |
+| guide_trimer_CGA | 2431 | 0.106541 | 0.320369 | 0 | 3 |
+| guide_trimer_CGU | 2431 | 0.123817 | 0.354704 | 0 | 3 |
+| guide_trimer_CGC | 2431 | 0.153435 | 0.459812 | 0 | 5 |
+| guide_trimer_CGG | 2431 | 0.178939 | 0.432792 | 0 | 3 |
+| guide_trimer_GAA | 2431 | 0.277664 | 0.511424 | 0 | 3 |
+| guide_trimer_GAU | 2431 | 0.298231 | 0.542355 | 0 | 4 |
+| guide_trimer_GAC | 2431 | 0.184698 | 0.429408 | 0 | 3 |
+| guide_trimer_GAG | 2431 | 0.278075 | 0.565839 | 0 | 3 |
+| guide_trimer_GUA | 2431 | 0.178527 | 0.415997 | 0 | 3 |
+| guide_trimer_GUU | 2431 | 0.264089 | 0.490425 | 0 | 2 |
+| guide_trimer_GUC | 2431 | 0.286713 | 0.524762 | 0 | 3 |
+| guide_trimer_GUG | 2431 | 0.263266 | 0.495872 | 0 | 2 |
+| guide_trimer_GCA | 2431 | 0.311394 | 0.537206 | 0 | 3 |
+| guide_trimer_GCU | 2431 | 0.296997 | 0.542653 | 0 | 3 |
+| guide_trimer_GCC | 2431 | 0.259975 | 0.520247 | 0 | 3 |
+| guide_trimer_GCG | 2431 | 0.156314 | 0.46286 | 0 | 5 |
+
+(119 more rows not shown)
+
+</details>
+
+### Categorical features
+
+<details>
+<summary>Show the table (297 rows)</summary>
+
+| column | rank | value | count | pct |
+|---|---|---|---|---|
+| descriptor_A_19 | 1 | 0.0 | 1884 | 77.5 |
+| descriptor_A_19 | 2 | 1.0 | 547 | 22.5 |
+| descriptor_CC_1 | 1 | 0.0 | 2274 | 93.54 |
+| descriptor_CC_1 | 2 | 1.0 | 157 | 6.46 |
+| descriptor_CG_1 | 1 | 0.0 | 2350 | 96.67 |
+| descriptor_CG_1 | 2 | 1.0 | 81 | 3.33 |
+| descriptor_C_1 | 1 | 0.0 | 1858 | 76.43 |
+| descriptor_C_1 | 2 | 1.0 | 573 | 23.57 |
+| descriptor_GC_1 | 1 | 0.0 | 2299 | 94.57 |
+| descriptor_GC_1 | 2 | 1.0 | 132 | 5.43 |
+| descriptor_GG_1 | 1 | 0.0 | 2236 | 91.98 |
+| descriptor_GG_1 | 2 | 1.0 | 195 | 8.02 |
+| descriptor_G_1 | 1 | 0.0 | 1790 | 73.63 |
+| descriptor_G_1 | 2 | 1.0 | 641 | 26.37 |
+| descriptor_UU_1 | 1 | 0.0 | 2228 | 91.65 |
+| descriptor_UU_1 | 2 | 1.0 | 203 | 8.35 |
+| descriptor_U_1 | 1 | 0.0 | 1740 | 71.58 |
+| descriptor_U_1 | 2 | 1.0 | 691 | 28.42 |
+| descriptor_U_2 | 1 | 0.0 | 1755 | 72.19 |
+| descriptor_U_2 | 2 | 1.0 | 676 | 27.81 |
+| guide_position_20 | 1 | t | 654 | 26.9 |
+| guide_position_20 | 2 | g | 609 | 25.05 |
+| guide_position_20 | 3 | c | 590 | 24.27 |
+| guide_position_20 | 4 | a | 578 | 23.78 |
+| guide_position_21 | 1 | t | 644 | 26.49 |
+| guide_position_21 | 2 | g | 618 | 25.42 |
+| guide_position_21 | 3 | c | 605 | 24.89 |
+| guide_position_21 | 4 | a | 564 | 23.2 |
+| target_gene | 1 | Rn Mmp7 | 150 | 6.17 |
+| target_gene | 2 | Hs C6orf110 | 145 | 5.96 |
+| target_gene | 3 | Rn TCAP | 144 | 5.92 |
+| target_gene | 4 | Hs RAB6IP1 | 126 | 5.18 |
+| target_gene | 5 | Hs P2RX3 | 90 | 3.7 |
+| target_window_position_01 | 1 | A | 635 | 26.12 |
+| target_window_position_01 | 2 | C | 582 | 23.94 |
+| target_window_position_01 | 3 | G | 582 | 23.94 |
+| target_window_position_01 | 4 | U | 552 | 22.71 |
+| target_window_position_01 | 5 | X | 80 | 3.29 |
+| target_window_position_02 | 1 | A | 633 | 26.04 |
+| target_window_position_02 | 2 | G | 620 | 25.5 |
+| target_window_position_02 | 3 | C | 610 | 25.09 |
+| target_window_position_02 | 4 | U | 495 | 20.36 |
+| target_window_position_02 | 5 | X | 73 | 3 |
+| target_window_position_03 | 1 | A | 635 | 26.12 |
+| target_window_position_03 | 2 | C | 611 | 25.13 |
+| target_window_position_03 | 3 | G | 587 | 24.15 |
+| target_window_position_03 | 4 | U | 531 | 21.84 |
+| target_window_position_03 | 5 | X | 66 | 2.71 |
+| target_window_position_04 | 1 | A | 632 | 26 |
+| target_window_position_04 | 2 | C | 620 | 25.5 |
+| target_window_position_04 | 3 | G | 593 | 24.39 |
+| target_window_position_04 | 4 | U | 522 | 21.47 |
+| target_window_position_04 | 5 | X | 63 | 2.59 |
+| target_window_position_05 | 1 | C | 623 | 25.63 |
+| target_window_position_05 | 2 | A | 622 | 25.59 |
+| target_window_position_05 | 3 | G | 592 | 24.35 |
+| target_window_position_05 | 4 | U | 535 | 22.01 |
+| target_window_position_05 | 5 | X | 59 | 2.43 |
+| target_window_position_06 | 1 | A | 625 | 25.71 |
+| target_window_position_06 | 2 | U | 587 | 24.15 |
+
+(237 more rows not shown)
+
+</details>
+
+## Build
+
+| field | value |
+|---|---|
+| uuid | 01a18629-c3f0-7652-a9e8-57307772b909 |
+| checksum | v2:e733528bab0b1071f95ffb17ede5aa335b63b96bb61c7322e86887835bae4f46 |
+| built_at | 2026-10-29T05:37:27+00:00 |
+| path | dataset_from_uncertainty_guided_model_selection_for_tabular_foundation_models_in_biomolecule_efficacy_prediction/01a18629-c3f0-7652-a9e8-57307772b909 |
+| data_foundry_version | 0.0.5 |
+| git_sha | 6d189a922994ddb0221c8249d07552d4df8af88b |
+| libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
+| stale | yes: the definition now gives checksum `v2:580102897fa13e09a899db6c6f134a84901bd82ad33b5ce1a32ec2bd91c1244a` |

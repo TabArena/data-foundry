@@ -176,6 +176,20 @@ def test_priority_score(priority):
     assert priority.score(_facts(features=4), thin)["shape"] == 0
 
 
+def test_priority_feature_type_counts(priority):
+    """The README's type counts parse with and without an ordinal count and before any special features."""
+    line = "<summary>Feature types: {}</summary>"
+    assert priority.feature_type_counts(line.format("2 categorical, 0 string, 1 datetime")) == {
+        "categorical": 2,
+        "string": 0,
+        "datetime": 1,
+    }
+    special = "7 categorical, 3 ordinal, 0 string, 0 datetime, smiles `SMILES`"
+    counts = priority.feature_type_counts(line.format(special))
+    assert counts == {"categorical": 7, "ordinal": 3, "string": 0, "datetime": 0}
+    assert priority.feature_type_counts("no such line") is None
+
+
 def test_priority_factors_on_the_working_copy(priority, capsys):
     """The command line measures a named record of the working copy against its accepted definitions."""
     root = REPO / "datasets" / "_dev" / "tabarena-v0pt2"
@@ -203,6 +217,17 @@ def _probe_input(clean_room, regime: str, grouping=None, time_on=None):
         grouping=grouping,
         time_on=time_on,
         origin="definition",
+    )
+
+
+def test_prediction_point_line_takes_a_clause_or_a_sentence(clean_room):
+    """A clause gets the lead-in; a whole sentence (airqo's) is kept, not prefixed a second time."""
+    assert clean_room.prediction_point_line("the policy is quoted.") == (
+        "- Prediction point: the prediction is made when the policy is quoted."
+    )
+    sentence = "The prediction is made for an hour after that hour has been recorded."
+    assert clean_room.prediction_point_line(sentence) == (
+        "- Prediction point: the prediction is made for an hour after that hour has been recorded."
     )
 
 
@@ -677,6 +702,25 @@ def test_leak_probe_run_scores_the_number_format(leak_probe):
     result = leak_probe.run(df, "y", "binary_classification", splits, n_splits=2, n_jobs=1)
     assert result["format_alone"] > 0.95
     assert next(iter(result["format_single"])) == "x"
+
+
+def test_leak_probe_run_leaves_out_aware_datetimes(leak_probe):
+    """A timezone-aware datetime column (airqo's `created_at`) is not a LightGBM input, as a naive one is not."""
+    rng = np.random.default_rng(3)
+    n = 300
+    df = pd.DataFrame(
+        {
+            "x": rng.normal(size=n),
+            "w": rng.normal(size=n),
+            "v": rng.normal(size=n),
+            "naive": pd.date_range("2021-01-01", periods=n, freq="h"),
+            "aware": pd.date_range("2021-01-01", periods=n, freq="h", tz="Africa/Nairobi"),
+            "y": rng.integers(0, 2, n),
+        }
+    )
+    splits = [(np.arange(200), np.arange(200, n))]
+    result = leak_probe.run(df, "y", "binary_classification", splits, n_splits=1, n_jobs=1)
+    assert result["features_probed"] == 3
 
 
 @pytest.fixture(scope="module")

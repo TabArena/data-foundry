@@ -30,6 +30,7 @@ import argparse
 import ast
 import base64
 import datetime as dt
+import hashlib
 import html
 import json
 import posixpath
@@ -733,8 +734,21 @@ TABLE_HTML = re.compile(r"<table>(.*?)</table>", re.DOTALL)
 ROW_HTML = re.compile(r"<tr>(.*?)</tr>", re.DOTALL)
 CELL_HTML = re.compile(r"<(t[hd])>(.*?)</t[hd]>", re.DOTALL)
 CELL_POINTS = re.compile(r";\s+(?![^<]*</code>)")
-RECOMMENDED = re.compile(r"\*\*Recommendation:\*\*\s*\**([A-Z])\b")
+RECOMMENDED = re.compile(r"\*\*Recommendation:\*\*\s*\**([A-Za-z])\b")
 IMPLEMENTED = re.compile(r"\s*\((?:implemented|as implemented)\)", re.IGNORECASE)
+
+
+def _option_cell(cell: str, i: int, option: int, tags: list[str]) -> str:
+    """One cell of an options table: the letter as it is, the option's name with its tags and the page's hidden
+    "locked in" tag (shown on the row the curator's mark locks in), and the points of any other cell as bullets.
+    """
+    if i == option:
+        name = f'<span class="oname">{cell}</span>{"".join(tags)}' if tags else cell
+        return name + '<span class="otag pick" hidden></span>'
+    points = [p for p in CELL_POINTS.split(cell) if p.strip()]
+    if i and len(points) > 1:
+        return "<ul>" + "".join(f"<li>{p}</li>" for p in points) + "</ul>"
+    return cell
 
 
 def _options_tables(out: str, text: str) -> str:
@@ -767,19 +781,11 @@ def _options_tables(out: str, text: str) -> str:
             if key and key == recommended:
                 tags.append('<span class="otag rec">recommended</span>')
                 classes.append("rec")
-            tds = []
-            for i, cell in enumerate(cells):
-                points = [p for p in CELL_POINTS.split(cell) if p.strip()]
-                if i == 0:
-                    shown = cell
-                elif i == option:
-                    shown = f'<span class="oname">{cell}</span>{"".join(tags)}' if tags else cell
-                elif len(points) > 1:
-                    shown = "<ul>" + "".join(f"<li>{p}</li>" for p in points) + "</ul>"
-                else:
-                    shown = cell
-                tds.append(f'<td class="{names[i] if i < len(names) else ""}">{shown}</td>')
-            body.append(f'<tr class="{" ".join(classes)}">' + "".join(tds) + "</tr>")
+            tds = [
+                f'<td class="{names[i] if i < len(names) else ""}">{_option_cell(cell, i, option, tags)}</td>'
+                for i, cell in enumerate(cells)
+            ]
+            body.append(f'<tr class="{" ".join(classes)}" data-key="{html.escape(key)}">' + "".join(tds) + "</tr>")
         head = "".join(
             f'<th class="{n}">{c}</th>' for n, (_, c) in zip(names, CELL_HTML.findall(rows[0]), strict=False)
         )
@@ -789,6 +795,38 @@ def _options_tables(out: str, text: str) -> str:
         )
 
     return TABLE_HTML.sub(table, out)
+
+
+MD_ROW = re.compile(r"^\s*\|(.*)\|\s*$")
+
+
+def _options(text: str) -> dict[str, Any]:
+    """An issue's options as the page's mark buttons name them: from its first options table (a header with an
+    ``Option`` column), each row's key and option name, the key of the row marked ``(implemented)`` (what "As
+    implemented" locks in) and the key the ``**Recommendation:**`` names. Empty when the issue has no such table.
+    """
+    tables: list[list[list[str]]] = [[]]
+    for line in text.splitlines():
+        m = MD_ROW.match(line)
+        if m:
+            tables[-1].append([c.strip() for c in re.split(r"(?<!\\)\|", m.group(1))])
+        elif tables[-1]:
+            tables.append([])
+    rows = next((t for t in tables if t and "option" in (h.lower() for h in t[0])), [])
+    if not rows:
+        return {"options": [], "implemented": "", "recommended": ""}
+    heads = [h.lower() for h in rows[0]]
+    col = heads.index("option")
+    options, implemented = [], ""
+    for cells in rows[2:]:
+        if len(cells) <= col or not cells[0]:
+            continue
+        key, name = re.sub(r"[*`]", "", cells[0]).strip(), cells[col]
+        if IMPLEMENTED.search(name):
+            name, implemented = IMPLEMENTED.sub("", name), implemented or key
+        options.append({"key": key, "nameHtml": MD.renderInline(name.strip())})
+    rec = RECOMMENDED.search(text)
+    return {"options": options, "implemented": implemented, "recommended": rec.group(1) if rec else ""}
 
 
 def render(text: str, *, fold: bool = False) -> str:
@@ -836,11 +874,47 @@ TURN = re.compile(
 the curator's note, or the label that closes it."""
 
 
+CHOICE = re.compile(r"^\s*[-*] \((?P<key>[a-z])\) (?P<text>.*)$")
+GIVE_LETTER = re.compile(
+    r"\s*Give (?:the letter|\([a-z]\) or \([a-z]\))[^.;]*[.;](?:\s+nothing\s+is\s+applied\s+until\s+then\.)?"
+)
+
+
+def _choices(md: str) -> tuple[str, list[dict[str, str]]]:
+    """An AI turn's choices, which the page shows as buttons the curator clicks to answer: the rows of its options table
+    (the issue shape, ``| | Option | What it does | Pro | Con |`` with letters a, b, c; the table stays in the text), or
+    else lettered bullets (``- (a) ...``, continuation lines indented), taken out of the text. A "Give the letter in the
+    note" sentence goes.
+    """
+    table = _options(md)
+    if len(table["options"]) >= 2:
+        return GIVE_LETTER.sub("", md).strip(), [{"key": o["key"], "html": o["nameHtml"]} for o in table["options"]]
+    kept: list[str] = []
+    choices: list[dict[str, Any]] = []
+    for line in md.splitlines():
+        m = CHOICE.match(line)
+        if m:
+            choices.append({"key": m["key"], "lines": [m["text"]]})
+        elif choices and kept[-1:] == ["\0"] and line.startswith((" ", "\t")) and line.strip():
+            choices[-1]["lines"].append(line.strip())
+        else:
+            kept.append(line)
+            continue
+        if not kept or kept[-1] != "\0":
+            kept.append("\0")  # where the choices stood
+    if len(choices) < 2:
+        return md, []
+    text = "\n".join(ln for ln in kept if ln != "\0")
+    text = GIVE_LETTER.sub("", text).strip()
+    return text, [{"key": c["key"], "html": MD.renderInline(" ".join(c["lines"]).rstrip(";."))} for c in choices]
+
+
 def _thread(text: str) -> dict[str, Any]:
     """An issue's or item's text split into the original and the turns after it, each rendered.
 
     The original is everything before the first turn label; each turn runs to the next label. The page shows the turns
-    as a conversation under the original text, so the curator sees who said what, and when.
+    as a conversation under the original text, so the curator sees who said what, and when. The options of the
+    original (``_options``) name what each mark button locks in.
     """
     body: list[str] = []
     turns: list[dict[str, Any]] = []
@@ -871,8 +945,15 @@ def _thread(text: str) -> dict[str, Any]:
         else:
             body.append(line)
     for turn in turns:
-        turn["html"] = render(_dedent(turn.pop("lines")))
-    return {"html": render("\n".join(body), fold=True), "thread": turns}
+        lines = turn.pop("lines")
+        md = "\n".join([lines[0], _dedent(lines[1:])]) if len(lines) > 1 else lines[0]
+        if turn["who"] == "ai":
+            md, turn["choices"] = _choices(md)
+        turn["html"] = render(md)
+    # The AI's last turn, when the issue waits on the curator: the page counts the issue as unmarked until the curator
+    # marks it (or writes a note) in reply to this turn, stored as `re` next to the mark.
+    ask = hashlib.sha256(turns[-1]["html"].encode()).hexdigest()[:12] if turns and turns[-1]["who"] == "ai" else ""
+    return {"html": render("\n".join(body), fold=True), "thread": turns, "askId": ask, **_options("\n".join(body))}
 
 
 def _frontmatter(text: str | None) -> tuple[dict, str]:
@@ -915,6 +996,22 @@ def _record(path: Path) -> dict:
         value = ", ".join(str(x) for x in v) if isinstance(v, list) else v
         rows.append([k, "" if value is None else str(value)])
     return {"fields": rows, "html": render(body)}
+
+
+METRIC_CHECKED = re.compile(
+    r"^CC \((?P<date>\d{4}-\d{2}-\d{2}), (?P<who>[^)]+)\): the declared metric\b.*?\bis checked\b.*$", re.MULTILINE
+)
+
+
+def _metric_checked(path: Path) -> dict | None:
+    """The record's latest CC line saying the declared metric is checked (the curator's metric mark, applied): the page
+    then shows that line instead of the mark and does not count the metric as open.
+    """
+    found = list(METRIC_CHECKED.finditer(_frontmatter(path.read_text())[1])) if path.is_file() else []
+    if not found:
+        return None
+    m = found[-1]
+    return {"date": m["date"], "by": m["who"], "html": MD.renderInline(m.group(0))}
 
 
 def _priority(path: Path) -> int | None:
@@ -1213,6 +1310,7 @@ def _dataset(where: _Repo, report: dict[str, Any], row: dict[str, Any], tldr: di
         "decided": decided,
         "summary": files["summary"],
         "metric": files["metric"],
+        "metricChecked": _metric_checked(record_path),
         "meta": files["meta"],
         "readme": files["readme"],
         "retiredCommit": files.get("retiredCommit"),

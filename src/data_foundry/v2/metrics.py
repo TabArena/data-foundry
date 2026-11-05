@@ -18,9 +18,13 @@ plain ``json``. scikit-learn and scipy are imported when a metric is computed, n
 
 Conventions of the predictions:
 
-* ``proba``: class probabilities. Binary: the probability of the positive class, ``labels[1]``, as a vector (or a
-  two-column array in ``labels`` order). Multiclass: one column per class in ``labels`` order. ``labels`` defaults
-  to the sorted classes of ``y_true``; :func:`scorer` passes the categories of the container's target column.
+* ``proba``: class probabilities, with the columns in ``labels`` order. Binary: the probability of the positive
+  class, ``labels[1]``, as a vector (or a two-column array). Multiclass: one column per class. ``labels`` defaults to
+  the sorted classes of ``y_true``; :func:`scorer` passes the sorted categories of the container's target column.
+  Both are scikit-learn's convention (``classes_``, the column order of ``predict_proba``), for every target: the
+  declared order of an ordered target (low < high) is type information, never the column order. Probabilities passed
+  as a pandas DataFrame whose columns are the class names are matched by name and reordered to ``labels``; a missing
+  or unknown class name is an error. A plain array is read in ``labels`` order.
 * ``label``: predicted classes, in the values of ``y_true``. Binary metrics that need a positive class
   (``f1``, ``precision``, ``recall``) take ``labels[1]``.
 * ``value``: a number per row (regression).
@@ -39,7 +43,8 @@ custom metrics against their official code, vendored in ``tests/test_v2_metrics_
 
 The custom metrics (``kind="custom"``): ``cost_matrix``, ``precision_at_k``, ``average_precision_at_k``, ``rmspe``,
 ``gini_top_capture``, ``weighted_pearsonr``, ``mean_group_pearsonr``, ``hierarchical_balanced_accuracy``,
-``gini_stability``, ``par_k`` and ``normalized_early_detection_utility``. Each :class:`MetricDef` holds its formula,
+``gini_stability``, ``par_k`` and ``normalized_early_detection_utility``. Each
+:class:`MetricDef` holds its formula,
 its reference, its prediction kind, its input roles and its params. A metric with inputs takes the values of the
 scored rows by role: ``group`` (rows of one unit: an era, a patient, an instance), ``order`` (sorts rows in time: a
 week, an hour; rows arrive in any order, so no metric relies on row position) and ``weight``. A metric scores the
@@ -133,6 +138,25 @@ def _codes(y_true: Any, labels: list) -> np.ndarray:
     return codes.astype(np.int64)
 
 
+def _named_proba(y_pred: pd.DataFrame, labels: list) -> np.ndarray:
+    """Probabilities in a DataFrame whose columns are the class names, as an array with its columns in ``labels``
+    order; a missing or unknown class name is an error.
+    """
+    columns, classes = pd.Index(y_pred.columns), pd.Index(list(labels))
+    if not columns.is_unique:
+        raise ValueError(f"the probability columns must be unique class names, got {list(columns)}.")
+    if not classes.is_unique:
+        raise ValueError(f"labels must be unique, got {list(labels)}.")
+    unknown = [c for c, i in zip(columns, classes.get_indexer(columns), strict=True) if i < 0]
+    missing = [c for c, i in zip(classes, columns.get_indexer(classes), strict=True) if i < 0]
+    if unknown or missing:
+        raise ValueError(
+            "the probability columns are matched to the classes by name and need one column per class: "
+            f"unknown {unknown}, missing {missing} (the classes: {list(labels)})."
+        )
+    return y_pred.iloc[:, columns.get_indexer(classes)].to_numpy(dtype=float)
+
+
 def _positive_proba(y_pred: Any) -> np.ndarray:
     """The probability of the positive class: a vector as is, or the second column of a two-column array."""
     proba = np.asarray(y_pred, dtype=float)
@@ -222,6 +246,25 @@ def _value_metric(func_name: str) -> Callable:
     return fn
 
 
+def _poisson_deviance(y_true, y_pred, *, params=None, **_):
+    """``mean_poisson_deviance`` with the predicted means floored at ``params["min_prediction"]`` (default machine
+    epsilon, as ``log_loss`` clips its probabilities): a mean at or below 0 is no valid Poisson mean, and in practice
+    a model's output is clipped at a small mean before it is scored. A dataset states its floor in the definition,
+    below the smallest plausible mean. NaN and infinite predictions still raise.
+    """
+    floor = float((params or {}).get("min_prediction", np.finfo(float).eps))
+    y_pred = np.asarray(y_pred, dtype=float)
+    y_pred = np.where(np.isfinite(y_pred), np.maximum(y_pred, floor), y_pred)
+    return _sklearn_metrics().mean_poisson_deviance(np.asarray(y_true, dtype=float), y_pred)
+
+
+def _check_min_prediction(params: Mapping[str, Any]) -> None:
+    if "min_prediction" in params:
+        value = params["min_prediction"]
+        if not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
+            raise ValueError(f"min_prediction is a finite number above 0, not {value!r}.")
+
+
 def _correlation(func_name: str) -> Callable:
     def fn(y_true, y_pred, **_):
         result = getattr(_scipy_stats(), func_name)(np.asarray(y_true, dtype=float), np.asarray(y_pred, dtype=float))
@@ -248,6 +291,9 @@ class MetricDef:
         predictions: Other prediction kinds it takes, chosen by ``params["prediction"]``.
         check_params: Raises a ValueError on invalid params (a missing matrix, a bad ``k``).
         reference: Where the metric is defined, and the official implementation it is tested against.
+        prediction_domain: The values a ``value`` prediction must take, on the original scale: ``None`` (any finite
+            value) or ``positive`` (an expected mean, as for ``mean_poisson_deviance``). The metric-computes check
+            draws its test predictions in this domain.
     """
 
     name: str
@@ -263,6 +309,7 @@ class MetricDef:
     predictions: tuple[str, ...] = ()
     check_params: Callable[[Mapping[str, Any]], None] | None = field(default=None, compare=False)
     reference: str | None = None
+    prediction_domain: str | None = None
 
     def prediction_for(self, params: Mapping[str, Any] | None) -> str:
         """The prediction kind under ``params``: :attr:`prediction`, or ``params["prediction"]`` when the metric
@@ -286,8 +333,8 @@ class MetricDef:
             self.check_params(params)
 
 
-def _standard(name, problem_types, prediction, greater_is_better, fn, implementation, definition) -> MetricDef:
-    return MetricDef(name, tuple(problem_types), prediction, greater_is_better, fn, implementation, definition)
+def _standard(name, problem_types, prediction, greater_is_better, fn, implementation, definition, **extra) -> MetricDef:
+    return MetricDef(name, tuple(problem_types), prediction, greater_is_better, fn, implementation, definition, **extra)
 
 
 _BIN = ("binary_classification",)
@@ -416,6 +463,20 @@ METRICS: dict[str, MetricDef] = {
             "mean ROC AUC of each class against the rest",
         ),
         # regression
+        _standard(
+            "mean_poisson_deviance",
+            _REG,
+            "value",
+            _LOWER,
+            _poisson_deviance,
+            "sklearn.metrics.mean_poisson_deviance, the predictions floored at min_prediction",
+            "2*mean(y*log(y/p)-y+p); finite y>=0; p below min_prediction (default machine epsilon) counts as it",
+            prediction_domain="positive",
+            params={
+                "min_prediction": "predictions below it count as it; a finite number above 0 (default: machine epsilon)"
+            },
+            check_params=_check_min_prediction,
+        ),
         _standard(
             "rmse",
             _REG,
@@ -701,6 +762,15 @@ def _group_center(values: np.ndarray, codes: np.ndarray, n_groups: int) -> np.nd
     return values - means[codes]
 
 
+def _group_range(values: np.ndarray, codes: np.ndarray, n_groups: int) -> np.ndarray:
+    """Per group, the largest value minus the smallest (0 for a group whose values are all equal)."""
+    high = np.full(n_groups, -np.inf)
+    low = np.full(n_groups, np.inf)
+    np.maximum.at(high, codes, values)
+    np.minimum.at(low, codes, values)
+    return high - low
+
+
 def _signed_power(values: np.ndarray, power: float) -> np.ndarray:
     return np.sign(values) * np.abs(values) ** power
 
@@ -713,11 +783,19 @@ def _check_group_corr(params: Mapping[str, Any]) -> None:
 def _mean_group_pearsonr(y_true, y_pred, *, group, params, **_):
     """Mean over groups of the per-group Pearson correlation; ``method="numerai_corr"`` first transforms as Numerai's
     CORR (predictions: per-group rank, gaussianized, signed power 1.5; target: per-group centred, signed power 1.5).
-    Groups whose correlation is undefined (one row, or no variance) are left out of the mean.
+
+    A group whose target is constant (one row, or one value) is left out of the mean: no prediction can rank it. A
+    group whose target varies but whose predictions are all equal scores 0, so a constant baseline gets a score (0)
+    instead of NaN, and a group a model declines to rank counts as no skill instead of leaving the mean (Lennart,
+    2026-11-05, huesken_sirna_efficacy issue 6). Both are decided on the values as given, before any transform, so a
+    float constant such as 0.3 is not mistaken for a ranking by rounding noise. ``numerai_tools`` returns NaN for such
+    an era instead of 0; on every other era the two agree.
     """
     codes, n_groups = _group_codes(group)
     y = np.asarray(y_true, dtype=float)
     p = np.asarray(y_pred, dtype=float)
+    target_varies = _group_range(y, codes, n_groups) > 0
+    constant_prediction = _group_range(p, codes, n_groups) == 0
     if params.get("method", "pearson") == "numerai_corr":
         from scipy.special import ndtri  # noqa: PLC0415 - imported when a metric is computed, not with the module
 
@@ -733,8 +811,8 @@ def _mean_group_pearsonr(y_true, y_pred, *, group, params, **_):
         codes, weights=dp * dp, minlength=n_groups
     )
     with np.errstate(invalid="ignore", divide="ignore"):
-        corr = cov / np.sqrt(var)
-    corr = corr[var > 0]
+        corr = np.where(constant_prediction, 0.0, cov / np.sqrt(var))
+    corr = corr[target_varies]
     return float(corr.mean()) if len(corr) else float("nan")
 
 
@@ -1366,9 +1444,12 @@ def score(spec: Any, y_true: Any, y_pred: Any, *, labels: Any = None, **inputs: 
             :class:`Metric` (resolved, or local).
         y_true: The true values of the scored rows, on the scale the target ships on.
         y_pred: The predictions (see the module docstring for the ``proba`` / ``label`` / ``value`` conventions), on
-            the shipped scale; a spec's ``target_transform`` is inverted on both before the metric.
+            the shipped scale; a spec's ``target_transform`` is inverted on both before the metric. There are no
+            metric-specific branches here: a metric that needs another scale takes it itself (``rmsle``), so the
+            inverse is the same for every metric. Probabilities as a DataFrame whose columns are the class names are
+            matched to ``labels`` by name; a missing or unknown class name is an error.
         labels: The class labels in the order of the probability columns (classification); default the sorted
-            classes of ``y_true``.
+            classes of ``y_true``, the order of scikit-learn's ``classes_``.
         **inputs: The values of the spec's input columns for the scored rows, by role (``group=...``).
 
     Returns:
@@ -1381,6 +1462,8 @@ def score(spec: Any, y_true: Any, y_pred: Any, *, labels: Any = None, **inputs: 
     if missing:
         raise ValueError(f"metric {fields['name']!r} needs the input(s) {missing} (pass them by role).")
     y_true = np.asarray(y_true)
+    if isinstance(y_pred, pd.DataFrame) and fields.get("prediction") == "proba":
+        y_pred = _named_proba(y_pred, _labels(y_true, labels))
     transform = fields.get("target_transform") or "identity"
     if transform != "identity":  # the target ships transformed for modelling: score on the original scale
         if transform not in INVERSE_TRANSFORMS:
@@ -1397,9 +1480,14 @@ def scorer(container: Any, *, metric: Any = None) -> Callable[..., float]:
 
     ``row_index`` are the positions of the scored rows in ``container.dataset`` (the test side of a split, as in
     ``experiment_metadata.splits``); the scorer takes the values of the spec's input columns from those rows, so a
-    benchmark passes only the test indices. It is needed when the metric has inputs. ``labels`` defaults to the
-    categories of the target column, the column order of the probabilities. Values are passed on the shipped scale:
-    a per-group aggregation works on it, and :func:`score` then inverts the spec's ``target_transform``.
+    benchmark passes only the test indices. It is needed when the metric has inputs. ``labels``, the column order of
+    the probabilities, defaults to the sorted categories of the target column: the column order of scikit-learn's
+    ``predict_proba`` (``classes_``) for a model trained on every class, for every target. An ordered target keeps its
+    declared order (low < high) in the container as type information; the scorer does not read its columns in that
+    order. Probabilities as a DataFrame whose columns are the class names are matched by name, in any order (a
+    missing or unknown class name is an error); a plain array is read in the sorted order. Values are passed on the
+    shipped scale: a per-group aggregation works on it, and :func:`score` then inverts the spec's
+    ``target_transform``.
 
     Args:
         container: A format-2 container (anything with ``dataset`` and ``task_metadata.objective_metric``).
@@ -1412,7 +1500,7 @@ def scorer(container: Any, *, metric: Any = None) -> Callable[..., float]:
     target = frame[task.target_column_name] if frame is not None else None
     default_labels = None
     if target is not None and isinstance(target.dtype, pd.CategoricalDtype):
-        default_labels = list(target.cat.categories)
+        default_labels = sorted(target.cat.categories)  # scikit-learn's classes_, whatever the declared order
     input_columns = dict(fields.get("inputs") or {})
     grouping = getattr(task, "grouping", None)
     per_group = grouping is not None and getattr(grouping, "prediction_unit", "row") == "group"
@@ -1420,7 +1508,11 @@ def scorer(container: Any, *, metric: Any = None) -> Callable[..., float]:
     def score_rows(
         y_true: Any, y_pred: Any, row_index: Any = None, *, labels: Any = None, aggregate: bool = True
     ) -> float:
-        y_true, y_pred = np.asarray(y_true), np.asarray(y_pred)
+        labels = labels if labels is not None else default_labels
+        y_true = np.asarray(y_true)
+        if isinstance(y_pred, pd.DataFrame) and fields.get("prediction") == "proba":  # by name, before the names go
+            y_pred = _named_proba(y_pred, _labels(y_true, labels))
+        y_pred = np.asarray(y_pred)
         rows = None if row_index is None else np.asarray(row_index)
         if per_group and aggregate:
             if rows is None:
@@ -1431,7 +1523,7 @@ def scorer(container: Any, *, metric: Any = None) -> Callable[..., float]:
             if rows is None:
                 raise ValueError(f"metric {fields['name']!r} uses {input_columns}: pass the rows' row_index.")
             values = {role: frame[column].iloc[rows].to_numpy() for role, column in input_columns.items()}
-        return score(spec, y_true, y_pred, labels=labels if labels is not None else default_labels, **values)
+        return score(spec, y_true, y_pred, labels=labels, **values)
 
     return score_rows
 
@@ -1498,10 +1590,17 @@ def to_sklearn_scorer(spec: Any, *, labels: Any = None) -> Callable[..., float]:
     )
 
 
-def dummy_prediction(prediction: str, y_train: Any, n: int, *, labels: Any = None, seed: int = 0) -> np.ndarray:
+def dummy_prediction(
+    prediction: str, y_train: Any, n: int, *, labels: Any = None, seed: int = 0, domain: str | None = None
+) -> np.ndarray:
     """A random prediction for ``n`` rows that matches the kind: draws of the training values (``label`` /
     ``value``) or random probabilities over ``labels`` (``proba``; a vector for two classes). Used to check that a
     metric computes on every split; not a baseline.
+
+    ``domain="positive"`` (a metric's :attr:`MetricDef.prediction_domain`) replaces the draws at or below zero by the
+    mean of the positive training values (1 if there are none): an observed count of 0 is a valid label but not a
+    valid expected mean. A positive value on the shipped scale is positive on the original scale under every
+    ``target_transform``.
     """
     rng = np.random.default_rng(seed)
     y_train = np.asarray(y_train)
@@ -1510,7 +1609,13 @@ def dummy_prediction(prediction: str, y_train: Any, n: int, *, labels: Any = Non
         proba = rng.dirichlet(np.ones(len(labels)), size=n)
         return proba[:, 1] if len(labels) == 2 else proba
     if prediction in ("label", "value"):
-        return rng.choice(y_train, size=n, replace=True)
+        draws = rng.choice(y_train, size=n, replace=True)
+        if domain == "positive":
+            positive = y_train[y_train > 0]
+            draws = np.where(draws > 0, draws, positive.mean() if len(positive) else 1.0)
+        elif domain is not None:
+            raise ValueError(f"domain is None or 'positive', not {domain!r}.")
+        return draws
     raise ValueError(f"prediction is one of {PREDICTIONS}, not {prediction!r}.")
 
 

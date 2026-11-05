@@ -51,6 +51,7 @@ EXPECTED = {
     "f1_weighted": (Y_MULTI, L_MULTI, skm.f1_score(Y_MULTI, L_MULTI, average="weighted")),
     "roc_auc_ovo_macro": (Y_MULTI, P_MULTI, skm.roc_auc_score(Y_MULTI, P_MULTI, multi_class="ovo", average="macro")),
     "roc_auc_ovr_macro": (Y_MULTI, P_MULTI, skm.roc_auc_score(Y_MULTI, P_MULTI, multi_class="ovr", average="macro")),
+    "mean_poisson_deviance": (Y_REG, P_REG, skm.mean_poisson_deviance(Y_REG, P_REG)),
     "rmse": (Y_REG, P_REG, np.sqrt(skm.mean_squared_error(Y_REG, P_REG))),
     "mae": (Y_REG, P_REG, skm.mean_absolute_error(Y_REG, P_REG)),
     "mse": (Y_REG, P_REG, skm.mean_squared_error(Y_REG, P_REG)),
@@ -207,15 +208,93 @@ def test_scorer_takes_the_group_input_by_row_index(monkeypatch: pytest.MonkeyPat
         score(spec, df["y"].to_numpy()[rows], y_pred)
 
 
-def test_scorer_uses_the_target_categories_as_labels() -> None:
-    df = pd.DataFrame({"y": pd.Categorical(Y_BIN, categories=["yes", "no"])})
-    task = PredictiveMLTaskMetadataV2(
+def _classification_task(problem_type: str, metric: Metric | None = None) -> PredictiveMLTaskMetadataV2:
+    return PredictiveMLTaskMetadataV2(
         target_column_name="y",
-        problem_type="binary_classification",
-        objective_metric=metric_spec(Metric.fallback(reason="r"), "binary_classification"),
+        problem_type=problem_type,
+        objective_metric=metric_spec(metric or Metric.fallback(reason="r"), problem_type),
     )
-    value = scorer(_Container(df, task))(Y_BIN, P_BIN)  # P_BIN is the probability of "no", the second category
-    assert value == pytest.approx(skm.roc_auc_score(1 - Y01, P_BIN))
+
+
+def test_scorer_reads_the_probability_columns_in_sorted_order() -> None:
+    """scikit-learn's classes_ order, whatever the order of the categories: the positive class is "yes"."""
+    for categories in (["no", "yes"], ["yes", "no"]):
+        df = pd.DataFrame({"y": pd.Categorical(Y_BIN, categories=categories)})
+        value = scorer(_Container(df, _classification_task("binary_classification")))(Y_BIN, P_BIN)
+        assert value == pytest.approx(skm.roc_auc_score(Y01, P_BIN))
+
+
+SCALE = ["low", "mid", "high", "top"]  # an ordered target's declared order, not its sorted order
+Y_SCALE = RNG.choice(SCALE, size=N)
+P_SCALE = RNG.dirichlet(np.ones(len(SCALE)), size=N)  # columns in sorted order: high, low, mid, top
+
+
+def _ordered_container() -> _Container:
+    df = pd.DataFrame({"y": pd.Categorical(Y_SCALE, categories=SCALE, ordered=True)})
+    return _Container(df, _classification_task("multiclass_classification"))
+
+
+def test_scorer_reads_an_ordered_target_in_sorted_order() -> None:
+    """A plain array is read in sorted order, not in the declared order (low < mid < high < top)."""
+    expected = skm.log_loss(Y_SCALE, P_SCALE, labels=sorted(SCALE))
+    model_order = LogisticRegression().fit(RNG.normal(size=(N, 2)), Y_SCALE).classes_
+    assert list(model_order) == sorted(SCALE)  # what predict_proba returns
+    assert scorer(_ordered_container())(Y_SCALE, P_SCALE) == pytest.approx(expected)
+    rows = np.arange(0, N, 2)
+    assert scorer(_ordered_container())(Y_SCALE[rows], P_SCALE[rows], rows) == pytest.approx(
+        skm.log_loss(Y_SCALE[rows], P_SCALE[rows], labels=sorted(SCALE))
+    )
+
+
+def test_scorer_matches_named_probability_columns_in_any_order() -> None:
+    """A DataFrame named by class scores the same whatever the order of its columns."""
+    expected = skm.log_loss(Y_SCALE, P_SCALE, labels=sorted(SCALE))
+    named = pd.DataFrame(P_SCALE, columns=sorted(SCALE))
+    for columns in (sorted(SCALE), SCALE, SCALE[::-1]):
+        assert scorer(_ordered_container())(Y_SCALE, named[columns]) == pytest.approx(expected)
+        assert score(Metric.source("log_loss"), Y_SCALE, named[columns]) == pytest.approx(expected)
+    binary = pd.DataFrame({"yes": P_BIN, "no": 1 - P_BIN})
+    df = pd.DataFrame({"y": pd.Categorical(Y_BIN)})
+    value = scorer(_Container(df, _classification_task("binary_classification")))(Y_BIN, binary)
+    assert value == pytest.approx(skm.roc_auc_score(Y01, P_BIN))
+
+
+@pytest.mark.parametrize(
+    ("columns", "message"),
+    [
+        (["high", "low", "mid"], r"missing \['top'\]"),
+        (["high", "low", "mid", "peak"], r"unknown \['peak'\], missing \['top'\]"),
+        (["high", "low", "mid", "top", "peak"], r"unknown \['peak'\]"),
+        ([0, 1, 2, 3], "matched to the classes by name"),
+        (["high", "low", "mid", "mid"], "unique"),
+    ],
+)
+def test_scorer_refuses_a_missing_or_unknown_class_name(columns: list, message: str) -> None:
+    """Named columns must be the classes, each once."""
+    named = pd.DataFrame(RNG.dirichlet(np.ones(len(columns)), size=N), columns=columns)
+    with pytest.raises(ValueError, match=message):
+        scorer(_ordered_container())(Y_SCALE, named)
+    with pytest.raises(ValueError, match=message):
+        score(Metric.source("log_loss"), Y_SCALE, named, labels=sorted(SCALE))
+
+
+def test_cost_matrix_takes_its_own_labels_with_named_probabilities() -> None:
+    """credit_g's matrix names its classes; the probability columns are matched to them by name."""
+    cost = Metric.source(
+        "cost_matrix",
+        reference="https://example.org",
+        params={"labels": ["good", "bad"], "matrix": [[0, 1], [5, 0]], "prediction": "proba"},
+    )
+    y = np.where(Y_BIN == "yes", "bad", "good")
+    df = pd.DataFrame({"y": pd.Categorical(y)})
+    container = _Container(df, _classification_task("binary_classification", cost))
+    p_bad = P_BIN
+    predicted = np.where(p_bad > 1 / 6, "bad", "good")  # the least expected cost
+    costs = {("good", "bad"): 1.0, ("bad", "good"): 5.0}
+    expected = np.mean([costs.get(pair, 0.0) for pair in zip(y, predicted, strict=True)])
+    assert scorer(container)(y, 1 - p_bad) == pytest.approx(expected)  # a vector: p("good"), the second sorted class
+    assert scorer(container)(y, np.column_stack([p_bad, 1 - p_bad])) == pytest.approx(expected)
+    assert scorer(container)(y, pd.DataFrame({"good": 1 - p_bad, "bad": p_bad})) == pytest.approx(expected)
 
 
 def test_local_metric_scores_with_its_own_code_but_its_spec_does_not() -> None:
@@ -281,6 +360,8 @@ def test_scorer_aggregates_per_group_as_the_grouping_says():
         task = SimpleNamespace(target_column_name="y", objective_metric=spec, grouping=grouping)
         score_rows = scorer(SimpleNamespace(task_metadata=task, dataset=frame))
         assert score_rows(frame["y"].to_numpy(), np.array(pred), np.arange(6)) == pytest.approx(expected)
+        named = pd.DataFrame({"yes": pred, "no": 1 - np.array(pred)})  # by name, before the rows are aggregated
+        assert score_rows(frame["y"].to_numpy(), named, np.arange(6)) == pytest.approx(expected)
 
 
 def test_a_metric_from_context_needs_a_reason():
@@ -363,3 +444,44 @@ def test_target_transform_round_trips_through_json() -> None:
     del dumped["objective_metric"]["target_transform"]
     assert adapter.validate_python(dumped).objective_metric.target_transform == "identity"
     assert any("target_transform" in line for line in spec.describe_lines())
+
+
+@pytest.mark.parametrize("bad", [np.nan, np.inf, -np.inf])
+def test_poisson_deviance_rejects_non_finite_means(bad) -> None:
+    """A NaN or infinite prediction raises: the floor covers only finite means at or below zero."""
+    with pytest.raises(ValueError, match=r"deviance|NaN|infinity"):
+        score(Metric.source("mean_poisson_deviance"), [0, 1, 3], [0.2, bad, 2.0])
+
+
+@pytest.mark.parametrize("low", [0.0, -1.0, 1e-300])
+def test_poisson_deviance_floors_means_at_machine_epsilon(low) -> None:
+    """A mean at or below zero scores as machine epsilon, the large loss the deviance gives a near-zero mean."""
+    eps = np.finfo(float).eps
+    expected = skm.mean_poisson_deviance([0, 1, 3], [0.2, eps, 2.0])
+    assert score(Metric.source("mean_poisson_deviance"), [0, 1, 3], [0.2, low, 2.0]) == pytest.approx(expected)
+    assert expected > 20  # a claim predicted at about zero is heavily penalised, not dropped
+
+
+def test_poisson_deviance_matches_source_likelihood_with_zero_observations() -> None:
+    """Compare the source Poisson log-likelihood ratio independently of sklearn."""
+    rng = np.random.default_rng(4267)
+    y = rng.poisson(0.2, 1000)
+    p = rng.lognormal(-2, 1, 1000)
+    expected = -2 * np.mean(scipy.stats.poisson.logpmf(y, p) - scipy.stats.poisson.logpmf(y, y))
+    assert score(Metric.source("mean_poisson_deviance"), y, p) == pytest.approx(expected, abs=1e-12)
+    assert score(Metric.source("mean_poisson_deviance"), [0], [0.25]) == pytest.approx(0.5)
+    with pytest.raises(ValueError, match="deviance"):
+        score(Metric.source("mean_poisson_deviance"), [-1, 0], [1, 1])
+
+
+def test_poisson_deviance_floor_is_a_stated_param() -> None:
+    """A definition states its floor; a prediction below it counts as it, and an invalid floor is refused."""
+    spec = Metric.source("mean_poisson_deviance", params={"min_prediction": 1e-6})
+    expected = skm.mean_poisson_deviance([0, 1, 3], [0.2, 1e-6, 2.0])
+    assert score(spec, [0, 1, 3], [0.2, -1.0, 2.0]) == pytest.approx(expected)
+    assert score(spec, [0, 1, 3], [0.2, 0.5, 2.0]) == pytest.approx(
+        skm.mean_poisson_deviance([0, 1, 3], [0.2, 0.5, 2.0])
+    )
+    for bad in (0, -1e-6, float("nan")):
+        with pytest.raises(ValueError, match="min_prediction"):
+            Metric.source("mean_poisson_deviance", params={"min_prediction": bad})

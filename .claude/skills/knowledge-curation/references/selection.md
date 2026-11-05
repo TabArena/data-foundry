@@ -133,6 +133,15 @@ handmade or deterministic data, and simulated physics that has its own benchmark
 generated: PROV-3 in [provenance.md](provenance.md), "Is the data generated?". Marker:
 `AHDS (Artifical/Handmade/Deterministic/Simulated)`. Cases: Higgs, sonar.
 
+### Outdated tasks
+
+**SEL-18 (Should; Lennart, 2026-11-05, on protein_model_quality_rf_pcp).** `Outdated` alone does not leave a dataset
+out. On a borderline dataset it is a note for us that today the task would use other data, features or models, while
+the task itself is still real: the decision it serves still exists and the data still answers it. A dataset leaves for
+being outdated only when the task is gone, when no one would make that prediction today or never from these inputs; the
+record then names what replaced it. A `No` that cites `Outdated` names its other reasons too. Marker: `Outdated`.
+Cases: protein_model_quality_rf_pcp, first_order_theorem_proving.
+
 ### Enough information to decide
 
 Not enough information after a thorough search: PROV-1 and PROV-2 in [provenance.md](provenance.md). (SEL-17 was
@@ -403,7 +412,7 @@ marker records where a record stands, not an issue of the data.
 | `Duplicate` | a re-upload, processed copy or cut of a recorded dataset that adds no distinct task | PROV-4 to PROV-7 ([provenance.md](provenance.md)) |
 | `Missing source information` | no traceable first source after a thorough search | PROV-1 (PROV-2 for a source unclear only in a detail; [provenance.md](provenance.md)) |
 | `Time-series (Classification)` | classification of a series or signal (readings over time, a recording), where time-series models are the tool | none (SEL-12 on vectorized time-series data) |
-| `Outdated` | an old dataset or experiment: today the task would use other data, features or models | none |
+| `Outdated` | an old dataset or experiment: today the task would use other data, features or models; a note on a kept dataset, an exclusion only when the task itself is gone | SEL-18 |
 | `No Good Target (yet)` | real data without a predictive target so far (a listing, a survey, a table built for another purpose); one may be defined later, and such records mostly wait as `TBD -> 2nd Tier` | none |
 | `No Good Target / Scientific Discovery` | no genuine predictive target: a discovery, survey or look-back table, a label no decision fits | SEL-3, SEL-4, SEL-6, SEL-7; USE-2, USE-8 ([use_case.md](use_case.md)) |
 | `Data Quality Issue` | damage that cannot be undone or repaired: a supervised transform fit on the whole labelled set, a manipulated real table | LEAK-27 ([leak_checks.md](leak_checks.md)); PROV-3 ([provenance.md](provenance.md)) |
@@ -444,6 +453,8 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SEL-15 | wbcatt | expert-annotated white-blood-cell morphology, on the `breast_w` boundary: kept only provisionally | applied |
 | SEL-15 | infrared_thermography_temperature | blackbody-compensated facial temperatures at named sites, read through a thermal camera used as a thermometer, the target the same quantity by mouth: kept as a measurement, not an image descriptor; the counter-cases satimage and wilt hold values that recognise image content (SEL-13) (2026-10-21, Lennart) | applied |
 | SEL-16 | Higgs, sonar | simulated physics with its own benchmarks; an outdated handcrafted toy experiment: out | applied |
+| SEL-18 | protein_model_quality_rf_pcp | six global descriptors of 2002-2012 server models, the field now on pLDDT: kept with `Outdated` as a note, a borderline dataset whose task (choosing among candidate models) is still real (Lennart, 2026-11-05) | applied |
+| SEL-18 | first_order_theorem_proving | `No` on `Outdated` alone (2026-07-27), while ASlib siblings ship; whether it has other reasons is its open consistency check of 2026-10-19 | proposed |
 | EV-4 | lucas_topsoil | JRC's terms forbid redistribution; the record is still triaged on what the survey measures | applied |
 | EV-5 | us_accidents | its published "78% accuracy" settled nothing | applied |
 | LEAK-27 ([leak_checks.md](leak_checks.md)) | yeast | a discriminant-analysis score fit on the full dataset: `Data Quality Issue`, `No` | applied |

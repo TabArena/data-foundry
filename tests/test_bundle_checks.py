@@ -946,3 +946,17 @@ def test_target_transform_that_overflows_is_an_error():
         make_v2_container(df, spec=_spec("rmse", target_transform="log1p"), problem_type="regression")
     )
     assert "task_metric_transform_overflow" not in found
+
+
+@pytest.mark.parametrize("all_zero", [False, True])
+@pytest.mark.parametrize("transform", ["identity", "log1p"])
+def test_poisson_computability_uses_valid_means_without_changing_labels(all_zero, transform):
+    """Zero outcomes pass computability, including all-zero training data and a shipped transform."""
+    df = make_iid_frame()
+    y = np.zeros(len(df)) if all_zero else (np.arange(len(df)) % 10 == 0).astype(float)
+    df["target"] = np.log1p(y) if transform == "log1p" else y
+    spec = _spec("mean_poisson_deviance", target_transform=transform)
+    container = make_v2_container(df, spec=spec, problem_type="regression")
+    before = container.dataset.copy(deep=True)
+    assert metric_findings(container) == {}
+    pd.testing.assert_frame_equal(container.dataset, before)

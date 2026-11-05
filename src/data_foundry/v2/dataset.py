@@ -49,6 +49,7 @@ from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar
 
+import numpy as np
 import pandas as pd
 
 from data_foundry.bundle_checks import (
@@ -84,6 +85,7 @@ from data_foundry.v2.preprocessing import (
     canonical_dtypes,
     canonical_nans,
     cast_dtypes,
+    order_positions,
     order_rows,
 )
 from data_foundry.v2.splits import SPLIT_RANDOM_STATE, SplitPlan, Splits, Temporal
@@ -120,6 +122,26 @@ AUTO: Any = _Auto()
 """Sentinel default of ``stratify_on``: the target for classification, nothing for regression."""
 
 REGIME_TAGS = ("IID", "Non-IID", "Temporal", "Grouped", "GroupedTemporal")
+
+LINEAGE_COLUMN = "__raw_row__"
+"""The column :meth:`AbstractCuratedDataset.process` adds to a one-table raw frame to trace its rows (lineage)."""
+_LINEAGE_OFFSET = 7_000_000_000_000
+"""The index start of the second lineage try: a reset or rebuilt index falls below it and shows the trace is lost."""
+
+
+@dataclass(frozen=True)
+class RawLineage:
+    """Where each row of the curated frame comes from in the raw table: :meth:`AbstractCuratedDataset.process`
+    with ``lineage=True``.
+
+    Attributes:
+        rows: The raw position (row number in ``raw``, from 0) of each row of the curated frame, in its order; None
+            when the rows cannot be traced.
+        note: How the rows were traced, or why they could not be.
+    """
+
+    rows: np.ndarray | None
+    note: str
 
 
 _TEXT_FIELDS = ("download_description", "bibtex", "curation_comments", "version_comment", "splits_comment")
@@ -545,8 +567,18 @@ class AbstractCuratedDataset(ABC):
             self._raw_loaded = True
         return self._raw_cache
 
-    def process(self) -> tuple[pd.DataFrame, pd.DataFrame | None]:
-        """Run :meth:`_clean` on a copy of :attr:`raw`, then the standard steps. Returns (dataset, test_dataset)."""
+    def process(self, *, lineage: bool = False) -> tuple:
+        """Run :meth:`_clean` on a copy of :attr:`raw`, then the standard steps. Returns (dataset, test_dataset).
+
+        With ``lineage``, returns (dataset, test_dataset, :class:`RawLineage`): the raw position of every row of
+        the dataset. It traces a one-table raw frame through ``_clean`` by a column (:data:`LINEAGE_COLUMN`), or,
+        when ``_clean`` drops that column (it selects columns), by the index; the standard steps' row order is then
+        applied to the positions. A trace counts only when the traced run gives the same dataset as :attr:`df`, so
+        a ``_clean`` that reads the extra column or the index (``drop_duplicates()`` over all columns, an aligned
+        assignment) gives no lineage rather than wrong lineage. A raw dict or tuple of tables gives none either.
+        """
+        if lineage:
+            return self._process_with_lineage()
         with _copy_on_write():
             cleaned = self._clean(_copy(self.raw))
             df, test = cleaned if isinstance(cleaned, tuple) else (cleaned, None)
@@ -555,6 +587,62 @@ class AbstractCuratedDataset(ABC):
             if test is not None:
                 test = _categories_like(self._standardize(test, order=False), df)
         return df, test
+
+    def _process_with_lineage(self) -> tuple[pd.DataFrame, pd.DataFrame | None, RawLineage]:
+        raw = self.raw
+        if not isinstance(raw, pd.DataFrame):
+            df, test = self.process()
+            return df, test, RawLineage(None, "the raw data is not one table")
+        reference = self.df
+        tried = []
+        for how in ("column", "index"):
+            try:
+                traced = self._clean_traced(raw, how)
+            except Exception as err:  # noqa: BLE001 - a `_clean` check of the source's shape fails on the tagged frame
+                # a real error of the definition is raised again by the untraced `process()` below
+                tried.append(f"`_clean` fails on the frame tagged by the {how} ({type(err).__name__})")
+                continue
+            if traced is None:
+                tried.append(f"the {how} does not survive `_clean`")
+                continue
+            df, test, rows = traced
+            if df.equals(reference):
+                return df, test, RawLineage(rows, f"traced by the {how}")
+            tried.append(f"tracing by the {how} changes what `_clean` returns")
+        df, test = self.process()
+        return df, test, RawLineage(None, "; ".join(tried))
+
+    def _clean_traced(self, raw: pd.DataFrame, how: str) -> tuple[pd.DataFrame, pd.DataFrame | None, np.ndarray] | None:
+        """:meth:`process` on ``raw`` tagged by a lineage column or index; None when ``_clean`` drops the tag."""
+        n = len(raw)
+        with _copy_on_write():
+            tagged = _copy(raw)
+            if how == "column":
+                if LINEAGE_COLUMN in tagged.columns:
+                    return None
+                tagged[LINEAGE_COLUMN] = np.arange(n)
+            else:
+                tagged.index = pd.RangeIndex(_LINEAGE_OFFSET, _LINEAGE_OFFSET + n)
+            cleaned = self._clean(tagged)
+            df, test = cleaned if isinstance(cleaned, tuple) else (cleaned, None)
+            if how == "column":
+                if LINEAGE_COLUMN not in df.columns:
+                    return None
+                rows = pd.to_numeric(df.pop(LINEAGE_COLUMN), errors="coerce").to_numpy(dtype=float)
+                if test is not None and LINEAGE_COLUMN in test.columns:
+                    test = test.drop(columns=[LINEAGE_COLUMN])
+            else:
+                if not pd.api.types.is_integer_dtype(df.index):
+                    return None
+                rows = df.index.to_numpy(dtype=float) - _LINEAGE_OFFSET
+                df = df.reset_index(drop=True)
+            if not len(rows) or np.isnan(rows).any() or rows.min() < 0 or rows.max() >= n:
+                return None
+            self._check_declared_columns(df)
+            df, positions = self._standardize(df, positions=True)
+            if test is not None:
+                test = _categories_like(self._standardize(test, order=False), df)
+        return df, test, rows.astype(np.int64)[positions]
 
     def _check_declared_columns(self, df: pd.DataFrame) -> None:
         """Fail with the attribute's name when a declared column is missing, or a split key has missing values."""
@@ -582,7 +670,11 @@ class AbstractCuratedDataset(ABC):
                 )
                 raise DatasetDefinitionError(msg)
 
-    def _standardize(self, df: pd.DataFrame, *, order: bool = True) -> pd.DataFrame:
+    def _standardize(self, df: pd.DataFrame, *, order: bool = True, positions: bool = False) -> Any:
+        """The standard steps: dtypes, canonical missing values, then (``order``) the row order of :func:`order_rows`.
+
+        With ``positions``, returns (frame, positions): the frame's rows are the input's rows at those positions.
+        """
         types = self.feature_types(df)
         if order:  # the full cleaned frame, before its dtypes are cast; the README lists these types
             self._applied_feature_types = types
@@ -597,6 +689,9 @@ class AbstractCuratedDataset(ABC):
         df = canonical_nans(canonical_dtypes(df))
         if not order:
             return df.reset_index(drop=True)
+        if positions:
+            at = order_positions(df, time_on=self.task_metadata.time_on, shuffle=self.shuffle)
+            return df.iloc[at].reset_index(drop=True), at
         return order_rows(df, time_on=self.task_metadata.time_on, shuffle=self.shuffle)
 
     def feature_types(self, df: pd.DataFrame | None = None) -> FeatureTypes:
@@ -827,6 +922,7 @@ class AbstractCuratedDataset(ABC):
             plan.df = df
         elif plan.df is not df and self._make_splits is not AbstractCuratedDataset._make_splits:
             plan.df = _drop_unused_categories(plan.df)  # a custom split step that drops rows keeps old levels
+            self._time_changed_in_split = _time_values_changed(df, plan.df, self.task_metadata.time_on)
         if self.splits_comment is not None:
             plan.comment = clean_text(self.splits_comment)
         if not plan.comment:
@@ -1021,6 +1117,19 @@ class AbstractCuratedDataset(ABC):
                 ),
             )
         findings += self._summary_checks()
+        changed = getattr(self, "_time_changed_in_split", 0)
+        if changed:
+            time_on = self.task_metadata.time_on
+            findings.append(
+                CheckResult(
+                    "definition_time_changed_in_split",
+                    "warning",
+                    f"`_make_splits` changes the time column `{time_on}` on {changed:,} rows. The rows were ordered "
+                    "by its values before that step, so within a coarsened period they keep the order of the finer "
+                    "time (the minute of chicago_traffic_crashes, 2026-11-04).",
+                    hint=f"Coarsen `{time_on}` in `_clean`; within a period the rows then follow the content order.",
+                ),
+            )
         if re.search(r"\bTODO\b", str(self.license)):
             findings.append(
                 CheckResult(
@@ -1235,6 +1344,18 @@ def _source(cls: type, name: str) -> str | None:
         return None
 
 
+def _time_values_changed(before: pd.DataFrame, after: pd.DataFrame, time_on: str | None) -> int:
+    """How many rows a custom split step changed the time column on (0 when it kept it, or has no such column).
+
+    The rows are ordered by the time column before ``_make_splits`` runs (:func:`order_rows`), so a split step that
+    floors the time leaves each period in the order of the finer values it meant to hide.
+    """
+    if time_on is None or time_on not in before.columns or time_on not in after.columns or len(before) != len(after):
+        return 0
+    old, new = before[time_on].reset_index(drop=True), after[time_on].reset_index(drop=True)
+    return int((old.ne(new) & old.notna()).sum())
+
+
 def _drop_unused_categories(df: pd.DataFrame) -> pd.DataFrame:
     """Drop category levels that no longer occur once a frame is sub-sampled (dtypes are set on the full data)."""
     df = df.copy()
@@ -1428,6 +1549,11 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
     for slug, reason in cls.accepted_check_warnings.items():
         if not str(reason).strip():
             fail(f"accepted check warning {slug!r} needs a reason.")
+    if not re.fullmatch(r"(19|20)\d{2}", str(cls.year).strip()):
+        fail(
+            f"`year={cls.year!r}` is not a year. Give the best guess of the first publication (PROV-9) and say in "
+            "`curation_comments` that it is a guess, and why."
+        )
 
     if cls.task_summary is not None:
         if not isinstance(cls.task_summary, TaskSummary):

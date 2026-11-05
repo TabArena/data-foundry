@@ -40,3 +40,5 @@ type_adapter_id: curation-record-v1
 Zindi mobility-prediction hackathon for Maputo, explicitly powered by Yango (a ride-hailing platform), so the task is almost certainly ride/trip demand forecasting. That is excluded forecasting and operations/RecSys-adjacent rather than a fixed tabular classification/regression task. The record contains no descriptive content. A human must verify the actual target and split regime before any reconsideration.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `chicago_rideshare_trip_duration` (TBD -> 2nd Tier, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
+**Assessment (AI, 2026-11-05):** this Yango task ships a weather file joined to the trips by time (Maputo_weather.csv), the same kind as 2024_lusaka_mobility_prediction_hackathon's. In Lusaka the dictionary calls the weather stamps local, but the file's daily temperature curve fits UTC stamps, so its join lags 3 hours (Lennart, 2026-11-05). When this record is promoted, check this file's clock the same way.

@@ -142,6 +142,8 @@ button, input, textarea { font: inherit; color: inherit; }
 .vdot[data-v="dont"] { background: var(--stop); border-color: var(--stop); }
 .vdot[data-v="discuss"] { background: var(--discuss); border-color: var(--discuss); }
 .rowname { font-family: var(--font-mono); font-size: .82rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.needverdict { color: var(--accent); font-weight: 600; }
+.parkedtag { color: var(--ink-3); font-weight: 600; }
 .rowmeta { font-size: .72rem; color: var(--ink-3); font-variant-numeric: tabular-nums; white-space: nowrap; display: inline-flex; align-items: center; gap: .45rem; }
 /* The use-case fit: a small square, so it never reads as the round verdict dot. */
 .fitmark { display: inline-block; width: .5rem; height: .5rem; border-radius: 2px; background: var(--ink-3); flex: none; }
@@ -262,6 +264,18 @@ textarea.note.big { min-height: 4.2rem; }
 .turn .who .when { font-weight: 500; color: var(--ink-3); text-transform: none; letter-spacing: 0; }
 .turn .md p { margin: .25rem 0; }
 .origlabel { font-size: .74rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-3); margin: .55rem 0 0 2.4rem; }
+.replybox { margin: .5rem 0 0 2.4rem; max-width: 78ch; border: 1px solid var(--accent); border-radius: 8px; padding: .5rem .6rem .6rem; background: var(--surface); display: grid; gap: .35rem; }
+.replybox .rlabel { font-size: .74rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--accent); }
+.replybox .rdone { margin-left: .4rem; color: var(--ok); text-transform: none; letter-spacing: 0; }
+.replybox .choice { display: flex; gap: .55rem; align-items: baseline; text-align: left; width: 100%; border: 1px solid var(--rule); background: var(--bg); border-radius: 6px; padding: .4rem .6rem; font-size: .85rem; line-height: 1.4; color: var(--ink); cursor: pointer; }
+.replybox .choice:hover { border-color: var(--accent); }
+.replybox .choice[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
+.replybox .choice .ck { font-weight: 700; color: var(--accent); flex: none; }
+.replybox .choice.short { width: auto; display: inline-flex; }
+.replybox:has(.short) { display: flex; flex-wrap: wrap; align-items: center; }
+.replybox:has(.short) .rlabel { width: 100%; }
+@media (max-width: 860px) { .replybox { margin-left: 0; } }
+.earlier { font-size: .7rem; font-weight: 500; margin-left: .5rem; padding: .05rem .45rem; border-radius: 4px; border: 1px dashed var(--rule); color: var(--ink-3); white-space: nowrap; }
 .yourturn { font-size: .7rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; margin-left: .5rem; padding: .05rem .45rem; border-radius: 4px; background: var(--approx-soft); color: var(--approx); white-space: nowrap; }
 @media (max-width: 860px) { .thread, .origlabel { margin-left: 0; } .turn.curator { margin-left: .8rem; } }
 .more { margin: .3rem 0 0 2.4rem; background: none; border: 0; padding: 0; color: var(--accent); cursor: pointer; font-size: .84rem; font-weight: 500; }
@@ -307,6 +321,19 @@ textarea.note.big { min-height: 4.2rem; }
 .md table.opttab .otag { display: inline-block; margin: .3rem .3rem 0 0; padding: .05rem .45rem; border-radius: 999px; font: 600 .64rem var(--font-body, inherit); text-transform: uppercase; letter-spacing: .05em; border: 1px solid currentColor; }
 .md table.opttab .otag.impl { color: var(--ink-3); }
 .md table.opttab .otag.rec { color: var(--accent); background: var(--surface); }
+/* The curator's mark on the options: the row a mark locks in, the others dimmed */
+.md table.opttab .otag.pick { color: var(--ok); background: var(--ok-soft); }
+.md table.opttab .otag.pick.change { color: var(--change); background: var(--change-soft); }
+.md table.opttab tr.picked td { background: var(--ok-soft); }
+.md table.opttab tr.picked.change td { background: var(--change-soft); }
+.md table.opttab tr.picked td.c-key { box-shadow: inset 3px 0 0 var(--ok); color: var(--ok); }
+.md table.opttab tr.picked.change td.c-key { box-shadow: inset 3px 0 0 var(--change); color: var(--change); }
+.md table.opttab.has-pick tr:not(.picked) td { opacity: .55; }
+/* An issue's "Change to:" buttons: one per option of its table, and "other" */
+.optgroup { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .2rem; border: 1px dashed var(--rule); border-radius: 7px; padding: .1rem .2rem; }
+.optgroup .glabel { font-size: .8rem; color: var(--ink-2); padding: 0 .2rem 0 .25rem; }
+.seg.small .optgroup .opt { padding: .15rem .5rem; min-width: 1.9rem; justify-content: center; }
+textarea.note.needs { border-color: var(--change); }
 /* An issue's footnotes (the rules and references) and its notes for the AI: closed boxes under the text */
 .md details.fnotes, .md details.ainotes { margin: .5rem 0 0; border: 1px solid var(--rule); border-radius: 6px; padding: .25rem .6rem; background: var(--surface-2); max-width: 78ch; }
 .md details.fnotes > summary, .md details.ainotes > summary { font-size: .78rem; font-weight: 600; color: var(--ink-3); text-transform: uppercase; letter-spacing: .04em; }
@@ -325,6 +352,9 @@ textarea.note.big { min-height: 4.2rem; }
 .fieldtab th, .fieldtab td { text-align: left; padding: .5rem .5rem .5rem 0; border-top: 1px solid var(--rule); vertical-align: middle; }
 .fieldtab th { font-weight: 600; color: var(--ink-3); font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; border-top: 0; }
 .fieldtab td.v { font-family: var(--font-mono); font-size: .8rem; overflow-wrap: anywhere; }
+/* The value a field mark leaves in the record, highlighted; the other one struck */
+.fieldtab tr[data-v="update"] td[data-side="update"], .fieldtab tr[data-v="keep"] td[data-side="keep"] { background: var(--ok-soft); color: var(--ok); font-weight: 600; box-shadow: inset 3px 0 0 var(--ok); padding-left: .45rem; }
+.fieldtab tr[data-v="update"] td[data-side="keep"], .fieldtab tr[data-v="keep"] td[data-side="update"] { color: var(--ink-3); text-decoration: line-through; }
 
 /* The run's report (Details tab) */
 .panelnav { display: flex; flex-wrap: wrap; gap: .25rem 1rem; font-size: .82rem; color: var(--ink-3); margin: 0 0 .4rem; }
@@ -507,9 +537,13 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   // The mark on the declared metric (stored as `metric: {d, note}` on the record's review document).
   const METRIC_OPTS = [["ok", "As declared"], ["change", "Change"], ["discuss", "Discuss"]];
   const METRIC_LABEL = { ok: "As declared", change: "Change", discuss: "Discuss" };
-  const hasMetricMark = (d) => !!d.metric && !!d.folder && !d.retired && d.cat !== "decided";
+  // The metric takes a mark until the record carries the curator's CC line that it is checked (then it is resolved).
+  const hasMetricMark = (d) => !!d.metric && !!d.folder && !d.retired && d.cat !== "decided" && !d.metricChecked;
   const X_OPTS = [["ok", "Go ahead"], ["leave", "Leave as is"], ["discuss", "Discuss"]];
   const FIELD_OPTS = [["update", "Take definition's value"], ["keep", "Keep record's value"]];
+  /* A record-field row's buttons name the value each one leaves in the record. */
+  const short = (v) => (String(v).length > 28 ? String(v).slice(0, 27) + "\u2026" : String(v));
+  const fieldOpts = (f) => [["update", "Use definition: " + short(f.definition)], ["keep", "Keep record: " + short(f.record)]];
   const OPT_LABEL = { ok: "As implemented", change: "Change", discuss: "Discuss", leave: "Leave as is", update: "Take definition's value", keep: "Keep record's value" };
   const X_LABEL = { ok: "Go ahead", leave: "Leave as is", discuss: "Discuss" };
   // The task summary, labelled and judged as on the TabArena Task Summaries page.
@@ -539,7 +573,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   ui.filter = recall("filter", "all");
   ui.hideReviewed = recall("hideReviewed", false);
   ui.ctab = recall("ctab", "usecase");
-  ui.showResolved = !!recall("showResolved", "");
+  ui.showResolved = false; // resolved issues start hidden on every visit
   if (!CTABS.includes(ui.ctab)) ui.ctab = "usecase";
   // GitHub links: the branch the page was built on; a retired definition at the last commit that still had it.
   const GH = DATA.github;
@@ -567,7 +601,41 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     }).join("") + "</ol>";
   }
   const awaitsCurator = (it) => !it.resolved && (it.thread || []).length > 0 && it.thread[it.thread.length - 1].who === "ai";
-  const yourTurn = (it) => (awaitsCurator(it) ? '<span class="yourturn" title="Claude answered; your mark is next">Your turn</span>' : "");
+  /* An issue the AI answered or re-opened waits on the curator: its earlier mark no longer counts until the curator
+     marks it (or writes a note) in reply to that turn, stored as `re` (the turn's id, `askId`) beside the mark. */
+  const pending = (it, st) => awaitsCurator(it) && (!st || st.re !== it.askId);
+  const shownSt = (it, st) => (pending(it, st) ? { note: st.note } : st);
+  const yourTurn = (it, st) => (awaitsCurator(it) && (st === undefined || pending(it, st)) ? '<span class="yourturn" title="Claude answered; your mark is next">Your turn</span>' : "");
+  const earlierMark = (it, st) => (pending(it, st) && st.d ? '<span class="earlier" title="Your mark before Claude\u2019s last turn; it counts again once you mark the issue">before: ' + esc(itemPill(it, st)) + "</span>" : "");
+  /* The answer buttons under the AI's last turn: its lettered choices, or Agree / Disagree when it asks no letter. A
+     click writes the reply as the note's first line ("Reply (a): ..." or "Agree.") and counts as the curator's answer. */
+  const REPLY_LINE = /^\s*(?:Reply \(([a-z])\)|(Agree)\.|(Disagree)\b)[^\n]*\n?/;
+  function replyKey(st) { const m = REPLY_LINE.exec((st && st.note) || ""); return m ? (m[1] || (m[2] ? "agree" : "disagree")) : ""; }
+  function replyHtml(it, st) {
+    if (!awaitsCurator(it)) return "";
+    const turn = it.thread[it.thread.length - 1];
+    const answered = st && st.re === it.askId ? replyKey(st) : "";
+    const ro = mode === "readonly" ? " disabled" : "";
+    const btn = (k, inner, cls) => '<button type="button" class="choice' + (cls ? " " + cls : "") + '" data-act="reply" data-n="' + it.n + '" data-k="' + k + '" aria-pressed="' + (answered === k) + '"' + ro + ">" + inner + "</button>";
+    const choices = turn.choices || [];
+    const body = choices.length
+      ? choices.map((c) => btn(c.key, '<span class="ck">(' + esc(c.key) + ')</span><span class="ct">' + c.html + "</span>")).join("")
+      : btn("agree", '<span class="ct">Agree</span>', "short") + btn("disagree", '<span class="ct">Disagree: say why in the note</span>', "short");
+    return '<div class="replybox" id="reply-' + it.n + '"><div class="rlabel">Your answer to Claude' + (answered ? ' <span class="rdone">sent</span>' : "") + "</div>" + body + "</div>";
+  }
+  /* The row of the AI turn's options table that the curator's reply picked, highlighted like an issue's pick. */
+  function markReply(li, it, st) {
+    const tab = li && li.querySelector(".thread > .turn:last-child table.opttab");
+    if (!tab) return;
+    const k = st && st.re === it.askId ? replyKey(st) : "";
+    tab.classList.toggle("has-pick", !!k && k !== "agree" && k !== "disagree");
+    tab.querySelectorAll("tbody tr").forEach((tr) => {
+      const on = !!k && tr.dataset.key === k;
+      tr.classList.toggle("picked", on);
+      const tag = tr.querySelector(".otag.pick");
+      if (tag) { tag.hidden = !on; tag.textContent = "your answer"; }
+    });
+  }
   const origLabel = (it) => ((it.thread || []).length ? '<p class="origlabel">The question</p>' : "");
   const slug = (s) => String(s).replace(/[^A-Za-z0-9_-]/g, "-");
 
@@ -581,20 +649,32 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   function peekRev(name) { return S.reviews[name] || { items: {}, fields: {} }; }
   function xdoc(id) { return S.crosscut[id] || (S.crosscut[id] = {}); }
 
+  /* A record of the review with no open issue, no open field row and no open metric ships by default (Lennart,
+     2026-11-05): its verdict is "ship" unless the curator sets another. */
+  // A record with a deferred (parked) issue waits: its metric is not marked and it does not ship until the issue returns.
+  const parked = (d) => d.items.some((it) => it.resolved && (it.thread || []).length && it.thread[it.thread.length - 1].kind === "deferred");
+  const shipsByDefault = (d) => d.cat === "added" && !parked(d) && counts(d).total === 0;
+  const verdictOf = (d) => peekRev(d.name).verdict || (shipsByDefault(d) ? "ship" : null);
+  /* The marks left on a record, or "done" once none is open. */
+  function markCount(d, c, r) {
+    if (c.total === 0 && parked(d) && !r.verdict) return '<span class="parkedtag" title="An issue is parked (deferred); the record waits for it">parked</span>';
+    if (c.total === 0) return r.verdict ? "done" : '<span class="needverdict" title="Every issue is settled, so it ships">ship (no issues)</span>';
+    return c.done + "/" + c.total;
+  }
   function counts(d) {
     const r = peekRev(d.name);
     if (d.cat === "decided") return { done: r.verdict ? 1 : 0, total: 1 };
     const items = r.items || {}, fields = r.fields || {};
-    // A resolved issue needs no mark; it counts only once it has one.
+    // A resolved issue is done and not counted; an issue that waits on the curator's reply counts as unmarked.
     let done = 0, total = d.fields.length;
     d.items.forEach((it) => {
-      const marked = !!(items[it.n] && items[it.n].d);
-      if (it.resolved && !marked) return;
+      if (it.resolved) return;
+      const st = items[it.n] || {};
       total++;
-      if (marked) done++;
+      if (st.d && !pending(it, st)) done++;
     });
     d.fields.forEach((f) => { if (fields[f.key]) done++; });
-    if (hasMetricMark(d)) { total++; if (r.metric && r.metric.d) done++; }
+    if (hasMetricMark(d) && !parked(d)) { total++; if (r.metric && r.metric.d) done++; }
     return { done, total };
   }
 
@@ -694,7 +774,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     const tally = { ship: 0, changes: 0, dont: 0, discuss: 0 };
     let reviewed = 0, done = 0, total = 0;
     DS.forEach((d) => {
-      const v = peekRev(d.name).verdict;
+      const v = verdictOf(d);
       if (v) { reviewed++; tally[v] = (tally[v] || 0) + 1; }
       const c = counts(d); done += c.done; total += c.total;
     });
@@ -754,14 +834,109 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
         head = '<li class="grp" aria-hidden="true"><span>' + prioLabel(d.priority) + '</span><span class="n">' + perGroup[group] + "</span></li>";
       }
       return head + '<li><button class="rowbtn" data-act="sel" data-name="' + esc(d.name) + '"' + (d.name === ui.current ? ' aria-current="true"' : "") + ' title="' + esc(d.name) + '">' +
-        '<span class="vdot"' + (r.verdict ? ' data-v="' + esc(r.verdict) + '"' : "") + '></span>' +
+        '<span class="vdot"' + (verdictOf(d) ? ' data-v="' + esc(verdictOf(d)) + '"' : "") + '></span>' +
         '<span class="rowname">' + esc(d.name) + "</span>" +
-        '<span class="rowmeta">' + fitMark(d) + c.done + "/" + c.total + "</span></button></li>";
+        '<span class="rowmeta">' + fitMark(d) + markCount(d, c, r) + "</span></button></li>";
     });
     document.getElementById("list").innerHTML = rows.length ? rows.join("") : '<li class="rowmeta" style="padding:.6rem .4rem">No record matches.</li>';
   }
 
   /* ---------- rendering: case file ---------- */
+  /* What a mark on an issue locks in: "As implemented" the row marked (implemented) in its options table, "Change"
+     the option the note names ("Option B: ..."), picked with the option buttons or written by hand. */
+  const PICKED_NOTE = /^\s*Option ([A-Z])\b/;
+  const OPTION_LINE = /^\s*Option [A-Z]\b[^\n]*\n?/;
+  function pickedKey(it, st) {
+    if (st.d === "ok") return it.implemented || "";
+    if (st.d === "change") { const m = PICKED_NOTE.exec(st.note || ""); return m ? m[1] : ""; }
+    return "";
+  }
+  function optName(it, key) { const o = (it.options || []).find((x) => x.key === key); return o ? o.nameHtml : ""; }
+  function plainText(html) { const t = document.createElement("div"); t.innerHTML = html; return t.textContent.trim(); }
+  /* An issue's mark buttons: "As implemented (A)", "Change to:" with a button per other option of the table (it
+     starts the note with "Option <key>: <name>.") and "other" (the note says what), "Discuss". With one other
+     option, a single "Change to B" button. */
+  function itemSegHtml(it, st, ro) {
+    const pick = pickedKey(it, st);
+    const attrs = (v, pressed, title) => ' data-n="' + it.n + '" data-v="' + v + '"' + ro + ' aria-pressed="' + pressed + '"' + (title ? ' title="' + esc(title) + '"' : "");
+    let h = '<button class="opt" data-act="item"' + attrs("ok", st.d === "ok", it.implemented ? plainText(optName(it, it.implemented)) : "the definition as it is now") + ">As implemented" +
+      (it.implemented ? " (" + esc(it.implemented) + ")" : "") + "</button>";
+    const others = (it.options || []).filter((o) => o.key !== it.implemented);
+    if (others.length === 1) {
+      // One other option: a single button changes to it.
+      const o = others[0];
+      h += '<button class="opt" data-act="pickopt" data-k="' + esc(o.key) + '"' + attrs("change", st.d === "change", plainText(o.nameHtml)) + ">Change to " + esc(o.key) + "</button>";
+    } else if (others.length) {
+      h += '<span class="optgroup" role="group" aria-label="Change to"><span class="glabel">Change to:</span>' +
+        others.map((o) => '<button class="opt" data-act="pickopt" data-k="' + esc(o.key) + '"' + attrs("change", st.d === "change" && pick === o.key, plainText(o.nameHtml)) + ">" + esc(o.key) + "</button>").join("") +
+        '<button class="opt" data-act="item"' + attrs("change", st.d === "change" && !pick, "a change your note describes") + ">other</button></span>";
+    } else {
+      h += '<button class="opt" data-act="item"' + attrs("change", st.d === "change", "") + ">Change</button>";
+    }
+    return h + '<button class="opt" data-act="item"' + attrs("discuss", st.d === "discuss", "") + ">Discuss</button>";
+  }
+  function itemPill(it, st) {
+    const pick = pickedKey(it, st);
+    if (st.d === "ok") return "As implemented" + (pick ? " (" + pick + ")" : "");
+    if (st.d === "change") return pick ? "Change to " + pick : "Change";
+    return st.d ? OPT_LABEL[st.d] : "";
+  }
+  /* Highlight the options-table row the mark locks in, dim the others; called on render and on every mark or note. */
+  function markOptions(li, it, st) {
+    if (!li) return;
+    const tab = li.querySelector(".body table.opttab");
+    const pick = pickedKey(it, st);
+    if (tab) {
+      tab.classList.toggle("has-pick", !!pick);
+      tab.querySelectorAll("tbody tr").forEach((tr) => {
+        const on = !!pick && tr.dataset.key === pick;
+        tr.classList.toggle("picked", on);
+        tr.classList.toggle("change", on && st.d === "change");
+        const tag = tr.querySelector(".otag.pick");
+        if (tag) {
+          tag.hidden = !on;
+          tag.textContent = st.d === "change" ? "your change" : "locked in";
+          tag.classList.toggle("change", st.d === "change");
+        }
+      });
+    }
+    // A change with no option picked needs the note to say what.
+    const ta = li.querySelector("textarea.note");
+    if (ta) {
+      const needs = st.d === "change" && !pick;
+      ta.classList.toggle("needs", needs && !(st.note || "").trim());
+      ta.placeholder = needs ? "What to change (needed for Change: other)" : "Note (optional)";
+    }
+  }
+  function setItemNote(n, it, note) {
+    it.note = note;
+    const ta = document.querySelector("#item-" + n + " textarea.note");
+    if (ta) { ta.value = note; autoGrow(ta); }
+  }
+  function refreshItem(n) {
+    const d = byName.get(ui.current);
+    const it = d && d.items.find((x) => String(x.n) === String(n));
+    const li = document.getElementById("item-" + n);
+    if (!it || !li) return;
+    const st0 = (rev(ui.current).items || {})[n] || {};
+    const st = shownSt(it, st0);
+    const seg = li.querySelector(".seg");
+    if (seg) seg.innerHTML = itemSegHtml(it, st, mode === "readonly" ? " disabled" : "");
+    const h4 = li.querySelector("h4");
+    let pill = h4.querySelector(".statepill");
+    const text = itemPill(it, st);
+    if (!text) { if (pill) pill.remove(); }
+    else {
+      if (!pill) { pill = document.createElement("span"); pill.className = "statepill"; h4.insertBefore(pill, h4.querySelector(".yourturn")); }
+      pill.dataset.v = st.d; pill.textContent = text;
+    }
+    const rb = li.querySelector(".replybox");
+    if (rb) rb.outerHTML = replyHtml(it, st0);
+    markReply(li, it, st0);
+    h4.querySelectorAll(".earlier, .yourturn").forEach((e) => e.remove());
+    h4.insertAdjacentHTML("beforeend", earlierMark(it, st0) + yourTurn(it, st0));
+    markOptions(li, it, st);
+  }
   function segHtml(opts, current, act, extra, recommended) {
     return opts.map(([v, label]) =>
       '<button class="opt" data-act="' + act + '" data-v="' + v + '"' + extra + ' aria-pressed="' + (current === v) + '">' + esc(label) +
@@ -817,6 +992,8 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   }
   // The curator's mark on the metric, like an issue's: as declared, change (say how in the note) or discuss.
   function metricMarkHtml(d) {
+    if (d.metricChecked) return '<p class="srcnote">Resolved: ' + d.metricChecked.html + "</p>";
+    if (parked(d)) return '<p class="srcnote">Parked: the metric waits for the deferred issue of this record.</p>';
     if (!hasMetricMark(d)) return "";
     const st = peekRev(d.name).metric || {};
     const ro = mode === "readonly" ? " disabled" : "";
@@ -936,7 +1113,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     if (!d.blocks.length && !d.shared.length) det += '<p class="intro">The run report has no further details for this record.</p>';
     det += "</section>";
     dec += '<h3 id="iss-h">Issues <span class="count">' + (d.cat === "decided" ? "for reference, no marks to set" : "a mark for each") + "</span></h3>";
-    if (d.items.length && d.cat !== "decided") dec += '<p class="intro">As implemented: keep what the definition does now. Change: do what your note says. Discuss: Claude answers on the page first. Record fields are marked in their own table below.</p>';
+    if (d.items.length && d.cat !== "decided") dec += '<p class="intro">As implemented locks in the option tagged <em>implemented</em> in the issue\u2019s table, what the definition does now. Change to: pick another option\u2019s letter, or other and say what in your note. Discuss: Claude answers on the page first. The row a mark locks in is highlighted in the table. Record fields are marked in their own table below.</p>';
     if (hasMetricMark(d)) {
       const mm = (r.metric && r.metric.d) ? METRIC_LABEL[r.metric.d] : "not marked yet";
       dec += '<p class="intro">The metric (<code>' + esc(d.metric.name) + "</code>) is marked in the Use case tab, under Metric: " + esc(mm) +
@@ -953,25 +1130,28 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     } else if (d.items.length) {
       dec += '<ol class="items' + (d.cat === "decided" ? " readonly-items" : "") + '">';
       shownItems.forEach((it) => {
-        const st = (r.items && r.items[it.n]) || {};
+        const st0 = (r.items && r.items[it.n]) || {};
+        const st = shownSt(it, st0);
         dec += '<li class="item' + (it.resolved ? " resolved" : "") + '" id="item-' + it.n + '"><div class="item-top"><span class="num">' + it.n + "</span><h4>" + it.titleHtml +
-          (st.d ? '<span class="statepill" data-v="' + esc(st.d) + '">' + esc(OPT_LABEL[st.d]) + "</span>" : "") + yourTurn(it) + "</h4></div>" +
-          '<div class="seg small">' + segHtml(ITEM_OPTS, st.d, "item", ' data-n="' + it.n + '"' + ro) + "</div>" +
-          origLabel(it) + '<div class="body md">' + it.html + "</div>" + threadHtml(it) +
+          (st.d ? '<span class="statepill" data-v="' + esc(st.d) + '">' + esc(itemPill(it, st)) + "</span>" : "") + earlierMark(it, st0) + yourTurn(it, st0) + "</h4></div>" +
+          '<div class="seg small">' + itemSegHtml(it, st, ro) + "</div>" +
+          origLabel(it) + '<div class="body md">' + it.html + "</div>" + threadHtml(it) + replyHtml(it, st0) +
           '<label class="visually-hidden" for="note-i-' + slug(d.name) + "-" + it.n + '">Note on item ' + it.n + "</label>" +
           '<textarea class="note" rows="1" id="note-i-' + slug(d.name) + "-" + it.n + '" data-note="item" data-n="' + it.n + '" placeholder="Note (optional)"' + (mode === "readonly" ? " readonly" : "") + ">" + esc(st.note || "") + "</textarea></li>";
       });
       dec += "</ol>";
     } else {
-      dec += '<p class="intro">No numbered issues in this section.</p>';
+      dec += '<p class="intro">No issues: the checks and the review panel left nothing for you to decide here. Set the verdict below.</p>';
     }
     if (d.fields.length) {
       dec += '<h3 id="fld-h">Record fields that disagree <span class="count">record against definition</span></h3>';
-      dec += '<p class="intro">Take definition\'s value: the curation record is changed to the definition\'s value. Keep record\'s value: the record stays as it is (add a note if the definition should change instead).</p>';
-      dec += '<div class="tablewrap"><table class="fieldtab"><thead><tr><th>Field</th><th>Record</th><th>Definition</th><th><span class="visually-hidden">Decision</span></th></tr></thead><tbody>';
+      dec += '<p class="intro">Each button names the value the curation record ends up with, and the table highlights it. To change the definition instead, keep the record\'s value and say so in the record\'s verdict note.</p>';
+      dec += '<div class="tablewrap"><table class="fieldtab"><thead><tr><th>Field</th><th>Record</th><th>Definition</th><th>The record gets</th></tr></thead><tbody>';
       d.fields.forEach((f) => {
-        dec += "<tr><td>" + esc(f.field) + '</td><td class="v">' + esc(f.record) + '</td><td class="v">' + esc(f.definition) + '</td><td><div class="seg small">' +
-          segHtml(FIELD_OPTS, r.fields && r.fields[f.key], "field", ' data-k="' + esc(f.key) + '"' + ro) + "</div></td></tr>";
+        const v = r.fields && r.fields[f.key];
+        dec += '<tr data-k="' + esc(f.key) + '"' + (v ? ' data-v="' + esc(v) + '"' : "") + "><td>" + esc(f.field) + '</td><td class="v" data-side="keep">' + esc(f.record) +
+          '</td><td class="v" data-side="update">' + esc(f.definition) + '</td><td><div class="seg small">' +
+          segHtml(fieldOpts(f), v, "field", ' data-k="' + esc(f.key) + '"' + ro) + "</div></td></tr>";
       });
       dec += "</tbody></table></div>";
     }
@@ -1027,7 +1207,8 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     h += '<section class="verdict-box" id="decide" aria-labelledby="decide-h"><h3 id="decide-h">' + (d.cat === "decided" ? "Is the triage update correct?" : "Your verdict") + "</h3>" +
       (d.panel ? '<p class="panelline"><span class="k">Panel:</span> ' + escCode(d.panel.recommendation) + '<button class="linkbtn" data-act="openpanel">Read the panel</button></p>' : "") +
       '<div class="seg">' +
-      segHtml(opts, r.verdict, "verdict", ro, REC[d.cat]) + "</div>" +
+      segHtml(opts, verdictOf(d), "verdict", ro, REC[d.cat]) + "</div>" +
+      (!r.verdict && shipsByDefault(d) ? '<p class="intro">No issues left, so this record ships; choose another verdict to override.</p>' : "") +
       '<label class="notelabel" for="note-v-' + slug(d.name) + '">Note for Claude</label>' +
       '<textarea class="note big" id="note-v-' + slug(d.name) + '" data-note="verdict" placeholder="What should change, or why you overrule the recommendation"' + (mode === "readonly" ? " readonly" : "") + ">" + esc(r.note || "") + "</textarea></section>";
 
@@ -1041,6 +1222,11 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     el.classList.toggle("readonly", mode === "readonly");
     finishMarkdown(el);
     el.querySelectorAll("textarea.note:not(.big)").forEach(autoGrow);
+    d.items.forEach((it) => {
+      const st0 = (r.items && r.items[it.n]) || {};
+      markOptions(document.getElementById("item-" + it.n), it, shownSt(it, st0));
+      markReply(document.getElementById("item-" + it.n), it, st0);
+    });
     highlightCode();
   }
   function highlightCode() {
@@ -1088,7 +1274,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       h += '<h3 class="sec">' + esc(s.title).replace(/`([^`]+)`/g, "<code>$1</code>") + '</h3><ol class="items">';
       shown.forEach((it) => {
         const st = S.crosscut[it.id] || {};
-        h += '<li class="item' + (it.resolved ? " resolved" : "") + '"><div class="item-top"><span class="num">' + esc(it.id.split("-")[1] * 1 + 1) + "</span><h4>" + it.titleHtml +
+        h += '<li class="item' + (it.resolved ? " resolved" : "") + '"><div class="item-top"><span class="num">' + (s.items.indexOf(it) + 1) + "</span><h4>" + it.titleHtml +
           (st.d ? '<span class="statepill" data-v="' + esc(st.d) + '">' + esc(X_LABEL[st.d]) + "</span>" : "") + yourTurn(it) + "</h4></div>" +
           '<div class="seg small">' + segHtml(X_OPTS, st.d, "x", ' data-id="' + esc(it.id) + '"' + ro) + "</div>" +
           origLabel(it) + '<div class="body md clamp">' + it.html + "</div>" +
@@ -1121,8 +1307,9 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       d.fields.forEach((f) => { const v = r.fields && r.fields[f.key]; if (v) marks.push("- Field " + f.field + " (record " + f.record + ", definition " + f.definition + "): " + OPT_LABEL[v]); });
       const mt = r.metric;
       if (mt && (mt.d || (mt.note || "").trim())) marks.push("- Metric (" + (d.metric ? d.metric.name : "none") + "): " + (mt.d ? METRIC_LABEL[mt.d] : "no mark") + ((mt.note || "").trim() ? ". Note: " + mt.note.trim() : ""));
-      if (!r.verdict && !(r.note || "").trim() && !marks.length) return;
-      const vl = r.verdict ? labelsFor(d)[r.verdict] : "no verdict";
+      const v = verdictOf(d);
+      if (!v && !(r.note || "").trim() && !marks.length) return;
+      const vl = v ? labelsFor(d)[v] + (r.verdict ? "" : " (no issues)") : "no verdict";
       lines.push("## " + d.name + ": " + vl);
       if ((r.note || "").trim()) lines.push("Note: " + r.note.trim());
       lines.push(...marks, "");
@@ -1159,7 +1346,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     const tally = { ship: 0, changes: 0, dont: 0, discuss: 0, correct: 0, none: 0 };
     let agree = 0, decided = 0;
     DS.forEach((d) => {
-      let v = peekRev(d.name).verdict;
+      let v = verdictOf(d);
       if (!v) { tally.none++; return; }
       if (d.cat === "decided" && v === "dont") v = "correct";
       tally[v] = (tally[v] || 0) + 1; decided++;
@@ -1187,8 +1374,8 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
         '<td><span class="tag ' + d.cat + '">' + esc(CAT[d.cat]) + "</span></td>" +
         "<td>" + (f ? '<span class="pill ' + f + '">' + esc(FIT[f]) + "</span>" : '<span class="vlabel none">–</span>') + "</td>" +
         "<td>" + esc(labels[REC[d.cat]]) + "</td>" +
-        "<td>" + (r.verdict ? '<span class="vlabel" data-v="' + esc(r.verdict) + '">' + esc(labels[r.verdict]) + "</span>" : '<span class="vlabel none">–</span>') + "</td>" +
-        '<td class="num">' + c.done + "/" + c.total + "</td>" +
+        "<td>" + (verdictOf(d) ? '<span class="vlabel" data-v="' + esc(verdictOf(d)) + '">' + esc(labels[verdictOf(d)]) + (r.verdict ? "" : " (no issues)") + "</span>" : '<span class="vlabel none">–</span>') + "</td>" +
+        '<td class="num">' + markCount(d, c, r) + "</td>" +
         "<td>" + esc((r.note || "").trim().slice(0, 140)) + ((r.note || "").trim().length > 140 ? "…" : "") + "</td></tr>";
     });
     h += "</tbody></table></div>";
@@ -1265,7 +1452,6 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     if (act === "openpanel") { showCtab("panel"); const t = document.getElementById("ct-panel"); if (t) t.scrollIntoView({ block: "start" }); return; }
     if (act === "toggleResolved") {
       ui.showResolved = !ui.showResolved;
-      store("showResolved", ui.showResolved);
       const y = window.scrollY;
       if (ui.view === "across") renderAcross(); else renderCase();
       window.scrollTo(0, y);
@@ -1323,8 +1509,9 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     if (act === "verdict") {
       const r = rev(name);
       r.verdict = r.verdict === b.dataset.v ? null : b.dataset.v;
+      const dd = byName.get(name);
       touch("reviews", name);
-      b.parentElement.querySelectorAll(".opt").forEach((o) => o.setAttribute("aria-pressed", String(o.dataset.v === r.verdict)));
+      b.parentElement.querySelectorAll(".opt").forEach((o) => o.setAttribute("aria-pressed", String(o.dataset.v === (r.verdict || (dd && shipsByDefault(dd) ? "ship" : null)))));
       refreshAll();
       return;
     }
@@ -1332,9 +1519,64 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       const r = rev(name);
       const n = b.dataset.n;
       const it = r.items[n] || (r.items[n] = {});
-      it.d = it.d === b.dataset.v ? null : b.dataset.v;
+      const item = byName.get(name).items.find((x) => String(x.n) === String(n));
+      const reply = item && pending(item, it); // a mark in reply to Claude's last turn sets it, never clears it
+      const picked = !reply && it.d === "change" && PICKED_NOTE.test(it.note || "");
+      // "other" after a picked option keeps Change and frees the note; a pressed button again clears the mark.
+      it.d = it.d === b.dataset.v && !picked && !reply ? null : b.dataset.v;
+      if (picked || (reply && b.dataset.v === "change" && PICKED_NOTE.test(it.note || ""))) setItemNote(n, it, (it.note || "").replace(OPTION_LINE, ""));
+      if (item && awaitsCurator(item)) it.re = item.askId;
       touch("reviews", name);
-      updatePill(b, it.d, OPT_LABEL);
+      refreshItem(n);
+      updateCount();
+      refreshAll();
+      return;
+    }
+    if (act === "reply") {
+      // An answer to the AI's last turn: the reply line leads the note; the earlier mark stands (Discuss if none).
+      const r = rev(name);
+      const n = b.dataset.n, k = b.dataset.k;
+      const item = byName.get(name).items.find((x) => String(x.n) === String(n));
+      const st = r.items[n] || (r.items[n] = {});
+      const rest = (st.note || "").replace(REPLY_LINE, "");
+      let line;
+      if (k === "agree") line = "Agree.";
+      else if (k === "disagree") line = "Disagree: ";
+      else {
+        const c = (item.thread[item.thread.length - 1].choices || []).find((x) => x.key === k);
+        const t = plainText(c ? c.html : "");
+        line = "Reply (" + k + "): " + (t.length > 110 ? t.slice(0, 109) + "\u2026" : t);
+      }
+      setItemNote(n, st, line + (rest.trim() ? "\n" + rest : ""));
+      if (!st.d) st.d = "discuss";
+      st.re = item.askId;
+      touch("reviews", name);
+      refreshItem(n);
+      updateCount();
+      refreshAll();
+      if (k === "disagree") { const ta = document.querySelector("#item-" + n + " textarea.note"); if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } }
+      return;
+    }
+    if (act === "pickopt") {
+      // Change to one option of the table: the mark is Change, the note starts with "Option <key>: <name>."; the same
+      // button again clears the mark.
+      const r = rev(name);
+      const n = b.dataset.n, k = b.dataset.k;
+      const item = byName.get(name).items.find((x) => String(x.n) === String(n));
+      const it = r.items[n] || (r.items[n] = {});
+      const rest = (it.note || "").replace(OPTION_LINE, "");
+      const reply = pending(item, it);
+      if (awaitsCurator(item)) it.re = item.askId;
+      if (!reply && it.d === "change" && pickedKey(item, it) === k) {
+        it.d = null;
+        setItemNote(n, it, rest);
+      } else {
+        const line = "Option " + k + ": " + plainText(optName(item, k)) + ".";
+        it.d = "change";
+        setItemNote(n, it, rest.trim() ? line + "\n" + rest : line);
+      }
+      touch("reviews", name);
+      refreshItem(n);
       updateCount();
       refreshAll();
       return;
@@ -1355,6 +1597,8 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
       r.fields[k] = r.fields[k] === b.dataset.v ? null : b.dataset.v;
       touch("reviews", name);
       b.parentElement.querySelectorAll(".opt").forEach((o) => o.setAttribute("aria-pressed", String(o.dataset.v === r.fields[k])));
+      const row = b.closest("tr");
+      if (r.fields[k]) row.dataset.v = r.fields[k]; else delete row.dataset.v;
       updateCount();
       refreshAll();
       return;
@@ -1392,7 +1636,13 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     if (mode === "readonly") return;
     const kind = t.dataset.note;
     if (kind === "verdict") { rev(ui.current).note = t.value; touch("reviews", ui.current, true); }
-    else if (kind === "item") { const r = rev(ui.current); const n = t.dataset.n; (r.items[n] || (r.items[n] = {})).note = t.value; touch("reviews", ui.current, true); }
+    else if (kind === "item") {
+      const r = rev(ui.current); const n = t.dataset.n; const st = r.items[n] || (r.items[n] = {});
+      st.note = t.value;
+      const item = byName.get(ui.current).items.find((x) => String(x.n) === String(n));
+      if (item && awaitsCurator(item) && t.value.trim()) st.re = item.askId; // a written reply answers Claude's turn
+      touch("reviews", ui.current, true); refreshItem(n); updateCount(); refreshAll();
+    }
     else if (kind === "metric") { const r = rev(ui.current); (r.metric || (r.metric = {})).note = t.value; touch("reviews", ui.current, true); }
     else if (kind === "x") { xdoc(t.dataset.id).note = t.value; touch("crosscut", t.dataset.id, true); }
   });

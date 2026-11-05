@@ -2,13 +2,15 @@
 unique_name: medical_facility_operational_data
 name: Medical Facility Operational Data
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Myunghwan
+- Lennart
+data_foundry_status:
+- WIP (DF)
+claimed_by: Myunghwan
+suggestion: 'Yes'
 priority: 3
 tags:
-- 2nd Tier / Scientific Discovery
 - Non-IID (Temporal)
-- AI-Filled (Verify)
 collections:
 - New (BeyondArena)
 original_source: Other
@@ -21,13 +23,32 @@ original_data_state: One Table
 source_links:
 - https://www.kaggle.com/datasets/weirdolucifer/medical-facility-operational-data
 - https://doi.org/10.7910/DVN/X4SJWS
+- https://medicalanalytics.group/operational-data-challenge/
+- https://doi.org/10.1038/s42256-020-0176-3
+v2_path: datasets/_dev/tabarena-v0pt2/medical_facility_operational_data/dataset.py
 source_row: 850
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
+
+CC (2026-10-28, Myunghwan): "ship this". Final scientific inclusion approved for Medical Facility Operational Data: all four facilities and original signed delay/wait targets, categorical facility context, accepted nine approximate source-order windows and option A ordinary per-visit MAE with equal mean across windows.
+
+**Assessment (AI, 2026-10-28; final review-added verdict):** Actual final ship applies to the reviewed source identities after both split and scoring decisions were applied. Independent consistency review found no reflection required. All 130,431 rows, 88 predictors and nine train/test memberships remain qualified; prior source/data audits, 90 saved-model replays and full ten-role panel remain applicable. Clock/cadence and estimator/booking lineage limitations remain documented. No scientific issue remains open. Accepted for later explicitly requested build; claim and WIP remain until repository integration. Historical comments below retain prior states and are superseded by this final verdict.
+
+CC (2026-10-28, Myunghwan): "Is MAE the main metric from the original task? If so, our current imbalance is somewhat acceptable." Retain ordinary per-visit MAE and the proposed standard equal mean of nine window scores, following verification that the original challenge deliberately uses MAE. Final overall inclusion remains undecided.
+
+**Assessment (AI, 2026-10-28; MAE review):** The primary author challenge specifies MAE-based feature-reduction tolerance and an MAE-reduction goal. It does not prescribe a combined facility/window weighting. The current composition is retained under the curator's conditional acceptance; it is not presented as an official source aggregation. F3 contributes 45.3% of absolute error versus 61.0% of squared error in the saved shared-model diagnostics. Independent consistency review found no reflection required. Close issue 5, preserve all source rows, targets, predictors and exact splits, and retain per-facility diagnostics. No final ship inferred.
+
+CC (2026-10-28, Myunghwan): "accept this split". Accept the proposed nine all-facility common source-event-order windows, strict training arrival/exam-start availability and intact ties, with the disclosed clock alignment and real-calendar limitations. Preserve all exact memberships. Scoring/aggregation (issue 5) and final inclusion remain undecided.
+
+**Assessment (AI, 2026-10-28; split acceptance):** Independent consistency check found no reflection needed. Closed issue 3 and preserved its original text and actual snapshot-bound mark. Acceptance records the approximation, not verification of intra-day synchronization or real deployment cadence. No row, label, predictor, metric or split change; prior all-facility probes, saved predictions and model replays remain applicable.
+
+**Assessment (AI, 2026-10-28; all-facility pre-human review):** Corrected scope retains all 130,431 source visits, original signed F1-F3 delay/F4 wait and categorical facility context, with 88 predictors. Validity: authenticated author workbook, all-row/label/type reconstruction, exact nine source-order memberships and 90 exact saved-model replays support the candidate. Planned inputs and completion histories remain; active-exam elapsed identities restore mintime/maxtime, and only F4 IsLast is masked. Value: fresh fixed pooled/per-facility checks show useful signal and measured loss-scale differences; F3 has 20.7% of tested visits but 45.3% of shared-model absolute error, while F4 has 45.0% of visits and 17.4% of that error. No native task flags. Quality: original signed targets, structural missingness and distinct source histories preserved. The old scientific-discovery tag is contradicted by the verified source task and removed; dated history remains. The source MAE formula is computable, so its origin is source, not an uncomputable-metric stand-in. Cross-facility aggregation and acceptance of approximate global source order remain human choices; clock/estimator/booking snapshot and real-patient linkage limits are not promoted to verification. Full panel recommends retention after those choices; no human ship exists. Review issues 3 and 5 plus the overall verdict are pending. Priority 3: gap 0 (no thin medical/regression/temporal axis), use case 0 (approximate archival operational fit), source +1 (authenticated original author), shape +1 (130k mixed operational rows), risk 0 (no demonstrated unrepairable defect).
+
+CC (2026-10-28, Myunghwan): Redo add-dataset and review-added-datasets for Medical Facility considering the previous scientific decisions. Preserve the earlier explicit all-facility main task and meaningful facility context. Complete per-facility and shared-predictor error/support/contribution checks before returning the metric/aggregation choice and final inclusion question. This request is not an F4-only approval, final ship, build or commit.
+
+**Assessment (AI, 2026-10-28; all-facility correction in progress):** The previously completed F4-only package did not fulfill the saved scope. The corrected candidate retains all 130,431 source visits and signed F1-F3 delay/nonnegative F4 wait, with facility categorical and the union of source features. Fresh all-group source/column audits support planned demand, completion histories and restoration of active-exam elapsed extrema mintime/maxtime; mask IsLast for F4 only. Global source-event-order windows have common-day corroboration but do not establish true calendar cadence or complete intra-day synchronization. Visit-weighted MAE is a provisional comparison spec, not a settled cross-facility scoring decision. Current model/evaluation work and full panel must finish before final human review.
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
@@ -45,3 +66,37 @@ A Kaggle 'Medical Facility Operational Data' dataset that is a single Excel shee
 ---
 
 Unsure what the task/target could be, is one Excel sheet with a bunch of data.
+
+CC (2026-10-26, Myunghwan): Proceed with add-dataset for Medical Facility Operational Data under the established curation procedure. This authorizes actual-data qualification and the required independent panel; final inclusion, build and repository integration remain separate. The existing Myunghwan reservation remains at triage; claim stage and scientific verdict are independent.
+
+**Assessment (AI, 2026-10-26):** F4 provides a source-defined walk-in wait task (48,430 visits); the earlier unverified no-target/single-sheet description is contradicted by the actual workbook. The paper and mirror worksheet counts differ; equivalence remains unverified. Nine arrival-order tests exclude immature labels and cross-split exact copies. Full independent panel recommends Ship after changes: preserve source-defined F4, correct metadata now, resolve retained-history/estimator availability through source evidence or a supported narrowed definition, record the order-only cadence departure, and reconcile completed tuning before inclusion.. Source-described recent delay/wait fields differ from F4 Wait and their updater/estimator lineage is unresolved; REVIEW.md retains the decisions without calling this proven leakage. Mechanical checks have zero errors/warnings; raw copies0, final repeated states6, conflicting-feature rows134, exact cross-split copies0. Priority 3: gap -, use case + (arrival-time patient wait quote), source + (named primary study and pinned release, with cohort-equivalence gap), shape + (48,430 visits, temporal), risk - (unverified history and estimator provenance).
+
+CC (2026-10-27 UTC, Myunghwan): Asked whether concerns/review/decisions remained, then said “yes, let’s check” after the agent proposed source verification and supported technical repair with affected checks. This authorizes the direct follow-up investigation; it is not an inclusion, build or commit decision.
+
+**Follow-up assessment (AI, 2026-10-27 UTC):** Supersedes the earlier unverified mirror/history-availability findings. The primary author archive linked by the Nature Machine Intelligence companion article contains a workbook byte-identical to the checked Kaggle copy (SHA256 153cff36b4bbf2d972f415c00a786ae5d5e65557ae23b0379fd33efb69060f2e). Inspected Matlab code imports precomputed features and evaluates Wait models, rather than generating features. New diagnostics reconstruct elapsed queue state in 48,408/48,430 rows, each wait-window mean in 48,399/48,430, and signed in-progress begin-minus-schedule delays in all 7,684 linked singleton active exams. All nine recent-history fields stay fixed over 22,800 unchanged-completion-count transitions; the five-value vector shifts correctly in all 13,093 single-completion transitions. Signed completion-delay interpretation fits all 9,888 linked completions; exact end timestamps/updater and full Median5/last-K arithmetic/default conventions remain unverified. Expected-time values behave as elapsed plus a fixed patient component and fail realized-duration identities; exact fitting provenance remains unverified, with no measured future-label fitting. The 31 missing-calendar visits explain all mean residuals and contain all queue residuals; retain source visits/missingness with that diagnostic limitation. Keep the exact feature inventory, values, types and nine mature-label splits; correct semantics and primary provenance. Focused independent claim/column/mediator/editor review supplements the preserved full original panel. Remaining limitations: source feature estimator lineage, sorting-only calendar and unclaimed PLOS analytical-cohort equivalence. Only inclusion with the disclosed order-only cadence remains a curator judgment; no new factual approval gates.
+
+CC (2026-11-04, Lennart): one meaning of `Wait` per dataset: the scheduled delay of F1-F3 ships here (82,001 visits), F4's walk-in wait is left out ("follow the recommendation"); a temporal split, not a grouped one ("ensure that a temporal, not a grouped split is the goal here"); `DayOfWeek` and `Month` are numbers ("follow the rule", CLEAN-14). The metric is checked as declared. F4 has no record of its own; it would need its own curation.
+
+**Assessment (AI, 2026-11-04):** the split is temporal as the source works: Crowley et al. (2020) train on six consecutive months per facility and test on "a further consecutive two weeks"; nothing holds out a facility. The source order is real time: every sheet lists its visits in reverse arrival order, the fictitious arrival time equals `StartTime` plus 60 minutes in all 130,431 rows, and the facilities agree on all 459 shared days, so the anonymisation is one clock shift for all. Every window has training rows of F1, F2 and F3 from before it (test sides 4,546-4,565).
+
+CC (2026-11-04, Lennart): the expected-delay table stays ("keep them"), with a `Potential leak, kept on purpose:` note (LEAK-38).
+
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled.
+
+**Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes; disputed: LEAK-9 against LEAK-5 for the test-row decode (settled as LEAK-9; the evaluator guarantee is issue 7), USE-6/USE-8/USE-9 on adding the patient's own minutes early or rewording the summary (issue 6); for the curator: issues 6-11. Priority 3: gap 0, use case 0, source +1, shape +1, risk 0 (no thin domain, problem type or regime among the accepted definitions; the source names the actor and the decision, but the fit is approximate; the authors' own workbook with paper and codebook; 82,001 visits, 87 features (88 since `minutes_early`, 2026-11-05), temporal; the test-block decode is an evaluation leak fixed by the protocol line, and the kept fields move MAE by 0.01-0.16).
+
+CC (2026-11-05, Lennart): add `minutes_early` (issue 6, A; USE-6, CLEAN-19): this patient's scheduled time minus arrival time in minutes, positive when early, derived before the scheduled timestamp is dropped; the inputs go from 87 to 88. It is known at check-in, the prediction point, and CLEAN-19's ground is "restores meaning the source destroyed": the anonymisation shifted every timestamp by one clock, so the difference is real minutes, while the source's features describe the next patient, whoever it is. No value is missing (range -328 to +522). Untuned LightGBM (L1) on the definition's frame and the nine shipped windows: MAE 15.29 without it, 13.56 with it (-11%, 2 seeds, lower in all 18 fits). Unlike protein_model_quality_rf_pcp, kept with no new features (2026-11-04) because a built feature's signal was weak on a dataset marked `Outdated`, here the signal is strong. The fit stays approximate: the patient's exam type is lost in the source's aggregation (USE-8).
+
+CC (2026-11-05, Lennart): the declared metric (the source's MAE in minutes, per window, the equal mean of the nine windows) is checked and stays as declared.
+
+CC (2026-11-05, Lennart): summaries of an empty set set to missing (issue 10, B; CLEAN-10, as ashrae's and rain_in_australia's cloud cover 9 and house_sales's `yr_renovated` 0): 186,047 cells in 16 columns; the sums stay 0. Empty line (`NoneInLine`): `AvgHowEarlyWaiting`, `AvgWaitByTaskTypeLine`, `AvgAgePeopleWaiting` (13,454 rows each; the age held 0 at F1 and six repeated constants at F2 and F3). No exam completed today (`NumCompletedToday` = 0, 9,779 rows): `Median5`, `AvgWaitLastK1-3Customers`; `MostRecentk` where fewer than k are completed (9,779 to 19,412 rows). `NoneCompleted` is not the condition: it equals `Median5` = 0 and also marks 261 rows with completed exams and a real median of 0. `AvgDelayForDay` where no exam of the day had begun (5,774 rows, from the timestamps). `AvgWaitLastW1-3` where no other exam began in the 30, 60 or 120 minutes up to the arrival (12,841, 8,253 and 5,848 rows): it averages begun exams' start-minus-arrival times, not completions. Every blanked value was 0 except the age constants; the zeros kept are real values. `AvgWaitLastK1-3Customers` divides the sum of the day's last 5/10/15 completed delays by 5/10/15, so K1-K3 are 5/10/15 exams, not the 2/4/8 inferred before. Untuned LightGBM (L1) on the nine shipped windows: MAE 13.565 with the source's zeros, 13.577 with missing values (+0.012, 2 seeds, lower in 9 of 18 fits): no measurable change.
+
+CC (2026-11-05, Lennart): the protocol line stays as implemented (issue 7, A), under LEAK-9 as amended on this dataset (answer (c)): an evaluation leak is fixed in the scoring or by a protocol line the benchmark checks, and a method that learns from the test block is called out and not benchmarked ("we investigate models, and would find out if they do transductive learning which we can call out and not benchmark"). The benchmark-side check is listed in the working copy's `BENCHMARK_CHANGES_TODO.md`. On the 14-day windows the test-block decode lowers MAE from 13.85 to 6.83 (-51%, all 9 windows); the next arrivals' features alone give 11.52.
+
+CC (2026-11-05, Lennart): the source's two-week test windows (issue 8, B, choice (b); SPLIT-12, SPLIT-19): nine 14-day windows, each from the first whole day at or after the start of one of the nine equal-count windows shipped before (42 to 53 days), so the folds stay nine and the test visits go from 40,995 to 12,408 (1,140 to 1,540 per window; 217 to 688 per facility). The training side stays expanding, 41,048 to 77,557 of 82,001 visits (50.1% to 94.6%): SPLIT-14's floor and its three windows hold. The day key is built from the arrival timestamp in `_clean`, since the time column is the arrival rank; the 2,921 visits after the newest window are in no split (`splits_rows_unused` accepted). The planned exception to SPLIT-19 is dropped: the split follows the source. Re-measured on the new windows (untuned LightGBM, L1, 2 seeds): MAE 13.70 with `minutes_early`, 15.47 without (was 13.56 and 15.29), training median 21.63 (21.54); `arrival_order` worth +0.12 (+0.08); the empty-set change +0.017 (+0.012).
+
+CC (2026-11-05, Lennart): the expected-delay table stays under LEAK-38 as amended on this dataset and tunisian_fraud_detection_challenge (issue 9, D, scope (a)): fields that may be post-outcome, anonymised or named, whose timing the source leaves undocumented and no test can establish, in data the data owner released for its own challenge, stay with a note and are named in `fit_reason` as kept (USE-8). `fit_reason` now names the table. On the 14-day windows dropping it changes MAE by -0.005 (0.01-0.02 before).
+
+CC (2026-11-05, Lennart): the nine schedule fields stay (issue 11, A), as an application of LEAK-10's clause on values read at a later pull (answer (a)), with a Cases row under LEAK-10: the late cells cannot be located row by row, so the whole-field worth is an upper bound on the late part, and it sits within about two seed SDs (+0.08 to +0.16 against 0.07 on the earlier windows; dropping all nine on the 14-day windows +0.05, higher in 15 of 18 fits, against a seed-to-seed difference of 0.05; +0.14 with the leak probe's L2 model, inside the earlier range), so the late part shows no gain.
+
+CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.

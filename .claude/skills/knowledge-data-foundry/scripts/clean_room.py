@@ -72,7 +72,8 @@ SCORE_PY = '''"""Score a prediction on this task as the benchmark does.
 
 ``python score.py`` scores a random prediction on every split: it shows the metric computes, it is not a baseline.
 The kind of prediction the metric takes (``proba``, ``label`` or ``value``) is ``task.json``'s ``metric.prediction``;
-``metrics.py`` implements it.
+``metrics.py`` implements it. Class probabilities: one column per class in the sorted order of the classes
+(scikit-learn's ``classes_``), or a DataFrame whose columns are the class names.
 """
 
 from __future__ import annotations
@@ -130,7 +131,7 @@ def score(y_true, y_pred, test_idx) -> float:
 if __name__ == "__main__":
     df = load()
     y = df[TARGET]
-    labels = list(y.cat.categories) if isinstance(y.dtype, pd.CategoricalDtype) else None
+    labels = sorted(y.cat.categories) if isinstance(y.dtype, pd.CategoricalDtype) else None
     for name, train_idx, test_idx in splits():
         pred = metrics.dummy_prediction(TASK["metric"]["prediction"], y.iloc[train_idx], len(test_idx), labels=labels)
         value = score(y.iloc[test_idx], pred, test_idx)
@@ -250,6 +251,16 @@ def participant_task(ds, data: dataset_io.ProbeInput, scoring: list[str]) -> dic
     }
 
 
+def prediction_point_line(prediction_point: str) -> str:
+    """The kit's prediction-point line from a clause ("the policy is quoted") or a whole sentence ("The prediction
+    is made for an hour after ..."), which is kept as written instead of getting a second "the prediction is made".
+    """
+    text = prediction_point.strip().rstrip(".")
+    if text.lower().startswith("the prediction is "):
+        return f"- Prediction point: {text[0].lower()}{text[1:]}."
+    return f"- Prediction point: the prediction is made when {text}."
+
+
 def participant_markdown(data: dataset_io.ProbeInput, links: list[str], task: dict, prediction_point: str) -> str:
     """The ``task.md`` of the participant kit: the clean room's facts, the prediction point, the metric, the files."""
     metric = task["metric"]
@@ -258,7 +269,7 @@ def participant_markdown(data: dataset_io.ProbeInput, links: list[str], task: di
     lines = task_markdown(data, links, rows=len(data.df), sampled=None).rstrip("\n").split("\n")
     at = lines.index("## Source links")
     extra = [
-        f"- Prediction point: the prediction is made when {prediction_point.rstrip('.')}.",
+        prediction_point_line(prediction_point),
         f"- Metric: `{metric['name']}` on a `{metric['prediction']}` prediction{params}; {direction} is better.",
     ]
     if task["grouping"]:

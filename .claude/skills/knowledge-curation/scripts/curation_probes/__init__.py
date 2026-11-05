@@ -5,7 +5,10 @@ type, group or time columns, and splits as lists of ``(train_idx, test_idx)`` ro
 so they run on a table from any source. Modules:
 
 * ``leak``: what a model learns from the data that it should not (single features, missing indicators, copies of
-  test rows in train, nearest neighbours, string columns).
+  test rows in train by label on every split, nearest neighbours, string columns), the target by period, the test
+  for right-censoring at the release end (``target_by_period``, probe 13), and the raw state before ``_clean``: the
+  target in the source's row order, the rows it removed, the columns it dropped, copies before deduplication
+  (``row_order``, ``removed_rows``, ``dropped_column_proxies``, ``raw_copies``; probes 10, 19, 20, 21).
 * ``task``: is the task worth benchmarking, or empty, solved, or the same for every model (baselines, three model
   families, the best single feature, and flags for the curator).
 * ``groups``: for a grouped task, does the grouping matter, and is there signal across groups.

@@ -30,17 +30,27 @@ to compare                                 snip100-tic``                    2022
 mass spectrum ``peaks`` or ``processed``;  ``spectrum-as-is``               the columns unchanged
 a vibrational spectrum (Raman, infrared,
 near-infrared)
-vibrational, the alternative to check      ``vib-als-snv``                  RamanBench's linear-model default: an
+vibrational, candidates to compare         ``vib-als-snv``                  RamanBench's linear-model default: an
                                                                             asymmetric least squares baseline
                                                                             (lambda 1e5, p 0.01, 10 iterations)
                                                                             removed, then the standard normal
                                                                             variate of each spectrum
+                                           ``vib-snv``                      the standard normal variate alone
+                                                                            (Barnes et al. 1989), OSSL's own
+                                                                            preprocessing
+                                           ``vib-sg11-d1``                  the Savitzky-Golay first derivative
+                                                                            (Savitzky and Golay 1964), 11 points,
+                                                                            polynomial order 2, per position
 =========================================  ===============================  =======================================
 
 Every encoding works on one spectrum at a time, with no fitting and no labels: it cannot leak test information, gives
 the same row in every split, and returns the same columns with new values. MALDIquant's later steps (aligning the
 spectra on common peaks, detecting peaks and binning them) fit across spectra, so they are left out of a per-row
 default.
+
+Each technique registers the standard preprocessing candidates of its field, with fixed published settings, so a
+benchmark can run them all and select (Lennart, 2026-11-04: "one can add all and select as needed when needed"). The
+recommended one changes only when a comparison over every dataset of the technique says so.
 
 The default for a raw mass spectrum is a placeholder until the benchmark decides it: the comparison studies find no
 pipeline that wins everywhere and large effects of the settings (Cruz-Marcelo et al. 2008; Wegdam et al. 2009,
@@ -57,7 +67,10 @@ regression loses 0.02; PR #21's chain, which ends in a log, scores higher for Ta
 spectra. For vibrational spectra the evidence points the other way: in RamanBench (arXiv:2605.02003, 77 datasets),
 the leading methods (AutoGluon 1.5, TabPFN v2.5, TabICL v2) read the raw spectra; the baseline and SNV are the
 chemometric baselines' convention, and no foundation model or tree was tested on processed spectra. So the vibrational
-default is the spectrum as it is, with ALS and SNV the alternative to check on the first such datasets.
+default is the spectrum as it is, with ALS and SNV, SNV alone and the first derivative the candidates to compare. On
+the first such dataset, open_soil_spectral_library (mid-infrared, 2026-11-04, untuned, RMSE in percent on the three
+grouped folds of repeat 0), LightGBM gains from every candidate (1.74 as it is; 1.33, 1.39 and 1.24), PLS from ALS and
+SNV and from the derivative, and ridge from none (the spectra guide of the curation skill has the table).
 """
 
 from __future__ import annotations
@@ -120,6 +133,17 @@ ALS_P = 0.01
 
 ALS_ITERATIONS = 10
 """RamanBench's reweighting iterations of the baseline."""
+
+VIB_SG_HALF_WINDOW = 5
+"""The half window of the vibrational first derivative: 11 points, the window of prospectr's first-derivative example
+on soil near-infrared spectra (``savitzkyGolay(m = 1, p = 3, w = 11)``, Stevens and Ramirez-Lopez) and of the
+comparison on open_soil_spectral_library; soil mid-infrared work uses 11 to 21 (Sila et al. 2016, Chemometrics and
+Intelligent Laboratory Systems 153: 21 points)."""
+
+VIB_SG_POLYORDER = 2
+"""The polynomial order of the vibrational first derivative: a quadratic, as in the comparison on
+open_soil_spectral_library. Away from the edges a quadratic's first derivative is the least-squares slope of the window
+(orders 1 and 2 give the same coefficients); prospectr's example uses order 3."""
 
 MS_RAW_ENCODING = Encoding(
     scope="row",
@@ -189,13 +213,52 @@ VIBRATIONAL_ALS_SNV_ENCODING = Encoding(
         "variate (minus the spectrum's mean, divided by its standard deviation). Same columns, new values."
     ),
 )
-"""The alternative encoding of a vibrational spectrum: check it next to the spectrum as it is."""
+"""A candidate for vibrational spectra, the first to compare with the spectrum as it is."""
+
+VIBRATIONAL_SNV_ENCODING = Encoding(
+    scope="row",
+    kind="spectrum",
+    name="vib-snv",
+    revision=1,
+    description=(
+        "The standard normal variate of each spectrum alone (Barnes, Dhanoa and Lister 1989, Applied Spectroscopy 43; "
+        "OSSL's preprocessing): minus the spectrum's mean, divided by its standard deviation (population, as in "
+        "vib-als-snv). Same columns, new values; a spectrum with a missing value comes out missing."
+    ),
+)
+"""A candidate for vibrational spectra: the scatter correction without a baseline."""
+
+VIBRATIONAL_SG1_ENCODING = Encoding(
+    scope="row",
+    kind="spectrum",
+    name=f"vib-sg{2 * VIB_SG_HALF_WINDOW + 1}-d1",
+    revision=1,
+    description=(
+        "The Savitzky-Golay first derivative of each spectrum (Savitzky and Golay 1964): "
+        f"{2 * VIB_SG_HALF_WINDOW + 1} points, polynomial order {VIB_SG_POLYORDER}, per position on the grid (not per "
+        "axis unit), the edges from the polynomial of the first and last window (scipy's savgol_filter, "
+        "mode='interp'). Same columns, new values; a spectrum with a missing value comes out missing."
+    ),
+)
+"""A candidate for vibrational spectra: the first derivative removes an additive offset and sharpens overlapping
+bands."""
 
 SPECTRUM_ENCODINGS = {
     e.id: e
-    for e in (MS_RAW_ENCODING, DRIAMS_ENCODING, CROMWELL_LOG2_ENCODING, AS_IS_ENCODING, VIBRATIONAL_ALS_SNV_ENCODING)
+    for e in (
+        MS_RAW_ENCODING,
+        DRIAMS_ENCODING,
+        CROMWELL_LOG2_ENCODING,
+        AS_IS_ENCODING,
+        VIBRATIONAL_ALS_SNV_ENCODING,
+        VIBRATIONAL_SNV_ENCODING,
+        VIBRATIONAL_SG1_ENCODING,
+    )
 }
 """Every spectrum encoding, by spec id."""
+
+VIBRATIONAL_CANDIDATES = (VIBRATIONAL_ALS_SNV_ENCODING, VIBRATIONAL_SNV_ENCODING, VIBRATIONAL_SG1_ENCODING)
+"""The processing candidates of a vibrational spectrum, after the recommended spectrum as it is."""
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -246,14 +309,15 @@ class Spectrum(SpecialColumnGroup):
     @classmethod
     def encodings(cls, feature: SpecialFeature) -> tuple[Encoding, ...]:
         """By technique and state: a raw mass spectrum's three published candidates (the placeholder default first),
-        a processed one or a peak list as it is, a vibrational spectrum as it is or with ALS and SNV.
+        a processed one or a peak list as it is, a vibrational spectrum as it is, then with ALS and SNV, with SNV
+        alone and as its Savitzky-Golay first derivative.
         """
         details = feature.details
         if details.technique == "mass_spectrometry":
             if details.state == "raw":
                 return (MS_RAW_ENCODING, DRIAMS_ENCODING, CROMWELL_LOG2_ENCODING)
             return (AS_IS_ENCODING,)
-        return (AS_IS_ENCODING, VIBRATIONAL_ALS_SNV_ENCODING)
+        return (AS_IS_ENCODING, *VIBRATIONAL_CANDIDATES)
 
     @classmethod
     def encode(cls, frame: pd.DataFrame, feature: SpecialFeature, encoding: Encoding) -> pd.DataFrame:
@@ -311,12 +375,14 @@ def _sqrt(values: np.ndarray) -> np.ndarray:
     return np.sqrt(np.clip(values, 0.0, None))
 
 
-def _savitzky_golay(values: np.ndarray, half_window: int, polyorder: int) -> np.ndarray:
-    """Savitzky-Golay smoothing along each row; the edges from the polynomial of the first and last window, as in
-    MALDIquant (scipy's ``mode="interp"``).
+def _savitzky_golay(values: np.ndarray, half_window: int, polyorder: int, deriv: int = 0) -> np.ndarray:
+    """Savitzky-Golay smoothing along each row, or its ``deriv``-th derivative per position; the edges from the
+    polynomial of the first and last window, as in MALDIquant (scipy's ``mode="interp"``).
     """
     signal = import_build_dependency("scipy.signal")
-    return signal.savgol_filter(values, window_length=2 * half_window + 1, polyorder=polyorder, axis=1, mode="interp")
+    return signal.savgol_filter(
+        values, window_length=2 * half_window + 1, polyorder=polyorder, deriv=deriv, axis=1, mode="interp"
+    )
 
 
 def snip_baseline(values: np.ndarray, iterations: int = MS_SNIP_ITERATIONS) -> np.ndarray:
@@ -440,7 +506,23 @@ def encode_spectrum(frame: pd.DataFrame, axis: Sequence[float], encoding: Encodi
         smoothed = _cromwell_denoise(values[complete])
         corrected = smoothed - np.minimum.accumulate(smoothed, axis=1)
         out[complete] = _log2_positive(_per_tic(corrected, positions))
-    else:  # VIBRATIONAL_ALS_SNV_ENCODING
-        rows = values[complete]
-        out[complete] = _snv(rows - als_baseline(rows))
+    else:
+        out[complete] = _encode_vibrational(values[complete], spec)
     return pd.DataFrame(out, index=frame.index, columns=frame.columns)
+
+
+def _encode_vibrational(rows: np.ndarray, spec: Encoding) -> np.ndarray:
+    """``rows`` (complete spectra) in one of the vibrational candidates (:data:`VIBRATIONAL_CANDIDATES`).
+
+    Raises:
+        ValueError: Fewer columns than the first derivative's window.
+    """
+    if spec == VIBRATIONAL_ALS_SNV_ENCODING:
+        return _snv(rows - als_baseline(rows))
+    if spec == VIBRATIONAL_SNV_ENCODING:
+        return _snv(rows)
+    window = 2 * VIB_SG_HALF_WINDOW + 1
+    if rows.shape[1] < window:
+        msg = f"The first derivative needs {window} columns, got {rows.shape[1]}."
+        raise ValueError(msg)
+    return _savitzky_golay(rows, VIB_SG_HALF_WINDOW, VIB_SG_POLYORDER, deriv=1)

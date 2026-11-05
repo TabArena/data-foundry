@@ -2,11 +2,12 @@
 unique_name: sendy_logistics_challenge
 name: sendy-logistics-challenge
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
-priority: 3
-tags:
-- AI-Filled (Verify)
+- Myunghwan
+data_foundry_status:
+- WIP (DF)
+claimed_by: Myunghwan
+suggestion: 'Yes'
+priority: 2
 collections:
 - New (BeyondArena)
 original_source: Zindi
@@ -18,9 +19,8 @@ problem_type: Regression
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://zindi.africa/competitions/sendy-logistics-challenge/data
+v2_path: datasets/_dev/tabarena-v0pt2/sendy_logistics_challenge/dataset.py
 source_row: 929
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -38,3 +38,49 @@ type_adapter_id: curation-record-v1
 - Priority: gap 0, use case +, source +, shape +, risk - (rider aggregates, noisy target, forced IID).
 
 Zindi Sendy logistics challenge to predict delivery ETA for parcel/motorbike deliveries in Nairobi, a genuine real-world tabular regression task with order, rider, and location features. This is a strong fit for the benchmark, though it likely involves joining multiple provided tables (orders + riders) and may need a temporal split since deliveries are time-ordered. A human must confirm the target (ETA/duration), table structure to be joined, size, split regime, and license; note potential overlap with the 'sendy_logistics_challenge_2' record.
+
+**CC (2026-10-29, Myunghwan):** Pursue add-dataset for Sendy delivery duration at pickup. Use timestamped orders and exclude undated changing rider summaries, including counts, ratings and tenure. The later clarification permits joining verified static rider attributes by Rider ID; this supersedes the earlier blanket exclusion of Riders.csv. Eligibility requires actual field semantics, availability at pickup and a join that preserves order rows. Exclude arrival-at-delivery outcome fields from predictors. This is screening approval, not final inclusion. Split and full data qualification remain pending. The source's seconds/RMSE task is the starting proposal. No build or commit requested.
+
+**Assessment (AI, 2026-10-29):** Added for curator review, not final shipment. Official archive has 21,201 labelled Nairobi delivery orders; definition retains all rows and 19 predictors, scored by original RMSE in seconds. All labels equal recorded arrival-minus-pickup clocks; 547 (2.58%) are <=10 seconds and 740 (3.49%) <=60 seconds, so physical-ETA fit is approximate. No eligible static rider attributes exist: counts, tenure and ratings are excluded; no rider-table join. Destination-arrival fields, unique order ID, constant vehicle and four duplicated calendar fields are removed. The recorded target, provisional source-distance retention and forced random split await curator decisions. No complete chronology was recovered; future dates would trigger chronological evaluation and label-availability checks. Native five-fold diagnostic RMSE is 767.02 versus dummy 988.29 seconds, with no task flags; leakage and hidden-group probes show no identified copying shortcut. On the first native repeat, full/no-distance RMSE is 761.52/789.63 seconds; distance timing remains unverified, not proven leakage. The panel recommends conditional inclusion, with conservative distance omission unless retention is justified. This assessment supersedes historical direct-fit, mandatory rider-join and final-IID language; screening Yes remains pursuit authority only. Priority 2: gap 0 (no thin domain/type/regime), use case 0 (real source ETA purpose but approximate fit), source + (original codebook), shape + (21,201 rows and mixed inputs), risk - (recorded-label and feature-timing uncertainty).
+
+**Assessment (AI, 2026-10-29, placement-time revision):** Qualified the curator-requested total-duration task on all 21,201 labelled completed express orders with 13 placement-time inputs. Excluded later events, rider identity and undated rider summaries; source distance remains provisional. The recorded total avoids pickup-marking errors but is not verified physical arrival; retain source rows pending curator disposition. Native first-five-fold RF RMSE 2017.72 seconds versus dummy 2227.52; all 26 checks pass and fresh probes show no flags. First-repeat pooled L2 RMSE/MAE 2133.11/1158.59 seconds; two multi-day orders contribute 39.31% of squared versus 1.06% of absolute error. A focused independent recheck supports inclusion subject to recorded-label, distance, same-release split and scoring choices; recommends MAE if average absolute ETA miss is the intended objective. Current RMSE is a stand-in for the revised target, not the original contest task. This supersedes pickup-task numerical/feature claims without changing the historical curator inputs or assigning shipment. Priority 2: gap 0 (no thin domain/type/regime), use case 0 (real ETA purpose, approximate recorded outcome), source + (original codebook), shape + (21,201 rows, mixed inputs), risk - (timing and label uncertainty).
+
+CC (2026-10-29, Myunghwan): Approved excluding total placement-to-arrival durations above 24 hours and straight-line endpoint average speeds above 100 km/h. Retain equality and keep the original pickup-short cases unless these total-duration rules exclude them. The restricted benchmark covers ordinary completed deliveries; eligibility is outcome-conditioned. Source distance, random split and metric remain open; no ship/build authorization.
+
+CC (2026-10-29, Myunghwan, distance): "I don't think the definitioin matters too much as far as it is consistent." Applied as retention of source Distance (KM) after empirical consistency checks, not certification of its acquisition time. Filtered Train/Test medians 8/8 km and correlations to endpoint distance 0.9524/0.9532 support a shared distance-like meaning; repeated-route variability and exact as-of remain documented. Revisit if actual later-only provenance emerges.
+
+CC (2026-10-29, Myunghwan, split): "is the order No looking ordered? we can check. we don't need exact "time cutoff" but sequence based cut off is fine. in the worst case, accept the random split but with limited value" Across all 28,269 original Train/Test orders, numeric Order No sorting has day/weekday adjacency 0.669% versus random 0.693%; clocks lack forward progression. No supported chronological sequence was found. Applied the authorized fallback: repeated random same-release folds with limited generalization value, not a future-period or historical-label-maturity test.
+
+CC (2026-10-29, Myunghwan, metric): Stick to the original eval metric Applied RMSE on raw total-duration seconds; no target transformation.
+
+**Assessment (AI, 2026-10-29, approved-filter recheck):** Current task retains 21,199 rows and 13 placement-time predictors; two >24-hour rows and zero >100 km/h rows excluded by curator decision. Source distance retained after consistency audit, with as-of unverified. Native 26 checks pass; fresh first-five-fold LGBM mean RMSE1531.58 versus dummy1808.66 with no task flags; leak and hidden-group checks find no demonstrated shortcut. Independent membership, boundary, column, split and scorer audits pass. Fixed-model pooled first-three-fold RMSE1546.32/MAE1128.95; fold RMSE1563.93/1565.66/1508.68; longest1% of retained labels18.31% squared error. These replace the earlier all-row current-performance claims. Outcome-conditioned eligibility, recorded-arrival uncertainty and temporal optimism remain disclosed. All four add-stage choices are settled; ready for final review-added judgment after final consistency verification. No final curator ship, build or commit. Priority 2: gap0, use case0 (approximate recorded and restricted ETA), source+ (original source/codebook), shape+ (21,199 mixed-feature rows), risk- (documented provenance and temporal limitations).
+
+CC (2026-10-29, Myunghwan): "yes, ship" — accepted the final Sendy placement-to-recorded-arrival definition after review-added-datasets. Retain 21,199 rows and 13 predictors; exclude total durations >24 hours and straight-line average speeds >100 km/h; retain source distance with undocumented as-of noted; retain RMSE in seconds and random same-release evaluation after numeric Order No failed the sequence check. Pickup, arrival-at-pickup and confirmation times are not predictors; pickup timestamps do not enter the target. Calendar fragments contradict a single-month release if accurate; same-month interpretation is only within each order, not across the dataset. Outcome-conditioned population, recorded-event uncertainty and limited future-generalization value are acknowledged. Ready for a separately requested build/commit; neither is authorized by this verdict.
+
+CC (2026-11-04, Lennart): `Distance (KM)` stays as implemented (REVIEW.md issue 2), with a `Potential leak, kept on purpose:` note under LEAK-38 quoting the dictionary's "Distance covered". The declared metric (RMSE in seconds) is checked as declared.
+
+CC (2026-11-04, Lennart): the task is the source's, pickup to arrival at pickup ("yes switch to the source task please"), scored by the competition's RMSE, with the rider id and the earlier clocks as inputs. The two multi-day orders are ordinary rows under it ("these might become normal rows again"), so the duration and speed filter of 2026-10-29 and its exception to CLEAN-11 are withdrawn: 21,201 rows. The 547 pickup legs of 10 s or less stay as the source's labels (CLEAN-11).
+
+**Assessment (AI, 2026-11-04):** under the pickup task, Order_No_2800 and Order_No_3530 have pickup legs at the 87th and 70th percentile (2,640 and 1,854 s, about 15 km/h by the source distance). No leg exceeds 3 h; 834 legs are faster than 100 km/h in a straight line, 546 of them the short legs of the late pickup mark. Riders.csv stays out: every rider's `No_Of_Orders` is at least their orders in Train plus Test. `dataset check` passes.
+
+CC (2026-11-04, Lennart): the placement and confirmation weekdays are numbers (CLEAN-14, a cycle).
+
+CC (2026-11-04, Lennart): the fit stays approximate under the forced-IID split, as beMTPL97, freMTPL2 and the other forced-IID definitions ("(b)").
+
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled.
+
+**Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes, then a rebuild on the curator's ask (USE-5 holds, the label being exact from the logged pickup mark; `Distance (KM)` tested under EV-1 and passes; a weak leak across rows, +3.4 RMSE, kept with a note; SPLIT-8 holds at a measured cost of 1.3 s; MET-1 to MET-4 hold; the notes now give these numbers); disputed: USE-5 and CLEAN-11 on the 547 late-marked legs (11.5 RMSE for a model trained without them), P5 on the stale build; for the curator: issues 4-7. Priority 2: gap 0, use case 0, source +, shape +, risk - (use case: Sendy's own ETA decision, but the fit is approximate; source: Zindi page with a codebook; shape: 21,201 orders, 19 mixed inputs; risk: the late-marked labels, issue 4, leave the target partly unclear).
+
+CC (2026-11-05, Lennart): the precipitation blanks stay missing, with the note on their likely meaning (REVIEW.md issue 6, A; CLEAN-10).
+
+CC (2026-11-05, Lennart): no rebuild now; the container is rebuilt with the release, and until then no text claims probes on the new one (issue 7, A).
+
+CC (2026-11-05, Lennart): the declared metric (RMSE, the source's) is checked and stays as declared.
+
+CC (2026-11-05, Lennart): the 740 pickup legs of 60 s or less leave (REVIEW.md issue 4, B, agreeing with the AI's answer; CLEAN-11's clause for a row whose target the source names as not the task's quantity), with the winners' page: the rider "forgot to mark that he took the order and did it just before it was delivered" (https://zindi.world/learn/meet-the-winners-of-the-sendy-logisitics-challenge). No one acts on the ETA of a leg marked at the destination, since the customer already has the parcel, so a deployed team leaves these legs out of training and does not judge its model on them; the late tap shows in the inputs (a median wait at the pickup of 1,505 s on legs of 10 s or less against 475 s on legs over 120 s). This supersedes the keep of 2026-11-04; 20,461 orders remain.
+
+CC (2026-11-05, Lennart): `Distance (KM)` is labelled "tested: not measured between the rider's two taps; a GPS total recorded after delivery not excluded" (issue 5, A as choice (a) of the consistency check), and the untested part is named in `fit_reason` as a kept risk (USE-8, as kick and homesite); LEAK-38 names it among the kept fields. It replaces the `Potential leak, kept on purpose` label of 2026-11-04.
+
+**Assessment (AI, 2026-11-05):** after the drop of issue 4: 20,461 orders and 922 riders on random 3x3 folds (6,820-6,821 test rows; 99.1-99.4% of test orders have a rider seen in training); `dataset check` 0 errors, 0 warnings; leak probes: all features R² 0.392 (Distance alone 0.348), no exact copies across the split, and probe 19 flags the removed rows as the cut on the label. LightGBM on the shipped folds: RMSE 742.8 s on the first repeat (766.6 without Distance); over the nine splits the wait feature gains 3.2 (8.5 before), training only on legs of 100 s or more costs 0.2 (11.5 before), the rider's later orders that day gain 4.2 (3.4 before), and holding out calendar days or month classes costs 2.1 and 1.1 s. The same scripts on the rows before the drop give 764.2 and 787.2 s on the first repeat, not the 761.3 and 789.6 the notes quoted, so those two old figures do not reproduce exactly.
+
+CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.

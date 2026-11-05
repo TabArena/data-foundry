@@ -47,6 +47,7 @@ STANDARD = {
     "mcc": metrics.matthews_corrcoef,
     "rmse": lambda y, p: metrics.mean_squared_error(y, p) ** 0.5,
     "mae": metrics.mean_absolute_error,
+    "mean_poisson_deviance": metrics.mean_poisson_deviance,
     "mse": metrics.mean_squared_error,
     "r2": metrics.r2_score,
     "rmsle": lambda y, p: metrics.mean_squared_log_error(y, p) ** 0.5,
@@ -88,12 +89,16 @@ def group_columns(task: dict) -> list[str]:
 
 
 def dummy_prediction(prediction: str, y_train: pd.Series, n: int, classes: list) -> np.ndarray:
-    """A random prediction of the kind the metric takes (not a baseline)."""
+    """A prediction of the kind the metric takes (not a baseline): random probabilities, a label drawn from the
+    training side, or the training mean as the value (valid for every regression metric, a Poisson mean included).
+    """
     rng = np.random.default_rng(0)
     if prediction == "proba":
         proba = rng.dirichlet(np.ones(len(classes)), size=n)
         return proba[:, 1] if len(classes) == 2 else proba  # binary: the probability of classes[1]
-    return rng.choice(y_train.to_numpy(), size=n)  # a label or a value drawn from the training side
+    if prediction == "value":
+        return np.full(n, float(y_train.mean()))
+    return rng.choice(y_train.to_numpy(), size=n)  # a label drawn from the training side
 
 
 def main(path: Path) -> float | None:
@@ -127,11 +132,12 @@ def main(path: Path) -> float | None:
     # The first split, as shipped: never re-split or shuffle.
     train_idx, test_idx = next(iter(next(iter(splits.values())).values()))
     y_train, y_test = df[target].iloc[train_idx], df[target].iloc[test_idx]
-    # The class order of the probabilities: the target's categories (as saved), else the sorted classes.
+    # The class order of the probabilities: the sorted classes (scikit-learn's classes_), also for an ordered target,
+    # whose declared order (low < high) is type information only.
     classes = []
     if task["problem_type"] != "regression":
         y = df[target]
-        classes = list(y.cat.categories) if isinstance(y.dtype, pd.CategoricalDtype) else sorted(y.unique())
+        classes = sorted(y.cat.categories) if isinstance(y.dtype, pd.CategoricalDtype) else sorted(y.dropna().unique())
     y_pred = dummy_prediction(spec["prediction"], y_train, len(test_idx), classes)
 
     if spec.get("kind") != "standard" or spec["name"] not in STANDARD:
@@ -149,7 +155,7 @@ def main(path: Path) -> float | None:
     if spec["prediction"] == "value":
         y_true, y_pred = inverse(np.asarray(y_true, dtype=float)), inverse(np.asarray(y_pred, dtype=float))
     value = float(STANDARD[spec["name"]](y_true, y_pred, **kwargs))
-    print(f"{spec['name']} of a random prediction on the first test fold ({len(test_idx)} rows): {value:.4f}")
+    print(f"{spec['name']} of a test prediction on the first test fold ({len(test_idx)} rows): {value:.4f}")
     return value
 
 

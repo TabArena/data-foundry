@@ -267,6 +267,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | EV-2 | kddcup99 | the paper text refuted the claim about to be made: Tavallaee et al. (CISDA 2009, Sec. III) state that the simulation artifacts do not affect the 41 KDD features | applied |
 | EV-2 | pkdd-15-taxi-trip-time-prediction-ii | only the notebooks showed why a public snippet scores well: the test polylines are truncated prefixes of the trips (de Brebisson et al. 2015), a trajectory task | applied |
 | EV-2 | hr_analytics | rebuilt from the hackathon's own train file: Kaggle's copy had added 2,623 test rows labelled 1 and gave 0.80, the real labels ROC AUC 0.62-0.63 (2026-10-14) | applied |
+| EV-2 | 2024_lusaka_mobility_prediction_hackathon | the weather file's own daily curve beat its dictionary's "Local date and time": mean temperature flat at stamps 02 to 04, rising at 05 before the 05:50 sunrise and peaking at 12 to 13 fits UTC stamps (Lusaka is UTC+2), and the trip file spans a calendar month in UTC; the join lags 3 hours instead of 1, so the row precedes the start on either clock, at no measured cost (2026-11-05, Lennart) | applied |
 | EV-3 | amazon_employee_access | `MGR_ID` hit: no action, a request's manager is known when it is made (2026-10-06) | applied |
 | EV-3 | superconductivity | grouped by composition although the gap is at most 0.009 R²: the use case decided, not the gap (2026-10-06) | applied |
 | EV-3 | diamonds, splice | near-saturated scores (R² 0.993, AUC 0.99+) showed no leak in the probes | applied |

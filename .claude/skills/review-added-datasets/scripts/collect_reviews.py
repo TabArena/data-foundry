@@ -267,8 +267,11 @@ def parse_review_file(path: Path, folder: str, text: str | None = None) -> Entry
     issues, numbers = ("", [])
     if "issues" in blocks:
         issues, numbers = _check_issues(path, blocks["issues"].start + 1, blocks["issues"].lines)
-    if not numbers and not fields:
-        raise ReviewFileError(path, None, "no issue and no record field; a settled issue stays, labelled Resolved")
+    if not numbers and not fields and "panel" not in blocks:
+        # A panel that found nothing for the curator leaves a file with no issue; without a panel it is a stray file.
+        raise ReviewFileError(
+            path, None, "no issue, no record field and no review panel; a settled issue stays, labelled Resolved"
+        )
     panel, roles = _check_panel(path, lines, blocks.get("panel"))
     outcome = blocks["outcome"].text
     cell = _first_sentence(outcome)
@@ -440,8 +443,9 @@ def _problem_shape(text: str) -> list[str]:
 
 
 def shape_warnings(entry: Entry) -> list[str]:
-    """What the open issues of ``entry`` miss of the issue shape: the bullets, the options table, and rule IDs kept
-    out of the text for the curator (they go into footnotes or the notes for the AI).
+    """What the open issues of ``entry`` miss of the issue shape: the bullets, the options table with its row marked
+    ``(implemented)``, and rule IDs kept out of the text for the curator (they go into footnotes or the notes for the
+    AI).
 
     A warning, not an error: closed issues and old files keep the shape they were written in.
     """
@@ -455,6 +459,8 @@ def shape_warnings(entry: Entry) -> list[str]:
         missing = [p.strip("*:") for p in SHAPE_PARTS if p not in body]
         if not re.search(r"^\s*\|.*\|\s*$", body, re.MULTILINE):
             missing.append("options table")
+        elif (opts := brp._options(body))["options"] and not opts["implemented"]:
+            missing.append("row marked (implemented), which the page's As implemented locks in")
         problem = PROBLEM_RE.search(body)
         if problem:
             missing += _problem_shape(problem.group(1))

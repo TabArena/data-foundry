@@ -62,11 +62,20 @@ same values in every split. The defaults follow the field's published workflows,
 | mass, `raw`, candidates to compare | `ms-driams-sqrt-sg21-snip20-snip100-tic-r1` | DRIAMS's settings (Weis et al. 2022): as above, the SNIP baseline removed twice (20, then 100 iterations) |
 | | `ms-cromwell-udwt-mm-tic-log2-r1` | Cromwell's wavelet denoising and monotone-minimum baseline (Coombes et al. 2005), then the total ion current and log2 (the Cromwell and Ciphergen pipelines, Wegdam et al. 2009) |
 | mass, `peaks` or `processed` | `spectrum-as-is-r1` | none: the source already processed it |
-| vibrational (Raman, infrared, near-infrared) | `spectrum-as-is-r1`, and check `vib-als-snv-r1` | RamanBench's linear-model default: asymmetric least squares baseline (lambda 1e5, p 0.01, 10 iterations), then the standard normal variate |
+| vibrational (Raman, infrared, near-infrared) | `spectrum-as-is-r1` | none |
+| vibrational, candidates to compare | `vib-als-snv-r1` | RamanBench's linear-model default: asymmetric least squares baseline (lambda 1e5, p 0.01, 10 iterations), then the standard normal variate |
+| | `vib-snv-r1` | the standard normal variate alone (Barnes, Dhanoa and Lister 1989), OSSL's own preprocessing: minus the spectrum's mean, divided by its standard deviation |
+| | `vib-sg11-d1-r1` | the Savitzky-Golay first derivative (Savitzky and Golay 1964): 11 points, polynomial order 2, per position on the grid, the edges from the first and last window's polynomial. 11 points is prospectr's first-derivative example on soil spectra; soil mid-infrared work uses 11 to 21 (Sila et al. 2016: 21) |
 
 MALDIquant's later steps (aligning spectra on common peaks, detecting peaks and binning them across spectra) fit across
 spectra, so they are no per-row default.
 
+* **Register the field's standard candidates** (CLEAN-26; Lennart, 2026-11-04: "one can add all and select as needed
+  when needed"). Each technique registers the standard preprocessing candidates of its field, each with fixed,
+  published settings, so a benchmark can run them all and select. Take them from the field's reviews and benchmarks
+  and from the source's own pipeline. Registering a candidate costs nothing for the data: the container records only
+  the recommended one, and `encodings_for(feature)` lists them all. The recommended one changes only when a
+  comparison over every dataset of the technique, by a rule fixed in advance, says so; one dataset is a case.
 * **Raw mass spectra need the processing.** pancreatic_cancer_mouse_detection, the 60 shipped splits by mouse, ROC AUC
   (2026-11-02):
 
@@ -91,10 +100,32 @@ spectra, so they are no per-row default.
   and the log (Cromwell, Ciphergen, and PR #21's chain). MALDIquant's steps stay the placeholder until the benchmark
   compares the three registered candidates on every raw mass-spectrum dataset and three model families, by a rule
   fixed in advance (`BENCHMARK_CHANGES_TODO.md`, "Spectra").
-* **Vibrational spectra may not.** RamanBench (arXiv:2605.02003, 77 datasets, 325,862 spectra): the leading methods
-  (AutoGluon 1.5, then TabPFN v2.5 and TabICL v2) read the raw spectra; the baseline and SNV were the chemometric
-  baselines' convention (PLS: smoothing, baseline and SNV; the linear model: baseline and SNV; kNN: SNV). No foundation
-  model or tree was tested on processed spectra, so check both encodings on the first such datasets we add.
+* **Mass spectra: candidates not registered yet.** The three raw candidates are the published pipelines of the two
+  traditions. MALDIquant documents further per-spectrum steps a comparison could add: the log, log2 or log10 in place
+  of the square root, a moving average in place of Savitzky-Golay, the TopHat, convex-hull or median baseline in place
+  of SNIP, the median in place of the total ion current (`transformIntensity`, `smoothIntensity`, `removeBaseline`,
+  `calibrateIntensity`). Its PQN normalisation divides by a median spectrum of all spectra, so it is no per-row
+  encoding. Register them when the benchmark's comparison asks for them.
+* **Vibrational spectra: it depends on the model.** RamanBench (arXiv:2605.02003, 77 datasets, 325,862 spectra): the
+  leading methods (AutoGluon 1.5, then TabPFN v2.5 and TabICL v2) read the raw spectra; the baseline and SNV were the
+  chemometric baselines' convention (PLS: smoothing, baseline and SNV; the linear model: baseline and SNV; kNN: SNV).
+  No foundation model or tree was tested on processed spectra. The first such dataset we added,
+  open_soil_spectral_library (KSSL mid-infrared absorbance, 1,700 positions, 75,929 soil layers; organic carbon on its
+  declared scale, log1p of weight percent, RMSE on log1p on the three grouped folds of repeat 0, untuned; 2026-11-04):
+
+  | Model | As it is | ALS + SNV | SNV | SG first derivative |
+  |---|---|---|---|---|
+  | LightGBM | 0.155 | 0.130 (3/3) | 0.136 (3/3) | 0.118 (3/3) |
+  | PLS, 30 components | 0.158 | 0.164 (0/3) | 0.145 (3/3) | 0.150 (3/3) |
+  | Ridge | 0.142 | 0.146 (0/3) | 0.138 (2/3) | 0.144 (0/3) |
+
+  In parentheses the folds on which the encoding beats the spectrum as it is. The tree gains from every candidate, most
+  from the derivative; PLS gains from SNV and the derivative, not from the baseline with SNV; ridge gains a little from
+  SNV alone. (An earlier table fitted in percent read PLS and ridge the other way; the review panel replaced it,
+  2026-11-04.)
+  The run computed SNV and the derivative as `vib-snv-r1` and `vib-sg11-d1-r1` do; no foundation model was run. So the
+  default stays the spectrum as it is, and the benchmark compares the four on every vibrational dataset
+  (`BENCHMARK_CHANGES_TODO.md`, "Spectra").
 * **Width.** The encodings keep every bin (pancreatic: 6,771 columns). Averaging adjacent bins costs little (PR #21:
   TabPFN 0.733 against 0.725 with 8-bin averages), but the width is left to the benchmark's feature-limit step.
 
@@ -107,6 +138,13 @@ spectra, so they are no per-row default.
   state from it (micro_mass's README: "pre-processed by the standard algorithm used for routine (culture-based)
   bacterial identification, which provided a peak-list representation").
 * A raw spectrum can have negative intensities (an instrument offset); MALDIquant's square root counts them as 0.
+* An edge bin can hold a fill value. Look at the first and last few positions: an exact 0 (or one repeated constant)
+  where the next position reads well above zero is no measurement. Count the spectra per edge position, and their
+  scan dates if the source has them. The bundle check does not see it (it tests only numeric, finite and present).
+  When only an edge bin is affected, drop that bin for every row, so each spectrum stays whole; when inner positions
+  are affected, set the values missing (CLEAN-26 as amended 2026-11-05, which narrows CLEAN-11). Case:
+  open_soil_spectral_library, 53 spectra with 0 at 600 cm-1 beside 1.27-1.86 at 602 cm-1, the bin dropped (Lennart,
+  2026-11-04).
 
 ## In Data Foundry
 

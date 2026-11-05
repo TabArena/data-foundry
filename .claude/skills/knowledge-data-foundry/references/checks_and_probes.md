@@ -35,17 +35,19 @@ The probe methods are the general library in
 [`../../knowledge-curation/scripts/`](../../knowledge-curation/scripts/); the command-line entry points here, in
 [`../scripts/`](../scripts/), load a Data Foundry dataset (its definition, or with `--built` the built container named
 in the README's build record) through `dataset_io.py` and call it. The probes use the shipped target and splits; when
-the definition changed the target, run the same checks on the source's labels in a scratch notebook (`ds = workbench()`).
-A special feature (`special_features`) enters every probe in its recommended encoding (`encode_special_feature`), as
-a benchmark would give it to a model: a SMILES as RDKit's 2D descriptors, the MACCS keys and the ECFP4 counts, a
-spectrum as its columns with the encoded values; the blind reviewer's clean room keeps the values as shipped. The
-bundle check `dataset_special_feature` finds each feature's columns and runs its kind's checks:
+the definition changed the target, run the same checks on the source's labels in a scratch notebook
+(`ds = workbench()`). A special feature (`special_features`) enters every probe in its recommended encoding
+(`encode_special_feature`), as a benchmark would give it to a model: a SMILES as RDKit's 2D descriptors, the MACCS keys
+and the ECFP4 counts, a spectrum as its columns with the encoded values; the blind reviewer's clean room keeps the
+values as shipped. The bundle check `dataset_special_feature` finds each feature's columns and runs its kind's checks:
 `dataset_smiles_column` parses every SMILES with the pinned RDKit, `dataset_spectrum` checks that a spectrum's columns
 are numeric and finite and warns about missing intensities.
 
 ```bash
 K=.claude/skills/knowledge-data-foundry/scripts
 .venv/bin/python $K/leak_probes.py <unique_name> [--splits 3] [--max-rows 50000] [--max-single-features 300] [--n-jobs 8] [--out DIR]
+.venv/bin/python $K/leak_probes.py <unique_name> --period-only [--time-on COLUMN] [--period D|W|M|Q|Y] [--tz ZONE] [--positive LABEL] [--tail N]
+.venv/bin/python $K/leak_probes.py <unique_name> --raw [--splits 3] [--max-rows 50000] [--n-jobs 8] [--out DIR]
 .venv/bin/python $K/task_probes.py <unique_name> [--built] [--splits N] [--no-text] [--out DIR]   # or --all --jobs 8
 .venv/bin/python $K/group_probes.py <unique_name> [--repeats 3] [--permutations 100]
 .venv/bin/python $K/hidden_groups.py <unique_name> [--built] [--include-grouped] [--out DIR]     # or --all
@@ -54,16 +56,28 @@ K=.claude/skills/knowledge-data-foundry/scripts
 .venv/bin/python $K/tuned_results.py <unique_name> [--feature auto]
 ```
 
-* `leak_probes.py`: probes 1-6, 14, 17 and 18 of the leak table (all features, each feature alone, missing indicators,
-  drop one, exact copies across the split with and without string and datetime columns, each long string column alone as
-  text (TF-IDF + SVD on the train side, character n-grams for one-token strings), nearest-neighbour agreement and the
-  label-free distance score, a depth-2 and depth-3 tree on the label), with untuned LightGBM on the first shipped
-  splits. With more columns than `--max-single-features` only the most informative enter the single-feature fits, and
-  the output says how many were screened out, so a 49,000-column omics table takes minutes. A multiclass ROC AUC is the
-  mean over the classes present in the test fold. Group columns are never features. For a classification task it also
-  scores the number format alone (probe 17), and, when the raw file is one table holding the target column, counts per
-  column and class the cells on a straight line between their neighbours in the raw file's order (probe 18: gaps filled
-  by interpolation).
+* `leak_probes.py`: probes 1-6, 10, 13, 14 and 17-21 of the leak table (all features, each feature alone, missing
+  indicators, drop one, exact copies across the split with and without string and datetime columns, each long string
+  column alone as text (TF-IDF + SVD on the train side, character n-grams for one-token strings), nearest-neighbour
+  agreement and the label-free distance score, a depth-2 and depth-3 tree on the label), with untuned LightGBM on the
+  first shipped splits. The exact copies are counted on every shipped split and every row, by label: the same label
+  only, another label only (each with one copy or two or more), both labels. The features are the definition's model
+  inputs; a scoring column kept as the time key is not one of them. When the task has a time column (`--time-on` names
+  another), probe 13 sets the target of the newest periods against the band of the earlier ones (rows per day, the
+  event rate or class shares, a regression's mean, p50 and p90, a count's zero share) and says whether the end falls
+  out of band, the mark of right-censoring; it picks the period (`--period` sets it), takes the minority class as the
+  event (`--positive`), reads integer times as years or periods, never as dates, reads dates that all fall on 1
+  January as years, cuts a rank (an integer with about one row per value) into equal-count periods by its order, and
+  `--period-only` runs it without a model. With more columns than `--max-single-features` only the most informative
+  enter the single-feature fits, and the output says how many were screened out, so a 49,000-column omics table takes
+  minutes. A multiclass ROC AUC is the mean over the classes present in the test fold. Group columns are never features.
+  For a classification task it also scores the number format alone (probe 17), and, when the raw file is one table
+  holding the target column, counts per column and class the cells on a straight line between their neighbours in the
+  raw file's order (probe 18: gaps filled by interpolation). `--raw` runs the probes of the raw state alone (probes 10
+  and 18 to 21; leak_checks.md, "The raw state"): the target in the raw row order, the rows `_clean` removed against the
+  kept ones, each dropped raw column alone on the first shipped splits, and copies before deduplication. It traces each
+  curated row to its raw row (`process(lineage=True)`, `dataset_io.from_definition(ds, raw=True)`) and says when it
+  cannot.
 * `task_probes.py`: dummy baselines against three untuned model families (a fourth on more than 1,000 inputs:
   `selected_linear`, the linear model on the 500 inputs a univariate F-test picks on each train side), on every shipped
   split up to 30 for a dataset of at most 5,000 scored units and the first 5 otherwise, scored per group for a

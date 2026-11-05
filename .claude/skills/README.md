@@ -81,7 +81,8 @@ Two stages, and in each one the AI works first and you verify:
   dataset you get the use case, your decisions, the panel's reports, the definition, its README and the record.
   You mark a verdict per dataset and each question; Claude reads the marks back, checks them for consistency, applies
   them (to `dataset.py`, the record, the CHANGELOG) and removes what is settled from `REVIEW.md`.
-* **Next:** a build and a commit, when you ask ("rebuild X and Y", "commit this").
+* **Next:** a build and a commit, when you ask ("rebuild X and Y", "commit this"). A ship verdict does not request
+  a build: building is a separate ask, and it can come later.
 
 ### Everyday situations
 

@@ -82,6 +82,8 @@ dtypes, accepted warnings) are in [`definitions.md`](.claude/skills/knowledge-da
 
 ## 5. References
 
+What the curator decides at each stage, and how Claude checks it: [the curation skills](.claude/skills/README.md).
+
 * Template: [`datasets/_template/`](datasets/_template/)
 * The v2 package: [`src/data_foundry/v2/`](src/data_foundry/v2/)
 * Scaffolding: [`.claude/skills/add-dataset/`](.claude/skills/add-dataset/SKILL.md)

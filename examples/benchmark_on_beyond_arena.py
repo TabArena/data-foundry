@@ -1,4 +1,9 @@
-"""Train a model on one BeyondArena dataset (or any container) across every outer CV split, scored by its metric.
+the """Train a model on one BeyondArena dataset across every outer CV split, scored by RMSE.
+
+BeyondArena ships format-1 containers: the metric is named only (``task_metadata.objective_metric_name``). This
+example fits a random forest regressor and scores RMSE, so it takes the numeric regression datasets. For a Data
+Foundry v2 container (the TabArena v0.2 collection, or one built locally), with its metric spec, scoring columns and
+feature types, see ``benchmark_container.py``.
 
 Calls :meth:`CuratedContainer.describe` to highlight every field of the
 container's metadata — including the feature-dtype counts and the split
@@ -19,23 +24,6 @@ Run::
     # Pick a different (numeric regression) BeyondArena dataset.
     python examples/benchmark_on_beyond_arena.py /tmp/my_cache concrete_compressive_strength
 
-    # A format-2 container (the TabArena v0.2 collection, or one built locally) from its folder.
-    python examples/benchmark_on_beyond_arena.py --container <container folder>
-
-The two container formats score differently:
-
-* Format 1 (BeyondArena) names its metric only (``task_metadata.objective_metric_name``); this example fits a random
-  forest regressor and scores RMSE, so it takes the numeric regression datasets.
-* Format 2 carries the metric spec (``task_metadata.objective_metric``: the name, what it takes, its origin and
-  reference) and the scoring columns, the metric's inputs that are never features. The features are
-  ``feature_columns(container)`` (no target, group or scoring column), and ``scorer(container)`` scores the test
-  rows by the spec, taking the scoring columns' values by row index. The model is a histogram gradient boosting
-  model, which takes numeric and categorical columns; other columns (strings, datetimes) are left out here. A special
-  feature (``special_features(container)``: a molecule's SMILES column, a spectrum's group of columns) enters in its
-  recommended encoding (``data_foundry.v2.special.encode_special_feature``): a SMILES as RDKit's 2D descriptors, the
-  MACCS keys and the ECFP4 counts (RDKit is in the ``build`` extra), never as text; a spectrum as the same columns with
-  the encoded values.
-
 Requires ``scikit-learn>=1.4`` (for :func:`sklearn.metrics.root_mean_squared_error`).
 """
 
@@ -43,83 +31,28 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import numpy as np
-import pandas as pd
 from data_foundry.collections import BEYOND_ARENA
-from data_foundry.curation_container import CuratedContainer, feature_columns, special_features
 from data_foundry.schema import as_column_list
-from data_foundry.v2.metrics import scorer
-from sklearn.ensemble import HistGradientBoostingClassifier, HistGradientBoostingRegressor, RandomForestRegressor
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import root_mean_squared_error
+
+if TYPE_CHECKING:
+    from data_foundry.curation_container import CuratedContainer
 
 EXAMPLE_DATASET = "airfoil_self_noise"
 
 
-def main(cache_dir: Path | None, dataset_name: str, container_path: Path | None = None) -> list[float]:
-    """Benchmark one dataset (a BeyondArena name, or the container at ``container_path``); return the scores."""
-    if container_path is not None:
-        container = CuratedContainer.load(container_path)
-    else:
-        print(f"Loading `{dataset_name}` from {BEYOND_ARENA.source!r}")
-        print(f"Cache override: {cache_dir}\n")
-        container = BEYOND_ARENA.get_dataset(dataset_name, cache_dir=cache_dir)
+def main(cache_dir: Path | None, dataset_name: str) -> list[float]:
+    """Benchmark one BeyondArena dataset; return the RMSE of every split."""
+    print(f"Loading `{dataset_name}` from {BEYOND_ARENA.source!r}")
+    print(f"Cache override: {cache_dir}\n")
+    container = BEYOND_ARENA.get_dataset(dataset_name, cache_dir=cache_dir)
     print(container.describe())
     print()
-    if container.format_version >= 2:
-        return benchmark_by_spec(container)
     return benchmark_format_1(container)
-
-
-def benchmark_by_spec(container: CuratedContainer) -> list[float]:
-    """Format 2: the features without the scoring columns, the score by the container's metric spec."""
-    df = container.dataset
-    task = container.task_metadata
-    spec = task.objective_metric
-    target_name = task.target_column_name
-    features = feature_columns(container)
-    special = special_features(container)
-    if special:  # each in its recommended encoding, in place of its columns: a SMILES never as text
-        from data_foundry.v2.special import encode_special_feature  # noqa: PLC0415 - RDKit or scipy by kind
-
-        before = list(df.columns)
-        for feature in special:
-            df = encode_special_feature(df, feature)
-        replaced = {c for f in special for c in f.columns} - set(df.columns)
-        features = [c for c in features if c not in replaced] + [c for c in df.columns if c not in before]
-    features = [c for c in features if _usable(df[c])]
-    score = scorer(container)  # score(y_true, y_pred, row_index): looks up the scoring columns by row index
-    labels = list(df[target_name].cat.categories) if task.problem_type != "regression" else None
-    print(f"Metric: {spec.name} ({spec.origin}; takes {spec.prediction}; ", end="")
-    print(f"{'higher' if spec.greater_is_better else 'lower'} is better); {len(features)} features")
-
-    scores: list[float] = []
-    for repeat_id, folds in container.experiment_metadata.splits.items():
-        for fold_id, (train_indices, test_indices) in folds.items():
-            train_data, test_data = df.iloc[train_indices], df.iloc[test_indices]
-            if labels is None:
-                model = HistGradientBoostingRegressor(categorical_features="from_dtype", random_state=42)
-            else:
-                model = HistGradientBoostingClassifier(categorical_features="from_dtype", random_state=42)
-            model.fit(train_data[features], train_data[target_name])
-            X_test = test_data[features]
-            if spec.prediction == "proba":
-                # The probability columns in the target's category order (the scorer's default labels).
-                proba = pd.DataFrame(model.predict_proba(X_test), columns=model.classes_)
-                proba = proba.reindex(columns=labels, fill_value=0.0).to_numpy()
-                y_pred = proba[:, 1] if len(labels) == 2 else proba
-            else:
-                y_pred = model.predict(X_test)
-            value = score(test_data[target_name].to_numpy(), y_pred, test_indices)
-            scores.append(value)
-            print(f"  repeat {repeat_id}  fold {fold_id}:  {spec.name}={value:.4f}")
-    print(f"\nMean {spec.name} over {len(scores)} splits: {np.mean(scores):.4f}  (std {np.std(scores):.4f})")
-    return scores
-
-
-def _usable(column: pd.Series) -> bool:
-    """A column the gradient boosting model takes as it is: numeric, boolean or categorical."""
-    return pd.api.types.is_numeric_dtype(column) or isinstance(column.dtype, pd.CategoricalDtype)
 
 
 def benchmark_format_1(container: CuratedContainer) -> list[float]:
@@ -160,6 +93,5 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("cache_dir", nargs="?", type=Path, default=None, help="Override the BeyondArena cache.")
     parser.add_argument("dataset", nargs="?", default=EXAMPLE_DATASET, help="A BeyondArena dataset name.")
-    parser.add_argument("--container", type=Path, default=None, help="Load this container folder instead.")
     args = parser.parse_args()
-    main(args.cache_dir, args.dataset, args.container)
+    main(args.cache_dir, args.dataset)

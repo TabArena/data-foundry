@@ -22,6 +22,8 @@ from data_foundry.v2.spectra import (
     DRIAMS_ENCODING,
     MS_RAW_ENCODING,
     VIBRATIONAL_ALS_SNV_ENCODING,
+    VIBRATIONAL_SG1_ENCODING,
+    VIBRATIONAL_SNV_ENCODING,
     snip_baseline,
 )
 
@@ -77,12 +79,58 @@ def test_als_and_snv_give_each_spectrum_mean_0_and_sd_1() -> None:
     np.testing.assert_allclose(values.std(axis=1), 1, atol=1e-9)
 
 
-def test_a_spectrum_with_a_missing_value_comes_out_missing() -> None:
-    """A spectrum with a missing intensity comes out missing; the others are encoded."""
+def test_snv_alone_matches_a_hand_computed_reference() -> None:
+    """SNV of [1, 2, 3, 4, 5] is [-2, -1, 0, 1, 2] / sqrt(2) (population SD); a shifted and scaled copy of a spectrum
+    comes out the same, every row with mean 0 and SD 1.
+    """
+    frame = pd.DataFrame([[1.0, 2.0, 3.0, 4.0, 5.0], [17.0, 27.0, 37.0, 47.0, 57.0], [2.0, 0.0, 5.0, 1.0, 1.0]])
+    out = encode_spectrum(frame, np.arange(5.0), VIBRATIONAL_SNV_ENCODING).to_numpy()
+    expected = np.array([-2.0, -1.0, 0.0, 1.0, 2.0]) / np.sqrt(2.0)
+    np.testing.assert_allclose(out[0], expected)
+    np.testing.assert_allclose(out[1], expected)
+    np.testing.assert_allclose(out.mean(axis=1), 0, atol=1e-12)
+    np.testing.assert_allclose(out.std(axis=1), 1)
+
+
+def test_the_first_derivative_is_savitzky_golay_over_11_points_of_order_2() -> None:
+    """The encoding equals scipy's savgol_filter(window 11, order 2, deriv 1, mode "interp") per position, and is
+    exact on a quadratic: the derivative of i**2 is 2i at every position, the edges included.
+    """
+    from scipy.signal import savgol_filter  # noqa: PLC0415 - scipy is checked at import
+
+    rng = np.random.default_rng(0)
+    values = rng.normal(size=(3, 30)).cumsum(axis=1)
+    axis = 600.0 + 2.0 * np.arange(30)
+    frame = pd.DataFrame(values, columns=[f"cm_{a:g}" for a in axis], index=[7, 8, 9])
+    out = encode_spectrum(frame, axis, VIBRATIONAL_SG1_ENCODING)
+    assert (list(out.columns), list(out.index)) == (list(frame.columns), [7, 8, 9])
+    np.testing.assert_allclose(out.to_numpy(), savgol_filter(values, 11, 2, deriv=1, axis=1, mode="interp"))
+    i = np.arange(15.0)
+    square = encode_spectrum(pd.DataFrame([i**2]), i, VIBRATIONAL_SG1_ENCODING).to_numpy()[0]
+    np.testing.assert_allclose(square, 2 * i, atol=1e-9)
+    with pytest.raises(ValueError, match="needs 11 columns"):
+        encode_spectrum(frame.iloc[:, :10], axis[:10], VIBRATIONAL_SG1_ENCODING)
+
+
+@pytest.mark.parametrize(
+    "encoding",
+    [
+        MS_RAW_ENCODING,
+        DRIAMS_ENCODING,
+        VIBRATIONAL_ALS_SNV_ENCODING,
+        VIBRATIONAL_SNV_ENCODING,
+        VIBRATIONAL_SG1_ENCODING,
+    ],
+    ids=lambda e: e.id,
+)
+def test_a_spectrum_with_a_missing_value_comes_out_missing(encoding) -> None:
+    """A spectrum with a missing intensity comes out missing; the others are encoded as they would be alone."""
     frame, axis = _spectra()
     frame.iloc[1, 5] = np.nan
-    out = encode_spectrum(frame, axis, MS_RAW_ENCODING)
+    out = encode_spectrum(frame, axis, encoding)
     assert out.iloc[1].isna().all()
+    rest = frame.drop(index=frame.index[1])
+    pd.testing.assert_frame_equal(out.drop(index=frame.index[1]), encode_spectrum(rest, axis, encoding))
     assert out.drop(index=frame.index[1]).notna().all().all()
 
 
@@ -126,7 +174,12 @@ def test_the_default_follows_the_technique_and_the_state() -> None:
         CROMWELL_LOG2_ENCODING,
     )
     assert encodings_for(record("mass_spectrometry", "peaks")) == (AS_IS_ENCODING,)
-    assert encodings_for(record("raman", "raw")) == (AS_IS_ENCODING, VIBRATIONAL_ALS_SNV_ENCODING)
+    vibrational = (AS_IS_ENCODING, VIBRATIONAL_ALS_SNV_ENCODING, VIBRATIONAL_SNV_ENCODING, VIBRATIONAL_SG1_ENCODING)
+    for technique in ("raman", "infrared", "near_infrared"):
+        feature = record(technique, "raw")
+        assert encodings_for(feature) == vibrational
+        assert feature.recommended_encoding == encodings_for(feature)[0].id == "spectrum-as-is-r1"
+    assert [e.id for e in vibrational] == ["spectrum-as-is-r1", "vib-als-snv-r1", "vib-snv-r1", "vib-sg11-d1-r1"]
     assert set(recommended_encodings()["spectrum"]) == set(spectra.SPECTRUM_ENCODINGS.values())
     assert all(e.scope == "row" for e in spectra.SPECTRUM_ENCODINGS.values())
     assert MS_RAW_ENCODING.id == "ms-sqrt-sg21-snip100-tic-r1"
@@ -163,6 +216,13 @@ def test_encode_special_feature_replaces_the_columns_where_they_stand() -> None:
     assert not np.allclose(driams[feature.columns].to_numpy(), out[feature.columns].to_numpy())
     with pytest.raises(ValueError, match="no encoding of"):
         encode_special_feature(frame, feature, VIBRATIONAL_ALS_SNV_ENCODING)
+    infrared = Spectrum(name="s", prefix="mz_", unit="cm-1", technique="infrared", state="raw", description="d")
+    feature = infrared.record(frame.columns)
+    derivative = encode_special_feature(frame, feature, "vib-sg11-d1-r1")
+    np.testing.assert_allclose(
+        derivative[feature.columns].to_numpy(),
+        encode_spectrum(frame[feature.columns], feature.details.axis, VIBRATIONAL_SG1_ENCODING).to_numpy(),
+    )
 
 
 def test_driams_removes_the_baseline_twice_and_the_scale() -> None:

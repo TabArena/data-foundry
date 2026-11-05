@@ -17,8 +17,8 @@ datetime  ``skrub-datetime`` (:func:`encode_datetime`)  skrub's ``DatetimeEncode
 text      ``tfidf-svd`` (:func:`encode_text_tfidf`) and ``e5-small-v2`` (:func:`encode_text_e5`): check both
 spectrum  by technique and state (:func:`~data_foundry.v2.special.encodings_for`): a raw mass spectrum
           ``ms-sqrt-sg21-snip100-tic`` (MALDIquant's steps; DRIAMS's and Cromwell's chains the candidates to
-          compare), any other ``spectrum-as-is``; a vibrational spectrum also ``vib-als-snv`` (RamanBench's
-          linear-model default): check both
+          compare), any other ``spectrum-as-is``; for a vibrational spectrum the candidates to compare are
+          ``vib-als-snv`` (RamanBench's linear-model default), ``vib-snv`` and ``vib-sg11-d1`` (a first derivative)
 ========  ========================================  ==========================================================
 
 Text has two recommendations because neither wins everywhere: TF-IDF fitted on the training rows reads the words (or
@@ -129,6 +129,8 @@ def recommended_encodings() -> dict[str, tuple[Encoding, ...]]:
         DRIAMS_ENCODING,
         MS_RAW_ENCODING,
         VIBRATIONAL_ALS_SNV_ENCODING,
+        VIBRATIONAL_SG1_ENCODING,
+        VIBRATIONAL_SNV_ENCODING,
     )
 
     return {
@@ -141,6 +143,8 @@ def recommended_encodings() -> dict[str, tuple[Encoding, ...]]:
             CROMWELL_LOG2_ENCODING,
             AS_IS_ENCODING,
             VIBRATIONAL_ALS_SNV_ENCODING,
+            VIBRATIONAL_SNV_ENCODING,
+            VIBRATIONAL_SG1_ENCODING,
         ),
     }
 

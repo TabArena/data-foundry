@@ -2,29 +2,50 @@
 unique_name: tunisian_fraud_detection_challenge
 name: Tunisian Fraud Detection Challenge
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
-priority: 3
-tags:
-- AI-Filled (Verify)
+- Myunghwan
+- Lennart
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Myunghwan
+suggestion: 'Yes'
+priority: 2
+decision_markers:
+- Selection Bias
 collections:
 - New (BeyondArena)
 original_source: Zindi
 year: '2019'
 domain: finance
 required_split:
-- '?'
+- Temporal (NON-IID)
 problem_type: Regression
 source_links:
 - https://zindi.africa/competitions/tunisian-fraud-detection
 - https://zindi.africa/competitions/supcom-tunisian-fraud-detection-challenge
+v2_path: datasets/_dev/tabarena-v0pt2/tunisian_fraud_detection_challenge/dataset.py
 source_row: 1015
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
 ## Comments
+
+**Assessment (AI, 2026-10-31; authorized build verified):** Built accepted format-2 container `01a19475-b104-7ff0-82db-ed3aeb71f3a7` from clean definition commit `4bc27fd6d8b49f8c9c16446bb7e85132ce90943b`; checksum `v2:84d2d72d5ffe91a80168cd461f4367b63635ee74467d97d96c89e6de9ce57972`. Saved reload/checksum, exact accepted-frame comparison, source-label scorer and all four split memberships verified. Reproduction with only the traced Train.csv (9,679,520 bytes) gives the identical checksum; its private input ZIP passes CRC and source SHA-256 verification. Dataset build reports zero errors and zero unaccepted warnings, with the two curator-accepted annual-time warnings and two documented duplicate infos. All 21,295 rows, 103 predictors and four annual windows remain unchanged; existing qualified probes remain applicable by exact identity. Full tests:1,326 passed,177 skipped; changed definition passes Ruff lint/format. Repository-wide lint has inherited findings in unchanged files. Build and commit were explicitly requested by Myunghwan. No scientific decision or exception is added; claim/stage retained until integration into main, no publication inferred.
+
+CC (2026-10-31, Myunghwan): "I think it's fine. accept all." Accept the dataset for a later build, both annual-time warnings with the presented reasons, and update required_split to Temporal (NON-IID). Temporal is preferred as closer to scanning a new year (superseded 2026-11-05: the task is the retrospective ranking of past fiscal years, with the taxpayer's earlier adjustments as held history; Lennart's issue 1 CC below). The previously accepted retrospective interpretation remains in force.
+
+**Assessment (AI, 2026-10-31; final added-dataset review):** Applied the snapshot-bound ship verdict, issue 2 as implemented, and required_split update after independent consistency review. Accepted task_time_on_few_unique because six real annual cohorts provide four eligible outer windows and constrain inner validation; accepted meta_time_horizon_mismatch because January 1 encodes an entire fiscal cohort, not daily observations or audit duration. Both exact reasons are declared in accepted_check_warnings. The scored target, all 21,295 rows, 103 predictors, source RMSE and four annual split memberships remain unchanged. Historical recording/revision and outcome dates remain unknown; no rule exception, maturity clearance or change to the target is inferred. All dataset-specific review issues and field disagreements are settled; the full review/panel history is archived privately. Scientific acceptance is complete. The existing claim remains active until integration; claim stage and DF status are not changed by this verdict. No build, commit or publication was requested.
+
+CC (2026-10-31, Myunghwan): Retrospective prediction is fine because looking back can identify more records worth investigating. Accept the bounded retrospective task framing (review issue 1); also check the contest test predictors. This is a partial decision, with no overall ship, annual-warning or record-field mark supplied.
+
+**Assessment (AI, 2026-10-31; retrospective clarification):** Implement the analyst's retrospective archive investigation use, with scored adjustment withheld and historical training labels already held. Four fiscal-cohort tests measure transfer across accounting years, not historical operational refits. Original feature/audit/extraction and outcome dates remain unknown; fit stays approximate. Independent consistency review finds no SPLIT-10 departure for a past-refit claim no longer made. Full participant SupCom test mirror has 7,517 rows and 120 columns, exactly training minus target; mirror training blob matches supplied bytes. All 103 retained predictors are present and none wholly missing, including observed nonzero refund/regularization values. No new schema exclusion follows; LEAK-38 limits this evidence to the contest input contract. Test spans 2013–2018, so our annual tests do not reproduce the contest split. Authenticated original host test was not obtained. Every benchmark row, target, predictor, scorer and split remains unchanged; no test rows enter the benchmark. Issue 1 settled; issue 2, required_split disagreement and final inclusion remain pending.
+
+**Assessment (AI, 2026-10-31; add-dataset qualification):** Added the source-label regression as an approximate historical annual-dossier task: all 21,295 rows, 103 predictors after 17 identity/redundancy removals, four temporal tests2015–2018, source RMSE on unchanged log1p labels with identity scoring transform. Four windows are all that meet the half-training floor; the original three-window screening proposal was expanded under SPLIT-15 before testing2015. Independent actual-container audits prove unchanged values/old split indices, correct fourth cohort and scorer/manual equality. Checks:26,0errors,2unaccepted warnings for six fiscal-year timestamps and annual-horizon encoding. Task probe RFmeanRMSE6.028 versusdummy7.049, beatsall4, noflags; feature models also beat taxpayer-history baselinesall4. Exact source-field availability and audit-label maturity remain cannot-verify, not passed. Registry invariance, refund-revision mechanisms and sparse block missingness are disclosed; focused conditional missingness tests do not identify an added target-dependent blank/fill mechanism. LEAK-38 supports provisional source-field retention with explicit revisit triggers, not causal clearance. Natural collisions across distinct taxpayer-years are retained; no exact full-feature copy including year crosses cutoffs. The supplied-source cohort does not establish national screening yield, independent audit appointments or recovered tax. The full independent panel supports retaining the qualified draft for curator judgment rather than inferring final admission. No accepted warning, final-inclusion decision, maturity exception, rule amendment, build or publication is inferred. Earlier screening statements about three windows and raw monetary scale are superseded. Priority 2: gap0 (none thin among133accepted definitions), usecase0 (approximate timing), source+1 (Ministry challenge and dictionary), shape+1 (21,295rows,103mixed-type predictors), risk-1 (unresolved label maturity/selection).
+
+CC (2026-10-31, Myunghwan): Invoked tabarena-add-dataset on this candidate after the screening recommendation. Proceed to qualification of the annual pre-inspection audit-prioritization task; keep the source-provided log-scale target and annual temporal intent subject to actual timing/cohort checks. This is screening acceptance, not final inclusion or build authorization.
+
+**Assessment (AI, 2026-10-31; screened-candidate review with supplied files):** Myunghwan supplied Train_tunisian-fraud-detection.csv and VariableDescription_tunisian-fraud-detection.csv and requested placement plus review-screened-candidates. Both are copied byte-for-byte to the private local warehouse as Train.csv and VariableDescription.csv, with SHA-256 manifest; originals preserved. This authorizes screening review, not an add-stage or final-inclusion verdict. Actual Train.csv has 21,295 rows and 121 columns (target plus 120 others, including IDs and years), 12,387 taxpayer IDs, no duplicate taxpayer-year pairs and six years, 2013–2018. Annual counts: 6,079 / 5,754 / 4,368 / 3,100 / 1,629 / 365. This measured count supersedes the page's broad over-25,000 description for the supplied training file. The source's target clarification states log(1 + adjustment), inverted by exp(x)-1, and confirms regression; retain supplied target and source RMSE. Targets span 0–23.5913, with 5,402 zeros (25.37%), no missing/negative labels. Underlying currency unit is unverified. The dictionary identifies RES_MNTRED as principal adjustment (target concept) and excludes RES_MNTRET penalties; neither is a separate raw column here. Historical binary-target prose is superseded. Inputs include taxpayer/legal/activity/obligation categories, annual VAT turnover/credits/payments, customs aggregates, government payments, third-party salary/rent/fee and VAT-suspended-invoice cross-checks. Raw numeric codes are not all continuous features. CTR_MATFIS is the taxpayer key, id administrative; EXE_EXERCI is year and RES_ANNIMP exactly duplicates it. Candidate temporal evaluation trains on earlier years and tests 2016/2017/2018, respectively 16,201/3,100, 19,301/1,629 and 20,930/365 train/test rows; each training side exceeds half of all rows. Both recurring and new taxpayers appear, which fits annual audit prioritization; grouped taxpayer evaluation is an alternative only for a deliberately cold-start use. No split is finalized or accepted. Primary limits: absent audit completion dates, unknown eligibility/availability of inspection/cross-check and refund fields, cohort-selection/representativeness, mixed missingness (customs and invoices often 80–94% missing), and some dictionary formatting/translation defects. No leakage, triviality, target reconstruction or model quality finding is claimed. Exact eligible features, causal training-label availability, cleaning, task probes and independent review remain add-stage work if the curator proceeds. Source terms restrict redistribution; this is a release condition, not a scientific rejection. Recommend proceed to add-dataset with the original log-scale target and an annual temporal design, conditional on timing/cohort checks. Curator choice remains proceed/later/no; suggestion TBD -> Yes, checked_by AI (UNVERIFIED), priority 3 and claim stage triage remain unchanged. No control-plane, definition, build, model run, commit or source publication.
+
+**Assessment (AI, 2026-10-31; next-candidate selection):** Selected for the next screening review after Myunghwan rejected QoS and asked for the next available already-claimed candidate. Fresh official board confirms Myunghwan’s unexpired triage claim. Existing screened priority 3; source reports over 25,000 annual samples and numerous anonymized numeric fields. This preserves the session preference for a substantial dataset. Other triage candidates are smaller/unknown in size; Chicago and GeoAI have separate active/completed work and are not selected again. Source describes TARGET as additional tax liability, scored by RMSE: regression, superseding historical binary-classification prose below. Inspection-stage leakage and taxpayer/year split support require actual-data checks; no add-stage or inclusion verdict is inferred.
 
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
@@ -42,3 +63,27 @@ A Zindi competition to detect tax fraud using the Tunisian Ministry of Finance's
 ---
 
 Detect tax fraud using the Ministry of Finance of Tunisia's data
+
+CC (2026-11-04, Lennart): the declared metric (RMSE, the competition's) is checked as declared (PR #33 review).
+
+CC (2026-11-04, Lennart): the `Anonymized` data tag is dropped ("drop it"): only the taxpayer id was replaced; the columns are named.
+
+CC (2026-11-04, Lennart): fiscal year 2018 is cut (LEAK-24, "do the change"), leaving three yearly windows 2015-2017; its three 2018-only VAT columns leave with it. The retrospective ranking stays ("okay let us keep it"). The source is Zindi's own file: Lennart's download (2026-11-04) is byte-identical to the file used, so no re-sourcing; the download description gives its SHA-256.
+
+**Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled.
+
+**Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes (LEAK-24 holds for 2017, measured by four agents, so no further cut; LEAK-10 triggered by `CTR_CESSAT`, a status looked up at extraction, and by `TVA_RESTIT`, whose fill differs by label (1.30 against 1.03), both to drop; USE-10 and SPLIT-9 unsettled: the registry columns rebuild the dropped taxpayer id, and a test taxpayer's other-year labels help by +0.12 to +0.19 RMSE beyond their size, so known history or not yet known must be decided first; SPLIT-14 and MET-2 to MET-4 hold; the notes now give these numbers); disputed: USE-10 and SPLIT-9 (the previous label as a feature, or the audit planner's framing with the test taxpayers' training rows removed), SPLIT-10 (an exception or an application), LEAK-10 for `TVA_MTORDTVA` and `TVA_MTDJRTVA`; for the curator: issues 1-5. Priority 2: gap 0, use case 0, source +, shape +, risk - (use case: the source names the tax authority, but the fit is approximate, inspected dossiers only; source: Ministry of Finance data with a variable dictionary; shape: 20,930 taxpayer-years, 100 mixed inputs, temporal; risk: issue 1, a measured shortcut through taxpayer labels, and two LEAK-10 fields, issues 2-3).
+
+CC (2026-11-05, Lennart): `CTR_CESSAT` dropped (REVIEW.md issue 2, B; LEAK-10): the registry is a snapshot looked up at extraction, so a firm that ceased later carries "ceased" on its earlier years. Cost +0.015 RMSE, below the ±0.03 noise per split.
+
+CC (2026-11-05, Lennart): `TVA_RESTIT` dropped (issue 3, B; LEAK-38's own clause, then LEAK-10; as kick and expresso_churn_prediction): its fill differs by outcome (observed/predicted 1.30 on zero-adjustment rows against 1.03). `TVA_MTORDTVA` and `TVA_MTDJRTVA` stay under LEAK-38.
+
+CC (2026-11-05, Lennart): `Selection Bias` marker set (issue 4, B; USE-8): every row is an inspected taxpayer-year, while a real screening ranks all filers.
+
+CC (2026-11-05, Lennart): the declared metric (RMSE on the supplied log label, the source's) is checked and stays as declared.
+
+CC (2026-11-05, Lennart): the taxpayer's earlier adjustments are held history (REVIEW.md issue 1, B; USE-10, LEAK-34): `previous_target` (the label of the taxpayer's most recent earlier fiscal year in the data) and `years_since_previous_target` ship as features, built from `CTR_MATFIS` over strictly earlier years, which then leaves (LEAK-33); on the three windows every test row's previous label is a training label. What sets this apart from lt_vehicle_loan_default_prediction: Tunisian in-depth verifications cover several open years (Ministère des Finances FAQ, https://www.finances.gov.tn/fr/faq?page=3), so ranking past years is the real decision, while a loan cannot be approved after the fact. LightGBM mean RMSE 5.863 to 5.533 (3 windows by 2 seeds; 6.021 to 5.476 with the codes as numbers, as the panel ran it). The late 2018 labels and the circumstantial hole test (0.794 vs 0.803) stay noted in the definition.
+
+CC (2026-11-05, Lennart): the refund and regularisation fields stay under LEAK-38 as amended the same day (REVIEW.md issue 5, B), named in `fit_reason` as kept. The 22 registry fields that stay were looked up at extraction, so LEAK-10 decides: they stay because no mechanism ties a registry change to the adjustment, unlike `CTR_CESSAT` (choice a; a LEAK-10 Cases row).
+
+CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
