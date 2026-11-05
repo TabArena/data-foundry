@@ -1,5 +1,12 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-05, `duolingo_spaced_repetition_recall_1m_clf`: requalified on current main
+
+- Reapply Myunghwan's approved >=75% session-performance classifier on updated main, retaining AUROC, numerical session_seen, equal weights and the temporal 1M/111111 windows with a one-day gap. Preserve original dated decisions and resolved issue IDs; retain REVIEW.md under the current history convention.
+- Current native checks report zero errors/warnings. Exact values, category state, labels and all six split arrays match the prior accepted package; saved predictions score identically. Fresh leak, task, dtype and raw-state checks and an independent focused panel are complete.
+- The participant attack and independent refutation find later test-history counters reconstruct earlier labels on 3.32-5.18% of rows, adding 0.0210-0.0349 AUROC to frozen honest predictions. Apply the current LEAK-9 own-row evaluation protocol while preserving legitimate histories; add the required benchmark method check to BENCHMARK_CHANGES_TODO. A clean build does not establish downstream enforcement.
+- Myunghwan requested the repeated build and local commits. Commit the reviewed source before the build; raw data, containers, process evidence and review-page exports stay local.
+
 ## 2026-11-05, GitHub issue #48: column types (Lennart's marks)
 
 - `eryhemato_squamous_disease`: the 10 clinical scores 0-3 ship as numbers; a blanket `_feature_types` had cast them
