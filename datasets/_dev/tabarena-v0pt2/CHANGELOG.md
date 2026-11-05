@@ -1,5 +1,24 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-05, three generated datasets retired (Andrej's marks on the BeyondArena v0.2 review page)
+
+- Retired as generated data: each record is `No (Retired)` with `AHDS` and a CC line giving the evidence, its folder is
+  removed and `v2_path` cleared. `DF: Yes`, the collection tags and the pinned BeyondArena containers stay.
+  - `bank_customer_churn` (TabArena v0.1; also `Missing source information`): a class-rooted Bayes net written down by
+    hand (churn first, each column given churn and at most two other columns) beats all 40 benchmark methods when used
+    as a classifier (1 - ROC AUC 0.1213 against 0.1233 for the best method); seven of ten columns cannot be told from
+    copies shuffled within each class. `superdatascience_churn_modelling`, the same course table, gains `AHDS`.
+  - `food_delivery_time` (TabArena v0.1): the delivery time is a 5-minute block plus a uniform minute that no feature
+    predicts, the other columns change only at the block edges, and no courier ID keeps one age, rating or vehicle.
+    `problem_type` and `domain` set from the definition.
+  - `santander_customer_transaction_prediction`: within each class the 200 columns are independent at the chance rate,
+    and real rows cannot be told from rows shuffled within each class (ROC AUC 0.49, against 1.0 on
+    santander_customer_satisfaction), so naive Bayes is right by construction and matches TabPFN-3.5. `Anonymized`
+    stays.
+- Guidelines: provenance.md, "Is the data generated?", gains test 8 (columns shuffled within each class) and test 9 (a
+  target drawn as a coarse level plus a uniform remainder), and an example under test 6 (IDs that keep no attributes);
+  PROV-3 names the three datasets as cases. task_probes.md and evidence.md no longer cite santander as real data.
+
 ## 2026-11-05, class-dependent recording documented on four datasets; duplicates note on one (no data change)
 
 - `biogeographical_ancestry_prediction`, `hepatitis_c_prediction`, `horse_colic_survival`, `lung_cancer`: one

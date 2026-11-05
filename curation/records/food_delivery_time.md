@@ -8,17 +8,20 @@ data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
 - BeyondArena
-suggestion: 'Yes'
+suggestion: No (Retired)
+decision_markers:
+- AHDS (Artifical/Handmade/Deterministic/Simulated)
 tags:
 - Random (IID)
 original_source: Kaggle
 year: '2023'
+domain: business & marketing
 required_split:
 - Random (IID)
+problem_type: Regression
 source_links:
 - https://www.kaggle.com/datasets/rajatkumar30/food-delivery-time
 notebook_path: datasets/beyond_iid/old_iid/food_delivery_time/food_delivery_time.ipynb
-v2_path: datasets/_dev/tabarena-v0pt2/food_delivery_time/dataset.py
 type_adapter_id: curation-record-v1
 ---
 
@@ -54,6 +57,14 @@ CC (2026-10-14, Lennart): Flip the signs, keep the (0, 0) rows and document the 
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback rmse — Kaggle dataset without a competition or paper; the data card states the task but no metric.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `meituan_food_delivery_time` (TBD -> Yes, priority 4). Each is screened in its own record; this record's verdict stays the curator's.
+
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the folder's `REVIEW.md`. Retire as generated data: in the shipped file and its 20-column parent the minute within each 5-minute block is uniform noise, every other column changes only at block edges, and a courier ID holds a median of 17 different ages. Priority 1: gap 0, use case 0, source 0, shape 1, risk -1.
+
+CC (2026-11-05, Andrej): retired as generated data (`No (Retired)`, `AHDS`). The data: 45,451 food deliveries of an unnamed Indian platform (Kaggle, rajatkumar30, 2023), a 9-column cut of an earlier 20-column upload with no documented origin (gauravmalik26, "Food Delivery Dataset", https://www.kaggle.com/datasets/gauravmalik26/food-delivery-dataset).
+- **The delivery time is drawn as a 5-minute block plus a random minute:** the minute within each block is uniform (19.6% to 21.2% of the orders in every block) and no feature predicts it (LightGBM R² -0.074 against -0.075 for shuffled minutes), while every other column changes only at the block edges (of the courier age's variance across delivery minutes, 0.0006 of 0.103 lies within blocks).
+- **The couriers are not people:** none of the 1,320 courier IDs keeps one age, rating or vehicle (medians of 17 ages, 9 ratings and 3 vehicle types over 41 orders), and a courier's age follows the delivery time of the order (4.2 years below the courier's mean at 10-14 minutes, 3.0 above it at 50-54).
+- **Other parts were already known to be made, and the larger file shares the marks:** delivery points are the restaurant plus one of 12 equal offsets (2026-10-14); in the 20-column file age 29 and rating 4.6 fill the missing entries, and its weather, traffic and order times follow the same block rule, so a rebuild from it is no way out.
+Record fields `problem_type` (Regression) and `domain` (business & marketing) set from the definition. A real source for the task, `meituan_food_delivery_time`, is screened in its own record.
 
 ## Reference
 
