@@ -1581,6 +1581,13 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
 - Requalify `economic_well_being_prediction_challenge` against main `9048f36a`, preserving Myunghwan’s prior annual timing, supplied-index and temporal × unseen-country decisions. Decode R/U as Rural/Urban under current CLEAN-12; all rows, labels, numeric values and country-year membership sets remain unchanged, with canonical order and indices regenerated. Restore resolved review issues with original IDs/dates and retain the completed focused panel. Document the accepted candidate-specific higher-ranked use-case override in SPLIT-3 Cases without amending the global rule.
 - Native checks: 27, zero errors/warnings, three infos. New dtype, all-sixteen-split task and refreshed leak/raw probes pass execution; no_spread remains the previously investigated finding, with prior prediction scores independently reverified by ID. Participant-kit review finds no demonstrated exploit beyond honest/random controls. Native Claude authentication failed before inference; the fresh Codex reviewer used contractual kit isolation, with that limitation disclosed. No new curator input is needed.
 
+## 2026-11-05, `duolingo_spaced_repetition_recall_1m_clf`: requalified on current main
+
+- Reapply Myunghwan's approved >=75% session-performance classifier on updated main, retaining AUROC, numerical session_seen, equal weights and the temporal 1M/111111 windows with a one-day gap. Preserve original dated decisions and resolved issue IDs; retain REVIEW.md under the current history convention.
+- Current native checks report zero errors/warnings. Exact values, category state, labels and all six split arrays match the prior accepted package; saved predictions score identically. Fresh leak, task, dtype and raw-state checks and an independent focused panel are complete.
+- The participant attack and independent refutation find later test-history counters reconstruct earlier labels on 3.32-5.18% of rows, adding 0.0210-0.0349 AUROC to frozen honest predictions. Apply the current LEAK-9 own-row evaluation protocol while preserving legitimate histories; add the required benchmark method check to BENCHMARK_CHANGES_TODO. A clean build does not establish downstream enforcement.
+- Myunghwan requested the repeated build and local commits. Commit the reviewed source before the build; raw data, containers, process evidence and review-page exports stay local.
+
 ## 2026-11-04, asp_potassco_classification: Andrej's marks on the v0.2 review page, first round (nothing rebuilt)
 
 - `asp_potassco_classification` (issue 1, B): reframed as runtime regression, as sat11_hand_algo_runtime: one row per
