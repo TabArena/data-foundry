@@ -3,7 +3,20 @@ report_format: data-foundry-report-v2
 unique_name: geoai_ground_level_no2_estimation_challenge
 container_format: 2
 checksum: v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20
-build: null
+build:
+  uuid: 01a1adf0-eb77-7e00-8228-2b3c1bc263db
+  checksum: v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20
+  built_at: '2026-11-05T23:00:11+00:00'
+  path: geoai_ground_level_no2_estimation_challenge/01a1adf0-eb77-7e00-8228-2b3c1bc263db
+  data_foundry_version: 0.0.5
+  git_sha: 2687a3ae2ebd33135af563cf9605e3adbc2897b6
+  libraries:
+    python: 3.12.3
+    pandas: 3.1.0
+    numpy: 2.5.4
+    pyarrow: 26.0.0
+    scikit-learn: 1.7.2
+    polars: 2.0.0
 build_stale: false
 data:
   n_rows: 82051
@@ -62,7 +75,7 @@ decisions: []
 
 Regression of `GT_NO2`, scored with `rmse` on grouped splits by `ID`. 82,051 rows and 11 features. Source: Zindi (2024).
 
-Not built yet. The current definition gives checksum `v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20`.
+Built as `01a1adf0-eb77-7e00-8228-2b3c1bc263db` on 2026-11-05. See [Build](#build).
 
 ## In brief
 
@@ -314,4 +327,12 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a1adf0-eb77-7e00-8228-2b3c1bc263db |
+| checksum | v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20 |
+| built_at | 2026-11-05T23:00:11+00:00 |
+| path | geoai_ground_level_no2_estimation_challenge/01a1adf0-eb77-7e00-8228-2b3c1bc263db |
+| data_foundry_version | 0.0.5 |
+| git_sha | 2687a3ae2ebd33135af563cf9605e3adbc2897b6 |
+| libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |

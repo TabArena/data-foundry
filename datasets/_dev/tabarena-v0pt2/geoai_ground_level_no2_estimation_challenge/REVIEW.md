@@ -29,7 +29,7 @@
 
 [^geoai-labels]: USE-8 and EV-7 require honest scope and uncertainty; CLEAN-11/15 retain unproven extremes and omit missing targets. [Original challenge and data description](https://zindi.africa/competitions/geoai-ground-level-no2-estimation-challenge/data).
 
-**Review panel:** ship (independent mediator). Focused recheck of the accepted definition against updated main: claim/split audit, column audit, precedent consistency, an isolated participant task gamer, mediator and editor. The prior full panel remains historical evidence. No new curator question was identified; issue 1 stays resolved. The current group learnability rerun and build verification are still pending at this draft.
+**Review panel:** ship (independent mediator). Focused recheck of the accepted definition against updated main: claim/split audit, column audit, precedent consistency, an isolated participant task gamer, mediator and editor. The prior full panel remains historical evidence. No new curator question was identified; issue 1 stays resolved. The current group learnability rerun and build verification are complete; the completion addendum below resolves the earlier reports' pending verification notes.
 
 
 
@@ -387,5 +387,15 @@ One placement fix remained in that revision: the new reconciliation paragraph si
 
 
 **Application:** All three formatting/content fixes were applied: embedded headings use bold text; the two checksum causes are explicitly distinguished; the checksum reconciliation is enclosed in a details section. The generated collector/parser verifies the final structure.
+
+</details>
+
+<details><summary>Completion of verification (2026-11-05)</summary>
+
+The current full group probe completed over 82,051 rows, 79 stations and all nine folds. IID versus grouped LightGBM R2 is 0.788 versus 0.636 (gap 0.152). Across-group R2 is ridge 0.396, random forest 0.631, LightGBM 0.634 and kNN 0.554, matching the historical printed results. These are indicative utility diagnostics with full-frame median preprocessing, not benchmark rankings. A group-label permutation test does not apply to per-sample labels.
+
+The requested build completed from clean definition commit `2687a3ae2ebd33135af563cf9605e3adbc2897b6`: format 2, UUID `01a1adf0-eb77-7e00-8228-2b3c1bc263db`, checksum `v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20`. All 27 checks passed with zero errors or warnings. Saved-container reload verified; a check with only the traced Train.csv (10,000,397 bytes) reproduced the checksum. Rows, nine splits and raw-input selection are unchanged from the October build. The raw-input backup passed ZIP CRC and source SHA-256 checks. The October container is retained because the preserved historical checkout still names it as its current build; no obsolete unreferenced container was deleted.
+
+The source panel reports above retain their original timing and qualifications. Their requested documentation repairs were applied and the current collector rendered one resolved issue, zero open issues, no cross-dataset items and the explicitly reused metric acknowledgement. No new scientific decision is required; the original acceptance and limitations remain in force.
 
 </details>
