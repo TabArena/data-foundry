@@ -2,5 +2,5 @@ name: duolingo_spaced_repetition_recall
 holder: Myunghwan
 stage: triage
 claimed_at: '2026-10-31T23:44:24Z'
-expires_at: '2026-11-07T23:44:24Z'
-note: Curator-requested triage of PR39 priority-4 candidates with 10M+ source observations.
+expires_at: '2026-11-12T22:42:52Z'
+note: 'Curator accepted the inclusive >=75% session-performance classifier with numerical session_seen and documented limits. Built and verified: 1,429,456 rows, 8 predictors, three temporal one-day windows with one-day gap and 1M/111111 train/test rows. Reload and traced-input reproduction passed, zero errors/warnings. Local commits 7c1928bb and cb3763ef on curation/duolingo-session-performance; not pushed or submitted. Retain Myunghwan ownership pending upstream integration; existing stage preserved.'

@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-05 22:19 UTC: 45 claim(s) (Andrej 16, Lennart 6, Myunghwan 23).
+As of 2026-11-05 22:42 UTC: 45 claim(s) (Andrej 16, Lennart 6, Myunghwan 23).
 
 ## Andrej
 
@@ -48,7 +48,7 @@ As of 2026-11-05 22:19 UTC: 45 claim(s) (Andrej 16, Lennart 6, Myunghwan 23).
 | `chicago_traffic_crashes` | triage | 2026-10-29 | 2026-11-05 (expired) | Selected by Myunghwan as the next large-scale candidate (about 1.1 million crashes). Reservation for screening review; no scientific inclusion or build decision. |
 | `chromophore_optical_properties_db` | triage | 2026-11-05 | 2026-11-12 | Curator-requested triage: priority-4 interaction datasets; scale, source and non-IID qualification pending. |
 | `desi_dr1_star_galaxy_quasar` | add | 2026-11-04 | 2026-11-11 | Myunghwan requested DESI add-dataset; label accuracy and systematic class noise require investigation before inclusion. |
-| `duolingo_spaced_repetition_recall` | triage | 2026-10-31 | 2026-11-07 | Curator-requested triage of PR39 priority-4 candidates with 10M+ source observations. |
+| `duolingo_spaced_repetition_recall` | triage | 2026-10-31 | 2026-11-12 | Curator accepted the inclusive >=75% session-performance classifier with numerical session_seen and documented limits. Built and verified: 1,429,456 rows, 8 predictors, three temporal one-day windows with one-day gap and 1M/111111 train/test rows. Reload and traced-input reproduction passed, zero errors/warnings. Local commits 7c1928bb and cb3763ef on curation/duolingo-session-performance; not pushed or submitted. Retain Myunghwan ownership pending upstream integration; existing stage preserved. |
 | `economic_well_being_prediction_challenge` | triage | 2026-10-28 | 2026-11-11 | Curator ship accepted. Local build, reload and traced-input reproduction verified (2026-11-03); temporal x unseen-country, 21,454 rows, 16 evaluations. Local branch prepared separately; intentionally not added to existing PR. Retain ownership pending separately authorized publication/integration. |
 | `fannie_mae_single_family_loan_performance` | triage | 2026-10-31 | 2026-11-07 | Curator-requested triage of PR39 priority-4 candidates with 10M+ source observations. |
 | `football_match_probability_prediction` | triage | 2026-11-05 | 2026-11-12 | Curator-requested triage: priority-4 interaction datasets; scale, source and non-IID qualification pending. |
