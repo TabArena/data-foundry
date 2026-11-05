@@ -1572,6 +1572,11 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
 - Restored issue 1 as resolved, retaining the original October 30 acceptance and November 5 reuse instruction. The review file remains in the repository under the current history-retention rule. The final checksum differs from October because current schema serializes an empty special-features field and the definition has one additional explanatory curation-comment bullet; independent canonical checksum comparisons account for both changes exactly.
 - Current bundle checks: 27 passed, zero errors/warnings. Full tests: 2,016 passed, 286 skipped after the eighteen sandbox-loopback cases passed on retry. GeoAI lint/format and record/pointer validation pass; whole-repository lint/format findings match the baseline, including its existing example syntax error. The completed grouped-model rerun and requested build are recorded in the entry above.
 
+## 2026-11-05
+
+- Requalify `economic_well_being_prediction_challenge` against main `9048f36a`, preserving Myunghwan’s prior annual timing, supplied-index and temporal × unseen-country decisions. Decode R/U as Rural/Urban under current CLEAN-12; all rows, labels, numeric values and country-year membership sets remain unchanged, with canonical order and indices regenerated. Restore resolved review issues with original IDs/dates and retain the completed focused panel. Document the accepted candidate-specific higher-ranked use-case override in SPLIT-3 Cases without amending the global rule.
+- Native checks: 27, zero errors/warnings, three infos. New dtype, all-sixteen-split task and refreshed leak/raw probes pass execution; no_spread remains the previously investigated finding, with prior prediction scores independently reverified by ID. Participant-kit review finds no demonstrated exploit beyond honest/random controls. Native Claude authentication failed before inference; the fresh Codex reviewer used contractual kit isolation, with that limitation disclosed. No new curator input is needed.
+
 ## 2026-11-04, asp_potassco_classification: Andrej's marks on the v0.2 review page, first round (nothing rebuilt)
 
 - `asp_potassco_classification` (issue 1, B): reframed as runtime regression, as sat11_hand_algo_runtime: one row per
