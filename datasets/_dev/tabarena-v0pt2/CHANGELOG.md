@@ -1588,7 +1588,6 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
 - Clarify TP-7's rule strength without rewriting historical curator text. The previously measured future-counter exploit and required benchmark-side own-row checks remain explicit; this repeat does not certify downstream enforcement.
 - Built `01a1ae4b-07ce-7d55-b885-f6b11cb52d72` from clean source `90e77a7ccbaadc25d903a32e255298f7ca31694a`, format 2, unchanged checksum `v2:c20f832bb366fbe3e87b547b5ddf83cca1c5877f6d3f4e7bd16c1d9a25b6e6e3`: 1,429,456 rows, eight predictors, zero errors/warnings. Saved reload and traced-input-only reproduction pass; exact prior data/splits and saved scores match. The one-file raw backup passed CRC/SHA verification. Historical containers still referenced by preserved earlier checkouts remain available; no raw files or containers are deleted.
 
-
 ## 2026-11-05, `duolingo_spaced_repetition_recall_1m_clf`: requalified on current main
 
 - Reapply Myunghwan's approved >=75% session-performance classifier on updated main, retaining AUROC, numerical session_seen, equal weights and the temporal 1M/111111 windows with a one-day gap. Preserve original dated decisions and resolved issue IDs; retain REVIEW.md under the current history convention.
@@ -1596,6 +1595,27 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
 - The participant attack and independent refutation find later test-history counters reconstruct earlier labels on 3.32-5.18% of rows, adding 0.0210-0.0349 AUROC to frozen honest predictions. Apply the current LEAK-9 own-row evaluation protocol while preserving legitimate histories; add the required benchmark method check to BENCHMARK_CHANGES_TODO. A clean build does not establish downstream enforcement.
 - Myunghwan requested the repeated build and local commits. Commit the reviewed source before the build; raw data, containers, process evidence and review-page exports stay local.
 - Built format-2 container `01a1adef-2da5-75af-9a38-674925897d45`, checksum `v2:c20f832bb366fbe3e87b547b5ddf83cca1c5877f6d3f4e7bd16c1d9a25b6e6e3`, from clean source `8429113143096b5f196312d7cca1089cb18197ab`: 1,429,456 rows, eight predictors, zero errors/warnings. Saved reload and traced-input reproduction pass; rows, split memberships and the single raw input are unchanged. A local raw-input ZIP passed CRC/SHA verification. Preserve the historical container still referenced by the earlier checkout; no raw files or containers are deleted.
+
+## 2026-11-05, Fugaku current-main refresh
+
+- Reapply the accepted `fugaku_hpc_job_failure_1m` package to main `9048f36a`. Preserve Myunghwan’s original target,
+  inputs, exact temporal memberships, ROC-AUC metric, qualified SPLIT-10 exception, overall ship and
+  first-tuned-benchmark recheck. Restore the original issue IDs1–3 and full historical panel in persistent
+  `REVIEW.md`, with actual human turns and resolved outcomes. No old mark receives a new source identity; no generated
+  overview table is restored.
+- Current focused panel (claim, column, split, precedent, mediator, cold editor): ship with the accepted
+  qualifications; no new curator decision. Reuse past models only after exact data/category/split/metric/library
+  identity and all six old/current scorer comparisons. Fresh updated dtype/format/raw-period diagnostics and
+  source/maturity checks do not establish a new retained-feature defect. The source cohort, reporting-clock,
+  parent-unit and separately supplemented native float32 diagnostic limits remain explicit.
+- The framework checksum changes from `v2:c7436e8df22a906088cadbb4d641da32cd709976aeaa43e087ac12ff278475cd` to
+  `v2:b655fe6b87263768dd5a2e1232484929a22c3364e7daeeaa6b5cb6a30dc4a06d` only because the new schema serializes empty
+  `special_features`. Restoring the old metadata encoding on the actual current container exactly recovers the
+  accepted checksum. No row, target, category, predictor or membership changes.
+- Current native check:27 checks,0errors,0warnings,2known heavy-check informational skips. Updated-main
+  tests:2,017passed,286skipped. All176definitions import; strict2,091-record vocabulary and pointer checks pass;
+  scoped Ruff/format pass. New native raw checks are invoked directly on bounded actual-source windows because the
+  generic raw CLI cannot unwrap this loader; a clean full native leak CLI is not claimed.
 
 ## 2026-11-04, asp_potassco_classification: Andrej's marks on the v0.2 review page, first round (nothing rebuilt)
 
