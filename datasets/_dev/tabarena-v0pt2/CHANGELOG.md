@@ -1,5 +1,32 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-05, five tasks without a real target retired; new marker `No Signal`
+
+- Retired: each record is `No (Retired)` with a CC line giving the reasons, its folder is removed and `v2_path`
+  cleared. `DF: Yes`, the collection tags and the pinned BeyondArena containers stay. The records also carry the
+  October disagreement notes the retirements build on.
+  - `audiology_diagnosis` (`No Good Target / Scientific Discovery`): the type of hearing loss is read off the five
+    tests that define it (accuracy 0.903 of 0.938), and the case history alone gives the majority class. `year` 1987.
+  - `biomechanical_orthopaedic_prediction` (`No Good Target / Scientific Discovery`): `degree_spondylolisthesis` is
+    the criterion of half the labels, and hernia against normal is diagnosed from MRI and symptoms the table lacks.
+    `year` 2006, `problem_type` Multiclass Classification.
+  - `blood_tests_drink_prediction` (`No Good Target / Scientific Discovery`): no decision rests on estimating drinks
+    from blood values the doctor already has.
+  - `clock_protein_toxicity` (`No Signal`): the 40 benchmark methods score within what shuffled labels give (best ROC
+    AUC 0.539); the one weak signal found was picked after about 137 screens of the same molecules.
+  - `forest_fires` (`No Signal`): with fires of one day kept together, no model beats the training median.
+- New marker `No Signal`: the best methods do not beat a constant, or stay within what shuffled labels give, on the
+  split the use case needs. `telemonitoring_parkinsons_biomedical_voice_measurements` (retired 2026-10-02) gets it too.
+- Guidelines:
+  - selection.md: SEL-19, a label the field defines by columns we ship is no prediction target (audiology,
+    biomechanical); LEAK-4 and USE-2 point to it. The marker table lists `No Signal`.
+  - TP-2: a real signal beats shuffled labels on the split the use case needs (forest_fires, 2026-10-19); a task within
+    shuffled labels is retired with `No Signal`, and a signal found by screening many scores on the same rows counts
+    only on rows it was not chosen on (clock). SPLIT-28 names the marker.
+  - USE-2: a label that stands in for what the features already measure fits no decision (blood_tests).
+  - task_probes.md: values a source computes once per day, site or batch are a hidden group key (forest_fires' daily
+    fire weather values). The Cases rows in task_probes.md, evidence.md, leak_checks.md and use_case.md say retired.
+
 ## 2026-11-05, three generated datasets retired (Andrej's marks on the BeyondArena v0.2 review page)
 
 - Retired as generated data: each record is `No (Retired)` with `AHDS` and a CC line giving the evidence, its folder is

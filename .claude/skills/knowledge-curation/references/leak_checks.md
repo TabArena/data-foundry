@@ -36,9 +36,10 @@ that the real groups are collection sites the file does not hold (maternal_healt
 binarizes), run the probes against the source's original labels too, and check the shipped label the same way: a
 depth-2 or depth-3 tree on its defining columns shows whether the target is a rule. A label the definition builds uses
 a convention of the field ([task_probes.md](task_probes.md), TP-7). Why: a merge can hide a column that spells out the
-fine label, or the fine label can turn out to be read off a few features. Cases: audiology_diagnosis's three merged
-classes hid that its four cochlear diagnoses are set by two history answers, age over 60 and noise exposure (139 of
-147 cases).
+fine label, or the fine label can turn out to be read off a few features. A label the field defines by columns we
+ship is no prediction target (SEL-19, [selection.md](selection.md)). Cases: audiology_diagnosis's three merged classes
+hid that its four cochlear diagnoses are set by two history answers, age over 60 and noise exposure (139 of 147
+cases).
 
 ### Deciding on a suspect
 
@@ -394,7 +395,7 @@ The cases of the rules outside this table are named in the rules.
 
 | Rule | Mechanism | Action | Cases |
 |---|---|---|---|
-| LEAK-4 | A label we built that a few features spell out (classes merged or dropped by the definition) | use a convention of the field and check it with a shallow tree; run the probes on the source's labels too | audiology_diagnosis: three classes from names replaced by hearing loss with or without a conductive part |
+| LEAK-4 | A label we built that a few features spell out (classes merged or dropped by the definition) | use a convention of the field and check it with a shallow tree; run the probes on the source's labels too | audiology_diagnosis: three classes from names replaced by hearing loss with or without a conductive part; that label in turn read off five of its tests (accuracy 0.903 of 0.938), retired (2026-11-05) |
 | LEAK-9 | An evaluation-level leak: the test set holds complete trajectories that end at the outcome | fix the scoring (causal per-entity predictions, the task's own utility), not the data; document the prediction point | sepsis_prediction |
 | LEAK-9 | Queue fields are history at each row's own arrival; a method that reads the other test rows of a block would see the future | no per-row scorer; a protocol line in the definition that a model may not use other test rows, and the benchmark checks models for it (2026-11-04, Lennart: "we can check if the model cheats"); also sepsis_prediction's and 5g_energy_consumption's protocol lines | medical_facility_operational_data |
 | LEAK-10 | A column recorded after the outcome | drop it | heart_failure `time` (follow-up ends at death or censoring); anes post-election items; kickstarter `profile`, `staff_pick`; hotel `BookingChanges`, `AssignedRoomType`, `RequiredCarParkingSpaces` |

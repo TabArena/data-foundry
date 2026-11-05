@@ -194,7 +194,7 @@ not enough: on unseen groups its probabilities are overconfident. Cases: mice_pr
 
 **SPLIT-28 (Must).** A regression task whose models all score below the mean on unseen groups has no signal across
 groups; then the use case has to allow known groups, or the dataset goes. Before recasting it as warm start, compare a
-model with the group's known value carried forward. Cases: telemonitoring_parkinsons.
+model with the group's known value carried forward. Marker: `No Signal`. Cases: telemonitoring_parkinsons.
 
 ### Hidden groups in an IID task
 

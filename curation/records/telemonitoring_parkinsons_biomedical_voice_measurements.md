@@ -3,6 +3,7 @@ unique_name: telemonitoring_parkinsons_biomedical_voice_measurements
 name: Parkinsons
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
@@ -10,6 +11,7 @@ suggestion: No (Retired)
 decision_markers:
 - Wrong Domain / Source Modality
 - No Good Target / Scientific Discovery
+- No Signal
 tags:
 - Tiny Data
 - Non-IID (Grouped)
@@ -40,6 +42,8 @@ Moreover, it was technically a correlation analysis / for scientific discovery. 
 AT: It seems as if repeated observations per time stamp are present. We might need to groupby and summarize them, because the target is unique. That way we would end up with just 124 samples -> real problem but solve in the future?
 
 CC (2026-10-02, Lennart): Retired from TabArena v0.2: the voice features carry almost no information about UPDRS across subjects. 88% of the target's variance lies between the 42 subjects (sd 10.5), so a held-out subject's level has to come from its voice, and the features track it weakly (Spearman 0.43 between a subject's mean NHR and its mean UPDRS; 5 of the 18 features at p < 0.05, against 0.9 expected by chance). With about 28 training subjects per fold, flexible models learn subject identity: on the grouped splits the best result is a ridge with alpha 1000 at RMSE 10.98 against 11.19 for the training mean (60 splits), and on BeyondArena the best model (CatBoost, 11.09) is no better than the mean (about 11.00). Recast as tracking a known patient (the source's setting: the baseline visit in training, the 3- and 6-month visits predicted), the baseline score does the work: carrying it forward gives RMSE 6.98, adding the training subjects' mean drift 6.48, a ridge on voice plus baseline 6.33 and LightGBM 7.32. In both framings the benchmark would rank models by how little they lose to a constant, not by what they learn from the data. The UPDRS labels between the clinic visits are interpolated (Tsanas et al. 2010), which is why the v2 definition kept only the test days nearest the three visits.
+
+CC (2026-11-05, Andrej): `No Signal` added, the new marker for a task whose methods do not beat a constant, or stay within what shuffled labels give, on the split the use case needs; this record is its first case (on unseen subjects the best result, a ridge at RMSE 10.98, against 11.19 for the training mean; CC 2026-10-02). The other markers stay.
 
 ## Reference
 
