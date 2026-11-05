@@ -1,5 +1,19 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-05, GitHub issue #48: column types (Lennart's marks)
+
+- `eryhemato_squamous_disease`: the 10 clinical scores 0-3 ship as numbers; a blanket `_feature_types` had cast them
+  back to unordered categories after the decoding of 2026-11-01 made them numbers (2 categorical features: `family
+  history` and the target). Not built; README regenerated (0 errors, 0 warnings).
+- `early_learning_predictors`: the national ward code `id_ward_best` (569 wards) ships as a category in place of
+  `ward_best` (the ward's number within its municipality); the notes say why the 2021 sampling cluster stays dropped.
+  Not built; README regenerated (0 errors, 0 warnings).
+- `pva_revenue_prediction_kddcup98`: no data change; a note on why `DOMAIN_urbanicity` stays unordered.
+- Each of the three folders has a `REVIEW.md` with the settled issue. `README.md` and `DATA_FOUNDRY_V1.md` say that
+  the pinned BeyondArena containers predate the leak audit (two leaks named, the 23 pins retired since). A test checks
+  that every `SCORES` column ships numeric; the dtype probe flags numeric columns named after an administrative area.
+  Issue #48's other points need no change (#37 decided them, or they already hold).
+
 ## 2026-11-05, PR #33: Lennart's marks on four datasets
 
 - `huesken_sirna_efficacy`: `guide_position_01..19` dropped, the complement of window positions 38 to 20 (247

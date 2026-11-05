@@ -86,7 +86,7 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
         We start with the data from UCI.
 
         - We keep only the clinical features: the 10 clinical findings graded 0 to 3, family history and age. The source describes two steps: "Patients were first evaluated clinically with 12 features. Afterwards, skin samples were taken for the evaluation of 22 histopathological features." With the 22 histopathological features the task is close to solved (a logistic model reaches macro ROC AUC 0.999 and 97% accuracy on the shipped splits); the task here is the clinical differential before the biopsy (macro ROC AUC 0.98, 87% accuracy), where seborrheic dermatitis, pityriasis rosea and chronic dermatitis are the hard cases.
-        - We encode all features but age as categorical, since they are ordinal features in nature.
+        - `family history` (0/1) is a category; age and the 10 graded findings are numbers (below).
         - We ensure missing values in age are encoded as NaN.
         - Codes decoded (2026-11-01, CLEAN-12, CLEAN-14; the curator's rule: a code whose codebook says in words what
           each level is carries the words, a score without them is a number): 10 scores with no words per level are
@@ -94,6 +94,10 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
           papules`, `follicular papules`, `oral mucosal involvement`, `knee and elbow involvement`, `scalp involvement`.
         - The target (2026-11-01, CLEAN-25): `class` ships its classes as words (dermatology.names, 9. Class
           Distribution).
+        - The 10 scores ship as numbers (2026-11-05, Lennart, GitHub issue #48, CLEAN-14): `_feature_types` had cast
+          every column but age to a category, so they shipped unordered although the decoding above made them
+          numbers. The source names only the ends of the scale ("0 indicates that the feature was not present, 3
+          indicates the largest amount possible, and 1, 2 indicate the relative intermediate values").
     """
 
     # Task
@@ -183,5 +187,5 @@ class EryhematoSquamousDisease(AbstractCuratedDataset):
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
-        # age is numeric, and has some missing values
-        return FeatureTypes(categorical=[c for c in df.columns if c not in ("age", self.target)])
+        # the 0/1 flag is a category; age and the 10 graded findings (SCORES) stay numbers (CLEAN-14)
+        return FeatureTypes(categorical=["family history"])

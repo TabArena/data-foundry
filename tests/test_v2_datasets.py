@@ -12,7 +12,9 @@ Every ``datasets/_dev/tabarena-v0pt2/<name>/dataset.py`` is discovered and check
 
 from __future__ import annotations
 
+import ast
 import os
+import re
 from pathlib import Path
 
 import pytest
@@ -77,3 +79,26 @@ def test_definition_matches_its_report(name: str) -> None:
     assert result.container.checksum == read_report(ds.report_path)["checksum"], (
         f"{name}: dataset.py no longer gives the checksum in README.md; re-run `dataset check` and review the diff"
     )
+
+
+def _scores(dataset_py: Path) -> list[str]:
+    """The definition's module-level `SCORES` list (scores with no words per level), or none."""
+    for node in ast.parse(dataset_py.read_text()).body:
+        if isinstance(node, ast.Assign) and any(getattr(target, "id", None) == "SCORES" for target in node.targets):
+            return list(ast.literal_eval(node.value))
+    return []
+
+
+@pytest.mark.parametrize("folder", [f for f in FOLDERS if _scores(ROOT / f / "dataset.py")])
+def test_scores_ship_as_numbers(folder: str) -> None:
+    """A column of `SCORES` is a number (CLEAN-14): no feature type casts it back to a category.
+
+    eryhemato_squamous_disease's 10 scores were numbers after `_clean` and categories after a blanket
+    `_feature_types` (GitHub issue #48). Read from the README's type lists, so no data is needed.
+    """
+    readme = (ROOT / folder / "README.md").read_text()
+    typed = set()
+    for kind in ("categorical", "ordinal", "string", "datetime"):
+        line = re.search(rf"^- {kind} \(\d+\): (.*)$", readme, re.MULTILINE)
+        typed |= set(re.findall(r"`([^`]+)`", line.group(1))) if line else set()
+    assert not typed & set(_scores(ROOT / folder / "dataset.py")), f"{folder}: `SCORES` columns typed as non-numbers"

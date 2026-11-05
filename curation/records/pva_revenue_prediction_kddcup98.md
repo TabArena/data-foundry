@@ -52,6 +52,8 @@ CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words w
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target ships as No/Yes, Yes the event (1 is the event).
 
+CC (2026-11-05, Lennart): GitHub issue #48 review: `DOMAIN_urbanicity` stays an unordered category with a note: the dictionary calls `DOMAIN` nominal and gives no density order of City and Suburban. The declared metric is checked.
+
 ## Reference
 
 Website / readme

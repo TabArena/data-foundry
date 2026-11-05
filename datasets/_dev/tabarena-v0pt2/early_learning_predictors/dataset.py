@@ -876,6 +876,16 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
         - The assessor's id (`id_enumerator`) is a control variable of the data collection rather than a factor that
           should be used for prediction, so we drop it with the other ids, although it is predictive and explains
           noise in the target.
+        - The ward ships as the national ward code `id_ward_best` (8 digits, 569 wards), a category, in place of
+          `ward_best`, the ward's number within its municipality (2026-11-05, Lennart, GitHub issue #48, CLEAN-14):
+          as a number `ward_best` read as an order of places that does not exist, and 101 numbers stood for 569
+          wards (ward 4 of Steve Tshwete is 83103004, ward 4 of Dr JS Moroka 83106003). The ward is a location, kept
+          like the municipality, district and province, not an id of the data collection like the other `id_`
+          columns. A ward holds 1 to 18 facilities (median 3, 28.5% hold one); the split groups by facility.
+          The survey's sampling cluster `id_cluster_original` (430 clusters, also a median of 3 facilities) stays
+          dropped: it exists only in the 2021 round (5,222 children), so it is a unit of that survey's sample design
+          and marks the round, which we drop as `data_year`; the ward is a place a new facility has too, recorded in
+          the 2020-2022 rounds (2026-11-05, Lennart).
         - We drop `teacher_duration`, the minutes the teacher's socio-emotional rating form was open (DataFirst's
           codebook: "Teacher SEF duration in minutes"): a timer of the data collection, like the three `duration_elom`
           timers dropped above, not a property of the child, the teacher or the facility. It exists only in the
@@ -952,7 +962,8 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
             "duration_elom_hle",
             "child_sample_wgt",
         ]
-        leaky_cols += ["id_cluster_original"]  # leaks with school-based split
+        # the 2021 survey's sampling cluster: present only in that round, so it marks the round (curation notes)
+        leaky_cols += ["id_cluster_original"]
         leaky_cols += [
             "child_observe_total",
             "child_observe_attentive",
@@ -968,7 +979,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
             "id_enumerator_hle",
             "id_prov_best",
             "audit_ind",
-            "id_ward_best",
             "child_conditions",
             "calc_test_hour",
             "teacher_gender",
@@ -980,7 +990,6 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
             "id_mn_best",
             "id_prov_best",
             "id_team",
-            "id_ward_best",
             "data_source",
             "sef_ind",
             "pra_ind",
@@ -1008,6 +1017,9 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pri_calc_time_close",
                 # a copy of `certificate_register` in every row
                 "certificate_registration_npo",
+                # the ward's number within its municipality: the same number names different wards;
+                # the national ward code `id_ward_best` ships in its place (curation notes)
+                "ward_best",
                 # how long the teacher's rating form was open: a timer of the data collection (curation notes)
                 "teacher_duration",
             ],
@@ -1080,6 +1092,8 @@ class EarlyLearningPredictors(AbstractCuratedDataset):
                 "pri_location",
                 "pri_meal_prep",
                 "programme",
+                # the national ward code, a location like the municipality (curation notes)
+                "id_ward_best",
                 "child_gender",
                 "child_age_group",
                 "child_attends",

@@ -61,6 +61,10 @@ CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN
 
 CC (2026-11-01, Lennart): counts with a cut end stay ordered categories of the source's levels, the cut end a level of its own (CLEAN-14): the lossless form, chosen from the context rather than by model runs; the same day's numbers with censoring flags are reverted.
 
+CC (2026-11-05, Lennart): GitHub issue #48 review: the ward ships as the national ward code `id_ward_best` (569 wards), a category, in place of `ward_best` (the ward's number within its municipality, which named different wards with one number). The sampling cluster `id_cluster_original` stays dropped: it exists only in the 2021 round, a unit of that survey's sample design that marks the round, while the ward is a place a new facility has too. The declared metric (RMSE, Zindi) is checked.
+
+**Assessment (AI, 2026-11-05):** a ward holds 1 to 18 facilities (median 3, 28.5% hold one), the split groups by facility, so the ward contains whole groups and reveals no test facility's rows. Issue #48's other points on this dataset hold no change: `programme` was categorical already, `pra_agency_*` and `pra_job` stay as the #37 ordinal review decided, the free-text "other" columns stay strings.
+
 ## Reference
 
 DataDrive2030. ELOM and Thrive by Five Index 2016-2023, Merged Data [dataset]. Version 1. Cape Town: DataDrive2030 [producer], 2024. Cape Town: DataFirst [distributor], 2024. DOI: https://doi.org/10.25828/WG0D-Y909
