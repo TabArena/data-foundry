@@ -890,9 +890,14 @@ def test_metric_with_a_documented_scoring_column_passes(group_metric):
     assert metric_findings(make_v2_container(_with_era(), spec=spec, scoring_columns=[_era(group_metric)])) == {}
 
 
-def test_metric_input_that_models_also_see_is_only_an_info(group_metric):
+def test_metric_reading_the_task_group_column_is_an_info_and_a_plain_feature_a_warning(group_metric):
+    """The metric reads the task's own group or time column where it is; a plain feature needs a scoring copy."""
+    df = _with_era()
+    df["week"] = np.arange(len(df)) // 6  # the task's time column, as blogfeedback's test day
+    on_time = make_v2_container(df, spec=_spec(group_metric, inputs={"group": "week"}), time_on="week")
+    assert metric_findings(on_time) == {"task_metric_input_is_model_input": "info"}
     spec = _spec(group_metric, inputs={"group": "era"})
-    assert metric_findings(make_v2_container(_with_era(), spec=spec)) == {"task_metric_input_is_model_input": "info"}
+    assert metric_findings(make_v2_container(_with_era(), spec=spec)) == {"task_metric_input_is_feature": "warning"}
 
 
 def test_metric_without_its_input_is_an_error(group_metric):
@@ -934,9 +939,9 @@ def test_feature_columns_drop_target_group_and_scoring_columns(group_metric):
     assert feature_columns(make_grouped_container()) == ["feat_num"]
 
 
-def test_weight_that_is_also_a_feature_stays_a_model_input_and_weighs_the_score():
-    """A weight known for every row at the prediction point (liberty's ``var11``, the sum insured) is an input of
-    the metric without a ``ScoringColumn``: the models get it, and the scorer reads it by row index (MET-2).
+def test_weight_that_is_also_a_feature_ships_a_scoring_copy_that_weighs_the_score():
+    """A weight known for every row at the prediction point (liberty's ``var11``, the sum insured) stays a feature,
+    and a copy ships as the scoring column the metric reads (MET-2); the copy is no duplicate column to drop.
     """
     from data_foundry.curation_container import feature_columns
     from data_foundry.v2.metrics import score, scorer
@@ -945,14 +950,23 @@ def test_weight_that_is_also_a_feature_stays_a_model_input_and_weighs_the_score(
     rng = np.random.default_rng(1)
     df["size"] = rng.uniform(1.0, 5.0, size=len(df))
     df["target"] = np.where(rng.random(len(df)) < 0.3, rng.exponential(size=len(df)), 0.0)
-    spec = _spec("normalized_weighted_gini", inputs={"weight": "size"})
-    container = make_v2_container(df, spec=spec, problem_type="regression")
+    plain = make_v2_container(
+        df, spec=_spec("normalized_weighted_gini", inputs={"weight": "size"}), problem_type="regression"
+    )
+    assert metric_findings(plain) == {"task_metric_input_is_feature": "warning"}
+    df["size_weight"] = df["size"]
+    spec = _spec("normalized_weighted_gini", inputs={"weight": "size_weight"})
+    copy = ScoringColumn(
+        column="size_weight", role="weight", used_by="normalized_weighted_gini", description="a copy of size"
+    )
+    container = make_v2_container(df, spec=spec, scoring_columns=[copy], problem_type="regression")
     assert feature_columns(container) == ["feat_num", "feat_cat", "size"]
-    assert metric_findings(container) == {"task_metric_input_is_model_input": "info"}
+    assert metric_findings(container) == {}
+    assert "dataset_duplicate_columns" not in slugs_of(container)
     test_idx = np.arange(0, len(df), 2)
     y_test, y_pred = df["target"].to_numpy()[test_idx], df["feat_num"].to_numpy()[test_idx]
     weighted = scorer(container)(y_test, y_pred, test_idx)
-    assert weighted == pytest.approx(score(spec, y_test, y_pred, weight=df["size"].to_numpy()[test_idx]))
+    assert weighted == pytest.approx(score(spec, y_test, y_pred, weight=df["size_weight"].to_numpy()[test_idx]))
     assert weighted != pytest.approx(score(spec, y_test, y_pred, weight=np.ones(len(test_idx))))
 
 

@@ -235,7 +235,9 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
   is (`task_metric_input_is_model_input`, info). A feature the metric also needs (MET-2: a weight known for every
   row at the prediction point, such as liberty_mutual_fire_peril_loss_cost's `var11`) stays a feature and is copied
   in `_clean` into a scoring column named for its role (`var11_weight`), so the scoring columns are the complete
-  set of the extra data a metric reads. A scoring column stays in the frame, is never a feature, and is declared as
+  set of the extra data a metric reads; a metric input that is a plain feature is a warning
+  (`task_metric_input_is_feature`), and the copy is exempt from `dataset_duplicate_columns`. A scoring column stays in
+  the frame, is never a feature, and is declared as
   `scoring_columns = (ScoringColumn(column="era", role="group", used_by="mean_group_pearsonr", description="the week a
   row belongs to; the metric is the mean of the per-era correlations"),)`. `feature_columns(container)` returns the
   model's inputs without the target, the group column and the scoring columns, and `scorer(container)` takes the
@@ -251,8 +253,9 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
   implement the metric from these fields. `describe()` and the README show it with the scoring columns. The bundle
   checks: `task_metric_undeclared` (a fallback without a reason), `task_metric_unknown`, `task_metric_not_canonical` (an
   alias), `task_metric_problem_type_mismatch`, `task_metric_unknown_param`, `task_metric_input_missing` (a role the
-  metric needs is not mapped), `task_metric_input_is_model_input` (info: an input that is also a feature, the group or
-  the time column, which is allowed), `task_metric_reference_missing` (a source or stand-in without a link),
+  metric needs is not mapped), `task_metric_input_is_model_input` (info: the metric reads the task's group or time
+  column), `task_metric_input_is_feature` (warning: the metric reads a plain feature; ship a scoring copy),
+  `task_metric_reference_missing` (a source or stand-in without a link),
   `task_metric_stand_in_incomplete`, `task_metric_not_computable` (no finite score of a random prediction on some fold),
   `task_metric_local`, `task_metric_transform_not_regression`, `task_metric_transform_overflow` (the inverse of
   `target_transform` overflows on a shipped value: the target is not on that scale) and

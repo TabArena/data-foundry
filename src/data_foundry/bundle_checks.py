@@ -599,7 +599,9 @@ def _check_dataset_duplicates(ctx: _Ctx) -> Iterator[CheckResult]:
             hashes.setdefault(digest, column)
 
     target_duplicates = [(a, b) for a, b in duplicate_pairs if ctx.target in (a, b)]
-    other_duplicates = [(a, b) for a, b in duplicate_pairs if ctx.target not in (a, b)]
+    # a scoring column may be a copy of a feature the metric also needs (MET-2): not a duplicate to drop
+    scoring = {c.column for c in getattr(ctx.task, "scoring_columns", None) or ()}
+    other_duplicates = [(a, b) for a, b in duplicate_pairs if ctx.target not in (a, b) and not ({a, b} & scoring)]
     if target_duplicates:
         leaking = [b if a == ctx.target else a for a, b in target_duplicates]
         yield CheckResult(
@@ -1091,17 +1093,29 @@ def _scoring_column_findings(ctx: _Ctx) -> Iterator[CheckResult]:
             "error",
             f"Scoring or metric input column(s) {missing} are not in the frame.",
         )
-    # An input may also be a column the task already gives the models (a feature, the group or the time column, e.g.
-    # sat11's instance id or a stay's hour); only a column that exists for scoring alone is a scoring column.
+    # The metric reads the task's own group or time column where it is (sat11's instance id, a stay's hour, a test
+    # day); any other input is a scoring column, and a feature the metric also needs ships a scoring copy (MET-2).
+    task_columns = {
+        *ctx.columns_of(task.group_on),
+        *ctx.columns_of(task.time_on),
+        *ctx.columns_of(task.group_time_on),
+    }
     model_inputs = sorted({c for c in spec.inputs.values() if c not in scoring and c in ctx.df.columns})
-    if model_inputs:
+    own = [c for c in model_inputs if c in task_columns]
+    features = [c for c in model_inputs if c not in task_columns]
+    if own:
         yield CheckResult(
             "task_metric_input_is_model_input",
             "info",
-            f"The metric's input column(s) {model_inputs} are also given to the models (a feature, the group or the "
-            "time column); they are not scoring columns.",
-            hint="Declare a column as a `ScoringColumn` only when it exists for scoring alone and must not be a "
-            "feature.",
+            f"The metric reads the task's group or time column(s) {own} where they are; they are not scoring columns.",
+        )
+    if features:
+        yield CheckResult(
+            "task_metric_input_is_feature",
+            "warning",
+            f"The metric reads feature column(s) {features}: a metric's extra data is a scoring column (MET-2).",
+            hint="Keep the feature and copy it in `_clean` into a scoring column named for its role "
+            "(`var11` -> `var11_weight`); map the metric's input to the copy.",
         )
     as_features = sorted(c for c in scoring if c == task.time_on or c in ctx.columns_of(task.stratify_on))
     if as_features:

@@ -220,8 +220,8 @@ class MetricSpec:
     """JSON values only: a cost matrix, ``k``, the shape of a transform."""
     inputs: dict[str, str] = dataclasses.field(default_factory=dict)
     """Each role the scorer needs (``group``, ``weight``, ``order``) mapped to a column of the frame. Such a column is
-    a :class:`ScoringColumn` (never a feature), unless the models get it anyway: the time column, or a weight known
-    for every row at the prediction point that stays a feature (MET-2), which is then left undeclared."""
+    a :class:`ScoringColumn` (never a feature), except the task's group or time column, which the metric reads where
+    it is; a feature the metric also needs ships a copy as a scoring column (MET-2)."""
     original: str | None = None
     """The original metric as the source names it (``"RMSE"``, ``"per-era CORR"``)."""
     reference: str | None = None
