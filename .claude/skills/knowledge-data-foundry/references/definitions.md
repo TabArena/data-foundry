@@ -637,13 +637,61 @@ A custom metric is added in the same change as the dataset that needs it (MET-13
      and with a class missing from a fold where the metric allows it; when the official code cannot run in the test
      environment, a faithful transcription of it in the test file, with its link;
    * one case computed by hand, with the arithmetic in a comment;
-   * a fold it cannot score (a single class, an empty group): a clear `ValueError` or a non-finite value, which
-     `task_metric_not_computable` reports;
+   * a fold it cannot score (a single class, an empty group): NaN or a clear `ValueError`, never an infinite value,
+     which `task_metric_not_computable` reports;
    * its time on 1M rows (with a realistic number of groups), reported in the test's output or the PR, and fast
-     enough to score every fold of a benchmark run.
+     enough to score every fold of a benchmark run;
+   * the stability checklist below, which `tests/test_v2_metrics_stability.py` runs on every registered metric (a
+     metric with required params needs an entry in its `EXAMPLE_PARAMS`).
 4. In the definition, declare it (`Metric.source("cost_matrix", params={...}, reference=...)`), declare every input
    column as a `ScoringColumn`, and run `dataset check`: `task_metric_not_computable` scores a random prediction on
    every split, so a test fold that lacks what the metric needs shows up there (MET-2).
+
+### Metric stability
+
+A benchmark scores every model on every fold, so a metric must not break on a prediction a model can make or on a
+fold at the edge of what it measures (MET-13, amended 2026-11-05, Lennart). Every metric in `METRICS`, standard or
+custom, meets this checklist; `tests/test_v2_metrics_stability.py` checks items 1 to 4 for every registered metric,
+and the rest is checked when the metric is written or reviewed.
+
+1. **Any prediction a model can make gets a finite score**, without scikit-learn's warnings of an ill-defined value:
+   constant, tied, 0, negative and huge values, probabilities of exactly 0 and 1, a class never predicted. A constant
+   baseline is a model too.
+   * A correlation of a constant prediction is 0, no skill, where scipy gives NaN (`pearsonr`, `spearmanr`,
+     `weighted_pearsonr`, and per group `mean_group_pearsonr`).
+   * A prediction outside the metric's domain is floored, not refused: `rmsle` at 0, the Poisson and Tweedie
+     deviances at `min_prediction` (with `prediction_domain="positive"`, so the bundle check draws valid dummies). The
+     Poisson floor defaults to machine epsilon, as `log_loss` clips probabilities. Where the floor sets the scale of
+     the worst error, it is a required param the definition states: above power 1 a Tweedie deviance charges a claim
+     about `y * p^(1-q)`, so a 2000 EUR claim predicted at 0 costs about 2e6 at a floor of 1e-6 and 2e3 at 1 EUR.
+   * Precision, recall and F1 pass `zero_division=0.0`: the value scikit-learn uses anyway, without the warning.
+2. **The score does not depend on the row order.** Tied predictions count by the mean over their orderings (the
+   expected share at a cut-off, a tied block's mid position in a cumulative curve, the mean of tied candidates), as in
+   `precision_at_k`, `normalized_gini`, `normalized_weighted_gini`, `gini_top_capture`, `par_k` and
+   `mean_group_top_k_overlap`. Never `argsort(kind="stable")` or "the first row". Official code often breaks ties by
+   row order; the library's value equals it without ties, and the docstring says where it departs.
+3. **A NaN or infinite prediction raises a `ValueError`.** `score()` checks the predictions (and a regression
+   target) before the metric and again after the inverse of `target_transform`, where a huge log prediction
+   overflows. A metric never returns NaN for a bad prediction, nor a score that quietly skipped the row.
+4. **A fold whose truth leaves the metric undefined gives NaN**, or a clear `ValueError`: one class (`roc_auc`,
+   `average_precision`, `gini_top_capture`), a constant target (the correlations, the normalized Ginis), no loss at
+   all, no septic patient (`normalized_early_detection_utility`), a true value of 0 in a ratio (`mape`; `rmspe` leaves
+   such rows out, as its competition did). Never an infinite value, a `ZeroDivisionError`, or a number made of
+   rounding noise. `task_metric_not_computable` flags a non-finite score on any shipped split, so such a fold never
+   ships.
+5. **A group that cannot tell models apart is left out, and the docstring says so**: a group whose truth does not
+   vary (`mean_group_pearsonr`, `mean_group_normalized_rmse`), a period with one class (`gini_stability`), a group of
+   `k` rows or fewer (`mean_group_top_k_overlap`, where every model scores 1). NaN when every group is left out. The
+   groups kept keep their positions: `gini_stability` fits its line over each period's own index, so a period left
+   out does not shift the later ones.
+6. **Degeneracy is decided on the values as given**, never on a computed variance or the result of a division:
+   `np.ptp(y) == 0` (or a range below 1e-12 of the group's largest absolute value), not `var > 0`. A constant 0.1
+   leaves a variance of about 1e-34 from rounding in the mean, which divides an error into about 1e17.
+7. **Every denominator is checked before the division**: a sum of weights, the score of the perfect order (a Gini of
+   the perfect order is 0 when every loss is equal), a per-group count, the best-minus-baseline of a normalized score.
+   `np.errstate` only silences a branch whose result is then replaced, never a value that is returned.
+8. **A scale-free metric stays in its range**: a metric of shares, ranks or relative errors cannot be dominated by
+   one row through a divisor near 0. Normalize by the truth's spread only where the spread is guarded (item 6).
 
 `Metric.local(fn, ...)` runs code that only the definition holds. It is for a user's own dataset that is never
 shipped; the working copy never uses it.

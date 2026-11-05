@@ -61,10 +61,9 @@ EXPECTED = {
     "median_absolute_error": (Y_REG, P_REG, skm.median_absolute_error(Y_REG, P_REG)),
     "pearsonr": (Y_REG, P_REG, scipy.stats.pearsonr(Y_REG, P_REG).statistic),
     "spearmanr": (Y_REG, P_REG, scipy.stats.spearmanr(Y_REG, P_REG).statistic),
-    "mean_poisson_deviance": (Y_REG, P_REG, skm.mean_poisson_deviance(Y_REG, P_REG)),
     "mean_tweedie_deviance": (Y_REG, P_REG, skm.mean_tweedie_deviance(Y_REG, P_REG, power=1.5)),
 }
-PARAMS = {"mean_tweedie_deviance": {"power": 1.5}}
+PARAMS = {"mean_tweedie_deviance": {"power": 1.5, "min_prediction": 1e-9}}
 """The params a standard metric needs for its reference value."""
 
 
@@ -491,39 +490,46 @@ def test_poisson_deviance_floor_is_a_stated_param() -> None:
             Metric.source("mean_poisson_deviance", params={"min_prediction": bad})
 
 
-# --- mean_tweedie_deviance: scikit-learn's semantics at a required power, an optional floor ---------------------------
+# --- mean_tweedie_deviance: scikit-learn's semantics at a required power and a required floor -----------------------
+
+
+def _tweedie(power: float, floor: float = 1e-9) -> MetricSpec:
+    params = {"power": power, "min_prediction": floor}
+    return metric_spec(Metric.source("mean_tweedie_deviance", reference="x", params=params), "regression")
 
 
 def test_mean_tweedie_deviance_by_hand_and_on_a_pure_premium_with_zeros() -> None:
     """At power 1.5, 2 * (y^0.5 / 0.375 - 2 y / p^0.5 + 2 p^0.5) per row; equal to scikit-learn on claim costs."""
-    spec = metric_spec(Metric.source("mean_tweedie_deviance", reference="x", params={"power": 1.5}), "regression")
     # y = 0, p = 4: 2 * 2 * 2 = 8; y = 4, p = 4: 2 * (8 / 3 - 4 + 4) = 16 / 3 - 16 / 3 = 0
-    assert score(spec, [0, 4], [4.0, 4.0]) == pytest.approx(4.0, rel=1e-12)
+    assert score(_tweedie(1.5), [0, 4], [4.0, 4.0]) == pytest.approx(4.0, rel=1e-12)
     rng = np.random.default_rng(7)
     cost = rng.gamma(2.0, 500.0, 3000) * rng.binomial(1, 0.1, 3000)  # 90% zero claims
     pred = rng.gamma(1.0, 80.0, 3000) + 1e-3
     expected = skm.mean_tweedie_deviance(cost, pred, power=1.5)
-    assert score(spec, cost, pred) == pytest.approx(expected, rel=1e-12)
-    poisson = metric_spec(Metric.source("mean_tweedie_deviance", reference="x", params={"power": 1}), "regression")
-    assert score(poisson, cost, pred) == pytest.approx(skm.mean_poisson_deviance(cost, pred), rel=1e-12)
+    assert score(_tweedie(1.5), cost, pred) == pytest.approx(expected, rel=1e-12)
+    assert score(_tweedie(1), cost, pred) == pytest.approx(skm.mean_poisson_deviance(cost, pred), rel=1e-12)
 
 
-def test_mean_tweedie_deviance_needs_a_power_and_floors_like_the_poisson_deviance() -> None:
-    """The power is required and must be one scikit-learn takes; min_prediction floors the predictions."""
+def test_mean_tweedie_deviance_needs_a_power_and_a_floor() -> None:
+    """Power >= 1 and min_prediction are both required: above power 1 the cost of a mean near 0 grows without bound,
+    so the floor sets the scale of the worst error and the definition states it.
+    """
     with pytest.raises(ValueError, match="power"):
-        Metric.source("mean_tweedie_deviance")
-    for bad in (0.5, float("inf"), "1.5", True):
-        with pytest.raises(ValueError, match="power"):
-            Metric.source("mean_tweedie_deviance", params={"power": bad})
+        Metric.source("mean_tweedie_deviance", params={"min_prediction": 1.0})
     with pytest.raises(ValueError, match="min_prediction"):
-        Metric.source("mean_tweedie_deviance", params={"power": 1.5, "min_prediction": 0})
-    plain = metric_spec(Metric.source("mean_tweedie_deviance", reference="x", params={"power": 1.5}), "regression")
-    with pytest.raises(ValueError, match="strictly positive"):
-        score(plain, [0, 1, 2], [0.0, 1.0, 2.0])
-    floored = metric_spec(
-        Metric.source("mean_tweedie_deviance", reference="x", params={"power": 1.5, "min_prediction": 1.0}),
-        "regression",
-    )
+        Metric.source("mean_tweedie_deviance", params={"power": 1.5})
+    for bad in (0, -1, 0.5, float("inf"), "1.5", True):
+        with pytest.raises(ValueError, match="power"):
+            Metric.source("mean_tweedie_deviance", params={"power": bad, "min_prediction": 1.0})
+    for bad in (0, -1e-6, float("nan"), float("inf"), True):
+        with pytest.raises(ValueError, match="min_prediction"):
+            Metric.source("mean_tweedie_deviance", params={"power": 1.5, "min_prediction": bad})
     y, p = np.array([0.0, 30.0, 500.0]), np.array([-3.0, 0.2, 400.0])
     expected = skm.mean_tweedie_deviance(y, np.maximum(p, 1.0), power=1.5)
-    assert score(floored, y, p) == pytest.approx(expected, rel=1e-12)
+    assert score(_tweedie(1.5, 1.0), y, p) == pytest.approx(expected, rel=1e-12)
+    # the floor sets the worst error: one 2000 EUR claim predicted at 0
+    assert score(_tweedie(1.5, 1.0), [2000.0], [0.0]) == pytest.approx(
+        skm.mean_tweedie_deviance([2000.0], [1.0], power=1.5)
+    )
+    with pytest.raises(ValueError, match="NaN or infinite"):
+        score(_tweedie(1.5, 1.0), y, [1.0, np.nan, 2.0])

@@ -735,9 +735,10 @@ def test_mean_group_top_k_overlap_by_hand() -> None:
     assert score(spec, y, p, group=d) == pytest.approx((0.5 + 1.0) / 2)
     # a tie at the cut-off: day a's predictions 3, 2, 2, 0 -> row 0 in, rows 1 and 2 each in with probability 1/2
     assert score(spec, y, [3, 2, 2, 0, 0.5, 0.9, 0.8, 0.1], group=d) == pytest.approx(((1 + 0.5) / 2 + 1.0) / 2)
-    # a day with fewer rows than k takes its size as k: x's one row is its own top (1); y: true top 7, 5, predicted
-    # top 2, 5 -> 1 of 2
-    assert score(spec, [1, 5, 2, 7], [0, 1, 2, 0], group=["x", "y", "y", "y"]) == pytest.approx((1.0 + 0.5) / 2)
+    # a day of k rows or fewer is left out (every model would score 1 there): x's one row does not count; y: true
+    # top 7, 5, predicted top 2, 5 -> 1 of 2
+    assert score(spec, [1, 5, 2, 7], [0, 1, 2, 0], group=["x", "y", "y", "y"]) == pytest.approx(0.5)
+    assert np.isnan(score(spec, [1, 5], [0, 1], group=["x", "y"]))  # no day larger than k
     # a constant prediction finds k / n of the top on average
     assert score(spec, [4, 3, 2, 1], [0, 0, 0, 0], group=[0, 0, 0, 0]) == pytest.approx(0.5)
     with pytest.raises(ValueError, match="missing param"):
@@ -943,7 +944,7 @@ _CHECK_PARAMS = {
     "precision_at_k": {"k_fraction": 0.2},
     "average_precision_at_k": {"k_fraction": 0.1},
     "par_k": {"cutoff": 5000},
-    "mean_group_top_k_overlap": {"k": 10},
+    "mean_group_top_k_overlap": {"k": 2},
 }
 
 

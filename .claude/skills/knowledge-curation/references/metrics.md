@@ -215,8 +215,14 @@ shipped: a reader of the files could not compute it. A metric undefined at the e
 the predictions, so a method gets a score rather than none (P6). The floor is a parameter the definition states, at
 a value below the smallest plausible prediction, as practice clips a model's output before scoring; the library's
 default is machine epsilon, as `log_loss` clips probabilities (Lennart, 2026-11-04, on bemtpl97: "in pratice we
-would also clip to a reasonable number"; `min_prediction=1e-6` for claim counts). How in Data Foundry:
-[definitions.md](../../knowledge-data-foundry/references/definitions.md), "Metrics".
+would also clip to a reasonable number"; `min_prediction=1e-6` for claim counts). Where the floor sets the scale of
+the worst error (a Tweedie deviance above power 1, whose cost of a near-zero prediction grows without bound), it has
+no default: the definition states it. A metric is stable at its edges (amended 2026-11-05, Lennart): any prediction
+a model can make gets a finite score that does not depend on the row order (ties count by the mean over their
+orderings), a NaN or infinite prediction is an error, and a fold or group the metric cannot score gives NaN or is
+left out by a stated rule, never an infinite value or a number made of rounding noise. How in Data Foundry, with the
+checklist: [definitions.md](../../knowledge-data-foundry/references/definitions.md), "Metrics" and "Metric
+stability".
 
 ## Patterns
 
@@ -270,6 +276,7 @@ and wait for the curator; the others are decided.
 | MET-1, MET-11 | churn_telco_south_asia | fallback `roc_auc` kept (2026-10-21, Lennart) | the first publication (closed access) could not be read; no metric is known | applied |
 | MET-2 (amended 2026-11-02, Andrej), MET-1, MET-12 | blogfeedback | `mean_group_top_k_overlap` (k = 10) with the time column `basetime_day` as its group, Buza's Hits@10 per test day (2026-11-02, Andrej) | the source scores each test day's top 10; the day is the task's time column, which the metric reads where it is, as sat11 reads its group column | applied |
 | MET-2 (amended 2026-11-02, Andrej), MET-4 | liberty_mutual_fire_peril_loss_cost | the competition's `normalized_weighted_gini`; `var11` stays a feature and its copy ships as the weight scoring column (2026-11-02, Andrej; the copy 2026-11-05, Lennart) | `var11`, the sum insured, is a policy characteristic the host shipped in the test file for every team, set at underwriting and known for train and test rows alike; on a weighted Gini the best order is by expected loss whatever the weights, and as a feature it moved an untuned model's score by -0.010 (within fold noise) | applied |
+| MET-13 (amended 2026-11-05, Lennart) | the metric library (`gini_top_capture`, `par_k`, the correlations, the normalized Ginis, `mean_group_normalized_rmse`, `mean_group_top_k_overlap`, `gini_stability`, `rmsle`, `mape`, `mean_tweedie_deviance`, `normalized_early_detection_utility`) | every metric checked against the stability checklist on edge cases: tied predictions now count by the mean over their orderings (`gini_top_capture`, `par_k` had taken the row order), a constant prediction of a correlation scores 0, NaN predictions raise, and folds or groups the metric cannot score give NaN or are left out | a constant 0.1 group gave `mean_group_normalized_rmse` 1.2e17 from rounding; `normalized_gini` raised `ZeroDivisionError` when every loss was equal; `gini_top_capture` scored 0.447 or 0.420 on the same tied predictions in two row orders; a 6-row day lifted a random model's top-3 overlap from 0.2 to 0.6; the sepsis utility gave -inf on a fold without a septic patient | applied |
 
 ## In Data Foundry
 
