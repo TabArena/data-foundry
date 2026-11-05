@@ -14,8 +14,10 @@ class Ai4dLabTanzaniaTourismClassificationChallenge(AbstractCuratedDataset):
         question="Which spending category applies to a visitor's specified Tanzania trip?",
         use_case=(
             "A tour operator or the Tanzania Tourism Board uses historical visitor and trip records to estimate the "
-            "spending category for a specified alternative trip plan, "
-            "conditional on the trip happening as specified."
+            "spending category for a specified alternative trip plan, conditional on the trip happening as specified. "
+            "The survey's own users, the National Bureau of Statistics and the Bank of Tanzania, fill in a departing "
+            "respondent's spending band from the rest of the exit form when the expenditure answer is missing or "
+            "implausible."
         ),
         row="One labeled tourist survey record in the 2022 competition's training file (18,506 records).",
         predicted=(
@@ -26,8 +28,8 @@ class Ai4dLabTanzaniaTourismClassificationChallenge(AbstractCuratedDataset):
         ),
         known=(
             "Visitor country, age group and first-trip status; travel party, purpose, activity, information source, "
-            "tour arrangement, package inclusions and nights on the mainland and Zanzibar. Historical realized "
-            "plan-like attributes instantiate the specified scenario."
+            "tour arrangement, package inclusions and nights on the mainland and Zanzibar. For the statistician these "
+            "are the completed exit form at departure; for the planner the realized trip stands in for the plan."
         ),
         split=(
             "Held-out visitor/trip records from the represented survey population, using stratified random folds. "
@@ -40,10 +42,10 @@ class Ai4dLabTanzaniaTourismClassificationChallenge(AbstractCuratedDataset):
         ),
         fit="approximate",
         fit_reason=(
-            "The conditional-plan scenario uses the observed trip attributes, assuming the plan is fulfilled. "
-            "A six-band label of party spending is coarser than the amount a planner needs, and its band edges "
-            "are reconstructed, not published. The release does not give the survey year or respondent/party "
-            "linkage."
+            "The statistician's task is mirrored: every input is on the form at departure, and the random folds test "
+            "other respondents of the same survey. For the planner the observed trip stands in for a plan assumed "
+            "fulfilled, and an operator quotes from a rate card, so a band guess changes little. Six bands are coarser "
+            "than the amount either needs, with reconstructed edges. No survey year or respondent/party linkage."
         ),
     )
 
@@ -82,6 +84,8 @@ class Ai4dLabTanzaniaTourismClassificationChallenge(AbstractCuratedDataset):
     curation_comments = """
         We start with the 18,506 labeled rows in Train.csv; the 6,169 unlabeled Test.csv rows are not training labels.
 
+        - CC (2026-11-05, Lennart): the survey statistician joins the trip planner as actor (issue 3, option B; USE-9): NBS and the Bank of Tanzania, who estimate tourism earnings from the exit survey, fill in a respondent's spending band from the rest of the form when the expenditure answer is missing or implausible. That actor has every input at departure, and its test is other respondents of the same survey, which the random folds measure. The planner stays, so the use case still looks forward and the `ForcedIIDFromTemporal` tag stays (SPLIT-8); the fit stays approximate (six bands, USE-5).
+        - CC (2026-11-05, Lennart): the scorer reads probability columns in the sorted order of the class labels (scikit-learn's classes_) and checks named columns; the ordered categories stay metadata (issue 5, C; MET-2).
         - Prediction point: a visitor supplies visitor context and a proposed trip plan, assumed to occur as specified.
           Nights, activity, party and package attributes are scenario inputs even though recorded in an exit survey.
           package_food denotes package inclusion, not meal consumption. cost_category stays target-only.
@@ -111,7 +115,7 @@ class Ai4dLabTanzaniaTourismClassificationChallenge(AbstractCuratedDataset):
         - Retain all rows and stratified random evaluation, accepted by Myunghwan on 2026-10-25 after reviewing
           repetition evidence. Across all nine folds, 9.8509% of test evaluations match a training profile and
           90.1491% do not (pooled across three repeats, not distinct people). The copies are distinct respondents
-          the coarse features cannot tell apart, which LEAK-19 keeps with the reason in the notes: 361 repeated
+          the coarse features cannot tell apart, kept under LEAK-18 (few coarse features, plausible repeats; Lennart, 2026-11-05, issue 7 (d), not a widened LEAK-19): 361 repeated
           profiles are Alone (213 of them with more than one label), and 67.8% of copy groups are larger than their
           party. A split grouped by feature profile costs +0.0047 log loss (+0.0025 without age_group; LightGBM, one
           repeat), and out-of-fold copy lookups gain nothing (1.0765 against 1.0755). Residual LEAK-17 risk: With

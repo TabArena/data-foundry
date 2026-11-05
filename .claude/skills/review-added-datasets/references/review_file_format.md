@@ -16,7 +16,8 @@ A review file keeps every issue, so the page shows how each dataset was decided.
 the decision goes to the definition and the record, and the issue stays in the file with a closing
 `**Resolved (<date>, <who>):**` turn that states the decision; the page hides it behind "Show resolved issues". A
 REVIEW.md is never deleted, so a decided dataset stays on the page (Andrej, 2026-11-02). A settled record-field row
-leaves the file. How to write an
+leaves the file. A REVIEW.md with a `**Review panel:**` block may have no issue and no field row: the panel found
+nothing for the curator, who only sets the verdict; without a panel such a file is an error. How to write an
 issue (evidence, links, what is no evidence) is in
 [`../../knowledge-curation/references/writing.md`](../../knowledge-curation/references/writing.md); the
 REVIEW.md convention of the working copy in
@@ -34,7 +35,7 @@ of a line, in this order:
 | `**Main points:**` | yes | One line: what the curator decides. |
 | `**Record fields that disagree with the definition:**` | no | One item per field, see below. |
 | `**Record judgment:**` | no | The AI's judgment of the record, in a few lines. |
-| `**Issues for <curator>:**` | no | The numbered issues. |
+| `**Issues for <curator>:**` | no | The numbered issues, 0 to N: a review that leaves nothing to decide has none. |
 | `**Review panel:**` | no | The review panel of `/add-dataset`: its summary, then one section per role, see below. |
 
 The first sentence of the outcome is the record's outcome on the page and sets its category:
@@ -67,7 +68,8 @@ this order:
    the text: every rule ID, rule wording and quoted earlier call. The page numbers them by first reference.
 
 The options table has the columns `| | Option | What it does | Pro | Con |`, one row per option, a letter in the
-first column, `(implemented)` on the row the definition has now. Every issue has two rows or more. Several points in
+first column, `(implemented)` on the row the definition has now (the page names it on the "As implemented" button
+and highlights it when that mark is set). Every issue has two rows or more. Several points in
 one cell are separated by `; `: the page shows them as bullets (green for Pro, red for Con) and tags the implemented
 row and the row the `**Recommendation:**` names by its letter. A rule ID belongs in
 a footnote or the notes for the AI, never in the bullets or the title. The page shows the problem, then every other
@@ -75,7 +77,8 @@ bullet before the options in a closed box "Details" (its summary lists their lea
 recommendation. It shows the footnotes in a closed box "Rules and references" (a click on a reference opens it) and the
 notes in a closed box "Notes for the AI". The same holds for the open-issues block of a record and for a cross-dataset
 item. The collector warns (and still writes the report) for an open issue without the three required bullets or the
-table, with a problem of more than three bullets or a bullet of more than one sentence, or with a rule ID in its text.
+table, with a table that has no `(implemented)` row, with a problem of more than three bullets or a bullet of more
+than one sentence, or with a rule ID in its text.
 
 An issue keeps the public links to its evidence. An answer to the curator's question goes into the issue as
 `**Answer (AI, <date>):**`; it does not close the issue. Write the curator's note that prompted it just before, at the
@@ -84,7 +87,14 @@ cross-dataset item as a conversation: the original text, then one box per turn, 
 with one of these labels:
 `**Answer (AI, <date>):**`, `**Consistency check (AI, <date>):**`, `**<curator> (<date>[, <mark>]):**`,
 `**Resolved (<date>[, <who>]):**` or `**Deferred (<date>):**`. An open item whose last turn is the AI's is marked
-"Your turn". A table inside an issue or a turn needs a blank line before and after it; without one, the lines
+"Your turn". An AI turn that asks the curator to choose (a consistency check, an answer that asks for a confirmation)
+takes the issue's shape: the question in one sentence on the label line, `**Problem:**` bullets (and `**Background:**`
+where needed), an options table `| | Option | What it does | Pro | Con |` with lowercase letters a, b, c,
+`**Recommendation:**` and `**Decision:**`, the rule IDs in footnotes. The page renders it like an issue and shows the
+table's rows as answer buttons under the turn (a turn without a table gets Agree / Disagree; lettered bullets
+`- (a) ...` still work); a click writes `Reply (a): ...` (or `Agree.`) as the first line of the issue's note and
+highlights the row. An answer that only reports findings keeps prose, with its rule IDs in footnotes too. A table
+inside an issue or a turn needs a blank line before and after it; without one, the lines
 around it render as table rows.
 
 The number is the key of the curator's mark (`items.<N>` on the page). Numbers are unique in the file and never

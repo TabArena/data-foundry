@@ -83,3 +83,17 @@ CC (2026-11-04, Lennart): sequence encoding: "go ahead with (b)": the preprocess
 **Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes (mediator; the wording fixes are applied in the definition: the 97%/80% figure restated as 30 of 30 by RMSE and 29 of 30 by the metric, the `Revisit later` text naming its reopening test, notes on redundancy, scope and the gene offset); disputed: whether the unrun CNN gates shipping (SEL-12), the NaN on a constant prediction (MET-2), dropping or noting the redundant guide columns (CLEAN-8); for the curator: issues 4, 5, 6 and 8 (the rule rows moved to the cross-dataset REVIEW.md). Priority 4: gap + (biology & life sciences is thin among the accepted definitions), use case - (fit approximate, reporter assay), source + (Nature Biotechnology supplement as first publication), shape + (2,431 rows, grouped), risk - none (SEL-12 open but it drops only on a positive finding; no leak, no recommendation against shipping). This supersedes the priority 3 and the "direct" fit of the 2026-10-26 and 2026-10-28 lines.
 
 CC (2026-11-04, Lennart): the declared metric is checked and stays as declared (`mean_group_pearsonr` per target gene, the Exception to MET-5 above; second review page).
+
+CC (2026-11-05, Lennart): kept as a tabular task with the reworded `Revisit later` tag; the sequence-model run stays optional (REVIEW.md issue 4, A; SEL-12).
+
+CC (2026-11-05, Lennart): `guide_position_01..19` dropped, the base-by-base complement of `target_window_position_38..20` (issue 5, B; CLEAN-22): 247 features, the guide's two DNA overhang bases kept.
+
+CC (2026-11-05, Lennart): "I would like to have usable metrics and them be safe guarded against such failure modes": the shared `mean_group_pearsonr` scores a gene whose predictions are all equal as 0 instead of leaving it out, so a constant baseline scores 0 (issue 6, B; MET-2). A gene with a constant target stays out.
+
+CC (2026-11-05, Lennart): the notes name a companion measure for the bench decision, the precision of the top few guides per gene or the per-gene Spearman correlation; the declared metric is unchanged (issue 8, B; MET-6, MET-7).
+
+CC (2026-11-05, Lennart): reopened with `grouping.context="all_rows"` like protein_model_quality_rf_pcp (protein's REVIEW.md issue 9, A); a focused panel measures the effect. Open as huesken's REVIEW.md issue 9 (now or after the panel).
+
+CC (2026-11-05, Lennart): `grouping.context="all_rows"` now, panel after (REVIEW.md issue 9, B). Per-gene context adds nothing on the 30 splits (LightGBM 0.6708 rows alone against 0.6699 with context, paired SE 0.0025).
+
+CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.

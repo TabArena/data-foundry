@@ -78,6 +78,22 @@ def _example(name: str):
     return module
 
 
+def _format_2_metadata(unique_name: str) -> DatasetMetadata:
+    return DatasetMetadata(
+        unique_name=unique_name,
+        dataset_year="2025",
+        domain_str="finance",
+        dataset_source="Kaggle",
+        original_dataset_source_download_link="http://example",
+        download_description="desc",
+        academic_reference_bibtex="bib",
+        academic_reference_bibtex_key="key",
+        license=None,
+        data_tags=[],
+        curation_comments=None,
+    )
+
+
 def _format_2_toy(tmp_path: Path, extra: dict | None = None) -> Path:
     """A regression container scored per era (``mean_group_pearsonr`` on the scoring column ``era``); ``extra``
     adds feature columns (name to values).
@@ -111,19 +127,7 @@ def _format_2_toy(tmp_path: Path, extra: dict | None = None) -> Path:
     splits = {0: {0: (index[index % 2 == 0].tolist(), index[index % 2 == 1].tolist())}}
     container = CuratedContainer(
         dataset=df,
-        dataset_metadata=DatasetMetadata(
-            unique_name="toy_eras",
-            dataset_year="2025",
-            domain_str="finance",
-            dataset_source="Kaggle",
-            original_dataset_source_download_link="http://example",
-            download_description="desc",
-            academic_reference_bibtex="bib",
-            academic_reference_bibtex_key="key",
-            license=None,
-            data_tags=[],
-            curation_comments=None,
-        ),
+        dataset_metadata=_format_2_metadata("toy_eras"),
         task_metadata=task,
         experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="toy", splits=splits),
         uuid="u",
@@ -191,6 +195,48 @@ def test_benchmark_container_example_encodes_every_feature_type(tmp_path, capsys
     scores = example.benchmark(container)
     assert len(scores) == 1
     assert "1 text columns encoded per split" in capsys.readouterr().out
+
+
+def test_benchmark_container_example_scores_an_ordered_target_as_scikit_learn_does(tmp_path):
+    """An ordered multiclass target (low < mid < high): the score is scikit-learn's log loss on classes_ order."""
+    pytest.importorskip("sklearn")
+    from sklearn.ensemble import HistGradientBoostingClassifier  # noqa: PLC0415 - scikit-learn is optional
+    from sklearn.metrics import log_loss  # noqa: PLC0415 - scikit-learn is optional
+
+    example = _example("benchmark_container")
+    rng = np.random.default_rng(2)
+    n = 150
+    x1 = rng.normal(size=n)
+    scale = ["low", "mid", "high"]
+    y = pd.Categorical(
+        np.array(scale)[np.digitize(x1 + rng.normal(scale=0.7, size=n), [-0.5, 0.5])], scale, ordered=True
+    )
+    df = pd.DataFrame({"x1": x1, "y": y})
+    task = PredictiveMLTaskMetadataV2(
+        target_column_name="y",
+        problem_type="multiclass_classification",
+        objective_metric=metric_spec(
+            Metric.source("log_loss", reference="https://example.org"), "multiclass_classification"
+        ),
+    )
+    index = np.arange(n)
+    train, test = index[index % 3 != 0], index[index % 3 == 0]
+    container = CuratedContainer(
+        dataset=df,
+        dataset_metadata=_format_2_metadata("toy_ordered"),
+        task_metadata=task,
+        experiment_metadata=PredictiveMLSplitsMetadata(
+            splits_comment="toy", splits={0: {0: (train.tolist(), test.tolist())}}
+        ),
+        uuid="u",
+    )
+    container = CuratedContainer.load(container.save(save_dir=tmp_path))
+    assert list(container.dataset["y"].cat.categories) == scale  # the declared order stays in the container
+    model = HistGradientBoostingClassifier(categorical_features="from_dtype", random_state=42)
+    model.fit(df[["x1"]].iloc[train], df["y"].iloc[train])
+    assert list(model.classes_) == sorted(scale)
+    expected = log_loss(df["y"].iloc[test], model.predict_proba(df[["x1"]].iloc[test]), labels=model.classes_)
+    assert example.benchmark(container) == [pytest.approx(expected)]
 
 
 def test_benchmark_container_example_refuses_a_format_1_container():

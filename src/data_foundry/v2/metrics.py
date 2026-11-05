@@ -18,9 +18,13 @@ plain ``json``. scikit-learn and scipy are imported when a metric is computed, n
 
 Conventions of the predictions:
 
-* ``proba``: class probabilities. Binary: the probability of the positive class, ``labels[1]``, as a vector (or a
-  two-column array in ``labels`` order). Multiclass: one column per class in ``labels`` order. ``labels`` defaults
-  to the sorted classes of ``y_true``; :func:`scorer` passes the categories of the container's target column.
+* ``proba``: class probabilities, with the columns in ``labels`` order. Binary: the probability of the positive
+  class, ``labels[1]``, as a vector (or a two-column array). Multiclass: one column per class. ``labels`` defaults to
+  the sorted classes of ``y_true``; :func:`scorer` passes the sorted categories of the container's target column.
+  Both are scikit-learn's convention (``classes_``, the column order of ``predict_proba``), for every target: the
+  declared order of an ordered target (low < high) is type information, never the column order. Probabilities passed
+  as a pandas DataFrame whose columns are the class names are matched by name and reordered to ``labels``; a missing
+  or unknown class name is an error. A plain array is read in ``labels`` order.
 * ``label``: predicted classes, in the values of ``y_true``. Binary metrics that need a positive class
   (``f1``, ``precision``, ``recall``) take ``labels[1]``.
 * ``value``: a number per row (regression).
@@ -132,6 +136,25 @@ def _codes(y_true: Any, labels: list) -> np.ndarray:
         bad = values[np.flatnonzero(codes < 0)[0]]
         raise ValueError(f"y_true holds the class {bad!r}, which is not in labels {list(labels)}.")
     return codes.astype(np.int64)
+
+
+def _named_proba(y_pred: pd.DataFrame, labels: list) -> np.ndarray:
+    """Probabilities in a DataFrame whose columns are the class names, as an array with its columns in ``labels``
+    order; a missing or unknown class name is an error.
+    """
+    columns, classes = pd.Index(y_pred.columns), pd.Index(list(labels))
+    if not columns.is_unique:
+        raise ValueError(f"the probability columns must be unique class names, got {list(columns)}.")
+    if not classes.is_unique:
+        raise ValueError(f"labels must be unique, got {list(labels)}.")
+    unknown = [c for c, i in zip(columns, classes.get_indexer(columns), strict=True) if i < 0]
+    missing = [c for c, i in zip(classes, columns.get_indexer(classes), strict=True) if i < 0]
+    if unknown or missing:
+        raise ValueError(
+            "the probability columns are matched to the classes by name and need one column per class: "
+            f"unknown {unknown}, missing {missing} (the classes: {list(labels)})."
+        )
+    return y_pred.iloc[:, columns.get_indexer(classes)].to_numpy(dtype=float)
 
 
 def _positive_proba(y_pred: Any) -> np.ndarray:
@@ -739,6 +762,15 @@ def _group_center(values: np.ndarray, codes: np.ndarray, n_groups: int) -> np.nd
     return values - means[codes]
 
 
+def _group_range(values: np.ndarray, codes: np.ndarray, n_groups: int) -> np.ndarray:
+    """Per group, the largest value minus the smallest (0 for a group whose values are all equal)."""
+    high = np.full(n_groups, -np.inf)
+    low = np.full(n_groups, np.inf)
+    np.maximum.at(high, codes, values)
+    np.minimum.at(low, codes, values)
+    return high - low
+
+
 def _signed_power(values: np.ndarray, power: float) -> np.ndarray:
     return np.sign(values) * np.abs(values) ** power
 
@@ -751,11 +783,19 @@ def _check_group_corr(params: Mapping[str, Any]) -> None:
 def _mean_group_pearsonr(y_true, y_pred, *, group, params, **_):
     """Mean over groups of the per-group Pearson correlation; ``method="numerai_corr"`` first transforms as Numerai's
     CORR (predictions: per-group rank, gaussianized, signed power 1.5; target: per-group centred, signed power 1.5).
-    Groups whose correlation is undefined (one row, or no variance) are left out of the mean.
+
+    A group whose target is constant (one row, or one value) is left out of the mean: no prediction can rank it. A
+    group whose target varies but whose predictions are all equal scores 0, so a constant baseline gets a score (0)
+    instead of NaN, and a group a model declines to rank counts as no skill instead of leaving the mean (Lennart,
+    2026-11-05, huesken_sirna_efficacy issue 6). Both are decided on the values as given, before any transform, so a
+    float constant such as 0.3 is not mistaken for a ranking by rounding noise. ``numerai_tools`` returns NaN for such
+    an era instead of 0; on every other era the two agree.
     """
     codes, n_groups = _group_codes(group)
     y = np.asarray(y_true, dtype=float)
     p = np.asarray(y_pred, dtype=float)
+    target_varies = _group_range(y, codes, n_groups) > 0
+    constant_prediction = _group_range(p, codes, n_groups) == 0
     if params.get("method", "pearson") == "numerai_corr":
         from scipy.special import ndtri  # noqa: PLC0415 - imported when a metric is computed, not with the module
 
@@ -771,8 +811,8 @@ def _mean_group_pearsonr(y_true, y_pred, *, group, params, **_):
         codes, weights=dp * dp, minlength=n_groups
     )
     with np.errstate(invalid="ignore", divide="ignore"):
-        corr = cov / np.sqrt(var)
-    corr = corr[var > 0]
+        corr = np.where(constant_prediction, 0.0, cov / np.sqrt(var))
+    corr = corr[target_varies]
     return float(corr.mean()) if len(corr) else float("nan")
 
 
@@ -1406,9 +1446,10 @@ def score(spec: Any, y_true: Any, y_pred: Any, *, labels: Any = None, **inputs: 
         y_pred: The predictions (see the module docstring for the ``proba`` / ``label`` / ``value`` conventions), on
             the shipped scale; a spec's ``target_transform`` is inverted on both before the metric. There are no
             metric-specific branches here: a metric that needs another scale takes it itself (``rmsle``), so the
-            inverse is the same for every metric.
+            inverse is the same for every metric. Probabilities as a DataFrame whose columns are the class names are
+            matched to ``labels`` by name; a missing or unknown class name is an error.
         labels: The class labels in the order of the probability columns (classification); default the sorted
-            classes of ``y_true``.
+            classes of ``y_true``, the order of scikit-learn's ``classes_``.
         **inputs: The values of the spec's input columns for the scored rows, by role (``group=...``).
 
     Returns:
@@ -1421,6 +1462,8 @@ def score(spec: Any, y_true: Any, y_pred: Any, *, labels: Any = None, **inputs: 
     if missing:
         raise ValueError(f"metric {fields['name']!r} needs the input(s) {missing} (pass them by role).")
     y_true = np.asarray(y_true)
+    if isinstance(y_pred, pd.DataFrame) and fields.get("prediction") == "proba":
+        y_pred = _named_proba(y_pred, _labels(y_true, labels))
     transform = fields.get("target_transform") or "identity"
     if transform != "identity":  # the target ships transformed for modelling: score on the original scale
         if transform not in INVERSE_TRANSFORMS:
@@ -1437,9 +1480,14 @@ def scorer(container: Any, *, metric: Any = None) -> Callable[..., float]:
 
     ``row_index`` are the positions of the scored rows in ``container.dataset`` (the test side of a split, as in
     ``experiment_metadata.splits``); the scorer takes the values of the spec's input columns from those rows, so a
-    benchmark passes only the test indices. It is needed when the metric has inputs. ``labels`` defaults to the
-    categories of the target column, the column order of the probabilities. Values are passed on the shipped scale:
-    a per-group aggregation works on it, and :func:`score` then inverts the spec's ``target_transform``.
+    benchmark passes only the test indices. It is needed when the metric has inputs. ``labels``, the column order of
+    the probabilities, defaults to the sorted categories of the target column: the column order of scikit-learn's
+    ``predict_proba`` (``classes_``) for a model trained on every class, for every target. An ordered target keeps its
+    declared order (low < high) in the container as type information; the scorer does not read its columns in that
+    order. Probabilities as a DataFrame whose columns are the class names are matched by name, in any order (a
+    missing or unknown class name is an error); a plain array is read in the sorted order. Values are passed on the
+    shipped scale: a per-group aggregation works on it, and :func:`score` then inverts the spec's
+    ``target_transform``.
 
     Args:
         container: A format-2 container (anything with ``dataset`` and ``task_metadata.objective_metric``).
@@ -1452,7 +1500,7 @@ def scorer(container: Any, *, metric: Any = None) -> Callable[..., float]:
     target = frame[task.target_column_name] if frame is not None else None
     default_labels = None
     if target is not None and isinstance(target.dtype, pd.CategoricalDtype):
-        default_labels = list(target.cat.categories)
+        default_labels = sorted(target.cat.categories)  # scikit-learn's classes_, whatever the declared order
     input_columns = dict(fields.get("inputs") or {})
     grouping = getattr(task, "grouping", None)
     per_group = grouping is not None and getattr(grouping, "prediction_unit", "row") == "group"
@@ -1460,7 +1508,11 @@ def scorer(container: Any, *, metric: Any = None) -> Callable[..., float]:
     def score_rows(
         y_true: Any, y_pred: Any, row_index: Any = None, *, labels: Any = None, aggregate: bool = True
     ) -> float:
-        y_true, y_pred = np.asarray(y_true), np.asarray(y_pred)
+        labels = labels if labels is not None else default_labels
+        y_true = np.asarray(y_true)
+        if isinstance(y_pred, pd.DataFrame) and fields.get("prediction") == "proba":  # by name, before the names go
+            y_pred = _named_proba(y_pred, _labels(y_true, labels))
+        y_pred = np.asarray(y_pred)
         rows = None if row_index is None else np.asarray(row_index)
         if per_group and aggregate:
             if rows is None:
@@ -1471,7 +1523,7 @@ def scorer(container: Any, *, metric: Any = None) -> Callable[..., float]:
             if rows is None:
                 raise ValueError(f"metric {fields['name']!r} uses {input_columns}: pass the rows' row_index.")
             values = {role: frame[column].iloc[rows].to_numpy() for role, column in input_columns.items()}
-        return score(spec, y_true, y_pred, labels=labels if labels is not None else default_labels, **values)
+        return score(spec, y_true, y_pred, labels=labels, **values)
 
     return score_rows
 

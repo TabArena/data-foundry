@@ -142,8 +142,9 @@ spectra, so they are no per-row default.
   where the next position reads well above zero is no measurement. Count the spectra per edge position, and their
   scan dates if the source has them. The bundle check does not see it (it tests only numeric, finite and present).
   When only an edge bin is affected, drop that bin for every row, so each spectrum stays whole; when inner positions
-  are affected, set the values missing (CLEAN-11). Case: open_soil_spectral_library, 53 spectra with 0 at 600 cm-1
-  beside 1.27-1.86 at 602 cm-1, the bin dropped (Lennart, 2026-11-04).
+  are affected, set the values missing (CLEAN-26 as amended 2026-11-05, which narrows CLEAN-11). Case:
+  open_soil_spectral_library, 53 spectra with 0 at 600 cm-1 beside 1.27-1.86 at 602 cm-1, the bin dropped (Lennart,
+  2026-11-04).
 
 ## In Data Foundry
 

@@ -89,6 +89,28 @@ by this panel. The year is now 2019 in the definition and the record.
    [^leak38]: **LEAK-38** does not apply: `expo` is a named field, and comparing part-year claims with what the other
      features and proportional exposure predict measured the mechanism.
 
+   **Lennart (2026-11-05, discuss):** This is related to the discussion for fremtpl2, compare it and check
+
+   **Answer (AI, 2026-11-05):** It is the same question, with the same facts, so the two should be decided together; see
+   fremtpl2 issue 6's answer of today. Here part-year policies claim about 1.4 times what a proportional offset expects,
+   and a free `expo` gains 0.0036-0.0041 mean deviance over the offset (16-18% of the skill); in fremtpl2 the free
+   `Exposure` gains 0.0033-0.0047 (21-30% of the gain after today's blanking). Neither has dates that tell a mid-year
+   start from a cancellation. The open PRs #44 to #47 do not settle it: they add no exposure weight to the Poisson
+   deviance and no training-weight declaration, and #44 keeps an unlocated cut with a measured note. So the choice is
+   the same in both:
+   - (a) A for both: `expo` / `Exposure` becomes a weight scoring column, the target the annual frequency, the metric a
+     weighted Poisson deviance, and the benchmark passes the exposure as `sample_weight` (new code in the API, the
+     container and the benchmark);
+   - (b) B for both: the feature stays, with an amendment of LEAK-10 for exposure as a denominator and the measured size in
+     the note.
+
+   Your answer here also answers fremtpl2 issue 6.
+
+   **Lennart (2026-11-05, discuss):** see my comment for fremtpl on this
+
+   **Deferred (2026-11-05):** parked with fremtpl2 issue 6 until the zero-inflated stack (PRs #44-#47) is merged; [#51](https://github.com/TabArena/data-foundry/issues/51)
+   holds the context. The declared metric waits with it.
+
 2. **Ship the 163,212 released rows or all 163,231?**
 
    * **Problem:**
@@ -109,6 +131,25 @@ by this panel. The year is now 2019 in the definition and the record.
    * **Recommendation:** A, keep 163,212 (mediator, advocate and critic agree). **Decision:** A (keep) or B (restore)?
 
    [^use5]: **USE-5** (Weigh, as the panel weighs it) and **USE-8** (a selection alone does not change the fit).
+
+   **Lennart (2026-11-05, ok):** If this is the official verison, we can stay with it for now instead of moving on
+
+   **Answer (AI, 2026-11-05):** Partly, and I corrected my first reply. The 163,212 rows are what the source's GitHub
+   release ships and what its boosting paper evaluates on (Sec. 4.1), with "exclusion of very large claims" as its own
+   preprocessing; but the first publication (PROV-8) is the 2019 copy with all 163,231 rows, so the official version
+   by our rule is the unselected one. Keeping the release's rows (A) is still a weighing call, and since the cut is by
+   claim cost, the fit rule as amended on 2026-10-27 asks `fit_reason` to name it and the record to carry `Selection
+   Bias`, as lt and tunisian do.
+   - (a) A, with the selection named in `fit_reason` and the `Selection Bias` marker;
+   - (b) B, restore the 2019 rows.
+
+   **Lennart (2026-11-05, ok):** Reply (b): B, restore the 2019 rows
+
+   **Resolved (2026-11-05, Lennart):** (b). The 2019 copy (katrienantonio/PE-pricing-analytics, commit of 2019-09-26,
+   SHA-256 pinned) ships all 163,231 rows; minus its 19 rows with an average claim above EUR 81,000 it equals the
+   release row by row, so the selection by claim cost is gone and no `Selection Bias` marker is needed. The 2019
+   repository states no licence (a note). LightGBM-Poisson mean deviance 0.5274 to 0.5279; the free `expo` still gains
+   0.0039 over the offset.
 
 3. **Confirm that `sex` stays?**
 
@@ -135,6 +176,31 @@ by this panel. The year is now 2019 in the definition and the record.
 
    [^sel1]: **SEL-1** (ethics, Must): a task with ethical concerns is out, including data whose subjects or creators
      ask that it not be used for ML.
+
+   **Lennart (2026-11-05, change):** Option B: Drop it. I think it is valid to remove it from the data to have models
+   that more acucratly track what would be used today
+
+   **Consistency check (AI, 2026-11-05):** dropping `sex` departs from USE-6 (Must: what is known at the prediction
+   point is a legitimate input) while the actor prices the 1997 tariff the notes describe, from the kept `CODE_GENDER`
+   (home_credit_default_risk) and `SEX` (credit_card_clients_default), and from SEL-18 of today, where "today one would
+   use other features" is a note. No rule covers protected attributes. What sets it apart?
+   - (a) the actor is an EU insurer pricing today, and the Test-Achats ruling (2012) bars sex as a rating factor:
+     `use_case` and `known` move to today's tariff, with a Tensions row;
+   - (b) keep it, as the panel said;
+   - (c) (a), and review the credit datasets that keep sex too;
+   - (d) a new rule on protected attributes.
+
+   Give the letter in the note; nothing is applied until then.
+
+   **Lennart (2026-11-05, change):** Reply (a): the actor is an EU insurer pricing today, and the Test-Achats ruling
+   (2012) bars sex as a rating factor: use_… Option B: Drop it. We make this special case here as we would try to
+   understand how good such models would be in the current world, and they would not be able to use sex
+
+   **Resolved (2026-11-05, Lennart):** (a). The actor is an EU insurer pricing today; since 21 December 2012 EU law bars
+   sex as a rating factor (CJEU C-236/09, Test-Achats), so `sex` leaves the features (it carried 0.00038 deviance, 1.6%
+   of the skill). `use_case`, `known` and `fit_reason` are rewritten; a Tensions row in principles.md (the actor's legal
+   constraint today wins when the use case is today's pricing; home_credit_default_risk and credit_card_clients_default
+   keep sex, not reviewed yet).
 
 **Review panel:** ship after changes (mediator). Tier full, second pass after Lennart's PR #33 review of 2026-11-04. Claims: 21 audited, 14 hold, 4 refuted in whole or in part (the year, the citation, the `known` sentence and the reason the `expo` note gave; all fixed in the notes, the `expo` question stays as issue 1), 1 record wording inconsistent, 2 untested (the build, the licence). Blind review: include with changes; its main concern is `expo` as a plain feature (its RMSE concern is moot, the definition scores by deviance). Task gamer: no real leak; its best exploit is `expo` used freely instead of as an offset, 0.0039 of deviance (0.0032 to 0.0047 per split) against a noise band of 0.0001 to 0.0004, the known kept-on-purpose note. Agreed: the split (SPLIT-8), the metric (MET-1, MET-5, MET-13), the dtypes (CLEAN-14), the copies (LEAK-16) and the provenance fixes (PROV-9, PROV-10). Disputed: only whether the rebuild is a separate gate (EV-7). On LEAK-10 the advocate withdrew the amendment in its rebuttal, so all sides recommend the scoring column; keeping `expo` under an amendment stays open to you (issue 1).
 

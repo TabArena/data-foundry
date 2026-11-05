@@ -74,23 +74,37 @@ retired on 2026-10-26 on its use case, not its split).
 
 Every feature has to have existed at the prediction time of its row: LEAK-10 in [leak_checks.md](leak_checks.md).
 
-**SPLIT-9 (Must).** A training row whose label is not yet known at the prediction point must not be in train. Why:
-such rows carry outcomes from after the prediction point, and the model learns them as a shortcut. Check that the
-filter removes the shortcut: for hotel_booking_demand, filtering on the status date does not, filtering on the arrival
-date does. Cases: hotel_booking_demand.
+**SPLIT-9 (Must; amended 2026-11-05, Lennart, on lt_vehicle_loan_default_prediction).** A training row whose label tells
+a test row's outcome and was not yet known at the prediction point must not be in train: a row that is in train because
+its outcome came early (hotel_booking_demand: bookings arriving after the prediction date, kept because they were
+already cancelled), or a label of the test row's own entity set after its prediction point (alfa_battle_2_0_task_2: a
+client's earlier product flagged as defaulted after the later one was issued). Why: the model learns such outcomes as a
+shortcut. The shortcut is measured and removed, whatever it costs SPLIT-14's floor. The rest of the unmatured training
+labels is not a shortcut and falls under SPLIT-10: labels that reach a test row only through codes shared by many
+entities (the recent default rate of a dealer or a branch), with no link to the row's own entity and an effect that does
+not grow toward the release end; the notes give its measured size. Check that the filter removes the shortcut: for
+hotel_booking_demand, filtering on the status date does not, filtering on the arrival date does. Cases:
+hotel_booking_demand, alfa_battle_2_0_task_2, lt_vehicle_loan_default_prediction.
 
-**SPLIT-10 (Should; applies SPLIT-9).** When a label is known only some time after its row (a delivery time, a
-permit's processing time, an outcome after a follow-up), a model refit at a window's start knows only the rows whose
-label had arrived. Simulate that: train on the rows whose outcome is known by the window's start, with a gap of about
-the label's delay between train and test. The gap is part of the task and is stated with it. A planning gap the use
-case has (a forecast made a day ahead) is a gap too. Why: without the gap the newest training rows are the fast ones,
-and a model that sees the time as a number is biased. Cases: brazilian_ecommerce, sf_permit_time.
-Amended 2026-11-04 (Lennart, on lt_vehicle_loan_default_prediction: "we argue from measurement and context that we
-dont see this pattern in the data as a problem, the gap is already accounted for by collection or other means"): a gap
-is set where the source or the context documents late labels, or where a measurement shows a shortcut through recent
-labels or a selection by the outcome at the release end. Where the collection already covers the delay (the time
-column's resolution, a fixed outcome horizon) and the measurements show neither, no gap is needed, and the notes give
-the measurements. Cases: ames_housing, perth_house_prices, melbourne_housing_market, lt_vehicle_loan_default_prediction.
+**SPLIT-10 (Should; applies SPLIT-9; amended 2026-11-04 and 2026-11-05, Lennart, on
+lt_vehicle_loan_default_prediction).** When a label is known only some time after its row (a delivery time, a permit's
+processing time, an outcome after a follow-up), a model refit at a window's start knows only the rows whose label had
+arrived. Simulate that: train on the rows whose outcome is known by the window's start, with a gap of about the label's
+delay between train and test. The gap is part of the task and is stated with it. A planning gap the use case has (a
+forecast made a day ahead) is a gap too. Why: without the gap the newest training rows are the fast ones, and a model
+that sees the time as a number is biased. Cases: brazilian_ecommerce, sf_permit_time.
+Amended 2026-11-04 and reworded 2026-11-05 (Lennart, on lt_vehicle_loan_default_prediction: "we argue from measurement
+and context that we dont see this pattern in the data as a problem, the gap is already accounted for by collection or
+other means"): the measurements decide, also where the source or the context documents late labels. A gap is set where a
+measurement shows a shortcut through recent labels (SPLIT-9) or a selection by the outcome at the release end, and where
+late labels are documented and the collection does not cover them. No gap is needed where the collection covers what the
+gap guards against and the measurements show neither: the time column's smallest step is longer than the delay (sales
+dated by month), the newest period is as complete as a later read of it, or a fixed outcome horizon (one due date for
+every row, every label final at release) removes the selection by the outcome, since the unmatured rows are then not the
+fast ones. A fixed horizon does not remove the delay itself: the newest training labels were still unknown at a window's
+start, so the notes give what they add at equal training size. Where the gap a case needs breaks SPLIT-14's floor, the
+departure is an exception (principles.md, Tensions). Cases: ames_housing, perth_house_prices, melbourne_housing_market,
+lt_vehicle_loan_default_prediction.
 
 **SPLIT-11 (Should).** Train on everything before the window (an expanding train side). The first split is the newest
 window, with the most training data and the most representative; the others walk back in time.
@@ -234,6 +248,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-8 | fremtpl2 | no policy dates; the blocks read as stacked periods with linked IDpols, but both the periods and the links are inferred, not the source's key (SPLIT-24), unlike nba and open_university, which group by a recorded entity: IID, `ForcedIIDFromTemporal`; grouping by the inferred chains costs +0.00049 Poisson deviance and leaves the ranking unchanged (2026-11-04, Lennart) | applied |
 | SPLIT-9 | hotel_booking_demand | train kept bookings arriving after the prediction date that were already cancelled (100% positive), so the model learned "future arrival means cancelled"; filtering on the status date kept the shortcut, filtering on the arrival date removed it | applied |
 | SPLIT-9 | alfa_battle_2_0_task_2 | the training products of clients with a product in the test window are dropped (32,861-39,221 rows; 60-83% of each training side kept), standing in for the as-of filter on label dates the data lacks: a later product defaults at 95.1% after a defaulted earlier one (2.3% otherwise), flat over lags of 1-10 months, while 45.5% of later defaults had one, so the earlier flag was set after the later issue; without the filter the window's ROC AUC rises by 0.002-0.009. Differs from ieee_fraud_detection (LEAK-34, 2026-10-01), whose carried labels follow the host's labelling rule and are read as known history (2026-10-26, Lennart) | applied |
+| SPLIT-9 | lt_vehicle_loan_default_prediction | not a shortcut, gap 0 kept: the last 30 days' default rates of the supplier, branch, employee and postcode codes add +0.0026 ROC AUC at equal pool size (0.0005-0.0051, 9 of 9 windows; up to +0.0057 in other encodings), the size of alfa_battle_2_0_task_2's removed effect; set apart by the mechanism: each code is shared by many borrowers and no borrower recurs (rebuilt borrowers score 0.517-0.543), so no test row is linked to its own client's earlier label (alfa: 95.1% default after an earlier default against 2.3%), and the effect does not grow at the release end (0.0025 in the newest window against 0.0028); the notes give its size (2026-11-05, Lennart) | applied |
 | SPLIT-10 | brazilian_ecommerce | a gap of one month; R^2 0.353 with the gap, -0.054 without (2026-10-15, Lennart) | applied |
 | SPLIT-10 | sf_permit_time | a gap of 6 months, since a 1-month gap still censored the slow permits | applied |
 | SPLIT-10 | alfa_battle_2_0_task_2 | no label dates, a default flagged up to a year after issue: a 12-month gap leaves 13-27% of the rows for training, a 6-month gap 35-53%; SPLIT-9 met by dropping the products of the test window's clients. Serves SPLIT-14 (2026-10-21, Lennart); gap 0 (2026-10-26, Lennart) | exception |
@@ -243,17 +258,22 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-10 | house_sales | a one-week gap: from the deed date to the recording date the delay has a median of 6 days, and 91% of sales are recorded within 14 days (review of 2026-10-20) | applied |
 | SPLIT-10 | zillow_prize | a one-month gap: training is every sale before the preceding month, since Zillow receives sales with a delay (review of 2026-10-20) | applied |
 | SPLIT-10 | melbourne_housing_market | no gap, measured: every weekly sheet from August 2017 holds as many sales as the companion file read up to October 2018 (558 of 558 on 17 March 2018), and the newest window's mean residual is +0.009 against -0.013 to +0.022 (2026-10-21, Lennart: a gap only if the newest months show selection) | applied |
-| SPLIT-10 | lt_vehicle_loan_default_prediction | no gap, measured: first instalments fall due about a month after disbursement, but a 30-day gap's loss is training size (+0.0018 ROC AUC at equal size of the +0.0167), recent default rates by supplier, branch, employee or postcode add +0.0026 at equal pool size (a drift by code, not a row-level link), and the release end shows no censoring; a 30-day gap would meet the 50% floor (oldest training side 50.39%) but leave three windows instead of nine (SPLIT-15); whether gap 0 applies the amendment or is an exception is open on the second review panel (2026-11-04, Lennart; the amendment) | applied |
+| SPLIT-10 | lt_vehicle_loan_default_prediction | no gap, an application of the amendment as reworded on 2026-11-05: one due date per loan (the first instalment, inferred at least about a month after disbursement; the release gives none) and every label final at release, so the unmatured rows are not selected by their outcome, and the release end shows drift, not censoring; the newest training labels add 0.0018-0.0051 ROC AUC at equal training size across four learners (no gap scores 0.007-0.017 above a 30-day gap), +0.0026 of it through recent default rates of shared codes (SPLIT-9 row); a 30-day gap would keep the 50% floor only with three two-day windows instead of nine (SPLIT-15) (2026-11-04, Lennart: the amendment; 2026-11-05, Lennart: an application, not an exception) | applied |
 | SPLIT-9, SPLIT-10 | nyc_taxi_trip_duration_1m, pkdd_15_taxi_trip_time_prediction_ii_1m, cooking_time_1m, maps_router_eta_1m, delivery_eta_1m | trip and order times in weekly or monthly windows: the training rows whose trip or order ends after the window start are counted per window, and a one-day gap is set where any are (nyc 77-127 per window, pkdd 8-48, cooking_time 108-172, maps_router_eta 578-656; 0 after); delivery_eta_1m has none, its orders stop overnight (2026-10-21, Lennart) | applied |
 | SPLIT-10 | ames_housing, perth_house_prices | proposed amendment, due at the third exception of this reason (principles.md, "Exceptions and amendments"): "No gap is needed when the label's delay is shorter than the resolution of the time column (sales dated by month) and the newest period shows no selection by the outcome (its mean residual within the other windows' range)." Both exceptions rest on these two facts; alfa_battle_2_0_task_2 and lending_club depart for another reason (SPLIT-14's floor) and do not count (proposed 2026-10-26 from the consistency check on ames_housing; open for Lennart) (settled by the amendment of 2026-11-04, Lennart) | applied |
 | SPLIT-12 | house_sales, perth_house_prices, ames_housing, zillow_prize, melbourne_housing_market | no window length for the whole family: each keeps the horizon of its own source or refit cadence (three weeks; one month, spaced; two months; one month after a one-month gap; three weekly sheets), since "different task might forecast differently long" and "we dont need to force the same split" (2026-10-21, Lennart) | applied |
+| SPLIT-12, SPLIT-19 | medical_facility_operational_data | the source's horizon followed: Crowley et al. (2020) train on six months and test on "a further consecutive two weeks", so nine 14-day windows replace nine equal-count windows of 42-53 days, each from the first whole day at or after the start of one of the old ones: the same number of folds, 12,408 test visits instead of 40,995, training sides still expanding (50.1% to 94.6%). The longer windows had cost nothing measurable (14.40 against 14.42 MAE on the same weeks), and the exception to SPLIT-19 proposed for them was dropped; the day key is built in `_clean`, as the time column is the arrival rank (2026-11-05, Lennart, issue 8) | applied |
 | SPLIT-14 | california_house_prices_2020 | `min_train_fraction=0.25` let the oldest window train on 25% of the rows; its windows now train on 50%, 67% and 83% (2026-10-21) | applied |
 | SPLIT-16 (TP-9) | seismic_bumps | 49 positives in the newest half, 0-5 per window: `Too Small`, no fallback to an IID split | applied |
 | SPLIT-17 | coffee_rating_prediction | 26 monthly windows of 2-72 reviews doubled the confidence interval of a model comparison; 13 two-month windows hold 54-115 | applied |
 | SPLIT-18 | climate_model_weather_forecasting | weather test windows of one to two weeks at most | applied |
 | SPLIT-20, SPLIT-21 | aeolus | flights from 2023 on rather than all of 2016-2024, two-week windows with one of three in the holiday peak (2026-10-12, Lennart) | applied |
 | SPLIT-20 | perth_house_prices | one-month windows every third month back from December 2020 (`step=3`) instead of nine contiguous months in 2020, so most windows fall outside the COVID months and the stale-record period; chosen from counts, not scores (2026-10-26, Lennart) | applied |
+| SPLIT-20 | airqo_low_cost_air_quality_monitor_calibration_challenge | five monthly windows from October 2020 (`n_windows=5`) instead of the three dry-season months December 2020 to February 2021, so the test covers both seasons and October and November score all three sites (smallest train side 57.3%); the fact proposed for an exception, that only the newest season has all three sites, was false; Nakawa enters October with 63 hours of history, noted under USE-10; chosen from season and site coverage, not scores (2026-11-05, Lennart, issue 1) | applied |
 | SPLIT-22 | seismic_bumps | the raw file order is the order of the mining shifts; kept as time | applied |
+| SPLIT-23 | sat11_hand_algo_runtime | `context="all_rows"`: algorithm selection predicts the runtime of all 10 candidate algorithms on a new instance and runs the fastest, so a model sees all of an instance's rows | applied |
+| SPLIT-23 | protein_model_quality_rf_pcp | `context="all_rows"`: CASP releases a target's server models at once and the researcher ranks them together; a context model scores 0.483 against 0.322 for a row-only one (2026-11-05, Lennart); huesken_sirna_efficacy reopened to follow | applied |
+| SPLIT-23 | huesken_sirna_efficacy | `context="all_rows"`: a researcher designs and ranks a gene's candidate guides together; per-gene context adds nothing measurable here (LightGBM 0.6708 against 0.6699, paired SE 0.0025), unlike protein (+0.161), and the context follows the use case, not the gain (2026-11-05, Lennart) | applied |
 | SPLIT-22 | california | the Kaggle id is the sale order; an index lookup sorted the rows by address, so the row-order time index is rebuilt after it | applied |
 | SPLIT-24 | emscad | grouped on identical profile text or a poster-specific masked contact (4,441 groups); the first suggestion, a TF-IDF cosine cluster at 0.95 or more, was barred | applied |
 | SPLIT-24 | in_vehicle_coupon_recommendation | consecutive blocks of identical person-level answers in the raw file order: 587 respondents | applied |

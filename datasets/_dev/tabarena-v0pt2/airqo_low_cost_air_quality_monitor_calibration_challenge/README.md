@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: airqo_low_cost_air_quality_monitor_calibration_challenge
 container_format: 2
-checksum: v2:1e98ef3ab80a7cedfba4a5f6259ec263278433d81a3fa9dde2cc9708ed56f1d1
+checksum: v2:34edd508d83450846fe555a4aed3f486115c3a6a6308382d3f773709dba3c194
 build:
   uuid: 01a18629-ab5f-784f-9679-a007fd54c98a
   checksum: v2:636107fbd1ea5a9ed82c2f22679b558d6a776b2332d135e8e742a7512d89bb6c
@@ -19,7 +19,7 @@ build:
     polars: 2.0.0
 build_stale: true
 data:
-  n_rows: 10927
+  n_rows: 10828
   n_features: 16
   dtypes:
     category: 2
@@ -41,7 +41,7 @@ task:
   group_time_on: null
   grouping: null
 splits:
-  n_repeats: 3
+  n_repeats: 5
   n_folds: 1
   random_state: 4267
   time_horizon: 1
@@ -49,11 +49,11 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 8207
-    max: 10093
+    min: 6204
+    max: 9994
   n_test:
-    min: 834
-    max: 1049
+    min: 596
+    max: 1310
 bundle_checks:
   ok: true
   errors: []
@@ -61,17 +61,18 @@ bundle_checks:
   infos: []
   accepted: {}
 decisions:
-- Sensor 2 missing where both its channels read 0
-- Single-hour reference spikes dropped
+- Dead sensor channels set missing
+- Single-hour reference errors dropped
+- Nakawa reference outage dropped
 ---
 
 # airqo_low_cost_air_quality_monitor_calibration_challenge
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `ref_pm2_5`, scored with `rmse` on temporal splits by `created_at`. 10,927 rows and 16 features. Source: Zindi (2021).
+Regression of `ref_pm2_5`, scored with `rmse` on temporal splits by `created_at`. 10,828 rows and 16 features. Source: Zindi (2021).
 
-Built as `01a18629-ab5f-784f-9679-a007fd54c98a` on 2026-10-29, but `dataset.py` has changed since: it now gives checksum `v2:1e98ef3ab80a7cedfba4a5f6259ec263278433d81a3fa9dde2cc9708ed56f1d1`, so the build is stale. See [Build](#build).
+Built as `01a18629-ab5f-784f-9679-a007fd54c98a` on 2026-10-29, but `dataset.py` has changed since: it now gives checksum `v2:34edd508d83450846fe555a4aed3f486115c3a6a6308382d3f773709dba3c194`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -85,11 +86,11 @@ Built as `01a18629-ab5f-784f-9679-a007fd54c98a` on 2026-10-29, but `dataset.py` 
 
 **Known at prediction time.** The recorded hour and site, both low-cost sensors' PM2.5 and PM10 readings, the city-wide temperature and humidity, and the site descriptors. No reference value from the month being corrected is known, so reference values from other hours are not predictors.
 
-**What the test data stands for.** Three monthly windows, December 2020 to February 2021 (Kampala's dry season), each trained on every earlier hour: a model refit at the start of each month corrects that month's readings.
+**What the test data stands for.** Five monthly windows, October 2020 to February 2021, each trained on every earlier hour: a model refit at the start of each month corrects that month's readings. The test covers two months of the September-November rains and Kampala's December-February dry season.
 
-**Our changes to the source.** Use only the labeled Train.csv. Drop the opaque row ID, set sensor 2's two channels missing in the 500 hours where both read exactly 0 (a dead channel), drop 5 single-hour reference spikes (10,927 of 10,932 rows stay), parse the recorded UTC+3 timestamp, type the site as categorical and decode the 90m landform class into its catalogue words.
+**Our changes to the source.** Use only the labeled Train.csv. Drop the opaque row ID; set a dead sensor's two channels missing (sensor 2 in 516 hours, sensor 1 in 18); drop 12 single-hour reference errors and 92 hours of a Nakawa reference outage (10,828 of 10,932 rows stay); parse the recorded UTC+3 timestamp, type the site as categorical and decode the 90m landform class into its catalogue words.
 
-> **Use case fit: approximate (a stand-in with a known gap).** AirQo's main use is correcting network devices that have no reference monitor; with three sites that transfer cannot be tested (leaving one site out, an untuned LightGBM scores RMSE 26.18 against 21.11 for the raw sensor). The task tests the next monthly refit at known collocated sites, a cadence the curator chose; the source paper names seasonal retraining as future work. Reference aggregation and site-metadata dates are unverified.
+> **Use case fit: approximate (a stand-in with a known gap).** AirQo's main use is correcting network devices that have no reference monitor; with three sites that transfer cannot be tested (leaving one site out, an untuned LightGBM scores RMSE 24.84 against 19.90 for the raw sensor). The task tests the next monthly refit at known collocated sites, a cadence the curator chose; the source paper names seasonal retraining as future work. Reference aggregation and site-metadata dates are unverified.
 
 ## Files in this folder
 
@@ -138,7 +139,7 @@ Only curators run `build`, when the dataset ships.
 | license | Zindi competition data terms: private participant use; redistribution to nonparticipants prohibited. |
 | data_tags | Non-IID, Temporal, Spatial |
 | reference | AirQoCalibration2021 |
-| rows x columns | 10,927 x 17 |
+| rows x columns | 10,828 x 17 |
 | task.target | ref_pm2_5 |
 | task.problem_type | regression |
 | task.metric | rmse |
@@ -181,7 +182,7 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 10,927 rows of the final frame (the oldest rows: the frame is sorted by `created_at`); 12 of 17 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 10,828 rows of the final frame (the oldest rows: the frame is sorted by `created_at`); 12 of 17 columns, the target first. Cells are cut at 40 characters.
 
 | ref_pm2_5 | created_at | site | pm2_5 | pm10 | s2_pm2_5 | s2_pm10 | humidity | temp | lat | long | altitude |
 |---|---|---|---|---|---|---|---|---|---|---|---|
@@ -193,18 +194,18 @@ The first 5 of 10,927 rows of the final frame (the oldest rows: the frame is sor
 
 ## Curation notes
 
-We start with the 10,932 labeled rows of the supplied 2021 competition Train.csv; 10,927 ship.
+We start with the 10,932 labeled rows of the supplied 2021 competition Train.csv; 10,828 ship.
 
 - Prediction point: the start of each month, when a model refit on every earlier collocated hour corrects
   that month's new hourly readings at the three collocated devices. No reference value from that month is
   known, so lagged or neighbouring reference values are not features (a previous-hour reference lowers an
-  untuned LightGBM's mean RMSE from 18.21 to 16.28 on the three windows, all from test-month labels).
+  untuned LightGBM's mean RMSE from 18.21 to 16.28 on the three windows, all from test-month labels;
+  superseded 2026-11-05: 15.34 to 14.09 on the five windows, February 27.12 to 23.23).
   Lennart chose this forward reading on 2026-11-04 with the temporal split; it supersedes the retrospective
   correction of archived hours that Myunghwan approved on 2026-10-27/28.
 - Keep ref_pm2_5 on its original micrograms-per-cubic-metre scale, with source RMSE; no target
-  transformation, clipping or weighting. Labels run from 0.1 to 459.0. The low end includes 92 Nakawa hours
-  (2020-11-10 to 2020-11-23) in which the reference reads 0.1 to 4 while both low-cost channels read 10 to
-  120; they are kept for now, all on the training side of every window (open review issue).
+  transformation, clipping or weighting. Labels run from 0.2 to 459.0. The 92 Nakawa outage hours of
+  2020-11-10 to 2020-11-23 were kept on 2026-11-04 (superseded 2026-11-05: they leave, CC below).
 - Drop ID: it is an opaque, unique row key. Parse created_at as the supplied UTC+3 time without adding
   another three-hour shift. No target lags, leads, reference-neighbor features or full-data label transforms.
 - Treat site and landform_90m as nominal. The source's Google Earth Engine links identify landform_90m as
@@ -216,16 +217,18 @@ We start with the 10,932 labeled rows of the supplied 2021 competition Train.csv
   both low-cost PM2.5 channels and above 3 times the same site's reference in both neighbouring hours is a
   single-hour artefact of the reference monitor, set missing and its row dropped (CLEAN-11, CLEAN-15). The
   rule catches 5 hours: Nakawa 2020-10-03 10:00 (444.0), 2020-10-05 09:00 (176.8), 2020-10-17 09:00 (374.5),
-  2020-10-30 17:00 (150.6) and Makerere 2021-02-17 20:00 (249.1). The rule reads the target and its
-  neighbouring labels. The four Nakawa hours are on the training side of every window; the Makerere hour is
-  in the February 2021 test window, where CLEAN-11 lets a single extreme target leave only from the training
-  period (open review issue). The rule follows the spike (rate-of-change) screening that hourly
-  reference-monitor feeds such as EPA's AirNow run as automated QC (no published QC document is quoted
-  yet). It needs both neighbouring hours in the file, so four look-alike hours with a missing neighbour
-  stay, two of them in the December and January test windows, and USEmbassy 2021-02-10 07:00 (459.0,
-  February window) misses the threshold by 0.55. Spikes lasting several hours, often at two sites at once,
-  stay: they look like real pollution events.
-- Keep ordinary missingness: six humidity and 17 temperature values. Exact upstream averaging and
+  2020-10-30 17:00 (150.6) and Makerere 2021-02-17 20:00 (249.1) (superseded 2026-11-05: 12 hours, CC below).
+  The rule reads the target and its neighbouring labels. The four Nakawa hours are on the training side of
+  every window (superseded 2026-11-05: under the five windows they are October 2020 test labels); the
+  Makerere hour is in the February 2021 test window, where CLEAN-11 lets a single extreme target leave only
+  from the training period (settled 2026-11-05: an impossible value, dropped in every window, issue 2, CC
+  below). The rule follows the spike (rate-of-change) screening that hourly reference-monitor feeds such as
+  EPA's AirNow run as automated QC (no published QC document is quoted yet). It needs both neighbouring hours
+  in the file, so four look-alike hours with a missing neighbour stay (superseded 2026-11-05: the rule takes
+  the neighbouring hours present and drops them, CC below), and USEmbassy 2021-02-10 07:00 (459.0, February
+  window) misses the threshold by 0.55 (to sensor 1; to sensor 2 by 26.2). Spikes lasting several hours,
+  often at two sites at once, stay: they look like real pollution events.
+- Keep ordinary missingness: five humidity and 17 temperature values. Exact upstream averaging and
   reference-label construction are unknown; unusual positive values are not proven erroneous.
 - Sensor 2's PM2.5 and PM10 both read exactly 0 in 500 labeled hours, all at USEmbassy between
   2019-11-18 and 2019-12-17 in 13 runs of 11 to 117 hours; neither channel is 0 anywhere else, and sensor 1
@@ -234,7 +237,7 @@ We start with the 10,932 labeled rows of the supplied 2021 competition Train.csv
   rows stay, with sensor 1 and the reference (CLEAN-11: an impossible value becomes missing; Lennart,
   2026-11-04). The definition raises if the joint zeros no longer number 500. Sixteen more hours of the same
   outage, with sensor 2 near zero (0.0014 to 1.37 in 15 of them), and 18 USEmbassy hours with sensor 1 dead
-  (2019-11-13/14, 2020-06-07/08) stay as readings (open review issue).
+  (2019-11-13/14, 2020-06-07/08) stay as readings (superseded 2026-11-05: set missing, CC below).
 - All 16 predictors remain after ID removal. The eight geographic/site descriptors are constant within
   each site and encode its identity; recurrence is legitimate for this known-site task. Temperature and
   humidity are identical across sites at every shared hour: one city-wide ("prevailing") series, not device
@@ -245,66 +248,143 @@ We start with the 10,932 labeled rows of the supplied 2021 competition Train.csv
 - New-site transfer, AirQo's network use, cannot be tested with three sites whose periods barely overlap
   (see fit_reason). Exact device serials, source reference aggregation and site-metadata snapshot dates
   remain unverified.
-- On the three windows, untuned models give mean RMSE 41.22 for the training mean, 25.32 for raw sensor 1,
-  24.76 for a linear model, 19.21 for a forest and 18.26 for LightGBM (26.9, 13.6 and 14.3 per window,
-  February first). February, the highest-pollution month, dominates the mean.
-- Exact feature-copy share is zero. Native hidden-group probes report no hits; quantized near-copy profiles
-  cover 17.72 percent of rows but have only a 0.001215 skill gap. Examined pairs are same-site, different-hour
-  observations, not duplicate dynamic readings. Only 2 of 2,720 test rows have a same-site training hour
-  within one hour.
-- The pinned leak CLI fails on timezone-aware date selection in this runtime. A by-hand substitute on the three
-  windows found no leak: no single column moves an untuned LightGBM's mean RMSE by more than 0.86 when
-  dropped, and created_at alone has no skill.
+- On the five windows, untuned models give mean RMSE 36.42 for the training mean, 21.01 for raw sensor 1,
+  20.71 for a linear model, 15.08 for a forest and 15.34 for LightGBM (27.4, 14.7, 12.2, 9.3 and 13.2 per
+  window, February first; one seed). February, the highest-pollution month, dominates the mean. (Superseded
+  2026-11-05: 41.22, 25.32, 24.76, 19.21 and 18.26 on the three windows of 2026-11-04; LightGBM 16.69, with
+  January 16.8 and November 13.0, before the 7 hours issue 2 adds.)
+- Exact feature-copy share is zero on all five windows. The hidden-group probe finds no entity-like column;
+  near-copy clusters hold 6.7% of rows, and 12.1% of test rows have one on the training side (superseded
+  2026-11-05: the quantized profiles' 17.72 percent and 0.001215 skill gap came from the random folds). Only 4
+  of 4,624 test rows have a same-site training hour within one hour, at the window starts.
+- The leak probes run on the five windows (superseded 2026-11-05: the pinned CLI failed on timezone-aware
+  dates, and a by-hand substitute on the three windows found no leak) and find none: all features score skill
+  0.813, each sensor channel alone 0.61 to 0.66 and every other column alone below 0, and no test row copies
+  a training row. Dropping one column moves an untuned LightGBM's mean RMSE by at most 0.62, and created_at
+  alone scores a skill of 0.04.
 - The split is temporal (Lennart, 2026-11-04), replacing the site-balanced random folds Myunghwan approved on
-  2026-10-28; see the splits comment. Public data redistribution permission
+  2026-10-28; see the splits comment.
+- CC (2026-11-05, Lennart): five monthly windows from October 2020 instead of the three dry-season months
+  (issue 1, A; SPLIT-20, as aeolus and perth_house_prices widened theirs). The test now holds 4,631 hours
+  (4,624 after issue 2) over both seasons, and October and November score all three sites; the smallest
+  train side is 57.3% (SPLIT-14). Nakawa enters the October window with 63 hours of history (2020-09-19 to
+  2020-09-23), so its October hours are close to a new-site test inside this known-site task (USE-10). It
+  supersedes the three windows of 2026-11-04 ("ok (a)").
+- CC (2026-11-05, Lennart): the 92-hour Nakawa reference outage leaves (issue 3, A; CLEAN-11 impossible-value
+  clause, then CLEAN-15; as qsar_tid_11 and 2024_lusaka_mobility_prediction_hackathon). A Nakawa hour of
+  2020-11-10 to 2020-11-23 with the reference below 0.3 times both low-cost PM2.5 channels is a failed
+  reference: 92 hours, reference 0.1 to 11.2 against channels of 12 to 190, while Nakawa's monthly median
+  ratio of reference to sensor 1 is 1.04 to 1.21 elsewhere. The target is set missing and the rows leave;
+  the definition raises unless the count is 92. Without the date bound the same test catches 96 Nakawa hours.
+  Under the five windows these are November 2020 test labels; November keeps 599 hours, 260 of them at Nakawa
+  (596 and 258 after issue 2).
+- CC (2026-11-05, Lennart): one symmetric dead-channel rule at 0.27 (issue 4, B; CLEAN-11; as heart_disease,
+  ashrae and protein_model_quality_rf_pcp): a sensor whose PM2.5 is below 0.27 times the other sensor's has
+  both its channels set missing, and the row stays. It adds 16 sensor-2 hours of the 2019 outage and 18
+  sensor-1 hours (2019-11-13/14, 2020-06-07/08), all at USEmbassy and on every window's training side; the
+  definition raises unless the counts are 500, 16 and 18. Dead hours reach a ratio of 0.255, and the lowest
+  live one, Makerere 2020-12-05 06:00 at 0.294 (December test window), stays a reading.
+- CC (2026-11-05, Lennart): the spike rule becomes an instrument-error rule for every window, test windows
+  included (issue 2, (a) of its consistency check; CLEAN-11 impossible-value clause, then CLEAN-15; as the
+  Nakawa outage, qsar_tid_11 and 2024_lusaka_mobility_prediction_hackathon). Collocated instruments sample
+  the same air, so a reference hour several times both sensors and the hours around it is a value the
+  reference could not have read ("we think the value is wrong"). A reference hour above 3 times both PM2.5
+  channels and above 3 times the same site's reference in each neighbouring hour present, with at least one
+  present (an outage hour counts as absent), is set missing and the row leaves; the definition raises unless
+  the count is 12. It adds the four look-alikes with a missing neighbour, Nakawa 2020-10-29 17:00 (172.1),
+  2020-11-02 18:00 (232.1), 2021-01-01 22:00 (147.2) and Makerere 2020-12-08 14:00 (82.9), and three more:
+  Nakawa 2020-10-13 05:00 (36.2 against channels of 11.1 and 11.8, the weakest at 3.06 times, before a
+  morning rise the sensors show by 07:00), 2020-11-04 13:00 (40.4 against 6.7 and 7.2) and USEmbassy
+  2020-11-06 02:00 (155.0 against 30.4 and 31.6). All 12 are test labels (October 6, November 3, December,
+  January and February 1 each); 10,828 rows ship. USEmbassy 2021-02-10 07:00 (459.0 against 153.2 and 161.7,
+  before 99.0, no 08:00 hour) stays: it is 2.84 times sensor 2, and a channel factor of 2.83 would catch it
+  and no other hour. LightGBM's mean RMSE goes from 16.69 to 15.34 (November 13.0 to 9.3, January 16.8 to
+  14.7).
+- CC (2026-11-05, Lennart): the declared metric (RMSE on the original micrograms-per-cubic-metre scale, the
+  source's) is checked and stays as declared. Public data redistribution permission
   is not established by these checks; the source's private-participant restrictions remain in force.
 
 ## Splits
 
-Three one-month windows, newest first: February 2021, January 2021, December 2020. Each trains on every
-earlier hour (8,207 to 10,093 rows, 75-92%). A model refit at the start of each month corrects that month's
-readings; the monthly cadence is the curator's judgment (Lennart, 2026-11-04). Adong et al. (2022) say it is
-"important to retrain these models periodically" and name "seasonal re-calibration" as future work; AirQo's
-refit practice is not documented. All three test months fall in Kampala's December-February dry season (mean
-reference 44.9, 49.6 and 74.4 against 35.9 to 43.1 in September to November 2020); whether to widen the
-windows is an open review issue (SPLIT-20). Site coverage differs by month: December has no USEmbassy rows,
-January 45, February no Nakawa. Before its test months Makerere (from 2020-07-15) has 4.5 to 6.5 months of
-history and Nakawa (from 2020-09-19) 2.4 and 3.4. The reference is for the same hour and no reporting delay
-is documented, so no gap is needed; no training row has a label from after its window start. Random folds
-over the hourly stream gave the model reference labels of neighbouring hours and scored a third better
-(LightGBM RMSE 12.94 against 18.26 on the same test rows; review panel, 2026-11-04).
+Five one-month windows, newest first: February 2021 to October 2020 (Lennart, 2026-11-05; issue 1, A). Each
+trains on every earlier hour (6,204 to 9,994 rows, 57-92%); the test months hold 596 to 1,310 hours. A model
+refit at the start of each month corrects that month's readings; the monthly cadence is the curator's
+judgment (Lennart, 2026-11-04). Adong et al. (2022) say it is "important to retrain these models
+periodically" and name "seasonal re-calibration" as future work; AirQo's refit practice is not documented.
+The test covers both seasons: mean reference 42.3 and 40.5 in October and November, two months of the
+September-November rains, against 44.8, 49.5 and 74.2 in the December-February dry season (SPLIT-20). The
+three dry-season windows of 2026-11-04 ("ok (a)") are superseded. Site coverage differs by month: October and
+November score all three sites, December has no USEmbassy rows, January 45, February no Nakawa. History before
+the test months: USEmbassy from 2019-07-25, Makerere from 2020-07-15 (2.5 to 6.5 months), and Nakawa from
+2020-09-19 with only 63 hours (to 2020-09-23) before the October window, then 1.4 to 3.4 months; Nakawa's
+October hours are close to a new-site test (USE-10). The reference is for the same hour and no reporting
+delay is documented, so no gap is needed; no training row has a label from after its window start. Random
+folds over the hourly stream gave the model reference labels of neighbouring hours and scored a quarter better
+(untuned LightGBM, one seed, mean RMSE 11.23 against 15.34 on the same five test months; trained on an
+equal-size random draw of all other months, future included, 14.53). Superseded 2026-11-05: 12.94 against
+18.26 on the three windows (review panel, 2026-11-04).
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 8,207 to 10,093 rows, test 834 to 1,049 rows. Prediction horizon: 1 months.
+5 repeat(s) x 1 fold(s) with seed 4267; train 6,204 to 9,994 rows, test 596 to 1,310 rows. Prediction horizon: 1 months.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
-| 0 | 0 | 10093 | 834 | 2019-07-25 09:00:00+03:00 | 2021-01-31 22:00:00+03:00 | 2021-02-01 00:00:00+03:00 | 2021-02-28 23:00:00+03:00 |
-| 1 | 0 | 9044 | 1049 | 2019-07-25 09:00:00+03:00 | 2020-12-31 23:00:00+03:00 | 2021-01-01 00:00:00+03:00 | 2021-01-31 22:00:00+03:00 |
-| 2 | 0 | 8207 | 837 | 2019-07-25 09:00:00+03:00 | 2020-11-30 22:00:00+03:00 | 2020-12-01 00:00:00+03:00 | 2020-12-31 23:00:00+03:00 |
+| 0 | 0 | 9994 | 834 | 2019-07-25 09:00:00+03:00 | 2021-01-31 22:00:00+03:00 | 2021-02-01 00:00:00+03:00 | 2021-02-28 23:00:00+03:00 |
+| 1 | 0 | 8946 | 1048 | 2019-07-25 09:00:00+03:00 | 2020-12-31 23:00:00+03:00 | 2021-01-01 00:00:00+03:00 | 2021-01-31 22:00:00+03:00 |
+| 2 | 0 | 8110 | 836 | 2019-07-25 09:00:00+03:00 | 2020-11-30 22:00:00+03:00 | 2020-12-01 00:00:00+03:00 | 2020-12-31 23:00:00+03:00 |
+| 3 | 0 | 7514 | 596 | 2019-07-25 09:00:00+03:00 | 2020-10-31 23:00:00+03:00 | 2020-11-01 00:00:00+03:00 | 2020-11-30 22:00:00+03:00 |
+| 4 | 0 | 6204 | 1310 | 2019-07-25 09:00:00+03:00 | 2020-09-30 23:00:00+03:00 | 2020-10-01 00:00:00+03:00 | 2020-10-31 23:00:00+03:00 |
 
 ## Decisions
 
-### 1. Sensor 2 missing where both its channels read 0
+### 1. Dead sensor channels set missing
 
-Both sensor-2 channels read exactly 0 in 500 USEmbassy hours (2019-11-18 to 2019-12-17) while sensor 1 and the reference show ordinary pollution, so the channel was dead: both are set missing and the rows stay (CLEAN-11; Lennart, 2026-11-04). The missing weather values stay too.
+Both sensor-2 channels read exactly 0 in 500 USEmbassy hours (2019-11-18 to 2019-12-17) while sensor 1 and the reference show ordinary pollution, so the channel was dead (Lennart, 2026-11-04). One symmetric rule takes the rest of the same failure (Lennart, 2026-11-05): a sensor whose PM2.5 is below 0.27 times the other sensor's is dead, 16 more sensor-2 hours of that outage and 18 sensor-1 hours (2019-11-13/14, 2020-06-07/08). Dead hours reach a ratio of 0.255; the lowest live ratio is 0.294 (Makerere 2020-12-05 06:00). The dead sensor's two channels are set missing and the rows stay (CLEAN-11). The missing weather values stay too.
 
-| site | labeled_hours | sensor2_any_zero | sensor2_both_zero | sensor1_pm2_5_min | sensor1_pm2_5_mean_when_dead | reference_mean_when_dead |
+| kind | site | hours | first | last | dead_pm2_5_max | live_pm2_5_mean | reference_mean |
+|---|---|---|---|---|---|---|---|
+| sensor 2, both channels 0 | USEmbassy | 500 | 2019-11-18 11:00:00+03:00 | 2019-12-17 11:00:00+03:00 | 0 | 52.2 | 59.3 |
+| sensor 2, below 0.27 of sensor 1 | USEmbassy | 16 | 2019-11-18 09:00:00+03:00 | 2019-12-14 07:00:00+03:00 | 2.87 | 27.9 | 36.1 |
+| sensor 1, below 0.27 of sensor 2 | USEmbassy | 18 | 2019-11-13 02:00:00+03:00 | 2020-06-08 09:00:00+03:00 | 35.51 | 62.7 | 51.1 |
+
+### 2. Single-hour reference errors dropped
+
+Twelve reference hours read above 3 times both low-cost PM2.5 channels and above 3 times the same site's reference in each neighbouring hour in the file, with at least one there (Nakawa 2020-10-03 10:00: 444.0 against channels of 35 and 36 and neighbours of 47.5 and 86.0). Collocated instruments sample the same air, so a single hour that neither the sensors nor the hours around it share is an instrument error of the reference, an impossible value. They become missing and the rows leave, in the test windows too (CLEAN-11, CLEAN-15; Lennart, 2026-11-04 and 2026-11-05, issue 2), by the rule, not by hand.
+
+| site | created_at | pm2_5 | s2_pm2_5 | ref_pm2_5 | ref_before | ref_after |
 |---|---|---|---|---|---|---|
-| Makerere | 3107 | 0 | 0 | 2.93 | nan | nan |
-| Nakawa | 1717 | 0 | 0 | 1.18 | nan | nan |
-| USEmbassy | 6108 | 500 | 500 | 0.57 | 52.17 | 59.32 |
+| Nakawa | 2020-10-03 10:00:00+03:00 | 34.9 | 35.7 | 444 | 47.5 | 86 |
+| Nakawa | 2020-10-05 09:00:00+03:00 | 20.6 | 22.2 | 176.8 | 25.4 | 26 |
+| Nakawa | 2020-10-13 05:00:00+03:00 | 11.1 | 11.8 | 36.2 | 6.2 | nan |
+| Nakawa | 2020-10-17 09:00:00+03:00 | 36.8 | 37.7 | 374.5 | 42.8 | 34.7 |
+| Nakawa | 2020-10-29 17:00:00+03:00 | 21.9 | 23.4 | 172.1 | nan | 32.9 |
+| Nakawa | 2020-10-30 17:00:00+03:00 | 19 | 19.8 | 150.6 | 20 | 28.8 |
+| Nakawa | 2020-11-02 18:00:00+03:00 | 30.6 | 30.8 | 232.1 | nan | 49.6 |
+| Nakawa | 2020-11-04 13:00:00+03:00 | 6.7 | 7.2 | 40.4 | nan | 12.8 |
+| USEmbassy | 2020-11-06 02:00:00+03:00 | 30.4 | 31.6 | 155 | nan | 24 |
+| Makerere | 2020-12-08 14:00:00+03:00 | 10.4 | 10.2 | 82.9 | nan | 11.3 |
+| Nakawa | 2021-01-01 22:00:00+03:00 | 42.5 | 42.9 | 147.2 | nan | 43 |
+| Makerere | 2021-02-17 20:00:00+03:00 | 52 | 49.5 | 249.1 | 21.7 | 43.7 |
 
-### 2. Single-hour reference spikes dropped
+### 3. Nakawa reference outage dropped
 
-Five reference hours read above 3 times both low-cost PM2.5 channels and above 3 times the same site's reference in both neighbouring hours (Nakawa 2020-10-03 10:00: 444.0 against channels of 35 and 36 and neighbours of 47.5 and 86.0). Isolated hours like this fit an artefact of the reference monitor; no input can predict them. They become missing and the rows leave (CLEAN-11, CLEAN-15; Lennart, 2026-11-04), by the rule, not by hand.
+From 2020-11-10 to 2020-11-23, 92 Nakawa hours have the reference below 0.3 times both low-cost PM2.5 channels (2020-11-21 02:00: 0.1 against 101.2 and 102.0); outside these days Nakawa's monthly median ratio of reference to sensor 1 is 1.04 to 1.21. Collocated instruments sample the same air, so the reference failed: an impossible label, set missing, and the rows leave (CLEAN-11, CLEAN-15; Lennart, 2026-11-05). The rule is bounded to the run's site and days; without the date bound the same test catches 96 Nakawa hours.
 
-| site | created_at | pm2_5 | s2_pm2_5 | ref_pm2_5 |
+| day | hours | reference_median | sensor1_pm2_5_median | sensor2_pm2_5_median |
 |---|---|---|---|---|
-| Nakawa | 2020-10-30 17:00:00+03:00 | 18.9721 | 19.8233 | 150.6 |
-| Makerere | 2021-02-17 20:00:00+03:00 | 51.9507 | 49.4564 | 249.1 |
-| Nakawa | 2020-10-17 09:00:00+03:00 | 36.7626 | 37.7472 | 374.5 |
-| Nakawa | 2020-10-05 09:00:00+03:00 | 20.6468 | 22.187 | 176.8 |
-| Nakawa | 2020-10-03 10:00:00+03:00 | 34.8576 | 35.6951 | 444 |
+| 2020-11-10 | 4 | 1.8 | 21.3 | 22.1 |
+| 2020-11-11 | 7 | 3.2 | 19.7 | 20.2 |
+| 2020-11-12 | 7 | 1.3 | 26.6 | 27.6 |
+| 2020-11-13 | 4 | 3.7 | 30.9 | 31.5 |
+| 2020-11-14 | 6 | 2.8 | 31.5 | 31.9 |
+| 2020-11-15 | 6 | 1.6 | 34.9 | 35.4 |
+| 2020-11-16 | 4 | 3 | 32.1 | 32.8 |
+| 2020-11-17 | 8 | 2 | 48.6 | 49.9 |
+| 2020-11-18 | 7 | 2.7 | 40.6 | 41.6 |
+| 2020-11-19 | 7 | 0.7 | 23 | 23.7 |
+| 2020-11-20 | 8 | 2 | 51 | 52.6 |
+| 2020-11-21 | 9 | 1.8 | 101.2 | 102 |
+| 2020-11-22 | 11 | 1.3 | 40.3 | 41.2 |
+| 2020-11-23 | 4 | 3 | 37.8 | 38.6 |
 
 ## Bundle checks
 
@@ -322,16 +402,16 @@ Five reference hours read above 3 times both low-cost PM2.5 channels and above 3
 |---|---|---|---|---|---|
 | site | category | 0 | 0 | 3 | USEmbassy, Makerere, Nakawa |
 | landform_90m | category | 0 | 0 | 2 | Upper slope (warm), Lower slope (warm) |
-| created_at | datetime64\[ns, UTC+03:00\] | 0 | 0 | 9146 | 2021-01-31 01:00:00+03:00, 2020-10-05 13:00:00+03:00, 2021-01-29 12:00:00+03:00… |
-| s2_pm2_5 | float64 | 500 | 4.58 | 10403 | 34.2, 50.438, 34.49, 46.5286, 35.018, 54.3, 25.1633, 18.11, 18.8178, 50.535 |
-| s2_pm10 | float64 | 500 | 4.58 | 10414 | 51.56, 69.3238, 65.4369, 88.5023, 15.586, 20.65, 26.3625, 112.8544, 56.9734, 66… |
-| temp | float64 | 17 | 0.16 | 1577 | 19.2417, 19.025, 20.7917, 19.6083, 20.7333, 19.8833, 20.45, 19.925, 20.7583, 19… |
-| humidity | float64 | 6 | 0.05 | 4288 | 0.9992, 0.9995, 0.9992, 1.0, 0.9993, 0.9988, 0.9994, 0.9997, 0.9978, 0.9098 |
-| pm2_5 | float64 | 0 | 0 | 10905 | 36.7208, 28.4675, 14.084, 47.4236, 67.4049, 19.2275, 31.15, 36.4314, 27.1687, 2… |
-| pm10 | float64 | 0 | 0 | 10910 | 76.87, 103.96, 63.28, 42.98, 62.305, 114.6726, 25.6059, 17.65, 42.4225, 15.2283 |
+| created_at | datetime64\[ns, UTC+03:00\] | 0 | 0 | 9053 | 2021-01-31 01:00:00+03:00, 2021-01-30 22:00:00+03:00, 2021-01-30 21:00:00+03:00… |
+| s2_pm2_5 | float64 | 516 | 4.77 | 10288 | 25.1633, 42.667, 46.53, 34.49, 46.41, 70.47, 54.3, 50.438, 65.96, 41.96 |
+| s2_pm10 | float64 | 516 | 4.77 | 10299 | 112.8544, 20.65, 66.9, 52.0767, 69.3238, 15.586, 56.9734, 26.3625, 24.57, 88.50… |
+| pm2_5 | float64 | 18 | 0.17 | 10788 | 33.5895, 48.74, 48.222, 36.4314, 47.2929, 31.15, 36.3617, 36.7208, 28.4675, 19.… |
+| pm10 | float64 | 18 | 0.17 | 10793 | 94.2267, 57.77, 25.6059, 90.63, 76.87, 62.305, 103.96, 42.4225, 25.1083, 20.78 |
+| temp | float64 | 17 | 0.16 | 1577 | 19.2417, 19.025, 20.7917, 19.6083, 20.7333, 19.925, 19.8833, 19.7833, 19.3667, … |
+| humidity | float64 | 5 | 0.05 | 4270 | 0.9992, 0.9995, 1.0, 0.9992, 0.9988, 0.9993, 0.9994, 0.9978, 0.9991, 0.999 |
 | lat | float64 | 0 | 0 | 3 | 0.2993, 0.3335, 0.3317 |
 | long | float64 | 0 | 0 | 3 | 32.5927, 32.5686, 32.6095 |
-| ref_pm2_5 | float64 | 0 | 0 | 1229 | 38.0, 36.0, 27.0, 34.0, 39.0, 48.0, 37.0, 31.0, 42.0, 46.0 |
+| ref_pm2_5 | float64 | 0 | 0 | 1199 | 38.0, 36.0, 27.0, 34.0, 39.0, 48.0, 37.0, 31.0, 42.0, 46.0 |
 | altitude | int64 | 0 | 0 | 3 | 1199, 1233, 1191 |
 | greenness | int64 | 0 | 0 | 3 | 4374, 6340, 5865 |
 | landform_270m | int64 | 0 | 0 | 3 | 14, 28, -11 |
@@ -344,7 +424,7 @@ Five reference hours read above 3 times both low-cost PM2.5 channels and above 3
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | 1.931 | -1.188 | 1236.59 | 0.476 | log | 108588 | 110381 | exponential |
+| 0 | 0 | 0 | 1.961 | -0.26 | 1220.13 | 0.384 | log | 107759 | 103209 | lognormal |
 
 ### Numeric features
 
@@ -353,20 +433,20 @@ Five reference hours read above 3 times both low-cost PM2.5 channels and above 3
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| pm2_5 | 10927 | 51.5521 | 34.5926 | 0.567273 | 335.433 |
-| pm10 | 10927 | 59.8041 | 38.2186 | 0.595909 | 407.714 |
-| s2_pm2_5 | 10427 | 50.5013 | 33.3721 | 0.00142857 | 330.275 |
-| s2_pm10 | 10427 | 59.4962 | 37.7142 | 0.00142857 | 384.627 |
-| humidity | 10921 | 0.824875 | 0.13524 | 0.307167 | 1 |
-| temp | 10910 | 21.9622 | 2.8043 | 16.175 | 30.7818 |
-| lat | 10927 | 0.314082 | 0.016703 | 0.299255 | 0.333501 |
-| long | 10927 | 32.5885 | 0.0138571 | 32.5686 | 32.6095 |
-| altitude | 10927 | 1207.41 | 16.3682 | 1191 | 1233 |
-| greenness | 10927 | 5166.58 | 905.028 | 4374 | 6340 |
-| landform_270m | 10927 | 14.0603 | 12.3977 | -11 | 28 |
-| population | 10927 | 6990.68 | 1201.28 | 4780 | 8518 |
-| dist_major_road | 10927 | 286.07 | 175.896 | 130 | 500 |
-| ref_pm2_5 | 10927 | 52.915 | 35.1652 | 0.1 | 459 |
+| pm2_5 | 10810 | 51.7132 | 34.612 | 0.567273 | 335.433 |
+| pm10 | 10810 | 59.9882 | 38.2329 | 0.595909 | 407.714 |
+| s2_pm2_5 | 10312 | 50.651 | 33.3751 | 0.590682 | 330.275 |
+| s2_pm10 | 10312 | 59.6656 | 37.7118 | 0.78 | 384.627 |
+| humidity | 10823 | 0.824704 | 0.135332 | 0.307167 | 1 |
+| temp | 10811 | 21.9638 | 2.8067 | 16.175 | 30.7818 |
+| lat | 10828 | 0.313923 | 0.0166933 | 0.299255 | 0.333501 |
+| long | 10828 | 32.5883 | 0.0137744 | 32.5686 | 32.6095 |
+| altitude | 10828 | 1207.56 | 16.3666 | 1191 | 1233 |
+| greenness | 10828 | 5160.28 | 906.626 | 4374 | 6340 |
+| landform_270m | 10828 | 14.2835 | 12.2235 | -11 | 28 |
+| population | 10828 | 7010.35 | 1188.22 | 4780 | 8518 |
+| dist_major_road | 10828 | 284.151 | 175.508 | 130 | 500 |
+| ref_pm2_5 | 10828 | 53.2955 | 34.9304 | 0.2 | 459 |
 
 </details>
 
@@ -375,15 +455,15 @@ Five reference hours read above 3 times both low-cost PM2.5 channels and above 3
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | created_at | 1 | 2021-01-31 01:00:00+03:00 | 3 | 0.03 |
-| created_at | 2 | 2020-10-05 13:00:00+03:00 | 3 | 0.03 |
-| created_at | 3 | 2021-01-29 12:00:00+03:00 | 3 | 0.03 |
-| created_at | 4 | 2020-10-02 14:00:00+03:00 | 3 | 0.03 |
-| created_at | 5 | 2020-10-02 15:00:00+03:00 | 3 | 0.03 |
-| landform_90m | 1 | Upper slope (warm) | 9214 | 84.32 |
-| landform_90m | 2 | Lower slope (warm) | 1713 | 15.68 |
-| site | 1 | USEmbassy | 6108 | 55.9 |
-| site | 2 | Makerere | 3106 | 28.43 |
-| site | 3 | Nakawa | 1713 | 15.68 |
+| created_at | 2 | 2021-01-30 22:00:00+03:00 | 3 | 0.03 |
+| created_at | 3 | 2021-01-30 21:00:00+03:00 | 3 | 0.03 |
+| created_at | 4 | 2020-10-04 17:00:00+03:00 | 3 | 0.03 |
+| created_at | 5 | 2021-01-30 20:00:00+03:00 | 3 | 0.03 |
+| landform_90m | 1 | Upper slope (warm) | 9212 | 85.08 |
+| landform_90m | 2 | Lower slope (warm) | 1616 | 14.92 |
+| site | 1 | USEmbassy | 6107 | 56.4 |
+| site | 2 | Makerere | 3105 | 28.68 |
+| site | 3 | Nakawa | 1616 | 14.92 |
 
 ## Build
 
@@ -396,4 +476,4 @@ Five reference hours read above 3 times both low-cost PM2.5 channels and above 3
 | data_foundry_version | 0.0.5 |
 | git_sha | 6d189a922994ddb0221c8249d07552d4df8af88b |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:1e98ef3ab80a7cedfba4a5f6259ec263278433d81a3fa9dde2cc9708ed56f1d1` |
+| stale | yes: the definition now gives checksum `v2:34edd508d83450846fe555a4aed3f486115c3a6a6308382d3f773709dba3c194` |

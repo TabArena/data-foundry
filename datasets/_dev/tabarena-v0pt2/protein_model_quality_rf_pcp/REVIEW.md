@@ -56,6 +56,11 @@ protein's other candidates (issue 5) and fix the metric's left-out proteins in t
 
    [^task-row]: **USE-7** (Must): a row that is no task row leaves; applied through **CLEAN-11**.
 
+   **Resolved (2026-11-05, Lennart):** B. The 1,011 `rosetta62_*_rn<pdb>.out.N` relaxed natives leave by identity (the
+   archive keeps them in `relaxed_natives/`): 94,083 rows, still 445 proteins; the three ambiguous zero-RMSD rows stay.
+   Re-measured without them: LightGBM 0.322 against ridge 0.272 (9 of 9 splits; 0.355 against 0.294 before). A USE-7
+   Cases row records it; `dataset check` clean, leak and group probes without a new flag.
+
 5. **Let models see a protein's other candidates (`context="all_rows"`)?**
 
    * **Problem:**
@@ -96,6 +101,25 @@ protein's other candidates (issue 5) and fix the metric's left-out proteins in t
    [^group]: **SPLIT-23** (Must): the use case decides what is known about a new group.
    [^known]: **USE-6** (Must): what is known at the prediction point is a legitimate input.
 
+   **Lennart (2026-11-05, change):** Option B: all_rows.
+
+   **Consistency check (AI, 2026-11-05):** `context="all_rows"` here differs from huesken_sirna_efficacy
+   (`context="none"`, 2026-11-04), with the same `mean_group_pearsonr` and candidates ranked inside a held-out group.
+   What sets them apart?
+   - (a) huesken's guides (about 81 per gene) are a sample of Huesken's library design, not the pool a researcher would
+     design for a new gene, while CASP releases a target's whole set of server models at once: recorded on huesken under
+     SPLIT-23, and B is applied here;
+   - (b) treat huesken like this one: reopen it with `all_rows` (issue 9, A), and B is applied here;
+   - (c) keep `none` here, like huesken;
+   - (d) amend SPLIT-23: a metric that ranks within groups implies `all_rows`.
+
+   Give the letter in the note; nothing is applied until then. Issue 9 asks the same question from huesken's side.
+
+   **Resolved (2026-11-05, Lennart):** B, with issue 9 A as the answer (b) to the check above.
+   `grouping.context="all_rows"`; a context model scores 0.483 against 0.322 for a row-only one on the new frame.
+   SPLIT-23 Cases rows for sat11_hand_algo_runtime and this dataset. The example harness does not yet give a model the
+   group of its test rows; that gap is in BENCHMARK_CHANGES_TODO.md.
+
 6. **Fix the metric so that a protein with constant predictions scores 0, before shipping?**
 
    * **Problem:**
@@ -126,6 +150,16 @@ protein's other candidates (issue 5) and fix the metric's left-out proteins in t
    [^edge]: **MET-13** and **MET-2** (Must): a metric undefined at the edge of its domain gets a defined score, and
      the score rewards the decision.
 
+   **Lennart (2026-11-05, change):** Option B: Score them 0.; Note that this is also a problem for another dataset,
+   check if it is algiend already
+
+   **Answer (AI, 2026-11-05):** it is aligned: the fix is in the one shared function, so it holds for all three datasets
+   that use it (this one, huesken_sirna_efficacy and numerai_v5_2_1m); each record says so.
+
+   **Resolved (2026-11-05, Lennart):** B, by your mark on huesken_sirna_efficacy issue 6 (the same shared function): a
+   protein whose predictions are all equal scores 0, a protein with a constant target stays out.
+
+
 7. **Keep `Yes` with `Outdated`, when `first_order_theorem_proving` is `No` on `Outdated` alone?**
 
    * **Problem:**
@@ -147,6 +181,16 @@ protein's other candidates (issue 5) and fix the metric's left-out proteins in t
      | D | A rule for `Outdated` | an amendment | none found | none found |
 
    * **Recommendation:** none from the AI; the advocate answers A. **Decision:** A, B, C or D?
+
+   **Lennart (2026-11-05, change):** Option D: A rule for Outdated. There might be task that are so outdated that we
+   dont need them anymore (or this was just teh first tag we found that is enouhg, first order might also have other
+   problems). But here, it is more a note for us that the task itself is outdated but we keep it as it is borderline
+
+   **Resolved (2026-11-05, Lennart):** D. New rule SEL-18 (Should) in selection.md: `Outdated` alone leaves no dataset
+   out; on a borderline dataset whose task is still real it is a note; a dataset leaves only when the task itself is
+   gone, and a `No` that cites `Outdated` names its other reasons too. Cases rows: this dataset (kept, applied) and
+   first_order_theorem_proving (proposed: its `No` cites `Outdated` alone, so its open consistency check now asks for
+   its other reasons); its record says so.
 
 8. **Add a Tensions row: a measured target scored within groups is not a ranking task?**
 
@@ -173,6 +217,14 @@ protein's other candidates (issue 5) and fix the metric's left-out proteins in t
    [^ranking]: **SEL-9** (Must) excludes ranking tasks "also when a mirror serves them as ... regression".
    [^scope]: **SEL-8** (Must): the original task decides the scope.
 
+   **Lennart (2026-11-05, change):** Option B: Add the row. Ranking predictions and using the prediction for ranking ar
+   etwo different tasks and metrics, we care about the metrics driving it
+
+   **Resolved (2026-11-05, Lennart):** B. A Tensions row in principles.md: a measured target scored within groups stays
+   when the source's task is regression; grades that exist only per query stay out; ranking predictions and using a
+   prediction for ranking are two tasks, and the metric follows the one the use case drives. Cases: numerai_v5_2_1m,
+   huesken_sirna_efficacy and this dataset kept; the three learning-to-rank datasets out.
+
 9. **Should `huesken_sirna_efficacy` declare `context="all_rows"` too?**
 
    * **Problem:**
@@ -191,6 +243,12 @@ protein's other candidates (issue 5) and fix the metric's left-out proteins in t
 
    * **Recommendation:** A, reopen. **Decision:** does a researcher ranking siRNAs for a gene hold all of that gene's
      candidates at once? If so, A: reopen `huesken_sirna_efficacy` (a focused panel measures the effect there).
+
+   **Lennart (2026-11-05, change):** Option A: Reopen huesken, all_rows.
+
+   **Resolved (2026-11-05, Lennart):** A. huesken_sirna_efficacy is reopened as its issue 9 (`context="all_rows"` now or
+   after a focused panel), with a CC line in its record. This also answers the consistency check on issue 5 with (b):
+   huesken follows this dataset.
 
 **Review panel:** ship after changes (mediator). Tier full, second pass after Lennart's review of PR #33 on 2026-11-04.
 Claims: 43 listed, 19 audit rows: 12 hold, 2 refuted (the "each such row has a same-length sibling" note, now 132 of

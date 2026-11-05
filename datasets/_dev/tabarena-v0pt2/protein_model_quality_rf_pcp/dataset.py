@@ -40,8 +40,9 @@ class RfPcp(AbstractCuratedDataset):
             "before the experimental reference is available; scored by the correlation within each protein."
         ),
         row=(
-            "One of 95,094 protein-structure candidate rows in the author's mixed CASP5-10 and classic-decoy "
-            "release; 4,893 explicitly named native reference structures are excluded from this candidate population."
+            "One of 94,083 protein-structure candidate rows in the author's mixed CASP5-10 and classic-decoy "
+            "release; 4,893 explicitly named native reference structures and the rosetta62 set's 1,011 relaxed native "
+            "structures are excluded from this candidate population."
         ),
         predicted="Fractional GDT_TS at 1, 2, 4 and 8 angstrom tolerances; higher is better.",
         known=(
@@ -55,8 +56,9 @@ class RfPcp(AbstractCuratedDataset):
             "342 CASP targets: 339 organizer links and three sequence checks. No alias overlaps a classic target."
         ),
         changes=(
-            "Exclude explicitly named native references; recover target keys; retain the original GDT_TS "
-            "scale and all six supplied descriptors. Myunghwan selected GDT_TS after comparing all three targets."
+            "Exclude explicitly named native references and relaxed natives; recover target keys; retain the "
+            "original GDT_TS scale and all six supplied descriptors. Myunghwan selected GDT_TS after comparing all "
+            "three targets."
         ),
         fit="approximate",
         fit_reason=(
@@ -94,10 +96,12 @@ class RfPcp(AbstractCuratedDataset):
         - Curator decision (2026-10-29, Myunghwan): Include GDT_TS as a historical tabular
           benchmark with the documented descriptor uncertainties. Source year 2014 and the
           identity-based exclusion of 4,893 native references are accepted; retain 95,094 rows
+          (superseded 2026-11-05: 94,083 rows, the 1,011 relaxed natives leave too, CC below)
           and the three documented ambiguous zero-RMSD cases. Preserve source values and the
           historical approximate fit; no modern-generator or protein-family claim is made.
-        - Models differ on the declared metric (TP-3): on the nine shipped splits, untuned LightGBM scores 0.355 and
-          ridge 0.294, LightGBM higher in all nine (review panel, 2026-11-04). The earlier five-fold comparison
+        - Models differ on the declared metric (TP-3): on the nine shipped splits, untuned LightGBM scores 0.322 and
+          ridge 0.272, LightGBM higher in all nine (2026-11-05, without the relaxed natives; 0.355 against 0.294 with
+          them, review panel 2026-11-04). The earlier five-fold comparison
           (ridge RMSE 0.19318568 against LightGBM 0.17894541, 7.37%) was measured for the RMSE fallback and is
           historical.
         - The author archive has 99,987 complete rows. Exclude 4,893 IDs beginning native_ or ending _native.pdb
@@ -107,6 +111,14 @@ class RfPcp(AbstractCuratedDataset):
           IDs, casp5_T0156_1nxj.nNh1.pdb and ROSETTA_1aa2_1aa2h2.pdb, may be reference-like but their identities
           are unverified. Retain CASP10_T0676_HOMER_TS2.pdb: zero matched RMSD and low global scores can reflect
           limited alignment coverage; no label repair is supported by the source evidence.
+        - CC (2026-11-05, Lennart): `grouping.context="all_rows"` (issue 5, B; SPLIT-23, USE-6; as sat11_hand_algo_runtime): the researcher holds all of a target's candidates when ranking them, so a model may compare a candidate with the other candidates of its protein. A model that does so (each descriptor's z-score and rank within its protein, the group size) scored 0.517 against 0.355 on the frame with the relaxed natives and 0.483 against 0.322 without them; that use is legitimate now, not an exploit. huesken_sirna_efficacy is reopened to follow (issue 9, A).
+        - CC (2026-11-05, Lennart): the rosetta62 set's 1,011 relaxed natives leave by identity (issue 4, B; USE-7 via
+          CLEAN-11), like the 4,893 named natives. Their IDs (`rosetta62_<pdb>_rn<pdb>.out.N.pdb`, matched on
+          `_rn<pdb>.out.`) sit in the folder `relaxed_natives/` of the set's own archive (Zenodo 48780): the
+          experimental structure energy-minimised, which exists only once the reference is known. The pattern matches
+          only these 1,011 rosetta62 rows, none of the three zero-RMSD rows above; they held 8 of the 10 GDT_TS = 1
+          rows and the best candidate in 55 of the 56 rosetta62 proteins. 94,083 rows and 445 proteins remain, each
+          rosetta62 protein with at least 99 de novo decoys.
         - Predict GDT_TS in its supplied scale. Remove both alternative outcome columns and the structure ID
           from predictors. All six released descriptors remain numeric. No target transform or clipping.
         - Source Sections 2.2 and 2.3 define RMSD in angstroms and TM/GDT as fractional scores. Area is absolute
@@ -116,16 +128,18 @@ class RfPcp(AbstractCuratedDataset):
           largest length in their protein; source coverage versus full-sequence alignment is unverified. No native-reference leakage is demonstrated.
           The retrieved archive has no feature-generation code; row-level generation was not reconstructed.
         - ED is a sum of pair distances over the PN pairs, and PN is fixed by the sequence (constant within protein
-          and sequence length in 1,146 of 1,249 cells). A sum over one or more pairs cannot be 0, and a sum over no
-          pairs cannot be positive, so ED = 0 with PN > 0 (71 rows) and PN = 0 with ED > 0 (63 rows) become missing
-          and the rows stay (CLEAN-11; Lennart, 2026-11-04). 132 of the 134 rows have a same-protein, same-length
-          sibling with the value positive; the other two (CASP10_T0692_FALCON-TOPO_TS5.pdb and
-          CASP10_T0716_sysimm_TS4.pdb) are the only rows of their length in a protein whose other rows are positive.
+          and sequence length in 1,143 of 1,245 cells). A sum over one or more pairs cannot be 0, and a sum over no
+          pairs cannot be positive, so ED = 0 with PN > 0 (71 rows) and PN = 0 with ED > 0 (60 rows) become missing
+          and the rows stay (CLEAN-11; Lennart, 2026-11-04). 129 of the 131 rows have a same-protein, same-length
+          sibling with the value positive (counts of 2026-11-05, without the relaxed natives); the other two
+          (CASP10_T0692_FALCON-TOPO_TS5.pdb and CASP10_T0716_sysimm_TS4.pdb) are the only rows of their length in a
+          protein whose other rows are positive.
         - SL counts the residues of the candidate model. In CASP6-9 and the ROSETTA, John2002 and rosetta62 sets it
           is constant within every target, so it acts as the target's length; in CASP10 it varies within all 67
           targets (and within 2 of 37 CASP5 targets and 12 classic-set proteins), so it measures the candidate's
           coverage of a GDT_TS normalised by the target's length. On the CASP10 targets of the shipped splits,
-          ranking by SL alone scores 0.50 on the metric and a row-only LightGBM 0.05 (review panel, 2026-11-04).
+          ranking by SL alone scores 0.50 on the metric and a row-only LightGBM 0.05 (review panel, 2026-11-04;
+          the same without the relaxed natives, 2026-11-05).
           The full file has 2,259 CASP10 rows that the paper's validation file lacks (66 of 67 targets, median
           GDT_TS 0.238 against 0.441).
         - Energy is signed in the release despite absolute-sum prose; retain signs and extreme finite values.
@@ -142,9 +156,12 @@ class RfPcp(AbstractCuratedDataset):
           correlation within each protein averaged over proteins, because the use case ranks one protein's
           candidates. The paper reports RMSE, correlation, R2 and tolerance accuracy side by side; pooled RMSE rewards
           a protein's typical quality, and each protein's true mean, which orders no candidate, beats LightGBM on it
-          (0.134 against 0.188). The correlation stands in for the top-1 GDT_TS loss (the best candidate's GDT_TS
+          (0.124 against 0.187 on the nine shipped splits, 2026-11-05; 0.134 against 0.188 with the relaxed natives).
+          The correlation stands in for the top-1 GDT_TS loss (the best candidate's GDT_TS
           minus the picked one's) that CASP11-14 use to score picking a model; both rank three test models the same
-          way (review panel, 2026-11-04). Each test fold holds 148-149 proteins with a median of 103-113 candidates,
+          way (review panel, 2026-11-04). A protein whose candidates all get the same prediction scores 0; a protein
+          whose GDT_TS does not vary would be left out, and there is none (the library's rule since 2026-11-05).
+          Each test fold holds 148-149 proteins with a median of 102-108 candidates,
           at least 13. In the 19 proteins merged across decoy collections (26% of rows), the score partly rewards
           telling the collections apart, about +0.01 on the fold mean.
         - `Energy` stays as supplied (Lennart, 2026-11-04): the extreme positive values (up to 7e11) are ProSEE's
@@ -165,7 +182,8 @@ class RfPcp(AbstractCuratedDataset):
             "stands in for the top-1 GDT_TS loss of picking the best model and ranks models the same way. Rana et al. "
             "(DOI 10.1142/S0219720015500055) report RMSE, correlation, R2 and tolerance accuracy side by side. Pooled "
             "RMSE does not score the decision: each protein's true mean, which orders no candidate, beats LightGBM on "
-            "it (0.134 against 0.188). Exception to MET-5 (Lennart, 2026-11-04)."
+            "it (0.124 against 0.187). A protein whose predictions are all equal scores 0 instead of being left out, "
+            "so declining to rank a protein earns nothing over a guess. Exception to MET-5 (Lennart, 2026-11-04)."
         ),
         inputs={"group": "protein_id"},
     )
@@ -173,12 +191,14 @@ class RfPcp(AbstractCuratedDataset):
         on="protein_id",
         labels="per_sample",
         prediction_unit="row",
-        context="none",
+        context="all_rows",
         definition=(
             "A group collects candidates for one canonical protein. CASP uses T identifiers and classic "
             "decoys use native PDB identifiers. Source Section 2.2 defines quality relative to experimental structure; "
             "Evaluation holds out target proteins. Verified same-protein accession aliases are merged. "
-            "Cross-source alias completeness is an open qualification issue, not established by the group checks."
+            "Cross-source alias completeness is an open qualification issue, not established by the group checks. "
+            "A target's candidates are in hand together when they are ranked (CASP releases a target's server models "
+            "at once), so a model may see all rows of a test protein (`all_rows`)."
         ),
     )
     splits_comment = """
@@ -187,8 +207,9 @@ class RfPcp(AbstractCuratedDataset):
         membership is verified explicitly.
         All 342 CASP identities are verified; three retain source IDs. Sequence-family independence is not claimed.
         The source's own files train on CASP5-9 and the classic sets and validate on CASP10. Forward windows by CASP
-        round (train on all earlier rows, untuned LightGBM, per-protein correlation) score CASP8 0.340, CASP9 0.483
-        and CASP10 0.016; through CASP9 they match the grouped folds within 0.03, so the rounds show no drift, and
+        round (train on all earlier rows, untuned LightGBM, per-protein correlation) score CASP8 0.339, CASP9 0.484
+        and CASP10 0.009; through CASP9 they match the grouped folds within 0.04 (2026-11-05, without the relaxed
+        natives; 0.340, 0.483, 0.016 and 0.03 with them), so the rounds show no drift, and
         CASP10's low score comes from its other descriptor convention (the SL note), not from time. The grouped
         split is kept.
     """
@@ -199,7 +220,9 @@ class RfPcp(AbstractCuratedDataset):
 
     def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
         is_reference = raw["PDB-ID"].str.startswith("native_") | raw["PDB-ID"].str.endswith("_native.pdb")
-        df = raw.loc[~is_reference].copy()
+        # rosetta62's relaxed natives (the archive's relaxed_natives/ folder) are references too (USE-7 via CLEAN-11).
+        is_relaxed_native = raw["PDB-ID"].str.contains(r"_rn[0-9a-z]{4}\.out\.", regex=True)
+        df = raw.loc[~(is_reference | is_relaxed_native)].copy()
         df["protein_id"] = df["PDB-ID"].map(protein_key)
         mapping_bytes = (self.folder / "protein_aliases.json").read_bytes()
         expected = "6ca86a5b32cad72d6795dd629f99be918115be0eb9bba5b87fb32746d437c187"

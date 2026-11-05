@@ -61,6 +61,9 @@ Left for you: issues 4, 6, 5, 8.
    [^clean]: **CLEAN-24** and **CLEAN-26**: the raw entity ships and derived encodings are left to the benchmark.
    [^ev6]: **EV-6**: a paper's claim is not a measurement on these folds.
 
+   **Resolved (2026-11-05, Lennart):** A. Kept as a tabular task with the reworded `Revisit later` tag; the
+   sequence-model run stays optional.
+
 6. **Should the per-group correlation score a constant prediction?**
 
    * **Problem:**
@@ -81,6 +84,14 @@ Left for you: issues 4, 6, 5, 8.
    * **Recommendation:** A (the advocate's call). **Decision:** leave and note, or change the shared scorer?
 
    [^met2]: **MET-2** (Should): the metric must be computable for a baseline on every fold.
+
+   **Lennart (2026-11-05, change):** Option B: Return 0 for a zero-variance group. I would like to have usable metrics
+   and them be safe guarded against such failur modes
+
+   **Resolved (2026-11-05, Lennart):** B. The shared `mean_group_pearsonr` scores a gene whose predictions are all equal
+   as 0; a gene with a constant target stays out. Both are decided on the raw values, so a float constant such as 0.3
+   cannot pass as a ranking through rounding noise; tests cover 0.3, 0.5, 0.25 and abstaining on some genes. It applies
+   to protein_model_quality_rf_pcp (its issue 6, resolved with this) and numerai_v5_2_1m too; their records say so.
 
 5. **Drop the 19 redundant guide position columns, or only note them?**
 
@@ -106,6 +117,10 @@ Left for you: issues 4, 6, 5, 8.
 
    [^clean8]: **CLEAN-8** (Should, P7): a column that restates others is noted or dropped.
 
+   **Resolved (2026-11-05, Lennart):** B. `guide_position_01..19` left as a copy of window positions 38 to 20 (the rule
+   is CLEAN-22, not CLEAN-8 as the footnote says): 247 features, the overhang bases 20 and 21 stay, `dataset check`
+   clean.
+
 8. **Name a top-k or per-gene Spearman companion in the README?**
 
    * **Problem:**
@@ -124,6 +139,51 @@ Left for you: issues 4, 6, 5, 8.
      the same family). **Decision:** add the sentence or leave it?
 
    [^met6]: **MET-6**, **MET-7** (Should): the metric reflects the part of the ranking the user acts on.
+
+   **Resolved (2026-11-05, Lennart):** B. The notes name the companion (the precision of the top few guides per gene, or
+   the per-gene Spearman correlation); the declared metric is unchanged.
+
+9. **Declare `context="all_rows"` now, or after a focused panel?**
+
+   * **Problem:**
+     - You reopened this dataset with `context="all_rows"` (protein_model_quality_rf_pcp issue 9, A, 2026-11-05), so it
+       matches protein, where a target's candidates are held together, as in sat11_hand_algo_runtime[^context].
+     - The definition still declares `context="none"`, a panel choice of 2026-11-04 that was never your call.
+     - A focused panel measures what context adds here and checks the one fact that could set huesken apart: whether
+       a gene's 81 guides are the pool a researcher would design, or a sample of Huesken's library.
+   * **Effect on the task:** None on the data, the split or the metric: `context` is metadata. Today no model in the
+     example harness sees which test rows share a gene (the group column is not an input), so the gain is not yet
+     reachable; that gap is noted for the benchmark.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | `none` until the panel (implemented) | the panel runs on `none` and proposes the change | the panel's numbers come first | huesken and protein differ until then |
+     | B | `all_rows` now, panel after | the definition declares it today; the panel measures it | huesken and protein agree today | a change before its measurement |
+
+   * **Recommendation:** B: the direction is your call, `context` changes no data, and the panel can still find the
+     library-sample fact and propose `none` back. **Decision:** A or B? The panel (claim auditor, split auditor,
+     domain practitioner, mediator, editor) needs your go-ahead as well.
+
+   **Notes for the AI:** on B, set `grouping.context="all_rows"` in `dataset.py` with a CC line, run `dataset check`,
+   then the focused panel; add a SPLIT-23 Cases row (protein, sat11, huesken) once both are settled.
+
+   [^context]: **SPLIT-23** (Must): the source's use case decides what one prediction is and what is known about a new
+     group when predicting; the grouping's `context` declares it.
+
+   **Answer (AI, 2026-11-05):** the data for B. On the 30 shipped gene-held-out splits, untuned LightGBM scores 0.6708
+   per-gene correlation on the rows alone and 0.6699 with each numeric feature's z-score and rank within its gene and
+   the gene's size added (the protein context model's recipe): a gain of -0.0010, paired SE 0.0025, ahead in 17 of 30
+   splits. On protein the same recipe gains +0.161 (0.483 against 0.322). So `all_rows` changes no score here: what
+   decides it is what the researcher knows when ranking (the use case, SPLIT-23), not the size. B costs nothing and
+   keeps the two datasets alike; A would only delay the same answer. Script:
+   `local-data-warehouse/_runs/2026-11-05_pr33_apply/huesken/context.py`.
+
+   **Lennart (2026-11-05, change):** Option B: all_rows now, panel after.
+
+   **Resolved (2026-11-05, Lennart):** B. `grouping.context="all_rows"`; `dataset check` clean; a SPLIT-23 Cases row
+   beside protein and sat11. The focused panel waits for your go-ahead; the measurement it would make is above (context
+   adds nothing here).
 
 **Review panel:** ship after changes (mediator). Tier full, second pass after your PR #33 review of 2026-11-04. Claim audit: 21 claims, 15 hold, 3 partly hold (constant prediction scores NaN, the RMSE gene-mean figure reproduced only in size, stale record text), 1 refuted and fixed (a metric-reason figure, not the data: the "97% and 80% of folds" figure; the reproduced values are 30 of 30 by RMSE and 29 of 30 by the metric), 2 untested (Kendall tau 0.64 and the sequence-model test). Blind review: include with changes; main concern `target_gene` as a feature, refuted because the kit's `features()` excludes it (266 features). Task gamer: nothing games the task; best exploit overlap-graph features of the target windows, +0.0015 per-gene correlation on 30 splits (noise), and the honest gain of a gene-centred training target without the window columns, 0.6461 to 0.6686 (single seed, about one split SD). Agreed: no exclusion, the data, splits, hashes and control scale verified, no leak, the exception to MET-5 stands, and the edit list (applied). Disputed: whether the unrun CNN gates shipping (SEL-12, issue 4), whether the NaN on a constant prediction is a defect or a note (MET-2, issue 6), and whether the redundant guide columns are dropped or noted (CLEAN-8, issue 5).
 

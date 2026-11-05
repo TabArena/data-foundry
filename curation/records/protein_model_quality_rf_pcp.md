@@ -30,7 +30,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-CC (2026-10-29, Myunghwan): Include GDT_TS as a historical tabular quality benchmark with the documented descriptor uncertainties. Use source year 2014 and retain the paper's 2015 citation. Exclude the 4,893 explicitly named native references; retain the 95,094-row candidate population, including the three documented ambiguous zero-RMSD cases. Preserve all six supplied descriptors and the canonical-protein holdout.
+CC (2026-10-29, Myunghwan): Include GDT_TS as a historical tabular quality benchmark with the documented descriptor uncertainties. Use source year 2014 and retain the paper's 2015 citation. Exclude the 4,893 explicitly named native references; retain the 95,094-row candidate population (superseded 2026-11-05: 94,083 rows, the 1,011 relaxed natives of the rosetta62 set leave too, CC below), including the three documented ambiguous zero-RMSD cases. Preserve all six supplied descriptors and the canonical-protein holdout.
 
 **Assessment (AI, 2026-10-29):** The author archive has 99,987 rows. A row is a candidate protein structure; the six numeric inputs are surface area, cumulative aliphatic C-beta distances, empirical energy, secondary-structure score, sequence length and aliphatic pair count. Identifiers and both alternative outcomes are excluded from predictors. GDT_TS is the supplied fractional average agreement at 1, 2, 4 and 8 angstrom tolerances. Predict it after candidate generation, before the experimental reference is available.
 
@@ -79,6 +79,18 @@ CC (2026-11-04, Lennart): the per-protein correlation stands as implemented (REV
 **Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the research behind each mark, and all are settled. (Superseded the same day by the full second-pass panel below.)
 
 **Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes, once the metric is fixed in the library (issue 6), the relaxed natives are excluded (issue 4) and `context` is settled (issue 5), and the definition is rebuilt (USE-7 triggered by 1,011 rosetta62 relaxed natives kept as candidates, the archive's `relaxed_natives/` folder; SPLIT-23 and USE-6 triggered by `context="none"`, a context model scores 0.517 against 0.355; MET-2 and MET-13 triggered by proteins with constant predictions left out of the score, 0.355 to 0.428 without labels; USE-8 wording for CASP10 and EV-6/EV-8 notes fixed in the definition); disputed: the metric fix as a gate (MET-2, MET-13; settled, a gate), what `rn` means (USE-7; settled from the archive), CASP10 as P5 or USE-8 (settled, USE-8), the `Outdated` keep against first_order_theorem_proving (open); for the curator: issues 4-9. Priority 3: gap +, use case 0, source +, shape +, risk - (gap: biology & life sciences is thin among the 107 accepted definitions; use case: the source names no actor and the fit is approximate; source: the Rana et al. 2015 paper and the authors' archive; shape: 95,094 rows, 6 features, 445 protein groups; risk: rows that exist only after the reference, issue 4, and the metric's left-out proteins, issue 6).
+
+**Assessment (AI, 2026-11-05):** the shared `mean_group_pearsonr` changed on 2026-11-05 (Lennart, huesken_sirna_efficacy issue 6): a group whose target varies but whose predictions are all equal scores 0 instead of being left out; a group with a constant target stays out. Scores of non-constant predictions are unchanged (this is the fix of this record's REVIEW.md issue 6).
+
+CC (2026-11-05, Lennart): the rosetta62 set's 1,011 relaxed natives leave by identity, like the 4,893 named natives (REVIEW.md issue 4, B; USE-7 via CLEAN-11). Their IDs (`rosetta62_<pdb>_rn<pdb>.out.N.pdb`) sit in the folder `relaxed_natives/` of the set's own archive (Zenodo 48780): the experimental structure energy-minimised, which exists only once the reference is known. They held the best candidate in 55 of the 56 rosetta62 proteins. The pattern matches only these rows and none of the three zero-RMSD cases; 94,083 rows and 445 proteins remain. On the declared metric and the nine shipped splits, untuned LightGBM scores 0.322 against ridge 0.272, higher in 9 of 9 (0.355 against 0.294 with the relaxed natives).
+
+CC (2026-11-05, Lennart): the declared metric (`mean_group_pearsonr` on `protein_id`; since 2026-11-05 a protein whose predictions are all equal scores 0) is checked and stays as declared.
+
+CC (2026-11-05, Lennart): `grouping.context="all_rows"` (REVIEW.md issue 5, B, confirmed through issue 9, A, which reopens huesken_sirna_efficacy to follow): the researcher holds all of a target's candidates when ranking them. A context model scores 0.483 against 0.322 for a row-only one (without the relaxed natives).
+
+CC (2026-11-05, Lennart): `Outdated` stays as a note on a kept borderline dataset, now rule SEL-18 (issue 7, D); a Tensions row in principles.md says a measured target scored within groups is no ranking task (issue 8, B).
+
+CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
 
 ## Reference
 

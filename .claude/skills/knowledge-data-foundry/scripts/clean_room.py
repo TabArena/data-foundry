@@ -72,7 +72,8 @@ SCORE_PY = '''"""Score a prediction on this task as the benchmark does.
 
 ``python score.py`` scores a random prediction on every split: it shows the metric computes, it is not a baseline.
 The kind of prediction the metric takes (``proba``, ``label`` or ``value``) is ``task.json``'s ``metric.prediction``;
-``metrics.py`` implements it.
+``metrics.py`` implements it. Class probabilities: one column per class in the sorted order of the classes
+(scikit-learn's ``classes_``), or a DataFrame whose columns are the class names.
 """
 
 from __future__ import annotations
@@ -130,7 +131,7 @@ def score(y_true, y_pred, test_idx) -> float:
 if __name__ == "__main__":
     df = load()
     y = df[TARGET]
-    labels = list(y.cat.categories) if isinstance(y.dtype, pd.CategoricalDtype) else None
+    labels = sorted(y.cat.categories) if isinstance(y.dtype, pd.CategoricalDtype) else None
     for name, train_idx, test_idx in splits():
         pred = metrics.dummy_prediction(TASK["metric"]["prediction"], y.iloc[train_idx], len(test_idx), labels=labels)
         value = score(y.iloc[test_idx], pred, test_idx)

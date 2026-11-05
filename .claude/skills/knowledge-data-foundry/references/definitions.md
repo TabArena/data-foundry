@@ -235,8 +235,11 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
   `scoring_columns = (ScoringColumn(column="era", role="group", used_by="mean_group_pearsonr", description="the week a
   row belongs to; the metric is the mean of the per-era correlations"),)`. `feature_columns(container)` returns the
   model's inputs without the target, the group column and the scoring columns, and `scorer(container)` takes the
-  scoring columns' values by row index: `scorer(container)(y_test, y_pred, test_idx)`. Before declaring a metric
-  with inputs, check on the data that every test fold holds what it needs (MET-2).
+  scoring columns' values by row index: `scorer(container)(y_test, y_pred, test_idx)`. It reads class probabilities
+  in the sorted order of the classes (scikit-learn's `classes_`), also for an ordered target, whose declared order
+  stays type information; a DataFrame whose columns are the class names is matched by name, and a missing or unknown
+  class name is an error (Lennart, 2026-11-05). Before declaring a metric with inputs, check on the data that every
+  test fold holds what it needs (MET-2).
 
   The build writes the spec into the task metadata as `objective_metric`: `name`, `kind` (`standard`, `custom` or
   `local`), `prediction` (`proba`, `label`, `value`), `greater_is_better`, `origin`, `params`, `inputs`, `original`,

@@ -16,7 +16,7 @@ tags:
 collections:
 - New (BeyondArena)
 original_source: GOV Website
-year: '2017'
+year: '2026'
 domain: social science
 required_split:
 - Temporal (NON-IID)
@@ -60,7 +60,7 @@ CC (2026-10-29, Myunghwan): Keep the five discussed crash-condition fields in th
 
 **Assessment (AI, 2026-10-29):** Revised 21-input package qualified for added-review. The saved curator direction retains five condition fields with measured recording risk and a disclosed departure from the pinned LEAK-38/LEAK-10 treatment; no standing amendment is inferred. All 1,097,209 rows and all nine train/test identities match the previous recipe; original source-copy, notification and hourly-time repairs remain. Three newest native capped task probes: linear log loss 0.507504, prior 0.613934; flags []. Bundle checks: 0 errors, 1 unaccepted warning (physical DEVICE_CONDITION=MISSING), 2 informational reduced-profile findings. Reduced-frame exact extras are now 221, conflicting profiles 21; earlier453/53 counts belong to the 16-input recipe. Focused independent claim/column/precedent/mediator/editor review and refreshed probes preserved. Final inclusion and issues1-4 remain undecided. Priority 3: gap + (thin social science/multiclass), use case 0 (approximate response assessment), source + (official documented release), shape + (large mixed temporal task), risk - (recording, label-version and historical-code uncertainty).
 
-CC (2026-10-29, Myunghwan): Issue 1: It's fine. Historical label is fine. This is a reasonable approximation. Issue 2: Yes, this is fine. We are now predicting more based on "closer to fact" information than "timely avaialbe" information. OK for this approximation. Issue 3: What decision do we need? does it matter? Issue 4: OK Issues 1/2/4 accepted; issue 3 remains discussion, not a final ship or build request.
+CC (2026-10-29, Myunghwan): Issue 1: It's fine. Historical label is fine. This is a reasonable approximation. Issue 2: Yes, this is fine. We are now predicting more based on "closer to fact" information than "timely avaialbe" information. OK for this approximation. Issue 3: What decision do we need? does it matter? Issue 4: OK Issues 1/2/4 accepted; issue 3 remains discussion, not a final ship or build request. (Superseded 2026-11-05 for the actor: the use case is now a city road-safety analyst, issue 7; the closer-to-fact finalized inputs stay, as what that analyst works from.)
 
 **Assessment (AI, 2026-10-29):** Applied accepted historical-label and closer-to-fact framing, preserved injury/report outcome exclusions, and accepted only dataset_missing_value_label for physical DEVICE_CONDITION=MISSING. Executable cleaning, features, labels, metric and split methods are unchanged. The speed question is whether to retain the posted road limit or remove/reconstruct it; recommend retaining it without guessed 99/default conversion. Recent matched zero rates weaken the specific proposed default mechanism; incremental predictive effect of dropping speed was not measured. Its coding caveat is not a demonstrated leakage defect. Issue 3 and overall inclusion remain open; settled choices are not reopened.
 
@@ -87,6 +87,20 @@ CC (2026-11-04, Lennart): the five condition fields (weather, lighting, road sur
 **Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; its issues came from the light static review of the PR #33 page and the measurements behind each mark (log loss on the three newest windows: 0.4960 without the five fields, 0.4921 with them; 0.49201 from 2017-09 against 0.49214 from 2013), and all are settled.
 
 **Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes (applied as wording: year 2026 under PROV-9, the 2026-11-04 snapshot and its hash, the measured update delay; the C-class step is in 2023Q4, not 2026Q2-Q3 as the assessment above says); disputed: USE-1, USE-5, LEAK-10/LEAK-38 (`dooring_i`); for the curator: issues 7-11. Priority 3: gap +, use case 0, source +, shape +, risk - (gap: social science and multiclass are thin among the accepted definitions; use case: the source names no actor and the curation's actor fits approximately; source: the City documents the table and the SR1050 form; shape: 998,117 mixed-type temporal rows; risk: the row-order leak of issue 9 and the open framing of issue 7).
+
+CC (2026-11-05, Lennart): the use case is a city road-safety analyst who estimates each reported crash's injury level to rank sites by expected people killed or seriously injured (issue 7, A; USE-1, USE-9: the blind reviewer named the same actor without our notes). It supersedes the emergency-response framing accepted on 2026-10-29: 50.9% of the rows are desk reports nobody was dispatched to (5.3% injured against 25.5% on scene). Every row stays. The fit stays approximate: police reports catch about half of serious injuries in trauma-registry linkage, the 'reported, not evident' share steps up in 2023Q4, and the road facts recorded more completely for injury crashes are dropped.
+
+CC (2026-11-05, Lennart): the 2023Q4 step in 'reported, not evident' (4.09-4.71% of crashes before, 6.07-6.74% from 2024Q2) is accepted as drift, with its note in the splits comment (issue 8, as implemented; USE-5 fails only when the label is shown to be another quantity, SPLIT-20).
+
+CC (2026-11-05, Lennart): the crash time is floored to the hour in `_clean`, not in `_make_splits` (issue 9, B; LEAK-13, as hepatitis_c_prediction and gallstone_disease). The framework sorts the rows by time between the two steps, so each hour kept its minute order, and a row's rank in its hour lowered log loss by 0.00098 on all 9 splits. The windows do not change; the one crash notified before its recorded time stays unused through a flag computed from the source minute.
+
+CC (2026-11-05, Lennart): `dooring_i` is dropped (issue 10, B; LEAK-10 through LEAK-38's measured clause, as the five condition fields of 2026-11-04); it costs 0.00011 log loss (three newest windows). If the LEAK-38 amendment opened on 2026-11-05 takes the any-source scope, `dooring_i` falls under it too.
+
+CC (2026-11-05, Lennart): the one-month gap stays (issue 11, as implemented; SPLIT-10 as amended 2026-11-04): it covers 99.4% of last updates, and two months would cover 4 of the 5 late fatal updates for about 1% of each training side.
+
+CC (2026-11-05, Lennart): the declared metric (the fallback multiclass log loss over the five police injury classes) is checked and stays as declared.
+
+CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask (the export URL stops working on 2026-12-22). The claim stays until the PR that takes it to `main` sets `DF: Yes`.
 
 ## Reference
 

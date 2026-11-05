@@ -79,6 +79,12 @@ credit datasets or amend USE-8 (issue 6), and the postcode's dtype (issue 7).
    [^split15]: **SPLIT-15** (Should): as many windows as an IID or grouped task of that size would get folds.
    [^split20]: **SPLIT-20** (Should): what the train side holds is decided from the use case.
 
+   **Resolved (2026-11-05, Lennart):** as implemented. SPLIT-9 is amended: a training label that tells a test row's
+   outcome (a row in train because its outcome came early, or a label of the test row's own entity set after its
+   prediction point) is removed whatever it costs the floor; rates over codes shared by many entities, with no link to
+   the row's own entity and no growth at the release end, fall under SPLIT-10, with their size in the notes. A SPLIT-9
+   Cases row for lt (+0.0026 ROC AUC through recent rates of shared codes; no borrower recurs).
+
 5. **Record gap 0 as an application of the amended label-delay rule, or as an exception?**
 
    * **Problem:**
@@ -143,6 +149,14 @@ credit datasets or amend USE-8 (issue 6), and the postcode's dtype (issue 7).
    [^windows5]: **SPLIT-15** (Should): as many windows as an IID or grouped task of that size would get folds. At 30
      days the trade is SPLIT-10 against SPLIT-15, both Shoulds, and SPLIT-10 comes first.
 
+   **Resolved (2026-11-05, Lennart):** as implemented. SPLIT-10's amendment is reworded: the measurements decide; no gap
+   where the collection covers what a gap guards against (a fixed outcome horizon removes the selection by the outcome)
+   and the measurements show neither, with the gain of the newest labels at equal training size in the notes. lt's gap 0
+   is an application, not an exception; its SPLIT-10 Cases row and the Tensions row are updated, and the 2026-10-23
+   exception line is marked history. Read again under the new text, lending_club has no measurement of the shortcut or
+   of the newest labels' gain (its exception still stands); alfa_battle_2_0_task_2 reads consistently. Neither is
+   relabelled.
+
 6. **Name the issued-loan selection on the sibling credit datasets too, or amend the rule on naming it?**
 
    * **Problem:**
@@ -175,6 +189,25 @@ credit datasets or amend USE-8 (issue 6), and the postcode's dtype (issue 7).
      selection of the rows is named and carries the `Selection Bias` marker.
    [^consistent]: principles.md, "Consistent judgement", cases 1 and 2.
 
+   **Lennart (2026-11-05, change):** Option C: Record what sets lt apart.
+
+   **Consistency check (AI, 2026-11-05):** lt already follows the fit rule (USE-8, a Must, your amendment of
+   2026-10-27), so C records a fact for a case that needs none, and lending_club, home_credit_default_risk, credit_g and
+   give_me_some_credit (approval use, granted credit only, no marker) keep contradicting a Must. What did you mean?
+   - (a) C, with the four records flagged as contradicting USE-8 until they are reopened;
+   - (b) A: reopen the four;
+   - (c) B: amend USE-8 for credit data that holds only accepted loans.
+
+   Give the letter in the note; nothing is applied until then.
+
+   **Lennart (2026-11-05, change):** we dont need the bias marker here as this is the real data for ther other cases but
+   selected subset for this case. In short, here we know we would waant to use more but dont have it, in the others we
+   have the data we want to use
+
+   **Resolved (2026-11-05, Lennart):** C. The fact that sets lt apart is recorded (a USE-8 Cases row and a CC line):
+   lt's approval decision faces every applicant while the release holds only approved loans, so lt carries `Selection
+   Bias`; the four siblings' releases are the data their own use cases use, so they keep no marker.
+
 7. **Type `Current_pincode_ID` as a number, since its masked IDs keep geographic order?**
 
    * **Problem:**
@@ -198,6 +231,48 @@ credit datasets or amend USE-8 (issue 6), and the postcode's dtype (issue 7).
 
    [^clean14]: **CLEAN-14** (Should): its "zip code prefixes, whose nearby values are nearby places" clause points to
      numeric typing; its Cases table keeps zip prefixes as numbers.
+
+   **Lennart (2026-11-05, change):** Option B: Numeric. Or would it be better to just add some feature based on this and
+   keep both, the categorical and the number?
+
+   **Answer (AI, 2026-11-05):** One column, numeric. Shipping the same code twice in two types is a copy (CLEAN-22, as
+   the huesken guide positions today), and an encoding derived from it is left to the benchmark (CLEAN-24). As a number,
+   a tree can still isolate a single postcode with two splits, so the categorical reading is not lost; as a category,
+   the order the masking kept is. A derived feature (say the state a code falls in) would need a mapping the release
+   does not give. So B as marked; say "yes" in the note and it is applied.
+
+   **Lennart (2026-11-05, change):** We want a context depdended feature here, what could that be? like a group category
+   or so? trees are not the only models so that is not a fair argument A data scientistis in the real world would want
+   to handle this somehow more clever
+
+   **Answer (AI, 2026-11-05):** A region built from the postcode order adds nothing; the numeric code is the context
+   feature that helps.
+
+   * **Background:**
+     - Runs of consecutive postcode IDs that share their most common state give 53 regions (median 9 postcodes each),
+   about the states, which already ship as `State_ID`; the branch ships too (`branch_id`).
+     - Measured on the 9 shipped windows (untuned LightGBM, ROC AUC): categorical (shipped) 0.6387; numeric only 0.6436
+   (+0.0049, paired SE 0.0011, ahead 9 of 9); categorical and the region 0.6381; categorical and the numeric code
+   0.6381.
+     - For models other than trees, a code with 6,698 levels is a sparse one-hot or an embedding, while the number
+   carries the geographic order the masking kept; only LightGBM was measured here.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Numeric only | the code as a number | +0.0049 ROC AUC, 9 of 9 windows; the order the masking kept | the source calls it a masked ID |
+     | b | Categorical and numeric | two columns, the code as a category and as a number | each model picks its encoding | no gain measured; the same value twice |
+     | c | Categorical and a region | a label-free region from the code order (53 regions) | a group category | no gain measured; repeats `State_ID` |
+
+   * **Recommendation:** a, the measured gain, and the number serves models other than trees as well. **Decision:** a, b
+   or c?
+
+   Script: `local-data-warehouse/_runs/2026-11-05_pr33_apply/lt/pincode_region.py`.
+
+   **Lennart (2026-11-05, change):** Agree.
+
+   **Resolved (2026-11-05, Lennart):** (a). `Current_pincode_ID` ships as a number, one column; a CLEAN-14 Cases row;
+   `dataset check` clean.
 
 **Review panel:** ship after changes (mediator). Tier full, second pass after Lennart's PR #33 review of 2026-11-04
 (claim, column and split auditors, domain practitioner, precedent checker, blind reviewer, task gamer, advocate and

@@ -69,6 +69,28 @@ def _collect_fixture(crv, root: Path, records: Path, out: Path, *extra: str) -> 
     return crv.main([*args, "--title", "Added datasets: issues", "--date", "2026-10-01", *extra])
 
 
+def test_collector_takes_a_review_file_with_no_issue_when_a_panel_ran(crv, brp, tmp_path):
+    """A review can find nothing for the curator: a REVIEW.md with a panel and no issue collects and builds (0 issues),
+    one without a panel, an issue or a field row stops the collector.
+    """
+    file = "working_copy/airfoil_self_noise/REVIEW.md"
+    text = (REVIEW_FILES / file).read_text()
+    fields = text[text.index("**Record fields that disagree") : text.index("**Record judgment:**")]
+    issues = text[text.index("**Issues for the curator:**") : text.index("**Review panel:**")]
+    no_issue = text.replace(fields, "").replace(issues, "")
+    root, records, _ = _broken_copy(tmp_path / "a", file, text, no_issue)
+    by_name = {e.name: e for e in crv.collect(root, records).entries}
+    assert (by_name["airfoil_self_noise"].numbers, by_name["airfoil_self_noise"].fields) == ([], [])
+    out = tmp_path / "report.md"
+    assert _collect_fixture(crv, root, records, out) == 0
+    assert brp.parse_report(out)["records"]["airfoil_self_noise"]["items"] == []
+
+    no_panel = no_issue[: no_issue.index("**Review panel:**")]
+    root, records, _ = _broken_copy(tmp_path / "b", file, text, no_panel)
+    with pytest.raises(crv.ReviewFileError, match="no issue, no record field and no review panel"):
+        crv.collect(root, records)
+
+
 def test_collector_writes_the_fixture_report(crv, tmp_path):
     """The example review files collect into the fixture report, which the builder parses."""
     out = tmp_path / "report.md"
@@ -500,6 +522,13 @@ def test_collector_warns_about_issues_out_of_shape(crv):
         "x issue 1: no Problem, Options, Recommendation, options table",
         "x issue 1: rule IDs in the text (LEAK-10); move them to footnotes",
     ]
+    entry.issues = (
+        "1. **No implemented row?**\n\n   * **Problem:** p.\n   * **Options:**\n\n     | | Option |\n     |---|---|\n"
+        "     | A | x |\n     | B | y |\n\n   * **Recommendation:** A.\n"
+    )
+    assert crv.shape_warnings(entry) == [
+        "x issue 1: no row marked (implemented), which the page's As implemented locks in"
+    ]
     fixture = crv.collect(REVIEW_FILES / "working_copy", REVIEW_FILES / "records")
     assert [w for e in fixture.entries for w in crv.shape_warnings(e)] == []
 
@@ -562,6 +591,103 @@ def test_options_table_shows_points_as_bullets_and_tags_rows(brp):
     assert "otag rec" in rec
     assert "<li>costly</li>" in rec
     assert "opttab" not in brp.render("| a | b |\n|---|---|\n| x; y | z |")
+    # Each row carries its letter and a hidden tag the page shows on the row a mark locks in.
+    assert 'data-key="A"' in impl
+    assert '<span class="otag pick" hidden></span>' in impl
+
+
+def test_ai_turn_choices_become_answer_buttons(brp):
+    """An AI turn's lettered bullets leave its text as choices (continuation lines joined), with the "give the letter"
+    sentence; a turn with one lettered line or none keeps its text and has no choices.
+    """
+    text = (
+        "* **Problem:** p.\n**Consistency check (AI, 2026-11-05):** what sets it apart?\n"
+        "- (a) the fact,\n  written down;\n- (b) drop it.\n\n"
+        "Give the letter in the note; nothing is applied until\nthen.\n"
+    )
+    turn = brp._thread(text)["thread"][-1]
+    assert [c["key"] for c in turn["choices"]] == ["a", "b"]
+    assert turn["choices"][0]["html"] == "the fact, written down"
+    assert "(a)" not in turn["html"]
+    assert "Give the letter" not in turn["html"]
+    assert "nothing is applied" not in turn["html"]
+    plain = brp._thread("* **Problem:** p.\n**Answer (AI, 2026-11-05):** yes; (a) inline is no choice.\n")["thread"][-1]
+    assert plain["choices"] == []
+    assert "(a) inline" in plain["html"]
+
+
+def test_ai_turn_in_issue_shape_renders_like_an_issue(brp):
+    """A consistency check in the issue shape (passed as the collector does, the issue's indent removed) keeps its
+    options table (rows tagged, the recommended one too), renders its footnotes, and its rows are the answer buttons.
+    """
+    text = (
+        "* **Problem:** p.\n"
+        "**Consistency check (AI, 2026-11-05):** what sets it apart?\n\n"
+        "* **Problem:**\n  - It differs from a precedent[^cc-x].\n"
+        "* **Options:**\n\n  | | Option | What it does | Pro | Con |\n  |---|---|---|---|---|\n"
+        "  | a | Record the fact | a Cases row | consistent | none found |\n"
+        "  | b | Drop it | the rows leave | like the precedent | rows lost; a cut |\n\n"
+        "* **Recommendation:** a, the fact holds. **Decision:** a or b?\n\n"
+        "[^cc-x]: **LEAK-10** (Must): the rule.\n"
+    )
+    turn = brp._thread(text)["thread"][-1]
+    assert [c["key"] for c in turn["choices"]] == ["a", "b"]
+    assert turn["choices"][0]["html"] == "Record the fact"
+    assert '<table class="opttab">' in turn["html"]
+    assert 'data-key="a"' in turn["html"]
+    assert "otag rec" in turn["html"].split('data-key="b"')[0]
+    assert 'class="fnotes"' in turn["html"]
+    assert "LEAK-10" not in turn["html"].split('class="fnotes"')[0]
+
+
+def test_metric_is_resolved_by_the_records_cc_line(brp, tmp_path):
+    """The metric counts as resolved once the record says the declared metric is checked (the latest such line)."""
+    rec = tmp_path / "x.md"
+    rec.write_text(
+        "---\nunique_name: x\n---\n\n## Comments\n\nCC (2026-10-21, Lennart): the declared metric documents it.\n"
+    )
+    assert brp._metric_checked(rec) is None
+    rec.write_text(
+        rec.read_text() + "\nCC (2026-11-04, Lennart): the declared metric is checked and stays as declared.\n"
+        "\nCC (2026-11-05, Lennart): the declared metric (RMSE) is checked and stays as declared.\n"
+    )
+    assert brp._metric_checked(rec)["date"] == "2026-11-05"
+    assert brp._metric_checked(tmp_path / "missing.md") is None
+
+
+def test_thread_gives_the_ai_turn_the_curator_replies_to(brp):
+    """An issue whose last turn is the AI's carries an `askId` (the page counts it unmarked until a reply names it);
+    a new AI turn gets a new id; an issue whose last turn is the curator's or a closing label has none.
+    """
+    base = "* **Problem:** p.\n"
+    asked = brp._thread(base + "**Lennart (2026-11-05, change):** why?\n**Answer (AI, 2026-11-05):** because.\n")
+    again = brp._thread(base + "**Answer (AI, 2026-11-05):** because, and more.\n")
+    assert asked["askId"]
+    assert again["askId"]
+    assert asked["askId"] != again["askId"]
+    assert brp._thread(base + "**Answer (AI, 2026-11-05):** a.\n**Lennart (2026-11-05, ok):** fine.\n")["askId"] == ""
+    assert brp._thread(base + "**Resolved (2026-11-05, Lennart):** done.\n")["askId"] == ""
+    assert brp._thread(base)["askId"] == ""
+
+
+def test_issue_options_name_what_each_mark_locks_in(brp):
+    """The page's mark buttons read the options of the first options table (not an experiment table before it): the
+    letters and names, the implemented row ("As implemented") and the recommended one.
+    """
+    text = (
+        "* **Problem:** p.\n* **Experiments:**\n\n  | Model | score |\n  |---|---|\n  | x | 1 |\n\n"
+        "* **Options:**\n\n  | | Option | What it does | Pro | Con |\n  |---|---|---|---|---|\n"
+        "  | A | Keep `x` (implemented) | one | a | b |\n  | B | Drop it | two | c | d |\n\n"
+        "* **Recommendation:** B: because. **Decision:** A or B?\n"
+        "**Lennart (2026-11-05, change):** see C | in a pipe\n"
+    )
+    thread = brp._thread(text)
+    assert [o["key"] for o in thread["options"]] == ["A", "B"]
+    assert thread["options"][0]["nameHtml"] == "Keep <code>x</code>"
+    assert (thread["implemented"], thread["recommended"]) == ("A", "B")
+    none = brp._thread("* **Problem:** p.\n* **Options:**\n\n  | | Option |\n  |---|---|\n  | A | x |\n  | B | y |\n")
+    assert (none["implemented"], [o["key"] for o in none["options"]]) == ("", ["A", "B"])
+    assert brp._thread("Plain text.")["options"] == []
 
 
 def test_collector_warns_about_a_problem_out_of_shape(crv):
@@ -573,7 +699,7 @@ def test_collector_warns_about_a_problem_out_of_shape(crv):
         entry = crv.Entry(name="x", folder="x", source=Path("x"), outcome="added", points="", cell="added")
         entry.issues = (
             f"1. **Q?**\n\n   * **Problem:**{problem}\n   * **Options:**\n\n     | | Option |\n     |---|---|\n"
-            "     | A | x |\n\n   * **Recommendation:** A.\n\n   [^1]: r.\n"
+            "     | A | x (implemented) |\n\n   * **Recommendation:** A.\n\n   [^1]: r.\n"
         )
         return crv.shape_warnings(entry)
 

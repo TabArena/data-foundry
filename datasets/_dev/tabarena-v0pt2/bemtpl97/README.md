@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bemtpl97
 container_format: 2
-checksum: v2:f12564e04d7567e1cfd4f92e3c77c74e39fc07872b8a9322e92c7e8f96f4d453
+checksum: v2:f5b8358cf651da8cd86e4666a50322cf1f75d63a91e0e7b379c761b07deb6dfd
 build:
   uuid: 01a18ad7-0bb6-7938-bc7e-98a4b50a8804
   checksum: v2:c453db381a0392e96b56e809e924cb0be3d0c3f4cf1087235d06d69a97aab978
@@ -19,12 +19,12 @@ build:
     polars: 2.0.0
 build_stale: true
 data:
-  n_rows: 163212
-  n_features: 13
+  n_rows: 163231
+  n_features: 12
   dtypes:
-    Int32: 5
-    category: 6
+    category: 5
     float64: 3
+    int64: 5
   n_test_dataset_rows: null
 task:
   target: nclaims
@@ -48,11 +48,11 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 108808
-    max: 108808
+    min: 108820
+    max: 108821
   n_test:
-    min: 54404
-    max: 54404
+    min: 54410
+    max: 54411
 bundle_checks:
   ok: true
   errors: []
@@ -66,7 +66,7 @@ bundle_checks:
       of claims; it is not binned into classification labels.
     task_target_value_dominant: The 144,936 zero labels are observed zero claims,
       not censoring or missing-value placeholders. The curator accepted claim-count
-      regression on all released policyholders, including nonclaimants.
+      regression on all policyholders, including nonclaimants.
 decisions:
 - Preserve distinct policyholders with repeated coarse profiles
 ---
@@ -75,37 +75,38 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `nclaims`, scored with `mean_poisson_deviance` on IID splits. 163,212 rows and 13 features. Source: GitHub (2019).
+Regression of `nclaims`, scored with `mean_poisson_deviance` on IID splits. 163,231 rows and 12 features. Source: GitHub (2019).
 
-Built as `01a18ad7-0bb6-7938-bc7e-98a4b50a8804` on 2026-10-30, but `dataset.py` has changed since: it now gives checksum `v2:f12564e04d7567e1cfd4f92e3c77c74e39fc07872b8a9322e92c7e8f96f4d453`, so the build is stale. See [Build](#build).
+Built as `01a18ad7-0bb6-7938-bc7e-98a4b50a8804` on 2026-10-30, but `dataset.py` has changed since: it now gives checksum `v2:f5b8358cf651da8cd86e4666a50322cf1f75d63a91e0e7b379c761b07deb6dfd`, so the build is stale. See [Build](#build).
 
 ## In brief
 
 **Question.** How many claims will a motor-insurance policyholder make during their insured period?
 
-**Use case.** For example, an actuary studies risk differentiation before quoting a policy, using historical policyholders to estimate the number of claims during a customer's insured period.
+**Use case.** For example, an EU motor insurer prices a third-party liability policy today: before quoting, its actuary estimates how many claims the policyholder will make during the insured period from the rating factors the insurer may use, learned here from a Belgian portfolio of 1997. Since 21 December 2012 EU law bars sex as a rating factor (CJEU C-236/09, Test-Achats), so the model does not see it.
 
-**One row.** One of 163,212 distinct policyholders in a released Belgian motor-insurance portfolio observed in 1997.
+**One row.** One of 163,231 policyholders of a Belgian motor-insurance portfolio observed in 1997, as first published in 2019.
 
 **Predicted.** Expected claims during the observed insured period; labels are original nclaims (observed 0-5).
 
-**Known at prediction time.** The source describes policyholder, vehicle, coverage, claim-history and municipality characteristics at policy start. This benchmark additionally supplies realized insured duration, whose availability at quotation is unresolved. Exposure is the fraction of 1997 actually insured, shorter when a policy started or was surrendered during the year; per insured year, part-year policies claim 1.6 to 2.3 times as often as full-year ones.
+**Known at prediction time.** At policy start the insurer knows the policyholder, vehicle, coverage and municipality; sex is left out, as EU insurers may no longer price on it. The share of 1997 insured is supplied, though its availability at quotation is unresolved: it is shorter when a policy started or was surrendered during the year, and per insured year part-year policies claim 1.6 to 2.3 times as often as full-year ones.
 
-**What the test data stands for.** Random policyholders are held out, representing comparable unseen customers of the same year; the release has no dates, so no later year can be held out.
+**What the test data stands for.** Random policyholders are held out, representing comparable unseen customers of the same year; the portfolio has no dates, so no later year can be held out.
 
-**Our changes to the source.** We keep the original claim count and exclude the identifier and other same-period outcome fields.
+**Our changes to the source.** We keep the original claim count and every policyholder of the first public copy, and exclude the identifier, the municipality name, the same-period outcome fields and the policyholder's sex.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The policies carry no dates, so random policyholders of 1997 stand in for the next year's customers an insurer prices. Realized exposure is kept on purpose, although it can reflect a cancellation later in the year. The release's selection: it leaves out the 19 policies whose average claim cost exceeds EUR 81,000 (21 claims, 0.1% of all claims).
+> **Use case fit: approximate (a stand-in with a known gap).** The insurer prices today, but the data is one undated year of a 1997 portfolio, so random policyholders of 1997 stand in for today's customers, whose rating factors and claim rates may differ. Sex is left out, as today's tariff must leave it out. Realized exposure is kept on purpose, although it can reflect a cancellation later in the year.
 
 ## Files in this folder
 
 | file | what it is |
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
+| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/bemtpl97.md`](../../../../curation/records/bemtpl97.md)
-- The original source: <https://github.com/henckr/treeML/tree/2ee8accc6df49168bd865cdf49efa1b7a5c8f4de>
+- The original source: <https://github.com/katrienantonio/PE-pricing-analytics/tree/0b279c433de7c8ef46ebf0a33cd70ebd76d2af9e>
 - The collection this folder belongs to: [`tabarena-v0pt2/README.md`](../README.md) and [`tabarena-v0pt2/CHANGELOG.md`](../CHANGELOG.md)
 
 ## Rebuild
@@ -113,11 +114,10 @@ Built as `01a18ad7-0bb6-7938-bc7e-98a4b50a8804` on 2026-10-30, but `dataset.py` 
 `dataset.py` reads its raw files from `local-data-warehouse/bemtpl97/`. To get them:
 
 ```text
-Download the CASdatasets copy, identical as a parsed table to the author's treeML release.
-Install rdata==1.1.0 and its dependencies in the environment used to run this definition.
+Download the first public copy of the portfolio (2019, all 163,231 policies), a tab-separated text file.
 mkdir -p "${DATA_FOUNDRY_WAREHOUSE:-local-data-warehouse}/bemtpl97"
-curl -L --fail https://raw.githubusercontent.com/dutangc/CASdatasets/227fb56b8734bdb7c0327a41180e01d2ddaeaf26/data/beMTPL97.rda -o "${DATA_FOUNDRY_WAREHOUSE:-local-data-warehouse}/bemtpl97/beMTPL97.rda"
-Expected SHA-256: 955a821a7a693bf18076c425e4d5a5a99889f3c89e1fbd99eca6239c11e963a6.
+curl -L --fail "https://raw.githubusercontent.com/katrienantonio/PE-pricing-analytics/0b279c433de7c8ef46ebf0a33cd70ebd76d2af9e/data/P%26Cdata.txt" -o "${DATA_FOUNDRY_WAREHOUSE:-local-data-warehouse}/bemtpl97/P&Cdata.txt"
+Expected SHA-256: 90915897ec158f5e54f54ef1bbdbf9ce415d3fb29bd60aaa7f159b7b2a418aff.
 From the repository root, set DATA_FOUNDRY_DATASETS_ROOT=datasets/_dev/tabarena-v0pt2.
 ```
 
@@ -134,13 +134,13 @@ Only curators run `build`, when the dataset ships.
 
 | field | value |
 |---|---|
-| source | GitHub: https://github.com/henckr/treeML/tree/2ee8accc6df49168bd865cdf49efa1b7a5c8f4de |
+| source | GitHub: https://github.com/katrienantonio/PE-pricing-analytics/tree/0b279c433de7c8ef46ebf0a33cd70ebd76d2af9e |
 | year | 2019 |
 | domain | insurance |
-| license | GPL (>= 2), declared by CASdatasets; insurer-specific terms not verified |
+| license | No licence stated by the 2019 course repository; CASdatasets declares GPL (>= 2) for the 2020 release of the same portfolio; insurer-specific terms not verified |
 | data_tags | IID, Spatial, ForcedIIDFromTemporal |
 | reference | Antonio2019PricingAnalytics,Henckaerts2020TreeMLData,Henckaerts2020Boosting |
-| rows x columns | 163,212 x 14 |
+| rows x columns | 163,231 x 13 |
 | task.target | nclaims |
 | task.problem_type | regression |
 | task.metric | mean_poisson_deviance |
@@ -158,9 +158,9 @@ Only curators run `build`, when the dataset ships.
 | params | {'min_prediction': 1e-06} |
 
 <details>
-<summary>Feature types: 5 categorical, 1 ordinal, 0 string, 0 datetime</summary>
+<summary>Feature types: 4 categorical, 1 ordinal, 0 string, 0 datetime</summary>
 
-- categorical (5): `sex`, `fuel`, `use`, `fleet`, `postcode`
+- categorical (4): `fuel`, `use`, `fleet`, `postcode`
 - ordinal (1): `coverage (TPL < TPL+ < TPL++)`
 - string (0): none
 - datetime (0): none
@@ -199,94 +199,90 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 163,212 rows of the final frame (random rows: the frame is shuffled); 12 of 14 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 163,231 rows of the final frame (random rows: the frame is shuffled); 12 of 13 columns, the target first. Cells are cut at 40 characters.
 
-| nclaims | expo | coverage | ageph | sex | bm | power | agec | fuel | use | fleet | postcode |
+| nclaims | expo | coverage | ageph | bm | power | agec | fuel | use | fleet | postcode | long |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 1 | TPL+ | 53 | male | 0 | 40 | 8 | gasoline | private | 0 | 2000 |
-| 0 | 1 | TPL+ | 67 | male | 1 | 51 | 7 | diesel | private | 0 | 2300 |
-| 0 | 0.747945 | TPL | 46 | male | 9 | 45 | 12 | gasoline | private | 0 | 9000 |
-| 0 | 1 | TPL | 33 | male | 0 | 43 | 11 | gasoline | private | 0 | 3700 |
-| 0 | 0.923288 | TPL+ | 34 | female | 11 | 55 | 7 | diesel | private | 0 | 3540 |
+| 0 | 1 | TPL+ | 30 | 10 | 55 | 9 | gasoline | private | 0 | 1650 | 4.30096 |
+| 0 | 0.123288 | TPL++ | 25 | 2 | 76 | 1 | gasoline | private | 0 | 3110 | 4.71814 |
+| 1 | 0.90137 | TPL | 51 | 4 | 76 | 5 | gasoline | private | 0 | 1640 | 4.36153 |
+| 0 | 1 | TPL+ | 71 | 1 | 84 | 13 | gasoline | private | 1 | 7340 | 3.83246 |
+| 0 | 1 | TPL | 54 | 0 | 42 | 9 | gasoline | private | 0 | 7130 | 4.08024 |
 
 ## Curation notes
 
-We start with data/beMTPL97.rda from CASdatasets commit 227fb56b8734bdb7c0327a41180e01d2ddaeaf26, equal as a parsed table to the pinned author's mtpl_data.rds; column labels become Python strings.
+We start with data/P&Cdata.txt of [katrienantonio/PE-pricing-analytics](https://github.com/katrienantonio/PE-pricing-analytics/tree/0b279c433de7c8ef46ebf0a33cd70ebd76d2af9e) commit 0b279c433de7c8ef46ebf0a33cd70ebd76d2af9e, the first public copy (2019, all 163,231 policies), read with exact float parsing; its column names, coverage labels (PO as TPL+, FO as TPL++) and fleet codes (N and Y as 0 and 1) become those of the author's 2020 release (superseded 2026-11-05: until then we started with data/beMTPL97.rda from CASdatasets commit 227fb56b8734bdb7c0327a41180e01d2ddaeaf26, the release's 163,212 rows, equal as a parsed table to the author's mtpl_data.rds).
 
-- Prediction point: the quotation at policy start. [Binning manuscript](https://roelverbelen.netlify.app/publication/binning/binning.pdf), Sec. 2, p. 4: "The risk factors are registered at the start of the policy period and remain constant during this period".
-- Target: the original nclaims, 0 to 5, as a count regression on every policyholder; no annualization, cap, weight or offset. We drop id and the same-period outcomes claim, amount and average.
-- Potential leak, kept on purpose: expo, the share of 1997 the policy was in force (one day to one year), is shorter for policyholders "who started the policy in the course of the year or surrendered the policy before the end of the year" ([arXiv:1904.10890v3](https://arxiv.org/pdf/1904.10890v3), Sec. 4.1). A start is known at quotation, a surrender (often after a claim) is not, and without dates the two cannot be told apart. The source puts exposure into the expected count in proportion (an offset with slope 1); here it is a free feature. Given the other features and a proportional offset, part-year policies claim about 1.4 times the expected count, and using expo freely instead of as an offset gains 0.0036 to 0.0041 of mean Poisson deviance, 16 to 18% of untuned LightGBM's skill over the training mean (3 and 9 folds). Revisit if policy dates become available.
+- Prediction point: the quotation at policy start. [Binning manuscript](https://roelverbelen.netlify.app/publication/binning/binning.pdf), Sec. 2, p. 4: "The risk factors are registered at the start of the policy period and remain constant during this period". The quotation is today's, by an EU insurer (CC below on sex).
+- Target: the original nclaims, 0 to 5, as a count regression on every policyholder; no annualization, cap, weight or offset. We drop the identifier ID, the same-period outcomes AMOUNT and AVG (the release's amount and average; the 2019 copy has no claim column), and TOWN, the municipality name, which has one value per postcode and is not in the release.
+- Potential leak, kept on purpose: expo, the share of 1997 the policy was in force (one day to one year), is shorter for policyholders "who started the policy in the course of the year or surrendered the policy before the end of the year" ([arXiv:1904.10890v3](https://arxiv.org/pdf/1904.10890v3), Sec. 4.1). A start is known at quotation, a surrender (often after a claim) is not, and without dates the two cannot be told apart. The source puts exposure into the expected count in proportion (an offset with slope 1); here it is a free feature. Given the other features and a proportional offset, part-year policies claim about 1.4 times the expected count, and using expo freely instead of as an offset gains 0.0036 to 0.0041 of mean Poisson deviance, 16 to 18% of untuned LightGBM's skill over the training mean (3 and 9 folds; superseded 2026-11-05: 0.0039 on the 163,231 rows without sex, 0.0033 to 0.0047 per fold, 16% of the skill, 9 folds; the same run on the old frame gave 0.0040, 0.0036 to 0.0044; out of fold, a LightGBM offset model gives part-year policies 1.41 times the expected count on both frames). Revisit if policy dates become available.
 - Metric: the source's mean Poisson deviance of nclaims against the predicted expected count, by which it tunes and compares its frequency models ([arXiv:1904.10890v3](https://arxiv.org/pdf/1904.10890v3), Sec. 3.2 Eq. 5, Algorithm 3, Sec. 4.5; treeML.Rmd lines 641-657 score nclaims against frequency times expo). Exposure enters through the prediction, so it is neither a weight nor a scoring column. A predicted mean below 1e-6 counts as 1e-6 (Lennart, 2026-11-04: "in pratice we would also clip to a reasonable number"): one day of exposure at a 3% claim frequency is about 1e-4, so the floor sits two orders below the smallest plausible mean; a NaN or infinite prediction raises.
-- Dtypes: coverage is ordered, TPL < TPL+ < TPL++ (plus limited, then comprehensive material damage; CLEAN-14); sex, fuel, use, fleet and postcode are nominal; the rest stay numeric. sex stays by curator choice, for research on a 1997 tariff.
-- Copies kept: each row is a distinct source policyholder; the 133 extra exact rows and 35 conflicting profiles are coarse rating profiles that coincide (the IID hidden-group probe found none, though 147,308 rows were too sparse to compare).
-- Selection by the release: the manuscript has 163,231 policies, 19 of them with an average claim cost above EUR 81,000 (Sec. 3.2, p. 11). The release is the 2019 copy of those 163,231 rows minus exactly these 19 (all claimants, 21 claims, 0.1% of all claims), the other rows identical and in the same order; the boosting paper evaluates on the 163,212. No further filter.
-- Split forced IID from temporal (ForcedIIDFromTemporal, SPLIT-8): an insurer fits on past policy years and prices the next, but the release is one undated year and its raw order is sorted by postcode, so no row-order window exists and the cost cannot be measured. A later year would test the drift of claim frequency; recover one if a release has it.
-- Year 2019: the first public copy is data/P&Cdata.txt in [katrienantonio/PE-pricing-analytics](https://github.com/katrienantonio/PE-pricing-analytics/tree/0b279c433de7c8ef46ebf0a33cd70ebd76d2af9e), added on 26 September 2019 with all 163,231 policies; we download the author's 2020 release of the 163,212 through CASdatasets. The observation year is 1997. CASdatasets declares GPL (>= 2); the insurer's terms are not stated.
+- Dtypes: coverage is ordered, TPL < TPL+ < TPL++ (plus limited, then comprehensive material damage; CLEAN-14); fuel, use, fleet and postcode are nominal; the rest stay numeric. sex stays by curator choice, for research on a 1997 tariff (superseded 2026-11-05: sex leaves the features, CC below; it was nominal).
+- Copies kept: each row is a distinct source policyholder; the 133 extra exact rows and 35 conflicting profiles are coarse rating profiles that coincide (the IID hidden-group probe found none, though 147,308 rows were too sparse to compare; superseded 2026-11-05: 176 extra exact rows and 50 rows with a conflicting profile on the 163,231 rows without sex, and the probe again found none, 155,120 rows too sparse).
+- Selection by the release: the manuscript has 163,231 policies, 19 of them with an average claim cost above EUR 81,000 (Sec. 3.2, p. 11). The release is the 2019 copy of those 163,231 rows minus exactly these 19 (all claimants, 21 claims, 0.1% of all claims), the other rows identical and in the same order; the boosting paper evaluates on the 163,212. No further filter (superseded 2026-11-05: the 19 are restored, CC below, so no selection by claim cost remains).
+- Split forced IID from temporal (ForcedIIDFromTemporal, SPLIT-8): an insurer fits on past policy years and prices the next, but the portfolio is one undated year and its raw order (the 2019 copy's and the release's alike) is sorted by postcode, so no row-order window exists and the cost cannot be measured. A later year would test the drift of claim frequency; recover one if a release has it.
+- Year 2019: the first public copy is data/P&Cdata.txt in [katrienantonio/PE-pricing-analytics](https://github.com/katrienantonio/PE-pricing-analytics/tree/0b279c433de7c8ef46ebf0a33cd70ebd76d2af9e), added on 26 September 2019 with all 163,231 policies; we download the author's 2020 release of the 163,212 through CASdatasets (superseded 2026-11-05: we download this 2019 copy). The observation year is 1997. CASdatasets declares GPL (>= 2); the 2019 course repository states no licence; the insurer's terms are not stated.
+- CC (2026-11-05, Lennart): all 163,231 policies of the first public copy ship (issue 2, b; PROV-8, USE-5), not the release's 163,212, which leave out the 19 policies whose average claim cost exceeds EUR 81,000. Re-verified on 2026-11-05: the 2019 copy minus exactly its 19 rows with AVG above 81,000 equals the release row by row in the same order, every value equal to the 15 digits of the text file; the 19 hold 21 claims. The restored rows remove the selection by claim cost, so the record needs no `Selection Bias` marker for it. They are 19 rows more than the boosting paper evaluates on.
+- CC (2026-11-05, Lennart): sex leaves the features (issue 3, a). The actor is an EU insurer pricing today, and the Test-Achats ruling (CJEU C-236/09, 1 March 2011, in force for new contracts from 21 December 2012) bars sex as a rating factor: "We make this special case here as we would try to understand how good such models would be in the current world, and they would not be able to use sex". The 1997 portfolio stays the data, priced as an insurer would today, so the fit stays approximate. Sex carried 0.0004 of mean Poisson deviance (0.0002 to 0.0007 per fold, better in 9 of 9; 1.6% of the skill; untuned LightGBM-Poisson, 9 folds, 163,231 rows). With both changes the model scores 0.5279 against the training mean's 0.5520 (was 0.5274 against 0.5517: 4.4% skill each). The tension is a row in principles.md; home_credit_default_risk (CODE_GENDER) and credit_card_clients_default (SEX) keep sex, not reviewed yet.
 
 ## Splits
 
 Default IID protocol: random 3-fold cross-validation repeated 3 times for this population, with the
 benchmark split seed 4267 after the base class's content ordering and shuffle with seed 42.
-Each row is a distinct released policyholder; test customers are unseen, while municipalities may recur.
-This evaluates comparable customers within the selected historical portfolio, not future years or insurers.
+Each row is a distinct policyholder; test customers are unseen, while municipalities may recur.
+This evaluates comparable customers within the historical portfolio, not future years or insurers.
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 108,808 rows, test 54,404 rows.
+3 repeat(s) x 3 fold(s) with seed 4267; train 108,820 to 108,821 rows, test 54,410 to 54,411 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 108808 | 54404 |
-| 0 | 1 | 108808 | 54404 |
-| 0 | 2 | 108808 | 54404 |
-| 1 | 0 | 108808 | 54404 |
-| 1 | 1 | 108808 | 54404 |
-| 1 | 2 | 108808 | 54404 |
-| 2 | 0 | 108808 | 54404 |
-| 2 | 1 | 108808 | 54404 |
-| 2 | 2 | 108808 | 54404 |
+| 0 | 0 | 108820 | 54411 |
+| 0 | 1 | 108821 | 54410 |
+| 0 | 2 | 108821 | 54410 |
+| 1 | 0 | 108820 | 54411 |
+| 1 | 1 | 108821 | 54410 |
+| 1 | 2 | 108821 | 54410 |
+| 2 | 0 | 108820 | 54411 |
+| 2 | 1 | 108821 | 54410 |
+| 2 | 2 | 108821 | 54410 |
 
 ## Decisions
 
 ### 1. Preserve distinct policyholders with repeated coarse profiles
 
-The source documents unique policyholders. Coarse characteristics and zero-heavy outcomes can coincide naturally; no person-level duplication is established, so every released row is kept.
+The source documents unique policyholders. Coarse characteristics and zero-heavy outcomes can coincide naturally; no person-level duplication is established, so every row is kept.
 
 | index | count |
 |---|---|
-| released policyholders | 163212 |
-| distinct source IDs | 163212 |
-| retained rows | 163212 |
-| extra identical cleaned rows | 133 |
-| rows in repeated predictor profiles | 335 |
-| extra predictor-profile copies | 168 |
+| policyholders in the 2019 copy | 163231 |
+| distinct source IDs | 163231 |
+| retained rows | 163231 |
+| extra identical cleaned rows | 176 |
+| rows in repeated predictor profiles | 450 |
+| extra predictor-profile copies | 226 |
 
 ## Bundle checks
 
 0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicate_rows`: 133 exact duplicate row(s) (0.1% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
-- **info** `dataset_conflicting_duplicate_rows`: 35 row(s) (0.0%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+- **info** `dataset_duplicate_rows`: 176 exact duplicate row(s) (0.1% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
+- **info** `dataset_conflicting_duplicate_rows`: 50 row(s) (0.0%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
 Accepted on purpose:
 
 - `task_target_low_cardinality`: The curator explicitly confirmed regression on the original claim count, observed from 0 to 5. The target measures a numeric number of claims; it is not binned into classification labels.
-- `task_target_value_dominant`: The 144,936 zero labels are observed zero claims, not censoring or missing-value placeholders. The curator accepted claim-count regression on all released policyholders, including nonclaimants.
+- `task_target_value_dominant`: The 144,936 zero labels are observed zero claims, not censoring or missing-value placeholders. The curator accepted claim-count regression on all policyholders, including nonclaimants.
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (14 rows)</summary>
+<summary>Show the table (13 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| nclaims | Int32 | 0 | 0 | 6 | 0, 1, 2, 3, 4, 5 |
-| ageph | Int32 | 0 | 0 | 78 | 43, 49, 47, 50, 51, 45, 39, 38, 42, 41 |
-| bm | Int32 | 0 | 0 | 23 | 0, 1, 5, 2, 4, 11, 10, 9, 6, 7 |
-| power | Int32 | 0 | 0 | 178 | 55, 40, 66, 44, 33, 43, 47, 51, 65, 60 |
-| agec | Int32 | 0 | 0 | 49 | 6, 8, 7, 2, 4, 3, 9, 5, 10, 11 |
 | coverage | category | 0 | 0 | 3 | TPL, TPL+, TPL++ |
-| sex | category | 0 | 0 | 2 | male, female |
 | fuel | category | 0 | 0 | 2 | gasoline, diesel |
 | use | category | 0 | 0 | 2 | private, work |
 | fleet | category | 0 | 0 | 2 | 0, 1 |
@@ -294,6 +290,11 @@ Accepted on purpose:
 | expo | float64 | 0 | 0 | 365 | 1.0, 0.0849, 0.4959, 0.7479, 0.4137, 0.3288, 0.2466, 0.9151, 0.8329, 0.6658 |
 | long | float64 | 0 | 0 | 583 | 4.4371, 4.3871, 3.7066, 5.5566, 4.166, 3.9568, 3.3758, 4.8582, 4.6838, 3.2014 |
 | lat | float64 | 0 | 0 | 583 | 50.4173, 51.216, 51.0591, 50.6478, 50.4679, 50.4569, 50.5925, 50.462, 50.8816, … |
+| nclaims | int64 | 0 | 0 | 6 | 0, 1, 2, 3, 4, 5 |
+| ageph | int64 | 0 | 0 | 78 | 43, 49, 47, 50, 51, 45, 39, 42, 38, 41 |
+| bm | int64 | 0 | 0 | 23 | 0, 1, 5, 2, 4, 11, 10, 9, 6, 7 |
+| power | int64 | 0 | 0 | 178 | 55, 40, 66, 44, 33, 43, 47, 51, 65, 60 |
+| agec | int64 | 0 | 0 | 49 | 6, 8, 7, 2, 4, 3, 9, 5, 10, 11 |
 
 </details>
 
@@ -301,44 +302,42 @@ Accepted on purpose:
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 88.8 | 3.235 | 2.686 | 0.135 | 0.056 | log1p | 299073 | 296376 | lognormal |
+| 0 | 0 | 88.79 | 3.233 | 2.684 | 0.135 | 0.056 | log1p | 299386 | 296665 | lognormal |
 
 ### Numeric features
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| expo | 163212 | 0.889744 | 0.244202 | 0.00273973 | 1 |
-| nclaims | 163212 | 0.123857 | 0.367471 | 0 | 5 |
-| ageph | 163212 | 47.0009 | 14.8316 | 18 | 95 |
-| bm | 163212 | 3.26825 | 3.99817 | 0 | 22 |
-| power | 163212 | 56.003 | 19.0248 | 10 | 243 |
-| agec | 163212 | 7.37492 | 4.20645 | 0 | 48 |
-| long | 163212 | 4.40726 | 0.751036 | 2.57779 | 6.30554 |
-| lat | 163212 | 50.7584 | 0.317856 | 49.5362 | 51.4498 |
+| expo | 163231 | 0.889736 | 0.244205 | 0.00273973 | 1 |
+| nclaims | 163231 | 0.123972 | 0.367617 | 0 | 5 |
+| ageph | 163231 | 47 | 14.8314 | 18 | 95 |
+| bm | 163231 | 3.26874 | 3.99867 | 0 | 22 |
+| power | 163231 | 56.004 | 19.0256 | 10 | 243 |
+| agec | 163231 | 7.37501 | 4.20641 | 0 | 48 |
+| long | 163231 | 4.40724 | 0.751023 | 2.57779 | 6.30554 |
+| lat | 163231 | 50.7584 | 0.31785 | 49.5362 | 51.4498 |
 
 ### Categorical features
 
 <details>
-<summary>Show the table (16 rows)</summary>
+<summary>Show the table (14 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| coverage | 1 | TPL | 95124 | 58.28 |
-| coverage | 2 | TPL+ | 45984 | 28.17 |
-| coverage | 3 | TPL++ | 22104 | 13.54 |
-| fleet | 1 | 0 | 158041 | 96.83 |
+| coverage | 1 | TPL | 95136 | 58.28 |
+| coverage | 2 | TPL+ | 45988 | 28.17 |
+| coverage | 3 | TPL++ | 22107 | 13.54 |
+| fleet | 1 | 0 | 158060 | 96.83 |
 | fleet | 2 | 1 | 5171 | 3.17 |
-| fuel | 1 | gasoline | 112818 | 69.12 |
-| fuel | 2 | diesel | 50394 | 30.88 |
-| postcode | 1 | 6000 | 5017 | 3.07 |
+| fuel | 1 | gasoline | 112833 | 69.12 |
+| fuel | 2 | diesel | 50398 | 30.88 |
+| postcode | 1 | 6000 | 5018 | 3.07 |
 | postcode | 2 | 2000 | 4669 | 2.86 |
-| postcode | 3 | 9000 | 3497 | 2.14 |
+| postcode | 3 | 9000 | 3498 | 2.14 |
 | postcode | 4 | 4000 | 2621 | 1.61 |
 | postcode | 5 | 7100 | 2275 | 1.39 |
-| sex | 1 | male | 120044 | 73.55 |
-| sex | 2 | female | 43168 | 26.45 |
-| use | 1 | private | 155334 | 95.17 |
-| use | 2 | work | 7878 | 4.83 |
+| use | 1 | private | 155352 | 95.17 |
+| use | 2 | work | 7879 | 4.83 |
 
 </details>
 
@@ -353,4 +352,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 6b2e70b5b795a373a3ae71006b8db8e471eabe9f-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:f12564e04d7567e1cfd4f92e3c77c74e39fc07872b8a9322e92c7e8f96f4d453` |
+| stale | yes: the definition now gives checksum `v2:f5b8358cf651da8cd86e4666a50322cf1f75d63a91e0e7b379c761b07deb6dfd` |

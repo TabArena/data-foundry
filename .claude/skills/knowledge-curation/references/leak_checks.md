@@ -62,10 +62,13 @@ melbourne_housing_market; 2026-10-21).
 SPLIT-25 in [splits.md](splits.md)), too few independent events (ghana: 626 farmer-days behind 10,928 rows). A
 re-split with too few positives (seismic_bumps) is `Too Small`: [task_probes.md](task_probes.md), TP-9.
 
-**LEAK-9 (Should).** Separate data leaks from evaluation leaks. An evaluation-level leak, where the test set holds
-complete trajectories that end at the outcome, is fixed in the scoring (causal per-entity predictions, the task's own
-utility), not in the data; document the prediction point. Cases: sepsis_prediction needs a scorer change, not
-different data.
+**LEAK-9 (Should; amended 2026-11-05, Lennart, on medical_facility_operational_data).** Separate data leaks from
+evaluation leaks. An evaluation-level leak, where the test set holds complete trajectories that end at the outcome or
+a model can read other test rows, is fixed in the scoring (causal per-entity predictions, the task's own utility) or by
+a protocol line the benchmark checks, not in the data; document the prediction point. A method that learns from the
+test block is called out and not benchmarked (Lennart, 2026-11-05: "we investigate models, and would find out if they
+do transductive learning which we can call out and not benchmark"). Cases: sepsis_prediction_1m,
+5g_energy_consumption, medical_facility_operational_data, fremtpl2 (protocol lines).
 
 Repair or rebuild damaged data from its origin before keeping it: PROV-13 in [provenance.md](provenance.md).
 
@@ -152,7 +155,9 @@ float-parsed `obj_ID` merged 21,947 distinct objects (it is now deduplicated on 
 **LEAK-18 (Should).** Many degrees of freedom and an exact match: a collection artefact, drop it and give the share.
 Few features and plausible repeats: natural, keep them and say so. Cases: sepsis_survival_minimal_clinical_records
 keeps 110,204 rows over 975 distinct feature rows: three features, real patients, and predicting from them is the
-source's question.
+source's question. ai4d_lab_tanzania_tourism_classification_challenge keeps its 965 exact copies: 17 of 19 inputs are
+coarse survey answers with 2 to 10 levels, and 361 repeated profiles are `Alone` travellers, 67.8% of copy groups larger
+than their party, so the copies are distinct respondents (Lennart, 2026-11-05; LEAK-19 unchanged).
 
 **LEAK-19 (Should).** Exact copies with the same label: drop them rather than group on the duplicate key. Cases:
 wine_quality (1,177 rows); audiology_diagnosis (27 copies of the same findings and diagnosis on different patient ids).
@@ -247,9 +252,12 @@ feature leak. Cases: diabetes "Expired".
 company computed itself (the promised delivery date, the forecast being corrected): USE-6 in [use_case.md](use_case.md).
 Such an input that tracks a dropped post-outcome column stays with a note (Mechanisms table: digicow `topics_list`).
 
-**LEAK-38 (Should; narrows LEAK-10; scope amended 2026-10-22, Lennart, on kick and expresso_churn_prediction).**
-Anonymised fields that may be post-outcome, in data a company released for its own competition, stay, with a
-`Potential leak, kept on purpose:` note giving the mechanism, the numbers, why they stay and when to revisit. Why:
+**LEAK-38 (Should; narrows LEAK-10; scope amended 2026-10-22, Lennart, on kick and expresso_churn_prediction; amended
+2026-11-05, Lennart, on medical_facility_operational_data and tunisian_fraud_detection_challenge).** Fields that may be
+post-outcome, anonymised or named, whose timing the source leaves undocumented and no test can establish, in data the
+data owner released for its own competition or challenge, stay, with a `Potential leak, kept on purpose:` note giving
+the mechanism, the numbers, why they stay and when to revisit, and are named in `fit_reason` as kept (USE-8). A field
+whose timing is known to be late (a value looked up at extraction) is LEAK-10's, not this rule's. Why:
 removing an unverified signal from host-designed data is arbitrary. The rule covers only fields whose timing cannot be
 tested. When a conditional test measures the mechanism (the field's missingness or fill, given the covariates known at
 the prediction point, differs by outcome), LEAK-10 applies and the field is dropped, even if the host's test file
@@ -257,7 +265,10 @@ carries it the same way: that file is a holdout of the same snapshot, not deploy
 (`PropertyField37` x `PersonalField12`, AUC 0.965 to 0.915, kept); kick's `WheelType` was kept here on 2026-10-01 and
 dropped under LEAK-10 on 2026-10-22, with `WheelTypeID`, `PRIMEUNIT` and `AUCGUART` (expresso's REGION the same way);
 fraud_detection_in_electricity_and_gas_consumption_1m cuts its invoice history at 2013-01-01 on the same kind of
-measured step (2026-10-26, Lennart).
+measured step (2026-10-26, Lennart). Named fields kept: african_credit_scoring_challenge `Amount_Funded_By_Lender`,
+medical_facility_operational_data's expected-delay table, tunisian_fraud_detection_challenge's refund and
+regularisation fields, sendy_logistics_challenge `Distance (KM)` (tested: not measured between the rider's two taps; a
+GPS total recorded after delivery not excluded) (2026-11-05, Lennart).
 
 Also not a leak, with their home elsewhere:
 
@@ -380,6 +391,7 @@ The cases of the rules outside this table are named in the rules.
 | LEAK-10 | A column recorded after the outcome | drop it | heart_failure `time` (follow-up ends at death or censoring); anes post-election items; kickstarter `profile`, `staff_pick`; hotel `BookingChanges`, `AssignedRoomType`, `RequiredCarParkingSpaces` |
 | LEAK-10 | Attributes looked up after the outcome (a property's current record for a past sale) | drop them, or keep them where the data shows they did not change | house_sales (the King County lesson); melbourne_housing_market: kept for the sales looked up by the weekly runs within weeks of the sale (`Bedroom2` equals the sheet's `Rooms` in 98.9-100% of the rows of each test window), blanked for the 7,578 sales looked up at once by 10 April 2017, up to 15 months after the sale (LEAK-7 row below; Lennart, 2026-10-21) |
 | LEAK-10 (decision, Lennart, 2026-10-21) | Attributes looked up after the outcome that changed for an unknown subset of the positives, with no record that isolates the change | drop them; LEAK-10 as written, no amendment for a gain that may sit on the changed rows | distribution_transformers_at_cauca_department: `power_kva` and `installation_type` from an inventory taken during or after 2020 dropped (none of the 163 replacement-marked first burns of 2020 is rated 5 kVA, against 9% of the other 277; no replacement log; ROC AUC 0.701 to 0.639) |
+| LEAK-10 (applied, Lennart, 2026-11-05) | Registry attributes looked up at extraction (constant within each entity), with no mechanism that ties a change of the attribute to the outcome | keep them with a note; drop a status that records a later event of the entity | tunisian_fraud_detection_challenge: the 22 registry fields that stay (tax office, category, legal form, activity and obligation codes) kept, no mechanism ties a registry change to the tax adjustment; `CTR_CESSAT` dropped, as a firm that ceased later carries "ceased" on its earlier years (+0.015 RMSE) |
 | LEAK-7, LEAK-10 (Lennart, 2026-10-21) | Values looked up after the outcome, where the rows with a changed or later value can be located (a snapshot date, a mismatch with a record made at the sale) | smallest fix: blank the values looked up after the outcome for those rows; a lookup is not kept merely because removing it changes no score (no LEAK-11 keep) | zillow_prize: the tax delinquency snapshot of about September 2016 blanked for the sales before it (1.5% flagged then, against 3.1-4.7% a month after); melbourne_housing_market: the six scraped attributes blanked for the 7,578 sales before the uploader's batch lookup of 10 April 2017 (RMSE +0.0011 to +0.0016 over 3 seeds) |
 | LEAK-10 | A part, a consequence or another encoding of the target: sub-scores that add up to it, weight and height when the target is body mass, earlier grades not yet known at the prediction point when the target is the final grade (amended 2026-10-21, Lennart), a current-status column, award notes inside a description | drop it | the UCI student performance data: G1 and G2 are the period grades of the final grade G3, not yet known at its prediction point |
 | LEAK-10 | Earlier grades known at the prediction point, when the target is the final grade, and the actor acts on them | keep them | predict_students_dropout_and_academic_success: the first-year grades (Lennart and Andrej, TabArena v0.1); open_university_learning_analytics_dataset: the assessment marks returned by day 60, 10-30% of the continuous-assessment weight of the final result (Lennart, 2026-10-21) |
@@ -390,7 +402,9 @@ The cases of the rules outside this table are named in the rules.
 | LEAK-10 | Snapshot data: a feature computed from the window that defines the target | drop it, even though its value is known at snapshot time | mutual_funds_india `rating` (60% 5-year and 40% 3-year risk-adjusted return; the target is the 3-year return) |
 | LEAK-10 (amended 2026-10-26, Lennart) | Snapshot data: a window sum that the data shows does not move with the outcome, given the covariates known at the prediction point | keep it with a note, case by case | account_debt_south_africa `TotalBilling`, `AverageBilling`: within file blocks and property-value bins their residuals separate the classes at ROC AUC 0.509 / 0.501 / 0.496 |
 | LEAK-10, LEAK-6 (amended 2026-10-26, Lennart) | Values read at a later pull whose late cells cannot be located row by row | keep them with a note only when the traceable part shows no gain; blank located cells; drop when a gain may sit on them | onlinenewspopularity `kw_*`, `self_reference_*` (crawl-time share counts: only counts unique above 5,000 can be traced; masking the traced young cells changes R^2 by -0.0004) |
+| LEAK-10, LEAK-6 (applied, Lennart, 2026-11-05) | Schedule fields that count the final schedule, not the plan at the prediction point (no-shows missing, visits booked later counted), the late cells not locatable row by row | keep them with a note: the whole-field worth is an upper bound on the late part, and it sits within about two seed SDs, so the late part shows no gain | medical_facility_operational_data: nine schedule fields (`AheadCount`, `IsFirst`, `IsLast`, `FutFlowCount2/4`, `NumScheduledNext*`, `SumTimeToCompleteNext*`) match the visits that took place in 99.9-100% of rows; dropping them changes LightGBM's MAE by +0.08 to +0.16 against seed noise of 0.07 (42-53-day windows) and +0.05 against 0.05 (14-day windows; +0.14 with an L2 model). Unlike distribution_transformers_at_cauca_department, where the dropped fields carried ROC AUC 0.701 against 0.639 |
 | LEAK-10, LEAK-7 | An aggregate that may include the row's own outcome | keep only the period where it behaves like history, and call the evidence circumstantial | online_shoppers `PageValues`: Feb-May every buyer has PV > 0 (AUC 0.974), Jun-Dec 27% of buyers have PV = 0 (0.814); Feb-May dropped |
+| LEAK-10, LEAK-7 (applied, Lennart, 2026-11-05) | A rating factor that looks recorded after the row's own outcome in some periods only, the periods located by the record ids, with no source statement of when it was recorded | blank it in the periods where it does not behave like history, keep it where it does | fremtpl2 `BonusMalus`: blanked in `IDpol` blocks 0-4 (597,998 rows, 88%), where it is frozen across the two years and claimants pile on the first malus step 62-63, kept in blocks 5-6, where it follows the previous year's claims (LightGBM Poisson mean deviance 0.2327 to 0.2435, 3 folds; dropping it too costs another 0.0009 in blocks 5-6). bemtpl97 `bm` kept: its source registers the rating factors at the start of the policy period |
 | LEAK-10 | Fitted from the same measurement that gives the label | drop it for the task we frame | sdss_17 `redshift` (photometric task) |
 | LEAK-10 | Targeting or pointing ids (they encode pre-selection or the observation date) | drop them | sdss_17 `plate`, `fiber_ID` (AUC 0.80 alone; they made log loss worse) |
 | LEAK-10, LEAK-38 (precedent, Lennart, 2026-10-22) | A named field whose missingness or fill, given the covariates known at the prediction point, differs by outcome (a conditional test), although the host's test file carries it the same way | drop it | expresso_churn_prediction REGION (flag AUC 0.936 among customers active all 62 days); kick `WheelType`/`WheelTypeID` (1.2% predicted missing for bad buys, 24.9% observed) and `PRIMEUNIT`/`AUCGUART` (42.3% predicted filled, 7.8% observed) |
@@ -400,6 +414,7 @@ The cases of the rules outside this table are named in the rules.
 | LEAK-14 | One class from a separate source or assay | drop that class once the paper confirms it | biogeographical_ancestry_prediction (Turkey, `rs3857620`) |
 | LEAK-15 (amended 2026-10-27, Andrej) | A recording artefact through several features that matter for prediction, that cannot be undone | retire; a feature subset does not help when it also separates same-label groups | gallstone_disease, kept: after LEAK-13 and LEAK-39 the suspected artefacts left (AST lower with gallstones, the fatty-liver grades on two scales) do not carry the score (TabPFN 3.5 0.826 without AST, 0.827 with it; 0.834 without the grade, 0.838 with it). prostate_cancer_detection, retired (the paper's 7 features: Benign against NED 0.92-0.97, the label 0.62-0.70) |
 | LEAK-13 (amended 2026-10-26, Andrej) | Precision that differs by class, filled cells with many decimals, a column filled in for one class only | write every row at the measured precision; drop the one-class column | gallstone_disease: GFR, vitamin D, visceral muscle area, CRP and creatinine at their measured precision (with LEAK-39, probe 17 from 0.949 to 0.666); `Hyperlipidemia` dropped (8 with gallstones, none without, though high cholesterol is as common without) |
+| LEAK-13 (applied, Lennart, 2026-11-05) | A time column coarsened in the split step, after the framework has sorted the rows by its finer values, so the order inside each period still carries them | coarsen it in `_clean`, before the sort; a check that needs the finer value reads a flag computed from it there | chicago_traffic_crashes: the hour floor moved from `_make_splits` to `_clean`; a row's rank in its hour had lowered log loss by 0.00098 (positive on all 9 splits), and the injury share by tenth of the hour went from 9.9-18.6% to a flat 15.1-15.5%; `dataset check` no longer warns `definition_time_changed_in_split` (813,133 rows) |
 | LEAK-39 | Part of one class recorded through a second route, found by a format fingerprint | drop the route's rows | gallstone_disease: 77 rows (72 with gallstones, 5 without); before the drop TabPFN 3.5 separates them from those without gallstones at 0.993, the other cases at 0.842, and scores the route's 5 without gallstones 0.77 (0.22 for the others) |
 | LEAK-40 | Gaps filled by interpolation down a class-sorted file | keep the fills when a label-free re-imputation inside each fold scores the same or higher | gallstone_disease: 134 fills kept (re-imputed, TabPFN 3.5 0.864; with the fills 0.838) |
 | PROV-3 ([provenance.md](provenance.md)) | Generated or manipulated data | retire (`AHDS`, `Data Quality Issue`) | ecommerce_shipping, customer_satisfaction_in_airline, homeq_default_prediction |

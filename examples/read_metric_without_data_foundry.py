@@ -132,11 +132,12 @@ def main(path: Path) -> float | None:
     # The first split, as shipped: never re-split or shuffle.
     train_idx, test_idx = next(iter(next(iter(splits.values())).values()))
     y_train, y_test = df[target].iloc[train_idx], df[target].iloc[test_idx]
-    # The class order of the probabilities: the target's categories (as saved), else the sorted classes.
+    # The class order of the probabilities: the sorted classes (scikit-learn's classes_), also for an ordered target,
+    # whose declared order (low < high) is type information only.
     classes = []
     if task["problem_type"] != "regression":
         y = df[target]
-        classes = list(y.cat.categories) if isinstance(y.dtype, pd.CategoricalDtype) else sorted(y.unique())
+        classes = sorted(y.cat.categories) if isinstance(y.dtype, pd.CategoricalDtype) else sorted(y.dropna().unique())
     y_pred = dummy_prediction(spec["prediction"], y_train, len(test_idx), classes)
 
     if spec.get("kind") != "standard" or spec["name"] not in STANDARD:

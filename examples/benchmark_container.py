@@ -8,7 +8,9 @@ says everything a benchmark needs:
 * the features, ``feature_columns(container)``: no target, no group column, no scoring column (a metric input such
   as an era, never a feature);
 * the metric, ``task_metadata.objective_metric`` (its name, what it takes, its origin and reference), scored by
-  ``scorer(container)``, which looks up the scoring columns' values by the test rows' index;
+  ``scorer(container)``, which looks up the scoring columns' values by the test rows' index and reads class
+  probabilities in the sorted order of the classes (scikit-learn's ``classes_``), or by name from a table whose
+  columns are the class names; an ordered target's order is type information, never the column order;
 * the feature types, from the dtypes: numeric, categorical, ordinal (an ordered categorical), ``datetime`` and
   ``string`` (free text), and the special features (``special_features(container)``: a molecule's SMILES column, a
   spectrum's group of columns).
@@ -65,7 +67,7 @@ def benchmark(container: CuratedContainer) -> list[float]:
     df, features = encoded_frame(container)
     text = [c for c in features if pd.api.types.is_string_dtype(df[c]) and not _categorical(df[c])]
     score = scorer(container)  # score(y_true, y_pred, row_index)
-    labels = list(df[target].cat.categories) if task.problem_type != "regression" else None
+    classes = list(df[target].cat.categories) if task.problem_type != "regression" else None
     scoring = ", ".join(f"`{c.column}` ({c.role})" for c in task.scoring_columns) or "none"
     print(f"Metric: {spec.name} ({spec.origin}; takes {spec.prediction}; ", end="")
     print(f"{'higher' if spec.greater_is_better else 'lower'} is better); scoring columns: {scoring}")
@@ -77,17 +79,17 @@ def benchmark(container: CuratedContainer) -> list[float]:
             x_train, x_test = df.iloc[train_idx][features], df.iloc[test_idx][features]
             x_train, x_test = _encode_text(x_train, x_test, text)
             y_train, y_test = df[target].iloc[train_idx], df[target].iloc[test_idx]
-            if labels is None:
+            if classes is None:
                 model = HistGradientBoostingRegressor(categorical_features="from_dtype", random_state=42)
             else:
                 model = HistGradientBoostingClassifier(categorical_features="from_dtype", random_state=42)
             model.fit(x_train, y_train)
             if spec.prediction == "proba":
-                # The probability columns in the target's category order (the scorer's default labels), by name:
-                # a fold whose training rows lack a class gets 0 for it.
-                proba = pd.DataFrame(model.predict_proba(x_test), columns=model.classes_)
-                proba = proba.reindex(columns=labels, fill_value=0.0).to_numpy()
-                y_pred = proba[:, 1] if len(labels) == 2 else proba
+                # A table with a column per class, named by the class: the scorer matches the columns by name, and
+                # a fold whose training rows lack a class gets 0 for it. A plain array is read in the sorted order of
+                # the classes (scikit-learn's `classes_`), also for an ordered target.
+                y_pred = pd.DataFrame(model.predict_proba(x_test), columns=model.classes_)
+                y_pred = y_pred.reindex(columns=classes, fill_value=0.0)
             else:
                 y_pred = model.predict(x_test)
             value = score(y_test.to_numpy(), y_pred, test_idx)

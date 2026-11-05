@@ -13,10 +13,6 @@ for `DrivAge` 99 (issue 9). Weighed: the label-free renewal signal, kept with a 
 with it as an offset (issue 6)? Group the split on the inferred policy chains (issue 7)? Keep the label-free renewal
 signal with a note (issue 8)? Set `DrivAge` 99 to missing (issue 9)?
 
-**Record fields that disagree with the definition:**
-
-- `year`: record `(empty)`, definition `2014`.
-
 **Issues for Lennart:**
 
 5. **Blank `BonusMalus` in blocks 0-4, where it looks recorded after the row's own claims?**
@@ -76,6 +72,14 @@ signal with a note (issue 8)? Set `DrivAge` 99 to missing (issue 9)?
    [^source-first]: **LEAK-3** (Should): read the source first.
    [^smallest]: **LEAK-7**: the smallest fix.
 
+   **Resolved (2026-11-05, Lennart):** B. `BonusMalus` is missing in `IDpol` blocks 0-4 (597,998 rows, 88.2%) and kept
+   in blocks 5-6 (79,993 rows, 50-190). Re-measured on the same folds (LightGBM Poisson, `Exposure` a free feature):
+   mean deviance 0.2327 to 0.2435, +0.0127 in blocks 0-3, and 0.0013 better in blocks 5-6, where the column now carries
+   0.0007-0.0009 (so B over C). The next-year channel of issue 7 falls from 0.0020 to 0.0008; the "0.0021 for claim
+   count and exposure" in the notes was wrong (they are worth 0.0003) and is corrected. bemtpl97 keeps its `bm`: its
+   source registers the risk factors at the start of the policy period. A LEAK-10 Cases row; `dataset check` clean, leak
+   probes without a flag.
+
 6. **Take realised `Exposure` out of the features and score with it as an offset?**
 
    * **Problem:**
@@ -121,6 +125,41 @@ signal with a note (issue 8)? Set `DrivAge` 99 to missing (issue 9)?
      signal, and this one strengthens it; **LEAK-38** sends a measured mechanism back to **LEAK-10**. The advocate
      argued LEAK-37.
    [^bemtpl97]: Myunghwan, 2026-10-23 and 2026-10-26 (bemtpl97).
+
+   **Lennart (2026-11-05, discuss):** We have a stack of PRs for zero inflated data and exposure, is this already
+   handled there? Note that it is quite important to treat this correctly and it might need to be used as sample weight
+   or a feature that can be used as such (maybe as a special feature metadata?) please check the PR stack and context
+   background what we should do here
+
+   **Answer (AI, 2026-11-05):** Not handled. PRs #44 to #47 add no exposure offset, no Poisson deviance with an exposure
+   input and no training-weight declaration, so option A still needs new code. What they do:
+   - #44 adds a LEAK-10 case row, "time on risk cut short by the outcome" (Andrej, 2026-11-02): fix the cut where the
+     data locates it, otherwise keep it with a measured note. It names fremtpl2 as a departure.
+   - #44 and #45 let an input known at the prediction point stay a feature and also be the metric's weight; #45's
+     `mean_poisson_deviance` takes no weight.
+   - #47's spanish_motor_insurance_coverage_level_2022_2024 comes nearest to A (a per-year target, exposure as a weight
+     scoring column); its issue 5 says "Data Foundry has no training-weight column yet".
+   - #46 rewrites this record from an older base with Andrej's CC of 2026-10-20, a different design (total claim amount,
+     a split by IDpol block, Exposure capped at 1 as a feature); merging it conflicts with this definition, and the two
+     designs need reconciling.
+
+   The actuarial convention is a Poisson GLM with offset log(Exposure) ([Noll, Salzmann and Wüthrich,
+   code](https://github.com/JSchelldorfer/ActuarialDataScience)), or the frequency ClaimNb/Exposure with Exposure as the
+   sample weight
+   ([scikit-learn](https://scikit-learn.org/stable/auto_examples/linear_model/plot_poisson_regression_non_normal_loss.html));
+   both give the same deviance. A special feature is the wrong place: special features are model inputs. The right shape
+   for A, here and in bemtpl97: target ClaimNb/Exposure, `Exposure` a weight scoring column, `mean_poisson_deviance`
+   with a `weight` input, and a declared training weight that the benchmark passes as `sample_weight` and never as a
+   feature. That last part is new in the API, the container and the benchmark.
+   - (a) A, for this dataset and bemtpl97: exposure becomes a weight, in the score and in training (new code);
+   - (b) B, for both: the feature stays, with an amendment of LEAK-10 for exposure as a denominator.
+
+   **Lennart (2026-11-05, discuss):** open this as a seperate issue on github, provide the context for it there and what
+   typical modelling would do and park this and bemtpl until then and the stack of zero-inflated is over
+
+   **Deferred (2026-11-05):** parked, with bemtpl97 issue 1 and both declared metrics, until the zero-inflated stack
+   (PRs #44-#47) is merged. The GitHub issue (context, typical modelling: an offset or a weight, what the stack provides
+   and what is missing) is [#51](https://github.com/TabArena/data-foundry/issues/51).
 
 7. **Group the split on the inferred policy chains (`ForcedGroupedFromTemporal`) instead of IID?**
 
@@ -195,6 +234,33 @@ signal with a note (issue 8)? Set `DrivAge` 99 to missing (issue 9)?
      353,887 rows).
    - (d) Amend SPLIT-8: when entities are only inferred and carry little of the label, the closest regime is IID.
 
+   **Lennart (2026-11-05, discuss):** How is this data used in related work and prior work? what did people do i nthe
+   past for this dataset?
+
+   **Answer (AI, 2026-11-05):** No published use links freMTPL2 records across years; papers use a random hold-out, or
+   lately a split grouped on identical rating factors.
+   - Noll, Salzmann and Wüthrich: random 90/10 (`set.seed(100)`), ClaimNb capped at 4 and Exposure at 1, Poisson
+     deviance of a GLM with offset log(Exposure) ([code](https://github.com/JSchelldorfer/ActuarialDataScience)).
+   - Wüthrich and Merz (2023, [Sec. 13.1](https://link.springer.com/chapter/10.1007/978-3-031-12409-9_13)): claims
+     recounted from freMTPL2sev, Exposure capped at 1, one fixed 610,206/67,801 partition that later papers reuse; they
+     note that renewals are split into two records but "do not have the necessary information to perform this merger".
+   - Schelldorfer (2021 code) and [Lorentzen and
+     Mayer](https://lorentzenchr.github.io/responsible_ml_material/xai_2_explaining_models.html): 80/20 grouped on
+     identical rating factors, since ignoring the groups lifts LightGBM's pseudo-R² from 5.0% to 6.0%.
+   - scikit-learn: random 67/33; [Holvoet et al.](https://arxiv.org/abs/2310.12671): six stratified folds. OpenML 41214
+     has no supervised task.
+
+   So A (grouping on the chains) goes further than any prior work, and the literature's key (identical factors) is not
+   our chain key. If you group, the key that joins the chains with identical-factor rows (430,298 groups in the notes)
+   is exact and close to the literature's; otherwise B, with the literature (a random split) as the recorded reason. Not
+   verified: how Wüthrich and Merz drew their partition (the chapter was not readable).
+
+   **Lennart (2026-11-05, discuss):** Ok so from this I take we can tick to IID for now based on the samll survey but
+   may need to revist this in the future
+
+   **Resolved (2026-11-05, Lennart):** B. The split stays IID with `ForcedIIDFromTemporal` for now; prior work gives no
+   reason to group, and it is revisited if the inferred policy chains become a recorded key.
+
 8. **Keep the label-free renewal and record-structure signal with a note?**
 
    * **Problem:**
@@ -228,6 +294,24 @@ signal with a note (issue 8)? Set `DrivAge` 99 to missing (issue 9)?
 
    [^transductive]: **LEAK-10** (the mechanism, transductive); **LEAK-30** covers scaling only.
 
+   **Consistency check (AI, 2026-11-05):** the signal comes from a model reading other rows, so it is an evaluation leak
+   (LEAK-9), not the scaling of stored values (LEAK-30). Kept with a note, it is the fourth case met by a protocol line,
+   after sepsis_prediction_1m, 5g_energy_consumption and medical_facility_operational_data issue 7, whose check is open.
+   - (a) the LEAK-9 note and the medical issue 7 protocol line, settled with medical 7's answer (its amendment would
+     cover this case too);
+   - (b) a LEAK-30 tension row, as the issue proposes;
+   - (c) `No`.
+
+   Give the letter in the note. Either way the leak is named in `fit_reason` with its size without `BonusMalus`
+   (0.0009-0.0010), which fits issue 5.
+
+   **Lennart (2026-11-05, ok):** Reply (a): the LEAK-9 note and the medical issue 7 protocol line, settled with medical
+   7's answer (its amendment would c…
+
+   **Resolved (2026-11-05, Lennart):** (a). The renewal signal is an evaluation leak handled by LEAK-9 as amended today
+   (a protocol line the benchmark checks; a method that learns from the test block is called out and not benchmarked);
+   `fit_reason` names it. After issue 5 it is worth 0.0008 mean deviance.
+
 9. **Set `DrivAge` 99 to missing in block 0, as `VehAge` 99/100 is?**
 
    * **Problem:**
@@ -252,6 +336,12 @@ signal with a note (issue 8)? Set `DrivAge` 99 to missing (issue 9)?
    * **Recommendation:** B, set the 66 values to missing. **Decision:** B (missing) or A (a recorded top-code reason)?
 
    [^default]: **CLEAN-10** (Should).
+
+   **Lennart (2026-11-05, change):** Option B: Set to missing.
+
+   **Resolved (2026-11-05, Lennart):** B. `DrivAge` 99 in block 0 (66 rows) is missing, as `VehAge` 99 and 100; the 4
+   rows at 99 in blocks 3-4 stay (three pair a year apart with a real age). A CLEAN-10 Cases row. The record's `year` is
+   2014 (PROV-9).
 
 **Review panel:** ship after changes, not as defined (mediator). Tier full, second pass after Lennart's PR #33 review of
 2026-11-04. Claims: 21; 14 hold, 1 holds in part ("consecutive years"), 5 refuted (the Exposure share, "changes

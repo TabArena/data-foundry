@@ -68,6 +68,9 @@ file in the folder; an AI note saying so is still to be added to the record. The
      task. Cases: brazilian_ecommerce, bias_correction_r_bias_correction_r_2.
    [^use3]: **USE-3** (Must): name the prediction point, when the model is used and what is known then.
 
+   **Resolved (2026-11-05, Lennart):** as implemented. The OSSL Engine and API take the spectrum alone (no depth input;
+   every v1.2 model uses "only the spectra data"), so the spectrum-only actor stands; `known` says so.
+
 7. **Record the `no_spread` flag as "keep pending tuned results"?**
 
    * **Problem:**
@@ -105,6 +108,18 @@ file in the folder; an AI note saying so is still to be added to the record. The
    [^tp3]: **TP-3** (Must): if tuned methods spread, keep the dataset; its Cases table holds more than 15 `no_spread`
      keeps.
    [^tp2]: **TP-2** (Should): a small but real signal is no reason to retire; the precedent's keep is filed here.
+
+   **Lennart (2026-11-05, ok):** Remove this comment or ignore it going forward, we can move one as is
+
+   **Answer (AI, 2026-11-05):** Done for this dataset: nothing is recorded on the flag (TP-3 holds; the default families
+   all reach skill 0.98-0.985). "Ignore it going forward" sounds like a standing rule; where should it go?
+   - (a) the `no_spread` row of the flag table in task_probes.md: on a large dataset whose default models all reach a
+     skill near 1, the flag is not raised;
+   - (b) only here.
+
+   **Lennart (2026-11-05, ok):** Reply (b): only here
+
+   **Resolved (2026-11-05, Lennart):** (b). Nothing is recorded on the flag here, and no standing rule.
 
 8. **File the fact that sets the log-scale metric apart from `forest_fires`?**
 
@@ -144,6 +159,12 @@ file in the folder; an AI note saying so is still to be added to the record. The
    [^met5]: **MET-5** (Should): a paper's metric is the source's metric only when it is one deliberate choice, the
      criterion it ranks, tunes or selects models by. Cases: forest_fires (MAD and RMSE, ranked by MAD: kept).
 
+   **Lennart (2026-11-05, change):** Option A: File the fact.
+
+   **Resolved (2026-11-05, Lennart):** A. A MET-5 Cases row: the source tunes and cross-validates by RMSE on log1p on
+   this cut (n = 75,929, RMSE 0.114), so `rmsle` is the source's criterion; unlike gallstone_disease and heart_disease,
+   which list several criteria with none named as deciding.
+
 9. **Rename the target to `log1p_organic_carbon_weight_percent`?**
 
    * **Problem:**
@@ -176,6 +197,26 @@ file in the folder; an AI note saying so is still to be added to the record. The
    [^clean16]: **CLEAN-16** (Should): log a skewed positive target when the source has not, case by case, and name the
      column after the transform (`log_days_to_death`).
 
+   **Lennart (2026-11-05, change):** Option A: Rename.
+
+   **Consistency check (AI, 2026-11-05):** renaming follows CLEAN-16 and ashrae, nyc_taxi, pkdd and house_sales, but
+   differs from your keeps of 2026-10-21 (diamonds `price`, mercari, allstate `loss`, forest_fires `area`). What sets it
+   apart?
+   - (a) the name states a unit, weight percent, that the log1p values contradict (the blind reviewer misread it); the
+     four state none: recorded as a CLEAN-16 case;
+   - (b) keep the name;
+   - (c) reopen the four;
+   - (d) amend CLEAN-16.
+
+   Give the letter in the note; nothing is applied until then.
+
+   **Lennart (2026-11-05, change):** Reply (a): the name states a unit, weight percent, that the log1p values contradict
+   (the blind reviewer misread it); the… Option A: Rename.
+
+   **Resolved (2026-11-05, Lennart):** A, with (a). The target is `log1p_organic_carbon_weight_percent` (values
+   unchanged; as ashrae's `log1p_meter_reading`): the old name stated a unit, weight percent, that the log1p values
+   contradict. A CLEAN-16 Cases row; the metric (`rmsle`) scores the same; `dataset check` clean.
+
 10. **Confirm the amendment of the spectrum rule for the dropped 600 cm-1 bin?**
 
    * **Problem:**
@@ -204,6 +245,13 @@ file in the folder; an AI note saying so is still to be added to the record. The
    [^clean26]: **CLEAN-26** (Should): a spectrum ships as the source publishes it, one numeric column per position on
      its axis, never processed in the data.
    [^clean11]: **CLEAN-11** (Should): impossible values become missing, and the row stays.
+
+   **Lennart (2026-11-05, change):** Option A: Amend the spectrum rule.
+
+   **Resolved (2026-11-05, Lennart):** A. CLEAN-26 is amended: a position holding a fill is set missing and the column
+   stays; when only an edge position holds it, that position is dropped for every row, so each spectrum stays whole
+   (narrows CLEAN-11). The facts checked on the export: 53 of 75,929 spectra read exactly 0 at 600 cm-1 beside 1.27-1.86
+   at 602 cm-1. A Cases row; spectra.md cites the amendment.
 
 **Review panel:** ship after changes (mediator). Tier full, second pass after your PR #33 review of 2026-11-04: twelve
 reports (claim, column and split auditors, domain practitioner, blind reviewer, task gamer, precedent checker, advocate

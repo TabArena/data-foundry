@@ -73,6 +73,11 @@ line of 2026-11-04. The record fields agree with the definition.
      cross-sectional by its use case.
    [^3-label]: **USE-5**: predict what the actor would act on, at the resolution they act on it.
 
+   **Lennart (2026-11-05, change):** Option B: Add the statistician next to the planner. Do B
+
+   **Resolved (2026-11-05, Lennart):** B. The survey statistician (NBS, the Bank of Tanzania) joins the planner in
+   `use_case`, `known` and `fit_reason`; the `ForcedIIDFromTemporal` tag stays; no data change; `dataset check` clean.
+
 7. **Keep the 965 exact copies as distinct respondents?**
 
    * **Problem:**
@@ -107,6 +112,25 @@ line of 2026-11-04. The record fields agree with the definition.
    [^7-copies]: **LEAK-19** (Should): exact copies with the same label are dropped rather than grouped on the
      duplicate key; distinct compounds that the descriptors cannot tell apart stay, with the reason in the notes.
 
+   **Consistency check (AI, 2026-11-05):** keeping the copies under a LEAK-19 clause widened to "distinct entities"
+   differs from audiology_diagnosis, whose 27 copies on distinct patient ids were dropped as an artifact of its coarse,
+   categorical findings: "distinct entities" covers audiology too, and coarse answers are the reason it dropped. What
+   sets ai4d apart?
+   - (a) evidence of distinct people beyond the profile (361 `Alone` profiles, 67.8% of copy groups larger than their
+     party), written into the amended clause, so audiology stays a drop;
+   - (b) drop the copies as audiology did (option C);
+   - (c) reopen audiology_diagnosis;
+   - (d) keep them under LEAK-18 (few coarse features, plausible repeats, as sepsis_survival) instead of amending
+     LEAK-19.
+
+   Give the letter in the note; nothing is applied until then.
+
+   **Lennart (2026-11-05, ok):** Reply (d): keep them under LEAK-18 (few coarse features, plausible repeats, as
+   sepsis_survival) instead of amending LEAK… (d)
+
+   **Resolved (2026-11-05, Lennart):** (d). The copies stay under LEAK-18 (few coarse features, plausible repeats), with
+   this case added to its Cases beside sepsis_survival_minimal_clinical_records; LEAK-19 is not widened.
+
 4. **Create a `No` / `Duplicate` record for the 2020 cut?**
 
    * **Problem:**
@@ -135,6 +159,11 @@ line of 2026-11-04. The record fields agree with the definition.
      distinct task: a swapped target, added or dropped rows or columns.
    [^4-distinct]: **PROV-7** (Must): records that share a source but give different tasks are not duplicates.
 
+   **Lennart (2026-11-05, change):** Option B: A No / Duplicate record. Follow the recommendation
+
+   **Resolved (2026-11-05, Lennart):** B. New record `tanzania_tourism_prediction`: `No` / `Duplicate`, naming this
+   record as canonical, checked by Lennart.
+
 8. **Confirm `mmu_2022` as a duplicate?**
 
    * **Problem:**
@@ -152,6 +181,11 @@ line of 2026-11-04. The record fields agree with the definition.
    * **Recommendation:** B, confirm. **Decision:** confirm (B) or not (A)?
 
    [^8-source]: **PROV-5** (Must): confirm the source before marking a duplicate.
+
+   **Lennart (2026-11-05, change):** follow the recommendaiton
+
+   **Resolved (2026-11-05, Lennart):** B. `mmu_2022` is confirmed: its `checked_by` is Lennart instead of AI
+   (UNVERIFIED), with a CC line.
 
 5. **Guard the class-column order of the scorer for all ordered targets?**
 
@@ -180,6 +214,33 @@ line of 2026-11-04. The record fields agree with the definition.
 
    [^5-score]: **MET-2** (Must): match the data, the metric and the real task; the score measures what it claims.
 
+   **Lennart (2026-11-05, change):** Option C: A label check in the scorer. Add a label check, but also make sure we
+   follow the sklearn and default convention of scoring by it being sorted no? we dont want to change this, just the
+   metadata we have as needed
+
+   **Answer (AI, 2026-11-05):** Yes: follow scikit-learn's convention, change nothing in the data, and keep the order of
+   the classes as metadata only. Today the scorer reads the probability columns in the order of the target's categories,
+   which for an ordered target is its declared order (Lower Cost to Highest Cost). scikit-learn, LightGBM and TabPFN
+   return `predict_proba` columns in sorted order (`classes_`), so a harness that passes them on unchanged scores 2.537
+   instead of 1.592 here. The change, in the shared scorer only:
+   - the probability columns are read in the sorted order of the class labels for every target; the ordered categories
+     stay in the container unchanged, as type information;
+   - the label check: probabilities passed as a table whose columns are the class names are matched by name, and a
+     missing or unknown class fails; a plain array is read in sorted order, and the docstring and the examples say so;
+   - unordered targets do not change (their categories are already sorted), nor do binary ones (no binary target is
+     ordered); the five ordered multiclass targets (cardiotocography, dementia_prediction, hepatitis_c_prediction,
+     chicago_traffic_crashes and this one) move from category order to sorted order.
+
+   Is that what you meant? Then mark Change to C again with "yes" in the note, and I apply it with tests.
+
+   **Lennart (2026-11-05, change):** Agree. Option C: A label check in the scorer.
+
+   **Resolved (2026-11-05, Lennart):** C, as answered. The shared scorer reads probability columns in the sorted order
+   of the class labels (scikit-learn's `classes_`) for every target, and a DataFrame of probabilities is matched by its
+   column names (a missing, unknown or duplicate class fails); the ordered categories stay in the container as type
+   information. Only the five ordered multiclass targets change column order; no binary target is ordered, so no
+   positive class moves. The examples, CLAUDE.md, the benchmark notes and tests follow; the full suite passes.
+
 6. **Add `Lennart` to `checked_by`?**
 
    * **Problem:**
@@ -199,6 +260,10 @@ line of 2026-11-04. The record fields agree with the definition.
    * **Recommendation:** B. **Decision:** A, B, C, D or E?
 
    **Notes for the AI:** options B to E are the precedent checker's (a) to (d).
+
+   **Lennart (2026-11-05, change):** Option B: Add Lennart. add checked by
+
+   **Resolved (2026-11-05, Lennart):** B. `checked_by` lists Lennart.
 
 **Review panel:** ship after changes (mediator). Tier full, second pass after Lennart's PR #33 review of 2026-11-04.
 The mediator's issues 1-4 are issues 3-6 here (its issue 2 is split into issues 4 and 8).

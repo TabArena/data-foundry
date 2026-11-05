@@ -75,7 +75,9 @@ both container formats.
   Format 2 (`container.format_version == 2`): score by the spec `task_metadata.objective_metric` with
   `data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`, and take the inputs from
   `feature_columns(container)` (`data_foundry.curation_container`), which drops the target, the group and the
-  scoring columns (`task_metadata.scoring_columns`: metric inputs such as an era, never features). Format 1
+  scoring columns (`task_metadata.scoring_columns`: metric inputs such as an era, never features). Class
+  probabilities go in the sorted order of the classes (scikit-learn's `classes_`, also for an ordered target), or as
+  a DataFrame whose columns are the class names, which the scorer matches by name. Format 1
   (BeyondArena): score with `task_metadata.objective_metric_name` (`rmse`, `roc_auc`, `log_loss`). Features can be
   categorical, string or datetime, so pick a model that takes mixed dtypes. A special feature
   (`special_features(container)`: a SMILES column, a spectrum's group of columns) is encoded by its kind:

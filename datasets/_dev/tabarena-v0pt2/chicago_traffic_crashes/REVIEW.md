@@ -22,10 +22,6 @@ reason, stale notes); data, split, features, target and metric are unchanged. Th
 Floor the crash time in `_clean` so the row order no longer carries the minute (issue 9)? Keep or drop `dooring_i`
 (issue 10)? Keep the one-month gap (issue 11)? After these, a rebuild before 2026-12-22.
 
-**Record fields that disagree with the definition:**
-
-- `year`: record `2017`, definition `2026`.
-
 **Issues for Lennart:**
 
 7. **Reword the use case to a road-safety analyst?**
@@ -78,6 +74,13 @@ Floor the crash time in `_clean` so the row order no longer carries the minute (
    [^known]: **USE-6** (Must): anything known at the prediction point is a legitimate input.
    [^target]: **USE-5** (Must): predict what the actor would act on, at the resolution they act on it.
 
+   **Lennart (2026-11-05, change):** Option A: Road-safety analyst.
+
+   **Resolved (2026-11-05, Lennart):** A. The actor is a city road-safety analyst ranking sites by expected people
+   killed or seriously injured; `use_case`, `known` and `fit_reason` are rewritten (fit approximate: police reports
+   catch about half of serious injuries, the C-class step of late 2023, the dropped road facts). Myunghwan's framing of
+   2026-10-29 is marked superseded. A USE-9 Cases row.
+
 8. **Accept the 2023Q4 step in "reported, not evident" as drift?**
 
    * **Problem:**
@@ -122,6 +125,8 @@ Floor the crash time in `_clean` so the row order no longer carries the minute (
    [^history]: **SPLIT-20** (Should): decide what the train side holds from the use case, and check the history for
      breaks (a change of rules or of the data collection).
 
+   **Resolved (2026-11-05, Lennart):** as implemented.
+
 9. **Floor the crash time in `_clean`, so the row order no longer carries the minute?**
 
    * **Problem:**
@@ -165,6 +170,13 @@ Floor the crash time in `_clean` so the row order no longer carries the minute (
      every row at the precision of the measured values. LEAK-13 is a Must, so keeping the order with a note would need
      a higher-ranked Must, and none applies.
 
+   **Lennart (2026-11-05, change):** Option B: Floor in _clean.
+
+   **Resolved (2026-11-05, Lennart):** B. `crash_date` is floored to the hour in `_clean`, before the framework orders
+   the rows; the notification check still reads the source minute through a flag computed before the floor. The injury
+   share by tenth of each hour is now flat (15.1-15.5%, 9.9-18.6% before), and `dataset check` no longer warns that the
+   split changes the time column. No other definition changes its time column in `_make_splits`. A LEAK-13 Cases row.
+
 10. **Keep `dooring_i` or drop it?**
 
    * **Problem:**
@@ -206,6 +218,11 @@ Floor the crash time in `_clean` so the row order no longer carries the minute (
      clause; the advocate argues that LEAK-38's measured clause leaves no option to keep `dooring_i`.
    [^note]: **LEAK-6** (Must) asks for a note on any suspect kept (to be added if you keep it).
 
+   **Lennart (2026-11-05, change):** Option B: Drop.
+
+   **Resolved (2026-11-05, Lennart):** B. `dooring_i` left (15 features; cost +0.00011 log loss). Should the open
+   LEAK-38 amendment take the any-source scope, this field would fall under it.
+
 11. **Keep the one-month gap?**
 
    * **Problem:**
@@ -231,6 +248,8 @@ Floor the crash time in `_clean` so the row order no longer carries the minute (
    [^gap]: **SPLIT-10** (Should), as amended on 2026-11-04: where the source documents late labels, the gap is about
      the label's delay.
    [^floor]: **SPLIT-14** (Must): no window's train side holds less than 50% of the data.
+
+   **Resolved (2026-11-05, Lennart):** as implemented. The record's `year` is 2026 (PROV-9, a growing source).
 
 **Review panel:** ship after changes (mediator). The tier was full, as a second pass after Lennart's review of PR #33
 on 2026-11-04: seven evidence agents, the advocate and the critic with one rebuttal each, and the mediator. Claims: 27

@@ -17,6 +17,7 @@ required_split:
 problem_type: Regression
 original_data_state: One Table
 source_links:
+- https://github.com/katrienantonio/PE-pricing-analytics/tree/0b279c433de7c8ef46ebf0a33cd70ebd76d2af9e
 - https://github.com/henckr/treeML/tree/2ee8accc6df49168bd865cdf49efa1b7a5c8f4de
 - https://dutangc.github.io/CASdatasets/reference/beMTPL97.html
 - https://ideas.repec.org/a/taf/sactxx/v2018y2018i8p681-705.html
@@ -79,3 +80,11 @@ CC (2026-11-04, Lennart): the fit stays approximate under the `ForcedIIDFromTemp
 **Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes; disputed: EV-7 (the rebuild as a separate gate); on LEAK-10 the advocate withdrew the amendment, so all sides recommend making `expo` a scoring column, as the source uses it, and keeping it as a feature under a LEAK-10 amendment stays open to the curator (for fremtpl2 too); for the curator: issues 1-3. Priority 3: gap +, use case -, source +, shape +, risk - (gap: insurance is thin among the accepted definitions; use case: the source names the insurer's pricing, but the fit is approximate, forced IID and realized exposure; risk: issue 1, a likely LEAK-10 leak through `expo`, 16-18% of the model's skill).
 
 **Assessment (AI, 2026-11-04):** text corrections of the second-pass panel applied (Lennart's go-ahead on the review page): the stale lines above carry correction notes. No data, split, feature or metric change.
+
+CC (2026-11-05, Lennart): issue 2, (b): ship all 163,231 policies of the first public copy (PROV-8), data/P&Cdata.txt of katrienantonio/PE-pricing-analytics commit 0b279c433de7c8ef46ebf0a33cd70ebd76d2af9e (26 September 2019), instead of the 2020 release's 163,212, which leaves out the 19 policies whose average claim cost exceeds EUR 81,000. Re-verified on 2026-11-05: the 2019 copy minus exactly those 19 rows equals the release row by row in the same order, every value equal to the text file's 15 digits; the 19 hold 21 claims (17 with one claim, 2 with two). The restored rows remove the selection by claim cost, so no `Selection Bias` marker is needed for it. The 2019 repository states no licence; CASdatasets declares GPL (>= 2) for the release. LightGBM-Poisson mean deviance (untuned, 9 folds, `expo` free): 0.5274 against the training mean's 0.5517 before, 0.5279 against 0.5520 after both of today's changes; the gain of a free `expo` over an offset is 0.0039 (was 0.0040), 16% of the skill either way.
+
+CC (2026-11-05, Lennart): issue 3, (a): `sex` leaves the features. The actor is an EU insurer pricing today, and the Test-Achats ruling (CJEU C-236/09, 1 March 2011, in force for new contracts from 21 December 2012) bars sex as a rating factor: "We make this special case here as we would try to understand how good such models would be in the current world, and they would not be able to use sex". The 1997 portfolio stays the data, priced as an insurer would today; the fit stays approximate. Sex carried 0.0004 mean Poisson deviance (0.0002 to 0.0007 per fold, better in 9 of 9 folds, 1.6% of the skill). The tension (a factor known at the prediction point that the actor may no longer use) is a row in principles.md; home_credit_default_risk (`CODE_GENDER`) and credit_card_clients_default (`SEX`) keep sex, not reviewed yet. This supersedes the note "sex stays by curator choice, for research on a 1997 tariff".
+
+CC (2026-11-05, Lennart): issue 1 (exposure) is parked, with fremtpl2's issue 6 and both declared metrics, until the zero-inflated stack (PRs #44-#47) is merged.
+
+**Assessment (AI, 2026-11-05):** the parked exposure question is GitHub issue #51 (https://github.com/TabArena/data-foundry/issues/51).

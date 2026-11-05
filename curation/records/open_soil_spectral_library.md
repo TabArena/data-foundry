@@ -91,6 +91,20 @@ CC (2026-11-04, Lennart): the metric is the source's cross-validation metric, `r
 
 **Assessment (AI, 2026-11-04):** the CC of 2026-11-04 that cites "REVIEW.md issues 2-3" means issues 2 and 3 of the first PR #33 review page (metric origin, target scale), which never became a file in the folder. `curation_comments` now say that only the three layers above 70% organic carbon were checked against the source's measured total carbon (second-pass panel; Lennart's go-ahead on the review page).
 
+CC (2026-11-05, Lennart): the spectrum only, with the source's scan-upload service as the actor (issue 6, ok on the implemented option; USE-3, USE-6). A KSSL laboratory also knows the layer's two depths and the preparation code (XS or XN), and adding them lowered RMSLE by 3.6% on the two folds tried; leaving them out is a choice of actor, now said in the task summary. The service accepts none of them: the OSSL API v1.2 prediction call takes the spectra file, the property, the spectral range, the subset (KSSL or OSSL) and the model; depth is only a filter for downloading library rows; every v1.2 model is coded `na`, "only the spectra data" (api.soilspectroscopy.org, the ossl-models README; checked 2026-11-05).
+
+CC (2026-11-05, Lennart): the fact that sets the log-scale metric apart from forest_fires is filed as a MET-5 case (issue 8, A; MET-5): the source tunes by RMSE on log1p and reports its 10-fold CV on log1p for exactly this cut (n = 75,929, RMSE 0.114, CCC 0.995), with the laboratory and instrument the split keeps; its ranking by CCC with an RPIQ cut-off is a compound grade, and its percent results come from the independent sets, the instrument transfer this task does not test.
+
+CC (2026-11-05, Lennart): the dropped 600 cm-1 edge is filed as an amendment of the spectrum rule (issue 10, A; CLEAN-26 as amended 2026-11-05, narrowing CLEAN-11): a fill at an edge position drops that position for every row, a fill at an inner position is set missing and the column stays. Re-counted on the raw export: 53 spectra read 0 at 600 cm-1 beside 1.27 to 1.86 at 602 cm-1.
+
+CC (2026-11-05, Lennart): the declared metric (`rmsle` on weight percent, the RMSE of the shipped log1p values, the source's) is checked and stays as declared.
+
+CC (2026-11-05, Lennart): the target column is renamed to `log1p_organic_carbon_weight_percent` (was `organic_carbon_weight_percent`), the values unchanged (issue 9, A with (a); CLEAN-16, filed as a case): the old name stated a unit, weight percent, that the shipped log1p values (0 to 4.375) contradict, and the blind reviewer took them for something other than percent; the names kept with a declared `target_transform` (diamonds and mercari `price`, allstate `loss`, forest_fires `area`) state no unit.
+
+CC (2026-11-05, Lennart): the `no_spread` flag is left unrecorded for this dataset only (REVIEW.md issue 7, (b)): its default families all reach skill 0.98-0.985.
+
+CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.
+
 ## Reference
 
 Safanelli JL, Hengl T, Parente LL, Minarik R, Bloom DE, Todd-Brown K, et al. (2025). Open Soil Spectral Library (OSSL): Building reproducible soil calibration models through open development and community engagement. PLoS ONE 20(1): e0296545.

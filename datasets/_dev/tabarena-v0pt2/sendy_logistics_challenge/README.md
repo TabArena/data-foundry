@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: sendy_logistics_challenge
 container_format: 2
-checksum: v2:79abd72e44c803358d2ca555e9f31f2e980a5fd5716257eba982ad5c5a05d8cf
+checksum: v2:b0346b23f3e7b0419efe52440ea42afaa3105d065cb53315d00fba8eb16c0d34
 build:
   uuid: 01a18a16-1f77-7fc2-b293-c8d8ca2eeefc
   checksum: v2:de47fa29784e3225f35fd7700d297905b233fab9369501a4d222bcca2baad69f
@@ -19,7 +19,7 @@ build:
     polars: 2.0.0
 build_stale: true
 data:
-  n_rows: 21201
+  n_rows: 20461
   n_features: 19
   dtypes:
     category: 4
@@ -49,27 +49,28 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 14134
-    max: 14134
+    min: 13640
+    max: 13641
   n_test:
-    min: 7067
-    max: 7067
+    min: 6820
+    max: 6821
 bundle_checks:
   ok: true
   errors: []
   warnings: []
   infos: []
   accepted: {}
-decisions: []
+decisions:
+- Pickup legs of 60 s or less dropped
 ---
 
 # sendy_logistics_challenge
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `Time from Pickup to Arrival`, scored with `rmse` on IID splits. 21,201 rows and 19 features. Source: Zindi (2019).
+Regression of `Time from Pickup to Arrival`, scored with `rmse` on IID splits. 20,461 rows and 19 features. Source: Zindi (2019).
 
-Built as `01a18a16-1f77-7fc2-b293-c8d8ca2eeefc` on 2026-10-29, but `dataset.py` has changed since: it now gives checksum `v2:79abd72e44c803358d2ca555e9f31f2e980a5fd5716257eba982ad5c5a05d8cf`, so the build is stale. See [Build](#build).
+Built as `01a18a16-1f77-7fc2-b293-c8d8ca2eeefc` on 2026-10-29, but `dataset.py` has changed since: it now gives checksum `v2:b0346b23f3e7b0419efe52440ea42afaa3105d065cb53315d00fba8eb16c0d34`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -77,17 +78,17 @@ Built as `01a18a16-1f77-7fc2-b293-c8d8ca2eeefc` on 2026-10-29, but `dataset.py` 
 
 **Use case.** Sendy tells the customer an arrival time once the rider has the parcel, and plans the rider's next orders from it.
 
-**One row.** One completed express motorbike delivery order in Nairobi from the 2019 Sendy challenge (21,201 orders, the labelled training file).
+**One row.** One completed express motorbike delivery order in Nairobi from the 2019 Sendy challenge (20,461 of the 21,201 orders of the labelled training file).
 
-**Predicted.** The seconds from the pickup to the arrival at the destination, both as the rider marks them in the app, as the source gives it. Riders often mark the pickup late, at the destination, so 2.6% of the labels are 10 seconds or less; on those the parcel has already arrived, and they reward spotting a late mark rather than estimating a trip.
+**Predicted.** The seconds from the pickup to the arrival at the destination, both as the rider marks them in the app, as the source gives it.
 
 **Known at prediction time.** The customer, their platform and type, the rider, the day, weekday and time of the order's placement and of the rider's confirmation, the times of the rider's arrival at the pickup and of the pickup, the pickup and destination coordinates, the source's distance and the weather at placement.
 
 **What the test data stands for.** Three repeats of three random folds over the same release; customers and riders recur. The release has the day of the month and the weekday but no month order or year, so later periods cannot be held out.
 
-**Our changes to the source.** The rider table the competition offered is left out, since its order counts, tenure and ratings were taken after these orders.
+**Our changes to the source.** The rider table the competition offered is left out, since its order counts, tenure and ratings were taken after these orders. The 740 legs of 60 seconds or less leave: the rider marked the pickup at the destination, so the customer already had the parcel and no one acts on that arrival time.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The source's own task at its moment, with what is known then. The label is the riders' marks, and the late pickup marks make some labels near zero; random folds over one release stand in for future orders. A weak leak across rows is kept: features built from the same rider's later orders that day.
+> **Use case fit: approximate (a stand-in with a known gap).** The source's own task at its moment. The label is the riders' marks; a few late pickup marks above 60 seconds may remain. Random folds over one release stand in for future orders. Kept: a weak leak across rows (features from the same rider's later orders that day) and the source distance, not measured between the rider's taps but possibly a GPS total recorded after delivery.
 
 ## Files in this folder
 
@@ -133,7 +134,7 @@ Only curators run `build`, when the dataset ships.
 | license | Zindi competition terms; no standalone open-data licence specified |
 | data_tags | IID, ForcedIIDFromTemporal, Anonymized, Spatial |
 | reference | sendy2019logistics |
-| rows x columns | 21,201 x 20 |
+| rows x columns | 20,461 x 20 |
 | task.target | Time from Pickup to Arrival |
 | task.problem_type | regression |
 | task.metric | rmse |
@@ -175,15 +176,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 21,201 rows of the final frame (random rows: the frame is shuffled); 12 of 20 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 20,461 rows of the final frame (random rows: the frame is shuffled); 12 of 20 columns, the target first. Cells are cut at 40 characters.
 
 | Time from Pickup to Arrival | User Id | Rider Id | Platform Type | Personal or Business | Placement - Day of Month | Placement - Weekday (Mo = 1) | Confirmation - Day of Month | Confirmation - Weekday (Mo = 1) | Distance (KM) | Temperature | Precipitation in millimeters |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 1116 | User_Id_3080 | Rider_Id_19 | 3 | Business | 30 | 1 | 30 | 1 | 8 | 22.4 | nan |
-| 1371 | User_Id_2523 | Rider_Id_318 | 3 | Business | 26 | 2 | 26 | 2 | 3 | 31.2 | nan |
-| 1896 | User_Id_393 | Rider_Id_177 | 3 | Business | 18 | 1 | 18 | 1 | 11 | 21.4 | nan |
-| 1213 | User_Id_3221 | Rider_Id_434 | 3 | Business | 21 | 4 | 21 | 4 | 5 | 30.8 | nan |
-| 1328 | User_Id_1835 | Rider_Id_322 | 1 | Personal | 31 | 4 | 31 | 4 | 5 | 21.8 | nan |
+| 790 | User_Id_1237 | Rider_Id_228 | 1 | Personal | 14 | 5 | 14 | 5 | 2 | 18.4 | nan |
+| 1936 | User_Id_3517 | Rider_Id_871 | 3 | Business | 9 | 2 | 9 | 2 | 16 | 27.1 | nan |
+| 408 | User_Id_2267 | Rider_Id_148 | 2 | Personal | 19 | 7 | 19 | 7 | 2 | 21 | nan |
+| 1790 | User_Id_1899 | Rider_Id_548 | 3 | Business | 10 | 1 | 10 | 1 | 13 | nan | nan |
+| 2590 | User_Id_1482 | Rider_Id_863 | 3 | Business | 1 | 1 | 1 | 1 | 18 | nan | nan |
 
 ## Curation notes
 
@@ -199,43 +200,55 @@ We start with Train.csv of the Zindi Sendy Logistics Challenge (21,201 labelled 
 - The two weekdays (1-7) are numbers, a cycle as rossmann's `DayOfWeek` (CLEAN-14; Lennart, 2026-11-04).
   Those of arrival at the pickup and of pickup equal the confirmation's in every row and are dropped as
   copies.
-- `Rider Id` and `User Id` are categorical inputs: the rider and the customer are known at pickup (924
-  riders; per the 2026-10-29 audit of Test.csv, 99.4% of its orders have a rider seen in training; 99.2-99.4%
+- `Rider Id` and `User Id` are categorical inputs: the rider and the customer are known at pickup (922
+  riders; per the 2026-10-29 audit of Test.csv, 99.4% of its orders have a rider seen in training; 99.1-99.4%
   of the test folds' orders do).
 - Dropped: the arrival-at-destination fields (they make the label), the unique `Order No` and the
   constant `Vehicle Type`.
 - Riders.csv stays out: it is not as-of. Per the 2026-10-29 audit, every rider's `No_Of_Orders` is at least
   their orders in Train and Test, so the counts, tenure and ratings were taken after these orders.
-- Anomaly: 547 legs of 10 s or less (2.6%; 740 of 60 s or less) stay as the source's labels (CLEAN-11):
-  riders mark the pickup late, when they arrive
-  (https://zindi.world/learn/meet-the-winners-of-the-sendy-logisitics-challenge). The late mark shows in
-  the inputs: the wait from arrival at the pickup to the pickup mark has a median of 1,505 s on these legs
-  against 475 s on legs over 120 s (1,337 s at 11-60 s, 1,358 s at 61-120 s). In LightGBM on the first
-  repeat they are 4.6% of the squared error, and RMSE on the other legs is 749.3 s against 761.3 s on all.
-  Over the nine splits, a model trained only on legs of 100 s or more loses 11.5 RMSE (744.2 to 755.7), and
-  an explicit wait feature gains 8.5; so the task partly scores spotting late marks, as the competition did.
+- Anomaly: riders mark the pickup late, at the destination, so 547 legs are 10 s or less (2.6%) and 740 are
+  60 s or less. Lennart kept them as the source's labels on 2026-11-04 (CLEAN-11) (superseded 2026-11-05:
+  the 740 leave, CC below). With them, LightGBM on the first repeat put 4.6% of its squared error on the
+  legs of 10 s or less, a model trained only on legs of 100 s or more lost 11.5 RMSE over the nine splits
+  (744.2 to 755.7), and an explicit wait feature gained 8.5: the task partly scored spotting late marks.
+- CC (2026-11-05, Lennart): the 740 pickup legs of 60 s or less leave (issue 4, B; CLEAN-11's clause for a
+  row whose target the source names as not the task's quantity; `MAX_LATE_MARK_SECONDS`, guarded at 740).
+  The winners' page says the rider "forgot to mark that he took the order and did it just before it was
+  delivered" (https://zindi.world/learn/meet-the-winners-of-the-sendy-logisitics-challenge). On these legs
+  the customer already has the parcel and no one acts on the ETA, so a deployed team leaves them out of
+  training and does not judge its model on them. The late tap shows in the inputs: the wait from arrival
+  at the pickup to the pickup mark has a median of 1,505 s on legs of 10 s or less (1,337 s at 11-60 s)
+  against 475 s on legs over 120 s. They are real deliveries (median 2.64 km in a straight line, none
+  within 100 m), so this departs from the task Zindi scored. The 82 legs of 61-120 s stay, though their
+  median wait of 1,358 s says some are late marks too. LightGBM, first repeat: RMSE 761.3 to 742.8 s; nine
+  splits: the wait feature's gain 8.5 to 3.2 (0.0 to 7.8 per split), and training only on legs of 100 s or
+  more now costs 0.2 (733.1 to 733.2). 20,461 orders remain; 2 of the 924 riders leave with them.
 - Order_No_20080 and Order_No_7111 end 89-90 m from their pickup but stay (USE-7): the source distance is
   3 and 4 km and the coordinates are anonymised, so the destination exists. The 100 m radius of nyc, pkdd
   and Lusaka rests on exact coordinates.
-- No row is dropped. The two multi-day orders, Order_No_2800 and Order_No_3530, waited 22.7 and 49.1 h
+- No other row is dropped. The two multi-day orders, Order_No_2800 and Order_No_3530, waited 22.7 and 49.1 h
   for confirmation; their pickup legs, 2,640 and 1,854 s at about 15 km/h, are ordinary. The longest leg
   is 7,883 s, and none passes 3 h.
 - Anomaly: five confirmation clocks precede placement by 1-42 s; kept as recorded.
-- Potential leak, kept on purpose (LEAK-38; Lennart, 2026-11-04): the dictionary reads "Distance covered (KM) -
-  The distance from Pickup to Destination", which a trip records at arrival, while a distance Sendy computes
-  when it prices the order is known at placement; the page does not say which. The data points to the
-  second: 1,708 of the 2,094 repeated identical routes carry the same km, and 275 of the other 386 differ
-  by 1 km; within a route, Distance does not track the label (correlation 0.013); the 547 legs marked at
-  the destination carry the full route distance (median 5 km). So it is not measured between the two
-  marks; a GPS total recorded after delivery is not excluded. It tracks the straight line (correlation
-  0.952) and lowers RMSE from 789.6 to 761.5 s (first repeat). Revisit if a source shows it is the distance
-  travelled.
+- `Distance (KM)`, tested: not measured between the rider's two taps; a GPS total recorded after delivery not
+  excluded (Lennart, 2026-11-05, issue 5, A as (a); it replaces the `Potential leak, kept on purpose` label of
+  2026-11-04; LEAK-38 names it among the kept fields). The dictionary reads "Distance covered (KM) - The
+  distance from Pickup to Destination", which a trip records at arrival, while a distance Sendy computes
+  when it prices the order is known at placement; the page does not say which. On Train.csv's 21,201 orders
+  the data points to the second: 1,708 of the 2,094 repeated identical routes carry the same km, and 275 of
+  the other 386 differ by 1 km; within a route, Distance does not track the label (correlation 0.013); the
+  547 legs marked at the destination carry the full route distance (median 5 km). It tracks the straight
+  line (correlation 0.952) and lowers RMSE from 766.6 to 742.8 s (first repeat; 789.6 to 761.5 before the
+  drop above). The untested part stays a kept risk, named in `fit_reason` (USE-8). Revisit if a source shows
+  it is the distance travelled.
 - Potential leak, kept on purpose (weak, across rows): features a participant builds from the same rider's
   later orders that day (their clocks minus this pickup, the day's order count), which do not exist at
-  pickup, gain 3.4 RMSE against a noise spread of 0.3, positive on 8 of the 9 splits. Our inputs hold no
-  such feature; a rider-day split cannot be built cleanly, since day and weekday merge months.
+  pickup, gain 4.2 RMSE against a noise spread of 0.2, positive on all 9 splits (3.4, 0.3 and 8 of 9 before
+  the drop above). Our inputs hold no such feature; a rider-day split cannot be built cleanly, since day and
+  weekday merge months.
 - Weather is matched to placement by the source, "measured every three hours"; the anonymised values vary
-  within an hour. Missing values stay missing. No recorded precipitation is 0 (552 values, 0.1-99.1 mm),
+  within an hour. Missing values stay missing. No recorded precipitation is 0 (541 values, 0.1-99.1 mm),
   so a blank where a temperature exists most likely means no rain; every row without a temperature also
   lacks precipitation.
 - Metric: the source's RMSE in seconds, with no target transform.
@@ -250,24 +263,38 @@ random evaluation with limited value. Sorting by the number in `Order No` gives 
 0.669% against 0.693% at random over all 28,269 Train/Test orders (the 2026-10-29 audit; 0.627% against
 0.731% on Train alone), so it holds no chronology. Weekday minus day of month (mod 7) gives the weekday each
 month started on: 7 month classes, which no run of calendar months puts in a unique order. Holding out one
-class gives RMSE 750.1 against 748.8 for random folds of the same size, and holding out calendar days 755.1
-against 752.5 on these folds (LightGBM), so same-period orders on both sides barely help. The split is
+class gives RMSE 734.1 against 733.0 for random folds of the same size, and holding out calendar days 737.0
+against 734.9 on these folds (LightGBM; 750.1 against 748.8 and 755.1 against 752.5 before the 2026-11-05
+drop of the short legs), so same-period orders on both sides barely help. The split is
 forced from temporal (SPLIT-8) and does not test future periods. If a later release supplies full dates,
 build chronological windows.
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 14,134 rows, test 7,067 rows.
+3 repeat(s) x 3 fold(s) with seed 4267; train 13,640 to 13,641 rows, test 6,820 to 6,821 rows.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 14134 | 7067 |
-| 0 | 1 | 14134 | 7067 |
-| 0 | 2 | 14134 | 7067 |
-| 1 | 0 | 14134 | 7067 |
-| 1 | 1 | 14134 | 7067 |
-| 1 | 2 | 14134 | 7067 |
-| 2 | 0 | 14134 | 7067 |
-| 2 | 1 | 14134 | 7067 |
-| 2 | 2 | 14134 | 7067 |
+| 0 | 0 | 13640 | 6821 |
+| 0 | 1 | 13641 | 6820 |
+| 0 | 2 | 13641 | 6820 |
+| 1 | 0 | 13640 | 6821 |
+| 1 | 1 | 13641 | 6820 |
+| 1 | 2 | 13641 | 6820 |
+| 2 | 0 | 13640 | 6821 |
+| 2 | 1 | 13641 | 6820 |
+| 2 | 2 | 13641 | 6820 |
+
+## Decisions
+
+### 1. Pickup legs of 60 s or less dropped
+
+The rider marked the pickup at the destination (the winners' page), so the customer already has the parcel and no one acts on the ETA. The late tap shows in the long wait before the pickup mark; the legs are real deliveries, kilometres long. Lennart, 2026-11-05 (CLEAN-11).
+
+| pickup leg | orders | median wait from arrival at the pickup to the pickup mark (s) | median straight line (km) | median Distance (KM) | rows |
+|---|---|---|---|---|---|
+| 1-10 s | 547 | 1505 | 2.64 | 5 | dropped |
+| 11-60 s | 193 | 1337 | 2.48 | 4 | dropped |
+| 61-120 s | 82 | 1357.5 | 2.7 | 5 | kept |
+| over 120 s | 20379 | 475 | 5.55 | 8 | kept |
 
 ## Bundle checks
 
@@ -283,26 +310,26 @@ build chronological windows.
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| User Id | category | 0 | 0 | 3186 | User_Id_393, User_Id_2330, User_Id_3647, User_Id_1500, User_Id_635, User_Id_868… |
-| Rider Id | category | 0 | 0 | 924 | Rider_Id_726, Rider_Id_576, Rider_Id_523, Rider_Id_101, Rider_Id_205, Rider_Id_… |
+| User Id | category | 0 | 0 | 3173 | User_Id_393, User_Id_2330, User_Id_3647, User_Id_635, User_Id_1500, User_Id_329… |
+| Rider Id | category | 0 | 0 | 922 | Rider_Id_726, Rider_Id_576, Rider_Id_523, Rider_Id_101, Rider_Id_205, Rider_Id_… |
 | Platform Type | category | 0 | 0 | 4 | 3, 1, 2, 4 |
 | Personal or Business | category | 0 | 0 | 2 | Business, Personal |
-| Precipitation in millimeters | float64 | 20649 | 97.4 | 54 | 2.0, 1.9, 0.9, 1.1, 3.0, 3.1, 2.1, 2.9, 1.0, 3.9 |
-| Temperature | float64 | 4366 | 20.59 | 188 | 24.7, 22.4, 23.8, 23.7, 24.6, 23.6, 25.2, 22.5, 27.3, 24.5 |
-| Pickup Lat | float64 | 0 | 0 | 3666 | -1.2552, -1.2571, -1.3167, -1.3009, -1.3004, -1.2584, -1.2726, -1.2909, -1.2794… |
-| Pickup Long | float64 | 0 | 0 | 3656 | 36.7822, 36.7951, 36.8302, 36.8282, 36.8297, 36.8048, 36.7947, 36.823, 36.8254,… |
-| Destination Lat | float64 | 0 | 0 | 5302 | -1.3004, -1.2552, -1.2638, -1.2657, -1.2601, -1.2628, -1.2571, -1.3064, -1.2991… |
-| Destination Long | float64 | 0 | 0 | 5267 | 36.8297, 36.7822, 36.793, 36.8238, 36.8089, 36.7818, 36.7951, 36.752, 36.7529, … |
-| Placement - Seconds after midnight | int32 | 0 | 0 | 15686 | 46263, 50779, 53842, 34863, 51851, 37903, 46580, 36829, 52243, 47084 |
-| Confirmation - Seconds after midnight | int32 | 0 | 0 | 15742 | 35812, 56880, 52117, 43379, 56870, 54733, 52866, 43458, 56701, 40898 |
-| Arrival at Pickup - Seconds after midnight | int32 | 0 | 0 | 15767 | 54161, 52324, 46973, 52961, 51011, 35769, 36137, 57698, 50377, 48082 |
-| Pickup - Seconds after midnight | int32 | 0 | 0 | 15690 | 52090, 39200, 40768, 43460, 54391, 44207, 58222, 57099, 58510, 46309 |
-| Placement - Day of Month | int64 | 0 | 0 | 31 | 8, 7, 13, 14, 6, 28, 18, 4, 15, 11 |
+| Precipitation in millimeters | float64 | 19920 | 97.36 | 54 | 2.0, 1.9, 1.1, 0.9, 3.1, 3.0, 2.1, 2.9, 1.0, 0.3 |
+| Temperature | float64 | 4171 | 20.39 | 188 | 22.4, 24.7, 23.8, 23.7, 24.6, 23.6, 22.5, 25.2, 24.0, 24.8 |
+| Pickup Lat | float64 | 0 | 0 | 3638 | -1.2552, -1.2571, -1.3009, -1.3004, -1.3167, -1.2584, -1.2726, -1.2909, -1.2794… |
+| Pickup Long | float64 | 0 | 0 | 3627 | 36.7822, 36.7951, 36.8282, 36.8297, 36.8302, 36.8048, 36.7947, 36.823, 36.8254,… |
+| Destination Lat | float64 | 0 | 0 | 5239 | -1.2552, -1.3004, -1.2657, -1.2601, -1.2628, -1.2571, -1.2638, -1.3064, -1.2584… |
+| Destination Long | float64 | 0 | 0 | 5207 | 36.7822, 36.8297, 36.8089, 36.7818, 36.8238, 36.7951, 36.793, 36.752, 36.8048, … |
+| Placement - Seconds after midnight | int32 | 0 | 0 | 15298 | 50779, 37903, 46263, 51851, 56159, 42352, 52407, 52794, 34863, 37796 |
+| Confirmation - Seconds after midnight | int32 | 0 | 0 | 15329 | 35812, 38311, 52117, 40898, 43458, 55253, 52866, 37088, 57972, 51372 |
+| Arrival at Pickup - Seconds after midnight | int32 | 0 | 0 | 15357 | 46973, 54161, 52961, 35360, 58526, 52205, 44213, 53564, 43639, 56422 |
+| Pickup - Seconds after midnight | int32 | 0 | 0 | 15289 | 43460, 40768, 52090, 47975, 46309, 47500, 56837, 37412, 47159, 39200 |
+| Placement - Day of Month | int64 | 0 | 0 | 31 | 8, 13, 7, 14, 6, 28, 4, 18, 15, 11 |
 | Placement - Weekday (Mo = 1) | int64 | 0 | 0 | 7 | 4, 5, 2, 3, 1, 6, 7 |
-| Confirmation - Day of Month | int64 | 0 | 0 | 31 | 8, 7, 13, 14, 6, 28, 18, 4, 15, 11 |
+| Confirmation - Day of Month | int64 | 0 | 0 | 31 | 8, 13, 7, 14, 6, 28, 4, 18, 15, 5 |
 | Confirmation - Weekday (Mo = 1) | int64 | 0 | 0 | 7 | 4, 5, 2, 3, 1, 6, 7 |
-| Distance (KM) | int64 | 0 | 0 | 45 | 8, 5, 6, 4, 7, 9, 10, 3, 11, 14 |
-| Time from Pickup to Arrival | int64 | 0 | 0 | 4067 | 2, 3, 4, 5, 7, 1, 6, 8, 10, 1424 |
+| Distance (KM) | int64 | 0 | 0 | 45 | 8, 5, 6, 7, 4, 9, 10, 3, 11, 14 |
+| Time from Pickup to Arrival | int64 | 0 | 0 | 4015 | 1424, 885, 1057, 1097, 1169, 917, 943, 1142, 1046, 705 |
 
 </details>
 
@@ -310,7 +337,7 @@ build chronological windows.
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 0 | 1.202 | -3.29 | 974704 | 1.425 | log | 354078 | 600564 | exponential |
+| 0 | 0 | 0 | 1.334 | -0.635 | 920259 | 0.397 | log | 343196 | 346330 | exponential |
 
 ### Numeric features
 
@@ -319,22 +346,22 @@ build chronological windows.
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| Placement - Day of Month | 21201 | 15.6537 | 8.79892 | 1 | 31 |
-| Placement - Weekday (Mo = 1) | 21201 | 3.24008 | 1.5673 | 1 | 7 |
-| Confirmation - Day of Month | 21201 | 15.6538 | 8.79889 | 1 | 31 |
-| Confirmation - Weekday (Mo = 1) | 21201 | 3.24022 | 1.56723 | 1 | 7 |
-| Distance (KM) | 21201 | 9.50653 | 5.66896 | 1 | 49 |
-| Temperature | 16835 | 23.2589 | 3.61577 | 11.2 | 32.1 |
-| Precipitation in millimeters | 552 | 7.9058 | 17.09 | 0.1 | 99.1 |
-| Pickup Lat | 21201 | -1.28147 | 0.0305071 | -1.4383 | -1.14717 |
-| Pickup Long | 21201 | 36.8113 | 0.0374726 | 36.6536 | 36.991 |
-| Destination Lat | 21201 | -1.28258 | 0.0348236 | -1.4303 | -1.03023 |
-| Destination Long | 21201 | 36.8112 | 0.0447206 | 36.6066 | 37.0168 |
-| Time from Pickup to Arrival | 21201 | 1556.92 | 987.271 | 1 | 7883 |
-| Placement - Seconds after midnight | 21201 | 46182.7 | 9090.21 | 436 | 82021 |
-| Confirmation - Seconds after midnight | 21201 | 46615.9 | 9139.33 | 515 | 82762 |
-| Arrival at Pickup - Seconds after midnight | 21201 | 47392.4 | 9146.49 | 731 | 83400 |
-| Pickup - Seconds after midnight | 21201 | 48136.6 | 9131.67 | 2992 | 83621 |
+| Placement - Day of Month | 20461 | 15.6428 | 8.79106 | 1 | 31 |
+| Placement - Weekday (Mo = 1) | 20461 | 3.24109 | 1.56866 | 1 | 7 |
+| Confirmation - Day of Month | 20461 | 15.643 | 8.79103 | 1 | 31 |
+| Confirmation - Weekday (Mo = 1) | 20461 | 3.24124 | 1.56859 | 1 | 7 |
+| Distance (KM) | 20461 | 9.61825 | 5.67248 | 1 | 49 |
+| Temperature | 16290 | 23.216 | 3.61702 | 11.2 | 32.1 |
+| Precipitation in millimeters | 541 | 8.00148 | 17.2456 | 0.1 | 99.1 |
+| Pickup Lat | 20461 | -1.28128 | 0.0306 | -1.4383 | -1.14717 |
+| Pickup Long | 20461 | 36.8111 | 0.037755 | 36.6536 | 36.991 |
+| Destination Lat | 20461 | -1.28263 | 0.0351035 | -1.4303 | -1.03023 |
+| Destination Long | 20461 | 36.8113 | 0.0450358 | 36.6066 | 37.0168 |
+| Time from Pickup to Arrival | 20461 | 1612.87 | 959.301 | 62 | 7883 |
+| Placement - Seconds after midnight | 20461 | 46154.9 | 9086.43 | 23742 | 82021 |
+| Confirmation - Seconds after midnight | 20461 | 46591.9 | 9137.94 | 24497 | 82762 |
+| Arrival at Pickup - Seconds after midnight | 20461 | 47379 | 9144.12 | 25542 | 83400 |
+| Pickup - Seconds after midnight | 20461 | 48087.8 | 9129.63 | 26360 | 83621 |
 
 </details>
 
@@ -345,22 +372,22 @@ build chronological windows.
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| Personal or Business | 1 | Business | 17384 | 82 |
-| Personal or Business | 2 | Personal | 3817 | 18 |
-| Platform Type | 1 | 3 | 18054 | 85.16 |
-| Platform Type | 2 | 1 | 2147 | 10.13 |
-| Platform Type | 3 | 2 | 980 | 4.62 |
-| Platform Type | 4 | 4 | 20 | 0.09 |
-| Rider Id | 1 | Rider_Id_726 | 247 | 1.17 |
-| Rider Id | 2 | Rider_Id_576 | 223 | 1.05 |
-| Rider Id | 3 | Rider_Id_523 | 199 | 0.94 |
-| Rider Id | 4 | Rider_Id_101 | 183 | 0.86 |
-| Rider Id | 5 | Rider_Id_205 | 182 | 0.86 |
-| User Id | 1 | User_Id_393 | 645 | 3.04 |
-| User Id | 2 | User_Id_2330 | 322 | 1.52 |
-| User Id | 3 | User_Id_3647 | 312 | 1.47 |
-| User Id | 4 | User_Id_1500 | 301 | 1.42 |
-| User Id | 5 | User_Id_635 | 290 | 1.37 |
+| Personal or Business | 1 | Business | 16661 | 81.43 |
+| Personal or Business | 2 | Personal | 3800 | 18.57 |
+| Platform Type | 1 | 3 | 17333 | 84.71 |
+| Platform Type | 2 | 1 | 2133 | 10.42 |
+| Platform Type | 3 | 2 | 975 | 4.77 |
+| Platform Type | 4 | 4 | 20 | 0.1 |
+| Rider Id | 1 | Rider_Id_726 | 245 | 1.2 |
+| Rider Id | 2 | Rider_Id_576 | 219 | 1.07 |
+| Rider Id | 3 | Rider_Id_523 | 192 | 0.94 |
+| Rider Id | 4 | Rider_Id_101 | 182 | 0.89 |
+| Rider Id | 5 | Rider_Id_205 | 181 | 0.88 |
+| User Id | 1 | User_Id_393 | 517 | 2.53 |
+| User Id | 2 | User_Id_2330 | 306 | 1.5 |
+| User Id | 3 | User_Id_3647 | 299 | 1.46 |
+| User Id | 4 | User_Id_635 | 280 | 1.37 |
+| User Id | 5 | User_Id_1500 | 277 | 1.35 |
 
 </details>
 
@@ -375,4 +402,4 @@ build chronological windows.
 | data_foundry_version | 0.0.5 |
 | git_sha | b58e9ac9185941edb42d19f681fe534aad8ec734 |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:79abd72e44c803358d2ca555e9f31f2e980a5fd5716257eba982ad5c5a05d8cf` |
+| stale | yes: the definition now gives checksum `v2:b0346b23f3e7b0419efe52440ea42afaa3105d065cb53315d00fba8eb16c0d34` |

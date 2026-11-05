@@ -81,6 +81,12 @@ history.
    [^clean19]: **CLEAN-19** (Should): we build a feature when one of its grounds holds, here "restores meaning the
      source destroyed".
 
+   **Resolved (2026-11-05, Lennart):** A. `minutes_early` (scheduled slot minus arrival, in minutes; positive is early)
+   is an input, derived in `_clean` before the scheduled time leaves: 88 predictors. The slots sit on a 15-minute grid,
+   so they are booked before arrival. LightGBM on the nine windows, two seeds: MAE 15.29 without it, 13.56 with it
+   (-11.3%, lower in 18 of 18 fits); the leak probe finds no leak (alone R² 0.516, as its mechanism predicts). Cases
+   rows under USE-6 and CLEAN-19.
+
 7. **Does the evaluator predict each test visit on its own?**
 
    * **Problem:**
@@ -126,6 +132,28 @@ history.
      stored values depend on the test rows.
    [^leak34]: **LEAK-34** (Must; narrows LEAK-10): an entity's own history under a temporal split is legitimate.
 
+   **Lennart (2026-11-05, ok):** We investigate models, and would find out if they do transductive learning which we can
+   call out and not benchmark
+
+   **Consistency check (AI, 2026-11-05):** this is the third dataset, after sepsis_prediction_1m and
+   5g_energy_consumption, where LEAK-9's "fixed in the scoring" (Should) is met by a protocol line, while LEAK-9's own
+   case still says sepsis "needs a scorer change". Three of a kind make an amendment due (principles, "Exceptions and
+   amendments").
+   - (a) record an exception here, with the fact that the benchmark checks models for use of the test block;
+   - (b) plan the per-row scorer after all;
+   - (c) amend LEAK-9: an evaluation leak is fixed in the scoring or by a protocol line the benchmark checks; a method
+     that learns from the test block is called out and not benchmarked (your note; the AI's suggestion).
+
+   Give the letter in the note; nothing is applied until then.
+
+   **Lennart (2026-11-05, ok):** Reply (c): amend LEAK-9: an evaluation leak is fixed in the scoring or by a protocol
+   line the benchmark checks; a method…
+
+   **Resolved (2026-11-05, Lennart):** (c). LEAK-9 is amended: an evaluation leak is fixed in the scoring or by a
+   protocol line the benchmark checks, and a method that learns from the test block is called out and not benchmarked
+   (your words in the rule); BENCHMARK_CHANGES_TODO.md has the check. The decode is still large on the new windows: the
+   task gamer's features take MAE from 13.85 to 6.83.
+
 11. **Keep the schedule fields that reflect the final schedule?**
 
    * **Problem:**
@@ -156,6 +184,27 @@ history.
      **Decision:** keep with the note (A), or drop the nine fields (B)?
 
    [^leak10]: **LEAK-10** (Must), the clause of 2026-10-26 on values read at a later pull.
+
+   **Consistency check (AI, 2026-11-05):** keeping the nine schedule fields applies LEAK-10's clause on values pulled
+   late (Must, 2026-10-26) without a test of the part that can be traced: whole fields are worth +0.08 to +0.16 MAE
+   against seed noise of 0.07, and the clause keeps such values "only when the part that can be traced shows none", a
+   removal test alone being no reason to keep. distribution_transformers_at_cauca_department (2026-10-21) dropped fields
+   where a gain could sit on the changed rows. What sets this apart?
+   - (a) the whole-field worth is an upper bound on the late part and sits within about two seed SDs, so the late part
+     shows no gain: recorded as an application, with a Cases row;
+   - (b) drop the nine fields;
+   - (c) measure the traceable part first;
+   - (d) amend the clause: a whole-field bound within seed noise counts as no gain.
+
+   Give the letter in the note; nothing is applied until then.
+
+   **Lennart (2026-11-05, ok):** Reply (a): the whole-field worth is an upper bound on the late part and sits within
+   about two seed SDs, so the late part…
+
+   **Resolved (2026-11-05, Lennart):** (a), as an application of LEAK-10's late-pull clause with a Cases row. On the new
+   windows dropping the nine fields costs +0.05 MAE with the L1 model (seed SD about 0.05), but +0.14 with the probe's
+   L2 model (`AheadCount` alone +0.11), about 2-3 seed SDs; the note and the row give both, and the reading "no gain"
+   holds for L1 only. Say if that changes your call.
 
 8. **Keep the 42-53-day test windows instead of the source's two weeks?**
 
@@ -193,6 +242,24 @@ history.
      50% of the data.
    [^p6]: **P6**, worth benchmarking: not trivial, not too small, every fold can be scored.
 
+   **Answer (AI, 2026-11-05):** two-week windows it is; one question before the re-cut: how many windows?
+   - (a) tile the test period with contiguous 14-day windows, as rain_in_australia did (2026-10-26, SPLIT-15): about 25
+     windows;
+   - (b) nine 14-day windows, one at the start of each current window: the same number of folds, about a third of the
+     test visits.
+
+   Either way the training side stays expanding (the source trained on six months), the day key goes into `_clean` (the
+   time column is arrival steps, so the check on `_make_splits` changing time applies), the 50% training floor is
+   checked, and the exception to SPLIT-19 is no longer needed. Give (a) or (b) in the note.
+
+   **Lennart (2026-11-05, change):** Reply (b): nine 14-day windows, one at the start of each current window: the same
+   number of folds, about a third of the … Option B: Two-week windows.
+
+   **Resolved (2026-11-05, Lennart):** B, with (b). Nine 14-day windows, each from the first day at or after the start
+   of an old window (starting a day earlier put the oldest window at 49.9% training); training shares 50.1-94.6%, the
+   training side expanding; 12,408 test visits (40,995 before). The day key is built in `_clean`. LightGBM MAE 13.56 to
+   13.70. The exception to SPLIT-19 is dropped (the source tests on two weeks); a Cases row.
+
 9. **Widen the kept-on-purpose rule to named fields of undocumented timing?**
 
    * **Problem:**
@@ -225,6 +292,34 @@ history.
    [^case4]: principles.md, "Consistent judgement", case 4: the same reason has produced its third exception.
    [^leak10b]: **LEAK-10** (Must): a feature holds only what existed at the prediction point.
 
+   **Lennart (2026-11-05, change):** Option D: Widen the rule.
+
+   **Consistency check (AI, 2026-11-05):** an amendment of LEAK-38 is due: the named host fields kept under it are now
+   african_credit_scoring_challenge, sendy_logistics_challenge, this dataset and tunisian_fraud_detection_challenge. Two
+   points before the wording:
+   - perth_house_prices and house_sales are no LEAK-38 cases: their timing is known to be late, so LEAK-10's clauses on
+     looked-up values decide them;
+   - tunisian issue 5 (B) amends the same rule with other wording, and its check is open; one amendment should cover
+     both.
+
+   Proposed wording: "Fields that may be post-outcome, anonymised or named, whose timing the source leaves undocumented
+   and no test can establish, in data the data owner released for its own competition or challenge, stay, with a
+   `Potential leak, kept on purpose:` note giving the mechanism, the numbers, why they stay and when to revisit, and are
+   named in `fit_reason` as kept." Which scope?
+   - (a) this wording, which keeps the condition that the data owner released it for its own challenge;
+   - (b) the note's wording, for fields from any source (it would also keep late lookups that LEAK-10 drops, as in
+     distribution_transformers_at_cauca_department);
+   - (c) wait for tunisian issue 5's letter first.
+
+   Give the letter in the note; nothing is applied until then.
+
+   **Lennart (2026-11-05, change):** Reply (a): this wording, which keeps the condition that the data owner released it
+   for its own challenge Option D: Widen the rule.
+
+   **Resolved (2026-11-05, Lennart):** D, with (a). LEAK-38 is amended (one amendment with tunisian issue 5; the
+   owner-challenge condition kept) and names the expected-delay table; `fit_reason` names it as kept. Dropping it
+   changes MAE by -0.005 on the new windows.
+
 10. **Set the zeros that stand for empty sets to missing?**
 
    * **Problem:**
@@ -254,6 +349,14 @@ history.
    [^clean10]: **CLEAN-10** (Should): convert proxy missing values to real missing values when the encoding can be
      inferred from the description and the context.
    [^p7]: **P7**, the expert state: cleaned as an expert would ship it, minimal and documented.
+
+   **Resolved (2026-11-05, Lennart):** B. The zeros the source writes for summaries of an empty set are missing: 186,047
+   cells in 16 columns, each by the condition the data supports (an empty line; no exam completed today, or fewer than k
+   for `MostRecentk`; no exam begun before arrival for `AvgDelayForDay`; no exam begun in the window for
+   `AvgWaitLastW*`). `Sum*` stays 0. `AvgWaitLastK1-3` average the last 5/10/15 exams, not 2/4/8 as the notes said
+   (corrected), so they are blank only when none is completed. LightGBM MAE 13.565 with the zeros, 13.577 without (lower
+   in 9 of 18 fits): no measurable change. A CLEAN-10 Cases row; `dataset check` clean, leak probes without a new flag.
+   Not included: `mintime` and `maxtime`, also 0 when no exam is in progress (11,888 rows); say if they should follow.
 
 
 **Review panel:** ship after changes (mediator). Tier full, second pass after Lennart's review of PR #33 on 2026-11-04. Claims: 44 (40 numbered, 4 implied); 31 hold, 7 refuted in whole or in part (wording, the licence, the metric's reference and the patient's offset; fixed in the notes or put to Lennart as issue 6), 6 untested (the 2026-10-26/28 panel and replay claims, and how the estimates were made). Blind review: would include with small changes; its main concern, `arrival_order` as a feature, is answered by CLEAN-3 (known at arrival, +0.08 MAE without it). Task gamer: reading the later test rows of a window rebuilds earlier targets, MAE 15.57 to 8.70 (-44%, all 9 splits), now a LEAK-9 note and protocol line (issue 7). Agreed: ship after changes; F1-F3 only, the temporal split, MAE, the kept expected-delay table, `arrival_order` stays. Disputed: LEAK-9 against LEAK-5 for the test-row decode (settled as LEAK-9; the evaluator guarantee is issue 7), and whether the patient's offset must be added or the summary reworded (USE-6, USE-8, USE-9; issue 6). The mediator's issues 1-4 are issues 6-9 here; the schedule-field keep is issue 11.

@@ -28,6 +28,14 @@ of age 99 that next_year_rows pairs with a next-year row are all 100 there."""
 BLOCK = 1_000_000
 """IDpol runs in seven blocks of a million (1-179,639 up to 6,000,016-6,114,330)."""
 
+LAST_LATE_BONUS_MALUS_BLOCK = 4
+"""BonusMalus looks recorded after the row's own claims in IDpol blocks 0-4 (597,998 rows) and like a value taken at the
+start of the year in blocks 5-6: blanked in blocks 0-4 (notes)."""
+
+DEFAULT_DRIVER_AGE = 99
+"""DrivAge 99 in block 0 (66 rows) is a default code: 1 row at 96 and none at 97-98 there, block 1 has no driver older
+than 97, and none of the 66 has a next-year row (62.7% of block 0 has one)."""
+
 
 def _ids(column: pd.Series) -> np.ndarray:
     """IDpol, a factor of numbers in the rda files, as integers."""
@@ -71,19 +79,25 @@ class Fremtpl2(AbstractCuratedDataset):
         ),
         predicted="The number of claims with a recorded cost in that period (0 to 16; 96.3% have none).",
         known=(
-            "The car's power, age, brand and fuel, the driver's age, the bonus-malus level, the density, area and "
-            "region of residence, and the time insured in the year, which may reflect a cancellation later in it."
+            "The car's power, age, brand and fuel, the driver's age, the bonus-malus level (in 12% of the records), "
+            "the density, area and region of residence, and the time insured in the year, which may reflect a "
+            "cancellation later in it."
         ),
         split=(
             "Random policy records are held out, standing for comparable policies of the same portfolio and years; the "
             "release has no dates, and a policy's record of another year can be on the training side."
         ),
-        changes="",
+        changes=(
+            "We blank the bonus-malus level in the first five policy-number ranges (88% of the records), where it looks "
+            "recorded after the year's own claims, and set default codes of car age (99, 100) and driver age (99, in the "
+            "first range) to missing."
+        ),
         fit="approximate",
         fit_reason=(
             "The rating factors and the claim counts mirror pricing a policy, but the release has no calendar dates, "
             "so a later year cannot be held out as an insurer would (forced from temporal). Realized exposure is "
-            "kept on purpose although it can reflect a later cancellation. The insurer is unknown."
+            "kept on purpose although it can reflect a later cancellation. The insurer is unknown. The bonus-malus "
+            "level is blank in 88% of records. A model reading other rows can find a next-year record (kept)."
         ),
     )
 
@@ -132,12 +146,17 @@ class Fremtpl2(AbstractCuratedDataset):
         - Not capped: the 8 policies with 5 to 16 claims (Noll et al.'s code caps at 4, "that might be data error", FreMTPL_1b load data.r line 30; Wüthrich and Merz drop them as "may be data error", Sec. 13.1) each have as many claims with a cost. Exposure above one year (1,224 rows, up to 2.01, IDpol blocks 1 and 2 only), capped at 1 by both, stays: the help page says only "mostly on one year", so it is unusual, not shown impossible (CLEAN-11).
         - Counts of 5 to 16 (Lennart, 2026-11-04: kept): seven of the eight policies are one profile (power 4, brand B1, area D, density 824, Languedoc-Roussillon, bonus-malus 50): 72 claims over 3.63 years, every claim with a positive cost, which Wüthrich and Merz suspect to be one driver or a rental fleet. A cap is a modelling choice of the literature, not a shown error, and the 2022 update ties each count to a costed claim; the 19 rows carry 0.0012 of the mean deviance 0.2534.
         - Exposure above one year (Lennart, 2026-11-04: kept): 1,224 rows of 1.01 to 2.01 years (median 1.04) in two policy ranges, IDpol 1,179,653-1,199,005 (961 rows) and the end of block 2 (263), which record a whole contract period rather than cutting at the accounting year and have no links to other years. The literature caps at 1 on the assumption that every policy lies inside one year, which these rows contradict; capping would raise their modelled rate by 11% on average. Exposure is the time at risk.
-        - Potential leak, kept on purpose: Exposure, the share of the year insured, is shorter when the policy ended during the year, so it can record a later cancellation. It stays as the exposure the source puts into the expected count, as in bemtpl97. Claims proportional to it score 0.2534 against 0.2595 for the mean count (0.0061, the time at risk), and LightGBM on all inputs 0.2326 (3 random folds). Beyond a log(Exposure) offset, Exposure as a free feature is worth another 0.0039 to 0.0045 of mean deviance (14-19% of LightGBM's gain over the mean count, 3 folds), and a Poisson GLM on the rating factors gives log(Exposure) a coefficient of 0.641 where an offset would be 1: that excess is the size of the kept leak. Part of it is renewals during the year recorded as two records (Wüthrich and Merz, Sec. 13.1). Revisit if policy dates become available.
+        - Potential leak, kept on purpose: Exposure, the share of the year insured, is shorter when the policy ended during the year, so it can record a later cancellation. It stays as the exposure the source puts into the expected count, as in bemtpl97. Claims proportional to it score 0.2534 against 0.2595 for the mean count (0.0061, the time at risk), and LightGBM on all inputs 0.2326 (3 random folds; 0.2435 after the BonusMalus blanking of 2026-11-05). Beyond a log(Exposure) offset, Exposure as a free feature is worth another 0.0039 to 0.0045 of mean deviance (14-19% of LightGBM's gain over the mean count, 3 folds; 0.0033 to 0.0047 and 21-30% after the blanking), and a Poisson GLM on the rating factors gives log(Exposure) a coefficient of 0.641 where an offset would be 1: that excess is the size of the kept leak. Part of it is renewals during the year recorded as two records (Wüthrich and Merz, Sec. 13.1). Revisit if policy dates become available.
         - Metric: the mean Poisson deviance of ClaimNb against the expected count, by which Noll, Salzmann and Wüthrich compare models in and out of sample (FreMTPL_1b load data.r line 35, 100 times the mean) and Wüthrich and Merz's out-of-sample loss (Sec. 5.2.4). The shared scorer floors a predicted mean at `min_prediction` 1e-6 (Lennart, 2026-11-04, on bemtpl97).
-        - Dtypes: Area ordered A (rural) to F (urban centre) as the help page defines it, bands of Density; VehBrand, VehGas and Region (22 regions before 2016) nominal; the rest numbers. IDpol dropped. A car age of 99 or 100 (48 rows) is a default date, as no car is 86 to 98 and the 14 of the 23 aged 99 that next_year_rows pairs are all 100 a year later: missing (CLEAN-10). Anomaly: a driver age of 99 has 70 rows against 5 at 98, kept as possible; 66 of them are in block 0, after 1 row at 96 and none at 97-98, and none of the 66 has a next-year row (62.7% of block 0 has one).
-        - Copies kept: every IDpol is distinct; 28,768 rows copy an earlier row (40,903 rows sit in groups of equal rows), neighbouring IDpols often share all rating factors, and at least half the rows of blocks 1, 3, 5 and 6 (48.7%, 48.3%, 49.2%, 60.3%) repeat a car of the block before with the driver a year older (decision table: 161,883 pairs, against 16 to 75 under shuffled or shifted controls), with no key the source states. These shares are lower bounds: a wider IDpol offset finds up to 75.3% in block 6. Chaining these pairs with neighbouring IDpols that share every rating factor gives 430,298 groups. For a model that scores one row at a time, grouping on them moves LightGBM skill over the portfolio frequency from 0.0821 to 0.0819 (3 folds each). A model that reads other rows can do more: for 16% of test rows the policy's next-year row is on the training side, the shipped columns single it out for 55% of linked rows, and its claim count and exposure are worth 0.0021 of mean deviance (0.0002 without BonusMalus).
-        - Split forced IID from temporal (ForcedIIDFromTemporal, SPLIT-8): an insurer fits on past years and prices the next. The blocks 0-1, 2-3 and 4-6 are read as consecutive periods of three sub-portfolios, with two caveats: from block 0 to 1 and 2 to 3 the bonus-malus barely moves (94.5% unchanged from 0 to 1, where the French system lowers it after every claim-free year), and in blocks 4-6 0.2% of linked rows cover a full year and 63-66% of linked pairs have exposures summing to at most 1.01, so they look like one contract year split across accounting years. Tested on blocks 1, 3 and 6 after training on blocks 0, 2, 4 and 5, LightGBM's mean deviance on those rows is 0.23316 against 0.23267 for the same rows under the shipped folds (+0.00049, SE 0.00016): the IID split is slightly optimistic, and the ranking against a Poisson GLM is unchanged. Recover the years if a release has them.
+        - Dtypes: Area ordered A (rural) to F (urban centre) as the help page defines it, bands of Density; VehBrand, VehGas and Region (22 regions before 2016) nominal; the rest numbers. IDpol dropped. A car age of 99 or 100 (48 rows) is a default date, as no car is 86 to 98 and the 14 of the 23 aged 99 that next_year_rows pairs are all 100 a year later: missing (CLEAN-10). Anomaly: a driver age of 99 has 70 rows against 5 at 98, kept as possible (superseded 2026-11-05: the 66 in block 0 are missing, CC below); 66 of them are in block 0, after 1 row at 96 and none at 97-98, and none of the 66 has a next-year row (62.7% of block 0 has one).
+        - Copies kept: every IDpol is distinct; 28,768 rows copy an earlier row (40,903 rows sit in groups of equal rows; 30,987 and 43,947 after the BonusMalus blanking), neighbouring IDpols often share all rating factors, and at least half the rows of blocks 1, 3, 5 and 6 (48.7%, 48.3%, 49.2%, 60.3%) repeat a car of the block before with the driver a year older (decision table: 161,883 pairs, against 16 to 75 under shuffled or shifted controls), with no key the source states. These shares are lower bounds: a wider IDpol offset finds up to 75.3% in block 6. Chaining these pairs with neighbouring IDpols that share every rating factor gives 430,298 groups. For a model that scores one row at a time, grouping on them moves LightGBM skill over the portfolio frequency from 0.0821 to 0.0819 (3 folds each). A model that reads other rows can do more: for 16% of test rows the policy's next-year row is on the training side, the shipped columns single it out for 55% of linked rows, and its claim count and exposure are worth 0.0021 of mean deviance (0.0002 without BonusMalus) (corrected 2026-11-05: 0.0021 is the oracle that also reads the next-year row's bonus-malus ratio, 0.0020 re-measured; claim count and exposure alone are worth 0.0003; after the blanking the full oracle is worth 0.0008, 3 folds).
+        - Split forced IID from temporal (ForcedIIDFromTemporal, SPLIT-8): an insurer fits on past years and prices the next. The blocks 0-1, 2-3 and 4-6 are read as consecutive periods of three sub-portfolios, with two caveats: from block 0 to 1 and 2 to 3 the bonus-malus barely moves (94.5% unchanged from 0 to 1, where the French system lowers it after every claim-free year), and in blocks 4-6 0.2% of linked rows cover a full year and 63-66% of linked pairs have exposures summing to at most 1.01, so they look like one contract year split across accounting years. Tested on blocks 1, 3 and 6 after training on blocks 0, 2, 4 and 5, LightGBM's mean deviance on those rows (BonusMalus in all rows) is 0.23316 against 0.23267 for the same rows under the shipped folds (+0.00049, SE 0.00016): the IID split is slightly optimistic, and the ranking against a Poisson GLM is unchanged. Recover the years if a release has them.
         - Year 2014: the tables entered CASdatasets on 14 October 2014 (`pkg/inst/NEWS` at CASdatasets commit 324c15c999; the NEWS.md of the pinned commit does not list them); the first release holding them is not pinned. Source: "Unknown private insurer".
+        - CC (2026-11-05, Lennart): BonusMalus blanked in IDpol blocks 0-4 (597,998 rows, 88.2%), where it looks recorded after the row's own claims (issue 5, B; LEAK-10, LEAK-7). There it is frozen from block 0 to 1 and 2 to 3 and claimants pile on the first malus step 62-63; in blocks 5-6 it follows the previous year's claims, as a start-of-year value does, and stays, as in zillow_prize, melbourne_housing_market and online_shoppers. bemtpl97 keeps its bm: its source says "The risk factors are registered at the start of the policy period" (binning manuscript, Sec. 2), the freMTPL2 help page says nothing of the kind, and the 2026-11-04 call that the two are treated alike covered the split and the fit. LightGBM Poisson, Exposure a free feature, shipped folds (3): mean deviance 0.2327 before, 0.2435 after (+0.0127 in blocks 0-3, -0.0013 in blocks 5-6); dropping the column too costs 0.0009 more in blocks 5-6.
+        - CC (2026-11-05, Lennart): DrivAge 99 set to missing in block 0 (66 rows), a default code like VehAge 99 (issue 9, B; CLEAN-10). None of the 66 has a next-year row, so the missing value marks the same rows the 99 did. The 4 rows at 99 outside block 0 stay at 99: next_year_rows pairs the one in block 3 with a block-2 row at 98, and two of the three in block 4 with block-5 rows at 100.
+        - CC (2026-11-05, Lennart): the split stays IID (`ForcedIIDFromTemporal`) for now (issue 7, B): prior work on freMTPL2 uses a random hold-out or a split grouped on identical rating factors, and none links records across years; revisit if the inferred policy chains become a recorded key.
+        - CC (2026-11-05, Lennart): the label-free renewal signal stays (issue 8, as implemented, answered (a)): it is an evaluation leak, read from other rows, handled by LEAK-9 as amended on 2026-11-05 (a protocol line the benchmark checks; a method that learns from the test block is called out and not benchmarked), as medical_facility_operational_data. After issue 5 a model that reads the next-year record gains 0.0008 mean deviance (0.0009-0.0010 without `BonusMalus`).
+        - CC (2026-11-05, Lennart): exposure is parked (issue 6; https://github.com/TabArena/data-foundry/issues/51) until the zero-inflated stack (PRs #44-#47) is merged; the declared metric and bemtpl97's issue 1 wait with it.
     """
 
     accepted_check_warnings = {
@@ -146,8 +165,9 @@ class Fremtpl2(AbstractCuratedDataset):
             "and the repetition is the portfolio (Lennart, 2026-11-04)."
         ),
         "dataset_conflicting_duplicate_rows": (
-            "390 rows share every factor with another policy but differ in claim count: claims are rare, random events "
-            "of identical risk profiles, not noise (Lennart, 2026-11-04)."
+            "520 rows (390 before BonusMalus was blanked in blocks 0-4) share every factor with another policy but "
+            "differ in claim count: claims are rare, random events of identical risk profiles, not noise (Lennart, "
+            "2026-11-04)."
         ),
         "task_target_value_dominant": "96% of the policies have no claim: real no-claim policies, the nature of claim frequency.",
     }
@@ -209,6 +229,12 @@ class Fremtpl2(AbstractCuratedDataset):
             df[column] = df[column].astype("int64")
         # A car age of 99 or 100 years is a default registration date, not an age (notes): missing, the row stays.
         df["VehAge"] = df["VehAge"].astype("float64").mask(df["VehAge"].ge(DEFAULT_VEHICLE_AGE))
+        # Both masks read the IDpol block, so they run before IDpol is dropped.
+        block = df["IDpol"] // BLOCK
+        # BonusMalus in blocks 0-4 looks recorded after the row's own claims (notes, LEAK-10): blanked there.
+        df["BonusMalus"] = df["BonusMalus"].astype("float64").mask(block.le(LAST_LATE_BONUS_MALUS_BLOCK))
+        # A driver age of 99 in block 0 is a default code, as VehAge 99 is (notes); the 4 rows at 99 elsewhere stay.
+        df["DrivAge"] = df["DrivAge"].astype("float64").mask(block.eq(0) & df["DrivAge"].eq(DEFAULT_DRIVER_AGE))
         return drop_columns(df, ["IDpol", "sev_claims"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

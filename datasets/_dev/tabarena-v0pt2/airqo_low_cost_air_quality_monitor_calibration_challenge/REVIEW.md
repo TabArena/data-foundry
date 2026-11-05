@@ -17,10 +17,6 @@ in the definition are fixed (EV-7). Weighed: three sites (-), a real named use (
 keep the Makerere test-window spike as a label (2), drop the Nakawa reference outage (3), one dead-channel rule for
 both sensors (4).
 
-**Record fields that disagree with the definition:**
-
-- `required_split`: record `Random (IID)`, definition `Temporal (NON-IID)`.
-
 **Issues for Lennart:**
 
 1. **Widen the test windows beyond the dry season?**
@@ -78,6 +74,13 @@ both sensors (4).
    [^split21]: **SPLIT-21** (Must): decide neither the training history nor the windows from a comparison over a few
      test windows.
 
+   **Lennart (2026-11-05, change):** Option A: Five monthly windows from October 2020.
+
+   **Resolved (2026-11-05, Lennart):** A. Five monthly windows, October 2020 to February 2021 (training shares 57-92%);
+   `required_split` in the record is Temporal. Untuned LightGBM mean RMSE 16.69 (27.5 / 16.8 / 12.5 / 13.0 / 13.6,
+   February first) against a training mean of 36.70; a random forest 16.18. Nakawa enters October with only 63 hours of
+   history (19-23 September), noted under USE-10. Your call of 2026-11-04 is marked superseded. A SPLIT-20 Cases row.
+
 2. **Keep the Makerere spike in the February test window as a label?**
 
    * **Problem:**
@@ -116,6 +119,33 @@ both sensors (4).
    [^clean11]: **CLEAN-11** (Should; weak P4), training-period clause: a single extreme target leaves from the
      training period only; in a test window a target leaves only when it is impossible.
 
+   **Lennart (2026-11-05, ok):** Given that we simulate the task and we htink the value is worng, we wnat to remove it
+   from the full dataset and keep it as it is
+
+   **Consistency check (AI, 2026-11-05):** keeping the spike drop departs from the training-period clause of CLEAN-11 (a
+   target in a test window leaves only when it is impossible) and from mercedes_benz_greener_manufacturing (2026-10-21,
+   training side only). Under issue 1 A all five dropped hours become test labels (the four Nakawa hours in October and
+   Makerere in February), while four look-alike hours in the December and January windows and USEmbassy's 459.0 stay.
+   What sets it apart?
+   - (a) the collocated sensors and both neighbouring hours read about 5 times lower, so the value is an instrument
+     error, an impossible value (the reasoning of issue 3 and of 2024_lusaka today): recorded as a CLEAN-11 case, with
+     the rule extended to the look-alike hours;
+   - (b) B: the rule only outside the test windows;
+   - (c) A: an exception naming the field's QC default;
+   - (d) amend CLEAN-11.
+
+   Give the letter in the note; nothing is applied until then.
+
+   **Lennart (2026-11-05, ok):** Reply (a): the collocated sensors and both neighbouring hours read about 5 times lower,
+   so the value is an instrument er…
+
+   **Resolved (2026-11-05, Lennart):** (a). The spike rule is an instrument-error rule in every window: a reference hour
+   above 3 times both low-cost channels and above 3 times each neighbouring reference hour in the file, with at least
+   one neighbour present. It drops 12 hours, all test labels (the 5 before, the 4 named look-alikes, and 3 more the
+   panel's nearest-hour variant missed); 10,828 rows ship. USEmbassy 2021-02-10 07:00 stays (2.84 times sensor 2; the
+   "0.55" was against sensor 1 only). LightGBM mean RMSE 16.69 to 15.34 over the five windows. One of the 12 is weak;
+   see issue 5. A CLEAN-11 Cases row; `dataset check` clean, probes without a flag.
+
 3. **Drop the 92-hour Nakawa reference outage?**
 
    * **Problem:**
@@ -147,6 +177,13 @@ both sensors (4).
 
    [^clean]: **CLEAN-11** (Should), impossible-value clause: impossible values become missing; then **CLEAN-15**
      (Must): drop rows with a missing target. Target faithfulness, P5.
+
+   **Lennart (2026-11-05, change):** Option A: Drop the run.
+
+   **Resolved (2026-11-05, Lennart):** A. 92 Nakawa hours, 2020-11-10 to 2020-11-23, where the reference is below 0.3
+   times both channels, leave (guarded at 92; measured, the reference reads 0.1 to 11.2 against channels of 12 to 190,
+   not "0.1 to 4 against 10 to 120"). They are November test labels; dropping them is the impossible-value clause of
+   CLEAN-11. A Cases row.
 
 4. **One dead-channel rule for both sensors?**
 
@@ -183,6 +220,32 @@ both sensors (4).
    **Notes for the AI:** under B, guards at 18 and 16 hours.
 
    [^dead]: **CLEAN-11** (Should; P7): impossible values become missing, and the row stays.
+
+   **Lennart (2026-11-05, change):** Option B: One symmetric rule at 0.27.
+
+   **Resolved (2026-11-05, Lennart):** B. One rule for both channels at 0.27: 18 sensor-1 and 16 more sensor-2 hours are
+   masked (guards 500, 16, 18; the rows stay); the live Makerere hour at 0.294 stays a reading, and every cut from 0.255
+   to 0.29 gives the same counts. A Cases row. 10,835 rows ship; `dataset check` clean, probes without a flag.
+
+5. **Is Nakawa 2020-10-13 05:00 an instrument error or a timing lag?**
+
+   * **Problem:**
+     - The extended spike rule of issue 2 drops this October test hour: reference 36.2 against channels of 11.1 and
+       11.8 (3.06 and 3.07 times), the hour before 6.2, the hour after missing.
+     - It sits before a morning rise (at 07:00 the reference reads 37.3 and the sensors about 44), so the reference may
+       lead the sensors rather than err.
+     - The other 11 hours are clear errors: the reference goes against the sensors and falls back within the hour.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Drop it (implemented) | the rule as written drops all 12 | one rule, no exception | may drop a real morning reading |
+     | B | Keep it | the rule also asks the next available reading to fall back; this hour stays (11 dropped) | keeps an hour that may be real | a rule tuned to one hour |
+
+   * **Recommendation:** A: at 3.06 times it meets the rule, and one test hour moves October's score little.
+     **Decision:** A or B?
+
+   **Resolved (2026-11-05, Lennart):** A, as implemented: the hour is dropped with the other 11.
 
 **Review panel:** ship after changes (mediator). Tier full, a second pass after Lennart's PR #33 review (2026-11-04), 12 reports. Claims: 24, 12 hold, 9 refuted (stale or overstated text, fixed in `dataset.py`; the record's `required_split` is in the field row and its 15-hour figures in issue 4), 1 concern (issue 2), 2 untested. Blind review: include with changes; its main concerns are that the eight site descriptors repeat the site label (kept: legitimate for known sites, LEAK-34) and that the windows mix later time with newer sites. Task gamer: its best exploit, the previous hour's reference, lowers mean RMSE from 18.21 to 16.28, a leak under the stated prediction point; nothing else beat the noise. Agreed: no leak, the temporal regime, the site descriptors kept, RMSE, the text fixes, the spike rule on training rows only, one dead-channel rule for both sensors. Disputed: SPLIT-20, widen the windows or keep them with an exception (issue 1); the clause and rank of the Nakawa outage (issue 3).
 

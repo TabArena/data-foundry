@@ -7,6 +7,7 @@ checked_by:
 suggestion: 'Yes'
 priority: 3
 original_source: Other
+year: '2014'
 domain: insurance
 required_split:
 - Random (IID)
@@ -27,7 +28,7 @@ type_adapter_id: curation-record-v1
 **⚠️ AI-FILLED — UNVERIFIED. The suggestion, metadata, and notes below were drafted by an AI assistant from public knowledge of this competition/dataset, NOT from inspecting the data. A human must verify everything before relying on it.**
 
 **Screening (AI, 2026-10-22):** `TBD -> Yes`, priority 4: the documented French MTPL portfolio for claim frequency, an insurer's pricing task, and insurance is thin. The earlier plain `Yes` was set by the older AI pass (no curator name in `checked_by`), so it is put back to `TBD -> Yes` for the curator to confirm.
-- Source: CASdatasets R package (Dutang and Charpentier), `freMTPL` page (https://dutangc.github.io/CASdatasets/reference/freMTPL.html): "risk features are collected for 677,991 motor third-part liability policies", "The period is approximately 2011-2013", source "Unknown private insurer". Two tables joined on `IDpol`: `freMTPL2freq` (677,991 x 12: `IDpol`, `ClaimNb`, `Exposure`, `Area`, `VehPower`, `VehAge`, `DrivAge`, `BonusMalus`, `VehBrand`, `VehGas`, `Density`, `Region`) and `freMTPL2sev` (26,444 claims: `IDpol`, `ClaimAmount`). The Kaggle link in `source_links` is a re-upload (karansarpal); the first publication is CASdatasets (the year it entered the package was not confirmed, so `year` stays empty).
+- Source: CASdatasets R package (Dutang and Charpentier), `freMTPL` page (https://dutangc.github.io/CASdatasets/reference/freMTPL.html): "risk features are collected for 677,991 motor third-part liability policies", "The period is approximately 2011-2013", source "Unknown private insurer". Two tables joined on `IDpol`: `freMTPL2freq` (677,991 x 12: `IDpol`, `ClaimNb`, `Exposure`, `Area`, `VehPower`, `VehAge`, `DrivAge`, `BonusMalus`, `VehBrand`, `VehGas`, `Density`, `Region`) and `freMTPL2sev` (26,444 claims: `IDpol`, `ClaimAmount`). The Kaggle link in `source_links` is a re-upload (karansarpal); the first publication is CASdatasets (the year it entered the package was not confirmed, so `year` stays empty; superseded 2026-11-05: `year` is 2014, Assessment below).
 - Use case: an insurer sets the premium of a motor TPL policy at underwriting from the rating factors (claim frequency per year of exposure, Noll, Salzmann and Wuthrich, "Case study: French motor third-party liability claims", SSRN 3164764); fit direct for the frequency target `ClaimNb` with `Exposure`; regime IID, one row per policy-period and no date, but see the risks.
 - Siblings and duplicates: `bemtpl97` (Belgian MTPL, CASdatasets, a different portfolio: no duplicate, PROV-7); no other freMTPL record (grep over `curation/records/` for fremtpl, MTPL, CASdatasets, ClaimNb). External collections: CASdatasets, OpenML (freMTPL2freq / freMTPL2sev uploads); used in Deprez, Verbeke and Verdonck, "Is TabPFN the Silver Bullet for Insurance Pricing?" (arXiv 2605.22892, 2026: TabPFN vs GLM and XGBoost on two public MTPL sets, frequency and severity).
 - Papers and pages: CASdatasets manual https://cas.uqam.ca/pub/web/CASdatasets-manual.pdf; Noll et al. (doi:10.2139/ssrn.3164764); Denuit, Charpentier and Trufin 2021 (doi:10.1016/j.insmatheco.2021.09.001); Miljkovic and Fernandez 2018 (doi:10.3390/risks6020057); Pocuca et al. 2020 (doi:10.1016/j.insmatheco.2020.06.004); arXiv 2605.22892.
@@ -58,3 +59,17 @@ CC (2026-11-04, Lennart): resolved as implemented: exposure above one year is ke
 **Assessment (AI, 2026-11-04):** review panel (none): built through /add-dataset steps 0-6 and checked against the literature (Noll et al.; Wüthrich and Merz 2023 Sec. 13.1); no panel ran, and all its issues are settled.
 
 **Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes, not as defined; disputed: LEAK-17/SPLIT-8/SPLIT-24 (IID or grouped on the inferred policy chains), LEAK-10 against LEAK-37 (realised `Exposure` as a feature), LEAK-10 (the `BonusMalus` mask, settled for blocks 0-4); for the curator: issues 5-9. Priority 3: gap +, use case -, source +, shape +, risk - (gap: insurance is thin among the 107 accepted definitions; use case: the fit is approximate, with no dates and realised exposure kept; source: the CASdatasets help page and the Noll, Salzmann and Wuthrich case study; shape: 677,991 rows, 10 mixed features; risk: likely leaks through `BonusMalus` and `Exposure` and the policy chains across the split, three Must issues open).
+
+CC (2026-11-05, Lennart): "Blank blocks 0-4": `BonusMalus` is missing in `IDpol` blocks 0-4 (597,998 rows, 88.2%), where it looks recorded after the row's own claims, and kept in blocks 5-6, where it behaves like a start-of-year value (issue 5, B; LEAK-10, LEAK-7; as zillow_prize, melbourne_housing_market, online_shoppers). bemtpl97 keeps its `bm`, which its source registers at the start of the policy period. LightGBM Poisson with `Exposure` as a free feature, shipped folds (3): mean deviance 0.2327 before, 0.2435 after.
+
+CC (2026-11-05, Lennart): "Set to missing": `DrivAge` 99 is missing in block 0 (66 rows), a default code like `VehAge` 99 (issue 9, B; CLEAN-10); the 4 rows at 99 outside block 0 stay at 99.
+
+**Assessment (AI, 2026-11-05):** `year` set to 2014, the definition's value: freMTPL2freq and freMTPL2sev entered CASdatasets on 14 October 2014 (`pkg/inst/NEWS` at CASdatasets commit 324c15c999), the first publication (PROV-9). This supersedes the screening's "`year` stays empty" (2026-10-22).
+
+CC (2026-11-05, Lennart): issue 6 (exposure) is parked, with bemtpl97's issue 1 and both declared metrics, until the zero-inflated stack (PRs #44-#47) is merged; a GitHub issue gives the context and the typical modelling (offset or weight).
+
+CC (2026-11-05, Lennart): the split stays IID for now (issue 7, B); prior work uses a random hold-out or a split grouped on identical rating factors, none links records across years; revisit later.
+
+CC (2026-11-05, Lennart): the renewal signal read from other rows is an evaluation leak handled by LEAK-9 as amended on 2026-11-05 (issue 8, (a)), named in `fit_reason`.
+
+**Assessment (AI, 2026-11-05):** the parked exposure question is GitHub issue #51 (https://github.com/TabArena/data-foundry/issues/51).

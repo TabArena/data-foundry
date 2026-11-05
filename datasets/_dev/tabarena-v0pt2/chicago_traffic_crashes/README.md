@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: chicago_traffic_crashes
 container_format: 2
-checksum: v2:c34c9563e8b42c616039081a42843f9df526394b5abe4c9c202a4c4e40a51f1a
+checksum: v2:1f5ef1f75a8676ebb67ff20539b6d807af6f579595a6b4134ba99cc72bce81dc
 build:
   uuid: 01a18a0b-6aa8-726f-a33a-75044860edbf
   checksum: v2:0e922de5b739eda2afd324862b5e2f3211ad7a1aa3088df8e1bbf576da978afc
@@ -20,9 +20,9 @@ build:
 build_stale: true
 data:
   n_rows: 998117
-  n_features: 16
+  n_features: 15
   dtypes:
-    category: 11
+    category: 10
     datetime64[ns]: 1
     float64: 5
   n_test_dataset_rows: null
@@ -73,33 +73,34 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `most_severe_injury`, scored with `log_loss` on temporal splits by `crash_date`. 998,117 rows and 16 features. Source: GOV Website (2026).
+Multiclass classification of `most_severe_injury`, scored with `log_loss` on temporal splits by `crash_date`. 998,117 rows and 15 features. Source: GOV Website (2026).
 
-Built as `01a18a0b-6aa8-726f-a33a-75044860edbf` on 2026-10-29, but `dataset.py` has changed since: it now gives checksum `v2:c34c9563e8b42c616039081a42843f9df526394b5abe4c9c202a4c4e40a51f1a`, so the build is stale. See [Build](#build).
+Built as `01a18a0b-6aa8-726f-a33a-75044860edbf` on 2026-10-29, but `dataset.py` has changed since: it now gives checksum `v2:1f5ef1f75a8676ebb67ff20539b6d807af6f579595a6b4134ba99cc72bce81dc`, so the build is stale. See [Build](#build).
 
 ## In brief
 
 **Question.** What is the most serious police-recorded injury in this crash?
 
-**Use case.** An emergency-response analyst estimates injury severity from crash and road conditions to help assess response needs. Finalized police reports approximate those facts without reconstructing their timely availability.
+**Use case.** A city road-safety analyst estimates, for each reported crash, the probability of each police injury level from the recorded crash and road facts, to estimate the expected number of people killed or seriously injured at each site and rank sites for countermeasures.
 
 **One row.** One CPD-recorded Chicago crash before October 2026; from September 2017, when citywide coverage starts.
 
 **Predicted.** The most severe injury among people involved: fatal, incapacitating, nonincapacitating, reported but not evident, or no indication. This is an officer-recorded classification, potentially amended later, not a fixed medical follow-up.
 
-**Known at prediction time.** Recorded crash facts: crash hour and location, posted speed, trafficway type, initial collision type, units involved and sparse scene flags; initial availability of finalized values is not verified.
+**Known at prediction time.** The finalized report's crash and road facts, without its injury, damage or reporting fields: crash hour and location, posted speed, trafficway type, first collision type, units involved, and sparse work-zone and private-property flags.
 
 **What the test data stands for.** Nine later three-month crash cohorts are tested against expanding earlier history that ends one month before each window and was notified before each quarterly refit; labels are from the final snapshot.
 
-**Our changes to the source.** We exclude reporting activity, injury/damage outcomes, investigation judgments, identifiers and the five condition fields whose recording follows the injury; start at September 2017; harmonize crash time to hours.
+**Our changes to the source.** We exclude reporting activity, injury/damage outcomes, investigation judgments, identifiers, the road and condition fields whose recording follows the injury and the door-opening flag; start at September 2017; floor crash time to whole hours.
 
-> **Use case fit: approximate (a stand-in with a known gap).** Myunghwan accepts finalized records as a closer-to-fact approximation, rather than timely initial-call information. Per-field availability and historical injury-label versions are unavailable; operational dispatch performance remains unvalidated.
+> **Use case fit: approximate (a stand-in with a known gap).** The police injury level stands in for the serious injuries the analyst counts: trauma-registry linkage finds police reports catch about half of them (Traffic Injury Prevention 2024), and the share of 'reported, not evident' injuries steps up in late 2023. Lane count, alignment, road defects, weather, lighting, surface and traffic control are dropped because injury reports record them more completely, though an analyst could take them from road inventories.
 
 ## Files in this folder
 
 | file | what it is |
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
+| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/chicago_traffic_crashes.md`](../../../../curation/records/chicago_traffic_crashes.md)
@@ -138,7 +139,7 @@ Only curators run `build`, when the dataset ships.
 | license | See Terms of Use (City of Chicago Data Portal) |
 | data_tags | Non-IID, Temporal, Spatial |
 | reference | chicago_crashes |
-| rows x columns | 998,117 x 17 |
+| rows x columns | 998,117 x 16 |
 | task.target | most_severe_injury |
 | task.problem_type | multiclass_classification |
 | task.metric | log_loss |
@@ -153,12 +154,12 @@ Only curators run `build`, when the dataset ships.
 | name | `log_loss` (standard; takes proba; lower is better) |
 | origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | mean of -log p(true class) |
-| reason | The original City portal, field dictionary and linked SR1050 manual define a crash-report release, not a scored prediction competition or a single defining model-selection metric. Use multiclass log loss for the accepted five-class probability task. On the newest window about 35% of the loss is in the 'reported, not evident' class and about 10% in incapacitating plus fatal; skill over the class prior is 18.0% on all rows against 11.9% on on-scene reports alone. |
+| reason | The original City portal, field dictionary and linked SR1050 manual define a crash-report release, not a scored prediction competition or a single defining model-selection metric. Use multiclass log loss for the accepted five-class probability task. On the newest window about 35% of the loss is in the 'reported, not evident' class and about 10% in incapacitating plus fatal; skill over the class prior is 18.0% on all rows against 11.8% on on-scene reports alone (one quick LightGBM on most of the shipped inputs, 2026-11-05). |
 
 <details>
-<summary>Feature types: 10 categorical, 1 ordinal, 0 string, 1 datetime</summary>
+<summary>Feature types: 9 categorical, 1 ordinal, 0 string, 1 datetime</summary>
 
-- categorical (10): `beat_of_occurrence`, `dooring_i`, `first_crash_type`, `not_right_of_way_i`, `street_direction`, `street_name`, `trafficway_type`, `work_zone_i`, `work_zone_type`, `workers_present_i`
+- categorical (9): `beat_of_occurrence`, `first_crash_type`, `not_right_of_way_i`, `street_direction`, `street_name`, `trafficway_type`, `work_zone_i`, `work_zone_type`, `workers_present_i`
 - ordinal (1): `most_severe_injury (NO INDICATION OF INJURY < REPORTED, NOT EVIDENT < NONINCAPACITATING INJURY < INCAPACITATING INJURY < FATAL)`
 - string (0): none
 - datetime (1): `crash_date`
@@ -181,14 +182,14 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 998,117 rows of the final frame (the oldest rows: the frame is sorted by `crash_date`); 12 of 17 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 998,117 rows of the final frame (the oldest rows: the frame is sorted by `crash_date`); 12 of 16 columns, the target first. Cells are cut at 40 characters.
 
-| most_severe_injury | crash_date | posted_speed_limit | first_crash_type | trafficway_type | not_right_of_way_i | street_no | street_direction | street_name | beat_of_occurrence | dooring_i | work_zone_i |
+| most_severe_injury | crash_date | posted_speed_limit | first_crash_type | trafficway_type | not_right_of_way_i | street_no | street_direction | street_name | beat_of_occurrence | work_zone_i | work_zone_type |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| NO INDICATION OF INJURY | 2017-09-01 00:00:00 | 30 | PARKED MOTOR VEHICLE | ONE-WAY | nan | 1658 | W | JUNEWAY TER | 2422 | nan | nan |
-| NO INDICATION OF INJURY | 2017-09-01 00:00:00 | 30 | TURNING | PARKING LOT | nan | 921 | W | BLACKHAWK ST | 1822 | nan | nan |
-| NO INDICATION OF INJURY | 2017-09-01 00:00:00 | 30 | TURNING | NOT DIVIDED | nan | 3201 | N | CUMBERLAND AVE | 1631 | nan | nan |
 | NO INDICATION OF INJURY | 2017-09-01 00:00:00 | 30 | REAR END | NOT DIVIDED | nan | 4750 | N | PULASKI RD | 1722 | nan | nan |
+| NO INDICATION OF INJURY | 2017-09-01 00:00:00 | 30 | PARKED MOTOR VEHICLE | ONE-WAY | nan | 1658 | W | JUNEWAY TER | 2422 | nan | nan |
+| NO INDICATION OF INJURY | 2017-09-01 00:00:00 | 30 | TURNING | NOT DIVIDED | nan | 3201 | N | CUMBERLAND AVE | 1631 | nan | nan |
+| NO INDICATION OF INJURY | 2017-09-01 00:00:00 | 35 | TURNING | DIVIDED - W/MEDIAN (NOT RAISED) | nan | 1130 | W | GRAND AVE | 1214 | nan | nan |
 | NO INDICATION OF INJURY | 2017-09-01 00:00:00 | 30 | FIXED OBJECT | DIVIDED - W/MEDIAN (NOT RAISED) | nan | 1422 | N | DAMEN AVE | 1424 | nan | nan |
 
 ## Curation notes
@@ -196,17 +197,23 @@ The first 5 of 998,117 rows of the final frame (the oldest rows: the frame is so
 We start with the original City's 2026-11-04 bulk CSV export, not a Kaggle re-upload. Figures marked
 "(2026-10-29)" were measured on the earlier export, whose bytes are no longer kept.
 
-- Prediction point: an approximate scene-based injury assessment using underlying crash and road facts, before using the injury classification itself. On 2026-10-29 Myunghwan accepted closer-to-fact finalized information rather than reconstructing timely initial-call availability. Later administrative/reporting activity, injury consequences and outcome encodings remain excluded; Myunghwan accepted this exact approximate task for shipping on 2026-10-29; build and repository integration are separate steps.
+- Prediction point: a reported crash's finalized crash and road facts, before its injury classification, from which a city road-safety analyst estimates the chance of each injury level to rank sites by expected people killed or seriously injured (2026-11-05; superseded: an approximate scene-based injury assessment for emergency response). On 2026-10-29 Myunghwan accepted closer-to-fact finalized information rather than reconstructing timely initial-call availability (superseded 2026-11-05 for the actor: finalized records are what the analyst works from, so they are no longer the gap). Later administrative/reporting activity, injury consequences and outcome encodings remain excluded; Myunghwan accepted this exact approximate task for shipping on 2026-10-29; build and repository integration are separate steps.
+- CC (2026-11-05, Lennart): the use case is a city road-safety analyst who ranks sites by expected people killed or seriously injured (issue 7, A; USE-1, USE-9: the blind reviewer named the same actor without our notes). It supersedes the emergency-response framing Myunghwan accepted on 2026-10-29: 50.9% of the rows are desk reports nobody was dispatched to (5.3% injured against 25.5% on scene). Every row stays. The fit stays approximate: police reports catch about half of serious injuries in trauma-registry linkage, the 'reported, not evident' share steps up in 2023Q4, and the road facts recorded more completely for injury crashes are dropped.
 - Late labels (SPLIT-10; 2026-11-04, Lennart): a one-month gap between train and test, as zillow_prize. A report can be amended after a later death, and a traffic death counts within 30 days of the crash, so a refit at a quarter start would see the newest month's crashes in a lower class than the final snapshot gives. The source has no label versions or amendment times; the portal's :updated_at field (any field, not only the label) puts 99.4% of last updates within 30 days of the crash (median 16.1 days, crashes of June-August 2026), with 5 of 32 fatal crashes updated later, at 33-102 days. Labels stay those of the final snapshot. A month is 1.0-1.4% of a training side, and the strict notification eligibility remains.
-- CRASH_DATE is the event timestamp: its original precision defines cohorts and source-copy checks; the returned datetime predictor is floored to whole hours for every row. Exact-hour recording differed by injury even within report type (on-scene: 8.21% injured versus 13.07% uninjured; desk: 18.86% versus 25.09%). The paired three-quarter diagnostic (2026-10-29, 21-input recipe) removed minute information for 889,076 rows without moving any quarter; mean log loss changed from 0.550174 to 0.550105. This harmonizes minute precision, not event-time accuracy. DATE_POLICE_NOTIFIED is notification time, used only as intermediate training-eligibility metadata and excluded from predictors together with delays. CRASH_DATE_EST_I is a later reporting flag, not a timestamp. The source carries no timezone offset; no UTC conversion is assumed.
+- CC (2026-11-05, Lennart): the one-month gap stays (issue 11, as implemented; SPLIT-10 as amended 2026-11-04: the gap is about the label's delay). It covers 99.4% of last updates; two months would cover 4 of the 5 late fatal updates and cost about 1% of each training side.
+- CC (2026-11-05, Lennart): the step in 'reported, not evident' in 2023Q4 is accepted as drift, with the shares in `splits_comment` (issue 8, as implemented; USE-5 fails only when the label is shown to be another quantity, SPLIT-20).
+- CRASH_DATE is the event timestamp: its original precision defines source-copy checks, and it is floored to whole hours for every row in `_clean`, before the framework sorts the rows by it (cohorts: original precision until 2026-11-05, now the floored hour, the same windows). Exact-hour recording differed by injury even within report type (on-scene: 8.21% injured versus 13.07% uninjured; desk: 18.86% versus 25.09%). The paired three-quarter diagnostic (2026-10-29, 21-input recipe) removed minute information for 889,076 rows without moving any quarter; mean log loss changed from 0.550174 to 0.550105. This harmonizes minute precision, not event-time accuracy. DATE_POLICE_NOTIFIED is notification time, used only as intermediate training-eligibility metadata and excluded from predictors together with delays. CRASH_DATE_EST_I is a later reporting flag, not a timestamp. The source carries no timezone offset; no UTC conversion is assumed.
+- CC (2026-11-05, Lennart): `crash_date` is floored in `_clean`, not in `_make_splits` (issue 9, B; LEAK-13, as hepatitis_c_prediction and gallstone_disease). The framework sorts the rows by the time column between the two steps, so the floor in `_make_splits` left each hour in minute order, and a row's rank in its hour lowered log loss by 0.00098 (0.00008 to 0.00202, on all 9 splits). Each hour now keeps the content order, the windows are the same, and the one crash notified before its recorded time stays unused through a flag computed from the source minute.
 - Injury counts, CRASH_TYPE and DAMAGE are outcome information; REPORT_TYPE, photo/statement flags, and primary/secondary contributory causes are reporting or investigation information and are excluded. INTERSECTION_RELATED_I is a causal judgment, not an at-intersection indicator. HIT_AND_RUN_I is withheld as post-collision flight/aid behavior rather than an initial physical condition; no injury-caused mechanism is claimed proved for that flag.
 - Keep underlying trafficway, posted speed, location and initial-collision facts as approximate candidates. FIRST_CRASH_TYPE follows the manual's first damage/injury event and sequence rules; it is not necessarily a raw caller observation. The bulk header NOT_RIGHT_OF_WAY_I corresponds to API alias private_property_i, meaning contact beginning outside the public right-of-way. Blank Y/N fields remain missing, not inferred N.
 - Exclude LANE_CNT, ALIGNMENT and ROAD_DEFECT from the initial recipe: the IDOT March 2011 dictionary, printed elements 80, 81 and 84 (PDF pages 40 and 43), requires them for injury/towing reports but not minor drive-away reports. Their underlying road facts preexist injury, but outcome-dependent collection makes the stored fields unsafe stand-ins without reconstruction. This is a source-based precaution, not a claim that every value is demonstrably leaked.
 - POSTED_SPEED_LIMIT has the same historical N/Y requirement (element 50); omission from the earlier sibling sweep was corrected. A zero speed is 0.548% of uninjured against 0.280% of injured crashes in the frame, but 39% of zeros are parking-lot crashes and within parking lots the rates are 3.00% against 2.80%: a zero mostly marks a place without a posted limit, a scene fact, not a field left blank on minor reports. The 66 source values of 99 all fall in 2015, before the frame starts. The check does not validate every nonzero default. Myunghwan accepted keeping posted speed as implemented on 2026-10-29; no source-value replacement or reconstruction was requested.
-- WEATHER_CONDITION, LIGHTING_CONDITION, ROADWAY_SURFACE_COND, TRAFFIC_CONTROL_DEVICE and DEVICE_CONDITION are dropped (LEAK-10; Lennart, 2026-11-04), as LANE_CNT, ALIGNMENT and ROAD_DEFECT: on the three newest windows they lower the five-class log loss by 0.0039, and flags saying only whether each was recorded win back 0.0028 of that (72%), so most of their gain is whether the field was filled in. Without them the task still rests on the collision type, the units involved, the hour and the road layout (log loss 0.4960 against the class prior's 0.6140).
-- Training starts on 2017-09-01, when citywide coverage starts (SPLIT-20; Lennart, 2026-11-04): before it, 7.3% of crashes have any injury against 15.3% after, with 4,000-7,000 crashes a month against 9,000-10,000. It leaves the score unchanged (0.49609 against 0.49600 from 2013, on the shipped 16 inputs) and costs about 99,100 rows per training side. No training side then exceeds one million rows, so the task ships unsampled, not as a `_1m` version.
+- WEATHER_CONDITION, LIGHTING_CONDITION, ROADWAY_SURFACE_COND, TRAFFIC_CONTROL_DEVICE and DEVICE_CONDITION are dropped (LEAK-10; Lennart, 2026-11-04), as LANE_CNT, ALIGNMENT and ROAD_DEFECT: on the three newest windows they lower the five-class log loss by 0.0039, and flags saying only whether each was recorded win back 0.0028 of that (72%), so most of their gain is whether the field was filled in. Without them the task still rests on the collision type, the units involved, the hour and the road layout (log loss 0.4960 against the class prior's 0.6140; superseded 2026-11-05: 0.4962 against 0.6130 on the shipped 15 inputs from 2017-09, the same LightGBM, mean of the three newest windows).
+- CC (2026-11-05, Lennart): `dooring_i` is dropped (issue 10, B; LEAK-10 through LEAK-38's measured clause, as the five fields). Within a crash type, injured crashes have it filled in 4-8 times as often, though the 'N' value alone shows no consistent difference by outcome; the drop costs 0.00011 log loss (0.49609 to 0.49620, three newest windows). If the LEAK-38 amendment opened on 2026-11-05 takes the any-source scope, `dooring_i` falls under it too.
+- Training starts on 2017-09-01, when citywide coverage starts (SPLIT-20; Lennart, 2026-11-04): before it, 7.3% of crashes have any injury against 15.3% after, with 4,000-7,000 crashes a month against 9,000-10,000. It leaves the score unchanged (0.49609 against 0.49600 from 2013, on the 16 inputs of 2026-11-04; 0.49620 against 0.49610 on the shipped 15 inputs, 2026-11-05) and costs about 99,100 rows per training side. No training side then exceeds one million rows, so the task ships unsampled, not as a `_1m` version.
 - Remove exact source copies using every original field except CRASH_RECORD_ID, IDOT_CONTROL_NO and REPORT_TYPE; keep the first source-order representative. The full export has 63 extra copies on that key (both exports); on the 2026-10-29 export 36 already matched even with the control number included, and the broader key removed 26 additional rows from the labeled pre-October cohort; raw rows remain preserved. Distinct administrative IDs alone do not establish independent events. Do not deduplicate on the reduced or hour-rounded predictor vector: some source-distinct crashes coincide after context is removed, and conflicting reduced profiles can be genuine label ambiguity. The remaining reused control number with different time/location is not collapsed. Missing labels and the unfinished October cohort are excluded; classes are not merged. Partial early coverage does not establish citywide incident rates.
 - CRASH_HOUR, CRASH_DAY_OF_WEEK and CRASH_MONTH are redundant components of CRASH_DATE. LOCATION repeats latitude/longitude; report identifiers are not predictors. Coordinate zeros are made missing because they cannot identify a Chicago crash location. Unknown/unreported categorical codes become missing; no outcome-based imputation is used.
+- CC (2026-11-05, Lennart): the declared metric (the fallback multiclass log loss over the five police injury classes) is checked and stays as declared.
 - Retrospective officer judgments, outcome-dependent reporting completeness and historical label amendments remain limitations. The source permits more complete forms for injury/towing and amendment after later deaths (SR1050 manual, printed pages 2-3 and 9). The approximate fit does not waive feature-specific leakage checks or establish deployment validity.
 
 ## Splits
@@ -225,8 +232,10 @@ lt_vehicle_loan_default_prediction has no gap because there a 30-day gap would l
 SPLIT-14's 50% floor and its measured effect was small; here the floor holds and the gap costs 1.0-1.4% of a
 training side.
 Training also requires DATE_POLICE_NOTIFIED strictly before the actual calendar-quarter start and not before the
-recorded event. This intermediate timestamp is removed before the model frame is returned. Source event
-timestamps determine cohorts; only the returned event-time predictor is floored to whole hours for every row.
+recorded event. This intermediate timestamp is removed before the model frame is returned. The event time is
+floored to whole hours in `_clean`, before the rows are sorted by it, and cohorts are drawn on the floored hour
+(window and gap bounds fall on midnight, so no cohort changes); only the check "not notified before the
+recorded event" reads the source minute, through a flag removed with the timestamp (2026-11-05, LEAK-13).
 The windows are calendar quarters only because the data is cut at 2026-10-01; a cut at another month would
 put the notification cutoff before the window start (stricter, still safe).
 The three-month horizon is an evaluation/refit cadence, not a medical outcome window.
@@ -286,7 +295,7 @@ Notification must precede refit and cannot precede its recorded event. It is eli
 0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicate_rows`: 397 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
-- **info** `dataset_conflicting_duplicate_rows`: 48 row(s) (0.0%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+- **info** `dataset_conflicting_duplicate_rows`: 49 row(s) (0.0%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
 Accepted on purpose:
 
@@ -297,12 +306,11 @@ Accepted on purpose:
 ### Feature summary
 
 <details>
-<summary>Show the table (17 rows)</summary>
+<summary>Show the table (16 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | workers_present_i | category | 996747 | 99.86 | 2 | Y, N |
-| dooring_i | category | 994880 | 99.68 | 2 | Y, N |
 | work_zone_type | category | 994851 | 99.67 | 3 | CONSTRUCTION, MAINTENANCE, UTILITY |
 | work_zone_i | category | 993043 | 99.49 | 2 | Y, N |
 | not_right_of_way_i | category | 953767 | 95.56 | 2 | Y, N |
@@ -344,7 +352,7 @@ Accepted on purpose:
 ### Categorical features
 
 <details>
-<summary>Show the table (51 rows)</summary>
+<summary>Show the table (48 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -358,9 +366,6 @@ Accepted on purpose:
 | crash_date | 3 | 2026-01-14 09:00:00 | 130 | 0.01 |
 | crash_date | 4 | 2024-11-21 10:00:00 | 117 | 0.01 |
 | crash_date | 5 | 2026-01-14 07:00:00 | 115 | 0.01 |
-| dooring_i | 1 | &lt;NA> | 994880 | 99.68 |
-| dooring_i | 2 | Y | 2221 | 0.22 |
-| dooring_i | 3 | N | 1016 | 0.1 |
 | first_crash_type | 1 | PARKED MOTOR VEHICLE | 229946 | 23.04 |
 | first_crash_type | 2 | REAR END | 210498 | 21.09 |
 | first_crash_type | 3 | SIDESWIPE SAME DIRECTION | 154284 | 15.46 |
@@ -413,4 +418,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 1964e1b2e4caa41c8a94082e028f65d4cd8b2b6b-dirty |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
-| stale | yes: the definition now gives checksum `v2:c34c9563e8b42c616039081a42843f9df526394b5abe4c9c202a4c4e40a51f1a` |
+| stale | yes: the definition now gives checksum `v2:1f5ef1f75a8676ebb67ff20539b6d807af6f579595a6b4134ba99cc72bce81dc` |

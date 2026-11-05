@@ -87,6 +87,34 @@ arrival at pickup" where it means "at destination"; it is yours, so it is left f
    [^clean]: **CLEAN-11** (Should); its clause "a row whose target the source names as not the task's quantity may
      leave, with the source's words". A CLEAN-11 exception cannot answer USE-5, a Must.
 
+   **Lennart (2026-11-05, discuss):** IT seems here, however, that one could argue that a good preprocessing would
+   remove these for the deployed model, no? or would we argue that we would observe these in real-world at predict time
+   and need to be robust to them?
+
+   **Answer (AI, 2026-11-05):** Both are true, at different steps, and they point the same way. The rows do occur at
+   prediction time: the rider taps pickup at the destination, the app computes an ETA, and the inputs show the late tap
+   (a median wait of 1,505 s from arrival at the pickup to the tap, against 475 s on other legs). But no one acts on
+   that ETA, because the customer already has the parcel. So a deployed team would leave these legs out of training, as
+   your first reading says, and would not judge its model on them, since a wrong ETA there costs nothing. Robustness to
+   them would matter only if a decision rested on those predictions, and none does.
+
+   The benchmark today does the opposite on both counts: it trains and scores on them. 4.6% of the squared error comes
+   from spotting the late tap, and a model trained only on legs of 100 s or more, as a deployed one would be, loses 11.5
+   s RMSE for it.
+
+   This leans to B: drop the legs of 60 s or less (740 rows) under the cleaning rule's clause for rows the source names
+   as not the task's quantity, quoting the winners' page. C (120 s, 822 rows) also catches late taps that take a little
+   longer, at the cost of more real short legs. The cost of either is a departure from the task Zindi scored. If you
+   agree, mark Change to B (or C).
+
+   **Lennart (2026-11-05, discuss):** Agree.
+
+   **Resolved (2026-11-05, Lennart):** B. The 740 legs of 60 s or less leave (547 of 10 s or less, 193 of 11-60 s;
+   guarded), under the cleaning rule's clause for rows the source names as not the task's quantity, quoting the winners'
+   page: 20,461 orders. LightGBM RMSE (first repeat) 742.8; a model trained only on legs of 100 s or more now costs 0.2
+   instead of 11.5. The 82 legs of 61-120 s stay, some of them late marks too (median wait 1,358 s), named in
+   `fit_reason`. A CLEAN-11 Cases row; `dataset check` clean.
+
 5. **`Distance (KM)`: call it tested rather than a potential leak kept on purpose?**
 
    * **Problem:**
@@ -122,6 +150,26 @@ arrival at pickup" where it means "at destination"; it is yours, so it is left f
    [^fit]: **USE-8** (Must): a potential leak kept on purpose is named in `fit_reason`, as the kick and homesite Cases
      rows of USE-8 ask.
 
+   **Lennart (2026-11-05, change):** Option A: Relabel "tested, not a leak".
+
+   **Consistency check (AI, 2026-11-05):** "tested, not a leak" says more than the test shows: the distance is not
+   measured between the rider's two taps, but a GPS total recorded after delivery is not excluded (partial correlation
+   0.159 given the straight line). kick and homesite, with an untested part left, keep it named in `fit_reason`. Which
+   do you want?
+   - (a) label it "tested: not measured between the taps; a GPS total recorded after delivery not excluded", and name
+     that part in `fit_reason`;
+   - (b) A as marked;
+   - (c) B: keep the current label and add Distance to `fit_reason`.
+
+   Give the letter in the note; nothing is applied until then.
+
+   **Lennart (2026-11-05, change):** Reply (a): label it "tested: not measured between the taps; a GPS total recorded
+   after delivery not excluded", and name … Option A: Relabel "tested, not a leak".
+
+   **Resolved (2026-11-05, Lennart):** (a). `Distance (KM)` is labelled "tested: not measured between the rider's two
+   taps; a GPS total recorded after delivery not excluded", kept under LEAK-38 as amended today and named in
+   `fit_reason`. It lowers RMSE from 766.6 to 742.8.
+
 7. **Rebuild before shipping?**
 
    * **Problem:**
@@ -145,6 +193,8 @@ arrival at pickup" where it means "at destination"; it is yours, so it is left f
 
    [^faithful]: **P5** (faithful data); builds happen on the curator's ask.
 
+   **Resolved (2026-11-05, Lennart):** A. No rebuild now; the container is rebuilt with the release.
+
 6. **Fill blank precipitation with 0 where a temperature exists?**
 
    * **Problem:**
@@ -167,6 +217,8 @@ arrival at pickup" where it means "at destination"; it is yours, so it is left f
      the source does not state. **Decision:** A (keep the blanks) or B (fill 0)?
 
    [^missing]: **CLEAN-10** (Should).
+
+   **Resolved (2026-11-05, Lennart):** A. The blanks stay missing, with the note on their likely meaning.
 
 **Review panel:** ship after changes, then a rebuild on your ask (mediator). Tier full, second pass after your PR #33
 review: twelve reports (claim, column and split auditors, domain practitioner, blind reviewer, task gamer, precedent

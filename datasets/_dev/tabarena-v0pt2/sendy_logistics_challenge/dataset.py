@@ -4,11 +4,19 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary
 
 # The order's events up to the prediction point (pickup), in order; each clock ships as seconds after midnight.
 KNOWN_EVENTS = ["Placement", "Confirmation", "Arrival at Pickup", "Pickup"]
+
+MAX_LATE_MARK_SECONDS = 60
+"""A pickup leg this short was marked at the destination: the rider "forgot to mark that he took the order and did it
+just before it was delivered" (the winners' page). Such legs leave (Lennart, 2026-11-05; CLEAN-11)."""
+
+LATE_MARKED_LEGS = 740
+"""The legs of ``MAX_LATE_MARK_SECONDS`` or less in Train.csv; another count means another file."""
 
 
 def _seconds_after_midnight(clock: pd.Series) -> pd.Series:
@@ -17,29 +25,38 @@ def _seconds_after_midnight(clock: pd.Series) -> pd.Series:
     return time.dt.hour * 3600 + time.dt.minute * 60 + time.dt.second
 
 
+def _straight_line_km(raw: pd.DataFrame) -> pd.Series:
+    """The great-circle distance from the pickup to the destination coordinates, in km."""
+    lat1, lon1, lat2, lon2 = (
+        np.radians(raw[c]) for c in ["Pickup Lat", "Pickup Long", "Destination Lat", "Destination Long"]
+    )
+    a = np.sin((lat2 - lat1) / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin((lon2 - lon1) / 2) ** 2
+    return 2 * 6371 * np.arcsin(np.sqrt(a))
+
+
 class SendyLogisticsChallenge(AbstractCuratedDataset):
     task_summary = TaskSummary(
         question="When a Sendy rider has picked up a parcel in Nairobi, how many seconds until the rider arrives at "
         "the destination?",
         use_case="Sendy tells the customer an arrival time once the rider has the parcel, and plans the rider's next "
         "orders from it.",
-        row="One completed express motorbike delivery order in Nairobi from the 2019 Sendy challenge (21,201 orders, "
-        "the labelled training file).",
+        row="One completed express motorbike delivery order in Nairobi from the 2019 Sendy challenge (20,461 of the "
+        "21,201 orders of the labelled training file).",
         predicted="The seconds from the pickup to the arrival at the destination, both as the rider marks them in the "
-        "app, as the source gives it. Riders often mark the pickup late, at the destination, so 2.6% of the labels are "
-        "10 seconds or less; on those the parcel has already arrived, and they reward spotting a late mark rather than "
-        "estimating a trip.",
+        "app, as the source gives it.",
         known="The customer, their platform and type, the rider, the day, weekday and time of the order's placement "
         "and of the rider's confirmation, the times of the rider's arrival at the pickup and of the pickup, the pickup "
         "and destination coordinates, the source's distance and the weather at placement.",
         split="Three repeats of three random folds over the same release; customers and riders recur. The release "
         "has the day of the month and the weekday but no month order or year, so later periods cannot be held out.",
         changes="The rider table the competition offered is left out, since its order counts, tenure and ratings "
-        "were taken after these orders.",
+        "were taken after these orders. The 740 legs of 60 seconds or less leave: the rider marked the pickup at the "
+        "destination, so the customer already had the parcel and no one acts on that arrival time.",
         fit="approximate",
-        fit_reason="The source's own task at its moment, with what is known then. The label is the riders' marks, "
-        "and the late pickup marks make some labels near zero; random folds over one release stand in for future "
-        "orders. A weak leak across rows is kept: features built from the same rider's later orders that day.",
+        fit_reason="The source's own task at its moment. The label is the riders' marks; a few late pickup marks "
+        "above 60 seconds may remain. Random folds over one release stand in for future orders. Kept: a weak leak "
+        "across rows (features from the same rider's later orders that day) and the source distance, not measured "
+        "between the rider's taps but possibly a GPS total recorded after delivery.",
     )
     unique_name = "sendy_logistics_challenge"
     year = "2019"
@@ -78,43 +95,55 @@ class SendyLogisticsChallenge(AbstractCuratedDataset):
         - The two weekdays (1-7) are numbers, a cycle as rossmann's `DayOfWeek` (CLEAN-14; Lennart, 2026-11-04).
           Those of arrival at the pickup and of pickup equal the confirmation's in every row and are dropped as
           copies.
-        - `Rider Id` and `User Id` are categorical inputs: the rider and the customer are known at pickup (924
-          riders; per the 2026-10-29 audit of Test.csv, 99.4% of its orders have a rider seen in training; 99.2-99.4%
+        - `Rider Id` and `User Id` are categorical inputs: the rider and the customer are known at pickup (922
+          riders; per the 2026-10-29 audit of Test.csv, 99.4% of its orders have a rider seen in training; 99.1-99.4%
           of the test folds' orders do).
         - Dropped: the arrival-at-destination fields (they make the label), the unique `Order No` and the
           constant `Vehicle Type`.
         - Riders.csv stays out: it is not as-of. Per the 2026-10-29 audit, every rider's `No_Of_Orders` is at least
           their orders in Train and Test, so the counts, tenure and ratings were taken after these orders.
-        - Anomaly: 547 legs of 10 s or less (2.6%; 740 of 60 s or less) stay as the source's labels (CLEAN-11):
-          riders mark the pickup late, when they arrive
-          (https://zindi.world/learn/meet-the-winners-of-the-sendy-logisitics-challenge). The late mark shows in
-          the inputs: the wait from arrival at the pickup to the pickup mark has a median of 1,505 s on these legs
-          against 475 s on legs over 120 s (1,337 s at 11-60 s, 1,358 s at 61-120 s). In LightGBM on the first
-          repeat they are 4.6% of the squared error, and RMSE on the other legs is 749.3 s against 761.3 s on all.
-          Over the nine splits, a model trained only on legs of 100 s or more loses 11.5 RMSE (744.2 to 755.7), and
-          an explicit wait feature gains 8.5; so the task partly scores spotting late marks, as the competition did.
+        - Anomaly: riders mark the pickup late, at the destination, so 547 legs are 10 s or less (2.6%) and 740 are
+          60 s or less. Lennart kept them as the source's labels on 2026-11-04 (CLEAN-11) (superseded 2026-11-05:
+          the 740 leave, CC below). With them, LightGBM on the first repeat put 4.6% of its squared error on the
+          legs of 10 s or less, a model trained only on legs of 100 s or more lost 11.5 RMSE over the nine splits
+          (744.2 to 755.7), and an explicit wait feature gained 8.5: the task partly scored spotting late marks.
+        - CC (2026-11-05, Lennart): the 740 pickup legs of 60 s or less leave (issue 4, B; CLEAN-11's clause for a
+          row whose target the source names as not the task's quantity; `MAX_LATE_MARK_SECONDS`, guarded at 740).
+          The winners' page says the rider "forgot to mark that he took the order and did it just before it was
+          delivered" (https://zindi.world/learn/meet-the-winners-of-the-sendy-logisitics-challenge). On these legs
+          the customer already has the parcel and no one acts on the ETA, so a deployed team leaves them out of
+          training and does not judge its model on them. The late tap shows in the inputs: the wait from arrival
+          at the pickup to the pickup mark has a median of 1,505 s on legs of 10 s or less (1,337 s at 11-60 s)
+          against 475 s on legs over 120 s. They are real deliveries (median 2.64 km in a straight line, none
+          within 100 m), so this departs from the task Zindi scored. The 82 legs of 61-120 s stay, though their
+          median wait of 1,358 s says some are late marks too. LightGBM, first repeat: RMSE 761.3 to 742.8 s; nine
+          splits: the wait feature's gain 8.5 to 3.2 (0.0 to 7.8 per split), and training only on legs of 100 s or
+          more now costs 0.2 (733.1 to 733.2). 20,461 orders remain; 2 of the 924 riders leave with them.
         - Order_No_20080 and Order_No_7111 end 89-90 m from their pickup but stay (USE-7): the source distance is
           3 and 4 km and the coordinates are anonymised, so the destination exists. The 100 m radius of nyc, pkdd
           and Lusaka rests on exact coordinates.
-        - No row is dropped. The two multi-day orders, Order_No_2800 and Order_No_3530, waited 22.7 and 49.1 h
+        - No other row is dropped. The two multi-day orders, Order_No_2800 and Order_No_3530, waited 22.7 and 49.1 h
           for confirmation; their pickup legs, 2,640 and 1,854 s at about 15 km/h, are ordinary. The longest leg
           is 7,883 s, and none passes 3 h.
         - Anomaly: five confirmation clocks precede placement by 1-42 s; kept as recorded.
-        - Potential leak, kept on purpose (LEAK-38; Lennart, 2026-11-04): the dictionary reads "Distance covered (KM) -
-          The distance from Pickup to Destination", which a trip records at arrival, while a distance Sendy computes
-          when it prices the order is known at placement; the page does not say which. The data points to the
-          second: 1,708 of the 2,094 repeated identical routes carry the same km, and 275 of the other 386 differ
-          by 1 km; within a route, Distance does not track the label (correlation 0.013); the 547 legs marked at
-          the destination carry the full route distance (median 5 km). So it is not measured between the two
-          marks; a GPS total recorded after delivery is not excluded. It tracks the straight line (correlation
-          0.952) and lowers RMSE from 789.6 to 761.5 s (first repeat). Revisit if a source shows it is the distance
-          travelled.
+        - `Distance (KM)`, tested: not measured between the rider's two taps; a GPS total recorded after delivery not
+          excluded (Lennart, 2026-11-05, issue 5, A as (a); it replaces the `Potential leak, kept on purpose` label of
+          2026-11-04; LEAK-38 names it among the kept fields). The dictionary reads "Distance covered (KM) - The
+          distance from Pickup to Destination", which a trip records at arrival, while a distance Sendy computes
+          when it prices the order is known at placement; the page does not say which. On Train.csv's 21,201 orders
+          the data points to the second: 1,708 of the 2,094 repeated identical routes carry the same km, and 275 of
+          the other 386 differ by 1 km; within a route, Distance does not track the label (correlation 0.013); the
+          547 legs marked at the destination carry the full route distance (median 5 km). It tracks the straight
+          line (correlation 0.952) and lowers RMSE from 766.6 to 742.8 s (first repeat; 789.6 to 761.5 before the
+          drop above). The untested part stays a kept risk, named in `fit_reason` (USE-8). Revisit if a source shows
+          it is the distance travelled.
         - Potential leak, kept on purpose (weak, across rows): features a participant builds from the same rider's
           later orders that day (their clocks minus this pickup, the day's order count), which do not exist at
-          pickup, gain 3.4 RMSE against a noise spread of 0.3, positive on 8 of the 9 splits. Our inputs hold no
-          such feature; a rider-day split cannot be built cleanly, since day and weekday merge months.
+          pickup, gain 4.2 RMSE against a noise spread of 0.2, positive on all 9 splits (3.4, 0.3 and 8 of 9 before
+          the drop above). Our inputs hold no such feature; a rider-day split cannot be built cleanly, since day and
+          weekday merge months.
         - Weather is matched to placement by the source, "measured every three hours"; the anonymised values vary
-          within an hour. Missing values stay missing. No recorded precipitation is 0 (552 values, 0.1-99.1 mm),
+          within an hour. Missing values stay missing. No recorded precipitation is 0 (541 values, 0.1-99.1 mm),
           so a blank where a temperature exists most likely means no rain; every row without a temperature also
           lacks precipitation.
         - Metric: the source's RMSE in seconds, with no target transform.
@@ -135,8 +164,9 @@ class SendyLogisticsChallenge(AbstractCuratedDataset):
         0.669% against 0.693% at random over all 28,269 Train/Test orders (the 2026-10-29 audit; 0.627% against
         0.731% on Train alone), so it holds no chronology. Weekday minus day of month (mod 7) gives the weekday each
         month started on: 7 month classes, which no run of calendar months puts in a unique order. Holding out one
-        class gives RMSE 750.1 against 748.8 for random folds of the same size, and holding out calendar days 755.1
-        against 752.5 on these folds (LightGBM), so same-period orders on both sides barely help. The split is
+        class gives RMSE 734.1 against 733.0 for random folds of the same size, and holding out calendar days 737.0
+        against 734.9 on these folds (LightGBM; 750.1 against 748.8 and 755.1 against 752.5 before the 2026-11-05
+        drop of the short legs), so same-period orders on both sides barely help. The split is
         forced from temporal (SPLIT-8) and does not test future periods. If a later release supplies full dates,
         build chronological windows.
     """
@@ -159,6 +189,11 @@ class SendyLogisticsChallenge(AbstractCuratedDataset):
         )
         if not recorded.equals(raw[self.target]):
             raise ValueError("The target no longer equals the recorded pickup-to-arrival clocks; review the source")
+        # The pickup legs marked at the destination leave (CLEAN-11, the source's words in MAX_LATE_MARK_SECONDS).
+        late = raw[self.target] <= MAX_LATE_MARK_SECONDS
+        if late.sum() != LATE_MARKED_LEGS:
+            raise ValueError(f"{late.sum()} legs of {MAX_LATE_MARK_SECONDS} s or less, not {LATE_MARKED_LEGS}")
+        raw = raw[~late]
         columns = [
             "User Id",
             "Rider Id",
@@ -191,3 +226,35 @@ class SendyLogisticsChallenge(AbstractCuratedDataset):
                 "Personal or Business",
             ]
         )
+
+    def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
+        leg = raw[self.target]
+        wait = _seconds_after_midnight(raw["Pickup - Time"]) - _seconds_after_midnight(raw["Arrival at Pickup - Time"])
+        band = pd.cut(
+            leg, [0, 10, MAX_LATE_MARK_SECONDS, 120, np.inf], labels=["1-10 s", "11-60 s", "61-120 s", "over 120 s"]
+        )
+        table = (
+            pd.DataFrame({"pickup leg": band, "wait": wait, "km": _straight_line_km(raw), "dist": raw["Distance (KM)"]})
+            .groupby("pickup leg", observed=True)
+            .agg(
+                orders=("wait", "size"),
+                **{
+                    "median wait from arrival at the pickup to the pickup mark (s)": ("wait", "median"),
+                    "median straight line (km)": ("km", lambda s: round(s.median(), 2)),
+                    "median Distance (KM)": ("dist", "median"),
+                },
+            )
+            .reset_index()
+        )
+        table["rows"] = np.where(table["pickup leg"].isin(["1-10 s", "11-60 s"]), "dropped", "kept")
+        return [
+            Decision(
+                title=f"Pickup legs of {MAX_LATE_MARK_SECONDS} s or less dropped",
+                why=(
+                    "The rider marked the pickup at the destination (the winners' page), so the customer already has "
+                    "the parcel and no one acts on the ETA. The late tap shows in the long wait before the pickup "
+                    "mark; the legs are real deliveries, kilometres long. Lennart, 2026-11-05 (CLEAN-11)."
+                ),
+                evidence=table,
+            )
+        ]

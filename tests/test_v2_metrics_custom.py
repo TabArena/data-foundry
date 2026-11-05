@@ -306,6 +306,26 @@ def _per_era_mean(frame: pd.DataFrame, corr) -> float:
     return float(frame.groupby("era")[["target", "prediction"]].apply(corr).mean())
 
 
+@pytest.mark.parametrize("method", ["pearson", "numerai_corr"])
+def test_mean_group_pearsonr_scores_a_constant_prediction_0(method: str) -> None:
+    """A group with a varying target and constant predictions scores 0 (also a float constant like 0.3, whose
+    centring leaves rounding noise); a group with a constant target stays out; a declined group counts as 0.
+    """
+    rng = np.random.default_rng(0)
+    group = np.repeat(np.arange(6), 50)
+    target = rng.normal(size=group.size)
+    target[group == 5] = 1.0  # constant target: left out
+    spec = _spec("mean_group_pearsonr", "regression", params={"method": method}, inputs={"group": "g"})
+    for constant in (0.3, 0.5, 0.25, 0.1 + 0.2):
+        assert score(spec, target, np.full(group.size, constant), group=group) == 0.0
+    noisy = target + rng.normal(scale=0.5, size=group.size)
+    full = score(spec, target, noisy, group=group)
+    half = noisy.copy()
+    half[group < 3] = 0.3  # abstain on three of the five scored groups
+    assert full > score(spec, target, half, group=group) > 0
+    assert np.isnan(score(spec, np.ones(10), np.arange(10.0), group=np.zeros(10)))
+
+
 @pytest.mark.parametrize("seed", [0, 1])
 def test_mean_group_pearsonr_numerai_corr_equals_numerai_tools(seed: int) -> None:
     frame = _numerai_frame(seed)

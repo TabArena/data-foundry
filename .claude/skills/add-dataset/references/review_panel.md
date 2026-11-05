@@ -89,7 +89,8 @@ would change no decision? The main session applies its fixes.
 
 ## What lands in REVIEW.md
 
-The issues come from the mediator's "needs the curator" list and the disputed points, in rank order. After them, the
+The issues come from the mediator's "needs the curator" list and the disputed points, in rank order, 0 to N of them:
+when the list is empty the REVIEW.md has no issue, and that is a result, not a gap. After them, the
 `**Review panel:**` block ([review file format](../../review-added-datasets/references/review_file_format.md)):
 
 ```markdown
@@ -136,5 +137,7 @@ another's debate runs.
   probe library (`curation_probes/leak.py`, a row in the probe table of
   [leak_checks.md](../../knowledge-curation/references/leak_checks.md)), so the cheap check finds it the next time.
 * An agent's claim without a test is a question, not a finding (evidence.md, EV-6 and EV-7).
+* Every agent reports 0 to N findings. An attack that finds nothing is a result ("no leak found", with what was
+  tested); an agent never stretches a weak point into a finding to have one.
 * The panel recommends; the curator decides. Nothing the panel says changes a verdict field.
 * Personal data in the raw files stays in the run folder; reports quote no rows that identify a person.

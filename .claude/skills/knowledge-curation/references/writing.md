@@ -82,7 +82,9 @@ options table has the columns `| | Option | What it does | Pro | Con |`: a lette
 with `(implemented)` on the one the definition has now, what it changes in the dataset (rows, columns, split, score),
 and its pros and cons in a few words each. A cell with several points separates them with `; `, and the page shows them
 as bullets (Andrej, 2026-11-03), so keep a `;` out of a single point. Every issue has at least two rows; the curator's
-mark "as implemented" takes the implemented row, and "change" names the letter.
+mark "as implemented" takes the implemented row, and "change" names the letter. Mark one row `(implemented)` also
+when the question is whether to change something elsewhere (a sibling, a rule): the row that changes nothing is what
+the definition has now, and the page names it on the "As implemented" button.
 
 The text for the curator reads without the rules. Rule IDs, rule wording, the strength of a rule and the curator's
 earlier calls quoted as precedent go into footnotes (`[^1]` in the text, `[^1]: **LEAK-31** (Should): ...` at the

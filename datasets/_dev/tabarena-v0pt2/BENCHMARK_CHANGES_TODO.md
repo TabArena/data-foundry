@@ -32,7 +32,11 @@ side (metadata, checks, the dataset review) is tracked in the curation records a
   prediction time; a task that may only use earlier rows of a group (`group_time_on`) needs causal aggregates, and a
   task whose rows stand alone (sepsis: each hour from its own measurements) none. The field is `grouping.context`
   (`none`, `all_rows`, `past_rows`); `all_rows` in v0.2: musk, amex_non_iid_1m,
-  sat11_hand_algo_runtime.
+  sat11_hand_algo_runtime, protein_model_quality_rf_pcp (2026-11-05; huesken_sirna_efficacy reopened to follow). On
+  protein a model that compares a candidate with its protein's others scores 0.483 against 0.322 per-protein
+  correlation for a row-only one, so ignoring `context` costs a third of the skill. data-foundry's
+  `examples/benchmark_container.py` does not use it yet: `feature_columns` drops the group column, so no model there
+  sees which test rows share a group.
 - [ ] **Dataset-specific metrics.** Every v0.2 definition now declares the metric its source scored, or an explicit
   fallback (the rules: `.claude/skills/knowledge-curation/references/metrics.md`, MET-1 to MET-13), and a format-2
   container stores it as data: `task_metadata.objective_metric` (`data_foundry.schema.MetricSpec`: `name`, `kind`
@@ -314,10 +318,17 @@ ignores them, since the bins stay numeric features.
 ## Ordered targets and the positive class (2026-11-01, PR #37)
 
 Classification targets ship their classes as words now (CLEAN-25). Binary targets are "No"/"Yes" with "Yes" the
-event, so sorting the classes gives the right positive class. Three multiclass targets are ordered categories whose
+event, so sorting the classes gives the right positive class. Five multiclass targets are ordered categories whose
 category order is not the sorted order (cardiotocography: normal < suspect < pathologic; dementia_prediction;
-hepatitis_c_prediction): the harness must align its probability columns to the container's categories by class name
-(as `examples/benchmark_container.py` does with `reindex(columns=labels)`), never by position after sorting.
+hepatitis_c_prediction; chicago_traffic_crashes; ai4d_lab_tanzania_tourism_classification_challenge).
+
+Since 2026-11-05 (Lennart, issue 5 of ai4d_lab_tanzania_tourism_classification_challenge) the scorer follows
+scikit-learn's convention for every target: `scorer(container)` reads probability columns in the sorted order of the
+classes (`classes_`, the column order of `predict_proba`), and the declared order stays in the container as type
+information. A harness passes `predict_proba` as it comes, or a DataFrame whose columns are the class names, which the
+scorer matches by name (a missing or unknown class name is an error). Before that change the scorer read a plain
+array in the category order: a harness that reorders its columns to the categories, as the example did, now passes
+them as named columns or in sorted order. A score computed with the columns aligned either way is the same number.
 
 ## Test rows predicted without the other test rows (2026-11-04, PR #33 second review)
 
@@ -326,4 +337,6 @@ hepatitis_c_prediction): the harness must align its probability columns to the c
   looks at the other test rows of a block (a test-time fit, transductive inference, the test block's own statistics)
   would see the future. Data Foundry ships a protocol line in each definition and no per-row scorer (Lennart: "we can
   check if the model cheats"), so the guarantee sits in the benchmark: predict each test row from the training rows and
-  its own row, or check that a method's predictions do not change when the other test rows change.
+  its own row, or check that a method's predictions do not change when the other test rows change. A method that
+  learns from the test block is called out and not benchmarked (LEAK-9, amended 2026-11-05, Lennart: "we investigate
+  models, and would find out if they do transductive learning which we can call out and not benchmark").

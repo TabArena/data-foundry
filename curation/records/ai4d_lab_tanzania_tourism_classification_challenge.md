@@ -3,6 +3,7 @@ unique_name: ai4d_lab_tanzania_tourism_classification_challenge
 name: ai4d-lab-tanzania-tourism-classification-challenge
 checked_by:
 - Myunghwan
+- Lennart
 data_foundry_status:
 - WIP (DF)
 claimed_by: Myunghwan
@@ -98,3 +99,19 @@ CC (2026-11-04, Lennart): ship, with the ordered `cost_category` and `age_group`
 **Assessment (AI, 2026-11-04):** review panel (none): no panel ran for this dataset; the PR #33 review page (a light static review of the definition, README and record) raised the two typing issues, both settled.
 
 **Assessment (AI, 2026-11-04):** review panel (full, second pass after Lennart's PR #33 review): ship after changes (text only, no change to data, target, metric or split; rebuild on the curator's ask. Made in the definition: the label is the party's total trip spending in TZS, bands at about 0.5M / 1M / 5M / 10M / 50M, 97.9% agreement on 2,401 rows linked to the 2020 cut (USE-5, EV-2); the 2020 cut is an earlier subset, a PROV-6 duplicate version, not a different task; year 2022 under PROV-9; `ForcedIIDFromTemporal` under SPLIT-8; the 965 copies kept under LEAK-19's distinct-entity clause, a profile-grouped split costs +0.0047 log loss; no leak and no exploit. This supersedes "no panel ran" above; the 2026-10-26 "retained in the review evidence" has no artefact behind it; `mmu_2022` is `No` / `Duplicate`, not `TBD -> Yes`; the screening's regression-framing risk is answered: keep the six classes, the cost exists only for the 4,809-row 2020 subset); disputed: SPLIT-8 (the tag stays unless the planner actor is replaced), PROV-6 (a record for the 2020 cut), MET-2 (the scorer's class column order, harness or dataset), LEAK-19 (exception line or note, settled as a note; issue 7); for the curator: issues 3-8. Priority 4: gap +, use case 0, source +, shape +, risk 0 (gap: multiclass is thin among the 162 accepted definitions; use case: Zindi names the planner, but the fit is approximate and a better-fitting actor is open, issue 3; source: NBS survey with Zindi's codebook and metric; shape: 18,506 rows, 19 mixed features; risk: no leak, the open issues are the actor, bookkeeping and the harness).
+
+CC (2026-11-05, Lennart): the survey statistician joins the trip planner as actor (REVIEW.md issue 3, B): NBS and the Bank of Tanzania fill in a departing respondent's spending band from the rest of the exit form when the expenditure answer is missing or implausible. `use_case`, `known` and `fit_reason` name both; the `ForcedIIDFromTemporal` tag stays, since the planner still looks forward; no data change.
+
+CC (2026-11-05, Lennart): the 2020 Pycon / Zindi "Tanzania Tourism Prediction" cut gets a `No` / `Duplicate` record, `tanzania_tourism_prediction`, naming this record as canonical (issue 4, B; PROV-6).
+
+CC (2026-11-05, Lennart): `checked_by` gets Lennart, in line with the ten records shipped on 2026-11-04 (issue 6, B).
+
+CC (2026-11-05, Lennart): `mmu_2022` confirmed as a duplicate of this record; its `checked_by` is Lennart (issue 8, B; PROV-5).
+
+CC (2026-11-05, Lennart): the declared metric (log loss over the six classes, the source's) is checked and stays as declared.
+
+CC (2026-11-05, Lennart): the 965 exact copies stay under LEAK-18 (few coarse features, plausible repeats, as sepsis_survival_minimal_clinical_records), not by widening LEAK-19 (REVIEW.md issue 7, answered (d)): 17 of 19 inputs are coarse survey answers, and the copies are distinct respondents.
+
+CC (2026-11-05, Lennart): the scorer reads probability columns in the sorted order of the class labels (scikit-learn's classes_) and checks named columns; the ordered categories stay metadata (issue 5, C; MET-2).
+
+CC (2026-11-05, Lennart): ship. Every issue of the second-pass review page is settled, and a record with no open issue ships by default; the definition joins the accepted set, built on the curator's ask. The claim stays until the PR that takes it to `main` sets `DF: Yes`.

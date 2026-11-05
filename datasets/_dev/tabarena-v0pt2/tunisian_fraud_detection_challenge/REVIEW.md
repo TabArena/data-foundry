@@ -102,6 +102,31 @@ verdict is a final `Yes` and `claimed_by` is Myunghwan; the claims board writes 
    [^split8]: **SPLIT-8** (Must): a task that cannot meet the window rule ships in the closest regime that keeps the
      rows, tagged as forced from temporal.
 
+   **Lennart (2026-11-05, change):** Option B: Previous-year label as a feature. Do B
+
+   **Consistency check (AI, 2026-11-05):** B keeps the retrospective framing and builds a feature on it, although the
+   2018 cut documents late labels. On 2026-11-04 you moved lt_vehicle_loan_default_prediction off the same retrospective
+   framing to the decision at disbursement. What sets this dataset apart?
+   - (a) Tunisian in-depth verifications cover several open years (Ministère des Finances FAQ), so ranking past years is
+     the real decision, while a loan cannot be approved after the fact; written as the fact that sets it apart, and B is
+     applied;
+   - (b) treat it like lt: option A, the planner framing with the test taxpayers out of training, shipped forced
+     grouped;
+   - (c) reopen lt.
+
+   Under B, `CTR_MATFIS` builds the two features and does not ship as an input. Give the letter in the note; nothing is
+   applied until then.
+
+   **Lennart (2026-11-05, change):** Reply (a): Tunisian in-depth verifications cover several open years (Ministère des
+   Finances FAQ), so ranking past years … Option B: Previous-year label as a feature.
+
+   **Resolved (2026-11-05, Lennart):** B, with (a). Two features ship: `previous_target` (the label of the taxpayer's
+   most recent earlier fiscal year) and `years_since_previous_target` (1-4), both missing for 58.5% of rows;
+   `CTR_MATFIS` builds them and is dropped. On the shipped windows every previous label comes from a training row, none
+   from its own window. LightGBM RMSE 5.863 to 5.533 with the codes as shipped (categories), 6.021 to 5.476 with the
+   codes as numbers, as the panel ran it. The fact that sets this apart from lt (verifications cover several open years)
+   is a Cases row; the framing is one retrospective story in every field.
+
 3. **Drop `TVA_RESTIT`, the VAT refund paid?**
 
    * **Problem:**
@@ -142,6 +167,9 @@ verdict is a final `Yes` and `claimed_by` is Myunghwan; the claims board writes 
    [^leak10]: **LEAK-10** (Must): a feature holds only what existed at the prediction point and never gives the
      target away.
 
+   **Resolved (2026-11-05, Lennart):** B. `TVA_RESTIT` left; `TVA_MTORDTVA` and `TVA_MTDJRTVA` stay under the host-field
+   rule with their numbers.
+
 2. **Drop `CTR_CESSAT`, the cessation status?**
 
    * **Problem:**
@@ -172,6 +200,8 @@ verdict is a final `Yes` and `claimed_by` is Myunghwan; the claims board writes 
    [^leak10b]: **LEAK-10** (Must, weak here): out are "attributes looked up after the outcome", whatever their size.
    [^clean12]: **CLEAN-12** (Should): reverse ordinal codes and one-hot blocks into categories with their labels.
 
+   **Resolved (2026-11-05, Lennart):** B. `CTR_CESSAT` left (98 features); `dataset check` clean.
+
 4. **Add the `Selection Bias` marker?**
 
    * **Problem:**
@@ -191,6 +221,8 @@ verdict is a final `Yes` and `claimed_by` is Myunghwan; the claims board writes 
    * **Recommendation:** B: every panel role that looked at it asks for it. **Decision:** add or leave?
 
    [^use8]: **USE-8** (Must): write how closely the data mirrors the use case, its fit.
+
+   **Resolved (2026-11-05, Lennart):** B. `Selection Bias` is set in the record.
 
 5. **Record the refund, regularisation and registry fields under the host-field rule, and amend its scope?**
 
@@ -215,6 +247,31 @@ verdict is a final `Yes` and `claimed_by` is Myunghwan; the claims board writes 
 
    [^leak38b]: **LEAK-38** (Should), procedure: anonymised fields that may be post-outcome, in data a company released
      for its own competition, stay, with a note.
+
+   **Lennart (2026-11-05, change):** Option B: Same, plus an amendment.
+
+   **Consistency check (AI, 2026-11-05):** the amendment fits the cases kept under the rule (kick,
+   expresso_churn_prediction and fraud_electricity are named fields too); its wording would keep "that may be
+   post-outcome" and "for its own competition or challenge", with Cases rows for african_credit_scoring_challenge,
+   medical_facility_operational_data and this dataset. The open point is the registry: issue 2 showed that every
+   registry field was looked up at extraction, so their timing is known, and in
+   distribution_transformers_at_cauca_department attributes looked up at extraction left under LEAK-10. What keeps the
+   22 registry fields that stay here?
+   - (a) no mechanism links a registry change to the adjustment (unlike cessation), recorded as a LEAK-10 Cases row; the
+     amendment is applied as proposed;
+   - (b) drop them too;
+   - (c) widen the amendment to registry fields looked up at extraction.
+
+   Give the letter in the note; nothing is applied until then.
+
+   **Lennart (2026-11-05, change):** Reply (a): no mechanism links a registry change to the adjustment (unlike
+   cessation), recorded as a LEAK-10 Cases row; t… Option B: Same, plus an amendment.
+
+   **Resolved (2026-11-05, Lennart):** B, with (a). LEAK-38 is amended (one amendment with medical issue 9): fields that
+   may be post-outcome, anonymised or named, whose timing no test can establish, in data the owner released for its own
+   challenge, stay with a note and are named in `fit_reason`; the refund and regularisation fields are named there. The
+   22 registry fields stay under LEAK-10 as an application (no mechanism ties a registry change to the adjustment,
+   unlike `CTR_CESSAT`), with a Cases row.
 
 **Review panel:** ship after changes (mediator). Tier full, second pass after your PR #33 review: twelve reports
 (claim, column and split auditors, domain practitioner, blind reviewer, task gamer, precedent checker, advocate and

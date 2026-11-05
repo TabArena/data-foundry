@@ -57,6 +57,8 @@ CC (2026-10-26, Lennart): issue 7: "Create the v6 data record, keep v5.2 as a fr
 
 CC (2026-10-26, Lennart): verdict ship.
 
+**Assessment (AI, 2026-11-05):** the shared `mean_group_pearsonr` changed on 2026-11-05 (Lennart, huesken_sirna_efficacy issue 6): an era whose target varies but whose predictions are all equal scores 0 instead of being left out; an era with a constant target stays out. Scores of non-constant predictions are unchanged; `numerai_tools` gives NaN for such an era, so a constant prediction is the one case where the two differ.
+
 ## Reference
 
 Website https://numer.ai/data/v5.2

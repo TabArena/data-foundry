@@ -18,35 +18,77 @@ from data_foundry.v2 import (
     drop_columns,
 )
 
+SENSOR1 = ("pm2_5", "pm10")
 SENSOR2 = ("s2_pm2_5", "s2_pm10")
+DEAD_RATIO = 0.27  # dead hours reach 0.255 of the other sensor; the lowest live ratio is 0.294 (Makerere 2020-12-05)
+OUTAGE_SITE, OUTAGE_DAYS = "Nakawa", ("2020-11-10", "2020-11-23")  # the reference outage, dates inclusive
 
 
 LANDFORMS = {21: "Upper slope (warm)", 31: "Lower slope (warm)"}  # ALOS landforms, Earth Engine CSP/ERGo/1_0/Global
 
 
-def _reference_spikes(df: pd.DataFrame) -> pd.Series:
-    """Reference hours above 3 times both low-cost PM2.5 channels and above 3 times the same site's reference in both
-    neighbouring hours: a single-hour artefact of the reference monitor, not a reading the sensors share.
+def _neighbour_references(df: pd.DataFrame) -> pd.DataFrame:
+    """The same site's reference one hour before and one hour after each row; missing when that hour is not in the
+    file or its reference is missing.
     """
     t = pd.to_datetime(df["created_at"])
     d = df.assign(_t=t).sort_values(["site", "_t"], kind="stable")
     by_site = d.groupby("site")
     hour = pd.Timedelta(hours=1)
-    adjacent = (d["_t"] - by_site["_t"].shift(1)).eq(hour) & (by_site["_t"].shift(-1) - d["_t"]).eq(hour)
-    ref = d["ref_pm2_5"]
-    spike = (
-        adjacent
-        & ref.gt(3 * d["pm2_5"])
-        & ref.gt(3 * d["s2_pm2_5"])
-        & ref.gt(3 * by_site["ref_pm2_5"].shift(1))
-        & ref.gt(3 * by_site["ref_pm2_5"].shift(-1))
-    )
-    return spike.reindex(df.index)
+    before = by_site["ref_pm2_5"].shift(1).where((d["_t"] - by_site["_t"].shift(1)).eq(hour))
+    after = by_site["ref_pm2_5"].shift(-1).where((by_site["_t"].shift(-1) - d["_t"]).eq(hour))
+    return pd.DataFrame({"ref_before": before, "ref_after": after}).reindex(df.index)
+
+
+def _reference_spikes(df: pd.DataFrame) -> pd.Series:
+    """Reference hours above 3 times both low-cost PM2.5 channels and above 3 times the same site's reference in each
+    neighbouring hour that has one, with at least one such hour: an instrument error of the reference monitor, a value
+    neither the collocated sensors nor the hours around it share.
+    """
+    nb = _neighbour_references(df)
+    ref = df["ref_pm2_5"]
+    above = [ref.gt(3 * nb[c]) | nb[c].isna() for c in nb]
+    return nb.notna().any(axis=1) & ref.gt(3 * df["pm2_5"]) & ref.gt(3 * df["s2_pm2_5"]) & above[0] & above[1]
 
 
 def _sensor2_dead(df: pd.DataFrame) -> pd.Series:
     """Hours in which both sensor-2 channels read exactly 0: a dead channel, as sensor 1 and the reference show."""
     return df[SENSOR2[0]].eq(0) & df[SENSOR2[1]].eq(0)
+
+
+def _sensor_low(df: pd.DataFrame, sensor: tuple[str, str], other: tuple[str, str]) -> pd.Series:
+    """Hours in which a sensor's PM2.5 is below DEAD_RATIO times the other sensor's: a dead channel, not clean air."""
+    return df[sensor[0]].lt(DEAD_RATIO * df[other[0]])
+
+
+def _reference_outage(df: pd.DataFrame) -> pd.Series:
+    """Nakawa hours of 2020-11-10 to 2020-11-23 with the reference below 0.3 times both low-cost PM2.5 channels: the
+    reference monitor failed, as collocated instruments sample the same air.
+    """
+    day = pd.to_datetime(df["created_at"]).dt.strftime("%Y-%m-%d")
+    run = df["site"].eq(OUTAGE_SITE) & day.between(*OUTAGE_DAYS)
+    ref = df["ref_pm2_5"]
+    return run & ref.lt(0.3 * df["pm2_5"]) & ref.lt(0.3 * df["s2_pm2_5"])
+
+
+def _reference_errors(df: pd.DataFrame) -> tuple[pd.Series, pd.Series]:
+    """The outage hours, then the spikes; an outage hour's reference is missing, so it is no neighbour of a spike."""
+    outage = _reference_outage(df)
+    return outage, _reference_spikes(df.assign(ref_pm2_5=df["ref_pm2_5"].mask(outage)))
+
+
+def _mask_dead_channels(df: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, pd.Series]]:
+    """Set a dead sensor's two channels missing; the rows stay. Masks come from the raw readings."""
+    zero2 = _sensor2_dead(df)
+    masks = {
+        "sensor 2, both channels 0": zero2,
+        "sensor 2, below 0.27 of sensor 1": _sensor_low(df, SENSOR2, SENSOR1) & ~zero2,
+        "sensor 1, below 0.27 of sensor 2": _sensor_low(df, SENSOR1, SENSOR2),
+    }
+    df = df.copy()
+    df.loc[masks["sensor 2, both channels 0"] | masks["sensor 2, below 0.27 of sensor 1"], list(SENSOR2)] = float("nan")
+    df.loc[masks["sensor 1, below 0.27 of sensor 2"], list(SENSOR1)] = float("nan")
+    return df, masks
 
 
 class AirqoLowCostAirQualityMonitorCalibrationChallenge(AbstractCuratedDataset):
@@ -65,19 +107,20 @@ class AirqoLowCostAirQualityMonitorCalibrationChallenge(AbstractCuratedDataset):
             "so reference values from other hours are not predictors."
         ),
         split=(
-            "Three monthly windows, December 2020 to February 2021 (Kampala's dry season), each trained on every "
-            "earlier hour: a model refit at the start of each month corrects that month's readings."
+            "Five monthly windows, October 2020 to February 2021, each trained on every earlier hour: a model refit "
+            "at the start of each month corrects that month's readings. The test covers two months of the "
+            "September-November rains and Kampala's December-February dry season."
         ),
         changes=(
-            "Use only the labeled Train.csv. Drop the opaque row ID, set sensor 2's two channels missing in the "
-            "500 hours where both read exactly 0 (a dead channel), drop 5 single-hour reference spikes (10,927 of "
-            "10,932 rows stay), parse the recorded UTC+3 timestamp, type the site as categorical and decode the "
-            "90m landform class into its catalogue words."
+            "Use only the labeled Train.csv. Drop the opaque row ID; set a dead sensor's two channels missing "
+            "(sensor 2 in 516 hours, sensor 1 in 18); drop 12 single-hour reference errors and 92 hours of a Nakawa "
+            "reference outage (10,828 of 10,932 rows stay); parse the recorded UTC+3 timestamp, type the site as "
+            "categorical and decode the 90m landform class into its catalogue words."
         ),
         fit="approximate",
         fit_reason=(
             "AirQo's main use is correcting network devices that have no reference monitor; with three sites that "
-            "transfer cannot be tested (leaving one site out, an untuned LightGBM scores RMSE 26.18 against 21.11 "
+            "transfer cannot be tested (leaving one site out, an untuned LightGBM scores RMSE 24.84 against 19.90 "
             "for the raw sensor). The task tests the next monthly refit at known collocated sites, a cadence the "
             "curator chose; the source paper names seasonal retraining as future work. Reference aggregation and "
             "site-metadata dates are unverified."
@@ -111,18 +154,18 @@ class AirqoLowCostAirQualityMonitorCalibrationChallenge(AbstractCuratedDataset):
         }
     """
     curation_comments = """
-        We start with the 10,932 labeled rows of the supplied 2021 competition Train.csv; 10,927 ship.
+        We start with the 10,932 labeled rows of the supplied 2021 competition Train.csv; 10,828 ship.
 
         - Prediction point: the start of each month, when a model refit on every earlier collocated hour corrects
           that month's new hourly readings at the three collocated devices. No reference value from that month is
           known, so lagged or neighbouring reference values are not features (a previous-hour reference lowers an
-          untuned LightGBM's mean RMSE from 18.21 to 16.28 on the three windows, all from test-month labels).
+          untuned LightGBM's mean RMSE from 18.21 to 16.28 on the three windows, all from test-month labels;
+          superseded 2026-11-05: 15.34 to 14.09 on the five windows, February 27.12 to 23.23).
           Lennart chose this forward reading on 2026-11-04 with the temporal split; it supersedes the retrospective
           correction of archived hours that Myunghwan approved on 2026-10-27/28.
         - Keep ref_pm2_5 on its original micrograms-per-cubic-metre scale, with source RMSE; no target
-          transformation, clipping or weighting. Labels run from 0.1 to 459.0. The low end includes 92 Nakawa hours
-          (2020-11-10 to 2020-11-23) in which the reference reads 0.1 to 4 while both low-cost channels read 10 to
-          120; they are kept for now, all on the training side of every window (open review issue).
+          transformation, clipping or weighting. Labels run from 0.2 to 459.0. The 92 Nakawa outage hours of
+          2020-11-10 to 2020-11-23 were kept on 2026-11-04 (superseded 2026-11-05: they leave, CC below).
         - Drop ID: it is an opaque, unique row key. Parse created_at as the supplied UTC+3 time without adding
           another three-hour shift. No target lags, leads, reference-neighbor features or full-data label transforms.
         - Treat site and landform_90m as nominal. The source's Google Earth Engine links identify landform_90m as
@@ -134,16 +177,18 @@ class AirqoLowCostAirQualityMonitorCalibrationChallenge(AbstractCuratedDataset):
           both low-cost PM2.5 channels and above 3 times the same site's reference in both neighbouring hours is a
           single-hour artefact of the reference monitor, set missing and its row dropped (CLEAN-11, CLEAN-15). The
           rule catches 5 hours: Nakawa 2020-10-03 10:00 (444.0), 2020-10-05 09:00 (176.8), 2020-10-17 09:00 (374.5),
-          2020-10-30 17:00 (150.6) and Makerere 2021-02-17 20:00 (249.1). The rule reads the target and its
-          neighbouring labels. The four Nakawa hours are on the training side of every window; the Makerere hour is
-          in the February 2021 test window, where CLEAN-11 lets a single extreme target leave only from the training
-          period (open review issue). The rule follows the spike (rate-of-change) screening that hourly
-          reference-monitor feeds such as EPA's AirNow run as automated QC (no published QC document is quoted
-          yet). It needs both neighbouring hours in the file, so four look-alike hours with a missing neighbour
-          stay, two of them in the December and January test windows, and USEmbassy 2021-02-10 07:00 (459.0,
-          February window) misses the threshold by 0.55. Spikes lasting several hours, often at two sites at once,
-          stay: they look like real pollution events.
-        - Keep ordinary missingness: six humidity and 17 temperature values. Exact upstream averaging and
+          2020-10-30 17:00 (150.6) and Makerere 2021-02-17 20:00 (249.1) (superseded 2026-11-05: 12 hours, CC below).
+          The rule reads the target and its neighbouring labels. The four Nakawa hours are on the training side of
+          every window (superseded 2026-11-05: under the five windows they are October 2020 test labels); the
+          Makerere hour is in the February 2021 test window, where CLEAN-11 lets a single extreme target leave only
+          from the training period (settled 2026-11-05: an impossible value, dropped in every window, issue 2, CC
+          below). The rule follows the spike (rate-of-change) screening that hourly reference-monitor feeds such as
+          EPA's AirNow run as automated QC (no published QC document is quoted yet). It needs both neighbouring hours
+          in the file, so four look-alike hours with a missing neighbour stay (superseded 2026-11-05: the rule takes
+          the neighbouring hours present and drops them, CC below), and USEmbassy 2021-02-10 07:00 (459.0, February
+          window) misses the threshold by 0.55 (to sensor 1; to sensor 2 by 26.2). Spikes lasting several hours,
+          often at two sites at once, stay: they look like real pollution events.
+        - Keep ordinary missingness: five humidity and 17 temperature values. Exact upstream averaging and
           reference-label construction are unknown; unusual positive values are not proven erroneous.
         - Sensor 2's PM2.5 and PM10 both read exactly 0 in 500 labeled hours, all at USEmbassy between
           2019-11-18 and 2019-12-17 in 13 runs of 11 to 117 hours; neither channel is 0 anywhere else, and sensor 1
@@ -152,7 +197,7 @@ class AirqoLowCostAirQualityMonitorCalibrationChallenge(AbstractCuratedDataset):
           rows stay, with sensor 1 and the reference (CLEAN-11: an impossible value becomes missing; Lennart,
           2026-11-04). The definition raises if the joint zeros no longer number 500. Sixteen more hours of the same
           outage, with sensor 2 near zero (0.0014 to 1.37 in 15 of them), and 18 USEmbassy hours with sensor 1 dead
-          (2019-11-13/14, 2020-06-07/08) stay as readings (open review issue).
+          (2019-11-13/14, 2020-06-07/08) stay as readings (superseded 2026-11-05: set missing, CC below).
         - All 16 predictors remain after ID removal. The eight geographic/site descriptors are constant within
           each site and encode its identity; recurrence is legitimate for this known-site task. Temperature and
           humidity are identical across sites at every shared hour: one city-wide ("prevailing") series, not device
@@ -163,18 +208,60 @@ class AirqoLowCostAirQualityMonitorCalibrationChallenge(AbstractCuratedDataset):
         - New-site transfer, AirQo's network use, cannot be tested with three sites whose periods barely overlap
           (see fit_reason). Exact device serials, source reference aggregation and site-metadata snapshot dates
           remain unverified.
-        - On the three windows, untuned models give mean RMSE 41.22 for the training mean, 25.32 for raw sensor 1,
-          24.76 for a linear model, 19.21 for a forest and 18.26 for LightGBM (26.9, 13.6 and 14.3 per window,
-          February first). February, the highest-pollution month, dominates the mean.
-        - Exact feature-copy share is zero. Native hidden-group probes report no hits; quantized near-copy profiles
-          cover 17.72 percent of rows but have only a 0.001215 skill gap. Examined pairs are same-site, different-hour
-          observations, not duplicate dynamic readings. Only 2 of 2,720 test rows have a same-site training hour
-          within one hour.
-        - The pinned leak CLI fails on timezone-aware date selection in this runtime. A by-hand substitute on the three
-          windows found no leak: no single column moves an untuned LightGBM's mean RMSE by more than 0.86 when
-          dropped, and created_at alone has no skill.
+        - On the five windows, untuned models give mean RMSE 36.42 for the training mean, 21.01 for raw sensor 1,
+          20.71 for a linear model, 15.08 for a forest and 15.34 for LightGBM (27.4, 14.7, 12.2, 9.3 and 13.2 per
+          window, February first; one seed). February, the highest-pollution month, dominates the mean. (Superseded
+          2026-11-05: 41.22, 25.32, 24.76, 19.21 and 18.26 on the three windows of 2026-11-04; LightGBM 16.69, with
+          January 16.8 and November 13.0, before the 7 hours issue 2 adds.)
+        - Exact feature-copy share is zero on all five windows. The hidden-group probe finds no entity-like column;
+          near-copy clusters hold 6.7% of rows, and 12.1% of test rows have one on the training side (superseded
+          2026-11-05: the quantized profiles' 17.72 percent and 0.001215 skill gap came from the random folds). Only 4
+          of 4,624 test rows have a same-site training hour within one hour, at the window starts.
+        - The leak probes run on the five windows (superseded 2026-11-05: the pinned CLI failed on timezone-aware
+          dates, and a by-hand substitute on the three windows found no leak) and find none: all features score skill
+          0.813, each sensor channel alone 0.61 to 0.66 and every other column alone below 0, and no test row copies
+          a training row. Dropping one column moves an untuned LightGBM's mean RMSE by at most 0.62, and created_at
+          alone scores a skill of 0.04.
         - The split is temporal (Lennart, 2026-11-04), replacing the site-balanced random folds Myunghwan approved on
-          2026-10-28; see the splits comment. Public data redistribution permission
+          2026-10-28; see the splits comment.
+        - CC (2026-11-05, Lennart): five monthly windows from October 2020 instead of the three dry-season months
+          (issue 1, A; SPLIT-20, as aeolus and perth_house_prices widened theirs). The test now holds 4,631 hours
+          (4,624 after issue 2) over both seasons, and October and November score all three sites; the smallest
+          train side is 57.3% (SPLIT-14). Nakawa enters the October window with 63 hours of history (2020-09-19 to
+          2020-09-23), so its October hours are close to a new-site test inside this known-site task (USE-10). It
+          supersedes the three windows of 2026-11-04 ("ok (a)").
+        - CC (2026-11-05, Lennart): the 92-hour Nakawa reference outage leaves (issue 3, A; CLEAN-11 impossible-value
+          clause, then CLEAN-15; as qsar_tid_11 and 2024_lusaka_mobility_prediction_hackathon). A Nakawa hour of
+          2020-11-10 to 2020-11-23 with the reference below 0.3 times both low-cost PM2.5 channels is a failed
+          reference: 92 hours, reference 0.1 to 11.2 against channels of 12 to 190, while Nakawa's monthly median
+          ratio of reference to sensor 1 is 1.04 to 1.21 elsewhere. The target is set missing and the rows leave;
+          the definition raises unless the count is 92. Without the date bound the same test catches 96 Nakawa hours.
+          Under the five windows these are November 2020 test labels; November keeps 599 hours, 260 of them at Nakawa
+          (596 and 258 after issue 2).
+        - CC (2026-11-05, Lennart): one symmetric dead-channel rule at 0.27 (issue 4, B; CLEAN-11; as heart_disease,
+          ashrae and protein_model_quality_rf_pcp): a sensor whose PM2.5 is below 0.27 times the other sensor's has
+          both its channels set missing, and the row stays. It adds 16 sensor-2 hours of the 2019 outage and 18
+          sensor-1 hours (2019-11-13/14, 2020-06-07/08), all at USEmbassy and on every window's training side; the
+          definition raises unless the counts are 500, 16 and 18. Dead hours reach a ratio of 0.255, and the lowest
+          live one, Makerere 2020-12-05 06:00 at 0.294 (December test window), stays a reading.
+        - CC (2026-11-05, Lennart): the spike rule becomes an instrument-error rule for every window, test windows
+          included (issue 2, (a) of its consistency check; CLEAN-11 impossible-value clause, then CLEAN-15; as the
+          Nakawa outage, qsar_tid_11 and 2024_lusaka_mobility_prediction_hackathon). Collocated instruments sample
+          the same air, so a reference hour several times both sensors and the hours around it is a value the
+          reference could not have read ("we think the value is wrong"). A reference hour above 3 times both PM2.5
+          channels and above 3 times the same site's reference in each neighbouring hour present, with at least one
+          present (an outage hour counts as absent), is set missing and the row leaves; the definition raises unless
+          the count is 12. It adds the four look-alikes with a missing neighbour, Nakawa 2020-10-29 17:00 (172.1),
+          2020-11-02 18:00 (232.1), 2021-01-01 22:00 (147.2) and Makerere 2020-12-08 14:00 (82.9), and three more:
+          Nakawa 2020-10-13 05:00 (36.2 against channels of 11.1 and 11.8, the weakest at 3.06 times, before a
+          morning rise the sensors show by 07:00), 2020-11-04 13:00 (40.4 against 6.7 and 7.2) and USEmbassy
+          2020-11-06 02:00 (155.0 against 30.4 and 31.6). All 12 are test labels (October 6, November 3, December,
+          January and February 1 each); 10,828 rows ship. USEmbassy 2021-02-10 07:00 (459.0 against 153.2 and 161.7,
+          before 99.0, no 08:00 hour) stays: it is 2.84 times sensor 2, and a channel factor of 2.83 would catch it
+          and no other hour. LightGBM's mean RMSE goes from 16.69 to 15.34 (November 13.0 to 9.3, January 16.8 to
+          14.7).
+        - CC (2026-11-05, Lennart): the declared metric (RMSE on the original micrograms-per-cubic-metre scale, the
+          source's) is checked and stays as declared. Public data redistribution permission
           is not established by these checks; the source's private-participant restrictions remain in force.
     """
 
@@ -186,20 +273,25 @@ class AirqoLowCostAirQualityMonitorCalibrationChallenge(AbstractCuratedDataset):
         reference="https://zindi.world/competitions/airqo-low-cost-air-quality-monitor-calibration-challenge#evaluation",
         definition="Square root of the mean squared error on original reference PM2.5, in micrograms per cubic metre",
     )
-    temporal = Temporal(on="created_at", splits=TemporalSplits(window=1, unit="months", n_windows=3))
+    temporal = Temporal(on="created_at", splits=TemporalSplits(window=1, unit="months", n_windows=5))
     splits_comment = """
-        Three one-month windows, newest first: February 2021, January 2021, December 2020. Each trains on every
-        earlier hour (8,207 to 10,093 rows, 75-92%). A model refit at the start of each month corrects that month's
-        readings; the monthly cadence is the curator's judgment (Lennart, 2026-11-04). Adong et al. (2022) say it is
-        "important to retrain these models periodically" and name "seasonal re-calibration" as future work; AirQo's
-        refit practice is not documented. All three test months fall in Kampala's December-February dry season (mean
-        reference 44.9, 49.6 and 74.4 against 35.9 to 43.1 in September to November 2020); whether to widen the
-        windows is an open review issue (SPLIT-20). Site coverage differs by month: December has no USEmbassy rows,
-        January 45, February no Nakawa. Before its test months Makerere (from 2020-07-15) has 4.5 to 6.5 months of
-        history and Nakawa (from 2020-09-19) 2.4 and 3.4. The reference is for the same hour and no reporting delay
-        is documented, so no gap is needed; no training row has a label from after its window start. Random folds
-        over the hourly stream gave the model reference labels of neighbouring hours and scored a third better
-        (LightGBM RMSE 12.94 against 18.26 on the same test rows; review panel, 2026-11-04).
+        Five one-month windows, newest first: February 2021 to October 2020 (Lennart, 2026-11-05; issue 1, A). Each
+        trains on every earlier hour (6,204 to 9,994 rows, 57-92%); the test months hold 596 to 1,310 hours. A model
+        refit at the start of each month corrects that month's readings; the monthly cadence is the curator's
+        judgment (Lennart, 2026-11-04). Adong et al. (2022) say it is "important to retrain these models
+        periodically" and name "seasonal re-calibration" as future work; AirQo's refit practice is not documented.
+        The test covers both seasons: mean reference 42.3 and 40.5 in October and November, two months of the
+        September-November rains, against 44.8, 49.5 and 74.2 in the December-February dry season (SPLIT-20). The
+        three dry-season windows of 2026-11-04 ("ok (a)") are superseded. Site coverage differs by month: October and
+        November score all three sites, December has no USEmbassy rows, January 45, February no Nakawa. History before
+        the test months: USEmbassy from 2019-07-25, Makerere from 2020-07-15 (2.5 to 6.5 months), and Nakawa from
+        2020-09-19 with only 63 hours (to 2020-09-23) before the October window, then 1.4 to 3.4 months; Nakawa's
+        October hours are close to a new-site test (USE-10). The reference is for the same hour and no reporting
+        delay is documented, so no gap is needed; no training row has a label from after its window start. Random
+        folds over the hourly stream gave the model reference labels of neighbouring hours and scored a quarter better
+        (untuned LightGBM, one seed, mean RMSE 11.23 against 15.34 on the same five test months; trained on an
+        equal-size random draw of all other months, future included, 14.53). Superseded 2026-11-05: 12.94 against
+        18.26 on the three windows (review panel, 2026-11-04).
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
@@ -214,61 +306,104 @@ class AirqoLowCostAirQualityMonitorCalibrationChallenge(AbstractCuratedDataset):
         if not raw["ID"].is_unique or raw[["site", "created_at"]].duplicated().any():
             raise ValueError("Expected unique source rows and site-hour observations")
         df = drop_columns(raw, ["ID"])
-        dead = _sensor2_dead(df)
-        if dead.sum() != 500:
-            raise ValueError(f"Expected 500 hours with both sensor-2 channels at 0, found {int(dead.sum())}")
-        df.loc[dead, list(SENSOR2)] = float("nan")
-        spikes = _reference_spikes(df)
-        if spikes.sum() != 5:
-            raise ValueError(f"Expected 5 single-hour reference spikes, found {int(spikes.sum())}")
-        # A row without a valid target is no task row (CLEAN-11, CLEAN-15; Lennart, 2026-11-04).
-        df = df.loc[~spikes]
+        # Dead channels become missing, the rows stay (CLEAN-11; Lennart, 2026-11-04 and 2026-11-05).
+        df, dead = _mask_dead_channels(df)
+        expected = {"sensor 2, both channels 0": 500, "sensor 2, below 0.27 of sensor 1": 16}
+        expected["sensor 1, below 0.27 of sensor 2"] = 18
+        for kind, n in expected.items():
+            if dead[kind].sum() != n:
+                raise ValueError(f"Expected {n} dead hours ({kind}), found {int(dead[kind].sum())}")
+        outage, spikes = _reference_errors(df)
+        if outage.sum() != 92:
+            raise ValueError(f"Expected 92 Nakawa reference-outage hours, found {int(outage.sum())}")
+        if spikes.sum() != 12:
+            raise ValueError(f"Expected 12 single-hour reference errors, found {int(spikes.sum())}")
+        # Impossible reference values in every window; a row without a valid target is no task row (CLEAN-11,
+        # CLEAN-15; Lennart, 2026-11-04 and 2026-11-05).
+        df = df.loc[~(spikes | outage)]
         return decode(df, {"landform_90m": LANDFORMS})
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(categorical=("site", "landform_90m"), datetime={"created_at": "ISO8601"})
 
     def _decisions(self, raw: pd.DataFrame, df: pd.DataFrame) -> list[Decision]:
-        dead = _sensor2_dead(raw)
-        evidence = (
-            raw.assign(
-                sensor2_any_zero=raw[list(SENSOR2)].eq(0).any(axis=1),
-                sensor2_both_zero=dead,
-                sensor1_pm2_5_when_dead=raw["pm2_5"].where(dead),
-                reference_when_dead=raw["ref_pm2_5"].where(dead),
-            )
-            .groupby("site")
-            .agg(
-                labeled_hours=("ID", "size"),
-                sensor2_any_zero=("sensor2_any_zero", "sum"),
-                sensor2_both_zero=("sensor2_both_zero", "sum"),
-                sensor1_pm2_5_min=("pm2_5", "min"),
-                sensor1_pm2_5_mean_when_dead=("sensor1_pm2_5_when_dead", "mean"),
-                reference_mean_when_dead=("reference_when_dead", "mean"),
-            )
-            .round(2)
-        )
+        masked, dead = _mask_dead_channels(raw)
+        outage, spikes = _reference_errors(masked)
         return [
             Decision(
-                "Sensor 2 missing where both its channels read 0",
+                "Dead sensor channels set missing",
                 "Both sensor-2 channels read exactly 0 in 500 USEmbassy hours (2019-11-18 to 2019-12-17) while "
-                "sensor 1 and the reference show ordinary pollution, so the channel was dead: both are set missing "
-                "and the rows stay (CLEAN-11; Lennart, 2026-11-04). The missing weather values stay too.",
-                evidence,
+                "sensor 1 and the reference show ordinary pollution, so the channel was dead (Lennart, 2026-11-04). "
+                "One symmetric rule takes the rest of the same failure (Lennart, 2026-11-05): a sensor whose PM2.5 "
+                "is below 0.27 times the other sensor's is dead, 16 more sensor-2 hours of that outage and 18 "
+                "sensor-1 hours (2019-11-13/14, 2020-06-07/08). Dead hours reach a ratio of 0.255; the lowest live "
+                "ratio is 0.294 (Makerere 2020-12-05 06:00). The dead sensor's two channels are set missing and the "
+                "rows stay (CLEAN-11). The missing weather values stay too.",
+                _dead_table(raw, dead),
             ),
             Decision(
-                "Single-hour reference spikes dropped",
-                "Five reference hours read above 3 times both low-cost PM2.5 channels and above 3 times the same "
-                "site's reference in both neighbouring hours (Nakawa 2020-10-03 10:00: 444.0 against channels of 35 "
-                "and 36 and neighbours of 47.5 and 86.0). Isolated hours like this fit an artefact of the reference "
-                "monitor; no input can predict them. They become missing and the rows leave (CLEAN-11, CLEAN-15; "
-                "Lennart, 2026-11-04), by the rule, not by hand.",
-                df_spikes_table(raw),
+                "Single-hour reference errors dropped",
+                "Twelve reference hours read above 3 times both low-cost PM2.5 channels and above 3 times the same "
+                "site's reference in each neighbouring hour in the file, with at least one there (Nakawa 2020-10-03 "
+                "10:00: 444.0 against channels of 35 and 36 and neighbours of 47.5 and 86.0). Collocated instruments "
+                "sample the same air, so a single hour that neither the sensors nor the hours around it share is an "
+                "instrument error of the reference, an impossible value. They become missing and the rows leave, in "
+                "the test windows too (CLEAN-11, CLEAN-15; Lennart, 2026-11-04 and 2026-11-05, issue 2), by the rule, "
+                "not by hand.",
+                _spikes_table(masked, outage, spikes),
+            ),
+            Decision(
+                "Nakawa reference outage dropped",
+                "From 2020-11-10 to 2020-11-23, 92 Nakawa hours have the reference below 0.3 times both low-cost "
+                "PM2.5 channels (2020-11-21 02:00: 0.1 against 101.2 and 102.0); outside these days Nakawa's monthly "
+                "median ratio of reference to sensor 1 is 1.04 to 1.21. Collocated instruments sample the same air, so "
+                "the reference failed: an impossible label, set missing, and the rows leave (CLEAN-11, CLEAN-15; "
+                "Lennart, 2026-11-05). The rule is bounded to the run's site and days; without the date bound the same "
+                "test catches 96 Nakawa hours.",
+                masked.loc[outage]
+                .assign(day=pd.to_datetime(masked.loc[outage, "created_at"]).dt.strftime("%Y-%m-%d"))
+                .groupby("day")
+                .agg(
+                    hours=("ref_pm2_5", "size"),
+                    reference_median=("ref_pm2_5", "median"),
+                    sensor1_pm2_5_median=("pm2_5", "median"),
+                    sensor2_pm2_5_median=("s2_pm2_5", "median"),
+                )
+                .round(1)
+                .reset_index(),
             ),
         ]
 
 
-def df_spikes_table(raw: pd.DataFrame) -> pd.DataFrame:
+def _dead_table(raw: pd.DataFrame, dead: dict[str, pd.Series]) -> pd.DataFrame:
+    """Per kind of dead channel: the hours, their dates, the dead and the live sensor's PM2.5 and the reference."""
+    rows = []
+    for kind, mask in dead.items():
+        r = raw.loc[mask]
+        dead_col, live_col = ("pm2_5", "s2_pm2_5") if kind.startswith("sensor 1") else ("s2_pm2_5", "pm2_5")
+        rows.append(
+            {
+                "kind": kind,
+                "site": ", ".join(sorted(r["site"].unique())),
+                "hours": len(r),
+                "first": r["created_at"].min(),
+                "last": r["created_at"].max(),
+                "dead_pm2_5_max": round(float(r[dead_col].max()), 2),
+                "live_pm2_5_mean": round(float(r[live_col].mean()), 1),
+                "reference_mean": round(float(r["ref_pm2_5"].mean()), 1),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def _spikes_table(masked: pd.DataFrame, outage: pd.Series, spikes: pd.Series) -> pd.DataFrame:
     """The reference hours the spike rule drops, with both channels and the neighbouring reference values."""
-    spikes = _reference_spikes(raw.assign(**{c: raw[c].where(~_sensor2_dead(raw)) for c in SENSOR2}))
-    return raw.loc[spikes, ["site", "created_at", "pm2_5", "s2_pm2_5", "ref_pm2_5"]].reset_index(drop=True)
+    nb = _neighbour_references(masked.assign(ref_pm2_5=masked["ref_pm2_5"].mask(outage)))
+    cols = ["site", "created_at", "pm2_5", "s2_pm2_5", "ref_pm2_5"]
+    return (
+        masked.loc[spikes, cols]
+        .join(nb.loc[spikes])
+        .sort_values("created_at", kind="stable")
+        .round(1)
+        .reset_index(drop=True)
+    )

@@ -58,6 +58,11 @@ and the 19 trips faster than 120 km/h in a straight line (issue 5)?
    [^3-fix]: **P7** of the principles.
    [^3-ev]: **EV-2** (Must): evidence ranks; when two pieces of evidence disagree, the higher one wins.
 
+   **Resolved (2026-11-05, Lennart):** B. The weather joins on the trip start floored to the hour minus 3 h
+   (`WEATHER_LAG_HOURS = 3`); the note rests on the evidence in the data, and the "1 h with note" fallback is gone.
+   Trips without a weather row: 23 before, 175 now (trips on 1 January before 03:00). An EV-2 Cases row records the
+   data's daily curve beating the dictionary; the 2025 Accra and Maputo records note to check their weather clock.
+
 4. **Keep the 20 trips over 3 hours, or drop them as nyc and pkdd do?**
 
    * **Problem:**
@@ -98,6 +103,11 @@ and the 19 trips faster than 120 km/h in a straight line (issue 5)?
    [^4-clean]: **CLEAN-11** (Should): impossible values become missing; values that are only unusual stay. **CLEAN-15**
      (Must): drop rows with a missing target. A quality question and a consistency check with precedent.
 
+   **Resolved (2026-11-05, Lennart):** B. The 20 trips over 3 h leave (`MAX_TRIP_MINUTES`, as pkdd); the longest trip is
+   now 175 minutes. Trips over 120 min now hold 7.9, 6.3 and 12.0% of each window's squared deviation (16.9, 28.8 and
+   15.7% before); the largest 1% of LightGBM errors 43-53% of the squared error (54-66%). A CLEAN-11 Cases row covers
+   both cuts.
+
 5. **Drop the 19 trips faster than 120 km/h in a straight line, as pkdd does?**
 
    * **Problem:**
@@ -123,6 +133,10 @@ and the 19 trips faster than 120 km/h in a straight line (issue 5)?
    [^5-clean]: **CLEAN-11** (Should), then **CLEAN-15** (Must): an impossible value becomes missing, and a row with a
      missing target is dropped. A quality question.
    [^5-fix]: **P7** of the principles.
+
+   **Resolved (2026-11-05, Lennart):** B. The 19 trips over 120 km/h in a straight line leave (`MAX_STRAIGHT_LINE_KMH`,
+   as pkdd); none overlaps the 20 long trips: 110,375 to 110,336 rows. Sendy keeps its fast legs because its late pickup
+   mark shows in the inputs; here neither cut leaves a mark there.
 
 **Review panel:** ship after changes (mediator). Tier full, a second pass after Lennart's review of PR #33
 (2026-11-04): seven evidence agents, the advocate and the critic with one rebuttal each, and the mediator. Claims: 25

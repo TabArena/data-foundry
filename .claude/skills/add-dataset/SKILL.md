@@ -167,7 +167,9 @@ and the editor) for a re-check after a small change. Say which tier ran.
    of [writing.md](../knowledge-curation/references/writing.md): bullets for the problem, the effect, the experiments
    and the consistency with other datasets, a table of the options with pros and cons, the recommendation and the
    decision, the rules in footnotes and what Claude needs to apply it in `**Notes for the AI:**`; and the
-   `**Review panel:**` block with each agent's full report.
+   `**Review panel:**` block with each agent's full report. A review raises 0 to N issues: zero is a valid outcome
+   when the checks and the panel leave nothing for the curator to decide (the outcome says so, and the curator only
+   sets the verdict). Never raise an issue to have one; an issue is something whose answer would change the dataset.
 3. The `review-editor` agent reads the draft as the curator would; apply its fixes.
 4. Add a dated CHANGELOG entry for the new folder, and the panel's summary in the record, one line in a fixed form:
    `**Assessment (AI, <date>):** review panel (<tier>): <the mediator's recommendation>; disputed: <the points, by
