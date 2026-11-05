@@ -104,40 +104,43 @@ point are filtered out by an as-of date: SPLIT-9 in [splits.md](splits.md). Case
 
 ### Artefacts that differ by class
 
-**LEAK-13 (Must; amended 2026-10-26, Andrej, on gallstone_disease).** Class-specific recording conventions are
-harmonised: write every row at the precision of the measured values, computed columns and filled cells included, and
-drop a column only one class has or one that was filled in for one class only. First measure how much the fix removes.
-Test: probes 4, 9 and 17. Cases: hepatitis_c_prediction, gallstone_disease.
+**LEAK-13 (Must).** Class-specific recording conventions are harmonised: write every row at the precision of the
+measured values, computed columns and filled cells included, and drop a column only one class has or one that was filled
+in for one class only. A convention that changed over time (a unit, a number format) counts too when the classes changed
+over the same time: it dates the row, and the date tells the class. First measure how much the fix removes. Test: probes
+4, 9 and 17. Cases: hepatitis_c_prediction, gallstone_disease, horse_colic_survival (open).
 
 **LEAK-14 (Must).** A class that comes from a separate source or assay is dropped once the paper confirms it. Test:
 probe 7. Cases: biogeographical_ancestry_prediction.
 
-**LEAK-15 (Must; amended 2026-10-27, Andrej, on gallstone_disease).** A recording artefact that runs through several
-features that would matter for prediction in practice, and that cannot be undone (no batch id to drop, no format to
-harmonise, no route to align), retires the dataset: a feature subset does not help when it also separates same-label
-groups. An artefact confined to features a practical model would not rely on is fixed (LEAK-13, LEAK-14, LEAK-39) or
-kept with a note. Test: probes 7, 8 and 17, and the score without the affected features. Cases:
-prostate_cancer_detection (retired), gallstone_disease (kept).
+**LEAK-15 (Must).** A recording artefact that runs through several features that would matter for prediction in
+practice, and that cannot be undone (no batch id to drop, no format to harmonise, no route to align), retires the
+dataset: a feature subset does not help when it also separates same-label groups. An artefact confined to features a
+practical model would not rely on is fixed (LEAK-13, LEAK-14, LEAK-39) or kept with a note. Test: probes 7, 8 and 17,
+and the score without the affected features. Cases: prostate_cancer_detection (retired), gallstone_disease (kept),
+lung_cancer (kept: the score is the same without the spike-in control probes).
 
-**LEAK-39 (Must; 2026-10-26, Andrej, on gallstone_disease).** Rows of one class recorded through a separate route, found
-by a recording fingerprint (number formats, a derived column that follows another definition, a shifted measurement)
-rather than a source column, are dropped when models recognise them and the route cannot be aligned with the other
-rows: too few rows of the other class went through it to calibrate it. Find them as rows of one class that share the
-formats the other class rarely has. Then score them against the other class out of fold, and score the other class's
-rows of the same route: when those are predicted as the first class, models learn the route, not the target. Test:
-probes 7, 9 and 17. Cases: gallstone_disease.
+**LEAK-39 (Must).** Rows of one class recorded through a separate route, found by a recording fingerprint (number
+formats, a derived column that follows another definition, a shifted measurement) rather than a source column, are
+dropped when models recognise them and the route cannot be aligned with the other rows: too few rows of the other class
+went through it to calibrate it. Find them as rows of one class that share the formats the other class rarely has. Then
+score them against the other class out of fold, and score the other class's rows of the same route: when those are
+predicted as the first class, models learn the route, not the target. Test: probes 7, 9 and 17. Cases: gallstone_disease
+(dropped), lung_cancer (kept: models barely tell the replicate-averaged rows from the others).
 
-**LEAK-40 (Should; 2026-10-26, Andrej, on gallstone_disease).** Gaps the source filled from neighbouring rows
-(interpolation, carried values) in a file sorted by class are tested, not assumed to leak: set the filled cells to
-missing and re-impute them inside each training fold without the label. When that scores the same or higher, the fills
-stay with a note. Setting them to missing is no fix when the gaps follow the classes: the missing values then mark a
-class. Their written precision is harmonised (LEAK-13). Values filled from the label, such as an outcome group's mean,
-are LEAK-10 and go back to missing. Test: probe 18. Cases: gallstone_disease (kept),
-heart_failure_followup_survival (outcome-group means, set back to missing).
+**LEAK-40 (Should).** Gaps the source filled from neighbouring rows (interpolation, carried values) in a file sorted by
+class are tested, not assumed to leak: set the filled cells to missing and re-impute them inside each training fold
+without the label. When that scores the same or higher, the fills stay with a note. Setting them to missing is no fix
+when the gaps follow the classes: the missing values then mark a class. Their written precision is harmonised (LEAK-13).
+Values filled from the label, such as an outcome group's mean, are LEAK-10 and go back to missing. Test: probe 18.
+Cases: gallstone_disease (kept), heart_failure_followup_survival (outcome-group means, set back to missing).
 
-Marker, for a dataset where LEAK-13 to LEAK-15, LEAK-39 or LEAK-40 applied, kept or retired: `Class-dependent
-Recording`. It says the classes were measured, formatted or filled differently, so the recording can give the label
-away. `Selection Bias` is about which rows were sampled, with the measurements alike.
+Marker, for a dataset where LEAK-13 to LEAK-15, LEAK-39 or LEAK-40 applies, whether the artefact was fixed, is kept with
+a note or is still open, and whether the dataset is kept or retired: `Class-dependent Recording`. It says the classes
+were measured, formatted or filled differently, so the recording can give the label away. `Selection Bias` is about
+which rows were sampled, with the measurements alike. The definition's notes say, once per dataset, what was recorded
+differently by class, how much it gives away (the recording alone, before and after a fix) and what was done, or why
+nothing was ([definitions.md](../../knowledge-data-foundry/references/definitions.md), "Classes recorded differently").
 
 Generated or manipulated data is retired (`AHDS`, `Data Quality Issue`; SEL-16, PROV-3); how to tell (probe 15):
 PROV-3 in [provenance.md](provenance.md), "Is the data generated?".
@@ -159,12 +162,14 @@ source's question. ai4d_lab_tanzania_tourism_classification_challenge keeps its 
 coarse survey answers with 2 to 10 levels, and 361 repeated profiles are `Alone` travellers, 67.8% of copy groups larger
 than their party, so the copies are distinct respondents (Lennart, 2026-11-05; LEAK-19 unchanged).
 
-**LEAK-19 (Should).** Exact copies with the same label: drop them rather than group on the duplicate key. Cases:
-wine_quality (1,177 rows); audiology_diagnosis (27 copies of the same findings and diagnosis on different patient ids).
-Copies of one compound go (qsar_oral_toxicity's 477 exact copies; qsar_tid_11's 37 salt forms of one ChEMBL parent);
-distinct compounds that the descriptors cannot tell apart stay, with the reason in the notes (hiva_agnostic: 23 repeated
-vectors, every NSC number distinct; qsar_tid_11: stereoisomers and analogs with their own measured potency) (Lennart,
-2026-10-21).
+**LEAK-19 (Should).** Exact copies with the same label: drop them rather than group on the duplicate key. When the
+copies are uneven by class, the notes give the share per class and the class balance after the drop:
+early_stage_diabetes_risk_prediction (61% of the negative rows, 46% of the positive ones; the positive share moves from
+62% to 69%). Cases: wine_quality (1,177 rows); audiology_diagnosis (27 copies of the same findings and diagnosis on
+different patient ids). Copies of one compound go (qsar_oral_toxicity's 477 exact copies; qsar_tid_11's 37 salt forms of
+one ChEMBL parent); distinct compounds that the descriptors cannot tell apart stay, with the reason in the notes
+(hiva_agnostic: 23 repeated vectors, every NSC number distinct; qsar_tid_11: stereoisomers and analogs with their own
+measured potency) (Lennart, 2026-10-21).
 
 **LEAK-20 (Should).** Feature vectors that occur with both labels: drop every copy, unless they are genuine label
 ambiguity the task has. Cases: jm1 (176 rows); consumer_complaints. Exception: mortgage (7 loans, Lennart, 2026-10-22)
@@ -418,11 +423,13 @@ The cases of the rules outside this table are named in the rules.
 | LEAK-12 (SPLIT-9) | Temporal: training rows whose label is not yet known at the prediction point | filter training rows by an as-of date | hotel_booking_demand: in-window cancellations in train were 100% cancelled (log loss 1.7 to 0.33); a filter on `ReservationStatusDate` keeps the shortcut |
 | LEAK-13 | Class-specific recording conventions | harmonise (round every row to the shared precision, drop a column only one class has); first measure how much the fix removes | hepatitis_c_prediction (7 lab columns rounded, `ALP` dropped) |
 | LEAK-14 | One class from a separate source or assay | drop that class once the paper confirms it | biogeographical_ancestry_prediction (Turkey, `rs3857620`) |
-| LEAK-15 (amended 2026-10-27, Andrej) | A recording artefact through several features that matter for prediction, that cannot be undone | retire; a feature subset does not help when it also separates same-label groups | gallstone_disease, kept: after LEAK-13 and LEAK-39 the suspected artefacts left (AST lower with gallstones, the fatty-liver grades on two scales) do not carry the score (TabPFN 3.5 0.826 without AST, 0.827 with it; 0.834 without the grade, 0.838 with it). prostate_cancer_detection, retired (the paper's 7 features: Benign against NED 0.92-0.97, the label 0.62-0.70) |
-| LEAK-13 (amended 2026-10-26, Andrej) | Precision that differs by class, filled cells with many decimals, a column filled in for one class only | write every row at the measured precision; drop the one-class column | gallstone_disease: GFR, vitamin D, visceral muscle area, CRP and creatinine at their measured precision (with LEAK-39, probe 17 from 0.949 to 0.666); `Hyperlipidemia` dropped (8 with gallstones, none without, though high cholesterol is as common without) |
+| LEAK-15 | A recording artefact through several features that matter for prediction, that cannot be undone | retire; a feature subset does not help when it also separates same-label groups | gallstone_disease, kept: after LEAK-13 and LEAK-39 the suspected artefacts left (AST lower with gallstones, the fatty-liver grades on two scales) do not carry the score (TabPFN 3.5 0.826 without AST, 0.827 with it; 0.834 without the grade, 0.838 with it). prostate_cancer_detection, retired (the paper's 7 features: Benign against NED 0.92-0.97, the label 0.62-0.70) |
+| LEAK-13 | Precision that differs by class, filled cells with many decimals, a column filled in for one class only | write every row at the measured precision; drop the one-class column | gallstone_disease: GFR, vitamin D, visceral muscle area, CRP and creatinine at their measured precision (with LEAK-39, probe 17 from 0.949 to 0.666); `Hyperlipidemia` dropped (8 with gallstones, none without, though high cholesterol is as common without) |
 | LEAK-13 (applied, Lennart, 2026-11-05) | A time column coarsened in the split step, after the framework has sorted the rows by its finer values, so the order inside each period still carries them | coarsen it in `_clean`, before the sort; a check that needs the finer value reads a flag computed from it there | chicago_traffic_crashes: the hour floor moved from `_make_splits` to `_clean`; a row's rank in its hour had lowered log loss by 0.00098 (positive on all 9 splits), and the injury share by tenth of the hour went from 9.9-18.6% to a flat 15.1-15.5%; `dataset check` no longer warns `definition_time_changed_in_split` (813,133 rows) |
 | LEAK-39 | Part of one class recorded through a second route, found by a format fingerprint | drop the route's rows | gallstone_disease: 77 rows (72 with gallstones, 5 without); before the drop TabPFN 3.5 separates them from those without gallstones at 0.993, the other cases at 0.842, and scores the route's 5 without gallstones 0.77 (0.22 for the others) |
 | LEAK-40 | Gaps filled by interpolation down a class-sorted file | keep the fills when a label-free re-imputation inside each fold scores the same or higher | gallstone_disease: 134 fills kept (re-imputed, TabPFN 3.5 0.864; with the fills 0.838) |
+| LEAK-13 | A unit that changed over time while the classes changed over the same time | harmonise; open while the target is in question | horse_colic_survival: `total_protein` in g/L for 95 horses (1 died, 27 euthanized) and in g/dL for 209 (64 died, 16 euthanized), the switch following the hospital number; the unit alone tells died from euthanized at ROC AUC 0.79, and one unit for all rows raises TabPFN 3.5's log loss from 0.682 to 0.724 |
+| LEAK-39, LEAK-15 | Part of one class averaged from replicate arrays, and control probes that separate the classes, neither carrying the score | keep both, with a note | lung_cancer: 47 of 139 adenocarcinomas are means of 2 to 4 arrays (none of the 58 other rows), told from single arrays at ROC AUC 0.59-0.62; the spike-in control probes alone separate the classes at 0.85; logistic regression log loss 0.141 as shipped, 0.140 with every value rounded to the shared grid, 0.146 without the averaged rows, 0.139 without the 67 control probes |
 | PROV-3 ([provenance.md](provenance.md)) | Generated or manipulated data | retire (`AHDS`, `Data Quality Issue`) | ecommerce_shipping, customer_satisfaction_in_airline, homeq_default_prediction |
 | LEAK-22 | The cohort holds rows that cannot have the outcome | follow the paper's cohort | diabetes_130_us: encounters ending in death (1,084) or hospice (461) removed (Strack et al. 2014, Sec. 2.3) |
 | LEAK-23 | Only rows with the event, follow-up ending on one date (right truncation) | an outcome within a fixed horizon, over the rows followed that long | cirrhosis_patient_survival_prediction (time to death over deaths only until 2026-10-14; now death or transplant within 5 years) |

@@ -9,6 +9,7 @@ data_foundry_status:
 suggestion: 'Yes'
 decision_markers:
 - Outdated
+- Class-dependent Recording
 tags:
 - Tiny Data
 collections:
@@ -42,6 +43,8 @@ Has multiple possible classes (lesion or others). Decide for one that is reasona
 CC (2026-11-01, Lennart): marks on the review board of PR #37: pain and mucous_membranes stay unordered as partial orders, noted in the definition.
 
 CC (2026-11-01, Lennart): the decode rule (a code whose codebook says in words what each level is carries the words; a score without them is a number): 13 coded columns carry their words.
+
+**Assessment (AI, 2026-11-05):** marker `Class-dependent Recording`: `total_protein` (a blood value) is written in g/L for 95 horses (1 died, 27 euthanized) and in g/dL for 209 (64 died, 16 euthanized). The unit switch follows the hospital number, that is the admission period, so the unit alone tells died from euthanized (ROC AUC 0.79). Not harmonised yet: one unit for all rows raises TabPFN 3.5's log loss from 0.682 to 0.724. Noted in the definition's curation comments; data unchanged.
 
 ## Reference
 
