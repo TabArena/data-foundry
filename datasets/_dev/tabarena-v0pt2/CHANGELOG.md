@@ -1,5 +1,30 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-05, verified Fugaku build on updated main
+
+- Built `fugaku_hpc_job_failure_1m` as `01a1ae07-bfad-7795-a282-7279d0d067dc` from clean source
+  `1061a759c76f07a50ed2df4433a4a7d577368471` (main `9048f36a`), format 2, checksum
+  `v2:b655fe6b87263768dd5a2e1232484929a22c3364e7daeeaa6b5cb6a30dc4a06d`. The definition is unchanged from the accepted
+  task; the checksum difference from November 3 is solely the new empty special-feature metadata field. Original
+  decisions and the first-tuned-benchmark recheck remain in force.
+- Native saved-container reload and minimal-warehouse reproduction pass with exactly the checked
+  checksum, 0 errors, 0 warnings and 2 known informational heavy-check skips. Full build took 554 seconds, peak 19.7 GiB.
+  Updated-main suite: 2,017 passed, 286 skipped; strict 2,091-record/pointer and scoped lint/format checks pass. The
+  preserved probe limitations remain, including generic raw-CLI inapplicability and the separately supplemented
+  float32 neighbour diagnostic failure; no full clean leak-CLI or HPO result is claimed.
+- The 43-file input closure (29,687,404,633 bytes) is backed up locally as `fugaku-raw-inputs-2026-11-05.zip`. Every
+  archive payload and current source SHA-256/size matches its manifest; the fresh build trace matches that exact
+  dependency closure. The current pinned helper's marker/self-symlink issue is handled by a local wrapper that copies
+  all four declared preparation outputs plus the marker independently. The minimal check does not rerun preparation or
+  write through source links; framework source is unchanged.
+- Keep the November 3 container because its frozen reviewed checkout and identity evidence still reference it. No raw
+  or prior container was deleted. Containers, archive and run artifacts remain local and outside git; only generated
+  card/overview/log metadata are committed. No dataset branch push or integration to main occurred.
+
+- The native generated card still carries legacy boilerplate saying settled REVIEW.md is removed. The newer
+  persistent-review procedure governs: all resolved history remains in REVIEW.md. The generated card was not
+  hand-edited; this template wording mismatch is documented without changing framework source.
+
 ## 2026-11-05, Fugaku current-main refresh
 
 - Reapply the accepted `fugaku_hpc_job_failure_1m` package to main `9048f36a`. Preserve Myunghwan’s original target,
