@@ -3,7 +3,20 @@ report_format: data-foundry-report-v2
 unique_name: economic_well_being_prediction_challenge
 container_format: 2
 checksum: v2:67814a2cb764b9b4774b509d02aeb05b24c17f34e225e371229d3163fcf821f3
-build: null
+build:
+  uuid: 01a1adf2-7ba6-7a75-a157-1c1451ba511e
+  checksum: v2:67814a2cb764b9b4774b509d02aeb05b24c17f34e225e371229d3163fcf821f3
+  built_at: '2026-11-05T23:01:53+00:00'
+  path: economic_well_being_prediction_challenge/01a1adf2-7ba6-7a75-a157-1c1451ba511e
+  data_foundry_version: 0.0.5
+  git_sha: 197d469d2931d8949f5454bc4d839f6b05558ef8
+  libraries:
+    python: 3.12.3
+    pandas: 3.1.0
+    numpy: 2.5.4
+    pyarrow: 26.0.0
+    scikit-learn: 1.7.2
+    polars: 2.0.0
 build_stale: false
 data:
   n_rows: 21454
@@ -60,7 +73,7 @@ decisions:
 
 Regression of `Target`, scored with `rmse` on temporal splits by `year`. 21,454 rows and 12 features. Source: Zindi (2021).
 
-Not built yet. The current definition gives checksum `v2:67814a2cb764b9b4774b509d02aeb05b24c17f34e225e371229d3163fcf821f3`.
+Built as `01a1adf2-7ba6-7a75-a157-1c1451ba511e` on 2026-11-05. See [Build](#build).
 
 ## In brief
 
@@ -338,4 +351,12 @@ Every country-year test excludes all country history.
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a1adf2-7ba6-7a75-a157-1c1451ba511e |
+| checksum | v2:67814a2cb764b9b4774b509d02aeb05b24c17f34e225e371229d3163fcf821f3 |
+| built_at | 2026-11-05T23:01:53+00:00 |
+| path | economic_well_being_prediction_challenge/01a1adf2-7ba6-7a75-a157-1c1451ba511e |
+| data_foundry_version | 0.0.5 |
+| git_sha | 197d469d2931d8949f5454bc4d839f6b05558ef8 |
+| libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
