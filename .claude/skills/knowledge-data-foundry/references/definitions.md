@@ -235,7 +235,8 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
   group, or a weight known for every row at the prediction point, such as liberty_mutual_fire_peril_loss_cost's
   `var11`): such an input is not declared as a scoring column, so it stays a feature and the scorer still reads it
   (`task_metric_input_is_model_input`, info). A scoring column stays in the frame, is never a feature, and is
-  declared as `scoring_columns = (ScoringColumn(column="era", role="group", used_by="mean_group_pearsonr", description="the week a
+  declared as
+  `scoring_columns = (ScoringColumn(column="era", role="group", used_by="mean_group_pearsonr", description="the week a
   row belongs to; the metric is the mean of the per-era correlations"),)`. `feature_columns(container)` returns the
   model's inputs without the target, the group column and the scoring columns, and `scorer(container)` takes the
   scoring columns' values by row index: `scorer(container)(y_test, y_pred, test_idx)`. It reads class probabilities
