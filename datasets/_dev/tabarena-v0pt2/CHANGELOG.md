@@ -6,6 +6,7 @@
 - Current native checks report zero errors/warnings. Exact values, category state, labels and all six split arrays match the prior accepted package; saved predictions score identically. Fresh leak, task, dtype and raw-state checks and an independent focused panel are complete.
 - The participant attack and independent refutation find later test-history counters reconstruct earlier labels on 3.32-5.18% of rows, adding 0.0210-0.0349 AUROC to frozen honest predictions. Apply the current LEAK-9 own-row evaluation protocol while preserving legitimate histories; add the required benchmark method check to BENCHMARK_CHANGES_TODO. A clean build does not establish downstream enforcement.
 - Myunghwan requested the repeated build and local commits. Commit the reviewed source before the build; raw data, containers, process evidence and review-page exports stay local.
+- Built format-2 container `01a1adef-2da5-75af-9a38-674925897d45`, checksum `v2:c20f832bb366fbe3e87b547b5ddf83cca1c5877f6d3f4e7bd16c1d9a25b6e6e3`, from clean source `8429113143096b5f196312d7cca1089cb18197ab`: 1,429,456 rows, eight predictors, zero errors/warnings. Saved reload and traced-input reproduction pass; rows, split memberships and the single raw input are unchanged. A local raw-input ZIP passed CRC/SHA verification. Preserve the historical container still referenced by the earlier checkout; no raw files or containers are deleted.
 
 ## 2026-11-05, GitHub issue #48: column types (Lennart's marks)
 

@@ -3,7 +3,20 @@ report_format: data-foundry-report-v2
 unique_name: duolingo_spaced_repetition_recall_1m_clf
 container_format: 2
 checksum: v2:c20f832bb366fbe3e87b547b5ddf83cca1c5877f6d3f4e7bd16c1d9a25b6e6e3
-build: null
+build:
+  uuid: 01a1adef-2da5-75af-9a38-674925897d45
+  checksum: v2:c20f832bb366fbe3e87b547b5ddf83cca1c5877f6d3f4e7bd16c1d9a25b6e6e3
+  built_at: '2026-11-05T22:58:23+00:00'
+  path: duolingo_spaced_repetition_recall/versions/01a1adef-2da5-75af-9a38-674925897d45
+  data_foundry_version: 0.0.5
+  git_sha: 8429113143096b5f196312d7cca1089cb18197ab
+  libraries:
+    python: 3.12.3
+    pandas: 3.1.0
+    numpy: 2.5.4
+    pyarrow: 26.0.0
+    scikit-learn: 1.7.2
+    polars: 2.0.0
 build_stale: false
 data:
   n_rows: 1429456
@@ -56,7 +69,7 @@ decisions:
 
 Binary classification of `session_accuracy_at_least_75`, scored with `roc_auc` on temporal splits by `timestamp`. 1,429,456 rows and 8 features. Source: Other (2016).
 
-Not built yet. The current definition gives checksum `v2:c20f832bb366fbe3e87b547b5ddf83cca1c5877f6d3f4e7bd16c1d9a25b6e6e3`.
+Built as `01a1adef-2da5-75af-9a38-674925897d45` on 2026-11-05. See [Build](#build).
 
 ## In brief
 
@@ -289,4 +302,12 @@ Coarsen observed session accuracy into the curator-selected inclusive 75% event;
 
 ## Build
 
-Not built yet. `dataset build` saves the container to the warehouse and records its UUID, checksum and provenance here.
+| field | value |
+|---|---|
+| uuid | 01a1adef-2da5-75af-9a38-674925897d45 |
+| checksum | v2:c20f832bb366fbe3e87b547b5ddf83cca1c5877f6d3f4e7bd16c1d9a25b6e6e3 |
+| built_at | 2026-11-05T22:58:23+00:00 |
+| path | duolingo_spaced_repetition_recall/versions/01a1adef-2da5-75af-9a38-674925897d45 |
+| data_foundry_version | 0.0.5 |
+| git_sha | 8429113143096b5f196312d7cca1089cb18197ab |
+| libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
