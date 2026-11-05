@@ -25,7 +25,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `No` (`Too Small`, TP-5; `No Good Target / Scientific Discovery`, SEL-3): 24 sites,
 each visited once for birds, so any task has about five test units per fold; the study links bird communities to
@@ -74,5 +74,5 @@ Rideout N.K., Alavi N., Lapen D.R., et al. (2025). Quality versus quantity: resp
 aquatic insect emergence in agro-ecosystems. Frontiers in Sustainable Food Systems 8:1484377.
 doi:10.3389/fsufs.2024.1484377. Data: doi:10.5061/dryad.sbcc2frfk.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 41 (Riparian bird communities / aquatic insect
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 41 (Riparian bird communities / aquatic insect
 emergence).

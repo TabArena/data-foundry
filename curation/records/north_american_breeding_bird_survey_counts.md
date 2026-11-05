@@ -59,7 +59,8 @@ routes, so the family's open species-abundance question decides whether a predic
   (NLCD or similar) is a separate record (PROV-11, PROV-14); the target is one species' count per route and year,
   zeros filled against the runs of Weather.csv (RunType 1); no lagged counts as features (SEL-10, TP-10); observer and
   first-year-observer effects; getting past ScienceBase's Cloudflare block; the open species-abundance question
-  (triage summary, "Policy questions"; SEL-3, USE-1).
+  (SEL-3, USE-1; settled by Andrej on 2026-10-30, policy question 1 of the zero-inflated review: no new rule, each
+  survey judged on its own use case).
 - Priority: gap 0 (biology & life sciences 4; regression and grouped not thin), use case 0 (none named for a
   prediction), source + (USGS data release with documentation), shape + (5,845 routes over 60 years, grouped and
   temporal structure), risk - (no habitat columns, target species unsettled).

@@ -23,7 +23,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `No` (`Time-series (Forecasting)`, SEL-10): monthly demand of 3,000 automotive
 spare parts, a benchmark for intermittent-demand forecasting, with no column besides the item index and the month.
@@ -65,4 +65,4 @@ Forecasting 21(2):303-314. Turkmen A.C., Januschowski T., Wang Y., Cemgil A.T. (
 sparse time series: A unified probabilistic framework via deep renewal processes. PLOS ONE 16(11):e0259764.
 doi:10.1371/journal.pone.0259764.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 51 (Auto intermittent-demand benchmark).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 51 (Auto intermittent-demand benchmark).

@@ -23,7 +23,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 1: a one-season survey of 585 plots in 38 urban
 wastelands of 17 cities with climate, urbanization and habitat covariates; the source's aim is a driver analysis, and
@@ -79,5 +79,5 @@ He L., Gao Z., Yao Y., et al. (2026). Patterns and drivers of spontaneous plant 
 17 cities on the Qinghai-Tibet Plateau. Ecology and Evolution 16:e73521. doi:10.1002/ece3.73521. Data:
 doi:10.5061/dryad.r7sqv9sst.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 43 (Spontaneous plant diversity in urban
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 43 (Spontaneous plant diversity in urban
 wastelands).

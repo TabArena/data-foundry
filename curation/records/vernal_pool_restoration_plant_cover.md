@@ -23,7 +23,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `No` (`No Good Target / Scientific Discovery`, SEL-3, USE-2): a 2 x 2 restoration
 experiment (thatch removal x native seeding) in 15 vernal pools, analysed with "repeated measures generalized linear
@@ -67,4 +67,4 @@ it, and total cover "often exceeded 100%". Paper text not read (Wiley 403). Lice
 Tang J., D'Antonio C. (2026). Community-based long-term management to address reinvasion of restored grassland
 vernal wetlands. Ecosphere 17:e70532. doi:10.1002/ecs2.70532. Data: doi:10.5061/dryad.7m0cfxq79.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 10 (Vernal wetland vegetation).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 10 (Vernal wetland vegetation).

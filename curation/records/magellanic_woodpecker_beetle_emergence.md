@@ -23,7 +23,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 1: beetle counts per emergence trap and season in 22
 landscapes, with wood decay and environmental covariates, sampled case-control (trees used by Magellanic woodpeckers
@@ -55,7 +55,8 @@ the family's open species-abundance question decides it.
   built from the species columns through Taxa.csv, those columns then dropped (SEL-5); the zero share per guild; the
   join with Environment.csv; split grouped by landscape with a trap's seasons together; PSRI and VCF are
   remote-sensing products, to check as measurements (SEL-15) rather than image descriptors (SEL-13); the open
-  species-abundance question (triage summary, "Policy questions"; SEL-3, USE-1).
+  species-abundance question (SEL-3, USE-1; settled by Andrej on 2026-10-30, policy question 1 of the zero-inflated
+  review: no new rule, each survey judged on its own use case).
 - Priority: gap 0 (biology & life sciences 4; regression and grouped not thin), use case 0 (none named), source +
   (paper, a documented deposit), shape 0 (rows not counted; 22 landscapes), risk - (target to build from species
   columns, a data file missing).
@@ -89,4 +90,4 @@ Vergara P.M., Quiroz M., Alaniz A.J., et al. (2025). Magellanic woodpeckers as i
 diversity in trees with different levels of decay and under changing environmental conditions. Insect Conservation
 and Diversity 19:211-227. doi:10.1111/icad.70025. Data: doi:10.5061/dryad.crjdfn3hj.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 15 (Magellanic woodpecker / beetle abundance).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 15 (Magellanic woodpecker / beetle abundance).

@@ -24,7 +24,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `No` (`No Good Target / Scientific Discovery`, SEL-3): a before-after-control-impact
 field experiment at four sites, published to test a treatment effect; its inputs are the design.
@@ -71,5 +71,5 @@ deposition to suppress invasive lake trout through hypoxia causes limited, non-t
 invertebrates in Yellowstone Lake. Aquaculture, Fish and Fisheries 2:470-483. doi:10.1002/aff2.72. Data:
 doi:10.5061/dryad.c866t1g9m.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 39 (Fish carcass / Yellowstone Lake benthic
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 39 (Fish carcass / Yellowstone Lake benthic
 invertebrates).

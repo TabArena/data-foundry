@@ -25,7 +25,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 2: a basin-wide marsh-bird monitoring table that ships its
 own habitat covariates but was published for trends; whether abundance mapped from habitat counts as a prediction task
@@ -55,7 +55,8 @@ is the family's open species-abundance question, and this is one of the two case
   request at https://www.greatlakeswetlands.org" (README).
 - Metric: none found for a prediction (the paper estimates indices and trends with a Bayesian INLA model, Methods;
   Dryad README), so the fallback `rmse`; a count deviance would be a family-level choice for the curator.
-- Risks for /add-dataset: the open species-abundance question (triage summary, "Policy questions"; SEL-3, USE-1);
+- Risks for /add-dataset: the open species-abundance question (SEL-3, USE-1; settled by Andrej on 2026-10-30, policy
+  question 1 of the zero-inflated review: no new rule, each survey judged on its own use case);
   which of the 18 species is the target; the water level is detrended and standardized over all years, one value per
   lake and year (LEAK-30, weak); the maximum of two visits mixes detection with abundance, and the occupancy filter
   shapes the zero share.
@@ -91,4 +92,4 @@ Tozer D.C., Bracey A.M., Fiorino G.E., et al. (2023). Increasing marsh bird abun
 Great Lakes, 2011-2021, likely caused by increasing water levels. Ornithological Applications 126:duad062.
 doi:10.1093/ornithapp/duad062. Data: doi:10.5061/dryad.vq83bk40k.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 35 (Great Lakes marsh birds).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 35 (Great Lakes marsh birds).

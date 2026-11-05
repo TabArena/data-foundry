@@ -25,7 +25,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 2: a national depth-to-bedrock map from SGU observations,
 with outcrops as true zeros, is a real mapping task, but only the code is public, and one feature (`HKDepth`) may be
@@ -111,4 +111,4 @@ right-censored depths are coded (the folder name says "censored", i.e. bedrock n
 Lin Y., Peterson G., Karlsson C., Westphal F., Lidberg W., Agren A. (2026). A Two-Part Framework for Depth to Bedrock
 Prediction and Uncertainty Assessment in Sweden. European Journal of Soil Science 77:e70308. doi:10.1111/ejss.70308.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 2 (Sweden depth-to-bedrock).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 2 (Sweden depth-to-bedrock).

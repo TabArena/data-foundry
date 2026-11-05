@@ -28,7 +28,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 1: AZTI's monitoring series names an early-warning use but
 publishes no task, its toxin values are 93.6% non-detects coded at the limit of quantification, and it holds two
@@ -47,7 +47,8 @@ bivalve sites over about 290 dates; the benchmark table built on it is broken bu
 - Target and zeros: no true zeros. The earlier AI triage measured a minimum of 0.03 and 93.6% of rows flagged "<" with
   the limit of quantification as the value, so Zhou et al.'s "strongly zero-inflated (often zero or near-zero)"
   (Sec. 2.1.1) describes non-detects. Whether a below-LOQ code may count as a zero is the family's open question on
-  coded and censored zeros (curation/inputs/two_regime_zero_triage_summary.md, "Policy questions the batch raises").
+  coded and censored zeros (settled by Andrej on 2026-10-30, policy question 2 of the zero-inflated review: how a source
+  codes its zeros is a cleaning choice at /add-dataset, no reason for a No).
 - Use case: the descriptor states one conditionally: the series, "in combination with other sources of information
   (meteorological, hydrological, currents, nutrients, etc.), could be useful to develop early warning systems for
   toxic algal blooms" (Value of the Data). The decision it names is taken on measured toxins: "This will allow food
@@ -111,4 +112,4 @@ Zhou X., Zhang H., Du T., Yuan Q., Wang H. (2026). Cross-dataset benchmarking of
 and atmospheric environmental prediction. PLOS ONE. doi:10.1371/journal.pone.0351325. Upstream: Solaun O. et al.
 (2025). Data in Brief 61:111736; data doi:10.17632/vyz9zvddz4.2.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 26 (Marine biotoxin benchmark).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 26 (Marine biotoxin benchmark).

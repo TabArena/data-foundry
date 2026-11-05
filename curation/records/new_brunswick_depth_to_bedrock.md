@@ -26,7 +26,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 2: depth to bedrock at a point from LiDAR terrain and
 geology covariates, with outcrops as true zeros, is a real mapping task, but no table is deposited and a rebuild from
@@ -99,4 +99,4 @@ case study of depth-to-bedrock mapping in New Brunswick, Canada. Geoderma 465:11
 doi:10.1016/j.geoderma.2025.117651. Predecessor compilation: Furze S. et al. (2021), Remote Sensing 13:4210,
 doi:10.3390/rs13214210.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 1 (New Brunswick depth-to-bedrock).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 1 (New Brunswick depth-to-bedrock).

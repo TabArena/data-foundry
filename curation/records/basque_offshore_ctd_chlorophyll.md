@@ -25,7 +25,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 1: chlorophyll from the other channels of the same CTD
 cast, a target a methods benchmark chose without a stated use; a virtual-sensor or gap-filling use is plausible but
@@ -34,7 +34,8 @@ named by no source, and the target has no zeros.
   described in Solaun et al. 2025, Data in Brief 61:111736 (read in full on Europe PMC): the "Hydrographic variables"
   table, 145 CTD profiles at Mendexa-Control (2014-05-20 to 2023-12-18) and 35 at Mussel Farm-CTD (2021-02-17 to
   2023-12-18) (Data Description a), measured with "Sea-Bird SBE-25 and 25plus CTD instruments" (Abstract). The
-  "hydrographic" table of Zhou et al. 2026 (PLOS ONE; GitHub, Zenodo) is derived from it: 4,653 rows from 132 casts
+  "hydrographic" table of Zhou et al. 2026 (PLOS ONE; GitHub, Zenodo doi:10.5281/zenodo.19510440) is derived from it:
+  4,653 rows from 132 casts
   with 11 predictors after quality control and an IQR filter, published as a regression with a chronological split
   (earlier AI triage, 2026-10-19, reproduced the rows). `original_source` says `Github`, which is the derivative; by
   PROV-8 the origin is the Mendeley Data release (`Other`), left for the curator.
@@ -103,4 +104,4 @@ Zhou X., Zhang H., Du T., Yuan Q., Wang H. (2026). Cross-dataset benchmarking of
 and atmospheric environmental prediction. PLOS ONE. doi:10.1371/journal.pone.0351325. Upstream: Solaun O. et al.
 (2025). Data in Brief 61:111736; data doi:10.17632/vyz9zvddz4.2.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 27 (Hydrographic benchmark).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 27 (Hydrographic benchmark).

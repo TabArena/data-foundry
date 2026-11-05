@@ -25,7 +25,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> Yes`, priority 3: weekly dengue incidence of 437 Manila villages from lagged
 satellite weather and static land use, with the source's own split (train 2009-2012, test 2013) and an actor the source
@@ -118,4 +118,4 @@ also matches its digest. 113,620 data rows and 36 columns (437 villages x 260 we
 Francisco M.E., Carvajal T.M., Watanabe K. (2024). Hybrid machine learning approach to zero-inflated data improves
 accuracy of dengue prediction. PLOS Neglected Tropical Diseases 18(10):e0012599. doi:10.1371/journal.pntd.0012599.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 11 (Dengue incidence environment).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 11 (Dengue incidence environment).

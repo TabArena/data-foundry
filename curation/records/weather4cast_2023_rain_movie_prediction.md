@@ -24,7 +24,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `No` (`Image`, `Time-series (Forecasting)`; SEL-12, SEL-10): a movie of radar rain
 rates for the next 8 hours, predicted from sequences of 11-band satellite images, is an image task whose organisers
@@ -69,4 +69,4 @@ Weather4cast 2023 competition repository and README, https://github.com/agruca-p
 edition: Gruca A. et al. (2023). Weather4cast at NeurIPS 2022: Super-Resolution Rain Movie Prediction under
 Spatio-temporal Shifts. PMLR 220:292-313.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 54 (Weather4cast 2023).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 54 (Weather4cast 2023).

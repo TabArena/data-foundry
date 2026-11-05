@@ -25,7 +25,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 2: snow-track indices of four large carnivores on Finnish
 Wildlife Triangle Scheme routes, with habitat and human-pressure covariates, released as the matched
@@ -47,7 +47,8 @@ family's open species-abundance question.
   1989-2017; a matched pair stays in one fold).
 - Doubt: the earlier pass set `No` (SEL-3, a treatment-effect design). The aim is causal, but the release is a national
   survey with habitat covariates, so the call falls under the open species-abundance-mapping question
-  (`curation/inputs/two_regime_zero_triage_summary.md`, policy questions); no fast reject. `Not Representative` added
+  (settled by Andrej on 2026-10-30, policy question 1 of the zero-inflated review: no new rule, each survey judged on
+  its own use case); no fast reject. `Not Representative` added
   for the matched sample.
 - Siblings and duplicates: no other record on the Wildlife Triangle Scheme (searched by name, DOI and species). Family
   ecology records of the earlier AI pass, re-screened in this run: `noaa_afsc_bottom_trawl_survey_cpue` and
@@ -93,4 +94,4 @@ Terraube J., Van doninck J., Helle P., Cabeza M. (2020). Assessing the effective
 network for carnivore conservation. Nature Communications 11. doi:10.1038/s41467-020-16792-7. Data:
 doi:10.5061/dryad.s1rn8pk4w.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 60 (Finnish large-carnivore FWTS).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 60 (Finnish large-carnivore FWTS).

@@ -25,7 +25,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `No` (`Image`, SEL-12; SEL-8): the iWildCam 2020 challenge classifies species in
 camera-trap images; the release is images with per-image labels and location ids, detector boxes and satellite image
@@ -72,4 +72,4 @@ for the WCS and remote-sensing data (2020 readme).
 Beery S., Cole E., Gjoka A. (2020). The iWildCam 2020 Competition Dataset. FGVC7 workshop at CVPR 2020.
 arXiv:2004.10340.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 23 (iWildCam / LILA).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 23 (iWildCam / LILA).

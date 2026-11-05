@@ -22,7 +22,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 1: a 7-year factorial field experiment (deer fencing x
 lime x herbicide, 24 sites x 11 microplots) whose release also holds pre-treatment measurements per microplot, so a
@@ -94,4 +94,4 @@ Begley-Miller D.R., Diefenbach D.R., Domoto E.J., et al. (2024). Complex interac
 chemistry, and competing vegetation explain oak-hickory forest tree regeneration in central Pennsylvania, USA.
 Canadian Journal of Forest Research 54:1367-1375. doi:10.1139/cjfr-2024-0034. Data: doi:10.5061/dryad.z8w9ghxnk.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 42 (Oak-hickory forest regeneration).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 42 (Oak-hickory forest regeneration).

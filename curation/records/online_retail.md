@@ -31,7 +31,7 @@ type_adapter_id: curation-record-v1
 transactions occurring between 01/12/2010 and 09/12/2011 for a UK-based and registered non-store online retail. Same uploader as for "Online_Retail_II" dataset. Could try to predict cancellations, but unclear whether that makes sense
 
 **AI note (two-regime-zero audit, 2026-10-19):** the two-regime-zero workbook
-(`curation/inputs/two_regime_zero_datasets_v4.xlsx`, Master row 53, "UCI retail-item demand benchmark", 4,070 item
+(v4 of 2026-10-19, Master row 53, "UCI retail-item demand benchmark", 4,070 item
 series) is this dataset. Turkmen et al. (2021, PLOS ONE 16:e0259764, Sec. 5.2) build their "UCI" intermittent-demand
 series from "demand records of retail items of 4070 individual items between 01/12/2010 and 09/12/2011", citing UCI
 and Chen et al. (2012). A fresh download on 2026-10-19 has 541,909 transactions and 4,070 StockCodes, as stated. The

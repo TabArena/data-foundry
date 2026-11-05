@@ -24,7 +24,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> Yes`, priority 2: hourly rain at gauges held out from training, estimated from
 satellite (IMERG) and radar estimates, terrain and time, is a real fusion task with a station-grouped split; the derived
@@ -98,4 +98,4 @@ Wang H., Zhao L., Ding K., Liu F., Zhang R., Chen L., Qin J., Cao P., Wang S. (2
 Framework for High-Resolution Multi-Source Precipitation Fusion in Complex Terrain: A Case Study of Shaoxing, China.
 Atmosphere 17(8):762. doi:10.3390/atmos17080762.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 47 (Precipitation fusion - Shaoxing).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 47 (Precipitation fusion - Shaoxing).

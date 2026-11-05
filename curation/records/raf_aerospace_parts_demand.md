@@ -23,7 +23,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `No` (`Time-series (Forecasting)`, SEL-10): monthly demand of 5,000 Royal Air Force
 spare parts, from a paper on forecasting for spare-parts ordering, with no column besides the part index and the month.
@@ -61,4 +61,4 @@ Eaves A.H.C., Kingsman B.G. (2004). Forecasting for the ordering and stock-holdi
 Operational Research Society 55(4):431-437. Used in Turkmen A.C. et al. (2021), PLOS ONE 16(11):e0259764.
 doi:10.1371/journal.pone.0259764.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 52 (RAF aerospace-parts demand).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 52 (RAF aerospace-parts demand).

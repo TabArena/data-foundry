@@ -26,7 +26,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 2: reindeer counts per 240 m pixel from field total counts
 at 33 Svalbard sites, which the source used to map abundance over the archipelago for a status estimate; an
@@ -95,4 +95,4 @@ recovery of Svalbard reindeer. Journal of Wildlife Management 83(8):1676-1686. d
 doi:10.5061/dryad.7351kt1. The workbook's link: Hann R. (2021), drone-based mapping of Sassendalen,
 doi:10.18710/KHQKWH.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 59 (Svalbard reindeer total-count pixels).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 59 (Svalbard reindeer total-count pixels).

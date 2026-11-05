@@ -23,7 +23,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 2: 15-minute PV generation of 42 sites on five campuses
 with irradiance, weather and site details, a panel with an outside driver whose forecasting test (TP-10) has not been
@@ -96,4 +96,4 @@ Wimalaratne S., Haputhanthri D., Kahawala S., Gamage G., Alahakoon D., Jennings 
 of Photovoltaic Solar Energy Generation in a Large Multi-Campus University Setting. 15th International Conference on
 Human System Interaction (HSI 2022). doi:10.1109/HSI55341.2022.9869474.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 8 (PV generation / UNISOLAR).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 8 (PV generation / UNISOLAR).

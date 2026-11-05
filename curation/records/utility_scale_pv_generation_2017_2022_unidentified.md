@@ -17,7 +17,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `No` (`Missing source information`, PROV-1): the lead names no publication, link or
 publisher, and repeated searches found no release with its row count and period.
@@ -37,7 +37,7 @@ publisher, and repeated searches found no release with its row count and period.
   `unisolar_la_trobe_pv_generation`, whose night is coded missing rather than 0.
 - Reject check (AI, 2026-10-27): stands. PROV-1 (Must). After searches of the web, Kaggle, Hugging Face, Zenodo,
   Mendeley Data and Data in Brief, nothing matches the workbook row, whose only link is a search
-  (curation/inputs/two_regime_zero_datasets_v4.xlsx, Master datasets, row 32), and PROV-2 has no upload to point to.
+  (Master row 32), and PROV-2 has no upload to point to.
 
 CC (2026-10-30, Andrej): `No`, as screened (verified on the zero-inflated screening review page).
 
@@ -56,4 +56,4 @@ well.
 No source identified. The workbook lists PVDAQ (https://data.openei.org/submissions/4568) and an LBNL solar series
 (https://data.openei.org/submissions/5963) only as unmatched alternatives, not as the source.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 32 (PV utility-scale dataset (2017-22)).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 32 (PV utility-scale dataset (2017-22)).

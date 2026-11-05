@@ -28,7 +28,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 2: Louisiana's coastal marsh monitoring with 75,418 plot
 visits over 20 years; Phragmites cover is zero in 94% of visits, mostly at sites outside its range, and the source
@@ -95,4 +95,4 @@ https://www.lacoast.gov/crms2/. Guo Y., Roberts B.J., Nyman J.A., Plumlee J.D., 
 M. (2026). Expansion trends and impacts of Phragmites australis on the Louisiana Gulf Coast. Ecological
 Applications. doi:10.1002/eap.70246.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 9 (Phragmites cover / CRMS).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 9 (Phragmites cover / CRMS).

@@ -28,7 +28,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 Partial casco motorcycle insurance of the former Swedish insurer Wasa, the case-study data of Ohlsson and Johansson
 (2010). CASdatasets ships it as `swmotorcycle`, insuranceData as `dataOhlsson` (same 64,548 rows, compared on
@@ -55,4 +55,4 @@ Ohlsson E., Johansson B. (2010). Non-Life Insurance Pricing with Generalized Lin
 Springer. doi:10.1007/978-3-642-10791-7. Data: `swmotorcycle` in CASdatasets (Dutang C., Charpentier A.);
 `dataOhlsson` in the R package insuranceData.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 62 (swmotorcycle / CASdatasets).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 62 (swmotorcycle / CASdatasets).

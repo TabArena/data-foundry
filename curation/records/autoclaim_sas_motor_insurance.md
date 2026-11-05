@@ -27,7 +27,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 1: a dated motor policy table with a clear claim-amount
 target and signal, but it is SAS Enterprise Miner sample data from an unnamed insurer, and the earlier generated-data
@@ -59,7 +59,11 @@ checks were mixed.
 
 **Assessment (AI, 2026-10-30):** suggested call for policy question 3 of the zero-inflated review, where Andrej asked
 for a call per dataset from its references and the domain's practice instead of one convention for the family (the
-shared reasoning is in `curation/inputs/two_regime_zero_triage_summary.md`, "Policy calls of 2026-10-30"); the curator
+shared reasoning: a time exposure or a sum insured is a feature, and a rating-cell table weights the metric by its
+exposure; negative amounts that are recoveries become 0; the source's metric first, else the normalized Gini as a
+context metric, since RMSE on raw amounts follows a few large claims and a Tweedie or Poisson deviance needs positive
+predictions; MET-10 as amended on 2026-11-02 (Andrej) later declined a family-wide metric, so each table's metric is
+decided on its own); the curator
 has the call.
 - Target: `CLM_AMT`, the claim amount of the current period; `CLM_FREQ5` and `CLM_AMT5` stay as history.
 - Exposure: no column. Negative amounts: none.
@@ -123,5 +127,5 @@ cplm (Zhang Y.); `auto` in the R package HDtweedie, built as in Qian W., Yang Y.
 Poisson model with grouped elastic net. Journal of Computational and Graphical Statistics 25:606-625.
 doi:10.1080/10618600.2015.1005213.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master rows 56 (AutoClaim / cplm motor insurance) and 55
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master rows 56 (AutoClaim / cplm motor insurance) and 55
 (HDtweedie auto insurance).

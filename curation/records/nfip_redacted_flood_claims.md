@@ -55,7 +55,11 @@ prediction point and the target are still to be chosen and the adjuster's fields
 
 **Assessment (AI, 2026-10-30):** suggested call for policy question 3 of the zero-inflated review, where Andrej asked
 for a call per dataset from its references and the domain's practice instead of one convention for the family (the
-shared reasoning is in `curation/inputs/two_regime_zero_triage_summary.md`, "Policy calls of 2026-10-30"); the curator
+shared reasoning: a time exposure or a sum insured is a feature, and a rating-cell table weights the metric by its
+exposure; negative amounts that are recoveries become 0; the source's metric first, else the normalized Gini as a
+context metric, since RMSE on raw amounts follows a few large claims and a Tweedie or Poisson deviance needs positive
+predictions; MET-10 as amended on 2026-11-02 (Andrej) later declined a family-wide metric, so each table's metric is
+decided on its own); the curator
 has the call.
 - Target: the total paid on building and contents at filing (ICC left out); a null payout with a non-payment reason
   counts as 0 and the open claims of the newest year are dropped, since the family's open question on coded and censored

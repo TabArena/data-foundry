@@ -24,7 +24,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 2: a USGS calibration release that pairs the Long Term
 Resource Monitoring's 0-5 rake density score with the fresh weight on the same rake (1,922 records at 100 sites, Pools 4
@@ -88,4 +88,4 @@ work released in 2020, and no 2026 structural-zero paper using them was found. L
 Drake D., Lund E. (2020). Developing methods for estimating SAV biomass in the Upper Mississippi River. U.S.
 Geological Survey data release, doi:10.5066/P9GFFYZH (LTRM completion report LTRM-2018BI03).
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 4 (SAV biomass - Upper Mississippi River).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 4 (SAV biomass - Upper Mississippi River).

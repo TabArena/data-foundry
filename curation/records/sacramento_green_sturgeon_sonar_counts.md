@@ -24,7 +24,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `No` (`No Good Target / Scientific Discovery`, SEL-3): repeated sonar counts per pool
 for a yearly population estimate, with no covariate of abundance to predict a count from.
@@ -67,4 +67,4 @@ Battaile B., Mora E., Lehman B., Dudley P. (2024). Estimating spawning green stu
 River using side-scan sonar and N-mixture models. Canadian Journal of Fisheries and Aquatic Sciences 81:935-951.
 doi:10.1139/cjfas-2023-0228. Data: doi:10.7291/D1738V.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 40 (Green Sturgeon abundance).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 40 (Green Sturgeon abundance).

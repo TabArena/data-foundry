@@ -25,7 +25,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `No` (`Time-series (Forecasting)`, SEL-10): the fifth Makridakis forecasting
 competition, 28-day-ahead point forecasts for each of 42,840 Walmart sales series, scored per series against the
@@ -84,4 +84,4 @@ series, so it stays No. Licence: the competition rules (not read).
 Makridakis S., Spiliotis E., Assimakopoulos V. (2022). M5 accuracy competition: Results, findings, and conclusions.
 International Journal of Forecasting 38(4):1346-1364. doi:10.1016/j.ijforecast.2021.11.013.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 49 (M5 Forecasting - Accuracy (Walmart)).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 49 (M5 Forecasting - Accuracy (Walmart)).

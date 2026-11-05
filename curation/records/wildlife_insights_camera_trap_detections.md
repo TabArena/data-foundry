@@ -23,7 +23,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 1: a platform that hosts many camera-trap projects, not one
 dataset; its public download is tabular (deployments and per-image identifications) with no target and no habitat
@@ -75,4 +75,4 @@ one specific project with a published site-level analysis, that project should b
 Wildlife Insights platform, https://www.wildlifeinsights.org/ (public-download documentation:
 https://www.wildlifeinsights.org/node/3079). No dataset paper.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 22 (Wildlife Insights camera traps).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 22 (Wildlife Insights camera traps).

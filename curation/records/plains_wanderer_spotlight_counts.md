@@ -24,7 +24,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 1: spotlight counts of the endangered plains-wanderer from
 a regional monitoring program (16 sites, 249 surveys, 41 with birds) with grass height and fox presence, published as
@@ -54,7 +54,8 @@ decides it.
   habitat" (as quoted by the reject check; a possible `Not Representative`); TP-5 on a split grouped by site (16
   sites, 41 positive surveys; `Too Small` stays a provisional marker, unmeasured); task probes, as the paper reports
   "the poor predictive power of the continuous models" (as quoted by the reject check); the open species-abundance
-  question (triage summary, "Policy questions"; SEL-3, USE-1).
+  question (SEL-3, USE-1; settled by Andrej on 2026-10-30, policy question 1 of the zero-inflated review: no new rule,
+  each survey judged on its own use case).
 - Priority: gap 0 (biology & life sciences 4; regression and grouped not thin), use case 0 (none named), source +
   (paper, Dryad), shape 0 (249 surveys at 16 sites, three predictors), risk - (16 groups and 41 positives, TP-5).
 - Reject check (AI, 2026-10-27): does not stand. Sixteen sites "distributed across the region" in a long-term
@@ -90,4 +91,4 @@ Parker D., Cameron M., Gordon C., Letnic M. (2024). Habitat structure and an int
 of an endangered ground-nesting bird. Ecological Applications 34:e3046. doi:10.1002/eap.3046. Data:
 doi:10.5061/dryad.t1g1jwtb9.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 16 (Plains-wanderer abundance).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 16 (Plains-wanderer abundance).

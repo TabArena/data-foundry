@@ -27,7 +27,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 3: the one source of this batch that frames sea-duck
 abundance as a prediction for a named decision (siting offshore wind farms and protected areas); whether the Dryad zip
@@ -63,7 +63,8 @@ holds the segment-by-survey table with its covariates is unknown, and the family
   model objects (covariates rebuilt from FVCOM and MODIS would be our construction, PROV-11); MODIS chlorophyll-a and
   CDOM are satellite products, to check as measurements (SEL-15) rather than image descriptors (SEL-13); monthly ocean
   fields and the NAO are known for a surveyed winter, not ahead of one (USE-3); the open species-abundance question
-  (triage summary, "Policy questions"; SEL-3, USE-1); which species group is the target.
+  (SEL-3, USE-1; settled by Andrej on 2026-10-30, policy question 1 of the zero-inflated review: no new rule, each
+  survey judged on its own use case); which species group is the target.
 - Priority: gap 0 (biology & life sciences 4; regression and temporal not thin), use case + (the source names the
   planners and the siting decision), source + (paper with a covariate table, Dryad, preprint), shape + (up to 15,120
   segment-surveys per group, mixed covariates, spatial and temporal structure), risk - (release contents unknown).
@@ -111,4 +112,4 @@ Smith A.D., Hofner B., Lamb J.S., Osenkowski J., Allison T., Sadoti G., et al. (
 abundance of mobile wildlife in highly variable environments using boosted GAMLSS hurdle models. Ecology and
 Evolution 9. doi:10.1002/ece3.4738. Data: doi:10.5061/dryad.1vm20t6.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 58 (Nantucket Sound sea-duck abundance).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 58 (Nantucket Sound sea-duck abundance).

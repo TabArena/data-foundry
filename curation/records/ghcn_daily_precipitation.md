@@ -25,7 +25,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 2: NOAA's archive of daily station readings has no
 published target, but NOAA itself predicts from it (nClimGrid-Daily interpolates station precipitation), so a task can
@@ -119,4 +119,4 @@ Menne M.J., Durre I., Vose R.S., Gleason B.E., Houston T.G. (2012). An overview 
 Climatology Network-Daily database. Journal of Atmospheric and Oceanic Technology 29(7):897-910.
 doi:10.1175/JTECH-D-11-00103.1. Dataset doi:10.7289/V5D21VHZ.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 7 (NOAA GHCN-D precipitation).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 7 (NOAA GHCN-D precipitation).

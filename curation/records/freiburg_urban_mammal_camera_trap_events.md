@@ -24,7 +24,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 1: a detection log of 24 urban camera traps in Freiburg (10
 mammal species, 2022-2024) with one habitat covariate, released for analyses of activity and habitat use; there is no
@@ -46,7 +46,8 @@ target yet, and a count per camera, season and species would be ours.
 - Doubt: this screening first proposed `No` (SEL-3); the reject check refuted it (below). The earlier marker `No Good
   Target / Scientific Discovery` is replaced by `No Good Target (yet)`, as for
   `wildlife_insights_camera_trap_detections`: no task yet, and habitat use falls under the open
-  species-abundance-mapping question (`curation/inputs/two_regime_zero_triage_summary.md`).
+  species-abundance-mapping question (settled by Andrej on 2026-10-30, policy question 1 of the zero-inflated review: no
+  new rule, each survey judged on its own use case).
 - Siblings and duplicates: the other camera-trap records (`southeast_asia_predator_prey_camera_trap_counts` 2nd Tier,
   `wildlife_insights_camera_trap_detections` 2nd Tier, `iwildcam_2020_camera_trap_species` No) hold other data. External
   collections: none found.
@@ -93,4 +94,4 @@ Moesch S.S., Sultana M., Peerenboom G., Storch I. (2026). Nocturnal neighbors: e
 urban wildlife related to animal traits identified by camera traps and literature. Wildlife Biology.
 doi:10.1002/wlb3.01522. Data: doi:10.5061/dryad.73n5tb3bz.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 24 (Freiburg urban wildlife camera traps).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 24 (Freiburg urban wildlife camera traps).

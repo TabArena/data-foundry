@@ -26,7 +26,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 2: DDPM's 2015 crash table is another source than
 `thailand_road_accident_register_2019_2022` but the same task (deaths per crash in Thailand), with six coded covariates
@@ -100,4 +100,4 @@ CC BY 4.0 (article and supplement).
 Simmachan T., Wongsai N., Wongsai S., Lerdsuwansri R. (2022). Modeling road accident fatalities with underdispersion
 and zero-inflated counts. PLOS ONE 17(11):e0269022. doi:10.1371/journal.pone.0269022.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 17 (Thai road-accident fatalities).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 17 (Thai road-accident fatalities).

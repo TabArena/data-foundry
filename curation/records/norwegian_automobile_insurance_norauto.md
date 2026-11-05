@@ -24,7 +24,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 183,999 automobile policies of an unnamed Norwegian insurer over one year ("Unknown Norwegian insurer", downloaded by
 CASdatasets from the University of Oslo; each row is a policy). Columns: `Male`, `Young` (binary), `DistLimit` (6
@@ -47,5 +47,5 @@ methods spread at all on it (task probes), which would overturn this.
 CASdatasets (Dutang C., Charpentier A.), `norauto`: "Unknown Norwegian insurer", downloaded from the University of
 Oslo. https://dutangc.github.io/CASdatasets/reference/norauto.html
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 31 (Insurance norauto; norauto / CASdatasets,
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 31 (Insurance norauto; norauto / CASdatasets,
 original audit rows 32 and 64).

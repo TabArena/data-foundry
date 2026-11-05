@@ -39,7 +39,7 @@ uploader kept only `payment_type == 1` and removed `trip_distance` and `fare_amo
 `nyc_taxi_trip_duration` (yellow cabs, 2016, trip-duration task), which is the one NYC taxi dataset we keep.
 
 **AI note (two-regime-zero audit, 2026-10-19):** the two-regime-zero workbook
-(`curation/inputs/two_regime_zero_datasets_v4.xlsx`, Master rows 28 "Taxi tip amount / NYC TLC" and 29 "Taxi green/NYC
+(v4 of 2026-10-19, Master rows 28 "Taxi tip amount / NYC TLC" and 29 "Taxi green/NYC
 tip-percentage subsets") lists NYC TLC tips as a zero-inflated regression candidate. Both rows are the TLC trip
 records this record and `nyc_taxi_trip_duration` already cover, so no new record was made, and nothing here changes
 the Duplicate verdict. The workbook's caveat that a zero tip may be an unrecorded cash tip holds for the full TLC

@@ -25,7 +25,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> Yes`, priority 2: daily carbon fluxes at eddy-covariance towers never seen in
 training, from weather and MODIS drivers, a benchmark built for a site-grouped split on which LightGBM is competitive
@@ -99,4 +99,4 @@ networks' policies (AmeriFlux requires site citations).
 
 Rozanov A., Renganathan A., Zhang Y., Kumar V. (2026). CarbonBench (released as CarbonFluxBench). arXiv:2603.09868.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 25 (CarbonFluxBench).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 25 (CarbonFluxBench).

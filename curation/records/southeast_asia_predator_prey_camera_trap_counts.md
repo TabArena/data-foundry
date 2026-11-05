@@ -24,7 +24,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 1: camera-trap count histories of tiger, clouded leopard,
 sambar and muntjac in about 416 hexagonal units of 10 Southeast Asian forest landscapes with three covariates, released
@@ -85,5 +85,5 @@ plus true absence where a species is extirpated; shares confirmed from the data,
 Amir Z., Sovie A., Luskin M.S. (2022). Inferring predator-prey interactions from camera traps: A Bayesian co-abundance
 modeling approach. Ecology and Evolution 12. doi:10.1002/ece3.9627. Data: doi:10.5061/dryad.b8gtht7h3.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 44 (Mammal predator-prey camera-trap
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 44 (Mammal predator-prey camera-trap
 co-abundance).

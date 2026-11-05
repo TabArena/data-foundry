@@ -24,7 +24,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `No` (`Too Small`, TP-5; `No Good Target / Scientific Discovery`, SEL-3): a
 one-season driver analysis of brood parasitism at nine sites, whose predictors are all constant within a site, so a
@@ -69,4 +69,4 @@ parasitized nests, a target leak if kept. Licence: CC BY 4.0 (Figshare).
 dos Reis Diniz M., et al. (2026). Drivers of brood parasitism in solitary bees across a South American dryland
 ecoregion. Apidologie 57:43. doi:10.1007/s13592-026-01287-z. Data: doi:10.6084/m9.figshare.29310806.v1.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 48 (Bee brood parasitism).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 48 (Bee brood parasitism).

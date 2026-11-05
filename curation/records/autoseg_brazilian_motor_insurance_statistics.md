@@ -65,7 +65,11 @@ policy question 4, Andrej, 2026-10-20); it is the origin of `brazilian_vehicle_i
 
 **Assessment (AI, 2026-10-30):** suggested call for policy question 3 of the zero-inflated review, where Andrej asked
 for a call per dataset from its references and the domain's practice instead of one convention for the family (the
-shared reasoning is in `curation/inputs/two_regime_zero_triage_summary.md`, "Policy calls of 2026-10-30"); the curator
+shared reasoning: a time exposure or a sum insured is a feature, and a rating-cell table weights the metric by its
+exposure; negative amounts that are recoveries become 0; the source's metric first, else the normalized Gini as a
+context metric, since RMSE on raw amounts follows a few large claims and a Tweedie or Poisson deviance needs positive
+predictions; MET-10 as amended on 2026-11-02 (Andrej) later declined a family-wide metric, so each table's metric is
+decided on its own); the curator
 has the call.
 - The 2nd Tier with `Not Representative` stays: rows are rating cells.
 - If it is built: the target is the cell's indemnity per vehicle-year (a pure premium), the hull covers summed, and the

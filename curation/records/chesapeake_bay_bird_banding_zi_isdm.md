@@ -27,7 +27,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 1: a species-distribution methods paper whose public
 release holds only presence-only banding records (counts of at least one); the eBird checklists that carry the zeros
@@ -58,7 +58,8 @@ are not distributed, so any task would be a rebuild from eBird.
   not read), so the fallback `rmse`.
 - Risks for /add-dataset: the target cannot be formed from the release; a rebuild needs the eBird Basic Dataset and
   the paper's filters, which makes eBird its origin and a record of its own (PROV-11); which species (not named in the
-  abstract); the open species-abundance question (triage summary, "Policy questions"; SEL-3, USE-1).
+  abstract); the open species-abundance question (SEL-3, USE-1; settled by Andrej on 2026-10-30, policy question 1 of
+  the zero-inflated review: no new rule, each survey judged on its own use case).
 - Priority: gap 0 (biology & life sciences 4; regression not thin), use case 0 (none named), source + (paper, README,
   code), shape 0 (no zeros and no checklists in the release), risk - (no target without a rebuild).
 
@@ -100,5 +101,5 @@ abundance using opportunistic surveys and presence-only observations: A zero-inf
 distribution model. Ecological Modelling 521:111712. doi:10.1016/j.ecolmodel.2026.111712. Data:
 doi:10.5061/dryad.pnvx0k729.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 45 (Species abundance from occurrence +
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 45 (Species abundance from occurrence +
 presence-only data).

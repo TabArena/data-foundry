@@ -24,7 +24,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `No` (`No Good Target / Scientific Discovery`, SEL-3, USE-2): a designed playback
 experiment in 10 vineyards; the target counts prospecting visits at a box, and its zeros mostly sit at the silent
@@ -78,4 +78,4 @@ the sums of their behaviour columns. Licence: CC BY 4.0.
 Jomaa F., Pham C., MacDonald E., Karp D., Johnson M. (2026). Data for: Western Bluebirds (Sialia mexicana) use
 public information for prospecting but not ultimate nest site selection. Zenodo. doi:10.5281/zenodo.19428948.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 13 (Western bluebird prospecting).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 13 (Western bluebird prospecting).

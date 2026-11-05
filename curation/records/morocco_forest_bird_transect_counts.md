@@ -25,7 +25,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 1: about 190 country-wide line transects of 11 forest
 passerines in Morocco with local habitat covers, published to test the centre-periphery hypothesis; a multi-site
@@ -53,8 +53,9 @@ survey with habitat covariates, so the family's open species-abundance question 
 - Risks for /add-dataset: count the rows of Transects.csv (the 2023 paper is related work: measure, do not cite its
   count, PROV-12); check the columns: coordinates or region, and whether Maxent suitability or distance to source
   areas is a column (model outputs: keep as an input or drop); which of the 11 species is the target and its zero
-  share; split grouped by region, TP-5 on the grouped folds; the open species-abundance question (triage summary,
-  "Policy questions"; SEL-3, USE-1).
+  share; split grouped by region, TP-5 on the grouped folds; the open species-abundance question (SEL-3, USE-1; settled
+  by Andrej on 2026-10-30, policy question 1 of the zero-inflated review: no new rule, each survey judged on its own use
+  case).
 - Priority: gap 0 (biology & life sciences 4; regression and grouped not thin), use case 0 (none named), source +
   (paper, Dryad), shape 0 (about 190 transects, a handful of habitat columns), risk - (the paper's key covariate is a
   model output; target species and zero share unknown).
@@ -88,4 +89,4 @@ Telleria J.L., Hernandez-Lambrano R., Carbonell R. (2021). Ecological and geogra
 populations of Palaearctic forest birds. Journal of Biogeography 48:2538-2549. doi:10.1111/jbi.14219. Data:
 doi:10.5061/dryad.34tmpg4kh.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 34 (Palaearctic rear-edge forest birds).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 34 (Palaearctic rear-edge forest birds).

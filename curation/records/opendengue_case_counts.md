@@ -25,7 +25,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `No` (`Time-series (Forecasting)`, SEL-10): a global compilation of reported dengue case
 counts by place and period, with no predictors; the only prediction its rows support is a case series' future values,
@@ -89,4 +89,4 @@ of the national zeros and 0.14% of the spatial ones. Licence: CC BY-SA (Usage No
 Clarke J., Lim A., Gupte P., Pigott D.M., van Panhuis W.G., Brady O.J. (2024). A global dataset of publicly available
 dengue case count data. Scientific Data 11:296. doi:10.1038/s41597-024-03120-7.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 21 (OpenDengue).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 21 (OpenDengue).
