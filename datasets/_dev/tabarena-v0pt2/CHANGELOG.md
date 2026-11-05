@@ -1,5 +1,14 @@
 # Changelog: TabArena v0.2 working copy
 
+
+## 2026-11-05 (GeoAI requalified against updated main)
+
+- Restored the previously accepted `geoai_ground_level_no2_estimation_challenge` definition and decision history on main `9048f36a`. Myunghwan explicitly requested this add/review/build cycle using the prior decisions; the accepted QC, regional and observed-day coverage limits remain documented.
+- Current independent claim/split and column audits confirm identical rows, values, missingness, dtypes, eleven predictors, target, all nine station folds and RMSE scoring. Expanded leak/raw-state and dtype probes and current task probes found no new material defect. The raw-order flag reflects date-major observations across stations. Historical fold-safe results remain applicable after exact input/split/runtime comparison and one bit-for-bit reproduced fold.
+- Focused review includes an isolated participant task gamer across all nine folds, precedent consistency, mediator and editor. Calendar and same-day training-station label improvements are legitimate signal. Clarified the existing context contract: each held-out-station query uses only its own row; the labeled training archive at other stations remains available. No scientific transformation changed and no new curator choice is needed.
+- Restored issue 1 as resolved, retaining the original October 30 acceptance and November 5 reuse instruction. The review file remains in the repository under the current history-retention rule. The final checksum differs from October because current schema serializes an empty special-features field and the definition has one additional explanatory curation-comment bullet; independent canonical checksum comparisons account for both changes exactly.
+- Current bundle checks: 27 passed, zero errors/warnings. Full tests: 2,016 passed, 286 skipped after the eighteen sandbox-loopback cases passed on retry. GeoAI lint/format and record/pointer validation pass; whole-repository lint/format findings match the baseline, including its existing example syntax error. The full grouped-model rerun and requested build are recorded separately when complete.
+
 ## 2026-11-05, GitHub issue #48: column types (Lennart's marks)
 
 - `eryhemato_squamous_disease`: the 10 clinical scores 0-3 ship as numbers; a blanket `_feature_types` had cast them
