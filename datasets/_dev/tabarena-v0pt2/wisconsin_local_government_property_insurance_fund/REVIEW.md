@@ -777,7 +777,7 @@ temporal windows, every accepted `splits_too_few`, `meta_license_unknown` and `t
 `Metric.stand_in`. Who decided matters (principles.md, "Precedence"). Curator decisions on this dataset: only the CC of
 2026-10-30 (Andrej: `Yes`, priority 3), given on a screening that left the split open ("SPLIT-8 (forced grouped by
 entity) unless the curator accepts two"). The record's Assessment of 2026-10-30 and the insurance table of "Policy calls
-of 2026-10-30" in `curation/inputs/two_regime_zero_triage_summary.md` are AI suggestions. Andrej's own words there are
+of 2026-10-30" in the zero-inflated triage summary (no longer in the repository; each call is in its record's Assessment of 2026-10-30) are AI suggestions. Andrej's own words there are
 the policy behind them: "I want you to suggest judgement calls based on the references for each dataset" (policy
 question 3, "no family convention"). The insurance siblings are AI drafts of 2026-11-01 waiting for review: they show
 how the batch decides, but carry no curator's authority.

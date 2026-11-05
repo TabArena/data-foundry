@@ -30,7 +30,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> Yes`, priority 3: NIOZ's yearly survey of over 4,000 intertidal stations,
 documented in Scientific Data, from which the paper behind the lead maps Macoma abundance with a cross-validated
@@ -72,7 +72,8 @@ zero-inflated model; open are whether abundance mapping counts as prediction, an
   the release (a bathymetry join would be ours); 769 samples without any biota row (empty core or missing record) and
   sediment missing in 3,687 samples (earlier triage); the taxon follows the paper. Open policy question: whether
   species-abundance mapping from habitat covariates counts as prediction
-  (curation/inputs/two_regime_zero_triage_summary.md, "Policy questions the batch raises").
+  (settled by Andrej on 2026-10-30, policy question 2 of the zero-inflated review: how a source codes its zeros is a
+  cleaning choice at /add-dataset, no reason for a No).
 - Priority: gap 0 (biology & life sciences has 4 accepted, regression and grouped are not thin), use case 0 (uses
   named, no decision on the map; approximate), source + (NIOZ release with a data descriptor), shape + (59,463
   samples at 5,105 stations over 15 years, though few features), risk 0.
@@ -128,4 +129,4 @@ Lyashevska O., Brus D.J., van der Meer J. (2016). Mapping species abundance by a
 a case study in the Wadden Sea, the Netherlands. Ecology and Evolution 6:532-543. doi:10.1002/ece3.1880. SIBES:
 Bijleveld A.I. et al. (2025), Scientific Data, doi:10.1038/s41597-025-04540-9; data doi:10.25850/nioz/7b.b.ug.
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master row 20 (Wadden Sea Macoma abundance).
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master row 20 (Wadden Sea Macoma abundance).

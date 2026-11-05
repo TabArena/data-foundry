@@ -28,7 +28,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured; extended on 2026-10-20 at Andrej's request with a file-by-file analysis of all ten tables. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured; extended on 2026-10-20 at Andrej's request with a file-by-file analysis of all ten tables. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> Yes`, priority 2: a documented French motor portfolio of 2004 with four years of
 claim history, best taken as five same-schema samples (freMPL5-9, 115,200 policy records); how the samples were cut is
@@ -57,7 +57,11 @@ undocumented and some amounts are negative.
 
 **Assessment (AI, 2026-10-30):** suggested call for policy question 3 of the zero-inflated review, where Andrej asked
 for a call per dataset from its references and the domain's practice instead of one convention for the family (the
-shared reasoning is in `curation/inputs/two_regime_zero_triage_summary.md`, "Policy calls of 2026-10-30"); the curator
+shared reasoning: a time exposure or a sum insured is a feature, and a rating-cell table weights the metric by its
+exposure; negative amounts that are recoveries become 0; the source's metric first, else the normalized Gini as a
+context metric, since RMSE on raw amounts follows a few large claims and a Tweedie or Poisson deviance needs positive
+predictions; MET-10 as amended on 2026-11-02 (Andrej) later declined a family-wide metric, so each table's metric is
+decided on its own); the curator
 has the call.
 - Target: `ClaimAmount` on freMPL5-9 stacked (115,200 records), as recommended above.
 - `Exposure`: a feature, as in the `fremtpl2` call (records cover parts of 2004, mean 0.44).
@@ -152,5 +156,5 @@ CC (2026-11-03, Andrej): ship (verdict); the metric, the exposure-weighted Gini 
 CASdatasets (Dutang C., Charpentier A.), `freMPL1` to `freMPL10`, "Unknown French private insurer".
 https://dutangc.github.io/CASdatasets/reference/freMPL.html
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master rows 63-69 (freMPL2, freMPL3, freMPL5, freMPL6,
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master rows 63-69 (freMPL2, freMPL3, freMPL5, freMPL6,
 freMPL7, freMPL8, freMPL9).

@@ -79,7 +79,8 @@ abundance mapping counts as prediction.
   sponge and sea-pen presence as covariates (p. 14). Decide on the 2,659 hauls with a non-zero performance code
   (earlier triage); GOA and AI stations are mostly sampled once or twice. Open policy question: whether
   species-abundance mapping from habitat covariates counts as prediction
-  (curation/inputs/two_regime_zero_triage_summary.md, "Policy questions the batch raises").
+  (settled by Andrej on 2026-10-30, policy question 2 of the zero-inflated review: how a source codes its zeros is a
+  cleaning choice at /add-dataset, no reason for a No).
 - Priority: gap 0 (biology & life sciences has 4 accepted, regression and temporal are not thin), use case 0 (actor
   and decision named by the EFH memo, fit approximate), source + (NOAA's documented tables and memos), shape +
   (35,561 hauls, mixed features, year and station structure), risk 0.

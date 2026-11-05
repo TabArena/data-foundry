@@ -1018,7 +1018,7 @@ Drift: none yet. A pair to avoid: keeping pg16's realised length while confirmin
 
 Sources read: the decision register of the run (it raises no flag for the insurance family), the
 definitions and REVIEW.md files of the run's insurance tables, the records of fremtpl2, pricing_game_2015/2016/2017,
-`curation/inputs/two_regime_zero_triage_summary.md` ("Policy calls of 2026-10-30"), the Cases tables of
+the zero-inflated triage summary (no longer in the repository; each call is in its record's Assessment of 2026-10-30) ("Policy calls of 2026-10-30"), the Cases tables of
 `leak_checks.md`, `splits.md` and `metrics.md`, frempl's panel (precedent checker, mediator D2), and this panel's
 claim, column, split and practitioner reports. Every number below comes from those reports. I ran no new probe.
 

@@ -29,7 +29,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> Yes`, priority 3: a documented textbook table of 67,856 one-year Australian car
 policies with an observed claim-cost target; few, coarse rating factors and a weak signal.
@@ -57,7 +57,11 @@ policies with an observed claim-cost target; few, coarse rating factors and a we
 
 **Assessment (AI, 2026-10-30):** suggested call for policy question 3 of the zero-inflated review, where Andrej asked
 for a call per dataset from its references and the domain's practice instead of one convention for the family (the
-shared reasoning is in `curation/inputs/two_regime_zero_triage_summary.md`, "Policy calls of 2026-10-30"); the curator
+shared reasoning: a time exposure or a sum insured is a feature, and a rating-cell table weights the metric by its
+exposure; negative amounts that are recoveries become 0; the source's metric first, else the normalized Gini as a
+context metric, since RMSE on raw amounts follows a few large claims and a Tweedie or Poisson deviance needs positive
+predictions; MET-10 as amended on 2026-11-02 (Andrej) later declined a family-wide metric, so each table's metric is
+decided on its own); the curator
 has the call.
 - Target: `claimcst0`, the claim cost of the policy-year, as published; the pile at 200 stays as recorded.
 - Exposure (0-1 policy-years): a feature, as in the `fremtpl2` call, since the contracted period is known when the
@@ -112,5 +116,5 @@ De Jong P., Heller G.Z. (2008). Generalized Linear Models for Insurance Data. Ca
 doi:10.1017/CBO9780511755408. Distributed as `dataCar` in the R package insuranceData (Wolny-Dominiak A., Trzesiok M.,
 2014) and as `ausprivauto0405` in CASdatasets (Dutang C., Charpentier A.).
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master rows 61 (dataCar / insuranceData) and 30 (Insurance
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master rows 61 (dataCar / insuranceData) and 30 (Insurance
 ausprivauto0405).

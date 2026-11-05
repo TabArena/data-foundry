@@ -551,7 +551,7 @@
 ## 2026-11-01, 25 folders added from the zero-inflated screening (no container built)
 
 - Added by /add-dataset with the full review panel, one folder per `Yes` of the zero-inflated screening
-  (curation/inputs/two_regime_zero_triage_summary.md, the curator's calls of 2026-10-30). Each folder's `REVIEW.md`
+  (the curator's calls of 2026-10-30, in each record). Each folder's `REVIEW.md`
   holds the open questions; none is built yet.
   - Insurance: `allstate_claim_prediction_challenge_1m`, `australian_vehicle_insurance_2004_2005`,
     `frempl_french_motor_personal_line`, `liberty_mutual_fire_peril_loss_cost`, `pricing_game_2016_french_fleet`,

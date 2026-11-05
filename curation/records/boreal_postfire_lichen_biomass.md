@@ -28,7 +28,7 @@ type_adapter_id: curation-record-v1
 
 ## Comments
 
-**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (`curation/inputs/two_regime_zero_datasets_v4.xlsx`), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
+**⚠️ AI-FILLED — UNVERIFIED. Drafted by an AI assistant on 2026-10-19 from the two-regime-zero workbook (v4 of 2026-10-19, a list of 69 candidates, not in the repository), the source pages and papers, and the data itself where the notes say it was downloaded and measured. A human must verify the suggestion, the metadata and the notes before relying on them.**
 
 **Screening (AI, 2026-10-27):** `TBD -> 2nd Tier`, priority 1: a regional post-fire survey of caribou forage lichen
 (567 plots in the Northwest Territories and Saskatchewan) with stand age, stand type and ecoprovince as covariates, not
@@ -47,10 +47,11 @@ biomass target is an allometric estimate from cover and height.
   known fire age and type. No actor or decision is named, so the fit is approximate at best. Regime grouped by plot or
   site, since quadrats nest in plots (SPLIT-3); the two regions differ in protocol (quadrat size, age classes).
 - Siblings and duplicates: `athabasca_forage_lichen_cover` is another study (Alberta, data not released); no duplicate
-  among the records. No ecological record of the family has a curator's verdict yet; the triage summary names
+  among the records. No ecological record of the family had a curator's verdict yet; the triage of 2026-10-19 named
   `wadden_sea_sibes_macoma_abundance`, `great_lakes_marsh_bird_point_counts` and
-  `nantucket_sound_sea_duck_aerial_survey_counts` as the cases to settle the question on. External collections: none
-  found.
+  `nantucket_sound_sea_duck_aerial_survey_counts` as the cases to settle the question on (since settled by Andrej on
+  2026-10-30, policy question 1 of the zero-inflated review: no new rule, each survey judged on its own use case).
+  External collections: none found.
 - Papers and pages: Greuel et al. 2021 (text not read: Wiley 403; claims from the Dryad abstract and methods, the
   authors' text); the companion deposit doi:10.5061/dryad.76hdr7sth (Baltzer et al.) describes the mature stands.
 - Metric: none found (the Dryad abstract reports a hurdle GLM judged by significance and a logistic growth model; the
@@ -58,9 +59,10 @@ biomass target is an allometric estimate from cover and height.
 - Risks for /add-dataset: the target. Biomass comes from "allometric equations to estimate lichen biomass from field
   measurements of lichen cover and height" (Dryad abstract), so cover and height are the label's inputs and go
   (SEL-5); measured lichen cover is the alternative target. The two protocols need one target definition, the sheets
-  need joining, and what the site sheet holds beyond stand age, type and ecoprovince is unseen. Open question:
-  species-abundance mapping from habitat covariates (`curation/inputs/two_regime_zero_triage_summary.md`, "Policy
-  questions"); `No Good Target / Scientific Discovery` stays as the marker of that concern.
+  need joining, and what the site sheet holds beyond stand age, type and ecoprovince is unseen. The question of
+  species-abundance mapping from habitat covariates is settled (Andrej, 2026-10-30, policy question 1 of the
+  zero-inflated review: no new rule, each survey judged on its own use case); `No Good Target / Scientific Discovery`
+  stays as the marker of that concern.
 - Priority: gap 0 (biology, regression and grouped are not thin), use case 0 (none named), source + (a paper and two
   documented deposits), shape 0 (about 567 plots, few covariates), risk - (allometric target, two protocols).
 
@@ -105,5 +107,5 @@ Greuel R.J., Degre-Timmons G.E., Baltzer J.L., Johnstone J.F., et al. (2021). Pr
 lichen biomass recovery following boreal wildfires. Ecosphere 12:e03481. doi:10.1002/ecs2.3481. Data:
 doi:10.5061/dryad.t1g1jwt15 (Northwest Territories), doi:10.5061/dryad.tb2rbnzzj (Saskatchewan).
 
-Lead: curation/inputs/two_regime_zero_datasets_v4.xlsx, Master rows 37 (Terrestrial lichen - Northwest
+Lead: the two-regime-zero workbook (v4, 2026-10-19), Master rows 37 (Terrestrial lichen - Northwest
 Territories) and 38 (Terrestrial lichen - Saskatchewan).

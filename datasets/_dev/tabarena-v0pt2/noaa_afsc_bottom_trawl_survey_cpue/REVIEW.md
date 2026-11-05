@@ -1116,7 +1116,7 @@ Process: the regime is still the AI's pick; the screening left it to the curator
 
 **What counts as a precedent here.** A precedent is a curator's decision: Lennart's in the rule files' Cases tables
 and the register, and Andrej's CC lines, including the policy calls of 2026-10-30 in
-`curation/inputs/two_regime_zero_triage_summary.md`. The same run's definitions are AI drafts that no curator has
+the zero-inflated triage summary (no longer in the repository; each call is in its record's Assessment of 2026-10-30). The same run's definitions are AI drafts that no curator has
 reviewed yet: wadden_sea_sibes_macoma_abundance, cape_floristic_region_family_cover, crms_phragmites_cover and the
 insurance siblings. They are siblings that should be decided alike, not precedents, and I mark them "same run". The
 run's register (in the run folder) holds three decisions on this

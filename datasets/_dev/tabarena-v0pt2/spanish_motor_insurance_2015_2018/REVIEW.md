@@ -1328,7 +1328,7 @@ For the curator: prompts 1-3 below.
 * the Cases tables of `splits.md`, `leak_checks.md`, `use_case.md` and `provenance.md`;
 * the curator's calls on the insurance family: [fremtpl2](../../../../curation/records/fremtpl2.md) (Andrej,
   2026-10-20), how_much_did_it_rain (Andrej, 2026-10-30), the "Policy calls of 2026-10-30" in
-  [two_regime_zero_triage_summary.md](../../../../curation/inputs/two_regime_zero_triage_summary.md) (AI suggestions
+  the zero-inflated triage summary (no longer in the repository; each call is in its record's Assessment of 2026-10-30) (AI suggestions
   the curator asked for, not decisions);
 * the sibling definitions of this run. Their drafts are by the AI and not yet decided, so they count as like cases to
   settle together, not as precedents with a curator's authority.

@@ -525,7 +525,7 @@ through `data_foundry.v2.metrics`. Scripts and outputs are in the run folder (no
 | 7 | `Exposure` = (end - start) / 365 within 0.006; 48% of records open at year end | notes | recomputed | holds | max deviation 0.0060; 48.4% open | - |
 | 8 | Records that ended early claim more at the same length; Gini 0.251 / 0.273 / 0.294 | notes, decision 1 | builder's experiment1; my 9 shipped splits | holds | table reproduced. On my splits, start-known length + `Exposure` gives 0.302 against 0.283 shipped, the same direction | LEAK-10 |
 | 9 | "`Exposure` is a feature ... the period is known when a policy is priced, apart from a contract that ends early" | notes (Note), fit_reason | `Exposure` against the length known at the start (start to year end, from the dropped `RecordBeg`), 9 shipped splits | **refuted in scope** | 51.3% of records ended early. Claim AUC: start-known length 0.633, `Exposure` 0.689 (9/9 splits), no length 0.565, so 45% of the lift from `Exposure` is known only at the end. Of the top 1% of claims, 74% ended early (51% of all records); the largest claim, 802,620, ended its record after 2 months (circumstantial: a claim ending the contract). Declared Gini: start-known length 0.292, shipped 0.283 (shipped wins 4/9, paired SE 0.015), so the fix costs nothing | LEAK-10 (Must), LEAK-7 |
-| 10 | `Exposure` follows "the curator's call for fremtpl2 and the family's call of 2026-10-30" | notes | `fremtpl2` record; triage summary, "Policy calls of 2026-10-30" | **refuted in part** | The fremtpl2 call is the curator's (CC 2026-10-20). The 2026-10-30 table is the AI's suggestion per record: "The calls are suggested per record". The frempl CC of 2026-10-30 sets only `Yes`, priority 5 | principles, who decides |
+| 10 | `Exposure` follows "the curator's call for fremtpl2 and the family's call of 2026-10-30" | notes | `fremtpl2` record; the records' Assessments of 2026-10-30 | **refuted in part** | The fremtpl2 call is the curator's (CC 2026-10-20). The 2026-10-30 table is the AI's suggestion per record: "The calls are suggested per record". The frempl CC of 2026-10-30 sets only `Yes`, priority 5 | principles, who decides |
 | 11 | Raw `Exposure` ranks claims at 0.674 and losses at Gini 0.214; the model reaches 0.282 and wins on every fold (no lookup) | notes | 9 shipped splits | holds | 0.674 / 0.213 against 0.283; the model wins 9/9 | TP-4 |
 | 12 | 34,324 records (30%) continue in the next row; 1 by chance; 80,831 chains of 1-6 | notes, splits_comment, decision 3 | `_continues_next` on the deduplicated raw | holds | 34,324; chain sizes sum to 80,831; shuffled control 1 (explore2) | SPLIT-24 |
 | 13 | A claim does not make one in the next record likelier (8.3% against 9.2%) | notes | explore3 | holds | 0.083 / 0.092 | SPLIT-29 |
@@ -975,7 +975,7 @@ The metric I would choose: the normalized Gini of the ordered Lorenz curve on th
 - Goldburd, Khare and Tevet, CAS Monograph No. 5, Generalized Linear Models for Insurance Rating, read in full: sec. 2.6 exposure offset and weight, 4.3.1 random against out-of-time holdout, 5.1.1 pure premium, 5.1.3 capping large losses, 7.2.4 Gini on cumulative exposures. https://www.casact.org/sites/default/files/2021-01/05-Goldburd-Khare-Tevet.pdf (page: https://www.casact.org/monograph/cas-monograph-no-5)
 - Frees, Meyers and Cummings (2011), "Summarizing Insurance Scores Using a Gini Index", JASA 106(495):1085-1098, read from the abstract and the CAS slides (the ordered Lorenz curve by relativity score / premium): https://casact.org/sites/default/files/presentation/spring_2010_handouts_c17-frees.pdf; the 2014 follow-up, https://casact.org/abstract/insurance-ratemaking-and-gini-index
 - CAS RPM slides on the Lorenz curve with earned car-years on the x-axis, from search results, not read in full: https://www.casact.org/sites/default/files/presentation/rpm_2014_handouts_paper_3048_handout_1892_0.pdf
-- Family call of 2026-10-30: the two-regime-zero triage summary in the repository's curation inputs, "Policy calls of 2026-10-30", item 3. The fremtpl2 call on `Exposure`: the fremtpl2 curation record.
+- Family call of 2026-10-30: the zero-inflated triage summary (no longer in the repository; each call is in its record's Assessment of 2026-10-30), "Policy calls of 2026-10-30", item 3. The fremtpl2 call on `Exposure`: the fremtpl2 curation record.
 
 </details>
 
@@ -1081,7 +1081,7 @@ decisions on this family: fremtpl2 (record) (CC 2026-10-20, Andrej: aggregate cl
 amount, `Exposure` a feature capped at 1, `ClaimNb` dropped, temporal by `year_index`). The CCs of 2026-10-30 on
 frempl, australian, spanish, pricing_game_2017 and allstate_claim_prediction_challenge set only the verdict and priority.
 The insurance table of "Policy calls of 2026-10-30" in
-the two-regime-zero triage summary (curation inputs) holds *suggested*
+the zero-inflated triage summary (no longer in the repository; each call is in its record's Assessment of 2026-10-30) holds *suggested*
 calls (Andrej: "I want you to suggest judgement calls ..."; every record: "the curator has the call"). The sibling
 definitions australian_vehicle_insurance_2004_2005 and
 spanish_motor_insurance_coverage_level_2022_2024 are

@@ -447,7 +447,7 @@ squared error).
 2. Anomaly counts (P7 notes). "57 first ... the youngest at 8" should read "55 first and 8 second drivers ... (the
    youngest at 5 and 8)". Remedy: edit the bullet.
 3. "the family's call of 2026-10-30" (P7 provenance of a decision). The clip is an AI suggestion that the curator
-   has not marked. Remedy: say "as suggested in the family's review (curation/inputs/two_regime_zero_triage_summary.md)"
+   has not marked. Remedy: say "as suggested in the family's review (the records' Assessments of 2026-10-30)"
    until the curator rules. The clip itself is harmless to model order (tau 1.0, 1.0, 0.8).
 4. "matches the rules' counts ... 14,243 claims" (P7). The rules do not give the claim count. Remedy: cite what they
    do give, "at most 6 claims per vehicle in Year 0 (Sec. 4.31)", which matches.
@@ -948,7 +948,7 @@ dataset, and its only entries for it are the AI's suggested call of 2026-10-30 a
 I also read:
 - the Cases tables of `splits.md`, `metrics.md`, `cleaning_features.md` and `provenance.md`;
 - the records of fremtpl2, pricing_game_2015/2016/2017, how_much_did_it_rain, zillow_prize and house_sales;
-- "Policy calls of 2026-10-30" in `curation/inputs/two_regime_zero_triage_summary.md`;
+- "Policy calls of 2026-10-30" in the zero-inflated triage summary (no longer in the repository; each call is in its record's Assessment of 2026-10-30);
 - the definitions and REVIEW.md files of this run's insurance tables (australian, frempl, wisconsin, spanish ×2,
   allstate_1m, liberty, pg16);
 - the precedent checks of the pg16, frempl and spanish panels, this panel's column audit, and the builder's probes.
