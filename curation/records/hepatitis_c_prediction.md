@@ -9,6 +9,7 @@ data_foundry_status:
 suggestion: 'Yes'
 decision_markers:
 - Selection Bias
+- Class-dependent Recording
 tags:
 - Tiny Data
 collections:
@@ -42,6 +43,8 @@ CC (2026-10-21, Lennart): the metric is the log_loss fallback, as proposed; bala
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `nhanes_liver_elastography_fibrosis` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
 
 CC (2026-11-01, Lennart): the target rule (CLEAN-25) and the cut-end rule (CLEAN-14): the target is an ordered category, blood donor < hepatitis < fibrosis < cirrhosis.
+
+**Assessment (AI, 2026-11-05):** marker `Class-dependent Recording`: donors and patients were recorded under different precision conventions (some lab values whole numbers in one group only), and ALP (alkaline phosphatase, a liver enzyme) is missing only for patients. Before the definition's rounding, bilirubin alone gives ROC AUC 0.881, and 0.954 with its number format. The definition rounds seven lab values and drops ALP. Noted in its curation comments; data unchanged.
 
 ## Reference
 

@@ -134,6 +134,7 @@ class HorseColicSurvival(AbstractCuratedDataset):
           each level is carries the words, a score without them is a number): 8 ordered codes carry their codebook's
           words (`CODE_LABELS`), in the same order; 5 unordered codes carry their words: `mucous_membranes`, `pain`,
           `abdomen`, `abdominocentesis_appearance`, `age`.
+        - Class-dependent recording (record marker `Class-dependent Recording`): `total_protein` is recorded in two units, g/L (above 15) for 95 horses, of which 1 died and 27 were euthanized, and g/dL for 209, of which 64 died and 16 were euthanized. The switch follows the hospital number, that is the admission period, so the unit tells died from euthanized (ROC AUC 0.79 alone). Not harmonised yet: one unit for all rows removes the cue (TabPFN 3.5 log loss 0.682 to 0.724).
     """
 
     # Task

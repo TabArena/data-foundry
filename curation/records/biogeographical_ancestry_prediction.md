@@ -9,6 +9,7 @@ data_foundry_status:
 suggestion: 'Yes'
 decision_markers:
 - Selection Bias
+- Class-dependent Recording
 tags:
 - Tiny Data
 - New IID
@@ -55,6 +56,8 @@ CC (2026-10-21, Lennart): biogeographical_ancestry: roc_auc stays (the paper's m
 CC (2026-10-21, Lennart): correction to the line above: log loss stays; ROC AUC does not make sense as a good metric for this multiclass task.
 
 CC (2026-10-27, Lennart): marker Selection Bias, from the AI review of PR #16: each population comes from one reference project (1000 Genomes or HGDP), so the classes were collected apart and project differences coincide with the label (failed calls occur only in the HGDP groups, as the fit_reason says); the reference donors were chosen for their ancestry, not drawn from case samples.
+
+**Assessment (AI, 2026-11-05):** marker `Class-dependent Recording`: the Turkey samples come from a separate source with their own genotyping artefact, so how a sample was genotyped told its class; the definition drops the class, as the rule for a class from a separate source or assay asks. Noted in the definition's curation comments; data unchanged.
 
 ## Reference
 

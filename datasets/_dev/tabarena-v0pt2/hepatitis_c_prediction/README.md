@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: hepatitis_c_prediction
 container_format: 2
-checksum: v2:ae9bb4e04f4a48b0c39e2514cb0d5d3eb6a7e4ef268a285a998c7dfc48ef4235
+checksum: v2:36c82446df4b3adedcacd9928be511cfa00638d3b970ba3ceaf7afc9d7ff89aa
 build:
   uuid: 01a111fc-da06-7344-b05c-32c0c4829da1
   checksum: v2:3b064a7111c0feec2dbda78b7c01add1af848f38ec06d17d94232ac6bac1e80a
@@ -68,7 +68,7 @@ decisions: []
 
 Multiclass classification of `Category`, scored with `log_loss` on IID splits. 608 rows and 11 features. Source: UCI (2020).
 
-Built as `01a111fc-da06-7344-b05c-32c0c4829da1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ae9bb4e04f4a48b0c39e2514cb0d5d3eb6a7e4ef268a285a998c7dfc48ef4235`, so the build is stale. See [Build](#build).
+Built as `01a111fc-da06-7344-b05c-32c0c4829da1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:36c82446df4b3adedcacd9928be511cfa00638d3b970ba3ceaf7afc9d7ff89aa`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -192,6 +192,7 @@ We start with the data from UCI.
 - There are no exact or near duplicates (minimum standardised nearest-neighbour distance 0.20), so there is no evidence of several rows per patient.
 - The target (2026-11-01, CLEAN-25): `Category` ships its classes as words, blood donor < hepatitis < fibrosis <
   cirrhosis (the source's own labels without their code; ordered by the course of the disease).
+- Class-dependent recording (record marker `Class-dependent Recording`): donors and patients follow different precision conventions and ALP is missing only for patients, as described above; harmonised by the rounding and the drop of ALP. Before the rounding, BIL alone gives ROC AUC 0.881, and 0.954 with its number format; CREA 0.628, and 0.790 with its format.
 
 ## Splits
 
@@ -269,7 +270,7 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
 
 ## Data checks
@@ -342,4 +343,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:ae9bb4e04f4a48b0c39e2514cb0d5d3eb6a7e4ef268a285a998c7dfc48ef4235` |
+| stale | yes: the definition now gives checksum `v2:36c82446df4b3adedcacd9928be511cfa00638d3b970ba3ceaf7afc9d7ff89aa` |
