@@ -58,13 +58,14 @@ origin (MET-11); none is left to a silent default.
 that:
 * its unit of evaluation exists in our data: per row, per patient, per customer, per era, per week, per instance;
 * every input it needs ships as a column and is never a feature (a group, a time, a weight, an onset hour), except
-  an input known at the prediction point for train and test rows alike, which may stay a feature and also be the
-  metric's group or weight (amended 2026-11-02, Andrej; merged from two clauses at the third case of the day):
-  the task's time column as the group, which the models get as the time column anyway (blogfeedback: the test day
-  groups Hits@10); a weight (liberty_mutual_fire_peril_loss_cost: the sum insured `var11`, which the host gave every
-  team as a policy characteristic; "I want to score with the feature and also keep it as a feature assuming it to be
-  known during train and test time as input for the model"); the row's taxon as the group
-  (noaa_afsc_bottom_trawl_survey_cpue: each species' map counts once). The test fold holds what the metric reads:
+  the task's own group or time column, which the metric reads where it is (blogfeedback: the time column's test day
+  groups Hits@10; sat11's instance id; a stay's hour). An input that is also a valid feature, known at the prediction
+  point for train and test rows alike, stays a feature and ships a second time as a scoring column, a copy the metric
+  reads, so the scoring columns are the complete set of the extra data a metric needs, and no metric reads a feature
+  (amended 2026-11-02, Andrej, on liberty_mutual_fire_peril_loss_cost's sum insured `var11` and
+  noaa_afsc_bottom_trawl_survey_cpue's taxon; reworded 2026-11-05, Lennart: "duplicate as needed ... so we keep a
+  clean set of extra data"). A value the models must not get (a rating's output such as a premium) is a scoring
+  column only. The test fold holds what the metric reads:
   whole patient stays for a per-patient utility, several eras or weeks per window for a per-era correlation or a
   slope over weeks, enough positives for the top k, every class the cost matrix names;
 * the metric means on our task what it meant on the source's: same target, same classes, same class balance. A task
@@ -104,7 +105,12 @@ metric the forum shows was gamed) or measured on the shipped splits, written in 
 competition that scored hard labels has fixed that the decision is a hard label, so its threshold metric (F1, a cost
 matrix) is kept: methods choose their threshold on the training side. Cases: zillow_prize, mercari_price_suggestion,
 amex_non_iid_1m, force_2020, g_research_crypto_forecasting_1m, numerai_v5_2_1m, rossmann_store_sales; overruled:
-african_credit_scoring_challenge (2026-10-26).
+african_credit_scoring_challenge (2026-10-26). The weight of a competition's choice follows its standing: a metric set
+by a company that acts on it (Kaggle's sponsored challenges, an industrial challenge) is overruled only as above; one
+from a competition of lesser standing (an old one, or one run by a community or a research group) may be replaced by
+the metric the task makes obvious (MET-11 `context`) when the measurements favour it, and between the two the call is
+case by case (amended 2026-11-05, Lennart, on loan_default_prediction_imperial_college, Imperial College London's
+2014 challenge).
 
 **MET-5 (Should).** A paper's metric is the source's metric only when it is one deliberate choice: the paper names it
 as the criterion it ranks, tunes or selects models by, or argues why it fits the decision. A paper that reports
@@ -262,8 +268,8 @@ and wait for the curator; the others are decided.
 | MET-7 | coil_2000 | `precision_at_k` kept (2026-10-21, Lennart) | CoIL 2000 counted the policy owners among the 800 customers selected from 4,000 | applied |
 | MET-4 | rossmann_store_sales | `rmspe` kept (2026-10-21, Lennart) | Kaggle scored RMSPE, now a custom metric of `data_foundry.v2.metrics` | applied |
 | MET-1, MET-11 | churn_telco_south_asia | fallback `roc_auc` kept (2026-10-21, Lennart) | the first publication (closed access) could not be read; no metric is known | applied |
-| MET-2 (amended 2026-11-02, Andrej), MET-1, MET-12 | blogfeedback | `mean_group_top_k_overlap` (k = 10) with the time column `basetime_day` as its group, Buza's Hits@10 per test day (2026-11-02, Andrej) | the source scores each test day's top 10; the day is the time column, which the models get in any case, so MET-2's "never a feature" does not cover it | applied |
-| MET-2 (amended 2026-11-02, Andrej), MET-4 | liberty_mutual_fire_peril_loss_cost | the competition's `normalized_weighted_gini` with `var11` as its weight and as a feature (2026-11-02, Andrej) | `var11`, the sum insured, is a policy characteristic the host shipped in the test file for every team, set at underwriting and known for train and test rows alike; on a weighted Gini the best order is by expected loss whatever the weights, and as a feature it moved an untuned model's score by -0.010 (within fold noise) | applied |
+| MET-2 (amended 2026-11-02, Andrej), MET-1, MET-12 | blogfeedback | `mean_group_top_k_overlap` (k = 10) with the time column `basetime_day` as its group, Buza's Hits@10 per test day (2026-11-02, Andrej) | the source scores each test day's top 10; the day is the task's time column, which the metric reads where it is, as sat11 reads its group column | applied |
+| MET-2 (amended 2026-11-02, Andrej), MET-4 | liberty_mutual_fire_peril_loss_cost | the competition's `normalized_weighted_gini`; `var11` stays a feature and its copy ships as the weight scoring column (2026-11-02, Andrej; the copy 2026-11-05, Lennart) | `var11`, the sum insured, is a policy characteristic the host shipped in the test file for every team, set at underwriting and known for train and test rows alike; on a weighted Gini the best order is by expected loss whatever the weights, and as a feature it moved an untuned model's score by -0.010 (within fold noise) | applied |
 
 ## In Data Foundry
 
