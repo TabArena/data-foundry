@@ -411,6 +411,43 @@ the precedent check found them consistent; the README files follow at the next `
   insurance_fund (2026-11-08), ashrae_great_energy_predictor_iii_1m (2026-11-10), anes_voting_2026,
   ieee_fraud_detection, maps_router_eta_1m and mercedes_benz_greener_manufacturing (2026-11-11).
 
+## 2026-11-11, sat11_hand_algo_runtime: PAR10 alone picks the solver (nothing rebuilt)
+
+- `sat11_hand_algo_runtime` (issue 4, B): PAR10 alone picks the solver: the grouping declares `prediction_unit="row"`
+  and no aggregation instead of `select_min`, so a tie counts as the mean of the tied solvers' costs, as in
+  asp_potassco_classification. Trained models score the same (no tie on the 60 splits); a constant prediction 18,539 s
+  instead of 19,140 s. `dataset check` 0 errors, README regenerated, record CC line; definitions.md no longer names
+  sat11 as declaring `select_min`. Nothing rebuilt.
+
+## 2026-11-11 (evening), lung_adenocarcinoma_metastasis reviewed (Andrej; no container built)
+
+- A full review panel (claim, column and split audits, a pathologist's view, a blind reviewer, a task gamer, a
+  precedent check, advocate and critic, mediator): ship after changes, all applied. The 67 `AFFX` control probes
+  dropped: they measure the preparation and separate the classes (ROC AUC 0.695 together; the earlier note of 0.42
+  came from a run that paired labels with the wrong arrays). Dropped as rows: AD355 and AD360 (no clinical data, like
+  the `A` patients) and AD218 and AD224, which the sheet codes inconsistently (the same second-review note, "ad w met?"
+  and "ad m met?", once a metastasis and once a primary; AD218 lies in the paper's colon expression cluster). 123 rows,
+  15 metastases (8 colon, 4 breast, 3 other), 5 per test fold.
+- Record markers `Class-dependent Recording` (the metastasis arrays call fewer genes present, ROC AUC 0.722; it runs
+  through every gene and stays, carrying a small part of the score) and `Selection Bias` (all resected
+  adenocarcinomas, while the question arises only after an earlier cancer elsewhere, which is not recorded); priority
+  1. The use-case reason restated: the flag is written in the tumour's pathology note but rests on an earlier cancer
+  outside the specimen (USE-1 text and Cases row). LEAK-15 gains the case, the TP-5 row the new numbers.
+- `dataset check` 0 errors, 0 warnings, README regenerated; task probe no flag (random forest 0.876, logistic
+  regression 0.836, LightGBM 0.811; out of fold on the 125 rows, colon metastases separated at 0.984, breast at 0.76).
+
+## 2026-11-11, lung_adenocarcinoma_metastasis added from lung_cancer's arrays (Andrej; no container built)
+
+- lung_adenocarcinoma_metastasis (new; BeyondArena v0.2 review page, lung_cancer issues 7, B, 4, B and 8, A): the
+  arrays of lung_cancer's GEO rebuild (one MAS5 array per tumour) with the target `Metastasis`, the study's flag of a
+  possible metastasis from another organ (sheet DATASET B of `SampleData.xls` in GEO's caArray archive, now
+  downloaded: 16 of the 127 adenocarcinomas with a clinical history, 8 colon, 4 breast, 4 other), the task the
+  source names as "a key issue in lung tumor diagnosis". Binary, ROC AUC (fallback), random stratified split, one
+  tumour per patient. The task probe raises no flag (random forest 0.887, logistic regression 0.850, 5 or 6
+  metastases per test fold). A new record, since rows, target and values changed (PROV-14, as coad and aeolus);
+  lung_cancer stays retired for the histology, with a CC line pointing here. Cases rows under USE-1 (rewritten),
+  TP-5 and PROV-14 (new); tcga_lung_histology's assessment notes the new dataset.
+
 ## 2026-11-10, horizon audit and the curator's window decisions, round 1 (no container built)
 
 The curator's marks on the test-windows board (Lennart, 2026-11-10) are applied where the window length holds; a
@@ -510,43 +547,6 @@ horizon (...) is checked". The README files follow at the next `dataset check`; 
   spanish_homeowners_motor_insurance_2010_2014 and wisconsin_local_government_property_insurance_fund, `"months"` for
   alfa_battle_2_0_task_2, `"quarters"` for mortgage. Their frames and splits are unchanged; their containers carry
   the field at the next check.
-
-## 2026-11-11, sat11_hand_algo_runtime: PAR10 alone picks the solver (nothing rebuilt)
-
-- `sat11_hand_algo_runtime` (issue 4, B): PAR10 alone picks the solver: the grouping declares `prediction_unit="row"`
-  and no aggregation instead of `select_min`, so a tie counts as the mean of the tied solvers' costs, as in
-  asp_potassco_classification. Trained models score the same (no tie on the 60 splits); a constant prediction 18,539 s
-  instead of 19,140 s. `dataset check` 0 errors, README regenerated, record CC line; definitions.md no longer names
-  sat11 as declaring `select_min`. Nothing rebuilt.
-
-## 2026-11-11 (evening), lung_adenocarcinoma_metastasis reviewed (Andrej; no container built)
-
-- A full review panel (claim, column and split audits, a pathologist's view, a blind reviewer, a task gamer, a
-  precedent check, advocate and critic, mediator): ship after changes, all applied. The 67 `AFFX` control probes
-  dropped: they measure the preparation and separate the classes (ROC AUC 0.695 together; the earlier note of 0.42
-  came from a run that paired labels with the wrong arrays). Dropped as rows: AD355 and AD360 (no clinical data, like
-  the `A` patients) and AD218 and AD224, which the sheet codes inconsistently (the same second-review note, "ad w met?"
-  and "ad m met?", once a metastasis and once a primary; AD218 lies in the paper's colon expression cluster). 123 rows,
-  15 metastases (8 colon, 4 breast, 3 other), 5 per test fold.
-- Record markers `Class-dependent Recording` (the metastasis arrays call fewer genes present, ROC AUC 0.722; it runs
-  through every gene and stays, carrying a small part of the score) and `Selection Bias` (all resected
-  adenocarcinomas, while the question arises only after an earlier cancer elsewhere, which is not recorded); priority
-  1. The use-case reason restated: the flag is written in the tumour's pathology note but rests on an earlier cancer
-  outside the specimen (USE-1 text and Cases row). LEAK-15 gains the case, the TP-5 row the new numbers.
-- `dataset check` 0 errors, 0 warnings, README regenerated; task probe no flag (random forest 0.876, logistic
-  regression 0.836, LightGBM 0.811; out of fold on the 125 rows, colon metastases separated at 0.984, breast at 0.76).
-
-## 2026-11-11, lung_adenocarcinoma_metastasis added from lung_cancer's arrays (Andrej; no container built)
-
-- lung_adenocarcinoma_metastasis (new; BeyondArena v0.2 review page, lung_cancer issues 7, B, 4, B and 8, A): the
-  arrays of lung_cancer's GEO rebuild (one MAS5 array per tumour) with the target `Metastasis`, the study's flag of a
-  possible metastasis from another organ (sheet DATASET B of `SampleData.xls` in GEO's caArray archive, now
-  downloaded: 16 of the 127 adenocarcinomas with a clinical history, 8 colon, 4 breast, 4 other), the task the
-  source names as "a key issue in lung tumor diagnosis". Binary, ROC AUC (fallback), random stratified split, one
-  tumour per patient. The task probe raises no flag (random forest 0.887, logistic regression 0.850, 5 or 6
-  metastases per test fold). A new record, since rows, target and values changed (PROV-14, as coad and aeolus);
-  lung_cancer stays retired for the histology, with a CC line pointing here. Cases rows under USE-1 (rewritten),
-  TP-5 and PROV-14 (new); tcga_lung_histology's assessment notes the new dataset.
 
 ## 2026-11-10, `sepsis_survival_minimal_clinical_records` retired as `Trivial` (Andrej; no container built)
 
@@ -1314,39 +1314,6 @@ noaa_storm's definitions now differ from any build.
   Recommended: a timeout at 10 x the limit in both datasets (no measurable change here, 17-19% better picks on sat11),
   the log kept. Open.
 
-## 2026-11-05, asp_potassco_classification: Andrej's marks on the v0.2 review page, second round (nothing rebuilt)
-
-- `asp_potassco_classification` (issue 2, B): the split protocol counts the units a metric scores. When the metric has
-  a group input, `recommended_dimensions` counts its groups instead of the rows, so 1,212 instances give 10 x 3 splits
-  instead of 3 x 3; `dataset check` 0 errors. The task summary now says 32 of the 96 problem classes per test fold (was
-  27 to 36). The same count moves `sat11_hand_algo_runtime` from 10 x 3 to 20 x 3 at its next build (184 instances);
-  open for confirmation in issue 2, with the rule amendment proposed there.
-
-## 2026-11-04, asp_potassco_classification: Andrej's marks on the v0.2 review page, first round (nothing rebuilt)
-
-- `asp_potassco_classification` (issue 1, B): reframed as runtime regression, as sat11_hand_algo_runtime: one row per
-  instance and clasp configuration (13,332 rows), the log runtime as target with timeouts at 600 s, `algorithm`
-  categorical, the anonymised `instance_id` a scoring column; scored by PAR10 (`par_k`, cutoff 600, k 10, the source's
-  metric) instead of log loss on the fastest label; ASlib's feature costs left out. `dataset check` 0 errors, task
-  probes no flag. The split protocol now gives 3 x 3 splits instead of 10 x 3: new issue 2. The rename waits until the
-  review page is done.
-
-## 2026-11-04, asp_potassco_classification issue 1 answered (no definition changed)
-
-- Andrej asked whether option B (runtime regression, as sat11) or C (the fastest label, scored by the chosen
-  configuration's runtime) serves the use case better. The answer in its `REVIEW.md` recommends B: only B lets a model
-  learn the timeouts that make up 96% of the user's loss, and it works with the framework as it is (a prototype split
-  by problem class with PAR10 per instance), while C needs a change of the metric spec. Each model trained both ways
-  on the 30 shipped splits (Slurm) favours neither: LightGBM and the forests pick better as in B, k-nearest
-  neighbours, the linear model and TabPFN as in C, and no method reliably beats always running the configuration most
-  often fastest in training. The issue stays open.
-
-## 2026-11-04, asp_potassco_classification and sat11_hand_algo_runtime: open questions in REVIEW.md for Andrej's review
-
-- A `REVIEW.md` in both folders, two of the 108 written for the BeyondArena v0.2 review page, without a panel, from
-  the evidence gathered so far: the records, earlier experiments and model runs on the shipped data. Both records carry
-  a `priority` and an `**Assessment (AI, 2026-11-04):**` line with its factors.
-
 ## 2026-11-06, PR #47: re-review under the exposure rules (no container built)
 
 Seventeen of the twenty datasets the exposure rework touched went through the review panel again under LEAK-41 and
@@ -1499,6 +1466,14 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
 - READMEs of the 17 regenerated by `dataset check` (0 errors, 0 warnings; new checksums, since the budget is part of
   the metadata); nothing rebuilt. `GETTING_STARTED.md` and `BENCHMARK_CHANGES_TODO.md` say how v0.2 uses the budget.
 
+## 2026-11-05, asp_potassco_classification: Andrej's marks on the v0.2 review page, second round (nothing rebuilt)
+
+- `asp_potassco_classification` (issue 2, B): the split protocol counts the units a metric scores. When the metric has
+  a group input, `recommended_dimensions` counts its groups instead of the rows, so 1,212 instances give 10 x 3 splits
+  instead of 3 x 3; `dataset check` 0 errors. The task summary now says 32 of the 96 problem classes per test fold (was
+  27 to 36). The same count moves `sat11_hand_algo_runtime` from 10 x 3 to 20 x 3 at its next build (184 instances);
+  open for confirmation in issue 2, with the rule amendment proposed there.
+
 ## 2026-11-05, a retirement of 2026-10-27 carried out
 
 - A record Andrej set to `No (Retired)` on 2026-10-27: its folder is removed and `v2_path` cleared. `DF: Yes`, the
@@ -1569,6 +1544,40 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
   69% and leaves 78 negatives; 74% of rows 260 to 519 repeat a row from 0 to 259. Data unchanged.
 - Not built. READMEs regenerated with `dataset check` (0 errors, 0 warnings) except `lung_cancer`'s: its raw file (the
   PNAS supplement) has to be downloaded by hand, so its README still shows the earlier notes and checksum.
+
+## 2026-11-05 (GeoAI requalified against updated main)
+
+- Restored the previously accepted `geoai_ground_level_no2_estimation_challenge` definition and decision history on main `9048f36a`. Myunghwan explicitly requested this add/review/build cycle using the prior decisions; the accepted QC, regional and observed-day coverage limits remain documented.
+- Current independent claim/split and column audits confirm identical rows, values, missingness, dtypes, eleven predictors, target, all nine station folds and RMSE scoring. Expanded leak/raw-state and dtype probes and current task probes found no new material defect. The raw-order flag reflects date-major observations across stations. Historical fold-safe results remain applicable after exact input/split/runtime comparison and one bit-for-bit reproduced fold.
+- Focused review includes an isolated participant task gamer across all nine folds, precedent consistency, mediator and editor. Calendar and same-day training-station label improvements are legitimate signal. Clarified the existing context contract: each held-out-station query uses only its own row; the labeled training archive at other stations remains available. No scientific transformation changed and no new curator choice is needed.
+- Restored issue 1 as resolved, retaining the original October 30 acceptance and November 5 reuse instruction. The review file remains in the repository under the current history-retention rule. The final checksum differs from October because current schema serializes an empty special-features field and the definition has one additional explanatory curation-comment bullet; independent canonical checksum comparisons account for both changes exactly.
+- Current bundle checks: 27 passed, zero errors/warnings. Full tests: 2,016 passed, 286 skipped after the eighteen sandbox-loopback cases passed on retry. GeoAI lint/format and record/pointer validation pass; whole-repository lint/format findings match the baseline, including its existing example syntax error. The full grouped-model rerun and requested build are recorded separately when complete.
+
+## 2026-11-04, asp_potassco_classification: Andrej's marks on the v0.2 review page, first round (nothing rebuilt)
+
+- `asp_potassco_classification` (issue 1, B): reframed as runtime regression, as sat11_hand_algo_runtime: one row per
+  instance and clasp configuration (13,332 rows), the log runtime as target with timeouts at 600 s, `algorithm`
+  categorical, the anonymised `instance_id` a scoring column; scored by PAR10 (`par_k`, cutoff 600, k 10, the source's
+  metric) instead of log loss on the fastest label; ASlib's feature costs left out. `dataset check` 0 errors, task
+  probes no flag. The split protocol now gives 3 x 3 splits instead of 10 x 3: new issue 2. The rename waits until the
+  review page is done.
+
+## 2026-11-04, asp_potassco_classification issue 1 answered (no definition changed)
+
+- Andrej asked whether option B (runtime regression, as sat11) or C (the fastest label, scored by the chosen
+  configuration's runtime) serves the use case better. The answer in its `REVIEW.md` recommends B: only B lets a model
+  learn the timeouts that make up 96% of the user's loss, and it works with the framework as it is (a prototype split
+  by problem class with PAR10 per instance), while C needs a change of the metric spec. Each model trained both ways
+  on the 30 shipped splits (Slurm) favours neither: LightGBM and the forests pick better as in B, k-nearest
+  neighbours, the linear model and TabPFN as in C, and no method reliably beats always running the configuration most
+  often fastest in training. The issue stays open.
+
+## 2026-11-04, asp_potassco_classification and sat11_hand_algo_runtime: open questions in REVIEW.md for Andrej's review
+
+- A `REVIEW.md` in both folders, two of the 108 written for the BeyondArena v0.2 review page, without a panel, from
+  the evidence gathered so far: the records, earlier experiments and model runs on the shipped data. Both records carry
+  a `priority` and an `**Assessment (AI, 2026-11-04):**` line with its factors.
+
 
 ## 2026-11-05, GitHub issue #48: column types (Lennart's marks)
 
