@@ -219,8 +219,9 @@ class MetricSpec:
     params: dict[str, Any] = dataclasses.field(default_factory=dict)
     """JSON values only: a cost matrix, ``k``, the shape of a transform."""
     inputs: dict[str, str] = dataclasses.field(default_factory=dict)
-    """Each role the scorer needs (``group``, ``weight``, ``order``) mapped to a column of the frame; every such column
-    is a :class:`ScoringColumn`."""
+    """Each role the scorer needs (``group``, ``weight``, ``order``) mapped to a column of the frame. Such a column is
+    a :class:`ScoringColumn` (never a feature), except the task's group or time column, which the metric reads where
+    it is; a feature the metric also needs ships a copy as a scoring column (MET-2)."""
     original: str | None = None
     """The original metric as the source names it (``"RMSE"``, ``"per-era CORR"``)."""
     reference: str | None = None

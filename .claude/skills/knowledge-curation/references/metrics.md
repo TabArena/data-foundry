@@ -57,10 +57,17 @@ origin (MET-11); none is left to a silent default.
 **MET-2 (Must).** Match the data, the metric and the real task. Before declaring a metric, check on the shipped data
 that:
 * its unit of evaluation exists in our data: per row, per patient, per customer, per era, per week, per instance;
-* every input it needs ships as a column and is never a feature (a group, a time, a weight, an onset hour), and the
-  test fold holds what the metric reads: whole patient stays for a per-patient utility, several eras or weeks per
-  window for a per-era correlation or a slope over weeks, enough positives for the top k, every class the cost
-  matrix names;
+* every input it needs ships as a column and is never a feature (a group, a time, a weight, an onset hour), except
+  the task's own group or time column, which the metric reads where it is (blogfeedback: the time column's test day
+  groups Hits@10; sat11's instance id; a stay's hour). An input that is also a valid feature, known at the prediction
+  point for train and test rows alike, stays a feature and ships a second time as a scoring column, a copy the metric
+  reads, so the scoring columns are the complete set of the extra data a metric needs, and no metric reads a feature
+  (amended 2026-11-02, Andrej, on liberty_mutual_fire_peril_loss_cost's sum insured `var11` and
+  noaa_afsc_bottom_trawl_survey_cpue's taxon; reworded 2026-11-05, Lennart: "duplicate as needed ... so we keep a
+  clean set of extra data"). A value the models must not get (a rating's output such as a premium) is a scoring
+  column only. The test fold holds what the metric reads:
+  whole patient stays for a per-patient utility, several eras or weeks per window for a per-era correlation or a
+  slope over weeks, enough positives for the top k, every class the cost matrix names;
 * the metric means on our task what it meant on the source's: same target, same classes, same class balance. A task
   we changed (classes merged or dropped, a balanced sample replaced by the full release, duplicates removed) keeps
   the source's metric only when its meaning survives the change.
@@ -98,7 +105,12 @@ metric the forum shows was gamed) or measured on the shipped splits, written in 
 competition that scored hard labels has fixed that the decision is a hard label, so its threshold metric (F1, a cost
 matrix) is kept: methods choose their threshold on the training side. Cases: zillow_prize, mercari_price_suggestion,
 amex_non_iid_1m, force_2020, g_research_crypto_forecasting_1m, numerai_v5_2_1m, rossmann_store_sales; overruled:
-african_credit_scoring_challenge (2026-10-26).
+african_credit_scoring_challenge (2026-10-26). The weight of a competition's choice follows its standing: a metric set
+by a company that acts on it (Kaggle's sponsored challenges, an industrial challenge) is overruled only as above; one
+from a competition of lesser standing (an old one, or one run by a community or a research group) may be replaced by
+the metric the task makes obvious (MET-11 `context`) when the measurements favour it, and between the two the call is
+case by case (amended 2026-11-05, Lennart, on loan_default_prediction_imperial_college, Imperial College London's
+2014 challenge).
 
 **MET-5 (Should).** A paper's metric is the source's metric only when it is one deliberate choice: the paper names it
 as the criterion it ranks, tunes or selects models by, or argues why it fits the decision. A paper that reports
@@ -159,7 +171,9 @@ overrule it (MET-5, MET-4). Cases: sepsis_survival_minimal_clinical_records (PR 
 * the resolution on our folds: a hard-label score on a few dozen test units moves in steps of a few percent (musk: 34
   molecules per fold);
 * the ceiling: a metric near its best for every method no longer tells methods apart;
-* whether our task is still the source's (MET-2): changed classes or balance weaken the source's claim.
+* whether our task is still the source's (MET-2): changed classes or balance weaken the source's claim;
+* diversity: the metric is chosen per dataset, never as one call for a family of datasets, and when the call stays in
+  doubt, the metric that adds diversity to the collection wins (Andrej, 2026-11-02).
 
 ### How to declare it
 
@@ -174,7 +188,10 @@ exactly it:
   per-era CORR, numerai_v5_2_1m).
 * **context** (Lennart, 2026-10-21, diamonds): the source defines no metric, but the task makes one obvious, so the
   default would score the wrong thing; the reason says why (a price's error matters relative to the price, so
-  `rmsle` on the price in dollars). Only when the context is clear; otherwise the fallback.
+  `rmsle` on the price in dollars). Only when the context is clear; otherwise the fallback. Amended 2026-11-03
+  (Andrej, loan_default_prediction_imperial_college): it also covers a source metric overruled under MET-2 or MET-4
+  ("if the source metric is bad we don't want to use it"), when the task then makes one metric obvious; the reason
+  names the overruled original and why.
 * **fallback**: the source defines no metric, or none the task would use in practice (MET-5, MET-6, MET-9), and the
   task makes none obvious; roc_auc, log_loss or rmse by problem type. The reason says where we looked and, when we
   rejected the source's metric, which one and why.
@@ -198,8 +215,14 @@ shipped: a reader of the files could not compute it. A metric undefined at the e
 the predictions, so a method gets a score rather than none (P6). The floor is a parameter the definition states, at
 a value below the smallest plausible prediction, as practice clips a model's output before scoring; the library's
 default is machine epsilon, as `log_loss` clips probabilities (Lennart, 2026-11-04, on bemtpl97: "in pratice we
-would also clip to a reasonable number"; `min_prediction=1e-6` for claim counts). How in Data Foundry:
-[definitions.md](../../knowledge-data-foundry/references/definitions.md), "Metrics".
+would also clip to a reasonable number"; `min_prediction=1e-6` for claim counts). Where the floor sets the scale of
+the worst error (a Tweedie deviance above power 1, whose cost of a near-zero prediction grows without bound), it has
+no default: the definition states it. A metric is stable at its edges (amended 2026-11-05, Lennart): any prediction
+a model can make gets a finite score that does not depend on the row order (ties count by the mean over their
+orderings), a NaN or infinite prediction is an error, and a fold or group the metric cannot score gives NaN or is
+left out by a stated rule, never an infinite value or a number made of rounding noise. How in Data Foundry, with the
+checklist: [definitions.md](../../knowledge-data-foundry/references/definitions.md), "Metrics" and "Metric
+stability".
 
 ## Patterns
 
@@ -224,6 +247,7 @@ and wait for the curator; the others are decided.
 
 | Rule | Dataset | Decision | Decisive evidence | Kind |
 |---|---|---|---|---|
+| MET-10 (amended 2026-11-02, Andrej) | pricing_game_2016_french_fleet, the insurance tables of the zero-inflated batch | no family call on the metric: each table's metric is decided on its own, and in doubt for diversity (2026-11-02, Andrej) | the curator, declining a family-wide Gini form (frempl issue 4, spanish coverage issue 3) | applied |
 | MET-4 | zillow_prize | `mae`, the competition's metric (2026-10-21) | Kaggle scored MAE on logerror; RMSE had been kept as the house default; 0.38% of the rows (absolute logerror above 1) hold 49.9% of the squared error | applied |
 | MET-4, MET-12 | g_research_crypto_forecasting_1m | `weighted_pearsonr`, each row weighted by its asset's `Weight` (a scoring column), the competition's metric (2026-10-21) | Kaggle scored a Pearson correlation weighted by asset; under RMSE more signal can lose (on the splits of 2026-10-20 a model correlating 0.058 scored R^2 -0.0090, one correlating 0.049 +0.0004) | applied |
 | MET-4, MET-12 | amex_non_iid_1m | `gini_top_capture` (top 4%, negatives weighted 20), per customer | the competition's M = 0.5 (G + D); the dataset-named `amex_metric` renamed; the official pandas code is slow on 460k customers | proposed |
@@ -250,6 +274,9 @@ and wait for the curator; the others are decided.
 | MET-7 | coil_2000 | `precision_at_k` kept (2026-10-21, Lennart) | CoIL 2000 counted the policy owners among the 800 customers selected from 4,000 | applied |
 | MET-4 | rossmann_store_sales | `rmspe` kept (2026-10-21, Lennart) | Kaggle scored RMSPE, now a custom metric of `data_foundry.v2.metrics` | applied |
 | MET-1, MET-11 | churn_telco_south_asia | fallback `roc_auc` kept (2026-10-21, Lennart) | the first publication (closed access) could not be read; no metric is known | applied |
+| MET-2 (amended 2026-11-02, Andrej), MET-1, MET-12 | blogfeedback | `mean_group_top_k_overlap` (k = 10) with the time column `basetime_day` as its group, Buza's Hits@10 per test day (2026-11-02, Andrej) | the source scores each test day's top 10; the day is the task's time column, which the metric reads where it is, as sat11 reads its group column | applied |
+| MET-2 (amended 2026-11-02, Andrej), MET-4 | liberty_mutual_fire_peril_loss_cost | the competition's `normalized_weighted_gini`; `var11` stays a feature and its copy ships as the weight scoring column (2026-11-02, Andrej; the copy 2026-11-05, Lennart) | `var11`, the sum insured, is a policy characteristic the host shipped in the test file for every team, set at underwriting and known for train and test rows alike; on a weighted Gini the best order is by expected loss whatever the weights, and as a feature it moved an untuned model's score by -0.010 (within fold noise) | applied |
+| MET-13 (amended 2026-11-05, Lennart) | the metric library (`gini_top_capture`, `par_k`, the correlations, the normalized Ginis, `mean_group_normalized_rmse`, `mean_group_top_k_overlap`, `gini_stability`, `rmsle`, `mape`, `mean_tweedie_deviance`, `normalized_early_detection_utility`) | every metric checked against the stability checklist on edge cases: tied predictions now count by the mean over their orderings (`gini_top_capture`, `par_k` had taken the row order), a constant prediction of a correlation scores 0, NaN predictions raise, and folds or groups the metric cannot score give NaN or are left out | a constant 0.1 group gave `mean_group_normalized_rmse` 1.2e17 from rounding; `normalized_gini` raised `ZeroDivisionError` when every loss was equal; `gini_top_capture` scored 0.447 or 0.420 on the same tied predictions in two row orders; a 6-row day lifted a random model's top-3 overlap from 0.2 to 0.6; the sepsis utility gave -inf on a fold without a septic patient | applied |
 
 ## In Data Foundry
 

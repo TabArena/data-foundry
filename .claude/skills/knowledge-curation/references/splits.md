@@ -64,9 +64,16 @@ month of the base or a few cohort months of one customer base (a split by those 
 of time), and a release with too few periods for three windows. The closest regime is IID (tag
 `ForcedIIDFromTemporal`), or grouped by the entity when the periods are stacked and the entities recur across them
 (tag `ForcedGroupedFromTemporal`). Say what the timestamp or a dated window would change and that it should be
-recovered if a later release has it. (Lennart, 2026-10-12; amended 2026-10-21, Lennart: one stock month, from
+recovered if a later release has it. A forced split, grouped or IID, gets a leak test across the split and the
+leak probes: does a row share its outcome, its unit's outcome or its period's outcome with the other side, is there
+a hidden group, an order dependence. A leak found is weighed case by case like any other: removed where it can be,
+otherwise the task may still ship as an approximate fit with the leak measured in the notes. Being forced alone never
+makes a dataset `No`, and a dataset stays tagged as forced whatever the test finds, since its source's regime was
+another. (Lennart, 2026-10-12; amended 2026-10-21, Lennart: one stock month, from
 mobile_churn and the churn snapshots; too few periods, from nba_players_2016_2019,
-open_university_learning_analytics_dataset and distribution_transformers_at_cauca_department.) Cases:
+open_university_learning_analytics_dataset and distribution_transformers_at_cauca_department; amended 2026-11-02,
+Andrej, on the insurance tables of the zero-inflated batch: a leak test across a forced split; reworded 2026-11-05,
+Lennart: the test informs a case-by-case call and the forced tag stays.) Cases:
 account_debt_south_africa, mobile_churn, open_university_learning_analytics_dataset (nba_players_2016_2019 was
 retired on 2026-10-26 on its use case, not its split).
 
@@ -121,7 +128,9 @@ predicts for known entities, and a question when the use case is a new entity (U
 
 **SPLIT-14 (Must).** A temporal task has at least 3 windows, and no window's train side holds less than 50% of the
 data. Why: a smaller train side is too unlike the real application. A task that cannot meet it ships under SPLIT-8
-(Lennart, 2026-10-21).
+(Lennart, 2026-10-21). Each window has its own train side: windows that share one train side test one model on
+several test periods, which is one evaluation, not several. As time moves on, a refit sees the data that arrived
+since, so each window trains on what is known before it starts (Andrej, 2026-11-02; reframed 2026-11-05, Lennart).
 
 **SPLIT-15 (Should).** Roll the windows back from the newest data: as many windows as an IID or grouped task of that
 size would get folds. Then check that the windows are still meaningful (SPLIT-16 to SPLIT-18).
@@ -264,6 +273,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-12 | house_sales, perth_house_prices, ames_housing, zillow_prize, melbourne_housing_market | no window length for the whole family: each keeps the horizon of its own source or refit cadence (three weeks; one month, spaced; two months; one month after a one-month gap; three weekly sheets), since "different task might forecast differently long" and "we dont need to force the same split" (2026-10-21, Lennart) | applied |
 | SPLIT-12, SPLIT-19 | medical_facility_operational_data | the source's horizon followed: Crowley et al. (2020) train on six months and test on "a further consecutive two weeks", so nine 14-day windows replace nine equal-count windows of 42-53 days, each from the first whole day at or after the start of one of the old ones: the same number of folds, 12,408 test visits instead of 40,995, training sides still expanding (50.1% to 94.6%). The longer windows had cost nothing measurable (14.40 against 14.42 MAE on the same weeks), and the exception to SPLIT-19 proposed for them was dropped; the day key is built in `_clean`, as the time column is the arrival rank (2026-11-05, Lennart, issue 8) | applied |
 | SPLIT-14 | california_house_prices_2020 | `min_train_fraction=0.25` let the oldest window train on 25% of the rows; its windows now train on 50%, 67% and 83% (2026-10-21) | applied |
+| SPLIT-14 (amended 2026-11-02, Andrej), SPLIT-11 | pricing_game_2016_french_fleet | three four-month windows of 2013 that all trained on 2011-2012 do not count as three windows; each window now trains on the periods closed before it starts (64%, 71%, 78% of the rows) (2026-11-02, Andrej) | applied |
 | SPLIT-16 (TP-9) | seismic_bumps | 49 positives in the newest half, 0-5 per window: `Too Small`, no fallback to an IID split | applied |
 | SPLIT-17 | coffee_rating_prediction | 26 monthly windows of 2-72 reviews doubled the confidence interval of a model comparison; 13 two-month windows hold 54-115 | applied |
 | SPLIT-18 | climate_model_weather_forecasting | weather test windows of one to two weeks at most | applied |

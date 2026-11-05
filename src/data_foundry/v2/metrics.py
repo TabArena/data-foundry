@@ -41,15 +41,22 @@ Every implementation is the fastest well-tested one available: scikit-learn or s
 otherwise vectorised numpy; each is tested against the reference implementation (``tests/test_v2_metrics.py``; the
 custom metrics against their official code, vendored in ``tests/test_v2_metrics_custom.py``).
 
+Every metric is stable at its edges (``tests/test_v2_metrics_stability.py`` checks each registered one): any
+prediction a model can make (constant, tied, zero, negative, huge, probabilities of 0 and 1) gets a finite score that
+does not depend on the row order, ties counting by the mean over their orderings; a NaN or infinite prediction raises
+a ValueError in :func:`score`; a fold whose truth leaves the metric undefined (one class, a constant target, no loss)
+gives NaN, and a group that cannot tell models apart is left out by a stated rule.
+
 The custom metrics (``kind="custom"``): ``cost_matrix``, ``precision_at_k``, ``average_precision_at_k``, ``rmspe``,
-``gini_top_capture``, ``weighted_pearsonr``, ``mean_group_pearsonr``, ``hierarchical_balanced_accuracy``,
-``gini_stability``, ``par_k`` and ``normalized_early_detection_utility``. Each
-:class:`MetricDef` holds its formula,
-its reference, its prediction kind, its input roles and its params. A metric with inputs takes the values of the
-scored rows by role: ``group`` (rows of one unit: an era, a patient, an instance), ``order`` (sorts rows in time: a
-week, an hour; rows arrive in any order, so no metric relies on row position) and ``weight``. A metric scores the
-rows it receives: when a task's prediction unit is a group (the grouping's ``aggregation``, e.g. a customer's last
-statement), the caller aggregates the predictions first; :func:`scorer` does not.
+``gini_top_capture``, ``normalized_gini``, ``normalized_weighted_gini``, ``ordered_lorenz_gini``,
+``weighted_pearsonr``, ``mean_group_pearsonr``, ``mean_group_normalized_rmse``, ``hierarchical_balanced_accuracy``,
+``gini_stability``, ``par_k``, ``mean_group_top_k_overlap`` and ``normalized_early_detection_utility``. Each
+:class:`MetricDef` holds its formula, its reference, its prediction kind, its input roles and its params. A metric
+with inputs takes the values of the scored rows by role: ``group`` (rows of one unit: an era, a patient, an
+instance), ``order`` (sorts rows in time: a week, an hour; rows arrive in any order, so no metric relies on row
+position) and ``weight``. A metric scores the rows it receives: when a task's prediction unit is a group (the
+grouping's ``aggregation``, e.g. a customer's last statement), the caller aggregates the predictions first;
+:func:`scorer` does not.
 
 TabArena (later, no change there now) would wrap a spec in an AutoGluon scorer::
 
@@ -195,11 +202,19 @@ def _positive_label(y_true: np.ndarray, y_pred: np.ndarray, labels: Any) -> Any:
 
 
 def _roc_auc(y_true, y_pred, *, labels=None, **_):
-    return _sklearn_metrics().roc_auc_score(_binary_truth(y_true, labels), _positive_proba(y_pred))
+    """ROC AUC; NaN when the scored rows hold one class (scikit-learn warns and returns NaN)."""
+    truth = _binary_truth(y_true, labels)
+    if truth.min() == truth.max():
+        return float("nan")
+    return float(_sklearn_metrics().roc_auc_score(truth, _positive_proba(y_pred)))
 
 
 def _average_precision(y_true, y_pred, *, labels=None, **_):
-    return _sklearn_metrics().average_precision_score(_binary_truth(y_true, labels), _positive_proba(y_pred))
+    """Average precision; NaN when the scored rows hold one class (no positive, or no negative to rank against)."""
+    truth = _binary_truth(y_true, labels)
+    if truth.min() == truth.max():
+        return float("nan")
+    return float(_sklearn_metrics().average_precision_score(truth, _positive_proba(y_pred)))
 
 
 def _log_loss(y_true, y_pred, *, labels=None, **_):
@@ -234,7 +249,10 @@ def _positive_label_metric(func_name: str) -> Callable:
     def fn(y_true, y_pred, *, labels=None, **_):
         y_pred = np.asarray(y_pred)
         pos_label = _positive_label(y_true, y_pred, labels)
-        return getattr(_sklearn_metrics(), func_name)(y_true, y_pred, pos_label=pos_label, average="binary")
+        # zero_division=0.0 is scikit-learn's value for no predicted (or no true) positive, without its warning
+        return getattr(_sklearn_metrics(), func_name)(
+            y_true, y_pred, pos_label=pos_label, average="binary", zero_division=0.0
+        )
 
     return fn
 
@@ -261,16 +279,72 @@ def _poisson_deviance(y_true, y_pred, *, params=None, **_):
 def _check_min_prediction(params: Mapping[str, Any]) -> None:
     if "min_prediction" in params:
         value = params["min_prediction"]
-        if not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
             raise ValueError(f"min_prediction is a finite number above 0, not {value!r}.")
 
 
 def _correlation(func_name: str) -> Callable:
+    """A correlation in the house convention of ``mean_group_pearsonr``: NaN when the truth does not vary (fewer than
+    two rows, or one value: nothing to rank), 0 for a prediction that does not vary (a constant baseline has no skill,
+    where scipy warns and returns NaN). Both are decided on the values as given, so rounding noise in a float constant
+    is not read as a ranking.
+    """
+
     def fn(y_true, y_pred, **_):
-        result = getattr(_scipy_stats(), func_name)(np.asarray(y_true, dtype=float), np.asarray(y_pred, dtype=float))
-        return result.statistic
+        y = np.asarray(y_true, dtype=float)
+        p = np.asarray(y_pred, dtype=float)
+        if len(y) < 2 or np.ptp(y) == 0:
+            return float("nan")
+        if np.ptp(p) == 0:
+            return 0.0
+        return float(getattr(_scipy_stats(), func_name)(y, p).statistic)
 
     return fn
+
+
+def _rmsle(y_true, y_pred, **_):
+    """RMSLE with predictions below 0 counted as 0: a negative count or price is no valid prediction of a non-negative
+    target, and on the log1p scale 0 is never farther from a true value >= 0 than a negative prediction, so the floor
+    only spares a model the error scikit-learn raises (it refuses predictions at or below -1).
+    """
+    return _sklearn_metrics().root_mean_squared_log_error(
+        np.asarray(y_true, dtype=float), np.maximum(np.asarray(y_pred, dtype=float), 0.0)
+    )
+
+
+def _mape(y_true, y_pred, **_):
+    """scikit-learn's MAPE, NaN when a true value is 0: its divisor ``max(|y|, eps)`` turns such a row into an error
+    of about 1e15 that swamps every other row, so the score would be meaningless; a target with zeros needs another
+    metric (``rmspe`` leaves those rows out, as Rossmann's competition did).
+    """
+    y = np.asarray(y_true, dtype=float)
+    if (y == 0).any():
+        return float("nan")
+    return _sklearn_metrics().mean_absolute_percentage_error(y, np.asarray(y_pred, dtype=float))
+
+
+def _check_tweedie(params: Mapping[str, Any]) -> None:
+    _require(params, "power", "min_prediction")
+    power = params["power"]
+    if isinstance(power, bool) or not isinstance(power, (int, float)) or not 1 <= power < math.inf:
+        raise ValueError(f"power is a finite number >= 1 (1 Poisson, 1-2 compound Poisson-gamma), not {power!r}.")
+    _check_min_prediction(params)
+
+
+def _tweedie_deviance(y_true, y_pred, *, params, **_):
+    """``mean_tweedie_deviance`` at ``params["power"]``, the predicted means floored at ``params["min_prediction"]``.
+
+    The floor is required, not machine epsilon as for the Poisson deviance: above power 1 a mean near 0 costs about
+    ``y * p^(1-q)``, which grows without bound (a 2000 EUR claim at a floor of 1e-6 costs about 2e6, at 1 EUR about
+    2e3), so the floor sets the scale of the worst error and the definition states it. NaN and infinite predictions
+    still raise.
+    """
+    floor = float(params["min_prediction"])
+    y_pred = np.asarray(y_pred, dtype=float)
+    y_pred = np.where(np.isfinite(y_pred), np.maximum(y_pred, floor), y_pred)
+    return _sklearn_metrics().mean_tweedie_deviance(
+        np.asarray(y_true, dtype=float), y_pred, power=float(params["power"])
+    )
 
 
 @dataclass(frozen=True)
@@ -422,7 +496,7 @@ METRICS: dict[str, MetricDef] = {
             _MULTI,
             "label",
             _HIGHER,
-            _label_metric("f1_score", average="macro"),
+            _label_metric("f1_score", average="macro", zero_division=0.0),
             "sklearn.metrics.f1_score(average='macro')",
             "unweighted mean of the per-class F1",
         ),
@@ -431,7 +505,7 @@ METRICS: dict[str, MetricDef] = {
             _MULTI,
             "label",
             _HIGHER,
-            _label_metric("f1_score", average="micro"),
+            _label_metric("f1_score", average="micro", zero_division=0.0),
             "sklearn.metrics.f1_score(average='micro')",
             "F1 of the pooled counts (equals accuracy for single-label data)",
         ),
@@ -440,7 +514,7 @@ METRICS: dict[str, MetricDef] = {
             _MULTI,
             "label",
             _HIGHER,
-            _label_metric("f1_score", average="weighted"),
+            _label_metric("f1_score", average="weighted", zero_division=0.0),
             "sklearn.metrics.f1_score(average='weighted')",
             "mean of the per-class F1 weighted by class support",
         ),
@@ -512,18 +586,18 @@ METRICS: dict[str, MetricDef] = {
             _REG,
             "value",
             _LOWER,
-            _value_metric("root_mean_squared_log_error"),
-            "sklearn.metrics.root_mean_squared_log_error",
-            "sqrt(mean((log1p(y) - log1p(p))^2)); y and p non-negative",
+            _rmsle,
+            "sklearn.metrics.root_mean_squared_log_error, the predictions floored at 0",
+            "sqrt(mean((log1p(y) - log1p(max(p, 0)))^2)); y >= 0, a prediction below 0 counts as 0",
         ),
         _standard(
             "mape",
             _REG,
             "value",
             _LOWER,
-            _value_metric("mean_absolute_percentage_error"),
+            _mape,
             "sklearn.metrics.mean_absolute_percentage_error",
-            "mean(|y - p| / max(|y|, eps))",
+            "mean(|y - p| / |y|); NaN when a true value is 0 (scikit-learn divides by eps there)",
         ),
         _standard(
             "median_absolute_error",
@@ -551,6 +625,23 @@ METRICS: dict[str, MetricDef] = {
             _correlation("spearmanr"),
             "scipy.stats.spearmanr",
             "Spearman rank correlation of y and p",
+        ),
+        MetricDef(
+            "mean_tweedie_deviance",
+            _REG,
+            "value",
+            _LOWER,
+            _tweedie_deviance,
+            "sklearn.metrics.mean_tweedie_deviance, the predictions floored at min_prediction",
+            "mean(2 * (y^(2-q) / ((1-q)(2-q)) - y p^(1-q) / (1-q) + p^(2-q) / (2-q))) at power q (1 Poisson; 1 < q < "
+            "2 a compound Poisson-gamma cost, y >= 0; q >= 2 needs y > 0); p below min_prediction counts as it",
+            params={
+                "power": "the Tweedie power q >= 1, required (1.5 for a pure premium with many zero claims)",
+                "min_prediction": "required floor on the predictions, on the original scale (after the inverse of "
+                "target_transform): a smaller prediction counts as this value; a finite number above 0",
+            },
+            check_params=_check_tweedie,
+            prediction_domain="positive",
         ),
     )
 }
@@ -695,28 +786,121 @@ def _check_gini_top_capture(params: Mapping[str, Any]) -> None:
         raise ValueError("negative_weight is positive.")
 
 
-def _weighted_gini_sorted(target: np.ndarray, weight: np.ndarray) -> float:
-    """The AmEx weighted Gini of rows already sorted by descending score."""
-    random = np.cumsum(weight / weight.sum())
-    weighted_target = target * weight
-    lorentz = np.cumsum(weighted_target) / weighted_target.sum()
-    return float(((lorentz - random) * weight).sum())
+def _amex_gini(positive: np.ndarray, weight: np.ndarray, scores: np.ndarray) -> float:
+    """The AmEx weighted Gini, sum of w_i (L_i - R_i) over the rows by descending score, L and R the cumulative shares
+    of the weighted positives and of the weight through row i. Rows tied in score take the mean over the orderings of
+    the tie: a tied row's expected cumulative share is the share before its block plus half of the block's and half of
+    its own, so without ties the official value is unchanged.
+    """
+    _, block = np.unique(-np.asarray(scores, dtype=float), return_inverse=True)
+    n_blocks = block.max() + 1
+    hits = weight * positive
+    block_w = np.bincount(block, weights=weight, minlength=n_blocks)
+    block_h = np.bincount(block, weights=hits, minlength=n_blocks)
+    before_w = (np.cumsum(block_w) - block_w)[block]
+    before_h = (np.cumsum(block_h) - block_h)[block]
+    random = (before_w + (block_w[block] + weight) / 2) / weight.sum()
+    lorentz = (before_h + (block_h[block] + hits) / 2) / hits.sum()
+    return float((weight * (lorentz - random)).sum())
+
+
+def _amex_top_capture(positive: np.ndarray, weight: np.ndarray, scores: np.ndarray, top_fraction: float) -> float:
+    """Share of the positives within the top ``top_fraction`` of the weight by descending score. A row counts when the
+    cumulative weight through it fits in ``int(top_fraction * total weight)``, as in the official code; a block of
+    tied rows across the cut-off counts its positives by the share of its weight that fits (about the mean over the
+    orderings of the tie; the official code takes the row order).
+    """
+    _, block = np.unique(-np.asarray(scores, dtype=float), return_inverse=True)
+    n_blocks = block.max() + 1
+    block_w = np.bincount(block, weights=weight, minlength=n_blocks)
+    block_p = np.bincount(block, weights=positive, minlength=n_blocks)
+    block_n = np.bincount(block, minlength=n_blocks)
+    cutoff = int(top_fraction * weight.sum())
+    before = np.cumsum(block_w) - block_w
+    fits = np.clip((cutoff - before) / block_w, 0.0, 1.0)
+    fits = np.where(block_n == 1, (before + block_w <= cutoff).astype(float), fits)
+    return float((fits * block_p).sum() / positive.sum())
 
 
 def _gini_top_capture(y_true, y_pred, *, labels=None, params, **_):
-    """0.5 * (normalized weighted Gini + share of positives in the top ``top_fraction`` of the weight)."""
+    """0.5 * (normalized weighted Gini + share of positives in the top ``top_fraction`` of the weight); NaN when the
+    scored rows hold one class. Tied scores take the mean over their orderings (see :func:`_amex_gini`), so the score
+    does not depend on the row order.
+    """
     top_fraction = float(params.get("top_fraction", 0.04))
     negative_weight = float(params.get("negative_weight", 20))
     positive = _binary_truth(np.asarray(y_true), labels).astype(float)
+    if positive.min() == positive.max():
+        return float("nan")
     scores = _positive_proba(y_pred)
-    target = positive[np.argsort(-scores, kind="stable")]
-    weight = np.where(target == 0, negative_weight, 1.0)
-    cutoff = int(top_fraction * weight.sum())
-    captured = target[np.cumsum(weight) <= cutoff].sum() / target.sum()
-    perfect = np.sort(positive)[::-1]
-    gini = _weighted_gini_sorted(target, weight)
-    gini_max = _weighted_gini_sorted(perfect, np.where(perfect == 0, negative_weight, 1.0))
-    return float(0.5 * (gini / gini_max + captured))
+    weight = np.where(positive == 0, negative_weight, 1.0)
+    gini = _amex_gini(positive, weight, scores)
+    gini_max = _amex_gini(positive, weight, positive)
+    return float(0.5 * (gini / gini_max + _amex_top_capture(positive, weight, scores, top_fraction)))
+
+
+# normalized_gini and normalized_weighted_gini: the insurers' Kaggle metrics (Allstate 2011, Liberty Mutual 2014)
+
+
+def _descending_groups(y_sort, *columns: np.ndarray) -> list[np.ndarray]:
+    """Sums of each column per value of ``y_sort``, the values in descending order (tied rows form one group).
+
+    The official codes break ties by row order, so their score depends on how the rows are stored (a constant
+    prediction scores up to 0.1 on a claims table). Treating tied rows as one group gives the mean score over the
+    orderings of the ties: a constant prediction scores 0, and without ties the official value is unchanged.
+    """
+    _, inverse = np.unique(-np.asarray(y_sort, dtype=float), return_inverse=True)
+    n_groups = inverse.max() + 1
+    return [np.bincount(inverse, weights=c, minlength=n_groups) for c in columns]
+
+
+def _gini(actual: np.ndarray, y_sort) -> float:
+    n = actual.size
+    count, total = _descending_groups(y_sort, np.ones(n), actual)
+    mean_position = np.cumsum(count) - (count - 1) / 2.0  # 1-based, a tie group at its mean position
+    return float(((total * (n + 1 - mean_position)).sum() / actual.sum() - (n + 1) / 2.0) / n)
+
+
+def _normalized_gini(y_true, y_pred, **_):
+    """Gini of the losses ordered by the prediction over the Gini of the perfect order (Kaggle's normalized Gini)."""
+    actual = np.asarray(y_true, dtype=float)
+    if actual.sum() == 0:
+        return float("nan")
+    best = _gini(actual, actual)
+    if best == 0:  # every loss equal (or one row): no order can be better than another
+        return float("nan")
+    return _gini(actual, y_pred) / best
+
+
+def _weighted_gini(actual: np.ndarray, weight: np.ndarray, y_sort) -> float:
+    w, aw = _descending_groups(y_sort, weight, actual * weight)
+    random = np.cumsum(w) / w.sum()
+    lorentz = np.cumsum(aw) / aw.sum()
+    return float(lorentz[1:] @ random[:-1] - lorentz[:-1] @ random[1:])
+
+
+def _normalized_weighted_gini(y_true, y_pred, *, weight, **_):
+    """Liberty Mutual's weighted Gini of the prediction over the weighted Gini of the perfect order."""
+    actual = np.asarray(y_true, dtype=float)
+    w = np.asarray(weight, dtype=float)
+    if (actual * w).sum() == 0 or w.sum() == 0:
+        return float("nan")
+    best = _weighted_gini(actual, w, actual)
+    if best == 0:  # every loss equal (or one row): no order can be better than another
+        return float("nan")
+    return _weighted_gini(actual, w, y_pred) / best
+
+
+def _ordered_lorenz_gini(y_true, y_pred, *, weight, **_):
+    """Frees et al.'s Gini of the losses ordered by the relativity score / base premium (the base is ``weight``)."""
+    loss = np.asarray(y_true, dtype=float)
+    base = np.asarray(weight, dtype=float)
+    if (base <= 0).any():
+        raise ValueError("ordered_lorenz_gini needs a positive base premium in every row.")
+    if loss.sum() == 0:
+        return float("nan")
+    # the raw sum is negative for an order better than the base (Liberty's normalisation divides two such sums)
+    return -_weighted_gini(loss / base, base, np.asarray(y_pred, dtype=float) / base)
 
 
 # weighted_pearsonr
@@ -743,10 +927,18 @@ def _row_weights(weight: Any, params: Mapping[str, Any]) -> np.ndarray:
 
 
 def _weighted_pearsonr(y_true, y_pred, *, weight, params, **_):
-    """Pearson correlation of y and p with the rows weighted by ``weight`` (or ``params['weights'][weight]``)."""
+    """Pearson correlation of y and p with the rows weighted by ``weight`` (or ``params['weights'][weight]``). As
+    :func:`_correlation`, over the rows of positive weight: NaN when the truth does not vary there (or no row has
+    weight), 0 when the prediction does not.
+    """
     w = _row_weights(weight, params)
     y = np.asarray(y_true, dtype=float)
     p = np.asarray(y_pred, dtype=float)
+    weighted = w > 0
+    if weighted.sum() < 2 or np.ptp(y[weighted]) == 0:
+        return float("nan")
+    if np.ptp(p[weighted]) == 0:
+        return 0.0
     sum_w = w.sum()
     dy = y - (w * y).sum() / sum_w
     dp = p - (w * p).sum() / sum_w
@@ -816,6 +1008,29 @@ def _mean_group_pearsonr(y_true, y_pred, *, group, params, **_):
     return float(corr.mean()) if len(corr) else float("nan")
 
 
+# mean_group_normalized_rmse
+
+
+def _mean_group_normalized_rmse(y_true, y_pred, *, group, **_):
+    """Mean over groups of the group's RMSE divided by the standard deviation of its true values (population, ddof 0),
+    so each group counts once whatever its scale; equal to the mean over groups of sqrt(1 - R^2). Groups whose true
+    values do not vary (one row, or all equal) are left out of the mean. That is decided on the values as given, not
+    on the computed variance: a constant such as 0.1 leaves a variance of about 1e-34 from rounding in the mean, which
+    would divide the group's error into about 1e17. A range below 1e-12 of the group's largest absolute value counts
+    as constant too, as values equal but for float noise (0.1 and 0.1 + 1e-17) would blow up the same way.
+    """
+    codes, n_groups = _group_codes(group)
+    y = np.asarray(y_true, dtype=float)
+    p = np.asarray(y_pred, dtype=float)
+    count = np.bincount(codes, minlength=n_groups)
+    mse = np.bincount(codes, weights=(y - p) ** 2, minlength=n_groups) / count
+    var = np.bincount(codes, weights=_group_center(y, codes, n_groups) ** 2, minlength=n_groups) / count
+    scale = np.zeros(n_groups)
+    np.maximum.at(scale, codes, np.abs(y))
+    keep = _group_range(y, codes, n_groups) > 1e-12 * scale
+    return float(np.sqrt(mse[keep] / var[keep]).mean()) if keep.any() else float("nan")
+
+
 # hierarchical_balanced_accuracy
 
 
@@ -852,7 +1067,8 @@ def _rank_auc_per_group(positive: np.ndarray, scores: np.ndarray, codes: np.ndar
 def _gini_stability(y_true, y_pred, *, labels=None, params, order, **_):
     """Per period (sorted ``order`` value) gini = 2 AUC - 1; a least-squares line over the period index (0, 1, ...);
     mean(gini) + slope_weight * min(0, slope) - residual_std_weight * std(residuals). Periods with one class are
-    left out (the official code fails on them).
+    left out (the official code fails on them); the others keep their positions on the line, so a period left out
+    does not shift the later ones and bend the slope.
     """
     positive = _binary_truth(np.asarray(y_true), labels).astype(float)
     scores = _positive_proba(y_pred)
@@ -860,10 +1076,10 @@ def _gini_stability(y_true, y_pred, *, labels=None, params, order, **_):
     if (codes < 0).any():
         raise ValueError("the order input holds missing values.")
     gini = 2 * _rank_auc_per_group(positive, scores, codes, len(uniques)) - 1
-    gini = gini[np.isfinite(gini)]
+    x = np.flatnonzero(np.isfinite(gini))  # each kept period at its own position, so a dropped one leaves a gap
+    gini = gini[x]
     if len(gini) < 2:
         return float("nan")
-    x = np.arange(len(gini))
     slope, intercept = np.polyfit(x, gini, 1)
     residuals = gini - (slope * x + intercept)
     return float(
@@ -885,20 +1101,62 @@ def _check_par_k(params: Mapping[str, Any]) -> None:
 
 
 def _par_k(y_true, y_pred, *, group, params, **_):
-    """Per group (instance) select the row (algorithm) with the lowest prediction, ties to the first row; its true
-    runtime counts as is, or as ``k * cutoff`` when it timed out (runtime >= cutoff * (1 - rel_tol)); mean over groups.
+    """Per group (instance) select the row (algorithm) with the lowest prediction; its true runtime counts as is, or
+    as ``k * cutoff`` when it timed out (runtime >= cutoff * (1 - rel_tol)); mean over groups. Rows tied at the lowest
+    prediction count as the mean of their penalized runtimes, the expected value when the tie is broken at random, so
+    the score does not depend on the row order (a constant prediction scores the mean over the algorithms).
     """
     cutoff = float(params["cutoff"])
     k = float(params.get("k", 10))
     rel_tol = float(params.get("timeout_rel_tol", 1e-9))
     runtime = np.asarray(y_true, dtype=float)  # on the original scale: score() inverts the spec's target_transform
     penalized = np.where(runtime >= cutoff * (1 - rel_tol), k * cutoff, runtime)
-    codes, _ = _group_codes(group)
+    codes, n_groups = _group_codes(group)
     predicted = np.asarray(y_pred, dtype=float)
-    rows = np.lexsort((np.arange(len(codes)), predicted, codes))  # by group, then prediction, then row
-    first = np.ones(len(rows), dtype=bool)
-    first[1:] = codes[rows][1:] != codes[rows][:-1]
-    return float(penalized[rows[first]].mean())
+    lowest = np.full(n_groups, np.inf)
+    np.minimum.at(lowest, codes, predicted)
+    chosen = (predicted == lowest[codes]).astype(float)
+    per_group = np.bincount(codes, weights=penalized * chosen, minlength=n_groups) / np.bincount(
+        codes, weights=chosen, minlength=n_groups
+    )
+    return float(per_group.mean())
+
+
+# mean_group_top_k_overlap
+
+
+def _check_group_top_k(params: Mapping[str, Any]) -> None:
+    _require(params, "k")
+    if isinstance(params["k"], bool) or not isinstance(params["k"], int) or params["k"] < 1:
+        raise ValueError(f"k is a positive integer, not {params['k']!r}.")
+
+
+def _top_k_membership(values: np.ndarray, codes: np.ndarray, k: np.ndarray) -> np.ndarray:
+    """Per row, the probability that it is among its group's ``k`` highest values when ties are broken at random:
+    1 above the cut-off, 0 below, and for a block of tied values across the cut-off the free places over its size.
+    """
+    ranks = pd.DataFrame({"g": codes, "v": values}).groupby("g", sort=False)["v"]
+    first = ranks.rank(method="min", ascending=False).to_numpy()  # 1 = the highest; a tied block spans first..last
+    last = ranks.rank(method="max", ascending=False).to_numpy()
+    return np.clip((k - first + 1) / (last - first + 1), 0.0, 1.0)
+
+
+def _mean_group_top_k_overlap(y_true, y_pred, *, group, params, **_):
+    """Per group, the share of its ``k`` highest true values that are among its ``k`` highest predictions, averaged
+    over the groups. A group of ``k`` rows or fewer is left out: all its rows are in both top sets, so every model
+    scores 1 there; NaN when no group is larger. Ties at either cut-off are broken at random and the expected share
+    is taken, so the score does not depend on the row order; without ties it is the plain overlap.
+    """
+    codes, n_groups = _group_codes(group)
+    y = np.asarray(y_true, dtype=float)
+    p = np.asarray(y_pred, dtype=float)
+    k = int(params["k"])
+    keep = np.bincount(codes, minlength=n_groups) > k
+    if not keep.any():
+        return float("nan")
+    k_rows = np.full(len(codes), float(k))
+    overlap = _top_k_membership(y, codes, k_rows) * _top_k_membership(p, codes, k_rows)
+    return float((np.bincount(codes, weights=overlap, minlength=n_groups)[keep] / k).mean())
 
 
 # normalized_early_detection_utility (PhysioNet/CinC 2019)
@@ -963,8 +1221,9 @@ def _normalized_early_detection_utility(y_true, y_pred, *, labels=None, params, 
     observed = _row_utility(predicted, septic, dt, p).sum()
     best = _row_utility(septic & (dt >= p["dt_early"]) & (dt <= p["dt_late"]), septic, dt, p).sum()
     inaction = _row_utility(np.zeros(len(codes), dtype=bool), septic, dt, p).sum()
-    with np.errstate(invalid="ignore", divide="ignore"):
-        return float((observed - inaction) / (best - inaction))
+    if best == inaction:  # no septic patient: no alarm can gain anything, the normalisation is undefined
+        return float("nan")
+    return float((observed - inaction) / (best - inaction))
 
 
 def _custom(name, problem_types, prediction, greater_is_better, fn, definition, reference, **extra) -> MetricDef:
@@ -1046,13 +1305,50 @@ _CUSTOM_METRICS = (
         _HIGHER,
         _gini_top_capture,
         "0.5 * (normalized weighted Gini + share of the positives in the top top_fraction of the total weight), "
-        "negatives weighted negative_weight (AmEx: 0.04 and 20)",
+        "negatives weighted negative_weight (AmEx: 0.04 and 20); tied scores averaged over their orderings",
         "https://www.kaggle.com/code/inversion/amex-competition-metric-python",
         params={
             "top_fraction": "the share of the total weight that counts as the top (default 0.04)",
             "negative_weight": "the weight of a negative row, a positive weighs 1 (default 20)",
         },
         check_params=_check_gini_top_capture,
+    ),
+    _custom(
+        "normalized_gini",
+        _REG,
+        "value",
+        _HIGHER,
+        _normalized_gini,
+        "G(y, p) / G(y, y), G = (sum of the cumulative share of the losses sorted by descending p - (n + 1) / 2) / n "
+        "(tied p averaged over their orderings, so a constant p scores 0; the Kaggle code takes row order)",
+        "https://www.kaggle.com/competitions/ClaimPredictionChallenge/overview/evaluation (normalized Gini, the "
+        "reference code posted on Kaggle)",
+    ),
+    _custom(
+        "normalized_weighted_gini",
+        _REG,
+        "value",
+        _HIGHER,
+        _normalized_weighted_gini,
+        "WG(y, p) / WG(y, y), WG = sum L_i R_(i-1) - sum L_(i-1) R_i over rows sorted by descending p, R the "
+        "cumulative weight share, L the cumulative share of weight * y (tied p form one step, the mean over their "
+        "orderings)",
+        "https://www.kaggle.com/competitions/liberty-mutual-fire-peril/overview/evaluation (the corrected code of "
+        "forum thread 9880)",
+        inputs=("weight",),
+    ),
+    _custom(
+        "ordered_lorenz_gini",
+        _REG,
+        "value",
+        _HIGHER,
+        _ordered_lorenz_gini,
+        "twice the area between the ordered Lorenz curve and the diagonal: rows sorted by the relativity p / B (B the "
+        "base premium, the weight), x the cumulative share of B, y the cumulative share of the losses y; 0 when p adds "
+        "nothing to B (tied relativities form one step)",
+        "Frees, Meyers and Cummings (2011), Summarizing Insurance Scores Using a Gini Index, JASA 106(495), "
+        "doi:10.1198/jasa.2011.tm10506; Frees, Lee and Yang (2016) on the Wisconsin property fund",
+        inputs=("weight",),
     ),
     _custom(
         "weighted_pearsonr",
@@ -1087,6 +1383,17 @@ _CUSTOM_METRICS = (
         check_params=_check_group_corr,
     ),
     _custom(
+        "mean_group_normalized_rmse",
+        _REG,
+        "value",
+        _LOWER,
+        _mean_group_normalized_rmse,
+        "mean over groups of RMSE within the group / standard deviation of the group's true values (ddof 0); groups "
+        "whose true values do not vary are left out",
+        "Laman et al. 2022, NOAA-TM-AFSC-459 (RMSE per species, https://repository.library.noaa.gov/view/noaa/48659)",
+        inputs=("group",),
+    ),
+    _custom(
         "hierarchical_balanced_accuracy",
         _CLF,
         "label",
@@ -1117,7 +1424,8 @@ _CUSTOM_METRICS = (
         "value",
         _LOWER,
         _par_k,
-        "mean over groups of the true runtime of the row with the lowest prediction, a timeout counted as k * cutoff",
+        "mean over groups of the true runtime of the row with the lowest prediction, a timeout counted as k * cutoff; "
+        "rows tied at the lowest prediction count as the mean of theirs",
         "Bischl et al. 2016, ASlib (PAR10); llama::parscores (https://cran.r-project.org/package=llama)",
         inputs=("group",),
         params={
@@ -1126,6 +1434,21 @@ _CUSTOM_METRICS = (
             "timeout_rel_tol": "relative tolerance of the timeout test (default 1e-9)",
         },
         check_params=_check_par_k,
+    ),
+    _custom(
+        "mean_group_top_k_overlap",
+        _REG,
+        "value",
+        _HIGHER,
+        _mean_group_top_k_overlap,
+        "mean over groups of more than k rows of |top_k(p) & top_k(y)| / k; ties at either cut-off broken at random "
+        "and the expected overlap taken (k times it is Hits@k per group)",
+        "Buza 2014, Feedback Prediction for Blogs, doi:10.1007/978-3-319-01595-8_16, Sec. 5.1 (Hits@10 per test day, "
+        "averaged over the days); Singh, Sandhu and Kumar 2015, Comment Volume Prediction using Neural Networks and "
+        "Decision Trees (Hits@10)",
+        inputs=("group",),
+        params={"k": "how many rows per group are the top (Buza: the 10 posts of a day)"},
+        check_params=_check_group_top_k,
     ),
     _custom(
         "normalized_early_detection_utility",
@@ -1436,6 +1759,16 @@ def metric_fn(spec: Any) -> Callable[..., float]:
     return METRICS[fields["name"]].fn
 
 
+def _require_finite(name: str, values: Any, where: str = "") -> None:
+    """Raise a ValueError naming ``name`` when ``values`` hold NaN or infinite numbers: a metric never scores them
+    silently (one NaN prediction would otherwise give NaN, or a finite score that just skipped the row).
+    """
+    array = np.asarray(values, dtype=float)
+    bad = int((~np.isfinite(array)).sum())
+    if bad:
+        raise ValueError(f"{name} holds {bad} NaN or infinite value(s){where}; a metric scores finite numbers only.")
+
+
 def score(spec: Any, y_true: Any, y_pred: Any, *, labels: Any = None, **inputs: Any) -> float:
     """Score ``y_pred`` against ``y_true`` by ``spec``.
 
@@ -1464,13 +1797,20 @@ def score(spec: Any, y_true: Any, y_pred: Any, *, labels: Any = None, **inputs: 
     y_true = np.asarray(y_true)
     if isinstance(y_pred, pd.DataFrame) and fields.get("prediction") == "proba":
         y_pred = _named_proba(y_pred, _labels(y_true, labels))
+    if fields.get("prediction") in ("value", "proba"):  # labels may be strings; values and probabilities are numbers
+        _require_finite("y_pred", y_pred)
+    if fields.get("prediction") == "value":
+        _require_finite("y_true", y_true)
     transform = fields.get("target_transform") or "identity"
     if transform != "identity":  # the target ships transformed for modelling: score on the original scale
         if transform not in INVERSE_TRANSFORMS:
             raise ValueError(f"target_transform is one of {TARGET_TRANSFORMS}, not {transform!r}.")
         inverse = INVERSE_TRANSFORMS[transform]
-        y_true = inverse(y_true.astype(float))
-        y_pred = inverse(np.asarray(y_pred, dtype=float))
+        with np.errstate(over="ignore"):
+            y_true = inverse(y_true.astype(float))
+            y_pred = inverse(np.asarray(y_pred, dtype=float))
+        _require_finite("y_true", y_true, f" after the inverse of target_transform={transform!r} (an overflow)")
+        _require_finite("y_pred", y_pred, f" after the inverse of target_transform={transform!r} (an overflow)")
     values = {role: np.asarray(v) for role, v in inputs.items()}
     return float(fn(y_true, y_pred, labels=labels, params=dict(fields.get("params") or {}), **values))
 

@@ -890,9 +890,14 @@ def test_metric_with_a_documented_scoring_column_passes(group_metric):
     assert metric_findings(make_v2_container(_with_era(), spec=spec, scoring_columns=[_era(group_metric)])) == {}
 
 
-def test_metric_input_that_models_also_see_is_only_an_info(group_metric):
+def test_metric_reading_the_task_group_column_is_an_info_and_a_plain_feature_a_warning(group_metric):
+    """The metric reads the task's own group or time column where it is; a plain feature needs a scoring copy."""
+    df = _with_era()
+    df["week"] = np.arange(len(df)) // 6  # the task's time column, as blogfeedback's test day
+    on_time = make_v2_container(df, spec=_spec(group_metric, inputs={"group": "week"}), time_on="week")
+    assert metric_findings(on_time) == {"task_metric_input_is_model_input": "info"}
     spec = _spec(group_metric, inputs={"group": "era"})
-    assert metric_findings(make_v2_container(_with_era(), spec=spec)) == {"task_metric_input_is_model_input": "info"}
+    assert metric_findings(make_v2_container(_with_era(), spec=spec)) == {"task_metric_input_is_feature": "warning"}
 
 
 def test_metric_without_its_input_is_an_error(group_metric):
@@ -934,6 +939,37 @@ def test_feature_columns_drop_target_group_and_scoring_columns(group_metric):
     assert feature_columns(make_grouped_container()) == ["feat_num"]
 
 
+def test_weight_that_is_also_a_feature_ships_a_scoring_copy_that_weighs_the_score():
+    """A weight known for every row at the prediction point (liberty's ``var11``, the sum insured) stays a feature,
+    and a copy ships as the scoring column the metric reads (MET-2); the copy is no duplicate column to drop.
+    """
+    from data_foundry.curation_container import feature_columns
+    from data_foundry.v2.metrics import score, scorer
+
+    df = make_iid_frame()
+    rng = np.random.default_rng(1)
+    df["size"] = rng.uniform(1.0, 5.0, size=len(df))
+    df["target"] = np.where(rng.random(len(df)) < 0.3, rng.exponential(size=len(df)), 0.0)
+    plain = make_v2_container(
+        df, spec=_spec("normalized_weighted_gini", inputs={"weight": "size"}), problem_type="regression"
+    )
+    assert metric_findings(plain) == {"task_metric_input_is_feature": "warning"}
+    df["size_weight"] = df["size"]
+    spec = _spec("normalized_weighted_gini", inputs={"weight": "size_weight"})
+    copy = ScoringColumn(
+        column="size_weight", role="weight", used_by="normalized_weighted_gini", description="a copy of size"
+    )
+    container = make_v2_container(df, spec=spec, scoring_columns=[copy], problem_type="regression")
+    assert feature_columns(container) == ["feat_num", "feat_cat", "size"]
+    assert metric_findings(container) == {}
+    assert "dataset_duplicate_columns" not in slugs_of(container)
+    test_idx = np.arange(0, len(df), 2)
+    y_test, y_pred = df["target"].to_numpy()[test_idx], df["feat_num"].to_numpy()[test_idx]
+    weighted = scorer(container)(y_test, y_pred, test_idx)
+    assert weighted == pytest.approx(score(spec, y_test, y_pred, weight=df["size_weight"].to_numpy()[test_idx]))
+    assert weighted != pytest.approx(score(spec, y_test, y_pred, weight=np.ones(len(test_idx))))
+
+
 def test_target_transform_that_overflows_is_an_error():
     """A log transform on a target whose exp overflows is not the scale the target ships on."""
     df = make_iid_frame()
@@ -958,5 +994,28 @@ def test_poisson_computability_uses_valid_means_without_changing_labels(all_zero
     spec = _spec("mean_poisson_deviance", target_transform=transform)
     container = make_v2_container(df, spec=spec, problem_type="regression")
     before = container.dataset.copy(deep=True)
-    assert metric_findings(container) == {}
+    expected = {"task_metric_deviance_on_transformed_target": "warning"} if transform == "log1p" else {}
+    assert metric_findings(container) == expected  # computable either way; the transform only warns
     pd.testing.assert_frame_equal(container.dataset, before)
+
+
+@pytest.mark.parametrize(
+    ("name", "params"),
+    [("mean_poisson_deviance", {}), ("mean_tweedie_deviance", {"power": 1.5, "min_prediction": 1.0})],
+)
+def test_a_mean_deviance_on_a_transformed_target_warns(name, params):
+    """A deviance scores the mean on the original scale; a target shipped on log1p is fit below it, so it warns."""
+    df = make_iid_frame()
+    y = (np.arange(len(df)) % 4) * 100.0
+    df["target"] = np.log1p(y)
+    found = metric_findings(
+        make_v2_container(df, spec=_spec(name, params=params, target_transform="log1p"), problem_type="regression")
+    )
+    assert found == {"task_metric_deviance_on_transformed_target": "warning"}
+    df["target"] = y
+    assert metric_findings(make_v2_container(df, spec=_spec(name, params=params), problem_type="regression")) == {}
+    df["target"] = np.log1p(y)  # another metric on the same transform does not warn
+    rmse = _spec("rmse", target_transform="log1p")
+    assert "task_metric_deviance_on_transformed_target" not in metric_findings(
+        make_v2_container(df, spec=rmse, problem_type="regression")
+    )
