@@ -1,5 +1,26 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-05, Fugaku current-main refresh
+
+- Reapply the accepted `fugaku_hpc_job_failure_1m` package to main `9048f36a`. Preserve Myunghwan’s original target,
+  inputs, exact temporal memberships, ROC-AUC metric, qualified SPLIT-10 exception, overall ship and
+  first-tuned-benchmark recheck. Restore the original issue IDs1–3 and full historical panel in persistent
+  `REVIEW.md`, with actual human turns and resolved outcomes. No old mark receives a new source identity; no generated
+  overview table is restored.
+- Current focused panel (claim, column, split, precedent, mediator, cold editor): ship with the accepted
+  qualifications; no new curator decision. Reuse past models only after exact data/category/split/metric/library
+  identity and all six old/current scorer comparisons. Fresh updated dtype/format/raw-period diagnostics and
+  source/maturity checks do not establish a new retained-feature defect. The source cohort, reporting-clock,
+  parent-unit and separately supplemented native float32 diagnostic limits remain explicit.
+- The framework checksum changes from `v2:c7436e8df22a906088cadbb4d641da32cd709976aeaa43e087ac12ff278475cd` to
+  `v2:b655fe6b87263768dd5a2e1232484929a22c3364e7daeeaa6b5cb6a30dc4a06d` only because the new schema serializes empty
+  `special_features`. Restoring the old metadata encoding on the actual current container exactly recovers the
+  accepted checksum. No row, target, category, predictor or membership changes.
+- Current native check:27 checks,0errors,0warnings,2known heavy-check informational skips. Updated-main
+  tests:2,017passed,286skipped. All176definitions import; strict2,091-record vocabulary and pointer checks pass;
+  scoped Ruff/format pass. New native raw checks are invoked directly on bounded actual-source windows because the
+  generic raw CLI cannot unwrap this loader; a clean full native leak CLI is not claimed.
+
 ## 2026-11-05, GitHub issue #48: column types (Lennart's marks)
 
 - `eryhemato_squamous_disease`: the 10 clinical scores 0-3 ship as numbers; a blanket `_feature_types` had cast them
