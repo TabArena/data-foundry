@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-04 14:52 UTC: 42 claim(s) (Andrej 16, Lennart 6, Myunghwan 20).
+As of 2026-11-05 04:47 UTC: 41 claim(s) (Andrej 16, Lennart 6, Myunghwan 19).
 
 ## Andrej
 
@@ -45,7 +45,6 @@ As of 2026-11-04 14:52 UTC: 42 claim(s) (Andrej 16, Lennart 6, Myunghwan 20).
 | `airqo_african_air_quality_prediction_challenge` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
 | `airqo_low_cost_air_quality_monitor_calibration_challenge` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
 | `bemtpl97` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
-| `busara_mental_health_prediction_challenge` | triage | 2026-10-28 | 2026-11-11 | Next Myunghwan curation batch: highest remaining eligible priority 3; existing screening dossiers await curator review. Reservation only; no scientific acceptance or build. |
 | `chicago_traffic_crashes` | triage | 2026-10-29 | 2026-11-05 | Selected by Myunghwan as the next large-scale candidate (about 1.1 million crashes). Reservation for screening review; no scientific inclusion or build decision. |
 | `desi_dr1_star_galaxy_quasar` | add | 2026-11-04 | 2026-11-11 | Myunghwan requested DESI add-dataset; label accuracy and systematic class noise require investigation before inclusion. |
 | `duolingo_spaced_repetition_recall` | triage | 2026-10-31 | 2026-11-07 | Curator-requested triage of PR39 priority-4 candidates with 10M+ source observations. |
