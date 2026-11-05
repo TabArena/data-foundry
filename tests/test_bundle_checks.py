@@ -980,5 +980,28 @@ def test_poisson_computability_uses_valid_means_without_changing_labels(all_zero
     spec = _spec("mean_poisson_deviance", target_transform=transform)
     container = make_v2_container(df, spec=spec, problem_type="regression")
     before = container.dataset.copy(deep=True)
-    assert metric_findings(container) == {}
+    expected = {"task_metric_deviance_on_transformed_target": "warning"} if transform == "log1p" else {}
+    assert metric_findings(container) == expected  # computable either way; the transform only warns
     pd.testing.assert_frame_equal(container.dataset, before)
+
+
+@pytest.mark.parametrize(
+    ("name", "params"),
+    [("mean_poisson_deviance", {}), ("mean_tweedie_deviance", {"power": 1.5, "min_prediction": 1.0})],
+)
+def test_a_mean_deviance_on_a_transformed_target_warns(name, params):
+    """A deviance scores the mean on the original scale; a target shipped on log1p is fit below it, so it warns."""
+    df = make_iid_frame()
+    y = (np.arange(len(df)) % 4) * 100.0
+    df["target"] = np.log1p(y)
+    found = metric_findings(
+        make_v2_container(df, spec=_spec(name, params=params, target_transform="log1p"), problem_type="regression")
+    )
+    assert found == {"task_metric_deviance_on_transformed_target": "warning"}
+    df["target"] = y
+    assert metric_findings(make_v2_container(df, spec=_spec(name, params=params), problem_type="regression")) == {}
+    df["target"] = np.log1p(y)  # another metric on the same transform does not warn
+    rmse = _spec("rmse", target_transform="log1p")
+    assert "task_metric_deviance_on_transformed_target" not in metric_findings(
+        make_v2_container(df, spec=rmse, problem_type="regression")
+    )

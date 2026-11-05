@@ -1031,8 +1031,14 @@ def _metric_spec_findings(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901, PL
     yield from _metric_computes_findings(ctx)
 
 
+_MEAN_DEVIANCES = ("mean_poisson_deviance", "mean_tweedie_deviance")
+"""Metrics minimised by the true mean on the original scale, which a model fit on a transformed target misses."""
+
+
 def _target_transform_findings(ctx: _Ctx) -> Iterator[CheckResult]:
-    """A ``target_transform`` is for a regression target whose inverse is finite on every shipped value."""
+    """A ``target_transform`` is for a regression target whose inverse is finite on every shipped value; a mean
+    deviance warns on one, as a model fit on the transformed scale predicts below the mean.
+    """
     from data_foundry.v2.metrics import INVERSE_TRANSFORMS  # noqa: PLC0415 - data_foundry.v2 imports this module
 
     task = ctx.task
@@ -1046,6 +1052,18 @@ def _target_transform_findings(ctx: _Ctx) -> Iterator[CheckResult]:
             f"`target_transform={transform!r}` is for a regression target; the task is {task.problem_type}.",
         )
         return
+    name = task.objective_metric.name
+    if name in _MEAN_DEVIANCES:
+        yield CheckResult(
+            "task_metric_deviance_on_transformed_target",
+            "warning",
+            f"`{name}` scores the predicted mean on the original scale, but the target ships as "
+            f"`target_transform={transform!r}`: a model fit on that scale predicts about the mean of the transformed "
+            "value, whose inverse falls below the mean (for a log, the geometric mean), so the deviance punishes the "
+            "transform, not the model (pricing_game_2017_french_mtpl: deviance skill -5.1 on log1p, +0.05 in euros).",
+            hint="Ship the target untransformed (CLEAN-16 exception, as pricing_game_2017_french_mtpl), or accept "
+            "the warning with the reason.",
+        )
     if ctx.df is None or ctx.target not in ctx.df.columns:
         return
     values = pd.to_numeric(ctx.df[ctx.target], errors="coerce").to_numpy(dtype=float)

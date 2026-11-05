@@ -254,8 +254,10 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
   metric needs is not mapped), `task_metric_input_is_model_input` (info: an input that is also a feature, the group or
   the time column, which is allowed), `task_metric_reference_missing` (a source or stand-in without a link),
   `task_metric_stand_in_incomplete`, `task_metric_not_computable` (no finite score of a random prediction on some fold),
-  `task_metric_local`, `task_metric_transform_not_regression` and `task_metric_transform_overflow` (the inverse of
-  `target_transform` overflows on a shipped value: the target is not on that scale).
+  `task_metric_local`, `task_metric_transform_not_regression`, `task_metric_transform_overflow` (the inverse of
+  `target_transform` overflows on a shipped value: the target is not on that scale) and
+  `task_metric_deviance_on_transformed_target` (warning: a Poisson or Tweedie deviance scores the mean on the original
+  scale, which a model fit on a log target misses; ship the target untransformed, as pricing_game_2017_french_mtpl).
   `Metric.local(fn, name=..., prediction=..., greater_is_better=...)` holds code only the definition has; it is for a
   user's own dataset that is never shipped (`build(allow_local_metric=True)`), never for the working copy (MET-13).
 * `download_description`: for a Kaggle dataset `kaggle datasets download <slug> && unzip ... && rm ...`, then the move
