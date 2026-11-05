@@ -7,6 +7,8 @@ data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+decision_markers:
+- Class-dependent Recording
 tags:
 - New IID
 - Many features
@@ -52,6 +54,8 @@ From the use case, it is unclear if this would really be done, as it is likely n
 **Assessment (AI, 2026-10-21):** Metric declared under MET-1..13: fallback log_loss — The source paper clusters the samples (hierarchical and probabilistic clustering) to find adenocarcinoma subclasses and declares no classification metric for predicting the class.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `tcga_lung_histology` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
+**Assessment (AI, 2026-11-05):** marker `Class-dependent Recording`: 47 of the 139 adenocarcinoma rows are means of 2 to 4 arrays (repeated measurements of one sample), none of the other 58 rows, and the non-human spike-in control probes (added to every array for quality control) alone separate the classes (ROC AUC 0.85). Kept, since neither carries the score: rounding every value to the shared 0.01 grid, dropping the averaged rows or dropping all 67 control probes moves logistic regression's log loss by at most 0.005 (0.141 as shipped). Noted in the definition's curation comments; data unchanged.
 
 ## Reference
 

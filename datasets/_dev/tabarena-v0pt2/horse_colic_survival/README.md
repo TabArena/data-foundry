@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: horse_colic_survival
 container_format: 2
-checksum: v2:6b186530ec3c711869107f0fb07afa946d8ec163e186f0a8e4c865c76149efd0
+checksum: v2:d967ea7c632fd99f8bd34fae3e67ac8e34f7602bd6f8bc9e79fa84192c0f1c49
 build:
   uuid: 01a111fc-df0b-7d08-9ad5-3bfee18c9b55
   checksum: v2:3edea035ca49ff4f42bfa2eb137a98817c67387f49f0fb111c2fd7cf979fa727
@@ -69,7 +69,7 @@ decisions: []
 
 Multiclass classification of `outcome`, scored with `log_loss` on IID splits. 344 rows and 20 features. Source: UCI (1989).
 
-Built as `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6b186530ec3c711869107f0fb07afa946d8ec163e186f0a8e4c865c76149efd0`, so the build is stale. See [Build](#build).
+Built as `01a111fc-df0b-7d08-9ad5-3bfee18c9b55` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:d967ea7c632fd99f8bd34fae3e67ac8e34f7602bd6f8bc9e79fa84192c0f1c49`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -202,6 +202,7 @@ We start with the data from UCI and merge the train and test data.
   each level is carries the words, a score without them is a number): 8 ordered codes carry their codebook's
   words (`CODE_LABELS`), in the same order; 5 unordered codes carry their words: `mucous_membranes`, `pain`,
   `abdomen`, `abdominocentesis_appearance`, `age`.
+- Class-dependent recording (record marker `Class-dependent Recording`): `total_protein` is recorded in two units, g/L (above 15) for 95 horses, of which 1 died and 27 were euthanized, and g/dL for 209, of which 64 died and 16 were euthanized. The switch follows the hospital number, that is the admission period, so the unit tells died from euthanized (ROC AUC 0.79 alone). Not harmonised yet: one unit for all rows removes the cue (TabPFN 3.5 log loss 0.682 to 0.724).
 
 ## Splits
 
@@ -279,7 +280,7 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicate_rows`: 2 exact duplicate row(s) (0.6% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **info** `dataset_conflicting_duplicate_rows`: 1 row(s) (0.3%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
@@ -418,4 +419,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6b186530ec3c711869107f0fb07afa946d8ec163e186f0a8e4c865c76149efd0` |
+| stale | yes: the definition now gives checksum `v2:d967ea7c632fd99f8bd34fae3e67ac8e34f7602bd6f8bc9e79fa84192c0f1c49` |

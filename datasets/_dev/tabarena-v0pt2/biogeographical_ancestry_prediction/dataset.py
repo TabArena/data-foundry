@@ -89,6 +89,7 @@ class BiogeographicalAncestryPrediction(AbstractCuratedDataset):
         - We drop the Turkey class (28 rows), deviating from the paper's ten classes. Its source has a genotyping artefact: rs3857620 is AG in 24 of 28 Turkey samples and never AA (about 5 expected under Hardy-Weinberg equilibrium), while all 607 other samples are GG, so the SNP alone separates Turkey (ROC AUC 0.93). Without Turkey, rs3857620 is constant and dropped, as is rs367953206 (TT in every sample; its only other value was the no-call NN, 9 Turkey rows and 1 Basque row).
         - "NN" genotypes are no-calls and are set to missing. They occur only in the HGDP classes (24 rows: Russian 8, French 7, Sardinian 5, Basque 4), never in 1000 Genomes, so missingness weakly hints at the source.
         - rs2789823 is AG in 7 rows, all Iberian; it may be a smaller artefact of the same kind and is kept.
+        - Class-dependent recording (record marker `Class-dependent Recording`): Turkey comes from a separate source with its own genotyping artefact, as described above; the class is dropped.
     """
 
     # Task

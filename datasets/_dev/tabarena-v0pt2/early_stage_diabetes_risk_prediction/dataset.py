@@ -61,6 +61,7 @@ class EarlyStageDiabetesRiskPrediction(AbstractCuratedDataset):
         We start with diabetes_data_upload.csv from UCI.
 
         - We drop exact duplicate rows: 269 of 520 (51.7%) repeat another row, and 107 profiles of age, gender and 14 symptoms occur 2 to 16 times. Distinct patients would rarely agree on all 16 answers, so we treat the copies as a collection artifact (no copies conflict on the label).
+        - Note: the copies are uneven by class (61% of the 200 negative rows repeat another row, 46% of the 320 positive rows), so dropping them moves the positive share from 62% to 69% and leaves 78 negatives. 74% of rows 260 to 519 repeat a row from 0 to 259; which rows are the original patients is unknown.
     """
 
     # Task
