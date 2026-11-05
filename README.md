@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-05 12:42 UTC: 44 claim(s) (Andrej 16, Lennart 9, Myunghwan 19).
+As of 2026-11-05 12:49 UTC: 41 claim(s) (Andrej 16, Lennart 6, Myunghwan 19).
 
 ## Andrej
 
@@ -30,11 +30,8 @@ As of 2026-11-05 12:42 UTC: 44 claim(s) (Andrej 16, Lennart 9, Myunghwan 19).
 | Dataset | Stage | Since | Until | Note |
 |---|---|---|---|---|
 | `1000_cameras` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `early_learning_predictors` | add | 2026-11-05 | 2026-11-12 | issue #48 type fixes |
-| `eryhemato_squamous_disease` | add | 2026-11-05 | 2026-11-12 | issue #48 type fixes |
 | `facebook_recruiting_human_or_robot` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `fl2000` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
-| `pva_revenue_prediction_kddcup98` | add | 2026-11-05 | 2026-11-12 | issue #48 type fixes |
 | `secom_semiconductor_yield` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `zeosyn_zeolite_synthesis` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `zindi_weekendz_laduma_analytics_football_league_winners_prediction_challenge` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
