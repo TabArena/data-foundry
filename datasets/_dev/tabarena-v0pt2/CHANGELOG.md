@@ -1,5 +1,10 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-05
+
+- Requalify `economic_well_being_prediction_challenge` against main `9048f36a`, preserving Myunghwan’s prior annual timing, supplied-index and temporal × unseen-country decisions. Decode R/U as Rural/Urban under current CLEAN-12; all rows, labels, numeric values and country-year membership sets remain unchanged, with canonical order and indices regenerated. Restore resolved review issues with original IDs/dates and retain the completed focused panel. Document the accepted candidate-specific higher-ranked use-case override in SPLIT-3 Cases without amending the global rule.
+- Native checks: 27, zero errors/warnings, three infos. New dtype, all-sixteen-split task and refreshed leak/raw probes pass execution; no_spread remains the previously investigated finding, with prior prediction scores independently reverified by ID. Participant-kit review finds no demonstrated exploit beyond honest/random controls. Native Claude authentication failed before inference; the fresh Codex reviewer used contractual kit isolation, with that limitation disclosed. No new curator input is needed.
+
 ## 2026-11-05, GitHub issue #48: column types (Lennart's marks)
 
 - `eryhemato_squamous_disease`: the 10 clinical scores 0-3 ship as numbers; a blanket `_feature_types` had cast them
