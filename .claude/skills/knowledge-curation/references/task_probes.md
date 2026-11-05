@@ -8,7 +8,7 @@ rule wins over the rules below it of the same strength. How to weigh, exceptions
 Whether a curated task is empty, trivial, too small, or worth benchmarking, and how to answer the flags of the task
 probes (dummy baselines against untuned model families on the task's own splits). The rules come from the review of
 the datasets the probes flagged in the TabArena v0.2 build (from 2026-10-05; the evidence is in each record's dated
-comment) and from the reviews since. The markers they set (`Trivial`, `Too Small`) are listed in
+comment) and from the reviews since. The markers they set (`Trivial`, `Too Small`, `No Signal`) are listed in
 [selection.md](selection.md), "Decision markers".
 
 Rule N is TP-N; definitions cite them as task_probes.md rule N, so keep the numbers. An ID is a name and the position
@@ -23,8 +23,13 @@ models, so check every flag against the benchmark's tuned methods before acting 
 flag"). Cases: clock_protein_toxicity, asp_potassco_classification, consumer_complaints_1m.
 
 **TP-2 (Should).** A small but real signal is no reason to retire, and neither is a cutoff on the best skill. Retire,
-fix or keep a task for a concrete reason found in the task itself; until one is found, the task stays. Cases:
-forest_fires (R² 0.013, but TabPFN-3.5 beats the mean on 26 of 32 folds) is a valid task.
+fix or keep a task for a concrete reason found in the task itself; until one is found, the task stays. Real means it
+beats shuffled labels on the split the use case needs: the best method's mean skill against the same method on
+shuffled labels and the same splits. Beating the dummy on most folds is not enough: repeated folds overlap, and
+shuffled labels often reach better than baseline performance too, but randomly. A task whose methods stay within what
+shuffled labels give has no signal and is retired. A signal found by screening many candidate scores on the same rows
+counts only when it holds on rows it was not chosen on. Marker: `No Signal`. Cases: forest_fires,
+clock_protein_toxicity.
 
 **TP-3 (Must).** If tuned methods spread, keep the dataset. No further discussion is needed (a rule of an earlier
 part still wins). Cases: gallstone_disease, electric_motor_temperature_prediction, hr_analytics.
@@ -125,7 +130,7 @@ ashrae_great_energy_predictor_iii in the Cases table.
 
 | Flag | Rule | What the script computes | First check |
 |---|---|---|---|
-| `no_signal` | TP-1, TP-2 | The best family's mean skill is not above twice its standard error (or 0.02). | Tuned results: do the strongest regularised methods beat the dummy fold by fold? Untuned models overfit noise (forest_fires, clock_protein_toxicity, asp_potassco: all kept). |
+| `no_signal` | TP-1, TP-2 | The best family's mean skill is not above twice its standard error (or 0.02). | Tuned results: do the strongest regularised methods beat the dummy fold by fold? Untuned models overfit noise. If one does, by a little, check the split and shuffled labels (TP-2): forest_fires' signal was same-day fires across a random split. Within shuffled labels: `No Signal` (forest_fires, clock_protein_toxicity, retired); asp_potassco_classification kept. |
 | `solved` | TP-6, TP-4 | ROC AUC, macro ROC AUC or R² of at least 0.995. | A leak or a lookup (leak probes, shallow tree); then a stage of the source where the task is not solved. |
 | `no_spread` | TP-3 | The best and worst family differ by less than twice the standard error of their per-split difference (or 0.01). | Tuned results: if methods spread, keep (TP-3). On a large, low-noise dataset strong methods converge (amex); on a small one it is noise. |
 | `one_feature` | TP-4 | The best single feature, chosen on each split's training side, reaches 95% of the best family's skill and leaves at most 1.25 times its remaining error (1 − skill). | TP-4: what the feature means, then the raw feature against the methods fold by fold (`tuned_results.py --feature auto`). |
@@ -203,6 +208,9 @@ quarter: concrete's `(all but Age)` gives R^2 0.923 random against 0.857 grouped
 the error. Take a key hit to the source: when the key is what one row's entity is (a mix, a wind-tunnel run), group on
 it (SPLIT-24 in [splits.md](splits.md), "Grouped tasks"); when new rows keep the key, it is a feature (SPLIT-4). A group
 by no column at all (the target protein of a CASP decoy) still does not show up; read what one row is in the source.
+Neither does a group held by several columns that the other columns vary within: forest_fires' fires of one day share
+the four daily fire weather index values (FFMC, DMC, DC, ISI), while temperature, humidity, wind and the map square
+differ fire by fire (517 fires on 227 days). Values a source computes once per day, site or batch are such a key.
 
 Calibration of the composite keys on 2026-10-14 (all 177 definitions, the grouped ones as if IID): three hits,
 concrete `(all but Age)`, airfoil_self_noise `(all but frequency)` (its wind-tunnel runs) and
@@ -323,10 +331,10 @@ task-probe flags the decision answers. The decisions on metrics (2026-10-21) are
 |---|---|---|---|---|---|
 | TP-4 | fitness_club | one_feature | retired, `Trivial` (2026-10-05) | `months_as_member` alone, chosen on all 30 training sides, AUC 0.822, above all 37 configurations; `days_before` = 2 × weekday in 1,251 of 1,500 rows (generated) | applied |
 | TP-5 | parkinsons_biomedical_voice_measurements | no_spread, one_feature, unstable | retired, `Too Small` (2026-10-05) | 8 healthy people, 2-3 per test fold; ranks less stable than on 98% of BeyondArena | applied |
-| TP-7 | audiology_diagnosis | no_spread, unstable | target re-defined, rebuilt (2026-10-06) | our own 3-class merge replaced by hearing loss with or without a conductive part; duplicates and non-hearing-loss diagnoses dropped; no flags since | applied |
+| TP-7 | audiology_diagnosis | no_spread, unstable | target re-defined, rebuilt (2026-10-06); retired (2026-11-05) | our own 3-class merge replaced by hearing loss with or without a conductive part; duplicates and non-hearing-loss diagnoses dropped; no flags since, but the new type is read off five of its features (accuracy 0.903 of 0.938) and the case history alone gives the majority class | applied |
 | TP-6 | eryhemato_squamous_disease | solved | clinical features only, rebuilt (2026-10-06) | macro AUC 0.999 with the biopsy features, 0.98 and 87% accuracy before the biopsy | applied |
-| TP-2 | forest_fires | no_signal | kept (2026-10-06) | TabPFN-3.5 beats the mean on 26 of 32 folds (R² 0.013); a hurdle model adds nothing | applied |
-| TP-1 | clock_protein_toxicity | no_signal | kept (2026-10-06) | LightGBM above AUC 0.5 on 44 of 60 folds (0.539); the probe's single feature was a selection effect | applied |
+| TP-2 | forest_fires | no_signal | kept (2026-10-06); re-split by day; retired (2026-11-05) | TabPFN-3.5 beats the mean on 26 of 32 folds (R² 0.013); a hurdle model adds nothing. Fires of one day share the station's daily fire weather index values; split by day, R² -0.002, within shuffled labels (p = 0.16; random splits p = 0.005) | applied |
+| TP-1 | clock_protein_toxicity | no_signal | kept (2026-10-06); retired (2026-11-05) | LightGBM above AUC 0.5 on 44 of 60 folds (0.539); the probe's single feature was a selection effect; shuffled labels do as well (p = 0.71) | applied |
 | TP-1 | asp_potassco_classification | no_signal | kept (2026-10-06) | TabICLv2 beats the class shares on 30 of 30 folds; label noisy (62% of runner-ups within 1 s) | applied |
 | TP-4 | sepsis_survival_minimal_clinical_records | one_feature | kept (2026-10-06) | age alone AUC 0.704, below the best (0.707) on every fold; 975 distinct cases by design | applied |
 | TP-4 | california_house_prices_2020 | one_feature | kept (2026-10-06) | the listed price is the natural core; sold = listed R² 0.89-0.91, methods 0.93-0.945 | applied |

@@ -44,6 +44,7 @@ decision_markers:
 - Out-of-scope Task (CTR/RecSys/Ranking)
 - Ethical Issue
 - Too Small
+- No Signal
 - Not Representative
 - Selection Bias
 - Anonymized
