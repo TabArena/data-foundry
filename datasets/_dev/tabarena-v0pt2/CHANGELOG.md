@@ -1,5 +1,18 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-05, the retirements of 2026-10-27 carried out
+
+- Three records Andrej set to `No (Retired)` on 2026-10-27: their folders are removed and `v2_path` cleared. `DF: Yes`,
+  the collection tags and the pinned BeyondArena containers stay. The records carry his October disagreement notes.
+  - `hepatitis_survival_prediction`: the CC of 2026-10-21 gives the reason, the UCI file differing from Efron & Gong
+    (1983) where it can be checked (11 patients); the reason is still to be restated.
+  - `hepatitis_c_prediction`: donors and patients come from separate collections, recorded differently, and the 75
+    patients alone are too few to stage.
+  - `early_stage_diabetes_risk_prediction`: patients of a diabetes hospital, not the adults the screening use case is
+    for; 52% of the rows repeat another row.
+- `tests/test_curation_scripts.py`: the participant-kit test builds `eryhemato_squamous_disease` in place of
+  `hepatitis_c_prediction` (it runs where the raw file is downloaded).
+
 ## 2026-11-05, five tasks without a real target retired; new marker `No Signal`
 
 - Retired: each record is `No (Retired)` with a CC line giving the reasons, its folder is removed and `v2_path`
