@@ -2,5 +2,5 @@ name: fugaku_hpc_job_failure
 holder: Myunghwan
 stage: add
 claimed_at: '2026-11-03T07:59:15Z'
-expires_at: '2026-11-10T22:36:23Z'
-note: 'Curator ship accepted; build/reload/traced-input reproduction complete: 2,500,499 rows, 388 predictors. Local commits 89bd0cd9 and b466ac80 on fugaku-build-20261103; not pushed. Retain ownership pending upstream integration. First tuned benchmark must recheck model-family separation, simple/user-history baselines, probability quality and label-maturity/reporting latency.'
+expires_at: '2026-11-12T23:40:19Z'
+note: Curator decisions reused; current main 9048f36a add/review/build cycle complete. Built/reloaded/minimal-input reproduction and backup of 43 input files verified; unchanged task with 2,500,499 rows and 388 predictors. Local commits 1061a759 and b8fd77bf on fugaku-refresh-20261105; not pushed. Retain ownership pending upstream integration. First tuned benchmark family, baseline, probability and maturity/latency recheck remains required; known diagnostic limits retained.

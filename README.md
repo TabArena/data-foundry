@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-05 23:02 UTC: 45 claim(s) (Andrej 16, Lennart 6, Myunghwan 23).
+As of 2026-11-05 23:40 UTC: 45 claim(s) (Andrej 16, Lennart 6, Myunghwan 23).
 
 ## Andrej
 
@@ -52,7 +52,7 @@ As of 2026-11-05 23:02 UTC: 45 claim(s) (Andrej 16, Lennart 6, Myunghwan 23).
 | `economic_well_being_prediction_challenge` | triage | 2026-10-28 | 2026-11-11 | Curator ship accepted. Local build, reload and traced-input reproduction verified (2026-11-03); temporal x unseen-country, 21,454 rows, 16 evaluations. Local branch prepared separately; intentionally not added to existing PR. Retain ownership pending separately authorized publication/integration. |
 | `fannie_mae_single_family_loan_performance` | triage | 2026-10-31 | 2026-11-07 | Curator-requested triage of PR39 priority-4 candidates with 10M+ source observations. |
 | `football_match_probability_prediction` | triage | 2026-11-05 | 2026-11-12 | Curator-requested triage: priority-4 interaction datasets; scale, source and non-IID qualification pending. |
-| `fugaku_hpc_job_failure` | add | 2026-11-03 | 2026-11-10 | Curator ship accepted; build/reload/traced-input reproduction complete: 2,500,499 rows, 388 predictors. Local commits 89bd0cd9 and b466ac80 on fugaku-build-20261103; not pushed. Retain ownership pending upstream integration. First tuned benchmark must recheck model-family separation, simple/user-history baselines, probability quality and label-maturity/reporting latency. |
+| `fugaku_hpc_job_failure` | add | 2026-11-03 | 2026-11-12 | Curator decisions reused; current main 9048f36a add/review/build cycle complete. Built/reloaded/minimal-input reproduction and backup of 43 input files verified; unchanged task with 2,500,499 rows and 388 predictors. Local commits 1061a759 and b8fd77bf on fugaku-refresh-20261105; not pushed. Retain ownership pending upstream integration. First tuned benchmark family, baseline, probability and maturity/latency recheck remains required; known diagnostic limits retained. |
 | `geoai_ground_level_no2_estimation_challenge` | triage | 2026-10-28 | 2026-11-06 | Curator accepted as implemented with documented label-QC, regional and observed-day coverage limits. Built and verified: 82,051 rows, 11 predictors, station-held-out 3x3 folds; reload and traced-input reproduction passed with zero warnings. Local commits 7b2837b and 8cba4df on geoai-no2-curation; not pushed or submitted. Retain Myunghwan ownership pending upstream integration; existing stage preserved by gateway. |
 | `loan_default_prediction_challenge` | triage | 2026-10-28 | 2026-11-11 | Myunghwan: requested single-candidate SuperLender source screening; no benchmark control plane |
 | `lt_vehicle_loan_default_prediction` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
