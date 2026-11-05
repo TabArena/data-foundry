@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-05 04:47 UTC: 41 claim(s) (Andrej 16, Lennart 6, Myunghwan 19).
+As of 2026-11-05 12:42 UTC: 44 claim(s) (Andrej 16, Lennart 9, Myunghwan 19).
 
 ## Andrej
 
@@ -30,8 +30,11 @@ As of 2026-11-05 04:47 UTC: 41 claim(s) (Andrej 16, Lennart 6, Myunghwan 19).
 | Dataset | Stage | Since | Until | Note |
 |---|---|---|---|---|
 | `1000_cameras` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
+| `early_learning_predictors` | add | 2026-11-05 | 2026-11-12 | issue #48 type fixes |
+| `eryhemato_squamous_disease` | add | 2026-11-05 | 2026-11-12 | issue #48 type fixes |
 | `facebook_recruiting_human_or_robot` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `fl2000` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
+| `pva_revenue_prediction_kddcup98` | add | 2026-11-05 | 2026-11-12 | issue #48 type fixes |
 | `secom_semiconductor_yield` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `zeosyn_zeolite_synthesis` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `zindi_weekendz_laduma_analytics_football_league_winners_prediction_challenge` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
@@ -45,7 +48,7 @@ As of 2026-11-05 04:47 UTC: 41 claim(s) (Andrej 16, Lennart 6, Myunghwan 19).
 | `airqo_african_air_quality_prediction_challenge` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
 | `airqo_low_cost_air_quality_monitor_calibration_challenge` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
 | `bemtpl97` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
-| `chicago_traffic_crashes` | triage | 2026-10-29 | 2026-11-05 | Selected by Myunghwan as the next large-scale candidate (about 1.1 million crashes). Reservation for screening review; no scientific inclusion or build decision. |
+| `chicago_traffic_crashes` | triage | 2026-10-29 | 2026-11-05 (expired) | Selected by Myunghwan as the next large-scale candidate (about 1.1 million crashes). Reservation for screening review; no scientific inclusion or build decision. |
 | `desi_dr1_star_galaxy_quasar` | add | 2026-11-04 | 2026-11-11 | Myunghwan requested DESI add-dataset; label accuracy and systematic class noise require investigation before inclusion. |
 | `duolingo_spaced_repetition_recall` | triage | 2026-10-31 | 2026-11-07 | Curator-requested triage of PR39 priority-4 candidates with 10M+ source observations. |
 | `economic_well_being_prediction_challenge` | triage | 2026-10-28 | 2026-11-11 | Curator ship accepted. Local build, reload and traced-input reproduction verified (2026-11-03); temporal x unseen-country, 21,454 rows, 16 evaluations. Local branch prepared separately; intentionally not added to existing PR. Retain ownership pending separately authorized publication/integration. |
