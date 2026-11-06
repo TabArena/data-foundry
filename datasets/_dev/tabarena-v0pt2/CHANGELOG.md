@@ -1,5 +1,58 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-06, issue #51 and PR #47: exposure as a weight, never a feature (no container built)
+
+The curator's decisions of 2026-11-06 on the exposure study (D1-D14): the framework gets training weights
+(`sample_weight`, a `weight` input on the deviances, a strict `score()`, a required Poisson floor) and probe 22; the
+rules get LEAK-41, MET-14 to MET-16 and the CLEAN-16 and MET-13 amendments. Every touched dataset has an exposure
+paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its record for each decision.
+
+- `fremtpl2`: target `claim_frequency` (claims per year insured); `Exposure` the weight scoring column and
+  `sample_weight`; `mean_poisson_deviance` weighted, floor 1e-4 a year (issue 6). Not built; README regenerated
+  (0 errors, 0 warnings).
+- `bemtpl97`: target `nclaims_per_year`; `expo` the weight and `sample_weight`; floor 1e-4 a year (issue 1); the
+  container 01a18ad7 is superseded. Not built; README regenerated (0 errors, 0 warnings).
+- `australian_vehicle_insurance_2004_2005`: claim cost per year insured, `exposure` the weight and `sample_weight`,
+  `normalized_weighted_gini` on the rate (issue 6); duplicate warnings accepted (rating cells). Not built; README
+  regenerated (0 errors, 0 warnings).
+- `frempl_french_motor_personal_line`: log1p loss per realized year, the realized `Exposure` the weight,
+  `length_to_year_end` a feature, `ordered_lorenz_gini(per_unit=True)` (issue 6; issue 7 open). Not built; README
+  regenerated (0 errors, 0 warnings).
+- `spanish_motor_insurance_coverage_level_2022_2024`: `sample_weight = "actual_exposure"`, premiums annualised,
+  `total_exposure` dropped, `float_precision="round_trip"` (issue 6). Not built; README regenerated (0 errors,
+  0 warnings).
+- `pricing_game_2016_french_fleet`: charge per vehicle-year over the realized period as weight, the length to
+  31 December renamed `exposure_to_year_end`, `normalized_weighted_gini`; every window trains on periods started
+  before 2013 (issue 5; issue 6 open). Not built; README regenerated (0 errors, 0 warnings).
+- `noaa_storm_events_damage`: `duration_hours` blank for Strong Wind and Heavy Rain as for tornadoes (issue 6). Not
+  built; README regenerated (0 errors, 0 warnings).
+- `wadden_sea_sibes_macoma_abundance`: the 39 single cores kept with a note (issue 6); fix: the station elevations
+  drop the NaN rows of `stack()`, which pandas 3 keeps (40.66% missing elevations, now the documented 5). Not built;
+  README regenerated (0 errors, 0 warnings).
+- `noaa_afsc_bottom_trawl_survey_cpue`: the scoring copy `taxon_group` (issue 4). Not built; README regenerated
+  (0 errors, 0 warnings).
+- `liberty_mutual_fire_peril_loss_cost`: the scoring copy `var11_weight` (issue 3). Not checked: the Kaggle data is not
+  downloadable yet; README not regenerated.
+- `spanish_motor_insurance_2015_2018`: the count of cut first years corrected to 2,055 (issue 6). Not built; README
+  regenerated (0 errors, 0 warnings).
+- `boreal_postfire_lichen_biomass`: the sentence on per-quadrat RMSE against the stand scores corrected. Not built;
+  README regenerated (0 errors, 0 warnings).
+- `wisconsin_local_government_property_insurance_fund`: three warnings accepted with reasons; issue 3 open (the 2008
+  window below SPLIT-14's floor). Not built; README regenerated (0 errors, 0 warnings).
+- `pricing_game_2017_french_mtpl`, `spanish_homeowners_motor_insurance_2010_2014`: exposure paragraph only. Not built;
+  READMEs regenerated (0 errors, 0 warnings).
+- `allstate_claim_prediction_challenge_1m`, `loan_default_prediction_imperial_college`: exposure paragraph only; not
+  checked (Kaggle data pending).
+- `g_research_crypto_forecasting_1m`: no training weight (MET-15; measured inside the noise); fit_reason and notes
+  re-measured on the shipped splits. Not built; README regenerated (0 errors, 0 warnings).
+- `bank_marketing`: `campaign` kept with a measured note under the new span row; notes on `contact` and `pdays`. Not
+  built; README regenerated (0 errors, 1 warning as before).
+- `anes_voting_2026`: a MET-16 note (survey weights stay out; scored unweighted). Not built; README regenerated
+  (0 errors, 0 warnings).
+- `REVIEW.md` (working copy): the adopted rules and the framework change as resolved items; a section "From PR #47"
+  with the forced splits, `how_much_did_it_rain`, the leak tests as probes and the `ausprivauto0405` duplicate.
+- `BENCHMARK_CHANGES_TODO.md`: "Training weights", a TODO for the TabArena side.
+
 ## 2026-11-05, GitHub issue #48: column types (Lennart's marks)
 
 - `eryhemato_squamous_disease`: the 10 clinical scores 0-3 ship as numbers; a blanket `_feature_types` had cast them
