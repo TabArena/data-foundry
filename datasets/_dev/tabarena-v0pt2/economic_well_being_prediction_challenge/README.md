@@ -4,12 +4,12 @@ unique_name: economic_well_being_prediction_challenge
 container_format: 2
 checksum: v2:67814a2cb764b9b4774b509d02aeb05b24c17f34e225e371229d3163fcf821f3
 build:
-  uuid: 01a1adf2-7ba6-7a75-a157-1c1451ba511e
+  uuid: 01a1ae48-ee3d-73ae-bf99-a2b037658716
   checksum: v2:67814a2cb764b9b4774b509d02aeb05b24c17f34e225e371229d3163fcf821f3
-  built_at: '2026-11-05T23:01:53+00:00'
-  path: economic_well_being_prediction_challenge/01a1adf2-7ba6-7a75-a157-1c1451ba511e
+  built_at: '2026-11-06T00:36:18+00:00'
+  path: economic_well_being_prediction_challenge/01a1ae48-ee3d-73ae-bf99-a2b037658716
   data_foundry_version: 0.0.5
-  git_sha: 197d469d2931d8949f5454bc4d839f6b05558ef8
+  git_sha: b4ac95ff0f853de54117555ae24bd013c3630fd4
   libraries:
     python: 3.12.3
     pandas: 3.1.0
@@ -73,7 +73,7 @@ decisions:
 
 Regression of `Target`, scored with `rmse` on temporal splits by `year`. 21,454 rows and 12 features. Source: Zindi (2021).
 
-Built as `01a1adf2-7ba6-7a75-a157-1c1451ba511e` on 2026-11-05. See [Build](#build).
+Built as `01a1ae48-ee3d-73ae-bf99-a2b037658716` on 2026-11-06. See [Build](#build).
 
 ## In brief
 
@@ -353,10 +353,10 @@ Every country-year test excludes all country history.
 
 | field | value |
 |---|---|
-| uuid | 01a1adf2-7ba6-7a75-a157-1c1451ba511e |
+| uuid | 01a1ae48-ee3d-73ae-bf99-a2b037658716 |
 | checksum | v2:67814a2cb764b9b4774b509d02aeb05b24c17f34e225e371229d3163fcf821f3 |
-| built_at | 2026-11-05T23:01:53+00:00 |
-| path | economic_well_being_prediction_challenge/01a1adf2-7ba6-7a75-a157-1c1451ba511e |
+| built_at | 2026-11-06T00:36:18+00:00 |
+| path | economic_well_being_prediction_challenge/01a1ae48-ee3d-73ae-bf99-a2b037658716 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 197d469d2931d8949f5454bc4d839f6b05558ef8 |
+| git_sha | b4ac95ff0f853de54117555ae24bd013c3630fd4 |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
