@@ -5,6 +5,8 @@ checked_by:
 - Lennart
 data_foundry_status:
 - 'DF: Yes'
+- WIP (DF)
+claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
 decision_markers:

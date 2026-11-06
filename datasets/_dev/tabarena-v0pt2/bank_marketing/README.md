@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bank_marketing
 container_format: 2
-checksum: v2:ac30288f56e670b959d79daee15aaf57f5237a5c9c44aa85f0bc8a4af313ff3e
+checksum: v2:9a54f907c1752c1a2dd2468d4968ada7daa9a40c151e6fa69a7348b701730d4f
 build:
   uuid: 01a111fc-7c2d-7441-b859-646c9bfbf380
   checksum: v2:df7e993235e244580c862ce525a593509ccdcce2503c8efd6c2ad7382a02bdeb
@@ -70,7 +70,7 @@ decisions: []
 
 Binary classification of `SubscribeTermDeposit`, scored with `roc_auc` on IID splits. 45,211 rows and 13 features. Source: UCI (2012).
 
-Built as `01a111fc-7c2d-7441-b859-646c9bfbf380` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ac30288f56e670b959d79daee15aaf57f5237a5c9c44aa85f0bc8a4af313ff3e`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7c2d-7441-b859-646c9bfbf380` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:9a54f907c1752c1a2dd2468d4968ada7daa9a40c151e6fa69a7348b701730d4f`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -88,7 +88,7 @@ Built as `01a111fc-7c2d-7441-b859-646c9bfbf380` on 2026-10-06, but `dataset.py` 
 
 **Our changes to the source.** We drop the duration of the last call, which the source says is unknown before the call and ends with the outcome, and the day and month of the last contact.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The calls span two and a half years, but the dates are dropped and the split is random, so the test clients do not stand for a later campaign. The number of calls in this campaign counts up to the last one, so it partly reflects how the campaign ended.
+> **Use case fit: approximate (a stand-in with a known gap).** The calls span two and a half years, but the dates are dropped and the split is random, so the test clients do not stand for a later campaign. The number of calls in this campaign counts up to the last one, so it partly reflects how the campaign ended (kept, worth 0.006 ROC AUC, about 0.0015 of it once the period is known).
 
 ## Files in this folder
 
@@ -193,6 +193,8 @@ The first 5 of 45,211 rows of the final frame (random rows: the frame is shuffle
 - `campaign` and `previous` are counts of contacts (UCI: "number of contacts performed during this campaign",
   "... before this campaign"), so they stay numeric. The BeyondArena notebook typed them categorical (48 and
   41 levels), which lost the order and left the high counts as rare levels (issue #34).
+- Potential leak, kept on purpose (the LEAK-10 Cases row on spans the outcome sets, 2026-11-06): `campaign` counts this campaign's contacts including the last (UCI: "number of contacts performed during this campaign and for this client (numeric, includes last contact)"). The calls stop at a subscription or when the bank stops calling, so the outcome draws the end only for subscribers, who cannot be told apart without the label. Without it ROC AUC falls by 0.0060 (LightGBM, 9 splits x 5 seeds, lower in 9 of 9) and 0.0079 (logistic regression); given the year of the last contact (rebuilt from the file's date order, not shipped) it adds 0.0013 and 0.0016, about one seed SD of LightGBM. Most of its worth is the period's call intensity (3.2 calls per client at 5.1% subscribed in 2008, 1.9 at 51.6% in 2010), and in 2008 the rate is flat over 1 to 10 calls. Revisit if the dates are restored or the split becomes temporal.
+- `contact` (cellular, telephone, unknown) belongs to the last contact in the codebook, but it is no span: its "unknown" covers all 12,443 rows of May-June 2008 (3.7% subscribed), so it marks the period, and within a period cellular and telephone barely differ. It is worth 0.021 ROC AUC in both models; kept. `pdays` counts to this campaign's start, not its end (at a fixed last-contact date it falls by 2.2 days per extra call); kept.
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
   categories in the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing
   (CLEAN-10).
@@ -217,7 +219,7 @@ Default splits.
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 2 info (26 checks run, plus the dataset's own checks).
+0 error(s), 1 warning(s), 2 info (27 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_missing_value_sentinel`: 1 numeric column(s) are dominated by a sentinel-looking value: pdays=-1 (81.7%). (hint: If it encodes 'missing', replace it with `np.nan` (curation guidelines); if it is a real value, ignore this finding.)
 - **info** `dataset_duplicate_rows`: 274 exact duplicate row(s) (0.6% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
@@ -242,9 +244,9 @@ Default splits.
 | poutcome | category | 0 | 0 | 4 | unknown, failure, other, success |
 | SubscribeTermDeposit | category | 0 | 0 | 2 | no, yes |
 | age | int64 | 0 | 0 | 77 | 32, 31, 33, 34, 35, 36, 30, 37, 39, 38 |
-| balance | int64 | 0 | 0 | 7168 | 0, 1, 2, 4, 3, 5, 6, 8, 23, 10 |
+| balance | int64 | 0 | 0 | 7168 | 0, 1, 2, 4, 3, 5, 6, 8, 23, 7 |
 | campaign | int64 | 0 | 0 | 48 | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 |
-| pdays | int64 | 0 | 0 | 559 | -1, 182, 92, 91, 183, 181, 370, 184, 364, 95 |
+| pdays | int64 | 0 | 0 | 559 | -1, 182, 92, 183, 91, 181, 370, 184, 364, 95 |
 | previous | int64 | 0 | 0 | 41 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 
 </details>
@@ -314,4 +316,4 @@ Default splits.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:ac30288f56e670b959d79daee15aaf57f5237a5c9c44aa85f0bc8a4af313ff3e` |
+| stale | yes: the definition now gives checksum `v2:9a54f907c1752c1a2dd2468d4968ada7daa9a40c151e6fa69a7348b701730d4f` |

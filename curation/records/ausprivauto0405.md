@@ -3,6 +3,9 @@ unique_name: ausprivauto0405
 name: 'Australian private motor insurance 2004-2005 (de Jong and Heller): claim occurrence and frequency per policy'
 checked_by:
 - AI (UNVERIFIED)
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Lennart
 suggestion: TBD -> Yes
 priority: 4
 tags:

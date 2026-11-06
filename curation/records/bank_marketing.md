@@ -8,6 +8,8 @@ data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
 - BeyondArena
+- WIP (DF)
+claimed_by: Lennart
 suggestion: 'Yes'
 original_source: UCI
 year: '2011'

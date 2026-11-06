@@ -39,7 +39,8 @@ class BankMarketing(AbstractCuratedDataset):
         fit_reason=(
             "The calls span two and a half years, but the dates are dropped and the split is random, so the test "
             "clients do not stand for a later campaign. The number of calls in this campaign counts up to the last "
-            "one, so it partly reflects how the campaign ended."
+            "one, so it partly reflects how the campaign ended (kept, worth 0.006 ROC AUC, about 0.0015 of it once "
+            "the period is known)."
         ),
     )
 
@@ -72,6 +73,8 @@ class BankMarketing(AbstractCuratedDataset):
         - `campaign` and `previous` are counts of contacts (UCI: "number of contacts performed during this campaign",
           "... before this campaign"), so they stay numeric. The BeyondArena notebook typed them categorical (48 and
           41 levels), which lost the order and left the high counts as rare levels (issue #34).
+        - Potential leak, kept on purpose (the LEAK-10 Cases row on spans the outcome sets, 2026-11-06): `campaign` counts this campaign's contacts including the last (UCI: "number of contacts performed during this campaign and for this client (numeric, includes last contact)"). The calls stop at a subscription or when the bank stops calling, so the outcome draws the end only for subscribers, who cannot be told apart without the label. Without it ROC AUC falls by 0.0060 (LightGBM, 9 splits x 5 seeds, lower in 9 of 9) and 0.0079 (logistic regression); given the year of the last contact (rebuilt from the file's date order, not shipped) it adds 0.0013 and 0.0016, about one seed SD of LightGBM. Most of its worth is the period's call intensity (3.2 calls per client at 5.1% subscribed in 2008, 1.9 at 51.6% in 2010), and in 2008 the rate is flat over 1 to 10 calls. Revisit if the dates are restored or the split becomes temporal.
+        - `contact` (cellular, telephone, unknown) belongs to the last contact in the codebook, but it is no span: its "unknown" covers all 12,443 rows of May-June 2008 (3.7% subscribed), so it marks the period, and within a period cellular and telephone barely differ. It is worth 0.021 ROC AUC in both models; kept. `pdays` counts to this campaign's start, not its end (at a fixed last-contact date it falls by 2.2 days per extra call); kept.
         - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
           categories in the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing
           (CLEAN-10).

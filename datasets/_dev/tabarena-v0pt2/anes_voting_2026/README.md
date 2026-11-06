@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: anes_voting_2026
 container_format: 2
-checksum: v2:6127b41ec3846c5435b6042a07a532cf9f8b0a3489aea0528773e1e12c8cd270
+checksum: v2:392957a73c6fd0dd0f5e467df8986d52e005c7e96f099e16929ac4167908a218
 build:
   uuid: 01a111fb-cb34-797a-ba46-5305a0c33af4
   checksum: v2:68b50d2a440c41001df168da2140a54131d4bde60c6aed028178881555c35d42
@@ -70,7 +70,7 @@ decisions: []
 
 Binary classification of `VCF0702`, scored with `roc_auc` on temporal splits by `VCF0004`. 48,587 rows and 261 features. Source: Other (2026).
 
-Built as `01a111fb-cb34-797a-ba46-5305a0c33af4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:6127b41ec3846c5435b6042a07a532cf9f8b0a3489aea0528773e1e12c8cd270`, so the build is stale. See [Build](#build).
+Built as `01a111fb-cb34-797a-ba46-5305a0c33af4` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:392957a73c6fd0dd0f5e467df8986d52e005c7e96f099e16929ac4167908a218`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -202,7 +202,7 @@ The first 5 of 48,587 rows of the final frame (the oldest rows: the frame is sor
 - Note: Alternative target could be constructed using who the candidate voted for (VCF0704). This could be a multi-class target with [Democrat, Republican, Other Party, Did not vote, Voted but unknown who]. However, the last category is less useful to predict, and might introduce problems. We therefore stick to predicting whether someone voted or not.
 - The alternative target in the kept rows (from the v1 exploration, counted 2026-10-22): of the 37,880 respondents who say they voted, VCF0704 gives 18,488 Democrat, 16,159 Republican and 687 other votes, and 2,546 have code 0 or a blank (no candidate recorded); of the 10,707 who say they did not vote, all but 4 have code 0 or a blank.
 - Note: While the data was also used in the TableShift benchmark, we define an entirely different task, with a temporal split and more features.
-- We drop the nine survey-weight columns (VCF0009x-VCF0011z) together with the other survey-related columns listed in `_clean`: they describe the survey design, not the respondent.
+- We drop the nine survey-weight columns (VCF0009x-VCF0011z) together with the other survey-related columns listed in `_clean`: they describe the survey design, not the respondent. A survey weight is never a feature (MET-16, 2026-11-06); the task scores each respondent's turnout, not a population estimate, so it is scored unweighted and declares no training weight (the poll a pollster later weights is the estimate, not this task).
 - Note: Ideally, we would select different feature sets per data split, depending on feature availability. However, for simplicity, we just keep all features.
 - Note: We considered keeping the unique respondent identifier in the data, because otherwise models that are able to reconstruct this information would unfairly benefit. However, for now we drop the identifier since it is not a desirable predictive feature for the given task, because the goal is generalization to the population, not memorizing individual behavior.
 - Metric: the fallback ROC AUC, not TableShift's accuracy (Lennart, 2026-10-21; metric spec).
@@ -256,7 +256,7 @@ We use each of the last 9 years once as test data, using all prior data as train
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 3 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 3 info (27 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicate_rows`: 156 exact duplicate row(s) (0.3% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **info** `dataset_conflicting_duplicate_rows`: 30 row(s) (0.1%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
@@ -483,4 +483,4 @@ We use each of the last 9 years once as test data, using all prior data as train
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:6127b41ec3846c5435b6042a07a532cf9f8b0a3489aea0528773e1e12c8cd270` |
+| stale | yes: the definition now gives checksum `v2:392957a73c6fd0dd0f5e467df8986d52e005c7e96f099e16929ac4167908a218` |
