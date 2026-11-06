@@ -54,7 +54,8 @@ work/<file> <url>`); prefer a paper's HTML version (PMC, arXiv HTML, the publish
   or sort by the label, hashes that encode a group.
 * **Copies across the split.** Exact and near copies of test rows in training with their labels; entities rebuilt from
   feature combinations (a birth date and a place, a product and a price) that appear on both sides; the label of the
-  nearest training row as a prediction.
+  nearest training row as a prediction; a later record of the same unit in training whose feature holds the test
+  row's label (a lag column, the previous campaign's outcome).
 * **The training rows.** In a temporal split: training rows dated at or after the prediction point, rows whose label
   can only be known later, rows whose presence in training depends on their label (a row is in training only when its
   outcome came early), and the time column relative to the split date. Compare the label rate of training rows by
