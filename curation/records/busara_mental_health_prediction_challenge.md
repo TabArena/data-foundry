@@ -2,13 +2,11 @@
 unique_name: busara_mental_health_prediction_challenge
 name: busara-mental-health-prediction-challenge
 checked_by:
-- AI (UNVERIFIED)
+- Myunghwan
+data_foundry_status:
+- 'DF: Suspended'
 suggestion: TBD -> Yes
 priority: 3
-decision_markers:
-- TBD
-tags:
-- AI-Filled (Verify)
 collections:
 - New (BeyondArena)
 original_source: Zindi
@@ -21,8 +19,6 @@ original_data_state: One Table
 source_links:
 - https://zindi.africa/competitions/busara-mental-health-prediction-challenge/data
 source_row: 923
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -40,3 +36,7 @@ type_adapter_id: curation-record-v1
 - Priority: gap + (social science thin), use case + (actor named by the host), source - (only the Zindi page; the study is not published), shape - (row count unknown, likely near 1,000), risk 0.
 
 Zindi Busara challenge to predict mental-health (depression) status from household survey/socioeconomic data collected in Kenya. This is a genuine real-world predictive classification task on structured survey features with a clear binary target, which fits the IID tabular criteria well. The main risks are sample size after cleaning and possible heavy missingness/many sparse survey columns. A human should verify the row count, the exact target definition, the proportion of usable (non-text) features, and confirm there are no ethical concerns given the sensitive mental-health target.
+
+CC (2026-11-05, Myunghwan): "Let's defer this then. Non-trivial modification seems required". Preserve the completed investigation; no current ship decision or authorization to implement an unspecified modification follows.
+
+**Assessment (AI, 2026-11-05):** The bounded nested study retained 1,143 respondents, 65 predictors and all 30 original outer pairs, selecting configurations and thresholds using training data only. Selected accuracy was 82.878% versus 83.115% majority. ExtraTrees reached 83.167%, an uncertain gain that did not persist outside matching profiles; modest ranking signal does not establish source-accuracy improvement. Exact-profile lookup scored 82.992% overall, below majority: the measured 2.598% overlap does not make this a simple lookup task and supports the curator's conditional retention position. The original depressed indicator remains an epidemiological moderate-depression screen with undocumented instrument/cutoff and assessment timing, not a verified clinical diagnosis. Raw collection-time fields are excluded; questionnaire ordering and household links remain unverified. Carry forward the applied hold as TBD -> Yes / DF: Suspended with priority 3. Reopen only on a separate curator request grounded in a substantively justified revision or stronger source evidence, then qualify the affected task. Do not infer a Trivial, Too Small or No Signal finding, automatic metric replacement, warning acceptance or permission for more model search.
