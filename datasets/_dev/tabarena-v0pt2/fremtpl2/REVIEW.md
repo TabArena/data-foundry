@@ -161,6 +161,16 @@ signal with a note (issue 8)? Set `DrivAge` 99 to missing (issue 9)?
    (PRs #44-#47) is merged. The GitHub issue (context, typical modelling: an offset or a weight, what the stack provides
    and what is missing) is [#51](https://github.com/TabArena/data-foundry/issues/51).
 
+   **Resolved (2026-11-06, Lennart):** A, as the rate with a weight (option A of
+   [#51](https://github.com/TabArena/data-foundry/issues/51), the exposure study of 2026-11-05). The target is
+   `claim_frequency` = `ClaimNb` / `Exposure`; `Exposure` is the weight scoring column, the `weight` input of
+   `mean_poisson_deviance` and the task's `sample_weight`, and never a feature (LEAK-41, MET-14, MET-15, adopted the same
+   day); the floor is 1e-4 claims per year (MET-13). This is the offset model: on every shipped fold the weighted rate
+   deviance equals the count deviance of the same predictions times n/sum(Exposure) of the scored rows (1.886 to
+   1.896), so models rank as by the source's metric. Supersedes Andrej's call of 2026-10-20 ("a feature, not a
+   divisor", capped at 1) and the parking above: the conditional measurement came later (+0.0040; never better at
+   quotation), and with the weight, dividing does not inflate short records. `dataset check`: 0 errors, 0 warnings.
+
 7. **Group the split on the inferred policy chains (`ForcedGroupedFromTemporal`) instead of IID?**
 
    * **Problem:**

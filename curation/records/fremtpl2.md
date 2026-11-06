@@ -5,6 +5,9 @@ checked_by:
 - Myunghwan
 - Lennart
 - Andrej
+data_foundry_status:
+- WIP (DF)
+claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -121,3 +124,7 @@ CC (2026-11-05, Lennart): the renewal signal read from other rows is an evaluati
 **Assessment (AI, 2026-11-05):** the parked exposure question is GitHub issue #51 (https://github.com/TabArena/data-foundry/issues/51).
 
 **Assessment (AI, 2026-11-05):** PR #46 rebased onto `main`: Andrej's CC of 2026-10-20 (aggregate claim amount, temporal split on `year_index`) came from the zero-inflated branch and is kept as his proposal; the record's fields follow the later CC lines (2026-11-04/05, Lennart: `ClaimNb` with `Exposure`, IID with `ForcedIIDFromTemporal`), which the v2 folder implements. Whether the aggregate claim amount ships as a dataset of its own is open.
+
+CC (2026-11-06, Lennart): option A of #51 (issue 6 of the folder's REVIEW.md): the target is claim_frequency = ClaimNb / Exposure, the claims per year insured; Exposure is the weight scoring column, the metric's `weight` input and the task's `sample_weight`, never a feature (LEAK-41, MET-14, MET-15, adopted 2026-11-06); `mean_poisson_deviance` with the floor 1e-4 claims per year (MET-13). It equals the source's count deviance with an exposure offset times n/sum(Exposure) of the scored rows (1.886 to 1.896 on the shipped folds), so models rank as by the source's metric. Supersedes the call of 2026-10-20 (Andrej, lines above: Exposure "a feature, not a divisor", capped at 1) and the AI line of 2026-10-29 that called the annualised form an unapproved draft: the conditional measurement came later (+0.0040 mean deviance as a free feature; never better at quotation), and with the weight, dividing does not inflate short records.
+
+CC (2026-11-06, Lennart): the claim amounts (the proposal of PR #46) stay out for now; a task on the amount per year insured or on the claim size is a separate decision, made on leak-free numbers (D12 of the exposure study).

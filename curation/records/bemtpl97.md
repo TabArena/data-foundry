@@ -6,7 +6,7 @@ checked_by:
 - Lennart
 data_foundry_status:
 - WIP (DF)
-claimed_by: Myunghwan
+claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
 original_source: Github
@@ -88,3 +88,5 @@ CC (2026-11-05, Lennart): issue 3, (a): `sex` leaves the features. The actor is 
 CC (2026-11-05, Lennart): issue 1 (exposure) is parked, with fremtpl2's issue 6 and both declared metrics, until the zero-inflated stack (PRs #44-#47) is merged.
 
 **Assessment (AI, 2026-11-05):** the parked exposure question is GitHub issue #51 (https://github.com/TabArena/data-foundry/issues/51).
+
+CC (2026-11-06, Lennart): issue 1 resolved as the rate with a sample weight (option A of #51): the target is nclaims_per_year = nclaims / expo; expo is the weight scoring column, the metric's `weight` input and the task's `sample_weight`, never a feature (LEAK-41, MET-14, MET-15, adopted 2026-11-06); the floor is 1e-4 claims per year on the predicted rate (MET-13). The weighted rate deviance equals the source's count deviance of the expected count expo x rate (Henckaerts et al., Eq. 5) times n/sum(expo) of the scored rows (1.123 to 1.125 on the shipped folds). Supersedes Myunghwan's calls of 2026-10-23 ("Retain expo ... Do not annualize, bin, clip, weight") and 2026-10-26 (expo as a predictor), and the floor of 2026-11-04 (1e-6 on the expected count): the conditional measurement came later (+0.0043, 17% of the skill; never better at quotation), and the source itself scores with an offset. The built container 01a18ad7 is superseded (not deleted).

@@ -111,6 +111,18 @@ by this panel. The year is now 2019 in the definition and the record.
    **Deferred (2026-11-05):** parked with fremtpl2 issue 6 until the zero-inflated stack (PRs #44-#47) is merged; [#51](https://github.com/TabArena/data-foundry/issues/51)
    holds the context. The declared metric waits with it.
 
+   **Resolved (2026-11-06, Lennart):** B, as the rate with a sample weight (option A of
+   [#51](https://github.com/TabArena/data-foundry/issues/51), the exposure study of 2026-11-05). The target is
+   `nclaims_per_year` = `nclaims` / `expo`; `expo` is the weight scoring column, the `weight` input of
+   `mean_poisson_deviance` and the task's `sample_weight`, and never a feature (LEAK-41, MET-14, MET-15, adopted the same
+   day); the floor is 1e-4 claims per year (MET-13). This is the source's offset model (Henckaerts et al., Eq. 5): on
+   every shipped fold the weighted rate deviance equals the count deviance of the same predictions times n/sum(expo) of
+   the scored rows (1.123 to 1.125). Supersedes Myunghwan's calls of 2026-10-23 and 2026-10-26 (keep `expo` as a
+   predictor; do not weight) and the floor of 2026-11-04 (1e-6 on the expected count): the conditional measurement came
+   later (+0.0043, 17% of the skill; never better at quotation), and the source itself scores with an offset. The
+   low-cardinality acceptance goes (the rate has 559 values); the built container `01a18ad7` is superseded.
+   `dataset check`: 0 errors, 0 warnings.
+
 2. **Ship the 163,212 released rows or all 163,231?**
 
    * **Problem:**
