@@ -29,6 +29,10 @@ The 2026-11-05 installed-skill alignment rebuild used the same qualified scienti
 Targeted rebuild on 2026-11-05: one format-2 dataset from one traced raw CSV (5,829,604 bytes). Saved-container reload and a check using only that input reproduce the checksum. The dated CHANGELOG entry records the UUID and accepted protocol. The manifested raw-input backup remains local, outside Git.
 Latest scoped build, 2026-11-05: repeated through the updated installed workflow for one format-2 definition and one traced raw input (379,004,009 bytes). Saved reload and reproduction using only that input passed, with zero errors or warnings and an unchanged checksum. This was a single-dataset rebuild, not a rebuild of the full working copy.
 
+- Latest requested scoped build (2026-11-06): one format-2 container, with 43 input dependencies (29,687,404,633
+  bytes). Saved-container reload and minimal-input reproduction match the checked checksum; the current trace matches
+  the existing input archive, whose payloads and current sources were freshly reverified. Details and remaining
+  limitations are in CHANGELOG.
 - The raw files come from `local-data-warehouse/` (or `$DATA_FOUNDRY_WAREHOUSE`); each folder's `README.md` gives the
   download command.
 - To rebuild, ask Claude; it follows

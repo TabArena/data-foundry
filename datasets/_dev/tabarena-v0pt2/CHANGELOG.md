@@ -49,6 +49,89 @@
 - The participant attack and independent refutation find later test-history counters reconstruct earlier labels on 3.32-5.18% of rows, adding 0.0210-0.0349 AUROC to frozen honest predictions. Apply the current LEAK-9 own-row evaluation protocol while preserving legitimate histories; add the required benchmark method check to BENCHMARK_CHANGES_TODO. A clean build does not establish downstream enforcement.
 - Myunghwan requested the repeated build and local commits. Commit the reviewed source before the build; raw data, containers, process evidence and review-page exports stay local.
 - Built format-2 container `01a1adef-2da5-75af-9a38-674925897d45`, checksum `v2:c20f832bb366fbe3e87b547b5ddf83cca1c5877f6d3f4e7bd16c1d9a25b6e6e3`, from clean source `8429113143096b5f196312d7cca1089cb18197ab`: 1,429,456 rows, eight predictors, zero errors/warnings. Saved reload and traced-input reproduction pass; rows, split memberships and the single raw input are unchanged. A local raw-input ZIP passed CRC/SHA verification. Preserve the historical container still referenced by the earlier checkout; no raw files or containers are deleted.
+## 2026-11-06, verified Fugaku build with maintained installation
+
+- Built `fugaku_hpc_job_failure_1m` as `01a1ae4e-b3ba-76cc-8c72-d588a0a10bab` from clean source
+  `c84f9b391016b94a8168083ff6b3e39ff999c7fc` using maintained upstream pin `9048f36a`, without a source override.
+  Format 2 and checksum `v2:b655fe6b87263768dd5a2e1232484929a22c3364e7daeeaa6b5cb6a30dc4a06d` match the November 5
+  build. The accepted definition, data, class meanings, predictor scope, all split memberships and metric remain
+  unchanged. Original decisions, the formal SPLIT-10 exception and first-tuned-benchmark recheck remain in force; no
+  new human input or mark was needed.
+- Native saved-container reload and minimal-input reproduction pass with exactly the checked checksum, 0 errors, 0
+  warnings and 2 known informational heavy-check skips. Full build took 524 seconds, peak 20.5 GiB. Suite: 2,017
+  passed, 286 skipped; strict 2,091-record/pointer and scoped lint/format checks pass. The refreshed native review
+  page has three historical resolved issues, zero open marks and zero field decisions. Focused independent claim,
+  precedent, mediator and cold-editor reports remain separately dated from the historical
+  actual-data/model/column/split evidence reused after exact identity checks.
+- The fresh trace closes to 43 files (29,687,404,633 payload bytes), exactly the existing local
+  `fugaku-raw-inputs-2026-11-05.zip`. Every archive payload and current source SHA-256/size was freshly reverified; no
+  duplicate archive was needed. The run-local helper accommodation copies all four declared prepared outputs and the
+  marker independently. Minimal verification did not rerun preparation or write through source links; framework source
+  is unchanged.
+- Retain the explicitly documented generic raw-CLI, float32 neighbour-diagnostic and legacy generated-review-wording
+  limitations. No clean full native leak-CLI or HPO result is claimed. Earlier dated reports that state a then-pending
+  build or archive check are preserved as history; this entry records subsequent completion. Keep prior containers
+  because frozen reviewed checkouts and identity evidence reference them. No raw files or containers were deleted.
+  Dataset branch, containers, input archive and run artifacts remain local; no push, PR or main integration occurred.
+
+## 2026-11-06, maintained-skill Fugaku recheck
+
+- Repeat the requested add/review/build cycle through the maintained installation after its pin upgrade to `9048f36a`.
+  That source and numerical dependencies are identical to the actual runtime used by the completed November5 cycle;
+  the earlier per-run source override is no longer required. Preserve the accepted task, source-bound decisions,
+  resolved IDs1–3, all dated reports, formal SPLIT-10 exception and first-tuned-benchmark recheck.
+- New focused panel: claim, precedent, mediator and cold editor. No column/split/target/feature rule changed; prior
+  verified audits and model/probe outputs are reused after a fresh native27-check and exact
+  full-data/category/membership/spec/version/scorer comparison. Checksum stays
+  `v2:b655fe6b87263768dd5a2e1232484929a22c3364e7daeeaa6b5cb6a30dc4a06d`; no new human input is required. Existing
+  generic raw-CLI, float32 neighbour-diagnostic and generated-review-template limitations remain explicit; no full
+  clean leak-CLI or HPO result is claimed.
+
+## 2026-11-05, verified Fugaku build on updated main
+
+- Built `fugaku_hpc_job_failure_1m` as `01a1ae07-bfad-7795-a282-7279d0d067dc` from clean source
+  `1061a759c76f07a50ed2df4433a4a7d577368471` (main `9048f36a`), format 2, checksum
+  `v2:b655fe6b87263768dd5a2e1232484929a22c3364e7daeeaa6b5cb6a30dc4a06d`. The definition is unchanged from the accepted
+  task; the checksum difference from November 3 is solely the new empty special-feature metadata field. Original
+  decisions and the first-tuned-benchmark recheck remain in force.
+- Native saved-container reload and minimal-warehouse reproduction pass with exactly the checked
+  checksum, 0 errors, 0 warnings and 2 known informational heavy-check skips. Full build took 554 seconds, peak 19.7 GiB.
+  Updated-main suite: 2,017 passed, 286 skipped; strict 2,091-record/pointer and scoped lint/format checks pass. The
+  preserved probe limitations remain, including generic raw-CLI inapplicability and the separately supplemented
+  float32 neighbour diagnostic failure; no full clean leak-CLI or HPO result is claimed.
+- The 43-file input closure (29,687,404,633 bytes) is backed up locally as `fugaku-raw-inputs-2026-11-05.zip`. Every
+  archive payload and current source SHA-256/size matches its manifest; the fresh build trace matches that exact
+  dependency closure. The current pinned helper's marker/self-symlink issue is handled by a local wrapper that copies
+  all four declared preparation outputs plus the marker independently. The minimal check does not rerun preparation or
+  write through source links; framework source is unchanged.
+- Keep the November 3 container because its frozen reviewed checkout and identity evidence still reference it. No raw
+  or prior container was deleted. Containers, archive and run artifacts remain local and outside git; only generated
+  card/overview/log metadata are committed. No dataset branch push or integration to main occurred.
+
+- The native generated card still carries legacy boilerplate saying settled REVIEW.md is removed. The newer
+  persistent-review procedure governs: all resolved history remains in REVIEW.md. The generated card was not
+  hand-edited; this template wording mismatch is documented without changing framework source.
+
+## 2026-11-05, Fugaku current-main refresh
+
+- Reapply the accepted `fugaku_hpc_job_failure_1m` package to main `9048f36a`. Preserve Myunghwan’s original target,
+  inputs, exact temporal memberships, ROC-AUC metric, qualified SPLIT-10 exception, overall ship and
+  first-tuned-benchmark recheck. Restore the original issue IDs1–3 and full historical panel in persistent
+  `REVIEW.md`, with actual human turns and resolved outcomes. No old mark receives a new source identity; no generated
+  overview table is restored.
+- Current focused panel (claim, column, split, precedent, mediator, cold editor): ship with the accepted
+  qualifications; no new curator decision. Reuse past models only after exact data/category/split/metric/library
+  identity and all six old/current scorer comparisons. Fresh updated dtype/format/raw-period diagnostics and
+  source/maturity checks do not establish a new retained-feature defect. The source cohort, reporting-clock,
+  parent-unit and separately supplemented native float32 diagnostic limits remain explicit.
+- The framework checksum changes from `v2:c7436e8df22a906088cadbb4d641da32cd709976aeaa43e087ac12ff278475cd` to
+  `v2:b655fe6b87263768dd5a2e1232484929a22c3364e7daeeaa6b5cb6a30dc4a06d` only because the new schema serializes empty
+  `special_features`. Restoring the old metadata encoding on the actual current container exactly recovers the
+  accepted checksum. No row, target, category, predictor or membership changes.
+- Current native check:27 checks,0errors,0warnings,2known heavy-check informational skips. Updated-main
+  tests:2,017passed,286skipped. All176definitions import; strict2,091-record vocabulary and pointer checks pass;
+  scoped Ruff/format pass. New native raw checks are invoked directly on bounded actual-source windows because the
+  generic raw CLI cannot unwrap this loader; a clean full native leak CLI is not claimed.
 
 ## 2026-11-05, GitHub issue #48: column types (Lennart's marks)
 
