@@ -8,6 +8,7 @@ import pandas.testing as pdt
 import pydantic
 import pytest
 from data_foundry.curation_container import CuratedContainer
+from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE, splits_from_row_table, splits_to_row_table
 from data_foundry.schema import (
     DatasetMetadata,
     Grouping,
@@ -646,15 +647,105 @@ def test_a_format_2_container_records_its_row_budget(tmp_path):
     container = dataclasses.replace(plain, experiment_metadata=meta, checksum=None, uuid=None)
     assert container.checksum != plain.checksum  # the budget is part of the checksum once set
     path = container.save(save_dir=tmp_path)
-    splits_json = json.loads((path / "experiment_metadata.predictive-ml-splits-mold-v1.json").read_text())
+    splits_json = json.loads((path / f"experiment_metadata.{SPLITS_TABLE_TYPE}.json").read_text())
     assert splits_json["row_budget"] == {"train": 4, "test": 2}
     loaded = CuratedContainer.load(path)
     assert loaded.experiment_metadata.row_budget == RowBudget(train=4, test=2)
     assert loaded.verify()
     plain_json = json.loads(
-        (plain.save(save_dir=tmp_path / "plain") / "experiment_metadata.predictive-ml-splits-mold-v1.json").read_text()
+        (plain.save(save_dir=tmp_path / "plain") / f"experiment_metadata.{SPLITS_TABLE_TYPE}.json").read_text()
     )
     assert "row_budget" not in plain_json  # no budget, no key: older readers load it unchanged
+
+
+def _v2_toy_with_splits(splits: dict) -> CuratedContainer:
+    plain = _grouped_toy(_v2_task(None))
+    meta = dataclasses.replace(plain.experiment_metadata, splits=splits)
+    return dataclasses.replace(plain, experiment_metadata=meta, checksum=None, uuid=None)
+
+
+def test_a_format_2_container_keeps_its_splits_in_the_row_table(tmp_path):
+    splits = {0: {0: ([0, 1, 2, 3], [4, 5]), 1: ([2, 3, 4, 5], [0, 1])}, 1: {0: ([0, 2, 4], [1, 3]), 1: ([1, 3], [5])}}
+    container = _v2_toy_with_splits(splits)
+    path = container.save(save_dir=tmp_path)
+    assert not (path / "experiment_metadata.predictive-ml-splits-mold-v1.json").exists()
+    meta = json.loads((path / f"experiment_metadata.{SPLITS_TABLE_TYPE}.json").read_text())
+    assert "splits" not in meta
+    assert (meta["splits_file"], meta["split_columns"]) == (
+        ROWS_FILE,
+        ["split_r0_f0", "split_r0_f1", "split_r1_f0", "split_r1_f1"],
+    )
+
+    roles = pd.read_parquet(path / ROWS_FILE)  # readable without Data Foundry, one row per row of the data
+    assert len(roles) == len(container.dataset)
+    assert roles["split_r1_f1"].isna().tolist() == [True, False, True, False, True, False]  # in neither side
+    assert roles["split_r1_f1"].dropna().tolist() == ["train", "train", "test"]
+    assert roles["split_r0_f0"].eq("test").to_numpy().nonzero()[0].tolist() == [4, 5]
+
+    loaded = CuratedContainer.load(path)
+    assert loaded.experiment_metadata.splits == splits
+    assert loaded.checksum == container.checksum == loaded._create_checksum()  # the checksum covers the splits
+    assert loaded.verify()
+    assert CuratedContainer.load(path, load_dataset=False).experiment_metadata.splits == splits
+
+
+def test_a_format_2_checksum_does_not_depend_on_where_the_splits_are_stored(tmp_path):
+    splits = {0: {0: ([0, 1, 2, 3], [4, 5])}}
+    container = _v2_toy_with_splits(splits)
+    path = container.save(save_dir=tmp_path)  # rewritten below as a format-2 container saved before the row table
+    meta = json.loads((path / f"experiment_metadata.{SPLITS_TABLE_TYPE}.json").read_text())
+    (path / f"experiment_metadata.{SPLITS_TABLE_TYPE}.json").unlink()
+    (path / ROWS_FILE).unlink()
+    del meta["splits_file"], meta["split_columns"]
+    meta |= {"splits": {"0": {"0": [[0, 1, 2, 3], [4, 5]]}}, "type_adapter_id": "predictive-ml-splits-mold-v1"}
+    (path / "experiment_metadata.predictive-ml-splits-mold-v1.json").write_text(json.dumps(meta))
+    old = CuratedContainer.load(path)  # a container written before the row table still loads and verifies
+    assert old.experiment_metadata.splits == splits
+    assert old.checksum == container.checksum
+    assert old.verify()
+
+
+def test_splits_a_row_table_cannot_hold_stay_inline(tmp_path):
+    out_of_order = {0: {0: ([3, 2, 1, 0], [4, 5])}}  # a side out of row order
+    container = _v2_toy_with_splits(out_of_order)
+    path = container.save(save_dir=tmp_path)
+    assert not (path / ROWS_FILE).exists()
+    inline = json.loads((path / "experiment_metadata.predictive-ml-splits-mold-v1.json").read_text())
+    assert inline["splits"] == {"0": {"0": [[3, 2, 1, 0], [4, 5]]}}
+    loaded = CuratedContainer.load(path)
+    assert loaded.experiment_metadata.splits == out_of_order
+    assert loaded.verify()
+
+
+@pytest.mark.parametrize(
+    "splits",
+    [
+        {0: {0: ([1, 0], [2])}},  # out of row order
+        {0: {0: ([0, 0, 1], [2])}},  # a row repeated
+        {0: {0: ([0, 1], [1, 2])}},  # a row on both sides
+        {0: {0: ([0, 1], [6])}},  # a row out of range
+    ],
+)
+def test_a_row_table_holds_only_sets_of_rows(splits):
+    assert splits_to_row_table(splits, 6) is None
+
+
+def test_a_row_table_refuses_values_other_than_train_and_test():
+    table = pd.DataFrame({"split_r0_f0": ["train", "valid", None]})
+    with pytest.raises(ValueError, match="train, test or empty"):
+        splits_from_row_table(table, ["split_r0_f0"])
+    with pytest.raises(ValueError, match="no split column"):
+        splits_from_row_table(table, ["fold_0"])
+
+
+def test_a_row_table_must_match_the_data(tmp_path):
+    path = _v2_toy_with_splits({0: {0: ([0, 1, 2, 3], [4, 5])}}).save(save_dir=tmp_path)
+    pd.read_parquet(path / ROWS_FILE).iloc[:5].to_parquet(path / ROWS_FILE, index=False)
+    with pytest.raises(ValueError, match=r"5 rows but dataset\.parquet 6"):
+        CuratedContainer.load(path)
+    (path / ROWS_FILE).unlink()
+    with pytest.raises(ValueError, match="which is missing"):
+        CuratedContainer.load(path)
 
 
 def test_a_format_2_container_keeps_its_metric_spec_and_scoring_columns(tmp_path):

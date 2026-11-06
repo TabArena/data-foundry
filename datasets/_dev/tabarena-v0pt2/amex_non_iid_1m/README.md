@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: amex_non_iid_1m
 container_format: 2
-checksum: v2:06b9fecaf80865d9fe5401d088fe5a44af289d6fb6b3544558aacf82058c844d
+checksum: v2:7adca252d2d87dcae9f1ebcff765f5a3c497be768410b2bb769d38181cdc5982
 build:
   uuid: 01a111fb-d73e-711b-a490-c684c5c4635d
   checksum: v2:0c020fafb06a0223bf62e6fa7cb60da404d9b841396e4624184ca2db713395c3
@@ -85,7 +85,7 @@ decisions: []
 
 Binary classification of `target`, scored with `gini_top_capture` on grouped splits by `customer_ID`, one prediction per group (last). 1,500,000 rows and 189 features. Source: Kaggle (2022).
 
-Built as `01a111fb-d73e-711b-a490-c684c5c4635d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:06b9fecaf80865d9fe5401d088fe5a44af289d6fb6b3544558aacf82058c844d`, so the build is stale. See [Build](#build).
+Built as `01a111fb-d73e-711b-a490-c684c5c4635d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7adca252d2d87dcae9f1ebcff765f5a3c497be768410b2bb769d38181cdc5982`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -497,4 +497,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:06b9fecaf80865d9fe5401d088fe5a44af289d6fb6b3544558aacf82058c844d` |
+| stale | yes: the definition now gives checksum `v2:7adca252d2d87dcae9f1ebcff765f5a3c497be768410b2bb769d38181cdc5982` |

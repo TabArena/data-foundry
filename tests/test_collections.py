@@ -8,8 +8,8 @@ from data_foundry.collections import (
     DATA_FOUNDRY_CACHE_ENV,
     DEFAULT_CACHE_DIR,
     CollectionEntry,
-    DataSource,
     DatasetCollection,
+    DataSource,
     HuggingFaceSource,
     LocalWarehouseSource,
     clear_cache,
@@ -17,6 +17,8 @@ from data_foundry.collections import (
     list_collections,
     resolve_cache_dir,
 )
+from data_foundry.collections._sources import has_core_files
+from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
 
 
 # --- CollectionEntry parsing ---
@@ -197,6 +199,16 @@ def _core_files(path: Path) -> Path:
     ):
         (path / name).touch()
     return path
+
+
+def test_a_container_whose_splits_are_in_the_row_table_is_complete_only_with_it(tmp_path):
+    path = _core_files(tmp_path / "toy")
+    assert has_core_files(path)
+    (path / "experiment_metadata.predictive-ml-splits-mold-v1.json").unlink()
+    (path / f"experiment_metadata.{SPLITS_TABLE_TYPE}.json").touch()
+    assert not has_core_files(path)  # an interrupted download: the split metadata names a missing row table
+    (path / ROWS_FILE).touch()
+    assert has_core_files(path)
 
 
 def _make_hf_snapshot(cache_dir: Path, repo_id: str, sha: str, relative: str, *, ref: str | None = None) -> Path:

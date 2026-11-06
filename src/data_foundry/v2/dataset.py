@@ -936,11 +936,15 @@ class AbstractCuratedDataset(ABC):
         )
 
     def make_splits(self, df: pd.DataFrame | None = None) -> SplitPlan:
-        """Run :meth:`_make_splits` on ``df`` (default: :attr:`df`) and normalise it to a SplitPlan."""
+        """Run :meth:`_make_splits` on ``df`` (default: :attr:`df`) and normalise it to a SplitPlan.
+
+        Every split side comes in row order: a side is a set of rows, and the container's row table stores it so.
+        """
         df = self.df if df is None else df
         plan = self._make_splits(df)
         if not isinstance(plan, SplitPlan):
             plan = SplitPlan(splits=plan)
+        plan.splits = _in_row_order(plan.splits)
         if plan.df is None:
             plan.df = df
         elif plan.df is not df and self._make_splits is not AbstractCuratedDataset._make_splits:
@@ -1378,6 +1382,18 @@ def _time_values_changed(before: pd.DataFrame, after: pd.DataFrame, time_on: str
         return 0
     old, new = before[time_on].reset_index(drop=True), after[time_on].reset_index(drop=True)
     return int((old.ne(new) & old.notna()).sum())
+
+
+def _in_row_order(splits: Splits) -> Splits:
+    """``splits`` with every side in row order; a side already in order is kept as it is."""
+
+    def ordered(side: list[int]) -> list[int]:
+        positions = np.asarray(side)
+        return side if bool(np.all(positions[1:] >= positions[:-1])) else np.sort(positions).tolist()
+
+    return {
+        r: {f: (ordered(train), ordered(test)) for f, (train, test) in folds.items()} for r, folds in splits.items()
+    }
 
 
 def _drop_unused_categories(df: pd.DataFrame) -> pd.DataFrame:
