@@ -34,8 +34,10 @@ Latest scoped build, 2026-11-05: one format-2 definition, one traced raw input (
 Latest scoped build, 2026-11-05: repeated through the updated installed workflow for one format-2 definition and one traced raw input (379,004,009 bytes). Saved reload and reproduction using only that input passed, with zero errors or warnings and an unchanged checksum. This was a single-dataset rebuild, not a rebuild of the full working copy.
 
 - Latest requested scoped build (2026-11-05): one format-2 container, with 43 input dependencies (29,687,404,633
+- Latest requested scoped build (2026-11-06): one format-2 container, with 43 input dependencies (29,687,404,633
   bytes). Saved-container reload and minimal-input reproduction match the checked checksum; the current trace matches
-  the locally verified input archive. Details and remaining limitations are in CHANGELOG.
+  the existing input archive, whose payloads and current sources were freshly reverified. Details and remaining
+  limitations are in CHANGELOG.
 - The raw files come from `local-data-warehouse/` (or `$DATA_FOUNDRY_WAREHOUSE`); each folder's `README.md` gives the
   download command.
 - To rebuild, ask Claude; it follows
