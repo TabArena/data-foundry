@@ -67,8 +67,12 @@ for each dataset, because subagents do not start subagents.
 Follow `source_links` to the first publication. Write the use case first, in `task_summary`: who uses the prediction,
 when, the decision it informs, what one row is, what is predicted and what is known then. A dataset no decision fits
 (`fit="none"`) is not added: it goes back as `No Good Target / Scientific Discovery`. Write the prediction point into
-the first `curation_comments` bullet; every later choice is checked against it. Then map the fields (definitions.md,
-"Field mapping"); for a grouped task note what one real-world prediction is and what is known about a new group.
+the first `curation_comments` bullet; every later choice is checked against it. Then work out how the data was
+collected for the use case: when each row, each feature and the target come into existence compared with that point.
+An order that varies from row to row makes the data non-IID and decides the two things this skill is for: which split
+represents the use case, and which features are actually available at the prediction point (SPLIT-32 in
+[splits.md](../knowledge-curation/references/splits.md)). Then map the fields (definitions.md, "Field mapping"); for a
+grouped task note what one real-world prediction is and what is known about a new group.
 
 Find the metric the source scored before falling back (MET-1): the competition's evaluation page (Kaggle's Evaluation
 tab or the API's `evaluationMetric`, Zindi, DrivenData, a challenge page), the task description, the evaluation section
@@ -143,14 +147,14 @@ data (`ds = workbench()` in a scratch notebook or script, never committed), re-r
 there are no errors and every warning is fixed or proposed for acceptance with a reason. Run `dataset check` again after
 every `ruff --fix`.
 
-Then run the leak probes and the task probes, the group probes for a grouped task, the hidden-group probe for an
-IID one, the time probe for a split that is not temporal and the dtype probe
+Then run the leak probes and the task probes, the group probes for a grouped task, the hidden-group probe for an IID
+one, the time probe for a split that is not temporal and the dtype probe
 ([checks_and_probes.md](../knowledge-data-foundry/references/checks_and_probes.md)). A time-probe flag that is not
 explained away (a file sorted by class, a duration named like a date) means the data carries time: split by time, or
-measure what the shipped split costs against a temporal one (through Slurm) and make it an issue. For a
-`DelayedTarget` or `Snapshot` basis, write the per-column audit (at the prediction point, later, cannot tell) into
-the run folder. every
-column it flags gets its meaning from the codebook, and its dtype from CLEAN-14. Read every flag by
+measure what the shipped split costs against a temporal one (through Slurm) and make it an issue. For non-IID data
+(every time basis but `Timeless` and a one-moment `Snapshot`, and every temporal split), write the per-column audit
+(at the prediction point, later, cannot tell) into the run folder; a later column is dropped or lagged. every column
+it flags gets its meaning from the codebook, and its dtype from CLEAN-14. Read every flag by
 [evidence.md](../knowledge-curation/references/evidence.md), "Reading a probe": the highest-ranked reading first. A
 leak gets the mildest remedy that removes it (drop, lag, filter, re-split) with the deciding number in a bullet; a
 task-probe flag is answered by the rules of [task_probes.md](../knowledge-curation/references/task_probes.md).

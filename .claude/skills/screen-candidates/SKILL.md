@@ -76,11 +76,12 @@ listing is fine; nothing is built. Collect, with links:
 * the data as published: rows, columns, the target, the tables and how they join;
 * the original task and who solved it (competition pages and top solutions are claims, read them as such);
 * the use case: who acts, when, on which decision, and what is known then; how closely the data mirrors it;
-* the time basis (SPLIT-32 in [splits.md](../knowledge-curation/references/splits.md)): its five questions answered
-  from the source. Where time lives, if anywhere (a date column, an order, an ID handed out in sequence, figures of a
-  period, a date in a raw file or a parent upload); when the features and the target are recorded compared with the
-  prediction point; whether all rows share one moment. It gives the record's temporal tag and the likely regime
-  (IID, grouped, temporal);
+* how the data was collected for the use case, and from it the time basis (SPLIT-32 in
+  [splits.md](../knowledge-curation/references/splits.md)): when each row, each feature and the target come into
+  existence compared with the prediction point, and whether that order varies from row to row (then the data is
+  non-IID); where time lives, if anywhere (a date column, an order, an ID handed out in sequence, figures of a period,
+  a date in a raw file or a parent upload); whether all rows share one moment. It gives the record's temporal tag, the
+  likely regime (IID, grouped, temporal) and the columns that may not be known at prediction time;
 * the metric the source scored (MET-1): the competition's evaluation page (Kaggle: the Evaluation tab, or the API's
   `evaluationMetric` via `uvx kaggle==2.2.2 competitions list -s <slug>`; Zindi, DrivenData and challenge pages state
   it), the task description, or the evaluation section of the paper that defined the task. Note whether it is a

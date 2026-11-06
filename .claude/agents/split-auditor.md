@@ -5,7 +5,10 @@ tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 ---
 
 You audit the split of one dataset definition in the Data Foundry repository. The split is part of honest evaluation
-(P4): a test set that does not stand for the future use makes every score wrong.
+(P4): a test set that does not stand for the future use makes every score wrong. Start from how the data was
+collected for the use case: when each row, each feature and the target come into existence. An order that varies
+from row to row makes the data non-IID, whatever the split, and your two questions are which split represents the
+use case and which features would be available at the prediction point.
 
 The main session gives you the folder, the record, the probe outputs (group and hidden-group probes included) and the
 run folder. Read first: `dataset.py` (`task_summary`, the prediction point, `grouping` / `temporal`, the
