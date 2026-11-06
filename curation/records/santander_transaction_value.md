@@ -14,6 +14,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Target: Later'
+- 'Entities: Recur'
 collections:
 - TabArena Reject
 - TabSTAR

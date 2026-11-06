@@ -51,12 +51,12 @@ errors, and `dataset build` refuses to save while any remains.
 
 Read `curation/records/<unique_name>.md`: the front matter and the comments, above all the screening block (the
 source, the use case, the collection facts and the regime, the risks) and the record's collection facts (the
-`Samples:`, `Time:` and `Target:` tags; SPLIT-32). Verify its claims as you go instead of redoing its research; a
-measurement on the data supersedes what screening read from the page. No record: stop and point to
-`/screen-candidates`. Claim the records first, in the curator's name: `claims claim <names> --stage add --note
-"add-dataset"` ([claims.md](../knowledge-data-foundry/references/claims.md)); it pushes the claim to the board and
-writes `WIP (DF)` and `claimed_by` into the records. Never work on a dataset another curator holds: a name the command
-skips is left out and reported.
+`Samples:`, `Time:`, `Target:`, `Entities:` and `Features:` tags; SPLIT-32). Verify its claims as you go instead of
+redoing its research; a measurement on the data supersedes what screening read from the page. No record: stop and
+point to `/screen-candidates`. Claim the records first, in the curator's name: `claims claim <names> --stage add
+--note "add-dataset"` ([claims.md](../knowledge-data-foundry/references/claims.md)); it pushes the claim to the board
+and writes `WIP (DF)` and `claimed_by` into the records. Never work on a dataset another curator holds: a name the
+command skips is left out and reported.
 
 A batch (several names or a dashboard filter) runs one `dataset-builder` agent per source unit for steps 0-6
 ([agent_runs.md](../knowledge-data-foundry/references/agent_runs.md)); the main session then runs the panel (step 7)
@@ -70,7 +70,22 @@ when, the decision it informs, what one row is, what is predicted and what is kn
 the first `curation_comments` bullet; every later choice is checked against it. Then note how the data was collected
 for the use case: when each row, each feature and the target come into existence compared with that point (SPLIT-32 in
 [splits.md](../knowledge-curation/references/splits.md)); it is information for the split and for which features are
-available. Then map the fields (definitions.md, "Field mapping"); for a grouped task note what one real-world
+available. The facts also point to checks; in the review of 98 v0.2 definitions they found more leaks than they
+changed splits:
+
+* `Target: Varying Delay` with a prediction point per row: a count or a length that the outcome stops
+  (bank_marketing's `campaign`), the gap, the residual at the release end, what the newest labels add at equal
+  training size.
+* A target that is an event within a window: labels still in flight across the cut (acquire_valued_shoppers_challenge,
+  hotel_booking_demand).
+* `Entities: Recur`: exact keys from fixed fields, label agreement within a key, random against grouped scores
+  (home_credit_default_risk, horse_colic_survival, lending_club).
+* `Features: Read Later` or `Revised Later`: an as-of check (rossmann_store_sales' competitors before they opened).
+* `Time: Lost` or `Inferred`: batches or blocks in the raw file's order before arguing that time does not matter
+  (eryhemato_squamous_disease's two file parts); the time probe looks for them.
+* A catalogue: which identifier a parent source could date its items by (qsar_tid_11 through ChEMBL).
+
+Then map the fields (definitions.md, "Field mapping"); for a grouped task note what one real-world
 prediction is and what is known about a new group.
 
 Find the metric the source scored before falling back (MET-1): the competition's evaluation page (Kaggle's Evaluation

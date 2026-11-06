@@ -13,8 +13,9 @@ decision_markers:
 tags:
 - Tiny Data
 - 'Samples: Over Time'
-- 'Time: Dated'
+- 'Time: Inferred'
 - 'Target: Varying Delay'
+- 'Entities: Recur'
 collections:
 - TabArena Reject
 - TabSTAR

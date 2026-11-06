@@ -80,7 +80,9 @@ listing is fine; nothing is built. Collect, with links:
   anywhere (a date column, an order, an ID handed out in sequence, figures of a period, a date in a raw file or a
   parent upload). It gives the record's collection facts (SPLIT-32 in
   [splits.md](../knowledge-curation/references/splits.md)), and with the use case the likely regime (IID, grouped,
-  temporal) and the columns that may not be known at prediction time;
+  temporal) and the columns that may not be known at prediction time. A fact the page leaves open is `Unknown`. For a
+  catalogue, note which identifier a parent source could date its items by (a structure, a CAS number, an observation
+  id), or "none published"; a related upload dates the rows only when an id matches them;
 * the metric the source scored (MET-1): the competition's evaluation page (Kaggle: the Evaluation tab, or the API's
   `evaluationMetric` via `uvx kaggle==2.2.2 competitions list -s <slug>`; Zindi, DrivenData and challenge pages state
   it), the task description, or the evaluation section of the paper that defined the task. Note whether it is a
@@ -148,8 +150,8 @@ plain `Yes`: that is the curator's call.
 Through the store API, right after reloading the record
 ([records.md](../knowledge-data-foundry/references/records.md)): the verified links in `source_links`, empty metadata
 only where the source states it, `priority`, `AI (UNVERIFIED)` in `checked_by`, `AI-Filled (Verify)` and the
-collection facts (the `Samples:`, `Time:` and `Target:` tags) in `tags`, and at the top of the comments the disclaimer
-followed by the screening block, every existing note kept below it:
+collection facts (the `Samples:`, `Time:`, `Target:`, `Entities:` and `Features:` tags) in `tags`, and at the top of
+the comments the disclaimer followed by the screening block, every existing note kept below it:
 
 ```markdown
 **Screening (AI, 2026-10-20):** `TBD -> Yes`, priority 4: <why, one line>.

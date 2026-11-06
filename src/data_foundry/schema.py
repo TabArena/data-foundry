@@ -93,12 +93,13 @@ DataTags = Literal[
     "Anonymized",  # data that has no semantic meaning anymore on purpose
     # Use-case prototypes that justify an IID or grouped split of data that is not IID (SPLIT-32); one per definition,
     #   never on a temporal split, with a `Time basis:` line in `curation_comments`.
-    "Timeless",  # the target is a fixed property of the item; time cannot affect it
-    "Snapshot",  # the use case fills in a time the data covers (one moment, or a period already observed)
+    "Timeless",  # the target is a fixed property of the item, in a catalogue that does not drift
+    "Snapshot",  # one moment with the target of that moment, or a use case that fills in a period already observed
     "DelayedTarget",  # one shared prediction moment; the target arrives after it, in a window closed for every row
-    "StationaryRelation",  # a present state read through a relation that time does not move (shown on dated data)
+    # a present state read through a relation that time does not move, always measured on dated data
+    "StationaryRelation",
     # Forced from temporal (SPLIT-8): a forward use case whose target time affects, but no usable time or too few
-    #   periods; the closest split, IID or grouped.
+    #   periods; the closest split, IID or grouped, with a `Time basis:` line that names the reason.
     "ForcedIIDFromTemporal",
     "ForcedGroupedFromTemporal",
     # Retired (2026-10-21): kept readable for containers that carry it; new definitions refuse it (RETIRED_DATA_TAGS).
@@ -106,13 +107,13 @@ DataTags = Literal[
     "WrongDomain",  # Task that was transformed to another domain (like audio) to tabular.
 ]
 RETIRED_DATA_TAGS = ("2ndTierData",)
+"""Tags old containers may carry and loading accepts, but a new definition may not set."""
 
 TIME_BASIS_TAGS = ("Timeless", "Snapshot", "DelayedTarget", "StationaryRelation")
 """The use-case prototypes that justify a split that is not temporal (SPLIT-32)."""
 
 FORCED_TIME_TAGS = ("ForcedIIDFromTemporal", "ForcedGroupedFromTemporal")
 """The forced splits of a forward use case without usable time (SPLIT-8)."""
-"""Tags old containers may carry and loading accepts, but a new definition may not set."""
 ProblemType = Literal["binary_classification", "multiclass_classification", "regression"]
 ProblemTypeClassification = [
     "binary_classification",

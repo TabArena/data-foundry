@@ -21,7 +21,8 @@ For every column of the cleaned frame (load it through
    missingness caused by the outcome, a window that ends at the outcome, an id that encodes the label. Patterns the
    arrival study found (SPLIT-32): a value computed at extraction over a window that reaches past the prediction
    point, a row overwritten at the end of a period, a length or exposure the outcome cuts short, a stand-in recorded
-   at the end of the event (a drop-off point for a destination), a figure looked up later for every row of an entity,
+   at the end of the event (a drop-off point for a destination), a figure looked up later for every row of an entity
+   (the record's `Features: Read Later`),
    the target of another row of the same entity stored as a lag or a counter, and values fitted over the whole
    release.
 3. Its dtype and cleaning against `cleaning_features.md`: by meaning, proxy missing values, impossible values,
