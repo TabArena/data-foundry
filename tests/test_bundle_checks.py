@@ -1157,3 +1157,16 @@ def test_an_unset_sample_weight_stays_out_of_the_saved_metadata(tmp_path):
     loaded = CuratedContainer.load(container.save(tmp_path))
     assert loaded.task_metadata.sample_weight == "exposure"
     assert loaded.verify()
+
+
+def test_duplicate_rows_compare_the_model_inputs_not_the_scoring_columns():
+    """Two rows equal in every feature but their weight are copies to a model: the weight is no input."""
+    df = _rate_frame()
+    copy = df.iloc[[0]].assign(exposure=df["exposure"].iloc[0] / 2, target=df["target"].iloc[0] * 2)
+    if df["target"].iloc[0] == 0:
+        copy = copy.assign(target=1.0 / copy["exposure"].iloc[0])  # a claim on the copy: a different target
+    found = {
+        r.slug
+        for r in run_bundle_checks(_rate_container(pd.concat([df, copy], ignore_index=True)), verbose=False).results
+    }
+    assert "dataset_conflicting_duplicate_rows" in found

@@ -618,7 +618,8 @@ def _check_dataset_duplicates(ctx: _Ctx) -> Iterator[CheckResult]:
             hint="Keep one of each pair.",
         )
 
-    feature_columns = [c for c in df.columns if c != ctx.target]
+    # the model's inputs: a scoring column (a weight, an era) is no feature, so rows that differ only there are copies
+    feature_columns = [c for c in df.columns if c != ctx.target and c not in scoring]
     if feature_columns:
         duplicated_features = df.duplicated(subset=feature_columns, keep=False)
         n_dup_feature_rows = int(duplicated_features.sum())

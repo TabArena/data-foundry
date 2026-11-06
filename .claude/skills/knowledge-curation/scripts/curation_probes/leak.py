@@ -1176,6 +1176,13 @@ def _spread(values) -> dict:
     }
 
 
+_TO_SHIPPED = {"identity": lambda v: v, "log": np.log, "log1p": np.log1p, "log10": np.log10}
+_FROM_SHIPPED = {"identity": lambda v: v, "log": np.exp, "log1p": np.expm1, "log10": lambda v: np.power(10.0, v)}
+"""A metric's ``target_transform`` (``metric["transform"]``): the scale the target ships on, and back."""
+_RATE_OBJECTIVES = ("poisson", "tweedie", "gamma")
+"""LightGBM objectives of a mean on the original scale: fitted there, the predictions moved to the shipped scale."""
+
+
 def _inverse_weight(w: np.ndarray, n_classes: int) -> np.ndarray | None:
     """1/weight as a prediction: the values, or for a binary task the probabilities of the second class (1/weight
     scaled into (0, 1]; ``weight_proxy`` also tries the first); None for a multiclass task. A weight of 0 gets twice
@@ -1275,6 +1282,11 @@ def weight_proxy(  # noqa: C901, PLR0912, PLR0913
     n_classes = 0 if regression else len(classes)
     sign = 1.0 if metric is None or metric["greater_is_better"] else -1.0
     errors: list[str] = []
+    # a target shipped on a log scale: a mean objective fits the original scale, and 1/weight is sent on the shipped
+    # one (the scorer inverts the transform before the metric)
+    transform = (metric or {}).get("transform") or "identity"
+    to_shipped, from_shipped = _TO_SHIPPED[transform], _FROM_SHIPPED[transform]
+    on_original_scale = regression and (fit_params or {}).get("objective") in _RATE_OBJECTIVES
 
     def evaluate(pred: np.ndarray, rows: np.ndarray) -> float:
         if metric is not None:
@@ -1295,6 +1307,10 @@ def weight_proxy(  # noqa: C901, PLR0912, PLR0913
         model = _proxy_model(
             regression=regression, seed=seed, n_estimators=n_estimators, n_jobs=n_jobs, params=fit_params
         )
+        if on_original_scale:  # the rate itself (a Poisson or Tweedie mean), back on the shipped scale
+            weights.fit(model, x_tr, from_shipped(truth[tr]), train_w[tr])
+            pred = to_shipped(np.maximum(model.predict(x_te), 0.0))
+            return np.clip(pred, truth[tr].min(), truth[tr].max())
         weights.fit(model, x_tr, truth[tr] if regression else y.iloc[tr], train_w[tr])
         if regression:
             return np.clip(model.predict(x_te), truth[tr].min(), truth[tr].max())
@@ -1324,6 +1340,8 @@ def weight_proxy(  # noqa: C901, PLR0912, PLR0913
             plus = fit_predict(x_tr.assign(_weight=w[tr]), x_te.assign(_weight=w[te]), tr, seed)
             with_weight[i, seed] = evaluate(plus, te)
         inverse = _inverse_weight(w[te], n_classes)
+        if inverse is not None and regression:
+            inverse = to_shipped(inverse)  # the scorer moves it back: 1/weight on the scale the metric scores
         if metric is not None and metric.get("gini") and inverse is not None:
             # a binary task's class order is arbitrary: 1/weight may point to either class, and the better one counts
             tried = [sign * evaluate(p, te) for p in ([inverse] if not n_classes else [inverse, inverse[:, ::-1]])]

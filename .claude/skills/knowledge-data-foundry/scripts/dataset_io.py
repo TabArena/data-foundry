@@ -155,6 +155,7 @@ class ProbeInput:
             "gini": "gini" in fields["name"],
             "row_weight": row_weight_column(self.metric),
             "params": dict(fields.get("params") or {}),
+            "transform": fields.get("target_transform") or "identity",
         }
 
 
