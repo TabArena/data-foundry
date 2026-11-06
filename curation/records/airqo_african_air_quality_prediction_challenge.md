@@ -2,13 +2,11 @@
 unique_name: airqo_african_air_quality_prediction_challenge
 name: airqo-african-air-quality-prediction-challenge
 checked_by:
-- AI (UNVERIFIED)
+- Myunghwan
+data_foundry_status:
+- 'DF: Suspended'
 suggestion: TBD -> Yes
 priority: 4
-decision_markers:
-- Wrong Domain / Source Modality
-tags:
-- AI-Filled (Verify)
 collections:
 - New (BeyondArena)
 original_source: Zindi
@@ -22,8 +20,6 @@ source_links:
 - https://zindi.africa/competitions/airqo-african-air-quality-prediction-challenge/data
 - https://zindi.africa/competitions/airqo-african-air-quality-prediction-challenge
 source_row: 883
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -45,3 +41,7 @@ Estimate PM2.5 levels from satellite observations (AirQo). Reliance on satellite
 ---
 
 estimate PM2.5 levels from satellite observations
+
+CC (2026-11-05, Myunghwan): Carry forward the earlier task-scope decision and the subsequent hold: treat processed Sentinel-5P atmospheric retrievals as tabular physical measurements, estimate same-day ground PM2.5 after those products are available, and preserve evaluation on unseen cities. The latest disposition is defer: "AirQo needs defer". The earlier acceptance authorized investigation, not shipment.
+
+**Assessment (AI, 2026-11-05):** The modality concern in the initial screening was resolved by the curator's physical-measurement interpretation; remove Wrong Domain / Source Modality rather than make it the reason for deferral. The completed local investigation retains four labeled cities with uneven support, modest and unstable city-transfer evidence, and unresolved target/extraction timing and unit metadata. Those are evidence limits, not newly established leakage or a scientific rejection. Record an operational hold with TBD -> Yes and DF: Suspended, preserving this record's priority. Reopen on a separate curator request with stronger support for the original unseen-city task or a substantively justified revised task, followed by affected qualification. No new split, target, warning acceptance, model search or build is authorized by this hold.
