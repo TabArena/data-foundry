@@ -110,7 +110,7 @@ K=.claude/skills/knowledge-data-foundry/scripts
   no number in a column of numbers are listed: often proxy missing codes (`.b`, `-3`) that made a count categorical
   (CLEAN-10). UCI types coded answers as `Integer` too, and names often differ from the codebook's (the output says how
   many matched): read the codebook where they do. A flag is a question; the meaning decides.
-* `time_probes.py`, for a split that is not temporal (SPLIT-32, question 3): does the data still carry a time order?
+* `time_probes.py`, for a split that is not temporal (SPLIT-32, question 4): does the data still carry a time order?
   It is model-free and fast. It lists the columns that look like time (a date dtype, a time word in the name such as
   date, year, month, week, season, period, wave or cohort, or whole numbers between 1900 and 2100 only; names that say
   a duration or an age are left out), the raw columns of that kind the definition drops, the target along the raw row

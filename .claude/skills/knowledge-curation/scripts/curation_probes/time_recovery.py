@@ -1,4 +1,4 @@
-"""Time recovery: does a table whose split is not temporal still carry a time order (SPLIT-32, question 3)?
+"""Time recovery: does a table whose split is not temporal still carry a time order (SPLIT-32, question 4)?
 
 A release can lose its dates and keep its time: a date column the definition dropped, a row order that follows entry
 time, an ID handed out in sequence, a few columns whose values change only from one period to the next (yearly

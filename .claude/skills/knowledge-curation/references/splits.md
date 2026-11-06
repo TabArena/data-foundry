@@ -81,42 +81,49 @@ split); account_debt_south_africa and mobile_churn, first cases here, are one-mo
 ### When information arrives
 
 **SPLIT-32 (Must; narrows SPLIT-7, SPLIT-8 and SPLIT-14).** A split starts from how the data was collected for the use
-case: when each row, each feature and the target come into existence, compared with the moment the use case predicts.
-Whenever that order varies from row to row (rows arriving over time, targets arriving after a delay, features or cells
-filled in later), the data is non-IID, whatever split it ships with, and it gets dedicated checks of two things: which
-split represents the use case, and which features would actually be available at the prediction point, so that no leak
-crosses the split or sits inside a row. These two answers are the aim of the rule. A split that is not temporal says
-why, with one time-basis tag in the definition and a `Time basis:` line in the curation notes that names the fact
-behind it, found by five questions asked in this order:
+case: when each sample, each feature and the target come into existence, compared with the moment the use case
+predicts. Whenever that order varies from sample to sample, the data is non-IID and gets dedicated checks. Temporal
+dependencies in how the samples were collected are not a blocker by themselves; what the checks ask is whether they
+affect the target: whether the target, how often it occurs, or its relation to the features depends on when a sample
+was collected, or on samples collected before it. The aim is two answers: which split represents the use case without
+leakage, and which features are actually available at the prediction point. The time bases below are prototypes of how
+a task can look over time; the work is to find which one a dataset and its use case match, or that none does. A split
+that is not temporal names its prototype with one time-basis tag in the definition and a `Time basis:` line in the
+curation notes that states the fact behind it. The questions, in order:
 
-1. **Does the target depend on when it was observed?** If the same item measured at another date has the same target
-   (a material's strength, a molecule's activity, a species, the outcome of a designed run), the task is `Timeless`.
-   There is no time to split on; the split is random or grouped by item family.
-2. **Does the use case predict for times after its data?** If it only fills in values for a time the data already
-   covers (one census, one scrape, the gaps of a logged week, a site not yet mapped in a past survey), the task is a
-   `Snapshot`, and the line names the moment or the period. When the rows span a period, check that no row of the
-   same time carries a test row's target (one day's weather across stations); if one does, group by that time unit.
-3. **Does the release, or its source, carry a global time order?** A date column, an order that tracks time, a value
-   that encodes the period, a date dropped from the raw file or kept in a parent upload (the time probe looks for
-   them, `time_probes.py`). Then the split is temporal (SPLIT-7, SPLIT-14). A split that leaves such time unused,
-   because there are too few periods for three windows or for another reason, is an exception the curator decides, as
-   an issue of its own with the measured cost (the score on the newest windows under a temporal split against the
-   shipped split). It is recorded in curation only: the record gets the tag `Time Unused`, and the definition no
-   time-basis tag but a `Time basis:` line naming the time, the reason and the cost (with `meta_time_present_unused`
-   accepted for that reason when the data has date columns). A time order found only within each entity (a policy's
-   terms) does not count.
-4. **Were all rows' features recorded at one shared prediction moment, with the target arriving after it?** A default
-   in the next month, a donation at the next drive, an event within a fixed follow-up: the task has a
-   `DelayedTarget`. No test row is later than a training row, so a random or grouped split tests the use case at that
-   moment; what it cannot test is the next moment. The line names the moment and the target's window. The window has
-   closed for every row (no censored rows), and every column is checked to have existed at the moment (LEAK-1,
-   LEAK-10), including fields the outcome cuts short, such as time on risk.
-5. **Otherwise the rows arose over a period and the release lost the time,** and the split is forced (SPLIT-8). If the
-   target is the case's present state, found at the same encounter (a diagnosis, a tissue type), it is a
-   `CaseSeries`: the cost is prevalence and practice drift. If the target is a later outcome or a market or
-   behavioural value, the time is lost (`TimeLost`): the split trains on rows from after its test rows, and by how
-   much that flatters the score is unknown. Both ship after SPLIT-8's leak test, and the line says what a dated
-   release would change.
+1. **Can time affect the target at all?** Not when the target is a fixed property of the item, the same whenever it is
+   measured (a material's strength, a molecule's activity, a species, the outcome of a designed run): `Timeless`. The
+   split is random or grouped by item family.
+2. **Does the use case predict targets for a time after its data, or only fill in targets for a time the data already
+   covers?** Only filling in (one census, one scrape, the gaps of a logged week, a site not yet mapped in a past
+   survey) is a `Snapshot`, and the line names the moment or the period. Time can then affect a target only through
+   samples of the same time: check that no sample of a test sample's time carries its target (one day's weather across
+   stations); if one does, group by that time unit.
+3. **Do all samples share one prediction moment, with the target arriving after it?** A default in the next month, a
+   donation at the next drive, an event within a fixed follow-up: a `DelayedTarget`. No test sample is later than a
+   training sample, so time cannot reach a target through other samples; what the split cannot test is the next
+   moment. The line names the moment and the target's window. The window has closed for every sample (no censored
+   samples), and every feature is checked to have existed at the moment (LEAK-1, LEAK-10), including fields the
+   outcome cuts short, such as time on risk.
+4. **The samples arrive over time: does that affect the target?** It does when the target, how often it occurs, or its
+   relation to the features moves with the period (prices, a credit climate, an adversary, a change in practice or
+   recording), or when a sample's target depends on samples before it (a shared shock, a label propagated along an
+   entity). The source, the time probe (`time_probes.py`) and the target by period answer it.
+   * **The release or its source keeps the time** (a date column, an order that tracks time, a value that encodes the
+     period, a date dropped from the raw file or kept in a parent upload): the split is temporal (SPLIT-7, SPLIT-14).
+     Keeping a random split, because time does not measurably affect the target or because there are too few periods
+     for three windows, is the curator's exception, decided as an issue of its own with the measured cost (the score
+     on the newest windows under a temporal split against the shipped split). It is recorded in curation only: the
+     record gets the tag `Time Unused`, and the definition no time-basis tag but a `Time basis:` line naming the time,
+     the reason and the cost (with `meta_time_present_unused` accepted for that reason when the data has date
+     columns). A time order found only within each entity (a policy's terms) does not count.
+   * **The time is lost,** and the split is forced (SPLIT-8). If the target is the case's present state, found at the
+     same encounter (a diagnosis, a tissue type), time affects it only through prevalence and practice: a
+     `CaseSeries`. If the target is a later outcome or a value a market or behaviour sets, time affects it directly,
+     by an amount nobody can measure here: `TimeLost`. Both ship after SPLIT-8's leak test, and the line says what a
+     dated release would change.
+5. **None of these prototypes fits:** the dataset and its use case go to the curator as an issue with the arrival
+   facts found, rather than under the nearest tag.
 
 IID data is data whose order of arrival does not vary: `Timeless`, a `Snapshot` of one moment whose target exists at
 that moment, and a `DelayedTarget` whose target arrives on one date for every row (the March 2007 drive of

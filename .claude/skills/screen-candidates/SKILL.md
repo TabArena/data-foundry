@@ -78,10 +78,11 @@ listing is fine; nothing is built. Collect, with links:
 * the use case: who acts, when, on which decision, and what is known then; how closely the data mirrors it;
 * how the data was collected for the use case, and from it the time basis (SPLIT-32 in
   [splits.md](../knowledge-curation/references/splits.md)): when each row, each feature and the target come into
-  existence compared with the prediction point, and whether that order varies from row to row (then the data is
-  non-IID); where time lives, if anywhere (a date column, an order, an ID handed out in sequence, figures of a period,
-  a date in a raw file or a parent upload); whether all rows share one moment. It gives the record's temporal tag, the
-  likely regime (IID, grouped, temporal) and the columns that may not be known at prediction time;
+  existence compared with the prediction point, whether that order varies from row to row (then the data is non-IID)
+  and whether it can affect the target; where time lives, if anywhere (a date column, an order, an ID handed out in
+  sequence, figures of a period, a date in a raw file or a parent upload); whether all rows share one moment. It gives
+  the prototype the record's temporal tag names (or that none fits), the likely regime (IID, grouped, temporal) and
+  the columns that may not be known at prediction time;
 * the metric the source scored (MET-1): the competition's evaluation page (Kaggle: the Evaluation tab, or the API's
   `evaluationMetric` via `uvx kaggle==2.2.2 competitions list -s <slug>`; Zindi, DrivenData and challenge pages state
   it), the task description, or the evaluation section of the paper that defined the task. Note whether it is a
