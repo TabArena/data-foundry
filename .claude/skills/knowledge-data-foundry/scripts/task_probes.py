@@ -85,6 +85,12 @@ def weight_and_metric_lines(result: dict) -> list[str]:
         lines.append(
             f"  declared metric {declared['name']} ({direction} is better{floor}): best family {declared['best']}"
         )
+        if vs := declared.get("vs_dummy"):
+            relative = f", {vs['relative_gain']:.1%} of the dummy's loss" if "relative_gain" in vs else ""
+            lines.append(
+                f"  on it {declared['best']} beats the dummy on {vs['beats_dummy_share']:.0%} of the splits, by "
+                f"{vs['gain_mean']:+.4g} (SE {vs['gain_se']:.2g}{relative})"
+            )
         lines += [f"  declared metric failed on {k} (scored NaN): {e}" for k, e in declared["errors"].items()]
     return lines
 
@@ -138,6 +144,9 @@ def render(result: dict) -> str:
     rules = result.get("flag_rules", {})
     flags = [f"{flag} ({rules[flag]})" if flag in rules else flag for flag in result["flags"]]
     lines.append(f"  flags: {', '.join(flags) or 'none'}")
+    vs = (result.get("declared_metric") or {}).get("vs_dummy")
+    if "no_signal" in result["flags"] and vs and vs["gain_mean"] > 2 * vs["gain_se"] and vs["beats_dummy_share"] >= 0.8:
+        lines.append("  no_signal reads the probe's own skill; on the declared metric the best family beats the dummy")
     return "\n".join(lines)
 
 

@@ -647,6 +647,25 @@ def test_task_probe_cap_keeps_the_newest_rows_of_a_temporal_train_side(task_prob
     assert task_probe.cap_train(train, 5_000, times, rng) is train
 
 
+def test_task_probe_compares_the_best_family_with_the_dummy_on_the_declared_metric(task_probe):
+    """The best family by the declared metric against the dummy, paired by split: a loss gives its relative gain, a
+    score not; a split scored by only one of the two is left out (fremtpl2: `no_signal` from R^2 near 0.01 while the
+    declared deviance shows a gain on every split).
+    """
+    loss = task_probe.vs_dummy(
+        [{"metric": 0.60}, {"metric": 0.61}, {"metric": 0.59}],
+        [{"metric": 0.62}, {"metric": 0.62}, {"metric": 0.61}],
+        -1,
+    )
+    assert loss["beats_dummy_share"] == 1.0
+    assert loss["gain_mean"] == pytest.approx(0.05 / 3)
+    assert loss["relative_gain"] == pytest.approx((0.05 / 3) / (1.85 / 3))
+    assert loss["gain_se"] > 0
+    gini = task_probe.vs_dummy([{"metric": 0.12}, {"metric": None}], [{"metric": 0.0}, {"metric": 0.0}], 1)
+    assert gini == {"gain_mean": pytest.approx(0.12), "gain_se": 0.0, "beats_dummy_share": 1.0}
+    assert task_probe.vs_dummy([{"metric": None}], [{"metric": 0.5}], -1) is None
+
+
 def test_task_probe_run_on_a_capped_temporal_task(task_probe):
     """A drifting temporal task capped below its train side: the keys are stable and the dummy uses every train row."""
     rng = np.random.default_rng(1)
@@ -862,6 +881,7 @@ def test_probes_fit_with_the_training_weight(task_probe, leak_probe, group_probe
     assert {"metric_mean", "at_floor_mean"} <= set(result["scores"]["lightgbm"])
     assert result["weighted"]
     assert result["declared_metric"]["name"] == "mean_poisson_deviance"
+    assert {"gain_mean", "gain_se", "beats_dummy_share", "relative_gain"} <= set(result["declared_metric"]["vs_dummy"])
     assert fitted
     assert all(fitted)  # the families and the single-feature fits
     fitted.clear()
@@ -993,6 +1013,29 @@ def test_weight_proxy_scores_one_over_the_weight_for_a_gini(leak_probe):
     assert result["inverse_weight_alone"]["mean"] == pytest.approx(ceiling)
     assert result["greater_is_better"]
     assert result["leak_reference"]["mean"] == pytest.approx(result["with_weight"]["mean"] - result["honest"]["mean"])
+
+
+def test_weight_proxy_fits_a_gini_scored_rate_with_its_actuarial_objective(leak_probe):
+    """Under a metric that is no deviance (a Gini), probe 22's default fit of a weighted rate is actuarial: Poisson
+    when the rate times the weight is a whole count, Tweedie at power 1.5 for a cost, L2 without a training weight
+    (pricing_game_2016_french_fleet: its two arms had both been L2, 2026-11-06).
+    """
+    del leak_probe  # the fixture skips without LightGBM
+    script = _import("leak_probes")
+    gini = {"name": "normalized_weighted_gini", "params": {}}
+    weight = np.array([0.5, 1.0, 0.25, 1.0])
+    counts = np.array([1.0, 0.0, 1.0, 2.0]) / weight
+    costs = np.array([120.5, 0.0, 33.3, 0.0]) / weight
+    assert script.fit_params("metric", gini, counts, weight) == {"objective": "poisson"}
+    assert script.fit_params("metric", gini, costs, weight) == {"objective": "tweedie", "tweedie_variance_power": 1.5}
+    assert script.fit_params("metric", gini, costs, None) is None
+    assert script.fit_params("metric", gini, -costs, weight) is None
+    assert script.fit_params("l2", gini, costs, weight) is None
+    poisson = {"name": "mean_poisson_deviance", "params": {"min_prediction": 1e-4}}
+    assert script.fit_params("metric", poisson) == {"objective": "poisson"}
+    tweedie = {"name": "mean_tweedie_deviance", "params": {"power": 1.8, "min_prediction": 1e-4}}
+    expected = {"objective": "tweedie", "tweedie_variance_power": 1.8}
+    assert script.fit_params("metric", tweedie, costs, weight) == expected
 
 
 def test_leak_probes_command_runs_the_weight_proxy(leak_probe, tmp_path, warehouse, capsys):  # noqa: F811

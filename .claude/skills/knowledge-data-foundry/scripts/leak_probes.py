@@ -32,10 +32,13 @@ trained with it as each row's weight, and every R^2 and ROC AUC is weighted. ``-
 ``--weight-column`` names (a feature named there is taken out of the features for this probe; a scoring column is read
 from the scoring columns), on the first ``--splits`` splits with ``--seeds`` LightGBM seeds each, every side capped at
 ``--max-rows`` random rows, scored by the declared metric. Its fits of the target are, by default (``--objective
-metric``), the weighted actuarial fit of a deviance metric (LightGBM's Poisson objective, or Tweedie at the metric's
-power) and L2 fits for any other metric; ``--objective l2`` makes them L2 fits on the shipped scale, and any other
-value is passed to LightGBM as the objective. LEAK-41 asks for both the L2 and the actuarial fit and decides on the
-worse: for a deviance metric the output says to run the other one. On a rate, L2 fits are noisy under a deviance
+metric``), the weighted actuarial fit: a deviance metric's own objective (LightGBM's Poisson objective, or Tweedie at
+the metric's power); for any other metric on a task with a training weight, Poisson when every target times its weight
+is a whole count (claims per year insured) and Tweedie at power 1.5 for any other non-negative rate (a cost per year
+insured, scored by a Gini), on the original scale of a log-shipped target; L2 fits otherwise. ``--objective l2`` makes
+them L2 fits on the shipped scale, and any other value is passed to LightGBM as the objective. LEAK-41 asks for both
+the L2 and the actuarial fit and decides on the worse: when an actuarial fit exists, the output says to run the other
+one. On a rate, L2 fits are noisy under a deviance
 (bemtpl97, 20,000 rows: the weight as a feature gains +0.0005 with an SD of 0.0066 under L2, +0.0039 with an SD of
 0.0013 under the Poisson fit). How to read them: ``.claude/skills/knowledge-curation/references/leak_checks.md``.
 The probes use the shipped target; when the definition changed the target (merged, dropped or binned classes), run
@@ -133,19 +136,55 @@ DEVIANCE_OBJECTIVES = {"mean_poisson_deviance": "poisson", "mean_tweedie_devianc
 """The LightGBM objective of each deviance metric: the weighted actuarial fit of ``--objective metric``."""
 
 
-def fit_params(objective: str, metric: dict | None) -> dict | None:
-    """The LightGBM parameters of probe 22's fits of the target for ``--objective``: None for an L2 fit; for
-    ``metric``, the declared deviance's own objective (Tweedie at the metric's power), else L2.
+RATE_TWEEDIE_POWER = 1.5
+"""The Tweedie power of the actuarial fit of a non-negative rate that is not a count, under a metric that is no
+deviance (a cost per year insured scored by a Gini)."""
+
+
+def rate_objective(rate: np.ndarray | None, weight: np.ndarray | None) -> str:
+    """The weighted actuarial fit of a rate under a metric that is no deviance: ``poisson`` when every rate times its
+    weight is a whole count (to 1e-6), ``tweedie`` for any other non-negative rate, ``l2`` without a training weight
+    or with a negative or missing rate. ``rate`` is the target on its original scale.
     """
+    if rate is None or weight is None:
+        return "l2"
+    rate, weight = np.asarray(rate, dtype=float), np.asarray(weight, dtype=float)
+    if not (np.isfinite(rate).all() and (rate >= 0).all()):
+        return "l2"
+    count = rate * weight
+    return "poisson" if np.allclose(count, np.round(count), rtol=0.0, atol=1e-6) else "tweedie"
+
+
+def fit_params(
+    objective: str, metric: dict | None, rate: np.ndarray | None = None, weight: np.ndarray | None = None
+) -> dict | None:
+    """The LightGBM parameters of probe 22's fits of the target for ``--objective``: None for an L2 fit; for
+    ``metric``, the declared deviance's own objective (Tweedie at the metric's power), or for another metric the
+    actuarial fit of the rate (``rate_objective`` on the target's original scale and the training weight), else L2.
+    """
+    power = (metric or {}).get("params", {}).get("power")
     if objective == "metric":
-        objective = DEVIANCE_OBJECTIVES.get(metric["name"] if metric else "", "l2")
+        name = metric["name"] if metric else ""
+        if name in DEVIANCE_OBJECTIVES:
+            objective = DEVIANCE_OBJECTIVES[name]
+        else:
+            objective, power = rate_objective(rate, weight), RATE_TWEEDIE_POWER
     if objective in ("l2", "regression"):
         return None
     params = {"objective": objective}
-    power = (metric or {}).get("params", {}).get("power")
     if objective == "tweedie" and power is not None:
         params["tweedie_variance_power"] = float(power)
     return params
+
+
+def original_rate(data: dataset_io.ProbeInput, metric: dict | None) -> np.ndarray | None:
+    """The target of a regression task with a training weight on its original scale (a log-shipped target sent
+    back), the rate ``rate_objective`` reads; None for any other task.
+    """
+    if data.problem_type != "regression" or data.weights is None:
+        return None
+    shipped = pd.to_numeric(data.df[data.target], errors="coerce").to_numpy(dtype=float)
+    return leak._FROM_SHIPPED[(metric or {}).get("transform") or "identity"](shipped)
 
 
 def weight_proxy(data: dataset_io.ProbeInput, args: argparse.Namespace) -> dict | None:
@@ -170,7 +209,8 @@ def weight_proxy(data: dataset_io.ProbeInput, args: argparse.Namespace) -> dict 
         leak.say(f"weight proxy (probe 22): not run (no column {column!r})")
         return None
     metric = data.declared_metric()
-    params = fit_params(getattr(args, "objective", "metric"), metric)
+    rate = original_rate(data, metric)
+    params = fit_params(getattr(args, "objective", "metric"), metric, rate, data.weights)
     try:
         result = leak.weight_proxy(
             data.df,
@@ -193,7 +233,7 @@ def weight_proxy(data: dataset_io.ProbeInput, args: argparse.Namespace) -> dict 
     except ValueError as err:
         leak.say(f"weight proxy (probe 22): not run ({err})")
         return None
-    if metric is not None and metric["name"] in DEVIANCE_OBJECTIVES:  # LEAK-41 takes the worse of the two fits
+    if fit_params("metric", metric, rate, data.weights) is not None:  # LEAK-41 takes the worse of the two fits
         other = "metric for the weighted actuarial fit" if params is None else "l2 for the L2 fit"
         leak.say(f"  run again with --objective {other}: LEAK-41 decides on the worse of the two")
     return result

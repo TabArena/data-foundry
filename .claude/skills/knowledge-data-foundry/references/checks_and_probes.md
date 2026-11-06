@@ -91,8 +91,10 @@ K=.claude/skills/knowledge-data-foundry/scripts
   the task's sample weight, or the column `--weight-column` names: a cross-fitted LightGBM of the weight on the
   features (R^2, Spearman, top features), the declared weighted metric with the weight added as a feature against the
   honest fit, each top feature's weight-mediated gain with its SD over folds and seeds, and for a Gini metric the score
-  of 1/weight alone. `--objective metric` (the default) fits the weighted actuarial model of a deviance (Poisson or
-  Tweedie) and L2 otherwise; run the other fit too (`--objective l2`), as LEAK-41 decides on the worse. A flagged
+  of 1/weight alone. `--objective metric` (the default) fits the weighted actuarial model: a deviance's own (Poisson
+  or Tweedie); under any other metric (a Gini) a rate with a training weight gets Poisson when the rate times the weight
+  is a whole count and Tweedie (power 1.5) for any other non-negative rate; L2 otherwise. Run the other fit too
+  (`--objective l2`), as LEAK-41 decides on the worse. A flagged
   feature is judged by its timing (LEAK-41): one known at the quote stays (USE-6), even when its weight-mediated share
   is high through risk selection.
 * `task_probes.py`: dummy baselines against three untuned model families (a fourth on more than 1,000 inputs:

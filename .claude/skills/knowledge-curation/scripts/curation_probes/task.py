@@ -49,6 +49,12 @@ curator, not verdicts:
 * ``few_minority``: a probed test fold holds fewer than 5 rows (or groups) of a class, binary or multiclass; the
   report names each class that falls short with its smallest count in a test fold.
 
+The flags read the probe's own skill. With a declared metric, ``declared_metric["vs_dummy"]`` gives the best family by
+that metric against the dummy, paired by split: the mean gain (positive is better), its standard error, the share of
+splits it beats the dummy on, and for a loss the gain relative to the dummy's loss. A count or a rate scored by a
+deviance has an R^2 near 0.01 by nature, so ``no_signal`` can come with a real gain on the declared metric (fremtpl2,
+bemtpl97, 2026-11-06): the report then names both.
+
 Group and target columns are not features. Text (string) columns enter as 16 TF-IDF + SVD components each, fitted on
 the train side (``text=False`` leaves them out; see ``curation_probes.text``). Categoricals enter as codes and
 datetimes as numbers. Each train side is capped at ``max_rows`` rows: the newest rows for a temporal task (a random
@@ -247,6 +253,27 @@ def cap_train(train: np.ndarray, max_rows: int, times: np.ndarray | None, rng: n
     if times is not None:
         return np.sort(train[np.argsort(times[train], kind="stable")[-max_rows:]])
     return np.sort(rng.choice(train, max_rows, replace=False))
+
+
+def vs_dummy(family: list[dict], dummy: list[dict], sign: float) -> dict[str, float] | None:
+    """A family against the dummy on the declared metric, paired by split: the mean gain (``sign`` makes a positive
+    gain better), its standard error, the share of splits with a gain, and for a loss (``sign`` -1) the gain relative
+    to the dummy's mean loss; None when no split scored both.
+    """
+    pairs = [(f.get("metric"), d.get("metric")) for f, d in zip(family, dummy, strict=True)]
+    gain = np.array([sign * (f - d) for f, d in pairs if f is not None and d is not None], dtype=float)
+    gain = gain[np.isfinite(gain)]
+    if not len(gain):
+        return None
+    dummy_loss = np.array([d for f, d in pairs if f is not None and d is not None], dtype=float)
+    out = {
+        "gain_mean": float(gain.mean()),
+        "gain_se": float(gain.std(ddof=1) / np.sqrt(len(gain))) if len(gain) > 1 else 0.0,
+        "beats_dummy_share": float((gain > 0).mean()),
+    }
+    if sign < 0 and np.nanmean(dummy_loss) > 0:
+        out["relative_gain"] = float(gain.mean() / np.nanmean(dummy_loss))
+    return out
 
 
 def run(  # noqa: C901, PLR0912, PLR0913
@@ -484,6 +511,8 @@ def run(  # noqa: C901, PLR0912, PLR0913
             "best": max(scored, key=lambda k: sign * table[k]["metric_mean"]) if scored else None,
             "errors": metric_errors,
         }
+        if declared["best"] is not None:
+            declared["vs_dummy"] = vs_dummy(results[declared["best"]], results["dummy"], sign)
     return {
         "problem_type": problem_type,
         "unit": unit if aggregation is None else f"{unit} ({aggregation})",
