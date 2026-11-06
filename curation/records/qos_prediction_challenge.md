@@ -2,11 +2,10 @@
 unique_name: qos_prediction_challenge
 name: qos-prediction-challenge
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
-priority: 3
-tags:
-- AI-Filled (Verify)
+- Myunghwan
+suggestion: 'No'
+decision_markers:
+- Not Representative
 collections:
 - New (BeyondArena)
 original_source: Zindi
@@ -21,8 +20,6 @@ source_links:
 - https://ieee-dataport.org/open-access/berlin-v2x
 - https://arxiv.org/abs/2212.10343
 source_row: 897
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -46,3 +43,7 @@ Zindi competition to predict quality-of-service for a wireless vehicle network, 
 predict quality-of-service for a wireless vehicle network
 
 no-distribution license
+
+CC (2026-11-05, Myunghwan): Carry forward the rejection decided on 2026-10-31: No. There is insufficient diversity across days and groups. Nearby-time QoS observations make random-row splitting uninformative, and the proposed day, operator and cell-group alternatives do not resolve the lack of representative support. This applies to the candidate dataset, not a general rule about all QoS data.
+
+**Assessment (AI, 2026-11-05):** The investigation found only two days and two confounded vehicle/operator domains. The curator rejected the dataset as Not Representative after considering the alternative split proposals. This is not a Trivial, Too Small or No Signal finding. Preserve the source and prior analysis as history; reconsider only if materially broader and representative support permits an application-faithful evaluation. No dataset definition or build is added by this decision.
