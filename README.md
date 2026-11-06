@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-06 14:24 UTC: 46 claim(s) (Andrej 1, Lennart 26, Myunghwan 19).
+As of 2026-11-06 14:24 UTC: 50 claim(s) (Andrej 1, Lennart 30, Myunghwan 19).
 
 ## Andrej
 
@@ -17,10 +17,12 @@ As of 2026-11-06 14:24 UTC: 46 claim(s) (Andrej 1, Lennart 26, Myunghwan 19).
 | `1000_cameras` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
 | `allstate_claim_prediction_challenge` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `anes_voting_2026` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
+| `ausprivauto0405` | triage | 2026-11-06 | 2026-11-13 | exposure rules (MET-14/15) note; ausprivauto0405 duplicate check |
 | `australian_vehicle_insurance_2004_2005` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `bank_marketing` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `bemtpl97` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `boreal_postfire_lichen_biomass` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
+| `eumtpl` | triage | 2026-11-06 | 2026-11-13 | exposure rules (MET-14/15) note; ausprivauto0405 duplicate check |
 | `facebook_recruiting_human_or_robot` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `fl2000` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
 | `frempl_french_motor_personal_line` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
@@ -28,6 +30,7 @@ As of 2026-11-06 14:24 UTC: 46 claim(s) (Andrej 1, Lennart 26, Myunghwan 19).
 | `g_research_crypto_forecasting` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `liberty_mutual_fire_peril_loss_cost` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `loan_default_prediction_imperial_college` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
+| `msha_mine_injury_frequency` | triage | 2026-11-06 | 2026-11-13 | exposure rules (MET-14/15) note; ausprivauto0405 duplicate check |
 | `noaa_afsc_bottom_trawl_survey_cpue` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `noaa_storm_events_damage` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `pricing_game_2016_french_fleet` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
@@ -36,6 +39,7 @@ As of 2026-11-06 14:24 UTC: 46 claim(s) (Andrej 1, Lennart 26, Myunghwan 19).
 | `spanish_homeowners_motor_insurance_2010_2014` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `spanish_motor_insurance_2015_2018` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `spanish_motor_insurance_coverage_level_2022_2024` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
+| `swedish_motorcycle_insurance` | triage | 2026-11-06 | 2026-11-13 | exposure rules (MET-14/15) note; ausprivauto0405 duplicate check |
 | `wadden_sea_sibes_macoma_abundance` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `wisconsin_local_government_property_insurance_fund` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `zeosyn_zeolite_synthesis` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
