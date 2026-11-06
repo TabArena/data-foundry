@@ -85,12 +85,16 @@ Lennart: the test informs a case-by-case call and the forced tag stays; one-mome
 open_university_learning_analytics_dataset (nba_players_2016_2019 was retired on 2026-10-26 on its use case, not its
 split); account_debt_south_africa and mobile_churn, first cases here, are one-moment releases under SPLIT-32.
 
-### Why a split is not temporal
+### When information arrives
 
-**SPLIT-32 (Must; narrows SPLIT-7, SPLIT-8 and SPLIT-14).** A split that is not temporal says why, with one time-basis
-tag in the definition and a `Time basis:` line in the curation notes that names the fact behind it. The answer comes
-from when the rows, the features and the target come into existence compared with the prediction point, found by
-five questions asked in this order:
+**SPLIT-32 (Must; narrows SPLIT-7, SPLIT-8 and SPLIT-14).** A split starts from how the data was collected for the use
+case: when each row, each feature and the target come into existence, compared with the moment the use case predicts.
+Whenever that order varies from row to row (rows arriving over time, targets arriving after a delay, features or cells
+filled in later), the data is non-IID, whatever split it ships with, and it gets dedicated checks of two things: which
+split represents the use case, and which features would actually be available at the prediction point, so that no leak
+crosses the split or sits inside a row. These two answers are the aim of the rule. A split that is not temporal says
+why, with one time-basis tag in the definition and a `Time basis:` line in the curation notes that names the fact
+behind it, found by five questions asked in this order:
 
 1. **Does the target depend on when it was observed?** If the same item measured at another date has the same target
    (a material's strength, a molecule's activity, a species, the outcome of a designed run), the task is `Timeless`.
@@ -120,6 +124,14 @@ five questions asked in this order:
    behavioural value, the time is lost (`TimeLost`): the split trains on rows from after its test rows, and by how
    much that flatters the score is unknown. Both ship after SPLIT-8's leak test, and the line says what a dated
    release would change.
+
+Only two answers describe IID data: `Timeless`, and a `Snapshot` of one moment whose target exists at that moment.
+Every other answer is non-IID data, its random or grouped split included: a `Snapshot` over a period (rows of the same
+time can share an outcome), a `DelayedTarget` (targets after a delay that may differ by row), a `CaseSeries` or
+`TimeLost` (rows over time), and every temporal split. For non-IID data the feature audit is part of the answer: every
+column gets "at the prediction point", "later" or "cannot tell" (LEAK-1, LEAK-10), a later column is dropped or
+lagged, and a "cannot tell" stays only when its missing values do not move with the outcome given the columns known at
+that point.
 
 The record carries the matching tag, set at screening from the source and checked when the definition is written:
 `Non-IID (Temporal)` when the data carries time, with `Time Unused` next to it when the curator keeps a split that
