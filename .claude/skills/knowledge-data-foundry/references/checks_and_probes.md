@@ -65,6 +65,7 @@ K=.claude/skills/knowledge-data-foundry/scripts
 .venv/bin/python $K/hidden_groups.py <unique_name> [--built] [--include-grouped] [--out DIR]     # or --all
 .venv/bin/python $K/generated_probes.py <unique_name> [--built] [--out DIR]                     # or --all
 .venv/bin/python $K/dtype_probes.py <unique_name> [--codebook URL] [--no-fetch] [--out DIR]    # or --all --jobs 4
+.venv/bin/python $K/time_probes.py <unique_name> [--built] [--include-temporal] [--out DIR]     # or --all --jobs 4
 .venv/bin/python $K/tuned_results.py <unique_name> [--feature auto]
 ```
 
@@ -135,6 +136,18 @@ K=.claude/skills/knowledge-data-foundry/scripts
   no number in a column of numbers are listed: often proxy missing codes (`.b`, `-3`) that made a count categorical
   (CLEAN-10). UCI types coded answers as `Integer` too, and names often differ from the codebook's (the output says how
   many matched): read the codebook where they do. A flag is a question; the meaning decides.
+* `time_probes.py`, for a split that is not temporal (SPLIT-32, question 3): does the data still carry a time order?
+  It is model-free and fast. It lists the columns that look like time (a date dtype, a time word in the name such as
+  date, year, month, week, season, period, wave or cohort, or whole numbers between 1900 and 2100 only; names that say
+  a duration or an age are left out), the raw columns of that kind the definition drops, the target along the raw row
+  order and along each ID-like column (whole numbers, nearly one per row, named like an ID or following the row
+  order; an ID the definition dropped is read through the rows' raw positions), and few-valued columns that move
+  together and encode a period (yearly unemployment, inflation and GDP; at least 50 rows per period). Flags:
+  `time_column`, `time_dropped`, `order_drift`, `id_drift`, `period_values`, and `sorted_by_target` for an order that
+  follows the target in blocks (a file sorted by class), which is how the file was put together, not a clock. Every
+  flag that is not explained away means the data carries time: split by time, or measure the shipped split against a
+  temporal one and make it the curator's decision (`TimeUnused`). Without the raw files (`--built`), the dropped
+  columns and the raw order are not checked; the output says which order it read.
 * `tuned_results.py`: the per-fold BeyondArena results of tuned and default methods cached under
   `~/.cache/tabarena/artifacts/` (`methods/<method>/results/hpo_results.parquet`), set against a dummy on the same
   splits of the shipped container; `--feature auto` adds the raw-feature test of TP-4. The runs used the shipped

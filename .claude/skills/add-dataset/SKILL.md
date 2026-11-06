@@ -51,12 +51,13 @@ errors, and `dataset build` refuses to save while any remains.
 ## Step 0: Gather inputs and claim
 
 Read `curation/records/<unique_name>.md`: the front matter and the comments, above all the screening block (the
-source, the use case, the regime, the risks). Verify its claims as you go instead of redoing its research; a
-measurement on the data supersedes what screening read from the page. No record: stop and point to
-`/screen-candidates`. Claim the records first, in the curator's name: `claims claim <names> --stage add --note
-"add-dataset"` ([claims.md](../knowledge-data-foundry/references/claims.md)); it pushes the claim to the board and
-writes `WIP (DF)` and `claimed_by` into the records. Never work on a dataset another curator holds: a name the command
-skips is left out and reported.
+source, the use case, the time basis and the regime, the risks) and the record's temporal tag (`Non-IID (Temporal)`,
+`Timeless`, `Snapshot`, `Delayed Target`, `Case Series` or `Time Lost`; SPLIT-32). Verify its claims as you go instead
+of redoing its research; a measurement on the data supersedes what screening read from the page. No record: stop and
+point to `/screen-candidates`. Claim the records first, in the curator's name: `claims claim <names> --stage add
+--note "add-dataset"` ([claims.md](../knowledge-data-foundry/references/claims.md)); it pushes the claim to the board
+and writes `WIP (DF)` and `claimed_by` into the records. Never work on a dataset another curator holds: a name the
+command skips is left out and reported.
 
 A batch (several names or a dashboard filter) runs one `dataset-builder` agent per source unit for steps 0-6
 ([agent_runs.md](../knowledge-data-foundry/references/agent_runs.md)); the main session then runs the panel (step 7)
@@ -99,8 +100,15 @@ domain and source from the record.
    ships as the source publishes it and is declared in `special_features` as a `Spectrum(...)`, its columns left out
    of `_feature_types` (CLEAN-26); [spectra.md](../knowledge-curation/references/spectra.md) has what ships, the
    encodings, grouping the spectra of one sample (SPLIT-23) and the pitfalls.
-4. The regime: nothing for IID, `grouping = Grouping(...)` or `temporal = Temporal(...)` with a `splits_comment`
-   saying why this window (and any gap, sub-sampling or trimming).
+4. The regime, from the time basis (SPLIT-32 in [splits.md](../knowledge-curation/references/splits.md)): answer its
+   five questions from the source and the record's temporal tag before choosing. Time in the release or its source
+   and a use case that predicts later rows means `temporal = Temporal(...)`. Otherwise IID (nothing) or `grouping =
+   Grouping(...)`, with one time-basis tag in `data_tags` (`Timeless`, `Snapshot`, `DelayedTarget`, `CaseSeries`,
+   `TimeLost`, `TooFewPeriods`) and a `Time basis:` bullet in `curation_comments` that names the fact behind it (for
+   `DelayedTarget` the prediction moment and the target's window). `TimeUnused` is never chosen here: a split that
+   leaves time unused goes to the curator as an issue with its measured cost (step 8). A `splits_comment` says why
+   this window (and any gap, sub-sampling or trimming). When your answer differs from the record's temporal tag, the
+   tag is not changed silently: it becomes an issue.
 5. The metric: `metric = Metric.source(name, original=..., reference=..., params=..., inputs=...)`,
    `Metric.stand_in(name, original=..., reason=..., reference=...)` or `Metric.fallback(reason=<where we looked, and
    which source metric was rejected and why>)` (definitions.md, "Field mapping", `metric`; MET-11). A standard name
@@ -139,7 +147,12 @@ there are no errors and every warning is fixed or proposed for acceptance with a
 every `ruff --fix`.
 
 Then run the leak probes and the task probes, the group probes for a grouped task, the hidden-group probe for an
-IID one and the dtype probe ([checks_and_probes.md](../knowledge-data-foundry/references/checks_and_probes.md)): every
+IID one, the time probe for a split that is not temporal and the dtype probe
+([checks_and_probes.md](../knowledge-data-foundry/references/checks_and_probes.md)). A time-probe flag that is not
+explained away (a file sorted by class, a duration named like a date) means the data carries time: split by time, or
+measure what the shipped split costs against a temporal one (through Slurm) and make it an issue. For a
+`DelayedTarget` or `Snapshot` basis, write the per-column audit (at the prediction point, later, cannot tell) into
+the run folder. every
 column it flags gets its meaning from the codebook, and its dtype from CLEAN-14. Read every flag by
 [evidence.md](../knowledge-curation/references/evidence.md), "Reading a probe": the highest-ranked reading first. A
 leak gets the mildest remedy that removes it (drop, lag, filter, re-split) with the deciding number in a bullet; a
@@ -174,6 +187,9 @@ and the editor) for a re-check after a small change. Say which tier ran.
    `**Review panel:**` block with each agent's full report. A review raises 0 to N issues: zero is a valid outcome
    when the checks and the panel leave nothing for the curator to decide (the outcome says so, and the curator only
    sets the verdict). Never raise an issue to have one; an issue is something whose answer would change the dataset.
+   Two time issues are always raised, each as its own issue: time the data carries that the split leaves unused
+   ("Split by time, or keep the <random|grouped> split as an exception?", with the measured cost of both splits and
+   `TimeUnused` as the exception's option), and a time basis that disagrees with the record's temporal tag.
 3. The `review-editor` agent reads the draft as the curator would; apply its fixes.
 4. Add a dated CHANGELOG entry for the new folder, and the panel's summary in the record, one line in a fixed form:
    `**Assessment (AI, <date>):** review panel (<tier>): <the mediator's recommendation>; disputed: <the points, by
