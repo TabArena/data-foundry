@@ -11,6 +11,7 @@ decision_markers:
 - Needs extensive data wrangling
 tags:
 - Non-IID (Grouped)
+- Non-IID (Temporal)
 collections:
 - New (BeyondArena)
 original_source: Website

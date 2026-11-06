@@ -16,6 +16,7 @@ decision_markers:
 - Trivial
 tags:
 - Tiny Data
+- Case Series
 collections:
 - New (BeyondArena)
 - TabSTAR

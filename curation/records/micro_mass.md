@@ -12,7 +12,7 @@ tags:
 - Tiny Data
 - Non-IID (Grouped)
 - Many class
-- Spectral Data
+- Timeless
 collections:
 - TabArena Reject
 - TabSTAR

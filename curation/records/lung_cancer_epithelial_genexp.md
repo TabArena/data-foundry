@@ -10,6 +10,7 @@ suggestion: 'Yes'
 tags:
 - New IID
 - Many features
+- Non-IID (Temporal)
 collections:
 - FS Benchmark
 original_source: OpenML

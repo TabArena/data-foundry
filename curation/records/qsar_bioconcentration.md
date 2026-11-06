@@ -9,6 +9,7 @@ suggestion: 'Yes'
 priority: 2
 tags:
 - Non-IID (Grouped)
+- Timeless
 collections:
 - TabSTAR
 original_source: UCI

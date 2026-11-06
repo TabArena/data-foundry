@@ -16,6 +16,7 @@ decision_markers:
 tags:
 - Tiny Data
 - Non-IID (Grouped)
+- Case Series
 collections:
 - New (BeyondArena)
 original_source: Other

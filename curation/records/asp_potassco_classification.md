@@ -13,6 +13,7 @@ suggestion: 'Yes'
 priority: 4
 tags:
 - Non-IID (Grouped)
+- Timeless
 collections:
 - TabArena Reject
 original_source: ASlib

@@ -11,6 +11,8 @@ data_foundry_status:
 suggestion: 'Yes'
 decision_markers:
 - Duplicate
+tags:
+- Timeless
 original_source: UCI
 year: '1992'
 required_split:

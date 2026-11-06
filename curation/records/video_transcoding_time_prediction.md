@@ -13,6 +13,7 @@ decision_markers:
 - Outdated
 tags:
 - Non-IID (Grouped)
+- Timeless
 collections:
 - TabArena Reject
 - TabSTAR

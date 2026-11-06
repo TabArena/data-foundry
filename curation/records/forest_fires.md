@@ -12,6 +12,7 @@ decision_markers:
 - No Signal
 tags:
 - Tiny Data
+- Non-IID (Temporal)
 collections:
 - TabArena Reject
 - TabSTAR

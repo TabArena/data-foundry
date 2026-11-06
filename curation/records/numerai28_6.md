@@ -11,6 +11,7 @@ decision_markers:
 - Anonymized
 tags:
 - New IID
+- Time Lost
 collections:
 - TabArena Reject
 - TabSTAR

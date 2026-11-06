@@ -12,6 +12,7 @@ suggestion: 'Yes'
 tags:
 - New IID
 - Free Text (Sentences)
+- Snapshot
 collections:
 - TexTabBench
 - STRABLE

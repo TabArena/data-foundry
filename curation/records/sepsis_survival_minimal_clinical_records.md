@@ -13,6 +13,7 @@ decision_markers:
 tags:
 - Larger IID Data
 - Tiny Data
+- Time Lost
 collections:
 - New (BeyondArena)
 original_source: Other

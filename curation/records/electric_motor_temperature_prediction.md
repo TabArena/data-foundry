@@ -13,6 +13,7 @@ decision_markers:
 tags:
 - Non-IID (Grouped)
 - Multi-target
+- Snapshot
 collections:
 - New (BeyondArena)
 original_source: Kaggle

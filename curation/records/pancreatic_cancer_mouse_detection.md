@@ -13,7 +13,7 @@ suggestion: 'Yes'
 tags:
 - Many features
 - Non-IID (Grouped)
-- Spectral Data
+- Timeless
 collections:
 - FS Benchmark
 original_source: Other

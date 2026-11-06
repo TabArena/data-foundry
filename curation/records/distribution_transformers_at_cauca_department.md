@@ -9,6 +9,7 @@ suggestion: 'Yes'
 priority: 2
 tags:
 - New IID
+- Delayed Target
 collections:
 - New (BeyondArena)
 original_source: Other

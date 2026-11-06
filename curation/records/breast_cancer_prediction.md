@@ -8,6 +8,7 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - New IID
+- Time Lost
 collections:
 - TabSTAR
 original_source: GOV Website

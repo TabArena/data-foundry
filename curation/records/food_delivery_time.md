@@ -13,6 +13,7 @@ decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 tags:
 - Random (IID)
+- Non-IID (Temporal)
 original_source: Kaggle
 year: '2023'
 domain: business & marketing

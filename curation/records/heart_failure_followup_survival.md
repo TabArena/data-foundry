@@ -9,6 +9,7 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Tiny Data
+- Time Lost
 collections:
 - New (BeyondArena)
 original_source: Other

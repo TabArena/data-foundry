@@ -9,6 +9,7 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Non-IID (Grouped)
+- Time Lost
 collections:
 - New (BeyondArena)
 - TabSTAR

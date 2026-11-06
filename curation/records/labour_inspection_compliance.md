@@ -11,6 +11,7 @@ suggestion: 'Yes'
 tags:
 - Larger IID Data
 - Free Text (Sentences)
+- Non-IID (Temporal)
 collections:
 - TabSTAR
 original_source: Other

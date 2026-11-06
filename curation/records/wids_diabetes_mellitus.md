@@ -9,6 +9,7 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Larger IID Data
+- Case Series
 collections:
 - New (BeyondArena)
 original_source: Kaggle

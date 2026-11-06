@@ -11,6 +11,7 @@ suggestion: 'Yes'
 tags:
 - Tiny Data
 - Non-IID (Grouped)
+- Timeless
 collections:
 - New (BeyondArena)
 original_source: UCI

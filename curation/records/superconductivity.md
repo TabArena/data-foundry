@@ -13,6 +13,8 @@ claimed_by: Lennart
 suggestion: 'Yes'
 decision_markers:
 - Selection Bias
+tags:
+- Timeless
 original_source: UCI
 year: '2018'
 required_split:

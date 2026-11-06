@@ -12,6 +12,7 @@ priority: 2
 tags:
 - Non-IID (Grouped)
 - Multi-target
+- Timeless
 collections:
 - TabArena Reject
 - TabSTAR

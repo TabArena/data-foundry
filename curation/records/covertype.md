@@ -11,6 +11,7 @@ decision_markers:
 - Outdated
 tags:
 - Random (IID)
+- Timeless
 collections:
 - TabArena Reject
 - TabSTAR

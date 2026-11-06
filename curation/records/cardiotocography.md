@@ -12,6 +12,7 @@ decision_markers:
 - Time-series (Classification)
 tags:
 - Non-IID (Grouped)
+- Non-IID (Temporal)
 collections:
 - TabArena Reject
 original_source: UCI

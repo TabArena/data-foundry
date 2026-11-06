@@ -11,6 +11,8 @@ data_foundry_status:
 suggestion: 'Yes'
 decision_markers:
 - Anonymized
+tags:
+- Delayed Target
 year: '2009'
 required_split:
 - Random (IID)

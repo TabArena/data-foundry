@@ -9,6 +9,8 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
+tags:
+- Non-IID (Temporal)
 original_source: Other
 year: '2018'
 required_split:
