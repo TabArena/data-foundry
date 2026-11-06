@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: nyc_taxi_trip_duration_1m
 container_format: 2
-checksum: v2:b7b8e92a14fb537b24c82634513599ec031526a22bd3f0372dbcb303768dd591
+checksum: v2:1eb91606762fbe4bce657bc6cad98dd12b66bf61707010b3f7196a37d5ebce18
 build: null
 build_stale: false
 data:
@@ -40,6 +40,9 @@ splits:
   n_test:
     min: 52607
     max: 54373
+  row_budget:
+    train: 1000000
+    test: 500000
 bundle_checks:
   ok: true
   errors: []
@@ -59,7 +62,7 @@ decisions:
 
 Regression of `log1p_trip_duration`, scored with `rmsle` on temporal splits by `pickup_datetime`. 1,165,967 rows and 7 features. Source: GOV Website (2016).
 
-Not built yet. The current definition gives checksum `v2:b7b8e92a14fb537b24c82634513599ec031526a22bd3f0372dbcb303768dd591`.
+Not built yet. The current definition gives checksum `v2:1eb91606762fbe4bce657bc6cad98dd12b66bf61707010b3f7196a37d5ebce18`.
 
 ## In brief
 
@@ -213,7 +216,7 @@ Version of `nyc_taxi_trip_duration`: Every train side holds 1.28M to 1.39M trips
 
 An ETA model refit every week predicts the trips of the next week, as for the other ETA tasks of the collection (delivery_eta_1m, maps_router_eta_1m). We use each of the last 3 weeks of June 2016 as a test window (newest first, 52,779 to 54,532 trips each) and the trips picked up at least one day before it as train data: 3 windows, the 1 x 3 an IID task of this size would get, and every train side holds at least 88% of the trips. The gap of one day is part of the task: a trip lasts up to 3 hours, so at a refit the last trips before it have no duration yet; without the gap 77, 119 and 127 train trips per window would end after the window start. Each train side (1.28M to 1.39M trips before the cap) is a random 1M of the earlier trips, drawn in one random order for all windows so the train sides overlap, and no test window reaches 500k rows; the frame keeps only the trips a split uses (version_comment). The competition's test set is a random sample of the same days (curation_comments); a random split is optimistic here. LightGBM (300 trees, learning rate 0.1, 63 leaves, a random 200k of each train side, one fit per split) scores RMSE 0.357-0.381 on the weekly windows, 0.355-0.364 on 3 folds of whole days and 0.353-0.355 on 3 random folds when the encoding keeps the hour (skrub's DatetimeEncoder), and 0.414-0.441, 0.401-0.410 and 0.390-0.392 with AutoGluon's date parts. Trips of one day sharing traffic and weather explain about 0.01 of the gap; the rest is the distance in time.
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 52,607 to 54,373 rows. Prediction horizon: 7 days. Gap between train and test: 1 days.
+3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 52,607 to 54,373 rows. Prediction horizon: 7 days. Gap between train and test: 1 days. Row budget: at most 1M train / 500k test rows per split.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
@@ -272,7 +275,7 @@ The times are wall-clock times, so a trip picked up before 02:00 on 2016-03-13 a
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
 
 ## Data checks

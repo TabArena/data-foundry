@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import json
 import os
 import sys
@@ -13,6 +14,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+from data_foundry.bundle_checks import run_bundle_checks
 from data_foundry.curation_container import CuratedContainer, feature_columns, special_features
 from data_foundry.schema import DATA_FOUNDRY_WAREHOUSE_ENV
 from data_foundry.v2 import (
@@ -20,6 +22,7 @@ from data_foundry.v2 import (
     DatasetDefinitionError,
     Grouping,
     Metric,
+    RowBudget,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -393,10 +396,10 @@ def _define(**attrs: object) -> type[AbstractCuratedDataset]:
             },
             "grouped or temporal, not both",
         ),
-        ({"subsample_to_budget": True}, "version_of"),
+        ({"row_budget": RowBudget(train=200, test=100)}, "version_of"),
         (
             {"temporal": Temporal(on="t", splits=TemporalSplits(window=7, unit="days", n_windows=3, sample_by="time"))},
-            "needs `subsample_to_budget = True`",
+            "needs a `row_budget`",
         ),
         ({"version_of": "toy"}, "version_comment"),
         ({"SPLIT_RANDOM_STATE": 1}, "fixed for the whole benchmark"),
@@ -680,70 +683,146 @@ def test_subsampled_frames_drop_unused_categories() -> None:
     assert list(df["g"].cat.categories) == ["a", "b", "c"]  # the input frame is left as it was
 
 
-# --- the v2 split protocol: `_1m` versions ------------------------------------------------------------------------
-def write_version(root: Path, *, extra: str = "") -> Path:
-    """A ``toy_ds_1m`` version of the toy dataset (reads the raw files of ``toy_ds``)."""
-    body = DEFINITION.format(name="toy_ds_1m", comment="Toy data.").replace(
-        '    target = "y"\n',
-        '    version_of = "toy_ds"\n'
-        '    version_comment = "Sub-sampled to the row budget."\n'
-        "    subsample_to_budget = True\n"
-        f"{extra}"
-        '    target = "y"\n',
-    )
-    return write_definition(root, "toy_ds_1m", body=body)
+# --- the v2 split protocol: versions sub-sampled to a row budget --------------------------------------------------
+IMPORTS = "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, drop_columns"
 
 
-@pytest.fixture
-def small_budget(monkeypatch: pytest.MonkeyPatch) -> None:
-    """A row budget the 600-row toy data exceeds: frames of 300 rows, splits of at most 190 / 100 rows."""
-    monkeypatch.setattr(protocol, "FRAME_ROW_BUDGET", 300)
-    monkeypatch.setattr(protocol, "TRAIN_ROW_BUDGET", 190)  # a 3-fold split of 300 rows trains on 200
-    monkeypatch.setattr(protocol, "TEST_ROW_BUDGET", 100)
-
-
-def test_a_version_samples_the_frame_then_runs_three_fold_cross_validation(
-    tmp_path: Path, warehouse: Path, small_budget: None
-) -> None:
-    del warehouse, small_budget
-    write_version(tmp_path / "datasets")
-    plan = get_dataset(tmp_path / "datasets", "toy_ds_1m").make_splits()
-
-    assert len(plan.df) == 300
-    assert {len(folds) for folds in plan.splits.values()} == {3}
-    assert all(
-        len(train) <= 190 and len(test) <= 100 for folds in plan.splits.values() for train, test in folds.values()
-    )
-    assert plan.comment.startswith("Default splits. The frame is sub-sampled to 0.3k rows")
-
-
-def test_a_version_replaces_the_v1_protocol_findings(
-    tmp_path: Path, warehouse: Path, small_budget: None, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    del warehouse, small_budget
-    monkeypatch.setattr("data_foundry.bundle_checks.SPLIT_TEST_ROW_BUDGET", 50)  # v1 would flag 100-row test folds
-    write_version(tmp_path / "datasets")
-    result = get_dataset(tmp_path / "datasets", "toy_ds_1m").check(write_report=False, verbose=False)
-    assert "splits_test_over_budget" not in result.bundle_report.slugs
-
-
-def test_a_version_within_the_budget_is_refused(tmp_path: Path, warehouse: Path) -> None:
-    del warehouse
-    write_version(tmp_path / "datasets")
-    with pytest.raises(DatasetDefinitionError, match="within the 1,500,000-row budget"):
-        get_dataset(tmp_path / "datasets", "toy_ds_1m").make_splits()
-
-
-def temporal_version_body(windows: str = 'TemporalSplits(window=5, unit="days", n_windows=3)') -> str:
-    """A temporal ``toy_ds_1m``: the 600 toy rows over 30 days (20 per day), 3 windows of 5 days."""
-    extra = f'    temporal = Temporal(on="t", splits={windows})\n'
+def version_body(name: str = "toy_ds_0p2k", budget: str = "RowBudget(train=200, test=50)", extra: str = "") -> str:
+    """A version of the toy dataset (reads the raw files of ``toy_ds``) sub-sampled to ``budget``."""
     return (
-        DEFINITION.format(name="toy_ds_1m", comment="Toy data.")
+        DEFINITION.format(name=name, comment="Toy data.")
+        .replace(IMPORTS, IMPORTS.replace("Metric,", "Grouping, Metric, RowBudget,"))
         .replace(
-            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, drop_columns",
-            "from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, "
-            "TemporalSplits, drop_columns",
+            '    target = "y"\n',
+            '    version_of = "toy_ds"\n'
+            '    version_comment = "Sub-sampled to the row budget."\n'
+            f"    row_budget = {budget}\n"
+            f"{extra}"
+            '    target = "y"\n',
         )
+    )
+
+
+def make_version(root: Path, name: str = "toy_ds_0p2k", **kwargs: str) -> AbstractCuratedDataset:
+    write_definition(root, name, body=version_body(name, **kwargs))
+    return get_dataset(root, name)
+
+
+def fold_sizes(splits: protocol.Splits) -> set[tuple[int, int]]:
+    return {(len(train), len(test)) for folds in splits.values() for train, test in folds.values()}
+
+
+def test_a_dataset_without_a_budget_keeps_the_full_cross_validation(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    write_definition(tmp_path / "datasets")
+    ds = get_dataset(tmp_path / "datasets", "toy_ds")
+    plan = ds.make_splits()
+    assert plan.splits == ds._cross_validation(plan.df)  # nothing sampled, nothing capped
+    assert plan.comment == "Default splits."
+    assert ds.to_container().experiment_metadata.row_budget is None
+
+
+def test_a_version_trains_every_fold_on_its_train_budget(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    plan = make_version(tmp_path / "datasets").make_splits()  # 600 rows, a budget of 200 / 50
+
+    assert len(plan.df) == 250  # train + test
+    assert {len(folds) for folds in plan.splits.values()} == {3}
+    assert fold_sizes(plan.splits) == {(200, 50)}  # plain 3-fold CV of 250 rows would train on 166
+    for folds in plan.splits.values():
+        for train, test in folds.values():
+            assert not set(train) & set(test)
+    assert plan.comment == (
+        "Default splits. The frame is sub-sampled to 0.25k rows; every split trains on at most 0.2k and tests on at "
+        "most 0.05k rows: each fold tests on up to 0.05k rows of its third and trains on the other rows."
+    )
+
+
+def test_a_version_at_two_to_one_is_three_fold_cross_validation(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    ds = make_version(tmp_path / "datasets", budget="RowBudget(train=200, test=100)")
+    plan = ds.make_splits()
+    assert len(plan.df) == 300
+    assert plan.splits == ds._cross_validation(plan.df)  # each third is the fold's test side, as at 1M / 500k
+    assert plan.comment == (
+        "Default splits. The frame is sub-sampled to 0.3k rows; every split trains on at most 0.2k and tests on at "
+        "most 0.1k rows."
+    )
+
+
+def test_a_version_keeps_whole_groups_and_trains_on_the_rest_of_its_fold(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    grouping = (
+        '    grouping = Grouping(on="site", labels="per_sample", definition="""\n'
+        "        One group is a toy site.\n"
+        '    """)\n'
+    )
+    body = version_body(extra=grouping).replace(
+        '        return drop_columns(df, ["row_id"])',
+        '        df["site"] = (df["row_id"] // 4).astype(str)\n        return drop_columns(df, ["row_id"])',
+    )
+    write_definition(tmp_path / "datasets", "toy_ds_0p2k", body=body)
+    plan = get_dataset(tmp_path / "datasets", "toy_ds_0p2k").make_splits()
+
+    assert len(plan.df) <= 250
+    assert (plan.df["site"].value_counts() == 4).all()  # whole groups
+    for folds in plan.splits.values():
+        for train, test in folds.values():
+            assert len(test) <= 50
+            assert 180 <= len(train) <= 200  # the untested rows of its third train in the fold
+            assert not set(plan.df["site"].iloc[train]) & set(plan.df["site"].iloc[test])
+    assert "(whole groups)" in plan.comment
+
+
+def test_a_version_with_a_frame_within_budget_still_samples_its_test_sides(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    plan = make_version(tmp_path / "datasets", "toy_ds_0p5k", budget="RowBudget(train=500, test=100)").make_splits()
+    assert len(plan.df) == 600  # within train + test: taken fully
+    assert fold_sizes(plan.splits) == {(500, 100)}
+    assert plan.comment.startswith("Default splits. The frame is taken fully; every split trains on at most 0.5k")
+
+
+def test_a_version_whose_budget_changes_nothing_is_refused(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse
+    ds = make_version(tmp_path / "datasets", "toy_ds_1m", budget="RowBudget(train=1_000_000, test=500_000)")
+    with pytest.raises(DatasetDefinitionError, match="Take the dataset fully: drop `row_budget` and the `_1m`"):
+        ds.make_splits()
+
+
+def test_a_version_records_its_budget_and_is_held_to_it(
+    tmp_path: Path, warehouse: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    del warehouse
+    monkeypatch.setattr("data_foundry.bundle_checks.SPLIT_TRAIN_ROW_BUDGET", 100)  # the v1 budgets: format 1 only
+    monkeypatch.setattr("data_foundry.bundle_checks.SPLIT_TEST_ROW_BUDGET", 10)
+    ds = make_version(tmp_path / "datasets")
+    result = ds.check(verbose=False)
+    container = result.container
+    assert container.experiment_metadata.row_budget == RowBudget(train=200, test=50)
+    assert read_report(ds.report_path)["splits"]["row_budget"] == {"train": 200, "test": 50}
+    assert "Row budget: at most 0.2k train / 0.05k test rows per split." in ds.report_path.read_text()
+    slugs = result.bundle_report.slugs
+    assert not [slug for slug in slugs if slug.endswith("_over_budget")]
+    assert "splits_rows_never_tested" not in slugs  # the sampled test sides are the budget's doing
+
+    tighter = dataclasses.replace(container.experiment_metadata, row_budget=RowBudget(train=150, test=40))
+    findings = {
+        r.slug: r.severity
+        for r in run_bundle_checks(dataclasses.replace(container, experiment_metadata=tighter, checksum=None)).results
+    }
+    assert findings["splits_train_over_budget"] == "error"
+    assert findings["splits_test_over_budget"] == "warning"
+
+
+def temporal_version_body(
+    name: str = "toy_ds_0p19k",
+    budget: str = "RowBudget(train=190, test=60)",
+    windows: str = 'TemporalSplits(window=5, unit="days", n_windows=3)',
+) -> str:
+    """A temporal version: the 600 toy rows over 30 days (20 per day), 3 windows of 5 days."""
+    return (
+        version_body(name, budget, extra=f'    temporal = Temporal(on="t", splits={windows})\n')
+        .replace("RowBudget,", "RowBudget, Temporal, TemporalSplits,")
         .replace(
             '        return drop_columns(df, ["row_id"])',
             '        df["t"] = pd.Timestamp("2024-01-01") + pd.to_timedelta(df["row_id"] // 20, unit="D")\n'
@@ -753,49 +832,32 @@ def temporal_version_body(windows: str = 'TemporalSplits(window=5, unit="days", 
             '        return FeatureTypes(categorical=["colour"])',
             '        return FeatureTypes(categorical=["colour"], datetime=["t"])',
         )
-        .replace(
-            '    target = "y"\n',
-            '    version_of = "toy_ds"\n'
-            '    version_comment = "Sub-sampled to the row budget."\n'
-            "    subsample_to_budget = True\n"
-            f"{extra}"
-            '    target = "y"\n',
-        )
     )
 
 
-def test_a_temporal_version_samples_per_window_and_keeps_the_rows_it_uses(
-    tmp_path: Path, warehouse: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    del warehouse
-    monkeypatch.setattr(protocol, "TRAIN_ROW_BUDGET", 190)  # the windows' train sides hold 300 to 500 earlier rows
-    monkeypatch.setattr(protocol, "TEST_ROW_BUDGET", 60)  # a 5-day window holds 100 rows
-    write_definition(tmp_path / "datasets", "toy_ds_1m", body=temporal_version_body())
-    plan = get_dataset(tmp_path / "datasets", "toy_ds_1m").make_splits()
+def test_a_temporal_version_samples_per_window_and_keeps_the_rows_it_uses(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse  # the windows' train sides hold 300 to 500 earlier rows, a 5-day window 100 rows
+    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=temporal_version_body())
+    plan = get_dataset(tmp_path / "datasets", "toy_ds_0p19k").make_splits()
 
     assert len(plan.splits) == 3
     sides = [side for folds in plan.splits.values() for pair in folds.values() for side in pair]
-    assert all(
-        len(train) == 190 and len(test) == 60 for folds in plan.splits.values() for train, test in folds.values()
-    )
+    assert fold_sizes(plan.splits) == {(190, 60)}
     assert set().union(*map(set, sides)) == set(range(len(plan.df)))  # every kept row is in some split
     assert len(plan.df) < 600
     assert plan.df["t"].is_monotonic_increasing
     for folds in plan.splits.values():  # train is earlier than the window it predicts
         train, test = folds[0]
         assert plan.df["t"].iloc[train].max() < plan.df["t"].iloc[test].min()
+    assert "each train side is a random 0.19k of all earlier rows" in plan.comment
     assert "the frame keeps only the rows a split uses" in plan.comment
 
 
-def test_a_temporal_version_sampled_by_time_keeps_whole_days(
-    tmp_path: Path, warehouse: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    del warehouse
-    monkeypatch.setattr(protocol, "TRAIN_ROW_BUDGET", 190)  # 9 whole days of 20 rows fit, the 10th would cross it
-    monkeypatch.setattr(protocol, "TEST_ROW_BUDGET", 60)  # 3 of a window's 5 days
+def test_a_temporal_version_sampled_by_time_keeps_whole_days(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse  # 9 whole days of 20 rows fit the train budget, the 10th would cross it; 3 of a window's 5 days
     windows = 'TemporalSplits(window=5, unit="days", n_windows=3, sample_by="time")'
-    write_definition(tmp_path / "datasets", "toy_ds_1m", body=temporal_version_body(windows))
-    plan = get_dataset(tmp_path / "datasets", "toy_ds_1m").make_splits()
+    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=temporal_version_body(windows=windows))
+    plan = get_dataset(tmp_path / "datasets", "toy_ds_0p19k").make_splits()
 
     full_days = plan.df["t"].value_counts()
     assert (full_days == 20).all()  # every kept day keeps all its rows
@@ -808,9 +870,27 @@ def test_a_temporal_version_sampled_by_time_keeps_whole_days(
 
 def test_a_temporal_version_within_the_budget_is_refused(tmp_path: Path, warehouse: Path) -> None:
     del warehouse
-    write_definition(tmp_path / "datasets", "toy_ds_1m", body=temporal_version_body())
+    body = temporal_version_body("toy_ds_1m", "RowBudget(train=1_000_000, test=500_000)")
+    write_definition(tmp_path / "datasets", "toy_ds_1m", body=body)
     with pytest.raises(DatasetDefinitionError, match="no split side exceeds the row budget"):
         get_dataset(tmp_path / "datasets", "toy_ds_1m").make_splits()
+
+
+@pytest.mark.parametrize(
+    ("name", "budget", "extra", "match"),
+    [
+        ("toy_ds_1m", "RowBudget(train=190, test=60)", "", "is named `toy_ds_0p19k`"),
+        ("toy_ds_0p19k", "(190, 60)", "", "must be a `RowBudget"),
+        ("toy_ds_1m", "RowBudget(train=1_000_000, test=500_000)", "    subsample_to_budget = True\n", "is replaced"),
+    ],
+)
+def test_a_row_budget_is_checked_with_its_definition(
+    tmp_path: Path, warehouse: Path, *, name: str, budget: str, extra: str, match: str
+) -> None:
+    del warehouse
+    write_definition(tmp_path / "datasets", name, body=version_body(name, budget, extra))
+    with pytest.raises(DatasetDefinitionError, match=match):
+        get_dataset(tmp_path / "datasets", name)
 
 
 def test_a_grouped_definition_reports_its_group_structure(tmp_path: Path, warehouse: Path) -> None:

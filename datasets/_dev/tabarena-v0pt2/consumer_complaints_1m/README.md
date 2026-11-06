@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: consumer_complaints_1m
 container_format: 2
-checksum: v2:422425a6b09602307362efbd0308d6061088265d5d2514d6b775341995f9a385
+checksum: v2:883d5c8805fc4dd0b4ab3fff918abe0924f3d7b8b174947e8827605a7a797562
 build:
   uuid: 01a111fc-f194-75a8-92f0-489647625f28
   checksum: v2:0c1e1969952d69bc2a754b301e0693a07c2b8ebb809fac7068f1c5cae353f45c
@@ -53,6 +53,9 @@ splits:
   n_test:
     min: 203139
     max: 307396
+  row_budget:
+    train: 1000000
+    test: 500000
 bundle_checks:
   ok: true
   errors: []
@@ -71,7 +74,7 @@ decisions: []
 
 Multiclass classification of `Company response to consumer`, scored with `log_loss` on temporal splits by `Date received`. 1,811,452 rows and 12 features. Source: GOV Website (2026).
 
-Built as `01a111fc-f194-75a8-92f0-489647625f28` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:422425a6b09602307362efbd0308d6061088265d5d2514d6b775341995f9a385`, so the build is stale. See [Build](#build).
+Built as `01a111fc-f194-75a8-92f0-489647625f28` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:883d5c8805fc4dd0b4ab3fff918abe0924f3d7b8b174947e8827605a7a797562`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -229,7 +232,7 @@ We try to create splits that simulate a model deployed to solve the task.
 We create 3 test splits, one per quarter (2025-04-01 to 2025-06-30, 2025-07-01 to 2025-09-30, 2025-10-01 to 2025-12-31). This represents a refit horizon of 3 months.
 We use all data before each quarter as training data. Each quarter keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order for all windows).
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 203,139 to 307,396 rows. Prediction horizon: 3 months.
+3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 203,139 to 307,396 rows. Prediction horizon: 3 months. Row budget: at most 1M train / 500k test rows per split.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
@@ -239,7 +242,7 @@ We use all data before each quarter as training data. Each quarter keeps at most
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
 
 Accepted on purpose:
@@ -361,4 +364,4 @@ No numeric features to summarize.
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:422425a6b09602307362efbd0308d6061088265d5d2514d6b775341995f9a385` |
+| stale | yes: the definition now gives checksum `v2:883d5c8805fc4dd0b4ab3fff918abe0924f3d7b8b174947e8827605a7a797562` |

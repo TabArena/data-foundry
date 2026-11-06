@@ -62,8 +62,9 @@ All commands run from the repository root in the repository's environment (`.ven
 
 [`AbstractCuratedDataset`](src/data_foundry/v2/dataset.py) holds the conventions, so a definition does not repeat
 them: the dtype casts from `_feature_types`, the row order (the rows in the order of their content, then a
-shuffle with seed 42 or a stable sort by the time column), the split protocol (3 folds, or at least 3 temporal windows; at most 1M train and 500k test rows per split;
-larger data as a sub-sampled `<name>_1m` version), standard NaNs, the metadata validation, the bundle checks and the
+shuffle with seed 42 or a stable sort by the time column), the split protocol (3 folds, or at least 3 temporal
+windows; no row budget unless the definition declares one: TabArena v0.2 ships larger data as a `<name>_1m`
+version with `row_budget = RowBudget(train=1_000_000, test=500_000)`), standard NaNs, the metadata validation, the bundle checks and the
 verification of the saved container. Recipes for the recurring cases (every split regime, sub-sampling, leaks,
 dtypes, accepted warnings) are in [`definitions.md`](.claude/skills/knowledge-data-foundry/references/definitions.md).
 

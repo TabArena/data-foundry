@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: delivery_eta_1m
 container_format: 2
-checksum: v2:a89ec4ed8db9da7c6eafc06c34cfe3a53a1373568b520096d0a9e0a5d1d18f32
+checksum: v2:70b7c56326c2c93d1c55f03486c13a4e1b9e2a372f269e12e898baca3780229a
 build:
   uuid: 01a111fc-e6b7-7547-8e7f-790705764eb1
   checksum: v2:f63bdebe625bde55f891f2178c53431cf853f7d16663f160e5d68cc165e224f1
@@ -53,6 +53,9 @@ splits:
   n_test:
     min: 500000
     max: 500000
+  row_budget:
+    train: 1000000
+    test: 500000
 bundle_checks:
   ok: true
   errors: []
@@ -69,7 +72,7 @@ decisions: []
 
 Regression of `delivery_eta_minutes`, scored with `rmse` on temporal splits by `timestamp`. 2,500,000 rows and 221 features. Source: Kaggle (2024).
 
-Built as `01a111fc-e6b7-7547-8e7f-790705764eb1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:a89ec4ed8db9da7c6eafc06c34cfe3a53a1373568b520096d0a9e0a5d1d18f32`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e6b7-7547-8e7f-790705764eb1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:70b7c56326c2c93d1c55f03486c13a4e1b9e2a372f269e12e898baca3780229a`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -196,7 +199,7 @@ Version of `delivery_eta`: We sample per test window (v2 split protocol): each w
 
 We use each of the last 3 weeks as a test window (newest first) and all prior data as train data. No gap is needed: the orders pause overnight, and the last train order of each window is delivered 57 minutes to 6 hours before the window start (order time + delivery time), so no train label is unknown at a weekly refit (0 late orders in each of the 3 windows). Each window keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order for all windows).
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 500,000 rows. Prediction horizon: 7 days.
+3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 500,000 rows. Prediction horizon: 7 days. Row budget: at most 1M train / 500k test rows per split.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
@@ -206,7 +209,7 @@ We use each of the last 3 weeks as a test window (newest first) and all prior da
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 555,000,000 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
 
@@ -400,4 +403,4 @@ We use each of the last 3 weeks as a test window (newest first) and all prior da
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:a89ec4ed8db9da7c6eafc06c34cfe3a53a1373568b520096d0a9e0a5d1d18f32` |
+| stale | yes: the definition now gives checksum `v2:70b7c56326c2c93d1c55f03486c13a4e1b9e2a372f269e12e898baca3780229a` |

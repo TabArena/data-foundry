@@ -94,7 +94,8 @@ with Data Foundry v1 ([DATA_FOUNDRY_V1.md](DATA_FOUNDRY_V1.md)); a format-2 cont
 per group with an aggregation such as `mean` or `any`), what a model may know about a group when predicting, and the
 definition of a group with its source. A format-1 container has no such block, so `container.grouping` raises
 there. The group column is split and scoring metadata, never a model feature. `run_bundle_checks` judges each
-format by its own split protocol (v1: the repeat ladder and 250k test rows; v2: 3 folds and 500k test rows).
+format by its own split protocol (v1: the repeat ladder, 1M train and 250k test rows; v2: 3 folds, and the
+`experiment_metadata.row_budget` a sub-sampled version records: no size limit without one).
 
 **Checksums.** `container.verify()` recomputes a container's checksum and compares it with the stored one (with
 `get_dataset(..., verify=True)` a collection does it on load). A container built since 2026-10-06 has a version-2
