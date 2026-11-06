@@ -5,13 +5,13 @@ checked_by:
 - Myunghwan
 data_foundry_status:
 - WIP (DF)
+- 'DF: Yes'
 claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 3
 decision_markers:
 - Selection Bias
 tags:
-- AI-Filled (Verify)
 - Non-IID (Temporal)
 original_source: Other
 year: '2024'

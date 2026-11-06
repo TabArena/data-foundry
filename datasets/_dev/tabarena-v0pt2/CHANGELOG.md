@@ -1,6 +1,20 @@
 # Changelog: TabArena v0.2 working copy
 
 
+## 2026-11-06 (combined accepted datasets and curator decisions)
+
+- Integrate the four accepted GeoAI ground-level NO2, Economic Well-being, Duolingo session-performance and
+  Fugaku job-failure packages. Preserve each verified source/build commit in history and its generated build card.
+  Exact definitions, data protocols and source evidence are unchanged; independent split-case notes and the
+  Duolingo prediction-protocol follow-up are retained.
+- Add `DF: Yes` bookkeeping for accepted records while retaining their actual claim/WIP mirrors until integration.
+  Remove Fugaku's stale AI-filled verification tag after the recorded curator approval and completed reviews.
+- Record QoS as `No` / `Not Representative`, and AirQo African, Fannie Mae, DESI and Busara as temporary
+  `TBD -> Yes` / `DF: Suspended` holds. Preserve previous comments, attribution and reopening conditions.
+  Held reservations are released through the official claims procedure; accepted reservations remain until merge.
+- Raw data, containers, private evidence packets and local archives remain outside Git. No scientific task,
+  cohort, split or metric is changed by this integration.
+
 ## 2026-11-05 (GeoAI internal-skill refresh build verified)
 
 - Rebuilt only `geoai_ground_level_no2_estimation_challenge` from clean commit `a40b46997a5bb7b08a2bac87187c74c109512466`: format 2, UUID `01a1ae48-7d06-76ac-9741-a58d8233b176`, checksum `v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20`. The checksum is exactly equal to the preceding November build; no definition, data or metadata changes were needed.
