@@ -2,5 +2,5 @@ name: duolingo_spaced_repetition_recall
 holder: Myunghwan
 stage: triage
 claimed_at: '2026-10-31T23:44:24Z'
-expires_at: '2026-11-12T23:02:08Z'
-note: 'Refreshed approved Duolingo >=75% session-performance classifier on main9048f36a; prior choices retained. Built/reload/traced-input reproduction pass: 1,429,456 rows,8predictors,0errors/warnings. Local commits84291131 andf11991c8; container01a1adef-2da5-75af-9a38-674925897d45. Future test-history counter exploit documented; LEAK-9 requires train-only fitting and current-row predictions, with downstream method checks stillrequired. Not pushed/submitted; retain Myunghwan ownership pending integration, existingstage preserved.'
+expires_at: '2026-11-13T00:42:12Z'
+note: Updated installed workflow at9048f36a completed add/review/build with prior curator decisions retained. Local commits 90e77a7c and 3be188a7; container 01a1ae4b-07ce-7d55-b885-f6b11cb52d72. Same accepted checksum/data/splits; reload and traced-input reproduction pass, zero errors/warnings. Native review records explicit retention with original marks preserved. Train-only, own-row prediction protocol stays required; downstream method checks remain unverified. Not pushed or submitted; retain Myunghwan ownership pending integration, existing stage preserved.
