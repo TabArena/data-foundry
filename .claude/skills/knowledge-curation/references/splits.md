@@ -125,13 +125,15 @@ behind it, found by five questions asked in this order:
    much that flatters the score is unknown. Both ship after SPLIT-8's leak test, and the line says what a dated
    release would change.
 
-Only two answers describe IID data: `Timeless`, and a `Snapshot` of one moment whose target exists at that moment.
-Every other answer is non-IID data, its random or grouped split included: a `Snapshot` over a period (rows of the same
-time can share an outcome), a `DelayedTarget` (targets after a delay that may differ by row), a `CaseSeries` or
-`TimeLost` (rows over time), and every temporal split. For non-IID data the feature audit is part of the answer: every
-column gets "at the prediction point", "later" or "cannot tell" (LEAK-1, LEAK-10), a later column is dropped or
-lagged, and a "cannot tell" stays only when its missing values do not move with the outcome given the columns known at
-that point.
+IID data is data whose order of arrival does not vary: `Timeless`, a `Snapshot` of one moment whose target exists at
+that moment, and a `DelayedTarget` whose target arrives on one date for every row (the March 2007 drive of
+blood_transfusion, the October 2005 payment of credit_card_clients_default). Every other answer is non-IID data, its
+random or grouped split included: a `Snapshot` over a period (rows of the same time can share an outcome), a
+`DelayedTarget` whose delay differs by row (an event within a fixed follow-up from each row's own exam), a
+`CaseSeries` or `TimeLost` (rows over time), and every temporal split. For non-IID data, and for every
+`DelayedTarget`, the feature audit is part of the answer: every column gets "at the prediction point", "later" or
+"cannot tell" (LEAK-1, LEAK-10), a later column is dropped or lagged, and a "cannot tell" stays only when its missing
+values do not move with the outcome given the columns known at that point.
 
 The record carries the matching tag, set at screening from the source and checked when the definition is written:
 `Non-IID (Temporal)` when the data carries time, with `Time Unused` next to it when the curator keeps a split that

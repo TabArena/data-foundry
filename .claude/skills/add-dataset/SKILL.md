@@ -153,12 +153,12 @@ every `ruff --fix`.
 
 Then run the leak probes and the task probes, the group probes for a grouped task, the hidden-group probe for an IID
 one, the time probe for a split that is not temporal and the dtype probe
-([checks_and_probes.md](../knowledge-data-foundry/references/checks_and_probes.md)). A time-probe flag that is not
-explained away (a file sorted by class, a duration named like a date) means the data carries time: split by time, or
-measure what the shipped split costs against a temporal one (through Slurm) and make it an issue. For non-IID data
-(every time basis but `Timeless` and a one-moment `Snapshot`, and every temporal split), write the per-column audit
-(at the prediction point, later, cannot tell) into the run folder; a later column is dropped or lagged. every column
-it flags gets its meaning from the codebook, and its dtype from CLEAN-14. Read every flag by
+([checks_and_probes.md](../knowledge-data-foundry/references/checks_and_probes.md)). Every column the dtype probe
+flags gets its meaning from the codebook, and its dtype from CLEAN-14. A time-probe flag that is not explained away (a
+file sorted by class, a duration named like a date) means the data carries time: split by time, or measure what the
+shipped split costs against a temporal one (through Slurm) and make it an issue. For non-IID data and every
+`DelayedTarget` (SPLIT-32), write the per-column audit (at the prediction point, later, cannot tell) into the run
+folder; a later column is dropped or lagged. Read every flag by
 [evidence.md](../knowledge-curation/references/evidence.md), "Reading a probe": the highest-ranked reading first. A
 leak gets the mildest remedy that removes it (drop, lag, filter, re-split) with the deciding number in a bullet; a
 task-probe flag is answered by the rules of [task_probes.md](../knowledge-curation/references/task_probes.md).
