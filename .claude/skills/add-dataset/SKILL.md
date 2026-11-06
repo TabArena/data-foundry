@@ -68,13 +68,11 @@ for each dataset, because subagents do not start subagents.
 Follow `source_links` to the first publication. Write the use case first, in `task_summary`: who uses the prediction,
 when, the decision it informs, what one row is, what is predicted and what is known then. A dataset no decision fits
 (`fit="none"`) is not added: it goes back as `No Good Target / Scientific Discovery`. Write the prediction point into
-the first `curation_comments` bullet; every later choice is checked against it. Then work out how the data was
-collected for the use case: when each row, each feature and the target come into existence compared with that point.
-An order that varies from row to row makes the data non-IID; such dependencies are no blocker by themselves, and what
-matters is whether they affect the target. That decides the two things this skill is for: which split represents the
-use case, and which features are actually available at the prediction point (SPLIT-32 in
-[splits.md](../knowledge-curation/references/splits.md)). Then map the fields (definitions.md, "Field mapping"); for a
-grouped task note what one real-world prediction is and what is known about a new group.
+the first `curation_comments` bullet; every later choice is checked against it. Then note how the data was collected
+for the use case: when each row, each feature and the target come into existence compared with that point (SPLIT-32 in
+[splits.md](../knowledge-curation/references/splits.md)); it is information for the split and for which features are
+available. Then map the fields (definitions.md, "Field mapping"); for a grouped task note what one real-world
+prediction is and what is known about a new group.
 
 Find the metric the source scored before falling back (MET-1): the competition's evaluation page (Kaggle's Evaluation
 tab or the API's `evaluationMetric`, Zindi, DrivenData, a challenge page), the task description, the evaluation section
@@ -105,14 +103,10 @@ domain and source from the record.
    ships as the source publishes it and is declared in `special_features` as a `Spectrum(...)`, its columns left out
    of `_feature_types` (CLEAN-26); [spectra.md](../knowledge-curation/references/spectra.md) has what ships, the
    encodings, grouping the spectra of one sample (SPLIT-23) and the pitfalls.
-4. The regime: the split that best represents the use case, from how the data was collected (step 1). `temporal =
-   Temporal(...)` when the use case predicts later samples and the data keeps its time, `grouping = Grouping(...)`
-   when it predicts for new entities, nothing for IID; a `splits_comment` says why this window (and any gap,
-   sub-sampling or trimming). Design the split for the use case alone and choose no time-basis tag: whether a split
-   that is not temporal matches a use-case prototype of SPLIT-32
-   ([splits.md](../knowledge-curation/references/splits.md)), or has to be flagged because it treats non-IID data as
-   IID, is checked in the review (step 7, the split auditor). Collection facts on the record that look wrong are not
-   changed silently: they become an issue.
+4. The regime: nothing for IID, `grouping = Grouping(...)` or `temporal = Temporal(...)` with a `splits_comment`
+   saying why this window (and any gap, sub-sampling or trimming). The record's collection facts and the use-case
+   prototypes of SPLIT-32 ([splits.md](../knowledge-curation/references/splits.md)) are information for it; a
+   definition that follows a prototype carries its tag and a `Time basis:` line.
 5. The metric: `metric = Metric.source(name, original=..., reference=..., params=..., inputs=...)`,
    `Metric.stand_in(name, original=..., reason=..., reference=...)` or `Metric.fallback(reason=<where we looked, and
    which source metric was rejected and why>)` (definitions.md, "Field mapping", `metric`; MET-11). A standard name
@@ -153,14 +147,12 @@ every `ruff --fix`.
 Then run the leak probes and the task probes, the group probes for a grouped task, the hidden-group probe for an IID
 one, the time probe for a split that is not temporal and the dtype probe
 ([checks_and_probes.md](../knowledge-data-foundry/references/checks_and_probes.md)). Every column the dtype probe
-flags gets its meaning from the codebook, and its dtype from CLEAN-14. A time-probe flag that is not explained away (a
-file sorted by class, a duration named like a date) means the data carries time: weigh it in the split for the use
-case, and keep the probe output for the review. When the order of arrival varies from sample to sample, or the target
-arrives after the features, write the per-column audit (at the prediction point, later, cannot tell) into the run
-folder; a later column is dropped or lagged. Read every flag by
-[evidence.md](../knowledge-curation/references/evidence.md), "Reading a probe": the highest-ranked reading first. A
-leak gets the mildest remedy that removes it (drop, lag, filter, re-split) with the deciding number in a bullet; a
-task-probe flag is answered by the rules of [task_probes.md](../knowledge-curation/references/task_probes.md).
+flags gets its meaning from the codebook, and its dtype from CLEAN-14. The time probe lists signs that the data
+carries time (date columns, a drifting row order or ID, figures of a period), as information for the split. Read every
+flag by [evidence.md](../knowledge-curation/references/evidence.md), "Reading a probe": the highest-ranked reading
+first. A leak gets the mildest remedy that removes it (drop, lag, filter, re-split) with the deciding number in a
+bullet; a task-probe flag is answered by the rules of
+[task_probes.md](../knowledge-curation/references/task_probes.md).
 
 ## Step 6: The checklist
 
@@ -191,12 +183,6 @@ and the editor) for a re-check after a small change. Say which tier ran.
    `**Review panel:**` block with each agent's full report. A review raises 0 to N issues: zero is a valid outcome
    when the checks and the panel leave nothing for the curator to decide (the outcome says so, and the curator only
    sets the verdict). Never raise an issue to have one; an issue is something whose answer would change the dataset.
-   The time basis comes from the review: when the split auditor matches a split that is not temporal to a use-case
-   prototype that the table of SPLIT-32 allows for the record's collection facts, and no other panel agent disputes
-   it, write the tag and its `Time basis:` line as a settled fix. Otherwise two time issues are raised, each as its
-   own issue: a split of non-IID data that the auditor could not match to a prototype ("Split by time, or keep the
-   <random|grouped> split?", with the measured cost of both splits), and a pair of collection facts and time basis
-   that the table does not allow.
 3. The `review-editor` agent reads the draft as the curator would; apply its fixes.
 4. Add a dated CHANGELOG entry for the new folder, and the panel's summary in the record, one line in a fixed form:
    `**Assessment (AI, <date>):** review panel (<tier>): <the mediator's recommendation>; disputed: <the points, by

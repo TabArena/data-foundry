@@ -227,13 +227,11 @@ A metric input known at the prediction point (a weight that is a function of the
   state read through a relation that time does not move, measured on a dated source), each with a `Time basis:` line
   in `curation_comments` that states the fact; or a forced tag, `"ForcedIIDFromTemporal"` when a forward use case has
   no usable time or too few periods and ships IID (a definition that declares a `grouping` or `temporal` refuses it),
-  `"ForcedGroupedFromTemporal"` when such a task ships grouped (it needs a `grouping`; SPLIT-8). The record's
-  collection facts and the definition's time basis are checked as a pair (the table in SPLIT-32). A definition refuses
+  `"ForcedGroupedFromTemporal"` when such a task ships grouped (it needs a `grouping`; SPLIT-8). A definition refuses
   two time bases, and a prototype on a temporal split or without its line. `dataset check` notes a split that is not
-  temporal and has no time basis, and warns when date columns sit in the data of such a split unless the basis is
-  `Snapshot` (for `StationaryRelation` the curator accepts the warning with the measured evidence). `"2ndTierData"` is
-  retired (2026-10-21): old containers that carry it still load, but a new definition refuses it; write the doubts as
-  a finding and the fit as `approximate`.
+  temporal and has no time basis, and notes date columns in the data of such a split unless the basis is `Snapshot`.
+  `"2ndTierData"` is retired (2026-10-21): old containers that carry it still load, but a new definition refuses it;
+  write the doubts as a finding and the fit as `approximate`.
 * `problem_type`: "Regression" to `"regression"`, "Binary Classification" to `"binary_classification"`,
   "Multiclass Classification" or "Classification" to `"multiclass_classification"`. A table that supports a regression
   or a classification target, where taking one means dropping the other, gets one folder per framing: the second is

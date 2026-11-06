@@ -86,16 +86,12 @@ split); account_debt_south_africa and mobile_churn, first cases here, are one-mo
 
 ### When information arrives
 
-**SPLIT-32 (Must; narrows SPLIT-7, SPLIT-8 and SPLIT-14).** A split starts from how the data was collected for the use
-case: when each sample, each feature and the target come into existence, compared with the moment the use case
-predicts. Whenever that order varies from sample to sample, the data is non-IID and gets dedicated checks. Temporal
-dependencies in how the samples were collected are not a blocker by themselves; what the checks ask is whether they
-affect the target: whether the target, how often it occurs, or its relation to the features depends on when a sample
-was collected, or on samples collected before it. The aim is two answers: which split represents the use case without
-leakage, and which features are actually available at the prediction point.
+**SPLIT-32 (Should; relates to SPLIT-7, SPLIT-8 and SPLIT-14).** How the data was collected for the use case, when
+each sample, each feature and the target come into existence, is information for the split. When that order varies
+from sample to sample, the data is non-IID, and how it was collected helps to see which split represents the use case
+and which features are available at the prediction point. Two sets of tags record it.
 
-Two layers keep apart what the source is and what we make of it. The curation record describes the source by
-independent collection facts, set at screening and true whatever task is built on it:
+The curation record describes the source by independent collection facts, true whatever task is built on it:
 
 * **Samples:** `Samples: No Time Dimension` (designed runs, or a catalogue of properties where it plays no role when
   an item was measured), `Samples: One Moment` (one extract, census, scrape or exam round) or `Samples: Over Time`
@@ -108,11 +104,9 @@ independent collection facts, set at screening and true whatever task is built o
   Delay` (after a delay that differs between samples: a settlement, a chargeback, a follow-up) or `Target: Revised
   Later` (assigned, then updated or propagated); no tag when the target exists with the features.
 
-The definition is designed for the use case first, and its split is then checked against the use-case prototypes,
-which are a check of the design, not a menu to design from. The same source can carry different use cases (SPLIT-1's
-two applications), so the prototype is found per definition. The prototypes are the categories a task is matched
-against: a split that is not temporal carries one time-basis tag, and a prototype's `Time basis:` line in the curation
-notes states the fact behind it. The questions, in order:
+A definition can name the use-case prototype it follows; the same source can carry different use cases (SPLIT-1's two
+applications). A definition that names one carries its tag and a `Time basis:` line in the curation notes with the
+fact behind it. The prototypes, by the questions that tell them apart:
 
 1. **Can time affect the target at all?** Not when the target is a fixed property of the item, the same whenever it is
    measured (a material's strength, a molecule's activity, a species, the outcome of a designed run): `Timeless`. The
@@ -143,27 +137,13 @@ notes states the fact behind it. The questions, in order:
 5. **None of these prototypes fits:** the dataset and its use case go to the curator as an issue with the arrival
    facts found, rather than under the nearest tag.
 
-The record's facts and the definition's prototype are checked as a pair. The pairs that make sense, and what each must
-show:
-
-| Source (record) | `Timeless` | `Snapshot` | `DelayedTarget` | `StationaryRelation` | temporal | forced |
-|---|---|---|---|---|---|---|
-| No time dimension | yes | no | no | no | no | no |
-| One moment | yes | yes | yes: window closed for all, feature audit | no | impossible | no: not forced |
-| Over time, dated | yes: a property | yes, retrospective: same-time samples checked | only one cohort | yes, measured | yes, the default | only too few periods |
-| Over time, time lost | yes | yes, if retrospective | no | yes, argued | impossible | yes: SPLIT-8's leak test |
-
-A pair outside the table, or a split on a dated source that names no prototype, is a question for the curator.
-
 IID data is data whose order of arrival does not vary: `Samples: No Time Dimension`, and `Samples: One Moment` with
 the target at that moment or at one shared later date (the March 2007 drive of blood_transfusion, the October 2005
-payment of credit_card_clients_default). Every other source is non-IID data, its random or grouped split included. For
-non-IID data, and for every `DelayedTarget`, the feature audit is part of the answer: every column gets "at the
-prediction point", "later" or "cannot tell" (LEAK-1, LEAK-10), a later column is dropped or lagged, and a "cannot
-tell" stays only when its missing values do not move with the outcome given the columns known at that point.
+payment of credit_card_clients_default). A column that comes into existence after the prediction point is a leak
+whatever the split (LEAK-1, LEAK-10).
 
-Why: a random split can stand for the use case or flatter it, and only the pair of source and prototype tells which;
-naming both makes a compromise visible and a mismatch a question. Cases: the arrival study of the 177 v0.2 definitions
+Why: the same split can stand for the use case or flatter it, depending on how the data arrived; recording the
+collection facts and the prototype makes that visible. Cases: the arrival study of the 177 v0.2 definitions
 (2026-11-04) is the evidence; examples are credit_card_clients_default and framingham_heart_study_fhs
 (`DelayedTarget`), houses and 5g_energy_consumption (`Snapshot`), gallstone_disease (`StationaryRelation`), heloc
 (`ForcedIIDFromTemporal`).
