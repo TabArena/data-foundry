@@ -1,5 +1,71 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-06, asp_potassco_classification and sat11_hand_algo_runtime: Andrej's marks, third round (nothing rebuilt)
+
+- `asp_potassco_classification` (issue 2, B confirmed): the split count follows the units the metric scores, for every
+  dataset: new rule SPLIT-33 in splits.md (with its Cases row) and the same wording in definitions.md; this dataset
+  10 x 3. `sat11_hand_algo_runtime`: `dataset check` now gives 20 x 3 (184 instances), README regenerated, record CC
+  line; its container keeps 10 x 3 until the next build. Andrej's question on the 600 s timeouts and the log scale is
+  being answered as new issues.
+- `sat11_hand_algo_runtime` (issues 1-3: ship, 20 x 3, A) and `asp_potassco_classification` (issue 3, A): timed-out
+  runs stay at the recorded limit in the log target (5,000 s and 600 s), since it is the value ASlib records and how to
+  treat a censored run is left to the models; the reason, with the measured effect of the PAR10 charge, is in both
+  definitions' curation notes and records. `dataset check` 0 errors on both (the known constant-column warning each).
+- `sat11_hand_algo_runtime` (new issue 4, no definition change): the grouping's `select_min` chooses the solver
+  before PAR10 does and breaks a tie by the order of the rows, where PAR10 counts tied picks as their mean. The
+  trained models never tie (0 of 3,680 test instances over the 60 splits); a constant prediction scores 19,140 s
+  against 18,539 s. Dropping the aggregation recommended. definitions.md now describes both layouts of algorithm
+  selection (instances held out; a larger group held out, the instance the metric's `group` scoring column). Open.
+- `sat11_hand_algo_runtime` (Andrej: a decision item for every suggested change): new issue 2 (20 x 3 splits under
+  SPLIT-33, recommended) and issue 3 (a timed-out run counted as the recorded 5,000 s or the 50,000 s PAR10 charge;
+  the charge recommended, every model 17-19% better); `asp_potassco_classification` issue 3 narrowed to that dataset
+  (recorded 600 s recommended). No definition change.
+- `asp_potassco_classification` issue 4 resolved: the log scale kept (also in sat11_hand_algo_runtime). Issue 3 answered
+  on Andrej's principle (the target as the source records it, unless a change clearly benefits all models equally; the
+  scoring from the domain): ASlib records every timeout at the limit (600 s, 5,000 s), so the shipped target is not
+  adapted; the PAR10 charge clears the bar only in sat11 (all four models 17-19% better). Open.
+  `sat11_hand_algo_runtime` issue 1: Andrej's question answered (affected: 20 x 3 splits, the log scale; the timeout
+  target follows asp issue 3). Open.
+- `asp_potassco_classification` (new issues 3 and 4, Andrej's question, no definition change): the target of a
+  timed-out run (the 600 s limit, the 6,000 s PAR10 charge, a censored model, a timeout classifier, or no timeouts in
+  training) and its scale (log seconds against raw seconds, log1p, the PAR10 cost, the rank or the runtime relative to
+  the instance's fastest), measured by the PAR10 of the pick on the shipped splits and on sat11_hand_algo_runtime's 60.
+  Recommended: a timeout at 10 x the limit in both datasets (no measurable change here, 17-19% better picks on sat11),
+  the log kept. Open.
+
+## 2026-11-05, asp_potassco_classification: Andrej's marks on the v0.2 review page, second round (nothing rebuilt)
+
+- `asp_potassco_classification` (issue 2, B): the split protocol counts the units a metric scores. When the metric has
+  a group input, `recommended_dimensions` counts its groups instead of the rows, so 1,212 instances give 10 x 3 splits
+  instead of 3 x 3; `dataset check` 0 errors. The task summary now says 32 of the 96 problem classes per test fold (was
+  27 to 36). The same count moves `sat11_hand_algo_runtime` from 10 x 3 to 20 x 3 at its next build (184 instances);
+  open for confirmation in issue 2, with the rule amendment proposed there.
+
+## 2026-11-04, asp_potassco_classification: Andrej's marks on the v0.2 review page, first round (nothing rebuilt)
+
+- `asp_potassco_classification` (issue 1, B): reframed as runtime regression, as sat11_hand_algo_runtime: one row per
+  instance and clasp configuration (13,332 rows), the log runtime as target with timeouts at 600 s, `algorithm`
+  categorical, the anonymised `instance_id` a scoring column; scored by PAR10 (`par_k`, cutoff 600, k 10, the source's
+  metric) instead of log loss on the fastest label; ASlib's feature costs left out. `dataset check` 0 errors, task
+  probes no flag. The split protocol now gives 3 x 3 splits instead of 10 x 3: new issue 2. The rename waits until the
+  review page is done.
+
+## 2026-11-04, asp_potassco_classification issue 1 answered (no definition changed)
+
+- Andrej asked whether option B (runtime regression, as sat11) or C (the fastest label, scored by the chosen
+  configuration's runtime) serves the use case better. The answer in its `REVIEW.md` recommends B: only B lets a model
+  learn the timeouts that make up 96% of the user's loss, and it works with the framework as it is (a prototype split
+  by problem class with PAR10 per instance), while C needs a change of the metric spec. Each model trained both ways
+  on the 30 shipped splits (Slurm) favours neither: LightGBM and the forests pick better as in B, k-nearest
+  neighbours, the linear model and TabPFN as in C, and no method reliably beats always running the configuration most
+  often fastest in training. The issue stays open.
+
+## 2026-11-04, asp_potassco_classification and sat11_hand_algo_runtime: open questions in REVIEW.md for Andrej's review
+
+- A `REVIEW.md` in both folders, two of the 108 written for the BeyondArena v0.2 review page, without a panel, from
+  the evidence gathered so far: the records, earlier experiments and model runs on the shipped data. Both records carry
+  a `priority` and an `**Assessment (AI, 2026-11-04):**` line with its factors.
+
 ## 2026-11-05, the retirements of 2026-10-27 carried out
 
 - Three records Andrej set to `No (Retired)` on 2026-10-27: their folders are removed and `v2_path` cleared. `DF: Yes`,

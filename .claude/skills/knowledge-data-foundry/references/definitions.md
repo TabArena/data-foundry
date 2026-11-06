@@ -359,7 +359,9 @@ The order the collection's definitions converge on. Emit the steps that plausibl
 # 9. TODO(verify): duplicate rows: decide and document (leak_checks.md, Copies across the split (LEAK-16 to LEAK-21)).
 # 10. TODO(verify): target transform: `np.log` / `np.log1p` a skewed positive target and rename the column; skip it
 #     when the source already logged it.
-# 11. TODO(verify): censored or capped target values (drop the capped rows or document the cap).
+# 11. TODO(verify): censored or capped target values: decide case by case and document it in `curation_comments`
+#     (asp_potassco_classification and sat11_hand_algo_runtime keep a timed-out run at its recorded limit and drop
+#     only the instances on which every configuration timed out; a target censored by the download date: LEAK-24).
 # 12. TODO(verify): rows the use case never sees (a row without the input the prediction acts on; bias_correction's
 #     days without an LDAPS run).
 # 13. TODO(verify): recording errors cleaned to the state an expert would ship (the top solutions' and data owners'
@@ -393,7 +395,9 @@ version (all found in the v0.2 copy, 2026-10-06):
 ### IID and grouped
 
 Keep the default: no split attributes. The base class runs the v2 split protocol (`src/data_foundry/v2/splits.py`):
-always 3-fold cross-validation, with 20, 10, 3 or 1 repeats by the size of the train side (`recommended_dimensions`),
+always 3-fold cross-validation, with 20, 10, 3 or 1 repeats by the size of the train side, in the units the metric
+scores (the groups of the metric's `group` input, else the groups of `per_group` labels, else the rows; SPLIT-33,
+`recommended_dimensions`),
 built by `iid_splits` / `grouped_splits` with the benchmark seed, and every split capped to 1M train and 500k test rows
 (`cap_splits`). The comment is "Default splits."; set `splits_comment` only when there is something to say (a split
 that deliberately differs from the source's protocol, what a grouped test fold holds).
@@ -422,8 +426,20 @@ It is stored in the container (`task_metadata.grouping`, read with `container.gr
 * `prediction_unit` and `aggregation` come from what one real-world prediction is in the source: `mean` for replicate
   measurements of one label, `any` for multiple-instance data (musk: a molecule is a musk if any conformation is),
   `last` when the latest row carries the label (amex; needs `time_on`), `select_min` / `select_max` when one row is
-  chosen by its prediction and scored by its true value (sat11: run the algorithm predicted fastest). Everything else
-  is `row`.
+  chosen by its prediction and scored by its true value under a metric that does not choose by itself. Everything
+  else is `row`.
+* Algorithm selection (one row per instance and algorithm, the runtime as the target, the algorithm predicted
+  fastest is run): the metric chooses. `par_k` takes the instance as its `group` input, picks per instance the row
+  with the lowest prediction and counts rows tied there as the mean of their costs. Declare `prediction_unit="row"`
+  and no aggregation: the scorer applies an aggregation before the metric, so `select_min` would choose first and
+  break a tie by the order of the rows (a constant prediction on sat11_hand_algo_runtime scores 19,140 s, always the
+  first solver in the file, against 18,539 s under `par_k`'s rule; trained models did not tie). What the split holds
+  out decides where the instance comes from:
+  * instances (sat11_hand_algo_runtime): the grouping is on the instance, and the metric reads that column (MET-2);
+  * something larger (asp_potassco_classification: problem classes): the grouping is on the class, and the
+    anonymised instance ships as `ScoringColumn(column="instance_id", role="group", used_by="par_k")`, never a
+    feature.
+  sat11_hand_algo_runtime still declares `select_min`; dropping it is open in its `REVIEW.md`.
 * `context`: `all_rows` when all rows of a new group are known when predicting, `past_rows` when only its earlier rows
   are (needs `time_on`), `none` when each row stands alone.
 * `definition` is required: what one group is, why groups are held out (the use case), and the source with a quote.
@@ -579,7 +595,7 @@ and [cleaning_features.md](../../knowledge-curation/references/cleaning_features
 | `groups_not_clustered` (info) | rows no closer to their group than chance: compare IID and grouped scores before keeping the grouping |
 | `splits_test_single_class`, `splits_test_target_constant` | a test fold whose metric is undefined: fewer, larger folds or windows, or the task is too small |
 | `splits_test_minority_few`, `splits_test_class_missing` | test folds with under 10 rows of the rarer class, or without some class: widen the windows, merge by convention, or accept with the counts |
-| `task_target_value_dominant` | one value holds half of a regression target: name the cap, placeholder or zero inflation in `curation_comments`, drop censored rows, or accept with the reason |
+| `task_target_value_dominant` | one value holds half of a regression target: name the cap, timeout, placeholder or zero inflation in `curation_comments`; keep or drop censored rows case by case (sat11_hand_algo_runtime keeps its timeouts at the recorded limit), or accept with the reason |
 | `meta_tags_*` | tags agree with the split regime |
 | `meta_bibtex_*` | balanced braces, keys defined, `&`, `%`, `_` escaped |
 | `meta_placeholder_left`, `definition_todo_left`, `definition_license_placeholder` | every TODO in the metadata (the licence included) and every `TODO(verify)` in `dataset.py` is resolved before `build` |

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: asp_potassco_classification
 container_format: 2
-checksum: v2:1d6d0372ad04d58c4fa9c5c1c334b2227095411084c33706505d7bc30cd33c0a
+checksum: v2:f1c3ab3a87c7f0e984ac8ac697a730f8b1f2aa32cabd5d1ab7691e3e9a7c1604
 build:
   uuid: 01a111fc-9534-79ba-a1c0-efe7268f38e0
   checksum: v2:b6bc3fcf579023a6bb681f97aa24b90c306eda42a2358ed61c14dcd15012cdb3
@@ -19,20 +19,21 @@ build:
     polars: 1.41.1
 build_stale: true
 data:
-  n_rows: 1212
-  n_features: 136
+  n_rows: 13332
+  n_features: 137
   dtypes:
-    category: 3
-    float64: 135
+    category: 4
+    float64: 136
   n_test_dataset_rows: null
 task:
-  target: algorithm
-  problem_type: multiclass_classification
-  metric: log_loss
-  metric_origin: stand_in
-  scoring_columns: null
+  target: runtime
+  problem_type: regression
+  metric: par_k
+  metric_origin: source
+  scoring_columns:
+  - instance_id
   split_regime: grouped_non_iid
-  stratify_on: algorithm
+  stratify_on: null
   time_on: null
   group_on: task_id
   group_labels: per_sample
@@ -43,8 +44,8 @@ task:
     context: none
     n_groups: 96
     test_groups_per_fold:
-      min: 27
-      max: 36
+      min: 32
+      max: 32
 splits:
   n_repeats: 10
   n_folds: 3
@@ -54,19 +55,17 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 492
-    max: 1027
+    min: 7040
+    max: 10197
   n_test:
-    min: 185
-    max: 720
+    min: 3135
+    max: 6292
 bundle_checks:
   ok: true
   errors: []
   warnings:
   - dataset_constant_column
-  infos:
-  - dataset_duplicate_rows
-  - dataset_conflicting_duplicate_rows
+  infos: []
   accepted: {}
 decisions: []
 ---
@@ -75,33 +74,34 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Multiclass classification of `algorithm`, scored with `log_loss` on grouped splits by `task_id`. 1,212 rows and 136 features. Source: ASlib (2014).
+Regression of `runtime`, scored with `par_k` on grouped splits by `task_id`. 13,332 rows and 137 features. Source: ASlib (2014).
 
-Built as `01a111fc-9534-79ba-a1c0-efe7268f38e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:1d6d0372ad04d58c4fa9c5c1c334b2227095411084c33706505d7bc30cd33c0a`, so the build is stale. See [Build](#build).
+Built as `01a111fc-9534-79ba-a1c0-efe7268f38e0` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:f1c3ab3a87c7f0e984ac8ac697a730f8b1f2aa32cabd5d1ab7691e3e9a7c1604`, so the build is stale. See [Build](#build).
 
 ## In brief
 
-**Question.** Which of 11 configurations of the solver clasp solves a given logic-programming problem fastest?
+**Question.** How long will each of 11 configurations of the solver clasp take on a logic-programming problem of a kind not seen before?
 
-**Use case.** A user of answer set programming (a way to state and solve search problems in logic) picks the solver configuration for each new problem instance, as the algorithm selector claspfolio 2 does; here for a kind of problem not seen before.
+**Use case.** Algorithm selection: a user of answer set programming (a way to state and solve search problems in logic) predicts the runtime of each configuration on a new problem instance and runs the one predicted fastest, as the selector claspfolio 2 does (ASlib, Bischl et al. 2016); here for a kind of problem not seen before.
 
-**One row.** One instance of the Potassco benchmark set that at least one configuration solved within the time limit (1,212 instances from 96 problem classes, ASlib, 2014).
+**One row.** One run of one of 11 clasp configurations on one instance of the Potassco benchmark set, stopped at 600 seconds (1,212 instances from 96 problem classes that at least one configuration solved, 13,332 runs; ASlib, 2014).
 
-**Predicted.** The fastest of the 11 configurations; the most common one is fastest on 19.8% of the instances, and for 62% the second-best is within 1 second.
+**Predicted.** The run's time in seconds, on a log scale; a run stopped at the 600-second limit counts as 600 (1,963 runs, on 38% of the instances).
 
-**Known at prediction time.** Statistics of the instance's program (numbers of rules, atoms and constraints of each kind) and of a few short probing runs of the solver (choices, conflicts, learnt constraints, backjumps).
+**Known at prediction time.** The configuration's name, statistics of the instance's program (numbers of rules, atoms and constraints of each kind) and of a few short probing runs of the solver (choices, conflicts, learnt constraints, backjumps).
 
-**What the test data stands for.** Whole problem classes are held out (27 to 36 per fold), so the test data stands for a kind of problem never seen in training, as for a user with a new encoding.
+**What the test data stands for.** Whole problem classes are held out (32 of the 96 in each test fold), so the test data stands for a kind of problem never seen in training, as for a user with a new encoding.
 
-**Our changes to the source.** We drop instances that no configuration solved within the time limit, and hold out whole problem classes where claspfolio 2 and ASlib split instances at random.
+**Our changes to the source.** We drop instances that no configuration solved within the time limit, and hold out whole problem classes where claspfolio 2 and ASlib split instances at random. ASlib adds the cost of computing the features to the selected runtime; we leave it out, as it is the same whichever configuration is picked.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The features exist before solving, and a held-out class matches a new encoding. But the label counts a pick 0.05 s slower as wrong as a timeout, while the user cares about the time lost, and instances that no configuration solved are dropped, which a user cannot know in advance.
+> **Use case fit: approximate (a stand-in with a known gap).** The features exist before solving, a held-out class matches a new encoding, and the score is the time the user loses with the pick, timeouts included. But instances that no configuration solved are dropped, which a user cannot know in advance.
 
 ## Files in this folder
 
 | file | what it is |
 |---|---|
 | [`dataset.py`](dataset.py) | The definition, and the only file edited by hand: metadata, reading and cleaning the raw files, feature types and splits. |
+| [`REVIEW.md`](REVIEW.md) | The open questions for the curator, removed once they are settled. Not needed to rebuild. |
 | [`README.md`](README.md) | This page, generated by `dataset check` and `dataset build`. |
 
 - The curation record, with the triage decision and its sources: [`curation/records/asp_potassco_classification.md`](../../../../curation/records/asp_potassco_classification.md)
@@ -138,12 +138,11 @@ Only curators run `build`, when the dataset ships.
 | license | GPLv3 |
 | data_tags | Non-IID, Grouped |
 | reference | hoos2014claspfolio,bischl_aslib_2016 |
-| rows x columns | 1,212 x 138 |
-| task.target | algorithm |
-| task.problem_type | multiclass_classification |
-| task.metric | log_loss |
+| rows x columns | 13,332 x 140 |
+| task.target | runtime |
+| task.problem_type | regression |
+| task.metric | par_k |
 | task.split_regime | grouped_non_iid |
-| task.stratify_on | algorithm |
 | task.group_on | task_id |
 | task.group_labels | per_sample |
 
@@ -151,17 +150,27 @@ Only curators run `build`, when the dataset ships.
 
 | field | value |
 |---|---|
-| name | `log_loss` (standard; takes proba; lower is better) |
-| origin | stand_in: a stand-in for the source's metric, which cannot be computed |
-| original | PAR10 (penalized average runtime, timeouts counted as 10 x cutoff) of the selected algorithm (ASlib) |
-| reference | Bischl et al. 2016, ASlib: A benchmark library for algorithm selection, Artificial Intelligence 237; https://github.com/coseal/aslib_data/tree/master/ASP-POTASSCO (cutoff 600 s) |
-| definition | Original: mean over instances of the runtime of the chosen configuration, with a timeout scored 6000 s (10 x 600 s cutoff); stand-in: multiclass log loss on the fastest-configuration label. |
-| reason | ASlib scores PAR10 of the selected configuration, which needs the 11 runtimes per instance; they are not shipped (only the fastest configuration's label), and instances no configuration solved are dropped. Log loss on the fastest-configuration label is the closest computable score. |
+| name | `par_k` (custom; takes value; lower is better) |
+| origin | source: the source's metric |
+| original | PAR10 (penalized average runtime, factor 10) of the selected configuration (ASlib) |
+| reference | Bischl et al. 2016, ASlib: A benchmark library for algorithm selection, Artificial Intelligence 237:41-58; https://github.com/coseal/aslib_data/tree/master/ASP-POTASSCO (cutoff 600 s) |
+| definition | per instance select the configuration with the lowest predicted runtime; its true runtime in seconds (exp of the log target), a timeout (runtime >= 600 x (1 - 1e-4)) counted as 6,000 s; mean over instances. ASlib's feature costs are left out: they are the same whichever configuration is picked. |
+| params | {'cutoff': 600, 'k': 10, 'timeout_rel_tol': 0.0001} |
+| inputs | group: `instance_id` |
+| target scale | ships on the `log` scale for modelling; scored on the original scale after the inverse of `log` |
+
+**Scoring columns**
+
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+
+| column | role | how the metric uses it | model input |
+|---|---|---|---|
+| `instance_id` | group | par_k: the anonymised instance (11 rows each, one per configuration); the metric picks per instance the configuration with the lowest predicted runtime and averages the picks' true runtimes. | never a feature |
 
 <details>
-<summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 4 categorical, 0 string, 0 datetime</summary>
 
-- categorical (3): `task_id`, `Tight`, `algorithm`
+- categorical (4): `task_id`, `instance_id`, `algorithm`, `Tight`
 - string (0): none
 - datetime (0): none
 
@@ -195,72 +204,79 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 1,212 rows of the final frame (random rows: the frame is shuffled); 12 of 138 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 13,332 rows of the final frame (random rows: the frame is shuffled); 12 of 140 columns, the target first. Cells are cut at 40 characters.
 
-| algorithm | Frac_Neg_Body | Frac_Pos_Body | Frac_Unary_Rules | Frac_Binary_Rules | Frac_Ternary_Rules | Frac_Integrity_Rules | Tight | Problem_Variables | Free_Problem_Variables | Assigned_Problem_Variables | Constraints |
+| runtime | instance_id | algorithm | Frac_Neg_Body | Frac_Pos_Body | Frac_Unary_Rules | Frac_Binary_Rules | Frac_Ternary_Rules | Frac_Integrity_Rules | Tight | Problem_Variables | Free_Problem_Variables |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| clasp/2.1.3/h6-n1 | 0.3487 | 0.8613 | 0.2521 | 0.1387 | 0.4832 | 0.0756 | 1 | 161 | 145 | 16 | 428 |
-| clasp/2.1.3/h11-n1 | 0.2665 | 0.936 | 0.1386 | 0.3998 | 0 | 0.3998 | 1 | 884 | 510 | 374 | 373 |
-| clasp/2.1.3/h1-n1 | 0.0009 | 0.9898 | 0.0007 | 0.1155 | 0.8504 | 0.01 | 0 | 81011 | 80150 | 861 | 288997 |
-| clasp/2.1.3/h8-n1 | 0.0256 | 0.4656 | 0.0201 | 0.1844 | 0.6115 | 0.3059 | 1 | 78759 | 48626 | 30133 | 157786 |
-| clasp/2.1.3/h5-n1 | 0.0513 | 0.9567 | 0.0238 | 0.1266 | 0.7204 | 0.0003 | 0 | 100371 | 100145 | 226 | 368116 |
+| 1.20731 | 9e54b38c7bd9 | clasp/2.1.3/h5-n1 | 0.0081 | 0.9979 | 0.0039 | 0.0042 | 0.9855 | 0.1438 | 1 | 65201 | 44800 |
+| -1.38437 | 8fe8b6ebed96 | clasp/2.1.3/h5-n1 | 0.0206 | 0.6355 | 0.0144 | 0.4697 | 0.4611 | 0.4533 | 1 | 11403 | 5070 |
+| 0.92525 | 3fdb7127f55f | clasp/2.1.3/h10-n1 | 0.003 | 0.9636 | 0.0022 | 0.0354 | 0.9533 | 0.7467 | 0 | 55159 | 20479 |
+| 3.02976 | 5a3af6445099 | clasp/2.1.3/h4-n1 | 0.0157 | 0.4754 | 0.0089 | 0.1664 | 0.6855 | 0.3054 | 1 | 26716 | 14987 |
+| 0.0103562 | 59abc6b0a31d | clasp/2.1.3/h11-n1 | 0.0915 | 0.9648 | 0.0211 | 0.2394 | 0.662 | 0.2394 | 1 | 727 | 600 |
 
 ## Curation notes
 
 We get the data from ASlib and merge them into one file.
 
-- We treat it as a multiclass classification task to solve the algorithm selection task as in the OpenML version (https://openml.org/d/41705).
-- We drop all cases where no algorithm was able to finish before the timeout as these are essentially random labels.
-- We resolve the instance ID to a problem class (`task_id`) from its path: the instance path without the file name, for example `ASP-Comp-2011-Lparse/26-Solitaire`. A class holds different instances of one problem (here, Solitaire puzzles), and the best configuration depends on the class, which the instance features fingerprint. claspfolio 2 and ASlib split the instances at random, so their test instances come from known classes; we hold out whole classes instead, to predict the best configuration for a problem class not seen in training (the `definition` of the grouping).
-- Metric: log loss stands in for ASlib's PAR10, which needs the runtimes of all 11 configurations; only the fastest configuration ships (metric spec).
+- Task (Andrej, 2026-11-04): runtime regression with one row per instance and configuration, as sat11_hand_algo_runtime. A selector in use learns from the full table of runs, every configuration on every training instance, timeouts included, and the user loses time mostly to timeouts (96% of the single best configuration's PAR10 comes from them). Until then the task was multiclass classification of the fastest configuration, as in the OpenML version (https://openml.org/d/41705), scored by log loss as a stand-in for PAR10; that label counted a pick 0.05 s slower as wrong as a timeout (for 62% of the instances the second-best configuration is within 1 s of the best) and no model saw a runtime or a timeout. On the 30 splits of the classification definition, always running the configuration most often fastest in training gives a PAR10 of 611 s, the best pick per instance 21 s; untuned LightGBM trained this way picks at 646 s.
+- We drop all instances that no configuration solved before the 600 s timeout (all their runtimes are the censored limit, and every choice costs the same). We keep the 1,963 timeouts of the other 1,212 instances at the limit of 600 s (every finished run took at most 599.7 s): selecting the fastest configuration needs every configuration's outcome, and the limit keeps the order within an instance and is enough to compute PAR10.
+- Timeouts stay at the recorded 600 s in the target (Andrej, 2026-11-06): it is the value ASlib records, and how to
+  treat a censored run is left to the models; the scoring, ASlib's PAR10, charges a timeout ten times the limit.
+  Counting timeouts at that charge (6,000 s) in the target moved the picks only within noise here (better with
+  LightGBM and linear models, worse with a random forest and TabPFN).
+- We log scale the target. The configuration's name (`algorithm`) is a categorical feature: the scenario publishes no configuration features.
+- The instance id is anonymised and ships as a scoring column only: the metric picks per instance the configuration with the lowest predicted runtime. Never a feature.
+- We resolve the instance ID to a problem class (`task_id`) from its path: the instance path without the file name, for example `ASP-Comp-2011-Lparse/26-Solitaire`. A class holds different instances of one problem (here, Solitaire puzzles), and the best configuration depends on the class, which the instance features fingerprint. claspfolio 2 and ASlib split the instances at random, so their test instances come from known classes; we hold out whole classes instead, to predict the runtimes on a problem class not seen in training (the `definition` of the grouping).
+- Metric: ASlib's PAR10 of the configuration predicted fastest per instance. ASlib adds the feature costs (`feature_costs.arff`) to the selected runtime; they are the same whichever configuration is picked, so we leave them out.
+- To do: rename the dataset (it is no longer a classification task) once the BeyondArena v0.2 review page is done; its marks are stored under the current name.
 
 ## Splits
 
 Default splits.
 
-10 repeat(s) x 3 fold(s) with seed 4267; train 492 to 1,027 rows, test 185 to 720 rows.
+10 repeat(s) x 3 fold(s) with seed 4267; train 7,040 to 10,197 rows, test 3,135 to 6,292 rows.
 
 <details>
 <summary>Show all 30 splits</summary>
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 827 | 385 |
-| 0 | 1 | 840 | 372 |
-| 0 | 2 | 757 | 455 |
-| 1 | 0 | 972 | 240 |
-| 1 | 1 | 823 | 389 |
-| 1 | 2 | 629 | 583 |
-| 2 | 0 | 714 | 498 |
-| 2 | 1 | 683 | 529 |
-| 2 | 2 | 1027 | 185 |
-| 3 | 0 | 831 | 381 |
-| 3 | 1 | 812 | 400 |
-| 3 | 2 | 781 | 431 |
-| 4 | 0 | 786 | 426 |
-| 4 | 1 | 710 | 502 |
-| 4 | 2 | 928 | 284 |
-| 5 | 0 | 773 | 439 |
-| 5 | 1 | 957 | 255 |
-| 5 | 2 | 694 | 518 |
-| 6 | 0 | 1015 | 197 |
-| 6 | 1 | 492 | 720 |
-| 6 | 2 | 917 | 295 |
-| 7 | 0 | 789 | 423 |
-| 7 | 1 | 829 | 383 |
-| 7 | 2 | 806 | 406 |
-| 8 | 0 | 779 | 433 |
-| 8 | 1 | 789 | 423 |
-| 8 | 2 | 856 | 356 |
-| 9 | 0 | 754 | 458 |
-| 9 | 1 | 864 | 348 |
-| 9 | 2 | 806 | 406 |
+| 0 | 0 | 8481 | 4851 |
+| 0 | 1 | 8668 | 4664 |
+| 0 | 2 | 9515 | 3817 |
+| 1 | 0 | 8558 | 4774 |
+| 1 | 1 | 8448 | 4884 |
+| 1 | 2 | 9658 | 3674 |
+| 2 | 0 | 9383 | 3949 |
+| 2 | 1 | 9647 | 3685 |
+| 2 | 2 | 7634 | 5698 |
+| 3 | 0 | 7590 | 5742 |
+| 3 | 1 | 8987 | 4345 |
+| 3 | 2 | 10087 | 3245 |
+| 4 | 0 | 9042 | 4290 |
+| 4 | 1 | 9603 | 3729 |
+| 4 | 2 | 8019 | 5313 |
+| 5 | 0 | 9955 | 3377 |
+| 5 | 1 | 8888 | 4444 |
+| 5 | 2 | 7821 | 5511 |
+| 6 | 0 | 10197 | 3135 |
+| 6 | 1 | 7040 | 6292 |
+| 6 | 2 | 9427 | 3905 |
+| 7 | 0 | 8426 | 4906 |
+| 7 | 1 | 9317 | 4015 |
+| 7 | 2 | 8921 | 4411 |
+| 8 | 0 | 9493 | 3839 |
+| 8 | 1 | 9174 | 4158 |
+| 8 | 2 | 7997 | 5335 |
+| 9 | 0 | 8492 | 4840 |
+| 9 | 1 | 8371 | 4961 |
+| 9 | 2 | 9801 | 3531 |
 
 </details>
 
 ## Group structure
 
-One group is a problem class of the Potassco ASP benchmark set (96 classes with 1 to 134 instances); its rows are instances, each labelled with the fastest of 11 clasp configurations. Each instance is one selection decision, made from its own features. claspfolio 2 (Hoos et al. 2014) and ASlib split the instances at random; holding out whole problem classes is our choice and asks for a configuration on a problem class not seen in training.
+One group is a problem class of the Potassco ASP benchmark set (96 classes with 1 to 134 instances); its rows are the runs of the 11 clasp configurations on its instances, with the log runtime as the target. The use case is algorithm selection: predict every configuration's runtime on a new instance and run the one predicted fastest (ASlib, Bischl et al. 2016), scored per instance by the selected configuration's true runtime (PAR10) through the instance id, a scoring column. claspfolio 2 (Hoos et al. 2014) and ASlib split the instances at random; holding out whole problem classes is our choice and asks for a configuration on a problem class not seen in training.
 
 | field | value |
 |---|---|
@@ -273,210 +289,198 @@ One group is a problem class of the Potassco ASP benchmark set (96 classes with 
 | statistic | value |
 |---|---|
 | groups | 96 |
-| rows per group (min / median / max) | 1 / 5.0 / 134 |
+| rows per group (min / median / max) | 11 / 55.0 / 1,474 |
 | largest group | 11.1% of the rows |
-| test groups per fold | 27 to 36 |
-| groups of two or more rows with a single label | 7.9% |
-| nearest neighbour in the same group | 83.9% of the rows (chance: 3.6%) |
-| label variance explained by the group | 0.28 (shuffled groups: 0.08) |
+| test groups per fold | 32 |
+| groups of two or more rows with a single label | 0.0% |
+| nearest neighbour in the same group | 97.7% of the rows (chance: 3.6%) |
+| label variance explained by the group | 0.59 (shuffled groups: 0.01) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 2 info (26 checks run, plus the dataset's own checks).
+0 error(s), 1 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_constant_column`: 2 constant column(s) (1 distinct non-null value): ['Removed_Nogoods-1', 'Removed_Nogoods-2']. (hint: Drop them unless the constant is meaningful for the task.)
-- **info** `dataset_duplicate_rows`: 5 exact duplicate row(s) (0.4% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
-- **info** `dataset_conflicting_duplicate_rows`: 5 row(s) (0.4%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
 ## Data checks
 
 ### Feature summary
 
 <details>
-<summary>Show the table (138 rows)</summary>
+<summary>Show the table (140 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| Tight | category | 16 | 1.32 | 2 | 1.0, 0.0 |
-| algorithm | category | 0 | 0 | 11 | clasp/2.1.3/h1-n1, clasp/2.1.3/h10-n1, clasp/2.1.3/h6-n1, clasp/2.1.3/h4-n1, cl… |
+| Tight | category | 176 | 1.32 | 2 | 1.0, 0.0 |
+| instance_id | category | 0 | 0 | 1212 | 004f5cda67b8, 008b8faad4b7, 00ab017c53cb, 00b2e91df90a, 00be9d6a0860, 00c3a51d1… |
+| algorithm | category | 0 | 0 | 11 | clasp/2.1.3/h1-n1, clasp/2.1.3/h10-n1, clasp/2.1.3/h11-n1, clasp/2.1.3/h2-n1, c… |
 | task_id | category | 0 | 0 | 96 | 222a85a4193a, 54a904dabd66, c40240438f96, 6b33cae0f35e, 26164589427a, 15c7db402… |
-| Choices-4 | float64 | 218 | 17.99 | 751 | 528.0, 200.0, 644.0, 415.0, 716.0, 974.0, 557.0, 634.0, 841.0, 808.0 |
-| Conflicts/Choices-4 | float64 | 218 | 17.99 | 812 | 0.2424, 0.2524, 0.0048, 0.2298, 1.0, 0.2393, 0.9143, 0.094, 0.251, 0.0047 |
-| Avg_Conflict_Levels-4 | float64 | 218 | 17.99 | 954 | 33.8984, 64.6589, 38.1016, 1.0, 10.9297, 33.1797, 45.3594, 74.375, 36.0703, 212… |
-| Avg_LBD_Levels-4 | float64 | 218 | 17.99 | 825 | 3.1406, 4.0231, 2.8281, 3.5469, 10.6641, 3.9922, 3.0, 4.1008, 2.907, 3.2578 |
-| Learnt_from_Conflict-4 | float64 | 218 | 17.99 | 10 | 128.0, 129.0, 130.0, 131.0, 132.0, 133.0, 134.0, 135.0, 136.0, 120.0 |
-| Learnt_from_Loop-4 | float64 | 218 | 17.99 | 284 | 0.0, 28.0, 31.0, 30.0, 11.0, 37.0, 18.0, 32.0, 9.0, 3.0 |
-| Frac_Learnt_from_Conflict-4 | float64 | 218 | 17.99 | 312 | 1.0, 0.8205, 0.805, 0.8101, 0.8312, 0.9343, 0.9209, 0.8767, 0.8421, 0.9481 |
-| Frac_Learnt_from_Loop-4 | float64 | 218 | 17.99 | 312 | 0.0, 0.1795, 0.195, 0.1899, 0.1688, 0.0657, 0.0791, 0.1233, 0.1579, 0.0519 |
-| Literals_in_Conflict_Nogoods-4 | float64 | 218 | 17.99 | 861 | 684.0, 442.0, 1770.0, 913.0, 2116.0, 409.0, 757.0, 1070.0, 1451.0, 1416.0 |
-| Literals_in_Loop_Nogoods-4 | float64 | 218 | 17.99 | 353 | 0.0, 45.0, 55.0, 135.0, 130.0, 120.0, 160.0, 150.0, 40.0, 65.0 |
-| Frac_Literals_in_Conflict_Nogoods-4 | float64 | 218 | 17.99 | 357 | 1.0, 0.0011, 0.0019, 0.0018, 0.0014, 0.0016, 0.0115, 0.0025, 0.0004, 0.0005 |
-| Frac_Literals_in_Loop_Nogoods-4 | float64 | 218 | 17.99 | 357 | 0.0, 0.9989, 0.9981, 0.9982, 0.9986, 0.9984, 0.9885, 0.9975, 0.9996, 0.9995 |
-| Removed_Nogoods-4 | float64 | 218 | 17.99 | 6 | 0.0, 92.0, 93.0, 89.0, 61.0, 90.0 |
-| Learnt_Binary-4 | float64 | 218 | 17.99 | 73 | 0.0, 2.0, 3.0, 1.0, 6.0, 7.0, 14.0, 4.0, 17.0, 12.0 |
-| Learnt_Ternary-4 | float64 | 218 | 17.99 | 106 | 0.0, 1.0, 10.0, 19.0, 18.0, 9.0, 8.0, 22.0, 14.0, 15.0 |
-| Learnt_Others-4 | float64 | 218 | 17.99 | 336 | 129.0, 128.0, 130.0, 131.0, 132.0, 94.0, 126.0, 127.0, 91.0, 108.0 |
-| Frac_Removed_Nogood-4 | float64 | 218 | 17.99 | 12 | 0.0, 0.7266, 0.7099, 0.7188, 0.7077, 0.4766, 0.7023, 0.6977, 0.7132, 0.6953 |
-| Frac_Learnt_Binary-4 | float64 | 218 | 17.99 | 417 | 0.0, 0.0078, 0.0046, 0.0156, 0.0076, 0.2969, 0.1318, 0.1797, 0.0923, 0.0538 |
-| Frac_Learnt_Ternary-4 | float64 | 218 | 17.99 | 454 | 0.0, 0.0078, 0.0076, 0.1154, 0.2812, 0.1473, 0.0938, 0.062, 0.0156, 0.0781 |
-| Frac_Learnt_Others-4 | float64 | 218 | 17.99 | 549 | 1.0, 0.9922, 0.9924, 0.4219, 0.9844, 0.9766, 0.9923, 0.9927, 0.8527, 0.7231 |
-| Skipped_Levels_while_Backjumping-4 | float64 | 218 | 17.99 | 691 | 382.0, 128.0, 163.0, 178.0, 161.0, 159.0, 351.0, 181.0, 169.0, 418.0 |
-| Avg_Skipped_Levels_while_Backjumping-4 | float64 | 218 | 17.99 | 872 | 2.9844, 1.0, 1.2636, 1.2846, 1.6719, 3.4846, 1.3101, 1.2443, 3.0, 2.7209 |
-| Longest_Backjumping-4 | float64 | 218 | 17.99 | 305 | 24.0, 4.0, 6.0, 5.0, 26.0, 20.0, 27.0, 7.0, 17.0, 16.0 |
-| Running_Avg_Conflictlevel-4 | float64 | 218 | 17.99 | 905 | 27.15, 26.11, 17.91, 18.88, 1.0, 29.27, 12.09, 42.42, 16.02, 23.31 |
-| Running_Avg_LBD-4 | float64 | 218 | 17.99 | 544 | 3.13, 3.2, 4.93, 3.93, 2.99, 3.44, 3.58, 4.16, 4.29, 3.59 |
-| Choices-3 | float64 | 191 | 15.76 | 693 | 341.0, 209.0, 338.0, 339.0, 158.0, 410.0, 162.0, 336.0, 403.0, 589.0 |
-| Conflicts/Choices-3 | float64 | 191 | 15.76 | 814 | 0.2815, 0.1479, 0.198, 0.3345, 0.4593, 0.1696, 0.2861, 0.9796, 0.2553, 0.6139 |
-| Avg_Conflict_Levels-3 | float64 | 191 | 15.76 | 968 | 37.6667, 1.1875, 1.0, 31.7188, 35.1042, 11.4583, 21.5104, 30.5833, 22.3229, 20.… |
-| Avg_LBD_Levels-3 | float64 | 191 | 15.76 | 797 | 3.1146, 2.6667, 2.6979, 3.9479, 3.5729, 2.75, 3.125, 2.9479, 1.1875, 3.9792 |
-| Learnt_from_Conflict-3 | float64 | 191 | 15.76 | 12 | 96.0, 97.0, 98.0, 99.0, 100.0, 101.0, 72.0, 103.0, 68.0, 91.0 |
-| Learnt_from_Loop-3 | float64 | 191 | 15.76 | 279 | 0.0, 26.0, 21.0, 1.0, 19.0, 4.0, 2.0, 23.0, 14.0, 24.0 |
-| Frac_Learnt_from_Conflict-3 | float64 | 191 | 15.76 | 300 | 1.0, 0.7869, 0.8205, 0.932, 0.8, 0.8727, 0.7934, 0.8136, 0.8348, 0.0174 |
-| Frac_Learnt_from_Loop-3 | float64 | 191 | 15.76 | 300 | 0.0, 0.2131, 0.1795, 0.068, 0.2, 0.1273, 0.2066, 0.1864, 0.1652, 0.9826 |
-| Literals_in_Conflict_Nogoods-3 | float64 | 191 | 15.76 | 856 | 521.0, 917.0, 295.0, 355.0, 318.0, 297.0, 301.0, 1433.0, 311.0, 539.0 |
-| Literals_in_Loop_Nogoods-3 | float64 | 191 | 15.76 | 344 | 0.0, 551.0, 125.0, 40.0, 65.0, 25.0, 30.0, 35.0, 70.0, 105.0 |
-| Frac_Literals_in_Conflict_Nogoods-3 | float64 | 191 | 15.76 | 353 | 1.0, 0.0024, 0.0022, 0.0014, 0.0013, 0.0016, 0.0012, 0.876, 0.0004, 0.001 |
-| Frac_Literals_in_Loop_Nogoods-3 | float64 | 191 | 15.76 | 353 | 0.0, 0.9976, 0.9978, 0.9986, 0.9987, 0.9984, 0.9988, 0.124, 0.9996, 0.999 |
-| Removed_Nogoods-3 | float64 | 191 | 15.76 | 2 | 0.0, 61.0 |
-| Learnt_Binary-3 | float64 | 191 | 15.76 | 59 | 0.0, 2.0, 1.0, 4.0, 3.0, 11.0, 5.0, 6.0, 10.0, 8.0 |
-| Learnt_Ternary-3 | float64 | 191 | 15.76 | 86 | 0.0, 7.0, 1.0, 10.0, 9.0, 8.0, 3.0, 4.0, 6.0, 16.0 |
-| Learnt_Others-3 | float64 | 191 | 15.76 | 323 | 96.0, 97.0, 99.0, 98.0, 93.0, 95.0, 65.0, 71.0, 66.0, 58.0 |
-| Frac_Removed_Nogood-3 | float64 | 191 | 15.76 | 2 | 0.0, 0.6354 |
-| Frac_Learnt_Binary-3 | float64 | 191 | 15.76 | 361 | 0.0, 0.0104, 0.0208, 0.3333, 0.1649, 0.0816, 0.0103, 0.1146, 0.0928, 0.0729 |
-| Frac_Learnt_Ternary-3 | float64 | 191 | 15.76 | 391 | 0.0, 0.0104, 0.0729, 0.0833, 0.1531, 0.1771, 0.134, 0.0102, 0.0208, 0.3021 |
-| Frac_Learnt_Others-3 | float64 | 191 | 15.76 | 499 | 1.0, 0.9896, 0.9897, 0.8646, 0.9688, 0.3646, 0.7526, 0.9792, 0.7245, 0.6875 |
-| Skipped_Levels_while_Backjumping-3 | float64 | 191 | 15.76 | 655 | 223.0, 96.0, 125.0, 123.0, 135.0, 118.0, 136.0, 267.0, 128.0, 363.0 |
-| Avg_Skipped_Levels_while_Backjumping-3 | float64 | 191 | 15.76 | 856 | 1.0, 2.3229, 1.3021, 1.2292, 1.3776, 2.4167, 2.7812, 1.3469, 3.5417, 3.6701 |
-| Longest_Backjumping-3 | float64 | 191 | 15.76 | 300 | 4.0, 16.0, 5.0, 6.0, 9.0, 27.0, 26.0, 24.0, 7.0, 15.0 |
-| Running_Avg_Conflictlevel-3 | float64 | 191 | 15.76 | 930 | 36.16, 1.14, 33.7, 9.38, 27.38, 0.96, 30.45, 12.44, 24.69, 48.41 |
-| Running_Avg_LBD-3 | float64 | 191 | 15.76 | 599 | 2.99, 3.82, 3.86, 3.83, 3.0, 3.79, 3.32, 11.88, 2.56, 3.9 |
-| Choices-2 | float64 | 162 | 13.37 | 630 | 222.0, 205.0, 190.0, 102.0, 64.0, 196.0, 278.0, 241.0, 108.0, 105.0 |
-| Conflicts/Choices-2 | float64 | 162 | 13.37 | 757 | 0.2883, 0.3368, 1.0, 0.3351, 0.3333, 0.0064, 0.6275, 0.3122, 0.2591, 0.5039 |
-| Avg_Conflict_Levels-2 | float64 | 162 | 13.37 | 977 | 42.375, 1.0, 32.7969, 1.9844, 4.4565, 32.3594, 81.2615, 6.9077, 26.2615, 15.0 |
-| Avg_LBD_Levels-2 | float64 | 162 | 13.37 | 719 | 3.2812, 2.8125, 4.0, 1.0, 2.6562, 2.7031, 3.0938, 3.1719, 2.9219, 6.4844 |
-| Learnt_from_Conflict-2 | float64 | 162 | 13.37 | 12 | 64.0, 65.0, 66.0, 67.0, 68.0, 69.0, 49.0, 46.0, 58.0, 70.0 |
-| Learnt_from_Loop-2 | float64 | 162 | 13.37 | 270 | 0.0, 4.0, 10.0, 14.0, 5.0, 8.0, 2.0, 7.0, 6.0, 1.0 |
-| Frac_Learnt_from_Conflict-2 | float64 | 162 | 13.37 | 255 | 1.0, 0.9412, 0.8649, 0.9275, 0.8205, 0.9143, 0.9014, 0.7111, 0.9697, 0.8889 |
+| Choices-4 | float64 | 2398 | 17.99 | 751 | 528.0, 644.0, 200.0, 415.0, 634.0, 716.0, 974.0, 557.0, 539.0, 1211.0 |
+| Conflicts/Choices-4 | float64 | 2398 | 17.99 | 812 | 0.2424, 0.2524, 0.0132, 0.094, 0.1677, 0.1584, 0.0095, 0.0047, 0.2393, 0.9143 |
+| Avg_Conflict_Levels-4 | float64 | 2398 | 17.99 | 954 | 33.8984, 38.1016, 1.0, 64.6589, 15.5846, 21.0703, 74.375, 47.4453, 53.3566, 34.… |
+| Avg_LBD_Levels-4 | float64 | 2398 | 17.99 | 825 | 3.1406, 4.0231, 10.6641, 2.8281, 4.1008, 3.9922, 3.0, 3.5469, 3.7231, 4.5547 |
+| Learnt_from_Conflict-4 | float64 | 2398 | 17.99 | 10 | 128.0, 129.0, 130.0, 131.0, 132.0, 133.0, 134.0, 135.0, 136.0, 120.0 |
+| Learnt_from_Loop-4 | float64 | 2398 | 17.99 | 284 | 0.0, 28.0, 31.0, 11.0, 30.0, 37.0, 18.0, 32.0, 9.0, 27.0 |
+| Frac_Learnt_from_Conflict-4 | float64 | 2398 | 17.99 | 312 | 1.0, 0.8205, 0.8101, 0.805, 0.9343, 0.8767, 0.8312, 0.9209, 0.9481, 0.8421 |
+| Frac_Learnt_from_Loop-4 | float64 | 2398 | 17.99 | 312 | 0.0, 0.1795, 0.1899, 0.195, 0.0657, 0.1233, 0.1688, 0.0791, 0.0519, 0.1579 |
+| Literals_in_Conflict_Nogoods-4 | float64 | 2398 | 17.99 | 861 | 684.0, 913.0, 1770.0, 442.0, 1451.0, 1070.0, 757.0, 2116.0, 708.0, 409.0 |
+| Literals_in_Loop_Nogoods-4 | float64 | 2398 | 17.99 | 353 | 0.0, 45.0, 55.0, 150.0, 40.0, 160.0, 120.0, 135.0, 130.0, 90.0 |
+| Frac_Literals_in_Conflict_Nogoods-4 | float64 | 2398 | 17.99 | 357 | 1.0, 0.0011, 0.0019, 0.0014, 0.0016, 0.0018, 0.0023, 0.0005, 0.0025, 0.002 |
+| Frac_Literals_in_Loop_Nogoods-4 | float64 | 2398 | 17.99 | 357 | 0.0, 0.9989, 0.9981, 0.9986, 0.9984, 0.9982, 0.9977, 0.9995, 0.9975, 0.998 |
+| Removed_Nogoods-4 | float64 | 2398 | 17.99 | 6 | 0.0, 92.0, 93.0, 89.0, 61.0, 90.0 |
+| Learnt_Binary-4 | float64 | 2398 | 17.99 | 73 | 0.0, 2.0, 3.0, 1.0, 6.0, 7.0, 14.0, 4.0, 17.0, 12.0 |
+| Learnt_Ternary-4 | float64 | 2398 | 17.99 | 106 | 0.0, 1.0, 10.0, 19.0, 18.0, 8.0, 9.0, 22.0, 15.0, 11.0 |
+| Learnt_Others-4 | float64 | 2398 | 17.99 | 336 | 129.0, 128.0, 130.0, 131.0, 132.0, 94.0, 126.0, 127.0, 78.0, 54.0 |
+| Frac_Removed_Nogood-4 | float64 | 2398 | 17.99 | 12 | 0.0, 0.7266, 0.7099, 0.7188, 0.6953, 0.697, 0.7023, 0.7077, 0.4766, 0.6899 |
+| Frac_Learnt_Binary-4 | float64 | 2398 | 17.99 | 417 | 0.0, 0.0078, 0.2969, 0.0046, 0.0076, 0.0156, 0.1318, 0.1797, 0.1308, 0.1484 |
+| Frac_Learnt_Ternary-4 | float64 | 2398 | 17.99 | 454 | 0.0, 0.0078, 0.0076, 0.1154, 0.2812, 0.0938, 0.1473, 0.062, 0.0775, 0.0077 |
+| Frac_Learnt_Others-4 | float64 | 2398 | 17.99 | 549 | 1.0, 0.9922, 0.9924, 0.4219, 0.9766, 0.9844, 0.9923, 0.7344, 0.9927, 0.6923 |
+| Skipped_Levels_while_Backjumping-4 | float64 | 2398 | 17.99 | 691 | 382.0, 163.0, 128.0, 178.0, 169.0, 181.0, 159.0, 351.0, 161.0, 418.0 |
+| Avg_Skipped_Levels_while_Backjumping-4 | float64 | 2398 | 17.99 | 872 | 1.0, 2.9844, 1.2636, 1.2846, 4.0, 3.374, 3.4846, 1.3101, 1.2443, 5.7266 |
+| Longest_Backjumping-4 | float64 | 2398 | 17.99 | 305 | 24.0, 4.0, 6.0, 5.0, 27.0, 26.0, 20.0, 7.0, 17.0, 16.0 |
+| Running_Avg_Conflictlevel-4 | float64 | 2398 | 17.99 | 905 | 27.15, 26.11, 17.91, 1.0, 29.27, 18.88, 95.37, 23.63, 15.77, 19.65 |
+| Running_Avg_LBD-4 | float64 | 2398 | 17.99 | 544 | 3.13, 3.2, 4.93, 3.93, 3.58, 2.99, 3.44, 3.11, 4.75, 4.29 |
+| Choices-3 | float64 | 2101 | 15.76 | 693 | 341.0, 209.0, 338.0, 339.0, 410.0, 158.0, 336.0, 162.0, 282.0, 424.0 |
+| Conflicts/Choices-3 | float64 | 2101 | 15.76 | 814 | 0.2815, 0.198, 0.4593, 0.2553, 0.0093, 0.6139, 0.1696, 0.9796, 0.1479, 0.3345 |
+| Avg_Conflict_Levels-3 | float64 | 2101 | 15.76 | 968 | 37.6667, 1.1875, 31.7188, 35.1042, 1.0, 27.1771, 22.3229, 3.4062, 63.4792, 30.5… |
+| Avg_LBD_Levels-3 | float64 | 2101 | 15.76 | 797 | 3.1146, 2.6667, 3.9479, 2.6979, 2.75, 3.125, 3.5729, 3.9792, 2.8542, 3.9794 |
+| Learnt_from_Conflict-3 | float64 | 2101 | 15.76 | 12 | 96.0, 97.0, 98.0, 99.0, 100.0, 101.0, 72.0, 68.0, 103.0, 82.0 |
+| Learnt_from_Loop-3 | float64 | 2101 | 15.76 | 279 | 0.0, 26.0, 21.0, 1.0, 2.0, 22.0, 24.0, 14.0, 23.0, 19.0 |
+| Frac_Learnt_from_Conflict-3 | float64 | 2101 | 15.76 | 300 | 1.0, 0.8205, 0.7869, 0.8, 0.932, 0.8727, 0.8348, 0.8136, 0.7934, 0.7805 |
+| Frac_Learnt_from_Loop-3 | float64 | 2101 | 15.76 | 300 | 0.0, 0.1795, 0.2131, 0.2, 0.068, 0.1273, 0.1652, 0.1864, 0.2066, 0.2195 |
+| Literals_in_Conflict_Nogoods-3 | float64 | 2101 | 15.76 | 856 | 521.0, 295.0, 917.0, 311.0, 355.0, 318.0, 297.0, 301.0, 1433.0, 946.0 |
+| Literals_in_Loop_Nogoods-3 | float64 | 2101 | 15.76 | 344 | 0.0, 551.0, 125.0, 40.0, 25.0, 30.0, 65.0, 70.0, 105.0, 35.0 |
+| Frac_Literals_in_Conflict_Nogoods-3 | float64 | 2101 | 15.76 | 353 | 1.0, 0.0014, 0.0016, 0.0022, 0.0024, 0.0013, 0.001, 0.0012, 0.0018, 0.876 |
+| Frac_Literals_in_Loop_Nogoods-3 | float64 | 2101 | 15.76 | 353 | 0.0, 0.9986, 0.9984, 0.9978, 0.9976, 0.9987, 0.999, 0.9988, 0.9982, 0.124 |
+| Removed_Nogoods-3 | float64 | 2101 | 15.76 | 2 | 0.0, 61.0 |
+| Learnt_Binary-3 | float64 | 2101 | 15.76 | 59 | 0.0, 2.0, 1.0, 4.0, 3.0, 11.0, 5.0, 6.0, 10.0, 8.0 |
+| Learnt_Ternary-3 | float64 | 2101 | 15.76 | 86 | 0.0, 7.0, 1.0, 10.0, 9.0, 8.0, 3.0, 4.0, 5.0, 6.0 |
+| Learnt_Others-3 | float64 | 2101 | 15.76 | 323 | 96.0, 97.0, 99.0, 98.0, 95.0, 93.0, 65.0, 71.0, 58.0, 66.0 |
+| Frac_Removed_Nogood-3 | float64 | 2101 | 15.76 | 2 | 0.0, 0.6354 |
+| Frac_Learnt_Binary-3 | float64 | 2101 | 15.76 | 361 | 0.0, 0.0104, 0.3333, 0.0208, 0.1649, 0.0816, 0.0103, 0.0729, 0.1146, 0.0928 |
+| Frac_Learnt_Ternary-3 | float64 | 2101 | 15.76 | 391 | 0.0, 0.0104, 0.0729, 0.0833, 0.134, 0.0102, 0.1771, 0.3021, 0.1531, 0.0208 |
+| Frac_Learnt_Others-3 | float64 | 2101 | 15.76 | 499 | 1.0, 0.9896, 0.9897, 0.8646, 0.9688, 0.3646, 0.7526, 0.7245, 0.6875, 0.9792 |
+| Skipped_Levels_while_Backjumping-3 | float64 | 2101 | 15.76 | 655 | 223.0, 96.0, 125.0, 123.0, 135.0, 118.0, 136.0, 267.0, 128.0, 294.0 |
+| Avg_Skipped_Levels_while_Backjumping-3 | float64 | 2101 | 15.76 | 856 | 1.0, 2.3229, 1.3021, 1.2292, 2.4167, 2.7812, 1.3776, 1.3434, 7.0312, 1.3469 |
+| Longest_Backjumping-3 | float64 | 2101 | 15.76 | 300 | 4.0, 16.0, 6.0, 5.0, 27.0, 9.0, 26.0, 24.0, 15.0, 7.0 |
+| Running_Avg_Conflictlevel-3 | float64 | 2101 | 15.76 | 930 | 36.16, 1.14, 0.96, 30.45, 9.38, 33.7, 27.38, 29.96, 208.57, 21.87 |
+| Running_Avg_LBD-3 | float64 | 2101 | 15.76 | 599 | 2.99, 3.82, 3.83, 3.86, 3.79, 2.56, 11.88, 3.0, 3.32, 2.64 |
+| Choices-2 | float64 | 1782 | 13.37 | 630 | 222.0, 190.0, 102.0, 205.0, 64.0, 196.0, 108.0, 241.0, 278.0, 198.0 |
+| Conflicts/Choices-2 | float64 | 1782 | 13.37 | 757 | 0.2883, 0.3368, 1.0, 0.3351, 0.3333, 0.6275, 0.0064, 0.7033, 0.5039, 0.3636 |
+| Avg_Conflict_Levels-2 | float64 | 1782 | 13.37 | 977 | 42.375, 1.0, 32.3594, 4.4565, 1.9844, 32.7969, 29.6923, 24.4062, 22.9688, 26.26… |
+| Avg_LBD_Levels-2 | float64 | 1782 | 13.37 | 719 | 3.2812, 2.8125, 4.0, 1.0, 2.7031, 2.6562, 3.0938, 2.8594, 3.1719, 2.9844 |
+| Learnt_from_Conflict-2 | float64 | 1782 | 13.37 | 12 | 64.0, 65.0, 66.0, 67.0, 68.0, 69.0, 49.0, 46.0, 58.0, 54.0 |
+| Learnt_from_Loop-2 | float64 | 1782 | 13.37 | 270 | 0.0, 4.0, 10.0, 5.0, 14.0, 2.0, 8.0, 7.0, 6.0, 1.0 |
 
-(78 more rows not shown)
+(80 more rows not shown)
 
 </details>
 
 ### Target distribution
 
-<details>
-<summary>Show the table (11 rows)</summary>
-
-| algorithm | count | pct |
-|---|---|---|
-| clasp/2.1.3/h1-n1 | 240 | 19.8 |
-| clasp/2.1.3/h10-n1 | 176 | 14.52 |
-| clasp/2.1.3/h6-n1 | 151 | 12.46 |
-| clasp/2.1.3/h4-n1 | 125 | 10.31 |
-| clasp/2.1.3/h8-n1 | 109 | 8.99 |
-| clasp/2.1.3/h7-n1 | 88 | 7.26 |
-| clasp/2.1.3/h2-n1 | 87 | 7.18 |
-| clasp/2.1.3/h11-n1 | 75 | 6.19 |
-| clasp/2.1.3/h9-n1 | 75 | 6.19 |
-| clasp/2.1.3/h5-n1 | 65 | 5.36 |
-| clasp/2.1.3/h3-n1 | 21 | 1.73 |
-
-</details>
+| index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | 0 | 33.63 | -0.067 | nan | 11.038 | 0.931 | log1p | 40686.9 | 1.74083e+16 | exponential |
 
 ### Numeric features
 
 <details>
-<summary>Show the table (135 rows)</summary>
+<summary>Show the table (136 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
-| Frac_Neg_Body | 1196 | 0.133759 | 0.219451 | 0.0002 | 0.9283 |
-| Frac_Pos_Body | 1196 | 0.790592 | 0.210144 | 0 | 0.9994 |
-| Frac_Unary_Rules | 1196 | 0.103597 | 0.200818 | 0 | 0.8863 |
-| Frac_Binary_Rules | 1196 | 0.191836 | 0.166739 | 0 | 0.9737 |
-| Frac_Ternary_Rules | 1196 | 0.494413 | 0.277348 | 0 | 1 |
-| Frac_Integrity_Rules | 1196 | 0.282627 | 0.277592 | 0 | 0.9977 |
-| Problem_Variables | 1196 | 94270.5 | 361410 | 59 | 7.75866e+06 |
-| Free_Problem_Variables | 1196 | 50634 | 101519 | 45 | 1.69169e+06 |
-| Assigned_Problem_Variables | 1196 | 43636.5 | 315134 | 2 | 6.91088e+06 |
-| Constraints | 1196 | 205693 | 425723 | 138 | 7.05407e+06 |
-| Constraints/Vars | 1196 | 2.28933 | 1.87587 | 0.1223 | 17.5976 |
-| Created_Bodies | 1196 | 118257 | 410337 | 105 | 8.04376e+06 |
-| Program_Atoms | 1196 | 41523.1 | 99807.2 | 51 | 2.49893e+06 |
-| SCCS | 1196 | 9.09615 | 28.6731 | 0 | 425 |
-| Nodes_in_Positive_BADG | 1196 | 14336.8 | 33506.8 | 0 | 407417 |
-| Rules | 1196 | 166207 | 679229 | 125 | 1.4182e+07 |
-| Normal_Rules | 1196 | 155017 | 676804 | 105 | 1.41818e+07 |
-| Cardinality_Rules | 1196 | 4669.5 | 18014.5 | 0 | 160797 |
-| Choice_Rules | 1196 | 6513.23 | 17848.7 | 0 | 142941 |
-| Weight_Rules | 1196 | 7.26589 | 39.2915 | 0 | 299 |
-| Frac_Normal_Rules | 1196 | 0.900057 | 0.128236 | 0.4223 | 1 |
-| Frac_Cardinality_Rules | 1196 | 0.0437708 | 0.0850308 | 0 | 0.5564 |
-| Frac_Choice_Rules | 1196 | 0.0536226 | 0.0665555 | 0 | 0.2227 |
-| Frac_Weight_Rules | 1196 | 0.00254875 | 0.0139047 | 0 | 0.0829 |
-| Equivalences | 1196 | 76508.5 | 186969 | 2 | 3.67884e+06 |
-| Atom-Atom_Equivalences | 1196 | 19026.6 | 53887.1 | 0 | 1.21925e+06 |
-| Body-Body_Equivalences | 1196 | 6656.08 | 22176.6 | 0 | 536862 |
-| Other_Equivalences | 1196 | 50825.9 | 114246 | 2 | 1.92273e+06 |
-| Frac_Atom-Atom_Equivalences | 1196 | 0.203499 | 0.131673 | 0 | 0.4743 |
-| Frac_Body-Body_Equivalences | 1196 | 0.0706072 | 0.0943928 | 0 | 0.646 |
-| Frac_Other_Equivalences | 1196 | 0.725891 | 0.136418 | 0.3425 | 1 |
-| Binary_Constraints | 1196 | 150438 | 334984 | 0 | 5.38817e+06 |
-| Ternary_Constraints | 1196 | 38543.8 | 87347.8 | 0 | 1.66548e+06 |
-| Other_Constraints | 1196 | 16711 | 31940.6 | 8 | 197800 |
-| Frac_Binary_Constraints | 1196 | 0.665059 | 0.221048 | 0 | 0.9979 |
-| Frac_Ternary_Constraints | 1196 | 0.20664 | 0.205462 | 0 | 0.9823 |
-| Frac_Other_Constraints | 1196 | 0.1283 | 0.184578 | 0 | 1 |
-| Choices-1 | 1077 | 418.518 | 1079.08 | 14 | 18584 |
-| Conflicts/Choices-1 | 1077 | 0.273656 | 0.209258 | 0.0017 | 1 |
-| Avg_Conflict_Levels-1 | 1077 | 130.113 | 343.016 | 1 | 3490.89 |
-| Avg_LBD_Levels-1 | 1077 | 8.44191 | 11.0713 | 1 | 103.469 |
-| Learnt_from_Conflict-1 | 1077 | 32.3148 | 0.989863 | 9 | 36 |
-| Learnt_from_Loop-1 | 1077 | 463.721 | 1298.14 | 0 | 12612 |
-| Frac_Learnt_from_Conflict-1 | 1077 | 0.777021 | 0.385969 | 0.0025 | 1 |
-| Frac_Learnt_from_Loop-1 | 1077 | 0.222979 | 0.385969 | 0 | 0.9975 |
-| Literals_in_Conflict_Nogoods-1 | 1077 | 1637.54 | 4015.15 | 14 | 37373 |
-| Literals_in_Loop_Nogoods-1 | 1077 | 178053 | 1.04709e+06 | 0 | 1.3771e+07 |
-| Frac_Literals_in_Conflict_Nogoods-1 | 1077 | 0.780685 | 0.378601 | 0 | 1 |
-| Frac_Literals_in_Loop_Nogoods-1 | 1077 | 0.219315 | 0.378601 | 0 | 1 |
-| Removed_Nogoods-1 | 1077 | 0 | 0 | 0 | 0 |
-| Learnt_Binary-1 | 1077 | 3.16249 | 16.5165 | 0 | 365 |
-| Learnt_Ternary-1 | 1077 | 7.75023 | 39.0529 | 0 | 766 |
-| Learnt_Others-1 | 1077 | 485.123 | 1282.04 | 0 | 12316 |
-| Frac_Learnt_Binary-1 | 1077 | 0.0450986 | 0.0885656 | 0 | 0.8438 |
-| Frac_Learnt_Ternary-1 | 1077 | 0.0996492 | 0.150176 | 0 | 1 |
-| Frac_Learnt_Others-1 | 1077 | 0.855246 | 0.193343 | 0 | 1 |
-| Skipped_Levels_while_Backjumping-1 | 1077 | 281.051 | 859.287 | 14 | 18545 |
-| Avg_Skipped_Levels_while_Backjumping-1 | 1077 | 8.73298 | 26.8035 | 1 | 579.531 |
-| Longest_Backjumping-1 | 1077 | 74.8867 | 281.789 | 1 | 4612 |
-| Running_Avg_Conflictlevel-1 | 1077 | 42.1179 | 111.532 | 0.16 | 1221.81 |
+| runtime | 13332 | 1.72401 | 3.3223 | -4.91238 | 6.39693 |
+| Frac_Neg_Body | 13156 | 0.133759 | 0.219367 | 0.0002 | 0.9283 |
+| Frac_Pos_Body | 13156 | 0.790592 | 0.210064 | 0 | 0.9994 |
+| Frac_Unary_Rules | 13156 | 0.103597 | 0.200741 | 0 | 0.8863 |
+| Frac_Binary_Rules | 13156 | 0.191836 | 0.166676 | 0 | 0.9737 |
+| Frac_Ternary_Rules | 13156 | 0.494413 | 0.277242 | 0 | 1 |
+| Frac_Integrity_Rules | 13156 | 0.282627 | 0.277487 | 0 | 0.9977 |
+| Problem_Variables | 13156 | 94270.5 | 361273 | 59 | 7.75866e+06 |
+| Free_Problem_Variables | 13156 | 50634 | 101480 | 45 | 1.69169e+06 |
+| Assigned_Problem_Variables | 13156 | 43636.5 | 315014 | 2 | 6.91088e+06 |
+| Constraints | 13156 | 205693 | 425561 | 138 | 7.05407e+06 |
+| Constraints/Vars | 13156 | 2.28933 | 1.87516 | 0.1223 | 17.5976 |
+| Created_Bodies | 13156 | 118257 | 410181 | 105 | 8.04376e+06 |
+| Program_Atoms | 13156 | 41523.1 | 99769.3 | 51 | 2.49893e+06 |
+| SCCS | 13156 | 9.09615 | 28.6622 | 0 | 425 |
+| Nodes_in_Positive_BADG | 13156 | 14336.8 | 33494.1 | 0 | 407417 |
+| Rules | 13156 | 166207 | 678971 | 125 | 1.4182e+07 |
+| Normal_Rules | 13156 | 155017 | 676547 | 105 | 1.41818e+07 |
+| Cardinality_Rules | 13156 | 4669.5 | 18007.6 | 0 | 160797 |
+| Choice_Rules | 13156 | 6513.23 | 17841.9 | 0 | 142941 |
+| Weight_Rules | 13156 | 7.26589 | 39.2765 | 0 | 299 |
+| Frac_Normal_Rules | 13156 | 0.900057 | 0.128187 | 0.4223 | 1 |
+| Frac_Cardinality_Rules | 13156 | 0.0437708 | 0.0849985 | 0 | 0.5564 |
+| Frac_Choice_Rules | 13156 | 0.0536226 | 0.0665302 | 0 | 0.2227 |
+| Frac_Weight_Rules | 13156 | 0.00254875 | 0.0138994 | 0 | 0.0829 |
+| Equivalences | 13156 | 76508.5 | 186898 | 2 | 3.67884e+06 |
+| Atom-Atom_Equivalences | 13156 | 19026.6 | 53866.7 | 0 | 1.21925e+06 |
+| Body-Body_Equivalences | 13156 | 6656.08 | 22168.2 | 0 | 536862 |
+| Other_Equivalences | 13156 | 50825.9 | 114202 | 2 | 1.92273e+06 |
+| Frac_Atom-Atom_Equivalences | 13156 | 0.203499 | 0.131623 | 0 | 0.4743 |
+| Frac_Body-Body_Equivalences | 13156 | 0.0706072 | 0.0943569 | 0 | 0.646 |
+| Frac_Other_Equivalences | 13156 | 0.725891 | 0.136366 | 0.3425 | 1 |
+| Binary_Constraints | 13156 | 150438 | 334857 | 0 | 5.38817e+06 |
+| Ternary_Constraints | 13156 | 38543.8 | 87314.6 | 0 | 1.66548e+06 |
+| Other_Constraints | 13156 | 16711 | 31928.5 | 8 | 197800 |
+| Frac_Binary_Constraints | 13156 | 0.665059 | 0.220964 | 0 | 0.9979 |
+| Frac_Ternary_Constraints | 13156 | 0.20664 | 0.205384 | 0 | 0.9823 |
+| Frac_Other_Constraints | 13156 | 0.1283 | 0.184508 | 0 | 1 |
+| Choices-1 | 11847 | 418.518 | 1078.63 | 14 | 18584 |
+| Conflicts/Choices-1 | 11847 | 0.273656 | 0.209169 | 0.0017 | 1 |
+| Avg_Conflict_Levels-1 | 11847 | 130.113 | 342.871 | 1 | 3490.89 |
+| Avg_LBD_Levels-1 | 11847 | 8.44191 | 11.0666 | 1 | 103.469 |
+| Learnt_from_Conflict-1 | 11847 | 32.3148 | 0.989445 | 9 | 36 |
+| Learnt_from_Loop-1 | 11847 | 463.721 | 1297.59 | 0 | 12612 |
+| Frac_Learnt_from_Conflict-1 | 11847 | 0.777021 | 0.385806 | 0.0025 | 1 |
+| Frac_Learnt_from_Loop-1 | 11847 | 0.222979 | 0.385806 | 0 | 0.9975 |
+| Literals_in_Conflict_Nogoods-1 | 11847 | 1637.54 | 4013.46 | 14 | 37373 |
+| Literals_in_Loop_Nogoods-1 | 11847 | 178053 | 1.04665e+06 | 0 | 1.3771e+07 |
+| Frac_Literals_in_Conflict_Nogoods-1 | 11847 | 0.780685 | 0.378441 | 0 | 1 |
+| Frac_Literals_in_Loop_Nogoods-1 | 11847 | 0.219315 | 0.378441 | 0 | 1 |
+| Removed_Nogoods-1 | 11847 | 0 | 0 | 0 | 0 |
+| Learnt_Binary-1 | 11847 | 3.16249 | 16.5095 | 0 | 365 |
+| Learnt_Ternary-1 | 11847 | 7.75023 | 39.0364 | 0 | 766 |
+| Learnt_Others-1 | 11847 | 485.123 | 1281.5 | 0 | 12316 |
+| Frac_Learnt_Binary-1 | 11847 | 0.0450986 | 0.0885282 | 0 | 0.8438 |
+| Frac_Learnt_Ternary-1 | 11847 | 0.0996492 | 0.150112 | 0 | 1 |
+| Frac_Learnt_Others-1 | 11847 | 0.855246 | 0.193262 | 0 | 1 |
+| Skipped_Levels_while_Backjumping-1 | 11847 | 281.051 | 858.924 | 14 | 18545 |
+| Avg_Skipped_Levels_while_Backjumping-1 | 11847 | 8.73298 | 26.7921 | 1 | 579.531 |
+| Longest_Backjumping-1 | 11847 | 74.8867 | 281.67 | 1 | 4612 |
 
-(75 more rows not shown)
+(76 more rows not shown)
 
 </details>
 
 ### Categorical features
 
 <details>
-<summary>Show the table (13 rows)</summary>
+<summary>Show the table (18 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
-| Tight | 1 | 1.0 | 619 | 51.07 |
-| Tight | 2 | 0.0 | 577 | 47.61 |
-| Tight | 3 | &lt;NA> | 16 | 1.32 |
-| algorithm | 1 | clasp/2.1.3/h1-n1 | 240 | 19.8 |
-| algorithm | 2 | clasp/2.1.3/h10-n1 | 176 | 14.52 |
-| algorithm | 3 | clasp/2.1.3/h6-n1 | 151 | 12.46 |
-| algorithm | 4 | clasp/2.1.3/h4-n1 | 125 | 10.31 |
-| algorithm | 5 | clasp/2.1.3/h8-n1 | 109 | 8.99 |
-| task_id | 1 | 222a85a4193a | 134 | 11.06 |
-| task_id | 2 | 54a904dabd66 | 89 | 7.34 |
-| task_id | 3 | c40240438f96 | 74 | 6.11 |
-| task_id | 4 | 6b33cae0f35e | 67 | 5.53 |
-| task_id | 5 | 26164589427a | 59 | 4.87 |
+| Tight | 1 | 1.0 | 6809 | 51.07 |
+| Tight | 2 | 0.0 | 6347 | 47.61 |
+| Tight | 3 | &lt;NA> | 176 | 1.32 |
+| algorithm | 1 | clasp/2.1.3/h1-n1 | 1212 | 9.09 |
+| algorithm | 2 | clasp/2.1.3/h10-n1 | 1212 | 9.09 |
+| algorithm | 3 | clasp/2.1.3/h11-n1 | 1212 | 9.09 |
+| algorithm | 4 | clasp/2.1.3/h2-n1 | 1212 | 9.09 |
+| algorithm | 5 | clasp/2.1.3/h3-n1 | 1212 | 9.09 |
+| instance_id | 1 | 004f5cda67b8 | 11 | 0.08 |
+| instance_id | 2 | 008b8faad4b7 | 11 | 0.08 |
+| instance_id | 3 | 00ab017c53cb | 11 | 0.08 |
+| instance_id | 4 | 00b2e91df90a | 11 | 0.08 |
+| instance_id | 5 | 00be9d6a0860 | 11 | 0.08 |
+| task_id | 1 | 222a85a4193a | 1474 | 11.06 |
+| task_id | 2 | 54a904dabd66 | 979 | 7.34 |
+| task_id | 3 | c40240438f96 | 814 | 6.11 |
+| task_id | 4 | 6b33cae0f35e | 737 | 5.53 |
+| task_id | 5 | 26164589427a | 649 | 4.87 |
 
 </details>
 
@@ -491,4 +495,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:1d6d0372ad04d58c4fa9c5c1c334b2227095411084c33706505d7bc30cd33c0a` |
+| stale | yes: the definition now gives checksum `v2:f1c3ab3a87c7f0e984ac8ac697a730f8b1f2aa32cabd5d1ab7691e3e9a7c1604` |
