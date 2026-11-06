@@ -12,7 +12,6 @@ decision_markers:
 - Selection Bias
 tags:
 - Tiny Data
-- Case Series
 collections:
 - New (BeyondArena)
 - TabSTAR

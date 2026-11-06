@@ -12,7 +12,7 @@ suggestion: 'Yes'
 decision_markers:
 - Selection Bias
 tags:
-- Timeless
+- 'Samples: No Time Dimension'
 original_source: Other
 year: '2017'
 required_split:

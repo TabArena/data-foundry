@@ -9,7 +9,9 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Tiny Data
-- Case Series
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
 collections:
 - New (BeyondArena)
 - TabSTAR

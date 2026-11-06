@@ -11,7 +11,8 @@ decision_markers:
 - No Good Target / Scientific Discovery
 tags:
 - Tiny Data
-- Delayed Target
+- 'Samples: One Moment'
+- 'Target: Later'
 collections:
 - TabArena Reject
 - TabSTAR

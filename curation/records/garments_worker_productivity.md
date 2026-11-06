@@ -9,6 +9,9 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
 collections:
 - TabArena Reject
 original_source: UCI

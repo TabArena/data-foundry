@@ -12,7 +12,9 @@ suggestion: 'Yes'
 tags:
 - Non-IID (Grouped)
 - Free Text (Sentences)
-- Time Lost
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Revised Later'
 collections:
 - TexTabBench
 - TabSTAR

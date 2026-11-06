@@ -10,7 +10,7 @@ data_foundry_status:
 - BeyondArena
 suggestion: 'Yes'
 tags:
-- Timeless
+- 'Samples: No Time Dimension'
 original_source: Other
 year: '1989'
 required_split:

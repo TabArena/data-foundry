@@ -12,7 +12,6 @@ decision_markers:
 - Outdated
 tags:
 - Tiny Data
-- Time Lost
 collections:
 - TabArena Reject
 original_source: UCI

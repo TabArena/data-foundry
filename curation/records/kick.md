@@ -10,6 +10,9 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
 collections:
 - TabArena Reject
 - TabSTAR

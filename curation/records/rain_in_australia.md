@@ -9,6 +9,9 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
 collections:
 - TabArena Reject
 original_source: GOV Website

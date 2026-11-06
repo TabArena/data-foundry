@@ -11,6 +11,7 @@ decision_markers:
 - Missing source information
 tags:
 - Tiny Data
+- 'Samples: One Moment'
 collections:
 - New (BeyondArena)
 - TabSTAR

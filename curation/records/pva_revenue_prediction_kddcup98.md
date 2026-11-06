@@ -9,7 +9,7 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Larger IID Data
-- Delayed Target
+- 'Samples: One Moment'
 collections:
 - TabArena Reject
 - TabSTAR

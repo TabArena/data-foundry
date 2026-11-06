@@ -10,7 +10,9 @@ data_foundry_status:
 - BeyondArena
 suggestion: 'Yes'
 tags:
-- Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
 original_source: UCI
 year: '2011'
 required_split:

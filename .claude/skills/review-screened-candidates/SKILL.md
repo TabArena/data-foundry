@@ -38,9 +38,9 @@ give the link to that view instead (the dashboard's 🔗 copy-link hash syntax).
 ## Step 2: Say what to check
 
 For each record the curator opens: the screening block's one-line reason, the decisive fact and the rule it rests on,
-the priority factors, the record's temporal tag with the fact behind it (the `Time basis:` part of the use-case line;
-SPLIT-32), and what the AI could not check. A tag that says the data carries time while the use case reads as IID is
-worth a look now, before a definition is written around it. Their choices:
+the priority factors, the record's collection facts with the evidence behind them (the `collection` part of the
+use-case line; SPLIT-32), and what the AI could not check. A dated source whose use case reads as IID is worth a look
+now, before a definition is written around it. Their choices:
 
 | The curator wants to | In the dashboard |
 |---|---|

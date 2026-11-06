@@ -12,7 +12,7 @@ suggestion: 'Yes'
 decision_markers:
 - Anonymized
 tags:
-- Delayed Target
+- 'Samples: One Moment'
 year: '2009'
 required_split:
 - Random (IID)

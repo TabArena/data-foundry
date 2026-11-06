@@ -10,7 +10,7 @@ data_foundry_status:
 - BeyondArena
 suggestion: 'Yes'
 tags:
-- Timeless
+- 'Samples: No Time Dimension'
 original_source: UCI
 year: '2007'
 required_split:

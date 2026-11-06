@@ -11,7 +11,7 @@ suggestion: 'Yes'
 tags:
 - Many features
 - Non-IID (Grouped)
-- Timeless
+- 'Samples: No Time Dimension'
 collections:
 - FS Benchmark
 original_source: Other

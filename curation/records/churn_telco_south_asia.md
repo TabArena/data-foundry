@@ -8,7 +8,7 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - New IID
-- Delayed Target
+- 'Samples: One Moment'
 collections:
 - TabSTAR
 original_source: Kaggle

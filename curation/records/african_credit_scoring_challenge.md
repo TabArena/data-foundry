@@ -10,6 +10,9 @@ suggestion: 'Yes'
 priority: 2
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Revised Later'
 collections:
 - New (BeyondArena)
 original_source: Zindi

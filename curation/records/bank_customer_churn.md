@@ -12,6 +12,8 @@ suggestion: No (Retired)
 decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 - Missing source information
+tags:
+- 'Samples: No Time Dimension'
 original_source: Kaggle
 year: '2022'
 required_split:
@@ -62,4 +64,3 @@ CC (2026-11-04, Andrej): retired as generated data (`No (Retired)`, `AHDS`, `Mis
 - **The generator beats every method:** used as a classifier on the 9 shipped splits it scores 1 - ROC AUC 0.1213, ahead of all 40 benchmark methods (best 0.1233, TabPFN-3.5 0.1240), so the task ranks methods by how well they recover a sampler's densities, not how customers leave.
 - **Checks calibrated on a real bank table agree:** seven of the ten columns cannot be told from a copy shuffled within each class (ROC AUC 0.48-0.53; every client column of bank_marketing 0.54-0.76), tenure does not rise with age, salary is uniform from 12 to 200,000.
 - **Why the keep of 2026-10-21 no longer holds:** it rested on a named course counting as a source when the data shows no marks of generation; the data shows them, as for credit_card_customers.
-

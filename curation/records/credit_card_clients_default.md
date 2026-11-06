@@ -10,7 +10,8 @@ data_foundry_status:
 - BeyondArena
 suggestion: 'Yes'
 tags:
-- Delayed Target
+- 'Samples: One Moment'
+- 'Target: Later'
 original_source: UCI
 year: '2016'
 required_split:

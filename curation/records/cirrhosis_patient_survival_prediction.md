@@ -9,7 +9,9 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Tiny Data
-- Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
 collections:
 - New (BeyondArena)
 original_source: Other

@@ -10,7 +10,8 @@ data_foundry_status:
 - BeyondArena
 suggestion: 'Yes'
 tags:
-- Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
 original_source: UCI
 year: '2009'
 required_split:

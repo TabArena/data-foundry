@@ -11,7 +11,7 @@ decision_markers:
 - Anonymized
 tags:
 - Larger IID Data
-- Timeless
+- 'Samples: No Time Dimension'
 collections:
 - TabArena Reject
 original_source: Kaggle

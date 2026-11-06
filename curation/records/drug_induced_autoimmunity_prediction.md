@@ -11,7 +11,7 @@ suggestion: 'Yes'
 tags:
 - Tiny Data
 - Non-IID (Grouped)
-- Timeless
+- 'Samples: No Time Dimension'
 collections:
 - New (BeyondArena)
 original_source: UCI

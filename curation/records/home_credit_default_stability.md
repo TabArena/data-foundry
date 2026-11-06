@@ -9,6 +9,8 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
 collections:
 - TabArena Reject
 - TabRed

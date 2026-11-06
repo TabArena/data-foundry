@@ -59,17 +59,19 @@ tags:
 - Review Prio 1 (Atlas)
 - AI-Filled (Verify)
 - Non-IID (Temporal)
-- Timeless
-- Snapshot
-- Delayed Target
-- Case Series
-- Time Lost
-- Time Unused
 - Tiny Data
 - 2nd Tier / Scientific Discovery
 - New IID
 - Non-IID (Grouped)
 - Random (IID)
+- 'Samples: No Time Dimension'
+- 'Samples: One Moment'
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Time: Lost'
+- 'Target: Later'
+- 'Target: Varying Delay'
+- 'Target: Revised Later'
 - Larger IID Data
 - Free Text (Short)
 - Free Text (Sentences)

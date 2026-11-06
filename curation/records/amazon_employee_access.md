@@ -10,7 +10,9 @@ data_foundry_status:
 - BeyondArena
 suggestion: 'Yes'
 tags:
-- Time Lost
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Varying Delay'
 original_source: Kaggle
 year: '2013'
 required_split:

@@ -50,13 +50,13 @@ errors, and `dataset build` refuses to save while any remains.
 ## Step 0: Gather inputs and claim
 
 Read `curation/records/<unique_name>.md`: the front matter and the comments, above all the screening block (the
-source, the use case, the time basis and the regime, the risks) and the record's temporal tag (`Non-IID (Temporal)`,
-`Timeless`, `Snapshot`, `Delayed Target`, `Case Series` or `Time Lost`; SPLIT-32). Verify its claims as you go instead
-of redoing its research; a measurement on the data supersedes what screening read from the page. No record: stop and
-point to `/screen-candidates`. Claim the records first, in the curator's name: `claims claim <names> --stage add
---note "add-dataset"` ([claims.md](../knowledge-data-foundry/references/claims.md)); it pushes the claim to the board
-and writes `WIP (DF)` and `claimed_by` into the records. Never work on a dataset another curator holds: a name the
-command skips is left out and reported.
+source, the use case, the time basis and the regime, the risks) and the record's collection facts (the `Samples:`,
+`Time:` and `Target:` tags; SPLIT-32). Verify its claims as you go instead of redoing its research; a measurement on
+the data supersedes what screening read from the page. No record: stop and point to `/screen-candidates`. Claim the
+records first, in the curator's name: `claims claim <names> --stage add --note "add-dataset"`
+([claims.md](../knowledge-data-foundry/references/claims.md)); it pushes the claim to the board and writes `WIP (DF)`
+and `claimed_by` into the records. Never work on a dataset another curator holds: a name the command skips is left out
+and reported.
 
 A batch (several names or a dashboard filter) runs one `dataset-builder` agent per source unit for steps 0-6
 ([agent_runs.md](../knowledge-data-foundry/references/agent_runs.md)); the main session then runs the panel (step 7)
@@ -102,16 +102,16 @@ domain and source from the record.
 3. `_clean(self, raw)`: the recipe as ordered, commented steps with `TODO(verify)` markers, and
    `_feature_types(self, df)` for the dtypes.
 4. The regime, from the time basis (SPLIT-32 in [splits.md](../knowledge-curation/references/splits.md)): match the
-   dataset and its use case to one of its prototypes by its five questions, from the source and the record's temporal
-   tag, before choosing; when none fits, that is an issue, not the nearest tag. Time in the release or its source and
-   a use case that predicts later rows means `temporal = Temporal(...)`. Otherwise IID (nothing) or `grouping =
-   Grouping(...)`, with one time-basis tag in `data_tags` (`Timeless`, `Snapshot`, `DelayedTarget`, `CaseSeries`,
-   `TimeLost`) and a `Time basis:` bullet in `curation_comments` that names the fact behind it (for `DelayedTarget`
-   the prediction moment and the target's window). Leaving time unused is never chosen here: a split that leaves the
-   data's time unused goes to the curator as an issue with its measured cost (step 8); kept, the record gets `Time
-   Unused` and the definition a `Time basis:` line with the reason and the cost, no tag. A `splits_comment` says why
-   this window (and any gap, sub-sampling or trimming). When your answer differs from the record's temporal tag, the
-   tag is not changed silently: it becomes an issue.
+   dataset and its use case to one of its prototypes by its five questions, from the source and the record's
+   collection facts, before choosing; when none fits, that is an issue, not the nearest tag. A forward use case on a
+   dated source whose target time affects means `temporal = Temporal(...)`. Otherwise IID (nothing) or `grouping =
+   Grouping(...)`, with one time basis in `data_tags`: a prototype (`Timeless`, `Snapshot`, `DelayedTarget`,
+   `StationaryRelation`) with a `Time basis:` bullet in `curation_comments` that names the fact behind it (for
+   `DelayedTarget` the prediction moment and the target's window, for `StationaryRelation` on a dated source the
+   measurement), or a forced tag (`ForcedIIDFromTemporal`, `ForcedGroupedFromTemporal`) when the time is lost or too
+   short. The pair of collection facts and time basis is one the table in SPLIT-32 allows; a pair outside it is an
+   issue. A `splits_comment` says why this window (and any gap, sub-sampling or trimming). Collection facts on the
+   record that look wrong are not changed silently: they become an issue.
 5. The metric: `metric = Metric.source(name, original=..., reference=..., params=..., inputs=...)`,
    `Metric.stand_in(name, original=..., reason=..., reference=...)` or `Metric.fallback(reason=<where we looked, and
    which source metric was rejected and why>)` (definitions.md, "Field mapping", `metric`; MET-11). A standard name
@@ -190,10 +190,9 @@ and the editor) for a re-check after a small change. Say which tier ran.
    `**Review panel:**` block with each agent's full report. A review raises 0 to N issues: zero is a valid outcome
    when the checks and the panel leave nothing for the curator to decide (the outcome says so, and the curator only
    sets the verdict). Never raise an issue to have one; an issue is something whose answer would change the dataset.
-   Two time issues are always raised, each as its own issue: time the data carries that the split leaves unused
-   ("Split by time, or keep the <random|grouped> split as an exception?", with the measured cost of both splits and
-   keeping it as the curator's exception, record tag `Time Unused`, as an option), and a time basis that disagrees
-   with the record's temporal tag.
+Two time issues are always raised, each as its own issue: a dated source whose split is not temporal and whose
+   prototype is not shown ("Split by time, or keep the <random|grouped> split under <prototype>?", with the measured
+   cost of both splits), and a pair of collection facts and time basis that the table in SPLIT-32 does not allow.
 3. The `review-editor` agent reads the draft as the curator would; apply its fixes.
 4. Add a dated CHANGELOG entry for the new folder, and the panel's summary in the record, one line in a fixed form:
    `**Assessment (AI, <date>):** review panel (<tier>): <the mediator's recommendation>; disputed: <the points, by

@@ -9,7 +9,7 @@ suggestion: 'Yes'
 priority: 2
 tags:
 - Non-IID (Grouped)
-- Timeless
+- 'Samples: No Time Dimension'
 collections:
 - TabSTAR
 original_source: UCI

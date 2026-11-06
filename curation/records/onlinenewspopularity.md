@@ -12,6 +12,9 @@ decision_markers:
 - NLP (Text)
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
 collections:
 - TabArena Reject
 - TabSTAR

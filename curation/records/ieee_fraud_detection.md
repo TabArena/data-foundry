@@ -13,6 +13,9 @@ decision_markers:
 - Anonymized
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
 collections:
 - TabArena Reject
 original_source: Kaggle

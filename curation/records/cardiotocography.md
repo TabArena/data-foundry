@@ -12,7 +12,8 @@ decision_markers:
 - Time-series (Classification)
 tags:
 - Non-IID (Grouped)
-- Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
 collections:
 - TabArena Reject
 original_source: UCI

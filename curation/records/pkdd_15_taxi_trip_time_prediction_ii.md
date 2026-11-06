@@ -11,7 +11,9 @@ decision_markers:
 - Needs extensive data wrangling
 tags:
 - Review Prio 1 (Atlas)
-- Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
 original_source: Kaggle
 year: '2015'
 domain: industry & manufacturing

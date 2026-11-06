@@ -11,7 +11,9 @@ tags:
 - Free Text (Short)
 - '?'
 - Review Prio 1 (Atlas)
-- Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
 collections:
 - New (BeyondArena)
 original_source: Other

@@ -12,7 +12,7 @@ suggestion: 'Yes'
 decision_markers:
 - Duplicate
 tags:
-- Timeless
+- 'Samples: No Time Dimension'
 original_source: UCI
 year: '1992'
 required_split:

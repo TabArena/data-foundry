@@ -62,11 +62,10 @@ forced from temporal, with the cost measured against the valid windows where the
 whose rows arose over a period and lost their dates, a few cohort months of one customer base (a split by those months
 tests a change of cohort, not of time), and a release with too few periods for three windows. A release that is one
 moment (one extract, one stock month, one exam round) is not forced: SPLIT-32 gives it `Snapshot` or `DelayedTarget`.
-The closest regime is IID, or grouped by the entity when the periods are stacked and the entities recur across them;
-the forced time-basis tags are `CaseSeries` and `TimeLost` (dates lost), SPLIT-32. A release that keeps its time but
-has too few periods for three windows is SPLIT-32's exception (record tag `Time Unused`). Say what the timestamp or a
-dated window would change and that it should be recovered if a later release has it. A forced split, grouped or IID,
-gets a leak test across the split and the leak probes: does a row share its outcome, its unit's outcome or its
+The closest regime is IID (`ForcedIIDFromTemporal`), or grouped by the entity when the periods are stacked and the
+entities recur across them (`ForcedGroupedFromTemporal`); SPLIT-32 says when a split is forced. Say what the timestamp
+or a dated window would change and that it should be recovered if a later release has it. A forced split, grouped or
+IID, gets a leak test across the split and the leak probes: does a row share its outcome, its unit's outcome or its
 period's outcome with the other side, is there a hidden group, an order dependence. A leak found is weighed case by
 case like any other: removed where it can be, otherwise the task may still ship as an approximate fit with the leak
 measured in the notes. Being forced alone never makes a dataset `No`, and a dataset stays tagged as forced whatever
@@ -86,19 +85,35 @@ predicts. Whenever that order varies from sample to sample, the data is non-IID 
 dependencies in how the samples were collected are not a blocker by themselves; what the checks ask is whether they
 affect the target: whether the target, how often it occurs, or its relation to the features depends on when a sample
 was collected, or on samples collected before it. The aim is two answers: which split represents the use case without
-leakage, and which features are actually available at the prediction point. The time bases below are prototypes of how
-a task can look over time; the work is to find which one a dataset and its use case match, or that none does. A split
-that is not temporal names its prototype with one time-basis tag in the definition and a `Time basis:` line in the
-curation notes that states the fact behind it. The questions, in order:
+leakage, and which features are actually available at the prediction point.
+
+Two layers keep apart what the source is and what we make of it. The curation record describes the source by
+independent collection facts, set at screening and true whatever task is built on it:
+
+* **Samples:** `Samples: No Time Dimension` (designed runs, or a catalogue of properties where it plays no role when
+  an item was measured), `Samples: One Moment` (one extract, census, scrape or exam round) or `Samples: Over Time`
+  (the samples arose over a period).
+* **Time,** for samples over time: `Time: Dated` when the release or its source keeps the time or lets us recover it
+  (a date column, an order that tracks time, a value that encodes the period, a date dropped from the raw file or kept
+  in a parent upload; the time probe, `time_probes.py`, looks for them), else `Time: Lost`. A time order found only
+  within each entity (a policy's terms) does not count.
+* **Target:** `Target: Later` (after the features, at one shared date or after a fixed window), `Target: Varying
+  Delay` (after a delay that differs between samples: a settlement, a chargeback, a follow-up) or `Target: Revised
+  Later` (assigned, then updated or propagated); no tag when the target exists with the features.
+
+The definition names the use-case prototype it follows. The same source can carry different use cases (SPLIT-1's two
+applications), so the prototype is chosen per definition. The prototypes are the categories a task is matched against:
+a split that is not temporal carries one time-basis tag, and a prototype's `Time basis:` line in the curation notes
+states the fact behind it. The questions, in order:
 
 1. **Can time affect the target at all?** Not when the target is a fixed property of the item, the same whenever it is
    measured (a material's strength, a molecule's activity, a species, the outcome of a designed run): `Timeless`. The
    split is random or grouped by item family.
-2. **Does the use case predict targets for a time after its data, or only fill in targets for a time the data already
-   covers?** Only filling in (one census, one scrape, the gaps of a logged week, a site not yet mapped in a past
-   survey) is a `Snapshot`, and the line names the moment or the period. Time can then affect a target only through
-   samples of the same time: check that no sample of a test sample's time carries its target (one day's weather across
-   stations); if one does, group by that time unit.
+2. **Does the use case predict targets for a time after its data, or only fill in a time the data covers?** Only
+   filling in (one census, one scrape, the gaps of a logged week, a site not yet mapped in a past survey) is a
+   `Snapshot`, and the line names the moment or the period. Time can then affect a target only through samples of the
+   same time: check that no sample of a test sample's time carries its target (one day's weather across stations); if
+   one does, group by that time unit.
 3. **Do all samples share one prediction moment, with the target arriving after it?** A default in the next month, a
    donation at the next drive, an event within a fixed follow-up: a `DelayedTarget`. No test sample is later than a
    training sample, so time cannot reach a target through other samples; what the split cannot test is the next
@@ -108,43 +123,42 @@ curation notes that states the fact behind it. The questions, in order:
 4. **The samples arrive over time: does that affect the target?** It does when the target, how often it occurs, or its
    relation to the features moves with the period (prices, a credit climate, an adversary, a change in practice or
    recording), or when a sample's target depends on samples before it (a shared shock, a label propagated along an
-   entity). The source, the time probe (`time_probes.py`) and the target by period answer it.
-   * **The release or its source keeps the time** (a date column, an order that tracks time, a value that encodes the
-     period, a date dropped from the raw file or kept in a parent upload): the split is temporal (SPLIT-7, SPLIT-14).
-     Keeping a random split, because time does not measurably affect the target or because there are too few periods
-     for three windows, is the curator's exception, decided as an issue of its own with the measured cost (the score
-     on the newest windows under a temporal split against the shipped split). It is recorded in curation only: the
-     record gets the tag `Time Unused`, and the definition no time-basis tag but a `Time basis:` line naming the time,
-     the reason and the cost (with `meta_time_present_unused` accepted for that reason when the data has date
-     columns). A time order found only within each entity (a policy's terms) does not count.
-   * **The time is lost,** and the split is forced (SPLIT-8). If the target is the case's present state, found at the
-     same encounter (a diagnosis, a tissue type), time affects it only through prevalence and practice: a
-     `CaseSeries`. If the target is a later outcome or a value a market or behaviour sets, time affects it directly,
-     by an amount nobody can measure here: `TimeLost`. Both ship after SPLIT-8's leak test, and the line says what a
-     dated release would change.
+   entity). The source, the time probe and the target by period answer it.
+   * **No,** beyond prevalence and practice: the target is a present state read through a relation that time does not
+     move (a diagnosis, a tissue type), a `StationaryRelation`. On a dated source this is measured (the target and its
+     relation to the features flat across periods, a temporal split costing nothing); on a source whose time is lost
+     it is argued from the source.
+   * **Yes, and the time is dated:** the split is temporal (SPLIT-7, SPLIT-14).
+   * **Yes, and the time is lost or too short for three windows:** the split is forced (SPLIT-8):
+     `ForcedIIDFromTemporal`, or `ForcedGroupedFromTemporal` when the entities recur. It ships after SPLIT-8's leak
+     test, and the definition says what a dated release would change.
 5. **None of these prototypes fits:** the dataset and its use case go to the curator as an issue with the arrival
    facts found, rather than under the nearest tag.
 
-IID data is data whose order of arrival does not vary: `Timeless`, a `Snapshot` of one moment whose target exists at
-that moment, and a `DelayedTarget` whose target arrives on one date for every row (the March 2007 drive of
-blood_transfusion, the October 2005 payment of credit_card_clients_default). Every other answer is non-IID data, its
-random or grouped split included: a `Snapshot` over a period (rows of the same time can share an outcome), a
-`DelayedTarget` whose delay differs by row (an event within a fixed follow-up from each row's own exam), a
-`CaseSeries` or `TimeLost` (rows over time), and every temporal split. For non-IID data, and for every
-`DelayedTarget`, the feature audit is part of the answer: every column gets "at the prediction point", "later" or
-"cannot tell" (LEAK-1, LEAK-10), a later column is dropped or lagged, and a "cannot tell" stays only when its missing
-values do not move with the outcome given the columns known at that point.
+The record's facts and the definition's prototype are checked as a pair. The pairs that make sense, and what each must
+show:
 
-The record carries the matching tag, set at screening from the source and checked when the definition is written:
-`Non-IID (Temporal)` when the data carries time, with `Time Unused` next to it when the curator keeps a split that
-does not use it, otherwise `Timeless`, `Snapshot`, `Delayed Target`, `Case Series` or `Time Lost`; when the record's
-tag and the definition's time basis disagree, the curator decides. `ForcedIIDFromTemporal` and
-`ForcedGroupedFromTemporal` are superseded by these tags: old definitions keep them until their time basis is
-reviewed. Why: a random split can stand for the use case or flatter it, and only the time basis tells which; naming it
-makes the compromise visible and the exception a decision. Cases: the arrival study of the 177 v0.2 definitions
+| Source (record) | `Timeless` | `Snapshot` | `DelayedTarget` | `StationaryRelation` | temporal | forced |
+|---|---|---|---|---|---|---|
+| No time dimension | yes | no | no | no | no | no |
+| One moment | yes | yes | yes: window closed for all, feature audit | no | impossible | no: not forced |
+| Over time, dated | yes: a property | yes, retrospective: same-time samples checked | only one cohort | yes, measured | yes, the default | only too few periods |
+| Over time, time lost | yes | yes, if retrospective | no | yes, argued | impossible | yes: SPLIT-8's leak test |
+
+A pair outside the table, or a split on a dated source that names no prototype, is a question for the curator.
+
+IID data is data whose order of arrival does not vary: `Samples: No Time Dimension`, and `Samples: One Moment` with
+the target at that moment or at one shared later date (the March 2007 drive of blood_transfusion, the October 2005
+payment of credit_card_clients_default). Every other source is non-IID data, its random or grouped split included. For
+non-IID data, and for every `DelayedTarget`, the feature audit is part of the answer: every column gets "at the
+prediction point", "later" or "cannot tell" (LEAK-1, LEAK-10), a later column is dropped or lagged, and a "cannot
+tell" stays only when its missing values do not move with the outcome given the columns known at that point.
+
+Why: a random split can stand for the use case or flatter it, and only the pair of source and prototype tells which;
+naming both makes a compromise visible and a mismatch a question. Cases: the arrival study of the 177 v0.2 definitions
 (2026-11-04) is the evidence; examples are credit_card_clients_default and framingham_heart_study_fhs
-(`DelayedTarget`), houses and 5g_energy_consumption (`Snapshot`), gallstone_disease (`CaseSeries`),
-allstate_claims_severity (`TimeLost`).
+(`DelayedTarget`), houses and 5g_energy_consumption (`Snapshot`), gallstone_disease (`StationaryRelation`), heloc
+(`ForcedIIDFromTemporal`).
 
 ### Temporal tasks
 

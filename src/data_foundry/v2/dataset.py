@@ -64,7 +64,7 @@ from data_foundry.curation_container import CuratedContainer
 from data_foundry.dataset_checks import run_all_checks
 from data_foundry.schema import (
     RETIRED_DATA_TAGS,
-    SUPERSEDED_TIME_TAGS,
+    FORCED_TIME_TAGS,
     TIME_BASIS_TAGS,
     DatasetMetadata,
     Grouping,
@@ -1378,20 +1378,19 @@ def _gap(cls: type[AbstractCuratedDataset]) -> tuple[int | None, str | None]:
 
 
 def _validate_time_basis(cls: type[AbstractCuratedDataset], fail: Callable[[str], None]) -> None:
-    """At most one time-basis tag, never on a temporal split, with its `Time basis:` line (SPLIT-32)."""
-    basis = [tag for tag in dict.fromkeys(cls.data_tags) if tag in TIME_BASIS_TAGS]
-    if not basis:
-        return
+    """One time basis at most: a use-case prototype or a forced tag; a prototype never on a temporal split and always
+    with its `Time basis:` line (SPLIT-32)."""
+    tags = list(dict.fromkeys(cls.data_tags))
+    basis = [tag for tag in tags if tag in TIME_BASIS_TAGS or tag in FORCED_TIME_TAGS]
     if len(basis) > 1:
         fail(f"`data_tags` {basis}: a split has one time basis (SPLIT-32); keep the one that says why it is not.")
-    tag = basis[0]
+    prototype = next((tag for tag in basis if tag in TIME_BASIS_TAGS), None)
+    if prototype is None:
+        return
     if cls.temporal is not None:
-        fail(f"`{tag}` says why a split is not temporal; this one is, so drop the tag.")
-    old = [t for t in cls.data_tags if t in SUPERSEDED_TIME_TAGS]
-    if old:
-        fail(f"`{tag}` replaces {old}; drop the old tag.")
+        fail(f"`{prototype}` says why a split is not temporal; this one is, so drop the tag.")
     if "Time basis:" not in (cls.curation_comments or ""):
-        fail(f"`{tag}` needs a `Time basis:` line in `curation_comments` that states the fact behind it (SPLIT-32).")
+        fail(f"`{prototype}` needs a `Time basis:` line in `curation_comments` stating the fact behind it (SPLIT-32).")
 
 
 def _regime_tags(cls: type[AbstractCuratedDataset]) -> list[str]:

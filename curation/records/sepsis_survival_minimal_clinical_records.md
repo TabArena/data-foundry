@@ -10,7 +10,9 @@ suggestion: 'Yes'
 tags:
 - Larger IID Data
 - Tiny Data
-- Time Lost
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Varying Delay'
 collections:
 - New (BeyondArena)
 original_source: Other
