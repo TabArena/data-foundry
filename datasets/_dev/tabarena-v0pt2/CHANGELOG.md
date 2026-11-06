@@ -1,5 +1,11 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-05, `duolingo_spaced_repetition_recall_1m_clf`: updated installed workflow repeat
+
+- Repeat add, added review and the requested local build using the updated installed source/launcher at9048f36a; preserve the prior accepted task, eight predictors, AUROC, equal records and temporal 1M/111111 protocol. No scientific definition, data, label or split change.
+- Fresh launcher/API checks pass with zero errors/warnings and exact approved values/category/label/six-array equality. Prior numerical/probe/participant evidence is fingerprinted and verified reusable; a focused independent claim/precedent, mediator and editor recheck finds no new decision. Preserve original mark identity and record the latest explicit retention instruction in the supported review store.
+- Clarify TP-7's rule strength without rewriting historical curator text. The previously measured future-counter exploit and required benchmark-side own-row checks remain explicit; this repeat does not certify downstream enforcement.
+
 ## 2026-11-05, `duolingo_spaced_repetition_recall_1m_clf`: requalified on current main
 
 - Reapply Myunghwan's approved >=75% session-performance classifier on updated main, retaining AUROC, numerical session_seen, equal weights and the temporal 1M/111111 windows with a one-day gap. Preserve original dated decisions and resolved issue IDs; retain REVIEW.md under the current history convention.
