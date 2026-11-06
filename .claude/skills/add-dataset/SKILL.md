@@ -97,12 +97,13 @@ domain and source from the record.
 3. `_clean(self, raw)`: the recipe as ordered, commented steps with `TODO(verify)` markers, and
    `_feature_types(self, df)` for the dtypes.
 4. The regime, from the time basis (SPLIT-32 in [splits.md](../knowledge-curation/references/splits.md)): answer its
-   five questions from the source and the record's temporal tag before choosing. Time in the release or its source
-   and a use case that predicts later rows means `temporal = Temporal(...)`. Otherwise IID (nothing) or `grouping =
+   five questions from the source and the record's temporal tag before choosing. Time in the release or its source and
+   a use case that predicts later rows means `temporal = Temporal(...)`. Otherwise IID (nothing) or `grouping =
    Grouping(...)`, with one time-basis tag in `data_tags` (`Timeless`, `Snapshot`, `DelayedTarget`, `CaseSeries`,
-   `TimeLost`, `TooFewPeriods`) and a `Time basis:` bullet in `curation_comments` that names the fact behind it (for
-   `DelayedTarget` the prediction moment and the target's window). `TimeUnused` is never chosen here: a split that
-   leaves time unused goes to the curator as an issue with its measured cost (step 8). A `splits_comment` says why
+   `TimeLost`) and a `Time basis:` bullet in `curation_comments` that names the fact behind it (for `DelayedTarget`
+   the prediction moment and the target's window). Leaving time unused is never chosen here: a split that leaves the
+   data's time unused goes to the curator as an issue with its measured cost (step 8); kept, the record gets `Time
+   Unused` and the definition a `Time basis:` line with the reason and the cost, no tag. A `splits_comment` says why
    this window (and any gap, sub-sampling or trimming). When your answer differs from the record's temporal tag, the
    tag is not changed silently: it becomes an issue.
 5. The metric: `metric = Metric.source(name, original=..., reference=..., params=..., inputs=...)`,
@@ -185,7 +186,8 @@ and the editor) for a re-check after a small change. Say which tier ran.
    sets the verdict). Never raise an issue to have one; an issue is something whose answer would change the dataset.
    Two time issues are always raised, each as its own issue: time the data carries that the split leaves unused
    ("Split by time, or keep the <random|grouped> split as an exception?", with the measured cost of both splits and
-   `TimeUnused` as the exception's option), and a time basis that disagrees with the record's temporal tag.
+   keeping it as the curator's exception, record tag `Time Unused`, as an option), and a time basis that disagrees
+   with the record's temporal tag.
 3. The `review-editor` agent reads the draft as the curator would; apply its fixes.
 4. Add a dated CHANGELOG entry for the new folder, and the panel's summary in the record, one line in a fixed form:
    `**Assessment (AI, <date>):** review panel (<tier>): <the mediator's recommendation>; disputed: <the points, by

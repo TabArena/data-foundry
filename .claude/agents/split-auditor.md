@@ -17,12 +17,13 @@ Check, with numbers (load through `.claude/skills/knowledge-data-foundry/scripts
 Python run):
 
 * the time basis first (`splits.md`, SPLIT-32): answer its five questions from the source and the data, and compare
-  your answer with the record's temporal tag (`Non-IID (Temporal)`, `Timeless`, `Snapshot`, `Delayed Target`,
-  `Case Series`, `Time Lost`) and with the definition's time-basis tag and its `Time basis:` line. For a split that is
-  not temporal, run the time probe (`.claude/skills/knowledge-data-foundry/scripts/time_probes.py <name> --out <run
-  folder>`) and read every flag: a date column, a dropped date, a drifting row order or ID, period figures.
-  Time present and unused is wrong unless the definition says `TimeUnused` with its measured cost; then measure that
-  cost yourself (the score on the newest windows under a temporal split against the shipped split) and report both;
+  your answer with the record's temporal tag (`Non-IID (Temporal)`, `Timeless`, `Snapshot`, `Delayed Target`, `Case
+  Series`, `Time Lost`) and with the definition's time-basis tag and its `Time basis:` line. For a split that is not
+  temporal, run the time probe (`.claude/skills/knowledge-data-foundry/scripts/time_probes.py <name> --out <run
+  folder>`) and read every flag: a date column, a dropped date, a drifting row order or ID, period figures. Time
+  present and unused is wrong unless the curator kept it as an exception (the record says `Time Unused`, the `Time
+  basis:` line gives the reason and the cost); measure that cost yourself (the score on the newest windows under a
+  temporal split against the shipped split) and report both;
 * the regime the use case implies (new entity or known entity; a stream over time), against the one declared;
 * temporal: the time column's meaning, windows and their sizes, the train side, the gap against the label delay,
   training rows whose label is not known at the prediction point, the training history, a season-shaped test window;

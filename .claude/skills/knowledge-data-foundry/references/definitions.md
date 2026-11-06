@@ -192,22 +192,22 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
 * `data_tags`: context tags only, since listing a regime tag yourself switches the automatic ones off. `"Anonymized"`
   when the source hid what the features are, by replacing their names or values on purpose (common for competition
   data; the record gets the `Anonymized` marker, and the cases without it are in
-  [selection.md](../../knowledge-curation/references/selection.md), "Anonymized data"); `"Spatial"` when the
-  data holds geographic information (ZIP, latitude and longitude, region, store location). An IID or grouped split
-  carries one time-basis tag that says why it is not temporal, with a `Time basis:` line in `curation_comments` that
-  names the fact (SPLIT-32 in [splits.md](../../knowledge-curation/references/splits.md)): `"Timeless"` (the target is
-  a fixed property of the item), `"Snapshot"` (one moment, or a fill-in inside the observed period), `"DelayedTarget"`
-  (features at one shared prediction moment, the target later in a window closed for every row), `"CaseSeries"`
-  (cases over a period with the dates lost, the target the case's present state), `"TimeLost"` (rows over a period
-  with the dates lost, the target later or market-set), `"TooFewPeriods"` (time present, too few periods; needs a
-  `grouping`) or `"TimeUnused"` (time present but not split on: an exception, with its measured cost in the line and a
-  decision of the curator). A definition refuses two of them, one on a temporal split, or one next to the superseded
-  `"ForcedIIDFromTemporal"` / `"ForcedGroupedFromTemporal"`, which old definitions keep until their time basis is
-  reviewed (`dataset check` names the replacement). `dataset check` notes a missing time basis, and warns when date
-  columns sit in the data of a split that is not temporal, unless the basis is `Snapshot`, `TooFewPeriods` or
-  `TimeUnused`. `"2ndTierData"` is retired
-  (2026-10-21): old containers that carry it still load, but a new definition refuses it; write the doubts as a
-  finding and the fit as `approximate`.
+  [selection.md](../../knowledge-curation/references/selection.md), "Anonymized data"); `"Spatial"` when the data
+  holds geographic information (ZIP, latitude and longitude, region, store location). An IID or grouped split carries
+  one time-basis tag that says why it is not temporal, with a `Time basis:` line in `curation_comments` that names the
+  fact (SPLIT-32 in [splits.md](../../knowledge-curation/references/splits.md)): `"Timeless"` (the target is a fixed
+  property of the item), `"Snapshot"` (one moment, or a fill-in inside the observed period), `"DelayedTarget"`
+  (features at one shared prediction moment, the target later in a window closed for every row), `"CaseSeries"` (cases
+  over a period with the dates lost, the target the case's present state) or `"TimeLost"` (rows over a period with the
+  dates lost, the target later or market-set). Time the data carries but the split leaves unused gets no tag: it is
+  the curator's exception, recorded as `Time Unused` on the record, and the definition's `Time basis:` line names the
+  time, the reason and the measured cost. A definition refuses two time-basis tags, one on a temporal split, or one
+  next to the superseded `"ForcedIIDFromTemporal"` / `"ForcedGroupedFromTemporal"`, which old definitions keep until
+  their time basis is reviewed (`dataset check` names the replacement). `dataset check` notes a split that is not
+  temporal and gives neither a tag nor a `Time basis:` line, and warns when date columns sit in the data of such a
+  split unless the basis is `Snapshot` (the curator accepts the warning for a kept exception). `"2ndTierData"` is
+  retired (2026-10-21): old containers that carry it still load, but a new definition refuses it; write the doubts as
+  a finding and the fit as `approximate`.
 * `problem_type`: "Regression" to `"regression"`, "Binary Classification" to `"binary_classification"`,
   "Multiclass Classification" or "Classification" to `"multiclass_classification"`. A table that supports a regression
   or a classification target, where taking one means dropping the other, gets one folder per framing: the second is

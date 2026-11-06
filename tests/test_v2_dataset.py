@@ -427,7 +427,6 @@ def _define(**attrs: object) -> type[AbstractCuratedDataset]:
             },
             "this one is, so drop the tag",
         ),
-        ({"data_tags": ("TooFewPeriods",), "curation_comments": "- Time basis: x"}, "declare `grouping"),
         ({"data_tags": ("TimeLost", "ForcedIIDFromTemporal"), "curation_comments": "- Time basis: x"}, "drop the old"),
         ({"data_tags": ("DelayedTarget",)}, "`Time basis:` line"),
     ],
@@ -1581,16 +1580,16 @@ def test_a_spectrum_with_missing_intensities_is_flagged(tmp_path: Path, warehous
     assert "1 row(s)" in warnings[0].message
 
 
-@pytest.mark.parametrize("tag", ["Timeless", "Snapshot", "DelayedTarget", "CaseSeries", "TimeLost", "TimeUnused"])
+@pytest.mark.parametrize("tag", ["Timeless", "Snapshot", "DelayedTarget", "CaseSeries", "TimeLost"])
 def test_a_time_basis_is_accepted_on_an_iid_split_with_its_line(tag: str) -> None:
     cls = _define(data_tags=(tag,), curation_comments="- Time basis: one census on 1 April 1990.")
     assert cls.dataset_metadata.data_tags == ["IID", tag]
 
 
-def test_too_few_periods_is_accepted_on_a_grouped_split() -> None:
+def test_grouped_split_takes_a_time_basis() -> None:
     cls = _define(
-        data_tags=("TooFewPeriods",),
-        curation_comments="- Time basis: two seasons only.",
+        data_tags=("DelayedTarget",),
+        curation_comments="- Time basis: one policy year; claims within it.",
         grouping=Grouping(on="g", labels="per_group", definition="x"),
     )
-    assert "TooFewPeriods" in cls.dataset_metadata.data_tags
+    assert "DelayedTarget" in cls.dataset_metadata.data_tags
