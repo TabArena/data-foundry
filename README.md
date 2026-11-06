@@ -2,28 +2,13 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-06 09:31 UTC: 42 claim(s) (Andrej 16, Lennart 6, Myunghwan 20).
+As of 2026-11-06 14:24 UTC: 27 claim(s) (Andrej 1, Lennart 6, Myunghwan 20).
 
 ## Andrej
 
 | Dataset | Stage | Since | Until | Note |
 |---|---|---|---|---|
-| `allstate_claim_prediction_challenge` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
-| `australian_vehicle_insurance_2004_2005` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
-| `boreal_postfire_lichen_biomass` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
-| `frempl_french_motor_personal_line` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
-| `liberty_mutual_fire_peril_loss_cost` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
-| `loan_default_prediction_imperial_college` | add | 2026-11-01 | 2026-11-08 | add-dataset, zero-inflated batch |
-| `noaa_afsc_bottom_trawl_survey_cpue` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
-| `noaa_storm_events_damage` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
-| `pricing_game_2016_french_fleet` | add | 2026-11-01 | 2026-11-08 | add-dataset, zero-inflated batch |
-| `pricing_game_2017_french_mtpl` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
-| `spanish_homeowners_motor_insurance_2010_2014` | add | 2026-11-02 | 2026-11-09 | add-dataset |
-| `spanish_motor_insurance_2015_2018` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
-| `spanish_motor_insurance_coverage_level_2022_2024` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
-| `wadden_sea_sibes_macoma_abundance` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
 | `walmart_sales_in_stormy_weather` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
-| `wisconsin_local_government_property_insurance_fund` | add | 2026-10-30 | 2026-11-06 | add-dataset, zero-inflated batch |
 
 ## Lennart
 
