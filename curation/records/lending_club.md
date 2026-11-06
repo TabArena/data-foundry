@@ -15,6 +15,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Dated'
 - 'Target: Varying Delay'
+- 'Entities: Recur'
 collections:
 - TexTabBench Extra
 - STRABLE

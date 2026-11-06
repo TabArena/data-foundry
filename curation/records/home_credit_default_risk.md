@@ -12,6 +12,7 @@ tags:
 - 'Samples: Over Time'
 - 'Time: Lost'
 - 'Target: Later'
+- 'Entities: Recur'
 collections:
 - New (BeyondArena)
 - TabSTAR

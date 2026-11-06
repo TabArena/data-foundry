@@ -11,7 +11,7 @@ tags:
 - New IID
 - Many features
 - 'Samples: Over Time'
-- 'Time: Dated'
+- 'Time: Inferred'
 - 'Target: Varying Delay'
 collections:
 - FS Benchmark

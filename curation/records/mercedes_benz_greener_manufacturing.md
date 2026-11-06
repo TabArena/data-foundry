@@ -12,7 +12,7 @@ decision_markers:
 tags:
 - Non-IID (Temporal)
 - 'Samples: Over Time'
-- 'Time: Dated'
+- 'Time: Inferred'
 - 'Target: Later'
 collections:
 - TabArena Reject

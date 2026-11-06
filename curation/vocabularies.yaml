@@ -67,11 +67,18 @@ tags:
 - 'Samples: No Time Dimension'
 - 'Samples: One Moment'
 - 'Samples: Over Time'
+- 'Samples: Unknown'
 - 'Time: Dated'
+- 'Time: Inferred'
 - 'Time: Lost'
 - 'Target: Later'
 - 'Target: Varying Delay'
 - 'Target: Revised Later'
+- 'Target: Open Window'
+- 'Target: Unknown'
+- 'Entities: Recur'
+- 'Features: Read Later'
+- 'Features: Revised Later'
 - Larger IID Data
 - Free Text (Short)
 - Free Text (Sentences)

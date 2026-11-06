@@ -1961,9 +1961,11 @@ def _check_data_tags(ctx: _Ctx) -> Iterator[CheckResult]:
 
 @_check
 def _check_time_basis(ctx: _Ctx) -> Iterator[CheckResult]:
-    """An IID or grouped split says why it is not temporal: a use-case prototype or a forced tag (SPLIT-32)."""
+    """An IID or grouped split says why it is not temporal: a prototype, a forced tag or a `Time basis:` line."""
     tags = set(ctx.dataset_metadata.data_tags)
     basis = sorted(tags & set(TIME_BASIS_TAGS))
+    forced = sorted(tags & set(FORCED_TIME_TAGS))
+    has_line = "Time basis:" in (ctx.dataset_metadata.curation_comments or "")
     if ctx.regime == "temporal_non_iid":
         if basis:
             yield CheckResult(
@@ -1973,17 +1975,27 @@ def _check_time_basis(ctx: _Ctx) -> Iterator[CheckResult]:
                 hint="Drop the time-basis tag.",
             )
         return
-    if not basis and not tags & set(FORCED_TIME_TAGS):
+    if not basis and not forced and not has_line:
         yield CheckResult(
             "meta_time_basis_missing",
             "info",
             "The split is not temporal and the definition does not say why.",
             hint=f"Add the use-case prototype ({', '.join(TIME_BASIS_TAGS)}) with a `Time basis:` line in "
-            "`curation_comments`, or a forced tag (`ForcedIIDFromTemporal`, `ForcedGroupedFromTemporal`), SPLIT-32.",
+            "`curation_comments`, a forced tag (`ForcedIIDFromTemporal`, `ForcedGroupedFromTemporal`) with its line, "
+            "or the line alone with the reason, SPLIT-32.",
+        )
+    if forced and not has_line:
+        yield CheckResult(
+            "meta_time_basis_line_missing",
+            "info",
+            f"`{forced[0]}` has no `Time basis:` line in `curation_comments`.",
+            hint="Name the reason (time lost, or too few periods) and what a dated release would change (SPLIT-8, "
+            "SPLIT-32).",
         )
     target = ctx.target
     dated = [c for c in ctx.df.columns if c != target and pd.api.types.is_datetime64_any_dtype(ctx.df[c])]
-    if dated and "Snapshot" not in basis:
+    explained = bool(set(basis) & {"Snapshot", "DelayedTarget"}) or (has_line and not basis)
+    if dated and not explained:
         yield CheckResult(
             "meta_time_present_unused",
             "info",

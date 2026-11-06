@@ -13,6 +13,7 @@ suggestion: 'Yes'
 tags:
 - Many features
 - Non-IID (Grouped)
+- Spectral Data
 - 'Samples: No Time Dimension'
 collections:
 - FS Benchmark

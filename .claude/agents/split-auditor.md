@@ -19,10 +19,15 @@ Python run):
 
 * how the data was collected: the record's collection facts and, if the definition names one, its use-case prototype
   and `Time basis:` line (`splits.md`, SPLIT-32), against the source; for a split that is not temporal, what the time
-  probe (`.claude/skills/knowledge-data-foundry/scripts/time_probes.py <name> --out <run folder>`) finds;
+  probe (`.claude/skills/knowledge-data-foundry/scripts/time_probes.py <name> --out <run folder>`) finds; the checks
+  the facts point to (`/add-dataset` Step 1 lists them): recurring entities across the split, labels in flight at a
+  cut, batches in the raw order;
 * the regime the use case implies (new entity or known entity; a stream over time), against the one declared;
 * temporal: the time column's meaning, windows and their sizes, the train side, the gap against the label delay,
   training rows whose label is not known at the prediction point, the training history, a season-shaped test window;
+  a time on risk (a training weight) is cut at the release date and at each window's cutoff, not only by the outcome,
+  so check which rows a training side admits by it (pricing_game_2016_french_fleet: from 2013 on, only the periods
+  that ended early; SPLIT-9, LEAK-41);
 * grouped: a true group id (never a similarity cluster or a hash), what one prediction is, what is known about a new
   group, the aggregation;
 * IID: hidden groups and near copies across the split, and what the score drops to under a grouped split;

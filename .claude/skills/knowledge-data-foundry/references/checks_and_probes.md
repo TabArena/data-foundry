@@ -139,15 +139,24 @@ K=.claude/skills/knowledge-data-foundry/scripts
 * `time_probes.py`, for a split that is not temporal (SPLIT-32, question 4): does the data still carry a time order?
   It is model-free and fast. It lists the columns that look like time (a date dtype, a time word in the name such as
   date, year, month, week, season, period, wave or cohort, or whole numbers between 1900 and 2100 only; names that say
-  a duration or an age are left out), the raw columns of that kind the definition drops, the target along the raw row
+  a duration or an age are left out, and so are fractional numbers outside 1900-2100 and numbers named with `dt`, a
+  delta t such as `edge_dt`), the raw columns of that kind the definition drops, the target along the raw row
   order and along each ID-like column (whole numbers, nearly one per row, named like an ID or following the row order;
   an ID the definition dropped is read through the rows' raw positions), and few-valued columns that move together and
-  encode a period (yearly unemployment, inflation and GDP; at least 50 rows per period). Flags: `time_column`,
-  `time_dropped`, `order_drift`, `id_drift`, `period_values`, and `sorted_by_target` for an order that follows the
-  target in blocks (a file sorted by class), which is how the file was put together, not a clock. A flag that is not
-  explained away is a sign that the data carries time: information for the split, which it does not decide. Without
-  the raw files (`--built`), the dropped columns and the raw order are not checked; the output says which order it
-  read.
+  encode a period (yearly unemployment, inflation and GDP; at least 50 rows per period). Along the raw order it also
+  looks for rows that repeat one block later (company-years stored year block by year block: in windows of 500 rows,
+  a lag whose rows are very close, below the 1st percentile of random pairs, far more often than at the lags around
+  it), runs of one entity in consecutive rows (a counter such as an admission number that goes up by 1 while fixed
+  fields such as age and sex repeat, and the share of each class on a run's last row), and, in a file sorted by class,
+  features that drift along a class's rows (the class block is several pieces: sources or periods; not when one
+  feature sorts the block). Flags: `time_column`, `time_dropped`, `order_drift`, `id_drift`, `period_values`,
+  `periodic_blocks`, `entity_runs`, `class_block_drift`, and `sorted_by_target` for an order that follows the target in
+  blocks (a file sorted by class), which is how the file was put together, not a clock, unless `class_block_drift`
+  says the blocks are pieces. A flag that is not explained away is a sign that the data carries time: information for
+  the split, which it does not decide. `--root` names the definitions; the raw files come from the local warehouse
+  (`$DATA_FOUNDRY_WAREHOUSE`). `--built` reads the README's build from the local warehouse, else a collection's copy
+  from the cache (`~/.cache/data_foundry/<collection>/`, `$DATA_FOUNDRY_CACHE`); a container's rows were shuffled, so
+  the dropped columns and every check of the row order are left out, and the output says so.
 * `tuned_results.py`: the per-fold BeyondArena results of tuned and default methods cached under
   `~/.cache/tabarena/artifacts/` (`methods/<method>/results/hpo_results.parquet`), set against a dummy on the same
   splits of the shipped container; `--feature auto` adds the raw-feature test of TP-4. The runs used the shipped
