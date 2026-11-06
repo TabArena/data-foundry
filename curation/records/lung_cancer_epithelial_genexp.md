@@ -10,7 +10,9 @@ suggestion: 'Yes'
 tags:
 - New IID
 - Many features
-- Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
 collections:
 - FS Benchmark
 original_source: OpenML

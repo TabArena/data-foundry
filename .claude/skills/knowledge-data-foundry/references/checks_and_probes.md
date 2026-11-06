@@ -145,9 +145,10 @@ K=.claude/skills/knowledge-data-foundry/scripts
   encode a period (yearly unemployment, inflation and GDP; at least 50 rows per period). Flags: `time_column`,
   `time_dropped`, `order_drift`, `id_drift`, `period_values`, and `sorted_by_target` for an order that follows the
   target in blocks (a file sorted by class), which is how the file was put together, not a clock. Every flag that is
-  not explained away means the data carries time: split by time, or measure the shipped split against a temporal one
-  and make it the curator's decision (kept, the record says `Time Unused`). Without the raw files (`--built`), the
-  dropped columns and the raw order are not checked; the output says which order it read.
+  not explained away means the data carries time: the record gets `Time: Dated`, and the split is temporal unless a
+  use-case prototype allows the shipped one (`Snapshot` for a retrospective use case, `StationaryRelation` with the
+  measured evidence); otherwise it is a question for the curator. Without the raw files (`--built`), the dropped
+  columns and the raw order are not checked; the output says which order it read.
 * `tuned_results.py`: the per-fold BeyondArena results of tuned and default methods cached under
   `~/.cache/tabarena/artifacts/` (`methods/<method>/results/hpo_results.parquet`), set against a dummy on the same
   splits of the shipped container; `--feature auto` adds the raw-feature test of TP-4. The runs used the shipped

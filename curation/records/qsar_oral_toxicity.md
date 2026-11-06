@@ -10,7 +10,7 @@ priority: 4
 tags:
 - Many features
 - Non-IID (Grouped)
-- Timeless
+- 'Samples: No Time Dimension'
 collections:
 - New (BeyondArena)
 - ChemPile

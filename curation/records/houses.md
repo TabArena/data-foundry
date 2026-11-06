@@ -10,7 +10,7 @@ data_foundry_status:
 - BeyondArena
 suggestion: 'Yes'
 tags:
-- Snapshot
+- 'Samples: One Moment'
 year: '1999'
 required_split:
 - Random (IID)

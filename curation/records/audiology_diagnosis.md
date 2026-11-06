@@ -16,7 +16,7 @@ decision_markers:
 - Trivial
 tags:
 - Tiny Data
-- Case Series
+- 'Samples: No Time Dimension'
 collections:
 - New (BeyondArena)
 - TabSTAR

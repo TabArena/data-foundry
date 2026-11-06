@@ -9,7 +9,8 @@ suggestion: 'Yes'
 priority: 4
 tags:
 - Non-IID (Grouped)
-- Timeless
+- 'Samples: Over Time'
+- 'Time: Dated'
 collections:
 - ChemPile
 original_source: GOV Website

@@ -13,6 +13,7 @@ decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 tags:
 - Larger IID Data
+- 'Samples: No Time Dimension'
 collections:
 - TabArena Reject
 original_source: Kaggle

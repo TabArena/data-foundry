@@ -9,6 +9,8 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
 original_source: Other
 year: '2011'
 domain: business & marketing

@@ -13,7 +13,6 @@ decision_markers:
 - Not Representative
 tags:
 - Tiny Data
-- Case Series
 collections:
 - New (BeyondArena)
 - TabSTAR

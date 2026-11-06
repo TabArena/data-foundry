@@ -11,7 +11,8 @@ tags:
 - Review Prio 1 (Atlas)
 - New IID
 - Larger IID Data
-- Delayed Target
+- 'Samples: One Moment'
+- 'Target: Later'
 collections:
 - New
 original_source: Zindi

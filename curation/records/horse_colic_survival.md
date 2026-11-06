@@ -13,7 +13,9 @@ decision_markers:
 - Class-dependent Recording
 tags:
 - Tiny Data
-- Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
 collections:
 - TabArena Reject
 - TabSTAR

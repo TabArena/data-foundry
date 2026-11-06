@@ -11,7 +11,8 @@ decision_markers:
 - Selection Bias
 tags:
 - Tiny Data
-- Case Series
+- 'Samples: Over Time'
+- 'Time: Lost'
 collections:
 - TabArena Reject
 original_source: UCI

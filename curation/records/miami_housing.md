@@ -10,7 +10,8 @@ data_foundry_status:
 - BeyondArena
 suggestion: 'Yes'
 tags:
-- Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
 original_source: OpenML
 year: '2021'
 required_split:

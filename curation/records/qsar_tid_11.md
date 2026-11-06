@@ -11,7 +11,7 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Non-IID (Grouped)
-- Timeless
+- 'Samples: No Time Dimension'
 year: '2015'
 domain: chemistry & material science
 required_split:

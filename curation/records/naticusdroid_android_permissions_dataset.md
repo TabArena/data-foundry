@@ -10,7 +10,7 @@ data_foundry_status:
 - BeyondArena
 suggestion: 'Yes'
 tags:
-- Time Lost
+- 'Samples: No Time Dimension'
 original_source: UCI
 year: '2022'
 required_split:

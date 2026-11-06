@@ -12,7 +12,7 @@ priority: 2
 tags:
 - Non-IID (Grouped)
 - Multi-target
-- Timeless
+- 'Samples: No Time Dimension'
 collections:
 - TabArena Reject
 - TabSTAR

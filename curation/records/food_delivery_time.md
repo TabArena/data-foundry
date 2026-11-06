@@ -13,7 +13,9 @@ decision_markers:
 - AHDS (Artifical/Handmade/Deterministic/Simulated)
 tags:
 - Random (IID)
-- Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
 original_source: Kaggle
 year: '2023'
 domain: business & marketing

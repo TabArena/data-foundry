@@ -11,7 +11,7 @@ decision_markers:
 - Outdated
 tags:
 - Random (IID)
-- Timeless
+- 'Samples: One Moment'
 collections:
 - TabArena Reject
 - TabSTAR

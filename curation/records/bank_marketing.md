@@ -12,7 +12,9 @@ data_foundry_status:
 claimed_by: Lennart
 suggestion: 'Yes'
 tags:
-- Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
 original_source: UCI
 year: '2012'
 required_split:

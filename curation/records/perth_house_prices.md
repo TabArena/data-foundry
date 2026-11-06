@@ -9,6 +9,8 @@ suggestion: 'Yes'
 priority: 1
 tags:
 - Non-IID (Temporal)
+- 'Samples: One Moment'
+- 'Target: Later'
 collections:
 - TabSTAR
 original_source: Kaggle

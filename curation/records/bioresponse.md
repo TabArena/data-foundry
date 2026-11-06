@@ -12,7 +12,7 @@ suggestion: 'Yes'
 decision_markers:
 - Anonymized
 tags:
-- Timeless
+- 'Samples: No Time Dimension'
 original_source: Kaggle
 year: '2011'
 domain: chemistry & material science

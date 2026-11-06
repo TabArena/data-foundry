@@ -10,7 +10,7 @@ data_foundry_status:
 - BeyondArena
 suggestion: 'Yes'
 tags:
-- Snapshot
+- 'Samples: One Moment'
 original_source: Kaggle
 year: '2020'
 required_split:

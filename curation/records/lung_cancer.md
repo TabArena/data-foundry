@@ -15,7 +15,7 @@ tags:
 - New IID
 - Many features
 - Tiny Data
-- Case Series
+- 'Samples: No Time Dimension'
 collections:
 - FS Benchmark
 original_source: Other

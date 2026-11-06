@@ -10,7 +10,9 @@ data_foundry_status:
 - BeyondArena
 suggestion: 'Yes'
 tags:
-- Time Lost
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Varying Delay'
 original_source: Other
 year: '2020'
 required_split:

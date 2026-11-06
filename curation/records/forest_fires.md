@@ -12,7 +12,9 @@ decision_markers:
 - No Signal
 tags:
 - Tiny Data
-- Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
 collections:
 - TabArena Reject
 - TabSTAR

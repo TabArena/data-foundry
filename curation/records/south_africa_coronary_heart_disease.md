@@ -14,7 +14,7 @@ decision_markers:
 - No Good Target / Scientific Discovery
 tags:
 - Tiny Data
-- Snapshot
+- 'Samples: One Moment'
 collections:
 - TabArena Reject
 original_source: Other

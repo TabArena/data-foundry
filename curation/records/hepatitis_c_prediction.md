@@ -12,7 +12,6 @@ decision_markers:
 - Class-dependent Recording
 tags:
 - Tiny Data
-- Case Series
 collections:
 - New (BeyondArena)
 original_source: UCI

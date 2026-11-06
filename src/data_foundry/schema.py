@@ -91,15 +91,14 @@ DataTags = Literal[
     # Other context tags (not statistical information!)
     "Spatial",  # data that contains spatial/geographical information
     "Anonymized",  # data that has no semantic meaning anymore on purpose
-    # Time basis: why an IID or grouped split is not temporal (SPLIT-32). One per IID or grouped definition.
-    #   Justified: the split tests what the use case does.
-    "Timeless",  # the target is a fixed property of the item; there is no time to split on
-    "Snapshot",  # one shared moment, or a fill-in inside the observed period; nothing is predicted for later times
-    "DelayedTarget",  # features at one shared prediction point; the target later, in a window closed for every row
-    #   Forced: the split is the closest one the release allows (SPLIT-8).
-    "CaseSeries",  # cases over a period, dates lost; the target is the case's present state (drift only)
-    "TimeLost",  # rows over a period, dates lost; the target a later outcome or a market value
-    # Superseded (2026-11-06) by the time-basis tags above; still accepted, and `dataset check` notes the replacement.
+    # Use-case prototypes that justify an IID or grouped split of data that is not IID (SPLIT-32); one per definition,
+    #   never on a temporal split, with a `Time basis:` line in `curation_comments`.
+    "Timeless",  # the target is a fixed property of the item; time cannot affect it
+    "Snapshot",  # the use case fills in a time the data covers (one moment, or a period already observed)
+    "DelayedTarget",  # one shared prediction moment; the target arrives after it, in a window closed for every row
+    "StationaryRelation",  # a present state read through a relation that time does not move (shown on dated data)
+    # Forced from temporal (SPLIT-8): a forward use case whose target time affects, but no usable time or too few
+    #   periods; the closest split, IID or grouped.
     "ForcedIIDFromTemporal",
     "ForcedGroupedFromTemporal",
     # Retired (2026-10-21): kept readable for containers that carry it; new definitions refuse it (RETIRED_DATA_TAGS).
@@ -108,20 +107,11 @@ DataTags = Literal[
 ]
 RETIRED_DATA_TAGS = ("2ndTierData",)
 
-TIME_BASIS_TAGS = ("Timeless", "Snapshot", "DelayedTarget", "CaseSeries", "TimeLost")
-"""Why an IID or grouped split is not temporal (SPLIT-32): at most one per definition, never on a temporal split.
+TIME_BASIS_TAGS = ("Timeless", "Snapshot", "DelayedTarget", "StationaryRelation")
+"""The use-case prototypes that justify a split that is not temporal (SPLIT-32)."""
 
-Time the data carries but the split leaves unused is the curator's exception, not a tag: the record says `Time Unused`
-and the definition's `Time basis:` line names the time, the reason and the measured cost.
-"""
-
-SUPERSEDED_TIME_TAGS = {
-    "ForcedIIDFromTemporal": "TimeLost or CaseSeries (rows over a period, dates lost), Snapshot or DelayedTarget "
-    "(one shared moment)",
-    "ForcedGroupedFromTemporal": "TimeLost (dates lost), Snapshot or DelayedTarget (one period); with time present, "
-    "a temporal split or the curator's exception (record tag `Time Unused`, a `Time basis:` line)",
-}
-"""The old forced tags and the time-basis tags that replace them."""
+FORCED_TIME_TAGS = ("ForcedIIDFromTemporal", "ForcedGroupedFromTemporal")
+"""The forced splits of a forward use case without usable time (SPLIT-8)."""
 """Tags old containers may carry and loading accepts, but a new definition may not set."""
 ProblemType = Literal["binary_classification", "multiclass_classification", "regression"]
 ProblemTypeClassification = [
