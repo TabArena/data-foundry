@@ -1545,6 +1545,12 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
 - Not built. READMEs regenerated with `dataset check` (0 errors, 0 warnings) except `lung_cancer`'s: its raw file (the
   PNAS supplement) has to be downloaded by hand, so its README still shows the earlier notes and checksum.
 
+## 2026-11-05 (GeoAI rechecked after internal-skill update)
+
+- Repeated the accepted GeoAI review under the refreshed installed skills/runtime. The pin is now `9048f36a`, exactly the source used by the previous cycle: 32 procedure hashes and 168 tracked source files match. No definition, data, target, metric, feature, context or split changes.
+- Fresh independent claim and precedent audits and mediator support reusing the October acceptance and prior completed evidence. All values/dtypes/metadata, nine folds and checksum exactly match the previous November container. One fresh LightGBM fold also reproduces every saved prediction. The full historical model/probe sweeps are reused with their recorded limitations, not described as new fits.
+- Current checks: 27 passed, zero errors/warnings; dtype zero flags; 2,017 tests passed, 286 skipped after the 18 localhost-dependent cases passed on exact retry. Priority remains 3, issue 1 stays resolved and no new human input is needed. The editor's presentation repairs are applied; new build verification follows when complete.
+
 ## 2026-11-05 (GeoAI current-main build verified)
 
 - Built only `geoai_ground_level_no2_estimation_challenge` from clean definition commit `2687a3ae2ebd33135af563cf9605e3adbc2897b6`: format 2, UUID `01a1adf0-eb77-7e00-8228-2b3c1bc263db`, checksum `v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20`. No crashes, errors or warnings; all 27 bundle checks pass.
