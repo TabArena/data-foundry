@@ -93,12 +93,12 @@ five questions asked in this order:
    `Snapshot`, and the line names the moment or the period. When the rows span a period, check that no row of the
    same time carries a test row's target (one day's weather across stations); if one does, group by that time unit.
 3. **Does the release, or its source, carry a global time order?** A date column, an order that tracks time, a value
-   that encodes the period, a date dropped from the raw file or kept in a parent upload. Then the split is temporal
-   (SPLIT-7, SPLIT-14). With fewer periods than three windows need, it holds out entities across stacked periods
-   (`TooFewPeriods`). A split that leaves such time unused is an exception (`TimeUnused`): the line gives the reason
-   and its measured cost (the score on the newest window under a temporal split against the shipped split), and it
-   is a decision of its own for the curator. A time order found only within each entity (a policy's terms) does not
-   count.
+   that encodes the period, a date dropped from the raw file or kept in a parent upload (the time probe looks for
+   them, `time_probes.py`). Then the split is temporal (SPLIT-7, SPLIT-14). With fewer periods than three windows
+   need, it holds out entities across stacked periods (`TooFewPeriods`). A split that leaves such time unused is an
+   exception (`TimeUnused`): the line gives the reason and its measured cost (the score on the newest window under a
+   temporal split against the shipped split), and it is a decision of its own for the curator. A time order found only
+   within each entity (a policy's terms) does not count.
 4. **Were all rows' features recorded at one shared prediction moment, with the target arriving after it?** A default
    in the next month, a donation at the next drive, an event within a fixed follow-up: the task has a
    `DelayedTarget`. No test row is later than a training row, so a random or grouped split tests the use case at that

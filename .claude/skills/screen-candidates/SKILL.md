@@ -76,7 +76,11 @@ listing is fine; nothing is built. Collect, with links:
 * the data as published: rows, columns, the target, the tables and how they join;
 * the original task and who solved it (competition pages and top solutions are claims, read them as such);
 * the use case: who acts, when, on which decision, and what is known then; how closely the data mirrors it;
-* the likely regime (IID, grouped, temporal) and why;
+* the time basis (SPLIT-32 in [splits.md](../knowledge-curation/references/splits.md)): its five questions answered
+  from the source. Where time lives, if anywhere (a date column, an order, an ID handed out in sequence, figures of a
+  period, a date in a raw file or a parent upload); when the features and the target are recorded compared with the
+  prediction point; whether all rows share one moment. It gives the record's temporal tag and the likely regime
+  (IID, grouped, temporal);
 * the metric the source scored (MET-1): the competition's evaluation page (Kaggle: the Evaluation tab, or the API's
   `evaluationMetric` via `uvx kaggle==2.2.2 competitions list -s <slug>`; Zindi, DrivenData and challenge pages state
   it), the task description, or the evaluation section of the paper that defined the task. Note whether it is a
@@ -143,13 +147,15 @@ plain `Yes`: that is the curator's call.
 
 Through the store API, right after reloading the record ([records.md](../knowledge-data-foundry/references/records.md)):
 the verified links in `source_links`, empty metadata only where the source states it, `priority`, `AI (UNVERIFIED)`
-in `checked_by`, `AI-Filled (Verify)` in `tags`, and at the top of the comments the disclaimer followed by the
+in `checked_by`, `AI-Filled (Verify)` and the temporal tag (`Non-IID (Temporal)`, `Timeless`, `Snapshot`, `Delayed
+Target`, `Case Series` or `Time Lost`) in `tags`, and at the top of the comments the disclaimer followed by the
 screening block, every existing note kept below it:
 
 ```markdown
 **Screening (AI, 2026-10-20):** `TBD -> Yes`, priority 4: <why, one line>.
 - Source: <first publication, who, year>; as published: <rows x columns, target, tables>.
-- Use case: <actor, moment, decision>; fit <direct | approximate>; regime <IID | grouped | temporal> because <...>.
+- Use case: <actor, moment, decision>; fit <direct | approximate>; time basis <temporal tag>: <the fact, where time
+  lives>; regime <IID | grouped | temporal> because <...>.
 - Siblings and duplicates: <records checked, and what they decided>; external collections: <...>.
 - Better data: <the hit: link, units and years against this one's, its record `<name>`> | none found (<where we
   looked>). On a hit's own record: found as better data for `<record>`.

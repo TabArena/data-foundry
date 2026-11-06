@@ -18,7 +18,14 @@ For every column of the cleaned frame (load it through
 
 1. What it means, from the codebook; "unknown" when nothing says.
 2. When its value comes into existence, and whether that is before the prediction point. Post-outcome fields,
-   missingness caused by the outcome, a window that ends at the outcome, an id that encodes the label.
+   missingness caused by the outcome, a window that ends at the outcome, an id that encodes the label. Under a
+   `DelayedTarget` or `Snapshot` time basis (SPLIT-32) this is the audit the tag rests on: every column gets
+   "at the prediction point", "later" or "cannot tell", and a "cannot tell" stays only when its missing values do not
+   move with the outcome given the columns known at that point. Look also for the patterns the arrival study found:
+   a value computed at extraction over a window that reaches past the prediction point, a row overwritten at the end
+   of a period, a length or exposure the outcome cuts short, a stand-in recorded at the end of the event (a drop-off
+   point for a destination), a figure looked up later for every row of an entity, the target of another row of the
+   same entity stored as a lag or a counter, and values fitted over the whole release.
 3. Its dtype and cleaning against `cleaning_features.md`: by meaning, proxy missing values, impossible values,
    encodings reversed, identifiers dropped or turned into their meaning. Run the dtype probe
    (`.claude/skills/knowledge-data-foundry/scripts/dtype_probes.py <name> --out <run folder>`) and answer each column
