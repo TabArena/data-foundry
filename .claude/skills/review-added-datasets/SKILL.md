@@ -143,6 +143,10 @@ Apply that mark only once the curator has answered; apply the others now. Never 
   `**Resolved (<date>, <curator>):**` turn with the decision and stays in the `REVIEW.md` (or the record's open-issues
   block): never delete an issue or a `REVIEW.md`, so the curator can look back at its decisions (Andrej, 2026-11-02);
   the page itself shows only the records with something left to decide (Step 1).
+* **Datasets of the same form:** after applying a decision, check the datasets it may change too (the same source
+  library, metric or table layout) and open a numbered issue in each one it does change, with its own options table
+  (Andrej, 2026-11-06: asp_potassco_classification's decisions moved sat11_hand_algo_runtime's splits and raised its
+  timeout question, which had sat only in an answer on asp's page until he asked for a decision item).
 * **Record fields:** `update` sets the record's field to the definition's value; `keep` leaves the record as it is.
   Either way the row leaves the `REVIEW.md`.
 * **The metric:** `ok` keeps the declared metric (a CC line in the record says it was checked); `change` changes
@@ -181,7 +185,9 @@ register's report on the decisions of the day (`decision_register.py --since <da
 
 Where the curator asked a question, answer it in the issue as `**Answer (AI, <date>):**`; the issue stays open.
 An answer is bullets, never a paragraph: what the curator asked, what was checked and found, and when it puts a new
-choice, the options table and the recommendation as in an issue. Rule IDs go into footnotes of the answer (`[^a1]`,
+choice, the options table and the recommendation as in an issue. A second decision that comes up in a note or an
+answer is a new issue with the next number, not part of the open one (Andrej, 2026-11-06: the timeout value and the
+target's scale on asp_potassco_classification). Rule IDs go into footnotes of the answer (`[^a1]`,
 defined at its end), what Claude needs into `**Notes for the AI:**`. Copy each note you acted on into the file first, as
 `**Lennart (<date>, <mark>):**` in their words, then clear that note on the page (an `update` deleting `note`, with
 `if_version`; keep the mark), so the note box is empty for the next turn and the conversation keeps the note. Then

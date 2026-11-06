@@ -3,10 +3,12 @@ unique_name: sat11_hand_algo_runtime
 name: SAT11-HAND-ALGO runtime-regression from aslib_data
 checked_by:
 - Lennart
+- Andrej
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
 suggestion: 'Yes'
+priority: 2
 tags:
 - Non-IID (Grouped)
 - Multi-target
@@ -54,6 +56,12 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 **Assessment (AI, 2026-10-21):** the log transform of the runtime moved from par_k's `target_transform` param to the spec-level `target_transform="log"` (the param is removed, so no double inverse is possible); the score is unchanged. Needs a rebuild to reach the container.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `sat03_16_indu_algo_runtime` (TBD -> Yes, priority 4), `sat18_exp_algo_runtime` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
+**Assessment (AI, 2026-11-04):** reviewed for the BeyondArena v0.2 review page, without a panel, from the gathered evidence (this record, earlier experiments, model runs on the shipped data); the open questions are in the folder's `REVIEW.md`. Ship as defined: real SAT-competition runs scored by the source's PAR10 of the predicted-fastest solver; only the spread under PAR10 is unmeasured. Priority 2: gap 0, use case 1, source 1, shape 0, risk -1.
+
+CC (2026-11-06, Andrej): the split count follows the scored units (new rule SPLIT-33, decided on asp_potassco_classification): PAR10 scores per instance, and 184 instances leave a training side of 122, so 20 x 3 splits instead of 10 x 3 counted in runs. `dataset check` 0 errors (the known constant-column warning); the shipped container keeps 10 x 3 until its next build.
+
+CC (2026-11-06, Andrej): ship (review page issue 1): 20 x 3 splits under the split rule in scored units (issue 2); a timed-out run stays at the recorded 5,000 s in the log target (issue 3), since it is the value ASlib records and how to treat a censored run is part of what a model has to work out; counting it at the 50,000 s PAR10 charge made every model pick 17-19% better but would replace the recorded value. Metric (PAR10) and split checked and kept.
 
 ## Reference
 

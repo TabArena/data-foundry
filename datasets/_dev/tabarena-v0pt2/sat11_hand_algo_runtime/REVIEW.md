@@ -1,0 +1,181 @@
+# sat11_hand_algo_runtime
+
+**Outcome:** added. ASlib's SAT11-HAND scenario (Xu, Hutter, Hoos and Leyton-Brown 2012; Bischl et al. 2016): the
+runtimes of 10 SAT solvers on 184 handcrafted instances of the 2011 SAT competition, one row per run (1,840 rows),
+from instance features and features of the solver's code; whole instances are held out, and the score is ASlib's
+PAR10 of the solver predicted fastest per instance. The AI recommends shipping it as defined. Reviewed without a panel,
+from the gathered evidence: the record, the curator's decisions of 2026-10-01 and 2026-10-06, and a model run
+on the shipped data. Validity: real competition runs, features known before any solver runs, the solver's name
+dropped, and `runstatus` (the timeout flag) dropped; the 112 instances on which every solver times out are dropped,
+which changes no selection. Value: a model run used BeyondArena's version (all 296 instances, RMSE on the log
+runtime), where the benchmark methods range from 1.89 (best) and 2.00 (TabPFN-3.5) over a median of 2.09 to 3.83
+(untuned
+linear regression), and two forests for instance difficulty and solver offsets rank 3 of 41: one difficulty
+factor carries 87% of the variance. How well v0.2's PAR10 on 61 test instances per fold separates methods is not
+measured. Quality: three constant columns (`POSNEG_RATIO_CLAUSE_max`, `UNARY`, `clustering_max`, constant in the raw
+file too) can go without a decision. Weighed: a documented algorithm-selection benchmark scored by its source's metric
+(+), few instances per fold and an untested spread under PAR10 (-).
+
+**Main points:** Ship: 20 x 3 splits, timeouts at the recorded 5,000 s, PAR10 (issues 1-3 resolved). Open: how
+a tie at the lowest prediction is scored (issue 4).
+
+**Record judgment:** valid. The task is the one the curator chose (one model for all solvers, from instance and
+solver features, as in Pulatov et al. 2022), and the split by instance rather than by instance family is his decision
+of 2026-10-06: a selector in use has other members of a new instance's family in its data. The censoring of runtimes at
+5,000 s is handled for PAR10 (timeouts kept at the limit, all-timeout instances dropped). The data-scouting run of
+2026-10-31 found better data for the same task, `sat03_16_indu_algo_runtime` (priority 4) and `sat18_exp_algo_runtime`
+(priority 3), screened in their own records and not added yet; whether SAT11-HAND stays next to them is for when they
+are added. The `Multi-target` tag stays (one runtime per solver, stacked as rows).
+
+**Issues for Andrej:**
+
+1. **Ship as defined?**
+
+   * **Problem:**
+     - Nothing open was found: real competition runs, features known before any solver runs, the source's metric
+       (PAR10 of the solver predicted fastest), and the curator's split by instance with its reason recorded.
+     - What is not measured is how well PAR10 on 61 test instances per fold separates methods; on BeyondArena's
+       version (RMSE, all 296 instances) the benchmark methods spread from 1.89 to 3.83, with a median of 2.09.
+     - Ship as defined, or retire?
+   * **Background:** one difficulty factor of the instance carries 87% of the variance of the instance-by-solver
+     table, and a model of instance difficulty plus solver offsets ranks 3 of 41 there, so the solvers differ mostly
+     by an offset and a few solver-specific families. Newer ASlib scenarios of the same kind
+     (`sat03_16_indu_algo_runtime`, priority 4; `sat18_exp_algo_runtime`, priority 3) are screened and not added.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Ship as defined (implemented) | 184 instances x 10 solvers, grouped by instance, PAR10 | the source's task and metric; no defect found | PAR10 spread unmeasured; few instances per fold |
+     | B | Retire | `No (Retired)`, a CC line, the folder removed | leaves the place to a larger SAT scenario once added | no defect of the data found; the newer scenarios are not added yet |
+
+   * **Recommendation:** A: no reason in the task itself to retire it, and methods spread on the version measured[^1a].
+     **Decision:** A or B?
+
+   [^1a]: **TP-2** (Should): retire, fix or keep a task for a concrete reason found in the task itself; until one is
+     found, the task stays.
+
+   **Andrej (2026-11-06, discuss):** We made changes to asp potassco - is this dataset affected by it too?
+
+   **Answer (AI, 2026-11-06):**
+
+   * **Yes, in two places; a third is open:**
+     - The split count (decided, asp_potassco_classification issue 2, B): splits now follow the units the metric
+       scores (SPLIT-33). PAR10 scores per instance, and 184 instances leave a training side of 122, so this dataset
+       gets 20 x 3 splits instead of 10 x 3. `dataset check` confirms it; the shipped container keeps 10 x 3 until
+       its next build.
+     - The target scale (decided, asp issue 4): the log scale stays, here as there.
+     - The timeouts (open, asp issue 3): this dataset is where the evidence differs. Here every model picks 17% to 19%
+       better when a timed-out run counts as the PAR10 charge (50,000 s) instead of the recorded 5,000 s, which meets
+       your bar for adapting the target; on asp it does not. The choice is made there (options A, B, C), and applies
+       here.
+   * **Not affected:** asp's reframing as runtime regression (asp issue 1) took this dataset as its model; the
+     metric (PAR10, from ASlib) and the rows (instances no solver finished dropped, as asp now does too) stay.
+   * **Recommendation:** ship as defined, with the 20 x 3 splits, and take the timeout target from asp issue 3.
+
+   **Andrej (2026-11-06, discuss):** If you suggest to change anything for this dataset, there should ne a decision
+   item, this is not clear right now.
+
+   **Answer (AI, 2026-11-06):**
+
+   * **Each change now has its own item:** issue 2, the split count (20 x 3 under the rule decided on
+     asp_potassco_classification, already in the definition's checks); issue 3, how a timed-out run is counted in
+     the target (open, recommended: the PAR10 charge). This issue asks only whether to ship once those are settled.
+   * **Recommendation:** ship (A), with issues 2 and 3 as you decide them.
+
+   **Resolved (2026-11-06, Andrej):** ship (A), with issues 2 and 3 as decided below; metric and split checked.
+
+2. **Split count: 20 x 3 splits, counted in instances, instead of 10 x 3 counted in runs?**
+
+   * **Problem:**
+     - The split protocol now counts the units the metric scores (SPLIT-33, decided on asp_potassco_classification
+       issue 2, B, "count the scored groups everywhere"); PAR10 scores per instance, and 184 instances leave a training
+       side of 122, below 500, so this dataset gets 20 repeats instead of the 10 its 1,840 runs gave.
+     - `dataset check` already gives 20 x 3 (training 1,220 to 1,230 runs, test 610 to 620); the shipped container keeps
+       10 x 3 until its next build.
+     - Keep the 20 x 3 the rule gives, or keep 10 x 3 here by an exception?
+   * **Effect on the task:** 60 splits instead of 30, each test fold 61 or 62 instances; the score averages over twice
+     as many folds, which the noise of few instances per fold needs.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | 20 x 3 (implemented) | the protocol's count in instances | follows the rule just decided; steadier score | twice the compute of 10 x 3 (1,840 rows, small) |
+     | B | 10 x 3 by exception | `splits_comment` and an override in the definition | the splits as shipped | an exception to the rule with no fact that sets this dataset apart |
+
+   * **Recommendation:** A, the rule applied. **Decision:** A or B?
+
+   **Resolved (2026-11-06, Andrej):** 20 x 3 splits (A), the rule applied; `dataset check` confirms them.
+
+3. **Count a timed-out run as the recorded 5,000 s, or as the 50,000 s PAR10 charges for it?**
+
+   * **Problem:**
+     - Counted as the PAR10 charge (10 times the 5,000 s limit) instead of the 5,000 s ASlib records, a timed-out run
+       makes every model pick better: LightGBM, the forest, the linear models and TabPFN by 17% to 19%, on 47 to 57 of the
+       60 splits, which meets the bar you set on asp_potassco_classification issue 3 (adapt the target only when a change
+       clearly benefits all models equally).
+     - The shipped target is the recorded value: ASlib stores all 2,695 timed-out runs at exactly 5,000 s (finished
+       runs end at 4,995.8 s at most). The scoring stays PAR10, ASlib's measure, either way.
+     - Keep the recorded 5,000 s, or count a timeout as 50,000 s in the target?
+   * **Background:** a timed-out run is right-censored (only "more than 5,000 s" is known). The log target with the
+     recorded limit keeps the order within an instance but charges a timeout as a run just past the slowest finish;
+     PAR10 charges it ten times the limit. On asp_potassco_classification the same change does not clear the bar (mixed
+     results within about two standard errors), so the two datasets may end up with different targets.
+   * **Experiments** (PAR10 of the pick, mean seconds over the 60 splits, instances held out):
+
+     | Model | Recorded 5,000 s | 50,000 s | Censored model | Timeouts left out of training |
+     |---|---|---|---|---|
+     | LightGBM | 8,970 | 7,420 (-1,549) | 7,523 (-1,447) | 14,532 (+5,562) |
+     | Random forest | 8,323 | 6,783 (-1,540) | 7,148 (-1,176) | 15,222 (+6,899) |
+     | Linear (one per solver) | 11,350 | 9,255 (-2,095) | 8,699 (-2,651) | 19,788 (+8,438) |
+     | TabPFN 3.5 | 7,820 | 6,464 (-1,356) | not run | 21,208 (+13,387) |
+
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Recorded 5,000 s (implemented) | the target as ASlib stores it | the source's values; the same form as asp_potassco_classification | leaves a gain every model shows unused |
+     | B | The PAR10 charge, 50,000 s | a timed-out run's target is 10 times the limit, on the log scale | every model picks 17-19% better; training charges what the score charges | a value the source did not record; differs from asp_potassco_classification if that keeps its 600 s |
+
+   * **Recommendation:** B: the gain holds for every model, so it meets your bar. **Decision:** A or B?
+
+   **Notes for the AI:** on B, in `_clean` set the runtime of runs with `runstatus != "ok"` to 50,000 before the log, a
+   curation note with the table above, `dataset check`, record CC line, CHANGELOG. Evidence of the asp_potassco review
+   (timeouts) covers this dataset.
+
+   **Andrej (2026-11-06, ok):** We go with A since this is the real recorded value and changing it is already part of
+   the solution models are supposed to find. Document this decision.
+
+   **Resolved (2026-11-06, Andrej):** the recorded 5,000 s stays (A): it is the value ASlib records, and how to treat a
+   censored run is part of what a model has to work out; the curation notes and the record say so, with the measured
+   gain of the PAR10 charge (17-19%) for reference. The scoring stays PAR10.
+
+4. **Let PAR10 alone choose the solver, so a tie is scored as PAR10 defines it?**
+
+   * **Problem:**
+     - The definition chooses the solver predicted fastest twice: the grouping's `select_min`, which the scorer applies
+       first and which breaks a tie by the order of the rows, and PAR10 (`par_k`), which counts solvers tied at the
+       lowest prediction as the mean of their costs.
+     - With `select_min` a tie scores the solver that comes first in the file; asp_potassco_classification declares no
+       aggregation, so there PAR10 alone chooses.
+     - Keep `select_min`, or let PAR10 choose alone?
+   * **Effect on the task:** none on the trained models measured: LightGBM, the random forest and the linear models
+     (one per solver) tie at an instance's lowest prediction in 0 of 3,680 test instances over the 60 splits and score
+     the same either way. A constant prediction ties everywhere: 19,140 s with `select_min` (always the first solver in
+     the file) against 18,539 s under PAR10's rule (the mean over the solvers), up to 5,107 s apart on one split.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep `select_min` (implemented) | `prediction_unit="group"`, `aggregation="select_min"`; PAR10 sees one row per instance | the definition as built; states one decision per instance | a tie scores the solver first in the file; a different form from asp_potassco_classification |
+     | B | PAR10 chooses alone | `prediction_unit="row"`, no aggregation; PAR10 keeps the instance as its group | a tie scored as PAR10 defines it, whatever the row order; one form for both ASlib datasets | changes a definition otherwise settled, for an effect only tied predictions show |
+
+   * **Recommendation:** B: a score should not depend on the order of the rows, and both ASlib datasets then declare
+     the same form[^4a]. **Decision:** A or B?
+
+   [^4a]: definitions.md ("Grouped"): when the metric chooses per instance by itself (`par_k`), the grouping declares
+     `prediction_unit="row"` and no aggregation.
+
+   **Notes for the AI:** on B, in `grouping` set `prediction_unit="row"` and remove `aggregation` (`context="all_rows"`
+   stays), the grouping's `definition` unchanged, `dataset check`, a CC line in the record, CHANGELOG, and the
+   "still declares `select_min`" line in definitions.md goes. On A, that line says it is kept and why. Tie counts: a
+   re-fit of issue 3's LightGBM, random forest and linear models on the shipped target.
