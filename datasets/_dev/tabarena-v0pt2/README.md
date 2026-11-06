@@ -24,6 +24,9 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
 - 2026-11-05: rebuilt GeoAI against updated main as one format-2 dataset. The single traced raw file is
   Train.csv (10,000,397 bytes); saved-container reload and reproduction from only that input both pass.
   The raw-input backup remains local. See the GeoAI README and dated changelog for the build identity.
+The 2026-11-05 installed-skill alignment rebuild used the same qualified scientific source and reproduced the preceding checksum. One format-2 dataset, one traced raw CSV (5,829,604 bytes); reload, minimal-input reproduction and the local manifested backup are verified. The dated CHANGELOG records the new UUID.
+
+Targeted rebuild on 2026-11-05: one format-2 dataset from one traced raw CSV (5,829,604 bytes). Saved-container reload and a check using only that input reproduce the checksum. The dated CHANGELOG entry records the UUID and accepted protocol. The manifested raw-input backup remains local, outside Git.
 
 - The raw files come from `local-data-warehouse/` (or `$DATA_FOUNDRY_WAREHOUSE`); each folder's `README.md` gives the
   download command.
