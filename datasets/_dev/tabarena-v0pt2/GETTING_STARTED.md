@@ -17,8 +17,9 @@ and **grouped** (generalise to unseen entities such as patients or customers).
 > **Large datasets are a priority.** Real tasks with roughly 1M–10M usable training rows are rare in public
 > benchmarks, and most of them are non-IID. Candidates of that size carry the tag **`Review Prio 1 (Atlas)`** in
 > the curation log (the tag comes from the earlier Atlas plan for a large-data collection, now folded into
-> TabArena v0.2); pick from them first (section 7). A frame above 1.5M rows ships as a sub-sampled `<name>_1m`
-> version, and each split trains on at most 1M rows.
+> TabArena v0.2); pick from them first (section 7). Data Foundry itself sets no row budget; TabArena v0.2
+> sub-samples to 1M train / 500k test rows: a dataset whose splits have a side over that ships as a `<name>_1m`
+> version with `row_budget = RowBudget(train=1_000_000, test=500_000)`, and the container records that budget.
 
 The selection criteria (unique source, a real predictive task, no irreversible leakage, ethically unambiguous, not
 trivial) are the same for every dataset; the [**📖 Guidelines**](https://tabarena.github.io/data-foundry/guidelines.html)

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, TaskSummary, decode
+from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, RowBudget, TaskSummary, decode
 
 
 class AmexNonIid1m(AbstractCuratedDataset):
@@ -107,10 +107,8 @@ class AmexNonIid1m(AbstractCuratedDataset):
     )
 
     # Splits
-    subsample_to_budget = True
+    row_budget = RowBudget(train=1_000_000, test=500_000)
     accepted_check_warnings = {
-        "splits_rows_never_tested": "The v2 protocol caps each test fold at 500k rows; the grouped folds of the 1.5M-row "
-        "frame overshoot by whole groups, so 325 rows (0.02%) are trimmed from a test fold (2026-10-01).",
         "dataset_constant_column": "D_87 is 1 or missing, as in AMEX's original data (1 in 3,865 of 5.5M statements); "
         "raddar's -1 is its missing value (CLEAN-10, 2026-10-30), so whether it is present is the column's information.",
     }

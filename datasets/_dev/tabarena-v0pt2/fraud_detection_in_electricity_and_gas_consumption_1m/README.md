@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: fraud_detection_in_electricity_and_gas_consumption_1m
 container_format: 2
-checksum: v2:a646fa214eb393cb7e1a1206d87a037aaf57f9eae5d95ceee85ee7e5b361f665
+checksum: v2:5aa89c7abfe65bc823a9aaaddc670127292d0e2fcdf832b3631790858221a287
 build: null
 build_stale: false
 data:
@@ -42,21 +42,21 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 999577
+    min: 999988
     max: 1000000
   n_test:
     min: 499629
     max: 499993
+  row_budget:
+    train: 1000000
+    test: 500000
 bundle_checks:
   ok: true
   errors: []
   warnings: []
   infos:
   - dataset_duplicate_rows
-  accepted:
-    splits_rows_never_tested: The v2 protocol caps each test fold at 500k rows; the
-      grouped folds of the 1.5M-row frame overshoot by whole clients, so 430 rows
-      (0.03%, 18 clients) are trimmed from a test fold (2026-10-20).
+  accepted: {}
 decisions:
 - The history is cut at 2013-01-01
 - Only clients billed before 2013 and still billed from 2015 on
@@ -69,7 +69,7 @@ decisions:
 
 Binary classification of `fraud`, scored with `roc_auc` on grouped splits by `client_id`, one prediction per group (mean). 1,500,000 rows and 17 features. Source: Zindi (2019).
 
-Not built yet. The current definition gives checksum `v2:a646fa214eb393cb7e1a1206d87a037aaf57f9eae5d95ceee85ee7e5b361f665`.
+Not built yet. The current definition gives checksum `v2:5aa89c7abfe65bc823a9aaaddc670127292d0e2fcdf832b3631790858221a287`.
 
 ## In brief
 
@@ -272,11 +272,11 @@ deployment over time, in which STEG would train on the findings of earlier campa
 forward: the labels are undated findings of 2013-2019, one per client, so no test window or gap can be set,
 and train and test clients share the same years, as in the challenge.
 
-1 repeat(s) x 3 fold(s) with seed 4267; train 999,577 to 1,000,000 rows, test 499,629 to 499,993 rows.
+1 repeat(s) x 3 fold(s) with seed 4267; train 999,988 to 1,000,000 rows, test 499,629 to 499,993 rows. Row budget: at most 1M train / 500k test rows per split.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 999577 | 499993 |
+| 0 | 0 | 999988 | 499993 |
 | 0 | 1 | 999989 | 499629 |
 | 0 | 2 | 1000000 | 499948 |
 
@@ -402,13 +402,9 @@ The challenge scores one probability per client; the mean, the largest and the l
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicate_rows`: 57 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
-
-Accepted on purpose:
-
-- `splits_rows_never_tested`: The v2 protocol caps each test fold at 500k rows; the grouped folds of the 1.5M-row frame overshoot by whole clients, so 430 rows (0.03%, 18 clients) are trimmed from a test fold (2026-10-20).
 
 ## Data checks
 

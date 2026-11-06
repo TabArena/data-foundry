@@ -10,7 +10,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Metric, TaskSummary, Temporal, TemporalSplits, decode
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Metric,
+    RowBudget,
+    TaskSummary,
+    Temporal,
+    TemporalSplits,
+    decode,
+)
 
 
 def set_table_dtypes(df):
@@ -258,7 +267,7 @@ class HomeCreditDefaultStability1m(AbstractCuratedDataset):
         "distribution (-1 4.8%, -2 4.7%, -3 4.2%, 0 3.8%, down to -1220), missing values are NaN, and the default "
         "rate rises from 2.1% (< -1) over 3.3% (-1) and 4.5% (0) to 8.6% (late).",
     }
-    subsample_to_budget = True
+    row_budget = RowBudget(train=1_000_000, test=500_000)
 
     # The raw tables are too large for pandas: `_prepare_raw_files` joins them with polars once (following
     # TabRed's homecredit.py, https://github.com/yandex-research/tabred/blob/main/preprocessing/homecredit.py)

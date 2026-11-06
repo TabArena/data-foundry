@@ -15,6 +15,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    RowBudget,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -466,7 +467,7 @@ class AeolusRebuilt1m(AbstractCuratedDataset):
         As in aeolus_1m: a delay model is refit every two weeks and predicts the flights of the two weeks ahead. The last six weeks of 2024 are three two-week test windows (2024-12-18 to 12-31, 12-04 to 12-17 and 11-20 to 12-03, newest first; 25.9%, 16.7% and 17.5% of the operated flights late), so that one window falls in the holiday peak. Train is every flight from 2023 on dated at least two days before the window (a one-day gap): a flight's arrival delay is known only once it has landed, and the previous evening's flights land after midnight. Each window keeps all of its flights (264,245, 259,738 and 273,891); each train side is a random 1M of the earlier flights (one random order for all windows). The authors split 1-15 June 2024 chronologically 6:2:2 (Sec. 4.1), one test stretch of about three days and no season, so we depart from it. All three windows lie in late November and December: the score measures early-winter delays.
     """
     temporal = Temporal(on="FL_DATE", splits=TemporalSplits(window=14, unit="days", n_windows=3, gap=1))
-    subsample_to_budget = True
+    row_budget = RowBudget(train=1_000_000, test=500_000)
 
     # The 25 monthly BTS files (zipped CSVs) and about 1,800 station-year weather files are converted once into two
     # parquet files; everything else is read as it is.

@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    RowBudget,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -181,7 +182,7 @@ class Pkdd15TaxiTripTimePredictionIi1m(AbstractCuratedDataset):
     splits_comment = """
         A model refit every month predicts the travel times of the next month's trips: 3 test windows of 30 days that start on 1 June, 1 May and 1 April 2014 (newest first; the May window leaves out 31 May), and train is the trips that start at least one day before the window. The gap of one day is part of the task: a trip lasts up to 3 hours, so at a refit the last trips before it have no travel time yet; without the gap 48, 36 and 8 train trips per window (June, May, April) would end after the window start, with it none. Each window keeps all of its trips (131,648 to 151,406, under the 500k budget); each train side is a random 1M of the eligible earlier trips (one random order for all windows). The monthly length follows the source: the challenge tested on 320 trips 1.5 to 6 months after its training year. The file covers one year, so the April to June test season has no earlier copy in train.
     """
-    subsample_to_budget = True
+    row_budget = RowBudget(train=1_000_000, test=500_000)
 
     # train.csv holds every GPS point of every trip (1.9 GB of text); `_prepare_raw_files` parses the polylines once
     # into their number of points and their first and last point, and `_load_raw` starts from that table.

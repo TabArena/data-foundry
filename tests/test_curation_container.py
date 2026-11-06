@@ -14,6 +14,7 @@ from data_foundry.schema import (
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadata,
     PredictiveMLTaskMetadataV2,
+    RowBudget,
 )
 
 from tests.test_bundle_checks import make_spec
@@ -637,6 +638,23 @@ def test_a_format_2_container_round_trips(tmp_path):
     assert loaded.grouping == TOY_GROUPING
     assert loaded.checksum == loaded._create_checksum() == container.checksum
     assert loaded.container_metadata["format_version"] == 2
+
+
+def test_a_format_2_container_records_its_row_budget(tmp_path):
+    plain = _grouped_toy(_v2_task(TOY_GROUPING))
+    meta = dataclasses.replace(plain.experiment_metadata, row_budget=RowBudget(train=4, test=2))
+    container = dataclasses.replace(plain, experiment_metadata=meta, checksum=None, uuid=None)
+    assert container.checksum != plain.checksum  # the budget is part of the checksum once set
+    path = container.save(save_dir=tmp_path)
+    splits_json = json.loads((path / "experiment_metadata.predictive-ml-splits-mold-v1.json").read_text())
+    assert splits_json["row_budget"] == {"train": 4, "test": 2}
+    loaded = CuratedContainer.load(path)
+    assert loaded.experiment_metadata.row_budget == RowBudget(train=4, test=2)
+    assert loaded.verify()
+    plain_json = json.loads(
+        (plain.save(save_dir=tmp_path / "plain") / "experiment_metadata.predictive-ml-splits-mold-v1.json").read_text()
+    )
+    assert "row_budget" not in plain_json  # no budget, no key: older readers load it unchanged
 
 
 def test_a_format_2_container_keeps_its_metric_spec_and_scoring_columns(tmp_path):

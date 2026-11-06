@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: cooking_time_1m
 container_format: 2
-checksum: v2:dfb2173086262d2076446ebc75f7a76ea0196a1934e0ff0df8178dc090a1d3fb
+checksum: v2:72073372d6046c6b54f9d517f940825ff7a85a1bdc75ad8e14d761aa15341dd2
 build:
   uuid: 01a111fc-29b5-72ce-95a1-e99f6874a4ee
   checksum: v2:cc6a96ce8c78e4f50b384a14bb6f6311cc1a6487adbd843d57cc06b5dddf5259
@@ -53,6 +53,9 @@ splits:
   n_test:
     min: 500000
     max: 500000
+  row_budget:
+    train: 1000000
+    test: 500000
 bundle_checks:
   ok: true
   errors: []
@@ -69,7 +72,7 @@ decisions: []
 
 Regression of `cooking_time_minutes`, scored with `rmse` on temporal splits by `timestamp`. 2,527,113 rows and 196 features. Source: Kaggle (2024).
 
-Built as `01a111fc-29b5-72ce-95a1-e99f6874a4ee` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:dfb2173086262d2076446ebc75f7a76ea0196a1934e0ff0df8178dc090a1d3fb`, so the build is stale. See [Build](#build).
+Built as `01a111fc-29b5-72ce-95a1-e99f6874a4ee` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:72073372d6046c6b54f9d517f940825ff7a85a1bdc75ad8e14d761aa15341dd2`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -195,7 +198,7 @@ Version of `cooking_time`: We sample per test window (v2 split protocol): each w
 
 We use each of the last 3 weeks as a test window (newest first) and the orders placed at least one day before it as train data. The gap of one day is part of the task: a cooking time is known only when the order is cooked (up to 2 hours after it is placed), so at a weekly refit the last orders before it have no label yet; without the gap 172, 126 and 108 train orders per window (start + cooking time) would end after the window start, with it none. The gap removes 280k, 264k and 239k of the 11.1M, 9.1M and 7.2M earlier orders (2.5 to 3.3%). Each window keeps at most 500k of its rows (1.7M to 2.0M before sampling); each train side is a random 1M of the eligible earlier rows (one random order for all windows).
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 500,000 rows. Prediction horizon: 7 days. Gap between train and test: 1 days.
+3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 500,000 rows. Prediction horizon: 7 days. Gap between train and test: 1 days. Row budget: at most 1M train / 500k test rows per split.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
@@ -205,7 +208,7 @@ We use each of the last 3 weeks as a test window (newest first) and the orders p
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 497,841,261 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
 
@@ -421,4 +424,4 @@ We use each of the last 3 weeks as a test window (newest first) and the orders p
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:dfb2173086262d2076446ebc75f7a76ea0196a1934e0ff0df8178dc090a1d3fb` |
+| stale | yes: the definition now gives checksum `v2:72073372d6046c6b54f9d517f940825ff7a85a1bdc75ad8e14d761aa15341dd2` |

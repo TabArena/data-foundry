@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: amex_non_iid_1m
 container_format: 2
-checksum: v2:ec42d3dcf557d52fb7019071a1cec2886a2184fd3eb1a168a2fc96e0eb108e27
+checksum: v2:06b9fecaf80865d9fe5401d088fe5a44af289d6fb6b3544558aacf82058c844d
 build:
   uuid: 01a111fb-d73e-711b-a490-c684c5c4635d
   checksum: v2:0c020fafb06a0223bf62e6fa7cb60da404d9b841396e4624184ca2db713395c3
@@ -57,11 +57,14 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 999121
+    min: 999997
     max: 1000000
   n_test:
     min: 499436
     max: 500000
+  row_budget:
+    train: 1000000
+    test: 500000
 bundle_checks:
   ok: true
   errors: []
@@ -70,9 +73,6 @@ bundle_checks:
   - dataset_duplicates_skipped
   - dataset_pure_feature_value_skipped
   accepted:
-    splits_rows_never_tested: The v2 protocol caps each test fold at 500k rows; the
-      grouped folds of the 1.5M-row frame overshoot by whole groups, so 325 rows (0.02%)
-      are trimmed from a test fold (2026-10-01).
     dataset_constant_column: D_87 is 1 or missing, as in AMEX's original data (1 in
       3,865 of 5.5M statements); raddar's -1 is its missing value (CLEAN-10, 2026-10-30),
       so whether it is present is the column's information.
@@ -85,7 +85,7 @@ decisions: []
 
 Binary classification of `target`, scored with `gini_top_capture` on grouped splits by `customer_ID`, one prediction per group (last). 1,500,000 rows and 189 features. Source: Kaggle (2022).
 
-Built as `01a111fb-d73e-711b-a490-c684c5c4635d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ec42d3dcf557d52fb7019071a1cec2886a2184fd3eb1a168a2fc96e0eb108e27`, so the build is stale. See [Build](#build).
+Built as `01a111fb-d73e-711b-a490-c684c5c4635d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:06b9fecaf80865d9fe5401d088fe5a44af289d6fb6b3544558aacf82058c844d`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -221,15 +221,15 @@ Version of `amex_non_iid`: We sub-sample the frame to 1.5M rows by whole custome
 
 ## Splits
 
-Default splits. The frame is sub-sampled to 1.5M rows (whole groups); every split trains on at most 1M and tests on at most 500k rows.
+Default splits. The frame is sub-sampled to 1.5M rows (whole groups); every split trains on at most 1M and tests on at most 500k rows: each fold tests on up to 500k rows of its third and trains on the other rows.
 
-1 repeat(s) x 3 fold(s) with seed 4267; train 999,121 to 1,000,000 rows, test 499,436 to 500,000 rows.
+1 repeat(s) x 3 fold(s) with seed 4267; train 999,997 to 1,000,000 rows, test 499,436 to 500,000 rows. Row budget: at most 1M train / 500k test rows per split.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
 | 0 | 0 | 1000000 | 499436 |
 | 0 | 1 | 999997 | 499685 |
-| 0 | 2 | 999121 | 500000 |
+| 0 | 2 | 1000000 | 500000 |
 
 ## Group structure
 
@@ -257,14 +257,13 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 286,500,000 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
 - **info** `dataset_pure_feature_value_skipped`: Skipped the pure-feature-value check: 286,500,000 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force it.)
 
 Accepted on purpose:
 
-- `splits_rows_never_tested`: The v2 protocol caps each test fold at 500k rows; the grouped folds of the 1.5M-row frame overshoot by whole groups, so 325 rows (0.02%) are trimmed from a test fold (2026-10-01).
 - `dataset_constant_column`: D_87 is 1 or missing, as in AMEX's original data (1 in 3,865 of 5.5M statements); raddar's -1 is its missing value (CLEAN-10, 2026-10-30), so whether it is present is the column's information.
 
 ## Data checks
@@ -498,4 +497,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:ec42d3dcf557d52fb7019071a1cec2886a2184fd3eb1a168a2fc96e0eb108e27` |
+| stale | yes: the definition now gives checksum `v2:06b9fecaf80865d9fe5401d088fe5a44af289d6fb6b3544558aacf82058c844d` |
