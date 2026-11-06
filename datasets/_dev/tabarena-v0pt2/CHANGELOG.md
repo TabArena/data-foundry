@@ -1,6 +1,6 @@
 # Changelog: TabArena v0.2 working copy
 
-## 2026-11-06, PR #61: the row budget is declared by the version and recorded in its container
+## 2026-11-06, PR #64 (was #61): the row budget is declared by the version and recorded in its container
 
 - Data Foundry sets no row budget any more: by default every split uses the full frame and no side is capped. A
   sub-sampled version declares its budget, `row_budget = RowBudget(train=..., test=...)`, in place of
