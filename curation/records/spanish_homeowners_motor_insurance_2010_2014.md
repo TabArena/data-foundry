@@ -51,6 +51,8 @@ CC (2026-11-02, Andrej): issues 2-5 as implemented: no gap before each test year
 
 CC (2026-11-02, Andrej): ship. Issue 1 (a), "I go with a)": the 13 once-read rating fields kept under LEAK-10's later-pull clause after the nine-test leak check (no gain a late read could carry into the home target), `Policy_PaymentMethodA` with its potential-leak note (LEAK-37). Issues 2-5 as recorded above.
 
+**Assessment (AI, 2026-11-06):** review panel (focused: claim auditor and mediator, re-review under LEAK-41, MET-14 to MET-16): ship after changes, text only and made (the Exposure note: at most the 29,296 lapse rows, 23.8%, can be years cut short, a bound since the release has no dates, and the lapse marker added as a feature gains no Gini; the elasticity of the cost to the insured values is 0.13 and 0.15, against 1 for an amount at risk, so they stay features; no LEAK-41 suspect; scored unweighted per contract, MET-15); disputed: none; for the curator: no issue.
+
 ## Reference
 
 Guillen, M., Bolance, C., Frees, E.W., Valdez, E.A. (2021). Insurance data for homeowners and motor insurance customers monitored over five years. Mendeley Data, V1. https://doi.org/10.17632/vfchtm5y7j.1

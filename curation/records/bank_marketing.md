@@ -11,6 +11,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
+priority: 2
 original_source: UCI
 year: '2011'
 required_split:
@@ -43,6 +44,12 @@ Andrej: Fits criteria
 CC (2026-10-30, Lennart): `campaign` and `previous` are counts and stay numeric, as the UCI description gives them ("number of contacts performed during this campaign", "... before this campaign"); the BeyondArena notebook had typed them categorical (issue #34, raised by Adrian). CLEAN-14: a count stays numeric.
 
 **Assessment (AI, 2026-10-30):** Dtype review (branch ordinal-and-censored-levels; the column decisions with their codebook evidence are on the review board): 1 ordinal scales typed as ordered categories in the codebook's order (CLEAN-14, amended): `education` (the README lists their levels); their codes that mean unknown (don't know, refused, not asked) are missing in `education` (CLEAN-10).
+
+**Assessment (AI, 2026-11-06):** supersedes the comment "features seem to be time-invariant" (a later measurement, EV-2): with the year rebuilt from the file's date order (UCI: "ordered by date"), the subscription rate is 5.1% in 2008 (27,729 rows), 17.1% in 2009 (14,862) and 51.6% in 2010 (2,620); `contact` "unknown" covers all 12,443 rows of May-June 2008; the mean number of calls per client falls from 3.19 to 2.13 to 1.89. Year: the data were first published by the UCI release (donated 2012-02-13), so the definition's 2012 is the year (PROV-9); the record's 2011 is the ESM paper, which only analysed them.
+
+**Assessment (AI, 2026-11-06):** review panel (focused, re-review under LEAK-41, MET-14 to MET-16): ship after changes, those needing no decision applied (notes on `campaign`, `contact`, `pdays` and `balance`, `job` "unknown" as missing, the row text, the `pdays` sentinel accepted); new: clients recur across campaigns, and the random split lets a client's later row give away its earlier row's label through `poutcome` (3.7% of test rows, +0.020 ROC AUC to a model that matches them; LEAK-17), while the source evaluates in time on date-ordered data; disputed: keep or drop `campaign`, which turns on the prediction point (issue 2); for the curator: issues 1 (split by time, against the SPLIT-31 call), 2 (the prediction point and `campaign`), 3 (duplicates).
+
+**Assessment (AI, 2026-11-06):** priority 2 (selection.md, Priority): a good shape (45,211 units, 13 features, categorical and ordinal) +, a strong source (UCI and Moro et al. 2014) +; no gap in the benchmark; the use case's fit is open (issue 2: before the campaign or at a call); a known risk -, the open issues on the split (1) and on `campaign` (2).
 
 ## Reference
 

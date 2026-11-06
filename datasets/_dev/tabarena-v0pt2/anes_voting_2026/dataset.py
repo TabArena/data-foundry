@@ -12229,6 +12229,11 @@ class AnesVoting2026(AbstractCuratedDataset):
         - The alternative target in the kept rows (from the v1 exploration, counted 2026-10-22): of the 37,880 respondents who say they voted, VCF0704 gives 18,488 Democrat, 16,159 Republican and 687 other votes, and 2,546 have code 0 or a blank (no candidate recorded); of the 10,707 who say they did not vote, all but 4 have code 0 or a blank.
         - Note: While the data was also used in the TableShift benchmark, we define an entirely different task, with a temporal split and more features.
         - We drop the nine survey-weight columns (VCF0009x-VCF0011z) together with the other survey-related columns listed in `_clean`: they describe the survey design, not the respondent. A survey weight is never a feature (MET-16, 2026-11-06); the task scores each respondent's turnout, not a population estimate, so it is scored unweighted and declares no training weight (the poll a pollster later weights is the estimate, not this task).
+          Weighting by `VCF0009z` (equal to `VCF0010z` and `VCF0011z` in 1996-2024) lowers the share who say they voted
+          in 8 of the 9 test years, by 2 to 9 points (2002: 0.716 unweighted, 0.623 weighted; 2024: 0.831 and 0.797;
+          2008 is the exception, 0.763 and 0.776), and the mean weight falls with interest in the campaign (`VCF0310`,
+          1996-2024: 1.11 for the least interested, 0.93 for the most): the kept rows hold more self-reported voters
+          than the population the weights describe (measured 2026-11-06).
         - Note: Ideally, we would select different feature sets per data split, depending on feature availability. However, for simplicity, we just keep all features.
         - Note: We considered keeping the unique respondent identifier in the data, because otherwise models that are able to reconstruct this information would unfairly benefit. However, for now we drop the identifier since it is not a desirable predictive feature for the given task, because the goal is generalization to the population, not memorizing individual behavior.
         - Metric: the fallback ROC AUC, not TableShift's accuracy (Lennart, 2026-10-21; metric spec).

@@ -39,6 +39,13 @@ Changes made after the review panel (AI, 2026-11-01):
 - Record, at hand-over (no mark needed): the Assessment's "Exposure: none (rows are vehicle-years)" now says none is
   published and some rows are part years.
 
+Changes made on 2026-11-06 (AI, under the exposure rules; no re-review panel): an exposure paragraph in the notes (the
+release has no exposure; the vehicle-years are partly cut by claims; the in-year vehicle count, which the outcome cuts,
+stays dropped; the competition's Gini is unweighted, so no weight is declared). Not checked on the data and not
+re-reviewed: the competition's files download only after its rules are accepted on Kaggle
+(https://www.kaggle.com/competitions/ClaimPredictionChallenge/rules), so the panel of 2026-11-06 did not run; it runs
+once the data is in the warehouse.
+
 **Main points:** all issues resolved on 2026-11-03: 2007 stays dropped (2), the dataset is the 2006 renewal book with
 the 2005 history (3), the Gini regression stays (4), and households are sampled and dealt to folds at random (5).
 Verdict: ship.

@@ -1,35 +1,62 @@
 # pricing_game_2016_french_fleet
 
-**Outcome:** added. Shipped (the curator's verdict of 2026-11-02); changed on 2026-11-06 by D11 of the exposure review
-(issue 5): the target is the claim charge per realized vehicle-year, each period weighted by its vehicle-years, and
-every window trains on 2011-2012. Settled on 2026-11-02: the `exposure` fix (issue 1) and no gap (an exception to
-SPLIT-10, issue 3); the expanding windows (issue 2) and the charge per period (issue 4) were superseded on 2026-11-06.
-Open: issue 6, the three windows now share one training side.
-The organisers' own files of the 2016 actuarial pricing game: 87,228 periods of cover of fleet vehicles of a French
-insurer, 2011-2013; the target is the period's claim charges summed, net IDA recoveries set to 0, per realized
-vehicle-year (0 for 95.7% of the periods), each period weighted by its vehicle-years in training and scoring; the
-features are the rating classes and the length of cover to the year's end, known at the period's start; three
-four-month windows of 2013, each trained on the periods of 2011-2012; scored by the normalized weighted Gini as a
-stand-in for the game's market. Validity: SEL-1, SEL-2, USE-1 (fit direct), LEAK-10 (fixed by LEAK-7), LEAK-41, MET-15,
-SPLIT-1, SPLIT-9, SPLIT-13 hold; SPLIT-14 in question (issue 6); SPLIT-10 departed from (exception); SPLIT-11 departed
-from (the 2013 periods closed before a window are left out, LEAK-41); SPLIT-15 departed from (three windows, not nine).
-Value: TP-4 holds (a regularised Tweedie LightGBM fitted with the weight 0.114 / 0.158 / 0.190 against 0 for the
-weighted constant and -0.016 on average for the length to 31 December and the start alone; on the newest window by
-about 1.7 standard errors), TP-9 holds (103 / 232 / 1,026 positive charges); the task probes' `no_signal` reads R^2 on a
-heavy tail, as for pricing_game_2017_french_mtpl. Weighed: the original files +, a real pricing task +, the family's
-only commercial-fleet damage table +; weak, anonymised covariates -, a noisy newest window -.
+**Outcome:** added. The AI recommends shipping it after changes. Shipped on Andrej's verdict of 2026-11-02 and changed
+on 2026-11-06 by D11 of the exposure review (issue 5): the target is the claim charge per realized vehicle-year, each
+period weighted by its vehicle-years, and every window trains on 2011-2012. The full re-review of the same day under the
+exposure rules (LEAK-41, MET-14 to MET-16) finds D11's target, weight, features and training side sound. The organisers'
+own files of the 2016 actuarial pricing game: 87,228 periods of cover of fleet vehicles of a French insurer, 2011-2013;
+the target is the period's claim charges summed, net IDA recoveries set to 0, per realized vehicle-year (0 for 95.7% of
+the periods), each period weighted by its vehicle-years in training and scoring; the features are the rating classes and
+the length of cover to the year's end, known at the period's start; three four-month windows of 2013, each trained on
+the periods of 2011-2012; scored by the normalized weighted Gini as a stand-in for the game's market. Like every
+container with a `sample_weight`, it enters no run before the collection's training-weight gate
+(`BENCHMARK_CHANGES_TODO.md`, "Training weights", "The gate").
+Validity: SEL-1, SEL-2, USE-1 (fit direct, USE-8), USE-5, LEAK-7, LEAK-37, MET-15, SPLIT-1, SPLIT-9, SPLIT-13 hold;
+LEAK-10 fixed by LEAK-7 (2026-11-02); LEAK-41 holds for the features and the weight (probe 22: the L2 arm cannot see the
+weight itself, -0.001; in the weighted Tweedie arm the weight gains +0.007, SD 0.028, and no feature a gain through it
+above noise); LEAK-41's last clause is triggered by the source, which left out every period shorter than 30 days, about
+1.5% of the vehicle-years (issue 7); SPLIT-14 broken as shipped, three windows on one training side (issue 6); SPLIT-10
+departed from (no gap, an exception whose stated reason is stale; it lapses under the forced split); SPLIT-11 departed
+from (LEAK-41: no 2013 period admitted by its early end); SPLIT-15 departed from (three windows, not nine).
+Value: TP-4 holds (a regularised Tweedie LightGBM fitted with the weight 0.114 / 0.158 / 0.190 newest first, re-measured
+0.110 / 0.157 / 0.189, and 0.182 on the forced folds, against 0 for the weighted constant; on the newest window by about
+1.7 standard errors); TP-9 holds (103 / 232 / 1,026 positive charges); the task probe's flags `no_signal` and
+`drift_baseline` read R^2, which follows a few large rates (best family R^2 0.001), while on the declared Gini the
+probes' linear family scores 0.168 and the random forest 0.121 against 0 for the weighted dummy (EV-3), as for
+pricing_game_2017_french_mtpl; MET-11: the stand-in's closeness to the game's market is now measured, and the uniformly
+rescaled weighted Tweedie deviance follows the market more closely than the Gini (issue 8).
+Quality: CLEAN-14, the four bands of a quantity (the contract's and the vehicle's age, the deductible, the insured
+value) are ordered categories now (they land with the next rebuild); LEAK-18 repeated rows natural; the text corrected
+where the panel found it overstated.
+Weighed: the original files +, a real fleet-pricing task +, the family's only commercial-fleet damage table +; weak,
+anonymised covariates -, a noisy newest window - (it drops out under the forced split).
+Left for Andrej and Lennart: the split (issue 6; recommended: the forced split grouped by contract, whose leak test
+passes), the organisers' floor of 30 days (issue 7; recommended: an amendment of the rule) and the stand-in metric
+(issue 8; recommended: the rescaled deviance, if the bootstrap separates the models on the newest window).
 
 Changes made after the review panel (AI, 2026-11-01 and 2026-11-02): `exposure` is the length of cover to 31 December
-for every period; the metric is a stand-in for the game's market; the statements the claim audit refuted are
-corrected; the windows train on an expanding side; the target is the claim charge, not the claim indicator; every
-window figure is re-measured. On 2026-11-06 (issue 5): the target is the charge per realized vehicle-year, the
-source's realized length is back as `exposure`, the weight of the metric and of training, the length to 31 December is
-the feature `exposure_to_year_end`, the metric is the normalized weighted Gini, and every window trains on 2011-2012.
-The panel's sections describe the definition before these changes.
+for every period; the metric is a stand-in for the game's market; the statements the claim audit refuted are corrected;
+the windows train on an expanding side; the target is the claim charge, not the claim indicator; every window figure is
+re-measured. On 2026-11-06 (issue 5): the target is the charge per realized vehicle-year, the source's realized length
+is back as `exposure`, the weight of the metric and of training, the length to 31 December is the feature
+`exposure_to_year_end`, the metric is the normalized weighted Gini, and every window trains on 2011-2012.
 
-**Main points:** Issue 6 is open: D11 puts the three windows of 2013 on one training side, which the windows rule counts
-as one window (amend the rule, keep one window, or the forced grouped split by contract). Issue 5, D11 of the exposure
-review, is resolved; issues 1 to 4 are resolved, 2 and 4 superseded by 5.
+Changes made after the re-review (AI, 2026-11-06), no decision needed: the four bands are ordered categories (the build
+stays stale until you ask for a rebuild); the notes cite both fits of the weight-proxy probe and mark two effects as
+within seed noise (fitting without the weight, the time features); "a cut nobody scheduled" reads "a cut not known at
+the start, a quarter of them on a month's end"; the metric reason says that the market rewarded the relative prices, of
+which the Gini scores the order, drops the argument that the deviance scores the level and gives the measured closeness;
+the floor of 30 days is a note under the rule on rows selected by their realized length, with its evidence and size; the
+pro-rata premium cites the sources checked; a line gives the trend of the charge per vehicle-year. The record marks the
+stale reason of the exception to SPLIT-10. Rows, split and metric are unchanged. The panel's reports describe the
+definition of D11, before these changes; the panel of 2026-11-01 is in this file's git history.
+
+**Main points:** Three calls, ranked: the split (issue 6: re-split grouped by contract, recommended now that the leak
+test across the contract folds passes, or keep the three windows or one window by amending the windows rule for the
+whole family); the organisers' floor of 30 days (issue 7: amend the rule on rows selected by their realized length for a
+selection the source made before release, recommended, or read the rule as barring the dataset); the stand-in metric
+(issue 8: score the uniformly rescaled weighted Tweedie deviance, recommended once its bootstrap separates the models,
+or keep the Gini with its measured shortfall). Issues 1 to 5 are resolved, 2 and 4 superseded by 5.
 
 **Issues for Andrej and Lennart:**
 
@@ -201,12 +228,18 @@ review, is resolved; issues 1 to 4 are resolved, 2 and 4 superseded by 5.
    * **Experiments:**
      - The study, unnormalised weighted Gini of the rate on the old windows (3 seeds): the rate model fitted with the
        weight 0.153, the model of the total 0.138, the rate model fitted without the weight 0.147.
-     - The new definition's shipped windows, normalized weighted Gini (newest first; regularised Tweedie LightGBM
-       fitted with the weight, 5 seeds): 0.114, 0.158 and 0.190 against 0 for the weighted constant; the model of the
-       total ranks the rate at 0.136 on average against 0.154; fitting without the weight costs 0.010 (SD 0.009).
+     - The new definition's shipped windows, normalized weighted Gini (newest first; regularised Tweedie LightGBM fitted
+       with the weight, 5 seeds): 0.114, 0.158 and 0.190 against 0 for the weighted constant; the model of the total
+       ranks the rate at 0.136 on average against 0.154; fitting without the weight costs 0.010 (SD 0.009), within seed
+       noise (0.005, lower on 2 of 3 seeds, in the re-review of 2026-11-06).
      - The realized vehicle-years as a feature would add 0.013 to the Tweedie fit (5 of 5 seeds), and 1/vehicle-years
-       alone scores 0.029, the ceiling of a proxy; the length to 31 December and the start add 0.007 (SD 0.009) and
-       stay, as they are known at the start.
+       alone scores 0.029, the ceiling of a proxy; the length to 31 December and the start add 0.007 (SD 0.009), within
+       seed noise (0.003 in the re-review), and stay, as they are known at the start.
+     - The weight-proxy probe with both of its fits (added by the re-review of 2026-11-06; the probe's text had cited
+       only its squared-error fit): the features predict the realized vehicle-years at R^2 0.38, mostly through the
+       fleet management and the length to 31 December, both known at the start. The squared-error fit cannot see the
+       weight itself (-0.001, SD 0.052); in the weighted Tweedie fit the weight as a feature gains +0.007 (SD 0.028),
+       and no feature's gain goes through the weight by more than one SD.
    * **Consistency:** fremtpl2 and bemtpl97 ship their claims per year insured with the years as the weight of the
      metric and of training (Lennart, 2026-11-06); frempl_french_motor_personal_line fixes its located cuts to the
      length known at the start. This dataset now does both: the realized length is the weight, the length to 31
@@ -245,1575 +278,1590 @@ review, is resolved; issues 1 to 4 are resolved, 2 and 4 superseded by 5.
    0 errors, 0 warnings (the four acceptances kept, their texts updated; `task_feature_looks_like_exposure` is gone with
    the weight declared).
 
-6. **Three windows on one training side: amend the windows rule, keep one window, or split by contract?**
+6. **Three windows on one training side: re-split grouped by contract, or amend the windows rule for the family?**
 
    * **Problem:**
-     - Issue 5 (D11 of the exposure review) trains every window on the periods that started before 2013, so the three
-       windows of 2013 now share one training side, the setup Andrej ruled out on 2026-11-02 when he amended the windows
-       rule so that windows sharing a training side count as one window[^windows].
-     - No training rule that admits no period by its realized end and keeps every label known at a window's start can
-       give the windows different training sides: rows are cut at 31 December and claims carry no dates, so between
-       two year ends a training side can grow only by the periods that ended early.
-     - With one valid window the rule ships a task forced, grouped by its entity, as it did
-       pricing_game_2017_french_mtpl, frempl_french_motor_personal_line and
-       spanish_motor_insurance_coverage_level_2022_2024[^forced], while D11's wording keeps three temporal windows.
+     - Since D11 (issue 5) the three windows of 2013 train on the same 56,178 periods of 2011-2012, and the windows rule
+       counts windows that share a training side as one evaluation, not three[^windows].
+     - The rule's remedy for a release with one valid window is a forced split grouped by the entity (each contract's
+       periods all on one side, the years mixed), after a leak test across the split, and that test now passes[^forced].
+     - Keeping the three windows (A) or one window (B) is open only as an amendment of the windows rule for the whole
+       family, and the expanding windows (D) stay out, as they train on 2013 periods selected by their early
+       end[^early].
    * **Background:**
-     - The windows rule asks for at least three windows, each with at least half the rows in training and its own
-       training side; a task that cannot meet it ships forced (grouped by the entity or IID, tagged), its cost measured
-       against the valid window.
-     - 2013 on 2011-2012 is the one valid window here (64.4% of the rows in training); the game priced the year 2014
-       with one tariff fit on 2011-2013.
-     - Andrej on issue 2 (2026-11-02): "I don't want to have the same training data and different test sets. We
-       assume that whenever we have different test sets, we would be retraining. Given one test period we test the
-       same model." He then took the expanding windows, which issue 5 ruled out.
-   * **Effect on the task:** The three scores are one model's scores on three cohorts of period lengths (a period's
-     start caps its length), and the benchmark counts them as three evaluations; the newest window (103 positive
-     charges, bootstrap standard error 0.068) counts for a third.
-   * **Experiments:** regularised Tweedie LightGBM fitted with the weight, normalized weighted Gini, 5 seeds:
-     - A, the three windows: 0.114, 0.158 and 0.190 (newest first), mean 0.154.
-     - B, one window over 2013: 0.171 (seed SD 0.004); pooled, the cohorts are ranked against each other.
-     - C, grouped 3-fold by contract over 2011-2013, 3 repeats: 0.182 on the test folds (SD 0.016 over 9 folds) and
-       0.174 on their 2013 rows (SD 0.029), against 0.171 for the valid window, so the forced split is no more
-       optimistic on 2013; each fold trains on 66-67% of the rows.
+     - Rows are cut at 31 December and claims carry no dates, so between two year ends a training side can grow only by
+       the periods that ended early: no training rule that admits no period by its realized end and keeps every label
+       known at a window's start can give the windows their own training sides.
+     - 2013 on 2011-2012 is the one valid window (64.4% of the rows in training); 2012 on 2011 would train on 30.4%,
+       below the floor.
+     - On issue 2 (2026-11-02) Andrej asked for a retrained model for every test period[^andrej], then took the
+       expanding windows, which issue 5 ruled out.
+     - The forced split (C) groups by `contract_id`, the source's contract key: 18,037 contracts, the largest with 81
+       periods (0.05% of the vehicle-years), vehicles nested in contracts, 10,757 contracts present in two or three of
+       the years; it stays the group column, never a feature.
+   * **Effect on the task:**
+     - As shipped, one model is scored on three cohorts of period lengths (a period's start caps its length) and the
+       benchmark counts it three times: the newest window holds 7% of the test vehicle-years and 103 positive charges
+       (bootstrap standard error 0.068), yet counts for a third, and the mean of the windows (0.154) runs below the same
+       model pooled over 2013 (0.171).
+     - Under C the model also meets fleets it has never seen, while the year's tariff prices known fleets (76-81% of the
+       2013 test periods have their contract in training); the cost of that cold start, measured below, is small.
+   * **Experiments:** a regularised Tweedie LightGBM fitted with the weight, scored by the normalized weighted Gini.
+     - A, the three windows: 0.114, 0.158 and 0.190 (newest first, 5 seeds), mean 0.154; re-measured at 0.110, 0.157 and
+       0.189 (3 seeds).
+     - B, one window over 2013: 0.171 (seed SD 0.004).
+     - C against the valid window, paired on the same 2013 rows of each fold (3 repeats x 3 folds by contract): the
+       forced model 0.174 (SD 0.029), the valid window's model 0.169 (SD 0.044), a difference of +0.005 (SD 0.022 over 9
+       folds), so the forced split is no more optimistic on 2013 beyond noise. The valid window's model without the test
+       fleets' history, a new fleet's cold start, loses 0.004 (SD 0.013). On its whole test folds C scores 0.182, mostly
+       because a fold ranks all start cohorts together. The earlier text of this issue compared 0.174 with 0.171, which
+       were scored on different test rows.
+     - The leak test across the contract folds, as on wisconsin: each test year scored by a model trained without that
+       year's training rows, against one trained without as many random rows (9 folds). With the start as a date, which
+       lets a model read the year, the same-year rows gain -0.001 pooled (SD 0.020, positive on 2 of 9 folds) and
+       -0.0035 within a year; with the start as its day of the year, +0.008 pooled (SD 0.015) and +0.006 within a year,
+       about 1.7 standard errors of structure within the year. Wisconsin's mark of a year-level leak, a pooled gain far
+       above the within-year one (+0.113 against +0.008), is absent, as the flat claims per vehicle-year suggested
+       (0.117, 0.119 and 0.119 in 2011 to 2013): no year-level leak crosses the contract folds.
      - D, the old expanding training sides: 0.137, 0.160 and 0.190.
    * **Consistency:**
-     - Forced grouped splits: pricing_game_2017_french_mtpl (one claim year), frempl_french_motor_personal_line (one
-       year; its windows inside 2004 trained on 13-39% of the rows, only contracts that ended early) and
-       spanish_motor_insurance_coverage_level_2022_2024 (one valid yearly window, below the floor), after Andrej's
-       "Forced group splits should be fine" (2026-11-02); nba_players_2016_2019 and
-       open_university_learning_analytics_dataset went grouped for too few periods.
-     - What sets this case apart: its one valid window is above the floor and its dates are daily, so the test year can
-       be cut into windows; Andrej's call counts such a cut as one window unless each window has its own training side.
+     - spanish_motor_insurance_coverage_level_2022_2024 has the same facts: three stacked years, one valid window above
+       the floor (52.5% of the rows in training; the earlier text of this issue had it below) and recurring entities; it
+       shipped forced grouped by policy on Andrej's call of 2026-11-02[^spanish].
+     - pricing_game_2017_french_mtpl and frempl_french_motor_personal_line (one year each), and nba_players_2016_2019
+       and open_university_learning_analytics_dataset (too few periods), went grouped by their entity too.
+     - The one fact left that sets this case apart is its daily dates, which allow sub-windows of 2013 on one training
+       side, and that is the cut Andrej's amendment counts as one window; no shipped dataset has windows that share a
+       training side.
+     - wisconsin_local_government_property_insurance_fund (its issue 3, open) found a year-level leak across its forced
+       folds; the leak test above sets this case apart, so C needs no wait for wisconsin, while an amendment (A or B)
+       would be decided together with wisconsin's issue 3.
+   * **Panel:**
+     - The domain practitioner ranks the fidelity to the use case B > A > C: the tariff is fit once a year and judged on
+       the whole 2013 book, while C tests fleets never insured, with the years mixed.
+     - The advocate withdrew its preference for A in rebuttal: C costs that fidelity almost nothing (+0.005 paired,
+       0.004 for the cold start), and no history feature ships.
+     - The critic: an amendment that fits only this dataset works as an exception to a rule that admits none, and it
+       would reverse Andrej's amendment of 2026-11-02, made on this dataset, and Lennart's reframing of 2026-11-05.
    * **Options:**
 
      | | Option | What it does | Pro | Con |
      |---|---|---|---|---|
-     | A | Three windows on 2011-2012 (implemented) | the three four-month windows of 2013 on one training side | D11's wording; the temporal regime of the use case; the game's tariff, fit once for the year | one evaluation counted three times; needs the windows rule amended, against Andrej's call |
-     | B | One window | 2013 on 2011-2012, 31,050 test periods | one evaluation counted once; the game's design | one window where the rule asks for three, so the rule is amended all the same |
-     | C | Forced grouped by contract | 3 x 3 folds by contract over 2011-2013, tagged `ForcedGroupedFromTemporal` | the rule's own fallback; as the three siblings; scores 2013 as the valid window does | mixes the years; tests fleets the model never saw, where the tariff prices known ones; the summary and the record change |
-     | D | Expanding windows, as before | each window trains on the periods closed before it starts | three training sides | admits the 2013 periods by their early end, which issue 5 ruled out |
+     | A | Three windows on 2011-2012 (implemented) | the three four-month windows of 2013 on one training side, with the windows rule amended for the whole family | what the curator set in D11 (issue 5); the temporal regime of the use case; the game's tariff, fit once for the year | one evaluation counted three times; an amendment that fits only this dataset; reverses Andrej's amendment of 2026-11-02 and Lennart's reframing of 2026-11-05 |
+     | B | One window | 2013 on 2011-2012, 31,050 test periods, with the windows rule amended below three windows | one evaluation counted once; the game's design; the practitioner's first choice | an amendment for the whole family; reopens spanish coverage, nba, open_university and distribution_transformers_at_cauca_department |
+     | C | Forced grouped by contract | 3 x 3 folds by `contract_id` over 2011-2013, tagged forced from temporal; the no-gap exception goes | the rule's own remedy; the same as spanish coverage, pricing_game_2017_french_mtpl, frempl, nba and open_university; the leak test passes; scores 2013 as the valid window does (+0.005 paired) | mixes the years; tests fleets the model never saw (the cold start costs 0.004); the summary, the notes and the record change, and a rebuild |
+     | D | Expanding windows, as before | each window trains on the periods closed before it starts | three training sides | trains on the 2013 periods selected by their early end, which issue 5 ruled out and the rule on realized lengths bars |
 
-   * **Recommendation:** C: the windows rule and its fallback decide this case as they decided the three siblings, and
-     on 2013 the forced split scores as the valid window does (0.174 against 0.171). Keep A only with an amendment that
-     lets windows share a training side when the data's annual cut leaves no other training side free of a selection by
-     the outcome. **Decision:** A (with the amendment), B, C or D?
+   * **Recommendation:** C: the windows rule and its remedy decide this case as they decided spanish coverage, which has
+     the same facts; the leak test across the contract folds passes, and on 2013 the forced split scores as the valid
+     window does. A or B only as a deliberate amendment of the windows rule for the family, decided with wisconsin's
+     issue 3. **Decision:** C, or an amendment (A or B)?
 
    **Notes for the AI:**
-   - C: group the default splits by `contract_id` (kept as the group column, never a feature), drop `temporal`, tag
-     `ForcedGroupedFromTemporal`; run the leak test across the split (SPLIT-8) and the probes; rewrite
-     `task_summary.split`, the fit, the splits comment and the notes on the gap (the SPLIT-10 exception goes); the
-     record's `required_split` and tags; a CC line naming the case.
-   - A: draft the SPLIT-14 amendment with this case and replace splits.md's Cases row for this dataset; B the same, with
-     one window.
+   - C: in `dataset.py`, take `contract_id` out of `drop_columns` and make it the group column (never a feature; rewrite
+     the notes' "Dropped:" bullet), replace `temporal` and `_make_splits` with a `Grouping` on `contract_id` and the
+     default 3 x 3 splits, add `ForcedGroupedFromTemporal` to `data_tags`; rewrite `task_summary.split`, `fit_reason`,
+     the notes on the gap (the SPLIT-10 exception goes, and the record's exception line with it), `splits_comment` (what
+     the dates would change, the cold-start cost of 0.004) and Decision 2 with its table; the record's `required_split`
+     (`Grouped (NON-IID)`) and tag (`Non-IID (Grouped)` for `Non-IID (Temporal)`); a CC line naming the case;
+     splits.md's SPLIT-14 Cases row for this dataset replaced (the main session's); after the rebuild, the leak probes
+     on the grouped split (`probes/group.txt`). The leak test above is the mediator's (`leaktest.py`, re-review of
+     2026-11-06).
+   - A or B: draft the SPLIT-14 amendment for the family with this case, decide it with wisconsin's issue 3, replace
+     splits.md's Cases row for this dataset, and restate the exception to SPLIT-10 on its new ground (LEAK-41 plus the
+     floor, the January window only).
+   - B: ask whether spanish_motor_insurance_coverage_level_2022_2024, which has the same facts and ships forced
+     grouped by policy, moves to its one valid window too (the precedent checker's conditional prompt of that
+     dataset's re-review of 2026-11-06).
 
    [^windows]: **SPLIT-14** (Must), amended 2026-11-02 (Andrej) and reframed 2026-11-05 (Lennart): "Each window has its
      own train side: windows that share one train side test one model on several test periods, which is one evaluation,
      not several." Its Cases row for this dataset still records the expanding windows of issue 2.
-   [^forced]: **SPLIT-8** (Must; narrows **SPLIT-14**): "a release with too few periods for three windows" ships "in the
-     closest regime that keeps the rows, tagged as forced from temporal, with the cost measured against the valid
-     windows where the data has any". **LEAK-41** (Part 3) outranks **SPLIT-14** (Part 4) where the two conflict, but
-     **SPLIT-8** lets both hold, so rank settles neither A nor B.
+   [^forced]: **SPLIT-8** (Must; narrows **SPLIT-14** and **USE-10**): a release with too few periods for three windows
+     ships "in the closest regime that keeps the rows, tagged as forced from temporal, with the cost measured against
+     the valid windows where the data has any"; "a forced split, grouped or IID, gets a leak test across the split and
+     the leak probes". **LEAK-41** (Part 3) outranks **SPLIT-14** (Part 4) only where meeting one rule means breaking
+     the other; **SPLIT-8** meets both, so rank does not decide for A (principles.md, How to decide, 4). "A Must has no
+     exceptions: only a higher-ranked Must overrides it, and anything else is an amendment" (principles.md).
+   [^early]: **LEAK-41** (Must, 2026-11-06): "No model is trained or scored on rows selected by the realized weight".
+   [^andrej]: Andrej, 2026-11-02, issue 2: "I don't want to have the same training data and different test sets. We
+     assume that whenever we have different test sets, we would be retraining. Given one test period we test the same
+     model."
+   [^spanish]: Andrej, 2026-11-02, spanish coverage: "Forced group splits should be fine".
 
-**Review panel:** ship after changes (mediator). Claim audit: 48 claims, 39 hold, 7 refuted (5 fixed in the definition:
-the length called known at the start, the test that could not fail, Decision 1 and the metric origin; 2 record fields
-for the hand-over), 2 untested. Blind review: include with changes; main concerns the windows against the cut at 31
-December and an `exposure` partly known only after the fact. Debate: agreed on the `exposure` fix (the advocate withdrew
-its keep in rebuttal), the windows with their notes, the stand-in origin and the text; nothing left disputed between the
-two; for the curator: the `exposure` fix with frempl (issue 1), the first SPLIT-14 reading (issue 2) and training
-without a gap (issue 3; the SPLIT-10 amendment is avito_demand_prediction_1m's issue 4).
+7. **The source left out every period under 30 days: amend the rule for such a selection, or bar the dataset?**
+
+   * **Problem:**
+     - No model may be trained or scored on rows selected by their realized length[^floor], and every row here passed
+       such a selection: before release, the organisers left out every period of cover shorter than 30 days.
+     - The cut periods and their claims are not published, so neither a repair nor a change of the definition can undo
+       it.
+     - The rule admits no exception, so keeping the dataset takes an amendment for a selection the source made before
+       release, and without one the rule bars it[^must].
+   * **Background:**
+     - The lengths stop at an edge, not a taper: no period of 29 days, 909 of 30, 2,074 of 31 and about 700 a day at 32
+       to 40 days.
+     - A vehicle's consecutive periods leave 1,558 gaps of 1 to 29 days, flat at about 45 a day, where the dropped
+       periods would sit, and no period starts after 2 December, since a later start could not run 30 days within the
+       year.
+     - The 2014 file the game priced has the same floor, so the game's own population was the periods of cover of a
+       month or more.
+   * **Effect on the task:**
+     - The dropped periods are many by rows and few by weight: some 15% of the rows (about 13,000 periods) and about
+       1.5% of the vehicle-years, as a period under 30 days holds at most 0.08 vehicle-years (the density at 30 to 59
+       days extrapolated down to one day).
+     - Short periods claim more per vehicle-year (early ends of 30 to 59 days 0.143 to 0.160, against 0.124 for 180 days
+       or more), so the dropped ones likely did too: the task leaves out a riskier slice that the insurer does price.
+     - The selection is the same on the training and test sides but uneven across the shipped windows (roughly 11%, 3%
+       and 1.6% of their vehicle-years, newest first, by a rougher extrapolation that assumes a flat density); that
+       falls away under the forced split of issue 6, where every year carries the same cut.
+   * **Consistency:** No precedent: the rule dates from 2026-11-06 and no selection by length made by a source has been
+     ruled on; frempl_french_motor_personal_line and the other insurance tables with a minimum length would be checked
+     under an amendment.
+   * **Panel:**
+     - The advocate first asked to accept the floor with a note as the source's population, then conceded that the form
+       is an amendment.
+     - The critic: a note cannot settle a rule that admits no exception, and without an amendment the next dataset with
+       a floor set by its source is decided without a rule.
+   * **Unknown:** How far the floor moves the scores and the order of models; a sensitivity run that adds a second floor
+     (say 60 days) on both sides would size it (optional).
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep with the note (implemented) | the notes name the floor as the source's selection, with its evidence and size, and no ruling is made | nothing changes | a note cannot settle a rule that admits no exception; the next dataset with such a floor is decided without a rule |
+     | B | Amend the rule | a selection the source made before release, the same in train and test, that cannot be undone, defines the task's population and is sized in the notes; a Cases row for this dataset; frempl and the siblings checked for a minimum length | keeps a real task whose selection is small by weight and the same on both sides; one ruling for every source with such a floor | the task's population is the periods of a month or more, not every period the insurer prices |
+     | C | Read the rule as barring the dataset | selections a source made count too, so the dataset goes `No`, and so does any sibling with such a floor | the rule's letter, without an amendment | loses the family's only commercial-fleet damage table over about 1.5% of its vehicle-years |
+
+   * **Recommendation:** B: the selection is the organisers', made before release, small by weight, the same on both
+     sides and in the game's own 2014 file, and it cannot be undone. **Decision:** B (amend the rule) or C (the dataset
+     goes `No`)? A, the note alone, is not open: the rule admits no exception.
+
+   **Notes for the AI:** on B, the amendment replaces LEAK-41's last clause in leak_checks.md in place, with the date,
+   the curator and this case (the main session's edit): "No model is trained or scored on rows selected by the realized
+   weight (such as full-year rows only); a row with no amount at risk may go under USE-7, its claims counted in the
+   notes; a selection the source made before release, the same in train and test, that cannot be undone, defines the
+   task's population and is sized in the notes." Add a LEAK-41 Cases row for this dataset (the floor of 30 days, about
+   1.5% of the vehicle-years), check frempl_french_motor_personal_line and the other insurance siblings for a minimum
+   length, and write a CC line; the note in `curation_comments` is written (2026-11-06). Optional: the sensitivity run
+   with a second floor of 60 days. On C: the record's `suggestion` goes `No`, and the siblings with a floor are
+   reopened.
+
+   [^floor]: **LEAK-41** (Must, 2026-11-06), last clause: "No model is trained or scored on rows selected by the
+     realized weight (such as full-year rows only); a row with no amount at risk may go under USE-7, its claims counted
+     in the notes."
+   [^must]: principles.md, "Exceptions and amendments": "A Must has no exceptions: only a higher-ranked Must overrides
+     it, and anything else is an amendment." The remedy ladder: "Exclusion is for a Must that cannot be fixed."
+
+8. **Keep the Gini as the stand-in for the game's market, or score the uniformly rescaled weighted Tweedie deviance?**
+
+   * **Problem:**
+     - The game's market cannot be computed, so the closest computable metric stands in for it, its closeness measured
+       on the shipped splits where possible[^standin], and that closeness is now measured.
+     - The game scaled every player's premiums by one uniform factor and sent each insured to the cheapest premium, so
+       it rewarded the relative prices, their order and their spread, while the Gini scores only their order.
+     - In a simulation of the game's market on the shipped windows the uniformly rescaled weighted Tweedie deviance
+       picks the market's winner more often than the Gini, but it would leave the family's stand-in and need a new
+       library metric[^newmetric].
+   * **Background:**
+     - The rescaled deviance multiplies each model's predictions by one factor so that its premiums total the window's
+       claims, as the game set every player's total to 2.5 million euros ("un facteur d'inflation appliqué
+       uniformément", rules Sec. 4), then scores the exposure-weighted Tweedie deviance (power 1.5) of the rate; any
+       common total gives the same market.
+     - The Gini gives a tariff and the same tariff with its relativities doubled on the log scale the same score (0.173
+       for the Tweedie GLM).
+   * **Experiments:**
+     - The market simulated on the three shipped windows (the mediator's run): 8 tariffs (two LightGBMs, the Tweedie
+       GLM, the GLM's relativities raised to the power 0.5, 1.5 and 2, the LightGBM's to 0.5, and the constant), each
+       rescaled to the window's claim total, each period going to the cheaper premium, in every two-player market (84
+       pairs over the windows).
+     - The rescaled deviance picks the market's winner in 76 of 84 pairs; the Gini in 44, and it ties on 21, as it
+       cannot see a change of spread; among the fitted tariffs alone (two LightGBMs, the GLM, the constant; 18 pairs)
+       the two are close, 16 for the deviance and 15 for the Gini.
+     - Window means: by the rescaled deviance (lower is better) the GLM 89.63, the constant 90.82, the LightGBM 91.34
+       and the GLM with doubled relativities 94.27; by the Gini the GLM 0.173 (doubled too), the LightGBM 0.157 and the
+       constant 0. The LightGBM's relativities run too steep (actual over expected by predicted fifth from 1.4 to 2.0 in
+       the cheapest fifth down to 0.5 to 0.9 in the dearest), and the rescaled deviance puts it behind a flat tariff.
+     - Limit: two-player markets of synthetic tariffs; the real game had many players and broke ties among the cheapest
+       at random.
+   * **Consistency:**
+     - Keeping the Gini follows australian_vehicle_insurance_2004_2005 (D8) and
+       spanish_motor_insurance_coverage_level_2022_2024, which kept it as a stand-in; neither measured its closeness to
+       a market that rescaled uniformly.
+     - pricing_game_2017_french_mtpl scores a Tweedie deviance on its own facts: its game kept the price level and
+       ruined a player at 170% losses.
+     - Switching departs from australian and spanish coverage on a fact that sets this case apart: its original is a
+       market that rescaled uniformly, and the closeness to it is measured.
+   * **Panel:**
+     - The advocate: the Gini follows australian and spanish coverage; the rescaled deviance takes its scale from the
+       test total, is noisier on the newest window and needs a new library metric; both metrics rank the GLM above the
+       LightGBM.
+     - The critic and the domain practitioner: the game rescaled uniformly and rewarded the relative prices, and only
+       the rescaled deviance ranks the over-steep tariffs below a flat one, as the market did.
+     - The mediator: by the letter of the stand-in rule the measurement favours the rescaled deviance; how large a gap
+       justifies leaving the family's Gini, against its costs, is a weighing call.
+   * **Unknown:** Whether the rescaled deviance separates the models on the newest window; bootstrap standard errors of
+     its differences per window (the GLM against the constant, the LightGBM against the GLM) would settle it, and if the
+     newest window cannot separate the GLM from the constant, keeping the Gini has the stronger case.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the Gini (implemented) | the normalized weighted Gini of the rate stays the stand-in, its reason stating the measured shortfall (44 against 76 of 84 two-player markets) | the stand-in of australian and spanish coverage; no new metric; level-free, as the game was | blind to the spread of the relativities, which the market priced; a tariff and its doubled relativities tie; not the closest stand-in as measured |
+     | B | The rescaled weighted Tweedie deviance | each model's predictions rescaled to the window's claim total, then the exposure-weighted Tweedie deviance (power 1.5) of the rate | the closest to the market as measured (76 of 84 pairs); level-free, as the game was; a proper score of the relative prices | a new library metric with its tests; its scale factor uses the test window's claim total, which no insurer knows when it prices; noisier on the newest window; leaves the family's stand-in |
+
+   * **Recommendation:** B, after the bootstrap of its differences per window: the stand-in rule asks for the closest
+     computable metric, and B is the closer as measured (76 against 44 of 84 markets); if the newest window cannot
+     separate the GLM from the constant, A. How much closeness is worth the new metric's costs is still yours to weigh.
+     **Decision:** A (keep the Gini) or B (the rescaled deviance)?
+
+   **Notes for the AI:** on A, a CC line; the metric reason already states the shortfall (2026-11-06). On B, first the
+   bootstrap standard errors of the rescaled deviance's differences per window (above); then the new metric in the
+   shared library (MET-13: a reference implementation, tested against a direct computation on random inputs and on a
+   hand case, timed on 1M rows), its scale factor sum(weight x y) / sum(weight x prediction) over the scored rows,
+   stated as the oracle scale; `Metric.stand_in` with the closeness in the reason; a CC line naming the fact that sets
+   the case apart from australian and spanish coverage (a market that rescaled uniformly, the closeness measured); a
+   MET-11 Cases row (the main session's).
+
+   [^standin]: **MET-11** (Must): a stand-in applies when the source's metric cannot be computed, "and the closest
+     computable metric replaces it; it names the original and why the original cannot be computed, and the closeness is
+     measured on the shipped splits where possible". The mediator and the critic read the choice under this rule, not as
+     a weighing between the source's metric and the fallback (**MET-10**, Weigh), since the original cannot be computed.
+   [^newmetric]: **MET-13** (Must): a custom metric ships as a reference implementation in the shared metric library, in
+     the same change, tested against the official implementation and timed on 1M rows.
+
+**Review panel:** ship after changes (mediator). Tier full, a re-review of 2026-11-06 under LEAK-41 and MET-14 to MET-16
+after D11 (issue 5): the claim, column and split auditors, the domain practitioner, the precedent checker, the blind
+reviewer, the task gamer, the advocate and the critic with one rebuttal each, and the mediator, who ran two experiments
+(the leak test across the contract folds, which passes, and the game's market simulated on the shipped windows). Claims:
+35 audited, 32 hold (two effects within seed noise; probe 22's cited L2 arm without power, its Tweedie arm agreeing), 1
+refuted (the implied claim that no row is selected by its realized length: the organisers' floor of 30 days, issue 7), 1
+breach confirmed and already open (three windows on one training side, issue 6), 1 wording wrong (the run's change note
+on option C); 6 settled numbers untested. Blind review: include with changes; its main concern is the weak, heavy-tailed
+signal and the metric (a deviance or a Gini, not RMSE); its points on integer codes and on the clipping do not apply to
+the shipped frame. Task gamer: no exploit above noise (the realized vehicle-years as a feature gain nothing under
+Tweedie and +0.030 inside the noise under L2). Agreed: D11's target, weight, features and training side; probe 22 cited
+with both arms; the four bands ordered; the text fixes (all made); the forced split grouped by contract as the fix
+within the rules (the advocate withdrew its preference for the three windows); an amendment, not a note, for the floor.
+Disputed, settled by the mediator and left to the curators: whether keeping the three windows stands on a par with the
+forced split (issue 6: only by an amendment for the family; the practitioner ranks fidelity one window, then three
+windows, then the forced split), whether the floor can be kept with a note (issue 7: no, an amendment), and whether the
+metric is a weighing call or a stand-in whose closeness must be measured (issue 8: the latter; the pick between the two
+measured candidates is the curators'). The mediator's issues 1 to 3 are issues 6 to 8 of this file; the panel of
+2026-11-01 is in this file's git history.
 
 <details><summary>Mediator</summary>
 
-**Mediator (2026-11-01): pricing_game_2016_french_fleet**
+**Mediator report: pricing_game_2016_french_fleet (exposure re-review, 2026-11-06, full tier)**
 
-**Recommendation**
+My two experiments are the leak test (`leaktest.py`, `leaktest.out`, `leaktest.csv`) and the market simulation (`market.py`, `market.out`), in the run folder. Probe 22's actuarial arm has now landed, and I use it below.
 
-```text
+**1. Recommendation (judgment record)**
+
 Verdict: ship after changes.
-Validity: SEL-1, SEL-2 hold; USE-1 holds, fit direct (USE-8); USE-3 triggered (the realised length called known at
-  the start), fixed in the text; LEAK-10 triggered by `exposure` (the realised length: 57.4% of periods end early at
-  a cut nobody scheduled), fixed by LEAK-7 (the length known at the start); SPLIT-1, SPLIT-3, SPLIT-9, SPLIT-13 hold;
-  SPLIT-14 met in letter by three windows on one train side, a first case (issue 2), with an exception to SPLIT-11
-  (annual refit); SPLIT-10 departed from, its third exception for SPLIT-14's floor (issue 3); PROV-3, PROV-8, PROV-9
-  hold; PROV-15 noted (CASdatasets' DirectComp).
-Value: TP-2, a small real signal (keep); TP-4 holds after the fix (covariates 0.594 / 0.622 / 0.653 against
-  0.551 / 0.567 / 0.531 for the start-known length alone); TP-9 holds (123 / 257 / 1,163 positives); MET-8 value
-  `roc_auc` kept; MET-11 origin triggered, fixed (`stand_in`, as pricing_game_2017_french_mtpl).
-Quality: CLEAN-3, CLEAN-5, CLEAN-10, CLEAN-12, CLEAN-14 hold; LEAK-18 repeated rows natural; text facts corrected.
-Weighed: the organisers' original files +, a real pricing task +, the family's only commercial-fleet damage table +;
-  weak and anonymised covariates -, a GLM ties LightGBM -.
-For the curator: issue 1, confirm the `exposure` fix with frempl's issue 2 (or amend LEAK-10 for the family);
-  issue 2, a first reading of SPLIT-14; issue 3, the third SPLIT-10 exception or an amendment.
-```
 
-The advocate withdrew its keep of the realised `exposure` in rebuttal, so the debate ends with no open dispute between
-the two sides. What remains for the curator are a confirmation tied to a pending decision on a sibling (issue 1), a
-first-case reading of a Must (issue 2) and a rule-maintenance call (issue 3).
+Validity:
+- SEL-2 holds. USE-1 and USE-8 hold (direct fit), and USE-5 holds.
+- LEAK-7 and LEAK-37 hold (`exposure_to_year_end` is known at the start).
+- LEAK-41 holds for the features and the weight. Probe 22 Tweedie arm: the weight as a feature gains +0.007 (SD 0.028). 1/weight alone scores 0.029 against the honest 0.143. No feature's gain goes through the weight above noise.
+- LEAK-41's last clause is triggered by the source's 30-day floor. This is issue 2 for the curator: an amendment, not a note.
+- SPLIT-9 holds.
+- SPLIT-14 is broken as shipped (three windows on one training side). The fix is a re-split to SPLIT-8's grouped split by contract (option C). Its precondition, the leak test across the split, I ran: it passes (section 4).
+- If C is taken, the exception to SPLIT-10 lapses.
 
-**Agreed facts**
+Value:
+- TP-4 holds: 0.110 / 0.157 / 0.189 against 0 for the weighted constant; 0.182 under C.
+- TP-9 holds: 103 / 232 / 1,026 positive charges.
+- MET-11: the stand-in's closeness to the game's market is now measured. The choice of metric is issue 3 for the curator.
 
-*Data and target*
-- The definition reads the organisers' own 2016 files (sha256 pinned; Wayback copy byte-identical). The counts are
-  87,228 periods, 68,485 vehicles, 18,037 contracts, 2011-2013, and every claim joins one period. The data is not
-  generated (the curator's test, CC 2026-11-01). All 39 claims the claim audit could check against the files hold to
-  the digit.
-- The portfolio is commercial fleets under a material-damage cover (rules Sec. 1), not CASdatasets' "private motor".
-  CASdatasets' DirectComp is 0 on 1,064 of the 1,190 IDA claims (a problem of that copy, PROV-15).
-- Target `claim`: 4,250 positives (4.9%), 286 periods with 2-7 claims, 523 periods with only IDA claims. The curator
-  chose this binary target (CC 2026-10-30). Under IRSA the insurer recovers a flat amount, not the cost, and 126 IDA
-  claims are at 50% responsibility.
+Quality:
+- CLEAN-14: four band columns should be ordinal. Cheap and safe, so fix it.
+- The text corrections in section 2.
 
-*`exposure`*
-- `exposure` is the realised length. 41.8% of periods end on 31 December, 0.8% at a contract anniversary, and 57.4%
-  (58.2% in 2013) at a cut nobody scheduled.
-- The realised length adds ROC AUC +0.040 / +0.055 / +0.052 over the start-known length, which adds 0.000 (LightGBM,
-  3 seeds, shipped windows).
-- Early ends go with claims: rate ratio 1.22 [1.12, 1.33] given the start-known covariates in 2011-2012, and 1.175
-  [1.05, 1.31] in 2013.
-- The definition's "31 December flag" test could not fail: the flag is fixed by start and length on 99.5% of rows. The
-  AUC test of the outcome link resolves about ±0.0013, so "no gain" does not mean "no link" (critic).
-- The gain is the time at risk itself: where the end carries no information on claims, a simulation gives +0.050
-  against +0.049 observed (advocate). It is still time at risk not known at pricing.
-- After the fix: LightGBM 0.594 / 0.622 / 0.653 (mean 0.623, against 0.672 before).
+Weighed: original files +, real fleet-pricing task +, the family's only commercial-fleet table +; weak anonymised covariates −, a noisy newest window − (this drops out under C).
 
-*Split*
-- Train side: 56,178 periods (64.4%), every one ending by 31 December 2012. Windows: 5,312 / 6,509 / 19,229 rows with
-  123 / 257 / 1,163 positives.
-- 76-81% of test periods have their contract in training; the game's own 2014 file has 82%.
-- On the 2013 rows, the IID, grouped and temporal designs agree within 0.003.
-- The per-window mean (LightGBM 0.672) sits below the pooled 2013 score (0.712) because windows are cohorts of period
-  length. The newest window has an SE of about 0.027.
-- Any gap on the train side breaks SPLIT-14's floor (1 day: 50.2% of rows; 1 month: 48.7%). Simulated reporting delays
-  of 30 and 90 days move the mean AUC by 0.003 or less; a planning gap (fit on 1 October 2012) gives 0.671 against
-  0.672.
+For the curator:
+- issue 1, the split (C recommended; no fact left open);
+- issue 2, the source's 30-day floor (an amendment of LEAK-41's last clause);
+- issue 3, the stand-in metric (Gini, or the uniformly rescaled weighted Tweedie deviance).
 
-*Metric*
-- The game scored a price-aggregator market: each insured drawn among the cheapest premiums, every player's premiums
-  scaled by a uniform factor to a total of 2.5 million euros (rules Sec. 4: "par un facteur d'inflation appliqué
-  uniformément").
-- The market needs the other players' premiums and the 2014 claims, neither published.
-- pricing_game_2017_french_mtpl declares its market as `stand_in`.
+**2. Changes to make now (no decision needed)**
 
-*Text facts*
-- The 2,099 "0.01 less" lengths are 2012 periods measured over 366 days.
-- The row names of the train and test files run exactly from 1 to 120,000, so the file is likely a sample, and "up to
-  12 vehicles" and "42.8% ... no later period" count the file, not the fleet.
-- The newest claims are not censored (0.117 / 0.119 / 0.119 claims per vehicle-year).
+1. **Probe 22 reporting (LEAK-41 Must, reporting clause; EV-1).** The notes' probe 22 sentence and REVIEW issue 5 cite only the L2 arm. probe22.txt and probe22_l2.txt are byte-identical, and in that arm the weight itself gains −0.0014 (SD 0.052): no power. Cite both arms and decide on the worse:
+   - L2: as above, no power.
+   - Tweedie (probe22_actuarial.txt): weight R² 0.378; the weight as a feature +0.007 (SD 0.028); 1/weight 0.029. Weight-mediated gains: exposure_to_year_end +0.017 (SD 0.029), distribution_channel +0.011 (SD 0.036), client_activity +0.008, fleet_size_class +0.005, fleet_management −0.004. All are under 1 SD.
+   - The claim auditor's 3-seed Tweedie arm agrees: +0.0118 (SD 0.0067).
+   - The notes' "would add 0.013 (5 of 5 seeds)" can stay, with this added.
+2. **Effects within seed noise (EV-1).**
+   - "A fit that ignores the weight loses 0.010 (SD 0.009, 4 of 5 seeds)": the claim auditor gets +0.005, 2 of 3 seeds.
+   - "The time features add 0.007": the claim auditor gets +0.003.
+   - Mark both "within seed noise".
+3. **"A cut nobody scheduled" (EV-2).** 25.9% of early ends fall on a month's last day. Reword to "a cut not known at the start, a quarter of them on a month's end". It appears in task_summary.known, the Exposure bullet, the weight ScoringColumn description and Decision 1.
+4. **Metric reason (MET-11 Must, which asks for the closeness to be measured).** Three edits:
+   - Replace "the market rewarded the ranking of the risks" with "it rewarded the relative prices; the Gini scores their order, not their spread". The GLM and the same GLM with doubled relativities both score 0.173.
+   - Drop the argument that the deviance "also scores the year's level". The uniformly rescaled form removes the level, as the game did.
+   - Add the closeness measured in section 4, whichever metric issue 3 keeps.
+5. **The 30-day floor bullet (LEAK-41).** Rewrite the "Anomaly: no period is shorter than 30 days" bullet as a LEAK-41 matter, whatever issue 2 decides:
+   - the length histogram: 0 rows at 29 days, 909 at 30, about 700 a day at 32-40;
+   - 1,558 gaps of 1-29 days between a vehicle's consecutive periods;
+   - no start after 2 December;
+   - the size: about 1.5% of vehicle-years overall (column auditor). Per window the claim auditor's rough figures are 11% / 3% / 1.6% of vehicle-years, newest first, assuming a flat density;
+   - short periods claim more per vehicle-year (0.143-0.160 against 0.124);
+   - it cannot be undone.
+6. **REVIEW issue 6 text (EV-2).**
+   - spanish_motor_insurance_coverage_level_2022_2024's valid window is above the floor (52.5%), not below it. Rewrite "What sets this case apart".
+   - Replace the unpaired C comparison (0.174 against 0.171) with the split auditor's paired one: +0.005 (SD 0.022, 9 folds); a new fleet's cold start costs −0.004 (SD 0.013).
+   - Add the leak test of section 4.
+7. **CHANGES.md.** "0.182 overall, no more optimistic than the valid window" holds only for C's 2013 rows: 0.174, paired +0.005.
+8. **Record, Exception to SPLIT-10 (2026-11-02, Andrej).** "Serves SPLIT-14: three windows on distinct training sides" is stale. If A survives, the ground is LEAK-41 plus the floor, for the January window only. Under C the exception is removed.
+9. **splits.md Cases (principles, Exceptions).**
+   - The SPLIT-14 row for pg16 still says "applied" for the expanding windows. Replace it with the outcome of issue 6.
+   - Add the missing SPLIT-10 rows of kind `exception` for pg16 (unless C removes it), spanish_homeowners_motor_insurance_2010_2014 and wisconsin_local_government_property_insurance_fund (all 2026-11-02).
+10. **The pro-rata claim (EV-2).** "AMRAE ... not checked": cite the sources the claim auditor and practitioner checked (the French fleet guide on pro-rata temporis regularisation; AXA Belgium's regularisable / non-regularisable fleet premiums).
+11. **CLEAN-14 (Should, P7, cheap and safe).** Declare these as ordinal, with the column auditor's level lists, and update the Dtypes bullet: contract_age_class, vehicle_age_class, deductible_class, insured_value_class. The 2026-11-01 column table calls deductible_class ordered; the shipped dtype is not. This lands with the next rebuild, which the curator asks for.
+12. **Optional, practitioner.**
+    - A one-line note: insurers may keep the unexpired premium after a covered total loss, so the rate per realized vehicle-year slightly overstates the break-even rate. This is an inference, unchecked.
+    - A line on trend: 167 per vehicle-year in training against 180-205 in 2013.
 
-*Mediator checks* (scripts in the run folder, thread caps, same LightGBM settings as the claim audit):
-- `m1_anniversary`: the agreed fix reads an anniversary cut from the vehicle's next period, which exists only if the
-  vehicle stays. That reading carries nothing measurable:
-  - covariates and day of year score 0.6231;
-  - with the agreed start-known length, 0.6229;
-  - with a variant that locates the anniversary from the contract alone, 0.6244 (the two lengths differ on 2.6% of
-    periods).
+**3. Issues for the curator, ranked**
 
-  The agreed form stands.
-- `m2_retention`: what the fixed task scores. The target still counts claims over the cover actually earned, so a
-  model told only the scheduled length can also gain by guessing how long a vehicle stays. The rating classes rank the
-  unscheduled early ends at AUC 0.78 / 0.77 / 0.82. Window means:
-  - the actuary's rate times the scheduled length: 0.610;
-  - the direct post-fix model: 0.623;
-  - the rate times a predicted stay: 0.629;
-  - the rate times the realised length: 0.670.
+**Issue 1 (P4, SPLIT-14 Must; REVIEW issue 6): three windows on one training side. Recommended: C.**
+- **Problem:** all three splits train on the same 56,178 rows, which SPLIT-14 counts as one evaluation. The newest window holds 7% of the test vehicle-years and 103 positive charges, has a bootstrap SE of 0.068, and gets a third of the score. The window mean (0.154) runs below the same model pooled over 2013 (0.171).
+- **Which rule wins:**
+  - This is not a conflict that rank settles. LEAK-41 (Part 3) does not force A, because C meets LEAK-41 and SPLIT-14 together (principles, How to decide 4). No higher Must stands behind A.
+  - The practitioner's USE-10 objection (C tests unseen fleets; on fidelity B > A > C) meets SPLIT-8, which says it narrows USE-10. Its cases (spanish coverage, pg17, frempl, nba, open_university) applied it to recurring known entities.
+  - The measured cost is small: on the same 2013 rows C is +0.005 (SD 0.022) against the valid window, and a new fleet's cold start costs −0.004. No history feature ships, and the record found the previous year's history adds nothing (0.667 against 0.668 ROC AUC).
+  - On the rules as written, C is the remedy (fix the definition by re-splitting). A or B is open only as a deliberate amendment of SPLIT-14.
+- **Advocate's best:** A or B keeps the use case: one tariff for the year, judged on the 2013 book. In its rebuttal it withdrew its preference for A and accepts C.
+- **Critic's best:**
+  - The A amendment drafted in issue 6 reaches only this dataset. That makes it an exception to a Must in effect, which the principles bar.
+  - It would reverse Andrej's amendment of 2026-11-02, made on this very dataset, and Lennart's reframing of 2026-11-05.
+  - B would reopen spanish coverage, nba, open_university and distribution_transformers_at_cauca_department.
+- **The precondition both sides named is now met** (section 4, experiment 1). No year-level leak crosses the contract folds.
+- **Options:**
+  - (C) Re-split, grouped 3 × 3 by `contract_id`. Recommended. contract_id becomes the group column, never a feature. Tag it `ForcedGroupedFromTemporal` and drop `temporal`. The SPLIT-10 exception goes. Rewrite task_summary.split, the fit text and the splits_comment, saying what the dates would change and the −0.004 cold-start cost. Update the record's required_split and tags. After the rebuild, run the leak probes on the grouped split (probes/group.txt).
+  - (A) Keep A by amending SPLIT-14 for the whole family.
+  - (B) Keep one window by amending SPLIT-14 below three windows.
+  - (D) The expanding windows: out, because LEAK-41 bars them.
+- **Decision needed:** C, or an amendment (A or B). Only an amendment needs deciding together with wisconsin issue 3. C does not, since the leak test sets pg16 apart from wisconsin.
 
-  About a tenth of the post-fix skill above chance is the stay. Before the fix, more than a quarter was time at risk
-  unknown at the start. The stay is an expectation at the prediction point, not a leak.
+**Issue 2 (P4, LEAK-41 Must, last clause): the source selected every row by its realized length (no period under 30 days).**
+- **Problem:** "No model is trained or scored on rows selected by the realized weight." The organisers dropped periods shorter than 30 days before release. The evidence:
+  - the histogram has a sharp edge at 30 days (0 rows at 29, 909 at 30);
+  - 1,558 gaps of 1-29 days between a vehicle's consecutive periods sit where the dropped periods would be;
+  - no period starts after 2 December.
+  The cut periods and their claims are not published, so neither repair nor a definition fix is possible.
+- **Effect:**
+  - About 1.5% of vehicle-years overall.
+  - The short periods claim more per vehicle-year.
+  - The selection is the same on both sides and was in the game's own 2014 file.
+  - It is uneven across A's windows (rough estimate: 11% of the newest window's vehicle-years). That point falls away under C, where every year carries the same cut.
+- **Advocate's best:** the source made this selection before release; it is small by weight and the same on both sides. The advocate concedes that the form is an amendment.
+- **Critic's best:** a Must has no exceptions, so "accept it with a note" is not available. Without a rule, the next dataset with a source-side floor is decided ad hoc.
+- **What is settled:** the form. Both sides now ask for an amendment.
+- **What is left:** the curator's ruling. A Must that cannot be fixed means `No` unless the rule is amended.
+- **Options:**
+  - (a) Amend LEAK-41's last clause. Draft: "a selection the source made before release, the same in train and test, that cannot be undone, defines the task's population and is sized in the notes". Add a Cases row for pg16, and check frempl and the other siblings for a minimum length. Recommended.
+  - (b) Read the clause as covering source selections too: the dataset goes `No`, and so do the siblings with such a floor.
+- **What would size it further:** a sensitivity run that adds a second floor (say 60 days) on both sides and reports how the scores and the ranking of models move. Optional.
 
-**Changes to make now (no decision needed)**
+**Issue 3 (P6, MET-11 Must): which stand-in is closest to the game's market.**
+- **The rule:** the critic is right that MET-11 governs, not MET-10. MET-10 weighs the source's metric against the fallback; here the original, a market, cannot be computed, so a stand-in must be "the closest computable metric", with its closeness "measured on the shipped splits where possible".
+- **Now measured** (section 4, experiment 2). I simulated the game's rule on the shipped windows: every tariff rescaled uniformly to one total, each period going to the cheaper premium.
+  - Across all two-player markets, the rescaled weighted Tweedie deviance (p = 1.5) picks the market's winner in 76 of 84 pairs. The Gini picks it in 44 and ties in 21, because it cannot see a change of spread.
+  - Among the fitted tariffs alone (two LightGBMs, the GLM, the constant; 18 pairs) the two are close: deviance 16 of 18, Gini 15 of 18. Over the 7 non-constant tariffs, the gap comes from the tariffs that differ in spread.
+- **Advocate's best:**
+  - The Gini follows australian (D8) and spanish coverage.
+  - The deviance takes its scale from the test total, is noisier on the newest window, and needs a new library metric (MET-13).
+  - Both metrics rank the GLM above the LightGBM.
+- **Critic and practitioner's best:**
+  - The game rescaled uniformly and rewarded relative prices. The Gini gives a tariff and the same tariff with doubled relativities the same score (0.173).
+  - The rescaled deviance ranks the over-steep tariffs below a flat one: GLM doubled 94.27, LightGBM 91.34, constant 90.82, GLM 89.63.
+- **My reading:** by the letter of MET-11 the measurement favours the rescaled deviance. How large a closeness gap justifies leaving the family's Gini, against the costs above, is a weighing call, so it is the curator's.
+- **Options:**
+  - (a) Uniformly rescaled weighted Tweedie deviance as the stand-in. A new library metric; state the oracle scale.
+  - (b) Keep the Gini, with the measured shortfall in the reason.
+- **What would settle it:** bootstrap SEs of the rescaled deviance's differences (GLM against the constant, LightGBM against the GLM) per window. If the newest window cannot separate the GLM from the constant, (b) has the stronger case.
 
-1. LEAK-10 (Must), fixed by LEAK-7 (Should): `exposure` becomes the length known at the start.
-   - Every period that ends before 31 December gets (31 Dec - start + 1) / 365 (/366 in 2012).
-   - Periods that end at a contract anniversary (the vehicle's next period starts the next day with a higher contract-age
-     class; 0.8%) keep their realised length.
-   - The two rows with `n_vehicles` = 2 keep vehicle-years.
-   - Drop the "Potential leak, kept on purpose" label. In its place, say what was fixed and why: the realised length
-     added +0.040 to +0.055, and early ends have a rate ratio of 1.22.
-   - Re-run TP-4, the task probes and every window figure in the notes. Issue 1 asks the curator to confirm the fix.
-2. USE-3 (Must): `task_summary.known`, `question` and the first bullet name "the length of cover to the year's end (or
-   to the contract's anniversary), known at the start".
-3. USE-8 (Must), EV-6:
-   - `fit_reason` loses "measured to add no signal". It says the target counts claims over the cover actually earned,
-     so the chance includes how long the vehicle stays (m2). Fit stays direct.
-   - Decision 1 is retitled. Its table shows claims per vehicle-year by how the period ends (0.111 / 0.111 / 0.137 in
-     2011-2012) in place of claim shares within length bands.
-4. MET-11 (Must): `Metric.stand_in("roc_auc", original=<the 2014 price-aggregator market, rules Sec. 4>, ...)`, with
-   `reference` set to the rules PDF. The reason adds:
-   - the uniform scaling of every player's premiums, which removes the price level and leaves the ranking of risks;
-   - ROC AUC = (normalized Gini + 1) / 2 on a binary target, the 2017 sibling's stand-in;
-   - how much of the score the scheduled length carries after the fix.
-5. USE-5 (Must) wording: `predicted` and the IDA bullet say "the insurer pays its client and recovers a flat amount
-   from the other insurer", and that 126 IDA claims are at 50% responsibility.
-6. EV-2 text facts:
-   - the leap-year clause;
-   - "up to 12 vehicles" and "42.8%" are counts of a likely sample; give the 57.4% (58.2% in 2013) of periods that end
-     early at an unscheduled cut;
-   - the target bullet's reason names this table's own facts (charges scaled by one constant, a short unexplained tail,
-     537 net-negative IDA periods; precedent check, item 1).
-7. P4 text in `splits_comment`:
-   - cite SPLIT-15, not SPLIT-17;
-   - say that window scores rank within start cohorts and that the newest window is the smallest and noisiest;
-   - "suggested on 2026-10-30, accepted with the curator's Yes" in place of "the call of 2026-10-30";
-   - the note's "cannot be measured" becomes the simulated bound, called a simulation.
-8. Checks: `accepted_check_warnings` for `dataset_duplicate_rows`, `meta_time_horizon_mismatch` and
-   `meta_license_unknown`, each with its reason (precedents in the precedent check, item 7).
-9. Record at hand-over (records.md, PROV-8):
-   - `name` and `source_links` point to the organisers' files, with CASdatasets named as a copy;
-   - add `v2_path`;
-   - drop the `Two-Regime Zeros` tag. The curator's definition (policy question 4) needs a low value in a continuous
-     target, so it cannot apply to a binary one;
-   - `problem_type` goes through the field row.
-10. Optional, USE-6 context: one clause that most contracts are small (median 2 vehicles per contract-year, 18% with 4
-    or more). Larger fleets are experience-rated in practice, and last year's claims were measured to add nothing.
+Disputed framings, settled:
+- (i) A is not symmetric with C under the current rules. A needs an amendment, and C is the rule's own remedy (issue 1).
+- (ii) The floor cannot be accepted by a note. LEAK-41 is a Must, so it takes an amendment (issue 2). The 11% per-window figure is a rough extrapolation. It does not decide anything and is moot under C.
+- (iii) The metric is a MET-11 question, not a MET-10 weighing. The pick between two measured candidates is then the curator's (issue 3).
+- The critic's factual correction stands: n_vehicles and insured_value_class are kept (D4; "ND" made missing), not dropped. No change follows.
 
-**Changes that need the curator** (ranked; full text in the review draft)
+Task gamer's exploits, mapped. The definition has no `Potential leak, kept on purpose:` note. Its accepted warnings cover duplicate rows (LEAK-18).
 
-1. P4, LEAK-10 (Must): confirm the fix, decided with frempl_french_motor_personal_line's issue 2. The alternative is an
-   amendment of LEAK-10 for time at risk in insurance tables, which reaches frempl, spanish coverage, australian and
-   fremtpl2 together.
-2. P4, SPLIT-14 (Must): is a set of three windows inside one dated test year, all on one train side, a valid set of
-   SPLIT-14 windows? If so, the exception to SPLIT-11 (annual refit) is recorded with it. The alternative is SPLIT-8,
-   forced grouped by contract, which meets your how_much_did_it_rain call (frempl issue 5, australian issue 1).
-3. P4, SPLIT-10 (Should): no gap. Record a third exception for SPLIT-14's floor, or amend SPLIT-10 (the precedent
-   check's prompt C).
+| # | Exploit | Rule | Status | Gain measured | What the notes say |
+|---|---|---|---|---|---|
+| 1 | The realized exposure as a feature | LEAK-41 (the weight is never an input) | Known (notes, probe 22) | Tweedie: 0.1985 against honest 0.2061 (none). L2: +0.030, inside the L2 noise of 0.08-0.14. Probe 22 Tweedie: +0.007 (SD 0.028) | +0.013, consistent. Not an issue |
+| 2 | Exposure over planned exposure (the cut-short ratio) | LEAK-41 (a column that encodes the weight) | Known in substance (the 1/weight ceiling of 0.029) | +0.006, noise | Not an issue |
+| 3 | A same-key successor row exists (built from future rows over all rows) | LEAK-10 (set after the prediction point), built transductively | New | +0.002, noise; vehicles cannot be chained without the dropped ids | Not an issue |
 
-**Disputed points**
+The gamer found no flaw that hurts an honest model. Settlement of 2012 claims could not be checked, which is the delay already simulated in the notes.
 
-- **D1. `exposure`, realised or known at the start.**
-  - The two positions: the advocate (opening) would keep it by an amendment, resting on P3 and USE-5 and on actuarial
-    practice (an offset; fleet premiums revised on earned vehicle-years). The critic would fix it, resting on LEAK-10
-    (Must) and its clause of 2026-10-26.
-  - Not a conflict. USE-5 governs the target, which the fix leaves alone. The practice supports the time at risk in the
-    scoring (MET-2), not as an input known at pricing. So LEAK-10 has to hold on its own (principles, step 4).
-  - A Must takes no exception, and the mildest remedy that resolves it is the definition fix (LEAK-7).
-  - The advocate conceded in rebuttal, so the point is agreed. It still goes to the curator because a decision on a
-    sibling (frempl issue 2) would carry over here.
-- **D2. Window design: pooled or exposure-weighted (practitioner), year-aligned or half-year windows (blind reviewer).**
-  - Pooling 2013 is one window. A 2011 train side for a 2012 window holds 30.4% of rows. Both break SPLIT-14 (Must,
-    P4).
-  - The scoring unit is P6, and P4 outranks it ("the metric never changes the split against the use case", MET-2).
-  - Settled: keep the shipped windows and add the cohort note (change 7).
-- **D3. The metric's value: `log_loss` as context (practitioner) or `roc_auc`.**
-  - Both debaters left this to the curator as a weighing call (MET-10). The rules settle it.
-  - Under MET-11 a stand-in is the closest computable metric to the original. The game rescaled every player's
-    premiums by one factor to the same total, so its market did not reward the price level, which is the
-    practitioner's reason for log loss. It rewarded the ranking of risks.
-  - ROC AUC scores that ranking (the normalized Gini identity), as in pricing_game_2017_french_mtpl and porto_seguro.
-  - Settled: `roc_auc` stays, no issue.
-- **D4. Drop `n_vehicles`, and drop `insured_value_class` or encode its "ND" as a level (blind reviewer).**
-  - CLEAN-5 covers constants only. "ND" marks no single formula, so missing is right (CLEAN-10; column audit).
-  - Quality, no change.
-- **D5. The binary target is broad and its reason is not pg16-specific (blind reviewer, precedent check).**
-  - The curator decided it (CC 2026-10-30). Only the reason text changes (change 6).
+**4. Agreed facts, and my two experiments**
 
-**Consistency with precedent** (precedent check)
+Agreed by both sides and every auditor:
+- 87,228 periods, 68,485 vehicles, 18,037 contracts.
+- The target reproduces from the source: all 4,568 claims match, total 6,675,926.40.
+- `exposure` is the source's realized vehicle-years. It is the weight scoring column and `sample_weight`, never a feature (16 features).
+- exposure ≤ exposure_to_year_end on every row.
+- The metric matches Kaggle's weighted Gini to 1e-12.
+- Weighted Tweedie LightGBM 0.110 / 0.157 / 0.189, newest first; the constant scores 0; the newest window beats it by 1.7 SE.
+- The old expanding sides admitted early-ended 2013 periods at 0.127 / 0.131 claims per vehicle-year, against 0.115 / 0.116 for the periods still running. D11's training side is the honest one (LEAK-41 over SPLIT-11).
+- The three splits share 56,178 training rows (64.4%). 2012 trained on 2011 alone would hold 30.4%, below the floor.
+- 76-81% of test periods have their contract in training.
+- Claims per vehicle-year are 0.117 / 0.119 / 0.119 in 2011-2013.
+- No period is shorter than 30 days.
+- probe22.txt and probe22_l2.txt are the same L2 run.
+- No exploit above noise.
 
-- `exposure`:
-  - Follows frempl (fix pending, its issue 2) and spanish_motor_insurance_coverage_level_2022_2024 (located
-    cancellations reset).
-  - Departs from fremtpl2 (CC, Andrej, 2026-10-20). Two facts set this case apart: the dates locate every early end
-    here, and LEAK-10's located-values clause (Lennart, 2026-10-26) is newer than that call.
-  - The 2026-10-30 policy row ("exposure: feature") still holds: the length known at pricing is a feature.
-  - australian keeps under LEAK-11 because its late part lowers the score; here the late part raises it. Prompt A is
-    answered with its option (b), and the confirmation is issue 1.
-- Metric: `stand_in` follows pricing_game_2017_french_mtpl and this record's suggested call of 2026-10-30 (prompt B
-  (b)). A label change; no score moves.
-- Split, regime: the precedents with one valid annual window went to SPLIT-8. Daily start dates set this case apart:
-  SPLIT-8 applies only when the release cannot give SPLIT-14's windows. Three windows on one train side have no
-  precedent, so this becomes the first Cases row under SPLIT-14 once decided (issue 2).
-- Split, refit: the fixed train side is a first exception to SPLIT-11 (annual refit, SPLIT-12 and SPLIT-19).
-  spanish_motor_insurance_2015_2018 grows monthly because its source prices new business monthly; each follows its
-  source.
-- SPLIT-10: the third exception for SPLIT-14's floor after alfa_battle_2_0_task_2 and lending_club (Lennart,
-  2026-10-21), with spanish 2015-2018 and wisconsin proposing the same. Principles ask for an amendment (issue 3).
-- Columns, repeated rows, the IDA count, provenance and the warnings follow their precedents.
-- No drift and no precedent that contradicts a rule.
+Experiment 1: SPLIT-8's leak test across the contract folds, the wisconsin way.
+- Setup:
+  - folds: 3 × 3 GroupKFold by Num_contrat over 2011-2013 (the split auditor's folds);
+  - model: regularised Tweedie LightGBM fitted with the weight, scored by the declared scorer;
+  - each test year was predicted by a model trained without that year's training rows, against one trained without as many random rows;
+  - period_start encoded two ways: the day of the year, or the date, which lets the model read the year.
+- Charge per vehicle-year by year: 159.6 / 173.7 / 184.3.
+- Results (mean over 9 folds):
+
+  | Encoding | Pooled gain of the same-year rows | Within-year gain |
+  |---|---|---|
+  | Date (year readable) | −0.001 (SD 0.020), positive in 2 of 9 | −0.0035 (SD 0.021) |
+  | Day of year | +0.008 (SD 0.015), positive in 7 of 9 | +0.006 (SD 0.016) |
+
+- Reading:
+  - Wisconsin's signature is absent: there the pooled gain was +0.113 against +0.008 within a year. Here the pooled gain is no larger than the within-year gain, and nothing crosses when the year is readable.
+  - The small day-of-year effect is within-year structure, about 1.7 SE, at the noise level.
+  - The test passes.
+
+Experiment 2: the game's market, simulated on the three shipped windows.
+- Tariffs: the regularised LightGBM, a deeper LightGBM (63 leaves), the Tweedie GLM, the GLM's relativities raised to the power 0.5, 1.5 and 2, the LightGBM's raised to 0.5, and the constant.
+- Each tariff was rescaled to the window's claim total. Any common total gives the same allocation; the game's fixed 2.5 million euros changes only the profit levels. Each period went to the cheapest premium.
+- Results: given above in issue 3.
+- Limit: these are synthetic two-player markets. The real game had many players and random ties among the cheapest.
+
+**5. Consistency with precedent**
+
+- **D11 (target, weight, metric):** consistent with fremtpl2, bemtpl97, australian D8, frempl D9 and spanish D10 (precedent checker).
+- **D11's reversal of Andrej's expanding windows:** set apart by a new measurement and a newer Must. Not drift. hotel_booking_demand (SPLIT-9) supports it.
+- **Issue 1:**
+  - C follows spanish coverage, which has the same facts: three stacked years, one valid window above the floor, recurring entities. It also follows pg17, frempl, nba and open_university.
+  - The fact that sets pg16 apart from wisconsin is now measured: the leak test passes (pooled −0.001 with the year readable, against wisconsin's +0.113). pg16 can therefore be decided without waiting for wisconsin issue 3, unless the curator prefers an amendment.
+  - The precedent checker's reflection prompt still applies to the implemented state:
+    **Consistency check (AI, 2026-11-06):** three windows of 2013 on one training side differ from spanish_motor_insurance_coverage_level_2022_2024 (forced grouped, 2026-11-02), which has the same facts. What sets this case apart?
+    (a) Amend SPLIT-14 for the family. The only candidate fact, daily dates that allow sub-windows on one side, is the cut Andrej's amendment rules out.
+    (b) Treat pg16 like spanish: C, grouped by `contract_id`. The leak test now passes.
+    (c) Reopen spanish: does not apply, since it has no dates within a year.
+    (d) Amend SPLIT-14 below three windows: reopens spanish, nba, open_university and cauca; decide with wisconsin issue 3.
+    Recommended: (b).
+- **Issue 2:** no precedent; a new tension. An amendment of LEAK-41 should add a Cases row and check frempl and the other siblings for a minimum length.
+- **Issue 3:**
+  - Keeping the Gini follows australian (D8) and spanish.
+  - Switching to the rescaled deviance departs from them. The fact that sets pg16 apart: its original is a market that rescaled uniformly, and its closeness to that market is measured. pg17 scores a Tweedie deviance on its own facts (a game that kept the price level).
+  - **Consistency check (AI, 2026-11-06):** if you switch, record that fact. If you keep the Gini, the reason must state the measured shortfall (76 against 44 of 84 two-player markets).
 
 </details>
 
 <details><summary>Claim audit</summary>
 
-**Claim audit: pricing_game_2016_french_fleet (claim-auditor, 2026-11-01)**
+**Claim audit: pricing_game_2016_french_fleet (exposure re-review, 2026-11-06, full tier)**
 
-**Verdict:** 48 claims tested. 39 hold, 7 are refuted and 2 are untested. Every count, share and probe number in the definition matches the organisers' files to the last digit (sha256 matches the definition). Two refutations matter. (1) P4: the length (`exposure`) is not known at the prediction point, and the evidence the definition gives that it adds nothing is a test that could not have failed. Measured properly, the part of the length the insurer cannot know at the start adds ROC AUC +0.040 to +0.055. (2) P6, MET-11: the metric origin says the source defined no metric. It did: a price-aggregator market, which the 2017 sibling declares as a `stand_in` original. The other refutations are wording and stale record fields.
+Verdict: today's change (D11) holds on the data. Every number I re-measured reproduces: the target, the weight, the
+splits, the metric's implementation, the leak figures and the model scores. I refuted no number. Two findings are new:
+(1) the source's 30-day floor selects every row by its realized length, and the newest window most of all, which
+LEAK-41 bars and the notes do not connect to it; (2) probe 22's "none above noise" rests on an L2 arm that cannot see
+even the weight itself; the Tweedie arm, which I ran, agrees. SPLIT-14 (issue 6) stays open as written.
 
-Scripts and outputs: six scripts, each with its output, in the run folder. The models are LightGBM with the builder's regularised parameters, 3 seeds, scored on the shipped windows, newest first.
+Scripts (read-only on the repository; definition loaded in memory, no build): audit_facts.py, audit_facts2.py, audit_models.py and audit_p22_tweedie.py in the run folder; the rules PDF from its Wayback copy (id_), read with pypdf.
 
-**Claims table**
+Model: the builder's regularised LightGBM (Tweedie 1.5, weighted by `exposure`), 3 seeds, scored with
+data_foundry.v2.metrics.scorer on the shipped splits.
+
+**Claims table** (claim, source, test, result, evidence, rule)
+
+*Today's changes first (D11).*
 
 | # | Claim | Source | Test | Result | Evidence | Rule |
 |---|---|---|---|---|---|---|
-| 1 | Fleet vehicles, material-damage claims | task_summary.question | rules PDF Sec. 1; pricingame.Rd | holds | rules: "Mode de gestion de la flotte", "Taille de la flotte", "garantie DTA"; Rd l.35 "all kinds of material damages" (Rd l.33 also says "private motor insurance") | USE-1, EV-2 |
-| 2 | The task is the frequency part of the pure premium, per vehicle and period | task_summary.use_case | count multi-claim periods | holds (weigh) | the binary target merges 286 multi-claim periods (318 extra claims, 7% of 4,568); a rate per vehicle-year would be the strict frequency | USE-5 |
-| 3 | 87,228 periods, 68,485 vehicles, 18,037 contracts, 2011-2013, cut at the year's end | task_summary.row | raw counts; periods crossing a year | holds | exact counts; 0 periods cross a year, in train and in the 2014 file | PROV-1 |
-| 4 | 4.9% positive, IDA (not-at-fault) claims included | task_summary.predicted | raw | holds | 4,250 positive (0.0487); 1,190 IDA claims; 1,156 periods with an IDA claim | USE-5 |
-| 5 | "Known at prediction time: ... the period's start date and its length" | task_summary.known (README "Known at prediction time") | does the period end on its scheduled date (31 Dec, or a contract anniversary: next period contiguous with a higher contract-age class)? | **refuted** | 57.4% of periods end before 31 Dec at a cut that is not scheduled (only 0.8% end at an anniversary); in the 2013 test year 58.2% end early. Their length is known only at their end, as the curation note itself says | LEAK-1, LEAK-10, USE-8 |
-| 6 | Trained on 2011-12, tested in three 4-month windows of 2013; most fleets insured before | task_summary.split | shipped splits | holds | train 56,178 rows (last start 2012-12-02); 76-81% of test periods belong to a contract seen in training | SPLIT-13 |
-| 7 | Changes: indicator only, identifiers, year and end dropped, ND made missing, two code sets relabelled | task_summary.changes | read `_clean` | holds | code matches; asserts pass in `dataset check` | CLEAN-1 |
-| 8 | Fit direct; the length is "measured to add no signal beyond the length" | task_summary.fit / fit_reason | see #17 | fit holds; **"measured to add no signal" refuted** | USE-8 keeps a leak kept on purpose out of the fit (kick, +0.066), so "direct" can stand. But the sentence's evidence cannot support it (#17), and the right test gives +0.040 to +0.055 | USE-8, EV-6 |
-| 9 | The game priced 32,772 periods of 2014 (the rules write 37,772) | curation_comments, prediction point | rules p.3; test file row count | holds | rules: "les 37 772 contrats"; test_contrats.csv has 32,772 rows | EV-2 |
-| 10 | Page dated 17 July 2016; files Last-Modified 13 July 2016 | curation_comments, source | WebFetch of the page; `curl -I` | holds | page "17/07/2016", "entre le 15 juillet et le 15 septembre"; Last-Modified Wed, 13 Jul 2016 21:05:46 GMT | PROV-9 |
-| 11 | CASdatasets has the same values, levels renamed one to one; its DirectComp is 0 on 1,064 of the 1,190 IDA claims | curation_comments, source | compare_orig_cas; recount | holds | IDA=1 with DirectComp FALSE: 1,064; DirectComp TRUE: 126; no false positive | PROV-15 |
-| 12 | Commercial fleets; 1,190 of 4,568 claims are IDA; up to 12 vehicles at once | curation_comments, portfolio | count concurrent vehicles per contract | holds | at most 12 at once (median 2, p99 7); at most 30 distinct per contract-year, 47 over 3 years | EV-2 |
-| 13 | Target = count > 0; 286 periods with 2 or more claims, at most 7; each claim joins one period; count = joined claims | curation_comments, target | raw join | holds | exact; asserted in `_load_raw` | LEAK-4 |
-| 14 | The 523 positive periods without a positive charge are IDA claims | curation_comments | non-positive charges by IDA flag | holds | all 599 claims with charge ≤ 0 are IDA; all 523 periods have only IDA claims | USE-5 |
-| 15 | `exposure` = (end - start + 1)/365 rounded for 97.6% of periods, 0.01 less for the rest | curation_comments, potential leak | recompute | holds; explanation missing | the 2,099 rows "0.01 less" are all from 2012, the leap year: days/366 matches 99.99% of 2012 rows. The 2014 file matches days/365 on 100% | CLEAN-1 (P7) |
-| 16 | 42.8% of periods end before 31 Dec with no later period of the vehicle | curation_comments, potential leak | recompute | holds | 0.4276. Detail: in 27.5% of these (2011-12) a new vehicle id starts in the same contract the next day (0.4% at 31 days, the baseline), so some are replacements, not departures | EV-1 |
-| 17 | "the end carries no signal beyond the length" (LightGBM 0.675 length alone, 0.670 with a 31-Dec flag; 0.708 on all features with or without the flag and the start's day of year) | curation_comments, potential leak; Decision 1 | (a) is the test able to fail? (b) the decisive test: covariates + start ± realised length, and ± the length known at the start | numbers hold; **conclusion refuted** | (a) Once the start is in the model, "ends 31 Dec" is a function of start and length on 99.5% of rows, so adding the flag could not change the score. history_probe ran the flag only together with the day of year, not "with or without" it. (b) Covariates + day of year: 0.5954 / 0.6218 / 0.6519 (mean 0.623). Adding the length known at the start changes nothing: 0.594 / 0.622 / 0.653. Adding the realised length: 0.6353 / 0.6763 / 0.7034 (mean 0.672), i.e. +0.040 / +0.055 / +0.052, about a quarter to a third of the skill above chance | LEAK-10, EV-1, EV-6 |
-| 18 | Length alone 0.596/0.655/0.659; logistic 0.615/0.670/0.699; LightGBM 0.635/0.676/0.704 | curation_comments, TP-4 | re-run on the shipped windows | holds | 0.5963/0.6552/0.6590; LightGBM 0.6342/0.6755/0.7042 | TP-4 |
-| 19 | Task probes: no flag; linear best at 0.661; the length chosen as the single feature on 3 of 3 windows, 0.629 | curation_comments | probes/task summary | holds | skill +0.323 (= 2 x 0.661 - 1), no flags | TP-1 |
-| 20 | Previous-year history adds nothing (0.705 vs 0.708); vehicles in force at the start add nothing (0.708 both) | curation_comments, not added | history_probe, explore4 | holds; qualified | 0.7053 vs 0.708; 0.7083 vs 0.7082. Vehicle history is thin by construction: only 18.4% of the vehicles in force on 31 Dec keep their id in the next year, although the renewed contracts keep their size (1.83 → 1.82 vehicles); 17.6% of 2013 rows have vehicle history | USE-10 |
-| 21 | `contract_id` follows subscription order (median 14,885 at most 1 year, 2,027 over 5 years) | curation_comments, dropped | median id by contract-age class | holds | exact, monotone across the six classes | LEAK-10 |
-| 22 | ND on 87,093 rows (99.8%); five classes on the other 135 | curation_comments | value counts | holds | 56 + 31 + 30 + 15 + 3 = 135 | CLEAN |
-| 23 | A/S/T = annual/semi-annual/quarterly; 2 = new company | curation_comments, labels | rules; CAS mapping | holds | rules "à 2 si création"; CAS maps the same codes one to one (year/semester/quarter; 2 = Yes) | CLEAN |
-| 24 | Power-value class has 11 levels and no order; `n_vehicles` is 1 except on 2 rows | curation_comments, dtypes | value counts | holds | 11 levels; 87,226 rows at 1 and 2 at 2 | CLEAN |
-| 25 | 9,373 rows (10.7%) repeat another row's features (8,577 with the same label, 796 with the other); natural, as fleet vehicles share every class | curation_comments; warning `dataset_duplicate_rows` | group the duplicate sets by contract | holds | 9,373 / 8,577 / 796 sets with both labels; 92.2% of the 7,446 sets fall within one contract (1,430 rows are in sets spanning contracts, coincident classes) | LEAK-18 |
-| 26 | No period is shorter than 30 days, in either file; no period starts after 2 Dec | curation_comments, anomaly | raw | holds | minimum 30 days (0.08) in both files; latest start 12-02 | PROV |
-| 27 | Levels anonymised, charges scaled by one constant | curation_comments, anomaly; record 11-01 | charges / 1.077841 | holds | 6.0% of charges are whole euros at tolerance 1e-3 (the record says 6.1%); piles at 130 (68), 150 (23), 2,200 (11), 1,000 (3) | PROV-3 |
-| 28 | The newest periods lose no claims: 0.117/0.119/0.119 per vehicle-year, 0.115/0.114/0.117 for Q4 ends | curation_comments | recompute | holds | 0.1171/0.1194/0.1189; 0.1154/0.1139/0.1173 | LEAK-24 |
-| 29 | Claims closed up to 2014, 41 still open; late reporting cannot be measured | curation_comments, note | ANNEE_CLOTURE | counts hold; lag **untested** | 41 with value 0; the latest closure year is 2014. The files hold no report date | LEAK-12, EV-7 |
-| 30 | Train 56,178 (64%); windows of 5,312 (123), 6,509 (257) and 19,229 (1,163); 12,028 start on 1 Jan | splits_comment | shipped splits | holds | exact; train share 0.644 | SPLIT-14 |
-| 31 | 2013 periods closed before a window start carry 2.4% and 3.2% claims | splits_comment | recompute | holds | 5,619 at 0.0238; 11,708 at 0.0315 | SPLIT-9 |
-| 32 | 76-81% of test periods belong to a contract seen in training, 23-26% to a vehicle seen in training | splits_comment | builder tp4 output; cross-check on the 2014 file | holds | 0.764/0.771/0.811 and 0.226/0.249/0.260; 82% of 2014 rows have a contract in train | SPLIT-13 |
-| 33 | "finer windows only cut the same test rows into noisier pieces (SPLIT-17)" | splits_comment | SPLIT-17's trigger | partly holds | SPLIT-14 (at least 3 windows) is met. SPLIT-17's trigger is fewer than about 50 test rows per window, and here the smallest window has 5,312 rows, so that rule does not carry the choice. The real limit is positives: 123 in the newest window. Left to the split auditor | SPLIT-14, SPLIT-17 |
-| 34 | The game scored a price-aggregator market (random pick among the cheapest premiums; premiums scaled to €2.5M) that needs data never published; the page and the Rd name no other metric | metric reason | rules p.3 Sec. 4; page; Rd grep; one more web search | holds | rules: "agrégateur de prix", "sélection aléatoire parmi les primes les moins chères", "égalisée à 2,5 millions d'euros". The page links no results; the Rd has no metric; the search found no published ranking | MET-1 |
-| 35 | origin = fallback, "the source defines no metric" (README Metric block) | `Metric.fallback` | MET-11's origins; the sibling | **refuted** | MET-11: "stand-in: the source has a unique metric that cannot be computed on our data (inputs not published, a task we changed)". Both apply, and the reason itself names them. pricing_game_2017_french_mtpl, the same organisers' market game, declares `Metric.stand_in("normalized_gini", original=<the market profit>)` | MET-11 (Must) |
-| 36 | ROC AUC is computable on every fold | MET-2 | `scorer` on a definition-backed container; random probabilities | holds | per row; 123 / 257 / 1,163 positives; scores 0.468 / 0.503 / 0.508, all finite | MET-2 |
-| 37 | The metric means the same on our task | MET-2 | target and balance | holds | the target was changed (pure premium to indicator), which is the stand-in case. AUC ranks like the normalized Gini (2 AUC - 1) the sibling uses. Window balance 2.3% / 4.0% / 6.1% (shorter periods later); AUC does not depend on prevalence | MET-2, MET-9 |
-| 38 | Warning `meta_time_horizon_mismatch` is benign | builder | horizon against the windows | holds | the horizon is the tariff year; all test starts fall within 12 months of the last training start | SPLIT-12 |
-| 39 | Warning `meta_license_unknown`; CASdatasets is GPL (>= 2) | builder; class comment | CASdatasets DESCRIPTION | holds | "License: GPL (>= 2)"; never evidence for a verdict | EV-4 |
-| 40 | No copies across the split | builder ("with the date 0.0%") | reasoning | holds, trivially | `period_start` differs by year, so no exact copy can cross the split. Recurring contracts and vehicles are by design (#32) | LEAK-17, SPLIT-13 |
-| 41 | "a vehicle's last period that ends early has about the claim rate of a period that runs to the year's end, a little higher among the shortest" | Decision 1 | claims per vehicle-year by how the period ends | **refuted** | 2011-12: 0.111 (ends 31 Dec), 0.111 (ends early, vehicle goes on), 0.137 (ends early for good): +23%. By length band (all years): +23%, +26%, -1%, +20%. The decision's table compares claim shares within 3-month bands, which hides the difference. These claims also cost more: 12.0% above the 90th percentile of charges against 9.2% for 31-Dec periods | LEAK-10, EV-1 |
-| 42 | Decision 2 counts (4,250; 286; 1,156 with IDA; 523 without a positive charge) | Decision 2 | recount | holds | 1,156 recounted | USE-5 |
-| 43 | Screening: tables 87,228 x 22, 4,568 x 9, 32,772; up to 30 vehicles; S2 3.3 against S1 1.9; net charge negative on 537 periods, positive on 3,711 | record, screening | raw | holds | 30 = maximum per contract-year; 3.27 / 1.89; 539 periods ≤ 0 (2 at zero); 4,250 - 539 = 3,711 | EV-2 |
-| 44 | Assessment of 11-01: negative IDA charges never at 100% responsibility; 41 claims open; settlement years end in 2014 | record | raw | holds | Responsabilite_IDA on negative charges: 0 (570) or 50 (27) | PROV-3 |
-| 45 | Assessment of 10-30: AUC 0.69 against 0.67 for exposure alone | record | history_probe | holds | 0.708 / 0.675 on all 2013 | TP-4 |
-| 46 | Front matter `problem_type: Regression`, tag `Two-Regime Zeros` | record front matter | the definition | **refuted (stale)** | the definition is binary classification on the claim indicator (CC 2026-10-30) | records.md |
-| 47 | Record `name` and `source_links` name only CASdatasets | record front matter | the definition's download | **refuted (stale)** | the definition downloads the organisers' files from freakonometrics.free.fr (PROV-8); builder issue 5 | PROV-8 |
-| 48 | "DTA is the usual French abbreviation of an all-accident damage cover"; ND = not available | curation_comments | rules; CAS | **untested** (reading) | the rules do not expand DTA. CAS maps ND to "Unknown" (third party). Neither changes a decision | EV-2 (rank 5), EV-7 |
+| 1 | Target = clipped summed charge / `exposure`; target x exposure gives the charge back | dataset.py _clean, notes | recompute from raw rows via lineage | HOLDS | asserts pass; 537 negative totals clipped (min -1,863.27); clip raises total charge +4.26% | MET-14 |
+| 2 | `exposure` is the source's realized Exposition_au_risque = (end-start+1)/365\|366 x vehicles, 0.08 to 1 | notes, scoring column | recompute; range | HOLDS | assert passes; range 0.08-1.00; n_vehicles = 2 on 2 rows | LEAK-41 |
+| 3 | `exposure` is never a feature; it is the metric's weight and the sample weight | dataset.py, README | feature_columns(c), sample_weight(c), metric inputs | HOLDS | 16 features, `exposure` not among them; sample_weight = exposure; metric inputs {"weight": "exposure"} | MET-15, LEAK-41 |
+| 4 | `exposure_to_year_end` is known at the start and is never below the realized length | notes | compare row by row | HOLDS | exposure <= exposure_to_year_end on 100% of rows; equal on 42.3% (periods that run to 31 Dec); max 1.82 on the 2-vehicle rows | LEAK-7, LEAK-37 |
+| 5 | 57.4% of periods end before 31 Dec at an unscheduled cut, 0.8% at an anniversary | notes, scoring column, Decision 1 | share of end != 31 Dec | HOLDS | 58.2% end before 31 Dec (57.8/58.1/58.6% in 2011/12/13) = 57.4% + 0.8% | - |
+| 6 | Every window trains on 2011-2012: 56,178 periods (64.4%), 24,674 of 38,538 vehicle-years, all closed by 31 Dec 2012 | splits_comment, CC | splits + raw end dates | HOLDS | train 56,178 (0.644), VY 24,674, total VY 38,538; max training end 2012-12-31; 0 rows in both train and test | SPLIT-14 floor, LEAK-41 |
+| 7 | Test windows: 5,312 / 6,509 / 19,229 periods; 987 / 2,218 / 10,659 vehicle-years | splits_comment | count | HOLDS | exact | - |
+| 8 | Old expanding sides admitted 11,708 / 5,619 early-ended 2013 periods at 0.127 / 0.131 claims per VY vs 0.115 / 0.116 for those still running; 10.8% / 4.0% of training VY | splits_comment, CC, Decision 2 | recompute | HOLDS | exact | LEAK-41 |
+| 9 | Weighted Tweedie LightGBM 0.114 / 0.158 / 0.190 (newest first); weighted constant 0 | notes, metric reason, CHANGES | refit, 3 seeds | HOLDS | 0.110 / 0.157 / 0.189; constant -0.0 on every window | TP-4 |
+| 10 | The realized weight as a feature adds 0.013 (5 of 5 seeds) | notes, CHANGES | refit with `exposure` added | HOLDS | +0.012 (seeds: +0.019, +0.007, +0.009; 3 of 3) | LEAK-41 |
+| 11 | 1/weight alone scores 0.029 | notes, CHANGES | score 1/exposure | HOLDS | 0.052 / -0.042 / 0.077, mean 0.029. The weight itself scores -0.052 / +0.042 / -0.077, so the "ceiling" sign flips by window: a weak, unstable proxy | LEAK-41 |
+| 12 | Ignoring the weight loses 0.010 (SD 0.009, 4 of 5 seeds) | notes, REVIEW 5 | refit unweighted | HOLDS, within noise | +0.005 (seeds -0.002, +0.012, +0.004; 2 of 3). "Little" is right; the sign is not settled at 3-5 seeds | MET-15 |
+| 13 | Time features add 0.007 (SD 0.009) | notes | refit without period_start and exposure_to_year_end | HOLDS, indistinguishable from 0 | +0.003 (seeds -0.004, +0.015, -0.002) | USE-6 |
+| 14 | Probe 22: weight R^2 0.38 from features, mostly fleet_management and exposure_to_year_end; no feature's gain goes through the weight above noise | notes, CHANGES | read probes; ran the Tweedie arm per feature | HOLDS, BUT THE CITED TEST HAS NO POWER | probe22.txt and probe22_l2.txt are byte-identical, both "objective L2"; in that L2 arm the realized weight itself gains -0.0014 (SD 0.052), so the probe could not have flagged any proxy. Tweedie arm (mine, 3 seeds): weight as a feature +0.0118 (SD 0.0067); mediated share: time features +0.006 (SD 0.014), distribution_channel +0.003 (0.008), client_activity +0.002 (0.010), fleet_management -0.003 (0.012); none above noise | LEAK-41 (report both arms, decide on the worse), EV-1 |
+| 15 | fleet_management and exposure_to_year_end are known at the start (USE-6) | notes | check variation and timing | HOLDS (timing not refutable here) | fleet_management varies within 313 of 18,037 contracts, which fits a contract term that changes at a cut; N periods end early 71.3%, P 33.5% (realized/planned 0.57 vs 0.82): risk selection by a contract term | USE-6 |
+| 16 | Pooled 2013 scores above the window mean (0.171 vs 0.154) | splits_comment | refit, pool the three test sides | HOLDS | 0.170 vs 0.152 | SPLIT-15 note |
+| 17 | Three windows on one training side | splits_comment, REVIEW 6 | read SPLIT-14 | CONFIRMED VIOLATION (already open) | SPLIT-14 (Must): "windows that share one train side ... one evaluation, not several"; the three splits have identical train indices | SPLIT-14, SPLIT-8 |
+| 18 | CHANGES.md: option C "0.182 overall, no more optimistic than the valid window" | CHANGES.md | read REVIEW 6 / builder log | WORDING WRONG | 0.182 overall is above 0.171; the "no more optimistic" holds only for its 2013 rows (0.174); REVIEW.md says it right | EV (process) |
 
-Refuted rows: #5, #8 (the sentence), #17 (the conclusion), #35, #41, #46, #47. Untested: #29 (the reporting lag) and #48.
+*The metric (MET-1, MET-2, MET-3, MET-11, MET-13, MET-15).*
 
-**Refuted and untested claims, ranked (principles.md: validity first, Must first)**
+| # | Claim | Source | Test | Result | Evidence | Rule |
+|---|---|---|---|---|---|---|
+| 19 | The original is the 2014 market: insureds sent at random among the cheapest premiums, premiums scaled uniformly to 2.5 million euros; no other metric named | metric original/reason | read the rules PDF (Sec. 2, 4); one more web search for the game's results | HOLDS | Sec. 4: "agrégateur de prix ... sélection aléatoire parmi les primes les moins chères ... la somme des primes ... égalisée à 2,5 millions d'euros (par un facteur d'inflation appliqué uniformément)". No scoring formula and no published results found | MET-1, MET-11 |
+| 20 | stand_in, not source: the market cannot be computed | metric | rules + data | HOLDS | needs other players' premiums and the 2014 claims; test_contrats.csv has no claims | MET-11 |
+| 21 | Rules Sec. 2 write 37,772 where the file holds 32,772 | notes | rules PDF | HOLDS | Sec. 2: "37 772 contrats" twice; Sec. 1: "32 772 polices" | - |
+| 22 | Implementation = Liberty Mutual's weighted Gini, ties by the mean over orderings | README Metric definition | compare with the Kaggle code on untied predictions; hand case; constant; row permutation | HOLDS | max \|diff\| 1.0e-12 over 15 random predictions; hand case 1.0; constant 0 on every window; permutation-invariant; perfect order 1.0 | MET-13 |
+| 23 | The metric reads `exposure` as its row weight and every test fold holds what it reads | scoring column | scorer vs manual weighted vs unweighted | HOLDS | scorer = manual with exposure (-0.01565); unweighted differs (-0.03317); positive charges per window 103 / 232 / 1,026; all weights > 0 | MET-2, MET-15 |
+| 24 | Meaning vs the source (MET-2): the game priced each period's total ("prime pure" per contract line; its 2014 file gave the realized end); we score the rate | metric reason, notes | read the rules | HOLDS AS A STATED DEPARTURE | the reason gives MET-15 and LEAK-38 for it; the market compared totals | MET-2, LEAK-38 |
+| 25 | A fleet premium is revised pro rata as vehicles come and go ("AMRAE ... not checked") | notes | web search | HOLDS IN GENERAL | a French fleet guide: "La prime est régularisée en fin d'année sur la base du parc réel (pro-rata temporis)"; AXA Belgium separates a "prime régularisable" (flotte globale) from a non-régularisable one (flotte classique), so not every fleet contract is pro rata | MET-15, USE-5 |
 
-1. **P4, LEAK-10 (Must; the case-by-case clause of 2026-10-26) with EV-6: the realised length (#5, #8, #17, #41).**
-   - The definition says the length is "known at prediction time" and "measured to add no signal beyond the length". Neither holds.
-   - 57.4% of periods (58.2% in 2013) end before their scheduled end, and only 0.8% at a contract anniversary.
-   - The 31-Dec flag test could not have failed: given the start and the length, the flag is fixed on 99.5% of rows.
-   - The decisive comparison: the part of the length the insurer cannot know at the start adds +0.040 / +0.055 / +0.052 ROC AUC. The part it can know adds 0.000.
-   - Vehicles whose cover ends early for good have 23% more claims per vehicle-year, and those claims cost more (12.0% against 9.2% above the 90th percentile). That fits some claims ending a cover, but selection fits too; without claim dates the files cannot tell them apart.
-   - Against the change: the game's own 2014 pricing file gives each period's realised end and length (100% match to days/365; 58% end before 31 Dec), and frequency models take exposure as given. So keeping the column is defensible, and USE-8 keeps the fit direct, as for kick (+0.066 kept).
-   - What it changes: the README states a falsehood under "Known at prediction time", and the curator would decide the exposure question on evidence that cannot discriminate.
-   - **Mildest remedy:** keep `exposure` and correct the text:
-     - `task_summary.known`: "the period's start; its realised length (the time at risk), known only at the period's end for 57% of periods";
-     - `fit_reason` and the "Potential leak" bullet: drop the 31-Dec-flag argument and give the +0.040 to +0.055 measurement;
-     - Decision 1: show claims per vehicle-year by how the period ends.
-   - **The curator's alternative:** drop `exposure`. The rest still predicts at 0.597 / 0.620 / 0.653 (mean 0.623), above the length known at the start (0.549), so the task stays learnable. It gives up the time at risk a pricing model uses.
-   - This answers builder draft issue 1.
-2. **P6, MET-11 (Must): the metric origin (#35).**
-   - The source had a unique evaluation, the aggregator market, which cannot be computed (other players' premiums and the 2014 claims were never published, and our target changed). That is MET-11's stand-in case, not "the source defines no metric".
-   - The sibling pricing_game_2017_french_mtpl declares the same kind of market as `Metric.stand_in(..., original=...)`.
-   - What it changes: the README's origin line is wrong, and the two siblings are declared inconsistently. The score does not change.
-   - **Mildest remedy:** `Metric.stand_in("roc_auc", original="each player's result in the 2014 price-aggregator market: each insured placed at random among the cheapest premiums, every player's premiums scaled to a total of 2.5 million euros (rules, Sec. 4)", reason=...)`. Keep the current reason and add that ROC AUC ranks models as the normalized Gini does (2 AUC - 1), the 2017 sibling's stand-in.
-3. **Record (process; records.md, PROV-8): stale fields (#46, #47).** `problem_type: Regression`, the `Two-Regime Zeros` tag, and a name and source links that cite only CASdatasets. Remedy: update them when the curator settles the review (builder issue 5).
-4. **P4, SPLIT-17 (Should; #33): the citation does not carry the choice.** Three windows meets SPLIT-14. SPLIT-17's trigger (fewer than about 50 test rows per window) is not met. Remedy: cite the positives instead (123 in the newest window, about 30 a month) or leave the choice to the split auditor's finding. Wording only.
-5. **P7, quality (#15): the "0.01 less" rows are leap-year 2012** (days/366 on 99.99% of 2012 rows). Remedy: one clause in the note.
-6. **Untested (#29, #48).** No report dates ship, so the reporting lag of late-2012 claims stays a stated possible optimism. DTA and ND are readings of French usage and of CAS. Neither changes a decision.
+*Earlier claims checked again on the new frame.*
 
-**Not refuted but worth the curator's eye:** vehicle ids rarely survive a year end. Only 18.4% of the vehicles in force on 31 Dec keep their id in a renewed contract, although fleet sizes hold (1.83 → 1.82). When a new id appears on 1 Jan, only a third share the old vehicle's age and power class, so these look like replacements rather than re-keying. The ids are dropped and the shipped data is unaffected. It does explain why vehicle history "carries nothing" (#20): few 2013 vehicles have any.
+| # | Claim | Source | Test | Result | Evidence | Rule |
+|---|---|---|---|---|---|---|
+| 26 | 87,228 periods, 68,485 vehicles, 18,037 contracts | task summary | count | HOLDS | exact (68,487 contract-vehicle pairs) | - |
+| 27 | 95.7% zeros; 4,250 with a claim, 286 with 2+, max 7; 3,711 positive; median 1,339, max 13,992; max rate 75,929 | notes | count | HOLDS | exact | - |
+| 28 | No period shorter than 30 days; no start after 2 December | notes (anomaly) | lengths, starts | HOLDS | min length 30; latest December start day 2 | - |
+| 29 | 11,807 repeats (10,828 same target, 979 other); no copy crosses the split with period_start | notes, accepted warnings | duplicated(keep="first"); hash match test vs train | HOLDS | 11,807 / 10,828 / 979; 0.0% test rows with a full-feature copy in train on all 3 windows | LEAK-18 |
+| 30 | Window rates 0.129 / 0.122 / 0.117 claims per VY; 2.3 / 3.9 / 6.0% with a claim; 123 claims, 103 positive charges in the newest window; charge per VY 180-205 in 2013 vs 167 | splits_comment, notes | recompute | HOLDS | 0.129 / 0.122 / 0.117; 2.3 / 3.9 / 6.0%; 123 / 103; 204.6 / 197.0 / 179.7 vs 167.0 | TP-9 |
+| 31 | 76-81% of test periods have their contract in training, 23-26% their vehicle | splits_comment | isin | HOLDS | 76.4 / 77.1 / 81.1%; 22.6 / 24.9 / 26.0% | SPLIT-13 |
+| 32 | Claims per VY 0.117 / 0.119 / 0.119 in 2011-2013 | notes | recompute | HOLDS | exact | LEAK-24 |
+| 33 | Commonest start 1 January (12,028 in 2013) | splits_comment | count | HOLDS | 12,028 | - |
+| 34 | Newest window beats the constant by about 1.7 SE | notes | 0.114 / 0.068 | HOLDS | 1.68 | TP-4 |
+| 35 | Implied: the task's rows are not selected by their realized length | (implied by "No training row is now admitted by its realized end" and LEAK-41 cited as holding) | length histogram; gaps between consecutive periods of a vehicle | REFUTED FOR THE SOURCE (see finding 1) | lengths: 0 below 30 days, 909 at 30, 2,074 at 31, about 700 a day at 32-40; 1,558 gaps of 1 to 29 days between a vehicle's consecutive periods, flat at about 45 a day, where dropped short periods would sit | LEAK-41 |
+
+Untested (no new data, or settled and not reopened by today's change): the claim-delay simulation (0.190 -> 0.192 /
+0.187; 0.151 / 0.119 when fit once on 1 January); the old-side scores 0.137 / 0.160 / 0.190 and option C's 0.182 /
+0.174 (the builder's log shows them, not refit); the GLM 0.159 / 0.171 / 0.200 and the Tweedie-deviance ordering;
+the scaling constant 1.077841; CASdatasets' DirectComp mismatch (1,064); the 0.8% anniversary split of claim 5.
+
+**Refuted and untested, ranked (validity first, Must first)**
+
+1. P4 / LEAK-41 (Must): the source selected every row by its realized length, the newest window most of all. (New.)
+   Test: period lengths stop at 30 days with no taper (0 rows at 29 days, 909 at 30, about 700 a day at 32-40). A
+   vehicle's consecutive periods leave 1,558 gaps of 1 to 29 days, flat at about 45 a day. Both fit a filter that
+   removed the periods shorter than 30 days. Extrapolating the 30-39 day density down to day 1 (rough, and it assumes
+   a flat density), the filter removed about 2,800 periods from the Sep-Dec window (about 35% of its would-be periods,
+   about 11% of its vehicle-years), about 1,800 from May-Aug (22%, 3%) and about 4,200 from Jan-Apr (18%, 1.6%).
+   Every period that would have started after 2 December is gone.
+   What it changes: LEAK-41 bars training or scoring "on rows selected by the realized weight". The definition
+   honours that for its own choices: no row is admitted by its early end. The data was selected before we got it,
+   though, and the selection is uneven across windows: the newest window's test rows are the periods that survived 30
+   days from a late start. The claims of the removed periods are also missing, so no one can say how the selection
+   moves the rate. The anomaly note ("the task covers periods of a month or more") states it but does not cite
+   LEAK-41, does not size it per window, and is not mentioned in issue 6, where the newest window's weight is
+   debated.
+   Mildest remedy: no fix in the data is possible. Add one sentence to the anomaly note: the source's selection by the
+   realized length (LEAK-41, a property of the release), with the gap and histogram evidence and the per-window
+   estimate. Add one line to issue 6: the newest window is the noisiest and also the most selected, which counts for
+   options B and C. The "fit direct" stays.
+
+2. P4 / SPLIT-14 (Must): three windows on one training side count as one evaluation. Confirmed, already open (issue
+   6). The three splits have identical training indices (56,178 rows). Nothing new; the split auditor and the judge
+   have it.
+
+3. EV-1 / LEAK-41 (Must on the reporting): probe 22 had no power. probe22.txt and probe22_l2.txt are the same file,
+   both from the L2 arm. In that arm the realized weight, the leak itself, gains -0.0014 (SD 0.052), so "no feature
+   above noise" could not have come out otherwise. LEAK-41 asks for the L2 arm and the weighted actuarial arm and a
+   decision on the worse. I ran the Tweedie arm (3 seeds): the weight as a feature +0.0118 (SD 0.0067); weight-mediated
+   gains of the time features +0.006 (SD 0.014), fleet_management -0.003 (0.012), distribution_channel +0.003 (0.008),
+   client_activity +0.002 (0.010). The conclusion stands; the evidence the notes cite does not carry it.
+   Mildest remedy: cite the Tweedie arm's numbers in the probe 22 sentence (notes and REVIEW 5), and re-run probe 22
+   with the actuarial objective, so the two output files differ.
+
+4. Quality / wording: two effects are stated with more certainty than the seeds give. "A fit that ignores the weight
+   loses 0.010 (SD 0.009, 4 of 5 seeds)": my 3 seeds give +0.005 (2 of 3). "The time features add 0.007 (SD 0.009)":
+   mine give +0.003. Both are within noise. The notes' "little" is right, but these numbers should not be used as a
+   finding that the weight or the time features matter on this metric. Remedy: none needed beyond "within seed noise"
+   where they are quoted.
+
+5. Process: CHANGES.md says option C scores "0.182 overall, no more optimistic than the valid window". 0.182 is above
+   0.171; it is the 2013 rows (0.174) that are no more optimistic. REVIEW.md issue 6 states it correctly. Remedy:
+   reword CHANGES.md if it is reused.
+
+6. Untested, low stakes: the pro-rata premium that MET-15's weighting rests on ("AMRAE ... not checked"). French fleet
+   practice regularises the premium pro rata temporis on the real fleet, but AXA Belgium's terms keep some fleet
+   premiums non-régularisable (flotte classique). The general claim holds, so the weighting stands; the notes could
+   cite a checked source in place of "not checked".
+
+**Sources consulted on the web:**
+- Rules PDF (Wayback): http://web.archive.org/web/20210422004748/https://freakonometrics.hypotheses.org/files/2016/08/pricing-game-2016-FR.pdf
+- https://www.r-bloggers.com/pricing-game/ (search result; no results or scoring published)
+- https://www.echangesassurances.org/assurance-pro/protection-biens-locaux/assurance-flotte-automobile-entreprise/
+- https://axa.be/axa-documents/ibp/000039-4186051-20190601.pdf
+- https://www.amrae.fr/flottes-automobiles-lauto-assurance-opportunite-ou-risque-pour-votre-entreprise
 
 </details>
 
 <details><summary>Column audit</summary>
 
-**Column audit (column-auditor, 2026-11-01): pricing_game_2016_french_fleet**
+**Column audit: pricing_game_2016_french_fleet (exposure re-review, 2026-11-06, full tier)**
 
-```text
-Verdict: ship after a curator call on `exposure` (issue 1); the other columns are fine.
-Validity: LEAK-10 triggered by `exposure`. It is the realised length, and the early end moves with the outcome
-  (adjusted rate ratio 1.22). It adds no ranking out of sample beyond the time at risk, but the time at risk that
-  cannot be known at the start is worth 0.04-0.05 AUC. USE-3: the prediction-point bullet and task_summary.known
-  say the length is known at the start.
-Value: not re-judged (TP-4 would need a re-run if exposure changes).
-Quality: CLEAN rules hold. Nits: n_vehicles, the N/P codes.
-For the curator: issue 1, a consistency call with frempl_french_motor_personal_line (same run, same mechanism, fixed there).
-```
+Verdict: ship. No feature is set or cut after the prediction point; `exposure` is the weight scoring column and the
+sample weight only (feature_columns() has 16 features, `exposure` not among them). One new P4 question under LEAK-41's
+last clause (the source's 30-day floor selects rows by their realized length), and one open P7 typing gap (four band
+columns are unordered categories).
 
-Frame audited: `dataset_io.from_definition` (17 columns, 87,228 rows). Codebook: the rules PDF, Sec. 1 (its text extract),
-and CASdatasets' `pricingame.Rd`. Scripts and numbers: in the run folder.
+Frame: the definition of D11 (branch zi-datasets), 87,228 rows, 18 columns (16 features, weight, target); raw files train_contrats.csv / train_sinistres.csv from the warehouse. Codebook: the rules PDF Sec. 1 (as quoted in RENAME and REVIEW.md). Dtype probe: 8 of 15 flagged.
+
+Prediction point (first curation_comments bullet): the start of a vehicle's period of cover, priced with the year's
+tariff fit on the closed years.
 
 **Column table**
 
-| column | meaning (codebook) | known at prediction? | dtype and cleaning | verdict | rule |
+| Column | Meaning | Known at prediction? | Dtype and cleaning | Verdict | Rule |
 |---|---|---|---|---|---|
-| `period_start` | "Date de début de situation" | yes: it is the prediction point | datetime; also the time index | fine. With `exposure` it gives the end date back, so dropping `period_end` does not hide the end | CLEAN-14, CLEAN-23 |
-| `contract_age_class` | "Classe age du contrat" | yes. Steps up at the anniversary (19.3% of next-day cuts change it) | category, 6 French labels ("<= 1 ans" ... "> 5 ans") | fine | CLEAN-14 |
-| `new_company` | "Indicateur de création entreprise (à 2 si création)" | yes. Constant per contract across all years (0.000 vary) | category No/Yes from 1/2 | fine | CLEAN-12 |
-| `fleet_management` | "Mode de gestion de la flotte" (N/P, meaning not stated) | yes. Varies in 0.5% of contract-years | category N/P | fine. P fleets run to 31 Dec in 66.5% of periods against 28.7% for N, so the column ties into how lengths are realised. Labels unknown | CLEAN-14 |
-| `zone` | "Zone géographique", anonymised 1-6 | yes | category | fine | CLEAN-14 |
-| `fleet_size_class` | "Taille de la flotte" (Segment 1/2) | yes. Varies in 0.5% of contract-years | category | fine | CLEAN-14 |
-| `payment_frequency` | "Fractionnement de paiement de la prime" | yes. Never changes within a contract across years | category annual/semi-annual/quarterly from A/S/T | fine | CLEAN-12 |
-| `exposure` | "Véhicules année (exposition au risque)" | **no for 58.2% of periods**: they end before 31 Dec, and that end is unknown at the start | float, vehicle-years | **leak** (issue 1) | LEAK-10, LEAK-7 |
-| `vehicle_age_class` | "Classe d'âge du véhicule" | yes. Only moves from 0-5 to >5 | category, 2 levels | fine | CLEAN-14 |
-| `deductible_class` | "Classe de franchise de la garantie DTA" | yes. Changes at a cut (12.9% of contract-years), and the new value is history for the next period | category, 6 ordered labels | fine | CLEAN-14 |
-| `n_vehicles` | "Nombre de véhicule" | yes | int. 1 except 2 rows (both 2012, train) | fine (nit, issue 4) | CLEAN-5 (does not strictly apply) |
-| `insured_value_class` | "Valeur assurée" | yes | category; "ND" made missing (87,093 rows) | fine. Non-ND rows sit in formulas 3, 4 and 5, so ND does not mark one formula ("not applicable" for one product); missing is right | CLEAN-10 |
-| `formula` | "Formule souscrite", anonymised 2-5 | yes. Varies in 6.6% of contract-years (at cuts) | category | fine | CLEAN-14 |
-| `client_activity` | "Activité du client (niveau contrat)", 1-8 | yes | category | fine | CLEAN-14 |
-| `distribution_channel` | "Type d'apporteur (agents ou courtiers ou autres)", 1-3 | yes. Constant per contract | category; code-to-label map not published | fine | CLEAN-14 |
-| `power_value_class` | "Combiné puissance valeur du véhicule", 1-11 | yes. Constant per vehicle (99.9%) | category | fine. The codes are not in claim order (claims per vehicle-year 0.068, 0.065, 0.128 ... 0.173, 0.131, 0.062 for codes 1, 2, 3 ... 9, 10, 11), so typing it categorical is right | CLEAN-14 |
-| `claim` (target) | "nombre de sinistre" > 0 | outcome | category Yes/No; IDA claims included (curator's call) | fine. The count equals the joined claims (asserted) | USE-5 |
-| dropped `contract_id` | "Numéro d'affaire" | yes, but numbered in subscription order | dropped | fine. An id that encodes when the contract was opened | CLEAN-3, LEAK-10 |
-| dropped `vehicle_id` | "Immatriculation", anonymised | yes | dropped | fine. Spearman 0.9994 with `contract_id`, so the same order | CLEAN-3 |
-| dropped `year`, `vehicle_category` | year of the start; one value | - | dropped | fine (copy; constant) | CLEAN-5 |
-| dropped `period_end` | "Date de fin de situation" | no for early ends | dropped | fine as a copy, but the end it carries is still in `exposure` (issue 1) | LEAK-10 |
-| unused claims-file columns (`CHARGE_SINISTRE`, `IDA`, `Responsabilite_IDA`, `ANNEE_CLOTURE`) | per claim | no (post-outcome) | used only for the join and the Decisions | fine | LEAK-10 |
+| period_start | "Date de début de situation" | yes, it is the prediction point | datetime; temporal key | fine | CLEAN-14 |
+| contract_age_class | "Classe age du contrat", bands of contract age | yes: a period value, steps up with time (of 6,029 contracts in 2011 and 2013, every one moves up or stays at "> 5 ans") | category, UNORDERED, lexical level order ['1 - 2 ans', ..., '<= 1 ans', '> 5 ans']; probe: ordinal_like, open_end | cleaning problem: bands with an open end are an ordered category, lowest first | CLEAN-14 (Should) |
+| new_company | "Indicateur de création entreprise (à 2 si création)" | yes; constant per contract (0 contracts vary): a subscription attribute | category No/Yes from 1/2 | fine | CLEAN-12 |
+| fleet_management | "Mode de gestion de la flotte", N/P, meaning not stated | yes: a contract term recorded per period (242 changes between consecutive periods of a vehicle, 28 of them next-day, so not an extract snapshot) | category N/P | fine; probe 22's top feature (49% of gain), judged below | USE-6, LEAK-41 |
+| zone | "Zone géographique", anonymised 1-6 | yes | category of codes | fine (probe numeric_levels: a code with no words stays a category) | CLEAN-12, CLEAN-14 |
+| fleet_size_class | "Taille de la flotte", anonymised 1/2 | yes | category of codes | fine; which code is the larger fleet is not documented, two levels so no order question in practice | CLEAN-14 |
+| payment_frequency | "Fractionnement de paiement de la prime" | yes; constant per contract | category annual / semi-annual / quarterly from A/S/T | fine; optional: an order by instalments exists (1, 2, 4 a year) | CLEAN-12 (nit) |
+| exposure | "Véhicules année (exposition au risque)", realized vehicle-years, 0.08 to 1.00 | NO for 58.2% of periods (end before 31 Dec) | float; weight scoring column + sample_weight, never a feature; values = (end-start+1)/365 (366 in 2012) x n_vehicles rounded to 0.01 (asserted); never above exposure_to_year_end (0 rows) | fine as the weight (MET-14, MET-15, LEAK-41); nit on the rounding below | LEAK-41 |
+| vehicle_age_class | "Classe d'âge du véhicule", '<= 5 ans' / '> 5 ans' | yes: a period value (1.9% of vehicles move up) | category, unordered; probe: open_end | cleaning nit: two-level band, ordered by the rule; no effect on models | CLEAN-14 (Should) |
+| deductible_class | "Classe de franchise de la garantie DTA", '1. 0' ... '6. > 600' | yes, changes only at a cut | category, UNORDERED (cat.ordered False; the lexical order happens to match the bands). The 2026-11-01 column audit's "6 ordered labels" is wrong for the shipped dtype | cleaning problem: bands of an amount, open end | CLEAN-14 (Should) |
+| n_vehicles | "Nombre de véhicule" | yes | int; 1 on 87,226 rows, 2 on 2 | fine (settled D4) | CLEAN-5 |
+| insured_value_class | "Valeur assurée", bands '<= 7.6K' ... '137K - 380K' | yes; non-ND rows spread over 2011/2012/2013 (40/44/51), so ND is no time artefact | category, UNORDERED; "ND" made missing (87,093) | cleaning problem (tiny: 135 rows): bands of a value, ordered category | CLEAN-10 ok; CLEAN-14 (Should) |
+| formula | "Formule souscrite", anonymised 2-5 | yes (changes at cuts) | category of codes | fine | CLEAN-14 |
+| client_activity | "Activité du client (niveau contrat)", anonymised 1-8 | yes | category of codes | fine | CLEAN-14 |
+| distribution_channel | "Type d'apporteur (agents ou courtiers ou autres)", 1-3, map not published | yes; constant per contract | category of codes | fine | CLEAN-14 |
+| power_value_class | "Combiné puissance valeur du véhicule", 1-11 | yes; constant per vehicle (99.9%) | category; a combined power x value grid, no documented order | fine (a grid of two dimensions is no single line; keep unordered with the note it has) | CLEAN-14 |
+| exposure_to_year_end | our build: (31 Dec - start + 1)/365 (366 in 2012) x n_vehicles, rounded 0.01; 0.08 to 1.82 | yes, a function of the start and the vehicle count | float | fine; probe 22's second feature (38%), judged below | LEAK-7, LEAK-37, CLEAN-19 |
+| claim_charge_per_vehicle_year (target) | period's summed CHARGE_SINISTRE, net negatives to 0, / exposure | outcome | float, identity scale, 0 on 95.7% | fine (MET-14; CLEAN-16 as amended: Gini, scale stated) | MET-14, CLEAN-16 |
+| dropped: contract_id, vehicle_id, year, period_end, vehicle_category, claim_count, claim_total and the join columns, row index | ids (subscription order), copy of start's year, realized end, constant, parts of the target | - | dropped | fine (settled) | CLEAN-3, CLEAN-5, LEAK-10, LEAK-41 |
 
-**Problems, ranked**
+**Probe 22: the features that predict the weight, judged by timing (LEAK-41)**
 
-**1. `exposure` is the realised length, and the early end goes with the claims (P4, LEAK-10 Must; a weak leak beyond the time at risk; a curator call).**
+Weight from the features: R^2 0.378 (SD 0.15), Spearman 0.589. The weight as a feature gains -0.001 (SD 0.052) on the
+probe's L2 fit; 1/weight alone 0.029 against the honest 0.113. No feature's weight-mediated gain is above noise.
+- fleet_management (49%): N periods end early in 71.3% of cases against 33.5% for P (N: 1.13 periods per vehicle-year,
+  P: 1.03 in each year). It is a contract term known at the start and recorded per period (it changes between
+  consecutive periods 242 times), not a value written at the realized end. Risk selection / administration mode:
+  stays (USE-6; LEAK-41's "a feature known at the prediction point that predicts the weight through risk selection
+  stays"). Weight-mediated -0.013 (SD 0.053).
+- exposure_to_year_end (38%): a deterministic function of the start and n_vehicles; the start-known part of the
+  weight that LEAK-41 asks to ship as its own column. Stays (LEAK-7, LEAK-37). Weight-mediated -0.017 (SD 0.055).
+- fleet_size_class, distribution_channel, client_activity (2% each): contract classes, constant or changing only at
+  cuts; known at the start. Stay. Weight-mediated +0.013, +0.030, +0.046, each under 1 SD.
+No column encodes the realized length: exposure_to_year_end never falls below exposure; no group sum of exposures;
+the rounding precision of exposure_to_year_end is uniform (0.01 on every row) and does not mark the cut.
 
-Evidence:
-- 58.2% of the periods end before 31 December. An end like that cannot be foreseen at the start:
-  - 76.5% of the next-day cuts change no released column;
-  - 59.8% of the early ends are shared by another vehicle of the contract on the same day (contract-wide events);
-  - the rest are exits, or continuations missing from the file (issue 3).
-- The early end moves with the outcome once the covariates known at the start are accounted for. I fit a Poisson GLM of
-  the claim count with offset log(exposure), on every class, the start month and a 1-January flag. Early-ending
-  periods have a rate ratio of:
-  - 1.22 [1.12, 1.33] in 2011-2012 (p = 2e-6), and 1.18 [1.05, 1.31] in 2013;
-  - 1.26 to 1.30 when the vehicle ends alone, and 1.08 to 1.18 when the end is contract-wide.
-- Among the periods that start on 1 January: 0.124 claims per vehicle-year when they end early, against 0.103 for full
-  years. This is the textbook mechanism: a total loss, a vehicle sold after an accident, or a contract cancelled after
-  claims ends the period.
-- The traced part adds no ranking out of sample, on the 3 shipped windows:
-  - Poisson offset model 0.669 without and 0.668 with the early-end flag;
-  - LightGBM (the builder's parameters, 3 seeds) 0.671 shipped, 0.670 with an explicit exit flag.
-- The time at risk itself, which nobody knows at the start for those 58%, is worth 0.04-0.05 AUC. Giving the early ends
-  the length known at the start (to 31 December) gives:
-  - LightGBM 0.671 -> 0.630 when only the periods without any later period are changed, and 0.622 when every early end
-    is changed;
-  - logistic 0.661 -> 0.630 and 0.626;
-  - the length alone 0.596/0.655/0.659 -> 0.53-0.58.
-- What the definition says against this:
-  - The note says "the end carries no signal beyond the length", and fit_reason says "measured to add no signal". That
-    holds for ROC AUC only. The frequency effect (+22%) is there.
-  - Its test "0.708 with or without the flag" cannot see the effect, because a model that has `period_start` and
-    `exposure` already computes the flag.
-  - The Decision table text ("about the claim rate ... a little higher among the shortest") understates it: in the
-    closed years, periods that end early with no later period have 0.137 claims per vehicle-year against 0.111 for
-    year-end periods.
-- Consistency check (principles, case 2):
-  - `frempl_french_motor_personal_line`, in this same run, met the same mechanism. Its dates locate the early ends row by
-    row, and it replaced their `Exposure` by the length known at the start under LEAK-10/LEAK-7. That was an AI change
-    after its panel and is still pending in its REVIEW.md.
-  - `spanish_motor_insurance_coverage_level_2022_2024` gave the cancelled portfolio years a full year.
-  - `fremtpl2` and `australian_vehicle_insurance_2004_2005` kept the realised value because no dates locate the ends.
-  - This dataset has the dates, so it sits with frempl, unless a fact sets it apart.
+**Problems ranked (principles.md)**
 
-Mildest remedies, for the curator:
-- (a) Fix the definition (LEAK-7). Give every period that ends before 31 December its length to 31 December,
-  (31 Dec - start + 1) / 365. Use every early end rather than frempl's "no continuation", because here that split does
-  not tell exits from cuts (issue 3). `exposure` then follows from `period_start`, so it can be dropped. Cost 0.671 ->
-  0.622, and TP-4 needs a re-run.
-- (b) Keep it as a recorded exception. Name the fact that sets it apart from frempl: the game's own 2014 pricing file
-  gives realised dates and lengths, and the outcome-linked part adds no AUC here. Rewrite the note with the rate ratio
-  instead of "no signal". Decide frempl the same way, or say why not.
+1. P4, LEAK-41 (Must), last clause, NEW under today's rule: the source's rows are selected by their realized length.
+   Question for the curator.
+   Evidence: no period is shorter than 30 days in either file, with a sharp edge, not a taper: early-ended periods
+   starting Jan-Sep number 717 at 30 days, 1,434 at 31, 565 at 32, 471 a day on average over 30-59 days against 288 over
+   60-89 and 259 over 90-119, so the density rises toward the cut. Extrapolating at least 470 a day below 30 days, the
+   organisers left out roughly 13,000 or more periods (some 15% of the rows), but at most about 0.04 vehicle-years each,
+   about 500-600 vehicle-years in all, near 1.5% of the 38,538. Short periods claim more per vehicle-year (early ends of
+   30-44 days 0.143, 45-59 days 0.160, against 0.124 at 180+ days), so the left-out ones likely do too. The same floor
+   explains "no period starts after 2 December": a period that starts 2 Nov to 2 Dec is in the file only if it ran 30
+   days (4,251 such periods in 2011-2013). LEAK-41: "No model is trained or scored on rows selected by the realized
+   weight." Here the selection is the organisers', the same in train and test (and in the game's 2014 file), and
+   cannot be undone: the cut periods and their claims are not published. The curation notes it as an "anomaly"
+   (bullet "no period is shorter than 30 days"), which today's rule makes a LEAK-41 matter, not a provenance remark.
+   Strength: weak by weight (about 1.5% of vehicle-years, so the weighted Gini and the weighted fit barely see it),
+   large by rows; no train/test asymmetry.
+   Mildest remedy: keep, and rewrite the anomaly bullet as a LEAK-41 note (the source's selection by realized length,
+   not removable, the estimate above, the population is "periods that last a month or more", which the insurer cannot
+   know at the start); the curator records it as an exception to LEAK-41's last clause or accepts it as the source's
+   population (USE-7). No definition change can fix it. The same check applies to frempl and the other family members
+   with a minimum length.
 
-My reading: (a) follows LEAK-10 as written and the run's precedent. (b) is defensible only as an explicit exception.
+2. P7, CLEAN-14 (Should): four band columns ship as unordered categories.
+   Evidence: dtype probe flags contract_age_class (ordinal_like, open_end), insured_value_class (ordinal_like,
+   open_end), vehicle_age_class (open_end); deductible_class is the same kind (bands of an amount with "> 600") and
+   ships cat.ordered False. CLEAN-14 (amended 2026-10-30, "going forward for all relevant datasets"; open ends
+   2026-11-01): bands of a quantity, the cut end a level of its own, are an ordered category lowest first. Raised by
+   the blind reviewer on 2026-11-01 (REVIEW.md, "Unordered age classes") and not acted on; the 2026-11-01 column table
+   called deductible_class ordered, which the shipped dtype is not.
+   Remedy: FeatureTypes(categorical=[the rest], ordinal={
+     "contract_age_class": ["<= 1 ans", "1 - 2 ans", "2 - 3 ans", "3 - 4 ans", "4 - 5 ans", "> 5 ans"],
+     "vehicle_age_class": ["<= 5 ans", "> 5 ans"],
+     "deductible_class": ["1. 0", "2. 1 - 200", "3. 201 - 300", "4. 301 - 400", "5. 401 - 600", "6. > 600"],
+     "insured_value_class": ["<= 7.6K", "7.6K - 38K", "38K - 76K", "76K - 137K", "137K - 380K"]},
+   datetime=["period_start"]), and the Dtypes bullet updated. Unknowns are already missing (ND). Optional:
+   payment_frequency ordered annual < semi-annual < quarterly. Cheap and safe; a rebuild is the curator's call.
 
-**2. The prediction point says the length is known at the start (P3/P4, USE-3 Must; a wording fix).** The first
-curation_comments bullet ("Known then: ... the period's start and its length") and `task_summary.known` ("the period's
-start date and its length") contradict fit_reason and the potential-leak bullet ("a period cut short is known only at
-its end"). Remedy: under (a), say "the length to the year's end". Under (b), say "the realised length (a potential leak
-kept on purpose)" in both places.
+3. P7, nit: the weight is the source's value rounded to 0.01. Relative error up to 5.8% on 30-day periods, above 2% on
+   16.1% of periods. The exact vehicle-years from the dates are already computed in _clean (`realized` before
+   .round(2)). Effect on the task is nil in practice: weight x target equals the charge either way, so the weighted
+   Gini's numerator and the weighted fit's loss terms move only by the weight sums. Keep with the source's value (it
+   is the documented column); no action needed, or note it in the Exposure bullet.
 
-**3. The file is probably a 120,000-row sample, so "no later period" is not an exit (P5 facts that bear on the column
-claims; circumstantial, EV-6; a question for the curator).**
-- The row names of `train_contrats.csv` and `test_contrats.csv` together are exactly 1 to 120,000, a round total for four
-  years of a portfolio.
-- 43.7% of the contract-years hold a single vehicle in the file.
-- Of the vehicles that run to 31 December in a contract that is present the next year, only 25.6% (2011) and 25.2% (2012)
-  appear in that next year.
-- 868 vehicles skip a whole year inside their contract (gaps of 366-367 days).
+4. P3/P7 wording: "a cut nobody scheduled". 25.9% of the early ends fall on a month's last day and 14.5% on the last
+   day of March, June or September; lengths of 31 and 59-60 days spike (1,434 and 758/545 against about 450 a day
+   around them), and 53.7% of periods start on the 1st. Some cuts follow monthly or quarterly administration. None of
+   this is known at the start for a given vehicle, so the weight treatment stands; the phrase overstates. Remedy: "at a
+   cut not known at the start, a quarter of them on a month's end".
 
-So these do not show what they say, and "A contract holds up to 12 vehicles at once" counts the file, not the fleet:
-- the comment's "42.8% ... end before 31 December with no later period of the vehicle";
-- the Decision table's "earlier, the last" column.
+**Not problems (checked):**
 
-Remedy: a note. The comment should give 58.2% (every early end) as the share with an unforeseen end.
-
-**4. Nits (P7; no action needed).**
-- `n_vehicles`:
-  - `exposure` is in vehicle-years. The two rows with 2 vehicles have doubled lengths (61 days -> 0.33, 33 days ->
-    0.18), so they are two more exceptions to the exposure formula of the comment.
-  - The column is 1 in every test window.
-  - Keeping it is harmless; dropping it is also fine.
-- `fleet_management` N/P: the meaning is not documented. The pattern of lengths fits N = individually listed
-  ("nominative") vehicles, but that is unverified, so keep the codes.
-- `contract_age_class` keeps French labels. This is consistent with the comment, and optional to translate.
+- Every feature is known at the period's start; the rating classes are period values, not extract snapshots
+  (contract_age_class steps up across years; vehicle_age_class moves for 1.9% of vehicles; fleet_management changes
+  between consecutive periods).
+- No missingness caused by the outcome: insured_value_class is the only column with missing values (ND), spread
+  evenly over the years, 5 claims among its 135 known rows.
+- The target is not given away by any feature (leak probe: every feature alone at R^2 0.001 or below).
+- Issue 6 (shared training side) is the split auditor's; nothing in the columns bears on it.
 
 </details>
 
 <details><summary>Split audit</summary>
 
-**Split audit (split-auditor, 2026-11-01): pricing_game_2016_french_fleet**
+**Split audit: pricing_game_2016_french_fleet (exposure re-review, 2026-11-06, full tier)**
 
-**Verdict: right with notes.** The regime fits the use case: a temporal split over known fleets, trained on the closed years 2011-2012 and tested on 2013. It mirrors the game's own design (2011-2013 used to price 2014), and the contracts recur in about the same share as in the game's 2014 pricing file. No training row has an unknown label, there are no copies across the split, and the training history shows no break. Neither an IID split nor a grouped split would score higher than the valid test year. Four points remain, none a defect of the split:
-- the curator should confirm that three sub-windows of one test year, all on one train side, count as SPLIT-14's three windows. This is the first such case, and the batch's one-window siblings went to `ForcedGroupedFromTemporal`;
-- the departures from SPLIT-11 and SPLIT-10 need recording as exceptions;
-- the windows are cohorts of different period lengths, so the per-window scores sit well below a pooled score for the year;
-- one rule citation is wrong (SPLIT-17 for SPLIT-15).
+Scope: REVIEW.md issue 6 (three windows on one training side). Read: dataset.py, REVIEW.md, CHANGES.md, the run's
+measure_shipped.py and out_shipped/alternatives.csv, splits.md (SPLIT-8/9/10/11/14 and Cases), leak_checks.md
+(LEAK-12, LEAK-41), principles.md. Own run: audit.py -> paired.csv, in the run folder.
 
-```text
-Verdict: right with notes (no re-split).
-Validity: SPLIT-1, SPLIT-3, USE-10 hold (known fleets, temporal; 2013 mirrors the game's 2014 file); SPLIT-9 holds
-  (every training period ends by 31 Dec 2012); SPLIT-14 met in letter (3 windows, 64.4% train), a reading for the
-  curator (one train side; precedents with one annual window went to SPLIT-8); SPLIT-11 departed from (annual refit,
-  SPLIT-12/SPLIT-19), exception to record; SPLIT-10 departed from (no gap), exception to record, serves SPLIT-14,
-  measured bound <= 0.003; SPLIT-13 part of the task; SPLIT-20 holds (two full years, no break); SPLIT-29/30 no hit.
-Value: windows hold 123 / 257 / 1,163 positives (TP-9 fine); the newest window is the noisiest (SE about 0.027).
-Quality: splits_comment cites SPLIT-17 where SPLIT-15 is the rule departed from; window-composition note missing.
-For the curator: issue 1 (SPLIT-14 reading), issue 2 (record the SPLIT-11 and SPLIT-10 exceptions).
-```
 
-**What I checked, with numbers.** Data loaded through `dataset_io.from_definition` (rebuilt from the raw files), plus my own rebuild in raw order for the contract ids. The shipped splits were reproduced exactly. All models are my own untuned ones, with thread caps:
-- LightGBM: regularised, 3 seeds.
-- Logistic regression: one-hot features plus log exposure.
+**Verdict:** the split as implemented (option A) is WRONG under the rules as written: it breaks SPLIT-14 (Must), which
+has no exceptions. The rules support option C, the forced split grouped by contract (SPLIT-8). A or B are open only
+as an amendment of SPLIT-14, a deliberate change the curator (and Andrej, who wrote the clause on this very dataset)
+would have to make.
 
-The scripts and outputs are in the run folder.
+1. Why A fails (P4, SPLIT-14 Must)
+   - SPLIT-14 as amended 2026-11-02 / reframed 2026-11-05: "Each window has its own train side: windows that share
+     one train side test one model on several test periods, which is one evaluation, not several ... each window
+     trains on what is known before it starts." The shipped splits: all three windows train on the same 56,178 rows
+     (64.4%); checked on the container (train share 0.644 for windows 0, 1, 2). Its own Cases row was written for this
+     dataset in exactly this configuration ("three four-month windows of 2013 that all trained on 2011-2012 do not
+     count as three windows").
+   - So A is one window counted three times: the newest window (103 positive charges, bootstrap SE 0.068) gets a third
+     of the weight; the mean of the windows (0.154) is one model on three start cohorts, below the pooled 2013 score
+     of the same model (0.171).
+   - Does LEAK-41 (Part 3, outranks Part 4) override SPLIT-14 here? No. Rank settles a conflict only where meeting one
+     rule means breaking the other (principles.md, How to decide 4: independent failures are not conflicts). SPLIT-8
+     (Must, narrows SPLIT-14) gives a regime that meets both LEAK-41 and SPLIT-14: ship forced. The REVIEW footnote
+     [^forced] says the same; I agree.
+   - "A Must has no exceptions: only a higher-ranked Must overrides it, and anything else is an amendment"
+     (principles.md). A therefore needs SPLIT-14 amended; it cannot ride on an exception or on D11's wording.
 
-- **Regime (SPLIT-1, SPLIT-3, USE-10).**
-  - The use case is a yearly tariff over the insurer's own portfolio, so the entity is mostly known and the stream runs over time. Temporal is right.
-  - Of the 2013 rows, 79.5% have their contract in 2011-2012 (by window 76.4 / 77.1 / 81.1%). By vehicle id the shares are 25.2% (22.6 / 24.9 / 26.0%).
-  - The game's own pricing file (`test_contrats.csv`, 32,772 periods of 2014) shows the same shape: 82.0% of its rows have their contract in 2011-2013, 29.6% their vehicle, and 70.4% their contract in 2013 alone (2013 against 2012: 70.1%).
-  - The test year therefore stands for the population the game priced. The splits_comment's figures (76-81% and 23-26%) are correct.
-  - The 20% new contracts are in the test in their natural share, as in a real tariff year.
-- **Time column and prediction point.**
-  - `period_start` is the start of the situation period, and its year equals `ANNEE` on every row (asserted in `_clean`).
-  - The newest start is 2 December 2013, so the first window spans 93 days. Accepting `meta_time_horizon_mismatch` is right: the horizon is the tariff year, and the windows reach 8-12 months past the cutoff.
-- **Train side and SPLIT-9.**
-  - The train side holds 56,178 rows (64.4%), with starts from 1 January 2011 to 2 December 2012.
-  - Every training period ends by 31 December 2012 (0 later), because rows are cut at the year's end. No training row has its label after the window start, apart from claims reported late (see issue 2).
-- **Windows.**
+2. Why D fails (P4, LEAK-41 Must, Part 3)
+   - LEAK-41: "No model is trained or scored on rows selected by the realized weight". The expanding sides admitted
+     the 2013 periods closed before the window, i.e. selected by their early end (realized exposure): 0.127 / 0.131
+     claims per vehicle-year against 0.115 / 0.116 for the 2013 periods left out (REVIEW issue 5). Excluded; SPLIT-11
+     (Should) cannot outrank it.
 
-  | window | rows | with a claim | share of 2013 rows | share of 2013 claims | mean / max exposure |
-  |---|---|---|---|---|---|
-  | Sep-Dec | 5,312 | 123 (2.3%) | 17.1% | 8.0% | 0.19 / 0.33 |
-  | May-Aug | 6,509 | 257 (3.9%) | 21.0% | 16.7% | 0.34 / 0.67 |
-  | Jan-Apr | 19,229 | 1,163 (6.0%) | 61.9% | 75.4% | 0.55 / 1.00 |
+3. Is SPLIT-8 really triggered (no rule-conforming three windows)? Yes; I checked the alternatives the issue does not
+   list.
+   - Windows across years: 2012 on 2011 trains on 30.4% of the rows, below SPLIT-14's floor; only 2013 on 2011-2012 is
+     valid. One valid window = "too few periods for three windows" in SPLIT-8.
+   - Admitting every 2013 period started before a window, whatever its end (no selection, so LEAK-41 holds): its
+     final label holds claims after the window's start, including the test months themselves, so it is not "what is
+     known before it starts" (SPLIT-14's own last sentence, and SPLIT-10); claims carry no dates, so it cannot be cut
+     at the window start; and a fleet's own later labels would reach its test periods (SPLIT-9, Must; 79% of 2013 test
+     rows have their contract in training). Not a valid route; I did not fit it.
+   - So no training rule meets LEAK-41, SPLIT-9 and SPLIT-14 together on this release; the REVIEW's claim holds.
 
-  12,028 periods start on 1 January 2013. Claims per vehicle-year are flat across the windows (0.129 / 0.122 / 0.117).
-- **Training history (SPLIT-20).**
-  - The train side covers two full years, so every season is in it.
-  - Claims per vehicle-year by quarter range from 0.108 to 0.137 over 2011-2013; by year they are 0.117, 0.119 and 0.119.
-  - The mixes of zone, fleet management and fleet size are stable. There is a slow drift towards formula 3 (74% to 82%) and towards higher deductibles. No break.
-  - The test windows cover all of 2013, so no season is left out.
-- **Hidden groups and copies.**
-  - The hidden-group probe makes no hit. `exposure` is "seen" 100%, as a feature should be (SPLIT-4). The composite key is seen 0.0% and near copies 2.7%.
-  - With `period_start` a feature, no test row copies a training row. The 9,373 repeated rows (vehicles of one fleet in one period) fall within a window, never across the split.
-- **Alternative splits (the decisive comparison; not used to choose windows, SPLIT-21).** ROC AUC, untuned:
+4. Is C a sound forced split? Yes, with the SPLIT-8 checks still to run.
+   - True group id: Num_contrat, the source's contract key (not a cluster or hash). 18,037 contracts; vehicles nest in
+     contracts (1 of 68,485 vehicles appears under two contracts); largest contract 81 rows (0.09% of rows, 0.05% of
+     vehicle-years); contracts present in 1 / 2 / 3 years: 7,280 / 6,064 / 4,693, so entities recur across the
+     stacked years, which is SPLIT-8's condition for ForcedGroupedFromTemporal rather than ForcedIIDFromTemporal.
+   - Grouping by contract (not by vehicle) keeps a fleet's later labels away from its earlier rows (the SPLIT-9
+     own-entity link) and keeps the 13.5% within-fleet feature copies on one side.
+   - LEAK-41 under C: every period of 2011-2013 is admitted, none by its realized end. Holds.
+   - Cost against the valid window (SPLIT-8 asks for it), re-run PAIRED, which the issue's comparison was not
+     (0.174 on each fold's 2013 rows against 0.171 on all of 2013 compares different test sets). Regularised Tweedie
+     LightGBM fitted with the weight (the run's REG params), declared scorer, 3 repeats x 3 folds grouped by contract;
+     on each fold's 2013 test rows (10,022-10,658):
+     ```text
+       valid window model (trained on all 2011-2012):            0.169 (SD 0.044 over 9 folds)
+       forced model (the fold's training side, all years):       0.174 (SD 0.029)   difference +0.005 (SD 0.022)
+       valid window without the test fleets' history (new fleet): -0.004 (SD 0.013) against the valid window
+       forced model on its whole test fold (all years):          0.182, as reported
+     ```
+     The forced split is no more optimistic on 2013 than the valid window beyond noise (+0.005, SE about 0.007); the
+     cold start of a new fleet costs about 0.004, consistent with the record's finding that a fleet's previous-year
+     history adds nothing (0.667 vs 0.668 ROC AUC). The higher overall 0.182 against A's 0.154 is mostly pooling: a
+     fold ranks all start cohorts together, as the pooled 2013 window does (0.171).
+   - Still required by SPLIT-8 before C ships: the leak test across the split and the leak probes on the grouped
+     split (no probes/group.txt exists for this dataset yet); the ForcedGroupedFromTemporal tag; contract_id kept as
+     the group column, never a feature; temporal removed, the SPLIT-10 exception dropped; splits_comment saying what
+     the dates would change (the tariff prices known fleets, USE-10/SPLIT-13: the cold start costs ~0.004 here).
 
-  | design | exposure alone | logistic | LightGBM |
-  |---|---|---|---|
-  | shipped: 3 windows, mean (per window) | 0.637 (0.596 / 0.655 / 0.659) | 0.672 (0.634 / 0.679 / 0.703) | 0.672 (0.636 / 0.677 / 0.703) |
-  | one window: all of 2013, train 2011-2012 | 0.682 | 0.713 | 0.712 |
-  | forced grouped by contract, 3 folds x 2 repeats, all rows | 0.680 | 0.710 / 0.710 | 0.711 / 0.708 |
-  | same, scored on the 2013 rows of each test fold | 0.682 | 0.713 / 0.712 | 0.710 / 0.709 |
-  | IID, 3 random folds | 0.680 | 0.710 | 0.711 |
-  | planning gap: tariff fit 1 Oct 2012 on the periods ended by then (45.4% of rows), shipped windows | 0.637 | 0.669 | 0.671 |
+5. B (one window)
+   - Breaks SPLIT-14's "at least 3 windows" just as A breaks its own-train-side clause: an amendment all the same. B
+     is honest about what A measures (one evaluation, 0.171), and it is C's yardstick under SPLIT-8, not a shipping
+     option under the current rules.
 
-  Read on the same 2013 rows, the IID, grouped and temporal designs agree within 0.003. Neither the fleets nor the passage of time makes a random split optimistic here. The temporal design is chosen for the use case, not for a gap (SPLIT-4). The shipped mean sits about 0.04 lower only because of how the windows are cut (issue 3).
+6. Consistency (principles.md, Consistent judgement)
+   - C follows the three siblings shipped forced grouped with one valid window (pricing_game_2017_french_mtpl,
+     frempl_french_motor_personal_line, spanish_motor_insurance_coverage_level_2022_2024) and SPLIT-8's
+     nba/open_university precedent (grouped by a recorded entity).
+   - A with the amendment the REVIEW drafts ("windows may share a training side when the data's annual cut leaves no
+     training side free of a selection by the outcome") would not reopen the siblings (none has a valid window above
+     the floor with daily dates), but it reverses the substance of Andrej's 2026-11-02 call on this dataset ("Given one
+     test period we test the same model"). That is a deliberate rule change for both curators, not a consistency fix.
 
-**Problems, ranked (principles.md)**
 
-**1. P4, SPLIT-14 (Must) and SPLIT-8 (Must): three windows on one train side. The letter is met; the curator should confirm the reading.**
-- Evidence:
-  - The three test windows hold real dated rows, strictly after a train side of 64.4%. That is what SPLIT-14 asks for.
-  - But all three share one refit. With a yearly horizon, only one annual window clears the floor: 2013 trained on 2011-2012 (64.4%). A 2012 window trained on 2011 would hold 30.4% of the rows.
-- Precedents with the same facts went the other way. In this batch, spanish_motor_insurance_coverage_level_2022_2024 had three calendar years and one valid annual window, and shipped `ForcedGroupedFromTemporal`. The same tag went to pricing_game_2017_french_mtpl and frempl_french_motor_personal_line (one year). The wisconsin split audit flagged two annual windows as a SPLIT-14 breach.
-- What sets this case apart:
-  - The periods carry daily start dates, so windows inside the test year exist and keep the train side above the floor.
-  - SPLIT-8 applies only when "the release cannot give the windows SPLIT-14 asks for". The two siblings named had no date finer than the year. frempl's windows inside the year fell below the floor under as-of training.
-- Cost of the rule-safe alternative (forced grouped by contract): LightGBM 0.708-0.711, against 0.712 for the valid test year pooled, with the same order of the families. The alternative is no more optimistic, but it mixes the training and test years. The temporal design is closer to the use case and to the game.
-- Remedy: none to the split. The curator should confirm that sub-windows of one dated test year, on the train side the refit cadence gives, count as SPLIT-14's windows, and record it as a Cases row under SPLIT-14. If not, the fallback is `ForcedGroupedFromTemporal` grouped by `contract_id` (SPLIT-8), with the cost above.
+**Ranked problems (by principles.md)**
 
-**2. P4, SPLIT-11 (Should) and SPLIT-10 (Should): two departures that need recording as exceptions.**
-- **SPLIT-11, the fixed train side.** I agree with the builder (draft issue 2).
-  - The deciding fact is the refit cadence. A tariff is fit once for the year (SPLIT-12), and the game gave the closed years and priced the next one (SPLIT-19). So a model pricing any 2013 period was fit on 2011-2012.
-  - The SPLIT-9 argument in the splits_comment is true but secondary. An as-of train side could add the 5,619 and 11,708 closed 2013 periods (2.4% and 3.2% with a claim). Those rows are selected by their early end, and their scores were not decisive (0.6695 against 0.6686; 0.6143 against 0.6259; SPLIT-21).
-  - Remedy: record "Exception to SPLIT-11: the tariff is refit once a year, so every window trains on the closed years; serves P3 and P4" in the record and the notes.
-- **SPLIT-10, no gap.** A claim is known only once it is reported, and no report date ships. The notes say the possible optimism "cannot be measured". It can be bounded:
-  - Any gap on the train side removes the 12,417 periods that run to 31 December 2012. A 1-day gap leaves 50.2% of the rows and a 1-month gap 48.7%, under the SPLIT-14 floor.
-  - Simulated reporting delays of 30 and 90 days hide 113 and 355 of the 2,707 training positives. (In the simulation a claim falls uniformly in its period and goes unreported when it falls in the last 30 or 90 days of 2012.) LightGBM's mean moves from 0.672 to 0.674 and 0.672.
-  - A planning gap (fit on 1 October 2012) gives 0.671 against 0.672.
-  - Remedy:
-    - record "Exception to SPLIT-10 (serves SPLIT-14)", as for lending_club and alfa_battle_2_0_task_2. This repeats a reason the batch has used before; principles.md asks for an amendment proposal at the third exception;
-    - replace "cannot be measured" with the simulated bound, called a simulation (no report dates), not proof.
-
-**3. P4, SPLIT-15 (Should) and SPLIT-20 (Should): the windows are cohorts of different period lengths. A note, no re-split.**
-- Evidence:
-  - Periods are cut on 31 December, so a period's start date caps its length: an exposure of 0.33 at most from September, 1.00 from January. Each window is therefore its own population. Jan-Apr holds the full-year 1-January periods (75.4% of the 2013 claims); Sep-Dec holds only short mid-year periods (8.0% of the claims, 123 positives).
-  - A per-window ROC AUC ranks within cohorts of similar length. LightGBM averages 0.672 over the windows against 0.712 on all of 2013, and the exposure-alone baseline 0.637 against 0.682.
-  - The newest window comes first, as the convention puts it, but it is the least representative and the noisiest: Hanley-McNeil SE about 0.027, against about 0.009 for Jan-Apr. The SPLIT-11 rationale ("the newest window, the most representative") does not hold on a fixed train side.
-  - The game's 2014 file has the same structure. By window, 63% / 0% / 0% of its periods start on 1 January, with mean exposure 0.55 / 0.34 / 0.19. So the windows mirror the year to be priced, and nothing here is a defect.
-- Citation: "Three windows, not the nine of the convention ... (SPLIT-17)". SPLIT-17's trigger, windows under about 50 test rows, does not apply (5,312-19,229 rows). The rule departed from is SPLIT-15. Its reason, that finer windows on one train side only cut the same rows into noisier pieces, is sound, and finer windows would also narrow each cohort further.
-- Remedy, in the splits_comment:
-  - cite SPLIT-15;
-  - say that the window scores rank within start cohorts and run below a pooled score for the year (0.672 against 0.712);
-  - say that the first split is the smallest and the noisiest.
-
-**4. Pointers for other auditors (not split defects).**
-- The vehicle key rarely survives the year boundary:
-  - only 9.7% of the periods ending 31 December 2012 continue on 1 January 2013 under the same `IMMAT`, while 53.1% of their contracts continue;
-  - 53.4% of the contracts present in both years share no vehicle id across them;
-  - the median gap between a vehicle's consecutive periods is 90 days, and only 30.4% are contiguous.
-
-  Either fleets replace vehicles fast or the key, or the extract, does not follow a vehicle. This bears on the notes' "42.8% of the periods end before 31 December with no later period of the vehicle" (the realised-length argument for `exposure`) and on the vehicle-history measurement. The contract is the entity that recurs, so the split is unaffected. For the leak and column auditors.
-- "(2011-2012 to 2013, the call of 2026-10-30)": the curator's CC lines of 2026-10-30 do not name the split. It came from the AI Assessments of that day, which the curator's `TBD -> Yes` followed. Write "suggested on 2026-10-30, accepted with the curator's Yes", or have the curator confirm. For the claim auditor.
-
-**Files.** Scripts and outputs in the run folder: the shipped splits; recurrence and the vehicle key; the game's 2014 file and the window composition; the alternative splits; the training history; the reporting-delay simulation.
+- P4 / SPLIT-14 (Must): three windows on one training side = one evaluation counted three times. Evidence: identical
+  train index sets (0.644 each); per-window mean 0.154 vs pooled 0.171. Mildest remedy: re-split as SPLIT-8
+  prescribes (C, grouped 3x3 by contract, ForcedGroupedFromTemporal). Alternative only by amendment (A or B).
+- P4 / SPLIT-8 (Must, procedural, for C): leak test across the grouped split and leak probes not yet run. Remedy: run
+  them before shipping C.
+- P4 / evidence (EV): the issue's C-vs-valid number (0.174 vs 0.171) is unpaired; replace with the paired +0.005
+  (SD 0.022, 9 folds) and the cold-start cost -0.004 above.
+- Housekeeping: splits.md Cases row "SPLIT-14 ... pricing_game_2016_french_fleet" still describes the expanding
+  windows with kind "applied"; replace it with the outcome of issue 6.
 
 </details>
 
 <details><summary>Domain practitioner</summary>
 
-**Domain practitioner: pricing_game_2016_french_fleet**
+**Domain practitioner: pricing_game_2016_french_fleet (exposure re-review, 2026-11-06, full tier)**
 
-Actor: the pricing actuary of a French motor insurer who sets the a priori vehicle tariff for small commercial
-multi-vehicle ("flotte") contracts for the coming year, from the closed years' rating data. The decision is the rate per
-vehicle-year by rating cell, its frequency part here; the fleet's premium is that rate times each vehicle's time on
-cover. My probes: two scripts with their outputs in the run folder,
-shipped windows, untuned models, 3 LightGBM seeds.
+Actor: the pricing actuary of a French insurer who sets the a priori material-damage (DTA) tariff per vehicle for small
+commercial fleets. Once a year I set the rate per vehicle-year by rating cell, fitting it on the closed years. The
+premium is that rate times the time each vehicle stays in the fleet, settled pro rata as vehicles come in and go out.
+Scope: what D11 changed (the target is now a rate, `exposure` is the weight, training is on 2011-2012), issue 6, and
+the metric. What earlier panels settled (the `exposure` fix of 2026-11-02, IDA, the claim wording) is not repeated.
+My probes: probe.py, probe2.py and the cohort table, with their outputs, in the run folder. They run
+on the shipped windows. The models are a weighted Tweedie GLM (one-hot, alpha 1e-3) and a weighted Tweedie LightGBM
+(15 leaves, 300 rounds at 0.03, min_child_samples 200, lambda 5, mean of 3 seeds). The day of the year of
+`period_start` is the date's encoding.
 
-**Verdict: fit direct (agree with `fit="direct"`, USE-8).** The rows are the vehicle-periods ("situations") an actuary
-fits a frequency model on, the features are the rating classes known when the period is priced, and the test year
-follows the training years. The realised period length is a potential leak kept on purpose and named as such, which
-leaves the fit direct under USE-8. The binary target stands in for the claim count I act on, and at this frequency the
-gap is small.
+**Verdict**
 
-**Metric: partly.** ROC AUC ranks the realistic models in the same order as the actuarial criteria do. But about 79% of
-its lift above 0.5 is the period length, which I never need predicted, and it ignores the level of the probabilities,
-which a premium is. My pick would be `log_loss`; keeping `roc_auc` is defensible (details under 5).
+- Fit: direct (USE-8, agree with fit="direct"). Each row is a vehicle-period I rate at its start, and the inputs are
+  the rating classes I hold then. The target is the pure premium per vehicle-year that my tariff charges, weighted by
+  the vehicle-years it is earned over. The test year 2013 follows the closed years 2011-2012, on the fleets I already
+  insure.
+- Metric: partly. The weighted Gini scores the order of my risks. The game's uniform rescaling removed the price level,
+  so that is the right core. The game's market sent each insured to the cheapest premium, though, so it also rewarded
+  how far apart the prices are (the spread of the relativities), and the Gini cannot see that spread. Measured below.
+  As context, or as the stand-in if the curator accepts its noise, I would choose the exposure-weighted Tweedie
+  deviance (p = 1.5) after the game's own uniform rescaling to the window's total.
 
-**1. Do I have these inputs when I price?**
+**1. DO I HAVE THESE INPUTS WHEN A VEHICLE'S PERIOD STARTS? (USE-3, USE-6, LEAK-41)**
 
 - Rating classes (contract age, activity, zone, fleet size and management, new-company flag, channel, payment
-  frequency, formula, deductible, insured value, vehicle age, power-value): yes, all are on the contract when it is
-  written or renewed. The start date: yes.
-- `exposure`: the actuarial role is right, the timing is not exact. A fleet premium is settled at the period's end for
-  the vehicles that came in and went out during the year (AMRAE: "révision en fin de période d'assurance" for "les
-  différentes entrées et sorties au cours de l'année"). So the earned vehicle-years are the premium base, and I price a
-  rate per vehicle-year. That makes the length a GLM offset, not a risk factor I forecast. The length as realised is
-  known only at the end, and the definition says so ("Potential leak, kept on purpose"). My check of the kept leak, on
-  the raw files for 2011-2012: periods that end early and are the vehicle's last have 0.137 claims per vehicle-year,
-  against 0.111 for periods running to 31 December. They also have 6.9 claims above 5,000 (scaled units) per 1,000
-  vehicle-years, against 4.2. That fits total losses, or claim-driven exits, that end a vehicle's cover. The builder's
-  test (an ending flag adds no ROC AUC) shows the leak does not move the score. I agree it stays, as named. The
-  Decision table's wording "about the claim rate ... a little higher among the shortest" is fair within the length
-  bands (+30% in the shortest band, +1% to +9% in the others).
-- Inputs I would normally have that are missing:
-  - The fleet's own claims experience (the S/C ratio over three years), which sets the renewal premium of fleets of 4
-    or more vehicles, where the bonus-malus does not apply (AMRAE). It matters little here: the median contract-year
-    has 2 distinct vehicles, only 18.2% have 4 or more, and the builder measured last year's contract and vehicle
-    claims to add nothing (0.705 against 0.708).
-  - The current tariff's premium, which I would refine (USE-6) and benchmark against with a double-lift chart. Not in
-    the release.
-  - Finer vehicle and use details (make or SRA group, use, mileage). The release keeps a combined power-value class
-    and two vehicle-age classes. This is the disclosure control of the release, so it cannot be fixed.
+  frequency, formula, deductible, insured value, vehicle age, power-value): yes. All are on the contract or on the
+  vehicle's declaration when the period opens.
+- period_start and exposure_to_year_end: yes. Both are fixed by the start (LEAK-7, LEAK-37). For a rate target they are
+  not exposure. They carry the season and the cohort a period falls in, a legitimate rating fact at the start.
+- exposure (realized vehicle-years): I would not have it, and I do not need it as an input. I need it to earn the
+  premium, and it does exactly that as the weight of training and scoring, never a feature (MET-15, LEAK-41). This is
+  how a fleet book is billed: a provisional premium, then pro-rata regularisation for vehicles added and removed
+  (City Drop's fleet conditions, AXA Belgium's regularisable fleet premium, Matmut's duty to declare additions and
+  removals). D11 matches practice.
+- Inputs I would always have that are missing (unchanged from the first panel; disclosure control, cannot be fixed):
+  - the fleet's own loss ratio over 3 years: the builder measured it to add nothing here;
+  - the current tariff's premium, which I would refine (USE-6);
+  - finer vehicle data (make/SRA group, use).
+  None of these changes the task.
 
-**2. Is the target what I act on?**
+**2. IS THE TARGET WHAT I ACT ON? (USE-5, MET-14)**
 
-I act on the expected claim count per vehicle-year, the frequency part of the pure premium. I want a number (a
-calibrated frequency, or a calibrated probability per period), never a class. `claim` (count > 0) is a close proxy:
+- Yes. The claim charge per vehicle-year is the pure premium rate I put in the tariff. I want a number, the expected
+  charge per vehicle-year by cell. The weighted fit estimates E[charge | x] / E[vehicle-years | x], the rate that
+  breaks even when the premium is earned pro rata. Under D11 this is the quantity I act on. Before, the charge per
+  period mixed my rate with a guess of how long the vehicle stays, which I never price.
+- One nuance, an inference I have not checked against these contracts: when a covered claim ends a vehicle's cover (a
+  total loss), French insurers often keep the rest of the premium. Code des assurances L121-9 refunds the unexpired
+  premium only when the loss comes from an event the policy does not cover. If so, the premium earned on claim-ended
+  periods is larger than their realized vehicle-years, and the break-even rate per realized vehicle-year slightly
+  overstates the rate I need. Early ends claim 1.22 times as often given the classes, so the effect is second order.
+  A note in the curation_comments would cover it, with no change to the data.
 
-- Multiple claims collapse into one. 286 periods hold 2 to 7 claims, so 318 of the 4,568 claims (7%) are lost. At 0.12
-  claims per vehicle-year, P(N ≥ 1) is close to E[N], so the ranking barely changes.
-- IDA claims count. A net-cost actuary might count only the claims that cost money. I measured the alternatives on all
-  of 2013 (LightGBM, length a feature). Any claim (shipped): ROC AUC 0.712. A claim with a positive net charge: 0.706.
-  A non-IDA claim: 0.702. The length alone scores 0.682 on all three. The choice does not change the task, and the
-  shipped target is the broadest and has the most signal. Counting gross claims and leaving recoveries to the severity
-  part is standard frequency-severity practice.
-- Wording, for the claim auditor (USE-5 precision, not a fit issue). `predicted` says "the claims in which the insured
-  was not at fault and the insurer recovered its cost", and bullet 5 says the insurer "recovers the cost". Under IRSA,
-  the recovery below 6,500 EUR excl. tax is a flat forfait, not the cost, which is why it exceeds the payment on 599 of
-  the 1,190 IDA claims (Assurland). Also, 126 of the IDA claims are at 50% responsibility, so they are not all
-  not-at-fault. Suggested: "claims settled under the IDA convention, where the insurer pays its client and recovers a
-  flat amount from the other insurer".
+**3. DOES ONE ROW MATCH ONE DECISION? IS THE TEST WHAT I WOULD FACE? (USE-10, SPLIT-13)**
 
-**3. Does one row match one decision? Is the test what I would face?**
+- Row: one vehicle over one period with unchanged terms is the unit my tariff rates. Yes.
+- Training only on the periods that started before 2013: yes, that is my practice. The 2013 tariff is fitted once on
+  the closed years and applied to every period that opens in 2013. I would never refit in May on the 2013 vehicles
+  that had already left. They are a selection by outcome: 0.127 and 0.131 claims per vehicle-year against 0.115 and
+  0.116 for those still running. The new training side is the honest one. In practice I fit in autumn 2012 on claims
+  not yet developed. Here the labels are developed to the 2014 extract, a small optimism the notes already simulate.
+- Issue 6 (open), from practice:
+  - My decision is one tariff for the year, judged on the whole 2013 book, weighted by vehicle-years.
+  - Option B (one window over 2013, 0.171) and option A (three windows on one training side) both test that tariff.
+  - Option C (grouped by contract over 2011-2013) tests fleets I have never insured, with years mixed. My tariff
+    prices known fleets (76-81% of the test periods are on contracts already in training). On fidelity to the use
+    case: B > A > C.
+  - A's three equal thirds overweight a small and unstable cohort. The Sep-Dec window holds 987 of 13,864 test
+    vehicle-years (7%) and 103 positive charges, yet counts a third.
+  - Its level jumps: the charge per vehicle-year by start cohort (2011 / 2012 / 2013) is 141.9 / 159.1 / 204.6 for
+    Sep-Dec, against 157.3 / 172.5 / 179.7 for Jan-Apr and 178.3 / 185.7 / 197.0 for May-Aug.
+  - The amendment or the forced split is the curator's call under SPLIT-14 and SPLIT-8. My point is that C moves the
+    task away from the decision (USE-10). A or B keeps it.
 
-- One row is one vehicle-period with unchanged terms. That is the unit of a rating dataset, and the tariff's rate
-  applies per vehicle and period. Yes.
-- Test 2013, train 2011-2012: a tariff for next year, with 76-81% of the test periods on contracts I already insure
-  (USE-10, a known entity; SPLIT-13). This is what I would face.
-- Two gaps, both small:
-  - In practice a 2013 tariff is fit in autumn 2012, on immature 2012 claims. Here the labels are developed to the
-    2014 extract (the builder's note on slight optimism).
-  - The three windows weight the year unevenly against how I would judge a tariff. Measured on the 2013 periods:
-    Jan-Apr holds 76.9% of the vehicle-years and 75.9% of the claims, May-Aug 16.0% and 16.4%, Sep-Dec 7.1% and 7.7%.
-    Each window still counts for a third of the mean score. I would judge a tariff on the year's book, pooled or
-    weighted by exposure. Within a window the range of lengths is cut, so the mean window AUC (0.674 for the best
-    model) sits below the pooled 2013 AUC (0.712). That is the split auditor's call. I note it because it changes how
-    much the mid-year additions weigh in "my" score.
+**4. WOULD I USE THIS MODEL? WHAT WOULD MAKE ME TRUST OR DISTRUST IT?**
 
-**4. Would I use this model? What would make me trust or distrust it?**
+- I would use a model trained this way as the a priori tariff for small fleets if:
+  - (a) it balances overall and by segment;
+  - (b) its relativities are neither steeper nor flatter than the data supports, checked by actual over expected by
+    predicted quintile;
+  - (c) it beats the current tariff on a double-lift chart.
+- What makes me distrust the tree model as specified: its relativities are too steep. Actual over expected by
+  predicted quintile, lowest to highest, after rescaling each window's predictions to the window total:
+  ```text
+    Sep-Dec  1.98 1.47 1.06 1.25 0.49
+    May-Aug  1.88 1.03 1.14 0.90 0.79
+    Jan-Apr  1.39 1.23 1.03 0.90 0.88
+  ```
+  It prices its cheapest fifth at about half the cost and its dearest at about twice. In a cheapest-wins market I
+  would win the risks I underprice. It still scores a weighted Gini of 0.157 (window mean), close to the GLM's 0.173.
+- Level: every model trained on 2011-2012 (167 per vehicle-year) underprices 2013 (180-205). The constant's actual
+  over expected is 1.08 / 1.18 / 1.23 (newest last). That is trend, which I would load separately. The game's uniform
+  rescaling took it away, and so does the Gini.
 
-I would use it as the frequency component of an a priori vehicle tariff for small contracts, on four conditions:
+**5. DOES THE DECLARED METRIC SCORE MY DECISION? (MET-1, MET-6 to MET-9, MET-14, MET-15)**
 
-- (a) Its frequency is proportional to the time on cover, so a half-year costs half the annual rate. A tree model
-  with the length as a free feature can learn a length effect that is not proportional. I would fit with the length
-  as an offset or check that the effect is proportional.
-- (b) It balances overall and by segment (actual over expected near 1).
-- (c) Its relativities can be explained to the agents and brokers who sell it.
-- (d) It beats the current tariff on a double-lift chart.
+- Unit and weight: right. Each period counts by its vehicle-years, the unit I earn premium on (MET-15). No threshold
+  or cost is fixed (MET-6, MET-7) and no top k is followed up (MET-9), so a ranking or a proper score is the right
+  family (MET-8).
+- What the Gini misses, measured (window means; lower deviance is better):
+  ```text
+    model                                     w. Gini   w. Tweedie dev   same, rescaled to window total
+    constant (training rate)                  0.000     91.17            90.82
+    Tweedie GLM                               0.173     89.92            89.63
+    GLM, relativities halved (x^0.5)          0.173     90.04            89.58
+    GLM, relativities doubled (x^2)           0.173     93.66            94.27
+    Tweedie LightGBM                          0.157     95.06            91.34
+  ```
+  - The Gini gives the same score to a tariff and to the same tariff with its relativities doubled.
+  - The rescaled deviance ranks the doubled tariff and the LightGBM below a flat tariff, which is what the game's
+    market would have done to them.
+  - Raw deviance mixes in the drift of the level. Rescaling uniformly, as the game did ("un facteur d'inflation
+    appliqué uniformément"), removes it.
+- The metric I would choose: the exposure-weighted Tweedie deviance of the rate (p = 1.5, MET-14's compound-Poisson
+  weighting), after multiplying each model's predictions by one factor so that its premium total equals the window's
+  claim total. Why:
+  - it is a strictly proper score of the relative prices (MET-8);
+  - it is level-free as the game was (MET-11, closest to the original);
+  - it sees the spread that a cheapest-wins market prices.
+- Costs: it uses the test total, an oracle scale, just as the game fixed its total at 2.5 million euros. It is noisier
+  than the Gini on the newest window, and it would be a new library metric (MET-13).
+- If the curator keeps the Gini as the stand-in, the reason should stop saying the market "rewarded the ranking of the
+  risks" alone. It rewarded the relative prices, of which the ranking is the part the Gini scores.
 
-What makes me distrust it:
+**Gaps between the dataset and my decision, ranked by how much they change the task**
 
-- The anonymised levels (zone 1-6, activity 1-8, channel, formula) stop me from checking that relativities make sense
-  (a zone order, a vehicle-value gradient).
-- The lift is modest. The rating factors add 0.015-0.045 ROC AUC over the length (the builder's TP-4). In my probe the
-  exposure-weighted Gini of the predicted rate is 0.19-0.21 for the GLM and LightGBM, against 0.02 for a risk-blind
-  rate. That segmentation is real but modest, which is plausible for commercial motor with coarse factors.
-
-**5. Does the declared metric score my decision?**
-
-Measured on the three shipped windows, means over the windows:
-
-| model | ROC AUC | log loss | exposure-weighted rate Gini | mean predicted / observed |
-|---|---|---|---|---|
-| constant rate x length (no rating factor) | 0.637 | 0.1628 | 0.019 | 0.92 |
-| logistic, rating factors, no length | 0.621 | 0.1667 | 0.160 | 1.26 |
-| logistic, length a feature | 0.661 | 0.1608 | 0.187 | 1.02 |
-| Poisson GLM, length an offset | 0.672 | 0.1601 | 0.195 | 0.93 |
-| LightGBM Poisson, length an offset | 0.671 | 0.1601 | 0.195 | 0.94 |
-| LightGBM binary, length a feature | 0.674 | 0.1600 | 0.207 | 1.02 |
-
-What the numbers say:
-
-- **Ranking among the models a benchmark would run: consistent.** ROC AUC, log loss and the exposure-weighted Gini of
-  the rate rank the four models that use the length in the same order. On these folds ROC AUC would not pick a model I
-  would reject (MET-8 holds: a ranking metric serves every threshold, and there is no threshold or cost to fix, MET-6
-  and MET-7).
-- **What it rewards: mostly the time on cover.** A tariff with no rating factor at all scores 0.637, which is 79% of
-  the best model's lift above 0.5. A model that segments risk but ignores the length (rate Gini 0.160) scores 0.621,
-  below the risk-blind model. The relativities, the part of the model I act on, are a slice of about 0.04 AUC. Log loss
-  has the same compression (0.1628 against 0.1600). Only the exposure-weighted rate Gini isolates the segmentation.
-- **What it ignores: the level.** A premium is a probability times a cost, so it must be calibrated (the balance
-  property). ROC AUC does not see the logistic model without the length overpredicting by 26%, or the Poisson models
-  underpredicting by 7%, the 2011-12 frequency applied to 2013. Log loss, the Bernoulli deviance, is strictly proper
-  (Gneiting & Raftery, under MET-8) and scores rank and level together. It is the binary form of the deviance by which
-  actuaries select frequency models.
-- **The unit:** each row counts the same whatever its exposure, and each window counts a third (under 3).
-
-The metric I would choose:
-
-- As the actuary, the mean Poisson deviance of the claim count, with exposure, for model choice. This is the standard
-  frequency loss (Noll, Salzmann & Wüthrich 2018 on freMTPL; scikit-learn's frequency example). Next to it, the Gini
-  of the ordered Lorenz curve (claims accumulated against exposure, ordered by predicted rate; Frees, Meyers & Cummings
-  2011) for the segmentation. Both need the count or the length as a scoring column (MET-2), and the shared library
-  has no Poisson deviance (MET-13). That is too large a change for a binary definition the curator chose on 2026-10-30.
-- On the shipped binary target: `log_loss` (MET-8, declared as `context` under MET-11: a premium acts on the
-  probability's level, not only on its rank).
-- For keeping `roc_auc`: it is the documented binary fallback (MET-8, MET-11). It ranks models as the actuarial
-  criteria do on these folds. And it is the binary counterpart of the `normalized_gini` the sibling insurance
-  definitions declare (the identity used for porto_seguro, MET-11). So `roc_auc` is defensible, and the choice is a
-  weighing call for the curator. The metric reason should say that the length carries most of the ROC AUC (the
-  builder's "length alone 0.596 / 0.655 / 0.659" is in the notes but not in the reason).
-
-**Gaps between the dataset and the real decision, ranked by how much they change the task**
-
-1. The metric scores the ranking of periods, which the time on cover dominates, not the rate per vehicle-year I
-   decide, and not its level (MET-1, MET-8). It changes how methods are compared, not which one wins on these folds.
-2. The windows weight Sep-Dec (7% of exposure, 123 claims) as much as Jan-Apr (77%), where I would judge the year's
-   book (SPLIT-17 area; MET-2 unit of evaluation).
-3. The realised length as a feature: a kept, named, weak leak (early-ending last periods have 23% more claims per
-   vehicle-year; no ROC AUC gain from the ending, measured by the builder). No change (USE-8, LEAK-10 kept).
-4. A binary target instead of the count: 7% of claims collapsed. No change at this frequency (USE-5).
-5. Missing the fleet's own experience and the current premium (USE-6, USE-10). The first is measured to add nothing,
-   and the second does not ship.
-6. Wording on IDA recovery ("its cost", "not at fault"): a correction to the text, not to the task.
+1. The metric cannot see the spread of the relativities, which a cheapest-wins market rewards (above). It changes
+   which models win: the GLM over a steep tree model by deviance, nearly tied by the Gini.
+2. Issue 6: the three equal-weight windows overweight a 7% cohort whose level jumped. Option C would test unseen fleets
+   on mixed years, against USE-10.
+3. Labels developed to the 2014 extract, where a real 2013 tariff sees immature 2012 claims (noted and simulated).
+4. Missing in practice: fleet experience, the current premium, finer vehicle data (disclosure control; no effect
+   measured).
+5. Possible premium kept after covered total losses, which would bias the per-realized-vehicle-year rate slightly
+   upward (inference; a note only).
 
 **What an expert would change**
 
-- The metric: `log_loss` as `context` (MET-11), or keep `roc_auc` and add to the reason that the length alone scores
-  0.60-0.66 of it. That is the curator's weighing call.
-- Pool the 2013 test year or weight the windows by exposure, if the split auditor agrees. Otherwise say in the
-  splits comment that the mean over windows weights the mid-year additions at a third.
-- Reword `predicted` and bullet 5: IRSA recovers a flat forfait, and 126 IDA claims are at 50% responsibility.
-- Add to `use_case` or the notes that most contracts are small (median 2 vehicles per contract-year, 18% with 4 or
-  more). An a priori per-vehicle tariff is the real practice for them, and fleets of 4 or more are mostly
-  experience-rated.
-- No change to the rows, features, target or split direction.
+- Score with the uniformly rescaled weighted Tweedie deviance (or ship it as context), or at least reword the stand-in
+  reason.
+- Prefer one 2013 window or the three on one training side over the grouped split.
+- Add a line on trend (the training rate 167 against 180-205 in 2013) and on the cohort level jump.
+- Optionally, note the total-loss earning convention.
 
 **Sources**
 
-- The game's rules, `pricing-game-2016-FR.pdf` (the organisers' PDF and its text extract): column descriptions,
-  "une prime pure", the aggregator market of Sec. 4.
-- Raw files `train_contrats.csv`, `train_sinistres.csv` (sha256 as in `dataset.py`); my probes in
-  the run folder.
-- AMRAE, "Flottes automobiles : l'auto-assurance, opportunité ou risque pour votre entreprise ?": fleet from 4
-  vehicles, no bonus-malus, renewal on the fleet's S/C, end-of-period revision for entries and exits, IDA:
-  https://www.amrae.fr/flottes-automobiles-lauto-assurance-opportunite-ou-risque-pour-votre-entreprise
-- Assurland on the IRSA convention: flat recourse below 6,500 EUR, at real cost above:
-  https://www.assurland.com/assurance-auto/sinistres/indemnisation-convention-irsa/
-- Noll, Salzmann & Wüthrich (2018), "Case Study: French Motor Third-Party Liability Claims", SSRN 3164764 (Poisson
-  deviance with exposure), as cited in scikit-learn's "Poisson regression and non-normal loss" example (frequency =
-  claims / exposure, exposure as weight, mean Poisson deviance, exposure-ordered Lorenz curve):
-  https://scikit-learn.org/stable/auto_examples/linear_model/plot_poisson_regression_non_normal_loss.html
-- Frees, Meyers & Cummings (2011), JASA 106:1085-1098 (ordered Lorenz curve, Gini), as cited in the sibling
-  australian_vehicle_insurance_2004_2005 definition.
-- Rules: `use_case.md` (USE-5, USE-6, USE-8, USE-10), `metrics.md` (MET-1, MET-2, MET-6 to MET-9, MET-11, MET-13).
+- The definition and REVIEW.md (issues 5, 6; the first panel's practitioner block) in
+  `datasets/_dev/tabarena-v0pt2/pricing_game_2016_french_fleet/`
+- Game rules: http://web.archive.org/web/20210422004748/https://freakonometrics.hypotheses.org/files/2016/08/pricing-game-2016-FR.pdf
+  (Sec. 4, the market and its uniform factor), as quoted in the definition.
+- Fleet billing: https://www.city-drop.com/files/conditions-particulieres-assurance.pdf (provisional premium,
+  pro-rata for vehicle movements); https://www.axa.be/axa-documents/ibp/000039-4186051-20200601.pdf (regularisable
+  fleet premium); https://www.matmut.fr/services-en-ligne/doc/IPID/IPIDMRSQFLOTTE.pdf (declaring additions and
+  removals); https://www.amrae.fr/flottes-automobiles-lauto-assurance-opportunite-ou-risque-pour-votre-entreprise
+- Code des assurances L121-9 (refund after a loss from an uncovered event): from memory, not fetched.
+- Rules: use_case.md USE-3, USE-5, USE-6, USE-8, USE-10; metrics.md MET-1, MET-6 to MET-9, MET-11, MET-13 to MET-15;
+  leak_checks.md LEAK-7, LEAK-37, LEAK-41; splits SPLIT-8, SPLIT-13, SPLIT-14.
+- Probes: probe.py, probe.out, probe2.py, probe2.out and cohorts.out, in the run folder.
 
 </details>
 
 <details><summary>Blind review</summary>
 
-**Verdict: include with changes.** This is a real, documented French fleet motor own-damage portfolio with an honest temporal structure and modest real signal. Before it goes in, the test windows should be aligned with the calendar-year structure, two dead columns dropped, and the nominal codes typed as categorical. Its main weakness as a benchmark is low headroom: a one-hot GLM ties LightGBM.
+**Blind review: pricing_game_2016_french_fleet (target claim_charge_per_vehicle_year, regression, exposure as weight)**
+
+**Verdict:** Include with changes. This is a real motor-insurance pure-premium task with an honest temporal split and the right use of the exposure weight. It needs nominal codes recast as categories, near-empty or constant columns dropped, the negative-charge clipping documented, and a deviance-type score instead of (R)MSE.
 
 **What the task is**
 
-- **Source.** The 2016 "Pricing Game" of the Institut des Actuaires (100% Data Science day, 8 Nov 2016), redistributed as `pg16trainpol` in CASdatasets.
-- **What a row is.** One "situation" (a coverage period with constant characteristics) of one vehicle in a business fleet policy, 2011-01-01 to 2013-12-31.
-- **Target.** `claim` = `ClaimNb > 0`: 4,250 of 87,228 rows (4.87%), covering 4,568 claims.
-- **The decision.** An insurer prices own-damage cover for fleet vehicles at renewal or when a vehicle is added. The organisers' PDF names the deductible as "Classe de franchise de la garantie DTA" (Dommages Tous Accidents), and the game asked for a "prime pure" for the next year's contracts. This is a genuine, standard actuarial use: claim-frequency modelling for pricing.
-- **Provenance check.** I decoded the CASdatasets `.rda` files myself. The prepared table is a one-to-one relabelling of `pg16trainpol`: a sorted multiset comparison on period start, exposure, zone, power, formula, activity, channel, fleet size and target matched exactly.
-- **Column mapping.** Area→zone, VehiclPower→power_value_class, PolicyCateg→formula, BusinessType→client_activity, ChannelDist→distribution_channel, FleetSizeCateg→fleet_size_class.
-- **Dropped columns.** Year, EndDate, PolicyID, LicNb, the constant VehiclCateg (all "V1"), and ClaimNb (which became the target).
-- **Public test file unusable.** `pg16test` (2014, 32,772 rows) has no labels publicly, so 2011-2013 is all there is.
+Source: 2016 Pricing Game of the French Institute of Actuaries (train_contrats + train_sinistres; CASdatasets pg16trainpol/pg16trainclaim).
+Each row is one "situation" (a coverage spell of one vehicle in a fleet or business policy, within one calendar year, 2011-2013).
+The target is the claim charge per vehicle-year for material damage. The organisers' brief: "Le but est de proposer une prime pure" (the goal is to propose a pure premium).
+Who would use it, when, and for what: an insurer pricing or renewing a commercial motor policy at the start of the period. The decision is the premium. This is a real, standard actuarial use.
 
-**Concerns, most to least serious**
+**How I verified it**
 
-1. **The test windows fight the calendar-year truncation, so late windows are small and shifted.**
-   - **Evidence: truncation.** No period crosses 31 December (0 of 87,228 rows). Rows that start late in the year are therefore mechanically short. Positive rate by start quarter falls from 6.2% (2013Q1, mean exposure 0.57) to 2.1% (2013Q4, mean exposure 0.17), and the same pattern repeats every year.
-   - **Evidence: no year-aligned option.** With only three years of labelled data, three expanding test windows cannot all sit on year boundaries, so at least some cutoffs fall mid-year.
-   - **Evidence: small, noisy late windows.** On plausible windows, the late-2013 ones are small: [2013-07-01, 2014) has 8,898 rows and 246 positives; a last-10%-by-date window has 7,022 rows and 165 positives. LightGBM AUC there is 0.636-0.658, with a standard error of about 0.02 (Hanley-McNeil). Method differences of 0.01 are unresolvable.
-   - **Evidence: label overlap.** Mid-year cutoffs leave 13-14k training rows (about 17%) whose outcome period runs past the cutoff. I tested this by retraining on strictly-ended rows only; the AUC change was at most 0.006, so it is not a material leak, but it is untidy.
-   - **Change.** Use year-aligned windows where possible: train 2011 → test 2012, and train 2011-12 → test 2013. If three windows are required, use half-years (2012H2, 2013H1, 2013H2) and pool or weight by number of positives. Report log loss alongside AUC, because per-window base rates differ for structural reasons.
-   - **Caveat.** I could not see the harness's actual window boundaries.
+I downloaded the CASdatasets .rda files and rebuilt the target from them:
+ - Joining the claims on (PolicyID, LicNb, BeginDate, EndDate) matches all 4,568 claims, which equals sum(ClaimNb).
+ - target = max(0, sum of ClaimCharge in the row) / Exposure reproduces the prepared total exactly (6,675,926.40).
+ - `exposure` is identical in distribution to the CASdatasets Exposure ((EndDate - BeginDate)/365, range 0.08-1.00, mean 0.4418).
+ - Every categorical column maps one-to-one to a source column with identical counts (e.g. Area A3 = 32,071 = zone 3).
+The data is real, not generated, and the target is what it claims to be.
 
-2. **`exposure` dominates, and it is partly an after-the-fact quantity.**
-   - **Evidence: dominance.** Exposure takes 53% of LightGBM gain. Log-exposure alone reaches AUC 0.60-0.67; all features reach 0.66-0.71.
-   - **Evidence: how it is defined.** Exposure is (EndDate − BeginDate + 1)/365. EndDate is the end of the situation, which is only known ex post when a vehicle leaves the fleet mid-year.
-   - **Evidence: possible claim-triggered exits.** Situations that end before 31 December with no later row for that vehicle have 0.134 claims per vehicle-year. Situations ending 31 December with no later row have 0.112, and contiguous mid-year splits have 0.102. This is consistent with some exits being caused by claims (for example write-offs under own-damage cover). It could also be churn heterogeneity; I cannot separate the two without claim dates.
-   - **Mitigating evidence.** The source game itself treats exposure as known at pricing: `test_contrats` ships with `Exposition_au_risque` and the situation dates, and exposure as an offset is standard actuarial practice. Contiguous mid-year splits show no claim excess (2.98% positive rate), so situations are not cut at claim dates.
-   - **Change.** Keep exposure, since removing it makes the task incoherent. Document that the benchmark assumes the coverage period is known. Optionally also offer the count target with an exposure offset, which is the natural form of the problem.
+**The training weight (`exposure`)**
 
-3. **Low headroom: the task is essentially additive.**
-   - **Evidence.** Trained on 2011-12 and tested on 2013 (31,050 rows, 1,543 positives):
-     - One-hot logistic regression with log-exposure: AUC 0.7124, log loss 0.1840.
-     - LightGBM: AUC 0.7122, log loss 0.1841.
-     - Bootstrap 95% CI of the AUC difference: [−0.0036, 0.0035].
-   - **Why.** There are 13 low-cardinality categorical features plus exposure. Fleet-level clustering further reduces the effective sample size: 18,037 fleets, up to 81 rows per fleet, and 8,577 exact duplicate rows (9.8%) from vehicles of the same fleet with identical profiles. The duplicates stay inside one window under the temporal split, so they are not a cross-split copy.
-   - **Change.** It is fine as a representative "GLM-sufficient" insurance-frequency task. Do not expect it to separate strong learners. If the benchmark already has freMTPL-style frequency data, check whether this adds diversity; the fleet/commercial own-damage angle is the differentiator.
+The use is correct. The target is a rate per vehicle-year and the weight is the vehicle-years that produced it. A weighted fit is then equivalent to modelling the total charge with an exposure offset under a Poisson or Tweedie loss, and the weighted mean of the target equals total charge / total exposure.
+Exposure depends on EndDate, which is not known at pricing time. It is used only as a weight, never as a feature, so there is no leakage. It is also correct to weight the test score by it, which is standard actuarial practice.
+ - Minor: the 2 rows with n_vehicles=2 should arguably carry vehicle-years of 2 x duration. This is negligible.
+ - Without the weight, test deviance is worse (e.g. 96.7 unweighted vs 93.5 weighted in the 2012H2 window).
 
-4. **Preparation: dead columns and wrong types.**
-   - **Dead columns.**
-     - `n_vehicles` equals 1 in 87,226 of 87,228 rows. Drop it.
-     - `insured_value_class` is missing in 87,093 rows (99.85%; source level "Unknown"). Drop it, or encode "Unknown" as its own level rather than NaN.
-   - **Nominal codes stored as integers.** `zone` (A1-A6), `client_activity` (B1-B8, "Activité du client"), `distribution_channel` (D1-D3, "agents ou courtiers ou autres"), `formula` (C2-C5) and `fleet_size_class` (S1/S2) are stored as int64. The Rd says "most categorical levels have unknown meaning", so these should be categorical.
-   - **Possibly ordinal.** `power_value_class` (P1-P11, "Combiné puissance valeur du véhicule") may be ordinal and can stay numeric.
-   - **Unordered age classes.** `contract_age_class` is an unordered category with lexicographic levels (`'1 - 2 ans', …, '<= 1 ans', '> 5 ans'`). Make it ordered, or map it to 0-5.
-   - **No other missing values.** Apart from `insured_value_class`, there are no missing values.
+**Concerns, most serious first**
 
-5. **Target definition is broad and slightly lossy.**
-   - **Evidence.** The target counts every reported claim, including recovered or not-at-fault ones: 599 of 4,568 claims have ClaimCharge ≤ 0, and 126 are IDA direct-compensation claims. The binarisation collapses 286 rows that have 2-7 claims.
-   - **Is there IBNR under-reporting?** No. Claim frequency per vehicle-year is flat across years (0.117 / 0.119 / 0.119) and is 0.117 for periods ending 2013Q4. Claims settled up to 2014, and only 41 are still open (SettlYear = 0).
-   - **Change.** No change is needed. Document that the target is "any material-damage claim reported in the situation".
 
-6. **The source documentation is inconsistent.**
-   - **Evidence.** The CASdatasets Rd calls `pg16trainpol` "policies for private motor insurance" and "TPL policies". It also says "pg16test is used for training", which is clearly a typo. The organisers' PDF, by contrast, lists "Mode de gestion de la flotte", "segment: Taille de la flotte" and the DTA deductible. The data are fleet (commercial) own-damage, and the prepared name "french_fleet" is right.
-   - **Plausibility.** Data are "from unknown private insurers". The values look like real anonymised portfolio data: exposure granularity, claim frequency of about 0.12 per vehicle-year, and realistic churn. Claim charges carry many decimals, suggesting a perturbation, but they are not used here.
-   - **Change.** Cite the organiser PDF for semantics, not the Rd text.
+1. Weak signal and noisy, heavy-tailed scoring. The metric choice decides whether results mean anything.
+   Evidence:
+   - 95.7% of rows have a zero target.
+   - The top 1% of rows carry 54% of the total charge.
+   - The target reaches 75,929 because charges are divided by exposures as short as 0.08.
+   - With a temporal split by year, a regularised LightGBM Tweedie model beats the exposure-weighted constant by only 1-2% in Tweedie deviance:
+     ```text
+       2012: 82.1 vs 83.0
+       2013: 83.4 vs 85.0
+     ```
+   - The claim-indicator AUC is 0.65-0.66.
+   - With half-year windows, the test sets have only about 210-1,150 rows with a claim. In 2 of 3 windows (2012H2 and 2013H2), my LightGBM did not beat the constant on deviance, and weighted MSE was essentially equal to the constant's (2.36e6 vs 2.36e6).
+   - The pure premium also drifts upward about 9-10% per year (159.6 / 173.7 / 184.3), and no tree model can extrapolate that.
+   Change:
+   - Score with exposure-weighted Tweedie deviance (power around 1.5) or Poisson deviance, or a Gini / lift metric. Do not use RMSE.
+   - Prefer test windows that are whole years (or that include a Q1 renewal block). Q1 holds about 60% of the rows because 37.5% of situations start on 1 January, so H2 windows are small.
+   - Report the variance across splits.
+
+2. Nominal codes stored as integers.
+   Evidence:
+   - These source labels were turned into int64: zone (A1-A6), client_activity (BusinessType B1-B8), distribution_channel (ChannelDist D1-D3) and formula (PolicyCateg C2-C5).
+   - The source says levels are confidential ("most categorical levels have unknown meaning"), so no order is known.
+   - power_value_class (P1-P11, "Combiné puissance valeur") may be ordinal. Keeping it numeric is defensible.
+   Change: cast zone, client_activity, distribution_channel and formula to category.
+
+3. Negative claim charges were clipped to 0 at the row level, and this is not documented.
+   Evidence:
+   - 597 of 4,568 claims are negative (minimum -1,254.8). These are IDA direct-compensation recoveries.
+   - 537 rows had a negative net charge and now have target 0.
+   - The total charge rose 4.3% (6.403M -> 6.676M).
+   This is defensible: Tweedie needs y >= 0, and the gross cost is arguably what a pricer wants. But it changes the target's meaning.
+   Change: state the clipping in task.md, or use the net charge floored at the portfolio level.
+
+4. Columns that are useless or redundant.
+   - insured_value_class is 99.85% missing (87,093 / 87,228 rows were "Unknown" in the source). Drop it, or keep "Unknown" as an explicit level rather than NaN.
+   - n_vehicles equals 1 in all but 2 rows. Drop it.
+   - exposure_to_year_end is n_vehicles x (year end - period_start)/365. This explains the maximum of 1.82 (two 2-vehicle rows). It is known at the start of the period, so there is no leakage, but it is a deterministic transform of period_start. Rename or drop it. If kept, cap it per vehicle.
+   - period_start as a feature hurt in 2 of 3 windows (deviance 93.5 vs 93.6 and 100.3 vs 95.7 without it). It is legitimate, but tree models cannot extrapolate time.
+   - Fine: VehiclCateg (constant V1), PolicyID, LicNb and ClaimNb were correctly dropped.
+
+5. Repeated entities across splits.
+   Evidence:
+   - The 87,228 rows come from 18,037 policies (fleets), 4.8 rows per policy on average and up to 81.
+   - 79% of the 2013 rows belong to a policy seen in 2011-2012, and 25% to the same vehicle.
+   - There are 11,807 exact duplicate feature rows, including the date (vehicles in the same fleet share contract attributes).
+   For renewal pricing, this overlap is realistic, not leakage. The policy ID is removed, so experience rating is impossible. That is acceptable but limits the attainable signal.
+   No change is needed. Optionally, note it.
+
+6. Situations that end before year end have a higher claim cost per exposure. This is informative truncation.
+   Evidence: pure premium 193.6 (ended early) vs 159.9 (ran to year end), and claim rows per exposure 0.106 vs 0.090. Contract changes or cancellations after a claim probably shorten situations.
+   This is inherent to the data and standard in insurance, so no change is needed. Be aware it makes the per-exposure target noisier for short rows.
+
+7. Claim development and capping.
+   Evidence:
+   - 41 claims have SettlYear 0 (still open). The others settle in 2011-2014, so 2013 claims are the least developed. Yet the 2013 pure premium is not lower, so no visible under-reserving.
+   - The maximum single claim charge is 8,565. The data may be capped or scaled for anonymity; the source does not say.
+   No change is needed.
+
+8. Labels and encodings. The categorical labels are in French ("> 5 ans", "<= 5 ans") and the deductible levels carry numeric prefixes ("1. 0", "2. 1 - 200"). This is harmless as categories. Missing values: only insured_value_class has any.
 
 **What I could not check**
 
-- The exact three test-window boundaries, and whether `period_start` is passed to models as a feature. Day-of-year added nothing in my tests: AUC changed by ±0.01 and was mostly lower.
-- Claim occurrence dates, which would settle whether mid-year exits are claim-triggered.
-- Labels for the 2014 `pg16test` file, which are not public.
-- Any perturbation or anonymisation the insurer applied.
-- The original CSVs on freakonometrics.free.fr. I verified against the CASdatasets `.rda` instead, and read the instructions PDF via the Wayback Machine, since the live link returns 404.
+ - The exact boundaries of the 3 test windows and the benchmark's metric (task.md gives neither). I used my own half-year and year windows.
+ - The original freakonometrics CSVs (the site did not respond). I verified against the CASdatasets copies instead; the French labels in the prepared data suggest a different but equivalent copy.
+ - Whether the claim charges were scaled or capped by the organisers.
+ - The real meaning of the anonymised levels.
+
+</details>
+
+<details><summary>Task gamer</summary>
+
+**Task gamer: pricing_game_2016_french_fleet (claim_charge_per_vehicle_year, normalized weighted Gini, weight = exposure)**
+
+Verdict: I found no exploit that beats the noise floor. The task cannot be gamed in any way I could measure. The training weight (the realised exposure, which the outcome can cut short) carries no usable signal under this metric.
+
+Setup. Three splits share one training set (2011-01-01 to 2012-12-02, 56,178 rows). The test windows are 2013 Jan-Apr (19,229 rows), May-Aug (6,509) and Sep-Dec (5,312). Every model is LightGBM fitted with sample_weight = exposure, as the task asks. Scores are listed per split in the order r0 (Sep-Dec), r1 (May-Aug), r2 (Jan-Apr), then the mean.
+- Untuned L2 baseline (baseline.py): 0.035 / 0.085 / 0.105, mean 0.075.
+- Better honest model, Tweedie 1.5 bagged over 5 seeds (weight_attack.py): 0.224 / 0.214 / 0.180, mean 0.206.
+- Noise floor: the same models refitted with one random column added (baseline.py, noise_bagged.py).
+  - Untuned L2: mean ranges from 0.044 to 0.110.
+  - Bagged L2: mean ranges from 0.082 to 0.140.
+  - Bagged Tweedie: mean ranges from 0.172 to 0.196; single splits vary by up to about 0.05.
+- With about 3,700 positive rows overall and a heavy-tailed target, any gain below about 0.03 in the mean is noise.
+
+**Exploits ranked by gain**
+
+| # | Exploit | Script | Honest | Exploited | Gain (per split) | Deployed model has it? | Fix |
+|---|---|---|---|---|---|---|---|
+| 1 | Realised exposure (the weight) as a feature, L2 | weight_attack.py | 0.1035 (L2 bagged) | 0.1338 | +0.067 / -0.015 / +0.039 | No: a period can be cut short by cancellation or change after it starts | none needed; the gain is inside the L2 noise range (0.08-0.14) |
+| 2 | Exposure / planned exposure (cut-short ratio), Tweedie | weight_attack.py | 0.2061 | 0.2121 | +0.004 / -0.007 / +0.022 | No | none needed (noise) |
+| 3 | Has a successor row with the same static key (future rows), Tweedie | order_and_test.py | 0.2061 | 0.2083 | +0.018 / +0.004 / -0.016 | No | none needed (noise) |
+
+None of these is a real gain. With Tweedie, the exposure columns do nothing: exposure 0.1985, 1/exposure 0.2003, cut-short flag 0.2101, against the honest 0.2061. Exposure alone used as a ranking scores 0.029, close to zero.
+
+Mechanism of the weight. Exposure is EndDate minus BeginDate, and EndDate can come before the year end. The kit's feature exposure_to_year_end equals (Dec 31 - period_start + 1) / 365 rounded to 2 decimals on all but 2 rows, so it is the planned exposure and is known at the prediction point. For 50,337 rows the realised exposure falls short of the planned one. These cut-short rows have a lower share of rows with a claim (3.3% against 5.6%) but a slightly higher charge per vehicle-year (220 against 171), because the target is already divided by exposure. Both the metric (L = cumulative exposure * y = cumulative charge) and the training weight remove the exposure effect, so a model has almost nothing left to learn from it. The weight is an outcome-dependent quantity a deployed model would not have. It could leak in principle; here it does not.
+
+**Flaws that hurt an honest model**
+
+None found. All the training-set choices below scored within noise of the weighted Tweedie (0.2061, honest_side.py):
+- unweighted fit: 0.2064
+- training on 2012 only: 0.2007
+- dropping rows with exposure < 0.1: 0.2047
+- dropping period_start: 0.1882 for Tweedie, 0.1148 for L2
+
+Dropping period_start helps the untuned unbagged L2 (0.075 to 0.131), but that is a weakness of the model when it extrapolates in time, not a flaw of the task.
+
+**Attacks that found nothing**
+
+- Order and ids.
+  - The data is sorted by period_start. Neighbouring rows agree on the label 0.9190 of the time, against 0.9185 by chance (correlation 0.005).
+  - The rank of a row within its start day predicts a claim with AUC 0.502. As a feature it scores 0.2079.
+  - The row position within 2012 has AUC 0.41, but that is period_start itself: later starts mean less exposure left in the year.
+- Copies and entities across the split.
+  - Ten static columns form 19,518 keys, which is not unique enough to identify vehicles.
+  - Only 6-10% of rows have a same-key row starting the day after they end, so the vehicle chains cannot be rebuilt.
+  - The successor flag scores 0.2083 (see #3).
+- Statistics over the test rows.
+  - Number of rows with the same key over all rows: 0.2098.
+  - Number of rows starting on the same day: 0.2032.
+- Formats. The features are categorical classes or 2-decimal derived values, so there are no digit patterns to exploit.
+  - insured_value_class is missing on 87,093 of 87,228 rows (99.8%). Rows that have it show a claim in 2.2% of cases against 4.3% for the rest. That is 135 rows, too few to matter.
+  - exposure_to_year_end is above 1 (1.82 and 1.26) on 2 rows, an artefact without effect.
+- Columns from after the prediction point. None among the features. exposure_to_year_end is planned, not realised. EndDate, Exposure, ClaimNb and the other claim fields of the source are not in the features.
+- Transforms over all rows. No column is standardised or ranked over the full table.
+- Web search: I found no competition forum or leak thread for the 2016 game. The CASdatasets documentation (saved in the kit as pricingame.Rd) lists the source columns. Compared with the kit, the preparation dropped PolicyID, LicNb, EndDate, Year, VehiclCateg and BusinessType, as well as ClaimNb, DirectComp, CompRate and SettlYear. Without PolicyID and LicNb, vehicles cannot be followed across years. Looking rows up in the public pg16trainpol/pg16trainclaim files would recover the labels; that is not a flaw of the task.
+
+**Could not check**
+
+- Whether 2012 claim charges were fully settled when the data was extracted. SettlYear was dropped, so labels of recent training rows could be incomplete; the claim rate is flat across 2011-2013 (about 4.2-4.5%), so there is no sign of it.
+- Whether a deployed fleet pricer would use claims history per vehicle. That needs PolicyID, which the kit does not have.
 
 </details>
 
 <details><summary>Precedent check</summary>
 
-**Precedent check (precedent-checker, 2026-11-01): pricing_game_2016_french_fleet**
+**Precedent check: pricing_game_2016_french_fleet, exposure re-review of 2026-11-06 (full tier)**
 
-```text
-Verdict: most choices follow their precedents. One keep is not allowed by the ranking as written (exposure), one Must
-  label departs from its sibling (metric origin), and one amendment is due (SPLIT-10).
-Validity: LEAK-10 (Must): `exposure` is kept as realised. That departs from frempl_french_motor_personal_line and
-  spanish_motor_insurance_coverage_level_2022_2024, which fixed the early ends they could locate (LEAK-7). It also
-  departs from LEAK-38's host-file clause (kick, expresso; Lennart, 2026-10-22). A keep would be an amendment, not an
-  exception (prompt A).
-  SPLIT-8 / SPLIT-14: temporal where the siblings were forced to grouped. Consistent: the daily dates set it apart.
-  Three windows inside one test year on one train side is a first case and needs a Cases row.
-  SPLIT-11: departed from with a stated reason (the tariff is refit once a year). An exception to record, the first of
-  its kind.
-  SPLIT-10 (no gap): the third exception for the reason "a gap would break SPLIT-14's 50% floor" (prompt C).
-  SPLIT-15: departed from, but cited as SPLIT-17.
-Value: `roc_auc` is consistent with porto_seguro and with the family's Gini (identity, MET-11). Origin `fallback`
-  departs from pricing_game_2017_french_mtpl's `stand_in` with nothing to set it apart (MET-11, Must; prompt B).
-  TP-4 reads as in frempl, australian and spanish.
-Quality: ids, labels, missing codes and repeated rows are handled as the siblings handle them.
-Target: the binary indicator is the curator's call for this dataset (CC 2026-10-30). Its stated reason also holds
-  for siblings that kept the amount, so the notes should name what is specific to pg16. IDA claims counted: consistent.
-Drift: none yet. A pair to avoid: keeping pg16's realised length while confirming frempl's fix (prompt A).
-```
+**Verdict**
 
-Sources read: the decision register of the run (it raises no flag for the insurance family), the
-definitions and REVIEW.md files of the run's insurance tables, the records of fremtpl2, pricing_game_2015/2016/2017,
-the zero-inflated triage summary (no longer in the repository; each call is in its record's Assessment of 2026-10-30) ("Policy calls of 2026-10-30"), the Cases tables of
-`leak_checks.md`, `splits.md` and `metrics.md`, frempl's panel (precedent checker, mediator D2), and this panel's
-claim, column, split and practitioner reports. Every number below comes from those reports. I ran no new probe.
+- **D11's target, weight, feature and metric parts follow the precedents.**
+- **D11's training-side part reverses Andrej's 2026-11-02 call (issue 2 (d)), and it states a fact that sets it apart.** The fact is a new measurement plus a newer Must.
+- **What is implemented now (three windows on one training side) breaks SPLIT-14 (Must) with no fact that sets it apart.** LEAK-41 does not force it, because option C meets both rules. Issue 6 is the right place to settle this. Below is the reflection prompt for it, and two corrections to issue 6's own text.
 
-**Decision by decision**
+**Sources read**
 
-1. **Target `claim` (count > 0) and `binary_classification`.** Consistent with the curator's decision. Departs from the
-   family's amount targets, with a stated reason that is only partly specific to pg16.
-   * The curator's call: Andrej asked "Might make more sense to add this as a classification task, what do you think?".
-     The AI agreed (Assessment 2026-10-30), and the CC of the same day gave `TBD -> Yes` after that answer. Andrej's
-     answer to policy question 3 ("suggest judgement calls based on the references for each dataset") makes calls per
-     dataset the rule here. A different target from fremtpl2's is therefore no drift.
-   * The siblings kept the amount: fremtpl2 (CC, Andrej, 2026-10-20: "aggregate claim amount ... The claim count alone
-     is the classic alternative target; not both"), frempl, pricing_game_2017_french_mtpl, australian,
-     spanish_motor_insurance_2015_2018 and spanish coverage. australian's panel weighed and rejected a binary target
-     ("drops the claim size the insurer prices", its issue 4).
-   * Why the stated reason does not set pg16 apart: the notes give "the charges among claimants carry no signal". That
-     holds for the siblings too: frempl R^2 -0.20 to -0.01 on claimants, pg17 -0.036, spanish 2015-2018 -0.03 to 0.03.
-   * What does set pg16 apart, already in the record:
-     * the charges are scaled by one constant;
-     * single charges stop at 8,565 with no pile, a short tail that is unexplained for material damage;
-     * 537 periods net negative from IDA flat recoveries.
-   * Suggestion: give those facts as the reason in the target bullet. No consistency prompt; it is the curator's call.
+All in the repository (branch zi-datasets):
 
-2. **IDA claims count as claims (523 periods with no positive charge).** Consistent.
-   * The family's call of 2026-10-30 ("a net recovery is no claim cost of the year") is about amount targets: frempl's
-     negatives, pg17's recourse totals.
-   * For a count, each dataset follows its source's own indicator. pg16's `nombre_de_sinistre` includes IDA claims;
-     frempl's `ClaimInd` is 0 on its negative amounts. Both follow their source (USE-5).
-   * The practitioner measured the alternatives: a positive-charge claim scores 0.706 and a non-IDA claim 0.702, against
-     0.712 for any claim.
+- `datasets/_dev/tabarena-v0pt2/pricing_game_2016_french_fleet/REVIEW.md` (issues 1-6), its `dataset.py` (split code and `splits_comment`), and `curation/records/pricing_game_2016_french_fleet.md` (CC lines of 2026-11-02 and 2026-11-06).
+- `.claude/skills/knowledge-curation/references/splits.md`: SPLIT-8, 9, 10, 11 and 14, and the Cases table.
+- `.claude/skills/knowledge-curation/references/leak_checks.md`: LEAK-41 and the Mechanisms row on time on risk.
+- `.claude/skills/knowledge-curation/references/principles.md`.
+- The REVIEW.md of the siblings, same folder layout: `wisconsin_local_government_property_insurance_fund` (issues 1 and 3), `spanish_motor_insurance_coverage_level_2022_2024`, `pricing_game_2017_french_mtpl`, `frempl_french_motor_personal_line`.
+- Every sibling's change note of this run (`CHANGES.md`), the decision register (`register.json`, `register.log`) and `probes/probe22_l2.txt`, in the run folder.
 
-3. **`exposure`, the realised period length, kept with a `Potential leak, kept on purpose:` note.** Departs from the
-   closest precedents. Of the two stated reasons, the rules reject one and the panel refuted the other. Not reasonable
-   under the ranking as written: LEAK-10 is a Must, so a keep needs an amendment (prompt A).
-   * Same mechanism, same facts:
-     * frempl (AI fix after its panel, 2026-11-01; pending as issue 2 of [its REVIEW.md](../frempl_french_motor_personal_line/REVIEW.md)).
-       Its dates locate the early ends row by row, and those ends carry 2.7 times the cost per exposure-year. Its
-       mediator (D2) settled the point by rank: LEAK-10 holds; LEAK-6's narrowing covers only late values that cannot
-       be located; LEAK-11 does not reach a value that raises the claim ranking. The fix was the start-known length.
-     * spanish coverage (AI draft, 2026-11-01). It resets the cancellations it can locate to a full year (LEAK-7;
-       0.50 against 0.28-0.31 claims per exposure-year). The part it cannot locate (new business) carries the kept-leak
-       note.
-     * pg16 has the dates too. 58.2% of 2013 periods end before 31 December. Given the covariates known at the start,
-       early-ending periods have a rate ratio of 1.22 [1.12, 1.33] (column audit). The realised length adds ROC AUC
-       +0.040 to +0.055 over the length known at the start (claim audit #17). Here the declared metric is that claim
-       ranking.
-   * Precedents that keep, and why they do not carry:
-     * australian (pending, [its issue 2](../australian_vehicle_insurance_2004_2005/REVIEW.md)) keeps under LEAK-11
-       because there the late part lowers the Gini (0.182 against 0.31). In pg16 it raises the declared metric, so
-       LEAK-11 cannot apply.
-     * fremtpl2 (CC, Andrej, 2026-10-20: "The contracted period is known at pricing (a mid-year cancellation also
-       shortens it)") is the curator's own keep, and the 2026-10-30 policy row for pg16 ("feature") cites it. It was
-       made before LEAK-38's scope amendment (2026-10-22) and LEAK-10's clauses (2026-10-26), on data that cannot
-       locate an early end. australian's mediator read it as a precedent on practice (a feature, not a divisor), not
-       on these facts.
-   * The definition's two reasons against the rules and the panel:
-     * "The game's pricing file gives each period's dates and length too." This is the argument LEAK-38 (as amended
-       2026-10-22, Lennart) rejects: "even if the host's test file carries it the same way: that file is a holdout of
-       the same snapshot, not deployment data". It was decided that way for kick (`WheelType`, `PRIMEUNIT`, `AUCGUART`)
-       and expresso_churn_prediction (`REGION`); see `leak_checks.md`, Mechanisms table. test_contrats.csv is the 2014
-       holdout of the same 2016 extract.
-     * "The end carries no signal beyond the length." The 31-December flag is fixed by start and length on 99.5% of the
-       rows, so that test could not fail (claim audit #17). LEAK-10's second clause also says that "removing it changes
-       no score" alone is no reason to keep. A test that can fail, the Poisson offset model with an early-end flag
-       (0.669 against 0.668), does show the outcome-linked part adds no ranking. But the time on risk unknown at the
-       start is worth 0.04-0.05.
-   * Weaker than frempl, by the closest comparable measures: +23% claims per vehicle-year for vehicles whose cover ends
-     early for good (+30% in the shortest band, +1% to +9% in the others), against 2.7 times the cost per exposure-year
-     in frempl. This is option (a) of prompt A. It is a fact about degree, not about kind.
-   * Form: the label, the mechanism, the numbers and the revisit condition match what definitions.md asks for. frempl's
-     precedent check had flagged a `Note:` there; pg16 is right on form.
+**Decision 1: D11, the target, weight, feature and metric (Lennart, 2026-11-06, issue 5)**
 
-4. **Split: temporal; train 2011-2012; three four-month windows of 2013, newest first.**
-   * Temporal rather than `ForcedGroupedFromTemporal`: consistent.
-     * pricing_game_2017_french_mtpl and frempl hold one year; spanish coverage holds three calendar years with no
-       finer date. All three went to SPLIT-8.
-     * pg16's daily start dates give windows that keep 64% of the rows in training. SPLIT-8 applies only when "the
-       release cannot give the windows SPLIT-14 asks for".
-     * wisconsin_local_government_property_insurance_fund, also annual rating with only a year column, ships two
-       yearly windows (a SPLIT-14 question in its own panel). It does not bear on pg16.
-   * Three windows inside one test year, on one train side: no precedent in the working copy. The custom split
-     functions show no other fixed train side. It meets SPLIT-14 in letter. The curator confirms the reading, and it
-     becomes the first Cases row under SPLIT-14 (split audit, issue 1).
-   * Fixed train side, a departure from SPLIT-11 (Should), with a stated reason that sets it apart: the tariff is refit
-     once a year, and the game priced a whole year from the closed years (SPLIT-12, SPLIT-19).
-     * spanish_motor_insurance_2015_2018 grows its train side month by month. Its source names pricing for new
-       business, written monthly. The two readings of the refit cadence differ, and each rests on its source.
-     * To record: `Exception to SPLIT-11` in the record and the notes. It is the first of its reason.
-   * Three windows, not nine, a departure from SPLIT-15 (Should), cited as SPLIT-17.
-     * SPLIT-17's trigger (under about 50 test rows per window; coffee_rating_prediction) does not apply: the windows
-       hold 5,312 to 19,229 rows.
-     * The reason is sound under SPLIT-15: on one train side, finer windows only cut the same test rows.
-       rain_in_australia (Lennart, 2026-10-26) went to more windows on an expanding train side, which is not this case.
-     * Fix the citation.
-   * No gap, a departure from SPLIT-10 (Should). The notes do not name it. The split audit gives the fact: rows are cut
-     at 31 December, so a 1-day gap leaves 50.2% of the rows and a 1-month gap 48.7%, under SPLIT-14's floor. The
-     simulated delays move the mean AUC by 0.003 or less.
-     * The same reason has two recorded exceptions in `splits.md`: alfa_battle_2_0_task_2 and lending_club (Lennart,
-       2026-10-21). In this run, spanish_motor_insurance_2015_2018 and wisconsin propose the same exception.
-     * pg16's would be the third, or later, so the amendment is due (prompt C). The proposed amendment for
-       ames_housing and perth_house_prices covers another reason and does not count.
-   * Recurring fleets (SPLIT-13): consistent with the use case (known entities, USE-10) and with the game's 2014 file
-     (82% of its rows have their contract in 2011-2013).
-     * frempl had to group because a later record's claim counters carry the earlier claim. pg16 trains strictly
-       earlier and ships no claim-history feature, so no grouping is needed.
-     * Note: the "call of 2026-10-30" for the split was an AI suggestion accepted with the curator's `Yes`, not a CC
-       of its own. Word it "suggested on 2026-10-30, accepted with the Yes", as australian does.
+**Consistent.**
 
-5. **Kept and dropped columns.** Consistent.
-   * `contract_id` (subscription order) and `vehicle_id` dropped. This matches fremtpl2's `IDpol` (encodes year and
-     file order; CC 2026-10-20), pg17's `id_vehicle` ("their rank should not represent anything valuable") and
-     LEAK-10's pointing-id row (sdss_17).
-   * `year` (a copy of the start) and `vehicle_category` (constant) dropped: CLEAN-5.
-   * `period_start` kept as a datetime feature, like the time column of spanish_motor_insurance_2015_2018.
-   * `period_end` dropped. Its end stays in start + `exposure` (column audit), so this belongs to decision 3. frempl
-     dropped both dates for that reason, after fixing the length.
-   * "ND" made missing (CLEAN-10), as pg17 made its placeholders missing. Two code sets mapped to labels (CLEAN-12), as
-     ames_housing (Lennart, 2026-10-26).
-   * Anonymised classes typed categorical (CLEAN-14). This follows the amex reading (Lennart, 2026-10-21): categorical
-     when the context says so. frempl's `RiskArea` stays numeric because its source says "possibly ordered"; that is
-     different documentation, not a conflict.
-   * `n_vehicles` (1 on all but 2 rows) kept. CLEAN-5 covers only constant columns, and I found no precedent against
-     keeping it.
-   * History features measured and not added. LEAK-34 allows them and does not require them.
-   * Repeated feature rows kept (LEAK-18), as frempl (391 after rounding), australian (707) and spanish (three pairs)
-     did. frempl's drop of exact copies over every source column does not arise: the raw periods are unique on their
-     keys (asserted).
+- **Realized time on risk is the weight and never a feature; the rate is the target.** This follows the four other 2026-11-06 decisions:
+  - fremtpl2 and bemtpl97 (option A of #51).
+  - australian_vehicle_insurance_2004_2005 (D8).
+  - frempl_french_motor_personal_line (D9).
+  - spanish_motor_insurance_coverage_level_2022_2024 (D10, `actual_exposure` the `sample_weight`).
+  - The rule is LEAK-41's Cases row, plus MET-14 and MET-15.
+- **The length to 31 December kept as `exposure_to_year_end`** follows frempl's `length_to_year_end` (LEAK-7, LEAK-37). Andrej's fix of 2026-11-02 (issue 1, the Mechanisms row) still holds as a feature.
+  - Probe 22 gives R² 0.38 through fleet_management (49% of the gain) and exposure_to_year_end (38%). Both are known at the start, so they stay under LEAK-41's timing clause.
+  - frempl is the precedent: R² 0.34, 86% through `length_to_year_end`, kept.
+- **frempl's open issue 7 does not carry over.** That issue exists because frempl ships on the log1p scale. pg16 ships the rate on the identity scale (CLEAN-16 as amended), so the squared-error problem does not arise.
+- **`normalized_weighted_gini` as a stand-in** matches australian (D8) and spanish coverage, and MET-10 (Andrej, 2026-11-02: no family call, diversity when in doubt). pg17 moved to the Tweedie deviance (Andrej, 2026-11-03). That is case by case under MET-10, not a conflict.
+- **D11 supersedes Andrej's 2026-11-02 target call (issue 4) with a stated measurement**: the stay is worth about 0.03 of the row Gini, and the rate model scores 0.154 against 0.136. australian's D8 and spanish's D10 superseded Andrej's calls of the same day in the same way. Same pattern, no drift.
 
-6. **Metric `roc_auc`, origin `fallback` (MET-8).**
-   * The value is consistent.
-     * porto_seguro (binary claim indicator) declares `roc_auc` for the competition's normalized Gini, by MET-11's
-       identity.
-     * The family's ranking metric (policy question 3, 2026-10-30: the normalized Gini) is the same order on a binary
-       target.
-     * The practitioner's `log_loss` (context) would be a new call, against both. It is a weighing call (MET-10) for the
-       curator, not a consistency fix.
-   * The origin departs, with nothing to set it apart (prompt B). pricing_game_2017_french_mtpl declares
-     `Metric.stand_in(..., original=<the market profit>)` for the same organiser's market game. The 2026-10-30 policy
-     row for this record said "Gini (stand-in)". Under MET-11 (Must), stand-in is the case "the source has a unique
-     metric that cannot be computed on our data (inputs not published, a task we changed)". The definition's own
-     reason states both conditions. The second Assessment of 2026-10-30 ("the fallback, MET-8") was an AI line. The
-     CC that followed decided the verdict, not the origin.
+**Decision 2: D11, every window trains on 2011-2012**
 
-7. **Provenance, year and licence.** Consistent.
-   * The organisers' files rather than CASdatasets (PROV-8), like diabetes_3 (Lennart, 2026-10-26: source_links to
-     the authors' file, copies named as copies) and airfoil_self_noise. pg17 took CASdatasets only because the toolbox
-     is gone (404).
-   * CASdatasets' `DirectComp` noted as a problem of that copy (PROV-15), like OpenML 43838.
-   * Year 2016 (PROV-9).
-   * `license = None` when the copy used states none, as wisconsin does. pg17's GPL comes from CASdatasets, the copy
-     it uses.
-   * The three warnings proposed for acceptance have precedents: `dataset_duplicate_rows` (account_debt_south_africa,
-     hotel_booking_demand), `meta_time_horizon_mismatch` (zillow_prize, perth_house_prices) and
-     `meta_license_unknown` (diabetes_3). The definition does not yet carry `accepted_check_warnings`.
+This reverses Andrej's issue 2 (d) of 2026-11-02 (CC line in the record; splits.md Cases row "SPLIT-14 (amended 2026-11-02, Andrej), SPLIT-11").
 
-8. **Zeros and record fields.** Consistent once updated.
-   * Andrej's definition of `Two-Regime Zeros` (policy question 4: a low value by far the most frequent and independent
-     of the rest of the target) cannot apply to a binary target. The tag goes at hand-over, with
-     `problem_type: Regression`, the CASdatasets-only `name` and `source_links`, and `v2_path`.
-   * diabetes_3 (Lennart, 2026-10-26) is the precedent for setting the record fields as the definition has them.
+**It departs with a stated reason.** The fact that sets it apart is real and new:
 
-9. **Fit `direct` with a kept leak; the "Known" text.**
-   * `direct` with a named kept leak follows USE-8 as written (kick: a kept leak "does not by itself make a fit
-     approximate").
-   * `task_summary.known` and the first bullet say the length is known at the start. australian corrected the same
-     error after its panel (2026-11-01, USE-3). The same rewording is due here, whatever prompt A decides.
+- **New measurement.** The exposure study of 2026-11-05 measured the 2013 periods the expanding sides admitted. They claim more per vehicle-year: 0.127 and 0.131 against 0.115 and 0.116. They make up 10.8% and 4.0% of the training vehicle-years of the September and May windows.
+- **This was not known on 2026-11-02.** The Assessment that day saw only the per-period claim share ("3.2% and 2.4% with a claim"), which looked lower. The answer to Andrej framed the closed periods as "as a refit on that day would see them".
+- **New rule.** LEAK-41 (Must, 2026-11-06) bars training "on rows selected by the realized weight". Admitting a 2013 period because it ended before the window start selects it by its realized length.
+- **Precedence allows the reversal.** Principles say a newer curator decision and a later measured finding win.
 
-**Consistency prompts**
+**It also matches an older precedent.** hotel_booking_demand (SPLIT-9) is the closest older case: rows in training because their outcome came early, plus a time feature that turns the selection into a shortcut. pg16 has `period_start` as a datetime feature, so the expanding sides taught "2013 start, higher rate". This supports the reversal under SPLIT-9 and SPLIT-10 even without LEAK-41.
 
-**Consistency check A (AI, 2026-11-01):** if you keep pg16's realised `exposure` (a departure from LEAK-10, Must), the
-call differs from frempl_french_motor_personal_line (fixed after its panel, 2026-11-01, pending your issue 2) and
-spanish_motor_insurance_coverage_level_2022_2024 (located cancellations reset, 2026-11-01). The mechanism is the same:
-time on risk cut short after the prediction point, located row by row by the dates, with the early ends claiming
-more at the same length. The definition's reason "the game's pricing file carries the lengths too" is the one LEAK-38
-rejected for kick and expresso (Lennart, 2026-10-22). Its "no signal beyond the length" test could not fail. What sets
-pg16 apart?
-(a) Two facts, which can only be recorded as a LEAK-10 amendment scoped to them, since a Must takes no exception:
-fleet cover is billed on the vehicle-years actually earned (the premium is revised at the period's end for vehicles
-in and out, AMRAE, cited by the practitioner); and the outcome-linked part of the early ends adds no ranking given the
-covariates (0.669 against 0.668), with a weaker link than frempl's (+23% claims per vehicle-year against 2.7 times
-the cost per exposure-year). The weakness: a personal policy cancelled mid-term also earns its premium pro rata
-(inference, not checked), so the billing fact may not set pg16 apart from frempl. And the time on risk unknown at the
-start still adds 0.04-0.05 AUC.
-(b) Treat pg16 like frempl: give every early end its length to 31 December (LightGBM 0.671 to 0.622; 0.630 if only the
-periods with no later period are changed). Drop `exposure` if it then follows from `period_start`, and re-run TP-4.
-(c) Reopen frempl's and spanish's fixes to match pg16.
-(d) Change the rule broadly, from fremtpl2's call: realised time on risk stays as a feature in insurance pricing. That
-reaches frempl, spanish, australian and fremtpl2 together, and would end frempl's issue 2 and australian's issue 2 with
-one answer.
+**One open point (not a departure).** No one measured whether the admitted early-ended 2013 periods belong to the same vehicle or contract as later periods in the test window. That would make the selection a SPLIT-9 shortcut (alfa_battle_2_0_task_2) rather than the diffuse kind (lt_vehicle_loan_default_prediction). It changes nothing for D11, which removes the rows anyway.
 
-**Consistency check B (AI, 2026-11-01):** the metric origin `fallback` differs from pricing_game_2017_french_mtpl
-(`stand_in`, original the market profit, AI draft 2026-11-01) and from this record's suggested call of 2026-10-30
-("Gini (stand-in)"). The facts are the same: one organiser's market game whose result needs other players' premiums
-and unpublished claims, on a task we changed. What sets pg16 apart?
-(a) The 2016 market placed each insured by a random draw among the cheapest premiums, so it gave no score to stand in
-for. This is weak: MET-11 names "a task we changed" as stand-in, and the players' results were a score.
-(b) Treat pg16 like pg17: `Metric.stand_in("roc_auc", original=<the 2014 price-aggregator market, rules Sec. 4>, ...)`,
-the reason adding that ROC AUC ranks as the Gini does (2 x AUC - 1).
-(c) Reopen pg17 to `fallback`.
-(d) Amend MET-11.
-Recommended: (b), a label change with no effect on any score.
+**What it leaves broken.** D11's wording keeps three windows on one shared training side. That is the setup Andrej's SPLIT-14 amendment counts as one window. Lennart reframed SPLIT-14 on 2026-11-05 ("each window trains on what is known before it starts"), so this also contradicts Lennart's own wording of the day before. D11 rightly leaves this to issue 6, so it is not drift yet. It becomes drift if A is taken without an amendment. See decision 4.
 
-**Consistency check C (AI, 2026-11-01):** shipping pg16 with no gap would be the third exception to SPLIT-10 for one
-reason: a gap of the label's delay leaves a window's train side below SPLIT-14's 50% floor. The first two are
-lending_club and alfa_battle_2_0_task_2 (Lennart, 2026-10-21). spanish_motor_insurance_2015_2018 and wisconsin propose
-the same in this run. principles.md asks for an amendment at the third.
-(a) Record it as an exception (the facts: rows cut at 31 December, 50.2% of the rows with a 1-day gap, 48.7% with a
-month; the simulated delays move AUC by 0.003 or less).
-(b) Set a gap. The train side then falls below the floor, so SPLIT-8 applies.
-(c) Not applicable.
-(d) Amend SPLIT-10: "When a gap of the label's delay would leave a window's train side below SPLIT-14's floor, the
-windows train without it, and the delay is stated as a risk with its measured or simulated bound." The five cases then
-apply the rule instead of departing from it.
+**Decision 3: the no-gap exception to SPLIT-10 (Andrej, 2026-11-02, issue 3), kept "on new grounds"**
 
-**Cases rows due once the curator decides:**
-* SPLIT-14: sub-windows of one dated test year on the train side the refit cadence gives.
-* SPLIT-11: exception, annual refit.
-* SPLIT-15: three windows on one train side.
-* LEAK-10 or its amendment: time on risk in insurance tables, decided with frempl issue 2, spanish coverage and
-  australian issue 2.
-* MET-11: market games as stand-in, with pg17.
+**Still reasonable, but its stated reason is now stale.**
+
+- **The record line is out of date.** It still reads "Serves SPLIT-14: three windows on distinct training sides above the floor". Under D11 the training sides are no longer distinct.
+- **The new ground is better than the old one.** REVIEW.md gives it: a gap inside 2012 would admit 2012 periods by their realized end (LEAK-41, a Must), and a one-year gap leaves 2011 alone (30.4%). The departure from SPLIT-10 (Should) now yields to LEAK-41 (Must), plus SPLIT-14's floor. The exception should be re-recorded with this reason.
+- **It now covers one window only.** The May and September windows start 4 and 8 months after the training side ends, so only the January window lacks a gap.
+- **The register's amendment-due flags are not new drift.** These are flag 17 (SPLIT-10, 9 datasets) and flags 18-24. Andrej declined the SPLIT-10 amendment on purpose on 2026-11-02 (avito_demand_prediction issue 4: "each no-gap departure for SPLIT-14's floor ... stays an exception").
+- **The "exception_to_must: SPLIT-14" flags are misattributions.** They are SPLIT-10 exceptions that serve SPLIT-14. spanish coverage's earlier precedent check said the same.
+- **Process gap.** splits.md has no SPLIT-10 Cases row for pg16, spanish_homeowners_motor_insurance_2010_2014 or wisconsin. The no-gap exceptions of 2026-11-02 for all three exist only in the records, while principles.md asks for a Cases row of kind `exception` for each.
+- **If issue 6 goes to C,** the exception disappears (the Notes for the AI say so), and pg16 drops out of the count.
+
+**Decision 4: issue 6 (open) against the SPLIT-14 precedent**
+
+**The closest precedent is spanish_motor_insurance_coverage_level_2022_2024**, not pg17 or frempl. Its facts:
+
+- Three stacked calendar years and recurring entities.
+- One valid annual window above the floor: 2024 trained on 2022-2023, 52.5% of the rows. The second window would train on 19.0%.
+- Result: forced grouped by `insured_id`, `ForcedGroupedFromTemporal` (Andrej, 2026-11-02: "Forced group splits should be fine"). The leak test found none.
+
+pg16 has the same structure: 2013 on 2011-2012 is 64.4%; 2012 on 2011 is 30.4%.
+
+**Correction 1 to issue 6's text.** Its Consistency bullet calls spanish coverage "one valid yearly window, below the floor" and names "its one valid window is above the floor" as what sets pg16 apart. Both are wrong: spanish's valid window is above the floor too (52.53%, its split audit and claim 34). The only remaining distinguishing fact is that pg16's dates are daily, so 2013 can be cut into sub-windows. Andrej's amendment exists precisely to say such a cut on one training side counts as one window. Under SPLIT-14 as it stands, pg16 has the same facts as spanish and gets C.
+
+**Other precedents for C:**
+- nba_players_2016_2019 and open_university_learning_analytics_dataset (Lennart, 2026-10-21): too few periods, one valid window, grouped by entity, cost measured against the valid window. These cases created SPLIT-8's "too few periods" clause.
+- pricing_game_2017_french_mtpl and frempl (one year each) and distribution_transformers_at_cauca_department (one window, forced IID) were forced too.
+- No shipped dataset has windows that share a training side. I searched every definition, REVIEW.md, record and knowledge file.
+
+**Option A, with an amendment.** No precedent supports it, and it reverses a Must amended four days earlier.
+- The amendment issue 6 drafts ("when the annual cut leaves no other training side free of a selection by the outcome") would reach only pg16. spanish coverage and pg17 have no dates within a year; frempl has a single year.
+- An amendment written to fit one dataset works like an exception to a Must, which principles.md bars ("A Must has no exceptions").
+- It would also run against Lennart's 2026-11-05 reframing.
+
+**Option B, one window.** It needs an amendment below three windows. That amendment would reopen spanish coverage, nba and open_university (each has one valid window), and distribution_transformers_at_cauca_department (two label years, one window, shipped forced IID). It would also reach the AIcrowd question for pg17 and wisconsin's option B. B departs from five precedents. It is a family-wide change, not a pg16 call.
+
+**Correction 2: option C has an unchecked precondition from wisconsin.**
+- Wisconsin's forced member folds shared each year's claim level across the split. Its 2026-11-02 leak test measured +0.010 claim AUC (8 of 9 folds) and +0.113 Gini pooled.
+- That finding moved Andrej to temporal windows below the floor. The decision was reopened as wisconsin issue 3 (open, 2026-11-06).
+- pg16's C evidence (0.182 pooled; 0.174 on its 2013 rows against 0.171 for the valid window) is close to a leak check but is not the SPLIT-8 test. That test is listed under "Notes for the AI" and has not been run.
+- The likely distinguishing fact: pg16's claims per vehicle-year are flat across 2011-2013 (issue 3: LEAK-24 holds), while wisconsin has a storm year. It should be measured the wisconsin way (test year's training rows in or out) before C is recommended as "the rule's own fallback" without qualification.
+
+**Decide together.** pg16 issue 6 and wisconsin issue 3 are both open SPLIT-14 readings, with the same curator on the same day. Deciding them apart risks two amendments that pull opposite ways: A loosens "own training side", while wisconsin A/B loosens "the floor / three windows". pg17's consistency check also hangs on wisconsin.
+
+**Reflection prompt (issue 6; the implemented state has no fact that sets it apart)**
+
+**Consistency check (AI, 2026-11-06):** three windows of 2013 on one training side differ from spanish_motor_insurance_coverage_level_2022_2024 (forced grouped, 2026-11-02), which has the same facts. What sets this case apart?
+
+**Problem:**
+- D11 (2026-11-06) trains all three windows of 2013 on the periods of 2011-2012. SPLIT-14 as amended on 2026-11-02 (Andrej), and reframed on 2026-11-05 (Lennart), counts that as one window[^14].
+- spanish_motor_insurance_coverage_level_2022_2024 has three stacked years, one valid window above the floor (52.5%) and recurring entities, and shipped forced grouped by policy[^8]. pg16 has three stacked years, one valid window above the floor (64.4%) and recurring contracts.
+- The fact issue 6 offers as the difference ("one valid window above the floor") is false: spanish's is above the floor too. The daily dates are the only fact left, and Andrej's amendment rules out exactly that kind of cut.
+- LEAK-41 does not force three windows on one side, because a forced grouped split meets LEAK-41 and SPLIT-14 together[^41]. So keeping them would break a Must without a higher-ranked Must behind it.
+
+| | Option | Pro | Con |
+|---|---|---|---|
+| a | Record as an amendment to SPLIT-14 the fact the AI guesses sets pg16 apart: rows cut at 31 December and undated claims leave no selection-free training side between year ends, and the game's tariff is fit once a year (SPLIT-12) | keeps the temporal regime the use case implies, and the game's own design | an amendment that fits only this dataset; it reverses Andrej's amendment of 2026-11-02 and your reframing of 2026-11-05; one evaluation still counts three times |
+| b | Treat pg16 like spanish coverage: forced grouped by `contract_id`, `ForcedGroupedFromTemporal` (issue 6 C) | the rule's own fallback; the same as spanish, nba, open_university, pg17 and frempl; scores 2013 like the valid window (0.174 against 0.171); the SPLIT-10 exception goes away | mixes the years; tests unseen fleets; the SPLIT-8 leak test across the split is not run yet (wisconsin found a year-level leak there) |
+| c | Reopen spanish coverage to match pg16 | none: spanish has no dates within a year, so it cannot be cut into sub-windows | does not apply |
+| d | Amend SPLIT-14 to allow fewer than three windows when only one or two are valid (issue 6 B), decided with wisconsin issue 3 | one evaluation counted once; would also settle wisconsin B and pg17's AIcrowd question | reopens spanish coverage, nba, open_university and distribution_transformers_at_cauca_department; a family-wide change of a Must |
+
+**Recommendation:** (b), after the SPLIT-8 leak test across the contract folds (test year's training rows in or out, as on wisconsin) confirms what the flat claims per vehicle-year suggest. Take (d) only if you want the change for the whole family, decided together with wisconsin issue 3.
+
+[^14]: **SPLIT-14** (Must), amended 2026-11-02 (Andrej), reframed 2026-11-05 (Lennart). Cases row: pricing_game_2016_french_fleet, reopened 2026-11-06.
+[^8]: **SPLIT-8** (Must; narrows SPLIT-14), "a release with too few periods for three windows". Cases: nba_players_2016_2019 and open_university_learning_analytics_dataset (2026-10-21). Siblings shipped on Andrej's call of 2026-11-02: spanish_motor_insurance_coverage_level_2022_2024, pricing_game_2017_french_mtpl, frempl_french_motor_personal_line.
+[^41]: **LEAK-41** (Must, 2026-11-06): "No model is trained or scored on rows selected by the realized weight". principles.md, "Exceptions and amendments": "A Must has no exceptions: only a higher-ranked Must overrides it, and anything else is an amendment."
+
+**Text fixes (no decision needed)**
+
+1. **REVIEW.md issue 6, Consistency bullet.** spanish coverage's valid window is above the floor (52.5%), so the "What sets this case apart" sentence needs rewriting.
+2. **Record, "Exception to SPLIT-10 (2026-11-02, Andrej)".** "Serves SPLIT-14: three windows on distinct training sides above the floor" is stale. The new ground is LEAK-41 plus the floor, with the January window only.
+3. **splits.md.** SPLIT-10 Cases rows of kind `exception` are missing for pg16, spanish_homeowners_motor_insurance_2010_2014 and wisconsin (all 2026-11-02).
+4. **Optional.** Add hotel_booking_demand (SPLIT-9) as a supporting precedent in D11's CC line: rows in training because their outcome came early, with `period_start` a feature.
 
 </details>
 
 <details><summary>Advocate</summary>
 
-**Advocate, opening brief (2026-11-01): pricing_game_2016_french_fleet**
+**Advocate, opening brief: pricing_game_2016_french_fleet (exposure re-review, 2026-11-06, full tier)**
+
+Position: ship. D11's target, weight, features and training side are right, and no agent refuted a number. The one Must the dataset breaks as defined is SPLIT-14 (issue 6). Fixing it changes the split (or the rule), not whether the dataset ships. Everything else needs a note, a cheap retype or a text fix.
+
+1. A real pricing task, and the numbers reproduce (P2, P3: SEL-2, USE-1, USE-5, USE-8 Must; MET-14).
+   - Evidence: the domain practitioner, a fleet pricing actuary, calls the fit direct. The target is "the pure premium rate I put in the tariff", and the weighted fit estimates "the rate that breaks even when the premium is earned pro rata".
+   - The blind reviewer rebuilt the target from the CASdatasets copies on their own: all 4,568 claims match and the total is exact (6,675,926.40). They called it "a real, standard actuarial use".
+   - The claim auditor re-measured 35 claims and refuted only claim 35, the implied one that the rows are not selected by their length (point 6). No figure in the notes was wrong, and the metric matches Kaggle's weighted Gini to 1e-12.
+   - Why it outranks: P2 and P3 are the top validity principles. Every objection below is at P4 or lower and is fixable (Tensions row "a real task against a leak": fix the leak, keep the task).
+
+2. No leak through the weight, and D11 follows LEAK-41 and MET-15 (P4; LEAK-41 Must, MET-15 Must, LEAK-7, LEAK-37).
+   - `exposure` is the metric's weight and `sample_weight` only. It is not among the 16 features (claim 3, column audit).
+   - Every feature is known at the period's start. `exposure_to_year_end` is never below the realized length (0 rows).
+   - The task gamer found no exploit above noise. With Tweedie, the realized weight as a feature scores 0.1985 against the honest 0.2061. 1/exposure alone scores 0.029.
+   - The claim auditor's Tweedie arm gives the weight as a feature +0.0118 (SD 0.0067). No weight-mediated gain of any feature is above noise.
+   - Concession (EV-1): probe22.txt and probe22_l2.txt are the same L2 run. That arm cannot see the weight itself (-0.0014, SD 0.052), so the cited probe had no power. The conclusion stands on the auditor's Tweedie arm.
+   - Mildest remedy: cite the Tweedie numbers in the notes and in REVIEW issue 5, and re-run probe 22 with the actuarial objective. That is a note fix, not a definition change.
+   - Precedent: frempl (D9), spanish coverage (D10), australian (D8) and fremtpl2/bemtpl97 all made the same call (precedent checker: "consistent").
+
+3. The new training side is the honest one (P4; LEAK-41 Must outranks SPLIT-11 Should).
+   - The old expanding sides admitted 2013 periods because they ended early. Those periods claim 0.127 and 0.131 per vehicle-year, against 0.115 and 0.116 for the 2013 periods still running (claim 8, exact).
+   - With `period_start` a feature, that is a selection-by-outcome shortcut. hotel_booking_demand under SPLIT-9 is the precedent the precedent checker found.
+   - The practitioner: "I would never refit in May on the 2013 vehicles that had already left."
+   - The reversal of Andrej's 2026-11-02 call rests on a new measurement and a newer Must. Principles allow that ("a later measured finding wins").
+
+4. Worth benchmarking (P6; TP-4 Must, TP-9 Must).
+   - The weighted Tweedie LightGBM scores 0.110 / 0.157 / 0.189 (re-measured) against 0 for the weighted constant. The newest window beats the constant by 1.7 SE. The GLM scores 0.159 / 0.171 / 0.200.
+   - The gamer's bagged Tweedie scores 0.206 mean, against a noise band of 0.172-0.196.
+   - The test windows hold 103 / 232 / 1,026 positive charges, so none is a handful (TP-9).
+   - The blind reviewer's "weak signal" is real but is a property of a sparse pure-premium table. It is no reason to drop the dataset: Tensions row "the right split against the score: a small signal under it is no reason to retire" (forest_fires).
+
+5. Issue 6, the shared training side: I concede SPLIT-14 (Must) is broken as defined. The dataset survives it by a re-split or an amendment, not by exclusion (remedy ladder).
+   - Concession: the three splits have identical training indices (56,178 rows). SPLIT-14 as amended on 2026-11-02 counts that as one evaluation. A Must has no exceptions, so the defined state (option A) cannot ship on a note.
+   - Fix within the current rules, (C): SPLIT-8's own fallback, ForcedGroupedFromTemporal by `contract_id`. The split auditor's paired comparison on the same 2013 rows: forced 0.174 against the valid window's 0.169, difference +0.005 (SD 0.022, 9 folds), no more optimistic beyond noise. The cold start of a new fleet costs about 0.004. C has the same facts as spanish coverage, nba and open_university.
+   - Precondition for C: SPLIT-8's leak test across the contract folds has not been run. Wisconsin found a year-level leak there. Here claims per vehicle-year are flat at 0.117 / 0.119 / 0.119 across 2011-2013 (LEAK-24 holds), where wisconsin had a storm year, so I expect the test to pass. It still has to run first.
+   - If the curators prefer A, it needs an amendment. The practitioner supports A on P3: the tariff is fit once a year and judged on the whole book (SPLIT-12), and 76-81% of the test periods are on known contracts (USE-10, Must, Part 2). The practitioner ranks fidelity B > A > C.
+   - I do not claim USE-10 forces A. The measured cold-start cost (0.004) and the absence of any history feature mean C does not break USE-10 in substance. So there is no conflict for rank to settle (principles, How to decide 4). A is a curator's choice to amend, decided together with wisconsin issue 3, as the precedent checker asks.
+   - Either way the dataset ships. The only open question is which split it ships with.
+
+6. The source's 30-day floor is a property of the source's population that both sides share. It needs a LEAK-41 note, not exclusion (LEAK-41 Must, last clause; USE-7; remedy ladder).
+   - Concession: no period is shorter than 30 days, and the floor is a sharp edge, not a taper. There are 1,558 gaps of 1-29 days between a vehicle's consecutive periods. So the organisers selected rows by their realized length, and our notes call it an "anomaly" without citing LEAK-41.
+   - Why it does not sink the dataset:
+     - The selection is the organisers', made before release. It is the same on the training and test sides, and the game's own 2014 file had it too. Nothing we choose adds a selection.
+     - The removed periods and their claims are not published, so no definition change can undo it.
+     - By weight it is small: the column auditor estimates about 1.5% of vehicle-years overall. The claim auditor estimates up to about 11% of the September-December window's vehicle-years.
+   - The task's population is "periods of cover of a month or more". The game priced that population.
+   - Mildest remedy: rewrite the anomaly bullet as a LEAK-41 note with the per-window estimates, and have the curator accept it as the source's population.
+   - The uneven selection across windows also counts against A's equal thirds, which I accept as an input to issue 6.
+
+7. The rest is quality work and text fixes, below validity (P7 and process; CLEAN-14 Should, MET-10 Weigh, MET-11).
+   - CLEAN-14: four band columns ship unordered (`contract_age_class`, `vehicle_age_class`, `deductible_class`, `insured_value_class`). The column auditor gives the exact ordinal lists. The fix is cheap and safe, so take it at the next rebuild.
+   - Metric: the practitioner shows the Gini cannot see how steep the relativities are. A tariff and the same tariff with doubled relativities both score 0.173. The Gini stand-in still follows australian (D8) and spanish coverage under MET-10, a Weigh call with no family rule (Andrej, 2026-11-02).
+   - Metric remedy: reword the stand-in reason. The market rewarded relative prices, and the ranking is the part the Gini scores. Optionally add the rescaled weighted Tweedie deviance as context. Neither changes the verdict.
+   - The blind reviewer's concern about integer-coded categories does not apply to the shipped frame: the column auditor finds them typed as categories. Dropping `n_vehicles` and `insured_value_class` was settled (D4, CLEAN-5). The IDA clipping is already in the notes (claim 1).
+   - Text fixes that need no decision:
+     - CHANGES.md: the "0.182 ... no more optimistic" wording.
+     - Issue 6 says spanish coverage's valid window is below the floor; it is above it at 52.5%.
+     - The record's stale "Exception to SPLIT-10" reason.
+     - The missing SPLIT-10 Cases rows.
+     - The outdated SPLIT-14 Cases row for this dataset.
+     - The "unchecked" pro-rata claim, which the claim auditor and the practitioner have since sourced.
+
+Judgment record as I would write it:
 
 ```text
-Verdict argued: ship after changes. The data, the use case, the split and the metric's value hold. The changes are
-  text, labels and one curator call on `exposure`, and every option of that call keeps the dataset.
-Validity: P5 holds (the organisers' files, not generated); USE-1, USE-5, USE-8 hold (fit direct); SPLIT-1, 3, 9, 13,
-  14 hold; LEAK-10 triggered by the realised `exposure`: a keep needs the curator's amendment, otherwise the LEAK-7
-  fix; USE-3 wording fix.
-Value: TP-2, TP-4, TP-9 hold; MET-11 origin goes to stand-in (a label, no score changes).
-Quality: CLEAN rules hold; the record's fields are stale (update them at hand-over).
+Verdict: ship after changes.
+Validity: SEL-2, USE-1 (direct), USE-5, LEAK-7/37, LEAK-41 (weight), MET-15, SPLIT-9 hold. SPLIT-14 broken as defined: fix by re-split (C, after SPLIT-8's leak test) or an amendment (A), issue 6. LEAK-41's last clause: the source's 30-day floor, kept with a note (it cannot be undone and is the same on both sides).
+Value: TP-4 holds (0.110 / 0.157 / 0.189 against 0), TP-9 holds.
+Quality: CLEAN-14 retype of the four bands (cheap); metric reason reworded.
+For the curator: issue 6 (C, or A by amendment, decided with wisconsin issue 3), and accepting the 30-day floor as the source's population.
 ```
 
-**1. The data is real, from its first publication, and faithful (P5; PROV-3, PROV-8, EV-6).**
-- Evidence:
-  - The definition downloads the organisers' own CSVs (sha256 pinned, Wayback copy with the same bytes).
-  - The claim audit re-derived every count, share and probe number to the last digit: 39 of 48 claims hold, and none
-    of the 7 refuted is about the data's content.
-  - The curator's extra test ("if generated, a no") passed on tests that could have failed: whole-euro piles once the
-    scaling constant 1.077841 is removed (6.1% against 0.1% for smooth amounts), exposure heaping with payment
-    frequency, starts on business days, the contract age stepping up at the anniversary (1,946 of 1,946). CC
-    2026-11-01: `Yes`.
-  - The blind reviewer decoded CASdatasets' `.rda` independently and found a one-to-one relabelling.
-- Why it stands: no agent disputes it. It is the fact that sank the pg15 sibling (AHDS), and it is refuted here by
-  proof, not by reading (EV-6).
-
-**2. A real pricing task with a direct fit (P3; USE-1, USE-5, USE-8, all Must).**
-- Evidence:
-  - The practitioner: "fit direct (agree)". The rows are the vehicle-periods an actuary fits a frequency model on, and
-    the features are the rating classes held at pricing. The blind reviewer: "a genuine, standard actuarial use".
-  - The binary target is a close proxy of the count: at 0.12 claims per vehicle-year, P(N >= 1) is close to E[N].
-    Only 7% of the claims are collapsed (286 periods).
-  - Counting IDA claims is the broadest target with the most signal: 0.712 against 0.706 (positive charge only) and
-    0.702 (non-IDA only). The curator chose the indicator (CC 2026-10-30).
-- Real problem, mildest fix: `predicted` and bullet 5 should say the insurer recovers "a flat amount" under IRSA, and
-  that 126 IDA claims are at 50% responsibility. This is wording (USE-5 precision); the task does not change.
-
-**3. The split mirrors the application and meets every Must (P4; SPLIT-1, SPLIT-3, SPLIT-9, SPLIT-13, SPLIT-14).**
-- Evidence:
-  - The split auditor: "right with notes (no re-split)".
-  - The 2013 test year has the shape of the game's own 2014 pricing file: 76-81% of its periods are on known
-    contracts, against 82% in the file.
-  - SPLIT-9: every training period ends by 31 December 2012. The training history shows no break (SPLIT-20).
-  - On the same 2013 rows, the IID, grouped and temporal designs agree within 0.003, so the temporal choice follows the
-    use case, not a score.
-  - The daily start dates set this case apart from the siblings forced to grouped (SPLIT-8). The precedent checker
-    calls it consistent.
-- Against the alternatives:
-  - The blind reviewer's year-aligned windows (train 2011, test 2012) leave 30.4% of the rows in training, which breaks
-    SPLIT-14 (Must). Its worry about 13-14k overlapping training labels does not apply to the shipped fixed train
-    side.
-  - The practitioner's pooled 2013 is one window: under SPLIT-14 that sends the task to SPLIT-8, away from the use
-    case. The three windows are how the Must is met, and they mirror the cohorts of the 2014 file (by window, 63%, 0%
-    and 0% of its periods start on 1 January).
-- Real problems, mildest fixes (all text):
-  - a SPLIT-14 Cases row for sub-windows of one dated test year;
-  - `Exception to SPLIT-11` (the tariff is refit once a year, SPLIT-12, SPLIT-19);
-  - SPLIT-10, no gap: the simulated reporting delays move the AUC by 0.003 or less. It is the third exception of its
-    kind, so the amendment of prompt C is due;
-  - cite SPLIT-15, not SPLIT-17;
-  - one sentence that per-window scores rank within start cohorts (0.672 against 0.712 pooled) and that the newest
-    window is the noisiest.
-
-**4. `exposure`: a real problem, and the dataset survives either remedy (P4, LEAK-10 Must; the remedy ladder; USE-8).**
-- Conceded:
-  - "Known at prediction time: ... its length" is false (USE-3): 58.2% of the 2013 periods end early.
-  - The 31-December-flag test could not fail (EV-6).
-  - The length unknown at the start adds ROC AUC +0.040 to +0.055.
-  - LEAK-38 rejects "the host's test file carries it" as a reason on its own.
-  - LEAK-10 is a Must, so a keep cannot be an exception. It needs the curator's amendment.
-- The case for the keep (my recommendation):
-  - The part that is linked to the outcome adds no ranking, by tests that could have failed: a Poisson offset model
-    scores 0.669 without the early-end flag and 0.668 with it; LightGBM scores 0.671 as shipped and 0.670 with an exit
-    flag (column audit).
-  - What is left is the time at risk. The domain's own evaluation conditions on it: the Poisson deviance with exposure
-    (Noll, Salzmann and Wüthrich 2018) and the exposure-ordered Lorenz curve (Frees et al. 2011). Fleet cover is billed
-    on the vehicle-years earned ("révision en fin de période" for vehicles in and out, AMRAE, cited by the
-    practitioner).
-  - The fix answers a different question: a claim before an unknown end mixes frequency with retention, and that is
-    not the quantity the actuary acts on (USE-5).
-  - The only curator decision in the family keeps the realised exposure (fremtpl2, CC 2026-10-20, Andrej). The fixes
-    in frempl and spanish coverage are AI changes still pending, which rank below a CC ("Who decides").
-- Scope of the amendment: prompt A (d), decided with frempl, spanish coverage and australian. Keep realised time at
-  risk when the outcome-linked part shows no gain given the covariates. That test separates pg16 (+23% claims per
-  vehicle-year, no AUC gain) from frempl (2.7 times the cost per exposure-year). It does not rest on a billing fact,
-  which may not set the two apart.
-- If the curator declines: the LEAK-7 fix (the length to 31 December) keeps the dataset. The score falls from 0.671
-  to 0.622, the covariates still beat the start-known length (0.623 against 0.549), and TP-4 is re-run.
-- Either way, rewrite the text:
-  - `known` and the first bullet;
-  - `fit_reason`, without the flag argument;
-  - the leak note, with the rate ratio 1.22 and the +0.04-0.055;
-  - Decision 1, as claims per vehicle-year by how the period ends;
-  - 58.2%, not 42.8% (the file looks like a sample).
-- Why this does not lead to `No`: independent failures are not conflicts, so P3 does not excuse a Must. But the
-  remedy ladder keeps exclusion for a Must that cannot be fixed, and this one can be fixed either way. The tension row
-  says: fix the leak and keep the task.
-
-**5. Worth benchmarking (P6; TP-2, TP-4, TP-9).**
-- Evidence:
-  - The models beat the length alone on every window (LightGBM 0.635 / 0.676 / 0.704 against 0.596 / 0.655 / 0.659).
-    The task probes raise no flag.
-  - The windows hold 123 / 257 / 1,163 positives (TP-9).
-  - The exposure-weighted Gini of the rate is 0.19-0.21, against 0.02 for a risk-blind rate (practitioner), so the
-    segmentation is real.
-- Against "low headroom" (the blind reviewer: GLM ties LightGBM, CI [-0.0036, 0.0035]): TP-2 (Should) says a small
-  signal and no spread are no reason to retire (rosbank1 and sf_permit_time were kept with no_spread). A GLM-sufficient
-  insurance frequency task is representative. It is the family's only commercial fleet own-damage portfolio.
-
-**6. The metric's value is right; its origin needs a one-line fix (P6; MET-8 Should, MET-11 Must).**
-- Conceded (MET-11): the origin should be `stand_in`, with the original being the 2014 price-aggregator market
-  (rules, Sec. 4). This follows pricing_game_2017_french_mtpl and this record's own call of 2026-10-30. No score
-  changes.
-- For `roc_auc`:
-  - On these folds it ranks the models as log loss and the exposure-weighted Gini do (practitioner table).
-  - 2 x AUC - 1 is the normalized Gini, the family's metric (porto_seguro).
-  - `log_loss` as context is a weighing call (MET-10) that the practitioner calls defensible either way.
-  - Add to the reason that the length alone carries most of the AUC.
-
-**7. The cleaning is the expert state (P7; CLEAN-3, CLEAN-5, CLEAN-10, CLEAN-12, CLEAN-14; LEAK-18).**
-- Evidence:
-  - The column audit finds every column but `exposure` fine.
-  - The blind reviewer's type points concern CASdatasets' integer codes. The definition already types zone, activity,
-    channel, formula and fleet size as categorical.
-  - "ND" made missing is right: it marks no single formula (CLEAN-10).
-  - `n_vehicles` is harmless: CLEAN-5 covers only constants.
-  - The repeated rows are natural and never cross the split (LEAK-18).
-- Real problems, mildest fixes:
-  - a leap-year clause for the 2,099 rows with "0.01 less";
-  - at hand-over, update the stale record fields (`problem_type: Regression`, the `Two-Regime Zeros` tag, the
-    CASdatasets-only name and links; records.md, PROV-8, as for diabetes_3);
-  - accept the three warnings, each of which has a precedent.
+Sources: the phase A reports of this panel (claim, column and split audits, the domain practitioner, the precedent check, the blind review, the task gamer); the rules in `.claude/skills/knowledge-curation/references/` (principles.md, splits.md, leak_checks.md, use_case.md, metrics.md); REVIEW.md in `datasets/_dev/tabarena-v0pt2/pricing_game_2016_french_fleet/`.
 
 </details>
 
 <details><summary>Critic</summary>
 
-**Critic, opening brief (2026-11-01): pricing_game_2016_french_fleet**
+**Critic's opening brief: pricing_game_2016_french_fleet (exposure re-review, 2026-11-06, full tier)**
 
-**Verdict: ship only after changes.** The task is real: an insurer's frequency tariff for fleet vehicles, the game's own task. Nothing below argues for exclusion. But as defined, the dataset gives models a feature that did not exist at the prediction point, and its text says the opposite. The fix belongs in the definition, and the task survives it. Points 1 and 2 are Musts that block shipping as it stands. Point 3 needs the curator's confirmation of a first-case reading. Point 4 is a label change. Point 5 is text and record fields.
+Position: do not ship as defined. Ship after changes. The task is real (USE-8, direct fit). D11's target, weight and feature handling holds on every measurement (claim auditor, items 1-4 and 9-10; column auditor; blind reviewer; task gamer), and I do not contest it. Three things fail as defined. The split breaks a Must. A source-side selection by the realized weight falls under LEAK-41's letter and has no ruling. The evidence cited for probe 22 has no power. Two lesser points follow on the metric reason and the record text, then one quality point.
+
+1. The three windows share one training side (P4, SPLIT-14 Must; issue 6, open).
+- Problem: all three splits have the same 56,178 training rows (64.4%), confirmed on the container by the split auditor and claim auditor item 17. SPLIT-14 as written says: "windows that share one train side test one model on several test periods, which is one evaluation, not several". Its Cases row was written for this dataset in exactly this configuration.
+- Effect on the task: one evaluation is counted three times. The Sep-Dec window holds 7% of the test vehicle-years (987 of 13,864) and 103 positive charges, yet gets a third of the weight. Its SE is 0.068 and it beats the constant by only 1.7 SE. The task gamer puts single-split noise at up to about 0.05. The window mean (0.154) is below the same model's pooled 2013 score (0.171), so the reported number is mostly the cohort mix and noise.
+- No higher Must forces A. LEAK-41 and SPLIT-14 are independent here, because a forced split grouped by contract meets both (split auditor section 1; principles.md "How to decide" 4). "A Must has no exceptions" (principles.md), so A can stand only through an amendment. That amendment would reverse Andrej's 2026-11-02 call on this very dataset and Lennart's 2026-11-05 reframing. It would also fit one dataset only (precedent checker, Decision 4).
+- Same facts as a precedent: spanish_motor_insurance_coverage_level_2022_2024 has three stacked years, one valid window above the floor (52.5%) and recurring entities, and it shipped ForcedGroupedFromTemporal. Issue 6's consistency bullet says spanish's valid window is "below the floor". That is false, so issue 6 names no fact that sets this case apart.
+- The practitioner's USE-10 objection (C tests unseen fleets) does not decide this. SPLIT-8 is a Must that "narrows ... USE-10". The cost is measured and small. Paired on the same 2013 rows, C's model scores +0.005 against the valid window (SD 0.022, 9 folds). Removing the test fleets' history costs -0.004 (split auditor section 4).
+- Remedy (re-split): option C. Group by `contract_id` (the source's Num_contrat), `ForcedGroupedFromTemporal`, contract_id the group column and never a feature. Drop the SPLIT-10 exception. The splits_comment should say what the dates would change. One condition before C ships: SPLIT-8's leak test across the grouped split and the leak probes on it. No probes/group.txt exists, and wisconsin found a year-level leak in the same setup (+0.113 Gini pooled). If the curator prefers A or B, it has to be a deliberate amendment of SPLIT-14, decided together with wisconsin issue 3, never a dataset-level exception.
+
+2. The source selects rows by their realized length, unevenly across windows (P4, LEAK-41 Must, last clause; new).
+- Problem: LEAK-41 says "No model is trained or scored on rows selected by the realized weight". Every row here passed the organisers' 30-day floor.
+  - The length histogram stops sharply at 30 days with no taper: 0 rows at 29 days, 909 at 30, about 700 a day at 32-40.
+  - Between a vehicle's consecutive periods there are 1,558 gaps of 1-29 days, at a flat rate of about 45 a day, which is where the dropped short periods would sit.
+  - No period starts after 2 December.
+  - Sources: claim auditor finding 1 and item 35; column auditor problem 1.
+- Effect: the short periods that were left out claim more per vehicle-year (0.143-0.160 for early ends of 30-59 days against 0.124 for 180+ days), and their claims are gone.
+  - Overall it is small by weight: about 1.5% of vehicle-years (column auditor).
+  - It is concentrated in the newest test window: about 35% of its would-be periods and about 11% of its vehicle-years (claim auditor, rough extrapolation). That is the same window that already carries a third of the score under A.
+- The definition calls this an "Anomaly ... periods of a month or more" and cites no rule. A Must cannot be settled by a provenance remark.
+- Remedy: no repair is possible, because the cut rows are not published. I do not ask for exclusion: the selection is the same in train and test and small by weight. I ask for two things.
+  - (a) An explicit curator ruling, recorded as an amendment to LEAK-41's last clause. It would say that a selection the source made uniformly, which cannot be undone, defines the population (USE-7) and is sized in the notes. It is not a dataset exception, because a Must has none. It applies to frempl and to any sibling with a minimum length.
+  - (b) A rewrite of the anomaly bullet as a LEAK-41 note, with the histogram and gap evidence and the per-window estimate, plus one line in issue 6: the newest window is the noisiest and also the most selected, which counts for C.
+
+3. The cited evidence for probe 22 cannot detect a proxy (LEAK-41 Must on the reporting; EV-1).
+- Problem: probe22.txt and probe22_l2.txt are byte-identical (I ran cmp), and both are the L2 arm ("LightGBM objective L2"). In that arm the realized weight itself, the leak, gains -0.0014 (SD 0.052). "No feature's gain goes through the weight above noise" could not have come out any other way.
+- LEAK-41 asks for the gain "with an L2 fit on the shipped scale and with the weighted actuarial fit", and for a decision on the worse of the two.
+- The conclusion survives: the claim auditor ran the Tweedie arm (3 seeds), and the weight as a feature gains +0.0118 (SD 0.0067). The weight-mediated gains are all under 1 SD:
+  - time features +0.006 (SD 0.014)
+  - distribution_channel +0.003
+  - client_activity +0.002
+  - fleet_management -0.003
+- So the evidence the notes cite does not carry the claim.
+- Remedy (fix the definition's notes): re-run probe 22 with the weighted Tweedie objective so the two files differ. Cite both arms in the Exposure / probe 22 bullet and in REVIEW issue 5.
+
+4. The stand-in metric's reason misstates what the original rewarded, and closeness is not measured (P6, MET-11 Must, MET-2).
+- Problem: the reason says the uniform rescaling meant "the market rewarded the ranking of the risks". In a cheapest-wins market after a uniform rescaling, a player wins on relative prices: both the order and the spread of the relativities. The Gini sees only the order.
+  - Measured by the domain practitioner, means over the windows: the GLM and the same GLM with its relativities doubled both score Gini 0.173.
+  - The exposure-weighted Tweedie deviance after the game's own uniform rescaling to the window total gives: GLM 89.63, GLM doubled 94.27, LightGBM 91.34, constant 90.82. It ranks the over-steep tariffs below a flat one, which is what the market would have done.
+  - The reason dismisses deviance because it "also scores the year's level". The rescaled form removes the level the same way the game did, so the reason argues against a version nobody proposes.
+  - MET-11 asks that "the closeness is measured on the shipped splits where possible". It is possible here and was not done.
+- Effect: the metric changes which models win. By rescaled deviance the GLM beats the steep tree model; by the Gini they nearly tie (0.173 against 0.157).
+- Remedy (mildest first):
+  - (a) Reword the reason: the market rewarded relative prices, of which the Gini scores the ranking. State what it misses.
+  - (b) Measure the uniformly rescaled weighted Tweedie deviance against the Gini as a candidate stand-in and give the curator the call (MET-4/MET-11 tension row). Its costs are an oracle scale (the test total, as the game fixed 2.5 million euros) and more noise on the newest window.
+
+5. Several statements in the record and the review file are stale or wrong (EV, writing; Should).
+- The SPLIT-10 exception line still reads "Serves SPLIT-14: three windows on distinct training sides above the floor". Under D11 the training sides are no longer distinct. The real ground is LEAK-41 plus the floor, and it covers the January window only (precedent checker, Decision 3). splits.md also lacks the SPLIT-10 Cases row of kind `exception` for it.
+- REVIEW issue 6 says spanish coverage's valid window is "below the floor". It is 52.5% (point 1).
+- splits.md's Cases row for SPLIT-14 on this dataset still describes the expanding windows as "applied".
+- Two effects are stated more firmly than the seeds allow, though both are within noise:
+  - "a fit that ignores the weight loses 0.010 (4 of 5 seeds)": the auditor's 3 seeds give +0.005 (2 of 3).
+  - "the time features add 0.007": the auditor's 3 seeds give +0.003.
+- "A cut nobody scheduled" overstates the case: 25.9% of early ends fall on a month's last day (column auditor problem 4).
+- CHANGES.md says option C's "0.182 overall" is "no more optimistic". That holds only for its 2013 rows (0.174, or paired +0.005).
+- Remedy: correct these lines and mark the two effects "within seed noise".
+
+6. Four band columns ship as unordered categories (P7, CLEAN-14 Should; quality, not a reason to exclude).
+- Problem: contract_age_class, vehicle_age_class, deductible_class and insured_value_class are bands of a quantity with an open end. CLEAN-14 and its cleaning table ("a count or band the source cuts at an end") make these an ordered category, lowest first.
+- The 2026-11-01 blind review raised this and nothing changed. The 2026-11-01 column table calls deductible_class ordered, but the shipped dtype has cat.ordered False. `_feature_types` declares only `categorical=CATEGORICAL, datetime=["period_start"]`.
+- Effect: small; models that use the order lose it.
+- Remedy (cheap and safe): declare the four as ordinal, with the level lists in column auditor problem 2, and update the Dtypes bullet.
+
+Not raised, because the evidence does not hold:
+- The blind reviewer's points on integer-coded nominals and on undocumented clipping are stale. The shipped columns are categories, and the clip is documented with its counts.
+- The task gamer found no exploit above the noise floor, and the column auditor found no feature set after the prediction point.
+
+Judgment record, as I would write it:
 
 ```text
-Verdict: ship after changes.
-Validity: LEAK-10 triggered on `exposure` (Must), fix by LEAK-7 (point 1); USE-3 triggered, wording (point 2);
-  SPLIT-14 met in letter, a first-case reading for the curator; SPLIT-10, SPLIT-11, SPLIT-15 departures to record
-  (point 3). USE-1, USE-8, SPLIT-1, SPLIT-9, SPLIT-13, PROV-8 hold.
-Value: MET-11 origin wrong, label change (point 4); TP-4 holds before and after the fix.
-Quality: statements the data refutes and stale record fields (point 5); nits not counted.
+- Verdict: ship after changes.
+- Validity:
+  - USE-8 holds (direct fit).
+  - LEAK-41 holds for the features and the weight.
+  - LEAK-41's selection clause is triggered by the source's 30-day floor: an amendment or ruling is needed, plus a note (point 2).
+  - LEAK-41's reporting is incomplete (point 3).
+  - SPLIT-14 is broken: re-split as SPLIT-8 (C) after its leak test, or a deliberate amendment (point 1).
+- Value: TP-4 holds, weakly on the newest window. MET-11's reason is to be corrected and its closeness measured (point 4).
+- Quality: CLEAN-14 ordinal bands (point 6); text fixes (point 5).
 ```
 
-**1. `exposure` is the realised length. Most periods' length is unknown at the start, and the early ends go with the claims (P4, LEAK-10, Must).**
-- **Problem.**
-  - `exposure` is the period's realised length. 58.2% of the 2013 periods end before their scheduled end, and across all years only 0.8% end at a contract anniversary. Their length is known only once they end.
-  - `period_start` is also a feature, so `exposure` gives back the dropped `period_end`.
-- **Effect on the task.**
-  - Models rank periods partly on time at risk that the insurer cannot know when it prices.
-  - The part of the length unknown at the start adds ROC AUC +0.040 / +0.055 / +0.052 on the three windows. That is about a quarter to a third of the skill above chance.
-  - The comparison (claim audit #17), mean ROC AUC over the windows:
-
-    | features | mean ROC AUC |
-    |---|---|
-    | covariates and the start's day of the year | 0.623 |
-    | the same plus the length known at the start | 0.623 |
-    | the same plus the realised length | 0.672 |
-
-- **The clause that could keep it does not apply.** LEAK-10 keeps a window's value only when "the data shows the window's values do not move with the outcome given the covariates known at the prediction point". Here they move.
-  - Given those covariates, early-ending periods claim at a rate ratio of 1.22 [1.12, 1.33] in 2011-2012 (p = 2e-6) and 1.18 in 2013. This is a Poisson GLM with an offset (column audit).
-  - Vehicles whose cover ends early for good have 0.137 claims per vehicle-year, against 0.111 for periods that run to the year's end.
-  - Their claims also cost more: 12.0% are above the 90th percentile of charges, against 9.2%.
-- **The definition's two reasons fail.**
-  - (a) "The end carries no signal beyond the length." This test could not fail. The 31 December flag is a function of start and length on 99.5% of rows (EV-6). And a "removing it changes no score" test alone is no reason to keep (LEAK-10, 2026-10-21).
-  - (b) "The game's pricing file gives the lengths too." LEAK-38, as amended (Lennart, 2026-10-22: kick, expresso), rejects this argument once a conditional test measures the mechanism. The host's test file "is a holdout of the same snapshot, not deployment data". test_contrats.csv is the 2014 holdout of the same extract.
-- **Precedents.**
-  - frempl_french_motor_personal_line, in this run, has the same mechanism, and its dates locate the ends. It was fixed under LEAK-10 and LEAK-7. That fix is an AI fix pending the curator.
-  - spanish_motor_insurance_coverage_level_2022_2024 reset the cancellations it could locate.
-  - fremtpl2 kept the realised exposure (CC 2026-10-20). Its data cannot locate an early end, and the call came before LEAK-10's clauses of 2026-10-26.
-  - The curator's "a feature" of 2026-10-30 came before the length was measured as realised (builder draft issue 1). A later measured finding supersedes an earlier reading (principles, Stages).
-- **Remedy: fix the definition (LEAK-7).** Give every period that ends before 31 December the length known at its start, (31 Dec - start + 1) / 365 (/366 in 2012). Keep `exposure` as that column, described as the scheduled time at risk.
-- **Use every early end, not only those with no later period.** Here "no later period" does not mark an exit:
-  - only 18.4% of vehicle ids survive a year end, while fleet sizes hold (1.83 -> 1.82 vehicles);
-  - 27.5% of "last" periods are followed the next day by a new id in the same contract;
-  - the row names of the two files run exactly from 1 to 120,000, which suggests a sample (column audit, issue 3).
-
-  frempl kept its continuing records because their changes are often planned, as at an anniversary. That does not hold here: 0.8% of periods end at an anniversary, and 76.5% of next-day cuts change no released column.
-- **Cost.** LightGBM falls from 0.671 to 0.622, or to 0.630 if only the periods with no later period are changed.
-- **The task survives the fix.** Covariates plus the start beat the start-known length alone on every window: 0.594 / 0.622 / 0.653 against 0.551 / 0.567 / 0.531. TP-4 holds; re-run the probes.
-- **The only other way to keep the realised length** is to amend LEAK-10 for time on risk in insurance tables, decided together with frempl issue 2, spanish coverage and australian issue 2 (precedent check, prompt A (d)). A Must takes no exception.
-
-**2. The README says the length is known at the prediction point (P3, USE-3, Must).**
-- **Problem.** Two texts say the length is known at the start:
-  - `task_summary.known`: "the period's start date and its length";
-  - the first curation bullet: "Known then: ... the period's start and its length".
-
-  Both contradict the definition's own potential-leak note and its fit_reason ("a period cut short is known only at its end").
-- **Effect.** A user reads that every input is known at pricing, so the prediction point is misstated.
-- **Evidence.** Claim audit #5; column audit, issue 2. australian_vehicle_insurance_2004_2005 corrected the same error after its panel (precedent check, item 9).
-- **Remedy.**
-  - After fix 1, write "the length to the year's end, known at the start".
-  - If the curator amends LEAK-10 instead, write "the realised length (the time at risk), known only at the period's end for 58% of periods".
-  - Either way, rewrite fit_reason and the potential-leak bullet.
-  - Rewrite Decision 1. Its table compares claim shares within three-month bands of length, which hides the +23% (claim audit #41). Show claims per vehicle-year by how the period ends.
-
-**3. Three windows inside one test year, on one train side: SPLIT-14 is met in letter only, and this is a first case (P4; SPLIT-14 and SPLIT-8 Must; SPLIT-10, SPLIT-11 and SPLIT-15 Should).**
-- **Problem.**
-  - The three windows share one refit.
-  - They are cohorts of period length: rows are cut at 31 December, so a period that starts in September is at most 0.33 years long.
-  - The precedents with one valid annual window went to `ForcedGroupedFromTemporal`: spanish coverage, pricing_game_2017_french_mtpl and frempl.
-- **Effect.**
-  - Each window's AUC ranks within one length cohort, so the mean runs below the year's pooled score (LightGBM 0.672 against 0.712).
-  - The first and newest window, September to December, holds 7% of the exposure and 123 positives (SE about 0.027), yet weighs a third of the mean (split audit, issue 3; practitioner, gap 2).
-- **Remedy: no re-split.**
-  - The curator confirms that sub-windows of one dated test year, on the train side the annual refit gives, count as SPLIT-14's windows, and this is recorded as SPLIT-14's first Cases row. The daily dates set this case apart (split audit). If not confirmed, SPLIT-8 applies, grouped by contract (0.708 to 0.711).
-- **In the splits_comment:**
-  - Cite SPLIT-15, not SPLIT-17. SPLIT-17's trigger, under about 50 test rows per window, is not met: the windows hold 5,312 to 19,229 rows.
-  - Record the exception to SPLIT-11: the tariff is refit once a year.
-  - State the SPLIT-10 departure with its simulated bound in place of "cannot be measured". Simulated reporting delays of 30 and 90 days move the mean AUC by 0.003 or less, and a one-month gap would leave 48.7% of the rows in training. This is the third exception for that reason, so the amendment of prompt C is due.
-  - Say that the window scores rank within start cohorts.
-  - Reword "the call of 2026-10-30": the split was an AI suggestion, accepted with the curator's Yes.
-
-**4. The metric origin is `fallback`, but the metric is a stand-in (P6, MET-11, Must).**
-- **Problem.** The source had one evaluation, the 2014 price-aggregator market, and it cannot be computed: the other players' premiums and the 2014 claims were never published, and we changed the target. That is MET-11's stand-in case ("inputs not published, a task we changed"). The definition's own reason states both conditions.
-- **Evidence.**
-  - The rules, Sec. 4 (claim audit #34 and #35).
-  - pricing_game_2017_french_mtpl, the same organisers' market game, declares `Metric.stand_in("normalized_gini", original=<the market profit>)`.
-  - This record's suggested call of 2026-10-30 said "normalized Gini as the stand-in (MET-11)".
-- **Effect.** No score changes. The README's origin line is wrong, and the two siblings are declared inconsistently.
-- **Remedy.** `Metric.stand_in("roc_auc", original=<the 2014 market, rules Sec. 4>, reason=...)`. The reason should add two things:
-  - ROC AUC ranks models as the normalized Gini does (2 AUC - 1);
-  - how much of the score the period's length carries (the length alone scores 0.596 / 0.655 / 0.659 now; re-measure after fix 1).
-
-  The practitioner's `log_loss` as a context metric is a weighing call for the curator, not part of this point.
-
-**5. Statements the data refutes, and stale record fields (EV-2; USE-5 for `predicted`; records.md). Text and record only.**
-- **"the insurer recovered its cost"** (`predicted` and the IDA bullet). Under IRSA, a recovery below 6,500 EUR is a flat amount, not the cost, and it exceeds the payment on 599 of the 1,190 IDA claims. 126 IDA claims are at 50% responsibility, so not all are not-at-fault (practitioner). Remedy: "claims settled under the IDA convention, where the insurer pays its client and recovers a flat amount from the other insurer".
-- **"0.01 less for the rest".** All 2,099 of these rows are from 2012, the leap year: their length is days/366 (claim audit #15). The two rows with `n_vehicles` = 2 have doubled lengths.
-- **"A contract holds up to 12 vehicles at once" and "42.8% ... no later period of the vehicle".** These count the file, which is likely a 120,000-row sample, not the fleet (column audit, issue 3).
-- **The target bullet's reason, "the charges among claimants carry no signal".** It holds equally for the siblings that kept the amount (frempl, pricing_game_2017_french_mtpl, spanish_motor_insurance_2015_2018). Name what sets pg16 apart: charges scaled by one constant, an unexplained short tail, and 537 net-negative IDA periods (precedent check, item 1).
-- **Record fields.** `problem_type: Regression`, the `Two-Regime Zeros` tag, and the CASdatasets-only `name` and `source_links` are stale (claim audit #46 and #47). The definition should also declare `accepted_check_warnings` for its three warnings.
-
-**Not pressed (quality, P7, or no rule triggered; no reason against shipping):**
-- `n_vehicles` is 1 on all but 2 rows; CLEAN-5 does not reach it.
-- `insured_value_class` is 99.85% missing.
-- The French labels are kept.
-- The blind reviewer's typing concerns do not apply to the shipped frame: every class column is categorical there.
-- Low headroom (one-hot GLM 0.7124 against LightGBM 0.7122, pooled) triggers no rule (TP-2, TP-3).
+Sources:
+- Panel reports: the claim, column and split audits, the domain practitioner, the precedent check, the blind review, the task gamer; probes/probe22.txt and probes/probe22_l2.txt.
+- Definition: `datasets/_dev/tabarena-v0pt2/pricing_game_2016_french_fleet/dataset.py`
+- Rules in `.claude/skills/knowledge-curation/references/`: principles.md, splits.md (SPLIT-8, SPLIT-14), leak_checks.md (LEAK-41), metrics.md (MET-2, MET-11), cleaning_features.md (CLEAN-14).
 
 </details>
 
 <details><summary>Advocate rebuttal</summary>
 
-**Advocate, rebuttal (2026-11-01): pricing_game_2016_french_fleet**
+**Advocate, rebuttal: pricing_game_2016_french_fleet (exposure re-review, 2026-11-06, full tier)**
+
+The critic and I agree on the verdict: ship after changes, not exclusion. We also agree that D11's target, weight and features hold. I concede five of the six points in full. On point 2 I concede the remedy and dispute only how much weight one estimate carries. On point 4 I concede both remedies and dispute only the effect claim and the strength of the issue.
+
+1. The windows share one training side (SPLIT-14). Conceded.
+   - The three splits have identical training indices (56,178 rows), and SPLIT-14 (Must) as written counts that as one evaluation.
+   - No higher Must forces option A, because C meets both LEAK-41 and SPLIT-14 (principles, How to decide 4).
+   - Issue 6's spanish "below the floor" bullet is false: spanish's valid window holds 52.5% of the rows.
+   - SPLIT-8 narrows USE-10, and the measured cost of C is small: +0.005 (SD 0.022) paired, about 0.004 for the cold start of a new fleet. That answers the practitioner's USE-10 objection, as I already said in my point 5.
+   - What follows: re-split to C (ForcedGroupedFromTemporal by `contract_id`, which stays the group column and is never a feature; the SPLIT-10 exception dropped). Before C ships, run SPLIT-8's leak test across the grouped split and the leak probes, the wisconsin way: the test year's training rows in and out.
+   - A or B only by a deliberate amendment of SPLIT-14, decided together with wisconsin issue 3, never by an exception.
+   - I withdraw my preference for A. Its only support is fidelity to the use case (USE-10, SPLIT-12), and the measurements show C costs that fidelity almost nothing.
+
+2. The source's 30-day floor selects rows by their realized length (LEAK-41, last clause). Remedy conceded, one effect estimate disputed.
+   - Conceded: a Must has no exceptions, so "accept it as the source's population" has to be recorded the way the critic says. That is a curator ruling written as an amendment of LEAK-41's last clause:
+     - the amendment: a selection the source made uniformly on both sides, which cannot be undone, defines the population (USE-7) and is sized in the notes;
+     - its reach: frempl and any sibling with a minimum length;
+     - the anomaly bullet rewritten as a LEAK-41 note.
+   - In my opening I called it a note plus acceptance. The amendment is the correct form.
+   - Disputed: how much the "about 11% of the newest window's vehicle-years" figure can carry.
+     - It is the claim auditor's own "rough" extrapolation, and it assumes a flat density below 30 days. The column auditor's estimate is about 1.5% of vehicle-years overall.
+     - The left-out periods are at most about 0.08 vehicle-years each (under 30 days), so their weight in a vehicle-year-weighted fit and Gini is small even where their count is large.
+     - It does count for C in issue 6, as the critic says, but only as a supporting line. It does not change any verdict.
+
+3. Probe 22's cited evidence has no power. Conceded.
+   - probe22.txt and probe22_l2.txt are both the L2 arm. In that arm the realized weight itself gains -0.0014 (SD 0.052), so the probe could not have flagged a proxy.
+   - LEAK-41 asks for both arms and a decision on the worse. The conclusion stands on the claim auditor's Tweedie arm: the weight as a feature +0.0118 (SD 0.0067), every weight-mediated gain under 1 SD.
+   - What follows: re-run probe 22 with the weighted Tweedie objective, and cite both arms in the Exposure bullet and in REVIEW issue 5.
+
+4. The stand-in metric's reason (MET-11, MET-2). Both remedies conceded; the effect claim and the strength disputed.
+   - Conceded (a): the reason's "the market rewarded the ranking of the risks" is incomplete. A cheapest-wins market after a uniform rescaling rewards relative prices, and the Gini scores only their order. The practitioner's doubled-relativities GLM (Gini 0.173 for both) shows it. Reword the reason.
+   - Conceded (b): MET-11 asks for the closeness "measured on the shipped splits where possible". The notes compare only the raw Tweedie deviance (89.9 against 91.2), the version that scores the 2013 level. Measuring the uniformly rescaled weighted deviance is cheap (EV-1) and belongs in the notes for the curator.
+   - Disputed: "the metric changes which models win".
+     - Both metrics put the GLM above the LightGBM: Gini 0.173 against 0.157 (practitioner); 0.159 / 0.171 / 0.200 against 0.114 / 0.158 / 0.190 in the notes.
+     - What differs is the margin, and whether the steep tree model falls below a flat tariff (rescaled deviance 91.34 against 90.82).
+     - That is a real difference in what the metric rewards. It is not a reversal between the two models measured.
+   - Disputed: the strength of this issue.
+     - Choosing between stand-ins is a Weigh call under MET-10, and the Gini stand-in follows australian (D8) and spanish coverage.
+     - The rescaled deviance has costs the critic also names: it takes its scale from the test total (an oracle), and it is noisier on the newest window.
+     - So it is a curator's call for the record. It is not a MET-11 failure that blocks shipping.
+
+5. Stale or wrong statements in the record, the review file and CHANGES.md. Conceded in full.
+   - The SPLIT-10 exception line, which still names "distinct training sides".
+   - The missing SPLIT-10 Cases rows.
+   - The outdated SPLIT-14 Cases row for this dataset.
+   - Issue 6's spanish floor statement.
+   - "Loses 0.010 (4 of 5 seeds)" and "time features add 0.007": both to be marked "within seed noise".
+   - "A cut nobody scheduled", to read "a cut not known at the start, a quarter of them on a month's end".
+   - CHANGES.md's option C wording.
+   - All of these are text fixes with no decision. My opening's point 7 listed most of them.
+
+6. Four band columns ship unordered (CLEAN-14, Should). Conceded.
+   - Declare `contract_age_class`, `vehicle_age_class`, `deductible_class` and `insured_value_class` as ordinal, with the column auditor's level lists, and update the Dtypes bullet. It is cheap and safe, and it lands with the rebuild that C needs anyway.
+
+Judgment record, with the critic's and my points merged:
 
 ```text
-Verdict: ship after changes. The critic and I now agree on the remedies. I withdraw my keep of the realised
-  `exposure`: under LEAK-10 as written the LEAK-7 fix is the call, and an amendment stays the curator's
-  family-wide option.
-Conceded: points 1 (with one narrowing), 2, 3, 4, 5.
-New fact (check r1): the realised length's gain is the time at risk itself. In a world where the end carries no
-  information on the outcome it gains as much (+0.050 against +0.049 observed). This settles what the leak is, not
-  whether it is one.
+Verdict: ship after changes.
+Validity: USE-1/USE-8 (direct), USE-5, LEAK-7/37 and LEAK-41 for the features and the weight hold. SPLIT-14 broken: re-split to C after SPLIT-8's leak test (A or B only by amendment, with wisconsin issue 3). LEAK-41's selection clause triggered by the source's 30-day floor: curator ruling as an amendment plus a sized note. LEAK-41 reporting: re-run probe 22 with the Tweedie arm.
+Value: TP-4 holds, weakly on the newest window (1.7 SE). TP-9 holds. MET-11: reword the reason and measure the rescaled deviance's closeness; the choice of stand-in is the curator's (MET-10).
+Quality: CLEAN-14 ordinal bands; the text fixes.
+For the curator: the issue 6 split, the LEAK-41 amendment for source floors (family-wide), and Gini against rescaled deviance as the stand-in.
 ```
 
-**Point 1, `exposure` (LEAK-10, Must): conceded, with one narrowing on what the leak is.**
-- Why I concede:
-  - LEAK-10 asks that a feature hold only what existed at the prediction point. The realised length of 58.2% of the
-    2013 periods did not exist then.
-  - The clause for window sums does not apply: the early ends move with the outcome (rate ratio 1.22).
-  - My domain argument shows that actuaries use the realised exposure in scoring (the offset of the Poisson deviance,
-    the exposure-weighted Lorenz curve), not as an input known at pricing. So it supports exposure as a scoring
-    column (MET-2), not as a feature.
-  - P3 does not excuse a Must. The tension row says: fix the leak and keep the task.
-- The check (a script and its output in the run folder; the claim audit's features, windows and
-  LightGBM parameters):
-  - Method: draw claims as Poisson(rate from the covariates and the start x the realised length), 5 draws. In this
-    world, how a period ends tells nothing about its claims.
-  - Gain of the realised over the start-known length:
-
-    | | Sep-Dec | May-Aug | Jan-Apr | mean |
-    |---|---|---|---|---|
-    | null world | +0.016 | +0.058 | +0.076 | +0.050 (sd 0.003) |
-    | data | +0.041 | +0.054 | +0.051 | +0.049 |
-
-- What follows from the check:
-  - The +0.04-0.055 is the time at risk. It does not come from outcome information. The rate ratio of 1.22 does not
-    raise the mean score (-0.001).
-  - By window, the outcome link does show:
-    - it lowers the gain in Jan-Apr: short periods there claim more than in proportion;
-    - it raises the gain in Sep-Dec, outside all five draws, with 123 positives.
-
-    So my "adds no ranking" holds for the mean only, not per window. That removes the scope test I proposed for an
-    amendment.
-- The leak note should name the mechanism as "the time at risk unknown at pricing", not "the claims ending periods".
-- The 12.0% against 9.2% share of large charges bears on severity, not on this binary target.
-- Narrowing of the remedy: use the claim audit's start-known length (`known_len`). Periods that end at a scheduled
-  anniversary cut (0.8%) keep their realised length; every other early end gets its length to 31 December (/366 in
-  2012). Otherwise `exposure` becomes a pure function of `period_start`, a copy (CLEAN-5's reasoning for `year`), and
-  should then be dropped, as the column audit says.
-- Agreed after the fix:
-  - the cost: LightGBM 0.671 -> 0.622;
-  - the task survives: covariates and the start score 0.594 / 0.622 / 0.653, against 0.551 / 0.567 / 0.531 for the
-    start-known length;
-  - re-run TP-4 and the window numbers in the notes.
-- The amendment (prompt A (d)) stays the curator's to make, for frempl, spanish coverage, australian and pg16
-  together. I no longer recommend it for pg16 alone.
-
-**Point 2, the "known" text (USE-3, Must): conceded.**
-- After the fix, write "the length to the year's end, known at the start" in `task_summary.known` and the first bullet.
-- Rewrite `fit_reason`, the leak bullet (or remove it once the fix is in) and Decision 1, with claims per vehicle-year
-  by how the period ends.
-
-**Point 3, the windows (SPLIT-14 and SPLIT-8 Must; SPLIT-10, SPLIT-11, SPLIT-15 Should): conceded, no dispute left.**
-- Same remedies as my point 3: a first SPLIT-14 Cases row for the curator, the SPLIT-11 exception, the SPLIT-10
-  bound with prompt C's amendment, the SPLIT-15 citation, the cohort note, and the reworded "call of 2026-10-30".
-- The check adds one fact to the cohort note: the windows differ in how the length acts (null gains +0.016 to
-  +0.076). Per-window scores are therefore not comparable across windows. The cohort note should say so.
-
-**Point 4, the metric origin (MET-11, Must): conceded.** Use `Metric.stand_in("roc_auc", original=<the 2014 market,
-rules Sec. 4>)`. Add the Gini identity to the reason. Measure again, after the fix, how much of the score the period's
-length carries.
-
-**Point 5, statements and record fields: conceded, all of them.**
-- IRSA's flat recovery and the 126 claims at 50% responsibility.
-- The leap year 2012 (and the two rows with `n_vehicles` = 2).
-- The "12 vehicles" and "42.8%" counts are counts of the file, which looks like a sample.
-- A pg16-specific reason for the binary target: the charges are scaled, their tail is short and unexplained, and 537
-  periods are net negative.
-- The stale record fields, and `accepted_check_warnings` for the three warnings.
-
-**What remains for the curator:** no dispute between us.
-- The LEAK-7 fix, unless the curator chooses the family-wide LEAK-10 amendment (prompt A).
-- The SPLIT-14 reading (first case).
-- The SPLIT-10 amendment (prompt C).
-- `log_loss` as context: a weighing call, MET-10.
+Sources:
+- The critic's opening brief and the phase A reports of this panel.
+- Rules in `.claude/skills/knowledge-curation/references/`: metrics.md (MET-10, MET-11), splits.md (SPLIT-8, SPLIT-14), leak_checks.md (LEAK-41), principles.md.
+- Definition: `datasets/_dev/tabarena-v0pt2/pricing_game_2016_french_fleet/dataset.py` (lines 170-174 for the notes' metric comparison; around line 202 for the stand-in reason).
 
 </details>
 
 <details><summary>Critic rebuttal</summary>
 
-**Critic, rebuttal (2026-11-01): pricing_game_2016_french_fleet**
+**Critic's rebuttal: pricing_game_2016_french_fleet (exposure re-review, 2026-11-06)**
 
-**Where we stand.** The advocate and I agree on the verdict (ship after changes), on the dataset staying, and on every text, label and record change. One dispute is left: what the panel recommends for `exposure`.
-- The advocate recommends keeping the realised length by an amendment of LEAK-10.
-- I recommend the LEAK-7 fix, because LEAK-10 as written decides it.
+We agree on the verdict: ship after changes, not as defined. I concede points 1 to 4. On 5 to 7 I dispute three framings. Each would let a Must be settled with less than the rule requires. I also correct one statement of fact.
 
-I ran one check, because it bears on the advocate's main argument for the keep. Script and output in the run folder.
+Point 1 (real task, numbers reproduce): conceded. USE-8 direct fit, target rebuilt from the source, metric implementation matches to 1e-12. I raised no point against P2 or P3.
 
-**A1. The data is real and faithful (P5). Conceded.** One qualification: the row names of the train and test files run exactly from 1 to 120,000. This hints at a sample (column audit, issue 3). It means some statements count the file rather than the fleet ("up to 12 vehicles at once", "42.8% ... no later period"), which is my point 5. It does not touch the data's faithfulness.
+Point 2 (no leak through the weight): conceded on the substance. The advocate concedes my point 3: probe22.txt and probe22_l2.txt are one L2 run, and that arm has no power (weight itself -0.0014, SD 0.052). The conclusion rests on the claim auditor's Tweedie arm, and we agree on the remedy. One nit: LEAK-41 requires the definition to report both arms and decide on the worse. Citing the Tweedie numbers is therefore needed for the definition to meet the rule, not an optional note fix. Fixing the text is enough; I do not ask for a definition change.
 
-**A2. A real pricing task, fit direct (P3; USE-1, USE-5, USE-8). Conceded.** The IDA wording ("a flat amount"; 126 claims at 50% responsibility) is the same fix as in my point 5. Fit stays direct under either remedy for `exposure`. The sentence in fit_reason, "measured to add no signal beyond the length", goes either way.
+Point 3 (the training side 2011-2012 is the honest one): conceded. LEAK-41 (Must) outranks SPLIT-11 (Should). The 0.127 / 0.131 against 0.115 / 0.116 measurement and the hotel_booking_demand precedent carry it.
 
-**A3. The split mirrors the application (P4). Conceded, narrowed on one word.**
-- The advocate's record block says SPLIT-14 "holds". The split auditor and the precedent checker both say it is met in letter, as a first case, and needs the curator's confirmation and a Cases row. The advocate's own remedy list includes that Cases row.
-- So the remedies are the same as in my point 3:
-  - the SPLIT-14 Cases row;
-  - the exception to SPLIT-11;
-  - the SPLIT-10 departure with its simulated bound (amendment prompt C);
-  - the citation of SPLIT-15 for SPLIT-17;
-  - the cohort sentence.
-- The advocate is right that the blind reviewer's windows aligned on years would break SPLIT-14 (30.4% train), and that its overlap worry does not apply to the fixed train side.
+Point 4 (worth benchmarking): conceded. TP-4 and TP-9 hold: 103 / 232 / 1,026 positive charges, every window above the constant. The newest window clears the constant by only 1.7 SE, yet option A gives it a third of the score. That weighs on issue 6 (my point 1), not on whether the dataset is worth benchmarking.
 
-**A4. `exposure`. Contested on the keep; agreed on everything else.**
+Point 5 (SPLIT-14): I concede that the defined state breaks a Must and that C is the fix within the rules. I dispute two framings.
+- (a) The advocate presents A-by-amendment and C as two equal paths ("either way the dataset ships; the only open question is which split"). They are not equal.
+  - principles.md: "A Must has no exceptions: only a higher-ranked Must overrides it, and anything else is an amendment".
+  - The amendment issue 6 drafts would reach only this dataset. Spanish coverage and pg17 have no dates within a year, and frempl has a single year (precedent checker, Decision 4). An amendment written to fit one dataset works as an exception to a Must, which the rule bars.
+  - It would also reverse Andrej's 2026-11-02 amendment, written on this very dataset, and Lennart's 2026-11-05 reframing. That is consistency case 3, drift of the same curator on the same rule.
+  - So C is the remedy the rules give. A is open only as a change to SPLIT-14 for the whole family, decided with wisconsin issue 3, with the reasoning written as a general rule.
+- (b) The advocate cites USE-10 as a "Must, Part 2" behind the practitioner's B > A > C ranking. SPLIT-8 is a Must that "narrows SPLIT-7, SPLIT-14 and USE-10", so within its scope USE-10 does not decide the regime. The advocate's own number agrees: the cold-start cost of C is about 0.004 (split auditor).
+- We agree on the precondition: SPLIT-8's leak test across the contract folds, plus probes/group.txt, must run before C ships. The flat claims per vehicle-year (0.117 / 0.119 / 0.119) make a pass likely, but likely is not measured (EV-1).
 
-**What the advocate concedes.**
-- The "known" text is false.
-- The 31 December test could not fail.
-- The part of the length unknown at the start adds +0.040 to +0.055.
-- LEAK-38 rejects the argument from the host's test file.
-- A keep needs an amendment, because a Must takes no exception.
+Point 6 (the source's 30-day floor): I concede the facts and that exclusion is wrong. I dispute the remedy.
+- The advocate's remedy is "a LEAK-41 note ... the curator accepts it as the source's population". Keeping a departure with a note is the exception route, and the exception route exists only for Should rules. LEAK-41 is a Must: "No model is trained or scored on rows selected by the realized weight". The rows here were selected by realized length.
+- A curator's acceptance has to take the form of an amendment of LEAK-41's last clause, for example: "a selection the source made before release, the same in train and test, that cannot be undone, defines the population (USE-7) and is sized per window in the notes". It is recorded in leak_checks.md with this case.
+- It applies equally to frempl and to any sibling with a minimum length. Otherwise the next dataset with a source-side floor gets decided without a rule.
+- "The same on both sides" holds for train against test, not across windows. The claim auditor estimates about 11% of the Sep-Dec window's vehicle-years removed against about 1.6% for Jan-Apr. The advocate accepts this as input to issue 6. It is one more reason for C or for pooling, not for A.
 
-What is left is which remedy the panel puts first. By the ranking it is the fix. Four of the advocate's reasons do not change that.
+Point 7 (the rest is quality): I concede CLEAN-14 (my point 6) and the text fixes (my point 5). I dispute the metric framing and correct one fact.
+- (a) The metric. The advocate files the Gini under MET-10 (Weigh). MET-10 weighs "a borderline call between the source's metric and the fallback". That is not this case. Here the source's metric, the market, cannot be computed, so this is a stand-in under MET-11, a Must. MET-11 says "the closest computable metric replaces it ... the closeness is measured on the shipped splits where possible".
+  - The practitioner measured where the two candidates part ways. The Gini gives 0.173 to a tariff and to the same tariff with doubled relativities. The uniformly rescaled weighted Tweedie deviance gives GLM 89.63, GLM doubled 94.27, LightGBM 91.34, constant 90.82, and the game applied the same uniform rescaling.
+  - So whether the Gini is the closest computable stand-in has been put in doubt by a measurement and not settled. Rewording the reason is necessary but not sufficient.
+  - My remedy stays mild: reword the reason, report the rescaled deviance against the Gini on the shipped windows, and give the curator the choice under MET-11 / MET-4. I do not ask to switch the metric unilaterally. The D8 and spanish coverage precedents chose the Gini on the family call. Neither measured closeness to a market that rescaled uniformly, which is the fact that sets this case apart.
+- (b) Correction of fact. The advocate says "Dropping n_vehicles and insured_value_class was settled (D4, CLEAN-5)". Both ship as features. `n_vehicles` is kept as the source ships it (D4; column auditor: "fine (settled D4)"). `insured_value_class` is kept with "ND" made missing on 87,093 rows (column auditor; CLEAN-10). The settled call is to keep them, not to drop them. This changes no verdict.
 
-- **(i) "The outcome-linked part adds no ranking, by tests that could have failed."**
-  - The LightGBM exit-flag test (0.671 against 0.670) could not fail, for the same reason as the 31 December test: the model has `period_start` and `exposure`, so it already holds the flag.
-  - The Poisson offset test can fail, so I measured how much it can resolve. Same GLM as the column audit, trained on 2011-2012, early-end flag on and off:
+Where we stand:
+- Agreed: ship after changes. Re-split by SPLIT-8 (C) once its leak test passes. Cite both arms of probe 22. Rewrite the 30-day floor as a LEAK-41 matter. CLEAN-14 retype. Text fixes.
+- Disputed, for the mediator:
+  - (i) Whether A is a symmetric option. I say it is an amendment of a Must for the whole family, with C the rule's own remedy.
+  - (ii) Whether the 30-day floor can be "accepted" by a note. I say it needs an amendment of LEAK-41's last clause.
+  - (iii) Whether the stand-in metric is a MET-10 weighing call or a MET-11 Must that needs its closeness measured. I say MET-11.
 
-    | | rate ratio of early ends [95% CI] | ROC AUC gain [contract-clustered 95% CI] | log loss |
-    |---|---|---|---|
-    | 2011-2012 (train) | 1.220 [1.123, 1.326] | | |
-    | 2013 (refit) | 1.175 [1.051, 1.314] | | |
-    | all 2013, out of sample | | +0.0009 [-0.0004, +0.0022] | lower in 93% of bootstrap draws |
-    | per window, newest first | | -0.0055 / +0.0018 / +0.0009 | |
-
-  - So the link holds in the test year. The early ends move with the outcome given the covariates known at the start, which is the condition under which LEAK-10's window clause would keep them: "unless the data shows the window's values do not move with the outcome". The AUC test can only resolve about ±0.0013, which is the size of gain this rate ratio predicts. "No measured gain" here means the test cannot see it, not that the link is absent (EV-6).
-  - LEAK-10 also says that "a 'removing it changes no score' test alone is still no reason to keep" (2026-10-21).
-- **(ii) "The domain's evaluation conditions on the time at risk."** Partly true, and it does not carry the keep.
-  - In actuarial practice the earned exposure enters the score as an offset or weight: the Poisson deviance, or the x-axis of the Lorenz curve. The rate the actuary acts on is a function of the rating classes alone.
-  - Here the realised length is a free model input under a metric that ranks periods. A risk-blind "rate times length" model already scores 0.637, which is 79% of the best model's lift. The practitioner says this is the part "I never need predicted".
-  - The practice argues for the time at risk in the scoring. It does not argue for a test-time feature that did not exist when the period was priced.
-- **(iii) "The fix answers a different question, frequency mixed with retention (USE-5)."** No conflict with USE-5.
-  - The target does not change: it is the curator's per-period indicator (CC 2026-10-30), which already folds the period's length into the outcome. The practitioner accepted it as a close proxy of the rate.
-  - The fix changes only what the model is told: the time at risk known at pricing. USE-5 is about the target, not the features, so the P3-over-P4 ranking is not triggered.
-  - The retention blur is small and named. A feature unknown at the prediction point is a P4 Must.
-- **(iv) "The only curator decision keeps it (fremtpl2, CC 2026-10-20); frempl and spanish are pending AI fixes."**
-  - Conceded: frempl and spanish are not curator precedents.
-  - But a newer curator decision covers this case. LEAK-10's second clause (Lennart, 2026-10-26) says late values "go where [they] can be located: they are blanked", and stay with a note only where they cannot be located.
-  - fremtpl2 has no dates, so its early ends cannot be located. pg16's dates locate every one.
-  - Principles: "A newer decision of the curator beats an older one", and rules win over precedents. The rule decides, not the AI fixes.
-
-**The advocate's proposed amendment.** It would keep realised time at risk "when the outcome-linked part shows no gain".
-- It rests on the test that my check shows cannot resolve the effect.
-- It would replace the curator's measured condition ("do not move with the outcome") with a score test that LEAK-10 explicitly rejects.
-- The +0.04 to +0.055 would still need the amendment to say outright that a time at risk unknown at pricing is an allowed feature in insurance tables (prompt A (d)). That would reach frempl, spanish, australian and fremtpl2 together.
-
-That is a deliberate rule change for the curator. A panel does not recommend it as the remedy for one dataset.
-
-**Recommendation, unchanged.**
-- The LEAK-7 fix: the length to 31 December for every early end.
-- Cost: LightGBM 0.671 to 0.622. TP-4 holds: covariates plus the start score 0.594 / 0.622 / 0.653, against 0.551 / 0.567 / 0.531 for the start-known length alone.
-- The amendment is the curator's alternative.
-- Agreed either way: rewrite `known`, the first bullet, fit_reason, the leak note (rate ratio 1.22, +0.04 to +0.055) and Decision 1 (claims per vehicle-year), and use 58.2%, not 42.8%.
-
-**A5. Worth benchmarking (P6). Conceded.** Low headroom triggers no rule (TP-2, TP-3), as my brief said. TP-4 is re-run after the fix, and the numbers above show it holds.
-
-**A6. The metric (P6). Conceded and agreed.** The origin becomes `stand_in` with the 2014 market as the original. `roc_auc` stays. The reason says how much of the score the length carries, re-measured after the fix. `log_loss` as a context metric is the curator's weighing call (MET-10).
-
-**A7. The cleaning (P7). Conceded.** The remaining items are the leap-year clause, the stale record fields and `accepted_check_warnings` for the three warnings. They match my point 5.
-
-```text
-Verdict: ship after changes (agreed).
-Disputed: `exposure`. LEAK-10 (Must) as written, with its 2026-10-26 clauses: fix by LEAK-7 (critic); keep only by a
-  curator amendment of LEAK-10 for insurance time at risk (advocate). The early-end link replicates in 2013 (RR 1.175
-  [1.05, 1.31]); the AUC test cannot resolve it (+0.0009 [-0.0004, +0.0022]).
-Agreed: USE-3 wording; SPLIT-14 Cases row, SPLIT-11 exception, SPLIT-10 bound and prompt C, SPLIT-15 citation;
-  MET-11 stand-in; IDA wording; record fields; warnings.
-```
+Sources:
+- The advocate's opening brief and the phase A reports of this panel.
+- Rules in `.claude/skills/knowledge-curation/references/`: principles.md (Exceptions and amendments), splits.md (SPLIT-8, SPLIT-14), leak_checks.md (LEAK-41), metrics.md (MET-10, MET-11).
 
 </details>

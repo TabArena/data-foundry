@@ -1,5 +1,63 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-06, PR #47: re-review under the exposure rules (no container built)
+
+Seventeen of the twenty datasets the exposure rework touched went through the review panel again under LEAK-41 and
+MET-14 to MET-16 (full panel where the definition changed, focused elsewhere; run folder
+`_runs/2026-11-06_exposure_review/`, not committed); the three Kaggle datasets wait for their data. Each of the
+seventeen REVIEW.md files has a new `**Review panel:**` block (the old one kept in the run folder and in git) and its
+new questions as open issues; each record has the panel's Assessment line. The changes below need no decision.
+
+- `fremtpl2`: text only (the LEAK-41 report on the declared metric, the duplicate counts, the 19-row rating profile in
+  the notes and `splits_comment`); issues 10 (the "Two-Regime Zeros" tag) and 11 (a split grouped on identical rating
+  factors) open. README regenerated (0 errors, 0 warnings).
+- `bemtpl97`: the LEAK-41 report on the declared metric (+0.0047 weighted Poisson, +0.0051 L2; the weight alone
+  0.6122), the old figures labelled as count deviance, the copies counts; priority 3 to 4. README regenerated.
+- `australian_vehicle_insurance_2004_2005`: the metric reason, the split, copies and exposure bullets on the rate
+  (probe 22, both arms); issues 7 (`gender` against bemtpl97's `sex`), 8 (MET-14's per-contract clause, with
+  spanish_motor_insurance_2015_2018's issue 7) and 9 (the age bands) open. README regenerated.
+- `frempl_french_motor_personal_line`: the LEAK-9 figure and its route through `Exposure`, "ceiling" dropped, the
+  start date shipping as `length_to_year_end`; issue 7 rewritten (the identity scale recommended), issues 8 (one-column
+  successors across the split) and 9 (the unrounded length against the month rounding) open. README regenerated.
+- `spanish_motor_insurance_coverage_level_2022_2024`: the premiums' decimals still carry the time on risk (a
+  part-year's quotient falls back on the tariff's 5-decimal grid; ROC AUC 0.965 for the located cancellations), said
+  in the notes and the README, rounding left to issue 7; the `business_type` note, `splits_comment` on today's numbers,
+  `bonus_score` ordinal, the planned-time clause moved to the exposure note; issues 7 (round the premiums to the cent)
+  and 8 (`payment_frequency` ordered) open. README regenerated (0 errors, 0 warnings).
+- `pricing_game_2016_french_fleet`: probe 22 both arms, the metric reason (the Gini's measured shortfall), the 30-day
+  floor as a LEAK-41 note, the four band columns ordinal; issue 6 rewritten (the split grouped by contract recommended,
+  now that the leak test across it passes); issues 7 (the 30-day floor) and 8 (the stand-in metric) open. README
+  regenerated.
+- `noaa_storm_events_damage`: the 51 Seiche durations blank by type (App. A Sec. 41 starts a Seiche with the damage);
+  the kept-span note gives the measured worth (-0.01 to +0.08 RMSLE over 15 fits, median about +0.03), names Dust
+  Storm and Volcanic Ashfall, and reads Flood, Flash Flood, Hurricane and Tropical Storm as outcome-free; the record's
+  `No Good Target / Scientific Discovery` marker removed (issue 5 settled it); issues 7 (blank the wind spans that
+  `magnitude_type` marks as timed by the damage) and 8 (RMSLE or the Tweedie deviance) open. README regenerated
+  (0 errors, 0 warnings).
+- `noaa_afsc_bottom_trawl_survey_cpue`: the LEAK-41 report, the tow-cut claim restated, the reason for unweighted
+  scoring, the MET-14 rebuild assert in `_clean`; frame unchanged; issues 5 and 6 open. README regenerated.
+- `pricing_game_2017_french_mtpl`: the exposure note's reason and the smallest plausible mean (14 to 20 EUR) next to
+  the floor; issue 5 open (the 1 EUR floor: amend the rule or lower it to 0.1 EUR). README regenerated.
+- `spanish_motor_insurance_2015_2018`: CLEAN-11 counts, `splits_comment` (12 test rows not new; smallest window 763),
+  the task summary's row, the exposure note; issues 7 (MET-14's clause and the half-yearly payers) and 8 (a sentence
+  of the CC) open. README regenerated.
+- `spanish_homeowners_motor_insurance_2010_2014`, `boreal_postfire_lichen_biomass`, `wadden_sea_sibes_macoma_abundance`,
+  `wisconsin_local_government_property_insurance_fund`: notes reworded on today's numbers; boreal issue 7 (per-quadrat
+  or per-plot scoring), wadden issue 7 (the 608 counts below one) and wisconsin issue 3 (option F added) open.
+  READMEs regenerated.
+- `bank_marketing`, `g_research_crypto_forecasting_1m`, `anes_voting_2026`: first REVIEW.md (bank_marketing issues 1
+  to 3; g_research issue 8; anes none); bank_marketing's `job` "unknown" made missing. READMEs regenerated.
+- `liberty_mutual_fire_peril_loss_cost`, `allstate_claim_prediction_challenge_1m`,
+  `loan_default_prediction_imperial_college`: a dated note that no panel ran (the Kaggle files download only after
+  the competition rules are accepted).
+- Working copy REVIEW.md, "From PR #47": items X1 (the weight kept from the model at test time), X2 (LEAK-41's
+  "ceiling" wording), X3 (MET-14's rebuild check) and X4 (a third clause of LEAK-10 for spans the outcome sets).
+- Knowledge files: the Cases rows of LEAK-41, the spans and time-on-risk rows of `leak_checks.md`, MET-14 and MET-15
+  rows of `metrics.md`, SPLIT-8 and SPLIT-10 rows of `splits.md`, the TP-10 row of `task_probes.md` and the probe-22
+  reading row of `evidence.md` follow the panels' numbers.
+- Probes: probe 22 fits a Gini-scored weighted rate actuarially (Poisson for counts, Tweedie 1.5 otherwise); the task
+  probe gives the declared metric's gain over the dummy next to its flags, which read an R²-type skill.
+
 ## 2026-11-06, issue #51 and PR #47: exposure as a weight, never a feature (no container built)
 
 The curator's decisions of 2026-11-06 on the exposure study (D1-D14): the framework gets training weights

@@ -1,60 +1,79 @@
 # noaa_afsc_bottom_trawl_survey_cpue
 
-**Outcome:** added. The AI recommends shipping it; after the panel one column was repaired from the origin and the
-text fixed, with rows, target, split and metric unchanged. The data are NOAA AFSC's summer bottom-trawl hauls from the
-public FOSS tables: 35,549 hauls of 1982-2026 in five survey regions. The target is the haul's rex sole catch in
-numbers per km^2 swept (62% zero), scored by RMSE, the rule by which the 2022 essential fish habitat (EFH) review
-picks and weights its models. The prediction is for a place in a survey year, from the region, design stratum,
-position, date, depth and that year's temperatures there. The split is temporal: three five-year windows, as the EFH
-review recurs every five years, each trained on the surveys up to two years before it.
-
-**Changed (2026-11-02, on Andrej's marks):** the table now holds 11 taxa, one row per haul and taxon (391,048 rows,
-52.5% zero), with `taxon` as a feature (issue 1). The split has nine two-year windows without a gap (issue 2). The
-metric is the source's RMSE taken per taxon over the taxon's spread and averaged (`mean_group_normalized_rmse`,
-issues 1 and 3); flathead sole is grouped with Bering flounder. The panel's reports below were written for the
-rex sole table and the five-year windows.
+**Outcome:** added. The AI recommends shipping it: the re-review of 2026-11-06 under the exposure rules corrected the
+notes and added one assert, with rows, target, features, split and metric unchanged, and leaves two questions that
+change neither the data nor the score (issues 5 and 6: a restated CC and a rule file's wording). The data are NOAA
+AFSC's summer bottom-trawl hauls from the public FOSS tables: 35,561 hauls of 1982-2026 in five survey regions, one row
+per haul and taxon for 11 groundfish taxa (391,044 rows, 52.0% zero catches). The target is the catch in numbers per
+km^2 swept, shipped as log1p and scored after the inverse by `mean_group_normalized_rmse`, the source's RMSE taken per
+taxon over the spread of its catches in the window and averaged, so that each species' habitat map counts once; the
+score is unweighted, with no sample weight. The prediction is for a species at a place in a survey year, from the taxon,
+the region, the design stratum, the position, the date, the depth and that year's temperatures there; `taxon_group`, a
+copy of `taxon`, is the metric's group and no feature. The split is temporal: nine two-year windows (2025-2026 back to
+2009-2010), each trained on every earlier survey, without a gap.
 
 Validity:
-* USE-1 holds: the EFH review is set by law. USE-5 holds for any managed species of the surveys, so the species is a
-  weighing call (issue 1). USE-8: fit approximate (no habitat layers such as sediment or currents; regions and life
-  stages pooled).
-* USE-3 was broken in the text, which described a review forecasting later hauls while feeding it each haul's own
-  temperatures. Fixed by naming one prediction point, a place in a survey year under that year's conditions: the
-  temperatures stay (no measured gain; to be decided with wadden_sea_sibes_macoma_abundance issue 5, where sediment
-  measured at the visit carried a gain and was replaced by interpolated values), the date stays because the survey
-  schedule sets it, and the vessel and the hour leave because a place-year has neither, so USE-6 holds without an
-  exception.
-* LEAK-10 holds for all 8 features.
-* SPLIT-1 and SPLIT-3 wait for your pick of the regime (issue 2). SPLIT-15 is departed from (three windows, not nine),
-  forced by SPLIT-12 and SPLIT-14: a fourth window would train on 43.6% of the hauls.
-* SPLIT-20 triggered: the Gulf of Alaska survey got new stratum numbers in 2025, so its 431 hauls of that year (10% of
-  the newest test window) carried codes no training row had. Repaired from the origin with GAP's polygons of the old
-  strata (newest window R^2 0.607 to 0.726; CLEAN-21, as college_scorecard).
-* PROV holds: every target was rebuilt exactly from the API, and the haul counts match the 2022 memo. EV-7: FOSS has
-  not yet rated the 2026 season (17% of the newest window); a fresh download is compared before a build.
+* USE-3 holds: the realized effort (tow length, distance, net width and height, area swept, end position) is dropped,
+  as a place in a survey year has no tow. USE-8: fit approximate (one table of 11 taxa scored at the hauls' own
+  readings; no habitat layers such as sediment or currents).
+* LEAK-41 holds as a leak rule: the shipped features carry the realized effort only through place and year (the
+  realized area swept over its region-year median at R^2 0.10, short tows told apart at ROC AUC 0.75), the risk
+  selection the rule allows. Its reporting clause was not met and is fixed in the notes: under a Poisson fit the effort
+  columns gain +0.013 in the panel's rerun (better in 4 of 5 windows), not nothing, and the score of a model on 1/area
+  swept is stated (a gain of 0.007-0.013 over the taxon alone, against the honest model's 0.90-0.93).
+* LEAK-10 holds: no feature carries the tow cut. EV-1 triggered on the notes' cut claim, fixed in the text: against an
+  area-only null Pacific cod's short tows stand above it too, and among the tows with a catch those of four more taxa;
+  Lennart's CC of 2026-11-06 still claims the cut for walleye pollock alone (issue 5).
+* SPLIT-1, SPLIT-3, SPLIT-9, SPLIT-11, SPLIT-12, SPLIT-13, SPLIT-14 and SPLIT-23 hold: no haul straddles a cutoff, and
+  the training sides hold 54.0-95.4% of the rows. SPLIT-20 is a note: pollock's cut sits mostly in the EBS hauls of
+  1989-2008, training rows in every window, and in the test years shows in the Aleutians and the Gulf of Alaska;
+  dropping the short tows from training moves the score by -0.0013, noise. EV-2 triggered on the splits text, which
+  said every window holds every region; corrected (the slope survey ended in 2016, the northern Bering Sea runs in
+  some years, and 2019 has no Aleutian survey).
 
-Value: MET-5 and MET-11 hold. MET-2 is met with a note: the Gulf of Alaska holds 71-93% of the squared error with
-23-40% of the test hauls. A region-averaged RMSE, the critic's and the domain practitioner's option, still leaves the
-Gulf 45-63% of it (the mediator's measure, before the repair), and a scale-free score per region would be a metric of
-our own (TP-6), so the mediator kept the note.
+Value: MET-2 holds: `taxon_group` equals `taxon` on all 391,044 rows, and the 11 taxa are scorable in 9 of 9 windows
+with at least 71 positives each. MET-15 holds and decides "unweighted, no sample weight", as the decision is per cell
+of an equal-area map; MET-16 holds, no design weight, as EFH is not a population estimate (a stratum-area design
+weight ranks 7 untuned models alike, Kendall tau 0.81-1.00, the same winner in 4 of 4 windows). The stated reason,
+"cells of equal area", misdescribed the scored hauls (the Aleutians have about 8 times the EBS shelf's hauls per
+km^2) and is reworded. The task probe raises no flag (random forest skill +0.786 ± 0.012; on the metric 0.919 against
+the dummy's 1.092). How the time-on-risk row of the leak rules' cases records this dataset is issue 6.
 
-Quality: CLEAN-22, each drop reason now says what the column is; CLEAN-8, the notes say the species was screened on all
-years, test windows included; CLEAN-21, a note on the 1993-95 depths.
+Quality: MET-14 departure fixed: `_clean` asserts that the CPUE times the area swept rebuilds the count (201,731
+counted catches, to 1.6e-4); the frame and the splits are unchanged. CLEAN-15 holds: the 128 catches weighed but not
+counted are dropped, not zero-filled. EV-8 triggered on the Poisson range, corrected to 0.88-1.24 (two runs, five
+windows each). The check warning `task_target_value_dominant` (52.0% zeros) is accepted with Andrej's reason of
+2026-11-03.
 
-Weighed: NOAA's documented tables +; a real use case +; an approximate fit -; a strong spatial baseline (k-NN on
-position alone scores close to LightGBM) -.
+Weighed: NOAA's documented tables +; a use case set by law +; an approximate fit -. None open (the mediator).
 
-Left for Andrej: issues 1 and 2. The mediator closed the precedent checker's two consistency checks (`stratum`, and the
-vessel and hour). Not verified: whether FOSS revises the 2026 season, Pirtle et al. 2020 and the 2023 Gulf of Alaska
-memo. The numbers of the notes and of issue 2 were measured again on the repaired frame, so some differ from the
-panel's (temporal mean R^2 0.694 in the split auditor's setup, not 0.652).
+Left for the curator: issue 5, restate the claim of Lennart's CC of 2026-11-06 (a fact correction); issue 6, the wording
+of this dataset's entry in the time-on-risk row of the leak rules' cases. Across datasets, this dataset's evidence goes
+to two items of the working copy's REVIEW.md ("From PR #47"), and no change here hangs on them: X2, rewording LEAK-41's
+"ceiling" (under this level-sensitive metric the model on 1/area swept beside the taxon scores 1.031-1.046, worse than
+the honest model's 0.90-0.93, while the free effort columns gain up to 0.033 in single windows, more than its
+0.007-0.013); X3, MET-14's rebuild check only when the source releases the count (this dataset now asserts the rebuild
+and leaves X3's list, so X3 rests on two cases, boreal_postfire_lichen_biomass and wadden_sea_sibes_macoma_abundance,
+and no amendment is due).
 
-**Main points:** All four issues are settled (1 to 3 on 2026-11-02, 4 on 2026-11-06).
+The first panel (2026-11-01) reviewed the rex sole table with three five-year windows; its reports are in this file's
+git history. Andrej's marks of 2026-11-02 made the table 11 taxa with the taxon as a feature (issue 1), the split nine
+two-year windows without a gap (issue 2) and the metric the RMSE per taxon over its spread (issues 1 and 3); on
+2026-11-06 issue 4 added the copy `taxon_group` and settled the tow's effort. The re-review of the same day (full
+tier) made the nine changes that need no decision (Mediator, "Changes to make now"). One figure differs from the
+panel's: Greenland turbot's spread, which the metric takes per test window, is 12-35 per km^2 from 2017 on against
+162-543 before (the panel's 8-38 and 47-639 are per survey year). `dataset check`: 0 errors, 0 warnings.
+
+**Main points:** Open: issue 5 (Lennart), restate your CC of 2026-11-06 so that it claims the tow cut for walleye
+pollock and, to a lesser degree, Pacific cod (B, recommended), or keep pollock alone and name the fact that sets cod
+apart (C)? Issue 6, record this dataset in the time-on-risk row of the leak rules' cases by a clause in the row's remedy
+(B, recommended) or as a listed case only (C)? Settled: the 11 taxa (issue 1), the temporal split (2) and RMSE (3) on
+2026-11-02; the copy `taxon_group` and the dropped effort (4) on 2026-11-06. Across datasets: X2 and X3.
 
 **Verdict (2026-11-02, Andrej):** ship. The metric is marked as declared (`mean_group_normalized_rmse`). The
 dataset joins the accepted set; a build waits for your ask.
 
-**Issues for Andrej:**
+**Issues for Andrej and Lennart:**
 
 1. **Keep rex sole as the species?** The target is one species' catch, and the source names none: the EFH memos
    model 31 to 36 species each. The definition takes rex sole, chosen from 22 species probed on these hauls.
@@ -331,33 +350,42 @@ dataset joins the accepted set; a build waits for your ask.
      the date. The realized effort (tow length, distance, net width, area swept) is dropped: a place in a survey year
      has no tow[^use3], and the area swept is the target's denominator[^weight].
    * **Effect on the task:** None on the scores: the copy holds the same values (identical scores on three windows),
-     and `taxon` stays a model input. The notes now claim the cut only where the data shows it.
+     and `taxon` stays a model input. The notes now claim the cut where the data shows it; the re-review of 2026-11-06
+     found it for Pacific cod too, to a lesser degree (issue 5).
    * **Experiments:** Short tows are those under 0.75 of the median duration of their region and year (1,699 of
      35,561 hauls); each is set against the mean of its stratum and year, on log1p numbers per km^2 (the new decision
-     table of the README).
-     - Over all hauls, pollock's short tows lie 0.36 above their cells, the other taxa -0.36 to +0.08: a pollock tow
-       ends early on a large catch. On the EBS shelf, pollock tows under 0.4 h (831) average 8.33 log1p kg per km^2
-       against 7.35 at full length.
+     table of the README). The text below is corrected after the re-review of 2026-11-06 (the review panel below).
+     - Over all hauls, pollock's short tows lie 0.36 above their cells, the other taxa -0.36 to +0.08. On the EBS
+       shelf, pollock tows under 0.4 h (831) average 8.33 log1p kg per km^2 against 7.35 at full length. Against an
+       area-only null (each short tow redrawn from a full tow of its cell, thinned by the ratio of the areas swept),
+       pollock stands far above it (+0.357 against -0.070) and Pacific cod above it too (about 4 standard deviations of
+       the null): a stop on a large catch is the likely reading, not isolated from where short tows land within a
+       cell (issue 5).
      - Where a short tow catches a taxon, its density is higher for 9 of 11 taxa by the plain means and for all 11
-       within their cells (pollock 0.55, the others 0.00 to 0.25): a positive count over a smaller area swept is a
-       higher density, with no stop on the catch.
+       within their cells (pollock 0.55, the others 0.00 to 0.25). The smaller area swept explains this for
+       Atheresthes, Dover sole, Greenland turbot, Hippoglossoides and rex sole, not for pollock, Pacific cod, Pacific
+       halibut, sablefish, shortspine thornyhead or rock sole, which sit above the null.
      - As free features the effort columns gain 0.0028 of the metric under an L2 fit on log1p (1.9% of untuned
-       LightGBM's skill, better in 3 of the 5 windows tested) and nothing under a Poisson fit; an RMSE on counts ranks
-       the models as the density RMSE does (Kendall tau 0.80 to 1.00, the same winner in 5 of 5 windows; exposure
-       study).
+       LightGBM's skill, better in 3 of the 5 windows tested; 0.0004 in the panel's rerun) and, under a Poisson fit,
+       -0.006 in the exposure study (better in 1 of 5 windows) and +0.013 in the panel's rerun (4 of 5), so about
+       0.013 on the worse fit. A model on 1/area swept beside the taxon scores 1.031-1.046 against 1.039-1.057 for the
+       taxon alone (the honest model 0.90-0.93). An RMSE on counts ranks the models as the density RMSE does (Kendall
+       tau 0.80 to 1.00, the same winner in 5 of 5 windows; exposure study).
    * **Consistency:** The same copy as liberty_mutual_fire_peril_loss_cost's `var11_weight`, asked in the same review
      comment. The density is scored unweighted, as wadden_sea_sibes_macoma_abundance and
-     boreal_postfire_lichen_biomass score theirs[^unweighted]. NOAA's design-based index averages the hauls' CPUE with
+     boreal_postfire_lichen_biomass score theirs[^unweighted]; they match on an unweighted rate per unit area, not on
+     the cut: boreal's quadrat area is fixed by its protocol, and wadden's effort, set after the sample is seen, is not
+     released, while this dataset's area swept is (issue 6). NOAA's design-based index averages the hauls' CPUE with
      equal weight in each stratum
      ([gapindex](https://afsc-gap-products.github.io/gapindex/articles/background_equations.html)), so it carries the
-     same bias of the cut pollock tows.
+     same bias of the cut tows.
    * **Options:**
 
      | | Option | What it does | Pro | Con |
      |---|---|---|---|---|
      | A | Copy; cut claimed for pollock (implemented) | `taxon_group` a scoring column, `taxon` a feature; effort dropped; the notes claim the cut for pollock only | the rule's shape; claims what the data shows; scores unchanged | one more column in the frame |
      | B | Read `taxon` directly | no copy; the warning accepted | no change | against the reworded rule |
-     | C | Weight the density by the area swept | the area swept a weight scoring column and the training weight | an actuarial convention | the maps are per cell of equal area; ranks models as the density score does |
+     | C | Weight the density by the area swept | the area swept a weight scoring column and the training weight | an actuarial convention | the map's decision is per cell of equal area, though the scored hauls are not; ranks models as the density score does |
 
    * **Recommendation:** A, as the review asked: the copy keeps the scoring columns complete, and the cut is claimed
      where it shows. **Decision:** A, B or C?
@@ -383,1526 +411,1413 @@ dataset joins the accepted set; a build waits for your ask.
    as NOAA's index does. Supersedes the metric's reading of the feature (Andrej, 2026-11-02, under MET-2 as amended
    then) and the note that read the pollock measurement for every taxon. `dataset check`: 0 errors, 0 warnings.
 
-**Review panel:** ship after changes (mediator). Claim audit: 34 claims, 27 hold, 3 refuted and 2 refuted in part
-(four fixed in the definition; the record's lines are corrected at hand-over), 1 concern (the Gulf of Alaska share of
-the metric, now a note), 1 untested (the regime, issue 2). Blind review: would include with changes; its main concerns
-were the `stratum` break in the newest window (repaired) and the undocumented species (the blind reviewer saw no task
-summary, which names the species). Debate: agreed on the stratum repair, the temporal split, the metric and the
-wording fixes; disputed the wording of the prediction point (settled for the critic: a place in a survey year) and a
-region-averaged RMSE as an option for the curator (settled: a note only).
+5. **Restate Lennart's CC claim that the tow cut shows for walleye pollock alone?**
+
+   * **Problem:**
+     - Your CC of 2026-11-06 claims the cut for walleye pollock only, on the reading that for the other taxa a smaller
+       area swept explains the higher densities of short tows.
+     - A test of that reading, which redraws each short tow from a full tow of its cell thinned by the ratio of the
+       areas swept, finds Pacific cod's short tows higher than the smaller area explains, and among the tows with a
+       catch also those of Pacific halibut, sablefish, shortspine thornyhead and rock sole.
+     - The AI does not edit a CC[^5a], so the claim stays as written until you restate it or name the fact that sets
+       cod apart.
+   * **Background:** A short tow is one under 0.75 of the median duration of its region and year (1,699 of 35,561
+     hauls). A tow hauled back early on a large catch records a high density for the taxa it caught; a short tow also
+     sweeps a smaller area, so one fish gives a higher density, which needs no stop. The test separates the two: it
+     redraws each short tow's count 20 times as a binomial thinning of a random full tow of the same stratum and year,
+     by the ratio of their areas swept, and sets the measured gaps (the README's decision "The tow's effort is
+     dropped") against the redrawn ones.
+   * **Effect on the task:** None on the scores or the features: the realized effort is dropped, no feature carries
+     the cut, and the short tows stay, since no model is trained or scored on rows selected by the realized
+     effort[^5b]. What changes is the reason the record gives for your decision, which a measurement now
+     contradicts[^5c].
+   * **Experiments:** claim auditor, from the raw tables, 20 draws of the null; log1p numbers per km^2 against the mean
+     of the stratum and year:
+     - Walleye pollock: +0.357 against the null's -0.070 over all hauls, 0.551 against 0.070 with a catch.
+     - Pacific cod: +0.077 against -0.084 over all hauls and 0.229 against 0.051 with a catch, about 4 and 9 standard
+       deviations of the null; its gap is largest on the EBS shelf and the slope (+0.18, +0.36), where pollock's is.
+     - With a catch, Pacific halibut, sablefish, shortspine thornyhead and rock sole sit 2.4 to 3.9 standard
+       deviations above the null; for Atheresthes, Dover sole, Greenland turbot, Hippoglossoides and rex sole the
+       smaller area explains the gap.
+     - Over all hauls the flatfish fall below the null (Hippoglossoides -0.360 against -0.039, rex sole -0.276 against
+       -0.063), so short tows land at other places within their cells than full tows, and a stop on a large catch is
+       the likely reading for pollock and cod, not isolated.
+   * **Panel:** The advocate: no feature carries the cut and the rows cannot be filtered, so the decision stands either
+     way. The critic: the CC's reason is refuted for five taxa besides pollock, and cod's gap is largest exactly where
+     pollock's is. The mediator: a fact correction, not a weighing; restate the CC.
+   * **Consistency:** Your CC of 2026-11-06 replaced a note that read pollock's measurement for every taxon; the test,
+     which could have confirmed pollock alone, puts cod with it. The notes, the decision's caption and issue 4 state
+     the test since the re-review; the decision's title still reads "the cut is claimed for walleye pollock only", as
+     your CC does.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | The CC as written (implemented) | the CC and the decision's title claim the cut for pollock alone; the notes give the test | no new CC | the CC's reason is refuted for cod and four more taxa; the CC and the notes disagree |
+     | B | Pollock and, to a lesser degree, Pacific cod | a new CC: "the cut claimed for pollock and, to a lesser degree, Pacific cod; the stop is the likely reading, not isolated"; the decision's title follows | claims what the test measured; the notes already say so | a second taxon named; the stop not isolated from where the tows land; halibut, sablefish, shortspine thornyhead and rock sole, above the null only among tows with a catch, left unnamed |
+     | C | Pollock alone, with the fact that sets cod apart | a new CC keeps pollock alone and names why cod's excess is no stop | one taxon claimed, as decided | no such fact is measured: cod sits 4 and 9 standard deviations above the null, largest where pollock's gap is |
+
+   * **Recommendation:** B, as the mediator recommends: it claims what the test measured and moves no score.
+     **Decision:** A, B or C?
+
+   **Notes for the AI:** the CC of 2026-11-06 stays word for word, in `curation_comments` and in the record. On B or C,
+   append the curator's new CC (dated, in their words) after it in `curation_comments` and to the record through the
+   store API. On B, retitle the fourth decision in `_decisions` "The tow's effort is dropped; the cut is claimed for
+   walleye pollock and, to a lesser degree, Pacific cod" and drop "(the CC of 2026-11-06 below claims the cut for
+   pollock only; REVIEW.md issue 5)" from the tow-cut bullet of the notes. On C, put the curator's fact into the
+   tow-cut bullet and the caption. Then `dataset check` (README). Optional, the mediator's extra: a column with the
+   null's gap in `_short_tows`, so the decision table shows the test.
+
+   [^5a]: principles.md, "Arguing a call": a documented decision is not a correct one; when the evidence contradicts
+     the stated reasoning, say so and argue the case, surface it and do not override it: the curator has the call.
+   [^5b]: **LEAK-10** (Must): a feature holds only what existed at the prediction point. **LEAK-41** (Must;
+     2026-11-06, Lennart): a rate's denominator set or cut after the prediction point is never a model input, and no
+     model is trained or scored on rows selected by the realized weight.
+   [^5c]: **EV-1** (Must): facts before rules; settle a disputed fact with the decisive experiment, and test a claim
+     the same way wherever it comes from, a curator's intuition included.
+
+6. **Record this unweighted dataset in the leak rules' worked case for a cut-short time on risk by a clause in its remedy, or only as a listed case?**
+
+   * **Problem:**
+     - The leak rules keep a table of worked cases (how a rule was applied to past datasets); its row for an amount at
+       risk cut short by the outcome says that where the cut cannot be located row by row and the amount is a rate's
+       denominator, the recorded amount ships as the metric's row weight and the training weight[^6a].
+     - This dataset falls in that branch, yet ships unweighted with no sample weight under the rule for rates, which
+       scores a decision per cell of an equal-area map unweighted[^6b].
+     - An entry is required, since a decided dataset that contradicts its row is recorded in it, and it applies the
+       rule for rates rather than departing from it[^6c]; only its wording is open.
+   * **Background:** The area swept is the density's denominator, and which short tows the catch cut cannot be told
+     row by row: 149 of the 256 tows under half the median duration carry the performance code of a tow without a
+     noted problem. The rule for rates outranks a row of cases, which records how the rules were applied[^6c]. The
+     precedent checker found this dataset the first case where a denominator the outcome cuts is released and left out
+     as a weight on purpose: wadden_sea_sibes_macoma_abundance, also scored unweighted, has an effort its outcome sets
+     (a subsample fraction chosen after the sample is seen) but does not release it.
+   * **Effect on the task:** None on this dataset, which stays unweighted with no sample weight. The entry decides
+     what the row tells the next dataset with a released effort that the outcome cuts and an equal-area decision: as
+     written, it would ship that effort as a weight.
+   * **Experiments:** Weighting would not change the ranking here: scoring the counts (the density times the area
+     swept) ranks the models as the density score does (Kendall tau 0.80-1.00, the same winner in 5 of 5 windows;
+     exposure study of 2026-11-05), and a stratum-area design weight ranks 7 untuned models alike (tau 0.81-1.00, the
+     same winner in 4 of 4 windows; domain practitioner).
+   * **Panel:** The advocate: an application of the rule for rates, not an exception, so the entry has the kind
+     "application". The critic: the entry is required, not optional, since without it the row asks for a weight. The
+     mediator: the advocate wins on the kind and the critic on requiring it; weighting by the area swept is out, as it
+     breaks the rule for rates.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | The row as written (implemented) | no entry for this dataset | no edit | a case that reads against its row; the next survey table would ship a weight |
+     | B | A clause in the row's remedy | the remedy adds: where the decision is per unit of an equal-area map, the rate is scored unweighted and no sample weight is declared, the notes naming the cut's bias; this dataset and wadden listed as its cases | the row and the rule for rates agree in writing; the next survey table finds the case | one more clause in a long row |
+     | C | A listed case only | this dataset listed under the row's cases, the remedy unchanged | shorter | the row's text still reads as asking for a weight |
+
+   * **Recommendation:** B, as the mediator and the precedent checker recommend: the row then states the equal-area
+     case itself. **Decision:** A, B or C?
+
+   **Notes for the AI:** the main session edits `.claude/skills/knowledge-curation/references/leak_checks.md` after the
+   mark (the Cases row "Time on risk or another amount at risk cut short by the outcome", LEAK-10, LEAK-7, LEAK-41),
+   as an entry of kind "application", not "exception". On B, add to the row's remedy: "where the decision is per unit
+   of an equal-area map, the rate is scored unweighted and no sample weight is declared (MET-15); the notes name the
+   cut's bias", and list noaa_afsc_bottom_trawl_survey_cpue (the area swept released and left out as a weight; the
+   cut not located row by row: 149 of the 256 tows under half the median duration carry performance code 0) and
+   wadden_sea_sibes_macoma_abundance (the subsample fraction, set after the sample is seen, not released). On C, list
+   noaa_afsc_bottom_trawl_survey_cpue alone, with the same facts. Nothing changes in this folder.
+
+   [^6a]: **LEAK-10, LEAK-7, LEAK-41**, Cases row "Time on risk or another amount at risk cut short by the outcome"
+     (Andrej, 2026-11-02; amended 2026-11-06, Lennart): where the cut cannot be located and the amount is the
+     denominator of a count or amount target, the target ships as the rate and the recorded amount as its weight
+     scoring column and the task's sample weight, never as a feature.
+   [^6b]: **MET-15** (Must; 2026-11-06, Lennart): when the decision is per unit of an equal-area map, per loan or per
+     contract, the rate is scored unweighted and no sample weight is declared.
+   [^6c]: principles.md, "Conflicts between rules": rules win over patterns and over precedents (how they were
+     applied), and a precedent that contradicts a rule is flagged, not followed; "Exceptions and amendments": a Must
+     has no exceptions.
+
+**Review panel:** ship after changes (mediator); the changes (text and one assert) are made. Tier full, a re-review of
+2026-11-06 under LEAK-41 and MET-14 to MET-16 after issue 4 was resolved: claim auditor, column auditor, split auditor,
+domain practitioner, precedent checker, blind reviewer, task gamer, advocate, critic and mediator. Claims: 25; 16 hold,
+4 refuted and 3 refuted in part, all fixed in the notes or by the assert, 2 untested (whether pollock's gap is a stop or
+where the short tows land; TM-459's wording, held at the audit of 2026-11-01). Blind review: include with small changes;
+its main concerns are the long format (11 rows per haul with shared features, safe as no haul straddles a cutoff) and
+the temperatures read during the haul (the prediction point takes them as that year's field, settled after the first
+panel), and its worry about false zeros is answered (the 128 uncounted catches are dropped, not zero-filled). Task
+gamer: no exploit above the noise of about 0.01 (six attacks; all effort proxies together +0.005, worse). Agreed: no
+leak (the realized effort reaches the features only through place and year), the copy `taxon_group`, every window
+scorable, the unweighted score with its reworded reason, the split, the MET-14 assert and the text fixes. Disputed: the
+scope of the cut claim (settled for the critic: the area reading is refuted for six taxa, pollock included; the CC is
+issue 5), the train and test sides (settled for the advocate: both sides, different regions), the 1/weight score
+(settled for the critic: two labelled comparisons), whether the squared-deviation shares are required (added either
+way), and the kind and need of the time-on-risk Cases-row entry (settled: an application, and required; its wording is
+issue 6).
 
 <details><summary>Mediator</summary>
 
-**Mediator (2026-11-01): noaa_afsc_bottom_trawl_survey_cpue**
+The mediator's issue 1 is issue 5 of this file and its issue 2 is issue 6; its cross-cutting evidence goes to X2 and X3 of the working copy's REVIEW.md. One figure of change 7 differs in the definition: Greenland turbot's spread, which the metric takes per test window, is 12-35 per km^2 from 2017 on against 162-543 before; 8-38 and 47-639 are its spreads per survey year.
 
-**Recommendation**
+MEDIATOR REPORT: noaa_afsc_bottom_trawl_survey_cpue (exposure re-review, 2026-11-06, full tier)
+
+I ran no new model. The one disputed number, the Poisson range, I checked against the exposure study's own output (its model summary of 2026-11-05). Every other disputed fact is already settled by a measurement in the panel's reports.
+
+**1. Recommendation (judgment record)**
 
 ```text
-Verdict: ship after changes (one column repaired from the origin, the rest text in dataset.py and the record; rows,
-  target, split and metric unchanged).
-Validity: SEL-2 holds (CC `Yes`, priority 5; species-abundance mapping judged per dataset, Andrej 2026-10-30).
-  USE-1 holds (the EFH review, 50 CFR 600.815(a)(10)). USE-3 broken in the text (a review forecasting later hauls,
-  fed each haul's own temperatures), fixed by naming one prediction point: a place in a survey year under that year's
-  conditions. The temperatures stay (mean R^2 0.652 with, 0.651 without); the vessel and the hour stay out under
-  USE-3, so USE-6 holds without an exception. USE-5 holds; the species is a weighing call (issue 1). USE-8
-  approximate, fit_reason's split claim corrected. LEAK-10 holds for all 8 features (gear, effort, end position and
-  performance code are LEAK-10 drops). SPLIT-1 / SPLIT-3: temporal, not yet the curator's pick (issue 2); SPLIT-10,
-  SPLIT-12, SPLIT-14 hold; SPLIT-15 departed, forced by SPLIT-12 and SPLIT-14. SPLIT-20: the 2025 GOA
-  restratification breaks `stratum` in the newest window, repaired (CLEAN-21). PROV holds (35,549 targets rebuilt
-  exactly; haul counts match TM-459 p. 6). EV-7: the 2026 catches are not yet rated; reworded, second download
-  compared at build.
-Value: MET-5 holds (TM-459 p. 21 selects and weights models by RMSE); MET-11 `source` holds (RMSE on density and on
-  counts rank seven models alike, tau 1.0); MET-2 met with a note (GOA holds 71-92% of the squared error; the source
-  pools shelf, slope and NBS itself; a region-averaged RMSE ranks the models as the pooled one does). TP probes: no
-  flag (RF skill +0.694).
-Quality: CLEAN-21 `stratum` of the 2025 GOA hauls put on the pre-2025 design with GAP's published polygons (newest
-  window R^2 0.607 to 0.726); CLEAN-22 drop reasons reworded; CLEAN-8 species note; CLEAN-21 depth 1993-95 note.
-Weighed: source + (NOAA tables and memos, rebuilt exactly); use case + (EFH set by law, models picked by RMSE);
-  fit - (no habitat rasters; regions and life stages pooled); strong spatial baseline - (k-NN on position close to
-  LightGBM, far above the stratum mean).
-For the curator: issue 1 (rex sole as the species, a weighing call); issue 2 (confirm temporal, SPLIT-1).
+Verdict: ship after changes (text, one assert; rows, target, features, split and metric unchanged).
+Validity: USE-3 holds (realized effort out: an untowed cell has no tow). LEAK-41 holds as a leak rule (the shipped
+  features carry the realized effort only through place and year: area ratio R^2 0.10, short tows AUC 0.75, risk
+  selection under USE-6). LEAK-41's reporting clause is not met, fixed in text (Poisson gain +0.013, not "nothing";
+  the 1/weight score stated). LEAK-10 holds (no feature carries the cut). EV-1 triggered on the cut claim, fixed in
+  text (cod and four other taxa sit above the area-only null). SPLIT-1/3/9/11/12/13/14/23 hold; SPLIT-20 a note.
+Value: MET-2 holds (taxon_group exact copy, 11 taxa scorable in 9/9 windows, >=71 positives). MET-15 holds and
+  decides "unweighted, no sample weight" (the decision is per cell of an equal-area map); MET-16 holds (no design
+  weight: EFH is no population estimate; a design weight ranks 7 models alike, tau 0.81-1.00, same winner 4/4). The
+  stated reason is reworded. TP: RF skill +0.786, no flags.
+Quality: MET-14 departure fixed (assert the count rebuild in _clean; holds to 1.6e-4). Splits comment corrected.
+  Poisson range corrected.
+Weighed: none open.
+For the curator: issue 1 (restate the CC's cut claim, a fact correction), issue 2 (wording of the LEAK-41
+  Cases-row entry, kind "application"), cross-cutting X2 and X3 evidence from this dataset.
 ```
 
-The advocate and the critic reach the same verdict and agree on every change except two wordings, settled below.
-Neither asks for exclusion, and no Must is left unmet once the changes are made.
+**2. Changes to make now (no decision needed)**
 
-Two decisive checks were run (scripts and outputs in the run folder). First, a region-averaged RMSE on seven untuned
-models over the shipped windows. Second, a point-in-polygon join of the 2025 GOA hauls onto GAP's pre-2025 strata,
-with LightGBM over 3 seeds.
+The file is the dataset's `dataset.py`. The same text also goes into REVIEW.md issue 4, where it repeats the claims.
 
-**Agreed facts**
+1. **LEAK-41 reporting clause (Must, P4).** In the Effort bullet:
+   - Replace "nothing under a Poisson fit" with the two runs: mean -0.006 (study, 1 of 5 windows better) and +0.013 (claim auditor, 4 of 5 better), per window -0.007 to +0.033.
+   - LEAK-41 decides on the worse fit, which is about 0.013. The drop stands on timing ("whatever it scores").
+2. **LEAK-41, the 1/weight score.** State two labelled comparisons. Do not merge them (EV-8).
+   - Taxon + 1/area swept: 1.031-1.046, against the taxon alone at 1.039-1.057 (gain 0.007-0.013).
+   - Beyond srvy and year: 1.016-1.034 against 1.027-1.041 (gain 0.004-0.012).
+   - The honest LightGBM scores 0.90-0.93.
+   - Do not call it a bound on the leak. The free effort columns under Poisson gain more in single windows (+0.0325, +0.0204), so here the figure is no ceiling (EV-1, EV-2). This text holds whichever way X2 is decided.
+   - Ruling: the critic wins on form (two labelled numbers). The advocate's merged "1.016-1.046 ... 0.004-0.014" mixes two bases.
+3. **The cut claim (EV-1 Must, LEAK-10 context): Effort bullet and the decision caption at lines 499-500.** This is the text only; the CC is issue 1 below.
+   - Pollock's short tows stand far above an area-only null: +0.357 against -0.070 over all hauls; 0.551 against 0.070 among catches.
+   - Pacific cod also stands above it, at about 4 and 9 null SDs; its gap is largest where pollock's is (EBS, BSS).
+   - Among catches, halibut, sablefish, shortspine thornyhead and rock sole sit above the null at 2.4-3.9 SDs.
+   - For Atheresthes, Dover sole, Greenland turbot, Hippoglossoides and rex sole, the smaller area swept explains the gap.
+   - The flatfish fall below the null, so short tows are not exchangeable within cells. A catch-triggered stop is "the likely reading, not isolated" (EV-3).
+   - The caption's "its tows end early on a large catch" becomes that hedged reading.
+   - Ruling: the critic wins on scope. Row 12 measured all taxa, and "which a smaller area swept explains" is refuted for six of them, not one.
+4. **Train side against test side (EV-1).** Both sides' facts are true and fit in one sentence (split auditor):
+   - Pooled, the cut reads alike: training sides +0.35 to +0.40, the nine test windows +0.30.
+   - By region it does not. The notes' EBS figures (+0.36 overall; 831 tows under 0.4 h) are mostly 1989-2008 training rows (EBS +0.71). Since 2009 the EBS shows +0.07, and in the test years the excess is in the AI (+0.39) and GOA (+0.73).
+   - Ruling: the advocate's "both sides, different regions" is the accurate reading. The critic's "training side only" overstates.
+5. **Short tows' weight in the score.** Add a note, labelled as weight in the score, not as the bias of a stop:
+   - In the test years, short tows are 3.4% of each taxon's rows. They hold 14.0% of pollock's squared deviation, 10.1% of Greenland turbot's and 7.0% of shortspine thornyhead's.
+   - Ruling on labelling: a share of squared deviation measures influence, not bias. Turbot's gap is within the area effect (row 12), and short tows are commoner at depth (6.7% at 500 m and deeper against 3.3% at 0-50 m).
+   - Ruling on "required": MET-16 requires the notes to name outcome-dependent sampling. They already name pollock's cut, and change 3 extends this to cod. MET-16 does not require these shares. Add them anyway: both sides want the sentence, and nothing argues against it (P7, cheap and safe).
+6. **The reason for scoring unweighted (MET-15, MET-16).** Keep the decision and reword the reason, as both sides agreed:
+   - Wording: "scored unweighted over the hauls, as the source's RMSE over stations (TM-459 p. 21). No area-swept weight, since the decision is per cell of an equal-area map (MET-15). No design weight, since EFH is not a population estimate (MET-16). The hauls are not equal-area (AI about 8x the EBS per km^2), and a stratum-area design weight ranks the models alike (tau 0.81-1.00, same winner 4/4)."
+   - Ruling: MET-15 governs the area-swept weight, and its premise holds. What was false is the description of the scored rows, which concerns the design weight under MET-16. Both rules point to unweighted.
+7. **Splits comment (EV-2).** The comment is at line 228 (`split=`) and line 359. Change it to: "each window holds the EBS shelf, the GOA and, except 2019, the AI; the slope survey ended in 2016, the NBS runs in some years". Add one Greenland-turbot sentence to the Metric bullet: from 2017 on it is scored without the slope survey, on a spread of 8-38 per km^2 against 47-639 before.
+8. **The Poisson range in the Metric bullet (EV-8).** "0.86-1.11" is refuted.
+   - Both sides propose "0.86-1.24", but neither run gives 0.86: the study gives 0.879-1.243 and the claim auditor 0.996-1.179.
+   - Write "0.88-1.24 (two runs, five windows each)", unless the builder names the run that gave 0.86.
+9. **MET-14 assert (Should, P6/P7).** In `_clean`, merge `area_swept_km2` into `catch` and assert on the counted rows, per species code and before summing:
+   ```python
+   np.allclose(cpue_nokm2 * area_swept_km2, count, rtol=1e-3)
+   ```
+   - The data rebuilds the count to 1.6e-4 on 201,731 catches, and the frame does not change.
+   - This does not wait for X3. FOSS releases the count, so the check applies under either outcome of X3.
 
-* 35,561 standard hauls 1982-2026 (no 2020) and 13,557 rex sole catches. The 12 catches weighed but not counted leave,
-  so 35,549 rows ship, 61.9% of them zero. CATCH has no zero-weight row, and the zero fill is GAP's own recipe
-  (gap_products sec. 10.2). The blind reviewer rebuilt every target from the API (maximum difference 0.0). Haul
-  counts match TM-459: 14,517 against 14,514 on the shelf and NBS, 1,136 against 1,136 on the slope.
-* Rex sole presence: EBS 19.5%, slope 49.1%, GOA 66.8%, AI 38.7%, NBS 0% (969 hauls). EBS presence is steady by
-  period (19.7 / 17.0 / 20.3 / 20.6%). All 13,331 catches of 1982-2025 are rated high confidence; the 226 catches of
-  2026 carry no rating yet. The 722 hauls of 2026 are 17% of the newest window, and their counts match a full season
-  (EBS 350 of 350).
-* No leak among the 8 features: exact copies across the split 0%, and missing temperatures do not track the catch.
-  Effort, gear, end position and performance code were rightly dropped (LEAK-10): EBS pollock tows under 0.4 h
-  average 8.33 against 7.35 log1p kg/km^2.
-* The review trains on haul temperatures and maps from "Rasterized 38-year averages" (TM-459 pp. 8-9). The
-  temperatures give no gain: mean R^2 on log1p is 0.652 with them and 0.651 without, and a training-years climatology
-  in their place moves each window by -0.004 to +0.012. Barnes et al. 2022 (same team) forecast later years with
-  year-specific bottom temperature kriged onto the tow locations and onto a 1-km grid.
-* Windows 2022-26 / 2017-21 / 2012-16, trained to 2019 / 2014 / 2009, on 85.2 / 71.0 / 57.3% of the hauls. A fourth
-  window would train on 43.6%. The two-year gap is the source's lag from the last survey used to the review.
-  84.7-85.3% of the test hauls sit at a station seen in training. Mean R^2: temporal 0.652, grouped by station
-  0.687, IID 0.732. The source skill-tests by random 10-fold CV (TM-459 pp. 20-21) and checked the 2017 models
-  forward (p. 3).
-* GOA was restratified for 2025: 23 new stratum numbers, none shared with the 59 of 1990-2023. They cover 431 hauls,
-  10.2% of the newest window. The source's models have no stratum covariate (TM-459 Table 3).
-* TM-459 picks and weights models by RMSE (p. 21). RMSE on density and on counts rank seven models at tau 1.000 in
-  every window. GOA is 23-40% of the test hauls but holds 71-92% of the squared error.
-* Rex sole is modelled in TM-357 (hurdle GAM, pp. 48-49), TM-459 (pp. 150-152) and TM-458 (pp. 131-132). FOSS has no
-  length table (404), so the target counts all sizes.
+**3. Issues for the curator (ranked)**
 
-**Changes to make now (no decision needed)**
+**Issue 1 (P4, EV-1 Must; fact correction, not a weighing): the CC of 2026-11-06 claims the cut "for walleye pollock only".**
+- Problem: the CC rests on "which a smaller area swept explains". The null test refutes that for cod (4 and 9 SDs) and, among catches, for four more taxa.
+- Effect: no score or feature moves. The record's reason for a curator decision is contradicted by a measurement.
+- Advocate's best evidence: no feature carries the cut, and LEAK-41 bars filtering the rows, so the decision is unchanged.
+- Critic's best evidence: claim auditor row 12, and the cod gap is largest exactly where pollock's is (EBS +0.18, BSS +0.36).
+- Rule: EV-1. principles.md "Arguing a call": the AI surfaces and never edits a CC.
+- Decision needed:
+  - (a) a new CC: "the cut claimed for pollock and, to a lesser degree, Pacific cod; the stop is the likely reading, not isolated" (recommended);
+  - (b) keep "pollock only" and name the fact that sets cod apart.
 
-1. `stratum` (CLEAN-21 Should, SPLIT-20; remedy ladder, repair from the origin). Put every GOA haul of the 2025
-   design (GOA from 2025 on) into the pre-2025 strata by its start position. Use GAP's own polygons: akgfmaps
-   `inst/extdata/afsc_bts_strata.gpkg`, layer `survey_strata`, `SURVEY_DEFINITION_ID` 47, `DESIGN_YEAR` 1984
-   (EPSG:3338). It holds 59 strata with exactly the IDs of the 59 FOSS GOA strata of 1990-2023. Pin commit
-   1fcc7fa598e66a13cdca95be407e1f93c11f50d3 (sha256 1319eb3485c9ee75be96dcbfa5cba44c9d43374d1a8e6a74b7dadfdd62e6fb27;
-   package licence GPL (>= 2); only the derived codes ship). Add the file to `download_description` and
-   `source_links`.
-   * Checked: every one of the 431 hauls falls inside a 1984 polygon. On the 10,868 earlier GOA hauls the join
-     returns FOSS's stratum for 95.5% (the start position lies near a boundary for the rest). The nearest pre-2025
-     haul gives the same stratum for 92.1% of the 2025 hauls.
-   * Effect (LightGBM, 3 seeds): newest window R^2 on log1p 0.607 to 0.726; on the 2025 GOA hauls -0.57 to 0.52;
-     older windows unchanged. Dropping the column instead gives 0.715 / 0.711 / 0.628, against 0.726 / 0.723 / 0.634.
-   * Implementation: no geometry library is installed; `matplotlib.path` (build extras) plus the Alaska Albers
-     formulas do it.
-   * Do not map the old hauls onto the 2025 design, which was built on survey densities that overlap the test
-     windows.
-   * Rewrite the anomaly bullet. Its reason "a model fit at a review meets the redesign too" goes, because the source
-     uses no stratum.
-2. Prediction point (USE-3, USE-6, Must). `known`, `split` and the first note name one point: a place in a given
-   survey year under that year's conditions. Known: the region and design stratum, the position, the date, the
-   depth, and that year's bottom and surface temperatures at the place, given by the readings taken during the haul.
-   * Say that the readings stand in for the year's temperature field (Barnes et al. 2022) and that the review's
-     maps use long-term means (TM-459 p. 8). Give the no-gain numbers above.
-   * `split`: "as the next review checks the model of the previous one against the surveys that followed it"
-     (TM-459 p. 3; Barnes et al. 2022).
-3. Drop reasons (CLEAN-22 Must; LEAK-10; USE-3). In `changes` and the two "Dropped" bullets, replace "which the
-   habitat models do not use" with what each column is:
-   * effort and gear: the label's denominator, and a tow length that responds to the catch;
-   * vessel and hour: a place in a survey year has neither.
-   * Remove the R^2 numbers given as reasons. Surface temperature stays.
-   * Replace "the covariates the source trains on" with: "position, depth and bottom temperature are the source's
-     trawl-model covariates (TM-459 Table 3); region, stratum, date and surface temperature are ours".
-4. `fit_reason` (USE-8). "The rows and target follow the review's models; the split follows the review cycle and the
-   next review's forecast check, not the review's random cross-validation." Add the gap that the temperatures are
-   the haul's readings where a map uses long-term means.
-5. `splits_comment` (SPLIT-13, SPLIT-14). Add: 85% of test hauls at a station seen in training (EBS 100%, GOA
-   40-65%); a fourth window would train on 43.6%. Cite Barnes, Essington, Pirtle et al. 2022 (Ecography e06189)
-   beside the unread Pirtle et al. 2020. Say the 2023 GOA memo was not read.
-6. Species bullet (CLEAN-8 Must; EV-2).
-   * The species was screened on the whole table, test windows included: a pipeline choice that approximates the
-     task.
-   * "Its zeros are not one region's" becomes: zeros fall inside four of the five regions; NBS has no catch.
-   * "Since 1982" becomes "1982-2025; the 226 catches of 2026 are not yet rated".
-   * The comparison with cod and pollock does not rest on zero inflation (Andrej, 2026-10-30, policy 2).
-7. 2026 season (EV-7; LEAK-24's two-download check by analogy). Add a note that the newest season is provisional. At
-   build, compare with a fresh download. If the 2026 rows change, build from the newer download or end the newest
-   window at 2025. A presence of 0.169 alone is no reason to cut (SPLIT-21).
-8. Metric (MET-2, MET-11). In `definition` and the metric note:
-   * RMSE on counts (density x area swept) ranks the probe models as RMSE on density does (tau 1.0);
-   * GOA holds 71-92% of the squared error;
-   * TM-459 itself pools shelf, NBS and slope (two gears) under one RMSE (p. 6);
-   * the tau of raw against log1p RMSE is 0.14-0.33 over reruns.
-9. `depth_m` note (CLEAN-21). The 1993-95 depths are headrope depths (TM-459 p. 8), a median 1.25 m shallower at the
-   EBS stations. They are training rows in every window and are kept.
-10. Optional:
-    * the oracle bound of the zero-inflated pattern next to the hurdle numbers (every same-run sibling gives it);
-    * half a sentence on the performance code (within strata, 45.9% presence with code 0 against 40.8%);
-    * cite GAP's column metadata (AKDT) for the local times instead of inferring them.
-11. Record (PROV-12 Must; PROV-9). Add an `Assessment (AI, 2026-11-01)` line that records: rex sole and its reasons;
-    `source` rmse from TM-459, which supersedes the screening's fallback; the temporal windows; year 2026, which
-    supersedes "stays empty"; AI stations repeat a median 7 times, not "once or twice".
-    * Move the Laman 2017 DOI from `source_links` to the comments: related work is not a source.
-    * Cite TM-459, TM-458 and Barnes et al. 2022 in the comments too. The builder's item 5, adding TM-459 to
-      `source_links`, would break PROV-12.
-    * Add the akgfmaps file to `source_links`: it is a data source of the definition.
+**Issue 2 (P4/P6, LEAK-41 Cases row against MET-15 Must): how to record noaa in the time-on-risk Cases row.**
+- Settled by rank, and not open:
+  - The entry is an application, not an exception. A Must has no exceptions. Cases are applications, and rules win over cases. MET-15's equal-area clause decides this case directly, and its premise (a per-cell map decision) holds.
+  - The entry is required, not optional. As written, the row's second branch gives the opposite answer for noaa, and the precedent checker says noaa is the first case with an outcome-cut denominator that is released and deliberately left out. A case that reads against the rule is flagged and fixed, and a curator decision goes in with its case (principles.md, Conflicts; Keeping the rules current).
+  - Ruling: the advocate wins on the kind of entry, the critic wins on requiring it.
+- Open: only the wording.
+  - (a) Add a clause to the row's remedy: "where the decision is per unit of an equal-area map, the rate is scored unweighted and no sample weight is declared (MET-15); the notes name the cut's bias", with noaa (and wadden as the unreleased-effort case) listed. This is the precedent checker's option a, and I recommend it.
+  - (b) List noaa under the row's cases only and leave the remedy text. This is shorter, but the row still reads as asking for a weight.
+- Out: weighting by area swept would break MET-15's Must clause.
 
-**Changes that need the curator**
+**Cross-cutting evidence (for the X items in the working copy's REVIEW.md; no noaa change hangs on them):**
+- **X2 (rewording "ceiling").** noaa adds a case. Under this level-sensitive metric, a fitted taxon + 1/area model scores 1.031-1.046, worse than the honest model (0.90-0.93). The free effort columns gain up to 0.033 in single windows, more than the "ceiling" gain of 0.007-0.013. This supports X2's proposal: report a fitted weight-alone score for a level-sensitive metric, without the word "ceiling".
+- **X3 (MET-14 only when the count is released).** With change 9, noaa meets MET-14 and leaves X3's list. X3 then rests on two cases (boreal, wadden), not three, so the "third exception calls for an amendment" trigger (principles.md, consistency case 4) is not reached. X3 stays a plain wording proposal.
 
-1. **Rex sole as the species** (P3, USE-5 Must holds; which species to ship is a weighing call).
-   * Problem: the EFH memos model 31-36 species with no primary one, so the choice is ours.
-   * Effect: the species sets what the zeros mean. Rex sole's zeros fall inside regions. Cod has 4% zeros on the EBS
-     shelf, and most of its presence signal is the region. Pollock's zeros are mostly whole regions.
-   * For rex sole (both sides):
-     * modelled in both reviews;
-     * high-confidence identification 1982-2025, with steady presence;
-     * both parts learnable (AUC 0.94-0.96, R^2 0.30-0.38 among catches).
-   * Against: cod and pollock are the larger fisheries, each with its own EFH maps. Andrej's policy 2 removes zero
-     inflation as a reason.
-   * Decision: rex sole, another species, or a second species as a sibling. Recommendation: rex sole.
-2. **Temporal over grouped by station** (P4, SPLIT-1 and SPLIT-3, Must: the curator picks the regime).
-   * Problem: the only CC line is `Yes`, priority 5, and the screening left grouped by station as the alternative.
-   * Effect: the windows test later years at mostly sampled places (85% of test hauls at seen stations). Mean R^2
-     0.652 temporal, 0.687 grouped, 0.732 IID.
-   * For temporal: the five-year review cycle; the 2022 forecast check of the 2017 models (TM-459 p. 3); Barnes et
-     al. 2022.
-   * For grouped: the source's CV is "a test of prediction skill at unsampled locations" (TM-459 p. 21);
-     wadden_sea_sibes (same run) is grouped.
-   * Every panel member who addressed it prefers temporal.
-   * Decision: temporal or grouped. Recommendation: temporal.
+**Optional extras (the curator's preference, P7; neither side's ask):**
+- a null column in `_short_tows` for the decision table;
+- a note that log1p fits, inverted, predict 34-51% of the test mean density, which RMSE barely penalises.
 
-**Disputed points**
+**4. Agreed facts**
 
-| Point | Advocate | Critic | Rule and rank | Settled |
+- `taxon_group` equals `taxon` on all 391,044 rows. It is not a feature, no sample weight is declared, and the scorer matches an independent computation to 4 decimals in 9/9 windows. `dataset check` gives 0 errors and 0 warnings.
+- The realized effort is dropped. From the features, area swept reaches R^2 0.85-0.91, but only -0.11 to +0.18 against the region-year means. The realized area ratio reaches R^2 0.103, and short tows are told apart at AUC 0.749.
+- L2 gain of the effort columns: +0.0004 to +0.0028.
+- Poisson gain: +0.013 in one run, -0.006 in the other.
+- 1/area with the taxon gains 0.007-0.013 over the taxon alone.
+- Hauls are not equal-area: AI 5.99, EBS 0.75 hauls per 1000 km^2 per year; strata within a survey and year differ up to 22.1x (AI) and 9.5x (GOA).
+- A design weight and a taxon x region score rank 7 models alike (tau 0.81-1.00, same winner 4/4).
+- Splits: 0 hauls straddle a cutoff; training shares 54.0-95.4%.
+- Dropping short tows from training moves the score -0.0013, and dropping the 30-minute era -0.0011, both noise. LEAK-41 bars a filter anyway.
+- The 128 uncounted catches are dropped, not zero-filled (CLEAN-15).
+- Region coverage: BSS is absent from 6 windows, NBS from 3, and AI from 2019.
+- Task probe: RF skill +0.786 ± 0.012; the blind reviewer says "include with small changes".
+- The task gamer found nothing above the noise floor of about 0.01.
+
+**Task gamer's exploits, mapped.** The definition has no `Potential leak, kept on purpose:` notes. Its one accepted warning (52% zeros) is unrelated, so every exploit is new. None is an issue: all are below noise and none touches a note.
+
+| # | Exploit | Gain | Rule | Reading |
 |---|---|---|---|---|
-| Which prediction point to name | "abundance at a haul, given the habitat measured there" (the skill test); vessel and hour out per 2_month_survival_rate_prediction, else restored | "a place in a survey year under that year's conditions"; the haul's readings stand in for the year's field | USE-3 and USE-6, both Must, P3; not a conflict, both must hold | Critic. At a haul the vessel and the hour are known, so USE-6 would make them inputs. 2_month_survival's fact (a physician's estimate set beside the model as its comparator) is not this one. Under the place-year point, both rules hold with the current columns, by a wording fix (mildest remedy). The advocate is right that the scored unit is the haul, the source's model-selection step; `fit_reason` names it as a gap (USE-8) |
-| Region-averaged RMSE as a curator option | no: MET-5 holds, TP-6, uneven region mix per window | yes: a MET-1 weighing call; MET-13 does not bar it | MET-5 Should, MET-2 Must (P6); EV-1 | Advocate on the outcome, critic on MET-13. Measured: the region-averaged RMSE ranks seven models at tau 0.81 / 0.81 / 0.90 with the pooled one (1.00 / 1.00 / 0.90 without NBS), and GOA still holds 45-63% of it, because RMSE keeps each region's scale (GOA 2,100-2,900 per km^2, EBS 120-880). It does not make each region count once. A scale-free per-region score would be a metric of our own invention (TP-6). TM-459 already pools shelf, NBS and slope. Note only (change 8) |
-| Surface temperature | keep (CLEAN-22) | keep | CLEAN-22 Must; claim auditor wanted it dropped (no source model uses it) | Keep: "not used by the source" is no CLEAN-22 reason; under the place-year point it is that year's condition |
-| `stratum` remedy | map the 2025 hauls (polygons, else nearest haul) | same; drop fallback withdrawn | CLEAN-21 Should; remedy ladder | Repair from the origin: GAP's 1984-design polygons exist and match FOSS's IDs (change 1). The split auditor's and blind reviewer's drop is the next rung and scores lower |
-| When to cut 2026 | only if a later download changes the counts | compare before build | EV-7, LEAK-24 by analogy; SPLIT-21 | Both: reword now, compare at build, cut only if the rows change |
+| 1 | Hauls per survey-year or stratum-year over the test window | -0.009 | LEAK-30 (test-set statistics); LEAK-37/USE-6 | The design is known in advance |
+| 2 | Station history using first-test-year labels | -0.0035 over honest history | SPLIT-12 (the two-year horizon), LEAK-34 | A deployed model lacks these labels |
+| 3 | Hauls per survey day, a pace proxy | -0.005 | LEAK-41 (an effort encoding) | Below noise |
+| 4 | Distance to the nearest same-day haul | -0.006 | LEAK-30 | Below noise |
+| 5 | Rows per haul, marking a dropped taxon row | +0.001 | LEAK-10 (a missingness marker), CLEAN-15 | No signal |
+| 6 | Day rank within the survey year | -0.001 | LEAK-30 | Below noise |
 
-**Consistency with precedent**
+All effort proxies together: +0.005, so they hurt.
 
-* `stratum`: follows college_scorecard (CLEAN-21: the measuring body's conversion; Lennart 2026-10-16). Because GAP
-  publishes the boundaries, no exception is needed, unlike zillow_prize's map from the data. This answers the
-  precedent checker's consistency check with its option (b).
-* Vessel and hour: a USE-3 drop under the place-year point, as in wadden_sea_sibes (same run, unreviewed). This does
-  not depart from brazilian_ecommerce: its inputs were known at the prediction point, while these are not attributes
-  of the predicted place-year. The precedent checker's check closes with its option (a), and no exception to USE-6 is
-  recorded.
-* Temperatures at their measured values: wadden_sea keeps station-measured sediment on the same reading (same run).
-* Temporal where wadden_sea is grouped: the distinguishing fact is written (a map stands for five future years and
-  is checked against them). Issue 2.
-* Effort and gear dropped, against fremtpl2's exposure kept (Andrej 2026-10-20): set apart by written facts (area
-  swept is the label's denominator; tow length responds to the catch).
-* Metric: follows forest_fires (MET-5), zillow_prize (concentration is no ground to overrule), porto_seguro (MET-11
-  identity) and TP-6 as amended.
-* Windows: the house family (SPLIT-12) and rain_in_australia (Lennart 2026-10-26); no exception.
-* Year 2026: rain_in_australia (PROV-9). The 12 uncounted catches: qsar_tid_11 (CLEAN-15).
-* Species: departs from the same-run siblings, which take their source's species. Here the source has none. Issue 1.
-* No new exception, no third exception of one reason, no drift in Andrej's calls.
+**5. Consistency with precedent**
+
+- The `taxon_group` copy follows liberty_mutual's `var11_weight` (MET-2). There is no drift.
+- Dropping the realized effort follows fremtpl2, bemtpl97 and wadden (USE-3, LEAK-41).
+- The unweighted density departs from the wording of the LEAK-41 time-on-risk Cases row.
+  - It rests on MET-15's own Must clause, which outranks a Cases row.
+  - The fact that sets it apart: the decision is per cell of an equal-area map, not a sum over the amount at risk. The difference from wadden: noaa's denominator is released.
+  - So it is consistent with the rules, and the row needs the entry in issue 2.
+- The boreal and wadden precedents match on "unweighted per unit area", not on the cut. The issue's Consistency bullet should say so.
+- The register flags no third exception on MET-14, MET-15 or LEAK-41. With change 9, X3 drops to two cases.
+- Panel file only: CHANGES.md headlines +0.55, the among-catches figure. The figure that carries the claim is +0.36 over all hauls. The definition, the CC and REVIEW.md already use +0.36.
 
 </details>
 
 <details><summary>Claim audit</summary>
 
-**Claim auditor: noaa_afsc_bottom_trawl_survey_cpue (2026-11-01)**
+CLAIM AUDITOR: noaa_afsc_bottom_trawl_survey_cpue (exposure re-review, 2026-11-06, full tier)
 
-Verdict: ship after changes (small ones).
-Validity: USE-3 / LEAK-10 refuted as written for the two measured temperatures: a review cannot know them for later hauls, but they add nothing measurable (drop them, or rewrite the prediction point). SPLIT-3 is open: no CC line names the regime, and the windows test later years at places already sampled. PROV holds: our hauls match the review's counts.
-Value: MET-5 holds (RMSE is the review's one selection and weighting criterion). MET-11: density stands in for the source's count and ranks the probe models the same (tau 1.0). MET-2: the pooled score is mostly a Gulf of Alaska score (needs a note).
-Quality: wording fixes (which covariates are the source's, taxon confidence in 2026, fit_reason).
+Verdict: today's change holds where it matters. The copy `taxon_group` is exact, it is not a feature, and it scores
+the same as `taxon`. The effort columns stay out, no sample weight is declared, and the shipped features do not carry
+the realized effort beyond the region and year. No validity claim is refuted. Five of the exposure paragraph's
+supporting statements are refuted or refuted in part. The fixes are to the text, plus one assert and one ceiling
+number. Rows, target, split and metric do not change.
 
-Every number below was recomputed from the raw FOSS JSON pages or from the definition's frame and splits (`workbench` + `make_splits`), with untuned models (LightGBM 400 trees, random forest 200 trees) on the three shipped windows. The scripts and outputs are in the run folder (not committed). The papers are the memo texts in the run folder. Pages are the printed ones.
+CLAIMS TABLE (today's change first)
 
-**Claims table**
-
-| # | Claim | Source | Test | Result | Evidence | Rule |
+| # | claim | source | test | result | evidence | rule |
 |---|---|---|---|---|---|---|
-| 1 | 35,561 standard hauls 1982-2026; 13,557 rex sole catches; 12 weighed but not counted leave; 35,549 rows; 62% zero | notes intro, Target bullet, `row`, builder claims | raw recount | holds | 35,561 unique `hauljoin`, 1982-2026, no 2020; 13,557 catches, 12 with `cpue_nokm2` and `count` missing; zero share 0.619 | CLEAN-15 |
-| 2 | CATCH holds positive catches only, so a missing row is a zero; this is the source's own zero fill (gap_products sec. 10.2) | Zeros bullet; the warning proposed for acceptance | rows with weight <= 0; the gap_products page | holds | 0 rows with `cpue_kgkm2` <= 0; sec. 10.2 is titled "Create zero-filled data" and its code sets missing CPUE to 0 | EV-2 |
-| 3 | `task_target_value_dominant`: the zeros are observed absences (zero-inflated), not placeholders | builder, warning | EBS presence by period: an early stretch of non-identification would show as a dip | holds | EBS presence 19.7% / 17.0% / 20.3% / 20.6% (1982-92 / 93-02 / 03-12 / 13-26) | TP, CLEAN |
-| 4 | "identified with high confidence in every catch since 1982" | Species bullet | `taxon_confidence` in CATCH | refuted (minor) | 13,331 High; 226 have none, all from 2026 (AI 167, EBS 59). The 2026 season is not yet rated: 722 hauls, 17.1% of the newest test window | EV-7, PROV-9 |
-| 5 | Presence 38.1% overall; EBS 19.5%, slope 49.1%, GOA 66.8%, AI 38.7%, NBS 0% | Species bullet; Decision 1 | recount | holds | identical. Rex sole is absent from a whole region too (NBS, 969 hauls), which the notes hold against sablefish and the others | EV-2 |
-| 6 | The 2017 memo uses its hurdle GAM, kept for species in 10-30% of hauls, on rex sole (pp. 15, 48-49); the 2022 Bering Sea and AI memos model it again | Species bullet | read TM-357, TM-459, TM-458 | holds | TM-357 p. 15 "between 10% and 30%, a hurdle model (hGAM)"; pp. 48-49 hGAM for juvenile and adult rex sole; TM-459 pp. 150-152 three life stages; TM-458 pp. 131-132 subadult and adult | EV-2 |
-| 7 | Hurdle probe numbers (AUC 0.94-0.96, 0.86-0.91 from survey and depth; R^2 0.30-0.38 among catches); the other species' shares and identification history | Species bullet | the builder's hurdle probe and species screen tables | holds | 10200 rows: AUC 0.947/0.962/0.941, 0.872/0.913/0.861; R^2 0.337/0.305/0.382; cod 22.2% zeros (EBS 4.0%), pollock 17.6% | EV-8 |
-| 8 | Every haul is satisfactory (codes 0 or positive); the 2,659 with a positive code stay; presence differs by code; the code is dropped | Hauls bullet; Decision 2 | recount; presence within strata | holds, with a nuance | minimum code 0, 2,659 positive; within strata, presence is 45.9% with code 0 and 40.8% with a positive code, so part of the gap is the tow, not the place; adding the code gives R^2 0.6505 against 0.6516 | LEAK-10 |
-| 9 | Effort and gear dropped: pollock tows under 0.4 h on the EBS shelf, 831 of them, 8.33 against 7.35; rex sole R^2 0.636 with them, 0.652 without | Dropped bullet | recomputed from CATCH 21740; probe file | holds | 831, 8.33, 7.35 reproduced; the builder's probe file: 0.6355 / 0.6516 | LEAK-10, USE-6 |
-| 10 | Vessel and hour dropped: R^2 0.643 and 0.646 against 0.652 | Dropped bullet | probe file | holds | 0.6434 / 0.6462 / 0.6516 | USE-6 |
-| 11 | `survey`, `survey_name` and `survey_definition_id` are copies of `srvy` | Dropped bullet | values per `srvy` | holds | 1 value each per `srvy` | CLEAN |
-| 12 | 26 of the 141 stratum numbers are used by two surveys | stratum bullet | recount | holds | 26 of 141 | CLEAN |
-| 13 | GOA restratified for 2025: 23 new strata, 431 hauls, 10.2% of the newest window; R^2 0.598 with stratum and 0.719 without (0.722/0.720, 0.635/0.623) | Anomaly bullet | recount; LightGBM rerun | holds | 23 of 23 strata in 2025 unseen, 431 hauls (10.19%); rerun 0.598/0.719, 0.722/0.720, 0.635/0.623 exactly | CLEAN-22 |
-| 14 | The AI survey crosses 180 degrees (2,567 hauls west of it); R^2 0.598 against 0.562 with the signed longitude | longitude bullet | recount; probe file | holds | 2,567, all AI; 0.5976 / 0.5623 | CLEAN |
-| 15 | Bottom temperature missing for 4.5% of hauls, surface for 2.4% | Missing bullet | recount | holds | 4.50% / 2.42% | CLEAN |
-| 16 | The "Z" timestamps are local times (hauls from 05:00 to 23:00) | Anomaly bullet | hour distribution | holds (inference) | hours 5 to 23, median 12; read as UTC they would put the tows at 21:00-15:00 Alaska time | EV-2 (rank 5) |
-| 17 | The EBS shelf survey has 350 stations from 2024 (376 before) | Anomaly bullet | stations per year | holds | 376 through 2023, 350 in 2024-2026 | EV-2 |
-| 18 | "Known for a haul: the region and stratum, the position, the date, and the depth and temperatures ..., the covariates the source trains on" | Prediction point bullet | TM-459 Table 3; TM-357 Fig. 4 | partly refuted | The trawl models use bottom temperature, depth and position plus rasters. Surface temperature appears only in the 2017 ichthyoplankton models (TM-357 Fig. 3). Neither memo uses stratum or date as a covariate | USE-6, EV-2 |
-| 19 | `known`: the bottom and surface temperature measured during the haul are known at the prediction point, where "a model fit at a review predicts the surveys of the years it is used" | `task_summary.known` and `split` | TM-459 pp. 8-9; the shipped features against no temperatures and against a training-side climatology (30-NN mean of training hauls) | refuted as written; no measured gain | TM-459 p. 8: "Rasterized 38-year averages of habitat covariates ... were input into the best-fitting SDMs when predicting"; p. 9: trained on haul temperatures, predicted from a raster. LightGBM R^2 0.598/0.722/0.635 shipped, 0.572/0.723/0.659 without; declared RMSE 1,472/1,652/1,315 against 1,461/1,642/1,286. Random forest RMSE 1,420/1,599/1,302 against 1,403/1,565/1,266 without. The source's procedure (train on measured, test on climatology): R^2 0.595/0.721/0.647 | USE-3, LEAK-10 (Must) |
-| 20 | 2017 review used 1982-2014 (Laman 2017 p. 5); 2022 used 1982-2019 (TM-459 p. 3); review "at least every 5 years" (50 CFR 600.815(a)(10), TM-459 p. 2) | Prediction point bullet; splits_comment | read | holds | TM-357 p. 5 "from 1982 through 2014"; TM-459 p. 3 "1982-2019"; p. 2 "at least every 5 years (50 CFR 600.815(a)(10))" | SPLIT-12 |
-| 21 | `fit_reason`: "The rows, target and split follow the review's models" | `task_summary.fit_reason` | TM-459 pp. 20-21; distance from each test haul to the nearest training haul | refuted (the split part) | The review skill-tested its models by random 10-fold CV, "a test of prediction skill at unsampled locations" (p. 21). In our windows, 1.8% / 4.6% / 4.2% of test hauls lie more than 5 km from any training haul (median 0.38 / 0.55 / 0.48 km), so the windows ask about later years at sampled places | SPLIT-3, USE-8 |
-| 22 | splits_comment: windows 2022-26 / 2017-21 / 2012-16, trained to 2019 / 2014 / 2009, no survey in 2020, oldest train side 57% | splits_comment | recount | holds | 30,273/4,230; 25,253/3,953; 20,384/4,806; train ends 2019-08-20, 2014-08-08, 2009-07-29; 20,384/35,549 = 57.3% | SPLIT-14 |
-| 23 | "the 2022 review assessed the forecasting accuracy of the 2017 SDM approach (TM-459, p. 3; Pirtle et al. 2020, not read), the question these windows ask" | splits_comment | TM-459 p. 3; web search | holds as a quote; Pirtle 2020 untested | Not found. Barnes, Essington, Pirtle, Rooper, Laman et al. 2022 (Ecography, doi:10.1111/ecog.06189; abstract only, unverified) ran retrospective forecast skill tests on Bering Sea groundfish SDMs: time-varying covariates "did not improve or decreased forecast skill". This supports the temporal question and agrees with row 19 | SPLIT-12, EV-2 |
-| 24 | Metric `source` `rmse`, original: cross-validated RMSE on numerical abundance by which the 2022 review "selects and weights" its models; also reported rho, AUC, PDE | `metric` | TM-459 pp. 16-24 | holds | p. 21 "the model with the lowest RMSE was considered to be the best performer"; weights RMSE^-2 (p. 21); p. 24 calls rho, AUC and PDE three reported "fit metrics". One deliberate criterion | MET-1, MET-5 |
-| 25 | `definition`: RMSE on numbers per km^2, where the source scores the count per station | `metric.definition` | RMSE on counts (density x `area_swept_km2`) against RMSE on density for seven probe models | holds: same ranking | Kendall tau 1.000 in all three windows; `count / area_swept_km2` equals `cpue_nokm2` (ratio 1.000 at p1 and p99) | MET-3, MET-11 |
-| 26 | The metric can be computed on every fold | implied (MET-2) | `data_foundry.v2.metrics.score` with the declared spec on dummies; units per window | holds | 4,230 / 3,953 / 4,806 test hauls, 1,537 / 1,737 / 1,863 catches; the raw-mean dummy scores 1,580.1 / 1,804.2 / 1,461.2 (as the builder found); the spec inverts log1p | MET-2 |
-| 27 | The metric means on our task what it meant on the source's | implied (MET-2) | share of the squared error by region; rank agreement of pooled and Bering-only RMSE | concern, not in the notes | GOA is 23% / 40% / 27% of the test hauls but holds 76% / 91% / 71% of LightGBM's squared error (mean predictor 71% / 89% / 71%). GOA mean density is 1,060 per km^2 against 85 on the EBS shelf. The reference memo scores Bering Sea models, per life stage. Kendall tau between pooled and Bering-only RMSE: 0.81 / 0.81 / 0.62 | MET-2 |
-| 28 | 10-31 test hauls hold half the squared error; every model beats the training mean; ranking against RMSE on log1p, Kendall tau 0.14-0.24 | Note bullet | rerun of the seven models | holds; tau fragile | 10-31 and every model beating the mean reproduced; my rerun gives tau 0.14 / 0.14 / 0.33 (with 21 pairs, one swap moves tau by 0.095) | EV-8 |
-| 29 | Implied: no row is a copy across the split | implied | leak probe 5 | holds | 0.0%, also with the date | LEAK-16 |
-| 30 | Implied: these are the review's hauls | implied | TM-459 p. 6 counts against ours | holds (strong) | EBS shelf + NBS 1982-2019: 14,517 here against 14,514 in TM-459; slope 1,136 against 1,136 | PROV |
-| 31 | "FOSS's CATCH has no lengths", so all sizes are counted | Note bullet | CATCH columns; FOSS endpoints | holds | CATCH has no length column; `/afsc_groundfish_survey_length/` and `/afsc_groundfish_survey_specimen/` return 404 | USE-5 |
-| 32 | Record: "GOA and AI stations are mostly sampled once or twice" | record, paragraph under the CC line | hauls per station id; distance | partly refuted | median hauls per station id: GOA 1, AI 7, EBS 44; 94.7% of GOA hauls in the newest window lie within 5 km of a training haul | EV-2 |
-| 33 | Record Assessment: the curator settled the species-abundance question without a new rule (SEL-2) | record | grep | holds | the same quote dated 2026-10-30 is in five sibling records | SEL-2 |
-| 34 | Record screening: temporal regime, "grouped by station the alternative (SPLIT-3: one, the curator's pick)" | record | the CC lines | untested | the only CC line is "`Yes`, priority 5"; `required_split: Temporal` comes from the AI draft of 2026-10-20 | SPLIT-3 |
+| 1 | `taxon_group` is a copy of `taxon` | _clean step 5; ScoringColumn description; issue 4 | compare the two columns on all 391,044 rows | holds | identical on every row | MET-2 |
+| 2 | `taxon` stays a feature and `taxon_group` is never one | issue 4; README scoring-column table | feature_columns(c) | holds | features: taxon, srvy, stratum, latitude, bottom_temperature_c, surface_temperature_c, depth_m, date, longitude_east (9); taxon_group left out; sample_weight None | MET-2 |
+| 3 | "the scores do not change: the copy holds the same values" | CC 2026-11-06; issue 4 | scorer(c) on a permuted prediction against my own per-taxon computation through `taxon`, nine windows | holds | equal to 4 decimals in all 9 windows (e.g. 77.9831 / 77.9831) | MET-2 |
+| 4 | metric = mean over taxa of sqrt(1 - R^2) on counts | metric.definition | computed both ways on the nine windows | holds | identical in all 9 | MET-11 |
+| 5 | "A taxon whose catches do not vary is left out; none is in the nine windows"; every fold scorable | metric.definition; notes | units per taxon per test window | holds | 11 of 11 taxa in every window; at least 1,056 rows and 71 positives per taxon (Greenland turbot, newest windows); smallest spread 8-19 per km^2 | MET-2 |
+| 6 | the source folds the area swept into CPUE ("catch per km^2 swept ... distance fished times net width") | notes, Effort bullet; issue 4 Background | cpue_nokm2 x area_swept_km2 against count on 201,731 catches; distance x width / 1000 against area_swept_km2 on 35,561 hauls | holds | median relative gap 6.8e-6, max 1.6e-4; area: max 1.6e-4; every count an integer | MET-14 |
+| 7 | MET-14 also says `_clean` asserts that target x denominator rebuilds the count | MET-14 (Should), implied by the declaration of a rate | read _clean | refuted in part (absent) | `_clean` asserts cpue_kgkm2 > 0 but never cpue_nokm2 x area_swept_km2 == count. The identity holds on the data (row 6) | MET-14 |
+| 8 | standard tow 30 min in the Bering Sea (medians 0.50-0.52 h in each of its three surveys), 15 min in the GOA from 1996 and AI from 1997 | notes; CHANGES | median duration_hr by survey and year | holds | all-year medians EBS 0.504, NBS 0.518, BSS 0.519 (year medians 0.50-0.53); GOA 0.50 to 1993, 0.278 in 1996; AI 0.50 to 1994, 0.294 in 1997; 0.26-0.28 since | USE-3 |
+| 9 | the planned effort reaches the models through region and date; realized effort is excluded and not carried by the features | notes; issue 4 | LightGBM of area_swept_km2 and duration_hr on the shipped features (one row per haul), trained on each of 5 windows, scored on its test hauls; R^2 also against the region-year means | holds | R^2 0.85-0.91 (area) and 0.87-0.94 (duration), all from region and year: against the region-year means R^2 -0.11 to +0.18 (area) and -0.38 to +0.08 (duration). No hidden carrier | LEAK-41, USE-3 |
+| 10 | 1,699 of 35,561 tows are short (< 0.75 x the median of their region and year) | issue 4 Experiments | recount | holds | 1,699 (AI 423, BSS 109, EBS 813, GOA 316, NBS 38) | EV-1 |
+| 11 | over all hauls, pollock's short tows sit +0.36 above their cells, the others -0.36 to +0.08; among hauls with a catch, pollock 0.55, the others 0.00 to 0.25; EBS pollock tows under 0.4 h 8.33 against 7.35 log1p kg | notes; decision 4; CHANGES | recomputed from the raw tables | holds (the numbers) | 0.357; -0.360 to +0.077; 0.551; 0.002 to 0.249; 831 tows, 8.33 against 7.35 | EV-1 |
+| 12 | "which a smaller area swept explains without any stop on the catch, so the cut is claimed for pollock alone"; "Over all hauls walleye pollock alone stands well above its cells" | notes, Effort bullet; decision 4 caption; issue 4 Resolved | NULL TEST: each short tow's count redrawn as a binomial thinning (ratio of the areas swept) of a random full tow of its cell, 20 draws, then the definition's two gaps recomputed | REFUTED IN PART | null gap over all hauls -0.02 to -0.19, among hauls with a catch +0.03 to +0.16. Above the null: pollock +0.357 vs -0.070 (sd 0.041), 0.551 vs 0.070 (0.029); PACIFIC COD +0.077 vs -0.084 (0.040), 0.229 vs 0.051 (0.020), about 4 and 9 null SDs; Pacific halibut all -0.102 vs -0.194 (0.034), positive 0.249 vs 0.159 (0.023); sablefish positive 0.199 vs 0.099 (0.039); shortspine thornyhead all 0.023 vs -0.019 (0.015), positive 0.183 vs 0.072 (0.047); rock sole positive 0.124 vs 0.041 (0.032). Explained by the smaller area: Atheresthes, Dover, Greenland turbot, Hippoglossoides, rex (positive). Cod's gap is largest where pollock's is (EBS +0.18, BSS +0.36) | LEAK-10, EV-1 |
+| 13 | "its tows end early on a large catch" (the stop causes pollock's gap) | decision 4 caption; notes | the same null on the taxa that should not drive a stop | untested as a cause (not settled) | short tows are not exchangeable within their cells: the flatfish fall far BELOW the area-only null (Hippoglossoides -0.360 vs -0.039, rex -0.276 vs -0.063, Atheresthes -0.188 vs -0.063). So short tows also land at different places within a stratum, and pollock's +0.43 above the null mixes a stop with where the tow was. A catch-triggered stop is the likely reading but this design does not isolate it | LEAK-10, EV-3 |
+| 14 | "The unweighted CPUE keeps the bias of the cut pollock tows, as NOAA's design-based index does, which averages the hauls' CPUE with equal weight in each stratum (gapindex)" | notes; issue 4 | gapindex "Background equations" | holds (the index part); "bias" untested | stratum mean = sum R_ij / n_i (each haul once), then x stratum area. Whether a cut tow's CPUE is biased, or the tow was cut in a dense patch and its CPUE is right, is not measured (row 13) | MET-15 |
+| 15 | "the score is unweighted on this density, as the review maps it over cells of equal area" (CHANGES: "unweighted scoring over equal-area cells") | notes, Effort bullet; issue 4 Option C Con; CHANGES | hauls per 1000 km^2 per stratum and year, from the strata areas in GAP's GeoPackage (AREA_M2, latest design no later than the year) | REFUTED as a description of what is scored | the scored units are hauls, not equal-area cells. Hauls per 1000 km^2 per year (2015-2025): AI 5.99, BSS 5.33, GOA 1.75, EBS 0.75, NBS 0.69, so a km^2 of the Aleutians counts 8x one of the EBS shelf. Within a survey and year the stratum density varies up to max/min 22.1 (AI, CV 0.70) and 9.5 (GOA, CV 0.53); EBS 1.9 and NBS 1.0 are near equal-area. AI holds 16.5% of rows and 5.8% of the surveyed area. The conclusion stands (no area-swept weight: MET-15; a design weight only for a population estimate: MET-16). Only the reason is wrong | MET-15, MET-16, MET-2 |
+| 16 | effort columns as free features: +0.0028 under L2 on log1p (better in 3 of 5 windows), "nothing under a Poisson fit" | notes; issue 4 Experiments | LightGBM (400 trees, 2 seeds) with and without duration, distance, width, height and area swept; newest five windows; L2 on log1p and Poisson on density | L2 holds; Poisson REFUTED as a general statement | L2 gain +0.0016, -0.0008, -0.0075, +0.0042, +0.0047 (mean +0.0004, 3 of 5 better). Poisson gain +0.0325, +0.0052, +0.0150, -0.0071, +0.0204 (mean +0.0132, 4 of 5 better; seeds agree in windows 2025-26 and 2017-18). The study's own Poisson run, on other windows, had -0.0061, 1 of 5. Under LEAK-41 "decides on the worse", so the worse is now about 0.013, not 0.0028. The drop stands | LEAK-41, EV-8 |
+| 17 | LEAK-41: "states the score of 1/weight alone as the ceiling a leak would reach" | LEAK-41 (Must, on the reporting) | LightGBM on taxon alone against taxon + 1/area_swept, and the same with srvy and year added, five windows | refuted in part (not stated); now measured | taxon alone 1.039-1.057; with 1/area 1.031-1.046 (gain 0.007-0.013). Beyond srvy and year: 1.027-1.041 against 1.016-1.034 (gain 0.004-0.012). The honest LightGBM scores 0.90-0.93 | LEAK-41 |
+| 18 | LightGBM on log1p scores 0.90-0.93 and beats the taxon means (1.01-1.23) in all nine windows | notes, Metric bullet | t1 (taxon means, nine windows), t3 (LightGBM, five windows) | holds | taxon means on counts 1.005-1.226 (on log1p 1.031-1.057); LightGBM L2 0.900-0.948 per seed, means 0.900-0.929 | MET-2 |
+| 19 | "Poisson LightGBM scores 0.86-1.11" | notes, Metric bullet | t3; the exposure study's afsc_models_summary.txt | refuted (range) | mine 0.996-1.179 on five windows (2021-2022: 1.157 and 1.179); the study's run 0.879-1.243 (2021: 1.243). Two runs exceed 1.11 in the same window, and there Poisson loses to the taxon count mean (1.226) | EV-8 |
+| 20 | pooled RMSE: pollock and rock sole hold 79-93% of an untuned model's squared error | metric.reason; notes | share under the taxon log1p-mean baseline, nine windows | holds roughly (model-dependent) | 76.8-92.2% for the baseline (2009-2010: 76.8%) | MET-2 |
+| 21 | the source scores models by cross-validated RMSE on numerical abundance and weights them by it | metric.original | reopened the reference (TM-459, repository.library.noaa.gov/view/noaa/48659): the PDF is 119 MB, and no extractor here (no pdftotext, pypdf or poppler; the Read tool refuses >100 MB) | untested today; held at the 2026-11-01 audit | the earlier audit quotes p. 21 "the model with the lowest RMSE was considered to be the best performer" and RMSE^-2 weights. The record page confirms the title, authors and year (TM-459, 2022) | MET-1, MET-11 |
+| 22 | "each window holds one survey of every region" | splits_comment | hauls by region and year | REFUTED | BSS ran 2002-2016 only, so it is absent from the 6 windows 2013-14 and 2017-18 to 2025-26. NBS is absent from 2011-12, 2013-14 and 2015-16. The 2019 window has no AI (no 2020 survey). Only 2009-2010 holds all five. Greenland turbot (BSS presence 0.70) has a spread of 8-38 per km^2 in the windows from 2017 on, against 47-639 before | SPLIT-14, EV-2 |
+| 23 | no row is a copy across the split; a haul's taxa stay on one side | implied; splits_comment | leak probe; date split | holds | 0.0% exact feature copies in 9 splits; the split is by date and all rows of a haul share it | LEAK, SPLIT |
+| 24 | counts in the notes (35,561 hauls, 201,859 catches, 128 not counted, 2,659 positive codes, 52.0% zeros, 391,044 rows) | notes | recount from the raw tables and the frame | holds | all equal | PROV |
+| 25 | `dataset check`: 0 errors, 0 warnings; the MET-2 warning is gone | issue 4 Resolved | check_before.txt / check_after.txt | holds | before: task_metric_input_is_feature ['taxon']; after: 0 warnings | MET-2 |
 
-**Refuted and untested claims, ranked (validity first, Must first)**
+THE METRIC CLAIM (MET-1, MET-2, MET-11, MET-14, MET-15)
+- MET-1: the original is the source's (row 21, held at the earlier audit). The per-taxon normalization and the equal
+  vote per taxon are ours (stand_in), with the reason given. Not re-read today.
+- MET-2 holds. The unit (taxon x window) exists in every fold with at least 71 positives. The metric's extra input
+  ships as a scoring column that is not a feature. The copy reads exactly what `taxon` read. The meaning carries one
+  note (row 22): in the windows from 2017 on, Greenland turbot is scored without its main habitat (the slope survey
+  ended in 2016), on a spread of 8-38 per km^2, and keeps one eleventh of the score.
+- MET-11 holds: stand_in, original named, closeness argued by identity (a fixed divisor within a taxon).
+- MET-14 holds on the data (row 6). The count is not in the frame. `_clean` lacks the assert (row 7, Should).
+- MET-15 holds in what it decides: no sample weight, unweighted. The stated reason ("equal-area cells") is wrong for
+  the scored rows (row 15).
 
-1. **Measured temperatures known at the review (row 19; P4, USE-3 / LEAK-10, Must).** `known` and `split` place the prediction point at a review that predicts later surveys. A review two or more years ahead cannot know a future haul's own bottom and surface temperature: the source predicts from a 38-year climatology raster (TM-459 pp. 8-9). Measured effect: none. Without both temperatures, both model families score better in all three windows (LightGBM RMSE -11 / -10 / -29, random forest -17 / -34 / -36). With the source's own procedure (train on measured, test on climatology) R^2 is within 0.012 of the shipped one. What it changes: the definition's prediction point, not the scores. Mildest remedy, the curator's call between two options. (a) Drop `bottom_temperature_c` and `surface_temperature_c`: no measured cost, and the task becomes "abundance from place, depth and date", which is what a review knows. (b) Keep `bottom_temperature_c` and rewrite the prediction point as the source's skill test: abundance at a haul given the habitat measured there (TM-459 p. 9: trained and skill-tested on haul temperatures). Say so in `known`, `split` and the notes, and drop `surface_temperature_c` either way, since no source model uses it (row 18). Under (b) the value is known at the stated point, so no exception to a Must is needed.
-2. **The split "follows the review's models", and the regime is "the curator's pick" (rows 21 and 34; P4, SPLIT-3, Must).** The review validated by random station CV, a test at unsampled locations. Our windows test later years at places already sampled: 95-98% of test hauls lie within 5 km of a training haul. The temporal question has support (TM-459 p. 3; Barnes et al. 2022), but no CC line records the regime choice that SPLIT-3 leaves to the use case. What it changes: the `fit_reason` wording, and the curator confirms the regime. Mildest remedy: reword `fit_reason` to "the rows and target follow the review's models; the split follows the review cycle and the 2022 forecast check, not the review's random cross-validation". Add the 5 km share to splits_comment, and ask the curator for a CC line on temporal against grouped by place. (This overlaps the split auditor's brief.)
-3. **The metric means what it meant (row 27; P6, MET-2).** RMSE pooled over five regions is mostly a GOA score: GOA hauls are 23-40% of the test hauls and carry 71-91% of the squared error. The source scores each region's models apart, per life stage, and the cited memo covers the Bering Sea only. Pooled and Bering-only RMSE rank the probe models at tau 0.62-0.81. What it changes: what a reader takes the score to mean; the metric stays. Mildest remedy: a Note bullet with these shares (also that the GOA memo of the 2023 review was not read).
-4. **Density for count (row 25; P6, MET-11).** This holds, and it settles the builder's draft issue 2 ("source or stand-in?") in favour of `source`. Mildest remedy: add the measured closeness to `metric.definition`: "RMSE on counts (density x area swept) ranks the seven probe models the same in all three windows (Kendall tau 1.0)".
-5. **"The covariates the source trains on" (row 18; P3 / P7 wording).** Surface temperature, stratum and date are not covariates of the source's trawl models. Mildest remedy: reword the prediction-point bullet ("position, depth and bottom temperature are the source's covariates; region, stratum, date and surface temperature are ours"). This also backs dropping surface temperature (item 1).
-6. **Taxon confidence and the 2026 season (row 4; P5, PROV-9).** The 2026 catches carry no confidence rating yet, so the 2026 rows (17.1% of the newest window) come from a season FOSS has not finished checking. What it changes: wording, and a stability caveat for the newest window. Mildest remedy: "rated high confidence in every catch 1982-2025; the 2026 catches are not yet rated", plus a note that the snapshot's newest season is provisional.
-7. **Kendall tau 0.14-0.24 (row 28; EV-8).** The value moves by 0.1 per swap among seven models; a rerun gives 0.14-0.33. Mildest remedy: write "agrees weakly (Kendall tau 0.14-0.33 over reruns)", or drop the range.
-8. **Record line on station repeats (row 32).** AI station ids repeat about 7 times, and GOA places recur within 5 km even though the ids do not. Mildest remedy: correct the record paragraph.
-9. **Performance code (row 8, nuance).** Within strata, positive-code hauls catch rex sole less often (40.8% against 45.9%), so part of the gap is the tow's catch efficiency. Keeping the hauls follows TM-459 p. 6 ("satisfactory trawl performance"). Mildest remedy: optional, half a sentence in the Hauls bullet.
+REFUTED AND UNTESTED, RANKED (validity first, Must first)
 
-Untested: Pirtle et al. 2020, the 2022 forecast check (not found; Barnes et al. 2022 read from its abstract only); the 2023 GOA EFH memo (whether its RMSE matches the Bering Sea and AI memos'; TM-458 matches TM-459); what the positive performance codes mean (gap_products not reopened); whether a later FOSS download changes the 2026 rows.
+1. Row 16, the Poisson gain (P4, LEAK-41 Must, reporting part). "Nothing under a Poisson fit" does not replicate:
+   +0.013 mean, 4 of 5 windows. What it changes: the number the decision rests on (LEAK-41 decides on the worse fit),
+   not the decision: the effort is still dropped, on timing (a place in a survey year has no tow). Mildest remedy: in
+   the Effort bullet and issue 4 say "under a Poisson fit -0.006 to +0.013 by windows and seeds (two runs)".
+2. Row 17, the 1/weight ceiling (P4, LEAK-41 Must, reporting part). Not stated. Measured now: 1/area swept with the
+   taxon gains 0.007-0.013 over the taxon alone (0.004-0.012 beyond region and year). Mildest remedy: add one clause
+   with the ceiling.
+3. Row 12, "pollock alone" (P4, LEAK-10, text). Against an area-only null, Pacific cod's short tows also stand above
+   their cells (+0.16 over all hauls, +0.18 with a catch, 4 and 9 null SDs). Halibut, sablefish, thornyhead and rock
+   sole exceed the null among hauls with a catch at 2.4-3.9 SDs. What it changes: the claim "the cut is claimed for
+   pollock alone" and "a smaller area swept explains" the positive gap. Neither feeds a feature (the effort is out), so
+   no score changes. Mildest remedy: claim the cut for pollock "and, to a lesser degree, Pacific cod caught in the
+   same tows" and say the area explains the gap for the flatfish, not for cod and halibut. Or test against the null
+   and report it in decision 4 (_short_tows could add a null column).
+4. Row 15, "unweighted over equal-area cells" (P6, MET-15/MET-16, reason only). Hauls are not equal-area: the
+   Aleutians are sampled 8x as densely per km^2 as the EBS shelf, and strata within GOA and AI up to 9x and 22x.
+   The unweighted score matches the source's own RMSE over stations, which is the right reason. Mildest remedy:
+   reword to "scored unweighted over the hauls, as the source's RMSE over stations is (the hauls are not equal-area:
+   AI about 8x the EBS per km^2); no area-swept weight, as the decision is per map cell (MET-15)". Optionally name
+   the stratum design weight under MET-16 (GOA and AI allocate stations by stratum).
+5. Row 22, "each window holds one survey of every region" (P4, SPLIT text). False for BSS (6 windows), NBS (3) and
+   AI (2019). Mildest remedy: reword the splits_comment ("each holds the EBS shelf, the GOA and, except 2019, the
+   AI; the slope survey ended in 2016, the NBS runs in some years") and add a Greenland-turbot line to the metric note.
+6. Row 19, "Poisson LightGBM 0.86-1.11" (P6, text). Two runs give up to 1.18 and 1.24 in 2021-2022, worse than the
+   taxon count mean there. Mildest remedy: "0.86-1.24 (two runs)".
+7. Row 7, the MET-14 assert (P6, Should). Mildest remedy: in `_clean`, assert that cpue_nokm2 x area_swept_km2
+   rebuilds count (rtol 1e-3) before the effort columns leave. It holds today to 1.6e-4.
+8. Untested: row 13, whether pollock's gap is a catch-triggered stop or where the short tows land (the flatfish
+   residuals show the tows are not exchangeable within cells). Row 14, whether a cut tow's CPUE is biased at all. Row
+   21, the TM-459 wording (the PDF could not be read here; held at the 2026-11-01 audit). And whether GOA/AI station
+   allocation depends on earlier surveys' catches (MET-16's note).
+
+Sources: https://afsc-gap-products.github.io/gapindex/articles/background_equations.html ;
+https://repository.library.noaa.gov/view/noaa/48659 ; the 2026-11-05 exposure study's model summary.
 
 </details>
 
 <details><summary>Column audit</summary>
 
-**Column audit (column-auditor, 2026-11-01): noaa_afsc_bottom_trawl_survey_cpue**
+COLUMN AUDIT (column-auditor, 2026-11-06, exposure re-review, full tier): noaa_afsc_bottom_trawl_survey_cpue
 
-**Verdict: ship after one change.** I found no leak. All 8 features existed before the catch was counted, none is the
-outcome in another form, and the missing temperatures do not track the catch. The gear, effort and performance columns
-were rightly dropped under LEAK-10. One cleaning problem has a large effect: the Gulf of Alaska was restratified in 2025,
-so all 431 GOA hauls of 2025 carry stratum codes no training row has. On those hauls untuned LightGBM scores R^2 -0.82
-on log1p. If each one is given the pre-2025 stratum of its nearest earlier haul, it scores +0.51, and the newest window
-goes from 0.577 to 0.726 (CLEAN-21). Three smaller items need a note or a question: the test hauls' temperatures (gain
-measured: none), the unfinished 2026 season, and the stated reason for dropping the vessel and the hour.
+Verdict: ship. No leak. The new rules (LEAK-41, MET-14, MET-15, MET-16, CLEAN-16 as amended) hold, with one Should gap
+and one note:
+- MET-14 (Should): `_clean` does not assert that the target times the area swept rebuilds the count. The data rebuilds
+  it, so the fix is one assertion.
+- P6 note (MET-15): the unweighted density gives walleye pollock's cut tows four times their share of pollock's
+  squared error. Put the number in the effort bullet.
+`taxon_group` is an exact copy of `taxon` and stays out of the features. This audit builds on the column audit of
+2026-11-01 in REVIEW.md. Its settled points (the temperatures note, the 2026 season, the 1993-95 depths, the stratum
+repair, the drop reasons) are not reopened.
 
-Prediction point (first `curation_comments` bullet): at an EFH review, which fits on surveys up to two years earlier
-and whose maps stand for five years. Known for a haul: the region, stratum, position, date, depth and the temperatures
-measured during the tow. Codebook: GAP's "Universal Column Metadata" (gap_products docs) and the methods of the EFH
-memos (TM-357, TM-458, TM-459). Frame: `dataset_io.from_definition` (no build record), 35,549 x 9, sorted
-by `date` (checked monotonic), with the three shipped windows. My numbers come from untuned LightGBM (400 trees, learning
-rate 0.05, 3 seeds, `date` as year plus day of year) on those windows, listed as 2012-16 / 2017-21 / 2022-26, unless
-cited as the builder's. Scripts and CSVs: in the run folder (not committed).
+Frame: dataset_io.from_definition, 391,044 rows. Features: taxon, srvy, stratum, latitude, longitude_east, date, depth_m,
+bottom_temperature_c, surface_temperature_c. Target: log1p_cpue_no_km2. Scoring column: taxon_group (role group).
+No sample_weight, so probe 22 does not apply (probes/p22 is empty).
+dtype probe (dtype_probes.py, --no-fetch): 0 of 8 columns flagged.
 
-**Column table: the shipped frame**
+PREDICTION POINT
+A species at a place in a given survey year, under that year's conditions (first curation_comments bullet,
+task_summary.known). Neither a place nor a year has a tow, so any column whose value depends on how this haul's tow
+went is not known at that point (USE-3).
 
-| column | meaning (codebook) | known at prediction? | dtype and cleaning | verdict | rule |
-|---|---|---|---|---|---|
-| `log1p_cpue_no_km2` (target) | log1p of `cpue_nokm2`, "numerical catch per unit effort (area swept by the net...)"; equals `count / area_swept_km2` to within 4e-5 for all 13,545 counted catches | outcome | float, 0-10.98; 61.9% zeros from the source's zero fill (CATCH has no row with count 0 or weight 0). The 12 catches weighed but never counted (count null; 10 GOA 1990-2013, 1 EBS 1992, 1 AI 1991) leave. Named after the transform | fine; one question on 2026 (problem 2) | CLEAN-15, CLEAN-16 |
-| `srvy` | survey region (EBS, NBS, BSS, GOA, AI); maps 1:1 to `survey` and `survey_definition_id` (checked by crosstab) | yes (survey design) | category, 5 levels. NBS: 969 hauls, every one zero. BSS ends in 2016, so the newest window has none | fine | CLEAN-14 |
-| `stratum` | "RACE database statistical area for analyzing data"; built as `srvy-number` because 26 numbers repeat across surveys | yes (a station's design stratum, set before the tow); no experimental stratum 0 in the data | category, 172 levels (9 with under 10 rows). **GOA 2025: 23 new numbers, 0 overlap with the 59 GOA strata of 1990-2023; all 431 GOA hauls of 2025 (10.2% of the newest window) carry one** | **cleaning problem: a code change over time** | CLEAN-21 |
-| `latitude` | "Latitude ... of the start of the haul" (vessel position) | yes | float, 51.19-65.34. The source uses the net's midpoint, corrected for the net's distance behind the vessel (TM-459 Table 3). Taking the start avoids the tow length the end position would carry | fine | |
-| `longitude_east` | start longitude mapped to 0-360 east | yes | float, 170.60-227.23. `% 360` is a per-row transform that joins the 2,567 Aleutian hauls west of 180 degrees to the rest | fine (CLEAN-12-style restoration) | CLEAN-12 |
-| `date` | date of the haul; GAP: "All dates and times are in Alaska time (AKDT)", so the trailing "Z" is wrong and the local date is right | yes (survey schedule) | datetime `YYYY-MM-DD`; the time of day is dropped (see below) | fine. The notes could cite the GAP doc instead of inferring local time from the 05:00-23:00 hours | CLEAN-14 |
-| `depth_m` | "Bottom depth (meters)"; "Gear depth plus net height equals bottom depth" | yes. The source trains on haul depth and predicts from a bathymetry raster; depth does not change between years | int, 9-1200, no sentinel values. **1993-95: headrope depth without the net height** (TM-459 p. 8). At the 376 EBS stations, 1993-95 depths are a median 1.25 m (mean 1.66 m) shallower than from 1996 on | minor cleaning note | CLEAN-21 |
-| `bottom_temperature_c` | "Bottom temperature ...; NA indicates removed or missing values"; XBT point values 1982-92, tow averages from 1993 | at the haul, yes. At the review, no, for the years it predicts: the source trains on haul values and predicts from a mean raster for 1982-2019 (problem 1) | float, -2.1 to 15.3. The 37 hauls above 12 C are NBS/GOA hauls at 12-36 m with a similar surface temperature: plausible. 2 EBS hauls in 1984 are 3.3-4.4 C warmer at the bottom than at the surface: unusual, they stay. 4.5% missing, mostly AI 1991 (81%), GOA 1990 (60%), EBS 1994 (22%). Within 38 survey-year cells, 41.4% of hauls with a missing value caught rex sole, against 43.8% with a value. The missing indicator alone scores R^2 -0.009 (builder) | fine; note on the timing | LEAK-10 holds; LEAK-6 |
-| `surface_temperature_c` | "Surface temperature ...; NA indicates removed or missing values" | same as bottom temperature. Not a covariate of the trawl SDMs in TM-357 (where it is used only by the ichthyoplankton models) or TM-459 (Table 3) | float, -1.1 to 18.1, 2.4% missing. Within 27 cells: 45.5% caught with a missing value, 46.0% with a value | fine. The note "the covariates the source trains on" does not cover it (wording) | LEAK-10 holds |
+COLUMN TABLE (column | meaning | known at prediction? | dtype and cleaning | verdict | rule)
 
-**Column table: the dropped HAUL columns**
+log1p_cpue_no_km2 (target)
+  meaning: log1p of FOSS cpue_nokm2, the count over the area swept; a group's taxon is the sum over its codes;
+    zero-filled
+  known at prediction? the outcome
+  dtype and cleaning: float, 0 to 14.05. The rebuild holds on all 201,731 counted catches (count / area_swept_km2 =
+    cpue_nokm2, max relative error 1.6e-4, from the rounding of the area). area_swept_km2 = distance_fished_km x
+    net_width_m to 1.6e-4 on all 35,561 hauls. The 128 catches weighed but not counted have no cpue_nokm2 (count and
+    CPUE are missing together) and leave (CLEAN-15). No assertion of the rebuild in `_clean` (problem 1). log1p is
+    allowed: the metric is an RMSE, not a deviance (CLEAN-16 as amended), and the denominator is not a feature
+  verdict: fine; MET-14 gap
+  rule: MET-14, CLEAN-15, CLEAN-16
 
-| column | meaning | known at prediction? | verdict | rule |
-|---|---|---|---|---|
-| `performance` | "what, if any, issues arose during the haul" | no: recorded after the tow, about the tow; the builder's Decision table shows the catch rate differs by code | drop is right; the rows stay (all codes >= 0, satisfactory) | LEAK-10 |
-| `duration_hr`, `distance_fished_km`, `latitude_dd_end`, `longitude_dd_end` | tow length and end position | the length is chosen during the tow and can respond to the catch (the builder's EBS pollock tows under 0.4 h) | drop is right | LEAK-10 |
-| `area_swept_km2`, `net_width_m`, `net_height_m` | area swept = distance x net width, the target's denominator; net geometry | measured during the tow | drop is right: the measurement that defines the label's scale (CLEAN-22 lists that reason). The stated reason, "the EFH models use none of them", is not one of CLEAN-22's | LEAK-10, CLEAN-22 |
-| `vessel_id`, `vessel_name` | the charter vessel | yes, before the haul. Every test haul's vessel appears in training in the two newer windows; 51.8% do not in 2012-16 | drop is fine in substance (the target is abundance at a place, and a map cell has no vessel), but the stated reason is not a CLEAN-22 reason (problem 4) | USE-3, CLEAN-22 |
-| time of day (from `date_time`) | AKDT clock time | yes | same as the vessel. Note: on the slope (BSS), 35% of hauls before 08:00 caught rex sole against 58% after 16:00, a diel catchability effect; the other regions show none | USE-3, CLEAN-22 |
-| `station` | design station id; EBS stations fixed (44 visits each), GOA mostly visited once | yes | drop is fine: the start position pins the place to within about 1 km, and the use case predicts places | CLEAN-3 |
-| `hauljoin`, `cruisejoin`, `cruise`, `haul`, `survey`, `survey_name`, `survey_definition_id`, `year` | keys, a sequence number within the cruise, copies of `srvy`, copies of the date's year (`year` matches the date in all rows) | | drop is right | CLEAN-3, CLEAN-5 |
+taxon
+  meaning: the row's taxon, one of 11 (three of them groups of species codes)
+  known at prediction? yes; the question is asked per species
+  dtype and cleaning: nominal category, 11 levels, none missing
+  verdict: fine
+  rule: MET-2 (feature kept)
 
-**Problems, ranked by principles.md**
+taxon_group (scoring)
+  meaning: a copy of taxon, the group of mean_group_normalized_rmse
+  known at prediction? metric input only
+  dtype and cleaning: category. Identical to taxon in all 391,044 rows, with the same 11 categories in the same order.
+    Not in feature_cols, not a weight. `_feature_types` also lists it as categorical, which is harmless
+  verdict: fine
+  rule: MET-2 (reworded 2026-11-05)
 
-**1. P4/P3, note only (LEAK-10 timing, LEAK-6 measured): the test hauls carry their own measured temperatures, which a
-review does not have.** The prediction point is the review: models are fit on surveys up to two years earlier, and the
-maps stand for five years. The source trains on haul temperatures but predicts from "Rasterized 38-year averages of
-habitat covariates in each raster cell" (TM-459 pp. 8-10, Table 3: "Training: ... Prediction: raster"). TM-357 p. 12
-did the same: "a single temperature raster layer that reflects the average temperature conditions ... from 1982 to
-2014. This raster layer of average temperature was used for prediction." A 2024 haul's bottom temperature did not exist
-at the 2022 review. Measured: I replaced the test hauls' temperatures with a climatology from the training
-years only (the mean of the 10 nearest training-period hauls). The model is still trained on measured values, as the
-source does. R^2 on log1p: 0.644 / 0.725 / 0.569 against 0.633 / 0.726 / 0.573 shipped. RMSE on raw density: 1,307 /
-1,668 / 1,466 against 1,320 / 1,675 / 1,471. Dropping both temperatures gives 0.656 / 0.726 / 0.582. So the haul's own
-values give no optimism; the shipped version scores slightly worse. **Mildest remedy:** keep them, and add one
-sentence to the prediction-point bullet or to `fit_reason`. It should say that the source predicts from mean-temperature
-rasters while the test hauls carry their own readings, and that swapping in a training-years climatology changes R^2 by
--0.004 to +0.012. Optional, for the curator: a climatology column is the source's own prediction covariate, and with it
-in both training and test the model scores best (0.666 / 0.733 / 0.575). It would have to be built from the history
-before the oldest test window (LEAK-29), so I do not propose it as a change.
+srvy
+  meaning: survey region (EBS, NBS, BSS, GOA, AI)
+  known at prediction? yes (survey design)
+  dtype and cleaning: category, 5 levels. With date, it carries the planned tow (30 min, or 15 min in GOA from 1996
+    and AI from 1997)
+  verdict: fine
+  rule: MET-14 (planned part), USE-6
 
-**2. P5, question (PROV, in the spirit of LEAK-24's two-download check): the 2026 season is not finished in FOSS.**
-All 226 rex sole catches of 2026 (AI 167, EBS 59) have `taxon_confidence` null. No catch of any earlier year does
-(2024: 0 of 205; 2025: 0 of 377). The note "identified with high confidence in every catch since 1982" therefore holds
-through 2025. The 722 hauls of 2026 are 17% of the newest test window. The EBS rex sole presence of 2026 is 0.169,
-against 0.209-0.293 in 2018-2025: suggestive, not shown to be an artefact. **Mildest remedy:** reword the note to
-"since 1982, 2026 not yet rated". Then either compare with a download after GAP finalizes 2026, or end the newest
-window at 2025 if the counts move. The builder's second download two days later cannot show a revision.
+stratum
+  meaning: srvy plus design stratum number; GOA 2025 placed in the 1984 strata
+  known at prediction? yes (set before the tow)
+  dtype and cleaning: category, 149 levels after the repair
+  verdict: fine
+  rule: CLEAN-21 (settled)
 
-**3. P7, CLEAN-21 (Should), the largest effect: `stratum` changes coding in GOA in 2025.** GOA had 59 strata in
-1990-2023 and 23 in 2025, with no number in common. All 431 GOA hauls of 2025 carry a code no training row has (EBS and
-BSS each gained one number in the 1980s/2000s; AI and NBS none). Effect (window 2022-26):
+latitude
+  meaning: start latitude of the haul
+  known at prediction? yes (start, not end)
+  dtype and cleaning: float, 51.19 to 65.34
+  verdict: fine
+  rule: LEAK-41 (the end position, which carries the tow length, is dropped)
 
-| variant | window R^2 log1p | GOA-2025 R^2 | window RMSE raw |
-|---|---|---|---|
-| shipped | 0.577 | -0.816 | 1,468 |
-| GOA-2025 stratum set to missing | 0.577 | -0.816 | 1,468 |
-| `stratum` dropped | 0.717 | 0.474 | 1,443 |
-| GOA-2025 hauls given the pre-2025 stratum of their nearest pre-2025 GOA haul (position, log depth; median 2.2 km away) | 0.726 | 0.511 | 1,405 |
+longitude_east
+  meaning: start longitude, 0 to 360 east
+  known at prediction? yes
+  dtype and cleaning: float, 170.60 to 227.23
+  verdict: fine
+  rule: CLEAN-12
 
-LightGBM routes the new codes like low-density strata: it predicts a mean log1p of 1.19 where the observed mean is 4.42
-(70.5% of those hauls caught rex sole). On the older windows, dropping `stratum` costs 0.003 and 0.010 R^2, so the
-column carries a little signal before 2025. The definition keeps the column "as a model fit at a review meets the
-redesign too". The source's models have no stratum covariate (TM-459 Table 3), so the actor never meets the redesign.
-What the newest window measures is how a model handles 431 unseen codes. **Mildest remedy:** put the 2025 GOA hauls on
-the pre-2025 coding. The published pre-2025 GOA stratum polygons (GAP's akgfmaps) give the exact assignment; the nearest
-pre-2025 haul is the map the data shows (zillow_prize's CLEAN-21 exception). That direction uses only a design that
-existed before every test window. Do not map the historical hauls onto the 2025 design instead. That design was
-optimized on historical survey densities of 14 groundfish species (Oyafuso et al. 2022; Stevenson et al. 2023
-presentation; whether rex sole was one of them I did not verify), which overlap the 2012-21 test windows. Next rung:
-drop `stratum` (position, depth and `srvy` hold most of what it means). Keeping it with the note is the last rung. The
-college_scorecard precedent (a section with no conversion table stays dropped) argues against keeping a column whose
-coding changed.
+date
+  meaning: local date of the haul (the time of day dropped)
+  known at prediction? yes (survey schedule)
+  dtype and cleaning: datetime, 1982-05-29 to 2026-08-04; the time key of the split
+  verdict: fine
+  rule: (settled)
 
-**4. P7, CLEAN-22 (Must on the reason, not on the outcome): the stated reason for the drops is not a CLEAN-22 reason,
-and it is applied unevenly.** The vessel, the hour and the gear columns leave as "sampling details the habitat models do
-not use". `stratum`, `date` and `surface_temperature_c` are not in the habitat models either (TM-459 Table 3) and stay.
-CLEAN-22 accepts what a column is (a leak, an identifier, a copy, the measurement that defines the label), not whether
-the source used it. Each drop holds under such a reason: the effort and gear columns define or respond to the catch
-(LEAK-10, the label's denominator). The vessel and the hour describe the sampling event, not the place whose abundance
-the map gives (USE-3, USE-5). **Mildest remedy:** reword the two curation bullets to these reasons; no change to the
-frame.
+depth_m
+  meaning: bottom depth; headrope depth in 1993-95
+  known at prediction? yes (the place's bathymetry)
+  dtype and cleaning: int, 9 to 1200, no sentinels
+  verdict: fine (1993-95 note settled)
+  rule: CLEAN-21 (settled)
 
-**5. P7, CLEAN-21, minor: `depth_m` for 1993-95 is headrope depth.** TM-459 p. 8: "In 1993-1995, mean gear depth
-measured at the headrope was equated with bottom depth. Since 1996, mean gear depth has been added to mean net height."
-At the 376 EBS stations, 1993-95 depths are a median 1.25 m shallower than from 1996 on (1982-92 XBT: 1.0 m). All of
-these rows are training rows in every fold, and the bias is about 1-2% of a typical depth. **Mildest remedy:** a note.
-The fix, adding `net_height_m` for 1993-95, is cheap, but net height is missing for 22% of those EBS hauls.
+bottom_temperature_c
+  meaning: bottom temperature during the haul (point values to 1992, tow means after)
+  known at prediction? yes, as that year's field at the place (settled 2026-11-02)
+  dtype and cleaning: float, -2.1 to 15.3, 4.5% missing. One decimal everywhere, so no precision marks the tow.
+    Missing in 10.4% of short tows against 4.2% of full tows, but within survey and year -0.009: the gap comes from
+    the years, not the cut
+  verdict: fine
+  rule: LEAK-41 (no encoding of effort), LEAK-10
 
-**Claims touched**
+surface_temperature_c
+  meaning: surface temperature during the haul
+  known at prediction? as above
+  dtype and cleaning: float, -1.1 to 18.1, 2.4% missing. Within survey and year, short tows -0.004
+  verdict: fine
+  rule: LEAK-41, LEAK-10
 
-- "Known for a haul: ... the depth and temperatures measured during the tow, the covariates the source trains on": true
-  of the training side. The source predicts from mean rasters (problem 1), and surface temperature is not a trawl-SDM
-  covariate in either memo.
-- "it was identified with high confidence in every catch since 1982": true through 2025; 2026 is not rated yet
-  (problem 2).
-- "the timestamps end in 'Z' but are local times": true. The GAP column metadata says so directly (AKDT).
-- "26 of the 141 stratum numbers are used by two surveys", "431 GOA hauls of 2025, 10.2% of the newest test window",
-  "23 new stratum numbers": hold. "Kept, as a model fit at a review meets the redesign too" does not hold for the
-  source's models (problem 3).
-- "Missing bottom (4.5%) and surface (2.4%) temperatures stay missing": holds, and the missingness is not outcome-driven.
-- The target's construction (zero fill; count / area swept; the 12 uncounted catches) holds.
+DROPPED HAUL COLUMNS THAT CARRY THE AMOUNT AT RISK (judged again under LEAK-41)
 
-**Judgment record**
+duration_hr
+  meaning: realized tow duration
+  known at prediction? no: realized, and cut early on large pollock catches
+  verdict: drop right
+  rule: LEAK-41, LEAK-10, USE-3
 
-```text
-Verdict: ship after changes (stratum), notes otherwise.
-Validity: LEAK-10 holds for all 8 features; drops of performance, effort and gear are LEAK-10 drops and hold.
-  USE-3/LEAK-10 timing of the test hauls' temperatures: measured no gain (LEAK-6), keep with a note.
-  P5: 2026 season unrated in FOSS, a question (reword; compare a later download).
-Quality: CLEAN-21 stratum 2025 GOA recoding, fix (map 2025 hauls to pre-2025 strata; else drop).
-  CLEAN-22 drop reasons reworded (vessel, hour: USE-3; gear: label denominator). CLEAN-21 depth 1993-95, note.
-For the curator: whether to map, drop or keep `stratum` (problem 3); the 2026 season (problem 2).
-```
+distance_fished_km
+  meaning: realized distance towed
+  known at prediction? no: a factor of the denominator
+  verdict: drop right
+  rule: LEAK-41
 
-Sources: [GAP Universal Column Metadata](https://afsc-gap-products.github.io/gap_products/content/product-metadata-column.html),
-[gap_products docs](https://afsc-gap-products.github.io/gap_products/),
-[Oyafuso et al. 2022](https://repository.library.noaa.gov/view/noaa/38939),
-[Stevenson et al. 2023 presentation](https://groundfish.psmfc.org/wp-content/uploads/2023/05/8_3_Stevenson_Apr27_0910.pdf),
-[2025 GOA survey data report](https://repository.library.noaa.gov/view/noaa/73915),
-[2026 AFSC GTC report](https://groundfish.psmfc.org/wp-content/uploads/2026/04/2026-NOAA-AFSC-GTC-Report.pdf); memo texts
-in the run folder (TM-357, TM-458, TM-459).
+net_width_m
+  meaning: realized net spread
+  known at prediction? no: a factor of the denominator (correlation 0.26 with log depth)
+  verdict: drop right
+  rule: LEAK-41
+
+area_swept_km2
+  meaning: the target's denominator
+  known at prediction? no
+  verdict: drop right; never a weight either (MET-15: the decision is per cell of an equal-area map)
+  rule: LEAK-41, MET-15
+
+net_height_m
+  meaning: realized net opening
+  known at prediction? no
+  verdict: drop right
+  rule: LEAK-10
+
+latitude_dd_end, longitude_dd_end
+  meaning: end position
+  known at prediction? no: with the start position, it encodes the distance towed
+  verdict: drop right
+  rule: LEAK-41 ("a column that encodes it")
+
+performance
+  meaning: post-tow code
+  known at prediction? no: 20.6% of hauls with a positive code are short tows, against 3.5% with code 0
+  verdict: drop right
+  rule: LEAK-10, LEAK-41
+
+CATCH count, weight_kg, cpue_kgkm2, taxon_confidence
+  meaning: parts of the target, and the identification rating
+  known at prediction? no
+  verdict: never merged into the frame; right
+  rule: MET-14, LEAK-10
+
+Other dropped columns (vessel, hour, identifiers, survey copies): settled on 2026-11-01 and 2026-11-02. Nothing new.
+
+THE EFFORT AS AN AMOUNT AT RISK (MET-14, LEAK-41): planned or realized, and does any feature carry the realized part
+
+Planned part. The protocol sets the standard tow by region and era: median 0.50 h everywhere before 1996, then 0.27 h
+in GOA and AI and 0.51 to 0.52 h in EBS, NBS and BSS. With the stratum's net and depth, this is the planned area
+swept. Cross-fitted LightGBM with folds by year, from the shipped features (srvy, stratum, place, depth, temperatures,
+year, day of year), predicts log(area_swept_km2) at R^2 0.819. The gain is stratum 0.59, srvy 0.22 and year 0.14.
+So the planned part reaches the models through the region, stratum and date, as the notes say.
+
+Realized part. The realized area swept over the median of its survey and year is predicted at R^2 0.103, and the
+realized duration over that median at R^2 0.076. The 1,699 short tows (under 0.75 of the median duration of their
+survey and year) are told apart at ROC AUC:
+  all features              0.749
+  without the temperatures  0.757
+  the schedule alone        0.694  (srvy, year, day of year)
+  the place alone           0.667  (srvy, stratum, latitude, longitude, depth)
+  Short-tow share by depth: 3.3% at 0-50 m, 6.7% at 500 m and deeper.
+The features predict the cut only through the place (rough or deep ground, more cut tows) and the year. Both are known
+at the prediction point. This is risk selection, which LEAK-41 and USE-6 allow ("a feature known at the prediction
+point that predicts the weight through risk selection stays"). No feature is set or cut after the prediction point:
+- The temperatures add nothing to the AUC.
+- No column marks the cut by its precision or missingness: one decimal everywhere, and the missingness gap is between
+  years, not between short and full tows.
+- The start position is kept and the end position dropped.
+No column that encodes the realized effort ships.
+
+The rule paths are consistent with the definition. The cut is located row by row (duration_hr), so the "fix it to the
+length known at the start or remove it" branch of the LEAK-41 Cases row applies:
+- Fixing it to the planned length needs no column: the planned length is a constant of region and era, already
+  carried by srvy and date.
+- Removing the cut rows is barred: LEAK-41 says no model is trained or scored on rows selected by the realized weight.
+  Keeping all of FOSS's satisfactory hauls is therefore right.
+- Declaring the area swept as the weight is barred by MET-15's equal-area clause, which the definition cites.
+- MET-16: no design weight ships. The task is a habitat map, not a population estimate, so it is rightly unweighted.
+
+PROBLEMS, RANKED BY principles.md
+
+1. P7 quality, MET-14 (Should): `_clean` does not assert that the target times the denominator rebuilds the count.
+   MET-14 asks for an assertion in `_clean`, and the definition reads cpue_nokm2 without one.
+   Evidence: the rebuild holds on all 201,731 counted catches (max relative error 1.6e-4; area_swept_km2 = distance
+   x width to 1.6e-4). The 128 uncounted catches lack both count and cpue_nokm2.
+   Mildest remedy: in `_clean`, before the taxa are summed, merge area_swept_km2 into `catch` and assert the rebuild
+   on the counted rows:
+     np.allclose(cpue_nokm2 * area_swept_km2, count, rtol=1e-3)
+   The frame does not change.
+
+2. P6 meaning of the metric, MET-15/MET-2 (note): the unweighted density puts walleye pollock's cut tows into the
+   score at four times their share of the rows. In the test years (2009 on), short tows are 3.4% of each taxon's rows
+   and hold this share of the taxon's squared deviation from its mean:
+     walleye pollock         14.0%  (11.0% of its top 1% of densities)
+     Greenland turbot        10.1%
+     shortspine thornyhead    7.0%
+     the other eight taxa    3% or less
+   Tows under half the median duration (256 hauls, 24 under 0.1 h, the shortest 1.5 minutes; 149 of the 256 have
+   performance code 0) hold 2.2% of pollock's squared deviation.
+   This is the bias of the cut that the notes accept, as NOAA's index does. It is not a reason to change the rows
+   (LEAK-41) or the weighting (MET-15).
+   Mildest remedy: one sentence with these shares in the "Effort, the survey's exposure" bullet, so a reader knows
+   how much of pollock's (and Greenland turbot's) vote rests on short tows.
+
+3. No other problem. The claims of issue 4 hold on the raw tables (verify_effort.out, rerun here):
+   - pollock's short tows sit +0.357 over all hauls, against -0.360 to +0.077 for the other taxa;
+   - among hauls with a catch, the within-cell residual is +0.551 for pollock and 0.002 to 0.249 for the others;
+   - 9 of 11 taxa are higher by the raw means, 11 of 11 within the cells;
+   - on the EBS shelf, pollock tows under 0.4 h: 831, mean 8.33 against 7.35 log1p kg/km^2.
+   The planned-effort medians in the notes match the data.
+
+Judgment record
+  Validity: no leak. LEAK-41 holds: the realized effort is predicted only through place and year
+    (realized area ratio R^2 0.10; short tows AUC 0.75, 0.757 without the temperatures). USE-6 risk selection.
+  Value: MET-15 unweighted is right (equal-area map). MET-16: no design weight. Pollock's cut tows hold 14% of its
+    squared deviation (note).
+  Quality: MET-14: assert the rebuild in _clean (holds to 1.6e-4). CLEAN-16: log1p fine under RMSE. Dtype probe
+    clean. taxon_group an exact copy.
 
 </details>
 
 <details><summary>Split audit</summary>
 
-**Split auditor: noaa_afsc_bottom_trawl_survey_cpue (2026-11-01)**
+Split auditor: noaa_afsc_bottom_trawl_survey_cpue (exposure re-review, 2026-11-06, full tier)
 
-**Verdict: right with notes.** Temporal by survey year, three five-year windows with a two-year gap, fits the use case
-(maps fit at a review stand for the years until the next one) and every Must of P4 holds. One change is recommended:
-the 2025 Gulf of Alaska restratification breaks the newest window through the `stratum` column. The regime still needs
-the curator's explicit pick (SPLIT-1, SPLIT-3).
+VERDICT: right with notes. The 2026-11-06 change (taxon_group copy, tow cut claimed for pollock only, effort kept out,
+unweighted density) does not touch the split, and nothing new breaks a Must of P4. One note is new: the tow cut does
+not read the same on both sides in the eastern Bering Sea. It is a training-history effect of 1989-2008 and costs
+nothing measurable, so the remedy is one sentence in the notes, not a filter.
 
-Numbers come from the definition's frame and splits loaded through `dataset_io.from_definition`, with station ids
-re-joined from the raw HAUL pages; models are untuned LightGBM (400 trees, learning rate 0.05) on log1p, features
-`srvy`, `stratum`, latitude, `longitude_east`, depth, both temperatures, year and day of year. These are probe numbers,
-not leaderboard numbers (EV-8). Scripts: in the run folder (not committed).
+How measured: the definition's frame and its nine splits, loaded with dataset_io.from_definition.
+The dropped haul columns (hauljoin, station, duration_hr, area swept, performance) were joined back one-to-one from
+_clean with the drop list emptied, keyed on taxon, position, date, depth, target and stratum (0 duplicate keys).
+"Short tow" is the definition's own cut: under 0.75 of the median duration of its region and year. The model is
+untuned LightGBM (400 trees, lr 0.05, 63 leaves, one seed) on log1p, with the shipped features plus year and day of
+year. It is scored with mean_group_normalized_rmse, reimplemented from the spec (expm1, clip at 0, RMSE per taxon over
+the taxon's std, mean). These are probe numbers, not leaderboard numbers (EV-8).
 
-**Judgment record**
+JUDGMENT RECORD
+Validity: SPLIT-1/SPLIT-3 hold (temporal, Andrej's pick of 2026-11-02, settled). SPLIT-9 holds: no training row is
+  admitted by its cut, and no weight ships. SPLIT-10 exception, settled: no gap. SPLIT-11 and SPLIT-14 hold: expanding,
+  train 54.0%-95.4%. SPLIT-12 holds (the two-year survey cycle). SPLIT-13 holds (stations recur; known waters).
+  SPLIT-20: note (the cut's history differs by era). SPLIT-23 holds (no haul is split across a cutoff).
+  LEAK-41 is not a split issue here.
+For the curator: nothing to decide. One optional sentence for the effort note (problem 1).
 
-```text
-Verdict: right with notes.
-Validity: SPLIT-1, SPLIT-3 hold (temporal, one regime; the curator's pick not yet recorded); SPLIT-9, SPLIT-10 hold
-  (labels known within the season, gap 2 years); SPLIT-11, SPLIT-14 hold (expanding, train 85% / 71% / 57%);
-  SPLIT-12 holds (window = the 5-year review cycle, sourced); SPLIT-13 holds (stations recur, known waters);
-  SPLIT-15 departed, forced by SPLIT-12 and SPLIT-14; SPLIT-20 concern (a design break in the newest window).
-For the curator: confirm temporal over grouped-by-station; drop `stratum` (or blank the 2025 GOA design).
-```
+WINDOWS (re-verified on today's frame, 391,044 rows)
+window  train years  test   train rows (share)  test rows  test hauls  regions in test
+0       1982-2024    25-26  373,005 (95.4%)     18,039     1,640       EBS 700, GOA 431, AI 372, NBS 137
+1       1982-2022    23-24  354,619 (90.7%)     18,386     1,672       EBS 726, GOA 523, AI 307, NBS 116
+2       1982-2019    21-22  333,018 (85.2%)     21,601     1,964       EBS 752, GOA 526, AI 398, NBS 288
+3       1982-2018    2019   321,394 (82.2%)     11,624     1,057       GOA 537, EBS 376, NBS 144 (no AI)
+4       1982-2016    17-18  301,045 (77.0%)     20,349     1,850       EBS 752, GOA 535, AI 420, NBS 143
+5       1982-2014    15-16  277,802 (71.0%)     23,243     2,113       GOA 767, EBS 752, AI 419, BSS 175
+6       1982-2012    13-14  259,007 (66.2%)     18,795     1,709       EBS 752, GOA 547, AI 410
+7       1982-2010    11-12  236,723 (60.5%)     22,284     2,026       EBS 752, GOA 665, AI 420, BSS 189
+8       1982-2008    09-10  211,119 (54.0%)     25,604     2,328       GOA 817, EBS 752, AI 418, BSS 200, NBS 141
+- Hauls split across train and test: 0 in every window, so a haul's 11 taxa stay together (the hidden group of one
+  haul holds).
+- Gap: 0 years everywhere except window 2, where the missing 2020 survey makes a de facto one-year gap. This matches
+  splits_comment.
+- Stations revisited, as part of the task (SPLIT-13). Test hauls at a station id seen in training: 72.4% / 91.1% /
+  92.3% / 84.5% / 89.2% / 86.5% / 87.4% / 85.0% / 72.9%. The EBS is 100% in every window. GOA is 0% in window 0
+  because the 2025 redesign renamed its stations, and 52-75% elsewhere. NBS is 0% in window 8 (its first survey,
+  2010).
+  By place, test hauls within 5 km of a training haul: window 0 97.9% (GOA 2025: 94.4%), window 1 98.7%, window 8
+  86.3%. The splits_comment line "most test hauls are at a station seen in training" holds on both readings.
 
-**Problems, ranked**
+PROBLEMS, RANKED (principles.md: P4 first; nothing here reaches a Must)
 
-1. **The newest window scores how a model treats an unseen category (P4, SPLIT-20, Should: a break in the data
-   collection; remedy at P7, CLEAN-22).** All 431 GOA hauls of 2025 (10.2% of the 2022-2026 window) carry a stratum of
-   the new GOA design that no training row has; the definition keeps `stratum` "as a model fit at a review meets the
-   redesign too". The source's models do not meet it: TM-459's Table 3 (pp. 35-36) lists bottom temperature, bottom
-   currents and their variability, tidal current, position, depth, slope, bathymetric position index, aspect,
-   curvature, sediment grain size and coral, sponge and sea-whip presence, and "strata" appears only in the
-   survey-design description (TM-458 p. 5), so the reason given does not hold. Measured on the newest window (train to 2019):
+1. The tow cut reads differently on the two sides in the EBS (P4, SPLIT-20 Should: a break in the history; new, from
+   today's claim). Rows here are hauls x 11 taxa.
+   Share of hauls that are short tows:
+   - training sides: 4.8% (window 0) to 6.0% (window 8);
+   - test windows: 2.4% to 5.2%.
+   The excess sits in old training-only years:
+   - EBS 1989-1992: 15.8-22.8% of tows short, against 1-5% since 2009; 13.8% of those years' tows ran 0.3-0.4 h;
+   - GOA 1990: 15.7%; AI 1991: 24.8%.
+   Pollock's short tows against their stratum-year cell (log1p numbers per km^2, cells holding both short and full
+   tows):
+   - pooled: every training side +0.35 to +0.40 (1,120-1,589 tows); the test windows -0.24 to +0.92 on only 25-87
+     tows each, +0.30 pooled over the nine. So pooled, the cut reads alike on both sides;
+   - by region it does not. EBS 1989-1992 +0.71 (269 tows) and 1993-2008 +0.71 (330), against +0.07 since 2009
+     (156 tows, the only EBS short tows any test window holds). In the test years the pollock excess comes from AI
+     (+0.39, 218 tows) and GOA (+0.73, 75 tows).
+   The dataset.py figures "+0.36 over all hauls" and "EBS tows under 0.4 h (831) average 8.33 against 7.35" are
+   therefore mostly the training history of 1989-2008.
+   Effect on the score:
+   - dropping every short tow from the training sides: mean metric 0.9049 -> 0.9036 (-0.0013; better in 5 of 9
+     windows; per-window swings of +/-0.02 are single-seed noise);
+   - scoring the shipped model on the full-length test tows only: 0.9019 against 0.9049 (lower in 8 of 9 windows).
+   So the cut rows add a little irreducible error to the test windows. Training on them neither helps nor hurts.
+   Rule: SPLIT-20 (check the history for a change in the data collection). The cut is a property of the label (LEAK-10,
+   resolved as claimed for pollock), not of which rows a window admits.
+   Mildest remedy: none to the split. Optionally, one clause in the effort bullet, for the claim auditor and the
+   mediator to word: "the pollock cut sits mostly in the EBS hauls of 1989-2008 (+0.71 on log1p within their cells),
+   training rows in every window; in the test years it shows in the Aleutians and the Gulf (+0.39, +0.73), not on the
+   EBS shelf (+0.07)". A filter on short tows is not warranted (no gain, and it would cut the label the review itself
+   uses, as NOAA's index keeps those tows).
 
-   | test hauls | with `stratum` | without `stratum` |
-   |---|---|---|
-   | GOA 2025 (431) | R^2 log1p -0.639; mean prediction 1.51 against 4.42 observed; 39.3% of the window's raw squared error | R^2 0.481; mean prediction 4.61; 34.3% |
-   | GOA 2023 (523) | R^2 0.611 | R^2 0.598 |
-   | the other 3,799 | R^2 0.735 | R^2 0.729 |
+2. Per-region tow lengths: the 30-minute era is on the training side only (P4, SPLIT-20; holds, a note at most).
+   - GOA 1990 and 1993 and AI 1991 and 1994: 2,186 hauls (24,046 rows) of 30-minute tows. They are training rows in
+     every window and appear in no test window. The 15-minute standard started in GOA 1996 and AI 1997.
+   - Median tow length by side: GOA train 0.272-0.280 h, test 0.263-0.276. AI train 0.270-0.271, test 0.262-0.273.
+     EBS train 0.500-0.502, test 0.512-0.528 (EBS tows have lengthened slightly since about 2009: medians 0.506-0.528
+     against 0.500-0.510 before). BSS 0.519 against 0.511; NBS 0.512 against 0.518.
+   - Share of training hauls at 30 minutes in GOA/AI: 15.5% (GOA) and 14.1% (AI), averaged over windows; 0.1% and 0%
+     on the test sides.
+   Effect: training without the 30-minute-era rows changes the mean metric from 0.9049 to 0.9037 (-0.0011; better in
+   5 of 9), which is noise.
+   The density folds the area swept in, and the date and region carry the era. The definition's "the planned effort
+   reaches the models through the region and the date" holds on the split.
+   Rule: SPLIT-20 (the source itself trains on 1982-2019 with both tow lengths, TM-459 p. 5).
+   Remedy: none. Optionally say in the effort bullet that the 30-minute GOA/AI tows are training rows only.
 
-   Window R^2 is 0.598 with and 0.719 without (the builder's 0.598 and 0.719 reproduced); a random forest on integer codes is
-   not hurt (0.735 and 0.742, builder's probe). Split 0 (SPLIT-11: the most representative window) would rank models
-   partly by their unseen-category handling (with LightGBM's native categories the new levels get low-density predictions, mean 1.51 against 4.42).
-   The hidden-group line on unseen stations shows the same: in 2022-2026, test hauls at stations seen in training score
-   R^2 0.732, the 645 unseen ones -0.213; 431 of them are GOA 2025. Re-splitting does not help, because any window holding
-   2025 has the break. Mildest remedies, in order: drop `stratum` (mean R^2 over the three windows 0.687 against 0.652;
-   the leak probe's "without stratum" 0.690 against 0.632; position and depth carry the place; the GOA and AI strata are
-   depth bands, TM-458 p. 5), or set the stratum of the post-2025 GOA design to missing. If the curator keeps it, the
-   anomaly bullet should say the source's models use no stratum and give the GOA 2025 effect (R^2 -0.64, 39% of the
-   squared error). Shared with the column auditor.
+3. Time on risk and window cutoffs (SPLIT-9, LEAK-41; holds). No training weight ships, and the realized effort is no
+   feature. A tow is cut at sea on the haul's own date, so a training side admits a haul by its survey date, never by
+   its length or its early end. Each window holds whole summer seasons. Unlike pricing_game_2016_french_fleet, no
+   window admits rows by their early end. No training row's label was unknown at its window's start: FOSS publishes a
+   season before the next one, as settled in issue 2. The unrated 2026 season (722 hauls, 44% of window 0) is test-only
+   and already a note (EV-7).
 
-**Notes (no change needed unless stated)**
+4. Settled points re-checked; still hold, no new evidence:
+   - the regime (temporal over grouped by station, issue 2);
+   - no gap (the SPLIT-10 exception);
+   - the window floor: the oldest window trains on 54.0%, and a tenth window (2007-2008) would train on 49%;
+   - window 3 holds only 2019 and no Aleutian survey;
+   - the slope survey (BSS) is tested in windows 5, 7 and 8 only;
+   - the EBS grid fell from 376 to 350 stations in 2024, and all 350 were sampled before;
+   - the GOA 2025 stratum repair (window 0's GOA hauls carry 1984-design strata, as the training rows do).
 
-2. **The regime: temporal is the right reading, but it is not yet the curator's recorded pick (P4, SPLIT-1, SPLIT-3,
-   Must; USE-10).** `required_split: Temporal` came from the AI triage of 2026-10-20; the screening says "grouped by
-   station the alternative ... (SPLIT-3: one, the curator's pick)", and the CC of 2026-10-30 records only `Yes`,
-   priority 5. For temporal: EFH is reviewed "at least every 5 years" (50 CFR 600.815(a)(10), TM-459 p. 2) and a
-   review's maps stand until the next one, and the source tested forward in time itself ("we assessed the forecasting accuracy of the 2017 SDM
-   approach", TM-459 p. 3; Pirtle et al. 2020 not read). For grouped: the source's own CV is random 10-fold over hauls,
-   described as "a test of prediction skill at unsampled locations" (TM-459 pp. 20-21), and wadden_sea_sibes_macoma_abundance
-   (same run) took grouped by station for a map drawn between the stations of a surveyed year. What sets this case apart
-   from wadden_sea is the five future years each map stands for. The three regimes on the same model:
-
-   | split | R^2 log1p per fold or window | mean | raw RMSE |
-   |---|---|---|---|
-   | shipped: temporal, gap 2 | 0.598 / 0.722 / 0.635 | 0.652 | 1,472 / 1,652 / 1,315 |
-   | grouped by station, 3 folds | 0.700 / 0.682 / 0.679 | 0.687 | 1,300 / 1,447 / 1,478 |
-   | IID, 3 folds (the source's protocol) | 0.727 / 0.743 / 0.725 | 0.732 | 1,355 / 1,456 / 1,355 |
-
-   The source's random CV is optimistic by about 0.08 R^2 against the shipped windows (SPLIT-5: a prescribed split is a
-   claim). The temporal split does not drop the spatial question: 84.7-85.3% of test hauls are at a station sampled in
-   training (EBS 100%, AI 93-97%, GOA 40-65%, slope 66%), so 15% of each window (mostly GOA, whose stations are drawn
-   anew each survey) tests new locations, scoring R^2 0.50 in the two older windows against 0.65-0.74 at seen stations.
-   Recurring stations are part of the task (SPLIT-13): the maps cover the surveyed waters. Remedy: a one-line CC
-   confirming temporal.
-
-3. **The gap and late labels (SPLIT-9, SPLIT-10, hold).** A catch is recorded at sea and FOSS is updated after every
-   season, so labels arrive within months; the two-year gap is a planning gap, the lag from the last survey a review
-   uses to the review (TM-357 p. 5: "We included trawl survey data from 1982 through 2014"; TM-459 p. 3: surveys
-   1982-2019). No training row has a label unknown at its window's start. The 2017 maps were approved on 5 July 2018
-   (83 FR 31340, TM-459 p. 3), so a gap of three (test from the year after the review) is a defensible reading too; it
-   changes little: mean R^2 0.664 with no gap, 0.652 with 2, 0.644 with 3. Keep.
-
-4. **Windows and their sizes (SPLIT-12, SPLIT-14, SPLIT-15, SPLIT-17).** Test 4,230 / 3,953 / 4,806 hauls, train
-   30,273 / 25,253 / 20,384 (85.2%, 71.0%, 57.3% of 35,549). "Nine" for an IID task of this size holds
-   (`recommended_dimensions`: 3 x 3). Nine five-year windows cannot be had: a fourth window (2007-2011) would train on
-   hauls to 2004, 43.6% of the rows, below SPLIT-14's floor. So the departure from SPLIT-15 is forced by SPLIT-12
-   (earlier, same strength) and SPLIT-14 (Must); `splits_comment` could give the 43.6%. Every window holds whole summer
-   seasons (May-September). Composition differs by window: the slope survey ended in 2016, so it is tested only in
-   2012-2016 (364 hauls); 2017-2021 holds one Aleutian survey (2018, 420 hauls; none in 2020); NBS hauls, where rex sole
-   was never caught, are 9.4% and 10.9% of the two newest windows. None of this needs a change.
-
-5. **Training history (SPLIT-19, SPLIT-20, hold apart from problem 1).** Expanding from 1982, as the source ("we include
-   trawl survey data from 1982 to 2019 in our analyses", TM-459 p. 5). FOSS starts GOA in 1990 and the Aleutians in 1991,
-   so the early foreign-vessel GOA years are not in. Breaks in the history: XBT temperatures 1982-1992 (TM-459 p. 8;
-   temperatures add little, note 6), the EBS grid from 376 to 350 stations in 2024, and the GOA redesign of 2025 (problem
-   1). The windows were set from the review cycle, not from scores (SPLIT-21 holds).
-
-6. **The temporal story against the measured temperatures (USE-3; for the column auditor and the domain
-   practitioner).** "A model fit at a review predicts the surveys of the years it is used" implies inputs known at the
-   review, but each test haul carries its own measured bottom and surface temperature, while the source predicts from
-   "a raster layer of average temperature" (TM-357 p. 12). Measured on the shipped windows, the temperatures give the
-   test no material advantage: mean R^2 0.652 with both, 0.651 without (newest 0.598 to 0.572, oldest 0.635 to 0.659),
-   raw RMSE 1,472 / 1,652 / 1,315 with and 1,461 / 1,642 / 1,286 without. No change to the split.
-
-7. **Hidden groups and copies.** Exact copies across the split 0% (leak probe); near copies not run (7 columns, no
-   evidence either way). `stratum` seen in training for 96.6% of test rows (hidden-group probe), stations for 85%: both
-   part of the task in a temporal split (SPLIT-13). Under an IID split the station would be a hidden group (EBS: 43
-   hauls per station), costing 0.045 R^2 (0.732 IID, 0.687 grouped).
-
-**Cannot verify**
-
-* Pirtle et al. (2020), the 2022 review's forecast test (which years trained and which were tested): not found; the
-  NPFMC page returned 403. `splits_comment` already marks it "not read".
-* Whether FOSS's 2026 values are final: the counts match a full season (EBS 350 of 350; Aleutians 372 hauls ending
-  2026-08-04, against 307 ending 2024-07-30 and 398 ending 2022-08-13), but finality is not stated.
-* GOA's own review cycle (2023 memo, TM-468, not read): GOA maps may run a year behind the Bering Sea and Aleutians,
-  while the windows put all regions on the 2017/2022 cycle. Minor at a five-year window.
-
-**Split claims checked**
-
-| claim | result |
-|---|---|
-| windows 2022-2026, 2017-2021, 2012-2016; no survey in 2020; trained to 2019, 2014, 2009 | holds (README split table; no 2020 rows) |
-| gap = lag from last survey to review (2017: to 2014; 2022: to 2019) | holds (TM-357 p. 5; TM-459 p. 3) |
-| oldest training side keeps 57% | holds (57.3%) |
-| nine windows for an IID task of this size | holds (3 x 3) |
-| source scored on hauls held out at random | holds (TM-459 pp. 20-21: random 90% in-bag partitions, 10-fold) |
-| 431 GOA 2025 hauls, 10.2% of the newest window, stratum unseen in training | holds (431 of 4,230, all unseen) |
-| "kept, as a model fit at a review meets the redesign too" | refuted in substance: the source's covariates include no stratum |
-| R^2 0.598 with `stratum`, 0.719 without on the newest window | holds (reproduced) |
-| 96.6% of test rows have a stratum seen in training | holds (probe) |
-| the 2022 review "assessed the forecasting accuracy of the 2017 SDM approach" | holds as a quote (TM-459 p. 3); the method behind it is unverified |
+CANNOT VERIFY
+- Why 14-23% of EBS tows of 1989-1992 ran 0.3-0.4 h (a cut on catch, or a protocol or gear trial of those years).
+  The pollock excess there (+0.71) reads like a cut, but the source documents were not re-read for it.
 
 </details>
 
 <details><summary>Domain practitioner</summary>
 
-**Domain practitioner (the actor: an AFSC habitat analyst preparing the five-year EFH review), 2026-11-01**
+Domain practitioner, noaa_afsc_bottom_trawl_survey_cpue, exposure re-review (2026-11-06, full tier)
+Actor: an AFSC habitat analyst fitting the five-year EFH species distribution models. Builds on the panel block of
+2026-11-01 in REVIEW.md. Only what is new, changed or still open under MET-14/15/16, LEAK-41 and the issue 4
+resolution is reported here.
 
-**Verdict.** Fit **approximate** (I agree with `fit="approximate"`). The haul rows, the density target and the
-five-year forward windows follow how AFSC's habitat team skill-tests its EFH models on these same surveys. The decision
-itself is a percentile map of 1-km raster cells, made per region and per life stage from long-term habitat layers that
-FOSS does not hold, so the pooled all-sizes score per haul stands in for it (USE-8). The use case is real and strong
-(P3): the actor, the moment fixed in law (50 CFR 600.815(a)(10), "at least every 5 years", TM-459 p. 2), the decision
-and the model-selection rule are all written in the source. No other use case makes the fit direct (USE-9). The
-metric scores my decision **partly** (MET-1, MET-2).
+VERDICT
+- Fit: approximate (unchanged; agree with fit="approximate"). This is the review's model-selection step: haul
+  densities scored against the next survey cycle. It is not the review's per-region, per-life-stage map from
+  long-term habitat rasters (USE-8; no other use case makes it direct, USE-9).
+- The exposure decision (issue 4, option A) is right for my use. I map a density, I score hauls unweighted, and I keep
+  the short tows as GAP does. One stated reason is wrong (finding 2) and the LEAK-41 ceiling is not stated (finding 4).
+  Both are text fixes.
+- Metric: scores my decision MOSTLY / partly, an upgrade from the "partly" of 2026-11-01. The 11-taxon mean of
+  RMSE/sd is the source's RMSE taken per species, one vote per species map (MET-1, MET-5). Scoring it per taxon x
+  region or with design weights picks the same winner in 4 of 4 windows (tau 0.81-1.00). Keep it, no change.
 
-**How the decision is made today (TM-459, Laman et al. 2022; Barnes et al. 2022)**
-- For each species, life stage and region (separate memos: Bering Sea TM-459, Aleutians TM-458, Gulf of Alaska 2023),
-  five SDMs (MaxEnt, paGAM, hurdle GAM, Poisson GAM, NB GAM) are fit to numerical abundance with an area-swept offset.
-  They are fit on the haul's measured depth and temperature plus habitat rasters averaged along the tow path:
-  sediment phi, slope, BPI, tidal maximum, ROMS bottom currents, presence of structure-forming invertebrates (pp. 7-15).
-- Models are kept and weighted by the lowest RMSE of abundance at the stations under 10-fold random CV
-  (pp. 3, 16, 20-21). Spearman's rho, AUC and Poisson deviance explained are reported next to it, scored on a rubric
-  (pp. 24-27).
-- The map is predicted from "Rasterized 38-year averages of habitat covariates" (p. 8), not from yearly conditions.
-  EFH is the area holding 95% of the predicted abundance, counting only the cells with an encounter probability of at
-  least 5%, computed as 1 - exp(-predicted abundance) (pp. 27-28). The principal (75%), core (50%) and hot-spot (25%)
-  areas are cut the same way.
-- At the next review, the team checks the old model against the surveys that came after it. TM-459 p. 3 "assessed the
-  forecasting accuracy of the 2017 SDM approach". Barnes et al. 2022 (same team, EBS trawl data) run retrospective
-  skill tests (fit to 1982..t, forecast t+1..2018) and score them by **Spearman's rho** "because it is a rank-based ...
-  measure" that "emphasizes a model's ability to identify relative differences" (pp. 3, 6).
+ANSWERS TO THE QUESTIONS ASKED
+1. Inputs for a species at a place in a survey year (USE-3, USE-6)
+   - I have these: the taxon, region, design stratum, position, date (set by the survey schedule) and depth.
+   - The year's temperatures come from the haul's own readings. They stand in for the year's field, as settled
+     2026-11-01; they carried no measured gain.
+   - I do not have the realized effort at a cell nobody towed: tow duration, distance, net width and height, area
+     swept, end position. Leaving them out is right (USE-3, LEAK-41).
+   - The planned effort is the standard tow: 30 min in the Bering Sea, 15 min in the GOA from 1996 and the Aleutians
+     from 1997. It is fixed by region and era, so region and date carry it. Nothing is missing that I would always
+     have, beyond the habitat rasters already named in fit_reason.
+2. Is the CPUE with the area swept folded in the quantity I map? Yes (MET-14, USE-5).
+   - Every AFSC product works on catch per area swept:
+     - the design-based index (gapindex: R_ijk = W_ijk / E_ij, numbers S = N / E);
+     - the 2022 EFH models (numerical abundance with an area-swept offset, TM-459 pp. 16-17);
+     - the model-based indices (an area-swept offset).
+   - The map is predicted abundance per raster cell, so it is a density times the cell area.
+   - The target is the right quantity. Dropping the count as part of the target is correct (LEAK-10).
+3. Weight hauls by effort, or score them unweighted? Unweighted (MET-15, MET-16).
+   - Weighting by area swept has no decision meaning for me.
+     - Within a region the area swept barely varies, apart from the cuts.
+     - Across regions it would only halve the weight of every GOA and Aleutian haul, because their tows are 15 min.
+       That regional reweighting is not a choice any EFH memo makes.
+     - The exposure study found that count RMSE and density RMSE rank models alike (tau 0.80-1.00, same winner 5/5).
+   - The other candidate is the design weight: stratum area / hauls in the stratum, the gapindex expansion. It turns
+     haul means into area means.
+     - EFH is not a population estimate, so MET-16 says unweighted, and the source's RMSE is unweighted over stations
+       (TM-459 p. 21).
+     - My probe: a design-weighted per-taxon normalized RMSE ranks 7 models like the declared score, tau 0.905 /
+       1.000 / 1.000 / 0.810 on the 4 newest windows, same winner in all 4. So unweighted costs nothing in ranking.
+4. A tow cut short (the pollock note; LEAK-10, LEAK-41)
+   - I keep short tows, as GAP does. They are satisfactory hauls, standardized by area swept, and enter the stratum
+     mean with equal weight.
+   - Dropping them would remove the densest pollock aggregations and bias pollock density down. LEAK-41 also forbids
+     training or scoring on rows selected by the realized weight.
+   - The tow length is a stop on the catch only for pollock: +0.36 log1p over all hauls in its cells, against -0.36 to
+     +0.08 for the other taxa. That matches survey practice (a tow on a dense pollock sign is hauled back early to
+     spare the net).
+   - The README table shows the other taxa's +0.00 to +0.25 among hauls with a catch. A smaller area turning one
+     caught fish into a higher density explains that.
+   - For scoring:
+     - short pollock tows are 25-84 of 1,057-1,964 pollock test rows per window (1.5-5.1%);
+     - they are true high densities with a small stopping-rule bias, which the design-based index carries too;
+     - keeping them unweighted is what I would do.
+5. Does the metric, scored per taxon group, score my decision? Mostly.
+   - What is right:
+     - The review selects and weights its models by the RMSE of abundance at stations, one species (and life stage
+       and region) at a time (TM-459 pp. 20-21).
+     - Per-taxon RMSE over the taxon's spread, averaged, gives each species map one vote. Within a taxon it ranks as
+       the source's RMSE does.
+     - Moving the group to the scoring column taxon_group changed no score: my re-implementation equals the declared
+       scorer to 4 decimals on 4 windows (MET-2, MET-13).
+   - Still open, but small:
+     - The source scores per region. Inside a taxon one region often holds the error. Newest window, LightGBM L2 on
+       log1p, share of the squared error:
+         - Dover sole: 100% GOA;
+         - Lepidopsetta: 100% EBS;
+         - rex sole: 86% GOA;
+         - Atheresthes: 90% GOA;
+         - pollock: 47% EBS and 47% GOA.
+     - A taxon x region mean ranks the 7 models at tau 0.905 / 0.905 / 1.000 / 0.905 against the declared score,
+       with the same winner 4/4. The concern of 2026-11-01 (GOA holding 71-92% of a pooled rex sole RMSE) no longer
+       changes the ranking once the score is taken per taxon.
+   - Metric I would choose: the declared one. A taxon x region average would be closer to the memos (MET-1, MET-2),
+     but it ranks the same and needs srvy as a second scoring column. Not worth the change.
 
-**1. Inputs at the moment of prediction**
-- I have them: region (`srvy`), the design stratum (known before the survey, including the 2025 GOA restratification,
-  which a model cannot learn), the position (I have every cell's position; the source uses the tow midpoint, the
-  dataset the start, about 1.4 km apart for a 30-minute tow), the date, and depth (from the bathymetry raster at map
-  time, close to the measured value).
-- I would not have them for a future haul: the measured bottom and surface temperatures. At map time I use the
-  long-term mean raster. Strictly, under USE-3 these values did not exist at the review. They carry almost no signal,
-  so the gap is a wording issue, not a leak worth acting on. LightGBM over the three windows:
-  - R^2 on log1p: 0.652 with the measured temperatures, 0.651 without them, 0.644 with each stratum's training-period
-    mean in their place;
-  - Poisson-objective RMSE: 1,385, 1,384 and 1,372.
+FINDINGS (ranked by how much they change the task)
+1. [settled, not reopened] The decision unit is a per-region, per-life-stage percentile map from 38-year mean
+   rasters. The task scores the model-selection step at hauls (USE-8). Already in fit_reason.
+2. [new, wording; MET-15] The exposure note and REVIEW issue 4 justify the unweighted score "as the review maps it
+   over cells of equal area". Test hauls are not equal-area cells. In 2015-2026 the hauls per 1,000 km^2 per
+   stratum-year are:
 
-  The source itself trains and tests on the measured values (TM-459 pp. 8-9), so keeping them is right. Surface
-  temperature is a covariate for eggs and larvae only (TM-357), harmless here.
-- I always have these and they are missing: the habitat rasters. The Bering Sea rex sole ensembles keep ROMS bottom
-  current, tidal maximum and pennatulacean presence besides position, depth and temperature (TM-459 pp. 150-152,
-  Table 23). On the fixed EBS grid (each station sampled about 44 times) position stands in for the static layers. In
-  GOA and the Aleutians, where stations move each survey, sediment, rockiness and slope would matter more (not
-  measurable from FOSS).
+     | Region | p10 | p50 | p90 | p90/p10 |
+     |---|---|---|---|---|
+     | EBS | 0.67 | 0.73 | 1.08 | 1.6 |
+     | GOA | 0.91 | 1.66 | 3.64 | 4.0 |
+     | AI | 1.55 | 5.22 | 14.63 | 9.4 |
 
-**2. Target**
-- What I act on is the expected numerical abundance per life stage per raster cell, turned into percentile areas.
-- Numbers per km^2 per haul is the observed quantity the models are fit to, so it is the right target. It counts all
-  sizes, while EFH must be described per life stage (50 CFR 600.815(a)(1), TM-459 p. 2). The source pools life stages
-  only when lengths cannot split a catch (pp. 6-7), and rex sole's subadult and adult EFH differ (the adults extend into
-  Bristol Bay, p. 152).
-- I need a number on the **mean** scale. The encounter probability (1 - exp(-lambda)) and the cumulative percentiles
-  both use the absolute mean. Shipping log1p is allowed (MET-3), but untuned models fit on log1p and inverted predict
-  only 33-49% of the observed mean density on the test windows. I would not accept that without a bias correction.
+   GOA and AI allocate stations by stratum, not by area. The right reasons for an unweighted score:
+   - the source's station RMSE is unweighted (TM-459 p. 21);
+   - EFH is not a population estimate (MET-16);
+   - the stratum-area design weight ranks the models the same (tau 0.81-1.00, same winner 4/4).
+   Mildest remedy: reword the clause to "scored unweighted over hauls, as the source's RMSE at the stations; a
+   stratum-area design weight ranks the models the same".
+3. [carried over, trust] Models fit on log1p and inverted predict only 34-51% of the test mean density (LightGBM L2,
+   4 windows). The declared RMSE still prefers them to a Tweedie fit on counts in 2 of 4 windows:
+   - newest window: 0.932 against 0.859 (Tweedie better);
+   - window 3: 0.917 against 0.931 (log1p better).
+   The EFH encounter threshold, 1 - exp(-lambda) >= 5%, uses the absolute mean. A method's mean bias therefore matters
+   to me even where RMSE is mild about it (MET-3, MET-8). This is a property of the source's metric, not a data error.
+   No change; a note would help users.
+4. [new, LEAK-41 Must, report gap] LEAK-41 asks the definition to state the score of 1/weight alone as the ceiling a
+   leak would reach. The notes give the L2 and Poisson gains of the effort columns (0.0028 and none), but not the
+   ceiling. My measurement (LightGBM on taxon + 1/area_swept, haul join matched 99.7%):
 
-**3. Row and test data**
-- One row is one haul, the unit at which the source selects and weights models (TM-459 p. 21: "a test of prediction
-  skill at unsampled locations"). It is not the unit of the map.
-- The test windows (the next five survey years after a two-year lag) are the comparison the next review makes, and the
-  retrospective skill test the team recommends (Barnes et al. 2022). They are real and arguably closer to the use than
-  the source's random CV.
-- Their region mix moves with the survey calendar:
-  - 2022-2026: EBS 1,802, AI 1,077, GOA 954, NBS 397;
-  - 2017-2021: GOA 1,598, EBS 1,504, NBS 431, AI 420;
-  - 2012-2016: EBS 1,880, GOA 1,313, AI 1,249, slope 364.
+     | Window | taxon + 1/area | taxon mean |
+     |---|---|---|
+     | 1 | 1.0319 | 1.0394 |
+     | 2 | 1.0311 | 1.0418 |
+     | 3 | 1.0317 | 1.0453 |
+     | 4 | 1.0452 | 1.0568 |
 
-  The slope survey has not run since 2016. The NBS hauls (9-11% of two windows) are all zeros, a true absence that
-  `srvy` predicts.
+   The honest LightGBM scores 0.92-0.93. The ceiling is tiny (0.007-0.014), and part of it is region, since GOA and
+   AI tows are half as long. Add one sentence with these numbers; no other change.
+5. [settled] Life stages are pooled (FOSS has no lengths), and 11 taxa sit in one table with taxon as a feature.
+   Unchanged.
 
-**4. Would I use the model?** As one more constituent of the ensemble, yes, if it beat the GAMs on RMSE **within my
-region** and passed the source's filter (predictions no more than 10 times the highest observed abundance, p. 22).
-- What builds trust: skill holds within each region. Untuned models reach within-region Spearman rho of 0.60-0.69 on
-  EBS, 0.61-0.75 on GOA and 0.58-0.80 on the Aleutians, "excellent" on TM-459's rubric. For comparison, the source's
-  ensembles reach 0.52 (subadult) and 0.56 (adult) under random CV on the Bering Sea (Table 22); the two are not
-  directly comparable.
-- What makes me distrust it: a single pooled number. It cannot tell the Bering Sea analyst whether the model is good
-  for the Bering Sea, and nothing in the task checks for patchy step-function maps or life-stage structure.
+WHAT AN EXPERT WOULD CHANGE
+- Reword the reason for the unweighted score (finding 2). Add the 1/area ceiling sentence (finding 4).
+- Keep:
+  - the density target;
+  - the dropped effort;
+  - the short tows in the data;
+  - the unweighted per-taxon score;
+  - taxon_group as the scoring copy.
+- Optional: a note in the metric block that log1p fits inverted underpredict the mean 2-3x, which matters for the
+  EFH encounter threshold.
 
-**5. Does `rmse` on numbers per km^2 score my decision? Partly.**
-- What is right: it is the source's deliberate selection rule (MET-5; TM-459 pp. 3, 16, 21: "the model with the lowest
-  RMSE was considered to be the best performer"). It is scored on the mean scale the map needs (MET-3, MET-8), and its
-  `original` and `definition` state the offset and density difference correctly (MET-11).
-- What is not: the source scores one region (and one life stage) at a time; the dataset pools four regions (MET-2: the
-  meaning changes). My probe (a script in the run folder, not committed) shows the effect:
-  - GOA hauls are 23-40% of each test window but hold **71-92% of the squared error**.
-  - EBS hauls are 38-43% of the test hauls and hold 0.4-13% of it.
-  - So the declared score is mostly a Gulf of Alaska score, and its 10-31 decisive hauls are mostly GOA hauls (22-28 of
-    the top 30). Over five untuned models, the pooled ranking agrees with the EBS-only RMSE ranking at Kendall tau 0.8,
-    1.0 and 0.2 across the three windows.
-  - It barely agrees with the Spearman rho that the same team uses for forecast skill: tau -0.2, -0.4 and 0.2.
-- Switching to Poisson deviance would not fix the region weighting: GOA still holds 52-84% of it for the fitted
-  models. It would also make the log1p-inverted LightGBM lose to the constant mean in the newest window (deviance
-  1,917 against 1,718).
-- **Metric I would choose:** the source's RMSE on numbers per km^2, **computed per survey region and averaged**, so each
-  region's review counts once (MET-1: the unit I act on is a region's map; MET-2). The alternative is to keep the
-  pooled RMSE and state in the metric note that GOA holds 71-92% of it. Restricting the table to one memo's study area
-  (EBS shelf, slope and NBS, as TM-459) would make the source's RMSE exact in meaning, but it gives up the
-  zeros-in-every-region rationale for rex sole.
-- Not Spearman rho as the declared metric. It is the forecast-skill measure of Barnes et al. 2022 and the closest to
-  the percentile map, but it ignores the absolute scale that sets the 5% encounter threshold, and with 62% tied zeros
-  it mostly scores presence. MET-8 prefers a score of the mean.
-- A region-averaged RMSE is a custom metric with `srvy` as a scoring column. `stratum` already encodes the region,
-  so dropping `srvy` as a feature loses nothing. MET-12 and MET-13 ship it only if other definitions use it; the
-  curator decides.
-
-**Gaps between the dataset and the real decision, most consequential first**
-1. All regions are pooled under one mean-scale RMSE. The review fits and selects per region, and the score is 71-92%
-   GOA (MET-1, MET-2; above).
-2. The unit of decision is a map of raster cells from long-term habitat layers (sediment, currents, tides, terrain,
-   invertebrates), and FOSS ships none of them. The task reproduces the model-selection step at hauls, not the map
-   (USE-8, already in `fit_reason`).
-3. Life stages are pooled into one all-sizes count, while EFH is described per life stage (USE-5; already in the
-   notes).
-4. The target ships as log1p, but the decision needs the mean. Inverted log models underpredict by a factor of 2-3,
-   which RMSE punishes only mildly (MET-3; a trap for methods, not a data error).
-5. The prediction point overstates what is known: a future haul's measured temperatures do not exist at the review.
-   Measured: no signal (USE-3; wording only).
-6. The split rationale says "a model fit at a review predicts the surveys of the years it is used". The review's map
-   uses 38-year means and is not a forecast of particular hauls. The windows instead mirror the next review's check of
-   the previous model (TM-459 p. 3; Barnes et al. 2022). The design is real; only the reason needs rewording.
-
-**What an expert in the domain would change**
-- Score per region (or restrict to one region). At minimum, write in the metric note that GOA hauls hold 71-92% of the
-  squared error, next to the existing "10-31 test hauls" sentence.
-- Reword `task_summary.known` and the first `curation_comments` bullet so the prediction point reads as a habitat
-  model scored at a haul's measured conditions, as the source's skill test does. Keep the temperatures and add the
-  no-signal numbers above.
-- Reword `task_summary.split` and `splits_comment` to give the forecast-check reason (TM-459 p. 3; Barnes et al. 2022,
-  retrospective skill testing, Ecography e06189). Cite TM-459 p. 8 for the long-term-mean maps.
-- Optional and beyond FOSS: public rasters (EBSSED-2 sediment, Bering10K ROMS currents, AFSC bathymetry and terrain)
-  would close part of gap 2. That would be a rebuild, not a requirement.
-
-**Sources**
-- Laman et al. 2022, NOAA-TM-AFSC-459, <https://repository.library.noaa.gov/view/noaa/48659> (pp. 2-3, 5-9, 16-28,
-  149-153, 494-502).
-- Laman et al. 2017, NOAA-TM-AFSC-357, for the surface-temperature use.
-- Barnes, Essington, Pirtle et al. 2022, "Climate-informed models benefit hindcasting but present challenges when
-  forecasting species-habitat associations", Ecography 2022(10) e06189; NOAA copy
-  <https://repository.library.noaa.gov/view/noaa/49312> (pp. 2-3, 6, 8-9).
-- My probes on the shipped splits: scripts and outputs in the run folder (not committed). All models are
-  untuned, so the numbers are indicative.
+SOURCES
+- gapindex "Background equations": unweighted haul mean of CPUE within a stratum, stratum-area expansion, area swept
+  only as the CPUE denominator.
+  https://afsc-gap-products.github.io/gapindex/articles/background_equations.html
+- Laman et al. 2022, NOAA-TM-AFSC-459 (pp. 3, 8, 16-21, 27-28), as cited in the definition and read by the
+  2026-11-01 panel. https://repository.library.noaa.gov/view/noaa/48659
+- Barnes, Essington, Pirtle et al. 2022, Ecography e06189 (retrospective skill tests).
+- AFSC survey reports found by web search: the standard 30-min tow at 3 knots on the shelf. No public text on early
+  haulback for pollock was found, so that practice is my judgement and is backed by the data (README decision 4).
+- Definition, README and REVIEW.md issue 4. Rules: use_case.md (USE-3, USE-5, USE-6, USE-8, USE-9),
+  metrics.md (MET-1, MET-2, MET-3, MET-5, MET-8, MET-13 to MET-16), leak_checks.md (LEAK-10, LEAK-41).
+- My probes (untuned LightGBM, 4 newest windows):
+  - probe.py / probe.out: declared vs taxon x region vs design-weighted scores, sampling intensity, region shares of
+    error;
+  - probe2.py / probe2.out: the 1/area ceiling and the short pollock tows in test.
 
 </details>
 
 <details><summary>Blind review</summary>
 
-**Verdict: include with changes.** The data is real, the target matches the source exactly, and the task (haul-level species-distribution prediction, scored forward in time) is a genuine one. But the `stratum` column breaks in the newest test window, and the task card does not say which species the target is. Both need fixing before scoring.
+BLIND REVIEW: noaa_afsc_bottom_trawl_survey_cpue
+Reviewer worked only from the clean-room data and task card (data.parquet, task.md) and the public web. No other local files were opened.
 
-**What the task is**
+VERDICT: Include with small changes. This is a real, honest, non-trivial species-distribution regression task, but the card should state the haul-by-taxon structure and the "in-situ covariates" framing, and the 2026 rows should be flagged as possibly provisional.
 
-The target is zero-filled numerical CPUE (fish per km² swept), as log1p, of **rex sole (*Glyptocephalus zachirus*, FOSS species_code 10200)**. Each row is one survey tow from the NOAA AFSC bottom trawl surveys: EBS shelf 1982-2026, AI 1991-2026, GOA 1990-2025, EBS slope 2002-2016 and NBS 2010-2025. task.md never names the species. I identified it myself: I took 4 random positive rows, matched them to the FOSS catch table, and only code 10200 fit all four. I then pulled every FOSS haul (35,561) and every rex sole catch record (13,557), and rebuilt the target with zero-filling. **All 35,549 rows match exactly (max absolute difference 0.0).** Depth and temperatures also match the FOSS haul table exactly.
+WHAT THE TASK IS
+The data come from NOAA AFSC groundfish bottom-trawl survey hauls (FOSS haul, catch and species tables). Each haul is zero-filled over 11 groundfish taxa: pollock, cod, halibut, sablefish, Dover sole, rex sole, Greenland turbot, shortspine thornyhead, and the Atheresthes, Hippoglossoides and Lepidopsetta groups. The surveys are EBS, NBS, GOA, AI and BSS, from 1982 to 2026.
+- Target: log1p(numbers per km2 swept).
+- Features: taxon, survey, stratum, latitude, longitude, depth, bottom and surface temperature measured during the haul, and date.
+- Use: a species-distribution model (SDM) that predicts a taxon's density at a station from habitat covariates in a later survey year. Such models feed essential-fish-habitat maps, distribution-shift studies and model-based abundance indices (sdmTMB/VAST style). This is a real use, but it is spatial-temporal SDM transfer, not an operational forecast made before the survey.
 
-Who uses this: AFSC assessment and essential-fish-habitat (EFH) scientists, and anyone forecasting distribution shifts. They model density at a tow from location, depth and temperature. They use it to build abundance indices, to map EFH, and to check whether next year's survey catch is in line with past years. Training on past surveys and testing on later ones fits that use.
+KEY NUMBERS (200k-row sample)
+- 35,544 distinct haul keys, about 5.6 rows each in the sample. The full data has 391,044 rows / 11 = about 35,549 hauls, so every haul has all 11 taxa.
+- No duplicate rows and no duplicate haul-taxon pairs.
+- 52% of target values are zero. The zero share is stable across years: EBS 0.47-0.55, GOA 0.42-0.51, AI 0.56-0.63, NBS 0.66-0.74.
+- Smallest positive CPUE: 13.5 no/km2, which fits one fish over about 0.07 km2. Largest log1p value is 14.0 (pollock).
+- Strata are all survey-prefixed (e.g. EBS-31), 149 levels. No experimental stratum 0. Every stratum seen at test time from 2019 on also appears in training.
+- Depth runs 9-1200 m (BSS reaches 1200, consistent with the slope survey). Latitude 51-65 N, longitude east 170.6-227.2. Both are plausible.
+- Temperatures: bottom NaN 4.5%, surface NaN 2.4%. Missingness is concentrated in 1990-91 (about 45%, early GOA/AI years) and is near 0 after 2010.
+- LightGBM with year and day-of-year added, trained on years before the cut and scored on the cut year onward:
 
-**Concerns, most to least serious**
+  | Cut  | LightGBM R2 | RMSE | taxon mean R2 | taxon x stratum mean R2 |
+  |------|-------------|------|---------------|-------------------------|
+  | 2015 | 0.734       | 1.82 | 0.31          | 0.66                    |
+  | 2019 | 0.768       | 1.70 | 0.33          | 0.68                    |
+  | 2023 | 0.778       | 1.65 | 0.34          | 0.69                    |
 
-1. **`stratum` breaks in the latest test window (GOA 2025 redesign).** The GOA survey was redesigned in 2025. The data report says it "was redesigned in 2025 to be more flexible to changes in survey effort and species distributions", moving from 59 historical strata to about 30 depth- and NMFS-area-based strata. All 23 GOA stratum codes in 2025 (431 rows) never occur in earlier years. I trained LightGBM on years before 2024 and tested on 2024-2026:
-   - GOA 2025 RMSE is 4.24 with `stratum` and 2.24 without it.
-   - The mean prediction is 1.22 against a true mean of 4.42.
-   - The whole window's RMSE rises from 1.57-1.63 to 2.24 (R² 0.42 instead of about 0.74 in the earlier windows).
+  Dropping taxon: R2 falls to about 0.04. Dropping srvy and stratum: R2 is about unchanged (lat/lon/depth stand in for them).
+  So there is clear signal and a non-trivial gain over a strong lookup baseline (about +0.09 R2). Room for methods to differ.
 
-   The column adds nothing elsewhere. In the 2019-21 and 2022-23 windows, location+depth without stratum scores 1.697 and 1.549, against 1.706 and 1.540 with it. So the benchmark would mostly be testing how each method handles unseen categories. **Change:** drop `stratum`, since latitude, longitude and depth already carry the stratum information. The other option is to assign every haul to one consistent stratification, such as the legacy GOA polygons, using its position.
+CONCERNS (most to least serious)
 
-2. **The target species is not documented.** Without the species name a reader cannot judge whether the values make sense, why NBS is all zeros, or which stock the task represents. **Change:** add "rex sole, species_code 10200, cpue_nokm2 zero-filled across all FOSS hauls, log1p" to task.md. If other species from the same survey are in the benchmark, they share every feature row and the same station grid. They should be treated as one family of related datasets, not as independent tasks.
+1. Long format: 11 rows per haul with identical covariates, and taxon dominates. (moderate)
+   Evidence:
+   - Each haul appears as 11 rows that differ only in taxon. Without taxon, R2 is about 0.04.
+   - A taxon x stratum mean lookup already gets R2 0.68.
+   Effects:
+   - The effective number of independent sampling units is about 35.5k hauls, not 391k rows.
+   - Errors are correlated within a haul. A cluster of very large or zero catches in one haul moves 11 rows together.
+   - The temporal split keeps whole hauls on one side, so this is not leakage. It does inflate the apparent size and makes the benchmark mostly a test of taxon-by-habitat interactions.
+   Change:
+   - Say so in the task card.
+   - Keep a haul identifier (not as a feature) so that any non-temporal resampling can group by haul.
+   - Alternatively, consider a wide multi-output version. Keeping the long form is defensible: it is a joint SDM.
 
-3. **Mostly spatial memory, and temperature adds little.** Stations are revisited: the 376 EBS grid stations every year, and 98% of AI rows are at stations sampled more than once. A distance-weighted k-NN on latitude and longitude alone scores RMSE 1.73, 1.52 and 1.54 across the three windows. That is about the same as the best LightGBM (1.63, 1.50, 1.57-1.63). Adding the two temperatures did not help: 1.728 vs 1.697, 1.543 vs 1.549, 1.616 vs 1.568. Adding year and day-of-year helps a little (1.633, 1.496). The weak baselines are much worse:
+2. Prediction-time framing: the temperatures are measured during the same tow as the catch. (moderate, mostly documentation)
+   Evidence: FOSS metadata defines BOTTOM_TEMPERATURE_C as "Bottom temperature (tenths of a degree Celsius); NA indicates removed or missing values". It is recorded at the haul, as are depth and date.
+   - For SDM use (predicting density given observed habitat) these are legitimately known.
+   - For a "forecast next year's catch before the survey" use they are not. You would only have climatology or ocean-model output.
+   This is not target leakage, but the task should be framed as habitat-conditional prediction in future years, not as a forecast.
+   Change: state the framing. Optionally provide a variant without in-situ temperatures.
 
-   | Baseline | RMSE range across windows |
-   |---|---|
-   | Global mean | 2.94-3.42 |
-   | Survey mean | 2.62-2.74 |
-   | Stratum mean | 2.10-2.25 |
-   | Spline ridge | 2.07-2.13 |
+3. Possible confusion of "count not recorded" with zero. (low-moderate; could not verify)
+   The FOSS catch COUNT field is described as "Total whole number of individuals caught in haul or samples collected". The documentation found does not say how missing counts are handled. The public zero-fill example sets null CPUE to 0.
+   - If a haul had weight but no count for a taxon, zero-filling would turn it into a false zero.
+   - Indirect evidence against a systematic problem: zero rates are flat across 1982-2026 within each survey, and positive values start at a one-fish level.
+   Change: when preparing the data, drop or flag haul-taxon rows where CPUE_KGKM2 > 0 but CPUE_NOKM2 is null, instead of setting them to 0. Confirm this was done.
 
-   So there is real signal and the task is not trivial. But strong methods will probably be hard to tell apart. For EBS, the leave-one-out station mean already gives RMSE 1.05, and the same station's value from the previous survey has correlation 0.82 with the current one. I would keep the dataset, knowing it rewards spatial interpolation rather than rich feature interactions.
+4. Survey composition shifts over time, so test windows differ in mix. (low)
+   - BSS (slope) exists only in 2002-2016.
+   - NBS appears only in 2010, 2017, 2019 and 2021-2025.
+   - GOA is surveyed in odd years and AI in even years from 1991/1990 on.
+   - No 2020 survey (COVID).
+   With 9 temporal windows, the late windows have no BSS and alternate GOA and AI. Per-window scores therefore differ partly by region mix, not only by method skill.
+   This is acceptable and realistic. Just know that window-to-window variance includes this.
 
-4. **Zeros and survey-specific dead weight.**
-   - 61.9% of targets are 0. The smallest positive value is log1p(15.8) = 2.82, so the target has two humps with a gap between them, and RMSE is dominated by getting presence or absence right.
-   - All 969 NBS rows are 0 (rex sole does not occur there). They are trivial once `srvy` is known, yet they appear in every test window (NBS in 2021, 2022, 2023 and 2025).
-   - The 1,136 EBS slope (BSS) rows end in 2016, so they only ever appear in training.
+5. 2026 rows may be provisional. (low)
+   The 2026 hauls (AI and EBS, 2026-06-01 to 2026-08-04) are three months old. FOSS data from the current year can be revised after final QA.
+   Change: record the download date or version. Consider ending at 2025, or re-pull before freezing.
 
-   This is acceptable, but the task card should say so. Dropping NBS would remove free points. The metric should be chosen knowing the target is a hurdle-type (zero-or-positive) quantity.
+6. Minor preparation notes. (low)
+   - Types are sensible: taxon, srvy and stratum are categorical; date is datetime; NaN is kept natively for temperatures.
+   - longitude_east is converted to 0-360 sensibly, so it does not jump at the dateline (AI spans 170.6-194.9).
+   - Time of day was dropped. It could matter for diel behaviour (pollock, cod) but is not essential.
+   - stratum is nested in srvy (100% prefix match), so srvy is partly redundant. That is harmless.
+   - Area swept, vessel, gear and haul performance are not included. CPUE is already area-standardised, so this is fine.
 
-5. **Temperatures are measured during the tow.** Bottom and surface temperature are recorded on the same tow as the catch. That is fine for a habitat model or a same-season prediction. It is not information you would have *before* a survey, unless it came from an ocean model (e.g., ROMS hindcasts). It is not leakage of the target: it does not encode the catch, and it adds no skill (point 3). The task card should describe the use as "habitat model / same-season prediction", not "pre-survey forecast".
+WHAT I COULD NOT CHECK
+- The full 391,044 rows. I only had the 200k sample, so the haul completeness of 11 rows each is inferred from 391,044 / 11 and the sample.
+- The exact boundaries of the 9 test windows (my cuts were by year, as a stand-in).
+- The raw FOSS pull. I could not see whether weight-only or null-count rows were zero-filled, or whether haul-performance / standard-haul filtering was applied.
+- Whether the 2026 values match the current FOSS release.
+- The akgfmaps strata geopackage was not inspected.
 
-6. **12 hauls were dropped.** These are tows with positive rex sole weight but no recorded count (cpue_nokm2 null), mostly GOA 1993. Dropping them rather than filling them with 0 is the right call. Since all 12 are positive catches the bias is tiny (12 of 13,557 positives). Using cpue_kgkm2 as the target would avoid the gap entirely.
+SOURCES READ
+- https://afsc-gap-products.github.io/gap_products/content/product-metadata-column.html
+- https://github.com/afsc-gap-products/gap_products
+- Web search results describing FOSS zero-filled data and zero-fill join code (afsc-gap-products.github.io foss-oracle-r / foss-api-r pages).
 
-7. **Different gear across surveys.** EBS and NBS use the 83-112 eastern otter trawl; GOA, AI and the slope use other nets, so catchability differs. `srvy` is a feature, so models can learn the offset. This is minor.
+</details>
 
-**Preparation checks that passed**
+<details><summary>Task gamer</summary>
 
-- Longitude is shifted to 0-360 east, which correctly handles the Aleutians crossing the date line.
-- Missing temperatures are left as NaN: 4.5% for bottom and 2.4% for surface, worst in 1990-91 at about 45%.
-- `srvy` and `stratum` are categorical; depth is an integer.
-- No duplicate feature rows; only 1 latitude/longitude pair repeats.
-- Year coverage matches the survey history: no 2020 (COVID), EBS drops to 350 stations from 2024, GOA has 431 stations in 2025.
-- Values are plausible. The bottom temperatures up to 15.3 °C are shallow NBS tows in the 2019 heat-wave year.
+TASK GAMER REPORT - noaa_afsc_bottom_trawl_survey_cpue (log1p catch numbers per km2, 11 taxa, 9 temporal windows,
+metric = mean over taxa of count-scale RMSE / SD, lower is better)
 
-**What I could not check**
+VERDICT: I could not game it. No exploit beat the noise floor. The kit has no effort columns (area swept, duration,
+performance), no haul id, and no haul spans the train/test cut. The rows that share a haul carry no label at test time.
 
-- The exact boundaries of the three test windows. I assumed year blocks 2019-21, 2022-23 and 2024-26. If the last window does not contain GOA 2025, concern 1 shrinks but does not go away: the next GOA survey will again have only new codes.
-- Whether `date` is given to models as a feature, and which metric is used.
-- Whether the 2025-2026 FOSS records are final or will still be revised.
-- Whether other species from this survey are also in the benchmark.
+Honest baselines (LightGBM, 300 trees, lr 0.05, 63 leaves; date as day number + year + day of year; 01_baseline.py)
+  log1p L2, predicted then expm1 ........ 0.9112  (per split 0.879-0.935)
+  Tweedie(1.5) on counts ................ 0.8976  (0.837-1.027)
+  L2 on raw counts ...................... 1.4108  (unstable; dominated by huge pollock hauls)
+Noise floor (Tweedie): + random column 0.8938 (-0.004); other seed + subsampling 0.9032 (+0.006); per-split swings up
+to 0.08. The metric is count-scale RMSE, so a few extreme hauls dominate it. Treat any mean change under ~0.01 as noise.
 
-I used only the clean-room folder, the public FOSS API, the gap_products documentation and a web search. I did not open any other local files.
+EXPLOITS RANKED BY GAIN (none clears noise)
+| # | Exploit | Script | Honest | Exploited | Gain (mean; per split) | Deployed model has it? | Fix |
+| 1 | Hauls per survey-year / per stratum-year counted over the test window | 03_attacks.py | 0.8976 tw / 0.9112 log | 0.8882 / 0.9104 | -0.009 / -0.001; splits -0.06..+0.02 | Mostly yes (survey design is known in advance) | none needed |
+| 2 | Station history that uses labels of the first test year for second-year rows | 06_history.py | 0.8699 tw (honest history) | 0.8664 | -0.0035 over honest history | No (labels from within the test window) | not needed; the gain is noise |
+| 3 | Hauls per survey day (effort/pace proxy) | 03_attacks.py | 0.8976 / 0.9112 | 0.8930 / 0.9086 | -0.005 / -0.003 | Yes once the survey is done | none |
+| 4 | Distance to nearest haul the same day | 03_attacks.py | 0.8976 / 0.9112 | 0.8917 / 0.9112 | -0.006 / 0.000 | Yes | none |
+| 5 | Rows per haul (10 vs 11 taxa; a taxon row dropped) | 03_attacks.py | 0.8976 / 0.9112 | 0.8962 / 0.9126 | -0.001 / +0.001 | n/a | none |
+| 6 | Day rank within survey year | 03_attacks.py | 0.8976 / 0.9112 | 0.8965 / 0.9080 | -0.001 / -0.003 | Yes | none |
+| - | All haul/effort features together | 03_attacks.py | 0.8976 / 0.9112 | 0.9025 / 0.9107 | +0.005 / -0.001 | | |
 
-Sources: FOSS haul/catch/species APIs (apps-st.fisheries.noaa.gov/ods/foss/...); https://github.com/afsc-gap-products/gap_products; https://afsc-gap-products.github.io/gap_products/content/product-metadata.html ("CPUE_NOKM2: Numerical catch per unit effort (area swept by the net, units square kilometers)"); 2025 GOA data report https://repository.library.noaa.gov/view/noaa/73915; https://groundfish.psmfc.org/wp-content/uploads/2023/05/8_3_Stevenson_Apr27_0910.pdf (59 historical strata to 30).
+FLAWS THAT HURT AN HONEST MODEL (small)
+| What | Honest choice | Baseline | Honest choice score | Fix |
+| Old training years (1980s-90s; gear/survey changes) dilute the fit | train on the last 15 years only | 0.9112 log / 0.8976 tw | 0.9054 / 0.8732 (-0.006 / -0.024; tweedie per split mixed) | none; it is a modelling choice, not a task defect |
+| Train >=1990 | | 0.9112 / 0.8976 | 0.9088 / 0.8885 | |
+| Train only on regions present in the test window | | 0.9112 / 0.8976 | 0.9098 / 0.8849 | |
+Better honest model: a station-history feature (mean same-taxon catch at the 8 nearest hauls of the previous 6 survey
+years, capped at the last training year) gives 0.8985 log (-0.013) and 0.8699 Tweedie (-0.028). That is signal: a
+deployed model has past survey catches. Fitting on the count scale (Tweedie) instead of log1p L2 is also honest. It
+gives -0.014 on average but is unstable per split.
+
+MECHANISMS
+- Shared hauls: each haul gives 11 rows (one per taxon) with identical lat/lon/date/depth/temps (35,561 hauls;
+  389,928 rows in complete hauls, 1,116 rows in hauls with 7-10 taxa). The split is by date, and every haul lies on one
+  side of the cut (train ends 2024-08-05, test starts 2025-05-27, and so on), so a test row never sees a co-haul label.
+  Rows per haul does not predict the target: positive rate 0.48 for 10- and 11-row hauls, with smaller groups too
+  small to read.
+- Effort columns: area_swept_km2, duration_hr, performance and the haul id are absent from the kit. Hauls per day,
+  distance to the same-day neighbour and day rank are the only effort proxies left. They shift the mean by 0.001-0.006,
+  which is inside the noise.
+- Test-window history: a 2-year test window lets the second year's rows use the first year's labels. That gains only
+  0.0035 over the honest history feature, which is noise.
+
+NOTHING FOUND
+- Formats: temperatures always 1 decimal; depth always integer; lat/lon decimal count (1-5) vs target: positive rate
+  0.46-0.53 with no trend (small groups at 1-2 decimals).
+- Missing temperatures: bottom NA 17,571 rows, positive rate 0.484 vs 0.480; surface NA 9,436 rows, 0.486 vs 0.480.
+- Row order: rows are sorted by date and shuffled within date. Corr(position, y) = -0.010; next-row agreement 0.510 vs
+  0.501 by chance, the same within a date (shared haul conditions). Within-date position vs residual: corr -0.0006.
+- Copies across the split: only 1 coordinate pair recurs on two dates; no exact duplicate hauls across train/test.
+- Transforms over all rows: none; raw units throughout.
+- Train vs test: separated only by date (temporal by design).
+- Source lookup: the rows could be joined back to the public FOSS haul/catch tables (lat/lon/date are exact), which
+  would recover the catches. Every public dataset allows that, so it is not ranked and was not done.
+- Web: no competition, forum or leak thread exists for this dataset. FOSS docs confirm that cpue_nokm2 = count /
+  area_swept_km2 and that the catch table is zero-filled. The kit drops area_swept, duration and performance, so the
+  effort leak is closed.
+
+COULD NOT CHECK
+- Whether the 1,116 rows in incomplete hauls were dropped because the count was NA while weight was present. The kit
+  has no weight column. It does not matter for scoring: dropped rows are not scored, and nrows gives no gain.
+- Whether the source positions are tow start or midpoint. A "tow cut short" signal would need both ends.
 
 </details>
 
 <details><summary>Precedent check</summary>
 
-**Precedent checker: noaa_afsc_bottom_trawl_survey_cpue (2026-11-01)**
+Precedent check: noaa_afsc_bottom_trawl_survey_cpue, issue 4 (resolved 2026-11-06, Lennart).
 
-**Verdict: mostly consistent; two decisions need the curator.** I checked 18 decisions. 14 follow a precedent, or the
-order of the rules, or a written fact that sets them apart. Two depart from a sibling with a reason that holds: the
-species, and temporal where wadden_sea_sibes is grouped. Two need the curator:
+**Verdict**
+None of today's three decisions departs from a rule without giving a reason, so no reflection prompt is needed.
 
-* the vessel and time-of-day drop is written as a departure from USE-6. USE-6 is a Must and allows no exceptions; read
-  under USE-3, as wadden_sea_sibes_macoma_abundance does, the drop is consistent.
-* `stratum` holds two GOA survey designs in one column. The CLEAN-21 precedents (college_scorecard, zillow_prize) put a
-  coding that changes at a date back on one scale or drop it.
+- **The copy of `taxon`:** consistent with the precedent.
+- **Dropping the tow's effort:** consistent with the precedent.
+- **Scoring the density unweighted:** departs from the wording of the LEAK-41 time-on-risk Cases row, and gives a reason. The reason is MET-15's own equal-area-map clause. That clause is a Must and is more specific than the Cases row, so the exception is reasonable. It is not written into the Cases row yet (optional recording question at the end).
+- **The pollock-only cut claim:** argued from the data, and the numbers check out. Two links in the argument are asserted, not tested (section 4).
 
-I found no drift in Andrej's decisions and no third exception, and none of the register's 14 flags touches this
-dataset. Two of the builder's draft issues need no decision: issue 1 is settled by rule order and SPLIT-14, and the
-"source or stand-in?" part of issue 2 by the claim auditor's measurement.
+**1. `taxon_group`, the metric's copy of the feature `taxon` (MET-2): consistent**
+- **Precedent:** liberty_mutual_fire_peril_loss_cost. `var11` stays a feature and its copy `var11_weight` is the weight scoring column. Andrej decided this on 2026-11-02 and Lennart added the copy on 2026-11-05 (metrics.md Patterns row; liberty_mutual_fire_peril_loss_cost's `dataset.py`). MET-2 as reworded on 2026-11-05 names this dataset's taxon itself.
+- **Differences:** none that matter. The role is `group` instead of `weight`, and the rule covers both.
+- **Siblings without a copy:** huesken `target_gene`, micro_mass `Strain`, protein_model_quality `protein_id`, numerai `era` and sat11 `instance_id` all read their task's own split group, which MET-2 allows. Here the split is temporal, so `taxon` is not the task's group and the copy is needed.
+- **Drift:** none. The CC explicitly supersedes Andrej's 2026-11-02 reading under the older MET-2.
 
-```text
-Consistency: follows SPLIT-12 (house family, Lennart 2026-10-21), MET-3 and MET-5 (forest_fires, 2026-10-21), TP-6 as
-  amended (Lennart 2026-10-21), MET-11 (porto_seguro identity), PROV-9 (rain_in_australia, Lennart 2026-10-26),
-  CLEAN-15 (qsar_tid_11), CLEAN-14 (zillow_prize census_tract); fremtpl2's exposure call (Andrej 2026-10-20) by a
-  written distinguishing fact.
-Departs, reason stated and holding: the species (the siblings take the source's species; this source has no primary
-  one); temporal where wadden_sea_sibes is grouped (each map stands for five future years).
-Departs, not reasonable as written: vessel and hour "depart from USE-6" (a Must, no exceptions): reframe as USE-3.
-Departs, reason contested: `stratum` across the 2025 GOA redesign, against the CLEAN-21 precedents.
-Process: the regime is still the AI's pick; the screening left it to the curator.
-```
+**2. Realized effort dropped from the features (USE-3, LEAK-41, LEAK-10): consistent**
+The dropped columns are duration, distance, net width and height, area swept and the end position.
+- **Precedents:**
+  - fremtpl2 and bemtpl97 (LEAK-41 Cases, 2026-11-06): the denominator is never a feature.
+  - wadden_sea_sibes_macoma_abundance: `total_surface_m2` dropped under USE-3, an unsampled place has no core (column table).
+  - boreal_postfire_lichen_biomass: quadrat area, nothing to drop (REVIEW.md, 2026-11-06).
+- **Panel evidence (column auditor):** the features predict the realized area swept only at R^2 0.10, and short tows at ROC AUC 0.749 (0.757 without the temperatures), through place and year only. That is risk selection, which LEAK-41 and USE-6 allow.
 
-**What counts as a precedent here.** A precedent is a curator's decision: Lennart's in the rule files' Cases tables
-and the register, and Andrej's CC lines, including the policy calls of 2026-10-30 in
-the zero-inflated triage summary (no longer in the repository; each call is in its record's Assessment of 2026-10-30). The same run's definitions are AI drafts that no curator has
-reviewed yet: wadden_sea_sibes_macoma_abundance, cape_floristic_region_family_cover, crms_phragmites_cover and the
-insurance siblings. They are siblings that should be decided alike, not precedents, and I mark them "same run". The
-run's register (in the run folder) holds three decisions on this
-record: the screening, the Assessment line on species-abundance mapping (SEL-2), and Andrej's CC `Yes`, priority 5,
-of 2026-10-30.
+**3. Unweighted score on the density (MET-15): departs with a stated reason, reasonable under the ranking**
+- **The rule text it departs from:** the LEAK-41 Cases row on time on risk (amended 2026-11-06, Lennart) has three branches:
+  - the cut can be located row by row: fix it to the planned length or remove it;
+  - it cannot be located and the amount is the target's denominator: ship the rate, with the recorded amount as weight scoring column and sample weight;
+  - it cannot be located and is no denominator: LEAK-10.
+- **Where noaa falls:** short tows can be found by duration, but which of them the catch cut cannot (149 of the 256 tows under half the median duration carry performance code 0). So the second branch applies, and as written it asks for a weight.
+- **Why that is defensible:** the definition instead applies MET-15's clause "when the decision is per unit of an equal-area map ... scored unweighted, no sample weight". MET-15 is a Must and that clause is specific, so it governs over a Cases row. A second fact supports the choice: NOAA's design-based index (gapindex) also weights hauls equally within a stratum.
+- **The cited precedents fit less well than the issue's Consistency bullet implies:**
+  - boreal: the sampled area is a protocol constant (1 m^2 in NT, 4 m^2 in SK), with no realized denominator (its REVIEW.md: "MET-15 not triggered as a weight rule"). It matches on "unweighted per unit area", not on the cut.
+  - wadden (CC 2026-11-06, Lennart, D13): the closer case. Its subsample fraction is chosen after the lab sees the sample, so the effort depends on the outcome, and it is scored unweighted. The difference is that wadden's fraction is not released and could not be a weight anyway. noaa's area swept is released.
+  - So noaa is the first case where an outcome-cut denominator is available as a weight and is deliberately left out.
+- **Third exception / amendment due:** no. There is one prior case of this kind (wadden), no third. The register has no flag on MET-2, MET-14, MET-15 or LEAK-41; its only amendment-due flag (SPLIT-10) comes from issue 2, not from today's change.
+- **The cost, measured by the panel:**
+  - The column auditor finds pollock's short tows are 3.4% of rows but hold 14.0% of pollock's squared deviation; Greenland turbot 10.1%, shortspine thornyhead 7.0%.
+  - The domain practitioner finds a design-weighted score ranks models as the declared one does (tau 0.81 to 1.0, same winner on 4 of 4 folds).
+  - The bias is accepted on purpose and named in the notes.
 
-**Decisions at a glance**
+**4. Is the pollock-only cut claim argued from the data? Yes, with two gaps**
+- **What replicates:** the column auditor reran it on the raw tables.
+  - Over all hauls, within stratum-year cells: pollock +0.357, the other taxa -0.360 to +0.077.
+  - Among hauls with a catch: pollock +0.551, the others 0.002 to 0.249.
+  - 9 of 11 taxa higher by raw means, 11 of 11 within cells.
+  - On the EBS shelf, 831 pollock tows under 0.4 h average 8.33 log1p kg/km^2 against 7.35 at full length.
+  - The contrast that carries the claim is the all-hauls one, and the notes use it correctly.
+- **Gap (a): "which a smaller area swept explains" is asserted, not tested.** A cheap test exists: compute each taxon's expected log1p shift among positives from shrinking the area alone (Poisson thinning at the taxon's own count distribution).
+  - That mechanical inflation should be largest for sparse taxa with singleton counts and close to 0 for large counts.
+  - Pollock's large counts should then show almost none, so its +0.55 is if anything stronger evidence than the notes say.
+  - Running this check would turn the assertion into a measurement.
+- **Gap (b): the causal phrase "its tows end early on a large catch" has no source statement and no named control.**
+  - Pacific cod is the natural control: almost as widespread on the EBS shelf (4.0% zeros there) and inside the -0.36 to +0.08 range.
+  - The notes could name cod's value, or cite an AFSC protocol on shortened tows if one exists (not verified here).
+  - The turbot and thornyhead squared-deviation shares above are a separate point (score effect, not offset). Short tows are more common at depth (6.7% at 500 m and deeper against 3.3% at 0-50 m), which may explain them; they do not contradict the claim.
+- **CHANGES.md misstates the evidence (the panel's file only; the definition, README CC and REVIEW.md use the right number):** it headlines "+0.55 log1p above, the others 0.00 to +0.25". That is the among-positives measure, which the notes themselves say shows up for every taxon. The number that carries the claim is +0.36 against -0.36 to +0.08 over all hauls.
+- **Smaller points:**
+  - The column auditor's MET-14 note: `_clean` does not assert that density times area swept rebuilds the count. The siblings (wadden, boreal) take a density from the source and do not assert this either, so it is a fix on MET-14's wording, not a consistency departure.
+  - The README says "Not built yet", so the generated decision table has not been rendered from a build.
 
-| # | Decision | Rule | Closest precedents | Status |
-|---|---|---|---|---|
-| D1 | rex sole as the species | USE-5, CLEAN-8 | wadden_sea, cape_floristic (same run: the source's species); Andrej 2026-10-30, policy 2 | departs, reason stated |
-| D2 | numbers per km^2, zero fill, shipped as log1p | USE-5, CLEAN-16, MET-3 | forest_fires; Andrej 2026-10-30, policies 2 and 4; wadden_sea (same run) | consistent |
-| D3 | `Metric.source("rmse")` on numbers per km^2 after the inverse | MET-3, MET-5, MET-11, TP-6 | forest_fires, zillow_prize, numerai_v5_2_1m, porto_seguro (2026-10-21) | consistent |
-| D4 | temporal regime | SPLIT-1, SPLIT-3 | the temporal-against-grouped tension (Lennart 2026-10-12); wadden_sea (same run, grouped); covertype (Lennart 2026-10-01) | departs from the sibling, reason stated; curator's pick not recorded |
-| D5 | three five-year windows | SPLIT-12, SPLIT-14, SPLIT-15 | house family (Lennart 2026-10-21); rain_in_australia (Lennart 2026-10-26) | consistent, no exception needed |
-| D6 | two-year gap | SPLIT-10 | house_sales, zillow_prize (label delays); the rule's planning-gap clause | consistent |
-| D7 | effort, gear and end position dropped | CLEAN-22, LEAK-10 | fremtpl2 (Andrej 2026-10-20); the insurance calls of 2026-10-30 | consistent by a written fact |
-| D8 | vessel and time of day dropped | USE-3, USE-6, CLEAN-22 | 2_month_survival_rate_prediction (Lennart 2026-10-26); wadden_sea (same run); against: brazilian_ecommerce (2026-10-15) | not reasonable as written; consistent under USE-3 |
-| D9 | performance code dropped, its hauls kept | LEAK-10 | the rule text ("a column recorded after the outcome") | consistent |
-| D10 | `stratum` kept across the 2025 GOA redesign | CLEAN-21, CLEAN-22, SPLIT-20 | college_scorecard (Lennart 2026-10-16); zillow_prize (Lennart 2026-10-26) | departs, reason contested |
-| D11 | identifiers and `station` dropped, `srvy` and `stratum` kept | CLEAN-3, CLEAN-5, CLEAN-14 | zillow_prize census_tract (Lennart 2026-10-26) | consistent |
-| D12 | `longitude_east` (0-360) | CLEAN-21, CLEAN-2 | none in the register | consistent with the rules |
-| D13 | 12 catches weighed but not counted dropped | CLEAN-15 | qsar_tid_11 (Lennart 2026-10-21) | consistent |
-| D14 | other species' catch not shipped | LEAK-10, USE-3 | cape_floristic, wadden_sea (same run) | consistent |
-| D15 | `year = "2026"` | PROV-9 | rain_in_australia (Lennart 2026-10-26); wadden_sea 2024 (same run) | consistent; the record still says "stays empty" |
-| D16 | fit approximate | USE-8 | wadden_sea (same run) | consistent |
-| D17 | warning `task_target_value_dominant` accepted | definitions.md, warning table; the task_probes zero-inflated pattern | wadden_sea, frempl, spanish_2022, pg17 (same run) report the oracle bound | consistent; oracle bound missing |
-| D18 | missing temperatures stay missing | CLEAN-2 | | consistent |
+**Optional recording question (not a reflection prompt; the departure has its reason)**
+Record noaa's unweighted density as the equal-area exception in the LEAK-41 time-on-risk Cases row?
 
-**D1. Species: rex sole (USE-5, Must; CLEAN-8, Must). Departs from the siblings, with a reason stated.**
+**Problem:**
+- As written, the row's second branch (denominator, cut not locatable) asks for a weight scoring column and a sample weight.
+- noaa ships none, on MET-15's equal-area clause; neither the row nor its cases say so.
+- wadden (2026-11-06) is the only earlier case with outcome-set effort scored unweighted, and its effort is not released. noaa's is.
 
-* The same-run siblings take the species or family their source names: wadden_sea_sibes takes Macoma balthica,
-  "the paper's species" (Lyashevska et al. 2016), and cape_floristic takes Crassulaceae, the family the paper
-  analyses. The EFH memos model 31 to 36 species with no primary one, so here the choice had to be ours.
-* The reasons are written down: zeros inside every surveyed region, not whole-region absences; high-confidence
-  identification since 1982, so early zeros are absences; modelled in the 2017 hurdle class and again in 2022.
-* Two points for the curator (builder issue 3):
-  1. Part of the stated reasoning is the zero structure (cod is rejected for "4% zeros on the EBS shelf"). Andrej's
-     call of 2026-10-30, policy question 2, makes zero inflation no criterion in itself: "We want to add any relevant
-     predictive task, independent if it is zero inflated or not." The reasons that stand without it are the
-     identification history and the fact that the zeros are habitat outcomes rather than a region code. By that call
-     Pacific cod, a managed species with its own EFH maps, would be just as valid.
-  2. CLEAN-8 (Lennart 2026-10-19; rosbank1, alfa_battle_2_0_task_2, anes_voting_2026) treats a choice made by counts
-     over the whole table as ordinary cleaning, but in a temporal task the notes must say it approximates the task.
-     The species was screened on 1982-2026 prevalence, test windows included (the builder's species screen), and on
-     test-window hurdle scores (the builder's hurdle probe). One sentence in the species bullet would cover this.
+| | Option | Pro | Con |
+|---|---|---|---|
+| a | Add noaa to the row as the equal-area case: "where the decision is per unit of an equal-area map, the rate is scored unweighted (MET-15), the bias of the cut named in the notes" | the next survey table finds the case; the row and MET-15 agree in writing | one more clause in a long row |
+| b | Leave the row; MET-15's clause is enough | no edit | the row as written still asks for a weight in noaa's situation |
+| c | Weight noaa by the area swept (follow the row) | follows the row's wording | against MET-15's equal-area clause and NOAA's own index; ranks models the same |
 
-**D2. Target: numbers per km^2, zero fill, shipped as log1p. Consistent.**
+Recommendation: (a).
 
-* Zero fill follows the source's own recipe (gap_products sec. 10.2), like wadden_sea's descriptor recipe. Andrej's
-  policy call 2 (2026-10-30) makes coded zeros a cleaning choice.
-* The `Two-Regime Zeros` tag meets Andrej's definition (policy call 4: the low value dominates and is separate):
-  62% zeros, with continuous positives above them.
-* Numbers rather than kg: the 2022 review's RMSE is on "numerical abundance at trawl station i" (TM-459 pp. 20-21,
-  read).
-* Shipping the target as log1p and scoring the raw scale is the MET-3 pattern: forest_fires (2026-10-21) and every
-  same-run zero-inflated sibling.
-
-**D3. Metric (MET-5, MET-3, MET-11; TP-6 as amended). Consistent.**
-
-* **MET-5 holds.** TM-459 uses the lowest cross-validated RMSE of numerical abundance to pick, drop and weight its
-  models (pp. 3, 20-23), and reports Spearman's rho, AUC and PDE only "in addition". That is one deliberate
-  criterion, as in forest_fires (ranked by MAD, kept). The screening's fallback (AI, 2026-10-27, from the 2017 memo
-  alone) is superseded by this later reading.
-* **Concentration is no ground to overrule.** zillow_prize (2026-10-21) cited "0.38% of the rows hold 49.9% of the
-  squared error" to move *to* the competition's metric. TP-6 as amended (Lennart 2026-10-21, on 17 definitions)
-  overrules a source's metric only "when it is biased or wrong (evidence from the paper)". The Kendall tau of
-  0.14-0.24 between raw and log1p RMSE compares against a metric the source never used, so it is not that evidence.
-  numerai's tau argument also went towards the source's metric, not away from it.
-* **Source or stand-in (builder issue 2).** The claim auditor's test T3
-  gives Kendall tau 1.000 between RMSE on density and RMSE on counts (density x area swept) in all three windows. The
-  declared metric therefore ranks models as the source's quantity would, and `source` holds under MET-11's identity
-  clause (porto_seguro: Gini = 2 x AUC - 1).
-* **The insurance siblings differ.** Their Gini suggestion (AI, 2026-10-30) rests on raw RMSE ranking every model
-  near the mean. Here every probed model beats the training mean in every window (RMSE 1,300-1,652 against
-  1,461-1,804), and the source has its own metric.
-* **One note (MET-2).** The source scores each region and life stage separately, while we pool them. Tau against a
-  Bering-only RMSE is 0.81, 0.81 and 0.62 (claim auditor). This is a note, not an issue.
-
-**D4. Regime: temporal (SPLIT-1, SPLIT-3; tension "Temporal against grouped", Lennart 2026-10-12). Departs from the
-sibling with a reason stated; the curator's pick is not recorded.**
-
-* wadden_sea_sibes (same run) groups by station because its map covers "a surveyed year between stations".
-  covertype (Lennart 2026-10-01) is IID for a cover map with no time axis. The source's own CV draws random stations,
-  "a test of prediction skill at unsampled locations" (TM-459 p. 21).
-* What sets this case apart is written in `splits_comment`: a review's maps stand for the five years until the next
-  review (50 CFR 600.815(a)(10)), and the 2022 review "assessed the forecasting accuracy of the 2017 SDM approach"
-  (TM-459 p. 3; Pirtle et al. 2020 not read). The split auditor adds that 15% of each window's test hauls are at new
-  stations, so the spatial question stays in.
-* Process: the screening (AI, 2026-10-27) wrote "grouped by station the alternative ... (SPLIT-3: one, the curator's
-  pick)". Andrej's CC of 2026-10-30 records only `Yes`, priority 5, so the regime is still the AI's choice. One CC
-  line would settle it.
-
-**D5. Windows: three of five years (SPLIT-12, SPLIT-14, SPLIT-15). Consistent; no exception needed.**
-
-* At equal strength the earlier rule wins (principles.md). SPLIT-12 sets the window to the source's review cycle, as
-  in the house family (Lennart 2026-10-21: each task keeps its own source's horizon, "we dont need to force the same
-  split").
-* SPLIT-14 (Must) caps the count: a fourth window would train on 43.6% of the rows (split auditor). The three windows
-  already use the whole test pool from 2012, which is what rain_in_australia's call (Lennart 2026-10-26, "follows
-  SPLIT-15; no exception needed") was after.
-* Builder issue 1 therefore changes no decision and can become a note. Its USE-3 temperature point is measured by
-  the split auditor: R^2 0.652 with the temperatures, 0.651 without.
-* crms_phragmites_cover (same run) takes nine one-year windows because no review cycle sets its horizon. The two are
-  alike by rule.
-
-**D6. Gap of two years (SPLIT-10). Consistent.**
-
-* SPLIT-10 counts "a planning gap the use case has" as a gap. Here it is the source's own lag from the last survey
-  to the review (TM-357 p. 5; TM-459 p. 3).
-* It is an application, not an exception, so it adds nothing to the register's `amendment_due` flag on SPLIT-10
-  (five exceptions so far).
-
-**D7. Effort, gear and end position dropped (CLEAN-22, LEAK-10). Consistent by a written distinguishing fact.**
-
-* The pair: fremtpl2 (Andrej 2026-10-20) kept `Exposure` as "a feature, not a divisor. The contracted period is known
-  at pricing". The insurance calls of 2026-10-30 repeat this and add that "a target that is already a ratio to the
-  insured value holds its exposure".
-* What sets this case apart is written in the definition:
-  * CPUE per km^2 swept is the source's own unit, and area swept is the target's denominator, which is CLEAN-22's
-    "the measurement that defines the label";
-  * the tow length is set during the tow, in response to the catch: walleye pollock tows under 0.4 h average 8.33
-    against 7.35 log1p kg/km^2 for full-length tows. It is not known before the outcome (LEAK-10).
-* wadden_sea (same run) drops its core area the same way.
-* Two wording points:
-  1. `task_summary.changes` gives "which the habitat models do not use" as the reason, but CLEAN-22 lets a column
-     leave only for what it is. The denominator and the leak are the reasons to name there.
-  2. The leak was measured on pollock, not rex sole. That is enough, since the tow length is a property of the haul,
-     but the notes could say so.
-
-**D8. Vessel and time of day dropped (USE-3, USE-6, CLEAN-22). Not reasonable as written; consistent under USE-3.**
-
-* Builder issue 4 calls this a departure from USE-6. USE-6 is a Must, and a Must has no exceptions: only a
-  higher-ranked Must overrides it (principles.md). None is named here.
-* Read under USE-3, the drop matches the precedents. The use case predicts for a place and year without a haul,
-  where no vessel or tow hour exists:
-  * wadden_sea (same run) drops platform, sampling type and core area because "an unsampled place has no visit
-    (USE-3)";
-  * 2_month_survival_rate_prediction (Lennart 2026-10-26, a USE-6 case) leaves out inputs known at the prediction
-    point when the source's task is defined without them.
-* The definition's own reasons are neither a CLEAN-22 reason nor decisive: "sampling details the habitat models do
-  not use", and R^2 0.643 and 0.646 against 0.652.
-* One point about the definition's own logic: the measured temperatures also exist only where a haul was made. They
-  stay because the source trains on them (Laman 2017, p. 5). wadden_sea keeps station-measured sediment on the same
-  reading and puts the measured gap in `fit_reason`. The split auditor has measured this gap here (R^2 0.652 with the
-  temperatures, 0.651 without), but the definition does not report it.
-
-**Consistency check (AI, 2026-11-01):** the draft drops `vessel_id`, `vessel_name` and the time of day and calls it a
-departure from USE-6 (Must: anything known at the prediction point is an input), which allows no exceptions.
-brazilian_ecommerce (2026-10-15) and bias_correction_r_bias_correction_r_2 kept inputs known at the prediction point.
-What sets this case apart?
-(a) The prediction is for the map cell of an EFH review, a place and year without a haul, where no vessel or tow hour
-exists. That is a USE-3 drop: word it as wadden_sea_sibes_macoma_abundance does, following
-2_month_survival_rate_prediction (Lennart 2026-10-26), and drop the R^2 numbers as the reason.
-(b) Treat it like brazilian_ecommerce: the row is a haul, its vessel and hour are known, and they carry no leak, so
-keep both.
-(c) Reopen wadden_sea_sibes_macoma_abundance's sampling-detail drop to match (b).
-(d) Amend USE-6: inputs outside the source's task definition may leave.
-
-**D9. Performance code dropped, its hauls kept (LEAK-10). Consistent.**
-
-* The code is recorded after the tow and is about the tow, which is LEAK-10's "a column recorded after the outcome".
-* The 2,659 positive-code hauls stay, as the survey keeps them (performance >= 0 counts as satisfactory).
-* The register has no closer case.
-
-**D10. `stratum` across the 2025 GOA redesign (CLEAN-21, Should; CLEAN-22, Must; SPLIT-20). Departs from the
-precedents; the stated reason is contested.**
-
-* CLEAN-22 keeps a column for what it is. Keeping `stratum` is therefore consistent in itself, and dropping it
-  because it scores badly on one window would be the kind of choice SPLIT-21 bars for windows.
-* The problem is that the column changes its coding at a date: from 2025 the GOA hauls carry 23 numbers from a new
-  design. The closest precedents measured such a change and left one coding per column:
-  * college_scorecard (CLEAN-21, Lennart 2026-10-16) put the redesigned SAT back on one scale with the measuring
-    body's concordance, and "a section without a conversion table stays dropped";
-  * zillow_prize (CLEAN-21 exception, Lennart 2026-10-26) mapped the 2017 `buildingqualitytypeid` onto the 2016 scale
-    with the map the data shows.
-* The stated reason ("a model fit at a review meets the redesign too") is contested by the split auditor:
-  * no stratum appears among the source's covariates (TM-459 Table 3);
-  * on GOA 2025, R^2 is -0.64 with `stratum` and 0.48 without, and these hauls hold 39% of the window's squared
-    error.
-* Untested: whether AFSC publishes the pre-2025 GOA hauls under the new strata, or the old strata's polygons for a
-  spatial join. The answer decides between the two branches of (b) below.
-* If (a) is chosen, it would be the second exception to CLEAN-21, after zillow_prize. Its reason differs (zillow
-  converted, this case would not), so it does not count towards an amendment.
-
-**Consistency check (AI, 2026-11-01):** the draft keeps both GOA survey designs, the old one and the 2025 one, in
-`stratum`. college_scorecard (2026-10-16, Lennart: the redesigned SAT put back on one scale, a section without a
-conversion dropped) and zillow_prize (2026-10-26, Lennart: the 2017 quality codes mapped onto the 2016 scale) both
-left one coding per column. What sets this case apart?
-(a) A model fit at a review meets the redesigned strata too, so unseen levels are part of the task. Record an
-exception to CLEAN-21 that serves SPLIT-1; note that the split auditor contests it, since the source's models use no
-stratum.
-(b) Treat it like college_scorecard: put the 2025 GOA hauls on the old design if AFSC publishes the mapping or the old
-polygons; otherwise drop `stratum`, or set the post-2025 GOA design to missing.
-(c) Reopen college_scorecard and zillow_prize to match (a).
-(d) Amend CLEAN-21 to cover category codes that a survey redesign replaces.
-
-**D11. Identifiers dropped (CLEAN-3, CLEAN-5, CLEAN-14). Consistent.**
-
-* zillow_prize (Lennart 2026-10-26) kept the census tract as a category and dropped the block group and block as
-  near-identifiers. Here the coarse code `stratum` stays and the fine code `station` goes (GOA and Aleutian stations
-  are mostly sampled once or twice).
-* If `stratum` leaves (D10), only `srvy` and the coordinates carry the place.
-
-**D12. `longitude_east` (0-360; CLEAN-21, CLEAN-2). Consistent with the rules.**
-
-* The register has no precedent. This re-expresses one coordinate so it does not jump at the antimeridian; it is not
-  a scaling or a built feature.
-* The R^2 gain is support for the change, not its reason.
-
-**D13. 12 catches weighed but not counted (CLEAN-15, Must). Consistent.**
-
-* Same rule as qsar_tid_11 (Lennart 2026-10-21).
-* All 12 are positive catches, but the drop rests on a missing field (the LEAK-25 reading wadden_sea cites), and 12
-  of 13,557 is negligible.
-
-**D14. Other species' catch not shipped (LEAK-10, USE-3). Consistent.**
-
-* Same as the same-run siblings: cape_floristic drops Restionaceae, recorded in the same survey; wadden_sea leaves
-  out the other taxa of the core.
-* The source's use of concurrent coral and sponge presence (Laman 2017 p. 14) is named in the notes.
-
-**D15. Year 2026 (PROV-9, Must). Consistent.**
-
-* A growing source takes the year of the pinned snapshot: rain_in_australia (Lennart 2026-10-26, "the year is the
-  definition's 2026"); wadden_sea pins 2024 (same run).
-* The record's screening still says "`year` stays empty", written before the snapshot was pinned. The record update
-  (builder issue 5) should add the year.
-
-**D16. Fit approximate (USE-8). Consistent with wadden_sea.**
-
-**D17. Warning `task_target_value_dominant` accepted (definitions.md warning table: name the zero inflation).
-Consistent.**
-
-* The task_probes pattern for a zero-inflated target (forest_fires) asks for the oracle bound and the two hurdle
-  stages. The stages are reported (AUC 0.94-0.96; R^2 0.30-0.38 among catches); the oracle bound is not.
-* Every same-run sibling reports the oracle bound (wadden_sea: R^2 0.04 raw, 0.93 log1p; frempl; spanish_2022; pg17).
-  It is one number to add. This is a pattern, not a rule.
-
-**D18. Missing temperatures stay missing (CLEAN-2). Consistent.**
-
-**Drift, amendments, register flags**
-
-* **Drift.** Andrej's decisions on the rules this dataset touches are fremtpl2 (2026-10-20), the eight policy calls
-  (2026-10-30) and this record's CC (2026-10-30). I see no drift: the fremtpl2 exposure call and the per-area target
-  agree once the timing of the effort (D7) is counted.
-* **Third exception.** None proposed. This definition adds no exception to SPLIT-10 or CLEAN-19, the two rules with
-  an `amendment_due` flag.
-* **Register flags.** None of the 14 flags names this dataset or its same-run siblings.
-
-**The builder's draft issues, against the precedents**
-
-1. SPLIT-12 against SPLIT-15: settled by rule order and SPLIT-14 (D5). It becomes a note, not an issue.
-2. Metric: `source` holds (tau 1.000 between density and count RMSE), and concentration is no evidence against the
-   source's metric (TP-6 as amended, zillow_prize) (D3). It becomes a note; the pooled regions are an aside.
-3. Species: the curator's pick, with Andrej's 2026-10-30 line on zero inflation beside it (D1).
-4. `stratum`: a consistency check (D10). Vessel and hour: reframe as USE-3, or settle with the check (D8).
-5. Record: also add `year` 2026 (D15).
+Footnotes:
+- [^1] LEAK-41 (Must, 2026-11-06, Lennart), time-on-risk Cases row.
+- [^2] MET-15 (Must, 2026-11-06, Lennart), equal-area clause.
+- [^3] MET-14 (Should).
+- [^4] LEAK-10 (Must).
 
 </details>
 
 <details><summary>Advocate</summary>
 
-**Advocate, opening brief: noaa_afsc_bottom_trawl_survey_cpue (2026-11-01)**
+ADVOCATE OPENING BRIEF: noaa_afsc_bottom_trawl_survey_cpue (exposure re-review, 2026-11-06, full tier)
 
-```text
-Verdict: ship. The rows, target, split, metric and feature set stand; one column recoding, the rest wording.
-Validity: USE-1, USE-8 hold (approximate, gaps named); LEAK-10 holds for all 8 features; USE-3 met once the
-  prediction point is worded as the source's skill test; SPLIT-1, -10, -12, -14, -21 hold; PROV holds (rebuilt exactly).
-Value: MET-5 and MET-11 hold (source RMSE; density and count rank alike, tau 1.0); TP probes no flag.
-Quality: CLEAN-21, `stratum` of the 2025 GOA design put on the pre-2025 coding; CLEAN-8 and CLEAN-22 wording.
-For the curator: a CC line confirming temporal (SPLIT-3); the vessel and hour consistency check (option a).
-```
+Position: ship as defined. Rows, target, features, split and metric stay as they are. Every problem the panel found is in the notes, the stated reasons or one missing assert. Each one has a fix at the "fix the definition text" or "keep with a note" step of the remedy ladder (principles.md, How to decide 5). None of them needs a change to the data or the task.
 
-**1. A real use case on the source's own data, reproduced exactly (P3, P5; USE-1, USE-8, PROV, all Must).**
-- Evidence: the actor, moment and decision are written in law and in the source: EFH reviewed "at least every 5
-  years" (50 CFR 600.815(a)(10), TM-459 p. 2), maps from SDMs fit to these hauls, models chosen by RMSE (TM-459 p. 21).
-  The domain practitioner calls the use case "real and strong (P3)" and agrees with `fit="approximate"`. The blind
-  reviewer rebuilt all 35,549 targets from the public API with a maximum absolute difference of 0.0. Our hauls match
-  the review's counts (EBS shelf and NBS 1982-2019: 14,517 against 14,514 in TM-459 p. 6; slope 1,136 against 1,136).
-  The zero fill is the source's recipe (gap_products sec. 10.2), and CATCH has no row with weight 0. EBS presence holds
-  at 19.7 / 17.0 / 20.3 / 20.6% across four periods, so the early zeros are absences, not gaps in identification.
-- Against "only a stand-in": USE-8 lets an approximate fit ship when its gaps are named. `fit_reason` already names
-  all three the practitioner lists (habitat rasters, per-region and per-life-stage models, raster cells).
+1. No leak. The realized effort is out, and no shipped feature carries it (P4; LEAK-41 Must, LEAK-10 Must, USE-3, USE-6).
+   - Evidence, column auditor:
+     - duration, distance, net width and height, area swept, end position and performance are all dropped.
+     - From the shipped features, the realized area-swept ratio is predicted at R^2 0.103 and the duration ratio at 0.076.
+     - Short tows are told apart at ROC AUC 0.749 (0.757 without the temperatures), through place (0.667) and schedule (0.694) only. That is risk selection, which LEAK-41 allows in so many words.
+     - No precision or missingness marker: one decimal everywhere, and the missingness gap within survey and year is -0.009.
+   - Evidence, claim auditor: the shipped features predict area swept at R^2 0.85-0.91, but against the region-year means R^2 is -0.11 to +0.18. So it all comes from the planned effort (region and era), which is known at the prediction point.
+   - Evidence, task gamer: no exploit beat the noise floor (best gain -0.009, noise about 0.01; all effort proxies together +0.005).
+   - Evidence, leak probe: 0.0% exact copies across 9 splits, and 0 hauls split across a cutoff.
+   - Why it outranks: P4 is the highest-ranked rule this dataset could fail on, and it holds. Every other finding sits below it.
 
-**2. No leak. The temperature objection is fixed in the wording, not by dropping columns (P4; LEAK-10, LEAK-6, USE-3,
-all Must).**
-- Evidence: the column auditor finds LEAK-10 holds for all 8 features, the missing temperatures do not track the
-  catch, and exact copies across the split are 0%. Effort, gear, end position and the performance code leave as
-  LEAK-10 drops. One example: EBS pollock tows under 0.4 h average 8.33 against 7.35 log1p kg/km^2.
-- The claim auditor's Must finding is real as written: a review cannot know a future haul's own temperatures. But
-  LEAK-6 says measure before acting, and the measurement shows no gain. Without both temperatures, LightGBM RMSE is
-  1,461 / 1,642 / 1,286 against 1,472 / 1,652 / 1,315 shipped. The random forest gets better without them too. Run the
-  source's own way (train on measured values, test on a climatology), R^2 is 0.595 / 0.721 / 0.647 against
-  0.598 / 0.722 / 0.635 shipped.
-- Fix: the claim auditor's option (b), which the domain practitioner also asks for. Word the prediction point as the
-  source's skill test: abundance at a haul, given the habitat measured there. Both parts are in the source:
-  - TM-459 p. 9 trains and skill-tests on haul temperatures;
-  - Barnes, Essington, Pirtle et al. 2022 (the AFSC habitat team, EBS trawl data) forecast later years with
-    "year-specific" bottom temperatures paired to the tow locations (dynamic SDMs, pp. 3-4).
-  Under that point the values exist, so USE-3 holds with no exception. On the remedy ladder this is a fix to the
-  definition, worded, before any drop.
-- Surface temperature stays. CLEAN-22 (Must) lets a column leave only for what it is, and "no source trawl model uses
-  it" is not one of its reasons. The column auditor makes the same argument against the vessel drop.
-- The vessel and hour drop stays, reworded under USE-3 and USE-5. It is the precedent checker's option (a), as in
-  wadden_sea_sibes. The actor acts on abundance at a place (USE-5), the temperatures describe that habitat, and the
-  vessel and hour describe the sampling event, which no map cell has. The cost is nil either way (R^2 0.643 and 0.646
-  with them, 0.652 without).
+2. Today's change is exact. Every fold can be scored (MET-2 Must, P6).
+   - `taxon_group` is identical to `taxon` on all 391,044 rows. It is not a feature, and no sample weight is declared.
+   - The scorer equals an independent per-taxon computation to 4 decimals in all 9 windows (claim auditor rows 1-4; domain practitioner).
+   - `dataset check`: the MET-2 warning is gone, 0 errors, 0 warnings.
+   - All 11 taxa are present in every window, with at least 1,056 rows and 71 positives per taxon.
+   - Precedent: liberty_mutual's `var11_weight` copy (precedent checker: consistent, no drift).
 
-**3. The split mirrors the review cycle, and every Must of P4 holds (SPLIT-1, SPLIT-10, SPLIT-12, SPLIT-14, SPLIT-21).**
-- Evidence: the split auditor finds the split "right with notes":
-  - window = the five-year cycle (SPLIT-12);
-  - gap = the sourced lag from the last survey to the review (surveys to 2014 for 2017, TM-357 p. 5; to 2019 for
-    2022, TM-459 p. 3), a planning gap under SPLIT-10;
-  - a fourth window would train on 43.6%, so SPLIT-14 forces three;
-  - the windows were set from the cycle, not from scores (SPLIT-21).
-- Against "the source used random CV" (claim auditor, row 21): SPLIT-5 (Must) treats a prescribed split as a claim to
-  check. Random CV scores 0.732 R^2 against 0.652 on the windows, so it is optimistic. The source itself checks
-  forward: TM-459 p. 3 "assessed the forecasting accuracy of the 2017 SDM approach", and Barnes et al. 2022 recommend
-  retrospective skill testing. The practitioner calls the windows "arguably closer to the use than the source's random
-  CV". The spatial question is still tested: 15% of each window's hauls are at stations unseen in training (SPLIT-13).
-  What sets this case apart from wadden_sea_sibes (grouped) is that each map stands for five future years.
-- Concede two items. `fit_reason` should say the split follows the review cycle and the next review's forecast check,
-  not the review's CV. The regime needs the curator's CC line (SPLIT-3; the curator decides). Neither changes the
-  definition's splits.
+3. Scoring the density unweighted is the right decision, even though the stated reason is wrong (MET-15 Must equal-area clause; MET-16 Should).
+   - Concede: "unweighted over equal-area cells" does not describe the scored hauls. The Aleutians have about 8x the hauls per km^2 of the EBS, and within GOA and AI the strata differ up to 9.5x and 22x (claim auditor row 15; domain practitioner finding 2).
+   - What still holds:
+     - The decision is a per-cell EFH map, which is exactly MET-15's "per unit of an equal-area map" clause.
+     - EFH is not a population estimate (MET-16).
+     - The source's RMSE is unweighted over stations (TM-459 p. 21).
+     - NOAA's gapindex weights hauls equally within a stratum.
+   - Measured cost of the choice is nil: a stratum-area design weight and a taxon x region mean both rank 7 models like the declared score (tau 0.81-1.00, same winner 4/4).
+   - The precedent checker finds the LEAK-41 Cases row's second branch would ask for a weight. MET-15's specific Must clause governs over a Cases row, since the Cases are applications of the rule (Conflicts: rules win over precedents). The precedent checker calls the exception reasonable.
+   - Mildest remedy:
+     - Reword the reason to "unweighted over hauls, as the source's station RMSE; a stratum-area design weight ranks the models the same".
+     - Record noaa in the LEAK-41 Cases row (the precedent checker's option a).
+     - No change to the metric.
 
-**4. The metric is the source's one deliberate criterion and ranks models as the source's quantity would (P6; MET-5
-Should, MET-11 Must, TP-6 Must).**
-- Evidence: TM-459 p. 21, "the model with the lowest RMSE was considered to be the best performer", with ensemble
-  weights of RMSE^-2. That is one deliberate choice (MET-5). RMSE on density and RMSE on counts (density x area swept)
-  rank the seven probe models at Kendall tau 1.000 in all three windows, so `source` holds under MET-11's identity
-  clause. Every probed model beats the training mean (RMSE 1,300-1,652 against 1,461-1,804).
-- Against "pooled over regions, GOA holds 71-92% of the squared error" (MET-2; claim auditor, domain practitioner):
-  - TP-6 as amended overrules a source's metric only when it is biased or wrong by the paper's own evidence;
-  - concentration is not such evidence: zillow_prize kept a metric where 0.38% of the rows hold 49.9% of the squared
-    error;
-  - pooled RMSE and Bering-only RMSE rank the models at tau 0.62-0.81, so the meaning largely survives;
-  - a region-averaged RMSE would be a custom metric, which MET-12 and MET-13 ship only when other definitions use it.
-- Mildest remedy: a Note bullet with GOA's share and the Bering tau, next to the existing "10-31 test hauls" sentence.
+4. A real, non-trivial task with clear headroom (P3, P6; TP).
+   - Task probe: random forest skill +0.786 ± 0.012, beats the dummy on 100% of splits, spread over linear +0.434 (paired SE 0.011). Flags: none.
+   - Blind reviewer (from the data and public pages only): "Include with small changes".
+     - LightGBM R^2 0.73-0.78 against a taxon x stratum lookup at 0.66-0.69.
+     - The use (EFH species distribution models, model-based indices) is real.
+   - Domain practitioner (AFSC habitat analyst):
+     - Fit approximate, already settled (USE-8).
+     - The metric now scores the decision "mostly", up from "partly".
+     - Keep the density target, the dropped effort, the short tows, the unweighted per-taxon score and the copy.
 
-**5. The `stratum` break is real. The fix keeps the column and the dataset (P7; CLEAN-21 Should, CLEAN-22 Must).**
-- Concede: the stated reason, "a model fit at a review meets the redesign too", does not hold, because no stratum is
-  among the source's covariates (TM-459 Table 3). The 431 GOA hauls of 2025 (10.2% of the newest window) carry codes
-  no training row has. On them LightGBM scores R^2 -0.64 to -0.82, and they hold 39% of the window's squared error.
-- Fix: put the 2025 GOA hauls on the pre-2025 coding (college_scorecard, zillow_prize). Use GAP's pre-2025 polygons
-  if they are published, which is a repair from the origin. Otherwise use each haul's nearest pre-2025 haul (median
-  2.2 km), which is zillow's "map the data shows". The column auditor measures window R^2 0.577 -> 0.726 and GOA-2025
-  -0.82 -> 0.51.
-- Why not drop the column: mapping scores better than dropping (0.726 against 0.717). `stratum` carries signal before
-  2025 (dropping it costs 0.003 and 0.010 R^2 on the older windows). CLEAN-22 does not list "it breaks in one window"
-  as a reason to drop. Principles step 3: a P7 problem is fixed when the fix is cheap and safe, and this one is.
+5. The refuted exposure statements need text and numbers only. None changes a decision (LEAK-41 reporting part, Must; EV-1, EV-8).
+   - Poisson gain:
+     - Concede: "nothing under a Poisson fit" does not replicate (+0.013 mean, better in 4 of 5 windows).
+     - The effort still goes, on timing: an untowed cell has no tow. LEAK-41 says "whatever it scores".
+   - The 1/weight ceiling:
+     - Concede: it is not stated, and LEAK-41 requires it.
+     - It is now measured twice: 1/area swept beside the taxon reaches 1.016-1.046 against the honest 0.90-0.93. The leak would gain 0.004-0.014.
+   - "Pollock alone":
+     - Concede: against an area-only null, Pacific cod also sits above (4 and 9 null SDs).
+     - The causal phrase "its tows end early on a large catch" is untested.
+     - Neither statement feeds a feature, so no score moves.
+   - The Poisson range "0.86-1.11" becomes "0.86-1.24".
+   - Why this is not a reason to hold the dataset: these are reporting failures. The Must is met by writing the measured numbers into the Effort bullet and issue 4, which is the mildest remedy. They are independent of the validity in point 1, which holds.
 
-**6. Rex sole is a sourced, documented choice. The blind reviewer's "species not documented" is a clean-room artefact
-(P3; USE-5 Must, CLEAN-8 Must).**
-- Evidence: `task_summary` names rex sole in `question`, `row` and `predicted` (16 mentions in the README). The
-  clean-room `task.md` carries no task_summary. The reasons stand without zero inflation, which Andrej's policy call
-  of 2026-10-30 rules out as a criterion:
-  - both reviews model the species (TM-357 pp. 48-49; TM-459 pp. 150-152; TM-458 pp. 131-132);
-  - every catch from 1982 to 2025 is rated high confidence (13,331);
-  - it has zeros inside every region but NBS.
-- Concede three wording fixes:
-  - CLEAN-8: one sentence saying the species was screened on the whole table, test years included, a pipeline
-    choice that approximates the task;
-  - "since 1982" becomes "1982-2025; the 226 catches of 2026 are not yet rated";
-  - a note that the 2026 season is provisional. The counts match a full season (EBS 350 of 350), so the remedy is to
-    compare against a later download and end the newest window at 2025 only if the counts move.
+6. The split holds. The short-tow history is a note, not a filter (P4; SPLIT-1/3/9/11/12/13/14/23 hold; SPLIT-20 Should).
+   - Split auditor: no new Must is broken. Training covers 54.0-95.4% of rows. 0 hauls straddle a cutoff. Most test hauls are within 5 km of a training haul (SPLIT-13, known waters).
+   - The EBS cut sits in 1989-2008 training years.
+     - Dropping short tows from training changes the score by -0.0013.
+     - Dropping the 30-minute GOA/AI era changes it by -0.0011.
+     - Both are noise.
+   - LEAK-41 bars training or scoring on rows selected by the realized effort, so a filter is ruled out anyway.
+   - Concede: the splits_comment "each window holds one survey of every region" is false.
+     - The slope survey (BSS) ended in 2016, the NBS is missing from 3 windows, and 2019 has no AI.
+     - Remedy: reword the comment, and add the Greenland-turbot note to the metric note (its spread is 8-38 per km^2 from 2017 on).
 
-**7. Worth benchmarking: large, scorable, not trivial (P6; TP rules; P4 over P6).**
-- Evidence: 35,549 rows. Each window has 3,953-4,806 test hauls, of which 1,537-1,863 caught rex sole. The leak and
-  task probes raise no flag (RF skill +0.694). In RMSE on log1p, the global mean scores 2.94-3.42, the stratum mean
-  2.10-2.25 and LightGBM 1.50-1.63. The blind reviewer: "real signal and the task is not trivial". Within-region
-  Spearman rho is 0.58-0.80, "excellent" on TM-459's rubric.
-- Against "mostly spatial memory" (k-NN on position comes close to LightGBM): the maps cover the surveyed waters, so
-  recurring stations are part of the task (SPLIT-13). The right split wins over the score (P4 over P6; forest_fires),
-  and a strong simple baseline is not triviality while it stays well above the weak ones.
+7. The quality gaps are cheap and safe (P7; MET-14 Should, CLEAN-15).
+   - The MET-14 assert is missing.
+     - The data rebuilds the count on all 201,731 counted catches (max relative error 1.6e-4).
+     - Remedy: one `np.allclose(cpue_nokm2 * area_swept_km2, count, rtol=1e-3)` in `_clean`. The frame does not change.
+   - The blind reviewer's false-zero worry is answered.
+     - The 128 catches weighed but not counted are dropped, not zero-filled (CLEAN-15).
+     - That is why the task gamer saw 1,116 rows in incomplete hauls, and the row count does not predict the target.
+   - The long format with 11 rows per haul is safe under a date split, because hauls stay whole.
+   - The 2026 season's provisional status is already a note (EV-7, settled).
+   - Optional notes (they serve P6/P7 and change no decision):
+     - Pollock's short tows hold 14% of its squared deviation; Greenland turbot 10.1%, shortspine thornyhead 7.0%.
+     - log1p fits underpredict the mean by 2-3x.
 
-Changes I accept, all of which keep the dataset: the GOA-2025 stratum recoding (point 5), plus wording in `known`,
-`split`, `fit_reason`, the species, vessel and gear bullets, the metric note and the 2026 caveat. One optional note:
-the 1993-95 depths are headrope depths (column auditor, problem 5).
+Judgment record (advocate)
+Verdict: ship after text changes.
+Validity: LEAK-41 and LEAK-10 hold (risk selection only, R^2 0.10, AUC 0.75). The LEAK-41 reporting Must is fixed by stating the Poisson gain (up to +0.013) and the 1/area ceiling (0.004-0.014). SPLIT-1/3/9/14/23 hold; SPLIT-20 is a note. USE-3 holds.
+Value: MET-2 holds (exact copy, every fold scorable). MET-15/16: unweighted is right, but the stated reason must be reworded (design weight tau 0.81-1.00). TP: skill +0.786.
+Quality: MET-14 assert to add. Notes for the splits_comment, the pollock/cod cut wording and the Greenland turbot spread.
+For the curator: the optional recording of noaa in the LEAK-41 time-on-risk Cases row (precedent checker, option a).
+
+Sources: the panel's reports (claim auditor, column auditor, split auditor, domain practitioner, precedent checker, blind reviewer, task gamer) and the task and leak probes. Rules: principles.md, leak_checks.md, metrics.md.
 
 </details>
 
 <details><summary>Critic</summary>
 
-**Critic: noaa_afsc_bottom_trawl_survey_cpue, opening brief (2026-11-01)**
+CRITIC'S OPENING BRIEF: noaa_afsc_bottom_trawl_survey_cpue (exposure re-review, 2026-11-06, full tier)
 
-**Verdict: ship only after changes.** The use case is real: the EFH review is set by law (50 CFR 600.815(a)(10)), and
-our hauls match the review's (14,517 against 14,514 Bering hauls, claim auditor row 30). Nothing below calls for
-exclusion. But three things are wrong as defined. The definition states a prediction point that its inputs contradict.
-It keeps a column whose coding breaks in the newest window. Its pooled metric is mostly a Gulf of Alaska score. Each
-can be fixed in the definition.
+Position: ship only after changes. I am not asking for exclusion. No evidence agent found a leak in the shipped features or a split that breaks a Must. The task gamer found no exploit above the noise floor. The column auditor found the realized effort predicted only through place and year: realized area ratio R^2 0.10, short tows told apart at AUC 0.75. What I do find is that the definition's own account of the exposure decision gets wrong the very facts that decision rests on. One of these is the reporting part of a Must (LEAK-41). One is the stated premise for setting aside the LEAK-41 Cases row (MET-15). One is a LEAK-10 claim that is refuted in part. Each fix is to the text or one assert. Rows, target, split and metric stay as they are.
 
-**1. The definition mixes two prediction points (P3/P4; USE-3, LEAK-10, USE-6, all Must).**
-- Problem: `known`, `split` and the first note put the prediction point at a review that predicts the next five years
-  of surveys. At that point a future haul's bottom and surface temperatures do not exist. The source maps from
-  "Rasterized 38-year averages of habitat covariates" (TM-459 p. 8; TM-357 p. 12). The temperatures stay anyway. The
-  vessel and the hour leave, on the map reading that a cell has no visit. The builder calls that drop "a departure
-  from USE-6", but USE-6 is a Must and allows no exceptions (precedent checker D8).
-- Effect: the text says "forecast", while the inputs describe the habitat at a measured haul. The scores do not move.
-  Without both temperatures, LightGBM RMSE is 1,461 / 1,642 / 1,286 against 1,472 / 1,652 / 1,315 shipped, and the
-  random forest 1,403 / 1,565 / 1,266 against 1,420 / 1,599 / 1,302 (claim auditor row 19). A
-  training-years climatology changes R^2 by -0.004 to +0.012 (column auditor problem 1); mean R^2 is 0.652 with the
-  temperatures and 0.651 without (split auditor). So the defect is in the definition, not in the scores, and the fix is
-  cheap.
-- Remedy (fix the definition by choosing one reading):
-  - (a) The review's map. Drop `bottom_temperature_c` and `surface_temperature_c` as unknown at the prediction point
-    (a CLEAN-22 reason: a leak, LEAK-10). The vessel and the hour stay out under USE-3. No measured cost.
-  - (b) The next review's skill test at measured conditions (TM-459 pp. 8-9; Barnes et al. 2022). Rewrite `known`,
-    `split`, `fit_reason` and the first note. Then the vessel and the hour are known at the haul too: bring them back
-    (USE-6, as in brazilian_ecommerce), or the curator amends USE-6.
-- I ask for (a). It is the actor's decision (the map), and it is the only reading under which the current drops
-  already hold.
+Definition: `dataset.py` (Effort bullet at line 305, Metric bullet at 314, CC at 318, splits comment at 228/359, `_clean` asserts at 398-401, decision caption at 499-500).
 
-**2. The regime is not the curator's pick, and `fit_reason` misstates the split (P4; SPLIT-1, SPLIT-3, USE-8, Must).**
-- Problem: under SPLIT-1 the curator picks the regime. The screening left it open ("grouped by station the
-  alternative ... (SPLIT-3: one, the curator's pick)"), and the only CC line is `Yes`, priority 5. `fit_reason` says
-  "the rows, target and split follow the review's models". The review skill-tested by random 10-fold CV, "a test of
-  prediction skill at unsampled locations" (TM-459 pp. 20-21). The same-run sibling wadden_sea_sibes took grouped by
-  station for its map.
-- Effect: the three regimes give different scores. Mean R^2 is 0.652 temporal, 0.687 grouped by station and 0.732 IID
-  (split auditor). In each window, 85% of the test hauls sit at a station seen in training (EBS 100%), and 95-98% lie
-  within 5 km of a training haul (claim auditor row 21). The windows test later years at known places, not unsampled
-  ones.
-- The case for temporal holds and I do not contest it: the five-year cycle, the 2017 model's forecast check (TM-459
-  p. 3), and the retrospective forecasts of Barnes et al. 2022.
-- Remedy:
-  - a CC line that records temporal;
-  - `fit_reason` reworded to "the split follows the review cycle and the next review's forecast check, not the
-    source's random CV";
-  - `splits_comment` adds the 85% seen-station share and the 43.6% a fourth window would train on, and cites Barnes et
-    al. 2022 (read by the domain practitioner, NOAA copy) beside the unread Pirtle 2020.
+1. LEAK-41's required report is wrong in one number and missing another (P4, LEAK-41 Must, reporting part).
+   - Problem: LEAK-41 says the definition "reports its gain ... with an L2 fit on the shipped scale and with the weighted actuarial fit, and decides on the worse; it states the score of 1/weight alone as the ceiling a leak would reach." The Effort bullet says the effort columns gain 0.0028 under L2 and "nothing under a Poisson fit". It gives no ceiling.
+   - Evidence: the claim auditor reran LightGBM on the newest five windows, 2 seeds. The Poisson gain is +0.0325, +0.0052, +0.0150, -0.0071, +0.0204: mean +0.013, better in 4 of 5, seeds agreeing in two windows. The study's own Poisson run gave -0.006 (1 of 5). L2 replicates at about +0.0004 (3 of 5). So "the worse" that LEAK-41 decides on is about 0.013, roughly five times the stated number.
+   - Ceiling: not stated. Measured by two agents. Taxon + 1/area swept scores 1.031-1.046 against taxon alone 1.039-1.057, a gain of 0.007-0.013, and 0.004-0.012 beyond region and year. The domain practitioner gets 0.007-0.014.
+   - Effect on the task: the decision to drop the effort stands, on timing (USE-3). But the record understates what the leak is worth by about 5x, and a later reader weighing a "free feature" variant would read the wrong number.
+   - Remedy (text): "under a Poisson fit -0.006 to +0.013 by windows and seeds (two runs); 1/area swept with the taxon alone gains 0.007-0.013 over the taxon alone (the ceiling)". Put it in the Effort bullet and REVIEW issue 4.
 
-**3. `stratum` holds two GOA designs, and the newest window scores unseen codes (P4, SPLIT-20, Should; P7, CLEAN-21,
-Should).**
-- Problem: GOA was restratified for 2025. Its 23 new stratum numbers share none with the 59 of 1990-2023, so all 431
-  GOA hauls of 2025 (10.2% of split 0) carry a code no training row has. The stated reason to keep the column is "a
-  model fit at a review meets the redesign too". It does not hold: the source's models have no stratum covariate
-  (TM-459 Table 3; split and column auditors).
-- Effect: split 0 is the most representative window (SPLIT-11). On the GOA-2025 hauls, untuned LightGBM scores R^2
-  -0.64 to -0.82 and predicts a mean of 1.2-1.5 against 4.42 observed. Those hauls hold 39% of the window's squared
-  error. Window R^2 by variant:
+2. The stated reason for scoring unweighted is false, and it is the only thing that licenses departing from the LEAK-41 Cases row (P4/P6; LEAK-41 Cases row, MET-15 Must, MET-16 Should).
+   - Problem: the Effort bullet and the CC justify "unweighted on this density, as the review maps it over cells of equal area (MET-15)". The precedent checker shows where noaa falls in the LEAK-41 time-on-risk row. The cut cannot be located row by row: 149 of the 256 tows under half the median duration carry performance code 0. The amount is the target's denominator. That is the second branch, which asks for the area swept as weight scoring column and sample weight. The definition sets that aside on MET-15's equal-area clause.
+   - Evidence: the scored units are hauls, and hauls are not equal-area. The claim auditor counts hauls per 1000 km^2 per year (2015-2025): AI 5.99, BSS 5.33, GOA 1.75, EBS 0.75, NBS 0.69. So a km^2 of the Aleutians counts about 8x one of the EBS shelf. Within a survey and year, stratum densities differ by up to 22.1x (AI) and 9.5x (GOA). AI holds 16.5% of rows on 5.8% of the area. The domain practitioner's p90/p10 agrees (AI 9.4, GOA 4.0).
+   - Effect: the conclusion can stand on better grounds. The source's RMSE over stations is unweighted (TM-459 p. 21). EFH is not a population estimate (MET-16). A design-weighted score ranks 7 models alike (tau 0.81-1.00, same winner 4/4). But as written, the record cites a false premise for an exception to a Must-backed row. Precedent checker: noaa is "the first case where an outcome-cut denominator is available as a weight and is deliberately left out", and the row does not say so.
+   - Remedy (fix the text, record the exception): reword to "scored unweighted over the hauls, as the source's RMSE over stations is; the hauls are not equal-area (AI about 8x the EBS per km^2), and a stratum-area design weight ranks the models the same (tau 0.81-1.00)". Add noaa to the LEAK-41 time-on-risk Cases row as the per-map-unit case (precedent checker's option a).
 
-  | variant | window R^2 |
-  |---|---|
-  | shipped | 0.598 |
-  | without `stratum` | 0.719 |
-  | the 2025 hauls mapped to their nearest earlier haul's stratum | 0.726 |
-  | random forest on the codes, shipped | 0.735 |
-  | random forest on the codes, without `stratum` | 0.742 |
+3. "The cut is claimed for pollock alone" is refuted in part, and so is "a smaller area swept explains" the rest (P4, LEAK-10 Must; EV-1 Must).
+   - Problem: the LEAK-10 finding (which taxa's labels carry a catch-triggered stop) rests on two things. One is a contrast across taxa. The other is an asserted mechanism that was never tested.
+   - Evidence: the claim auditor ran a null test. It redrew each short tow as a binomial thinning of a random full tow in its cell, with the ratio of the areas swept, 20 draws.
+     - Pacific cod's short tows stand above the null: +0.077 vs -0.084 over all hauls (about 4 null SDs) and 0.229 vs 0.051 among catches (about 9 SDs). Cod's gap is largest where pollock's is (EBS +0.18, BSS +0.36).
+     - Halibut, sablefish, shortspine thornyhead and rock sole exceed the null among catches at 2.4-3.9 SDs.
+     - The flatfish fall far below the null (Hippoglossoides -0.360 vs -0.039). So short tows are not exchangeable within cells, and pollock's gap mixes a stop with where the tow was. The causal clause "its tows end early on a large catch" (line 499-500) is untested (EV-3).
+   - Effect on the score: no feature carries it, so no score changes. But these labels enter the score. The column auditor finds short tows are 3.4% of rows yet hold 14.0% of pollock's squared deviation, 10.1% of Greenland turbot's and 7.0% of shortspine thornyhead's.
+   - Split auditor: the pollock excess is mostly the training history of EBS 1989-2008 (+0.71). In the test years it shows in the GOA and AI (+0.73, +0.39), not on the EBS shelf (+0.07). So the headline figures (+0.36, the 831 EBS tows) describe the training side, not what is scored.
+   - Remedy (text, no rows change): claim the cut for pollock "and, to a lesser degree, Pacific cod". Say the smaller area explains the gap for the flatfish, not for cod, halibut, sablefish, thornyhead or rock sole. Call the stop "the likely reading, not isolated". Add the squared-deviation shares (14.0 / 10.1 / 7.0%) and the region and era split of the pollock gap. Optionally add the null column to `_short_tows` so the decision table shows the test. Fix the decision caption at lines 499-500 to match.
 
-  The random forest is barely hurt, so the window partly ranks models by how they treat unseen categories. The blind
-  reviewer found this on its own (concern 1). Setting the 2025 codes to missing does not help (-0.816, unchanged;
-  column auditor).
-- Rule: departing from a Should needs a fact that sets the case apart, and the stated fact does not hold. Precedents:
-  college_scorecard (CLEAN-21: put back on one scale with the published concordance; "a section without a conversion
-  table stays dropped") and zillow_prize (2017 codes mapped onto the 2016 scale from the data).
-- Remedy, repair first:
-  - map the 2025 GOA hauls onto the pre-2025 strata, with GAP's polygons or else each haul's nearest pre-2025 haul, as
-    zillow_prize did;
-  - only if no mapping can be built, drop `stratum` (college_scorecard), for its broken coding, not for its score;
-  - not the reverse: the 2025 design was built on survey densities that overlap the test windows (column auditor).
+4. The splits comment is false about region coverage, which hides a weak vote in the metric (P4 text, SPLIT-14 / EV-2; P6, MET-2).
+   - Problem: line 228 says "two years hold one survey of every region", and line 359 says "one survey of every region each".
+   - Evidence (claim auditor; split auditor table):
+     - BSS ran 2002-2016 only, so it is absent from 6 of 9 windows.
+     - NBS is absent from 3 windows.
+     - Window 3 (2019) has no AI.
+     - Only 2009-2010 holds all five regions.
+   - Effect on the metric: each taxon has one equal vote. From 2017 on, Greenland turbot (BSS presence 0.70) is scored without its main habitat, on a spread of 8-38 per km^2 against 47-639 before. Turbot's normalized RMSE there divides by a tiny spread, yet keeps 1/11 of the score. The blind reviewer also notes that window-to-window variance partly reflects the region mix.
+   - Remedy (text): "each holds the EBS shelf, the GOA and, except 2019, the AI; the slope survey ended in 2016, the NBS runs in some years". Add one Greenland-turbot sentence to the Metric bullet.
 
-**4. The newest season is not finished, and the notes say it is (P5; EV-7, Must; LEAK-24's two-download check, Must,
-by analogy).**
-- Problem: "identified with high confidence in every catch since 1982" is false for 2026. All 226 rex sole catches of
-  2026 have a null `taxon_confidence`; none of the 205 catches of 2024 or the 377 of 2025 does (claim auditor row 4,
-  column auditor problem 2).
-- Effect: the 722 hauls of 2026 are 17% of split 0. EBS presence in 2026 is 0.169, against 0.209-0.293 in 2018-2025.
-  That is suggestive, not shown to be an artefact. The species was chosen partly on its identification record.
-- Remedy:
-  - reword to "1982-2025; the 2026 catches are not yet rated", and add a note that the newest season is provisional;
-  - before `build`, compare with a download made after GAP rates 2026;
-  - if the 2026 counts move, rebuild from that settled download, or end the newest window at 2025.
+5. The MET-14 rebuild assert is missing (P6/P7, MET-14 Should).
+   - Problem: MET-14 says "`_clean` asserts that target x denominator rebuilds it". `_clean` asserts only cpue_kgkm2 > 0 (line 401).
+   - Evidence: the identity holds on all 201,731 counted catches (max relative error 1.6e-4), and area = distance x width to 1.6e-4 on 35,561 hauls. Both the claim auditor and the column auditor found this.
+   - Remedy (repair, one line): merge area_swept_km2 into `catch` and assert np.allclose(cpue_nokm2 * area_swept_km2, count, rtol=1e-3) on the counted rows before the effort columns leave. The frame does not change. The siblings (wadden, boreal) lack it too, but that does not excuse a Should with a cheap fix and no departure reason.
 
-**5. The pooled RMSE is mostly a Gulf of Alaska score (P6; MET-2 and MET-1, Must).**
-- Problem: the source scores each region and life stage separately, and the reference memo (TM-459) is the Bering Sea
-  memo. We pool five regions under one RMSE on density. MET-2: a changed task keeps the source's metric "only when its
-  meaning survives the change".
-- Effect: GOA hauls are 23-40% of the test hauls but hold 71-92% of the squared error. GOA's mean density is 1,060 per
-  km^2, against 85 on the EBS shelf, and EBS hauls hold 0.4-13% of the error. The pooled RMSE and a Bering-only RMSE
-  rank the probe models with Kendall tau 0.62-0.81 (claim auditor) or 0.2-1.0 (domain practitioner, five models). A
-  Bering Sea analyst cannot read the score as Bering skill.
-- Remedy:
-  - at least, a note in `metric.definition` and in the notes that gives these shares;
-  - the curator weighs a region-averaged RMSE with `srvy` as a scoring column (the domain practitioner's choice; a
-    custom metric under MET-12 and MET-13);
-  - I do not ask to drop `rmse`. It is the source's selection rule (MET-5 holds, TM-459 p. 21), and density ranks the
-    models as counts do (tau 1.0).
+6. The metric note's numbers are out of range, and it omits a property that matters to the actor (P6, EV-8 Should; MET-3/MET-8 note).
+   - Problem: "Poisson LightGBM scores 0.86-1.11".
+   - Evidence: the claim auditor gets 0.996-1.179 (2021-22: 1.157, 1.179). The study's own run gave 0.879-1.243. In 2021-22 Poisson loses to the taxon count mean (1.226).
+   - Domain practitioner: log1p fits, inverted, predict only 34-51% of the test mean density. The EFH encounter threshold uses the absolute mean, and the declared RMSE still prefers these fits to Tweedie in 2 of 4 windows.
+   - Remedy (text): "0.86-1.24 (two runs)". Add one sentence saying log1p fits underpredict the mean 2-3x, which RMSE barely penalizes.
 
-**6. The species was picked on the whole table, test windows included, and partly by a criterion the curator set
-aside (P7; CLEAN-8, Must, a note).**
-- Problem: rex sole was chosen from 22 species by prevalence over 1982-2026 (the builder's species screen) and by
-  hurdle scores on the three shipped test windows (the builder's hurdle probe). In a temporal task, CLEAN-8 asks the
-  notes to call such a choice a pipeline choice that approximates the task. Part of the stated reason is the zero
-  structure: cod is rejected for its "4% on the EBS shelf". Andrej's call of 2026-10-30 (policy question 2) makes zero
-  inflation no criterion. The note says "its zeros are not one region's", yet NBS has 0% presence over 969 hauls. That
-  is the same whole-region absence the note holds against sablefish (claim auditor row 5).
-- Effect: small. A reader cannot see that the species choice saw the test years.
-- Remedy: one sentence for each point in the species bullet. The curator confirms the species (builder issue 3) on the
-  reasons that stand without zero inflation: the identification history, and a managed species modelled in both
-  reviews.
+What I do not argue:
+- The 2026 provisional season, the in-situ temperatures, the pooled life stages and the haul-x-taxon long format are settled in REVIEW.md, and today's change does not reopen them.
+- The 30-minute GOA/AI era sits on the training side only. It costs -0.0011, which is noise (split auditor).
+- CHANGES.md headlines +0.55 instead of the +0.36 that carries the claim. That is a panel-file error, not the definition's.
+- I do not count points 5 and 6 as reasons to hold a real task. They are cheap fixes.
 
-**7. Drop reasons and claims that the evidence contradicts (P7 and writing; CLEAN-22, Must, on reasons; EV-2, EV-7).**
-- Effort, gear, vessel and hour leave because "the habitat models do not use" them (`task_summary.changes`, two notes).
-  That is not a CLEAN-22 reason. The valid reasons: for gear and effort, the label's denominator and a tow length that
-  responds to the catch (LEAK-10); for vessel and hour, point 1. The reason is also applied unevenly: `stratum`, `date`
-  and `surface_temperature_c` are not model covariates either, and they stay (column auditor problem 4).
-- "The covariates the source trains on" is wrong in part. Surface temperature is a covariate of the ichthyoplankton
-  models only (TM-357 Fig. 3), and stratum and date are covariates in neither memo (claim auditor row 18).
-- The Kendall tau of 0.14-0.24 (raw against log1p RMSE) gives 0.14-0.33 on reruns; one swap among seven models moves
-  it by 0.095 (row 28).
-- `depth_m` for 1993-95 is headrope depth, a median 1.25 m shallower at the EBS stations (TM-459 p. 8). It needs a
-  note (CLEAN-21).
-- Two record lines are wrong:
-  - "GOA and AI stations are mostly sampled once or twice": the AI median is 7 hauls per station id (row 32);
-  - "`year` stays empty": the definition pins 2026 (PROV-9).
-- Remedy: reword. The frame does not change.
+Ask, in order:
+- (1) Correct the LEAK-41 Poisson gain and state the ceiling.
+- (2) Replace the equal-area reason and record the exception in the LEAK-41 Cases row.
+- (3) Restate the LEAK-10 cut claim (cod, the null test, the squared-error shares, train-side vs test-side).
+- (4) Fix the splits comment and add the turbot note.
+- (5) Add the MET-14 assert.
+- (6) Fix the Poisson range and add the mean-bias note.
 
-**Judgment record**
-
-```text
-Verdict: ship after changes.
-Validity: USE-3 / LEAK-10 / USE-6 triggered (two prediction points); fix the definition (drop both temperatures, or
-  rewrite as the skill test and follow USE-6 for the vessel and the hour). SPLIT-1 / SPLIT-3: the curator's CC is
-  missing; USE-8: `fit_reason`'s split claim refuted, reword. SPLIT-20 / CLEAN-21: `stratum` departs without a reason
-  that holds; repair by mapping the 2025 GOA hauls, else drop. P5: 2026 not yet rated; reword, two-download check
-  before build.
-Value: MET-5 holds; MET-2, pooled regions: a note at least, a region-averaged RMSE for the curator.
-Quality: CLEAN-8 note on the species; CLEAN-22 reasons reworded; wording fixes.
-Exclusion: not asked; every point has a fix in the definition or a note.
-```
+Evidence: the claim auditor (rows 7, 12, 13, 15, 16, 17, 19, 22), the column auditor (problems 1-2), the split auditor (problem 1), the domain practitioner (findings 2-4), the precedent checker (sections 3-4), the task gamer and the blind reviewer. Rules: leak_checks.md (LEAK-41 at line 103, Cases row at ~441) and metrics.md (MET-14/15/16 at lines 232-256).
 
 </details>
 
 <details><summary>Advocate rebuttal</summary>
 
-**Advocate, rebuttal: noaa_afsc_bottom_trawl_survey_cpue (2026-11-01)**
+ADVOCATE REBUTTAL: noaa_afsc_bottom_trawl_survey_cpue (exposure re-review, 2026-11-06)
 
-The critic and I agree on the verdict ("ship after changes", no exclusion) and on five of the seven remedies. We
-still differ on two points: which prediction point the definition should state (critic 1), and whether the curator
-should be offered a custom metric (critic 5).
+The critic and I agree on the verdict: ship after changes to the text and one added assert. We also agree that the rows, target, split and metric stay as they are, and that there is no leak and no broken split Must. Of the critic's six points I concede five in substance. I dispute how points 2 and 3 are framed, and qualify how point 4 reads, because each framing would set a wrong precedent or overstate what is scored. No new points.
 
-**Critic 1, two prediction points: concede the defect, dispute the remedy. Option (b), not (a).**
-- Conceded: as written, `known` and `split` describe a review forecasting the next five years, while the inputs are a
-  measured haul's. One reading has to be chosen (USE-3, Must). Calling the vessel and hour drop "a departure from
-  USE-6" is wrong, because a Must has no exceptions.
-- Disputed: (a) is the wrong reading to choose, for two reasons.
-  - The task does not score the map. The row is a haul and the metric is RMSE at the stations, which is the step
-    where the source selects and weights its models (TM-459 pp. 20-21, MET-1). The domain practitioner says the task
-    "reproduces the model-selection step at hauls, not the map", and `fit_reason` already names the map as a gap
-    (USE-8). Putting the prediction point at the map would leave the stated point and the scored unit disagreeing.
-  - Under (b) the measured values are exactly what the source scores at. The review trains and skill-tests on haul
-    temperatures (TM-459 p. 9). The next review's forward check is the split, and in Barnes, Essington, Pirtle et al.
-    2022 (the same team, EBS trawl hauls) the dynamic SDMs forecast later years with "year-specific" bottom
-    temperatures paired to the tow locations (pp. 3-4).
-- Under (b) the temperatures are no leak. CLEAN-22 (Must) then gives no reason to drop bottom temperature, which is a
-  covariate of the source's model (TM-459 Table 3). Dropping it under (a) would remove the source's habitat driver to
-  repair a wording problem. The measured cost is nil either way (RMSE 1,461 / 1,642 / 1,286 without, 1,472 / 1,652 /
-  1,315 with), so the scores do not decide this. The rule order does: the mildest remedy is a fix to the definition's
-  wording, before any drop (remedy ladder; LEAK-7, Should).
-- The critic says (a) "is the only reading under which the current drops already hold". That is not so.
-  - Under (b) the vessel and hour drop holds as USE-6 has been applied. 2_month_survival_rate_prediction (Lennart,
-    2026-10-26) left out the physicians' estimates, known at the prediction point, because the source's task is
-    defined without them.
-  - Here the source's task is abundance as a function of habitat (Laman et al. 2017 p. 5: "habitat covariates ...
-    collected in association with the catch"). The vessel and hour describe the sampling event, which the per-area
-    target already standardizes, not the habitat (USE-5).
-  - If the curator does not accept that reading, the fallback is the critic's own (b) branch: restore the vessel and
-    hour (R^2 0.643 and 0.646 against 0.652). That still beats (a), because it keeps the source's covariate.
+1. The LEAK-41 report: one number wrong, the ceiling missing. CONCEDE.
+   - This is the reporting part of a Must, so it must be fixed before shipping, not merely noted.
+   - The fix is the critic's text: Poisson -0.006 to +0.013 by windows and seeds (two runs), and the ceiling 0.007-0.013 (0.004-0.012 beyond region and year).
+   - What follows: the decision to drop the effort stands on timing. LEAK-41 says "whatever it scores", and USE-3 applies because an untowed cell has no tow. The ceiling (1.016-1.046) stays far above the honest models (0.90-0.93), so even the corrected leak is small.
 
-**Critic 2, regime and `fit_reason`: concede in full.** The fixes are a CC line recording temporal, `fit_reason`
-reworded as the critic proposes, and in `splits_comment` the 85% seen-station share, the 43.6% a fourth window would
-train on, and Barnes et al. 2022 beside the unread Pirtle 2020 (SPLIT-1, SPLIT-3, USE-8). The critic does not contest
-temporal, so the splits stay.
+2. The reason for scoring unweighted. CONCEDE the wording, DISPUTE the framing.
+   - Conceded: "over cells of equal area" misdescribes the scored hauls (AI about 8x the EBS per km^2; strata within a region up to 22x). The reason must be replaced.
+   - Disputed:
+     - The critic calls this "a false premise for an exception to a Must-backed row". A Must has no exceptions (principles.md, Exceptions).
+     - The clause the definition relies on is MET-15's. It is a Must and keys on the decision: "when the decision is per unit of an equal-area map ... scored unweighted, no sample weight". That premise is true here. The EFH decision is a per-cell map of equal-area raster cells (domain practitioner; fit_reason). What was false is only the sentence describing the scored rows.
+     - So the license stands. MET-15's specific clause applies within LEAK-41's scope. The case is an application of a rule, not an exception, and the remedy is a reword plus a Cases-row entry.
+   - What follows:
+     - Adopt the critic's wording, which adds the true supporting facts: the source's station RMSE is unweighted (TM-459 p. 21), MET-16 applies because EFH is not a population estimate, and the design weight gives tau 0.81-1.00, same winner 4/4.
+     - Record noaa in the LEAK-41 time-on-risk Cases row (precedent checker, option a) as the per-map-unit application of MET-15, of kind "application", not "exception".
 
-**Critic 3, `stratum`: concede in full; same remedy as my point 5.** Map the 2025 GOA hauls onto the pre-2025
-strata, with GAP's polygons or else the nearest pre-2025 haul (window R^2 0.726). Drop the column only if no mapping
-can be built. Never map in the reverse direction (CLEAN-21; college_scorecard, zillow_prize).
+3. The pollock cut claim. CONCEDE the text, DISPUTE two readings.
+   - Conceded:
+     - Cod stands above the area-only null (4 and 9 SDs).
+     - The mechanism "a smaller area swept explains" is not tested for cod, halibut, sablefish, thornyhead or rock sole.
+     - "Ends early on a large catch" is the likely reading but is not isolated (EV-3).
+     - Reword as the critic says and fix the caption.
+   - Disputed (a): the critic says "the headline figures describe the training side, not what is scored".
+     - The split auditor's own numbers show the cut on both sides. Pooled, the training sides are +0.35 to +0.40 and the nine test windows +0.30, with AI +0.39 and GOA +0.73 in the test years.
+     - The EBS shelf moved; the effect did not vanish from what is scored.
+     - The right text is "mostly EBS 1989-2008 on the training side; GOA and AI in the test years", not "training side only".
+   - Disputed (b): the critic presents Greenland turbot's (10.1%) and thornyhead's (7.0%) squared-deviation shares as the bias of a cut.
+     - The column auditor ties short tows to depth (6.7% at 500 m and deeper against 3.3% at 0-50 m).
+     - The null test does not put the turbot gap above the area effect; turbot is among the taxa the area explains (claim auditor row 12).
+     - Report those two shares as "short tows' weight in the score", not as a stop.
+   - Rule: EV-1 (state only what was measured). LEAK-10 is untouched because no feature carries the cut, and LEAK-41 bars removing the rows.
 
-**Critic 4, the 2026 season: concede the wording and the check; one limit on the remedy.**
-- Agreed: reword to "1982-2025; the 2026 catches are not yet rated", add a note that the newest season is provisional,
-  and compare with a later download before `build` (EV-7).
-- The limit: a null `taxon_confidence` is a missing rating, not missing catches. The 2026 hauls look complete (EBS 350
-  of 350; Aleutians 372 hauls to 2026-08-04, split auditor). So the newest window should be ended at 2025 only if a
-  settled download actually changes the 2026 counts. A presence of 0.169 against 0.209-0.293 is not that evidence,
-  and cutting windows on such comparisons is what SPLIT-21 bars.
+4. The splits comment on region coverage. CONCEDE the text; the metric stays sound.
+   - The comment is false: BSS is absent from 6 windows, NBS from 3, and AI from 2019. Reword it and add the turbot sentence.
+   - On "a weak vote": MET-2 holds in every window. Turbot has at least 1,056 rows and 71 positives in every window, and a spread of 8-38 per km^2. Dividing by the taxon's own spread is the normalization's purpose (MET-11: a fixed divisor within a taxon). It does not inflate one taxon's vote beyond 1/11.
+   - What follows: a note, no change to the metric or the split (SPLIT-14 holds, training share 54-95%).
 
-**Critic 5, pooled RMSE: concede the note, dispute offering the custom metric.**
-- Agreed: `metric.definition` and the notes should give GOA's 23-40% of the test hauls against its 71-92% of the
-  squared error, and the Bering-only rank agreement (MET-2).
-- Disputed: the region-averaged RMSE.
-  - The meaning survives the pooling: the same target, unit and formula as TM-459's selection rule. Pooled and
-    Bering-only RMSE rank seven models at tau 0.81 / 0.81 / 0.62. The practitioner's 0.2 comes from five models,
-    where one swap moves tau by 0.2 (EV-8).
-  - TP-6 as amended overrules a source's metric only when the paper shows it biased or wrong. Concentration is not
-    that evidence (zillow_prize kept a metric where 0.38% of the rows hold 49.9% of the squared error).
-  - A region average would weigh different regions in each window, which is an untested side effect. NBS hauls, all
-    zero, sit in two windows, and the slope survey in one (split auditor note 4). The NBS term would be a near-free
-    quarter of the score in those windows.
-  - MET-12 and MET-13 ship a custom metric only when other definitions use it.
-- If the curator weighs it anyway, it is a weighing call, not a fix this definition needs.
+5. The MET-14 assert. CONCEDE.
+   - It is a Should with a cheap, safe fix (P7 remedy: fix when cheap). Add the one-line np.allclose. The frame does not change.
 
-**Critic 6, the species: concede.**
-- CLEAN-8 needs a sentence saying the species was screened on the whole table and the test windows, a pipeline
-  choice that approximates the task.
-- "Its zeros are not one region's" overstates the case: NBS is a whole-region absence (969 hauls, 2.7% of the rows).
-  The species bullet should say zeros fall inside four of the five regions and NBS is absent.
-- The curator confirms the species on the reasons that stand without zero inflation: a high-confidence
-  identification history and a managed species modelled in both reviews (Andrej, 2026-10-30, policy 2).
+6. The Poisson range and the mean-bias note. CONCEDE.
+   - The range becomes "0.86-1.24 (two runs)".
+   - The underprediction note (log1p fits invert to 34-51% of the mean density) helps users.
+   - It describes the source's metric, RMSE on numbers (MET-1, MET-11), and is not a reason to change the metric (MET-4 order: the source's deliberate choice stands).
 
-**Critic 7, drop reasons and claims: concede, and it supports my point 2.** "The habitat models do not use it" goes
-everywhere. Each column then stands or leaves for what it is (CLEAN-22):
-- gear and effort leave as the label's denominator and a tow length that responds to the catch (LEAK-10);
-- vessel and hour follow critic 1;
-- surface temperature, `stratum` and `date` stay as inputs known at the haul.
-The covariate sentence, the tau range (0.14-0.33 over reruns), the depth note for 1993-95 and the two record lines
-are wording fixes. The frame does not change.
+Net
+- The critic's six asks, in its own order, are all text or one assert, and I support all of them.
+- On ask 2, the record should state that the dataset applies MET-15 rather than claiming an exception to a Must. On ask 3, the claim should be "both sides, different regions", with the turbot and thornyhead shares reported as score weight, not as stop bias.
 
-```text
-Agreed with the critic: ship after changes. Stratum mapping (the one frame change); CC line for temporal; fit_reason,
-  splits_comment, species, 2026 and drop-reason wording; metric note on GOA's share.
-Still disputed, for the mediator: critic 1, (b) over (a): the scored unit is the source's skill test, and CLEAN-22
-  keeps bottom temperature once it is no leak; vessel and hour per 2_month_survival (USE-6 as applied), else restored.
-  Critic 5: no custom metric (TP-6, MET-12/13; it weighs regions unevenly across windows).
-```
+Sources: the critic's brief and the panel's reports (split_auditor problem 1, column_auditor problem 2, claim_auditor rows 12, 15-17, 22). Rules: principles.md, leak_checks.md, metrics.md.
 
 </details>
 
 <details><summary>Critic rebuttal</summary>
 
-**Critic: rebuttal to the advocate (2026-11-01)**
+CRITIC'S REBUTTAL: noaa_afsc_bottom_trawl_survey_cpue (exposure re-review, 2026-11-06)
 
-**Summary.** I concede advocate points 1, 3, 5, 6 and 7, and I drop my preference for dropping the temperatures. Two
-points stay open, both about wording or a curator option and neither about a change to the frame:
-- **Advocate 2:** the prediction point has to be named so that the temperatures stay and the vessel and hour leave
-  under the same reading.
-- **Advocate 4:** a region-averaged RMSE should stay on the table for the curator.
+The advocate and I reach the same verdict: ship after text changes, with no exclusion and no change to rows, target, features, split or metric. We differ on three things. Two notes the advocate calls optional are required by rule. The cut-claim concession is too narrow. And the ceiling should be stated as two separate numbers rather than one merged range. I raise no new points.
 
-After this round, the changes both sides accept are:
-- the GOA-2025 stratum recoding;
-- a CC line confirming temporal;
-- rewording of `known`, `split` and `fit_reason`;
-- the CLEAN-8 sentence on the species;
-- the 2026 caveat and the check against a second download;
-- the CLEAN-22 reasons for the drops;
-- the metric note;
-- the note on the 1993-95 depths.
+1. No leak (advocate point 1): concede. The realized effort is predicted only through place and year: area ratio R^2 0.103, short tows AUC 0.749, region-year R^2 -0.11 to +0.18. That is risk selection, which LEAK-41 and USE-6 allow. My brief never claimed a feature leak.
 
-**Advocate 1 (real use case, data rebuilt exactly; USE-1, USE-8, PROV). Concede.** I never disputed it. The blind
-reviewer rebuilt all 35,549 targets with zero difference, and the haul counts match TM-459 p. 6.
+2. Today's change is exact (advocate point 2): concede. `taxon_group` is identical on all 391,044 rows, the scorer matches to 4 decimals in 9 of 9 windows, and every taxon has at least 71 positives per window (MET-2).
 
-**Advocate 2 (no leak; the temperatures are fixed by wording; the vessel and hour stay dropped). Concede the substance,
-dispute the wording.**
-- **I concede that the temperatures stay.** The advocate's source holds up. Barnes et al. 2022 (pp. 3-4) fit dynamic SDMs to "year-specific BT", kriged from the BERING10K
-  hindcast onto both the tow locations and "a uniform 1-km2 prediction grid", and test them by retrospective
-  forecasts. So a year's bottom temperature exists for every place, not only where a haul was made. The measurement
-  (LEAK-6) shows no gain from the haul's own values. My option (a) is not needed.
-- **I dispute the wording "abundance at a haul, given the habitat measured there".**
-  - At a haul, the vessel and the tow hour are known as well. Under that prediction point, USE-6 (Must, no exceptions)
-    makes them legitimate inputs.
-  - The advocate's own reason for dropping them is "the sampling event, which no map cell has". That is a reason about
-    a place, not about a haul. Taken together, the advocate's temperatures follow the haul and its drops follow the
-    map: the same two prediction points my point 1 objected to.
-  - USE-3 (Must) asks for one named prediction point.
-- **The wording that makes both choices hold:** abundance at a place in a given survey year, given that year's
-  depth and bottom conditions there. The haul's measured temperatures stand in for the year-specific field of Barnes
-  et al. 2022. Under that point:
-  - the temperatures exist, so USE-3 and LEAK-10 hold;
-  - the vessel and the hour are not attributes of a place-year, so they leave under USE-3 and USE-6 is not breached.
-    This is the precedent checker's option (a), as in wadden_sea_sibes.
-- **Apply the same wording to:**
-  - `known`;
-  - `split`, so that it reads as the next review's forecast check of later years under their own conditions, not "a
-    model fit at a review predicts the surveys";
-  - the first note, citing TM-459 p. 8 for the long-term-mean maps, the no-gain numbers, and Barnes et al.'s finding
-    that year-specific temperatures "did not improve or decreased forecast skill".
-- **Surface temperature.** I agree it stays (CLEAN-22). It is a year-specific condition under the same reading.
+3. Unweighted scoring (advocate point 3): concede the decision and the reworded reason. I dispute calling the Cases-row record optional.
+   - The advocate's own judgment record calls recording noaa in the LEAK-41 time-on-risk Cases row "optional". It should be required.
+   - As written, the row's second branch asks for the area swept as the weight scoring column and the sample weight. The only written ground for not doing that was "equal-area cells", and both of us now agree it is false.
+   - principles.md: a departure "needs the fact that sets the case apart and the higher principle it serves, and is recorded as an exception". Maintenance order: amendment > exception > precedent.
+   - Precedent checker: noaa is "the first case where an outcome-cut denominator is available as a weight and is deliberately left out".
+   - Without the Cases-row entry, the next survey table follows the row's wording and ends up weighted.
+   - Remedy: the reword the advocate proposes, plus the Cases-row clause (option a) as part of the change, not left to the curator's discretion.
 
-**Advocate 3 (the split). Concede.** The advocate concedes the `fit_reason` wording and the CC line, which were my
-point 2. I ask only that `splits_comment` also give the 85% seen-station share and the 43.6% for a fourth window. The
-advocate does not contest either.
+4. A real task with headroom (advocate point 4): concede. RF skill is +0.786, the blind reviewer says include, and the fit is approximate (settled, USE-8). I argued value only through the turbot vote (point 6 below).
 
-**Advocate 4 (the metric). Agreed on the note; I dispute that the region-averaged option is closed.**
-- **Agreed.** `rmse` stays. MET-5 holds (TM-459 p. 21), and MET-11 holds (tau 1.0 between density and count). The
-  minimum is a note in `metric.definition` giving GOA's share of the squared error (71-92%) and the Bering-only tau.
-- **The zillow_prize precedent does not apply.** There, the error was concentrated inside the competition's own task.
-  Here we pooled five regions that the source scores separately. MET-2 (Must) keeps the source's metric on a changed
-  task "only when its meaning survives the change". The evidence on that is mixed:
-  - pooled RMSE and Bering-only RMSE rank the models with Kendall tau 0.62-0.81 (claim auditor) and 0.2 / 0.8 / 1.0
-    (domain practitioner);
-  - EBS hauls carry 0.4-13% of the error while making up 38-43% of the test hauls.
-- **MET-13 does not bar the option.** It asks for a reference implementation in the shared library ("a metric only
-  one definition holds is never shipped" means its code cannot live in one definition file). It does not require
-  other users. A mean of per-group RMSE takes a general name under MET-12, as `mean_group_pearsonr` already does.
-- **Where it stands.** This is a weighing call under MET-1 (the actor acts on one region's map) and goes to the
-  curator with both sides' evidence. It does not block shipping.
+5. The refuted exposure statements (advocate point 5): concede that these are reporting failures fixed in text. I dispute two parts of the proposed remedy.
+   - (a) The ceiling. The advocate writes "1.016-1.046 ... would gain 0.004-0.014", which merges two different comparisons. LEAK-41 asks for "the score of 1/weight alone".
+     - Claim auditor row 17: taxon + 1/area is 1.031-1.046 against taxon alone at 1.039-1.057, a gain of 0.007-0.013.
+     - Beyond srvy and year the gain is 0.004-0.012 (1.016-1.034 against 1.027-1.041).
+     - Domain practitioner: 0.007-0.014.
+     - Remedy: state both comparisons, labelled, so the ceiling is the figure LEAK-41 defines.
+   - (b) The cut claim. The advocate concedes cod only, and says no score moves, so the rest can be dropped. Both points are too narrow.
+     - Against the area-only null, more taxa sit above it among hauls with a catch: halibut 0.249 vs 0.159, sablefish 0.199 vs 0.099, shortspine thornyhead 0.183 vs 0.072, rock sole 0.124 vs 0.041, at 2.4-3.9 SDs (claim auditor row 12).
+     - So "which a smaller area swept explains" is refuted for these taxa as well as for cod. EV-1 (Must) settles the fact before the LEAK-10 reading is written, and the decision caption at dataset.py lines 499-500 repeats the refuted claim.
+     - The figures in the notes describe the training side, not the scored windows. The pollock excess is EBS 1989-2008 (+0.71); in the test years it is AI and GOA (+0.39, +0.73) and the EBS shelf shows only +0.07 (split auditor).
+     - No feature moves, but scored labels carry the cut: pollock's short tows hold 14.0% of its squared deviation, Greenland turbot's 10.1% and shortspine thornyhead's 7.0% (column auditor).
+     - MET-16 (Should) says "the notes name it when sampling depends on the outcome". The CC itself accepts "the bias of the cut", and the shares are the measured size of that bias.
+     - Remedy: the restated claim (pollock and, to a lesser degree, cod; area explains the flatfish only; the stop is the likely reading, not isolated), the train-versus-test split of the gap, the corrected caption, and the squared-deviation shares as a required note, not an optional one.
 
-**Advocate 5 (`stratum`). Concede.** We agree on the remedy: polygons where GAP publishes them, otherwise each haul's
-nearest pre-2025 haul. The nearest-haul mapping can always be built, so my fallback (drop the column) never comes into
-play. I withdraw it. The mapping beats dropping (0.726 against 0.717), and the column carries signal before 2025.
+6. The split holds (advocate point 6): concede. SPLIT-20 is a note. Dropping the short tows from training moves the score -0.0013 and dropping the 30-minute era -0.0011, both noise, and LEAK-41 bars a filter anyway. We agree on the splits_comment reword and the Greenland turbot note.
 
-**Advocate 6 (rex sole, the 2026 season). Concede, with one point on timing.**
-- The advocate accepts the CLEAN-8 sentence, the "1982-2025; the 2026 catches are not yet rated" wording, and the
-  provisional-season note. That covers my points 4 and 6.
-- I agree that the blind reviewer's "species not documented" comes from the clean room and is not a fault of the
-  definition.
-- Timing: LEAK-24 says "compare two downloads first". The comparison belongs before `build`, because the shipped
-  container freezes the snapshot. If the 2026 counts move, rebuild from the rated download, or end the newest window
-  at 2025.
+7. Quality gaps (advocate point 7): concede in full.
+   - The MET-14 assert is a one-liner.
+   - The blind reviewer's false-zero worry is answered: the 128 uncounted catches are dropped (CLEAN-15).
+   - The long format is safe under the date split.
+   - The 2026 season is settled (EV-7).
+   - I accept that the log1p mean-bias note is optional (it is a property of the source's metric, MET-3/MET-8, and not a defect).
 
-**Advocate 7 (worth benchmarking). Concede.** I raised no value objection. Each window has 3,953-4,806 test hauls, and
-LightGBM beats the stratum mean well. The spatial-memory concern is the blind reviewer's, not mine, and SPLIT-13
-answers it.
+Remaining ask, beyond what the advocate already accepts:
+- (i) Record noaa in the LEAK-41 Cases row as part of the change (principles.md, exception recording).
+- (ii) State the ceiling as LEAK-41 defines it: taxon + 1/area against taxon alone, 0.007-0.013, plus 0.004-0.012 beyond region and year.
+- (iii) Widen the cut claim to the null-test results for all taxa, fix the caption at dataset.py lines 499-500, and give the train-versus-test era split (EV-1, LEAK-10).
+- (iv) Make the 14.0 / 10.1 / 7.0% squared-deviation shares a required note (MET-16).
 
-```text
-Rebuttal: conceded A1, A3, A5, A6, A7; withdrew the temperature drop (Barnes et al. 2022 year-specific BT on the full
-  grid) and the stratum-drop fallback.
-Disputed: A2 wording only. The prediction point is a place-year under that year's conditions, not "at a haul"
-  (USE-3, USE-6 Must). A4: a region-averaged RMSE stays a curator option (MET-1, MET-2; MET-13 does not bar it).
-Exclusion: not asked.
-```
+Sources: the definition's `dataset.py`; the claim auditor (rows 12, 17), the column auditor (problem 2), the split auditor (problem 1) and the precedent checker (section 3); rules: leak_checks.md and metrics.md.
 
 </details>

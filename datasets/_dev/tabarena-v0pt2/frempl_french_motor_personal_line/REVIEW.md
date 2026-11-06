@@ -1,24 +1,41 @@
 # frempl_french_motor_personal_line
 
-**Outcome:** added. The AI recommends shipping it; the forced split of one year and the `Exposure` fix are settled
-(2026-11-02), and the claim cost per year with the realized length as the weight (issue 6, 2026-11-06). A French private
-insurer's motor portfolio of 2004 (CASdatasets freMPL5 to freMPL9, 115,155 records, each a policy's period of cover with
-fixed rating factors); the target is the period's claim amount per realized year, shipped as log1p and scored on the
-amount per year by the exposure-weighted Gini of the ordered Lorenz curve (a context metric), with the realized length
-as each record's weight in training and scoring; all records of one policy component stay on one side of the split.
-Validity: SEL-1 holds (`Gender` noted); USE-1 holds, fit approximate (USE-8); LEAK-41: the realized length `Exposure` is
-the rate's denominator and the weight, never a feature (issue 6; it supersedes the fix of 2026-11-02 under LEAK-10,
-which kept the realized length on the continued records); LEAK-10 holds for the other features; LEAK-24 cannot be
-verified (issue 3); SPLIT-9 triggered and fixed: under random records, a test record's later records sat in training
-and gave its claim away to a model that reads training rows, so the folds are grouped by policy component (issue 1);
-LEAK-9: those later records are test rows now, so a protocol line forbids reading other test rows; SPLIT-8 ships the one
-year as `ForcedGroupedFromTemporal`, shipped on your call of 2026-11-02 (forced grouped splits ship; SPLIT-8 amended);
-PROV-7, PROV-8 and PROV-9 hold. Value: a small real signal (TP-2: claim AUC about 0.67, claim sizes not learnable); an
-honest model beats the length to 31 December alone on every split (TP-4: 0.183 against 0.005, 9 of 9 shipped splits);
-1/`Exposure` alone scores 0.184, the ceiling a leak would reach. Quality: the negative amounts stay set to 0, with a
-corrected reason. Weighed: documented source and size +; low signal, fold noise (SD 0.03 over the 9 splits) and a thin
-tariff (no vehicle or cover factors) -; a squared-error fit on the shipped log1p scale is misled by the length to 31
-December (issue 7). Left for Lennart: issue 7.
+**Outcome:** added. The AI recommends shipping it once the split is fixed: the re-review panel of 2026-11-06 under the
+exposure rules found that a policy's later record can sit on the other side of the split when its contract change also
+changed one profile column (issue 8, a fix the rules require, in a form you choose); its text changes are made (below),
+and issues 7 and 9 are open. Like every container with a `sample_weight`, it enters no run before the collection's
+training-weight gate (`BENCHMARK_CHANGES_TODO.md`, "Training weights", "The gate"). A French private insurer's motor
+portfolio of 2004 (CASdatasets freMPL5 to freMPL9, 115,155 records, each a policy's period of cover with fixed rating
+factors); the target is the period's claim amount per realized year, shipped as log1p and scored on the amount per year
+by the exposure-weighted Gini of the ordered Lorenz curve (a context metric), with the realized length as each record's
+weight in training and scoring; all records of one policy component stay on one side of the split. Validity: SEL-1
+holds (`Gender` noted); USE-1 holds, fit approximate (USE-8); LEAK-41 holds: the realized length `Exposure` is the
+rate's denominator, the metric's weight and the `sample_weight`, never a feature (issue 6; it supersedes the fix of
+2026-11-02 under LEAK-10, which kept the realized length on the continued records); the feature `length_to_year_end`
+depends on the start day alone (one value per day), and its gain through the weight is negative under both fits of
+probe 22 (-0.038 weighted Tweedie, -0.060 L2), with no other feature above noise; LEAK-10 holds for the other
+features; LEAK-24 cannot be verified (issue 3); SPLIT-9 triggered and fixed for later records with the same profile
+(issue 1), and triggered again where a contract change also changes one profile column: the later record falls in
+another component, can sit in training and tells a test record's claim to a model that reads training rows (+0.020, 9
+of 9 splits), so the component is to be widened or each fold filtered, the form yours to choose (issue 8); LEAK-9: a
+test record's later records are test rows, and a model that reads them gains +0.26 to +0.44, so a protocol line forbids
+reading other test rows; SPLIT-8 ships the one year as `ForcedGroupedFromTemporal` on Andrej's call of 2026-11-02; PROV-7, PROV-8 and PROV-9 hold. Value: TP-2, a small real
+signal: an honest weighted Tweedie fit scores 0.183, the weighted constant 0 and random orders 0.003 (per-fold SD
+0.037), and the fit beats the length to 31 December alone (0.005) on 9 of 9 splits (TP-4); the task probe flags
+`no_signal`, but the flag reads an R^2-type skill (+0.014 on the log1p scale), while on the declared metric its linear
+family scores 0.178 and the dummy 0 (5 splits; EV-3); MET-1 holds in part: the largest claim moves the fold that holds
+it by about 0.06, so the notes ask for paired fold comparisons. 1/`Exposure` alone scores 0.184, as much as the honest
+model, and `Exposure` as a feature lifts the model to 0.256; the word "ceiling" that LEAK-41 and probe 22 use for
+1/weight alone is cross-dataset item X2 ("From PR #47"). Quality: CLEAN-16 departed from with no fact that sets the
+case apart: on the log1p scale the length to 31 December misleads a squared-error fit (0.156 with it, 0.185 without);
+the identity scale is recommended, and dropping the length needs LEAK-41's sentence on a part known at the start
+amended first (issue 7); the negative amounts stay set to 0. Weighed: the actuarial convention (a rate weighted by its
+time on risk) and a faithful, documented source +; an approximate fit (a thin tariff, no vehicle or cover factors),
+fold noise and a low signal -. For Andrej: Lennart's D9 (issue 6) supersedes his `Exposure` fix of 2026-11-02 (issue 2
+(a)) and his base of issue 4; the unrounded length undoes his month rounding on the AI's call, pending Lennart's mark
+(issue 9); issue 8 reopens his key of issue 1. Follow-up, not an issue: a large-loss cap in scoring (each loss
+capped at 50,000 moves fold 0 of the first repeat from 0.210 to 0.147), to be measured on the 9 shipped splits before
+it is offered; the metric is unchanged until then. Left for Andrej and Lennart: issues 8, 7 and 9.
 
 Changes made after the review panel (AI, 2026-11-01): the folds grouped by policy chain, `Exposure` fixed (issue 2), the
 valid windows stated in `splits_comment` (SPLIT-8), the metric reason and the negatives text corrected, and the figures
@@ -26,15 +43,22 @@ re-measured on the shipped folds. The record's screening lines the data refutes 
 sizes, "near-random slices", the negatives) are corrected at hand-over and need no mark. Changed on 2026-11-06 (issue
 6): the target is the claim amount per realized year, `Exposure` the weight and no feature, the length to 31 December
 the feature, the metric the Gini per unit of `Exposure`; `exposure_at_start` dropped; `fit_reason` no longer names a
-kept leak; a protocol line against reading other test rows.
+kept leak; a protocol line against reading other test rows. Changed after the re-review panel (AI, 2026-11-06), text
+only (rows, features, target, weight, split and metric unchanged): the protocol line gives the gain as +0.26 to +0.44,
+depending on what is read, and says that a test record's successor is found without `policy_component`, from the
+features and `Exposure`; the metric reason and the notes no longer call 1/`Exposure` alone the ceiling a leak would
+reach; the notes ask for paired fold comparisons (random orders' per-fold SD 0.037, up to 0.071; the 802,620 claim
+moves the fold that holds it by about 0.06) and say that the start date ships as the length to 31 December, one value
+per day; issue 6's resolution marks the unrounded length as the AI's call, pending Lennart's mark (issue 9); issue 7
+carries the panel's reading and the precedent checker's question.
 
-**Main points:** issues 1, 3 and 4 resolved on 2026-11-03 and issue 6 on 2026-11-06: the amounts stay with their note
-(3), the folds are grouped by the cross-file policy component (1), the target is the claim cost per realized year with
-the realized length as the weight, scored by the Gini per unit of that length (6, which replaces the base of 4). Open:
-keep the length to 31 December as a feature, although it misleads a squared-error fit on the log1p scale (7)? Verdict:
-ship (2026-11-03).
+**Main points:** Open: widen the policy component to the later records that change one profile column, or filter each
+fold's training side (8, a fix the rules require); the length to 31 December on the log1p scale, the identity scale
+recommended, a drop only with the leak rule amended (7); keep the length unrounded against Andrej's month rounding,
+confirmed in a CC line that also names both of his calls D9 supersedes, or restore the rounding (9). Resolved: 1, 3 and 4 on 2026-11-03, 6 on 2026-11-06. Verdict: ship
+(2026-11-03).
 
-**Issues for Andrej:**
+**Issues for Andrej and Lennart:**
 
 3. **Keep the claim amounts although their basis and valuation date are not stated?**
 
@@ -354,8 +378,8 @@ ship (2026-11-03).
    every record, so no row goes under USE-7), is the weight scoring column, the `weight` input of
    `ordered_lorenz_gini` with `per_unit` and the task's `sample_weight`, and never a feature (LEAK-41, MET-14, MET-15).
    `length_to_year_end`, the length the source gives a record open from the same start day to 31 December, is the
-   feature (CLEAN-22, USE-6), unrounded: the month rounding of 2026-11-02 only hid the decimals of the realized
-   length, and rounded it would make 2,704 records repeat another record of their policy. `exposure_at_start` is
+   feature (CLEAN-22, USE-6). It ships unrounded on the dataset agent's call, which is not part of D9 and is open as
+   issue 9. `exposure_at_start` is
    dropped. Supersedes Andrej's call of 2026-11-03 (issue 4, option C); his unnormalised CAS form stays. On the shipped
    splits an honest Tweedie LightGBM scores 0.183, squared error on log1p 0.156, the weighted constant 0 and
    1/`Exposure` alone 0.184. A model that reads a test record's next record, a test row too under the grouped split,
@@ -363,15 +387,113 @@ ship (2026-11-03).
    test rows, and a method that does is called out and not benchmarked (LEAK-9). `dataset check`: 0 errors, 0
    warnings (the warning `task_feature_looks_like_exposure` is gone).
 
-7. **Keep the length to 31 December as a feature, although it misleads a squared-error fit on the log1p scale?**
+8. **Widen the policy component to the later records that change one profile column, or filter each fold?**
+
+   * **Problem:**
+     - A policy's later record joins its component only when all six profile columns are equal, so a contract change
+       that also changes one of them (the risk area, the km limit, the vehicle use, the socio-professional category or
+       the marital status) leaves the policy in two components, and its later record can sit in training while the
+       earlier one is tested.
+     - The later record's claim counters tell the earlier record's claim, so a model that reads training rows gains
+       +0.020 on 9 of 9 splits, a shortcut the split has to remove whatever it costs[^8a].
+     - The rule leaves you only the form of the fix: widen the component with these links (B), or drop each fold's
+       candidate successors from its training side (C).
+   * **Background:**
+     - The component of issue 1 joins a record to one that starts the day it ends, with the same six profile columns,
+       the driver's age the same or one more and the licence age advanced by the months between the starts.
+     - The split auditor searched for a record that ends before 31 December and a record that starts that day with
+       the same gender, a driver's age 0 to 1 higher, the licence age advanced, every claim and out-of-use counter at
+       least as large and exactly one of the other five profile columns different: 9,160 such pairs over 7,120 earlier
+       records, none of them in one component.
+     - About 3,200 of the pairs are true links: the later record's counters rise after 75.5% of the earlier record's
+       claims and after 41.9% of its other periods, while pairs with the end date shifted by one or two months show no
+       such contrast (0.63 to 0.67 against 0.62 to 0.65), nor do pairs that differ in two or more columns.
+     - By the column that changed, the rise after a claim against the rise otherwise: the km limit 0.939 against 0.073,
+       the vehicle use 0.863 against 0.311, the risk area (5,788 pairs) 0.722 against 0.494, the socio-professional
+       category 0.68 against 0.47, the marital status 0.72 against 0.46.
+   * **Effect on the task:** a model that reads the training rows (nearest neighbours, retrieval, in-context learners)
+     learns a test record's claim from its own policy's later record, which an insurer pricing the record at its start
+     would not have; a gradient-boosted model that reads one row at a time cannot use it.
+   * **Experiments:** the split auditor, the 9 shipped splits, untuned LightGBM with a Tweedie loss weighted by
+     `Exposure`, one seed:
+     - a lookup computed from the training rows only (the largest counter rise among a test record's candidate
+       successors in training; 1,609 to 1,705 test rows per fold, about 4.4%, have one) lifts the honest score from
+       0.1742 to 0.1945 (+0.0203, SD 0.0100, higher on 9 of 9 splits);
+     - the flag "a candidate exists" alone gives -0.003 (higher on 3 of 9), so the gain is the claim the later record
+       tells, not the early end;
+     - with the component widened by these links (61,091 groups, the largest 90 records), the lookup's gain falls to
+       -0.0045 (SD 0.009, higher on 4 of 9), and the honest score is 0.1686 against 0.1742, an unpaired comparison of
+       different folds, inside the fold SD of about 0.03;
+     - the filter of C drops about 1,700 to 2,500 training rows per fold (2% to 3%) and leaves the groups as they are.
+   * **Consistency:** B applies your choice of issue 1 (the most conservative key, its chance links accepted) to the
+     same mechanism[^8b]. The widened key is the current rule with one profile column relaxed, built from the data;
+     about two thirds of its new links are chance (about 1% in issue 1's key), and a chance link only joins two
+     policies into one group, the stricter side[^8c]. This is the path issue 1 closed for later records with the same profile, at about a fifth of
+     its size.
+   * **Panel:**
+     - The split auditor found the route and recommends B: it fits your call for the most conservative key, at a cost
+       inside the noise.
+     - The advocate first named C as the mildest fix and then accepted B, since B also moves the successors to the
+       test side, where the protocol line against reading other test rows covers them[^8d].
+     - The critic asks for B, since both fixes stand on the same rung of the remedy ladder, so the precedent of issue 1
+       decides[^8e].
+     - The mediator recommends B, since C drops training rows chosen by a contract change that often follows a claim,
+       close to the rule against training on rows selected by the realized length[^8f], and has to be repeated at
+       every re-split.
+   * **Not proposed:** widening only by the km-limit and vehicle-use links (2,049 pairs, the near-exact ones): it
+     leaves most of the route open and does not meet the rule.
+   * **Cost:** either fix changes the shipped splits, so the container is rebuilt, only on your ask; under B every
+     score in the notes, the metric reason and these issues is re-measured on the new folds.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Six-column key (implemented) | the component of issue 1, 68,857 groups | no rebuild | the shortcut stays: +0.020 on 9 of 9 splits for a model that reads training rows |
+     | B | Widen the component | also joins a record to a successor that differs in one profile column: 61,091 groups, the largest 90 records | the lookup's gain falls to -0.0045; your most conservative key of issue 1, applied to the same mechanism; the successors become test rows, under the protocol line | about two thirds of the 9,160 new links are chance (about 3,200 true), against about 1% in the key of issue 1; a chance link only joins two policies; groups of up to 90 records; every score re-measured |
+     | C | Per-fold filter | drops from each fold's training side the candidate successors of its test rows, about 2% to 3% of the training rows; the groups unchanged | the key of issue 1 stays | training rows dropped for a contract change that often follows a claim; repeated at every re-split; the links among the test rows stay without a group |
+
+   * **Recommendation:** B: it is your choice of issue 1 applied to the same mechanism, it puts the successors on the
+     test side, where the protocol line covers them, and its measured cost is inside the fold noise; C if the key of
+     issue 1 should stay as it is. **Decision:** B or C?
+
+   **Notes for the AI:** SPLIT-9 is a Must, so A is no outcome; the mediator's issue 1 of the re-review of 2026-11-06.
+   On B: extend `_policy_components` with the one-column links as the split auditor built them (a record ending before
+   31 December; a record starting that day with the same `Gender`, `DrivAge` 0 to 1 higher, `LicAge` advanced by the
+   months between the starts within 1, every claim and out-of-use counter at least as large, and exactly one of
+   `MariStat`, `SocioCateg`, `VehUsage`, `HasKmLimit`, `RiskArea` different); restate the counts (61,091 groups, the
+   largest 90 records) in the `Grouping` definition, `splits_comment`, the notes and the third `Decision`; add to the
+   LEAK-9 bullet that the protocol line also covers the one-column successors, now test rows (the mediator's change 1);
+   re-run `dataset check`, the leak and group probes and the lookup test (gain near 0), and re-measure the scores of the
+   notes, the metric reason and issues 7 and 9 (the rebuild only on the curator's ask). On C: override `_make_splits`
+   to drop from each fold's training indices the candidate successors of its test rows (the same link rule), give the
+   dropped counts in `splits_comment`, and re-run the same checks.
+
+   [^8a]: **SPLIT-9** (Must; amended 2026-11-05, Lennart): a training row whose label tells a test row's outcome and
+     was not yet known at the prediction point must not be in train, such as a label of the test row's own entity set
+     after its prediction point; "The shortcut is measured and removed, whatever it costs". Its Tensions row in
+     principles.md: "a shortcut is always removed".
+   [^8b]: Andrej, 2026-11-03, issue 1: "What is the most conservative option that is the safest to not leak?", then
+     "I choose B", the cross-file policy component, about 1% of its links by chance.
+   [^8c]: **SPLIT-24** (Must): group on a true group id, or on one constructed exactly from the data; never on a
+     similarity-threshold cluster.
+   [^8d]: **LEAK-9** (Should; amended 2026-11-05, Lennart): an evaluation leak, where a model can read other test rows,
+     is fixed by a protocol line the benchmark checks, not in the data.
+   [^8e]: principles.md, "How to decide", the remedy ladder: repair from the origin; fix the definition (drop, lag,
+     filter, re-split, re-target); keep it with a documented note; exclude. A filter and a widened group are both a
+     fix of the definition.
+   [^8f]: **LEAK-41** (Must; 2026-11-06, Lennart): "No model is trained or scored on rows selected by the realized
+     weight (such as full-year rows only)".
+
+7. **Keep the log1p scale and the length to 31 December together, although together they mislead a squared-error fit?**
 
    * **Problem:**
      - Issue 6 keeps the target on the log1p scale and the length to 31 December as a feature, and a squared-error fit
-       on that scale ranks short periods too low when it sees the length.
-     - On the shipped splits such a fit scores 0.156 with the length and 0.185 without it, while a Tweedie fit on the
-       cost per year scores 0.183 with it and 0.179 without.
-     - The rule on log-scale rates asks to drop such a feature or to ship the identity scale[^7a], and the decision of
-       issue 6 keeps both the feature and the scale[^7b].
+       on that scale ranks short periods too low when it sees the length (0.156 with it, 0.185 without, on the shipped
+       splits).
+     - The rule on log-scale rates asks to drop such a feature or to ship the identity scale[^7a], while the leak rule
+       says that the part of the weight known at the start ships as its own column[^7d], and this length is that part.
+     - The leak rule ranks higher, so its sentence is an instruction, not a permission: only the identity scale (C)
+       meets both rules as written, and dropping the length (B) needs that sentence amended first[^7e].
    * **Background:**
      - A squared-error fit on log1p of the cost per year estimates the exposure-weighted mean of log1p(cost per year),
        not the cost per year the Gini orders by.
@@ -379,7 +501,10 @@ ship (2026-11-03).
        time to 31 December (0.29 up to 3 months, 0.98 to 1.08 from 9 months on) while the cost per realized year stays
        at 394 to 469 and the claims per realized year at 0.20 to 0.22.
      - The length to 31 December equals the realized length on the 55,700 records open at the year end and bounds it
-       on the others.
+       on the others; it depends on the start day alone (one value per day), so it is known when the period
+       starts[^7c].
+     - Your D9 keeps both the length ("stays a feature") and the log1p scale[^7b]: B reverses the first clause, C the
+       second, and the rule D9 cites for the scale names the identity scale as one of its two remedies.
    * **Effect on the task:** most regression learners fit squared error on the target as shipped; with the length they
      lose about 0.03 of Gini for a reason unrelated to the risk, while a learner with a Tweedie loss gains 0.005 from
      it.
@@ -388,27 +513,57 @@ ship (2026-11-03).
      - Tweedie on the cost per year: 0.183 with it, 0.179 without (higher with it on 5 of 9, +0.005, SE 0.004);
      - squared error on the cost per year itself: 0.159 with it, 0.163 without, led by the tail (up to 11.6 million
        per year, a claim of 58,087 on a record of under two days);
-     - without the length, squared error on log1p scores as the Tweedie fit with it (+0.001, higher on 6 of 9).
-   * **Consistency:** the rule's example is spanish_motor_insurance_coverage_level_2022_2024, whose log1p rate shows
-     the same rise across exposure bands[^7a]; the length to 31 December is known at the start, and an input known at
-     the prediction point is legitimate[^7c].
+     - without the length, squared error on log1p scores as the Tweedie fit with it (+0.001, higher on 6 of 9);
+     - the blind reviewer, without our notes, found the same mechanism on its own folds: a model of the log target
+       ranks claims at AUC 0.627 with the length and 0.560 without, a Poisson rate model at 0.572 and 0.569.
+   * **Consistency:**
+     - pricing_game_2016_french_fleet, the sibling with the same facts, kept its length to the year end, known at the
+       start, and ships the identity scale (Lennart, 2026-11-06)[^7f]; the precedent checker found no fact that sets
+       this table apart from it.
+     - Dropping a length known at the start for this reason has no applied precedent:
+       spanish_motor_insurance_coverage_level_2022_2024 dropped `total_exposure` as a length corrected on some rows and
+       realized on others, under the leak rule, and has no start date to build a known part from[^7f].
+     - Keeping both (A) needs an exception to the rule on log-scale rates, and no fact sets this table apart from the
+       rule or from pricing_game_2016_french_fleet.
+   * **Panel:**
+     - The advocate and the domain practitioner favour B: the length is a cut made by the extract's calendar year, not
+       a rating factor, it is worth +0.005 (SE 0.004) to a Tweedie fit, and the leak rule's own table says the length
+       known at the start "may stay a feature", which they read as a permission.
+     - The critic favours C: a rule's text outranks a row of its table, so B would break the higher-ranked rule to meet
+       the lower one, while C meets both and follows pricing_game_2016_french_fleet.
+     - The mediator settles the reading by rank for C and offers B only with the leak rule's sentence amended into a
+       permission ("a part known at the start may ship as its own column"), after which B against C is your weighing
+       call: the log1p scale and the squared-error learners on it against a legitimate input worth 0.005 and the match
+       with the sibling.
    * **Unknown:** only LightGBM was measured; other squared-error learners should show the same trend, which sits in
      the target's weighted mean by length.
    * **Options:**
 
      | | Option | What it does | Pro | Con |
      |---|---|---|---|---|
-     | A | Keep the length on log1p (implemented) | as issue 6 decided | an input known at the start stays; a Tweedie fit gains 0.005 | squared-error fits on the shipped scale lose 0.029 (7 of 9 splits) |
-     | B | Drop the length | `length_to_year_end` leaves the features; target, scale and weight unchanged | squared-error and Tweedie fits score alike (0.185 and 0.179); keeps your scale | drops an input known at the start, worth 0.005 to a Tweedie fit |
-     | C | Identity scale | the cost per year ships untransformed; the length stays | a squared-error fit then estimates the cost per year | squared-error fits score 0.159, led by the tail; departs from the curator's scale |
+     | A | Keep the length on log1p (implemented) | as issue 6 decided | an input known at the start stays; a Tweedie fit gains 0.005 | squared-error fits on the shipped scale lose 0.029 (7 of 9 splits); needs an exception that no fact supports |
+     | B | Drop the length, with the leak rule amended | `length_to_year_end` leaves the features; target, scale and weight unchanged; the leak rule's sentence first becomes "a part known at the start may ship as its own column" | squared-error and Tweedie fits score alike (0.185 and 0.179); keeps your scale | a rule change first; drops an input known at the start, worth 0.005 to a Tweedie fit; reverses D9's "stays a feature"; no applied precedent |
+     | C | Identity scale | the cost per year ships untransformed; the length stays | meets both rules as written; follows pricing_game_2016_french_fleet; a squared-error fit then estimates the cost per year | squared-error fits score 0.159, led by the tail; reverses D9's log1p scale |
+     | D | Amend a rule to say which wins | the rule on log-scale rates or the leak rule says which wins for a length known at the start on a log-scale rate; this table then follows it (B or C) | settles this table and the next one alike | a rule change prompted by one case |
 
-   * **Recommendation:** B: the length is worth +0.005 (SE 0.004) to the loss that suits the metric and costs the
-     common loss 0.029, and dropping it keeps the log1p scale. **Decision:** A, B or C?
+   * **Recommendation:** C: it is the only option that meets both rules as written, and it follows
+     pricing_game_2016_french_fleet; B only together with the leak rule amended (D), after which B against C is a
+     weighing call; A needs an exception that no fact supports. **Decision:** A (then name the fact that sets this
+     table apart from the rule and from pricing_game_2016_french_fleet), B, C or D?
 
-   **Notes for the AI:** on B, drop `length_to_year_end` in `_clean` (the asserts on the length known at the start
-   can stay), rewrite `known` and `changes` in the task summary, the bullets on the length, the learners and the
-   ceiling and the metric reason's numbers, then re-run `dataset check`, the leak probes and the measurement of
-   2026-11-06; on C, ship `claim_amount_per_year` with `target_transform="identity"` and re-measure.
+   **Notes for the AI:** the mediator's issue 2 of the re-review of 2026-11-06 (CLEAN-16, Should, against LEAK-41's
+   "A part known at the start ships as its own column", Must; settled by rank under principles.md, "Conflicts between
+   rules"). On C: ship `claim_amount_per_year` with `target_transform="identity"`, rewrite the target, learners and
+   stand-in bullets, `predicted` and the metric reason's numbers, record the curator's call in a CC line that names the
+   clause of D9 it reverses (the log1p scale), and re-run `dataset check`, the leak and task probes, probe 22 in both
+   arms and the measurement of 2026-11-06. On B: the main session first amends LEAK-41's sentence in leak_checks.md
+   (date, curator, this case) and the Mechanisms row's case text; then drop `length_to_year_end` in `_clean` (the
+   asserts on the length known at the start can stay), rewrite `known` and `changes` in the task summary, the bullets
+   on the dates, the length, the learners and the stand-in and the metric reason's numbers, record the CC line (it
+   reverses D9's "stays a feature"), and re-run the same checks. On D: the main session amends CLEAN-16 in
+   cleaning_features.md or LEAK-41 in leak_checks.md (date, curator, this case); then B or C as the amended rule says.
+   On A: an exception line to CLEAN-16 with the fact the curator gives, in the record and the notes, and a row of kind
+   `exception` in CLEAN-16's Cases table (the main session).
 
    [^7a]: **CLEAN-16** (Should; amended 2026-11-06, Lennart): a rate scored by a Gini keeps the scale the curator chose
      for the table, and the notes say what a weighted fit on that scale estimates; a log-scale rate with its
@@ -419,1424 +574,1311 @@ ship (2026-11-03).
      the record's start, stays a feature.
    [^7c]: **USE-6** (Must): anything known at the prediction point is a legitimate input. **CLEAN-22** (Must):
      columns leave for what they are, never for how many there are.
+   [^7d]: **LEAK-41** (Must; 2026-11-06, Lennart): "A part known at the start ships as its own column (LEAK-7,
+     LEAK-37)". Its row in the Mechanisms table of leak_checks.md (time on risk cut short by the outcome): "fix it to
+     the length known at the start (which may stay a feature) or remove it".
+   [^7e]: principles.md, "Conflicts between rules": "Rules win over patterns (quick ways to apply them) and over
+     precedents (how they were applied)"; "Exceptions and amendments": "A Must has no exceptions: only a
+     higher-ranked Must overrides it, and anything else is an amendment"; "Consistent judgement", case 1: a call that
+     would break a Must of a higher rank is offered as an amendment of the rule.
+   [^7f]: pricing_game_2016_french_fleet, CC of 2026-11-06 (Lennart, D11): "the length to 31 December stays a feature
+     as `exposure_to_year_end` (LEAK-7, LEAK-37)", "the scale stays the identity (CLEAN-16 as amended)";
+     spanish_motor_insurance_coverage_level_2022_2024, CC of 2026-11-06 (Lennart, D10): "every premium is annualised
+     and `total_exposure` leaves the features (LEAK-41); the log1p target and the weighted Gini stay".
 
-**Review panel:** ship after changes (mediator). Claim audit: 39 claims, 26 hold, 4 refuted and 3 refuted in part (all
-fixed or reworded), 3 refuted in the record only, 3 untested. Blind review: include with changes; its main concerns are
-the weak signal, mostly from `Exposure`, and the realised `Exposure`. Settled by the mediator: grouped folds over the
-split auditor's random records (the paired lookup test, D1) and the `Exposure` fix over the precedent checker's keep
-(LEAK-10 by rank, D2). Agreed: the text fixes. Left to Andrej: the key (issue 1), the `Exposure` fix as a departure from
-fremtpl2 (issue 2) and the Gini form for the family (issue 4).
+9. **Keep the length to 31 December unrounded, against Andrej's month rounding of 2026-11-02?**
+
+   * **Problem:**
+     - The length to 31 December ships unrounded on the dataset agent's call, which undoes Andrej's rounding of every
+       length to whole months (issue 2 (a), 2026-11-02), and an AI call does not outrank a curator's until a curator
+       marks it[^9a].
+     - The CC line of D9 names only Andrej's issue 4 of 2026-11-03 as superseded, though D9 also supersedes his issue 2
+       (a), which kept the realized length on the 34,324 continued records.
+     - The CC lines of the sibling tables name every call they supersede[^9b], so one line from you would confirm the
+       unrounded length and name both calls, unless the rounding should come back.
+   * **Background:**
+     - The rounding of 2026-11-02 hid the decimals of the realized length, which told a continued record from an open
+       one (AUC 0.92, and 0.71 once rounded).
+     - The new column depends on the start day alone: it is the length the source gives the records open from that day
+       to 31 December, one value per start day (366 values) at the source's precision of three decimals, so its
+       decimals carry no end.
+     - Rounded, 2,704 records would repeat the features and target of another record of their policy that starts 0 to
+       15 days apart (3,445 such repeats in all, against 610), and the score would not move (-0.002 with a weighted
+       Tweedie fit, -0.001 with squared error on log1p); these are the dataset agent's figures, which the panel did not
+       re-run.
+   * **Effect on the task:** none if you confirm, since only the record changes; if the rounding comes back (C), the
+     length takes whole months and 2,704 records repeat another record of their policy.
+   * **Consistency:** pricing_game_2016_french_fleet ships its length to the year end at the source's precision (0.01
+     year) and the start day as a feature, and spanish_motor_insurance_coverage_level_2022_2024 kept the source's
+     precision of its premiums; the precedent checker reads the unrounded column as consistent with both, a departure
+     from Andrej's rounding with a stated fact[^9c].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Leave as is (implemented) | the length ships unrounded on the AI's call; the CC line of D9 names issue 4 only | nothing to do | an AI call stands against Andrej's; the record misses a superseded call, unlike the siblings |
+     | B | Confirm in one CC line | your CC line confirms the unrounded length with its fact and names Andrej's issue 2 (a) of 2026-11-02 and issue 4 of 2026-11-03 as superseded | the record matches the siblings; the call becomes a curator's | none found |
+     | C | Restore the rounding | the length to 31 December rounded to whole months, as on 2026-11-02 | follows Andrej's call | 2,704 records repeat another record of their policy; gains nothing, since the column holds no realized decimals |
+
+   * **Recommendation:** B: the column depends on the start day alone, so the rounding hides nothing, and the line only
+     records who decided what. **Decision:** A, B or C?
+
+   **Notes for the AI:** the mediator's issue 4 of the re-review of 2026-11-06 ("Who decides", principles.md). On B:
+   append through the store API a CC line in Lennart's name, for example "CC (<date>, Lennart): the length to 31
+   December ships unrounded (REVIEW.md issue 9 (B)): it depends on the start day alone, one value per day at the
+   source's precision, so the month rounding of 2026-11-02 hides nothing (rounded, 2,704 records would repeat another
+   of their policy). D9 (issue 6) supersedes Andrej's calls of 2026-11-02 (issue 2 (a): the realized length kept on the
+   34,324 continued records, every length rounded to months) and of 2026-11-03 (issue 4, option C)." On C: round
+   `length_to_year_end` to whole months in `_clean`, as the feature of 2026-11-02 was, restate the length bullet,
+   record the CC line, and re-run `dataset check`, the copies count and the measurements of the notes.
+
+   [^9a]: principles.md, "Precedence in the process", who decides: "the curator's decision (a `CC` line, a review
+     mark) > an AI assessment > an AI draft marked unverified > imported or legacy values. A newer decision of the
+     curator beats an older one." Andrej's CC of 2026-11-02 (issue 2 (a)): the records that end early without a
+     continuation get the length known at their start, "every `Exposure` rounded to months".
+   [^9b]: australian_vehicle_insurance_2004_2005, CC of 2026-11-06 (D8): "Supersedes Andrej's call of 2026-11-02
+     (issue 2 ...) and changes the form of his Gini of the same day (issue 4 ...)"; pricing_game_2016_french_fleet,
+     CCs of 2026-11-06 (D11): each names the call of Andrej it supersedes (issue 4 on the target, issue 2 (d) on the
+     training sides).
+   [^9c]: principles.md, "Consistent judgement, the curator's included": a decision that departs from a precedent
+     names the fact that sets the case apart. Andrej, 2026-11-02, on spanish_motor_insurance_coverage_level_2022_2024:
+     "do not round the premiums".
+
+**Review panel:** ship after changes (mediator). Tier full, re-review of 2026-11-06 under LEAK-41, MET-14 to MET-16,
+after decision D9 (issue 6): 12 reports. Claims: 30 audited, 26 hold (one within seed noise, one by reasoning), 1
+refuted (the wording "1/`Exposure` alone, the ceiling a leak would reach", reworded in the definition), 1 not
+reproduced (1/`Exposure` above the squared-error fit on 6 of 9 splits: 8 of 9 with one seed), 2 untested (the CAS
+Monograph 5 section; the rounding figures of issue 9), and issue 7's conflict confirmed. Blind review: include with
+changes; its main concern, the log1p rate with the length to 31 December, is issue 7, measured on its own folds (claim
+AUC 0.627 with the length, 0.560 without); its call for a deviance or a frequency task is not taken, since a Tweedie
+deviance scores worse than a flat rate here. Task gamer: the task can be gamed badly through a test record's later
+records among the test rows (0.20 to 0.64), the route the protocol line forbids, whose figure is now restated; its
+other exploits read `Exposure`, which `feature_columns()` drops. Agreed: D9's target, weight and metric; the length to
+31 December known at the start; the grouped split; that the one-column successors must be fixed; the text changes
+(made). Disputed: the fix for those successors, a widened component or a per-fold filter (issue 8; both sides now
+prefer widening); dropping the length or the identity scale (issue 7, settled by rank for the identity scale unless
+LEAK-41 is amended). Not dataset issues: the word "ceiling" in LEAK-41 and probe 22 (cross-dataset item X2); a
+large-loss cap in scoring, to be measured first (the Outcome). The mediator's issues 1, 2 and 4 are issues 8, 7 and 9
+here.
 
 <details><summary>Mediator</summary>
 
-**Mediator (2026-11-01): frempl_french_motor_personal_line**
+**Mediator report: frempl_french_motor_personal_line (exposure re-review, full tier, 2026-11-06)**
 
-**Recommendation**
+The facts are settled. No disputed fact needed a new experiment: the two sides differ on remedies and on how to read the rules, not on any number. One factual correction to both sides is in agreed fact 9: the gamer's "features-only" link used each test row's `Exposure`.
+
+**1. Judgment record**
 
 ```text
 Verdict: ship after changes.
-Validity: SEL-1 holds (Gender noted); SEL-2 and USE-1 hold, fit approximate (USE-8). SPLIT-9 triggered (with LEAK-5):
-  under random records about 8,000 training rows per fold are later records of a test record's policy, and their
-  claim counts give the test claim away to a model that reads training rows (+0.09 Gini, 3/3 folds, gone when those
-  rows leave train; mediator's paired test); fixed by grouping on the within-file policy chain,
-  ForcedGroupedFromTemporal (SPLIT-8, SPLIT-24). LEAK-10 triggered on `Exposure` for the 25,131 records that ended
-  early with no continuation; fixed by LEAK-7 (the length known at the start, rounded to months). LEAK-10 holds for
-  the other 15 features. LEAK-24 cannot verify (evaluation date of the amounts). PROV-7, PROV-8, PROV-9, PROV-13 hold.
-Value: TP-2 a small real signal (keep); TP-4 holds (model 0.339 against the fixed length alone 0.281, 9/9, random
-  folds; re-measure on the shipped folds); MET-11 context Gini kept, reason corrected; its form is a family weighing.
-Quality: negatives clip kept with a corrected reason (EV-2); file note (EV-5) and record corrections (EV-2).
-Weighed: source + (every column documented, version pinned), size +, a real tariff table +; signal - (claim AUC
-  0.69, severity unlearnable), fold noise - (one claim moves its fold by about 0.09), a thin tariff - (no vehicle or
-  cover factors).
-For the curator: issue 1 (chain or component key), issue 2 (the Exposure fix against the fremtpl2 call, a
-  consistency check), issue 3 (amount basis and evaluation date, cannot verify), issue 4 (row or exposure-weighted
-  Gini, a family weighing).
+Validity: SEL and USE hold (USE-8, approximate fit). LEAK-41 holds: Exposure is the weight only. length_to_year_end is
+  known at the start; its weight-mediated gain is -0.038 (Tweedie) and -0.060 (L2). USE-6 holds. MET-15 holds.
+  PROV-7/8/9 hold. SPLIT-8 holds (forced grouped).
+  SPLIT-9 is triggered (finding A: one-column successors cross the split, +0.020 Gini, 9 of 9 splits). The fix is in
+  the definition: widen the component (recommended) or a per-fold filter. It reopens issue 1's key, so the curator
+  marks it.
+  LEAK-9 is an evaluation leak, kept with its protocol line. The line's figure is restated and the link route is named.
+Value: TP-2, a small real signal (Tweedie 0.183; weighted constant 0; random orders 0.003, SD 0.037). TP-4 holds
+  (the length alone scores 0.005). MET-1 partly: one claim moves a fold by about 0.06; noted, a cap to be measured.
+Quality: CLEAN-16 departure open (issue 7). A has no fact that sets it apart. C meets every rule text. B needs LEAK-41's
+  start-known sentence amended into a permission first.
+Weighed: approximate fit -, fold noise -, actuarial convention and faithful source +.
+For the curator: issue 1 (key for finding A), issue 2 (issue 7: B or C, and how LEAK-41 reads),
+  issue 3 ("ceiling" amendment, joins X2), issue 4 (CC line), issue 5 (large-loss cap, optional).
 ```
 
-**Agreed facts** (no agent disputes them; EV-8: untuned LightGBM, the builder's settings, unless noted)
+**2. Changes to make now (no decision needed)**
 
-- 115,155 records from freMPL5-9 of CASdatasets 1.2-1 (commit 3f5c00c), all ten checksums match; the blind reviewer
-  rebuilt the target, log1p(clip(ClaimAmount, 0)), to 1e-10. 45 exact copies over 20 columns dropped (89 in groups).
-- 967 negative amounts, all with `ClaimInd` = 0, set to 0. They are not "recoveries on earlier claims": 95.1% of those
-  with a next record are followed by a rise of the not-at-fault counter (0.19% for zero records), so they are
-  not-at-fault claims of the period whose recourse covered the payment. The clip stays (-2.4% of net cost; the
-  pricing_game_2017 definition clips the same way); the text is wrong.
-- 90.6% zeros; claim AUC about 0.69; severity not learnable (R^2 at or below 0); 3,540-3,740 claims per test fold.
-- 15 of the 16 features hold the state at the record's start: a claim counter rises at the next record after 95.3% of
-  claims and 2.3% of other records; `BonusMalus` moves at the anniversary (after 11.6% of claims).
-- `Exposure` is the realised length. 51.6% of records end before 31 December; 25,131 (21.8%) end with no continuation
-  in their file. Those hold 20.7% of the exposure, 38.9% of the claim cost (837 per exposure-year against 311 for open
-  records) and 66 of the 109 largest claims. The exact 3-decimal value tells an ended record from an open one at
-  AUC 0.91 (0.61 rounded to months; two agents, model and lookup).
-- Policies have several records: 34,324 records continue in the next row of their file (1 by chance), 10,292 more only
-  in another file. Under the shipped folds about a fifth of the test rows have a later record of their policy in
-  train; its counters rise after 87% of the test record's claims and 0.9% of its non-claims.
-- Grouping costs a row-wise model nothing measurable: 0.277 against 0.282 Gini by chain, 0.2785 against 0.2827 by
-  component.
-- Valid windows inside 2004 train on 13-39% of the rows (only contracts that had ended): claim AUC 0.55 / 0.59 / 0.62
-  against 0.60 / 0.59 / 0.62 for as many random records. No window meets SPLIT-14, so SPLIT-8 applies.
-- The files differ (claim rate 7.7-10.0%, one-vs-rest AUC 0.57-0.64), but leave-one-file-out scores like random folds
-  (AUC 0.690 against 0.687), so stacking without a file column holds. "Near-random slices" and its accuracy evidence
-  (EV-5) go.
-- After the Exposure fix, the declared row Gini gives the fixed length alone 0.281 of the model's 0.339 (83%), fold SD
-  0.052, against 0.019 for the exposure-weighted Gini on the annual rate (3 seeds x 3 random folds). The scorer is
-  verified (equal to a hand-computed Gini on the amount).
-- Year 2014 (NEWS of 1.0-7), licence GPL (>= 2); freMPL1 (39% of contracts in 5-9), freMPL2-4 and freMPL10 stay out.
+1. **LEAK-9 protocol note (dataset.py notes line 188; REVIEW; CHANGES).** Rules: EV-2 and LEAK-9.
+   - Replace "+0.260" with "+0.26 to +0.44 depending on what is read". The exploited scores are 0.44 to 0.64, against honest scores of 0.18 to 0.20:
+     - claim auditor: +0.285;
+     - split auditor: +0.355;
+     - task gamer: +0.387 without `Exposure` among the inputs, +0.437 with it.
+   - Add that the successor can be linked without `policy_component`: `length_to_year_end` minus the row's `Exposure` matches the next record's `length_to_year_end`, and `LicAge` rises by 12×`Exposure` (39% of rows linked, 99.7% of them within one group). This link reads the test rows' scoring column `Exposure`. So write "from the features and `Exposure`", not "from the features alone".
+   - Once finding A's key is widened, add that the line also covers the one-column successors.
+2. **"Ceiling" in the dataset's own texts** (metric reason line 220, notes line 186, REVIEW summary). Rule: EV-2; claim audit row 13 refutes the word.
+   - New wording: "1/`Exposure` alone scores 0.184, as much as the honest model (0.183); `Exposure` as a feature lifts the model to 0.256".
+   - This still states the score of 1/weight alone, which LEAK-41 requires. It only drops the refuted bound.
+3. **REVIEW.md issue 6, "Resolved (2026-11-06, Lennart)" block.** Mark the "unrounded" clause as the AI's call, pending Lennart's mark. Rule: "Who decides" in principles.md; until a curator marks it, Andrej's rounding of 2026-11-02 outranks it.
+4. **Notes, paired comparisons.** Say that models are compared by paired fold differences. Give the fold SD (random orders 0.037, up to 0.071) and the fact that one 802,620 claim moves fold 0 by about 0.06. Rules: TP-2, EV-2.
+5. **Notes line 118, start date.** "Dropped the record dates" becomes: the start date ships as `length_to_year_end`, a one-to-one recoding (366 values). Rule: EV-2. This applies under A and C; under B the sentence is true again as written.
+6. **Issue 7 in REVIEW.md.** Append the precedent checker's consistency prompt (section 5 below). Rule: principles.md, "Consistent judgement".
+7. **Finding A** goes into REVIEW.md as a new issue for the curator's mark (issue 1 below).
+8. **Knowledge files, stale number** (LEAK-41 Cases text; evidence.md line 200). Change "the honest model 0.176" to D9's 0.183. The metrics Cases row at line 316 already has it. This is a number update, not a rule change; the word "ceiling" itself is issue 3.
 
-**Changes to make now** (no decision needed; dataset.py unless marked)
+Not a change: the 967 negative amounts set to 0 are already in the notes and the accepted warning (claim audit row 23).
 
-1. Split (SPLIT-9 Must and its tension row, LEAK-5, SPLIT-8, SPLIT-24): in `_clean`, before `file` and the dates are
-   dropped, build the within-file chain id as `_decisions` does and keep it as `policy_chain`; declare
-   `grouping = Grouping(on="policy_chain", labels="per_sample", prediction_unit="row", context="none", definition=...)`;
-   `data_tags = ("ForcedGroupedFromTemporal",)`. Rewrite decision 3, `task_summary.split` and `splits_comment` (chain
-   counts within and across files; the lookup's +0.09 Gini under random records and its loss without the successors;
-   the residual across files, issue 1).
-2. Valid windows in `splits_comment` (SPLIT-8 Must, "with the cost measured against the valid windows"): 13-39% of the
-   rows, only ended contracts, claim AUC 0.55 / 0.59 / 0.62 against 0.60 / 0.59 / 0.62.
-3. `Exposure` (LEAK-10 Must, LEAK-7; the curator confirms in issue 2): in `_clean`, before the dates are dropped, give
-   the records with `RecordEnd` and no within-file continuation the median `Exposure` of the open records with the
-   same `RecordBeg` (fallback for a start day without one: days to 1 January 2005 / 365, floored to 3 decimals, capped
-   at 1); then round every `Exposure` to whole months (`(Exposure * 12).round() / 12`). Measured on 3 seeds x 3 random
-   folds: Gini 0.288 to 0.339 (9/9), claim AUC 0.689 to 0.675 (9/9); rounding costs nothing (0.338 / 0.674) and takes
-   the code that marks a continued record from AUC 0.92 to 0.71. Label the rest `Potential leak, kept on purpose:`
-   (continued records keep their realised length: 407 against 311 per exposure-year; revisit if a release gives the
-   contracted term or why a record ended). Replace "the family's call of 2026-10-30" with "the AI's suggested call of
-   2026-10-30" and cite fremtpl2's CC with the fact that sets this case apart. Update decision 1, the dates bullet ("the
-   exact value alone gave the end away, AUC 0.91") and the `fit_reason` clause.
-4. Re-measure on the rebuilt folds and restate (EV-8): the TP-4 note (model against the fixed length as a raw score),
-   the Gini figures in the notes and the metric reason.
-5. Metric reason (MET-1, MET-11, EV-2): Frees, Meyers and Cummings order by the relativity to a premium; Liberty Mutual
-   scored a weighted Gini; Allstate's rows were whole vehicle-years. Say the row Gini scores the period's total cost,
-   length included (the fixed length alone 0.281 of 0.339), and that the 802,620 claim moves its fold by about 0.09.
-6. Negatives (EV-2): "0 = no claim, or a not-at-fault claim whose recourse covered the payment (0.84%)" in `predicted`,
-   the negatives bullet, the target bullet, decision 2 and the acceptance reason of `task_target_value_dominant`.
-   AIcrowd's game ran in 2020-21 on the 2017 game's portfolio.
-7. Files bullet (EV-5, EV-2): the claim rate by file, the per-file AUC and leave-one-file-out instead of the accuracy;
-   "samples of one portfolio drawn differently, sharing policies across files".
-8. Smaller text (EV-2, USE-5): the counts bullet "a rise after 95% of the claims, 2.3% otherwise" (the 12% counted falls
-   out of the 4-year window); `task_summary.known`: `OutUseNb` counts out-of-use periods, not claims; first bullet: 38%
-   of records start on 1 January, the calendar cut; `fit_reason`: the amount spans every counted claim type (of claims
-   with one counter rise: windscreen 40%, at fault 28%, not at fault 17%, parking 9%, fire-theft 6%), paid or incurred
-   and the evaluation date not stated.
-9. Record (no mark needed): the screening's empty year (2014), "no record spans all of 2004" (3,805 do), "431 pairs
-   against 309, policyholders cannot be traced" (34,324 links, 1 by chance), the file sizes (16,000-32,400 in 1.2-1),
-   "near-random slices", and the negatives reading. Record fields: `required_split` and the `Larger IID Data` tag
-   (field rows in the review draft).
+**3. Issues for the curator, ranked**
 
-**Changes that need the curator** (ranked; details in the review draft)
+**Issue 1 (P4, SPLIT-9, Must). Finding A: one-column successors cross the split.**
+- **Problem.** The component key joins records only when all six profile columns are equal. A contract change that also changes one of them (RiskArea, HasKmLimit, VehUsage, SocioCateg, MariStat) leaves the policy split across components. The later record can then sit in train, and its claim counters tell the test record's claim.
+- **Evidence (split auditor).**
+  - 9,160 pairs, about 3,200 true links.
+  - The successor's counters rise after 75.5% of claims against 41.9% of non-claims; for HasKmLimit changes, 0.939 against 0.073.
+  - A train-only lookup gains +0.0203 (SD 0.010) on 9 of 9 splits.
+  - The "a candidate exists" flag alone gives -0.003, so the gain is the claim, not the early end.
+- **Effect.** A model that reads training rows (kNN, retrieval, in-context learners) learns a test record's claim from its own policy's later record. Row-wise GBMs cannot use it.
+- **Whether to fix: no decision needed.** Every Must has to hold, and nothing ranked above SPLIT-9 excuses it (principles step 4). The SPLIT-9 tension row says a shortcut is always removed. Both sides agree.
+- **Decision: which fix.**
+  - (ii) Widen the component with all one-column links. 61,091 groups, the largest 90 records. The lookup gain falls to -0.0045 (4 of 9). The honest score is 0.169 against 0.174, an unpaired comparison inside the fold SD of about 0.03.
+  - (i) A per-fold filter: drop each fold's training rows that are candidate successors of its test rows (about 2-3% of training rows; groups unchanged).
+- **Mediator.** Both are on the same rung of the remedy ladder (fix the definition), so mildness does not decide. Three things favour (ii):
+  - Treat like cases alike: it is Andrej's issue-1 choice of 2026-11-03, the more conservative key with chance links accepted, applied to the same mechanism.
+  - It encodes the link in the group column, so the successors move to the test side, where the LEAK-9 line covers them.
+  - (i) drops training rows chosen by a contract change that follows a claim. That selection sits close to LEAK-41's last clause, and the filter has to be repeated at every re-split.
+- **Not an option:** the narrower variant (HasKmLimit and VehUsage only). It leaves most of the route open and does not meet the Must.
+- **Cost of (ii).** A rebuild, only on the curator's ask (house rule). Every score in the notes, the metric reason and the issue numbers is re-measured.
+- **Recommendation:** (ii).
 
-1. P4, SPLIT-24 (Must) with SPLIT-9: group on the within-file chain (implemented) or on the cross-file policy
-   component. Chain grouping leaves a lookup-alone AUC of 0.545 (component: 0.507); with the lookup the model gains
-   +0.014 Gini on average (one fold +0.037) and loses 0.006 claim AUC. The component key links on exact profile and
-   date continuity with age tolerances, with about 1% chance links (465 under a 7-day shift). A weighing of exactness
-   against coverage.
-2. P4, LEAK-10 (Must): confirm the Exposure fix, which departs from fremtpl2 (CC, Andrej, 2026-10-20). Fact that sets
-   frempl apart: the dates locate the early ends row by row, and the shipped value encoded them. Keeping the realised
-   length would be an amendment of LEAK-10, not a kept-leak note.
-3. P4, LEAK-24 (Must) and USE-5, cannot verify: paid or incurred, and when the amounts were valued. Keep with the note
-   or ask the maintainers.
-4. P6, MET-1 and MET-11: the row Gini (implemented) or the exposure-weighted Gini on the annual rate, for the whole
-   insurance family (australian, spanish, the pricing games).
+**Issue 2 (P7, CLEAN-16, Should, against how LEAK-41, a Must, is read). Issue 7: the length on the log1p scale.**
+- **Problem.** The definition keeps both the log1p scale and `length_to_year_end`. CLEAN-16 (amended 2026-11-06) asks for one or the other: drop the feature or ship the identity scale.
+- **Mechanism, measured.**
+  - Weighted mean of log1p by length band: 0.29 to 1.01, while the cost per year stays flat at 394 to 469.
+  - L2 on log1p scores 0.156 with the column and 0.185 without (lower on 7 of 9).
+  - The blind reviewer found the same thing independently: claim AUC 0.627 with the column against 0.560 without for the log target, and 0.572 against 0.569 for a Poisson rate model.
+- **Advocate's best case for B (drop).**
+  - L2 and Tweedie score alike after the drop (0.185, 0.179). The only cost is Tweedie's +0.005 (SE 0.004).
+  - The practitioner: the length is "a cut made by the extract's calendar year, not a rating factor".
+  - LEAK-41's Mechanisms row says the length "may stay a feature".
+  - Lennart's same-day CLEAN-16 names "drop the feature" as a remedy.
+- **Critic's best case for C (identity scale, column kept).**
+  - It meets CLEAN-16, LEAK-41 and USE-6 together.
+  - It follows the nearest sibling with the same facts, pricing_game_2016_french_fleet (Lennart, 2026-11-06: identity scale, start-known length kept). The precedent checker found no fact that sets frempl apart.
+  - B has no applied precedent: spanish dropped a hybrid under LEAK-41, which is a different reason.
+  - Cost of C: L2 scores 0.159, driven by the tail (up to 11.6M per year). Tweedie is unaffected (0.183).
+- **Settled by rank: how LEAK-41's sentence reads.**
+  - The rule text outranks a Mechanisms or Cases row ("rules win over patterns and precedents").
+  - LEAK-41 says "A part known at the start ships as its own column". It sits right after the list of columns that encode the weight, and it says that column's start-known part is shipped, not discarded. `length_to_year_end` is exactly that part (column audit: one value per start day, L >= E on every row).
+  - As written, then, the sentence is a directive, and B would break a P4 Must to meet a P7 Should. That is not allowed (principles step 4; a Must has no exceptions).
+- **Two more facts neither side raised.**
+  - Lennart's own D9 CC says "the length to 31 December stays a feature (CLEAN-22, USE-6)". B reverses that clause.
+  - C reverses the CC's scale clause. But CLEAN-16, which the CC cites for the scale, names the identity scale as its own remedy.
+- **Option A (keep as is).** It needs an exception to CLEAN-16, and no fact sets frempl apart from the rule or from pricing_game_2016. It fails the test for an exception.
+- **Decision.**
+  - (c) C. Recommended: the only option that meets every rule text.
+  - (b) B, only together with an amendment of LEAK-41's wording ("a part known at the start may ship as its own column"). It is offered as an amendment, not an exception (consistency case 1), so the next table is decided the same way. B against C then becomes a weighing call, with the evidence above.
+  - (a) A, with an exception: not supported.
+  - (d) Amend CLEAN-16 or LEAK-41 to say which wins for a start-known length on a log-scale rate.
+- **What would settle the weighing**, if LEAK-41 is amended: whether the curator values the log1p scale (and L2 learners on it) above keeping a legitimate input worth +0.005 to Tweedie, and above matching pricing_game_2016.
 
-**Disputed points**
+**Issue 3 (P4, LEAK-41, Must, wording; cross-dataset, joins X2). "Ceiling" in LEAK-41, probe 22, evidence.md line 200 and metrics Cases line 316.**
+- **Problem.** LEAK-41 asks each definition to state "the score of 1/weight alone as the ceiling a leak would reach". Here that is refuted. `Exposure` as a feature reaches 0.256 to 0.259 (probe22_actuarial: 0.240 against 0.183), about 0.07 past 1/E's 0.184.
+- **Effect.** A reviewer would wave through a partial proxy at 0.20 as "below the ceiling".
+- **Same gap as X2.** X2 (bemtpl97 and fremtpl2 panels) already shows that under a deviance, 1/weight is no ceiling either. Under a Gini, frempl shows the same.
+- **Decision (amendment).**
+  - (a) Call 1/weight alone "what the weight alone scores", and call the probe's leak reference (the weight as a feature next to the features) the size a perfect proxy would reach. Under a deviance, "the weight alone" means the weight fitted to the target, as X2 proposes.
+  - (b) Keep the word, with a note that it bounds the weight alone only.
+  - Mediator: (a), settled together with X2. Both sides agree it goes to the curator, not to the dataset agent.
 
-D1. **The split: random records (split auditor) or grouped by policy chain (claim auditor, advocate, critic).** The
-two measurements answer different questions, so I ran the test that separates them
-(a script in the run folder, not committed). Shipped folds of repeat 0, the same test rows; training
-side A drops as many random rows as B drops successors (training rows that are later records of a test record's
-chain, 7,852-8,055 per fold). The lookup is the claim auditor's, built from features only.
+**Issue 4 (recording; "Who decides"). Lennart's CC line.**
+- **Problem.**
+  - The unrounded `length_to_year_end` is the dataset agent's call. It supersedes Andrej's month rounding (issue 2 (a), 2026-11-02).
+  - D9's CC names only Andrej's issue 4 (2026-11-03) as superseded. It also supersedes issue 2 (a), which kept the realized length on the 34,324 continued records.
+  - The sibling CCs (australian D8, pricing_game_2016 D11) name every call they supersede.
+- **Evidence for the call.** One value per start day, no realized decimals (column audit). Rounding would create 2,704 within-component repeats. It is consistent with pricing_game_2016 and spanish (precedent checker).
+- **Decision.** Confirm with one CC line that names both superseded Andrej calls, or restore the rounding. Mediator: confirm; this is attribution only.
 
-| training side or split | plain LightGBM: Gini / claim AUC | with the lookup: Gini / claim AUC | lookup alone, AUC |
+**Issue 5 (P6, MET-1, Weigh; optional, not now). Large-loss cap in scoring.**
+- Capping at 50,000 moves fold 0 from 0.210 to 0.147. The 802,620 claim is 3.6% of all cost.
+- Both sides want the cap measured on the 9 shipped splits before it is offered. The metric is unchanged until then.
+- Decision only after that measurement.
+
+**4. Agreed facts**
+
+1. The target is log1p(ClaimAmount/Exposure); the round trip asserts.
+2. `Exposure` is the weight scoring column, the metric's weight and `sample_weight`, and not among the 16 features. `exposure_at_start` is gone.
+3. The scorer matches an independent CAS Gini to 4e-12. A weighted constant scores 0 on 9 of 9 splits; random orders score 0.002 to 0.003 (SD 0.037).
+4. Scores:
+   - Tweedie 0.182 to 0.183; L2 on log1p 0.152 to 0.156;
+   - 1/E alone 0.184 (above Tweedie on 4 of 9);
+   - `Exposure` as a feature +0.073 to +0.077 (9 of 9);
+   - ignoring the weight costs Tweedie 0.023 (9 of 9).
+5. `length_to_year_end` is a function of the start day: 0 of 366 days have two values, it falls strictly with the date, L >= E on all rows and L = E on 48.4%.
+   - Without it, the tariff predicts `Exposure` at R² 0.003; with it, R² 0.34 (86% from it).
+   - Weight-mediated gain: -0.038 (Tweedie), -0.060 (L2). No other feature is above noise.
+   - It alone scores 0.005.
+6. Issue 7's mechanism is measured: L2 0.156 with the column against 0.185 without (7 of 9); identity-scale L2 0.159; Tweedie gain from the column +0.005 (SE 0.004).
+7. Data: 115,200 − 45 copies = 115,155 rows; 10,869 positive claims, as in the source; the target rebuilt with difference 0.
+8. Grouped split: no component straddles a split. Test folds hold 38,281 to 38,532 rows and 3,570 to 3,675 claims. An in-year temporal split would train on rows chosen by their realized weight (12.8% of rows by 1 April, cost 1,140 against 311 per year), which LEAK-41 forbids.
+9. Successor route within test (LEAK-9): exploited scores +0.26 to +0.44.
+   - Linking without the group id reaches 39% of rows, 99.7% of them within one group.
+   - The link uses each test row's `Exposure`. Neither brief says so; whether `length_to_year_end` and `LicAge` alone suffice was not measured.
+10. Finding A as stated under issue 1. Its widened alternative: 61,091 groups, gain -0.0045, honest score 0.169.
+11. Fold noise: one claim moves a fold by 0.06; a random column spreads Tweedie by about 0.04. The Tweedie deviance does worse than a flat rate on 3 of 3 folds.
+12. The dataset texts, LEAK-41, probe 22 and evidence.md call 1/weight alone the "ceiling", which the measurement refutes.
+
+**5. Disputed points, settled**
+
+- **Finding A remedy: widen (ii) or filter (i).**
+  - No conflict and no departure: SPLIT-9 must hold either way.
+  - Same rung of the ladder; precedent (Andrej, issue 1 (B)) and LEAK-41's selection clause favour (ii). Both sides now prefer (ii).
+  - The curator marks it, because it reopens issue 1's key.
+- **Issue 7, B against C.**
+  - A real conflict only if LEAK-41's sentence is a directive. By rank (rule text over the Mechanisms row) it is, and B then breaks a Must.
+  - C meets everything, so there is no conflict under C.
+  - Recommend C. B needs an amendment, after which the choice is a weighing call for the curator.
+- **LEAK-9 figure and the link route.** Agreed in the rebuttals (change 1). Corrected here: the link needs `Exposure`, a scoring column.
+- **"Ceiling."** Agreed: reword the dataset texts now (change 2); the rule and probe wording is a cross-dataset amendment (issue 3, with X2). The advocate's worry that dropping the word departs from LEAK-41 does not hold: the Must's operative duty, stating the score of 1/weight alone, is still met.
+- **Recording gaps.** Agreed (change 3, issue 4).
+
+**Task gamer exploits, mapped** (the gamer's honest Tweedie is 0.2025, the definition's 0.183, different settings):
+
+| # | Exploit | Rule | Definition note | Gain: measured against noted | Status |
+|---|---|---|---|---|---|
+| 1, 1b, 1c, 1d, 4 | Successor deltas and the no-model rule | LEAK-9 (protocol line) | "Potential leak, kept on purpose (LEAK-9)", line 188: +0.260 | +0.364 to +0.437 measured | Known, figure understated: an issue, fixed by change 1 |
+| 2, 3, 3b, 3c | ends_early flag, `Exposure` as a feature, 1/E rule, -E alone | LEAK-41, MET-15 (`feature_columns` excludes it) | Line 186: +0.073 and 0.184 | +0.082 to +0.088 (within probe 22's SD of 0.017); 3c 0.1837 equals the note | Known, no issue. Reading `scoring.parquet` is a protocol breach for every exposure dataset |
+| Flaw | log1p scale hurts L2 (0.141 against 0.203) | CLEAN-16 | Issue 7 | Matches | Known, open: issue 2 |
+
+- The gamer's fix (one row per policy-year) is rejected by both sides. No rule requires it, and the practitioner says the earned-exposure segments are the unit a pricing GLM is fitted on.
+- Finding A is not among the gamer's exploits (it is a training-side route); it is new from the split auditor.
+- The accepted warning (`task_target_value_dominant`) is not touched.
+
+**6. Consistency with precedent**
+
+- D9 is consistent with fremtpl2, bemtpl97, australian (D8), pricing_game_2016 (D11) and spanish (D10). Its reversal of Andrej's issue 4 names the fact that changed (the constant scored 0.184 then, 0 now). No prompt needed.
+- The unrounded length departs from Andrej's 2026-11-02 rounding with a stated fact, and is consistent with pricing_game_2016 and spanish. It needs Lennart's mark (issue 4).
+- Widening the key (finding A) follows Andrej's issue 1 (B) of 2026-11-03.
+- Issue 7: A has no fact that sets it apart; C follows pricing_game_2016; B has no precedent. The register shows no flags on LEAK-41, MET-14/15/16 or CLEAN-16, no drift, and no third exception.
+- Reflection prompt for issue 7 (from the precedent checker, to append):
+
+**Consistency check (AI, 2026-11-06):** Does anything set frempl apart from CLEAN-16's clause on log-scale rates, or should it go like pricing_game_2016_french_fleet (identity scale, start-known length kept)?
+
+| | Option | Pro | Con |
 |---|---|---|---|
-| A: shipped, random rows dropped | 0.280 / 0.688 | 0.395 / 0.739 | 0.626 |
-| B: shipped, successors dropped | 0.290 / 0.688 | 0.303 / 0.686 | 0.545 |
-| folds grouped by within-file chain | 0.275 / 0.688 | 0.288 / 0.682 | 0.545 |
-| folds grouped by cross-file component | 0.286 / 0.689 | 0.236 / 0.653 | 0.507 |
+| a | Exception to CLEAN-16 (keep A) | Keeps a legitimate input and the log1p scale | No fact sets frempl apart; L2 loses 0.029 for a reason unrelated to risk |
+| b | Drop the column (B) | L2 and Tweedie score alike (0.185, 0.179); scale kept | Breaks LEAK-41's "a part known at the start ships as its own column" unless amended; reverses D9's "stays a feature" |
+| c | Identity scale, column kept (C) | Meets CLEAN-16, LEAK-41 and USE-6; matches pricing_game_2016 | L2 scores 0.159, driven by the tail; changes the per-table scale of 2026-11-02 |
+| d | Amend CLEAN-16 or LEAK-41 to say which wins | Settles this table and the next alike | A rule change prompted by one case |
 
-Paired A minus B: plain Gini -0.009 (-0.013, -0.017, +0.002), plain AUC +0.000; with the lookup, Gini +0.092 (+0.096,
-+0.067, +0.113) and AUC +0.053, 3/3 folds.
-- Fact settled: both auditors measured correctly. The information that gives the test claims away sits in the
-  successors on the training side. A row-wise model cannot read it, so the split auditor's paired test could not have
-  come out the other way (EV-6); a model that reads training rows gains 0.09 Gini from it. Whether TabPFN-class models
-  take it stays untested (no in-context model in the environment; EV-7).
-- Rules: the split auditor rests on SPLIT-29/SPLIT-30 (re-split only for an entity new data would not have) and USE-10
-  (a known policy's history is legitimate). The others rest on SPLIT-9 (Must: a training row whose label is not known
-  at the prediction point stays out), its tension row ("a shortcut that can be measured is always removed") and
-  SPLIT-8. LEAK-5 (Must, part 3) adds: "models would predict the same" is no argument when the stored values depend on
-  the test rows, and the successors' counters depend on the test record's claim.
-- No conflict: SPLIT-29/30 and USE-10 cover recognising an entity and its past. A successor is the policy's future: it
-  does not exist when the record is priced. Grouping keeps the past, since the counters and `BonusMalus` carry it as
-  features. So SPLIT-9 must hold on its own, and the remedy is the second rung (re-split). SPLIT-8 names the regime:
-  grouped by the entity when periods are stacked and entities recur, `ForcedGroupedFromTemporal`. Cost: none measured.
-- Left open: chain or component key (issue 1).
-
-D2. **`Exposure`: keep as recorded (precedent checker, following fremtpl2; the practitioner does not reopen it) or fix
-(column and claim auditors, advocate, critic).**
-- For keeping: the curator's fremtpl2 call ("the contracted period is known at pricing (a mid-year cancellation also
-  shortens it)"); the precedent checker's test (every record given its start-known length: no consistent Gini gain).
-  The strongest case, which no agent made: LEAK-11 (Should, narrows LEAK-10) keeps a late value that weakens the
-  signal, and the shipped value lowers the declared Gini (0.288 against 0.339).
-- For fixing: LEAK-10 (Must) puts out "a consequence of the target"; the unforeseen ends move with the outcome (2.7
-  times the cost per exposure-year, 66 of the 109 largest claims), and they can be located row by row.
-- Decision by rank: LEAK-10 (Must) holds. LEAK-6's narrowing covers only late values that cannot be located, which is
-  not this case. The precedent checker's test is the "removing it changes no score" test that LEAK-10 rules out, and
-  the targeted fix does change the score, 9/9. LEAK-11 does not reach a value that also raises the claim ranking on 9/9
-  folds (AUC 0.675 to 0.689), as this one does through the end status. Remedy: LEAK-7 (the start-known value for the
-  located rows).
-- It departs from a curator precedent, so the curator confirms (issue 2). The fact that sets frempl apart is named.
-
-D3. **The fallback if the curator keeps the realised length: a kept-leak note with month rounding (critic) or an
-amendment (advocate).** The advocate is right on the form: a Must has no exceptions, and LEAK-6's narrowing does not
-cover located cells, so keeping it changes the rule (principles.md, "Exceptions and amendments"). The critic's rounding
-is useful either way. After the fix, the exact value marks the continued records (AUC 0.92); rounding to months takes
-that to 0.71 at no cost (a script in the run folder, not committed), so it is part of change 3.
-
-D4. **The metric: a failed MET-1 (critic's opening) or a family reading (advocate).** Settled on the critic's own
-post-fix test: the order swap between the two Gini forms came from the leaking `Exposure`. After the fix, both forms
-rank the model with length above the one without (9/9 row, 6/9 weighted). So it is no failed Must; which form is the
-"clear context" of MET-11 is a weighing, and the curator's (issue 4).
-
-D5. **Recording of the keep (precedent checker: `Note:` instead of `Potential leak, kept on purpose:`, no revisit
-condition, an AI suggestion cited as "the family's call").** Agreed by all; mostly moot after change 3. The residual is
-labelled, and the attribution is corrected.
-
-**Consistency with precedent**
-
-- fremtpl2 (CC, Andrej, 2026-10-20), `Exposure` kept: departed from, with the fact named (dates locate the early ends;
-  the value encoded them). Issue 2 asks the curator.
-- spanish_motor_insurance_coverage_level_2022_2024 (draft): reset the cancellations it could locate. Followed.
-- australian_vehicle_insurance_2004_2005 (draft): kept with a note because it could not locate them. Different facts.
-- Split: pricing_game_2017_french_mtpl (grouped by client, `ForcedGroupedFromTemporal`) and spanish (grouped by policy)
-  now agree with frempl. nba_players_2016_2019 and open_university_learning_analytics_dataset are the SPLIT-8 cases
-  for this tag. alfa_battle_2_0_task_2 (SPLIT-9: an entity's later rows telling the earlier outcome, removed) has the
-  same mechanism. sarcoma (IID kept over a weak group, SPLIT-29) differs: no future rows there.
-- Andrej, 2026-10-30, on SPLIT-8: "Forced IID is to be avoided at all costs." Change 1 takes frempl off forced IID. It
-  ships forced grouped under SPLIT-8, which stays unchanged, as pricing_game_2017 does. His `No` on
-  how_much_did_it_rain rested on a leak that forced IID could not bound; here the measured path is removed and the
-  remaining cost is measured (the valid windows).
-- Target scale (consistency check B): frempl follows CLEAN-16 and MET-3 (Lennart, 2026-10-21). The question belongs to
-  australian, which departs.
-- MET-11 context Gini: no curator precedent yet. Once issue 4 is decided, it becomes a MET-11 Cases row for the three
-  definitions; the `Exposure` answer becomes a LEAK-10 Cases row (precedent checker).
-- `RiskArea` numeric: consistent with CLEAN-14 as amended ("categorical if we know from the context"; the source says
-  "possibly ordered"). The column auditor's question is not raised.
-- Library, for the working copy's REVIEW.md: `normalized_gini` breaks ties in row order, as the official code does,
-  so a constant scores -0.016 to +0.101 depending on the frame order.
+Recommendation: c, or d followed by b if the log1p scale matters more than the sibling match. Decision: a, b, c or d?
 
 </details>
 
 <details><summary>Claim audit</summary>
 
-**Claim audit: frempl_french_motor_personal_line (claim-auditor, 2026-11-01)**
+**Claim audit: frempl_french_motor_personal_line (full tier, exposure re-review 2026-11-06)**
 
-**Verdict: ship after changes.** Most of the counts and the provenance hold. Two validity claims are refuted, both in
-P4 and both fixable in the definition at no cost to the declared metric:
-1. The random split leaves later records of a test record's policy in train, and their claim counts give the test
-   record's outcome away (SPLIT-8, SPLIT-9).
-2. `Exposure` is the realised length, which for 51% of the records is known only when the record ends. The length
-   known at the start is in the raw data (LEAK-10, LEAK-7).
+Verdict: ship as is on validity. Every claim of today's change (D9) that I tested holds on the data. One claim is
+refuted, a wording claim repeated in five places: "1/Exposure alone, the ceiling a leak would reach". Issue 7
+(CLEAN-16) is confirmed as an open Should-level conflict. No Must-level claim is refuted.
 
-The metric's reason cites sources that, for rows of unequal exposure, use an exposure-weighted Gini (MET-1, a weighing
-call across the family).
+Setup: the definition's container (load_definition(...).to_container()), scored with
+data_foundry.v2.metrics.scorer, features from feature_columns(c), splits as shipped (3x3). LightGBM ran with the
+exposure study's PARAMS (400 trees, lr 0.03, min_child_samples 200, subsample/colsample 0.8), Tweedie power 1.5,
+weighted by Exposure, ONE seed (the definition used 3).
 
-Data: the definition's own frame and split plan (`make_splits`, 115,155 rows, 3 x 3 folds, seed 4267). Each shipped
-row is mapped back to its raw row (dates, file) by replaying the frame's shuffle. Models are untuned LightGBM with the
-builder's parameters (300 trees, lr 0.03, 31 leaves), fit on the log1p target. The Gini is scored on the amount
-through `data_foundry.v2.metrics`. Scripts and outputs are in the run folder (not committed).
-
-**Claims**
+**Claims table**
 
 | # | Claim | Source | Test | Result | Evidence | Rule |
 |---|---|---|---|---|---|---|
-| 1 | 115,155 records from freMPL5-9 of 1.2-1; 16 features | task_summary.row, README | rebuilt frame; sha256 of the 5 rda and 5 csv | holds | 115,155 x 17; all 10 checksums match the definition; commit 3f5c00c (2026-04-11, "update freMPL* files by removing duplicated rows") is still the last commit to touch `data/freMPL5.rda` | PROV-8 |
-| 2 | 45 exact copies dropped (89 rows in groups; 10 within a file, 35 across) | notes, changes | `duplicated` over the 20 source columns | holds | 89 / 45 / 10 / 35 | LEAK-18 |
-| 3 | After the dates are dropped: 29 repeat features and amount, 9 conflict | notes; info checks | duplicates on the shipped frame | holds | 29 exact rows; 9 conflicting groups (18 rows); 13-19 test rows per fold have their feature vector in train (0.03-0.05%) | LEAK-18 |
-| 4 | 967 negatives (0.84%, -1,948 to -2), all with `ClaimInd` = 0, set to 0 | notes, decision 2 | counts after dedup | holds | 967 (0.84%), min -1,947.6, max -2.07, all `ClaimInd` 0 | CLEAN, USE-5 |
-| 5 | "AIcrowd set negative totals to 0 on the portfolio of its 2017 pricing game" | notes | sibling record `pricing_game_2017_french_mtpl` | holds in substance, wrong wording | AIcrowd's game ran in 2020-21 on the 2017 game's portfolio and set 1,116 negative Year-0 totals to 0. "its 2017 pricing game" is wrong | EV-2 |
-| 6 | `ClaimInd` is 1 exactly where the amount is positive | notes | assert on the deduplicated raw | holds | True on every row | LEAK-10 |
-| 7 | `Exposure` = (end - start) / 365 within 0.006; 48% of records open at year end | notes | recomputed | holds | max deviation 0.0060; 48.4% open | - |
-| 8 | Records that ended early claim more at the same length; Gini 0.251 / 0.273 / 0.294 | notes, decision 1 | builder's experiment1; my 9 shipped splits | holds | table reproduced. On my splits, start-known length + `Exposure` gives 0.302 against 0.283 shipped, the same direction | LEAK-10 |
-| 9 | "`Exposure` is a feature ... the period is known when a policy is priced, apart from a contract that ends early" | notes (Note), fit_reason | `Exposure` against the length known at the start (start to year end, from the dropped `RecordBeg`), 9 shipped splits | **refuted in scope** | 51.3% of records ended early. Claim AUC: start-known length 0.633, `Exposure` 0.689 (9/9 splits), no length 0.565, so 45% of the lift from `Exposure` is known only at the end. Of the top 1% of claims, 74% ended early (51% of all records); the largest claim, 802,620, ended its record after 2 months (circumstantial: a claim ending the contract). Declared Gini: start-known length 0.292, shipped 0.283 (shipped wins 4/9, paired SE 0.015), so the fix costs nothing | LEAK-10 (Must), LEAK-7 |
-| 10 | `Exposure` follows "the curator's call for fremtpl2 and the family's call of 2026-10-30" | notes | `fremtpl2` record; the records' Assessments of 2026-10-30 | **refuted in part** | The fremtpl2 call is the curator's (CC 2026-10-20). The 2026-10-30 table is the AI's suggestion per record: "The calls are suggested per record". The frempl CC of 2026-10-30 sets only `Yes`, priority 5 | principles, who decides |
-| 11 | Raw `Exposure` ranks claims at 0.674 and losses at Gini 0.214; the model reaches 0.282 and wins on every fold (no lookup) | notes | 9 shipped splits | holds | 0.674 / 0.213 against 0.283; the model wins 9/9 | TP-4 |
-| 12 | 34,324 records (30%) continue in the next row; 1 by chance; 80,831 chains of 1-6 | notes, splits_comment, decision 3 | `_continues_next` on the deduplicated raw | holds | 34,324; chain sizes sum to 80,831; shuffled control 1 (explore2) | SPLIT-24 |
-| 13 | A claim does not make one in the next record likelier (8.3% against 9.2%) | notes | explore3 | holds | 0.083 / 0.092 | SPLIT-29 |
-| 14 | "Folds that keep each chain together score like random ones ... so the split stays random"; "a pricing model scores the known policies of its portfolio too" | notes, splits_comment, decision 3 | (a) true links: is the test record's successor in train, and did its counts rise? (b) a lookup on the shipped features only (same profile, `DrivAge` +0/1, `LicAge` + 12 x `Exposure` within 1.5 months), added to LightGBM; (c) the same under chain-grouped folds | **refuted (as justification)** | (a) 19.4-20.0% of test rows have their successor in train. Its counts rose after 87% of claims and 0.9% of non-claims (AUC 0.93 on those rows, 90% precision, 17% of test claims flagged). (b) Shipped splits, repeat 0: Gini 0.282 -> 0.403, claim AUC 0.689 -> 0.741 (3/3 folds). (c) Chain-grouped: lookup AUC 0.54 (0.63 random); the model with the lookup gets AUC 0.680 against 0.689 and Gini 0.300 against 0.277 (one fold +0.065, two within ±0.007). The plain model loses nothing grouped (0.277 against 0.282). LightGBM cannot read other rows, so the builder's random-against-grouped test could not have come out the other way (EV-6). At a record's start its successor does not exist | SPLIT-9, SPLIT-8, LEAK-10 (Must) |
-| 15 | "Random records, so the test data stands for other policies' periods in the same year" | task_summary.split | as 14 | **refuted** | 30% of records continue; a fifth of the test rows have a later record of the same policy in train | SPLIT-1 |
-| 16 | The claim counts are taken at each record's start, never its own claim (change after 96% of claims, 12% otherwise) | notes; builder's claims | counts rise from k to k+1 depending on whose claim it is | holds | rise after a claim in k: 95.3%; after a claim only in k+1: 2.6%; neither: 3.1%. `BonusMalus` rises after a claim at only 11.6% (updated at the anniversary) | LEAK-10 |
-| 17 | 90.6% zeros (89.7% as published plus the negatives) | predicted, notes, warning | counts | holds | 0.9056 shipped; 0.8972 published zeros after dedup | - |
-| 18 | Claim AUC 0.69, severity R^2 -0.08 (amount) / -0.01 (log), oracle 9.6% | notes, metric reason | hurdle on the shipped splits, repeat 0 | holds | AUC 0.686-0.692; severity amount -0.154 / -0.002 / -0.206; log -0.007 to -0.023; oracle 0.160 / 0.021 / 0.133 (mean 0.105); hurdle R^2 -0.006 to 0.000 | TP-2 |
-| 19 | Files 5-9 "are near-random slices of one portfolio" | notes; record | per-file rates against 200 random relabellings of the file | **refuted** | Claim rate by file 7.67-9.99% (chi2 80, p 2e-16); spread 0.023 against at most 0.0097 under random relabelling. Mean `BonusMalus` 56.3-61.4 (Kruskal p ~0); 1 January starts 30-42%; mean start day 102-127. They are samples drawn differently, not random cuts | PROV-7 (weigh), EV-2 |
-| 20 | File sizes are round (16,000-32,400): samples of a chosen size; 1.2-1 removed "around 9995" duplicates per file | notes, download | pre-1.2-1 files (commit ef06f44) | holds, sharpened | Before 1.2-1: 26,000 / 42,400 / 36,600 / 34,000 / 26,200 rows, each with 10,000-10,004 duplicated rows. 1.2-1 removed exactly 10,000 per file, leaving 4 + 4 + 2 within-file copies, the 10 the definition drops | PROV-8 |
-| 21 | freMPL1 repeats 39% of its contracts and amounts in 5-9; freMPL10 has another column list | notes (not re-measured by the builder) | freMPL1 and 10 of 1.2-1 matched on the 11 shared columns | holds | 8,041 of 20,566 keys (39.1%); 793 of 815 positive amounts equal; freMPL10 has 21 columns (adds `VehAge`) | PROV-7 |
-| 22 | Year 2014: entered CASdatasets 9 Sep 2014 (NEWS of 1.0-7) | notes, `year` | `inst/NEWS` and `DESCRIPTION` at commit c49cbbb | holds | "freMPL1.rda 09/09/2014" ... "freMPL10.rda 09/09/2014" in the "Dataset list with entry date"; DESCRIPTION Version 1.0-7. The current NEWS page lists them only from 1.2-0 | PROV-9 |
-| 23 | Licence GPL (>= 2) | `license` | DESCRIPTION at 1.0-7 and master | holds | "License: GPL (>= 2)" both | - |
-| 24 | Source names no use; currency not stated; "Unknown French private insurer"; RiskArea "possibly ordered" | task_summary, notes | freMPL page and `man/freMPL.Rd` | holds | page quotes match ("Unkonw risk area between 1 and 13, possibly ordered"); no task or metric named | USE-1 |
-| 25 | "the claims of the four preceding years by type" | task_summary.known | codebook | holds, loose wording | `OutUseNb` is "Number of out-of-use in the 4 preceding years", not a claim count | - |
-| 26 | 46 CSP codes, 23 under 10 records; 47 licences before 17; top claim 802,620 = 3.6%, next 163,427, top ten 7.6% | notes | counts | holds | 46 / 23; 47; 0.0355, 163,427, 0.0764 | - |
-| 27 | Metric computable per row; target_transform log1p scored on the amount | metric, README | scorer per fold with dummies; raw `Exposure` scored through the scorer against a hand-computed Gini | holds | 3,540-3,740 claims per test fold. The scorer gives 0.2627, equal to the Gini on the amount (0.3481 on the log1p values), so the inverse is applied. No scoring column needed | MET-2, MET-3 |
-| 28 | "CASdatasets defines no task or metric ... no paper that defines a task on these tables was found" | metric reason | freMPL page, NEWS, one more search | holds | none on the page or in the NEWS. A web search found only freMTPL papers; arXiv 1808.08982 ("Combining Predictions of Auto Insurance Claims") draws a Lorenz curve, but its PDF could not be read, so which data it uses is unverified | MET-1 |
-| 29 | Gini of the ordered Lorenz curve (Frees, Meyers, Cummings 2011), "the metric the insurers' own Kaggle competitions chose (Allstate 2011, Liberty Mutual 2014)" | metric reason | sources against the declared unweighted form; the declared metric against an exposure-weighted Gini (order by predicted cost / `Exposure`, x = cumulative exposure, y = cumulative loss) | **refuted in part** | Frees et al. order by the relativity to a premium (abstract and secondary sources; full text not read). Liberty Mutual scored a weighted Gini (`var11`; the sibling declares `normalized_weighted_gini`). Allstate's rows are whole vehicle-years (sibling record: "Exposure: none"). Here exposure runs 0.001-1. Raw `Exposure` gets 0.213 on the declared Gini (75% of the model's 0.283) and -0.05 on the exposure-weighted one, so the declared Gini mostly scores how well periods are ranked by length | MET-1 (Must), MET-11 |
-| 30 | (implied) The fold score resolves models | metric | the per-fold Gini with and without the top claim; constant and random predictions | concern | One claim (802,620) moves its fold by about 0.09 (0.216 -> 0.308). SD over 9 splits is 0.044, and 0.018 without it. A constant scores -0.016 to +0.101 (ties broken by the fixed frame order); random predictions -0.094 to +0.036 | MET-10 |
-| 31 | Warning `task_target_value_dominant` proposed for acceptance: 0 = no claim | builder | counts | holds | 0 = `ClaimInd` 0 on every row; 90.6% | - |
-| 32 | Record screening: "the version that first held the tables was not found ... `year` stays empty" | record, screening | as 22 | **refuted** | NEWS of 1.0-7 lists 09/09/2014 (the definition already uses 2014) | PROV-9 |
-| 33 | Record: "no record spans all of 2004"; "chaining ... finds 431 pairs against 309 by chance, so policyholders cannot be traced" | record, recommendation | counts; as 12 | **refuted** | 3,805 records run from 1 January to year end. 34,324 links, 1 by chance | EV-2 |
-| 34 | Record: "Every file's row count is a multiple of 100 (20,600 to 38,300)" | record | as 20 | wrong range for 5-9 | 1.2-1: 16,000-32,400 (20,600 is freMPL1) | EV-2 |
-| 35 | Record Assessment (2026-10-30): target `ClaimAmount`, `Exposure` a feature, negatives to 0, Gini context, pin 1.2-1, drop `ClaimInd` | record | against the definition | holds (implemented) | all applied; target shipped as log1p, scored on the amount | - |
-| 36 | (implied) Every other feature is known at the record's start | - | 16; codebook | holds | ages, licence age, profile; counts start-dated (16); `BonusMalus` at the anniversary | LEAK-10 |
-| 37 | (implied) Benchmark models take the shortcut of claim 14 | - | not run | **untested** | needs an in-context model (TabPFN, TabICL) on random against chain-grouped folds. LightGBM and KNN (which reads neighbours' labels, not their features) cannot | EV-7 |
-| 38 | Which guarantee; paid or incurred; development date | fit_reason, builder | source | **untested** (cannot verify) | not in the page, the Rd or the NEWS | USE-5, LEAK-24 |
-| 39 | freMPL2-4 amounts derived from freMPL1 (0.849 x) | notes (from the record) | not re-run | **untested** | needs freMPL2-4; it changes no decision, since those files stay out anyway | PROV-7 |
+| 1 | Target = log1p(ClaimAmount/Exposure); _clean rebuilds the amount | dataset.py _clean step 7, notes "Target" bullet, CHANGES | inverted the container's target: expm1(y)*Exposure; re-ran _clean | HOLDS | the assert passes; total 22,586,967; max rate 11,617,306/yr (amount 58,087, Exposure 0.005 = 1.8 days) | MET-14 |
+| 2 | Exposure is the weight scoring column, the metric's weight input and the sample_weight, never a feature | dataset.py metric/scoring_columns/sample_weight, CHANGES | task_metadata; sample_weight(c); feature_columns(c) | HOLDS | inputs={'weight':'Exposure'}, sample_weight='Exposure', 16 features, no Exposure, no exposure_at_start, policy_component not a feature | MET-15, MET-2, LEAK-41 |
+| 3 | exposure_at_start dropped | CHANGES, notes | columns of the container | HOLDS | not among the 19 columns | LEAK-41 |
+| 4 | length_to_year_end is known at the start: one value per start day, >= Exposure, = Exposure on open records, unrounded | _clean step 6, notes, CHANGES | raw files: nunique of open records' Exposure per start day; compare with (2005-01-01 - start)/365 | HOLDS | 0 of 366 start days have two open Exposure values; L >= E on all rows, L = E on 48.4%; max \|L - calendar days/365\| 0.006 (the source's own Exposure precision); 366 values at 3 decimals (the source's precision, not month-rounded) | USE-6, CLEAN-22, LEAK-41 |
+| 5 | Every Exposure is positive, 0.001 to 1; no row goes under USE-7 | notes, scoring_columns | min/max | HOLDS | 0.001 to 1.0, none <= 0 | USE-7, MET-2 |
+| 6 | The per_unit Gini is the CAS ordered-Lorenz Gini: rows sorted by predicted rate, x = cumulative exposure, y = cumulative loss | metric reason, metrics.py | independent 1 - 2*AUC (sklearn Tweedie-example form, ties grouped) against the scorer on 45 random predictions over the 9 folds; perfect and 1/E predictions | HOLDS | max abs difference 4.1e-12; perfect 0.9630 both; 1/E 0.1837 both; the scorer inverts y_true through target_transform | MET-3, MET-13 |
+| 7 | A weighted constant scores exactly 0 | metric reason, CHANGES | constant prediction on 9 folds | HOLDS | 0.0000 on every fold | MET-13 |
+| 8 | Random orders score 0.003 on average (SD 0.039) | metric reason | 20 random predictions per fold | HOLDS | mean 0.0024, mean per-fold SD 0.037 (0.020 to 0.071) | EV-2 |
+| 9 | MET-2 computable: each test fold holds what the metric reads | (implied) | units per fold | HOLDS | 38,281-38,532 test rows, 3,570-3,675 claims per fold; 0 groups shared between train and test on 9 of 9 splits | MET-2, SPLIT-9 |
+| 10 | Honest Tweedie LightGBM scores 0.183 (0.149 to 0.237) | CHANGES, metric reason, notes, REVIEW 6 | refit, 1 seed | HOLDS | 0.182 (0.145 to 0.244) | EV-8 |
+| 11 | Squared error on log1p scores 0.156 | same | refit | HOLDS within seed noise | 0.152 | EV-8 |
+| 12 | 1/Exposure alone scores 0.184 (0.130 to 0.263), above the Tweedie model on 4 of 9 | same | scorer on log1p(1/E) | HOLDS | 0.1837 (0.1305 to 0.2629), above Tweedie on 4 of 9 | LEAK-41 |
+| 13 | 1/Exposure is "the ceiling a leak would reach" / "the ceiling of a proxy" | metric reason, notes "metric rewards any stand-in" bullet, REVIEW summary, CHANGES ("the ceiling"), probe 22 output | Tweedie with Exposure as a feature | REFUTED | with the realized length as a feature: 0.259 (mine, +0.077, 9 of 9), 0.256 (the definition's own number, +0.073), 0.240 against 1/E's 0.183 in probe22_actuarial.txt. A proxy combined with the features goes 0.07 past the "ceiling" | EV-2 (wording); LEAK-41's own phrasing |
+| 14 | Exposure as a feature lifts Tweedie by +0.073 on 9 of 9 | CHANGES, notes, REVIEW 6 | refit | HOLDS | +0.077 (SE 0.007), 9 of 9 | LEAK-41 |
+| 15 | 1/E above the L2 fit on 6 of 9 splits | notes bullet | per fold | NOT REPRODUCED (seed noise) | 8 of 9 with one seed; the mean claim (0.156 < 0.184) holds | EV-2 |
+| 16 | Ignoring the weight costs Tweedie 0.023 (9 of 9) and L2 on log1p nothing | notes "learners" bullet | unweighted refits | HOLDS | Tweedie -0.0225 (SE 0.003), 9 of 9; L2 weighted - unweighted -0.004 (weighted higher on 3 of 9) | MET-15 |
+| 17 | Probe 22: features predict Exposure at R^2 0.34, 86% through length_to_year_end; none above noise | CHANGES, notes, probe22*.txt | cross-fitted LightGBM E ~ features on split (0,0), with and without L; mediation of L under Tweedie with and without E on 9 splits | HOLDS | R^2 0.336 with all features, 0.003 without L (the rest of the tariff has no selection proxy of the length); mediated gain of L = -0.035 (SD 0.019), negative on 9 of 9 (L gains MORE when E is present, as L - E marks a cut record: an interaction with the leak, not a proxy of it); probe22_actuarial.txt: -0.038 (SD 0.019) | LEAK-41, USE-6 |
+| 18 | Issue 7: L2 on log1p scores 0.156 with L, 0.185 without (lower with it on 7 of 9); Tweedie 0.183 with, 0.179 without | CHANGES, notes, REVIEW 7 | refits | HOLDS | L2 0.152 vs 0.182 (-0.030, SE 0.011, lower with L on 7 of 9); Tweedie 0.182 vs 0.178 (+0.004, SE 0.005, higher on 6 of 9) | CLEAN-16 |
+| 19 | The weighted mean of log1p rises with the length to 31 December while the cost per year stays flat | notes "learners" bullet, REVIEW 7 | raw data by L band | HOLDS | weighted mean log1p 0.289 / 0.636 / 0.881 / 1.013 for L in quarters; cost per year 394 / 469 / 451 / 441; claims per year 0.20 to 0.22 | CLEAN-16 |
+| 20 | The next record of the policy as an oracle: 0.443 (+0.260) | CHANGES, notes LEAK-9 bullet, REVIEW 6 | Tweedie with has_next, the next record's counter rises and the realized length from the next start | HOLDS | 0.467 (+0.285, 9 of 9; min 0.427) | LEAK-9 |
+| 21 | The length to 31 December alone scores 0.005; models beat it by at least 0.11 on 9 of 9 | notes, REVIEW summary | per fold | HOLDS | L alone 0.0052; Tweedie margin min 0.140, 9 of 9 | TP-4 |
+| 22 | Records: 55,700 open, 34,324 continued, 25,131 ended alone; ended-alone 20.7% of exposure, 38.9% of cost; 837 / 407 / 311 per exposure-year; 66 of the 109 largest claims | notes "Exposure" bullet, REVIEW 6 | recomputed from raw with _continues_next | HOLDS | exact: 55,700 / 34,324 / 25,131; 20.7% / 38.9%; 836.9 / 407.0 / 310.6; 66 | EV-2 |
+| 23 | 45 exact copies dropped, 967 negatives set to 0; 90.6% zeros (89.7% published + 0.84%) | notes, task_summary | raw | HOLDS | 45; 967; 0.9056 and 0.8972 | EV-2 |
+| 24 | 15,303 records shorter than a month hold 4.3% of the claim cost | notes | raw | HOLDS | 15,303; 4.32% | EV-2 |
+| 25 | 38% of records start on 1 January | notes | raw | HOLDS | 38.2% | EV-2 |
+| 26 | MET-1/MET-11: the source names no metric, origin context | metric reason | the CASdatasets freMPL page once more; one web search for a freMPL paper | HOLDS | the page has descriptions and plotting examples only; no paper scoring freMPL found (Gini on ordered Lorenz curves appears on freMTPL/BelgianMTPL, arXiv 2412.14916). The x axis of cumulative exposure with ordering by predicted pure premium matches the CAS validation practice | MET-1, MET-11 |
+| 27 | "CAS Monograph 5, sec. 7.2.4" | metric reason | look up the section | UNTESTED | the monograph PDF was not reached in one search; the form itself is confirmed (claim 6) | EV-2 |
+| 28 | MET-15 applies: the decision's quantity is a sum over the realized length (premium earned pro rata) | metric reason, notes | reading | HOLDS (reasoning) | a per-year tariff earned pro rata on a cancelled policy; the sample weight equals the metric's weight | MET-15 |
+| 29 | "Rounded, 2,704 records would repeat ... (3,445 in all, against 610)", "score would not move (-0.002 / -0.001)" | notes length bullet | not run | UNTESTED | a supporting figure for the unrounded choice; claim 4 already shows the unrounded L is a per-day calendar value with no realized decimals, so the choice is safe whatever these counts are | LEAK-41 |
+| 30 | (implied) No row copies across the split | leak.txt | probe output | HOLDS | 0.4% of test rows have an exact feature copy in train; same label 0.3%, another label 0.1% | LEAK-18 |
 
-Count: 39 claims. 26 hold or hold in substance; 4 refuted (9, 14, 15, 19); 3 refuted in part (10, 29, and 5 in
-wording); 3 refuted in the record only (32-34); 3 untested (37-39). Claim 30 is a concern, not a written claim.
+**Ranked: refuted and untested**
 
-**Refuted and untested, ranked (validity first, Must first)**
+1. (Refuted, wording, EV-2; no validity effect) "1/Exposure alone ... the ceiling a leak would reach". Where:
+   metric reason (dataset.py, README Metric block), the notes bullet "The metric rewards any stand-in", the REVIEW
+   summary, CHANGES.md, the probe 22 output line "1/weight alone, the ceiling of a proxy", and LEAK-41 /
+   probe-22 text in leak_checks.md. Numbers: the realized length as a feature reaches 0.259 (mine), 0.256 (the
+   definition's own), 0.240 (probe22_actuarial) against 0.184. The single variable 1/E is a floor for a perfect proxy
+   used together with the features, not a ceiling. What it changes: nothing in the decision (LEAK-41 decides by
+   timing), but a reader who takes 0.184 as a bound would let a partial proxy that scores 0.20 through as "below the
+   leak ceiling". Mildest remedy: reword to "1/Exposure alone scores 0.184, as much as the honest model; with the
+   features it reaches 0.256" in the dataset's texts. The rule and probe wording are the curator's (shared with
+   australian_vehicle_insurance and others), so flag them and do not edit them here.
 
-1. **The split (claims 14, 15; P4, SPLIT-9 and SPLIT-8, Must).**
-   - What is wrong: under random records, a fifth of each test fold has the policy's next record in train. That
-     record's claim counts rose after 87% of the test record's claims and after 0.9% of its non-claims. A lookup built
-     from training features only (no labels, no dates, no file order) lifts the declared Gini from 0.282 to 0.403
-     (3/3 folds).
-   - SPLIT-8 already names the regime for this case: "grouped by the entity when the periods are stacked and the
-     entities recur across them (`ForcedGroupedFromTemporal`)". The principles' SPLIT-9 tension: "a shortcut that can
-     be measured is always removed".
-   - What it changes: the regime and the tag.
-   - Mildest remedy:
-     - build the chain id in `_clean`; `_decisions` already computes it;
-     - ship it as the group column, not a feature, with `Grouping(on=chain, labels="per_sample", context="none")`;
-     - tag `ForcedGroupedFromTemporal`.
-   - Cost: none measured (plain LightGBM 0.277 grouped against 0.282 random). Grouped, the lookup's gain is gone
-     (AUC 0.680 against 0.689).
-   - Residual: chain grouping still leaves a test record's successor in `X_test`. That is an evaluation-level path,
-     which standard models do not take (LEAK-9).
-   - Untested (claim 37): whether TabPFN-class models take the shortcut. It is no reason to keep the split, since
-     the shortcut is measured.
-2. **`Exposure` (claims 9, 10; P4, LEAK-10 Must, LEAK-7 Should).**
-   - What is wrong: half the records ended early. The realised length carries 45% of what `Exposure` adds to the
-     claim AUC (0.633 start-known against 0.689 realised, 9/9). Large claims end their records early more often (74%
-     against 51%), circumstantial evidence of the outcome cutting the period short.
-   - The length known at the start (start date to year end, equal to `Exposure` for every open record) scores the
-     same on the declared Gini (0.292 against 0.283).
-   - What sets this case apart from fremtpl2 (CC, kept) and australian (kept, "Revisit if a release gives the
-     contracted term"): the start date exists here. Spanish 2022-2024 made the same fix where it could, giving
-     cancelled portfolio years their start-known exposure.
-   - Mildest remedy: replace `Exposure` by the start-known length, and say so in the notes and the task summary.
-   - It departs from the curator's fremtpl2 call, so it is the curator's: a consistency check (a) treat as fremtpl2,
-     or (b) the start date as the distinguishing fact.
-   - Also correct "the family's call of 2026-10-30" to "the AI's suggested call", since the curator decided only
-     the verdict and the priority.
-3. **Files as "near-random slices" (claim 19; P5, PROV-7 Weigh).**
-   - What is wrong: claim rates differ by file, 7.7-10.0% (p 2e-16, 2.4 times the largest spread of random
-     relabelling); bonus-malus and start dates differ too.
-   - Stacking without a file column stays reasonable: one schema, one insurer, a file is not known for a new record.
-   - Mildest remedy: reword the note ("samples of one portfolio drawn differently, claim rate 7.7-10.0% by file; why
-     is undocumented") and the record. The fit reason already says the cuts are undocumented.
-4. **The metric's justification (claims 29, 30; P6, MET-1 Must, MET-10 Weigh).**
-   - What is wrong: the cited practice supports the unweighted Gini only for rows of equal exposure (Allstate's
-     vehicle-years). For unequal exposure, Liberty Mutual weighted, and Frees et al. order by the relativity to a
-     premium.
-   - On this task the declared Gini gives raw `Exposure` 75% of the model's score, and an exposure-weighted Gini
-     gives it -0.05.
-   - One claim moves a fold by 0.09.
-   - What it changes: what the benchmark rewards (ranking period lengths against ranking risk). The australian and
-     Spanish siblings declare the same unweighted Gini, so it is a family-level weighing call for the curator.
-   - Mildest remedy: keep `normalized_gini`, and add to the reason that it scores the period's total cost, length
-     included.
-   - Alternative: an exposure-weighted ordered-Lorenz Gini, with the realised `Exposure` as a scoring column (MET-2:
-     a weight is never a feature). That fits the remedy of item 2, where the feature becomes the start-known length.
-5. **Record corrections (claims 32-34, 19; EV-2, record only).** Year 2014 from the 1.0-7 NEWS; 3,805 records span
-   all of 2004; 34,324 chain links (not "431 against 309"); file sizes 16,000-32,400 in 1.2-1; the files are not
-   random slices. The builder's draft issue 5 covers part of this.
-6. **Wording (claims 5, 25; quality).** AIcrowd's game was 2020-21 on the 2017 game's portfolio. `OutUseNb` counts
-   out-of-use periods, not claims.
-7. **Cannot verify (claim 38).** Which guarantee the amount covers, paid or incurred, and the development date
-   (USE-5, LEAK-24). The source does not say; it stays in the fit reason.
+2. (Confirmed open conflict, CLEAN-16 Should; issue 7) The shipped state keeps both the log1p scale and
+   length_to_year_end, which CLEAN-16 as amended asks against ("drop the feature or ship the identity scale"). Measured:
+   -0.030 (SE 0.011) for a weighted L2 fit on log1p, lower on 7 of 9; +0.004 (SE 0.005) for Tweedie. Strictly CLEAN-16
+   names the "denominator as a feature". L is not the denominator, but it equals it on 48% of rows and bounds it on
+   the rest, and the mechanism (weighted mean of log1p rising with L, flat cost per year) is the one the rule describes.
+   What it changes: the most common learner family loses about one random-order SD (0.037) for a reason unrelated to
+   risk. Mildest remedy: option B of issue 7 (drop L), which the agent recommends; the data supports it.
 
-**Files**
-- Scripts and outputs: in the run folder (not committed): the row alignment, the counts, the models, the true
-  links, the feature-only lookup (random and chain-grouped folds), the severity, the files, the pre-1.2-1 sizes
-  and the freMPL1 overlap.
-- Sources: CASdatasets freMPL page (https://dutangc.github.io/CASdatasets/reference/freMPL.html); NEWS
-  (https://dutangc.perso.math.cnrs.fr/RRepository/pub/web/NEWS.html); `inst/NEWS` and `DESCRIPTION` at GitHub
-  commit c49cbbb; commit 3f5c00c; Frees et al. 2011 abstract
-  (https://academicnewsletter.sufe.edu.cn/info/445125).
+3. (Not reproduced, seed noise) "1/E above the L2 fit on 6 of 9": 8 of 9 with one seed. The mean holds. Remedy: none
+   needed, or state the count as "6 to 8 of 9 by seed".
+
+4. (Untested) The CAS Monograph 5 section number; the rounding counts 2,704 / 3,445 and the -0.002 / -0.001 deltas.
+   Neither changes a decision.
+
+Other observations (not claims the definition makes, for the panel):
+- Fold noise: random orders have a per-fold SD of 0.037 (up to 0.071), the Tweedie-L2 gap is 0.030, and 1/E per fold
+  ranges 0.13 to 0.26. Model comparisons on this task need paired fold differences. The REVIEW already lists "fold
+  noise (SD 0.03)" as a minus.
+- The task probe's flag no_signal (TP-1, TP-2) comes from R^2 skill on the log1p scale (+0.014). On the declared metric
+  the models beat the constant by 0.18 and the length alone by at least 0.14 on 9 of 9 (TP-4), so the flag measures
+  the scale, not the absence of a ranking signal.
+- Without length_to_year_end, the tariff predicts the realized length at R^2 0.003: no rating factor carries risk
+  selection into the length. The LEAK-41 timing call for L is clean.
+- The README guidance "a model fitted without [the weight] targets another quantity" holds in principle. Empirically
+  it matters for Tweedie (-0.023, 9 of 9) and not for L2 on log1p (-0.004 the other way).
+- The container rows are not in _clean's order. I aligned them through a key merge over every column (the assert on a
+  complete match passed, and the oracle's 0.47 confirms the alignment). The probes that read raw order go through
+  lineage and are unaffected.
+
+Sources checked: https://dutangc.github.io/CASdatasets/reference/freMPL.html ; https://arxiv.org/pdf/2412.14916 ;
+https://open-exam-prep.com/study-guides/cas-pcpa/ch07-validation/gini-roc-auc
 
 </details>
 
 <details><summary>Column audit</summary>
 
-**Column audit (column-auditor, 2026-11-01): frempl_french_motor_personal_line**
+**Column audit (2026-11-06, exposure re-review, full tier): frempl_french_motor_personal_line**
 
-**Verdict: ship after changes.** 15 of the 16 features are fine. One is not: `Exposure` is partly post-outcome, and its late
-part can be located row by row. The negative-amount step can stay, but its stated reason is refuted by the data.
+Verdict: ship as defined. No leak and no cleaning problem is new under LEAK-41. `length_to_year_end` is known at the
+start and holds no part of the realized length. The only open point is issue 7 (CLEAN-16). Both arms of probe 22
+show the feature is worth nothing on the declared metric, and that evidence supports option B, dropping it.
 
-Prediction point (first `curation_comments` bullet): the start of a record, a period of cover with fixed rating factors.
-Codebook: CASdatasets `man/freMPL.Rd` (master). Frame: `dataset_io.load(..., built=True)`, which gave a rebuild because
-there is no build record: 115,155 x 17, shuffled (0.01% of consecutive rows look like a continuation). All numbers below
-are mine, from untuned LightGBM (the builder's settings) on random 3-fold CV (6-9 folds), unless they are cited as the
-builder's. Scripts: in the run folder (not committed).
+Read: the definition and its REVIEW.md (issues 6, 7; column audit of 2026-11-01),
+the change note, leak_checks.md (LEAK-41, probe 22, cases), cleaning_features.md (CLEAN-12, -14, -16, -22), use_case.md
+(USE-6, -7). Frame: the definition's own _load_raw/_clean on the warehouse CSVs, 115,155 x 21 (with the raw dates kept
+next to it for the checks). dataset_io.load confirms 16 features, weight `Exposure`, scoring column `Exposure`, group
+`policy_component`.
+Probes read: probe 22 (the L2 arm and the weighted Tweedie arm), the leak, task and group probes.
+
+**1. length_to_year_end: the question asked (LEAK-41 timing, its decimals)**
+Known at the start: yes. It depends on the start date alone.
+- _clean takes it as the median `Exposure` of the open records (RecordEnd missing) that start on the same day.
+  All 366 start days of 2004 have open records. On none of the 366 days do the open records disagree: every day has
+  exactly one distinct open `Exposure`, so the median is that value, and the frame holds one value per start day
+  (max distinct per day 1; 366 values over 366 days).
+- It falls strictly with the start date (0 inversions over the 366 days, 0.001 on 31 Dec to 1.0 on 1 Jan). It is the
+  source's own rounding of the time left to 31 December. Neither (days-1)/365 nor days/366 reproduces it exactly
+  (50% and 44% of rows match to 3 decimals), so the lookup from the source is the right way to build it, not a formula.
+- Since the value is fixed by the start day, it carries no information about the realized length beyond the start date
+  itself. Its three decimals are the start date's, not the record's end. It equals `Exposure` on all 55,700 open
+  records and is strictly above it on all 59,455 closed records (0 ties). That says the end is at or before 31 Dec,
+  which is known at the start. No value is "corrected on some rows and realized on others" (LEAK-41's hybrid), and
+  no precision marks the cut. Unrounded is right: the month rounding of 2026-11-02 guarded the old `Exposure`
+  feature's decimals, and this column has no such decimals to hide. Rounded, it would only merge known start days.
+- The lookup reads the open records' `Exposure` over all rows, test rows included. Every day has one shared value,
+  so the lookup is a fixed calendar table and moves no label information. This is not a leak (EV note only).
+- Probe 22 (3 splits x 3 seeds, capped at 50k):
+  - The features predict `Exposure` at R^2 0.335 (Spearman 0.536), 86% of the gain through length_to_year_end. That
+    is expected of a feature that equals the weight on 48% of rows and bounds it on the rest.
+  - Its weight-mediated gain is negative in both arms: -0.060 (SD 0.034) under L2 on log1p and -0.038 (SD 0.019)
+    under the weighted Tweedie fit. The feature stands in for nothing the weight would add.
+  - Its gain without the weight is -0.038 (SD 0.040) under L2 and -0.002 (SD 0.014) under Tweedie.
+  - Its gain with the weight present is +0.022 under L2 and +0.036 under Tweedie. That is the open/closed status that
+    `Exposure` < length_to_year_end reveals, and it only exists while the weight is a feature, which it is not.
+  - The other top features (LicAge, DrivAge, BonusMalus, SocioCateg) are all within one SD of 0 in both arms.
+  Verdict: fine under LEAK-41 and LEAK-10 (timing: known at the start, USE-6). LEAK-41's "worse of the two fits" test
+  is for suspect columns. This one is not a suspect by timing. Its value question is CLEAN-16 (issue 7, below).
+- A small wording point for the definition: length_to_year_end is a one-to-one recoding of RecordBeg (366 values for
+  366 days). `changes` says "dropped the record dates", and the `known` field says "the time from the period's start
+  to 31 December". Both are true, but a reader should be told that the start date ships in this form. Suggested
+  addition to the length bullet: "a one-to-one recoding of the start date (366 values)". The 2026-11-01 audit found
+  that RecordBeg adds nothing on top of the corrected length (Gini 0.335 against 0.340), so nothing changes in value.
+
+**2. Exposure (the weight)**
+Realized length in years, 0.001 to 1.0, positive on every row (USE-7: none to drop). It is excluded from the features
+(confirmed in dataset_io's feature_cols), it is the metric's `weight` input with per_unit, and it is `sample_weight`.
+Verdict: correct under LEAK-41, MET-14 and MET-15.
+- Leak reference: as a feature it would add +0.079 (SD 0.017) under Tweedie, and 1/Exposure alone scores 0.183
+  against the honest Tweedie fit's 0.161 in the probe. Those numbers are the ceiling a leak would reach. Nothing
+  shipped reaches it.
+- Under L2 on log1p, Exposure as a feature lowers the Gini (0.137 to 0.008). That is the CLEAN-16 mechanism again,
+  not reassurance.
 
 **Column table**
 
-| column | meaning (codebook) | known at prediction? | dtype and cleaning | verdict | rule |
+| Column | Meaning (codebook, man/freMPL.Rd) | Known at prediction (record start)? | Dtype and cleaning | Verdict | Rule |
 |---|---|---|---|---|---|
-| `Exposure` | "The exposure, in years"; (end - start)/365 within 0.006, 3 decimals | partly. Yes for open records (48%, which run to 31 Dec) and probably for continued ones (30%, which end at a renewal: the BM steps -3/-4/-5 at the change). No for the 25,131 records (21.8%) that end before 31 Dec with no continuation. Their end is unforeseen, and the claim drives it | float, (0.001, 1] | **leak (partial), fix** | LEAK-10, LEAK-7 |
-| `LicAge` | "driving licence age, in months" | yes: grows by the months elapsed between consecutive records (99.9%) | int, 2-940. 47 records imply a licence before 17 (DrivAge is in whole years), 18 before 16, none before 15 | fine (unusual, kept with the note) | CLEAN-11 |
-| `Gender` | Male / Female | yes (profile, fixed per record) | category, 2 levels | fine (ethics note present) | SEL-1, CLEAN-14 |
-| `MariStat` | "Alone" / "Other" | yes | category, 2 | fine | CLEAN-14 |
-| `SocioCateg` | CSP code, "CSP1" to "CSP99" | yes | category, 46 levels (union of the files), 23 with < 10 records | fine | CLEAN-14, CLEAN-8 |
-| `VehUsage` | 4 usages | yes | category, 4 | fine | CLEAN-14 |
-| `DrivAge` | driver age in years | yes: +1 at 37% of continuations, so it is the age at the record's start | int, 20-99 | fine | |
-| `HasKmLimit` | "1 if there is a km limit for the policy" | yes (contract term) | category {0, 1} | fine (a yes/no flag) | CLEAN-14 |
-| `ClaimNbResp`, `ClaimNbNonResp`, `ClaimNbParking`, `ClaimNbFireTheft`, `ClaimNbWindscreen` | claims of each type "in the 4 preceding years" | yes: at least one counter rises at the next record after 95.3% of the claims and after 2.3% of the zero-amount records, so a record's counters never hold its own claim | int counts | fine | LEAK-10 holds, CLEAN-14 |
-| `OutUseNb` | "Number of out-of-use in the 4 preceding years"; what an "out-of-use" event is: unknown | yes: rises at the next record after 2.0% of the zero records and 3.2% of the claims, so it is not a claim type of the target | int count | fine | |
-| `RiskArea` | "Unknown risk area between 1 and 13, possibly ordered" | yes (profile) | int, kept numeric. Claims per exposure-year are not monotone in the code (0.117 in area 1, 0.251 in area 4, 0.149 in area 12; Spearman 0.25) | fine; minor question | CLEAN-14 |
-| `BonusMalus` | 50-350, < 100 bonus | yes: rises at the next record after 11.6% of the claims (2.4% otherwise), so it is the value at the start, updated at renewal | int, 50-195 | fine | |
-| `log1p_claim_amount` (target) | `ClaimAmount`, "Total claim amount of the guarantee", negatives clipped to 0, log1p | target | float. 967 negatives set to 0; the stated reason is refuted (problem 2) | cleaning problem (reason only) | EV-2, CLEAN-1 |
-| `ClaimInd` (dropped) | claim indicator of the same period | no: same period, 1 exactly where amount > 0 | dropped | fine (correct drop) | LEAK-10 |
-| `RecordEnd` (dropped) | end date of the record | no: post-outcome (it carries the termination) | dropped | fine (correct drop) | LEAK-10 |
-| `RecordBeg` (dropped) | start date of the record | yes, but with `Exposure` it gives a record's end | dropped. Even after the problem-1 fix it adds nothing (Gini 0.335 with it against 0.340 without, AUC 0.675 both) | fine | CLEAN-22 |
-| `file` (dropped) | which sample file | n/a (a storage artefact of near-random slices) | dropped | fine | CLEAN-3 |
+| `length_to_year_end` | time from the record's start to 31 Dec 2004 in years, the source's Exposure of open records starting that day | yes: a function of the start date only (one value per day, strictly monotone) | float64, 0.001-1.0, unrounded, no missing | fine (timing); keep or drop is issue 7 | USE-6, LEAK-41 (holds), CLEAN-16 (open) |
+| `LicAge` | driving licence age in months | yes (grows by the elapsed months between records) | int, 2-940; 47 implausible early licences kept with a note | fine | CLEAN-11 (settled) |
+| `Gender` | Male / Female | yes (profile) | category, 2 | fine (ethics note present) | CLEAN-14 |
+| `MariStat` | Alone / Other | yes | category, 2 | fine | CLEAN-14 |
+| `SocioCateg` | CSP code (socio-professional category) | yes | category, 46 levels, 23 with < 10 records (several singletons) | fine | CLEAN-14, CLEAN-8 |
+| `VehUsage` | 4 vehicle usages | yes | category, 4 | fine | CLEAN-14 |
+| `DrivAge` | driver age in years | yes (age at start; +1 at 37% of continuations) | int, 20-99 | fine |  |
+| `HasKmLimit` | 1 if the policy has a km limit | yes (contract term) | category {0, 1}, 0/1 only (12,660 ones) | fine | CLEAN-14 (yes/no flag) |
+| `ClaimNbResp` | at-fault claims in the 4 preceding years | yes (rises after the record's claim, not before) | int 0-5 | fine | LEAK-10 holds |
+| `ClaimNbNonResp` | not-at-fault claims, 4 preceding years | yes | int 0-7 | fine | LEAK-10 holds |
+| `ClaimNbParking` | parking claims, 4 preceding years | yes | int 0-5 | fine | LEAK-10 holds |
+| `ClaimNbFireTheft` | fire-theft claims, 4 preceding years | yes | int 0-4 | fine | LEAK-10 holds |
+| `ClaimNbWindscreen` | windscreen claims, 4 preceding years | yes | int 0-8 | fine | LEAK-10 holds |
+| `OutUseNb` | out-of-use periods, 4 preceding years (what one is: unknown) | yes | int 0-5 | fine |  |
+| `RiskArea` | "Unknown risk area between 1 and 13, possibly ordered" | yes (profile) | int 1-13 kept numeric; codes have no words, so CLEAN-12 keeps them as shipped | fine (the minor question of 2026-11-01 was not raised by the mediator; not reopened) | CLEAN-12, CLEAN-14 |
+| `BonusMalus` | bonus-malus 50-350, < 100 bonus | yes, see below | int 50-195 | fine | LEAK-10 holds (checked again against the fremtpl2 case of 2026-11-05) |
+| `Exposure` | realized length in years | no: cut by contract changes and ends, which claims drive | float 0.001-1; weight scoring column and sample_weight, not a feature | fine as wired | LEAK-41, MET-14, MET-15 |
+| `policy_component` | group: connected records of one policy | n/a (group column, not a feature) | int32 | fine | SPLIT-9, SPLIT-24 |
+| `log1p_claim_amount_per_year` (target) | log1p(ClaimAmount / Exposure), negatives clipped to 0 | target | float 0-16.27 (11.6 M per year at most); round-trip checked in _clean | fine; scale question is issue 7 | MET-14, CLEAN-16 |
+| `ClaimAmount`, `ClaimInd` (dropped) | the period's amount and its indicator | no: parts of the target | dropped | fine | LEAK-10 |
+| `RecordEnd` (dropped) | end date | no: post-outcome | dropped | fine | LEAK-10, LEAK-41 |
+| `RecordBeg` (dropped) | start date | yes | dropped; ships one-to-one as length_to_year_end | fine (note wording, problem 2) | CLEAN-22 |
+| `file` (dropped) | sample file | n/a | dropped | fine | (settled) |
+| `exposure_at_start` (dropped since 2026-11-06) | the old hybrid base | partly realized | dropped | fine | LEAK-41 |
 
-**Problems, ranked**
+BonusMalus against the fremtpl2 case (new LEAK-10 Cases row, 2026-11-05). There, BonusMalus was recorded after the
+outcome in some ID blocks, with claimants piling up on the first malus step. That pattern is absent here:
+- Only 9 of 115,083 records with no at-fault claim in the 4 preceding years carry BM > 100 (7.8e-5), against 8.1%
+  of the records with one. A malus therefore follows prior at-fault claims, which places the value at the start.
+- The claim rate rises smoothly with BM: 0.086 at 50, 0.11 at 100, 0.12-0.14 at 101-125, 0.16 above 125. Claimants
+  do not pile up on a step.
+- The 2026-11-01 audit found that BM rises at the next record after 11.6% of the claims (2.4% otherwise).
+Kept: the source registers it at the start, as for bemtpl97.
 
-**1. P4, LEAK-10 (Must), fixed by LEAK-7: `Exposure` of records that end early with no continuation is post-outcome,
-and those ends can be located.** Severity: strong on the declared metric.
-- What the definition says. The `Exposure` note gives the curator's fremtpl2 call ("known when a policy is priced, apart
-  from a contract that ends early"). The dates bullet says that only "the start date together with `Exposure`" gives
-  the end away.
-- What the data shows. The exact 3-decimal value of `Exposure` alone tells a record that ended early from an open one at
-  ROC AUC 0.91 (3 folds; rounded to whole months, 0.61). It picks out the unforeseen ends at 0.81 (rounded, 0.56).
-  Dropping the dates hides much less than the note says.
-- The claim drives the end. Among short records, those with an unforeseen end have far more claims than open or
-  continued ones of the same length:
+Dtype probe: 0 of 16 columns flagged. There is no codebook file, so
+the meanings above come from man/freMPL.Rd as cited in the definition. No count or measured quantity is typed
+categorical, and no code is typed numeric except RiskArea, which is deliberate. There is no ordinal column, and no
+missing values in any feature.
 
-  | length | unforeseen end | open | continued |
-  |---|---|---|---|
-  | 1-3 days | 2.7% | 0.4% | 0.24% |
-  | 4-11 days | 2.65% | 0.34% | 1.0% |
-  | 0.03-0.1 years | 4.3% | 1.7% | 2.0% |
-
-  These records hold 20.7% of the exposure but 38.9% of the claim cost (837 per exposure-year, against 311 for open
-  records and 407 for continued ones). They also hold 66 of the 109 claims in the top 1%. Large claims (write-offs,
-  thefts) end contracts, as the australian sibling found (claims of at least 80% of the vehicle's value: median
-  exposure 0.37 against 0.65).
-- The decisive test (EV-1). Give these 25,131 records the source's own `Exposure` for a record starting the same day
-  and running to 31 Dec, the value known at the start. Every start date has open records and one shared value, so this
-  is a lookup that does not read the label.
-  - Normalized Gini goes from 0.288 to 0.339: +0.027 to +0.065, higher on 9 of 9 folds. Without the 802,620 claim it goes
-    from 0.316 to 0.371.
-  - Claim AUC goes from 0.689 to 0.675: -0.013 to -0.016, lower on 9 of 9 folds.
-  - So the shipped value inflates the claim ranking and hides the large claims that ended contracts. Either way the
-    benchmark measures another task than "price at the start".
-  - Giving every record its start-known value instead loses the scheduled renewal ends: Gini 0.293, AUC 0.633.
-- Precedents.
-  - spanish_motor_insurance_coverage_level_2022_2024 (same run): cancellations it could locate got the exposure known at
-    the start (LEAK-10, LEAK-7); the ones it could not locate were kept with a note.
-  - australian (same run): kept with a note, because it could not locate them and the late part showed no gain.
-  - fremtpl2 (CC, 2026-10-20): kept, also unable to locate them.
-  - LEAK-10's second clause: late cells that can be located are fixed.
-  - The fact that sets freMPL apart from fremtpl2: its dates locate the early ends row by row. Treating it like spanish is
-    the consistent call; keeping it as it is would be a departure from the rule that needs its own reason.
-- Mildest remedy. In `_clean`, before the dates are dropped, set `Exposure` for the records with `RecordEnd` and no
-  continuation (`_continues_next` already in the file) to the open records' `Exposure` for the same `RecordBeg`. Keep the
-  continued records as they are, with a note on the residue: some continuations are claim-driven too (vehicle
-  replaced), at a claim cost of 407 against 311 per exposure-year. Rewrite the `Exposure` note and the `fit_reason`
-  clause.
-- Fallback if the curator keeps the fremtpl2 reading. Use a `Potential leak, kept on purpose:` note with the numbers
-  above. Also round `Exposure` to whole months. That removes the end-status code (0.91 to 0.61) at no cost: Gini 0.282
-  against 0.283, claim AUC -0.001, and +0.002 for exact values with fine-binned trees on 5 of 6 folds.
-
-**2. P7 with EV-2 (Should): the negative amounts are claims of the period, not "recoveries on earlier claims".**
-- Of the 246 negative-amount records that have a continuation, 95.1% are followed by `ClaimNbNonResp` +1 at the next
-  record. That happens for 0.19% of zero-amount records and 18.6% of positive claims.
-- Their rate grows with the length, like a claim of the period: 0.18% at 0.1 years or less, 1.5% at 0.75-1.
-- Their predecessor had a claim no more often than for other records (6.6% against 8.0%).
-- So they are not-at-fault claims in the record's own period whose recourse exceeded the payment, presumably the
-  IRSA flat rate. `ClaimInd` = 0 there marks "no positive net cost", not "no claim".
-- The clip itself can stay. pricing_game_2017 clips the same kind of recourse totals with "a net recovery is no claim
-  cost of the year". The effect is small: the negatives are -2.4% of the net claim cost.
-- Remedy (text only):
-  - Correct the negatives bullet, `predicted` ("0 ... those without a claim"), the target bullet ("90.6% ... no claim"),
-    the `Decision` text, and the reason proposed for accepting `task_target_value_dominant`.
-  - Suggested wording: 0 = no claim, or a not-at-fault claim recovered in full (0.84%).
-
-**3. P3, USE-5 (positive finding for a note): the amount covers the policy's claims of every counted type.** The source
-names no guarantee, but the counter that rises after a positive claim shows which kinds the amount holds. Over the
-2,361 claim pairs with exactly one rise:
-
-| counter | share |
-|---|---|
-| windscreen | 39.6% |
-| responsible (at fault) | 28.2% |
-| non-responsible (not at fault) | 17.3% |
-| parking | 8.9% |
-| fire-theft | 5.9% |
-
-So the amount spans liability, own damage, glass and theft/fire claims. This narrows the `fit_reason` gap "the guarantee
-behind the amount is not named" and the builder's draft issue 3. The fit stays approximate for its other reasons.
-
-**4. P7, CLEAN-14 (weigh; question for the curator): `RiskArea` numeric or categorical.** It is a fixed set of 13 codes
-that the source calls only "possibly ordered", and the claim rate is not monotone in the code (Spearman 0.25).
-- Numeric keeps the source's suggested order and matches the definition ("as shipped").
-- Categorical follows CLEAN-14's "fixed, finite set". The australian sibling types its `area` categorical, but that one
-  is a letter code.
-- Either choice is defensible. Low stakes for tree models.
-
-**5. Minor note wording (claim-auditor's territory).**
-- The counts bullet's "12% otherwise" counts any change, falls from the 4-year window included. Only 2.3% of zero
-  records see a rise, mostly in `OutUseNb`. Say "a rise after 95% of claims, 2.3% otherwise", or name the falls.
-- The 47 early licences: 18 imply a licence before 16 even allowing for the whole-year `DrivAge`. They are still not
-  provably impossible without the reference dates, so keeping them is right.
-
-**Judgment record**
-
-```text
-Verdict: ship after changes.
-Validity: USE-3 holds; LEAK-10 triggered on Exposure (21.8% of records, unforeseen ends located by RecordEnd + no
-continuation), fix by LEAK-7 (start-known Exposure, as spanish); ClaimInd/RecordEnd drops hold; counters and
-BonusMalus are as of the record's start (LEAK-10 holds).
-Value: unchanged by this audit (the fix raises the Gini 0.288 -> 0.339, lowers claim AUC 0.689 -> 0.675).
-Quality: negative-amount reason refuted (EV-2), clip kept with corrected text; RiskArea dtype a CLEAN-14 weighing.
-For the curator: problem 1 (fix Exposure as spanish, or keep as fremtpl2 with a kept-leak note and month rounding).
-```
+**Problems, ranked (principles.md)**
+1. Issue 7, open (CLEAN-16, Should; value, not validity). Keep length_to_year_end on the log1p scale? New evidence
+   from probe 22, 3 splits x 3 seeds, with the weight not a feature:
+   - weighted Tweedie arm: the feature's gain is -0.002 (SD 0.014);
+   - L2-on-log1p arm: its gain is -0.038 (SD 0.040).
+   On the definition's 9 splits it was +0.005 (SE 0.004) under Tweedie and -0.029 (SE 0.010) under L2.
+   - No arm shows the feature is worth anything to the loss that suits the metric. Under the common loss it is a
+     penalty unrelated to risk: CLEAN-16's mechanism, with the start-known length in the place of the denominator.
+   - LEAK-41's "decide on the worse of the two fits" does not formally apply, because the column is not a suspect by
+     timing. But the same reading leads to the same answer.
+   - Mildest remedy: option B as issue 7 describes it. Drop the feature in _clean, keep the asserts, and update
+     known, changes, the length bullet, the learners bullet and the metric reason's numbers. USE-6 makes the column
+     legitimate, not obligatory, and CLEAN-16 names dropping it as one of its two remedies.
+   - If the curator keeps it (A), the learners bullet already says what an L2 fit estimates. Nothing else is needed.
+2. Text only (EV, CLEAN-22): say that length_to_year_end is a one-to-one recoding of the start date (366 values),
+   because `changes` reads "dropped the record dates". One clause in the length bullet; moot under issue 7 option B.
+No other problem. Settled points (the grouped folds, the negatives, the 45 copies, the LEAK-9 protocol line, the
+counters' timing) are not reopened by today's change.
 
 </details>
 
 <details><summary>Split audit</summary>
 
-**Split audit (split-auditor, 2026-11-01): right with notes.** Random 3x3 folds over the 115,155 records, tagged
-`ForcedIIDFromTemporal`, are the right split for this release. All numbers come from untuned LightGBM (300 trees, the
-builder's settings) on the definition's frame and shipped splits, loaded through `dataset_io` (EV-8). The split stays.
-Three statements about it need correcting, and one consistency question goes to the curator.
+**Split audit: frempl_french_motor_personal_line (exposure re-review, full tier, 2026-11-06)**
+Verdict: RIGHT WITH NOTES. The forced grouped regime and the component key stand. One new finding: a hidden group the
+key misses. A contract change that also changes one profile column (a move to another RiskArea, a km limit or vehicle use
+changed) leaves the policy split across components, and its later record in training gives a test record's claim away
+(+0.020 Gini, 9/9 splits). The LEAK-9 protocol line is right, and the route it guards is larger than its stated number.
 
-```text
-Verdict: right with notes.
-Validity: SPLIT-1, SPLIT-3 hold (temporal by use case, one year released); SPLIT-8 holds for the regime and the tag, but
-  the cost against the valid windows was not measured (now measured, issue 1); SPLIT-29, SPLIT-30 hold: a test record's
-  policy mates on the training side add nothing (paired, 9 shipped folds); USE-10 (known policies are priced) supports
-  keeping them across the split.
-Value: not affected by the split. The 802,620 claim decides which fold scores low (note A).
-For the curator: consistency with pricing_game_2017_french_mtpl (grouped by client) and
-  spanish_motor_insurance_coverage_level_2022_2024 (grouped by policy), issue 2.
-```
+Untuned LightGBM, Tweedie
+1.5, 300 trees, weighted by Exposure, one seed; scored with scorer(c) on log1p(pred). Rows are mapped to the raw dates
+through process(lineage=True) ("traced by the column", target matches).
 
-**What the use case implies.** An insurer prices a period of cover when it starts and fits its tariff on past years
-for the next year. The task is therefore temporal (SPLIT-6), and most priced policies are renewals, i.e. known entities
-(USE-10). The release holds one year: `RecordBeg` runs from 2004-01-01 to 2004-12-31, 38% of the records start on 1
-January, and 48% are open at year end. No next-year window exists, so SPLIT-8 applies. IID is its closest regime,
-because the records are segments of one year, not periods stacked across years. One prediction is one record, with no
-aggregation. Claims per exposure-year are flat by start quarter (0.216, 0.209, 0.216, 0.204), so there is no seasonal
-pattern a window would have to respect.
+1. Regime (SPLIT-8): holds, and is now also required by LEAK-41.
+   - The use case is a tariff applied at the start of a period to next year's policies, so it is temporal by nature.
+     Every record lies inside 2004 (starts 2004-01-01 to 2004-12-31), and 48.4% are open at 31 Dec.
+   - An in-year window could only train on records that had already ended by its cutoff:
 
-**Issue 1 (P4, SPLIT-8, Must: "with the cost measured against the valid windows where the data has any").** The
-`splits_comment` says windows inside 2004 "would train on records whose period is still running". That is only true of
-naive windows. Windows whose training labels are complete do exist: train on the records whose period ended by the
-cutoff (SPLIT-9 met), and test on the records that start in the next three months. They fail SPLIT-14's 50% floor, and
-their training side holds only contracts that ended early. Their cost was not measured. Measured on the same test rows:
+     | Cutoff | Rows ended by then | Claim rate of those rows | Cost per year, those rows / open records |
+     |---|---|---|---|
+     | 1 Apr | 12.8% | 4.4% | 1,140 / 311 |
+     | 1 Jul | 26.9% | 6.5% | 720 / 311 |
+     | 1 Oct | 39.1% | 8.1% | 631 / 311 |
 
-| cutoff | test rows | valid train (ended by cutoff) | claim AUC: valid / random same n / 3-fold OOF | Gini: valid / random same n / 3-fold OOF |
-|---|---|---|---|---|
-| 1 Apr | 20,237 | 14,752 (12.8%) | 0.549 / 0.601 / 0.621 | 0.136 / 0.170 / 0.162 |
-| 1 Jul | 16,822 | 30,933 (26.9%) | 0.592 / 0.595 / 0.604 | 0.106 / 0.155 / 0.162 |
-| 1 Oct | 19,417 | 45,077 (39.1%) | 0.624 / 0.622 / 0.638 | 0.172 / 0.153 / 0.191 |
+     That training side is chosen by the realized weight. LEAK-41's last clause forbids it, as in the
+     pricing_game_2016_french_fleet case, and it is also below the 50% floor.
+   - The weight (time on risk) is cut at the release end (31 Dec) for 48.4% of the records. The grouped random folds
+     put that cut on both sides alike. ForcedGroupedFromTemporal is right.
+   - Not new, and should stay in the notes: held-out policies of the same year cannot test drift to the next tariff
+     year (fit=approximate already says so).
 
-The April window loses the most, because it trains on Q1-ended records (mean `Exposure` 0.15, claim rate 4.4%) and tests
-on Q2 starters (mean 0.53, 11.0%). Its predicted claim rate is 0.41 of the observed rate. That loss comes from which
-records the window can train on (only contracts that ended early), not from change over time. The two later windows
-match random records of the same size on AUC. Training on every record that started before the cutoff, labels still
-running, gives AUC 0.624, 0.609 and 0.630. So the windows this release allows test a training side that is selected by
-how contracts ended. They cannot replace the forced IID split, but SPLIT-8 asks for the number to be stated.
-*Remedy (mildest: text only):* replace the reason in `splits_comment` with the measured windows, e.g. "Windows inside
-it can train only on records whose period had ended by the cutoff: 13% to 39% of the rows for 1 April, 1 July and 1
-October, below the 50% floor, and only contracts that ended early; on the records starting in the next three months
-they reach a claim AUC of 0.55, 0.59 and 0.62 against 0.60, 0.59 and 0.62 for as many random records".
+2. Group id (SPLIT-24, SPLIT-9): checked.
+   - 68,857 components; 1 to 13 records each; 85,124 records in components of two or more.
+   - No component straddles any of the 9 splits. Test folds hold 38,281 to 38,532 rows.
+   - One prediction = one row, made from that row (context none).
+   - The group probe: IID 0.006 vs grouped 0.008, so a row-wise model gains nothing from IID. That probe cannot see a
+     lookup route; see finding A.
 
-**Issue 2 (P4, SPLIT-29 and SPLIT-30, Must, which hold; a consistency question under principles.md).** The notes
-undercount how often one policy has several records. `splits_comment` ("80,831 chains") and the curation note ("34,324
-records (30%)") count only continuations in the next row of the same file. Matching every closed record to a record
-that starts on its end day, with the same six profile columns and consistent `DrivAge` and `LicAge`, gives:
+**Findings, ranked (all P4)**
 
-- 34,683 closed records continue within their file. Another 10,292 continue only in another file, and 1,201 in both.
-  Shifting every start date by 7 days, as a chance control, matches 465 closed records.
-- The cross-file pairs behave like one policy. The claim-history counts change after 95% of claims (96% within a
-  file), and `BonusMalus` moves by 0 to -5 in 89% of the pairs.
-- Joining all the links gives about 68,900 policy components. 74% of the records share a component with another record,
-  and 10,485 components span two or more files. So the five files are not disjoint policy samples.
-- Under the shipped folds, 53% of the test records have a record of their policy on the training side (40% counting
-  only the within-file chains).
+A. [P4, SPLIT-9 Must, with SPLIT-30/SPLIT-24] Hidden successors that change one profile column fall outside the
+   component and cross the split. NEW.
+   - What the key requires: all six PROFILE columns equal. But a contract change is often exactly a change of one of
+     them.
+   - The search: records that end before 31 Dec, matched to a record starting that same day with the same Gender, a
+     DrivAge 0 to 1 higher, a LicAge advanced by the months between the starts (within 1), every claim/out-of-use
+     counter at least as large, and exactly one of the other five profile columns different.
+   - Result: 9,160 such pairs over 7,120 predecessors, none in the same component.
+   - Proof that real links are among them (a test that could have refuted it): the successor's counters rise after
+     75.5% of the predecessor's claims and after 41.9% of its non-claims.
+     - Chance baselines, with the end date shifted by +-1 or 2 months: 0.63-0.67 against 0.62-0.65, no contrast.
+     - Pairs with 2 or more profile columns different: no contrast either.
+     - By column changed (rise after claims / after non-claims):
 
-Does the random split reward recognising the policy? A paired test on the 9 shipped folds answers it. For each fold,
-one model trains without the test records' policy mates, and the other drops the same number of random non-mate rows.
-Both score the same test rows:
+       | Changed column | Rise after claims | Rise after non-claims |
+       |---|---|---|
+       | HasKmLimit | 0.939 | 0.073 (near exact) |
+       | VehUsage | 0.863 | 0.311 |
+       | RiskArea (5,788 pairs) | 0.722 | 0.494 |
+       | SocioCateg | 0.68 | 0.47 |
+       | MariStat | 0.72 | 0.46 |
 
-| policy key | Gini, mates kept / removed (diff ± se) | claim AUC, kept / removed | test rows with a mate: Gini, AUC diff |
-|---|---|---|---|
-| within-file chains | 0.2804 / 0.2821 (-0.0017 ± 0.0018) | 0.6880 / 0.6890 (-0.0009 ± 0.0005) | -0.0005, -0.0007 |
-| cross-file components | 0.2790 / 0.2790 (0.0000 ± 0.0029) | 0.6871 / 0.6875 (-0.0004 ± 0.0007) | +0.0028, -0.0002 |
+   - Rough count of true links: about 3,200 records (35% of the pairs, from the non-claim rise mixing 0.63 chance
+     with 0.025 true).
+   - Leak size, on the shipped 9 splits:
+     - Setup: a lookup feature, computed only from training rows: the largest counter rise among the test record's
+       one-column-changed candidate successors in train. 1,609 to 1,705 test rows per fold (about 4.4%) have such a
+       candidate.
+     - Result: honest 0.1742 against lookup 0.1945, a gain of +0.0203 (SD 0.0100), better on 9 of 9 splits.
+     - Where the gain comes from: the flag "a candidate exists" alone gives -0.003 (3/9). So the gain is the claim
+       told by the later record's counters, not the early end.
+   - The same alternative under widened groups: the component graph plus these links gives 61,091 groups, the largest
+     90 records.
+     - The lookup gain falls to -0.0045 (SD 0.009, 4/9).
+     - The honest score is 0.1686 (SD 0.020) against 0.1742 on the shipped folds. These folds differ, so the
+       comparison is unpaired; the gap is well inside the fold SD of about 0.03.
+   - Rule: SPLIT-9 says a training row of the test row's own entity, set after its prediction point, that tells its
+     outcome is removed whatever it costs. This is the same path issue 1 closed for exact-profile links, at about 1/5
+     of its size (issue 1 measured 0.303 to 0.395 on about 20% of test rows).
+   - LightGBM reading one row cannot use it. A model that searches the training rows (kNN, retrieval, in-context
+     models conditioning on train) could.
+   - Remedies, mildest first:
+     (i) A per-fold filter. Drop from each training side the rows that are one-column candidate successors of a test
+         row of that fold. About 1,700 to 2,500 training rows per fold (about 2-3%); groups unchanged. The splits
+         stay index lists, so this is a split edit only.
+     (ii) Widen the component with these links, as Andrej's "most conservative key" asked.
+         - Exactness: the rule is the current rule with one profile column relaxed, so it is built exactly from the
+           data (SPLIT-24).
+         - Precision: about half of the RiskArea links are chance. A chance link only merges two policies, the
+           stricter side, as the 1% cross-file chance links were accepted. The largest group grows to 90 records.
+         - Narrower variant: restrict the relaxation to HasKmLimit and VehUsage changes (2,049 pairs), the near-exact
+           links. This closes only part of the route.
+     Recommend (ii) with all one-column links (it fits the 2026-11-03 "most conservative" call and the measured cost
+     is within noise). Otherwise use (i). Either needs the curator's mark, since it reopens issue 1's key.
 
-A direct split, 3x3 folds grouped by component, scores Gini 0.2785 and AUC 0.6899, against 0.2827 and 0.6901 on the
-shipped folds. The mates do not help. This fits the builder's finding that a claim does not make the next record's claim
-likelier (8.3% after a claim, 9.2% otherwise), and it refutes the screening note "policyholders cannot be traced" (431
-pairs against 309 by chance). The builder's unpaired numbers (0.266 against 0.251) sit inside the fold noise of note A.
-The paired numbers are the ones to cite.
+B. [P4, LEAK-9 Should] The protocol line for the successor route: right, and its number should be stated as a floor.
+   - Grouping puts a test record's later records in test. 44,999 records have an in-component successor; issue 1 fixed
+     that route on the training side.
+   - My oracle uses the in-component successor's counter rise plus the days to its start, i.e. the realized length.
+     - Result: honest 0.1742 against oracle 0.529, a gain of +0.355 (SD 0.015), 9 of 9.
+     - The CHANGES/notes figure (+0.260) uses the next record of the file only. Both say the same thing; the larger
+       one is what a method reading other test rows could get, about 3x the honest score.
+   - The mildest remedy stays the protocol line: each test record is predicted from the training rows and its own row
+     only, and a method that reads other test rows is called out and not benchmarked. Precedents: fremtpl2,
+     medical_facility_operational_data, sepsis.
+   - The re-split alternative is not milder. Keeping one record per component in test would drop about 15,000 test
+     rows per fold and select rows by contract changes, which correlate with claims and with the realized length
+     (LEAK-41).
+   - Note: models that predict each test row independently given train (GBMs, TabPFN in its usual batch) are not
+     affected.
+   - Suggested wording: "+0.26 to +0.36 depending on what is read". After finding A's fix, the line also covers the
+     one-column successors, which would then be test rows.
 
-The consistency question: two siblings in this run keep a policyholder's rows together.
-`pricing_game_2017_french_mtpl` (one year, the same family) is grouped by `id_client` because "the claims of the
-client's other vehicles in that year are not known". `spanish_motor_insurance_coverage_level_2022_2024` is grouped by
-`insured_id`. The same reasoning applies here to a policy's later records. What sets this case apart:
+C. [P4, SPLIT-8, note] Time on risk cut at the release end: no split problem.
+   - The cut is the same on both sides.
+   - It enters only through `length_to_year_end`: equal to Exposure on the 48.4% open records, an upper bound on the
+     others. That is a feature question (issue 7, CLEAN-16/LEAK-41 timing), not a split one.
+   - Every record has Exposure > 0, so every test fold is fully scored.
 
-- The release has no policy or client id. The components are built from date continuity, with tolerances on the ages,
-  so they would be a constructed key that is not exact (SPLIT-24). About 1% of the links match by chance, and 1,767
-  closed records have two or more candidate continuations.
-- New data keeps the entity: the insurer reprices its known policies. SPLIT-30 re-splits only for an entity that new
-  data would not have.
-- The measured effect is nil. Under SPLIT-4 the gap never decides alone, but no reward is measurable either.
+D. [P4, copies across the split, note] Fine.
+   - 0.39% to 0.46% of each test fold has an exact feature copy in train.
+   - Leak probe: same label 0.3%, another label 0.1%; 1-NN R^2 is negative. Natural repeats (LEAK-18), already
+     documented.
 
-*Remedy (mildest: text only):* correct the counts in `splits_comment` and in the curation note. Cite the paired test.
-Record the distinguishing facts above. Ask the curator to confirm IID over grouping by component. If the curator wants
-consistency instead, grouping on the components is possible and costs nothing measurable, but it groups on an inexact
-key.
-
-**Issue 3 (P4 support; EV-5, EV-9).** The claim that the files are "near-random slices of one portfolio" underpins
-stacking them with no file column. It rests on file accuracy of 31.0% against a 28.1% majority share, and EV-5 bars
-accuracy against the majority class as evidence. Measured instead:
-
-- The file log loss is 1.528 against 1.572 for the prior, and the one-vs-rest AUC per file is 0.57 to 0.64 (files 9 and
-  5 are the most distinct). So the files are weakly distinct.
-- What separates them is the profile mix (`HasKmLimit`, `VehUsage`, `DrivAge`, `BonusMalus`, `SocioCateg`), not time:
-  the start-quarter shares are close, and 47% to 49% of each file's records are open at year end.
-- File 9's claim rate is 7.7%, against 9.3% to 10.0% for the others.
-- Leave-one-file-out scores like the random folds on each file's rows: AUC 0.690 against 0.687, Gini 0.284 against
-  0.285.
-
-The conclusion holds: stacking with no file column is fine, and a file split would test nothing new. Policies also
-cross files (issue 2). *Remedy:* replace the accuracy figure in the note with these numbers.
-
-**Issue 4 (P3 wording, USE-8).** `task_summary.split` says the test data "stands for other policies' periods in the same
-year". Half the test records have their policy on the training side, so it should read "other periods of cover in the
-same year, half of them of a policy with another period in training, which a pricing model knows too". *Remedy:*
-wording.
-
-**Note A (P6; for the metric and value reviewers, not a split problem).** The largest claim, 802,620, decides the fold
-Gini. The fold that holds it scores 0.211 to 0.234, the other folds 0.279 to 0.331 (shipped folds, both mate tests).
-Each repeat has exactly one such fold, so repeat means stay comparable, but any single-fold or unpaired comparison of
-splits is noisy.
-
-**Note B (LEAK-24, cannot verify).** The claim amounts' evaluation date is not stated. Among claimants, records open at
-year end have lower severity (median 749, mean capped at the 99th percentile 1,608) than records that ended earlier
-(median 799 to 1,086, capped mean 2,046 to 2,781 by end quarter). This fits immature year-end claims, but also claims
-that end a contract (a total loss or a theft), so it is circumstantial. It does not change the IID split.
-
-**Checked with no finding.**
-
-- No exact feature copy in the test folds has a twin on the training side (leak probe: 0.0%).
-- Near copies: 0.2% of the rows, the largest cluster 4.
-- Hidden-group probe: no hit. Its best composite key, `(all but Exposure, LicAge)` at 49.4%, is the policy chain of
-  issue 2, now tested directly.
-- No time column survives in the features, and none is needed for an IID task.
-
-**Scripts and outputs** (run folder, not committed): the alignment of the shuffled frame with the raw dates, files
-and chains; the paired mate test; the cross-file components; the valid windows; the files; the grouped folds.
+Not re-opened: issue 1 (the component key, apart from finding A), the 45 exact copies, the file stacking.
 
 </details>
 
 <details><summary>Domain practitioner</summary>
 
-**Domain practitioner (pricing actuary of a French motor insurer), 2026-11-01**
+**Domain practitioner (2026-11-06, exposure re-review, full tier): frempl_french_motor_personal_line**
+Played as: the pricing actuary of a French private motor insurer, building the pure-premium (prime pure) model of a
+personal-line tariff from a year of earned-exposure records.
 
-**Verdict.** Fit **approximate**, as declared (USE-8). The rows are the exposure lines of a tariff study and the features are its rating factors. But the amount's guarantee and loss basis are undocumented (USE-5), the vehicle and cover factors every French motor tariff rates on are missing, and random records of 2004 stand in for next year's book. Metric: **partly**. The Gini family is the right one, but the declared form ranks rows, not exposure. It scores the record's length nearly as much as the risk, and one claim moves it by ±0.05 between folds. I would use the exposure-weighted Gini on the predicted annual loss cost (below).
+**Verdict**
+Fit: approximate (USE-8), unchanged. The rows are the rated exposure segments I fit a tariff on, the target is the
+pure premium per earned year and the weight is the earned exposure, but the tariff is thin (no vehicle, cover or
+deductible factors), the amount's guarantee and basis are unknown, and held-out policies of the same year stand in
+for next year's book.
+Metric scores my decision: partly. The exposure-weighted ordered Lorenz Gini on the cost per year is the lift
+measure I would use to rank segmentations (Frees, Meyers and Cummings 2011), at my unit (the earned year) with my
+weight. It ignores calibration, and one large claim moves it by about 0.06 on a fold. I would keep it (the Tweedie
+deviance I would normally add fails here, see Q5) and score it on losses capped at a large-loss threshold.
+Issue 7: from the pricing side I support B (drop `length_to_year_end`). It is a cut made by the extract's calendar
+year, not a rating factor.
 
-**How the decision is made.** I fit a pure-premium model each year: expected loss per car-year, either frequency × severity or one Tweedie GLM. I fit it on calendar-year experience, one line per period with fixed rating factors, with the earned exposure and the incurred losses of that line. The exposure is an offset or a weight, never a rating factor. CAS Monograph 5 (sec. 2.6) says exposure is "included as a weight, but not as an offset" for frequency, and its offset form for counts is the same thing. Sec. 5.1.1 defines pure premium as "dollars of loss per exposure". The premium of a period is the annual rate times its length, pro rata. I pick between candidate models on a holdout. The tools are quantile plots, double-lift charts against the current tariff, and the Gini index. That Gini sorts by "the model predicted loss cost" and plots "the cumulative percentage of exposures" against "the cumulative percentage of losses" (sec. 7.2.4). I cap large losses before fitting (sec. 5.1.3).
+**Q1. Do I have these inputs when a period of cover starts?**
+- Driver age, licence age, gender, marital status, socio-professional category, vehicle use, km limit, bonus-malus
+  (the French CRM, 50 to 350), risk area, and the claim and out-of-use counts of the four preceding years: yes, all
+  on the policy file at the start or amendment of cover (USE-3, USE-6). The counters update at each record's start
+  (95% rise after a claim, 2.3% otherwise), so they are history I hold. Gender was a legal rating factor in 2004
+  (before the EU Test-Achats ruling of 2012), so it is fine for a 2004 book.
+- `length_to_year_end`: I know it, because it follows from the start date. But no French tariff rates on the days
+  left to 31 December. That boundary comes from the extract's calendar year: 38% of the records start on 1 January
+  because the release cuts there, not because anything is priced there. What it really tells me is the kind of
+  record (a policy carried into the year, or one that starts mid-year as new business or an amendment). If I want
+  that, I want it as a new business / renewal / mid-term amendment flag and a policy tenure. The data supports this:
+  the cost per realized year stays at 394 to 469 across its bands, so it carries nearly no risk signal. Under the
+  right loss it is worth +0.005 (SE 0.004, 5 of 9 splits), and it costs a squared-error fit on log1p 0.029 (7 of 9).
+  Keeping it is legitimate under USE-6, but CLEAN-16 as amended names exactly this case (drop it or ship the
+  identity scale). As a practitioner I would drop it (issue 7, option B).
+- The realized `Exposure` is out of the features (LEAK-41, MET-15). That is correct: at the start I know the planned
+  term, not when a total loss or a cancellation will end the cover. Probe 22 confirms nothing reaches it above noise
+  (features predict it at R^2 0.34, 86% through `length_to_year_end`, and no feature's gain is mediated by it).
+- Missing inputs I would always have (the main gap, ranked first below): the vehicle (class or group, age, power,
+  value, fuel; the source has them in freMPL1 to freMPL4 but not in freMPL5 to freMPL9), the cover bought and the
+  deductible (DeducType exists only in freMPL3-4), policy tenure, the new business / renewal flag, and a zoning finer
+  than 13 unknown risk areas.
 
-**1. Inputs at the prediction point (USE-3, USE-6).**
-- I have these at the start of the period: age, licence age, marital status, CSP, usage, km limit, risk area, the bonus-malus (the French CRM, known at the anniversary), and the claim counts of the four preceding years, taken at the record's start (the builder's check, 96% / 12%). Gender was a lawful factor in 2004. I could not use it today (Test-Achats, noted).
-- `Exposure` is not a risk input in my world. It is the volume of experience inside the 2004 window: 38.2% of records start on 1 January, 48.4% run to 31 December, and only 3.3% cover the whole year. When I price a real policy, its planned period is known. The realised length of a record that ends early is not known.
-- The early end carries risk. Records that end with no next record cost 837 a year (frequency 0.280, severity 2,985). Records that end and continue in a next record cost 407 (0.211). Open records cost 311 (0.189, severity 1,640). That is 2.7 times the annual cost of open records, presumably cancellations after claims, total losses and thefts.
-- `fit_reason` names this gap ("known only at its end when the contract ends early"). The curator's fremtpl2 call and the family call of 2026-10-30 keep `Exposure` as a feature. I do not reopen that call, but it is the reason the metric needs fixing.
-- Inputs I would always have and do not: the vehicle (SRA group and class, age, value, power), the cover level (third party or comprehensive), the deductible, tenure with the insurer and a finer zoning. freMPL1-4 hold the vehicle block, but for other samples, and the record measured the union and rejected it. So this is a thin tariff: it ranks driver and claims-history risk only.
+**Q2. Is the target what I act on?**
+- The claim cost per earned year is the pure premium. It is the number I set the premium from (MET-14 applies, and I
+  would ship it the same way). I want a number, the expected cost per year on the original scale, not a class.
+- Shipping it on log1p is not my scale. A fit of the mean of log1p(cost per year) is not E[cost per year]. Because
+  the Gini is rank-based this does not change the score's meaning (y is scored after the inverse, and the order of
+  the predictions is unchanged). It does change which learners look good (issue 7), and it leaves predictions I
+  could not use as premiums (A/E 0.003 below). The notes say what such a fit estimates (CLEAN-16), so the scale is
+  the curator's call. Any premium I file would come from a Tweedie or frequency-severity model on the identity scale.
+- The amount: "Total claim amount of the guarantee" (CASdatasets page), with no guarantee named. The counters show
+  windscreen, at-fault, not-at-fault, parking and fire-theft claims all inside it. I price each guarantee separately
+  (third-party liability, damage, glass, theft-fire), each with its own frequency and severity. A sum over guarantees
+  whose purchase I cannot see means a 0 can stand for "covered, no claim" or "not covered". Paid or incurred, and the
+  valuation date, are unknown: 2004 bodily-injury liability claims develop for years (LEAK-24 cannot be verified,
+  issue 3, settled). These gaps keep the fit approximate (USE-5, USE-8).
+- The negative amounts set to 0 (recourse covered the payment) match how I would net recoveries per period. No gap.
 
-**2. Target (USE-5).** I act on a number: the expected cost per car-year. I would never want a class. The shipped total amount of the record is the standard label of a pure-premium model once the length is handled. It is the right quantity, with three caveats. "Total claim amount of the guarantee" names no guarantee; the median claim of 781 and the claim counts by type suggest all covers combined. Paid or incurred is not stated, and neither is the evaluation date. The losses are uncapped: the 802,620 claim is 3.6% of all cost, and the 13 claims above 50,000 hold 8.3%. The log1p shipping with the score taken on the amount is correct (MET-3).
+**Q3. Does one row match one decision? Is the test data what I face?**
+- A row is a period with fixed rating factors, weighted by its earned length. That is exactly the unit of the
+  earned-exposure table a pricing GLM is fitted on. The premium is re-rated at an amendment and charged pro rata, so
+  the per-unit weighting is my convention (MET-15). A row matches one rated exposure segment, though not always one
+  pricing event: the 1 January starts are calendar cuts.
+- I would weight by the realized length: yes. Earned exposure is the weight of a rate model (the compound-Poisson
+  convention of MET-14). A record cut short after a total loss is real experience at a high cost per earned year,
+  and weighting it by its earned days counts it the way my book earns it. The records ending alone cost 837 per
+  realized year, against 311 for the open ones. That is risk I must price, not noise.
+- Test data: other policies' periods in the same year, grouped by policy component. That is the right protection for
+  my use (a later record's counters give a test record's claim away, SPLIT-9). But I apply a tariff to next year's
+  book, with claims inflation and portfolio drift, and one year cannot test that (SPLIT-8, ForcedGroupedFromTemporal,
+  settled). New against known entity (USE-10): I price renewals as well as new business, and the history I would
+  use for a renewal is already in the four-year counters and the CRM. Grouping by policy costs me nothing real.
+- The five files are samples of chosen sizes with claim rates of 7.7% to 10.0% and an undocumented draw. I could not
+  say what book the test fold represents.
 
-**3. Row and test data (USE-8, USE-10).** One row is one exposure line, the unit I model on, not the unit I decide on. I decide an annual rate per risk. 38% of the record starts are the calendar cut, not a pricing event, so "the start of a record, when the insurer prices it" (the first `curation_comments` bullet) is true only loosely: the factors are the ones in force. Random records of one year are an accepted holdout in practice. The CAS monograph (sec. 4.3.1) allows a random or an out-of-time split and prefers out-of-time. The chain-grouped folds scored like random ones, so the split is a small gap, honestly named (`ForcedIIDFromTemporal`).
+**Q4. Would I use this model? Trust and distrust**
+- As a benchmark of how well a learner ranks risk from a thin French personal-line tariff: yes. The signal is small
+  but real (claim AUC about 0.67; an honest Tweedie fit 0.183 against 0.005 for the length alone, 9 of 9 splits,
+  TP-4). Severities are not learnable (R^2 about 0 on the claimants), which is typical of motor and believable.
+- As a tariff: no. Without vehicle and cover factors it is a partial model, and I could file no premium from it.
+- I would trust it more with the vehicle and cover factors, a stated guarantee and valuation date, and losses capped
+  at a large-loss threshold (the 802,620 claim is 3.6% of all cost, and the ten largest are 7.6%).
+- I would distrust any score that moves with which fold drew the largest claims (fold SD about 0.03 over 9 splits).
 
-**4. Would I use it?** Yes, as a challenger to a GLM on a realistic, if thin, French tariff table. I would trust a model that beats the current tariff on a double-lift chart and on an exposure-weighted Gini out of time, with actual/expected stable by decile and by factor. I would distrust one whose lift comes from the period length, or whose ranking depends on where one 802,620 claim lands.
+**Q5. Does the metric score my decision? (MET-1, MET-6 to MET-9)**
+- Unit and weight (MET-1, MET-2): yes. The rows are sorted by the predicted cost per year, x is the cumulative
+  earned exposure, y the cumulative losses, and there is no base premium (I have none, so the flat rate is the base).
+  A flat rate scores exactly 0, random orders score 0.003, and 1/Exposure, the leak's ceiling, scores 0.184 and is
+  kept out by LEAK-41. The unnormalised form suits me: normalising by the perfect order would divide by a number the
+  largest claims set.
+- Threshold metrics (MET-6, MET-7) do not apply: I set a continuous premium, with no cut-off and no top k (MET-9 does
+  not apply either).
+- What the Gini misses is calibration. It is consistent only among auto-calibrated predictions (Wuthrich 2023,
+  European Actuarial Journal 13:469-477): rank-based, so blind to the level and to the shape of the relativities. I
+  measured this on repeat 0 (3 folds; LightGBM 300 trees, lr 0.03, seed 0, weighted by Exposure):
 
-**5. The metric (MET-1, MET-2, MET-10, MET-11).** `normalized_gini` here is Kaggle's row form: losses cumulated over rows sorted by the predicted total. In Frees, Meyers and Cummings (2011), which the reason cites, rows are sorted by relativity, score / premium, against the cumulative premium. The row form is that curve with every record charged the same premium, whatever its length, and no insurer charges that. With a pro-rata base premium it becomes the CAS construction: sort by predicted loss cost per year, cumulative exposure on the x-axis. Allstate's rows were vehicle-years, so its row Gini was close to an exposure Gini. Here exposure runs from 0.001 to 1 year. Measured with untuned LightGBM on 3×3 random folds (script and output below):
-
-| model | declared row Gini (sd) | exposure Gini on the annual rate | row Gini, losses capped at 50,000 (sd) |
+| Fold | Tweedie p=1.5 on rate: Gini, A/E | L2 on log1p: Gini, A/E | L2 on log1p, no length: Gini |
 |---|---|---|---|
-| LightGBM, all features (log1p) | 0.283 (0.044) | 0.182 | 0.316 (0.012) |
-| LightGBM without `Exposure` | 0.191 | 0.203 | 0.187 |
-| `Exposure` alone (raw score) | 0.213 | about 0 (constant rate) | - |
-| Tweedie GBM, log-exposure offset, no `Exposure` feature | 0.281 | 0.199 | 0.304 |
+| 0 | 0.210, 0.69 | 0.185, 0.003 | 0.162 |
+| 1 | 0.163, 0.82 | 0.154, 0.004 | 0.207 |
+| 2 | 0.139, 0.85 | 0.106, 0.004 | 0.182 |
 
-- Under the declared metric, the record's length alone (0.213) beats a risk model without it (0.191) and makes up 75% of the full model's score.
-- Under the actuary's Gini, the length scores nothing and the order of the two LightGBMs reverses.
-- The three folds that hold the 802,620 claim score 0.216-0.237, the other six 0.281-0.328. Capping cuts the fold sd from 0.044 to 0.012 and keeps the model order (MET-10, resolution).
-- The price-level blind spot the reason names is real and acceptable for ranking (pricing sets the level separately).
+  A/E is predicted cost over actual cost, weighted. The squared-error fit on log1p predicts about 1/250 of the cost
+  level, yet scores the same Gini range. A rebasing would fix the level, but not the distorted relativities that a
+  log-mean produces.
+- The metric I would add normally fails here. Weighted Tweedie deviance (p=1.5) on the cost per year: the Tweedie
+  fit is worse than the flat rate on all 3 folds (132.64 vs 132.56, 121.23 vs 120.86, 117.84 vs 117.56). The tail
+  rates (up to 11.6 million per year on records of a few days) swamp it. So I would not switch to a deviance (MET-8's
+  proper rule is not usable as the single score of this table). The Gini stays the better single choice, and MET-10
+  diversity agrees: fremtpl2 and bemtpl97 already carry the Poisson deviance.
+- Large claims: capping each record's loss at 50,000 in scoring only (my script) moves the Tweedie fit's fold-0 Gini
+  from 0.210 to 0.147. Folds 1 and 2 move by -0.003 and +0.006. One fold's score is decided by its largest claims. A
+  pricing actuary models attritional losses and loads large losses separately (ecretement).
+- The metric I would choose: the same `ordered_lorenz_gini` (per_unit, weighted by Exposure) on the cost per year
+  with each record's loss capped at a stated large-loss threshold. The cap is a target or scoring choice for the
+  curator, measured on the shipped splits first. Failing that, I would keep the declared metric as it is. Answer:
+  partly.
 
-The metric I would choose: the normalized Gini of the ordered Lorenz curve on the annual loss cost. Rows are sorted by predicted amount / `Exposure`, with cumulative `Exposure` on the x-axis and cumulative amount on the y-axis. This is `normalized_weighted_gini` with y = amount / `Exposure`, prediction = predicted amount / `Exposure`, weight = `Exposure`. It needs `Exposure` as a metric input, and MET-2 says a metric input is never a feature, so it is the curator's call. The ways to get there are listed below.
+**Gaps between the dataset and the real decision, ranked by how much they change the task**
+1. A thin tariff: no vehicle, cover, deductible, tenure or fine zoning (present in freMPL1-4, absent in freMPL5-9).
+   The model ranks risk from driver and history factors only. This sets the ceiling of the task (USE-8 approximate).
+2. The target is a sum over guarantees whose purchase is unseen, with an unknown basis and valuation date. The zeros
+   mix "no claim" and "not covered" (USE-5, issue 3 settled as a note).
+3. Same-year held-out policies stand in for next year's book (SPLIT-8, settled). Trend and inflation are untested.
+4. Large claims are uncapped. The 802,620 claim (3.6% of cost) can decide a fold, about 0.06 of Gini on fold 0.
+5. `length_to_year_end` is a calendar-cut artefact, not a rating factor. It is legitimate (USE-6) but misleads L2
+   learners on log1p (CLEAN-16). Issue 7: B.
+6. The log1p shipping scale is not the premium scale. It is harmless to the Gini, but it invites learners whose
+   predictions could not be premiums (A/E 0.003). Noted per CLEAN-16, the curator's choice.
+7. The sample draw of the five files is undocumented (claim rates 7.7% to 10.0%).
 
-**Gaps, ranked by how much they change the task.**
-1. What the score measures. With `Exposure` a free feature and a row Gini on the total, about three quarters of the score is the record's length, part of it known only at the record's end (gap above; LEAK-10 kept by the curator's call). The fix is in the metric, not the features.
-2. Missing vehicle and cover factors. This is a driver-and-history tariff and cannot be repaired from these files.
-3. The undocumented amount: which guarantee, paid or incurred, evaluated when (USE-5, already behind `approximate`).
-4. Uncapped large losses. One claim decides a third of the folds (MET-10).
-5. One year, random records, one policy's records on both sides. Standard practice, small, named.
-6. Gender: lawful then, barred now. Noted, fine for a 2004 task.
+**What an expert in the domain would change**
+- Drop `length_to_year_end` (issue 7, B). If a record-type signal is wanted, derive a mid-year start flag from
+  RecordBeg instead. That is a curator decision, not measured here.
+- Measure and consider a large-loss cap on the losses the Gini reads (or on the target), stated in the notes. The
+  pricing practice is to cap and load.
+- Say in the notes, beside the Gini, that it scores the ranking only and not the premium level (Wuthrich 2023). A
+  user who wants a premium refits with a Tweedie or frequency-severity loss on the identity scale and rebalances.
+- Keep the realized-exposure weight, the per-unit rate and the LEAK-41 exclusion as decided (issue 6). These are the
+  actuarial convention.
+- Optional, for the fit: a sibling built from freMPL1-4 with the vehicle factors would mirror a real tariff more
+  closely, but freMPL1 overlaps 39% with freMPL5-9 (record notes). That is out of scope here.
 
-**What an expert would change (recommendations; the curator decides).**
-- Metric, in order of preference:
-  - (a) Keep target and features, and score the exposure-weighted Gini on the annual rate, with `Exposure` also a metric input. This needs the curator to allow a feature as a metric input (MET-2) and a general metric such as `normalized_exposure_gini` (MET-12, MET-13).
-  - (b) Ship the annual loss cost with `Exposure` as weight only. This follows the actuarial standard and the AUTOSEG precedent, but goes against the fremtpl2 call ("dividing would inflate short policies' targets"), and models without weights suffer on records of a few days.
-  - (c) At the least, keep the row Gini and write in the metric reason that `Exposure` alone scores 0.213 of the model's 0.283, and that one claim moves a fold by about 0.08.
-- The same question applies to every table with exposure below a year scored by the row Gini: `australian_vehicle_insurance_2004_2005`, `spanish_motor_insurance_coverage_level_2022_2024`, and the 2015 and 2016 pricing games. It should be one family decision, not this dataset's alone.
-- Capping: consider scoring losses capped at a large-loss threshold (50,000: 13 claims), or name the instability. This is a change to the target as recorded, so it is the curator's call.
-- Wording:
-  - `use_case`: "estimates the expected claim cost per year of cover (the pure premium) from the rating factors; a period's premium is that rate times its length".
-  - `fit_reason`: add that the length is mostly the 2004 window, that contracts ending within the year cost 2.7 times as much per year, and that vehicle and cover factors are missing.
-  - The first `curation_comments` bullet: name the calendar cut (38% of starts).
-- Keep: freMPL5-9 stacked, negatives set to 0, `ClaimInd` and the dates dropped, the log1p shipping, the random split with its tag.
+**Rules cited**
+USE-3, USE-5, USE-6, USE-8, USE-10; MET-1, MET-2, MET-6, MET-7, MET-8, MET-9, MET-10, MET-14, MET-15; CLEAN-16;
+LEAK-24, LEAK-41; SPLIT-8, SPLIT-9; TP-4.
 
-**Probe.** A script in the run folder, not committed (clean-room frame, RepeatedKFold 3×3, seed 4267, the builder's LightGBM settings; the constant-rate Gini over five random tie orders lies between -0.01 and 0.035). The annual costs by record type, the calendar shares and the claim tail were computed inline on the raw freMPL5-9 CSVs with the 45 copies dropped.
-
-**Sources.**
-- CASdatasets freMPL page (column definitions, "Total claim amount of the guarantee", "The exposure, in years"): https://dutangc.github.io/CASdatasets/reference/freMPL.html
-- Goldburd, Khare and Tevet, CAS Monograph No. 5, Generalized Linear Models for Insurance Rating, read in full: sec. 2.6 exposure offset and weight, 4.3.1 random against out-of-time holdout, 5.1.1 pure premium, 5.1.3 capping large losses, 7.2.4 Gini on cumulative exposures. https://www.casact.org/sites/default/files/2021-01/05-Goldburd-Khare-Tevet.pdf (page: https://www.casact.org/monograph/cas-monograph-no-5)
-- Frees, Meyers and Cummings (2011), "Summarizing Insurance Scores Using a Gini Index", JASA 106(495):1085-1098, read from the abstract and the CAS slides (the ordered Lorenz curve by relativity score / premium): https://casact.org/sites/default/files/presentation/spring_2010_handouts_c17-frees.pdf; the 2014 follow-up, https://casact.org/abstract/insurance-ratemaking-and-gini-index
-- CAS RPM slides on the Lorenz curve with earned car-years on the x-axis, from search results, not read in full: https://www.casact.org/sites/default/files/presentation/rpm_2014_handouts_paper_3048_handout_1892_0.pdf
-- Family call of 2026-10-30: the zero-inflated triage summary (no longer in the repository; each call is in its record's Assessment of 2026-10-30), "Policy calls of 2026-10-30", item 3. The fremtpl2 call on `Exposure`: the fremtpl2 curation record.
+**Sources**
+- Dataset: the definition, its README.md and REVIEW.md, the change note and the probes (probe 22 in its weighted
+  Tweedie arm, the leak and task probes).
+- CASdatasets freMPL page: https://dutangc.github.io/CASdatasets/reference/freMPL.html (variables by file, "Total
+  claim amount of the guarantee", year 2004, unknown insurer, no sampling description).
+- Frees, Meyers, Cummings (2011), "Summarizing insurance scores using a Gini index", JASA 106:1085-1098 (as cited in
+  the metric reason).
+- Wuthrich (2023), "Model selection with Gini indices under auto-calibration", European Actuarial Journal 13:469-477,
+  https://arxiv.org/abs/2207.14372.
+- My measurement: 3 folds of repeat 0, one seed; indicative, not the 9-split protocol.
 
 </details>
 
 <details><summary>Blind review</summary>
 
-**Verdict: include with changes.** The table is a faithful, leak-free preparation of real French motor insurance records (CASdatasets freMPL5 to freMPL9). But very little in it is predictable: most of the explainable variance comes from the mechanical effect of `Exposure`, and well-tuned models tie within noise. The changes are to document how the target was built and to flag the task as low-signal (it tests robustness to noise and does not separate good methods well).
+**Blind review: freMPL French motor personal line (clean room task)**
+
+VERDICT: Include with changes. The data is real, cleanly prepared and grouped by policy, but the target log1p(ClaimAmount/Exposure),
+fitted and scored with Exposure as the weight, does not stay the same as exposure changes. Most of the little signal it has comes from
+exposure leaking in through length_to_year_end. Reformulate the target before benchmarking.
 
 **What the task is**
+An insurer pricing a motor policy (the annual pure premium for one guarantee) at the start of a 2004 policy record, using driver,
+usage, bonus-malus, area and 4-year claim history. This is a real and common actuarial use. Rows = 115,155 policy-period records,
+taken from CASdatasets freMPL5..freMPL9. I verified this: their combined size is 115,200, and the 45 exact duplicates were removed. The 10,869 positive
+claims match the number of positive ClaimAmount rows in the source exactly. Target = log1p(max(ClaimAmount,0)/Exposure), which I
+reproduced exactly (max abs diff 0.0). length_to_year_end = (2004-12-31 - RecordBeg)/365 (matches to within 0.003), so it is
+known at the start of the record.
 
-A French motor insurer in 2004 predicts, for one policy record (a time segment of a policy within the year), the claim cost on "the guarantee", using driver profile, bonus-malus, risk area, usage and claim counts over the previous 4 years. The decision is pricing: an expected cost per policy period, in effect a pure premium. This is a real and central actuarial use. An actuary would normally model frequency and severity separately, or use a Tweedie model on the raw amount, rather than squared error on log1p. Still, log1p regression is a reasonable proxy for a generic benchmark, and it avoids the extreme tail (maximum claim 802,620).
+**Concerns, most serious first**
 
-**Provenance check (reproduced from the public source)**
+1. Target/weight design: the "per year" log target is not invariant to exposure, so the Exposure weight does not do its job (serious).
+   - For a rate target A/E, weighting by E is standard (Poisson/Tweedie). Taking log1p of the rate breaks that: P(claim) scales with E,
+     while log1p(A/E) on a claim grows as E shrinks. The weighted mean target by exposure bin is
+     E<=0.1: 0.20, 0.1-0.3: 0.43, 0.3-0.6: 0.76, 0.6-0.99: 1.05, E=1: 1.29. So the target mostly measures how long the record ran.
+   - Exposure is withheld as a feature, but length_to_year_end is an upper bound on it (L>=E for 100% of rows, corr 0.49). Models learn
+     exposure through L. With LightGBM and grouped 3-fold CV, the claim AUC of the log-target model is 0.627 with L and 0.560 without L.
+     For an exposure-invariant Poisson rate model, the AUC barely moves (0.572 with L vs 0.569 without). So L only matters because of the
+     target artifact, not because of risk. Weighted R2 drops from 0.0098 to 0.0019 when L is dropped.
+   - Annualizing tiny exposures gives absurd values: a max of 11.6M per year from an ~800k claim. Exposure goes down to 0.001, and 84 claims
+     have E<0.05.
+   - Is the training weight right for the task? Weighting by Exposure is right for a frequency or pure-premium rate under a
+     Poisson/Tweedie loss. Under squared error on log1p(rate) it is an ad-hoc fix that leaves the target biased by exposure (see the
+     numbers above). Fix, either:
+     (a) target = ClaimAmount/Exposure (no log), weight = Exposure, metric = Tweedie/Poisson deviance (the actuarially correct form); or
+     (b) a frequency task: ClaimInd (binary) with Exposure as an input feature or offset. That is known at pricing time as the term of
+         the contract. Without it, the signal is weak but honest: a Poisson rate model with E as offset reaches AUC 0.69.
+     If the benchmark must use RMSE on a log target, keep Exposure as a feature rather than a weight, or restrict to E close to 1.
+     Only 3.3% of rows have E==1, so that restriction leaves too little data.
 
-I downloaded the current freMPL5 to freMPL10 `.rda` files from github.com/dutangc/CASdatasets and read them with pyreadr, installed into a scratch folder.
-- freMPL5 to 9 have 16,000 + 32,400 + 26,600 + 24,000 + 16,200 = 115,200 rows. The prepared table has 115,155 rows, which is exactly those files minus 45 rows that are duplicates on all 20 source columns (including RecordBeg, RecordEnd and ClaimAmount).
-- The target equals `log1p(clip(ClaimAmount, lower=0))` exactly: the sums match to 1e-10, and there are 10,869 positive rows in both the source and the table.
-- RecordBeg, RecordEnd and ClaimInd were dropped. ClaimInd is the target indicator, so dropping it was correct.
-- freMPL10 was excluded. That is right: it has a different schema (VehAge) and a claim rate of 0.08% against about 9.5% in files 5 to 9.
-- The files are from CASdatasets 1.2-1, whose NEWS says: "Remove duplicated rows in `freMPL*.rda` files (around 9995 rows for each file)". So the prepared table already builds on the deduplicated release.
+2. Very weak signal / score dominated by noise (serious for benchmarking value).
+   - 90.6% of targets are zero, and claim rows carry 88% of the weighted target variance. Weighted R2 in grouped CV: LightGBM 0.007-0.013,
+     Ridge on one-hot features 0.011-0.016 (Ridge beats GBM in all 9 folds). Fold spread is about 0.002, comparable to the gaps
+     between methods. A ranking of methods would mostly reflect noise and the exposure artifact. Concern 1's reformulation (a
+     deviance metric or the frequency task) is the standard way to make it informative.
 
-**Concerns, most to least serious**
+3. Negative claim amounts clipped to zero without saying so (moderate).
+   - The source has 967 rows with ClaimAmount<0 across freMPL5-9: 165/324/220/163/95. All 965 that I matched have target 0.
+     They are most likely recoveries or subrogation. Clipping is defensible, but task.md should say so.
 
-1. **Weak signal, mostly from Exposure; competent methods cannot be told apart.** All figures below are from 3x3 repeated CV (the same protocol as the task description), scored as R² on the log1p target:
-   - tuned LightGBM: 0.0357 ± 0.0018
-   - spline + one-hot ridge: 0.0355 ± 0.0015
-   - default LightGBM: 0.0319
-   - LightGBM on `Exposure` alone: 0.0284
+4. Which guarantee/portfolio a row comes from was dropped (moderate, could not fully resolve).
+   - The source says ClaimAmount is the "Total claim amount of the guarantee" and gives no per-file meaning. 15% of policy_components
+     span more than one source file, and about 2,470 cross-file record pairs overlap in time. So the files may be different
+     guarantees or covers on the same policies. Claim rates are similar (7.7-10.1%), so maybe not. Either way, a source-file
+     indicator would be cheap, and it would be safer to keep it as a feature, or at least to document why it is dropped.
 
-   So about 80% of the explainable variance is the mechanical effect of the record's length: the claim rate rises from 2.1% at Exposure ≤ 0.1 to 19.4% at Exposure = 1. The other 15 features add about 0.007 R².
-   - The paired difference between tuned LightGBM and ridge is 0.0002 ± 0.0009, a tie. Tuned versus default LightGBM is 0.0038 ± 0.0006, so the task mainly rewards regularization.
-   - Severity among the positive rows is essentially unpredictable (R² 0.012).
-   - For the claim indicator, AUC is 0.692 with all features against 0.674 with Exposure alone.
+5. policy_component is a reconstructed key (minor).
+   - Records link sensibly: LicAge steps track the calendar-time gaps between records (corr 0.83, median deviation about 0 months).
+     Gender, SocioCateg, RiskArea, VehUsage, MariStat and HasKmLimit are constant within every component. About 3% of components have
+     overlapping records, which hints at some over-merging. Over-merging is conservative for a grouped split.
+   - Grouping is needed and correct here. After a claim in one record, the next record's claim-history count rises in 82% of
+     cases. A random row split would let a test record's outcome show up in a training record's features. Within a record, the
+     history columns look pre-period: the claim rate only climbs from 7.8% to 12.9% across history counts, so there is no leak.
 
-   What I would change: keep it only as a deliberately low-signal or noise-robustness task, and give it low weight or flag it in any analysis that ranks methods. If the benchmark wants tasks where model choice matters, this one adds little.
-
-2. **Exposure is partly known only after the fact.** A record's length is fixed when it ends, by a policy change, a cancellation, or the end of the 2004 observation window. Records that end with no following record (likely cancellations) have 0.282 claims per exposure-year. Records that run to the end of the year have 0.189, and records followed by another record of the same policy have 0.213. So a short exposure partly encodes "the policy lapsed, often after a claim".
-   - Using exposure as an offset is standard actuarial practice, and the effect is moderate, so I would not drop `Exposure`. Without it the task loses most of its signal anyway.
-   - What I would change: say in the task description that Exposure is the realised duration of the record, not a planned one.
-
-3. **Negative claim amounts were set to zero, undocumented.** 967 source rows (0.84%) have negative ClaimAmount (minimum −1,947.62). All of them have ClaimInd = 0, so they are presumably recoveries rather than claims.
-   - Setting them to 0 agrees with the source's own claim indicator and is sensible.
-   - What I would change: state it in the task description, together with the 45-row deduplication and the choice of files (freMPL5 to 9 only).
-
-4. **One policy can contribute several rows, and the IID split ignores this.** The source has no policy ID. Policies are split into several records within 2004, and in the source these records sit on consecutive rows.
-   - I linked consecutive source rows when the next record starts on the day the previous one ends and gender, socio-category, age and licence age agree. This gave 37,045 links and 78,155 inferred policies; 70,177 rows (61%) belong to policies with two or more records.
-   - The effect on scores is negligible: random 3-fold R² is 0.0294 against 0.0287 for GroupKFold on the inferred policies.
-   - The claim-history counts do not leak the target. After a record with a claim, the next record's ClaimNbResp rises by 0.26 and ClaimNbWindscreen by 0.38 on average, against −0.02 and −0.03 after records without a claim. So the counts exclude the record's own claim and are known when the record starts.
-   - What I would change: nothing is required. Mention it as a known limitation.
-
-5. **Source files overlap, and some duplicates remain.** For 35 of the 45 duplicate rows that were removed, the original copy sits in a different file. Some are whole multi-record chains: source rows 10929 and 10930 in freMPL5 reappear as row 38840 in freMPL6 and row 67520 in freMPL7.
-   - After RecordBeg and RecordEnd were dropped, the prepared table still has 29 rows duplicated on all columns and 38 duplicated on the features alone. That is negligible.
-   - Overlaps that differ in segmentation cannot be detected. Because the files overlap, other freMPL tables in the benchmark (if any) could share policies with this one.
-
-6. **Pooling five files without a file indicator.** Claim rates differ by file: 7.7% in freMPL9 against 9.3% to 10.0% in the others. Ages and gender mix also differ a little. The claim-amount distributions, including the conventional fixed amounts, look alike across the files, so pooling is defensible. Minor.
-
-7. **Preparation details (fine).**
-   - No missing values.
-   - Gender, MariStat, SocioCateg and VehUsage are stored as categoricals. SocioCateg has 46 levels, 25 of them with fewer than 30 rows.
-   - RiskArea (1 to 13, "possibly ordered") is stored as an integer, which is acceptable.
-   - The values are plausible:
-     - DrivAge runs from 20 to 99 and BonusMalus from 50 to 195.
-     - Only 18 rows have a licence age in years above DrivAge − 16.
-     - The positive amounts have mass points at 1,418.61 (427 rows), 102.59 (329) and 4,326.53 (192). These look like the fixed-cost conventions typical of French claims data and support that the data is real, not generated.
+6. Preparation details (minor).
+   - Column types are fine: categoricals are categorical, and counts and RiskArea are int. RiskArea 1-13 is described as "possibly
+     ordered", so int is acceptable. No missing values. Vehicle variables are absent from freMPL5-9 by source design.
+     freMPL10 is excluded, which is reasonable since it has only 18 claims. One near-duplicate is left once the group id is ignored.
 
 **What I could not check**
-- True policy identity: there is no ID in the source, so the grouping is inferred.
-- Which "guarantee" (coverage) ClaimAmount refers to, the insurer, and the currency or any scaling.
-- Whether the 1.2-1 deduplication removed records that were legitimately repeated, such as multi-vehicle insureds with identical driver rows (a few within-file triplicates look like that).
-- How the earlier, pre-deduplication release differs from this one.
-- Whether other freMPL or CASdatasets tables elsewhere in the benchmark overlap with this one.
+- Which guarantee each freMPL file represents. The source does not say ("Unknown French private insurer").
+- The exact rule that built policy_component (I only inferred it).
+- Whether the 45 removed rows were exactly the source duplicates. The counts match: 115,200 - 45 = 115,155. 272 prepared rows
+  matched more than one source row, so the row-by-row mapping is only approximate.
+- I read the source .rda files from GitHub (dutangc/CASdatasets, current master) with pyreadr installed into a scratch directory.
 
-I used only the clean-room data and public sources (the CASdatasets docs and NEWS, and the raw `.rda` files on GitHub).
+</details>
+
+<details><summary>Task gamer</summary>
+
+**Task gamer report: frempl_french_motor_personal_line (target log1p_claim_amount_per_year, ordered_lorenz_gini per_unit, weight Exposure, grouped by policy_component, 3x3 splits)**
+
+Verdict: the task can be gamed badly. A record of this table ends when a claim happens, so the record's length (the weight) and the next record of the same policy (which is in the same test fold) both reveal the outcome. Rebuilding the next record from the features alone takes the Gini from 0.20 (best honest model) to 0.64.
+
+Every model is LightGBM with Exposure as the sample weight, scored on all 9 shipped splits. The "baseline" is the brief's untuned LGBM: L2 on the shipped log1p target, 300 trees. The "honest tweedie" is a Tweedie LGBM on expm1(target), the per-year rate (honest2.py).
+
+**Honest scores (mean over the 9 splits)**
+
+```text
+baseline (L2 on log1p target)          0.1407  (per split 0.10-0.18)
+baseline + random column, 3 seeds      0.148 / 0.153 / 0.153
+honest tweedie on the raw rate         0.2025  (per split 0.17-0.25)
+tweedie + random column, 3 seeds       0.165 / 0.193 / 0.196  -> the noise spread is about 0.04
+The metric is very noisy: it is an unnormalised Gini on heavy-tailed claim amounts.
+```
+
+**Exploits, ranked by gain**
+
+| # | Exploit | Honest score | Exploited score | Gain (per split, range) | A deployed model has it? | Fix |
+|---|---|---|---|---|---|---|
+| 1 | Successor record rebuilt from features: changes in claim counts and BonusMalus to the next record of the same policy, plus Exposure | 0.2025 (tweedie) | 0.6394 | +0.437 (+0.423..+0.448) | No (the next record is created by the outcome) | Collapse the records of a policy-year into one row, or drop the count and BonusMalus columns of any record that follows a cut |
+| 1b | Same successor deltas, no Exposure | 0.2025 tweedie / 0.1407 base | 0.5893 / 0.5588 | +0.387 (+0.368..+0.402) / +0.418 (+0.387..+0.475) | No | as above |
+| 1c | d_claims alone (rise in the next record's claim counts) | 0.2025 / 0.1407 | 0.5420 / 0.5113 | +0.34 / +0.371 (+0.334..+0.44) | No | as above |
+| 1d | Rule with no model: rows with d_claims>0 first, linked rows with no new claim last | 0.1407 | 0.5051 | +0.364 (+0.319..+0.436) | No | as above |
+| 2 | ends_early flag (Exposure < length_to_year_end) | 0.2025 | 0.2905 | +0.088 (+0.06..+0.11) | No | Ship the planned term, not the realised exposure; or merge cut records |
+| 3 | The weight: Exposure as a feature (Tweedie model) | 0.2025 | 0.2846 | +0.082 (+0.051..+0.104) | No (a claim cuts it short) | as #2 |
+| 3b | The weight as a rule: log P(claim) - log Exposure | 0.2025 | 0.2841 | +0.082 (+0.03..+0.12) | No | as #2 |
+| 3c | The weight alone: prediction = -Exposure | 0.1407 base | 0.1837 | +0.043; it beats the brief's baseline with no model at all | No | as #2 |
+| 4 | d_bm alone (BonusMalus change to the next record) | 0.2025 | 0.2734 | +0.071 | No | as #1 |
+
+Note on Exposure fed to the L2 log1p baseline: the score drops to 0.005, and to 0.023 with E/L and ends_early added. On the log scale the model learns that short rows are mostly zero. The weight only pays off on the rate scale (the Tweedie model or the rule).
+
+**Mechanism**
+
+**#1:** A freMPL row is a record (RecordBeg-RecordEnd) of one policy in one year. When a claim happens, the claim-history columns change, so the record is closed and a new one opens. The next record starts where this one ends: its length_to_year_end equals this row's length_to_year_end minus Exposure (within 0.002), and its LicAge equals this row's LicAge plus 12*Exposure (within 1 month). Its Gender, MariStat, SocioCateg, VehUsage, HasKmLimit and RiskArea are the same. Matching on these, without policy_component, links 39% of the rows, and 99.7% of the links fall in the same group, so the successor is always on the test side with the row. Among linked rows, when the successor's claim counts rose by 1 the row has a claim 87.5% of the time; when they did not rise, 1.4% of the time (base rate 9.4%). The claim frequency per exposure-year is 1.59 for cut rows whose successor gained a claim and 0.036 for cut rows whose successor did not.
+Mildest fix: aggregate the records of a policy-year into one row (summed exposure and amount, features at the first record), or keep only each policy-year's first record. Grouping by policy keeps the successor in the same fold, so it does not stop this; it makes it worse.
+
+**#2/#3:** Exposure (the training weight and metric weight) ends at RecordEnd, and a claim moves RecordEnd forward. The loss per exposure-year is 312 for records that run to year end, 1227 for cut records with no successor found, 67 for cut records whose successor shows no new claim, and 3222 for cut records whose successor shows one. The per-year rate is falling in Exposure: about 1200/yr in the shortest decile, 295/yr in the longest. A model given Exposure, or the flag Exposure < length_to_year_end, learns "short record = claim". At the start of cover the insurer knows the start date (length_to_year_end) but not when the record will end.
+Fix: same as #1 (one row per policy-year makes the exposure run to the planned term or to cancellation). Keeping Exposure out of the features is already the case. The issue is that it is also the target's divisor and the metric's weight, and a participant can feed it in from scoring.parquet.
+
+**Flaws that hurt an honest model**
+
+| What is wrong | Honest choice | Baseline score | Honest-choice score | Fix to the task |
+|---|---|---|---|---|
+| The target ships as log1p of a per-year rate, but the metric ranks on the original scale. L2 on log1p ranks the claim indicator, not the expected rate. | Fit the rate expm1(y) with a Tweedie (or Poisson) objective, weighted by Exposure | 0.1407 | 0.2025 (+0.062, per split +0.037..+0.144) | Not strictly a flaw. Ship the raw per-year amount, or say in task.md that the score is on the expm1 scale. |
+
+The record-splitting above also distorts the honest training target: claim-free pieces of a cut policy-year get a tiny rate. I found no honest row filter that undoes this. The fix for #1 removes it.
+
+**Attacks that found nothing**
+
+- Row position: Spearman with the target 0.001. Next-row label agreement 0.8297 vs 0.8290 by chance. Tweedie + row position 0.1945 (vs 0.2025).
+- policy_component id as a feature: 0.2009; Spearman with the target -0.012.
+- has_prev (a predecessor record exists; past information): 0.2033. has_next alone: 0.2101, within noise.
+- Year-end successor (next year's record): the links are spurious (0% same group, no label signal). The data covers one year.
+- Exact feature copies across the split: 0.4% of the test rows (split r0f0), and their train labels do not predict (7% vs a 9.4% base rate).
+- Format of length_to_year_end (last digit): the positive rate is 0.07-0.11 across digits, with the 0 digit (year-start records) at 0.106. That is the record structure again, not a separate signal.
+- Train vs test classifier: AUC 0.54 on three splits, so no usable shift.
+- No column is standardised or scaled over all rows. The targets have no sentinels (min 0; source claim amounts can be negative, the kit clips them to 0).
+
+**Could not check / notes**
+
+- I did not compare row by row with the public freMPL5-9 files. A lookup in the published source would work, as for any public dataset, and is not ranked.
+- The web turned up no competition forum or leak thread for freMPL. The CASdatasets reference only confirms that the claim-history columns cover "the 4 preceding years" and that records are RecordBeg-RecordEnd.
+- That a claim causes the record split is inferred from the data (the claim counts rise in the successor; the loss per year is extreme in cut records). The source documentation does not state it.
+- About 14,400 cut records have no successor found (frequency 0.33 per year). These are cancellations after a claim, or links my matcher missed. The policy_component oracle links the same share (39%).
+- I did not open any file outside the kit.
+
+Sources: https://dutangc.github.io/CASdatasets/reference/freMPL.html
 
 </details>
 
 <details><summary>Precedent check</summary>
 
-**Precedent check (AI, precedent-checker, 2026-11-01): frempl_french_motor_personal_line**
+**Precedent check: frempl_french_motor_personal_line (full tier, exposure re-review, 2026-11-06)**
 
-```text
-Verdict: consistent with the precedents on 14 of 15 decisions. One departs without a stated reason: how the
-`Exposure` keep is recorded (the label, no revisit condition, the late part it could locate left unmeasured, and an
-AI suggestion cited as "the family's call"). One pair in this batch is decided two ways and the curator should
-settle it once: the target scale (log1p here and in spanish, raw in australian).
-Validity: LEAK-10 / LEAK-6 the `Exposure` keep follows fremtpl2 (CC, Andrej, 2026-10-20) and is reasonable (no
-consistent Gini gain from the late part, measured below), but it is written as `Note:`, not `Potential leak, kept on
-purpose:`, and gives no revisit condition (definitions.md; australian, spanish). SPLIT-8, SPLIT-29/30 consistent (IID,
-ForcedIIDFromTemporal). PROV-6/7, PROV-9 consistent.
-Value: MET-3 consistent (Lennart's calls of 2026-10-21). MET-11 context Gini: no curator precedent yet; the same reason
-is now in three definitions.
-Quality: CLEAN-11, CLEAN-14, LEAK-18/19 consistent.
-Drift: none. Third exception: none recorded. Two Cases rows are due once the curator confirms: time exposure as a
-feature (fremtpl2's call is cited by three definitions and is in no Cases table), and the context Gini for insurance
-pricing (MET-11).
-For the curator: consistency checks A (Exposure) and B (target scale) below.
-```
+**Verdict in short:**
+- **D9 is consistent.** It follows the four sibling calls Lennart made the same day, and where it reverses Andrej's issue-4 call it names the fact that sets the case apart.
+- **The unrounded `length_to_year_end` departs from Andrej's call, with a stated reason.** It undoes Andrej's month rounding of 2026-11-02, gives a reason that holds up, and is consistent with pricing_game_2016 and the spanish table. It is still an AI call that needs Lennart's mark.
+- **One real departure has no fact that sets it apart: keeping the length on the log1p scale (issue 7, option A).** The reflection prompt for it is at the end. It also shows a conflict between two rule texts that issue 7 does not mention.
+- **Two recording gaps** (point 3).
 
-**How I checked.** For each decision: the same rule ID in the decision register of this run (1,620
-decisions, 14 flags, none touching this dataset's decisions), the same mechanism in the Cases tables of the knowledge files, the
-records of the insurance family (a search of the curation records for fremtpl, MTPL, CASdatasets, insurance), and the
-definitions of the insurance siblings built in this run. Who decided matters (principles.md, "Precedence"). Curator
-decisions on this family: fremtpl2 (record) (CC 2026-10-20, Andrej: aggregate claim
-amount, `Exposure` a feature capped at 1, `ClaimNb` dropped, temporal by `year_index`). The CCs of 2026-10-30 on
-frempl, australian, spanish, pricing_game_2017 and allstate_claim_prediction_challenge set only the verdict and priority.
-The insurance table of "Policy calls of 2026-10-30" in
-the zero-inflated triage summary (no longer in the repository; each call is in its record's Assessment of 2026-10-30) holds *suggested*
-calls (Andrej: "I want you to suggest judgement calls ..."; every record: "the curator has the call"). The sibling
-definitions australian_vehicle_insurance_2004_2005 and
-spanish_motor_insurance_coverage_level_2022_2024 are
-AI drafts of 2026-11-01 waiting for review. They are not precedents with a curator's authority, but the curator will
-decide them alongside this one.
+The register's flags (opposite outcomes on LEAK-38, TP-10, USE-5, USE-8, few_minority, one_feature, trivial; amendments due on SPLIT-10, SPLIT-14, CLEAN-19; exceptions to Musts) don't touch this decision. None is on LEAK-41, MET-14, MET-15, MET-16 or CLEAN-16, or on the mechanism "realized weight / time on risk" (19 decisions, no flag). I found no drift: Lennart's CLEAN-16 calls of 2026-11-05 and 2026-11-06 all follow the amended text. No third exception of one kind either, so no amendment is due.
 
-**Per decision**
+**1. D9: target per realized year, `Exposure` as weight and sample_weight, never a feature; `exposure_at_start` dropped; `ordered_lorenz_gini(per_unit=True)`. Consistent.**
 
-1. **Target: the record's total `ClaimAmount`, freMPL5-9 stacked without a file column, freMPL1-4 and 10 left out.**
-   Consistent. It follows fremtpl2 (CC 2026-10-20, aggregate amount per policy), the tension row "versions or cuts
-   without a distinct task are duplicates" (PROV-6, PROV-7), the record's recommendation of 2026-10-20 and the Assessment
-   of 2026-10-30. Andrej's answer to policy question 5 (no cap on French motor portfolios) leaves no uniqueness question
-   against fremtpl2.
-2. **Target shipped as log1p, scored on the amount (`target_transform="log1p"`).** Consistent with MET-3 and CLEAN-16,
-   and with the curator's calls of 2026-10-21 (Lennart, "ship the target on the modelling scale, score on the original
-   scale", given on 15 definitions). Among them are
-   allstate_claims_severity (a log insurance loss) and the
-   zero-inflated forest_fires (log1p area; MET-3 Cases in
-   metrics.md). spanish ships log1p and says why.
-   australian ships the raw cost and gives no reason. The builder calls log1p a "departure", but it is not one: MET-3
-   leaves the scale to the definition. The split in the family is real, though: consistency check B.
-3. **`Exposure` a feature; `RecordBeg` and `RecordEnd` dropped.** The decision follows fremtpl2 (CC 2026-10-20: "The
-   contracted period is known at pricing (a mid-year cancellation also shortens it)"). Under the ranking it is a
-   reasonable keep: LEAK-6 lets a slight optimism with a known cause stay with a note, and the part known only at the end
-   shows no consistent gain in the metric (measured below). How it is recorded **departs without a stated reason** in
-   three ways:
-   * The bullet is labelled `Note:`. definitions.md ("Recording decisions") wants `Potential leak, kept on purpose:` for
-     a suspect kept on purpose, with the mechanism, the numbers, why it stays and when to revisit. The definition itself
-     names the suspect (`fit_reason`: "a period's length is known only at its end when the contract ends early").
-     australian (`Potential leak, kept on purpose:`, LEAK-6/LEAK-10, revisit "if a release gives the contracted term")
-     and spanish (the same label for the part it cannot locate) both use the label.
-   * The part known only at the end can be located here (`RecordEnd` is set on 51.6% of the deduplicated records).
-     spanish resets the cancellations it can locate to the value known at the start (LEAK-7: exposure 1 and annual
-     premiums for portfolio policies, +0.004 to 0.010 Gini when kept). frempl neither resets nor measures this part. It
-     measures the dates (Gini 0.251 without, 0.294 with an ended-early flag), not the late part of `Exposure` itself.
-   * The note cites "the family's call of 2026-10-30". That call was an AI suggestion that the curator had not yet
-     confirmed. australian words it correctly: "the suggested call of 2026-10-30, for the curator to confirm".
+**Follows** (all CC, 2026-11-06, Lennart, under LEAK-41, MET-14 and MET-15):
+- **fremtpl2:** ClaimNb / Exposure, Exposure the weight. Metrics Cases row l.313.
+- **bemtpl97:** nclaims / expo. Row l.314.
+- **australian_vehicle_insurance_2004_2005 (D8):** claimcst0 / exposure, identity scale, `normalized_weighted_gini` on the rate. Row l.315.
+- **pricing_game_2016_french_fleet (D11):** charge per vehicle-year, the realized period as weight. Row l.317.
+- **spanish_motor_insurance_coverage_level_2022_2024 (D10):** `actual_exposure` as metric weight and sample_weight, the hybrid `total_exposure` dropped.
 
-   Measured for this check (untuned LightGBM, the builder's settings, 3 random folds; script and output in
-   the run folder, not committed): I replaced `Exposure` by the length known
-   at a record's start (start to 31 December, capped at 1). The normalized Gini on the amount moves from 0.286 to 0.301
-   on a log1p fit (per fold 0.273, 0.297, 0.289 against 0.336, 0.315, 0.253) and from 0.251 to 0.243 on squared error.
-   The claim AUC falls from 0.690 to 0.632. The realized length helps rank claims, but it shows no consistent gain in the
-   declared metric. That supports the keep under LEAK-6, provided the note says so. A weaker AI precedent points the
-   other way: analcatdata_supreme (AI assessment, 2026-10-07) read an exposure shortened by the outcome as a leak. The
-   curator retired that dataset on another ground (Lennart, 2026-10-14), so the reading was never decided.
-   Consistency check A.
-4. **967 negative amounts (all `ClaimInd` = 0) set to 0.** Consistent. It matches the suggested call of 2026-10-30 and
-   AIcrowd's practice on the 2017 game's portfolio (an external precedent). The record's own indicator shows they are no
-   claim of the period (USE-5). The register holds no curator decision on negative targets either way. The
-   pricing_game_2016 and 2017 definitions will meet the same question, so the first confirmation sets the family's
-   precedent.
-5. **`ClaimInd` dropped.** Consistent with LEAK-10 (a part of the target) and the family: fremtpl2 `ClaimNb` (CC),
-   australian `clm`/`numclaims`, spanish's claim counts.
-6. **45 exact copies over all 20 columns dropped; 29 and 9 feature repeats kept.** Consistent with LEAK-18 and LEAK-19
-   (wine_quality; many columns and an exact match make a collection artefact) and with the source's own repair in 1.2-1
-   (PROV-13). australian keeps its 707 copies for a stated distinguishing fact (7 features, two of them rounded), so the
-   two cases do not conflict.
-7. **Random split, `ForcedIIDFromTemporal`, policy chains not grouped.** Consistent with a stated reason:
-   * SPLIT-8: one year with no valid window, as distribution_transformers_at_cauca_department (one label year, IID,
-     Lennart, 2026-10-21) and australian.
-   * SPLIT-29/30: no id column, and the entity does not carry the label (8.3% claims after a claim against 9.2%).
-     sarcoma (IID kept over a weak group, Lennart, 2026-10-26) is the closest curator case.
-   * USE-10: the previous record's claim reaches the next record through the claim counts, a known entity's history.
+frempl has the same structure as all of these: a realized time on risk that claims cut short, used as the rate's denominator. All five give the same treatment. Each sibling's CC names the curator call it supersedes and why.
 
-   spanish groups by policy. That is a different set of facts, all evident: a true `insured_id`, policies that recur
-   across three calendar years, 69% new business. frempl's chains are reconstructed, sit inside one year, and have no
-   id. Two things to fix. The bullet's "so the split stays random" follows the fold comparison (Gini 0.266 against
-   0.251), and SPLIT-4/SPLIT-30 say the gap never decides, so lead with the SPLIT-29 condition and cite it. The record's
-   screening reason for IID ("policyholders cannot be traced", 431 pairs against 309) is superseded by the builder's
-   34,324 chained records and should be corrected (EV-2; a later stage's measurement wins).
-8. **Metric: normalized Gini, context (MET-11).** Consistent with the suggested call of 2026-10-30 and with australian
-   and spanish (the same reason, nearly word for word). The insurers' own source metrics agree: Allstate 2011 (normalized
-   Gini) and liberty_mutual_fire_peril_loss_cost (weighted Gini). porto_seguro (roc_auc for a binary Gini, 2026-10-21)
-   is the related case. No curator has yet confirmed a *context* Gini on a regression target. MET-11's context origin
-   ("only when the context is clear"; diamonds, Lennart, 2026-10-21) allows it. Once confirmed, it should become a MET-11
-   Cases row, so the three definitions rest on one decision.
-9. **`year = "2014"`.** Consistent with PROV-9 and melbourne_housing_market (a publication that grew over versions takes
-   its first version's year, Lennart, 2026-10-22): freMPL entered CASdatasets on 9 September 2014. Pinning 1.2-1 is the
-   copy, not the year. The screening's empty year is superseded (record correction, builder issue 5).
-10. **Dtypes.** Consistent with CLEAN-14 as amended (Lennart, 2026-10-21): `HasKmLimit` is a yes/no flag, so
-    categorical; `RiskArea` ("possibly ordered") stays a number as shipped, like australian's age bands. Keeping all 46
-    CSP codes is allowed (CLEAN-8 permits merging rare codes, never requires it).
-11. **The 802,620 claim kept.** Consistent with CLEAN-11 and qsar_tid_11 (Lennart, 2026-10-21: the training-period
-    clause does not apply to a random split).
-12. **47 licence ages below 17 kept.** Consistent with CLEAN-11 (unusual values stay) and with spanish's threshold,
-    which makes missing only what no licence allows (below 15 in Spain). Measured here: 0 records below 15, 18 below 16,
-    47 below 17, and 21,136 below 18. The measure (whole-year `DrivAge` minus `LicAge` in months) runs about a year low
-    for many records, so nothing is shown impossible.
-13. **`Gender` kept with a note (SEL-1).** Consistent: no rule or precedent drops a protected attribute. australian keeps
-    `driver_gender`. 2_month_survival_rate_prediction's drop of edu and income (Lennart, 2026-10-26) rested on LEAK-10,
-    and its fairness remark was an aside.
-14. **Fit `approximate` (USE-5, USE-8: guarantee and development date undocumented).** Consistent with the USE-5 cases
-    blood_tests_drink_prediction (the quantity known, its recording not) and mobile_churn, and with australian and
-    spanish.
-15. **`task_target_value_dominant` proposed for acceptance.** No precedent (no definition accepts this check yet). It
-    is consistent within the batch.
+**Where frempl differs, the difference is allowed:**
+- **Metric form:** the unnormalised CAS ordered Lorenz Gini here, the normalized weighted Gini on australian and pricing_game_2016. MET-15 fixes the weight, not the metric, and MET-10 chooses the metric per table. Andrej said on 2026-11-02 (pricing_game_2016): "It is case by case and when in doubt we go for diversity". D9 keeps Andrej's own choice of form from 2026-11-03.
+- **Scale:** log1p here and on spanish; identity on australian and pricing_game_2016. This follows Andrej's per-file call of 2026-11-02 (australian CC: "this table ships the claim cost in dollars, the log1p tables keep log1p") and CLEAN-16 as amended ("a rate scored by a Gini keeps the scale the curator chose"). This is not a pair of similar cases decided differently: each table keeps its own scale, as the rule says. But pricing_game_2016's notes give a general reason for identity ("a log1p fit transformed back orders by its geometric mean"). That reason would apply here too. It feeds issue 7, not D9.
 
-**The builder's draft issues against the precedents.** Issue 1 (Exposure): the keep follows fremtpl2. The drop option
-(claim AUC 0.690 to 0.565) would depart from the curator's only call on the question, so it needs a fact that sets frempl
-apart. The recording needs check A. Issue 2 (chains): consistent (item 7); confirm the tag. Issue 3 (USE-5): consistent
-(item 14). Issue 4 (scale): frempl is consistent; the pair goes to check B. Issue 5 (record corrections): add the chain
-correction of item 7. Issue 6 (notes): consistent (items 11-13).
+**Reverses Andrej's call of 2026-11-03 (issue 4, option C over B), with a fact that sets it apart:**
+- Andrej turned down B because a constant prediction scored 0.184 when totals were scored against the realized base: the metric itself read the record's end.
+- Under D9 the target is the rate, so a weighted constant scores 0. The realized length now acts only through 1/`Exposure` as a would-be feature (0.184, the ceiling), and LEAK-41 (Must, adopted the same day) keeps it out of the features. Probe 22 finds no feature whose gain goes through `Exposure` above noise (length_to_year_end weight-mediated -0.060, SD 0.034).
+- So the fact Andrej's call rested on (the constant's score) no longer holds. The change also comes through an adopted rule, not drift, and the two calls are by different curators. Under "Who decides", a newer curator decision with a stated fact wins.
+- The record states this fact (CC l.154; REVIEW issue 6, Consistency bullet). No prompt is needed.
 
-**Drift and repeated reasons.** Andrej's decisions on the family are fremtpl2 (2026-10-20) plus verdicts and priorities
-(2026-10-30, 2026-11-01): no drift. Lennart's MET-3 calls of 2026-10-21 are uniform. No recorded exception shares a
-reason with this dataset, so no third exception. One reason does recur, though: a realized time on risk kept as a feature
-although an early end is known only after the prediction point. It appears in fremtpl2 (CC) and the three drafts of this
-batch. LEAK-10 is a Must, so this cannot travel as exceptions. It needs one written reading (a LEAK-10 Cases row under
-LEAK-6's slight-optimism clause, or an amendment) that the curator confirms once ("Keeping the rules current"). Today
-three definitions cite a call that sits only in fremtpl2's record.
+**2. Unrounded `length_to_year_end` (dataset agent's call, for Lennart to confirm): departs from Andrej's rounding, with a stated reason; consistent with the siblings**
 
-**Consistency check A (AI, 2026-11-01):** your call on frempl (`Exposure` kept as recorded, dates dropped, written as a
-`Note:`) differs from spanish_motor_insurance_coverage_level_2022_2024 (draft, 2026-11-01: the locatable cancellations
-reset to the exposure known at the start, LEAK-7; the rest `Potential leak, kept on purpose:` with a revisit condition)
-and australian_vehicle_insurance_2004_2005 (draft, 2026-11-01: `Potential leak, kept on purpose:` with a test that the
-late part adds nothing to the Gini). The mechanism is the same: a time on risk cut short after the prediction point,
-with early-ended records claiming more at the same length (2.4% against 1.5% at 0.1 years or less). What sets frempl
-apart?
-(a) The length known at a record's start is only an upper bound (31 December); no contracted term ships, unlike
-spanish's portfolio policies, which run from 1 January. So no value known at the start can be restored, as for spanish's
-new business. Recorded as `Potential leak, kept on purpose:` with the measurement above (Gini 0.286 against 0.301 on a
-log1p fit, claim AUC 0.690 against 0.632) and a revisit condition (a release with the contracted term or why a record
-ended), and "the family's call" reworded as the suggested call. (b) Treat frempl like spanish: for the early-ended
-records, replace `Exposure` by the length from the start to the year end. (c) Reopen spanish's portfolio fix to match
-frempl. (d) Change the rule: a LEAK-10 Cases row or amendment for time exposure in insurance pricing, from fremtpl2's
-call.
+**Precedent it departs from:** Andrej, 2026-11-02 (CC l.138, issue 2 (a)): "every `Exposure` rounded to months". The reason recorded then was that the three decimals of the *realized* length told a continued record from an open one (AUC 0.92 to 0.71, 0.91 to 0.61), and the rounding cost nothing.
 
-**Consistency check B (AI, 2026-11-01):** the insurance drafts of this batch ship the claim cost on two scales:
-frempl and spanish on log1p, australian raw, all scored by the Gini on the amount (the scale changes only what a model
-fits: here log1p LightGBM 0.286, Tweedie 0.275, squared error on the raw amount 0.251). frempl follows CLEAN-16 and
-Lennart's MET-3 calls of 2026-10-21. What sets australian apart?
-(a) Its source, a GLM textbook (de Jong and Heller 2008), models the raw cost with Tweedie and zero-adjusted models,
-while frempl's source names no model. Recorded as an exception to CLEAN-16 on australian. (b) Treat australian like
-frempl (log1p). (c) Reopen frempl to the raw scale. (d) Amend CLEAN-16 for zero-inflated insurance costs (the raw,
-Tweedie scale).
+**Fact that sets it apart** (stated in dataset.py l.184 and REVIEW issue 6):
+- The column is now a function of the start day alone: the source's own `Exposure` for open records starting that day, one value per day. Its decimals carry no end, so the mark the rounding hid is gone.
+- LEAK-41's "a value whose precision marks the cut" does not apply.
+- The column auditor reaches the same reading (column_auditor.report.txt l.23-30).
+- A second, weaker reason: rounding would make 2,704 records within one component repeat another record's features and target (3,445 repeats against 610, copies.log against copies_unrounded.log). The score would not move (-0.002 / -0.001).
+
+**Siblings:**
+- **pricing_game_2016:** `exposure_to_year_end` keeps the source's own precision (0.01 year, the grid of Exposition_au_risque), and `period_start` (to the day) is a feature. So the start day at full precision is already a shipped input in the nearest sibling.
+- **spanish:** "do not round the premiums" (Andrej, 2026-11-02): the source's precision kept when rounding bounds no leak.
+- The rule both follow: the start-known length at the source's own precision. The unrounded column is consistent.
+
+**Recording gap:** REVIEW.md's "**Resolved (2026-11-06, Lennart):**" block (issue 6) writes "unrounded: ..." as part of Lennart's resolution. Lennart's CC line (record l.154) does not mention the rounding, and CHANGES.md calls it the agent's call for Lennart to confirm. Under "Who decides" (principles.md), an AI call sits below Andrej's CC until a curator marks it. Either Lennart confirms it (one line in the CC, naming Andrej's rounding of 2026-11-02 as superseded and why), or the Resolved block marks the clause as the AI's, pending. This is not a consistency problem, only an attribution one.
+
+**3. Recording gaps (no departure)**
+
+- **D9 also supersedes Andrej's issue-2 call of 2026-11-02, but the CC line names only issue 4.** That call kept the realized length on the 34,324 continued records, as a potential leak kept on purpose, and rounded it to months. The REVIEW header says so ("it supersedes the fix of 2026-11-02 under LEAK-10"). The australian (D8) and pricing_game_2016 (D11) CC lines each name every Andrej call they supersede, so frempl's CC should too, for the record to match its siblings.
+- **LEAK-41 Cases text and probe 22's row l.370 are now stale.** They still quote "1/length alone 0.184, the honest model 0.176", the figures under the metric of 2026-11-03. The D9 figures are 0.184 against 0.183 (Tweedie), as the metrics Cases row l.316 has them. This is a wording fix in the knowledge file, not a decision.
+
+**4. Keeping `length_to_year_end` on the log1p scale (D9 as worded = issue 7 option A): departs from CLEAN-16 without a fact that sets it apart**
+
+**The rule:** CLEAN-16 (Should, amended 2026-11-06 by Lennart) says "A log-scale rate with its denominator as a feature misleads L2 fits ...; drop the feature or ship the identity scale". The rule's mechanism is measured here: mean log1p rate 0.29 to 1.08 by length band; L2 on log1p 0.156 with the length and 0.185 without, lower on 7 of 9 splits; probe 22 L2 weight-mediated -0.060.
+
+**The reason D9 gives** ("CLEAN-22, USE-6") does not set the case apart:
+- USE-6 makes the input legitimate, not required.
+- CLEAN-22 is about width.
+- Neither answers a learner being misled by the scale.
+
+**Precedents:**
+- **pricing_game_2016 (Lennart, 2026-11-06):** the start-known length kept as a feature, on the identity scale. This is the clause's identity remedy.
+- **spanish_motor_insurance_coverage_level_2022_2024 (Lennart, 2026-11-06):** log1p kept with no length feature. But `total_exposure` left under LEAK-41 as a hybrid, and that release has no start date to build a start-known part from. So spanish is not a precedent for dropping a start-known length for the L2 reason. No applied case of that exists.
+
+**Conflict between rule texts that issue 7 leaves out:**
+- LEAK-41 (Must) says "A part known at the start ships as its own column (LEAK-7, LEAK-37)".
+- The leak Mechanisms row (l.441) says the fixed length "may stay a feature".
+- If LEAK-41's sentence is a directive, issue 7's recommended B (drop) breaks a higher-ranked Must to satisfy a Should, and only C meets every rule.
+- If it is a permission, B is fine.
+- The principles tension row "Width against model limits: ... a model's input cap is never an argument" also leans against dropping a legitimate input because of one family of losses.
+- So the precedents and ranks favour C. Issue 7 frames C as a departure from the curator's scale, but CLEAN-16 itself names C as a remedy.
+
+**Reflection prompt** (to append to issue 7 of REVIEW.md, in the review-file shape):
+
+**Consistency check (AI, 2026-11-06):** Does anything set frempl apart from CLEAN-16's clause on log-scale rates, or should it go like pricing_game_2016 (identity scale, length kept)?
+
+* **Problem:**
+  - D9 keeps both the log1p scale and `length_to_year_end`. CLEAN-16 asks for one or the other, and it gives no exception[^cc1].
+  - The reason D9 gives (USE-6, CLEAN-22) makes the column legitimate but doesn't answer the misled L2 fit (0.156 with the column, 0.185 without, 7 of 9 splits).
+  - pricing_game_2016 (Lennart, 2026-11-06) kept its start-known length and shipped the identity scale. spanish dropped `total_exposure` for LEAK-41, not for this clause.
+  - Dropping the column (issue 7 B) may conflict with LEAK-41's "a part known at the start ships as its own column"[^cc2].
+
+| | Option | Pro | Con |
+|---|---|---|---|
+| a | Exception to CLEAN-16 (keep A): the column is known at the start on every record, and LEAK-41 asks for that part as a column; the notes name which losses it misleads | keeps a legitimate input and the curator's scale; serves P4 and USE-6 | first exception to the clause; squared-error learners lose 0.029 for a reason unrelated to risk |
+| b | Treat like the clause's letter: drop the column (issue 7 B) | L2 and Tweedie fits score alike (0.185, 0.179); scale kept | may break LEAK-41's start-known sentence (Must over Should); drops an input worth +0.005 (SE 0.004) to Tweedie |
+| c | Treat like pricing_game_2016: identity scale, column kept (issue 7 C) | meets CLEAN-16, LEAK-41 and the nearest sibling; L2 then estimates the cost per year | L2 scores 0.159, led by the tail (11.6 million per year); changes the per-file scale of 2026-11-02 |
+| d | Amend CLEAN-16 (or LEAK-41) to say which wins for a start-known length on a log-scale rate | settles this table and the next one alike | a rule change for one case so far |
+
+* **Recommendation:** c, or d if the log1p scale matters more to you than the sibling match. c is the only option that meets every rule text and follows pricing_game_2016. b should wait until LEAK-41's sentence is read as a permission. **Decision:** a, b, c or d?
+
+[^cc1]: **CLEAN-16** (Should; amended 2026-11-06, Lennart): a rate scored by a Gini keeps the curator's scale; a log-scale rate with its denominator as a feature misleads L2 fits: drop the feature or ship the identity scale.
+[^cc2]: **LEAK-41** (Must; 2026-11-06, Lennart): "A part known at the start ships as its own column (LEAK-7, LEAK-37)"; against it, the Mechanisms row of leak_checks.md: "which may stay a feature". **USE-6** (Must): an input known at the prediction point is legitimate. Precedents: pricing_game_2016_french_fleet CC 2026-11-06 (identity, `exposure_to_year_end` kept); spanish_motor_insurance_coverage_level_2022_2024 CC 2026-11-06 (log1p, `total_exposure` dropped under LEAK-41).
 
 </details>
 
 <details><summary>Advocate</summary>
 
-**Advocate, opening brief (2026-11-01): frempl_french_motor_personal_line**
+**Advocate, opening brief: frempl_french_motor_personal_line (full tier, exposure re-review 2026-11-06)**
 
-**Position: ship after definition fixes. None of them costs the task.** The panel found two real P4 problems: the late
-part of `Exposure`, and the successor shortcut under random records. Each has a fix in `dataset.py` that keeps all
-115,155 rows and costs nothing measurable on the declared metric. Everything else is notes and wording. Nothing found
-goes past the second rung of the remedy ladder ("fix the definition", principles step 5).
+Position: ship. Validity holds where today's change touches it. I concede one Must-level split finding (finding A of the split audit). Its fix is a split edit that keeps the dataset. Issue 7 is a P7 call, and I take a side on it below. The panel found no problem that cannot be fixed inside the definition.
 
-**1. A real pricing task on faithful data (P2, P3, P5).**
-- Claim: the rows are an insurer's 2004 exposure lines: the rating factors and the claim cost that a tariff study
-  uses, exactly as the source publishes them.
-- Evidence:
-  - All 10 checksums match (claim audit, claim 1).
-  - The blind reviewer rebuilt the 115,155 rows from the public `.rda` files without the definition. The target
-    equals log1p(clip(ClaimAmount, 0)) to 1e-10.
-  - The amounts have mass points at 1,418.61 (427 rows), 102.59 and 4,326.53, which look like French fixed-cost
-    claim conventions: real claims, not generated ones.
-  - Domain practitioner: "Yes, as a challenger to a GLM on a realistic, if thin, French tariff table."
-  - 26 of 39 claims hold, and none of the refuted ones touches scope, ethics or provenance.
-- Rules: scope (SEL) holds. SEL-1 holds, with `Gender` noted. USE-1 holds, and USE-8 `approximate` is declared
-  honestly. PROV-8 holds (pinned to commit 3f5c00c). PROV-9 holds (2014, verified at 1.0-7). PROV-13 holds (the
-  source's own 1.2-1 dedup).
-- Answers the undocumented guarantee, loss basis and sample cuts (USE-5, LEAK-24):
-  - These already sit behind `approximate`.
-  - The column audit narrows the guarantee gap. The counter that rises after a claim shows that the amount spans
-    windscreen 40%, at fault 28%, not at fault 17%, parking 9% and fire-theft 6%: the policy's total motor claim cost.
-  - Tension row "a real task against imperfect cleaning": keep the task and note the rest. None of these gaps changes
-    what the target means.
+1. The target, weight and metric of D9 are the actuarial convention, and the Musts behind them hold. They also answer the blind reviewer's concern 1.
+   - Evidence. The claim audit tested the D9 claims, and all of them hold:
+     - target = log1p(ClaimAmount/Exposure); the round trip asserts;
+     - Exposure is the weight scoring column, the metric's weight and sample_weight, and is not among the 16 features;
+     - exposure_at_start is gone;
+     - the scorer matches an independent CAS ordered-Lorenz Gini to 4e-12;
+     - a weighted constant scores 0.000 on 9 of 9 splits.
+   - Precedents. Lennart gave the same treatment the same day to fremtpl2, bemtpl97, australian_vehicle_insurance (D8), pricing_game_2016 (D11) and spanish_motor (D10). The precedent checker calls D9 consistent. Where it reverses Andrej's issue-4 call, it names the fact that changed: the constant scored 0.184 then and scores 0 now.
+   - Practitioner: the earned-exposure-weighted pure premium is "the number I set the premium from". A record cut short after a total loss "is risk I must price, not noise" (837 against 311 per exposure-year).
+   - Rules: LEAK-41 (Must), MET-15 (Must), MET-14 (Should). Who decides: Lennart's D9 is the newest curator decision.
+   - Against the blind reviewer's "the weight does not do its job; switch to Tweedie deviance or a frequency task":
+     - The weight works for the loss that suits the metric. Dropping it costs Tweedie -0.023, worse on 9 of 9 splits (claim audit row 16).
+     - The proposed deviance metric fails on this table. On 3 of 3 folds the Tweedie fit scores worse than a flat rate (132.64 vs 132.56, 121.23 vs 120.86, 117.84 vs 117.56), because tail rates of up to 11.6M per year swamp it (practitioner, Q5).
+     - A frequency-only task changes what the actor acts on (USE-5).
+     - The Gini scores on the expm1 scale and is invariant to order, so the log1p scale only matters for training. That is issue 7 (P7), not a validity problem.
 
-**2. Fifteen of the sixteen features are known at the prediction point (P4, LEAK-10 Must holds for them).**
-- Evidence:
-  - The claim counts are taken at the record's start. A counter rises at the next record after 95.3% of the claims
-    and after 2.3-3.1% of the other records (claim audit 16, column audit).
-  - `BonusMalus` moves after 11.6% of the claims, because it is updated at the anniversary.
-  - `ClaimInd` (1 exactly where the amount is positive) and `RecordEnd` are dropped.
-  - No test row has an exact feature copy in train (0.0%).
-- What it shows: the problem is one column, not the task. Independent failures are not conflicts, so this point does
-  not excuse point 3.
+2. No realized length reaches the features, and length_to_year_end is known at the start. This answers the claim that "exposure leaks in through L".
+   - Evidence. length_to_year_end is a function of the start day alone:
+     - one value per day; 0 of 366 days have two different open-record values;
+     - strictly monotone in the start date; L >= E on all rows;
+     - unrounded decimals are the source's calendar precision, not the record's end (column audit, claim audit row 4).
+   - Without L, the tariff predicts Exposure at R² 0.003. No rating factor carries risk selection into the length.
+   - Probe 22, both arms: L's weight-mediated gain is negative, -0.038 (SD 0.019) under Tweedie and -0.060 (SD 0.034) under L2, and negative on 9 of 9 splits in the claim audit. No other feature is above noise.
+   - Rules: USE-6 (Must), LEAK-41 (Must, a timing call). The blind reviewer's AUC gap from L appears only under the log1p target. That is CLEAN-16's mechanism (P7, issue 7), not a P4 leak.
 
-**3. `Exposure`: the late part is real, and LEAK-7 fixes it without losing the feature (P4, LEAK-10 Must, LEAK-7
-Should).**
-- Concession: 25,131 records (21.8%) end before 31 December with no continuation. For them the realised length is a
-  consequence of the outcome.
-  - They hold 20.7% of the exposure and 38.9% of the claim cost.
-  - The 3-decimal `Exposure` alone tells an ended-early record from an open one at AUC 0.91 (column audit).
-  - So the note's premise is wrong: dropping the dates does not hide the end.
-- Mildest fix (column audit, problem 1):
-  - In `_clean`, before the dates are dropped, give those records the `Exposure` of the open records that start on the
-    same day. That is the value known at the start.
-  - Keep the continued records as they are. Add a `Potential leak, kept on purpose:` note on the residue: continued
-    records cost 407 per exposure-year, against 311 for open ones.
-  - Measured: the Gini goes from 0.288 to 0.339 and the claim AUC from 0.689 to 0.675, on 9 of 9 folds each way. The
-    shipped value inflated the claim AUC and hid the large claims that ended contracts. It did not inflate the
-    declared score.
-- Why this rather than the alternatives:
-  - Dropping `Exposure` (the builder's option, claim AUC 0.565) is a harsher rung.
-  - Setting every row to the length from the start to the year end (claim audit: Gini 0.292, AUC 0.633) also throws
-    away the renewal ends, which are known at the start.
-  - Keeping the value as in fremtpl2 fails LEAK-10's second clause, which fixes late values wherever they can be
-    located. "No consistent Gini gain" (precedent check) is the "removing it changes no score" test, which the
-    LEAK-7/LEAK-10 case row of 2026-10-21 rules out as a reason to keep.
-  - The dates set frempl apart from fremtpl2 (CC, 2026-10-20). So the fix follows the rule without reopening the
-    curator's call: a precedent is followed only on the same facts.
-  - The curator settles it as consistency check A, option (b).
-- Also: reword "the family's call of 2026-10-30" to "the AI's suggested call" (claim audit 10).
+3. The data is faithful, and the grouped split is right. The blind reviewer confirmed both independently.
+   - Evidence from the blind review:
+     - 115,200 source rows minus 45 exact copies gives 115,155;
+     - the 10,869 positive claims match the source exactly;
+     - the target was rebuilt with max abs diff 0.0;
+     - the history columns are pre-period; grouping is "needed and correct".
+   - Split audit: no component straddles any of the 9 splits; every test fold has 3,570-3,675 claims (MET-2 computable).
+   - Rules: PROV-7/8/9 hold, SPLIT-9 (Must, as fixed by issue 1), SPLIT-8 (ForcedGroupedFromTemporal, settled 2026-11-02).
+   - The in-year temporal alternative is ruled out. Its training side is selected by the realized weight: 12.8% of rows by 1 April, cost 1,140 against 311 per year (split audit, point 1). LEAK-41's last clause forbids that, and it also falls below the 50% floor.
 
-**4. The split: group on the chain to remove the measured successor shortcut, at no cost (P4, SPLIT-9 tension row,
-SPLIT-8 Must, SPLIT-24 Must).**
-- Concession:
-  - Under random records, a fifth of each test fold has its policy's next record in train.
-  - That record's claim counts rose after 87% of the test record's claims and after 0.9% of its non-claims.
-  - A lookup built from training features only lifts the declared Gini from 0.282 to 0.403 (claim audit 14).
-  - The successor does not exist when the record is priced. USE-10's "known policy" argument (split audit) covers the
-    policy's past, not its future.
-  - The tension row settles it: "a shortcut that can be measured is always removed".
-- Mildest fix:
-  - Ship the chain id that `_decisions` already computes as the group column, not as a feature.
-  - Use grouped folds, tagged `ForcedGroupedFromTemporal` (SPLIT-8: grouped by the entity when its periods recur).
-  - The key is built exactly from consecutive raw rows with the same profile, each starting on the previous end. The
-    shuffled control finds 1 such link by chance. It follows the SPLIT-24 case in_vehicle_coupon_recommendation
-    (consecutive blocks in the raw file order).
-- Cost: none measured.
-  - Plain LightGBM scores 0.277 grouped against 0.282 random (claim audit).
-  - Grouped by component, it scores Gini 0.2785 against 0.2827 and AUC 0.6899 against 0.6901 (split audit).
-  - Under chain folds the lookup falls to AUC 0.54 and no longer lifts the claim AUC.
-- Residual, for the curator:
-  - 10,292 records continue only in another file, and one chain fold of three still gains (+0.065).
-  - Grouping on the cross-file components (split audit) costs nothing measured either, but that key has about 1% chance
-    links: a weighing of exactness (SPLIT-24) against coverage.
-  - The successor that stays in the test fold is an evaluation-level path (LEAK-9).
-- Why a fix and not an exit: re-splitting is the second rung of the ladder, and the tension row "a real task against a
-  leak" fixes the leak and keeps the task.
+4. The task is worth benchmarking. TP-2 (Should) and TP-4 (Must) hold; the "weak signal" objection is a weighing factor, not a blocker.
+   - Evidence:
+     - honest Tweedie 0.183; L alone 0.005; the margin over L alone is at least 0.14 on 9 of 9 splits;
+     - weighted constant 0; random orders 0.003 (SD 0.037);
+     - claim AUC about 0.67.
+   - The probe's no_signal flag comes from R² on the log1p scale. On the declared metric the models beat the constant by about 0.18 (claim audit, other observations).
+   - Rank: TP-2 says a small real signal is no reason to retire. The principles' tension row "right split against the score" puts P4 over P6.
+   - Fold noise (SD about 0.03) and one large claim moving fold 0 by 0.06 are real minuses. Their remedy is a note: compare models by paired fold differences, and optionally measure a large-loss cap in scoring (practitioner). Neither is an exclusion.
 
-**5. The metric: the Gini family is right, and the row form is a weighing call for the whole family, not a blocker
-(P6, MET-11 Must, MET-1 Must, MET-10 Weigh).**
-- Evidence for the Gini:
-  - Every agent agrees that RMSE would score the wrong thing. The true claim indicator times the claimants' mean reaches
-    only R^2 0.096, and untuned LightGBM -0.04 to 0.00, while the same model ranks claims at AUC 0.69. That is MET-11's
-    context case ("the default would score the wrong thing").
-  - The scorer is verified (claim audit 27): it returns 0.2627, the Gini computed by hand on the amount, with
-    3,540-3,740 claims per test fold.
-- Concession: the reason overstates its sources.
-  - Liberty Mutual used a weighted Gini, Frees et al. order by the relativity to a premium, and Allstate's rows were
-    whole vehicle-years.
-  - Here exposure runs from 0.001 to 1, and raw `Exposure` alone scores 0.213 against the model's 0.283 (domain
-    practitioner, claim audit 29).
-- Mildest fix: keep `normalized_gini` and correct the reason. Say that it scores the period's total cost, length
-  included, and give the 0.213 figure and the swing of 0.09 that one claim causes in a fold.
-- Why the better metric waits for a family decision:
-  - The exposure-weighted Gini on the annual rate (domain practitioner, option a) needs `Exposure` as a scoring column
-    (MET-2).
-  - It needs a new general metric with a reference implementation (MET-12, MET-13).
-  - australian, spanish and the pricing games need the same answer.
-  - So it is one decision for the curator, not a reason to hold this dataset alone.
-- Fold noise is a factor (MET-10), not a failure. Each repeat holds the 802,620 claim in exactly one fold, so the
-  repeat means stay comparable (split audit, note A). Capping changes the target as recorded, which is the curator's
-  call.
+5. The successor-record exploit is the settled LEAK-9 route. A protocol line already covers it. The number in the text needs updating.
+   - Evidence. The task gamer reaches 0.639 from 0.203 by rebuilding each test record's successor from other test rows. The split audit's oracle gives +0.355. Both read other test rows of the same fold. LightGBM reading one row cannot use this, and neither can TabPFN in its usual batch.
+   - Rule: LEAK-9 (Should, amended 2026-11-05). An evaluation-level leak where "a model can read other test rows" is fixed "by a protocol line the benchmark checks, not in the data". Precedents: fremtpl2, medical_facility_operational_data, sepsis_prediction. Lennart settled it for this dataset in issue 6.
+   - Against the gamer's fix (collapse each policy-year into one row): it is not milder. It rebuilds the unit and the weight, and the 1 January starts are calendar cuts, not pricing events. The split audit also shows that keeping one record per component in test drops about 15,000 test rows per fold, selected by contract changes that correlate with claims (LEAK-41).
+   - Gamer exploits 2 and 3 (Exposure fed in from scoring.parquet) amount to using the weight as a feature. MET-15 and the shipped feature_columns forbid that for every exposure dataset; nothing here is specific to frempl.
+   - Concession (EV-2): restate the protocol line's figure as "+0.26 to +0.44, depending on what is read", instead of +0.260 alone.
 
-**6. Worth benchmarking (P6, TP-2 Should, TP-4 Must, TP-5 Must).**
-- Evidence:
-  - Not trivial: the model beats raw `Exposure` on 9 of 9 folds (0.283 against 0.213; TP-4).
-  - The linear model beats the dummy on 5 of 5.
-  - 115,155 rows and about 3,600 claims per test fold, far from `Too Small` (TP-5).
-  - After the fix in point 3, the Gini rises to 0.339.
-- Answers the blind reviewer's "low signal, methods tie" (tuned LightGBM against ridge, 0.0002 ± 0.0009 R^2):
-  - TP-2: a small real signal is "no reason to retire".
-  - forest_fires (kept, R^2 0.013) has the same zero-inflated shape: only the claim part carries signal.
-  - acquire_valued_shoppers_challenge and amex_non_iid_1m were kept with no spread.
-  - That tie is R^2 on log1p, not the declared Gini.
-  - The blind reviewer's own verdict is include.
+6. Concede: the split audit's finding A is a real SPLIT-9 Must problem. It is fixed in the split, and the dataset stays.
+   - Evidence. A contract change that also changes one profile column leaves a policy split across components. The later record then sits in train and tells the test record's claim:
+     - 9,160 candidate pairs; about 3,200 are true links;
+     - the counter rises after 0.939 of claims against 0.073 of non-claims when HasKmLimit changes;
+     - a train-only lookup gains +0.020 (SD 0.010), better on 9 of 9 splits.
+   - Only models that read training rows (kNN, retrieval, in-context learners) can use it. SPLIT-9 is a Must, so "whatever it costs" applies. Under "independent failures are not conflicts", nothing ranked above it excuses it.
+   - Mildest remedy: (i) a per-fold filter that drops the one-column candidate successors of a fold's test rows from its training side (about 2-3% of training rows; groups unchanged; a split edit only). Alternatively (ii), widen the component with these links, which fits Andrej's "most conservative key". Under (ii) the lookup gain falls to -0.0045, and the honest score moves from 0.174 to 0.169, inside the fold SD of 0.03.
+   - Either reopens issue 1's key, so the curator must mark it. Neither threatens the dataset.
 
-**7. The file choice, uniqueness and cleaning hold; the fixes are wording (P5, PROV-7 Must; P7; EV-5).**
-- Uniqueness holds:
-  - freMPL1 stays out: 39.1% of its contracts are in files 5-9, and 793 of 815 amounts are equal.
-  - freMPL2-4 stay out (derived amounts), and so does freMPL10 (another schema, 0.08% claims).
-  - fremtpl2 is another portfolio, period and schema (PROV-7).
-- Concession on the file note: "near-random slices" is wrong, and its evidence is accuracy against the majority class
-  (EV-5). Claim rates run 7.7-10.0% by file.
-  - Stacking without a file column still holds. Leave-one-file-out scores like the random folds (AUC 0.690 against
-    0.687, Gini 0.284 against 0.285), and a new record has no file.
-  - Fix: reword the note with these numbers.
-- Concession on the negatives: they are not recoveries on earlier claims. Of those with a continuation, 95.1% are
-  followed by a rise in the not-at-fault counter (column audit).
-  - The clip stays: the negatives are -2.4% of the net cost, and the pricing_game_2017 definition clips the same way.
-  - Fix the text in the notes, in `predicted`, in the Decision and in the acceptance reason for
-    `task_target_value_dominant`: "0 = no claim, or a not-at-fault claim recovered in full".
-- Smaller wording fixes:
-  - AIcrowd's game ran in 2020-21 on the 2017 game's portfolio.
-  - `OutUseNb` counts out-of-use periods, not claims.
-  - The record's screening lines are superseded (EV-2): the year, "431 against 309", and the file sizes.
-- All of these are P7 and record fixes, cheap and safe (principles step 3).
+7. Issue 7 is open: CLEAN-16 (Should) against keeping L on the log1p scale. It is a quality call, and either fix keeps the dataset. The remaining items are text.
+   - Concede: shipping A (the definition as it stands) needs a recorded exception, and the precedent checker finds no fact that sets frempl apart.
+   - Evidence:
+     - L2 on log1p scores 0.156 with L and 0.185 without (lower with L on 7 of 9 splits);
+     - Tweedie gains only +0.005 (SE 0.004) from L;
+     - the practitioner: "a cut made by the extract's calendar year, not a rating factor".
+   - My side: B, drop L, the mildest fix. It keeps the curator's scale and stays inside CLEAN-16's letter. On the precedent checker's worry that B breaks LEAK-41's "a part known at the start ships as its own column": the Mechanisms row says the fixed length "may stay a feature". I read that as a permission, so B does not break the Must. If Lennart reads the sentence as a directive, C (identity scale, as in pricing_game_2016) is the way out. Either way this is P7, fixed when cheap and safe, and it is no reason against shipping (principles, step 3).
+   - Text fixes, all cheap (EV-2):
+     - reword "1/Exposure alone, the ceiling a leak would reach" (refuted: Exposure as a feature reaches 0.256);
+     - say that length_to_year_end is a one-to-one recoding of the start date (moot under B);
+     - have Lennart's CC confirm the unrounded length and name Andrej's issue-2 rounding of 2026-11-02 as superseded;
+     - state in the notes that the 967 negatives were set to 0 (the blind reviewer asks for this; the claim audit shows it is already counted).
 
-**Judgment record**
-
-```text
-Verdict: ship after changes.
-Validity: SEL holds (Gender noted, SEL-1); USE-1 holds, USE-8 approximate; LEAK-10 holds for 15 features, triggered
-on Exposure (21.8% unforeseen ends, located row by row), fixed by LEAK-7 (the start-known value for those rows);
-SPLIT-9 shortcut (successor's counts, Gini 0.282 -> 0.403 with a lookup) fixed by chain-grouped folds,
-ForcedGroupedFromTemporal (SPLIT-8, SPLIT-24); PROV-7, PROV-8, PROV-9 hold.
-Value: TP-2 small real signal (keep); TP-4 not trivial (9/9); MET-11 context Gini kept, reason corrected.
-Quality: negatives clip kept, reason corrected; file note and wording corrected.
-Weighed: source + (every column documented, version pinned), size +, use case + (a real tariff table), signal -,
-fold noise -.
-For the curator: consistency check A (Exposure as spanish, not as fremtpl2); chain against component grouping; the
-family's metric form (row Gini against exposure-weighted Gini on the annual rate).
-```
+Proposed judgment: ship after changes.
+- Validity: LEAK-41, MET-15, USE-6, PROV, SPLIT-8 hold. SPLIT-9 is triggered by finding A and fixed by the per-fold filter or the widened key (curator mark). LEAK-9 is covered by the protocol line, with its figure restated.
+- Value: TP-2 small real signal, TP-4 holds.
+- Quality: CLEAN-16, issue 7, B (or C).
+- For the curator: issue 7, and the key for finding A.
 
 </details>
 
 <details><summary>Critic</summary>
 
-**Critic, opening brief (2026-11-01): frempl_french_motor_personal_line**
+**Critic, opening brief: frempl_french_motor_personal_line (exposure re-review, full tier, 2026-11-06)**
 
-```text
-Verdict: do not ship as defined; ship after changes 1-3 (the definition) and 4-6 (text).
-Validity: SPLIT-9 triggered (a policy's later records in train tell a test record's claim), fix: group on the policy
-  chain (SPLIT-8, ForcedGroupedFromTemporal). LEAK-10 triggered on `Exposure` (unforeseen ends, located row by row),
-  fix by LEAK-7. PROV-7 holds, but the evidence given for it breaks EV-5.
-Value: MET-1 triggered: the row Gini on the period's total scores the period's length; the exposure-weighted form,
-  a family decision.
-Quality: the negative amounts are described wrongly (EV-2); note and record corrections (EV-2).
-Exclusion: none asked. Every Must here can be fixed in the definition.
-```
+Verdict asked: ship only after changes. Point 1 is a Must under P4 and has to be fixed before the dataset ships. Points 2 to 6 ask for corrected numbers, a curator decision or notes. None of them is a reason to exclude: the task is real (domain practitioner: a pure premium per earned year, weighted by earned exposure, is the actuarial convention), and D9's target, weight and metric hold on the data (claim auditor, claims 1-12 and 14-28).
 
-**1. The random split shows the model a test record's claim through the policy's later records (P4, SPLIT-9 Must, with SPLIT-8 Must).**
-- Problem. 30% of records continue in a later record of the same policy: 34,324 links within files, 1 by chance with
-  the rows shuffled. More continue across files: 10,292 records continue only in another file, and 53% of test records
-  have a record of their policy in train (split auditor). The later record's claim counts rise after 86.8% of the
-  earlier record's claims and after 0.9% of its non-claims (claim auditor).
-- Effect on the task. At a record's start its successor does not exist: an insurer knows a policy's past, not its
-  future. Under the shipped folds, 19.4-20.0% of each test fold has its successor in train. On those rows the
-  successor's counts identify the test claim at AUC 0.93.
-- Evidence (claim auditor, claim 14). The lookup uses the shipped training features only: same profile, `DrivAge`
-  +0/1, `LicAge` advanced by the length. It reads no labels, dates or file order. Added to LightGBM, it lifts the
-  declared Gini from 0.282 to 0.403 and the claim AUC from 0.689 to 0.741, on 3/3 folds. Under chain-grouped folds
-  the lookup alone drops to AUC 0.54 (0.63 random), and with it the model's claim AUC is lower than without it (0.680
-  against 0.689).
-- The tests read the other way prove nothing here. The builder's chain-fold comparison and the split auditor's
-  paired mate test (-0.0017 ± 0.0018) both used LightGBM. LightGBM reads one row at a time and cannot take a cross-row
-  path, whatever the data holds. A test that cannot come out the other way proves nothing (EV-6). Whether in-context
-  models (TabPFN, TabICL) take the path is untested (EV-7, cannot verify).
-- Rule. The principles' tension row on SPLIT-9: "a shortcut that can be measured is always removed, whatever it costs
-  the floor". alfa_battle_2_0_task_2 has the same mechanism: a later row of one client tells the earlier outcome, and
-  that client's training rows were dropped. USE-10 makes a known entity's history legitimate, and history is the past.
-  Here the past already reaches the record through its claim counts and `BonusMalus`.
-- Like cases. pricing_game_2017_french_mtpl (one year, French MTPL, this batch) groups by client because "the claims
-  of the client's other vehicles in that year are not known". spanish groups by policy. SPLIT-8 names this regime:
-  grouped by the entity, `ForcedGroupedFromTemporal`.
-- Cost: none measured. Grouped by component: Gini 0.2785 and AUC 0.6899, against 0.2827 and 0.6901 random (split
-  auditor, 3x3). Grouped by chain: Gini 0.277 against 0.282 (claim auditor).
-- Remedy (fix the definition).
-  - Build the chain id in `_clean`; `_decisions` already computes it. Ship it as the group column, never a feature,
-    and tag the split `ForcedGroupedFromTemporal`.
-  - Which key: the within-file chain is constructed exactly (consecutive raw rows, exact profile and date continuity),
-    as in in_vehicle_coupon_recommendation (SPLIT-24). The split auditor's cross-file component also covers the 10,292
-    cross-file continuations, but it links on age tolerances (465 chance links under a 7-day shift). The curator
-    decides whether it meets SPLIT-24.
-  - Rewrite `task_summary.split`, `splits_comment` and decision 3.
-  - Put the measured valid windows in `splits_comment`, as SPLIT-8 asks: 13-39% of the rows, claim AUC 0.55 / 0.59 /
-    0.62 against 0.60 / 0.59 / 0.62 for as many random records (split auditor, issue 1).
+1. A hidden successor route crosses the split (P4, SPLIT-9 Must; SPLIT-24, SPLIT-30).
+- Problem: the policy_component key joins records only when all six PROFILE columns are equal. A contract change that also changes one of them (RiskArea, HasKmLimit, VehUsage, SocioCateg, MariStat) leaves the policy split across components. The later record can then sit in train and give away the test record's claim through its claim counters.
+- Evidence (split auditor, finding A):
+  - 9,160 one-column-changed pairs over 7,120 predecessors, none in the same component.
+  - The pairs are real links, and the test could have refuted it. The successor's counters rise after 75.5% of claims against 41.9% of non-claims. Shifted end dates give no contrast (0.63-0.67 against 0.62-0.65). HasKmLimit changes are near exact (0.939 against 0.073).
+  - A training-side lookup gives +0.0203 Gini (SD 0.010), better on 9 of 9 shipped splits (0.1742 to 0.1945). The "a candidate exists" flag alone gives -0.003, so the gain is the claim, not the early end.
+  - Under widened groups the gain falls to -0.0045 (4/9). The honest score is 0.1686 against 0.1742, an unpaired comparison inside a fold SD of about 0.03.
+- Effect: a model that reads training rows (kNN, retrieval, in-context learners) can learn a test record's outcome from its own policy's later record. This is the path issue 1 closed for exact-profile links, at about 1/5 of the size.
+- Rule: SPLIT-9 (Must) says a shortcut of the row's own entity is removed whatever it costs. The tension row in principles.md says a measured shortcut is always removed. Issue 1 sets the precedent that lookup routes count, even though LightGBM cannot use them.
+- Remedy (fix the definition): widen the component with the one-column links. This follows Andrej's "most conservative key" call of 2026-11-03; the measured cost is within noise; the largest group is 90 records. Failing that, a per-fold filter that drops the one-column candidate successors of each fold's test rows from training (about 2-3% of training rows). Either reopens issue 1's key and needs the curator's mark.
 
-**2. For records that ended with no successor, the realised `Exposure` is set by the outcome (P4, LEAK-10 Must, fixed by LEAK-7 Should).**
-- Problem. 25,131 records (21.8%) end before 31 December with no continuation, an end not foreseen at the start.
-  Claims drive these ends (column auditor):
-  - they hold 20.7% of the exposure but 38.9% of the claim cost: 837 per exposure-year, against 311 for open records;
-  - they hold 66 of the 109 claims in the top 1%;
-  - at a length of 1-3 days, 2.7% of them have a claim, against 0.4% of open records.
-- Dropping the dates does not hide it. The exact 3-decimal `Exposure` alone tells an ended record from an open one at
-  ROC AUC 0.91, and at 0.61 when rounded to months. My second check, a model-free lookup per value, gives 0.914 /
-  0.915 / 0.914, and 0.61 rounded (a script in the run folder). So the note's "the start date
-  together with `Exposure` gives it away" is refuted: `Exposure` gives it away alone.
-- Effect on the task. The decisive test (column auditor, EV-1): give those records the value known at the start, the
-  open records' `Exposure` for the same start day, which reads no label. The declared Gini rises from 0.288 to 0.339,
-  higher on 9/9 folds. The claim AUC falls from 0.689 to 0.675, lower on 9/9. So the shipped value changes what is
-  measured: it inflates the frequency ranking and hides the large claims that ended their contracts.
-- Rule. LEAK-10's second clause (2026-10-26, Lennart): late cells that can be located go. Only cells that cannot be
-  located row by row stay with a note, and only when the part that can be traced shows no gain. The clause adds: "a
-  'removing it changes no score' test alone is still no reason to keep". The precedent checker's LEAK-6 keep rests on
-  exactly that test (no consistent Gini gain when every record gets the start-known length), and LEAK-6's narrowing
-  covers only cells that cannot be located.
-- Precedents. fremtpl2 (CC, 2026-10-20) has other facts: no dates there locate the early ends. spanish (this batch)
-  reset the cancellations it could locate. What sets this case apart: `RecordEnd` with `_continues_next` locates the
-  early ends row by row.
-- Attribution. The note cites "the family's call of 2026-10-30", but that was an AI suggestion. The curator's CC of
-  that day set only `Yes` and priority 5 (principles, "Who decides").
-- Remedy (fix the definition, LEAK-7).
-  - In `_clean`, before the dates are dropped, set `Exposure` of the records with `RecordEnd` and no continuation to
-    the open records' `Exposure` for the same `RecordBeg`.
-  - Keep the continued records as they are, with a `Potential leak, kept on purpose:` note (407 against 311 per
-    exposure-year) and a revisit condition.
-  - Rewrite the `Exposure` note, the `fit_reason` clause and the attribution.
-  - The change departs from the fremtpl2 call, so it goes to the curator as a consistency check.
-  - Fallback if the curator keeps the realised length: round it to whole months, which removes the end-status code
-    (AUC 0.91 to 0.61) at no cost (Gini 0.282 against 0.283), and label the bullet `Potential leak, kept on purpose:`
-    with these numbers and a revisit condition (definitions.md).
+2. The LEAK-9 protocol line understates the route it guards, and the route needs no group id (P4, LEAK-9 Should).
+- Problem: the notes, CHANGES and REVIEW give the successor oracle as +0.260 (0.443 against 0.183). Three agents measured more:
+  - claim auditor: 0.467 (+0.285, 9/9);
+  - split auditor: 0.529 (+0.355, 9/9), with the in-component successor and the days to its start;
+  - task gamer: 0.2025 to 0.6394 (+0.437, range +0.423 to +0.448). It rebuilt the successor from features alone, without policy_component, matching length_to_year_end minus Exposure and LicAge plus 12*Exposure. That links 39% of rows, 99.7% of them within one group. A rule with no model (d_claims > 0 first) scores 0.505.
+- Effect: a method that reads other test rows can reach about three times the honest score. The note tells the benchmark operator how much to look for, so an understated size makes a cheating method harder to spot. The grouped split keeps successors on the test side, so the protocol line is the only guard (the gamer: grouping "makes it worse").
+- Rule: LEAK-9 (Should, amended 2026-11-05) puts the fix in a protocol line, as for fremtpl2 and medical_facility_operational_data. I do not ask for a re-split: the split auditor shows that one record per component in test would select rows by contract changes, which LEAK-41 forbids. EV-2: a measurement outranks the stated figure.
+- Remedy (a note): restate the size as "+0.26 to +0.44 depending on what is read". Say that the successor can be found from the features without the group id (length to 31 December minus Exposure, LicAge advanced). After point 1's fix, the line also covers the one-column successors.
 
-**3. The declared row Gini scores the period's length as much as the risk (P6, MET-1 Must; MET-11; MET-10 Weigh).**
-- Problem. `normalized_gini` sorts rows by the predicted total and weighs every record the same, whatever its length
-  (0.001 to 1 year). The practice the reason cites does not do this (domain practitioner; claim auditor, claim 29):
-  - CAS Monograph 5, sec. 7.2.4, sorts by predicted loss cost against cumulative exposure;
-  - Frees, Meyers and Cummings order by the relativity to a premium (read from the abstract and slides, not the full
-    text);
-  - Liberty Mutual scored a weighted Gini;
-  - Allstate's rows were whole vehicle-years.
-- Effect on the task. `Exposure` alone scores 0.213, 75% of the full model's 0.283, and it beats a model of all the
-  risk factors without `Exposure` (0.191). Under the exposure-weighted Gini on the annual rate, `Exposure` alone scores
-  about 0, and the two models swap places: 0.182 with `Exposure`, 0.203 without (9 splits, two auditors). A metric that
-  ranks two models the opposite way to the practitioner's metric does not score the task "the way a practitioner would
-  have chosen a model" (MET-1).
-- Resolution (MET-10). The 802,620 claim moves its fold by about 0.09: the fold SD is 0.044, and 0.018 without that
-  claim. A constant prediction scores -0.016 to +0.101, depending on the frame order.
-- Remedy (fix the definition; a family decision).
-  - Declare the exposure-weighted ordered-Lorenz Gini on the annual loss cost, with the realised exposure as a scoring
-    column, never a feature (MET-2). After change 2 the feature and the scoring column are different columns.
-  - Ship it as a general library metric (MET-12, MET-13). `normalized_weighted_gini` exists, but it orders by the raw
-    prediction. The alternative is to ship the annual rate with `Exposure` as the weight.
-  - australian, spanish and the pricing games declare the same row Gini, so the curator decides once for all of them.
-  - Keeping the row Gini would be a reading of MET-1 to record, since a Must has no exceptions. The reason must then
-    state the 0.213-of-0.283 share and the swap.
+3. Issue 7 rests on two rule texts that disagree, and the recommended option B may break the Must (P4 LEAK-41 Must against P7 CLEAN-16 Should).
+- Problem: the definition keeps both the log1p scale and length_to_year_end, which CLEAN-16 (amended 2026-11-06) asks against.
+  - Measured: L2 on log1p scores 0.156 with the column and 0.185 without (claim auditor: -0.030, SE 0.011, lower on 7 of 9). Tweedie: +0.004 (SE 0.005).
+  - Weighted mean of log1p by band of the length: 0.289 / 0.636 / 0.881 / 1.013, while the cost per year stays flat at 394 / 469 / 451 / 441.
+  - The blind reviewer, working without our notes, ranked the same mechanism as the most serious problem: claim AUC 0.627 with the length against 0.560 without for the log target, and 0.572 against 0.569 for a Poisson rate model.
+- Effect: the most common learner family loses about one random-order SD (0.037) for a reason unrelated to risk. Rankings between learners change.
+- The trap: the agent recommends B (drop the column). LEAK-41 (Must) says "a part known at the start ships as its own column", and the column auditor confirms this column is exactly that part (a function of the start day only, one value per day, L >= E on every row). If that sentence is a directive, B breaks a higher-ranked Must to meet a Should. Option C (identity scale, column kept) meets CLEAN-16, LEAK-41 and the nearest sibling, pricing_game_2016_french_fleet (Lennart, 2026-11-06: identity scale, exposure_to_year_end kept). The precedent checker found no fact that sets frempl apart from it.
+- Remedy (fix the definition, the curator's call): C. B only if the curator records that LEAK-41's sentence permits the column rather than requires it. Either way, add the precedent checker's consistency prompt to issue 7. Its cost under C: L2 on the identity scale scores 0.159, led by the tail. Tweedie is unaffected.
 
-**4. "Near-random slices" is refuted, and it was argued from accuracy against the majority class (P5, PROV-7; EV-5 Must).**
-- Problem. The note and the record rest the claim on a file accuracy of 31.0% against 28.1%, which EV-5 bars as
-  evidence. What was measured instead:
-  - claim rates by file run from 7.7% to 10.0% (chi2 p 2e-16), a spread 2.4 times the largest of 200 random
-    relabellings (claim auditor);
-  - the per-file one-vs-rest AUC is 0.57-0.64 (split auditor);
-  - 10,485 policy components span two or more files.
-- Effect on the task. None on stacking: leave-one-file-out scores like the random folds (AUC 0.690 against 0.687).
-  It matters for change 1, because policies cross files.
-- Remedy (text), in the note and the record. Write "samples of one portfolio drawn differently (claim rate 7.7-10.0%
-  by file; why is undocumented), sharing policies across files", and give the AUC numbers instead of the accuracy.
+4. One claim decides a fold (P6 value; MET-1 "scores the decision", EV-2).
+- Evidence:
+  - Domain practitioner: capping losses at 50,000 in scoring moves fold 0's Tweedie Gini from 0.210 to 0.147. The 802,620 claim is 3.6% of all cost; the ten largest claims are 7.6%.
+  - Random orders: per-fold SD 0.037 (up to 0.071).
+  - Task gamer: a random column added to Tweedie spreads it by about 0.04 (0.165 to 0.196).
+  - The Tweedie-L2 gap is 0.030, and 1/E per fold ranges 0.13 to 0.26.
+  - Annualised tiny exposures reach 11.6 million per year (58,087 over 1.8 days).
+- Effect: method gaps below about 0.04 are noise unless they are paired by fold. A pricing actuary caps and loads large losses separately.
+- Rule: TP-2 keeps a small real signal, so this is no exclusion. MET-1 asks that the metric score the decision, which the practitioner answers "partly".
+- Remedy (a note): state in the notes that comparisons need paired fold differences, with the fold SD. Measure a large-loss cap on the losses the Gini reads on the shipped splits and give the curator the number as an option. Do not change the metric without that measurement.
 
-**5. The negative amounts are claims of the period, not "no claim" (EV-2 Must; the target's description).**
-- Problem. Of the 246 negative-amount records that have a continuation, 95.1% are followed by a `ClaimNbNonResp` +1.
-  That happens for 0.19% of zero records and 18.6% of positive claims. Their rate grows with the length, like a claim's
-  (column auditor). So they are not-at-fault claims recovered in full, and `ClaimInd` = 0 means "no positive net
-  cost", not "no claim".
-- Effect on the task. The clip to 0 stays: pricing_game_2017 clips the same way, and the negatives are -2.4% of the net
-  cost. The text is wrong: `predicted` ("0 ... those without a claim"), the negatives bullet ("presumably recoveries on
-  earlier claims"), the target bullet, decision 2, and the reason proposed for accepting `task_target_value_dominant`.
-- Remedy (text). Write "0 = no claim, or a not-at-fault claim recovered in full (0.84%)". Also, AIcrowd's game ran in
-  2020-21 on the 2017 game's portfolio; it was not "its 2017 pricing game".
+5. A stated bound is refuted: "1/Exposure alone, the ceiling a leak would reach" (EV-2; the wording of LEAK-41 and probe 22).
+- Evidence: with the realized length as a feature the score is 0.259 (claim auditor), 0.256 (the definition's own number) and 0.240 against 0.183 (probe22_actuarial.txt). That is about 0.07 past the "ceiling". 1/E alone is a floor for a perfect proxy combined with the features, not a ceiling. The column auditor's report repeats the wrong reading ("Those numbers are the ceiling a leak would reach").
+- Effect: a reviewer would wave through a partial proxy scoring 0.20 as "below the ceiling". The figure appears in five places: the metric reason, the notes bullet, the REVIEW summary, CHANGES and the probe output. LEAK-41's Cases text also still quotes 0.176 for the honest model, where D9 gives 0.183.
+- Remedy (a note): reword the dataset's texts to "1/Exposure alone scores 0.184, as much as the honest model; with the features the realized length reaches 0.256". Flag LEAK-41's and probe 22's "ceiling" wording to the curator as an amendment; it is not an edit for the dataset agent.
 
-**6. Note and record corrections (EV-2: a later measurement supersedes).**
-- `curation_comments`:
-  - "12% otherwise" in the counts bullet includes counts falling out of the 4-year window. A rise follows only 2.3% of
-    non-claims (column auditor).
-  - `OutUseNb` counts out-of-use periods, not claims, so `task_summary.known` should not call it one.
-  - The first bullet should say that 38% of the starts are 1 January, the calendar cut, not a pricing event (domain
-    practitioner).
-- Record:
-  - year 2014 (NEWS of 1.0-7), not empty;
-  - 3,805 records span all of 2004, not none;
-  - 34,324 chain links against 1 by chance, not "431 against 309", so policyholders can be traced;
-  - the 1.2-1 file sizes are 16,000-32,400, not 20,600-38,300.
-- Remedy: text, in the same change as 1-3.
+6. Recording gaps ("Who decides" in principles.md; CLEAN-22, EV).
+- The unrounded length_to_year_end is the dataset agent's call (CHANGES: "Lennart to confirm"). REVIEW.md's "Resolved (2026-11-06, Lennart)" block records it as Lennart's resolution, and Lennart's CC line does not mention it. It supersedes Andrej's month rounding of 2026-11-02. Until a curator marks it, Andrej's call ranks above an AI call. The data supports the call (column auditor: one value per start day, no realized decimals), so this is attribution only.
+- D9's CC line names only issue 4 as superseded. It also supersedes Andrej's issue-2 call of 2026-11-02. The australian (D8) and pricing_game_2016 (D11) CC lines each name every call they supersede.
+- The notes say "dropped the record dates", but length_to_year_end is a one-to-one recoding of RecordBeg (366 values).
+- Remedy (notes): ask Lennart for one CC line that confirms the rounding change and names both superseded Andrej calls. Add one clause saying the start date ships as length_to_year_end.
 
-**Files**
-- Second check of the end-status code: a script in the run folder (not committed).
-- Evidence cited: claim-auditor.md (claims 9, 14, 19, 29, 30), column-auditor.md (problems 1, 2), split-auditor.md
-  (issues 1-3), domain-practitioner.md (metric table), precedent-checker.md (item 3, check A), the panel's reports.
+Points I checked and dropped:
+- Exposure fed in as a feature, or the ends_early flag (task gamer: +0.082, +0.088). These need the test rows' scoring column as an input, which LEAK-41 and MET-15 already forbid. Nothing shipped reaches it (probe 22: no feature's gain is mediated by Exposure above noise).
+- Merging a policy-year's records into one row (task gamer's fix). The domain practitioner shows the earned-exposure segments are the unit a pricing GLM is fitted on, and the protocol line covers the route. I found no rule that requires the merge.
+- A source-file or guarantee indicator (blind reviewer). Issue 3 is settled and the files show similar claim rates; I have no evidence that the files are different guarantees.
+- The negative amounts set to 0. Already in the notes (967 rows), and the practitioner agrees with it.
 
 </details>
 
 <details><summary>Advocate rebuttal</summary>
 
-**Advocate, rebuttal (2026-11-01): frempl_french_motor_personal_line**
+**Advocate, rebuttal: frempl_french_motor_personal_line (exposure re-review, 2026-11-06)**
 
-The critic and I agree on the verdict (ship after changes) and on the remedies for points 1, 2, 4, 5 and 6. Two
-disputes are left. One is the framing of the `Exposure` fallback. The other is whether the metric (point 3) fails
-MET-1 on this dataset or is a reading for the whole family. One new fact came up: I ran the critic's own metric check,
-which the brief does not report.
+The critic and I reach the same verdict: ship after changes, with nothing that excludes the dataset. We differ on two things: the remedy for issue 7 (point 3) and where the "ceiling" wording gets fixed (point 5). I concede the rest.
 
-**1. Split: conceded in full.**
-- I accept chain-grouped folds tagged `ForcedGroupedFromTemporal`, with the chain id shipped as the group column.
-- I also accept the addition I missed. SPLIT-8 asks for "the cost measured against the valid windows", so the valid
-  windows go into `splits_comment`: 13-39% of the rows, claim AUC 0.55 / 0.59 / 0.62 against 0.60 / 0.59 / 0.62 for
-  as many random records.
-- EV-6 point accepted. LightGBM cannot take a cross-row path, which is why my concession rested on the lookup and not
-  on the paired tests.
-- Key: the within-file chain by default, because it is built exactly (SPLIT-24). Whether to use the cross-file
-  component instead, with about 1% chance links, is the curator's call. We agree on this.
+1. Hidden successor route across the split (SPLIT-9, Must): CONCEDE.
+- This is my own point 6. The evidence stands: +0.020 Gini (SD 0.010) on 9 of 9 splits, and 0.939 against 0.073 on HasKmLimit changes.
+- What follows: it is a Must, so it must be fixed before shipping. Under "independent failures are not conflicts", nothing ranked above it excuses it.
+- On the remedy, the critic prefers widening the component and I named the per-fold filter as the narrower option. Both are "fix the definition" on the remedy ladder, and both keep the dataset.
+- I accept widening as the first choice, for three reasons:
+  - It follows Andrej's "most conservative key" call of 2026-11-03 (treat like cases alike).
+  - It also moves the successors into test, where point 2's protocol line covers them.
+  - The filter would leave the same links among test rows with no group to hold them.
+- The curator marks it, because it reopens issue 1's key.
 
-**2. `Exposure`: the fix is conceded. I dispute the fallback.**
-- Month rounding is not a remedy for LEAK-10.
-  - It removes the 3-decimal code for the end status (AUC 0.91 to 0.61).
-  - But the realised length of the 25,131 unforeseen ends stays, so nothing measured changes: Gini 0.282 against
-    0.283, the critic's own numbers.
-  - The effect the decisive test found (Gini 0.288 to 0.339, claim AUC 0.689 to 0.675) sits in the length, not in the
-    decimals.
-- Rule:
-  - LEAK-10's second clause (Must) removes late cells that can be located, and a Must has no exceptions.
-  - So keeping the realised length would be an amendment of LEAK-10, fremtpl2's reading made general. It would not be
-    a `Potential leak, kept on purpose:` note (principles, "Exceptions and amendments" and "Consistent judgement",
-    case 1).
-  - The curator can choose that, but it should be offered as an amendment.
+2. The LEAK-9 protocol line understates the route: CONCEDE.
+- I proposed the same wording in my point 5: "+0.26 to +0.44, depending on what is read".
+- I also accept the critic's addition: say that the successor can be found from the features without the group id (length_to_year_end minus Exposure, LicAge advanced). It tells the benchmark operator what to look for.
+- The remedy stays a note under LEAK-9 (Should). The critic agrees that a re-split would select rows by contract changes (LEAK-41).
 
-**3. Metric: partly conceded, partly disputed, on a new fact.**
-- Conceded:
-  - The sources the reason cites do not support the row form when exposure varies.
-  - The practitioner's metric is the exposure-weighted Gini on the annual rate (CAS Monograph 5, sec. 7.2.4).
-  - "Correct the reason", my fix in the opening brief, does not settle MET-1 by itself.
-- New fact. I ran the critic's metric script on the column auditor's aligned
-  records (untuned LightGBM, 3 seeds x 3 random folds). Output in the run folder (not committed).
+3. Issue 7, B against C: PARTLY DISPUTE.
+- I concede three things:
+  - Keeping A as shipped needs either an exception with a fact that sets frempl apart, or a change. The precedent checker found no such fact.
+  - The consistency prompt belongs in issue 7.
+  - C is the only option that satisfies every reading of the rule texts.
+- I dispute that B "may break the Must". Read in context, LEAK-41's sentence "A part known at the start ships as its own column (LEAK-7, LEAK-37)" keeps the legitimate part from being thrown out with the leak. It does not force every start-known column to stay a feature. Three things support this reading:
+  - The rule's own Mechanisms row, which names frempl, says the start-known length "may stay a feature".
+  - The same rule says a feature known at the start that predicts the weight "stays (USE-6)". USE-6 makes an input legitimate, not required (column auditor; precedent checker on USE-6).
+  - Lennart amended CLEAN-16 the same day, and it names "drop the feature" as a remedy. A reading under which the curator's two same-day texts conflict is the less likely one.
+- Rule text outranks a Mechanisms row. If the curator reads the sentence as a directive, C wins and I accept it.
+- On the evidence, B costs less:
+  - Under C, L2 scores 0.159, "led by the tail" (11.6 million per year).
+  - Under C, it overturns Andrej's per-table scale call of 2026-11-02.
+  - Under B, L2 and Tweedie score alike (0.185, 0.179), and the only cost is +0.005 (SE 0.004) to Tweedie.
+  - The practitioner calls L "a calendar-cut artefact, not a rating factor".
+- What follows: this is a curator call on how to read LEAK-41, which is option d of the precedent checker's prompt. I recommend B with one recorded line that the sentence permits the column, and C if Lennart reads it as a directive. Either way it is a definition fix that keeps the dataset.
 
-  | model | row Gini (SD) | weighted Gini on the rate (SD) |
-  |---|---|---|
-  | no length | 0.188 (0.023) | 0.264 (0.045) |
-  | shipped `Exposure` | 0.288 (0.049) | 0.195 (0.030) |
-  | fixed `Exposure` (change 2) | 0.339 (0.052) | 0.277 (0.019) |
-  | fixed `Exposure` alone, as the score | 0.281 (0.057) | - |
-
+4. One claim decides a fold (P6): CONCEDE as notes.
+- The evidence stands:
+  - capping at 50,000 moves fold 0 from 0.210 to 0.147;
+  - random orders spread with an SD of 0.037;
+  - a random column spreads Tweedie by about 0.04.
 - What follows:
-  - The critic's MET-1 evidence is that the two metrics "rank two models the opposite way". That swap comes from the
-    realised `Exposure`, the LEAK-10 problem of point 2, not from the metric.
-  - After change 2, both metrics put the fixed-length model above the no-length one: on the row Gini 9/9 (+0.151), on
-    the weighted Gini 6/9 (+0.012). So the row Gini no longer misorders the models that would ship.
-- Still conceded:
-  - Under the row Gini, the start-known length alone scores 0.281 of the model's 0.339 (83%).
-  - The fold SD is 0.052, against 0.019 for the weighted form.
-  - Both favour the weighted form: the unit clause of MET-1 (a rate per car-year) and resolution (MET-10).
-- Ties: a constant scores -0.016 to +0.101 under the row Gini (claim audit 30). The constant rate scores -0.017 to
-  +0.101 under the weighted Gini (domain practitioner's probe, `rate_expo`). Both come from breaking ties by row order,
-  so the fix belongs in the library metric (average the ties). It does not decide between the two forms.
-- Disputed: that MET-1 blocks this dataset alone. Whether the row form meets MET-1 when exposure varies is one reading
-  for australian, spanish, the pricing games and this dataset (the critic agrees: "decide once").
-  - If the curator takes the weighted form, adopt it here: realised `Exposure` as a scoring column (MET-2), shipped as
-    a library metric (MET-12, MET-13).
-  - If the curator keeps the row form, record it as the family's MET-1 reading, with the 83% share and the SD in the
-    reason.
-  - On this evidence I would recommend the weighted form.
+  - The notes state that model comparisons need paired fold differences, and give the fold SD.
+  - The large-loss cap is measured on the shipped splits and offered to the curator as an option, not applied now.
+- Under TP-2 (Should) a small real signal is no reason to retire, and the critic agrees. The metric stays as declared until that measurement exists. The Tweedie deviance alternative already fails here (worse than a flat rate on 3 of 3 folds; practitioner, Q5).
 
-**4. "Near-random slices": conceded.** I add the critic's wording: "sharing policies across files" (10,485 components
-span two or more files).
+5. "1/Exposure alone, the ceiling a leak would reach" is refuted: CONCEDE the fact, DISPUTE where the fix goes.
+- The fact: Exposure as a feature reaches 0.256 to 0.259, about 0.07 above 1/E's 0.184 (claim audit, row 13; EV-2).
+- The dataset did not invent the word. LEAK-41 (Must) itself says the definition "states the score of 1/weight alone as the ceiling a leak would reach". If the dataset texts alone drop the word, they depart from the rule's wording while the rule still prescribes it.
+- What follows: two changes, both cheap.
+  - The dataset's texts keep the 1/E figure and add the measured one: "1/Exposure alone scores 0.184, as much as the honest model; with the features the realized length reaches 0.256".
+  - The word "ceiling" in LEAK-41, probe 22 and the LEAK-41 Cases text (0.176, now 0.183) goes to Lennart as an amendment ("Maintenance of the rules: an amendment"). The critic agrees that it is not an edit for the dataset agent.
+- Nothing in the decision changes, because LEAK-41 decides by timing.
 
-**5. Negative amounts: conceded.** The text becomes "0 = no claim, or a not-at-fault claim recovered in full (0.84%)",
-and the AIcrowd date is corrected.
+6. Recording gaps: CONCEDE all three.
+- One CC line from Lennart that confirms the unrounded length and names both Andrej calls it supersedes (the issue-2 month rounding of 2026-11-02, and issue 4 of 2026-11-03). Until he marks it, the "Resolved (Lennart)" block must show the rounding clause as the AI's call, pending ("Who decides").
+- One clause in the length bullet saying that the start date ships as length_to_year_end (366 values). It is moot under B.
+- None of the three affects validity. The column audit shows the unrounded column carries no realized decimals.
 
-**6. Note and record corrections: conceded.**
-- The counts bullet: "a rise after 95% of the claims, 2.3% otherwise". The old "12%" counted falls out of the window.
-- `OutUseNb` is not a claim count.
-- The 38% of starts on 1 January are the calendar cut, not a pricing event.
-- The record lines on the year, the 3,805 full-year records, the chain links and the file sizes.
+On the critic's dropped points: I agree with all four. They match my points 1, 3 and 5:
+- Exposure and ends_early as features are already forbidden by LEAK-41 and MET-15.
+- No rule requires merging a policy-year into one row.
+- The file indicator is covered by settled issue 3.
+- The negatives are already noted.
 
-**Judgment record after the rebuttal**
-
-```text
-Verdict: ship after changes 1-2 (definition) and 4-6 (text); change 3 after the family's metric decision.
-Validity: SPLIT-9 fixed by chain-grouped folds (SPLIT-8, SPLIT-24), valid windows stated; LEAK-10 fixed by LEAK-7 on
-the 25,131 unforeseen ends; keeping the realised length would be an amendment, not a kept-leak note.
-Value: after change 2 the row Gini and the weighted Gini rank the candidate models the same way (9/9, 6/9); the row
-form still gives the length alone 83% and has 2.7 times the fold SD: the family should pick the weighted form.
-Quality: file, negatives and wording corrections conceded.
-For the curator: consistency check A; chain or component key; the family's metric (MET-1 reading).
-```
+Agreed judgment for the mediator: ship after changes.
+- Validity: SPLIT-9 is triggered by finding A; fix it by widening the key (curator mark). LEAK-9 is covered by the protocol line, with the size restated and the feature-only route named. LEAK-41, MET-15, USE-6, PROV-7/8/9 and SPLIT-8 hold.
+- Value: TP-2, a small real signal, with notes on fold noise and a cap to measure. TP-4 holds.
+- Quality: CLEAN-16, issue 7, B (or C if LEAK-41 is read as a directive), plus the text and CC fixes.
+- For the curator: issue 7 and the LEAK-41 reading, the widened key, the "ceiling" amendment, and the CC line.
 
 </details>
 
 <details><summary>Critic rebuttal</summary>
 
-**Critic, rebuttal (2026-11-01): frempl_french_motor_personal_line**
+**Critic, rebuttal: frempl_french_motor_personal_line (exposure re-review, full tier, 2026-11-06)**
 
-The advocate concedes my points 1, 2, 4 and 5 and asks for the same remedies. What remains is the metric (their
-point 5, my point 3). I settled that question with a new measurement, and the measurement goes against my opening
-point.
+We agree on the verdict: ship after changes. Two disputes are left, both about which remedy to take: issue 7 (B against C) and the key for finding A. I concede everything else. No new points.
 
-**New fact (EV-1).** I repeated the metric comparison on the column that change 2 produces: the records that ended
-with no continuation get the open records' `Exposure` for the same start day. Setup: untuned LightGBM with the
-builder's settings, log1p target, 3 seeds x 3 random folds. Script in the run folder (not committed). The tie-order caveat of change 1 applies here too.
+Point by point:
 
-| features | row Gini (declared) | exposure-weighted Gini on the annual rate |
-|---|---|---|
-| no length | 0.188 | 0.264 |
-| shipped `Exposure` | 0.288 | 0.195 |
-| fixed `Exposure` (change 2) | 0.339 | 0.277 (beats no length on 6/9) |
-| fixed length alone, as a raw score | 0.281 | (constant rate) |
+1. D9's target, weight and metric (advocate 1): concede. The claim audit holds on every D9 claim: the round trip, the weight wiring, the scorer within 4e-12 of an independent Gini, and a constant scoring 0. The deviance alternative fails on this table (the practitioner, Q5: worse than a flat rate on 3 of 3 folds). I did not argue otherwise.
 
-The order of the two models swapped only because of the shipped `Exposure`, that is, because of the leak. Once the
-column is fixed, both forms rank the models the same way. The model also beats the fixed length alone on 9/9 folds
-(0.339 against 0.281, a script in the run folder), so TP-4 still holds.
+2. length_to_year_end is known at the start (advocate 2): concede. One value per start day, R² 0.003 without it, and a negative weight-mediated gain in both arms of probe 22. The open question about this column is issue 7, not P4.
 
-**Point by point**
+3. Data and grouped split (advocate 3): concede. The blind reviewer independently reproduced the target, the row count and the claim count.
 
-1. **A real task on faithful data (P2, P3, P5).** I concede it, and I raised nothing against it.
-2. **15 of the 16 features known at the prediction point (LEAK-10).** I concede it.
-3. **`Exposure` (LEAK-10 Must, LEAK-7).** We agree on the fix, the consistency check A option (b) as spanish did, and
-   the rewording of the attribution. I keep one addition. If the curator keeps the realised length instead, round it
-   to whole months and label it `Potential leak, kept on purpose:`. The exact value gives away whether a record ended
-   early (AUC 0.91, and 0.61 rounded; re-checked by a script in the run folder), and rounding costs nothing (Gini 0.282
-   against 0.283).
-4. **The split (SPLIT-9 tension row, SPLIT-8, SPLIT-24).** We agree. On which key to group by, the evidence favours
-   the advocate's mildest one, the within-file chain:
-   - Under chain folds, the lookup lowers the claim AUC on 3/3 folds (0.680, 0.678, 0.681 against 0.687, 0.687,
-     0.692; claim auditor). So the frequency shortcut is gone.
-   - The one fold with +0.065 Gini has a plain Gini of 0.215, the level of the folds that hold the 802,620 claim
-     (0.211-0.237 in the split audit). That is circumstantial; read it as fold noise (MET-10).
-   - So I drop my preference for the cross-file component. It stays an option for the curator, with its 1% chance
-     links (SPLIT-24).
-5. **The metric (MET-1, MET-11, MET-10).** I concede the remedy: keep `normalized_gini`, correct the reason, and send
-   the choice of form to the curator as one decision for the whole insurance family.
-   - My MET-1 case rested on the swap in model order. The new measurement shows that swap was the leak, which change
-     2 removes.
-   - The row form still gives the length most of the score: the fixed length alone gets 0.281 of the model's 0.339
-     (83%). So the curator still has a real call between the two forms, but it is no longer a failed Must.
-   - One condition holds (EV-8): the corrected reason must give the numbers on the shipped, fixed column (0.281 of
-     0.339, the 0.09 swing that one claim causes in its fold), not the pre-fix 0.213 of 0.283 the advocate cites.
-6. **Worth benchmarking (TP-2, TP-4, TP-5).** I concede it. The TP-4 note in the definition must be re-measured on the
-   fixed column: model against raw length, 0.339 against 0.281, model ahead on 9/9.
-7. **Files, negatives, wording (PROV-7, EV-5, EV-2).** I concede it. These are the same remedies as my points 4 to 6.
-   The record corrections include "no record spans all of 2004" (3,805 do), which the advocate's list leaves out.
+4. Value (advocate 4): concede. This matches my point 4. TP-2 and TP-4 hold. The noise and the large claims call for a note (paired fold differences) and a measured cap offered as an option, not an exclusion.
 
-**Where this leaves the verdict**
+5. The successor route under LEAK-9 (advocate 5): concede. The advocate accepts the restated figure, "+0.26 to +0.44 depending on what is read", which is all my point 2 asked. I also dropped gamer exploits 2 and 3 and the policy-year merge, for the same reasons. One addition, from the evidence already on file: the protocol line should also say that the successor can be found without the group id (task gamer: 39% of rows linked through the length to 31 December minus Exposure and LicAge plus 12*Exposure, 99.7% of them within one group). An operator checking a model for the route must know that dropping policy_component does not block it.
 
-```text
-Verdict: ship after changes (changes 1-2 in the definition, the rest text); no dispute left between critic and
-  advocate on the remedies.
-Validity: SPLIT-9 fixed by within-file chain groups, ForcedGroupedFromTemporal (SPLIT-8, SPLIT-24); LEAK-10 on
-  Exposure fixed by LEAK-7 (consistency check A, option b).
-Value: MET-11 context row Gini kept, reason corrected with post-fix numbers; the form (row against exposure-weighted)
-  a family weighing call. TP-4 holds after the fix (9/9).
-Quality: file note (EV-5), negatives text, record corrections (EV-2).
-For the curator: check A (Exposure, as spanish); the family's Gini form.
-```
+6. Finding A, SPLIT-9 Must (advocate 6): the problem is conceded on both sides. I dispute the remedy order only.
+- The advocate leads with (i), the per-fold filter, as the mildest. On the remedy ladder (principles.md) both options are "fix the definition" (a filter and a re-split stand on the same rung), so mildness does not decide between them.
+- "Treat like cases alike" does decide. On 2026-11-03 Andrej resolved issue 1 for the cross-file component over the exact chain: the more conservative key, with about 1% chance links accepted. Widening the key with the one-column links (ii) applies that same choice to the same mechanism.
+  - The measured cost is inside the noise: 0.1686 against 0.1742, fold SD about 0.03.
+  - The lookup gain falls to -0.0045 (4 of 9).
+- (i) leaves the splits with per-fold holes that depend on the test fold and hides the policy link instead of encoding it in the group column. Any later re-split would have to repeat it.
+- Remedy asked: (ii). (i) is acceptable if the curator prefers to keep issue 1's key unchanged. Either meets SPLIT-9, and either needs the curator's mark.
+
+7. Issue 7 (advocate 7): disputed. The advocate picks B (drop L), reading LEAK-41's sentence "a part known at the start ships as its own column" as a permission because the Mechanisms row says the length "may stay a feature".
+- The rule outranks the table row. Principles.md, "Conflicts between rules": rules win over patterns and precedents. The Mechanisms row is a Cases-table entry, so it cannot narrow the text of LEAK-41 (Must). The rule's sentence is written as a directive ("ships as"). Read as written, B breaks a P4 Must to meet a P7 Should, which principles.md step 4 and the Should definition forbid ("only a higher-ranked Must overrides" a Must).
+- C meets every rule text: CLEAN-16 names "ship the identity scale" as its second remedy, and LEAK-41's sentence is kept. C also follows the nearest precedent with the same facts, pricing_game_2016_french_fleet (Lennart, 2026-11-06: identity scale, start-known length kept). The precedent checker found no fact that sets frempl apart.
+- B has no applied precedent: spanish dropped `total_exposure` as a hybrid under LEAK-41, not a start-known length under CLEAN-16.
+- The advocate's practitioner quote ("not a rating factor") is a weighing argument. USE-6 makes the column a legitimate input, and the precedent checker notes the tension row "a model's input cap is never an argument" for dropping a legitimate input because of one loss family.
+- C's cost: L2 on the identity scale scores 0.159, led by the tail (claim audit, issue 7). Tweedie is unaffected (0.183).
+- Remedy asked: C. B only if Lennart records that LEAK-41's sentence is a permission, as an amendment of LEAK-41's wording, so the next table is decided the same way (principles.md, "Consistent judgement", case 1: a call that would break a higher Must is offered as an amendment, not an exception). Agreed with the advocate: shipping A as it stands needs a recorded exception, and none is supported.
+
+Text fixes (advocate 7, list): concede, with two corrections.
+- The negatives are already noted (claim audit row 23: "967 negatives set to 0" holds in the notes). That item is a check, not a change.
+- The advocate's list leaves out the flag to the curator: the "ceiling" wording also sits in LEAK-41's own text and in probe 22's output line, and LEAK-41's Cases text still quotes the honest model at 0.176 (D9: 0.183). Rewording only the dataset's texts leaves the rule stating a refuted bound (claim audit, refuted claim 13: 0.256 to 0.259 with the realized length as a feature, against 1/E's 0.184). Remedy: flag both as an amendment for the curator. The dataset agent does not edit the rule.
+
+Judgment I support:
+- Verdict: ship after changes.
+- Validity:
+  - SPLIT-9 triggered by finding A, fixed by widening the component (ii), or by filter (i), on the curator's mark;
+  - LEAK-9 covered by the protocol line, its figure restated to +0.26 to +0.44, plus that the route works without the group id;
+  - LEAK-41, MET-15, USE-6 and PROV hold.
+- Value: TP-2, TP-4; a note on paired fold comparisons and a measured cap offered as an option.
+- Quality: issue 7, C (B only with a LEAK-41 amendment).
+- Text: the "ceiling" reworded in the dataset's texts and flagged in the rule; Lennart's CC to confirm the unrounded length and name both superseded calls of Andrej; the start-date recoding stated.
 
 </details>

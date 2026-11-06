@@ -25,6 +25,13 @@ definition (untuned LightGBM, one fit per window); the panel's are from before t
 `Data Quality Issue` marker, since the concern behind it (the iranian_churn chain pattern) is refuted; it stays until
 your mark.
 
+Changes made on 2026-11-06 (AI, under the exposure rules; no re-review panel): an exposure paragraph in the notes (the
+target is a lifetime loss per 100 of notional, folded in by the source, so no weight is declared; an annual rate over a
+loan's realized life would bring back the cut-time leak, LEAK-41). Not checked on the data and not re-reviewed: the
+competition's files download only after its rules are accepted on Kaggle
+(https://www.kaggle.com/competitions/loan-default-prediction/rules), so the panel of 2026-11-06 did not run; it runs
+once the data is in the warehouse.
+
 **Main points:** Keep f533 and the six aggregates out as one block, or restore all seven (issue 1)? The 5,800-loan gap
 or no gap (2)? The Gini as `context` (with an amendment of MET-11) or the fallback `rmse` (3)? And the proposal to
 remove the `Data Quality Issue` marker (it stays until your mark).

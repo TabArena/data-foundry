@@ -101,6 +101,8 @@ CC (2026-11-03, Andrej): ship after the changes (verdict). Issue 1 (A): the pape
 
 CC (2026-11-03, Andrej): ship (verdict); the metric, RMSE on kg/ha, checked.
 
+**Assessment (AI, 2026-11-06):** review panel (focused, re-review under LEAK-41, MET-14 to MET-16): ship after changes (wording only; nothing shipped changes; the notes' equal-per-plot taus, the dropped 0.91 of the former site splits and the exposure reason are fixed); disputed: none, issue 7 is a weighing call (the per-quadrat RMSE counts an NT plot 2.5 times an SK plot: A keep and say so, implemented, or B count each plot once); for the curator: issue 7.
+
 ## Reference
 
 Greuel R.J., Degre-Timmons G.E., Baltzer J.L., Johnstone J.F., et al. (2021). Predicting patterns of terrestrial

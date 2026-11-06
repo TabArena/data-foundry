@@ -32,6 +32,13 @@ note on fold noise. Each row's fold is assigned from its content, so the new tar
 every number below is re-measured on the shipped folds of the changed definition (the panel's reports, at the end,
 describe the definition before the changes).
 
+Changes made on 2026-11-06 (AI, under the exposure rules; no re-review panel): the metric reads `var11_weight`, a copy
+of `var11` declared as its weight scoring column (MET-2 as reworded on 2026-11-05), and `var11` stays a feature; no
+training weight is declared, and the warning `task_metric_weight_without_sample_weight` is accepted because the weight
+is a function of the features (MET-15). Not checked on the data and not re-reviewed: the competition's files download
+only after its rules are accepted on Kaggle (https://www.kaggle.com/competitions/liberty-mutual-fire-peril/rules), so
+the panel of 2026-11-06 did not run; it runs once the data is in the warehouse.
+
 **Main points:** All issues are resolved: `var11` stays a feature and is the weight of the competition's Gini, MET-2
 amended (issue 2).
 

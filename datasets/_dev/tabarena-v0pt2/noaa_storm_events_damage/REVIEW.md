@@ -1,62 +1,83 @@
 # noaa_storm_events_damage
 
-**Outcome:** added. The AI recommends shipping it as changed: you amended LEAK-25 on 2026-11-02 so the $0 entries
-stay, and `Data Quality Issue` left the record. NOAA NCEI's Storm Events Database,
-2007-2025: 999,757 entries of the property damage an NWS office entered for one event in one county or zone, 73% of
-them $0, for an emergency manager ranking a storm's counties for damage-assessment teams; tested on the calendar years
-2023-2025 with a 3-month gap, scored by RMSLE (by context; the source has none).
-
-Changed after the panel, no decision needed: the fixes listed below; the target bullet now quotes your call of
-2026-10-30 in place of the AI's gloss ("a cleaning choice") and marks the reading of the blank as the "no information
-available" box as an inference. On the changed definition untuned LightGBM scores RMSLE 2.42, 2.63 and 2.58 (2025,
-2024, 2023) against 3.82, 4.01 and 3.87 for a constant. The numbers in the issues are the panel's runs, made with a
-2-month gap and before the double entries were dropped (its full model scored 2.41, 2.63 and 2.59, and put 41-49% of its
-error on the $0 entries, against 37-47% now).
+**Outcome:** added. The AI recommends shipping it after changes: the re-review panel of 2026-11-06 under the exposure
+rules (LEAK-41, MET-14 to MET-16) found no exposure, weight or offset to add and the split right; its changes that need
+no decision are made (below), and two questions are open (issues 7 and 8), one of them on validity (7). NOAA NCEI's
+Storm Events Database, 2007-2025: 843,144 entries of the property damage an NWS office entered for one event in one
+county or zone, 68% of them $0, for a state hazard-mitigation planner who estimates the damage of storm events before
+it is assessed (Diaz and Joseph 2019); tested on the calendar years 2023-2025 with a 3-month gap, scored by RMSLE (by
+context; the source has none).
 
 Validity:
-* SEL-3 holds on your `Yes` of 2026-10-30; the check against us_accidents is settled with LEAK-25's amendment
-  (2026-11-02).
-* USE-5 was broken and is fixed: the insurer's catastrophe desk and "what to reserve" are dropped from the use case.
-  Storm Data's 2024 total is $15.7B against $182.7B for NCEI's billion-dollar events, and hail is 11% of the rows but 1%
-  of the dollars, so the label is another quantity than an insurer's loss. USE-8: fit approximate; `fit_reason` now
-  names the gaps.
-* USE-3: the prediction point is the first report, before any damage figure exists; the real-time Local Storm Reports
-  were used to check the inputs against it.
-* LEAK-25 triggered, not recovered; kept under the rule as amended on 2026-11-02.
-* LEAK-10 triggered three times and fixed. The wind speeds the office estimated from the damage (EG, ES) are blank
-  (94.4% of the 2024 ones were missing from the real-time first reports); the tornado durations are blank (they track
-  the dropped surveyed path); `hurricane_category` is dropped (set per zone, partly after the event). In the panel's run
-  the three fixes moved RMSLE from 2.50 to 2.56 over the 3 windows, against 3.90 for a constant. LEAK-37: strong wind,
-  lightning and weaker thunderstorm wind enter Storm Data only with damage (3.5-4.0% of the test rows); `known` now says
-  that the first report tells whether damage was seen.
-* SPLIT-1, SPLIT-6, SPLIT-9, SPLIT-13, SPLIT-14 and SPLIT-20 hold: known counties and offices, no storm crosses a
-  window, later releases change 0-0.17% of the labels, and the 2007 start sits on a measured change of entry format.
-  SPLIT-10 was departed from and is fixed: the gap is now 3 months, since NCEI's public files lag 75-80 days and
-  October is not public on 1 January (cost +0.02-0.03 RMSLE, an edge effect).
+* SEL-3 holds on the `Yes` of 2026-10-30. USE-1 and USE-5 hold with the planner as the actor (issue 5); USE-8: fit
+  approximate, as a row is one event while the planner sums dollars per county and hazard, and a $0 mixes no damage
+  with no estimate. USE-3: the rows are the events with a damage entry (an office leaves 0% to 98% of its events
+  blank), which the task summary now says.
+* LEAK-25 triggered, kept under the rule as amended on 2026-11-02: the office's $0 practice, with `wfo` a feature.
+* LEAK-10 triggered and fixed: the wind speeds estimated from the damage (EG, ES) are blank; the tornado rating, path
+  and end point, the reporter, the hurricane category, casualties and crop damage are dropped. D13 (issue 6) is applied
+  as decided: `duration_hours` is blank for Tornado, Strong Wind and Heavy Rain, and since the re-review for Seiche too
+  (below). The re-review read App. A again for every type: a seiche begins at flooding "resulting in a fatality, injury
+  or damage" (Sec. 41), so its 51 durations are now blank too, an extension of D13's reading that both debaters accepted
+  (say so if you want them kept); Dust Storm and Volcanic Ashfall join the types kept with a note; Flood and Flash Flood
+  (a threat to life or property) and Hurricane and Tropical Storm (the storm's direct effects) are recorded as judged
+  outcome-free.
+* LEAK-10 and the Cases row on spans: the note's premise that the damage-timed part of the kept spans "cannot be
+  located row by row" does not hold. `magnitude_type` locates most of it (241,523 of 318,813 rows), and on those rows a
+  stronger LightGBM gains +0.023 to +0.031 RMSLE from the span (12 of 12 seeds): issue 7, B (blank them) recommended.
+* SPLIT-9, SPLIT-10 and SPLIT-13 hold: a 3-month gap against a public lag of 75-80 days, no storm crosses a window, no
+  training event ends after its cutoff, 98.6-99.6% of the test rows in a county or zone seen in training.
+* MET-14, MET-15, MET-16 and LEAK-41 are not triggered: the target is one event's damage, not an amount accrued over a
+  time at risk, so there is no weight and no offset (county population does not scale with the damage).
 
-Value: TP-2, a real signal: RMSLE about 2.55 against 3.90 for a constant; 62% of that gain comes from the office (the
-LEAK-25 note). MET-11: RMSLE by context, since the damage spans nine orders of magnitude and on raw dollars 0.1% of the
-entries hold 99.96% of the squared deviation. MET-1: the reason now names Diaz and Joseph (2019, Weather and Climate
-Extremes 25:100216; several metrics, tornadoes only, a random split, so no source metric) and says that 37-47% of the
-error falls on the $0 entries (issue 3).
+Value: TP-2, a real signal: untuned LightGBM scores RMSLE 2.67, 2.93 and 2.94 (2025, 2024, 2023) against 4.05, 4.28
+and 4.20 for a constant. TP-3: the task probe flags `no_spread` (two untuned families, +0.051), but a LightGBM of 400
+rounds scores 2.83 against the linear family's 3.24, so methods spread; keep. MET-11: RMSLE by context. MET-1: the
+reason now names the planner and says that RMSLE scores the order of magnitude, not summed dollars; the Tweedie
+deviance on the dollars picks other models in 3 of 3 windows (issue 8, a weighing call, A recommended).
 
-Quality: LEAK-19 (1,072 double entries dropped), CLEAN-21 (`magnitude` split into wind speed and hail size), CLEAN-11
-(24 impossible wind speeds, all estimated ones, now blank).
+Quality: LEAK-19 (918 double entries dropped), CLEAN-21 (`magnitude` split into wind speed and hail size), CLEAN-11 (24
+impossible wind speeds, all estimates, blank). EV: the counts left from before issue 2's drop are restated on the
+shipped rows, and the kept spans' worth is the measured range (-0.01 to +0.08 RMSLE over 15 fits, median about
++0.03), no longer "+0.012 to +0.021, an upper bound".
 
 Weighed: size +; the NWS directive and a public-domain source +; an honest temporal split +; approximate fit -; the
-office's $0 convention in the label -.
+office's $0 convention in the label -; a duration the damage partly times, kept with its worth noted -.
 
-Not adopted: county exposure from the Census, an outside join; the 40% zone rows would need the NWS zone-county
-file (practitioner).
+Not issues here: the amendment of LEAK-10 for spans that the panel asked for (a third clause tied to the test for
+located cells, with heart_failure's `time` as the counter-case on size) is cross-dataset item X4 of the working copy's
+REVIEW.md. The mediator asks to record Andrej's release of D13 (the study's decision table assigned D13 to him) before
+merging; not needed on the AI's reading: you took over this round as main reviewer on 2026-11-06 and decided D13
+yourself (CC of 2026-11-06).
 
-For the curator: issue 2 (drop the hazards nobody assesses, a weighing
-call), issue 3 (RMSLE or a within-storm score, a weighing call), issue 4 (the storm's size as an input, a probe first).
+For the curator: issue 7 (blank the located damage-timed spans, B recommended), issue 8 (RMSLE or the Tweedie
+deviance, a weighing call, A recommended).
 
-**Main points:** all issues resolved on 2026-11-03: the unassessed hazards dropped (2), RMSLE stays (3), no
-storm-size input (4); on 2026-11-06 the duration blanked where the damage alone draws the span, kept with a note
-elsewhere (6).
+Changes made after the re-review panel (AI, 2026-11-06), no decision needed (`dataset check`: 0 errors, 0 warnings):
+the 51 Seiche durations are blank by type, as for Strong Wind; the kept-span note drops "cannot be located row by row"
+and "an upper bound", gives the measured worth (-0.01 to +0.08 RMSLE on the five kept types' test rows over 15 fits,
+median about +0.03) and the share `magnitude_type` locates, names Dust Storm and Volcanic Ashfall, and records Flood,
+Flash Flood, Hurricane and Tropical Storm as judged outcome-free; the metric reason and the reason for dropping the
+unassessed hazards name the planner; the task summary says the rows are the events with a damage entry and gives
+4.5-5.0% of the test rows for the types entered only with damage, now with hail under 3/4 inch and dust devils; the
+counts are restated (918 double entries, 30.1% zone rows, 7,697 codes, 140,270 episodes, 252,451 EG and 1,151 ES
+entries); issue 6 says "seven" for "six" and points to issue 7; the record's `No Good Target / Scientific Discovery`
+marker, a screening concern that issue 5 settled, is removed. One change departs from the
+mediator's list: the panel read Hurricane and Tropical Storm as timed by "damage or" a wind criterion, but that is
+App. A's wording for their marine types (Sec. 34, 39), which the data drops; the land types begin with "the direct
+effects" of the storm (Sec. 25, 49), so they are recorded with the floods as outcome-free, not kept with a note. Your
+CC line of 2026-11-06 keeps its words ("read App. A for every type", "+0.012 to +0.021"); the notes and the record say
+what the re-review corrected.
 
-**Issues for Andrej:**
+Earlier changes: after the panel of 2026-11-01 the estimated wind speeds and the tornado durations were blanked, the
+hurricane category dropped and the gap set to 3 months; on 2026-11-03 the unassessed hazards were dropped (issue 2)
+and the use case became the planner's (issue 5); on 2026-11-06 D13 (issue 6).
+
+**Main points:** Open: blank the duration on the wind entries the first report gives as damage (7, B recommended);
+RMSLE or the Tweedie deviance on the dollars (8, a weighing call, A recommended). Made without a decision, say if you
+disagree: the 51 Seiche durations are blank, an extension of D13. Issues 2 to 6 are resolved.
+
+**Issues for Andrej and Lennart:**
 
 2. **Drop the hazards nobody sends an assessor for?**
 
@@ -258,7 +279,8 @@ elsewhere (6).
      facts; the exposure study of 2026-11-05 read the entry of every type.
    * **Effect on the task:** for Strong Wind and Heavy Rain (39,079 rows, 4.6%) the span is a record of the outcome.
      For the five other types (318,813 rows, 37.8%) it is partly the damage's and partly a wind or flooding criterion,
-     and the data does not say which set a given span.
+     and Storm Data does not record which set a given span (on 2026-11-06 the re-review found that `magnitude_type`,
+     a feature, locates most of the spans the damage set: issue 7).
    * **Experiments:** untuned LightGBM on the shipped splits (trained from 2007 with the 3-month gap), change in
      RMSLE, mean of 4 bagging seeds (SD in brackets):
 
@@ -277,7 +299,7 @@ elsewhere (6).
 
      | | Option | What it does | Pro | Con |
      |---|---|---|---|---|
-     | A | Tornado only | the duration stays a feature for the six other damage-timed types | no change; keeps the wind and flood signal | on Strong Wind and Heavy Rain the span records the damage |
+     | A | Tornado only | the duration stays a feature for the seven other damage-timed types | no change; keeps the wind and flood signal | on Strong Wind and Heavy Rain the span records the damage |
      | B | Blank Strong Wind and Heavy Rain too (implemented) | blank for the three types the outcome alone times; the five others keep it, with a note giving its worth | removes the spans the damage alone draws, at no measured cost; keeps +0.012 to +0.021 on the five types | the five types' spans are partly the damage's, a leak kept with a note |
      | C | Blank all seven damage-timed types | blank wherever the damage can set the span | no span the damage may set stays | loses +0.013 to +0.021 on the seven types, part of it a wind or flooding criterion the first report holds |
      | D | Drop the column | no duration for any type | simplest | also loses the duration of floods, winter storms and the types no damage times |
@@ -302,1429 +324,1989 @@ elsewhere (6).
    hold round office values, not split totals. Supersedes the definition shipped on 2026-11-03 (Andrej), which blanked
    the tornado durations only. `dataset check`: 0 errors, 0 warnings.
 
-**Review panel:** ship after changes if LEAK-25 is amended, otherwise `No` (mediator). Claim audit: 44 claims, 29 hold
-(3 with a caveat), 11 refuted (2 in part; all fixed in the definition, the LEAK-25 part is issue 1), 4 untested (older
-label revisions and a forum post open; the other two now a note and issue 3). Blind review: would include with changes;
-its main concern is that the zero label is mostly an office reporting convention that drifts over time. Debate: agreed
-on the temporal split with a 3-month gap, the three LEAK-10 fixes, the narrowed use case, `rmsle` with its reason
-repaired and the quality fixes; disputed at the end: only the amendment's wording (issue 1); the critic withdrew the
-us_accidents objection.
+7. **Blank the duration also on the wind entries the first report gives as damage?**
+
+   * **Problem:**
+     - D13 kept the duration of Thunderstorm Wind and High Wind with a note because Storm Data does not record
+       whether the damage or a wind criterion timed a span, but `magnitude_type`, known at the first report, marks the
+       entries whose speed the office estimated from the damage (EG, ES), and on nearly all of them nothing but the
+       damage can have timed the span[^7a].
+     - Strong Wind was blanked the same day for that fact, and these entries, with 435 Thunderstorm Wind entries
+       measured under 50 kt, are 241,523 of the 318,813 rows whose duration was kept (75.8%).
+     - On those rows the span carries a small but consistent gain under a stronger model, and where other datasets
+       could locate such cells they blanked them rather than keep them with a note[^7b].
+   * **Background:**
+     - Appendix A of the NWS directive times a Thunderstorm Wind entry from "When damage first occurred or winds 50
+       knots (58 mph) or greater were first reported" to "When damage ended or winds of 50 knots (58 mph) were last
+       reported" (Sec. 46), and High Wind likewise with its wind criteria (Sec. 24).
+     - An EG or ES entry carries a speed the office estimated from the damage, which the definition already blanks.
+       Matched to the real-time Local Storm Reports of 2024, 94.4% of the EG Thunderstorm Wind entries had a first
+       report "TSTM WND DMG" without a speed, so no wind of the criterion was reported; the other 5.6% had a speed in
+       the first report, so the blank locates these spans closely, not exactly.
+     - A Thunderstorm Wind entry measured under 50 kt met no wind criterion and enters Storm Data only with damage
+       (92% of the 435 have property damage).
+     - The blank would follow `magnitude_type` and the event type, both features, so a missing duration would tell a
+       model nothing it cannot already read.
+   * **Experiments:** the mediator's rerun on the shipped splits: the change in RMSLE when the duration is blanked on
+     these 241,523 rows (positive: the span carried a gain), mean of 4 paired seeds (SD in brackets):
+
+     | Model | Rows scored | 2023 | 2024 | 2025 |
+     |---|---|---|---|---|
+     | untuned LightGBM, 400 trees (the note's) | these rows | +0.001 (0.022) | +0.013 (0.028) | +0.020 (0.024) |
+     | untuned LightGBM, 400 trees | all rows | +0.001 | -0.002 | +0.008 |
+     | LightGBM, 1,500 trees, 127 leaves | these rows | +0.031 (0.009) | +0.023 (0.005) | +0.030 (0.015) |
+     | LightGBM, 1,500 trees, 127 leaves | all rows | +0.004 | +0.015 | +0.019 |
+
+     - The stronger model gains on these rows with 12 of 12 seeds, 3 to 4 seed SDs; the note's model with 9 of 12,
+       within one SD.
+     - A model gains about 1.3 over a constant, so even the largest figure is a small part of the skill.
+   * **Consistency:**
+     - Your keep differs from Strong Wind, blanked by D13 the same day because its span runs from the first to the
+       last damage (the domain practitioner: "All I would have is the time of a damage report, not an end"), and from
+       zillow_prize and melbourne_housing_market, which blanked the late cells they could locate (2026-10-21), as
+       frempl_french_motor_personal_line did for its located early ends[^7c].
+     - medical_facility_operational_data kept a part it could not locate, within about two seed SDs; here the part is
+       located, and the stronger model's gain is 3 to 4 seed SDs.
+     - Item X4 of the working copy's REVIEW.md would write B's reading into the leak rule[^7f] (blank the part of a
+       span that can be located, keep the rest with its worth only when small); D is the reverse, so B goes with taking
+       X4 and D with declining it.
+     - So what sets an EG wind span apart from a Strong Wind span? The ways out are the options below: nothing, treat
+       them alike (B); a fact written down that sets them apart (A; the advocate's candidate, the first report's clock
+       times, would reopen the Strong Wind blank); all five types alike (C); or the rule read type by type (D)[^7d].
+   * **Panel:**
+     - The advocate keeps them: the first reports hold the damage report's time, the rule on inputs the actor knows
+       admits that the first report says whether damage was seen, and a blank removes a first-report fact[^7e].
+     - The critic blanks them: the first report says when damage was seen, not how long it went on, and the end is
+       the preparer's merge of the damage reports, the fact for which Strong Wind was blanked.
+     - Before the rerun both set the same tie-breaker, blank if four seeds show a consistent gain on these rows; the
+       rerun met it under the stronger model, and the mediator recommends the blank.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep, the note corrected (implemented) | the duration stays on these rows; the note gives their share and the column's measured worth | keeps a time the first report holds; D13 unchanged | keeps spans only the damage can have timed while Strong Wind's is blank; departs from the located-cells cases |
+     | B | Blank these rows | `duration_hours` blank on the EG and ES entries of Thunderstorm Wind and High Wind and on Thunderstorm Wind measured under 50 kt (241,523 rows); the note keeps the measured-wind, dust, ash and flood spans, with their worth measured again | treats these spans like Strong Wind's; follows the located-cells cases; the blank follows features, so no new marker | loses +0.001 to +0.031 RMSLE on these rows; rests on the directive's wording, and 5.6% of the EG entries had a speed in the first report |
+     | C | Blank every kept type | the duration blank for the five wind and flood types (318,813 rows) and for Dust Storm and Volcanic Ashfall | no span the damage may have timed stays | loses the measured-wind and flood spans, which the first report or a tide gauge gives |
+     | D | Amend the rule on spans | the rule reads a span type by type, never within a type; nothing changes here | one reading for every dataset | against the smallest fix and the located-cells cases; the Strong Wind contrast stays |
+
+   * **Recommendation:** B: a feature locates these rows, on them nothing but the damage can have timed the span, as
+     for Strong Wind, and the stronger model gains from the span with 12 of 12 seeds, which meets the tie-breaker both
+     debaters set. A only with the fact that sets an EG span apart from a Strong Wind span written down. **Decision:**
+     A, B, C or D?
+
+   **Notes for the AI:** On B: in `_clean`, blank `duration_hours` where `EVENT_TYPE` is Thunderstorm Wind or High
+   Wind and `MAGNITUDE_TYPE` is EG or ES, and where `EVENT_TYPE` is Thunderstorm Wind, `MAGNITUDE_TYPE` MG or MS and
+   `MAGNITUDE` under 50 (241,523 rows; the mediator's variant `blankA` in `eg_rerun.py`, run folder of 2026-11-06);
+   measure the worth of what is left of the column on the kept types' test rows again (the claim auditor's 5 set-ups
+   by 3 windows) and write it into the kept-with-note bullet in place of -0.01 to +0.08, with the EG and ES sentence
+   turned into the blank's reason in the "Blanked" bullet; add the rows to `changes` and the `known` wording; re-run
+   `dataset check` and the leak probes; a CC line with the call; the main session updates the LEAK-10 / LEAK-37 Cases
+   row on spans in leak_checks.md. On A: the curator's fact goes into the kept bullet and a CC line; if it is the
+   first report's times, reopen the Strong Wind blank with an issue of its own. On D: the main session amends the
+   Cases row (date, curator, this case) and closes X4 as declined; on B, X4 is applied with this case named. The
+   rule: LEAK-10 (Must) with its second clause and LEAK-6 (Must) over LEAK-7 (Should); the advocate's ground is
+   LEAK-37 (Must).
+
+   [^7a]: **LEAK-10** (Must): a feature holds only what existed at the prediction point and never gives the target
+     away; a part, a consequence or another encoding of the target is out. The **LEAK-10, LEAK-37** Cases row on
+     spans (Lennart, 2026-11-06): where the outcome alone draws a span, blank or drop it for those types; where it is
+     drawn by the outcome or an outcome-free criterion, keep it with a `Potential leak, kept on purpose:` note giving
+     its worth.
+   [^7b]: **LEAK-10**, second clause (amended 2026-10-26, Lennart): late cells that can be located row by row are
+     blanked (zillow_prize, melbourne_housing_market, aeolus_1m); values that cannot be located stay with a note only
+     when the part that can be traced shows no gain. **LEAK-6** (Must): measure before acting; a confirmed leak goes
+     even when small. **LEAK-7** (Should): the smallest fix that keeps a valid signal. The time-on-risk Cases row
+     (amended 2026-11-06, Lennart): "where the data locates the cut row by row, fix it".
+   [^7c]: Located and blanked: zillow_prize and melbourne_housing_market (2026-10-21);
+     frempl_french_motor_personal_line, whose dates locate the early ends (2026-11-02, 2026-11-06). Not located and
+     kept with a note: medical_facility_operational_data (Lennart, 2026-11-05). Not located and dropped:
+     distribution_transformers_at_cauca_department (2026-10-21).
+   [^7d]: principles.md, "Conflicts between rules": "Treat like cases alike: a precedent with the same facts is
+     followed unless a fact sets the new case apart." "Consistent judgement, the curator's included", case 2: a
+     precedent with similar facts decided the other way; the ways out are the fact that sets the case apart, the case
+     treated like the precedent, the precedent reopened, or the rule amended. A Must has no exceptions; anything else
+     is an amendment ("Exceptions and amendments").
+   [^7e]: **LEAK-37** (Must; applies **USE-6**): an input the actor knows at the prediction point is not a leak.
+   [^7f]: **LEAK-10** (Must): item X4 proposes a third clause for spans drawn by the outcome or an outcome-free
+     criterion, tied to the second clause's test: blank the part that can be located; keep the rest with a note giving
+     its worth only when that worth is small (heart_failure's `time`, dropped on its size, the counter-case).
+
+8. **Keep RMSLE, or score the Tweedie deviance on the dollars?**
+
+   * **Problem:**
+     - Since issue 5 the actor is a planner who sums expected dollars per county and hazard, while RMSLE scores each
+       event's order of magnitude and is minimised by a geometric mean (the best constant for 2024 is $16 against a
+       mean of $355,555), and issue 3 kept RMSLE for the earlier triage actor[^8a].
+     - The domain practitioner would score the mean Tweedie deviance at power 1.5 on the dollars, the usual score for
+       zero-heavy, heavy-tailed amounts, which the mean minimises, and both debaters agreed to switch only if the two
+       pick different models.
+     - The mediator's probe found that they pick different models in all three windows, which meets that condition,
+       but the deviance's picks (a mean per event type in 2023, the least capacity in every window) may come from a
+       few large events rather than from a better model, so this is a weighing call between the label's precision and
+       the planner's sum[^8b].
+   * **Background:**
+     - The label is coarse: 44% of the positive figures have one significant digit, and offices enter round values
+       ($1,000, $5,000, $10,000), so it supports an order of magnitude and little more.
+     - On raw dollars 0.1% of the rows hold 99.94% of the squared deviation; the Tweedie deviance damps that tail far
+       more than a squared error does, but much less than a log.
+     - No source metric exists: Diaz and Joseph (2019) report several metrics, on tornadoes only and a random split.
+     - Under the deviance the target would ship in dollars, not on the log scale, since a deviance scores the mean on
+       the original scale[^8c].
+   * **Experiments:** the mediator's probe on the shipped splits: candidates a mean per event type and untuned
+     LightGBM (100 or 400 trees of 31 leaves, or 1,500 trees of 127 leaves), each trained for each metric (squared
+     error on the log for RMSLE, a Tweedie loss on the dollars for the deviance), one seed, no tuning or early stopping;
+     in brackets the winner's score, RMSLE or the mean Tweedie deviance, lower is better:
+
+     | Window | RMSLE picks | The deviance picks |
+     |---|---|---|
+     | 2023 | LightGBM, 400 trees (2.959) | the mean per event type (2,660), ahead of LightGBM, 100 trees (3,828) |
+     | 2024 | LightGBM, 400 trees (2.944) | LightGBM, 100 trees (2,040) |
+     | 2025 | LightGBM, 1,500 trees (2.675) | LightGBM, 100 trees (762) |
+
+     - Under the deviance more capacity scores worse in every window (100 trees, then 400, then 1,500), which can be
+       a score the tail decides or an untuned Tweedie fit that overfits; the probe cannot tell which.
+     - The models trained for RMSLE sum to 0.05% to 10% of the actual dollars.
+   * **Consistency:** diamonds and onlinenewspopularity score RMSLE by context, neither with a mass at zero;
+     pricing_game_2017_french_mtpl scores the mean Tweedie deviance at power 1.5 for an insurer's expected claim
+     cost[^8d].
+   * **Panel:**
+     - For RMSLE (the advocate; the domain practitioner, though they proposed the deviance): the label supports an
+       order of magnitude, a score on dollars is decided by a few hurricanes and floods, and the practitioner "could
+       pick a model by it".
+     - For the deviance (the critic; the domain practitioner, who proposed it): the planner plans with summed expected
+       dollars, which RMSLE does not score, and issue 3 chose the metric for the earlier actor.
+     - The mediator leans to RMSLE, reading the deviance's preference for a mean per event type and for less capacity
+       as tail-driven noise, and leaves the weighing to you.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | RMSLE (implemented) | as now; the reason adds that the deviance was probed, picks other models, and why RMSLE stays | fits the label's precision; a few large events do not decide it | scores the order of magnitude, not the planner's sum; the best constant is $16 |
+     | B | The Tweedie deviance on the dollars | the mean Tweedie deviance at power 1.5 with a floor of $1; the target ships in dollars | scores the expected dollars the planner sums | in the probe it ranks a mean per event type first in 2023 and penalises capacity; large events weigh heavily |
+     | C | Probe again first | tuned Tweedie fits with early stopping on the three windows, then A or B | settles whether the deviance's picks are noise | a probe to run; the decision waits |
+
+   * **Recommendation:** A, the mediator's lean: the label holds an order of magnitude and little more, and in the
+     probe the deviance prefers a mean per event type and the least capacity, which reads as noise from the tail rather
+     than a better model for the planner; so the debaters' condition is met, but not, on this reading, by a better
+     model; C if you want that reading tested before you decide. **Decision:** A, B or C?
+
+   **Notes for the AI:** On A: add to the metric reason one sentence, e.g. "Probed against the mean Tweedie deviance
+   at power 1.5 on the dollars (each candidate trained for each metric, 3 windows, 2026-11-06): the two pick
+   different models in 3 of 3 windows, the deviance preferring a mean per event type (2023) or the least capacity;
+   RMSLE stays for the label's precision (<curator>, <date>)." On B: the target ships as dollars
+   (`property_damage_usd`, no `target_transform`: CLEAN-16), the metric is `Metric.from_context(
+   "mean_tweedie_deviance", params={"power": 1.5, "min_prediction": 1.0}, reason=...)`; rewrite `predicted`, the
+   target bullet, the accepted warning and the metric reason; re-run `dataset check` and the task probe. On C: rerun
+   the mediator's `met_probe.py` (run folder of 2026-11-06) with tuned Tweedie LightGBM and early stopping on a slice
+   of each training side, then put A or B again. The rules: MET-1 (Must), MET-11 (context) and the Tensions row on
+   the source's metric against a better metric (no source metric here).
+
+   [^8a]: **MET-1** (Must): the declared metric scores the real task, the decision of the use case at the unit the
+     actor acts on, the way a practitioner would have chosen a model for it. **MET-11** (Must), origin "context":
+     the source defines no metric, the task makes one obvious and the reason says why. Issue 3 (Andrej, 2026-11-03)
+     kept RMSLE for ranking a storm's counties; issue 5 (Andrej, 2026-11-03) made the actor the planner, "data, split
+     and metric unchanged".
+   [^8b]: principles.md, Tensions, "The source's metric against a better metric for the same goal": without a source
+     metric, the metric the task makes obvious; which framing of this task's decision that is, the rules leave to the
+     curator.
+   [^8c]: **CLEAN-16** (Should; amended 2026-11-06, Lennart): "A target scored by a deviance, a rate included, ships
+     untransformed: the deviance scores the mean on the original scale, which a fit on the log scale misses".
+   [^8d]: diamonds (Lennart, 2026-10-21): "a price's error matters relative to the price, so `rmsle`";
+     pricing_game_2017_french_mtpl: the mean Tweedie deviance at power 1.5, "Chosen over the Gini by the curator
+     (Andrej, 2026-11-03)".
+
+**Review panel:** ship after changes (mediator). Tier full, a re-review of 2026-11-06 under LEAK-41 and MET-14 to
+MET-16, after decision D13 (issue 6): 12 reports. The mediator's issues 1 and 2 are issues 7 and 8 here (its option (a)
+of issue 1, the blank, is option B of issue 7); its issue 3 is cross-dataset item X4, its issue 4 needs no decision (see
+the outcome), and its issue 5 is applied: the record's leftover marker is removed. Claims: 27 audited; 19 hold, 7
+refuted (the kept spans' worth, understated; "App. A read for every type", which missed Seiche; the metric reason's
+manager; the share of types entered only with damage; two sets of stale counts; the record's marker) and 1 at risk (the
+reason for dropping the unassessed hazards); 4 untested (the 2024 Local Storm Report match, the 2025 file comparison,
+the office spread and drift, the RMSE figures of older definitions). All are fixed, in the definition or (the marker) in
+the record, and one claim that held, that the kept worth is the criterion's rather than the damage's, was overturned by
+the mediator's rerun (issue 7). Blind review: include with changes; its main concern, that a $0 is mostly an office's
+reporting habit, is settled under LEAK-25 as amended, and the masking it calls undocumented is documented in the notes,
+which its task sheet did not carry. Task gamer: nothing beats the honest model by more than noise plus about 0.01 RMSLE;
+`magnitude_type` with the blanked speeds is worth 0.092 and the duration 0.013, both known at the stated prediction
+point; no late labels and no training row after a cutoff. Agreed: the task, the split, D13 as applied, the Seiche blank,
+the measured worth and every text fix, Flood and Flash Flood recorded as outcome-free, the spread of methods. Disputed:
+the spans `magnitude_type` locates (issue 7: the advocate keeps them as first-report times, the critic blanks them as
+Strong Wind's; the rerun met the tie-breaker both set, for the blank); the metric (issue 8, a weighing call); the
+LEAK-10 amendment and the release of D13, settled as upkeep of the rules and the process, not defects (X4; Andrej's
+release of D13: see the outcome). One reading of the panel is corrected: its quotes that time Hurricane and Tropical
+Storm by "damage or" a wind criterion are App. A's marine sections (34, 39); the land types run on the storm's direct
+effects (Sec. 25, 49) and are recorded as outcome-free.
 
 <details><summary>Mediator</summary>
 
-**Mediator: noaa_storm_events_damage (2026-11-01)**
+**Mediator report: noaa_storm_events_damage (exposure re-review, full tier, 2026-11-06)**
 
-**Recommendation**
+I ran the decisive experiment and the MET-1 probe. Both rebuttals had named these as the tie-breakers. Splits are the
+shipped ones, in the order they ship.
+
+**1. Recommendation (judgment record)**
 
 ```text
-Verdict: ship after changes, on one condition: the curator amends LEAK-25 (issue 1). Under the rule as written: don't
-  ship (`No`, LEAK-25).
-Validity: SEL-3 holds on the curator's `Yes` (2026-10-30), consistency check against us_accidents open (issue 1);
-  USE-1 holds once narrowed to the emergency manager's triage; USE-5 triggered (the insurer half), fixed (dropped);
-  USE-8 approximate, reason rewritten; LEAK-25 triggered, not recovered (issue 1); LEAK-10 triggered three times,
-  fixed (EG/ES speeds blanked, tornado durations blanked, `hurricane_category` dropped); LEAK-37 holds for the types
-  entered only with damage (said in `known`); SPLIT-1, SPLIT-3, SPLIT-6, SPLIT-9, SPLIT-13, SPLIT-14, SPLIT-20 hold;
-  SPLIT-10 departure, fixed (gap 3 months).
-Value: TP-2, a real signal after the fixes (RMSLE about 2.55 against a dummy at 3.90, 3 windows), 62% of the gain from
-  the office; MET-11 `rmsle` kept, reason repaired (MET-1).
-Quality: LEAK-19 (1,072 double entries), CLEAN-21 (`magnitude` holds knots and inches), CLEAN-11 (24 impossible wind
-  values) fixed; text corrections.
-Weighed: size +, source (NWS directive, public domain) +, honest temporal split +, approximate fit -, office
-  convention in the label -.
-For the curator: issue 1 (LEAK-25: amend or `No`, with the us_accidents check), issue 2 (drop the hazards nobody
-  assesses, a weighing call), issue 3 (`rmsle` or a within-storm score, a weighing call).
+Verdict: ship after changes.
+Validity: SEL-3 holds; USE-1, USE-5 hold (approximate fit, issue 5). LEAK-10 / spans Cases row: D13 is applied as
+  decided (Tornado, Strong Wind, Heavy Rain 100% blank, 0% elsewhere; no marker, LEAK-38). LEAK-10 is triggered on
+  the located damage-timed spans (EG/ES wind entries, Thunderstorm Wind measured under 50 kt). The rerun shows a gain
+  on those rows, so blanking them is recommended (issue 1, a change to D13). Seiche: 51 durations blanked (agreed by
+  both sides). LEAK-25 kept as amended. LEAK-37 note incomplete (text). SPLIT-9, SPLIT-10, SPLIT-13 hold.
+  MET-14/15/16 and LEAK-41 are not triggered (no weight, no exposure).
+Value: TP-3, methods spread (keep). MET-1: the reason names the old actor (text fix). The Tweedie probe picks a
+  different model from RMSLE in 3 of 3 windows (issue 2, a weighing call).
+Quality: stale counts, unnamed types and the record marker (text).
+Weighed (metric): label precision +, tail dominance of dollar metrics +, planner sums dollars -, probe disagreement -.
+For the curator: issue 1 (EG/ES blank: a, recommended), issue 2 (metric weighing), issue 3 (LEAK-10 amendment),
+  issue 4 (Andrej's release of D13), issue 5 (record marker).
 ```
 
-The debate narrowed to LEAK-25. Both debaters concede every other point to the other side's evidence, and both say the
-dataset ships only if the curator amends LEAK-25. I ran three checks (mediator scratch: `m1_blank_drift`,
-`m2_beyond_subsets`, `m3_ablation`; untuned LightGBM, the advocate's parameters, the shipped windows, the three LEAK-10
-fixes applied).
+**2. Agreed facts (no side disputes them)**
 
-**Agreed facts**
+- The task is real. USE-1/USE-5 hold with the planner as actor (issue 5, Andrej, 2026-11-03).
+- The target equals log1p(DAMAGE_PROPERTY) in 100% of 9,527 matched 2024 rows (blind reviewer). Blanks are dropped, not
+  set to $0.
+- The split is right (split auditor):
+  - gap of 3 months against a public lag of 75-80 days;
+  - 0 episodes cross a window;
+  - 0 training events end after the cutoff;
+  - county_zone seen in train for 98.6-99.6% of test rows.
+- D13 is applied exactly. Every App. A quote is verbatim (claim auditor, precedent checker).
+- Blanking Strong Wind and Heavy Rain cost nothing (10 of 15 fits were better with the blank).
+- `magnitude_type` marks the estimated-wind rows. EG/ES rows are 241,088 of the 318,813 kept-span rows (75.6%):
+  Thunderstorm Wind 228,978 EG + 56 ES, High Wind 11,018 EG + 1,036 ES.
+- In 2024, 94.4% of EG Thunderstorm Wind first reports were "TSTM WND DMG" with no speed. Separately, 435 Thunderstorm
+  Wind rows carry a measured speed under 50 kt.
+- The note's sentence "the part the damage set cannot be located row by row" is false. Both sides concede it.
+- The note's worth "+0.012 to +0.021, an upper bound" is understated. Over 15 fits the measured worth is -0.009
+  to +0.078, median about +0.03 (claim auditor T3). Both sides accept the wording "+0.01 to +0.08 ... median
+  about +0.03" with "an upper bound" dropped.
+- Even +0.08 is about 6% of the ~1.3 RMSLE gain over a constant. The keep of the column as a whole does not flip on this
+  point alone.
+- Seiche (Sec. 41): the begin is drawn "resulting in a fatality, injury or damage". Both rebuttals accept blanking the
+  51 rows (advocate: "blank it, which is costless"; the critic holds blank and accepts the curator's call).
+- Hurricane (482), Tropical Storm (3,837), Volcanic Ashfall (77) and Dust Storm (1,476) are timed "damage or criterion".
+  Name them in the kept note.
+- Flood and Flash Flood are timed by "threat to life or property". They stay, recorded as threat-timed and judged
+  outcome-free. The worth has no consistent sign: -0.125 to +0.098 over 15 fits; Flash Flood alone -0.011 / +0.053
+  / +0.071 (column auditor).
+- Stale text:
+  - `known` says 3.5-4.0%; shipped is 4.4-4.9%.
+  - 1,072 double entries; shipped is 918.
+  - 40% / 37% zone rows; shipped is 30.1%.
+  - 8,135 codes; shipped is 7,697.
+  - 167,629 episodes; shipped is 140,270.
+  - EG 254,988; shipped is 252,451. ES 1,162; shipped is 1,151.
+  - REVIEW issue 6 option A says "six"; it should say "seven".
+  - Hail under 3/4 inch (504 rows, 67-89% positive) and Dust Devil are missing from the entered-only-with-damage list.
+- Stale actor: "The manager" appears in the metric reason, in the REVIEW.md header and in the UNASSESSED filter's
+  reason. The actor is now the planner.
+- Population: rows with a blank damage figure are dropped. Blank rates run 0-98% by office (EAX 98%, ALY 96%), and 22.7%
+  of 2025 source rows are blank. The handling is settled under LEAK-25. A task_summary sentence is missing.
+- TP-3: methods spread (LightGBM 2.83 against linear 3.24), so the probe's no_spread flag does not hold. Keep.
+- The record shows no release of D13 by Andrej, although the study's table assigns D13 to him.
 
-1. 1,000,829 entries 2007-2025 with a damage figure; the 18.3% of 1,225,290 events left blank are dropped; 73% of the
-   entries are $0 (test windows 74.2%, 74.0%, 76.3%).
-2. The split is right: county_zone seen in train for 99.2% of test rows, office and state 100%; 0 of 167,629 episodes
-   span two months; later releases change 0 of 64,921 Jan-Oct 2025 values and 0.17% of 2024's; a random split
-   overrates by 0.16-0.36 RMSLE.
-3. NCEI's public files lag 75-80 days (C00510: "up to a 120 day delay possible"), so the 2-month gap gives each training
-   side one month (0.15-0.21% of rows) the actor would not have; gap 3 costs 0.02-0.03, an edge effect.
-4. Three columns hold values written after the first report: 94.4% of the 2024 EG speeds were absent from the real-time
-   Local Storm Reports ("TSTM WND DMG", no speed), against 92.7% carry-over for measured gusts and 97.9% for hail; ES is
-   the same estimate (1,164 entries); tornado duration tracks the dropped path length (Spearman 0.83); the hurricane
-   category is set per zone (Michael's Cat 5 is the April 2019 reanalysis; 483 rows, none in 2025).
-5. After the three fixes: RMSLE 2.54-2.56 (mean of 3 windows) against a dummy at 3.90. Event type and time give 3.55,
-   the office 2.71: 62% of the gain is the office.
-6. A $0 mixes "no damage" with "no estimate made": 13 of 121 EF4/EF5 tornado segments and 17.3% of EF2+ are at $0;
-   the Thunderstorm Wind $0 share runs 7%-91% across offices. The mix sits in the events entered by a criterion (severe
-   wind, hail); in the types entered only with damage, a $0 without casualty or crop damage is 0.3-3.1%.
-7. The 2007 break is a change of entry format: in 2006, which holds both, the old PDS rows are 71.3% blank (floods
-   63.3%, which the directive forbids) and the CSV rows 0.1% (floods 0 of 710).
-8. Strong Wind, Lightning and Thunderstorm Wind below 50 kt enter Storm Data only with damage (94-98% positive, 3.5-4.0%
-   of test rows); the first report says whether damage was seen (LEAK-37).
-9. The insurer half of the use case fails USE-5: Storm Data's 2024 total is $15.7B against $182.7B for NCEI's
-   billion-dollar events; hail is 11.1% of the rows and 1.4% of the dollars.
-10. Metric: on raw dollars the top 0.1% of entries hold 99.96% of the squared deviation; `normalized_gini` picks the
-    model that ranks a storm's counties worse; 41-49% of RMSLE's squared error sits on the $0 rows; Diaz and Joseph
-    (2019) exist (several metrics, tornadoes only, random split: no source metric, MET-5).
-11. Every storm (episode) is entered by one office. 1,072 rows are exact copies of another in every published column.
-12. LEAK-25 is a Must and takes no exception; re-targeting to the positive amounts is withdrawn (rows selected on the
-    label; whether an office enters a figure is not known at the prediction point).
+**3. The decisive experiment: blank the EG/ES spans (and Thunderstorm Wind under 50 kt) against the shipped column**
 
-**Changes to make now** (no decision needed)
+Design:
+- Variant "blankA": `duration_hours` set to NaN where event_type is Thunderstorm Wind or High Wind and magnitude_type is
+  EG or ES, plus Thunderstorm Wind MG/MS under 50 kt. That is 241,523 rows.
+- Shipped splits; 4 seeds; two LightGBM set-ups:
+  - small: 400 trees, subsample 0.8, colsample 0.9 (the note's own set-up);
+  - big: 1500 trees, lr 0.03, 127 leaves, close to the task gamer's model.
+- Each seed is paired: the same seed fits both variants.
+- Reported: RMSLE(blankA) - RMSLE(shipped). Positive means the span carried a gain on those rows.
 
-1. LEAK-10 (Must; located late cells are blanked): blank `magnitude` where `magnitude_type` is EG or ES, keep
-   `magnitude_type`; the EG bullet becomes a drop bullet with the LSR numbers. Follows zillow_prize and
-   melbourne_housing_market, and this definition's own `TOR_F_SCALE` drop.
-2. LEAK-10, LEAK-2 (Must): blank `duration_hours` on every Tornado row (by type, not by `SOURCE`, which would leave the
-   survey marker).
-3. LEAK-10, LEAK-6 (Must): drop `hurricane_category`; remove the Built bullet's Saffir-Simpson reading.
-4. USE-5 (Must): narrow `use_case` to the emergency manager ranking a storm's counties for damage-assessment teams;
-   drop "an insurer's catastrophe desk" and "what to reserve".
-5. USE-8 (Must): rewrite `fit_reason` to name the gaps: Storm Data entries made weeks later stand in for the first
-   reports; tornado types come from surveys; one row per event and county segment against a decision per county and
-   storm; the $0 convention differs by office and drifts; no exposure.
-6. LEAK-37 (Must), USE-3: `known` and the prediction-point bullet say that the first report tells whether damage was
-   seen, with the 3.5-4.0% share; "once the event has ended" in the prediction point (long floods and fires).
-7. SPLIT-10 (Should): `gap=3`; `splits_comment` cites C00510 and the measured 75-80 day lag; `task_summary.split` reads
-   "every event published by the refit". The default of the rule, so no exception is needed.
-8. MET-1 (Must): the metric reason names Diaz and Joseph (2019) and says that 41-49% of the error falls on the $0
-   entries. `rmsle` stays.
-9. Text on the target (who decides; EV-2): quote the curator's call of 2026-10-30 in place of "coded zeros are a
-   cleaning choice" and label that gloss as the AI's; mark "blank = the 'no information' box" as an inference
-   (floods have no blanks from 2008 on) and add the within-office shift (disputed point A); the same in the first
-   `Decision` text; accept `task_target_value_dominant` as "zero-inflated; part of the zeros are unestimated damage
-   (LEAK-25, REVIEW issue 1)".
-10. LEAK-19 (Should): drop the 1,072 exact copies; correct the duplicates note.
-11. CLEAN-21 (Should): split `magnitude` into `wind_speed_kt` and `hail_size_in` (lossless: 2.6125 against 2.6007).
-12. CLEAN-11 (Should): 22 Thunderstorm Wind entries of 1-10 kt and 2 Strong Wind entries of 0 kt become missing.
-13. Text (EV-7, EV-8): flood blanks are 26, all in 2007; no episode spans two months (drop "except at New Year"); the
-    2024 file comparison leaves out 907 events (1.3%) added or removed; the office practice drifts (r 0.958 from 2024
-    to 2025, 0.575 from 2007-2016; 30.5% of offices moved by more than 0.2); scratch numbers on the shipped features
-    (base 2.582), recomputed after the fixes; the `SOURCE` bullet loses "(REVIEW issue)" (the drop follows kick and
-    expresso_churn_prediction, and no one disputes it).
-14. Record: an `Assessment (AI, 2026-11-01)` line: Diaz and Joseph (2019) found; the screening's R^2 0.48 on the
-    positives had `SOURCE` and the EG speeds (0.28-0.45 with the fixed features, critic's c02).
-
-**Issues for the curator** (ranked)
-
-1. **LEAK-25 (Must, P4) with the SEL-3 consistency check against us_accidents (P2): amend or `No`.**
-   - Problem: a $0 means "no damage" or "no estimate made", depending on the office and the period. The blank drop
-     removes the source's own mark only where and when an office uses it. No label-free rule locates the rest.
-   - Effect: the score rewards learning each office's habit (62% of the gain); a manager would see counties ranked down
-     where the office rarely enters dollars.
-   - For keeping (advocate): the curator's call of 2026-10-30 ("We don't care. We want to add any relevant predictive
-     task, independent if it is zero inflated or not") covers it; the habit follows a shipped feature and is stable a
-     year ahead (r 0.958); with office, period and place given, the other features still lower RMSLE by 0.17-0.21 and
-     double the R^2 on the positive amounts in 2025 (disputed point B).
-   - For `No` (critic, under the rule as written): the mix is not recovered, and the office's coding moves inside an
-     office over time (disputed point A), as us_accidents' codes moved inside a feed.
-   - Decision: amend LEAK-25 (wording under disputed point C; it names the fact that sets the case apart from
-     us_accidents), or `No`. My recommendation: amend, since the curator's call already points there and the signal
-     beyond the habit is measured; the curator should see the 62% before doing so.
-2. **USE-1 (Must, P3), a weighing call: drop the hazards nobody sends an assessor for.** Marine zones, drought, heat,
-   cold, fog, rip current, funnel cloud, waterspout, high surf: 19.8% of the 2024 rows, 99.7% $0, 0.07% of the
-   dollars. Practitioner and critic: drop (the rows lie outside the narrowed decision and are easy zeros). Advocate:
-   optional. Which types an emergency manager assesses is a domain judgement. My recommendation: drop.
-3. **MET-1 (Must, P6), a weighing call: `rmsle` or a within-storm score.** `mean_group_pearsonr` by `EPISODE_ID` (a
-   scoring column) holds the office fixed, so the $0 habit counts less. Against it: all-$0 storms drop out (59.9% of
-   the 2024 storms with five or more rows), and so do storms where a model predicts one value, so a model can skip hard
-   storms. Advocate and critic keep `rmsle`; the practitioner prefers the within-storm score. On 2024 both pick the
-   same model. My recommendation: keep `rmsle`.
-
-**Disputed points**
-
-A. *What the 2007 shift from blanks to $0 means.* The critic first read it as "the 'no information' entries became
-$0". The advocate's 2006 table (both formats in one year; fact 7) shows a change of entry format, and the critic
-conceded. The live question was then whether, in the CSV format, the blank is the box and the $0 is a real zero (the
-advocate's amendment wording rests on it). Decisive check (`m1_blank_drift`): per office, 2007-2010 against
-2022-2025, when an office's blank share rose, what fell?
-
-| event type | offices | slope of $0 change on blank change | slope of positive change | offices with blank +0.2 or more: blank, $0, positive |
+| set-up | rows | 2023 | 2024 | 2025 |
 |---|---|---|---|---|
-| Hail | 91 | -1.00 | 0.00 | 32: +0.55, -0.50, -0.05 |
-| Thunderstorm Wind | 98 | -0.70 | -0.30 | 21: +0.58, -0.32, -0.26 |
-| Winter Storm | 50 | -1.01 | +0.01 | 15: +0.61, -0.54, -0.07 |
-| High Wind | 51 | -0.79 | -0.21 | 14: +0.58, -0.35, -0.23 |
+| small | EG/ES rows (mean of 4 seeds, SD) | +0.001 (0.022) | +0.013 (0.028) | +0.020 (0.024) |
+| small | all rows | +0.001 | -0.002 | +0.008 |
+| big | EG/ES rows (mean of 4 seeds, SD) | +0.031 (0.009) | +0.023 (0.005) | +0.030 (0.015) |
+| big | all rows | +0.004 | +0.015 | +0.019 |
 
-All types: blank 7.3% (2007) to 22.7% (2025), $0 70.1% to 57.4%. For hail the trade-off is partly arithmetic
-(positives are 7-9%, so a blank can only come out of the $0 entries; the same holds for the critic's -0.83 across
-offices). Thunderstorm Wind and High Wind, where positives are about half and a quarter of the entries, show it is not:
-70-79% of an office's rise in blanks came out of its $0 entries. So the same office codes the same kind of event $0 in
-one period and blank in another. If the blank is the box (the flood fingerprint says so), the early $0 entries held
-unestimated events; if it is not, the drop removes no-damage events by habit. Either way the line between $0 and blank
-is a convention of office and period. Settled: the advocate is right that 2007 is a format change; the critic is right
-that the mix is not recovered, within the CSV years too.
+- Big set-up: 12 of 12 seeds are positive on the EG/ES rows, and the 4-seed ensemble gives +0.031 / +0.023 / +0.030.
+- Small set-up: 9 of 12 seeds are positive. The gain is within one seed SD.
+- For comparison, blanking all five kept types moves the EG/ES rows by +0.009 / +0.024 / +0.015 (small set-up). Most of
+  the five types' worth sits on the located damage-timed rows.
+- The U50 rows (12-63 per window) are too few to read on their own.
 
-B. *How far the signal beyond type, office and time carries the us_accidents comparison.* Lennart's reason named
-"feed, period, location"; the advocate's comparison left location out. Decisive check (`m2_beyond_subsets`,
-`m3_ablation`):
+Reading:
+- Under the stronger model the located part carries a consistent gain of about 3-4 seed SDs. Under the note's small
+  model it is within noise.
+- The precedent checker's 2-seed figure (+0.041) was high. Its sign holds.
+- Both sides' stated condition is met: "If the 4-seed rerun shows a consistent gain on the EG/ES rows, take a" (advocate
+  rebuttal point 1; critic rebuttal).
 
-| features | RMSLE 2025 / 2024 / 2023 | R^2 on positives | AUC any damage | Pearson within a storm (storms scored) |
-|---|---|---|---|---|
-| dummy | 3.820 / 4.010 / 3.872 | | | |
-| type + office + time | 2.562 / 2.792 / 2.767 | 0.18 / 0.38 / 0.37 | 0.935-0.945 | 0.27-0.32 (945-1,046) |
-| + place (state, county/zone, lat/lon) | 2.592 / 2.800 / 2.797 | 0.15 / 0.39 / 0.36 | 0.932-0.941 | 0.23-0.25 (1,184-1,261) |
-| all features, fixed | 2.406 / 2.632 / 2.592 | 0.37 / 0.46 / 0.45 | 0.945-0.954 | 0.31-0.34 (1,193-1,276) |
+**4. Changes to make now (no decision needed)**
 
-Place adds nothing over the office. Beyond office, period and place, the rest lowers RMSLE by 0.17-0.21 (about 14% of
-the gain), mostly from the hail size and measured gusts (2024: 0.14 of 0.17; the report type adds nothing once the
-magnitude is there), and raises the ranking within a storm by 0.08-0.10 on nearly the same storms. The advocate's
-within-storm figures compared models scored on different storms and understated that gap. us_accidents' honest split
-left log loss 0.48 against a 0.53 prior. So the signal beyond the subsets is real and larger than us_accidents had, and
-the label is a dollar estimate the narrowed actor ranks, not a delay code; but the office still carries most of the
-score and its code drifts (point A). The facts set the case apart in degree, not in kind. That is a weighing the rules
-leave open: the curator's (issue 1).
+Each carries its rule. All are text fixes except the Seiche blank.
 
-C. *The amendment's wording.* The advocate's draft ("a mix whose unrecorded part the source flags and the definition
-drops") claims a recovery point A refutes. The critic's form fits the data. Proposed, adding the us_accidents fact:
-"A mix whose recording follows a reporting unit shipped as a feature may be kept, case by case, with a note giving the
-unit's spread and drift and fit approximate, when the task keeps a measured signal beyond the reporting unit, the
-period and the place; the source's own 'not recorded' flag is dropped where it is used (Andrej, <date>,
-noaa_storm_events_damage)."
+1. Kept-span note (LEAK-10 / spans Cases row; EV-2):
+   - Drop "cannot be located row by row" and "an upper bound".
+   - State the worth as "+0.01 to +0.08 RMSLE on these types' test rows depending on the model (median about +0.03)",
+     and mirror it in REVIEW issue 6 and the leak_checks.md Cases row.
+   - If the curator takes issue 1 option a, re-measure the worth of what is left of the column first and write that
+     number instead.
+2. Seiche (spans Cases row; both sides agree): blank its 51 durations by type, the same mechanism as the OUTCOME_SPAN
+   blank. This extends D13's own reading, and the curator may veto. Add Seiche to the blank list in `changes`.
+3. Name Hurricane, Tropical Storm, Volcanic Ashfall and Dust Storm in the kept-with-note bullet (spans Cases row).
+   Reword "read App. A for every type" in the CC, the notes and the Cases row.
+4. Add one clause (spans Cases row; LEAK-37), so no later reviewer reopens the point: "Flood and Flash Flood are timed
+   by a threat to life or property (App. A), judged outcome-free and kept; their worth has no consistent sign (-0.13
+   to +0.10 over 15 fits)."
+5. Metric reason (MET-1): replace "The manager ranks counties by orders of magnitude" with the planner, and add the
+   sentence the practitioner asked for: RMSLE scores order of magnitude, not summed dollars (the RMSLE-optimal constant
+   for 2024 is $16 against a mean of $355,555). Fix the REVIEW.md header the same way.
+6. UNASSESSED filter reason (USE-1): ground it on the planner: property damage is almost never entered for these hazards
+   (99.1% $0, 0.5% of the dollars).
+7. Population sentence (USE-3): add to task_summary.row: "events with a damage entry; offices leave 0-98% blank". No
+   data change; LEAK-25 as amended stands.
+8. `known` and notes (LEAK-37, USE-3): 4.4-4.9% of test rows, 95-96% of them damaged. Add "Hail under 3/4 inch" and
+   "Dust Devil" to the entered-only-with-damage list.
+9. Stale counts (EV): 918 double entries (in `changes` too); 30.1% zone rows / 30.1% without lat/lon; 7,697 codes;
+   140,270 episodes; EG 252,451 / ES 1,151. Change "six" to "seven" in REVIEW issue 6. Alternatively, date each old
+   figure "before the issue 2 drop".
+10. Tornado line of the Cases row (precedent checker 1b): say that the tornado is blanked on the survey fact (Spearman
+    0.83 with TOR_LENGTH), not on the row's own reading.
 
-**Consistency with precedent**
+**5. Changes that need the curator (ranked: validity first, Must first)**
 
-- LEAK-25: no dataset has kept an unrecovered mix. ghanas_indigenous_intel was retired (rows not located, and `Too
-  Small`); caracas_cervical_cancer, account_debt_south_africa and fraud_detection_in_electricity_and_gas_consumption_1m
-  were recovered by label-free rules. Keeping needs the amendment; it changes nothing for ghanas.
-- us_accidents (`No`, Lennart, 2026-09-23): a similar mechanism; the separating facts are in point B, and the call is
-  the curator's (issue 1).
-- EG speeds blanked: follows zillow_prize and melbourne_housing_market (located late cells) and this definition's
-  `TOR_F_SCALE` drop. thailand_road_accident_register_2019_2022 kept the officer's cause under LEAK-10's case-by-case
-  clause because its traced part showed no gain; here the late cells are located and carry a gain (2.504 to 2.538), so
-  the two follow the same clause.
-- The prediction point: thailand_road_accident_register_2019_2022 reads its register as a severity screen after the
-  crash is recorded. The fact that separates them: here the decision (where to send assessors) comes before any damage
-  figure exists, and a real-time first-report stream exists to check the inputs against (the Local Storm Reports,
-  used in fact 4); the Thai register has no first-report snapshot and its agency acts after the record.
-- `SOURCE` dropped: kick, expresso_churn_prediction. History from 2007 on a measured break: aeolus,
-  fraud_detection_in_electricity_and_gas_consumption_1m. Gap set to the release lag: mortgage, sberbank (lag to
-  release). `rmsle` by context: diamonds, onlinenewspopularity; no decided context case had a mass at zero (the
-  Thai register's RMSE fallback is on a count of a few deaths, not nine orders of magnitude). Markers on a `Yes`:
-  5g_energy_consumption and others. `Two-Regime Zeros` stays (an exact-zero spike in a continuous amount, unlike the
-  Thai death count).
-- USE-9 considered: the blind reviewer's other reading, imputing the figures left blank, would put the survey fields
-  back as inputs, and its test rows (entered figures) would not stand for the blanks it fills. Not adopted.
+**Issue 1 (P4, LEAK-10 Must): blank `duration_hours` on the EG/ES wind rows and on Thunderstorm Wind rows measured under
+50 kt?**
+
+Problem:
+- D13 keeps the five types' spans because "which criterion set a span is not recorded".
+- On an EG/ES entry no wind of 50 kt or more was reported (94.4% were damage reports with no speed). Sec. 46's begin and
+  end ("When damage first occurred" / "When damage ended") can then only be the damage.
+- That is the same fact as Strong Wind's span, which D13 blanked.
+- `magnitude_type` is a first-report feature and locates these rows (241,523; 75.8% of the kept-span rows).
+
+Effect: the rerun above. On those rows the gain is +0.023 to +0.031 RMSLE (big model, 12 of 12 seeds) or +0.001
+to +0.020 (small model). On all rows it is +0.004 to +0.019.
+
+Advocate's best evidence:
+- LEAK-37 admits whether damage was seen at the first report, and the LSR times are first-report facts.
+- The association is weaker on EG rows: High Wind AUC 0.459 against 0.686 for MG.
+- LEAK-7 favours keeping a valid signal.
+
+Critic's best evidence:
+- LEAK-37 admits that damage was seen, not how long it went on. The span's end is the preparer's merge of the damage
+  swath.
+- Treat like cases alike: Strong Wind was blanked on the same fact.
+- The time-on-risk Cases row and LEAK-10's located-cells clause say: where rows can be located, fix them.
+- The critic's rebuttal also notes that the AUC within EG rows measures separation, not worth. EG rows are 62.5%
+  positive.
+
+Ruling by rank:
+- Both rest on P4 Musts.
+- LEAK-37 does not cover the span's length, so there is no conflict there. The advocate's distinction between a speed
+  estimated from damage and a report's clock time applies equally to Strong Wind, which the curator blanked.
+- LEAK-6 lets a keep with a note stand only where the late part cannot be located and the traced part shows no gain.
+  Here the part is located, and it shows a gain.
+- LEAK-7 (Should) yields to the Must. Blanking only the located rows is itself the smallest fix: measured-gust and flood
+  spans keep their signal.
+- The blank repeats `magnitude_type` and the wind-speed gap, so it is no new marker (LEAK-38).
+- Caveat: about 5.6% of EG entries had a spotter's estimated speed, so the location is close but not exact. That is the
+  same standard as melbourne's batch-located blank.
+
+Options (the precedent checker's prompt):
+- (a) Blank the EG/ES rows and Thunderstorm Wind under 50 kt. The note keeps the measured-gust and flood spans, with
+  their worth re-measured. Recommended: both sides' own tie-breaker is met.
+- (b) Keep as is, with the note corrected: the EG/ES share and the worth on them, +0.001 to +0.031.
+- (c) Blank all five types.
+- (d) Amend the spans row: read spans type by type only, never located within a type.
+
+Decision needed: a, b, c or d. Under a, the worth figure in change 1 must be re-measured on the new column.
+
+**Issue 2 (P6, MET-1 Must, a weighing call): RMSLE against Tweedie deviance (p 1.5, on dollars)**
+
+The probe: each candidate was trained for each metric (L2 on log1p for RMSLE; LightGBM tweedie p 1.5 on dollars for
+Tweedie). One seed, untuned, no early stopping.
+
+| window | RMSLE picks | Tweedie picks |
+|---|---|---|
+| 2023 | LightGBM 400x31 | event-type mean (2,660), ahead of LightGBM 100x31 (3,828) |
+| 2024 | LightGBM 400x31 | LightGBM 100x31 |
+| 2025 | LightGBM 1500x127 | LightGBM 100x31 |
+
+- Among the RMSLE-trained models, Tweedie's own pick also differs from RMSLE's in all 3 windows.
+- Under Tweedie, more capacity scores worse every year: 100 trees < 400 < 1500/127 leaves.
+- The log-trained models' Tweedie scores range from 40k to 600k.
+- RMSLE-trained predictions sum to 0.05-10% of the actual dollars.
+
+Effect: the two metrics pick different models in 3 of 3 windows. This triggers the switch condition both sides set:
+"switch only if they pick different models".
+
+Each side's best evidence:
+- For RMSLE (advocate, practitioner):
+  - 44% of positive figures have one significant digit;
+  - on dollars, 0.1% of rows hold 99.94% of the squared deviation;
+  - no source metric exists (MET-5);
+  - the practitioner: "I could pick a model by it".
+  - My probe adds: Tweedie ranks a per-type mean first in 2023 and penalises capacity, which reads as tail-driven noise.
+- For Tweedie (critic, practitioner):
+  - the planner plans with summed expected dollars;
+  - the RMSLE-optimal constant is $16 against a mean of $355,555;
+  - the issue 3 metric call was made for the triage actor.
+
+Rule: MET-1 (Must) and the tension row "the source's metric against a better metric" (there is no source metric). The
+rules leave which framing to ship open.
+
+Options:
+- (A) Keep RMSLE, with change 5's reason plus a line that Tweedie was probed and disagrees, and why (tail-driven).
+- (B) Switch to mean_tweedie_deviance p 1.5 on dollars (needs a CLEAN-16 check on the target transform).
+- (C) Rerun the probe with tuned Tweedie fits and early stopping before deciding.
+
+My lean is A, but it is the curator's weighing.
+
+**Issue 3 (rule maintenance; principles.md "Exceptions and amendments"): amend LEAK-10 with a third clause for spans**
+
+- What: spans drawn "by the outcome or an outcome-free criterion". Tie the clause to the second clause's test: blank the
+  located part; keep the rest with a note only when its worth is small. Name heart_failure `time` (dropped: AUC 0.84
+  alone, LightGBM 0.75 to 0.90) as the size counter-case.
+- Both sides agree it is right. The advocate holds that it does not gate shipping. It does not: the dataset meets the
+  rule either way once issue 1 is decided.
+- Without it, the register will flag this keep under a Must, as it did loan_default's.
+- Decision needed: adopt, adopt with different wording, or keep it as a Cases row only.
+
+**Issue 4 (process, house rules): Andrej's release of D13**
+
+- The study's decision table (report.md l.728) assigns D13 to Andrej, "in his folders, or with his release". The record
+  shows Lennart's CC only. Andrej is `checked_by`.
+- Decision needed: record his release, or confirm that he gave it, before merging.
+
+**Issue 5 (bookkeeping, records.md): the record's `No Good Target / Scientific Discovery` marker**
+
+- The marker sits on a `Yes` record. It belongs to the retire option of issue 5, which was not taken.
+- Decision needed: remove it (one click).
+
+**6. Disputed points and how they were settled**
+
+| Point | Advocate | Critic | Outcome |
+|---|---|---|---|
+| EG/ES spans | keep with corrected note (LEAK-37, LEAK-7, spans row) | blank (LEAK-10 located cells, time-on-risk row, Strong Wind like-case) | Fact settled by the rerun: a consistent gain on the located rows (big model 12/12 seeds). By rank and by both sides' tie-breaker: a. It changes a curator decision, so it is issue 1. |
+| Tweedie probe as a gate | not a gate; a weighing call | MET-1 Must, settle on evidence | Probe run: the metrics disagree in 3/3 windows. Not a failed Must on its face (the metric is defensible on the label's precision). A weighing call: issue 2. |
+| LEAK-10 amendment and Andrej's release | maintenance, not a defect | needed | Both are right. Neither changes the data. Issues 3 and 4, not a condition on the data. |
+| Seiche | blank (rebuttal) | blank, curator's call accepted | Agreed: blank (change 2). |
+| "Worth is the criterion, not the damage" (advocate's support point) | AUC 0.459 against 0.686 | AUC measures separation, not worth | The critic is right. The rerun shows the worth sits largely on the damage-timed rows. |
+
+**7. The task gamer's exploits (no rule IDs in its report)**
+
+1. `magnitude_type` with the wind-speed gap, +0.092 mean (Thunderstorm Wind +0.21 to +0.26).
+   - Rules: LEAK-37, LEAK-10, LEAK-38.
+   - Known: the EG-blank bullet, dataset.py l.156, settled by the 2024 LSR match. It is a reasoned keep, not a
+     `Potential leak, kept on purpose:` note, and no gain for the type itself is stated.
+   - Not an issue. Optionally add the 0.09 figure to the bullet.
+2. `duration_hours`, +0.013 mean (+0.000 / +0.004 / +0.034).
+   - Rules: LEAK-10 and the spans Cases row.
+   - Known: the kept-on-purpose note.
+   - The gain differs from the note (all rows +0.001 to +0.015; 2023 is +0.034), so it is an issue. It is covered by
+     change 1 and issue 1.
+3. Tie size: rows sharing a begin_time, counted over train and test, +0.006 (noise ±0.004).
+   - Rule: LEAK-9 (a method reading other test rows; transductive).
+   - New, no note. At noise, so no action.
+4. Lat/lon decimal count, +0.001.
+   - Rule: a format marker (LEAK-38 class).
+   - New, noise, no action.
+5. Population: rows enter only when the office later entered a damage figure.
+   - Rules: USE-3; LEAK-25 as amended.
+   - Known in the notes (18% blanks dropped). Change 7.
+6. Lookup in the public source file: true of any public dataset. Not ranked.
+
+The gamer found no flaw that hurts an honest model: no late labels and no training row after the cutoff.
+
+**8. Consistency with precedent**
+
+- D13 is consistent with the precedents type by type, and its reversal of the 2026-11-03 definition states its fact
+  (precedent checker 1a-1c).
+- bank_marketing `campaign` (kept with a note, worth 0.0013-0.0016 once the period is known) is consistent.
+- The one departure is the located part:
+  - zillow_prize, melbourne_housing_market and frempl's located branch blank cells they can locate.
+  - Strong Wind (the same day, the same curator) was blanked on the same fact as an EG span.
+  - medical_facility_operational_data kept a part that could not be located and sat within about two seed SDs. Here the
+    part is located, and under the stronger model it sits at 3-4 SDs. That sets it apart from medical_facility, not from
+    zillow or melbourne.
+- heart_failure `time` is the size counter-case for issue 3's amendment.
+- No drift and no third exception is due.
+
+Reflection prompt (the precedent checker's, updated with the rerun):
+
+**Consistency check (AI, 2026-11-06):** your keep of `duration_hours` for Thunderstorm Wind and High Wind (D13, a keep
+with a note) differs from Strong Wind (blanked by D13 the same day) and from zillow_prize and melbourne_housing_market
+(located cells blanked, 2026-10-21) on the EG/ES rows. On those rows App. A's span can only be the damage's,
+`magnitude_type` locates them (241,088 rows), and blanking them costs +0.023 to +0.031 RMSLE on those rows under the
+stronger model (4 seeds, 12 of 12 positive), or +0.001 to +0.020 under the note's model. What sets them apart?
+(a) Nothing: blank the EG/ES and the under-50-kt spans, and keep the note for the measured-gust and flood spans
+(recommended).
+(b) The first-report times make the EG span a LEAK-37 fact, recorded as an exception with that fact, which would also
+reopen the Strong Wind blank.
+(c) Blank all five types.
+(d) Amend the spans row to read type by type only.
 
 </details>
 
 <details><summary>Claim audit</summary>
 
-**Claim audit: noaa_storm_events_damage (claim-auditor, 2026-11-01)**
+**Claim audit: noaa_storm_events_damage (exposure re-review, full tier, 2026-11-06)**
 
-**Verdict:** ship after changes. 44 claims audited: 29 hold (3 with a caveat), 11 refuted (2 in part; claims 5 and 8 restate 3, 4 and 23), 4 untested. Three refutations are
-LEAK-10 (P4, Must) and come from columns that the notes say are first-report values but that the preparer writes after
-the event: the EG wind speeds, the tornado `duration_hours` and `hurricane_category`. Each can be fixed in the
-definition (blank or drop it). The metric is computable on every fold and its main argument holds on the data. Its
-reason says no paper exists, but one does. The task survives the fixes: LightGBM RMSLE goes from 2.504 to 2.556 (mean
-of the 3 shipped windows) against a dummy at 3.90.
+Definition: the dataset's `dataset.py` (README.md, REVIEW.md, record). NWSI 10-1605: the text extracted from the
+PDF downloaded today (md5 7bf8de30dd420eef049401d387eef2ba).
 
-How I tested: the shipped frame and splits come from the definition (`make_splits`), and the raw 2000-2025 files from
-the local copy of the source. Models are untuned LightGBM (400 trees, the builder's parameters)
-on the 13 shipped features, with `begin_time` turned into month, hour and days since 2007. All scores are RMSLE through
-`data_foundry.v2.metrics.score(spec)` on the 3 shipped windows unless a row says otherwise. To check first-report
-values I downloaded the Local Storm Reports (LSR) that NWS offices issue in real time, for all of 2024, from the Iowa
-Environmental Mesonet archive. Scripts and outputs stay in the local run folder.
+**Verdict**
 
-**Claims**
+D13 holds as a decision: the blank hits exactly Tornado, Strong Wind and Heavy Rain. Every App. A quote checks out
+against the PDF. The Strong Wind and Heavy Rain blank costs nothing. I found no sign that the kept spans carry a
+damage-only signal. Two claims about the change are refuted:
+- (a) The worth the note gives for the five kept types (+0.012 to +0.021 RMSLE) is the low end. It comes from one model
+    set-up, untuned 400-tree LightGBM averaged over bagging seeds. The deterministic fit of the same run, and a stronger
+    LightGBM, give +0.02 to +0.08.
+- (b) "The study read App. A for every type" missed Seiche (Sec. 41): its begin time is drawn by "a fatality, injury or
+    damage". 51 rows, not named in the notes.
 
-| # | claim | source | test | result | evidence | rule |
+Older claims are also refuted: stale counts left from before issue 2 (`known` 3.5-4.0% -> 4.4-4.9%; 1,072 double
+entries -> 918; and others), the metric reason still naming "the manager" after issue 5 moved the use case to a planner,
+and a `No Good Target` marker on a `Yes` record. None of these changes the task, the split or the metric. All of them
+are fixes to the text.
+
+**Tests run**
+
+- T1 container facts, splits, scorer on a constant
+- T2 raw files: counts, and the association of the duration with the label per event type, using durations from before
+   any blank
+- T3 the duration's worth on the shipped splits: 5 variants x 5 LightGBM set-ups x 3 test years.
+   Variants: shipped; old (Strong Wind and Heavy Rain durations restored, aligned
+   by the full-row key like the curator's script); blank5 (the five kept types blank too); blankFF (Flood and Flash
+   Flood blank); nodur (no column). Set-ups: small_det = 400 trees, deterministic; small_bag1/2 = 400 trees, bagging
+   seeds 1 and 2; big_det = 1500 trees, lr 0.03, 127 leaves, deterministic; big_bag1 = the same with bagging seed 1.
+- T4 double entries before and after the unassessed-hazard drop, EG/ES counts, zone shares
+- T5 missing begin_lat/lon against the label
+- Source reads: NWSI 10-1605 App. A, the begin and end times of every type; Diaz and Joseph (2019), the study's text
+extract; one more web search for a source metric.
+
+**Claims table** (claim, source, test, result, evidence, rule)
+
+| # | Claim | Source | Test | Result | Evidence | Rule |
 |---|---|---|---|---|---|---|
-| 1 | Row: one event per county, forecast zone or marine zone, 2007-2025, 54 event types, with a damage entry | task_summary.row | count the rows, EVENT_ID uniqueness and the event types | holds | 1,000,829 rows; 1,225,290 unique EVENT_IDs in the raw 2007-2025 files; 54 types | USE-3 |
-| 2 | 73% of the entries are $0 | task_summary.predicted | zero share of the shipped target | holds | 72.99%; test windows 74.2%, 74.0%, 76.3% | - |
-| 3 | Known: "the wind speed or hail size reported" | task_summary.known | match the 2024 county Thunderstorm Wind and Hail events to the real-time LSRs (same office, within 15 min, within 10 km) | **refuted for wind**, holds for hail | EG: 12,498 of 13,211 events matched; for 94.4% the first report was "TSTM WND DMG" with no speed, and only 4.4% carried the speed Storm Data shows. MG: 92.7% same speed. Hail: 96.8% matched, 97.9% same size | LEAK-10 |
-| 4 | Known: "a hurricane's category" | task_summary.known; Built bullet | how CATEGORY varies within a storm | **refuted** | It is set per zone: 23 of the 95 episodes with a category carry more than one value. Michael 2018 has values 1 to 5 over 14 Florida zones, and Ian 2022 has 1, 2 and 4 although its landfall was Cat 4 (see 25) | LEAK-10, EV-2 |
-| 5 | "The features are what the first reports hold" | task_summary.fit_reason | 3, 4 and 23 | **refuted** for three columns | EG speeds, tornado duration and hurricane category | LEAK-10 |
-| 6 | Split: a later calendar year; training events certified by the start of that year | task_summary.split; splits_comment | NWSI Sec. 3 text; windows from the definition | holds | "certified ... no later than 60 days after the end of the month" (NWSI 10-1605, Sec. 3); windows 2025/2024/2023, train ends 31 Oct of the year before | SPLIT-6, SPLIT-9 |
-| 7 | Changes: the narratives, tornado rating and path, end point, casualties, crop damage and reporter are all dropped | task_summary.changes | list the shipped columns | holds | 13 features, none of these among them | LEAK-10 |
-| 8 | "Every column is checked against" the prediction point | notes, prediction-point bullet | 3, 4 and 23 | **refuted** | three columns written after the first report | LEAK-1, LEAK-10 |
-| 9 | Scratch numbers: untuned LightGBM, trained on 2007 to Oct 2023, tested on 2024 | notes, prediction-point bullet | read the builder's scratch script | holds, with a caveat | The base (2.560) includes `SOURCE` and `year`, which the shipped frame does not have. The shipped-feature base on 2024 is 2.582 | EV-8 |
-| 10 | Target parsing ("10.00K" means $10,000; a value without a letter is dollars) | notes, Target bullet; `_dollars` | list the values without a letter | holds | 133 such values: 124 "0", 1 "0.00" and 8 Illinois/Indiana tornado amounts such as "2000000"; no unparsable value | CLEAN |
-| 11 | 18% of the 1,225,290 events are blank and dropped; NWSI Sec. 2.7 p. 11 quote | notes, rows bullet | count; grep the NWSI text | holds | 18.32%; quote on page 11 of NWSI 10-1605 | LEAK-25 |
-| 12 | "Flood and Flash Flood have no blanks" | notes, rows bullet; record | count the blanks by year | **refuted (minor)** | 26 blanks, all in 2007 (18 Flood, 8 Flash Flood); none from 2008 on | EV-7 |
-| 13 | A $0 mixes "no damage" with "no estimate made" | notes, Anomaly bullet | $0 share among tornado segments rated from damage | holds (new evidence) | 13 of 121 EF4/EF5 segments are at $0, all from an NWS storm survey (for example a 33.7-mile EF5 in Alabama, 2011); 518 of 2,989 EF2+ segments (17.3%) | LEAK-25 |
-| 14 | Office $0 share for Thunderstorm Wind: 7% to 91% (10th-90th percentile, 107 offices); 4% to 98% at screening (2018-2024) | notes; record | recompute | holds | 0.073/0.913 (107 offices); 2018-2024: 96 offices, 0.042/0.984 | - |
-| 15 | "a model can learn the practice" (`wfo` is a feature) | notes, Anomaly bullet | each office's $0 share in 2007-2021 against 2023-2025 | holds in part | Pearson 0.72 over 82 offices, but 30.5% of them moved by more than 0.2 | SPLIT-20 |
-| 16 | History: 70-72% blank in 2000-2005 (69.6% in 2003), 61% in 2006 (PDS to CSV), 7-24% from 2007; Thunderstorm Wind median $5,000 in 2007-2017, $2,000 in 2025 | notes, History bullet | blank share and DATA_SOURCE by year | holds | 0.696-0.722; 2006 0.614 (PDS 48,562 + CSV 7,838 rows); 2007-2025 0.073-0.236; medians as stated | PROV |
-| 17 | Dropped under LEAK-10: the EF quote (format doc p. 4), the swath quote (Sec. 46.1, A-68), and RMSE 2.560 to 2.542, 2.457 and 2.496 | notes, Dropped bullet | grep the documents; read the builder's scratch output | holds | format document p. 4; NWSI 10-1605 p. A-68; the numbers are in the scratch output | LEAK-10 |
-| 18 | `SOURCE`: "NWS Storm Survey" 23,703 rows, 72% with damage, no missing values, "Unknown" 1,428; 2.565 merged, 2.608 dropped | notes, SOURCE bullet | counts; scratch | holds | 23,703 rows, 0.720; 0 missing; 1,428; 16,043 of the survey rows are tornadoes | LEAK-10 |
-| 19 | EG numbers: 229,191 Thunderstorm Wind entries, AUC 0.433, median 52 kt, 62.5% against 10.8% with damage; blanking costs 2.560 to 2.589 | notes, EG bullet | counts; shipped splits | holds | 229,191; 0.625 against 0.108. On the shipped splits, blanking costs 2.504 to 2.538 (mean of 3) | - |
-| 20 | EG kept because "which values the preparer set later cannot be located" | notes, EG bullet | the LSR match (3) | **refuted** | The preparer-set values can be located: 94.4% of the matched EG speeds were not in the first report, which was a damage report with no speed. Among those events with damage, the value tracks the dollars (Spearman 0.51). 62% of them are the conventional 50 or 52 kt | LEAK-10 (late-pull clause) |
-| 21 | `DATA_SOURCE` is constant from 2007 | notes, identifiers bullet | values by year | holds | CSV only from 2007 | - |
-| 22 | `duration_hours`: none negative; the longest are 31-day entries such as Drought | notes, Built bullet | quantiles | holds | 0 negative; maximum 743.98 h, mostly Drought (19,519 rows) | - |
-| 23 | Implied by 8: the end time (through `duration_hours`) is known at the first report, while the end point was dropped as the surveyed path | notes, Dropped and Built bullets | correlation with the dropped path length; blank the tornado durations | **refuted** | Spearman(duration, TOR_LENGTH) = 0.83 on tornadoes. NWSI Sec. 47.7: the path "generally excludes sections without surface damage". Blanking the tornado durations raises tornado-row RMSLE 4.51 to 4.67 (2025), 4.60 to 4.83 (2024) and 4.15 to 4.33 (2023), against 0.27 for all dropped survey columns in the builder's scratch | LEAK-10 |
-| 24 | `county_zone` has 8,135 codes; zones are 40% of the rows; 37% of the rows lack a begin point | notes | counts | holds | 8,135; 40.46%; 37.29% (92.1% of zone rows, 0.03% of county rows) | - |
-| 25 | `hurricane_category` is "the hurricane's Saffir-Simpson category, which the National Hurricane Center issues before landfall" (marked as an inference) | notes, Built bullet | values by zone; Michael's zones; the NWSI tables | **refuted** | Set per zone (4). Michael's Coastal Bay zone is Cat 5 with $6B, which matches NOAA's April 2019 upgrade to Cat 5 at landfall, not the operational Cat 4. NWSI Table A4 pairs each category with "Types of Damage Due to Hurricane/Typhoon Winds". The $0 share is 29% at Cat 1 and 0% at Cat 4-5. Dropping the column: hurricane rows 5.29 to 5.64 (2024, 50 rows), 2.37 to 3.84 (2023, 12 rows) | LEAK-10, EV-6 ("maybe" on the timing) |
-| 26 | Duplicates: 0.6% of the rows, mostly zone entries "which the source entered as separate events with their own narratives"; never on both sides of a window | notes, duplicates bullet; info | compare every raw column (event narrative included) except EVENT_ID/EPISODE_ID | **refuted in part** | 6,388 extra copies. 1,072 of them (16.8%) are exact copies of another raw row in every published column, narrative included, in every year and type (248 Thunderstorm Wind, 228 Hail). 0% across the split once `begin_time` is counted | LEAK-19 |
-| 27 | One storm system appears as several events; windows keep an episode on one side "except at New Year" | notes, episodes bullet | episodes with rows in both train and test, per split | holds (conservative) | 0 in each of the 3 splits; no episode spans more than 61 days, so with the 2-month gap none can straddle New Year either | SPLIT-13 |
-| 28 | The 2024 file of 17 Mar 2025 and of 28 Jul 2026 agree on 99.83% of the 69,545 events in both, so 2025 is settled | notes; builder's probe 13 | the builder's comparison of the two 2024 files | holds | 121 changed (107 blank to value, 6 $0 to positive, 8 positive to another positive). Not said: 907 events (1.3%) were added or removed | LEAK-24 |
-| 29 | Licence and C00510 quotes | notes, Licence bullet | search C00510 | holds | "Cite dataset when used as a source"; "may be unverified by the NWS" | EV-4 |
-| 30 | Offices and counties recur (99.2%, 100%) | splits_comment | the builder's hidden-groups probe | holds | county_zone 99.2% (98.5-99.7%); wfo and state 100% | SPLIT-13 |
-| 31 | Metric `rmsle` is computable on every fold, with `target_transform="log1p"` and no scoring columns | `metric = Metric.from_context` | score a dummy and LightGBM through `score(spec)` on each window | holds | Dummy 3.820/4.010/3.872 and LightGBM 2.388/2.582/2.543, both equal to RMSE on log1p. 24-30% of the LightGBM predictions are negative on the log1p scale; their expm1 is above -1, which sklearn 1.7.2 accepts | MET-2, MET-3 |
-| 32 | "no competition or paper on this target was found" | metric reason; record's screening line | one more search (MET-1) | **refuted** | Diaz & Joseph 2019, Weather and Climate Extremes 25:100216 (read): tornado property damage from the Storm Events Database, 1997-2018. A classifier (accuracy 0.821, AUROC 0.872) plus the amount given damage by MSE on log damage; a random 60/20/20 split; tornado length and width among the inputs. Several metrics on a subset task, so no unique original (MET-5), but it scores on the log scale | MET-1, MET-11 |
-| 33 | On raw dollars the largest 0.1% of the entries hold "all of" the squared deviation, so RMSE would score a few hurricanes and floods | metric reason | full frame; per test window, the LightGBM's dollar error | holds | 99.96% for the top 0.1% (97.0% for the top 100 rows). Per window, the top 0.1% hold 99.1-99.98% of the model's squared dollar error, and its dollar RMSE beats predicting $0 everywhere by only 0.2%, 3.8% and 0.2% | MET-11 |
-| 34 | The damage spans nine orders of magnitude ($0 to $17 billion) | metric reason | smallest and largest positive value | holds | $10 to $17B, 9.23 orders | - |
-| 35 | "An estimate of damage is judged relative to its size", hence RMSLE | metric reason | how RMSLE splits its error | untested (a weighing call) | 41-49% of the model's squared log error falls on the true-$0 rows (74-76% of the rows), so RMSLE largely scores whether a figure above $0 was entered. "What to reserve" in the use case is a dollar sum | MET-1, MET-11 |
-| 36 | Warning `task_target_value_dominant` accepted as "zero-inflated by nature" | builder's proposed acceptance | 13 | **refuted in part** | Part of the zeros are unestimated damage (13 of 121 EF4/EF5 segments, 17.3% of EF2+) | LEAK-25 |
-| 37 | Info: 453 conflicting rows "never both sides of a window" | builder; info | the same begin time puts them on one side | holds | by construction; 0% exact copies across the split | LEAK-20 |
-| 38 | Screening: 468,514 events x 51 columns in 2018-2024, 21.4% blank, 75.8% $0, direct injuries 0 for 99.5% | record | recompute | holds | 468,514; 0.2139; 0.7582; 0.9953 | - |
-| 39 | Earlier probe: AUC 0.950 for any damage, 0.934 from event type and office alone (train 2018-2022, test 2023-2024) | record | LightGBM classifier on the shipped features | holds | 0.952 (all shipped features) and 0.933 | EV-5 |
-| 40 | NWSI Sec. 1 p. 3: "the primary purpose of Storm Data is to accurately describe events" | record | search the directive | holds | NWSI 10-1605, p. 3 | SEL-3 |
-| 41 | No other record of this database | record | search the records | holds | only this record names Storm Events or tornadoes | PROV-6 |
-| 42 | Rows exist independently of the outcome (implied by "known" and the use case) | implied | $0 share of the event types and magnitudes whose Storm Data entry requires damage | untested ("maybe", see ranked item 4) | Strong Wind 94.2% with damage, Lightning 83.9%, Thunderstorm Wind below 50 kt 97.5% (above: 54.3%). NWSI Sec. 29, 45, 46: entered only when "resulting in a fatality, injury, or damage". These are 3.5-4.0% of the test rows and give 8-10% of the model's gain over the dummy | LEAK-10, LEAK-22, LEAK-37 |
-| 43 | Training labels are those known at the refit | implied by the split | 2024 two-download comparison only | untested for older years | Sec. 3 allows recertification for 18 months. The 2012 file was rewritten on 26 Oct 2026 and no older copy was compared | SPLIT-9, LEAK-24 |
-| 44 | A StormTrack post says a printed dash became a 0 | record | - | untested | a third-party page, not read | EV-2 |
+| 1 | Duration blank for exactly Tornado, Strong Wind, Heavy Rain (62,694 rows, 7.4%; SW 18,243 + HR 20,836 = 39,079, 4.6%); kept for TSW, High Wind, Coastal/Lakeshore Flood, Storm Surge (318,813, 37.8%) | notes "Blanked", REVIEW 6, CHANGES.md | T1 per-type missing share | HOLDS | missing 1.000 for the 3 types, 0.000 for every other row; all counts exact; never negative, max 743.98 h | LEAK-10, LEAK-37 Cases row |
+| 2 | App. A quotes: SW Sec. 45, HR Sec. 21, TSW Sec. 46, HW Sec. 24, floods Sec. 4/27/44, Tornado Sec. 47 | notes, REVIEW 6 | read the PDF (the extracted text, lines 1137, 2403, 2611, 3268, 4306, 4361, 4473, 4912) | HOLDS | every quote word for word | LEAK-10 |
+| 3 | "the study read App. A for every type"; seven damage-timed types | notes CC 2026-11-06 | read the begin/end lines of all ~55 types | REFUTED (completeness, small) | Seiche (Sec. 41, line 4091): "Beginning Time - When water levels rose to initiate shoreline flooding, resulting in a fatality, injury or damage"; end "When water returned to pre-seiche levels". 51 shipped rows, 57% positive, kept as a feature with no note. Flash Flood (line 1845) and Flood (2041) are timed by "threat to life or property", not by damage: not damage-timed by the rule's reading, and their worth is not measurable (row 7) | LEAK-10, LEAK-37 Cases row |
+| 4 | Kept five: "worth +0.012 to +0.021 RMSLE on these types' test rows ... +0.001 to +0.015 on all rows, an upper bound on that part" | notes "Potential leak, kept on purpose", REVIEW 6 resolution, leak_checks.md Cases row | T3 RMSLE(blank5) - RMSLE(shipped) on kept5 rows | REFUTED (understated) | kept5 rows, per year 2023/24/25: small_det +0.040/+0.027/+0.034; big_det +0.078/+0.020/+0.063; big_bag1 +0.044/+0.021/+0.032; small_bag1/2 -0.000/+0.036, +0.024/-0.009, +0.042/+0.030. Over 15 fits: -0.009 to +0.078, median about +0.034. On all rows up to +0.047. The curator's own run had the deterministic fit at +0.027 to +0.040 (the study's summary of that run) and reported only the bagged mean of the small model. The study's +0.020 to +0.038 sits in the same range | LEAK-10 / LEAK-37 Cases row ("a note giving its worth"), EV rules |
+| 5 | The kept worth is mostly the wind/flood criterion, not the damage part ("the part the damage set cannot be located row by row") | notes | T2: within-type association of the old duration with the label, damage reports (EG) against measured winds (MG) | HOLDS (supports keeping) | High Wind MG: AUC(any damage) 0.686, Spearman 0.191; High Wind EG: 0.459, 0.013. TSW MG: Spearman with the positive amount 0.305; TSW EG: 0.159. The association is no stronger where damage set the span. Coastal Flood AUC 0.495, Lakeshore 0.521, Storm Surge 0.634 | LEAK-10, LEAK-37 |
+| 6 | Strong Wind / Heavy Rain blank "costs nothing measurable: -0.009, -0.018, -0.046" | notes, REVIEW 6 | T3 RMSLE(shipped) - RMSLE(old) on SW+HR rows | HOLDS | 15 fits: -0.109 to +0.066, 10 of 15 negative (the blank is better). The noise floor on these rows is large: in the blank5 contrast, which leaves them untouched, they move -0.066 to +0.130. T2 shows no leak signal in the old values either: Heavy Rain AUC 0.402, Spearman -0.071; Strong Wind Spearman with the amount -0.059 | LEAK-10 |
+| 7 | (implied) no other type's duration carries a measurable damage-timed worth | D13 scope | T3 blankFF on Flood + Flash Flood rows | HOLDS | ff rows -0.125 to +0.098 over 15 fits, no consistent sign. T2: Flood Spearman with the amount 0.451, Flash Flood 0.342 (a strong signal; the begin/end are threat-defined) | LEAK-10 |
+| 8 | Blank by type, so "a blank is no survey marker" | notes | T1 | HOLDS | missing exactly when event_type is one of the 3 types; event_type is a feature already | LEAK-10, LEAK-38 |
+| 9 | Tornado: duration tracks TOR_LENGTH (Spearman 0.83); 68% from "NWS Storm Survey" | notes | T2 | HOLDS | 0.831; 67.9% | LEAK-10 |
+| 10 | Heavy Rain is "timed by the damage" | notes, REVIEW 6 | T2 | HOLDS on the text, WEAK in the data | 95.2% of Heavy Rain entries are $0, so whatever "damage" timed the span is not the property figure; the old duration has no leak signal (row 6). The blank is still costless | LEAK-10, LEAK-37 |
+| 11 | Exposure: none; the duration is not an exposure; no weight, no offset | notes "Exposure", CHANGES.md | T1: sample_weight(c), scoring columns | HOLDS | sample_weight None, scoring_columns [], no denominator among the features. The target is one event's damage, not a count over a time at risk | MET-14, MET-15, LEAK-41 |
+| 12 | County population: Spearman -0.14 to +0.05 with log damage | notes "Exposure" | read the study's log | HOLDS (study evidence, not re-run) | -0.139, -0.059, -0.052, +0.003, +0.049. Side note: the same log shows "+ log county population" at -0.014 and -0.020 RMSLE in 2023 and 2024 (+0.016 in 2025): a small feature gain, an outside join, not adopted | MET-14 |
+| 13 | Metric: no source metric; Diaz and Joseph (2019) use accuracy/AUROC and MSE on log damage, tornadoes only, random split | metric reason | read the study's text of the paper; web search | HOLDS | "randomly partitioned ... training set (60%), cross-validation set (20%), and test set (20%)"; MSE 0.0918, accuracy 0.821, AUROC 0.872. The search found no competition and no benchmark metric | MET-1, MET-5, MET-11 |
+| 14 | Metric reason: "The manager ranks counties by orders of magnitude" | dataset.py l.182, README Metric block | compare with the use case | REFUTED (stale actor) | issue 5 (B, 2026-11-03) made the actor a state hazard-mitigation planner (use_case l.71-76); the reason still cites the manager. The REVIEW.md header also still says "for an emergency manager ranking a storm's counties". RMSLE is still justified by the nine orders of magnitude | MET-1 |
+| 15 | Metric computable per fold; constant RMSLE 4.05 / 4.28 / 4.20 | REVIEW issue 2 resolution | T1 scorer on a train-mean constant | HOLDS | scorer 4.0535 / 4.2779 / 4.2027, equal to a direct log RMSE (predictions on the log1p scale); unit per row; 44,056-45,870 test rows per fold | MET-2 |
+| 16 | Raw dollars: the top 0.1% of entries hold 99.96% of the squared deviation; range $0 to $17B | metric reason | T1 | HOLDS (99.94% on the shipped rows) | max $17.0B | MET-11 |
+| 17 | 68% of the entries are $0 | predicted, accepted warning | T1 | HOLDS | 68.13% | - |
+| 18 | Split: test = calendar year 2023/2024/2025, train = every earlier event up to the end of September | split, splits_comment | T1 | HOLDS | train ends 2024-09-30, 2023-09-30, 2022-09-30; test 1 Jan to 31 Dec | SPLIT-10 |
+| 19 | `known`: "some types are entered only with damage (3.5-4.0% of test rows)"; notes "3.5-4.0% of the test rows, 95-96% of them with damage" | task_summary.known, notes | T2: Strong Wind + Lightning + TSW with MAGNITUDE < 50 kt per test year | REFUTED (stale) | 4.56% / 4.41% / 4.94% (2023/24/25), 95.4-96.5% with damage. The old figure fits the denominator from before issue 2's drop | USE-3 accuracy, EV |
+| 20 | `changes` and notes: "1,072 double entries" | changes, notes LEAK-19 bullet | T4 | REFUTED (stale) | 1,072 before the unassessed drop, 918 in the shipped definition. The type breakdown (248 TSW, 228 Hail) holds | LEAK-19 |
+| 21 | Notes: zone events 40% of rows, 37% lack lat/lon, 8,135 county_zone codes; "no episode spans two months (0 of 167,629)"; EG 254,988 / ES 1,162 | notes | T1, T2, T4 | REFUTED (stale counts; the substance holds) | zone rows 30.1%, lat/lon missing 30.1%, 7,697 codes; 0 of 140,270 episodes span two begin months (1 has a different end month; no window effect with a 3-month gap); EG 252,451, ES 1,151 in the shipped rows | EV |
+| 22 | Blank share 18% of 1,225,290; dropped hazards 156,767 (15.7%), 99.1% $0, 0.5% of the dollars | notes | T2 | HOLDS | 18.32%; 156,767 (15.66%), 99.08%, 0.52% | USE-1 |
+| 23 | EF4/EF5 13 of 121 at $0; 17.3% of EF2+ | notes, accepted warning | T2 | HOLDS | 13/121; 517/2,990 = 17.3% | LEAK-25 |
+| 24 | (implied) no row is a copy across the split | probes/leak.txt | read the probe | HOLDS | 0.0% of test rows have an exact copy in train once begin_time is included (14.8% without it) | LEAK-19, SPLIT |
+| 25 | (implied) begin_lat/lon missingness is not an outcome marker | - | T5 | HOLDS | missing on 0.03% of the county rows and 100% of the zone rows: it follows cz_type, not the label | LEAK-38 |
+| 26 | Record: suggestion 'Yes' with decision_markers [No Good Target / Scientific Discovery] | record front matter | read against records.md ("a clean dataset has none") and REVIEW 5 (B, ship) | REFUTED (inconsistent bookkeeping) | the marker belongs to option C (retire), which was not taken | records.md |
+| 27 | Unassessed-hazard filter: "the hazards no one sends a damage assessor for" | task_summary.row, UNASSESSED comment | check against the current use case | AT RISK (wording) | the filter was justified by the manager's triage (issue 2, USE-1). Issue 5 replaced the actor with a planner. The rows (99.1% $0, 0.5% of the dollars) still make sense to drop for a property-damage planner, but the stated reason names a decision the use case no longer has | USE-1 |
 
-**Refuted and untested, ranked (validity first, Must first)**
+**Untested (and why)**
 
-1. **EG wind speeds (P4, LEAK-10 Must; claims 3, 5, 20).** The note keeps them because the late values "cannot be
-   located". The LSR match locates them: 94.4% of the 2024 EG speeds were not in the first report, which was a damage
-   report with no speed. The preparer then wrote a speed from the damage (NWSI Sec. 46.3), mostly the conventional
-   50 or 52 kt (62%), and among events with damage the value tracks the dollars (Spearman 0.51). The check works:
-   measured gusts carry over 92.7% of the time and hail sizes 97.9%. LEAK-10's late-pull clause says to blank cells
-   that can be located. *Changes:* an input that is not known at the prediction point. *Mildest remedy:* blank
-   `magnitude` where `magnitude_type == "EG"` and keep `magnitude_type`, since the report type (damage against
-   measured gust) is in the first report (positive share 0.64 against 0.20). Cost on the shipped splits: 2.504 to
-   2.538. This settles the builder's draft issue 2 with a measurement; the curator still decides.
-2. **Tornado `duration_hours` (P4, LEAK-10 Must; claim 23).** The definition drops the tornado end point and path as
-   survey products but keeps the end time inside `duration_hours`. That duration follows the surveyed path (Spearman
-   0.83 with the dropped `TOR_LENGTH`; Sec. 47.7). Blanking it costs 0.16-0.23 RMSLE on tornado rows, about two thirds
-   of what all the dropped survey columns gave. *Mildest remedy:* blank `duration_hours` for Tornado rows (LEAK-7), or
-   keep it with a "Potential leak, kept on purpose" note that gives these numbers.
-3. **`hurricane_category` (P4, LEAK-10 Must; claims 4, 25).** It is not the storm's NHC category. It is set per
-   zone, it varies within a storm, it is linked to damage (no $0 at Cat 4-5), and Michael's Cat 5 zone matches the
-   reanalysis of April 2019 (the timing is circumstantial: "maybe" written after certification, EV-6). It covers 483
-   rows (0.05%), and 0 rows in the 2025 window. *Mildest remedy:* drop the column, or keep it with a corrected
-   description and a potential-leak note. With 2, the score goes from 2.538 to 2.556.
-4. **Outcome-defined rows (P4, LEAK-10 against LEAK-37; claim 42, untested).** Strong Wind, Lightning and sub-severe
-   Thunderstorm Wind exist in Storm Data only when they did damage or hurt someone, and are 94-98% positive. In 2024
-   the offices also issued 24,673 real-time non-thunderstorm gust reports, most of which never become Storm Data rows.
-   This is known at the prediction point only if the first report says damage was seen. The builder's prediction
-   point implicitly accepts that (its EG argument), but `task_summary.known` does not say it. *Mildest remedy:* write
-   into `known` and the prediction-point bullet that the first report says whether damage was seen (a damage report
-   against a measured gust), with the 3.5-4.0% share. The curator decides whether that is the moment.
-5. **The warning's "zero-inflated by nature" (P4/P5, LEAK-25 Must; claim 36).** Zeros on EF4/EF5 tornadoes prove
-   that some $0 entries are unestimated damage. *Changes:* the acceptance reason, and it adds evidence to the
-   builder's draft issue 1 (exception or amendment of LEAK-25). *Mildest remedy:* accept the warning with "part of the
-   zeros are unestimated damage (13 of 121 EF4/EF5 segments, 17.3% of EF2+ at $0); LEAK-25 question in REVIEW".
-6. **The metric reason (P6, MET-1/MET-11 Must; claim 32).** "No paper found" is wrong: Diaz & Joseph 2019 exists.
-   It does not overturn `rmsle`: it reports several metrics on a tornado-only, randomly split task (MET-5), and it
-   scores on the log scale, which supports the context call. *Mildest remedy:* name the paper in the reason. Claim 35
-   (RMSLE against the use case's "what to reserve") stays a weighing call for the curator: about 45% of RMSLE is
-   spent on whether a $0 was entered.
-7. **Exact copies (P7, LEAK-19 Should; claim 26).** 1,072 rows are identical to another row in every published
-   column, narrative included: double entries, not separate events. They never cross the split, but they weigh some
-   rows twice. *Mildest remedy:* drop them (LEAK-19), or correct the note.
-8. **Minor wording (P7/EV).** "Flood and Flash Flood have no blanks": 26 blanks, all in 2007 (claim 12). The scratch
-   base includes `SOURCE` and `year`, so give the shipped-feature base of 2.582 (claim 9, EV-8). For "a model can
-   learn the practice", add that 30% of offices shifted by more than 0.2 (claim 15). Claim 28 leaves out the 1.3% of
-   events added or removed between the two 2024 files.
-9. **Untested:** whether training labels moved for older years (claim 43; 2012 rewritten in Oct 2026, no older copy
-   compared); the StormTrack post (claim 44).
+- LSR match "94.4% of 12,498 EG events had no speed in the first report": needs the 2024 Local Storm Reports, not in
+  the warehouse folder.
+- "0 of 64,921 damage values differ between the 2025 files of January and August 2026": the older file is not in the
+  raw folder.
+- Office $0-share spread and drift (r 0.958 / 0.575, 30.5% of 82 offices): not re-run; not touched by today's change.
+- RMSE figures of older definitions (2.626, 2.596, 4.537/4.796 tornado rows): they were measured on definitions before
+  issue 2, so they cannot be reproduced on the shipped one. They are dated in the text.
 
-Sources read: NWSI 10-1605, the bulk CSV format document, C00510, Diaz & Joseph 2019
-(<https://arxiv.org/abs/1807.03456>), NOAA's April 2019 Michael upgrade (news reports, e.g.
-<https://www.wuga.org/local-news/2019-04-24/hurricane-michael-upgraded-to-a-category-5-at-time-of-u-s-landfall>),
-and IEM's LSR archive (<https://mesonet.agron.iastate.edu/cgi-bin/request/gis/lsr.py>, 2024).
+**Refuted, ranked (validity first, Must first)**
+
+1. Row 4, the worth in the "Potential leak, kept on purpose" note (LEAK-10 / LEAK-37 Cases row, a Must-level leak note
+   that has to give its worth). The note reports the most favourable estimate as the worth and as "an upper bound".
+   Measured worth is +0.01 to +0.08 RMSLE on the kept types' rows, median about +0.03, depending on the fit.
+   What it changes: the number in the notes, REVIEW 6 and the leak_checks.md Cases row. The decision does not change:
+   even +0.08 is about 6% of the ~1.3 gain over a constant, and row 5 shows the worth is not concentrated where damage
+   set the span.
+   Mildest remedy: write "+0.01 to +0.08 RMSLE on these types' test rows depending on the model (median about +0.03;
+   untuned bagged LightGBM +0.012 to +0.021)" and drop "an upper bound", or say "an upper bound for this model".
+2. Row 14, the metric reason cites "the manager" (MET-1, Must: the metric scores the use case's decision). The metric
+   stays.
+   Mildest remedy: "A planner compares events by orders of magnitude, so RMSLE ...". Also refresh the REVIEW.md header
+   sentence.
+3. Row 3, Seiche left out of D13's type reading (LEAK-10 / LEAK-37 Cases row). 51 rows: the begin is drawn by the
+   damage,
+   the end by an outcome-free level.
+   Mildest remedy: add Seiche to the kept-with-note list (or blank its 51 durations; either way it costs nothing
+   measurable).
+4. Row 19, `known` and the notes state 3.5-4.0% for the damage-only types; the shipped value is 4.4-4.9%, with 95-96%
+   of those rows damaged. This is a task_summary claim a reader acts on.
+   Mildest remedy: update both numbers.
+5. Rows 20 and 21, stale counts from before issue 2: 1,072 -> 918 double entries (in `changes` too); 40% / 37% -> 30.1%;
+   8,135 -> 7,697 codes; 167,629 -> 140,270 episodes; EG 254,988 -> 252,451.
+   Mildest remedy: recompute the counts on the shipped rows, or date them "before the issue 2 drop".
+6. Row 26, the record's `No Good Target / Scientific Discovery` marker on a `Yes`.
+   Mildest remedy: remove the marker (the curator's call; issue 5 resolved B).
+7. Row 27, the reason for the unassessed-hazard filter names the old actor (USE-1).
+   Mildest remedy: re-ground it on the planner ("property damage is almost never entered for these hazards: 99.1% $0,
+   0.5% of the dollars").
+
+**Sources**
+
+NWSI 10-1605 (https://www.weather.gov/media/directives/010_pdfs/pd01016005curr.pdf, July 26, 2021 edition); Diaz and
+Joseph 2019 (https://doi.org/10.1016/j.wace.2019.100216, the study's text extract); web search: no published metric for
+this task.
 
 </details>
 
 <details><summary>Column audit</summary>
 
-**Column audit (column-auditor, 2026-11-01): noaa_storm_events_damage**
+**Column audit (2026-11-06, exposure re-review, full tier): noaa_storm_events_damage**
 
-**Verdict: ship after changes.** Most of the cleaning is sound, and the builder's drops (narratives, EF rating, path, end point, casualties, crop damage, `SOURCE`) are right. The column-by-column pass finds three columns that carry survey or post-event content the definition says it removed:
-1. `duration_hours` on tornado rows is the length of the surveyed path.
-2. `hurricane_category` is a per-zone value, and at least one value was written after the event.
-3. The estimated (EG) wind speeds get new evidence that favours blanking them.
+VERDICT: ship after a note change. D13 is applied as decided and the column table is clean, except one gap
+under the new LEAK-10 / LEAK-37 Cases row on spans the outcome sets. NWSI 10-1605 App. A also times Flash Flood
+(74,914 rows, 8.9%, the third-largest type) partly by damage. Dust Storm, Seiche and Volcanic Ashfall are timed the
+same way. None of these four is named in the `Potential leak, kept on purpose:` note. On Flash Flood test rows the
+column is worth -0.011 / +0.053 / +0.071 RMSLE (2025/2024/2023), which is more than on the five types the note names.
+No other column has a span or value that the damage sets beyond what is already settled. There is no training weight,
+so probe 22 / LEAK-41 do not apply.
 
-On the quality side, `magnitude` mixes two units in one column.
+Prediction point checked against: the first curation_comments bullet ("a storm has passed, the event has ended and is
+logged from the first reports (type, place, begin and end time, a measured wind speed or the hail size, whether damage
+was seen), before any damage survey, claim or damage estimate").
 
-Prediction point checked against: "a storm has passed and its events are logged from the first reports (type, place, begin and end time, the reported wind speed or hail size), before any damage survey, claim or damage estimate" (first `curation_comments` bullet).
-
-Evidence comes from the definition's own frame (1,000,829 rows, loaded through `dataset_io.from_definition`), with the raw columns joined back by row index. Model numbers come from untuned LightGBM, the builder's setup without `SOURCE`: 400 trees, trained on 2007 to October 2023, tested on 2024, RMSE on log1p, one window. On the shipped features the RMSE is 2.6007 overall.
-
-How much these numbers move by chance: a lossless re-encoding (run F) moved the overall RMSE by 0.012, tornado rows (1,774) by 0.05 and hurricane rows (50) by 0.20.
-
-Scripts and outputs stay in the local run folder.
+How the evidence was produced:
+- The frame was rebuilt through dataset_io.from_definition(raw=True): 843,144 rows, 13 features. The raw SOURCE,
+  EVENT_ID and other raw columns were joined back by lineage.
+- App. A's begin and end times for every type were read from the study's text extract
+  of NWSI 10-1605 (26 July 2021).
+- Model numbers: untuned LightGBM with 400 trees, subsample 0.8 and colsample 0.9, 4 seeds. Trained on the shipped
+  windows (begin_time < 1 Oct of the year before) and tested on the calendar year. The test sets reproduce the shipped
+  ones exactly (45,870 / 44,255 / 44,056 rows). begin_time enters as year fraction, month and hour. The score is RMSE on
+  the log1p target, which is RMSLE. My overall RMSE is 2.74 / 2.98 / 2.96, against the definition's 2.67 / 2.93 / 2.94,
+  because of the different hyperparameters. Read the deltas, not the levels.
+- dtype probe (--no-fetch): it flags 1 column of 12, `event_type` as ordinal_like. That is a false positive: the event
+  types are nominal (NWSI Table 1).
 
 **Column table**
 
-| Column | Meaning (codebook) | Known at prediction? | Dtype and cleaning | Verdict | Rule |
-|---|---|---|---|---|---|
-| `log1p_property_damage_usd` (target) | `DAMAGE_PROPERTY`, "the estimated amount of damage to property" (format doc p. 4), parsed from "10.00K" | the outcome | float. Parse checked: K 991,979, M 8,654, B 63, and 133 values without a letter, read as dollars ("0", "2000000"); no value fails to parse. Blanks dropped. | fine as parsed. $0 mixes "no damage" with "not estimated" (builder's issue 1; not repeated here) | CLEAN-15; LEAK-25 elsewhere |
-| `event_type` | one of the 55 permitted Storm Data events (NWSI Table 1) | yes, as the report's type. Two caveats: (1) some types exist only when there was damage or a casualty: Strong Wind (94.2% of rows with damage), Lightning (83.9%), Dust Devil, and Thunderstorm Wind under 50 kt (96-98%); (2) tornado against thunderstorm wind is often settled by the survey (Sec. 47.6) | category, 54 levels | fine. Selection by impact is part of what a first report says (a report of damage); note only | USE-3 |
-| `state` | state name, or marine area ("GULF OF MEXICO", "LAKE MICHIGAN") | yes | category, 69 levels, no variant spellings | fine | |
-| `cz_type` | C county, Z zone. The doc lists M for marine, but the files code marine zones as Z | yes | category: C 595,895, Z 404,934 | fine | |
-| `county_zone` | state FIPS + type + county or zone number | yes | category, 8,135 levels. 294 codes carry more than one name after case-folding (renamed or renumbered zones; 3,377 rows, 0.34%, are under a non-majority name, e.g. `01Z066` DALE 26 rows against BALDWIN COASTAL 1). 303 codes (1,567 rows) occur first in 2023-2025 | fine. A meaningful identifier processed into a place code; the renumbering is minor | CLEAN-3, CLEAN-14 |
-| `wfo` | the forecast office whose area the event is in | yes | category, 123 offices, the same set in every period | fine (also carries office practice on $0) | |
-| `magnitude` | knots for wind events, inches for hail (doc p. 4) | measured gusts (MG, MS) and hail sizes: yes. Estimated speeds (EG, ES): set by the preparer "based on observed structural or tree damage" (Sec. 46.3), with Table A7, "Estimating Wind Speed from Damage" | float64. **Two units in one column** (knots and inches). 22 Thunderstorm Wind entries of 1-10 kt and 2 Strong Wind entries of 0 kt are impossible for a wind entered because it did damage | EG part: leak, curator's call, lean blank (problem 3). Units: cleaning problem (problem 5). Impossible values: cleaning problem (problem 6) | LEAK-10, LEAK-2; CLEAN-21; CLEAN-11 |
-| `magnitude_type` | EG, ES, MG, MS (doc p. 4); blank for hail and non-wind events | yes: whether a wind report is a measured gust or a damage-based estimate is in the first report | category | fine (the builder's reasoning holds) | LEAK-10 |
-| `flood_cause` | "reported or estimated cause of the flood" | yes | category, 7 values; filled for 100% of Flood and Flash Flood, 83.5% of Debris Flow | fine | |
-| `hurricane_category` | `CATEGORY`, which the doc calls unknown. In the data it is filled for Hurricane (Typhoon) rows only, values 1-5, and **varies by zone within one storm** | **no, at least in part**: it is a per-zone value, and Michael's Cat 5 (2018) is the NHC upgrade of April 2019 | float64, ordinal kept numeric (dtype fine) | leak, weak in effect, strong in mechanism (problem 2) | LEAK-10, LEAK-6 |
-| `begin_lat`, `begin_lon` | "begin point of the event or damage path" | approximately, yes. For surveyed tornadoes it is the start of the surveyed path, but the place is known from the first reports | float. Ranges are valid (American Samoa lat < 0, Guam lon > 0; no CONUS row off the map; no 0/0). Missing for 91.7% of zone rows, driven by event type and not by damage (land zone types never have a point, marine types always do) | fine | CLEAN-10, CLEAN-11 |
-| `begin_time` | built from `BEGIN_YEARMONTH`, `BEGIN_DAY`, `BEGIN_TIME`; local standard time | yes | datetime. Local clocks from HST-10 to AST-4, with 327 rows tagged with a daylight-time zone; the hour is local, as documented | fine | CLEAN-12 |
-| `duration_hours` | end minus begin. NWSI: Thunderstorm Wind "when damage first occurred ... when damage ended"; Tornado "when the sub-cloud vortex first contacted the ground ... lost contact"; Flood "when flood waters receded" | Most types: yes. **Tornado: no**; it is the surveyed path (68% of tornado rows have `SOURCE` "NWS Storm Survey", 80% in 2024-2025). Flood and Wildfire: the end comes days to weeks later (a question) | float, 0 to 744 h, none negative | Tornado rows: leak (problem 1). Flood and Wildfire: question (problem 4) | LEAK-10, LEAK-2, LEAK-7; USE-3 |
+**log1p_property_damage_usd (target)**
 
-**Problems, ranked (P4 first, then P7)**
+- Meaning (codebook): DAMAGE_PROPERTY, "estimated amount of damage to property", parsed from "10.00K", shipped as log1p
+- Known at the prediction point: the outcome
+- dtype and cleaning: float. Blanks dropped (CLEAN-15), $0 kept. The name states the transform. The metric is rmsle with
+  target_transform log1p, not a deviance, so CLEAN-16 as amended holds.
+- Verdict: fine. The $0 mix is settled under LEAK-25 as amended.
+- Rule: CLEAN-15, CLEAN-16
 
-**1. LEAK-10 / LEAK-2 (Must): `duration_hours` on tornado rows carries the dropped surveyed path.** Strength: moderate, about the size of the block the definition dropped. Remedy: blank `duration_hours` for Tornado rows.
-- **The sibling sweep.** The definition drops `TOR_LENGTH` and the end point as "the path from the damage survey". It keeps the end *time* of the same path. NWSI Sec. 47 defines a tornado's begin and end as ground contact of the vortex. 16,043 of the 23,620 tornado rows (68%; 80% in both 2024 and 2025) have `SOURCE` "NWS Storm Survey".
-- **How closely duration tracks the dropped columns.** Spearman with `TOR_LENGTH` is 0.831, and with the EF rating 0.461. The median duration rises with the rating: EF0 2 min, EF1 5, EF2 9, EF3 15, EF4 19.5, EF5 20. Among tornado rows with damage, duration ranks the dollars at 0.434, close to `TOR_LENGTH`'s 0.466.
-- **Measured.** With duration in the model, adding `TOR_LENGTH` moves tornado RMSE only from 4.629 to 4.618: the path is already there. Blanking duration on tornado rows raises tornado RMSE to 4.894 (+0.26, five times the noise), and overall from 2.601 to 2.622. For scale, the builder's whole block (rating, path, end point) is worth 4.429 to 4.156 on the same rows.
-- **The mildest fix that leaves no marker.** Blank by event type (every tornado row), not by `SOURCE`. Blanking only the surveyed rows would make a missing duration the survey marker that the `SOURCE` bullet already rejects. `begin_time` stays.
+**event_type**
 
-**2. LEAK-10 / LEAK-6 (Must): `hurricane_category` is a per-zone intensity, at least partly written after the event.** Strength: the effect cannot be measured (50 hurricane rows in the 2024 test; dropping the column moves their RMSE from 5.56 to 5.73, inside the noise), but the mechanism is confirmed by one case. Remedy: drop the column; the event type still separates Hurricane from Tropical Storm. The alternative is a join of NHC's operational landfall category per storm (CLEAN-19), more work for 483 rows. Either way, the `Built:` bullet's reading ("the hurricane's Saffir-Simpson category, which the National Hurricane Center issues before landfall") does not hold and should be corrected.
-- **The data contradicts that reading.** Of the 61 hurricane episodes with two or more zones, 22 have more than one category. Within those episodes, the category ranks the zone's damage: Spearman 0.504 on episode-demeaned values, 212 rows.
-- **Hurricane Michael** (episode 130185, 14 Tallahassee-office zones) runs from category 1 to 5. Coastal Bay is 5 ($6.0B). NHC's operational landfall intensity was Category 4; the Category 5 is the post-storm upgrade of April 2019 ([WSLS](https://www.wsls.com/weather/hurricane-michael-upgraded-to-a-category-5-upon-post-storm-analysis), [Air & Space Forces](https://www.airandspaceforces.com/noaa-upgrades-hurricane-michael-to-category-5-the-4th-in-us-history/); secondary sources). That is six months after the event and after the 60-day certification. NWSI's own Saffir-Simpson table (Sec. 25.3) pairs each category with "Types of Damage Due to Hurricane/Typhoon Winds", so a preparer can set a zone's category from damage, as with Table A7.
-- **Strength of the evidence.** Circumstantial but strong. Under LEAK-6, a confirmed late value goes even when small.
+- Meaning (codebook): one of the permitted Storm Data events (NWSI Table 1); 34 levels left
+- Known at the prediction point: yes, as the reported type. Two caveats already noted: a tornado's type can be settled
+  by the survey, and some
+  types are entered only with damage (LEAK-37 note; see problem 3)
+- dtype and cleaning: category, nominal. The probe's ordinal_like flag is wrong: there is no order.
+- Verdict: fine
+- Rule: LEAK-37, CLEAN-14
 
-**3. LEAK-10 clause 2 / LEAK-2 (Must, a case-by-case call for the curator): EG wind speeds.** This is the builder's issue 2, with new evidence that leans towards blanking. Remedy: blank `magnitude` where `magnitude_type` is EG (keep `magnitude_type`). Without `SOURCE` this costs 2.601 to 2.654 overall and 2.767 to 2.931 on EG rows (builder, with `SOURCE`: 2.560 to 2.589). Otherwise keep the note, but then the note should cite the survey measurement below and explain why clause 2 does not apply.
-- **For blanking: the same mechanism as the EF rating.** Table A7 is titled "Estimating Wind Speed from Damage" and refers to the EF-Scale damage indicators 27 and 28. That is the mechanism the definition cites to drop `TOR_F_SCALE`; treat like cases alike (LEAK-2).
-- **For blanking: the traceable late part carries a gain.** By the definition's own prediction point ("before any damage survey"), EG values set by a survey are late. There are 6,114 Thunderstorm Wind EG entries from "NWS Storm Survey": median 65 kt, 55% at 65 kt or more, and 60% of all EG entries at 80 kt or more. Blanking just those raises their RMSE from 3.246 to 3.448 (533 test rows, against noise of about 0.04 on them). They cannot be blanked alone, because an EG with no value would become the survey marker. Clause 2 then reads: late cells that cannot be located without a marker "go when they may carry a gain and stay with a note only when the part that can be traced shows none".
-- **For blanking: the builder's ROC AUC figure measures the wrong thing.** The figure (0.433, any damage) comes from the sub-50-kt damage entries (96-98% with damage) and the 50 kt default (90,626 entries). Among entries with damage, the EG speed ranks the dollars at Spearman 0.462 (143,238 rows). The median positive damage rises from $3,000 at 50 kt to $75,000 at 78 kt and above.
-- **For keeping (the steelman).** Measured gusts (MG) rank the dollars among damaged entries at the same Spearman, 0.462 (3,501 rows), with a similar rise ($5,000 to $61,000). So the EG gradient is no steeper than a physical measurement's. The actor reading a first report sees the damage description the estimate is made from.
-- **My lean is to blank.** The rule's wording and the EF precedent decide it. With problems 1 and 2 also applied, the overall RMSE is 2.668.
+**state**
 
-**4. USE-3 (question): "begin and end time" are not both first-report facts for long events.** Strength: weak. Remedy: keep the column. Reword the prediction point to "once the event has ended and is logged from the first reports", and add the flood and wildfire numbers to a note. The alternative, blanking the duration of these types, costs little and is not needed on this evidence. A related, unsettled reading: the AI assessment for `nfip_redacted_flood_claims` treats the adjuster's flood duration as a post-inspection field (a different source: the adjuster at a building).
-- A Flood's end is "when flood waters receded"; 20.2% of the 48,513 floods last more than 72 h (90th percentile 218 h). 48.2% of wildfires last more than 72 h (90th percentile 529 h). Damage assessments can start before such an end.
-- Measured: blanking duration for Flood and Wildfire rows moves Flood RMSE from 3.853 to 3.884 (2,472 rows) and Wildfire from 5.646 to 5.769 (292 rows, noisy).
+- Meaning (codebook): state or territory name
+- Known at the prediction point: yes
+- dtype and cleaning: category; 55 levels after the marine drop
+- Verdict: fine
+- Rule: -
 
-**5. CLEAN-21 (Should): `magnitude` holds knots for wind and inches for hail in one column.** Remedy: split into `wind_speed_kt` (wind event types) and `hail_size_in` (Hail, Marine Hail), each missing elsewhere. The split is lossless, cheap and safe: LightGBM RMSE 2.6125 against 2.6007, inside the noise. A model without interactions otherwise reads 1.75-inch hail and a 50-knot gust on one axis. `magnitude_type` stays for the wind column.
+**cz_type**
 
-**6. CLEAN-11 (Should): impossible wind values.** 22 Thunderstorm Wind entries of 1-10 kt and 2 Strong Wind entries of 0 kt (a wind entered because it did damage cannot be 0-10 kt) should become missing; the rows stay. Tiny. The 99 High Wind values above 100 kt, up to 174 kt, are unusual (mountain-top stations) and stay.
+- Meaning (codebook): C county / Z zone (marine types dropped)
+- Known at the prediction point: yes
+- dtype and cleaning: category: C 589,601 / Z 253,543
+- Verdict: fine
+- Rule: -
 
-**Claims checked**
-- **Corrected:** the `Built:` bullet's reading of `hurricane_category` (problem 2). The prediction point's "begin and end time" from first reports does not hold for tornadoes (problem 1) or long floods and wildfires (problem 4). The EG bullet's "ranks the damage below chance" is true for any damage but not for the amount that is scored (problem 3).
-- **Hold:** duration none negative, longest 744 h; zone events lack points (37% of rows); `CATEGORY` filled for Hurricane rows only (483 in the frame, 560 in the raw files); flood causes fully filled; `DATA_SOURCE` dropped; the identifier and copy drops in the "Dropped as identifiers or copies" bullet.
-- **Holds with a footnote:** `county_zone` as "one code per county, forecast zone or marine zone" (a few renumbered zones; 0.34% of rows).
+**county_zone**
+
+- Meaning (codebook): state FIPS + C/Z + county or zone number
+- Known at the prediction point: yes
+- dtype and cleaning: category, 7,697 codes. A meaningful identifier turned into a place code; renumbered zones are
+  minor (settled
+  2026-11-01).
+- Verdict: fine
+- Rule: CLEAN-3, CLEAN-14
+
+**wfo**
+
+- Meaning (codebook): the forecast office whose area holds the event
+- Known at the prediction point: yes
+- dtype and cleaning: category, 123 offices
+- Verdict: fine. It also carries the office's $0 practice, kept under LEAK-25 as amended.
+- Rule: LEAK-25 (settled)
+
+**magnitude_type**
+
+- Meaning (codebook): EG/ES estimated gust/sustained, MG/MS measured. Filled only for Thunderstorm Wind, High Wind and
+  Strong Wind
+  (all of their rows); blank elsewhere.
+- Known at the prediction point: yes: whether a wind report was a damage report or a measured gust is in the first
+  report (LSR match of 2024,
+  settled)
+- dtype and cleaning: category
+- Verdict: fine
+- Rule: LEAK-10 (settled)
+
+**flood_cause**
+
+- Meaning (codebook): "reported or estimated cause of the flood"; filled for Flash Flood, Flood and Debris Flow only
+- Known at the prediction point: yes (heavy rain, dam/levee break, ice jam, planned release)
+- dtype and cleaning: category, 7 values
+- Verdict: fine
+- Rule: -
+
+**begin_lat, begin_lon**
+
+- Meaning (codebook): "begin point of the event or damage path"
+- Known at the prediction point: yes: the place of the first report (an LSR carries lat/lon)
+- dtype and cleaning: float, ranges valid. Missing on all Z rows and on 0.04% of C rows (138 rows: Winter Storm 119,
+  Heavy Snow 8 and a
+  few others). The C-row missingness does not follow damage (0.04% at $0, 0.00% positive), so it is no outcome marker.
+- Verdict: fine
+- Rule: CLEAN-10, LEAK-10
+
+**begin_time**
+
+- Meaning (codebook): begin date and time, local standard time (the split column too)
+- Known at the prediction point: yes. For the damage-timed types, App. A sets the begin at "when damage first occurred"
+  (Thunderstorm Wind, High
+  Wind, Strong Wind and others), so the time is when the damage started, not how much it was. A check for rounding
+  as a marker shows no effect: Thunderstorm Wind begins on a :x0/:x5 minute in 52.3% of rows, with a positive share
+  of 0.568 against 0.554 on exact minutes, and Hail 0.100 against 0.095.
+- dtype and cleaning: datetime
+- Verdict: fine (a reading under the new Cases row: the start's timing does not carry the amount)
+- Rule: LEAK-10/37 Cases row
+
+**duration_hours**
+
+- Meaning (codebook): end minus begin. App. A defines begin and end per type.
+- Known at the prediction point: It depends on the type, as follows.
+  - Blanked (D13, applied and verified): Tornado, Strong Wind and Heavy Rain, 62,694 rows, NaN on 100%. No NaN
+    anywhere else, none negative, so the blank follows the type and is no marker.
+  - Kept with a note: Thunderstorm Wind, High Wind, Coastal Flood, Lakeshore Flood and Storm Surge/Tide (318,813
+    rows, counts verified). Each runs from "damage or criterion" to "damage ended or criterion".
+  - NOT NAMED, same class (problem 1):
+    * Flash Flood. Its begin is "When flood waters became an immediate threat to life or property", with four listed
+      onset examples. One of them is "The point at which any amount of water comes in contact, flowing into, or
+      causes damage to an above ground residence or public building". Its end is "no longer an immediate threat".
+    * Dust Storm: begins when visibility reached the criterion "or began to cause a major impact".
+    * Seiche: begins "When water levels rose to initiate shoreline flooding, resulting in a fatality, injury or
+      damage".
+    * Volcanic Ashfall: begins "When volcanic ash began to cause disruption to transportation, commerce, fatality,
+      injury, or damage".
+  - Outcome-free by App. A (my reading): Hail, Lightning (begin = end), winter types (accumulation; the "inferred
+    by damage reports" criteria time is not in the data), Flood (threat to life or property, not damage), the
+    tropical types (direct effects, guided by the TCP advisories), Wildfire (out of control to under control),
+    Avalanche, Debris Flow, Dust Devil, Frost/Freeze, Tsunami, Astronomical Low Tide, Dense Smoke, Sneakerwave.
+- dtype and cleaning: float, 0 to 744 h
+- Verdict: Flash Flood, Dust Storm, Seiche and Volcanic Ashfall: a leak kept under the Cases row but missing from the
+  note
+  (problem 1). Otherwise fine as decided.
+- Rule: LEAK-10, LEAK-37 Cases row (2026-11-06), LEAK-38
+
+**hail_size_in**
+
+- Meaning (codebook): maximum hail diameter in inches (MAGNITUDE for Hail; CLEAN-21 split)
+- Known at the prediction point: yes. Hail sizes kept their value in 97.9% of the LSR matches.
+- dtype and cleaning: float, 0.13 to 7.75. Missing for every non-hail row; no Hail row is missing it. No impossible
+  values.
+- Verdict: fine. Sizes under 3/4 inch mark outcome-selected rows (problem 3).
+- Rule: CLEAN-21, LEAK-37
+
+**wind_speed_kt**
+
+- Meaning (codebook): measured gust or sustained wind in knots. EG/ES estimates are blanked.
+- Known at the prediction point: yes for MG/MS
+- dtype and cleaning: float, 17 to 149 kt. 79,581 values, all MG/MS. The impossible ones went with the estimates.
+- Verdict: fine
+- Rule: LEAK-10, CLEAN-11 (settled)
+
+Dropped columns re-checked against the frame: SOURCE, CATEGORY, TOR_*, END_*, casualties, crop damage, narratives and
+EPISODE_ID are absent. EG/ES speeds are NaN on all 253,602 EG/ES rows. The drops listed under "identifiers or copies"
+are absent too.
+
+**Problems, ranked (principles.md: P4 validity first, then P7 quality)**
+
+1. LEAK-10 / LEAK-37 Cases row "a span or extent whose start or end the source defines by the outcome" (Must, P4).
+   Flash Flood, Dust Storm, Seiche and Volcanic Ashfall are spans timed by the outcome or by an outcome-free criterion,
+   kept, with no `Potential leak, kept on purpose:` note.
+   Evidence:
+   - App. A text, quoted in the table row for duration_hours.
+   - Flash Flood is 74,914 rows (8.9%), 36.1% positive. Its duration ranks the positive damage at Spearman 0.342
+     (Thunderstorm Wind 0.165, High Wind 0.233, Coastal Flood 0.436).
+   - Blanking duration on Flash Flood rows only changes RMSLE on the Flash Flood test rows by:
+       2025: -0.011 (SD 0.04-0.05), 2024: +0.053 (SD 0.01-0.04), 2023: +0.071 (SD 0.02); 3,619-5,383 rows per window.
+     On all rows the change is +0.001 / +0.012 / +0.004. In the same runs, the five kept types moved by -0.004 to
+     +0.003 because their duration was left in, a check that the runs are stable.
+   - So the Flash Flood duration is worth about as much as, or more than, the five types the note names (+0.012 to
+     +0.021).
+   - Dust Storm (1,476 rows), Seiche (51) and Volcanic Ashfall (77, all $0) are too small to measure: 69-268 test rows,
+     noise 0.03-0.10.
+   - The note and CC say the study "read App. A for every type", and the Cases row lists only the five, so both claims
+     need correcting.
+   Strength: moderate. The span starts at damage to a building in one of four listed onset criteria. The others (road
+   closed, 6 inches over a road, 3 ft ponded) are outcome-free, and the end is threat-based.
+   Mildest remedy, which is what the Cases row prescribes for a mixed span: keep the column. Add Flash Flood (Sec. 20),
+   Dust Storm (Sec. 11), Seiche (Sec. 41) and Volcanic Ashfall (Sec. 51) to the `Potential leak, kept on purpose:`
+   note, with the Flash Flood worth measured on the shipped splits by the definition's own setup. Name them in the
+   Cases row's example too. Re-word "read App. A for every type".
+   Question for the curator: on Flash Flood the worth reaches +0.07, and the damage criterion is one onset example of
+   four, not half of an "or". Keep with a note (the rule as written), or blank it (option C of issue 6 extended)?
+   I lean keep: the rule as written applies, and the end is outcome-free.
+
+2. Boundary reading for the curator (P4, question, no change proposed): Flood.
+   - App. A: "When flood waters began to threaten life or property" until "no longer any threat to life or property".
+     That is a threat, not damage, so I read it as outcome-free. A preparer can still date the threat by the first
+     damage.
+   - The duration ranks the positive damage at Spearman 0.451 on 48,454 rows, the highest of the large types, but a
+     long flood is also a large flood.
+   - Wildfire (Spearman 0.520) is timed by fire control, which is outcome-free.
+   - Both end after damage assessments can start. That was settled under the prediction point "the event has ended"
+     (audit of 2026-11-01, problem 4).
+   - If the curator reads "threat to property" as the outcome, Flood joins problem 1 as a kept-with-note type.
+
+3. LEAK-37 note completeness (Should, P7): hail under 3/4 inch is entered only with damage or an accumulation.
+   - App. A, Hail: "all reports of hail that is 3/4 of an inch or larger ... will be entered. Observed hail
+     accumulations of smaller sizes ... that cause property and/or crop damage, should be entered."
+   - In the frame: 504 Hail rows under 0.75 in, 67-89% positive, against 1.9-5.0% at 0.75-1.0 in. 0.0-1.5% of Hail
+     rows per year.
+   - `hail_size_in` < 0.75 therefore marks a row selected by the outcome, the same mechanism as Thunderstorm Wind under
+     50 kt (435 MG rows under 50 kt, 92% positive). The first report gives the hail size and whether damage was seen,
+     so it stays (LEAK-37).
+   - Remedy: add "Hail under 3/4 inch" (and Dust Devil, flagged 2026-11-01) to the first bullet's list of types entered
+     only with damage, and update the 3.5-4.0% share if it moves (it is tiny). No data change.
+
+4. dtype probe flag on event_type (ordinal_like): not a problem. It is nominal; no change.
+
+**Settled and not reopened**
+
+- D13 is applied and verified: the blanked types are 100% NaN, there is no NaN elsewhere, and the row counts in the
+  notes check out.
+- The Thunderstorm Wind kept-span carries a survey part I could locate but not remove without a marker. 49.9% of the
+  NWS Storm Survey rows have a duration above 0, against 26.6% of the others. The positive share is 0.613 with a
+  duration above 0 and 0.542 at 0. Blanking by SOURCE would make a missing duration the survey marker, which is why the
+  definition blanks by type. This is consistent with D13's note and needs no change.
+- The EG/ES blank, the hurricane category, SOURCE and the tornado duration were checked again and hold.
+- No exposure or weight column ships. MET-14 / MET-15 and LEAK-41 do not apply, and the notes' exposure paragraph is
+  consistent with the columns.
 
 </details>
 
 <details><summary>Split audit</summary>
 
-**Split audit (split-auditor, 2026-11-01): noaa_storm_events_damage**
+**Split audit (2026-11-06, exposure re-review, full tier): noaa_storm_events_damage**
 
-**Verdict: right with notes.** The regime, the windows, the expanding train side and the 2007 start are right and backed by measurements. One Should departure: the 2-month gap is set from the NWS certification deadline, but the actors in the use case read NCEI's public releases, which come about 2.5 months after the end of a month. At a refit on 1 January, October's events are not public yet. Two claims need rewording. None of this changes the regime.
+Verdict: right (with two carried-over notes, no change asked).
 
-```text
-Verdict: right with notes.
-Validity: SPLIT-1, SPLIT-3, USE-10 hold (temporal; known places: county_zone 99.2% of test rows seen, office and state 100%);
-  SPLIT-6 holds; SPLIT-9 holds (no measurable shortcut: 0 episodes cross the cut, later releases change 0-0.17% of labels);
-  SPLIT-10 departure: gap 2 months against a public label delay of about 2.5 months (fix: gap 3, or restate the refit date);
-  SPLIT-11, SPLIT-14 (train 82.4-94.0%), SPLIT-17 hold; SPLIT-13 holds (known offices and counties are the task);
-  SPLIT-20 holds (2007 break measured; drift within 2007-2025 is gradual, no break).
-For the curator: gap 2 or 3 months (a fact about the release lag plus a small call on the refit date).
-```
+Today's change (D13: duration_hours blank for Tornado, Strong Wind, Heavy Rain; kept with a note for Thunderstorm
+Wind, High Wind, Coastal Flood, Lakeshore Flood, Storm Surge/Tide) touches no split, and the split still mirrors the
+application. The 2026-11-01 audit's one problem (SPLIT-10, gap 2 against a ~2.5-month public release lag) is settled:
+gap=3 months ships and task_summary.split reads "every event published by the refit". The numbers below are
+re-measured on today's frame (843,144 rows after the 2026-11-03 drop of unassessed hazards), which the earlier audit
+(~1.0M rows) predates.
 
-**What was checked, with numbers** (frame from the definition, rebuilt from the raw files)
+Method: definition loaded with load_definition(...)().to_container(); splits taken from
+c.experiment_metadata.splits (never re-split); episode ids rebuilt from the raw files with the definition's own filters
+(_dollars, UNASSESSED / Marine, the LEAK-19 de-duplication). Date masks (train: begin_time < 1 Oct of year-1; test:
+the calendar year) reproduce the shipped train and test sizes exactly.
 
-| Check | Finding | Rule |
-|---|---|---|
-| Regime from the use case | The actor estimates the damage of new events in counties and offices it has seen before, and the events arrive over time, so the split is temporal with known entities. county_zone: 99.2% of test rows seen in train (98.5-99.7%); wfo and state: 100%. The new-entity key `(all but county_zone)` matches 0% of test rows. A grouped split (new county) would test a question nobody asks. | SPLIT-1, SPLIT-3, USE-10, SPLIT-13: hold |
-| Time column | `begin_time` is the event's start in local standard time. The data month is the begin month: only 1 of 1,225,290 raw rows has an end month that differs (NWSI Sec. 2.3.2: an event that spans months is entered once per month). So a cut on `begin_time` is a cut on the month whose certification brings the label. | holds |
-| Windows and sizes | Calendar years 2025, 2024 and 2023, newest first. Test: 55,961 / 54,755 / 57,763 rows (zero share 0.742 / 0.740 / 0.763). Train: 940,520 / 886,742 / 824,900 rows (94.0 / 88.6 / 82.4%). Train ends on 31 Oct of the year before. My own date masks reproduce the shipped index sets exactly. | SPLIT-11, SPLIT-14, SPLIT-17: hold |
-| Episodes across the cut | 0 of 167,629 episodes span two months, so none crosses a window boundary, even without a gap (0 test rows in a shared episode in each window). | holds; a claim to reword (note 1) |
-| Gap against the label delay | NWSI Sec. 3: certified "no later than 60 days after the end of the month". NCEI's own metadata (C00510): "updated monthly with up to a 120 day delay possible". Measured on archived releases: the 2025 file of 18 Aug 2025 holds Jan-May 2025, with May 83% present (79 days after its end) and June absent. The file of 16 Jan 2026 holds Jan-Oct 2025, all of October present (77 days), November absent. The file of 26 Oct 2026 holds Jan-Jul 2026, August absent (56 days). The public listing of 25 Dec 2025 and 5 Jan 2026 shows the 2025 file of 16 Dec 2025 (not archived). By the measured lag of 75-80 days, that file holds events through September. | SPLIT-10: departure (problem 1) |
-| Training labels not known at the prediction point | No shortcut: no episode crosses the cut. Labels barely move in later releases: 0 of 64,921 damage values of Jan-Oct 2025 differ between the files of 16 Jan 2026 and 19 Aug 2026, and the builder found 0.17% of 2024 values changed between Mar 2025 and Jul 2026. 417 events of Jan and Jul 2025 were added after 16 Jan 2026, all from three offices (PAH 297, FFC 119, MFL 1), 88.5% at $0. NWSI Sec. 3 allows recertification for 18 months; these numbers bound the effect. | SPLIT-9: holds |
-| Training history | Blank share 71.8 / 71.2 / 70.3 / 69.5 / 71.8 / 72.2% in 2000-2005, 61.4% in 2006, 7.3% in 2007 (measured). The 2007 start sits on that break. Inside 2007-2025 the drift is gradual. The blank share rises from 7.3% (2007) to 15-21% (2009-2021) and 22-24% (2022-2025). The median positive damage falls from $10,000 (2007-2011) to $5,000 (2018-2024) and $3,000 (2025). The EG share of Thunderstorm Wind falls from 0.925 to 0.789. 46-53 event types and 122-123 offices every year. | SPLIT-20: holds (note 3) |
-| Season-shaped test window | Full calendar years, so every window covers the spring tornadoes, summer convection, the autumn hurricanes and the winter storms. 2025 is light on tropical damage: 5 tropical rows against 222 in 2023 and 587 in 2024, and a total of $4.5B against $16.6B and $15.7B. That is one of three windows, and it is already a full year, so there is nothing to widen. | SPLIT-20: holds |
-| Copies and near copies | Exact copies across the split: 0% with the datetime, 8.3% without it. Near copies: 4.6% of test rows. `(all but begin_time)`: 17.0% of test rows share all 12 other columns with a training row (the same county, type and magnitude at another time). These are separate events, natural repeats (LEAK-18). The 0.6% duplicate rows share a begin time, so they always land on one side. | holds |
+**What was checked, with numbers**
 
-**Alternatives fitted** (untuned LightGBM, 400 trees, the shipped 13 features with `begin_time` as year fraction, month and hour; RMSE on the log1p target)
+1. Regime (SPLIT-1, SPLIT-3, SPLIT-13, USE-10): holds. A planner estimates the damage of new events in known places
+   over time, so temporal with known entities. Test rows whose county_zone is seen in train: 99.63% / 99.18% / 98.59%
+   (2025 / 2024 / 2023); wfo and state 100% in all three.
 
-| Split | 2025 | 2024 | 2023 |
-|---|---|---|---|
-| shipped: gap 2 months | 2.4030 | 2.5803 | 2.5404 |
-| gap 0 | 2.3981 | 2.5810 | 2.5409 |
-| gap 3 months (train through September) | 2.4350 | 2.5994 | 2.5607 |
-| gap 2 minus as many random Jan-Sep rows as October holds (2 seeds) | 2.3969, 2.3902 | 2.5809, 2.5840 | |
-| gap 2 / gap 3, without the time feature | 2.8082 / 2.8008 | 2.9515 / 2.9533 | |
-| reference only: random thirds of 2023-2025 held out, trained on all other rows | 2.24, 2.24, 2.22 (R^2 0.670-0.674, against 0.570-0.606 by window) | | |
+2. Windows and sizes (SPLIT-11, SPLIT-14, SPLIT-17, SPLIT-20): hold.
+   - 2025: train 793,017 (2007-01-01 .. 2024-09-30), test 45,870; train share 94.5%; test $0 share 0.687.
+   - 2024: train 749,875 (2007-01-01 .. 2023-09-30), test 44,255; 94.4%; 0.679.
+   - 2023: train 702,587 (2007-01-01 .. 2022-09-30), test 44,056; 94.1%; 0.691.
+   - Full calendar years, so each test window covers every storm season. The train side is expanding from 2007, the
+   format break the earlier audit measured (blank share 70-72% in 2000-2005, 7.3% in 2007).
 
-How to read these numbers:
+3. Gap against the label delay (SPLIT-10): holds. gap=3 months (container: time_gap 3, months). Train ends 30 Sep, which
+   matches the measured public lag (a month appears complete 75-80 days after its end; the 1 Jan public file holds
+   events through September; C00510 "up to a 120 day delay possible").
 
-* The random split overrates the models by 0.16-0.36 RMSE. That fits the use case: offices change their practice over time. An office's $0 share among Thunderstorm Wind entries in 2024 predicts its 2025 share closely (r 0.958, 76 offices), but its 2007-2016 share predicts it much less well (r 0.575). 17 of 84 offices moved by more than 30 points between 2015-17 and 2022-24. This is why the time feature alone is worth 0.37-0.41 RMSE, and why the temporal split is the right test.
-* Gap 3 costs 0.019-0.032 RMSE. Removing as many random rows changes the score by -0.013 to +0.004, and without the time feature gap 3 costs nothing (-0.007, +0.002). So the cost is an edge effect: the time feature leans on the newest training month. October itself carries no extra information. It is no argument either way: the gap follows the label delay, not the score (P4 over P6; SPLIT-21 on comparisons over a few windows).
+4. Training rows whose label or inputs are not known at the prediction point (SPLIT-9, LEAK-24):
+   - No training event ends after its window's cutoff (0 in each window) and no event begun before a test year ends
+     inside it (0), so every training duration_hours and begin_time is complete at the refit.
+   - Revised damage estimates: the training labels are those of the 2026 files, not of the files the actor would hold
+     at each refit. Measured bound (earlier audit and the builder): 0 of 64,921 Jan-Oct 2025 values differ between the
+     files of 16 Jan and 19 Aug 2026; 0.17% of 2024 values (14 changed, 107 blanks filled, 1.3% events added or removed)
+     between Mar 2025 and Jul 2026. A diffuse rest, no shortcut. Still untested for older years (REVIEW item 43: the
+     2012 file was rewritten on 26 Oct 2026, no earlier copy compared); since those years are far from every cutoff,
+     a revision there is not a label the actor lacks at the refit, only a different archive version. No change.
 
-**Problems, ranked**
+5. Hidden groups, one storm's many county rows (SPLIT-13, LEAK-18): hold. 140,270 episodes in the shipped rows; 94.6% of
+   the rows sit in episodes of 2 or more (median 3 rows, 90th pct 15, 99th 46, max 412). 0 episodes span two begin
+   months (largest span 30 days 8 h, inside one month), 0 span two offices, and 0 episodes have rows on both sides of
+   any of the three windows. Within a test year an episode's rows are correlated (the effective test size is nearer
+   the episode count than the row count); this widens the noise of a score, it biases no method.
 
-1. **SPLIT-10 (Should; applies SPLIT-9): the gap is shorter than the actor's label delay by one month.**
-   * The problem: `splits_comment` sets the gap from the 60-day certification deadline: "so at a refit on 1 January the events of November and December are not yet in". But the actors named in the use case (a state emergency manager, an insurer's catastrophe desk) get Storm Data from NCEI's monthly releases. On 1 January 2026 the public 2025 file was the one of 16 December 2025. By the lag measured on three releases (75-80 days after the end of a month; a month 47-56 days old is absent), that file held events through September. October 2025 first appears complete in the file of 16 January 2026.
-   * The effect: each training side holds one month the actor would not have: 1,401 / 1,743 / 1,705 October rows (0.15-0.21% of train). There is no shortcut, so SPLIT-9 holds and this is the diffuse rest under SPLIT-10 (principles.md, Tensions: unmatured training labels).
-   * The same claim recurs in `task_summary.split`: "with every event certified by the start of that year". Certification is not always on time. May 2025 was 83% present 79 days after its end, and 417 Jan and Jul 2025 events came after 16 Jan 2026.
-   * The precedent it follows: mortgage and sberbank lag official series to their release (register, 2026-10-21), which is the same logic applied to labels.
-   * The mildest remedy, two equivalent ways out for the curator:
-     * (a) `gap=3, gap_unit="months"`: train through September. The splits_comment cites C00510 ("up to a 120 day delay possible") and the measured release lag.
-     * (b) Keep `gap=2` and restate the refit as made at the mid-January release, which holds all of October (16 Jan 2026 file: 1,703 of 1,703 October 2025 events). The first two weeks of each test year are then predicted by a model refit after them.
+6. The type-specific blank of duration_hours on both sides of every window (today's change): reads the same.
+   - Tornado, Strong Wind, Heavy Rain: 100% blank on train and on test in all three windows (train 22,053 / 17,491 /
+     20,130 rows for the 2025 window; test 1,296 / 560 / 593; 2024 test 1,773 / 813 / 885; 2023 test 1,171 / 722 /
+     762).
+   - The five kept types and every other type: 0% blank on train and on test in all three windows. So the blank is a
+     pure function of event_type, identical in meaning on both sides; overall blank share 7.5-7.6% train, 5.3-7.8% test,
+     the difference only the type mix of the year.
+   - The kept spans keep their meaning over time: Thunderstorm Wind is 69-78% zero-length with a 90th percentile of
+     0.07-0.10 h in every year 2007-2025; the other four kept types have a median of 1.1-3.5 h and a 90th percentile
+     of 10-21 h, with no break at any cutoff. The column's worth on the kept types (+0.012 to +0.021 RMSLE, REVIEW
+     issue 6) was measured on these shipped splits, so the noted upper bound holds for the windows as shipped.
 
-   Either way, reword `task_summary.split` to "every event published by the refit". The score difference (+0.02-0.03 for gap 3) is an artifact and should not decide.
+7. Training weight / time on risk (SPLIT-9, LEAK-41): not applicable. No ScoringColumn(role="weight"), no exposure and
+   no offset ship (MET-14, MET-15 bullet), so no training side admits rows by a cut time on risk.
 
-**Notes (no change to the split; wording or documentation)**
+Alternative split: not fitted today. Nothing in today's change gives a reason to doubt the regime; the earlier audit's
+random-split reference (overrates by 0.16-0.36 RMSE) and gap comparison stand, and the gap question is settled.
 
-1. Curation note "they share a date, so the yearly windows keep an episode on one side except at New Year": the exception does not occur. 0 of 167,629 episodes span two months, so none crosses New Year. Suggested wording: "no episode spans two months (0 of 167,629), so none crosses a window boundary".
-2. The Anomaly note says a model can learn office practice from `wfo`. It should add that the practice drifts: r 0.958 from 2024 to 2025 against 0.575 from 2007-2016 to 2025, and 17 of 84 offices moved by more than 30 points. This is what the temporal split tests, and it is why the newest training months matter. One line in the History or Anomaly bullet.
-3. History bullet: "7-24% from 2007 on" is a trend, not a range (7.3% in 2007, 22-24% in 2022-2025). Since blank rows are dropped, the shipped rows change composition over time. Worth stating with the existing note on the falling positive median.
-4. SPLIT-12: the yearly refit is our choice, since the source names no horizon and NCEI releases monthly. It is defensible for the full season in each window. The cost: late-year test events are predicted by a model 14 months stale (15 with gap 3), which an actor refitting monthly would not face. The cost is the same for every method, so no change. The splits_comment could say the cadence is ours.
-5. "2025 ... is settled (leak probe 13)": holds and is strengthened (0 of 64,921 Jan-Oct 2025 values changed between Jan and Aug 2026). Nov-Dec 2025 cannot be compared, since they are absent from the January file. The 18-month recertification window (NWSI Sec. 3) stays open until mid-2027 for December 2025.
+Problems, ranked by principles.md: none new.
 
-**Claims checked**
+**Notes carried over (no change to the split)**
 
-| Claim | Status |
-|---|---|
-| splits_comment: certification within 60 days (NWSI Sec. 3) | the quote holds (NWSI 10-1605, Sec. 3) |
-| splits_comment: "at a refit on 1 January the events of November and December are not yet in" | holds for certification, understates the public delay (problem 1) |
-| splits_comment: offices and counties recur (SPLIT-13) | holds (99.2% / 100% / 100%) |
-| splits_comment: full calendar years for seasonality | holds |
-| task_summary.split: "every event certified by the start of that year" | partly refuted (problem 1) |
-| Note: an episode stays on one side "except at New Year" | holds, overcautious (note 1) |
-| Note: duplicate rows never on both sides | holds (same begin time) |
-| Note: History, 70-72% blank 2000-2005, 61% 2006, 7-24% from 2007 | holds (measured: 69.5-72.2%, 61.4%, 7.3-23.6%) |
-| Note: 2025 settled | holds (note 5) |
-| Builder: train 825k-941k, test 55k-58k | holds (824,900-940,520; 54,755-57,763) |
-
-**Not checked**
-
-* Whether the features the actor sees at the prediction point (preliminary storm reports) match the certified Storm Data values the test rows carry. For example, 76 event types changed in 2024 between releases. That is the column auditor's and the domain practitioner's question.
-* Tuned models under the alternatives.
-
-Evidence files stay in the local run folder: the windows, history and episodes; the archived releases against the final file (the 2025 files of 18 Aug 2025 and 16 Jan 2026, and the 2026 file of 26 Oct 2026); the episode spans and the 2000-2007 blank shares; the fits; the office practice; the scripts.
+- (a) SPLIT-9 / LEAK-24, low: training labels come from the 2026 archive, not the files of each refit; measured bound
+    0-0.17% of values per year for 2024-2025, untested before (REVIEW item 43). Mildest remedy if ever wanted: none in
+    the split; a dated note that labels are the archive's as of the download already covers it (download_description).
+- (b) Episodes cluster the test rows (94.6% of rows in multi-event storms); worth a line for anyone reading score
+    differences between methods on one window (SPLIT-21), not a split change.
 
 </details>
 
 <details><summary>Domain practitioner</summary>
 
-**Domain practitioner: noaa_storm_events_damage** (2026-11-01). I take the role of a state emergency-management officer ranking a storm's counties for damage-assessment teams; the catastrophe-desk analyst gets a second voice. The numbers come from my scratch runs: one window (train 2007 to October 2023, test 2024), untuned LightGBM with 400 trees, and the features as shipped.
+**Domain practitioner: noaa_storm_events_damage, exposure re-review of 2026-11-06 (full tier)**
+
+Actor played: the state hazard-mitigation planner of task_summary.use_case (Diaz and Joseph 2019), who estimates the
+property damage of storm events from what is known about each event before its damage is assessed. The prediction point
+in the first curation bullet is the logged event before any damage survey (first reports).
 
 **Verdict**
 
-- **Fit: approximate, as the definition says.** For the emergency manager's triage, the label is a rough measure of the right quantity (which counties of a storm took the most damage). It is recorded at a finer unit than the decision, and its zeros carry office habits. For the insurer's reserve it is a different quantity (USE-5, last sentence), so that half of the use case should go.
-- **Metric: partly.** RMSLE's log scale suits triage by orders of magnitude, and on 2024 it picks the same best model as triage within a storm does. However, 69% of its squared error sits at the zero/positive call, which is mostly whether the office entered a figure. It is also scored per row, while I decide per county and storm (MET-1). I would score within the storm, by `EPISODE_ID`. I would not switch to the insurance siblings' `normalized_gini`, which picks the wrong model here.
+- Fit: approximate (agree; USE-8). One sentence: the inputs are the planner's event description, but the label is a
+per-event NWS office estimate whose $0 mixes "no damage" with "no estimate" by office, while the planner acts on
+aggregate expected loss per county and hazard.
+- D13 (duration): agree with B. What I would know matches the call type by type (below). No change asked.
+- Exposure/weight (MET-14, MET-15, MET-16, LEAK-41): agree, none. Damage is not accrued pro rata over the duration, and
+  I
+do not price per hour of storm, so duration is no denominator and no weight. LEAK-41 does not apply.
+- Metric: partly scores my decision (MET-1). RMSLE suits the precision of the label. It does not score the quantity I
+plan with, the expected dollars. My choice would be mean_tweedie_deviance (p about 1.5) on the dollars, after a probe
+that checks whether the two metrics pick different models. Not a Must.
 
-**How the decision is made today**
+**1. Do I have each input at the prediction point? (the question on duration, type by type)**
 
-- **Emergency manager.** Local emergency managers run the Initial Damage Assessment. They work from 911 data and self-reports to "determine impact areas to prioritize". The state then verifies those numbers and requests a joint Preliminary Damage Assessment with FEMA (Florida SERT; Missouri SEMA; 44 CFR 206.33). The request is weighed against FEMA's per-capita indicator for public infrastructure cost and against counts of destroyed and major-damage homes.
-  - The NWS dollar figure arrives with Storm Data, which is certified up to 60 days after the end of the month (NWSI 10-1605, Sec. 3).
-  - Its estimates "can be obtained from emergency managers ... utility companies, and newspaper articles" (Sec. 2.7, p. 12). So part of the label is my own reports, coming back to me.
-- **Catastrophe desk.** In the first days the desk reads vendor event estimates (KCC, CoreLogic, Gallagher Re). These are built from hazard footprints and storm-report counts laid over exposure. The desk then reads its own first notices of loss.
-  - Until the 2021 revision, the directive referred preparers to Verisk PCS for damage amounts ("Section 2.7 – Removed reference to using Verisk PCS for damage amounts"). For large events before 2021, the label is partly the industry estimate the desk already had.
-- **Published uses of these figures.** The ones I found are for planning, not for response:
-  - Diaz & Joseph (arXiv 1807.03456) fit a hurdle model on Storm Data tornadoes "for science-informed tornado disaster planning".
-  - FEMA's National Risk Index takes its historic losses from SHELDUS and divides them by exposed building value.
+Shipped-data numbers (participant kit, 843,144 rows):
 
-**1. My inputs at the moment of the prediction**
+| Type | Rows | Duration 0 | Median hours | Spearman (duration, log damage), positive rows |
+|---|---|---|---|---|
+| Thunderstorm Wind | 261,454 | 72.9% | 0.0 | 0.165 |
+| High Wind | 53,486 | 23.8% | 2.3 | 0.233 |
+| Coastal Flood | 2,871 | 6.1% | 4.0 | 0.436 |
+| Lakeshore Flood | 335 | 0.3% | 13.5 | 0.042 |
+| Storm Surge/Tide | 667 | 10.3% | 15.0 | 0.175 |
 
-- **What I have.** These match the definition's "known" list:
-  - the event type for hail, wind, flood and winter weather (the type on the Local Storm Report);
-  - the state, county or zone, and office;
-  - the begin time, and the end time once the storm has passed;
-  - the reported magnitude, and whether it was measured or estimated (LSRs carry that designation);
-  - the flood cause, and a hurricane's category.
+Strong Wind / Heavy Rain / Tornado: all blank since D13.
 
-  I would also have the reporter (the LSR's source field). The definition drops it for the "NWS Storm Survey" marker, which raised RMSE from 2.560 to 2.608. Either the drop or the merge is a small effect.
-- **What I would not have.**
-  - **A Tornado type that a survey set.** NWSI 10-1605 Sec. 47.6 types an event as a tornado "if the type or intensity of the structural and vegetative damage ... could only have been tornadic". 67.9% of the 23,620 tornado rows from 2007 to 2025 carry SOURCE "NWS Storm Survey". For those rows the begin point and the duration also come from the surveyed path. Tornado rows are 2.4% of the rows but 10.9% of 2024's dollars.
-  - **The row itself.** A Storm Data entry is one event in one county segment, assembled weeks later. What I would feed a model in practice is the LSR stream: several unverified reports per county.
-    - Storm Data also selects on damage. Sub-severe wind is entered only with "fatalities, injuries, or serious property damage" (Sec. 46, p. A-68).
-    - Measured: Thunderstorm Wind with an EG speed below 50 kt is $0 in 2.3% of 10,604 entries, against 39.2% at 50 kt or more.
-    - A first report of damage tells me the same thing, so this is a gap in how the input is shaped, not a leak.
-  - **The EG wind speeds.** The definition keeps these on purpose. I accept that: my first report is itself a damage report.
-- **What is missing although I would always have it:**
-  - **Exposure:** population, housing units and building value of the county; for the insurer, its own policies inside the footprint. The NRI's historic loss ratio is loss over exposed building value. Without exposure, the model can learn dollars per place only as a category over 8,135 county or zone codes.
-  - **The size of the storm:** how many reports and counties the episode touched.
-  - **The LSR remarks**, such as "roof off" or "trees on house", which are the first description of damage. The Storm Data narratives are rightly dropped because they are written later. The builder's two flags read off the narratives moved RMSE from 2.560 to 2.496, so the earlier remarks would carry real signal.
-  - **Radar hail swaths and rotation tracks, and power outages per county.**
+- Thunderstorm Wind: yes, in practice. 73% of the entries have a duration of 0, which is a point event: one Local Storm
+  Report time. The rest are swaths built from the times of the first gust and damage reports. Every one of those times
+  is in the first reports. A damage report carries its time, and LEAK-37 already admits that the first report says
+  whether damage was seen. What the reports do not give is the dollar amount. The remaining leak is the preparer's
+  later merging of reports into a swath, which is small (Spearman 0.165) and is in the kept note.
+- High Wind: yes. Its criteria are measured: ASOS sustained 40 mph or gusts of 58 mph (NWSI 10-1605 Sec. 24). I would
+  read the span off the observations.
+- Coastal Flood, Lakeshore Flood, Storm Surge/Tide: yes, better than for any wind type. "Flooding" is a water level
+  above the gauge's flood threshold. NOAA tide gauges publish it in real time, so I know the span without any damage
+  report. The strong relation on Coastal Flood (0.436 among positive rows) is mostly physics: a longer inundation does
+  more damage. It is signal, not a leak. This is the type where I would most want the column kept.
+- Strong Wind: no. By definition it is below the high-wind criteria, it is entered only with damage, and Sec. 45 times
+  it by "When the wind started to cause ... significant damage" to "no longer caused ... damage". No measured
+  criterion bounds it. All I would have is the time of a damage report, not an end. Blanking it is right, and the
+  re-measurement shows it cost nothing (-0.009 to -0.046 RMSLE on its test rows).
+- Heavy Rain: I would know a rain duration from gauges and radar, but not this one. The span is "the heavy rain that
+  led to damage" (Sec. 21). Blank is right. Only 4.8% of its rows are positive, so it matters little.
+- Tornado: no. The ground contact comes from the damage survey (settled 2026-11-03).
+So: yes, I would know it for Thunderstorm Wind and Coastal Flood and not for Strong Wind. The line D13 draws (outcome
+alone, against outcome or an outcome-free criterion) is the line between what I could and could not read off
+observations. The Cases row on spans (LEAK-10, LEAK-37) applied here gives the answer a practitioner would.
+- Small inconsistency to note, not to fix: Flood and Flash Flood (123k rows, the largest dollar types) are timed by
+  "when flood waters began to threaten life or property" (Sec. on Flash Flood and Flood). That is an impact judgment,
+  not damage, and I would know it from warnings and first reports. Spearman with the positive damage is 0.34 to 0.45,
+  as high as Coastal Flood. Kept implicitly. It would be consistent to name it in the kept note as judged
+  outcome-free, so a later reviewer does not reopen it.
+- Inputs I would always have and the data lacks: the exposure of the place (buildings, values) and the warning
+  issued. The exposure was tested (county population does not scale, Spearman -0.14 to +0.05) and settled as an
+  outside join. Not reopened.
 
 **2. Is the target what I act on?**
 
-- **As the emergency manager: a rough proxy.** I act on where damage is largest within the storm, in orders of magnitude. Later I act on public-infrastructure cost and damaged-home counts, which the label does not hold. The $0 mixes "no damage" with "no estimate":
-  - Wind speeds estimated from observed damage (EG, 50 kt or more) are $0 in 39.2% of 218,587 entries.
-  - Hail of 1 to 1.75 in is $0 in 93.3% of entries; hail of 2.75 in or larger still in 58.8%.
-  - Offices range from 7% to 91% $0 (the definition's decision table).
-- **As the insurer: a different quantity.**
-  - **Scale.** Storm Data's 2024 total property damage is $15.7 billion, against $182.7 billion for NCEI's 27 billion-dollar events of 2024. The scopes differ (the NCEI total includes uninsured and infrastructure losses), but the gap is about 12-fold.
-  - **Hail.** Hail drives convective-storm claims (Triple-I: up to 80% of severe-storm claims; CoreLogic: 95% of the June 2023 outbreak). Yet hail is 11.1% of the 2024 rows and only 1.4% of their dollars.
-  - **Convective total.** Hail, thunderstorm wind and tornado together come to $2.4 billion in 2024. Industry insured convective losses are about $50 to 60 billion a year (Swiss Re 2023; Triple-I 2025).
-  - **Undercount in claims data.** In Georgia, insurance claims logged 136 times the lightning incidents and more than twice the dollars of Storm Data (Stallins 2002).
+A proxy (USE-5). Planners do use this field: local hazard mitigation plans tabulate NCEI Storm Events losses by county
+and hazard, and SHELDUS and FEMA's National Risk Index are built partly from it. So the label is the real planning input
+and not a made-up quantity (issue 5, settled). But three gaps remain:
+- (a) I act on the sum, the expected annual loss per county and hazard, not on one event. In 2024 the top 1% of rows
+    hold 96.8% of the dollars.
+- (b) Nominal dollars. I would plan in constant dollars. The note shows the positive median of Thunderstorm Wind falls
+    ($5,000 to $2,000), which is office practice and not inflation, so deflating would not fix it. No change asked.
+- (c) The $0 is partly "no estimate made" (settled under LEAK-25 as amended). For me, the office's $0 habit is noise I
+    would not want a model to learn, yet 62% of the gain over a constant comes from the office. This is the gap that
+    most lowers my trust (below).
+I want a number in dollars: an expected loss, not a class.
 
-  A model of this label says nothing about the desk's hail book. This is USE-5's "a label ... found to be another quantity than the one the actor acts on" (compare the us_accidents decision of 2026-09-23: a delay code does not serve the first responder).
-- **Form.** A number in dollars is fine. What I would consume is the ranking of a storm's counties.
+**3. Does one row match one decision? Is the test data what I face?**
 
-**3. Does one row match one decision, and is the test what I face?**
-
-- **The unit is finer than my decision.** I decide per county and storm; a row is one event of one type in one county segment. In 2024, 25.4% of the 33,350 county-storms (`EPISODE_ID` x county or zone) have more than one row. They hold 54.6% of the rows and 44% of the dollars.
-- **A fifth of the rows have no assessment decision.** 19.8% of the 2024 rows are hazards nobody sends an assessor for: marine types, drought, heat, cold, fog, rip current, funnel cloud, waterspout, high surf. They are 99.7% $0 and hold 0.07% of the dollars. They make the task look easier, and the metric rewards predicting zero on them.
-- **Dollars are concentrated.** In 2024 the top 0.1% of rows (55) hold 76.7% of the dollars, and the top 1% hold 97.4%. By type: hurricanes 33.7%, flash floods 20.0%, tropical storms 12.1%, tornadoes 10.9%.
-- **The test fits.** It is the next calendar year in counties seen before, with a two-month gap for certification. That is what I would face with a model refit each winter (USE-10, known entity; SPLIT-13).
+A row is one event in one county segment, and my unit is a county by hazard over a year. That is an aggregation gap,
+already named in fit_reason ("A planner plans for kinds of events"). The test data, a later calendar year in known
+counties and offices refit yearly, is what I face (SPLIT-13 holds). The 3-month gap matches the NCEI lag.
 
 **4. Would I use this model?**
 
-- **As the emergency manager: yes, cautiously, as a first-pass prior** to order a storm's counties before the reports firm up. On 2024 I took the 775 storms with five or more counties or zones and some damage:
-  - The log1p LightGBM puts 68.8% of a storm's dollars in its top 3 counties.
-  - The event-type mean puts 61.7% there, and a perfect order 86.1%.
-  - Weighted by dollars, the model gets 54.2% against 26.4% for the event-type mean.
+As a screening tool for the order of magnitude of an event type in a county: yes. As a basis for the dollar figure of a
+mitigation plan: no, for two reasons. A model trained under RMSLE predicts about the geometric mean: the RMSLE-optimal
+constant for 2024 is $16 per event, against a mean of $355,555, and summed it understates annual loss by four orders of
+magnitude. And much of its skill is reporting convention (wfo). I would trust it more if its skill held with the office
+fixed: a check per office, or the within-storm score the earlier panel tried, which picked the same model on 2024.
 
-  I would distrust it in three places:
-  - where the office rarely enters dollars, since the model has learned that habit and ranks those counties down;
-  - for tornado types that exist only after a survey;
-  - everywhere, for the lack of exposure.
-
-  Validation against FEMA PDA outcomes would make me trust it.
-- **As the insurer: no.** There is no exposure, the label is blind to hail, and the totals are far off. Predicted dollars sum to 5.9% of the 2024 actual for the log1p model and 11.2% for a Tweedie model.
-
-**5. Does the metric score my decision? Partly.**
-
-- **What RMSLE scores here.** On 2024, with the log1p LightGBM:
-  - 69.3% of the squared error falls on the 11.4% of rows where the zero/positive call at $500 is wrong.
-  - $0 rows (74% of rows) carry 40.7% of the squared error.
-  - Rows of $1 million or more (1% of rows, 97.5% of dollars) carry only 12.5%.
-
-  Much of the score is whether the office entered a figure (the anomaly the definition documents).
-- **Would I pick a model by it?** I compared three models on 2024: a log1p LightGBM, a Tweedie LightGBM on dollars (the actuarial form) and the event-type mean.
-
-| | log1p LightGBM | Tweedie on dollars | event-type mean |
-|---|---|---|---|
-| RMSLE (declared) | 2.586 | 4.372 | 3.471 |
-| within-storm top-3 dollar capture | 0.688 | 0.672 | 0.617 |
-| same, dollar-weighted | 0.542 | 0.365 | 0.264 |
-| mean per-episode Pearson on dollars (`mean_group_pearsonr`, `EPISODE_ID`) | 0.397 | 0.374 | 0.278 |
-| global normalized Gini on dollars | 0.821 | 0.930 | 0.646 |
-
-  - RMSLE picks the same winner as triage within a storm, but it places the Tweedie model below the event-type mean.
-  - The global normalized Gini picks the Tweedie model, which ranks a storm's counties worse. On this target the Gini measures which storms are hurricanes and floods, not which county of a storm to visit. So `normalized_gini` (the builder's draft issue 5) would score my decision worse than `rmsle`.
-  - The per-episode Pearson on dollars orders all three models as triage does.
-- **The metric I would choose.** A within-storm score, with `EPISODE_ID` shipped as a scoring column and never as a feature (MET-2): `mean_group_pearsonr` on the dollars, which it computes after the log1p inverse. It is in the library, and it matches the unit I act on (MET-1).
-  - Every episode is entered by one office: all 167,629 episodes from 2007 to 2025 have a single WFO. A within-episode score therefore holds the office's habit fixed, which is exactly the label problem RMSLE cannot get away from.
-  - **Caveats.** 59.9% of the 2024 episodes with five or more rows have $0 on every row and drop out. Groups where a model's predictions are constant also drop out (1,812 groups for the log1p model against 1,399 for the event-type mean), so models are scored on slightly different sets. The curator should weigh that before adopting it.
-  - If a per-row metric is kept, `rmsle` (origin context, MET-11; MET-3 is satisfied with `target_transform="log1p"`) is the best per-row option. Its reason should say that it is dominated by the zero/positive call.
-  - The source fixes no k or cost (MET-7: never invent one), so no top-k metric, even though triage is top-k in spirit. MET-6, MET-8 and MET-9 are about classification thresholds and do not apply.
+**5. Does the metric score my decision?** Partly (MET-1).
+For: the label is coarse. 44% of the positive figures have one significant digit, and offices enter round values
+($1K, $5K, $10K ...), so the label supports order-of-magnitude accuracy and no more. RMSLE scores exactly that, and it
+does not let a few hurricanes and floods decide (on raw dollars, 0.1% of the rows hold 99.96% of the squared
+deviation). As a planner ranking hazards and counties by order of magnitude, I could pick a model by it.
+Against: my decision is a sum of expected dollars. RMSLE is minimised by exp(E[log(1+y)]) - 1, not by E[y], and it
+gives 37-47% of the error to the $0 entries, where part of the $0 is the office convention.
+What I would pick: mean_tweedie_deviance on the dollars with p about 1.5 (in the metric library; the standard loss-cost
+score for zero-mass, heavy-tailed amounts). It is minimised by the mean, so predictions add up to the annual loss I
+plan with, and its scale term (mu^(2-p)) damps the tail far more than RMSE. MET-6 and MET-7 do not apply: there is no
+threshold or k. MET-8 and MET-9 do not apply: this is regression. MET-14 and MET-15 do not apply: no rate and no
+denominator, so the Tweedie would be unweighted. Before any switch, run a probe: if Tweedie p = 1.5 and RMSLE pick the
+same model over the 3 windows (as RMSLE and the within-storm score did on 2024), RMSLE stays and the reason should say
+it was checked. This was resolved on 2026-11-03 for the triage framing (issue 3). The use case has since become the
+planner's (issue 5, B), and the metric reason still says "The manager ranks counties by orders of magnitude". That
+sentence names the old actor and should read "the planner" (EV text fix, MET-1).
 
 **Gaps, ranked by how much they change the task**
 
-1. **Target (USE-5, USE-8).** The insurer half of the use case fails; the label is another quantity, about 12 times smaller in total and blind to hail. The emergency-manager half is a rough proxy whose zeros the office codes. This changes the task most.
-2. **Unit (USE-1, MET-1).** The row is an event in a county segment; the decision is a county in a storm (25.4% of county-storms have several rows, holding 54.6% of the rows). A fifth of the test rows are hazards without an assessment decision.
-3. **Inputs as first reports (USE-3).** The rows are Storm Data's entries made weeks later: tornado types and paths come from surveys (67.9% of tornado rows), and county segmentation and inclusion depend on damage. In practice the model would read LSRs, a differently shaped table.
-4. **Missing inputs I always have (USE-6 in spirit).** Exposure, storm size, LSR remarks, radar footprints, outages. Their absence lowers the ceiling but does not void the task.
-5. **Drift.** Nominal dollars, with positive damage drifting down (median Thunderstorm Wind $5,000 in 2007-2017, $2,000 in 2025). This is mild for a refit each year.
+1. Unit: per-event rows against the planner's county-by-hazard expected loss. The metric then scores a geometric mean,
+   not the expected dollars (MET-1, USE-5). Named in fit_reason; the metric reason does not weigh it.
+2. The label's $0 convention by office (LEAK-25 as amended, settled). It shapes much of the learnable signal.
+3. The metric reason names "the manager" from the superseded triage use case. A text inconsistency after issue 5.
+4. Flood and Flash Flood spans, timed by "threat to life or property", are not named in the duration note. Consistency
+   of D13, no measured leak expected.
+5. Nominal dollars. Minor, since the drift is practice, not inflation.
 
-**What an expert in the domain would change**
+**What an expert would change**
 
-1. **`use_case`.** Narrow it to the emergency manager alone. Proposed wording: "For example, a state emergency manager, once a storm has passed and its reports are in, ranks the counties it hit by expected property damage to decide where to send damage-assessment teams first." Drop "an insurer's catastrophe desk" and "what to reserve".
-2. **`fit_reason`.** Replace "The features are what the first reports hold" with a sentence naming the gaps. Proposed wording: "The features stand in for the first reports: they are Storm Data's entries, made weeks later, with tornado types and paths from surveys, one row per event and county segment where the decision is per county and storm."
-3. **Ship `EPISODE_ID` as a scoring column and score within the storm** (`mean_group_pearsonr`), or aggregate the rows to county-storm. Keep `rmsle` if neither is adopted. Do not switch to `normalized_gini`.
-4. **Add exposure:** county population and housing units from the Census, joined on the county FIPS code for county rows. Zone rows would need the NWS zone-county correlation file. Possibly also add the storm's size from the data (rows and counties per episode); all events of an episode are known once the storm has passed.
-5. **Consider dropping the hazards no one assesses** (marine, drought, heat, cold, fog, rip current, funnel cloud, waterspout, high surf): 19.8% of rows, 0.07% of dollars. This narrows the task to the decision.
+- Keep D13 as shipped. Optionally add one clause to the duration note: Flood and Flash Flood are timed by threat
+  (Sec. on Flood and Flash Flood), judged outcome-free, and kept without a potential-leak note.
+- Replace "The manager" by "the planner" in the metric reason, and add one sentence that RMSLE scores order of
+  magnitude, not expected dollars, so summing the predictions does not give the expected loss.
+- Probe mean_tweedie_deviance (p = 1.5, on dollars) against RMSLE on the 3 windows. Switch only if they pick
+  different models. A weighing call for the curator (MET-1, MET-10), not a Must.
+- No exposure, weight or offset: agree with the exposure paragraph (MET-14, MET-15, MET-16; LEAK-41 not triggered).
 
 **Sources**
 
-- NWSI 10-1605 (26 July 2021): Sec. 1 (purpose), 2.7 (damage sources, the "no information available" box, the revision note on Verisk PCS), 3 (60-day certification), 4 (SPC preliminary reports and LSRs), 46 and 46.3 (thunderstorm wind entry criteria, EG), 47.5 and 47.6 (surveys, tornado criteria).
-- NCEI metadata C00510 (reports "may be unverified by the NWS").
-- FEMA and state damage-assessment process: [Florida SERT](https://www.floridadisaster.org/news-media/news/20181013-florida-sert-damage-assessment-teams-to-deploy-immediately-to-expedite-assistance/), [Missouri SEMA](https://sema.dps.mo.gov/recover/damage-assessment-process.php), [44 CFR 206.33](https://www.law.cornell.edu/cfr/text/44/206.33).
-- Insurer side: [KCC June 2023 estimate and report counts](https://www.businessinsurance.com/convective-storm-system-causes-close-to-55-billion-in-insured-losses/), [CoreLogic June 2023](https://www.reinsurancene.ws/corelogic-estimates-insured-losses-from-june-u-s-storms-at-10bn/), [Swiss Re 2023 convective losses](https://theinsurer.com/news/swiss-re-severe-convective-storm-losses-reach-record-60bn-in-2023), [Triple-I 2025](https://www.mychesco.com/a/news/business/triple-i-reports-51-billion-in-2025-storm-losses-in-u-s/).
-- Label quality: [Stallins 2002, Georgia lightning losses](https://www.uky.edu/~jast239/reprints/Southeastern%20Geographer%202002.pdf), [Laidlaw, Lazo & Bushek 2009, survey of the NWS loss-estimation method](https://ams.confex.com/ams/89annual/webprogram/Paper150932.html), [reliability of the Storm Events Database](https://arxiv.org/abs/1606.06973v2).
-- Scale: [NCEI billion-dollar disasters, 2024](https://ncei.noaa.gov/access/billions/time-series/US/cost).
-- Planning uses: [Diaz & Joseph, tornado damage](https://arxiv.org/abs/1807.03456); [FEMA NRI FAQ (SHELDUS losses)](https://hazards.fema.gov/nri/frequently-asked-questions) (unreachable today; read from the search summary).
-- LSR contents: [NWS SCN 05-37, measured/estimated designation](https://www.weather.gov/media/notification/pdfs/scn05-37modified_lsr_format.pdf).
-
-**Scratch**
-
-The scripts and outputs stay in the local run folder:
-
-- the decision unit, the dollar concentration, seven models under RMSLE, Gini and per-episode Spearman, and the squared-error decomposition.
-- the hazards with no assessment decision, hail, and within-storm top-k capture.
-- the per-episode Pearson.
-
-All numbers come from one window with untuned models.
+- NWSI 10-1605 (July 2021, the exposure study's text extract): App. A begin and end
+  times for Thunderstorm Wind (Sec. 46), High Wind (24), Strong Wind (45), Heavy Rain (21), Coastal Flood, Lakeshore
+  Flood, Storm Surge/Tide (4, 27, 44), Flash Flood and Flood ("threat to life or property"), Wildfire, Debris Flow,
+  Hurricane.
+- Definition, README and REVIEW.md of noaa_storm_events_damage; the change note; the participant kit's data (my
+  statistics).
+- Diaz and Joseph (2019), Weather and Climate Extremes 25:100216 (as cited in the definition).
+- Domain practice: local hazard mitigation plans (44 CFR 201.6 risk assessment) cite NCEI Storm Events loss history.
+  SHELDUS and FEMA NRI draw on Storm Data. NOAA CO-OPS tide-gauge flood thresholds and ASOS high-wind criteria are
+  measured in real time. These are from domain knowledge, not fetched this session.
+- Rules: USE-1, USE-3, USE-5, USE-8, SPLIT-13; LEAK-10, LEAK-37 (Cases row on spans), LEAK-25, LEAK-41; MET-1, MET-6
+  to MET-10, MET-14 to MET-16.
 
 </details>
 
 <details><summary>Blind review</summary>
 
-**Verdict: include with changes.** This is a real, large, correctly parsed table with honest temporal evaluation and moderate signal. But a big part of the target, especially whether it is zero or not, reflects how each NWS office fills in the form, and that habit changes over time. The task should expose time features, and its documentation should say plainly that the label is an NWS estimate, not a measured loss.
+**Blind review: noaa_storm_events_damage (target log1p_property_damage_usd, regression, temporal split on begin_time, 3
+windows)**
 
-**What the task is.** Each row is one event from the NOAA Storm Events database (NWS "Storm Data"), 2007-2025. The target is log1p of the property damage the NWS staff member preparing the entry recorded (`DAMAGE_PROPERTY`). The features are event type, state, county/zone, issuing forecast office (WFO), magnitude and its type, flood cause, hurricane category, start lat/lon, start time and duration. The most credible use is imputing the damage figure for Storm Data events where the preparer ticked "no information available". That is a real need for hazard-loss researchers, and the prepared population (events already in Storm Data) matches it. As a rapid loss estimator for insurers or emergency managers the use is weak: those users rely on claims, FEMA damage assessments or catastrophe models, not on the NWS figure.
+Inputs used: the clean room's 200k-row sample (of 843,144) and its task sheet, the NCEI bulk-format PDF, and two raw
+NCEI detail files (2010, 2024) downloaded for cross-checking. No other local files were opened.
 
-**How I checked the data.** I downloaded the 2007, 2015, 2024 and 2025 details files from the NCEI csvfiles directory.
-- Per year, the sample holds 30.0-30.2% of the raw rows with a non-blank damage field (for example 2025: 72,360 raw rows, 16,399 blank, 16,817 sampled; ratio 0.3005). So rows with blank damage were dropped and nothing else was.
-- The target matches log1p of the parsed "K/M/B" strings exactly: 0 mismatches over 15,215 uniquely matched 2025 rows and 13,251 uniquely matched 2015 rows.
-- The largest values are real disasters: the 2018 Camp Fire ($17B, Butte zone), Harvey 2017 ($10B, Harris County flash flood), Ian 2022 ($7B, Lee County) and Ike 2008.
+Verdict: Include with changes. It is real NOAA data, the target matches the source exactly, the split is honest, and
+there is clear signal (LightGBM R2 about 0.49 vs 0.19 for an event-type mean). But a large share of what is learnable is
+how each NWS office reports damage, not the damage itself, and this should be documented or reduced.
 
-**Concerns, most serious first**
+**What the task is**
 
-1. **The zero label is mostly an office reporting convention, not physical "no damage".**
-   - What the source says. NWSI 10-1605 (2021), section 2.7: "If this estimate is not available, then the preparer has two choices: either check the 'no information available' box, or make an estimate." In practice offices differ on whether they enter $0 or leave the field blank.
-   - Thunderstorm Wind events with an estimated gust (EG). Section 46.3 says that wind value is "based on observed structural or tree damage", so these events had damage by construction. Yet across the 74 WFOs with at least 200 such events, the share recorded as $0 runs from 0.2% (BUF, IND) to 96% (GYX, OAX), with a median of 39%.
-   - Change over time. Between 2007-14 and 2020-25, 27 of 95 WFOs changed their zero share by more than 20 points (DMX +62, LZK +51, CLE +48, BGM -38). In the raw files the blank ("no information") share rose from 7.3% (2007) to 17.4% (2015), 21.6% (2024) and 22.7% (2025).
-   - Consequences. Zeros are 73% of rows, and WFO is the second most important feature by LightGBM gain (0.235, after event_type at 0.356). A large part of what a model learns is each office's data-entry habit.
-   - Change: state this in the task description. Expose time as a feature (concern 2). Consider also reporting the score on rows with damage above zero, so that a method's ranking does not depend only on how well it guesses each office's zero convention. Keep the blank rows dropped: that is correct.
+Each row is one NWS Storm Events record (county or zone, event type, time, magnitude). The target is the NWS
+property-damage estimate in nominal USD, log1p. Plausible users: insurers, emergency managers, or researchers who want a
+damage estimate from an initial storm report before an assessment exists, or who want to fill in missing damage values
+in the database. The use is real but weak: the NWS fills in the damage field together with the rest of the record, so in
+practice the "features" and the label become available at about the same time. Best framed as "estimate reported damage
+from the storm-report attributes".
 
-2. **The label drifts strongly over time, so the time features matter.**
-   - LightGBM on my own reconstruction of three expanding-window splits (test = 70-80%, 80-90% and 90-100% time quantiles of the sample). With event type, location, magnitude, duration, month and hour, R2 was 0.469, 0.458 and 0.433. Adding `year` raised it to 0.548, 0.567 and 0.569, and RMSE on the log scale fell from about 2.8-3.0 to 2.5-2.6.
-   - Other signs of drift: the mean log damage of nonzero rows fell from 9.42 (2007) to 8.44 (2025) even without inflation adjustment, and the Thunderstorm Wind zero share moved from 0.34 (2011) to 0.48 (2019).
-   - Change: make sure `begin_time` or features derived from it (year, month, hour) are available to models, not used only to split. Otherwise the benchmark mainly penalizes methods for drift they were never allowed to see. Optionally convert dollars to constant dollars with CPI: nominal values rise about 0.43 on the log scale from 2007 to 2025, small next to the drift but systematic.
+**Data checks (evidence)**
 
-3. **Some event types are recorded only when they cause damage, and the estimated wind speed is inferred from the damage.**
-   - What the source says. The directive defines Strong Wind as "...resulting in a fatality, injury, or damage", Lightning the same way, and Thunderstorm Wind below 50 kt only when "producing a fatality, injury, or damage".
-   - In the data: Strong Wind is nonzero in 94% of rows and Lightning in 83%. EG versus measured-gust (MG) Thunderstorm Wind events have zero shares of 0.37 versus 0.89. Dropping `magnitude_type` costs about 0.02 R2.
-   - Why this is not leakage. The qualitative damage report exists before the dollar figure is set, and the imputation use case conditions on the event being in the database. But it makes part of the zero/nonzero split trivial.
-   - Change: none required. Document it. Do not add the tornado EF scale, tornado path length/width, SOURCE, injuries/deaths, crop damage or the narratives. These were rightly left out because they come from damage surveys or are outcomes recorded at the same time as the target.
+- Real and correctly built. For the 2024 sample rows with a unique (county_zone, begin_time, event_type) key in the raw
+  2024 file (9,527 of 10,616), the target equals log1p(DAMAGE_PROPERTY) in 100% of rows. Row counts match "drop blank
+  damage, drop marine/heat/drought/fog/etc. types": 2010 raw has 46,014 such rows vs 45,951 scaled from the sample; 2024
+  has 44,298 vs 44,754. Zero share matches too (2010 0.640 raw vs 0.636 sample; 2024 0.679 vs 0.681).
+- Blank DAMAGE_PROPERTY (17% of 2010 raw rows, 22% of 2024 raw rows) was dropped, not turned into 0. Good.
+- 34 event types kept. Drought, Heat, Excessive Heat, Dense Fog, Cold/Wind Chill, Funnel Cloud, Rip Current, High Surf
+  and marine types were removed. That is a sensible choice but it is not documented in task.md.
+- Values are plausible: max 22.8 (about $8B), 68% zeros, 91.5% of nonzero values are multiples of $1,000, and the top
+  five values ($1k, $5k, $10k, $2k, $3k) make up 52% of nonzero rows. This is typical of rounded human estimates.
 
-4. **The target is coarse.** The directive asks preparers to round to three significant figures, and they round further. Only 991 distinct target values appear in 300k rows. Among nonzero damages, 66% are exactly 1, 2 or 5 times a power of ten ($1,000 alone: 11,881 rows; $5,000: 9,786). Combined with 73% zeros, RMSE on log1p is driven largely by getting zero versus $1k-$10k right. This is acceptable for a regression benchmark, but worth noting when reading the scores.
+**Concerns, most to least serious**
 
-5. **Related rows: within-episode copies and exact duplicates.**
-   - Episode and event IDs were dropped. In the raw 2025 file an episode has a median of 3 events, a 90th percentile of 18 and a maximum of 412, and in 191 of 1,577 episodes with two or more damaged events every event has the same damage (a total split evenly across zones). In the sample, 5,318 of 80,905 nonzero rows share state, event type, start time, duration and target with another row; Strong Wind accounts for 2,151 of them.
-   - Under the temporal split such rows land in the same window except at window edges, so the leak is small. A random K-fold split would leak.
-   - There are also 858 fully duplicated rows (0.3%), mostly Heavy Snow and Winter Storm. Change: remove exact duplicates, and never evaluate this task with a random split.
+1. A zero target often means "damage not estimated", not "no damage", and this depends on the office. (Serious; a
+   validity and interpretability issue.)
+   Evidence: among Thunderstorm Wind rows, offices with at least 100 events have zero-damage shares from 0.01 (IND),
+   0.015 (BUF) and 0.018 (AKQ) up to 0.993 (BYZ), 0.994 (ABR) and 0.995 (TFX); the median office is 0.54. For Hail the
+   range is 0.38 (ILM) to 1.00 (BYZ, TAE, TFX). For Winter Storm it is 0.08 (CLE) to 1.00 (IWX, STO, TFX). In LightGBM
+   gain importance, wfo ranks first (9.0M), ahead of event_type (8.7M) and county_zone (2.6M). Weather does not explain
+   a 1% vs 99% split between neighbouring Plains offices; reporting habit does.
+   The source treats 0.00K as a valid estimate ("damage_property Ex: 10.00K, 0.00K, 10.00M: The estimated amount of
+   damage"), so zeros cannot be separated from "not assessed".
+   Change: at minimum, document that the target includes office reporting habits. Better: drop (wfo, event_type) cells
+   whose zero share stays near 1, or use only Hail and Thunderstorm Wind events from offices that report damage. Another
+   option is a two-part framing. Keep wfo as a feature either way, because removing it does not remove the bias.
 
-6. **Smaller preparation points.**
-   - `magnitude` mixes hail size in inches (median 1.0) with wind in knots (median about 50). That is fine for trees but meaningless for linear or kNN models; splitting it into `hail_size_in` and `wind_kt` would be cleaner.
-   - `hurricane_category` is 99.95% missing (158 rows, all Hurricane events). It is harmless but nearly useless.
-   - `begin_time` is in local standard time per zone (CST, EST, MST and others), so hour of day is not on a common clock. This is minor.
-   - lat/lon is missing for 92% of zone-type rows. That is structural and correctly left as NaN.
-   - `state` includes about 20 marine or water-body areas (LAKE MICHIGAN, GULF OF ALASKA). This is fine.
-   - `county_zone` has 7,907 levels. It is a reasonable high-cardinality categorical, though it adds almost nothing beyond WFO (removing both changes R2 by less than 0.01).
+2. Several rows share one estimate within an episode, and the timestamp feature carries drift. (Moderate.)
+   Evidence: in 2024, sampled rows average 2.6 per episode (maximum 39), and the episode mean explains about 70% of
+   target variance. Example: BTV Winter Weather zones on 2007-01-01 all have $3,000 or $5,000. Because the split is
+   temporal, this only leaks at window edges. However, removing the begin_time-derived feature cuts R2 from 0.486 to
+   0.372, a sign of strong drift over time in reporting practice. Thunderstorm Wind zero share moves from 0.51 (2007) to
+   0.35 (2010-12) to about 0.48 (2018+).
+   Change: keep the temporal split, as it is right. Consider an episode-aware gap at the window edges. Expect methods
+   that handle drift to be favoured.
 
-**Benchmark value.** There is clear signal beyond the trivial: R2 is 0.23-0.26 from event type alone and about 0.45 with all features, against a constant-mean baseline RMSE of about 3.9. The task is not trivial and has 1M rows. It brings mixed types, structural missingness and high-cardinality categoricals, and its temporal split is realistic. These are good reasons to include it, provided concerns 1-2 are addressed or documented.
+3. Some columns were silently masked by the preparation and are not documented. (Moderate, mostly documentation.)
+   - wind_speed_kt is set only for measured gusts (MG/MS). For estimated gusts (EG/ES) it is NaN, although the raw
+     MAGNITUDE is 100% filled for Thunderstorm Wind (2024 EG mean 53.4 kt). Presumably this is deliberate, because EG
+     speeds are often inferred from damage. That is defensible, but it is undocumented, and magnitude_type=EG still
+     gives this away: EG rows have mean target 4.93 and 40% zeros, MG rows 0.60 and 93% zeros. Dropping magnitude_type
+     does not change R2 (0.489 vs 0.486), because the NaN pattern of wind_speed carries the same information.
+   - duration_hours is NaN for every Tornado, Heavy Rain and Strong Wind row (7.4% of rows), although the raw end times
+     exist. Again, presumably this hides damage-path information, but it is undocumented. For other events, duration
+     needs END_DATE_TIME, which is known only afterwards; that is acceptable under the "estimate from the full report"
+     framing.
+   - Tornado EF scale, path length and width are excluded. This is correct, because EF scale is damage-based by
+     definition ("Enhanced Fujita Scale describes the strength of the tornado based on the amount and type of damage").
+   Change: write these choices into task.md. Optionally drop magnitude_type or keep it consistently. A single "wind
+   speed is damage-derived" flag would be more honest than half-masked speeds.
+
+4. Dollars are nominal, not adjusted for inflation, from 2007 to 2025. (Minor.) Prices rose about 50% over this period,
+   a shift of about 0.4 in log units. That is small next to an RMSE of about 3.0, but it is a systematic drift. Change:
+   deflate to constant dollars, or note it.
+
+5. Preparation details. (Minor.)
+   - county_zone is a categorical with 7,395 levels; it is redundant with state/cz_type plus FIPS but useful.
+     Acceptable.
+   - begin_lat/lon are missing for all zone-based events (30%); this is structural and fine.
+   - Duplicates: 585 rows with identical features in the 200k sample (0.3%), 560 of them fully identical. These are
+     separate events (e.g. hail reports in one county at the same minute). Negligible.
+   - begin_time is in local standard time, as the source says ("usually in LST"). Fine for month and hour features.
+   - The latest year (2025) may still be revised by NCEI; the files carry creation stamps such as c20260728. Note it.
+
+**Benchmark value**
+
+LightGBM (600 trees) with expanding-window training, testing on 2020-21, 2022-23 and 2024-25: R2 = 0.468 / 0.486 / 0.502
+(mean 0.486, RMSE 2.98). An event-type mean baseline gets R2 0.185. Without wfo and county_zone, R2 is 0.475; without
+IDs and the timestamp, 0.394. The task is not trivial, has room between methods, is large (843k rows), and is a
+realistic heavy-tailed, zero-inflated target. Worth having once concern 1 is documented or reduced.
+
+**Could not check**
+
+- The exact three test windows used by the harness (I used my own two-year windows).
+- The full 843k table (only the 200k sample is given), and raw years other than 2010 and 2024.
+- Whether office zero-rates reflect true no-damage policy in some places (e.g. rural Montana) rather than "not
+  assessed". NWS Directive 10-1605 guidance on entering 0 was not read.
+- Revision history of damage values between file versions.
+
+</details>
+
+<details><summary>Task gamer</summary>
+
+**Task gamer: noaa_storm_events_damage (target log1p_property_damage_usd, RMSLE = RMSE on the shipped log1p values, 3
+yearly test windows 2023/2024/2025)**
+
+Verdict: the task barely games. I found no feature or rule that beats the honest model by more than noise plus about
+0.01 RMSE. The columns that touch the outcome are worth 0.01 to 0.09, and a model logging the event from its first
+reports has them.
+
+Honest baseline (LightGBM on features() with date parts, 400 rounds, 127 leaves):
+- r0f0 2.6118 | r1f0 2.9313 | r2f0 2.9426 | mean 2.8285
+- Untuned LightGBM (31 leaves, 100 rounds, raw begin_time): mean 2.9178.
+- Noise: two refits with an added random column gave means of 2.8321 and 2.8292. The spread is about +-0.004 on the mean
+  and +-0.01 per split.
+- Scale note: metrics.py inverts the log1p before the RMSLE, so predict on the shipped scale. Predicting expm1 values
+  scores worse (3.03).
+
+**Exploits and outcome-touched columns, ranked by gain (gain = baseline RMSE minus the variant's; for a column the
+baseline already has, it is how much worse the model gets without it)**
+
+| # | Exploit / column | Script | Honest | With it | Gain per split (r0,r1,r2) | Deployed model has it? | Fix |
+|---|---|---|---|---|---|---|---|
+| 1 | magnitude_type + wind_speed_kt (EG estimated gust, whose speed the prep nulled, vs MG measured) | attacks_wind.py | 2.9206 (both dropped) | 2.8285 | +0.108 +0.082 +0.086 (mean 0.092); Thunderstorm Wind +0.21..+0.26 | Yes, mostly: an EG thunderstorm-wind row is a damage report (93% of 2025 EG narratives mention trees down or damage, vs 5% of MG). Spotter reports carry the E/M qualifier. | None needed. To be strict, drop magnitude_type for Thunderstorm Wind. |
+| 2 | duration_hours (end time minus begin time) | attacks1.py, per_type.py | 2.8411 (dropped) | 2.8285 | +0.000 +0.004 +0.034 (mean 0.013) | Yes: the prediction point is after the event has ended | None |
+| 3 | tie size: rows sharing the same begin_time, counted over train and test | attacks_tie.py | 2.8285 | 2.8222 | +0.003 +0.006 +0.011 (mean 0.006, at the noise level) | Roughly: simultaneous zone warnings are known when the event is logged | None |
+| 4 | lat/lon decimal count (precision format) | attacks1.py | 2.8285 | 2.8277 | -0.010 +0.006 +0.007 (mean 0.001, noise) | Yes | None |
+
+Per-event-type gain of duration_hours (RMSE without it minus with it; per split):
+  Thunderstorm Wind +0.041 +0.025 +0.057; High Wind +0.021 +0.057 +0.019; Lightning +0.003 +0.136 +0.062;
+  Ice Storm +0.071 +0.089; Winter Storm +0.061 -0.017 +0.010; Winter Weather +0.002 -0.006 +0.069;
+  Hail +0.007 -0.038 -0.059; Flood -0.061 -0.067 +0.029; Flash Flood -0.070 +0.011 +0.111; Tropical Storm -0.153 +0.356
+  (small n).
+- The column most likely to be set by the outcome (a flood's span, recorded until the water recedes) gives no consistent
+  gain. The consistent gain is in Thunderstorm Wind and High Wind, where a nonzero span marks a multi-report path.
+  Spearman(duration, y) within type is at most 0.19 (Flood).
+- Missingness: duration_hours is NaN for all Tornado, Heavy Rain and Strong Wind rows and for no others, so its gap only
+  repeats event_type. The prep removed it for those types.
+- wind_speed_kt missingness is exact: NaN for every EG/ES row (the prep nulled estimated speeds) and filled for every
+  MG/MS row. Positive-damage rate: EG 62.5%, MG 10.8%. The gap therefore tells the outcome only as far as magnitude_type
+  does (row 1). Dropping magnitude_type alone costs 0.002 because the wind gap stands in for it.
+- Per-type gain of magnitude_type alone (with the wind gap kept) is noise: Thunderstorm Wind +0.007..+0.016, the other
+  types -0.11..+0.15 on small n.
+
+- Mechanism, finding 1: in NOAA Storm Data a thunderstorm-wind row with an estimated gust is almost always a damage
+  report ("trees down"), and its gust is a default inferred from the damage: 50 kt in 6,173 of the 2025 EG rows, 52 kt
+  in 4,672. The prep nulled those speeds but kept magnitude_type, and the null pattern carries the same bit. Whether the
+  event was a damage report is known when the first report is logged, so this is signal at the stated prediction point,
+  not an exploit. What would decide it: whether the benchmark means "first reports" to include the reporter's own damage
+  description. If not, drop magnitude_type for Thunderstorm Wind and Strong Wind (cost about 0.09).
+- Mechanism, finding 2: duration is end minus begin. Under the stated prediction point (event ended, before the damage
+  survey) it is known. Gain 0.013, concentrated in the wind types.
+- Mechanism, finding 3: tie_n counts other rows starting the same minute, across train and test. Zone products (winter
+  storms, high wind) start many rows at once. The gain is at the noise level.
+
+**Flaws that hurt an honest model**
+
+I found none that I could measure in the kit.
+  - Recent-only training (honest_variants.py): rows from 2012 on 2.8332, from 2016 on 2.8331, from 2019 on 2.8479, all
+    against 2.8285. Old rows do not hurt.
+  - Label rate of the last training months vs the test windows: no sign of late-filled labels. Last-12-month positive
+    rate is 0.29 to 0.32, and the test windows are 0.31 to 0.32.
+  - Population flaw (not measurable in the kit): the source leaves DAMAGE_PROPERTY blank on 22.7% of 2025 rows, and the
+    kit has no such rows. 2025 has 72,360 source rows and 45,870 kit rows; the kit also drops marine event types. A row
+    is in the task only if its office later entered a damage figure, which is not known at the stated prediction point.
+    Blank rates run from 0% to 98% by WFO (EAX 98%, ALY 96%). Among non-blank rows, the positive share rises only from
+    0.19 (offices with under 5% blanks) to 0.25 (over 70% blanks). So the selection on the label field slightly enriches
+    positives at offices that leave blanks. A deployed model would also face events left blank. Mild fix: state in
+    task.md that the population is events with a damage entry, or keep the blanks as their own documented class. A test
+    window cannot hold rows the deployed model would see, so this cannot be scored here.
+
+**Attacks that found nothing (mean RMSE; baseline 2.8285; noise +-0.004)**
+
+  - Row position as a feature: 2.8374 (worse). Rows are sorted by begin_time. Within ties, the order matches no column
+    (state is monotone in 60% of ties, county_zone in 43%, event_type in 66%). Mean y by relative position in a tie is
+    flat (2.38 to 2.65, no trend). Rank in tie 2.8272; relative rank 2.8285.
+  - Next-row label agreement 0.708 vs 0.566 by chance: these are clusters from the same storm. Test labels are not
+    available, so it is not usable.
+  - Same-day counts over train and test (wfo, state, county_zone, event_type x wfo, all): 2.8445 (worse).
+  - Begin minute / minute 0 / minute divisible by 5: 2.8304 (no gain). Positive rate is 0.22 at minute 0 vs about 0.36
+    otherwise, which the model already gets from time and type.
+  - Format-only features alone (decimals, minute format, duration format, missing flags): 3.632. event_type alone 3.766.
+    event_type + formats 3.595. The format gain is the missing flags repeating event type and EG/MG. Over the full model
+    the formats add nothing (row 4).
+  - Exact feature twins across the split (all features but time): 14-16% of test rows have one. Twin-mean RMSE on those
+    rows is 3.10-3.23, worse than the model.
+  - Transforms over all rows: none shipped (lat/lon and magnitudes are raw values). Gap between train and test: train
+    ends Sep 30 and the test starts Jan 1, so there are no cross-boundary episodes.
+  - Training rows dated after the prediction point: none (train max < test min on every split).
+  - Lookup in the published source file (StormEvents_details d2023-d2025): matching on begin_time + county_zone +
+    event_type recovers DAMAGE_PROPERTY. This works, as it does for any public dataset, and is not ranked.
+  - Web: no competition, forum or "leak" thread for this table. Published work (CU Boulder tornado-damage paper; dos
+    Santos 2016 on database reliability) notes that damage is "as reported", that coverage changed over time, and that
+    zero damage is common. None of it gives an exploit that applies here.
 
 **What I could not check**
-- The exact three test windows used by the benchmark, and whether `begin_time` is passed to models as a feature. I used my own quantile windows.
-- Full-row reconciliation for all 19 years. I verified row counts for 4 years and target parsing for 2 years.
-- Whether the 858 exact duplicates are double entries in the raw data or distinct events. EVENT_ID was not retained.
-- How many episodes straddle the window boundaries, since EPISODE_ID is not in the table.
-- How accurate NWS damage estimates are against insured or FEMA losses. The literature calls them rough, and the directive itself allows rough estimates.
-- Whether the 2024-2025 figures will be revised in later NCEI file versions. The 2025 file is dated c20260819.
 
-**Sources:** https://www.ncei.noaa.gov/pub/data/swdi/stormevents/csvfiles/ ; https://www.ncei.noaa.gov/access/storm-events-database/ ; NWSI 10-1605 (July 26, 2021), https://www.weather.gov/media/directives/010_pdfs/pd01016005curr.pdf
+  - Score effect of the blank-damage filter: the kit has no blank rows. Rebuilding them from the source would be
+    building a different task.
+  - Whether magnitude_type in the final database is ever revised after a damage survey, which would make EG partly later
+    information. The 2025 narratives suggest it is set from the first damage report.
+  - Damage revisions between NOAA file versions (the source files are versioned c2026xxxx). I compared one version only.
+
+Sources: https://www.ncei.noaa.gov/pub/data/swdi/stormevents/csvfiles/ (details files d2023, d2024, d2025; only d2025
+was compared), https://www.ncei.noaa.gov/pub/data/swdi/stormevents/csvfiles/Storm-Data-Export-Format.pdf,
+https://arxiv.org/pdf/1606.06973,
+https://deepai.org/publication/some-comments-on-the-reliability-of-noaa-s-storm-events-database
 
 </details>
 
 <details><summary>Precedent check</summary>
 
-**Precedent check: noaa_storm_events_damage (precedent-checker, 2026-11-01)**
+**Precedent check for D13 in noaa_storm_events_damage (REVIEW issue 6, Lennart, 2026-11-06), full tier**
 
-**Verdict.** Five of the nine choices I checked follow their precedents: blanks dropped, `SOURCE` dropped, history
-from 2007, the 2-month gap, and the markers kept. The metric departs from the screening and gives a reason. Three
-choices need the curator:
+**Verdict.** On the type-by-type reading, D13 is consistent with the precedents. Where it reverses an earlier call, it
+gives a fact for the reversal. It has one gap: its "keep with a note" for the five types rests on a premise the data
+contests. The definition says the damage-set part "cannot be located row by row". But the column `magnitude_type`, which
+is known at the first report, locates most of it. That is a departure without a stated reason, so a reflection prompt is
+drafted below. There are also two smaller findings: types the type-by-type reading left out, and a rule-text gap.
 
-1. Keeping the $0 entries departs from LEAK-25 (Must, P4). A Must takes no exception, and the curator's call of
-   2026-10-30 is filed in the triage summary as "no rule", so it is not an amendment either.
-2. Keeping the EG wind speeds departs from LEAK-10 as amended on 2026-10-26. The part of them that can be traced
-   carries a gain.
-3. The `Yes` sits against us_accidents (`No`, Lennart, 2026-09-23), which has a similar mechanism, and the CC states
-   no fact that sets this case apart.
+**1. D13 against each precedent**
 
-I found no drift and no third exception.
+**a) The new LEAK-10 / LEAK-37 Cases row on spans the outcome sets (Lennart, 2026-11-06).**
 
-What I read: the register (1,620 decisions; it holds no MET rows, so for metrics I used the Cases table of
-`metrics.md`), the Cases tables of `leak_checks.md`, `splits.md`, `metrics.md` and `selection.md`, the records behind
-each precedent, the policy calls of 2026-10-30 (the zero-inflated triage summary), Andrej's CC lines
-of 2026-10-30, and the sibling definitions of this batch. The siblings are AI drafts the curator has not decided. They
-show what the batch does, not precedent. My own checks on the raw files stay in the local run folder.
-I also cite one run of the column auditor.
+- D13 is the row's founding case, so it is consistent by construction.
+- Strong Wind (Sec. 45: "When the wind started to cause a fatality, injury, or significant damage") and Heavy Rain (Sec.
+  21: "the heavy rain that led to damage") are timed by the outcome alone, so they are blanked.
+- Thunderstorm Wind (Sec. 46), High Wind (Sec. 24), and Coastal Flood, Lakeshore Flood and Storm Surge/Tide (Sec. 4,
+  27, 44) are timed by "damage or" a criterion. They are kept with a note.
+- I checked every quote against the study's NWSI text and they are verbatim.
+- On how thoroughly each type is argued:
+  - Thunderstorm Wind and the three flood types are quoted in full.
+  - High Wind is only "likewise". Its actual text is "When damage first occurred, or when sustained winds or gusts first
+    equaled or exceeded locally/regionally established criteria" / "When damage ended or sustained winds or gusts
+    dropped below high wind criteria". It fits the kept branch.
 
-| # | Decision | Rules | Result | Closest precedents |
-|---|---|---|---|---|
-| 1 | $0 entries kept as zeros | LEAK-25 (Must) | **not reasonable as an exception under the ranking** (a Must): amend the rule or apply it | ghanas_indigenous_intel (retired 2026-10-01); caracas_cervical_cancer, account_debt_south_africa, fraud_detection_in_electricity_and_gas_consumption (amendment 2026-10-21, CCs 2026-10-26) |
-| 2 | Blank entries dropped | CLEAN-15 (Must) | consistent; the stated cause is an inference (see 1) | CLEAN-15; qsar_tid_11 (2026-10-21) |
-| 3 | EG wind speeds kept with a `Potential leak, kept on purpose:` note | LEAK-10 (Must, clause 2), LEAK-37 | **departs; the stated reason is contradicted for the part that can be traced** | distribution_transformers_at_cauca_department (dropped, 2026-10-21); onlinenewspopularity (kept, 2026-10-26); zillow_prize, melbourne_housing_market (blanked, 2026-10-21); digicow `topics_list` (LEAK-37, 2026-10-21); in this definition: `TOR_F_SCALE`, `SOURCE` dropped |
-| 4 | `SOURCE` dropped | LEAK-10, LEAK-7 | consistent | kick, expresso_churn_prediction (2026-10-22); distribution_transformers (2026-10-21) |
-| 5 | `rmsle` by context, `target_transform="log1p"`, instead of the screening's fallback `rmse` | MET-3, MET-11 | departs from the screening, with a stated reason; follows the diamonds line | diamonds (MET-11, Lennart, 2026-10-21); onlinenewspopularity (CC 2026-10-26); batch pairs: nfip_redacted_flood_claims (AI, `rmse` "for a reserve"), nantucket (fallback `rmse`) |
-| 6 | History from 2007, on a measured break | SPLIT-20, SPLIT-21 | consistent | aeolus (Lennart, 2026-10-12); fraud_detection, history cut at 2013 on a measured step (Lennart, 2026-10-26) |
-| 7 | 2-month gap (60-day certification) | SPLIT-10 | consistent | brazilian_ecommerce (1 month, 2026-10-15), zillow_prize (1 month, 2026-10-20), sf_permit_time (6 months), house_sales (1 week) |
-| 8 | Markers `No Good Target / Scientific Discovery` and `Data Quality Issue` kept on a `Yes` | selection.md, "Reading decision markers" | consistent | 5g_energy_consumption, ieee_fraud_detection, obesity_estimation, student_portuguese_performance (shipped with markers); batch: boreal, crms, pennsylvania, rand, blogfeedback, cape, loan_default |
-| 9 | `Yes` on scope (CC 2026-10-30) | SEL-3, SEL-2, USE-5 | **a similar case was decided the other way** (another curator); the CC gives only an implicit reason | us_accidents (`No`, Lennart, 2026-09-23); thailand_road_accident_register_2019_2022 (`Yes`, Andrej, 2026-10-30) |
+**b) Tornado duration (Andrej, 2026-11-03; earlier panel issue 4, claim 23).** Consistent: D13 keeps the blank. The
+tornado blank rests on a different fact from the new row.
+- NWSI times a tornado by ground contact ("When the sub-cloud vortex first contacted the ground"), which is a criterion
+  without the outcome. Read literally, the row would keep the tornado duration.
+- It stays blank because the damage survey sets the span: Spearman 0.83 with the dropped `TOR_LENGTH`, and +0.16
+  to +0.26 RMSLE on tornado rows. That is a survey product, not a first-report fact, which sets it apart from digicow
+  `topics_list` (LEAK-37, 2026-10-21).
+- The row's case text does say "a tornado's span and path come from the damage survey". It would help to say outright
+  that the tornado is blanked on the survey fact and not on the row's reading.
 
-**A measurement that bears on 1, 2 and 6.** In the raw files the split between blank and $0 changes with the 2007
-format. The positive share does not.
+**c) The dataset's own earlier call (column audit 2026-11-01; definition shipped by Andrej 2026-11-03, tornado only).**
+D13 reverses it for Strong Wind and Heavy Rain and states the fact that sets the new call apart.
+- The audit quoted the Thunderstorm Wind entry alone. The study of 2026-11-05 read App. A for every type.
+- The blank costs nothing measurable: -0.009, -0.018 and -0.046 on those types' rows.
+- This is a legitimate reversal: a newer, better-read decision, not drift.
+- Process point, not a consistency departure: the study's decision table (report.md line 728) assigns D13 to Andrej, "by
+  Andrej in his folders, or with his release". The record and REVIEW show Lennart's decision but no release from Andrej.
+  Confirm that he released it.
 
-| Thunderstorm Wind events | blank | $0 | positive |
-|---|---|---|---|
-| 2000-2005 | 44-56% | 5-6% | 39-51% |
-| 2007 | 10% | 45% | 45% |
-| 2007-2025 | 10-24% | 29-45% | 39-56% |
+**d) heart_failure `time` (Lennart, 2026-09-30, dropped).** This is a real pair of similar cases decided the other way,
+and the difference can be seen in the evidence.
+- Follow-up ends at death OR censoring. That is structurally the row's "outcome or outcome-free criterion" branch, which
+  keeps with a note.
+- It was dropped, on its size: alone ROC AUC 0.84; with it LightGBM scores 0.90, without it 0.75.
+- noaa's kept part is worth +0.012 to +0.021 RMSLE against a gain of about 1.3 over a constant, and the noaa prediction
+  point is after the event has ended.
+- So D13 is distinguished, but the row names no size limit. Read literally, it would have kept heart_failure's `time`.
+- Suggestion: add heart_failure to the row as its counter-case, with the condition that a dominant worth goes under
+  LEAK-6.
 
-Over all event types the blank share falls from 70-72% to 7%, and the $0 share rises from 5-8% to 70%. From 2007 on,
-the $0 share of the entries stays at 67-79%.
+**e) bank_marketing `campaign` (Lennart, 2026-11-06, kept with a note under the same row).** Consistent with D13.
+- The count of calls ends at a subscription or when the bank stops calling.
+- Worth 0.006 ROC AUC overall, and 0.0013 to 0.0016 once the period is known (about one seed SD).
+- The same day, bank_marketing dropped `day`/`month` of the last contact. That matches noaa dropping its end columns and
+  keeping only the span.
 
-What this shows:
+**f) LEAK-10's second clause and LEAK-6 on size.**
 
-* The break is a recoding of the entries that are not positive. That supports the cut at 2007 (SPLIT-20), and the cut
-  was not chosen from test windows (SPLIT-21).
-* Which code an entry gets is a format convention, so the data does not confirm the comments' reading that a blank means
-  "the preparer had no estimate" (the box) and a $0 is an entered zero. The builder could not check how the box is
-  exported.
+- D13 is consistent on size with medical_facility_operational_data (Lennart, 2026-11-05). There, the whole-field worth
+  is an upper bound and sits within about two seed SDs. D13's +0.012 to +0.021 sits against SDs of 0.016 to 0.030.
+- It is unlike distribution_transformers_at_cauca_department (Lennart, 2026-10-21, dropped: a clear gain that could not
+  be located).
+- The same clause and the time-on-risk row (amended 2026-11-06) also say that where the late or outcome-set rows can be
+  located, they are blanked. Precedents: zillow_prize and melbourne_housing_market (2026-10-21), frempl's located
+  branch. Section 2 is about this.
 
-**1. $0 kept (LEAK-25, Must).** The mechanism is the one the rule names: "no event" (no damage) mixed with "not recorded"
-(no estimate made). The definition says so itself in its Anomaly bullet.
+**g) Drift and third exception.**
 
-Since the amendment of 2026-10-21, a mix counts as recovered only when the unrecorded rows are located by a rule that
-does not read the label, and are dropped:
+- No drift: Lennart's LEAK-10 keeps (2026-10-26, 2026-11-05, 2026-11-06) all rest on a small or no measurable gain.
+- No third exception of one kind is due.
+- But this keep sits under a Must and is written only as a Cases row. LEAK-10's text was amended in place for its two
+  earlier keeps (window sums; late pulls), and LEAK-6's narrowing sentence names only the late pull and LEAK-41.
+- Under principles.md, a keep under a Must is an amendment. LEAK-10 should get a third clause, or the row should be tied
+  to the second clause's test. Otherwise the register will flag it like loan_default's exception_to_must.
 
-* caracas_cervical_cancer: a skipped question;
-* account_debt_south_africa: file runs without debt data;
-* fraud_detection: the last invoice date, "never by the label".
+**2. The departure without a stated reason: the located part**
 
-When the rows cannot be located, the precedent is ghanas_indigenous_intel: retired.
+- The definition's kept-with-note bullet says: "Which of the two set a given span is not recorded, so the part the
+  damage set cannot be located row by row."
+- But the same definition already blanks the estimated wind speeds by `magnitude_type`. EG and ES are speeds estimated
+  from the damage, and 94.4% of 2024's EG Thunderstorm Wind entries had a first report "TSTM WND DMG" with no speed.
+- For such an entry, no wind of 50 kt or more was reported, so the Sec. 46 begin ("When damage first occurred or winds
+  50 knots ... were first reported") can only be the damage.
+- Counts on the shipped container, among the five kept types:
+  - EG/ES rows: 241,088 of 318,813 (75.6%). Thunderstorm Wind 228,978 EG and 56 ES; High Wind 11,018 EG and 1,036 ES.
+  - Thunderstorm Wind with a measured speed under 50 kt: 435 more. Their spans must be damage-timed.
+- Indicative probe (my own untuned LightGBM, 300 trees, 2 seeds, the shipped splits in container order; not the panel's
+  setup):
+  - Blanking the duration only on the EG/ES rows changes RMSLE on those rows by +0.041, +0.009 and +0.003.
+  - Blanking it only on the other kept rows: -0.002, -0.008, -0.010 on the EG/ES rows. On their own
+    rows: +0.032, -0.004, +0.053.
+  - So where the column has worth, part of it sits on the rows that can be located. The numbers are noisy and need the
+    panel's 4-seed rerun.
 
-Here only the blanks are located and dropped, and the measurement above shows that blank against $0 does not separate
-the two meanings. No label-free rule that locates the "not estimated" $0 entries was found. A rule on the office's $0
-share reads the label in aggregate.
+Reflection prompt, in the turn shape:
 
-What the definition rests on, and why neither is enough:
+**Consistency check (AI, 2026-11-06):** Should the duration also be blanked on the wind entries the first report gives
+as damage, since `magnitude_type` locates them?
+   * **Problem:**
+     - The note keeps the duration of the five types because the damage-set part "cannot be located row by row", but an
+       estimated-speed entry (EG or ES) was reported as damage, so its span starts at the damage[^c1].
+     - These are 241,088 of the 318,813 kept rows (75.6%), and `magnitude_type`, known at the first report, already
+       drives the blank of their speed without a marker.
+     - Where the rows can be located, the precedents blank them (zillow_prize, melbourne_housing_market, frempl), and
+       keep with a note only what cannot be located[^c2].
+   * **Experiments:** a rough check (2 seeds, untuned) puts blanking on those rows at +0.041, +0.009 and +0.003 RMSLE on
+     their rows; the panel's 4-seed run would settle it.
+   * **Consistency:** heart_failure's `time` was dropped on its size, and bank_marketing's `campaign` kept on its size;
+     neither had a located subset.
+   * **Options:**
 
-* "the office is a feature, so a model can learn the practice". This is the mechanism itself, not a recovery.
-* "(curator, 2026-10-30: coded zeros are a cleaning choice, no obstacle)". The curator's words were "We don't care. We
-  want to add any relevant predictive task, independent if it is zero inflated or not". The summary files that answer
-  under "Coded zeros (no rule)". It settled verdicts and priorities. "A cleaning choice at /add-dataset" is the AI's
-  application of it, in the triage summary and in the record's Assessment.
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Blank on EG/ES rows too | the duration is also blank where the speed was estimated from the damage; the note keeps the measured-gust and flood rows | follows the located-rows precedents; no new marker, the blank follows a known column; removes most of the damage-set spans | an inference from the NWSI wording, not a recorded field; loses whatever valid wind-criterion signal those rows hold |
+     | b | Keep D13 as is (implemented) | the note stays, with the EG/ES fact and its measured worth added | keeps the signal; the worth is about one seed SD | the note's premise ("cannot be located") is no longer accurate |
+     | c | Blank all five types | the duration is blank wherever the damage can set the span | no damage-set span stays | loses the flood and measured-wind signal, which is a first-report criterion |
+     | d | Amend the rule | the spans row says a span is read type by type only, never located within a type | one reading for every dataset | goes against LEAK-7's smallest fix and the located-rows precedents |
 
-The definition therefore attributes an AI reading to the curator. Quote the call and label the gloss as the AI's.
+   * **Recommendation:** a, after the panel's 4-seed rerun of the EG/ES blank. If that shows no gain, b with the note
+     corrected. **Decision:** a, b, c or d?
 
-Under the ranking, no higher Must carries the keep. The use case is a "for example" actor with fit approximate. The
-Tensions row "a real task against a leak" stops at "a leak that cannot be undone".
+   [^c1]: **LEAK-10** (Must): a feature never gives the target away; a consequence of the target is out. NWSI 10-1605
+     Sec. 46: "When damage first occurred or winds 50 knots (58 mph) or greater were first reported".
+   [^c2]: **LEAK-7** (Should): the smallest fix that keeps a valid signal. LEAK-10's second clause and the time-on-risk
+     Cases row (2026-11-06): where the rows can be located, blank them; keep with a note only what cannot be located and
+     shows no gain.
 
-The builder's issue 1 offers "exception or amendment". Only the amendment is open. The rule as written leaves two
-outcomes: re-target or retire. The remedy ladder puts "fix the definition (re-target)" before exclusion. Re-targeting
-to the entered positive amounts would remove the $0 mix, but the entries that were never estimated would still select
-the rows.
+**3. Types the type-by-type reading left out (fix in the note; one small choice)**
 
-**2. Blanks dropped (CLEAN-15, Must).** This is consistent: a row without a target leaves. The drop stands on CLEAN-15,
-whatever the blank means. It is not LEAK-25 recovery, and the comments' causal reading ("the preparer had no estimate")
-should be marked as an inference.
+App. A also times these types, still in the data, by "damage or" a criterion. The definition neither blanks them nor
+covers them in its note:
+- Hurricane (Typhoon), 482 rows: "When winds of 64 knots or greater first occurred or when a fatality, injury, or damage
+  began". Kept branch.
+- Tropical Storm, 3,837 rows: the same with 34 to 64 kt. Kept branch.
+- Volcanic Ashfall, 77 rows: "disruption to transportation, commerce, fatality, injury, or damage". Kept branch, 0%
+  positive.
+- Seiche, 51 rows: "When water levels rose to initiate shoreline flooding, resulting in a fatality, injury or damage".
+  The begin is conditioned on the outcome, close to Strong Wind, so under the row it would be blanked.
 
-**3. EG speeds kept (LEAK-10).** NWSI 10-1605 Sec. 46.3 says the preparer sets the value "based on observed structural
-or tree damage", so for some rows it is set after the prediction point. LEAK-10's second clause (Lennart, 2026-10-26)
-settles values of that kind:
+Flood and Flash Flood are timed by a "threat to life or property", a forecaster's judgement, not the damage, so I read
+them as outside the row. Together these types are about 4,450 rows (0.5%).
 
-* late cells that can be located are blanked (zillow_prize, melbourne_housing_market);
-* where they cannot be located, the values go when a gain may sit on them (distribution_transformers_at_cauca_department);
-* they stay with a note only when the part that can be traced shows no gain (onlinenewspopularity: masking changed R^2
-  by -0.0004).
+Recommendation: list Hurricane, Tropical Storm and Volcanic Ashfall in the kept-with-note bullet, and decide Seiche
+(blank, by the row). Without this, the claim that every type was read type by type does not hold for the whole set.
 
-The definition keeps the speeds "because ... which values the preparer set later cannot be located". Part of them can
-be located: 6,177 EG entries come from events whose `SOURCE` is "NWS Storm Survey" (6,114 of them Thunderstorm Wind).
-Against the other Thunderstorm Wind EG entries they have:
+**4. Minor**
 
-* a median of 65 kt, against 52;
-* damage in 72%, against 62%.
-
-The traced part carries a gain. In the column auditor's run C, blanking those speeds raises the RMSE on the 533 such
-test rows of 2024 from 3.246 to 3.448, and on all rows from 2.601 to 2.610.
-
-Blanking them alone would leave a marker, because every Thunderstorm Wind entry has a magnitude (261,702 of 261,702).
-That is the same reason the definition gives for dropping `SOURCE`. The same definition also drops `TOR_F_SCALE`, a
-wind rating made from the damage, so the EF rating, `SOURCE` and the EG speed are like cases decided two ways.
-
-The reason given, "the first report carries the same description of the damage", is LEAK-37's argument (an input the
-actor knows at the prediction point; digicow `topics_list`). It holds only if the EG values appear in the real-time
-reports. That can be traced against the NWS Local Storm Report archive (EV-1), and has not been. The figure quoted for
-the value, ROC AUC 0.433 for any damage, also understates its link to the amount: the claim auditor measures a Spearman
-correlation of 0.462 between the EG speed and log dollars among the positive entries. Andrej's own lines of the same day
-on leaks point the same way: "If an unresolvable leak remains, explain it and move to No" (loan_default_prediction);
-"Move to yes if you can resolve the leak, otherwise no" (blogfeedback).
-
-**4. `SOURCE` dropped: consistent.** LEAK-7 asks for the smallest fix first. The builder measured it: merging "NWS Storm
-Survey" into "Unknown" keeps the survey's signal (RMSE 2.565, against 2.560 as published and 2.608 without the column),
-and blanking leaves a marker in a column with no missing values. Dropping a field whose measured marker survives the
-smallest fix follows kick and expresso_churn_prediction (2026-10-22). The cost in signal is no reason to keep it
-(distribution_transformers: ROC AUC 0.701 to 0.639, dropped). The builder's issue 3 alternative, the merge, would keep
-the marker and depart from those cases.
-
-**5. Metric: departs from the screening, with a stated reason.** The screening's fallback `rmse` came "with the target's
-scale to settle when adding (MET-3)", and a later stage's finding supersedes it. `rmsle` by context follows diamonds
-(Lennart, 2026-10-21: the error matters relative to the size) and onlinenewspopularity (CC 2026-10-26, "RMSLE as
-declared", a heavy-tailed count). The declaration is in the MET-3 form (`target_transform="log1p"`, mercari).
-
-Two things for the curator to see:
-
-* The decided context cases have no mass at zero. Here 73% of the entries are $0, so RMSLE weighs heavily whether an
-  entry is $0 or a few thousand dollars, and that is the part the office's practice decides (1). No decided case covers
-  this.
-* The use case says the actor decides "what to reserve". For nfip_redacted_flood_claims the AI suggested `rmse` because
-  "the use is a case reserve, set in dollars" (Assessment, 2026-10-30). That is not a curator decision, but it is the
-  same wording with the other metric.
-
-Either the use case says what the relative metric serves (where to send assessors first), or the metric follows the
-reserve. The insurance siblings' `normalized_gini` was the AI's suggestion for pricing under call 3, and NFIP was set
-apart from it as no pricing task. Storm damage is no pricing task either.
-
-**6, 7, 8: consistent.**
-
-* History: SPLIT-20 asks to check for "a change of rules or of the data collection" and to say why; the measurement
-  above confirms the break. The positive amounts still drift within the kept years (median of Thunderstorm Wind $5,000
-  to $2,000). That is a weighing note under "keep a recent stretch", not a departure. Nominal dollars follow the
-  housing cases (house_sales, melbourne_housing_market); CLEAN-21 is about features.
-* Gap: SPLIT-10, a gap of the documented delay, as in the four cases listed in the table.
-* Markers: "a `Yes` with a concern marker is not a contradiction". The table defines `Data Quality Issue` as damage that
-  cannot be undone (LEAK-27, PROV-3). If LEAK-25 is settled by amendment, that marker has nothing left to mark.
-
-**9. Scope against us_accidents.** Lennart's `No` (CC 2026-09-23): "Too hard to tell whether there is a real predictive
-distribution here beyond finding the right subsets (feed, period, location) that reproduce a provider's codes". Here:
-
-* event type and office alone give ROC AUC 0.934 of 0.950 for any damage (screening probe);
-* the $0 share runs from 7% to 91% across offices;
-* the definition relies on the office to "learn the practice".
-
-The screening named this precedent and kept the record "on the event-register precedent". Andrej's `Yes` on
-thailand_road_accident_register_2019_2022 and his call 1 of 2026-10-30 ("if a dataset is useful for a predictive
-application although the data was collected for something else, then this is fine") are the implicit reasons. Neither
-answers us_accidents' point, which was about the label, not the purpose of the collection.
-
-**Also seen (a like pair inside the definition).** The end point (`END_LAT`, `END_LON`, ...) is dropped because for a
-tornado it is the end of the surveyed path. The end time of that same path stays, inside `duration_hours`. The column
-auditor's run B: blanking the tornado duration raises the tornado RMSE from 4.629 to 4.894. I leave the call to the
-column auditor's report.
-
-**Reflection prompts**
-
-**Consistency check (AI, 2026-11-01):** the definition keeps the $0 entries (a departure from LEAK-25, Must: "no event"
-mixed with "not recorded", the unrecorded rows not located). That differs from ghanas_indigenous_intel (retired
-2026-10-01, rows not located) and from caracas_cervical_cancer, account_debt_south_africa and fraud_detection (located
-by a rule that does not read the label and dropped; 2026-10-21 and 2026-10-26). Your call of 2026-10-30 is filed as "no rule"
-and covered verdicts. What sets this case apart? (a) The mix follows the reporting office, a feature known at the
-prediction point, so a model meets the practice as a learnable effect rather than hidden noise; and with 1,000,829
-rows the task is not `Too Small` as ghanas was. A Must takes no exception, so (a) can only be recorded as (d).
-(b) Treat it like the precedents: re-target to the entered positive amounts, or retire. (c) Reopen ghanas (retired
-also as `Too Small`, so this changes nothing there). (d) Amend LEAK-25: "a mix that follows a reporting unit shipped as
-a feature is kept with a note, fit approximate".
-
-**Consistency check (AI, 2026-11-01):** the call on the EG wind speeds (keep with a note) differs from
-distribution_transformers_at_cauca_department (dropped 2026-10-21: values set after the outcome for an unknown subset,
-with a gain that may sit on them) and from this definition's drops of `TOR_F_SCALE` and `SOURCE`. It would follow
-onlinenewspopularity (kept 2026-10-26) only if the traced part showed no gain, and the 6,177 storm-survey EG speeds
-show one (RMSE 3.246 kept, 3.448 blanked, on 533 test rows). What sets it apart? (a) A non-survey EG speed is in the
-real-time Local Storm Report the actor reads (LEAK-37), to be shown on a sample traced against the LSR archive. The
-survey speeds would then stay as a stated residual, since blanking them leaves a marker. (b) Treat it like
-distribution_transformers: blank every EG speed (RMSE 2.560 to 2.589) and keep the EG/MG type. (c) Reopen
-distribution_transformers. (d) Amend LEAK-10's second clause.
-
-**Consistency check (AI, 2026-11-01):** your `Yes` (2026-10-30) differs from us_accidents (`No`, Lennart, 2026-09-23,
-`No Good Target / Scientific Discovery`: a label a model reproduces from "the right subsets (feed, period, location)"),
-with a similar mechanism here: event type and office give ROC AUC 0.934 of 0.950 for any damage. What sets it apart?
-(a) The target is a dollar amount estimated by the preparer (an expert annotation under SEL-3), whose positive part
-carries signal beyond place and reporter (R^2 0.48 on log1p among the positives, screening probe), and whose zero share
-is stable over 2007-2025 (67-79% of entries). us_accidents' Severity was a feed's traffic-delay code whose classes
-changed meaning (class 3 from 31% to 0%). Recorded under SEL-2 with your call 1. (b) Treat it like us_accidents
-(`No`). (c) Reopen us_accidents. (d) Change SEL-3.
-
-**For the curator, in rank order:**
-
-1. LEAK-25 (P4, Must): amend or apply.
-2. LEAK-10 (P4, Must): EG speeds, after the LSR trace or blanked.
-3. SEL-3 (P2) against us_accidents.
-4. MET-11 (P6): make the use case and the metric say the same thing.
-5. A text fix: the curator attribution in the target bullet.
+REVIEW.md issue 6, option A says "the six other damage-timed types". The list and the experiments count seven (Strong
+Wind, Heavy Rain and the five). The issue is resolved, so this is text only.
 
 </details>
 
 <details><summary>Advocate</summary>
 
-**Advocate, opening brief: noaa_storm_events_damage (2026-11-01)**
+**Advocate, opening brief: noaa_storm_events_damage (exposure re-review, full tier, 2026-11-06)**
 
-**Position: ship after changes.** The split, the signal, the scope and the metric hold on measured evidence. The
-evidence agents found three real LEAK-10 columns, a use-case half that fails and a SPLIT-10 shortfall; I concede all
-of them, and each one has a fix in the definition. The one call I cannot settle by argument is LEAK-25 (point 6): the
-dataset ships only if the curator turns the 2026-10-30 call on coded zeros into an amendment. I say so plainly below
-rather than dress it up as an exception. No new probes of my own; every number is from the panel's reports.
+Position: ship as defined, after text fixes to the notes and the metric reason. None of the panel's findings touches the
+task, the split, the target or the metric. Every problem found is fixed by rewriting a note (the "keep with a documented
+note" step of the remedy ladder), plus at most one costless blank (Seiche, 51 rows).
 
-**1. The split is honest and measured (P4).**
-- Claim: calendar-year test windows (2025, 2024, 2023) with an expanding train side and known places mirror a model
-  refit each winter. The split auditor rates it "right with notes".
-- Evidence: county_zone is seen in train for 99.2% of test rows, and wfo and state for 100%. None of the 167,629
-  episodes spans two months, so none crosses a cut. Later releases change 0 of 64,921 Jan-Oct 2025 damage values and
-  0.17% of the 2024 ones. The 2007 start sits on a measured break: 69.5-72.2% blank in 2000-2005, 7.3% in 2007. A
-  random split would overrate the models by 0.16-0.36 RMSE (R^2 0.67 against 0.57-0.61 per window). So the temporal
-  split is exactly what tests whether a model can carry each office's practice forward a year.
-- Rules: SPLIT-1, SPLIT-3, USE-10, SPLIT-6, SPLIT-9 (Must) hold; SPLIT-13, SPLIT-14, SPLIT-20 (Should) hold.
-- Real problem, conceded: SPLIT-10 (Should). The public files lag about 75-80 days, so October is not public at a
-  1 January refit. Mildest fix: `gap=3` months, citing C00510's "up to a 120 day delay possible", and reword
-  `task_summary.split` to "every event published by the refit". The 0.02-0.03 cost is an edge effect: it vanishes
-  without the time feature and with random row removal. The split follows the application, not the score (P4 over
-  P6; forest_fires). Precedent: mortgage and sberbank lag their series to the release.
+1. The task is valid at the top ranks, and no agent disputes that (P3 USE-1/USE-5 Must, P5).
+   - Evidence, use case: the domain practitioner says the label is "the real planning input and not a made-up quantity".
+     Local hazard mitigation plans tabulate NCEI losses, and SHELDUS and FEMA's National Risk Index draw on Storm Data.
+     The actor was set to the planner in issue 5 (Andrej, 2026-11-03).
+   - Evidence, the data: the blind reviewer, working from the raw NCEI files, found the target equals
+     log1p(DAMAGE_PROPERTY) in 100% of 9,527 matched 2024 rows. Blanks were dropped, not turned into $0. Its verdict is
+     "Include with changes".
+   - Why this outranks the objections: every objection below is P4 note completeness, P6 metric wording or P7
+     bookkeeping. By principles.md, "A real task against a leak": fix the leak, keep the task.
 
-**2. Real signal remains after every leak fix (P4 fixes, P6 value).**
-- Claim: the three LEAK-10 findings are real. Each has a definition fix that keeps the task, and the task stays far
-  from both trivial and dummy.
-- Evidence and fixes:
-  - EG wind speeds: the LSR match shows 94.4% of the 2024 EG speeds were not in the first report (a "TSTM WND DMG"
-    with no speed), while measured gusts carry over 92.7% and hail sizes 97.9%. Fix: blank `magnitude` where
-    `magnitude_type == "EG"` and keep `magnitude_type`, since the first report says whether it was a damage report or
-    a measured gust.
-  - Tornado `duration_hours`: Spearman 0.83 with the dropped `TOR_LENGTH`. Fix: blank it on every Tornado row. Blank
-    by event type, not by `SOURCE`, so the blank is no survey marker.
-  - `hurricane_category`: set per zone, and Michael's Cat 5 is the April 2019 reanalysis. Fix: drop it (483 rows, 0
-    in the 2025 window).
-  - After all three: LightGBM RMSLE 2.556 (mean of the 3 windows) against a dummy at 3.82/4.01/3.87. Event type alone
-    gives R^2 0.269 against 0.567 for all features (builder, before the fixes). The leak probes raise no red flag (best
-    single feature 0.248).
-- Rules: LEAK-10 (Must), second clause: late cells that can be located are blanked. LEAK-2 (Must): the sibling sweep.
-  LEAK-7 (Should): the smallest fix. USE-12 (Must): a leak is no reason to reject a real task. The TP rules hold
-  (beats the dummy 3/3).
-- Why it outranks the objection: step 2 of the remedy ladder (fix the definition) resolves each one. None is a leak
-  that cannot be undone (LEAK-27), so the Tensions row "a real task against a leak" keeps the task.
-- Related: Strong Wind, Lightning and sub-50 kt wind rows exist only with damage (3.5-4.0% of test rows). They stay
-  under LEAK-37 (Must): the first report already says damage was seen. The domain practitioner and the blind reviewer
-  both read it as no leak. Fix: say it in `known` and in the prediction-point bullet.
+2. The split is right, with no new problem (P4: SPLIT-10, SPLIT-13, SPLIT-9; LEAK-18).
+   - The split auditor's verdict is "right".
+   - The gap is 3 months against a measured public lag of 75-80 days.
+   - 0 episodes have rows on both sides of any window, and 0 training events end after the cutoff.
+   - Test rows whose county_zone is seen in train: 98.6-99.6%.
+   - Once begin_time is included, 0.0% of test rows have an exact copy in train (leak probe).
+   - The task gamer found no training row dated after its prediction point, and no gain from late labels.
+   - Why it outranks: nothing the critic can raise on columns reaches the split, and P4's split half holds outright.
 
-**3. Scope and target hold, and us_accidents is set apart by facts (P2).**
-- Claim: SEL-3 holds. The target is an expert annotation, the NWS preparer's estimate under a written directive
-  (NWSI 10-1605 Sec. 2.7). The curator's `Yes` (CC 2026-10-30) stands.
-- Evidence against us_accidents (Lennart, 2026-09-23):
-  - That label was a traffic-delay code that did not serve the first responder (a USE-5 failure). Its classes changed
-    meaning (class 3 from 31% of 2016 to 0% of 2023), and the temporal split left log loss 0.48 against a 0.53 prior.
-  - Here the label is dollars of damage, the quantity the actor ranks. The $0 share of the entries stays at 67-79%
-    from 2007. Under the temporal split RMSLE is 2.556 against 3.90, and the positives alone give R^2 0.48 (screening
-    probe).
-  - Within one storm, where the office is fixed (every one of 167,629 episodes has a single WFO), the model still
-    ranks counties above the event-type mean: per-episode Pearson 0.397 against 0.278.
-  - The blind reviewer says "include with changes". The practitioner would use it "cautiously, as a first-pass prior".
-- Rules: SEL-3 (Must): "an observed outcome or an expert annotation". SEL-2 (Must): the use case decides, read with
-  call 1 of 2026-10-30. Like cases alike unless a fact sets them apart, and here three facts do.
-- Why it outranks the objection: the curator's decision outranks an AI assessment, and the precedent checker's
-  option (a) supplies the distinguishing fact to record.
+3. D13 is applied exactly and costs nothing (LEAK-10 Must, the LEAK-10/LEAK-37 Cases row on spans of 2026-11-06,
+   LEAK-38).
+   - The claim auditor found every App. A quote verbatim against the NWSI PDF.
+   - The blank is 100% on Tornado, Strong Wind and Heavy Rain and 0% elsewhere, on both sides of all three windows. So
+     it is a pure function of event_type and no outcome marker (LEAK-38).
+   - Blanking Strong Wind and Heavy Rain is costless: 10 of 15 fits are better with the blank, and the old values show
+     no leak signal (Heavy Rain AUC 0.402).
+   - The task gamer, playing to win, "found no feature or rule that beats the honest model by more than noise plus about
+     0.01 RMSE". The duration overall is worth a mean of 0.013.
+   - The practitioner says D13's line is "the line between what I could and could not read off observations".
+   - Why it outranks: under the Must, the curator's decision holds on the facts. The newer curator decision beats the
+     older call (precedence in the process), and the precedent checker confirms the reversal "gives a fact for the
+     reversal".
 
-**4. The use case is real once narrowed (P3).**
-- Claim: narrowed to the emergency manager's triage, the actor, moment and decision hold. That narrowing fixes the
-  definition. It is no reason to drop the dataset.
-- Evidence:
-  - Local emergency managers run the Initial Damage Assessment to "determine impact areas to prioritize" (Florida
-    SERT, Missouri SEMA, 44 CFR 206.33).
-  - On 2024, the model's top 3 counties hold 68.8% of a storm's dollars, against 61.7% for the event-type mean (86.1%
-    for a perfect order). Weighted by dollars it is 54.2% against 26.4%.
-  - Conceded, the insurer half: Storm Data's 2024 total is $15.7B against $182.7B for NCEI's billion-dollar events,
-    and hail is 11.1% of the rows but 1.4% of the dollars.
-- Rules: USE-1 (Must) holds after narrowing. USE-5 (Must), last sentence: the insurer reading fails, so drop "an
-  insurer's catastrophe desk" and "what to reserve" (the practitioner's wording). USE-8 (Must): fit approximate is
-  already declared. Rewrite `fit_reason` to name the gaps: Storm Data entries made weeks later, and one row per event
-  and county segment where the decision is per county and storm (25.4% of county-storms have more than one row).
-- Why it outranks the objection: the remedy ladder (re-target the framing before exclusion) and USE-12. Optional,
-  a curator's weighing: drop the hazards nobody assesses (19.8% of rows, 0.07% of dollars).
+4. The kept spans are legitimate inputs. Their worth is understated, and I concede that; the fix is the number in the
+   note (LEAK-37 Must, LEAK-6 Must, the Cases row).
+   - Concede: the note's "+0.012 to +0.021, an upper bound" is the most favourable set-up. Over 15 fits the worth
+     is -0.009 to +0.078, median about +0.03 (claim auditor T3). The study's own +0.020 to +0.038 sits in that range.
+   - What keeps the column:
+     - Even +0.08 is about 6% of the ~1.3 RMSLE gain over a constant.
+     - The association is weaker where damage set the span than where a measured wind did. High Wind: EG AUC 0.459
+       against MG 0.686. Thunderstorm Wind: EG Spearman 0.159 against MG 0.305. So the worth is the wind or flood
+       criterion, not the damage.
+     - The practitioner: the Thunderstorm Wind span is built from first-report times, and coastal flood spans come from
+       tide gauges published in real time ("signal, not a leak").
+   - LEAK-37: an input the actor knows at the prediction point is not a leak. LEAK-6: a slight optimism with a known
+     cause stays with a note.
+   - Mildest remedy: the claim auditor's wording, "+0.01 to +0.08 RMSLE on these types' test rows depending on the model
+     (median about +0.03)", and drop "an upper bound". Mirror it in REVIEW.md issue 6 and the leak_checks.md Cases row.
 
-**5. The metric is right for the narrowed task (P6).**
-- Claim: `rmsle` by context, with `target_transform="log1p"`, is the right metric.
-- Evidence:
-  - On raw dollars the top 0.1% of entries hold 99.96% of the squared deviation, and the model's dollar RMSE beats
-    predicting $0 everywhere by only 0.2-3.8%.
-  - `normalized_gini` picks the Tweedie model, which ranks a storm's counties worse (dollar-weighted top 3: 0.365
-    against 0.542). RMSLE picks the same winner as triage within a storm.
-  - Diaz & Joseph 2019 score tornado damage on the log scale. That supports the call, but it is a tornado-only,
-    multi-metric, randomly split task, so it is no source metric (MET-5).
-- Rules: MET-11 (Must), context (diamonds; onlinenewspopularity). MET-3 (Must). MET-1 (Must).
-- Real problems, conceded:
-  - The reason says no paper exists, but one does: name Diaz & Joseph 2019.
-  - The reason should say that 41-49% of the error falls on the true-$0 rows.
-  - Once the insurer half goes (point 4), the clash between "what to reserve" and NFIP's `rmse` is gone.
-- Option for the curator: `mean_group_pearsonr` within `EPISODE_ID` as a scoring column. It holds the office fixed,
-  but it has a caveat: 59.9% of the episodes with 5 or more rows are all $0 and drop out.
+5. The EG/ES "located subset" (precedent checker) is a wording fix, not a forced blank (LEAK-37 Must; LEAK-10's second
+   clause by its scope; EV-1).
+   - Concede: the note's premise that the damage-set part "cannot be located row by row" is inaccurate. magnitude_type
+     marks 241,088 of the 318,813 kept rows as estimated (EG/ES). Correct the sentence.
+   - Dispute that the precedents compel blanking:
+     - LEAK-10's located-rows clause is about "a value read at a later pull": zillow, melbourne and aeolus are values
+       looked up after the outcome.
+     - A damage report's time is in the first report, at the prediction point. That the first report saw damage is
+       admitted under LEAK-37 (settled with the 2024 LSR match). The task gamer calls the EG/MG distinction "signal at
+       the stated prediction point, not an exploit".
+     - Blanking these spans would remove a first-report fact. That is the opposite of LEAK-7's "smallest fix that keeps
+       a valid signal".
+   - The measured worth on those rows is +0.041/+0.009/+0.003 from 2 untuned seeds. That is inside the seed SDs of
+     0.016-0.030 and the noise floor the claim auditor measured on small subsets.
+   - Mildest remedy: option b of the precedent checker's prompt: keep, and state the EG/ES share and its measured worth
+     in the note.
+   - If the curator wants the fact settled first (EV-1), the 4-seed rerun decides between b and a. Either way it is a
+     definition detail, not a reason against shipping.
 
-**6. LEAK-25: the open call, and the fix that keeps the dataset (P4).**
-- Claim: the zero mix is real. Under the rule as written it cannot be kept as an exception. The fix that keeps the
-  dataset is an amendment of LEAK-25, which the curator's 2026-10-30 call already points to.
-- Evidence:
-  - The source's own "no estimate" mark is located and dropped. The directive forbids the box only for floods, and
-    Flood and Flash Flood have no blanks from 2008 on (26 in 2007), against 14.6-28.3% blank for the other main types.
-    So the blank is the box: 18.3% of the events, dropped.
-  - Conceded: a residual remains, $0 entered where no estimate was made. 13 of 121 EF4/EF5 segments are at $0, and
-    17.3% of EF2+.
-  - That residual follows a feature, the office. An office's $0 share in 2024 predicts its 2025 share at r 0.958, and
-    within one office's storm the model still ranks counties (point 3). So the score is not only the recording
-    practice.
-  - The precedent that retired a dataset under LEAK-25, ghanas_indigenous_intel, was also `Too Small`. LEAK-25 has
-    not decided a large task on its own.
-  - The curator saw this exact mechanism (the screening's risks name "$0 against blank, offices that rarely
-    estimate") and answered "We don't care. We want to add any relevant predictive task, independent if it is zero
-    inflated or not", then `Yes`.
-- Rule: LEAK-25 (Must). I concede that nothing ranked above it carries the keep, and that a Must takes no exception.
-  Principles, "Consistent judgement" 1: a call that breaks a Must is offered as an amendment. Draft amendment: "a mix
-  whose unrecorded part the source flags and the definition drops, and whose remainder follows a reporting unit
-  shipped as a feature, is kept with a note and fit approximate".
-- Why it outranks the objection: the curator decides and may amend (amendment > exception > precedent). Exclusion is
-  for a Must that cannot be fixed, and here the fix is a rule change that only the curator can make. If the curator
-  declines, the honest outcome under the rule as written is `No`, since re-targeting to the positives still leaves
-  the selection. The rest of the dataset gives no reason to go there.
-- Text fix, conceded: the target bullet attributes an AI gloss to the curator ("a cleaning choice"). Quote the call
-  instead and label the gloss as the AI's.
+6. Types the note does not name are a completeness fix in the note (LEAK-10/LEAK-37 Cases row; P7 writing).
+   - Seiche (51 rows), Dust Storm (1,476), Volcanic Ashfall (77, all $0), Hurricane (482) and Tropical Storm (3,837) are
+     timed "by damage or a criterion". About 0.7% of rows; the small types are too small to measure.
+   - Mildest remedy: name them in the kept-with-note bullet. Seiche's begin is conditioned on damage, so blank its 51
+     durations (costless) or note it. Reword "read App. A for every type".
+   - Flash Flood (and Flood): three agents read "threat to life or property" as outcome-free (precedent checker,
+     practitioner, claim auditor). The column auditor reads one of Flash Flood's four onset examples as damage, but it
+     too "lean[s] keep".
+   - The measured Flash Flood worth has no consistent sign: -0.011/+0.053/+0.071 by the column auditor, -0.125 to +0.098
+     over 15 fits by the claim auditor.
+   - So every agent lands on keep. The fix is one clause saying Flood and Flash Flood are timed by threat, judged
+     outcome-free and kept, so no later reviewer reopens it.
 
-**7. The quality items are cheap and decide nothing (P7).**
-- Fixes:
-  - LEAK-19 (Should): drop the 1,072 exact raw copies (narrative included).
-  - CLEAN-21 (Should): split `magnitude` into `wind_speed_kt` and `hail_size_in`. The split is lossless (2.6125
-    against 2.6007, inside the noise).
-  - CLEAN-11 (Should): set the 24 impossible wind values to missing.
-- Wording:
-  - Flood blanks: 26, all in 2007.
-  - Episodes: none spans two months, so drop "except at New Year".
-  - The 2024 file comparison: 1.3% of events were added or removed.
-  - Office drift: 30% of offices moved by more than 0.2.
-  - Scratch base: 2.582 on the shipped features.
-- Untested and bounded: rewrites of older years (2012 file of October 2026). The 2024 and 2025 comparisons bound them
-  at 0-0.17%.
-- Rule: principles, step 3: a quality problem is fixed when the fix is cheap and safe. None of these touches validity.
+7. Metric, value and the remaining findings are settled or are text fixes (MET-1/MET-11 Must; TP-3 Must; LEAK-25 as
+   amended).
+   - RMSLE suits the label and the task:
+     - No source metric exists (claim auditor web search; Diaz and Joseph used MSE on log damage).
+     - On raw dollars, 0.1% of rows hold 99.94% of the squared deviation.
+     - 44% of the positive figures have one significant digit.
+     - The practitioner: "As a planner ranking hazards and counties by order of magnitude, I could pick a model by it".
+       The Tweedie switch is "a weighing call ... not a Must", and issue 3 settled RMSLE.
+     - The stale "the manager" in the metric reason becomes "the planner" (text fix, MET-1).
+   - Value (TP-3): the probe's no_spread flag compares untuned families (RF vs linear +0.051). The task gamer's LightGBM
+     (2.83) against the probe's linear (3.24) and its own 100-round LightGBM (2.92) shows methods spread, and TP-3 says
+     keep. The blind reviewer has R2 0.49 against 0.19 for an event-type mean.
+   - The office $0 convention (blind reviewer's first concern) was decided for this dataset under LEAK-25 as amended
+     (Andrej, 2026-11-02). The spread and drift are in the notes.
+   - The blind reviewer's "undocumented masking" refers to task.md only. The definition documents the EG/ES blank, the
+     duration blank and the dropped hazards.
+   - Bookkeeping, all text: stale counts (1,072 to 918; 3.5-4.0% to 4.4-4.9%; 40%/37% to 30.1%; others), the
+     unassessed-filter reason (re-ground it on 99.1% $0 / 0.5% of dollars), hail under 3/4 inch added to the damage-only
+     list, and the record's leftover `No Good Target` marker on a `Yes`.
+   - "Independent failures are not conflicts": none of these is a failed Must. Each is a correction of what the notes
+     say about data that is right.
 
-**Changes I accept, in rank order:** amend LEAK-25 or retire (curator); narrow `use_case` and rewrite `fit_reason`;
-blank EG speeds; blank tornado durations; drop `hurricane_category`; add the damage-report fact to `known`; `gap=3`;
-name Diaz & Joseph and the zero share in the metric reason; drop the 1,072 copies; split `magnitude`; fix the
-impossible values and the wording.
+**Judgment record (advocate's reading)**
+
+Verdict: ship after text changes.
+Validity:
+- USE-1 and USE-5 hold (approximate fit, issue 5).
+- LEAK-10/LEAK-37 Cases row applied (D13 verified). The kept spans stay with a corrected worth and EG/ES statement; the
+  missing types are named; Seiche is blanked or noted.
+- LEAK-25 kept as amended.
+- SPLIT-10 and SPLIT-13 hold.
+- No weight or exposure: MET-14/MET-15/LEAK-41 do not apply.
+Value: TP-3, methods spread (keep). RMSLE kept under MET-1/MET-11; reason re-worded to the planner.
+Quality: stale counts and the record marker corrected.
+For the curator:
+- EG/ES option a or b, after the 4-seed rerun if wanted.
+- Seiche: blank or note.
+
+Sources: the panel's reports (claim auditor, column auditor, split auditor, domain practitioner, precedent checker,
+blind reviewer, task gamer) and the task and leak probes; the rules (principles.md, leak_checks.md, metrics.md,
+task_probes.md); the definition (the kept-with-note bullet).
 
 </details>
 
 <details><summary>Critic</summary>
 
-**Critic: opening brief, noaa_storm_events_damage (2026-11-01)**
+**Critic, opening brief: noaa_storm_events_damage (exposure re-review, full tier, 2026-11-06)**
 
-**Verdict: do not ship as defined; ship only after the changes below.** Point 1 decides whether it ships at all: as
-written, the definition sets aside a Must (LEAK-25) and backs that with a gloss on the curator's words. Points 2 to 4
-are validity fixes in the definition, and they are cheap. With all three LEAK-10 fixes the task keeps its signal:
-mean RMSLE goes from 2.504 to 2.556 over the 3 windows, against a dummy at about 3.90 (claim auditor, s06).
+Position: ship only after changes. Nothing here excludes the dataset. The use case is real (issue 5), the split holds
+(split auditor: no problem), and no exposure or weight ships, so MET-14, MET-15, MET-16 and LEAK-41 do not apply. That
+leaves four problems. D13's keep-with-a-note rests on a premise the data refutes. Its reading of the event types is
+incomplete. The worth it reports is the low end of what was measured. And the metric reason was never redone after the
+use case changed. Ranked validity first, Must first.
 
-```text
-Verdict: ship after changes (no ship without a decision on point 1).
-Validity: SEL-3 consistency check against us_accidents (point 1); USE-5 triggered, fix the text (point 2);
-  LEAK-25 triggered, not recovered (point 1); LEAK-10 triggered three times, fixable (points 3, 4);
-  SPLIT-10 departure (point 5).
-Value: MET-1/MET-11, the reason misstates the search; rmsle kept (point 6).
-Quality: CLEAN-21, LEAK-19, CLEAN-11 and text fixes (point 7), no reason to exclude.
-```
+1. The kept-span note says the damage-set part "cannot be located row by row". It can be located: `magnitude_type` EG/ES
+   marks it. (P4; LEAK-10 Must, second clause; LEAK-7 Should; the time-on-risk Cases row: "where the data locates the
+   cut row by row, fix it")
+   - Problem: the definition keeps `duration_hours` for the five types because "Which of the two set a given span is not
+     recorded, so the part the damage set cannot be located row by row" (dataset.py l.158). The same definition already
+     uses `magnitude_type` to blank the speeds the preparer estimated from the damage (l.156, 234).
+     - In 2024, 94.4% of EG Thunderstorm Wind events had a first report "TSTM WND DMG" with no speed (the definition's
+       own LSR match).
+     - For such an entry, Sec. 46 ("When damage first occurred or winds 50 knots ... were first reported") can only mean
+       the damage.
+     - The EG/ES rows are 241,088 of the 318,813 kept rows (75.6%), per the precedent checker. A further 435
+       Thunderstorm Wind rows carry a measured speed under 50 kt, so their spans must be damage-timed too (column
+       auditor, 92% positive).
+   - Effect on the task: most of the kept rows carry a span the outcome sets, and those rows can be located. They are
+     not an unlocatable remainder.
+   - Evidence:
+     - The precedent checker's report, section 2, with its probe. Blanking the duration on the EG/ES rows only changes
+       RMSLE on those rows by +0.041, +0.009 and +0.003. This was 2 seeds and untuned, so it is indicative only and
+       needs the panel's 4-seed rerun.
+     - Precedents that blank located cells: zillow_prize, melbourne_housing_market, frempl (leak_checks.md l.93, 430,
+       441).
+     - A blank keyed on `magnitude_type`, which is itself a feature, makes no marker. The speed blank was accepted on
+       exactly that ground.
+   - Remedy (mildest):
+     - Blank `duration_hours` on the EG/ES rows of Thunderstorm Wind and High Wind, and on the Thunderstorm Wind rows
+       with a measured speed under 50 kt.
+     - Keep the note for the measured-gust rows and the flood rows.
+     - If the 4-seed rerun shows no gain on the EG/ES rows, keep the column instead, but rewrite the note: drop "cannot
+       be located" and give the EG/ES fact and its measured worth.
+     - This is the curator's call (option a or b of the precedent checker's prompt).
 
-**1. The $0 label is largely office entry practice (P4, LEAK-25 Must; P2, SEL-3 consistency check).**
-- *Problem.* A $0 mixes "no damage" with "not estimated". The definition says that blanks are the "no information
-  available" box and that a $0 is an entered zero. The data does not support that reading. In 2007, when the files
-  switched to the CSV format, Thunderstorm Wind entries moved from 49.8% blank and 7.1% $0 (2006) to 10.5% blank and
-  44.7% $0, while the positive share stayed flat (43.1% to 44.8%; precedent checker). So
-  the "no information" entries became $0.
-- *More evidence.* 13 of the 121 EF4/EF5 tornado segments are at $0, among them a 33.7-mile EF5 in Alabama in 2011,
-  and 17.3% of the EF2+ segments (claim auditor, claim 13). Across offices, the $0 share of Thunderstorm Wind runs
-  from 7% to 91% (10th to 90th percentile), and it moves over time: 30.5% of 82 offices shifted by more than 0.2
-  (claim 15).
-- *Effect.* RMSLE spends 41-49% of its squared error on the true-$0 rows (claim 35). On 2024, 69% of it falls on the
-  rows where the zero/positive call is wrong (practitioner). Event type and office alone give ROC AUC 0.933 of 0.952
-  for any damage (claim 39). Much of the score therefore ranks how well a model reproduces each office's habit. That
-  is the mechanism Lennart retired us_accidents for (`No`, 2026-09-23: codes reproduced from "the right subsets").
-- *Rule.* LEAK-25 (Must): retire unless recovered. Since 2026-10-21, recovered means the unrecorded rows are located
-  by a rule that does not read the label, and nothing here locates them. The curator's call of 2026-10-30 ("We don't
-  care. We want to add any relevant predictive task, independent if it is zero inflated or not") is filed as
-  "Coded zeros (no rule)". A Must takes no exception (principles.md, Strengths). The `Yes` gives no fact that sets
-  this case apart from us_accidents (Consistent judgement, case 2).
-- *Remedy, the mildest that works.* The curator decides it as an amendment of LEAK-25, for example "a mix that
-  follows a reporting unit shipped as a feature is kept with a note, fit approximate", and records what sets the case
-  apart from us_accidents. Without an amendment, the rule leaves two outcomes:
-  - (b) re-target to the entered positive amounts. This removes the mix, but it narrows the task and selects rows on
-    the label.
-  - retirement.
+2. D13 claims to have read App. A for every type. It did not, so some damage-timed spans are neither blanked nor noted.
+   (P4; LEAK-10 Must; LEAK-10 / LEAK-37 Cases row of 2026-11-06)
+   - Problem: the CC line says "the study of 2026-11-05 read App. A for every type" (l.167). Three auditors found types
+     it left out:
+     - Seiche (Sec. 41), 51 rows, 57% positive. The begin is "When water levels rose to initiate shoreline flooding,
+       resulting in a fatality, injury or damage", so it is conditioned on the outcome (claim auditor row 3; precedent
+       checker section 3). Under the row's own reading this is closer to Strong Wind than to the kept branch.
+     - Hurricane (482 rows), Tropical Storm (3,837), Volcanic Ashfall (77) and Dust Storm (1,476) are timed by "damage
+       or" a criterion. That is the kept branch, but they have no note (precedent checker; column auditor problem 1).
+     - Flash Flood, 74,914 rows (8.9%). One of App. A's four onset examples is water that "causes damage to an above
+       ground residence or public building". Its worth on Flash Flood test rows is -0.011, +0.053 and +0.071 (column
+       auditor, 4 seeds), which is above the five noted types. The claim auditor's blankFF contrast found no consistent
+       sign (-0.125 to +0.098 over 15 fits), and the domain practitioner and the claim auditor read Flash Flood as
+       threat-timed. That disagreement is the curator's to settle.
+   - Effect on the task: the Must rule is applied unevenly across the types of one column, and the Cases row cites a
+     reading that is not complete.
+   - Remedy (mildest):
+     - Blank the 51 Seiche durations, which costs nothing measurable.
+     - Add Hurricane, Tropical Storm, Volcanic Ashfall and Dust Storm to the kept-with-note bullet.
+     - Rule on Flash Flood (and Flood) explicitly: either keep it with a note giving its worth, or record it as judged
+       threat-timed and outcome-free.
+     - Reword "read App. A for every type", both in the notes and in the leak_checks.md Cases row.
 
-  Whichever way the curator goes, three text fixes:
-  - Quote the curator's words in the Target bullet instead of "coded zeros are a cleaning choice". That phrase is the
-    AI's gloss.
-  - Mark "blank = no estimate" as an inference that the 2007 recoding contradicts.
-  - Change the acceptance reason of `task_target_value_dominant` from "zero-inflated by nature" to "part of the
-    zeros are unestimated damage".
+3. The note understates the kept column's worth and calls it "an upper bound". (P4; the Cases row requires "a note
+   giving its worth"; LEAK-6 Must: measure before acting; EV-2)
+   - Problem: the note gives +0.012 to +0.021 RMSLE on the five types and calls it "an upper bound on that part".
+   - Evidence:
+     - Claim auditor, 5 set-ups by 3 years (t3_summary.txt): -0.009 to +0.078, median about +0.034.
+     - The deterministic fit from the curator's own run gave +0.027 to +0.040 (out/duration_worth_summary.txt). Only the
+       bagged mean of the small model was reported.
+     - Task gamer, per-type gain: Thunderstorm Wind +0.025 to +0.057; High Wind +0.019 to +0.057.
+     - The study's +0.020 to +0.038 sits in the same range.
+   - Effect on the task: the curator weighed the keep against a number that is not a bound. The heart_failure
+     counter-case shows that size decides between keeping with a note and dropping (precedent checker 1d), and that same
+     counter-case shows the row needs a size condition.
+   - I concede that even +0.08 is about 6% of the ~1.3 gain over a constant. The keep need not flip on this point alone,
+     but the note must be true.
+   - Remedy: write "+0.01 to +0.08 RMSLE on these types' test rows depending on the model (median about +0.03)" and drop
+     "an upper bound". Make the same fix in REVIEW issue 6 and in the Cases row.
 
-**2. Half of the use case fails, and `fit_reason` misstates the inputs (P3, USE-5 Must; USE-3, USE-8 Must).**
-- *Problem.* The use case names an insurer's catastrophe desk deciding "what to reserve". The label is a different
-  quantity:
-  - Storm Data's 2024 total is $15.7B, against $182.7B for NCEI's billion-dollar events of 2024 (the scopes differ).
-  - Hail is 11.1% of the 2024 rows but 1.4% of the dollars, while it drives up to 80% of severe-storm claims.
-  - The model's predicted dollars sum to 5.9% of the 2024 actual (domain practitioner, Sec. 2).
-- *`fit_reason`.* It says "The features are what the first reports hold". Claims 3, 4, 5 and 23 refute that for
-  three columns. In addition:
-  - 67.9% of tornado rows come from storm surveys (NWSI Sec. 47.6 types a tornado from its damage).
-  - Strong Wind, Lightning and sub-severe Thunderstorm Wind enter Storm Data only with damage. They are 94.2%, 83.9%
-    and 97.5% positive (claim 42). That is known at the first report only if the report says damage was seen, and
-    `known` does not say so.
-- *Effect.* A benchmark user reads an insurer task the label cannot serve, and reads the inputs as cleaner than they
-  are.
-- *Rule.* USE-5, last sentence: "A label checked and found to be another quantity than the one the actor acts on
-  still fails" (Lennart, 2026-10-21).
-- *Remedy (fix the definition, text only).*
-  - Narrow `use_case` to the emergency manager ranking a storm's counties for damage-assessment teams (the
-    practitioner's wording), and drop the insurer and "what to reserve".
-  - Rewrite `fit_reason` to name the gaps: Storm Data entries made weeks later, tornado types from surveys, and one
-    row per event type and county segment where the decision is per county and storm.
-  - Add to `known` that the first report says whether damage was seen.
-  - Weighing call for the curator: filter the hazard types that no assessor is sent for. They are 19.8% of the 2024
-    rows, 99.7% of them $0, and 0.07% of the dollars, and they make the task look easier.
+4. The metric reason names an actor the use case no longer has, and RMSLE was never checked against the planner's
+   decision. (P6; MET-1 Must)
+   - Problem: the reason reads "The manager ranks counties by orders of magnitude" (l.182). Issue 5 (B, 2026-11-03) made
+     the actor a state hazard-mitigation planner. Issue 3 settled RMSLE for the triage framing only, and "metric
+     unchanged" in issue 5 was not re-argued.
+   - Evidence (domain practitioner, section 5):
+     - The planner acts on expected annual loss per county and hazard, which is a sum of dollars.
+     - RMSLE is minimised by exp(E[log(1+y)]) - 1. In 2024 the RMSLE-optimal constant is $16 against a mean of $355,555.
+     - The $0 entries take 37-47% of the error, and part of that $0 is office convention.
+     - On the other side: the label supports order of magnitude and no more (44% of positive figures have one
+       significant digit), and RMSLE scores exactly that.
+   - Effect on the task: the declared metric may rank models by a quantity the actor does not plan with.
+   - Remedy (mildest):
+     - Rewrite the reason for the planner.
+     - Run the practitioner's probe: mean_tweedie_deviance (p = 1.5, on dollars) against RMSLE on the 3 windows. Keep
+       RMSLE if both pick the same model, and say in the reason that this was checked. Switch only if they pick
+       different models.
+     - Fix the same stale actor in the REVIEW.md header and in the UNASSESSED filter's reason (claim auditor rows 14,
+       27; USE-1).
 
-**3. The EG wind speeds are written after the first report, and they can be located (P4, LEAK-10 Must, clause 2).**
-- *Problem.* The note keeps the speeds because the late values "cannot be located". The claim auditor located them.
-  2024 county Thunderstorm Wind events were matched to the real-time Local Storm Reports (IEM archive), and 12,498 of
-  the 13,211 EG events matched. For 94.4% of them the first report was "TSTM WND DMG" with no speed, and only 4.4%
-  carried the speed Storm Data shows. The check works: measured gusts carry over 92.7% of the time and hail sizes
-  97.9% (claims 3 and 20).
-- *Effect.* The model reads a number the preparer set from the damage (NWSI Sec. 46.3; Table A7, "Estimating Wind
-  Speed from Damage"). Among the entries with damage it tracks the dollars: Spearman 0.51 on the matched 2024 events,
-  0.462 overall. The note's AUC of 0.433 measures any damage, not the amount that is scored.
-- *Like cases.* This definition drops `TOR_F_SCALE` for the same mechanism (LEAK-2). On precedent,
-  distribution_transformers_at_cauca_department was dropped, and zillow_prize and melbourne_housing_market were
-  blanked.
-- *Steelman.* MG speeds rank the damage just as well, and the practitioner accepts EG because the first report is a
-  damage report. That argues for keeping `magnitude_type`, which the first report carries. It does not argue for the
-  number, which 94.4% of first reports lack.
-- *Remedy.* Blank `magnitude` where `magnitude_type` is EG, and check ES, the same estimate for sustained wind
-  (LEAK-2). Keep `magnitude_type`. The blank follows a shipped feature, so it leaves no marker. Cost: 2.504 to 2.538.
+5. The task's population is "events whose office later entered a damage figure", and nothing in task_summary says so.
+   (P3; USE-3, reading what the row means; LEAK-25 as amended, settled, not reopened)
+   - Problem: rows with a blank `DAMAGE_PROPERTY` are dropped.
+     - The blank rate runs from 0% to 98% by office (EAX 98%, ALY 96%), and 22.7% of 2025 source rows are blank (task
+       gamer).
+     - At the prediction point the planner does not know whether a figure will be entered.
+     - Among the non-blank rows, the positive share is 0.19 at offices with under 5% blanks and 0.25 at offices with
+       over 70% blanks, so the drop slightly enriches positives.
+   - Effect on the task: small, but a reader of task_summary would take the population for all logged events.
+   - Remedy: one sentence in task_summary.row or known: "events with a damage entry; offices leave 0-98% blank". No data
+     change. The settled LEAK-25 handling stands.
 
-**4. Two more survey products remain: tornado `duration_hours` and `hurricane_category` (P4, LEAK-10 Must; LEAK-2,
-LEAK-6).**
-- *Tornado duration.* For a tornado, begin and end mean ground contact, which the survey sets (Sec. 47). 68% of
-  tornado rows have `SOURCE` "NWS Storm Survey".
-  - Duration correlates with the dropped `TOR_LENGTH` at Spearman 0.83. With duration in the model, adding
-    `TOR_LENGTH` moves tornado RMSE only from 4.629 to 4.618: the path is already there.
-  - Blanking duration raises the tornado-row RMSLE by 0.16 to 0.23 in the 3 windows (claim 23; column auditor +0.26,
-    five times the noise).
-  - The definition drops the end point of the same path.
-- *Hurricane category.* It is set per zone:
-  - 23 of the 95 episodes with a category carry more than one value.
-  - Michael 2018 runs from 1 to 5 across 14 zones. Its Cat 5 zone ($6B) matches the post-storm upgrade of April 2019,
-    while the operational landfall category was 4.
-  - NWSI pairs each category with "Types of Damage". The $0 share is 29% at Cat 1 and 0% at Cat 4-5 (claims 4 and
-    25).
-  - The Built bullet's reading ("the category ... the National Hurricane Center issues before landfall") is wrong.
-- *Remedy.*
-  - Blank `duration_hours` on every Tornado row: by type, not by `SOURCE`, which would leave a survey marker.
-  - Drop `hurricane_category`. It covers 483 rows and none in the 2025 window, and under LEAK-6 a confirmed late value
-    goes even when small.
-  - Correct the Built bullet.
+6. Stale and inaccurate text that a reader acts on. (EV; USE-3; LEAK-37 note completeness, Should; records.md)
+   - `known` says "3.5-4.0% of test rows" are entered only with damage. Shipped: 4.4-4.9%, of which 95-96% are damaged
+     (claim auditor row 19).
+   - The type list leaves out Hail under 3/4 inch, which App. A enters only with damage or an accumulation: 504 rows,
+     67-89% positive (column auditor problem 3). It also leaves out Dust Devil.
+   - `changes` says 1,072 double entries. Shipped: 918.
+   - Notes give 40% / 37% zone rows; shipped 30.1%. 8,135 codes; shipped 7,697. 167,629 episodes; shipped 140,270. EG
+     254,988; shipped 252,451 (claim auditor rows 20-21).
+   - The record carries a `No Good Target / Scientific Discovery` marker on a `Yes` suggestion (row 26).
+   - REVIEW issue 6, option A, says "six other damage-timed types" where the list has seven.
+   - Remedy: recompute the counts on the shipped rows, or date them "before the issue 2 drop". Update `known`. Remove
+     the marker if the curator agrees.
 
-**5. The gap is shorter than the actor's label delay (P4, SPLIT-10 Should).**
-- *Problem.* The gap of 2 months comes from the 60-day certification. The actor reads NCEI's public releases, which
-  lag 75 to 80 days (measured on three archived releases; C00510 says "up to a 120 day delay possible"). On 1 January,
-  the public file holds events through September. `task_summary.split` ("every event certified by the start of that
-  year") is partly refuted: May 2025 was 83% present 79 days after its end, and 417 events were added after
-  16 Jan 2026 (split auditor).
-- *Effect.* Each training side holds one month the actor would not have: 1,401 to 1,743 October rows, 0.15-0.21%.
-  There is no shortcut (SPLIT-9 holds).
-- *Remedy.* Either set `gap=3`, or keep 2 months and restate the refit as made at the mid-January release. Reword
-  `task_summary.split` to "every event published by the refit". The score difference (+0.02 to 0.03 for gap 3) is an
-  edge effect and should not decide.
+7. Rule and process bookkeeping for a keep under a Must. (principles.md "Exceptions and amendments": a Must has no
+   exceptions, a keep is an amendment; house rules on claims)
+   - Problem 1, the rule text: the Cases row keeps a partly outcome-set column under LEAK-10 (Must), but LEAK-10's text
+     has only two clauses, and LEAK-6's narrowing names neither. The row also sets no size condition, so read literally
+     it would have kept heart_failure's `time` (precedent checker 1d, 1g).
+   - Problem 2, the release: the study's decision table assigns D13 to Andrej ("by Andrej in his folders, or with his
+     release"). REVIEW and the record show Lennart's decision but no release from Andrej (precedent checker 1c).
+   - Remedy:
+     - Amend LEAK-10 in place with a third clause for spans drawn "by the outcome or an outcome-free criterion". Tie it
+       to the second clause's test: blank the located part, and keep the rest only when its worth is small. Name
+       heart_failure as the counter-case.
+     - Record Andrej's release of D13, or confirm that he gave it.
 
-**6. The metric reason misstates the search, and it leaves out what the score is made of (P6, MET-1 and MET-11
-Must).**
-- *Problem.* The reason says that no competition or paper on this target was found. Diaz & Joseph 2019 (Weather and
-  Climate Extremes 25:100216) models tornado property damage from this database (claim 32). The reason also says
-  that a relative error fits the use, yet the use case's "what to reserve" is a dollar sum (see point 2), and much of
-  the error sits at the zero/positive call (see point 1).
-- *Effect.* Rmsle reads as an unanchored choice, and a reader does not learn that the score ranks models largely by
-  how they reproduce $0 entries.
-- *Remedy (repair the text).*
-  - Name the paper. It reports several metrics on a tornado-only subset with a random split, so it gives no unique
-    original (MET-5). It scores on the log scale, which supports rmsle.
-  - State that the zero/positive call dominates the score.
-  - Keep `rmsle`. A within-storm score (`mean_group_pearsonr`, with `EPISODE_ID` as a scoring column) is a weighing
-    call for the curator, with its caveat: 59.9% of the 2024 episodes with five or more rows are all $0 and drop out.
-  - Not `normalized_gini`: on 2024 it prefers the model that ranks a storm's counties worse (practitioner).
+Not argued, because settled and not reopened by today's change:
+- The office $0 convention (LEAK-25 as amended). The blind reviewer and the practitioner raise it again, with no new
+  fact.
+- `magnitude_type` as a feature. Settled by the LSR match. The task gamer agrees it is a first-report fact.
+- Nominal dollars.
+- The split and its gap.
+- Exposure (county population does not scale).
 
-**7. Quality, fixes that are cheap and safe (P7, Should; no reason to exclude).**
-- **CLEAN-21:** `magnitude` holds knots and inches in one column. Split it into `wind_speed_kt` and `hail_size_in`.
-  The split is lossless (2.6125 against 2.6007, inside the noise).
-- **LEAK-19:** 1,072 rows are exact copies of another raw row in every published column, narrative included. They
-  are double entries, not separate events, as the duplicates note says (claim 26). Drop them, or correct the note.
-- **CLEAN-11:** 22 Thunderstorm Wind entries of 1-10 kt and 2 Strong Wind entries of 0 kt should become missing.
-- **Text:**
-  - "Flood and Flash Flood have no blanks" is wrong: there are 26, all in 2007.
-  - The scratch base includes `SOURCE` and `year`. The base on the shipped features is 2.582.
-  - "except at New Year" never occurs: 0 of 167,629 episodes span two months.
-  - The 2024 file comparison leaves out 907 events (1.3%) that were added or removed.
+Sources: the panel's reports (claim auditor, column auditor, split auditor, domain practitioner, precedent checker with
+its probe, blind reviewer, task gamer); the definition (l.86-100, 156-158, 167, 182); REVIEW issue 6; the rules
+(leak_checks.md: LEAK-6 l.51, LEAK-10 l.78-98, Cases rows l.430, 441, 442; principles.md).
 
 </details>
 
 <details><summary>Advocate rebuttal</summary>
 
-**Advocate, rebuttal: noaa_storm_events_damage (2026-11-01)**
+**Advocate, rebuttal: noaa_storm_events_damage (exposure re-review, full tier, 2026-11-06)**
 
-**Where this leaves the case.** The critic and I agree on the verdict: ship only after the changes, and only once the
-curator has decided LEAK-25. We also agree on points 2 to 7. Point 1 is the only live dispute. I ran three checks on
-it, and the main one goes against me. The office is the largest single part of the score, larger than either brief
-said. I concede that effect. I dispute only the critic's reading of the 2007 recoding, and I narrow the us_accidents
-distinction to what the numbers still support.
+The critic and I agree on the verdict: ship after changes, with nothing that excludes the dataset. We disagree on two
+things:
+- Which way the EG/ES question should default (point 1).
+- Whether the Tweedie probe and the rule amendment hold up shipping (points 4 and 7).
 
-New checks:
-- entries that require damage, blanks against $0 by office, and the 2006 format split.
-- blanks by year, and the EF4/EF5 segments at $0.
-- LightGBM with the critic's LEAK-10 fixes (EG and ES speeds blanked, tornado
-  durations blanked, `hurricane_category` out). The frame is rebuilt from the raw files. The date masks reproduce the
-  shipped windows, for example 940,520 train and 55,961 test rows for 2025.
+Point by point:
 
-**Critic 1, LEAK-25 and us_accidents: the rule and the effect conceded; one sub-claim disputed; the precedent
-distinction narrowed.**
-- **Conceded: the rule.** LEAK-25 is a Must and takes no exception. The way out is an amendment by the curator. Without
-  one, the outcome is retirement. Re-targeting to the positive amounts does not work: whether the office enters an
-  amount above $0 is not known at the prediction point (USE-3).
-- **Conceded: the three text fixes.**
-  - Quote the curator's words in place of the AI gloss.
-  - Mark the reading of the blank as an inference.
-  - Change the acceptance reason to "part of the zeros are unestimated damage".
-- **Conceded, and stronger than the critic put it: the effect.** Mean over the 3 windows:
+1. EG/ES locates the damage-set spans (LEAK-10 second clause, LEAK-7, the time-on-risk row). Concede in part; dispute
+   the default remedy.
+   - Conceded: "cannot be located row by row" is false. magnitude_type marks 241,088 of 318,813 kept rows. The note must
+     say so and give their measured worth.
+   - Disputed: that the located-rows precedents call for blanking here.
+     - The rules the critic cites are about values that were never available at the prediction point:
+       - LEAK-10's second clause covers "a value read at a later pull" (zillow, melbourne, aeolus).
+       - The time-on-risk row covers an amount at risk cut short by the outcome (LEAK-41).
+     - The rule written for this column is the later, specific row on spans (leak_checks.md l.442). It reads spans type
+       by type.
+     - The begin and end times of a damage report are in the first reports at the stated prediction point. LEAK-37
+       (Must) already admits "whether damage was seen" there, and the LSR match settled this. The task gamer calls the
+       EG/MG fact "signal at the stated prediction point".
+     - The EG speed was blanked for a different reason: the preparer estimated that number from the damage, so it is a
+       consequence of the target (LEAK-10). A report's clock time is not.
+   - Data: the duration is weaker where damage set the span. High Wind EG AUC 0.459 against MG 0.686; Thunderstorm Wind
+     EG Spearman 0.159 against MG 0.305 (claim auditor row 5).
+   - The only worth measured on the EG/ES rows is +0.041/+0.009/+0.003, from 2 untuned seeds, inside seed SDs of
+     0.016-0.030.
+   - So under LEAK-7 (keep a valid signal) the default is b: keep, with the corrected note.
+   - I accept the critic's tie-breaker (EV-1, facts first). If the 4-seed rerun shows a consistent gain on the EG/ES
+     rows, take a, which is a definition fix. Either outcome ships.
+   - The 435 measured-under-50-kt rows go with whatever is decided for EG/ES.
 
-  | features | RMSLE | ROC AUC for any damage |
-  |---|---|---|
-  | dummy | 3.90 | |
-  | event type + month + time | 3.55 | 0.80-0.84 |
-  | + the office | 2.71 | 0.935-0.945 |
-  | all features (fixed) | 2.54 | 0.945-0.954 |
+2. Types left out of the App. A reading. Concede.
+   - Seiche (51 rows): blank it, which is costless.
+   - Hurricane, Tropical Storm, Volcanic Ashfall and Dust Storm: add them to the note.
+   - Reword "read App. A for every type" in the notes and in the Cases row.
+   - Flash Flood and Flood: I agree it needs an explicit ruling. My reading is recorded as threat-timed and
+     outcome-free, kept with a clause:
+     - App. A's begin is "an immediate threat to life or property", and the damage case is one of four onset examples.
+     - The end is threat-based.
+     - The worth has no consistent sign over 15 fits (-0.125 to +0.098).
+     - Every agent, the column auditor included, leans keep.
+   - Whichever way the curator rules (with a note, or recorded outcome-free), the column stays.
 
-  - The office, added after type and time, gives 0.84 of the 1.36 total gain (62%). All the other features together
-    add 0.16.
-  - Among the positive entries, R^2 on log1p is -0.01 to 0.21 from type and time, 0.18 to 0.38 with the office, and
-    0.37 to 0.46 with all features.
-  - This run cannot separate the office's habit from regional cost levels. But the spread for the same event type
-    (7% to 91% at $0 for Thunderstorm Wind; 0.2% to 96% for EG wind, blind reviewer) makes habit the likelier reading.
-  - It follows that I withdraw "RMSLE 2.556 against 3.90" as evidence against us_accidents (my opening, point 3):
-    most of that gap is the office.
-- **Disputed: "the no-information entries became $0" (the 2006 to 2007 recoding).** The year 2006 holds both entry
-  formats, so it allows a direct comparison:
+3. Understated worth. Concede in full, with the critic's wording ("+0.01 to +0.08 ... median about +0.03", drop "an
+   upper bound") in the note, REVIEW issue 6 and the Cases row.
+   - The critic also concedes that +0.08 is about 6% of the gain over a constant and that the keep need not flip.
+   - On heart_failure: its `time` alone scored ROC AUC 0.84 and moved LightGBM from 0.75 to 0.90. That is a dominant
+     worth, not comparable with a few percent. The size test is met here at any of the measured numbers.
 
-  | 2006 rows | blank | $0 | floods blank |
-  |---|---|---|---|
-  | PDS (48,562) | 71.3% | 5.5% | 63.3% of 3,158 |
-  | CSV (7,838) | 0.1% | 72.7% | 0 of 710 |
+4. Metric reason names the old actor. Concede the rewrite; dispute that the probe gates shipping.
+   - Conceded: "The manager" becomes "the planner" in the reason, the REVIEW.md header and the UNASSESSED filter's
+     reason (MET-1, USE-1).
+   - Disputed: that MET-1 is in doubt.
+     - The practitioner, playing the planner, says "I could pick a model by it" and calls the Tweedie switch "a weighing
+       call ... not a Must".
+     - The label supports order of magnitude only: 44% of positive figures have one significant digit, and offices enter
+       round values.
+     - On dollars, 0.1% of rows hold 99.94% of the squared deviation.
+     - No source metric exists (MET-11).
+     - The $16-against-$355,555 gap is the geometric mean against the arithmetic one. It is a reason to say in the
+       reason that RMSLE scores order of magnitude, not summed dollars, and the practitioner asks for exactly that
+       sentence.
+   - Running the Tweedie probe and recording the result is cheap and I support it. But a disagreement between the two
+     metrics would be a weighing call under the "source's metric against a better metric" tension. It is not a failed
+     Must, so it does not hold the dataset.
 
-  - The directive says floods always get an amount. The PDS blank ignores that rule, so it is no "no information"
-    box: it is how the old format wrote an empty field.
-  - In the CSV format, floods have no blanks from 2008 on, against 15-28% blank for the other main types.
-  - So the 2007 shift is a change of entry system, not the box recoded as $0. Rule: EV-2, a measurement on the data.
-  - The fix is a narrower text change than the critic's: write "blank = the box: supported by the flood rule in the
-    CSV format, not documented", rather than "contradicted by the 2007 recoding".
-- **Narrowed: where the mix sits.**
-  - In entries that require damage (Strong Wind, Lightning, Thunderstorm Wind below 50 kt), a $0 with no casualty and
-    no crop damage is 3.1%, 0.6% and 0.3% of the entries.
-  - In the quarter of offices that enter $0 on 91% of their Thunderstorm Wind, that rate is still 1.2% (0.0% in the
-    bottom quarter).
-  - So offices do cost damage when the entry rests on it. The mix sits in events entered by a criterion (severe wind,
-    hail), where costing was not required. That locates where it is, but not which rows: dropping those events would
-    drop most of the task. So it is no recovery under LEAK-25.
-  - Two further facts:
-    - Blanks rose from 7.3% to 22.7% of events over 2007-2025. The $0 share (r -0.63) and the positive share (r -0.67)
-      both fell with them, so early $0 entries held some unestimated damage.
-    - 7 of the 13 EF4/EF5 segments at $0 come from the Alabama outbreak of April 2011, where sibling segments of the
-      same episode carry $20-50M. That is damage booked elsewhere: real, but clustered.
-- **us_accidents, narrowed.** The facts that still set this case apart:
-  1. The label is the quantity the narrowed use acts on (dollars of damage, a rough proxy). us_accidents failed USE-5
-     on a delay code.
-  2. There is signal beyond the subsets that reproduce the code (type, office, period):
-     - RMSLE 0.16 lower in every window (2.41 / 2.63 / 2.59 against 2.56 / 2.79 / 2.77);
-     - R^2 among the positives +0.08 to +0.19;
-     - within one episode, where the office is fixed, Pearson on dollars of 0.31-0.34 against 0.27-0.32.
+5. Population is the events with a damage entry. Concede the sentence, with no data change.
+   - The notes already give the blank share (18.32% of 1,225,290, claim auditor row 22), and the drop is the settled
+     LEAK-25 handling.
+   - One line in task_summary ("events with a damage entry; offices leave 0-98% blank") makes it visible to a reader
+     (USE-3).
 
-     In us_accidents the temporal split left almost nothing (log loss 0.48 against a 0.53 prior).
-  3. The office practice is stable from one year to the next (r 0.958 from 2024 to 2025). us_accidents had a class
-     that vanished inside one feed.
+6. Stale text. Concede every item:
+   - `known`: 4.4-4.9%.
+   - Hail under 3/4 inch and Dust Devil added to the damage-only list.
+   - 918 double entries.
+   - 30.1% / 7,697 / 140,270 / 252,451.
+   - The record marker removed (curator's call).
+   - "six" becomes "seven".
+   - All are EV/USE-3 text fixes. None touches the data.
 
-  This is a fact that sets the case apart (Consistent judgement, case 2), but it is smaller than my opening said. The
-  curator weighs it.
-- **What follows.**
-  - The amendment I drafted would ship a benchmark of which about 60% of the gain is the office's reporting. The
-    curator should see that number before amending. If adopted, it goes into the note and `fit_reason`.
-  - Of the evaluation options, `mean_group_pearsonr` within `EPISODE_ID` cancels the office's level (one office per
-    episode). It still has two caveats:
-    - the all-$0 episodes drop out;
-    - episodes where a model predicts a constant drop out too: 945-1,046 for the type/office model against
-      1,193-1,276, so a model can skip hard episodes.
+7. Rule and process bookkeeping. Concede that both should be done; dispute that either is a defect of the dataset.
+   - The LEAK-10 third clause:
+     - principles.md does say a keep under a Must is an amendment, so writing the Cases row into LEAK-10's text with a
+       size condition is right.
+     - That is maintenance of the rules. The dataset meets the rule either way: the spans are first-report facts
+       (LEAK-37), and the worth is small and measured.
+   - Andrej's release of D13: a process confirmation. Record it before merge.
+   - Neither changes the definition.
 
-    It is a weighing call, not a fix of LEAK-25.
-  - If the curator reads the 62% as us_accidents' mechanism, the result is `No`. I cannot rule that out with
-    evidence.
+Net:
+- Conceded: points 2, 3, 5 and 6 in full; the text and process parts of 1, 4 and 7.
+- Disputed: blanking EG/ES as the default (LEAK-37 and the span row over the later-pull clause; the data shows no damage
+  concentration), and any reading of the Tweedie probe or the rule amendment as a condition for shipping. Both are a
+  weighing call or rule maintenance, not a failed Must.
+- Open for the curator:
+  - EG/ES: a or b, after the 4-seed rerun.
+  - Flash Flood: kept with a note, or recorded outcome-free.
+  - The result of the Tweedie probe, as a weighing call.
 
-**Critic 2, the use case and `fit_reason` (USE-5, USE-3, USE-8): conceded.**
-- Same fix as my opening point 4: narrow the use case to the emergency manager, rewrite `fit_reason` to name the gaps
-  (including tornado types from surveys), and add the damage-report fact to `known`.
-- Filtering the hazards nobody assesses is a weighing call for the curator.
-
-**Critic 3, EG speeds (LEAK-10 clause 2): conceded, and the ES check run.**
-- ES is the same estimate for sustained wind: 1,164 entries with a damage figure, 1,154 of them High Wind. Blank them
-  too (LEAK-2).
-- My r3 and r4 runs already blank both EG and ES.
-
-**Critic 4, tornado duration and `hurricane_category` (LEAK-10, LEAK-2, LEAK-6): conceded.**
-- Blank the duration by event type and drop the category.
-- Correct the Built bullet.
-
-**Critic 5, the gap (SPLIT-10, Should): conceded.**
-- Either option works. `gap=3` is the conservative one. A refit at the mid-January release also fits a use case that
-  estimates after the storm.
-- Reword `task_summary.split` either way.
-
-**Critic 6, the metric reason (MET-1, MET-11): conceded.**
-- Name Diaz & Joseph 2019, and say that the zero/positive call dominates the score.
-- Keep `rmsle`, not `normalized_gini`.
-
-**Critic 7, the quality items (P7): conceded.**
-- Do the CLEAN-21, LEAK-19 and CLEAN-11 fixes and the four text fixes.
+Sources: the critic's brief and the phase A reports; the rules (leak_checks.md l.51-98, 273, 441-442; principles.md).
 
 </details>
 
 <details><summary>Critic rebuttal</summary>
 
-**Critic: rebuttal to the advocate, noaa_storm_events_damage (2026-11-01)**
+**Critic, rebuttal: noaa_storm_events_damage (exposure re-review, 2026-11-06)**
 
-**Where we stand.** The advocate concedes every fix in my brief. We also agree on the condition that decides the
-dataset: it ships only if the curator amends LEAK-25, and otherwise the verdict is `No`. I ran two checks on the
-points still open.
-- The first settles the LEAK-25 dispute in part.
-- The second corrects one of the advocate's numbers without changing the conclusion that depends on it.
+Summary: I concede most of the advocate's brief. The task is real, the split is right, and most of what remains is text.
+One real dispute is left: the advocate's point 5, the EG/ES spans. On that point the like-case rule (Strong Wind) and
+the time-on-risk Cases row favour a blank, unless a proper rerun shows the blank buys nothing. I also keep a narrow
+version of my metric point. No new points.
 
-What remains open is one disagreement: how the LEAK-25 amendment is worded.
+Advocate 1, valid task (USE-1, USE-5, P5): conceded. I never argued against shipping. My verdict is "ship only after
+changes".
 
-**Advocate 1, the split: conceded.** This is my point 5. We agree on `gap=3` and on the reworded `task_summary.split`.
+Advocate 2, the split: conceded. The split auditor found nothing new, and I raised nothing on the split.
 
-**Advocate 2, signal after the leak fixes: conceded.** These are my points 3 and 4: blank the EG speeds and the
-tornado durations, and drop `hurricane_category`. On the rows that exist only with damage (LEAK-37), I asked only for
-the `known` text, and the advocate accepts that. My check c01 supports keeping these rows. In those types, offices
-almost always enter a figure:
-- Lightning without casualties: 98.3% positive, 1.6% at $0.
-- Strong Wind without casualties: 85.0% positive, 4.5% at $0.
-- Thunderstorm Wind with an EG speed under 50 kt: 98.1% positive, 1.5% at $0.
+Advocate 3, D13 applied exactly and costless: conceded for what D13 covers. The blank on Tornado, Strong Wind and Heavy
+Rain is verified and is no marker (LEAK-38). This does not answer my points 1 and 2: they are about rows and types that
+D13 left untouched.
 
-**Advocate 3, SEL-3 against us_accidents: conceded, with one number corrected.**
-- *The correction.* The R^2 of 0.48 on the positives comes from the screening probe, which still had `SOURCE` and
-  the EG speeds. My check c02 used the fixed features: EG blanked, tornado duration blanked, `hurricane_category`
-  dropped. Trained and tested on the positive entries, R^2 is 0.276 (2025), 0.454 (2024) and 0.430 (2023). The
-  event-type mean scores 0.160, 0.196 and 0.186.
-- *Why I concede.* The signal beyond the type is real. The within-storm Pearson (0.397 against 0.278) holds the office
-  fixed. The $0 share stays at 67-79% from 2007 on. These facts set this case apart from us_accidents, so I withdraw
-  SEL-3 as an objection.
-- *What I still ask.* The curator records these facts, with the corrected numbers, as the answer to the consistency
-  check (principles, Consistent judgement, case 2).
+Advocate 4, the kept spans and their worth: I concede the remedy, which is the same as mine (+0.01 to +0.08, median
+about +0.03, and "an upper bound" dropped). I dispute one supporting argument.
+- The advocate's argument: the worth is "the wind or flood criterion, not the damage", because within High Wind the
+  any-damage AUC is 0.459 for EG and 0.686 for MG.
+- Why that does not show it:
+  - That AUC measures how well the duration separates damaged from undamaged rows within a group. EG rows are 62.5%
+    positive, against 10.8% for MG (task gamer), so the label has little left to separate among EG rows. It says nothing
+    about how much the model gains from the span.
+  - On the positive amount, the Thunderstorm Wind EG Spearman is still 0.159 (claim auditor row 5).
+  - The only direct measure of worth on the EG rows is the precedent checker's: +0.041 / +0.009 / +0.003.
+- So the claim "the worth is not the damage" is unproven either way (EV-1: settle the fact with the decisive
+  experiment).
 
-**Advocate 4, the narrowed use case: conceded.** This is my point 2, and the remedy is the same.
+Advocate 5, EG/ES is a wording fix, not a blank: disputed. The advocate concedes the note's premise is false. I dispute
+the rest, on three grounds.
 
-**Advocate 5, the metric: conceded.** This is my point 6. Keep `rmsle`, and repair the reason: name Diaz & Joseph and
-state the share of the error on the $0 rows. A within-storm score is the curator's weighing call, and we both reject
-`normalized_gini`.
+(a) Scope.
+- The advocate says the located-rows rule covers only "a value read at a later pull".
+- But the time-on-risk Cases row (leak_checks.md l.441, amended 2026-11-06) applies the same rule to a span cut short by
+  the outcome: "where the data locates the cut row by row, fix it". That is not a later pull. It is the same kind of
+  fact as here: a span whose end the outcome sets.
+- The new spans row (l.442) allows a keep with a note only where a span is "drawn by the outcome or an outcome-free
+  criterion". For an EG entry with no reported wind of 50 kt or more, there is no "or" left: Sec. 46's begin and end are
+  "When damage first occurred" and "When damage ended".
 
-**Advocate 7, the quality items: conceded.** This is my point 7, with the same list.
+(b) Like cases (principles.md, "treat like cases alike").
+- Strong Wind was blanked because it is entered only with damage, and its span runs from the first damage to the last
+  damage.
+- The practitioner's reason was: "All I would have is the time of a damage report, not an end."
+- An EG Thunderstorm Wind entry is the same fact. 94.4% of the 2024 entries had a first report "TSTM WND DMG" with no
+  speed.
+- The advocate's "a damage report's time is in the first report" covers the begin only. The end, "when damage ended",
+  comes from the preparer merging the damage reports into a swath: the extent of the damage in time, which LEAK-10 calls
+  "a consequence of the target".
+- LEAK-37 admits that the first report says whether damage was seen. It does not admit how long the damage went on.
+- Keeping the EG span while the Strong Wind span is blank treats two identical facts differently, with no fact that sets
+  them apart.
 
-**Advocate 6, LEAK-25: partly conceded, partly contested.**
-- *Conceded, three things:*
-  - My brief overstated the 2007 table. It shows that the code is a format convention. It does not show that the
-    "no information" entries became $0: before 2007 a blank may have meant no damage.
-  - My option (b), re-targeting to the positive entries, does not fix the problem cleanly, because the rows would
-    still be selected on the label. I withdraw it, so the outcome is an amendment or `No`.
-  - Where an office uses the blank, the blank is the box. Floods have no blanks from 2008 on.
-- *Contested: "the source flags the unrecorded part and the definition drops it".* That holds only for the offices
-  that use the flag. Check c01 compares offices with 50 or more entries, 2007-2025:
+(c) Size.
+- The advocate says +0.041 / +0.009 / +0.003 sits within the seed SDs of 0.016-0.030.
+- +0.041 is above that range.
+- And this keep sits under a Must. LEAK-6 (Must) says "a confirmed leak goes even when small". It allows a keep with a
+  note only for a slight optimism with a known cause, and the second clause of LEAK-10 allows it only "when the part
+  that can be traced shows no gain". The traced part here is the EG/ES rows, and its first measurement shows a gain.
+- LEAK-7 does not save the keep. Blanking only the located rows is itself the smallest fix: the measured-gust and flood
+  spans keep their signal.
 
-| entries | Spearman(blank share, $0 share) across offices | offices with blank < 2% and $0 > 30% |
-|---|---|---|
-| Hail | -0.83 (112 offices) | 28 |
-| Thunderstorm Wind | -0.21 (114 offices) | 21 |
+The rule that wins: LEAK-10 (Must), with its located-cells clause and the time-on-risk Cases row, over a keep with a
+note, which applies only to the part that cannot be located.
 
-  For hail, offices that leave the field blank do not enter $0, and offices that enter $0 do not leave it blank. So
-  each office picks one code for the same kind of event. In 28 offices the flag is all but unused for hail, and the
-  $0 entries hold whatever part was never estimated. Hail and Thunderstorm Wind are about 41% of the shipped rows.
-  In the types that need damage to be entered, the codes do not trade off this way (see Advocate 2).
-- *Contested: "LEAK-25 has not decided a large task on its own".* LEAK-25 has no size clause. Under principles
-  step 4, independent failures are not conflicts. This changes nothing, since the advocate accepts amendment or `No`.
-- *Rule.* LEAK-25 (Must). Dropping the blanks is CLEAN-15, not a LEAK-25 recovery. The precedent checker reads it the
-  same way: the rows are located by the missing label itself, and only in the offices that use the flag. The
-  advocate's draft amendment rests on "a mix whose unrecorded part the source flags and the definition drops". On
-  this data that describes a recovery that does not happen in a quarter of the offices.
-- *Remedy.* The curator decides. If the rule is amended, the wording should not claim a recovery. For example: "a
-  mix of 'no event' and 'not recorded' that follows a reporting unit shipped as a feature is kept with a note and fit
-  approximate; the source's own flag is dropped where it is used." The dataset's note then gives the office numbers
-  above, so a user knows the $0 code is the office's convention.
+Remedy, unchanged: rerun with 4 seeds on the shipped splits. If the blank of the EG/ES rows (and of the Thunderstorm
+Wind rows under 50 kt) shows a gain, blank them (option a). If it shows none, keep the column and correct the note
+(option b). I agree with the advocate that this is a definition detail, not a reason against shipping. I do not agree
+that option b is the default before the rerun.
 
-**Verdict after rebuttal.** Ship after changes, on one condition: the curator amends LEAK-25 with wording that does
-not claim a recovery. Without the amendment, the verdict is `No`. The changes are the ones both briefs list: points 2
-to 7 of my brief, the corrected positives number, and option (b) withdrawn.
+Advocate 6, unnamed types and Flash Flood: mostly conceded.
+- I accept naming Dust Storm, Volcanic Ashfall, Hurricane and Tropical Storm in the kept bullet.
+- I accept the clause recording Flood and Flash Flood as threat-timed, judged outcome-free and kept. Three agents read
+  them that way, and the 15-fit contrast has no consistent sign.
+- On Seiche I hold the blank as the reading the rule gives: its begin is drawn by "a fatality, injury or damage" alone,
+  and only its end is outcome-free. Since it is 51 rows and costless, I accept "blank or note" as the curator's call.
+
+Advocate 7, metric, value, bookkeeping:
+- Conceded:
+  - TP-3: methods spread, keep.
+  - LEAK-25, the office $0 convention: settled, and I did not reopen it.
+  - Every item of bookkeeping: they match my point 6.
+- Disputed, narrowly: "issue 3 settled RMSLE".
+  - Issue 3 settled RMSLE for the triage use case. Issue 5 then changed the actor and decision, and nobody re-argued the
+    metric. MET-1 (Must) ties the metric to the use case's decision, so a changed use case reopens the question.
+  - The practitioner's own evidence is the fact: the RMSLE-optimal constant is $16 against a mean of $355,555, and the
+    planner plans with summed dollars.
+  - I do not ask for a switch. I ask for the reason to be rewritten for the planner and for one probe: Tweedie p = 1.5
+    against RMSLE, on the 3 windows. If both pick the same model, RMSLE stays, and the reason says it was checked.
+  - That is cheap and settles the Must on evidence rather than on wording.
+
+My points the advocate did not answer, which still stand:
+- My point 5: one sentence saying the population is the events with a damage entry, with the 0-98% blank rate by office
+  (USE-3).
+- My point 7:
+  - LEAK-10 amended with a clause for the spans keep, including a size condition, with heart_failure as the counter-case
+    (principles.md: a keep under a Must is an amendment).
+  - Andrej's release of D13 recorded.
+
+Where we stand:
+- Agreed: ship after changes, with no exclusion; the worth figure and every text fix; the missing types named; Flood and
+  Flash Flood recorded as kept and outcome-free.
+- Open for the mediator:
+  - EG/ES: blank or note. I hold blank, decided by the 4-seed rerun (LEAK-10, the time-on-risk Cases row, like cases).
+  - Seiche: blank or note (curator's call).
+  - The Tweedie-against-RMSLE probe under MET-1.
+
+Files: the advocate's brief; the rules (leak_checks.md: LEAK-6 l.51, LEAK-10 l.78-98, Cases rows l.441-442).
 
 </details>

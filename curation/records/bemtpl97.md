@@ -8,7 +8,7 @@ data_foundry_status:
 - WIP (DF)
 claimed_by: Lennart
 suggestion: 'Yes'
-priority: 3
+priority: 4
 original_source: Github
 year: '2019'
 domain: insurance
@@ -90,3 +90,9 @@ CC (2026-11-05, Lennart): issue 1 (exposure) is parked, with fremtpl2's issue 6 
 **Assessment (AI, 2026-11-05):** the parked exposure question is GitHub issue #51 (https://github.com/TabArena/data-foundry/issues/51).
 
 CC (2026-11-06, Lennart): issue 1 resolved as the rate with a sample weight (option A of #51): the target is nclaims_per_year = nclaims / expo; expo is the weight scoring column, the metric's `weight` input and the task's `sample_weight`, never a feature (LEAK-41, MET-14, MET-15, adopted 2026-11-06); the floor is 1e-4 claims per year on the predicted rate (MET-13). The weighted rate deviance equals the source's count deviance of the expected count expo x rate (Henckaerts et al., Eq. 5) times n/sum(expo) of the scored rows (1.123 to 1.125 on the shipped folds). Supersedes Myunghwan's calls of 2026-10-23 ("Retain expo ... Do not annualize, bin, clip, weight") and 2026-10-26 (expo as a predictor), and the floor of 2026-11-04 (1e-6 on the expected count): the conditional measurement came later (+0.0043, 17% of the skill; never better at quotation), and the source itself scores with an offset. The built container 01a18ad7 is superseded (not deleted).
+
+**Assessment (AI, 2026-11-06):** review panel (full, re-review under LEAK-41, MET-14 to MET-16): ship after changes, to the notes only (data, target, weight, metric, floor and split stay as defined); disputed: whether this definition says that test-row `expo` belongs to the scorer alone (the critic) or one house remedy covers every weighted table (the advocate), moved by the mediator to cross-dataset item X1; for the curator: no issue on this dataset (cross-dataset items X1 and X2, working copy REVIEW.md, "From PR #47"). On the declared metric the honest model scores 0.5979 against the training mean's 0.6193 (3.46%, better on 9 of 9 folds); the task probe's `no_signal` reads the RMSE skill (R^2 0.015). The priority's factor "risk -: issue 1" of 2026-11-04 is resolved: `expo` is the weight, never a feature.
+
+**Assessment (AI, 2026-11-06):** the panel's text changes are in the definition's notes, with no data, split, feature or metric change: LEAK-41's report on the declared metric (`expo` as a feature gains +0.0047 under the weighted Poisson fit and +0.0051 under weighted L2, 9 folds; a fit on `expo` alone scores 0.6122, between the training mean and the honest model, and a scaled 1/`expo` scores at the training mean), the copy counts with `expo` out (397 extra exact rows, 88 conflicting profiles), the part-year pairs that may be one re-issued policy (57 to 176; both rows claim in at most 1.1%) and postcode's distinguishing fact (long and lat give each municipality's place). The +0.0043 (17%) of the CC of 2026-11-06 above is a gain on the count deviance of the old task (the exposure study's +0.00425 with early stopping, 9 folds), the scale of the 0.0039 of 2026-11-05, not the rate scale; on the weighted rate deviance the same comparison gains +0.0048. The AI line of 2026-11-04 "Exposure is an offset, not a weight" is superseded: `expo` is the weight, and the weighted rate deviance ranks models as the source's offset model does.
+
+**Assessment (AI, 2026-11-06):** priority 4, up from 3 (selection.md, Priority): the risk factor behind 3 (issue 1, the exposure) is resolved; a gap in the benchmark (insurance) +, a good shape (163,231 units, 11 features) +, a strong source (Henckaerts et al., the treeML code) +; the fit stays approximate.
