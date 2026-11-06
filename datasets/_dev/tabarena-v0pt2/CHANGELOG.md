@@ -1,5 +1,33 @@
 # Changelog: TabArena v0.2 working copy
 
+
+## 2026-11-05 (GeoAI internal-skill refresh build verified)
+
+- Rebuilt only `geoai_ground_level_no2_estimation_challenge` from clean commit `a40b46997a5bb7b08a2bac87187c74c109512466`: format 2, UUID `01a1ae48-7d06-76ac-9741-a58d8233b176`, checksum `v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20`. The checksum is exactly equal to the preceding November build; no definition, data or metadata changes were needed.
+- All 27 bundle checks pass, zero errors/warnings; saved-container reload verifies. A traced-input-only check reproduces the checksum from one 10,000,397-byte Train.csv. The new raw-input ZIP passes CRC and source SHA-256 checks. Rows, all nine splits and raw-input selection are unchanged.
+- The focused review and editor follow-through are complete. Prior acceptance, resolved issue 1, source RMSE and documented limits remain intact; no new human input or collection-wide probe sweep is needed. Previous containers remain referenced audit baselines and were retained. Local commits do not publish the dataset upstream.
+
+## 2026-11-05 (GeoAI rechecked after internal-skill update)
+
+- Repeated the accepted GeoAI review under the refreshed installed skills/runtime. The pin is now `9048f36a`, exactly the source used by the previous cycle: 32 procedure hashes and 168 tracked source files match. No definition, data, target, metric, feature, context or split changes.
+- Fresh independent claim and precedent audits and mediator support reusing the October acceptance and prior completed evidence. All values/dtypes/metadata, nine folds and checksum exactly match the previous November container. One fresh LightGBM fold also reproduces every saved prediction. The full historical model/probe sweeps are reused with their recorded limitations, not described as new fits.
+- Current checks: 27 passed, zero errors/warnings; dtype zero flags; 2,017 tests passed, 286 skipped after the 18 localhost-dependent cases passed on exact retry. Priority remains 3, issue 1 stays resolved and no new human input is needed. The editor's presentation repairs and new build verification are complete.
+
+## 2026-11-05 (GeoAI current-main build verified)
+
+- Built only `geoai_ground_level_no2_estimation_challenge` from clean definition commit `2687a3ae2ebd33135af563cf9605e3adbc2897b6`: format 2, UUID `01a1adf0-eb77-7e00-8228-2b3c1bc263db`, checksum `v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20`. No crashes, errors or warnings; all 27 bundle checks pass.
+- Saved-container reload verified. A check against only the traced Train.csv (10,000,397 bytes) reproduces the full checksum; the raw-input ZIP backup passes CRC and source SHA-256 verification. Rows, all nine splits and traced inputs are unchanged from the October build. Current metadata serialization and the explanatory context comment account for the checksum difference.
+- The complete current group probe matches the historical printed results: IID/grouped LightGBM R2 0.788/0.636; grouped ridge 0.396, random forest 0.631, LightGBM 0.634 and kNN 0.554. These full-frame-imputation diagnostics remain indicative. Per-group label permutation is inapplicable to this per-sample target. No new curator question or collection-wide probe sweep is needed.
+- The resolved review and original acceptance remain preserved. The October container is still referenced by its historical checkout and retained; no unreferenced superseded container was deleted. The generated dataset table removed on current main is not reintroduced. Local build and commits do not establish upstream publication.
+
+## 2026-11-05 (GeoAI requalified against updated main)
+
+- Restored the previously accepted `geoai_ground_level_no2_estimation_challenge` definition and decision history on main `9048f36a`. Myunghwan explicitly requested this add/review/build cycle using the prior decisions; the accepted QC, regional and observed-day coverage limits remain documented.
+- Current independent claim/split and column audits confirm identical rows, values, missingness, dtypes, eleven predictors, target, all nine station folds and RMSE scoring. Expanded leak/raw-state and dtype probes and current task probes found no new material defect. The raw-order flag reflects date-major observations across stations. Historical fold-safe results remain applicable after exact input/split/runtime comparison and one bit-for-bit reproduced fold.
+- Focused review includes an isolated participant task gamer across all nine folds, precedent consistency, mediator and editor. Calendar and same-day training-station label improvements are legitimate signal. Clarified the existing context contract: each held-out-station query uses only its own row; the labeled training archive at other stations remains available. No scientific transformation changed and no new curator choice is needed.
+- Restored issue 1 as resolved, retaining the original October 30 acceptance and November 5 reuse instruction. The review file remains in the repository under the current history-retention rule. The final checksum differs from October because current schema serializes an empty special-features field and the definition has one additional explanatory curation-comment bullet; independent canonical checksum comparisons account for both changes exactly.
+- Current bundle checks: 27 passed, zero errors/warnings. Full tests: 2,016 passed, 286 skipped after the eighteen sandbox-loopback cases passed on retry. GeoAI lint/format and record/pointer validation pass; whole-repository lint/format findings match the baseline, including its existing example syntax error. The completed grouped-model rerun and requested build are recorded in the entry above.
+
 ## 2026-11-05, GitHub issue #48: column types (Lennart's marks)
 
 - `eryhemato_squamous_disease`: the 10 clinical scores 0-3 ship as numbers; a blanket `_feature_types` had cast them

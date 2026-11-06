@@ -18,6 +18,13 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
 
 ## Rebuild
 
+- 2026-11-05 (internal-skill refresh): rebuilt GeoAI as one format-2 dataset with the same checksum.
+  Reload and reproduction from the single 10,000,397-byte Train.csv pass; the new raw-input backup stays local.
+
+- 2026-11-05: rebuilt GeoAI against updated main as one format-2 dataset. The single traced raw file is
+  Train.csv (10,000,397 bytes); saved-container reload and reproduction from only that input both pass.
+  The raw-input backup remains local. See the GeoAI README and dated changelog for the build identity.
+
 - The raw files come from `local-data-warehouse/` (or `$DATA_FOUNDRY_WAREHOUSE`); each folder's `README.md` gives the
   download command.
 - To rebuild, ask Claude; it follows
