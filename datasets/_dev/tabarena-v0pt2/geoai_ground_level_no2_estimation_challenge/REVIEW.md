@@ -1,8 +1,8 @@
 # geoai_ground_level_no2_estimation_challenge
 
-**Outcome:** added. Recommend shipping the previously accepted retrospective unseen-station task after current-main verification. The independent audits found no changed data, target, features, split or metric and no new scientific issue. Each prediction uses only its query row from a held-out station; the complete labeled training archive at other stations remains available. This clarifies the existing context contract without changing it.
+**Outcome:** added. Recommend shipping the previously accepted retrospective unseen-station task. The focused recheck found unchanged source values, target, inputs, whole-station folds and source RMSE; no new validity issue was identified. Historical probes still support useful predictive signal, and minimal cleaning preserves the released measurements and missing inputs. Source and dataset size support inclusion; ground-label processing, regional coverage and product timing remain documented limits. No new curator decision is needed; the requested new build remains pending.
 
-**Main points:** Myunghwan accepted the implemented task and its documented limits on 2026-10-30 and explicitly requested reuse of those decisions on 2026-11-05. Issue 1 is preserved as resolved; any new issue must use number 2 or higher.
+**Main points:** No new decision. Myunghwan's 2026-10-30 acceptance and resolved issue 1 remain in force under the repeated instruction to use the past decisions.
 
 **Record judgment:** source, year, regression target and grouped regime agree with the definition. Priority 3: source and shape positive; use case approximate; no thin accepted domain or regime and no demonstrated material leak.
 
@@ -29,7 +29,7 @@
 
 [^geoai-labels]: USE-8 and EV-7 require honest scope and uncertainty; CLEAN-11/15 retain unproven extremes and omit missing targets. [Original challenge and data description](https://zindi.africa/competitions/geoai-ground-level-no2-estimation-challenge/data).
 
-**Review panel:** ship (independent mediator). Focused recheck of the accepted definition against updated main: claim/split audit, column audit, precedent consistency, an isolated participant task gamer, mediator and editor. The prior full panel remains historical evidence. No new curator question was identified; issue 1 stays resolved. The current group learnability rerun and build verification are complete; the completion addendum below resolves the earlier reports' pending verification notes.
+**Review panel:** ship (independent mediator). The internal-skill refresh uses a focused claim audit, precedent check, mediator and editor; earlier full and focused panels remain dated evidence. Independent comparisons establish unchanged task, data, metadata, folds and checksum. Issue 1 remains resolved under the explicit reuse instruction; no new curator decision. The editor's presentation repairs are applied; the requested new build is pending. Earlier completed-build reports below remain history.
 
 
 
@@ -397,5 +397,194 @@ The current full group probe completed over 82,051 rows, 79 stations and all nin
 The requested build completed from clean definition commit `2687a3ae2ebd33135af563cf9605e3adbc2897b6`: format 2, UUID `01a1adf0-eb77-7e00-8228-2b3c1bc263db`, checksum `v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20`. All 27 checks passed with zero errors or warnings. Saved-container reload verified; a check with only the traced Train.csv (10,000,397 bytes) reproduced the checksum. Rows, nine splits and raw-input selection are unchanged from the October build. The raw-input backup passed ZIP CRC and source SHA-256 checks. The October container is retained because the preserved historical checkout still names it as its current build; no obsolete unreferenced container was deleted.
 
 The source panel reports above retain their original timing and qualifications. Their requested documentation repairs were applied and the current collector rendered one resolved issue, zero open issues, no cross-dataset items and the explicitly reused metric acknowledgement. No new scientific decision is required; the original acceptance and limitations remain in force.
+
+</details>
+
+<details><summary>Internal-skill refresh: mediator</summary>
+
+**Independent mediator — internal skill/runtime refresh, 2026-11-06 UTC**
+
+**Verdict: ship.** Retain the previously accepted scientific definition and complete the authorized current-cycle review and build. This recommendation does not claim that the new build has completed. No new curator decision or scientific change is needed.
+
+Validity: SEL-15, USE-1/3/5/8, SPLIT-1/3/24 and PROV-1 remain supported for retrospective, same-period estimation at withheld stations; unknown daily ground-label aggregation/QC and regional/observed-day coverage remain explicitly limited. No new Must violation is demonstrated. Value: retain source RMSE on the original concentration scale (MET-1/2/3/4); exact fold/scorer identity supports the historical utility evidence under EV-8. Quality: preserve faithful values, missingness and minimal date/identifier cleaning (CLEAN-2/3/11/12/15). Weighed: source and shape positive; approximate use case, no measured thin-category bonus and no newly demonstrated material defect; priority remains 3. For the curator: none.
+
+**Changes and completion work requiring no new decision**
+
+- Preserve the October 30 acceptance and resolved issue 1. Record this cycle as reuse under the explicit repeat-cycle instruction, without inventing a new human mark or rebinding old session fingerprints. This follows the principles' decision precedence and the review-history procedure.
+- Clearly distinguish current measured checks from historical model/probe evidence (EV-7/8). The previous November artifact, rather than the October artifact, is the current comparison baseline. Its checksum already matches the fresh in-memory result. The older serialization/context-note checksum change must remain historical.
+- Complete editor review and the requested build, saved-container reload and traced-input reproduction, then record their actual results. Until they finish, completion statements are pending (EV-7). The parent corrected the draft verification wording to keep editor/final completion pending; preserve that distinction through handoff.
+- Preserve all existing scientific limitations and the query-row-only held-out-station context. No feature, target, metric, cleaning or split edit is warranted.
+
+**Issues for the curator**
+
+None. The fresh claim and precedent reports agree; there is no new disputed fact or weighing call. Acceptance is not being used to waive a Must. It applies because no contrary evidence or changed scientific condition was identified. Daily label QC/aggregation, precise product-release latency, station representativeness, authenticated current download availability and exhaustive duplicate coverage remain unverified; fresh mechanical checks do not establish those facts (USE-8, EV-7).
+
+**Agreed facts and scope of evidence**
+
+This is a focused recheck. Fresh roles are claim auditor, precedent checker and mediator, with editor review still required at this report's completion. The focused-panel procedure calls for a task gamer when features, target or split change; none changed. No new blind review, advocate/critic debate, column/split panel or gamer run is represented as having occurred. Prior full and focused panels remain historical evidence.
+
+The claim auditor's fresh comparison establishes exact equality of every dataframe value, dtype, category metadata, row/column order, missing value, model input, all nine train/test index arrays and all three metadata objects against the previous November container. The checksum is unchanged. Independently parsed raw data retain 82,051 of 86,584 station-days after excluding 4,533 missing targets, with 79 stations and eleven model inputs. All folds have zero station, coordinate and complete-feature overlap, positive target variance, and identical manual/current-scorer RMSE. Their 1,096 shared dates are intentional under the retrospective task. These are measurements relevant to EV-1/2, SPLIT-1/3/24, LEAK-16 and MET-2/3, not a proof of all possible scientific claims.
+
+The source-identity audit and reconciliation agree that all 32 selected procedures and 168 tracked source files match the preceding cycle. The upstream source is the same `9048f36a1bcf7da3687fde04b18ef79cd7a1201e`; previous final head is `5eb90020ef7fad05bdf6f2f60bbca31ae0eb5b81`. Recorded core package versions match, including LightGBM 4.6.0. This supports reuse under unchanged measured conditions, without asserting binary-identical environments or a complete historical transitive-dependency inventory.
+
+Current verification reports 27 bundle checks with zero errors/warnings, zero dtype flags, passing definition imports and dataset lint/format, and 2,017 tests passed: 1,999 initially plus the exact 18 loopback-restricted cases on approved retry; 286 skipped. These are the parent's execution results inspected through the supplied verification evidence, not tests independently rerun by this mediator.
+
+The prior completed group, task, leak, raw-state, column and participant evidence is identified in reused-evidence.json. The completed November group log supersedes the old mediator's then-pending learnability note. The full heavy probe and participant sweeps were not rerun in this cycle. Full-frame median preprocessing limits the historical group diagnostics; fold-safe supplements and finite one-seed participant tests retain their own scope and selection optimism. Exact data, folds, metadata, source and scorer equality makes this reuse adequate for this unchanged-task refresh (EV-8); it does not turn the old numbers into fresh fits.
+
+A supplementary fresh numerical checkpoint, runtime-model-check.json, reproduces all 27,659 predictions of the previous r0f0 LightGBM participant baseline exactly: maximum absolute difference 0.0, RMSE 10.740054356570974. This is one fold, not a new full participant or utility sweep. The initial kit comparison exposed a Parquet station-ID category-label dtype difference (str versus object); exact station strings, model-feature/target dtypes and values, and fold indices were then checked. ID is excluded from model inputs, and the separate direct-container comparison remains exact. This serialization detail does not change the scientific conclusion.
+
+**Historical gamer findings mapped to the current contract**
+
+The prior gamer is reused, not newly run. Its calendar improvement of mean nine-fold RMSE from 10.3701 to 10.0299 uses legitimate query-row information (USE-3/6, LEAK-10). Same-day training-station target blending is legitimate under the complete other-station training archive; its reported gains do not show access to held-out labels (SPLIT-1/3/24). Exact-copy attacks found no matches, consistent with the fresh zero-overlap check (LEAK-16). Nearby correlated stations were not identical target series.
+
+Held-out-station archive aggregates and forward filling were outside `context="none"`; their historical mean RMSE worsened by 0.0887 and 0.1674 respectively. The previous cycle already clarified the row-only contract, so there is no remaining new ambiguity or task expansion (SPLIT-24/26, USE-3/6). Row-order, prohibited identifier and format/missingness probes showed no mean benefit; training-row/station removal also worsened scores. These bounded negative tests are not exhaustive proof (EV-3/6/7). The definition has no accepted-check-warning or `Potential leak, kept on purpose:` exception to reconcile; no measured new exploit requires adding one.
+
+**Consistency with precedent**
+
+The independent precedent report identifies no GeoAI-specific conflict or new drift. Physical quantities follow SEL-15, consistent with infrared thermography temperatures. Same-period station holdout follows the application, consistent with the missing-station use case of 5g_energy_consumption (SPLIT-1/3/24). Approximate named-source labels with explicit construction gaps remain consistent with USE-5/8 and the differentiated_thyroid_cancer_recurrence precedent. Source RMSE remains consistent with MET-4 and the source-metric precedent; no measured pathological incentive justifies replacement. The eight newly extracted register entries are previous-cycle history, including resolved text, rather than eight new decisions. No exception, amendment or reopened curator issue is required.
+
+This mediator inspected the supplied reports, JSON evidence, current definition/README/record/review, relevant procedures and historical mediator/gamer reports. It did not independently rerun models, access remote sources or alter repository files. The scientific ship recommendation is complete; current-cycle editor/build verification remains separate pending work.
+
+</details>
+
+<details><summary>Internal-skill refresh: claim audit</summary>
+
+**GeoAI focused claim audit — internal skill/runtime refresh**
+
+Observed 2026-11-06 UTC. Recommendation: retain the prior scientific acceptance and complete the authorized review/build. **No new curator input is needed.** No refuted current scientific claim was found. This focused audit does not claim that every possible exploit or external duplicate has been excluded.
+
+Validity: exact raw reconstruction, station-disjoint folds and unchanged retrospective query-row contract satisfy the checks relevant to USE-1/8, SPLIT-1/3/23/24, PROV-1 and LEAK-16. Value: source RMSE remains appropriate on the unchanged physical target and is freshly computable on all nine folds (MET-1/2/3/4). Quality: dates, missing-target removal and faithful input/target preservation remain unchanged (CLEAN-2/12/15). Previously accepted limits remain limits.
+
+**What was freshly tested**
+
+`claim_audit_current.py` was adapted into this new panel directory and run through the dedicated capped runtime. It rebuilt the current definition in memory and loaded the previous **November 5** container `01a1adf0-eb77-7e00-8228-2b3c1bc263db`. It did not overwrite that artifact or prior evidence. Assertions passed for exact dataframe values, dtypes, category metadata, column and row order, missingness, eleven model inputs, all nine train/test index arrays, and all three metadata objects. The saved checksum, its fresh recomputation, and the new in-memory checksum are all:
+
+`v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20`
+
+There is **no new checksum or scientific change** in this cycle. The older October-to-November schema/comment explanation remains historical; it must not be presented as a new difference from the November artifact.
+
+`source_identity_audit.py` independently compared all 32 procedure hashes with the previous instruction manifest. It also compared 168 tracked files selected by `git ls-files src .claude tests pyproject.toml curation/vocabularies.yaml` against both upstream `9048f36a1bcf7da3687fde04b18ef79cd7a1201e` and the previous final commit `5eb90020ef7fad05bdf6f2f60bbca31ae0eb5b81`. All match the current files. This includes model/feature-preparation code, group/task/leak/dtype probes, scorer, container/schema code, role instructions and tests; per-file hashes are in `source-identity-audit.json`. The definition also matches the previous review fingerprint. No new workflow semantics were inferred merely from the integration-pin change.
+
+**Claims and refutation tests**
+
+| Claim (where written) | Test that could refute it | Result and evidence | Rule |
+|---|---|---|---|
+| “82,051 rows” from “79” stations, 2019–2021 (`task_summary.row`) | Independently parse and count raw and prepared rows/groups | Fresh: 86,584 raw; 4,533 missing targets removed; 82,051 retained; 79 stations; 1,096 raw dates/station and one-day gaps. | CLEAN-12/15, EV-1 |
+| “Drop only the 4,533 missing targets” and preserve measurements/NaNs (`curation_comments`) | Compare complete retained raw/prepared frames keyed by independently parsed station/date | Fresh: every retained value and NaN equal; no imputation, filtering by score, smoothing or target-derived stored feature. | CLEAN-2/6/7/15 |
+| “ID is a station grouping key and is excluded from model features”; ID_Zindi dropped (comments) | Inspect feature API, full dataframe and duplicate keys | Fresh: eleven inputs, no target or station/submission identifier; zero duplicate station-days; two repeated submission keys remain separate real station-days. | CLEAN-3, LEAK-16 |
+| “Whole stations are held out across all dates” (`task_summary.split`, `grouping`) | Compare every fold and intersect stations, coordinates and full-feature row hashes | Fresh: all nine exact memberships match; zero station, coordinate or full-feature hash overlap; 26–27 test stations and 26,637–27,875 test rows/fold. | SPLIT-1/23/24, LEAK-16 |
+| Test dates overlap training intentionally (`splits_comment`) | Count date intersections per fold | Fresh: 1,096 shared dates in every fold. Consistent with retrospective same-period spatial task; no forecast claim. | SPLIT-1/3, USE-8 |
+| Six original unlabeled stations differ from training (comments) | Parse Test.csv and intersect station/coordinate sets | Fresh: six test stations; zero overlapping IDs or coordinates. Test.csv contributes no container rows. | SPLIT-1, CLEAN-12 |
+| Labeled coverage 298–1,093 days; seven zeros, maximum 188.2333333 (comments) | Count coverage and target extremes; exact raw comparison | Fresh: all named counts/extrema match. This does not verify sensor QC or representativeness. | CLEAN-11/15, USE-8 |
+| Negative satellite retrievals and cloud excess are retained (comments) | Exact raw equality and fresh extrema | Fresh: negative values unchanged, no NO2 minimum below -0.001 mol/m²; CloudFraction maximum 1.000000044. Product-document explanation is reused from prior audit. | CLEAN-11, EV-2/8 |
+| “Root Mean Squared Error (RMSE)” is original metric (`Metric.source`, README) | Inspect current metric metadata and previous source reading | Holds as reused source evidence: previous auditor opened official challenge Evaluation section on November 5 and recorded explicit RMSE, distinct from jury correlation/MAE. No new page access is claimed. | MET-1/4/11, EV-7/8 |
+| RMSE scores original ground concentration per row (metric/target) | Score a training-mean prediction with current scorer and previous container, compare manual RMSE on every fold | Fresh: all three exactly equal on all nine folds; each fold has positive target variance. No extra scoring columns required. Target values/scales unchanged. | MET-2/3 |
+| Every feature is available at declared prediction point (`task_summary.known`, comments) | Inspect prediction-point wording and original source evidence | Supported for after-products-available retrospective estimation. Exact release latency is still unverified; real-time or as-of-day availability is not established. | USE-3/8, LEAK-1/10, EV-7 |
+| “Each prediction uses only the query row” at held-out station; training archive remains available (comments/context) | Read current enum and clarification, compare metadata and old participant findings | Fresh metadata/text inspection: context remains `none`; old held-out archive aggregation variants remain outside contract. Training-station same-day signal is allowed. No new fitting performed. | SPLIT-24/26, EV-8 |
+| Raw autocorrelation indicates leakage (possible reading of prior raw probe) | Freshly test raw adjacency and inspect prior decisive test | Fresh: zero adjacent rows share a station; 85,488 adjacent pairs share a date. Prior raw-order reconciliation explains same-day spatial dependence. This flag alone does not refute station holdout. | EV-1/3, SPLIT-1/3 |
+| Empty accepted warnings and passing current checks (definition/check log) | Read current check output | Current parent-run check: 27 checks, zero errors/warnings/infos. It is mechanical evidence, not universal scientific assurance. | EV-3/7 |
+| Historical model results still apply (record/review completion) | Exact inputs/folds/scorer/source and runtime core-version comparison | Reusable historical diagnostics under unchanged measured conditions; no fresh heavy-model rerun claimed. See below. | EV-8 |
+| Original source/citation/year and atmospheric-vs-ground quantities (metadata/comments) | Inspect prior primary-source audit and unchanged raw/definition identity | Reused historical source evidence; no new source publication or raw change is identified. Ground-label aggregation/QC remains undocumented. | PROV-1/8, USE-5, EV-7/8 |
+
+**Evidence reuse and limits**
+
+Current pandas 3.1.0, numpy 2.5.4, scikit-learn 1.7.2 and LightGBM 4.6.0 match the explicitly recorded previous runtime. Build metadata also records the same Python, pyarrow and polars versions. This is package-version evidence, not a claim of identical installed binaries or a complete old transitive dependency inventory.
+
+The November 5 full group log completes the earlier mediator's pending condition: IID/grouped LightGBM R² 0.788/0.636, gap 0.152; grouped ridge 0.396, random forest 0.631, LightGBM 0.634, kNN 0.554. These remain **historical untuned diagnostics** with full-frame median preprocessing; they are neither fresh fits nor tuned benchmark rankings. The prior fold-safe supplements and participant experiments also remain historical, with finite one-seed search and selected-gain optimism preserved. Current source and exact input identity support their reuse; they do not erase those methodological limits. Prior source/scorer/probe files are now hashed and compared against both relevant commits. Prior run files have fresh identifying hashes, without pretending that every old experiment-time byte had a cryptographic attestation.
+
+The prior full panel, focused panel, original-source metric reading and accepted issue history remain applicable. Human acceptance is the October 30 decision, reused under the explicit repeat-cycle instruction; this audit does not create a new human mark or rebind old session fingerprints. Issue 1 remains resolved. A change of target, metric, split, query context or operational scope would need new review; this cycle made none.
+
+**Unsupported or untested claims, ranked**
+
+- P3/P4/P5: actual daily label aggregation/QC, exact product-release latency and station representativeness remain cannot-verify. The mildest remedy is the existing explicit limitations; no demonstrated new invalid-label mechanism requires reopening accepted issue 1.
+- P5: a fresh authenticated redownload and exhaustive external duplicate search were not performed. Preserved Train.csv SHA-256 freshly matches `fdee673ab76a4589cf118e10bcb6250ac6c58f132cec76d52ffc6f8b7d104446`; the loader verifies it. This establishes local input identity, not present-day remote download availability or exhaustive uniqueness.
+- P6: no claim is made that all historical model experiments were rerun, that every dependency binary is identical, or that the finite gamer search excludes all shortcuts. Preserve their measured, dated scope.
+
+No new concrete curator choice follows from these unchanged accepted limits. The parent still owns the new cycle's final review/build verification and completion record. This reviewer made no repository edits and no transfers.
+
+</details>
+
+<details><summary>Internal-skill refresh: precedent consistency</summary>
+
+**GeoAI precedent consistency — internal skill refresh**
+
+Verdict: **consistent; reuse the existing acceptance, source RMSE, priority 3 and row-only `context="none"` contract. No concrete new human decision is needed.** This is an independent consistency assessment, not a fresh curator mark or a new scientific acceptance. The current instruction explicitly repeats add → review → build while reusing past decisions.
+
+**Scope and evidence identity**
+
+Read the current precedent-checker role, review-added-datasets procedure, principles and applicable use-case, metric, priority and grouping rules; inspected the current definition, REVIEW and record, the October 30 decision session, previous decision-reuse receipt and previous precedent report. Current upstream pin is `9048f36a1bcf7da3687fde04b18ef79cd7a1201e`, the same upstream source already used in the previous cycle, whose final head is `5eb90020ef7fad05bdf6f2f60bbca31ae0eb5b81`.
+
+Reconciliation records all 32 selected procedure hashes equal and zero differences among 168 tracked source files. Runtime resolves Data Foundry to this checkout; the lock adds `lightgbm==4.6.0` and removes nothing. That installation change does not itself change a scientific decision. Fresh runtime checks remain the parent cycle's responsibility.
+
+I independently hashed `dataset.py`, `README.md`, `REVIEW.md` and the curation record: all four match the final snapshot in the previous decision-reuse receipt. No new dataset, source, metric, feature, grouping or review-history modification was identified in this round. The earlier October-to-November checksum change was already reconciled as empty `special_features` serialization plus explanatory row-only context prose; it is not a new change in this refresh.
+
+**Current register, including apparent open issues**
+
+The new register contains **4,038 entries**, against **4,030** in the previous register: **+8, −0**. Both define **176 rule IDs** and contain **21 collection-wide flags**. The complete flag arrays are equal, and **zero flags name GeoAI**. All eight added entries concern GeoAI's completed previous cycle: one metric-reuse CC line, one focused-panel assessment and six lines mechanically classified as `open_issue` from retained REVIEW text. Those six include resolved issue 1 and historical mediator completion instructions. Current REVIEW closes issue 1 and has a completion addendum reporting the finished group probe and build; these register labels are not evidence of six new unresolved decisions. Register flags and extracted lines are navigation candidates, not semantic findings (precedent-checker instructions and principles).
+
+The unchanged `CLEAN-19` amendment-due flag concerns amex and electricity/gas invoice aggregation exceptions, not GeoAI. The unchanged metric exception flags concern within-group ranking/correlation tasks. Neither is a same-facts conflict with per-station-day concentration estimation. Temporal label-maturity flags concern prospective issued-loan outcomes; GeoAI deliberately uses complete other-station archives for retrospective same-period estimation. No new drift or third exception by this curator was identified.
+
+**Per-decision consistency**
+
+| Decision | Classification and rule basis | Closest precedent and distinguishing facts |
+|---|---|---|
+| Preserve October 30 acceptance with unknown daily ground-label QC/aggregation | **Consistent.** USE-5 expressly permits named-source labels with unverified construction to ship case by case with approximate fit and a named gap; USE-8 and EV-7 require honest limits. CLEAN-11/15 support retaining unproven extremes and excluding missing targets. | `differentiated_thyroid_cancer_recurrence`, Lennart 2026-10-21, is approximate because label breadth/horizon remains unverified (use-case Cases). GeoAI has a defined physical concentration target and source attribution; no evidence now establishes a different or corrupted target. Its curator accepted exactly the remaining uncertainty on 2026-10-30. |
+| Retain regional same-period whole-station transfer and observed-label coverage limits | **Consistent.** USE-1/3/8/9/10 and SPLIT-1/3/24 align the split to unseen stations, not an advance forecast. | `5g_energy_consumption`, Lennart 2026-10-14, uses within-period station holdout for missing-station estimation; grouped `airfoil_self_noise` likewise matches the real query entity. GeoAI's complete 2019–2021 archive is intentionally available at other stations. Its 82,051 observed station-days at 79 stations do not establish future-year, distant-region or missing-monitor-day performance. No new measured selection mechanism changes the already approximate fit. |
+| Keep physical satellite/weather measurements as tabular inputs | **Consistent.** SEL-15 follows physical measurement semantics. | `infrared_thermography_temperature`, Lennart 2026-10-21, keeps physical temperatures measured with a camera. GeoAI's atmospheric columns and weather measurements are named physical quantities; no new raster-descriptor block appeared. |
+| Keep `Metric.source("rmse")` on original concentration scale | **Consistent.** MET-1/2/3/4/11 support a declared source metric at the station-day unit and physical target scale. | `zillow_prize`, Lennart 2026-10-21, keeps source MAE. The MET-4 amendment of 2026-11-05 permits case-specific replacement of weaker competition choices on evidence; it does not require replacement. Unlike `loan_default_prediction_imperial_college` or `african_credit_scoring_challenge`, no measured pathological metric incentive or wrong-use-case evidence is supplied here. RMSE requires no extra scoring column. The existing CC explicitly describes reuse, not a newly supplied metric mark. |
+| Keep priority 3 | **Consistent.** The Priority procedure in selection.md starts at 1 and weighs factors; it is not itself a validity rule. PROV-1/8 support source +1; USE-1/8 do not earn a direct-use-case point for an inferred actor. | The measured October 30 and November 5 GeoAI assessments agree: 1 + source 1 + shape 1 + gap 0 + direct-use-case 0 − demonstrated-risk 0 = **3**. The earlier screening's conjectured thin grouped regime was superseded by accepted-definition counts. Nothing in this same-source, unchanged-record refresh supplies a new coverage or risk fact. QC uncertainty remains disclosed; it has not become a demonstrated unclear quantity or damaged target. |
+| Preserve the row-only explanation of `context="none"` | **Consistent clarification, not an exception or task expansion.** The maintained definitions guidance says `none` means each row stands alone. USE-3/6/10, SPLIT-3 and LEAK-10 constrain information to the declared task. | The enum already was `none`; the previous mediator clarified it on November 5. Other rows of a held-out station cannot be used for its aggregates/filling. Complete labeled archives at other training stations remain legitimate. The CLEAN-19 `rain_in_australia` case (Lennart 2026-10-26) permits legitimate cross-location information available at prediction time; it does not authorize a global target-derived column or extra held-out-station context. The previous task-gamer results do not change this contract. |
+
+Rules outrank precedents and Must violations cannot be waived just because the curator once accepted a task. Here no newly identified Must violation or unexplained departure was found. Therefore no reflection prompt or manufactured additional approval is appropriate.
+
+**Decision provenance and handoff**
+
+The preserved historical session records Myunghwan's October 30 ship verdict and issue-1 `ok`: “thse limits are fine”. The previous reuse receipt records the November 5 request and completed application. The current authorization again directs the same cycle using past decisions after the internal skill update. These establish reuse authority, not new issue/metric marks. Do not rebind old browser marks to new fingerprints. Keep issue 1 resolved and reserve number 2 or above for an actually new finding. The current review-added-datasets procedure also applies ship when issues, field disagreements and metric are settled; it does not require repeated acceptance of unchanged limits.
+
+The old REVIEW contains historical unfinished-work statements with a later completion addendum. Preserve that chronology. New runtime/build verification must be reported as new execution evidence, not silently substituted for the historical result. This report does not independently rerun models or authenticate a new source download. Ground-label aggregation/QC, operational product latency/versioning, regional representativeness and exhaustive external duplicate coverage remain incompletely established. The historical full-frame median preprocessing limitation in group diagnostics remains; finite participant attacks are not an exhaustive leak proof.
+
+
+</details>
+
+<details><summary>Internal-skill refresh: review editor</summary>
+
+**Independent review editor, 2026-11-06 UTC**
+
+Verdict: ready for completion after the small presentation edits below. No new scientific issue or curator decision is warranted. The requested new build remains pending at this read; this report is neither a build-verification result nor a new human acceptance.
+
+I read the current editor role, writing guidance, principles and review-file format, then the complete REVIEW, current definition, generated README, curation record and new changelog entry. I checked the fresh claim, precedent and mediator reports against the summary. This was a cold editorial consistency check; I did not rerun experiments or authenticate external sources.
+
+**Concrete edits, in priority order**
+
+1. Make the opening judgment describe this repeat cycle and include its decisive validity, value and quality findings. The current outcome still leads with "after current-main verification" and ends "This clarifies the existing context contract without changing it", which can make the previous cycle's clarification sound newly applied. Replace the whole outcome paragraph with:
+
+   > **Outcome:** added. Recommend shipping the previously accepted retrospective unseen-station task. The focused recheck found unchanged source values, target, inputs, whole-station folds and source RMSE; no new validity issue was identified. Historical probes still support useful predictive signal, and minimal cleaning preserves the released measurements and missing inputs. Source and dataset size support inclusion; ground-label processing, regional coverage and product timing remain documented limits. No new curator decision is needed; the requested new build remains pending.
+
+   Once the new build is actually verified, remove the final pending clause and append its dated completion evidence separately. Do not change the dated earlier reports' pending statements.
+
+2. Keep the main-points line about the curator's decision. Replace:
+
+   > **Main points:** Myunghwan accepted the implemented task and its documented limits on 2026-10-30 and explicitly requested reuse of those decisions on 2026-11-05. Issue 1 is preserved as resolved; any new issue must use number 2 or higher.
+
+   with:
+
+   > **Main points:** No new decision. Myunghwan's 2026-10-30 acceptance and resolved issue 1 remain in force under the repeated instruction to use the past decisions.
+
+   The issue-numbering instruction belongs in the working notes. Preserve the exact original acceptance and subsequent reuse CC entries already present in the record.
+
+3. The newly embedded precedent report ends with "Workspace Bridge's last recorded selected sync finished ..." through "No remote access, transfer, control-plane operation, historical-session rewrite or repository edit was performed." This host-status paragraph is process evidence unrelated to the curator's decision. Keep it in the standalone run report and omit it from the embedded panel copy; no replacement is needed. The REVIEW format keeps run-process details in the run. Existing historical role reports need no rewrite.
+
+**Evidence and scope checks**
+
+- Issue 1 has the required problem, options and recommendation, one implemented row, original quoted answer and explicit resolution. Its rule references are in a footnote. No unresolved record-field disagreement or separate metric choice was identified.
+- The metric CC explicitly acknowledges source RMSE by reuse of the accepted implementation, without inventing a new metric mark. The current audit distinguishes the previous official-source reading from fresh scorer checks.
+- The fresh reports support exact comparison with the November container: data, dtypes, metadata, inputs, nine fold memberships and checksum. The older October-to-November serialization/context explanation is clearly historical in the fresh reports. The historical full-frame preprocessing limitation, finite participant search and selected-gain optimism remain disclosed. The fresh one-fold LightGBM reproduction is not presented as a new nine-fold sweep.
+- The mediator supplies validity, value, quality, weighed factors and the absence of a new decision. Accepted uncertainty is not treated as proof of label quality, real-time availability, broad regional transfer or exhaustive absence of shortcuts.
+- The panel is last, uses one summary and closed, nonnested details sections. Public evidence links in REVIEW are portable; no absolute filesystem link or integration-specific link was found there. The new changelog entry has no link-scope problem. Its pending editor/build sentence must be replaced by actual completion evidence only after completion.
+- README currently names the previous November build, consistent with the pending new build. Its generated generic description that REVIEW is "removed once they are settled" conflicts with the maintained history-retention procedure, but is an existing generator wording defect. Preserve REVIEW and its resolved issue; this dataset-only repeat cycle need not expand into a shared-generator change or a scientific issue.
+
+The scientific recommendation remains unchanged. Complete the already authorized build and validation, record actual completion, and preserve the distinction between reused human decisions, current measurements and historical evidence.
+
+Application: the opening outcome and main points were rewritten as requested, and the local host-status paragraph was removed only from the newly embedded precedent report. The complete original report remains in the local evidence. No scientific definition changed.
 
 </details>
