@@ -38,7 +38,7 @@ side (metadata, checks, the dataset review) is tracked in the curation records a
   `examples/benchmark_container.py` does not use it yet: `feature_columns` drops the group column, so no model there
   sees which test rows share a group.
 - [ ] **Dataset-specific metrics.** Every v0.2 definition now declares the metric its source scored, or an explicit
-  fallback (the rules: `.claude/skills/knowledge-curation/references/metrics.md`, MET-1 to MET-13), and a format-2
+  fallback (the rules: `.claude/skills/knowledge-curation/references/metrics.md`, MET-1 to MET-16), and a format-2
   container stores it as data: `task_metadata.objective_metric` (`data_foundry.schema.MetricSpec`: `name`, `kind`
   `standard` or `custom`, `prediction` `proba` / `label` / `value`, `greater_is_better`, `params`, `inputs`,
   `origin` `source` / `stand_in` / `context` / `fallback`, `original`, `reference`, `definition`, `reason`,
@@ -101,6 +101,31 @@ side (metadata, checks, the dataset review) is tracked in the curation records a
   | `hierarchical_balanced_accuracy` | custom, label; input `group` | micro_mass (scoring column `Strain`) |
   | `par_k` | custom, value; input `group` | sat11_hand_algo_runtime (PAR10, cutoff 5,000 s, group `instance_id`, `select_min`) |
   | `normalized_early_detection_utility` | custom, label; inputs `group`, `order` | sepsis_prediction_1m (scoring columns `Patient_ID`, `Hour`; each test patient's hours whole) |
+  | `mean_poisson_deviance` | standard, value; optional input `weight` (a row weight), `min_prediction` required | fremtpl2 (scoring column `Exposure`), bemtpl97 (`expo`): claims per year insured, the weight column also the task's `sample_weight`, `min_prediction` 1e-4 (2026-11-06) |
+- [ ] **Training weights.** A TODO for later: nothing changes in TabArena or AutoGluon yet. A format-2 task may declare
+  a training weight, `task_metadata.sample_weight` (read it with `data_foundry.curation_container.sample_weight`): a
+  scoring column that the objective metric reads as its row weight (MET-15), such as the years insured of a claims
+  rate (fremtpl2 `Exposure`, bemtpl97 `expo`). Every model is fitted with it as the row weight and never gets it as a
+  feature: a time on risk that a claim can cut short leaks the outcome as a feature (LEAK-41), and a fit without the
+  weight targets another quantity (on fremtpl2 an unweighted fit scores worse than the constant rate).
+  - **The gate.** No container with a `sample_weight` enters a run until the adapter builds X from
+    `feature_columns()`, passes the weight to every fit, and scores with Data Foundry's scorer. A contract test on a
+    toy container guards it: its realized weight, used as a feature or ignored, moves the score past a stated
+    tolerance.
+  - **Weighted validation.** Early stopping, tuning and ensembling use the weighted metric, with the same
+    `min_prediction` floor in validation and test (in AutoGluon, `TabularPredictor(sample_weight=col,
+    weight_evaluation=True)`).
+  - **The models to update.** AutoGluon's NN_TORCH, FastAI and KNN drop the weight with a log line at level 15;
+    RealMLP, TabM, the TabPFN wrappers, TabICL, Mitra and TabDPT never read it; XGBoost's early stopping ignores the
+    evaluation weights; CatBoost stops on RMSE for a metric it does not know; AutoGluon has no Poisson scorer and no
+    offset.
+  - **A model-fit contract test** for the benchmark pipeline, per model: does it use the training weights, and the
+    validation weights? Fit with half the rows at weight 0: the prediction must change. Other fit properties are worth
+    testing the same way, such as transductive use of the test rows (LEAK-9) and determinism.
+  - **Resampling, one default for a weight-blind model.** Draw each bag fold's training rows with probability in
+    proportion to the weight (the validation rows untouched), seeded, recorded as `weight_mode=resampled` and flagged
+    on the leaderboard. Measured against a weighted fit, it costs 0.0007 to 0.0018 deviance on fremtpl2 (three draws
+    or one); on australian_vehicle_insurance_2004_2005 it closes 90% of the deviance gap but only 45% of the Gini gap.
 - [ ] **Report the effective sample size.** For a task scored per group, the number of test groups per fold is the
   sample size of the score (34 molecules per fold in `musk`); show it next to the results.
 
