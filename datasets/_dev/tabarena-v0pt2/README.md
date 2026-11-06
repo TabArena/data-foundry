@@ -18,6 +18,8 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
 
 ## Rebuild
 
+The 2026-11-05 installed-skill alignment rebuild used the same qualified scientific source and reproduced the preceding checksum. One format-2 dataset, one traced raw CSV (5,829,604 bytes); reload, minimal-input reproduction and the local manifested backup are verified. The dated CHANGELOG records the new UUID.
+
 Targeted rebuild on 2026-11-05: one format-2 dataset from one traced raw CSV (5,829,604 bytes). Saved-container reload and a check using only that input reproduce the checksum. The dated CHANGELOG entry records the UUID and accepted protocol. The manifested raw-input backup remains local, outside Git.
 
 - The raw files come from `local-data-warehouse/` (or `$DATA_FOUNDRY_WAREHOUSE`); each folder's `README.md` gives the
