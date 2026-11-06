@@ -59,12 +59,13 @@ temporal or forecasting whether or not a date column survived. Cases: combined_c
 **SPLIT-8 (Must; narrows SPLIT-7, SPLIT-14 and USE-10).** When a task is temporal in nature or by its use case but
 the release cannot give the windows SPLIT-14 asks for, it ships in the closest regime that keeps the rows, tagged as
 forced from temporal, with the cost measured against the valid windows where the data has any. This covers a release
-with no dates at all (one extract, the status at that moment standing in for a forecast), a release with one stock
-month of the base or a few cohort months of one customer base (a split by those months tests a change of cohort, not
-of time), and a release with too few periods for three windows. The closest regime is IID (tag
-`ForcedIIDFromTemporal`), or grouped by the entity when the periods are stacked and the entities recur across them
-(tag `ForcedGroupedFromTemporal`). Say what the timestamp or a dated window would change and that it should be
-recovered if a later release has it. A forced split, grouped or IID, gets a leak test across the split and the
+whose rows arose over a period and lost their dates, a few cohort months of one customer base (a split by those
+months tests a change of cohort, not of time), and a release with too few periods for three windows. A release that
+is one moment (one extract, one stock month, one exam round) is not forced: SPLIT-32 gives it `Snapshot` or
+`DelayedTarget`. The closest regime is IID, or grouped by the entity when the periods are stacked and the entities
+recur across them; the forced time-basis tags are `CaseSeries` and `TimeLost` (dates lost) and `TooFewPeriods` (too
+few periods), SPLIT-32. Say what the timestamp or a dated window would change and that it should be recovered if a
+later release has it. A forced split, grouped or IID, gets a leak test across the split and the
 leak probes: does a row share its outcome, its unit's outcome or its period's outcome with the other side, is there
 a hidden group, an order dependence. A leak found is weighed case by case like any other: removed where it can be,
 otherwise the task may still ship as an approximate fit with the leak measured in the notes. Being forced alone never
@@ -73,9 +74,53 @@ another. (Lennart, 2026-10-12; amended 2026-10-21, Lennart: one stock month, fro
 mobile_churn and the churn snapshots; too few periods, from nba_players_2016_2019,
 open_university_learning_analytics_dataset and distribution_transformers_at_cauca_department; amended 2026-11-02,
 Andrej, on the insurance tables of the zero-inflated batch: a leak test across a forced split; reworded 2026-11-05,
-Lennart: the test informs a case-by-case call and the forced tag stays.) Cases:
-account_debt_south_africa, mobile_churn, open_university_learning_analytics_dataset (nba_players_2016_2019 was
-retired on 2026-10-26 on its use case, not its split).
+Lennart: the test informs a case-by-case call and the forced tag stays; one-moment releases moved to SPLIT-32.)
+Cases: open_university_learning_analytics_dataset (nba_players_2016_2019 was retired on 2026-10-26 on its use case,
+not its split); account_debt_south_africa and mobile_churn, first cases here, are one-moment releases under SPLIT-32.
+
+### Why a split is not temporal
+
+**SPLIT-32 (Must; narrows SPLIT-7, SPLIT-8 and SPLIT-14).** A split that is not temporal says why, with one time-basis
+tag in the definition and a `Time basis:` line in the curation notes that names the fact behind it. The answer comes
+from when the rows, the features and the target come into existence compared with the prediction point, found by
+five questions asked in this order:
+
+1. **Does the target depend on when it was observed?** If the same item measured at another date has the same target
+   (a material's strength, a molecule's activity, a species, the outcome of a designed run), the task is `Timeless`.
+   There is no time to split on; the split is random or grouped by item family.
+2. **Does the use case predict for times after its data?** If it only fills in values for a time the data already
+   covers (one census, one scrape, the gaps of a logged week, a site not yet mapped in a past survey), the task is a
+   `Snapshot`, and the line names the moment or the period. When the rows span a period, check that no row of the
+   same time carries a test row's target (one day's weather across stations); if one does, group by that time unit.
+3. **Does the release, or its source, carry a global time order?** A date column, an order that tracks time, a value
+   that encodes the period, a date dropped from the raw file or kept in a parent upload. Then the split is temporal
+   (SPLIT-7, SPLIT-14). With fewer periods than three windows need, it holds out entities across stacked periods
+   (`TooFewPeriods`). A split that leaves such time unused is an exception (`TimeUnused`): the line gives the reason
+   and its measured cost (the score on the newest window under a temporal split against the shipped split), and it
+   is a decision of its own for the curator. A time order found only within each entity (a policy's terms) does not
+   count.
+4. **Were all rows' features recorded at one shared prediction moment, with the target arriving after it?** A default
+   in the next month, a donation at the next drive, an event within a fixed follow-up: the task has a
+   `DelayedTarget`. No test row is later than a training row, so a random or grouped split tests the use case at that
+   moment; what it cannot test is the next moment. The line names the moment and the target's window. The window has
+   closed for every row (no censored rows), and every column is checked to have existed at the moment (LEAK-1,
+   LEAK-10), including fields the outcome cuts short, such as time on risk.
+5. **Otherwise the rows arose over a period and the release lost the time,** and the split is forced (SPLIT-8). If the
+   target is the case's present state, found at the same encounter (a diagnosis, a tissue type), it is a
+   `CaseSeries`: the cost is prevalence and practice drift. If the target is a later outcome or a market or
+   behavioural value, the time is lost (`TimeLost`): the split trains on rows from after its test rows, and by how
+   much that flatters the score is unknown. Both ship after SPLIT-8's leak test, and the line says what a dated
+   release would change.
+
+The record carries the matching tag, set at screening from the source and checked when the definition is written:
+`Non-IID (Temporal)` when the data carries time (a temporal split, `TooFewPeriods` or `TimeUnused`), otherwise
+`Timeless`, `Snapshot`, `Delayed Target`, `Case Series` or `Time Lost`; when the record's tag and the definition's
+time basis disagree, the curator decides. `ForcedIIDFromTemporal` and `ForcedGroupedFromTemporal` are superseded by
+these tags: old definitions keep them until their time basis is reviewed. Why: a random split can stand for the use
+case or flatter it, and only the time basis tells which; naming it makes the compromise visible and the exception a
+decision. Cases: the arrival study of the 177 v0.2 definitions (2026-11-04) is the evidence; examples are
+credit_card_clients_default and framingham_heart_study_fhs (`DelayedTarget`), houses and 5g_energy_consumption
+(`Snapshot`), gallstone_disease (`CaseSeries`), allstate_claims_severity (`TimeLost`).
 
 ### Temporal tasks
 

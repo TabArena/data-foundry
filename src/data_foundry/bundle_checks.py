@@ -46,7 +46,7 @@ import pandas as pd
 
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.curation_recommendations import SPLIT_TEST_ROW_BUDGET, SPLIT_TRAIN_ROW_BUDGET
-from data_foundry.schema import as_column_list
+from data_foundry.schema import SUPERSEDED_TIME_TAGS, TIME_BASIS_TAGS, as_column_list
 from data_foundry.utils.checksum import categorical_details
 from data_foundry.utils.dtypes import is_str_dtype, object_columns
 
@@ -1750,14 +1750,14 @@ def _check_data_tags(ctx: _Ctx) -> Iterator[CheckResult]:
                 "warning",
                 f"Task declares no `time_on`/`group_on` (IID split) but `data_tags={sorted(tags)}` has no `IID` tag.",
             )
-        wrong = tags & (non_iid_tags | {"Non-IID", "ForcedGroupedFromTemporal"})
+        wrong = tags & (non_iid_tags | {"Non-IID", "ForcedGroupedFromTemporal", "TooFewPeriods"})
         if wrong:
             yield CheckResult(
                 "meta_tags_contradict_regime",
                 "warning",
                 f"`data_tags` claim {sorted(wrong)} but the task defines an IID split.",
-                hint="Either set `time_on`/`group_on`, or fix the tags (`ForcedIIDFromTemporal` is the tag for "
-                "temporal data shipped without a usable time index).",
+                hint="Either set `time_on`/`group_on`, or fix the tags (`TimeLost` is the tag for rows spread over "
+                "a period whose release lost the time index, SPLIT-32).",
             )
     else:
         if expected not in tags and "GroupedTemporal" not in tags:
@@ -1789,6 +1789,48 @@ def _check_data_tags(ctx: _Ctx) -> Iterator[CheckResult]:
                 hint="Tag the regime that the split actually uses; describe the other structure in "
                 "`curation_comments`.",
             )
+
+
+@_check
+def _check_time_basis(ctx: _Ctx) -> Iterator[CheckResult]:
+    """An IID or grouped split says why it is not temporal, and a split that leaves dates unused says so (SPLIT-32)."""
+    tags = set(ctx.dataset_metadata.data_tags)
+    basis = sorted(tags & set(TIME_BASIS_TAGS))
+    if ctx.regime == "temporal_non_iid":
+        if basis:
+            yield CheckResult(
+                "meta_time_basis_on_temporal",
+                "warning",
+                f"`data_tags` carry {basis}, which say why a split is not temporal, but this split is temporal.",
+                hint="Drop the time-basis tag.",
+            )
+        return
+    old = sorted(tags & set(SUPERSEDED_TIME_TAGS))
+    if old:
+        yield CheckResult(
+            "meta_time_basis_superseded",
+            "info",
+            f"`data_tags` carry {old}, superseded by the time-basis tags of SPLIT-32.",
+            hint="; ".join(f"`{t}` becomes {SUPERSEDED_TIME_TAGS[t]}" for t in old) + ".",
+        )
+    elif not basis:
+        yield CheckResult(
+            "meta_time_basis_missing",
+            "info",
+            "The split is not temporal and `data_tags` do not say why.",
+            hint=f"Add one of {', '.join(TIME_BASIS_TAGS)} with a `Time basis:` line in `curation_comments` "
+            "(SPLIT-32).",
+        )
+    target = ctx.target
+    dated = [c for c in ctx.df.columns if c != target and pd.api.types.is_datetime64_any_dtype(ctx.df[c])]
+    if dated and not set(basis) & {"Snapshot", "TooFewPeriods", "TimeUnused"}:
+        yield CheckResult(
+            "meta_time_present_unused",
+            "warning",
+            f"Date columns {dated} are in the data, but the split is not temporal.",
+            hint="Split by time, or tag `TimeUnused` with the measured cost of not doing so (`Snapshot` when the use "
+            "case only fills in inside the observed period), SPLIT-32.",
+        )
 
 
 @_check

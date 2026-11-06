@@ -563,6 +563,33 @@ def test_forced_iid_tag_on_an_iid_task_is_not_flagged():
     assert "meta_tags_contradict_regime" not in slugs_of(make_container(dataset_metadata=metadata))
 
 
+def test_an_iid_split_without_a_time_basis_gets_a_note():
+    found = slugs_of(make_container(dataset_metadata=make_dataset_metadata(data_tags=["IID"])))
+    assert "meta_time_basis_missing" in found
+
+
+def test_a_time_basis_silences_the_note():
+    found = slugs_of(make_container(dataset_metadata=make_dataset_metadata(data_tags=["IID", "Timeless"])))
+    assert "meta_time_basis_missing" not in found
+
+
+def test_a_superseded_forced_tag_names_its_replacement():
+    metadata = make_dataset_metadata(data_tags=["ForcedIIDFromTemporal"])
+    found = run_bundle_checks(make_container(dataset_metadata=metadata), verbose=False).results
+    note = [r for r in found if r.slug == "meta_time_basis_superseded"]
+    assert note and "TimeLost" in note[0].hint
+
+
+def test_a_time_basis_on_a_temporal_split_is_flagged():
+    metadata = make_dataset_metadata(data_tags=["Non-IID", "Temporal", "Snapshot"])
+    assert "meta_time_basis_on_temporal" in slugs_of(make_temporal_container(dataset_metadata=metadata))
+
+
+def test_too_few_periods_on_an_iid_task_is_flagged():
+    metadata = make_dataset_metadata(data_tags=["IID", "TooFewPeriods"])
+    assert "meta_tags_contradict_regime" in slugs_of(make_container(dataset_metadata=metadata))
+
+
 def test_non_iid_tags_on_an_iid_task_are_flagged():
     metadata = make_dataset_metadata(data_tags=["Non-IID", "Temporal"])
     assert "meta_tags_contradict_regime" in slugs_of(make_container(dataset_metadata=metadata))
