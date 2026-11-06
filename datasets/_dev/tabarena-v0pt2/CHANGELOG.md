@@ -1,5 +1,18 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-06, maintained-skill Fugaku recheck
+
+- Repeat the requested add/review/build cycle through the maintained installation after its pin upgrade to `9048f36a`.
+  That source and numerical dependencies are identical to the actual runtime used by the completed November5 cycle;
+  the earlier per-run source override is no longer required. Preserve the accepted task, source-bound decisions,
+  resolved IDs1–3, all dated reports, formal SPLIT-10 exception and first-tuned-benchmark recheck.
+- New focused panel: claim, precedent, mediator and cold editor. No column/split/target/feature rule changed; prior
+  verified audits and model/probe outputs are reused after a fresh native27-check and exact
+  full-data/category/membership/spec/version/scorer comparison. Checksum stays
+  `v2:b655fe6b87263768dd5a2e1232484929a22c3364e7daeeaa6b5cb6a30dc4a06d`; no new human input is required. Existing
+  generic raw-CLI, float32 neighbour-diagnostic and generated-review-template limitations remain explicit; no full
+  clean leak-CLI or HPO result is claimed.
+
 ## 2026-11-05, verified Fugaku build on updated main
 
 - Built `fugaku_hpc_job_failure_1m` as `01a1ae07-bfad-7795-a282-7279d0d067dc` from clean source
