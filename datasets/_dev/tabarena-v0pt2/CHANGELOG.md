@@ -259,6 +259,364 @@
   in each folder's `REVIEW.md` and in an open-issues block of `online_retail`, `book_price_prediction`, `ctu_13`,
   `fremtpl2` and `xente_fraud_detection_challenge`. No definition, row or split changed.
 
+## 2026-11-03, zero-inflated targets accepted (no container built)
+
+- `task_target_value_dominant` accepted with the meaning of the zeros in loan_default_prediction_imperial_college,
+  noaa_afsc_bottom_trawl_survey_cpue, spanish_motor_insurance_2015_2018,
+  spanish_motor_insurance_coverage_level_2022_2024 and wadden_sea_sibes_macoma_abundance (Andrej: "for these tasks
+  this is natural and a core challenge"); READMEs regenerated.
+
+## 2026-11-03, nantucket_sound_sea_duck_aerial_survey_counts removed (no container built)
+
+- The curator moved it to 2nd Tier: a multi-target task (three species counts per segment-day; the format ships one
+  target). The record is `TBD -> 2nd Tier` with the `Multi-target` tag, its `v2_path` cleared and its claim
+  released; the folder leaves the working copy with its `REVIEW.md` (commit 902011b3; copies of today's files, with
+  the transect split, in the run folder). It had no row in the README table. The per-species split design is not
+  built.
+
+## 2026-11-03, nantucket per-species splits proposed (no container built)
+
+- nantucket_sound_sea_duck_aerial_survey_counts issue 3: the curator's design (one dataset, each split on one species)
+  answered with a concrete layout (23,253 rows with `species`, 27 splits); the AI recommends it; not built yet.
+- rand_health_insurance_experiment_doctor_visits (retired): issues 2 and 3 closed as moot in the record.
+- nantucket: the record takes the definition's `required_split` and tag (Grouped).
+
+## 2026-11-03, cape_floristic_region_family_cover and pennsylvania_oak_hickory_regeneration_experiment removed (no container built)
+
+- cape_floristic_region_family_cover: the curator's verdict is `No` (`No Good Target / Scientific Discovery`, with
+  the screening's `Data Quality Issue`), as the review recommended: no actor, no decision, a label of undocumented
+  scale. `required_split` takes the definition's value.
+- pennsylvania_oak_hickory_regeneration_experiment: `No` (`Too Small`, `Not Representative`): 24 sites and one
+  cohort, so the score cannot test a forecast of a later cohort. Today's stratified split goes with it.
+- Both: no priority, claims released, folders leave the working copy with their `REVIEW.md` (commit 902011b3;
+  copies of today's files in the run folder); neither had a row in the README table.
+- loan_default_prediction_imperial_college and noaa_storm_events_damage: ship verdicts recorded in their records.
+- nantucket_sound_sea_duck_aerial_survey_counts issue 3: one dataset per species answered (the AI recommends one).
+
+## 2026-11-03, pennsylvania folds stratified by forest; noaa_storm as a planning task (no container built)
+
+- pennsylvania_oak_hickory_regeneration_experiment: issue 2 (B): site folds stratified by state forest
+  (`stratify_on`, the check's warning on it accepted), tagged `ForcedGroupedFromTemporal`; `fit_reason` names the
+  shared years; the probe numbers in the notes measured again (Slurm); README regenerated. Issue 3 answered (the
+  shared forests and years are optimism, not a test label in training).
+- noaa_storm_events_damage: issue 5 (B): the use case is the planner's (Diaz and Joseph 2019), `fit_reason`
+  shortened; data, split and metric unchanged; README regenerated.
+
+## 2026-11-03, loan_default metric under amended MET-11; cape asked (no container built)
+
+- loan_default_prediction_imperial_college: issue 2 settled (A, the 5,800-loan gap stays); issue 3 settled (B): the
+  normalized Gini is declared from context under MET-11 as amended today for an overruled source metric
+  (`metrics.md`, `principles.md`), no longer as an exception; notes reworded, README regenerated.
+- cape_floristic_region_family_cover: a new issue 3 answers whether the task is valid (no actor, no decision, a label
+  of undocumented scale; the AI recommends `No`).
+- nantucket_sound_sea_duck_aerial_survey_counts issue 3 answered with TabPFN (Slurm): no species gains from one
+  stacked model; TabPFN finds more signal for the eider and the scoters than for the long-tailed duck.
+
+## 2026-11-03, basque_offshore_bivalve_biotoxins removed (no container built)
+
+- The curator's verdict is `No` with `Too Small`, as the review recommended ("I follow your suggestion to retire the
+  dataset"): the three test windows hold 6, 7 and 0 samples above the EU limit. No priority; the record fields take
+  the definition's values (`original_source` Other, `required_split` Temporal); claim released; the folder leaves the
+  working copy with its `REVIEW.md` (commit 902011b3; copies of today's files in the run folder). It had no row in the
+  README table.
+- noaa_storm_events_damage: a new issue 5 answers whether the task is real (the label is predicted in the literature
+  for planning; the triage moment is ours). pennsylvania_oak_hickory_regeneration_experiment issue 2 answered: being
+  the first stratified grouped regression is no con of option B.
+- loan_default_prediction_imperial_college issue 1 settled (A): f529-f531, f533-f535 and f537 stay dropped with
+  f527/f528, recorded as an exception to LEAK-10's precedent in the notes, the record and `leak_checks.md`; README
+  regenerated.
+
+## 2026-11-03, review problems as bullets
+
+- The problem of every open issue in the `REVIEW.md` files is now at most three bullets of one sentence each, as the
+  curator asked (writing.md); the sentences are the same, no fact or decision changed.
+
+## 2026-11-03, thailand_road_accident_register_2019_2022 removed
+
+- The curator's verdict: don't ship. On issue 3 the curator chose (C): with the deaths in the same record as the
+  crash, the model predicts a count already on file, as for glioma_grading_clinical_and_mutation_features. The record is
+  `No` (`No Good Target / Scientific Discovery`), its `v2_path` cleared and its claim released; the folder leaves the
+  working copy with its `REVIEW.md`. The definition is in commit 902011b3. It had no row in the README table.
+
+## 2026-11-03, blogfeedback: nine test windows
+
+- Nine windows of 6 days over the newest 54 test days replace three of 20 days (issue 2, Andrej: "With the given
+  sample size we would prioritize 9 folds"); `splits_comment` and the task summary say so. `dataset check`: 0 errors,
+  the one accepted warning as before; README regenerated. The record's `year` (2012) and `original_source` (`Other`)
+  take the definition's values. Issue 1 is answered and a new issue 4 asks about the metric's name and scale.
+
+## 2026-11-03, basque_offshore_ctd_chlorophyll removed; nantucket by transect; settled issues restored (no container built)
+
+- basque_offshore_ctd_chlorophyll removed: the curator's verdict is `No` ("it seems like this is a made up task"),
+  marker `No Good Target / Scientific Discovery`, no priority; the record fields take the definition's values; claim
+  released; the folder leaves the working copy (commit 902011b3; copies of today's files in the run folder).
+- nantucket_sound_sea_duck_aerial_survey_counts: the group is now the transect column (24 north-south transects),
+  the field's validation unit (issue 1); the zero warning is accepted (issue 4); `dataset check` run (Slurm).
+- noaa_storm_events_damage: issue 4 settled, no storm-level input.
+- australian_vehicle_insurance_2004_2005 issues 1, 2 and 5 and pricing_game_2016_french_fleet issue 1 are back in
+  their `REVIEW.md` with a Resolved turn from the record's CC: they were removed when settled, before the rule that
+  settled issues stay (2026-11-02).
+
+## 2026-11-03, rand_health_insurance_experiment_doctor_visits removed; noaa_storm_events_damage narrowed (no container built)
+
+- rand_health_insurance_experiment_doctor_visits removed: the curator moved it to 2nd Tier ("the target is a bit made
+  up and the data is quite outdated"). The record is `TBD -> 2nd Tier`, its `v2_path` cleared and its claim released;
+  the folder leaves the working copy with its `REVIEW.md` (commit 902011b3; copies of today's files in the run folder).
+- noaa_storm_events_damage: the hazards no one sends a damage assessor for are dropped (issue 2 (B)): 156,767 entries,
+  99.1% at $0; 843,144 rows remain. RMSLE stays (issue 3). Issue 4 (a storm-size input) answered with a measurement:
+  no gain either way. `dataset check` clean (Slurm).
+- pennsylvania_oak_hickory_regeneration_experiment: `Yes` with the `No Good Target / Scientific Discovery` marker
+  removed (issue 1 (B)); issues 2 and 3 answered (new sites, stratified by forest, tagged forced; the size); the
+  definition is unchanged.
+
+## 2026-11-03, avito_demand_prediction_1m removed (no container built)
+
+- The curator's verdict: don't ship for now, 2nd Tier, as a recommender / click-through task. The record is
+  `TBD -> 2nd Tier` with the marker `Out-of-scope Task (CTR/RecSys/Ranking)`, its `v2_path` cleared and its claim
+  released; the folder leaves the working copy with its `REVIEW.md` (the definition is in commit 902011b3; copies of
+  today's files in the run folder). It had no row in the README table.
+
+## 2026-11-03, spanish_motor_insurance_2015_2018: every first year kept (no container built)
+
+- Design S (issue 2, Andrej): the filter to customers with one policy is gone (37,090 rows instead of 25,665), and
+  `Policies_in_force`, a calendar-year count that also sees policies added later, is replaced by
+  `other_policies_at_start`. Same five monthly windows, about twice the claims each. Issue 5: ship and re-check
+  `Trivial`. Texts and the third decision rewritten.
+- frempl_french_motor_personal_line: the metric reason now says what the base is (the feature `Exposure` before
+  rounding, the realised length for continued records as in the feature); stale fold figures relabelled.
+- pricing_game_2016_french_fleet: two sentences no longer call pricing_game_2017's metric a Gini; README regenerated.
+
+## 2026-11-03, spanish_motor_insurance_2015_2018: curator's marks (no container built)
+
+- Issues 1, 3 and 4 settled as implemented (Andrej): first-year pricing; `Value_vehicle` kept, the note now assumes its
+  value changes in proportion over time; no request to the authors now, the note names it for a future version.
+  Issues 2 and 5 answered with five row designs scored by TabPFN on a GPU (Slurm) and LightGBM; open.
+
+## 2026-11-03, blogfeedback removed; ship verdicts (no container built)
+
+- blogfeedback removed: the curator's verdict is don't ship for now, 2nd Tier (issue 1 (C)): the post text behind
+  the word flags cannot be recovered, and without it the curator reads the task as text classification. The record
+  is `TBD -> 2nd Tier`, its `v2_path` cleared and its claim released; the folder leaves the working copy with its
+  `REVIEW.md` (the definition is in commit 902011b3; today's nine-window version is in the run folder). It had no row
+  in the README table.
+- Ship verdicts (Andrej): allstate_claim_prediction_challenge_1m (issue 5 (A), households at random),
+  boreal_postfire_lichen_biomass, frempl_french_motor_personal_line and pricing_game_2017_french_mtpl (issue 3 (A),
+  euros, recorded as an exception to CLEAN-16 in cleaning_features.md). The claims stay until the work goes to `main`.
+
+## 2026-11-03, frempl: grouped by policy component, exposure-weighted Gini (no container built)
+
+- frempl_french_motor_personal_line: the group column is now `policy_component`, records joined across the sample
+  files as well as within them (68,857 groups; issue 1 (B), Andrej). The metric is `ordered_lorenz_gini` with the new
+  scoring column `exposure_at_start`, the length known when a record starts (issue 4 (C), Andrej). Notes, grouping
+  text, splits comment and the third decision rewritten; `dataset check` clean, README regenerated, leak probe clean.
+
+## 2026-11-03, boreal: curator's marks (no container built)
+
+- boreal_postfire_lichen_biomass: ship after the changes (Andrej). Issues 1, 2, 5 and 6 settled as implemented: the
+  paper's forecast with the burn-area split, the tree-ring stand age, kg/ha and RMSE; the metric reason and two notes
+  say why. The record's `No Good Target / Scientific Discovery` marker is removed. `dataset check` clean.
+
+## 2026-11-03, frempl: curator's marks (no container built)
+
+- frempl_french_motor_personal_line: the record takes the grouped split and tag; the amounts' note stays (issue 3).
+  The exposure-weighted Gini chosen in issue 4 was not applied: measured on the shipped splits, its realised-length
+  base lets a constant prediction score 0.184, so the review asks for the base known at the start instead; the
+  definition is unchanged. Issue 1 answered (the cross-file component as the most conservative key; why no temporal
+  split inside 2004).
+
+## 2026-11-03, allstate as the 2006 renewal book; boreal against the paper (no container built)
+
+- allstate_claim_prediction_challenge_1m: rebuilt as the 2006 renewal book (issue 3 (B), Andrej). The rows are the
+  4.4M vehicle-years of 2006 (1.5M of whole households sampled); 2005 gives five history columns
+  (`household_vehicles_2005`, `household_claims_2005`, `household_vehicles_carried`, `vehicle_insured_2005`,
+  `vehicle_claims_2005`), counts only; `Calendar_Year` goes. The competition's Gini stays (issue 4 (A)). Task summary,
+  notes, grouping text, splits comment and decisions rewritten; `dataset check` clean, README regenerated, leak probe
+  clean. Issue 5 (sampling and dealing households to folds) answered with a fold experiment, open.
+- boreal_postfire_lichen_biomass: the notes cite Greuel et al. (2021) by section instead of marking it unread (issue 4,
+  Andrej); the claim of two regional conversions is replaced by the paper's pooled allometry and Saskatchewan's 0.76
+  live-height ratio; the metric reason gives the paper's in-sample R^2. The two duplicate-row warnings are accepted
+  (issue 3). `dataset check` clean, README regenerated. Issues 1, 2 and 5 answered, a new issue 6 on R^2 against
+  RMSE; all open.
+
+## 2026-11-03, curator's marks on allstate and pricing_game_2017 (no container built)
+
+- pricing_game_2017_french_mtpl: the metric is now `mean_tweedie_deviance` (power 1.5, predictions floored at 1
+  EUR), the stand-in for the game's profit, replacing the normalized Gini (issue 2, Andrej). The metric is new in
+  `src/data_foundry/v2/metrics.py`, under scikit-learn's name, with tests. The target stays in euros, and issue 3
+  asks the curator to confirm that; the name stays (issue 4). `dataset check` is clean and the README is regenerated.
+- allstate_claim_prediction_challenge_1m: dropping 2007 is confirmed (issue 2); the decision's note says 2007 can
+  come back with settled amounts. Issues 3 and 4 are answered in its `REVIEW.md` and stay open.
+  A second round of answers proposes rebuilding it as the 2006 renewal book with the 2005 claim history (issue 3,
+  option B) and asks in a new issue 5 whether to sample claim households first; the definition is unchanged.
+- pricing_game_2016_french_fleet: the metric reason no longer calls the Gini "the stand-in of
+  pricing_game_2017_french_mtpl"; it now names what sets pg16 apart (one uniform price factor). Text only.
+
+## 2026-11-03, review issues in the new shape
+
+- The open issues of 16 `REVIEW.md` files of the zero-inflated batch are rewritten in the issue shape the curator
+  asked for (writing.md, "Questions and issues for the curator"): bullets, an options table with pros and cons, the
+  rules in footnotes, the text for Claude in `**Notes for the AI:**`. No fact, number or decision changed; issue
+  numbers and the curator's notes are as they were. No definition changed.
+
+## 2026-11-02, crms_phragmites_cover removed
+
+- The curator confirmed the record's `No` (`Time-series (Forecasting)`, TP-10 as written) on the review page, so the
+  folder leaves the working copy with its `REVIEW.md`; the record's `v2_path` is cleared, its `year` (2026) and
+  `required_split` (`Temporal (NON-IID)`) take the definition's values, and the claim is released. The definition is
+  in commit 902011b3.
+
+## 2026-11-02, two datasets shipped (no container built)
+
+- The curator's verdict: ship, for noaa_afsc_bottom_trawl_survey_cpue and
+  spanish_motor_insurance_coverage_level_2022_2024 (issue 5: the task kept). Their `REVIEW.md` files keep the issues as
+  resolved.
+
+## 2026-11-02, spanish_motor_insurance_coverage_level_2022_2024: exposure-weighted Gini (no container built)
+
+- On the curator's marks (REVIEW.md issues 3 and 4): the target is the cost per year on risk,
+  `log1p_incurred_per_exposure_year` (`total_incurred` over the recorded time on risk), scored by
+  `normalized_weighted_gini` with the recorded time on risk as weight. That time ships as the scoring column
+  `actual_exposure`, never a feature; the corrected `total_exposure` stays the feature, and the cancellation fix is
+  unchanged.
+- The two kept late values are reworded ("no consistent score gain detected in the tested comparisons", no bound
+  claimed, a revisit condition), premiums unrounded.
+- New issue 5: on the new metric an untuned plain model scores below the premium alone.
+
+## 2026-11-02, noaa_afsc_bottom_trawl_survey_cpue: 11 taxa, two-year windows (no container built)
+
+- On the curator's marks: one row per haul and taxon for 11 groundfish taxa, `taxon` a categorical feature, in place
+  of rex sole alone (391,048 rows, 52.5% zeros). Atheresthes and Lepidopsetta each group the species codes the survey
+  told apart only later. The catches of 14 more species codes are downloaded one query per code (FOSS refuses `$in`).
+- Split: nine two-year windows (2025-2026 back to 2009-2010), each trained on every earlier survey, no gap: an
+  exception to SPLIT-10 (splits.md Cases), in place of three five-year windows with a two-year gap.
+- Metric: `mean_group_normalized_rmse` (new in `data_foundry.v2.metrics`, with tests), RMSE on counts per taxon over
+  the taxon's spread, averaged, a stand-in for the review's RMSE per species, `taxon` its group and a feature (MET-2
+  amended). Flathead sole joins Bering flounder and unidentified Hippoglossoides as one taxon (391,044 rows).
+  `dataset check` and the probes are clean.
+
+## 2026-11-02, four datasets shipped; walmart held (no container built)
+
+- The curator's verdict: ship, for australian_vehicle_insurance_2004_2005, liberty_mutual_fire_peril_loss_cost,
+  wisconsin_local_government_property_insurance_fund and spanish_homeowners_motor_insurance_2010_2014 (issue 1 (a):
+  the 13 rating fields kept after the leak check). Their `REVIEW.md` files keep the issues as resolved.
+- walmart_sales_in_stormy_weather: don't ship for now; the record stays `TBD -> Yes`, the folder unbuilt.
+- wadden_sea_sibes_macoma_abundance: the leak test across the station-grouped split finds no leak (no station or row
+  on both sides; nearby stations of the same year merged into one group move R^2 by at most -0.006); the same survey's
+  other stations carry 0.085 R^2, the map's own input. `elevation_m_nap` joined from Rijkswaterstaat's vaklodingen
+  (the latest survey on or before each sample; R^2 +0.033, 9 of 9 folds); the interpolated sediment kept; record
+  `year` 2024. A container would need a rebuild.
+
+## 2026-11-02, the curator's afternoon marks on the zero-inflated review (no container built)
+
+- wisconsin_local_government_property_insurance_fund: the forced grouped split, which leaked its years' claim level,
+  is replaced by three expanding yearly windows without a gap (test 2008, 2009, 2010; train 40.6%, 60.6%, 80.3%); the
+  2008 window is below SPLIT-14's floor on the curator's call (splits.md Cases). `PolicyNum` becomes an input (known
+  members); record `year` 2017.
+- liberty_mutual_fire_peril_loss_cost: `var11` stays a feature and the competition Gini's weight; MET-2 amended
+  (metrics.md), `definitions.md` and the `MetricSpec.inputs` docstring aligned, one test added.
+- australian_vehicle_insurance_2004_2005: the book's claims corrected from the pages the curator read (de Jong and
+  Heller 2008, Table 1.6, Sec. 7.3-7.6, 8.3, 10.4-10.5); the Gini confirmed for this table; every issue resolved.
+- spanish_homeowners_motor_insurance_2010_2014: issues 2-5 resolved as implemented (no gap, the Gini, the frozen ages,
+  two warnings accepted); a nine-test leak check of the once-read rating fields finds no gain, and
+  `Policy_PaymentMethodA` gets a potential-leak note; issue 1 stays open for the curator.
+- walmart_sales_in_stormy_weather: `TBD -> 2nd Tier` to `TBD -> Yes` (TP-10 the only open reason); the folder stays.
+
+## 2026-11-02, spanish_homeowners_motor_insurance_2010_2014 added (no container built)
+
+- New v2 folder from the curator's `Yes` of 2026-11-02 (Guillen, Bolancé, Frees and Valdez, Mendeley
+  10.17632/vfchtm5y7j.1, CC BY 4.0): a customer's coming-year home claim cost at renewal, 122,935 customer-years.
+  Target `Claims2` as log1p, `normalized_gini` on the amount from context; test years 2012, 2013 and 2014 on expanding
+  windows without a gap. The year's own outcomes are dropped, prior-year claims added. The full review panel ran;
+  five issues are open in the folder's `REVIEW.md`.
+  [Record](../../../curation/records/spanish_homeowners_motor_insurance_2010_2014.md).
+
+## 2026-11-02, pricing_game_2016_french_fleet: shipped (no container built)
+
+- The curator's verdict: ship. Issue 4 (the claim charge as target) and the metric confirmed as implemented; the
+  metric is this dataset's own call (MET-10 amended in `metrics.md`: no family call on the metric, in doubt for
+  diversity). The folder's `REVIEW.md` keeps issues 2-4 as resolved, so the review page keeps the dataset and its
+  decisions. [Record](../../../curation/records/pricing_game_2016_french_fleet.md).
+
+## 2026-11-02, pricing_game_2016_french_fleet: the claim charge as target (no container built)
+
+- Target `claim` (a claim in the period) replaced by `claim_charge`, the period's claim charges summed with the 537 net
+  negative totals (IDA recoveries) set to 0: the curator's call after a measurement (the charge beats the length alone
+  on every window, all its signal is claim frequency). `problem_type` regression, metric `normalized_gini` as a stand-in
+  for the game's market, as in `pricing_game_2017_french_mtpl`; `task_target_value_dominant` accepted (zero-inflated);
+  notes, decisions and figures rewritten. The record gets `Two-Regime Zeros` back. Issues 2 and 3 leave the
+  folder's `REVIEW.md`; issue 4 asks the curator to confirm the switch. [Record](../../../curation/records/pricing_game_2016_french_fleet.md).
+
+## 2026-11-02, pricing_game_2016_french_fleet: expanding windows (no container built)
+
+- The three four-month windows of 2013 now each train on every period closed before the window starts (78%, 71%, 64%
+  of the rows) instead of all on 2011-2012: the curator's call on issue 2 ("whenever we have different test sets, we
+  would be retraining"), with SPLIT-14 amended in `splits.md` (windows that share one train side count as one).
+  `period_end` stays in the cleaned frame for the split and is dropped from the shipped one; `Temporal` horizon 4
+  months; the `meta_time_horizon_mismatch` acceptance removed. No gap (issue 3, an exception to SPLIT-10). Window
+  figures, the split comment and the metric reason re-measured; check, task and leak probes clean. README.md
+  regenerated. [Record](../../../curation/records/pricing_game_2016_french_fleet.md).
+
+## 2026-11-02, the curator's cross-dataset marks on the zero-inflated review (no container built)
+
+- Forced splits (SPLIT-8 amended: a forced grouped split ships; a forced IID split ships only when the leak test
+  across the random split finds none): `frempl_french_motor_personal_line`,
+  `rand_health_insurance_experiment_doctor_visits`, `spanish_motor_insurance_coverage_level_2022_2024`, `pricing_game_2017_french_mtpl` and
+  `allstate_claim_prediction_challenge_1m` ship grouped; `australian_vehicle_insurance_2004_2005` and
+  `liberty_mutual_fire_peril_loss_cost` ship IID, no leak measured across their random splits. Each `dataset.py`
+  split note names the call; the forced-split issue leaves each `REVIEW.md`.
+- Time on risk cut short by the outcome: one LEAK-10 case (removed or fixed where the data locates it, kept with its
+  measured size where not) for `australian_vehicle_insurance_2004_2005` (kept), `frempl_french_motor_personal_line`
+  and `pricing_game_2016_french_fleet` (fixed) and `spanish_motor_insurance_coverage_level_2022_2024` (located part
+  fixed, the rest kept); notes in the four `dataset.py`.
+- `noaa_storm_events_damage`: LEAK-25 amended so the $0 entries stay (a mix that follows a reporting unit shipped as a
+  feature, with a measured signal beyond it); notes updated, issue 1 resolved.
+- TP-10 stays as written: `crms_phragmites_cover` goes to `No` (`Time-series (Forecasting)`) and
+  `walmart_sales_in_stormy_weather` to `TBD -> 2nd Tier` in their records; both folders stay until the curator's
+  dataset verdict. `basque_offshore_bivalve_biotoxins`'s note on leg 1 updated.
+- SPLIT-10 amendment declined (`avito_demand_prediction_1m` issue 4): the no-gap departures of avito,
+  `pricing_game_2016_french_fleet` and `wisconsin_local_government_property_insurance_fund` stay per-dataset
+  exceptions, their pointers rewritten.
+- `australian_vehicle_insurance_2004_2005`: the claim cost stays in dollars, the log1p tables keep log1p (issue 5).
+- README.md of the nine changed definitions regenerated by `dataset check`.
+- Count metrics (zi-count-metric): `mean_poisson_deviance` added to `data_foundry.v2.metrics` (scikit-learn's
+  metric, an optional `min_prediction` floor on the original scale, tested against scikit-learn and through a log1p
+  `target_transform`). `nantucket_sound_sea_duck_aerial_survey_counts` declares it as a stand-in for its source's
+  likelihood, floored at 0.01 ducks (issue 2 resolved); `wadden_sea_sibes_macoma_abundance` (issue 3) and
+  `pennsylvania_oak_hickory_regeneration_experiment` (issue 4) keep `rmse`, a note in each `dataset.py`.
+- Hits@10 (zi-hits10): `mean_group_top_k_overlap` added to the library (per group, the share of the k highest true
+  values among the k highest predictions, ties by their expected share; tested against Buza's definition as a
+  loop). `blogfeedback` declares it as the source's metric, k = 10, the test day `basetime_day` as its group,
+  replacing the RMSLE stand-in (issue 3 resolved); MET-2 amended in metrics.md for the time column used as the
+  metric's group. README.md of the four definitions regenerated by `dataset check`.
+
+## 2026-11-01, 25 folders added from the zero-inflated screening (no container built)
+
+- Added by /add-dataset with the full review panel, one folder per `Yes` of the zero-inflated screening
+  (the curator's calls of 2026-10-30, in each record). Each folder's `REVIEW.md`
+  holds the open questions; none is built yet.
+  - Insurance: `allstate_claim_prediction_challenge_1m`, `australian_vehicle_insurance_2004_2005`,
+    `frempl_french_motor_personal_line`, `liberty_mutual_fire_peril_loss_cost`, `pricing_game_2016_french_fleet`,
+    `pricing_game_2017_french_mtpl`, `rand_health_insurance_experiment_doctor_visits`,
+    `spanish_motor_insurance_2015_2018`, `spanish_motor_insurance_coverage_level_2022_2024`,
+    `wisconsin_local_government_property_insurance_fund`.
+  - Ecology and environment: `basque_offshore_bivalve_biotoxins`, `basque_offshore_ctd_chlorophyll`,
+    `boreal_postfire_lichen_biomass`, `cape_floristic_region_family_cover`, `crms_phragmites_cover`,
+    `nantucket_sound_sea_duck_aerial_survey_counts`, `noaa_afsc_bottom_trawl_survey_cpue`,
+    `pennsylvania_oak_hickory_regeneration_experiment`, `wadden_sea_sibes_macoma_abundance`.
+  - Others: `avito_demand_prediction_1m`, `blogfeedback`, `loan_default_prediction_imperial_college`,
+    `noaa_storm_events_damage`, `thailand_road_accident_register_2019_2022`, `walmart_sales_in_stormy_weather`.
+- Recommended not to ship as they stand: `basque_offshore_bivalve_biotoxins` (`Too Small`), `crms_phragmites_cover`
+  (TP-10, unless amended), `noaa_storm_events_damage` (LEAK-25, unless amended) and `walmart_sales_in_stormy_weather`
+  (`TBD -> 2nd Tier`, then TP-10). The others are recommended to ship, several only if the family call on forced splits
+  (SPLIT-8 against the how_much_did_it_rain `No`) keeps them.
+- `sweden_depth_to_bedrock` got no folder: its features need a manual order from Lantmäteriet, so it went to
+  `2nd Tier` under the curator's rule of 2026-11-01.
+- Metric library (`data_foundry.v2.metrics`): `normalized_gini` and `normalized_weighted_gini` treat tied predictions
+  as one group (the mean over the orderings of the ties), so a constant prediction scores 0 and the score no longer
+  depends on row order; without ties the official value is unchanged. New metric `ordered_lorenz_gini` (Frees, Meyers
+  and Cummings 2011), the Gini of the losses ordered by the relativity against a base premium, declared by
+  `wisconsin_local_government_property_insurance_fund`. Tests in `tests/test_v2_metrics_custom.py`.
+
 ## 2026-11-02, special features: SMILES and spectra under one declaration (PR #21)
 
 Lennart: the metadata for SMILES and spectra should be one general form, declared like the target column, so later
