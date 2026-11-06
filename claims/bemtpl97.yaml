@@ -1,6 +1,6 @@
 name: bemtpl97
-holder: Myunghwan
+holder: Lennart
 stage: review
-claimed_at: '2026-10-23T16:27:03Z'
-expires_at: '2026-11-04T03:18:24Z'
-note: Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized.
+claimed_at: '2026-11-06T14:24:38Z'
+expires_at: '2026-11-13T14:24:38Z'
+note: 'exposure rework (#51) and re-review, PR #47'

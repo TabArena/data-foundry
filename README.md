@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-06 14:24 UTC: 46 claim(s) (Andrej 1, Lennart 25, Myunghwan 20).
+As of 2026-11-06 14:24 UTC: 46 claim(s) (Andrej 1, Lennart 26, Myunghwan 19).
 
 ## Andrej
 
@@ -19,6 +19,7 @@ As of 2026-11-06 14:24 UTC: 46 claim(s) (Andrej 1, Lennart 25, Myunghwan 20).
 | `anes_voting_2026` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `australian_vehicle_insurance_2004_2005` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `bank_marketing` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
+| `bemtpl97` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `boreal_postfire_lichen_biomass` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `facebook_recruiting_human_or_robot` | triage | 2026-10-31 | 2026-11-07 | screening (data-scouting run 2026-10-30/31) |
 | `fl2000` | triage | 2026-10-31 | 2026-11-07 | data-scouting run: Better data lines and cleanup notes |
@@ -47,7 +48,6 @@ As of 2026-11-06 14:24 UTC: 46 claim(s) (Andrej 1, Lennart 25, Myunghwan 20).
 | `2024_lusaka_mobility_prediction_hackathon` | review | 2026-10-28 | 2026-11-06 (expired) | Curator accepted; build, reload and traced-input reproduction complete. Submitted in PR #33: https://github.com/TabArena/data-foundry/pull/33 . Accepted approximations and source/descriptor limits are documented. Awaiting PR review/merge; retain Myunghwan ownership until merged. |
 | `ai4d_lab_tanzania_tourism_classification_challenge` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
 | `airqo_low_cost_air_quality_monitor_calibration_challenge` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
-| `bemtpl97` | review | 2026-10-23 | 2026-11-04 (expired) | Screening accepted; add-stage qualification completed. Added-dataset review or approved pre-build work; individual scientific verdicts remain separate. No build authorized. |
 | `chicago_traffic_crashes` | triage | 2026-10-29 | 2026-11-05 (expired) | Selected by Myunghwan as the next large-scale candidate (about 1.1 million crashes). Reservation for screening review; no scientific inclusion or build decision. |
 | `chromophore_optical_properties_db` | triage | 2026-11-05 | 2026-11-12 | Curator-requested triage: priority-4 interaction datasets; scale, source and non-IID qualification pending. |
 | `duolingo_spaced_repetition_recall` | triage | 2026-10-31 | 2026-11-13 | Updated installed workflow at9048f36a completed add/review/build with prior curator decisions retained. Local commits 90e77a7c and 3be188a7; container 01a1ae4b-07ce-7d55-b885-f6b11cb52d72. Same accepted checksum/data/splits; reload and traced-input reproduction pass, zero errors/warnings. Native review records explicit retention with original marks preserved. Train-only, own-row prediction protocol stays required; downstream method checks remain unverified. Not pushed or submitted; retain Myunghwan ownership pending integration, existing stage preserved. |
