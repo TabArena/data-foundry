@@ -5,7 +5,7 @@ checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Andrej
+claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -93,6 +93,8 @@ CC (2026-11-03, Andrej): no request to the authors now (issue 4): "Write a comme
 CC (2026-11-03, Andrej): every first year is kept, with the customer's other policies in force at the start in place of the calendar-year count (issue 2, design S): "Good, we can ship S with 5 splits." Ship, re-checking `Trivial` on the first benchmark run (issue 5): "With design S we can ship."
 
 CC (2026-11-03, Andrej): the check warning `task_target_value_dominant` accepted: "for these tasks this is natural and a core challenge" (zero-inflated target).
+
+CC (2026-11-06, Lennart): issue 6 of the folder's REVIEW.md resolved. The task stays per contract under the exposure rules adopted this day (MET-14's per-contract clause, MET-15): every first year is a contract of exactly one calendar year, known at the quote (37,090 of 37,090), and `Premium` is the written annual premium, not prorated (Spearman -0.03 with the share of the year in force among the cut years), so no feature carries a cut; no weight and no offset. The count of first years cut short by a lapse is 2,055 of 37,090 (5.5%; 233 of the 4,362 test rows; 1,632 of them half-yearly payers who stopped paying, at a median of half the year), not the 1,236 that `fit_reason` gave: that was the count of the one-policy design (25,665 rows), left in the text when design S kept every first year (Andrej, 2026-11-03, issue 2). Per contract the cut years claim like full years (a claim in 35.4% of each), per year at risk 1.9 times as often (1.53 claims a year against 0.81). It confirms the per-contract target of issue 1 (Andrej, 2026-11-03); what keeps it per contract is the constant planned term, unlike fremtpl2 and bemtpl97, whose periods are realized lengths with no planned term.
 
 ## Reference
 

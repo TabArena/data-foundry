@@ -5,7 +5,7 @@ checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Andrej
+claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -122,6 +122,8 @@ CC (2026-11-02, Andrej): record field `year` set to the definition's 2024 (pinne
 **Assessment (AI, 2026-11-02):** marks applied. Leak test across the station-grouped split (untuned LightGBM, 3x3 shipped folds, R^2 0.376 on log1p): no test row has a feature copy in training; merging stations within 50/100/250 m into one group moves R^2 by +0.000/-0.002/-0.006; 6.8% of test rows have a same-year training sample within 100 m against 14.5% of map pixels; removing the test year's training rows costs R^2 0.085 against 0.002 for as many random rows (9 of 9), the same survey's other stations being the map's own input, not a leak; training only on years up to the test year scores 0.317 against 0.299 for as many random rows (later years add rows, not the outcome); no input is built from another row's outcome. Elevation (`elevation_m_nap`, latest vaklodingen survey of the station's 20 m cell on or before the sample's date) adds R^2 +0.033 (9 of 9 folds) and lowers RMSE on the density 872.8 to 863.9. Not forced, so no SPLIT-8 Cases entry. Needs a rebuild to ship.
 
 CC (2026-11-03, Andrej): the check warning `task_target_value_dominant` accepted: "for these tasks this is natural and a core challenge" (zero-inflated target).
+
+CC (2026-11-06, Lennart): decision D13 of the exposure study (#51; issue 6 of the folder's REVIEW.md): the 39 single boat cores (0.00866 m2, half the two-core boat sample; 20 in 2008, 9 in 2010, 10 in 2009-2019), which the data descriptor does not describe, stay with a note: 79.5% hold no tellin, against 57.4% for two-core boat samples and 60.6% at their stations' other visits, about what half the area gives by chance (77.8-82.0% for a random scatter); unusual, not wrong (CLEAN-11), 0.07% of the rows. The notes also name the effort the density folds in: the core area (CV 1.4% over the shipped rows) and a subsample correction whose fraction is chosen after the sample is seen and not released (9.55% of the positive counts per core are not whole numbers); the task scores the density unweighted with no sample weight (MET-15: an equal-area map). No earlier call covered these cores: the definition has kept them without a note since the review panel of 2026-11-01, which counted them and raised nothing; the exposure study of 2026-11-05 found that the descriptor does not describe them and measured their zeros.
 
 ## Reference
 

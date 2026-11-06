@@ -48,7 +48,7 @@ not 114; RMSE 879.7 against 847.1 for the Tweedie fit, not 865.8 against 837.2).
 
 **Main points:** Nothing left to decide; all settled on 2026-11-02: the interpolated sediment stays (issue 5), the
 split by station stays after a clean leak test (1), the 2008 samples without a fauna record go (2), the elevation is
-joined (4), RMSE on the density stays (3).
+joined (4), RMSE on the density stays (3); on 2026-11-06 the 39 single boat cores stay, with a note (6).
 
 **Issues for Andrej:**
 
@@ -217,6 +217,55 @@ joined (4), RMSE on the density stays (3).
    * The download needs a rebuild to reach a container (2.9 GB more raw data).
 
    **Resolved (2026-11-02, Andrej):** elevation joined from the vaklodingen.
+
+6. **Keep the 39 single boat cores that the data descriptor does not describe?**
+
+   * **Problem:**
+     - 39 samples are one boat core of 0.00866 m2, half the two-core boat sample (0.0173 m2) that the data descriptor
+       describes.
+     - The source standardised their density for the area, but a core half the size finds no tellin more often: 79.5%
+       of them hold none, against 57.4% of the two-core boat samples.
+     - Keep them as samples of the survey, or drop them as a protocol the source does not document?
+   * **Background:** the descriptor describes two boat cores ("two cores ... combined area of 0.0173 m2") and one core
+     on foot ("a single core of 0.0177 m2"), and no single boat core
+     ([descriptor](https://doi.org/10.1038/s41597-025-04540-9)). The density folds in the core area (CV 1.4% over the
+     shipped rows) and, for samples with many individuals, a subsample fraction chosen after the sample is seen and
+     not released, so 9.55% of the positive counts per core are not whole numbers. The task scores the density
+     unweighted, as for equal-area map cells[^6a].
+   * **Effect on the task:** 39 of 59,044 rows (0.07%): 20 in 2008, 9 in 2010 and 10 in 2009-2019, each at its own
+     station. One tellin in such a core is 115.5 per m2, against 57.7 in two cores, so more of their zeros are chance.
+   * **Experiments:** 79.5% of them hold no tellin, against 60.6% in the same stations' 452 other samples and 67.2% in
+     the two-core boat samples of the same year and basin. Halving the area of a random scatter at those two rates
+     gives 77.8% and 82.0% zeros, so the smaller core explains their zeros.
+   * **Consistency:** the 2008 samples without any fauna record were dropped because they may never have been entered
+     (issue 2)[^6b]; these cores have fauna records, so their zeros are observed, as in every other sample.
+   * **Panel:** the column auditor and the domain practitioner counted them (41 in the raw file, 39 shipped) and
+     raised nothing.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep with a note (implemented) | the 39 stay; the notes name them and the effort the density folds in | real samples of the survey, standardised for the area by the source; no filter to defend | more of their zeros are chance; a protocol the descriptor does not describe |
+     | B | Drop them | the 39 rows go, located by the core area | one sampling protocol per platform | drops real samples, 20 of them from 2008; a filter for a gap the core area already explains |
+
+   * **Recommendation:** A: they are unusual, not wrong[^6c], and their extra zeros are what half the area gives by
+     chance. **Decision:** A or B?
+
+   [^6a]: **MET-15** (Must, Lennart, 2026-11-06): a rate's realized denominator is the metric's row weight and the
+     task's sample weight; when the decision is per unit of an equal-area map, per loan or per contract, the rate is
+     scored unweighted and no sample weight is declared.
+   [^6b]: **LEAK-25** (Must): "no event" mixed with "not recorded" is a censoring bias; recovered includes unrecorded
+     rows located by a rule that does not read the label, and dropped.
+   [^6c]: **CLEAN-11** (Should): impossible values become missing, and the row stays; values that are only unusual
+     stay; a row leaves only when it is no task row or a copy.
+
+   **Resolved (2026-11-06, Lennart):** A (decision D13 of the exposure study,
+   [#51](https://github.com/TabArena/data-foundry/issues/51)): the 39 single boat cores stay, with a note in
+   `curation_comments` (79.5% zeros against 60.6% at the same stations' other visits, about the 77.8% that half the
+   area gives by chance). The notes also gain the exposure paragraph: the density folds in the core area (CV 1.4%)
+   and a subsample correction whose fraction is chosen after the sample is seen and not released, 9.55% of the
+   positive counts per core are not whole numbers, and the task scores the density unweighted with no sample weight.
+   No earlier call covered these cores. `dataset check`: 0 errors, 0 warnings.
 
 **Review panel:** ship after changes (mediator). Claim audit: 41 claims, 30 hold, 6 refuted or partly refuted (the
 use-case example, the no-record framing, the station-day counts and the Kendall tau note fixed in the definition; the

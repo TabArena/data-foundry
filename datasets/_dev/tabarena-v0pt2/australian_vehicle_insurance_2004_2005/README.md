@@ -2,23 +2,25 @@
 report_format: data-foundry-report-v2
 unique_name: australian_vehicle_insurance_2004_2005
 container_format: 2
-checksum: v2:098b6333a9882f0e5776ea3e51f66e818ee31a6efd17121d485e819f04e4eaa6
+checksum: v2:f0d635cb0500795aa93c49f2aeb5a5fbec66f802fcb5cf27264d71b9441d45ab
 build: null
 build_stale: false
 data:
   n_rows: 67856
-  n_features: 7
+  n_features: 6
   dtypes:
     category: 3
     float64: 3
     int64: 2
   n_test_dataset_rows: null
 task:
-  target: claim_cost
+  target: claim_cost_per_year
   problem_type: regression
-  metric: normalized_gini
+  metric: normalized_weighted_gini
   metric_origin: context
-  scoring_columns: null
+  scoring_columns:
+  - exposure
+  sample_weight: exposure
   split_regime: iid
   stratify_on: null
   time_on: null
@@ -44,43 +46,51 @@ bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos:
-  - dataset_duplicate_rows
-  - dataset_conflicting_duplicate_rows
+  infos: []
   accepted:
-    task_target_value_dominant: 'Zero-inflated by nature: the claim cost is 0 for
-      exactly the 63,232 policies without a claim (93.2%), the rows where the source''s
-      claim indicator is 0; not a cap or a placeholder (claim audit, 2026-11-01).'
+    task_target_value_dominant: 'Zero-inflated by nature: the claim cost per year
+      is 0 for exactly the 63,232 policies without a claim (93.2%), the rows where
+      the source''s claim indicator is 0; not a cap or a placeholder (claim audit,
+      2026-11-01).'
+    dataset_duplicate_rows: 'Distinct policies in coarse rating cells: with exposure
+      out of the features, six rating factors remain and 51.5% of the rows share them
+      with another policy. Grouping the split on the rating cell does not lower the
+      score (LightGBM 0.054 against 0.059, GLM 0.119 against 0.120; split audit, 2026-11-06).'
+    dataset_conflicting_duplicate_rows: 'Policies with the same rating factors and
+      different claim costs: claims are rare events of one risk profile, not label
+      noise (the same split audit, 2026-11-06).'
 decisions:
 - The claim costs at 200 are kept as recorded
-- The observed share of the year is a feature, though a write-off seems to end it
+- 'The observed share of the year is the weight, not a feature: a write-off seems
+  to end it'
+- The 7 costs per year of a million dollars or more are kept
 ---
 
 # australian_vehicle_insurance_2004_2005
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `claim_cost`, scored with `normalized_gini` on IID splits. 67,856 rows and 7 features. Source: Other (2008).
+Regression of `claim_cost_per_year`, scored with `normalized_weighted_gini` on IID splits. 67,856 rows and 6 features. Source: Other (2008).
 
-Not built yet. The current definition gives checksum `v2:098b6333a9882f0e5776ea3e51f66e818ee31a6efd17121d485e819f04e4eaa6`.
+Not built yet. The current definition gives checksum `v2:f0d635cb0500795aa93c49f2aeb5a5fbec66f802fcb5cf27264d71b9441d45ab`.
 
 ## In brief
 
-**Question.** What will a car insurance policy cost the insurer in claims over the part of its year the data observes?
+**Question.** What will a vehicle insurance policy cost the insurer in claims per year insured?
 
-**Use case.** For example, an Australian car insurer prices a one-year policy at underwriting: it estimates the expected claim cost from the rating factors and the time on risk, to set the premium. The source, a textbook on insurance GLMs, names no decision.
+**Use case.** For example, an Australian car insurer prices a one-year policy at underwriting: it estimates the expected claim cost per year insured (the pure premium) from the rating factors, to set the premium. The source, a textbook on insurance GLMs, names no decision.
 
 **One row.** One one-year vehicle policy taken out in Australia in 2004 or 2005, mostly cars but also trucks, buses and motor caravans, observed for up to a year (67,856 policies of an unnamed insurer).
 
-**Predicted.** The total cost of the policy's claims while it was observed, in dollars: 0 for the 93.2% without a claim; no claim is recorded below $200.
+**Predicted.** The claim cost per year insured, in dollars: the total cost of the policy's claims while the data observed it, divided by the years observed (1 to 365 days). 0 for the 93.2% without a claim; no claim is recorded below $200. Each policy counts in proportion to the time observed, in training and scoring.
 
-**Known at prediction time.** The vehicle's value, body type and age band, the policyholder's or driver's gender (the sources differ), the driver's age band, an area code A-F (the R packages do not say what it codes), and the share of the policy's year observed in the data (a full year for 1.9%; it can end early after a claim).
+**Known at prediction time.** The vehicle's value, body type and age band, the policyholder's or driver's gender (the sources differ), the driver's age band, and an area code A-F (the R packages do not say what it codes). The time observed is no input: a claim can cut it short, so it is the rate's denominator and each policy's weight.
 
 **What the test data stands for.** Random policies, so the test data stands for other policies of the same portfolio and period.
 
-**Our changes to the source.** We dropped the claim indicator and the claim count (parts of the target), made the 53 vehicle values of 0 missing, and score by the normalized Gini, which measures how well the predictions order the policies by claim cost, since the source has no metric.
+**Our changes to the source.** We divide the claim cost by the time observed and weight each policy by that time, as pricing actuaries do. We dropped the claim indicator and the claim count (parts of the target) and made the 53 vehicle values of 0 missing. The source has no metric, so we score by the exposure-weighted normalized Gini, which measures how well the predictions order the policies by claim cost per year.
 
-> **Use case fit: approximate (a stand-in with a known gap).** Real policies with the rating factors and claim costs of pricing. Gaps: a random split of undated policies stands in for next year's; the target is the cost of each policy's observed part-year, not of a policy-year; the label's construction is undocumented (paid or incurred, the $200 floor, repeated amounts, the cover). The observed share of the year, cut short by some claims, is a kept potential leak.
+> **Use case fit: approximate (a stand-in with a known gap).** Real policies with the rating factors and claim costs of pricing, priced per year insured. Gaps: a random split of undated policies stands in for next year's; the label's construction is undocumented (paid or incurred, the $200 floor, repeated amounts, the cover).
 
 ## Files in this folder
 
@@ -137,19 +147,33 @@ Only curators run `build`, when the dataset ships.
 | data_tags | IID, ForcedIIDFromTemporal |
 | reference | dejong2008generalized |
 | rows x columns | 67,856 x 8 |
-| task.target | claim_cost |
+| task.target | claim_cost_per_year |
 | task.problem_type | regression |
-| task.metric | normalized_gini |
+| task.metric | normalized_weighted_gini |
+| task.sample_weight | exposure |
 | task.split_regime | iid |
 
 **Metric**
 
 | field | value |
 |---|---|
-| name | `normalized_gini` (custom; takes value; higher is better) |
+| name | `normalized_weighted_gini` (custom; takes value; higher is better) |
 | origin | context: obvious from the task: the source defines no metric |
-| definition | G(y, p) / G(y, y), G = (sum of the cumulative share of the losses sorted by descending p - (n + 1) / 2) / n (tied p averaged over their orderings, so a constant p scores 0; the Kaggle code takes row order) |
-| reason | No source metric for this claim-cost regression was established: insuranceData and CASdatasets define no task, and the book (Sec. 10.4) selects its claim-amount model by AIC on all rows, with no held-out score; its ROC AUC (Sec. 7.6) scores claim occurrence, a classification, and is no support for this Gini. Ye et al. (2022, Econometrics 10(2):19) scored this table with this unweighted normalized Gini (Sec. 2.3) on a holdout third (Sec. 2.2), with exposure among the inputs, next to MAE, RMSE, a rebalanced RMSE and the total error, and recommend the Gini with a second measure where possible (Sec. 4.2): context, not one source metric. Pricing actuaries use a weighted form: Frees, Meyers and Cummings (2011, JASA 106:1085-1098) order policies by relativity and accumulate premium, and CAS Monograph 5 (Sec. 7.2.4) orders by predicted loss cost per exposure and accumulates exposure; here every row counts once, ordered by predicted cost. Allstate scored its Claim Prediction Challenge (Kaggle, 2011) by this Gini on rows of one full vehicle-year each; 98.1% of the rows here are shorter. Exposure alone scores 0.168 (9 splits), the level a useful model must beat. RMSE on the raw cost follows a few large claims: the largest 46 (0.07% of the policies) hold 43% of the sum of squares, and no model family probed beats the mean by more than R^2 0.002 on average. The Gini ignores the price level, which pricing sets separately. |
+| definition | WG(y, p) / WG(y, y) over the claim cost per year y and the predicted cost per year p, w = exposure (years observed): rows sorted by descending p, R the cumulative share of exposure, L the cumulative share of claim cost (w*y), WG = sum L_i R_(i-1) - sum L_(i-1) R_i; tied p form one step (the mean over their orderings), so a constant scores 0 |
+| reason | No source metric for this claim-cost regression was established: insuranceData and CASdatasets define no task, and the book (Sec. 10.4) selects its claim-amount model by AIC on all rows, with no held-out score; its ROC AUC (Sec. 7.6) scores claim occurrence, a classification, and is no support for this Gini. Pricing actuaries compare tariffs by a Gini of the loss cost per exposure: CAS Monograph 5 (Sec. 7.2.4) sorts the policies by predicted loss cost per exposure and accumulates exposure on the x-axis, and Frees, Meyers and Cummings (2011, JASA 106:1085-1098) order by relativity and accumulate premium. The weighted Gini on the rate is that CAS Gini of the cost per year insured, each policy weighted by its exposure, normalised by the Gini of the perfect order (as Liberty Mutual's Kaggle metric is). The curator chose a Gini for this table on 2026-11-02 (Andrej, 'Use Gini'), then unweighted on each policy's cost, the form Ye et al. (2022, Econometrics 10(2):19) scored this table by (Sec. 2.3, on a holdout third, Sec. 2.2, next to MAE, RMSE, a rebalanced RMSE and the total error; they recommend the Gini with a second measure where possible, Sec. 4.2: context, not one source metric); that form scores the cost of the observed part-year and hid the exposure leak, so the weighted Gini on the rate replaced it (2026-11-06, Lennart). Allstate scored its Claim Prediction Challenge (Kaggle, 2011) by the unweighted Gini on rows of one full vehicle-year each; the weight gives the part-years here (98.1% of the rows) their share of a year. The alternative, the claim frequency with an exposure-weighted Poisson deviance, was not chosen: it drops the claim size the insurer prices. A constant scores 0, an honest Tweedie GLM 0.120 and an honest Tweedie LightGBM 0.059 (9 shipped splits, fitted with the sample weight); 1/exposure alone, which no model may read, 0.205. RMSE follows a few large values: on the cost the largest 46 (0.07% of the policies) hold 43% of the sum of squares and no model family probed beat the mean by more than R^2 0.002 on average; on the rate the 7 policies at 1M dollars or more a year hold 45% of the exposure-weighted sum of squares. The Gini ignores the price level, which pricing sets separately. |
+| inputs | weight: `exposure` |
+
+**Scoring columns**
+
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+
+| column | role | how the metric uses it | model input |
+|---|---|---|---|
+| `exposure` | weight | normalized_weighted_gini: years observed (days / 365.25, 1 to 365 days): the share of the policy's one-year term inside the data's observation period, realized and cut short by some claims (write-offs). The claim cost per year's denominator; each row's weight in the metric and in training; never a feature | training weight; never a feature |
+
+**Training weight**
+
+Fit every model with `exposure` as each row's sample weight (`sample_weight(container)` from `data_foundry.curation_container`), and never use it as a feature. The metric weights the test rows by the same column, so a model fitted without it targets another quantity.
 
 <details>
 <summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
@@ -181,28 +205,30 @@ Only curators run `build`, when the dataset ships.
 
 The first 5 of 67,856 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
 
-| claim_cost | vehicle_value | exposure | vehicle_body | vehicle_age_band | gender | area | driver_age_band |
+| claim_cost_per_year | vehicle_value | exposure | vehicle_body | vehicle_age_band | gender | area | driver_age_band |
 |---|---|---|---|---|---|---|---|
-| 0 | 1.56 | 0.0876112 | Hatchback | 1 | F | E | 4 |
-| 0 | 1.23 | 0.605065 | Hatchback | 4 | F | C | 4 |
-| 0 | 0.45 | 0.980151 | Station wagon | 4 | F | C | 1 |
-| 0 | 5.15 | 0.0355921 | Station wagon | 1 | M | F | 2 |
-| 0 | 2.42 | 0.651608 | Sedan | 1 | M | C | 4 |
+| 0 | 4.45 | 0.0657084 | Station wagon | 1 | F | F | 2 |
+| 14583.1 | 1.33 | 0.15332 | Sedan | 3 | M | B | 1 |
+| 0 | 0.39 | 0.66256 | Sedan | 4 | M | E | 5 |
+| 0 | 1.3 | 0.84052 | Sedan | 3 | F | C | 3 |
+| 4503.39 | 1.37 | 0.930869 | Hatchback | 1 | M | A | 1 |
 
 ## Curation notes
 
 We start with `dataCar` of the R package insuranceData 1.0, the "Car" data of de Jong and Heller (2008).
 
-- Prediction point: when the policy is priced at underwriting (for example; the source names no use). The rating factors are known then, its claims are not. Every policy is a one-year contract; `exposure`, the share of that year the data observed, is known only at the end of the observation period and is cut short by some claims (the leak note below).
+- Prediction point: when the policy is priced at underwriting (for example; the source names no use). The rating factors are known then, its claims are not. Every policy is a one-year contract; `exposure`, the share of that year the data observed, is known only at the end of the observation period and is cut short by some claims (the exposure note below), so it is the target's denominator and the weight, never a feature.
 - Source: the book's companion website, now offline; the copy in insuranceData matches the book's Table 1.1 (claims by driver age band: 5,742 to 16,189 policies per band, 5,742 in the youngest and 6,547 in the oldest, 4,624 with a claim; Table 1.6, pp. 15-16, gives the same 67,856 policies and 4,624 with claims), and CASdatasets' `ausprivauto0405` agrees with it on every row (2026-11-01). What the book does with this table (read by the curator, 2026-11-02; printed pages): logistic regression for claim occurrence with exposure, the time at risk, in a modified link (Sec. 7.3-7.4, pp. 99-104), compared by ROC AUC, 0.662 with the exposure adjustment against 0.548 without, on the same data with no held-out split (Sec. 7.6, pp. 108-110); a zero-adjusted inverse Gaussian model of the claim amount with its zeros, selected by AIC (Sec. 10.4, pp. 145-148), log links on the raw amount, not a log-transformed target; Tweedie models (Sec. 8.3) and a multiple-claim model (Sec. 10.5) are explained without a fit to this table. The book does not say why some exposures end early, whether the costs are paid or incurred, or why no claim lies below 200.
-- Target `claim_cost` (`claimcst0`, "claim amount (0 if no claim)"), on the raw dollar scale as published: 0 for exactly the 63,232 policies without a claim (93.2%). Dropped as parts of the target: `clm` (claim_cost > 0 on every row) and `numclaims` (above 0 on the same rows). `X_OBSTAT_` is one value on every row and is dropped too.
-- Anomaly: no claim cost lies below 200, and 705 of the 4,333 single-claim policies cost 200.00 to the cent (695 exactly, the rest float noise of the file); no policy with several claims does, and the two-claim policies start at 400 (10 of 271 at 400.00, one at 400.01), so each claim seems recorded at 200 at least. Kept as recorded, as fremtpl2 keeps its fixed IRSA-IDA amounts in the target as point masses (CC 2026-10-20, Andrej): the floor is in the source's data and a model can learn it. Other point masses (353.77 for 219 claims, 389.95 for 94, 390 for 55) are kept as well.
-- Potential leak, kept on purpose (LEAK-10, LEAK-11): `exposure` (days / 365.25, 1 to 365 days, a full year 0.9993; median 163 days, 1.9% full years, no 366-day row) is mostly the share of each one-year policy that fell in the observed period, which is fixed when the policy starts, but some claims cut it short. In claim occurrence: policies of 0.2 years or less have 147 more claims than the rate of longer ones predicts; at 7 days or less they claim 0.85 times per policy-year even without the claims of at least 80% of the vehicle's value (0.14-0.17 above 0.2 years); a free log-exposure coefficient is 0.29-0.31 in a Tweedie GLM where proportional time gives 1. In size: those 193 claims (likely write-offs) have a median exposure of 0.37 against 0.65 for the other claims (Mann-Whitney p < 1e-20). Kept because the traced part lowers the score instead of raising it (LEAK-11; 9 shipped splits, Tweedie LightGBM): exposure as a proportional offset only scores 0.1833 against 0.1824 as a free feature (paired SE 0.0059), floored at 0.1 years 0.1849, and giving the write-offs a counterfactual uncut exposure lifts the Gini from 0.182 to 0.31 (18 of 18 runs). That sets it apart from heart_failure's follow-up `time`, dropped because it carried the signal. As in the curator's fremtpl2 call (2026-10-20) it is a feature, not a divisor, since dividing would inflate short policies' targets; fremtpl2's other reason, a contracted period known at pricing, does not carry, as the contract here is one year for every policy. Alone it scores 0.168 of the best 0.205 (a Tweedie GLM, which beats it on 8 of 9 splits). Revisit if a release gives the policy dates or why a policy ended. Kept on the curator's call (Andrej, 2026-11-02), recorded as the LEAK-10 case for time on risk cut short by the outcome: the cut is removed where the data locates it, kept with its measured size where it cannot (here).
+- Target `claim_cost_per_year` = `claimcst0` / `exposure`, the claim cost per year insured in dollars (MET-14), on the identity scale as the cost target was (issue 5; CLEAN-16: a rate scored by a Gini keeps the scale the curator chose), with `exposure` as the row weight of the metric and the training weight (`sample_weight`, MET-15) and never a feature (LEAK-41). `claimcst0` ("claim amount (0 if no claim)") leaves the frame as a part of the target, and `_clean` checks that claim_cost_per_year x exposure gives it back. It is 0 for exactly the 63,232 policies without a claim (93.2%). A fit weighted by exposure on this scale estimates E[cost | x] / E[exposure | x], the cost per year insured that breaks even (292.90 dollars a year for the whole portfolio); an unweighted fit estimates the mean of cost / exposure (755.26 dollars a year for the portfolio, 2.6 times as much). Dropped as parts of the target: `clm` (1 exactly where `claimcst0` > 0) and `numclaims` (above 0 on the same rows). `X_OBSTAT_` is one value on every row and is dropped too.
+- Every exposure is positive (one day at least), so the rate is defined on every row and no row goes (USE-7). The rate reaches 5.24 million dollars a year: one claim of 14,343 dollars on a policy observed one day. The 7 policies at 1M dollars or more a year are kept, each with one claim on 1 to 7 days observed: 1 day and 14,343 dollars (5.24M a year), 1 day and 8,605 (3.14M), 2 days and 16,307 (2.98M), 2 days and 13,819 (2.52M), 4 days and 20,891 (1.91M), 4 days and 17,604 (1.61M), 7 days and 25,594 (1.34M); together 1.26% of the claim cost. actuaRE 0.1.5's copy of this table (`dataCar`) builds the same rate (`Y = claimcst0 / exposure`) with the exposure as its weight and removes them (`Y < 1e6`), with the body types of less than 100 years of exposure (67,566 rows left). In the weighted metric and a weighted fit each counts by its cost, not by its rate. Under squared error they would weigh far more: 45% of the exposure-weighted sum of squares of the rate (92% unweighted).
+- Anomaly: no claim cost lies below 200, and 705 of the 4,333 single-claim policies cost 200.00 to the cent (695 exactly, the rest float noise of the file); no policy with several claims does, and the two-claim policies start at 400 (10 of 271 at 400.00, one at 400.01), so each claim seems recorded at 200 at least. Kept as recorded, as Andrej's call on fremtpl2 of 2026-10-20 kept that table's fixed IRSA-IDA amounts as point masses: the floor is in the source's data. In the target it is a cost of 200 per claim over the time observed. Other point masses (353.77 for 219 claims, 389.95 for 94, 390 for 55) are kept as well.
+- Exposure (LEAK-41, MET-14, MET-15; issue 6, resolved 2026-11-06): `exposure` (days / 365.25, 1 to 365 days, a full year 0.9993; median 163 days, 1.9% full years, no 366-day row) is mostly the share of each one-year policy that fell inside the extract's observation period, fixed when the policy starts, but some claims cut it short. It is realized, not planned: at a quote it is one year for every policy. In claim occurrence: policies of 0.2 years or less have 147 more claims than the rate of longer ones predicts; at 7 days or less they claim 0.85 times per policy-year even without the claims of at least 80% of the vehicle's value (0.14-0.17 above 0.2 years); a free log-exposure coefficient is 0.29-0.31 in a Tweedie GLM where proportional time gives 1. In size: the 193 claims of at least 80% of the vehicle's value (likely write-offs) have a median exposure of 0.37 against 0.65 for the other claims (Mann-Whitney p < 1e-20). The task uses it as the rate's denominator and each policy's weight, in the metric and in training, never as a feature: a column whose value the outcome can cut after the prediction point is never a model input, whatever it scores (LEAK-41). With the weight, dividing does not inflate short policies: each counts by its time observed. The old metric, the unweighted Gini of each policy's cost over its observed part-year, hid the leak: there exposure as a proportional offset only scored 0.1833 against 0.1824 as a free feature (9 shipped splits, Tweedie LightGBM, paired SE 0.0059), giving the write-offs a counterfactual uncut exposure lifted that Gini from 0.182 to 0.31 (18 of 18 runs), and exposure alone scored 0.168 of the best 0.205, though it is one year at every quote. The exposure study of 2026-11-05 (own 3x3 KFold) scored the claim counts by a Poisson deviance instead: 47% (GLM) to 82% (LightGBM) of a free model's gain over a constant rate is leak, and at a quote (exposure set to one year) the free LightGBM's mean deviance is 0.0068 worse than the offset model's, better on 0 of 9 folds. On the exposure-weighted Gini of the cost per year, a Tweedie GLM that reads the exposure scores 0.238 against 0.125 for an honest GLM, whose quotes see no exposure. The rating factors predict the exposure only weakly (LightGBM R^2 0.06; ROC AUC 0.62 for exposures of 0.2 years or less), so little of it can come back through them. Re-measured on this definition's 9 shipped splits, every model fitted with the sample weight (LightGBM: learning rate 0.05, 15 leaves, 300 rounds): an honest Tweedie LightGBM scores 0.059 (SD 0.021) against 0 for the weighted constant (above it on 9 of 9), an L2 LightGBM on the identity scale 0.060 and a Tweedie GLM 0.120; with `exposure` added as a feature they score 0.149 (+0.089, SE 0.010), 0.159 (+0.099, SE 0.008) and 0.236 (+0.116, SE 0.006), higher on 9 of 9 splits each (more regularised LightGBM settings: 0.070 to 0.090 honest, +0.094 to +0.124 with it). 1/exposure alone, the ceiling a proxy of it would reach, scores 0.205, above every honest model. Probe 22: the rating factors predict the exposure at R^2 0.07 (Spearman 0.26, mostly through the vehicle value), and no rating factor gains through it above noise. Revisit if a release gives the policy dates or why a policy ended.
 - `veh_value` (in $10,000s, insuranceData; CASdatasets says thousands of AUD, which would make the median car worth $1,500, an error of that copy) is 0 for 53 policies, most of them station wagons, buses, trucks or motor caravans of the oldest band, while the next lowest value is 0.18 ($1,800): a vehicle value of $0 is no value, so these are made missing (CLEAN-10, CLEAN-11).
 - The body codes are given the labels CASdatasets uses for the same rows (`HBACK` to Hatchback, `STNWG` to Station wagon, ...). The age bands of the vehicle (1 youngest to 4) and the driver (1 youngest to 6) stay numbers, the order of an age.
-- Columns renamed to plain names: `vehicle_value`, `vehicle_body`, `vehicle_age_band`, `driver_age_band`, `claim_cost`; `gender`, `area` and `exposure` keep theirs. `gender` is "gender" in insuranceData and the policyholder's in CASdatasets, so it is not called the driver's. `area` is a code A-F that insuranceData leaves undocumented and CASdatasets lacks (the book's Table 1.6, pp. 15-16, says it denotes the area of residence and leaves A-F unexplained; Ye et al. 2022 call it the driver's area of residence). The age band keeps its name: the book's Table 1.1 says "Driver's age category", while its Table 1.6 and CASdatasets call it the policyholder's age.
-- 707 rows share every column with another row (378 extra copies, 0.6%), all without a claim. That is about three times chance: with the exposure shuffled among the no-claim rows, 120-125 copies remain (20 runs). Among the 1,129 full-year rows without a claim there are 152 copies against 11.6 for random rows of that number; that cohort is rich in trucks and panel vans, likely fleet vehicles insured on the same dates. Kept (LEAK-18): dropping the copies moves the Gini by +0.0045, and a split that keeps identical feature rows together scores within fold noise (Tweedie LightGBM 0.194 against 0.182); 0.8% of the test rows have an exact feature copy in train (leak probe, first split).
-- The split is forced (ForcedIIDFromTemporal, SPLIT-8): an insurer fits its tariff on past policy-years and prices the next year's policies, but the release has no date and no policy id. It looks like one observation period of about a year (exposure spread evenly over 1-365 days, 1.9% full years, no 366-day row), so a temporal test needs another year's extract. The raw file order is not random (12.2% of adjacent rows share a day count, against 0.3% when the rows are permuted; whether the order is time is unknown), but the claim indicator shows no serial dependence (lag-1 correlation 0.005), and training on the earlier quarters of the file to test the next shows no drop (Tweedie LightGBM 0.168, 0.189, 0.208 against 0.127, 0.174, 0.181 for random splits of the same sizes; single splits). No policy is visibly split into two rows (116 pairs of identical rating factors sum to 365 days, against 102 on average for other sums) and the hidden-group probe finds no group. Shipped forced on the curator's call (Andrej, 2026-11-02): a forced IID split ships only when no leak is found across the random split, as here (no row shares its outcome across the split, no hidden group, no order dependence); how_much_did_it_rain's `No` named a measured leak.
+- Columns renamed to plain names: `vehicle_value`, `vehicle_body`, `vehicle_age_band`, `driver_age_band`; `gender`, `area` and `exposure` keep theirs, and the target is `claim_cost_per_year`. `gender` is "gender" in insuranceData and the policyholder's in CASdatasets, so it is not called the driver's. `area` is a code A-F that insuranceData leaves undocumented and CASdatasets lacks (the book's Table 1.6, pp. 15-16, says it denotes the area of residence and leaves A-F unexplained; Ye et al. 2022 call it the driver's area of residence). The age band keeps its name: the book's Table 1.1 says "Driver's age category", while its Table 1.6 and CASdatasets call it the policyholder's age.
+- 707 rows share every column with another row (378 extra copies, 0.6%), all without a claim. That is about three times chance: with the exposure shuffled among the no-claim rows, 120-125 copies remain (20 runs). Among the 1,129 full-year rows without a claim there are 152 copies against 11.6 for random rows of that number; that cohort is rich in trucks and panel vans, likely fleet vehicles insured on the same dates. Kept (LEAK-18): on the earlier cost target (2026-11-01), dropping the copies moved the Gini by +0.0045, and a split that keeps identical feature rows together scored within fold noise (Tweedie LightGBM 0.194 against 0.182); 0.8% of the test rows had an exact feature copy in train then (leak probe, first split, with exposure a feature). Without exposure among the features, 34,974 rows (51.5%) share their six rating factors with another policy and 42-43% of the test rows have an exact copy of them in train (every shipped split): coarse rating cells of distinct policies, the portfolio a tariff prices, as in fremtpl2.
+- The split is forced (ForcedIIDFromTemporal, SPLIT-8): an insurer fits its tariff on past policy-years and prices the next year's policies, but the release has no date and no policy id. It looks like one observation period of about a year (exposure spread evenly over 1-365 days, 1.9% full years, no 366-day row), so a temporal test needs another year's extract. The raw file order is not random (12.2% of adjacent rows share a day count, against 0.3% when the rows are permuted; whether the order is time is unknown), but the claim indicator shows no serial dependence (lag-1 correlation 0.005), and training on the earlier quarters of the file to test the next shows no drop (on the earlier cost target, Tweedie LightGBM 0.168, 0.189, 0.208 against 0.127, 0.174, 0.181 for random splits of the same sizes; single splits). No policy is visibly split into two rows (116 pairs of identical rating factors sum to 365 days, against 102 on average for other sums) and the hidden-group probe finds no group. Shipped forced on the curator's call (Andrej, 2026-11-02): a forced IID split ships only when no leak is found across the random split, as here (no row shares its outcome across the split, no hidden group, no order dependence); how_much_did_it_rain's `No` named a measured leak.
+- CC (2026-11-06, Lennart): decision D8 of the exposure study of 2026-11-05 (issue 6): the target is the claim cost per year insured (`claimcst0` / `exposure`, in dollars, identity scale), `exposure` the weight scoring column, the `weight` input of `normalized_weighted_gini` and the task's `sample_weight`, and never a feature (LEAK-41, MET-14, MET-15); the metric stays a context Gini, now weighted on the rate; the 7 rows at 1M dollars or more a year are kept. Supersedes Andrej's call of 2026-11-02 (issue 2: `exposure` kept as a feature with its note, the LEAK-10 case for time on risk cut short by the outcome) and changes the form of his Gini of the same day (issue 4: unweighted on the cost, now weighted on the rate). What sets the case apart is a measurement made after the call: the deviance on the claim counts shows the leak the slice Gini hid (47 to 82% of a free model's gain over a constant rate is leak); on the weighted Gini of the cost per year a free GLM scores 0.238 against 0.125 for honest quotes, and on the shipped splits `exposure` as a feature lifts an honest LightGBM from 0.059 to 0.149 (9 of 9). The alternative, the claim frequency with an exposure-weighted deviance, was not chosen.
 
 ## Splits
 
@@ -226,7 +252,7 @@ Default splits.
 
 ### 1. The claim costs at 200 are kept as recorded
 
-No claim costs less than 200 and only single-claim policies cost exactly 200, while two-claim policies start at 400: each claim seems recorded at 200 at least. Kept as recorded, as fremtpl2 keeps its fixed amounts (CC 2026-10-20).
+No claim costs less than 200 and only single-claim policies cost exactly 200, while two-claim policies start at 400: each claim seems recorded at 200 at least. Kept as recorded, as the call on fremtpl2's fixed amounts did (CC 2026-10-20).
 
 | claims | policies | lowest cost | cost of 200 per claim (to the cent) |
 |---|---|---|---|
@@ -235,9 +261,9 @@ No claim costs less than 200 and only single-claim policies cost exactly 200, wh
 | 3 | 18 | 1173.27 | 0 |
 | 4 | 2 | 2356.41 | 0 |
 
-### 2. The observed share of the year is a feature, though a write-off seems to end it
+### 2. The observed share of the year is the weight, not a feature: a write-off seems to end it
 
-Claimants are observed longer than other policies (more time to claim), except those whose claim comes near the vehicle's value: their policy seems to end with the claim. The part cut short lowers the score instead of raising it (as an offset only, exposure scores as well; given the write-offs an uncut exposure, the Gini rises from 0.182 to 0.31), so it is kept with a note (LEAK-11, curation notes).
+Claimants are observed longer than other policies (more time to claim), except those whose claim comes near the vehicle's value: their policy seems to end with the claim. A time on risk the outcome can cut short is never a model input (LEAK-41); it is the rate's denominator and each policy's weight in the metric and in training (MET-15). The Gini of each policy's cost did not show the leak; the deviance on the claim counts and the weighted Gini on the cost per year do (curation notes).
 
 | claim cost / vehicle value | claims | median_exposure |
 |---|---|---|
@@ -248,16 +274,30 @@ Claimants are observed longer than other policies (more time to claim), except t
 | >=80% | 193 | 0.37 |
 | no claim | 63232 | 0.427 |
 
+### 3. The 7 costs per year of a million dollars or more are kept
+
+Each is one claim on a policy observed 1 to 7 days, together 1.26% of the claim cost. actuaRE's copy removes them; here they stay, and the weighted metric and a weighted fit count each by its cost, not by its rate.
+
+| days observed | claims | claim cost | cost per year | vehicle body |
+|---|---|---|---|---|
+| 1 | 1 | 14343.3 | 5238879 | Sedan |
+| 1 | 1 | 8605.3 | 3143086 | Sedan |
+| 2 | 1 | 16306.8 | 2978033 | Truck |
+| 2 | 1 | 13818.6 | 2523627 | Sedan |
+| 4 | 1 | 20890.6 | 1907571 | Station wagon |
+| 4 | 1 | 17604.3 | 1607494 | Sedan |
+| 7 | 1 | 25594.2 | 1335470 | Sedan |
+
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicate_rows`: 378 exact duplicate row(s) (0.6% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
-- **info** `dataset_conflicting_duplicate_rows`: 61 row(s) (0.1%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
 Accepted on purpose:
 
-- `task_target_value_dominant`: Zero-inflated by nature: the claim cost is 0 for exactly the 63,232 policies without a claim (93.2%), the rows where the source's claim indicator is 0; not a cap or a placeholder (claim audit, 2026-11-01).
+- `task_target_value_dominant`: Zero-inflated by nature: the claim cost per year is 0 for exactly the 63,232 policies without a claim (93.2%), the rows where the source's claim indicator is 0; not a cap or a placeholder (claim audit, 2026-11-01).
+- `dataset_duplicate_rows`: Distinct policies in coarse rating cells: with exposure out of the features, six rating factors remain and 51.5% of the rows share them with another policy. Grouping the split on the rating cell does not lower the score (LightGBM 0.054 against 0.059, GLM 0.119 against 0.120; split audit, 2026-11-06).
+- `dataset_conflicting_duplicate_rows`: Policies with the same rating factors and different claim costs: claims are rare events of one risk profile, not label noise (the same split audit, 2026-11-06).
 
 ## Data checks
 
@@ -270,7 +310,7 @@ Accepted on purpose:
 | area | category | 0 | 0 | 6 | C, A, B, D, E, F |
 | vehicle_value | float64 | 53 | 0.08 | 985 | 1.36, 1.26, 0.71, 1.3, 1.5, 1.37, 1.74, 1.29, 1.22, 1.31 |
 | exposure | float64 | 0 | 0 | 383 | 0.9993, 0.0027, 0.2546, 0.3368, 0.0849, 0.2136, 0.0821, 0.0794, 0.0301, 0.2519 |
-| claim_cost | float64 | 0 | 0 | 3257 | 0.0, 200.0, 353.77, 389.95, 390.0, 367.73, 345.0, 353.8, 369.15, 408.95 |
+| claim_cost_per_year | float64 | 0 | 0 | 4115 | 0.0, 200.137, 354.0123, 204.0503, 521.7857, 394.8649, 274.6241, 212.3547, 358.0… |
 | vehicle_age_band | int64 | 0 | 0 | 4 | 3, 4, 2, 1 |
 | driver_age_band | int64 | 0 | 0 | 6 | 4, 3, 2, 5, 6, 1 |
 
@@ -278,7 +318,7 @@ Accepted on purpose:
 
 | index | y_missing_count | non_positive_pct | skew_y | skew_log | var_y | var_log | log_used | aic_exponential | aic_lognormal | dist_hint |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 0 | 0 | 93.19 | 17.503 | 3.624 | 1.11576e+06 | 3.043 | log1p | 79661.9 | 96520.5 | exponential |
+| 0 | 0 | 93.19 | 113.057 | 3.67 | 9.74913e+08 | 3.668 | log1p | 95379.9 | 85912.7 | lognormal |
 
 ### Numeric features
 
@@ -286,9 +326,9 @@ Accepted on purpose:
 |---|---|---|---|---|---|
 | vehicle_value | 67803 | 1.77841 | 1.20468 | 0.18 | 34.56 |
 | exposure | 67856 | 0.468652 | 0.290025 | 0.00273785 | 0.999316 |
-| claim_cost | 67856 | 137.27 | 1056.3 | 0 | 55922.1 |
 | vehicle_age_band | 67856 | 2.67353 | 1.06754 | 1 | 4 |
 | driver_age_band | 67856 | 3.48548 | 1.42561 | 1 | 6 |
+| claim_cost_per_year | 67856 | 755.259 | 31223.6 | 0 | 5.23888e+06 |
 
 ### Categorical features
 

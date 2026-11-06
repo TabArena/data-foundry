@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: pricing_game_2017_french_mtpl
 container_format: 2
-checksum: v2:621a8f7a32484795e4280c038e33dae1a83b29652207900ca6964da19975bfe8
+checksum: v2:efb67dd79b38ffb5d69c736ec4937fada0a06ef005213373fad476322dd443c0
 build: null
 build_stale: false
 data:
@@ -71,7 +71,7 @@ decisions:
 
 Regression of `claim_amount`, scored with `mean_tweedie_deviance` on grouped splits by `id_client`. 100,000 rows and 29 features. Source: Other (2017).
 
-Not built yet. The current definition gives checksum `v2:621a8f7a32484795e4280c038e33dae1a83b29652207900ca6964da19975bfe8`.
+Not built yet. The current definition gives checksum `v2:efb67dd79b38ffb5d69c736ec4937fada0a06ef005213373fad476322dd443c0`.
 
 ## In brief
 
@@ -164,7 +164,7 @@ Only curators run `build`, when the dataset ships.
 | origin | stand_in: a stand-in for the source's metric, which cannot be computed |
 | original | each player's profit over Years 1 to 4 in simulated markets of 10 players: the premiums minus the losses of the clients it won, each client choosing among the three cheapest offers, a player whose losses pass 170% of its premiums going bankrupt (rules, objective (2)) |
 | reference | http://web.archive.org/web/20190919092227/http://freakonometrics.free.fr/PG3/3rdPricingGame.pdf |
-| definition | mean(2 * (max(y, 0)^(2-q) / ((1-q)(2-q)) - y p^(1-q) / (1-q) + p^(2-q) / (2-q))) at power q (1 < q < 2: a compound Poisson-gamma cost, zeros allowed); q = 0 is the squared error, 1 Poisson, 2 gamma; p > 0 (a smaller p raises an error unless min_prediction floors it) |
+| definition | sum(w * 2 * (y^(2-q) / ((1-q)(2-q)) - y p^(1-q) / (1-q) + p^(2-q) / (2-q))) / sum(w) at power q (1 Poisson; 1 < q < 2 a compound Poisson-gamma cost, y >= 0; q >= 2 needs y > 0), w the optional weight input (1 without it); p below min_prediction counts as it |
 | reason | The market needs the other players' premiums and the claims of Years 1 to 4, which the release does not hold, so the profit cannot be computed. A player wins the clients it prices lowest and goes bankrupt when its losses pass 170% of its premiums, so its profit rests on both the order and the level of its premiums. The mean Tweedie deviance at power 1.5 (a compound Poisson-gamma cost, the actuarial loss for a pure premium with many zero claims) scores both; a prediction below 1 EUR counts as 1 EUR. Closeness measured in simulated Year-1 markets under the game's Rule 2 on the shipped splits, models as players: across a mixed field of models a Poisson or Tweedie deviance follows the profit order at a Kendall tau of 0.58 to 0.79, the normalized Gini at 0.12 to 0.59 (means per market variant), as the Gini is blind to any monotone transform of the predictions: a steeper copy of the best model ties the top Gini (0.317) and earns less than a flat premium. Among six strong, comparable learners the Gini leads (0.91 against 0.69). Chosen over the Gini by the curator (Andrej, 2026-11-03). |
 | params | {'power': 1.5, 'min_prediction': 1.0} |
 
@@ -200,10 +200,10 @@ The first 5 of 100,000 rows of the final frame (random rows: the frame is shuffl
 
 | claim_amount | id_client | pol_bonus | pol_coverage | pol_duration | pol_sit_duration | pol_pay_freq | pol_payd | pol_usage | pol_insee_code | drv_drv2 | drv_age1 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | A00021969 | 0.5 | Maxi | 12 | 3 | Biannual | No | WorkPrivate | 78418 | Yes | 49 |
-| 0 | A00083768 | 0.5 | Mini | 28 | 1 | Yearly | No | Retired | 77284 | No | 70 |
+| 0 | A00058000 | 0.5 | Mini | 6 | 6 | Biannual | No | WorkPrivate | 31407 | No | 51 |
+| 0 | A00000494 | 0.5 | Maxi | 15 | 4 | Yearly | No | Retired | 54265 | No | 78 |
 | 0 | A00060963 | 0.5 | Maxi | 15 | 2 | Monthly | No | WorkPrivate | 69204 | Yes | 39 |
-| 0 | A00006542 | 0.5 | Mini | 13 | 2 | Yearly | No | WorkPrivate | 60021 | No | 65 |
+| 0 | A00038954 | 0.5 | Median1 | 12 | 3 | Biannual | No | Retired | 85146 | No | 80 |
 | 0 | A00049829 | 0.5 | Maxi | 1 | 1 | Monthly | No | WorkPrivate | 17351 | Yes | 47 |
 
 ## Curation notes
@@ -226,7 +226,7 @@ We start with pg17trainpol and pg17trainclaim of CASdatasets, the Year-0 underwr
 - `pol_department` added: the first two characters of `pol_insee_code`, which the rules name as the department (Sec. 4.12; 96 values, Corsica 2A and 2B; CLEAN-12). In the same untuned log1p probe, run while the commune was still a category, it lowered the Gini (0.256 to 0.243), as a 96-level category can in an untuned model; kept as the coarse geography an insurer zones by. `pol_insee_code` is text (CLEAN-14): 17,794 communes, median 2 policies, 6,775 with one.
 - Dropped: `id_policy` (id_client and id_vehicle joined), `id_vehicle` ("their rank should not represent anything valuable", Sec. 4.2) and `id_year` (one value). `id_client` is the group column.
 - Dtypes: the policy, driver and vehicle labels and the department categorical (`pol_coverage` ordered Mini to Maxi in the rules, kept as a category), the commune a string; bonus-malus, ages, durations and the vehicle's measures numeric. One pair of policies, one client's two vehicles without a claim, is identical in every feature: kept.
-- Note: no exposure column. Every year's file holds the same 100,000 policies (rules, Sec. 4) and the premium is annual, so a row is a whole policy-year; the release does not say so.
+- Exposure: no exposure column, and none is needed. The 100,000 policies are each present once in every year's file, with annual premiums (rules, Sec. 4), so a row is a whole policy-year; the release does not say so. The shortest `pol_duration` is 1, so no policy was written during Year 0, and the newest policies claim more often, not less (a claim in 13.7% of the policies at duration 1 against 12.3% from 6 on), where part years would claim less: nothing points to a year cut short. The target is the policy's claims of the year, scored unweighted, as the game priced each policy for the year (MET-14, MET-15). For the 4,152 pay-as-you-drive policies (`pol_payd`) the real exposure, the distance driven, is not released.
 - Note: `drv_sex1` and `drv_sex2` kept, as the rules offer them ("can be used as discriminatory variable in this pricing game", Sec. 4.16). EU law has barred sex from insurance prices since 21 December 2012; in the data's year, about 2010-11, it was still a legal rating factor, so the insurer could use it.
 
 ## Splits
@@ -284,7 +284,7 @@ One group is a client (id_client); its rows are its insured vehicles, one policy
 | test groups per fold | 30,496 |
 | groups of two or more rows with a single label | 81.4% |
 | nearest neighbour in the same group | 0.1% of the rows (chance: 0.0%) |
-| label variance explained by the group | 0.94 (shuffled groups: 0.97) |
+| label variance explained by the group | 0.94 (shuffled groups: 0.86) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
@@ -320,10 +320,10 @@ The rules give 0 as the age of an absent second driver (Sec. 4.15); a licence of
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicate_rows`: 1 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
-- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (0.1% of nearest neighbours vs 0.0%), and the group explains no more of the label than shuffled groups (0.94 vs 0.97). (hint: The grouping may not be needed: compare IID and grouped scores with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.)
+- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (0.1% of nearest neighbours vs 0.0%), and the group explains no more of the label than shuffled groups (0.94 vs 0.86). (hint: The grouping may not be needed: compare IID and grouped scores with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.)
 
 Accepted on purpose:
 
@@ -339,7 +339,7 @@ Accepted on purpose:
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | drv_sex2 | category | 66814 | 66.81 | 2 | F, M |
-| id_client | category | 0 | 0 | 91488 | A00054291, A00072517, A00033051, A00026771, A00087320, A00004947, A00066128, A0… |
+| id_client | category | 0 | 0 | 91488 | A00054291, A00004947, A00020663, A00026771, A00028075, A00033051, A00045156, A0… |
 | pol_coverage | category | 0 | 0 | 4 | Maxi, Median2, Median1, Mini |
 | pol_pay_freq | category | 0 | 0 | 4 | Yearly, Monthly, Biannual, Quarterly |
 | pol_payd | category | 0 | 0 | 2 | No, Yes |
@@ -420,10 +420,10 @@ Accepted on purpose:
 | drv_sex2 | 2 | F | 20332 | 20.33 |
 | drv_sex2 | 3 | M | 12854 | 12.85 |
 | id_client | 1 | A00054291 | 9 | 0.01 |
-| id_client | 2 | A00072517 | 5 | 0 |
-| id_client | 3 | A00033051 | 5 | 0 |
+| id_client | 2 | A00004947 | 5 | 0 |
+| id_client | 3 | A00020663 | 5 | 0 |
 | id_client | 4 | A00026771 | 5 | 0 |
-| id_client | 5 | A00087320 | 5 | 0 |
+| id_client | 5 | A00028075 | 5 | 0 |
 | pol_coverage | 1 | Maxi | 64515 | 64.52 |
 | pol_coverage | 2 | Median2 | 17526 | 17.53 |
 | pol_coverage | 3 | Median1 | 9342 | 9.34 |

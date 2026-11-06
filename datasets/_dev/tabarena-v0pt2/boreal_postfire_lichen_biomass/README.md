@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: boreal_postfire_lichen_biomass
 container_format: 2
-checksum: v2:9d001835166aca67bf4e6b51a8c18649be3afa44a81c1e6c64802d07cfbf9e15
+checksum: v2:1c183f4db4282abb6f12e218ba797e7f9e3fd02f96b861bb328d45b979eaf22a
 build: null
 build_stale: false
 data:
@@ -72,7 +72,7 @@ decisions:
 
 Regression of `forage_lichen_biomass_kg_ha`, scored with `rmse` on grouped splits by `burn_area`. 2,010 rows and 7 features. Source: Other (2021).
 
-Not built yet. The current definition gives checksum `v2:9d001835166aca67bf4e6b51a8c18649be3afa44a81c1e6c64802d07cfbf9e15`.
+Not built yet. The current definition gives checksum `v2:1c183f4db4282abb6f12e218ba797e7f9e3fd02f96b861bb328d45b979eaf22a`.
 
 ## In brief
 
@@ -152,7 +152,7 @@ Only curators run `build`, when the dataset ships.
 | field | value |
 |---|---|
 | name | `rmse` (standard; takes value; lower is better) |
-| origin | fallback: the default for the problem type: the source defines no metric |
+| origin | fallback: the default for the problem type: the source defines no metric the task would use in practice |
 | definition | sqrt(mean((y - p)^2)) |
 | reason | The paper judges its combined hurdle model in sample by the R2 of a regression of observed on predicted biomass (0.18; Results, 'Combined predictions'), a squared correlation that ignores a bias of the predictions, and reports no held-out error; RMSE on kg/ha, the planner's unit, is kept (Andrej, 2026-11-03). |
 
@@ -208,7 +208,8 @@ We start with `Lichen_data_NT.xlsx` (1,630 quadrats) and `Lichen_data_SK.xlsx` (
 - Dropped the quadrat label (`quadrat`, `plot.quadrat`: positions 0, 6, 12, 18, 24 in NT, `nw` and `se` in SK), an identifier within a plot; `species`, constant (`Cladonia spp.`, NT only); `acronym` and `acronym1`, one-to-one recodings of `ecoprovince` (CLEAN-5). Kept `ecozone` and `jurisdiction` (the published `design`), coarser levels of the ecoprovince; `jurisdiction` also marks the protocol, 1 m2 quadrats in NT and 4 m2 in SK.
 - Anomaly: plot F8-3A labels one quadrat `8` where every other plot has `6`; it is the plot's fifth quadrat, and the label is dropped anyway.
 - Repair (2026-11-01): a plot whose task-sheet coordinate differs from the authors' site sheet by more than 0.01 degree takes the site sheet's, rounded to 0.01 degree; three NT plots, 15 rows (Decisions). CG3-31A carries CG2-35A's coordinate (62.22, -116.33), 162 km from its site-mates; the site sheet puts it at 60.77, -116.56 with them, so it also takes their ecoprovince, Hay and Slave River Lowlands for Great Bear Plains (the ecozone stays Taiga plains). F13-5A and F13-5B move 7.8 and 7.9 km, from 63.03, -114.35 to 63.00, -114.21. The other 323 NT plots equal the site sheet rounded to 0.01 degree; that grid stays, since the coordinate links rest on it.
-- Every input is constant within a plot, so the quadrats of a plot share one feature vector and differ only in the target; they stay as the source's rows (SPLIT-26) and are scored one by one. A quadrat score ranks models like a stand score weighted by quadrats (Kendall tau 0.91 on the former site splits), with an NT plot weighing 5 quadrats against 2 for SK (SPLIT-23). 32.5% of the target's variance lies within identical inputs (28.8% within a plot), a floor no model can go below. Hence 532 exact duplicate rows (518 at 0: 482 quadrats of one plot and 36 of sibling plots that share every input) and the 980 rows the check counts as sharing their inputs with a row of another target (1,671 rows sit in an input group with more than one target). No feature vector occurs in two groups, so the split keeps every copy on one side (LEAK-18: few features, natural repeats).
+- Every input is constant within a plot, so the quadrats of a plot share one feature vector and differ only in the target; they stay as the source's rows (SPLIT-26) and are scored one by one. A model then predicts one value per plot, so the per-quadrat MSE splits into a fixed within-plot floor plus the stand score weighted by quadrats (an NT plot weighs 5 quadrats against 2 for SK), and the per-quadrat RMSE ranks models exactly like that stand score (Kendall tau 1 on all 30 shipped splits): no weight is needed for a stand score (SPLIT-23). Against the stand score with equal weights per plot, tau is 0.91 on the former site splits (5 untuned predictors); on the shipped burn-area splits it is 0.76 per split on average and 0.71 for the ranking by the mean over the splits (8 untuned predictors). 32.5% of the target's variance lies within identical inputs (28.8% within a plot), a floor no model can go below. Hence 532 exact duplicate rows (518 at 0: 482 quadrats of one plot and 36 of sibling plots that share every input) and the 980 rows the check counts as sharing their inputs with a row of another target (1,671 rows sit in an input group with more than one target). No feature vector occurs in two groups, so the split keeps every copy on one side (LEAK-18: few features, natural repeats).
+- Exposure (MET-14, MET-15; 2026-11-06): none. The sampled area, a 1 m2 quadrat in NT and a 4 m2 quadrat in SK, is set by the protocol and folded into kg/ha by the source, so the target is a biomass per area, not a count or an amount accrued over an amount at risk, and no rate, weight or offset applies. The number of quadrats per plot (5 in NT, 2 in SK) sets how much a plot weighs in the per-quadrat score (above); it is no exposure.
 - Zeros: 813 of 2,010 quadrats (40.4%; NT 40.7%, SK 39.5%) have a target of 0, the presence part of the authors' hurdle model ("to account both for the heterogeneous nature of lichen presence (zero-inflation)", Dryad abstract). 811 have no forage-lichen cover; 2 in plot 2015-054 have cover but volume 0 and stay 0, as the authors' presence flag has them.
 - Note: `years_since_fire` (`TSSRF`, "Time since stand replacing fire") is the survey's stand age per plot, not a fire-map value. The 145 NT control plots (725 rows, 36%) lie in areas with "no recorded burn history" (Dryad NT methods) and carry ages of 33 to 241 years, so theirs were dated in the field: from four (SK) or five (NT) tree cores or disks per site, "the time since stand-replacing fire based on clusters of tree ages (<20-yr range)" and, "at sites without a clear cohort of similar-aged trees, and with no recorded fire history", "the ring count of the oldest sampled tree" (Methods, "Forest stand composition and structure"). The sites were chosen by fire-record age class (NT: 37-38 and 46-49 years after fire, and controls ">70 yr" with no recorded burn; Methods, "Site selection"); only 26 of 110 multi-plot NT sites share one age. A planner has an inventory age or "older than the fire record". Capping the age at assumed fire-record horizons (51 years in NT, 70 in SK, our assumption) costs 0.01 to 0.03 R^2 on the shipped splits (random forest 0.007, ridge 0.024, small LightGBM 0.032; SE 0.016 to 0.021). Kept: a stand age is known at the prediction point (USE-6), and the gap is named in the fit. `stand_type` is likewise the crew's class ("Stand types, Hart et al. 2019"), where a planner has the inventory's.
 - Grouped by burn area. A group is an NT burn scar or unburned area, the plot-name prefix (`F1` of `F1-22A`; the codebook: "Plot location: Burn Scar or Unburned area -xxx"), merged with any area that shares an exact recorded coordinate: only CG2 and F2 join (CG2-4A and F2-22A/B lie about 0.5 km apart in the site sheet). Each SK plot is its own group, since SK names ("Year -xxx") carry no burn key. 216 groups, 26 NT and 190 SK; the largest, CG2 with F2, holds 200 rows (10.0%). Burn areas hold 18.4% of the NT target's sum of squares. The use case predicts for burns nobody surveyed (SPLIT-1, SPLIT-4); under the former site split, 94.3% of NT test quadrats had another site of their own burn area in training.
@@ -308,7 +309,7 @@ In the task sheet CG3-31A carries CG2-35A's coordinate, 162 km from its site-mat
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 0 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
 
 Accepted on purpose:
@@ -326,11 +327,11 @@ Accepted on purpose:
 | jurisdiction | category | 0 | 0 | 2 | NT, SK |
 | ecozone | category | 0 | 0 | 3 | Taiga plains, Taiga shield, Boreal shield |
 | ecoprovince | category | 0 | 0 | 4 | Hay and Slave River Lowlands, Coppermine River and Tazin Lake Uplands, Athabasc… |
-| burn_area | category | 0 | 0 | 216 | area_011, area_012, area_013, area_010, area_023, area_022, area_014, area_021,… |
-| forage_lichen_biomass_kg_ha | float64 | 0 | 0 | 847 | 0.0, 9.475, 6.3167, 12.6333, 18.95, 11.5805, 8.4222, 25.2666, 15.7916, 13.6861 |
-| latitude | float64 | 0 | 0 | 274 | 60.7, 61.06, 62.65, 62.51, 61.13, 62.66, 60.72, 60.71, 61.14, 60.73 |
-| longitude | float64 | 0 | 0 | 321 | -115.83, -115.9, -116.17, -116.58, -116.18, -116.32, -116.25, -116.15, -113.78,… |
-| years_since_fire | int64 | 0 | 0 | 137 | 40, 39, 42, 34, 35, 33, 43, 71, 41, 32 |
+| burn_area | category | 0 | 0 | 216 | area_011, area_012, area_013, area_010, area_014, area_022, area_023, area_021,… |
+| forage_lichen_biomass_kg_ha | float64 | 0 | 0 | 847 | 0.0, 9.475, 6.3167, 12.6333, 18.95, 11.5805, 8.4222, 25.2666, 15.7916, 35.7943 |
+| latitude | float64 | 0 | 0 | 274 | 60.7, 61.06, 61.13, 62.66, 62.51, 62.65, 60.71, 61.14, 60.72, 60.73 |
+| longitude | float64 | 0 | 0 | 321 | -115.83, -116.17, -116.58, -115.9, -116.18, -116.32, -116.25, -115.84, -116.33,… |
+| years_since_fire | int64 | 0 | 0 | 137 | 40, 39, 42, 34, 35, 33, 43, 71, 41, 36 |
 
 ### Target distribution
 
@@ -358,7 +359,7 @@ Accepted on purpose:
 | burn_area | 2 | area_012 | 150 | 7.46 |
 | burn_area | 3 | area_013 | 135 | 6.72 |
 | burn_area | 4 | area_010 | 120 | 5.97 |
-| burn_area | 5 | area_023 | 110 | 5.47 |
+| burn_area | 5 | area_014 | 110 | 5.47 |
 | ecoprovince | 1 | Hay and Slave River Lowlands | 730 | 36.32 |
 | ecoprovince | 2 | Coppermine River and Tazin Lake Uplands | 620 | 30.85 |
 | ecoprovince | 3 | Athabasca Plain and Churchill River Uplands | 380 | 18.91 |

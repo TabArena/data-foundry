@@ -14,6 +14,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    ScoringColumn,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -70,6 +71,9 @@ STRATA_FILE = "afsc_bts_strata.gpkg"
 GOA_SURVEY_DEFINITION_ID = 47
 GOA_OLD_DESIGN_YEAR = 1984
 GOA_NEW_DESIGN_FROM = 2025
+# A short tow, for the decision on the tow's effort: under this share of the median duration of its region and year
+# (the standard tow is 30 minutes in the Bering Sea, 15 in the Gulf of Alaska from 1996 and the Aleutians from 1997).
+SHORT_TOW = 0.75
 
 
 def _read_pages(raw_dir: Path, prefix: str) -> pd.DataFrame:
@@ -153,6 +157,43 @@ def _goa_stratum_1984(latitude: pd.Series, longitude: pd.Series, strata: pd.Data
             inside |= in_polygon
         stratum[inside & (stratum == -1)] = number
     return stratum
+
+
+def _short_tows(haul: pd.DataFrame, catch: pd.DataFrame) -> pd.DataFrame:
+    """Per taxon, the short tows against the mean of their stratum and year, in the cells that hold short and full tows.
+
+    Three gaps: the share of hauls with a catch, the log1p numbers per km^2 over all hauls, and the log1p numbers per
+    km^2 over the hauls with a catch (cells that hold short and full tows with a catch).
+    """
+    year = pd.to_datetime(haul["date_time"].str[:10], format="%Y-%m-%d").dt.year
+    median = haul["duration_hr"].groupby([haul["srvy"], year]).transform("median")
+    short = haul["duration_hr"] < SHORT_TOW * median
+    cell = haul["srvy"] + ":" + haul["stratum"].astype(str) + ":" + year.astype(str)
+    catch = catch.assign(taxon=catch["species_code"].map({c: t for t, codes in TAXA.items() for c in codes}))
+    keys = [catch["hauljoin"], catch["taxon"]]
+    number = catch["cpue_nokm2"].groupby(keys).sum().where(~catch["cpue_nokm2"].isna().groupby(keys).any())
+    grid = pd.MultiIndex.from_product([haul["hauljoin"], list(TAXA)], names=["hauljoin", "taxon"])
+    density = np.log1p(number.reindex(grid, fill_value=0.0)).unstack().reindex(index=haul["hauljoin"])
+    density.index = haul.index
+    rows = {}
+    for taxon in TAXA:
+        d = density[taxon].dropna()  # a catch weighed but not counted has no numerical CPUE
+        s, c = short[d.index], cell[d.index]
+        mixed = s.groupby(c).transform("any") & ~s.groupby(c).transform("all")
+        d, s, c = d[mixed], s[mixed], c[mixed]
+        caught = d > 0
+        p, sp, cp = d[caught], s[caught], c[caught]
+        mixed_p = sp.groupby(cp).transform("any") & ~sp.groupby(cp).transform("all")
+        share = caught.astype(float)
+        rows[taxon] = {
+            "short tows": int(s.sum()),
+            "share with a catch": (share - share.groupby(c).transform("mean"))[s].mean(),
+            "all hauls": (d - d.groupby(c).transform("mean"))[s].mean(),
+            "hauls with a catch": (p - p[mixed_p].groupby(cp[mixed_p]).transform("mean"))[mixed_p & sp].mean(),
+        }
+    table = pd.DataFrame(rows).T.rename_axis("taxon")
+    table["short tows"] = table["short tows"].astype(int)
+    return table.round(3)
 
 
 class NoaaAfscBottomTrawlSurveyCpue(AbstractCuratedDataset):
@@ -261,7 +302,7 @@ class NoaaAfscBottomTrawlSurveyCpue(AbstractCuratedDataset):
         - Zeros (52.0% of the rows; a zero-inflated target, not a cap or a placeholder): CATCH holds positive catches only (no row with zero weight), so a haul without a row for a taxon caught none of it, the source's own zero fill (gap_products documentation, "Access via API and R", sec. 10.2, "Create zero-filled data": missing CPUE set to 0 after joining HAUL and CATCH).
         - Target: numbers per square kilometre swept (`cpue_nokm2`), as the 2022 review models numerical abundance (with an area-swept offset) instead of the 2017 memo's fourth-root CPUE (TM-459, pp. 16-17), shipped as `log1p_cpue_no_km2`; a group's catch is the sum over its codes. The 127 haul and taxon rows with a catch weighed but not counted (128 catches) have no numerical CPUE and leave (CLEAN-15).
         - Hauls: all 35,561 are the survey's satisfactory hauls (every performance code is 0 or positive); the 2,659 with a positive code (satisfactory with a noted minor problem) stay, as the survey and the source use them. The code itself is dropped: recorded after the tow about the tow, and presence differs by it (rex sole on the slope 52.2% with code 0, 29.7% with a positive code; within strata 45.9% against 40.8%, so part of the gap is the tow, not the place; the decisions show the share for every taxon).
-        - Dropped, effort and gear (`distance_fished_km`, `duration_hr`, `net_width_m`, `net_height_m`, `area_swept_km2`, the end position): the area swept (distance fished times net width) is the label's denominator, the target being per square kilometre swept, and the tow length responds to the catch (on the EBS shelf, walleye pollock tows under 0.4 h, 831 of them, average log1p kg per km^2 8.33 against 7.35 for the full-length tows; measured on pollock, as the length is a property of the haul).
+        - Effort, the survey's exposure (issue 4): the target is the catch per square kilometre swept (CPUE), into which the source folds the area swept (distance fished times net width), the rate per unit of effort (MET-14), and the score is unweighted on this density, as the review maps it over cells of equal area (MET-15). The planned effort is the standard tow, 30 minutes in the Bering Sea (median 0.50 to 0.52 h in each of its three surveys) and 15 minutes in the Gulf of Alaska from 1996 and the Aleutians from 1997 (median 0.27 h; 30 minutes before), so it reaches the models through the region and the date. The realized effort (`distance_fished_km`, `duration_hr`, `net_width_m`, `net_height_m`, `area_swept_km2`, the end position) is dropped: a place in a survey year has no tow (USE-3), and the area swept is the target's denominator (LEAK-41). As free features these columns would gain 0.0028 of the metric under an L2 fit on log1p (1.9% of untuned LightGBM's skill over the taxon means, better in 3 of the 5 windows tested) and nothing under a Poisson fit (exposure study, 2026-11-05). Only for walleye pollock does the tow length also record the catch (LEAK-10): its short tows (under 0.75 of the median duration of their region and year) lie 0.36 above the mean of their stratum and year on log1p numbers per km^2 over all hauls, against -0.36 to +0.08 for the other taxa, and on the EBS shelf its tows under 0.4 h (831) average 8.33 log1p kg per km^2 against 7.35 at full length. Where a short tow catches a taxon, the density is higher for 9 of 11 taxa by the plain means and for all 11 within their stratum and year (pollock 0.55, the others 0.00 to 0.25), which a smaller area swept explains without any stop on the catch, so the cut is claimed for pollock alone (the decision "The tow's effort is dropped"). The unweighted CPUE keeps the bias of the cut pollock tows, as NOAA's design-based index does, which averages the hauls' CPUE with equal weight in each stratum (gapindex, "Background equations").
         - Dropped, the vessel and the time of day (`date_time` kept as the date): a place in a survey year has neither; they describe the sampling event.
         - Dropped, identifiers and copies: `hauljoin` (the join key), `cruisejoin`, `cruise`, `haul`, `station` (the position columns hold the place), `survey`, `survey_name` and `survey_definition_id` (copies of `srvy`), `year` (the date's year).
         - `stratum` is built as region plus stratum number (`EBS-31`): 18 of the 128 stratum numbers are used by two surveys for different areas.
@@ -270,10 +311,11 @@ class NoaaAfscBottomTrawlSurveyCpue(AbstractCuratedDataset):
         - `depth_m`: in 1993-95 the depth is the headrope depth, without the net height (TM-459, p. 8), a median 1.25 m shallower at the EBS stations than from 1996 on. These are training rows in every window and stay as published.
         - Missing bottom (4.5%) and surface (2.4%) temperatures stay missing.
         - Note: the newest season is provisional. FOSS has not yet rated the 2026 catches (all 3,968 of the 11 taxa lack a `taxon_confidence`), though the 722 hauls of 2026 (44% of the newest window) match a full season (EBS 350 of 350 stations). Before a build, compare with a fresh download: if the 2026 rows change, build from the newer download or end the newest window at 2025. The lower EBS presence of rex sole in 2026 (0.169 against 0.209-0.293 in 2018-2025) alone is no reason to cut.
-        - Metric: the source's RMSE on numbers per km^2, taken per taxon and given one vote per species' map (Andrej, 2026-11-02, "Let's do RMSE", then "I follow your suggestions": the AI's option (c), REVIEW.md issue 1). The review draws one EFH map per species: the places with a predicted chance of a catch of at least 5%, cut into the areas holding 95%, 75%, 50% and 25% of the species' predicted abundance (TM-459, pp. 27-28; EFH is "the area inhabited by 95% of a species' population", NMFS 2005, quoted p. 1). Pooled into one RMSE on counts, walleye pollock and rock sole held 79-93% of an untuned model's squared error in every window (pollock 34-84%), seven taxa under 1% each, and the pooled score picked LightGBM fit on raw counts, whose error per taxon is 1.72 times the taxon's spread (0.92 for LightGBM on log1p, 1.08 for each taxon's training mean). `mean_group_normalized_rmse` divides each taxon's RMSE by the spread of its true catches in the window: within a taxon a fixed divisor ranks models as RMSE does, so only the equal weight per taxon is ours. On the nine windows LightGBM on log1p scores 0.90-0.93 and beats the taxon means (1.01-1.23) in all nine; Poisson LightGBM scores 0.86-1.11. `taxon` is both a feature and the metric's group (MET-2 as amended 2026-11-02). Every taxon has a varying catch in every window, so none is left out.
+        - Metric: the source's RMSE on numbers per km^2, taken per taxon and given one vote per species' map (Andrej, 2026-11-02, "Let's do RMSE", then "I follow your suggestions": the AI's option (c), REVIEW.md issue 1). The review draws one EFH map per species: the places with a predicted chance of a catch of at least 5%, cut into the areas holding 95%, 75%, 50% and 25% of the species' predicted abundance (TM-459, pp. 27-28; EFH is "the area inhabited by 95% of a species' population", NMFS 2005, quoted p. 1). Pooled into one RMSE on counts, walleye pollock and rock sole held 79-93% of an untuned model's squared error in every window (pollock 34-84%), seven taxa under 1% each, and the pooled score picked LightGBM fit on raw counts, whose error per taxon is 1.72 times the taxon's spread (0.92 for LightGBM on log1p, 1.08 for each taxon's training mean). `mean_group_normalized_rmse` divides each taxon's RMSE by the spread of its true catches in the window: within a taxon a fixed divisor ranks models as RMSE does, so only the equal weight per taxon is ours. On the nine windows LightGBM on log1p scores 0.90-0.93 and beats the taxon means (1.01-1.23) in all nine; Poisson LightGBM scores 0.86-1.11. `taxon` stays a feature, and its copy `taxon_group` is the metric's group, a scoring column (MET-2 as reworded on 2026-11-05; CC below). Every taxon has a varying catch in every window, so none is left out.
         - Not shipped: the catch of other species in the same haul (unknown at a place nobody sampled, though the 2017 models used concurrent coral, sponge and sea-whip presence, p. 14), and the source's raster covariates (sediment, currents, tides, slope, ocean colour), which FOSS does not hold.
         - Note: the source fits each region and each life stage (by length) apart; FOSS's CATCH has no lengths, so the target counts all sizes, and one table holds all regions with `srvy` as a feature.
         - Anomaly: the timestamps end in "Z" but are local times (Alaska time, AKDT, in GAP's column metadata; hauls run from 05:00 to 23:00); only the date is used. The EBS shelf survey has 350 stations from 2024 (376 before).
+        - CC (2026-11-06, Lennart): issue 4 resolved. `taxon` stays a feature and its copy `taxon_group` is the group the metric reads, a scoring column (MET-2 as reworded on 2026-11-05, asked in PR #47's review that day); the tow's effort stays out, the cut is claimed for walleye pollock only, and the score stays unweighted on the density (USE-3, LEAK-10, LEAK-41, MET-15). Supersedes the metric's reading of the feature `taxon` (Andrej, 2026-11-02, under MET-2 as amended then) and the note that the tow length responds to the catch, measured on pollock and read for every taxon: the exposure study of 2026-11-05 found the densities of short tows that catch a taxon higher for nearly every taxon, which a smaller area swept explains, while over all hauls only pollock's short tows stand well above their cells (+0.36 on log1p, the others -0.36 to +0.08). The scores do not change: the copy holds the same values.
     """
 
     # Task
@@ -299,8 +341,19 @@ class NoaaAfscBottomTrawlSurveyCpue(AbstractCuratedDataset):
             "11 taxa, lower is better (equal to the mean over taxa of sqrt(1 - R^2) on counts). A taxon whose catches "
             "do not vary in a window is left out; none is in the nine windows."
         ),
-        inputs={"group": "taxon"},
+        inputs={"group": "taxon_group"},
         target_transform="log1p",
+    )
+    scoring_columns = (
+        ScoringColumn(
+            column="taxon_group",
+            role="group",
+            used_by="mean_group_normalized_rmse",
+            description=(
+                "a copy of the feature taxon (11 taxa): the metric divides each taxon's RMSE by the spread of its "
+                "true catches in the window and averages the 11; taxon itself stays a feature"
+            ),
+        ),
     )
 
     # Splits: nine two-year windows (one survey of every region each), each trained on every earlier survey.
@@ -375,11 +428,14 @@ class NoaaAfscBottomTrawlSurveyCpue(AbstractCuratedDataset):
         cpue = cpue.reindex(grid, fill_value=0.0).dropna().rename("cpue_nokm2").reset_index()
         df = cpue.merge(df, on="hauljoin", how="left", validate="many_to_one")
         df["log1p_cpue_no_km2"] = np.log1p(df["cpue_nokm2"])
+        # 5. The metric's group: a copy of the feature `taxon`, shipped as a scoring column (MET-2); `taxon` stays a
+        #    feature.
+        df["taxon_group"] = df["taxon"]
         return drop_columns(df, [*DROPPED_HAUL_COLUMNS, "date_time", "longitude_dd_start", "cpue_nokm2"])
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
-            categorical=["taxon", "srvy", "stratum"],
+            categorical=["taxon", "srvy", "stratum", "taxon_group"],  # taxon_group: the metric's, never a feature
             datetime={"date": "%Y-%m-%d"},
         )
 
@@ -433,5 +489,15 @@ class NoaaAfscBottomTrawlSurveyCpue(AbstractCuratedDataset):
                 "and the catch rate differs by it, so as a feature it would carry part of the outcome; the hauls "
                 "themselves stay.",
                 by_code,
+            ),
+            Decision(
+                "The tow's effort is dropped; the cut is claimed for walleye pollock only",
+                "Short tows (under 0.75 of the median duration of their region and year) against the mean of their "
+                "stratum and year, in the cells that hold short and full tows: the share of hauls with a catch, and "
+                "the log1p numbers per km^2 over all hauls and over the hauls with a catch. Short tows catch most "
+                "taxa less often, and where they catch one its density is higher, as a smaller area swept gives "
+                "without any stop on the catch. Over all hauls walleye pollock alone stands well above its cells: "
+                "its tows end early on a large catch (curation notes).",
+                _short_tows(haul, catch),
             ),
         ]

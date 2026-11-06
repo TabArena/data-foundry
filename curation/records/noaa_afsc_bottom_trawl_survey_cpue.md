@@ -5,7 +5,7 @@ checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Andrej
+claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -135,6 +135,8 @@ CC (2026-11-02, Andrej): "I follow your suggestions. Please don't forget to prop
 CC (2026-11-02, Andrej): ship. Every issue of the REVIEW is resolved: 11 taxa in one table with the taxon as a feature (issue 1), nine two-year windows without a gap (2), RMSE taken per taxon over its spread and averaged, marked as declared (3, the metric row).
 
 CC (2026-11-03, Andrej): the check warning `task_target_value_dominant` accepted: "for these tasks this is natural and a core challenge" (zero-inflated target).
+
+CC (2026-11-06, Lennart): issue 4 of the folder's REVIEW.md resolved. `taxon` stays a feature and its copy `taxon_group` is the group the metric reads, a scoring column (MET-2 as reworded on 2026-11-05, asked in PR #47's review that day); the tow's effort stays out, the cut is claimed for walleye pollock only, and the score stays unweighted on the density (USE-3, LEAK-10, LEAK-41, MET-15). Supersedes the metric's reading of the feature `taxon` (Andrej, 2026-11-02, under MET-2 as amended then) and the note that the tow length responds to the catch, measured on pollock and read for every taxon: the exposure study of 2026-11-05 found the densities of short tows that catch a taxon higher for nearly every taxon, which a smaller area swept explains, while over all hauls only pollock's short tows stand well above their stratum and year (+0.36 on log1p numbers per km^2, the other taxa -0.36 to +0.08). The planned effort (30-minute tows in the Bering Sea, 15-minute tows in the Gulf of Alaska from 1996 and the Aleutians from 1997) reaches the models through the region and the date; the unweighted CPUE carries the bias of the cut pollock tows, as NOAA's design-based index does. The scores do not change: the copy holds the same values.
 
 ## Reference
 

@@ -5,7 +5,7 @@ checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Andrej
+claimed_by: Lennart
 suggestion: 'Yes'
 priority: 2
 decision_markers:
@@ -104,6 +104,8 @@ CC (2026-11-03, Andrej): no storm-level input (issue 4 (A)); counts of a storm's
 CC (2026-11-03, Andrej): issue 5, B ("I go with your change"): the use case is the planner's, as in Diaz and Joseph (2019): the damage of storm events estimated for disaster planning, not the triage of a storm's counties; data, split and metric unchanged.
 
 CC (2026-11-03, Andrej): ship (review page verdict) with the planning use case of issue 5; the declared metric, RMSLE from context, checked.
+
+CC (2026-11-06, Lennart): decision D13 of the exposure study (#51; issue 6 of the folder's REVIEW.md): `duration_hours` is blank for Strong Wind and Heavy Rain, whose span NWSI 10-1605 App. A draws by the damage (Sec. 45, 21), and kept with a `Potential leak, kept on purpose:` note for Thunderstorm Wind, High Wind, Coastal Flood, Lakeshore Flood and Storm Surge/Tide, which it times by the damage or a wind or flooding criterion (Sec. 46, 24, 4, 27, 44), under the new LEAK-10 / LEAK-37 Cases row on spans the outcome sets. Supersedes the definition Andrej shipped on 2026-11-03 (lines above), which blanked only the tornado durations, as the column audit of 2026-11-01 had read the begin and end of Thunderstorm Wind alone and judged the other spans first-report facts: the study of 2026-11-05 read App. A for every type and measured the column's worth on the seven damage-timed types (+0.02 to +0.04 RMSLE, trained from 2016). On the shipped splits (untuned LightGBM, 4 bagging seeds) it is +0.013 to +0.021 on those rows, all of it on the five kept types (+0.012 to +0.021) and none on Strong Wind and Heavy Rain (-0.009 to -0.046). The notes gain the exposure paragraph: no exposure in the source; county population does not scale with the damage (Spearman -0.14 to +0.05 among positive entries), so no offset; storms whose entries share one figure hold round office values, not split totals.
 
 ## Reference
 

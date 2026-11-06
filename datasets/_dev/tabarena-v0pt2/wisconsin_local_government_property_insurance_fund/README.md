@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: wisconsin_local_government_property_insurance_fund
 container_format: 2
-checksum: v2:bcf016836eeba4575af9d710d183425d5ff95d0a7f8b08422eed426b766d8fc3
+checksum: v2:85ad446df6fddc9a739c7c6d5a4dbf1aa54ee1f5eacd9a183ffed3e2796d3e1d
 build: null
 build_stale: false
 data:
@@ -44,13 +44,19 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - task_time_on_few_unique
-  - meta_license_unknown
-  - task_target_value_dominant
+  warnings: []
   infos:
   - meta_time_horizon_unit
-  accepted: {}
+  accepted:
+    task_time_on_few_unique: 'Five policy years, 2006-2010, the whole time axis of
+      the file: the yearly windows train on two to four earlier years, and the file
+      has no finer time.'
+    meta_license_unknown: The textbook's repository has no licence file (GitHub API,
+      2026-11-01), and the book's pages state none.
+    task_target_value_dominant: '70.2% zeros: member-years without a building and
+      contents claim (`Freq` 0), real no-claim years and not a cap or a placeholder;
+      the batch''s other zero-inflated targets are accepted on the same ground (Andrej,
+      2026-11-03).'
 decisions:
 - The fund's premium is the metric's base, never an input
 - The yearly claims agree with the claim-level file
@@ -63,7 +69,7 @@ decisions:
 
 Regression of `bc_claims`, scored with `ordered_lorenz_gini` on temporal splits by `Year`. 5,639 rows and 8 features. Source: GitHub (2017).
 
-Not built yet. The current definition gives checksum `v2:bcf016836eeba4575af9d710d183425d5ff95d0a7f8b08422eed426b766d8fc3`.
+Not built yet. The current definition gives checksum `v2:85ad446df6fddc9a739c7c6d5a4dbf1aa54ee1f5eacd9a183ffed3e2796d3e1d`.
 
 ## In brief
 
@@ -130,7 +136,7 @@ Only curators run `build`, when the dataset ships.
 | source | GitHub: https://github.com/OpenActTexts/Loss-Data-Analytics/blob/38859ed741b21d41a26b5abb668e1172c088a216/Data/PropertyFundInsample.csv |
 | year | 2017 |
 | domain | insurance |
-| license |  |
+| license | nan |
 | data_tags | Non-IID, Temporal |
 | reference | OpenActTexts2017LossDataAnalytics |
 | rows x columns | 5,639 x 10 |
@@ -148,7 +154,7 @@ Only curators run `build`, when the dataset ships.
 | origin | source: the source's metric |
 | original | Gini index of the ordered Lorenz curve with the fund's premium as base: members sorted by the relativity score / premium, cumulative premium share against cumulative claims share (Frees, Meyers and Cummings 2011, JASA 106:1085-1098), computed with the premium the fund collected as the denominator |
 | reference | https://doi.org/10.3390/risks4010004 |
-| definition | twice the area between the ordered Lorenz curve and the diagonal: rows sorted by the relativity p / B (B the base premium, the weight), x the cumulative share of B, y the cumulative share of the losses y; 0 when p adds nothing to B (tied relativities form one step) |
+| definition | twice the area between the ordered Lorenz curve and the diagonal: rows sorted by the relativity p / B (B the base premium, the weight), x the cumulative share of B, y the cumulative share of the losses y; 0 when p adds nothing to B (tied relativities form one step); per_unit: y and p are per unit of B, rows sorted by p and x the cumulative share of B (the unnormalised weighted Gini of a rate) |
 | inputs | weight: `Premium` |
 
 **Scoring columns**
@@ -209,6 +215,7 @@ We start with PropertyFundInsample.csv of the open textbook Loss Data Analytics 
 - `NoClaimCredit` is 1 exactly when the member had no claim in the two years before, wherever both years are in the file (1,852 rows against 0, and 0 against 1,375): history known at rating time. Where the file lacks one of the two years it is 0 (all 2,292 rows of 2006-2007 and 119 of the 120 later ones; one member with a gap year has 1), which says only that the history is not in the file, and a linear model would read it as "had a claim". These 2,412 rows are set missing (CLEAN-10, as house_sales). The 2008 window trains on 2006-2007 alone, so its training side holds no known credit and the column informs only the 2009 and 2010 windows.
 - `Fire5` is 1 when the fire protection class (0 to 10) is below 5. The claim-level file, which covers claimants only, shows the unknown class -99 coded as 1 for 48 claimant members (66 member-years). It stays as published: the unknowns can be found only among members with a claim, so blanking them would tell the outcome (LEAK-10 before CLEAN-10). `Fire5` and `NoClaimCredit` hold only 0 and 1 (and missing): categorical.
 - The coverage of a year is set before its claims: the change of log coverage from the year before is +0.059 with a claim in the year and +0.061 without (+0.052 with a claim in the top 10%). It grew about 5% a year in 2007-2009; in 2010 it fell for 67.7% of the members (median -2.6%).
+- Exposure: `Premium` is the rating's output and the base of the Lorenz curve, not an amount at risk. `ordered_lorenz_gini` takes totals, each member's claims and prediction against its premium, not values per unit of it, so the premium is no row weight and no training weight is declared (MET-15); it is a scoring column only, never an input (MET-2, the note above). The coverage (`LnCoverage`, the log of the building and contents sum insured, set for the year at renewal) stays a feature, not an offset: the source estimates its coefficient rather than fixing it at 1, as its general definition of an exposure offset would (Frees, Lee and Yang 2016, Sec. 2.2, p. 5; Table 11, p. 19: 0.853 in the negative binomial frequency part and 0.136 in the GB2 severity part, an implied elasticity of the expected claims of about 0.99 before the zero-one inflation), simple GLMs on this file give 1.14 for the claim count and 0.67 for a Tweedie fit of the total, and a feature lets a model learn any elasticity. Rows are member-years with no time at risk: whether a member joined or left during a year cannot be checked; 48 members appear in one year only (54 in two, 55 in three, 32 in four, 1,038 in all five).
 - Target `bc_claims`, `y`, the year's total BC claims in dollars; 70.2% of the member-years are 0, none is negative. Dollars rather than the log scale CLEAN-16 defaults to: the metric divides each prediction by the premium, so a prediction's size counts, not only its order; the source models dollars (Tweedie and GB2 models), and the fund prices from expected dollars (MET-3, USE-5). On the three yearly windows (test 2008, 2009, 2010) an untuned LightGBM fit on dollars with a Tweedie loss scores 0.146, 0.254 and 0.327, the same model fit on log1p with squared error -0.049, 0.248 and 0.016, an untuned Tweedie GLM on dollars 0.254, 0.251 and 0.350.
 - Note: the task probes flag no_signal, scored by R^2 on dollars, which follows a few large claims (random forest 0.234, SD 0.28 across the windows; linear 0.032): even the true claim indicator times the training claimants' mean reaches R^2 0.007 to 0.038 on the windows. Both parts carry signal (untuned LightGBM, test 2008, 2009, 2010): a claim is ranked at ROC AUC 0.791, 0.774 and 0.760 (log coverage alone 0.745, 0.738, 0.736), the log claims of the claimants at R^2 0.054, 0.095 and 0.221. The leak probes find nothing: every feature alone at R^2 0.014 or below, no test row with an exact copy of its inputs in training.
 - The totals match the claim-level file: CLAIMLEVEL.csv (6,258 BC claims) sums to the year's claims within $1 for 5,633 of the 5,639 member-years (decision 2); 4 of the 6 others hold claim lines that look duplicated in the claim-level file (82,532.36 = 2 x 41,266.18). `y` is kept as published. The book keeps "only claims that are closed, with obligations fully met" (Ch. 1): a claim still open when the file was made is missing from its year (LEAK-24). There is no extraction date; 2010, the newest year, has the highest share of members with a claim (36.3%), so no shortfall shows.
@@ -283,12 +290,15 @@ The test years are 2008, 2009 and 2010, each trained on every earlier year. The 
 
 ## Bundle checks
 
-0 error(s), 3 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
 
-- **warning** `task_time_on_few_unique`: `time_on='Year'` has only 5 distinct time points. (hint: Consumers derive inner validation folds by cutting the time axis into intervals; too few time points makes that degenerate.)
-- **warning** `meta_license_unknown`: `license` is None (unknown or missing). (hint: Record the license if one exists — downstream users need it to redistribute the data.)
-- **warning** `task_target_value_dominant`: The target value 0 holds 70% of the rows. (hint: A cap (a censored value), a placeholder for missing, or a zero-inflated target: say which in `curation_comments`, drop censored or placeholder rows, or accept it with the reason.)
 - **info** `meta_time_horizon_unit`: `time_horizon_unit='years'` implies calendar time, but `time_on='Year'` has dtype int64, so the horizon cannot be cross-checked. (hint: Fine when the numeric values themselves are calendar units (e.g. a year column); otherwise use `time_horizon_unit='steps'` for a plain numeric time index.)
+
+Accepted on purpose:
+
+- `task_time_on_few_unique`: Five policy years, 2006-2010, the whole time axis of the file: the yearly windows train on two to four earlier years, and the file has no finer time.
+- `meta_license_unknown`: The textbook's repository has no licence file (GitHub API, 2026-11-01), and the book's pages state none.
+- `task_target_value_dominant`: 70.2% zeros: member-years without a building and contents claim (`Freq` 0), real no-claim years and not a cap or a placeholder; the batch's other zero-inflated targets are accepted on the same ground (Andrej, 2026-11-03).
 
 ## Data checks
 
@@ -297,15 +307,15 @@ The test years are 2008, 2009 and 2010, each trained on every earlier year. The 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | NoClaimCredit | category | 2412 | 42.77 | 2 | 1.0, 0.0 |
-| PolicyNum | category | 0 | 0 | 1227 | 180733, 180736, 180737, 180738, 180739, 180740, 180741, 180718, 180724, 180725 |
+| PolicyNum | category | 0 | 0 | 1227 | 120002, 120003, 120004, 120005, 120008, 120009, 120012, 120013, 120015, 120017 |
 | Fire5 | category | 0 | 0 | 2 | 1, 0 |
 | EntityType | category | 0 | 0 | 6 | School, Village, Town, City, Misc, County |
 | AlarmCredit | category | 0 | 0 | 4 | 0, 15, 10, 5 |
-| LnCoverage | float64 | 0 | 0 | 5611 | -1.6094, -1.4642, 2.2861, 1.1196, -0.8916, 0.9103, -0.3109, -1.931, 2.3959, 0.2… |
+| LnCoverage | float64 | 0 | 0 | 5611 | -1.6094, -1.4642, 4.7288, -2.3914, 1.2055, 2.8937, -1.931, 0.1068, -0.3109, -1.… |
 | lnDeduct | float64 | 0 | 0 | 10 | 6.2146, 6.9078, 8.5172, 7.824, 9.2103, 10.1266, 9.6158, 10.8198, 11.5129, 11.22… |
-| bc_claims | float64 | 0 | 0 | 1637 | 0.0, 1000.0, 1500.0, 3000.0, 1950.0, 900.0, 7500.0, 2500.0, 6000.0, 1625.0 |
+| bc_claims | float64 | 0 | 0 | 1637 | 0.0, 1000.0, 1500.0, 3000.0, 1950.0, 900.0, 2500.0, 7500.0, 4500.0, 6000.0 |
 | Year | int64 | 0 | 0 | 5 | 2006, 2007, 2008, 2009, 2010 |
-| Premium | int64 | 0 | 0 | 4750 | 100, 276, 186, 486, 637, 253, 9, 292, 279, 415 |
+| Premium | int64 | 0 | 0 | 4750 | 100, 276, 486, 186, 279, 253, 9, 637, 415, 292 |
 
 ### Target distribution
 
@@ -344,11 +354,11 @@ The test years are 2008, 2009 and 2010, each trained on every earlier year. The 
 | NoClaimCredit | 1 | &lt;NA> | 2412 | 42.77 |
 | NoClaimCredit | 2 | 1.0 | 1852 | 32.84 |
 | NoClaimCredit | 3 | 0.0 | 1375 | 24.38 |
-| PolicyNum | 1 | 180733 | 5 | 0.09 |
-| PolicyNum | 2 | 180736 | 5 | 0.09 |
-| PolicyNum | 3 | 180737 | 5 | 0.09 |
-| PolicyNum | 4 | 180738 | 5 | 0.09 |
-| PolicyNum | 5 | 180739 | 5 | 0.09 |
+| PolicyNum | 1 | 120002 | 5 | 0.09 |
+| PolicyNum | 2 | 120003 | 5 | 0.09 |
+| PolicyNum | 3 | 120004 | 5 | 0.09 |
+| PolicyNum | 4 | 120005 | 5 | 0.09 |
+| PolicyNum | 5 | 120008 | 5 | 0.09 |
 
 </details>
 

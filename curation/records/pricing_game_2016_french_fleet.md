@@ -1,11 +1,11 @@
 ---
 unique_name: pricing_game_2016_french_fleet
-name: 'Pricing Game 2016 of the Institut des Actuaires: French fleet vehicles, claim charge per period of cover, 2011-2013 (organisers'' train_contrats / train_sinistres; CASdatasets pg16 a copy)'
+name: 'Pricing Game 2016 of the Institut des Actuaires: French fleet vehicles, claim charge per vehicle-year, 2011-2013 (organisers'' train_contrats / train_sinistres; CASdatasets pg16 a copy)'
 checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Andrej
+claimed_by: Lennart
 suggestion: 'Yes'
 priority: 4
 tags:
@@ -148,6 +148,10 @@ by 4.3%.
 CC (2026-11-02, Andrej): ship. The claim charge as target confirmed as implemented (issue 4 (a)); the metric checked
 and kept as declared (`normalized_gini`, a stand-in for the game's market, as pricing_game_2017_french_mtpl). The metric
 is this dataset's own call, not a family one ("It is case by case and when in doubt we go for diversity", MET-10).
+
+CC (2026-11-06, Lennart): the target is the claim charge per vehicle-year over the realized period, `exposure` (the source's Exposition_au_risque, restored) its denominator, the weight scoring column and the `sample_weight`, never a feature (MET-14, MET-15, LEAK-41; issue 5, D11 of the exposure review); the length to 31 December stays a feature as `exposure_to_year_end` (LEAK-7, LEAK-37); the metric is the normalized weighted Gini of the rate, still a stand-in for the game's market; the scale stays the identity (CLEAN-16 as amended). Supersedes Andrej's call of 2026-11-02 on the target (the claim charge per period, issue 4): the exposure study measured later that the total over the realized period rewards predicting how long a vehicle stays (about 0.03 of the row Gini) and that the rate model ranks the rate better under the weighted Gini (0.153 against 0.138 for the model of the total; 0.154 against 0.136 on the shipped windows).
+
+CC (2026-11-06, Lennart): every window trains on the periods that started before 2013 (56,178 periods of 2011-2012, 24,674 vehicle-years), all closed by 31 December 2012, so no training row is admitted by its realized end (LEAK-41; issue 5, D11 of the exposure review). Supersedes Andrej's expanding training sides of 2026-11-02 (issue 2 (d)): the exposure study's red team measured later that the 2013 periods they admitted, those that ended early, claim more (0.127 and 0.131 claims per vehicle-year against 0.115 and 0.116 for the 2013 periods they left out; 10.8% and 4.0% of the training vehicle-years of the September and May windows), and LEAK-41 (2026-11-06) bars training on rows selected by their realized end.
 
 ## Reference
 

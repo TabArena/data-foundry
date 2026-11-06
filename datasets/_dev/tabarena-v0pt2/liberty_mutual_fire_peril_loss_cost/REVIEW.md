@@ -102,6 +102,21 @@ amended (issue 2).
 
    **Resolved (2026-11-02, Andrej):** (a), the weighted Gini with var11 as weight and feature; MET-2 amended.
 
+3. **Ship `var11`'s copy as the scoring column the metric reads (MET-2 as reworded on 2026-11-05)?** The definition
+   read the feature `var11` directly as the weight of `normalized_weighted_gini`; MET-2 as reworded in #44 says a
+   feature the metric also needs stays a feature and ships a copy as a scoring column, so the scoring columns are the
+   complete set of a metric's extra data. The check now warns `task_metric_input_is_feature`.
+   * Implemented: `_clean` copies `var11` into `var11_weight`, a `ScoringColumn(role="weight")` the metric reads;
+     `var11` stays a feature. No training weight is declared: the weight is a function of the features (MET-15), and
+     the warning `task_metric_weight_without_sample_weight` is accepted with that reason. Scores do not change (the
+     copy holds the same values).
+
+   **Lennart (2026-11-05, PR #47):** MET-2 wants scoring copies: `var11` -> `var11_weight` (role weight); `var11`
+   stays a feature.
+
+   **Resolved (2026-11-06, Lennart):** the copy, as asked; `dataset check` waits for the raw data (Kaggle's rules for
+   the competition are not accepted on the download account yet).
+
 **Review panel:** ship after changes; issue 1 (the forced split) can still turn it to `No` (mediator). Claim audit: 29
 claims, most hold; 1 refuted, 3 refuted in part and 1 incomplete, all in notes and numbers, now fixed. Blind review:
 exclude as prepared, on squared-error scoring (no model beats the mean), but a genuine ranking signal under the

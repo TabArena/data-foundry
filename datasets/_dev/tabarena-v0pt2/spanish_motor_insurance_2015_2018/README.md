@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: spanish_motor_insurance_2015_2018
 container_format: 2
-checksum: v2:1bf7baa39481082aa53c23d16726483c409c4ebccdc7dfa4d2757cec9d4ba51c
+checksum: v2:d4004b8416e2b01954264411e222a4aacbef2052760a1666422310b72fade2e9
 build: null
 build_stale: false
 data:
@@ -44,14 +44,16 @@ splits:
 bundle_checks:
   ok: true
   errors: []
-  warnings:
-  - splits_rows_unused
+  warnings: []
   infos:
   - dataset_duplicate_rows
   - dataset_conflicting_duplicate_rows
   accepted:
     task_target_value_dominant: '65% zeros: policy-years without a claim cost (Andrej,
       2026-11-03: zero-inflated targets are natural for these tasks and a core challenge).'
+    splits_rows_unused: 'The 12-month gap of every window: a year''s claims are known
+      only when it ends, so the 5,685 first years that start from December 2016 to
+      July 2017 are in no window (splits_comment).'
 decisions:
 - Only each policy's first year in the release is a task row
 - Years that start in 2018 are dropped
@@ -65,7 +67,7 @@ decisions:
 
 Regression of `log1p_cost_claims_year`, scored with `normalized_gini` on temporal splits by `period_start`. 37,090 rows and 18 features. Source: Other (2023).
 
-Not built yet. The current definition gives checksum `v2:1bf7baa39481082aa53c23d16726483c409c4ebccdc7dfa4d2757cec9d4ba51c`.
+Not built yet. The current definition gives checksum `v2:d4004b8416e2b01954264411e222a4aacbef2052760a1666422310b72fade2e9`.
 
 ## In brief
 
@@ -83,7 +85,7 @@ Not built yet. The current definition gives checksum `v2:1bf7baa39481082aa53c23d
 
 **Our changes to the source.** We keep only each policy's first year in the release (the later yearly rows hold a shrinking remnant of its claims) and replace the insurer's count of the customer's policies over the calendar year by the policies in force at the start. We drop renewals never in force, years starting in 2018 (claims stop then) and the columns read at the policy's end (claim history, lapses, seniority, payment method).
 
-> **Use case fit: approximate (a stand-in with a known gap).** Real new contracts with the insurer's rating factors and premium. But the cover bought, the driver's claims history and the territory are missing; the carry-over of claims between years is undocumented; whether claims are booked across a customer's policies is unknown; 1,236 years cut short by a lapse count as full; the sample's design is not described. The 2019 vehicle value is kept on purpose.
+> **Use case fit: approximate (a stand-in with a known gap).** Real new contracts with the insurer's rating factors and premium. But the cover bought, the driver's claims history and the territory are missing; the carry-over of claims between years is undocumented; whether claims are booked across a customer's policies is unknown; 2,055 first years cut short by a lapse count as full; the sample's design is not described. The 2019 vehicle value is kept on purpose.
 
 ## Files in this folder
 
@@ -208,6 +210,7 @@ We start with "Motor vehicle insurance data.csv" of Mendeley Data 5cxyb5fp4f, ve
 - Target `log1p_cost_claims_year`, log1p of `Cost_claims_year` ("Total cost of claims for the insurance policy during the current year"; Sec. 3: "The Cost_claims_year variable includes both payments and reserves"), the scale a model of a skewed amount is fit on; the metric is computed on the amount (`target_transform="log1p"`, MET-3), as in frempl_french_motor_personal_line and spanish_motor_insurance_coverage_level_2022_2024. No negative amounts; the smallest positive cost is 40.05. 64.6% of the rows cost 0, exactly those with `N_claims_year` 0.
 - Why log1p and not the raw amount (MET-3): untuned LightGBM ranks the 5 shipped windows at a mean Gini of 0.116 fit on log1p, about the 0.121 of a Tweedie loss on the amount (the actuarial loss) and above the 0.073 of squared error on the amount. The Gini is computed on the amount either way.
 - Only the claim part carries signal (the hurdle check of task_probes.md, 5 shipped windows): a claim is ranked at ROC AUC 0.56 to 0.62, while a severity model on the claimants reaches R^2 -0.12 to -0.04 on log costs and below 0 on the costs, and the true claim indicator times the claimants' mean explains 8% to 19% of the variance of the amount. A hurdle model (claim probability times severity) ranks at a mean Gini of 0.115, the direct log1p model at 0.116.
+- Exposure (MET-14, MET-15; issue 6): no exposure column ships, and the target stays the year's claim cost per contract. Every first year has a planned term of exactly one calendar year, known when it is priced (`Date_next_renewal` falls one calendar year after the year's start in all 37,090 rows), so every contract has the same amount at risk at the prediction point. 2,055 of the 37,090 first years (5.5%; 233 of the 4,362 test rows) are cut short by a lapse inside the year, at a median of half the year, 1,632 of them half-yearly payers who stopped paying. The cut is known only when the policy ends: `Date_lapse` stays out of the features (LEAK-10) and only finds the years without cover. `Premium` is the written annual premium, not prorated (among the cut years it does not move with the share of the year in force, Spearman -0.03), so no feature carries the cut. Per contract the cut years claim like full years (a claim in 35.4% of each, 0.78 claims against 0.81), per year at risk 1.9 times as often (1.53 claims a year against 0.81); the per-contract cost carries the claims of the contracts that lapse, as the annual contract the insurer prices does, so it is scored unweighted, with no weight or offset (exposure study, 2026-11-05).
 - Dropped as parts of the target: `N_claims_year` (the year's claim count, 0 exactly where the cost is 0).
 - Dropped as measured after the prediction point (LEAK-10): `N_claims_history` ("throughout the entire duration of the insurance policy"; it also counts the customer's other policies: for new contracts it exceeds the sum of the policy's rows for 58% of multi-policy customers and 6% of single-policy ones) and `R_Claims_history` (it over the policy's whole years in force), one value for every row of a policy; `Lapse` (the customer's lapses "in the current year of maturity") and `Date_lapse` (the contract's termination date, one value for every row of a policy, used only to find the years without cover); `Max_policies` and `Max_products` (the most policies or products the customer "has ever had", one value for every row of a policy). As published, these columns lift an untuned LightGBM from a normalized Gini of 0.13 to 0.84 (the 5 shipped windows).
 - `Seniority` dropped, not rebuilt. It is one value for every row of a policy: for customers with one policy, the years from the contract's start to the policy's last next renewal (to the nearest year for 92% of them), so it counts the years the policy will still run. Subtracting the rows still to come gives the seniority at each row's start, but the rebuild leaks where the rule fails: among new contracts of single-policy customers, the 442 rows the rebuild puts at 1 instead of 0 have a claim in 65%, against 32% for the 8,344 at 0. The contract's age at the year's start (`contract_years`) stays.
@@ -223,6 +226,7 @@ We start with "Motor vehicle insurance data.csv" of Mendeley Data 5cxyb5fp4f, ve
 - Anomaly: 77 of the 139 farm vehicles share one of four combinations of engine size, weight and value (27, 22, 15 and 13 rows), each across vehicles registered from 1978 to 1998 or later, and every farm vehicle has 0 doors: fill values, not measurements (CLEAN-10). Kept as recorded; farm vehicles are 0.5% of the rows.
 - Anomaly: the claim share of new contracts' first years is 34-43% for those written from November 2015 to March 2016 and 24-34% for those of 2017, complete years both; a claim from the latest months may still be unreported (Sec. 3, run-off). Kept; the time column stays a feature.
 - Note: the sample's design is not described ("A sample dataset has been created from a Spanish insurance company specialized in non-life insurance", Sec. 3), and claims include travel assistance and complaints (the claim-type sample: travel assistance 56% of 7,366 typed claims), which fits a claim share near a third.
+- CC (2026-11-06, Lennart): issue 6 resolved. The task stays per contract under the exposure rules adopted this day (MET-14's per-contract clause, MET-15): the decision prices a contract of one calendar year, known at the quote, and the premium is the written annual premium, so no feature carries a cut; no weight and no offset. The count of first years cut short by a lapse is 2,055 of 37,090 (1,632 of them half-yearly payers who stopped paying), not the 1,236 that `fit_reason` gave: that was the count of the one-policy design (25,665 rows), left in the text when design S kept every first year (Andrej, 2026-11-03, issue 2). It confirms the per-contract target of issue 1 (Andrej, 2026-11-03); what keeps it per contract is the constant planned term, unlike fremtpl2 and bemtpl97, whose periods are realized lengths with no planned term.
 
 ## Splits
 
@@ -299,15 +303,15 @@ The claims per row grow with the customer's policies in force over the calendar 
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 2 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
 
-- **warning** `splits_rows_unused`: 5,685 row(s) (15.3%) appear in no train and no test set. (hint: Expected for temporal splits (rows inside a planning gap or before the earliest train cut); for IID/grouped splits it means the splits do not cover the data — consider dropping the unused rows so the shipped frame matches what is evaluated.)
 - **info** `dataset_duplicate_rows`: 2 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
 - **info** `dataset_conflicting_duplicate_rows`: 1 row(s) (0.0%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
 Accepted on purpose:
 
 - `task_target_value_dominant`: 65% zeros: policy-years without a claim cost (Andrej, 2026-11-03: zero-inflated targets are natural for these tasks and a core challenge).
+- `splits_rows_unused`: The 12-month gap of every window: a year's claims are known only when it ends, so the 5,685 first years that start from December 2016 to July 2017 are in no window (splits_comment).
 
 ## Data checks
 
@@ -328,14 +332,14 @@ Accepted on purpose:
 | Power | float64 | 601 | 1.62 | 247 | 90.0, 110.0, 75.0, 100.0, 105.0, 60.0, 115.0, 70.0, 140.0, 120.0 |
 | contract_years | float64 | 26 | 0.07 | 36 | 0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 5.0, 7.0, 8.0, 9.0 |
 | years_licensed | float64 | 22 | 0.06 | 60 | 10.0, 9.0, 11.0, 12.0, 15.0, 13.0, 8.0, 16.0, 26.0, 18.0 |
-| Premium | float64 | 0 | 0 | 23253 | 43.93, 101.7, 75.25, 100.28, 101.69, 117.68, 121.92, 108.14, 109.96, 115.47 |
-| Value_vehicle | float64 | 0 | 0 | 7883 | 18943.0, 28451.91, 19100.0, 12500.0, 11910.0, 20670.0, 42920.0, 20300.0, 12450.… |
-| log1p_cost_claims_year | float64 | 0 | 0 | 8634 | 0.0, 6.7833, 3.9693, 3.972, 3.9308, 3.9336, 4.2211, 4.2232, 4.1793, 7.4759 |
+| Premium | float64 | 0 | 0 | 23253 | 43.93, 101.7, 75.25, 100.28, 121.92, 101.69, 117.68, 109.96, 108.14, 99.37 |
+| Value_vehicle | float64 | 0 | 0 | 7883 | 18943.0, 28451.91, 19100.0, 12500.0, 11910.0, 20670.0, 42920.0, 20300.0, 18340.… |
+| log1p_cost_claims_year | float64 | 0 | 0 | 8634 | 0.0, 6.7833, 3.9693, 3.972, 3.9308, 3.9336, 4.2211, 4.2232, 7.4759, 4.1793 |
 | Cylinder_capacity | int64 | 0 | 0 | 682 | 1896, 1560, 1997, 1598, 1461, 1870, 1390, 1753, 1995, 49 |
 | N_doors | int64 | 0 | 0 | 6 | 5, 3, 4, 0, 2, 6 |
 | Weight | int64 | 0 | 0 | 1418 | 1205, 1320, 1290, 1165, 1250, 1090, 1200, 1300, 1155, 1430 |
 | other_policies_at_start | int64 | 0 | 0 | 7 | 0, 1, 2, 3, 4, 6, 5 |
-| driver_age | int64 | 0 | 0 | 62 | 39, 37, 48, 40, 38, 49, 45, 36, 43, 46 |
+| driver_age | int64 | 0 | 0 | 62 | 39, 37, 48, 40, 38, 49, 45, 36, 43, 50 |
 | vehicle_age | int64 | 0 | 0 | 65 | 11, 12, 10, 13, 9, 14, 15, 16, 8, 17 |
 
 </details>

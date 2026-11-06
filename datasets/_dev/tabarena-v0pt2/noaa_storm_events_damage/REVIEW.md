@@ -53,7 +53,8 @@ For the curator: issue 2 (drop the hazards nobody assesses, a weighing
 call), issue 3 (RMSLE or a within-storm score, a weighing call), issue 4 (the storm's size as an input, a probe first).
 
 **Main points:** all issues resolved on 2026-11-03: the unassessed hazards dropped (2), RMSLE stays (3), no
-storm-size input (4).
+storm-size input (4); on 2026-11-06 the duration blanked where the damage alone draws the span, kept with a note
+elsewhere (6).
 
 **Issues for Andrej:**
 
@@ -241,6 +242,65 @@ storm-size input (4).
 
    **Resolved (2026-11-03, Andrej):** B: `use_case` is the planner's (Diaz and Joseph 2019), `fit_reason` names the
    gaps for a planner; data, split and metric unchanged. `dataset check` clean (Slurm).
+
+6. **Blank the duration where the damage draws an event's span?**
+
+   * **Problem:**
+     - NWSI 10-1605 App. A sets the begin and end of an event by type, and for some types the damage draws them.
+     - Strong Wind runs while the wind causes "a fatality, injury, or significant damage" (Sec. 45), and Heavy Rain is
+       timed from "When the heavy rain that led to damage began" (Sec. 21).
+     - The definition blanked only the tornado durations, so the duration of the other damage-timed types was a
+       feature[^6a].
+   * **Background:** Thunderstorm Wind runs from "When damage first occurred or winds 50 knots (58 mph) or greater
+     were first reported" (Sec. 46), High Wind likewise with its wind criteria (Sec. 24), and Coastal Flood, Lakeshore
+     Flood and Storm Surge/Tide from "When the water level began to cause damage or flooding" (Sec. 4, 27, 44). The
+     panel's column audit of 2026-11-01 quoted the Thunderstorm Wind entry alone and judged the spans first-report
+     facts; the exposure study of 2026-11-05 read the entry of every type.
+   * **Effect on the task:** for Strong Wind and Heavy Rain (39,079 rows, 4.6%) the span is a record of the outcome.
+     For the five other types (318,813 rows, 37.8%) it is partly the damage's and partly a wind or flooding criterion,
+     and the data does not say which set a given span.
+   * **Experiments:** untuned LightGBM on the shipped splits (trained from 2007 with the 3-month gap), change in
+     RMSLE, mean of 4 bagging seeds (SD in brackets):
+
+     | Duration blank on | against | Rows scored | 2023 | 2024 | 2025 |
+     |---|---|---|---|---|---|
+     | all seven damage-timed types | the definition before | the seven types | +0.013 (0.013) | +0.016 (0.017) | +0.021 (0.018) |
+     | the five kept types too | the shipped definition | the five types | +0.021 (0.016) | +0.018 (0.019) | +0.012 (0.030) |
+     | Strong Wind and Heavy Rain | the definition before | those two types | -0.009 (0.035) | -0.018 (0.034) | -0.046 (0.057) |
+
+     The study's run, trained from 2016, put the first row at +0.020 to +0.038. A model gains about 1.3 over a
+     constant, so the column is a small part of the skill, and on Strong Wind and Heavy Rain it is worth nothing.
+   * **Consistency:** the tornado duration was blanked by event type on 2026-11-03 for the same reason, a span the
+     damage survey sets; the rule on spans the outcome sets, adopted the same day as this decision, names this column
+     as its case[^6b].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Tornado only | the duration stays a feature for the six other damage-timed types | no change; keeps the wind and flood signal | on Strong Wind and Heavy Rain the span records the damage |
+     | B | Blank Strong Wind and Heavy Rain too (implemented) | blank for the three types the outcome alone times; the five others keep it, with a note giving its worth | removes the spans the damage alone draws, at no measured cost; keeps +0.012 to +0.021 on the five types | the five types' spans are partly the damage's, a leak kept with a note |
+     | C | Blank all seven damage-timed types | blank wherever the damage can set the span | no span the damage may set stays | loses +0.013 to +0.021 on the seven types, part of it a wind or flooding criterion the first report holds |
+     | D | Drop the column | no duration for any type | simplest | also loses the duration of floods, winter storms and the types no damage times |
+
+   * **Recommendation:** B: blank where the outcome alone draws the span, keep it with its worth noted where a
+     criterion without the damage can draw it too, as the rule on spans says[^6b]. **Decision:** A, B, C or D?
+
+   [^6a]: **LEAK-10** (Must): a feature holds only what existed at the prediction point and never gives the target
+     away; a part, a consequence or another encoding of the target is out.
+   [^6b]: **LEAK-10, LEAK-37** Cases row "A span or extent whose start or end the source defines by the outcome"
+     (Lennart, 2026-11-06): read the source's definition of the start and end; where the outcome alone draws it, blank
+     or drop it for those types; where it is drawn by the outcome or an outcome-free criterion, keep it with a
+     `Potential leak, kept on purpose:` note giving its worth.
+
+   **Resolved (2026-11-06, Lennart):** B (decision D13 of the exposure study,
+   [#51](https://github.com/TabArena/data-foundry/issues/51)). `duration_hours` is blank for Tornado, Strong Wind and
+   Heavy Rain (62,694 rows, 7.4%) and kept for Thunderstorm Wind, High Wind, Coastal Flood, Lakeshore Flood and Storm
+   Surge/Tide with a `Potential leak, kept on purpose:` note: worth +0.012 to +0.021 RMSLE on their test rows and
+   +0.001 to +0.015 on all rows; the blank on Strong Wind and Heavy Rain costs nothing (-0.009 to -0.046 on their rows).
+   The notes gain the exposure paragraph: the source gives no exposure, county population does not scale with the
+   damage (Spearman -0.14 to +0.05 among positive entries), so no offset, and storms whose entries share one figure
+   hold round office values, not split totals. Supersedes the definition shipped on 2026-11-03 (Andrej), which blanked
+   the tornado durations only. `dataset check`: 0 errors, 0 warnings.
 
 **Review panel:** ship after changes if LEAK-25 is amended, otherwise `No` (mediator). Claim audit: 44 claims, 29 hold
 (3 with a caveat), 11 refuted (2 in part; all fixed in the definition, the LEAK-25 part is issue 1), 4 untested (older

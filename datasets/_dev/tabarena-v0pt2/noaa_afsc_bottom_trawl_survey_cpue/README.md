@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: noaa_afsc_bottom_trawl_survey_cpue
 container_format: 2
-checksum: v2:6572d778cd364f80ae762daed1323ea85dd2489c62c92812fc64e67973a24d26
+checksum: v2:55062f723f2301e4e7dfd65009c7ab6db43dcb0321cca6f598a84014f205aceb
 build: null
 build_stale: false
 data:
   n_rows: 391044
   n_features: 9
   dtypes:
-    category: 3
+    category: 4
     datetime64[ns]: 1
     float64: 5
     int64: 1
@@ -19,7 +19,8 @@ task:
   problem_type: regression
   metric: mean_group_normalized_rmse
   metric_origin: stand_in
-  scoring_columns: null
+  scoring_columns:
+  - taxon_group
   split_regime: temporal_non_iid
   stratify_on: null
   time_on: date
@@ -45,8 +46,7 @@ bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos:
-  - task_metric_input_is_model_input
+  infos: []
   accepted:
     task_target_value_dominant: '52% zeros: hauls that caught none of the row''s taxon
       (Andrej, 2026-11-03: zero-inflated targets are natural for these tasks and a
@@ -55,6 +55,7 @@ decisions:
 - 'The 11 taxa: where each is caught'
 - The 2025 GOA hauls are placed in the strata of the 1984 design
 - The performance code is dropped as a feature
+- The tow's effort is dropped; the cut is claimed for walleye pollock only
 ---
 
 # noaa_afsc_bottom_trawl_survey_cpue
@@ -63,7 +64,7 @@ decisions:
 
 Regression of `log1p_cpue_no_km2`, scored with `mean_group_normalized_rmse` on temporal splits by `date`. 391,044 rows and 9 features. Source: GOV Website (2026).
 
-Not built yet. The current definition gives checksum `v2:6572d778cd364f80ae762daed1323ea85dd2489c62c92812fc64e67973a24d26`.
+Not built yet. The current definition gives checksum `v2:55062f723f2301e4e7dfd65009c7ab6db43dcb0321cca6f598a84014f205aceb`.
 
 ## In brief
 
@@ -151,7 +152,7 @@ Only curators run `build`, when the dataset ships.
 | license | Public Domain |
 | data_tags | Non-IID, Temporal, Spatial |
 | reference | afsc_gap_foss_2026 |
-| rows x columns | 391,044 x 10 |
+| rows x columns | 391,044 x 11 |
 | task.target | log1p_cpue_no_km2 |
 | task.problem_type | regression |
 | task.metric | mean_group_normalized_rmse |
@@ -168,13 +169,21 @@ Only curators run `build`, when the dataset ships.
 | reference | https://repository.library.noaa.gov/view/noaa/48659 |
 | definition | Per taxon, RMSE of the catch in numbers per km^2 swept over the test rows, after the inverse of log1p, divided by the standard deviation of the taxon's true catches in the window (ddof 0); the mean over the 11 taxa, lower is better (equal to the mean over taxa of sqrt(1 - R^2) on counts). A taxon whose catches do not vary in a window is left out; none is in the nine windows. |
 | reason | One table holds 11 taxa, so the source's RMSE per species is 11 numbers; pooled into one RMSE, walleye pollock and rock sole hold 79-93% of the squared error and the score picks the model worst for the other maps. Each taxon's RMSE over its spread, averaged, keeps the source's RMSE within a taxon (a fixed divisor ranks models as RMSE does) and gives each species' map one vote. |
-| inputs | group: `taxon` |
+| inputs | group: `taxon_group` |
 | target scale | ships on the `log1p` scale for modelling; scored on the original scale after the inverse of `log1p` |
 
-<details>
-<summary>Feature types: 3 categorical, 0 string, 1 datetime</summary>
+**Scoring columns**
 
-- categorical (3): `taxon`, `srvy`, `stratum`
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+
+| column | role | how the metric uses it | model input |
+|---|---|---|---|
+| `taxon_group` | group | mean_group_normalized_rmse: a copy of the feature taxon (11 taxa): the metric divides each taxon's RMSE by the spread of its true catches in the window and averages the 11; taxon itself stays a feature | never a feature |
+
+<details>
+<summary>Feature types: 4 categorical, 0 string, 1 datetime</summary>
+
+- categorical (4): `taxon`, `srvy`, `stratum`, `taxon_group`
 - string (0): none
 - datetime (1): `date (%Y-%m-%d)`
 
@@ -201,13 +210,13 @@ Only curators run `build`, when the dataset ships.
 
 The first 5 of 391,044 rows of the final frame (the oldest rows: the frame is sorted by `date`). Cells are cut at 40 characters.
 
-| log1p_cpue_no_km2 | taxon | srvy | stratum | latitude | bottom_temperature_c | surface_temperature_c | depth_m | date | longitude_east |
-|---|---|---|---|---|---|---|---|---|---|
-| 6.29155 | Pacific cod | EBS | EBS-10 | 57.6717 | -0.6 | 1.1 | 38 | 1982-05-29 00:00:00 | 201.64 |
-| 0 | Dover sole | EBS | EBS-10 | 57.6717 | -0.6 | 1.1 | 38 | 1982-05-29 00:00:00 | 201.64 |
-| 0 | Atheresthes (arrowtooth and Kamchatka f… | EBS | EBS-10 | 57.6717 | -0.6 | 1.1 | 38 | 1982-05-29 00:00:00 | 201.64 |
-| 11.7256 | Lepidopsetta (northern and southern roc… | EBS | EBS-10 | 56.685 | 0.7 | 2.8 | 40 | 1982-05-29 00:00:00 | 200.24 |
-| 0 | Atheresthes (arrowtooth and Kamchatka f… | EBS | EBS-10 | 58.015 | 0.5 | 2.3 | 37 | 1982-05-29 00:00:00 | 201.683 |
+| log1p_cpue_no_km2 | taxon | srvy | stratum | latitude | bottom_temperature_c | surface_temperature_c | depth_m | date | longitude_east | taxon_group |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 0 | Hippoglossoides (flathead sole and Beri… | EBS | EBS-10 | 57.6717 | -0.6 | 1.1 | 38 | 1982-05-29 00:00:00 | 201.64 | Hippoglossoides (flathead sole and Beri… |
+| 0 | walleye pollock | EBS | EBS-10 | 58.015 | 0.5 | 2.3 | 37 | 1982-05-29 00:00:00 | 201.683 | walleye pollock |
+| 0 | shortspine thornyhead | EBS | EBS-10 | 58.015 | 0.5 | 2.3 | 37 | 1982-05-29 00:00:00 | 201.683 | shortspine thornyhead |
+| 0 | shortspine thornyhead | EBS | EBS-10 | 56.685 | 0.7 | 2.8 | 40 | 1982-05-29 00:00:00 | 200.24 | shortspine thornyhead |
+| 0 | Hippoglossoides (flathead sole and Beri… | EBS | EBS-10 | 58.015 | 0.5 | 2.3 | 37 | 1982-05-29 00:00:00 | 201.683 | Hippoglossoides (flathead sole and Beri… |
 
 ## Curation notes
 
@@ -218,7 +227,7 @@ We start with the FOSS tables HAUL (35,561 standard hauls, 1982-2026) and CATCH 
 - Zeros (52.0% of the rows; a zero-inflated target, not a cap or a placeholder): CATCH holds positive catches only (no row with zero weight), so a haul without a row for a taxon caught none of it, the source's own zero fill (gap_products documentation, "Access via API and R", sec. 10.2, "Create zero-filled data": missing CPUE set to 0 after joining HAUL and CATCH).
 - Target: numbers per square kilometre swept (`cpue_nokm2`), as the 2022 review models numerical abundance (with an area-swept offset) instead of the 2017 memo's fourth-root CPUE (TM-459, pp. 16-17), shipped as `log1p_cpue_no_km2`; a group's catch is the sum over its codes. The 127 haul and taxon rows with a catch weighed but not counted (128 catches) have no numerical CPUE and leave (CLEAN-15).
 - Hauls: all 35,561 are the survey's satisfactory hauls (every performance code is 0 or positive); the 2,659 with a positive code (satisfactory with a noted minor problem) stay, as the survey and the source use them. The code itself is dropped: recorded after the tow about the tow, and presence differs by it (rex sole on the slope 52.2% with code 0, 29.7% with a positive code; within strata 45.9% against 40.8%, so part of the gap is the tow, not the place; the decisions show the share for every taxon).
-- Dropped, effort and gear (`distance_fished_km`, `duration_hr`, `net_width_m`, `net_height_m`, `area_swept_km2`, the end position): the area swept (distance fished times net width) is the label's denominator, the target being per square kilometre swept, and the tow length responds to the catch (on the EBS shelf, walleye pollock tows under 0.4 h, 831 of them, average log1p kg per km^2 8.33 against 7.35 for the full-length tows; measured on pollock, as the length is a property of the haul).
+- Effort, the survey's exposure (issue 4): the target is the catch per square kilometre swept (CPUE), into which the source folds the area swept (distance fished times net width), the rate per unit of effort (MET-14), and the score is unweighted on this density, as the review maps it over cells of equal area (MET-15). The planned effort is the standard tow, 30 minutes in the Bering Sea (median 0.50 to 0.52 h in each of its three surveys) and 15 minutes in the Gulf of Alaska from 1996 and the Aleutians from 1997 (median 0.27 h; 30 minutes before), so it reaches the models through the region and the date. The realized effort (`distance_fished_km`, `duration_hr`, `net_width_m`, `net_height_m`, `area_swept_km2`, the end position) is dropped: a place in a survey year has no tow (USE-3), and the area swept is the target's denominator (LEAK-41). As free features these columns would gain 0.0028 of the metric under an L2 fit on log1p (1.9% of untuned LightGBM's skill over the taxon means, better in 3 of the 5 windows tested) and nothing under a Poisson fit (exposure study, 2026-11-05). Only for walleye pollock does the tow length also record the catch (LEAK-10): its short tows (under 0.75 of the median duration of their region and year) lie 0.36 above the mean of their stratum and year on log1p numbers per km^2 over all hauls, against -0.36 to +0.08 for the other taxa, and on the EBS shelf its tows under 0.4 h (831) average 8.33 log1p kg per km^2 against 7.35 at full length. Where a short tow catches a taxon, the density is higher for 9 of 11 taxa by the plain means and for all 11 within their stratum and year (pollock 0.55, the others 0.00 to 0.25), which a smaller area swept explains without any stop on the catch, so the cut is claimed for pollock alone (the decision "The tow's effort is dropped"). The unweighted CPUE keeps the bias of the cut pollock tows, as NOAA's design-based index does, which averages the hauls' CPUE with equal weight in each stratum (gapindex, "Background equations").
 - Dropped, the vessel and the time of day (`date_time` kept as the date): a place in a survey year has neither; they describe the sampling event.
 - Dropped, identifiers and copies: `hauljoin` (the join key), `cruisejoin`, `cruise`, `haul`, `station` (the position columns hold the place), `survey`, `survey_name` and `survey_definition_id` (copies of `srvy`), `year` (the date's year).
 - `stratum` is built as region plus stratum number (`EBS-31`): 18 of the 128 stratum numbers are used by two surveys for different areas.
@@ -227,10 +236,11 @@ We start with the FOSS tables HAUL (35,561 standard hauls, 1982-2026) and CATCH 
 - `depth_m`: in 1993-95 the depth is the headrope depth, without the net height (TM-459, p. 8), a median 1.25 m shallower at the EBS stations than from 1996 on. These are training rows in every window and stay as published.
 - Missing bottom (4.5%) and surface (2.4%) temperatures stay missing.
 - Note: the newest season is provisional. FOSS has not yet rated the 2026 catches (all 3,968 of the 11 taxa lack a `taxon_confidence`), though the 722 hauls of 2026 (44% of the newest window) match a full season (EBS 350 of 350 stations). Before a build, compare with a fresh download: if the 2026 rows change, build from the newer download or end the newest window at 2025. The lower EBS presence of rex sole in 2026 (0.169 against 0.209-0.293 in 2018-2025) alone is no reason to cut.
-- Metric: the source's RMSE on numbers per km^2, taken per taxon and given one vote per species' map (Andrej, 2026-11-02, "Let's do RMSE", then "I follow your suggestions": the AI's option (c), REVIEW.md issue 1). The review draws one EFH map per species: the places with a predicted chance of a catch of at least 5%, cut into the areas holding 95%, 75%, 50% and 25% of the species' predicted abundance (TM-459, pp. 27-28; EFH is "the area inhabited by 95% of a species' population", NMFS 2005, quoted p. 1). Pooled into one RMSE on counts, walleye pollock and rock sole held 79-93% of an untuned model's squared error in every window (pollock 34-84%), seven taxa under 1% each, and the pooled score picked LightGBM fit on raw counts, whose error per taxon is 1.72 times the taxon's spread (0.92 for LightGBM on log1p, 1.08 for each taxon's training mean). `mean_group_normalized_rmse` divides each taxon's RMSE by the spread of its true catches in the window: within a taxon a fixed divisor ranks models as RMSE does, so only the equal weight per taxon is ours. On the nine windows LightGBM on log1p scores 0.90-0.93 and beats the taxon means (1.01-1.23) in all nine; Poisson LightGBM scores 0.86-1.11. `taxon` is both a feature and the metric's group (MET-2 as amended 2026-11-02). Every taxon has a varying catch in every window, so none is left out.
+- Metric: the source's RMSE on numbers per km^2, taken per taxon and given one vote per species' map (Andrej, 2026-11-02, "Let's do RMSE", then "I follow your suggestions": the AI's option (c), REVIEW.md issue 1). The review draws one EFH map per species: the places with a predicted chance of a catch of at least 5%, cut into the areas holding 95%, 75%, 50% and 25% of the species' predicted abundance (TM-459, pp. 27-28; EFH is "the area inhabited by 95% of a species' population", NMFS 2005, quoted p. 1). Pooled into one RMSE on counts, walleye pollock and rock sole held 79-93% of an untuned model's squared error in every window (pollock 34-84%), seven taxa under 1% each, and the pooled score picked LightGBM fit on raw counts, whose error per taxon is 1.72 times the taxon's spread (0.92 for LightGBM on log1p, 1.08 for each taxon's training mean). `mean_group_normalized_rmse` divides each taxon's RMSE by the spread of its true catches in the window: within a taxon a fixed divisor ranks models as RMSE does, so only the equal weight per taxon is ours. On the nine windows LightGBM on log1p scores 0.90-0.93 and beats the taxon means (1.01-1.23) in all nine; Poisson LightGBM scores 0.86-1.11. `taxon` stays a feature, and its copy `taxon_group` is the metric's group, a scoring column (MET-2 as reworded on 2026-11-05; CC below). Every taxon has a varying catch in every window, so none is left out.
 - Not shipped: the catch of other species in the same haul (unknown at a place nobody sampled, though the 2017 models used concurrent coral, sponge and sea-whip presence, p. 14), and the source's raster covariates (sediment, currents, tides, slope, ocean colour), which FOSS does not hold.
 - Note: the source fits each region and each life stage (by length) apart; FOSS's CATCH has no lengths, so the target counts all sizes, and one table holds all regions with `srvy` as a feature.
 - Anomaly: the timestamps end in "Z" but are local times (Alaska time, AKDT, in GAP's column metadata; hauls run from 05:00 to 23:00); only the date is used. The EBS shelf survey has 350 stations from 2024 (376 before).
+- CC (2026-11-06, Lennart): issue 4 resolved. `taxon` stays a feature and its copy `taxon_group` is the group the metric reads, a scoring column (MET-2 as reworded on 2026-11-05, asked in PR #47's review that day); the tow's effort stays out, the cut is claimed for walleye pollock only, and the score stays unweighted on the density (USE-3, LEAK-10, LEAK-41, MET-15). Supersedes the metric's reading of the feature `taxon` (Andrej, 2026-11-02, under MET-2 as amended then) and the note that the tow length responds to the catch, measured on pollock and read for every taxon: the exposure study of 2026-11-05 found the densities of short tows that catch a taxon higher for nearly every taxon, which a smaller area swept explains, while over all hauls only pollock's short tows stand well above their cells (+0.36 on log1p, the others -0.36 to +0.08). The scores do not change: the copy holds the same values.
 
 ## Splits
 
@@ -311,11 +321,28 @@ Share of hauls with a catch of each taxon by performance code: the code is recor
 | Lepidopsetta (northern and southern rock sole) | 0.675 | 0.499 |
 | Hippoglossoides (flathead sole and Bering flounder) | 0.676 | 0.406 |
 
+### 4. The tow's effort is dropped; the cut is claimed for walleye pollock only
+
+Short tows (under 0.75 of the median duration of their region and year) against the mean of their stratum and year, in the cells that hold short and full tows: the share of hauls with a catch, and the log1p numbers per km^2 over all hauls and over the hauls with a catch. Short tows catch most taxa less often, and where they catch one its density is higher, as a smaller area swept gives without any stop on the catch. Over all hauls walleye pollock alone stands well above its cells: its tows end early on a large catch (curation notes).
+
+| taxon | short tows | share with a catch | all hauls | hauls with a catch |
+|---|---|---|---|---|
+| walleye pollock | 1675 | -0.015 | 0.357 | 0.551 |
+| Pacific cod | 1675 | -0.018 | 0.077 | 0.229 |
+| sablefish | 1676 | -0.013 | -0.04 | 0.199 |
+| Pacific halibut | 1676 | -0.051 | -0.102 | 0.249 |
+| rex sole | 1675 | -0.054 | -0.276 | 0.093 |
+| Dover sole | 1675 | -0.013 | -0.043 | 0.098 |
+| Greenland turbot | 1676 | -0.026 | -0.092 | 0.168 |
+| shortspine thornyhead | 1676 | -0.002 | 0.023 | 0.183 |
+| Atheresthes (arrowtooth and Kamchatka flounder) | 1674 | -0.032 | -0.187 | 0.003 |
+| Lepidopsetta (northern and southern rock sole) | 1674 | -0.022 | -0.061 | 0.124 |
+| Hippoglossoides (flathead sole and Bering flounder) | 1676 | -0.063 | -0.36 | 0.049 |
+
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
-- **info** `task_metric_input_is_model_input`: The metric's input column(s) ['taxon'] are also given to the models (a feature, the group or the time column); they are not scoring columns. (hint: Declare a column as a `ScoringColumn` only when it exists for scoring alone and must not be a feature.)
 
 Accepted on purpose:
 
@@ -325,18 +352,24 @@ Accepted on purpose:
 
 ### Feature summary
 
+<details>
+<summary>Show the table (11 rows)</summary>
+
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| taxon | category | 0 | 0 | 11 | shortspine thornyhead, Pacific halibut, Greenland turbot, sablefish, walleye po… |
+| taxon | category | 0 | 0 | 11 | shortspine thornyhead, Greenland turbot, Pacific halibut, sablefish, walleye po… |
 | srvy | category | 0 | 0 | 5 | EBS, GOA, AI, BSS, NBS |
 | stratum | category | 0 | 0 | 149 | EBS-31, EBS-61, EBS-10, EBS-41, EBS-20, EBS-42, EBS-50, EBS-43, GOA-11, GOA-31 |
+| taxon_group | category | 0 | 0 | 11 | shortspine thornyhead, Greenland turbot, Pacific halibut, sablefish, walleye po… |
 | date | datetime64\[ns\] | 0 | 0 | 2970 | 2007-06-26 00:00:00, 2005-06-11 00:00:00, 2003-07-07 00:00:00, 2005-06-21 00:00… |
 | bottom_temperature_c | float64 | 17571 | 4.49 | 159 | 4.0, 4.1, 4.4, 4.2, 3.9, 4.3, 3.8, 4.6, 4.5, 3.7 |
 | surface_temperature_c | float64 | 9436 | 2.41 | 185 | 7.0, 5.8, 7.4, 7.8, 5.6, 6.6, 5.4, 6.5, 5.5, 6.1 |
-| latitude | float64 | 0 | 0 | 32588 | 57.3395, 56.3458, 56.6602, 58.3272, 57.6828, 58.326, 58.9893, 58.9878, 56.9852,… |
-| longitude_east | float64 | 0 | 0 | 34667 | 195.9935, 197.2322, 199.666, 195.9962, 195.9985, 199.0508, 193.0312, 196.5992, … |
-| log1p_cpue_no_km2 | float64 | 0 | 0 | 177490 | 0.0, 3.0914, 3.7871, 3.8522, 4.5752, 3.6536, 3.1585, 3.0873, 4.3582, 3.8248 |
+| latitude | float64 | 0 | 0 | 32588 | 57.3395, 57.6828, 58.326, 56.6602, 56.3458, 58.9893, 58.3272, 58.9878, 56.6707,… |
+| longitude_east | float64 | 0 | 0 | 34667 | 195.9935, 199.666, 197.2322, 195.9962, 196.61, 196.002, 194.2083, 196.5985, 196… |
+| log1p_cpue_no_km2 | float64 | 0 | 0 | 177490 | 0.0, 3.1585, 3.0914, 3.0873, 3.8522, 3.8248, 3.7871, 3.6536, 4.5752, 4.3582 |
 | depth_m | int64 | 0 | 0 | 911 | 70, 68, 73, 71, 66, 75, 64, 95, 135, 77 |
+
+</details>
 
 ### Target distribution
 
@@ -358,7 +391,7 @@ Accepted on purpose:
 ### Categorical features
 
 <details>
-<summary>Show the table (20 rows)</summary>
+<summary>Show the table (25 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -366,7 +399,7 @@ Accepted on purpose:
 | date | 2 | 2005-06-11 00:00:00 | 330 | 0.08 |
 | date | 3 | 2003-07-07 00:00:00 | 319 | 0.08 |
 | date | 4 | 2005-06-21 00:00:00 | 316 | 0.08 |
-| date | 5 | 2007-07-05 00:00:00 | 308 | 0.08 |
+| date | 5 | 1996-06-15 00:00:00 | 308 | 0.08 |
 | srvy | 1 | EBS | 178893 | 45.75 |
 | srvy | 2 | GOA | 124337 | 31.8 |
 | srvy | 3 | AI | 64669 | 16.54 |
@@ -378,10 +411,15 @@ Accepted on purpose:
 | stratum | 4 | EBS-41 | 21185 | 5.42 |
 | stratum | 5 | EBS-20 | 14780 | 3.78 |
 | taxon | 1 | shortspine thornyhead | 35559 | 9.09 |
-| taxon | 2 | Pacific halibut | 35558 | 9.09 |
-| taxon | 3 | Greenland turbot | 35558 | 9.09 |
+| taxon | 2 | Greenland turbot | 35558 | 9.09 |
+| taxon | 3 | Pacific halibut | 35558 | 9.09 |
 | taxon | 4 | sablefish | 35558 | 9.09 |
 | taxon | 5 | walleye pollock | 35552 | 9.09 |
+| taxon_group | 1 | shortspine thornyhead | 35559 | 9.09 |
+| taxon_group | 2 | Greenland turbot | 35558 | 9.09 |
+| taxon_group | 3 | Pacific halibut | 35558 | 9.09 |
+| taxon_group | 4 | sablefish | 35558 | 9.09 |
+| taxon_group | 5 | walleye pollock | 35552 | 9.09 |
 
 </details>
 

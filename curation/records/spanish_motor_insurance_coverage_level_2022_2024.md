@@ -5,7 +5,7 @@ checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Andrej
+claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -115,6 +115,8 @@ CC (2026-11-02, Andrej): metric (issue 3): "Use exposure-weighted Gini on annual
 CC (2026-11-02, Andrej): ship. Every issue of the REVIEW is resolved: the exposure-weighted Gini on the cost per year on risk, marked as declared (issue 3, the metric row), both late values kept with notes and the premiums unrounded (4), the task kept although an untuned plain model scores below the premium alone (5).
 
 CC (2026-11-03, Andrej): the check warning `task_target_value_dominant` accepted: "for these tasks this is natural and a core challenge" (zero-inflated target).
+
+CC (2026-11-06, Lennart): REVIEW.md issue 6 resolved by decision D10 of the exposure study of 2026-11-05: `actual_exposure` is the training weight (`sample_weight`, MET-15) as well as the Gini's weight, every premium is annualised and `total_exposure` leaves the features (LEAK-41); the log1p target and the weighted Gini stay. Applied after the weighted re-measure of the same day found no remaining column whose cancellation signal pays on the declared metric (the premium mark, the year's last record, first-year cancellation from the features; the numbers are in the definition's notes and REVIEW.md issue 6). Supersedes Andrej's calls of 2026-11-02: keep the corrected `total_exposure` as the model feature with the 5,653 first-year cuts an approved limitation (REVIEW.md issues 2 and 3), since LEAK-41's partial-correction clause, adopted after that call, takes a length corrected on some rows and realized on others out of the features whatever it scores (the exposure study's +0.0032 for the cuts under weighted Tweedie, 7 of 9 of its own folds, did not hold on the shipped splits: -0.0012 net, SE 0.0006, 3 of 9); keep the premiums as published ("Keep both with explicit potential-leak notes; do not round the premiums", issue 4), since an earned premium carries the cut and annualising removes it (Spearman 0.024 with the time on risk among the first-year cancellations), while the premiums stay unrounded and the year's last record stays with its note; keep the task without a training weight (issue 5), since the training-weight API now exists (`sample_weight`), and with it and the annual premiums both weighted fits beat the premium alone (0.317 against 0.298).
 
 ## Reference
 

@@ -6,7 +6,15 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Metric,
+    ScoringColumn,
+    TaskSummary,
+    drop_columns,
+)
 
 # The policy variables the data page lists as categorical (ordinal var1, var3, var7, var8; nominal var2, var4, var5,
 # var6, var9), each with "Z" for a missing value.
@@ -88,7 +96,7 @@ class LibertyMutualFirePerilLossCost(AbstractCuratedDataset):
         - The level `Z` of `var1` to `var9` becomes missing ("Level "Z" in these variable represents a missing value", data page). These nine are categorical, as the data page lists them; the rest is numeric.
         - We add `var4_group`, the letter of `var4`: the data page says its levels "are in a hierarchical structure", the letter the higher level, and competitors split `var4` that way (forum thread 10194, "I split var4 into two values") (CLEAN-19).
         - We drop `weatherVar115`, 0 wherever present.
-        - `var11` is the metric's weight ("var11 is the weight used in the weighted gini score calculation", data page) and stays a feature, so it is no scoring column: the data page lists it among the "policy characteristics", the host ships it in the test file, and it behaves like the size of the risk (the decision "var11 behaves like the size of the risk"), known for train and test rows alike at underwriting (MET-2 as amended on the curator's call, Andrej, 2026-11-02). As a feature it changed an untuned model's weighted Gini (log1p target) by -0.010 on average (-0.060 to +0.084 over 6 random folds).
+        - `var11` is the metric's weight ("var11 is the weight used in the weighted gini score calculation", data page) and stays a feature, and a copy, `var11_weight`, ships as the scoring column the metric reads (MET-2 as reworded on 2026-11-05: the scoring columns are the complete set of a metric's extra data; asked in PR #47's review). As a feature: the data page lists it among the "policy characteristics", the host ships it in the test file, and it behaves like the size of the risk (the decision "var11 behaves like the size of the risk"), known for train and test rows alike at underwriting (MET-2 as amended on the curator's call, Andrej, 2026-11-02). As a feature it changed an untuned model's weighted Gini (log1p target) by -0.010 on average (-0.060 to +0.084 over 6 random folds).
         - The host "normalized" the blocks (data page): 213 of 289 numeric columns have a mean between 0.9 and 1.1. The constant is not these records' mean (177 of the 213 lie more than 10 standard errors from 1 on this half), so it comes from outside these records and carries nothing of a test row (LEAK-30); the unscaled values were never published.
         - We keep the exact copies: 28,965 rows (6.4%) equal another row in every column but `id` and `dummy` (16,981 extra copies). They are of two kinds: 11,433 extra copies have `var15` missing, so they may be terms whose age is not recorded, and 5,548 share a `var15`, so they are not terms but perhaps locations of one account. Every one of the 49 groups with a loss also holds a copy without one, and only 2 of the 1,188 losses have a copy with a loss: distinct policies the features cannot tell apart, with genuinely different outcomes (LEAK-19, LEAK-20; the decision "Exact copies"). 4.8-4.9% of the rows of a test fold have a copy in training.
         - Note: `var13` alone ranks the shipped test folds at a weighted Gini of 0.221-0.260 (ties averaged), the regularised LightGBM on the log1p target at 0.306-0.320, higher on every fold (TP-4: not trivial); the forum knew it ("target = -var13", thread 9706). Its loss rate falls from 0.41% to 0.04% over its range, like an underwriting grade, so it stays (LEAK-38).
@@ -97,6 +105,10 @@ class LibertyMutualFirePerilLossCost(AbstractCuratedDataset):
     """
 
     accepted_check_warnings = {
+        "task_metric_weight_without_sample_weight": (
+            "var11, the size of the risk set at underwriting, is a feature: the metric's weight is a function of the "
+            "features, so MET-15 needs no training weight (2026-11-06)."
+        ),
         "task_target_value_dominant": (
             "Zero-inflated by nature: the target is 0 for the 450,873 policies (99.74%) without a fire loss; not a "
             "cap or a placeholder."
@@ -110,8 +122,19 @@ class LibertyMutualFirePerilLossCost(AbstractCuratedDataset):
         "normalized_weighted_gini",
         original="Normalized weighted Gini coefficient, weights var11",
         reference="https://www.kaggle.com/competitions/liberty-mutual-fire-peril/overview/evaluation",
-        inputs={"weight": "var11"},
+        inputs={"weight": "var11_weight"},
         target_transform="log1p",
+    )
+    scoring_columns = (
+        ScoringColumn(
+            column="var11_weight",
+            role="weight",
+            used_by="normalized_weighted_gini",
+            description=(
+                "a copy of var11 (the square root of a round sum insured, set at underwriting), the weight of the "
+                "competition's Gini; var11 itself stays a feature"
+            ),
+        ),
     )
     splits_comment = """
         Default splits: random policies, as the competition split them ("The train and test sets are split randomly",
@@ -149,6 +172,8 @@ class LibertyMutualFirePerilLossCost(AbstractCuratedDataset):
         df.insert(df.columns.get_loc("var4") + 1, "var4_group", df["var4"].str[0])
         # Constant where present.
         df = drop_columns(df, ["weatherVar115"])
+        # The metric's weight is also a feature: a copy ships as the scoring column the metric reads (MET-2).
+        df["var11_weight"] = df["var11"]
         # Exact copies across all features stay (curation_comments, the decision "Exact copies").
         return df
 

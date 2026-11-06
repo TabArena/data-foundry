@@ -1,26 +1,28 @@
 # spanish_motor_insurance_coverage_level_2022_2024
 
-**Outcome:** added. The AI recommends shipping it after the panel's changes (made, below); the forced split and the kept
-first-year cut are settled (2026-11-02). The motor portfolio of an unnamed Spanish insurer (Espinosa, Lledó and Atance,
-Data in Brief 66:112883, 2026; Mendeley, CC BY 4.0): 354,091 policy-years of 185,677 policies, 2022 to 2024, with the
-premium of each cover. The target is the year's claim cost over all seven covers, paid plus reserved (0 for 88.1%),
-shipped as log1p and scored on the amount by the normalized Gini (a context metric); all years of a policy stay on one
+**Outcome:** added. The AI recommends shipping it after the panel's changes (made, below); the forced split is settled
+(2026-11-02), and the time on risk became the training weight and left the features on 2026-11-06 (issue 6). The motor
+portfolio of an unnamed Spanish insurer (Espinosa, Lledó and Atance, Data in Brief 66:112883, 2026; Mendeley, CC BY
+4.0): 354,091 policy-years of 185,677 policies, 2022 to 2024, with the premium of each cover. The target is the year's
+claim cost over all seven covers, paid plus reserved (0 for 88.1%), per year on risk, shipped as log1p and scored on the
+cost per year by the normalized Gini weighted by the time on risk (a context metric); all years of a policy stay on one
 side of the split. Validity: SEL-1 and SEL-2 hold; USE-1, USE-5 and USE-6 hold, fit approximate on the forced split
-(USE-8); LEAK-10 is triggered: `policy_status` and the target's parts are dropped, and a time on risk cut by a
-cancellation is removed wherever the data locates it (32,626 policy-years); three late values that cannot be located are
-kept with notes (the cut time on risk on your call of 2026-11-02, a LEAK-10 case; the other two issue 4); SPLIT-8 ships
-the three years as `ForcedGroupedFromTemporal`, shipped on your call of 2026-11-02 (forced grouped splits ship; SPLIT-8
-amended); PROV-16 was broken by a cut quote on negative costs, now quoted in full; PROV-6 and PROV-7: distinct from
-spanish_motor_insurance_2015_2018 (other years, schema and task, no shared policyholders found). Value: a small real
-signal (TP-2: a claim is ranked at ROC AUC 0.70-0.71, claim sizes barely learnable); the model beats the insurer's
-premium alone on 3 of 3 splits (TP-4: Gini 0.426 / 0.412 / 0.397 against 0.397 / 0.388 / 0.368); the Gini form is
-decided once for the insurance family (issue 3). Quality: impossible values made missing, including 23 zero premiums of
-the compulsory liability cover (CLEAN-11); the ten claim costs below 1 EUR are kept (recorded amounts on the release's
-own grid). Weighed: recent real insurer data with costs and premiums per cover +, a data article with a variable table
-+, size +; core rating factors absent (vehicle age, postcode) -, low signal -, unnamed insurer -. Left for Andrej:
-issues 3 and 4, and the acceptance of the warning `task_target_value_dominant`, with the proposed reason "a two-part
-target: 0 is a policy-year without claim cost; 8,543 of them have a claim recorded at zero cost, some maybe negative
-cover amounts left out of the sum (35.8% of third-party property claims)".
+(USE-8); LEAK-10 is triggered: `policy_status` and the target's parts are dropped; the time on risk, which a
+cancellation cuts short, is the weight of the metric and of training and no input, and every premium is annualised
+(LEAK-41, issue 6); two late values that cannot be located are kept with notes, re-measured without a gain (issue 4);
+SPLIT-8 ships the three years as `ForcedGroupedFromTemporal`, shipped on your call of 2026-11-02 (forced grouped splits
+ship; SPLIT-8 amended); PROV-16 was broken by a cut quote on negative costs, now quoted in full; PROV-6 and PROV-7:
+distinct from spanish_motor_insurance_2015_2018 (other years, schema and task, no shared policyholders found). Value: a
+small real signal (TP-2: a claim is ranked at ROC AUC 0.70-0.71, claim sizes barely learnable); the model beats the
+insurer's annual premium alone (TP-4: untuned LightGBM weighted by the time on risk scores 0.317 against 0.298 on the
+declared metric, ahead on 9 of 9 splits with L2 on log1p and 8 of 9 with Tweedie); the weighted Gini is this table's own
+call (issue 3). Quality: impossible values made missing, including 23 zero premiums of the compulsory liability cover
+(CLEAN-11); the ten claim costs below 1 EUR are kept (recorded amounts on the release's own grid). Weighed: recent real
+insurer data with costs and premiums per cover +, a data article with a variable table +, size +; core rating factors
+absent (vehicle age, postcode) -, low signal -, unnamed insurer -. Left for Andrej: issues 3 and 4, and the acceptance
+of the warning `task_target_value_dominant`, with the proposed reason "a two-part target: 0 is a policy-year without
+claim cost; 8,543 of them have a claim recorded at zero cost, some maybe negative cover amounts left out of the sum
+(35.8% of third-party property claims)".
 
 Changes made after the review panel (AI, 2026-11-01): the full-year fix now also covers the 13,842 cancelled
 new-business years of policies already in force on 1 January (they had a row the year before), which lowers no score
@@ -32,7 +34,8 @@ notes and below was re-measured on the changed definition (the panel's reports q
 changes). The record's "left out rows with negative incurred amounts" and its screening metric line are corrected at
 hand-over.
 
-**Main points:** Issues 3, 4 and 5 are settled (2026-11-02).
+**Main points:** Issues 3, 4 and 5 are settled (2026-11-02); issue 6 (2026-11-06) makes the time on risk the training
+weight, annualises the premiums and drops `total_exposure`.
 
 **Verdict (2026-11-02, Andrej):** ship. The metric is marked as declared (`normalized_weighted_gini` on the cost per
 year on risk, weighted by `actual_exposure`). The dataset joins the accepted set; a build waits for your ask.
@@ -151,6 +154,89 @@ year on risk, weighted by `actual_exposure`). The dataset joins the accepted set
    Recommendation: keep. Decision: keep, (b), or (c)?
 
    **Resolved (2026-11-02, Andrej):** keep, as implemented (marked as implemented, no note).
+
+6. **Make `actual_exposure` the training weight, annualise every premium and drop `total_exposure`?**
+
+   * **Problem:**
+     - `total_exposure`, a model input, is the time on risk set to a full year for the 32,626 located cancellations
+       but still cut short on the 5,653 cancellations in a new policy's first year.
+     - The earned premiums of part-years scale with the time on risk, and the models train unweighted while the Gini
+       weights each policy-year by its time on risk.
+     - The change is safe only if no remaining column tells the models which policies were cancelled in a way that pays.
+   * **Background:** The exposure study of 2026-11-05 proposed the change as its decision D10, on the condition that a
+     re-measure with weighted fits finds no such column. On 2026-11-06 a new rule took a realized weight, and any column
+     that encodes it or is corrected on some rows only, out of the features[^leak41]; another made the realized
+     denominator the training weight as well[^met15]; and `sample_weight` entered the API. Andrej's calls of 2026-11-02
+     had kept the corrected `total_exposure`, the earned premiums and no training weight[^calls].
+   * **Effect on the task:** Every model trains and is scored with each policy-year counted by its time on risk, and
+     sees annual premiums and no time on risk. It loses the planned time on risk of a policy that starts during the
+     year (the old column gained 0.0176 under weighted Tweedie), which the release cannot separate from a cut.
+   * **Experiments:** untuned LightGBM fitted with `actual_exposure` as the row weight, by Tweedie on the cost per year
+     and by L2 on log1p, scored by the declared metric on the 9 shipped splits x 3 seeds; each number is the mean
+     difference, its SE over the splits and the splits ahead (one run's seed SD is 0.004 to 0.010):
+     - Leak references: the recorded time on risk as a free feature gains 0.0325 (SE 0.0023, 9/9) under Tweedie and
+       loses 0.035 under L2; the cancellation flag gains 0.019 and 0.011 (9/9); 1/time on risk alone scores 0.075,
+       against 0.317 for the model.
+     - (a) The premiums of the located cancellations: they mark a cancellation at ROC AUC 0.81 among the years in force
+       from 1 January (0.62 without the premiums), mostly through the occupants and legal protection premiums, which
+       repeat a few flat amounts a year and show one of them when a year ends before its anniversary. Against the year
+       before's premiums, this year's premiums gain -0.0006 (Tweedie) and -0.0010 (L2) through the located
+       cancellation and 0.0000 and +0.0009 through the time on risk: the mark does not pay. Through any cancellation
+       they gain +0.0020 under Tweedie (SE 0.0011, 7/9), under two SEs and 6% of the free-exposure gain.
+     - (b) The year's last record: setting the 11,875 renewal years with a changed attribute back to the year before's
+       values moves the score by -0.0006 (Tweedie, SE 0.0009; the last record ahead on 6/9) and +0.0001 (L2), at most
+       2% of the free-exposure gain.
+     - (c) First-year cancellation: the features rank it at ROC AUC 0.77 without the premiums (0.80 with them), mostly
+       from the payment frequency and the year, both known at the quote; leaving either out costs the same with the
+       cancellation flag among the features as without (+0.0008 and -0.0020 under Tweedie, within 0.0007 under L2),
+       at most 3% of the free-exposure gain.
+     - The old corrected `total_exposure` gains 0.0176 under Tweedie (9/9) and loses 0.0216 under L2 (0/9). Replacing
+       its 5,653 cuts by an estimate of the uncut time (from the policy number, for this check only) changes it by
+       -0.0012 net of a control (SE 0.0006, 3/9): the exposure study's +0.0032 (7 of 9 of its own folds) does not hold
+       on the shipped splits.
+     - Scores: the new definition 0.3166 (L2) and 0.3165 (Tweedie), ahead of the annual premium alone (0.2975) on 9 and
+       8 of 9 splits; the old definition under the same fits 0.2911 and 0.3277.
+   * **Consistency:** As fremtpl2 issue 6 and bemtpl97 issue 1 (the time insured is the weight of training and scoring,
+     never a feature). It departs from Andrej's calls of 2026-11-02 on facts that came after them: the new rules, the
+     training-weight API and the measurements above.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | D10 (implemented) | `actual_exposure` the training weight; premiums annualised; `total_exposure` dropped | no input carries the time on risk; both weighted fits beat the premium alone | loses the planned time on risk of late starts (0.018 under Tweedie) |
+     | B | As on 2026-11-02 | corrected `total_exposure` a feature; earned premiums; no training weight | Tweedie scores 0.011 higher | breaks a Must; an untuned L2 fit scores below the premium |
+     | C | A, flat covers as flags | A, with the occupants and legal protection premiums as cover held or not | the premium mark mostly gone (ROC AUC 0.81 to 0.68) | costs 0.010 to 0.012; the mark does not pay |
+
+   * **Recommendation:** A: no column's cancellation signal pays on the declared metric, and C removes legitimate
+     signal for a mark that does not pay. **Decision:** A, B or C?
+
+   [^leak41]: **LEAK-41** (Must, 2026-11-06, Lennart): a column the task uses as a weight whose value is set or cut
+     after the prediction point is never a model input, and neither is a column that encodes it ("an earned premium
+     (ship it annualised to the planned term, or not at all), a length corrected on some rows and realized on
+     others"); a suspect's gain is measured with an L2 fit on the shipped scale and with the weighted actuarial fit,
+     and the worse decides.
+   [^met15]: **MET-15** (Must, 2026-11-06, Lennart): a rate's realized denominator is the metric's row weight and the
+     task's `sample_weight`, never a feature.
+   [^calls]: Andrej, 2026-11-02: issue 2 (the 5,653 first-year cuts kept), issue 3 ("Keep corrected total_exposure as
+     the model feature [...] Retain the existing cancellation corrections and the approved limitation for the 5,653
+     ambiguous first-year cancellations"), issue 4 ("Keep both with explicit potential-leak notes; do not round the
+     premiums") and issue 5 (kept without a training weight).
+
+   **Resolved (2026-11-06, Lennart):** A, decision D10 of the exposure study, applied after the weighted re-measure
+   above found no column whose cancellation signal pays. `sample_weight = "actual_exposure"`, the metric's row weight,
+   so every model trains with the weight it is scored by. Every earned premium is divided by the recorded time on risk
+   (days in force over 365, on a 1/365 grid in all three years): the premiums are earned pro rata, cancelled years
+   included (Spearman with the time on risk 0.74 to 0.83 for the earned total premium, 0.034, 0.024 and -0.053 for the
+   annual one among active part-years, first-year and located cancellations; median annual premium 340 to 355 in every
+   band of the time on risk). `total_exposure` leaves the features (LEAK-41's partial-correction clause). The log1p
+   target and the weighted Gini stay; `_clean` checks that the cost per year times the time on risk gives back the cost.
+   The notes give the three marks with these numbers, and the CC line supersedes Andrej's calls of 2026-11-02, each on
+   the fact that sets it apart: the partial-correction clause, adopted after the call, for the corrected
+   `total_exposure` (the study's +0.0032 for the cuts did not hold on the shipped splits, so the clause decides, not a
+   score); annualising removes the cut from the premiums, for "keep both ... do not round the premiums" (they stay
+   unrounded, and the last record stays with its note); the training-weight API, for issue 5. `_load_raw` now parses
+   the 15-digit decimals exactly (`float_precision="round_trip"`), so pandas 2.3 and 3.1 give the same frame and
+   checksum. `dataset check`: 0 errors, 0 warnings (`task_metric_weight_without_sample_weight` fixed).
 
 **Review panel:** ship after changes (mediator). Claim audit: 45 claims, 29 hold, 5 hold but are incomplete or inexact,
 7 refuted (2 in part), 4 untested; the refuted ones are fixed in the definition or reworded (the record's line at

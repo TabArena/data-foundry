@@ -154,6 +154,7 @@ class WisconsinLocalGovernmentPropertyInsuranceFund(AbstractCuratedDataset):
         - `NoClaimCredit` is 1 exactly when the member had no claim in the two years before, wherever both years are in the file (1,852 rows against 0, and 0 against 1,375): history known at rating time. Where the file lacks one of the two years it is 0 (all 2,292 rows of 2006-2007 and 119 of the 120 later ones; one member with a gap year has 1), which says only that the history is not in the file, and a linear model would read it as "had a claim". These 2,412 rows are set missing (CLEAN-10, as house_sales). The 2008 window trains on 2006-2007 alone, so its training side holds no known credit and the column informs only the 2009 and 2010 windows.
         - `Fire5` is 1 when the fire protection class (0 to 10) is below 5. The claim-level file, which covers claimants only, shows the unknown class -99 coded as 1 for 48 claimant members (66 member-years). It stays as published: the unknowns can be found only among members with a claim, so blanking them would tell the outcome (LEAK-10 before CLEAN-10). `Fire5` and `NoClaimCredit` hold only 0 and 1 (and missing): categorical.
         - The coverage of a year is set before its claims: the change of log coverage from the year before is +0.059 with a claim in the year and +0.061 without (+0.052 with a claim in the top 10%). It grew about 5% a year in 2007-2009; in 2010 it fell for 67.7% of the members (median -2.6%).
+        - Exposure: `Premium` is the rating's output and the base of the Lorenz curve, not an amount at risk. `ordered_lorenz_gini` takes totals, each member's claims and prediction against its premium, not values per unit of it, so the premium is no row weight and no training weight is declared (MET-15); it is a scoring column only, never an input (MET-2, the note above). The coverage (`LnCoverage`, the log of the building and contents sum insured, set for the year at renewal) stays a feature, not an offset: the source estimates its coefficient rather than fixing it at 1, as its general definition of an exposure offset would (Frees, Lee and Yang 2016, Sec. 2.2, p. 5; Table 11, p. 19: 0.853 in the negative binomial frequency part and 0.136 in the GB2 severity part, an implied elasticity of the expected claims of about 0.99 before the zero-one inflation), simple GLMs on this file give 1.14 for the claim count and 0.67 for a Tweedie fit of the total, and a feature lets a model learn any elasticity. Rows are member-years with no time at risk: whether a member joined or left during a year cannot be checked; 48 members appear in one year only (54 in two, 55 in three, 32 in four, 1,038 in all five).
         - Target `bc_claims`, `y`, the year's total BC claims in dollars; 70.2% of the member-years are 0, none is negative. Dollars rather than the log scale CLEAN-16 defaults to: the metric divides each prediction by the premium, so a prediction's size counts, not only its order; the source models dollars (Tweedie and GB2 models), and the fund prices from expected dollars (MET-3, USE-5). On the three yearly windows (test 2008, 2009, 2010) an untuned LightGBM fit on dollars with a Tweedie loss scores 0.146, 0.254 and 0.327, the same model fit on log1p with squared error -0.049, 0.248 and 0.016, an untuned Tweedie GLM on dollars 0.254, 0.251 and 0.350.
         - Note: the task probes flag no_signal, scored by R^2 on dollars, which follows a few large claims (random forest 0.234, SD 0.28 across the windows; linear 0.032): even the true claim indicator times the training claimants' mean reaches R^2 0.007 to 0.038 on the windows. Both parts carry signal (untuned LightGBM, test 2008, 2009, 2010): a claim is ranked at ROC AUC 0.791, 0.774 and 0.760 (log coverage alone 0.745, 0.738, 0.736), the log claims of the claimants at R^2 0.054, 0.095 and 0.221. The leak probes find nothing: every feature alone at R^2 0.014 or below, no test row with an exact copy of its inputs in training.
         - The totals match the claim-level file: CLAIMLEVEL.csv (6,258 BC claims) sums to the year's claims within $1 for 5,633 of the 5,639 member-years (decision 2); 4 of the 6 others hold claim lines that look duplicated in the claim-level file (82,532.36 = 2 x 41,266.18). `y` is kept as published. The book keeps "only claims that are closed, with obligations fully met" (Ch. 1): a claim still open when the file was made is missing from its year (LEAK-24). There is no extraction date; 2010, the newest year, has the highest share of members with a claim (36.3%), so no shortfall shows.
@@ -187,6 +188,20 @@ class WisconsinLocalGovernmentPropertyInsuranceFund(AbstractCuratedDataset):
             ),
         ),
     )
+    accepted_check_warnings = {
+        "task_time_on_few_unique": (
+            "Five policy years, 2006-2010, the whole time axis of the file: the yearly windows train on two to four "
+            "earlier years, and the file has no finer time."
+        ),
+        "meta_license_unknown": (
+            "The textbook's repository has no licence file (GitHub API, 2026-11-01), and the book's pages state none."
+        ),
+        "task_target_value_dominant": (
+            "70.2% zeros: member-years without a building and contents claim (`Freq` 0), real no-claim years and not a "
+            "cap or a placeholder; the batch's other zero-inflated targets are accepted on the same ground (Andrej, "
+            "2026-11-03)."
+        ),
+    }
     temporal = Temporal(
         on="Year",
         splits=TemporalSplits(window=1, unit="unique", n_windows=3),

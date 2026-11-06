@@ -49,7 +49,7 @@ vessel and hour). Not verified: whether FOSS revises the 2026 season, Pirtle et 
 memo. The numbers of the notes and of issue 2 were measured again on the repaired frame, so some differ from the
 panel's (temporal mean R^2 0.694 in the split auditor's setup, not 0.652).
 
-**Main points:** All three issues are settled (2026-11-02).
+**Main points:** All four issues are settled (1 to 3 on 2026-11-02, 4 on 2026-11-06).
 
 **Verdict (2026-11-02, Andrej):** ship. The metric is marked as declared (`mean_group_normalized_rmse`). The
 dataset joins the accepted set; a build waits for your ask.
@@ -316,6 +316,72 @@ dataset joins the accepted set; a build waits for your ask.
    **Resolved (2026-11-02, Andrej):** RMSE, the source's selection metric (MET-5); record CC of 2026-11-02. The scale
    it is taken on (counts after the inverse, or the log1p target) is open under issue 1, since pooling several
    species brings it up.
+
+4. **Ship a copy of `taxon` as the metric's group, and claim the tow cut for walleye pollock only?**
+
+   * **Problem:**
+     - The metric read the feature `taxon` as its group, while the scoring rule as reworded on 2026-11-05 wants every
+       column a metric reads, other than the task's own group or time column, to ship as a scoring column, a copy
+       where the column is also a feature[^copy], so `dataset check` warned `task_metric_input_is_feature`.
+     - The notes said the tow length responds to the catch, measured on walleye pollock and read for every taxon,
+       and the exposure study of 2026-11-05 asked whether that holds for the other ten taxa.
+   * **Background:** The target is a density, the catch per km^2 swept, into which the source folds the area swept
+     (distance fished times net width). The standard tow is 30 minutes in the Bering Sea and 15 minutes in the Gulf
+     of Alaska from 1996 and the Aleutians from 1997, so the planned effort reaches the models through the region and
+     the date. The realized effort (tow length, distance, net width, area swept) is dropped: a place in a survey year
+     has no tow[^use3], and the area swept is the target's denominator[^weight].
+   * **Effect on the task:** None on the scores: the copy holds the same values (identical scores on three windows),
+     and `taxon` stays a model input. The notes now claim the cut only where the data shows it.
+   * **Experiments:** Short tows are those under 0.75 of the median duration of their region and year (1,699 of
+     35,561 hauls); each is set against the mean of its stratum and year, on log1p numbers per km^2 (the new decision
+     table of the README).
+     - Over all hauls, pollock's short tows lie 0.36 above their cells, the other taxa -0.36 to +0.08: a pollock tow
+       ends early on a large catch. On the EBS shelf, pollock tows under 0.4 h (831) average 8.33 log1p kg per km^2
+       against 7.35 at full length.
+     - Where a short tow catches a taxon, its density is higher for 9 of 11 taxa by the plain means and for all 11
+       within their cells (pollock 0.55, the others 0.00 to 0.25): a positive count over a smaller area swept is a
+       higher density, with no stop on the catch.
+     - As free features the effort columns gain 0.0028 of the metric under an L2 fit on log1p (1.9% of untuned
+       LightGBM's skill, better in 3 of the 5 windows tested) and nothing under a Poisson fit; an RMSE on counts ranks
+       the models as the density RMSE does (Kendall tau 0.80 to 1.00, the same winner in 5 of 5 windows; exposure
+       study).
+   * **Consistency:** The same copy as liberty_mutual_fire_peril_loss_cost's `var11_weight`, asked in the same review
+     comment. The density is scored unweighted, as wadden_sea_sibes_macoma_abundance and
+     boreal_postfire_lichen_biomass score theirs[^unweighted]. NOAA's design-based index averages the hauls' CPUE with
+     equal weight in each stratum
+     ([gapindex](https://afsc-gap-products.github.io/gapindex/articles/background_equations.html)), so it carries the
+     same bias of the cut pollock tows.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Copy; cut claimed for pollock (implemented) | `taxon_group` a scoring column, `taxon` a feature; effort dropped; the notes claim the cut for pollock only | the rule's shape; claims what the data shows; scores unchanged | one more column in the frame |
+     | B | Read `taxon` directly | no copy; the warning accepted | no change | against the reworded rule |
+     | C | Weight the density by the area swept | the area swept a weight scoring column and the training weight | an actuarial convention | the maps are per cell of equal area; ranks models as the density score does |
+
+   * **Recommendation:** A, as the review asked: the copy keeps the scoring columns complete, and the cut is claimed
+     where it shows. **Decision:** A, B or C?
+
+   [^copy]: **MET-2** (Must), reworded 2026-11-05 (Lennart): a metric reads the task's own group or time column where it
+     is; a feature the metric also needs stays a feature and ships a copy as a scoring column.
+   [^use3]: **USE-3** (Must): a value that did not exist at the prediction point is a leak.
+   [^weight]: **LEAK-41** (Must): a rate's denominator set or cut after the prediction point is never a model input;
+     **LEAK-10** (Must) for the cut itself.
+   [^unweighted]: **MET-15** (Must): when the decision is per unit of an equal-area map, the rate is scored unweighted
+     and no sample weight is declared.
+
+   **Lennart (2026-11-05, PR #47):** MET-2 as reworded in #44: "A feature the metric also needs stays a feature and
+   ships a copy as a scoring column, so the scoring columns are the complete set of a metric's extra data." For this
+   dataset: "the same for `taxon` as the group of `mean_group_normalized_rmse` (`taxon_group`, `role="group"`)".
+
+   **Resolved (2026-11-06, Lennart):** A. `_clean` copies `taxon` into `taxon_group`, a scoring column of role `group`
+   that `mean_group_normalized_rmse` reads; `taxon` stays a feature, and a random prediction scores the same through
+   the copy as through `taxon` on three windows. The tow's effort stays out (USE-3; the area swept is the target's
+   denominator, LEAK-41), the cut is claimed for walleye pollock only (LEAK-10: +0.36 over all hauls, the other taxa
+   -0.36 to +0.08; the densities of short tows that catch a taxon are higher for every taxon, which the smaller area
+   swept explains), and the score stays unweighted on the density (MET-15), carrying the bias of the cut pollock tows
+   as NOAA's index does. Supersedes the metric's reading of the feature (Andrej, 2026-11-02, under MET-2 as amended
+   then) and the note that read the pollock measurement for every taxon. `dataset check`: 0 errors, 0 warnings.
 
 **Review panel:** ship after changes (mediator). Claim audit: 34 claims, 27 hold, 3 refuted and 2 refuted in part
 (four fixed in the definition; the record's lines are corrected at hand-over), 1 concern (the Gulf of Alaska share of

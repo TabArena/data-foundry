@@ -21,6 +21,9 @@
   Proposal: two rows, each with the fact that forces IID (no policy dates in the release).
   Decision needed: go ahead or leave as is.
   **Resolved (2026-11-04, Lennart):** go ahead. Two SPLIT-8 rows in `splits.md`; fremtpl2's names what sets it apart from nba and open_university (periods and links inferred, not the source's key) and the measured cost (+0.00049 deviance, ranking unchanged).
+- **Adopt the exposure rules of the study of 2026-11-05 ([#51](https://github.com/TabArena/data-foundry/issues/51))?** LEAK-41 (a realized weight, and any column that encodes it, is never a model input; no training or scoring on rows selected by it), the amended LEAK-10 Cases row on time on risk and a new one on spans the outcome sets, MET-14 (ship the rate per unit at risk), MET-15 (its realized denominator is the metric's row weight and the training weight), MET-16 (survey weights), and the CLEAN-16 (no transform under a deviance) and MET-13 (a stated floor, no cap) amendments.
+  Implemented: the texts in `leak_checks.md`, `metrics.md`, `cleaning_features.md`, `verification.md`, `evidence.md` and the agent briefs.
+  **Resolved (2026-11-06, Lennart):** adopted as drafted (D1-D4), without the structured exposure note: the exposure is described in text. Probe 22 measures per dataset whether a feature predicts the weight.
 ### Framework (`src/data_foundry/v2/`)
 
 - **Floor a coarse time column before the framework orders the rows, in every definition (from `chicago_traffic_crashes`)?** `order_rows` (`src/data_foundry/v2/preprocessing.py`) stable-sorts by the full-precision time column after `_clean`. A definition that coarsens the time only in `_make_splits` therefore ships each period's rows in the order of the finer time it meant to hide, which is chicago's issue 9 (LEAK-13, the minute back through the row order). Flooring in `_clean` leaves each period in the framework's content order (a hash of each row's values).
@@ -40,6 +43,9 @@
   Decision needed: go ahead or leave as is.
   **Lennart (2026-11-04, leave):** we only care about it being correctly read from our setup and changing this would make the data state less correct, so integer code should stay
   **Resolved (2026-11-04, Lennart):** no change; integer-coded categories stay integers, restored as categories by the container.
+- **Add a training weight to container format 2 and weights to the deviances?** The metric reads a weight scoring column through its `weight` input; the task names its training weight in an optional field `sample_weight` (opt-in, always the metric's row weight); `score()` refuses an input the metric does not take; `mean_poisson_deviance` needs a stated `min_prediction`; `ordered_lorenz_gini` gets `per_unit`.
+  Implemented: `schema.py`, `v2/metrics.py`, `v2/dataset.py`, `curation_container.py`, the bundle checks, the README, the probes and the examples; containers without the field keep their checksum.
+  **Resolved (2026-11-06, Lennart):** go ahead (D5-D7); no backward compatibility with older readers; floor 1e-4 claims per year and no per-row cap; the TabArena side is a TODO in `BENCHMARK_CHANGES_TODO.md` only.
 ### Text corrections in definitions and records (the panel's, text only; go ahead = Claude applies them)
 
 - **`airqo_low_cost_air_quality_monitor_calibration_challenge`.** The record's Assessment line on the 15 outage hours says sensor 2 at 0.02-2.9 with a ratio of at least 0.63 elsewhere; the panel measured 0.0014 to 1.37, and elsewhere a 0.1% quantile of 0.618 and a minimum of 0.107. The record's 2026-11-04 "review panel (none) ... all are settled" line gets a correction line. `splits_comment` still gives the pre-temporal "LightGBM RMSE 14.05 against 18.39"; the panel measured 12.94 against 18.26 (split auditor).
@@ -67,3 +73,21 @@
   Proposal: a test that every column of a definition's module-level `SCORES` list ships numeric (read from the README's type lists, no data needed; it fails on eryhemato only, 2026-11-05), and the probe's code words extended by administrative areas (`ward`, `district`, `county`, `municipality`, `province`, `region`), so a numeric column so named is flagged for a look.
   Decision needed: go ahead or leave as is.
   **Resolved (2026-11-05, Lennart):** go ahead. `tests/test_v2_datasets.py::test_scores_ship_as_numbers` (fails on the old eryhemato definition), and the dtype probe's `code_name` flag covers `ward`, `district`, `county`, `municipality`, `province` and `region` (tested).
+### From PR #47 (exposure rework, 2026-11-06)
+
+- **Ship the seven insurance tables with a forced split, as listed?** Seven tables of the zero-inflated batch have no valid temporal windows and ship forced from temporal (SPLIT-8): frempl_french_motor_personal_line, rand_health_insurance_experiment_doctor_visits, spanish_motor_insurance_coverage_level_2022_2024, pricing_game_2017_french_mtpl and allstate_claim_prediction_challenge_1m grouped, australian_vehicle_insurance_2004_2005 and liberty_mutual_fire_peril_loss_cost IID. The leak tests of 2026-11-02 (shared rows and units across the split, the training side's outcome of the test rows' period, features built from other rows' outcomes, hidden groups, order dependence) found none. Wisconsin moved to temporal windows instead (its issue 3).
+  Implemented: all seven ship forced and tagged, under SPLIT-8 as reworded in #44 (a leak found is weighed case by case).
+  Proposal: ship them as listed.
+  Decision needed: go ahead, or name the tables to discuss.
+- **Re-read `how_much_did_it_rain`'s `No` under the reworded SPLIT-8?** It was set to `No` on 2026-10-30 for a measured leak across its split (the hours of one storm on both sides). Under the reworded rule a leak across a forced split is weighed case by case, not a reason to refuse by itself.
+  Implemented: nothing; the record stays `No`.
+  Proposal: re-open the record for a check of whether a split grouped on storms removes the leak, or how large it is when kept, as its own task.
+  Decision needed: re-open or leave as is.
+- **Make the leak tests of a forced split probes?** The five tests above ran by hand for each table. Hidden groups is already a probe; the others are not.
+  Implemented: nothing.
+  Proposal: one probe for a forced split that runs the period-outcome test (drop the training rows of the test rows' period and compare) and the shared-unit test, so every forced split gets them without a panel.
+  Decision needed: go ahead or leave as is.
+- **Retire the record `ausprivauto0405` as a duplicate of `australian_vehicle_insurance_2004_2005`?** CASdatasets' `ausprivauto0405` holds the same rows (exposure, vehicle value, claim count and cost equal on every row) without the area, the definition's `download_description` says so; the record is still `TBD -> Yes` with priority 4.
+  Implemented: nothing.
+  Proposal: set it to `No` as a duplicate, pointing to the australian folder.
+  Decision needed: go ahead or leave as is.

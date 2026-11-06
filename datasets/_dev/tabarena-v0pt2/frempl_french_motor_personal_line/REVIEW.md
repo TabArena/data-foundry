@@ -1,29 +1,38 @@
 # frempl_french_motor_personal_line
 
 **Outcome:** added. The AI recommends shipping it; the forced split of one year and the `Exposure` fix are settled
-(2026-11-02). A French private insurer's motor portfolio of 2004 (CASdatasets freMPL5 to freMPL9, 115,155 records, each
-a policy's period of cover with fixed rating factors); the target is the period's claim amount, shipped as log1p and
-scored on the amount by the normalized Gini (a context metric); all records of one policy chain stay on one side of the
-split. Validity: SEL-1 holds (`Gender` noted); USE-1 holds, fit approximate (USE-8); LEAK-10 triggered on `Exposure` and
-fixed by LEAK-7 (confirmed 2026-11-02), holds for the other 15 features; LEAK-24 cannot be verified (issue 3); SPLIT-9
-triggered and fixed: under random records, a test record's later records sat in training and gave its claim away to a
-model that reads training rows, so the folds are grouped by policy chain (the key: issue 1); SPLIT-8 ships the one year
-as `ForcedGroupedFromTemporal`, shipped on your call of 2026-11-02 (forced grouped splits ship; SPLIT-8 amended);
-PROV-7, PROV-8 and PROV-9 hold. Value: a small real signal (TP-2: claim AUC about 0.67, claim sizes not learnable); the
-model beats the record's length alone on every split (TP-4: Gini 0.332 against 0.277, 9 of 9 shipped splits); the
-context Gini is kept, its form open (issue 4). Quality: the negative amounts stay set to 0, with a corrected reason.
-Weighed: documented source and size +; low signal, fold noise (the 802,620 claim moves its fold's Gini by about 0.10)
-and a thin tariff (no vehicle or cover factors) -. The target scale follows CLEAN-16 and MET-3; the family's split with
-australian_vehicle_insurance_2004_2005 (raw scale) is raised there. Left for Andrej: issues 1, 3 and 4.
+(2026-11-02), and the claim cost per year with the realized length as the weight (issue 6, 2026-11-06). A French private
+insurer's motor portfolio of 2004 (CASdatasets freMPL5 to freMPL9, 115,155 records, each a policy's period of cover with
+fixed rating factors); the target is the period's claim amount per realized year, shipped as log1p and scored on the
+amount per year by the exposure-weighted Gini of the ordered Lorenz curve (a context metric), with the realized length
+as each record's weight in training and scoring; all records of one policy component stay on one side of the split.
+Validity: SEL-1 holds (`Gender` noted); USE-1 holds, fit approximate (USE-8); LEAK-41: the realized length `Exposure` is
+the rate's denominator and the weight, never a feature (issue 6; it supersedes the fix of 2026-11-02 under LEAK-10,
+which kept the realized length on the continued records); LEAK-10 holds for the other features; LEAK-24 cannot be
+verified (issue 3); SPLIT-9 triggered and fixed: under random records, a test record's later records sat in training
+and gave its claim away to a model that reads training rows, so the folds are grouped by policy component (issue 1);
+LEAK-9: those later records are test rows now, so a protocol line forbids reading other test rows; SPLIT-8 ships the one
+year as `ForcedGroupedFromTemporal`, shipped on your call of 2026-11-02 (forced grouped splits ship; SPLIT-8 amended);
+PROV-7, PROV-8 and PROV-9 hold. Value: a small real signal (TP-2: claim AUC about 0.67, claim sizes not learnable); an
+honest model beats the length to 31 December alone on every split (TP-4: 0.183 against 0.005, 9 of 9 shipped splits);
+1/`Exposure` alone scores 0.184, the ceiling a leak would reach. Quality: the negative amounts stay set to 0, with a
+corrected reason. Weighed: documented source and size +; low signal, fold noise (SD 0.03 over the 9 splits) and a thin
+tariff (no vehicle or cover factors) -; a squared-error fit on the shipped log1p scale is misled by the length to 31
+December (issue 7). Left for Lennart: issue 7.
 
 Changes made after the review panel (AI, 2026-11-01): the folds grouped by policy chain, `Exposure` fixed (issue 2), the
 valid windows stated in `splits_comment` (SPLIT-8), the metric reason and the negatives text corrected, and the figures
 re-measured on the shipped folds. The record's screening lines the data refutes (the year, the chain links, the file
-sizes, "near-random slices", the negatives) are corrected at hand-over and need no mark.
+sizes, "near-random slices", the negatives) are corrected at hand-over and need no mark. Changed on 2026-11-06 (issue
+6): the target is the claim amount per realized year, `Exposure` the weight and no feature, the length to 31 December
+the feature, the metric the Gini per unit of `Exposure`; `exposure_at_start` dropped; `fit_reason` no longer names a
+kept leak; a protocol line against reading other test rows.
 
-**Main points:** all issues resolved on 2026-11-03: the amounts stay with their note (3), the folds are grouped by the
-cross-file policy component (1), and the metric is the exposure-weighted Gini with the length known at the start as
-its base (4). The record takes the grouped split and tag. Verdict: ship (2026-11-03).
+**Main points:** issues 1, 3 and 4 resolved on 2026-11-03 and issue 6 on 2026-11-06: the amounts stay with their note
+(3), the folds are grouped by the cross-file policy component (1), the target is the claim cost per realized year with
+the realized length as the weight, scored by the Gini per unit of that length (6, which replaces the base of 4). Open:
+keep the length to 31 December as a feature, although it misleads a squared-error fit on the log1p scale (7)? Verdict:
+ship (2026-11-03).
 
 **Issues for Andrej:**
 
@@ -287,6 +296,129 @@ its base (4). The record takes the grouped split and tag. Verdict: ship (2026-11
    The base is the feature `Exposure` before its rounding, as measured for C: continued records keep their realised
    length in it, as in the feature (the leak kept on purpose in issue 2), so their ratio stays neutral. Checked on
    2026-11-03: with the known-at-start length for them too, the length alone would score 0.176 of a model's 0.249.
+
+6. **Ship the claim cost per realized year, weighted by the realized length, with the length to 31 December as the
+   feature?**
+
+   * **Problem:**
+     - The `Exposure` feature of 2026-11-02 held the realized length on the 34,324 records that continue in a later
+       record, a length known only when they end, and the length known at the start on the others.
+     - The metric of issue 4 took the same mix as its base (`exposure_at_start`), and the target was the period's
+       total, which grows with the realized length.
+     - The exposure study of 2026-11-05 proposed the cost per realized year as the target, the realized length as the
+       weight of the metric and of training, and the length to 31 December, known at the start, as the feature (its
+       decision D9)[^6a].
+   * **Background:**
+     - The 115,155 records form 68,857 policy components: 55,700 records are open at 31 December, 34,324 continue in
+       a later record of their file and 25,131 end earlier without a continuation.
+     - Claims cut records short: the records that ended alone cost 837 per realized year, the continued ones 407 and
+       the open ones 311.
+     - An actuary prices the cost per year of cover and compares tariffs by the Gini of the ordered Lorenz curve: the
+       records sorted by the predicted cost per year, each counted by its exposure.
+   * **Effect on the task:** a model reads no realized length any more, so it ranks the cost per year from what an
+     insurer knows when the period starts; each record counts in training and scoring in proportion to its time on
+     risk.
+   * **Experiments:** on the 9 shipped splits, untuned LightGBM weighted by the realized length, 3 seeds:
+     - an honest model scores 0.183 with a Tweedie loss on the cost per year and 0.156 with squared error on the
+       log1p scale; the weighted constant scores 0 and random orders 0.003 on average;
+     - 1/realized length alone scores 0.184, above the Tweedie model on 4 of 9 splits; the realized length added as a
+       feature lifts the Tweedie model to 0.256 (+0.073, higher on 9 of 9);
+     - the old hybrid length in place of the length to 31 December scores 0.018 lower with the Tweedie loss (higher on
+       1 of 9 splits); its kept part was worth about 0.045 under the metric of issue 4 (the exposure study).
+   * **Consistency:** fremtpl2 and bemtpl97 moved to the claims per year insured with the exposure as the weight on the
+     same day[^6b]. It departs from Andrej's call of 2026-11-03 (issue 4, option C)[^6c]; what sets the case apart:
+     under the rate a constant scores 0, whereas option B scored totals against a realized base, where a constant
+     scored 0.184; the leak rule now keeps 1/length out of the features.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Total with the hybrid length | the definition of 2026-11-03: log1p of the period's total; `Exposure` a feature; the Gini on the base known at the start | no training weight | the realized length stays in a feature on 34,324 records; worth about 0.045 under that metric |
+     | B | Cost per realized year, weighted (implemented) | log1p of the amount per realized year; `Exposure` the weight and `sample_weight`, never a feature; `length_to_year_end` a feature; the Gini per unit of `Exposure` | the actuary's form; a constant scores 0; no realized length in the features | 1/length alone scores at the honest model's level; learners differ by loss (issue 7) |
+
+   * **Recommendation:** B, the exposure study's D9: no realized length in the features, and the metric scores the cost
+     per year by the exposure. **Decision:** A or B?
+
+   [^6a]: **LEAK-41** (Must, 2026-11-06): a column the task uses as a weight or as a rate's denominator whose value is
+     set or cut after the prediction point is never a model input, whatever it scores, nor is a column that encodes
+     it, such as a length corrected on some rows and realized on others. **MET-14** (Should) and **MET-15** (Must): a
+     count or amount over a varying time on risk ships as the rate per unit, and its realized denominator is the
+     metric's row weight and the task's `sample_weight`, never a feature.
+   [^6b]: fremtpl2 issue 6 and bemtpl97 issue 1, resolved 2026-11-06 (Lennart); the exposure study of 2026-11-05.
+   [^6c]: Andrej, 2026-11-03, issue 4: "I go with your option C", the length known at the start as the base; option
+     B, the realized base, was set aside because a constant prediction scored 0.184 under it.
+
+   **Resolved (2026-11-06, Lennart):** B, decision D9 of the exposure study of 2026-11-05. The target is
+   `log1p_claim_amount_per_year`, log1p of `ClaimAmount` / `Exposure` (the log1p scale kept, CLEAN-16 as amended: a
+   rate scored by a Gini keeps the curator's scale). `Exposure`, the realized length (0.001 to 1 year, positive on
+   every record, so no row goes under USE-7), is the weight scoring column, the `weight` input of
+   `ordered_lorenz_gini` with `per_unit` and the task's `sample_weight`, and never a feature (LEAK-41, MET-14, MET-15).
+   `length_to_year_end`, the length the source gives a record open from the same start day to 31 December, is the
+   feature (CLEAN-22, USE-6), unrounded: the month rounding of 2026-11-02 only hid the decimals of the realized
+   length, and rounded it would make 2,704 records repeat another record of their policy. `exposure_at_start` is
+   dropped. Supersedes Andrej's call of 2026-11-03 (issue 4, option C); his unnormalised CAS form stays. On the shipped
+   splits an honest Tweedie LightGBM scores 0.183, squared error on log1p 0.156, the weighted constant 0 and
+   1/`Exposure` alone 0.184. A model that reads a test record's next record, a test row too under the grouped split,
+   reaches 0.443, so the notes and the splits comment carry a protocol line: no feature or model step may use other
+   test rows, and a method that does is called out and not benchmarked (LEAK-9). `dataset check`: 0 errors, 0
+   warnings (the warning `task_feature_looks_like_exposure` is gone).
+
+7. **Keep the length to 31 December as a feature, although it misleads a squared-error fit on the log1p scale?**
+
+   * **Problem:**
+     - Issue 6 keeps the target on the log1p scale and the length to 31 December as a feature, and a squared-error fit
+       on that scale ranks short periods too low when it sees the length.
+     - On the shipped splits such a fit scores 0.156 with the length and 0.185 without it, while a Tweedie fit on the
+       cost per year scores 0.183 with it and 0.179 without.
+     - The rule on log-scale rates asks to drop such a feature or to ship the identity scale[^7a], and the decision of
+       issue 6 keeps both the feature and the scale[^7b].
+   * **Background:**
+     - A squared-error fit on log1p of the cost per year estimates the exposure-weighted mean of log1p(cost per year),
+       not the cost per year the Gini orders by.
+     - A short period's cost per year is large when it has a claim, but a claim is rarer, so that mean rises with the
+       time to 31 December (0.29 up to 3 months, 0.98 to 1.08 from 9 months on) while the cost per realized year stays
+       at 394 to 469 and the claims per realized year at 0.20 to 0.22.
+     - The length to 31 December equals the realized length on the 55,700 records open at the year end and bounds it
+       on the others.
+   * **Effect on the task:** most regression learners fit squared error on the target as shipped; with the length they
+     lose about 0.03 of Gini for a reason unrelated to the risk, while a learner with a Tweedie loss gains 0.005 from
+     it.
+   * **Experiments:** untuned LightGBM weighted by the realized length, the 9 shipped splits, 3 seeds:
+     - squared error on log1p: 0.156 with the length, 0.185 without (lower with it on 7 of 9 splits, -0.029, SE 0.010);
+     - Tweedie on the cost per year: 0.183 with it, 0.179 without (higher with it on 5 of 9, +0.005, SE 0.004);
+     - squared error on the cost per year itself: 0.159 with it, 0.163 without, led by the tail (up to 11.6 million
+       per year, a claim of 58,087 on a record of under two days);
+     - without the length, squared error on log1p scores as the Tweedie fit with it (+0.001, higher on 6 of 9).
+   * **Consistency:** the rule's example is spanish_motor_insurance_coverage_level_2022_2024, whose log1p rate shows
+     the same rise across exposure bands[^7a]; the length to 31 December is known at the start, and an input known at
+     the prediction point is legitimate[^7c].
+   * **Unknown:** only LightGBM was measured; other squared-error learners should show the same trend, which sits in
+     the target's weighted mean by length.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Keep the length on log1p (implemented) | as issue 6 decided | an input known at the start stays; a Tweedie fit gains 0.005 | squared-error fits on the shipped scale lose 0.029 (7 of 9 splits) |
+     | B | Drop the length | `length_to_year_end` leaves the features; target, scale and weight unchanged | squared-error and Tweedie fits score alike (0.185 and 0.179); keeps your scale | drops an input known at the start, worth 0.005 to a Tweedie fit |
+     | C | Identity scale | the cost per year ships untransformed; the length stays | a squared-error fit then estimates the cost per year | squared-error fits score 0.159, led by the tail; departs from the curator's scale |
+
+   * **Recommendation:** B: the length is worth +0.005 (SE 0.004) to the loss that suits the metric and costs the
+     common loss 0.029, and dropping it keeps the log1p scale. **Decision:** A, B or C?
+
+   **Notes for the AI:** on B, drop `length_to_year_end` in `_clean` (the asserts on the length known at the start
+   can stay), rewrite `known` and `changes` in the task summary, the bullets on the length, the learners and the
+   ceiling and the metric reason's numbers, then re-run `dataset check`, the leak probes and the measurement of
+   2026-11-06; on C, ship `claim_amount_per_year` with `target_transform="identity"` and re-measure.
+
+   [^7a]: **CLEAN-16** (Should; amended 2026-11-06, Lennart): a rate scored by a Gini keeps the scale the curator chose
+     for the table, and the notes say what a weighted fit on that scale estimates; a log-scale rate with its
+     denominator as a feature misleads squared-error fits (spanish_motor_insurance_coverage_level_2022_2024: the mean
+     log1p of the rate rises from 0.085 to 1.074 across exposure bands while the cost per year stays at 221 to 336):
+     drop the feature or ship the identity scale.
+   [^7b]: Lennart, 2026-11-06, D9: the target on the log1p scale as before, and the length to 31 December, known at
+     the record's start, stays a feature.
+   [^7c]: **USE-6** (Must): anything known at the prediction point is a legitimate input. **CLEAN-22** (Must):
+     columns leave for what they are, never for how many there are.
 
 **Review panel:** ship after changes (mediator). Claim audit: 39 claims, 26 hold, 4 refuted and 3 refuted in part (all
 fixed or reworded), 3 refuted in the record only, 3 untested. Blind review: include with changes; its main concerns are

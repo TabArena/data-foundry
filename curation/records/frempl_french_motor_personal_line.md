@@ -5,7 +5,7 @@ checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Andrej
+claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -150,6 +150,8 @@ CC (2026-11-03, Andrej): the folds are grouped by the cross-file policy componen
 CC (2026-11-03, Andrej): the metric is the exposure-weighted Gini of the ordered Lorenz curve with the length known at the start as its base (issue 4 (C)): "I go with your option C".
 
 CC (2026-11-03, Andrej): ship (verdict); the metric, the exposure-weighted Gini with the length known at the start as its base, checked.
+
+CC (2026-11-06, Lennart): issue 6 resolved by D9 of the exposure study (https://github.com/TabArena/data-foundry/issues/51): the target is the claim amount per realized year on the log1p scale (CLEAN-16 as amended: a rate scored by a Gini keeps the curator's scale); `Exposure`, the realized length, is the weight of the metric and of training and never a feature (LEAK-41, MET-14, MET-15); the length to 31 December stays a feature (CLEAN-22, USE-6); `exposure_at_start` is dropped; the metric is `ordered_lorenz_gini` per unit of `Exposure`, Andrej's unnormalised CAS form, now on the rate. Supersedes Andrej's call of 2026-11-03 (issue 4: option C, the length known at the start as the base, chosen over option B, the realized base, under which a constant prediction scored 0.184): under the rate a constant scores 0, whereas option B scored totals against a realized base; LEAK-41 now guards against 1/length, which alone scores 0.184 against 0.183 for the honest model.
 
 ## Reference
 

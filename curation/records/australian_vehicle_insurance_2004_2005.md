@@ -5,7 +5,7 @@ checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Andrej
+claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -109,6 +109,8 @@ CC (2026-11-02, Andrej): the target scale as each file implements it (issue 5): 
 CC (2026-11-02, Andrej): the metric (issue 4): "Use Gini". `normalized_gini` on the claim cost as a context metric (MET-11), decided for this table (MET-10 as amended 2026-11-02); the screening's `rmse` fallback is struck. All issues of the REVIEW are now resolved.
 
 CC (2026-11-02, Andrej): ship. Every issue of the REVIEW is resolved: the forced IID split after its leak test (issue 1), `exposure` kept (2), the book's claims corrected (3), the Gini for this table (4), the claim cost in dollars (5).
+
+CC (2026-11-06, Lennart): decision D8 of the exposure study of 2026-11-05 (issue 6): the target is the claim cost per year insured (`claimcst0` / `exposure`, in dollars, identity scale), `exposure` the weight scoring column, the `weight` input of `normalized_weighted_gini` and the task's `sample_weight`, and never a feature (LEAK-41, MET-14, MET-15); the metric stays a context Gini, now weighted on the rate; the 7 rows at 1M dollars or more a year are kept. Supersedes Andrej's call of 2026-11-02 (issue 2: `exposure` kept as a feature with its note, the LEAK-10 case for time on risk cut short by the outcome) and changes the form of his Gini of the same day (issue 4: unweighted on the cost, now weighted on the rate). What sets the case apart is a measurement made after the call: the deviance on the claim counts shows the leak the slice Gini hid (47 to 82% of a free model's gain over a constant rate is leak); on the weighted Gini of the cost per year a free GLM scores 0.238 against 0.125 for honest quotes, and on the shipped splits `exposure` as a feature lifts an honest LightGBM from 0.059 to 0.149 (9 of 9). The alternative, the claim frequency with an exposure-weighted deviance, was not chosen.
 
 ## Reference
 

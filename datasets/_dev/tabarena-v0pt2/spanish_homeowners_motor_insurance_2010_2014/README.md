@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: spanish_homeowners_motor_insurance_2010_2014
 container_format: 2
-checksum: v2:eec60ac25038672c0cbbd8d326ebce767f1c648e1e65fbf266919827b3671adc
+checksum: v2:4c223bfa663e7037abba6b9874a0419eb6beb393a7480e112e14e8b8cfbc8d0d
 build: null
 build_stale: false
 data:
@@ -65,7 +65,7 @@ decisions:
 
 Regression of `log1p_home_claim_cost`, scored with `normalized_gini` on temporal splits by `policy_year`. 122,935 rows and 20 features. Source: Other (2021).
 
-Not built yet. The current definition gives checksum `v2:eec60ac25038672c0cbbd8d326ebce767f1c648e1e65fbf266919827b3671adc`.
+Not built yet. The current definition gives checksum `v2:4c223bfa663e7037abba6b9874a0419eb6beb393a7480e112e14e8b8cfbc8d0d`.
 
 ## In brief
 
@@ -207,6 +207,7 @@ We start with data_ex.csv of Mendeley Data vfchtm5y7j, version 1 (Guillen, Bolan
 - The codes get the labels of the data article (Sec. 1): `gender` (male, female), `Car_2ndDriver_M` (no, yes), `metro_code` (rural, urban or metropolitan), `Policy_PaymentMethodA` and `Policy_PaymentMethodH` (annual, monthly; of the motor and the home policy), `appartment` (apartment, house; "0 for houses or semi-attached houses", model paper Table 4); all categorical.
 - Potential leak, kept on purpose: `Policy_PaymentMethodA`, the motor policy's payment method, read once at an unknown date (LEAK-37, LEAK-10). Against motor claims it shows the pattern for which spanish_motor_insurance_2015_2018 drops its last payment method: annual payment is 9.6 points rarer after a motor claim among customers who renew, 0.6 among those who lapsed in 2010, so a switch to monthly payment after a motor claim is possible. It stays because the target is the home claim, where the pattern is absent (5.9 against 8.1 points, the reverse order), and the pair adds no gain a late read could carry: dropping both payment fields moves the mean Gini by -0.013 (null SD of the 3-window mean 0.045), dropping A alone by +0.002, and the pair's gain on renewing minus lapse rows is -0.006 [-0.018, 0.006]; on customers who never had a motor claim the pair still adds +0.019 (leak check of 2026-11-02, nine tests). Revisit if a release gives the read date or a payment history.
 - Note: `Insuredcapital_content_re` and `Insuredcapital_continent_re` (the insured values of the contents and the building) are on a log scale: they run from 2.4 to 14.4 and 5.7 to 15.4, and their exponentials have medians over rows of 31,647 and 104,457 euros. The sources do not say so (the model paper's Table 8 profiles use 3, 8 and 15); kept as recorded. 403 customers have equal values for the two, and 9.7% a content value above the building's.
+- Exposure: no exposure column, and none is needed. A row is a customer-year, and the data article frames a lapse as not renewing at the year's end ("If the customer does not renew one of those two policies or both, we do not have more information after this lapse occurs", Sec. 1), so a lapse year is a whole year as far as the sources say. The insured values of the contents and the building are sums insured, rating factors and not an amount at risk the cost grows with in proportion: across the quintiles of the contents value (median 13,126 to 66,766 euros) the home claim cost per row runs 8.16, 6.37, 6.77, 7.57 and 10.82 euros, and across the building's (35,868 to 258,136 euros) 8.03, 7.56, 7.18, 6.68 and 10.25, so they take neither an offset nor a weight and stay features (MET-14). Their read date is unknown, so their timing is mixed: they are kept under LEAK-10's later-pull clause after the leak check of nine tests (review issue 1, the note above).
 - Anomaly: `num_policiesC` is "the total number of policies held by the same customer in the insurance company" (Sec. 1) but holds only 0 (19%) and 1 (81%), though every customer holds at least two policies; its meaning is unclear. Kept as recorded.
 - Anomaly: `age_of_car_M` ("the number of years since the vehicle was bought by the customer") is 0 for 8,050 of the 40,284 customers (20%), against 406 at 1 and 640 at 2. These customers are older (65 against 58 years) and longer with the insurer (15.3 against 9.1 years), with less powerful cars: not new cars, likely an unknown purchase date. For 161 customers the value exceeds their age minus 18, so the field likely counts the car's age rather than the years since this customer bought it. CLEAN-10 not triggered: the description does not let us infer a code; kept as recorded.
 - Anomaly: `Client_Seniority` is at least 5.0 years for every customer, either by the sample's selection or because it was read at the end of the window (neither is stated), and for 76 customers it exceeds their age minus 18, so it likely counts from a household's or a policy's first contract. Kept as recorded.
@@ -285,7 +286,7 @@ A home claim in the previous year raises the year's home claim share about three
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
 
 - **info** `meta_time_horizon_unit`: `time_horizon_unit='years'` implies calendar time, but `time_on='policy_year'` has dtype int64, so the horizon cannot be cross-checked. (hint: Fine when the numeric values themselves are calendar units (e.g. a year column); otherwise use `time_horizon_unit='steps'` for a plain numeric time index.)
 
@@ -310,16 +311,16 @@ Accepted on purpose:
 | Policy_PaymentMethodH | category | 0 | 0 | 2 | annual, monthly |
 | appartment | category | 0 | 0 | 2 | apartment, house |
 | prev_home_claims | float64 | 40284 | 32.77 | 4 | 0.0, 1.0, 2.0, 3.0 |
-| prev_home_claim_cost | float64 | 40284 | 32.77 | 1195 | 0.0, 59.09, 63.46, 64.1, 69.72, 77.96, 64.56, 134.1, 400.0, 73.93 |
+| prev_home_claim_cost | float64 | 40284 | 32.77 | 1195 | 0.0, 59.09, 63.46, 64.1, 77.96, 64.56, 69.72, 400.0, 60.89, 134.1 |
 | prev_motor_claims | float64 | 40284 | 32.77 | 6 | 0.0, 1.0, 2.0, 3.0, 4.0, 6.0 |
-| prev_motor_claim_cost | float64 | 40284 | 32.77 | 520 | 0.0, 882.0, 1764.0, 917.0, 184.0, 32.22, 2646.0, 36.93, 180.0, 14746.54 |
+| prev_motor_claim_cost | float64 | 40284 | 32.77 | 520 | 0.0, 882.0, 1764.0, 917.0, 184.0, 32.22, 180.0, 36.93, 2646.0, 975.49 |
 | past_home_claims | float64 | 40284 | 32.77 | 6 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 |
 | past_motor_claims | float64 | 40284 | 32.77 | 8 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0 |
 | Car_power_M | float64 | 0 | 0 | 281 | 90.0, 110.0, 75.0, 100.0, 60.0, 115.0, 105.0, 140.0, 150.0, 136.0 |
 | Insuredcapital_content_re | float64 | 0 | 0 | 20041 | 10.309, 9.9035, 10.5967, 10.1267, 9.7982, 10.3385, 10.8198, 10.0859, 10.3682, 1… |
 | Insuredcapital_continent_re | float64 | 0 | 0 | 25065 | 11.5129, 11.4076, 11.1563, 11.2898, 11.6953, 11.9184, 12.2061, 11.0021, 11.2253… |
 | Client_Seniority | float64 | 0 | 0 | 6213 | 6.2505, 6.0835, 7.5866, 6.5024, 8.0849, 5.8371, 5.5852, 5.9986, 7.4196, 7.5044 |
-| log1p_home_claim_cost | float64 | 0 | 0 | 1883 | 0.0, 4.0958, 4.166, 4.3166, 4.1534, 4.2587, 4.3689, 4.2985, 4.1759, 4.1254 |
+| log1p_home_claim_cost | float64 | 0 | 0 | 1883 | 0.0, 4.0958, 4.166, 4.1534, 4.3166, 4.3689, 4.2587, 4.1759, 4.2985, 5.994 |
 | Age_client | int64 | 0 | 0 | 75 | 53, 55, 59, 54, 65, 58, 56, 57, 60, 61 |
 | age_of_car_M | int64 | 0 | 0 | 40 | 0, 9, 10, 11, 8, 12, 7, 13, 14, 6 |
 | num_policiesC | int64 | 0 | 0 | 2 | 1, 0 |

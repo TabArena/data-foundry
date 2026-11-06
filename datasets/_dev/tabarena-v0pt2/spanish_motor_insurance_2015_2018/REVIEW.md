@@ -40,9 +40,10 @@ rows starting December 2016 to July 2017 are in no split); the ages are computed
 
 The record's screening and Assessment lines still describe renewal pricing. They are updated once issue 1 is decided.
 
-**Main points:** all issues resolved on 2026-11-03: first-year pricing (1), every first year kept with the
+**Main points:** all issues resolved: on 2026-11-03 first-year pricing (1), every first year kept with the
 customer's other policies in force at the start (2, design S), `Value_vehicle` kept (3), no request to the authors now
-(4), ship and re-check `Trivial` (5).
+(4), ship and re-check `Trivial` (5); on 2026-11-06 the per-contract target under the exposure rules, with the count of
+first years cut short corrected to 2,055 (6).
 
 **Issues for Andrej:**
 
@@ -389,6 +390,53 @@ customer's other policies in force at the start (2, design S), `Value_vehicle` k
 
    **Resolved (2026-11-03, Andrej):** A, ship with design S and re-check `Trivial` on the first benchmark run; the
    notes give the TabPFN and premium scores per window.
+
+6. **Keep the claim cost per contract under the exposure rules, with the count of first years cut short corrected?**
+
+   * **Problem:**
+     - The exposure rules adopted on 2026-11-06 ship a cost that accrues over a varying time at risk as a rate per
+       year, weighted by that time, unless every contract has the same planned term, known when it is priced[^e-rate].
+     - 2,055 of the 37,090 first years end early by a lapse, while `fit_reason` still gave 1,236, the count of the
+       earlier design that kept only customers with one policy (25,665 rows).
+   * **Background:** Every first year in the table is a contract of exactly one calendar year: `Date_next_renewal`
+     falls one calendar year after the year's start in all 37,090 rows. A lapse inside the year is known only when
+     the policy ends, so `Date_lapse` is no input[^e-late]; 1,632 of the 2,055 lapses are half-yearly payers who
+     stopped paying, at a median of half the year. `Premium` is the written annual premium, not prorated.
+   * **Effect on the task:** None: rows, target, metric and split stay. The cost per contract carries the claims of
+     the contracts that lapse, as the annual contract the insurer prices does.
+   * **Experiments:** On the shipped rows (the exposure study of 2026-11-05, re-run for this issue):
+     - Per contract the cut years claim like full years: a claim in 35.4% of each, 0.78 claims against 0.81.
+     - Per year at risk they claim 1.9 times as often: 1.53 claims a year against 0.81.
+     - Among the cut years the premium does not move with the share of the year in force (Spearman -0.03), so no
+       feature tells a cut year apart; 233 of the 4,362 test rows are cut years.
+   * **Consistency:** fremtpl2 and bemtpl97 became rates per year insured on the same day, as their periods are
+     realized lengths with no planned term; pricing_game_2017_french_mtpl keeps whole policy-years, each present in
+     every year's file.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Per contract (implemented) | the year's claim cost per first year, unweighted; the count corrected | one planned term for every contract; no feature carries the cut | the 2,055 cut years count as whole contracts |
+     | B | Cost per year at risk, weighted | the cost over the share of the year in force, that share the metric's weight and the training weight | the actuarial rate | a rate over a term every contract shares; the decision prices a contract |
+     | C | Drop the cut years | full years only | no cut years | selects rows by a length the outcome cuts[^e-select] |
+
+   * **Recommendation:** A: the contract is priced for one calendar year, so its claim cost is what the insurer acts
+     on. **Decision:** A, B or C?
+
+   [^e-rate]: **MET-14** (Should, 2026-11-06): a count or amount over a varying amount at risk ships as the rate per
+     unit; "A per-contract target stays when the planned term is constant and known at the prediction point; the notes
+     give the share cut short (spanish_motor_insurance_2015_2018: 2,055 of 37,090)." **MET-15** (Must): when the
+     decision is per contract, the target is scored unweighted and no sample weight is declared.
+   [^e-late]: **LEAK-10** (Must): a column recorded after the outcome is no feature.
+   [^e-select]: **LEAK-41** (Must): no model is trained or scored on rows selected by the realized weight, such as
+     full-year rows only.
+
+   **Resolved (2026-11-06, Lennart):** A, per contract (MET-14's per-contract clause, MET-15): every first year is a
+   contract of one calendar year and the premium is the written annual premium, so no feature carries the cut.
+   `fit_reason` now gives 2,055 of 37,090 first years cut short by a lapse (1,632 half-yearly payers who stopped
+   paying), not the 1,236 of the earlier one-policy design; the notes carry the exposure paragraph. Per contract the
+   cut years claim like full years, per year at risk 1.9 times as often. `dataset check`: 0 errors, 0 warnings
+   (`splits_rows_unused` accepted: the 5,685 first years in every window's 12-month gap).
 
 **Review panel:** ship after changes (mediator). Claim audit: 43 claims, 27 hold, 14 refuted in whole or in part (the
 years without cover, the claims shared across a customer's policies, the late part of `Policies_in_force` and text

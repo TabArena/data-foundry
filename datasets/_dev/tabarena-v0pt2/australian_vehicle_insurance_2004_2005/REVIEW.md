@@ -1,32 +1,37 @@
 # australian_vehicle_insurance_2004_2005
 
-**Outcome:** added. The AI recommends shipping it; the panel's changes to the text are made (below), and the forced
-split, `exposure` and the target scale are settled (2026-11-02). The "Car" table of de Jong and Heller (2008) from the R
-package insuranceData (CASdatasets holds the same rows): 67,856 one-year Australian vehicle policies of 2004-2005,
-target the claim cost of the part of the policy's year the data observed (0 for 93.2%), six rating factors and the
-observed time, random 3x3 split tagged forced from temporal, scored by the normalized Gini as a context metric.
-Validity: USE-1 holds (pricing a policy at underwriting, "for example"); USE-3 and USE-8 were wrong in the text (the
-observed time was called the contracted term and listed as a gap), now reworded; LEAK-10 is triggered by `exposure`,
-which some claims cut short, and it is kept on your call of 2026-11-02 (a LEAK-10 case: the cut cannot be located, and
-that part lowers the score); SPLIT-8 holds, the split shipped on your call of 2026-11-02 (a forced IID split ships when
-the leak test across the random split finds none; SPLIT-8 amended); PROV-4 holds (the book's Table 1.1, CASdatasets row
-by row); PROV-16 was broken by claims about the book's later chapters taken from section titles; corrected from
-the pages Andrej read (issue 3, resolved). Value: TP-2, a small real signal (every model family beats a
-constant on 9 of 9 splits);
-TP-4 holds (a GLM beats the observed time alone on 8 of 9); MET-11, the Gini as a context
-metric, is open for the insurance tables (issue 4). Quality: the 53 vehicle values of 0 made missing (CLEAN-10,
-CLEAN-11); the claim costs at 200 kept as recorded, as fremtpl2's fixed amounts; the target is in dollars while
-CLEAN-16's default and most sibling tables use log1p, kept as implemented on your call of 2026-11-02. Weighed: a
-documented textbook table +, a real pricing task +, few coarse rating factors -, the observed time alone earns 82% of
-the best score -. Left for Andrej: none (issues 3 and 4 resolved 2026-11-02).
+**Outcome:** added. The AI recommends shipping it; the panel's changes to the text are made (below), the forced split
+and the target scale are settled (2026-11-02), and `exposure` is settled as the weight (issue 6, 2026-11-06). The "Car"
+table of de Jong and Heller (2008) from the R package insuranceData (CASdatasets holds the same rows): 67,856 one-year
+Australian vehicle policies of 2004-2005, target the claim cost per year insured (the cost of the part of the policy's
+year the data observed, over that time, in dollars; 0 for 93.2%), six rating factors, the observed time as each
+policy's weight in training and scoring, random 3x3 split tagged forced from temporal, scored by the exposure-weighted
+normalized Gini as a context metric. Validity: USE-1 holds (pricing a policy at underwriting, "for example"); USE-3 and
+USE-8 were wrong in the text (the observed time was called the contracted term and listed as a gap), now reworded;
+LEAK-41: `exposure`, which some claims cut short, is the rate's denominator and the weight, never a feature (issue 6,
+Lennart, 2026-11-06; it supersedes the keep under LEAK-10 of 2026-11-02, issue 2); SPLIT-8 holds, the split shipped on
+your call of 2026-11-02 (a forced IID split ships when the leak test across the random split finds none; SPLIT-8
+amended); PROV-4 holds (the book's Table 1.1, CASdatasets row by row); PROV-16 was broken by claims about the book's
+later chapters taken from section titles; corrected from the pages Andrej read (issue 3, resolved). Value: TP-2, a
+small real signal (every model family probed beats the weighted constant on 9 of 9 splits: a Tweedie GLM 0.120, a
+Tweedie LightGBM 0.059); TP-4: the observed time, which alone earned 82% of the old score, is no input now; MET-11, the
+exposure-weighted Gini of the cost per year as a context metric (issues 4 and 6). Quality: the 53 vehicle values of 0
+made missing (CLEAN-10, CLEAN-11); the claim costs at 200 kept as recorded, as the call on fremtpl2's fixed amounts
+(2026-10-20); the target is in dollars while CLEAN-16's default and most sibling tables use log1p, kept as implemented
+on your call of 2026-11-02; the 7 costs per year of 1M dollars or more kept. Weighed: a documented textbook table +, a
+real pricing task priced per year insured +, few coarse rating factors -, a weak signal (best honest score 0.120) -.
+Left for Andrej: none (issues 3 and 4 resolved 2026-11-02, issue 6 2026-11-06).
 
 Changes made after the review panel (AI, 2026-11-01), text only (rows, split and metric unchanged): `exposure` is
 described as the share of the year observed, cut short after some claims, and named in `fit_reason` as a kept leak;
 the split note gives the one observation period and the file-order check; the metric reason cites Ye et al. (2022) and
 describes Frees et al. and Allstate as they are; the book's later sections are marked unverified; the duplicates and
-200-floor notes give their baselines and precedent; `driver_gender` is renamed `gender`.
+200-floor notes give their baselines and precedent; `driver_gender` is renamed `gender`. Changed on 2026-11-06 (issue
+6): the target is the cost per year insured, `exposure` the weight and no feature, the metric the weighted Gini on the
+rate; `fit_reason` no longer names a kept leak.
 
-**Main points:** All issues are resolved: the Gini confirmed for this table (4), the book's claims corrected (3).
+**Main points:** All issues are resolved: the cost per year insured with `exposure` as the weight (6), the Gini for this
+table (4, now weighted on the rate), the book's claims corrected (3).
 
 **Issues for Andrej:**
 
@@ -208,6 +213,78 @@ describes Frees et al. and Allstate as they are; the book's later sections are m
 
    **Resolved (2026-11-02, Andrej):** the target scale as each file implements it (issue 5): this table ships the
    claim cost in dollars, the log1p tables keep log1p.
+
+6. **Ship the claim cost per year insured, with `exposure` as the weight and no longer a feature?**
+
+   * **Problem:**
+     - `exposure` is the realized share of each one-year policy inside the extract (median 163 days, 1.9% full years),
+       and some claims cut it short: the 193 likely write-offs have a median exposure of 0.37 against 0.65 for the
+       other claims.
+     - Your call of 2026-11-02 kept it as a feature[^call], because on the unweighted Gini of each policy's cost the
+       part cut short showed no gain (as an offset only 0.1833, as a free feature 0.1824).
+     - The exposure study of 2026-11-05 measured it on scores that can see the cut, and the rules adopted on 2026-11-06
+       never let a realized weight be a model input[^weight].
+   * **Background:** Issue 2 named the actuaries' design (the cost per policy-year, the time only as the metric's
+     weight) and set it aside because Data Foundry had no training weight. The API now has one (`sample_weight`):
+     every model trains with the weight it is scored by, so one claim on a one-day policy counts by its cost, not as
+     5.2 million dollars a year.
+   * **Effect on the task:**
+     - The target is `claim_cost_per_year` = `claimcst0` / `exposure`, in dollars on the identity scale (issue 5's
+       scale); `exposure` leaves the features and becomes the weight scoring column, the metric's `weight` input and
+       the task's `sample_weight`; the metric is `normalized_weighted_gini` on the rate, still a context Gini.
+     - A weighted fit estimates the cost per year that breaks even (292.90 dollars a year for the portfolio); a learner
+       that ignores the weight estimates the mean of cost / exposure (755.26, 2.6 times as much).
+     - Every exposure is at least one day, so no row goes. The 7 policies at 1M dollars or more a year (one claim each
+       on 1 to 7 days observed, up to 5.24 million, 1.26% of the cost) are kept and listed in the notes; actuaRE's copy
+       removes them. They hold 45% of the exposure-weighted sum of squares of the rate, while the Gini counts each by
+       its cost.
+   * **Experiments:**
+     - Exposure study (own 3x3 KFold): on the claim counts, 47% (GLM) to 82% (LightGBM) of a free model's gain over a
+       constant rate is leak; at a quote (exposure one year) the free LightGBM is 0.0068 worse in mean deviance than
+       the offset model, better on 0 of 9 folds.
+     - Same study, on the weighted Gini of the cost per year: a Tweedie GLM that reads the exposure scores 0.238
+       against 0.125 for an honest GLM; the rating factors predict the exposure at R^2 0.06 (ROC AUC 0.62 for
+       exposures of 0.2 years or less).
+     - On the 9 shipped splits of the new definition, every fit with the sample weight: an honest Tweedie LightGBM
+       scores 0.059 (SD 0.021), an L2 LightGBM on the identity scale 0.060 and a Tweedie GLM 0.120, against 0 for the
+       weighted constant (above it on 9 of 9); with `exposure` added as a feature 0.149 (+0.089, SE 0.010), 0.159
+       (+0.099, SE 0.008) and 0.236 (+0.116, SE 0.006), higher on 9 of 9 each. More regularised LightGBM settings:
+       0.070 to 0.090 honest, +0.094 to +0.124 with the exposure.
+     - 1/exposure alone scores 0.205, above every honest model. The weight-proxy probe: the rating factors predict the
+       exposure at R^2 0.07 (Spearman 0.26, mostly through the vehicle value), and no rating factor gains through it
+       above noise.
+   * **Consistency:** Follows fremtpl2 and bemtpl97 (2026-11-06: the claims per year insured, the exposure as the
+     weight and never a feature)[^cases]. It departs from your call of 2026-11-02 on this table; what sets the case
+     apart is a measurement made after it: the deviance on the claim counts shows the leak the slice Gini hid.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Cost per year, weighted Gini (implemented) | `exposure` the weight; Gini on the rate | the actuary's Gini; no exposure leak | fold SD 0.02-0.03 |
+     | B | Claim frequency, weighted deviance | `numclaims` / `exposure` | as fremtpl2, bemtpl97; fold SD 0.01 | drops the claim size |
+     | C | Keep `exposure` a feature | the call of 2026-11-02 | no training weight | 47-82% of the count gain is leak |
+
+   * **Recommendation:** A (the exposure study's decision D8). **Decision:** A, B or C?
+
+   [^call]: Andrej, 2026-11-02 (issue 2): `exposure` kept as a feature with its note, recorded as the **LEAK-10** case
+     for time on risk cut short by the outcome; his Gini of the same day (issue 4) was the unweighted one.
+   [^weight]: **LEAK-41** (Must, 2026-11-06): a column the task uses as a weight or a rate's denominator whose value is
+     set or cut after the prediction point is never a model input, whatever it scores; **MET-14** (Should) and
+     **MET-15** (Must): the rate per unit, its realized denominator the metric's row weight and the `sample_weight`;
+     **CLEAN-16** (Should, amended 2026-11-06): a rate scored by a Gini keeps the scale the curator chose.
+   [^cases]: fremtpl2 issue 6 and bemtpl97 issue 1, resolved 2026-11-06 (Lennart); the exposure study of 2026-11-05,
+     decision D8.
+
+   **Resolved (2026-11-06, Lennart):** A, decision D8 of the exposure study of 2026-11-05. The target is
+   `claim_cost_per_year` = `claimcst0` / `exposure` in dollars (identity scale); `exposure` is the weight scoring
+   column, the `weight` input of `normalized_weighted_gini` and the task's `sample_weight`, and never a feature
+   (LEAK-41, MET-14, MET-15); the metric stays a context Gini, the CAS Gini of the cost per year, normalised; the claim
+   frequency with a weighted deviance was not chosen. No exposure is 0 (the shortest is one day), so no row goes; the
+   7 rows at 1M dollars or more a year are kept and named in the notes. Supersedes Andrej's call of 2026-11-02 (issue
+   2) and changes the form of the Gini of issue 4: the deviance on the counts shows the leak the slice Gini hid. On the
+   shipped splits an honest Tweedie LightGBM scores 0.059 and a Tweedie GLM 0.120 against 0 for the weighted constant;
+   `exposure` as a feature adds +0.089 and +0.116 (9 of 9); 1/exposure alone scores 0.205. `dataset check`: 0 errors,
+   0 warnings (the warning `task_feature_looks_like_exposure` is gone).
 
 **Review panel:** ship after changes (mediator). Claim audit: 37 claims, 30 hold, 5 refuted (all fixed in the
 text), 2 untested (whether the costs are paid or incurred; the book's later sections). Blind review: exclude as

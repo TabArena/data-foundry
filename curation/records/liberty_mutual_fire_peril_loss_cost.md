@@ -5,7 +5,7 @@ checked_by:
 - Andrej
 data_foundry_status:
 - WIP (DF)
-claimed_by: Andrej
+claimed_by: Lennart
 suggestion: 'Yes'
 priority: 3
 tags:
@@ -103,6 +103,8 @@ CC (2026-11-02, Andrej): the forced IID split ships (issue 1 (a)): "Forced group
 CC (2026-11-02, Andrej): `var11` is the metric's weight and stays a feature (issue 2 (a)): "I want to score with the feature and also keep it as a feature assuming it to be known during train and test time as input for the model." The competition's weighted normalized Gini with `var11` as weight, and `var11` a feature; recorded in MET-2 (amended 2026-11-02: a weight known at the prediction point for train and test rows alike stays a feature and is also the metric's weight). All issues of the REVIEW are now resolved.
 
 CC (2026-11-02, Andrej): ship, with `var11` a feature and the weight of the competition's normalized Gini (issue 2 (a), MET-2 amended).
+
+CC (2026-11-06, Lennart): `var11` stays a feature and a copy, `var11_weight`, ships as the scoring column the weighted Gini reads (MET-2 as reworded on 2026-11-05; asked in PR #47's review); no training weight, since the weight is a function of the features (MET-15). Issue 3 of the folder's REVIEW.md.
 
 ## Reference
 

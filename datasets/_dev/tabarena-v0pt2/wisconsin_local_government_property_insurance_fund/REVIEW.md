@@ -24,7 +24,7 @@ benchmark run. Quality: CLEAN-10 triggered, fixed (`NoClaimCredit` missing witho
 class kept with a note); dollars rather than CLEAN-16's log default (issue 2). Weighed: documented source and real
 decision +; small test years, one claim that is 35% of 2010's losses, rating inputs the public file lacks (endorsements,
 county, the full fire class), coverage alone ahead of the probed models in 2010, and a 2008 window that trains on 41% of
-the rows -. Nothing left for Andrej: issues 1 and 2 are resolved.
+the rows -. Issues 1 and 2 are resolved; issue 3, the split (moved here from the rules PR on 2026-11-05), is open.
 
 Changes made after the review panel (AI, 2026-11-01): the changes the panel agreed are made (the source's metric
 `ordered_lorenz_gini`, new in the library, with `Premium` as base and scoring column; the target in dollars;
@@ -34,10 +34,11 @@ curator's marks (AI, 2026-11-02): the member folds replaced by three expanding y
 input, `ForcedGroupedFromTemporal` dropped; every split figure re-measured. The panel's sections describe the
 definition before these changes.
 
-**Main points:** Nothing open. Issue 1 is resolved by three expanding yearly windows (test 2008, 2009, 2010; train
-shares 40.6%, 60.6%, 80.3%), no gap, the 2008 window below SPLIT-14's floor on the curator's call; issue 2 by the
-claims in dollars. The record's `year` is now 2017, and its `required_split` (Temporal) and tag (Non-IID (Temporal))
-match the definition.
+**Main points:** Open: issue 3, which split the five policy years get, moved here from the rules PR on 2026-11-05
+(three windows with the 2008 window below SPLIT-14's floor, two windows, folds by member, or `No`). Issue 1 is resolved
+by three expanding yearly windows (test 2008, 2009, 2010; train shares 40.6%, 60.6%, 80.3%), no gap, the 2008 window
+below SPLIT-14's floor on the curator's call; issue 2 by the claims in dollars. The record's `year` is now 2017, and
+its `required_split` (Temporal) and tag (Non-IID (Temporal)) match the definition.
 
 **Issues for Andrej:**
 
@@ -148,6 +149,89 @@ match the definition.
    log scale?
 
    **Resolved (2026-11-02, Andrej):** (as implemented) the claims in dollars.
+
+3. **Which split do five policy years get: three windows with the oldest below half the rows, two windows, folds by
+   member, or `No`?**
+
+   * **Problem:**
+     - The file covers five policy years (2006-2010, 5,639 member-years of 1,227 members), so three expanding yearly
+       windows fit only if the oldest, test 2008, trains on two years, 40.6% of the rows, below the floor of half the
+       rows that every window must keep[^floor].
+     - The rules send a release with too few periods to folds by member instead[^forced], but those folds share each
+       year's claim level across the split, a leak measured on 2026-11-02.
+     - The three windows were the call of 2026-11-02 (issue 1); the review of the rules PR took that call out of the
+       rules on 2026-11-05 to be decided here, and a rule of this strength takes no exception, only a change of the
+       rule[^must].
+   * **Background:** The question and options A to D are Lennart's, in
+     [PR #47's conversation](https://github.com/TabArena/data-foundry/pull/47#issuecomment-6659677982) (2026-11-05,
+     moved from the closed #53); E is added from the rules (Recommendation). The shipped windows train on 80.3% (test
+     2010), 60.6% (2009) and 40.6% (2008) of the rows, with no gap[^gap]. In folds by member the member id leaves the
+     inputs[^group], and the test members are unseen in training, while the fund re-rates the members it knows.
+   * **Effect on the task:**
+     - A: the 2008 window trains on 2006-2007 alone, where the no-claim credit is unknown on every training row, so a
+       third of the score comes from a training side unlike the fund's.
+     - B: two windows, and the 2010 one rests largely on one claim (35% of the year's claims), so model comparisons
+       lean on 2009.
+     - C and E: unseen members are tested on the same years the training members cover; the year-level leak lifts the
+       pooled score, and the folds rank LightGBM far below where the valid windows put it (Experiments).
+   * **Experiments:**
+     - On the shipped windows (test 2008, 2009, 2010; with the member id): untuned Tweedie GLM 0.254, 0.251, 0.350;
+       LightGBM Tweedie 0.146, 0.254, 0.327; coverage alone 0.019, 0.195, 0.540.
+     - The leak of the member folds (2026-11-02, untuned LightGBM, 9 folds): the test year's training rows add ROC AUC
+       +0.010 for a claim (8 of 9 folds) and Gini +0.113 on the pooled folds (5 of 9); within one year only +0.002 and
+       +0.008 (SD 0.20), so what crosses is the year's claim level, and dropping the year does not remove it.
+     - The same inputs on every design (no member id; untuned; run for this issue): coverage alone, the Tweedie GLM
+       and LightGBM score 0.368, 0.312 and 0.232 on the two valid windows (mean of 2009 and 2010), 0.251, 0.291 and
+       0.215 on the three shipped windows, 0.318, 0.265 and 0.044 on the member folds pooled, and 0.209, 0.192 and
+       -0.001 on the member folds scored within each year (SD over the 9 folds 0.06 to 0.17).
+   * **Consistency:** california_house_prices_2020 dropped its window that trained on 25% rather than ship it[^cal].
+     nba_players_2016_2019 and open_university_learning_analytics_dataset shipped folds by entity with one valid
+     window each, and seven insurance tables of this batch ship forced splits. What sets this case apart: two valid
+     windows exist, so a temporal split is possible with two windows instead of three.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Three yearly windows (implemented) | test 2008, 2009 and 2010; the 2008 window trains on 40.6% | three windows; no period shared across the split | breaks the floor, a rule without exceptions; the precedent dropped such a window |
+     | B | Two yearly windows | test 2009 and 2010 only, trained on 60.6% and 80.3% | keeps the floor; closest to how the fund rates | two windows need a change of the three-window rule; the 2010 window rests on one claim |
+     | C | Folds by member, the leak kept | member folds tagged forced from temporal; the year-level leak measured in the notes | what the rules prescribe for too few periods | a measured leak; unseen members; LightGBM near 0 against 0.23 on the valid windows |
+     | D | `No` | retire the dataset | no departure | a forced split alone never retires a dataset; loses a documented public-sector pricing task |
+     | E | Folds by member, scored within each year | C, with the Gini taken per year against that year's premium and averaged over the years | removes the year-level leak; one year's Gini, as the source scored | a per-year Gini in the metric library; LightGBM still near 0 |
+
+   * **Recommendation:** E, the answer the rules give: a release with too few periods ships folds by member, and a
+     leak found across them is removed where it can be[^leak], which scoring within each year does; C only if the
+     per-year Gini cannot be had. A and B each need a change of the floor rule. If the cost of the member folds
+     decides for you (LightGBM near 0 against 0.23 on the valid windows), B is the change the facts support, since two
+     valid windows exist, while A has a precedent against it. D is not what the rules ask. **Decision:** A, B, C, D
+     or E?
+
+   [^floor]: **SPLIT-14** (Must): a temporal task has at least 3 windows, and no window's train side holds less than
+     50% of the data; "A task that cannot meet it ships under SPLIT-8".
+   [^forced]: **SPLIT-8** (Must; narrows SPLIT-14), reworded 2026-11-05 (Lennart): a release with too few periods for
+     three windows ships in the closest regime that keeps the rows, grouped by the entity when the periods are stacked
+     and the entities recur (`ForcedGroupedFromTemporal`), with the cost measured against the valid windows; "Being
+     forced alone never makes a dataset `No`".
+   [^must]: principles.md, "Exceptions and amendments": "A Must has no exceptions: only a higher-ranked Must overrides
+     it, and anything else is an amendment."
+   [^gap]: **SPLIT-10** (Should): no gap here, an exception that serves SPLIT-14, as in pricing_game_2016_french_fleet.
+   [^group]: **LEAK-33** (Must): a group id column is split metadata, never a feature.
+   [^cal]: **SPLIT-14**, Cases: california_house_prices_2020 (2026-10-21), whose `min_train_fraction=0.25` let the
+     oldest window train on 25% of the rows; its windows now train on 50%, 67% and 83%.
+   [^leak]: **SPLIT-8**: "A leak found is weighed case by case like any other: removed where it can be, otherwise the
+     task may still ship as an approximate fit with the leak measured in the notes." **LEAK-6** (Must): "a confirmed
+     leak goes even when small". **MET-2** (Must): the metric means on our task what it meant on the source's, whose
+     Gini compares the members of one year (2011) against that year's premium.
+
+   **Notes for the AI:** A: an amendment of SPLIT-14 for a floor below half (wording and Cases row with the curator);
+   the definition stays. B: an amendment of SPLIT-14, e.g. "a temporal task whose release gives exactly two windows,
+   both training on at least half the rows, ships those two; fewer go to SPLIT-8" (issue 1, option (a));
+   `TemporalSplits(window=1, unit="unique", n_windows=2)`, the no-gap exception kept. C: `Grouping(on="PolicyNum")`
+   per row, no `temporal`, tag `ForcedGroupedFromTemporal`, `PolicyNum` the group and no feature, the leak test's
+   numbers in `splits_comment`, a SPLIT-8 Cases row; `task_time_on_few_unique` no longer fires. E: as C, plus a library
+   metric for the mean of per-group ordered-Lorenz Ginis (MET-12 name such as `mean_group_ordered_lorenz_gini`, tested
+   against a loop over `ordered_lorenz_gini`, timed; MET-13), `Year` copied in `_clean` to a scoring column of role
+   `group` (`Year` stays a feature, MET-2), `inputs={"weight": "Premium", "group": "<copy>"}`. D: record `No` with its
+   marker.
 
 **Review panel:** ship after changes (mediator). Claim audit: 38 claims, 32 hold, 6 refuted or partly refuted (the
 metric origin, `NoClaimCredit`'s zeros, the close extract and the stale README fixed here; TP-4 settled by the

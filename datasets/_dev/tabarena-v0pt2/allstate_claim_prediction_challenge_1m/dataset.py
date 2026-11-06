@@ -131,6 +131,7 @@ class AllstateClaimPredictionChallenge1m(AbstractCuratedDataset):
         - Potential leak, kept on purpose (LEAK-30, weak): Var1 to Var8 and NVVar1 to NVVar4 are "mean 0 stdev 1" (data dictionary), yet over the labelled file their means are -0.065 to +0.019 and their standard deviations 0.97 to 1.04, so the host scaled them over a population we do not know, which may have taken in the test years. The yearly means of Var1 to Var8 rise from 2005 to 2007 (Var2 from -0.154 to +0.013) as the fleet's model-year mix changes; NVVar1 to NVVar4 do not rise. One shift and one scale per column; the unscaled values were never published.
         - Note: 82.9% of the 2006 rows share every feature with a row of another household (one vehicle type, policy profile and history): natural repeats, kept (LEAK-18).
         - Note: the competition rules say "Participants will not use the data for purposes unrelated to the competition"; a 2022 forum question about the licence (thread 309810) has no answer.
+        - Exposure (LEAK-41, MET-14; 2026-11-06): the release publishes no exposure; the rows are vehicle-years, some of them part years partly cut by claims (vehicles gone by 2007 had claimed at 1.40% in 2006, against 0.73% for the rest). The in-year vehicle count, which the outcome cuts, is already dropped, and the Kaggle metric is an unweighted Gini, so no weight is declared. If a later release adds an exposure, it is a realized time on risk: the rate's denominator and weight, never a feature.
     """
 
     # Task

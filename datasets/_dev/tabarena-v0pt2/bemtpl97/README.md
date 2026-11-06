@@ -279,8 +279,8 @@ The source documents unique policyholders. Coarse characteristics and zero-heavy
 
 0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicate_rows`: 176 exact duplicate row(s) (0.1% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
-- **info** `dataset_conflicting_duplicate_rows`: 50 row(s) (0.0%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
+- **info** `dataset_duplicate_rows`: 397 exact duplicate row(s) (0.2% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
+- **info** `dataset_conflicting_duplicate_rows`: 88 row(s) (0.1%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
 Accepted on purpose:
 
