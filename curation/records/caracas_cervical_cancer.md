@@ -8,6 +8,7 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - New IID
+- Case Series
 collections:
 - New (BeyondArena)
 - TabSTAR

@@ -11,6 +11,7 @@ suggestion: 'Yes'
 tags:
 - Many features
 - Non-IID (Grouped)
+- Timeless
 collections:
 - FS Benchmark
 original_source: Other

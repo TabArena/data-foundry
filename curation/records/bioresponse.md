@@ -11,6 +11,8 @@ data_foundry_status:
 suggestion: 'Yes'
 decision_markers:
 - Anonymized
+tags:
+- Timeless
 original_source: Kaggle
 year: '2011'
 domain: chemistry & material science

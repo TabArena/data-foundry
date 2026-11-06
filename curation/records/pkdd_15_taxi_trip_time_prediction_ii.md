@@ -11,6 +11,7 @@ decision_markers:
 - Needs extensive data wrangling
 tags:
 - Review Prio 1 (Atlas)
+- Non-IID (Temporal)
 original_source: Kaggle
 year: '2015'
 domain: industry & manufacturing

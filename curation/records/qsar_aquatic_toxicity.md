@@ -11,6 +11,7 @@ suggestion: Yes (Disagreement)
 tags:
 - Tiny Data
 - Non-IID (Grouped)
+- Timeless
 collections:
 - TabArena Reject
 original_source: UCI

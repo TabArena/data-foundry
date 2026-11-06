@@ -13,6 +13,7 @@ decision_markers:
 tags:
 - Tiny Data
 - Non-IID (Grouped)
+- Snapshot
 collections:
 - New (BeyondArena)
 original_source: UCI

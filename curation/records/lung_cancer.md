@@ -13,6 +13,7 @@ tags:
 - New IID
 - Many features
 - Tiny Data
+- Case Series
 collections:
 - FS Benchmark
 original_source: Other

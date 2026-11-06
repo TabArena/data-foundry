@@ -16,6 +16,7 @@ decision_markers:
 - No Good Target / Scientific Discovery
 tags:
 - Tiny Data
+- Case Series
 collections:
 - New (BeyondArena)
 - TabSTAR

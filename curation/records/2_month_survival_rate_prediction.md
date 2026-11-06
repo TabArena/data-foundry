@@ -11,6 +11,7 @@ decision_markers:
 - Outdated
 tags:
 - New IID
+- Non-IID (Temporal)
 collections:
 - New (BeyondArena)
 original_source: Other

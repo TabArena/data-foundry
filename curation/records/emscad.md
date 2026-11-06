@@ -12,6 +12,7 @@ suggestion: 'Yes'
 tags:
 - Non-IID (Grouped)
 - Free Text (Sentences)
+- Time Lost
 collections:
 - TexTabBench
 - TabSTAR

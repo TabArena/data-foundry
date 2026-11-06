@@ -10,6 +10,7 @@ suggestion: 'Yes'
 tags:
 - Non-IID (Grouped)
 - Multi-target
+- Timeless
 collections:
 - TabArena Reject
 - TabSTAR

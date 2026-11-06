@@ -10,6 +10,7 @@ suggestion: 'Yes'
 tags:
 - Tiny Data
 - New IID
+- Non-IID (Temporal)
 collections:
 - TabArena Reject
 - TabSTAR

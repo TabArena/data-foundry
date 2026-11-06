@@ -12,6 +12,7 @@ decision_markers:
 - Selection Bias
 tags:
 - Tiny Data
+- Snapshot
 collections:
 - New (BeyondArena)
 - TabSTAR

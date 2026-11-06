@@ -9,6 +9,7 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Non-IID (Grouped)
+- Timeless
 collections:
 - TabArena Reject
 original_source: ASlib

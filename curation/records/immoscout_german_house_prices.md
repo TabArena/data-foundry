@@ -10,6 +10,7 @@ suggestion: 'Yes'
 tags:
 - New IID
 - Free Text (Short)
+- Snapshot
 collections:
 - TabSTAR
 original_source: Kaggle

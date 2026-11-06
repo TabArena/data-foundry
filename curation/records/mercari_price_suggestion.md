@@ -12,6 +12,7 @@ suggestion: 'Yes'
 tags:
 - Larger IID Data
 - Free Text (Sentences)
+- Time Lost
 collections:
 - TexTabBench
 - TabSTAR

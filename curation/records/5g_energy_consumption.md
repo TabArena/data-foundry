@@ -11,6 +11,7 @@ decision_markers:
 - Data Quality Issue
 tags:
 - Non-IID (Grouped)
+- Snapshot
 collections:
 - New (BeyondArena)
 original_source: Zindi

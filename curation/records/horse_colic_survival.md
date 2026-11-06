@@ -12,6 +12,7 @@ decision_markers:
 - Class-dependent Recording
 tags:
 - Tiny Data
+- Non-IID (Temporal)
 collections:
 - TabArena Reject
 - TabSTAR

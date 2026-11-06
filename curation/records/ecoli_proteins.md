@@ -9,6 +9,7 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Tiny Data
+- Timeless
 collections:
 - TabArena Reject
 original_source: UCI

@@ -9,6 +9,7 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Larger IID Data
+- Time Lost
 collections:
 - New (BeyondArena)
 - TabSTAR

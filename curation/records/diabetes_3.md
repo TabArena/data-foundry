@@ -9,6 +9,7 @@ suggestion: 'Yes'
 priority: 1
 tags:
 - Tiny Data
+- Time Lost
 collections:
 - TabSTAR
 original_source: Website

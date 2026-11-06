@@ -11,6 +11,7 @@ decision_markers:
 - Selection Bias
 tags:
 - Tiny Data
+- Case Series
 collections:
 - TabArena Reject
 original_source: UCI
