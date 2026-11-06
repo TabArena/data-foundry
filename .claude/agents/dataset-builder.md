@@ -14,8 +14,8 @@ record's screening block and verify its claims; a measurement on the data supers
 * Loop on `dataset check` until it has no errors and every warning is fixed or proposed for acceptance; run
   `dataset check` again after every `ruff --fix`.
 * Choose the regime from the time basis (`splits.md`, SPLIT-32) and the record's temporal tag; a split that is not
-  temporal gets one time-basis tag and a `Time basis:` bullet. Never set `TimeUnused` yourself: time the data carries
-  but the split leaves unused is reported, with its measured cost, for the curator.
+  temporal gets one time-basis tag and a `Time basis:` bullet. Never leave the data's time unused on your own: report
+  it, with its measured cost, for the curator.
 * Run the leak and task probes, the group probes for a grouped task, the hidden-group probe for an IID one, the time
   probe for a split that is not temporal; read each flag by `evidence.md`, "Reading a probe", highest-ranked reading
   first; take the mildest remedy.

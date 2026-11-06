@@ -595,9 +595,9 @@ def test_a_time_basis_on_a_temporal_split_is_flagged():
     assert "meta_time_basis_on_temporal" in slugs_of(make_temporal_container(dataset_metadata=metadata))
 
 
-def test_too_few_periods_on_an_iid_task_is_flagged():
-    metadata = make_dataset_metadata(data_tags=["IID", "TooFewPeriods"])
-    assert "meta_tags_contradict_regime" in slugs_of(make_container(dataset_metadata=metadata))
+def test_a_time_basis_line_alone_silences_the_note():
+    metadata = make_dataset_metadata(data_tags=["IID"], curation_comments="- Time basis: dates kept, not split on.")
+    assert "meta_time_basis_missing" not in slugs_of(make_container(dataset_metadata=metadata))
 
 
 def test_non_iid_tags_on_an_iid_task_are_flagged():

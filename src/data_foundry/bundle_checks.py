@@ -1918,7 +1918,7 @@ def _check_data_tags(ctx: _Ctx) -> Iterator[CheckResult]:
                 "warning",
                 f"Task declares no `time_on`/`group_on` (IID split) but `data_tags={sorted(tags)}` has no `IID` tag.",
             )
-        wrong = tags & (non_iid_tags | {"Non-IID", "ForcedGroupedFromTemporal", "TooFewPeriods"})
+        wrong = tags & (non_iid_tags | {"Non-IID", "ForcedGroupedFromTemporal"})
         if wrong:
             yield CheckResult(
                 "meta_tags_contradict_regime",
@@ -1981,23 +1981,23 @@ def _check_time_basis(ctx: _Ctx) -> Iterator[CheckResult]:
             f"`data_tags` carry {old}, superseded by the time-basis tags of SPLIT-32.",
             hint="; ".join(f"`{t}` becomes {SUPERSEDED_TIME_TAGS[t]}" for t in old) + ".",
         )
-    elif not basis:
+    elif not basis and "Time basis:" not in (ctx.dataset_metadata.curation_comments or ""):
         yield CheckResult(
             "meta_time_basis_missing",
             "info",
-            "The split is not temporal and `data_tags` do not say why.",
-            hint=f"Add one of {', '.join(TIME_BASIS_TAGS)} with a `Time basis:` line in `curation_comments` "
-            "(SPLIT-32).",
+            "The split is not temporal and the definition does not say why.",
+            hint=f"Add one of {', '.join(TIME_BASIS_TAGS)} with a `Time basis:` line in `curation_comments`, or, for "
+            "time the curator decided to leave unused, the line alone (SPLIT-32).",
         )
     target = ctx.target
     dated = [c for c in ctx.df.columns if c != target and pd.api.types.is_datetime64_any_dtype(ctx.df[c])]
-    if dated and not set(basis) & {"Snapshot", "TooFewPeriods", "TimeUnused"}:
+    if dated and "Snapshot" not in basis:
         yield CheckResult(
             "meta_time_present_unused",
             "warning",
             f"Date columns {dated} are in the data, but the split is not temporal.",
-            hint="Split by time, or tag `TimeUnused` with the measured cost of not doing so (`Snapshot` when the use "
-            "case only fills in inside the observed period), SPLIT-32.",
+            hint="Split by time (`Snapshot` when the use case only fills in inside the observed period). Leaving the "
+            "time unused is the curator's exception: accept this warning with the measured cost, SPLIT-32.",
         )
 
 

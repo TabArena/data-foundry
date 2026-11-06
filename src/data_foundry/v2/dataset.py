@@ -1816,8 +1816,6 @@ def _validate_time_basis(cls: type[AbstractCuratedDataset], fail: Callable[[str]
     tag = basis[0]
     if cls.temporal is not None:
         fail(f"`{tag}` says why a split is not temporal; this one is, so drop the tag.")
-    if tag == "TooFewPeriods" and cls.grouping is None:
-        fail("`TooFewPeriods` holds out entities across stacked periods; declare `grouping = Grouping(...)`.")
     old = [t for t in cls.data_tags if t in SUPERSEDED_TIME_TAGS]
     if old:
         fail(f"`{tag}` replaces {old}; drop the old tag.")
