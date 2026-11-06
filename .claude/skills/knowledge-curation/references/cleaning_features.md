@@ -190,8 +190,14 @@ ordinal from the context and logic, not from target information"). The curator's
 
 **CLEAN-15 (Must).** Drop rows with a missing target.
 
-**CLEAN-16 (Should).** Log a skewed positive target (prices, durations, counts) when the source has not, case by case,
-and name the column after the transform (`log_days_to_death`).
+**CLEAN-16 (Should; amended 2026-11-06, Lennart, on fremtpl2 and spanish_motor_insurance_coverage_level_2022_2024).**
+Log a skewed positive target (prices, durations, counts) when the source has not, case by case, and name the column
+after the transform (`log_days_to_death`). A target scored by a deviance, a rate included, ships untransformed: the
+deviance scores the mean on the original scale, which a fit on the log scale misses
+(`task_metric_deviance_on_transformed_target` is an error). A rate scored by a Gini keeps the scale the curator chose
+for the table, and the notes say what a weighted fit on that scale estimates. A log-scale rate with its denominator as
+a feature misleads L2 fits (spanish_motor_insurance_coverage_level_2022_2024: mean log1p(rate) rises from 0.085 to
+1.074 across exposure bands while the cost per year stays at 221 to 336); drop the feature or ship the identity scale.
 
 **CLEAN-17 (Should).** Keep rare classes of the source's labels (TP-8), and merge classes only by an established
 convention of the field, with the merge tested (TP-7): [task_probes.md](task_probes.md). Cases: audiology_diagnosis,

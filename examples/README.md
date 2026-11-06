@@ -13,6 +13,9 @@ curation log. Run them from the repository root, for example `python examples/lo
 | [`download_all_beyond_arena_datasets.py`](download_all_beyond_arena_datasets.py) | The registered collections, then the whole BeyondArena collection downloaded once (`prefetch`) and every checksum verified. | network, several GB |
 | [`curation_records.py`](curation_records.py) | Read, filter, edit and snapshot the curation log (`curation/records/`) from code. | a repository checkout |
 
+A task with a training weight names it: `sample_weight(container)` (`data_foundry.curation_container`) returns the
+column, and every model is fitted with it as each row's weight, never as a feature.
+
 Containers come through a collection (`data_foundry.collections`): it pins each dataset by `(unique_name, uuid)` and
 downloads it once into `~/.cache/data_foundry/<collection>/` (an explicit `cache_dir=...`, then
 `$DATA_FOUNDRY_CACHE`, take precedence). BeyondArena is the collection registered today; the TabArena v0.2 collection

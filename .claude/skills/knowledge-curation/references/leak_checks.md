@@ -51,7 +51,8 @@ each test fold's mean of every feature, so each split hands the model the test p
 **LEAK-6 (Must).** Measure before acting. A slight optimism with a known cause can stay with a note; a confirmed leak
 goes even when small. Cases: santander `has_*` (+0.003 AUC). One narrowing (amended 2026-10-26, Lennart, with LEAK-10):
 late values that cannot be located row by row stay with a note when the part that can be traced shows no gain
-(LEAK-10, second clause below).
+(LEAK-10, second clause below). A column the task uses as a weight or as a rate's denominator never stays with a note
+(LEAK-41).
 
 **LEAK-7 (Should).** The smallest fix that keeps a valid signal beats dropping the column. Cases: lag `incentive`
 (garments), drop the months where `PageValues` misbehaves (online_shoppers), cut the censored years (sf_permit_time),
@@ -94,10 +95,27 @@ each a case-by-case judgment of the curator, never a default:
   go when they may carry a gain (distribution_transformers_at_cauca_department) and stay with a note only when the
   part that can be traced shows none (onlinenewspopularity's keyword and self-reference counts, "go with (a)"). This
   narrows LEAK-6 for that one case; a "removing it changes no score" test alone is still no reason to keep
-  (2026-10-21).
+  (2026-10-21). A column the task uses as a weight or as a rate's denominator is LEAK-41's, never kept with a note.
 
 **LEAK-11 (Should; narrows LEAK-10).** A value measured after the outcome that weakens the signal stays, with a note.
 Cases: south_africa_coronary_heart_disease.
+
+**LEAK-41 (Must; narrows LEAK-6, LEAK-10 and LEAK-11; 2026-11-06, Lennart, on fremtpl2 and bemtpl97).** A column the
+task uses as a weight (the metric's row weight, the training weight, a rate target's denominator) whose value is set
+or cut after the prediction point is never a model input, whatever it scores, and neither is a column that encodes it:
+an earned premium (ship it annualised to the planned term, or not at all), a length corrected on some rows and
+realized on others, a sum of a group's exposures, a value whose precision marks the cut. A part known at the start
+ships as its own column (LEAK-7, LEAK-37). A column is judged by its timing, as under LEAK-10: a feature known at the
+prediction point that predicts the weight through risk selection stays (USE-6). For each suspect column the definition
+reports its gain on the declared metric with an L2 fit on the shipped scale and with the weighted actuarial fit, and
+decides on the worse; it states the score of 1/weight alone as the ceiling a leak would reach. No model is trained or
+scored on rows selected by the realized weight (such as full-year rows only); a row with no amount at risk may go
+under USE-7, its claims counted in the notes. Test: probe 22. Cases: fremtpl2 (`Exposure` as weight and feature
+scores 0.24341, as a free feature 0.24343: the weight alone does not stop the leak); frempl_french_motor_personal_line
+(1/length alone scores 0.184, the honest model 0.176); spanish_motor_insurance_coverage_level_2022_2024 (earned premiums
+annualised: +0.0096 under a weighted Tweedie fit, Spearman 0.025 with the exposure; its 49 rows without exposure); a
+simulated partial correction (renewals reset to a full year, new business left realized) still beats the oracle
+(0.46490 against 0.46799, with 30% of claims followed by a cancellation).
 
 **LEAK-12 (Must; applies SPLIT-9).** In a temporal task, training rows whose label is not yet known at the prediction
 point are filtered out by an as-of date: SPLIT-9 in [splits.md](splits.md). Cases: hotel_booking_demand.
@@ -349,6 +367,7 @@ The numbers compare the shipped data with a suspected fix; they are not leaderbo
 | 19 | The rows `_clean` removes, against the kept ones: the class shares, or the target's median and mean shift (`leak_probes.py --raw`) | the removed rows differ by their target: a filter on the outcome | protein_model_quality_rf_pcp: the 4,893 native references removed all score GDT_TS 1 (mean shift +3.0 SD), by design |
 | 20 | Each raw column the definition drops, alone against the shipped target on the shipped splits (`leak_probes.py --raw`) | a dropped column scores well alone: say why it is out, and check that no kept column carries it | protein_model_quality_rf_pcp: `TM` R^2 0.87 and `RMSD` 0.84, other quality scores of the same model, rightly dropped |
 | 21 | Exact copies in the raw table, before `_clean`: rows equal in every column but the target and the identifiers, by label (`leak_probes.py --raw`) | copies the definition removed, or the source's own repeats it kept (set against probe 5) | ai4d_lab_tanzania_tourism_classification_challenge: 2,018 of 18,506 rows in 718 groups, 370 with more than one label |
+| 22 | Weight proxy: the realized weight (a time on risk) fitted on the features; the declared metric with the weight added as a feature against the honest fit; each top feature's gain through the weight; for a Gini, 1/weight alone (`leak_probes.py --weight-proxy`) | a feature whose gain through the weight is above noise: decide by its timing (LEAK-41, LEAK-10) | australian_vehicle_insurance_2004_2005: the rating factors predict the exposure at R^2 0.06; frempl_french_motor_personal_line: 1/length alone 0.184 Gini, the honest model 0.176 |
 
 ### The raw state (probes 10, 18 to 21)
 
@@ -380,6 +399,18 @@ the end: cut before the first period out of band, or compare a second download (
 censoring at the release end only; whether a model refit at a window's start would have known each training label is
 SPLIT-10's question, and a changing case mix can hide or mimic a drop.
 
+### Probe 22
+
+Probe 22 (`weight_proxy`) asks whether the features carry a realized weight: the time on risk of a rate target, cut
+short when a claim causes a cancellation (LEAK-41). The weight is the task's sample weight, or the column
+`--weight-column` names. A cross-fitted LightGBM of the weight on the features gives the R^2, the Spearman correlation
+and the top features. The leak reference is the declared weighted metric with the weight added as a feature, against
+the honest fit: what a perfect proxy would gain. For each top feature, the weight-mediated gain is its gain without the
+weight minus its gain when the weight is a feature, with the SD over folds and seeds; a feature that stands in for the
+weight loses its gain once the weight is there. For a Gini metric the probe also scores 1/weight alone, the ceiling a
+leak would reach. A gain above noise flags a feature; it does not decide. The call is on timing (LEAK-41, LEAK-10): a
+feature known at the quote stays, even when it predicts the weight through risk selection (USE-6).
+
 ## Cases
 
 Precedents: how a rule was applied. They never change a rule; an exception is listed with the fact that set it apart.
@@ -407,7 +438,8 @@ The cases of the rules outside this table are named in the rules.
 | LEAK-10 (amended 2026-10-26, Lennart) | Snapshot data: a window sum that the data shows does not move with the outcome, given the covariates known at the prediction point | keep it with a note, case by case | account_debt_south_africa `TotalBilling`, `AverageBilling`: within file blocks and property-value bins their residuals separate the classes at ROC AUC 0.509 / 0.501 / 0.496 |
 | LEAK-10, LEAK-6 (amended 2026-10-26, Lennart) | Values read at a later pull whose late cells cannot be located row by row | keep them with a note only when the traceable part shows no gain; blank located cells; drop when a gain may sit on them | onlinenewspopularity `kw_*`, `self_reference_*` (crawl-time share counts: only counts unique above 5,000 can be traced; masking the traced young cells changes R^2 by -0.0004) |
 | LEAK-10, LEAK-6 (applied, Lennart, 2026-11-05) | Schedule fields that count the final schedule, not the plan at the prediction point (no-shows missing, visits booked later counted), the late cells not locatable row by row | keep them with a note: the whole-field worth is an upper bound on the late part, and it sits within about two seed SDs, so the late part shows no gain | medical_facility_operational_data: nine schedule fields (`AheadCount`, `IsFirst`, `IsLast`, `FutFlowCount2/4`, `NumScheduledNext*`, `SumTimeToCompleteNext*`) match the visits that took place in 99.9-100% of rows; dropping them changes LightGBM's MAE by +0.08 to +0.16 against seed noise of 0.07 (42-53-day windows) and +0.05 against 0.05 (14-day windows; +0.14 with an L2 model). Unlike distribution_transformers_at_cauca_department, where the dropped fields carried ROC AUC 0.701 against 0.639 |
-| LEAK-10, LEAK-7 (Andrej, 2026-11-02) | Time on risk cut short by the outcome (a policy or period that ends early after a claim or a cancellation), in insurance pricing | where the data locates the cut row by row, remove it or fix it (the length known at the start); where it cannot be located, keep it with a `Potential leak, kept on purpose:` note giving its measured size | frempl_french_motor_personal_line (25,131 early ends without a continuation given the start-known length, the dates locate them); pricing_game_2016_french_fleet (every period's length to 31 December); spanish_motor_insurance_coverage_level_2022_2024 (the located cancellations get a full year; the 5,653 first-year cuts, which look like a late start, kept: the traced estimate of the uncut time raises the Gini by 0.0065); australian_vehicle_insurance_2004_2005 (`exposure` kept: no dates locate the cut, and the traced part lowers the Gini). Departs from fremtpl2 (2026-10-20, `Exposure` kept) where the data locates the cut |
+| LEAK-10, LEAK-7, LEAK-41 (Andrej, 2026-11-02; amended 2026-11-06, Lennart) | Time on risk or another amount at risk cut short by the outcome (a policy or period that ends early after a claim or a cancellation) | where the data locates the cut row by row, fix it to the length known at the start (which may stay a feature) or remove it; where it cannot be located and the amount is the denominator of a count or amount target, the target ships as the rate and the recorded amount as its weight scoring column and the task's sample weight, never as a feature (MET-14, MET-15, LEAK-41; the proportional part stays, LEAK-7); where it cannot be located and is no denominator, LEAK-10's second clause applies | located: frempl_french_motor_personal_line (25,131 early ends without a continuation given the start-known length, the dates locate them); pricing_game_2016_french_fleet (every period's length to 31 December). Denominator: fremtpl2 (`Exposure` as a free feature gains 0.0040, 25% of the skill, and is never better at quotation); bemtpl97 (`expo`: +0.0043, 17%); australian_vehicle_insurance_2004_2005 (`exposure`, kept as a feature on 2026-11-02 because the traced part lowered the row Gini; on claim counts 47 to 82% of a free model's gain over the null is the leak); spanish_motor_insurance_coverage_level_2022_2024 (the realized length weights the rate; the 5,653 unlocated first-year cuts leave the features with `total_exposure`) |
+| LEAK-10, LEAK-37 (2026-11-06, Lennart) | A span or extent whose start or end the source defines by the outcome | read the source's definition of the start and end; where the outcome alone draws it (damage alone, "the rain that led to damage"), blank or drop it for those types; where it is drawn by the outcome or an outcome-free criterion, keep it with a `Potential leak, kept on purpose:` note giving its worth | noaa_storm_events_damage `duration_hours`: NWSI 10-1605 App. A times the span by the damage alone for Strong Wind and Heavy Rain (Sec. 45, 21: blank, proposed), by the damage or a wind or flooding criterion for Thunderstorm Wind, High Wind, Coastal Flood, Lakeshore Flood and Storm Surge/Tide (Sec. 46, 24, 4, 27, 44: kept with a note); on those seven types the column is worth 0.020 to 0.038 RMSLE; a tornado's span and path come from the damage survey (duration blanked, `TOR_LENGTH` and `TOR_WIDTH` dropped). bank_marketing `campaign` (the calls of this campaign, counted up to the last one): to be measured |
 | LEAK-10, LEAK-7 | An aggregate that may include the row's own outcome | keep only the period where it behaves like history, and call the evidence circumstantial | online_shoppers `PageValues`: Feb-May every buyer has PV > 0 (AUC 0.974), Jun-Dec 27% of buyers have PV = 0 (0.814); Feb-May dropped |
 | LEAK-10, LEAK-7 (applied, Lennart, 2026-11-05) | A rating factor that looks recorded after the row's own outcome in some periods only, the periods located by the record ids, with no source statement of when it was recorded | blank it in the periods where it does not behave like history, keep it where it does | fremtpl2 `BonusMalus`: blanked in `IDpol` blocks 0-4 (597,998 rows, 88%), where it is frozen across the two years and claimants pile on the first malus step 62-63, kept in blocks 5-6, where it follows the previous year's claims (LightGBM Poisson mean deviance 0.2327 to 0.2435, 3 folds; dropping it too costs another 0.0009 in blocks 5-6). bemtpl97 `bm` kept: its source registers the rating factors at the start of the policy period |
 | LEAK-10 (exception, Andrej, 2026-11-03) | Aggregates of the same hidden value as measured leaking aggregates, with no sign of a leak in tests without labels | drop them with the leaking ones as one block, and still measure each next to it (the tests without labels, and its worth with labels where the data allows), both in the notes: the judgement rests on the block and the measurements together | loan_default_prediction_imperial_college: f529-f531, f533-f535, f537 dropped with f527/f528; sets it apart from online_shoppers `PageValues` and account_debt_south_africa: aggregates of the same hidden x as two measured leaks (f527, f528), and with anonymised fields a test without labels is indirect |

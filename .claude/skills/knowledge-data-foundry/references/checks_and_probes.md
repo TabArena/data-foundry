@@ -27,7 +27,10 @@ definition drifted from its evidence. Then:
 * do not restate passing checks: "Bundle checks: 0 errors, 3 warnings (2 accepted)" is the right level.
 
 The slug-by-slug actions are in [definitions.md](definitions.md), "Bundle checks". Never run `dataset build` to verify:
-it mints a new UUID, and a build is the curator's call (or an explicit ask).
+it mints a new UUID, and a build is the curator's call (or an explicit ask). A task with a training weight has its own
+checks (`task_sample_weight_not_metric_weight`, `task_weight_invalid`, `task_rate_count_not_whole`), and two warnings
+say a weight may be missing (`task_metric_weight_without_sample_weight`, `task_feature_looks_like_exposure`):
+[definitions.md](definitions.md), Field mapping, `sample_weight`.
 
 ## The probes
 
@@ -43,11 +46,18 @@ values as shipped. The bundle check `dataset_special_feature` finds each feature
 `dataset_smiles_column` parses every SMILES with the pinned RDKit, `dataset_spectrum` checks that a spectrum's columns
 are numeric and finite and warns about missing intensities.
 
+A task with a training weight (`sample_weight`) is probed with it: `dataset_io.py` fills `ProbeInput.weights` from it,
+and the task, leak and group probes fit every model with the weight and take the weighted dummy (sum of target x
+weight over the sum of the weights: the portfolio rate); their R^2, RMSE, ROC AUC and log loss are weighted.
+`task_probes.py` and probe 22 also score the declared metric, and `task_probes.py` reports the share of each family's
+predictions at the metric's floor (`min_prediction`, MET-13).
+
 ```bash
 K=.claude/skills/knowledge-data-foundry/scripts
 .venv/bin/python $K/leak_probes.py <unique_name> [--splits 3] [--max-rows 50000] [--max-single-features 300] [--n-jobs 8] [--out DIR]
 .venv/bin/python $K/leak_probes.py <unique_name> --period-only [--time-on COLUMN] [--period D|W|M|Q|Y] [--tz ZONE] [--positive LABEL] [--tail N]
 .venv/bin/python $K/leak_probes.py <unique_name> --raw [--splits 3] [--max-rows 50000] [--n-jobs 8] [--out DIR]
+.venv/bin/python $K/leak_probes.py <unique_name> --weight-proxy [--weight-column COLUMN] [--objective metric|l2|OBJ] [--seeds 3] [--splits 3] [--max-rows 50000]
 .venv/bin/python $K/task_probes.py <unique_name> [--built] [--splits N] [--no-text] [--out DIR]   # or --all --jobs 8
 .venv/bin/python $K/group_probes.py <unique_name> [--repeats 3] [--permutations 100]
 .venv/bin/python $K/hidden_groups.py <unique_name> [--built] [--include-grouped] [--out DIR]     # or --all
@@ -56,7 +66,7 @@ K=.claude/skills/knowledge-data-foundry/scripts
 .venv/bin/python $K/tuned_results.py <unique_name> [--feature auto]
 ```
 
-* `leak_probes.py`: probes 1-6, 10, 13, 14 and 17-21 of the leak table (all features, each feature alone, missing
+* `leak_probes.py`: probes 1-6, 10, 13, 14 and 17-22 of the leak table (all features, each feature alone, missing
   indicators, drop one, exact copies across the split with and without string and datetime columns, each long string
   column alone as text (TF-IDF + SVD on the train side, character n-grams for one-token strings), nearest-neighbour
   agreement and the label-free distance score, a depth-2 and depth-3 tree on the label), with untuned LightGBM on the
@@ -77,7 +87,14 @@ K=.claude/skills/knowledge-data-foundry/scripts
   and 18 to 21; leak_checks.md, "The raw state"): the target in the raw row order, the rows `_clean` removed against the
   kept ones, each dropped raw column alone on the first shipped splits, and copies before deduplication. It traces each
   curated row to its raw row (`process(lineage=True)`, `dataset_io.from_definition(ds, raw=True)`) and says when it
-  cannot.
+  cannot. `--weight-proxy` runs probe 22 alone (leak_checks.md, "Probe 22"; `curation_probes.leak.weight_proxy`) on
+  the task's sample weight, or the column `--weight-column` names: a cross-fitted LightGBM of the weight on the
+  features (R^2, Spearman, top features), the declared weighted metric with the weight added as a feature against the
+  honest fit, each top feature's weight-mediated gain with its SD over folds and seeds, and for a Gini metric the score
+  of 1/weight alone. `--objective metric` (the default) fits the weighted actuarial model of a deviance (Poisson or
+  Tweedie) and L2 otherwise; run the other fit too (`--objective l2`), as LEAK-41 decides on the worse. A flagged
+  feature is judged by its timing (LEAK-41): one known at the quote stays (USE-6), even when its weight-mediated share
+  is high through risk selection.
 * `task_probes.py`: dummy baselines against three untuned model families (a fourth on more than 1,000 inputs:
   `selected_linear`, the linear model on the 500 inputs a univariate F-test picks on each train side), on every shipped
   split up to 30 for a dataset of at most 5,000 scored units and the first 5 otherwise, scored per group for a

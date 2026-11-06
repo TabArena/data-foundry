@@ -64,8 +64,8 @@ that:
   reads, so the scoring columns are the complete set of the extra data a metric needs, and no metric reads a feature
   (amended 2026-11-02, Andrej, on liberty_mutual_fire_peril_loss_cost's sum insured `var11` and
   noaa_afsc_bottom_trawl_survey_cpue's taxon; reworded 2026-11-05, Lennart: "duplicate as needed ... so we keep a
-  clean set of extra data"). A value the models must not get (a rating's output such as a premium) is a scoring
-  column only. The test fold holds what the metric reads:
+  clean set of extra data"). A value the models must not get (a rating's output such as a premium, or a realized
+  amount at risk) is a scoring column only. The test fold holds what the metric reads:
   whole patient stays for a per-patient utility, several eras or weeks per window for a per-era correlation or a
   slope over weeks, enough positives for the top k, every class the cost matrix names;
 * the metric means on our task what it meant on the source's: same target, same classes, same class balance. A task
@@ -212,17 +212,49 @@ it covers the metric, otherwise vectorised array code, or for a competition whos
 versions posted in its discussions, checked. It is tested to equal the official implementation on random inputs (to
 1e-9 or exactly), on one case computed by hand, and timed on 1M rows. A metric only one definition holds is never
 shipped: a reader of the files could not compute it. A metric undefined at the edge of its prediction domain floors
-the predictions, so a method gets a score rather than none (P6). The floor is a parameter the definition states, at
-a value below the smallest plausible prediction, as practice clips a model's output before scoring; the library's
-default is machine epsilon, as `log_loss` clips probabilities (Lennart, 2026-11-04, on bemtpl97: "in pratice we
-would also clip to a reasonable number"; `min_prediction=1e-6` for claim counts). Where the floor sets the scale of
-the worst error (a Tweedie deviance above power 1, whose cost of a near-zero prediction grows without bound), it has
-no default: the definition states it. A metric is stable at its edges (amended 2026-11-05, Lennart): any prediction
-a model can make gets a finite score that does not depend on the row order (ties count by the mean over their
-orderings), a NaN or infinite prediction is an error, and a fold or group the metric cannot score gives NaN or is
-left out by a stated rule, never an infinite value or a number made of rounding noise. How in Data Foundry, with the
-checklist: [definitions.md](../../knowledge-data-foundry/references/definitions.md), "Metrics" and "Metric
+the predictions, so a method gets a score rather than none (P6). The floor is a parameter the definition states, as
+practice clips a model's output before scoring (Lennart, 2026-11-04, on bemtpl97: "in pratice we would also clip to a
+reasonable number"): two orders below the smallest plausible mean, on the scale the metric scores (amended
+2026-11-06, Lennart: 1e-4 claims per year on fremtpl2 and bemtpl97), and the task probe reports the share of
+predictions at the floor. The floor sets the scale of a deviance's worst error (above power 1 a Tweedie deviance's
+cost of a near-zero prediction grows without bound), so `min_prediction` is a required parameter of
+`mean_poisson_deviance` and `mean_tweedie_deviance`, with no library default. A deviance gets no per-row cap: a cap
+makes the metric improper (on fremtpl2 a cap of 10 binds on honest predictions for 4% of the claim rows and moves the
+best constant 8% below the portfolio rate). A metric is stable at its edges (amended 2026-11-05, Lennart): any
+prediction a model can make gets a finite score that does not depend on the row order (ties count by the mean over
+their orderings), a NaN or infinite prediction is an error, and a fold or group the metric cannot score gives NaN or
+is left out by a stated rule, never an infinite value or a number made of rounding noise. How in Data Foundry, with
+the checklist: [definitions.md](../../knowledge-data-foundry/references/definitions.md), "Metrics" and "Metric
 stability".
+
+### Rates over an amount at risk, and weights
+
+**MET-14 (Should; applies USE-5; 2026-11-06, Lennart, on fremtpl2 and bemtpl97).** A count or amount accrued over a
+varying amount at risk (time on risk, vehicle-years, area swept) ships as the rate per unit when the decision prices
+or maps per unit. The count or amount leaves the frame as a part of the target (LEAK-10), and `_clean` asserts that
+target x denominator rebuilds it. A per-contract target stays when the planned term is constant and known at the
+prediction point; the notes give the share cut short (spanish_motor_insurance_2015_2018: 2,055 of 37,090). For
+Poisson the rate weighted by its denominator is the source's offset model (MET-11). A weighted Tweedie deviance
+weights the rate by v (the compound-Poisson convention); an offset on the total corresponds to weight v^(2-p) and is
+used only when the source scores that form.
+
+**MET-15 (Must; 2026-11-06, Lennart, on fremtpl2 and bemtpl97).** When a rate target's denominator is realized and
+the decision's quantity is a sum over it (a premium earned pro rata, a book's claims), the denominator is the metric's
+row weight (a weight scoring column read through the metric's `weight` input) and the task's `sample_weight`, never a
+feature (LEAK-41). The rule fixes the weight, not the metric: the metric is chosen per table (MET-10). When the
+decision is per unit of an equal-area map, per loan or per contract, the rate is scored unweighted and no sample
+weight is declared. A declared sample weight is always the metric's row weight. A metric weight that is a function of
+the features (liberty_mutual_fire_peril_loss_cost's `var11_weight`, g_research_crypto_forecasting_1m's asset
+`Weight`) needs no sample weight; the bundle check `task_metric_weight_without_sample_weight` is then accepted with
+that reason. Why: an unweighted fit of the rate estimates E[N/v | x], not the rate E[N | x] / E[v | x] that breaks
+even per unit; on fremtpl2 that is 1.61 times the portfolio rate (0.1186 against 0.0738 claims per year), and it
+scores worse than the constant rate (0.26187 against 0.25342).
+
+**MET-16 (Should; 2026-11-06, Lennart).** A survey or design weight is never a feature. The task is scored unweighted
+unless the use case is a population estimate; then one weight ships as a scoring column and as the sample weight, and
+folds follow the design when it is known. A weight for training alone cannot be declared, since a sample weight is
+always the metric's row weight (MET-15); the notes name it when sampling depends on the outcome. Cases:
+anes_voting_2026 (its nine survey-weight columns dropped from the features).
 
 ## Patterns
 
@@ -237,6 +269,7 @@ stability".
 | A range of costs or thresholds | the fallback | MET-7 |
 | A metric on the raw scale, a target shipped transformed | the metric with `target_transform` (the inverse before scoring) | MET-3 |
 | RMSLE | `rmsle` with `target_transform="log1p"` on a log1p target | MET-3, MET-11 |
+| A count or amount over a realized time on risk (an offset or weight in the source) | the rate per unit; the time on risk as the metric's row weight and the `sample_weight`, never a feature | MET-14, MET-15, LEAK-41 |
 | No metric anywhere | the fallback, with where we looked | MET-1, MET-11 |
 
 ## Cases
@@ -277,6 +310,8 @@ and wait for the curator; the others are decided.
 | MET-2 (amended 2026-11-02, Andrej), MET-1, MET-12 | blogfeedback | `mean_group_top_k_overlap` (k = 10) with the time column `basetime_day` as its group, Buza's Hits@10 per test day (2026-11-02, Andrej) | the source scores each test day's top 10; the day is the task's time column, which the metric reads where it is, as sat11 reads its group column | applied |
 | MET-2 (amended 2026-11-02, Andrej), MET-4 | liberty_mutual_fire_peril_loss_cost | the competition's `normalized_weighted_gini`; `var11` stays a feature and its copy ships as the weight scoring column (2026-11-02, Andrej; the copy 2026-11-05, Lennart) | `var11`, the sum insured, is a policy characteristic the host shipped in the test file for every team, set at underwriting and known for train and test rows alike; on a weighted Gini the best order is by expected loss whatever the weights, and as a feature it moved an untuned model's score by -0.010 (within fold noise) | applied |
 | MET-13 (amended 2026-11-05, Lennart) | the metric library (`gini_top_capture`, `par_k`, the correlations, the normalized Ginis, `mean_group_normalized_rmse`, `mean_group_top_k_overlap`, `gini_stability`, `rmsle`, `mape`, `mean_tweedie_deviance`, `normalized_early_detection_utility`) | every metric checked against the stability checklist on edge cases: tied predictions now count by the mean over their orderings (`gini_top_capture`, `par_k` had taken the row order), a constant prediction of a correlation scores 0, NaN predictions raise, and folds or groups the metric cannot score give NaN or are left out | a constant 0.1 group gave `mean_group_normalized_rmse` 1.2e17 from rounding; `normalized_gini` raised `ZeroDivisionError` when every loss was equal; `gini_top_capture` scored 0.447 or 0.420 on the same tied predictions in two row orders; a 6-row day lifted a random model's top-3 overlap from 0.2 to 0.6; the sepsis utility gave -inf on a fold without a septic patient | applied |
+| MET-14, MET-15, MET-13 (2026-11-06, Lennart) | fremtpl2 | claims per year insured (`ClaimNb / Exposure`, uncapped); `Exposure` the weight scoring column and the `sample_weight`, never a feature; `mean_poisson_deviance` weighted by `Exposure`, `min_prediction=1e-4` claims per year, origin `source` | `Exposure` as a free feature gained 0.0040 (25% of the skill) and was never better at quotation; the weighted rate deviance equals the source's mean count deviance (Noll et al.) times n / sum(Exposure) on every fold (1.891 on the full frame), so models rank the same | applied |
+| MET-14, MET-15, MET-13 (2026-11-06, Lennart) | bemtpl97 | claims per year insured (`nclaims / expo`); `expo` the weight scoring column and the `sample_weight`, never a feature; `mean_poisson_deviance` weighted by `expo`, `min_prediction=1e-4` claims per year (the floor of 1e-6 on the expected count, 2026-11-04, moved to the rate scale), origin `source` | `expo` as a free feature gained 0.0043 (17% of the skill) and was 0.0002 to 0.0011 worse at quotation; Henckaerts et al. score the count deviance of the prediction e x f (Eq. 5); this score is that deviance times n / sum(expo) (about 1.12), so models rank the same | applied |
 
 ## In Data Foundry
 

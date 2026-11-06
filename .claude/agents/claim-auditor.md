@@ -32,6 +32,9 @@ in `.claude/skills/knowledge-curation/references/metrics.md`). Test it:
   eras, enough positives for the top k, every class of the cost matrix). Score a dummy prediction on each fold with
   `data_foundry.v2.metrics.scorer`, and count the units per test fold.
 * Does it mean on our task what it meant on the source's (MET-2): same target, same classes, same class balance?
+* A declared `sample_weight` is the metric's row weight (MET-15): the metric reads that column as its `weight` input.
+  A rate's realized denominator that is still a feature, or a column that encodes it (an earned premium), is a
+  LEAK-41 finding.
 
 Also attack the claims nobody wrote down but the definition implies: that every feature is known at the prediction
 point, that the split is the one the use case needs, that the target is the real-world target, that no row is a copy
