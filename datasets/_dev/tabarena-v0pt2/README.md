@@ -18,7 +18,7 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
 
 ## Rebuild
 
-Latest scoped build, 2026-11-05: one format-2 definition, one traced raw input (379,004,009 bytes); saved reload and reproduction using only that input passed, with zero errors or warnings. This was a single-dataset rebuild, not a rebuild of the full working copy.
+Latest scoped build, 2026-11-05: repeated through the updated installed workflow for one format-2 definition and one traced raw input (379,004,009 bytes). Saved reload and reproduction using only that input passed, with zero errors or warnings and an unchanged checksum. This was a single-dataset rebuild, not a rebuild of the full working copy.
 
 - The raw files come from `local-data-warehouse/` (or `$DATA_FOUNDRY_WAREHOUSE`); each folder's `README.md` gives the
   download command.

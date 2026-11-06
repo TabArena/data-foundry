@@ -5,6 +5,7 @@
 - Repeat add, added review and the requested local build using the updated installed source/launcher at9048f36a; preserve the prior accepted task, eight predictors, AUROC, equal records and temporal 1M/111111 protocol. No scientific definition, data, label or split change.
 - Fresh launcher/API checks pass with zero errors/warnings and exact approved values/category/label/six-array equality. Prior numerical/probe/participant evidence is fingerprinted and verified reusable; a focused independent claim/precedent, mediator and editor recheck finds no new decision. Preserve original mark identity and record the latest explicit retention instruction in the supported review store.
 - Clarify TP-7's rule strength without rewriting historical curator text. The previously measured future-counter exploit and required benchmark-side own-row checks remain explicit; this repeat does not certify downstream enforcement.
+- Built `01a1ae4b-07ce-7d55-b885-f6b11cb52d72` from clean source `90e77a7ccbaadc25d903a32e255298f7ca31694a`, format 2, unchanged checksum `v2:c20f832bb366fbe3e87b547b5ddf83cca1c5877f6d3f4e7bd16c1d9a25b6e6e3`: 1,429,456 rows, eight predictors, zero errors/warnings. Saved reload and traced-input-only reproduction pass; exact prior data/splits and saved scores match. The one-file raw backup passed CRC/SHA verification. Historical containers still referenced by preserved earlier checkouts remain available; no raw files or containers are deleted.
 
 ## 2026-11-05, `duolingo_spaced_repetition_recall_1m_clf`: requalified on current main
 
