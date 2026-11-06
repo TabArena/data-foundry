@@ -18,9 +18,10 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
 
 ## Rebuild
 
-- Latest requested scoped build (2026-11-05): one format-2 container, with 43 input dependencies (29,687,404,633
+- Latest requested scoped build (2026-11-06): one format-2 container, with 43 input dependencies (29,687,404,633
   bytes). Saved-container reload and minimal-input reproduction match the checked checksum; the current trace matches
-  the locally verified input archive. Details and remaining limitations are in CHANGELOG.
+  the existing input archive, whose payloads and current sources were freshly reverified. Details and remaining
+  limitations are in CHANGELOG.
 - The raw files come from `local-data-warehouse/` (or `$DATA_FOUNDRY_WAREHOUSE`); each folder's `README.md` gives the
   download command.
 - To rebuild, ask Claude; it follows

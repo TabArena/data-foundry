@@ -4,12 +4,12 @@ unique_name: fugaku_hpc_job_failure_1m
 container_format: 2
 checksum: v2:b655fe6b87263768dd5a2e1232484929a22c3364e7daeeaa6b5cb6a30dc4a06d
 build:
-  uuid: 01a1ae07-bfad-7795-a282-7279d0d067dc
+  uuid: 01a1ae4e-b3ba-76cc-8c72-d588a0a10bab
   checksum: v2:b655fe6b87263768dd5a2e1232484929a22c3364e7daeeaa6b5cb6a30dc4a06d
-  built_at: '2026-11-05T23:26:15+00:00'
-  path: fugaku_hpc_job_failure/versions/01a1ae07-bfad-7795-a282-7279d0d067dc
+  built_at: '2026-11-06T00:43:48+00:00'
+  path: fugaku_hpc_job_failure/versions/01a1ae4e-b3ba-76cc-8c72-d588a0a10bab
   data_foundry_version: 0.0.5
-  git_sha: 1061a759c76f07a50ed2df4433a4a7d577368471
+  git_sha: c84f9b391016b94a8168083ff6b3e39ff999c7fc
   libraries:
     python: 3.12.3
     pandas: 3.1.0
@@ -71,7 +71,7 @@ decisions:
 
 Binary classification of `exit state`, scored with `roc_auc` on temporal splits by `adt`. 2,500,499 rows and 388 features. Source: Other (2024).
 
-Built as `01a1ae07-bfad-7795-a282-7279d0d067dc` on 2026-11-05. See [Build](#build).
+Built as `01a1ae4e-b3ba-76cc-8c72-d588a0a10bab` on 2026-11-06. See [Build](#build).
 
 ## In brief
 
@@ -487,10 +487,10 @@ Training labels end strictly before each refit. Source positions and availabilit
 
 | field | value |
 |---|---|
-| uuid | 01a1ae07-bfad-7795-a282-7279d0d067dc |
+| uuid | 01a1ae4e-b3ba-76cc-8c72-d588a0a10bab |
 | checksum | v2:b655fe6b87263768dd5a2e1232484929a22c3364e7daeeaa6b5cb6a30dc4a06d |
-| built_at | 2026-11-05T23:26:15+00:00 |
-| path | fugaku_hpc_job_failure/versions/01a1ae07-bfad-7795-a282-7279d0d067dc |
+| built_at | 2026-11-06T00:43:48+00:00 |
+| path | fugaku_hpc_job_failure/versions/01a1ae4e-b3ba-76cc-8c72-d588a0a10bab |
 | data_foundry_version | 0.0.5 |
-| git_sha | 1061a759c76f07a50ed2df4433a4a7d577368471 |
+| git_sha | c84f9b391016b94a8168083ff6b3e39ff999c7fc |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |

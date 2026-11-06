@@ -1,5 +1,30 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-06, verified Fugaku build with maintained installation
+
+- Built `fugaku_hpc_job_failure_1m` as `01a1ae4e-b3ba-76cc-8c72-d588a0a10bab` from clean source
+  `c84f9b391016b94a8168083ff6b3e39ff999c7fc` using maintained upstream pin `9048f36a`, without a source override.
+  Format 2 and checksum `v2:b655fe6b87263768dd5a2e1232484929a22c3364e7daeeaa6b5cb6a30dc4a06d` match the November 5
+  build. The accepted definition, data, class meanings, predictor scope, all split memberships and metric remain
+  unchanged. Original decisions, the formal SPLIT-10 exception and first-tuned-benchmark recheck remain in force; no
+  new human input or mark was needed.
+- Native saved-container reload and minimal-input reproduction pass with exactly the checked checksum, 0 errors, 0
+  warnings and 2 known informational heavy-check skips. Full build took 524 seconds, peak 20.5 GiB. Suite: 2,017
+  passed, 286 skipped; strict 2,091-record/pointer and scoped lint/format checks pass. The refreshed native review
+  page has three historical resolved issues, zero open marks and zero field decisions. Focused independent claim,
+  precedent, mediator and cold-editor reports remain separately dated from the historical
+  actual-data/model/column/split evidence reused after exact identity checks.
+- The fresh trace closes to 43 files (29,687,404,633 payload bytes), exactly the existing local
+  `fugaku-raw-inputs-2026-11-05.zip`. Every archive payload and current source SHA-256/size was freshly reverified; no
+  duplicate archive was needed. The run-local helper accommodation copies all four declared prepared outputs and the
+  marker independently. Minimal verification did not rerun preparation or write through source links; framework source
+  is unchanged.
+- Retain the explicitly documented generic raw-CLI, float32 neighbour-diagnostic and legacy generated-review-wording
+  limitations. No clean full native leak-CLI or HPO result is claimed. Earlier dated reports that state a then-pending
+  build or archive check are preserved as history; this entry records subsequent completion. Keep prior containers
+  because frozen reviewed checkouts and identity evidence reference them. No raw files or containers were deleted.
+  Dataset branch, containers, input archive and run artifacts remain local; no push, PR or main integration occurred.
+
 ## 2026-11-06, maintained-skill Fugaku recheck
 
 - Repeat the requested add/review/build cycle through the maintained installation after its pin upgrade to `9048f36a`.
