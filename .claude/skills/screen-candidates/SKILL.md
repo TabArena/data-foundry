@@ -81,8 +81,8 @@ listing is fine; nothing is built. Collect, with links:
   existence compared with the prediction point, whether that order varies from row to row (then the data is non-IID)
   and whether it can affect the target; where time lives, if anywhere (a date column, an order, an ID handed out in
   sequence, figures of a period, a date in a raw file or a parent upload); whether all rows share one moment. It gives
-  the record's collection facts, the likely use-case prototype (or that none fits), the likely regime (IID, grouped,
-  temporal) and the columns that may not be known at prediction time;
+  the record's collection facts, the likely regime (IID, grouped, temporal) and the columns that may not be known at
+  prediction time;
 * the metric the source scored (MET-1): the competition's evaluation page (Kaggle: the Evaluation tab, or the API's
   `evaluationMetric` via `uvx kaggle==2.2.2 competitions list -s <slug>`; Zindi, DrivenData and challenge pages state
   it), the task description, or the evaluation section of the paper that defined the task. Note whether it is a
@@ -160,7 +160,7 @@ note kept below it:
 **Screening (AI, 2026-10-20):** `TBD -> Yes`, priority 4: <why, one line>.
 - Source: <first publication, who, year>; as published: <rows x columns, target, tables>.
 - Use case: <actor, moment, decision>; fit <direct | approximate>; collection <the Samples, Time and Target facts>:
-  <where time lives>; likely prototype <tag | none fits>; regime <IID | grouped | temporal> because <...>.
+  <where time lives>; regime <IID | grouped | temporal> because <...>.
 - Siblings and duplicates: <records checked, and what they decided>; external collections: <...>.
 - Better data: <the hit: link, units and years against this one's, its record `<name>`> | none found (<where we
   looked>). On a hit's own record: found as better data for `<record>`.

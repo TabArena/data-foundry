@@ -20,24 +20,26 @@ start), `splits.md`, `evidence.md` (reading a probe).
 Check, with numbers (load through `.claude/skills/knowledge-data-foundry/scripts/dataset_io.py`; thread caps on every
 Python run):
 
-* the time basis first (`splits.md`, SPLIT-32): match the dataset and its use case to one of its prototypes by its
-  five questions, from the source and the data (or find that none fits), and check your answer as a pair with the
-  record's collection facts (the `Samples:`, `Time:` and `Target:` tags) against the table in SPLIT-32, and against
-  the definition's time basis and its `Time basis:` line. For a split that is not temporal, run the time probe
+* the time basis first (`splits.md`, SPLIT-32). The builder designed the split for the use case without a prototype
+  in mind; matching it is your job. Match the dataset and its use case to one of the prototypes by the five
+  questions, from the source and the data (or find that none fits); check your answer as a pair with the record's
+  collection facts (the `Samples:`, `Time:` and `Target:` tags) against the table in SPLIT-32; then propose the
+  time-basis tag and its `Time basis:` line, or flag the split when it treats non-IID data as IID without a prototype
+  that allows it. For a split that is not temporal, run the time probe
   (`.claude/skills/knowledge-data-foundry/scripts/time_probes.py <name> --out <run folder>`) and read every flag: a
   date column, a dropped date, a drifting row order or ID, period figures. A dated source with a split that is not
   temporal needs a prototype that allows it, shown: for `StationaryRelation` measure it yourself (the target by
-  period; the score on the newest windows under a temporal split against the shipped split) and report both; * the
-  regime the use case implies (new entity or known entity; a stream over time), against the one declared; * temporal:
-  the time column's meaning, windows and their sizes, the train side, the gap against the label delay, training rows
-  whose label is not known at the prediction point, the training history, a season-shaped test window; * grouped: a
-  true group id (never a similarity cluster or a hash), what one prediction is, what is known about a new group, the
-  aggregation; * IID: hidden groups and near copies across the split, and what the score drops to under a grouped
-  split;
+  period; the score on the newest windows under a temporal split against the shipped split) and report both;
+* the regime the use case implies (new entity or known entity; a stream over time), against the one declared;
+* temporal: the time column's meaning, windows and their sizes, the train side, the gap against the label delay,
+  training rows whose label is not known at the prediction point, the training history, a season-shaped test window;
+* grouped: a true group id (never a similarity cluster or a hash), what one prediction is, what is known about a new
+  group, the aggregation;
+* IID: hidden groups and near copies across the split, and what the score drops to under a grouped split;
 * `Snapshot` over a period: whether a row of the same time carries a test row's target (one day's weather across
   stations), and what grouping by that time unit costs; `DelayedTarget`: that the window closed for every row; a
-  forced tag: the forced split's leak test (SPLIT-8); * when you doubt the choice, fit a quick model under the
-  alternative split and report both.
+  forced tag: the forced split's leak test (SPLIT-8);
+* when you doubt the choice, fit a quick model under the alternative split and report both.
 
 Never edit a repository file. Return the time basis you found (tag and the fact behind it) and whether it agrees with
 the record and the definition, the split's verdict (right / right with notes / wrong), then each problem ranked by
