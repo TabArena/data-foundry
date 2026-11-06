@@ -8,6 +8,9 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - New IID
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Later'
 collections:
 - TabSTAR
 original_source: GOV Website

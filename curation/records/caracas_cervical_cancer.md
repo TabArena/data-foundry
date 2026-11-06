@@ -8,6 +8,8 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - New IID
+- 'Samples: Over Time'
+- 'Time: Lost'
 collections:
 - New (BeyondArena)
 - TabSTAR

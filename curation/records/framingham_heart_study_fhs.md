@@ -9,6 +9,8 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - New IID
+- 'Samples: One Moment'
+- 'Target: Later'
 collections:
 - New (BeyondArena)
 original_source: GOV Website

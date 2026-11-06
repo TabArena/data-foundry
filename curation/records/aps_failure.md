@@ -11,6 +11,9 @@ data_foundry_status:
 suggestion: 'Yes'
 decision_markers:
 - Anonymized
+tags:
+- 'Samples: Over Time'
+- 'Time: Lost'
 original_source: Other
 year: '2016'
 required_split:

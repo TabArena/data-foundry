@@ -563,6 +563,65 @@ def test_forced_iid_tag_on_an_iid_task_is_not_flagged():
     assert "meta_tags_contradict_regime" not in slugs_of(make_container(dataset_metadata=metadata))
 
 
+def test_an_iid_split_without_a_time_basis_gets_a_note():
+    found = slugs_of(make_container(dataset_metadata=make_dataset_metadata(data_tags=["IID"])))
+    assert "meta_time_basis_missing" in found
+
+
+def test_a_time_basis_silences_the_note():
+    found = slugs_of(make_container(dataset_metadata=make_dataset_metadata(data_tags=["IID", "Timeless"])))
+    assert "meta_time_basis_missing" not in found
+
+
+def test_a_forced_tag_answers_why_the_split_is_not_temporal():
+    metadata = make_dataset_metadata(data_tags=["ForcedIIDFromTemporal"])
+    assert "meta_time_basis_missing" not in slugs_of(make_container(dataset_metadata=metadata))
+
+
+def test_a_time_basis_on_a_temporal_split_is_flagged():
+    metadata = make_dataset_metadata(data_tags=["Non-IID", "Temporal", "Snapshot"])
+    assert "meta_time_basis_on_temporal" in slugs_of(make_temporal_container(dataset_metadata=metadata))
+
+
+def test_a_time_basis_line_without_a_tag_answers_why():
+    """A `Time basis:` line alone says why the split is not temporal."""
+    metadata = make_dataset_metadata(data_tags=["IID"], curation_comments="- Time basis: dates kept, not split on.")
+    assert "meta_time_basis_missing" not in slugs_of(make_container(dataset_metadata=metadata))
+
+
+def test_a_forced_tag_without_its_line_gets_a_note():
+    """A forced tag without its `Time basis:` line gets a note; with the line, none."""
+    metadata = make_dataset_metadata(data_tags=["ForcedIIDFromTemporal"])
+    assert "meta_time_basis_line_missing" in slugs_of(make_container(dataset_metadata=metadata))
+    metadata = make_dataset_metadata(
+        data_tags=["ForcedIIDFromTemporal"], curation_comments="- Time basis: time lost; a dated release would test."
+    )
+    assert "meta_time_basis_line_missing" not in slugs_of(make_container(dataset_metadata=metadata))
+
+
+def _dated_frame() -> pd.DataFrame:
+    """The IID toy frame with a date column."""
+    df = make_iid_frame()
+    return df.assign(when=pd.date_range("2020-01-01", periods=len(df), freq="D"))
+
+
+@pytest.mark.parametrize(
+    ("tags", "comments", "noted"),
+    [
+        (["IID", "Timeless"], "- Time basis: Timeless: a fixed property.", True),
+        (["IID", "Snapshot"], "- Time basis: Snapshot: one scrape.", False),
+        (["IID", "DelayedTarget"], "- Time basis: DelayedTarget: one moment, gifts dated before it.", False),
+        (["IID"], "- Time basis: dated, kept random by choice; a temporal split costs 0.01.", False),
+        (["IID"], "Read the CSV.", True),
+    ],
+)
+def test_date_columns_are_noted_unless_the_definition_says_why(tags, comments, noted):
+    """Date columns are noted unless the basis or a `Time basis:` line without a prototype explains them."""
+    metadata = make_dataset_metadata(data_tags=tags, curation_comments=comments)
+    found = slugs_of(make_container(df=_dated_frame(), dataset_metadata=metadata))
+    assert ("meta_time_present_unused" in found) is noted
+
+
 def test_non_iid_tags_on_an_iid_task_are_flagged():
     metadata = make_dataset_metadata(data_tags=["Non-IID", "Temporal"])
     assert "meta_tags_contradict_regime" in slugs_of(make_container(dataset_metadata=metadata))

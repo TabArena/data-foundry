@@ -16,6 +16,7 @@ decision_markers:
 - No Good Target / Scientific Discovery
 tags:
 - Tiny Data
+- 'Samples: No Time Dimension'
 collections:
 - New (BeyondArena)
 - TabSTAR

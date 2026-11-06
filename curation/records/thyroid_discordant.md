@@ -10,6 +10,8 @@ suggestion: 'Yes'
 tags:
 - Tiny Data
 - New IID
+- 'Samples: Over Time'
+- 'Time: Dated'
 collections:
 - TabArena Reject
 - TabSTAR

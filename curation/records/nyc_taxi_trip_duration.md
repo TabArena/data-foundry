@@ -9,6 +9,9 @@ suggestion: 'Yes'
 priority: 3
 tags:
 - Review Prio 1 (Atlas)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
 collections:
 - New (BeyondArena)
 original_source: GOV Website

@@ -12,6 +12,7 @@ tags:
 - Tiny Data
 - Non-IID (Grouped)
 - Many class
+- 'Samples: No Time Dimension'
 collections:
 - TabArena Reject
 - TabSTAR

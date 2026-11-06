@@ -9,6 +9,8 @@ data_foundry_status:
 - TabArena (v0.1)
 - BeyondArena
 suggestion: 'Yes'
+tags:
+- 'Samples: No Time Dimension'
 original_source: UCI
 year: '2007'
 required_split:

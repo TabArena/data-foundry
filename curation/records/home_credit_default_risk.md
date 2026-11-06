@@ -9,6 +9,10 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Larger IID Data
+- 'Samples: Over Time'
+- 'Time: Lost'
+- 'Target: Later'
+- 'Entities: Recur'
 collections:
 - New (BeyondArena)
 - TabSTAR

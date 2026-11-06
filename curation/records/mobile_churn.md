@@ -11,6 +11,7 @@ decision_markers:
 - Missing source information
 tags:
 - Larger IID Data
+- 'Samples: One Moment'
 collections:
 - TabSTAR
 original_source: Kaggle

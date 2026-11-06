@@ -11,6 +11,8 @@ data_foundry_status:
 suggestion: 'Yes'
 decision_markers:
 - Selection Bias
+tags:
+- 'Samples: No Time Dimension'
 original_source: UCI
 year: '2018'
 required_split:

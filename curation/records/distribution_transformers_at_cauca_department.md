@@ -9,6 +9,8 @@ suggestion: 'Yes'
 priority: 2
 tags:
 - New IID
+- 'Samples: One Moment'
+- 'Target: Later'
 collections:
 - New (BeyondArena)
 original_source: Other

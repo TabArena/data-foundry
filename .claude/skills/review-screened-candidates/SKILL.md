@@ -38,7 +38,8 @@ give the link to that view instead (the dashboard's 🔗 copy-link hash syntax).
 ## Step 2: Say what to check
 
 For each record the curator opens: the screening block's one-line reason, the decisive fact and the rule it rests on,
-the priority factors, and what the AI could not check. Their choices:
+the priority factors, the record's collection facts with the evidence behind them (the `collection` part of the
+use-case line; SPLIT-32; a fact the source leaves open is `Unknown`), and what the AI could not check. Their choices:
 
 | The curator wants to | In the dashboard |
 |---|---|

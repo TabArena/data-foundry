@@ -17,6 +17,9 @@ so they run on a table from any source. Modules:
 * ``dtypes``: is each column typed by its meaning (a count numeric, a code categorical), against its values,
   its name and the source's codebook.
 * ``text``: the numeric model inputs and the TF-IDF + SVD text encoding the probes share.
+* ``time_recovery``: does a table whose split is not temporal still carry a time order (date columns, dropped
+  date columns, the target along the row order or an ID, few-valued columns that encode the period, rows that repeat
+  one block later, one entity's rows in consecutive runs, class blocks that are several pieces).
 
 ``problem_type`` is ``"regression"`` or a classification type (any other value). Import the package with the folder
 that holds it on ``sys.path``.

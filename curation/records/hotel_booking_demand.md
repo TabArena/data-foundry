@@ -9,6 +9,10 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Varying Delay'
+- 'Features: Read Later'
 collections:
 - New (BeyondArena)
 original_source: Other

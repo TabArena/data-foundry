@@ -50,12 +50,13 @@ errors, and `dataset build` refuses to save while any remains.
 ## Step 0: Gather inputs and claim
 
 Read `curation/records/<unique_name>.md`: the front matter and the comments, above all the screening block (the
-source, the use case, the regime, the risks). Verify its claims as you go instead of redoing its research; a
-measurement on the data supersedes what screening read from the page. No record: stop and point to
-`/screen-candidates`. Claim the records first, in the curator's name: `claims claim <names> --stage add --note
-"add-dataset"` ([claims.md](../knowledge-data-foundry/references/claims.md)); it pushes the claim to the board and
-writes `WIP (DF)` and `claimed_by` into the records. Never work on a dataset another curator holds: a name the command
-skips is left out and reported.
+source, the use case, the collection facts and the regime, the risks) and the record's collection facts (the
+`Samples:`, `Time:`, `Target:`, `Entities:` and `Features:` tags; SPLIT-32). Verify its claims as you go instead of
+redoing its research; a measurement on the data supersedes what screening read from the page. No record: stop and
+point to `/screen-candidates`. Claim the records first, in the curator's name: `claims claim <names> --stage add
+--note "add-dataset"` ([claims.md](../knowledge-data-foundry/references/claims.md)); it pushes the claim to the board
+and writes `WIP (DF)` and `claimed_by` into the records. Never work on a dataset another curator holds: a name the
+command skips is left out and reported.
 
 A batch (several names or a dashboard filter) runs one `dataset-builder` agent per source unit for steps 0-6
 ([agent_runs.md](../knowledge-data-foundry/references/agent_runs.md)); the main session then runs the panel (step 7)
@@ -66,8 +67,26 @@ for each dataset, because subagents do not start subagents.
 Follow `source_links` to the first publication. Write the use case first, in `task_summary`: who uses the prediction,
 when, the decision it informs, what one row is, what is predicted and what is known then. A dataset no decision fits
 (`fit="none"`) is not added: it goes back as `No Good Target / Scientific Discovery`. Write the prediction point into
-the first `curation_comments` bullet; every later choice is checked against it. Then map the fields (definitions.md,
-"Field mapping"); for a grouped task note what one real-world prediction is and what is known about a new group.
+the first `curation_comments` bullet; every later choice is checked against it. Then note how the data was collected
+for the use case: when each row, each feature and the target come into existence compared with that point (SPLIT-32 in
+[splits.md](../knowledge-curation/references/splits.md)); it is information for the split and for which features are
+available. The facts also point to checks; in the review of 98 v0.2 definitions they found more leaks than they
+changed splits:
+
+* `Target: Varying Delay` with a prediction point per row: a count or a length that the outcome stops
+  (bank_marketing's `campaign`), the gap, the residual at the release end, what the newest labels add at equal
+  training size.
+* A target that is an event within a window: labels still in flight across the cut (acquire_valued_shoppers_challenge,
+  hotel_booking_demand).
+* `Entities: Recur`: exact keys from fixed fields, label agreement within a key, random against grouped scores
+  (home_credit_default_risk, horse_colic_survival, lending_club).
+* `Features: Read Later` or `Revised Later`: an as-of check (rossmann_store_sales' competitors before they opened).
+* `Time: Lost` or `Inferred`: batches or blocks in the raw file's order before arguing that time does not matter
+  (eryhemato_squamous_disease's two file parts); the time probe looks for them.
+* A catalogue: which identifier a parent source could date its items by (qsar_tid_11 through ChEMBL).
+
+Then map the fields (definitions.md, "Field mapping"); for a grouped task note what one real-world
+prediction is and what is known about a new group.
 
 Find the metric the source scored before falling back (MET-1): the competition's evaluation page (Kaggle's Evaluation
 tab or the API's `evaluationMetric`, Zindi, DrivenData, a challenge page), the task description, the evaluation section
@@ -96,7 +115,9 @@ domain and source from the record.
 3. `_clean(self, raw)`: the recipe as ordered, commented steps with `TODO(verify)` markers, and
    `_feature_types(self, df)` for the dtypes.
 4. The regime: nothing for IID, `grouping = Grouping(...)` or `temporal = Temporal(...)` with a `splits_comment`
-   saying why this window (and any gap, sub-sampling or trimming).
+   saying why this window (and any gap, sub-sampling or trimming). The record's collection facts and the use-case
+   prototypes of SPLIT-32 ([splits.md](../knowledge-curation/references/splits.md)) are information for it; a
+   definition that follows a prototype carries its tag and a `Time basis:` line.
 5. The metric: `metric = Metric.source(name, original=..., reference=..., params=..., inputs=...)`,
    `Metric.stand_in(name, original=..., reason=..., reference=...)` or `Metric.fallback(reason=<where we looked, and
    which source metric was rejected and why>)` (definitions.md, "Field mapping", `metric`; MET-11). A standard name
@@ -134,12 +155,15 @@ data (`ds = workbench()` in a scratch notebook or script, never committed), re-r
 there are no errors and every warning is fixed or proposed for acceptance with a reason. Run `dataset check` again after
 every `ruff --fix`.
 
-Then run the leak probes and the task probes, the group probes for a grouped task, the hidden-group probe for an
-IID one and the dtype probe ([checks_and_probes.md](../knowledge-data-foundry/references/checks_and_probes.md)): every
-column it flags gets its meaning from the codebook, and its dtype from CLEAN-14. Read every flag by
-[evidence.md](../knowledge-curation/references/evidence.md), "Reading a probe": the highest-ranked reading first. A
-leak gets the mildest remedy that removes it (drop, lag, filter, re-split) with the deciding number in a bullet; a
-task-probe flag is answered by the rules of [task_probes.md](../knowledge-curation/references/task_probes.md).
+Then run the leak probes and the task probes, the group probes for a grouped task, the hidden-group probe for an IID
+one, the time probe for a split that is not temporal and the dtype probe
+([checks_and_probes.md](../knowledge-data-foundry/references/checks_and_probes.md)). Every column the dtype probe
+flags gets its meaning from the codebook, and its dtype from CLEAN-14. The time probe lists signs that the data
+carries time (date columns, a drifting row order or ID, figures of a period), as information for the split. Read every
+flag by [evidence.md](../knowledge-curation/references/evidence.md), "Reading a probe": the highest-ranked reading
+first. A leak gets the mildest remedy that removes it (drop, lag, filter, re-split) with the deciding number in a
+bullet; a task-probe flag is answered by the rules of
+[task_probes.md](../knowledge-curation/references/task_probes.md).
 
 ## Step 6: The checklist
 
@@ -161,12 +185,12 @@ and the editor) for a re-check after a small change. Say which tier ran.
 
 1. Apply what the panel settled that needs no decision (a refuted claim with an obvious fix, a missing note), re-run
    `dataset check` and the probes it touches.
-2. Write `REVIEW.md` ([review file format](../review-added-datasets/references/review_file_format.md)): the outcome as a
-   judgment record ([principles.md](../knowledge-curation/references/principles.md)), the main points, the record fields
-   that disagree with the definition, the issues in rank order (validity first, Must first), each in the issue shape
-   of [writing.md](../knowledge-curation/references/writing.md): bullets for the problem, the effect, the experiments
-   and the consistency with other datasets, a table of the options with pros and cons, the recommendation and the
-   decision, the rules in footnotes and what Claude needs to apply it in `**Notes for the AI:**`; and the
+2. Write `REVIEW.md` ([review file format](../review-added-datasets/references/review_file_format.md)): the outcome as
+   a judgment record ([principles.md](../knowledge-curation/references/principles.md)), the main points, the record
+   fields that disagree with the definition, the issues in rank order (validity first, Must first), each in the issue
+   shape of [writing.md](../knowledge-curation/references/writing.md): bullets for the problem, the effect, the
+   experiments and the consistency with other datasets, a table of the options with pros and cons, the recommendation
+   and the decision, the rules in footnotes and what Claude needs to apply it in `**Notes for the AI:**`; and the
    `**Review panel:**` block with each agent's full report. A review raises 0 to N issues: zero is a valid outcome
    when the checks and the panel leave nothing for the curator to decide (the outcome says so, and the curator only
    sets the verdict). Never raise an issue to have one; an issue is something whose answer would change the dataset.

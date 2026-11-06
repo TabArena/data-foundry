@@ -12,6 +12,10 @@ decision_markers:
 - Class-dependent Recording
 tags:
 - Tiny Data
+- 'Samples: Over Time'
+- 'Time: Inferred'
+- 'Target: Varying Delay'
+- 'Entities: Recur'
 collections:
 - TabArena Reject
 - TabSTAR

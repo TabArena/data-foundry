@@ -10,6 +10,7 @@ suggestion: 'Yes'
 tags:
 - Non-IID (Grouped)
 - Multi-target
+- 'Samples: No Time Dimension'
 collections:
 - TabArena Reject
 - TabSTAR

@@ -9,6 +9,10 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Non-IID (Temporal)
+- 'Samples: Over Time'
+- 'Time: Dated'
+- 'Target: Later'
+- 'Features: Read Later'
 collections:
 - TabArena Reject
 original_source: Kaggle

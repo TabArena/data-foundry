@@ -9,6 +9,8 @@ data_foundry_status:
 suggestion: 'Yes'
 tags:
 - Tiny Data
+- 'Samples: Over Time'
+- 'Time: Lost'
 collections:
 - New (BeyondArena)
 - TabSTAR
