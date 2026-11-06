@@ -1,11 +1,17 @@
 # Changelog: TabArena v0.2 working copy
 
 
+## 2026-11-05 (GeoAI internal-skill refresh build verified)
+
+- Rebuilt only `geoai_ground_level_no2_estimation_challenge` from clean commit `a40b46997a5bb7b08a2bac87187c74c109512466`: format 2, UUID `01a1ae48-7d06-76ac-9741-a58d8233b176`, checksum `v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20`. The checksum is exactly equal to the preceding November build; no definition, data or metadata changes were needed.
+- All 27 bundle checks pass, zero errors/warnings; saved-container reload verifies. A traced-input-only check reproduces the checksum from one 10,000,397-byte Train.csv. The new raw-input ZIP passes CRC and source SHA-256 checks. Rows, all nine splits and raw-input selection are unchanged.
+- The focused review and editor follow-through are complete. Prior acceptance, resolved issue 1, source RMSE and documented limits remain intact; no new human input or collection-wide probe sweep is needed. Previous containers remain referenced audit baselines and were retained. Local commits do not publish the dataset upstream.
+
 ## 2026-11-05 (GeoAI rechecked after internal-skill update)
 
 - Repeated the accepted GeoAI review under the refreshed installed skills/runtime. The pin is now `9048f36a`, exactly the source used by the previous cycle: 32 procedure hashes and 168 tracked source files match. No definition, data, target, metric, feature, context or split changes.
 - Fresh independent claim and precedent audits and mediator support reusing the October acceptance and prior completed evidence. All values/dtypes/metadata, nine folds and checksum exactly match the previous November container. One fresh LightGBM fold also reproduces every saved prediction. The full historical model/probe sweeps are reused with their recorded limitations, not described as new fits.
-- Current checks: 27 passed, zero errors/warnings; dtype zero flags; 2,017 tests passed, 286 skipped after the 18 localhost-dependent cases passed on exact retry. Priority remains 3, issue 1 stays resolved and no new human input is needed. The editor's presentation repairs are applied; new build verification follows when complete.
+- Current checks: 27 passed, zero errors/warnings; dtype zero flags; 2,017 tests passed, 286 skipped after the 18 localhost-dependent cases passed on exact retry. Priority remains 3, issue 1 stays resolved and no new human input is needed. The editor's presentation repairs and new build verification are complete.
 
 ## 2026-11-05 (GeoAI current-main build verified)
 
