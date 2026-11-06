@@ -265,14 +265,20 @@ when predicting; the label structure alone does not.
 Cold start or warm start is decided from the use case before grouping: USE-10 and USE-11 in
 [use_case.md](use_case.md).
 
-**SPLIT-24 (Must).** Group on a true group id, or on one constructed exactly from the data: identical profile text or
-a poster-specific masked contact, consecutive blocks of identical person-level answers in the raw file order,
-identical values in the columns that define the entity. Never on a similarity-threshold cluster, and never on a hash
-of the feature vector standing in for an unknown entity. Cases: emscad, in_vehicle_coupon_recommendation,
-concrete_compressive_strength, airfoil_self_noise, maternal_health_risk.
+**SPLIT-24 (Must).** Group on a true group id, or on one constructed from the data, either exactly (identical profile
+text or a poster-specific masked contact, consecutive blocks of identical person-level answers in the raw file order,
+identical values in the columns that define the entity) or by a calibrated link. A calibrated link takes its match rule
+from how the data were recorded (the same counters read again, values shifted by one step, a policy record starting
+the day the other ends), never from the score, and a chance rate shows that most of its links are real (LEAK-42 in
+[leak_checks.md](leak_checks.md)); whether it holds is the curator's call, case by case, by how certain the evidence
+is. Never on a similarity-threshold cluster, and never on a hash of the feature vector standing in for an unknown
+entity. Cases: emscad, in_vehicle_coupon_recommendation, concrete_compressive_strength, airfoil_self_noise,
+maternal_health_risk, frempl_french_motor_personal_line, santander_transaction_value.
 
-**SPLIT-25 (Must).** When the real groups matter and cannot be recovered, retire the dataset rather than group on a
-guess, and note that the authors could be asked for the group labels. Cases: maternal_health_risk,
+**SPLIT-25 (Must).** When the real groups matter and cannot be recovered, never group on a guess. Drop the repeats
+that can be identified and ask whether the target still stands for the use case (LEAK-41, not recoverable); retire
+the dataset when the repeats cannot be identified, or when what stays still rewards recognising an unrecorded group,
+and note that the authors could be asked for the group labels. Cases: maternal_health_risk,
 hazelnut_spread_contaminant_detection.
 
 **SPLIT-26 (Should).** Take the group key from the source's own data, at the resolution the features see. Keep the
@@ -345,6 +351,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-8 | distribution_transformers_at_cauca_department | two label years, one window: one year IID, `ForcedIIDFromTemporal`, not stacked, as the two files hold the same units with identical attributes; ROC AUC 0.648 trained on 2019 and tested on 2020 against 0.639 on the random folds (2026-10-21, Lennart) | applied |
 | SPLIT-8 | bemtpl97 | one policy year (1997), undated, the raw order sorted by postcode: IID, `ForcedIIDFromTemporal`; the cost cannot be measured (2026-11-04, Lennart: beMTPL97 and freMTPL2 treated alike) | applied |
 | SPLIT-8 | fremtpl2 | no policy dates; the blocks read as stacked periods with linked IDpols, but both the periods and the links are inferred, not the source's key (SPLIT-24), unlike nba and open_university, which group by a recorded entity: IID, `ForcedIIDFromTemporal`; grouping by the inferred chains costs +0.00049 Poisson deviance and leaves the ranking unchanged (2026-11-04, Lennart) | applied |
+| SPLIT-8, SPLIT-24 | santander_transaction_value | no dates; the rows are snapshots of the same customers, a later one holding an earlier one's lag values and target shifted by the steps between them: grouped by customers rebuilt from the data, `ForcedGroupedFromTemporal`. Exact links where the shifted values agree in all 12 lag groups (3 or more non-zero, unique on both sides, no target used), plus a calibrated link where a sparse match is confirmed by the earlier row's exact target in the later row's lag column (4,371 links, 85-110 with shuffled targets); 710 customers, the largest 104 rows. Set apart from fremtpl2 (IID kept over inferred policy chains) by the use case, potential customers the model has not seen, and by the links: equal values at many shifted positions at once | applied |
 | SPLIT-9 | hotel_booking_demand | train kept bookings arriving after the prediction date that were already cancelled (100% positive), so the model learned "future arrival means cancelled"; filtering on the status date kept the shortcut, filtering on the arrival date removed it | applied |
 | SPLIT-9 | alfa_battle_2_0_task_2 | the training products of clients with a product in the test window are dropped (32,861-39,221 rows; 60-83% of each training side kept), standing in for the as-of filter on label dates the data lacks: a later product defaults at 95.1% after a defaulted earlier one (2.3% otherwise), flat over lags of 1-10 months, while 45.5% of later defaults had one, so the earlier flag was set after the later issue; without the filter the window's ROC AUC rises by 0.002-0.009. Differs from ieee_fraud_detection (LEAK-34, 2026-10-01), whose carried labels follow the host's labelling rule and are read as known history (2026-10-26, Lennart) | applied |
 | SPLIT-9 | lt_vehicle_loan_default_prediction | not a shortcut, gap 0 kept: the last 30 days' default rates of the supplier, branch, employee and postcode codes add +0.0026 ROC AUC at equal pool size (0.0005-0.0051, 9 of 9 windows; up to +0.0057 in other encodings), the size of alfa_battle_2_0_task_2's removed effect; set apart by the mechanism: each code is shared by many borrowers and no borrower recurs (rebuilt borrowers score 0.517-0.543), so no test row is linked to its own client's earlier label (alfa: 95.1% default after an earlier default against 2.3%), and the effect does not grow at the release end (0.0025 in the newest window against 0.0028); the notes give its size (2026-11-05, Lennart) | applied |
@@ -367,6 +374,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-16 (TP-9) | seismic_bumps | 49 positives in the newest half, 0-5 per window: `Too Small`, no fallback to an IID split | applied |
 | SPLIT-17 | coffee_rating_prediction | 26 monthly windows of 2-72 reviews doubled the confidence interval of a model comparison; 13 two-month windows hold 54-115 | applied |
 | SPLIT-18 | climate_model_weather_forecasting | weather test windows of one to two weeks at most | applied |
+| SPLIT-19, SPLIT-5 | santander_transaction_value | the competition's split checked on the data: the customer key over Kaggle's train and test files links 12 of 111,552 snapshot pairs across them (4 customers), so the files hold different customers, as the grouped split does. The leak competitors read ran inside the test file (a later test snapshot shows 6,991 of 17,550 test targets, a training row 4): a competition's known leak says where to look, not that its split crossed entities | applied |
 | SPLIT-20, SPLIT-21 | aeolus | flights from 2023 on rather than all of 2016-2024, two-week windows with one of three in the holiday peak (2026-10-12, Lennart) | applied |
 | SPLIT-20 | perth_house_prices | one-month windows every third month back from December 2020 (`step=3`) instead of nine contiguous months in 2020, so most windows fall outside the COVID months and the stale-record period; chosen from counts, not scores (2026-10-26, Lennart) | applied |
 | SPLIT-20 | airqo_low_cost_air_quality_monitor_calibration_challenge | five monthly windows from October 2020 (`n_windows=5`) instead of the three dry-season months December 2020 to February 2021, so the test covers both seasons and October and November score all three sites (smallest train side 57.3%); the fact proposed for an exception, that only the newest season has all three sites, was false; Nakawa enters October with 63 hours of history, noted under USE-10; chosen from season and site coverage, not scores (2026-11-05, Lennart, issue 1) | applied |
@@ -379,6 +387,7 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-24 | in_vehicle_coupon_recommendation | consecutive blocks of identical person-level answers in the raw file order: 587 respondents | applied |
 | SPLIT-24 | concrete_compressive_strength | a mix is its seven ingredient amounts, tested at several ages: 428 mixes behind 1,030 tests (2026-10-14) | applied |
 | SPLIT-24 | airfoil_self_noise | a setup is one chord and one angle with all its speeds, one figure of the report (2026-10-20; before, a run of chord, angle and velocity, 2026-10-06) | applied |
+| SPLIT-24 | frempl_french_motor_personal_line | a calibrated link: a policy's records joined where one may continue the other (the same six profile columns, starting the day the other ends, the driver's age the same or one more), the most conservative of the keys offered; 68,857 policy components for 115,155 records, `ForcedGroupedFromTemporal` | applied |
 | SPLIT-24, SPLIT-25 | maternal_health_risk | the first suggestion, a hash of the feature vector standing in for the unknown entity, was barred; the six collection sites are not in the file: retired | applied |
 | SPLIT-25 | hazelnut_spread_contaminant_detection | re-scans of about ten set-ups, not recoverable: retired | applied |
 | SPLIT-26 | superconductivity | key: element shares from `unique_m.csv`, which the features are computed from; a formula string would split one composition written two ways | applied |

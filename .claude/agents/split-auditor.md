@@ -33,7 +33,9 @@ Python run):
   whose label is not known at the prediction point, the training history, a season-shaped test window; * grouped: a
   true group id (never a similarity cluster or a hash), what one prediction is, what is known about a new group, the
   aggregation; * IID: hidden groups and near copies across the split, and what the score drops to under a grouped
-  split;
+  split; repeats of a unit the data does not record: the entity-leakage verdict and its three tests (is the link
+  above chance, does the label travel with it, is there an order; LEAK-41, LEAK-42), and a later record that carries
+  an earlier label forward (LEAK-43);
 * `Snapshot` over a period: whether a row of the same time carries a test row's target (one day's weather across
   stations), and what grouping by that time unit costs; `DelayedTarget`: that the window closed for every row; a
   forced tag: the forced split's leak test (SPLIT-8); * when you doubt the choice, fit a quick model under the
