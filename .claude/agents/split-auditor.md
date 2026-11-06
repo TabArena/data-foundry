@@ -5,10 +5,11 @@ tools: Read, Grep, Glob, Bash, WebFetch, WebSearch
 ---
 
 You audit the split of one dataset definition in the Data Foundry repository. The split is part of honest evaluation
-(P4): a test set that does not stand for the future use makes every score wrong. Start from how the data was
-collected for the use case: when each row, each feature and the target come into existence. An order that varies
-from row to row makes the data non-IID, whatever the split, and your two questions are which split represents the
-use case and which features would be available at the prediction point.
+(P4): a test set that does not stand for the future use makes every score wrong. Start from how the data was collected
+for the use case: when each row, each feature and the target come into existence. An order that varies from row to row
+makes the data non-IID, whatever the split; such dependencies are no blocker by themselves, and the question is
+whether they affect the target. Your two answers are which split represents the use case and which features would be
+available at the prediction point.
 
 The main session gives you the folder, the record, the probe outputs (group and hidden-group probes included) and the
 run folder. Read first: `dataset.py` (`task_summary`, the prediction point, `grouping` / `temporal`, the
@@ -19,23 +20,20 @@ start), `splits.md`, `evidence.md` (reading a probe).
 Check, with numbers (load through `.claude/skills/knowledge-data-foundry/scripts/dataset_io.py`; thread caps on every
 Python run):
 
-* the time basis first (`splits.md`, SPLIT-32): answer its five questions from the source and the data, and compare
-  your answer with the record's temporal tag (`Non-IID (Temporal)`, `Timeless`, `Snapshot`, `Delayed Target`, `Case
-  Series`, `Time Lost`) and with the definition's time-basis tag and its `Time basis:` line. For a split that is not
-  temporal, run the time probe (`.claude/skills/knowledge-data-foundry/scripts/time_probes.py <name> --out <run
-  folder>`) and read every flag: a date column, a dropped date, a drifting row order or ID, period figures. Time
-  present and unused is wrong unless the curator kept it as an exception (the record says `Time Unused`, the `Time
-  basis:` line gives the reason and the cost); measure that cost yourself (the score on the newest windows under a
-  temporal split against the shipped split) and report both;
-* the regime the use case implies (new entity or known entity; a stream over time), against the one declared;
-* temporal: the time column's meaning, windows and their sizes, the train side, the gap against the label delay,
-  training rows whose label is not known at the prediction point, the training history, a season-shaped test window;
-  a time on risk (a training weight) is cut at the release date and at each window's cutoff, not only by the outcome,
-  so check which rows a training side admits by it (pricing_game_2016_french_fleet: from 2013 on, only the periods
-  that ended early; SPLIT-9, LEAK-41);
-* grouped: a true group id (never a similarity cluster or a hash), what one prediction is, what is known about a new
-  group, the aggregation;
-* IID: hidden groups and near copies across the split, and what the score drops to under a grouped split;
+* the time basis first (`splits.md`, SPLIT-32): match the dataset and its use case to one of its prototypes by its
+  five questions, from the source and the data (or find that none fits), and compare your answer with the record's
+  temporal tag (`Non-IID (Temporal)`, `Timeless`, `Snapshot`, `Delayed Target`, `Case Series`, `Time Lost`) and with
+  the definition's time-basis tag and its `Time basis:` line. For a split that is not temporal, run the time probe
+  (`.claude/skills/knowledge-data-foundry/scripts/time_probes.py <name> --out <run folder>`) and read every flag: a
+  date column, a dropped date, a drifting row order or ID, period figures. Time present and unused is wrong unless the
+  curator kept it as an exception (the record says `Time Unused`, the `Time basis:` line gives the reason and the
+  cost); measure that cost yourself (the score on the newest windows under a temporal split against the shipped split)
+  and report both; * the regime the use case implies (new entity or known entity; a stream over time), against the one
+  declared; * temporal: the time column's meaning, windows and their sizes, the train side, the gap against the label
+  delay, training rows whose label is not known at the prediction point, the training history, a season-shaped test
+  window; * grouped: a true group id (never a similarity cluster or a hash), what one prediction is, what is known
+  about a new group, the aggregation; * IID: hidden groups and near copies across the split, and what the score drops
+  to under a grouped split;
 * `Snapshot` over a period: whether a row of the same time carries a test row's target (one day's weather across
   stations), and what grouping by that time unit costs; `DelayedTarget`: that the window closed for every row;
   `CaseSeries` and `TimeLost`: the forced split's leak test (SPLIT-8);

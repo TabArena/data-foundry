@@ -70,8 +70,9 @@ when, the decision it informs, what one row is, what is predicted and what is kn
 (`fit="none"`) is not added: it goes back as `No Good Target / Scientific Discovery`. Write the prediction point into
 the first `curation_comments` bullet; every later choice is checked against it. Then work out how the data was
 collected for the use case: when each row, each feature and the target come into existence compared with that point.
-An order that varies from row to row makes the data non-IID and decides the two things this skill is for: which split
-represents the use case, and which features are actually available at the prediction point (SPLIT-32 in
+An order that varies from row to row makes the data non-IID; such dependencies are no blocker by themselves, and what
+matters is whether they affect the target. That decides the two things this skill is for: which split represents the
+use case, and which features are actually available at the prediction point (SPLIT-32 in
 [splits.md](../knowledge-curation/references/splits.md)). Then map the fields (definitions.md, "Field mapping"); for a
 grouped task note what one real-world prediction is and what is known about a new group.
 
@@ -104,8 +105,9 @@ domain and source from the record.
    ships as the source publishes it and is declared in `special_features` as a `Spectrum(...)`, its columns left out
    of `_feature_types` (CLEAN-26); [spectra.md](../knowledge-curation/references/spectra.md) has what ships, the
    encodings, grouping the spectra of one sample (SPLIT-23) and the pitfalls.
-4. The regime, from the time basis (SPLIT-32 in [splits.md](../knowledge-curation/references/splits.md)): answer its
-   five questions from the source and the record's temporal tag before choosing. Time in the release or its source and
+4. The regime, from the time basis (SPLIT-32 in [splits.md](../knowledge-curation/references/splits.md)): match the
+   dataset and its use case to one of its prototypes by its five questions, from the source and the record's temporal
+   tag, before choosing; when none fits, that is an issue, not the nearest tag. Time in the release or its source and
    a use case that predicts later rows means `temporal = Temporal(...)`. Otherwise IID (nothing) or `grouping =
    Grouping(...)`, with one time-basis tag in `data_tags` (`Timeless`, `Snapshot`, `DelayedTarget`, `CaseSeries`,
    `TimeLost`) and a `Time basis:` bullet in `curation_comments` that names the fact behind it (for `DelayedTarget`
