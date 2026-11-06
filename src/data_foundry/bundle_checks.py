@@ -1818,11 +1818,9 @@ def _check_time_basis(ctx: _Ctx) -> Iterator[CheckResult]:
     if dated and "Snapshot" not in basis:
         yield CheckResult(
             "meta_time_present_unused",
-            "warning",
-            f"Date columns {dated} are in the data, but the split is not temporal.",
-            hint="Split by time, or show that the use-case prototype allows this split (`Snapshot` when the use case "
-            "only fills in inside the observed period; `StationaryRelation` with the measured evidence that time does "
-            "not affect the target, which accepts this warning), SPLIT-32.",
+            "info",
+            f"Date columns {dated} are in the data, and the split is not temporal.",
+            hint="Information for the split (SPLIT-32): the data carries dates.",
         )
 
 
