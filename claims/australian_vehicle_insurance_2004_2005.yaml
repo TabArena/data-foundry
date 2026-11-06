@@ -1,0 +1,6 @@
+name: australian_vehicle_insurance_2004_2005
+holder: Lennart
+stage: review
+claimed_at: '2026-11-06T14:24:30Z'
+expires_at: '2026-11-13T14:24:30Z'
+note: 'exposure rework (#51) and re-review, PR #47'
