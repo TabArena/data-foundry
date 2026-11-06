@@ -534,7 +534,12 @@ It is stored in the container (`task_metadata.grouping`, read with `container.gr
   section with the group statistics, which give four findings (few test groups per fold, one group over 20% of the
   rows, `per_sample` labels nearly one per group, groups not clustered). For the model-based questions run
   `group_probes.py` ([checks_and_probes.md](checks_and_probes.md)); accept `groups_test_groups_few` only with that
-  evidence. A group id built from the data: `df.groupby(columns).ngroup()` over the defining columns.
+  evidence. A group id built from the data: `df.groupby(columns).ngroup()` over the defining columns; a calibrated
+  link (SPLIT-24): the connected components of the linked pairs (`scipy.sparse.csgraph.connected_components`). Build
+  it in `_clean` from the columns that define the entity before any step replaces them (santander_transaction_value's
+  customers come from the raw lag columns, before the summaries), carry it as a column, and leave it out of the
+  `drop_duplicates` subset: with it, copies that fall in different groups survive (all 4,459 rows stay there instead
+  of 4,447). The curation notes give the match rule, the chance rate and the verdict (LEAK-41 to LEAK-43).
 
 ### Temporal: `Temporal` and `TemporalSplits`
 

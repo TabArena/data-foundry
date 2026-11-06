@@ -30,7 +30,10 @@ Python run):
   that ended early; SPLIT-9, LEAK-41);
 * grouped: a true group id (never a similarity cluster or a hash), what one prediction is, what is known about a new
   group, the aggregation;
-* IID: hidden groups and near copies across the split, and what the score drops to under a grouped split;
+* IID: hidden groups and near copies across the split, and what the score drops to under a grouped split; repeats
+  of a unit the data does not record: the entity-leakage verdict and its three tests (is the link above chance, does
+  the label travel with it, is there an order; LEAK-41, LEAK-42), and a later record that carries an earlier label
+  forward (LEAK-43);
 * when you doubt the choice, fit a quick model under the alternative split and report both.
 
 Never edit a repository file. Return the split's verdict (right / right with notes / wrong), then each problem ranked
