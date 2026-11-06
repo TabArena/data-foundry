@@ -1,6 +1,6 @@
 # geoai_ground_level_no2_estimation_challenge
 
-**Outcome:** added. Recommend shipping the previously accepted retrospective unseen-station task. The focused recheck found unchanged source values, target, inputs, whole-station folds and source RMSE; no new validity issue was identified. Historical probes still support useful predictive signal, and minimal cleaning preserves the released measurements and missing inputs. Source and dataset size support inclusion; ground-label processing, regional coverage and product timing remain documented limits. No new curator decision is needed; the requested new build remains pending.
+**Outcome:** added. Recommend shipping the previously accepted retrospective unseen-station task. The focused recheck found unchanged source values, target, inputs, whole-station folds and source RMSE; no new validity issue was identified. Historical probes still support useful predictive signal, and minimal cleaning preserves the released measurements and missing inputs. Source and dataset size support inclusion; ground-label processing, regional coverage and product timing remain documented limits. No new curator decision is needed. The requested new build is verified, with the same checksum as the preceding build.
 
 **Main points:** No new decision. Myunghwan's 2026-10-30 acceptance and resolved issue 1 remain in force under the repeated instruction to use the past decisions.
 
@@ -29,7 +29,7 @@
 
 [^geoai-labels]: USE-8 and EV-7 require honest scope and uncertainty; CLEAN-11/15 retain unproven extremes and omit missing targets. [Original challenge and data description](https://zindi.africa/competitions/geoai-ground-level-no2-estimation-challenge/data).
 
-**Review panel:** ship (independent mediator). The internal-skill refresh uses a focused claim audit, precedent check, mediator and editor; earlier full and focused panels remain dated evidence. Independent comparisons establish unchanged task, data, metadata, folds and checksum. Issue 1 remains resolved under the explicit reuse instruction; no new curator decision. The editor's presentation repairs are applied; the requested new build is pending. Earlier completed-build reports below remain history.
+**Review panel:** ship (independent mediator). The internal-skill refresh uses a focused claim audit, precedent check, mediator and editor; earlier full and focused panels remain dated evidence. Independent comparisons establish unchanged task, data, metadata, folds and checksum. Issue 1 remains resolved under the explicit reuse instruction; no new curator decision. The editor's presentation repairs are applied and the requested new build is verified. Earlier completed-build reports below remain history.
 
 
 
@@ -586,5 +586,13 @@ I read the current editor role, writing guidance, principles and review-file for
 The scientific recommendation remains unchanged. Complete the already authorized build and validation, record actual completion, and preserve the distinction between reused human decisions, current measurements and historical evidence.
 
 Application: the opening outcome and main points were rewritten as requested, and the local host-status paragraph was removed only from the newly embedded precedent report. The complete original report remains in the local evidence. No scientific definition changed.
+
+</details>
+
+<details><summary>Internal-skill refresh: completed verification (2026-11-05 Pacific)</summary>
+
+The internal-skill refresh build is complete: format 2, UUID `01a1ae48-7d06-76ac-9741-a58d8233b176`, from clean review commit `a40b46997a5bb7b08a2bac87187c74c109512466`. All 27 checks passed with zero errors or warnings. Saved-container reload verified. A check using only the traced Train.csv (10,000,397 bytes) reproduced checksum `v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20`, exactly equal to the preceding November build. Rows, all nine splits, metadata and raw-input selection are unchanged. The new input backup passed ZIP CRC and source SHA-256 checks. Earlier containers remain retained as referenced audit baselines; no raw files or containers were removed.
+
+The dated reports above retain their original pending statements. All of their requested follow-through is now complete: the summary repairs were applied, native review collection confirms one resolved issue and zero open decisions, and the refreshed runtime built and reproduced the accepted definition. Historical full model/probe results remain explicitly reused; the fresh numerical checkpoint covered one fold. No new scientific change or curator mark was introduced.
 
 </details>

@@ -4,12 +4,12 @@ unique_name: geoai_ground_level_no2_estimation_challenge
 container_format: 2
 checksum: v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20
 build:
-  uuid: 01a1adf0-eb77-7e00-8228-2b3c1bc263db
+  uuid: 01a1ae48-7d06-76ac-9741-a58d8233b176
   checksum: v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20
-  built_at: '2026-11-05T23:00:11+00:00'
-  path: geoai_ground_level_no2_estimation_challenge/01a1adf0-eb77-7e00-8228-2b3c1bc263db
+  built_at: '2026-11-06T00:35:50+00:00'
+  path: geoai_ground_level_no2_estimation_challenge/01a1ae48-7d06-76ac-9741-a58d8233b176
   data_foundry_version: 0.0.5
-  git_sha: 2687a3ae2ebd33135af563cf9605e3adbc2897b6
+  git_sha: a40b46997a5bb7b08a2bac87187c74c109512466
   libraries:
     python: 3.12.3
     pandas: 3.1.0
@@ -75,7 +75,7 @@ decisions: []
 
 Regression of `GT_NO2`, scored with `rmse` on grouped splits by `ID`. 82,051 rows and 11 features. Source: Zindi (2024).
 
-Built as `01a1adf0-eb77-7e00-8228-2b3c1bc263db` on 2026-11-05. See [Build](#build).
+Built as `01a1ae48-7d06-76ac-9741-a58d8233b176` on 2026-11-06. See [Build](#build).
 
 ## In brief
 
@@ -329,10 +329,10 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 | field | value |
 |---|---|
-| uuid | 01a1adf0-eb77-7e00-8228-2b3c1bc263db |
+| uuid | 01a1ae48-7d06-76ac-9741-a58d8233b176 |
 | checksum | v2:79bbb806dd322f6c3586bb61f7d86fa3d4315d8e2de3c5f1bdb0015e24596f20 |
-| built_at | 2026-11-05T23:00:11+00:00 |
-| path | geoai_ground_level_no2_estimation_challenge/01a1adf0-eb77-7e00-8228-2b3c1bc263db |
+| built_at | 2026-11-06T00:35:50+00:00 |
+| path | geoai_ground_level_no2_estimation_challenge/01a1ae48-7d06-76ac-9741-a58d8233b176 |
 | data_foundry_version | 0.0.5 |
-| git_sha | 2687a3ae2ebd33135af563cf9605e3adbc2897b6 |
+| git_sha | a40b46997a5bb7b08a2bac87187c74c109512466 |
 | libraries | {'python': '3.12.3', 'pandas': '3.1.0', 'numpy': '2.5.4', 'pyarrow': '26.0.0', 'scikit-learn': '1.7.2', 'polars': '2.0.0'} |
