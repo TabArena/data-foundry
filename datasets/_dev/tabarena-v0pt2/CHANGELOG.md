@@ -1581,6 +1581,13 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
 - Requalify `economic_well_being_prediction_challenge` against main `9048f36a`, preserving Myunghwan’s prior annual timing, supplied-index and temporal × unseen-country decisions. Decode R/U as Rural/Urban under current CLEAN-12; all rows, labels, numeric values and country-year membership sets remain unchanged, with canonical order and indices regenerated. Restore resolved review issues with original IDs/dates and retain the completed focused panel. Document the accepted candidate-specific higher-ranked use-case override in SPLIT-3 Cases without amending the global rule.
 - Native checks: 27, zero errors/warnings, three infos. New dtype, all-sixteen-split task and refreshed leak/raw probes pass execution; no_spread remains the previously investigated finding, with prior prediction scores independently reverified by ID. Participant-kit review finds no demonstrated exploit beyond honest/random controls. Native Claude authentication failed before inference; the fresh Codex reviewer used contractual kit isolation, with that limitation disclosed. No new curator input is needed.
 
+## 2026-11-05, `duolingo_spaced_repetition_recall_1m_clf`: updated installed workflow repeat
+
+- Repeat add, added review and the requested local build using the updated installed source/launcher at9048f36a; preserve the prior accepted task, eight predictors, AUROC, equal records and temporal 1M/111111 protocol. No scientific definition, data, label or split change.
+- Fresh launcher/API checks pass with zero errors/warnings and exact approved values/category/label/six-array equality. Prior numerical/probe/participant evidence is fingerprinted and verified reusable; a focused independent claim/precedent, mediator and editor recheck finds no new decision. Preserve original mark identity and record the latest explicit retention instruction in the supported review store.
+- Clarify TP-7's rule strength without rewriting historical curator text. The previously measured future-counter exploit and required benchmark-side own-row checks remain explicit; this repeat does not certify downstream enforcement.
+
+
 ## 2026-11-05, `duolingo_spaced_repetition_recall_1m_clf`: requalified on current main
 
 - Reapply Myunghwan's approved >=75% session-performance classifier on updated main, retaining AUROC, numerical session_seen, equal weights and the temporal 1M/111111 windows with a one-day gap. Preserve original dated decisions and resolved issue IDs; retain REVIEW.md under the current history convention.
