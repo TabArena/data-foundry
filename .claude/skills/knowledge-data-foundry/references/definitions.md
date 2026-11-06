@@ -498,6 +498,16 @@ with `unique_name = "<name>_1m"`, `version_of = "<name>"` and a `version_comment
 
 A dataset that sets `splits_comment` itself states the sub-sampling there.
 
+A larger version, sampled to its own budget instead of the protocol's, sets `row_budget = RowBudget(train=...,
+test=...)` next to `subsample_to_budget = True` and is named after its train budget: `RowBudget(train=10_000_000,
+test=250_000)` makes `<name>_10m` (`RowBudget.suffix`). Everything above holds with its numbers; an IID or grouped
+frame is sampled to `train + test` rows unless `frame=` says otherwise. The split-size checks
+(`splits_train_over_budget`, `splits_test_over_budget`) then hold the splits to that budget; a saved container
+carries only its name, so the train budget must read back exactly from the suffix (10M, 2.5M, 300k) and the test
+budget stays at or below the protocol's 500k. Such versions are for
+large-data experiments (the 1M-10M scaling benchmark), not for the TabArena v0.2 collection, which keeps the `_1m`
+budget.
+
 ## Traps to flag at scaffold time
 
 Turn each one that plausibly applies into a `# TODO(verify):` marker in `dataset.py` and a bullet in

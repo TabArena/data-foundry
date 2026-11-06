@@ -301,7 +301,8 @@ class AbstractCuratedDataset(ABC):
 
     # --- dataset ------------------------------------------------------------------------------------
     unique_name: ClassVar[str]
-    """Snake-case name; equal to the folder name. A version sub-sampled to the row budget ends in ``_1m``."""
+    """Snake-case name; equal to the folder name. A version sub-sampled to the row budget ends in ``_1m`` (with its
+    own :attr:`row_budget`, in that budget's suffix, such as ``_10m``)."""
     year: ClassVar[str]
     """Year the data was first published, at the publication ``source_url`` names (a competition's launch, a
     dataset's release or donation, the online date of the paper or supplement that holds the rows), not the year it
@@ -385,6 +386,10 @@ class AbstractCuratedDataset(ABC):
     stratified) before splitting, so every fold trains on at most 1M and tests on at most 500k rows. Temporal: sample
     per window (each test window up to 500k rows, each train side a random 1M of all earlier rows; whole time values
     with ``TemporalSplits(sample_by="time")``) and keep only the rows a split uses (:mod:`data_foundry.v2.splits`)."""
+    row_budget: ClassVar[protocol.RowBudget | None] = None
+    """The budget a sub-sampled version samples to. None: the protocol's 1M train, 500k test and 1.5M frame rows,
+    for a ``_1m`` version. ``RowBudget(train=10_000_000, test=250_000)`` makes a larger version, named
+    ``<name>_10m`` (:attr:`~data_foundry.v2.splits.RowBudget.suffix`); it needs ``subsample_to_budget = True``."""
 
     # --- checks and raw files ----------------------------------------------------------------------
     accepted_check_warnings: ClassVar[dict[str, str]] = {}
@@ -802,32 +807,36 @@ class AbstractCuratedDataset(ABC):
         """The default of :meth:`_make_splits`: the v2 split protocol (:mod:`data_foundry.v2.splits`).
 
         The splits are the declarative temporal windows, or the recommended IID / grouped 3-fold cross-validation,
-        and no split trains on more than 1M or tests on more than 500k rows. A ``_1m`` version of IID or grouped
+        and no split trains on more than 1M or tests on more than 500k rows (or the version's own
+        :attr:`row_budget`). A ``_1m`` version of IID or grouped
         data first sub-samples the frame to 1.5M rows (whole groups, stratified); a temporal ``_1m`` version samples
         per window instead (:func:`~data_foundry.v2.splits.sample_temporal_splits`) and keeps only the rows a split
         uses.
         """
         task = self.task_metadata
         temporal = task.time_on is not None
+        budget = self.row_budget or protocol.default_row_budget()
+        version = f"`_{budget.suffix}` version"
         frame_sampled = self.subsample_to_budget and not temporal
         if frame_sampled:
-            if len(df) <= protocol.FRAME_ROW_BUDGET:
+            if len(df) <= budget.frame_rows:
                 msg = (
                     f"{type(self).__name__}: the frame has {len(df):,} rows, within the "
-                    f"{protocol.FRAME_ROW_BUDGET:,}-row budget. Take the dataset fully: drop `subsample_to_budget` "
-                    "and the `_1m` version."
+                    f"{budget.frame_rows:,}-row budget. Take the dataset fully: drop `subsample_to_budget` "
+                    f"and the {version}."
                 )
                 raise DatasetDefinitionError(msg)
             df = protocol.subsample_frame(
-                df, group_on=task.group_on, stratify_on=task.stratify_on, random_state=self.SPLIT_RANDOM_STATE
+                df,
+                group_on=task.group_on,
+                stratify_on=task.stratify_on,
+                n_rows=budget.frame_rows,
+                random_state=self.SPLIT_RANDOM_STATE,
             )
 
         splits, comment = self._window_splits(df) if temporal else (self._cross_validation(df), DEFAULT_SPLITS_COMMENT)
 
-        train_budget, test_budget = (
-            protocol.rows_text(protocol.TRAIN_ROW_BUDGET),
-            protocol.rows_text(protocol.TEST_ROW_BUDGET),
-        )
+        train_budget, test_budget = protocol.rows_text(budget.train), protocol.rows_text(budget.test)
         if self.subsample_to_budget and temporal:
             by_time = self.temporal.splits.sample_by == "time"
             df, splits, trimmed = protocol.sample_temporal_splits(
@@ -835,12 +844,14 @@ class AbstractCuratedDataset(ABC):
                 splits,
                 stratify_on=None if by_time else task.stratify_on,
                 whole_values_of=task.time_on if by_time else None,
+                train_cap=budget.train,
+                test_cap=budget.test,
                 random_state=self.SPLIT_RANDOM_STATE,
             )
             if not trimmed:
                 msg = (
                     f"{type(self).__name__}: no split side exceeds the row budget ({train_budget} train, {test_budget} "
-                    "test rows). Take the dataset fully: drop `subsample_to_budget` and the `_1m` version."
+                    f"test rows). Take the dataset fully: drop `subsample_to_budget` and the {version}."
                 )
                 raise DatasetDefinitionError(msg)
             if by_time:
@@ -863,17 +874,17 @@ class AbstractCuratedDataset(ABC):
             splits,
             group_on=task.group_on,
             stratify_on=task.stratify_on,
+            train_cap=budget.train,
+            test_cap=budget.test,
             random_state=self.SPLIT_RANDOM_STATE,
         )
-        budget = f"every split trains on at most {train_budget} and tests on at most {test_budget} rows"
+        caps = f"every split trains on at most {train_budget} and tests on at most {test_budget} rows"
         if frame_sampled:
             whole = " (whole groups)" if task.group_on is not None else ""
-            comment += (
-                f" The frame is sub-sampled to {protocol.rows_text(protocol.FRAME_ROW_BUDGET)} rows{whole}; {budget}."
-            )
+            comment += f" The frame is sub-sampled to {protocol.rows_text(budget.frame_rows)} rows{whole}; {caps}."
             return SplitPlan(splits=splits, df=_drop_unused_categories(df), comment=comment)
         if capped:
-            comment += f" Split sides over the row budget are trimmed: {budget}."
+            comment += f" Split sides over the row budget are trimmed: {caps}."
         return SplitPlan(splits=splits, comment=comment)
 
     def _window_splits(self, df: pd.DataFrame) -> tuple[Splits, str]:
@@ -1045,6 +1056,10 @@ class AbstractCuratedDataset(ABC):
                 own.append(
                     CheckResult("check_crashed", "error", f"the {name} checks crashed: {type(error).__name__}: {error}")
                 )
+        if self.row_budget is not None:  # a larger version: the split sizes are held to its own budget
+            replaced = {"splits_train_over_budget", "splits_test_over_budget"}
+            shared = [r for r in shared if r.slug not in replaced]
+            own += protocol.budget_checks(container, self.row_budget)
         found = [*shared, *own]
         unused = [slug for slug in accepted if slug not in {r.slug for r in found}]
         if unused:
@@ -1586,8 +1601,13 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         fail("`subsample_to_budget` is ignored when the class implements `_make_splits`; sample there instead.")
     if cls.subsample_to_budget and cls.version_of is None:
         fail("`subsample_to_budget` makes a sub-sampled version: set `version_of` (and `version_comment`).")
-    if cls.subsample_to_budget and not cls.unique_name.endswith("_1m"):
-        fail("a version sub-sampled to the row budget (`subsample_to_budget`) is named `<name>_1m`.")
+    if cls.row_budget is not None and not isinstance(cls.row_budget, protocol.RowBudget):
+        fail("`row_budget` must be a `RowBudget(train=..., test=...)`.")
+    if cls.row_budget is not None and not cls.subsample_to_budget:
+        fail("`row_budget` sets how a sub-sampled version samples; it needs `subsample_to_budget = True`.")
+    suffix = f"_{cls.row_budget.suffix}" if isinstance(cls.row_budget, protocol.RowBudget) else "_1m"
+    if cls.subsample_to_budget and not cls.unique_name.endswith(suffix):
+        fail(f"a version sub-sampled to the row budget (`subsample_to_budget`) is named `<name>{suffix}`.")
     if cls.version_of is not None and not clean_text(cls.version_comment or ""):
         fail("a version (`version_of`) needs a `version_comment`.")
     if cls.prepared_raw_files and cls._prepare_raw_files is AbstractCuratedDataset._prepare_raw_files:

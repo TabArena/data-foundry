@@ -12,6 +12,8 @@
   time value is kept), for data whose rows at one time form a cross-section.
 * No split trains on more than :data:`TRAIN_ROW_BUDGET` or tests on more than :data:`TEST_ROW_BUDGET` rows:
   :func:`cap_splits` trims a side that uneven folds or a long history push over.
+* A larger sub-sampled version declares its own budget (:class:`RowBudget`, for example a ``<name>_10m`` version
+  of 10M train and 250k test rows); everything above then holds with its numbers.
 
 This module does not use the v1 helpers in :mod:`data_foundry.curation_recommendations`, which keep the v1 protocol
 (one 1M / 250k split from 1.25M rows on) for the v1 notebooks. The cross-validation builders give the same splits
@@ -20,6 +22,7 @@ as the v1 ones, so a dataset below 1.25M rows keeps its splits.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Literal
 
@@ -50,6 +53,59 @@ TEST_ROW_BUDGET = 500_000
 
 FRAME_ROW_BUDGET = 1_500_000
 """A ``_1m`` version sub-samples its frame to this many rows: 3 folds of 1M train and 500k test rows."""
+
+
+@dataclass(frozen=True)
+class RowBudget:
+    """A row budget other than the protocol's, for a larger sub-sampled version (``row_budget = RowBudget(...)``).
+
+    A definition without one samples to :data:`TRAIN_ROW_BUDGET`, :data:`TEST_ROW_BUDGET` and
+    :data:`FRAME_ROW_BUDGET` and is named ``<name>_1m``. One with a budget is named ``<name>_<suffix>``
+    (:attr:`suffix`: ``RowBudget(train=10_000_000, test=250_000)`` is a ``_10m`` version), and the split-size checks
+    hold it to this budget instead of the protocol's.
+
+    Attributes:
+        train: No split trains on more rows than this. It must read back exactly from :attr:`suffix` (10M, 2.5M,
+            300k), since a saved container is checked against the budget its name gives.
+        test: No split tests on more rows than this, at most :data:`TEST_ROW_BUDGET`: a saved container is checked
+            against the protocol's test budget, the definition against this one.
+        frame: The rows an IID or grouped version keeps before its 3-fold cross-validation; None takes
+            ``train + test``. Temporal versions sample per window and do not use it.
+    """
+
+    train: int
+    test: int
+    frame: int | None = None
+
+    def __post_init__(self) -> None:
+        if self.train <= 0 or self.test <= 0 or (self.frame is not None and self.frame <= 0):
+            msg = f"A row budget needs positive row counts, got {self}."
+            raise ValueError(msg)
+        if self.test > TEST_ROW_BUDGET:  # a saved container is checked against the protocol's test budget
+            msg = f"A row budget tests on at most {TEST_ROW_BUDGET:,} rows (the protocol's), got {self.test:,}."
+            raise ValueError(msg)
+        if _rows_from_suffix(self.suffix) != self.train:  # a saved container reads its train budget from its name
+            msg = f"The train budget must be exact in the name suffix (`_{self.suffix}`), got {self.train:,}."
+            raise ValueError(msg)
+
+    @property
+    def frame_rows(self) -> int:
+        """The frame size of an IID or grouped version: :attr:`frame`, or ``train + test``."""
+        return self.frame if self.frame is not None else self.train + self.test
+
+    @property
+    def suffix(self) -> str:
+        """The name suffix of a version sampled to this budget, from its train budget: 10M -> ``"10m"``."""
+        return rows_text(self.train).lower().replace(".", "p")
+
+
+def default_row_budget() -> RowBudget:
+    """The protocol's budget, read at call time.
+
+    Built from :data:`TRAIN_ROW_BUDGET`, :data:`TEST_ROW_BUDGET` and :data:`FRAME_ROW_BUDGET`.
+    """
+    return RowBudget(train=TRAIN_ROW_BUDGET, test=TEST_ROW_BUDGET, frame=FRAME_ROW_BUDGET)
+
 
 SINGLE_REPEAT_ROWS = 1_250_000
 """A frame with this many rows gets a single repeat even when it has few groups (``group_labels="per_group"``)."""
@@ -919,6 +975,60 @@ def protocol_checks(container: CuratedContainer) -> list[CheckResult]:
                 hint="Deviating is allowed when the task demands it; record why in `splits_comment`.",
             ),
         )
+    return findings
+
+
+_SIZE_SUFFIX = re.compile(r"_(\d+)(?:p(\d+))?([km])$")
+
+
+def train_budget_of(container: CuratedContainer) -> int | None:
+    """The train budget a saved container is held to, read from its name.
+
+    A sub-sampled version (``version_from_unique_name`` set) is named after its train budget (:attr:`RowBudget.suffix`),
+    so ``cooking_time_10m`` is held to 10M train rows wherever it is checked, not only by its definition. Any other
+    container returns None and keeps the protocol's budget.
+    """
+    meta = container.dataset_metadata
+    match = _SIZE_SUFFIX.search(meta.unique_name) if meta.version_from_unique_name else None
+    if match is None:
+        return None
+    return _rows_from_suffix(match.group(0)[1:])
+
+
+def _rows_from_suffix(suffix: str) -> int | None:
+    match = _SIZE_SUFFIX.fullmatch(f"_{suffix}")
+    if match is None:
+        return None
+    whole, fraction, unit = match.groups()
+    return round(float(f"{whole}.{fraction or 0}") * (1_000_000 if unit == "m" else 1_000))
+
+
+def budget_checks(container: CuratedContainer, budget: RowBudget) -> list[CheckResult]:
+    """The split-size checks against a version's own row budget, in place of the protocol's.
+
+    The same slugs as the shared checks they replace: ``splits_train_over_budget`` (error) and
+    ``splits_test_over_budget`` (warning).
+    """
+    splits = container.experiment_metadata.splits
+    flat = [(r, f, train, test) for r, folds in splits.items() for f, (train, test) in folds.items()]
+    findings: list[CheckResult] = []
+    for slug, severity, side, cap in (
+        ("splits_train_over_budget", "error", 2, budget.train),
+        ("splits_test_over_budget", "warning", 3, budget.test),
+    ):
+        over = [(row[0], row[1], len(row[side])) for row in flat if len(row[side]) > cap]
+        if over:
+            largest = max(n for *_, n in over)
+            kind = "train" if side == 2 else "test"
+            findings.append(
+                CheckResult(
+                    slug,
+                    severity,
+                    f"{len(over)} split(s) {kind} on more than {cap:,} rows, the version's row budget (largest: "
+                    f"{largest:,}); first: {[(r, f) for r, f, _ in over[:5]]}.",
+                    hint="The splits should be sampled to `row_budget`; check the definition's `_make_splits`.",
+                ),
+            )
     return findings
 
 

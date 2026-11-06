@@ -1609,10 +1609,17 @@ def _check_splits_dimensions(ctx: _Ctx) -> Iterator[CheckResult]:
 
 @_check
 def _check_splits_row_budget(ctx: _Ctx) -> Iterator[CheckResult]:
-    """No outer split may train on more than 1M rows (or, in format 1, test on more than 250k)."""
+    """No outer split may train on more than 1M rows (or, in format 1, test on more than 250k).
+
+    A format-2 version sub-sampled to a larger budget (``<name>_10m``) is held to the budget its name gives.
+    """
     if not ctx.flat_splits:
         return
     train_budget, test_budget = SPLIT_TRAIN_ROW_BUDGET, SPLIT_TEST_ROW_BUDGET
+    if ctx.container.format_version >= 2:
+        from data_foundry.v2.splits import train_budget_of  # noqa: PLC0415 - data_foundry.v2 imports this module
+
+        train_budget = train_budget_of(ctx.container) or train_budget
     over_train = [(r, f, len(train)) for r, f, train, _test in ctx.flat_splits if len(train) > train_budget]
     over_test = [(r, f, len(test)) for r, f, _train, test in ctx.flat_splits if len(test) > test_budget]
     if ctx.container.format_version != 1:

@@ -13,6 +13,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+from data_foundry.bundle_checks import run_bundle_checks
 from data_foundry.curation_container import CuratedContainer, feature_columns, special_features
 from data_foundry.schema import DATA_FOUNDRY_WAREHOUSE_ENV
 from data_foundry.v2 import (
@@ -804,6 +805,102 @@ def test_a_temporal_version_sampled_by_time_keeps_whole_days(
         assert (len(train), len(test)) == (180, 60)  # at most the budget: the day crossing it is dropped
         assert plan.df["t"].iloc[train].max() < plan.df["t"].iloc[test].min()
     assert "drawn as whole values of `t`" in plan.comment
+
+
+# --- the v2 split protocol: versions with their own row budget ---------------------------------------------------
+def budget_version_body(name: str = "toy_ds_0p19k", budget: str = "RowBudget(train=190, test=60)") -> str:
+    """A temporal version of the toy data sampled to its own row budget instead of the protocol's."""
+    return (
+        temporal_version_body()
+        .replace("toy_ds_1m", name)
+        .replace("TemporalSplits, drop_columns", "TemporalSplits, RowBudget, drop_columns")
+        .replace("    subsample_to_budget = True\n", f"    subsample_to_budget = True\n    row_budget = {budget}\n")
+    )
+
+
+def test_a_row_budget_names_its_version_and_frames_train_plus_test() -> None:
+    assert protocol.RowBudget(train=10_000_000, test=250_000).suffix == "10m"
+    assert protocol.RowBudget(train=2_500_000, test=250_000).suffix == "2p5m"
+    assert protocol.RowBudget(train=10_000_000, test=250_000).frame_rows == 10_250_000
+    assert protocol.RowBudget(train=100, test=50, frame=120).frame_rows == 120
+    assert protocol.default_row_budget().suffix == "1m"
+    with pytest.raises(ValueError, match="positive row counts"):
+        protocol.RowBudget(train=0, test=10)
+
+
+def test_a_version_with_its_own_budget_samples_to_it(tmp_path: Path, warehouse: Path) -> None:
+    del warehouse  # the protocol budget stays at 1M: only the version's own budget trims the 600 toy rows
+    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=budget_version_body())
+    plan = get_dataset(tmp_path / "datasets", "toy_ds_0p19k").make_splits()
+
+    assert len(plan.splits) == 3
+    assert all(
+        len(train) == 190 and len(test) == 60 for folds in plan.splits.values() for train, test in folds.values()
+    )
+    assert "each train side is a random 0.19k of all earlier rows" in plan.comment
+
+
+@pytest.mark.parametrize(
+    ("name", "budget", "subsample", "match"),
+    [
+        ("toy_ds_1m", "RowBudget(train=190, test=60)", True, "is named `<name>_0p19k`"),
+        ("toy_ds_0p19k", "(190, 60)", True, "must be a `RowBudget"),
+        ("toy_ds_0p19k", "RowBudget(train=190, test=60)", False, "needs `subsample_to_budget = True`"),
+    ],
+)
+def test_a_row_budget_is_checked_with_its_definition(
+    tmp_path: Path, warehouse: Path, *, name: str, budget: str, subsample: bool, match: str
+) -> None:
+    del warehouse
+    body = budget_version_body(name, budget)
+    if not subsample:
+        body = body.replace("    subsample_to_budget = True\n", "")
+    write_definition(tmp_path / "datasets", name, body=body)
+    with pytest.raises(DatasetDefinitionError, match=match):
+        get_dataset(tmp_path / "datasets", name)
+
+
+def test_a_version_with_its_own_budget_is_checked_against_it(
+    tmp_path: Path, warehouse: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    del warehouse
+    monkeypatch.setattr("data_foundry.bundle_checks.SPLIT_TRAIN_ROW_BUDGET", 100)  # the shared check flags 190
+    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=budget_version_body())
+    result = get_dataset(tmp_path / "datasets", "toy_ds_0p19k").check(write_report=False, verbose=False)
+    assert "splits_train_over_budget" not in result.bundle_report.slugs
+
+    findings = protocol.budget_checks(result.container, protocol.RowBudget(train=150, test=50))
+    assert [(f.slug, f.severity) for f in findings] == [
+        ("splits_train_over_budget", "error"),
+        ("splits_test_over_budget", "warning"),
+    ]
+
+
+@pytest.mark.parametrize(
+    ("budget", "match"),
+    [
+        ({"train": 10_000_001, "test": 250_000}, "exact in the name suffix"),
+        ({"train": 10_000_000, "test": 600_000}, "tests on at most"),
+        ({"train": 0, "test": 250_000}, "positive row counts"),
+    ],
+)
+def test_a_row_budget_refuses_what_a_saved_container_cannot_carry(budget: dict[str, int], match: str) -> None:
+    with pytest.raises(ValueError, match=match):
+        protocol.RowBudget(**budget)
+
+
+def test_a_saved_version_is_held_to_the_budget_its_name_gives(
+    tmp_path: Path, warehouse: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    del warehouse
+    monkeypatch.setattr("data_foundry.bundle_checks.SPLIT_TRAIN_ROW_BUDGET", 100)
+    write_definition(tmp_path / "datasets", "toy_ds_0p19k", body=budget_version_body())
+    container = get_dataset(tmp_path / "datasets", "toy_ds_0p19k").check(write_report=False, verbose=False).container
+    assert protocol.train_budget_of(container) == 190
+    assert "splits_train_over_budget" not in run_bundle_checks(container).slugs
+
+    container.dataset_metadata.version_from_unique_name = None  # not a version: the protocol's budget again
+    assert "splits_train_over_budget" in run_bundle_checks(container).slugs
 
 
 def test_a_temporal_version_within_the_budget_is_refused(tmp_path: Path, warehouse: Path) -> None:
