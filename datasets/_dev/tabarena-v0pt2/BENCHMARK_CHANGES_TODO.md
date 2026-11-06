@@ -299,6 +299,11 @@ ignores them, since the bins stay numeric features.
   `split_random_state` (and `grouping` for grouped tasks); releases up to v0.0.5 forbid unknown fields and cannot load
   them. Release data-foundry before uploading the rebuilt containers and raise TabArena's `data-foundry>=0.0.3` floor.
   From this version on, `CuratedContainer.load` ignores fields it does not know, with a warning.
+- [ ] **The rebuilt containers keep their splits in a row table** (`rows.parquet`, one `split_r<repeat>_f<fold>`
+  column per split holding `train`, `test` or nothing; the split metadata file is then
+  `experiment_metadata.predictive-ml-splits-table-v1.json`). A data-foundry release before the row table refuses
+  these containers as written by a newer version, so the floor above must be a release that has it. The adapter reads
+  the splits through `experiment_metadata.splits` and needs no change.
 
 ## Frame sizes of the v2 split protocol
 

@@ -893,6 +893,28 @@ def test_a_row_budget_is_checked_with_its_definition(
         get_dataset(tmp_path / "datasets", name)
 
 
+def test_split_sides_come_in_row_order_and_the_container_keeps_them_in_its_row_table(
+    tmp_path: Path, warehouse: Path
+) -> None:
+    del warehouse
+    body = DEFINITION.format(name="toy_ds", comment="Toy data.").replace(
+        "    def _feature_types(",
+        '    splits_comment = "A toy split whose train side comes out of row order."\n\n'
+        "    def _make_splits(self, df: pd.DataFrame) -> dict:\n"
+        "        half = len(df) // 2\n"
+        "        return {0: {0: (list(range(half - 1, -1, -1)), list(range(half, len(df))))}}\n\n"
+        "    def _feature_types(",
+    )
+    write_definition(tmp_path / "datasets", body=body)
+    ds = get_dataset(tmp_path / "datasets", "toy_ds")
+    train, test = ds.make_splits().splits[0][0]
+    assert train == list(range(300))  # a side is a set of rows, in row order
+    assert test == list(range(300, 600))
+    path = ds.to_container().save(save_dir=tmp_path / "saved")
+    assert (path / "rows.parquet").is_file()
+    assert CuratedContainer.load(path).experiment_metadata.splits == {0: {0: (train, test)}}
+
+
 def test_a_grouped_definition_reports_its_group_structure(tmp_path: Path, warehouse: Path) -> None:
     del warehouse
     body = (

@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: fraud_detection_in_electricity_and_gas_consumption_1m
 container_format: 2
-checksum: v2:5aa89c7abfe65bc823a9aaaddc670127292d0e2fcdf832b3631790858221a287
+checksum: v2:da6f8add48f9cffb1d03b0033e37a8be8f696ecc135867726e1bcdae091812d6
 build: null
 build_stale: false
 data:
@@ -69,7 +69,7 @@ decisions:
 
 Binary classification of `fraud`, scored with `roc_auc` on grouped splits by `client_id`, one prediction per group (mean). 1,500,000 rows and 17 features. Source: Zindi (2019).
 
-Not built yet. The current definition gives checksum `v2:5aa89c7abfe65bc823a9aaaddc670127292d0e2fcdf832b3631790858221a287`.
+Not built yet. The current definition gives checksum `v2:da6f8add48f9cffb1d03b0033e37a8be8f696ecc135867726e1bcdae091812d6`.
 
 ## In brief
 

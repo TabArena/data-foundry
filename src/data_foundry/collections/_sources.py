@@ -21,6 +21,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
+
 if TYPE_CHECKING:
     from data_foundry.collections._core import CollectionEntry
 
@@ -40,6 +42,8 @@ def has_core_files(path: Path) -> bool:
     """
     if not path.is_dir() or not all((path / name).is_file() for name in CORE_FILES):
         return False
+    if (path / f"experiment_metadata.{SPLITS_TABLE_TYPE}.json").is_file() and not (path / ROWS_FILE).is_file():
+        return False  # the splits are in the row table
     return all(any(path.glob(f"{name}.*.json")) for name in CORE_METADATA)
 
 

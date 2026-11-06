@@ -46,6 +46,7 @@ import pandas as pd
 
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.curation_recommendations import SPLIT_TEST_ROW_BUDGET, SPLIT_TRAIN_ROW_BUDGET
+from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
 from data_foundry.schema import as_column_list
 from data_foundry.utils.checksum import categorical_details
 from data_foundry.utils.dtypes import is_str_dtype, object_columns
@@ -2107,14 +2108,22 @@ def _task_metadata_file(path: Path, container: CuratedContainer | None) -> str:
 
 
 def _expected_files(path: Path, container: CuratedContainer | None) -> list[str]:
-    """The files a saved container must hold (the category and test-set files only when the frames need them)."""
+    """The files a saved container must hold.
+
+    The category and test-set files only when the frames need them, the row table when the splits are in it.
+    """
+    table = (path / f"experiment_metadata.{SPLITS_TABLE_TYPE}.json").is_file()
     files = [
         "dataset.parquet",
         "dtypes.json",
         "container_metadata.json",
         "dataset_metadata.dataset-mold-v1.json",
         _task_metadata_file(path, container),
-        "experiment_metadata.predictive-ml-splits-mold-v1.json",
+        *(
+            [f"experiment_metadata.{SPLITS_TABLE_TYPE}.json", ROWS_FILE]
+            if table
+            else ["experiment_metadata.predictive-ml-splits-mold-v1.json"]
+        ),
     ]
     if container is not None and categorical_details(container.dataset):
         files.append("categories.json")
