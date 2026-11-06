@@ -91,16 +91,36 @@ DataTags = Literal[
     # Other context tags (not statistical information!)
     "Spatial",  # data that contains spatial/geographical information
     "Anonymized",  # data that has no semantic meaning anymore on purpose
-    # data that is IID by construction of the data.
-    #   - e.g. temporal data that is missing the timestamp
+    # Time basis: why an IID or grouped split is not temporal (SPLIT-32). One per IID or grouped definition.
+    #   Justified: the split tests what the use case does.
+    "Timeless",  # the target is a fixed property of the item; there is no time to split on
+    "Snapshot",  # one shared moment, or a fill-in inside the observed period; nothing is predicted for later times
+    "DelayedTarget",  # features at one shared prediction point; the target later, in a window closed for every row
+    #   Forced: the split is the closest one the release allows (SPLIT-8).
+    "CaseSeries",  # cases over a period, dates lost; the target is the case's present state (drift only)
+    "TimeLost",  # rows over a period, dates lost; the target a later outcome or a market value
+    "TooFewPeriods",  # time present, fewer periods than three test windows need; grouped across stacked periods
+    #   Exception: time present and not split on, justified with its measured cost.
+    "TimeUnused",
+    # Superseded (2026-11-06) by the time-basis tags above; still accepted, and `dataset check` notes the replacement.
     "ForcedIIDFromTemporal",
-    # a task temporal by its use case, split grouped because it has too few periods for three test windows
     "ForcedGroupedFromTemporal",
     # Retired (2026-10-21): kept readable for containers that carry it; new definitions refuse it (RETIRED_DATA_TAGS).
     "2ndTierData",
     "WrongDomain",  # Task that was transformed to another domain (like audio) to tabular.
 ]
 RETIRED_DATA_TAGS = ("2ndTierData",)
+
+TIME_BASIS_TAGS = ("Timeless", "Snapshot", "DelayedTarget", "CaseSeries", "TimeLost", "TooFewPeriods", "TimeUnused")
+"""Why an IID or grouped split is not temporal (SPLIT-32): at most one per definition, never on a temporal split."""
+
+SUPERSEDED_TIME_TAGS = {
+    "ForcedIIDFromTemporal": "TimeLost or CaseSeries (rows over a period, dates lost), Snapshot or DelayedTarget "
+    "(one shared moment)",
+    "ForcedGroupedFromTemporal": "TooFewPeriods (time present, too few periods), TimeLost (dates lost), Snapshot or "
+    "DelayedTarget (one period)",
+}
+"""The old forced tags and the time-basis tags that replace them."""
 """Tags old containers may carry and loading accepts, but a new definition may not set."""
 ProblemType = Literal["binary_classification", "multiclass_classification", "regression"]
 ProblemTypeClassification = [
