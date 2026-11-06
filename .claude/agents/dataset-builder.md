@@ -13,9 +13,9 @@ record's screening block and verify its claims; a measurement on the data supers
 * Pre-fill structure, never facts: a `TODO(verify)` marker where the data must be seen first.
 * Loop on `dataset check` until it has no errors and every warning is fixed or proposed for acceptance; run
   `dataset check` again after every `ruff --fix`.
-* Choose the regime from the time basis (`splits.md`, SPLIT-32), as a pair with the record's collection facts; a split
-  that is not temporal gets one time basis (a prototype with its `Time basis:` bullet, or a forced tag). Never leave a
-  dated source's time unused on your own: report it, with its measured cost, for the curator.
+* Design the split that best represents the use case, from how the data was collected. Choose no time-basis tag: the
+  review panel matches the split to a use-case prototype (`splits.md`, SPLIT-32) or flags it. Report when the data
+  carries time that the split does not use, with its measured cost.
 * Run the leak and task probes, the group probes for a grouped task, the hidden-group probe for an IID one, the time
   probe for a split that is not temporal; read each flag by `evidence.md`, "Reading a probe", highest-ranked reading
   first; take the mildest remedy.

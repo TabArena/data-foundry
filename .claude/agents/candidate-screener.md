@@ -11,11 +11,10 @@ Follow `.claude/skills/screen-candidates/SKILL.md`, steps 3 to 6, for each recor
 (start with `.claude/skills/knowledge-curation/references/principles.md`). In short:
 
 1. Research from the start link and the web only: the first publication and year, the data as published, the original
-   task, the use case (actor, moment, decision), the source's collection facts and the likely use-case prototype
-   (`splits.md`, SPLIT-32: when samples, features and target arrive, where time lives, whether all samples share one
-   moment), the likely regime, the metric the source scored and where it is defined (or "none found" with where you
-   looked; any extra inputs it needs; MET-1, MET-5, MET-6 in
-   `.claude/skills/knowledge-curation/references/metrics.md`), papers, siblings and duplicates among
+   task, the use case (actor, moment, decision), the source's collection facts (`splits.md`, SPLIT-32: when samples,
+   features and target arrive, where time lives, whether all samples share one moment), the likely regime, the metric
+   the source scored and where it is defined (or "none found" with where you looked; any extra inputs it needs; MET-1,
+   MET-5, MET-6 in `.claude/skills/knowledge-curation/references/metrics.md`), papers, siblings and duplicates among
    `curation/records/`, external collections, better data for the same task (a quick look, step 3, "Better data for
    the same task"; skip it for a record the main session says a data scout covers), risks for the add stage. No
    download beyond a preview; nothing is built.

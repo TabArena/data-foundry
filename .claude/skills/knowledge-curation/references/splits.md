@@ -101,10 +101,11 @@ independent collection facts, set at screening and true whatever task is built o
   Delay` (after a delay that differs between samples: a settlement, a chargeback, a follow-up) or `Target: Revised
   Later` (assigned, then updated or propagated); no tag when the target exists with the features.
 
-The definition names the use-case prototype it follows. The same source can carry different use cases (SPLIT-1's two
-applications), so the prototype is chosen per definition. The prototypes are the categories a task is matched against:
-a split that is not temporal carries one time-basis tag, and a prototype's `Time basis:` line in the curation notes
-states the fact behind it. The questions, in order:
+The definition is designed for the use case first, and its split is then checked against the use-case prototypes,
+which are a check of the design, not a menu to design from. The same source can carry different use cases (SPLIT-1's
+two applications), so the prototype is found per definition. The prototypes are the categories a task is matched
+against: a split that is not temporal carries one time-basis tag, and a prototype's `Time basis:` line in the curation
+notes states the fact behind it. The questions, in order:
 
 1. **Can time affect the target at all?** Not when the target is a fixed property of the item, the same whenever it is
    measured (a material's strength, a molecule's activity, a species, the outcome of a designed run): `Timeless`. The
