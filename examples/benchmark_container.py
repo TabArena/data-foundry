@@ -7,6 +7,9 @@ says everything a benchmark needs:
   shuffle, they encode the regime (IID, temporal, grouped);
 * the features, ``feature_columns(container)``: no target, no group column, no scoring column (a metric input such
   as an era, never a feature);
+* the training weight, ``sample_weight(container)`` (or ``None``): a scoring column every model is fitted with as each
+  row's weight, never a feature, such as the years insured of a claims-per-year target; the metric weights the test
+  rows by it too;
 * the metric, ``task_metadata.objective_metric`` (its name, what it takes, its origin and reference), scored by
   ``scorer(container)``, which looks up the scoring columns' values by the test rows' index and reads class
   probabilities in the sorted order of the classes (scikit-learn's ``classes_``), or by name from a table whose
@@ -39,7 +42,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.curation_container import CuratedContainer, feature_columns, special_features
+from data_foundry.curation_container import CuratedContainer, feature_columns, sample_weight, special_features
 from data_foundry.v2.encodings import encode_text_tfidf
 from data_foundry.v2.metrics import scorer
 from sklearn.ensemble import HistGradientBoostingClassifier, HistGradientBoostingRegressor
@@ -69,9 +72,11 @@ def benchmark(container: CuratedContainer) -> list[float]:
     score = scorer(container)  # score(y_true, y_pred, row_index)
     classes = list(df[target].cat.categories) if task.problem_type != "regression" else None
     scoring = ", ".join(f"`{c.column}` ({c.role})" for c in task.scoring_columns) or "none"
+    weight = sample_weight(container)  # the training weight, or None
     print(f"Metric: {spec.name} ({spec.origin}; takes {spec.prediction}; ", end="")
     print(f"{'higher' if spec.greater_is_better else 'lower'} is better); scoring columns: {scoring}")
-    print(f"{len(features)} model inputs, {len(text)} text columns encoded per split\n")
+    print(f"{len(features)} model inputs, {len(text)} text columns encoded per split", end="")
+    print(f"; every model fitted with `{weight}` as the row weight\n" if weight else "\n")
 
     scores: list[float] = []
     for repeat_id, folds in container.experiment_metadata.splits.items():
@@ -83,7 +88,8 @@ def benchmark(container: CuratedContainer) -> list[float]:
                 model = HistGradientBoostingRegressor(categorical_features="from_dtype", random_state=42)
             else:
                 model = HistGradientBoostingClassifier(categorical_features="from_dtype", random_state=42)
-            model.fit(x_train, y_train)
+            # the training weight is the metric's row weight: a model fitted without it targets another quantity
+            model.fit(x_train, y_train, sample_weight=None if weight is None else df[weight].iloc[train_idx])
             if spec.prediction == "proba":
                 # A table with a column per class, named by the class: the scorer matches the columns by name, and
                 # a fold whose training rows lack a class gets 0 for it. A plain array is read in the sorted order of

@@ -151,6 +151,7 @@ def report_frontmatter(result: CurationResult, *, previous: dict[str, Any] | Non
             "metric": task.objective_metric.name,
             "metric_origin": task.objective_metric.origin,
             "scoring_columns": [c.column for c in task.scoring_columns] or None,
+            **({"sample_weight": task.sample_weight} if getattr(task, "sample_weight", None) else {}),
             "split_regime": task.split_regime,
             "stratify_on": task.stratify_on,
             "time_on": task.time_on,
@@ -450,10 +451,16 @@ def _metric_block(task: Any) -> list[str]:
         if value
     ]
     out = ["**Metric**", "", _table(pd.DataFrame(rows, columns=["field", "value"]), full=True), ""]
+    weight = getattr(task, "sample_weight", None)
     if task.scoring_columns:
         table = pd.DataFrame(
             [
-                (f"`{c.column}`", c.role, f"{c.used_by}: {c.description}", "never a feature")
+                (
+                    f"`{c.column}`",
+                    c.role,
+                    f"{c.used_by}: {c.description}",
+                    "training weight; never a feature" if c.column == weight else "never a feature",
+                )
                 for c in task.scoring_columns
             ],
             columns=["column", "role", "how the metric uses it", "model input"],
@@ -466,6 +473,15 @@ def _metric_block(task: Any) -> list[str]:
             "(`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).",
             "",
             _table(table, full=True),
+            "",
+        ]
+    if weight is not None:
+        out += [
+            "**Training weight**",
+            "",
+            f"Fit every model with `{weight}` as each row's sample weight (`sample_weight(container)` from "
+            "`data_foundry.curation_container`), and never use it as a feature. The metric weights the test rows by "
+            "the same column, so a model fitted without it targets another quantity.",
             "",
         ]
     return out

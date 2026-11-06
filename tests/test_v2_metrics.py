@@ -10,12 +10,13 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+import scipy.special
 import scipy.stats
 from data_foundry import bundle_checks
 from data_foundry.schema import MetricSpec, PredictiveMLTaskMetadataV2, ScoringColumn
 from data_foundry.v2 import metrics as m
 from data_foundry.v2.dataset import metric_spec
-from data_foundry.v2.metrics import METRICS, Metric, score, scorer, to_sklearn_scorer
+from data_foundry.v2.metrics import METRICS, Metric, row_weight_column, score, scorer, to_sklearn_scorer
 from pydantic import TypeAdapter
 from sklearn import metrics as skm
 from sklearn.linear_model import LinearRegression, LogisticRegression
@@ -63,7 +64,10 @@ EXPECTED = {
     "spearmanr": (Y_REG, P_REG, scipy.stats.spearmanr(Y_REG, P_REG).statistic),
     "mean_tweedie_deviance": (Y_REG, P_REG, skm.mean_tweedie_deviance(Y_REG, P_REG, power=1.5)),
 }
-PARAMS = {"mean_tweedie_deviance": {"power": 1.5, "min_prediction": 1e-9}}
+PARAMS = {
+    "mean_tweedie_deviance": {"power": 1.5, "min_prediction": 1e-9},
+    "mean_poisson_deviance": {"min_prediction": 1e-9},
+}
 """The params a standard metric needs for its reference value."""
 
 
@@ -209,6 +213,38 @@ def test_scorer_takes_the_group_input_by_row_index(monkeypatch: pytest.MonkeyPat
         scorer(_Container(df, task))(df["y"].to_numpy()[rows], y_pred)
     with pytest.raises(ValueError, match="needs the input"):
         score(spec, df["y"].to_numpy()[rows], y_pred)
+
+
+def test_scorer_weights_a_rate_by_its_exposure_and_checks_the_true_values() -> None:
+    """A claims-per-year target scored with its exposure as the row weight; passing the old count is refused."""
+    exposure = np.array([0.25, 1.0, 0.5, 1.0, 0.1, 0.75])
+    counts = np.array([1, 0, 2, 0, 0, 1])
+    df = pd.DataFrame({"x": np.arange(6.0), "claim_frequency": counts / exposure, "Exposure": exposure})
+    spec = metric_spec(
+        Metric.source(
+            "mean_poisson_deviance",
+            reference="https://example.org",
+            params={"min_prediction": 1e-4},
+            inputs={"weight": "Exposure"},
+        ),
+        "regression",
+    )
+    task = PredictiveMLTaskMetadataV2(
+        target_column_name="claim_frequency",
+        problem_type="regression",
+        objective_metric=spec,
+        scoring_columns=[
+            ScoringColumn(column="Exposure", role="weight", used_by="mean_poisson_deviance", description="years")
+        ],
+        sample_weight="Exposure",
+    )
+    rows = np.array([0, 2, 4, 5])
+    y_pred = np.full(len(rows), 0.8)
+    got = scorer(_Container(df, task))(df["claim_frequency"].to_numpy()[rows], y_pred, rows)
+    rate = df["claim_frequency"].to_numpy()[rows]
+    assert got == pytest.approx(skm.mean_poisson_deviance(rate, y_pred, sample_weight=exposure[rows]))
+    with pytest.raises(ValueError, match="is not the container's target"):
+        scorer(_Container(df, task))(counts[rows].astype(float), y_pred, rows)
 
 
 def _classification_task(problem_type: str, metric: Metric | None = None) -> PredictiveMLTaskMetadataV2:
@@ -449,20 +485,24 @@ def test_target_transform_round_trips_through_json() -> None:
     assert any("target_transform" in line for line in spec.describe_lines())
 
 
+def _poisson(floor: float = 1e-12, **inputs: str) -> Metric:
+    return Metric.source("mean_poisson_deviance", params={"min_prediction": floor}, inputs=inputs)
+
+
 @pytest.mark.parametrize("bad", [np.nan, np.inf, -np.inf])
 def test_poisson_deviance_rejects_non_finite_means(bad) -> None:
     """A NaN or infinite prediction raises: the floor covers only finite means at or below zero."""
     with pytest.raises(ValueError, match=r"deviance|NaN|infinity"):
-        score(Metric.source("mean_poisson_deviance"), [0, 1, 3], [0.2, bad, 2.0])
+        score(_poisson(1e-6), [0, 1, 3], [0.2, bad, 2.0])
 
 
-@pytest.mark.parametrize("low", [0.0, -1.0, 1e-300])
-def test_poisson_deviance_floors_means_at_machine_epsilon(low) -> None:
-    """A mean at or below zero scores as machine epsilon, the large loss the deviance gives a near-zero mean."""
-    eps = np.finfo(float).eps
-    expected = skm.mean_poisson_deviance([0, 1, 3], [0.2, eps, 2.0])
-    assert score(Metric.source("mean_poisson_deviance"), [0, 1, 3], [0.2, low, 2.0]) == pytest.approx(expected)
-    assert expected > 20  # a claim predicted at about zero is heavily penalised, not dropped
+def test_poisson_deviance_needs_a_stated_floor() -> None:
+    """``min_prediction`` is required (MET-13): no silent machine-epsilon default sets the worst error."""
+    with pytest.raises(ValueError, match="min_prediction"):
+        Metric.source("mean_poisson_deviance")
+    # one claim scored at the floor costs 2 * (log(1/f) - 1 + f): 16.4 at 1e-4, 25.6 at 1e-6
+    assert score(_poisson(1e-4), [1], [0.0]) == pytest.approx(2 * (np.log(1e4) - 1 + 1e-4))
+    assert score(_poisson(1e-6), [1], [-1.0]) == pytest.approx(2 * (np.log(1e6) - 1 + 1e-6))
 
 
 def test_poisson_deviance_matches_source_likelihood_with_zero_observations() -> None:
@@ -471,10 +511,94 @@ def test_poisson_deviance_matches_source_likelihood_with_zero_observations() -> 
     y = rng.poisson(0.2, 1000)
     p = rng.lognormal(-2, 1, 1000)
     expected = -2 * np.mean(scipy.stats.poisson.logpmf(y, p) - scipy.stats.poisson.logpmf(y, y))
-    assert score(Metric.source("mean_poisson_deviance"), y, p) == pytest.approx(expected, abs=1e-12)
-    assert score(Metric.source("mean_poisson_deviance"), [0], [0.25]) == pytest.approx(0.5)
+    assert score(_poisson(), y, p) == pytest.approx(expected, abs=1e-12)
+    assert score(_poisson(), [0], [0.25]) == pytest.approx(0.5)
     with pytest.raises(ValueError, match="deviance"):
-        score(Metric.source("mean_poisson_deviance"), [-1, 0], [1, 1])
+        score(_poisson(), [-1, 0], [1, 1])
+
+
+# --- weighted deviances: a rate per unit at risk, weighted by its denominator (MET-14, MET-15) ----------------------
+
+
+def _claims(n: int = 5000, seed: int = 11) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Counts over realized exposures in (0, 1] years, and a predicted yearly rate."""
+    rng = np.random.default_rng(seed)
+    exposure = rng.integers(1, 366, n) / 365
+    rate = rng.gamma(2.0, 0.05, n)
+    return rng.poisson(rate * exposure), exposure, rate * rng.lognormal(0, 0.3, n)
+
+
+def test_weighted_poisson_deviance_equals_scikit_learn_with_sample_weight() -> None:
+    """``sum(w * d) / sum(w)`` on the rate, scikit-learn's ``sample_weight``; zero weights drop a row."""
+    counts, exposure, pred = _claims()
+    rate = counts / exposure
+    expected = skm.mean_poisson_deviance(rate, pred, sample_weight=exposure)
+    assert score(_poisson(weight="w"), rate, pred, weight=exposure) == pytest.approx(expected, rel=1e-9)
+    by_hand = 2 * np.sum(exposure * (scipy.special.xlogy(rate, rate / pred) - rate + pred)) / exposure.sum()
+    assert score(_poisson(weight="w"), rate, pred, weight=exposure) == pytest.approx(by_hand, rel=1e-9)
+    w = exposure.copy()
+    w[:10] = 0.0
+    assert score(_poisson(weight="w"), rate, pred, weight=w) == pytest.approx(
+        skm.mean_poisson_deviance(rate[10:], pred[10:], sample_weight=w[10:]), rel=1e-9
+    )
+
+
+def test_weighted_rate_deviance_is_the_count_deviance_with_an_offset() -> None:
+    """d(N, v * l) = v * d(N / v, l): the count deviance of the same predictions is (sum v / n) x the weighted rate
+    deviance, so the two rank models alike on every fold (the source's offset model).
+    """
+    counts, exposure, pred = _claims()
+    count_deviance = score(_poisson(), counts, exposure * pred)
+    rate_deviance = score(_poisson(weight="w"), counts / exposure, pred, weight=exposure)
+    assert count_deviance == pytest.approx(exposure.sum() / len(counts) * rate_deviance, rel=1e-12)
+
+
+def test_the_floor_applies_to_the_predicted_rate() -> None:
+    """A rate below ``min_prediction`` counts as it: a claim on a quarter year at a predicted rate of 0."""
+    floor = 1e-4
+    got = score(_poisson(floor, weight="w"), [4.0], [0.0], weight=[0.25])
+    assert got == pytest.approx(2 * (4.0 * np.log(4.0 / floor) - 4.0 + floor))
+
+
+@pytest.mark.parametrize("bad", [[np.nan, 1.0], [-0.5, 1.0], [0.0, 0.0]])
+def test_an_invalid_row_weight_raises(bad) -> None:
+    """A row weight is finite and >= 0, with weight on some row."""
+    with pytest.raises(ValueError, match="weight"):
+        score(_poisson(weight="w"), [0.0, 2.0], [0.5, 0.5], weight=bad)
+
+
+def test_weighted_tweedie_deviance_equals_scikit_learn_with_sample_weight() -> None:
+    """The compound-Poisson convention: an amount per unit at risk weighted by the units."""
+    rng = np.random.default_rng(5)
+    exposure = rng.uniform(0.05, 1.0, 2000)
+    cost = rng.gamma(2.0, 400.0, 2000) * rng.binomial(1, 0.08, 2000) / exposure
+    pred = rng.gamma(1.0, 60.0, 2000) + 1e-3
+    spec = Metric.source("mean_tweedie_deviance", params={"power": 1.5, "min_prediction": 1e-3}, inputs={"weight": "w"})
+    expected = skm.mean_tweedie_deviance(cost, pred, power=1.5, sample_weight=exposure)
+    assert score(spec, cost, pred, weight=exposure) == pytest.approx(expected, rel=1e-9)
+
+
+def test_an_input_the_metric_does_not_take_is_refused() -> None:
+    """A weight passed to a metric that ignores it raises, at scoring and when the definition declares it."""
+    with pytest.raises(ValueError, match="not \\['weight'\\]"):
+        score(Metric.source("rmse"), [1.0, 2.0], [1.5, 2.5], weight=[1.0, 2.0])
+    with pytest.raises(ValueError, match="takes the input role"):
+        Metric.source("rmse", inputs={"weight": "w"})
+    assert score(_poisson(), [1.0, 2.0], [1.5, 2.5]) == pytest.approx(skm.mean_poisson_deviance([1, 2], [1.5, 2.5]))
+
+
+def test_row_weight_column_names_the_weight_a_task_may_train_with() -> None:
+    """The deviances and the weighted Gini read a row weight; the Lorenz base on totals and a key column do not."""
+    assert row_weight_column(_poisson(weight="Exposure")) == "Exposure"
+    assert row_weight_column(_poisson()) is None
+    assert row_weight_column(Metric.source("normalized_weighted_gini", inputs={"weight": "w"})) == "w"
+    base = Metric.source("ordered_lorenz_gini", inputs={"weight": "Premium"})
+    assert row_weight_column(base) is None
+    per_unit = Metric.source("ordered_lorenz_gini", inputs={"weight": "years"}, params={"per_unit": True})
+    assert row_weight_column(per_unit) == "years"
+    keyed = Metric.source("weighted_pearsonr", inputs={"weight": "asset"}, params={"weights": {"btc": 6.78}})
+    assert row_weight_column(keyed) is None
+    assert row_weight_column(Metric.source("rmse")) is None
 
 
 def test_poisson_deviance_floor_is_a_stated_param() -> None:

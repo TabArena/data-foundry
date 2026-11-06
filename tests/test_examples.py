@@ -19,7 +19,9 @@ from data_foundry.examples import (
 )
 from data_foundry.schema import DatasetMetadata, PredictiveMLSplitsMetadata, PredictiveMLTaskMetadataV2, ScoringColumn
 from data_foundry.v2.dataset import metric_spec
-from data_foundry.v2.metrics import Metric
+from data_foundry.v2.metrics import Metric, scorer
+from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.metrics import mean_poisson_deviance
 
 
 def test_toy_container_path_exists_inside_package():
@@ -244,3 +246,61 @@ def test_benchmark_container_example_refuses_a_format_1_container():
     example = _example("benchmark_container")
     with pytest.raises(SystemExit, match="benchmark_on_beyond_arena"):
         example.main(get_toy_container_path())
+
+
+def _rate_toy(tmp_path: Path) -> Path:
+    """Claims per year insured, scored by the Poisson deviance weighted by the years insured (the training weight)."""
+    rng = np.random.default_rng(2)
+    n = 300
+    exposure = rng.integers(1, 13, n) / 12
+    df = pd.DataFrame({"x1": rng.normal(size=n), "Exposure": exposure})
+    df["claim_frequency"] = rng.poisson(0.2 * np.exp(0.5 * df["x1"]) * exposure) / exposure
+    metric = Metric.source(
+        "mean_poisson_deviance",
+        reference="https://example.org",
+        params={"min_prediction": 1e-4},
+        inputs={"weight": "Exposure"},
+    )
+    task = PredictiveMLTaskMetadataV2(
+        target_column_name="claim_frequency",
+        problem_type="regression",
+        objective_metric=metric_spec(metric, "regression"),
+        scoring_columns=[
+            ScoringColumn(
+                column="Exposure", role="weight", used_by="mean_poisson_deviance", description="years insured"
+            )
+        ],
+        sample_weight="Exposure",
+    )
+    index = np.arange(n)
+    splits = {0: {0: (index[index % 3 != 0].tolist(), index[index % 3 == 0].tolist())}}
+    container = CuratedContainer(
+        dataset=df,
+        dataset_metadata=_format_2_metadata("toy_rates"),
+        task_metadata=task,
+        experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="toy", splits=splits),
+        uuid="u",
+    )
+    return container.save(save_dir=tmp_path)
+
+
+def test_both_examples_weight_a_rate_by_its_training_weight(tmp_path, capsys):
+    """The benchmark fits with the training weight and the scorer weights the test rows; the plain-json reader
+    floors the predictions and passes the weight to scikit-learn, as the scorer does.
+    """
+    folder = _rate_toy(tmp_path)
+    container = CuratedContainer.load(folder)
+    df = container.dataset
+    train, test = container.experiment_metadata.splits[0][0]
+    model = HistGradientBoostingRegressor(categorical_features="from_dtype", random_state=42)
+    model.fit(df[["x1"]].iloc[train], df["claim_frequency"].iloc[train], sample_weight=df["Exposure"].iloc[train])
+    expected = scorer(container)(
+        df["claim_frequency"].iloc[test].to_numpy(), model.predict(df[["x1"]].iloc[test]), test
+    )
+    assert _example("benchmark_container").benchmark(container) == [pytest.approx(expected)]
+    assert "fitted with `Exposure` as the row weight" in capsys.readouterr().out
+    value = _example("read_metric_without_data_foundry").main(folder)
+    rate, exposure = df["claim_frequency"].iloc[test], df["Exposure"].iloc[test]
+    dummy = np.full(len(test), float(df["claim_frequency"].iloc[train].mean()))
+    assert value == pytest.approx(mean_poisson_deviance(rate, dummy, sample_weight=exposure))
+    assert "Training weight: Exposure" in capsys.readouterr().out

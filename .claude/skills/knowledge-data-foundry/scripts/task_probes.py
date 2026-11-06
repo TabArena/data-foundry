@@ -17,6 +17,12 @@ temporal task's train side keeps its newest rows), ``--no-text`` leaves text col
 with ``--jobs 8`` takes about 2-3 hours, at most about 13 GB per job). ``--out DIR`` writes one JSON per dataset
 and ``summary.md`` there.
 
+Each model is also scored by the task's declared metric (``objective_metric``, as the benchmark scores it; not for a
+``local`` metric), next to the probe's own scores, and for a metric with a floor (``min_prediction``) the output gives
+the share of each family's predictions at or below the floor. A task with a training weight (``sample_weight``) is
+probed with it: every model is fitted with it, the dummy is the weighted mean or the weighted class shares, and every
+score is weighted.
+
 The flags are questions for the curator, not verdicts; how to answer each one:
 ``.claude/skills/knowledge-curation/references/task_probes.md``. The numbers are indicative (untuned models); a flag is
 checked against tuned methods before anyone acts on it (``tuned_results.py``).
@@ -59,9 +65,38 @@ def probe(name: str, root: Path, *, built: bool, n_splits: int | None, max_rows:
         max_rows=max_rows,
         n_jobs=n_jobs,
         text=text,
+        sample_weight=data.weights,
+        metric=data.declared_metric(),
     )
     seconds = round(time.time() - started)
-    return {"name": name, "origin": data.origin, "regime": data.regime} | result | {"seconds": seconds}
+    head = {"name": name, "origin": data.origin, "regime": data.regime, "sample_weight": data.weight_column}
+    return head | result | {"seconds": seconds}
+
+
+def weight_and_metric_lines(result: dict) -> list[str]:
+    """The report lines of the training weight and the declared metric (its best family, the folds it failed on)."""
+    lines = []
+    if result.get("sample_weight"):
+        lines.append(f"  every model fitted with `{result['sample_weight']}` as the row weight; every score weighted")
+    declared = result.get("declared_metric")
+    if declared:
+        direction = "higher" if declared["greater_is_better"] else "lower"
+        floor = f"; floor {declared['floor']:g}" if declared.get("floor") is not None else ""
+        lines.append(
+            f"  declared metric {declared['name']} ({direction} is better{floor}): best family {declared['best']}"
+        )
+        lines += [f"  declared metric failed on {k} (scored NaN): {e}" for k, e in declared["errors"].items()]
+    return lines
+
+
+def score_cells(scores: dict, keys: list[str], declared: dict | None) -> str:
+    """One model's mean scores, with the declared metric and the share of predictions at its floor."""
+    cells = ", ".join(f"{k} {scores[f'{k}_mean']:.3f}" for k in keys)
+    if declared and "metric_mean" in scores:
+        cells += f" | {declared['name']} {scores['metric_mean']:.5g}"
+    if "at_floor_mean" in scores:
+        cells += f", at the floor {scores['at_floor_mean']:.1%}"
+    return cells
 
 
 def render(result: dict) -> str:
@@ -76,10 +111,10 @@ def render(result: dict) -> str:
         + (f" + {result['text_columns']} text columns" if result["text_columns"] else "")
         + f", {result['splits_probed']} of {result['splits_shipped']} splits, {result['seconds']} s"
     )
-    lines = [head]
+    lines = [head, *weight_and_metric_lines(result)]
     for key in ["dummy", "drift", "linear", "selected_linear", "random_forest", "lightgbm", "single_feature"]:
         if key in t:
-            cells = ", ".join(f"{k} {t[key][f'{k}_mean']:.3f}" for k in keys)
+            cells = score_cells(t[key], keys, result.get("declared_metric"))
             lines.append(f"  {key:>15}: skill {t[key]['skill_mean']:+.3f} +- {t[key]['skill_std']:.3f} | {cells}")
     lines.append(
         f"  best family {result['best']}: beats the dummy on {result['best_beats_dummy_share']:.0%} of the splits, "

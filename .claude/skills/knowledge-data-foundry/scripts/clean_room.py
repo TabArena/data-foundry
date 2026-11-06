@@ -12,10 +12,12 @@ the raw files; ``--built`` reads the container of the README's build record inst
 source links, and writes two files:
 
 * ``DIR/data.parquet``: the curated frame with the target, without the scoring columns (metric inputs, never
-  features; ``dataset_io.py`` drops them). A frame with more than ``--max-rows`` rows is a random
+  features; ``dataset_io.py`` drops them), except the task's training weight (``sample_weight``), which ships as its
+  last column so that the reviewer can judge its use. A frame with more than ``--max-rows`` rows is a random
   sample of that many rows (seed 0, original order kept), and ``task.md`` says so.
 * ``DIR/task.md``: the target column, the problem type, rows x columns, the regime (IID, grouped with the group
-  column, temporal with the time column), the number of folds or test windows, and the source links.
+  column, temporal with the time column), the number of folds or test windows, the training weight's column with
+  how it is used, and the source links.
 
 Nothing else goes into the folder: no ``task_summary``, ``curation_comments``, record comments, README text or link
 notes (the ``#`` lines of ``source_links``), so the reviewer's judgement is their own. The folder name ``<unique_name>``
@@ -24,10 +26,11 @@ is not in ``task.md`` either; the links name the source.
 ``--participant`` writes the participant kit of the ``task-gamer`` agent instead, everything a benchmark participant
 gets and nothing more: ``data.parquet`` with every row, ``splits.parquet`` (the shipped splits as ``repeat``, ``fold``,
 ``side``, ``row``: positions into ``data.parquet``), ``scoring.parquet`` (the scoring columns, when the metric has
-inputs), ``task.json`` and ``task.md`` (the facts above plus the metric and the prediction point, one neutral sentence
-the main session writes), a copy of ``src/data_foundry/v2/metrics.py`` and ``score.py``, which scores a prediction by
-the shipped metric as the benchmark does, and an empty ``work/`` for the agent's scripts. The kit's folder name must
-contain ``participant_kit``: the ``task_gamer_hook.py`` sandbox lets the agent touch nothing else.
+inputs; the training weight is one of them), ``task.json`` and ``task.md`` (the facts above plus the metric, the
+training weight and the prediction point, one neutral sentence the main session writes), a copy of
+``src/data_foundry/v2/metrics.py`` and ``score.py``, which scores a prediction by the shipped metric as the benchmark
+does, and an empty ``work/`` for the agent's scripts. The kit's folder name must contain ``participant_kit``: the
+``task_gamer_hook.py`` sandbox lets the agent touch nothing else.
 """
 
 from __future__ import annotations
@@ -183,18 +186,30 @@ def splits_line(data: dataset_io.ProbeInput) -> str:
     return f"{len(repeats)} repeats x {per} folds ({total} train/test splits)"
 
 
-def task_markdown(data: dataset_io.ProbeInput, links: list[str], *, rows: int, sampled: int | None) -> str:
-    """The task.md of the clean room: only the facts the reviewer needs to start."""
+def task_markdown(
+    data: dataset_io.ProbeInput, links: list[str], *, rows: int, sampled: int | None, weight: str | None = None
+) -> str:
+    """The task.md of the clean room: only the facts the reviewer needs to start; ``weight``, the training weight's
+    column when ``data.parquet`` ships it.
+    """
     columns = data.df.shape[1]
+    size = f"{columns} columns (target included)"
+    if weight:
+        size = f"{columns + 1} columns (target and training weight included)"
     lines = [
         "# Task",
         "",
         f"- Target column: `{data.target}`",
         f"- Problem type: {data.problem_type.replace('_', ' ')}",
-        f"- Size: {rows:,} rows x {columns} columns (target included)",
+        f"- Size: {rows:,} rows x {size}",
         f"- Regime: {regime_line(data)}",
         f"- Splits: {splits_line(data)}",
     ]
+    if weight:
+        lines.append(
+            f"- Training weight: `{weight}`, the task's training weight, not a feature: every model is fitted with it "
+            "as the row weight, and the score weights each test row by it."
+        )
     if sampled is not None:
         lines.append(
             f"- `data.parquet` is a random sample of {sampled:,} of the {rows:,} rows (seed {SEED}, original order "
@@ -219,6 +234,8 @@ def write(name: str, out: Path, *, root: Path, records: Path, max_rows: int, bui
     )
     links = source_links(name, records, type(ds))
     df = data.df
+    if data.weight_column:  # the reviewer judges how the training weight is used, so it ships, labelled in task.md
+        df = df.assign(**{data.weight_column: data.weights})
     rows = len(df)
     sampled = None
     if rows > max_rows:
@@ -226,7 +243,7 @@ def write(name: str, out: Path, *, root: Path, records: Path, max_rows: int, bui
         sampled = max_rows
     out.mkdir(parents=True, exist_ok=True)
     df.reset_index(drop=True).to_parquet(out / "data.parquet")
-    (out / "task.md").write_text(task_markdown(data, links, rows=rows, sampled=sampled))
+    (out / "task.md").write_text(task_markdown(data, links, rows=rows, sampled=sampled, weight=data.weight_column))
     return {"name": name, "folder": folder, "rows": rows, "columns": df.shape[1], "sampled": sampled, "out": str(out)}
 
 
@@ -246,6 +263,7 @@ def participant_task(ds, data: dataset_io.ProbeInput, scoring: list[str]) -> dic
         "group_columns": data.group_cols,
         "grouping": grouping,
         "scoring_columns": scoring,
+        "sample_weight": data.weight_column,
         "special_features": list(data.special_features),
         "metric": {key: spec.get(key) for key in PARTICIPANT_METRIC_KEYS},
     }
@@ -284,6 +302,10 @@ def participant_markdown(data: dataset_io.ProbeInput, links: list[str], task: di
         extra.append(f"- Special features (one input over several columns, or a SMILES string, as shipped): {names}.")
     if task["scoring_columns"]:
         extra.append(f"- Scoring columns (metric inputs, never features): {', '.join(task['scoring_columns'])}.")
+    if task.get("sample_weight"):
+        extra.append(
+            f"- Training weight: `{task['sample_weight']}`, in `scoring.parquet`; fit models with it as the row weight."
+        )
     files = [
         "## Files",
         "",

@@ -743,9 +743,17 @@ class PredictiveMLTaskMetadataV2:
     special_features: list[SpecialFeature] = dataclasses.field(default_factory=list)
     """Model inputs that need handling beyond their dtype (:class:`SpecialFeature`): one column (a SMILES) or a group
     of columns (a spectrum), each encoded by its kind."""
+    sample_weight: str | None = None
+    """The training weight: a scoring column that every model is fitted with as each row's weight, never a feature.
+    It is the metric's row weight (a rate's realized denominator such as the years insured, MET-15), so training and
+    scoring weight the rows alike. ``None``: models train unweighted."""
 
     type_adapter_id: str = "predictive-ml-task-mold-v2"
     """Identifies container format 2."""
+
+    _OMIT_WHEN_UNSET: ClassVar[tuple[str, ...]] = ("sample_weight",)
+    """Fields added after containers shipped: dropped from the checksum and the saved JSON while ``None``, so a
+    container saved before they existed keeps verifying."""
 
     def __post_init__(self):
         """Validate the regime, and the rules between the grouping and the target."""
@@ -768,6 +776,7 @@ class PredictiveMLTaskMetadataV2:
             raise ValueError(f"scoring_columns lists a column twice: {scoring}.")
         if self.target_column_name in scoring:
             raise ValueError(f"The target column ({self.target_column_name!r}) cannot be a scoring column.")
+        self._check_sample_weight()
         self._check_special_features(scoring)
         aggregation = self.grouping.aggregation if self.grouping is not None else None
         if aggregation == "any" and self.problem_type != "binary_classification":
@@ -779,6 +788,20 @@ class PredictiveMLTaskMetadataV2:
                 f"aggregation={aggregation!r} selects the row with the lowest / highest predicted value: it needs a "
                 f"regression target, got {self.problem_type!r}.",
             )
+
+    def _check_sample_weight(self) -> None:
+        """The training weight is a scoring column of role ``weight``, never a column models use."""
+        if self.sample_weight is None:
+            return
+        weight = {c.column: c for c in self.scoring_columns}.get(self.sample_weight)
+        if weight is None or weight.role != "weight":
+            raise ValueError(
+                f"sample_weight={self.sample_weight!r} names no scoring column of role 'weight': the training weight "
+                "ships as the metric's weight column (a ScoringColumn with role='weight').",
+            )
+        used = {self.time_on, self.group_time_on, *as_column_list(self.group_on), *as_column_list(self.stratify_on)}
+        if self.sample_weight in used:
+            raise ValueError(f"sample_weight={self.sample_weight!r} is a time, group or stratification column.")
 
     def _check_special_features(self, scoring: list[str]) -> None:
         """Special features have distinct names and hold features only, each column in one special feature at most."""
@@ -838,6 +861,11 @@ class PredictiveMLTaskMetadataV2:
             lines.append(
                 f"  scoring column:        {scoring.column} (role {scoring.role}, used by {scoring.used_by}; never a "
                 f"feature): {scoring.description}"
+            )
+        if self.sample_weight is not None:
+            lines.append(
+                f"  sample weight:         {self.sample_weight} (fit every model with it as the row weight; never a "
+                "feature)"
             )
         for feature in self.special_features:
             spectrum = feature.details

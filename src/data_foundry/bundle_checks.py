@@ -999,13 +999,27 @@ def _metric_spec_findings(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901, PL
                 "error",
                 f"Metric {name!r} takes the params {sorted(definition.params)}, not {unknown_params}.",
             )
+        else:
+            try:
+                definition.validate(spec.params)
+            except ValueError as error:
+                yield CheckResult(
+                    "task_metric_param_invalid",
+                    "error",
+                    f"The params of {name!r} are invalid: {error}",
+                    hint="State the required params in the definition's `Metric` (a Poisson deviance's "
+                    "`min_prediction`, MET-13).",
+                )
         missing_roles = [role for role in definition.inputs if role not in spec.inputs]
-        extra_roles = [role for role in spec.inputs if role not in definition.inputs]
+        extra_roles = [
+            role for role in spec.inputs if role not in definition.inputs and role not in definition.optional_inputs
+        ]
         if missing_roles or extra_roles:
+            optional = f" and may take {list(definition.optional_inputs)}" if definition.optional_inputs else ""
             yield CheckResult(
                 "task_metric_input_missing",
                 "error",
-                f"Metric {name!r} needs the input role(s) {list(definition.inputs)}; the spec maps "
+                f"Metric {name!r} needs the input role(s) {list(definition.inputs)}{optional}; the spec maps "
                 f"{dict(spec.inputs)}.",
             )
     if spec.origin in ("source", "stand_in") and not (spec.reference or "").strip():
@@ -1030,6 +1044,7 @@ def _metric_spec_findings(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901, PL
 
     yield from _target_transform_findings(ctx)
     yield from _scoring_column_findings(ctx)
+    yield from _weight_findings(ctx)
     yield from _metric_computes_findings(ctx)
 
 
@@ -1058,13 +1073,13 @@ def _target_transform_findings(ctx: _Ctx) -> Iterator[CheckResult]:
     if name in _MEAN_DEVIANCES:
         yield CheckResult(
             "task_metric_deviance_on_transformed_target",
-            "warning",
+            "error",
             f"`{name}` scores the predicted mean on the original scale, but the target ships as "
             f"`target_transform={transform!r}`: a model fit on that scale predicts about the mean of the transformed "
             "value, whose inverse falls below the mean (for a log, the geometric mean), so the deviance punishes the "
             "transform, not the model (pricing_game_2017_french_mtpl: deviance skill -5.1 on log1p, +0.05 in euros).",
-            hint="Ship the target untransformed (CLEAN-16 exception, as pricing_game_2017_french_mtpl), or accept "
-            "the warning with the reason.",
+            hint="Ship the target untransformed: a target scored by a deviance ships on the identity scale "
+            "(CLEAN-16 as amended on 2026-11-06).",
         )
     if ctx.df is None or ctx.target not in ctx.df.columns:
         return
@@ -1142,6 +1157,97 @@ def _scoring_column_findings(ctx: _Ctx) -> Iterator[CheckResult]:
             f"Scoring column(s) {unused} are not an input of the metric {spec.name!r} in the role they declare.",
             hint="Map the role to the column in the metric's `inputs`, or drop the column (or keep it as a feature).",
         )
+
+
+_EXPOSURE_NAME = re.compile(
+    r"(?:^|_)(?:exposure|expo|exposition|earned|swept|area_swept|at_risk|insured_years|vehicle_years|policy_years|"
+    r"person_years)(?:_|$)",
+    re.IGNORECASE,
+)
+"""Feature names that look like an amount at risk (time insured, area swept): a realized one leaks (LEAK-41)."""
+
+
+def _weight_findings(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901 - a flat list of rules
+    """The task's training weight (``sample_weight``) is the metric's row weight (MET-15), and a row weight holds
+    finite, non-negative values with weight on every split side; a weighted Poisson target rebuilds whole counts; a
+    feature named like an amount at risk is explained when the task declares no weight (LEAK-41).
+    """
+    from data_foundry.v2.metrics import row_weight_column  # noqa: PLC0415 - data_foundry.v2 imports this module
+
+    task = ctx.task
+    spec = task.objective_metric
+    sample_weight = getattr(task, "sample_weight", None)
+    row_weight = row_weight_column(spec)
+    if sample_weight is not None and sample_weight != row_weight:
+        yield CheckResult(
+            "task_sample_weight_not_metric_weight",
+            "error",
+            f"`sample_weight={sample_weight!r}` is not the row weight the metric {spec.name!r} reads "
+            f"({row_weight!r}): models would train on another weighting than the score uses (MET-15).",
+            hint="Map the metric's `weight` input to the same scoring column, or drop `sample_weight`.",
+        )
+    if sample_weight is None and row_weight is not None:
+        yield CheckResult(
+            "task_metric_weight_without_sample_weight",
+            "warning",
+            f"The metric weights rows by {row_weight!r}, but the task declares no `sample_weight`: models train "
+            "unweighted. A realized amount at risk (time insured) must also be the training weight (MET-15).",
+            hint=f'Declare `sample_weight = "{row_weight}"`, or accept the warning when the weight is a function of '
+            "the features (a sum insured, an asset's weight).",
+        )
+    weight_column = sample_weight or row_weight
+    if weight_column is not None and ctx.df is not None and weight_column in ctx.df.columns:
+        weights = pd.to_numeric(ctx.df[weight_column], errors="coerce").to_numpy(dtype=float)
+        problems = []
+        bad = ~np.isfinite(weights)
+        if bad.any():
+            problems.append(f"{int(bad.sum())} missing or non-finite")
+        if (weights < 0).any():
+            problems.append(f"{int((weights < 0).sum())} negative")
+        if spec.name in _MEAN_DEVIANCES and (weights == 0).any():
+            problems.append(f"{int((weights == 0).sum())} zero (a rate needs a positive denominator)")
+        empty = [
+            f"r{repeat}/f{fold} {side}"
+            for repeat, fold, train_idx, test_idx in ctx.flat_splits
+            for side, idx in (("train", train_idx), ("test", test_idx))
+            if len(idx) and not np.nansum(np.clip(weights[idx], 0, None)) > 0
+        ]
+        if empty:
+            problems.append(f"no weight on {', '.join(empty[:3])}")
+        if problems:
+            yield CheckResult(
+                "task_weight_invalid",
+                "error",
+                f"The weight column {weight_column!r} has {'; '.join(problems)}: a row weight is a finite number >= 0 "
+                "with weight on every split side.",
+            )
+        if spec.name == "mean_poisson_deviance" and ctx.target in ctx.df.columns and not bad.any():
+            totals = pd.to_numeric(ctx.df[ctx.target], errors="coerce").to_numpy(dtype=float) * weights
+            off = np.abs(totals - np.round(totals)) > 1e-6 * np.maximum(1.0, np.abs(totals))
+            if off.any():
+                yield CheckResult(
+                    "task_rate_count_not_whole",
+                    "warning",
+                    f"target x {weight_column!r} is not a whole count on {int(off.sum())} row(s): a Poisson rate "
+                    "weighted by its denominator should rebuild the count it was divided from.",
+                    hint="Check that the target is the count divided by this weight, or accept with the reason.",
+                )
+    if weight_column is None and ctx.df is not None:
+        excluded = {ctx.target, *ctx.columns_of(task.group_on), *(c.column for c in task.scoring_columns)}
+        suspects = sorted(
+            c
+            for c in ctx.df.columns
+            if c not in excluded and _EXPOSURE_NAME.search(str(c)) and pd.api.types.is_numeric_dtype(ctx.df[c])
+        )
+        if suspects:
+            yield CheckResult(
+                "task_feature_looks_like_exposure",
+                "warning",
+                f"Feature(s) {suspects} look like an amount at risk (time insured, area swept). A realized one is cut "
+                "by the outcome and never a feature; it is the rate's denominator and the weight (LEAK-41, MET-15).",
+                hint="Say in the notes what the column is (planned or realized) and accept the warning, or ship the "
+                "rate with the column as `sample_weight`.",
+            )
 
 
 def metric_computes_findings(container: CuratedContainer, metric: object) -> list[CheckResult]:

@@ -339,6 +339,28 @@ def test_ordered_lorenz_gini_by_hand_and_on_the_base() -> None:
     assert score(spec, loss, 2.5 * base, weight=base) == pytest.approx(0.0, abs=1e-12)
 
 
+@pytest.mark.parametrize("seed", [0, 1])
+def test_ordered_lorenz_gini_per_unit_scores_a_rate_with_its_exposure(seed: int) -> None:
+    """``per_unit``: a loss per year insured ordered by the predicted rate, x the cumulative years. The same as the
+    totals on the base of the years, and the unnormalised form of ``normalized_weighted_gini`` on the rate.
+    """
+    rng = np.random.default_rng(seed)
+    n = 4000
+    years = rng.uniform(0.05, 1.0, n)
+    rate = np.where(rng.uniform(size=n) < 0.1, rng.lognormal(7, 1.2, n), 0.0) / years
+    pred = np.exp(rng.normal(5, 1, n)) * (1 + (rate > 0))
+    per_unit = _spec("ordered_lorenz_gini", "regression", inputs={"weight": "years"}, params={"per_unit": True})
+    totals = _spec("ordered_lorenz_gini", "regression", inputs={"weight": "years"})
+    got = score(per_unit, rate, pred, weight=years)
+    assert got == pytest.approx(score(totals, rate * years, pred * years, weight=years), rel=1e-12)
+    assert got == pytest.approx(frees_ordered_lorenz_gini(rate * years, years, pred * years), rel=1e-10)
+    normalized = _spec("normalized_weighted_gini", "regression", inputs={"weight": "years"})
+    best = score(per_unit, rate, rate, weight=years)
+    assert got == pytest.approx(score(normalized, rate, pred, weight=years) * best, rel=1e-10)
+    with pytest.raises(ValueError, match="per_unit"):
+        Metric.source("ordered_lorenz_gini", inputs={"weight": "years"}, params={"per_unit": "yes"})
+
+
 def test_normalized_weighted_gini_host_test_case() -> None:
     # the host's check in thread 9880: "should now score -0.821428571428572"
     spec = _spec("normalized_weighted_gini", "regression", inputs={"weight": "var11"})
@@ -992,5 +1014,9 @@ def test_every_custom_metric_passes_the_bundle_metric_checks(name: str) -> None:
         ScoringColumn(column=column, role=role, used_by=name, description="toy scoring column")
         for role, column in inputs.items()
     ]
-    container = make_v2_container(df, spec=spec, scoring_columns=scoring, problem_type=problem_type)
+    from data_foundry.v2.metrics import row_weight_column  # noqa: PLC0415
+
+    container = make_v2_container(
+        df, spec=spec, scoring_columns=scoring, problem_type=problem_type, sample_weight=row_weight_column(spec)
+    )
     assert metric_findings(container) == {}

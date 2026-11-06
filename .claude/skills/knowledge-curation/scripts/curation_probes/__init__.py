@@ -8,18 +8,22 @@ so they run on a table from any source. Modules:
   test rows in train by label on every split, nearest neighbours, string columns), the target by period, the test
   for right-censoring at the release end (``target_by_period``, probe 13), and the raw state before ``_clean``: the
   target in the source's row order, the rows it removed, the columns it dropped, copies before deduplication
-  (``row_order``, ``removed_rows``, ``dropped_column_proxies``, ``raw_copies``; probes 10, 19, 20, 21).
+  (``row_order``, ``removed_rows``, ``dropped_column_proxies``, ``raw_copies``; probes 10, 19, 20, 21), and whether
+  the features carry a realized weight, such as a time on risk a claim can cut short (``weight_proxy``, probe 22).
 * ``task``: is the task worth benchmarking, or empty, solved, or the same for every model (baselines, three model
-  families, the best single feature, and flags for the curator).
+  families, the best single feature, the task's own metric, and flags for the curator).
 * ``groups``: for a grouped task, does the grouping matter, and is there signal across groups.
 * ``hidden_groups``: columns, composite keys and near copies that act as an entity, which a random split would leak.
 * ``generated``: is the target a formula or a rule set of the features, or were the columns drawn one by one.
 * ``dtypes``: is each column typed by its meaning (a count numeric, a code categorical), against its values,
   its name and the source's codebook.
 * ``text``: the numeric model inputs and the TF-IDF + SVD text encoding the probes share.
+* ``weights``: the task's training weight and its own metric as the probes share them (fits with the weight, the
+  weighted dummy, the declared metric's score and the share of predictions at its floor).
 
-``problem_type`` is ``"regression"`` or a classification type (any other value). Import the package with the folder
-that holds it on ``sys.path``.
+``problem_type`` is ``"regression"`` or a classification type (any other value). A task with a training weight
+passes it as ``sample_weight`` (one value per row; ``leak``, ``task`` and ``groups`` fit and score with it). Import the
+package with the folder that holds it on ``sys.path``.
 """
 
 from __future__ import annotations

@@ -2,7 +2,8 @@
 
 The scripts live in the skill, not in the package, so they are imported from their files. They run here on small
 records written to ``tmp_path``; the clean room's end-to-end test needs the raw files of ``airfoil_self_noise`` and
-skips without them.
+skips without them. The probes run on small generated frames, a task with a training weight (a claims rate over the
+years insured) included.
 """
 
 from __future__ import annotations
@@ -20,6 +21,11 @@ import pytest
 from data_foundry.curation.record import CurationRecord
 from data_foundry.curation.store import save_record
 from data_foundry.schema import ScoringColumn
+from data_foundry.v2 import get_dataset
+from data_foundry.v2.metrics import Metric, score
+from sklearn.metrics import mean_poisson_deviance
+
+from tests.test_v2_dataset import DEFINITION, warehouse, write_definition  # noqa: F401 - the fixture is used by name
 
 REPO = Path(__file__).resolve().parents[1]
 SCRIPTS = REPO / ".claude" / "skills" / "knowledge-data-foundry" / "scripts"
@@ -721,6 +727,318 @@ def test_leak_probe_run_leaves_out_aware_datetimes(leak_probe):
     splits = [(np.arange(200), np.arange(200, n))]
     result = leak_probe.run(df, "y", "binary_classification", splits, n_splits=1, n_jobs=1)
     assert result["features_probed"] == 3
+
+
+# --------------------------------------------------------------------------- the training weight and probe 22
+RATE_TASK = """    target = "rate"
+    problem_type = "regression"
+    metric = Metric.source(
+        "mean_poisson_deviance",
+        reference="https://example.org/eval",
+        params={"min_prediction": 1e-4},
+        inputs={"weight": "exposure"},
+    )
+    scoring_columns = (
+        ScoringColumn(column="exposure", role="weight", used_by="mean_poisson_deviance", description="years insured"),
+    )
+    sample_weight = "exposure"
+"""
+RATE_CLEAN = """        df["exposure"] = (df["row_id"] % 12 + 1) / 12
+        df["rate"] = df["y"] / df["exposure"]
+        return drop_columns(df, ["row_id", "y"])"""
+
+
+def _rate_toy(root: Path):
+    """The dataset tests' toy definition as a claims rate: ``y`` claims over 1 to 12 months insured, the time insured
+    its training weight and the metric's row weight.
+    """
+    body = DEFINITION.format(name="toy_ds", comment="x")
+    for old, new in (
+        (
+            '    target = "y"\n    problem_type = "binary_classification"\n'
+            '    metric = Metric.fallback(reason="the toy data is generated; it has no source metric")\n',
+            RATE_TASK,
+        ),
+        ('        df["y"] = df["y"].map({0: "no", 1: "yes"})\n        return drop_columns(df, ["row_id"])', RATE_CLEAN),
+        ("import AbstractCuratedDataset,", "import ScoringColumn, AbstractCuratedDataset,"),
+    ):
+        assert old in body
+        body = body.replace(old, new)
+    write_definition(root, body=body)
+    return get_dataset(root, "toy_ds")
+
+
+def _rate_frame(n: int = 500, seed: int = 0) -> tuple[pd.DataFrame, np.ndarray, np.ndarray]:
+    """Claims per year insured: counts over 1 to 12 months, the time insured the training weight; ``g`` groups of 5."""
+    rng = np.random.default_rng(seed)
+    x = rng.normal(size=n)
+    exposure = rng.integers(1, 13, n) / 12
+    claims = rng.poisson(0.4 * np.exp(0.5 * x) * exposure)
+    colour = pd.Categorical(rng.choice(["red", "blue"], n))
+    df = pd.DataFrame({"x": x, "colour": colour, "g": np.arange(n) // 5, "rate": claims / exposure})
+    return df, exposure, claims
+
+
+def _poisson_metric(exposure: np.ndarray) -> dict:
+    """A claims rate's metric as the probe library takes it: the Poisson deviance weighted by the time insured."""
+    spec = Metric.source(
+        "mean_poisson_deviance", reference="x", params={"min_prediction": 1e-4}, inputs={"weight": "exposure"}
+    )
+    return {
+        "name": "mean_poisson_deviance",
+        "greater_is_better": False,
+        "prediction": "value",
+        "floor": 1e-4,
+        "row_weight": "exposure",
+        "score": lambda y_true, y_pred, rows: score(spec, y_true, y_pred, weight=exposure[rows]),
+    }
+
+
+@pytest.fixture(scope="module")
+def group_probe():
+    """curation_probes.groups, imported through group_probes.py; it needs LightGBM."""
+    pytest.importorskip("lightgbm")
+    return _import("group_probes").groups
+
+
+def test_probe_input_carries_the_training_weight_and_the_metric(clean_room, tmp_path, warehouse):  # noqa: F811
+    """`from_definition` and `from_container` give the definition's sample weight row by row, never as a feature,
+    with the declared metric, its inputs and a scorer that weights the rows as the benchmark does.
+    """
+    del warehouse
+    dataset_io = clean_room.dataset_io
+    ds = _rate_toy(tmp_path / "datasets")
+    plan = ds.make_splits()
+    data = dataset_io.from_definition(ds, plan)
+    exposure = plan.df["exposure"].to_numpy()
+    assert data.weight_column == "exposure"
+    np.testing.assert_array_equal(data.weights, exposure)
+    assert "exposure" not in data.df.columns
+    assert "exposure" not in data.feature_cols
+    rows = data.flat_splits()[0][1]
+    np.testing.assert_array_equal(data.metric_inputs(rows)["weight"], exposure[rows])
+    metric = data.declared_metric()
+    assert (metric["name"], metric["greater_is_better"], metric["floor"]) == ("mean_poisson_deviance", False, 1e-4)
+    assert metric["row_weight"] == "exposure"
+    y, pred = data.df["rate"].to_numpy()[rows], np.full(len(rows), 0.3)
+    expected = mean_poisson_deviance(y, pred, sample_weight=exposure[rows])
+    assert metric["score"](y, pred, rows) == pytest.approx(expected)
+    assert score(data.metric, y, pred, **data.metric_inputs(rows)) == pytest.approx(expected)
+    rebuilt = dataset_io.from_container(ds.to_container(), "rebuilt")
+    assert rebuilt.weight_column == "exposure"
+    np.testing.assert_array_equal(rebuilt.weights, exposure)
+
+
+def test_probes_fit_with_the_training_weight(task_probe, leak_probe, group_probe, monkeypatch):
+    """A claims rate weighted by the time insured: every model of the task, leak and group probes is fitted with the
+    training rows' weights, and the dummy is the portfolio rate sum(N) / sum(v), not the mean of the rates.
+    """
+    df, exposure, claims = _rate_frame()
+    fitted: list[bool] = []
+    fit = task_probe.weights.fit
+
+    def recording_fit(model, X, y, weight=None):
+        fitted.append(weight is not None and len(weight) == len(X))
+        return fit(model, X, y, weight)
+
+    monkeypatch.setattr(task_probe.weights, "fit", recording_fit)
+    idx = np.random.default_rng(1).permutation(len(df))
+    train, test = np.sort(idx[:350]), np.sort(idx[350:])
+    rows = df.drop(columns="g")
+    result = task_probe.run(
+        rows, "rate", "regression", [(train, test)], sample_weight=exposure, metric=_poisson_metric(exposure), n_jobs=1
+    )
+    rate, portfolio = df["rate"].to_numpy(), claims[train].sum() / exposure[train].sum()
+    assert abs(rate[train].mean() - portfolio) > 0.01  # the unweighted mean is another dummy
+    dummy = result["scores"]["dummy"]
+    assert dummy["rmse_mean"] == pytest.approx(
+        np.sqrt(np.average((rate[test] - portfolio) ** 2, weights=exposure[test]))
+    )
+    constant = np.full(len(test), portfolio)
+    assert dummy["metric_mean"] == pytest.approx(
+        mean_poisson_deviance(rate[test], constant, sample_weight=exposure[test])
+    )
+    assert dummy["at_floor_mean"] == 0.0
+    assert {"metric_mean", "at_floor_mean"} <= set(result["scores"]["lightgbm"])
+    assert result["weighted"]
+    assert result["declared_metric"]["name"] == "mean_poisson_deviance"
+    assert fitted
+    assert all(fitted)  # the families and the single-feature fits
+    fitted.clear()
+    assert leak_probe.run(rows, "rate", "regression", [(train, test)], sample_weight=exposure, n_jobs=1)["weighted"]
+    assert fitted
+    assert all(fitted)
+    fitted.clear()
+    folds = [(np.flatnonzero(df["g"] % 3 != k), np.flatnonzero(df["g"] % 3 == k)) for k in range(3)]
+    group_probe.run(df, "rate", "regression", ["g"], [folds], per_group_labels=False, n_jobs=1, sample_weight=exposure)
+    assert fitted
+    assert all(fitted)  # kNN takes no weight: `fit` is handed it and fits without it
+
+
+def _motor_book(n: int = 3_000, seed: int = 0) -> tuple[pd.DataFrame, np.ndarray]:
+    """A toy motor book scored as claims per year insured. Half the first claims cancel the policy, so the time
+    insured carries the outcome. The earned premium (the annual premium times the time insured) encodes it; the
+    quote-time risk score predicts it too, through the claims and the lapses of the riskier drivers.
+    """
+    rng = np.random.default_rng(seed)
+    risk = rng.normal(size=n)
+    rate = 1.5 * np.exp(0.5 * risk)  # claims per year
+    first = rng.exponential(1 / rate)
+    planned = rng.uniform(0.5, 1.0, n)
+    lapse = np.where(rng.random(n) < 0.4 / (1 + np.exp(-2 * risk)), rng.uniform(0.2, 1, n) * planned, np.inf)
+    end = np.minimum(planned, lapse)
+    claimed = first < end
+    cut = claimed & (rng.random(n) < 0.5)  # the claim cancels the policy
+    exposure = np.maximum(np.where(cut, first, end), 0.02)
+    claims = np.where(claimed, 1 + np.where(cut, 0, rng.poisson(rate * np.maximum(end - first, 0))), 0)
+    earned = 400 * np.exp(0.5 * risk + rng.normal(0, 0.3, n)) * exposure
+    region = pd.Categorical(rng.choice(["n", "s", "e", "w"], n))
+    frame = pd.DataFrame({"risk": risk, "region": region, "earned_premium": earned, "rate": claims / exposure})
+    return frame, exposure
+
+
+def _thirds(n: int, seed: int) -> list[tuple[np.ndarray, np.ndarray]]:
+    folds = np.array_split(np.random.default_rng(seed).permutation(n), 3)
+    return [(np.sort(np.concatenate(folds[:k] + folds[k + 1 :])), np.sort(folds[k])) for k in range(3)]
+
+
+def test_weight_proxy_flags_an_earned_premium(leak_probe, clean_room):
+    """Probe 22 flags the earned premium, which stands in for the time insured and loses all its gain once the time
+    insured is a feature. The quote-time risk score predicts the time insured too and reports its weight-mediated
+    part, a smaller share of its gain (with the time insured, the earned premium gives the premium, and so the risk,
+    back); whether it stays is the timing call the reading names (LEAK-41).
+    """
+    df, exposure = _motor_book()
+    spec = Metric.source(
+        "mean_poisson_deviance", reference="x", params={"min_prediction": 1e-4}, inputs={"weight": "exposure"}
+    ).spec("regression")
+    data = clean_room.dataset_io.ProbeInput(
+        df=df,
+        target="rate",
+        problem_type="regression",
+        regime="iid",
+        splits={0: dict(enumerate(_thirds(len(df), 100)))},
+        grouping=None,
+        time_on=None,
+        origin="definition",
+        weights=exposure,
+        weight_column="exposure",
+        metric=spec,
+        scoring=pd.DataFrame({"exposure": exposure}),
+    )
+    result = leak_probe.weight_proxy(
+        data.df,
+        data.target,
+        data.problem_type,
+        data.flat_splits(),
+        data.weights,
+        sample_weight=data.weights,
+        metric=data.declared_metric(),
+        weight_name="exposure",
+        seeds=(0, 1),
+        top=3,
+        n_estimators=50,
+        fit_params={"objective": "poisson"},
+        n_jobs=1,
+        report=False,
+    )
+    model = result["weight_model"]
+    assert next(iter(model["top_features"])) == "earned_premium"
+    assert model["top_features"]["risk"] > 0.1  # the risk score predicts the time insured
+    assert result["leak_reference"]["mean"] == pytest.approx(result["honest"]["mean"] - result["with_weight"]["mean"])
+    assert result["leak_reference"]["mean"] > 0  # lower is better: the weight as a feature lowers the deviance
+    assert "earned_premium" in result["flags"]
+    checked = result["features_checked"]
+    risk = checked["risk"]["weight_mediated"]
+    assert risk["runs"] == 6
+    assert np.isfinite(risk["mean"])
+    assert np.isfinite(risk["sd"])
+    assert checked["earned_premium"]["mediated_share"] > 0.9
+    assert checked["risk"]["mediated_share"] < checked["earned_premium"]["mediated_share"] - 0.05
+    assert "timing call (LEAK-41)" in result["reading"]
+    lines = leak_probe.weight_proxy_lines(result)
+    assert any(line.lstrip().startswith("earned_premium") and line.endswith("flag") for line in lines)
+    json.dumps(result)  # what --out writes
+
+
+def test_weight_proxy_scores_one_over_the_weight_for_a_gini(leak_probe):
+    """For a Gini metric (higher is better) probe 22 scores 1/weight alone, the ceiling of a proxy, and keeps the
+    gains in the metric's direction.
+    """
+    df, exposure = _motor_book(n=900, seed=1)
+    spec = Metric.source("ordered_lorenz_gini", reference="x", params={"per_unit": True}, inputs={"weight": "exposure"})
+    metric = {
+        "name": "ordered_lorenz_gini",
+        "greater_is_better": True,
+        "prediction": "value",
+        "gini": True,
+        "score": lambda y_true, y_pred, rows: score(spec, y_true, y_pred, weight=exposure[rows]),
+    }
+    train, test = _thirds(len(df), 7)[0]
+    result = leak_probe.weight_proxy(
+        df,
+        "rate",
+        "regression",
+        [(train, test)],
+        exposure,
+        metric=metric,
+        seeds=(0,),
+        top=1,
+        n_estimators=30,
+        n_jobs=1,
+        report=False,
+    )
+    rate = df["rate"].to_numpy()
+    ceiling = score(spec, rate[test], 1 / exposure[test], weight=exposure[test])
+    assert result["inverse_weight_alone"]["mean"] == pytest.approx(ceiling)
+    assert result["greater_is_better"]
+    assert result["leak_reference"]["mean"] == pytest.approx(result["with_weight"]["mean"] - result["honest"]["mean"])
+
+
+def test_leak_probes_command_runs_the_weight_proxy(leak_probe, tmp_path, warehouse, capsys):  # noqa: F811
+    """`leak_probes.py --weight-proxy` reads the task's sample weight and metric from the definition and, by default,
+    fits a Poisson deviance's rate with the Poisson objective; `--objective l2` asks for the L2 fit.
+    """
+    del warehouse, leak_probe  # the fixture skips without LightGBM
+    root = tmp_path / "datasets"
+    _rate_toy(root)
+    out = tmp_path / "out"
+    script = _import("leak_probes")
+    argv = ["toy_ds", "--root", str(root), "--weight-proxy", "--splits", "1", "--seeds", "2", "--n-jobs", "1"]
+    assert script.main([*argv, "--out", str(out)]) == 0
+    result = json.loads((out / "toy_ds.json").read_text())["weight_proxy"]
+    assert (result["weight"], result["metric"], result["objective"]) == ("exposure", "mean_poisson_deviance", "poisson")
+    assert result["metric_row_weight"] == "exposure"
+    assert result["trained_with_sample_weight"]
+    printed = capsys.readouterr().out
+    assert "weight proxy (probe 22) of `exposure`" in printed
+    assert "run again with --objective l2" in printed
+    assert script.main([*argv, "--objective", "l2", "--out", str(out)]) == 0
+    assert json.loads((out / "toy_ds.json").read_text())["weight_proxy"]["objective"] == "L2"
+
+
+def test_clean_rooms_name_the_training_weight(clean_room, tmp_path, warehouse):  # noqa: F811
+    """The participant kit's task.json and task.md name the sample weight, which ships in scoring.parquet; the blind
+    reviewer's clean room ships it as the last column of data.parquet, labelled in task.md.
+    """
+    del warehouse
+    root, records = tmp_path / "datasets", tmp_path / "records"
+    _rate_toy(root)
+    kit = tmp_path / "participant_kit"
+    clean_room.write_participant("toy_ds", kit, root=root, records=records, prediction_point="the policy is quoted")
+    task = json.loads((kit / "task.json").read_text())
+    assert task["sample_weight"] == "exposure"
+    assert task["scoring_columns"] == ["exposure"]
+    line = "- Training weight: `exposure`, in `scoring.parquet`; fit models with it as the row weight."
+    assert line in (kit / "task.md").read_text()
+    assert "exposure" in pd.read_parquet(kit / "scoring.parquet").columns
+    assert "exposure" not in pd.read_parquet(kit / "data.parquet").columns
+    room = tmp_path / "room"
+    clean_room.write("toy_ds", room, root=root, records=records, max_rows=10_000, built=False)
+    assert list(pd.read_parquet(room / "data.parquet").columns)[-1] == "exposure"
+    text = (room / "task.md").read_text()
+    assert "- Training weight: `exposure`, the task's training weight, not a feature" in text
+    assert "x 4 columns (target and training weight included)" in text
 
 
 @pytest.fixture(scope="module")

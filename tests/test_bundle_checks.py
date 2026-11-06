@@ -12,7 +12,11 @@ from data_foundry.bundle_checks import (
     run_bundle_checks,
     verify_saved_container,
 )
-from data_foundry.curation_container import CuratedContainer
+from data_foundry.curation_container import (
+    CuratedContainer,
+    feature_columns as model_inputs,
+    sample_weight as training_weight,
+)
 from data_foundry.schema import (
     DatasetMetadata,
     MetricSpec,
@@ -21,6 +25,7 @@ from data_foundry.schema import (
     PredictiveMLTaskMetadataV2,
     ScoringColumn,
 )
+from data_foundry.utils.checksum import encode_pydantic_metadata
 
 BIBTEX = """@misc{toy2025dataset,
   author = {Toy Author},
@@ -953,7 +958,9 @@ def test_weight_that_is_also_a_feature_ships_a_scoring_copy_that_weighs_the_scor
     plain = make_v2_container(
         df, spec=_spec("normalized_weighted_gini", inputs={"weight": "size"}), problem_type="regression"
     )
-    assert metric_findings(plain) == {"task_metric_input_is_feature": "warning"}
+    # a weight that is a function of the features needs no training weight: the MET-15 prompt is accepted then
+    no_training_weight = {"task_metric_weight_without_sample_weight": "warning"}
+    assert metric_findings(plain) == {"task_metric_input_is_feature": "warning"} | no_training_weight
     df["size_weight"] = df["size"]
     spec = _spec("normalized_weighted_gini", inputs={"weight": "size_weight"})
     copy = ScoringColumn(
@@ -961,7 +968,7 @@ def test_weight_that_is_also_a_feature_ships_a_scoring_copy_that_weighs_the_scor
     )
     container = make_v2_container(df, spec=spec, scoring_columns=[copy], problem_type="regression")
     assert feature_columns(container) == ["feat_num", "feat_cat", "size"]
-    assert metric_findings(container) == {}
+    assert metric_findings(container) == no_training_weight
     assert "dataset_duplicate_columns" not in slugs_of(container)
     test_idx = np.arange(0, len(df), 2)
     y_test, y_pred = df["target"].to_numpy()[test_idx], df["feat_num"].to_numpy()[test_idx]
@@ -991,27 +998,38 @@ def test_poisson_computability_uses_valid_means_without_changing_labels(all_zero
     df = make_iid_frame()
     y = np.zeros(len(df)) if all_zero else (np.arange(len(df)) % 10 == 0).astype(float)
     df["target"] = np.log1p(y) if transform == "log1p" else y
-    spec = _spec("mean_poisson_deviance", target_transform=transform)
+    spec = _spec("mean_poisson_deviance", params={"min_prediction": 1e-6}, target_transform=transform)
     container = make_v2_container(df, spec=spec, problem_type="regression")
     before = container.dataset.copy(deep=True)
-    expected = {"task_metric_deviance_on_transformed_target": "warning"} if transform == "log1p" else {}
-    assert metric_findings(container) == expected  # computable either way; the transform only warns
+    expected = {"task_metric_deviance_on_transformed_target": "error"} if transform == "log1p" else {}
+    assert metric_findings(container) == expected  # computable either way; the transform is the finding
     pd.testing.assert_frame_equal(container.dataset, before)
+
+
+def test_a_poisson_spec_without_its_floor_is_an_error():
+    """``min_prediction`` is required (MET-13): a spec without it is refused before the metric is computed."""
+    df = make_iid_frame()
+    df["target"] = (np.arange(len(df)) % 10 == 0).astype(float)
+    found = metric_findings(make_v2_container(df, spec=_spec("mean_poisson_deviance"), problem_type="regression"))
+    assert found.get("task_metric_param_invalid") == "error"
 
 
 @pytest.mark.parametrize(
     ("name", "params"),
-    [("mean_poisson_deviance", {}), ("mean_tweedie_deviance", {"power": 1.5, "min_prediction": 1.0})],
+    [
+        ("mean_poisson_deviance", {"min_prediction": 1e-6}),
+        ("mean_tweedie_deviance", {"power": 1.5, "min_prediction": 1.0}),
+    ],
 )
-def test_a_mean_deviance_on_a_transformed_target_warns(name, params):
-    """A deviance scores the mean on the original scale; a target shipped on log1p is fit below it, so it warns."""
+def test_a_mean_deviance_on_a_transformed_target_is_an_error(name, params):
+    """A deviance scores the mean on the original scale; a target shipped on log1p is fit below it (CLEAN-16)."""
     df = make_iid_frame()
     y = (np.arange(len(df)) % 4) * 100.0
     df["target"] = np.log1p(y)
     found = metric_findings(
         make_v2_container(df, spec=_spec(name, params=params, target_transform="log1p"), problem_type="regression")
     )
-    assert found == {"task_metric_deviance_on_transformed_target": "warning"}
+    assert found == {"task_metric_deviance_on_transformed_target": "error"}
     df["target"] = y
     assert metric_findings(make_v2_container(df, spec=_spec(name, params=params), problem_type="regression")) == {}
     df["target"] = np.log1p(y)  # another metric on the same transform does not warn
@@ -1019,3 +1037,123 @@ def test_a_mean_deviance_on_a_transformed_target_warns(name, params):
     assert "task_metric_deviance_on_transformed_target" not in metric_findings(
         make_v2_container(df, spec=rmse, problem_type="regression")
     )
+
+
+# --- Format 2: the training weight (sample_weight) and row weights -------------------------------------------------
+_WEIGHT_SLUGS = (
+    "task_sample_weight",
+    "task_metric_weight",
+    "task_weight",
+    "task_rate_count",
+    "task_feature_looks",
+    "task_metric_input",
+    "task_metric_param",
+    "task_metric_not",
+)
+
+
+def weight_findings(container: CuratedContainer) -> dict[str, str]:
+    """The findings of the weight checks (and the metric checks around them), slug to severity."""
+    report = run_bundle_checks(container, verbose=False)
+    return {r.slug: r.severity for r in report.results if r.slug.startswith(_WEIGHT_SLUGS)}
+
+
+def _rate_frame(n: int = 60) -> pd.DataFrame:
+    """Claims per year insured: ``counts / exposure``, the exposure a realized time on risk in (0, 1]."""
+    rng = np.random.default_rng(3)
+    df = make_iid_frame(n)
+    exposure = rng.integers(1, 13, size=n) / 12
+    counts = rng.poisson(0.3 * exposure)
+    return df.assign(target=counts / exposure, exposure=exposure)
+
+
+def _exposure_column() -> ScoringColumn:
+    return ScoringColumn(
+        column="exposure",
+        role="weight",
+        used_by="mean_poisson_deviance",
+        description="years insured, realized; the rate's denominator",
+    )
+
+
+def _rate_container(df=None, *, sample_weight="exposure", inputs=None, scoring=None) -> CuratedContainer:
+    spec = _spec(
+        "mean_poisson_deviance",
+        params={"min_prediction": 1e-4},
+        inputs={"weight": "exposure"} if inputs is None else inputs,
+    )
+    return make_v2_container(
+        _rate_frame() if df is None else df,
+        spec=spec,
+        scoring_columns=[_exposure_column()] if scoring is None else scoring,
+        problem_type="regression",
+        sample_weight=sample_weight,
+    )
+
+
+def test_a_declared_sample_weight_is_the_metrics_row_weight_and_no_feature():
+    """A rate scored by a weighted deviance trains with its denominator: the weight is no feature (MET-15)."""
+    container = _rate_container()
+    assert weight_findings(container) == {}
+    assert training_weight(container) == "exposure"
+    assert "exposure" not in model_inputs(container)
+    assert "sample weight:         exposure" in container.task_metadata.describe()
+    unweighted_metric = _rate_container(inputs={})
+    assert weight_findings(unweighted_metric)["task_sample_weight_not_metric_weight"] == "error"
+
+
+def test_a_row_weight_without_a_sample_weight_warns():
+    """The metric weights the rows but the models would train unweighted: MET-15's prompt."""
+    assert weight_findings(_rate_container(sample_weight=None)) == {
+        "task_metric_weight_without_sample_weight": "warning"
+    }
+
+
+def test_sample_weight_must_name_a_weight_scoring_column():
+    """The training weight ships as the metric's weight column, never as a feature or a group column."""
+    with pytest.raises(ValueError, match="names no scoring column"):
+        _rate_container(sample_weight="feat_num")
+    as_group = ScoringColumn(column="exposure", role="group", used_by="mean_poisson_deviance", description="x")
+    with pytest.raises(ValueError, match="names no scoring column of role 'weight'"):
+        _rate_container(scoring=[as_group], inputs={})
+
+
+@pytest.mark.parametrize(
+    ("value", "what"),
+    [(np.nan, "non-finite"), (-0.5, "negative"), (0.0, "zero")],
+)
+def test_an_invalid_weight_is_an_error(value, what):
+    """A row weight is finite and >= 0; a rate scored by a deviance needs a positive denominator."""
+    df = _rate_frame()
+    df.loc[3, "exposure"] = value
+    df.loc[3, "target"] = 0.0
+    found = weight_findings(_rate_container(df))
+    assert found.get("task_weight_invalid") == "error", what
+
+
+def test_a_weighted_poisson_rate_rebuilds_whole_counts():
+    """Target x weight is the count the rate came from; a rate that does not rebuild one warns."""
+    df = _rate_frame()
+    df.loc[5, "target"] = 0.37  # 0.37 x the exposure is no whole count
+    df.loc[5, "exposure"] = 0.5
+    assert weight_findings(_rate_container(df)).get("task_rate_count_not_whole") == "warning"
+
+
+def test_a_feature_named_like_an_exposure_warns_without_a_weight():
+    """A numeric feature that looks like an amount at risk is explained when no weight is declared (LEAK-41)."""
+    df = make_iid_frame().assign(Exposure=np.linspace(0.1, 1.0, 60), target=np.linspace(0, 3, 60))
+    found = weight_findings(make_v2_container(df, spec=_spec("rmse"), problem_type="regression"))
+    assert found == {"task_feature_looks_like_exposure": "warning"}
+    df = df.rename(columns={"Exposure": "exponent"})  # a name that only starts the same way
+    assert weight_findings(make_v2_container(df, spec=_spec("rmse"), problem_type="regression")) == {}
+
+
+def test_an_unset_sample_weight_stays_out_of_the_saved_metadata(tmp_path):
+    """Containers built before the field keep their checksum and JSON; a set field round-trips."""
+    unset = _rate_container(sample_weight=None)
+    assert b"sample_weight" not in encode_pydantic_metadata(unset.task_metadata)
+    container = _rate_container()
+    assert b'"sample_weight":"exposure"' in encode_pydantic_metadata(container.task_metadata)
+    loaded = CuratedContainer.load(container.save(tmp_path))
+    assert loaded.task_metadata.sample_weight == "exposure"
+    assert loaded.verify()

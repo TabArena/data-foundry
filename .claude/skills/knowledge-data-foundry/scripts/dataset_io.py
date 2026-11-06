@@ -9,6 +9,14 @@ The scoring columns (``task.scoring_columns``: the inputs of the metric, such as
 inputs, so they are dropped from the frame the probes see, unless one is also the target, a group column or the time
 column, which the probes take by name. ``ProbeInput.scoring_cols`` lists the ones dropped.
 
+The task's training weight (``sample_weight``: a scoring column of role ``weight``, such as the years insured of a
+claims-per-year target) leaves ``df`` with them; ``ProbeInput.weights`` holds its values, row by row of ``df``, so the
+probes fit every model with it, and ``ProbeInput.weight_column`` names it. ``ProbeInput.metric`` is the declared
+metric (the spec), and ``ProbeInput.scoring`` the values of every scoring column, row by row of ``df``:
+``metric_inputs(rows)`` gives the metric's inputs by role (``data_foundry.v2.metrics.score(spec, y, p, **inputs)``),
+and ``declared_metric()`` the metric as the probe library takes it (``curation_probes.weights``), scored as the
+benchmark scores it.
+
 A special feature (``task.special_features``) enters the probes in its recommended encoding
 (``data_foundry.v2.special.encode_special_feature``), as a benchmark would give it to a model: a SMILES column as its
 descriptor and fingerprint columns (``<column>__rdkit_<name>``, ``<column>__maccs_<i>``, ``<column>__ecfp4_<i>``),
@@ -24,8 +32,10 @@ copies before deduplication from them.
 
 from __future__ import annotations
 
+import dataclasses
 from dataclasses import dataclass
 from pathlib import Path
+from types import SimpleNamespace
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
@@ -33,6 +43,7 @@ import pandas as pd
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.schema import as_column_list, resolve_warehouse_dir
 from data_foundry.v2 import discover_datasets, load_definition, read_report
+from data_foundry.v2.metrics import row_weight_column, scorer
 
 if TYPE_CHECKING:
     from data_foundry.schema import Grouping
@@ -63,6 +74,11 @@ class ProbeInput:
             raw data is not one table.
         raw_rows: The raw position of each row of ``df``, or None when the rows cannot be traced.
         raw_note: How the rows were traced, or why not.
+        weights: The task's training weight, one value per row of ``df``, or None: every model is fitted with it as
+            the row weight. Its column is a scoring column, never in ``df``.
+        weight_column: The training weight's column, or None.
+        metric: The declared metric (the ``objective_metric`` spec), or None (a format-1 container).
+        scoring: The values of every scoring column, row by row of ``df`` (index 0 to n - 1), or None.
     """
 
     df: pd.DataFrame
@@ -79,6 +95,10 @@ class ProbeInput:
     raw: pd.DataFrame | None = None
     raw_rows: np.ndarray | None = None
     raw_note: str = ""
+    weights: np.ndarray | None = None
+    weight_column: str | None = None
+    metric: Any = None
+    scoring: pd.DataFrame | None = None
 
     @property
     def group_cols(self) -> list[str]:
@@ -92,6 +112,61 @@ class ProbeInput:
     def repeats(self) -> list[list[tuple]]:
         """The ``(train_idx, test_idx)`` folds of each repeat, by repeat number."""
         return [list(self.splits[r].values()) for r in sorted(self.splits)]
+
+    def metric_inputs(self, rows: Any) -> dict[str, np.ndarray]:
+        """The declared metric's input values on ``rows`` (positions into ``df``), by role:
+        ``data_foundry.v2.metrics.score(data.metric, y, p, **data.metric_inputs(rows))``.
+        """
+        rows = np.asarray(rows)
+        out = {}
+        for role, column in (_spec_fields(self.metric).get("inputs") or {}).items():
+            source = self.scoring if self.scoring is not None and column in self.scoring.columns else self.df
+            out[role] = source[column].to_numpy()[rows]
+        return out
+
+    def declared_metric(self) -> dict | None:
+        """The declared metric as the probe library takes it (``curation_probes.weights``), scored as the benchmark
+        scores it (``data_foundry.v2.metrics.scorer``: a group's rows aggregated, the input columns read by row), or
+        None: a format-1 container, or a metric whose code only the definition holds (``kind="local"``).
+        """
+        fields = _spec_fields(self.metric)
+        if not fields or fields.get("kind") == "local":
+            return None
+        frame = self.df.reset_index(drop=True)
+        if self.scoring is not None:
+            frame = frame.join(self.scoring[[c for c in self.scoring.columns if c not in frame.columns]])
+        task = SimpleNamespace(target_column_name=self.target, objective_metric=self.metric, grouping=self.grouping)
+        score_rows = scorer(SimpleNamespace(dataset=frame, task_metadata=task))
+
+        def score(y_true: Any, y_pred: Any, rows: Any) -> float:
+            # probabilities come as a table named by the classes: matched by name, in the sorted order of the classes
+            labels = sorted(y_pred.columns) if isinstance(y_pred, pd.DataFrame) else None
+            return score_rows(y_true, y_pred, rows, labels=labels)
+
+        floor = (fields.get("params") or {}).get("min_prediction")
+        if floor is not None:  # on the scale the target ships on, where the probes predict
+            floor = float(_TO_SHIPPED[fields.get("target_transform") or "identity"](float(floor)))
+        return {
+            "name": fields["name"],
+            "greater_is_better": bool(fields["greater_is_better"]),
+            "prediction": fields["prediction"],
+            "score": score,
+            "floor": floor,
+            "gini": "gini" in fields["name"],
+            "row_weight": row_weight_column(self.metric),
+            "params": dict(fields.get("params") or {}),
+        }
+
+
+_TO_SHIPPED = {"identity": float, "log": np.log, "log1p": np.log1p, "log10": np.log10}
+"""Each ``target_transform`` a spec may declare: a value on the original scale moved to the scale the target ships."""
+
+
+def _spec_fields(spec: Any) -> dict:
+    """A metric spec (a ``MetricSpec``, or the dict of the JSON file) as a dict; empty for None."""
+    if spec is None:
+        return {}
+    return dataclasses.asdict(spec) if dataclasses.is_dataclass(spec) else dict(spec)
 
 
 def dataset_names(root: Path | str) -> list[str]:
@@ -116,11 +191,28 @@ def _without_scoring_columns(df: pd.DataFrame, task: Any) -> tuple[pd.DataFrame,
 
 
 def _excluded_columns(task: Any) -> set[str]:
-    """The columns that are never model inputs: the target, the group column(s) and the scoring columns."""
+    """The columns that are never model inputs: the target, the group column(s), the scoring columns and the
+    training weight (a scoring column too).
+    """
     return {
         task.target_column_name,
         *as_column_list(task.group_on),
         *(c.column for c in getattr(task, "scoring_columns", None) or ()),
+        *as_column_list(getattr(task, "sample_weight", None)),
+    }
+
+
+def _weight_and_metric(frame: pd.DataFrame, task: Any) -> dict[str, Any]:
+    """The ``ProbeInput`` fields of the training weight, the declared metric and the scoring columns' values, from
+    ``frame`` before the scoring columns are dropped.
+    """
+    column = getattr(task, "sample_weight", None)
+    scoring = [c.column for c in getattr(task, "scoring_columns", None) or () if c.column in frame.columns]
+    return {
+        "weights": frame[column].to_numpy(dtype=float) if column else None,
+        "weight_column": column,
+        "metric": getattr(task, "objective_metric", None),
+        "scoring": frame[scoring].reset_index(drop=True) if scoring else None,
     }
 
 
@@ -144,7 +236,8 @@ def from_definition(
 ) -> ProbeInput:
     """The definition's frame and split plan, rebuilt from the raw files (no container); ``plan``: one already made.
 
-    ``raw`` adds the raw state (``ProbeInput.raw``, ``raw_rows``, ``raw_note``; see the module docstring).
+    ``raw`` adds the raw state (``ProbeInput.raw``, ``raw_rows``, ``raw_note``; see the module docstring). The
+    training weight is the definition's ``sample_weight``, read from the task metadata it builds.
     """
     plan = plan if plan is not None else ds.make_splits()
     task = ds.task_metadata_for(plan.df)
@@ -167,6 +260,7 @@ def from_definition(
         raw=table,
         raw_rows=rows,
         raw_note=note,
+        **_weight_and_metric(plan.df, task),
     )
 
 
@@ -203,7 +297,7 @@ def _row_positions(frame: pd.DataFrame, processed: pd.DataFrame) -> np.ndarray |
 
 
 def from_container(container: CuratedContainer, origin: str, *, encode_special: bool = True) -> ProbeInput:
-    """A container's frame, task and shipped splits."""
+    """A container's frame, task and shipped splits; the training weight is its ``task_metadata.sample_weight``."""
     task = container.task_metadata
     df, scoring = _without_scoring_columns(container.dataset, task)
     df, special = _with_encoded_special_features(df, task, encode=encode_special)
@@ -219,6 +313,7 @@ def from_container(container: CuratedContainer, origin: str, *, encode_special: 
         scoring_cols=scoring,
         special_features=special,
         feature_cols=tuple(c for c in df.columns if c not in _excluded_columns(task)),
+        **_weight_and_metric(container.dataset, task),
     )
 
 

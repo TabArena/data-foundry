@@ -64,7 +64,19 @@ def feature_columns(container: CuratedContainer) -> list[str]:
     task = container.task_metadata
     excluded = {task.target_column_name, *as_column_list(task.group_on)}
     excluded.update(c.column for c in getattr(task, "scoring_columns", None) or ())
+    excluded.update(as_column_list(getattr(task, "sample_weight", None)))
     return [c for c in container.dataset.columns if c not in excluded]
+
+
+def sample_weight(container: CuratedContainer) -> str | None:
+    """The task's training weight column, or ``None``: fit every model with it as each row's weight, never as a
+    feature (it is a scoring column, so :func:`feature_columns` leaves it out). It is also the metric's row weight,
+    so the scorer weights the test rows alike.
+
+    ``model.fit(X, y, sample_weight=container.dataset[col].iloc[train_idx])`` with
+    ``col = sample_weight(container)``; a format-1 container has none.
+    """
+    return getattr(container.task_metadata, "sample_weight", None)
 
 
 def special_features(container: CuratedContainer, kind: str | None = None) -> list[SpecialFeature]:

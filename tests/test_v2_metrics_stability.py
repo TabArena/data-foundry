@@ -25,6 +25,7 @@ EXAMPLE_PARAMS = {
     ("par_k", "regression"): {"cutoff": 100},
     ("mean_group_top_k_overlap", "regression"): {"k": 3},
     ("mean_tweedie_deviance", "regression"): {"power": 1.5, "min_prediction": 1.0},
+    ("mean_poisson_deviance", "regression"): {"min_prediction": 1e-6},
 }
 """Params for metrics that cannot be declared without them."""
 

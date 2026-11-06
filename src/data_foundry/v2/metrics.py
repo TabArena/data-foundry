@@ -264,16 +264,38 @@ def _value_metric(func_name: str) -> Callable:
     return fn
 
 
-def _poisson_deviance(y_true, y_pred, *, params=None, **_):
-    """``mean_poisson_deviance`` with the predicted means floored at ``params["min_prediction"]`` (default machine
-    epsilon, as ``log_loss`` clips its probabilities): a mean at or below 0 is no valid Poisson mean, and in practice
-    a model's output is clipped at a small mean before it is scored. A dataset states its floor in the definition,
-    below the smallest plausible mean. NaN and infinite predictions still raise.
-    """
-    floor = float((params or {}).get("min_prediction", np.finfo(float).eps))
+def _floored(y_pred: Any, params: Mapping[str, Any]) -> np.ndarray:
+    """The predicted means floored at ``params["min_prediction"]``; NaN and infinite predictions are left to raise."""
+    floor = float(params["min_prediction"])
     y_pred = np.asarray(y_pred, dtype=float)
-    y_pred = np.where(np.isfinite(y_pred), np.maximum(y_pred, floor), y_pred)
-    return _sklearn_metrics().mean_poisson_deviance(np.asarray(y_true, dtype=float), y_pred)
+    return np.where(np.isfinite(y_pred), np.maximum(y_pred, floor), y_pred)
+
+
+def _row_weight(weight: Any) -> np.ndarray | None:
+    """The optional row weight of a deviance: finite, >= 0 and with a positive sum, or ``None`` (every row weighs 1)."""
+    if weight is None:
+        return None
+    w = np.asarray(weight, dtype=float)
+    if not np.isfinite(w).all() or (w < 0).any():
+        raise ValueError("weight holds NaN, infinite or negative values; a row weight is a finite number >= 0.")
+    if w.sum() <= 0:
+        raise ValueError("weight sums to 0 over the scored rows: no row carries weight.")
+    return w
+
+
+def _poisson_deviance(y_true, y_pred, *, params, weight=None, **_):
+    """``mean_poisson_deviance`` with the predicted means floored at ``params["min_prediction"]``, the rows weighted by
+    the optional ``weight`` input (``sum(w * d) / sum(w)``, scikit-learn's ``sample_weight``).
+
+    The floor is required: a mean at or below 0 is no valid Poisson mean, and in practice a model's output is clipped
+    at a small mean before it is scored. The definition states it two orders below the smallest plausible mean, on the
+    scale the metric scores (MET-13). With a weight the target is a rate per unit of the weight (claims per year
+    insured, the weight the years) and the score equals the count deviance of the same predictions times
+    ``n / sum(w)`` (the Poisson model with the weight as offset). NaN and infinite predictions still raise.
+    """
+    return _sklearn_metrics().mean_poisson_deviance(
+        np.asarray(y_true, dtype=float), _floored(y_pred, params), sample_weight=_row_weight(weight)
+    )
 
 
 def _check_min_prediction(params: Mapping[str, Any]) -> None:
@@ -281,6 +303,11 @@ def _check_min_prediction(params: Mapping[str, Any]) -> None:
         value = params["min_prediction"]
         if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
             raise ValueError(f"min_prediction is a finite number above 0, not {value!r}.")
+
+
+def _check_poisson(params: Mapping[str, Any]) -> None:
+    _require(params, "min_prediction")
+    _check_min_prediction(params)
 
 
 def _correlation(func_name: str) -> Callable:
@@ -331,19 +358,21 @@ def _check_tweedie(params: Mapping[str, Any]) -> None:
     _check_min_prediction(params)
 
 
-def _tweedie_deviance(y_true, y_pred, *, params, **_):
-    """``mean_tweedie_deviance`` at ``params["power"]``, the predicted means floored at ``params["min_prediction"]``.
+def _tweedie_deviance(y_true, y_pred, *, params, weight=None, **_):
+    """``mean_tweedie_deviance`` at ``params["power"]``, the predicted means floored at ``params["min_prediction"]``,
+    the rows weighted by the optional ``weight`` input (``sum(w * d) / sum(w)``).
 
-    The floor is required, not machine epsilon as for the Poisson deviance: above power 1 a mean near 0 costs about
-    ``y * p^(1-q)``, which grows without bound (a 2000 EUR claim at a floor of 1e-6 costs about 2e6, at 1 EUR about
-    2e3), so the floor sets the scale of the worst error and the definition states it. NaN and infinite predictions
-    still raise.
+    The floor is required: above power 1 a mean near 0 costs about ``y * p^(1-q)``, which grows without bound (a 2000
+    EUR claim at a floor of 1e-6 costs about 2e6, at 1 EUR about 2e3), so the floor sets the scale of the worst error
+    and the definition states it. With a weight the target is an amount per unit of the weight and the weight is the
+    unit count (the compound-Poisson convention); an offset on the total corresponds to the weight ``w^(2-q)``, so a
+    source that scores totals with an offset needs that form stated. NaN and infinite predictions still raise.
     """
-    floor = float(params["min_prediction"])
-    y_pred = np.asarray(y_pred, dtype=float)
-    y_pred = np.where(np.isfinite(y_pred), np.maximum(y_pred, floor), y_pred)
     return _sklearn_metrics().mean_tweedie_deviance(
-        np.asarray(y_true, dtype=float), y_pred, power=float(params["power"])
+        np.asarray(y_true, dtype=float),
+        _floored(y_pred, params),
+        power=float(params["power"]),
+        sample_weight=_row_weight(weight),
     )
 
 
@@ -368,6 +397,10 @@ class MetricDef:
         prediction_domain: The values a ``value`` prediction must take, on the original scale: ``None`` (any finite
             value) or ``positive`` (an expected mean, as for ``mean_poisson_deviance``). The metric-computes check
             draws its test predictions in this domain.
+        optional_inputs: Input roles it may take but does not need (the ``weight`` of a deviance); without one every
+            row weighs the same.
+        row_weight: Whether its ``weight`` input is a row weight (each row counts in proportion to it), the kind a
+            task may also train with (:func:`row_weight_column`); ``False`` for a weight read another way.
     """
 
     name: str
@@ -384,6 +417,8 @@ class MetricDef:
     check_params: Callable[[Mapping[str, Any]], None] | None = field(default=None, compare=False)
     reference: str | None = None
     prediction_domain: str | None = None
+    optional_inputs: tuple[str, ...] = ()
+    row_weight: bool = False
 
     def prediction_for(self, params: Mapping[str, Any] | None) -> str:
         """The prediction kind under ``params``: :attr:`prediction`, or ``params["prediction"]`` when the metric
@@ -543,13 +578,18 @@ METRICS: dict[str, MetricDef] = {
             "value",
             _LOWER,
             _poisson_deviance,
-            "sklearn.metrics.mean_poisson_deviance, the predictions floored at min_prediction",
-            "2*mean(y*log(y/p)-y+p); finite y>=0; p below min_prediction (default machine epsilon) counts as it",
+            "sklearn.metrics.mean_poisson_deviance(sample_weight=weight), the predictions floored at min_prediction",
+            "2*sum(w*(y*log(y/p)-y+p))/sum(w), w the optional weight input (1 without it); finite y>=0; p below "
+            "min_prediction counts as it",
             prediction_domain="positive",
             params={
-                "min_prediction": "predictions below it count as it; a finite number above 0 (default: machine epsilon)"
+                "min_prediction": "required floor on the predictions, on the original scale (after the inverse of "
+                "target_transform): a smaller prediction counts as this value; a finite number above 0, two orders "
+                "below the smallest plausible mean"
             },
-            check_params=_check_min_prediction,
+            check_params=_check_poisson,
+            optional_inputs=("weight",),
+            row_weight=True,
         ),
         _standard(
             "rmse",
@@ -632,9 +672,10 @@ METRICS: dict[str, MetricDef] = {
             "value",
             _LOWER,
             _tweedie_deviance,
-            "sklearn.metrics.mean_tweedie_deviance, the predictions floored at min_prediction",
-            "mean(2 * (y^(2-q) / ((1-q)(2-q)) - y p^(1-q) / (1-q) + p^(2-q) / (2-q))) at power q (1 Poisson; 1 < q < "
-            "2 a compound Poisson-gamma cost, y >= 0; q >= 2 needs y > 0); p below min_prediction counts as it",
+            "sklearn.metrics.mean_tweedie_deviance(sample_weight=weight), the predictions floored at min_prediction",
+            "sum(w * 2 * (y^(2-q) / ((1-q)(2-q)) - y p^(1-q) / (1-q) + p^(2-q) / (2-q))) / sum(w) at power q (1 "
+            "Poisson; 1 < q < 2 a compound Poisson-gamma cost, y >= 0; q >= 2 needs y > 0), w the optional weight "
+            "input (1 without it); p below min_prediction counts as it",
             params={
                 "power": "the Tweedie power q >= 1, required (1.5 for a pure premium with many zero claims)",
                 "min_prediction": "required floor on the predictions, on the original scale (after the inverse of "
@@ -642,6 +683,8 @@ METRICS: dict[str, MetricDef] = {
             },
             check_params=_check_tweedie,
             prediction_domain="positive",
+            optional_inputs=("weight",),
+            row_weight=True,
         ),
     )
 }
@@ -891,16 +934,29 @@ def _normalized_weighted_gini(y_true, y_pred, *, weight, **_):
     return _weighted_gini(actual, w, y_pred) / best
 
 
-def _ordered_lorenz_gini(y_true, y_pred, *, weight, **_):
-    """Frees et al.'s Gini of the losses ordered by the relativity score / base premium (the base is ``weight``)."""
+def _ordered_lorenz_gini(y_true, y_pred, *, weight, params=None, **_):
+    """Frees et al.'s Gini of the losses ordered by the relativity score / base premium (the base is ``weight``).
+
+    With ``params["per_unit"]`` the target and the prediction are already per unit of ``weight`` (a loss per year
+    insured, the weight the years): the rows are ordered by the prediction and weighted by ``weight``, the same score
+    as the totals ``y * weight`` and ``p * weight`` on the base ``weight`` (the unnormalised weighted Gini).
+    """
     loss = np.asarray(y_true, dtype=float)
     base = np.asarray(weight, dtype=float)
-    if (base <= 0).any():
-        raise ValueError("ordered_lorenz_gini needs a positive base premium in every row.")
-    if loss.sum() == 0:
+    if not np.isfinite(base).all() or (base <= 0).any():
+        raise ValueError("ordered_lorenz_gini needs a positive, finite base (or weight) in every row.")
+    pred = np.asarray(y_pred, dtype=float)
+    if not (params or {}).get("per_unit"):
+        loss, pred = loss / base, pred / base
+    if (loss * base).sum() == 0:
         return float("nan")
     # the raw sum is negative for an order better than the base (Liberty's normalisation divides two such sums)
-    return -_weighted_gini(loss / base, base, np.asarray(y_pred, dtype=float) / base)
+    return -_weighted_gini(loss, base, pred)
+
+
+def _check_ordered_lorenz_gini(params: Mapping[str, Any]) -> None:
+    if "per_unit" in params and not isinstance(params["per_unit"], bool):
+        raise ValueError(f"per_unit is True or False, not {params['per_unit']!r}.")
 
 
 # weighted_pearsonr
@@ -1336,6 +1392,7 @@ _CUSTOM_METRICS = (
         "https://www.kaggle.com/competitions/liberty-mutual-fire-peril/overview/evaluation (the corrected code of "
         "forum thread 9880)",
         inputs=("weight",),
+        row_weight=True,
     ),
     _custom(
         "ordered_lorenz_gini",
@@ -1345,10 +1402,16 @@ _CUSTOM_METRICS = (
         _ordered_lorenz_gini,
         "twice the area between the ordered Lorenz curve and the diagonal: rows sorted by the relativity p / B (B the "
         "base premium, the weight), x the cumulative share of B, y the cumulative share of the losses y; 0 when p adds "
-        "nothing to B (tied relativities form one step)",
+        "nothing to B (tied relativities form one step); per_unit: y and p are per unit of B, rows sorted by p and x "
+        "the cumulative share of B (the unnormalised weighted Gini of a rate)",
         "Frees, Meyers and Cummings (2011), Summarizing Insurance Scores Using a Gini Index, JASA 106(495), "
         "doi:10.1198/jasa.2011.tm10506; Frees, Lee and Yang (2016) on the Wisconsin property fund",
         inputs=("weight",),
+        params={
+            "per_unit": "True: y and p are per unit of the weight (a loss per year insured), the weight a row weight; "
+            "False (default): y and p are totals and the weight is the base premium they are compared against"
+        },
+        check_params=_check_ordered_lorenz_gini,
     ),
     _custom(
         "weighted_pearsonr",
@@ -1359,6 +1422,7 @@ _CUSTOM_METRICS = (
         "sum w (y - ybar_w)(p - pbar_w) / sqrt(sum w (y - ybar_w)^2 * sum w (p - pbar_w)^2)",
         "https://www.kaggle.com/competitions/g-research-crypto-forecasting/overview/evaluation",
         inputs=("weight",),
+        row_weight=True,
         params={
             "weights": "optional {value: weight}: the weight input holds a key per row (an asset), mapped to its "
             "weight; without it the weight input holds the weights"
@@ -1479,6 +1543,15 @@ def known_metrics() -> dict[str, set[str]]:
     return {p: {name for name, d in METRICS.items() if p in d.problem_types} for p in PROBLEM_TYPES}
 
 
+def _check_input_roles(name: str, inputs: Mapping[str, str]) -> None:
+    """Refuse an input role the registry metric does not read: it would be ignored without notice."""
+    definition = METRICS[name]
+    allowed = [*definition.inputs, *definition.optional_inputs]
+    unknown = [role for role in inputs if role not in allowed]
+    if unknown:
+        raise ValueError(f"metric {name!r} takes the input role(s) {allowed}, not {unknown}.")
+
+
 def _unknown_name_message(name: str) -> str:
     close = difflib.get_close_matches(str(name).lower(), METRICS, n=3)
     hint = f" Did you mean {', '.join(close)}?" if close else ""
@@ -1543,6 +1616,8 @@ class Metric:
             METRICS[self.name].validate(self.params)
         if not isinstance(self.inputs, Mapping) or not all(isinstance(c, str) for c in self.inputs.values()):
             raise ValueError("Metric inputs map each role to a column name: {'group': 'era'}.")
+        if self.fn is None and self.name is not None:
+            _check_input_roles(self.name, self.inputs)
 
     # --- constructors ---
     @classmethod
@@ -1759,6 +1834,27 @@ def metric_fn(spec: Any) -> Callable[..., float]:
     return METRICS[fields["name"]].fn
 
 
+def row_weight_column(spec: Any) -> str | None:
+    """The column ``spec`` reads as a row weight, or ``None``.
+
+    A row weight makes each row count in proportion to it (``normalized_weighted_gini``, ``weighted_pearsonr``, a
+    deviance with its ``weight`` input, ``ordered_lorenz_gini`` with ``per_unit``). The base premium of
+    ``ordered_lorenz_gini`` on totals is no row weight, and neither is the key column of ``weighted_pearsonr`` with
+    ``params["weights"]``. A task's ``sample_weight`` is always this column (MET-15).
+    """
+    fields = _as_dict(spec)
+    column = dict(fields.get("inputs") or {}).get("weight")
+    name = fields.get("name")
+    if column is None or fields.get("kind") == "local" or name not in METRICS:
+        return None
+    params = dict(fields.get("params") or {})
+    if name == "ordered_lorenz_gini":
+        return column if params.get("per_unit") else None
+    if name == "weighted_pearsonr" and params.get("weights") is not None:
+        return None
+    return column if METRICS[name].row_weight else None
+
+
 def _require_finite(name: str, values: Any, where: str = "") -> None:
     """Raise a ValueError naming ``name`` when ``values`` hold NaN or infinite numbers: a metric never scores them
     silently (one NaN prediction would otherwise give NaN, or a finite score that just skipped the row).
@@ -1783,17 +1879,26 @@ def score(spec: Any, y_true: Any, y_pred: Any, *, labels: Any = None, **inputs: 
             matched to ``labels`` by name; a missing or unknown class name is an error.
         labels: The class labels in the order of the probability columns (classification); default the sorted
             classes of ``y_true``, the order of scikit-learn's ``classes_``.
-        **inputs: The values of the spec's input columns for the scored rows, by role (``group=...``).
+        **inputs: The values of the spec's input columns for the scored rows, by role (``group=...``). An input the
+            metric does not take is an error, so a weight is never dropped without notice.
 
     Returns:
         The score as a float.
     """
     fields = _as_dict(spec)
     fn = metric_fn(spec)
-    needed = METRICS[fields["name"]].inputs if fields.get("kind") != "local" else tuple(fields.get("inputs") or {})
+    if fields.get("kind") == "local":
+        needed, optional = tuple(fields.get("inputs") or {}), ()
+    else:
+        needed, optional = METRICS[fields["name"]].inputs, METRICS[fields["name"]].optional_inputs
     missing = [role for role in needed if role not in inputs]
     if missing:
         raise ValueError(f"metric {fields['name']!r} needs the input(s) {missing} (pass them by role).")
+    unknown = [role for role in inputs if role not in needed and role not in optional]
+    if unknown:
+        raise ValueError(
+            f"metric {fields['name']!r} takes the input(s) {[*needed, *optional]}, not {unknown}: it would ignore them."
+        )
     y_true = np.asarray(y_true)
     if isinstance(y_pred, pd.DataFrame) and fields.get("prediction") == "proba":
         y_pred = _named_proba(y_pred, _labels(y_true, labels))
@@ -1854,6 +1959,8 @@ def scorer(container: Any, *, metric: Any = None) -> Callable[..., float]:
             y_pred = _named_proba(y_pred, _labels(y_true, labels))
         y_pred = np.asarray(y_pred)
         rows = None if row_index is None else np.asarray(row_index)
+        if rows is not None and target is not None:
+            _check_true_values(y_true, target.iloc[rows].to_numpy(), task.target_column_name)
         if per_group and aggregate:
             if rows is None:
                 raise ValueError("the task predicts one value per group: pass the rows' row_index to aggregate them.")
@@ -1866,6 +1973,23 @@ def scorer(container: Any, *, metric: Any = None) -> Callable[..., float]:
         return score(spec, y_true, y_pred, labels=labels, **values)
 
     return score_rows
+
+
+def _check_true_values(y_true: np.ndarray, expected: np.ndarray, target: str) -> None:
+    """Raise when ``y_true`` is not the container's target on the scored rows (a column read from an older build, the
+    count where the task predicts a rate): the metric would score the wrong thing without notice.
+    """
+    if len(y_true) != len(expected):
+        raise ValueError(f"y_true has {len(y_true)} values for {len(expected)} rows of row_index.")
+    try:
+        same = np.allclose(y_true.astype(float), expected.astype(float), rtol=1e-9, atol=1e-12, equal_nan=True)
+    except (TypeError, ValueError):
+        same = bool((pd.Series(y_true).astype(str).to_numpy() == pd.Series(expected).astype(str).to_numpy()).all())
+    if not same:
+        raise ValueError(
+            f"y_true is not the container's target {target!r} on the rows of row_index: pass "
+            f"container.dataset[{target!r}] of those rows, on the scale it ships."
+        )
 
 
 def _aggregate(frame: pd.DataFrame, grouping: Any, y_true: np.ndarray, y_pred: np.ndarray, rows: np.ndarray) -> tuple:
