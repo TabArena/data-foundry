@@ -5,6 +5,7 @@ checked_by:
 - Myunghwan
 data_foundry_status:
 - WIP (Triage)
+- 'DF: Yes'
 claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 3
