@@ -2,7 +2,7 @@
 
 **Outcome:** added as `fugaku_hpc_job_failure_1m`. Recommend ship on current main, preserving Myunghwan’s accepted original future exit-state task and all qualified decisions. Validity: source labels and submission-time inputs are unchanged, mature-label temporal memberships are reproduced, and fit remains approximate for the selected execution cohort. Value: useful historical ranking evidence remains applicable with the required first-tuned-benchmark recheck. Quality: source representations and meaningful class words are retained. No new curator choice is required by the focused recheck.
 
-**Main points:** No new decision is required. Carry forward the November 3 ship decision under the November 5 request, preserving approximate execution-record fit, the accepted no-extra-gap exception, reporting-latency limits and the first-tuned-benchmark recheck.
+**Main points:** No new scientific decision is required. Carry the original ship decision and all resolved choices forward under the November 6 request. The maintained installation now uses the same upstream code already validated on November 5; the task, metric, memberships, accepted qualifications and first-tuned-benchmark recheck remain unchanged.
 
 **Issues for Myunghwan:**
 
@@ -30,7 +30,7 @@
 
    **Resolved (2026-11-03, Myunghwan):** Retain with the required first-tuned-benchmark recheck; this remains a future trigger, not an unfinished add-stage gate.
 
-**Review panel:** ship with the previously accepted qualifications (current focused mediator). Current claim, column, split and precedent audits support the unchanged task; the editor checks presentation. No new disputed decision remains. The complete historical full panel below is retained as historical evidence, followed by the current focused reports; it was not rerun as a full panel.
+**Review panel:** retain the accepted task and decisions (November 6 focused mediator). The new scope is installed-runtime and instruction identity; there is no feature, label or split change. The complete earlier panels remain dated evidence, followed by current claim, precedent, mediator and cold-editor reports. Zero new disputed decisions.
 
 <details><summary>Historical panel summary (2026-11-03)</summary>
 
@@ -1037,7 +1037,7 @@ Fugaku has completed train-only tuning, date ablations and raw-user comparisons.
 
 </details>
 
-<details><summary>Current focused claim audit (2026-11-05)</summary>
+<details><summary>Prior focused claim audit (2026-11-05)</summary>
 
 **Independent focused claim audit — Fugaku, 2026-11-05**
 
@@ -1100,7 +1100,7 @@ Native probe19 on the source-position preparation selection finds23,366,401 of25
 
 </details>
 
-<details><summary>Current focused column audit (2026-11-05)</summary>
+<details><summary>Prior focused column audit (2026-11-05)</summary>
 
 **Focused column audit — current main, 2026-11-05**
 
@@ -1133,7 +1133,7 @@ Native probe19 on the source-position preparation selection finds23,366,401 of25
 
 </details>
 
-<details><summary>Current focused split audit (2026-11-05)</summary>
+<details><summary>Prior focused split audit (2026-11-05)</summary>
 
 **Independent focused split audit — current-main refresh**
 
@@ -1161,7 +1161,7 @@ The current definition's native full-source selection was rerun independently on
 
 </details>
 
-<details><summary>Current focused precedent check (2026-11-05)</summary>
+<details><summary>Prior focused precedent check (2026-11-05)</summary>
 
 **Independent precedent review: updated-main Fugaku recheck**
 
@@ -1200,7 +1200,7 @@ I independently ran the pinned old runtime's scoring core on the current scorer'
 
 </details>
 
-<details><summary>Current focused mediator (2026-11-05)</summary>
+<details><summary>Prior focused mediator (2026-11-05)</summary>
 
 **Focused-panel mediation — Fugaku current-main refresh, 2026-11-05**
 
@@ -1238,7 +1238,7 @@ The original source-bound decision stores remain unchanged. Persistent resolved 
 
 </details>
 
-<details><summary>Current focused review editor (2026-11-05)</summary>
+<details><summary>Prior focused review editor (2026-11-05)</summary>
 
 **Current focused cold review editor (2026-11-05)**
 
@@ -1294,5 +1294,194 @@ Concrete corrections, most important first:
 - Record SHA-256: `d730d99bb361d8de7470520543538801600bf1eee617a986baa6b5f28b99c267`.
 
 Bridge's latest selected-sync receipt captured November 2 at 23:05 UTC and completed at 23:06 UTC, roughly 72 hours before this read. It reports changed local summaries and unknown receipt members; its selected knowledge inventory also has changed/missing entries. Peer changes were not queried. Those receipts do not certify freshness of this newly reviewed checkout; the explicit local file identities above bind this editorial result. No network, controller, source edit, decision-store mutation, or model run was used. Only this report was written.
+
+</details>
+
+<details><summary>Current maintained-runtime claim audit (2026-11-06)</summary>
+
+**Independent focused claim audit — Fugaku, 2026-11-06**
+
+**Recommendation:** retain the accepted definition and decisions. This maintained-environment recheck establishes no new target, feature, split, metric or source-procedure defect. **New curator issues: 0.** The original issues 1–3 remain resolved; the required first tuned-benchmark follow-up remains outstanding. The accepted approximate execution-record task, cohort/parent-unit limitations and explicit SPLIT-10 exception remain part of this conclusion.
+
+**What changed and what was actually tested.** The maintained `.venv` now imports the installed vendor source without the November 5 checkout `PYTHONPATH` override. I independently executed `panel/claim-reuse-check.py` through the new run's thread-capped `run-python`. It compares actual bytes across the November 5 checkout, current checkout and installed vendor: all **49 files under `src`** match; among **80 files under `.claude`**, the sole installed-vendor difference is exactly the restored Fugaku SPLIT-10 Cases row in both work checkouts. The current and November 5 procedures themselves are byte-identical. These counts include non-Python package assets; they are broader than the parent's 126 selected source/procedure paths. The five numerical-library versions match. Consequently, an upgrade relative to the earlier November 3 environment must not be described as new scientific/probe code relative to the already completed November 5 cycle.
+
+I read the current definition, migrated record and README claims, the current claim-auditor contract, principles/evidence/metric rules, the prior literal claim inventory and 32-claim report, and actual metric, format, raw, period, fill, column and split evidence. I reread the cached pinned encoder/cleaner and the load-bearing paper/experiment sections; all five cached primary-source files freshly match SHA-256s in their original source manifest. No source document was downloaded and no raw cohort/model was rerun by this auditor. The script records the exact source and reused evidence identities in `panel/claim-reuse-check.json`.
+
+**Current claims tested adversarially.** “Holds” has the bounded scope stated in the row. Parent-executed data identity is distinguished from this auditor's independent comparisons and scorer checks.
+
+| Claim | Source | Cheapest refuting test | Result | Evidence | Rule |
+|---|---|---|---|---|---|
+| `runtime_source_override: false` | Current `migration.json`, `run-python` | Inspect environment and actual imported `curation_container.__file__` under that wrapper | Holds, independently executed | `PYTHONPATH` absent; actual path is `vendor/data-foundry/src/data_foundry/curation_container.py`; all source bytes match the prior executed checkout | EV-1/7/8 |
+| Current source pin is `9048f36a1bcf7da3687fde04b18ef79cd7a1201e`, the same upstream main used November 5 | Current migration/delta; November 5 manifest | Compare actual source/procedure bytes rather than infer change from the word “upgrade” | Holds | 49 source files identical across all three copies; 80 procedure/agent files identical between work checkouts; only vendor's missing local SPLIT-10 case differs | EV-1/2/8 |
+| “past_decisions_reused”; no new scientific marks | Migration; migrated record/REVIEW | Compare inherited definition/record/review to actual completed prior package and read decision attribution | Holds for the inspected migration | Definition, initial migrated record and REVIEW byte-identical; original November 3 ship, gap and retain-with-recheck history and November 5 metric carry-forward remain attributed to their original decisions. This auditor creates no human marks | EV-2/7; consistent judgment |
+| The current definition preserves the accepted task | Definition and migration | SHA-256 comparison to November 5 accepted definition | Holds, independently executed | SHA-256 `16f04dad621437b6b0d7e3a9d59ed77882641954ec379c640573cf9c31cedd98` | USE-5/8; EV-1 |
+| Historical data probes speak for the current shipped task | Current `identity.json` | Compare frame/order/dtypes/category domains, every membership array, metric spec and libraries; inspect actual proof code | Holds at exact inspected identity | Parent freshly executed native check/frame identity. I independently compared its results to November 5: frame hash `2c64d412…`, all four categorical domains and all six split hashes match; 2,500,499 rows and 388 predictors unchanged | EV-7/8; PROV-1; SPLIT-9/14 |
+| Current checksum remains `v2:b655fe6b…`, with earlier `c7436e8d…` explained solely by old metadata encoding | Current identity and November 5 identity | Compare fresh checksum and old-schema counterfactual; inspect metadata differences | Holds | Both exact checksums match November 5. The only difference from the November 3 schema remains empty `special_features=[]`, not a new November 6 data change | EV-1/2/8 |
+| All six fresh one-/two-column ROC-AUC fixture scores match the prior runtime | Current `scorer-current.json` | Exact numeric comparison to actual November 5 file | Holds, independently compared | All six equal exactly: per-fold AUC 0.49743700643841415, 0.4985142501699026, 0.498459600516546 in both representations | MET-2/13; EV-1/8 |
+| “The metric computes at the shipped unit on every fold” | Definition fallback `roc_auc`; README Metric | Independently score constant and oracle predictions on current identity's actual 500k fold-label fixtures through installed native `scorer` | Holds, newly executed | Dummy 0.5 and oracle 1.0 for all three folds; failed support 59,253 / 74,610 / 57,135; row unit, identity target scale, no auxiliary metric inputs | MET-2/3/13; TP-5/9 |
+| Source has no fixed operator cost/threshold or deliberate task-specific accuracy criterion | Definition metric reason | Reread retained Technical Validation and baseline code at pinned source revision | Holds as retained source reading | Paper describes “simple and widely used metrics,” accuracy for classification; baseline calls `classification_report`. No newly discovered competing selection criterion. Source files match their fixed manifest | MET-1/5/6/8/11; EV-2/7 |
+| “accepted_check_warnings = {}”; current native check clean | Definition; current identity check bundle | Read actual fresh native check output | Holds | 27 native checks; 0 errors, 0 warnings, 2 explicit budget-skipped infos. Heavy duplicate/pure-value skips are not newly completed whole-table checks | EV-7; verification |
+| “The raw data is not one table” for this definition's generic raw CLI | Actual `_load_raw`; `dataset_io._raw_state` | Inspect actual unchanged loader and helper predicate | Holds as a tooling limitation | Definition returns dict; helper returns no raw table unless it is a DataFrame. November 5 native-function raw tests were explicitly aligned actual source, not generic CLI success | EV-7/8 |
+| Float32 neighbor normalization and its previous failure are unchanged | Actual `curation_probes/leak.py`; prior normalizer measurements | Byte-compare helper implementation and confirm exact current task identity | Holds by exact-source/data evidence reuse | Helper still computes `num.std()` before float promotion. Prior measured embedding127/223 stds underflow to 0 despite 383,135/379,755 distinct values; 5,000,998 normalized nonfinite cells. No new neighbor fit or full native leak-CLI pass is claimed | EV-3/7/8; CLEAN-22 |
+
+**Exact carry-forward scope.** The full literal inventory is `retained local evidence`; the prior claim-by-claim table is `retained local evidence`. Its 32 bounded claims and their source/test/result/rule entries are incorporated as dated evidence, supported by the newly established identity predicates above. They are not relabeled as newly executed source/model tests. The prior record's already-superseded “about 24M/about 20GB/direct fit” interpretation remains refuted as a current fact; the current accepted record already preserves it as historical, so this supplies no new issue.
+
+The reused actual artifacts, each freshly hashed in `claim-reuse-check.json`, establish the following scopes:
+
+| Evidence reused | What it establishes | Boundary preserved |
+|---|---|---|
+| November 5 `claim-raw-probes.json` | All 38 raw publisher MD5/byte counts and all 25,866,900 exit-code/label comparisons passed; failed count 2,558,519; zero mismatches. Native source-order checks found 11,707–204,890 label transitions per file, none literally two class blocks | These are November 5 scans. This auditor does not claim another November 6 full raw read; the parent's independent archive verification is separately evidenced. Source clustering alone does not demonstrate a temporal predictor shortcut |
+| November 5 `claim-format-probe.json` | All 384 retained float coordinates in three exact folds, native RNG0 50k-per-side caps, 200-tree LightGBM: format-only and top-three format scores 0.5 against numeric/categorical baseline 0.8042185 | This is the same-protocol diagnostic, not the differently capped three-family task probe, not HPO and not a fresh fit today |
+| November 5 `claim-period-probe.json` | Full-source 38-month period13; April failure rate 19.42%, z+3.24; rows/day z−1.26. Native reading is rate-rise drift | It does not establish a submission census, complete pending-job coverage or absence of censoring outside the released selected cohort |
+| November 5 `claim-raw-probes.json`, `claim-fill-recheck.json`, `claim-probe-summary.json` | Eight separate actual source head/tail windows, 80k rows and 30.72M embedding cells: 74,418 native morphology hits; 24,194 survive tight relative check. Of 22,724 hits in most-hit April tail window, 19,642 (86.44%) have identical masked profiles and adjacent vectors within 1e-6. Zero raw-copy groups in those eight windows | Morphology is not proven interpolation and is not “no hits.” Remaining hits are unclassified; eight windows are not a full-cohort interpolation sweep. The prior exhaustive 38-file nonembedding duplicate audit remains separately dated |
+| November 5 column audit and original whole-value/vector checks | 389 total columns/388 predictors; three nominal features and datetime support; zero fresh dtype flags; finite, length384 float32 source vectors under the prior complete scan | Byte-identical source construction/current retained frame supports reuse; private original text and private encoder regeneration remain unavailable |
+| November 5 `split-auditor.json` plus current exact membership proof | Full-source rows 25,866,900; minimum eligible history 65.322%; zero missing/negative source intervals; zero unavailable recorded train outcomes. Native caps 1M/500k; late source outcomes excluded 28,118/48,375/10,387 newest-first. Test-user recurrence 97.9808%/95.0844%/74.1210% | Recorded completion is only a label-arrival proxy. Fast-completer selection is real; the September last-day late-versus-completed failed shares are 18.53% vs 0.292%. The SPLIT-10 exception is retained, not converted into an ordinary zero-gap pass |
+| Original actual task-probe and train-only follow-up, carried explicitly by the November 5 panel | Mean untuned linear/RF/LightGBM AUC about 0.7941/0.7576/0.7826; ranking signal, bounded date/user-baseline follow-up and paired maturity sensitivity | `no_spread`/`drift_baseline` and required first tuned-family/probability/simple-baseline/maturity check remain. Two configurations are not full HPO, family separation or causal operational utility |
+
+**Untested/limited claims, ranked.** Under P3/P4, complete attempted/pending submission coverage, reliable parent/subjob mapping, actionable/preventable failure utility and actual post-completion reporting latency remain unverified, exactly as accepted approximate-fit qualifications. Under P4/P5, private-string regeneration and complete raw-interpolation coverage remain unavailable/limited; there is no demonstrated new leakage mechanism. Under P6, full tuned-family separation, probability quality and the first tuned-run sensitivity recheck remain pending. Under EV-7, a successful complete generic raw or native float32-neighbor leak CLI is not established. The mildest remedy is to preserve the existing bounds and execute the already-required tuned-run trigger when that stage is authorized; none justifies reopening settled issue IDs or changing the definition today.
+
+This audit writes only its own current run artifacts. It changes no repository source, prior evidence, decision stores, data or human marks; uses no network, GPU or controller; and runs no model fits.
+
+</details>
+
+<details><summary>Current maintained-runtime precedent check (2026-11-06)</summary>
+
+**Independent precedent review — maintained internal skill refresh, 2026-11-06**
+
+**Verdict:** carry forward the original accepted Fugaku decisions and ship verdict. **New human inputs: 0. New reflection prompts: 0.** No current rule, case comparison or native identity result examined here supplies a concrete contradiction requiring a new scientific choice. Preserve the formal SPLIT-10 exception, approximate execution-record fit, selected-cohort/action-unit/reporting-latency limitations and first-tuned-benchmark recheck.
+
+**Evidence and scope.** I read the current maintained precedent-checker role, principles, relevant temporal/metric/type/value/use-case rules, review-added procedure, persistent review-file contract, HUMAN_REVIEW, original human stores and their application receipts, current Fugaku record/history, closest precedent records/Cases rows, November 5 precedent report and the new native identity proof. I independently ran the current decision register through this run's `run-python` wrapper, with no PYTHONPATH override and thread caps 2. This review wrote scratch panel evidence only; it did not change definitions, records, original decision stores, runtime or rule source, access the network, start a controller or rerun raw-data/model qualification.
+
+**Actual upgrade delta.** The maintained source pin is `9048f36a1bcf7da3687fde04b18ef79cd7a1201e`, already the actual source reviewed on November 5. My independent comparison of 20 relevant rule/procedure/role/register/metric-library files found every current checkout file byte-identical to November 5. Against the maintained vendor, the sole difference is the restored Fugaku SPLIT-10 Cases row; normative rule text is identical. Exact hashes are in `precedent-rule-identity.json`. Changing the internal pin to match the already used code does not create a new metric or ship decision.
+
+| Decision | Result | Closest evidence and rule reading |
+|---|---|---|
+| Keep original eventual zero/nonzero exit-state task and original class words | consistent | Myunghwan's November 3 item 1 and final ship accept the measured future terminal outcome with approximate per-execution operational fit. USE-1/3/5/8 and CLEAN-25 do not require a new failure taxonomy, fixed-hour target or parent-job aggregation. Preserve all cohort/actionability limits. |
+| Keep exact recorded-completion filtering and zero additional fixed embargo | departs with an already stated and accepted reason | November 3 item 2, completed maturity follow-through and explicit SPLIT-10 exception serve SPLIT-1/P4 fidelity to completed outcomes at live refit. This remains a Should departure. It is no exception to SPLIT-9 Must. Current identity reports zero unavailable recorded labels in each shipped training side; unobserved ingestion latency remains a qualification. |
+| Preserve masked categorical identities, 384 numeric source embedding coordinates and submission datetime | consistent | Original source-representations-first authorization and unchanged definition remain applicable. CLEAN-14's high-cardinality masked-name departure is documented: opaque token identities cannot recover unavailable original text. Ordered-scale amendments introduce no contradictory fact about these nominal identities. |
+| Preserve fallback ROC AUC | consistent | MET-5/6/8/11 still support the fallback when the source reports generic accuracy/classification-report metrics without a unique operational threshold or cost. The applied heart_disease precedent (October 21; checked October 27) remains analogous. No newly established context metric or score-direction change appears. |
+| Preserve actual overall ship and metric acceptance provenance | consistent | The actual November 3 final human words are “ship this”; the accepted package includes the unchanged declared metric. The November 5 CC faithfully records that provenance and explicit reuse instruction. Current HUMAN_REVIEW preserves earlier decisions absent contradictory evidence. The newer metric UI does not require inventing a separate historical metric click or a fresh ship mark for an identical task/scorer. |
+| Preserve first-tuned-benchmark recheck | consistent | The applied open_university_learning_analytics_dataset TP-3 case (Lennart, October 22; later ship October 26) retains `no_spread` pending the first tuned run. Fugaku's equivalent November 3 choice additionally preserves foldwise simple/user-history baselines, probability quality and maturity/reporting-latency sensitivity. This refresh/build does not discharge that future obligation. |
+| Preserve resolved issue IDs 1–3 and dated human turns | consistent | Current review-added skill and file format retain resolved history and the original full panel as historical. Issue 4 is the next genuinely new issue. No old mark should receive a fresh source snapshot, and the historical panel is not a newly rerun panel. |
+
+**Register candidates inspected.** `decision-register-fugaku.json` contains 68 selected decisions out of 4,090, with 176 defined rule IDs and five Fugaku-related candidate flags. These are candidates, not findings:
+
+1. Two `exception_to_must: SPLIT-1` flags index the record exception and its Cases row. Both explicitly depart from SPLIT-10 and cite SPLIT-1 as the higher rule served. They do not announce an exception to SPLIT-1.
+2. The `exception_to_must: SPLIT-9` flag indexes the same paragraph's statement that unavailable labels still leave under SPLIT-9. It does not declare a departure from that Must.
+3. The `amendment_due: SPLIT-9` count inherits broad rule-ID attribution and includes superseded lt_vehicle history. The actual alfa/Fugaku exception headings name SPLIT-10, while their text says SPLIT-9 must be met. The current lt_vehicle CC of November 5 explicitly supersedes its old exception and treats gap zero as an application.
+4. The `amendment_due: SPLIT-10` seven-dataset count mixes distinct reasons: missing outcome dates and the training-floor conflict (alfa/lending_club), month-resolution with no measured outcome selection (Ames/Perth and related historical rows), superseded fixed-horizon lt_vehicle history, and Fugaku's precise-completion/live-refit rationale. Current rule amendments already address the earlier shared reasons. The principles ask whether **the same reason** has produced three exceptions, not whether three names mention one rule. No third instance of Fugaku's reason is established.
+
+The register also classifies numbered text in preserved historical panel reports as `open_issue`. That heuristic count is not evidence that resolved curator issues reopened. Current issues 1–3 have their exact actual human turns and resolved labels.
+
+**Current native identity evidence.** I inspected the main session's new `identity.json`; I did not independently regenerate its frame. Its status is `current_runtime_data_categories_splits_metric_and_versions_match_reviewed_task`. It reports byte-identical definition, frame/order SHA `2c64d4129380d494ae03e3f24a3f9ccd593f1811ce077cb6fd20c0ebfce04e5b`, identical category metadata, all six original membership hashes and unchanged metric specification. Each training side has zero recorded unavailable labels. Native checking reports 27 checks, zero errors, zero warnings and the same two disclosed heavy-check skips. I independently compared the fresh `scorer-current.json` to November 5: all six deterministic fixture scores match exactly for both one- and two-column probabilities on all three folds. The maintained metric-library bytes are also unchanged.
+
+The current checksum remains `v2:b655fe6b87263768dd5a2e1232484929a22c3364e7daeeaa6b5cb6a30dc4a06d`. As on November 5, the historical checksum difference is fully explained by the new empty `special_features=[]` metadata field; encoding the original metadata schema restores `v2:c7436e8df22a906088cadbb4d641da32cd709976aeaa43e087ac12ff278475cd`. This is identity/scorer evidence, not new model performance or a newly established ingestion clock.
+
+**Original decision stores preserved.** Repeated SHA-256 checks during this review exactly match the November 5 report:
+
+| Original store | Snapshot binding retained | File SHA-256 unchanged |
+|---|---|---|
+| `retained local evidence` | `460955057d7ae98d40dab1ada853ce0be837c92fe306a8d2357635353e0a95e9` | `d288452f085392f408011f07ec120e78fe135f8bae9b3dde61554791605f787d` |
+| `retained local evidence` | `86a1370cc633a537278cd750bc214b421d978f6519ac6635d34b7030a1dec54f` | `3e914cf13f78c9540255bd33ec1866ab1c32526bc07cc7974a3fd0156109400d` |
+
+The item store retains Myunghwan's exact words: item 1, “As far as some measurement reflects the futures, it's OK”; item 2, “Training gap is not a big concern. But potential issues with matured labels need to be checked.”; item 3, “Yes with the recheck”. The final store retains the actual overall `ship` mark and “ship this”. Neither store contains a fabricated new metric mark, and neither was rebound to this run's source identity. Full checks and exact input provenance are in `precedent-checker.json`.
+
+**For the mediator.** Proceed using the existing scientific decisions under the explicit repeated-cycle request. Preserve the original stores and resolved history; append only current evidence. No new human question is justified by this precedent review. A genuinely new contradiction from another audit still needs assessment on its own evidence. Actual post-completion reporting latency and the first tuned benchmark's value checks remain unresolved limits, as already accepted.
+
+</details>
+
+<details><summary>Current maintained-runtime mediator (2026-11-06)</summary>
+
+**Focused mediator judgment record (2026-11-06)**
+
+**Verdict: ship with the previously accepted qualifications.** Carry forward Myunghwan's original ship decision under the explicit repeated add/review/build request. The maintained runtime binding now points to the same source actually used on November 5. The completed current claim and precedent reports establish no new contradictory fact requiring a task change or curator choice.
+
+**Validity:** USE-1/3/5/8 remain satisfied at the accepted approximate execution-record fit: eventual zero/nonzero exit state at submission, within the released selected cohort. The recorded-completion boundary meets the measured SPLIT-9 requirement; the accepted SPLIT-10 Should exception remains explicit and serves SPLIT-1 live-refit fidelity. Actual post-completion label arrival, complete attempted/pending submission coverage, preventable-failure utility and parent/subjob decision identity remain unverified. No new Must failure or leakage mechanism is established.
+
+**Value:** Historical ranking signal remains applicable under exact task/scorer identity. MET-2/3/5/6/8/11 support the unchanged ROC-AUC fallback and its computation on every fold. TP-1/3/4 follow-through remains required at the first tuned benchmark run: family separation, foldwise simple/user-history baselines, probability quality and maturity/reporting-latency sensitivity. This maintenance cycle does not fulfill that future obligation.
+
+**Quality:** Retain the accepted nominal masked identities, 384 finite source embedding coordinates, datetime input and original class words. The documented CLEAN-14 departure remains justified by unavailable private text and opaque stable identities. There is no newly supported cleaning remedy.
+
+**Weighed:** source traceability, exact reproducibility, substantial chronological support and useful ranking signal favor retention. Selected-cohort coverage, uncertain intervention unit, fast-completer selection, unknown reporting delay and incomplete tuned evaluation retain their accepted limits.
+
+**Changes to make now that need no decision**
+
+1. Append the November 6 evidence and focused assessment to the current record/review, preserving dated resolved issues 1–3 and all historical report bodies. Distinguish the November 6 claim/precedent/mediator/editor roles from the reused November 5 column, split, dtype, raw, format and model evidence. The next genuinely new issue remains 4. This is evidence and judgment-history maintenance under the principles' process precedence and add-dataset step 8, not a new scientific mark.
+2. Describe the change precisely: maintained pin/import binding to `9048f36a1bcf7da3687fde04b18ef79cd7a1201e`, already November 5's actual source. Record the installed vendor import without PYTHONPATH. The earlier November 3-to-5 metadata/checksum change is historical; the current checksum remains `v2:b655fe6b87263768dd5a2e1232484929a22c3364e7daeeaa6b5cb6a30dc4a06d` (EV-7/8).
+3. Keep the current archive-verification and subsequent build results as separate evidence with actual completion status. At this mediation read, the parent reports archive verification ongoing; this report neither certifies it nor claims a new build. Preserve the previous built UUID/date until the actual build regenerates documentation. Routine evidence updates need no task/metric amendment (EV-7/8).
+
+**Issues for the curator: 0. Disputed new decisions: none.** Earlier choices are preserved, not reopened. This is an agent recommendation and creates no human ship/metric field. Original review-store snapshot bindings must remain unchanged. The explicit later build stage remains outside this mediator's execution scope.
+
+**Agreed facts and evidence scope**
+
+- `upgrade-delta.json`, `runtime-equivalence.json` and `identity.json` report unchanged actual source, rules, numerical-library versions, definition, frame values/order, category domains, all six train/test memberships and metric specification relative to November 5. The claim auditor independently compared all 49 source files across the two work checkouts and installed vendor; the two work checkouts' 80 procedure/agent files also match. The vendor difference is the restored local Fugaku SPLIT-10 Cases row, with unchanged normative text. The definition SHA-256 is `16f04dad621437b6b0d7e3a9d59ed77882641954ec379c640573cf9c31cedd98`.
+- The parent's freshly executed native identity/check proof reports 2,500,499 rows, 388 predictors, three 1M/500k train/test sides and zero recorded unavailable training labels. Frame/order SHA-256 is `2c64d4129380d494ae03e3f24a3f9ccd593f1811ce077cb6fd20c0ebfce04e5b`. Native checking ran 27 checks with zero errors, zero warnings and two known budget-skip infos. Skipped whole-table checks are not newly completed scans.
+- All six fresh one-/two-column fixture ROC-AUC scores exactly match November 5. The current claim auditor additionally executed constant/oracle scores of 0.5/1.0 on each actual fold-label fixture. These checks test scorer behavior, not model performance.
+- The current claim auditor rechecked cached primary-source identities and source reading, and independently compared reused evidence hashes. The November 5 38-file raw label/MD5 scan, column/split audits, format model fits, period/fill diagnostics and original task/maturity models remain dated reused evidence. This mediator ran no raw scan, model, scorer or data reconstruction.
+- Source/timing qualifications, generic raw-CLI inapplicability for the dict loader and the unchanged float32 nearest-neighbor normalization failure remain explicit. The float64 recovery stays separately labeled. No clean full native leak-CLI pass or exhaustive raw-interpolation absence is claimed.
+
+**Consistency with precedent**
+
+The current independent precedent checker supports each carried decision. Fugaku's variable-delay terminal outcome and measured fast-completer selection distinguish it from the fixed-horizon zero-gap application in the amended lt_vehicle case. Preserve the accepted SPLIT-10 exception; no exception to SPLIT-9 or SPLIT-1 is implied. Register candidates naming those Must rules arise from paragraph-level attribution, while the generic third-exception count mixes mechanisms and superseded history; the checker found no third instance of the same Fugaku rationale. The applied accuracy-only-source ROC-AUC precedent and retain-with-first-tuned-recheck precedent remain aligned. No amendment or reflection prompt follows.
+
+**Panel tier and freshness**
+
+Focused recheck: current independent claim auditor and precedent checker, this mediator, and the cold editor still to read the synthesized draft. The definition, target, features and splits are unchanged, so the full blind/gamer/debate panel and new column/split runs are not triggered by this binding repair. The November 3 full panel and November 5 focused reports remain historical.
+
+Bridge's latest selected sync was captured 2026-11-02 at 23:05 UTC and completed at 23:06 UTC, about 73.5 hours before this read. Local inventory reports changed summaries/pins/runtime files and unknown receipt members; peer changes were not queried. This report is bound to the explicitly read local artifacts, not certified by that older sync. Only the two current scratch mediation artifacts were written; no repository definition, record, rule, decision store or dataset was changed.
+
+</details>
+
+<details><summary>Current maintained-runtime cold editor (2026-11-06)</summary>
+
+**Current maintained-runtime cold review editor (2026-11-06)**
+
+**Verdict:** Ready to carry forward the accepted scientific decisions with the planned final composition and authorized build. Zero new curator choices or marks are needed. This report does not certify the subsequent build.
+
+I read the full review-editor contract and its writing, principles and review-file-format references, then read the opening judgment and issues cold. I checked the historical/current panel boundary, current claim/precedent/mediator synthesis, definition, generated README, record and generated page data. The identity, upgrade-delta and runtime-equivalence reports support the scope of the refresh. I inspected reported identity results; I did not recreate their frame, run models or rescan source data.
+
+Concrete editorial points, most important first:
+
+1. Clarify the generated page's historical issue count in its run subtitle. The native collector's header says “Open: 1 record, 3 issues, 0 record fields, 0 cross-dataset items.” Its actual dataset has `openMarks=0`, exactly three items with `resolved=true`, and no field rows. A reader should not mistake the generated total for three renewed choices.
+
+   Old subtitle: “Original decisions are retained under the November6 repeat request; new runtime-binding checks and reused evidence are dated separately.”
+
+   Suggested replacement: “All three displayed issues are historical and resolved; no new curator decision is requested. Original decisions are retained under the November 6 repeat request; current runtime-binding checks and reused evidence are dated separately.”
+
+   The parent reports this clarification applied to its run-local render helper for the final rebuild. I have not inspected that later output. Do not hand-edit the generated report or change the shared generator for this refresh.
+
+2. Finish the already planned dated evidence composition. At this read, the record's leading status and last assessment are dated November 5. The current mediator accurately states that archive verification was ongoing at its read and makes no new-build claim. Preserve those dated statements, append the November 6 assessment and completed artifact facts at final composition, and regenerate the page after the actual build.
+
+   Old leading status: “**Current accepted status (AI, 2026-11-05):** Myunghwan accepted this definition on November 3 and explicitly requested reuse of those decisions for the updated-main cycle on November 5.”
+
+   Suggested current wrapper: “**Current accepted status (AI, 2026-11-06):** Myunghwan accepted this definition on November 3 and requested reuse of those decisions for the November 5 and November 6 refreshes. The maintained-runtime recheck found no new scientific choice; the first-tuned-benchmark recheck remains required.”
+
+   Keep the dated November 5 assessments and exact human words. Record a new UUID/build time only from the completed native build. The parent confirms this final record update and separate dated completion evidence are planned; neither is a renewed scientific decision.
+
+**What passes**
+
+- The outcome leads with the ship recommendation, then validity, value and quality. The current reports support its unchanged task, approximate execution-record fit, measured completed-label boundary, historical ranking signal and preserved future recheck. The higher-ranked operational/timing qualifications remain visible in the current mediator.
+- The only numbered issues remain 1–3, in validity-to-value order, each closed with its original dated human turn. The current review procedure preserves resolved history. Their older prose format is therefore no reason to rewrite them into new option tables, reopen them or manufacture issue 4. No field disagreement is buried in the panel.
+- Every historical panel wrapper is explicitly dated; November 5 focused and November 6 maintained-runtime reports are separate. The draft page has 20 panel sections before this editor is appended. Old pending-result/checksum statements remain historical. Appending this report completes the named current panel; the full blind/debate panel is not represented as newly rerun.
+- Generated page data exactly matches the current definition text. It contains three resolved items, zero open marks and zero field rows. The carried `metricChecked` is dated November 5 and expressly records unchanged-metric acceptance within the November 3 package and reuse request. It claims no separate new metric click. The old ship stores need no rebinding.
+- `identity.json`, `upgrade-delta.json` and `runtime-equivalence.json` support the maintained import from vendor pin `9048f36a1bcf7da3687fde04b18ef79cd7a1201e`, already the actual November 5 source. The definition is byte-identical; frame/order, categories, all six membership arrays, metric specification and numerical-library versions match. Six deterministic scorer fixtures match. This supports reuse of dated evidence without implying a new model comparison.
+- The record and definition retain the formal SPLIT-10 exception, zero recorded unavailable training labels, fast-completer and unobserved reporting-latency limits, selected-cohort and parent/intervention-unit limits, and the required first tuned-run check of family separation, foldwise simple/user-history baselines, probability quality and maturity/latency sensitivity.
+- The current checksum remains `v2:b655fe6b87263768dd5a2e1232484929a22c3364e7daeeaa6b5cb6a30dc4a06d`. The empty `special_features=[]` change explains the historical November 3-to-5 checksum difference. The pre-build README truthfully carries the November 5 UUID/time; it is not evidence of a November 6 build.
+- Existing generic raw-CLI applicability and native float32 neighbour-normalization limits remain qualified. The historical float64 recovery is separately labeled. These accepted boundaries establish no new scientific choice and were not reopened by this review.
+
+**Input identities at review**
+
+| Input | SHA-256 |
+|---|---|
+| REVIEW.md | `ce687447d0c5ccdcc1401b0e1e9c4ab38e2f8ea40333db91f41ab11097ab9903` |
+| dataset.py | `16f04dad621437b6b0d7e3a9d59ed77882641954ec379c640573cf9c31cedd98` |
+| README.md | `80c15bc9f42ccc5d8bda69b52ae2a21d56cb98c8691dd358f0eb0c2a3042f8a3` |
+| Curation record | `b11b1b55ef55eb7eaa8fc360fcc4e96ac983d2d58499f9f3218094c33bbc3fa7` |
+| Draft review-page data.json | `a73783aac27cd169e1c7086844257601b7a43bbc3ee8655198e8c51bbada0844` |
+| identity.json | `3502f67f12b079e986890e094264735ab146d6a4d4f388ada6225aa5cc057a82` |
+| upgrade-delta.json | `c88126fa974ec88cb470b29e643aaea2ada9ec32f08147ab1847392de16343b9` |
+| runtime-equivalence.json | `fd14468af3aa463ace37f0249e1a87988c26524a68111c83af64a18f0511cd24` |
+
+These identities bind the pre-final local draft, not a later page/build or peer installation. The review used no network, GPU, controller, source scan, model fitting, decision-store mutation or subagents. Only this report and its JSON companion were written. No material scientific conclusion or standing procedure changed, so this role needs no separate memory rewrite.
 
 </details>
