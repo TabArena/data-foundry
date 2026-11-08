@@ -3,44 +3,44 @@
 **Outcome:** added. The AI recommends shipping it. Shipped on Andrej's verdict of 2026-11-02, changed on 2026-11-06
 by D11 of the exposure review (issue 5): the target is the claim charge per realized vehicle-year, each period weighted
 by its vehicle-years; and changed on 2026-11-08 by Lennart's calls: the periods split by contract, forced from temporal
-(issue 6), and scored by the uniformly rescaled weighted Tweedie deviance (issue 8). The full re-review of 2026-11-06
+(issue 6), the three contracts that share a registration joined in one group (issue 9), and scored by the uniformly
+rescaled weighted Tweedie deviance (issue 8). The full re-review of 2026-11-06
 under the exposure rules (LEAK-41, MET-14 to MET-16) finds D11's target, weight and features sound. The organisers' own
 files of the 2016 actuarial pricing game: 87,228 periods of cover of fleet vehicles of a French insurer, 2011-2013; the
 target is the period's claim charges summed, net IDA recoveries set to 0, per realized vehicle-year (0 for 95.7% of the
 periods), each period weighted by its vehicle-years in training and scoring; the features are the rating classes and
-the length of cover to the year's end, known at the period's start; grouped 3 x 3 folds by contract over 2011-2013,
-forced from temporal; scored by the uniformly rescaled, exposure-weighted Tweedie deviance (power 1.5) as a stand-in for
+the length of cover to the year's end, known at the period's start; grouped 3 x 3 folds by contract over 2011-2013
+(the three contracts that share a vehicle as one group), forced from temporal; scored by the uniformly rescaled, exposure-weighted Tweedie deviance (power 1.5) as a stand-in for
 the game's market. Like every container with a `sample_weight`, it enters no run before the collection's
 training-weight gate (`BENCHMARK_CHANGES_TODO.md`, "Training weights", "The gate").
 Validity: SEL-1, SEL-2, USE-1 (fit approximate since 2026-11-08: held-out fleets of the same years stand in for next
 year's book), USE-5, LEAK-7, LEAK-37, MET-15, SPLIT-1, SPLIT-9, SPLIT-13 hold; LEAK-10 fixed by LEAK-7 (2026-11-02);
-LEAK-41 holds for the features and the weight (probe 22 on the contract folds under the declared metric: in either arm
-no feature's gain goes through the weight above noise, and the weight as a feature gains 0.37, SD 0.49, in the Tweedie
+LEAK-41 holds for the features and the weight (probe 22 on the shipped folds under the declared metric: in either arm
+no feature's gain goes through the weight above noise, and the weight as a feature gains 0.31, SD 0.94, in the Tweedie
 arm); LEAK-41's last clause, as amended on 2026-11-08 (issue 7), takes the source's floor as the task's population: the
 organisers left out every period shorter than 30 days, about 1.5% of the vehicle-years; SPLIT-8 holds (forced from
 temporal by contract on 2026-11-08, issue 6: the leak test across the folds passes, and on the 2013 periods the forced
-split scores as the valid window does); the exception to SPLIT-10 lapsed with the windows. Probe 23's shared-unit flag
-of 2026-11-08 (a lookup of the exact profile across the contract folds, +0.117) reads as LEAK-18's natural repeats and
-an artefact of the probe's row folds, not a leak (issue 9: with the lookup out of fold by contract, -0.047); LEAK-17
-is open for one registration under three contracts (issue 9).
-Value: TP-4 holds on the declared metric for a fit that keeps its relativities in check (on the contract folds a Tweedie
-GLM beats the weighted constant by 1.39, bootstrap standard error 0.46, on all 9 folds; a regularised Tweedie LightGBM
-by 0.59, 0.58), while untuned models score worse than the constant (an untuned LightGBM 86.84 against 82.63; the task
-probe's families, flag `no_signal`), as the market punished relativities that run too steep (EV-3); TP-9 holds (1,182
-to 1,305 positive charges per test fold); MET-11: the stand-in since 2026-11-08 follows the game's market more closely
-than the Gini it replaces (76 of 84 two-player markets against 44 on the windows of 2013, 225 of 252 against 128 on
-the contract folds).
+split scores no better than the valid window); the exception to SPLIT-10 lapsed with the windows. Probe 23's
+shared-unit flag of 2026-11-08 (a lookup of the exact profile across the contract folds, +0.117) read as LEAK-18's
+natural repeats and an artefact of the probe's row folds, not a leak (issue 9: with the lookup out of fold by contract,
+-0.047; the probe, its folds drawn by group since, finds -0.23 on the shipped folds); LEAK-17 and SPLIT-24 hold: the
+three contracts that share a registration are one group since 2026-11-08 (issue 9).
+Value: TP-4 holds on the declared metric for a fit that keeps its relativities in check (on the shipped folds a Tweedie
+GLM beats the weighted constant by 1.06, bootstrap standard error 0.65, on all 9 folds; a regularised Tweedie LightGBM
+by 0.65, 0.56), while untuned models score worse than the constant (an untuned LightGBM 86.21 against 82.64; the task
+probe's families, flag `no_signal`), as the market punished relativities that run too steep (EV-3); TP-9 holds (1,216
+to 1,271 positive charges per test fold); MET-11: the stand-in since 2026-11-08 follows the game's market more closely
+than the Gini it replaces (76 of 84 two-player markets against 44 on the windows of 2013, 217 of 252 against 136 on
+the shipped folds).
 Quality: CLEAN-14, the four bands of a quantity (the contract's and the vehicle's age, the deductible, the insured
 value) are ordered categories now (they land with the next rebuild), and so is `payment_frequency` (annual <
 semi-annual < quarterly, 2026-11-08, as in the two other pricing tables); LEAK-18 repeated rows natural; the text corrected
 where the panel found it overstated.
 Weighed: the original files +, a real fleet-pricing task +, the family's only commercial-fleet damage table +; weak,
 anonymised covariates -, held-out fleets of the same years standing in for next year's book -.
-Left for Andrej and Lennart: issue 9, opened on 2026-11-08 after probe 23 flagged shared rating profiles across the
-contract folds: they are common cells, not one client under several contracts, so the split by contract stays with a
-note; open is whether to join the three contracts that share one registration (recommended). The split (issue 6), the
-organisers' floor of 30 days (issue 7) and the stand-in metric (issue 8) were settled on 2026-11-08; the build is stale
-until a rebuild (the split, the metric, the ordered bands).
+Left for Andrej and Lennart: nothing. The split (issue 6), the organisers' floor of 30 days (issue 7), the stand-in
+metric (issue 8) and the group of the three contracts that share a registration (issue 9) were settled on 2026-11-08;
+the build is stale until a rebuild (the split and its group column, the metric, the ordered bands).
 
 Changes made after the review panel (AI, 2026-11-01 and 2026-11-02): `exposure` is the length of cover to 31 December
 for every period; the metric is a stand-in for the game's market; the statements the claim audit refuted are corrected;
@@ -66,13 +66,21 @@ summary's split and fit (approximate), the notes on late claims, the splits comm
 measurements are rewritten on the contract folds; the record's split fields follow. The panel's reports describe the
 definition before these changes.
 
-**Main points:** Issue 9 (open, probe 23 of 2026-11-08): the shared rating profiles across the contract folds are no
-leak, so the split by contract stays with a note; also join the three contracts that share a registration (B,
-recommended), or leave them (A)? Issues 1 to 5 are resolved, 2 and 4 superseded by 5; issues 6 to 8 on 2026-11-08 (the
-split by contract, forced from temporal; the rule amended for a selection the source made before release; the
-uniformly rescaled weighted Tweedie deviance as the stand-in). To note before the rebuild: under the new metric untuned
-models and the task probe's families score worse than the weighted constant, and only fits that keep the relativities
-in check (a Tweedie GLM, a regularised LightGBM, a frequency model) beat it.
+Changes made on 2026-11-08 (AI, Lennart's call on issue 9): the group column is `fleet_group`, the contract with the
+contracts that share a registration joined (6168, 6169 and 6170, the only shared registration), 18,035 groups, in
+place of `contract_id`, which leaves the frame with the registration; the grouping definition, the summary's split and
+changes, the splits comment, Decision 2 and the notes' "Dropped:" bullet follow; the bullet on repeated rows says why
+probe 23's flag was no leak; every fold number of the notes, the metric reason and the splits comment is measured again
+on the reshuffled folds (the CC lines keep the numbers of their day).
+
+**Main points:** No issue is open. Issues 1 to 5 are resolved, 2 and 4 superseded by 5; issues 6 to 9 on 2026-11-08
+(the split by contract, forced from temporal; the rule amended for a selection the source made before release; the
+uniformly rescaled weighted Tweedie deviance as the stand-in; the three contracts that share a registration joined in
+one group, the shared rating profiles across the folds natural repeats). To note before the rebuild: under the new
+metric untuned models and the task probe's families score worse than the weighted constant, and only fits that keep
+the relativities in check (a Tweedie GLM, a regularised LightGBM, a frequency model) beat it; on the reshuffled folds
+the GLM's margin over the constant is 1.06 (standard error 0.65) where the folds before gave 1.39 (0.46), so the draw
+of the folds moves it by about a standard error.
 
 **Issues for Andrej and Lennart:**
 
@@ -857,6 +865,16 @@ in check (a Tweedie GLM, a regularised LightGBM, a frequency model) beat it.
      it then reads as the probe's artefact (folds by contract: -0.047, SE 0.042). The run: the exposure review's run
      folder, `pricing_game_2016_french_fleet/apply_2026-11-08/probe23_units/` (`describe.py`, `describe2.py`,
      `lookups.py`, `lookups2.py`, `near_pairs.py`, `consecutive.py`, `shared_vehicle.py`, with their logs).
+
+   **Lennart (2026-11-08, change):** Option B: Also join the contracts that share a registration.
+
+   **Resolved (2026-11-08, Lennart):** B: the group column is `fleet_group`, the contract with the contracts that share
+   a registration joined under the smallest number (6168, 6169 and 6170, the only shared registration in the data;
+   18,035 groups), and the notes say the shared profiles are common cells and probe 23's flag an artefact of its old row
+   folds. Every fold reshuffled and its numbers are measured again: the GLM beats the constant by 1.06 (standard error
+   0.65, on all 9 folds), the rescaled deviance picks the market's winner in 217 of 252 pairs against 136 for the Gini,
+   and probe 23, its lookup folds drawn by group, finds no leak (-0.23 on the test periods with a shared profile, SE
+   0.17).
 
    [^p23]: **SPLIT-8** (Must): a forced split "gets a leak test across the split and the leak probes: does a row share
      its outcome, its unit's outcome or its period's outcome with the other side"; "a leak found is weighed case by

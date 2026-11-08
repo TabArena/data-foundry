@@ -6,6 +6,8 @@ checked_by:
 data_foundry_status:
 - 'DF: Yes'
 - BeyondArena
+- WIP (DF)
+claimed_by: Lennart
 suggestion: 'Yes'
 decision_markers:
 - Outdated
@@ -47,6 +49,8 @@ CC (2026-10-21, Lennart): proposal accepted: the fallback rmse on the log transc
 CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the original scale (target_transform).
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `x264_ugc_encoding_time` (TBD -> Yes, priority 3). Each is screened in its own record; this record's verdict stays the curator's.
+
+**Assessment (AI, 2026-11-08):** one vote per unit (the scan of 2026-11-08 after boreal_postfire_lichen_biomass's issue 7): 80 of the 1,099 videos were transcoded to the full grid of 841 output settings and hold 97.8% of the 68,784 jobs; 1,018 videos have one job and would take 93% of the weight if each video counted once. The scheduler acts per job. Counting each video once ranks 8 untuned models at Kendall tau 0.90 per split (lowest 0.79) and 0.93 for the ranking by the mean over the 9 shipped splits, the same best model on 3 of 9 (random forest and LightGBM swap at the top). Open for Lennart as issue 1 of the folder's REVIEW.md; recommended: per job, with a note that names the 80 full-grid videos (B).
 
 ## Reference
 

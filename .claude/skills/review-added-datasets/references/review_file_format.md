@@ -196,7 +196,10 @@ block at most, and none when its folder exists: then the issues belong in the fo
 
 ## Items across datasets
 
-The working copy's own `REVIEW.md` holds the items that span datasets:
+The working copy's own `REVIEW.md` holds the items that span datasets: one decision for many datasets at once (a
+rule, a framework change, a family stance). A choice taken per dataset goes into each dataset's own `REVIEW.md` as an
+issue, one per dataset, even when one scan found it in several; a cross-dataset item then covers only the rule or code
+change itself, if any (Lennart, 2026-11-08: "too many per dataset choice in the across dataset tab"):
 
 ```markdown
 # Across datasets

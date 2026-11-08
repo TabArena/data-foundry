@@ -59,9 +59,9 @@ changes no more often going into a loss term (LEAK-41's reporting clause); the t
 records no term length, so the share of terms cut short cannot be given, that no feature carries a cut, and that the
 target stays per contract (MET-14). No change to the data, the split, the metric or the features.
 
-**Main points:** Open: the type of `var1`, `var3`, `var7` and `var8`: unordered categories as shipped, ordered by
-code, or numbers, which one look at the Kaggle data page settles (4). Resolved: `var11` a feature and the Gini's weight,
-MET-2 amended (2, 2026-11-02); its copy `var11_weight` the scoring column the metric reads (3, 2026-11-06).
+**Main points:** Open: none. Resolved: `var1`, `var3`, `var7` and `var8` ship as unordered categories (4, 2026-11-08);
+`var11` a feature and the Gini's weight, MET-2 amended (2, 2026-11-02); its copy `var11_weight` the scoring column the
+metric reads (3, 2026-11-06).
 
 **Issues for Andrej and Lennart:**
 
@@ -195,6 +195,9 @@ MET-2 amended (2, 2026-11-02); its copy `var11_weight` the scoring column the me
    categorical" names the four as ordered by their codes, with the data page's wording. On C, convert the four to
    float after `Z` becomes missing and take them out of `CATEGORICAL`; the same bullet says so. On B or C: `dataset
    check`, the dtype probe, a CLEAN-14 Cases row, a `CC` line in the record, the working copy's `CHANGELOG.md`.
+
+   **Resolved (2026-11-08, Lennart):** A, as implemented: `var1`, `var3`, `var7` and `var8` ship as unordered categories; the code comment that called them ordinal is reworded.
+
 
    [^4a]: **CLEAN-14** (Should), 2026-10-31, Lennart: "we keep the ordinal from the context and logic, not from target
      information".

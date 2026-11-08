@@ -8,6 +8,8 @@ data_foundry_status:
 - 'DF: Yes'
 - TabArena (v0.1)
 - BeyondArena
+- WIP (DF)
+claimed_by: Lennart
 suggestion: 'Yes'
 decision_markers:
 - Selection Bias
@@ -48,6 +50,8 @@ CC (2026-10-27, Lennart): marker Selection Bias, from the AI review of PR #16: S
 CC (2026-10-27, Lennart): fit approximate (was direct): a screen meets mostly materials that do not superconduct, so the selection is a known gap (USE-8, amended on the review of PR #16); the Selection Bias marker stays.
 
 **Assessment (AI, 2026-10-31):** better data: the data-scouting run of 2026-10-30/31 found better data for the same task: `supercon_mdr_2024` (TBD -> Yes, priority 2), `systematically_verified_thermoelectric_zt` (TBD -> Yes, priority 2). Each is screened in its own record; this record's verdict stays the curator's.
+
+**Assessment (AI, 2026-11-08):** one vote per unit (the scan of 2026-11-08 after boreal_postfire_lichen_biomass's issue 7): the per-row RMSE counts a composition as often as SuperCon lists it, 1 to 110 times (YBa2Cu3O7 110); the 2,422 compositions with two or more entries hold 40% of the 21,263 rows, and all 81 inputs are equal within 99.8% of them, so a model predicts per composition. Weighting each entry by 1 over its composition's entries (each composition counts once) ranks 8 untuned models at Kendall tau 0.98 per split (lowest 0.93) and 0.93 for the ranking by the mean over the 9 shipped splits, the same best model on 9 of 9. Open for Lennart as issue 1 of the folder's REVIEW.md; recommended: each composition counts once (B), RMSE already takes the weight.
 
 ## Reference
 

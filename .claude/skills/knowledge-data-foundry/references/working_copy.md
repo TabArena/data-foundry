@@ -29,7 +29,9 @@ While a dataset has questions for the curator, they live in `<folder>/REVIEW.md`
 a short outcome, the open issues numbered, the alternatives with their numbers, the record fields that disagree with
 the definition, and public evidence links. The format is the review skill's
 [review_file_format.md](../../review-added-datasets/references/review_file_format.md). Cross-dataset items go into a
-root `datasets/_dev/tabarena-v0pt2/REVIEW.md` while they are open. A record without a folder keeps its open issues in
+root `datasets/_dev/tabarena-v0pt2/REVIEW.md` while they are open: only what is decided once for many datasets (a rule,
+a framework change, a family stance). A choice taken per dataset, even one a scan found in several, goes into each
+dataset's own `REVIEW.md` as its own issue (Lennart, 2026-11-08). A record without a folder keeps its open issues in
 an `**Open issues (AI, date):**` block of the record.
 
 When the curator settles an issue, its decision goes into `dataset.py` (code and `curation_comments`) and the record

@@ -41,9 +41,8 @@ warning for -1 in nine columns is accepted: -1 is a change of -100%, and it pred
 (f648: 14.4% against 8.5%). The metric reason adds that the Gini also leans on the tail (the 1% of loans with the
 largest losses hold 38-46% of a window's loss sum, against 71-82% of RMSE's squared error).
 
-**Main points:** Open: issue 4, remove the record's `Data Quality Issue` marker, now that the chain pattern it stands
-for is refuted (the re-review's data support B)? Issues 1 to 3 are settled (Andrej, 2026-11-03); the re-review of
-2026-11-08 adds no issue.
+**Main points:** Open: none. Settled on 2026-11-08: issue 4, the record's `Data Quality Issue` marker removed (the chain
+pattern it stood for is refuted, the leak columns are dropped). Issues 1 to 3 are settled (Andrej, 2026-11-03).
 
 **Issues for Andrej:**
 
@@ -248,6 +247,11 @@ for is refuted (the re-review's data support B)? Issues 1 to 3 are settled (Andr
 
    **Notes for the AI:** on B, remove `Data Quality Issue` from `decision_markers` through the store API, a CC line
    naming the refuted chain pattern and the dropped leak columns, and `validate`.
+
+   **Lennart (2026-11-08, change):** Option B: Remove the marker.
+
+   **Resolved (2026-11-08, Lennart):** B: the record's `Data Quality Issue` marker is removed, with a CC line naming the settled chain pattern and the dropped leak columns.
+
 
    [^ld4a]: records.md, `decision_markers`: "Issue flags ...; a clean dataset has none". selection.md, `Data Quality
      Issue`: "damage that cannot be undone or repaired".

@@ -44,10 +44,10 @@ blocks 5-6 are cut mostly at a date; the metric's identity is stated above the f
 `BonusMalus` is blank and how small the signal is; the notes say a method must use the weight. The panel's reports
 quote the definition before these changes.
 
-**Main points:** Open: issue 12, ship the claims per year insured (as implemented) or the claim cost per year insured,
-one of the two only. Settled on 2026-11-08: the tag `Two-Regime Zeros` stays and bemtpl97 gets it, as the
-tag describes the target's distribution (issue 10); the random split stays, with the note on the one rating profile
-behind its gap to a split grouped on identical rating factors (issue 11).
+**Main points:** Open: none. Settled on 2026-11-08: one task, the claims per year insured, and the claim cost per year
+insured is not created (issue 12); the tag `Two-Regime Zeros` stays and bemtpl97 gets it, as the tag describes the
+target's distribution (issue 10); the random split stays, with the note on the one rating profile behind its gap to a
+split grouped on identical rating factors (issue 11).
 
 **Issues for Lennart:**
 
@@ -619,6 +619,9 @@ behind its gap to a split grouped on identical rating factors (issue 11).
    content order); `dataset check`, the task probe and probe 22 with both objectives (LEAK-41: the weight alone scores
    0.32 Gini on the cost per year, above every honest model, and `Exposure` as a feature adds +0.13); the CC line; the
    tag stays; then ask whether bemtpl97 follows.
+
+   **Resolved (2026-11-08, Lennart):** A, as implemented: one task, the claims per year insured; the claim cost per year insured is not created (no duplicate).
+
 
    [^f12-ask]: Lennart, 2026-11-08, on D12: "fremtpl2's claim-amount task -> which task is more representative of the
      real use case? use that one and the other is not created as we dont want to have duplicates".

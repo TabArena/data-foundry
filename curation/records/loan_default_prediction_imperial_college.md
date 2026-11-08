@@ -8,8 +8,6 @@ data_foundry_status:
 claimed_by: Lennart
 suggestion: 'Yes'
 priority: 1
-decision_markers:
-- Data Quality Issue
 tags:
 - Two-Regime Zeros
 - Non-IID (Temporal)
@@ -141,6 +139,8 @@ CC (2026-11-08, Lennart): the declared metric (`normalized_gini`) is checked, as
 **Assessment (AI, 2026-11-08):** the competition files are in the warehouse, so `dataset check` and the re-review ran; the Assessment of 2026-11-08 above (both waiting for the files) is superseded. Changes from the panel, no decision needed: the check warning `dataset_missing_value_sentinel` is accepted, since -1 in f72, f586-f588, f648-f651 and f763 is a change of -100%, not a missing code (it predicts the loss differently from missing: f648 14.4% against 8.5%; CLEAN-10, a value kept as in home_credit_default_risk); the exposure bullet and `task_summary.predicted` mark "a share of the loan's amount" as our reading of the host's "loss = loss given default = scaled number between 0 and 100" (topic 6862), and the equal-notional sentence rests on that reading; the exposure bullet adds that the planned term varies by a factor of 1 to 3 and ships only as the maturity-range code f4 (MET-14); the metric reason adds that the Gini also leans on the tail (the 1% of loans with the largest losses hold 38-46% of a window's loss sum). `dataset check`: 0 errors, 0 warnings. The notes above that call the target "the loss as a percentage of the notional" give our reading too, not the host's words.
 
 **Assessment (AI, 2026-11-08):** review panel (focused: claim auditor, column auditor, mediator; re-review under LEAK-41, MET-14 to MET-16, after the raw data arrived): ship after changes (wording and one accepted warning, now made); disputed: none; for the curator: issue 4 (remove `Data Quality Issue`; both auditors' data support B: `f528 - f527` ranks a loss at ROC AUC 0.916 on the raw file and is dropped, and a chain's last row has a loss in 9.42% of cases against 9.38%).
+
+CC (2026-11-08, Lennart): issue 4, B: the `Data Quality Issue` marker removed: the chain pattern it was set for is refuted (a chain's last row has a loss as often as its other rows, 9.42% against 9.38%), and the leak columns of the screening's other risk are dropped (f527, f528 and their block).
 
 ## Reference
 

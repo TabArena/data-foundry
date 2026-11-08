@@ -179,6 +179,10 @@
   accepted with that reason. A Cases row in metrics.md for each, next to boreal's.
   Decision needed: go ahead for both, for one, or keep per row (pancreatic stays per row if the use case is a person
   tested again and again, every test a decision).
+  **Lennart (2026-11-08, discuss):** same as for (2)
+  **Resolved (2026-11-08, Lennart):** opened as per-dataset issues: superconductivity issue 1 (recommended: each
+  composition counts once) and pancreatic_cancer_mouse_detection issue 1 (recommended: each mouse counts once; per
+  sample if the use case is a person tested again and again).
 
 - **Which unit does the score count once in dementia_prediction, asp_potassco_classification and
   video_transcoding_time_prediction?** The same scan. In these three the rows of a unit are not replicates (their
@@ -202,8 +206,16 @@
   names the imbalance (video's per-row score is in effect the grid of 80 videos).
   Decision needed: per row or one vote per unit, for each of the three (for dementia also: score only each test
   person's first visit).
+  **Lennart (2026-11-08, discuss):** open this as per dataset issues not here, remeber this in the future here ar etoo
+  many per dataset choice in the across dataset tab!
+  **Resolved (2026-11-08, Lennart):** opened as per-dataset issues: dementia_prediction issue 1 (recommended: each
+  person counts once, or C, first visits only), asp_potassco_classification issue 5 (recommended: per instance with a
+  note) and video_transcoding_time_prediction issue 1 (recommended: per job with a note). Per-dataset choices go into
+  each dataset's REVIEW.md from now on (review_file_format.md, working_copy.md).
 
 - **Correct african_credit_scoring_challenge's `row` text and notes on co-funded loans?** The `row` text and the notes (line 153) say a loan co-funded with a second lender gives two rows; in the shipped frame that never happens (52,826 rows and 52,826 loan ids), since the kept product has one lender (found by the scan above).
   Implemented: nothing.
   Proposal: say one row per loan and drop the co-funding sentence; text only, the README regenerated.
   Decision needed: go ahead or leave as is.
+  **Resolved (2026-11-08, Lennart):** go ahead, applied: the `row` text, the notes, the splits comment and decision
+  table 4 now say one row per loan; README regenerated, checksum changed (not built).

@@ -6,6 +6,8 @@ checked_by:
 - Lennart
 data_foundry_status:
 - 'DF: Yes'
+- WIP (DF)
+claimed_by: Lennart
 suggestion: 'Yes'
 priority: 2
 tags:
@@ -68,3 +70,7 @@ CC (2026-10-26, Lennart): issue 8, option (a): add the history feature a data sc
 **Assessment (AI, 2026-10-26):** issue 8 (a) applied: `earlier_loans`, the customer's loans in the release disbursed on an earlier day (Train.csv and Test.csv's Kenyan rows, any product, no label read); a count of earlier settled defaults is 0 in every row and is not added. ROC AUC over the six windows: the count alone 0.724; tuned LightGBM 0.698 (before 0.633); CatBoost default 0.673 (0.655), tuned 0.655 (0.651); TabPFN v3.5 0.724 (0.675 without the feature). Task probes: linear 0.704, LightGBM 0.660, random forest 0.647; the `unstable` flag is gone, `no_spread` and `drift_baseline` remain. Leak probes: nothing new. Recommendation on the page: ship.
 
 CC (2026-10-26, Lennart): verdict ship (with earlier_loans, issue 8).
+
+CC (2026-11-08, Lennart): text fix (cross-dataset item, go ahead): one row per loan. The `row` text no longer says that a loan funded together with a second lender gives two rows, and the notes no longer say that `New_versus_Repeat` can differ between a loan's two rows; the same claim is gone from the splits comment ("A row is one lender's part of a loan, so a two-lender loan counts twice") and from decision table 4 ("A row is one loan"). Text only; the `row` text changes the checksum (not built).
+
+**Assessment (AI, 2026-11-08):** the kept product has one lender: the shipped frame has 52,826 rows and 52,826 loan ids, and Train.csv's Type_1 rows 61,723 rows, 61,723 loan ids and one lender_id; the loans with two rows (4,268 rows) are all of other products (Type_7, Type_4, Type_5, ...). `dataset check`: 0 errors, 0 warnings, 2 info.

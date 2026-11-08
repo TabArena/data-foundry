@@ -1,5 +1,53 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-08, PR #47: Lennart's marks on the final board applied (no container built)
+
+Lennart's marks of 2026-11-08 on the final board of PR #47: fremtpl2 12 (A), liberty 4 (A), loan_default 4 (B),
+allstate 6 (B) and 7 (A), pricing_game_2016 9 (B); the three items of "From the review of 2026-11-08" closed, the one
+vote per unit as per-dataset issues at his ask ("open this as per dataset issues not here"). No container was built.
+Every issue of the 20 PR #47 datasets is settled; five per-dataset issues are new.
+
+- `fremtpl2`, issue 12 (A, Lennart): one task, the claims per year insured; the claim cost per year insured is not
+  created. Text only.
+- `liberty_mutual_fire_peril_loss_cost`, issue 4 (A, Lennart): `var1`, `var3`, `var7` and `var8` stay unordered
+  categories; the code comment that called them ordinal is reworded. dataset check clean.
+- `loan_default_prediction_imperial_college`, issue 4 (B, Lennart): the record's `Data Quality Issue` marker is
+  removed, with a CC line naming the settled chain pattern and the dropped leak columns. Record only.
+- `allstate_claim_prediction_challenge_1m`, issue 6 (B, Lennart: "Option B: The renewal book."): only the cars insured
+  in 2005 too stay: 2,754,936 of the 4,447,729 vehicle-years of 2006, those on the policy at the start of the year
+  (1.5M of whole households sampled, claim rate 0.82%). The filter reads a fact of 2005, never presence in 2007.
+  `vehicle_insured_2005` is dropped as constant (31 features) and the history is never missing. The task summary,
+  notes, decision 1 (now with the same cars' 2007 rate) and splits comment are restated. Untuned LightGBM scores 0.106
+  / 0.091 / 0.061 Gini on the shipped folds against 0 for the dummy; the leak probes and probe 23 are clean. Issue 7
+  (A, Lennart): the target stays per contract where a claim ends the cover, and the notes bound the share cut short.
+  Two MET-14 Cases rows. dataset check 0 errors, 0 warnings; README regenerated.
+- `pricing_game_2016_french_fleet`, issue 9 (B, Lennart): the group column is `fleet_group`, the contract with the
+  contracts that share a vehicle's registration joined under the smallest number (registration 32348 under contracts
+  6168, 6169 and 6170, the only shared registration): 18,035 groups in place of `contract_id`'s 18,037; `contract_id`
+  and `vehicle_id` leave the frame after building it. Every fold reshuffled: the fold numbers of the notes, the metric
+  reason and `splits_comment` are measured again (the GLM beats the weighted constant by 1.06, SE 0.65, on all 9 folds,
+  1.39 before; the market's winner in 217 of 252 pairs against 136 for the Gini), and the task, leak, group, probe 22
+  and probe 23 runs repeated (probe 23 with lookup folds by group: no flag). "One of 68,485 has two" contracts corrected
+  to three. SPLIT-24 gets a Cases row; the SPLIT-14, MET-11 and probe 23 rows get the new numbers. dataset check 0
+  errors, 0 warnings; README regenerated; the build stays stale.
+  [Record](../../../curation/records/pricing_game_2016_french_fleet.md).
+- `superconductivity`: REVIEW.md opened, issue 1: count each composition once in the RMSE, or each SuperCon entry (the
+  one-vote-per-unit scan of 2026-11-08; Kendall tau 0.98 per split). Definition unchanged.
+- `pancreatic_cancer_mouse_detection`: REVIEW.md opened, issue 1: count each mouse once in the ROC AUC, or each serum
+  sample (tau 0.66 per split, lowest -0.07). Definition unchanged.
+- `dementia_prediction`: REVIEW.md opened, issue 1: per visit, one vote per person, or first visits only (a new
+  measurement of the scan's 8 models on all 60 splits for the last). Definition unchanged.
+- `asp_potassco_classification`: REVIEW.md opened, issue 5 (numbered after issues 1-4 of the unmerged PAR10 branch,
+  whose file holds marks): per instance with a note, or one vote per problem class. Definition unchanged.
+- `video_transcoding_time_prediction`: REVIEW.md opened, issue 1: per job with a note, or one vote per video. Definition
+  unchanged.
+- `african_credit_scoring_challenge`: text fix (Lennart, go ahead on the item): one row per loan. The `row` text, a
+  note, the splits comment and decision table 4 no longer say a co-funded loan gives two rows (52,826 rows, 52,826 loan
+  ids). The checksum changes with the `row` text; not built. dataset check 0 errors, 0 warnings.
+- Rules: `review_file_format.md` and `working_copy.md` say that a choice taken per dataset goes into each dataset's
+  REVIEW.md, never into the items across datasets (Lennart, 2026-11-08). SPLIT-24 gets pricing_game_2016's Cases row;
+  its SPLIT-14, MET-11 and probe 23 rows get the numbers of the new folds; MET-14 gets allstate's two rows.
+
 ## 2026-11-08, PR #47: follow-ups and the Kaggle three's re-review (no container built)
 
 Lennart's follow-ups to the settled board (2026-11-08): the profile flag on pricing_game_2016, the reach of one vote per

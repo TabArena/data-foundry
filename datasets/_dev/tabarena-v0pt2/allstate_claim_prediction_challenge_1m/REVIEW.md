@@ -1,29 +1,27 @@
 # allstate_claim_prediction_challenge
 
-**Outcome:** added as `allstate_claim_prediction_challenge_1m`. The AI recommends shipping it once issue 6 is decided:
-the focused re-review of 2026-11-08 under the exposure rules, run once the competition's files were in the warehouse,
-found that about 38% of the rows are cars that joined during 2006 and were on risk for about half of it, and recommends
-keeping only the cars on the policy at the start of 2006. The source is Allstate's Kaggle competition (2011): one row
-per insured vehicle and calendar year, the target its bodily-injury liability claim payments of 2006, adjusted by
-Allstate for non-vehicle effects by an undisclosed rule (0 for 99.29% of the rows), shipped as log1p and scored by the
-competition's normalized Gini on the amount. The inputs are the vehicle's and the policy's anonymised characteristics
-and the household's and the car's record of 2005 as counts; 1.5M of the 4.4M vehicle-years of 2006 are sampled as whole
-households, split by household and tagged as forced from temporal. Validity: USE-1 holds (approximate fit); LEAK-41
-holds: no column is set or cut after the rating (the in-year vehicle count stays dropped, `household_vehicles_carried`
-does not react to 2006 claims, the vehicle attributes are fixed across years); LEAK-10 holds for the five 2005-history
-columns; LEAK-24 triggered by the 2007 claims, fixed by dropping 2007 (issue 2); SPLIT-8 holds (no household on both
-sides of a fold; probe 23's +0.035 came from drawing rows, its fixed form gives +0.018, SE 0.013); MET-14 departed
-from: the target per row keeps a part year for the 38% of rows whose start is not released, and no rate can be built
-without an exposure (issue 6), and its per-contract clause is not met word for word where a claim ends the cover (issue
-7); MET-15 and MET-16 hold (no weight; the competition's Gini is unweighted); MET-1 to MET-4 hold (the scorer equals the
-Gini on the amount, a constant scores 0). Value: TP-2, a small signal. The task probe flags `no_signal` and `unstable`,
-which read an R^2-type skill (EV-3); on the declared Gini its random forest scores 0.095 and beats the dummy on 3 of 3
-splits (SE 0.015), and untuned LightGBM scores 0.087 / 0.102 / 0.058. But `vehicle_insured_2005`, which marks the part
-years, scores 0.046 to 0.052 alone, and trained and tested on the carried rows the same LightGBM scores 0.063 / 0.057 /
-0.003 (one untuned run, to be measured again after any change). Quality: the notes' wrong statements are fixed (below);
-`OrdCat` stays categorical (settled). Weighed: Allstate's own competition +, a real pricing task +, 2.75M renewal rows
-(above the row budget) +, an undisclosed adjustment -, a weak signal -, no exposure and no dates -. Left for Andrej and
-Lennart: issues 6 and 7.
+**Outcome:** added as `allstate_claim_prediction_challenge_1m`. The AI recommends shipping it: on Lennart's marks of
+2026-11-08 the rows are the 2006 renewal book, the cars on the policy at the start of the year (issue 6, B), and the
+target stays per contract where a claim ends the cover (issue 7, A). The source is Allstate's Kaggle competition (2011):
+one row per insured vehicle and calendar year, the target its bodily-injury liability claim payments of 2006, adjusted
+by Allstate for non-vehicle effects by an undisclosed rule (0 for 99.18% of the rows), shipped as log1p and scored by
+the competition's normalized Gini on the amount. The inputs are the vehicle's and the policy's anonymised
+characteristics and the household's and the car's record of 2005 as counts; 1.5M of the 2.75M vehicle-years of the
+renewal book (61.9% of 2006; the cars that joined during 2006 are left out) are sampled as whole households, split by
+household and tagged as forced from temporal. Validity: USE-1 holds (approximate fit); LEAK-41 holds: no column is set
+or cut after the rating, and the rows are selected on a fact of 2005, never on presence in 2007; LEAK-10 holds for the
+four 2005-history columns; LEAK-24 triggered by the 2007 claims, fixed by dropping 2007 (issue 2); SPLIT-8 holds (no
+household on both sides of a fold; probe 23 on the rebuilt folds finds no period gain and no shared-unit gain, -0.005
+with SE 0.024 for the profile lookup); MET-14 holds: the part years of the cars that joined during 2006 are left out
+(issue 6), and the per-contract clause is confirmed where a claim ends the cover (issue 7); MET-15 and MET-16 hold (no
+weight; the competition's Gini is unweighted); MET-1 to MET-4 hold (the scorer equals the Gini on the amount, a constant
+scores 0). Value: TP-2, a small signal: untuned LightGBM scores 0.106 / 0.091 / 0.061 on the shipped folds against 0 for
+the dummy (random predictions SD 0.023 to 0.025), 0.022 to 0.106 over nine folds; the task probe flags `no_signal` and
+`unstable`, which read an R^2-type skill (EV-3), and on the declared Gini its LightGBM beats the dummy on 3 of 3 splits
+(+0.037, SE 0.004, sides capped at 200,000 rows). Quality: the notes' wrong statements are fixed; `OrdCat` stays
+categorical (settled). Weighed: Allstate's own competition +, a real pricing task +, 2.75M renewal rows (above the row
+budget) +, an undisclosed adjustment -, a weak signal -, no exposure and no dates -, new business untested -. Nothing is
+left to decide.
 
 Changes made after the review panel (AI, 2026-11-01):
 
@@ -64,10 +62,18 @@ are gone) and says why the target stays per contract for these cuts; the history
 new households' 0.50% and part of the history's lift measure the shorter term, not the claim record alone. `dataset
 check`: 0 errors, 0 warnings. The record marks its part-year statement of 2026-10-30 superseded.
 
-**Main points:** open: which rows the task holds, only the cars on the policy at the start of 2006 (recommended) or all
-rows as an exception (6), and whether the target stays per contract where a claim ends the cover (7). Resolved on
-2026-11-03: 2007 stays dropped (2), the 2006 renewal book with the 2005 history (3), the Gini regression (4),
-households at random (5); verdict ship (2026-11-03), which issue 6 may change.
+Changed on Lennart's marks of 2026-11-08: the rows are the 2006 renewal book, the 2,754,936 cars insured in 2005 too
+(61.9% of the 4,447,729 vehicle-years of 2006; issue 6, B), filtered in `_clean` after the history is built and before
+the sampling; `vehicle_insured_2005` left as constant and the history is never missing. `row`, `known`, `changes`,
+`fit_reason`, the question, the notes, decision 1 (now with the same cars' 2007 rate) and the splits comment restate the
+book's numbers. `household_vehicles_carried`, which had lowered the score on all rows, now adds +0.001 to +0.009 on 3 of
+3 folds and stays. The exposure paragraph gives the cuts by claims on the book and names the confirmation of issue 7
+(A). `dataset check`: 0 errors, 0 warnings.
+
+**Main points:** nothing open. Resolved on 2026-11-08 (Lennart): the rows are the 2006 renewal book, only the cars on
+the policy at the start of the year (6), and the target stays per contract where a claim ends the cover (7). Resolved on
+2026-11-03: 2007 stays dropped (2), the 2006 renewal book with the 2005 history (3), the Gini regression (4), households
+at random (5); verdict ship (2026-11-03).
 
 **Issues for Andrej and Lennart:**
 
@@ -564,6 +570,15 @@ households at random (5); verdict ship (2026-11-03), which issue 6 may change.
      weight (such as full-year rows only).
    [^6d]: **TP-2** (Should): a small but real signal is no reason to retire, and neither is a cutoff on the best skill.
 
+   **Lennart (2026-11-08, change):** Option B: The renewal book.
+
+   **Resolved (2026-11-08, Lennart):** B, the renewal book: only the cars insured in 2005 too stay (2,754,936 of the
+   4,447,729 vehicle-years of 2006, 1.5M of whole households sampled), selected on a fact of 2005 and never on presence
+   in 2007, and `vehicle_insured_2005` left as constant. Rebuilt and probed again: untuned LightGBM scores 0.106 / 0.091
+   / 0.061 on the shipped folds against 0 for the dummy (random predictions SD 0.023 to 0.025),
+   `household_vehicles_carried` now adds on 3 of 3 folds and stays, the leak probes and probe 23 find nothing, and
+   `dataset check` gives 0 errors and 0 warnings.
+
 7. **Keep the target per contract for the cars a claim takes off the cover?**
 
    * **Problem:**
@@ -619,6 +634,12 @@ households at random (5); verdict ship (2026-11-03), which issue 6 may change.
      like the full ones; the notes give the share cut short and the most a price per year in force would differ."
    [^7b]: **LEAK-10** (Must) with **LEAK-41** (Must), the Cases row on a time on risk cut short by the outcome: where
      the cut cannot be located and is no denominator, LEAK-10's second clause applies; no column here carries it.
+
+   **Resolved (2026-11-08, Lennart):** A, confirmed as implemented: the target stays per contract where a claim ends the
+   cover, the insurer's cost of the cover it wrote, counted once. On the renewal book the notes give the bounds (at most
+   39.3% of its cars not seen in 2007; 15.8% of the cars of households that continued are gone and claimed at 1.39%
+   against 0.72%) and name the confirmation; the record's CC line records it, and the Cases row under MET-14 (the cut
+   caused by a claim, distinct from spanish_motor_insurance_2015_2018's lapses) is the main session's.
 
 **Review panel:** ship after changes, once issue 6 is decided (mediator). Tier focused, re-review of 2026-11-08 under
 LEAK-41, MET-14 to MET-16, after the raw data arrived: the claim auditor, the column auditor and the mediator ran, with
