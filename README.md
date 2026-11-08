@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-08 17:05 UTC: 125 claim(s) (Andrej 1, Lennart 105, Myunghwan 19).
+As of 2026-11-08 17:47 UTC: 124 claim(s) (Andrej 1, Lennart 104, Myunghwan 19).
 
 ## Andrej
 
@@ -40,7 +40,6 @@ As of 2026-11-08 17:05 UTC: 125 claim(s) (Andrej 1, Lennart 105, Myunghwan 19).
 | `chile_school_dropout_mineduc` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `cns_tumor_methylation_classification` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `cook_county_residential_sales` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review: wide non-bio and 2M+ lists |
-| `customer_retention_in_the_media_industry_datathon` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review: wide non-bio and 2M+ lists |
 | `data_fusion_2026_guardian` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `dementia_prediction` | add | 2026-11-08 | 2026-11-15 |  |
 | `desi_dr1_star_galaxy_quasar` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
