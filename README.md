@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-08 16:54 UTC: 85 claim(s) (Andrej 1, Lennart 65, Myunghwan 19).
+As of 2026-11-08 17:05 UTC: 104 claim(s) (Andrej 1, Lennart 84, Myunghwan 19).
 
 ## Andrej
 
@@ -15,12 +15,14 @@ As of 2026-11-08 16:54 UTC: 85 claim(s) (Andrej 1, Lennart 65, Myunghwan 19).
 | Dataset | Stage | Since | Until | Note |
 |---|---|---|---|---|
 | `1000_cameras` | triage | 2026-10-31 | 2026-11-07 (expired) | data-scouting run: Better data lines and cleanup notes |
+| `aaia14_fire_service_injury_risk` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review: new candidates (wide non-bio, 2M+ rows) |
 | `aegis_bronchial_airway_lung_cancer` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `african_credit_scoring_challenge` | add | 2026-11-08 | 2026-11-15 |  |
 | `allstate_claim_prediction_challenge` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `anes_voting_2026` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `asp_potassco_classification` | add | 2026-11-08 | 2026-11-15 |  |
 | `australian_vehicle_insurance_2004_2005` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
+| `azure_vm_lifetime_resource_central` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review: new candidates (wide non-bio, 2M+ rows) |
 | `backblaze_hard_drive_failure` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `bacteria_id_raman` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `bank_marketing` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
@@ -28,6 +30,7 @@ As of 2026-11-08 16:54 UTC: 85 claim(s) (Andrej 1, Lennart 65, Myunghwan 19).
 | `boreal_postfire_lichen_biomass` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `bosch_production_line_performance` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `cesnet_os_fingerprinting_2024` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
+| `cesnet_quic22_service_classification` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review: new candidates (wide non-bio, 2M+ rows) |
 | `chicago_taxi_trip_duration` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `chile_school_dropout_mineduc` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `cns_tumor_methylation_classification` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
@@ -35,25 +38,37 @@ As of 2026-11-08 16:54 UTC: 85 claim(s) (Andrej 1, Lennart 65, Myunghwan 19).
 | `dementia_prediction` | add | 2026-11-08 | 2026-11-15 |  |
 | `desi_dr1_star_galaxy_quasar` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `driams_antimicrobial_resistance` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
+| `ecls_k2011_later_achievement` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review: new candidates (wide non-bio, 2M+ rows) |
+| `ember2024_malware_detection` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review: new candidates (wide non-bio, 2M+ rows) |
 | `eumtpl` | triage | 2026-11-06 | 2026-11-13 | exposure rules (MET-14/15) note; ausprivauto0405 duplicate check |
 | `facebook_recruiting_human_or_robot` | triage | 2026-10-31 | 2026-11-07 (expired) | screening (data-scouting run 2026-10-30/31) |
 | `fannie_mae_single_family_loan_performance` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `fl2000` | triage | 2026-10-31 | 2026-11-07 (expired) | data-scouting run: Better data lines and cleanup notes |
+| `fmcsa_roadside_inspection_out_of_service` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review: new candidates (wide non-bio, 2M+ rows) |
+| `fragile_families_challenge` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review: new candidates (wide non-bio, 2M+ rows) |
+| `france_dvf_property_sales` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review: new candidates (wide non-bio, 2M+ rows) |
 | `freddie_mac_single_family_default` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `frempl_french_motor_personal_line` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `fremtpl2` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `g_research_crypto_forecasting` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `genomic_prediction_soy_yield` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
+| `github_pull_request_acceptance` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review: new candidates (wide non-bio, 2M+ rows) |
 | `gse40279_methylation_age` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
+| `gse55763_methylation_age` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review: new candidates (wide non-bio, 2M+ rows) |
+| `kdd_cup_09_orange_large` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review: new candidates (wide non-bio, 2M+ rows) |
 | `kumc_inpatient_aki_prediction` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `liberty_mutual_fire_peril_loss_cost` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `loan_default_prediction_imperial_college` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
+| `mh_1m_android_malware` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review: new candidates (wide non-bio, 2M+ rows) |
+| `microsoft_malware_prediction` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review: new candidates (wide non-bio, 2M+ rows) |
 | `milk_nir_composition` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `msha_mine_injury_frequency` | triage | 2026-11-06 | 2026-11-13 | exposure rules (MET-14/15) note; ausprivauto0405 duplicate check |
+| `nchs_linked_birth_infant_death` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review: new candidates (wide non-bio, 2M+ rows) |
 | `noaa_afsc_bottom_trawl_survey_cpue` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `noaa_storm_events_damage` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `ny_wcb_assembled_claims` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `pancreatic_cancer_mouse_detection` | add | 2026-11-08 | 2026-11-15 |  |
+| `pover_t_tests_household_poverty` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review: new candidates (wide non-bio, 2M+ rows) |
 | `ppnn_ecmwf_t2m_postprocessing_germany` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `pricing_game_2016_french_fleet` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `pricing_game_2017_french_mtpl` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
@@ -62,7 +77,9 @@ As of 2026-11-08 16:54 UTC: 85 claim(s) (Andrej 1, Lennart 65, Myunghwan 19).
 | `sarcoma_methylation_classification` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `secom_semiconductor_yield` | triage | 2026-10-31 | 2026-11-07 (expired) | screening (data-scouting run 2026-10-30/31) |
 | `sinan_dengue_case_screening` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
+| `sivep_gripe_sari_outcome` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review: new candidates (wide non-bio, 2M+ rows) |
 | `smartshark_release_defect_prediction` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
+| `sorel_20m_malicious_pe` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review: new candidates (wide non-bio, 2M+ rows) |
 | `spanish_homeowners_motor_insurance_2010_2014` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `spanish_motor_insurance_2015_2018` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `spanish_motor_insurance_coverage_level_2022_2024` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
@@ -72,7 +89,9 @@ As of 2026-11-08 16:54 UTC: 85 claim(s) (Andrej 1, Lennart 65, Myunghwan 19).
 | `tls_os_fingerprinting_masaryk` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `treehouse_pediatric_tumor_type` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `ugr16_isp_netflow_intrusion` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
+| `uk_mot_test_results` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review: new candidates (wide non-bio, 2M+ rows) |
 | `uniform_soybean_tests_yield` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
+| `uspto_patex_grant_outcome` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review: new candidates (wide non-bio, 2M+ rows) |
 | `video_transcoding_time_prediction` | add | 2026-11-08 | 2026-11-15 |  |
 | `wadden_sea_sibes_macoma_abundance` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `wioa_employment_after_exit` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
