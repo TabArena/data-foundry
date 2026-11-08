@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-08 18:55 UTC: 125 claim(s) (Andrej 1, Lennart 105, Myunghwan 19).
+As of 2026-11-08 18:55 UTC: 124 claim(s) (Andrej 1, Lennart 104, Myunghwan 19).
 
 ## Andrej
 
@@ -75,7 +75,6 @@ As of 2026-11-08 18:55 UTC: 125 claim(s) (Andrej 1, Lennart 105, Myunghwan 19).
 | `milk_nir_composition` | add | 2026-11-08 | 2026-11-15 | add-dataset: large-datasets batch (stacked PR on #47) |
 | `msha_mine_injury_frequency` | triage | 2026-11-06 | 2026-11-13 | exposure rules (MET-14/15) note; ausprivauto0405 duplicate check |
 | `nchs_linked_birth_infant_death` | add | 2026-11-08 | 2026-11-15 | add-dataset: large-datasets batch (stacked PR on #47) |
-| `nfip_redacted_claims` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review: wide non-bio and 2M+ lists |
 | `nfip_redacted_flood_claims` | add | 2026-11-08 | 2026-11-15 | add-dataset: large-datasets batch (stacked PR on #47) |
 | `noaa_afsc_bottom_trawl_survey_cpue` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `noaa_storm_events_damage` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
