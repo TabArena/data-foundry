@@ -337,8 +337,18 @@ ignores them, since the bins stay numeric features.
   `split_random_state` (and `grouping` for grouped tasks); releases up to v0.0.5 forbid unknown fields and cannot load
   them. Release data-foundry before uploading the rebuilt containers and raise TabArena's `data-foundry>=0.0.3` floor.
   From this version on, `CuratedContainer.load` ignores fields it does not know, with a warning.
+- [ ] **The rebuilt containers keep their splits in a row table** (`rows.parquet`, one `split_r<repeat>_f<fold>`
+  column per split holding `train`, `test` or nothing; the split metadata file is then
+  `experiment_metadata.predictive-ml-splits-table-v1.json`). A data-foundry release before the row table refuses
+  these containers as written by a newer version, so the floor above must be a release that has it. The adapter reads
+  the splits through `experiment_metadata.splits` and needs no change.
 
 ## Frame sizes of the v2 split protocol
+
+- [ ] **A sub-sampled version records its row budget** (`experiment_metadata.row_budget`: `{train, test}`, absent
+  without one; PR #64, 2026-11-06): the 17 `_1m` versions carry `{train: 1000000, test: 500000}` once rebuilt, every
+  other v0.2 container none. The TabArena adapter can read it to tell a sub-sampled version from a full dataset, and
+  larger versions for large-data experiments (`_10m`) will carry their own.
 
 - [ ] **Temporal `_1m` versions ship up to 2.5M rows** (each split still trains on at most 1M and tests on at most
   500k rows): check storage and loading for `cooking_time_1m`, `delivery_eta_1m` and `maps_router_eta_1m` (2.5M rows,

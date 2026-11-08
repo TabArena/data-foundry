@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    RowBudget,
     ScoringColumn,
     TaskSummary,
     Temporal,
@@ -179,7 +180,7 @@ class GResearchCryptoForecasting1m(AbstractCuratedDataset):
     splits_comment = """
         The competition scored the submitted models on the 3 months of live data after its submission deadline. We use each of the last 3 windows of 91 days (newest first) as a test window and all earlier data as train data, with a 15-minute gap, the minimum: a row's target needs the Close 16 minutes later, so the newest training label is known at the close of the window's first minute, when the first test prediction is made (Lennart, 2026-10-22; against a 1-day gap the weighted Pearson moves by -0.0003 on average, inside the seed noise). Each window keeps at most 500k of its rows and each train side at most 1M of all earlier rows, both drawn as whole minutes (every asset of a drawn minute kept; one random order of the minutes for all windows), as the target and the features are relative to the 14-asset market at each minute. Rows of one asset a few minutes apart share most of their 15-minute target window (per asset, targets 5 minutes apart correlate with a median of 0.57, range 0.25-0.66), so validation inside a train side has to split by time blocks, not rows: LightGBM early-stopped on random rows of the train side stops after 220-528 rounds and scores test R^2 -0.0049, -0.0043 and -0.0090, against +0.0006, +0.0013 and +0.0004 when it stops on the newest 10% (random-row train sides, 1-day gap).
     """
-    subsample_to_budget = True
+    row_budget = RowBudget(train=1_000_000, test=500_000)
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
         return {

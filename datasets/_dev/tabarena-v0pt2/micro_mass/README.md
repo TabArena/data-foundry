@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: micro_mass
 container_format: 2
-checksum: v2:2d27efa12a31b37ea297e7e75788185b92d17b2347e2540cebd9ef41962ec8b5
+checksum: v2:ae164d05eaeae0b2cc4fde52379131faf9ba4cee3e2ee08cf5e663212acb48aa
 build:
   uuid: 01a111fc-8b57-73f7-bb59-b6d7ab7a6881
   checksum: v2:802ebb029c52182c5bbf583d95742b4b602e695db08e9507413476054f2d48a2
@@ -78,7 +78,7 @@ decisions: []
 
 Multiclass classification of `Species`, scored with `hierarchical_balanced_accuracy` on grouped splits by `Strain`. 571 rows and 1,082 features. Source: UCI (2013).
 
-Built as `01a111fc-8b57-73f7-bb59-b6d7ab7a6881` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:2d27efa12a31b37ea297e7e75788185b92d17b2347e2540cebd9ef41962ec8b5`, so the build is stale. See [Build](#build).
+Built as `01a111fc-8b57-73f7-bb59-b6d7ab7a6881` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:ae164d05eaeae0b2cc4fde52379131faf9ba4cee3e2ee08cf5e663212acb48aa`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -307,7 +307,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
 
-- **info** `task_metric_input_is_model_input`: The metric's input column(s) ['Strain'] are also given to the models (a feature, the group or the time column); they are not scoring columns. (hint: Declare a column as a `ScoringColumn` only when it exists for scoring alone and must not be a feature.)
+- **info** `task_metric_input_is_model_input`: The metric reads the task's group or time column(s) ['Strain'] where they are; they are not scoring columns.
 
 ## Data checks
 
@@ -511,4 +511,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:2d27efa12a31b37ea297e7e75788185b92d17b2347e2540cebd9ef41962ec8b5` |
+| stale | yes: the definition now gives checksum `v2:ae164d05eaeae0b2cc4fde52379131faf9ba4cee3e2ee08cf5e663212acb48aa` |

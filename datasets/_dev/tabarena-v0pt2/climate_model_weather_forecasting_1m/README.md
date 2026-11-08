@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: climate_model_weather_forecasting_1m
 container_format: 2
-checksum: v2:b1da7274bb015ce393eb49d853cc69b287efd86bcb6af7cb650c55cd004419ba
+checksum: v2:13da70c8376c744ca954d48c5658392a696e333aba921c7e246dad032db86907
 build:
   uuid: 01a111fb-bc63-7614-a137-a3fd390bc4f1
   checksum: v2:db33e0620375dca0b14660f5fa76165c01a9052eaf5882f9451ae2cd7405f4fc
@@ -55,6 +55,9 @@ splits:
   n_test:
     min: 341169
     max: 396122
+  row_budget:
+    train: 1000000
+    test: 500000
 bundle_checks:
   ok: true
   errors: []
@@ -71,7 +74,7 @@ decisions: []
 
 Regression of `fact_temperature`, scored with `rmse` on temporal splits by `fact_time`. 2,115,283 rows and 99 features. Source: Kaggle (2024).
 
-Built as `01a111fb-bc63-7614-a137-a3fd390bc4f1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:b1da7274bb015ce393eb49d853cc69b287efd86bcb6af7cb650c55cd004419ba`, so the build is stale. See [Build](#build).
+Built as `01a111fb-bc63-7614-a137-a3fd390bc4f1` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:13da70c8376c744ca954d48c5658392a696e333aba921c7e246dad032db86907`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -200,7 +203,7 @@ Version of `climate_model_weather_forecasting`: We sample per test window (v2 sp
 
 We use each of the last 3 weeks as a test window (newest first) and all prior data as train data. Each window keeps at most 500k of its rows; each train side is a random 1M of all earlier rows (one random order for all windows).
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 341,169 to 396,122 rows. Prediction horizon: 7 days.
+3 repeat(s) x 1 fold(s) with seed 4267; train 1,000,000 rows, test 341,169 to 396,122 rows. Prediction horizon: 7 days. Row budget: at most 1M train / 500k test rows per split.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|
@@ -210,7 +213,7 @@ We use each of the last 3 weeks as a test window (newest first) and all prior da
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 211,528,300 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
 
@@ -403,4 +406,4 @@ We use each of the last 3 weeks as a test window (newest first) and all prior da
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:b1da7274bb015ce393eb49d853cc69b287efd86bcb6af7cb650c55cd004419ba` |
+| stale | yes: the definition now gives checksum `v2:13da70c8376c744ca954d48c5658392a696e333aba921c7e246dad032db86907` |

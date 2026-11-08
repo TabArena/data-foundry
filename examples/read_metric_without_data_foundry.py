@@ -73,6 +73,25 @@ def read_json(folder: Path, prefix: str) -> dict:
     return json.loads(file.read_text())
 
 
+def read_splits(folder: Path) -> dict:
+    """The outer splits, ``{repeat: {fold: (train positions, test positions)}}``.
+
+    A format-2 container keeps them in its row table ``rows.parquet``: one row per row of ``dataset.parquet``, one
+    column per split (``split_r<repeat>_f<fold>``) holding ``train``, ``test`` or nothing. Older containers keep them
+    inline in ``experiment_metadata.*.json``.
+    """
+    meta = read_json(folder, "experiment_metadata")
+    if "splits" in meta:
+        return meta["splits"]
+    roles = pd.read_parquet(folder / meta["splits_file"], columns=meta["split_columns"])
+    splits: dict = {}
+    for column in meta["split_columns"]:
+        repeat, fold = column.removeprefix("split_r").split("_f")
+        values = roles[column]
+        splits.setdefault(repeat, {})[fold] = (np.flatnonzero(values == "train"), np.flatnonzero(values == "test"))
+    return splits
+
+
 def metric_spec(task: dict) -> dict:
     """The metric spec: format 2's ``objective_metric``, or format 1's name as a spec without the extra fields."""
     if "objective_metric" in task:
@@ -131,7 +150,7 @@ def main(path: Path) -> float | None:
     """Print the spec and the scoring columns, then score a dummy prediction; return the score (None if custom)."""
     folder = find_container(path)
     task = read_json(folder, "task_metadata")
-    splits = read_json(folder, "experiment_metadata")["splits"]
+    splits = read_splits(folder)
     df = pd.read_parquet(folder / "dataset.parquet")
 
     spec = metric_spec(task)

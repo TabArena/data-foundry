@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: expresso_churn_prediction_1m
 container_format: 2
-checksum: v2:63e099ba290d50433716a840201c6b58bc6499d34e8cee79a0284bcef0865ea6
+checksum: v2:68c28ab74c9499224a050bf3e0bbe5a90de292b19a9f3f84d3379b883db3d6b6
 build: null
 build_stale: false
 data:
@@ -40,6 +40,9 @@ splits:
   n_test:
     min: 500000
     max: 500000
+  row_budget:
+    train: 1000000
+    test: 500000
 bundle_checks:
   ok: true
   errors: []
@@ -65,7 +68,7 @@ decisions:
 
 Binary classification of `CHURN`, scored with `roc_auc` on IID splits. 1,500,000 rows and 15 features. Source: Zindi (2020).
 
-Not built yet. The current definition gives checksum `v2:63e099ba290d50433716a840201c6b58bc6499d34e8cee79a0284bcef0865ea6`.
+Not built yet. The current definition gives checksum `v2:68c28ab74c9499224a050bf3e0bbe5a90de292b19a9f3f84d3379b883db3d6b6`.
 
 ## In brief
 
@@ -216,7 +219,7 @@ Version of `expresso_churn_prediction`: We sub-sample the frame (2,154,048 custo
 
 Default splits. The frame is sub-sampled to 1.5M rows; every split trains on at most 1M and tests on at most 500k rows.
 
-1 repeat(s) x 3 fold(s) with seed 4267; train 1,000,000 rows, test 500,000 rows.
+1 repeat(s) x 3 fold(s) with seed 4267; train 1,000,000 rows, test 500,000 rows. Row budget: at most 1M train / 500k test rows per split.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
@@ -276,7 +279,7 @@ Every row is a different customer (unique ids). The copies are customers with no
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
 
 - **info** `dataset_conflicting_duplicate_rows`: 6,986 row(s) (0.5%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 

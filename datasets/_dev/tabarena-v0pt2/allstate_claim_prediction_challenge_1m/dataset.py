@@ -13,6 +13,7 @@ from data_foundry.v2 import (
     FeatureTypes,
     Grouping,
     Metric,
+    RowBudget,
     TaskSummary,
     drop_columns,
 )
@@ -183,12 +184,8 @@ class AllstateClaimPredictionChallenge1m(AbstractCuratedDataset):
     """
 
     # Splits
-    subsample_to_budget = True
+    row_budget = RowBudget(train=1_000_000, test=500_000)
     accepted_check_warnings = {
-        "splits_rows_never_tested": (
-            "The v2 protocol caps each test fold at 500k rows; the folds by household overshoot by whole "
-            "households, so 85 of the 1.5M rows are trimmed from a test fold (2026-11-01; restated 2026-11-08)."
-        ),
         "groups_labels_constant": (
             "The label is one per vehicle-year and claims are rare (0.82%), so 98.2% of the households with two or "
             "more rows of the 2006 renewal book have a single label (2026-11-03; restated 2026-11-08)."

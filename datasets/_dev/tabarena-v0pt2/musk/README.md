@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: musk
 container_format: 2
-checksum: v2:c54185a52676f7a28090351ed7572c13f6f55d5532feb878ba9b7af6c053a7b5
+checksum: v2:fd287d3bc8d64577edd47cc1174b54283c1f744b3e37bde5456cfd8aefca1326
 build:
   uuid: 01a111fc-e484-7212-b264-ac00bcffbd4d
   checksum: v2:97fd0ae473c7c5b7269a847b647b7c59f16d497f1cab4f66c09586c43df3ff7b
@@ -76,7 +76,7 @@ decisions: []
 
 Binary classification of `class`, scored with `roc_auc` on grouped splits by `molecule_name`, one prediction per group (any). 6,598 rows and 166 features. Source: UCI (1994).
 
-Built as `01a111fc-e484-7212-b264-ac00bcffbd4d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:c54185a52676f7a28090351ed7572c13f6f55d5532feb878ba9b7af6c053a7b5`, so the build is stale. See [Build](#build).
+Built as `01a111fc-e484-7212-b264-ac00bcffbd4d` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:fd287d3bc8d64577edd47cc1174b54283c1f744b3e37bde5456cfd8aefca1326`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -293,7 +293,7 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 
 ## Bundle checks
 
-0 error(s), 1 warning(s), 1 info (26 checks run, plus the dataset's own checks).
+0 error(s), 1 warning(s), 1 info (27 checks run, plus the dataset's own checks).
 
 - **warning** `dataset_missing_value_sentinel`: 1 numeric column(s) are dominated by a sentinel-looking value: feature_52=-1 (4.9%). (hint: If it encodes 'missing', replace it with `np.nan` (curation guidelines); if it is a real value, ignore this finding.)
 - **info** `dataset_duplicate_rows`: 17 exact duplicate row(s) (0.3% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
@@ -474,4 +474,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:c54185a52676f7a28090351ed7572c13f6f55d5532feb878ba9b7af6c053a7b5` |
+| stale | yes: the definition now gives checksum `v2:fd287d3bc8d64577edd47cc1174b54283c1f744b3e37bde5456cfd8aefca1326` |

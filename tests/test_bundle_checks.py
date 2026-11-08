@@ -25,6 +25,7 @@ from data_foundry.schema import (
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadata,
     PredictiveMLTaskMetadataV2,
+    RowBudget,
     ScoringColumn,
     UnitWeight,
 )
@@ -744,6 +745,32 @@ def test_test_side_over_the_row_budget_is_a_warning(monkeypatch):
     report = run_bundle_checks(make_container(), verbose=False)
     assert "splits_test_over_budget" in [r.slug for r in report.warnings]
     assert "splits_test_over_budget" not in [r.slug for r in report.errors]
+
+
+def test_a_format_2_container_without_a_budget_has_no_size_limit(monkeypatch):
+    monkeypatch.setattr(bundle_checks, "SPLIT_TRAIN_ROW_BUDGET", 30)  # the v1 budgets do not apply to format 2
+    monkeypatch.setattr(bundle_checks, "SPLIT_TEST_ROW_BUDGET", 10)
+    task = PredictiveMLTaskMetadataV2(
+        target_column_name="target", problem_type="binary_classification", objective_metric=make_spec()
+    )
+    meta = dataclasses.replace(
+        make_container().dataset_metadata, unique_name="toy_10m", version_from_unique_name="toy", version_comment="x"
+    )
+    slugs = slugs_of(make_container(task_metadata=task, dataset_metadata=meta))  # a size-like name sets no budget
+    assert "splits_train_over_budget" not in slugs
+    assert "splits_test_over_budget" not in slugs
+
+
+def test_a_budget_explains_the_rows_its_test_samples_leave_out():
+    base = make_container()
+    half_tested = {
+        r: {f: (train, test[: len(test) // 2]) for f, (train, test) in folds.items()}
+        for r, folds in base.experiment_metadata.splits.items()
+    }
+    plain = PredictiveMLSplitsMetadata(splits_comment="x", splits=half_tested)
+    assert "splits_rows_never_tested" in slugs_of(make_container(experiment_metadata=plain))
+    budgeted = dataclasses.replace(plain, row_budget=RowBudget(train=1_000, test=1_000))
+    assert "splits_rows_never_tested" not in slugs_of(make_container(experiment_metadata=budgeted))
 
 
 def single_split_container(n_train: int = 40, n: int = 60) -> CuratedContainer:

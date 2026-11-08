@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: pancreatic_cancer_mouse_detection
 container_format: 2
-checksum: v2:3d36ce2d6d9dffca9248f373e33a89d65d747f699cd4728ec82801a364f25ea0
+checksum: v2:7d333feb5d74ad35c857c1fd3c57928e991d9c813052f30ed2868cac981a222c
 build:
   uuid: 01a111fc-4ee4-7a63-9a02-e4ac045fac79
   checksum: v2:59cb0f0821d490ba01b3fac29a19152347d6c9626d569ac6c6d994a23c47d014
@@ -81,7 +81,7 @@ decisions: []
 
 Binary classification of `HasPanIN`, scored with `roc_auc` on grouped splits by `mouse_id`. 181 rows and 6,771 features. Source: Other (2003).
 
-Built as `01a111fc-4ee4-7a63-9a02-e4ac045fac79` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:3d36ce2d6d9dffca9248f373e33a89d65d747f699cd4728ec82801a364f25ea0`, so the build is stale. See [Build](#build).
+Built as `01a111fc-4ee4-7a63-9a02-e4ac045fac79` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:7d333feb5d74ad35c857c1fd3c57928e991d9c813052f30ed2868cac981a222c`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -511,4 +511,4 @@ The nearest neighbour is computed on the standardised numeric features of a samp
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:3d36ce2d6d9dffca9248f373e33a89d65d747f699cd4728ec82801a364f25ea0` |
+| stale | yes: the definition now gives checksum `v2:7d333feb5d74ad35c857c1fd3c57928e991d9c813052f30ed2868cac981a222c` |

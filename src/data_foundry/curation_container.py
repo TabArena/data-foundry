@@ -14,6 +14,14 @@ import pandas as pd
 from pydantic import TypeAdapter
 from uuid6 import uuid7
 
+from data_foundry.row_table import (
+    ROWS_FILE,
+    SPLITS_TABLE_TYPE,
+    inline_metadata,
+    row_table_length,
+    splits_to_row_table,
+    table_metadata,
+)
 from data_foundry.schema import (
     DatasetMetadata,
     Grouping,
@@ -131,6 +139,7 @@ class CuratedContainer:
             "test_dtypes.json",
             "test_categories.json",
             "container_metadata.json",
+            ROWS_FILE,
         }
     )
     _REQUIRED_METADATA: ClassVar[tuple[str, ...]] = ("dataset_metadata", "task_metadata", "experiment_metadata")
@@ -521,10 +530,14 @@ class CuratedContainer:
         ]:
             assert "." not in meta_name, "Meta names cannot contain dots!"
             adapter = TypeAdapter(MetadataRegistry[meta_obj.type_adapter_id])
-            meta_path = save_path / f"{meta_name}.{meta_obj.type_adapter_id}.json"
-            indent = None if meta_obj.type_adapter_id in NoIndentMetadata else 2
-            with meta_path.open("w") as f:
-                json.dump(omit_unset_fields(meta_obj, adapter.dump_python(meta_obj, mode="json")), f, indent=indent)
+            type_id, indent = meta_obj.type_adapter_id, None if meta_obj.type_adapter_id in NoIndentMetadata else 2
+            dumped = omit_unset_fields(meta_obj, adapter.dump_python(meta_obj, mode="json"))
+            table = self._row_table() if meta_name == "experiment_metadata" else None
+            if table is not None:  # the splits go to the row table; the metadata file stays small and readable
+                table.to_parquet(save_path / ROWS_FILE, index=False)
+                dumped, type_id, indent = table_metadata(dumped, table), SPLITS_TABLE_TYPE, 2
+            with (save_path / f"{meta_name}.{type_id}.json").open("w") as f:
+                json.dump(dumped, f, indent=indent)
 
         with (save_path / "container_metadata.json").open("w") as f:
             json.dump(self.container_metadata, f, indent=2)
@@ -533,6 +546,15 @@ class CuratedContainer:
             shutil.rmtree(final_path)
         save_path.rename(final_path)
         return final_path
+
+    def _row_table(self) -> pd.DataFrame | None:
+        """The row table a format-2 container saves its splits in (:mod:`data_foundry.row_table`).
+
+        None for format 1 and for splits a table cannot hold exactly, which stay inline.
+        """
+        if self.format_version < 2:  # the format that introduced the row table
+            return None
+        return splits_to_row_table(self.experiment_metadata.splits, len(self.dataset))
 
     def load_test_dataset(self, path: Path | str | None = None) -> pd.DataFrame:
         """Load the test dataset if it exists."""
@@ -570,6 +592,11 @@ class CuratedContainer:
             meta_name, type_adapter_id = meta_file.name.rsplit(".", 2)[:2]
             if meta_name not in CuratedContainer._REQUIRED_METADATA:
                 logger.warning("%s: not a metadata file of the container — skipping.", meta_file.name)
+                continue
+            if type_adapter_id == SPLITS_TABLE_TYPE:  # the splits are in the row table
+                with meta_file.open("r") as f:
+                    meta_data = inline_metadata(json.load(f), path, PredictiveMLSplitsMetadata.type_adapter_id)
+                metadata_objs[meta_name] = TypeAdapter(PredictiveMLSplitsMetadata).validate_python(meta_data)
                 continue
             if type_adapter_id not in MetadataRegistry:
                 raise ValueError(
@@ -642,6 +669,12 @@ class CuratedContainer:
                 f"{container_metadata_path} states format {stated_format}, but its task metadata is format "
                 f"{actual_format} ({metadata_objs['task_metadata'].type_adapter_id}).",
             )
+        n_table_rows = row_table_length(path)
+        if dataset is not None and n_table_rows is not None and n_table_rows != len(dataset):
+            raise ValueError(
+                f"{path / ROWS_FILE} has {n_table_rows:,} rows but dataset.parquet {len(dataset):,}; the row table "
+                "holds one row per row of the data.",
+            )
 
         return CuratedContainer(
             dataset=dataset,
@@ -671,8 +704,9 @@ class CuratedContainer:
         """Resolve the path of an extra artifact alongside the container.
 
         Extra artifacts are any files a producer ships in the container directory beyond
-        the six core files (``dataset.parquet``, ``dtypes.json``, ``container_metadata.json``
-        and the three ``*.{type_id}.json`` metadata files) and the optional test-dataset pair.
+        the core files (``dataset.parquet``, ``dtypes.json``, ``categories.json``, ``container_metadata.json``,
+        the three ``*.{type_id}.json`` metadata files and a format-2 container's ``rows.parquet``) and the optional
+        test-dataset files.
         Data Foundry does not interpret their contents — it only resolves the path so callers
         can load them however they need (e.g. ``pd.read_parquet``, ``json.load``, ``np.load``).
 
@@ -698,7 +732,7 @@ class CuratedContainer:
     def list_extra_files(self, *, path: Path | str | None = None) -> list[str]:
         """Return the sorted list of extra-artifact file names present next to the container.
 
-        Excludes the core six files and the optional test-dataset pair. Metadata JSON files
+        Excludes the core files and the optional test-dataset files. Metadata JSON files
         (``<name>.<type_id>.json`` — two dots before ``.json``) are also excluded.
         Returns ``[]`` if the directory does not exist or holds no extras.
         """

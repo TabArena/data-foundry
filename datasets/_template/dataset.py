@@ -45,8 +45,9 @@ class ClassName(AbstractCuratedDataset):
 
         - TODO(verify): what was dropped and why (identifiers, leaking features, constant columns).
     """
-    # Data over the row budget ships as a sub-sampled `<name>_1m` version, which also sets: version_of = "<name>",
-    # version_comment = "...", subsample_to_budget = True.
+    # TabArena v0.2 ships data over its row budget (a split side over 1M train / 500k test rows) as a sub-sampled
+    # `<name>_1m` version, which also sets: version_of = "<name>", version_comment = "...",
+    # row_budget = RowBudget(train=1_000_000, test=500_000)  (from data_foundry.v2 import RowBudget).
 
     # Task (stratifying on a classification target is the default)
     target = "TODO"

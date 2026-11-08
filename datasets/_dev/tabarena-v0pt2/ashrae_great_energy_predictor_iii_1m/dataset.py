@@ -11,6 +11,7 @@ from data_foundry.v2 import (
     Decision,
     FeatureTypes,
     Metric,
+    RowBudget,
     TaskSummary,
     Temporal,
     TemporalSplits,
@@ -249,7 +250,7 @@ class AshraeGreatEnergyPredictorIii1m(AbstractCuratedDataset):
     splits_comment = """
         Three test windows of 4 months tile 2017, the competition's first test year: September-December, May-August and January-April 2017, newest first; train is all earlier hours. The oldest window is the competition's own setting: train on the year 2016 and predict the first months of 2017. 2016 holds 50.07% of the hours (8,784 of 17,544) but 49.12% of the rows, as it has more gaps and drops (site 0's recording gap); we keep the window because it is the competition's setting. A window is the horizon: the competition asked for the two years after its training year, and 4 months is the longest window that gives three windows inside 2017. Each test window keeps at most 500k of its rows and each train side is a random 1M of all earlier rows (one random order for all windows); the frame keeps only the rows a split uses.
     """
-    subsample_to_budget = True
+    row_budget = RowBudget(train=1_000_000, test=500_000)
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
         read = {

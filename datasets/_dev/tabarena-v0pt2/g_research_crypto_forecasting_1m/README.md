@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: g_research_crypto_forecasting_1m
 container_format: 2
-checksum: v2:398eb96bff16356c3d01f6b14f12be51e1932e923af6c11619f864bed3e3e498
+checksum: v2:8d41be50e533d78fc49227285466b61ce82fdcae84e2e45fe47e2adeb780f234
 build: null
 build_stale: false
 data:
@@ -41,6 +41,9 @@ splits:
   n_test:
     min: 499992
     max: 500000
+  row_budget:
+    train: 1000000
+    test: 500000
 bundle_checks:
   ok: true
   errors: []
@@ -64,7 +67,7 @@ decisions:
 
 Regression of `Target`, scored with `weighted_pearsonr` on temporal splits by `timestamp`. 2,499,998 rows and 27 features. Source: Kaggle (2021).
 
-Not built yet. The current definition gives checksum `v2:398eb96bff16356c3d01f6b14f12be51e1932e923af6c11619f864bed3e3e498`.
+Not built yet. The current definition gives checksum `v2:8d41be50e533d78fc49227285466b61ce82fdcae84e2e45fe47e2adeb780f234`.
 
 ## In brief
 
@@ -218,7 +221,7 @@ Version of `g_research_crypto_forecasting`: We sample per test window (v2 split 
 
 The competition scored the submitted models on the 3 months of live data after its submission deadline. We use each of the last 3 windows of 91 days (newest first) as a test window and all earlier data as train data, with a 15-minute gap, the minimum: a row's target needs the Close 16 minutes later, so the newest training label is known at the close of the window's first minute, when the first test prediction is made (Lennart, 2026-10-22; against a 1-day gap the weighted Pearson moves by -0.0003 on average, inside the seed noise). Each window keeps at most 500k of its rows and each train side at most 1M of all earlier rows, both drawn as whole minutes (every asset of a drawn minute kept; one random order of the minutes for all windows), as the target and the features are relative to the 14-asset market at each minute. Rows of one asset a few minutes apart share most of their 15-minute target window (per asset, targets 5 minutes apart correlate with a median of 0.57, range 0.25-0.66), so validation inside a train side has to split by time blocks, not rows: LightGBM early-stopped on random rows of the train side stops after 220-528 rounds and scores test R^2 -0.0049, -0.0043 and -0.0090, against +0.0006, +0.0013 and +0.0004 when it stops on the newest 10% (random-row train sides, 1-day gap).
 
-3 repeat(s) x 1 fold(s) with seed 4267; train 999,991 to 1,000,000 rows, test 499,992 to 500,000 rows. Prediction horizon: 91 days. Gap between train and test: 15 minutes.
+3 repeat(s) x 1 fold(s) with seed 4267; train 999,991 to 1,000,000 rows, test 499,992 to 500,000 rows. Prediction horizon: 91 days. Gap between train and test: 15 minutes. Row budget: at most 1M train / 500k test rows per split.
 
 | repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
 |---|---|---|---|---|---|---|---|

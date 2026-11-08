@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: allstate_claim_prediction_challenge_1m
 container_format: 2
-checksum: v2:93b6cee2284133d4f0cd127a07878a60109fa2c18838862546e85d07ee04b54c
+checksum: v2:9a7d721139b9e67d54130eae07e57a289caf6647dee29261d812998293ad30ac
 build: null
 build_stale: false
 data:
@@ -42,11 +42,14 @@ splits:
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 999947
+    min: 1000000
     max: 1000000
   n_test:
     min: 499915
     max: 500000
+  row_budget:
+    train: 1000000
+    test: 500000
 bundle_checks:
   ok: true
   errors: []
@@ -56,9 +59,6 @@ bundle_checks:
   - dataset_conflicting_duplicate_rows
   - groups_not_clustered
   accepted:
-    splits_rows_never_tested: The v2 protocol caps each test fold at 500k rows; the
-      folds by household overshoot by whole households, so 85 of the 1.5M rows are
-      trimmed from a test fold (2026-11-01; restated 2026-11-08).
     groups_labels_constant: The label is one per vehicle-year and claims are rare
       (0.82%), so 98.2% of the households with two or more rows of the 2006 renewal
       book have a single label (2026-11-03; restated 2026-11-08).
@@ -77,7 +77,7 @@ decisions:
 
 Regression of `log1p_claim_amount`, scored with `normalized_gini` on grouped splits by `Household_ID`. 1,500,000 rows and 31 features. Source: Kaggle (2011).
 
-Not built yet. The current definition gives checksum `v2:93b6cee2284133d4f0cd127a07878a60109fa2c18838862546e85d07ee04b54c`.
+Not built yet. The current definition gives checksum `v2:9a7d721139b9e67d54130eae07e57a289caf6647dee29261d812998293ad30ac`.
 
 ## In brief
 
@@ -226,13 +226,13 @@ Version of `allstate_claim_prediction_challenge`: We sub-sample the 2006 renewal
 
 Default splits, grouped by household (Household_ID): 3 folds over 1.5M rows of whole households drawn at random from the 2.75M of the 2006 renewal book (claim rate 0.82%, as in the book), each training on about 1M and testing on about 500k rows with 4,006 to 4,210 claims. The task is temporal by its use case: the competition gave 2005-2007 for training and scored 2008 (public leaderboard) and 2009 (final ranking), whose claims were never published. With 2007 dropped (its large claims look unsettled) and 2005 used as the history of 2006, one labelled target year is left, so no window of a temporal split exists and the task ships under SPLIT-8 (ForcedGroupedFromTemporal): the folds hold out whole households, whose vehicles share the household's record, so random rows would put a household's other cars on both sides. Before the history was built, trained on 2005 and scored on 2006 all rows reached 0.064, inside the range of the folds by household (0.022 to 0.054 then; 0.022 to 0.106 now over nine folds of the renewal book), so the forced split shows no cost this noise can measure. What the folds do not test: new business (the cars that joined during 2006 are left out), vehicle series not seen in training (0.02% of test rows on the earlier folds), and a rating at a known date within the year. A release with dates beyond 2007 should get a temporal split. Shipped forced on the curator's call (Andrej, 2026-11-02: "Forced group splits should be fine"; 2026-11-03: the 2006 renewal book; Lennart, 2026-11-08: only the cars on the policy at the start of 2006).
 
-1 repeat(s) x 3 fold(s) with seed 4267; train 999,947 to 1,000,000 rows, test 499,915 to 500,000 rows.
+1 repeat(s) x 3 fold(s) with seed 4267; train 1,000,000 rows, test 499,915 to 500,000 rows. Row budget: at most 1M train / 500k test rows per split.
 
 | repeat | fold | n_train | n_test |
 |---|---|---|---|
-| 0 | 0 | 999947 | 500000 |
+| 0 | 0 | 1000000 | 500000 |
 | 0 | 1 | 1000000 | 499915 |
-| 0 | 2 | 999968 | 500000 |
+| 0 | 2 | 1000000 | 500000 |
 
 ## Group structure
 
@@ -307,7 +307,6 @@ The source removed the records with a missing value from its test file and asked
 
 Accepted on purpose:
 
-- `splits_rows_never_tested`: The v2 protocol caps each test fold at 500k rows; the folds by household overshoot by whole households, so 85 of the 1.5M rows are trimmed from a test fold (2026-11-01; restated 2026-11-08).
 - `groups_labels_constant`: The label is one per vehicle-year and claims are rare (0.82%), so 98.2% of the households with two or more rows of the 2006 renewal book have a single label (2026-11-03; restated 2026-11-08).
 - `task_target_value_dominant`: A zero-inflated target, not a cap or a placeholder: 0 is a vehicle-year without a bodily-injury claim, 99.18% of the rows of the 2006 renewal book (see the curation notes; 2026-11-03; restated 2026-11-08).
 
