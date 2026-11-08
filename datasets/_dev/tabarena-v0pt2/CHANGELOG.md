@@ -1,5 +1,16 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-08 (XuetangX curator hold)
+
+- Myunghwan deferred XuetangX MOOC dropout despite its value: the raw records are activities with one dropout
+  label per learner-course enrollment, so constructing tabular samples requires chosen aggregation and further
+  task design. Aggregation is not adopted by default; the candidate is not straightforward enough to pursue now.
+- Record `TBD -> 2nd Tier` / `DF: Suspended` and preserve prior screening, qualification and curator history.
+  Source timing remains unaccepted; no proven leakage or poor-data rejection is inferred. The official
+  reservation is released. Revisit only on explicit curator reconsideration of a suitable tabular task.
+- This update publishes the decision record only. Exploratory definition, data and detailed reviews remain
+  local; no XuetangX dataset package, build or container is added.
+
 
 ## 2026-11-06 (combined accepted datasets and curator decisions)
 
