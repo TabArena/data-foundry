@@ -3,6 +3,9 @@ unique_name: eclipse_bug_data_zimmermann
 name: 'Eclipse Bug Data (Zimmermann, Premraj & Zeller, PROMISE 2007), release 2.0a: Eclipse 2.0, 2.1, 3.0'
 checked_by:
 - Andrej
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Lennart
 suggestion: TBD -> Yes
 priority: 3
 decision_markers:
@@ -84,6 +87,13 @@ random and 0.79 across releases, with R^2 0.09 on log1p defects among defective 
 release 2.0a the Spearman is 0.33-0.39, so only 2.0a should be used. 2nd tier for the age of the code (Eclipse
 2002-2004, like `defect_data`) and because the family already has `jm1`. Terms: "facts are free", but the archive's XML
 and texts are copyrighted and the site does "not allow redistribution of the archive" (FAQ).
+
+**Assessment (AI, 2026-11-08):** size check for the large-datasets review: the task's table is 25,210 file-releases (6,729 / 7,888 / 10,593 for Eclipse 2.0 / 2.1 / 3.0) x 154 inputs once 44 constant and 2 copied columns leave (153 numeric and `plugin`), and 61 of the 153 are shares derived from counts kept beside them. The table is wide only at the lower edge, and `smartshark_release_defect_prediction`, accepted today, carries the same task with newer and wider data. By the factors the priority stays 3.
+- As published: release 2.0a of 2007-12-28 (archived page, http://web.archive.org/web/20260918052843/https://www.st.cs.uni-saarland.de/softevo/bug-data/eclipse/; the site did not answer on 2026-11-08). File level, `promise-2_0a-files-csv.zip` (5,913,784 bytes in the Wayback copy of 2023-03-07): `eclipse-metrics-files-2.0.csv`, `-2.1.csv` and `-3.0.csv`, semicolon-separated, 6,729 / 7,888 / 10,593 rows x 202 columns (counted): `plugin`, `filename`, `pre`, `post`, 31 complexity metrics (ACD, FOUT, MLOC, NBD, NOF, NOI, NOM, NOT, NSF, NSM, PAR, TLOC, VG, most as avg, max and sum), 83 AST node counts with their `SUM`, and 83 `NORM_` columns (each count divided by `SUM`). Package level, `promise-2_0a-packages-csv.zip` (815,647 bytes): 377 / 434 / 661 rows x 211 columns. The three releases share the columns; no cell is missing. The page also lists a revised PROMISE paper (2009-12-10) that "supersedes the original, published version, being based on the revised 2.0a data", an R file of the experiments, and an XML archive with the bug and CVS references (no metrics).
+- The task's table: one row per file and release, 25,210 rows (counted) with 13,975 distinct file names; `post` > 0 in 975 / 854 / 1,568 files (14.5% / 10.8% / 14.8%), max 31. The inputs as published are `pre`, `plugin` and 198 metrics (200). 44 columns are constant over all three releases (the Java 5 nodes such as EnhancedForStatement, annotations and enums, the comment nodes, AssertStatement, CompilationUnit and PackageDeclaration, with their `NORM_` columns), and 2 copy another column in every row (`AnonymousClassDeclaration` = `ACD`, `NORM_PackageDeclaration` = `NORM_CompilationUnit`). That leaves 153 numeric inputs and `plugin` (42 / 52 / 70 plugins per release): `pre`, 31 complexity metrics, 59 AST counts, `SUM` and 61 `NORM_` shares, so 92 distinct measurements plus their shares (computed on the files).
+- Access: open download from the Wayback Machine, no login: 5.9 MB and 0.8 MB of CSV zips. The page's terms: "facts are free (as in freedom), and are not copyrightable", while "The XML representation of the data is copyrighted ... we currently do not allow redistribution of the archive"; cite the PROMISE 2007 paper. No named licence (a note, EV-4).
+- Changes the call: two facts, neither moves the priority by the factors. First, the width: about 200 columns become 154 inputs. Second, better data for the same task is now accepted: `smartshark_release_defect_prediction` (`Yes`, Lennart, 2026-11-08) labels the files of 398 releases of 38 Apache projects for the same QA decision at a release, with 4,198 features and manually validated labels up to about 2020, where Eclipse gives three releases of 2002-2004 and one valid temporal window. The risk point is already taken (one window, files recurring across releases), so the factors give 3 again (gap 0, use case +, source +, shape +, risk -). The reasons for 2nd Tier in the earlier note (the age of the code, a family already shipped with `jm1`) now have a second, newer member in the family. `unified_bug_dataset` re-measures the Eclipse Bug Dataset with another analyser per its record, so taking both would need a PROV-6 check.
+- Not checked: the revised 2009 paper's text; the Eclipse part of the Unified Bug Dataset.
 
 ## Reference
 
