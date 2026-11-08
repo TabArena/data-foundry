@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-08 18:55 UTC: 124 claim(s) (Andrej 1, Lennart 104, Myunghwan 19).
+As of 2026-11-08 21:47 UTC: 123 claim(s) (Andrej 1, Lennart 104, Myunghwan 18).
 
 ## Andrej
 
@@ -141,4 +141,3 @@ As of 2026-11-08 18:55 UTC: 124 claim(s) (Andrej 1, Lennart 104, Myunghwan 19).
 | `protein_model_quality_rf_pcp` | review | 2026-10-28 | 2026-11-06 (expired) | Curator accepted; build, reload and traced-input reproduction complete. Submitted in PR #33: https://github.com/TabArena/data-foundry/pull/33 . Accepted approximations and source/descriptor limits are documented. Awaiting PR review/merge; retain Myunghwan ownership until merged. |
 | `sendy_logistics_challenge` | review | 2026-10-28 | 2026-11-06 (expired) | Curator ship accepted; build and verification complete. Submitted in PR #33: https://github.com/TabArena/data-foundry/pull/33 (commit 46e8b32). Placement-to-arrival RMSE; 21,199 rows, 13 predictors, random 3x3 folds. Awaiting PR review/merge; retain Myunghwan ownership until merged. |
 | `tunisian_fraud_detection_challenge` | triage | 2026-10-28 | 2026-11-04 (expired) | Next Myunghwan curation batch: highest remaining eligible priority 3; existing screening dossiers await curator review. Reservation only; no scientific acceptance or build. |
-| `xuetangx_mooc_dropout` | triage | 2026-11-05 | 2026-11-12 | Curator-requested triage: priority-4 interaction datasets; scale, source and non-IID qualification pending. |
