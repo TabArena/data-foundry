@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-08 14:51 UTC: 54 claim(s) (Andrej 1, Lennart 34, Myunghwan 19).
+As of 2026-11-08 14:51 UTC: 55 claim(s) (Andrej 1, Lennart 35, Myunghwan 19).
 
 ## Andrej
 
@@ -15,6 +15,7 @@ As of 2026-11-08 14:51 UTC: 54 claim(s) (Andrej 1, Lennart 34, Myunghwan 19).
 | Dataset | Stage | Since | Until | Note |
 |---|---|---|---|---|
 | `1000_cameras` | triage | 2026-10-31 | 2026-11-07 (expired) | data-scouting run: Better data lines and cleanup notes |
+| `african_credit_scoring_challenge` | add | 2026-11-08 | 2026-11-15 |  |
 | `allstate_claim_prediction_challenge` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `anes_voting_2026` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `asp_potassco_classification` | add | 2026-11-08 | 2026-11-15 |  |
