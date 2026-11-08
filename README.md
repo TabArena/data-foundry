@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-08 14:50 UTC: 51 claim(s) (Andrej 1, Lennart 31, Myunghwan 19).
+As of 2026-11-08 14:51 UTC: 52 claim(s) (Andrej 1, Lennart 32, Myunghwan 19).
 
 ## Andrej
 
@@ -21,6 +21,7 @@ As of 2026-11-08 14:50 UTC: 51 claim(s) (Andrej 1, Lennart 31, Myunghwan 19).
 | `bank_marketing` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `bemtpl97` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `boreal_postfire_lichen_biomass` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
+| `dementia_prediction` | add | 2026-11-08 | 2026-11-15 |  |
 | `eumtpl` | triage | 2026-11-06 | 2026-11-13 | exposure rules (MET-14/15) note; ausprivauto0405 duplicate check |
 | `facebook_recruiting_human_or_robot` | triage | 2026-10-31 | 2026-11-07 (expired) | screening (data-scouting run 2026-10-30/31) |
 | `fl2000` | triage | 2026-10-31 | 2026-11-07 (expired) | data-scouting run: Better data lines and cleanup notes |
