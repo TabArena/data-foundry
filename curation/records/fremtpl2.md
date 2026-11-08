@@ -140,3 +140,5 @@ CC (2026-11-06, Lennart): the claim amounts (the proposal of PR #46) stay out fo
 CC (2026-11-08, Lennart): issue 11 of the folder's REVIEW.md, as implemented (ok): the random split stays (`ForcedIIDFromTemporal`), with the note on the one rating profile of the high counts. Its 19 rows of 677,991 (72 claims over 3.63 years) make 94-102% of the 0.0007 to 0.0017 by which the random folds score better than folds grouped on identical rating factors; without them the gap is about 0, and LightGBM ranks ahead of a Poisson GLM under every split. Follows the IID call of 2026-11-05 (issue 7) and bemtpl97; the counts of 5 to 16 stay as kept on 2026-11-04.
 
 CC (2026-11-08, Lennart): the declared metric (`mean_poisson_deviance`) is checked, as declared on the PR #47 review board.
+
+CC (2026-11-08, Lennart): issue 10, reply (c): the `Two-Regime Zeros` tag stays, and bemtpl97 gets it too: the tag describes the target's distribution (96.3% of the policies without a claim), not the task's model, so a Poisson model that reproduces the zeros does not remove it; the tag's definition in records.md says so.

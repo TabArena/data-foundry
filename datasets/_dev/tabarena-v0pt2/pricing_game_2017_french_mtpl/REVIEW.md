@@ -6,10 +6,12 @@ French actuarial pricing game, from the R package CASdatasets (the organiser's c
 100,000 car policies of 91,488 clients of an unnamed French insurer, about 2010-11. The target is the policy's claim
 total for the year in euros (0 for 88.9%), predicted when the premium is set, with no exposure column and no weight; all
 policies of a client stay on one side of the split, tagged as forced from temporal; the score is the mean Tweedie
-deviance (power 1.5, predictions floored at 0.1 EUR) as a stand-in for the game's market profit. Validity: SEL-1 holds
-(driver sex kept with a note: a legal rating factor in the data's year, as frempl and australian); USE-1 holds, fit
+deviance (power 1.5, predictions floored at 0.1 EUR) as a stand-in for the game's market profit. Validity: SEL-1 holds;
+USE-6 and the Tensions row on rating factors as amended on 2026-11-08: the drivers' sex is dropped, as sex is no
+rating factor of an insurance pricing task, whatever the actor's jurisdiction (australian_vehicle_insurance_2004_2005's
+issue 7); USE-1 holds, fit
 approximate (USE-8: next year's renewals with their claim history are the real task); USE-5 holds (negative totals from
-legal recourse set to 0, +4.8% on total cost); LEAK-10 holds for all 29 features; SPLIT-1 and SPLIT-4 hold (grouped by
+legal recourse set to 0, +4.8% on total cost); LEAK-10 holds for all 27 features; SPLIT-1 and SPLIT-4 hold (grouped by
 client); SPLIT-8: the forced split ships on Andrej's call of 2026-11-02, its cost stated, and the leak test across it
 found none; PROV-8 and PROV-13 hold. The re-review of 2026-11-06 under the exposure rules finds nothing to weight: no
 time on risk is realized, so MET-15 scores each policy unweighted, LEAK-41 has no weight to guard and MET-16 no survey
@@ -17,8 +19,9 @@ weight to act on; MET-14 holds by its per-contract clause (every policy is price
 located, and the newest policies claim as their risk predicts, so at most about 9% of the policies in their first year
 could be half years). Value: the task probe flags no_signal (TP-1, TP-2), which reads an R²-type skill (best R² 0.003);
 on the declared deviance the random forest scores 62.44 against the constant's 63.10 (skill 0.011, 5 of 9 splits, task
-probe) and 60.57 against 63.31 (skill 0.043, 3 folds, mediator), a small real signal (EV-3); at the 0.1 EUR floor the
-task probe's random forest scores 62.22 against 63.10; MET-11 holds (the deviance follows the game's profit at a
+probe) and 60.57 against 63.31 (skill 0.043, 3 folds, mediator), a small real signal (EV-3); at the 0.1 EUR floor
+and without the drivers' sex the task probe's random forest scores 62.30 against 63.10 (62.22 with them); MET-11
+holds (the deviance follows the game's profit at a
 Kendall tau of 0.58 to 0.79 in simulated markets); MET-13 holds since 2026-11-08: the floor is 0.1 EUR, two orders of
 magnitude below the smallest plausible mean policy cost (16.8 EUR), where Andrej's 1 EUR sat 1.2 orders below (issue
 5). Quality: impossible values masked (CLEAN-11), make and model joined (CLEAN-12), the commune typed as text
@@ -36,10 +39,17 @@ Changed on Lennart's marks of 2026-11-08 (rows, target and split unchanged; a bu
 floor is 0.1 EUR (issue 5) and `pol_pay_freq` is an ordered category, Yearly < Biannual < Quarterly < Monthly; the
 task probe was re-run at the new floor.
 
+Changed on 2026-11-08 on Lennart's stance of australian_vehicle_insurance_2004_2005's issue 7 (rows, target, split and
+metric unchanged): `drv_sex1` and `drv_sex2` are dropped, since sex is no rating factor of any insurance pricing task
+of this collection; the task probe was re-run without them (random forest 62.30 against the constant's 63.10, 62.22
+with them). The notes' other model scores were measured with the two columns in and say so.
+
 **Main points:** nothing open. Resolved on 2026-11-03: the deviance is in (2), euros stay (3) and the name stays (4);
 verdict ship (Andrej). On 2026-11-08 the floor was lowered from Andrej's 1 EUR to 0.1 EUR, following the collection's
 rule for a deviance floor, a convention that can change later (5, Lennart); `pol_pay_freq` is ordered by payments a
-year (from issue 8 of spanish_motor_insurance_coverage_level_2022_2024).
+year (from issue 8 of spanish_motor_insurance_coverage_level_2022_2024). The drivers' sex left the features on
+2026-11-08, on Lennart's stance that sex is no rating factor of any insurance pricing task
+(australian_vehicle_insurance_2004_2005's issue 7).
 
 **Issues for Andrej and Lennart:**
 

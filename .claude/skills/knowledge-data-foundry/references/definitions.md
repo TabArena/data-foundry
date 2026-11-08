@@ -248,18 +248,20 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
   test fold holds what it needs (MET-2).
 
   A row weight makes each row count in proportion to it: `normalized_weighted_gini`, `weighted_pearsonr` (without
-  `weights`), the optional `weight` input of `mean_poisson_deviance` and `mean_tweedie_deviance` (`sum(w * d) / sum(w)`,
-  as scikit-learn's `sample_weight`) and of `rmse` (`sqrt(sum(w * (y - p)^2) / sum(w))`, since 2026-11-08:
-  boreal_postfire_lichen_biomass weighs each quadrat by 1 over its plot's quadrats, so each plot counts once), and
-  `ordered_lorenz_gini` with `params={"per_unit": True}`, where the target and the prediction are already per unit of
-  the weight (a loss per year insured; the unnormalised weighted Gini). Without `per_unit` its weight is the base
-  premium that totals are compared against, not a row weight. `data_foundry.v2.metrics.row_weight_column(spec)` returns
-  a spec's row-weight column, or `None`. The regression fallback takes the weight too (`Metric.fallback(reason=...,
-  inputs={"weight": ...})`); the spec of a weighted `rmse` states the weighted formula, while the unweighted spec keeps
-  `sqrt(mean((y - p)^2))`, so the containers built before keep their checksum. Both deviances require `min_prediction`,
-  the floor on the predicted mean, two orders below the smallest plausible mean on the scale the metric scores (MET-13:
-  `1e-4` claims per year for fremtpl2 and bemtpl97). `score()` refuses an input the metric does not take, so a weight is
-  never dropped without notice.
+  `weights`), `rescaled_mean_tweedie_deviance` (its required `weight`; since 2026-11-08: each scored set's predictions
+  multiplied by `sum(w * y) / sum(w * p)`, then the weighted Tweedie deviance, the stand-in for a pricing game's market
+  that rescales every tariff to one total, pricing_game_2016_french_fleet), the optional `weight` input of
+  `mean_poisson_deviance` and `mean_tweedie_deviance` (`sum(w * d) / sum(w)`, as scikit-learn's `sample_weight`) and of
+  `rmse` (`sqrt(sum(w * (y - p)^2) / sum(w))`, since 2026-11-08: boreal_postfire_lichen_biomass weighs each quadrat by 1
+  over its plot's quadrats, so each plot counts once), and `ordered_lorenz_gini` with `params={"per_unit": True}`, where
+  the target and the prediction are already per unit of the weight (a loss per year insured; the unnormalised weighted
+  Gini). Without `per_unit` its weight is the base premium that totals are compared against, not a row weight.
+  `data_foundry.v2.metrics.row_weight_column(spec)` returns a spec's row-weight column, or `None`. The regression
+  fallback takes the weight too (`Metric.fallback(reason=..., inputs={"weight": ...})`); the spec of a weighted `rmse`
+  states the weighted formula, while the unweighted spec keeps `sqrt(mean((y - p)^2))`, so the containers built before
+  keep their checksum. The three deviances require `min_prediction`, the floor on the predicted mean, two orders below
+  the smallest plausible mean on the scale the metric scores (MET-13: `1e-4` claims per year for fremtpl2 and bemtpl97).
+  `score()` refuses an input the metric does not take, so a weight is never dropped without notice.
 
   The build writes the spec into the task metadata as `objective_metric`: `name`, `kind` (`standard`, `custom` or
   `local`), `prediction` (`proba`, `label`, `value`), `greater_is_better`, `origin`, `params`, `inputs`, `original`,
@@ -711,7 +713,7 @@ and the rest is checked when the metric is written or reviewed.
      `weighted_pearsonr`, and per group `mean_group_pearsonr`).
    * A prediction outside the metric's domain is floored, not refused: `rmsle` at 0, the Poisson and Tweedie
      deviances at `min_prediction` (with `prediction_domain="positive"`, so the bundle check draws valid dummies).
-     Both deviances require the floor, with no library default (`task_metric_param_invalid` without it): the
+     The three deviances require the floor, with no library default (`task_metric_param_invalid` without it): the
      definition states it two orders below the smallest plausible mean, on the scale the metric scores (MET-13: 1e-4
      claims per year on fremtpl2 and bemtpl97), and `task_probes.py` reports the share of predictions at it. The floor
      sets the scale of the worst error: one claim predicted at f costs `2 * (log(1/f) - 1 + f)` in Poisson deviance

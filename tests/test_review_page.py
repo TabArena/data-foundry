@@ -156,6 +156,11 @@ def test_collector_leaves_out_a_settled_record(crv, tmp_path):
     assert _collect_fixture(crv, root, records, out, "--keep-settled") == 0
     assert "### airfoil_self_noise" in out.read_text()
 
+    # Only settled records named: nothing to write, and no error.
+    out.unlink()
+    assert _collect_fixture(crv, root, records, out, "--names", "airfoil_self_noise") == 0
+    assert not out.exists()
+
     # Deferred last: the record is parked, not settled.
     review = root / "airfoil_self_noise" / "REVIEW.md"
     review.write_text(review.read_text().replace(closing, "   **Deferred (2026-11-08):** parked.\n\n"))

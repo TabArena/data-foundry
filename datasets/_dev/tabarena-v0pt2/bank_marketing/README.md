@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: bank_marketing
 container_format: 2
-checksum: v2:5d5f1a07d4134a74d9f2f0e4d4db5aabb1811cd1e0cd33f08d66ecedf97b465e
+checksum: v2:883952c1414c219e73c864346563473bd86589306ec9b405a297598652eda586
 build:
   uuid: 01a111fc-7c2d-7441-b859-646c9bfbf380
   checksum: v2:df7e993235e244580c862ce525a593509ccdcce2503c8efd6c2ad7382a02bdeb
@@ -31,34 +31,32 @@ task:
   metric: roc_auc
   metric_origin: source
   scoring_columns: null
-  split_regime: iid
+  split_regime: temporal_non_iid
   stratify_on: SubscribeTermDeposit
-  time_on: null
+  time_on: time_index
   group_on: null
   group_labels: null
   group_time_on: null
   grouping: null
 splits:
-  n_repeats: 3
-  n_folds: 3
+  n_repeats: 5
+  n_folds: 1
   random_state: 4267
-  time_horizon: null
-  time_horizon_unit: null
+  time_horizon: 4521
+  time_horizon_unit: steps
   time_gap: null
   time_gap_unit: null
   n_train:
-    min: 30140
-    max: 30141
+    min: 22606
+    max: 40690
   n_test:
-    min: 15070
-    max: 15071
+    min: 4521
+    max: 4521
 bundle_checks:
   ok: true
   errors: []
   warnings: []
-  infos:
-  - dataset_duplicate_rows
-  - dataset_conflicting_duplicate_rows
+  infos: []
   accepted:
     dataset_missing_value_sentinel: 'pdays = -1 is the source''s code for ''client
       was not previously contacted'' (UCI codebook), not a missing value: it matches
@@ -71,9 +69,9 @@ decisions: []
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Binary classification of `SubscribeTermDeposit`, scored with `roc_auc` on IID splits. 45,211 rows and 13 features. Source: UCI (2012).
+Binary classification of `SubscribeTermDeposit`, scored with `roc_auc` on temporal splits by `time_index`. 45,211 rows and 13 features. Source: UCI (2012).
 
-Built as `01a111fc-7c2d-7441-b859-646c9bfbf380` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:5d5f1a07d4134a74d9f2f0e4d4db5aabb1811cd1e0cd33f08d66ecedf97b465e`, so the build is stale. See [Build](#build).
+Built as `01a111fc-7c2d-7441-b859-646c9bfbf380` on 2026-10-06, but `dataset.py` has changed since: it now gives checksum `v2:883952c1414c219e73c864346563473bd86589306ec9b405a297598652eda586`, so the build is stale. See [Build](#build).
 
 ## In brief
 
@@ -85,13 +83,13 @@ Built as `01a111fc-7c2d-7441-b859-646c9bfbf380` on 2026-10-06, but `dataset.py` 
 
 **Predicted.** Whether the client subscribed to a term deposit by the end of the campaign's calls; 11.7% did.
 
-**Known at prediction time.** Age, job, marital status, education, whether the client has defaulted on credit, the account balance, housing and personal loans, the phone type, the number of calls in this campaign, and the contacts with and outcome of earlier campaigns.
+**Known at prediction time.** Before the campaign's first call: age, job, marital status, education, whether the client has defaulted on credit, the account balance, housing and personal loans, the phone type, the contacts with and outcome of earlier campaigns, and the record's place in the file's date order.
 
-**What the test data stands for.** Random clients, so the test data stands for other clients of the same campaigns and years.
+**What the test data stands for.** Five stretches of the file's date order, 4,521 records each from August 2008 to November 2010, each trained on every earlier record, so the test data stands for the clients the bank calls next.
 
-**Our changes to the source.** We drop the duration of the last call, which the source says is unknown before the call and ends with the outcome, and the day and month of the last contact.
+**Our changes to the source.** We drop what the campaign's calls set: the duration of the last call (which the source says is unknown before the call), the number of calls in this campaign and the day and month of the last contact. We split by time on the file's date order instead of at random.
 
-> **Use case fit: approximate (a stand-in with a known gap).** The calls span two and a half years, but the dates are dropped and the split is random, so the test clients do not stand for a later campaign. The number of calls in this campaign counts up to the last one, so it partly reflects how the campaign ended (kept, worth 0.006 ROC AUC, about 0.0015 of it once the period is known).
+> **Use case fit: approximate (a stand-in with a known gap).** The windows follow the file's date order, as the source's own evaluation does, but count records, not campaigns: the file names no campaign and dates each record by its last call, so a window can start inside a campaign. In the newest window a recurring client's later record gives an earlier one's label away to a model that reads other test records, which the protocol forbids.
 
 ## Files in this folder
 
@@ -132,14 +130,15 @@ Only curators run `build`, when the dataset ships.
 | year | 2012 |
 | domain | finance |
 | license | CC BY 4.0 |
-| data_tags | IID |
+| data_tags | Non-IID, Temporal |
 | reference | moro2014bank-marketing |
 | rows x columns | 45,211 x 14 |
 | task.target | SubscribeTermDeposit |
 | task.problem_type | binary_classification |
 | task.metric | roc_auc |
-| task.split_regime | iid |
+| task.split_regime | temporal_non_iid |
 | task.stratify_on | SubscribeTermDeposit |
+| task.time_on | time_index |
 
 **Metric**
 
@@ -180,57 +179,65 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 45,211 rows of the final frame (random rows: the frame is shuffled); 12 of 14 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 45,211 rows of the final frame (the oldest rows: the frame is sorted by `time_index`); 12 of 14 columns, the target first. Cells are cut at 40 characters.
 
-| SubscribeTermDeposit | age | job | marital | education | default | balance | housing | loan | contact | campaign | pdays |
+| SubscribeTermDeposit | age | job | marital | education | default | balance | housing | loan | contact | pdays | previous |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| no | 45 | self-employed | divorced | tertiary | yes | 75 | yes | yes | cellular | 1 | -1 |
-| no | 31 | services | married | secondary | no | 283 | yes | no | cellular | 2 | -1 |
-| no | 37 | services | divorced | secondary | no | 75 | yes | no | cellular | 1 | -1 |
-| no | 35 | technician | single | secondary | no | 127 | no | no | cellular | 1 | -1 |
-| no | 40 | entrepreneur | divorced | nan | no | 2418 | yes | yes | unknown | 16 | -1 |
+| no | 58 | management | married | tertiary | no | 2143 | yes | no | unknown | -1 | 0 |
+| no | 44 | technician | single | secondary | no | 29 | yes | no | unknown | -1 | 0 |
+| no | 33 | entrepreneur | married | secondary | no | 2 | yes | yes | unknown | -1 | 0 |
+| no | 47 | blue-collar | married | nan | no | 1506 | yes | no | unknown | -1 | 0 |
+| no | 33 | nan | single | nan | no | 1 | no | no | unknown | -1 | 0 |
 
 ## Curation notes
 
+- Prediction point (USE-3; CC 2026-11-08, Lennart, REVIEW.md issue 2): before the campaign's first call to the client, when the team picks whom to call. Known then: the client's profile and the earlier campaigns, nothing of this campaign's calls; so `duration`, `campaign`, `day` and `month` leave (below).
 - We removed the "duration" feature following its original description to obtain a "realistic predictive model".
-- We drop `day` (the day of the month; `day_of_week` is a column of the authors' 2014 release only) and `month` of the last contact: the campaign's end sets that date, since the calls stop at a subscription or when the bank stops calling (LEAK-10). The source keeps the month of each call as an input (Moro et al. 2014, Table 2, "month in which the call is made"); this file has only the last call's.
-- `campaign` and `previous` are counts of contacts (UCI: "number of contacts performed during this campaign",
-  "... before this campaign"), so they stay numeric. The BeyondArena notebook typed them categorical (48 and
-  41 levels), which lost the order and left the high counts as rare levels (issue #34).
-- Potential leak, kept on purpose (the LEAK-10 Cases row on spans the outcome sets, 2026-11-06): `campaign` counts this campaign's contacts including the last (UCI: "number of contacts performed during this campaign and for this client (numeric, includes last contact)"). The calls stop at a subscription or when the bank stops calling, so the outcome draws the end only for subscribers, who cannot be told apart without the label. Without it ROC AUC falls by 0.0060 (LightGBM, 9 splits x 5 seeds, lower in 9 of 9) and 0.0079 (logistic regression); given the year of the last contact (rebuilt from the file's date order, not shipped) it adds 0.0013 and 0.0016, about one seed SD of LightGBM. Most of its worth is the period's call intensity (3.2 calls per client at 5.1% subscribed in 2008, 1.9 at 51.6% in 2010). In 2008 the rate is flat over 1 to 10 calls (5.3% at 1 call, 5.3% at 6 to 10), but not in 2009 (19.0% at 1 call, 7.2% at 6 to 10) or in 2010 (51.9% to 39.2%). Revisit if the dates are restored or the split becomes temporal.
-- `contact` (cellular, telephone, unknown) belongs to the last contact in the codebook, but it is no span: its "unknown" covers all 12,443 rows of May-June 2008 (3.7% subscribed), so it marks the period (the authors' 2014 release codes these rows "telephone"). It is worth 0.021 ROC AUC in both models, nearly all of it the period: replaced by an unknown-or-not flag, it loses 0.0005 (LightGBM, 9 splits x 3 seeds), although the raw rates of cellular and telephone differ within a period (2009: 17.4% against 13.6%; 2010: 57.1% against 45.5%). Kept, with "unknown" as a level.
-- `pdays` (days since the client was last contacted in an earlier campaign): the data lean to counting to this campaign's start, not its end, but do not settle it. At a fixed date of the last contact it falls by 2.2 days per extra call, and by 1.0 with `previous` and `poutcome` also held fixed, so about half of the slope is who gets called more. It is worth 0.0048 ROC AUC with LightGBM and nothing with logistic regression (9 splits); kept. Its -1 means "client was not previously contacted" (UCI) and matches `previous` == 0 row for row (36,954 rows), so it stays as the source's code (CLEAN-10), and the bundle's sentinel warning is accepted for it.
+- The file has the day (`day`, the day of the month) and the month (`month`) of the last contact, but not the year. `_clean` rebuilds the year where the month wraps from December to January (2008: 27,729 records, 2009: 14,862, 2010: 2,620), checks that the dates never fall in the file's order (UCI: "ordered by date"; May 2008 to November 2010, with no record in September 2008), keeps the file position as the time key `time_index` (SPLIT-22), and drops `day` and `month` (`day_of_week` is a column of the authors' 2014 release only): the campaign's end sets the last contact's date, since the calls stop at a subscription or when the bank stops calling (LEAK-10). The source keeps the month of each call as an input (Moro et al. 2014, Table 2, "month in which the call is made"); this file has only the last call's, and whether it comes back is REVIEW.md issue 4.
+- Split by time (CC 2026-11-08, Lennart, REVIEW.md issue 1; SPLIT-1, SPLIT-19, SPLIT-22, LEAK-17), in place of the random split shipped until 2026-11-08; `splits_comment` gives the windows. Clients recur across campaigns: 995 pairs of records in two different years share the profile and the balance to the euro, the later record has more earlier contacts in 95% of them, and where the earlier record subscribed, the later one's `poutcome` says "success" in 562 of 581 pairs. Under the random split about 3.7% of the test records had the same client's later record in training (a lookup of it: +0.020 ROC AUC to LightGBM, higher on 9 of 9 splits), and models learnt each period's rate (5.1% subscribed in 2008, 17.1% in 2009, 51.6% in 2010) from records of the same months: most of that split's 0.76 ROC AUC came from telling the periods apart. Under the windows a client's earlier records train as its history (LEAK-34), and its later ones never do. On the five windows, newest first, LightGBM scores ROC AUC 0.570, 0.679, 0.605, 0.552 and 0.522 (mean 0.586; 3 seeds, early stopping on the newest tenth of the training side, seed SD 0.029 per window) and logistic regression 0.633, 0.701, 0.640, 0.603 and 0.490 (mean 0.614). The time key as an input is worth +0.018 to LightGBM (lower without it in 3 of 5 windows) and +0.004 to logistic regression.
+- Protocol (LEAK-9, an evaluation leak): in the newest window (August 2009 to November 2010) 703 test records (15.6%) have a later record of the same client in the same window, and its `poutcome` gives the label away: 419 say "success", all of them subscribers (19.7% of the window's positives; 7 to 18 records in each older window). Each test record is predicted from the training records and its own inputs only; no feature or model step may use other test records.
+- `campaign` is dropped (LEAK-10; CC 2026-11-08, Lennart, REVIEW.md issue 2, in place of the keep with a note of 2026-11-06): it counts this campaign's contacts including the last (UCI: "number of contacts performed during this campaign and for this client (numeric, includes last contact)"), none of which exists at the prediction point, and the calls stop at a subscription or when the bank stops calling. It is the shape of heart_failure_followup_survival's `time`, a span from the prediction point to the outcome or a criterion without it. Under the random split it was worth 0.0060 ROC AUC to LightGBM (9 splits x 5 seeds, lower without it in 9 of 9) and 0.0079 to logistic regression, 0.0013 and 0.0016 once the year was known; on the five windows it adds +0.0065 to logistic regression (higher in 5 of 5) and -0.014 to LightGBM (higher in 1 of 5).
+- `previous` is a count of contacts (UCI: "number of contacts performed before this campaign and for this client"), so it stays numeric. The BeyondArena notebook typed it and `campaign` categorical (41 and 48 levels), which lost the order and left the high counts as rare levels (issue #34).
+- `contact` (cellular, telephone, unknown) belongs to the last contact in the codebook, but it is no span: its "unknown" covers all 12,443 rows of May-June 2008 (3.7% subscribed), so it marks the period (the authors' 2014 release codes these rows "telephone"). Under the random split it was worth 0.021 ROC AUC in both models, nearly all of it the period: replaced by an unknown-or-not flag, it lost 0.0005 (LightGBM, 9 splits x 3 seeds), although the raw rates of cellular and telephone differ within a period (2009: 17.4% against 13.6%; 2010: 57.1% against 45.5%). On the five windows, where the period it marks lies wholly in training, dropping it lowers LightGBM by 0.006 (lower in 3 of 5) and raises logistic regression by 0.014 (higher in 4 of 5). Kept, with "unknown" as a level.
+- `pdays` (days since the client was last contacted in an earlier campaign): the data lean to counting to this campaign's start, not its end, but do not settle it. At a fixed date of the last contact it falls by 2.2 days per extra call, and by 1.0 with `previous` and `poutcome` also held fixed, so about half of the slope is who gets called more. It was worth 0.0048 ROC AUC with LightGBM and nothing with logistic regression on the random split (9 splits), and 0.002 with both on the five windows; kept. Its -1 means "client was not previously contacted" (UCI) and matches `previous` == 0 row for row (36,954 rows), so it stays as the source's code (CLEAN-10), and the bundle's sentinel warning is accepted for it.
 - Note: `balance` is the "average yearly balance, in euros" (UCI); the source does not say which year. 995 pairs of rows in two different years share the profile and the balance to the euro, mostly one client seen twice (the later row has more earlier contacts in 95%), and in 71% of them the age moves by one year while the balance stays: it may be one reading of unknown date. A subscription could move money, but nothing shows the reading falls after the calls, so it stays, as the registry fields of tunisian_fraud_detection_challenge did (LEAK-10, 2026-11-05). Revisit if the source dates it.
-- `job`'s "unknown" (288 rows) is missing, as `education`'s (1,857 rows): the authors' 2014 codebook says "There are several missing values in some categorical attributes, all coded with the 'unknown' label" (CLEAN-10; ROC AUC unchanged on 9 of 9 splits). `contact`'s "unknown" stays a level, as it marks the period (above).
-- Duplicates (LEAK-16, LEAK-18): 274 exact copies (0.6%, label included) and 32 feature-copies with the other label; 93% of the copy rows have a balance of 0, plausible repeats of common profiles, so they stay; under the random split 0.9% of the test rows have a copy of every feature in training, 0.8% one with the same label. Kept with this note (CC 2026-11-08, Lennart; REVIEW.md issue 3).
+- `job`'s "unknown" (288 rows) is missing, as `education`'s (1,857 rows): the authors' 2014 codebook says "There are several missing values in some categorical attributes, all coded with the 'unknown' label" (CLEAN-10; ROC AUC unchanged on 9 of 9 random splits). `contact`'s "unknown" stays a level, as it marks the period (above).
+- Duplicates (LEAK-16, LEAK-18): on the twelve inputs without the time key, 811 records (1.8%) copy another, label included, and 82 more copy another's inputs with the other label (274 and 32 while `campaign` was an input); 89% of the copy rows have a balance of 0, plausible repeats of common profiles, so they stay. The time key makes every record distinct, so the bundle check counts none. On the five windows 0.8% to 4.3% of the test records (the oldest window the most) have a copy of every input but the time key in training, 0.6% to 4.0% with the same label: an earlier record, the client's history when it is one client (LEAK-34). Kept with this note (CC 2026-11-08, Lennart; REVIEW.md issue 3).
 - Ordinal scales (2026-10-30, the curator's marks of 2026-10-31 and 2026-11-01, CLEAN-14): 1 column is ordered
   categories in the order of the source's codebook (`ORDINAL_LEVELS`); codes that mean unknown are missing
   (CLEAN-10).
 
 ## Splits
 
-Default splits.
+Five expanding windows on the file's date order (UCI: "ordered by date"), newest first: the newest half of the
+45,211 records cut into five stretches of 4,521, each trained on every earlier record (90%, 80%, 70%, 60% and
+50% of the records; SPLIT-14). By the date of the last contact, rebuilt in `_clean` and not shipped, the test
+windows run from 2009-08-07 to 2010-11-17 (2,129 subscribers, 47.1%), 2009-05-11 to 2009-08-07 (727, 16.1%),
+2009-04-06 to 2009-05-11 (593, 13.1%), 2008-11-21 to 2009-04-06 (473, 10.5%) and 2008-08-22 to 2008-11-21
+(279, 6.2%). The time key `time_index` is the record's position in the file. Each cut falls inside a day, whose
+earlier records in the file train (8 to 295 records); the order inside a day carries no signal (the position
+in the day alone: ROC AUC 0.501 over the days with 20 records or more). The source scores its model on
+time-ordered windows too: a random split does "not reflect the temporal dimension that a real prediction
+system would have to follow" (Moro et al. 2014, p. 5). The windows count records, not campaigns, as the file
+names no campaign. No gap (SPLIT-10): a record is dated by its last call, which ends the client's calls in that
+campaign, so its outcome is known by the date that orders it. Each test record is predicted from the training
+records and its own inputs only; no feature or model step may use other test records (curation notes,
+Protocol).
 
-3 repeat(s) x 3 fold(s) with seed 4267; train 30,140 to 30,141 rows, test 15,070 to 15,071 rows.
+5 repeat(s) x 1 fold(s) with seed 4267; train 22,606 to 40,690 rows, test 4,521 rows. Prediction horizon: 4521 steps.
 
-| repeat | fold | n_train | n_test |
-|---|---|---|---|
-| 0 | 0 | 30140 | 15071 |
-| 0 | 1 | 30141 | 15070 |
-| 0 | 2 | 30141 | 15070 |
-| 1 | 0 | 30140 | 15071 |
-| 1 | 1 | 30141 | 15070 |
-| 1 | 2 | 30141 | 15070 |
-| 2 | 0 | 30140 | 15071 |
-| 2 | 1 | 30141 | 15070 |
-| 2 | 2 | 30141 | 15070 |
+| repeat | fold | n_train | n_test | train_start | train_end | test_start | test_end |
+|---|---|---|---|---|---|---|---|
+| 0 | 0 | 40690 | 4521 | 0 | 40689 | 40690 | 45210 |
+| 1 | 0 | 36169 | 4521 | 0 | 36168 | 36169 | 40689 |
+| 2 | 0 | 31648 | 4521 | 0 | 31647 | 31648 | 36168 |
+| 3 | 0 | 27127 | 4521 | 0 | 27126 | 27127 | 31647 |
+| 4 | 0 | 22606 | 4521 | 0 | 22605 | 22606 | 27126 |
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 0 info (27 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicate_rows`: 274 exact duplicate row(s) (0.6% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
-- **info** `dataset_conflicting_duplicate_rows`: 32 row(s) (0.1%) share all features with another row but carry a different target. (hint: Either the rows differ in a dropped column, or the label is noisy — this caps the achievable score.)
 
 Accepted on purpose:
 
@@ -256,9 +263,9 @@ Accepted on purpose:
 | SubscribeTermDeposit | category | 0 | 0 | 2 | no, yes |
 | age | int64 | 0 | 0 | 77 | 32, 31, 33, 34, 35, 36, 30, 37, 39, 38 |
 | balance | int64 | 0 | 0 | 7168 | 0, 1, 2, 4, 3, 5, 6, 8, 23, 7 |
-| campaign | int64 | 0 | 0 | 48 | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 |
-| pdays | int64 | 0 | 0 | 559 | -1, 182, 92, 183, 91, 181, 370, 184, 364, 95 |
+| pdays | int64 | 0 | 0 | 559 | -1, 182, 92, 91, 183, 181, 370, 184, 364, 95 |
 | previous | int64 | 0 | 0 | 41 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
+| time_index | int64 | 0 | 0 | 45211 | 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 |
 
 </details>
 
@@ -275,9 +282,9 @@ Accepted on purpose:
 |---|---|---|---|---|---|
 | age | 45211 | 40.9362 | 10.6188 | 18 | 95 |
 | balance | 45211 | 1362.27 | 3044.77 | -8019 | 102127 |
-| campaign | 45211 | 2.76384 | 3.09802 | 1 | 63 |
 | pdays | 45211 | 40.1978 | 100.129 | -1 | 871 |
 | previous | 45211 | 0.580323 | 2.30344 | 0 | 275 |
+| time_index | 45211 | 22605 | 13051.4 | 0 | 45210 |
 
 ### Categorical features
 
@@ -327,4 +334,4 @@ Accepted on purpose:
 | data_foundry_version | 0.0.5 |
 | git_sha | 8fbc4745ab8de19d5bc0c98a89b008f5d779909f-dirty |
 | libraries | {'python': '3.11.14', 'pandas': '2.3.3', 'numpy': '2.1.3', 'pyarrow': '20.0.0', 'scikit-learn': '1.7.2', 'polars': '1.41.1'} |
-| stale | yes: the definition now gives checksum `v2:5d5f1a07d4134a74d9f2f0e4d4db5aabb1811cd1e0cd33f08d66ecedf97b465e` |
+| stale | yes: the definition now gives checksum `v2:883952c1414c219e73c864346563473bd86589306ec9b405a297598652eda586` |

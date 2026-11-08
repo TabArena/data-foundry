@@ -1,5 +1,72 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-08, PR #47: Lennart's replies on the board applied (second round, no container built)
+
+Lennart replied on the review board to the consistency checks and answers of the first round. Every open question of
+that round is settled; bank_marketing's new issue 4 (the month of the last call) waits for him. The changes below follow
+the replies; no container was built, and the folds change at the next build for bank_marketing, pricing_game_2016,
+australian and frempl (row order).
+
+- `noaa_storm_events_damage`: issue 10 (A): the mean Tweedie deviance on the dollars stays; the notes' signal bullet
+  gives tuned Tweedie LightGBM against the mean per event type per window (3,463 / 2,044 / 962 against 2,660 / 2,301 /
+  1,740; 2023 within noise, bootstrap SE 1,580) and the $10M-capped variant as a note. Issue 11 (B): the Flash Flood
+  duration is kept with a `Potential leak, kept on purpose:` note (one Sec. 14 onset is damage to a building, named in
+  6.8% of its narratives; worth +31% to +102% of the deviance on its rows); Flood, Hurricane (Typhoon) and Tropical
+  Storm stay read as outcome-free. Text only.
+- `wisconsin_local_government_property_insurance_fund`: issue 3, reply (a): the three yearly windows stay under SPLIT-14
+  as amended on this fund's facts (two windows above the floor, recurring members, a leak across member folds); the
+  split note states what the 2008 window changes, and the no-gap departure from SPLIT-10 has a fact of its own (final
+  claim amounts in every year). Text only.
+- `fremtpl2`, `bemtpl97`, `thailand_road_accident_register_2019_2022`: fremtpl2 issue 10, reply (c): the `Two-Regime
+  Zeros` tag stays on fremtpl2, bemtpl97 gets it and thailand (retired, `No`) has it restored; the tag describes the
+  target's distribution, not the task's model (records.md). Records only.
+- `frempl_french_motor_personal_line`: issue 7 (b): the claim cost per realized year ships on the identity scale
+  (`claim_amount_per_year`, no `target_transform`; was `log1p_claim_amount_per_year`), `length_to_year_end` kept;
+  reverses D9's log1p clause. Issue 9 (B): Lennart's CC line confirms the length unrounded and names Andrej's superseded
+  calls of 2026-11-02 (issue 2 (a)) and 2026-11-03 (issue 4). Same rows, features, weight, metric and folds; the frame's
+  row order changes with the target; scores re-measured on the identity scale (Tweedie 0.183, squared error 0.154).
+- `bank_marketing`: issue 1 (reply (a), the issue's A): split by time on the file's date order, five expanding windows
+  of 4,521 records (training on 50% to 90%), keyed by the file position `time_index` (an input) once `_clean` has
+  rebuilt the year and checked the dates; the record's `required_split` is `Temporal (NON-IID)` with the tag `Non-IID
+  (Temporal)`; a protocol line for 703 recurring clients inside the newest window. Issue 2 (reply (a)): the prediction
+  point is before the campaign, `campaign` dropped (12 inputs and the time key). Issue 4 raised (the month of the last
+  call). LightGBM ROC AUC 0.586 on the windows (0.76 at random before); splits and columns change, so the build 01a111fc
+  is superseded.
+- `pricing_game_2016_french_fleet`: issue 6 (b): split by contract, forced from temporal (`contract_id` the group column
+  of the default 3 x 3 grouped splits, `ForcedGroupedFromTemporal`) in place of the three four-month windows of 2013 on
+  one training side; the exception to SPLIT-10 lapses; `fit` approximate; record `required_split` `Grouped (NON-IID)`,
+  tag `Non-IID (Grouped)`. Issue 8 (B): the metric is the new library metric `rescaled_mean_tweedie_deviance` (power
+  1.5, `min_prediction` 0.1 per vehicle-year, weighted by `exposure`), the stand-in for the game's market in place of
+  the normalized weighted Gini; it separates a Tweedie GLM from the constant on every fold, and untuned LightGBMs score
+  below the constant. The folds and the metric change at the next build.
+- Code: the new library metric `rescaled_mean_tweedie_deviance` (each scored set's predictions rescaled to its weighted
+  claim total, then the weighted Tweedie deviance; 1M rows in 0.03 s) with its tests; the bundle check on a transformed
+  target and the leak probes' actuarial fit know it.
+- `australian_vehicle_insurance_2004_2005`: issue 7 (reply (a), the issue's C): `gender` dropped on Lennart's stance
+  that sex is no rating factor of any insurance pricing task, whatever the actor's jurisdiction (principles.md,
+  Tensions, amended); five rating factors. Issue 8 (reply (a)): target, weight, Gini and split design stay, the target
+  bullet cites MET-14's per-contract clause as amended (one change with spanish_motor_insurance_2015_2018 issue 7) and
+  the metric reason says why the frequency deviance was not chosen. The content order and so the shipped folds change;
+  the model numbers are re-measured (Tweedie GLM 0.119, LightGBM 0.075, task probe linear 0.117).
+- `pricing_game_2017_french_mtpl`: `drv_sex1` and `drv_sex2` dropped on the same stance (27 features); split sets
+  unchanged; task probe re-run (random forest 62.30 against the constant's 63.10; 62.22 with them).
+- `frempl_french_motor_personal_line`: `Gender` leaves the features on the same stance; it still builds
+  `policy_component` (`_clean` step 5, dropped in step 8), so the 61,091 components and every split's test records are
+  unchanged (the rows reordered). It carried nothing measurable (weighted Tweedie fit 0.1815 with it, 0.1819 without);
+  the notes, the metric reason and the splits comment are re-measured without it.
+- `spanish_homeowners_motor_insurance_2010_2014`: `gender` dropped (19 features) on the same stance, as EU law requires
+  (Test-Achats); supersedes Andrej's keep of 2026-11-02 (issue 1 (a)); it carried little (-0.004 to +0.017 on the
+  3-window mean Gini across five models, none above twice its SE). The Exposure bullet's lapse test re-run on four
+  models: the lapse gains +0.011 to +0.038, towards more loss, where the one LightGBM run quoted before showed none.
+- Knowledge files: SPLIT-14 amended (a release with two windows above the floor may add one older window on at least 40%
+  of the rows, wisconsin), MET-14's per-contract clause amended (spanish_motor_insurance_2015_2018 and australian), the
+  Tensions row on rating factors amended (sex leaves every insurance pricing task), the `Two-Regime Zeros` definition
+  (the target's distribution, not the model); Cases rows: MET-11 (the rescaled deviance as the stand-in for a uniformly
+  rescaling market), SPLIT-14 and SPLIT-10 (wisconsin; pricing_game_2016 forced by contract), SPLIT-31 and a new
+  bank_marketing row, CLEAN-16 (frempl's identity scale), TP-1/TP-2 (noaa_storm), the noaa_storm spans, LEAK-41 and
+  evidence for frempl. The review page leaves out records with nothing left to decide (`collect_reviews.py
+  --keep-settled` keeps them).
+
 ## 2026-11-08, PR #47: Lennart's marks on the review board applied (no container built)
 
 Lennart marked the PR #47 review board on 2026-11-06 and 2026-11-08. A consistency check ran first; four marks wait for

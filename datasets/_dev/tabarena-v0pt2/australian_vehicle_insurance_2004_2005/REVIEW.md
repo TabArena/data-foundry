@@ -1,30 +1,34 @@
 # australian_vehicle_insurance_2004_2005
 
 **Outcome:** added. The AI recommends shipping it: the re-review panel of 2026-11-06 under the exposure rules found no
-validity rule broken in the rows, features, target or split, its text changes are made (below), and two questions
-on validity are open (issues 7 and 8); a third, the age bands' type (issue 9), was settled on 2026-11-08. Like every container with a `sample_weight`, it enters no
+validity rule broken in the rows, features, target or split, its text changes are made (below), and its three
+questions were settled on 2026-11-08: `gender` leaves the features (issue 7), the cost per year insured stays with
+MET-14's per-contract clause amended (issue 8), the age bands are ordered categories (issue 9). Like every container
+with a `sample_weight`, it enters no
 run before the collection's training-weight gate (`BENCHMARK_CHANGES_TODO.md`, "Training weights", "The gate"). The
 "Car" table of de Jong and Heller (2008) from the R package insuranceData (CASdatasets holds the same rows): 67,856
 one-year Australian vehicle policies of 2004-2005, target the claim cost per year insured (the cost of the part of the
-policy's year the data observed, over that time, in dollars; 0 for 93.2%), six rating factors, the observed time as
+policy's year the data observed, over that time, in dollars; 0 for 93.2%), five rating factors, the observed time as
 each policy's weight in training and scoring, random 3x3 split tagged forced from temporal, scored by the
 exposure-weighted normalized Gini as a context metric. Validity: USE-1 holds (pricing a policy at underwriting, "for
 example"); LEAK-41 holds: `exposure`, which some claims cut short, is only the weight scoring column, the metric's
 weight input and the `sample_weight` (issue 6, Lennart, 2026-11-06); the rating factors predict it only weakly (R^2
-0.074, and 0.080 on the policies without a claim, whose exposure no claim cut), so what they predict is when the
+0.076, and 0.081 on the policies without a claim, whose exposure no claim cut), so what they predict is when the
 policy started, which is known at the quote (USE-6); probe 22 finds in both arms (an L2 and a weighted Tweedie fit)
-that the exposure as a feature gains +0.098 and +0.068 and that no rating factor gains through it above noise (the
-panel read the L2 arm; the Tweedie arm, run after it, agrees); LEAK-10 holds (`clm`, `numclaims` and `claimcst0`
+that the exposure as a feature gains +0.078 and +0.062 and that no rating factor gains through it above noise
+(re-run on 2026-11-08 without `gender`); LEAK-10 holds (`clm`, `numclaims` and `claimcst0`
 dropped as parts of the target); SPLIT-8 holds: the forced IID split ships on Andrej's call of 2026-11-02 (issue 1),
 and on the rate it shows no drop when later file blocks or whole rating cells are held out; PROV-4 and PROV-16 hold
 (the book's Table 1.1, CASdatasets row by row, the book's pages read, issue 3); USE-6 and the Tensions row on rating
-factors: `gender` is kept with no stated fact, while bemtpl97 dropped `sex` (issue 7); USE-5 and MET-14: the rate
-departs from the rule's per-contract clause without the fact that sets it apart recorded (issue 8). Value: TP-2, a
-small real signal: the three families fitted with the weight beat the weighted constant on 9 of 9 splits (Tweedie GLM
-0.120, Tweedie LightGBM 0.059, L2 LightGBM 0.060); the task probe flags `no_signal`, but the flag reads an R^2-type
-skill (weighted squared error, best R^2 0.0002), while on the declared metric the probe's linear family scores 0.120
-and beats the dummy on all 5 splits it ran (EV-3); re-check with the first tuned run (TP-1), as for sf_permit_time,
-heart_disease and open_university_learning_analytics_dataset; TP-4: the observed time, which alone earned 82% of the
+factors as amended on 2026-11-08: sex is no rating factor of an insurance pricing task, whatever the actor's
+jurisdiction, so `gender` is dropped, as bemtpl97's `sex` (issue 7); USE-5 and MET-14 hold: the per-contract clause,
+amended on 2026-11-08, needs the data to record each contract to its end, and the extract's window cuts 98.1% of
+these policies (issue 8). Value: TP-2, a small real signal: the three families fitted with the weight beat the
+weighted constant on 9 of 9 splits (Tweedie GLM 0.119, Tweedie LightGBM 0.075, L2 LightGBM 0.076); the task probe
+flags `no_signal`, but the flag reads an R^2-type skill (weighted squared error, best R^2 0.0002), while on the
+declared metric the probe's linear family scores 0.117 and beats the dummy on all 5 splits it ran (EV-3); re-check
+with the first tuned run (TP-1), as for sf_permit_time, heart_disease and
+open_university_learning_analytics_dataset; TP-4: the observed time, which alone earned 82% of the
 old score, is no input now; MET-11 and MET-13 hold: the exposure-weighted Gini of the cost per year as a context
 metric (issues 4 and 6), its scorer equal to a brute-force Lorenz area, its reason now saying that it sees neither the
 price level nor the spread of the relativities; MET-15 holds at the definition (the run waits on the gate above).
@@ -32,11 +36,11 @@ Quality: the 53 vehicle values of 0 made missing (CLEAN-10, CLEAN-11); the claim
 call on fremtpl2's fixed amounts (2026-10-20); dollars kept on Andrej's call of 2026-11-02 (issue 5; CLEAN-16 as
 amended 2026-11-06: a rate scored by a Gini keeps the curator's scale); the 7 costs per year of 1M dollars or more
 kept, since no row may be selected by the realized weight (LEAK-41); CLEAN-14: the age bands ship as ordered categories
-(issue 9, 2026-11-08). Weighed: a documented textbook table +, the standard actuarial formulation (a rate with its weight) +, six
-coarse rating factors -, a thin signal (best honest score 0.109 to 0.120) -. For Andrej: Lennart's decision D8 of
-2026-11-06 (issue 6) supersedes his call on issue 2 (`exposure` kept as a feature) and changes the form of his Gini of
-issue 4 (unweighted on the cost, now weighted on the rate); the newer curator decision wins. Left for Andrej and
-Lennart: issues 7 and 8 (issue 9 settled on 2026-11-08).
+(issue 9, 2026-11-08). Weighed: a documented textbook table +, the standard actuarial formulation (a rate with its
+weight) +, five coarse rating factors -, a thin signal (best honest score 0.117 to 0.125) -. For Andrej: Lennart's
+decision D8 of 2026-11-06 (issue 6) supersedes his call on issue 2 (`exposure` kept as a feature) and changes the form
+of his Gini of issue 4 (unweighted on the cost, now weighted on the rate), and Lennart's stance of 2026-11-08 (issue
+7) drops the `gender` his ship of 2026-11-02 kept; the newer curator decision wins. Nothing is left open.
 
 Changes made after the review panel (AI, 2026-11-01), text only (rows, split and metric unchanged): `exposure` is
 described as the share of the year observed, cut short after some claims, and named in `fit_reason` as a kept leak;
@@ -46,17 +50,24 @@ describes Frees et al. and Allstate as they are; the book's later sections are m
 6): the target is the cost per year insured, `exposure` the weight and no feature, the metric the weighted Gini on the
 rate; `fit_reason` no longer names a kept leak. Changed after the re-review panel (AI, 2026-11-06), text only (rows,
 features, target, weight, split and metric unchanged): the metric reason adds that the Gini also ignores the spread of
-the relativities (a Tweedie GLM with doubled log-relativities keeps 0.120 but loses to the weighted constant on the
+the relativities (a Tweedie GLM with doubled log-relativities keeps its Gini but loses to the weighted constant on the
 weighted Tweedie deviance on 9 of 9 splits) and why that deviance was not chosen (the best honest model gains 0.5% of
 it); the split and copies notes give the file-order and grouped splits re-measured on the rate, as issue 1 now does,
 the cut at the extract window's edges and the drift of the exposure along the file; the exposure note gives both arms
 of probe 22; "spread evenly" and four minor numbers are corrected; the record marks its old statements on `exposure`
 and the target superseded.
 
-**Main points:** Open: what sets `gender` apart from bemtpl97's dropped `sex` (7); for the cost per year insured, an
-exception to the per-contract rule or an amendment of it, settled once with spanish_motor_insurance_2015_2018's issue 7
-(8). Issues 1 to 6 are resolved (6 supersedes 2 and changes the form of 4), and 9 on 2026-11-08 (the age bands as
-ordered categories).
+Changed on Lennart's marks of 2026-11-08 (target, weight, metric and split design unchanged; a build waits for your
+ask): `gender` is dropped (issue 7), so five rating factors remain; the notes' target bullet says why MET-14's
+per-contract clause, amended the same day, does not apply, and the metric reason why the claim frequency's deviance
+was not chosen (issue 8). Dropping a column changes the rows' content order and so the shipped splits; every model
+number of the notes, the metric reason and this page was re-measured on the new splits (the probes, the honest and
+exposure-fed fits, the grouped, file-order and copy checks).
+
+**Main points:** nothing open. On 2026-11-08: `gender` dropped, as sex leaves every insurance pricing task (7); the
+cost per year insured kept, with MET-14's per-contract clause amended together with spanish_motor_insurance_2015_2018's
+issue 7 (8); the age bands as ordered categories (9). Issues 1 to 6 are resolved (6 supersedes 2 and changes the form
+of 4).
 
 **Issues for Andrej and Lennart:**
 
@@ -401,6 +412,18 @@ ordered categories).
      was decided the other way; the ways out are the distinguishing fact recorded, the case treated like the
      precedent, the precedent reopened, or the rule amended.
 
+   **Lennart (2026-11-08, change):** Reply (a): A stance for the family; as if we were to simulate the case in europe
+   always
+
+   **Resolved (2026-11-08, Lennart):** (a), the issue's C. `gender` leaves the features: sex is no rating factor of any
+   insurance pricing task of this collection, whatever the actor's jurisdiction, as under EU law (Test-Achats); the
+   Tensions row on rating factors in principles.md is amended so (2026-11-08, Lennart, this case). `known`, `changes`,
+   `fit_reason` and the notes say so, and the record's CC line supersedes Andrej's ship of 2026-11-02, which kept
+   `gender`. It carried little: the Tweedie GLM scores 0.124 with it and 0.119 without (+0.004, SE 0.002, higher with
+   it on 7 of 9 splits), a regularised LightGBM 0.103 either way. Dropping a column changes the rows' content order and
+   so the shipped splits; the notes' model numbers are re-measured on the new ones (task probe: linear 0.117 against the
+   dummy's 0, 5 of 5 splits). `dataset check`: 0 errors, 0 warnings.
+
 8. **Record the cost per year insured as an exception to the per-contract rule, or amend the rule?**
 
    * **Problem:**
@@ -596,6 +619,18 @@ ordered categories).
      under the same ID. The principle served here is P3 (**USE-5**, Must: predict what the actor acts on).
    [^i8-cases]: MET-14's Cases rows of 2026-11-06 in metrics.md: this table (applied) and
      spanish_motor_insurance_2015_2018 (the per-contract target stays); no exception on the clause is recorded yet.
+
+   **Lennart (2026-11-08, discuss):** Reply (a): Keep the current target, the clause amended
+
+   **Resolved (2026-11-08, Lennart):** (a). The claim cost per year insured stays, with `exposure` as its weight and
+   the weighted Gini (D8 kept); MET-14's per-contract clause is amended in one change with
+   spanish_motor_insurance_2015_2018's issue 7. The notes' target bullet says why the clause does not apply here, and
+   the metric reason why the claim frequency was not chosen, with the numbers on the shipped splits without `gender`,
+   which moved with the new splits (issue 7): a model of the window scores 0.056 Gini on the cost per contract (the
+   GLM 0.124) and -0.034 on the cost per year; on the claims per year the GLMs and a regularised LightGBM tie (-0.0003,
+   GLM ahead on 4 of 9), on the weighted Gini of the cost per year the GLM leads it by +0.016 (8 of 9; +0.031 on the old
+   splits); the Tweedie GLM scores 0.119 and the 300-round Tweedie LightGBM 0.075 (0.117 and 0.067 on the old splits,
+   as above). The record's CC line keeps D8. `dataset check`: 0 errors, 0 warnings.
 
 9. **Ship the two age bands as numbers or as ordered categories?**
 

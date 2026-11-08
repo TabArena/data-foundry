@@ -132,7 +132,11 @@ def raw_state(ds: object, data: dataset_io.ProbeInput, args: argparse.Namespace)
     return out
 
 
-DEVIANCE_OBJECTIVES = {"mean_poisson_deviance": "poisson", "mean_tweedie_deviance": "tweedie"}
+DEVIANCE_OBJECTIVES = {
+    "mean_poisson_deviance": "poisson",
+    "mean_tweedie_deviance": "tweedie",
+    "rescaled_mean_tweedie_deviance": "tweedie",
+}
 """The LightGBM objective of each deviance metric: the weighted actuarial fit of ``--objective metric``."""
 
 

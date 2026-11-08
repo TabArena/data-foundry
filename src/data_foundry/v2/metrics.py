@@ -49,13 +49,13 @@ gives NaN, and a group that cannot tell models apart is left out by a stated rul
 
 The custom metrics (``kind="custom"``): ``cost_matrix``, ``precision_at_k``, ``average_precision_at_k``, ``rmspe``,
 ``gini_top_capture``, ``normalized_gini``, ``normalized_weighted_gini``, ``ordered_lorenz_gini``,
-``weighted_pearsonr``, ``mean_group_pearsonr``, ``mean_group_normalized_rmse``, ``hierarchical_balanced_accuracy``,
-``gini_stability``, ``par_k``, ``mean_group_top_k_overlap`` and ``normalized_early_detection_utility``. Each
-:class:`MetricDef` holds its formula, its reference, its prediction kind, its input roles and its params. A metric
-with inputs takes the values of the scored rows by role: ``group`` (rows of one unit: an era, a patient, an
-instance), ``order`` (sorts rows in time: a week, an hour; rows arrive in any order, so no metric relies on row
-position) and ``weight``. A metric scores the rows it receives: when a task's prediction unit is a group (the
-grouping's ``aggregation``, e.g. a customer's last statement), the caller aggregates the predictions first;
+``rescaled_mean_tweedie_deviance``, ``weighted_pearsonr``, ``mean_group_pearsonr``, ``mean_group_normalized_rmse``,
+``hierarchical_balanced_accuracy``, ``gini_stability``, ``par_k``, ``mean_group_top_k_overlap`` and
+``normalized_early_detection_utility``. Each :class:`MetricDef` holds its formula, its reference, its prediction kind,
+its input roles and its params. A metric with inputs takes the values of the scored rows by role: ``group`` (rows of one
+unit: an era, a patient, an instance), ``order`` (sorts rows in time: a week, an hour; rows arrive in any order, so no
+metric relies on row position) and ``weight``. A metric scores the rows it receives: when a task's prediction unit is a
+group (the grouping's ``aggregation``, e.g. a customer's last statement), the caller aggregates the predictions first;
 :func:`scorer` does not.
 
 TabArena (later, no change there now) would wrap a spec in an AutoGluon scorer::
@@ -988,6 +988,35 @@ def _check_ordered_lorenz_gini(params: Mapping[str, Any]) -> None:
         raise ValueError(f"per_unit is True or False, not {params['per_unit']!r}.")
 
 
+# rescaled_mean_tweedie_deviance: a market that scales every tariff by one factor to the same total
+
+
+def _rescaled_tweedie_deviance(y_true, y_pred, *, params, weight, **_):
+    """The weighted Tweedie deviance of the predictions after one uniform rescaling that balances them with the truth
+    on the scored rows: ``c = sum(w * y) / sum(w * p)``, then ``mean_tweedie_deviance(y, c * p, sample_weight=w)``.
+
+    A pricing game whose market scales every player's premiums by one factor to a common total before each insured
+    goes to the cheapest (the 2016 actuarial pricing game: "un facteur d'inflation appliqué uniformément") rewards the
+    relative prices, their order and their spread, and not their level. This score does the same: it is invariant to
+    a common positive scale of the predictions (while they stay above the floor), so it cannot reward the level, and,
+    unlike a Gini, it sees a change of spread. ``c`` is the balance of the premiums with the claims of the scored rows,
+    an oracle scale read from their labels as the deviance reads them; the model never sees it. It is the scale that
+    minimises the deviance only at power 1 (at power q that is ``sum(w y p^(1-q)) / sum(w p^(2-q))``).
+
+    The predictions are floored at ``params["min_prediction"]`` before the factor, as a model's output is clipped
+    before it is scored. NaN when the scored rows carry no loss (``sum(w * y) = 0``): there is no total to share.
+    NaN and infinite predictions still raise.
+    """
+    y = np.asarray(y_true, dtype=float)
+    w = _row_weight(weight)
+    p = _floored(y_pred, params)
+    loss = float(w @ y)
+    if loss == 0:
+        return float("nan")
+    scale, power = loss / float(w @ p), float(params["power"])
+    return float(_sklearn_metrics().mean_tweedie_deviance(y, scale * p, power=power, sample_weight=w))
+
+
 # weighted_pearsonr
 
 
@@ -1443,6 +1472,30 @@ _CUSTOM_METRICS = (
         check_params=_check_ordered_lorenz_gini,
     ),
     _custom(
+        "rescaled_mean_tweedie_deviance",
+        _REG,
+        "value",
+        _LOWER,
+        _rescaled_tweedie_deviance,
+        "p' = max(p, min_prediction); c = sum(w * y) / sum(w * p') over the scored rows; then sum(w * d(y, c * p')) / "
+        "sum(w), d the Tweedie unit deviance at power q, 2 * (y^(2-q) / ((1-q)(2-q)) - y m^(1-q) / (1-q) + m^(2-q) / "
+        "(2-q)) for the mean m (q = 1 Poisson); invariant to a common scale of p above the floor; NaN when sum(w * y) "
+        "= 0",
+        "the market of the 2016 actuarial pricing game (https://actinfo.hypotheses.org/69; its rules, Sec. 4, scale "
+        "every player's premiums by one uniform factor to the same total); the deviance is "
+        "sklearn.metrics.mean_tweedie_deviance, tested against a direct computation of the formula",
+        inputs=("weight",),
+        params={
+            "power": "the Tweedie power q >= 1, required (1.5 for a pure premium with many zero claims)",
+            "min_prediction": "required floor on the predictions before the rescaling, on the original scale (after "
+            "the inverse of target_transform): a smaller prediction counts as this value; a finite number above 0, "
+            "two orders below the smallest plausible mean",
+        },
+        check_params=_check_tweedie,
+        prediction_domain="positive",
+        row_weight=True,
+    ),
+    _custom(
         "weighted_pearsonr",
         _REG,
         "value",
@@ -1872,10 +1925,10 @@ def metric_fn(spec: Any) -> Callable[..., float]:
 def row_weight_column(spec: Any) -> str | None:
     """The column ``spec`` reads as a row weight, or ``None``.
 
-    A row weight makes each row count in proportion to it (``normalized_weighted_gini``, ``weighted_pearsonr``, a
-    deviance or ``rmse`` with its ``weight`` input, ``ordered_lorenz_gini`` with ``per_unit``). The base premium of
-    ``ordered_lorenz_gini`` on totals is no row weight, and neither is the key column of ``weighted_pearsonr`` with
-    ``params["weights"]``. A task's ``sample_weight`` is always this column (MET-15).
+    A row weight makes each row count in proportion to it (``normalized_weighted_gini``, ``weighted_pearsonr``,
+    ``rescaled_mean_tweedie_deviance``, a deviance or ``rmse`` with its ``weight`` input, ``ordered_lorenz_gini`` with
+    ``per_unit``). The base premium of ``ordered_lorenz_gini`` on totals is no row weight, and neither is the key column
+    of ``weighted_pearsonr`` with ``params["weights"]``. A task's ``sample_weight`` is always this column (MET-15).
     """
     fields = _as_dict(spec)
     column = dict(fields.get("inputs") or {}).get("weight")

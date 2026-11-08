@@ -123,6 +123,12 @@ CC (2026-11-08, Lennart): review issue 8, B ("The Tweedie deviance on the dollar
 
 CC (2026-11-08, Lennart): the declared metric (`mean_tweedie_deviance`, power 1.5, floor $1) is checked: his choice in issue 8 (B); issue 10 asks whether it leaves enough signal.
 
+CC (2026-11-08, Lennart): review issue 10, A (as implemented): the mean Tweedie deviance on the dollars stays as shipped, with the signal stated in the notes; tuned Tweedie LightGBM beats the mean per event type in 2024 and 2025, and in 2023 the difference is within noise. The capped target ($10M) is a note, not shipped.
+
+CC (2026-11-08, Lennart): review issue 11, B ("Option B: Flash Flood kept with a note."): the Flash Flood duration is no longer read as outcome-free but kept with a `Potential leak, kept on purpose:` note giving its worth on the declared metric, since one of its onsets in NWSI 10-1605 Sec. 14 is damage to a building; Flood, Hurricane (Typhoon) and Tropical Storm stay read as outcome-free. Supersedes, for Flash Flood, the reading recorded at the re-review of 2026-11-06 (AI, made without a decision).
+
+**Assessment (AI, 2026-11-08):** issues 10 and 11 applied in the notes, no data change. The signal bullet gives the tuned results (3,463, 2,044 and 962 against 2,660, 2,301 and 1,740 for the mean per event type; bootstrap SE of the difference 1,580, 129 and 30 over test rows) and the capped variant as a note. The new Flash Flood bullet gives the Sec. 14 onset, the narrative shares (6.8% name water at or damage to a building, 36% a road, 10% a rescue or evacuation) and the worth on the declared metric (+102%, +93% and +31% of the deviance on its rows when blanked, +9%, +27% and +16% on all rows); the Flood worth (+43%, +0% and +9% on its rows) is stated with the outcome-free reading. `dataset check`: 0 errors, 0 warnings. No issue is open in the folder's REVIEW.md.
+
 ## Reference
 
 NOAA National Centers for Environmental Information. Storm Events Database, bulk CSV files 1950-2026.

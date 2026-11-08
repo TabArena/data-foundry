@@ -216,21 +216,25 @@ class WisconsinLocalGovernmentPropertyInsuranceFund(AbstractCuratedDataset):
         Three expanding yearly windows, newest first: test 2010 trained on 2006-2009 (4,529 rows, 80.3%; 1,110 test
         member-years, 403 with a claim), test 2009 on 2006-2008 (3,417 rows, 60.6%; 1,112, 301) and test 2008 on
         2006-2007 (2,292 rows, 40.6%; 1,125, 309). The fund rates the members it knows once a year for the next year,
-        and the source tested on the next year, 2011, which is not public. The 2008 window trains on less than SPLIT-14's
-        floor of half the rows (a Must): the curator's call (Andrej, 2026-11-02), after the leak test found the year's
-        claim level shared across the member folds the definition shipped before ("We found that grouped splits leak, so
-        I would recommend to use three splits, one for each year of 2008, 2009, 2010"), open again since 2026-11-05
-        (REVIEW.md issue 3). In that window the no-claim credit is unknown on every training row (the file starts in
-        2006), so it informs only the two later windows. No test year has a row on its training side, and no gap
-        separates the sides: an exception to SPLIT-10 that serves SPLIT-14, since a one-year gap would leave the 2009
-        window 2006-2007 and the 2008 window one year. Its earlier precedent, "as in pricing_game_2016_french_fleet", is
-        stale (2026-11-06): that case is reopened (its REVIEW.md issue 6) and never covered a window below the floor, so
-        if the windows stay the exception needs a fact of its own and a SPLIT-10 Cases row. The training years carry
-        final claim amounts, which the fund knew only in part when it rated (fit approximate). Members recur across the
-        cutoff, as the fund re-rates them (SPLIT-13, USE-10): 98.8%, 97.6% and 98.6% of the 2008, 2009 and 2010 members
-        are in their training years, and `PolicyNum` is an input. The windows differ: the claims were $12.1M, $11.0M
-        and $36.7M, and in 2010, a year of severe weather, coverage fell for 67.7% of the members and one claim is 35%
-        of the year's claims, so that window's score moves with where that one member is ranked.
+        and the source tested on the next year, 2011, which is not public. The 2008 window trains on 40.6%, below half
+        the rows, as SPLIT-14 allows since its amendment of 2026-11-08 (Lennart, on this fund, REVIEW.md issue 3: two
+        windows above the floor, 97.6% to 98.8% of each test year's members in earlier years, and member folds leaked
+        the year's claim level): the curator's call of 2026-11-02 (Andrej), after the leak test found the year's claim
+        level shared across the member folds the definition shipped before ("We found that grouped splits leak, so I
+        would recommend to use three splits, one for each year of 2008, 2009, 2010"), kept ("We think the task is too
+        good to remove because of the 50% floor", Lennart, 2026-11-06). The short window changes the order of the two
+        simplest predictors: on the two windows above the floor coverage alone (0.368) beats a Tweedie GLM (0.312), with
+        the 2008 window the GLM comes first (0.291 against 0.251). In that window the no-claim credit is unknown on
+        every training row (the file starts in 2006), so it informs only the two later windows. No test year has a row
+        on its training side, and no gap separates the sides. Exception to SPLIT-10 (2026-11-08, Lennart): every policy
+        year ships with its final claim amounts, so no label is selected by the release end, and a one-year gap would
+        leave the 2009 window 2006-2007 and the 2008 window one year, below the floor in two of the three windows; it
+        serves SPLIT-14. The training years carry final claim amounts, which the fund knew only in part when it rated
+        (fit approximate). Members recur across the cutoff, as the fund re-rates them (SPLIT-13, USE-10): 98.8%, 97.6%
+        and 98.6% of the 2008, 2009 and 2010 members are in their training years, and `PolicyNum` is an input. The
+        windows differ: the claims were $12.1M, $11.0M and $36.7M, and in 2010, a year of severe weather, coverage fell
+        for 67.7% of the members and one claim is 35% of the year's claims, so that window's score moves with where that
+        one member is ranked.
     """
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:

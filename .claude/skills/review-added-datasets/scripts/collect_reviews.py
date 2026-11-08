@@ -409,6 +409,8 @@ def _retired_entries(root: Path, records: Path, names: list[str]) -> dict[str, E
     so a retired dataset stays on the page with its decisions.
     """
     entries: dict[str, Entry] = {}
+    if not names:
+        return entries
     repo = Path(brp._git(root, "rev-parse", "--show-toplevel").stdout.strip())
     for name in names:
         record = records / f"{name}.md"
@@ -634,6 +636,10 @@ def main(argv: list[str] | None = None) -> int:
             settled = [e.name for e in collected.entries if is_settled(e, args.records)]
             collected.entries = [e for e in collected.entries if e.name not in settled]
             collected.settled = settled
+        if not collected.entries:
+            names = ", ".join(collected.settled)
+            print(f"nothing left to decide for {names}: no report written (--keep-settled writes one)")
+            return 0
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(render_report(collected, title=args.title, date=args.date))
         check_report(args.out, collected)

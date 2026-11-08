@@ -4,22 +4,24 @@
 (LEAK-41, MET-14 to MET-16) leaves nothing to decide: its text changes are made. The authors' release (Mendeley Data
 vfchtm5y7j, CC BY 4.0): 122,935 customer-years of 40,284 Spanish customers who held a motor and a home policy with one
 insurer in 2010, followed until they lapsed either one, 2010-2014. The target is the year's home claim cost (0 for
-98.2%), shipped as log1p and scored unweighted on the amount by the normalized Gini; the inputs are 13 rating fields
-and the customer's earlier home and motor claims; three yearly test windows, 2014, 2013 and 2012, each trained on all
-earlier years. Validity: SEL-1, SEL-2, USE-1, USE-5, LEAK-34, PROV-1 hold; USE-8 approximate (no current premium,
-closed 2010 cohort); the split rules SPLIT-9, SPLIT-11 and SPLIT-14 hold; LEAK-10 fixed (the year's own outcomes
-dropped); the rating fields read once kept with a note (issue 1; a new test finds no update of the insured values after
-a claim); LEAK-41 not triggered (no weight, time on risk or earned amount; the year-end lapse added as a feature gains
-no Gini); SPLIT-10 departed from, no gap (issue 2). Value: TP-9 holds (240 / 310 / 448 claimants per window); TP-2, a
-small real signal (EV-3): the task probe's flags `no_signal` and `drift_baseline` read squared error on the log1p scale
-(best family R^2 0.008), while on the declared Gini its fitted families score 0.21 to 0.28 against 0 for a constant
-(LightGBM 0.168 / 0.280 / 0.179 by window in the claim audit); MET-15 holds on its unweighted branch (per contract, no
-realized denominator); MET-14 holds with a bound (a yearly renewal term, known at the renewal; the release has no
-dates, so at most the 23.8% of rows that end in a lapse can be cut short (a policy year ended by a cancellation before its end), and they claim more often, not less).
-Quality: CLEAN-10 not triggered (`age_of_car_M` zeros kept with a note); CLEAN-11 notes (microcar powers, 84%
-"rural"); CLEAN-19 `past_*` kept as counts; the frozen ages kept as released (issue 4). Weighed: the original
-release +, a real renewal decision +, the claim history signal +; frozen rating fields -, a closed 2010 cohort -, noisy
-windows -.
+98.2%), shipped as log1p and scored unweighted on the amount by the normalized Gini; the inputs are 12 rating fields and
+the customer's earlier home and motor claims; three yearly test windows, 2014, 2013 and 2012, each trained on all
+earlier years. Validity: SEL-1, SEL-2, USE-1, USE-5, LEAK-34, PROV-1 hold; USE-8 approximate (no current premium, closed
+2010 cohort); USE-6 and the Tensions row on rating factors as amended on 2026-11-08: `gender` is dropped, as sex is no
+rating factor of an insurance pricing task, whatever the actor's jurisdiction (australian_vehicle_insurance_2004_2005's
+issue 7); the split rules SPLIT-9, SPLIT-11 and SPLIT-14 hold; LEAK-10 fixed (the year's own outcomes dropped); the
+rating fields read once kept with a note (issue 1; a new test finds no update of the insured values after a claim);
+LEAK-41 not triggered (no weight, time on risk or earned amount; the year-end lapse, alone or as a feature, marks more
+loss, not less); SPLIT-10 departed from, no gap (issue 2). Value: TP-9 holds (240 / 310 / 448 claimants per window);
+TP-2, a small real signal (EV-3): the task probe's flags `no_signal` and `drift_baseline` read squared error on the
+log1p scale (best family R^2 0.008), while on the declared Gini its fitted families score 0.21 to 0.28 against 0 for a
+constant (without `gender`, 2026-11-08: ridge 0.282, a random forest 0.243, LightGBM 0.209); MET-15 holds on its
+unweighted branch (per contract, no realized denominator); MET-14 holds with a bound (a yearly renewal term, known at
+the renewal; the release has no dates, so at most the 23.8% of rows that end in a lapse can be cut short (a policy year
+ended by a cancellation before its end), and they claim more often, not less). Quality: CLEAN-10 not triggered
+(`age_of_car_M` zeros kept with a note); CLEAN-11 notes (microcar powers, 84% "rural"); CLEAN-19 `past_*` kept as
+counts; the frozen ages kept as released (issue 4). Weighed: the original release +, a real renewal decision +, the
+claim history signal +; frozen rating fields -, a closed 2010 cohort -, noisy windows -.
 
 Changes made (2026-11-02), no decision needed: the text of `use_case`, `fit_reason`, `splits_comment`, the metric reason
 and the notes was corrected after the panel (wording and numbers only). The split is unchanged (train 89.2 / 75.3 /
@@ -31,10 +33,20 @@ could cut short (at most the 29,296 lapse rows, 23.8%, since the release has no 
 the insured values (0.13 contents, 0.15 building, against 1 for an amount at risk) and the rules that apply (MET-14,
 MET-15, LEAK-41). Text only: rows, columns, split and metric unchanged.
 
+Changed on 2026-11-08 on Lennart's stance of australian_vehicle_insurance_2004_2005's issue 7 (rows, target, metric and
+windows unchanged; a build waits for your ask): `gender` leaves the features, as sex is no rating factor of any
+insurance pricing task, whatever the actor's jurisdiction, as under EU law (Test-Achats; this Spanish insurer is in the
+EU). It carried little: with minus without, the mean Gini of the 3 windows moves by -0.004 to +0.017 across five models,
+none above twice its standard error. The task and leak probes were re-run (no new flag). The Exposure note's lapse test,
+re-run on four models, shows a small gain from the lapse (+0.011 to +0.038), towards more loss, where the one LightGBM
+run quoted before showed none; its reading (no sign of a cut) holds.
+
 **Main points:** No open issue. Shipped (Andrej, 2026-11-02), every issue resolved as implemented: the 13 rating fields
 kept after a nine-test leak check (1), no gap (2), the Gini (3), the frozen ages (4), two warnings accepted (5). The
 exposure re-review of 2026-11-06 adds none: no column is a weight or a time on risk, and the notes now bound the lapse
-years that could be cut short.
+years that could be cut short. On 2026-11-08 (Lennart): `gender` dropped, as sex leaves every insurance pricing task
+(the stance of australian_vehicle_insurance_2004_2005's issue 7; for `gender` it supersedes the keep of issue 1); it
+carried little.
 
 **Issues for Andrej:**
 

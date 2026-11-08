@@ -1049,7 +1049,7 @@ def _metric_spec_findings(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901, PL
     yield from _metric_computes_findings(ctx)
 
 
-_MEAN_DEVIANCES = ("mean_poisson_deviance", "mean_tweedie_deviance")
+_MEAN_DEVIANCES = ("mean_poisson_deviance", "mean_tweedie_deviance", "rescaled_mean_tweedie_deviance")
 """Metrics minimised by the true mean on the original scale, which a model fit on a transformed target misses."""
 
 

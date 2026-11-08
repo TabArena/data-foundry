@@ -9,6 +9,8 @@ data_foundry_status:
 claimed_by: Lennart
 suggestion: 'Yes'
 priority: 4
+tags:
+- Two-Regime Zeros
 original_source: Github
 year: '2019'
 domain: insurance
@@ -98,3 +100,5 @@ CC (2026-11-06, Lennart): issue 1 resolved as the rate with a sample weight (opt
 **Assessment (AI, 2026-11-06):** priority 4, up from 3 (selection.md, Priority): the risk factor behind 3 (issue 1, the exposure) is resolved; a gap in the benchmark (insurance) +, a good shape (163,231 units, 11 features) +, a strong source (Henckaerts et al., the treeML code) +; the fit stays approximate.
 
 CC (2026-11-08, Lennart): the declared metric (`mean_poisson_deviance`) is checked, as declared; the record ships, with no open issue on the PR #47 review board.
+
+CC (2026-11-08, Lennart): tagged `Two-Regime Zeros`, as fremtpl2 (its issue 10, reply (c)): the tag describes the target's distribution, not the task's model, and 88.8% of the policies have no claim (144,936 of 163,212) ("Tag bemtpl97 too; the tag should when the target has the kind of distribution indepdet of just the task as far as I understand").

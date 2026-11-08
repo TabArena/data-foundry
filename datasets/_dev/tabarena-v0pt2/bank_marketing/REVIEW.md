@@ -1,20 +1,20 @@
 # bank_marketing
 
-**Outcome:** added. UCI's bank-full file (45,211 records of a Portuguese bank's term-deposit phone campaigns, May 2008 to November 2010, one per client and campaign), predicting a subscription, scored by ROC AUC on a random split. A focused re-review of 2026-11-06 recommends shipping after changes. The changes that need no decision are made in `dataset.py` (notes on `campaign`, `contact`, `pdays` and `balance`; `job`'s "unknown" as missing; the row text), and the README is regenerated; the build stays stale until you ask. Open: the split, since a client's later row in training gives away its earlier row's label (issue 1); the prediction point, which decides `campaign` (issue 2). Settled on 2026-11-08: the duplicates, kept with a note (issue 3), and the record's `year`, set to 2012. Not checked on this tier: whether the authors' 2014 release of the same campaigns (with the month and weekday of each call, economic context and the true phone type of May-June 2008) is the better version; no provenance reviewer ran.
+**Outcome:** added. UCI's bank-full file (45,211 records of a Portuguese bank's term-deposit phone campaigns, May 2008 to November 2010, one per client and campaign), predicting a subscription before the campaign's first call, scored by ROC AUC on five time windows of the file's date order. A focused re-review of 2026-11-06 recommended shipping after changes; those that needed no decision are made in `dataset.py`, and the README is regenerated; the build stays stale until you ask. Settled on 2026-11-08: the split, by time on the file's date order, in place of the random split kept under your earlier call (issue 1); the prediction point, before the campaign, so `campaign` is dropped (issue 2); the duplicates, kept with a note (issue 3), now 811 exact copies on the twelve inputs since `campaign` left (274 before); and the record's `year`, set to 2012. Open: whether the month of the last call comes back as an input (issue 4). New on the windows: the newest one holds both records of 703 recurring clients, and the later record gives 419 subscribers away to a model that reads other test records; a protocol line covers it. Not checked on this tier: whether the authors' 2014 release of the same campaigns (with the month and weekday of each call, economic context and the true phone type of May-June 2008) is the better version; no provenance reviewer ran.
 
-Validity: LEAK-17 and SPLIT-29 triggered, not fixed: clients recur across campaigns, and under the random split a client's later row gives away its earlier row's label through `poutcome` (+0.020 ROC AUC to a model that makes the match; issue 1). SPLIT-1, SPLIT-5, SPLIT-7, SPLIT-19 and SPLIT-22 point to a temporal split on the file's date order, against the SPLIT-31 precedent that names this dataset as IID (issue 1). USE-3 fails as written: the use case is before the campaign, yet `known` lists this campaign's calls (issue 2). LEAK-10 holds for `contact` and `pdays`; for `campaign` it depends on issue 2. LEAK-41 and MET-15 do not apply (no weight).
+Validity: LEAK-17 and SPLIT-29 fixed by the split by time (issue 1): a client's later record never trains, and SPLIT-1, SPLIT-5, SPLIT-7, SPLIT-19 and SPLIT-22 hold on the file's date order. Inside the newest window recurring clients leave an evaluation leak, covered by a protocol line (LEAK-9). USE-3 holds: the prediction point is before the campaign's first call, and `campaign` is dropped (issue 2). LEAK-10 holds for `contact` and `pdays`. LEAK-41 and MET-15 do not apply (no weight).
 
-Value: MET-1, MET-2 and MET-5 hold (ROC AUC is the source's selection criterion); 1,763 positives per test fold. Under the temporal windows the signal is weak (mean ROC AUC 0.56 to 0.62, the first window below chance): a fact for the task probes, no reason to keep the random split (P4 over P6).
+Value: MET-1, MET-2 and MET-5 hold (ROC AUC is the source's selection criterion); 279 to 2,129 positives per test window. On the windows the signal is weak but there: LightGBM 0.522 to 0.679 (mean 0.586), logistic regression mean 0.614, against 0.76 on the random split; the task probes' best family (random forest, 0.631) beats the dummy on 5 of 5 windows, flagged `no_spread` (TP-3), which the tuned results cannot settle here, as they ran on the random split.
 
-Quality: CLEAN-10 applied (`job`'s "unknown" missing; the reason for `pdays` = -1 written and its warning accepted); LEAK-16 decided: the 274 exact copies kept with a note (issue 3, 2026-11-08); the wrong or one-sided sentences of the notes rewritten.
+Quality: CLEAN-10 applied (`job`'s "unknown" missing; the reason for `pdays` = -1 written and its warning accepted); LEAK-16 decided: the exact copies kept with a note (issue 3, 2026-11-08), 811 on the twelve inputs since `campaign` left, 89% of them with a balance of 0; the wrong or one-sided sentences of the notes rewritten.
 
-Weighed: source + (a paper with a stated metric), use case + (a real decision), split gap - (random on dated data), signal - under the temporal split.
+Weighed: source + (a paper with a stated metric), use case + (a real decision), split + (by time, as the source evaluates), signal - on the windows.
 
-Left for you: issues 1 and 2. Settled on 2026-11-08: issue 3 and the `year` field (the record now takes the definition's 2012, UCI's release, in place of 2011, the ESM paper, which only analysed the data).
+Left for you: issue 4. Settled on 2026-11-08: issues 1, 2 and 3 and the `year` field (the record now takes the definition's 2012, UCI's release, in place of 2011, the ESM paper, which only analysed the data).
 
-**Main points:** Split by time on the file's date order, reversing your call that kept this dataset on a random split (issue 1)? Is the model used before the campaign, so `campaign` goes, or at a call during it, as the source frames it, so it stays (issue 2)? Settled on 2026-11-08: the 274 exact copies kept with a note (issue 3); the record's `year` set to 2012.
+**Main points:** Bring back the month of the last call as an input (issue 4)? Settled on 2026-11-08: split by time on the file's date order, reversing your call that kept the random split (issue 1); before the campaign, so `campaign` is dropped (issue 2); the exact copies kept with a note (issue 3); the record's `year` set to 2012.
 
-**Record judgment:** valid, keep (`Yes`), after changes. The record's `year` (2011, the ESM paper, which only analysed the data) disagreed with the definition's 2012 (UCI's release, donated 2012-02-13); it was set to 2012 on 2026-11-08 (Lennart, `update`). Its comment that the features "seem to be time-invariant" is superseded by an Assessment line of 2026-11-06 giving the measured shift by year; a second line of that date records this panel.
+**Record judgment:** valid, keep (`Yes`), after changes. The record's `year` (2011, the ESM paper, which only analysed the data) disagreed with the definition's 2012 (UCI's release, donated 2012-02-13); it was set to 2012 on 2026-11-08 (Lennart, `update`). Its `required_split` is `Temporal (NON-IID)`, with the tag `Non-IID (Temporal)`, since 2026-11-08 (issue 1). Its comment that the features "seem to be time-invariant" is superseded by an Assessment line of 2026-11-06 giving the measured shift by year; a second line of that date records this panel.
 
 **Issues for Lennart:**
 
@@ -65,6 +65,15 @@ Left for you: issues 1 and 2. Settled on 2026-11-08: issue 3 and the `year` fiel
 
    **Notes for the AI:** the steps for A and B are in the issue's notes above; issue 2's answer gives `campaign`'s
    worth under both splits.
+
+   **Lennart (2026-11-08, ok):** Reply (a): Split by time (the issue's A)
+
+   **Resolved (2026-11-08, Lennart):** A, split by time: five expanding windows of 4,521 records on the file's date
+   order (training on 50% to 90% of the records), keyed by the record's position in the file once `_clean` has checked
+   the rebuilt dates against it (a month or a date as the key would leave records of the cut's day on both sides);
+   the task text, the notes and the record's split changed. On the windows LightGBM scores ROC AUC 0.586 on average
+   (0.522 to 0.679) and logistic regression 0.614, against 0.76 at random; the month of the last call is issue 4, and
+   the newest window's recurring clients get a protocol line.
 
    [^b1a]: **LEAK-17**, **SPLIT-29**, **SPLIT-1**, **SPLIT-7** (Must); **SPLIT-22**, **SPLIT-19** (Should); **SPLIT-8**
      (Must) for forced splits.
@@ -141,6 +150,13 @@ Left for you: issues 1 and 2. Settled on 2026-11-08: issue 3 and the `year` fiel
    **Notes for the AI:** the steps for A and B are in the issue's notes above. Counts from `bank-full.csv` (45,211
    rows; `campaign` sums to 124,956).
 
+   **Lennart (2026-11-08, discuss):** Reply (a): A: before the campaign, drop campaign
+
+   **Resolved (2026-11-08, Lennart):** A: the prediction point is before the campaign's first call, and `campaign` is
+   dropped (twelve inputs and the time key); `known`, `changes`, `fit_reason` and the notes say so, the notes opening
+   with the prediction point. On the five time windows `campaign` had added +0.0065 ROC AUC to logistic regression
+   (higher in 5 of 5) and -0.014 to LightGBM (higher in 1 of 5).
+
    [^a2b]: **USE-3** (Must): name the prediction point and what is known then. **USE-9** (Should): weigh another use
      case practitioners have against one rephrased to excuse a gap.
 
@@ -179,6 +195,53 @@ Left for you: issues 1 and 2. Settled on 2026-11-08: issue 3 and the `year` fiel
    bullet with the counts and the reason (93% of the copy rows have a balance of 0, plausible repeats of common
    profiles; 0.9% of the test rows have a copy in training under the random split). `dataset check`: 0 errors, 0
    warnings (the copies show as info, 274 and 32 rows).
+
+4. **Bring back the month of the last call as an input?**
+
+   * **Problem:**
+     - The source keeps the month of each call as an input, and the period of a campaign is known when it is
+       planned[^m4a].
+     - This file holds only the month of each client's last call, which the end of the calls sets, so it left with
+       the day[^m4b].
+     - On the five time windows the month adds nothing measurable, and the record's place in the date order is an
+       input already.
+   * **Background:** The source lists "month in which the call is made" among its inputs (Moro et al. 2014, Table 2),
+     with one row per call; this release keeps one record per client and campaign, dated by its last call. `_clean`
+     rebuilds the year and month only to check the file's date order and does not ship them; the time key, the
+     record's position in the file, carries the period. A month as a category would add the season, but in the two
+     oldest windows most test records fall in months with no record in training (the oldest window, August to
+     November 2008, trains on May to August 2008).
+   * **Effect on the task:** Brought back, the month tells a model the season and, inside a window, the period; for a
+     subscriber it is also the month the calls stopped.
+   * **Experiments:** On the five windows (LightGBM with 3 seeds and early stopping on the newest tenth of the
+     training side; logistic regression), adding the month of the last call as a category changes ROC AUC by -0.0096
+     for LightGBM (higher in 1 of 5 windows; seed SD 0.029 per window) and by -0.0019 for logistic regression (higher
+     in 1 of 5); with `campaign` back as well, by -0.0044 and +0.0050. Under the random split the year and month
+     together were worth +0.042 to LightGBM, with the records of each month on both sides of the split, which no
+     window has but for the month of its cut.
+   * **Consistency:** Leaving it out follows issue 2, which dropped `campaign` as set during the campaign; bringing it
+     back would keep a value of the last call next to that drop, on the ground that it mostly marks the planned
+     period[^m4c].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Leave it out (implemented) | the month stays dropped with the day | every input exists before the first call; the period is in the time key | departs from the source's inputs |
+     | B | Bring the month back | `month` kept in `_clean` as a category of 12 levels | the source's input; the season | the month of the last call, which the end of the calls sets; no gain on the windows |
+
+   * **Recommendation:** A: on the windows the month adds nothing, and the value this file holds is the last call's.
+     **Decision:** leave the month out (A), or bring it back (B)?
+
+   **Notes for the AI:** on A, a CC line in the record. On B: keep `month` in `_clean`, mapped to 1 to 12 from the
+   names and typed categorical in `_feature_types`, rewrite the dates bullet of the notes and `known`, and re-run
+   `dataset check` and the task and leak probes; the measurements are in the record's Assessment of 2026-11-08.
+
+   [^m4a]: **USE-6** (Must): anything known at the prediction point is a legitimate input. **LEAK-37** (Must): an
+     input the actor knows at the prediction point is not a leak.
+   [^m4b]: **LEAK-10** (Must): a feature holds only what existed at the prediction point and never gives the target
+     away.
+   [^m4c]: Issue 2 of this file (2026-11-08, Lennart): before the campaign, `campaign` dropped. **USE-3** (Must): name
+     the prediction point, when the model is used and what is known then.
 
 **Review panel:** ship after changes (mediator). Tier focused (claim auditor, column auditor, mediator), a re-review of 2026-11-06 under LEAK-41 and MET-14 to MET-16, which do not apply here (no weight, no rate target). Claims: 33; 22 hold (6 of them with a caveat), 8 refuted or partly refuted (5 fixed in wording; the use case's moment and the split go to issues 1 and 2, the record's year to the field row), 1 not established (when `pdays` is counted) and 1 untested (the date of `balance`), both reworded as notes, 1 not applicable. Blind review: not run on this tier. Agreed: `contact` and `pdays` stay; the measured worth of `campaign`; the recurring-client leak (raised by the claim auditor, not contested); the mediator's changes a to h, applied (change i waits for issue 2). Disputed: keep or drop `campaign`, which turns on the prediction point (issue 2); settled in wording: whether cellular and telephone differ within a period (change a) and when `pdays` is counted (change c).
 

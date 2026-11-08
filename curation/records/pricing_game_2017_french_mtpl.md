@@ -131,6 +131,10 @@ CC (2026-11-08, Lennart): the declared metric (`mean_tweedie_deviance`, with the
 
 CC (2026-11-08, Lennart, in chat): `pol_coverage` is an ordered category, Mini < Median1 < Median2 < Maxi, the order in which the game's rules list the covers, as `pol_pay_freq` is ordered for the family (spanish coverage issue 8); it was an unordered category.
 
+CC (2026-11-08, Lennart): `drv_sex1` and `drv_sex2` leave the features, on the stance Lennart set in australian_vehicle_insurance_2004_2005's issue 7 ("A stance for the family; as if we were to simulate the case in europe always"): sex is no rating factor of any insurance pricing task of this collection, whatever the actor's jurisdiction or the data's year, as under EU law (Test-Achats, CJEU C-236/09, in force for new contracts from 21 December 2012); the Tensions row on rating factors in principles.md says so. Supersedes the note that kept them as a legal rating factor in the data's year (AI, 2026-11-01), which shipped with Andrej's verdict of 2026-11-03.
+
+**Assessment (AI, 2026-11-08):** applied in the definition: both columns are dropped in `_clean` (27 features); `known` and `changes` say so, and the notes' drop bullet says that the notes' other model scores, the metric reason's and the splits comment's were measured with them in. Task probe without them, on the same 5 of 9 splits (the dummy's loss per split is unchanged, so the split sets are the same): the random forest scores 62.30 against the constant's 63.10 (62.22 with them), the linear model 80.04 (81.97) and LightGBM 88.84 (90.30); 0.1%, 6.6% and 3.9% of their predictions sit at the 0.1 EUR floor. `dataset check`: 0 errors, 0 warnings.
+
 ## Reference
 
 CASdatasets (Dutang C., Charpentier A.), `pg17trainpol`, `pg17trainclaim`, `pg17testyear1`-`pg17testyear4`,

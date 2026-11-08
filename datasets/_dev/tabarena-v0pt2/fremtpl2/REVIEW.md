@@ -2,33 +2,34 @@
 
 **Outcome:** added. The AI recommends shipping it: the re-review panel of 2026-11-06 under the exposure rules found no
 rule of validity broken, its changes are text only and made (below), and a new measurement raised a new split question
-(issue 11, settled on 2026-11-08: the random split kept with the note). Like every container with a `sample_weight`, it enters no run before the collection's training-weight gate
-(`BENCHMARK_CHANGES_TODO.md`, "Training weights", "The gate"). A French motor third-party liability portfolio
-(CASdatasets freMTPL2, 677,991 policy records, about 2011-2013): the target is the claims per year insured (`ClaimNb` /
-`Exposure`, 0 for 96.3%) from the 9 rating factors; `Exposure`, the share of the year insured, is each record's weight
-in training and scoring and never a feature (option A of #51, issue 6); random 3-fold split tagged forced from temporal;
-scored by the source's Poisson deviance, weighted by `Exposure`. Validity: MET-14 and MET-15 hold (an unweighted
-LightGBM scores 0.50043 against the weighted constant's 0.47980 on fold 0, so a method must use the weight); LEAK-41
-holds: the rating factors predict `Exposure` at R^2 0.17 and none gains through it above noise, and the notes now report
-what it would leak as a feature (+0.0082 Poisson, +0.0075 L2; a rate fitted on it alone 0.47114 against the constant's
-0.47929); LEAK-10 holds with `BonusMalus` blank in blocks 0-4, where it likely follows the year's own claims (issue 5,
-EV-6); LEAK-9: next-year records found by reading other rows (label-free flags about 0.0010) stay under the protocol
-line (issue 8); SPLIT-8 holds (IID with `ForcedIIDFromTemporal`; holding out the later blocks costs +0.0009); SPLIT-29
-does not apply (19 rows are not many), but by SPLIT-30 the one rating profile behind 94-102% of the gap to a split
-grouped on identical rating factors was a question for you, kept with the note on 2026-11-08 (issue 11). Value: MET-11 holds above the floor (the scorer
-equals the source's offset count deviance times n/sum(Exposure), 1.886-1.896 per fold) and MET-13 holds (the floor of
-1e-4 a year binds for no prediction of a Poisson LightGBM); TP-2, a small real signal: a weighted Poisson LightGBM beats
-the constant rate on 3 of 3 folds by 0.0096 to 0.0127 (D^2 about 2.3%, actual over expected 1.00, Gini 0.195), while a
+(issue 11, settled on 2026-11-08: the random split kept with the note). Like every container with a `sample_weight`, it
+enters no run before the collection's training-weight gate (`BENCHMARK_CHANGES_TODO.md`, "Training weights", "The
+gate"). A French motor third-party liability portfolio (CASdatasets freMTPL2, 677,991 policy records, about 2011-2013):
+the target is the claims per year insured (`ClaimNb` / `Exposure`, 0 for 96.3%) from the 9 rating factors; `Exposure`,
+the share of the year insured, is each record's weight in training and scoring and never a feature (option A of #51,
+issue 6); random 3-fold split tagged forced from temporal; scored by the source's Poisson deviance, weighted by
+`Exposure`. Validity: MET-14 and MET-15 hold (an unweighted LightGBM scores 0.50043 against the weighted constant's
+0.47980 on fold 0, so a method must use the weight); LEAK-41 holds: the rating factors predict `Exposure` at R^2 0.17
+and none gains through it above noise, and the notes now report what it would leak as a feature (+0.0082 Poisson,
++0.0075 L2; a rate fitted on it alone 0.47114 against the constant's 0.47929); LEAK-10 holds with `BonusMalus` blank in
+blocks 0-4, where it likely follows the year's own claims (issue 5, EV-6); LEAK-9: next-year records found by reading
+other rows (label-free flags about 0.0010) stay under the protocol line (issue 8); SPLIT-8 holds (IID with
+`ForcedIIDFromTemporal`; holding out the later blocks costs +0.0009); SPLIT-29 does not apply (19 rows are not many),
+but by SPLIT-30 the one rating profile behind 94-102% of the gap to a split grouped on identical rating factors was a
+question for you, kept with the note on 2026-11-08 (issue 11). Value: MET-11 holds above the floor (the scorer equals
+the source's offset count deviance times n/sum(Exposure), 1.886-1.896 per fold) and MET-13 holds (the floor of 1e-4 a
+year binds for no prediction of a Poisson LightGBM); TP-2, a small real signal: a weighted Poisson LightGBM beats the
+constant rate on 3 of 3 folds by 0.0096 to 0.0127 (D^2 about 2.3%, actual over expected 1.00, Gini 0.195), while a
 random column moves fold scores by up to 0.0006, so strong methods differ in the fourth decimal; the task probe flags
 `no_signal`, but the flag reads an R^2-type skill (+0.002), which a Poisson count has near 0.01 by nature, and on the
 declared metric the probe's LightGBM scores 0.47283 against the dummy's 0.47838 and beats it on 3 of 3 splits (EV-3);
 re-check with the first tuned run (TP-1). The honest skill fell from about 6% to 2% with the `BonusMalus` blanking
 (issue 5), not with the rate target. Quality: CLEAN-11 (no cap, exposures above a year kept) and CLEAN-10 (default ages
 missing) hold as settled. Weighed: the reference table of actuarial frequency modelling, scored by the source's own
-metric +; `BonusMalus` blank in 88% of records, no dates, a thin signal -. Left for Lennart: issue 10 (the record's
-tag; issue 11, the split on identical rating factors, settled on 2026-11-08); and in the working copy's REVIEW.md ("From PR #47"), X1 (keep the
-test rows' weight away from the model) and X2 (LEAK-41's 1/weight ceiling under a deviance), which this panel raised
-with bemtpl97's.
+metric +; `BonusMalus` blank in 88% of records, no dates, a thin signal -. Issues 10 (the record's tag stays, and
+bemtpl97 gets it) and 11 (the random split stays) were settled on 2026-11-08; left for Lennart in the working copy's
+REVIEW.md ("From PR #47"), X1 (keep the test rows' weight away from the model) and X2 (LEAK-41's 1/weight ceiling under
+a deviance), which this panel raised with bemtpl97's.
 
 Changes made after the review panel (AI, 2026-11-06), text only (rows, target, weight, metric, features and split
 unchanged): the `Exposure` bullet reports LEAK-41's numbers on the declared metric; the two accepted duplicate warnings
@@ -39,8 +40,9 @@ blocks 5-6 are cut mostly at a date; the metric's identity is stated above the f
 `BonusMalus` is blank and how small the signal is; the notes say a method must use the weight. The panel's reports
 quote the definition before these changes.
 
-**Main points:** Keep the record's tag `Two-Regime Zeros` (issue 10)? Settled on 2026-11-08: the random split stays,
-with the note on the one rating profile behind its gap to a split grouped on identical rating factors (issue 11).
+**Main points:** Open: none. Settled on 2026-11-08: the tag `Two-Regime Zeros` stays and bemtpl97 gets it, as the
+tag describes the target's distribution (issue 10); the random split stays, with the note on the one rating profile
+behind its gap to a split grouped on identical rating factors (issue 11).
 
 **Issues for Lennart:**
 
@@ -514,6 +516,14 @@ with the note on the one rating profile behind its gap to a split grouped on ide
 
    * **Recommendation:** (b).
    * **Decision:** (a), (b) or (c)?
+
+   **Lennart (2026-11-08, ok):** Reply (c): Tag bemtpl97 too; the tag should when the target has the kind of
+   distribution indepdet of just the task as far as I understand
+
+   **Resolved (2026-11-08, Lennart):** the tag stays on fremtpl2 and bemtpl97 gets it too: the tag describes the
+   target's distribution (here 96.3% of the policies without a claim), not the task's model, and the tag's definition
+   in records.md now says so.
+
 
    [^f10a]: records.md, `tags` (Andrej, 2026-10-30); thailand_road_accident_register_2019_2022.
 

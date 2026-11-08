@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: pricing_game_2017_french_mtpl
 container_format: 2
-checksum: v2:0812d137923506a25798ec334fc9fe5768300a51675354280f19fe1edd707c83
+checksum: v2:93120b5e562daae24615de7fc7a517048983854e66fb528e02b7de06ca44cfd2
 build: null
 build_stale: false
 data:
   n_rows: 100000
-  n_features: 29
+  n_features: 27
   dtypes:
-    category: 13
+    category: 11
     float64: 8
     int64: 9
     string: 1
@@ -69,9 +69,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `claim_amount`, scored with `mean_tweedie_deviance` on grouped splits by `id_client`. 100,000 rows and 29 features. Source: Other (2017).
+Regression of `claim_amount`, scored with `mean_tweedie_deviance` on grouped splits by `id_client`. 100,000 rows and 27 features. Source: Other (2017).
 
-Not built yet. The current definition gives checksum `v2:0812d137923506a25798ec334fc9fe5768300a51675354280f19fe1edd707c83`.
+Not built yet. The current definition gives checksum `v2:93120b5e562daae24615de7fc7a517048983854e66fb528e02b7de06ca44cfd2`.
 
 ## In brief
 
@@ -83,11 +83,11 @@ Not built yet. The current definition gives checksum `v2:0812d137923506a25798ec3
 
 **Predicted.** The total of the policy's claims in the year, in euros, over every guarantee of its cover (liability only for the Mini cover): 0 for 88.9% of the policies, those without a claim or whose claims net to 0 or less after legal recourse.
 
-**Known at prediction time.** The bonus-malus, cover level, policy age and time since its last change, payment frequency, pay-as-you-drive and use, the commune and its department, both drivers' age, sex and years of licence, the vehicle's age, engine, power, fuel, make, model, years on sale, top speed, type, value and weight, and how many vehicles the client insures.
+**Known at prediction time.** The bonus-malus, cover level, policy age and time since its last change, payment frequency, pay-as-you-drive and use, the commune and its department, both drivers' age and years of licence, the vehicle's age, engine, power, fuel, make, model, years on sale, top speed, type, value and weight, and how many vehicles the client insures. The drivers' sex is left out, as EU insurers may no longer price on it.
 
 **What the test data stands for.** All policies of a client stay on one side, so the test data stands for clients whose claims of the year are not known; pricing the next year from this one, as the game did, needs a second claim year.
 
-**Our changes to the source.** We summed each policy's claims, set the 1,116 negative totals (legal recourse) to 0, made placeholder and impossible values missing (a licence of 111 years or taken before 16, a weight of 0 or 7,901 kg, the zeros of an absent second driver), joined make and model, added the client's vehicle count and the commune's department, kept the commune as text, and dropped the identifiers.
+**Our changes to the source.** We summed each policy's claims, set the 1,116 negative totals (legal recourse) to 0, made placeholder and impossible values missing (a licence of 111 years or taken before 16, a weight of 0 or 7,901 kg, the zeros of an absent second driver), joined make and model, added the client's vehicle count and the commune's department, kept the commune as text, and dropped the identifiers and the drivers' sex.
 
 > **Use case fit: approximate (a stand-in with a known gap).** The features are the rating factors known when a premium is set, and the target is the policy's own claims. But the game priced the next year knowing each policy's claims of this one, and only one claim year is published, so held-out clients of the same year stand in; the insurer and how the policies were chosen are not stated.
 
@@ -148,7 +148,7 @@ Only curators run `build`, when the dataset ships.
 | license | GPL (>= 2) |
 | data_tags | Non-IID, Grouped, ForcedGroupedFromTemporal, Spatial |
 | reference | Charpentier2017PricingGame |
-| rows x columns | 100,000 x 31 |
+| rows x columns | 100,000 x 29 |
 | task.target | claim_amount |
 | task.problem_type | regression |
 | task.metric | mean_tweedie_deviance |
@@ -165,13 +165,13 @@ Only curators run `build`, when the dataset ships.
 | original | each player's profit over Years 1 to 4 in simulated markets of 10 players: the premiums minus the losses of the clients it won, each client choosing among the three cheapest offers, a player whose losses pass 170% of its premiums going bankrupt (rules, objective (2)) |
 | reference | http://web.archive.org/web/20190919092227/http://freakonometrics.free.fr/PG3/3rdPricingGame.pdf |
 | definition | sum(w * 2 * (y^(2-q) / ((1-q)(2-q)) - y p^(1-q) / (1-q) + p^(2-q) / (2-q))) / sum(w) at power q (1 Poisson; 1 < q < 2 a compound Poisson-gamma cost, y >= 0; q >= 2 needs y > 0), w the optional weight input (1 without it); p below min_prediction counts as it |
-| reason | The market needs the other players' premiums and the claims of Years 1 to 4, which the release does not hold, so the profit cannot be computed. A player wins the clients it prices lowest and goes bankrupt when its losses pass 170% of its premiums, so its profit rests on both the order and the level of its premiums. The mean Tweedie deviance at power 1.5 (a compound Poisson-gamma cost, the actuarial loss for a pure premium with many zero claims) scores both; a prediction below 0.1 EUR counts as 0.1 EUR, two orders below the smallest plausible mean policy cost, 16.8 EUR (the cheapest rating cell of at least 500 policies), which follows the collection's rule for a deviance floor (MET-13), a convention that can change later, not a property of the source; in the task probe 0.1% (random forest) to 6.7% (linear) of a model's predictions sit at the floor. Closeness measured in simulated Year-1 markets under the game's Rule 2 on the shipped splits, models as players: across a mixed field of models a Poisson or Tweedie deviance follows the profit order at a Kendall tau of 0.58 to 0.79, the normalized Gini at 0.12 to 0.59 (means per market variant), as the Gini is blind to any monotone transform of the predictions: a steeper copy of the best model ties the top Gini (0.317) and earns less than a flat premium. Among six strong, comparable learners the Gini leads (0.91 against 0.69). Chosen over the Gini by the curator (Andrej, 2026-11-03). |
+| reason | The market needs the other players' premiums and the claims of Years 1 to 4, which the release does not hold, so the profit cannot be computed. A player wins the clients it prices lowest and goes bankrupt when its losses pass 170% of its premiums, so its profit rests on both the order and the level of its premiums. The mean Tweedie deviance at power 1.5 (a compound Poisson-gamma cost, the actuarial loss for a pure premium with many zero claims) scores both; a prediction below 0.1 EUR counts as 0.1 EUR, two orders below the smallest plausible mean policy cost, 16.8 EUR (the cheapest rating cell of at least 500 policies), which follows the collection's rule for a deviance floor (MET-13), a convention that can change later, not a property of the source; in the task probe 0.1% (random forest) to 6.6% (linear) of a model's predictions sit at the floor. Closeness measured in simulated Year-1 markets under the game's Rule 2 on the shipped splits, models as players: across a mixed field of models a Poisson or Tweedie deviance follows the profit order at a Kendall tau of 0.58 to 0.79, the normalized Gini at 0.12 to 0.59 (means per market variant), as the Gini is blind to any monotone transform of the predictions: a steeper copy of the best model ties the top Gini (0.317) and earns less than a flat premium. Among six strong, comparable learners the Gini leads (0.91 against 0.69). Chosen over the Gini by the curator (Andrej, 2026-11-03). |
 | params | {'power': 1.5, 'min_prediction': 0.1} |
 
 <details>
-<summary>Feature types: 11 categorical, 2 ordinal, 1 string, 0 datetime</summary>
+<summary>Feature types: 9 categorical, 2 ordinal, 1 string, 0 datetime</summary>
 
-- categorical (11): `pol_payd`, `pol_usage`, `pol_department`, `drv_drv2`, `drv_sex1`, `drv_sex2`, `vh_fuel`, `vh_make`, `vh_model`, `vh_type`, `id_client`
+- categorical (9): `pol_payd`, `pol_usage`, `pol_department`, `drv_drv2`, `vh_fuel`, `vh_make`, `vh_model`, `vh_type`, `id_client`
 - ordinal (2): `pol_pay_freq (Yearly < Biannual < Quarterly < Monthly)`, `pol_coverage (Mini < Median1 < Median2 < Maxi)`
 - string (1): `pol_insee_code`
 - datetime (0): none
@@ -197,15 +197,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 100,000 rows of the final frame (random rows: the frame is shuffled); 12 of 31 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 100,000 rows of the final frame (random rows: the frame is shuffled); 12 of 29 columns, the target first. Cells are cut at 40 characters.
 
 | claim_amount | id_client | pol_bonus | pol_coverage | pol_duration | pol_sit_duration | pol_pay_freq | pol_payd | pol_usage | pol_insee_code | drv_drv2 | drv_age1 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | A00058000 | 0.5 | Mini | 6 | 6 | Biannual | No | WorkPrivate | 31407 | No | 51 |
-| 0 | A00000494 | 0.5 | Maxi | 15 | 4 | Yearly | No | Retired | 54265 | No | 78 |
-| 0 | A00060963 | 0.5 | Maxi | 15 | 2 | Monthly | No | WorkPrivate | 69204 | Yes | 39 |
-| 0 | A00038954 | 0.5 | Median1 | 12 | 3 | Biannual | No | Retired | 85146 | No | 80 |
-| 0 | A00049829 | 0.5 | Maxi | 1 | 1 | Monthly | No | WorkPrivate | 17351 | Yes | 47 |
+| 0 | A00052359 | 0.5 | Maxi | 11 | 3 | Biannual | No | WorkPrivate | 44163 | No | 42 |
+| 0 | A00034393 | 0.5 | Maxi | 5 | 2 | Yearly | No | WorkPrivate | 53039 | Yes | 38 |
+| 0 | A00081150 | 0.5 | Maxi | 4 | 1 | Yearly | No | WorkPrivate | 57067 | No | 55 |
+| 6756.67 | A00008612 | 0.5 | Maxi | 5 | 1 | Biannual | No | WorkPrivate | 25321 | Yes | 39 |
+| 0 | A00008065 | 0.5 | Median2 | 25 | 4 | Biannual | No | Retired | 73008 | No | 73 |
 
 ## Curation notes
 
@@ -218,7 +218,7 @@ We start with pg17trainpol and pg17trainclaim of CASdatasets, the Year-0 underwr
 - Amount, not a claim indicator, unlike pricing_game_2016_french_fleet: these are euros with a full tail (largest total 141,828), the pure premium the game priced, where pg16's charges are scaled by one constant and stop at 8,565.
 - 1,116 negative policy totals (-1,864 to -0.02) set to 0, as the AI suggested (record, 2026-10-30) and as frempl_french_motor_personal_line does; AIcrowd set the same totals to 0 on this portfolio. The reason: Tweedie and Poisson losses, the usual ones for a pure premium, need a non-negative target. The clip raises the total claim cost by 4.8% (Mini 12.5%, Maxi 4.3%). The total is clipped, not each claim: 213 policies mix positive and negative claims (80 net below 0). 88.9% of the targets are then 0.
 - Raw amount, not log1p: the Tweedie deviance scores the expected claim cost in euros, its level included, and a log1p fit transformed back prices policies at about 1% of their cost (deviance skill -5.1, below a constant prediction). Under the normalized Gini the scale made no clear difference (untuned, 9 shipped splits: random forest 0.298 on the amount, 0.297 on log1p; LightGBM 0.248 and 0.251). frempl_french_motor_personal_line ships log1p with a Gini. **Exception to CLEAN-16 (2026-11-03, Andrej):** a metric that scores the level in euros, which a log1p fit loses.
-- Metric floor: a prediction below 0.1 EUR counts as 0.1 EUR (`min_prediction`; Lennart, 2026-11-08, REVIEW.md issue 5, in place of Andrej's 1 EUR of 2026-11-03). The 0.1 EUR follows the collection's rule for a deviance floor, two orders of magnitude below the smallest plausible mean (MET-13 as amended on 2026-11-06, as for the 1e-4 claims per year of fremtpl2 and bemtpl97): a convention of this collection that can change later, not a property of the source, which states no floor. The smallest plausible mean is 16.8 EUR, the cheapest cell of cover x use x bonus-malus band x first driver's age band with at least 500 policies (Mini, WorkPrivate, bonus-malus above 0.5 up to 0.7, aged 26 to 40: 553 policies; other band edges give 14 to 20 EUR), so the rule gives about 0.17 EUR, rounded down to 0.1 EUR to stay two orders below every such cell. A model that never predicts below 1 EUR scores as at the old floor; the lower floor costs only a model that prices a claiming policy near zero. At the floor in the task probe (5 of 9 splits, 2026-11-08): 6.7% of the linear model's predictions, 3.8% of LightGBM's and 0.1% of the random forest's; the random forest scores 62.22 against the constant's 63.10, the linear model 81.97 and LightGBM 90.30 (66.28 and 70.90 at the 1 EUR floor).
+- Metric floor: a prediction below 0.1 EUR counts as 0.1 EUR (`min_prediction`; Lennart, 2026-11-08, REVIEW.md issue 5, in place of Andrej's 1 EUR of 2026-11-03). The 0.1 EUR follows the collection's rule for a deviance floor, two orders of magnitude below the smallest plausible mean (MET-13 as amended on 2026-11-06, as for the 1e-4 claims per year of fremtpl2 and bemtpl97): a convention of this collection that can change later, not a property of the source, which states no floor. The smallest plausible mean is 16.8 EUR, the cheapest cell of cover x use x bonus-malus band x first driver's age band with at least 500 policies (Mini, WorkPrivate, bonus-malus above 0.5 up to 0.7, aged 26 to 40: 553 policies; other band edges give 14 to 20 EUR), so the rule gives about 0.17 EUR, rounded down to 0.1 EUR to stay two orders below every such cell. A model that never predicts below 1 EUR scores as at the old floor; the lower floor costs only a model that prices a claiming policy near zero. At the floor in the task probe (5 of 9 splits, without the drivers' sex, 2026-11-08): 6.6% of the linear model's predictions, 3.9% of LightGBM's and 0.1% of the random forest's; the random forest scores 62.30 against the constant's 63.10, the linear model 80.04 and LightGBM 88.84 (with the drivers' sex: 62.22, 81.97 and 90.30 at this floor, the last two 66.28 and 70.90 at the 1 EUR floor).
 - Only the claim part carries signal (repeat 0): untuned LightGBM ranks claims at AUC 0.611, a severity model scores R^2 -0.036 on the claimants (-0.018 on log amounts), and the true claim indicator times the claimants' mean reaches R^2 0.158. The largest total, 141,828, is 1.2% of all claim cost; kept.
 - `pol_bonus` is the bonus-malus at the start of the year: to Year 1 it rises by 24-25% for 1,230 policies with a Year-0 claim and 373 without (pg17testyear1), the French rule after a claim (Sec. 4.5); alone it ranks Year-0 claims at AUC 0.518.
 - Made missing, rows kept: `drv_age2` and `drv_age_lic2`, 0 exactly for the 66,814 policies without a second driver ("When not, this age is 0", Sec. 4.15); a licence held longer than the driver has lived (111 years for 24 first and 768 second drivers, 2 other first drivers; the rules warn of "some outliers", Sec. 4.19); a licence that, by the driver's age, was taken before 16 (8 first drivers, at 5 to 15, and 2 second drivers, at 8 and 10; CLEAN-11, as caracas_cervical_cancer); `vh_weight` of 0 (3,744) and the 7,901 kg of one Peugeot 205 (the other 1,384 weigh 740 to 1,300 kg), and `vh_value` of 0 (2). `vh_cyl` of 0 stays: the 5 vehicles are electric (`vh_fuel` "Hybrid"). `vh_age` is missing for one policy, as published.
@@ -229,7 +229,8 @@ We start with pg17trainpol and pg17trainclaim of CASdatasets, the Year-0 underwr
 - Dropped: `id_policy` (id_client and id_vehicle joined), `id_vehicle` ("their rank should not represent anything valuable", Sec. 4.2) and `id_year` (one value). `id_client` is the group column.
 - Dtypes: the policy, driver and vehicle labels and the department categorical, the commune a string; `pol_coverage` an ordered category, Mini < Median1 < Median2 < Maxi, the order of the rules (Lennart, 2026-11-08); `pol_pay_freq` an ordered category by the number of payments a year, fewest first: Yearly < Biannual < Quarterly < Monthly (1, 2, 4, 12), the same order as in spanish_motor_insurance_coverage_level_2022_2024 and pricing_game_2016_french_fleet (Lennart, 2026-11-08, issue 8 of the first's REVIEW.md); bonus-malus, ages, durations and the vehicle's measures numeric. One pair of policies, one client's two vehicles without a claim, is identical in every feature: kept.
 - Exposure: no exposure column, and none is needed. Each policy is quoted a yearly premium (rules, Sec. 1 and 4.9) and is present once in every year's file (Sec. 4), so a row is a policy-year by design. The later years' files are the organiser's ageing of Year 0 (from Year 0 to Year 1 every policy's two durations rise by 1, and none changes cover, use or vehicle), so they cannot show that no Year-0 year was cut short. The shortest `pol_duration` is 1, so no policy was written during Year 0. The newest policies claim as often as their risk predicts: a claim model without the two durations (LightGBM, 5 folds by client) expects 1,184 claims at duration 1 and sees 1,198 (observed over expected 1.011, z 0.43), where part years would claim less; at the ratio's 95% lower bound (0.954), at most about 9% of them could be half years. The raw shares agree but mix in the risk profile (a claim in 13.7% of the policies at duration 1 against 12.3% from 6 on). Share cut short (MET-14): none can be located; for new policies, bounded by the test above; for older ones, not observable (no cancellation date). The target is the policy's claims of the year, scored unweighted, as the game priced each policy for the year (MET-14, MET-15). For the 4,152 pay-as-you-drive policies (`pol_payd`) the real exposure, the distance driven, is not released.
-- Note: `drv_sex1` and `drv_sex2` kept, as the rules offer them ("can be used as discriminatory variable in this pricing game", Sec. 4.16). EU law has barred sex from insurance prices since 21 December 2012; in the data's year, about 2010-11, it was still a legal rating factor, so the insurer could use it.
+- Dropped: `drv_sex1` and `drv_sex2`, the two drivers' sex (the first driver's M for 60.2%; the second's missing without a second driver). The rules offer them ("can be used as discriminatory variable in this pricing game", Sec. 4.16), and in the data's year, about 2010-11, sex was still a legal rating factor in France. But sex leaves the rating factors of every insurance pricing task of this collection, whatever the actor's jurisdiction or the data's year, as EU law has required for new contracts since 21 December 2012 (Test-Achats, CJEU C-236/09): the benchmark asks how good such models would be in today's European market (the Tensions row on rating factors in principles.md, amended 2026-11-08; CC below). The model scores of these notes, the metric reason and the splits comment were measured with the two columns in, except the task probe's (re-run without them, 2026-11-08).
+- CC (2026-11-08, Lennart): the drivers' sex leaves the features, on the stance Lennart set in australian_vehicle_insurance_2004_2005's issue 7 ("A stance for the family; as if we were to simulate the case in europe always"): sex is no rating factor of any insurance pricing task of this collection, whatever the actor's jurisdiction, as under EU law (Test-Achats). Supersedes the note that kept `drv_sex1` and `drv_sex2` as legal in the data's year (AI, 2026-11-01), which shipped with Andrej's verdict of 2026-11-03. They carried almost nothing: in the task probe the random forest scores 62.30 without them and 62.22 with them, against the constant's 63.10 (the same 5 splits).
 
 ## Splits
 
@@ -286,7 +287,7 @@ One group is a client (id_client); its rows are its insured vehicles, one policy
 | test groups per fold | 30,496 |
 | groups of two or more rows with a single label | 81.4% |
 | nearest neighbour in the same group | 0.1% of the rows (chance: 0.0%) |
-| label variance explained by the group | 0.94 (shuffled groups: 0.86) |
+| label variance explained by the group | 0.94 (shuffled groups: 0.97) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
@@ -325,7 +326,7 @@ The rules give 0 as the age of an absent second driver (Sec. 4.15); a licence of
 0 error(s), 0 warning(s), 2 info (27 checks run, plus the dataset's own checks).
 
 - **info** `dataset_duplicate_rows`: 1 exact duplicate row(s) (0.0% of the data). (hint: Duplicates spread across train and test inflate scores — deduplicate unless the repetition is meaningful.)
-- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (0.1% of nearest neighbours vs 0.0%), and the group explains no more of the label than shuffled groups (0.94 vs 0.86). (hint: The grouping may not be needed: compare IID and grouped scores with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.)
+- **info** `groups_not_clustered`: Rows are no closer to their own group than chance (0.1% of nearest neighbours vs 0.0%), and the group explains no more of the label than shuffled groups (0.94 vs 0.97). (hint: The grouping may not be needed: compare IID and grouped scores with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.)
 
 Accepted on purpose:
 
@@ -336,18 +337,16 @@ Accepted on purpose:
 ### Feature summary
 
 <details>
-<summary>Show the table (31 rows)</summary>
+<summary>Show the table (29 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| drv_sex2 | category | 66814 | 66.81 | 2 | F, M |
 | id_client | category | 0 | 0 | 91488 | A00054291, A00004947, A00020663, A00026771, A00028075, A00033051, A00045156, A0… |
 | pol_coverage | category | 0 | 0 | 4 | Maxi, Median2, Median1, Mini |
 | pol_pay_freq | category | 0 | 0 | 4 | Yearly, Monthly, Biannual, Quarterly |
 | pol_payd | category | 0 | 0 | 2 | No, Yes |
 | pol_usage | category | 0 | 0 | 4 | WorkPrivate, Retired, Professional, AllTrips |
 | drv_drv2 | category | 0 | 0 | 2 | No, Yes |
-| drv_sex1 | category | 0 | 0 | 2 | M, F |
 | vh_fuel | category | 0 | 0 | 3 | Diesel, Gasoline, Hybrid |
 | vh_make | category | 0 | 0 | 101 | RENAULT, PEUGEOT, CITROEN, VOLKSWAGEN, FORD, OPEL, TOYOTA, MERCEDES BENZ, FIAT,… |
 | vh_model | category | 0 | 0 | 1076 | RENAULT CLIO, PEUGEOT 206, RENAULT TWINGO, RENAULT SCENIC, RENAULT MEGANE, PEUG… |
@@ -410,17 +409,12 @@ Accepted on purpose:
 ### Categorical features
 
 <details>
-<summary>Show the table (51 rows)</summary>
+<summary>Show the table (46 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | drv_drv2 | 1 | No | 66814 | 66.81 |
 | drv_drv2 | 2 | Yes | 33186 | 33.19 |
-| drv_sex1 | 1 | M | 60201 | 60.2 |
-| drv_sex1 | 2 | F | 39799 | 39.8 |
-| drv_sex2 | 1 | &lt;NA> | 66814 | 66.81 |
-| drv_sex2 | 2 | F | 20332 | 20.33 |
-| drv_sex2 | 3 | M | 12854 | 12.85 |
 | id_client | 1 | A00054291 | 9 | 0.01 |
 | id_client | 2 | A00004947 | 5 | 0 |
 | id_client | 3 | A00020663 | 5 | 0 |

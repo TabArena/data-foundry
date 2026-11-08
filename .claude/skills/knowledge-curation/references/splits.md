@@ -126,11 +126,15 @@ predicts for known entities, and a question when the use case is a new entity (U
 
 ### How many windows
 
-**SPLIT-14 (Must).** A temporal task has at least 3 windows, and no window's train side holds less than 50% of the
-data. Why: a smaller train side is too unlike the real application. A task that cannot meet it ships under SPLIT-8
-(Lennart, 2026-10-21). Each window has its own train side: windows that share one train side test one model on
-several test periods, which is one evaluation, not several. As time moves on, a refit sees the data that arrived
-since, so each window trains on what is known before it starts (Andrej, 2026-11-02; reframed 2026-11-05, Lennart).
+**SPLIT-14 (Must; amended 2026-11-08, Lennart, on wisconsin_local_government_property_insurance_fund).** A temporal task
+has at least 3 windows, and no window's train side holds less than 50% of the data. Why: a smaller train side is too
+unlike the real application. A task that cannot meet it ships under SPLIT-8 (Lennart, 2026-10-21). Each window has its
+own train side: windows that share one train side test one model on several test periods, which is one evaluation, not
+several. As time moves on, a refit sees the data that arrived since, so each window trains on what is known before it
+starts (Andrej, 2026-11-02; reframed 2026-11-05, Lennart). A release with two windows above the floor may add one older
+window that trains on at least 40% of the rows, when most test entities recur (the actor re-rates entities it knows) and
+folds by entity would test unseen ones; the notes give the score on the valid windows next to all windows and what the
+short window changes (Lennart, 2026-11-08: "the task is too good to remove because of the 50% floor").
 
 **SPLIT-15 (Should).** Roll the windows back from the newest data: as many windows as an IID or grouped task of that
 size would get folds. Then check that the windows are still meaningful (SPLIT-16 to SPLIT-18).
@@ -206,15 +210,15 @@ carries the label. Why: a random split then rewards recognising the entity.
 the column an id, or the use case predicts for new entities), or when the evidence is very strong. The size of the
 gap never decides (SPLIT-4).
 
-**SPLIT-31 (Should).** Over related entities, IID can match how a task is framed even when it is optimistic: such a
-task is a candidate for a grouped or temporal variant, not a fix. Cases: amazon_employee_access, bank_marketing.
-Molecules are the exception (amended 2026-10-26, Lennart, on qsar_bioconcentration: "in other cases, we also moved
-towards a scaffold split as is often correct for chemicals"): a molecule dataset whose rows carry exact structures
-groups on the Bemis-Murcko scaffold, as a new chemical under assessment often comes from a series not yet measured. A
-molecule without a ring is a group of its own, and so is each molecule of a scaffold that holds more than a tenth of
-the molecules, which is no series and would leave folds of very unequal size (`scaffold_groups` in
-`data_foundry.v2.chemistry`). Cases: drug_induced_autoimmunity_prediction, qsar_bioconcentration, qsar_oral_toxicity,
-qsar_tid_11.
+**SPLIT-31 (Should).** Over related entities, IID can match how a task is framed even when it is optimistic: such a task
+is a candidate for a grouped or temporal variant, not a fix. Cases: amazon_employee_access (bank_marketing until
+2026-11-08, when it was split by time). Molecules are the exception (amended 2026-10-26, Lennart, on
+qsar_bioconcentration: "in other cases, we also moved towards a scaffold split as is often correct for chemicals"): a
+molecule dataset whose rows carry exact structures groups on the Bemis-Murcko scaffold, as a new chemical under
+assessment often comes from a series not yet measured. A molecule without a ring is a group of its own, and so is each
+molecule of a scaffold that holds more than a tenth of the molecules, which is no series and would leave folds of very
+unequal size (`scaffold_groups` in `data_foundry.v2.chemistry`). Cases: drug_induced_autoimmunity_prediction,
+qsar_bioconcentration, qsar_oral_toxicity, qsar_tid_11.
 
 The hidden-group cases and the probe's calibration are in [task_probes.md](task_probes.md), "Hidden groups".
 
@@ -271,10 +275,12 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | SPLIT-9, SPLIT-10 | nyc_taxi_trip_duration_1m, pkdd_15_taxi_trip_time_prediction_ii_1m, cooking_time_1m, maps_router_eta_1m, delivery_eta_1m | trip and order times in weekly or monthly windows: the training rows whose trip or order ends after the window start are counted per window, and a one-day gap is set where any are (nyc 77-127 per window, pkdd 8-48, cooking_time 108-172, maps_router_eta 578-656; 0 after); delivery_eta_1m has none, its orders stop overnight (2026-10-21, Lennart) | applied |
 | SPLIT-10 | ames_housing, perth_house_prices | proposed amendment, due at the third exception of this reason (principles.md, "Exceptions and amendments"): "No gap is needed when the label's delay is shorter than the resolution of the time column (sales dated by month) and the newest period shows no selection by the outcome (its mean residual within the other windows' range)." Both exceptions rest on these two facts; alfa_battle_2_0_task_2 and lending_club depart for another reason (SPLIT-14's floor) and do not count (proposed 2026-10-26 from the consistency check on ames_housing; open for Lennart) (settled by the amendment of 2026-11-04, Lennart) | applied |
 | SPLIT-10 | spanish_homeowners_motor_insurance_2010_2014 | no gap for late-reported claims: the panel is yearly and a one-year gap leaves the 2012 window 33% of the rows, below SPLIT-14's floor; hiding 30 or 90 days of the newest year's claims moves the mean Gini from 0.219 to 0.226 and 0.203, within noise. Serves SPLIT-14 (2026-11-02, Andrej; row added 2026-11-06) | exception |
+| SPLIT-10 | wisconsin_local_government_property_insurance_fund | exception (2026-11-08, Lennart): no gap; every policy year ships with its final claim amounts, so no label is selected by the release end, and a one-year gap would put two of the three windows below the floor; serves SPLIT-14 as amended on this fund | exception |
 | SPLIT-12 | house_sales, perth_house_prices, ames_housing, zillow_prize, melbourne_housing_market | no window length for the whole family: each keeps the horizon of its own source or refit cadence (three weeks; one month, spaced; two months; one month after a one-month gap; three weekly sheets), since "different task might forecast differently long" and "we dont need to force the same split" (2026-10-21, Lennart) | applied |
 | SPLIT-12, SPLIT-19 | medical_facility_operational_data | the source's horizon followed: Crowley et al. (2020) train on six months and test on "a further consecutive two weeks", so nine 14-day windows replace nine equal-count windows of 42-53 days, each from the first whole day at or after the start of one of the old ones: the same number of folds, 12,408 test visits instead of 40,995, training sides still expanding (50.1% to 94.6%). The longer windows had cost nothing measurable (14.40 against 14.42 MAE on the same weeks), and the exception to SPLIT-19 proposed for them was dropped; the day key is built in `_clean`, as the time column is the arrival rank (2026-11-05, Lennart, issue 8) | applied |
 | SPLIT-14 | california_house_prices_2020 | `min_train_fraction=0.25` let the oldest window train on 25% of the rows; its windows now train on 50%, 67% and 83% (2026-10-21) | applied |
-| SPLIT-14 (amended 2026-11-02, Andrej), SPLIT-11 | pricing_game_2016_french_fleet | three four-month windows of 2013 that all trained on 2011-2012 do not count as three windows; each window now trains on the periods closed before it starts (64%, 71%, 78% of the rows) (2026-11-02, Andrej) Reopened 2026-11-06: under LEAK-41 no window may admit training periods by their realized end, which gives the three windows one training side again (the dataset's issue 6, open). | applied |
+| SPLIT-14 (amended 2026-11-08, Lennart) | wisconsin_local_government_property_insurance_fund | three yearly windows, test 2008, 2009 and 2010 on 40.6%, 60.6% and 80.3% of the rows: two windows above the floor, 97.6% to 98.8% of each test year's members in earlier years, and member folds leaked the year's claim level (pooled ROC AUC +0.010 to +0.012; within a year +0.031 to +0.036 Gini for a GLM); the 2008 window changes the order of the two simplest predictors (coverage alone 0.368 against a GLM's 0.312 on the valid windows, 0.251 against 0.291 with 2008), stated in the notes | applied |
+| SPLIT-14 (amended 2026-11-02, Andrej), SPLIT-8 | pricing_game_2016_french_fleet | forced grouped by contract (`contract_id`, 3 x 3 folds over 2011-2013, `ForcedGroupedFromTemporal`) in place of the windows (2026-11-08, Lennart, issue 6 (b): "Forced by contract"), superseding Andrej's expanding four-month windows (2026-11-02) and D11's three windows of 2013 on one training side (2026-11-06): rows are cut at 31 December and the claims carry no dates, so the windows are whole years and 2013 on 2011-2012 is the one valid window (2012 on 2011 trains on 30.4%); windows inside 2013 either share one training side, one evaluation, or admit the 2013 periods by their realized end (LEAK-41); the leak test across the contract folds passes (the test year's own training periods gain -0.12 and -0.18 on the declared metric, -0.007 and +0.008 Gini, against wisconsin's +0.113), and on the 2013 periods the forced split scores as the valid window (+0.06, SD 0.52; a new fleet's cold start 1.10); the exception to SPLIT-10 lapsed with the windows | applied |
 | SPLIT-16 (TP-9) | seismic_bumps | 49 positives in the newest half, 0-5 per window: `Too Small`, no fallback to an IID split | applied |
 | SPLIT-17 | coffee_rating_prediction | 26 monthly windows of 2-72 reviews doubled the confidence interval of a model comparison; 13 two-month windows hold 54-115 | applied |
 | SPLIT-18 | climate_model_weather_forecasting | weather test windows of one to two weeks at most | applied |
@@ -300,7 +306,8 @@ Precedents: how a rule was applied. They never change a rule; an exception is li
 | Few groups (factor) | covertype | 3 wilderness areas: IID instead of grouped | applied |
 | Few groups (factor) | heart_disease | 3 hospitals, leave one out kept: the source built its model in Cleveland and applied it at the other hospitals, no class drops out (51 or more of each per test fold), and 7 of 15 pairs of model families separate (4 to 5 under a random 10 x 3 split); SPLIT-1, SPLIT-4 and SPLIT-23 outweigh the factor (2026-10-27, Lennart) | applied |
 | Few groups (factor) | huesken_sirna_efficacy | 30 genes, grouped by target gene kept (10 test genes, 648-942 test rows per fold): a new gene is the unit predicted for, and LightGBM beats the training mean on every split (0.1618 against 0.2024); not a general license for few groups, the signal across groups is measured (2026-11-04, Lennart) | applied |
-| SPLIT-31 | amazon_employee_access, bank_marketing | IID kept: optimistic, but it matches how the task is framed; candidates for a grouped or temporal variant | applied |
+| SPLIT-31 | amazon_employee_access | IID kept: optimistic, but it matches how the task is framed; a candidate for a grouped or temporal variant (bank_marketing left this row on 2026-11-08: the row below) | applied |
+| SPLIT-1, SPLIT-19, SPLIT-22, LEAK-17 | bank_marketing | split by time in place of SPLIT-31's IID keep: five expanding windows of 4,521 records on the file's date order (UCI: "ordered by date"; the year rebuilt where the month wraps, the dates checked against the order, the file position the time key), training on 50% to 90%. What sets it apart from amazon_employee_access: the source scores on time-ordered windows, the date order is recoverable, a client's later record gave an earlier one's label away across the random split (+0.020 ROC AUC to a lookup) and the subscription rate moves tenfold (5.1% in 2008, 51.6% in 2010). The windows score ROC AUC 0.586 on average (LightGBM; 0.614 logistic regression) against 0.76 at random, and a weak score under the right split keeps no wrong one (forest_fires) (2026-11-08, Lennart, issue 1) | applied |
 | SPLIT-31 | infrared_thermography_temperature | IID kept over a measured year-to-year shift (a first-year calibration over-predicts the second year by 0.06-0.09 °C): the calibration is a function of the inputs that should not depend on the day, so no real signal across time; temporal is a candidate variant (2026-10-21, Lennart) | applied |
 | SPLIT-31 | qsar_oral_toxicity | IID kept over related chemicals (random forest 0.882 IID, 0.842 by Butina clusters, 0.843 by reconstructed Murcko scaffolds, ranking unchanged); the scaffold-grouped variant on structures linked by row order stays a listed candidate, not built (2026-10-21, Lennart); superseded 2026-10-26 by the amendment below | applied |
 | SPLIT-31 | drug_induced_autoimmunity_prediction | grouped on the Bemis-Murcko scaffold, ring-less drugs alone, the bare benzene ring one group (7% of the drugs): new candidates come from series not yet tested, as in the TDC ADMET benchmarks (2026-10-19, Lennart) | applied |

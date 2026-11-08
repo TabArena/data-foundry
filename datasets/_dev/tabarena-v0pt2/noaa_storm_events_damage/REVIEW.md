@@ -2,12 +2,11 @@
 
 **Outcome:** added. The AI recommends shipping it after changes: the re-review panel of 2026-11-06 under the exposure
 rules (LEAK-41, MET-14 to MET-16) found no exposure, weight or offset to add and the split right; its changes that need
-no decision are made (below), issues 7 and 8 are decided and applied (2026-11-08), and two questions raised when issue 8
-was applied are open (10 and 11). NOAA NCEI's Storm Events Database, 2007-2025: 843,144 entries of the property damage
-an NWS office entered for one event in one county or zone, 68% of them $0, for a state hazard-mitigation planner who
-estimates the damage of storm events before it is assessed (Diaz and Joseph 2019); tested on the calendar years
-2023-2025 with a 3-month gap, scored by the mean Tweedie deviance at power 1.5 on the dollars (by context; the source
-has none; RMSLE until 2026-11-08).
+no decision are made (below), issues 7, 8, 10 and 11 are decided and applied (2026-11-08), so no question is open. NOAA
+NCEI's Storm Events Database, 2007-2025: 843,144 entries of the property damage an NWS office entered for one event in
+one county or zone, 68% of them $0, for a state hazard-mitigation planner who estimates the damage of storm events
+before it is assessed (Diaz and Joseph 2019); tested on the calendar years 2023-2025 with a 3-month gap, scored by the
+mean Tweedie deviance at power 1.5 on the dollars (by context; the source has none; RMSLE until 2026-11-08).
 
 Validity:
 * SEL-3 holds on the `Yes` of 2026-10-30. USE-1 and USE-5 hold with the planner as the actor (issue 5); USE-8: fit
@@ -20,9 +19,9 @@ Validity:
   as decided: `duration_hours` is blank for Tornado, Strong Wind and Heavy Rain, and since the re-review for Seiche too
   (below). The re-review read App. A again for every type: a seiche begins at flooding "resulting in a fatality, injury
   or damage" (Sec. 41), so its 51 durations are now blank too, an extension of D13's reading that both debaters accepted
-  (say so if you want them kept); Dust Storm and Volcanic Ashfall join the types kept with a note; Flood and Flash Flood
-  (a threat to life or property) and Hurricane and Tropical Storm (the storm's direct effects) are recorded as judged
-  outcome-free.
+  (say so if you want them kept); Dust Storm and Volcanic Ashfall join the types kept with a note; Flood (a threat to
+  life or property) and Hurricane and Tropical Storm (the storm's direct effects) are recorded as judged outcome-free,
+  and Flash Flood, one of whose onsets is damage to a building, is kept with a note since issue 11 (2026-11-08).
 * LEAK-10 and the Cases row on spans: the note's premise that the damage-timed part of the kept spans "cannot be
   located row by row" does not hold. `magnitude_type` locates most of it (241,523 of 318,813 rows), and on those rows a
   stronger LightGBM gains +0.023 to +0.031 RMSLE from the span (12 of 12 seeds): issue 7, B, decided on 2026-11-08 and
@@ -39,13 +38,13 @@ Value: under the declared deviance (issue 8, 2026-11-08) the signal is weak and 
 all lose to the training mean (3,866 against 5,796 for the random forest). LightGBM fitted with the Tweedie loss at 100
 trees scores 4,108-5,327, 2,048-2,453 and 788-838 (2023, 2024, 2025) against 4,453, 4,216 and 2,929 for the training
 mean and 2,660, 2,301 and 1,740 for the mean per event type, so it beats the per-type mean clearly in 2025 only, and 400
-or 1,500 trees score worse. Tuned per window with early stopping (issue 10), it scores 3,463, 2,044 and 962 (3 seeds):
-it beats the training mean in every window and the per-type mean in 2024 and 2025, and loses to it in 2023 within noise
-(bootstrap SE 1,580 for a difference of +802); a GLM on event type and month beats the per-type mean in all three
-windows (2,553, 2,130, 1,598). Under RMSLE (until 2026-11-08) untuned LightGBM scored 2.67, 2.93 and 2.94 (2025, 2024,
-2023) against 4.05, 4.28 and 4.20 for a constant, and methods spread (TP-3). MET-11: the deviance by context. MET-1: the
-reason names the planner, who sums expected dollars, which RMSLE does not score. MET-13: floor $1, two orders below the
-$909 training mean of Dense Smoke, the cheapest event type with a positive mean, rounded down.
+or 1,500 trees score worse. Tuned per window with early stopping (issue 10, kept as shipped), it scores 3,463, 2,044 and
+962 (3 seeds): it beats the training mean in every window and the per-type mean in 2024 and 2025, and loses to it in
+2023 within noise (bootstrap SE 1,580 for a difference of +802); a GLM on event type and month beats the per-type mean
+in all three windows (2,553, 2,130, 1,598). Under RMSLE (until 2026-11-08) untuned LightGBM scored 2.67, 2.93 and 2.94
+(2025, 2024, 2023) against 4.05, 4.28 and 4.20 for a constant, and methods spread (TP-3). MET-11: the deviance by
+context. MET-1: the reason names the planner, who sums expected dollars, which RMSLE does not score. MET-13: floor $1,
+two orders below the $909 training mean of Dense Smoke, the cheapest event type with a positive mean, rounded down.
 
 Quality: LEAK-19 (918 double entries dropped), CLEAN-21 (`magnitude` split into wind speed and hail size), CLEAN-11 (24
 impossible wind speeds, all estimates, blank). EV: the counts left from before issue 2's drop are restated on the
@@ -55,7 +54,7 @@ longer "+0.012 to +0.021, an upper bound".
 
 Weighed: size +; the NWS directive and a public-domain source +; an honest temporal split +; approximate fit -; the
 office's $0 convention in the label -; a duration the damage partly times, kept with its worth noted -; under the
-declared deviance a model beats the mean per event type clearly in one window of three -.
+declared deviance a tuned model beats the mean per event type in two windows of three, the third within noise -.
 
 Not issues here: the amendment of LEAK-10 for spans that the panel asked for (a third clause tied to the test for
 located cells, with heart_failure's `time` as the counter-case on size) is cross-dataset item X4 of the working copy's
@@ -63,8 +62,7 @@ REVIEW.md. The mediator asks to record Andrej's release of D13 (the study's deci
 merging; not needed on the AI's reading: you took over this round as main reviewer on 2026-11-06 and decided D13
 yourself (CC of 2026-11-06).
 
-For the curator: issue 10 (does the task beat a mean per event type under the deviance; A, keep it, recommended) and
-issue 11 (is the Flash Flood duration outcome-free; B, keep it with a note, recommended).
+For the curator: no issue is open.
 
 Changes made after the re-review panel (AI, 2026-11-06), no decision needed (`dataset check`: 0 errors, 0 warnings):
 the 51 Seiche durations are blank by type, as for Strong Wind; the kept-span note drops "cannot be located row by row"
@@ -83,17 +81,17 @@ CC line of 2026-11-06 keeps its words ("read App. A for every type", "+0.012 to 
 what the re-review corrected.
 
 Earlier changes: after the panel of 2026-11-01 the estimated wind speeds and the tornado durations were blanked, the
-hurricane category dropped and the gap set to 3 months; on 2026-11-03 the unassessed hazards were dropped (issue 2)
-and the use case became the planner's (issue 5); on 2026-11-06 D13 (issue 6); on 2026-11-08 the duration blank on
-the 241,523 wind entries the first report gives as damage (issue 7, B), and the target in dollars scored by the mean
-Tweedie deviance with a $1 floor (issue 8, B; `dataset check`: 0 errors, 0 warnings).
+hurricane category dropped and the gap set to 3 months; on 2026-11-03 the unassessed hazards were dropped (issue 2) and
+the use case became the planner's (issue 5); on 2026-11-06 D13 (issue 6); on 2026-11-08 the duration blank on the
+241,523 wind entries the first report gives as damage (issue 7, B), and the target in dollars scored by the mean Tweedie
+deviance with a $1 floor (issue 8, B); then issue 10 kept that metric with the tuned results in the notes, and issue 11
+moved the Flash Flood duration to the spans kept with a note (no data change; `dataset check`: 0 errors, 0 warnings).
 
-**Main points:** Open: does the task still beat a mean per event type under the deviance on the dollars (10: tuned
-LightGBM does in 2024 and 2025, not in 2023; A, keep, recommended); is the Flash Flood duration outcome-free (11: one of
-its onsets is damage to a building, and under the deviance it carries much of the skill; B, keep with a note,
-recommended). Issues 2 to 8 are resolved: on 2026-11-08 issue 7 blanked the duration on the wind entries the first
-report gives as damage, and issue 8 made the target the dollars, scored by the mean Tweedie deviance with a $1 floor.
-Made without a decision, say if you disagree: the 51 Seiche durations are blank, an extension of D13.
+**Main points:** Nothing is open; issues 2 to 11 are resolved. On 2026-11-08 issue 7 blanked the duration on the wind
+entries the first report gives as damage, issue 8 made the target the dollars, scored by the mean Tweedie deviance with
+a $1 floor, issue 10 kept that metric with its signal stated (tuned LightGBM beats the mean per event type in 2024 and
+2025, not in 2023, within noise), and issue 11 moved the Flash Flood duration to the spans kept with a note. Made
+without a decision, say if you disagree: the 51 Seiche durations are blank, an extension of D13.
 
 **Issues for Andrej and Lennart:**
 
@@ -642,6 +640,10 @@ Made without a decision, say if you disagree: the 51 Seiche durations are blank,
    [^10c]: **TP-1** (Must), "How to check a flag": against the benchmark's tuned methods. **MET-1** (Must): the metric
      scores the decision of the use case; issue 8 made it the planner's sum of expected dollars.
 
+   **Resolved (2026-11-08, Lennart):** A. The mean Tweedie deviance on the dollars stays as shipped; the notes' signal
+   bullet gives the tuned results by window (3,463, 2,044 and 962 against 2,660, 2,301 and 1,740 for the mean per
+   event type, with the bootstrap standard errors) and the capped variant as a note, and a CC line records the call.
+
 11. **Is the Flash Flood duration outcome-free?**
 
    * **Problem:**
@@ -710,6 +712,13 @@ Made without a decision, say if you disagree: the 51 Seiche durations are blank,
    [^11b]: **LEAK-10** (Must), second clause (amended 2026-10-26, Lennart): late cells that can be located row by row
      are blanked; values that cannot be located stay with a note only when the part that can be traced shows no gain.
      Issue 7 (Lennart, 2026-11-08) and D13 (issue 6, 2026-11-06).
+
+   **Lennart (2026-11-08, change):** Option B: Flash Flood kept with a note.
+
+   **Resolved (2026-11-08, Lennart):** B. The Flash Flood duration moves from the outcome-free reading to a `Potential
+   leak, kept on purpose:` note with the Sec. 14 onset, the narrative shares (6.8% name a building) and its worth on the
+   declared metric (+31% to +102% of the deviance on its rows when blanked); Flood, Hurricane (Typhoon) and Tropical
+   Storm stay read as outcome-free, and no data changes (`dataset check`: 0 errors, 0 warnings).
 
 **Review panel:** ship after changes (mediator). Tier full, a re-review of 2026-11-06 under LEAK-41 and MET-14 to
 MET-16, after decision D13 (issue 6): 12 reports. The mediator's issues 1 and 2 are issues 7 and 8 here (its option (a)

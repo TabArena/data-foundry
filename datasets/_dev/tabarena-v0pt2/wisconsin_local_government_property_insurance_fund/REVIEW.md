@@ -1,36 +1,36 @@
 # wisconsin_local_government_property_insurance_fund
 
 **Outcome:** added. Shipped on 2026-11-02 (the curator's verdict: changes, applied) on three expanding yearly windows
-(test 2008, 2009, 2010) with no gap and the claims in dollars (issues 1 and 2); the split is open again since
-2026-11-05 (issue 3). The re-review of 2026-11-06 recommends shipping after changes: its text changes are made, and for
-issue 3 it recommends folds by member with the test year left out of training (F). The building-and-contents cover of
-Wisconsin's Local Government Property Insurance Fund, 2006-2010, from the open textbook Loss Data Analytics: 5,639
-member-years of 1,227 counties, cities, towns, villages, school districts and other members; the target is the year's
-claims in dollars (0 for 70.2%), the inputs are the fund's rating variables, and the score is the source's Gini against
-the fund's premium. Validity: USE-1 holds (the fund's own rating project, Lee 2017); USE-8 triggered, fixed (fit
-approximate: the training years carry final claim amounts the fund knew only in part at renewal, as lending_club, and
-the public file lacks rating inputs); USE-6 holds (the premium is the source's comparator and the rating's output, a
-scoring column only, as 2_month_survival_rate_prediction; MET-2 as reworded on 2026-11-05 keeps it so); LEAK-41 holds
-(the premium is set at the start of the year and not prorated, no time on risk exists, the coverage is a feature);
-MET-15 holds (no training weight: the target is a total and the premium is not realized); LEAK-10 holds for every kept
-column; SPLIT-14 broken: the 2008 window trains on 40.6% of the rows, and a Must takes no exception (issue 3); LEAK-6
-and SPLIT-8 triggered on the member folds the rules send this release to (the year's claim level and a smaller
-within-year share cross them; F removes both); SPLIT-10 departed from (no gap; its precedent "as
-pricing_game_2016_french_fleet" is stale, since that case is reopened and never covered a window below the floor; moot
-under C, E or F); PROV-9 holds (rows first published 2017, a close extract of the paper's sample), and the licence
-reason now names the second edition's identical rows under CC0-1.0, where a stated licence can be had if the release
-needs one. Value: MET-11 and MET-13 triggered, fixed (the source's metric, new in the library); MET-2 holds (one year's
-Gini against that year's premium is the source's own, Sec. 6.2, and E and F both give it); MET-5 holds (the Gini is
-argued, Spearman reported beside it); TP-4 holds narrowly: coverage alone leads the untuned models in every design but A
-(0.368 against 0.30-0.31 for a Tweedie GLM on the two valid windows, 0.198 against 0.139 under F); the task probes flag
-`no_signal`, which reads an R^2 on dollars, while on the declared Gini the untuned GLM without the member id scores
-0.244, 0.256 and 0.346 on the shipped windows against the premium's 0 (the split auditor's run, which the claim auditor
-matches; issue 3's run of the same models differs by its setup, within noise). TP-2 keep; re-read TP-4 on the first
-benchmark run. Quality: CLEAN-10 triggered, fixed (`NoClaimCredit` missing without two earlier years; `Fire5`'s
-unknown class kept with a note); CLEAN-16 exception kept (dollars, issue 2). Weighed: documented source and real
-decision +; small test sets, one claim that is 35% of 2010's losses, rating inputs the public file lacks (endorsements,
-county, the full fire class) and unseen members under any forced split -. Issues 1 and 2 are resolved; issue 3 (the
-split, to decide together with pricing_game_2016_french_fleet issue 6) is open.
+(test 2008, 2009, 2010) with no gap and the claims in dollars (issues 1 and 2); the split, open again from 2026-11-05
+(issue 3), was settled on 2026-11-08: the three windows stay under the floor rule as amended on this fund's facts
+(Lennart). The re-review of 2026-11-06 recommended folds by member with the test year left out (F); its text changes are
+made. The building-and-contents cover of Wisconsin's Local Government Property Insurance Fund, 2006-2010, from the open
+textbook Loss Data Analytics: 5,639 member-years of 1,227 counties, cities, towns, villages, school districts and other
+members; the target is the year's claims in dollars (0 for 70.2%), the inputs are the fund's rating variables, and the
+score is the source's Gini against the fund's premium. Validity: USE-1 holds (the fund's own rating project, Lee 2017);
+USE-8 triggered, fixed (fit approximate: the training years carry final claim amounts the fund knew only in part at
+renewal, as lending_club, and the public file lacks rating inputs); USE-6 holds (the premium is the source's comparator
+and the rating's output, a scoring column only, as 2_month_survival_rate_prediction; MET-2 as reworded on 2026-11-05
+keeps it so); LEAK-41 holds (the premium is set at the start of the year and not prorated, no time on risk exists, the
+coverage is a feature); MET-15 holds (no training weight: the target is a total and the premium is not realized);
+LEAK-10 holds for every kept column; SPLIT-14 holds as amended on 2026-11-08 (two windows above the floor, recurring
+members; the 2008 window trains on 40.6% of the rows, and the notes state what it changes); LEAK-6 and SPLIT-8 triggered
+on the member folds the rules send this release to (the year's claim level and a smaller within-year share cross them; F
+removes both); SPLIT-10 departed from (no gap), an exception with a fact of its own since 2026-11-08 (final claim
+amounts in every year; a gap would break the floor in two windows); PROV-9 holds (rows first published 2017, a close
+extract of the paper's sample), and the licence reason now names the second edition's identical rows under CC0-1.0,
+where a stated licence can be had if the release needs one. Value: MET-11 and MET-13 triggered, fixed (the source's
+metric, new in the library); MET-2 holds (one year's Gini against that year's premium is the source's own, Sec. 6.2, and
+E and F both give it); MET-5 holds (the Gini is argued, Spearman reported beside it); TP-4 holds narrowly: coverage
+alone leads the untuned models in every design but A (0.368 against 0.30-0.31 for a Tweedie GLM on the two valid
+windows, 0.198 against 0.139 under F); the task probes flag `no_signal`, which reads an R^2 on dollars, while on the
+declared Gini the untuned GLM without the member id scores 0.244, 0.256 and 0.346 on the shipped windows against the
+premium's 0 (the split auditor's run, which the claim auditor matches; issue 3's run of the same models differs by its
+setup, within noise). TP-2 keep; re-read TP-4 on the first benchmark run. Quality: CLEAN-10 triggered, fixed
+(`NoClaimCredit` missing without two earlier years; `Fire5`'s unknown class kept with a note); CLEAN-16 exception kept
+(dollars, issue 2). Weighed: documented source and real decision +; small test sets, one claim that is 35% of 2010's
+losses, rating inputs the public file lacks (endorsements, county, the full fire class) and unseen members under any
+forced split -. Issues 1, 2 and 3 are resolved.
 
 Changes made after the review panel (AI, 2026-11-01): the changes the panel agreed are made (the source's metric
 `ordered_lorenz_gini`, new in the library, with `Premium` as base and scoring column; the target in dollars;
@@ -39,14 +39,14 @@ Changes made after the review panel (AI, 2026-11-01): the changes the panel agre
 curator's marks (AI, 2026-11-02): the member folds replaced by three expanding yearly windows, no gap, `PolicyNum` an
 input, `ForcedGroupedFromTemporal` dropped; every split figure re-measured. Changes after the re-review (AI,
 2026-11-06): text only (the exposure note's reasons, the metric note's baselines, the licence reason, the no-gap
-precedent marked stale). The review panel below is that re-review; the full panel of 2026-11-01, which saw the
+precedent marked stale). Changes after the curator's replies (AI, 2026-11-08): the split note cites the floor rule as
+amended on this fund and states what the 2008 window changes; the no-gap departure has a fact of its own. The review
+panel below is that re-review; the full panel of 2026-11-01, which saw the
 definition before the changes of 2026-11-02, is in this file's git history.
 
-**Main points:** Open: issue 3, which split the five policy years get: the three shipped windows (A) break the floor
-of half the rows; recommended F, folds by member with the test year left out of training, else E (folds by member
-scored within each year, a measured within-year leak kept with a note) or, by an amendment of the windows rule, B (the
-two valid windows); decide it together with pricing_game_2016_french_fleet issue 6. Resolved: issue 1 (the three
-windows, on the curator's call of 2026-11-02, reopened by issue 3) and issue 2 (the claims in dollars).
+**Main points:** Open: none. Resolved: issue 3 (the three yearly windows, under the floor rule as amended on
+2026-11-08 on this fund's facts), issue 1 (the three windows, on the curator's call of 2026-11-02) and issue 2 (the
+claims in dollars).
 
 **Issues for Andrej and Lennart:**
 
@@ -311,6 +311,13 @@ windows, on the curator's call of 2026-11-02, reopened by issue 3) and issue 2 (
    cites pricing_game_2016_french_fleet (reopened), a fact of its own and a SPLIT-10 Cases row of kind exception. On
    (b): a notes bullet `Exception to SPLIT-14 (2026-11-06, Lennart): ...` with the reason, and a SPLIT-14 Cases row of
    kind exception. Decide pricing_game_2016_french_fleet issue 6 under the same wording.
+
+   **Lennart (2026-11-08, ok):** Reply (a): Amend the floor on these facts
+
+   **Resolved (2026-11-08, Lennart):** A, the three yearly windows, now under the floor rule as amended on this fund's
+   facts (two windows above the floor, recurring members, a leak across member folds); the notes state what the 2008
+   window changes and give the no-gap departure a fact of its own.
+
 
    [^w3a]: principles.md, "Exceptions and amendments": "A Must has no exceptions: only a higher-ranked Must overrides
      it, and anything else is an amendment." **SPLIT-14** (Must): at least 3 windows, none training on less than half

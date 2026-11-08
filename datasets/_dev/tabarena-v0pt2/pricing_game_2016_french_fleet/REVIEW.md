@@ -1,39 +1,41 @@
 # pricing_game_2016_french_fleet
 
-**Outcome:** added. The AI recommends shipping it after changes. Shipped on Andrej's verdict of 2026-11-02 and changed
-on 2026-11-06 by D11 of the exposure review (issue 5): the target is the claim charge per realized vehicle-year, each
-period weighted by its vehicle-years, and every window trains on 2011-2012. The full re-review of the same day under the
-exposure rules (LEAK-41, MET-14 to MET-16) finds D11's target, weight, features and training side sound. The organisers'
-own files of the 2016 actuarial pricing game: 87,228 periods of cover of fleet vehicles of a French insurer, 2011-2013;
-the target is the period's claim charges summed, net IDA recoveries set to 0, per realized vehicle-year (0 for 95.7% of
-the periods), each period weighted by its vehicle-years in training and scoring; the features are the rating classes and
-the length of cover to the year's end, known at the period's start; three four-month windows of 2013, each trained on
-the periods of 2011-2012; scored by the normalized weighted Gini as a stand-in for the game's market. Like every
-container with a `sample_weight`, it enters no run before the collection's training-weight gate
-(`BENCHMARK_CHANGES_TODO.md`, "Training weights", "The gate").
-Validity: SEL-1, SEL-2, USE-1 (fit direct, USE-8), USE-5, LEAK-7, LEAK-37, MET-15, SPLIT-1, SPLIT-9, SPLIT-13 hold;
-LEAK-10 fixed by LEAK-7 (2026-11-02); LEAK-41 holds for the features and the weight (probe 22: the L2 arm cannot see the
-weight itself, -0.001; in the weighted Tweedie arm the weight gains +0.007, SD 0.028, and no feature a gain through it
-above noise); LEAK-41's last clause, as amended on 2026-11-08 (issue 7), takes the source's floor as the task's
-population: the organisers left out every period shorter than 30 days, about 1.5% of the vehicle-years; SPLIT-14 broken as shipped, three windows on one training side (issue 6); SPLIT-10
-departed from (no gap, an exception whose stated reason is stale; it lapses under the forced split); SPLIT-11 departed
-from (LEAK-41: no 2013 period admitted by its early end); SPLIT-15 departed from (three windows, not nine).
-Value: TP-4 holds (a regularised Tweedie LightGBM fitted with the weight 0.114 / 0.158 / 0.190 newest first, re-measured
-0.110 / 0.157 / 0.189, and 0.182 on the forced folds, against 0 for the weighted constant; on the newest window by about
-1.7 standard errors); TP-9 holds (103 / 232 / 1,026 positive charges); the task probe's flags `no_signal` and
-`drift_baseline` read R^2, which follows a few large rates (best family R^2 0.001), while on the declared Gini the
-probes' linear family scores 0.168 and the random forest 0.121 against 0 for the weighted dummy (EV-3), as for
-pricing_game_2017_french_mtpl; MET-11: the stand-in's closeness to the game's market is now measured, and the uniformly
-rescaled weighted Tweedie deviance follows the market more closely than the Gini (issue 8).
+**Outcome:** added. The AI recommends shipping it. Shipped on Andrej's verdict of 2026-11-02, changed on 2026-11-06
+by D11 of the exposure review (issue 5): the target is the claim charge per realized vehicle-year, each period weighted
+by its vehicle-years; and changed on 2026-11-08 by Lennart's calls: the periods split by contract, forced from temporal
+(issue 6), and scored by the uniformly rescaled weighted Tweedie deviance (issue 8). The full re-review of 2026-11-06
+under the exposure rules (LEAK-41, MET-14 to MET-16) finds D11's target, weight and features sound. The organisers' own
+files of the 2016 actuarial pricing game: 87,228 periods of cover of fleet vehicles of a French insurer, 2011-2013; the
+target is the period's claim charges summed, net IDA recoveries set to 0, per realized vehicle-year (0 for 95.7% of the
+periods), each period weighted by its vehicle-years in training and scoring; the features are the rating classes and
+the length of cover to the year's end, known at the period's start; grouped 3 x 3 folds by contract over 2011-2013,
+forced from temporal; scored by the uniformly rescaled, exposure-weighted Tweedie deviance (power 1.5) as a stand-in for
+the game's market. Like every container with a `sample_weight`, it enters no run before the collection's
+training-weight gate (`BENCHMARK_CHANGES_TODO.md`, "Training weights", "The gate").
+Validity: SEL-1, SEL-2, USE-1 (fit approximate since 2026-11-08: held-out fleets of the same years stand in for next
+year's book), USE-5, LEAK-7, LEAK-37, MET-15, SPLIT-1, SPLIT-9, SPLIT-13 hold; LEAK-10 fixed by LEAK-7 (2026-11-02);
+LEAK-41 holds for the features and the weight (probe 22 on the contract folds under the declared metric: in either arm
+no feature's gain goes through the weight above noise, and the weight as a feature gains 0.37, SD 0.49, in the Tweedie
+arm); LEAK-41's last clause, as amended on 2026-11-08 (issue 7), takes the source's floor as the task's population: the
+organisers left out every period shorter than 30 days, about 1.5% of the vehicle-years; SPLIT-8 holds (forced from
+temporal by contract on 2026-11-08, issue 6: the leak test across the folds passes, and on the 2013 periods the forced
+split scores as the valid window does); the exception to SPLIT-10 lapsed with the windows.
+Value: TP-4 holds on the declared metric for a fit that keeps its relativities in check (on the contract folds a Tweedie
+GLM beats the weighted constant by 1.39, bootstrap standard error 0.46, on all 9 folds; a regularised Tweedie LightGBM
+by 0.59, 0.58), while untuned models score worse than the constant (an untuned LightGBM 86.84 against 82.63; the task
+probe's families, flag `no_signal`), as the market punished relativities that run too steep (EV-3); TP-9 holds (1,182
+to 1,305 positive charges per test fold); MET-11: the stand-in since 2026-11-08 follows the game's market more closely
+than the Gini it replaces (76 of 84 two-player markets against 44 on the windows of 2013, 225 of 252 against 128 on
+the contract folds).
 Quality: CLEAN-14, the four bands of a quantity (the contract's and the vehicle's age, the deductible, the insured
 value) are ordered categories now (they land with the next rebuild), and so is `payment_frequency` (annual <
 semi-annual < quarterly, 2026-11-08, as in the two other pricing tables); LEAK-18 repeated rows natural; the text corrected
 where the panel found it overstated.
 Weighed: the original files +, a real fleet-pricing task +, the family's only commercial-fleet damage table +; weak,
-anonymised covariates -, a noisy newest window - (it drops out under the forced split).
-Left for Andrej and Lennart: the split (issue 6; recommended: the forced split grouped by contract, whose leak test
-passes) and the stand-in metric (issue 8; recommended: the rescaled deviance, if the bootstrap separates the models on
-the newest window). The organisers' floor of 30 days (issue 7) was settled on 2026-11-08 by an amendment of the rule.
+anonymised covariates -, held-out fleets of the same years standing in for next year's book -.
+Left for Andrej and Lennart: nothing. The split (issue 6), the organisers' floor of 30 days (issue 7) and the stand-in
+metric (issue 8) were settled on 2026-11-08; the build is stale until a rebuild (the split, the metric, the ordered
+bands).
 
 Changes made after the review panel (AI, 2026-11-01 and 2026-11-02): `exposure` is the length of cover to 31 December
 for every period; the metric is a stand-in for the game's market; the statements the claim audit refuted are corrected;
@@ -52,11 +54,18 @@ pro-rata premium cites the sources checked; a line gives the trend of the charge
 stale reason of the exception to SPLIT-10. Rows, split and metric are unchanged. The panel's reports describe the
 definition of D11, before these changes; the panel of 2026-11-01 is in this file's git history.
 
-**Main points:** Two calls, ranked: the split (issue 6: re-split grouped by contract, recommended now that the leak
-test across the contract folds passes, or keep the three windows or one window by amending the windows rule for the
-whole family); the stand-in metric (issue 8: score the uniformly rescaled weighted Tweedie deviance, recommended once its
-bootstrap separates the models, or keep the Gini with its measured shortfall). Issues 1 to 5 are resolved, 2 and 4
-superseded by 5; issue 7 on 2026-11-08 (the rule amended for a selection the source made before release).
+Changes made on 2026-11-08 (AI, Lennart's calls on issues 6 and 8): `contract_id` is the group column of the default
+3 x 3 grouped splits, tagged ForcedGroupedFromTemporal, in place of the three windows; the metric is
+`rescaled_mean_tweedie_deviance` (power 1.5, floor 0.1 per vehicle-year), a new metric of the shared library; the
+summary's split and fit (approximate), the notes on late claims, the splits comment, Decision 2 and the notes'
+measurements are rewritten on the contract folds; the record's split fields follow. The panel's reports describe the
+definition before these changes.
+
+**Main points:** None left. Issues 1 to 5 are resolved, 2 and 4 superseded by 5; issues 6 to 8 on 2026-11-08 (the
+split by contract, forced from temporal; the rule amended for a selection the source made before release; the
+uniformly rescaled weighted Tweedie deviance as the stand-in). To note before the rebuild: under the new metric untuned
+models and the task probe's families score worse than the weighted constant, and only fits that keep the relativities
+in check (a Tweedie GLM, a regularised LightGBM, a frequency model) beat it.
 
 **Issues for Andrej and Lennart:**
 
@@ -504,6 +513,16 @@ superseded by 5; issue 7 on 2026-11-08 (the rule amended for a selection the sou
      reversing D11.
    - a: the SPLIT-14 amendment reversing the clause on shared training sides for this case, decided with wisconsin's.
 
+   **Lennart (2026-11-08, discuss):** Reply (b): Forced by contract
+
+   **Resolved (2026-11-08, Lennart):** (b), the forced split by contract: `contract_id` is the group column of the
+   default 3 x 3 grouped splits, never a feature, tagged ForcedGroupedFromTemporal; the three windows and the exception
+   to SPLIT-10 go, which supersedes D11's three windows on one training side (issue 5) and Andrej's expanding windows
+   (issue 2). On the shipped folds the forced split scores the 2013 periods as the valid window does (+0.06 on the
+   declared metric, SD 0.52; -0.005 on the Gini), a new fleet's cold start costs 1.10 (SD 0.86), and the leak test
+   passes (the test year's own training periods gain -0.12 and -0.18 on the declared metric); the record's
+   `required_split` and tag follow, and its CC and Assessment lines of 2026-11-08 give the numbers.
+
    [^a6a]: **LEAK-41** (Must; 2026-11-06, last clause amended 2026-11-08 on this dataset's issue 7): "No model is
      trained or scored on rows selected by the realized weight (such as full-year rows only); a row with no amount at
      risk may go under USE-7, its claims counted in the notes; a selection the source made before release, the same
@@ -706,6 +725,17 @@ superseded by 5; issue 7 on 2026-11-08 (the rule amended for a selection the sou
      dataset-specific metrics already covers custom metrics in validation.
    * The bootstrap of its differences per window, which the recommendation waits for, runs once issue 6 settles the
      split, since the split decides which sets are scored. The decision (A or B) stays open.
+
+   **Lennart (2026-11-08, discuss):** Agree. GO with the change in metric and use it going forward
+
+   **Resolved (2026-11-08, Lennart):** B, the uniformly rescaled, exposure-weighted Tweedie deviance at power 1.5 as
+   the stand-in for the game's market: the new library metric `rescaled_mean_tweedie_deviance` (tested against the
+   formula written out, invariant to a common scale of the predictions, 1M rows in 0.03 s), with a floor of 0.1 per
+   vehicle-year, two orders below the cheapest cells' 26 to 31. On the contract folds it separates the GLM from the
+   constant (1.39, bootstrap standard error 0.46, on all 9 folds), the regularised LightGBM less clearly (0.59, 0.58),
+   and an untuned LightGBM scores worse than the constant; it picks the market's winner in 225 of 252 two-player
+   markets against 128 for the Gini. It is the stand-in for later pricing games whose market rescales uniformly (the
+   MET-11 Cases row is the main session's).
 
 
    [^standin]: **MET-11** (Must): a stand-in applies when the source's metric cannot be computed, "and the closest

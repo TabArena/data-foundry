@@ -128,6 +128,8 @@ CC (2026-11-06, Lennart): issue 3, the three yearly windows stay (A), the 2008 w
 
 CC (2026-11-08, Lennart): the declared metric (`ordered_lorenz_gini`) is checked, as declared on the PR #47 review board.
 
+CC (2026-11-08, Lennart): issue 3, reply (a) to the consistency check: the floor of half the rows is amended on this fund's facts (SPLIT-14: a release with two windows above the floor may add one older window that trains on at least 40% of the rows, when most test entities recur and folds by entity would test unseen ones), so the three yearly windows stay as an application of the amended rule, not an exception; the no-gap departure from SPLIT-10 is recorded with a fact of its own (every policy year ships with its final claim amounts; a one-year gap would put two windows below the floor).
+
 ## Reference
 
 Frees, E.W., Lee, G., Yang, L. (2016). Multivariate Frequency-Severity Regression Models in Insurance. Risks 4(1):4.

@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: spanish_homeowners_motor_insurance_2010_2014
 container_format: 2
-checksum: v2:8deec4676f5aa061f7a9c3839c8ec8165fcecd6f9fd3c7bb40f809edbc67e812
+checksum: v2:de6149b480362a76370f5c694e961ad1123bec7659a3209a9768e630d3e11ce8
 build: null
 build_stale: false
 data:
   n_rows: 122935
-  n_features: 20
+  n_features: 19
   dtypes:
-    category: 6
+    category: 5
     float64: 11
     int64: 4
   n_test_dataset_rows: null
@@ -63,9 +63,9 @@ decisions:
 
 > Generated from [`dataset.py`](dataset.py) by `dataset check` (or `build`). Do not edit this page: change `dataset.py` and re-run the check.
 
-Regression of `log1p_home_claim_cost`, scored with `normalized_gini` on temporal splits by `policy_year`. 122,935 rows and 20 features. Source: Other (2021).
+Regression of `log1p_home_claim_cost`, scored with `normalized_gini` on temporal splits by `policy_year`. 122,935 rows and 19 features. Source: Other (2021).
 
-Not built yet. The current definition gives checksum `v2:8deec4676f5aa061f7a9c3839c8ec8165fcecd6f9fd3c7bb40f809edbc67e812`.
+Not built yet. The current definition gives checksum `v2:de6149b480362a76370f5c694e961ad1123bec7659a3209a9768e630d3e11ce8`.
 
 ## In brief
 
@@ -77,11 +77,11 @@ Not built yet. The current definition gives checksum `v2:8deec4676f5aa061f7a9c38
 
 **Predicted.** The year's home claim cost in euros, 0 for 98.2% of the customer-years. Shipped as log1p, scored on the amount.
 
-**Known at prediction time.** The customer's age, gender and years with the insurer; the car's age, power and second driver; urban or rural; the payment method of each policy; the insured values of the contents and the building; apartment or house; and the customer's motor and home claims of the earlier years in the release.
+**Known at prediction time.** The customer's age and years with the insurer; the car's age, power and second driver; urban or rural; the payment method of each policy; the insured values of the contents and the building; apartment or house; and the customer's motor and home claims of the earlier years in the release. Gender is left out, as EU law requires today (Test-Achats).
 
 **What the test data stands for.** Three yearly windows, 2014, 2013 and 2012, each trained on all earlier years, so the test data stands for next year's renewals of the customers still holding both policies.
 
-**Our changes to the source.** We added the customer's claims of the previous year and the earlier years as inputs, and dropped the year's own outcomes: the home claim count, the motor claims, the claim type and the renewal at the year's end.
+**Our changes to the source.** We added the customer's claims of the previous year and the earlier years as inputs, and dropped the year's own outcomes (the home claim count, the motor claims, the claim type and the renewal at the year's end) and the customer's gender.
 
 > **Use case fit: approximate (a stand-in with a known gap).** Real renewals of one insurer's bundle customers, but the rating fields were read once, at an unstated date; with no current premium the task ranks renewal risk; no customer enters after 2010, so the test years drift towards claim-free survivors (30.7% of claim years end in a lapse, 24.5% of claim-free years), while lapse rows claim more (2.21% against 1.65%), so lapse years stay.
 
@@ -133,7 +133,7 @@ Only curators run `build`, when the dataset ships.
 | license | CC BY 4.0 |
 | data_tags | Non-IID, Temporal |
 | reference | guillen2021homeowners |
-| rows x columns | 122,935 x 21 |
+| rows x columns | 122,935 x 20 |
 | task.target | log1p_home_claim_cost |
 | task.problem_type | regression |
 | task.metric | normalized_gini |
@@ -151,9 +151,9 @@ Only curators run `build`, when the dataset ships.
 | target scale | ships on the `log1p` scale for modelling; scored on the original scale after the inverse of `log1p` |
 
 <details>
-<summary>Feature types: 6 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 5 categorical, 0 string, 0 datetime</summary>
 
-- categorical (6): `gender`, `Car_2ndDriver_M`, `metro_code`, `Policy_PaymentMethodA`, `Policy_PaymentMethodH`, `appartment`
+- categorical (5): `Car_2ndDriver_M`, `metro_code`, `Policy_PaymentMethodA`, `Policy_PaymentMethodH`, `appartment`
 - string (0): none
 - datetime (0): none
 
@@ -179,15 +179,15 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 122,935 rows of the final frame (the oldest rows: the frame is sorted by `policy_year`); 12 of 21 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 122,935 rows of the final frame (the oldest rows: the frame is sorted by `policy_year`); 12 of 20 columns, the target first. Cells are cut at 40 characters.
 
-| log1p_home_claim_cost | gender | Age_client | age_of_car_M | Car_power_M | Car_2ndDriver_M | num_policiesC | metro_code | Policy_PaymentMethodA | Policy_PaymentMethodH | Insuredcapital_content_re | Insuredcapital_continent_re |
+| log1p_home_claim_cost | Age_client | age_of_car_M | Car_power_M | Car_2ndDriver_M | num_policiesC | metro_code | Policy_PaymentMethodA | Policy_PaymentMethodH | Insuredcapital_content_re | Insuredcapital_continent_re | appartment |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | male | 42 | 13 | 71 | no | 1 | rural | annual | annual | 10.3716 | 11.6209 |
-| 0 | female | 43 | 14 | 90 | no | 0 | urban or metropolitan | annual | annual | 10.0287 | 11.2605 |
-| 0 | male | 74 | 0 | 75 | no | 1 | rural | annual | annual | 10.0619 | 10.656 |
-| 0 | male | 53 | 6 | 193 | no | 1 | rural | monthly | annual | 10.58 | 11.6397 |
-| 0 | male | 55 | 6 | 100 | no | 1 | rural | monthly | annual | 10.8526 | 12.2389 |
+| 0 | 85 | 11 | 110 | no | 1 | urban or metropolitan | annual | annual | 12.079 | 13.4653 | house |
+| 0 | 66 | 7 | 147 | no | 1 | rural | annual | annual | 10.6817 | 11.3765 | apartment |
+| 0 | 50 | 7 | 41 | no | 1 | urban or metropolitan | monthly | annual | 11.1402 | 11.8978 | apartment |
+| 0 | 45 | 7 | 110 | no | 1 | rural | annual | annual | 11.2754 | 12.5483 | house |
+| 0 | 43 | 12 | 120 | no | 1 | rural | annual | annual | 10.309 | 8.69968 | apartment |
 
 ## Curation notes
 
@@ -200,18 +200,20 @@ We start with data_ex.csv of Mendeley Data vfchtm5y7j, version 1 (Guillen, Bolan
 - Why log1p and not the raw amount (MET-3): on the 3 shipped windows untuned LightGBM ranks the costs at a mean normalized Gini of 0.219 fit on log1p and 0.213 by a Tweedie loss on the amount (0.215 by squared error on the amount, on the same rows before the labels were mapped); fit on the amount by squared error it scores R^2 -0.041 on the amount, fit on log1p -0.003. The scale changes no ranking, so the default for a skewed amount holds (CLEAN-16): log1p, which keeps the models off the few largest claims (the 20 largest of each test year carry 40% to 58% of its total loss), with the metric on the amount (MET-3). Other families on log1p: ridge 0.280, a random forest 0.271 (a logistic model of the claim alone 0.272; apartment or house alone 0.177; a constant 0), each above apartment alone in every window.
 - Only the claim part carries signal (the hurdle check of task_probes.md, 3 shipped windows): a claim is ranked at ROC AUC 0.68 to 0.69 (hurdle classifier), while a severity model on the claimants reaches R^2 -0.07 to -0.02 on log costs, and the true claim indicator times the claimants' training mean explains 16% to 22% of the variance of the amount. The hurdle model (claim probability times severity) ranks at a mean Gini of 0.203, the direct log1p model at 0.213.
 - Dropped as the year's own outcomes (USE-3, LEAK-10): `NClaims2`, the year's home claim count (a part of the target: the cost is positive only where it is; 1,742 rows have a claim with no cost, kept as 0, claims closed without payment); `Types`, the joint code of a motor and a home claim in the year; `NClaims1` and `Claims1`, the year's motor claims (the data article's description gives `NClaims2` the motor wording; the counts show it is the home count); `Retention`, whether the customer renews at the year's end (0 exactly on each lapser's last row).
+- Dropped: `gender` (1 male, 0 female, data article Sec. 1; male for 77.8% of the rows, one value per customer in all years). Sex leaves the rating factors of every insurance pricing task of this collection, whatever the actor's jurisdiction, as EU law has required for new contracts since 21 December 2012 (Test-Achats, CJEU C-236/09): the benchmark asks how good such models would be in today's European market (the Tensions row on rating factors in principles.md, amended 2026-11-08; CC below). This insurer is Spanish, so the ruling bound its new contracts from that date, within the release's years. Gender carried little, none of it above twice its standard error (3 shipped windows, the declared Gini, the score with it minus without on the mean of the 3 windows, paired bootstrap SE over the test rows): untuned LightGBM on log1p -0.001 (SE 0.017), the averaged prediction of 10 LightGBM runs with row and column subsampling +0.016 (SE 0.010), LightGBM with a Tweedie objective on the amount +0.017 (SE 0.012), a Tweedie GLM on the amount -0.002 (SE 0.003), ridge on log1p -0.004 (SE 0.003). Alone it ranks a home claim at ROC AUC 0.496 / 0.485 / 0.523 (2014 / 2013 / 2012): men claimed less often than women in 2014 and 2013, more often in 2012. The task probe without it: ridge 0.282 (0.279 with it), a random forest 0.243 (0.262), LightGBM 0.209 (0.214). The Exposure bullet's lapse test was re-run without it (2026-11-08); the other model scores of these notes, the metric reason and the splits comment were measured with it in, and their readings hold without it (on the Tweedie deviance the training-mean constant still beats each of three untuned Tweedie LightGBM setups in every window; fit on log1p, untuned LightGBM still scores R^2 -0.004 to -0.003 on the amount while it ranks claims at ROC AUC 0.64 to 0.69).
 - Added: the customer's claims of the previous year (`prev_home_claims`, `prev_home_claim_cost`, `prev_motor_claims`, `prev_motor_claim_cost`) and the claim counts of all earlier years in the release (`past_home_claims`, `past_motor_claims`), all missing in 2010, whose history the release does not hold. A known customer's history is a legitimate input (USE-10, LEAK-34), and insurers reward a claim-free year at renewal (model paper, footnote 1). A home claim the year before raises the year's home claim share from 1.7% to 6.0% (2,477 rows); it is no carried-over remnant: of 98 years with a home cost after a year with one, 2 repeat the amount. The `past_*` counts span more years as the year grows (mean `past_home_claims` 0.029 in 2011, 0.121 in 2014); they are kept as the counts the insurer reads at each renewal, and in every training year the count covered that year's span. As per-year rates they scored lower (ridge 0.268 against 0.279, LightGBM 0.215 against 0.219; CLEAN-19).
 - Note: the release's previous-year claims are as finally recorded; at a renewal the insurer knows the claims reported until then, so the last weeks' claims and part of the costs may still be missing. Home claims are reported soon after the event; how far the costs had developed is not stated.
-- Note: every rating field holds one value per customer in all years (measured: no customer's value changes in any field; `Age_client` does not grow by a year), so the fields were read once, at a date the sources do not give. The Specifications Table says "A sample of customer in 2010 was selected", which suggests the selection in 2010; no field is described as the "last" value; and no age implies a read in 2015 (4 customers are 18 and 10 under 23, though these 10 also have seniority above age minus 18, so the floor is circumstantial). No field moves with the claims over time: each field's ROC AUC for a home claim is flat across 2010-2014 and across the years before a customer's lapse (appartment 0.63-0.65 in every year; no field moves by more than 0.045 by year, and at most 0.07, without a trend, by years before a lapse). They are kept (LEAK-10: the read date cannot be located row by row, and the part that can be traced shows no gain). Revisit if the authors give the read date.
+- Note: every rating field holds one value per customer in all years (measured: no customer's value changes in any field; `Age_client` does not grow by a year), so the fields were read once, at a date the sources do not give. The Specifications Table says "A sample of customer in 2010 was selected", which suggests the selection in 2010; no field is described as the "last" value; and no age implies a read in 2015 (4 customers are 18 and 10 under 23, though these 10 also have seniority above age minus 18, so the floor is circumstantial). No field moves with the claims over time: each field's ROC AUC for a home claim is flat across 2010-2014 and across the years before a customer's lapse (appartment 0.63-0.65 in every year; no field moves by more than 0.045 by year, and at most 0.07, without a trend, by years before a lapse). The twelve shipped are kept (LEAK-10: the read date cannot be located row by row, and the part that can be traced shows no gain); `gender`, the thirteenth, is dropped (above). Revisit if the authors give the read date.
 - `PolID` (the customer id, a group of rows; the model sees the customer's history through the added columns) and the file's unnamed row number (ordered by year, then customer) are dropped.
-- The codes get the labels of the data article (Sec. 1): `gender` (male, female), `Car_2ndDriver_M` (no, yes), `metro_code` (rural, urban or metropolitan), `Policy_PaymentMethodA` and `Policy_PaymentMethodH` (annual, monthly; of the motor and the home policy), `appartment` (apartment, house; "0 for houses or semi-attached houses", model paper Table 4); all categorical.
+- The codes get the labels of the data article (Sec. 1): `Car_2ndDriver_M` (no, yes), `metro_code` (rural, urban or metropolitan), `Policy_PaymentMethodA` and `Policy_PaymentMethodH` (annual, monthly; of the motor and the home policy), `appartment` (apartment, house; "0 for houses or semi-attached houses", model paper Table 4); all categorical.
 - Potential leak, kept on purpose: `Policy_PaymentMethodA`, the motor policy's payment method, read once at an unknown date (LEAK-37, LEAK-10). Against motor claims it shows the pattern for which spanish_motor_insurance_2015_2018 drops its last payment method: annual payment is 9.6 points rarer after a motor claim among customers who renew, 0.6 among those who lapsed in 2010, so a switch to monthly payment after a motor claim is possible. It stays because the target is the home claim, where the pattern is absent (5.9 against 8.1 points, the reverse order), and the pair adds no gain a late read could carry: dropping both payment fields moves the mean Gini by -0.013 (null SD of the 3-window mean 0.045), dropping A alone by +0.002, and the pair's gain on renewing minus lapse rows is -0.006 [-0.018, 0.006]; on customers who never had a motor claim the pair still adds +0.019 (leak check of 2026-11-02, nine tests). Revisit if a release gives the read date or a payment history.
 - Note: `Insuredcapital_content_re` and `Insuredcapital_continent_re` (the insured values of the contents and the building) are on a log scale: they run from 2.4 to 14.4 and 5.7 to 15.4, and their exponentials have medians over rows of 31,647 and 104,457 euros. The sources do not say so (the model paper's Table 8 profiles use 3, 8 and 15); kept as recorded. 403 customers have equal values for the two, and 9.7% a content value above the building's.
-- Exposure: no exposure column, and none is needed. A row is a customer-year, and the data article frames a lapse as not renewing at the year's end ("If the customer does not renew one of those two policies or both, we do not have more information after this lapse occurs", Sec. 1), so a lapse year is a whole year as far as the sources say. The release has no dates, so the share of years cut short cannot be measured, only bounded: if a lapse can fall within the year, at most the 29,296 lapse rows are cut short (23.8% of the rows; 17.3 / 22.1 / 24.3% of the test years 2014 / 2013 / 2012). The lapse rows show no sign of a cut: they claim more often, not less (2.21% against 1.65% of rows), and the lapse at the year's end, the only marker a cut could have, adds no Gini as a feature (LightGBM, mean of 3 seeds, 2014 / 2013 / 2012: 0.168 / 0.280 / 0.179 without, 0.129 / 0.265 / 0.168 with). The insured values of the contents and the building are sums insured, rating factors and not an amount at risk the cost grows with in proportion: the elasticity of the cost per row to the insured value is 0.13 (contents) and 0.15 (building), against 1 for an amount at risk (the coefficient of the log value in a log-link Tweedie fit; every 95% interval, also given the other rating fields, ends below 0.5). Across the quintiles of the contents value (median 13,126 to 66,766 euros) the home claim cost per row runs 8.16, 6.37, 6.77, 7.57 and 10.82 euros, and across the building's (35,868 to 258,136 euros) 8.03, 7.56, 7.18, 6.68 and 10.25. So they take neither an offset nor a weight and stay features (MET-14; scored unweighted per contract, MET-15; no LEAK-41 suspect). Their read date is unknown, so their timing is mixed: they are kept under LEAK-10's later-pull clause after the leak check of nine tests (review issue 1, the note above).
+- Exposure: no exposure column, and none is needed. A row is a customer-year, and the data article frames a lapse as not renewing at the year's end ("If the customer does not renew one of those two policies or both, we do not have more information after this lapse occurs", Sec. 1), so a lapse year is a whole year as far as the sources say. The release has no dates, so the share of years cut short cannot be measured, only bounded: if a lapse can fall within the year, at most the 29,296 lapse rows are cut short (23.8% of the rows; 17.3 / 22.1 / 24.3% of the test years 2014 / 2013 / 2012). The lapse rows show no sign of a cut, which would lower their cost: they claim more often, not less (2.21% against 1.65% of rows). The lapse at the year's end, the only marker a cut could have, scores a positive Gini alone (0.054 / 0.023 / 0.124 in 2014 / 2013 / 2012), so lapse years carry more of the loss; added as a feature it raises the mean Gini of the 3 windows a little (ridge 0.282 to 0.293, a Tweedie GLM 0.274 to 0.289, untuned LightGBM 0.210 to 0.223, the averaged prediction of 10 subsampled LightGBM runs 0.194 to 0.231; paired bootstrap SE of the gain 0.013 to 0.018; 2026-11-08, without `gender`). The single LightGBM run quoted here until 2026-11-08 showed a loss with `gender` in (0.209 to 0.187); with `gender` in, the three other models gain too (+0.012 to +0.016). The insured values of the contents and the building are sums insured, rating factors and not an amount at risk the cost grows with in proportion: the elasticity of the cost per row to the insured value is 0.13 (contents) and 0.15 (building), against 1 for an amount at risk (the coefficient of the log value in a log-link Tweedie fit; every 95% interval, also given the other rating fields, ends below 0.5). Across the quintiles of the contents value (median 13,126 to 66,766 euros) the home claim cost per row runs 8.16, 6.37, 6.77, 7.57 and 10.82 euros, and across the building's (35,868 to 258,136 euros) 8.03, 7.56, 7.18, 6.68 and 10.25. So they take neither an offset nor a weight and stay features (MET-14; scored unweighted per contract, MET-15; no LEAK-41 suspect). Their read date is unknown, so their timing is mixed: they are kept under LEAK-10's later-pull clause after the leak check of nine tests (review issue 1, the note above).
 - Anomaly: `num_policiesC` is "the total number of policies held by the same customer in the insurance company" (Sec. 1) but holds only 0 (19%) and 1 (81%), though every customer holds at least two policies; its meaning is unclear. Kept as recorded.
 - Anomaly: `age_of_car_M` ("the number of years since the vehicle was bought by the customer") is 0 for 8,050 of the 40,284 customers (20%), against 406 at 1 and 640 at 2. These customers are older (65 against 58 years) and longer with the insurer (15.3 against 9.1 years), with less powerful cars: not new cars, likely an unknown purchase date. For 161 customers the value exceeds their age minus 18, so the field likely counts the car's age rather than the years since this customer bought it. CLEAN-10 not triggered: the description does not let us infer a code; kept as recorded.
 - Anomaly: `Client_Seniority` is at least 5.0 years for every customer, either by the sample's selection or because it was read at the end of the window (neither is stated), and for 76 customers it exceeds their age minus 18, so it likely counts from a household's or a policy's first contract. Kept as recorded.
 - Anomaly: `Car_power_M` holds a few unusual powers (4 to 15 for 103 rows), in the range of licence-free microcars, so not impossible (CLEAN-11); kept as recorded. `metro_code` is "rural" for 84% of the rows, odd for a Spanish bundle book, and barely separates apartments (62% of the rural customers, 69% of the urban); the labels follow both papers and are kept.
+- CC (2026-11-08, Lennart): `gender` leaves the features, on the stance Lennart set in australian_vehicle_insurance_2004_2005's issue 7 ("A stance for the family; as if we were to simulate the case in europe always"): sex is no rating factor of any insurance pricing task of this collection, whatever the actor's jurisdiction, as under EU law (Test-Achats, CJEU C-236/09, in force for new contracts from 21 December 2012); the Tensions row on rating factors in principles.md says so. Supersedes Andrej's calls of 2026-11-02: issue 1 (a), which kept all 13 rating fields, `gender` among them, under LEAK-10's later-pull clause, and his ship of that day.
 
 ## Splits
 
@@ -248,7 +250,6 @@ No customer's value changes over the years in any rating field, so each was read
 
 | index | customers whose value changes | 2010 | 2011 | 2012 | 2013 | 2014 |
 |---|---|---|---|---|---|---|
-| gender | 0 | 0.496 | 0.488 | 0.523 | 0.485 | 0.496 |
 | Age_client | 0 | 0.5 | 0.471 | 0.51 | 0.465 | 0.481 |
 | age_of_car_M | 0 | 0.489 | 0.512 | 0.486 | 0.502 | 0.5 |
 | Car_power_M | 0 | 0.496 | 0.494 | 0.517 | 0.515 | 0.492 |
@@ -299,11 +300,10 @@ Accepted on purpose:
 ### Feature summary
 
 <details>
-<summary>Show the table (21 rows)</summary>
+<summary>Show the table (20 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
-| gender | category | 0 | 0 | 2 | male, female |
 | Car_2ndDriver_M | category | 0 | 0 | 2 | no, yes |
 | metro_code | category | 0 | 0 | 2 | rural, urban or metropolitan |
 | Policy_PaymentMethodA | category | 0 | 0 | 2 | annual, monthly |
@@ -312,13 +312,13 @@ Accepted on purpose:
 | prev_home_claims | float64 | 40284 | 32.77 | 4 | 0.0, 1.0, 2.0, 3.0 |
 | prev_home_claim_cost | float64 | 40284 | 32.77 | 1195 | 0.0, 59.09, 63.46, 64.1, 77.96, 64.56, 69.72, 400.0, 60.89, 134.1 |
 | prev_motor_claims | float64 | 40284 | 32.77 | 6 | 0.0, 1.0, 2.0, 3.0, 4.0, 6.0 |
-| prev_motor_claim_cost | float64 | 40284 | 32.77 | 520 | 0.0, 882.0, 1764.0, 917.0, 184.0, 32.22, 180.0, 36.93, 2646.0, 975.49 |
+| prev_motor_claim_cost | float64 | 40284 | 32.77 | 520 | 0.0, 882.0, 1764.0, 917.0, 184.0, 32.22, 180.0, 36.93, 2646.0, 3365.03 |
 | past_home_claims | float64 | 40284 | 32.77 | 6 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0 |
 | past_motor_claims | float64 | 40284 | 32.77 | 8 | 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0 |
 | Car_power_M | float64 | 0 | 0 | 281 | 90.0, 110.0, 75.0, 100.0, 60.0, 115.0, 105.0, 140.0, 150.0, 136.0 |
 | Insuredcapital_content_re | float64 | 0 | 0 | 20041 | 10.309, 9.9035, 10.5967, 10.1267, 9.7982, 10.3385, 10.8198, 10.0859, 10.3682, 1… |
 | Insuredcapital_continent_re | float64 | 0 | 0 | 25065 | 11.5129, 11.4076, 11.1563, 11.2898, 11.6953, 11.9184, 12.2061, 11.0021, 11.2253… |
-| Client_Seniority | float64 | 0 | 0 | 6213 | 6.2505, 6.0835, 7.5866, 6.5024, 8.0849, 5.8371, 5.5852, 5.9986, 7.4196, 7.5044 |
+| Client_Seniority | float64 | 0 | 0 | 6213 | 6.2505, 6.0835, 7.5866, 6.5024, 8.0849, 5.5852, 5.8371, 5.9986, 7.4196, 7.5044 |
 | log1p_home_claim_cost | float64 | 0 | 0 | 1883 | 0.0, 4.0958, 4.166, 4.1534, 4.3166, 4.3689, 4.2587, 4.1759, 4.2985, 5.994 |
 | Age_client | int64 | 0 | 0 | 75 | 53, 55, 59, 54, 65, 58, 56, 57, 60, 61 |
 | age_of_car_M | int64 | 0 | 0 | 40 | 0, 9, 10, 11, 8, 12, 7, 13, 14, 6 |
@@ -360,9 +360,6 @@ Accepted on purpose:
 
 ### Categorical features
 
-<details>
-<summary>Show the table (12 rows)</summary>
-
 | column | rank | value | count | pct |
 |---|---|---|---|---|
 | Car_2ndDriver_M | 1 | no | 105909 | 86.15 |
@@ -373,12 +370,8 @@ Accepted on purpose:
 | Policy_PaymentMethodH | 2 | monthly | 9133 | 7.43 |
 | appartment | 1 | apartment | 77378 | 62.94 |
 | appartment | 2 | house | 45557 | 37.06 |
-| gender | 1 | male | 95671 | 77.82 |
-| gender | 2 | female | 27264 | 22.18 |
 | metro_code | 1 | rural | 102824 | 83.64 |
 | metro_code | 2 | urban or metropolitan | 20111 | 16.36 |
-
-</details>
 
 ## Build
 
