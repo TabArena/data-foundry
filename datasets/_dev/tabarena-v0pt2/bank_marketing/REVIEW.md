@@ -10,9 +10,9 @@ Quality: CLEAN-10 applied (`job`'s "unknown" missing; the reason for `pdays` = -
 
 Weighed: source + (a paper with a stated metric), use case + (a real decision), split + (by time, as the source evaluates), signal - on the windows.
 
-Left for you: issue 4. Settled on 2026-11-08: issues 1, 2 and 3 and the `year` field (the record now takes the definition's 2012, UCI's release, in place of 2011, the ESM paper, which only analysed the data).
+Left for you: nothing. Settled on 2026-11-08: issues 1, 2, 3 and 4 and the `year` field (the record now takes the definition's 2012, UCI's release, in place of 2011, the ESM paper, which only analysed the data).
 
-**Main points:** Bring back the month of the last call as an input (issue 4)? Settled on 2026-11-08: split by time on the file's date order, reversing your call that kept the random split (issue 1); before the campaign, so `campaign` is dropped (issue 2); the exact copies kept with a note (issue 3); the record's `year` set to 2012.
+**Main points:** Open: none. Settled on 2026-11-08: the month of the last call stays out of the inputs (issue 4); split by time on the file's date order, reversing your call that kept the random split (issue 1); before the campaign, so `campaign` is dropped (issue 2); the exact copies kept with a note (issue 3); the record's `year` set to 2012.
 
 **Record judgment:** valid, keep (`Yes`), after changes. The record's `year` (2011, the ESM paper, which only analysed the data) disagreed with the definition's 2012 (UCI's release, donated 2012-02-13); it was set to 2012 on 2026-11-08 (Lennart, `update`). Its `required_split` is `Temporal (NON-IID)`, with the tag `Non-IID (Temporal)`, since 2026-11-08 (issue 1). Its comment that the features "seem to be time-invariant" is superseded by an Assessment line of 2026-11-06 giving the measured shift by year; a second line of that date records this panel.
 
@@ -235,6 +235,10 @@ Left for you: issue 4. Settled on 2026-11-08: issues 1, 2 and 3 and the `year` f
    **Notes for the AI:** on A, a CC line in the record. On B: keep `month` in `_clean`, mapped to 1 to 12 from the
    names and typed categorical in `_feature_types`, rewrite the dates bullet of the notes and `known`, and re-run
    `dataset check` and the task and leak probes; the measurements are in the record's Assessment of 2026-11-08.
+
+   **Resolved (2026-11-08, Lennart):** A, the month of the last call stays out of the inputs, with the day: every
+   input exists before the first call, and the period is in the time key.
+
 
    [^m4a]: **USE-6** (Must): anything known at the prediction point is a legitimate input. **LEAK-37** (Must): an
      input the actor knows at the prediction point is not a leak.

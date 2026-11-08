@@ -379,13 +379,23 @@ Span = tuple[int, str, int]
 """A section: the index of its heading line, its title, and the index where it ends."""
 
 
+def _check_something_to_review(
+    rows: list[dict[str, Any]], record_parts: list[Span], roles: dict[str, Span], fail: Callable[..., ReportFormatError]
+) -> None:
+    """Record rows need their per-record sections; a report without record rows holds the items across datasets."""
+    if rows and not record_parts:
+        raise fail(0, "the report", "no `## ` section with the per-record sections (`### <unique_name>`)")
+    if not rows and ACROSS not in roles:
+        raise fail(0, "the report", "no record row and no `## Across datasets` section: nothing to review")
+
+
 def _parse_summary(lines: list[str], span: Span, fail: Callable[..., ReportFormatError]) -> list[dict[str, Any]]:
     """The summary table: one row per record, in the report's order (the page sorts them by ``review_order``)."""
     start, title, end = span
     section = f"## {title}"
     table = [i for i in range(start + 1, end) if lines[i].lstrip().startswith("|")]
-    if len(table) < 3:
-        raise fail(start, section, "no summary table with at least one record row")
+    if len(table) < 2:
+        raise fail(start, section, "no summary table (a header and its separator row)")
     if not re.fullmatch(r"\|?(\s*:?-{3,}:?\s*\|)+\s*:?-{3,}:?\s*\|?", lines[table[1]].strip()):
         raise fail(table[1], section, "the second table line is the separator `|---|---|---|`")
     rows: list[dict[str, Any]] = []
@@ -603,10 +613,8 @@ def parse_report(path: Path) -> dict[str, Any]:
             roles[role] = span
     if SUMMARY not in roles:
         raise fail(0, "the report", "no `## Summary per record` section")
-    if not record_parts:
-        raise fail(0, "the report", "no `## ` section with the per-record sections (`### <unique_name>`)")
-
     rows = _parse_summary(lines, roles[SUMMARY], fail)
+    _check_something_to_review(rows, record_parts, roles, fail)
     names = {row["name"] for row in rows}
     fields = _parse_fields(lines, roles[FIELDS], names, fail) if FIELDS in roles else {}
     crosscut = _parse_crosscut(lines, roles[ACROSS], fail) if ACROSS in roles else []

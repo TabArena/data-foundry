@@ -571,7 +571,15 @@ def render_report(collected: Collected, *, title: str, date: str) -> str:
                 out.append(f"- `{e.name}`: {parts}.")
     if collected.across:
         out += ["", "## Across datasets", "", collected.across]
-    out += ["", "## Per dataset"]
+    out += _per_dataset_lines(entries)
+    return "\n".join(out) + "\n"
+
+
+def _per_dataset_lines(entries: list[Entry]) -> list[str]:
+    """The report's per-record sections, under one heading, or nothing when no record is left."""
+    if not entries:
+        return []
+    out = ["", "## Per dataset"]
     for e in entries:
         out += ["", f"### {e.name}", "", f"**Outcome:** {e.outcome}"]
         if e.judgment:
@@ -580,7 +588,7 @@ def render_report(collected: Collected, *, title: str, date: str) -> str:
             out += ["", f"**{e.issues_label}:**", "", e.issues]
         if e.panel:
             out += ["", e.panel]
-    return "\n".join(out) + "\n"
+    return out
 
 
 def check_report(path: Path, collected: Collected) -> None:
@@ -636,7 +644,7 @@ def main(argv: list[str] | None = None) -> int:
             settled = [e.name for e in collected.entries if is_settled(e, args.records)]
             collected.entries = [e for e in collected.entries if e.name not in settled]
             collected.settled = settled
-        if not collected.entries:
+        if not collected.entries and not collected.across_items:
             names = ", ".join(collected.settled)
             print(f"nothing left to decide for {names}: no report written (--keep-settled writes one)")
             return 0

@@ -125,7 +125,7 @@ def test_collector_names_filter(crv, tmp_path):
     assert _collect_fixture(crv, root, records, out, "--names", "no_such_record") == 1
 
 
-def test_collector_leaves_out_a_settled_record(crv, tmp_path):
+def test_collector_leaves_out_a_settled_record(crv, brp, tmp_path):
     """A record with every issue resolved, no field row and its declared metric checked leaves the page by default
     (it ships by default; Lennart, 2026-11-08); --keep-settled keeps it, and an unchecked metric or an issue whose last
     closing turn is Deferred keeps it too.
@@ -156,10 +156,14 @@ def test_collector_leaves_out_a_settled_record(crv, tmp_path):
     assert _collect_fixture(crv, root, records, out, "--keep-settled") == 0
     assert "### airfoil_self_noise" in out.read_text()
 
-    # Only settled records named: nothing to write, and no error.
-    out.unlink()
+    # Only settled records named: the report keeps the items across datasets alone, and the builder reads it.
     assert _collect_fixture(crv, root, records, out, "--names", "airfoil_self_noise") == 0
-    assert not out.exists()
+    report = out.read_text()
+    assert "## Across datasets" in report
+    assert "## Per dataset" not in report
+    assert "### airfoil_self_noise" not in report
+    parsed = brp.parse_report(out)
+    assert (parsed["rows"], len(parsed["crosscut"])) == ([], 1)
 
     # Deferred last: the record is parked, not settled.
     review = root / "airfoil_self_noise" / "REVIEW.md"

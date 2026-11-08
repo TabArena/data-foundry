@@ -780,7 +780,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
     });
     let xdone = 0;
     XITEMS.forEach((_, id) => { if (S.crosscut[id] && S.crosscut[id].d) xdone++; });
-    const pct = (n) => (100 * n / DS.length).toFixed(2) + "%";
+    const pct = (n) => (DS.length ? (100 * (n || 0)) / DS.length : 0).toFixed(2) + "%";
     document.getElementById("progress").innerHTML =
       '<span><b>' + reviewed + "</b>/" + DS.length + " verdicts</span>" +
       '<span class="meter" aria-hidden="true">' +
@@ -1732,6 +1732,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   const h = (location.hash || "").slice(1);
   if (h === "across" || h === "summary") showView(h);
   else if (h && byName.has(h)) { select(h, true); }
+  else if (!DS.length) showView("across");
   connect();
 })();
 </script>

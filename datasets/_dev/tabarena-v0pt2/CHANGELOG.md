@@ -3,9 +3,9 @@
 ## 2026-11-08, PR #47: Lennart's replies on the board applied (second round, no container built)
 
 Lennart replied on the review board to the consistency checks and answers of the first round. Every open question of
-that round is settled; bank_marketing's new issue 4 (the month of the last call) waits for him. The changes below follow
-the replies; no container was built, and the folds change at the next build for bank_marketing, pricing_game_2016,
-australian and frempl (row order).
+that round is settled, and so is bank_marketing's new issue 4 (the month of the last call stays out, A); every dataset
+of the board is settled, and the items across datasets are left. The changes below follow the replies; no container was
+built, and the folds change at the next build for bank_marketing, pricing_game_2016, australian and frempl (row order).
 
 - `noaa_storm_events_damage`: issue 10 (A): the mean Tweedie deviance on the dollars stays; the notes' signal bullet
   gives tuned Tweedie LightGBM against the mean per event type per window (3,463 / 2,044 / 962 against 2,660 / 2,301 /
