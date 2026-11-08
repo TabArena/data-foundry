@@ -563,7 +563,7 @@ details.block > .md { padding: 0 0 1rem 1.5rem; }
   const fitOf = (d) => (d.summary && FIT[d.summary.fit] ? d.summary.fit : null);
 
   const S = { reviews: {}, crosscut: {} };
-  const ui = { view: "datasets", current: DS[0].name, filter: "all", q: "", hideReviewed: false, detailOpen: false };
+  const ui = { view: "datasets", current: DS.length ? DS[0].name : null, filter: "all", q: "", hideReviewed: false, detailOpen: false };
   let mode = "connecting";
   let db = null;
   let userId = null;

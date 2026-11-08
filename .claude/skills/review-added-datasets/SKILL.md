@@ -57,8 +57,9 @@ and the working copy's own `REVIEW.md`, and writes one report; `--names` limits 
 run). It leaves out a record with nothing left to decide (every issue resolved, no field row, the declared metric
 checked, nothing deferred or to verify from triage): such a record ships by default, and its decisions stay readable in
 its `REVIEW.md` (Lennart, 2026-11-08); `--keep-settled` keeps it, for a page that looks back or to check one settled
-file's report. When every record is settled, the page holds only the items across datasets. It stops with the file and the line when a file breaks the format, and checks the report with the
-builder's parser; fix the file, not the scripts. The report is generated: never edit or commit it.
+file's report. When every record is settled, the report and the page hold only the items across datasets. It stops with
+the file and the line when a file breaks the format, and checks the report with the builder's parser; fix the file, not
+the scripts. The report is generated: never edit or commit it.
 
 `build_review_page.py` writes `data.json` and `review_page.html` into `--out`. Both scripts need `markdown-it-py`
 (the `curation` extra: `uv pip install --python .venv/bin/python -e ".[curation]"`). Records whose definition has no
