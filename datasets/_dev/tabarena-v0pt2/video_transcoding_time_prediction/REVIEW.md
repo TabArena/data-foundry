@@ -1,10 +1,11 @@
 # video_transcoding_time_prediction
 
 **Outcome:** added. In the working copy since the migration; a scan of 2026-11-08 for units with unequal numbers of
-rows (raised on boreal_postfire_lichen_biomass's issue 7) found that 80 of the 1,099 videos hold 97.8% of the jobs
-and so nearly all of the RMSLE. The AI recommends keeping the score per job and naming this in the notes (issue 1).
+rows (raised on boreal_postfire_lichen_biomass's issue 7) found that 80 of the 1,099 videos hold 97.8% of the jobs and
+so nearly all of the RMSLE. Resolved on 2026-11-08: scored per job, with a note on the 80 full-grid videos (issue 1).
 
-**Main points:** Open: issue 1, keep each job's vote with a note, or count each video once?
+**Main points:** Open: none. Resolved on 2026-11-08: scored per job, each job a decision of the scheduler, with a note
+that 80 full-grid videos hold 97.8% of the jobs (issue 1).
 
 **Issues for Lennart:**
 
@@ -64,3 +65,10 @@ and so nearly all of the RMSLE. The AI recommends keeping the score per job and 
 
    [^vt-unit]: **SPLIT-23** (Must): the source's use case, cited, decides what one prediction is (a row, or a whole
      group). **MET-1** (Must): the declared metric scores the real task, at the unit the actor acts on.
+
+   **Lennart (2026-11-08, change):** Option B: Per job, with a note.
+
+   **Resolved (2026-11-08, Lennart):** B, per job with a note. The score is unchanged; a dated bullet in the notes
+   says that each job is a decision of the scheduler, that 80 full-grid videos hold 97.8% of the jobs, that one vote
+   per video would give the 1,018 single-job videos 93% of the weight, and that it ranks 8 untuned models at Kendall
+   tau 0.90 per split.

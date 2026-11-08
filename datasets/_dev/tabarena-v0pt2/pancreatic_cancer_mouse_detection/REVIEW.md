@@ -2,10 +2,10 @@
 
 **Outcome:** added. In the working copy since the migration; a scan of 2026-11-08 for units with unequal numbers of
 rows (raised on boreal_postfire_lichen_biomass's issue 7) found that the ROC AUC counts a mouse once per serum sample,
-1 to 6 times. The AI recommends counting each mouse once (issue 1), unless the use case is a person tested again and
-again.
+1 to 6 times. Resolved on 2026-11-08: each mouse counts once in the ROC AUC (issue 1).
 
-**Main points:** Open: issue 1, count each mouse once in the ROC AUC, or each serum sample as now?
+**Main points:** Open: none. Resolved on 2026-11-08: each mouse counts once in the ROC AUC, weighted by 1 over its
+number of serum samples (issue 1).
 
 **Issues for Lennart:**
 
@@ -82,3 +82,11 @@ again.
      design weight is never a feature, and the task is scored unweighted unless the use case is a population estimate
      (boreal's `plot_weight` was read as no such weight: it is ours, not the source's).
    [^pc-boreal]: boreal_postfire_lichen_biomass, issue 7, Lennart, 2026-11-08: "Option B: Each plot counts once."
+
+   **Lennart (2026-11-08, change):** Option B: Each mouse counts once.
+
+   **Resolved (2026-11-08, Lennart):** B, each mouse counts once. `roc_auc` got an optional `weight` input, and the
+   ROC AUC is weighted by `mouse_weight`, 1 over the mouse's number of samples, a scoring column for the metric only
+   with no training weight (Lennart's rule of 2026-11-08: a one-vote weight is for scoring only, also when it does not
+   follow from the inputs; training with it measured -0.015 ROC AUC). Each sample is still read on its own; the use
+   case now says each mouse counts once, as one patient.

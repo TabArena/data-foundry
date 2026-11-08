@@ -58,6 +58,7 @@ if TYPE_CHECKING:
         PredictiveMLSplitsMetadata,
         PredictiveMLTaskMetadata,
         PredictiveMLTaskMetadataV2,
+        UnitWeight,
     )
 
 Severity = Literal["error", "warning", "info"]
@@ -1168,7 +1169,40 @@ _EXPOSURE_NAME = re.compile(
 """Feature names that look like an amount at risk (time insured, area swept): a realized one leaks (LEAK-41)."""
 
 
-def _weight_findings(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901 - a flat list of rules
+def _unit_weight_findings(ctx: _Ctx, unit: UnitWeight) -> Iterator[CheckResult]:
+    """A unit weight (MET-17) gives each unit one vote: the weights of each unit's rows sum to 1, and a unit's rows
+    lie on one side of every split, or a unit's vote would be split between training and test.
+    """
+    df = ctx.df
+    if df is None or unit.column not in df.columns or unit.unit not in df.columns:
+        return
+    sums = pd.to_numeric(df[unit.column], errors="coerce").groupby(df[unit.unit].to_numpy(), dropna=False).sum()
+    off = sums[(sums - 1.0).abs() > 1e-6]
+    if len(off):
+        yield CheckResult(
+            "task_unit_weight_not_one_per_unit",
+            "error",
+            f"`unit_weight`: the weights of {len(off)} of {len(sums)} units ({unit.unit!r}) do not sum to 1 "
+            f"(e.g. {off.index[0]!r}: {off.iloc[0]:.6g}); each unit must count once (MET-17).",
+            hint=f'Build it as `1.0 / df.groupby("{unit.unit}")["{unit.unit}"].transform("size")`.',
+        )
+    units = df[unit.unit].to_numpy()
+    split = [
+        f"r{repeat}/f{fold}"
+        for repeat, fold, train_idx, test_idx in ctx.flat_splits
+        if len(set(units[train_idx]) & set(units[test_idx]))
+    ]
+    if split:
+        yield CheckResult(
+            "task_unit_weight_unit_split",
+            "warning",
+            f"`unit_weight`: a unit ({unit.unit!r}) has rows on both sides of {len(split)} split(s) ({split[0]}, ...): "
+            "its vote is shared between training and test.",
+            hint="Group the splits by the unit (or a coarser group that contains it), or accept with the reason.",
+        )
+
+
+def _weight_findings(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901, PLR0912 - a flat list of rules
     """The task's training weight (``sample_weight``) is the metric's row weight (MET-15), and a row weight holds
     finite, non-negative values with weight on every split side; a weighted Poisson target rebuilds whole counts; a
     feature named like an amount at risk is explained when the task declares no weight (LEAK-41).
@@ -1187,7 +1221,10 @@ def _weight_findings(ctx: _Ctx) -> Iterator[CheckResult]:  # noqa: C901 - a flat
             f"({row_weight!r}): models would train on another weighting than the score uses (MET-15).",
             hint="Map the metric's `weight` input to the same scoring column, or drop `sample_weight`.",
         )
-    if sample_weight is None and row_weight is not None:
+    unit = getattr(task, "unit_weight", None)
+    if unit is not None:
+        yield from _unit_weight_findings(ctx, unit)
+    if sample_weight is None and row_weight is not None and (unit is None or unit.column != row_weight):
         yield CheckResult(
             "task_metric_weight_without_sample_weight",
             "warning",

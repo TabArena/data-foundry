@@ -1,10 +1,11 @@
 # superconductivity
 
 **Outcome:** added. In the working copy since the migration; a scan of 2026-11-08 for units with unequal numbers of
-rows (raised on boreal_postfire_lichen_biomass's issue 7) found that the RMSE counts a composition as often as SuperCon
-lists it, 1 to 110 times. The AI recommends counting each composition once (issue 1).
+rows (raised on boreal_postfire_lichen_biomass's issue 7) found that the RMSE counts a composition as often as
+SuperCon lists it, 1 to 110 times. Resolved on 2026-11-08: each composition counts once in the RMSE (issue 1).
 
-**Main points:** Open: issue 1, count each composition once in the RMSE, or each SuperCon entry as now?
+**Main points:** Open: none. Resolved on 2026-11-08: each composition counts once in the RMSE, weighted by 1 over its
+number of SuperCon entries (issue 1).
 
 **Issues for Lennart:**
 
@@ -84,3 +85,12 @@ lists it, 1 to 110 times. The AI recommends counting each composition once (issu
      metric is not exactly it.
    [^sc-boreal]: boreal_postfire_lichen_biomass, issue 7, Lennart, 2026-11-08: "Option B: Each plot counts once."
    [^sc-cc]: Lennart, CC of 2026-10-06: "Every entry is kept and scored per row."
+
+   **Lennart (2026-11-08, change):** Option B: Each composition counts once.
+
+   **Resolved (2026-11-08, Lennart):** B, each composition counts once. The RMSE is weighted by `composition_weight`,
+   1 over the composition's number of SuperCon entries, a scoring column for the metric only with no training weight
+   (the bundle warning accepted: the composition fixes all 81 inputs); the metric is now
+   `Metric.from_context("rmse")`, its reason naming Hamidieh's per-entry RMSE as the original and Stanev et al.
+   counting each material once. Every entry is kept; the notes, the grouping's definition and the record say so, and
+   the CC line supersedes "scored per row" of 2026-10-06.

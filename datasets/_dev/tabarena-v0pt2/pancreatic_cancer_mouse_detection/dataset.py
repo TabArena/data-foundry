@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, FeatureTypes, Grouping, Metric, Spectrum, TaskSummary
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    ScoringColumn,
+    Spectrum,
+    TaskSummary,
+    UnitWeight,
+)
 
 
 class PancreaticCancerMouseDetection(AbstractCuratedDataset):
@@ -13,8 +22,8 @@ class PancreaticCancerMouseDetection(AbstractCuratedDataset):
         question="Does a mouse have preinvasive pancreatic lesions, judged from one blood serum sample?",
         use_case=(
             "For example, a doctor screens a person at risk with a blood test for the preinvasive stage of pancreatic"
-            " cancer; in this mouse study (Hingorani et al. 2003) each sample of an unseen mouse stands for a new "
-            "patient's test."
+            " cancer; in this mouse study (Hingorani et al. 2003) an unseen mouse stands for a new patient: each of its "
+            "samples is read on its own, and the mouse counts once, as one patient."
         ),
         row=(
             "One serum mass spectrum of one mouse, from 1 to 6 blood samples per mouse taken at least 5 days apart "
@@ -25,9 +34,13 @@ class PancreaticCancerMouseDetection(AbstractCuratedDataset):
             "invasive cancer, or a littermate control (44% of the spectra are mutants)."
         ),
         known="The intensities of the serum's mass spectrum at about 6,770 mass-to-charge values.",
-        split=("Whole mice are held out, so the test data stands for new individuals, each sample read on its own."),
+        split=(
+            "Whole mice are held out, so the test data stands for new individuals, each sample read on its own and "
+            "each mouse counting once in the score."
+        ),
         changes=(
-            "We split by mouse; the paper split the samples at random, so samples of one mouse sat on both sides."
+            "We split by mouse; the paper split the samples at random, so samples of one mouse sat on both sides. "
+            "Each mouse counts once in the score, whatever its number of samples."
         ),
         fit="approximate",
         fit_reason=(
@@ -73,6 +86,7 @@ class PancreaticCancerMouseDetection(AbstractCuratedDataset):
         - We label the samples based on name of the folder they are located in: "PanINCTL" are the littermate control mice, "03-PanIN" the compound-mutant mice with pancreatic intraepithelial neoplasia (PanIN), preinvasive lesions with "no evidence of invasive or metastatic disease" (Hingorani et al. 2003). The target is therefore `HasPanIN`, not cancer.
         - Anomaly: the download holds 181 serum spectra (80 PanIN, 101 control) from 73 mouse IDs (35 PanIN, 38 control); the paper reports 191 spectra after quality control (80 PanIN, 111 control) from 72 mice (33 compound mutants, 39 littermate controls). The 10 missing spectra are controls, and no mouse ID occurs in both classes; the difference cannot be resolved without the authors.
         - The file names encode the class: the third token is `02` for every control file and `03` for every PanIN file, some with a `t` suffix of unknown meaning (42 of 101 control and 24 of 80 PanIN files; it is not the paper's training/blinded-test split). We take the label from the folder and the mouse ID from the second token; the class code never enters the features.
+        - Each mouse counts once in the score (Lennart, 2026-11-08, review issue 1; MET-17): the ROC AUC weights a sample by 1 over its mouse's number of samples (`mouse_weight`), a scoring column for the metric only, no feature and no training weight, so the score is the chance that a random sample of a random PanIN mouse scores above a random sample of a random control mouse. The 73 mice gave 1 to 6 samples (median 2, 29 mice one), the label is the mouse's, and each mouse stands for one patient; unweighted, a mouse bled six times counted as six patients. Each sample is still read on its own. On 30 of the shipped splits the weighted ROC AUC ranks 8 untuned predictors (two logistic regressions, random forest, extra trees, two LightGBM, kNN, the class shares; raw spectrum standardized per bin) like the per-sample one at Kendall tau 0.66 per split on average (lowest -0.07, on 24 test mice) and 0.86 for the ranking by the mean over the splits, the same best model on 23 of 30. The weight is for scoring only (MET-15 as amended 2026-11-08): training a regularised logistic regression with it changes the weighted ROC AUC by -0.015 (SE 0.006, lower on 39 of 60 grouped random splits).
         - The spectrum ships raw, as the NCI-FDA page publishes it, and is declared as one (`special_features`, CLEAN-26, 2026-11-02): the container records its 6,771 columns in m/z order, and a benchmark encodes it row by row, by default with MALDIquant's steps (square root, Savitzky-Golay smoothing, SNIP baseline, total ion current). Processing the spectra lifts every model tested by 0.07 to 0.13 ROC AUC (PR #21, Andrej, 2026-10-21); the page itself recommends "appropriate normalization, baseline correction, and alignment prior to any such analysis".
     """
 
@@ -80,15 +94,33 @@ class PancreaticCancerMouseDetection(AbstractCuratedDataset):
     target = "HasPanIN"
     problem_type = "binary_classification"
     metric = Metric.fallback(
-        reason="The paper reports sensitivity and specificity at its classifier's operating point, a pair with no single threshold-free metric; roc_auc summarises both over thresholds."
+        reason=(
+            "The paper reports sensitivity and specificity at its classifier's operating point, a pair with no single "
+            "threshold-free metric; roc_auc summarises both over thresholds. Each mouse counts once, as one patient: "
+            "a sample weighs 1 over its mouse's number of samples (`mouse_weight`; 1 to 6 samples per mouse), where "
+            "unweighted a mouse bled six times would count as six patients (Lennart, 2026-11-08)."
+        ),
+        inputs={"weight": "mouse_weight"},
     )
+    scoring_columns = (
+        ScoringColumn(
+            column="mouse_weight",
+            role="weight",
+            used_by="roc_auc",
+            description=(
+                "1 over the number of serum samples of the row's mouse (from 1/6 to 1), so that each mouse counts "
+                "once in the ROC AUC; for scoring only, never a feature or a training weight"
+            ),
+        ),
+    )
+    unit_weight = UnitWeight(column="mouse_weight", unit="mouse_id")
     grouping = Grouping(
         on="mouse_id",
         labels="per_group",
         prediction_unit="row",
         context="none",
         definition="""
-            One group is a mouse; its rows are serum samples from 1 to 6 bleeds, collected "as independent events" at least 5 days apart (Hingorani et al. 2003). The use case is a serum test for the preinvasive state, so each sample is one prediction, made from that sample alone. The paper split the samples at random, ignoring the mice; holding out whole mice simulates testing a new patient.
+            One group is a mouse; its rows are serum samples from 1 to 6 bleeds, collected "as independent events" at least 5 days apart (Hingorani et al. 2003). The use case is a serum test for the preinvasive state, so each sample is one prediction, made from that sample alone, and each mouse counts once in the score (`mouse_weight`). The paper split the samples at random, ignoring the mice; holding out whole mice simulates testing a new patient.
         """,
     )
 
@@ -126,6 +158,12 @@ class PancreaticCancerMouseDetection(AbstractCuratedDataset):
                 row["HasPanIN"] = label
                 rows.append(row)
         df = pd.DataFrame(rows)
+        return df
+
+    def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
+        df = raw
+        # Each mouse counts once in the score: 1 over its number of samples (curation comments)
+        df["mouse_weight"] = 1.0 / df.groupby("mouse_id")["mouse_id"].transform("size")
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

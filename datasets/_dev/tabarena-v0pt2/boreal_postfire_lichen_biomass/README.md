@@ -2,14 +2,14 @@
 report_format: data-foundry-report-v2
 unique_name: boreal_postfire_lichen_biomass
 container_format: 2
-checksum: v2:b114ee23af5eb6e7da8789b06a3448d46a49d434645769f76937c7fe6ccc653c
+checksum: v2:ad58b3e72b8db241ebc5266be85e70915271cd5c436cf19e72067ca8d310ecb1
 build: null
 build_stale: false
 data:
   n_rows: 2010
   n_features: 7
   dtypes:
-    category: 5
+    category: 6
     float64: 4
     int64: 1
   n_test_dataset_rows: null
@@ -20,6 +20,9 @@ task:
   metric_origin: fallback
   scoring_columns:
   - plot_weight
+  unit_weight:
+    column: plot_weight
+    unit: plot
   split_regime: grouped_non_iid
   stratify_on: null
   time_on: null
@@ -62,12 +65,6 @@ bundle_checks:
       differ in lichen. 32.5% of the target's variance lies within identical inputs
       (28.8% within a plot), a floor no model can go below. Each input vector stays
       in one group (Andrej, 2026-11-03).
-    task_metric_weight_without_sample_weight: plot_weight is a design weight of the
-      score that gives each plot one vote (the stand the planner acts on, SPLIT-23),
-      not an amount at risk (MET-15) nor a survey weight of the source (MET-16), and
-      a function of the features (0.2 in NT, 0.5 in SK, set by `jurisdiction`), so
-      it needs no training weight; it is for scoring only (Lennart, 2026-11-08, review
-      issue 7).
 decisions:
 - The target is the volume-based biomass; the cover-based one is dropped
 - Three NT plots take the site sheet's coordinates
@@ -79,7 +76,7 @@ decisions:
 
 Regression of `forage_lichen_biomass_kg_ha`, scored with `rmse` on grouped splits by `burn_area`. 2,010 rows and 7 features. Source: Other (2021).
 
-Not built yet. The current definition gives checksum `v2:b114ee23af5eb6e7da8789b06a3448d46a49d434645769f76937c7fe6ccc653c`.
+Not built yet. The current definition gives checksum `v2:ad58b3e72b8db241ebc5266be85e70915271cd5c436cf19e72067ca8d310ecb1`.
 
 ## In brief
 
@@ -146,10 +143,11 @@ Only curators run `build`, when the dataset ships.
 | license | CC0 1.0 |
 | data_tags | Non-IID, Grouped, Spatial |
 | reference | greuel2021predicting |
-| rows x columns | 2,010 x 10 |
+| rows x columns | 2,010 x 11 |
 | task.target | forage_lichen_biomass_kg_ha |
 | task.problem_type | regression |
 | task.metric | rmse |
+| task.unit_weight | {'column': 'plot_weight', 'unit': 'plot'} |
 | task.split_regime | grouped_non_iid |
 | task.group_on | burn_area |
 | task.group_labels | per_sample |
@@ -170,14 +168,18 @@ Kept in the frame for the metric; do not use them as features. Drop them from th
 
 | column | role | how the metric uses it | model input |
 |---|---|---|---|
-| `plot_weight` | weight | rmse: 1 over the number of quadrats of the row's plot (0.2 for the five of an NT plot, 0.5 for the two of an SK plot), so that each plot counts once in the RMSE; for scoring only, never a feature or a training weight | never a feature |
+| `plot_weight` | weight | rmse: 1 over the number of quadrats of the row's plot (0.2 for the five of an NT plot, 0.5 for the two of an SK plot), so that each plot counts once in the RMSE; for scoring only, never a feature or a training weight | unit weight: weight a validation loss by it; never a feature |
 
 The test-row values of `plot_weight` are for the scorer only: never read them when predicting a test row.
 
-<details>
-<summary>Feature types: 5 categorical, 0 string, 0 datetime</summary>
+**Unit weight**
 
-- categorical (5): `burn_area`, `stand_type`, `jurisdiction`, `ecozone`, `ecoprovince`
+The score counts each `plot` once: `plot_weight` is 1 over the unit's number of rows, so the weights of a unit sum to 1. It is for scoring only, never a training weight or a feature. A model that picks its settings on a validation split weights the validation loss by `plot_weight` too (`validation_weight(container)` from `data_foundry.curation_container`) and keeps a unit's rows on one side of that split; `plot` is metadata, never a feature.
+
+<details>
+<summary>Feature types: 6 categorical, 0 string, 0 datetime</summary>
+
+- categorical (6): `burn_area`, `plot`, `stand_type`, `jurisdiction`, `ecozone`, `ecoprovince`
 - string (0): none
 - datetime (0): none
 
@@ -206,13 +208,13 @@ The test-row values of `plot_weight` are for the scorer only: never read them wh
 
 The first 5 of 2,010 rows of the final frame (random rows: the frame is shuffled). Cells are cut at 40 characters.
 
-| forage_lichen_biomass_kg_ha | years_since_fire | stand_type | latitude | longitude | jurisdiction | ecozone | ecoprovince | burn_area | plot_weight |
-|---|---|---|---|---|---|---|---|---|---|
-| 0 | 82 | Poorly-drained spruce | 62.46 | -114.54 | NT | Taiga shield | Coppermine River and Tazin Lake Uplands | area_002 | 0.2 |
-| 67.3776 | 71 | Jack pine | 61.15 | -119.55 | NT | Taiga plains | Hay and Slave River Lowlands | area_025 | 0.2 |
-| 11.5805 | 33 | Conifer mix | 60.72 | -115.11 | NT | Taiga plains | Hay and Slave River Lowlands | area_023 | 0.2 |
-| 187.394 | 92 | Conifer mix | 61.06 | -118.48 | NT | Taiga plains | Hay and Slave River Lowlands | area_010 | 0.2 |
-| 691.294 | 45 | Jack pine | 58.2398 | -103.81 | SK | Boreal shield | Athabasca Plain and Churchill River Upl… | area_090 | 0.5 |
+| forage_lichen_biomass_kg_ha | plot | years_since_fire | stand_type | latitude | longitude | jurisdiction | ecozone | ecoprovince | burn_area | plot_weight |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 805.373 | CG2-35B | 85 | Well-drained spruce | 62.22 | -116.32 | NT | Taiga plains | Great Bear Plains | area_011 | 0.2 |
+| 0 | F4-17C | 36 | Larch | 61.09 | -118.83 | NT | Taiga plains | Hay and Slave River Lowlands | area_022 | 0.2 |
+| 93.697 | CG3-30A | 127 | Well-drained spruce | 60.58 | -116.16 | NT | Taiga plains | Hay and Slave River Lowlands | area_012 | 0.2 |
+| 0 | 2015-006 | 73 | Jack pine | 57.356 | -105.672 | SK | Boreal shield | Athabasca Plain and Churchill River Upl… | area_031 | 0.5 |
+| 1838.17 | 2015-007 | 34 | Jack pine | 57.3643 | -105.641 | SK | Boreal shield | Athabasca Plain and Churchill River Upl… | area_032 | 0.5 |
 
 ## Curation notes
 
@@ -300,7 +302,7 @@ One group is a burn scar or unburned area of the Northwest Territories (the plot
 | test groups per fold | 72 |
 | groups of two or more rows with a single label | 26.4% |
 | nearest neighbour in the same group | 100.0% of the rows (chance: 4.1%) |
-| label variance explained by the group | 0.35 (shuffled groups: 0.12) |
+| label variance explained by the group | 0.35 (shuffled groups: 0.13) |
 
 The nearest neighbour is computed on the standardised numeric features of a sample of up to 20,000 rows; chance is the share expected if the groups were unrelated to the features. The model-based diagnostics run with `.claude/skills/knowledge-data-foundry/scripts/group_probes.py`.
 
@@ -334,24 +336,29 @@ Accepted on purpose:
 
 - `dataset_duplicate_rows`: 532 exact copies, 518 of them at 0: quadrats of one plot (482) or of sibling plots that share every input (36), since every input is a plot attribute. Each copy stays in one group, so no test row has a copy in training (LEAK-18: few features, natural repeats; Andrej, 2026-11-03).
 - `dataset_conflicting_duplicate_rows`: Quadrats of one plot share their inputs and differ in lichen. 32.5% of the target's variance lies within identical inputs (28.8% within a plot), a floor no model can go below. Each input vector stays in one group (Andrej, 2026-11-03).
-- `task_metric_weight_without_sample_weight`: plot_weight is a design weight of the score that gives each plot one vote (the stand the planner acts on, SPLIT-23), not an amount at risk (MET-15) nor a survey weight of the source (MET-16), and a function of the features (0.2 in NT, 0.5 in SK, set by `jurisdiction`), so it needs no training weight; it is for scoring only (Lennart, 2026-11-08, review issue 7).
 
 ## Data checks
 
 ### Feature summary
 
+<details>
+<summary>Show the table (11 rows)</summary>
+
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
+| plot | category | 0 | 0 | 516 | C1-14A, C1-14B, C1-17B, C1-17C, C1-19A, C1-19B, C1-21A, C1-21B, C1-32A, C1-32B |
 | stand_type | category | 0 | 0 | 7 | Jack pine, Well-drained spruce, Conifer mix, Poorly-drained spruce, Deciduous-c… |
 | jurisdiction | category | 0 | 0 | 2 | NT, SK |
 | ecozone | category | 0 | 0 | 3 | Taiga plains, Taiga shield, Boreal shield |
 | ecoprovince | category | 0 | 0 | 4 | Hay and Slave River Lowlands, Coppermine River and Tazin Lake Uplands, Athabasc… |
 | burn_area | category | 0 | 0 | 216 | area_011, area_012, area_013, area_010, area_014, area_022, area_023, area_021,… |
-| forage_lichen_biomass_kg_ha | float64 | 0 | 0 | 847 | 0.0, 9.475, 6.3167, 12.6333, 18.95, 11.5805, 8.4222, 15.7916, 25.2666, 13.6861 |
-| latitude | float64 | 0 | 0 | 274 | 60.7, 61.06, 62.51, 61.13, 62.65, 62.66, 60.72, 60.71, 61.14, 60.73 |
-| longitude | float64 | 0 | 0 | 321 | -115.83, -116.58, -116.17, -115.9, -116.32, -116.18, -116.25, -113.78, -114.04,… |
+| forage_lichen_biomass_kg_ha | float64 | 0 | 0 | 847 | 0.0, 9.475, 6.3167, 12.6333, 18.95, 8.4222, 11.5805, 25.2666, 15.7916, 13.6861 |
+| latitude | float64 | 0 | 0 | 274 | 60.7, 61.06, 62.51, 62.66, 62.65, 61.13, 60.71, 60.73, 60.72, 61.14 |
+| longitude | float64 | 0 | 0 | 321 | -115.83, -116.17, -116.58, -115.9, -116.32, -116.25, -116.18, -114.04, -116.15,… |
 | plot_weight | float64 | 0 | 0 | 2 | 0.2, 0.5 |
-| years_since_fire | int64 | 0 | 0 | 137 | 40, 39, 42, 35, 34, 33, 43, 71, 41, 36 |
+| years_since_fire | int64 | 0 | 0 | 137 | 40, 39, 42, 34, 35, 33, 43, 71, 41, 36 |
+
+</details>
 
 ### Target distribution
 
@@ -372,7 +379,7 @@ Accepted on purpose:
 ### Categorical features
 
 <details>
-<summary>Show the table (19 rows)</summary>
+<summary>Show the table (24 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -390,6 +397,11 @@ Accepted on purpose:
 | ecozone | 3 | Boreal shield | 380 | 18.91 |
 | jurisdiction | 1 | NT | 1630 | 81.09 |
 | jurisdiction | 2 | SK | 380 | 18.91 |
+| plot | 1 | C1-14A | 5 | 0.25 |
+| plot | 2 | C1-14B | 5 | 0.25 |
+| plot | 3 | C1-17B | 5 | 0.25 |
+| plot | 4 | C1-17C | 5 | 0.25 |
+| plot | 5 | C1-19A | 5 | 0.25 |
 | stand_type | 1 | Jack pine | 640 | 31.84 |
 | stand_type | 2 | Well-drained spruce | 581 | 28.91 |
 | stand_type | 3 | Conifer mix | 295 | 14.68 |

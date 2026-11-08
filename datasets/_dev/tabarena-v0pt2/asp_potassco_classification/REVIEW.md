@@ -2,10 +2,11 @@
 
 **Outcome:** added. In the working copy since the migration; a scan of 2026-11-08 for units with unequal numbers of
 rows (raised on boreal_postfire_lichen_biomass's issue 7) found that the problem classes the split holds out hold 1 to
-134 instances each, so a few large classes decide about half of the log loss. The AI recommends keeping the score per
-instance and naming the imbalance in the notes (issue 5).
+134 instances each, so a few large classes decide about half of the log loss. Resolved on 2026-11-08: scored per
+instance, with a note on the large classes (issue 5).
 
-**Main points:** Open: issue 5, keep each instance's vote with a note, or count each problem class once?
+**Main points:** Open: none. Resolved on 2026-11-08: scored per instance, each instance a decision of the selector,
+with a note that the largest 10% of the problem classes hold 51% of the instances (issue 5).
 
 **Issues for Lennart:**
 
@@ -68,3 +69,9 @@ instance and naming the imbalance in the notes (issue 5).
 
    [^asp-unit]: **SPLIT-23** (Must): the source's use case, cited, decides what one prediction is (a row, or a whole
      group). **MET-1** (Must): the declared metric scores the real task, at the unit the actor acts on.
+
+   **Lennart (2026-11-08, change):** Option B: Per instance, with a note.
+
+   **Resolved (2026-11-08, Lennart):** B, per instance with a note. The score is unchanged; a dated bullet in the
+   notes says that each instance is a decision of the selector, that the largest 10% of the problem classes hold 51%
+   of the instances, and that counting each class once ranks 8 untuned models at Kendall tau 0.86 per split.

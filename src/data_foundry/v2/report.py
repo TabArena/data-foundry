@@ -152,6 +152,11 @@ def report_frontmatter(result: CurationResult, *, previous: dict[str, Any] | Non
             "metric_origin": task.objective_metric.origin,
             "scoring_columns": [c.column for c in task.scoring_columns] or None,
             **({"sample_weight": task.sample_weight} if getattr(task, "sample_weight", None) else {}),
+            **(
+                {"unit_weight": {"column": task.unit_weight.column, "unit": task.unit_weight.unit}}
+                if getattr(task, "unit_weight", None)
+                else {}
+            ),
             "split_regime": task.split_regime,
             "stratify_on": task.stratify_on,
             "time_on": task.time_on,
@@ -452,6 +457,7 @@ def _metric_block(task: Any) -> list[str]:
     ]
     out = ["**Metric**", "", _table(pd.DataFrame(rows, columns=["field", "value"]), full=True), ""]
     weight = getattr(task, "sample_weight", None)
+    unit = getattr(task, "unit_weight", None)
     if task.scoring_columns:
         table = pd.DataFrame(
             [
@@ -459,7 +465,11 @@ def _metric_block(task: Any) -> list[str]:
                     f"`{c.column}`",
                     c.role,
                     f"{c.used_by}: {c.description}",
-                    "training weight; never a feature" if c.column == weight else "never a feature",
+                    "training weight; never a feature"
+                    if c.column == weight
+                    else "unit weight: weight a validation loss by it; never a feature"
+                    if unit is not None and c.column == unit.column
+                    else "never a feature",
                 )
                 for c in task.scoring_columns
             ],
@@ -482,6 +492,17 @@ def _metric_block(task: Any) -> list[str]:
                 "a test row.",
                 "",
             ]
+    if unit is not None:
+        out += [
+            "**Unit weight**",
+            "",
+            f"The score counts each `{unit.unit}` once: `{unit.column}` is 1 over the unit's number of rows, so the "
+            "weights of a unit sum to 1. It is for scoring only, never a training weight or a feature. A model that "
+            f"picks its settings on a validation split weights the validation loss by `{unit.column}` too "
+            "(`validation_weight(container)` from `data_foundry.curation_container`) and keeps a unit's rows on one "
+            f"side of that split; `{unit.unit}` is metadata, never a feature.",
+            "",
+        ]
     if weight is not None:
         out += [
             "**Training weight**",

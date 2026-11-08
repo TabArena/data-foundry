@@ -201,12 +201,17 @@ def _positive_label(y_true: np.ndarray, y_pred: np.ndarray, labels: Any) -> Any:
 # --- the standard metrics -----------------------------------------------------------------------------------------
 
 
-def _roc_auc(y_true, y_pred, *, labels=None, **_):
-    """ROC AUC; NaN when the scored rows hold one class (scikit-learn warns and returns NaN)."""
+def _roc_auc(y_true, y_pred, *, labels=None, weight=None, **_):
+    """ROC AUC, the rows weighted by the optional ``weight`` input (scikit-learn's ``sample_weight``: a pair of a
+    positive and a negative row counts with the product of their weights); NaN when the scored rows hold one class.
+
+    A weight of 1 over a unit's number of rows counts each unit once (pancreatic_cancer_mouse_detection: each mouse
+    once, whatever its number of serum samples).
+    """
     truth = _binary_truth(y_true, labels)
     if truth.min() == truth.max():
         return float("nan")
-    return float(_sklearn_metrics().roc_auc_score(truth, _positive_proba(y_pred)))
+    return float(_sklearn_metrics().roc_auc_score(truth, _positive_proba(y_pred), sample_weight=_row_weight(weight)))
 
 
 def _average_precision(y_true, y_pred, *, labels=None, **_):
@@ -217,10 +222,15 @@ def _average_precision(y_true, y_pred, *, labels=None, **_):
     return float(_sklearn_metrics().average_precision_score(truth, _positive_proba(y_pred)))
 
 
-def _log_loss(y_true, y_pred, *, labels=None, **_):
+def _log_loss(y_true, y_pred, *, labels=None, weight=None, **_):
+    """Log loss, the rows weighted by the optional ``weight`` input: ``sum(w * -log p(true class)) / sum(w)``,
+    scikit-learn's ``sample_weight``; without one every row weighs 1 (dementia_prediction: each person once).
+    """
     labels = _labels(y_true, labels)
     proba = _class_proba(y_pred, len(labels))
-    return _sklearn_metrics().log_loss(_codes(y_true, labels), proba, labels=list(range(len(labels))))
+    return _sklearn_metrics().log_loss(
+        _codes(y_true, labels), proba, labels=list(range(len(labels))), sample_weight=_row_weight(weight)
+    )
 
 
 def _roc_auc_multiclass(multi_class: str) -> Callable:
@@ -272,8 +282,8 @@ def _floored(y_pred: Any, params: Mapping[str, Any]) -> np.ndarray:
 
 
 def _row_weight(weight: Any) -> np.ndarray | None:
-    """The optional row weight of a deviance or of RMSE: finite, >= 0 and with a positive sum, or ``None`` (every row
-    weighs 1).
+    """The optional row weight of a deviance, RMSE, ROC AUC or log loss: finite, >= 0 and with a positive sum, or
+    ``None`` (every row weighs 1).
     """
     if weight is None:
         return None
@@ -487,7 +497,17 @@ METRICS: dict[str, MetricDef] = {
     for d in (
         # binary classification
         _standard(
-            "roc_auc", _BIN, "proba", _HIGHER, _roc_auc, "sklearn.metrics.roc_auc_score", "area under the ROC curve"
+            "roc_auc",
+            _BIN,
+            "proba",
+            _HIGHER,
+            _roc_auc,
+            "sklearn.metrics.roc_auc_score",
+            "area under the ROC curve",
+            optional_inputs=("weight",),
+            row_weight=True,
+            weighted_definition="area under the ROC curve, each positive-negative pair counted with w_i * w_j, w the "
+            "weight input (finite, >= 0)",
         ),
         _standard(
             "average_precision",
@@ -499,7 +519,16 @@ METRICS: dict[str, MetricDef] = {
             "area under the precision-recall curve (step-wise)",
         ),
         _standard(
-            "log_loss", _CLF, "proba", _LOWER, _log_loss, "sklearn.metrics.log_loss", "mean of -log p(true class)"
+            "log_loss",
+            _CLF,
+            "proba",
+            _LOWER,
+            _log_loss,
+            "sklearn.metrics.log_loss",
+            "mean of -log p(true class)",
+            optional_inputs=("weight",),
+            row_weight=True,
+            weighted_definition="sum(w * -log p(true class)) / sum(w), w the weight input (finite, >= 0)",
         ),
         _standard(
             "accuracy",

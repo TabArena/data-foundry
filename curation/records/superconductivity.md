@@ -53,6 +53,10 @@ CC (2026-10-27, Lennart): fit approximate (was direct): a screen meets mostly ma
 
 **Assessment (AI, 2026-11-08):** one vote per unit (the scan of 2026-11-08 after boreal_postfire_lichen_biomass's issue 7): the per-row RMSE counts a composition as often as SuperCon lists it, 1 to 110 times (YBa2Cu3O7 110); the 2,422 compositions with two or more entries hold 40% of the 21,263 rows, and all 81 inputs are equal within 99.8% of them, so a model predicts per composition. Weighting each entry by 1 over its composition's entries (each composition counts once) ranks 8 untuned models at Kendall tau 0.98 per split (lowest 0.93) and 0.93 for the ranking by the mean over the 9 shipped splits, the same best model on 9 of 9. Open for Lennart as issue 1 of the folder's REVIEW.md; recommended: each composition counts once (B), RMSE already takes the weight.
 
+CC (2026-11-08, Lennart): issue 1, B: each composition counts once. The RMSE weights an entry by 1 over its composition's number of SuperCon entries (`composition_weight`, a scoring column for the metric only, no training weight; the bundle warning accepted, since the composition fixes all 81 inputs), and the metric is declared from context with Hamidieh's per-entry RMSE named as the original, overruled on the unit the scientist decides on (MET-1, MET-17), as Stanev et al. (2018) count each material once. Every entry is still kept (SPLIT-26). Supersedes "Every entry is kept and scored per row" of Lennart's CC of 2026-10-06.
+
+CC (2026-11-08, Lennart): the declared metric (rmse, weighted by composition_weight) is checked.
+
 ## Reference
 
 Hamidieh, Kam. "A data-driven statistical model for predicting the critical temperature of a superconductor." Computational Materials Science 154 (2018): 346-354.

@@ -2,11 +2,11 @@
 
 **Outcome:** added. In the working copy since the migration; a scan of 2026-11-08 for units with unequal numbers of
 rows (raised on boreal_postfire_lichen_biomass's issue 7) found that the log loss counts a person once per visit, 1 to
-5 times, while the use case is a first visit. The AI recommends counting each person once (issue 1), or scoring only
-the first visits.
+5 times, while the use case is a first visit. Resolved on 2026-11-08: each person counts once in the log loss
+(issue 1).
 
-**Main points:** Open: issue 1, count each person once in the log loss, score only each test person's first visit, or
-each visit as now?
+**Main points:** Open: none. Resolved on 2026-11-08: each person counts once in the log loss, weighted by 1 over the
+person's visits (issue 1).
 
 **Issues for Lennart:**
 
@@ -83,3 +83,11 @@ each visit as now?
      at risk is also the training weight. A weight that gives each unit one vote and does not follow from the inputs
      is not named.
    [^dp-boreal]: boreal_postfire_lichen_biomass, issue 7, Lennart, 2026-11-08: "Option B: Each plot counts once."
+
+   **Lennart (2026-11-08, change):** Option B: Each person counts once.
+
+   **Resolved (2026-11-08, Lennart):** B, each person counts once. `log_loss` got an optional `weight` input, and the
+   log loss is weighted by `person_weight`, 1 over the person's number of visits, a scoring column for the metric only
+   with no training weight (Lennart's rule of 2026-11-08: a one-vote weight is for scoring only; training with it
+   measured -0.004 log loss, within noise). Follow-up visits stay scored as if each were a first visit, at one vote
+   per person; the notes, the metric's reason and the record say so.

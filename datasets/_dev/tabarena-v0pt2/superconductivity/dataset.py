@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, Metric, TaskSummary
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    ScoringColumn,
+    TaskSummary,
+    UnitWeight,
+)
 
 
 def composition_labels(elements: pd.DataFrame) -> pd.Series:
@@ -43,7 +52,7 @@ class Superconductivity(AbstractCuratedDataset):
         ),
         changes=(
             "We group the entries by composition; with random rows, 35% of the test rows had an identical row in "
-            "training."
+            "training. Each composition counts once in the score, where the source counts each entry."
         ),
         fit="approximate",
         fit_reason=(
@@ -79,25 +88,44 @@ class Superconductivity(AbstractCuratedDataset):
     """
     curation_comments = """
         - The 81 features are computed from the element shares of the chemical formula alone. `unique_m.csv` (row-aligned with `train.csv`, same critical temperatures) has each row's element counts and formula; from it we add the group column `composition` (see `composition_labels`): 15,164 compositions, 2,422 of them with 2 to 110 SuperCon entries (6,099 repeated rows). Their temperatures differ by a median standard deviation of 1.3 K, by more than 30 K for 132 compositions (other samples, phases or pressures, which the release does not record).
-        - Grouped by composition since 2026-10-06 (IID before): a model like this is used for compositions without a measured temperature, and a random split gave 35% of the test rows an identical row in train. Every entry is kept and scored per row. Not grouped by element set: a new composition is usually another proportion of known elements (a doping level), not a new family. Stanev et al. (2018) average the entries of a material instead (standard deviation below 5 K) and drop the rest; we keep the release's rows.
+        - Grouped by composition since 2026-10-06 (IID before): a model like this is used for compositions without a measured temperature, and a random split gave 35% of the test rows an identical row in train. Every entry is kept (SPLIT-26), and each composition counts once in the score (Lennart, 2026-11-08, review issue 1): the RMSE weights an entry by 1 over its composition's number of entries (`composition_weight`), a scoring column for the metric only, no feature and no training weight. All 81 inputs are fixed by the composition (equal within 2,416 of the 2,422 compositions with several entries; in the other 6, formulas written at another scale such as `Au30Pd3.3Te66.6` and `Au0.3Pd0.033Te0.666`, they differ by floating-point noise, at most 3e-15 relative), so a model predicts one value per composition, and the materials scientist decides per composition which to synthesize (MET-1, MET-17). Unweighted, YBa2Cu3O7 (110 entries) counted 110 times a composition measured once, and the 2,422 compositions with several entries held 40% of the rows; weighted, the 12,742 compositions with one entry carry 84% of the weight. On the 9 shipped splits the weighted RMSE ranks 8 untuned predictors (random forest, extra trees, two LightGBM, two ridge, kNN, the training mean) like the per-entry RMSE at Kendall tau 0.98 per split on average (lowest 0.93) and 0.93 for the ranking by the mean over the splits, the same best model on 9 of 9. Not grouped by element set: a new composition is usually another proportion of known elements (a doping level), not a new family. Stanev et al. (2018) average the entries of a material instead (standard deviation below 5 K) and drop the rest; we keep the release's rows.
     """
 
     # Task
     target = "critical_temp"
     problem_type = "regression"
-    metric = Metric.source(
+    metric = Metric.from_context(
         "rmse",
-        original="out-of-sample RMSE (with R2)",
-        reference="Hamidieh 2018, Computational Materials Science 154:346-354, doi:10.1016/j.commatsci.2018.07.052",
-        definition="RMSE of the critical temperature in K (paper: about 9.5 K for XGBoost; R2 about 0.92 reported alongside)",
+        reason=(
+            "Original: the out-of-sample RMSE of Hamidieh 2018 (Computational Materials Science 154:346-354, "
+            "doi:10.1016/j.commatsci.2018.07.052; about 9.5 K for XGBoost, R2 about 0.92 alongside), which counts "
+            "each SuperCon entry. Overruled on the unit (Lennart, 2026-11-08): every input is fixed by the "
+            "composition and the materials scientist decides per composition, so the RMSE of the critical "
+            "temperature in K weights an entry by 1 over its composition's number of entries "
+            "(`composition_weight`) and each composition counts once, as Stanev et al. (2018) count each material "
+            "once. Unweighted, YBa2Cu3O7 (110 entries) would count 110 times a composition measured once."
+        ),
+        inputs={"weight": "composition_weight"},
     )
+    scoring_columns = (
+        ScoringColumn(
+            column="composition_weight",
+            role="weight",
+            used_by="rmse",
+            description=(
+                "1 over the number of SuperCon entries of the row's composition (from 1/110 to 1), so that each "
+                "composition counts once in the RMSE; for scoring only, never a feature or a training weight"
+            ),
+        ),
+    )
+    unit_weight = UnitWeight(column="composition_weight", unit="composition")
     grouping = Grouping(
         on="composition",
         labels="per_sample",
         prediction_unit="row",
         context="none",
         definition="""
-            One group is a composition: the share of each element in the chemical formula, from which the 81 features are computed. Its rows are the SuperCon entries for that composition (1 to 110), whose critical temperatures can differ (other samples, phases or pressures that the release does not record). The source predicts the critical temperature from the formula alone (Hamidieh 2018), and a model like that is used for compositions without a measured temperature, so the test compositions are new to the model. Each row is one prediction, made from the composition's features.
+            One group is a composition: the share of each element in the chemical formula, from which the 81 features are computed. Its rows are the SuperCon entries for that composition (1 to 110), whose critical temperatures can differ (other samples, phases or pressures that the release does not record). The source predicts the critical temperature from the formula alone (Hamidieh 2018), and a model like that is used for compositions without a measured temperature, so the test compositions are new to the model. Each row is one prediction, made from the composition's features; each composition counts once in the score (`composition_weight`).
         """,
     )
 
@@ -113,6 +141,12 @@ class Superconductivity(AbstractCuratedDataset):
             msg = "unique_m.csv is no longer row-aligned with train.csv"
             raise ValueError(msg)
         df["composition"] = composition_labels(elements)
+        return df
+
+    def _clean(self, raw: pd.DataFrame) -> pd.DataFrame:
+        df = raw
+        # Each composition counts once in the score: 1 over its number of entries (curation comments)
+        df["composition_weight"] = 1.0 / df.groupby("composition")["composition"].transform("size")
         return df
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:

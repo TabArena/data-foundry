@@ -111,6 +111,8 @@ CC (2026-11-08, Lennart): issue 7 (B) in boreal_postfire_lichen_biomass, "Each p
 
 CC (2026-11-08, Lennart): the declared metric (the fallback `rmse`, weighted by `plot_weight` so each plot counts once) is checked: as marked, with issue 7 (B).
 
+CC (2026-11-08, Lennart): the score's `plot_weight` is declared as the task's `unit_weight` (column `plot_weight`, unit `plot`), so downstream tools can read that each plot counts once and weight their validation loss alike ("make sure to somehow add it to the metadata that this kind of group type ... exists and can be read by downstream tools"; MET-17). The `plot` column stays in the frame as metadata, never a feature.
+
 ## Reference
 
 Greuel R.J., Degre-Timmons G.E., Baltzer J.L., Johnstone J.F., et al. (2021). Predicting patterns of terrestrial

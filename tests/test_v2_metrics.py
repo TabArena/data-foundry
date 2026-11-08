@@ -635,6 +635,60 @@ def test_a_weighted_rmse_states_its_formula_and_the_unweighted_spec_stays_as_bui
     assert metric_spec(_poisson(weight="w"), "regression").definition == METRICS["mean_poisson_deviance"].definition
 
 
+# --- weighted ROC AUC and log loss: each unit once (a mouse, a person), whatever its number of rows -----------------
+
+
+def _weighted(name: str, column: str = "w") -> Metric:
+    return Metric.from_context(name, reason="r", inputs={"weight": column})
+
+
+def test_weighted_roc_auc_and_log_loss_equal_scikit_learn_with_sample_weight() -> None:
+    """Both pass the weight to scikit-learn's ``sample_weight``; zero weights drop a row."""
+    w = np.random.default_rng(9).choice([1 / 6, 0.5, 1.0], N)
+    auc = score(_weighted("roc_auc"), Y_BIN, P_BIN, labels=["no", "yes"], weight=w)
+    assert auc == pytest.approx(skm.roc_auc_score(Y01, P_BIN, sample_weight=w), rel=1e-12)
+    ll = score(_weighted("log_loss"), Y_MULTI, P_MULTI, labels=CLASSES, weight=w)
+    assert ll == pytest.approx(skm.log_loss(Y_CODES, P_MULTI, labels=range(4), sample_weight=w), rel=1e-12)
+    assert ll == pytest.approx(-np.sum(w * np.log(P_MULTI[np.arange(N), Y_CODES])) / w.sum(), rel=1e-12)
+    w0 = w.copy()
+    w0[:20] = 0.0
+    assert score(_weighted("roc_auc"), Y_BIN, P_BIN, labels=["no", "yes"], weight=w0) == pytest.approx(
+        skm.roc_auc_score(Y01[20:], P_BIN[20:], sample_weight=w0[20:]), rel=1e-12
+    )
+
+
+def test_weighted_roc_auc_counts_each_pair_by_the_product_of_its_weights() -> None:
+    """A positive and a negative row count with w_pos * w_neg: two copies of a row at weight 1/2 score as the row."""
+    y = np.array(["no", "yes", "no", "yes", "yes"])
+    p = np.array([0.2, 0.9, 0.6, 0.4, 0.4])
+    one = score(_weighted("roc_auc"), y[:4], p[:4], labels=["no", "yes"], weight=np.ones(4))
+    halves = score(_weighted("roc_auc"), y, p, labels=["no", "yes"], weight=np.array([1, 1, 1, 0.5, 0.5]))
+    assert halves == pytest.approx(one, rel=1e-12)
+
+
+def test_unweighted_roc_auc_and_log_loss_specs_stay_as_built() -> None:
+    """The weighted formula appears only when the spec maps a weight, so built containers keep their checksum."""
+    for name, problem, formula in (
+        ("roc_auc", "binary_classification", "area under the ROC curve"),
+        ("log_loss", "multiclass_classification", "mean of -log p(true class)"),
+    ):
+        assert metric_spec(Metric.from_context(name, reason="r"), problem).definition == formula
+        weighted = metric_spec(_weighted(name, "mouse_weight"), problem)
+        assert weighted.inputs == {"weight": "mouse_weight"}
+        assert weighted.definition == METRICS[name].weighted_definition
+    assert score(Metric.fallback(reason="r").resolve("binary_classification"), Y_BIN, P_BIN, labels=["no", "yes"]) == (
+        skm.roc_auc_score(Y01, P_BIN)
+    )
+
+
+@pytest.mark.parametrize("name", ["roc_auc", "log_loss"])
+@pytest.mark.parametrize("bad", [[np.nan, 1.0], [-0.5, 1.0], [0.0, 0.0], [np.inf, 1.0]])
+def test_an_invalid_classification_weight_raises(name, bad) -> None:
+    """A weight is finite, >= 0 and has a positive sum, as for the deviances and RMSE."""
+    with pytest.raises(ValueError, match="weight"):
+        score(_weighted(name), ["no", "yes"], [0.3, 0.7], labels=["no", "yes"], weight=bad)
+
+
 def test_the_regression_fallback_takes_a_weight_and_stays_the_fallback() -> None:
     """A source without a metric still gets the fallback rmse when each row should count by a weight: the origin
     stays ``fallback`` and the spec states the weighted formula.

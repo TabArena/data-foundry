@@ -14,6 +14,7 @@ from data_foundry.v2 import (
     Metric,
     ScoringColumn,
     TaskSummary,
+    UnitWeight,
     drop_columns,
 )
 
@@ -228,6 +229,7 @@ class BorealPostfireLichenBiomass(AbstractCuratedDataset):
             ),
         ),
     )
+    unit_weight = UnitWeight(column="plot_weight", unit="plot")
     grouping = Grouping(
         on="burn_area",
         labels="per_sample",
@@ -252,12 +254,6 @@ class BorealPostfireLichenBiomass(AbstractCuratedDataset):
             "identical inputs (28.8% within a plot), a floor no model can go below. Each input vector stays in one "
             "group (Andrej, 2026-11-03)."
         ),
-        "task_metric_weight_without_sample_weight": (
-            "plot_weight is a design weight of the score that gives each plot one vote (the stand the planner acts on, "
-            "SPLIT-23), not an amount at risk (MET-15) nor a survey weight of the source (MET-16), and a function of "
-            "the features (0.2 in NT, 0.5 in SK, set by `jurisdiction`), so it needs no training weight; it is for "
-            "scoring only (Lennart, 2026-11-08, review issue 7)."
-        ),
     }
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
@@ -279,14 +275,13 @@ class BorealPostfireLichenBiomass(AbstractCuratedDataset):
         #    in the RMSE; a scoring column, no feature and no training weight
         df["plot_weight"] = 1.0 / df.groupby("plot")["plot"].transform("size")
         # 5. Drops: the cover-based biomass (cover x 61.934, a part of the target) and non_zero (target > 0) are
-        #    LEAK-10; the plot and quadrat labels are identifiers; species is constant; acronym and acronym1 recode
+        #    LEAK-10; the quadrat labels are identifiers (the plot stays as the unit of `plot_weight`, metadata, never a feature); species is constant; acronym and acronym1 recode
         #    the ecoprovince one to one
         return drop_columns(
             df,
             [
                 "kgha.areaperm2",
                 "non_zero",
-                "plot",
                 "plot.quadrat",
                 "quadrat",
                 "area_name",
@@ -298,7 +293,7 @@ class BorealPostfireLichenBiomass(AbstractCuratedDataset):
 
     def _feature_types(self, df: pd.DataFrame) -> FeatureTypes:
         return FeatureTypes(
-            categorical=["burn_area", "stand_type", "jurisdiction", "ecozone", "ecoprovince"],
+            categorical=["burn_area", "plot", "stand_type", "jurisdiction", "ecozone", "ecoprovince"],
         )
 
     def _decisions(self, raw: dict[str, pd.DataFrame], df: pd.DataFrame) -> list[Decision]:

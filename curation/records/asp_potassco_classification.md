@@ -49,6 +49,10 @@ CC (2026-10-21, Lennart): on which 0/1 columns are flags: "no if we can infer fr
 
 **Assessment (AI, 2026-11-08):** one vote per unit (the scan of 2026-11-08 after boreal_postfire_lichen_biomass's issue 7): the 96 problem classes hold 1 to 134 instances (median 5), and the largest 10% of them hold 51% of the instances, so a few large classes decide about half of the log loss; the selector acts per instance, and the split holds out whole classes. Weighting each instance by 1 over its class's instances ranks 8 untuned models at Kendall tau 0.86 per split (lowest 0.64) and 0.86 for the ranking by the mean over the 30 shipped splits, the same best model on 17 of 30. Open for Lennart as issue 5 of the folder's REVIEW.md (numbered after issues 1 to 4 of the PAR10 branch); recommended: per instance, with a note that names the imbalance (B).
 
+CC (2026-11-08, Lennart): issue 5, B: scored per instance, with a note. Each instance is a decision of the selector (MET-17); the notes say that the largest 10% of the 96 problem classes hold 51% of the instances and that counting each class once ranks 8 untuned models at Kendall tau 0.86 per split.
+
+CC (2026-11-08, Lennart): the declared metric (log_loss) is checked.
+
 ## Reference
 
 @article{hoos2014claspfolio,

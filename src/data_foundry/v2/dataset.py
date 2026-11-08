@@ -70,6 +70,7 @@ from data_foundry.schema import (
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadataV2,
     ScoringColumn,
+    UnitWeight,
     as_column_list,
     resolve_warehouse_dir,
 )
@@ -353,6 +354,11 @@ class AbstractCuratedDataset(ABC):
     metric's row weight (``inputs={"weight": col}``). Declare it when the weight is a realized amount at risk, the
     denominator of a rate target (the years insured of a claims-per-year target, MET-15); a weight that is a function
     of the features (a sum insured) needs none. ``None``: models train unweighted."""
+    unit_weight: ClassVar[UnitWeight | None] = None
+    """A score that counts each unit once (MET-17): ``UnitWeight(column="plot_weight", unit="plot")``, the metric's
+    weight scoring column (1 over the unit's rows, ``inputs={"weight": column}``) and the column naming the unit, kept
+    in the frame as metadata, never a feature. For scoring and validation only, never a ``sample_weight``; the check
+    tests that each unit's weights sum to 1. Downstream tools read it to weight their validation loss alike."""
     special_features: ClassVar[tuple[SpecialFeatureSpec, ...]] = ()
     """Model inputs that need handling beyond their dtype, declared like the target. Each entry is one special
     feature, in one of two layouts (:mod:`data_foundry.v2.special`):
@@ -660,6 +666,8 @@ class AbstractCuratedDataset(ABC):
             declared["grouping.time_on"] = as_column_list(self.grouping.time_on)
         declared["scoring_columns"] = [c.column for c in task.scoring_columns]
         declared["sample_weight"] = as_column_list(task.sample_weight)
+        if task.unit_weight is not None:
+            declared["unit_weight"] = [task.unit_weight.column, task.unit_weight.unit]
         self.special_feature_records(df)  # every declared special feature finds its columns
         declared["metric inputs"] = list(task.objective_metric.inputs.values())
         for attribute, columns in declared.items():
@@ -1424,6 +1432,7 @@ def _build_metadata(cls: type[AbstractCuratedDataset]) -> tuple[DatasetMetadata,
         grouping=grouping,
         scoring_columns=[dataclasses.replace(c, description=clean_text(c.description)) for c in cls.scoring_columns],
         sample_weight=cls.sample_weight,
+        unit_weight=cls.unit_weight,
     )
     return dataset, task
 
@@ -1521,6 +1530,8 @@ def _validate_definition(cls: type[AbstractCuratedDataset]) -> None:  # noqa: C9
         fail("`scoring_columns` must be a tuple of `ScoringColumn(...)`.")
     if cls.sample_weight is not None and not isinstance(cls.sample_weight, str):
         fail("`sample_weight` names one scoring column (a string), or is None.")
+    if cls.unit_weight is not None and not isinstance(cls.unit_weight, UnitWeight):
+        fail("`unit_weight` is a `UnitWeight(column=..., unit=...)`, or None.")
     from data_foundry.v2.special import SpecialFeatureSpec  # noqa: PLC0415 - the kinds import this module
 
     moved = [a for a in ("smiles_columns", "spectra") if a in vars(cls)]

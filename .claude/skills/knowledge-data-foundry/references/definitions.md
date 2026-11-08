@@ -308,6 +308,17 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
   `curation_comments` bullet. A metric weight that is a function of the features (liberty_mutual_fire_peril_loss_cost's
   `var11_weight`, g_research_crypto_forecasting_1m's asset `Weight`) needs no sample weight: accept
   `task_metric_weight_without_sample_weight` with that reason.
+* `unit_weight = UnitWeight(column="<weight column>", unit="<unit column>")` (optional): a score that counts each unit
+  once (MET-17), e.g. each plot of boreal_postfire_lichen_biomass or each mouse of pancreatic_cancer_mouse_detection.
+  The column is the metric's weight scoring column (`inputs={"weight": column}`), 1 over the unit's rows (`1.0 /
+  df.groupby(unit)[unit].transform("size")`); the unit is a column `_clean` keeps (the group column, or a column kept
+  for it), metadata, never a feature. It is for scoring and validation only, never a `sample_weight`. The task metadata
+  stores it, so downstream tools can read it: `unit_weight(container)` returns it, `validation_weight(container)`
+  returns the column a validation loss is weighted by (the metric's row weight: the training weight, a unit weight or a
+  weight that is a function of the features), and `feature_columns(container)` leaves the unit out. Its checks:
+  `task_unit_weight_not_one_per_unit` (error: a unit's weights do not sum to 1) and `task_unit_weight_unit_split`
+  (warning: a unit has rows on both sides of a split). With it declared, `task_metric_weight_without_sample_weight` is
+  not raised (Lennart, 2026-11-08: downstream tools "need to know it to set their own validation loss correctly").
 * `download_description`: for a Kaggle dataset `kaggle datasets download <slug> && unzip ... && rm ...`, then the move
   into `local-data-warehouse/<unique_name>/`; for a competition `kaggle competitions download -c <name>`; otherwise
   `wget <url>`. Pin a DOI or an archived release where one exists.

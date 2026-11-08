@@ -22,6 +22,7 @@ from data_foundry.schema import (
     PredictiveMLTaskMetadata,
     PredictiveMLTaskMetadataV2,
     SpecialFeature,
+    UnitWeight,
     as_column_list,
     resolve_warehouse_dir,
 )
@@ -57,7 +58,8 @@ NoIndentMetadata = [
 
 def feature_columns(container: CuratedContainer) -> list[str]:
     """The model's input columns, in frame order: every column but the target, the group column(s) and, in format 2,
-    the scoring columns (:class:`~data_foundry.schema.ScoringColumn`: metric inputs, never features).
+    the scoring columns (:class:`~data_foundry.schema.ScoringColumn`: metric inputs, never features) and the unit of a
+    unit weight (:class:`~data_foundry.schema.UnitWeight`).
 
     ``X = container.dataset[feature_columns(container)]``.
     """
@@ -65,6 +67,9 @@ def feature_columns(container: CuratedContainer) -> list[str]:
     excluded = {task.target_column_name, *as_column_list(task.group_on)}
     excluded.update(c.column for c in getattr(task, "scoring_columns", None) or ())
     excluded.update(as_column_list(getattr(task, "sample_weight", None)))
+    unit = getattr(task, "unit_weight", None)
+    if unit is not None:
+        excluded.add(unit.unit)
     return [c for c in container.dataset.columns if c not in excluded]
 
 
@@ -77,6 +82,29 @@ def sample_weight(container: CuratedContainer) -> str | None:
     ``col = sample_weight(container)``; a format-1 container has none.
     """
     return getattr(container.task_metadata, "sample_weight", None)
+
+
+def unit_weight(container: CuratedContainer) -> UnitWeight | None:
+    """The task's unit weight, or ``None``: a score that counts each unit once (MET-17), its weight column 1 over the
+    unit's rows (``unit_weight(container).column``) and the column of the unit (``.unit``). For scoring and validation
+    only, never a training weight; see :func:`validation_weight`. A format-1 container has none.
+    """
+    return getattr(container.task_metadata, "unit_weight", None)
+
+
+def validation_weight(container: CuratedContainer) -> str | None:
+    """The column to weight a validation loss by, or ``None`` (every row weighs 1): the metric's row weight, so that
+    model selection, early stopping and tuning on a validation split optimise what the test score counts.
+
+    It is the training weight when the task declares one (:func:`sample_weight`), a unit weight that counts each unit
+    once (:func:`unit_weight`; keep a unit's rows on one side of the validation split), or a row weight that is a
+    function of the features. ``w_val = container.dataset[col].iloc[val_idx]``.
+    """
+    if getattr(container, "format_version", 1) != 2:
+        return None
+    from data_foundry.v2.metrics import row_weight_column  # noqa: PLC0415 - data_foundry.v2 imports this module
+
+    return row_weight_column(container.task_metadata.objective_metric)
 
 
 def special_features(container: CuratedContainer, kind: str | None = None) -> list[SpecialFeature]:

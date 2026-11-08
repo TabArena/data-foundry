@@ -131,6 +131,14 @@ side (metadata, checks, the dataset review) is tracked in the curation records a
     proportion to the weight (the validation rows untouched), seeded, recorded as `weight_mode=resampled` and flagged
     on the leaderboard. Measured against a weighted fit, it costs 0.0007 to 0.0018 deviance on fremtpl2 (three draws
     or one); on australian_vehicle_insurance_2004_2005 it closes 90% of the deviance gap but only 45% of the Gini gap.
+- [ ] **Validation weights and unit weights.** A TODO for later (Lennart, 2026-11-08). The adapter weights every
+  validation loss (early stopping, model selection, tuning, ensembling) by `validation_weight(container)`
+  (`data_foundry.curation_container`), the metric's row weight, so the model optimises what the test score counts. A
+  task with a `unit_weight` (MET-17: boreal_postfire_lichen_biomass, superconductivity,
+  pancreatic_cancer_mouse_detection, dementia_prediction) counts each unit once in the score: weight the validation loss
+  by its column, keep a unit's rows on one side of an inner validation split (group the inner folds by
+  `unit_weight(container).unit`), and never fit with it as a training weight. A contract test: a toy container whose
+  units have 1 and 5 rows; the adapter's validation score equals the scorer's on the same rows.
 - [ ] **Report the effective sample size.** For a task scored per group, the number of test groups per fold is the
   sample size of the score (34 molecules per fold in `musk`); show it next to the results.
 

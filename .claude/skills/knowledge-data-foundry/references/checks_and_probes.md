@@ -30,7 +30,8 @@ The slug-by-slug actions are in [definitions.md](definitions.md), "Bundle checks
 it mints a new UUID, and a build is the curator's call (or an explicit ask). A task with a training weight has its own
 checks (`task_sample_weight_not_metric_weight`, `task_weight_invalid`, `task_rate_count_not_whole`), and two warnings
 say a weight may be missing (`task_metric_weight_without_sample_weight`, `task_feature_looks_like_exposure`):
-[definitions.md](definitions.md), Field mapping, `sample_weight`.
+[definitions.md](definitions.md), Field mapping, `sample_weight`. A unit weight (MET-17) has two
+(`task_unit_weight_not_one_per_unit`, `task_unit_weight_unit_split`): Field mapping, `unit_weight`.
 
 ## The probes
 

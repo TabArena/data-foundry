@@ -284,6 +284,23 @@ class ScoringColumn:
     per-era correlations"."""
 
 
+@pydantic.dataclasses.dataclass(config=pydantic.ConfigDict(extra="forbid"))
+class UnitWeight:
+    """A score that counts each unit once (MET-17): the metric's row weight is 1 over the rows of the row's unit, so
+    the weights of each unit sum to 1 (each quadrat of a plot, each bleed of a mouse, each visit of a person).
+
+    It is for scoring only, never a training weight (MET-15). A model that picks its settings on a validation split
+    weights the validation loss by :attr:`column` too, so that it optimises what the test score counts
+    (:func:`~data_foundry.curation_container.validation_weight`), and keeps a unit's rows on one side of that split.
+    """
+
+    column: str
+    """The weight scoring column the metric reads (role ``weight``): 1 over the unit's number of rows."""
+    unit: str
+    """The column that names each row's unit (the task's group column, or a column kept for it): metadata, never a
+    model feature."""
+
+
 SpecialFeatureKind = Literal["smiles", "spectrum"]
 """What a :class:`SpecialFeature` holds: ``smiles``, a molecule's structure as a SMILES string (one column), or
 ``spectrum``, one spectrum per row (a group of columns, one per position on its axis)."""
@@ -747,11 +764,15 @@ class PredictiveMLTaskMetadataV2:
     """The training weight: a scoring column that every model is fitted with as each row's weight, never a feature.
     It is the metric's row weight (a rate's realized denominator such as the years insured, MET-15), so training and
     scoring weight the rows alike. ``None``: models train unweighted."""
+    unit_weight: UnitWeight | None = None
+    """A score that counts each unit once (:class:`UnitWeight`, MET-17): the metric's row weight column and the column
+    of the unit whose rows it splits 1 among. For scoring and validation only, never a training weight. ``None``: no
+    unit weight (a row weight the metric reads is then an amount or a function of the features)."""
 
     type_adapter_id: str = "predictive-ml-task-mold-v2"
     """Identifies container format 2."""
 
-    _OMIT_WHEN_UNSET: ClassVar[tuple[str, ...]] = ("sample_weight",)
+    _OMIT_WHEN_UNSET: ClassVar[tuple[str, ...]] = ("sample_weight", "unit_weight")
     """Fields added after containers shipped: dropped from the checksum and the saved JSON while ``None``, so a
     container saved before they existed keeps verifying."""
 
@@ -777,6 +798,7 @@ class PredictiveMLTaskMetadataV2:
         if self.target_column_name in scoring:
             raise ValueError(f"The target column ({self.target_column_name!r}) cannot be a scoring column.")
         self._check_sample_weight()
+        self._check_unit_weight()
         self._check_special_features(scoring)
         aggregation = self.grouping.aggregation if self.grouping is not None else None
         if aggregation == "any" and self.problem_type != "binary_classification":
@@ -802,6 +824,31 @@ class PredictiveMLTaskMetadataV2:
         used = {self.time_on, self.group_time_on, *as_column_list(self.group_on), *as_column_list(self.stratify_on)}
         if self.sample_weight in used:
             raise ValueError(f"sample_weight={self.sample_weight!r} is a time, group or stratification column.")
+
+    def _check_unit_weight(self) -> None:
+        """The unit weight is a weight scoring column the metric reads, for scoring only, and its unit is no column
+        with another role (the target, a scoring column, a special feature).
+        """
+        if self.unit_weight is None:
+            return
+        column, unit = self.unit_weight.column, self.unit_weight.unit
+        weight = {c.column: c for c in self.scoring_columns}.get(column)
+        if weight is None or weight.role != "weight":
+            raise ValueError(f"unit_weight.column={column!r} names no scoring column of role 'weight'.")
+        if self.objective_metric.inputs.get("weight") != column:
+            raise ValueError(
+                f"unit_weight.column={column!r} is not the metric's weight input: map it with inputs={{'weight': "
+                f"{column!r}}}."
+            )
+        if self.sample_weight == column:
+            raise ValueError(
+                f"unit_weight.column={column!r} is also the sample_weight: a unit weight is for scoring and "
+                "validation only, never a training weight (MET-15, MET-17)."
+            )
+        if unit in (self.target_column_name, column) or unit in {c.column for c in self.scoring_columns}:
+            raise ValueError(f"unit_weight.unit={unit!r} is the target or a scoring column.")
+        if unit in {c for f in self.special_features for c in f.columns}:
+            raise ValueError(f"unit_weight.unit={unit!r} is a column of a special feature.")
 
     def _check_special_features(self, scoring: list[str]) -> None:
         """Special features have distinct names and hold features only, each column in one special feature at most."""
@@ -869,6 +916,11 @@ class PredictiveMLTaskMetadataV2:
             lines.append(
                 f"  sample weight:         {self.sample_weight} (fit every model with it as the row weight; never a "
                 "feature)"
+            )
+        if self.unit_weight is not None:
+            lines.append(
+                f"  unit weight:           {self.unit_weight.column} (each {self.unit_weight.unit} counts once in "
+                "the score: weight a validation loss by it too; never a training weight or a feature)"
             )
         for feature in self.special_features:
             spectrum = feature.details

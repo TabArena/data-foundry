@@ -16,6 +16,8 @@ from data_foundry.curation_container import (
     CuratedContainer,
     feature_columns as model_inputs,
     sample_weight as training_weight,
+    unit_weight,
+    validation_weight,
 )
 from data_foundry.schema import (
     DatasetMetadata,
@@ -24,6 +26,7 @@ from data_foundry.schema import (
     PredictiveMLTaskMetadata,
     PredictiveMLTaskMetadataV2,
     ScoringColumn,
+    UnitWeight,
 )
 from data_foundry.utils.checksum import encode_pydantic_metadata
 from data_foundry.v2.report import _metric_block
@@ -782,6 +785,7 @@ def test_round_trip_comparison_sees_category_order_but_not_string_storage():
 def make_v2_container(df: pd.DataFrame | None = None, *, spec=None, scoring_columns=(), **task) -> CuratedContainer:
     df = make_iid_frame() if df is None else df
     problem_type = task.pop("problem_type", "binary_classification")
+    splits = task.pop("splits", None)
     return CuratedContainer(
         dataset=df,
         dataset_metadata=make_dataset_metadata(),
@@ -792,7 +796,9 @@ def make_v2_container(df: pd.DataFrame | None = None, *, spec=None, scoring_colu
             scoring_columns=list(scoring_columns),
             **task,
         ),
-        experiment_metadata=PredictiveMLSplitsMetadata(splits_comment="Toy split.", splits=make_iid_splits()),
+        experiment_metadata=PredictiveMLSplitsMetadata(
+            splits_comment="Toy split.", splits=make_iid_splits() if splits is None else splits
+        ),
         uuid="u",
     )
 
@@ -1190,6 +1196,102 @@ def test_an_unset_sample_weight_stays_out_of_the_saved_metadata(tmp_path):
     assert b'"sample_weight":"exposure"' in encode_pydantic_metadata(container.task_metadata)
     loaded = CuratedContainer.load(container.save(tmp_path))
     assert loaded.task_metadata.sample_weight == "exposure"
+    assert loaded.verify()
+
+
+# --- Format 2: a unit weight, each unit counted once in the score (MET-17) --------------------------------------------
+
+
+def _unit_frame() -> pd.DataFrame:
+    """60 rows in 30 plots of 1, 2 or 3 quadrats; ``plot_weight`` is 1 over the plot's quadrats."""
+    sizes = np.tile([1, 2, 3], 10)
+    df = make_iid_frame(60).assign(target=np.linspace(0.0, 3.0, 60), plot=np.repeat(np.arange(30), sizes))
+    return df.assign(plot_weight=1.0 / df.groupby("plot")["plot"].transform("size"))
+
+
+def _plot_splits(df: pd.DataFrame) -> dict:
+    """Three folds by plot, so every plot's rows lie on one side."""
+    fold = df["plot"].to_numpy() % 3
+    rows = np.arange(len(df))
+    return {0: {f: (rows[fold != f].tolist(), rows[fold == f].tolist()) for f in range(3)}}
+
+
+def _unit_container(df=None, *, splits="plots", **task) -> CuratedContainer:
+    df = _unit_frame() if df is None else df
+    weight = ScoringColumn(column="plot_weight", role="weight", used_by="rmse", description="1 / quadrats of the plot")
+    task.setdefault("unit_weight", UnitWeight(column="plot_weight", unit="plot"))
+    return make_v2_container(
+        df,
+        spec=_spec("rmse", inputs={"weight": "plot_weight"}),
+        scoring_columns=[weight],
+        problem_type="regression",
+        splits=_plot_splits(df) if splits == "plots" else None,
+        **task,
+    )
+
+
+def unit_findings(container: CuratedContainer) -> dict[str, str]:
+    """The findings of the unit-weight checks and of the missing-training-weight prompt, slug to severity."""
+    report = run_bundle_checks(container, verbose=False)
+    return {r.slug: r.severity for r in report.results if r.slug.startswith(("task_unit", "task_metric_weight"))}
+
+
+def test_a_unit_weight_counts_each_unit_once_and_tells_downstream_tools():
+    """A declared unit weight needs no training weight, keeps its unit out of the inputs, and names the column a
+    validation loss is weighted by (MET-17).
+    """
+    container = _unit_container()
+    assert unit_findings(container) == {}
+    assert unit_weight(container) == UnitWeight(column="plot_weight", unit="plot")
+    assert validation_weight(container) == "plot_weight"
+    assert training_weight(container) is None
+    assert not {"plot", "plot_weight"} & set(model_inputs(container))
+    assert (
+        "unit weight:           plot_weight (each plot counts once in the score" in container.task_metadata.describe()
+    )
+    block = "\n".join(_metric_block(container.task_metadata))
+    assert "**Unit weight**" in block
+    assert "unit weight: weight a validation loss by it; never a feature" in block
+    without = _unit_container(unit_weight=None)  # the same weight undeclared: MET-15's prompt again
+    assert unit_findings(without) == {"task_metric_weight_without_sample_weight": "warning"}
+    assert validation_weight(without) == "plot_weight"
+
+
+def test_the_validation_weight_is_the_metrics_row_weight():
+    """A training weight is also the validation weight; an unweighted metric has none."""
+    assert validation_weight(_rate_container()) == "exposure"
+    assert validation_weight(make_v2_container()) is None
+
+
+def test_a_unit_weight_that_does_not_sum_to_one_per_unit_is_an_error():
+    """Each unit counts once: its weights sum to 1, or the check stops the build."""
+    df = _unit_frame()
+    df.loc[df["plot"] == 2, "plot_weight"] = 0.5  # a plot of three quadrats counted 1.5 times
+    assert unit_findings(_unit_container(df)) == {"task_unit_weight_not_one_per_unit": "error"}
+
+
+def test_a_unit_on_both_sides_of_a_split_warns():
+    """Random splits put a plot's quadrats on both sides: its vote is shared between training and test."""
+    assert unit_findings(_unit_container(splits="iid")) == {"task_unit_weight_unit_split": "warning"}
+
+
+def test_a_unit_weight_is_the_metrics_weight_and_never_a_training_weight():
+    """The unit weight is the metric's weight scoring column, never the sample weight, and its unit no target."""
+    with pytest.raises(ValueError, match="names no scoring column"):
+        _unit_container(unit_weight=UnitWeight(column="feat_num", unit="plot"))
+    with pytest.raises(ValueError, match="never a training weight"):
+        _unit_container(sample_weight="plot_weight")
+    with pytest.raises(ValueError, match="the target or a scoring column"):
+        _unit_container(unit_weight=UnitWeight(column="plot_weight", unit="target"))
+
+
+def test_an_unset_unit_weight_stays_out_of_the_saved_metadata(tmp_path):
+    """Containers built before the field keep their checksum and JSON; a set field round-trips."""
+    assert b"unit_weight" not in encode_pydantic_metadata(_rate_container().task_metadata)
+    container = _unit_container()
+    assert b'"unit_weight":{"column":"plot_weight","unit":"plot"}' in encode_pydantic_metadata(container.task_metadata)
+    loaded = CuratedContainer.load(container.save(tmp_path))
+    assert loaded.task_metadata.unit_weight == UnitWeight(column="plot_weight", unit="plot")
     assert loaded.verify()
 
 

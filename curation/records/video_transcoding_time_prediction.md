@@ -52,6 +52,10 @@ CC (2026-10-21, Lennart): ship the target on the modelling scale, score on the o
 
 **Assessment (AI, 2026-11-08):** one vote per unit (the scan of 2026-11-08 after boreal_postfire_lichen_biomass's issue 7): 80 of the 1,099 videos were transcoded to the full grid of 841 output settings and hold 97.8% of the 68,784 jobs; 1,018 videos have one job and would take 93% of the weight if each video counted once. The scheduler acts per job. Counting each video once ranks 8 untuned models at Kendall tau 0.90 per split (lowest 0.79) and 0.93 for the ranking by the mean over the 9 shipped splits, the same best model on 3 of 9 (random forest and LightGBM swap at the top). Open for Lennart as issue 1 of the folder's REVIEW.md; recommended: per job, with a note that names the 80 full-grid videos (B).
 
+CC (2026-11-08, Lennart): issue 1, B: scored per job, with a note. Each job is a decision of the scheduler (MET-17); the notes say that 80 full-grid videos hold 97.8% of the jobs, that one vote per video would give the 1,018 single-job videos 93% of the weight, and that it ranks 8 untuned models at Kendall tau 0.90 per split.
+
+CC (2026-11-08, Lennart): the declared metric (rmsle) is checked.
+
 ## Reference
 
 @inproceedings{deneke2014video,

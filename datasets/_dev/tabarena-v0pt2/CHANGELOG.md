@@ -1,5 +1,43 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-08, one vote per unit: Lennart's marks on the five issues, and the unit weight in the format (no container built)
+
+Lennart's marks of 2026-11-08 on the five issues of the one-vote-per-unit scan (all B), his call on the rule (in chat:
+scoring only, written as MET-17 with MET-15 and MET-16 amended), and his ask that the format record this kind of weight
+so downstream tools can weight their validation loss alike. No container was built; four checksums change with the
+metric and the new field, two with the notes.
+
+- Format: a task field `unit_weight` (`UnitWeight(column=..., unit=...)`, `data_foundry.v2`), stored in the task
+  metadata and left out of the checksum while unset: the metric's weight column, 1 over the unit's rows, and the column
+  of the unit, metadata and never a feature. Readers `unit_weight(container)` and `validation_weight(container)` (the
+  metric's row weight, the column a validation loss is weighted by); `feature_columns` leaves the unit out; `describe()`
+  and the README say how to use it. Bundle checks `task_unit_weight_not_one_per_unit` (error) and
+  `task_unit_weight_unit_split` (warning); with a unit weight declared, `task_metric_weight_without_sample_weight` is
+  not raised. `roc_auc` and `log_loss` take an optional `weight` input (scikit-learn's `sample_weight`); unweighted
+  specs keep their checksum. Tests for both.
+- Rules: MET-17 (new, Should): one vote per unit when the actor decides once per unit and the unit's further rows are
+  repeats of the source's protocol, per row with a note when each row is a decision of its own, declared as the task's
+  `unit_weight`. MET-15 amended (a unit weight is for scoring only, also when it does not follow from the inputs);
+  MET-16 one sentence (a unit weight is no survey weight). Five Cases rows. definitions.md and checks_and_probes.md
+  document the field and its checks; BENCHMARK_CHANGES_TODO.md gets "Validation weights and unit weights".
+- `superconductivity`, issue 1 (B, Lennart): each composition counts once: `composition_weight` (1 over the
+  composition's SuperCon entries), read by `rmse`, now declared from context with Hamidieh's per-entry RMSE named as the
+  original (MET-11); `unit_weight` on `composition`; supersedes "Every entry is kept and scored per row" (CC of
+  2026-10-06). Every entry is kept.
+- `pancreatic_cancer_mouse_detection`, issue 1 (B, Lennart): each mouse counts once: `mouse_weight` read by the
+  `roc_auc` fallback, `unit_weight` on `mouse_id`; the use case says each mouse counts once, as one patient.
+- `dementia_prediction`, issue 1 (B, Lennart): each person counts once: `person_weight` read by the `log_loss` fallback,
+  `unit_weight` on `Subject ID`; follow-up visits still scored.
+- `boreal_postfire_lichen_biomass`: its `plot_weight` (2026-11-08) declared as the task's `unit_weight` on `plot`, which
+  now stays in the frame as metadata (typed categorical, never a feature); its accepted warning is gone, since the check
+  no longer raises it.
+- `asp_potassco_classification`, issue 5 (B, Lennart): scored per instance with a notes bullet on the imbalance of the
+  problem classes. `video_transcoding_time_prediction`, issue 1 (B, Lennart): scored per job with a notes bullet on the
+  80 full-grid videos.
+- All five: the metric marked as declared (a CC line each), the issues resolved in their REVIEW.md. dataset check 0
+  errors on all six (superconductivity keeps its unaccepted `dataset_conflicting_duplicate_rows` warning); READMEs
+  regenerated.
+
 ## 2026-11-08, PR #47: Lennart's marks on the final board applied (no container built)
 
 Lennart's marks of 2026-11-08 on the final board of PR #47: fremtpl2 12 (A), liberty 4 (A), loan_default 4 (B),
