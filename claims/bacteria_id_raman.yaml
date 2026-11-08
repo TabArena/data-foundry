@@ -1,0 +1,6 @@
+name: bacteria_id_raman
+holder: Lennart
+stage: triage
+claimed_at: '2026-11-08T15:13:37Z'
+expires_at: '2026-11-15T15:13:37Z'
+note: 'large-datasets screening review (most rows / most features), stacked on PR #47'
