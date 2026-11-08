@@ -1281,6 +1281,17 @@ noaa_storm's definitions now differ from any build.
   the Flash Flood duration carries much of the skill (+31% to +102% of the deviance on its rows when blanked; B, keep
   with a note, recommended).
 
+## 2026-11-08 (XuetangX curator hold)
+
+- Myunghwan deferred XuetangX MOOC dropout despite its value: the raw records are activities with one dropout
+  label per learner-course enrollment, so constructing tabular samples requires chosen aggregation and further
+  task design. Aggregation is not adopted by default; the candidate is not straightforward enough to pursue now.
+- Record `TBD -> 2nd Tier` / `DF: Suspended` and preserve prior screening, qualification and curator history.
+  Source timing remains unaccepted; no proven leakage or poor-data rejection is inferred. The official
+  reservation is released. Revisit only on explicit curator reconsideration of a suitable tabular task.
+- This update publishes the decision record only. Exploratory definition, data and detailed reviews remain
+  local; no XuetangX dataset package, build or container is added.
+
 ## 2026-11-06, asp_potassco_classification and sat11_hand_algo_runtime: Andrej's marks, third round (nothing rebuilt)
 
 - `asp_potassco_classification` (issue 2, B confirmed): the split count follows the units the metric scores, for every
@@ -1491,7 +1502,6 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
   because frozen reviewed checkouts and identity evidence reference them. No raw files or containers were deleted.
   Dataset branch, containers, input archive and run artifacts remain local; no push, PR or main integration occurred.
 
-
 ## 2026-11-06, maintained-skill Fugaku recheck
 
 - Repeat the requested add/review/build cycle through the maintained installation after its pin upgrade to `9048f36a`.
@@ -1583,6 +1593,7 @@ paragraph in its notes, and a resolved REVIEW.md issue with a CC line in its rec
   69% and leaves 78 negatives; 74% of rows 260 to 519 repeat a row from 0 to 259. Data unchanged.
 - Not built. READMEs regenerated with `dataset check` (0 errors, 0 warnings) except `lung_cancer`'s: its raw file (the
   PNAS supplement) has to be downloaded by hand, so its README still shows the earlier notes and checksum.
+
 
 ## 2026-11-06 (combined accepted datasets and curator decisions)
 
