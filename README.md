@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-08 15:13 UTC: 75 claim(s) (Andrej 1, Lennart 55, Myunghwan 19).
+As of 2026-11-08 16:54 UTC: 85 claim(s) (Andrej 1, Lennart 65, Myunghwan 19).
 
 ## Andrej
 
@@ -31,7 +31,9 @@ As of 2026-11-08 15:13 UTC: 75 claim(s) (Andrej 1, Lennart 55, Myunghwan 19).
 | `chicago_taxi_trip_duration` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `chile_school_dropout_mineduc` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `cns_tumor_methylation_classification` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
+| `data_fusion_2026_guardian` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `dementia_prediction` | add | 2026-11-08 | 2026-11-15 |  |
+| `desi_dr1_star_galaxy_quasar` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `driams_antimicrobial_resistance` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `eumtpl` | triage | 2026-11-06 | 2026-11-13 | exposure rules (MET-14/15) note; ausprivauto0405 duplicate check |
 | `facebook_recruiting_human_or_robot` | triage | 2026-10-31 | 2026-11-07 (expired) | screening (data-scouting run 2026-10-30/31) |
@@ -43,17 +45,24 @@ As of 2026-11-08 15:13 UTC: 75 claim(s) (Andrej 1, Lennart 55, Myunghwan 19).
 | `g_research_crypto_forecasting` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `genomic_prediction_soy_yield` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `gse40279_methylation_age` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
+| `kumc_inpatient_aki_prediction` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `liberty_mutual_fire_peril_loss_cost` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `loan_default_prediction_imperial_college` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
+| `milk_nir_composition` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `msha_mine_injury_frequency` | triage | 2026-11-06 | 2026-11-13 | exposure rules (MET-14/15) note; ausprivauto0405 duplicate check |
 | `noaa_afsc_bottom_trawl_survey_cpue` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `noaa_storm_events_damage` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
+| `ny_wcb_assembled_claims` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `pancreatic_cancer_mouse_detection` | add | 2026-11-08 | 2026-11-15 |  |
 | `ppnn_ecmwf_t2m_postprocessing_germany` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `pricing_game_2016_french_fleet` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `pricing_game_2017_french_mtpl` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
+| `rais_employment_separation` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
+| `raman_mlrod` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `sarcoma_methylation_classification` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `secom_semiconductor_yield` | triage | 2026-10-31 | 2026-11-07 (expired) | screening (data-scouting run 2026-10-30/31) |
+| `sinan_dengue_case_screening` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
+| `smartshark_release_defect_prediction` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `spanish_homeowners_motor_insurance_2010_2014` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `spanish_motor_insurance_2015_2018` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `spanish_motor_insurance_coverage_level_2022_2024` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
@@ -63,6 +72,7 @@ As of 2026-11-08 15:13 UTC: 75 claim(s) (Andrej 1, Lennart 55, Myunghwan 19).
 | `tls_os_fingerprinting_masaryk` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `treehouse_pediatric_tumor_type` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `ugr16_isp_netflow_intrusion` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
+| `uniform_soybean_tests_yield` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
 | `video_transcoding_time_prediction` | add | 2026-11-08 | 2026-11-15 |  |
 | `wadden_sea_sibes_macoma_abundance` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `wioa_employment_after_exit` | triage | 2026-11-08 | 2026-11-15 | large-datasets screening review (most rows / most features), stacked on PR #47 |
