@@ -172,6 +172,8 @@ Kept in the frame for the metric; do not use them as features. Drop them from th
 |---|---|---|---|
 | `plot_weight` | weight | rmse: 1 over the number of quadrats of the row's plot (0.2 for the five of an NT plot, 0.5 for the two of an SK plot), so that each plot counts once in the RMSE; for scoring only, never a feature or a training weight | never a feature |
 
+The test-row values of `plot_weight` are for the scorer only: never read them when predicting a test row.
+
 <details>
 <summary>Feature types: 5 categorical, 0 string, 0 datetime</summary>
 

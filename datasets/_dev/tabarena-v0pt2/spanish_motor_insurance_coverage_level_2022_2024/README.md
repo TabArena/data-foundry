@@ -170,6 +170,8 @@ Kept in the frame for the metric; do not use them as features. Drop them from th
 |---|---|---|---|
 | `actual_exposure` | weight | normalized_weighted_gini: the policy-year's time on risk as recorded (`total_exposure` of the release: days in force over 365, in years), realized: shorter when the policy starts or is cancelled during the year. The cost per year's denominator; each row's weight in the metric and in training (`sample_weight`); never a feature, since for a cancelled year it gives the cancellation away (LEAK-41) | training weight; never a feature |
 
+The test-row values of `actual_exposure` are for the scorer only: never read them when predicting a test row.
+
 **Training weight**
 
 Fit every model with `actual_exposure` as each row's sample weight (`sample_weight(container)` from `data_foundry.curation_container`), and never use it as a feature. The metric weights the test rows by the same column, so a model fitted without it targets another quantity.

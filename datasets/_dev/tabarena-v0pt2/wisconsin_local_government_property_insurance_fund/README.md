@@ -169,6 +169,8 @@ Kept in the frame for the metric; do not use them as features. Drop them from th
 |---|---|---|---|
 | `Premium` | weight | ordered_lorenz_gini: the fund's building and contents premium for the member-year, the base of the source's Gini: members are sorted by prediction / Premium and the cumulative share of the claims is set against the cumulative share of the premium. Never a feature: it is the output of the rating the task replaces. | never a feature |
 
+The test-row values of `Premium` are for the scorer only: never read them when predicting a test row.
+
 <details>
 <summary>Feature types: 5 categorical, 0 string, 0 datetime</summary>
 

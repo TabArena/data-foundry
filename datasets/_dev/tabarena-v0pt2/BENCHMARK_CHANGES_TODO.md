@@ -112,6 +112,11 @@ side (metadata, checks, the dataset review) is tracked in the curation records a
     `feature_columns()`, passes the weight to every fit, and scores with Data Foundry's scorer. A contract test on a
     toy container guards it: its realized weight, used as a feature or ignored, moves the score past a stated
     tolerance.
+  - **Scoring columns never reach `predict`.** The adapter passes the scoring columns to the scorer, and the
+    `sample_weight` column to the fit as the training rows' weight; it passes none of them to `predict`. A test row's
+    weight is the realized amount at risk, which a model at the quote does not have (LEAK-41): read as a feature it
+    gains 0.0052 deviance on bemtpl97, 0.0072 to 0.0088 on fremtpl2 and 0.09 to 0.12 weighted Gini on
+    australian_vehicle_insurance_2004_2005 (X1, 2026-11-08).
   - **Weighted validation.** Early stopping, tuning and ensembling use the weighted metric, with the same
     `min_prediction` floor in validation and test (in AutoGluon, `TabularPredictor(sample_weight=col,
     weight_evaluation=True)`).

@@ -171,6 +171,8 @@ Kept in the frame for the metric; do not use them as features. Drop them from th
 |---|---|---|---|
 | `exposure` | weight | normalized_weighted_gini: years observed (days / 365.25, 1 to 365 days): the share of the policy's one-year term inside the data's observation period, realized and cut short by some claims (write-offs). The claim cost per year's denominator; each row's weight in the metric and in training; never a feature | training weight; never a feature |
 
+The test-row values of `exposure` are for the scorer only: never read them when predicting a test row.
+
 **Training weight**
 
 Fit every model with `exposure` as each row's sample weight (`sample_weight(container)` from `data_foundry.curation_container`), and never use it as a feature. The metric weights the test rows by the same column, so a model fitted without it targets another quantity.

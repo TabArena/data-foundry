@@ -1,5 +1,36 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-08, PR #47: the items across datasets applied (no container built)
+
+Lennart marked the board's items across datasets (all go ahead) and discussed X4 in chat, which a measurement on
+noaa_storm_events_damage settled. With these, every dataset and item of the PR #47 board is settled. No container was
+built.
+
+- Cross-dataset items of the board (Lennart, go ahead): the seven forced insurance tables ship as listed, and
+  pricing_game_2016_french_fleet joined them (x4-0); how_much_did_it_rain re-opened for the next screening (`TBD -> 2nd
+  Tier`), out of this batch (x4-1); ausprivauto0405 `No`, `Duplicate` of australian_vehicle_insurance_2004_2005, its
+  claim released (x4-3); MET-14's rebuild check applies when the source releases the count (X3); X4 (a third clause of
+  LEAK-10 for spans the outcome draws) reopened for discussion.
+- X1: a weight scoring column's test-row values are for the scorer only. The generated README says so under the
+  scoring-column table, and `describe()` adds it to each weight column's line; READMEs regenerated (only that sentence
+  changed): australian_vehicle_insurance_2004_2005, bemtpl97, boreal_postfire_lichen_biomass,
+  frempl_french_motor_personal_line, fremtpl2, g_research_crypto_forecasting_1m, pricing_game_2016_french_fleet,
+  spanish_motor_insurance_coverage_level_2022_2024, wisconsin_local_government_property_insurance_fund;
+  liberty_mutual_fire_peril_loss_cost waits for its raw data. `BENCHMARK_CHANGES_TODO.md`, under "Training weights": the
+  adapter passes scoring columns to the scorer and the `sample_weight` to the fit, never to `predict`.
+- X2: LEAK-41 reports the weight-alone score (1/weight for a Gini, a model of the target on the weight for a deviance)
+  next to the gain of the weight added to the features, and no longer calls it a ceiling.
+- X4: LEAK-10 gets a third clause for spans the outcome or an outcome-free criterion can draw: blank what features
+  locate; keep the rest with a note only when the outcome can draw a minority of the spans and the span keeps its worth
+  where it did not, measured with the narratives as a diagnostic; the size of the worth alone never decides.
+  `noaa_storm_events_damage`: the Flash Flood note gives the worth by narrative class (threat-only narratives, 82% of
+  the test rows: -40% to -48% of the deviance when kept, 24 of 24 fits); text only.
+- Probe 23 (cross-dataset item on forced splits): the leak tests of a split forced from temporal run at the end of
+  `leak_probes.py`'s default run on such a split, alone with `--forced-split`: the period-outcome test and the
+  shared-unit test, with regularised fits on the declared metric (spanish coverage +0.0053 Gini pooled;
+  pricing_game_2016 +0.07, no flag, and its exact-profile lookup +0.117 on 4.3% of the test rows, flagged). Probe 22
+  fits the target on the weight alone for a deviance.
+
 ## 2026-11-08, PR #47: Lennart's replies on the board applied (second round, no container built)
 
 Lennart replied on the review board to the consistency checks and answers of the first round. Every open question of

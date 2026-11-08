@@ -186,6 +186,8 @@ Kept in the frame for the metric; do not use them as features. Drop them from th
 |---|---|---|---|
 | `exposure` | weight | rescaled_mean_tweedie_deviance: the period's vehicle-years (the source's Exposition_au_risque, 0.08 to 1), realized: 57.4% of the periods end before 31 December at a cut not known at the start (a quarter of them on a month's end), known only when it comes. The rate's denominator; each row's weight in the metric and in training; never a feature | training weight; never a feature |
 
+The test-row values of `exposure` are for the scorer only: never read them when predicting a test row.
+
 **Training weight**
 
 Fit every model with `exposure` as each row's sample weight (`sample_weight(container)` from `data_foundry.curation_container`), and never use it as a feature. The metric weights the test rows by the same column, so a model fitted without it targets another quantity.

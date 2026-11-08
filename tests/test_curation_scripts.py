@@ -982,8 +982,8 @@ def test_weight_proxy_flags_an_earned_premium(leak_probe, clean_room):
 
 
 def test_weight_proxy_scores_one_over_the_weight_for_a_gini(leak_probe):
-    """For a Gini metric (higher is better) probe 22 scores 1/weight alone, the ceiling of a proxy, and keeps the
-    gains in the metric's direction.
+    """For a Gini metric (higher is better), a ranking metric, probe 22 scores 1/weight alone as the prediction, and
+    keeps the gains in the metric's direction.
     """
     df, exposure = _motor_book(n=900, seed=1)
     spec = Metric.source("ordered_lorenz_gini", reference="x", params={"per_unit": True}, inputs={"weight": "exposure"})
@@ -1009,10 +1009,50 @@ def test_weight_proxy_scores_one_over_the_weight_for_a_gini(leak_probe):
         report=False,
     )
     rate = df["rate"].to_numpy()
-    ceiling = score(spec, rate[test], 1 / exposure[test], weight=exposure[test])
-    assert result["inverse_weight_alone"]["mean"] == pytest.approx(ceiling)
+    inverse = score(spec, rate[test], 1 / exposure[test], weight=exposure[test])
+    assert result["weight_alone"]["as"] == "1/weight"
+    assert result["weight_alone"]["mean"] == pytest.approx(inverse)
     assert result["greater_is_better"]
     assert result["leak_reference"]["mean"] == pytest.approx(result["with_weight"]["mean"] - result["honest"]["mean"])
+    lines = leak_probe.weight_proxy_lines(result)
+    assert any(line.startswith("  1/weight alone as the prediction:") for line in lines)
+    assert not any("ceiling" in line for line in lines)
+
+
+def test_weight_proxy_fits_the_target_on_the_weight_alone_for_a_deviance(leak_probe):
+    """For a level-sensitive metric (a Poisson deviance) probe 22 scores a fit of the target on the weight alone, with
+    the fits' own objective, not 1/weight as the prediction (X2, LEAK-41). In the toy book a claim can cut the time
+    insured short, so the weight alone beats the weighted constant.
+    """
+    df, exposure = _motor_book(n=1_500, seed=2)
+    result = leak_probe.weight_proxy(
+        df,
+        "rate",
+        "regression",
+        _thirds(len(df), 3),
+        exposure,
+        sample_weight=exposure,
+        metric=_poisson_metric(exposure),
+        weight_name="exposure",
+        seeds=(0, 1),
+        top=1,
+        n_estimators=50,
+        fit_params={"objective": "poisson"},
+        n_jobs=1,
+        report=False,
+    )
+    alone = result["weight_alone"]
+    assert alone["as"] == "fit"
+    assert alone["runs"] == 6  # every split and seed
+    assert not result["greater_is_better"]
+    assert alone["mean"] < result["constant"]["mean"]  # lower is better: the weight alone carries the outcome
+    lines = leak_probe.weight_proxy_lines(result)
+    fitted = [
+        line for line in lines if line.startswith("  a fit of the target on the weight alone (objective poisson)")
+    ]
+    assert len(fitted) == 1
+    assert "the weighted constant's" in fitted[0]
+    assert not any("ceiling" in line for line in lines)
 
 
 def test_weight_proxy_fits_a_gini_scored_rate_with_its_actuarial_objective(leak_probe):
@@ -1058,6 +1098,163 @@ def test_leak_probes_command_runs_the_weight_proxy(leak_probe, tmp_path, warehou
     assert "run again with --objective l2" in printed
     assert script.main([*argv, "--objective", "l2", "--out", str(out)]) == 0
     assert json.loads((out / "toy_ds.json").read_text())["weight_proxy"]["objective"] == "L2"
+
+
+# --------------------------------------------------------------------------- probe 23: the leak tests of a forced split
+def _stacked_book(*, shock_sd: float, unit_sd: float = 0.0, units: int = 300, seed: int = 0) -> pd.DataFrame:
+    """Units seen once a year over 2001 to 2005, stacked: the target is a row feature, a static attribute of the unit,
+    a shock of the year shared by every unit (``shock_sd``) and an effect of the unit (``unit_sd``), plus noise.
+    """
+    rng = np.random.default_rng(seed)
+    years = np.arange(2001, 2006)
+    unit = np.repeat(np.arange(units), len(years))
+    year = np.tile(years, units)
+    attribute = rng.normal(size=units)[unit]
+    x = rng.normal(size=len(unit))
+    shock = rng.normal(0, shock_sd, len(years))[year - years[0]] if shock_sd else 0.0
+    effect = rng.normal(0, unit_sd, units)[unit] if unit_sd else 0.0
+    y = x + 0.5 * attribute + shock + effect + rng.normal(size=len(unit))
+    return pd.DataFrame({"unit": unit, "year": year, "x": x, "attribute": attribute, "y": y})
+
+
+def _by_unit(frame: pd.DataFrame, repeats: int = 2) -> list[tuple[np.ndarray, np.ndarray]]:
+    """Three folds grouped by unit, ``repeats`` times: the forced grouped split of stacked periods."""
+    out = []
+    for r in range(repeats):
+        fold = np.random.default_rng(10 + r).permutation(frame["unit"].max() + 1)[frame["unit"].to_numpy()] % 3
+        out += [(np.flatnonzero(fold != k), np.flatnonzero(fold == k)) for k in range(3)]
+    return out
+
+
+@pytest.mark.parametrize(("shock_sd", "flagged"), [(1.0, True), (0.0, False)])
+def test_period_outcome_flags_a_shock_of_the_period_shared_across_the_split(leak_probe, shock_sd, flagged):
+    """Probe 23 (a): a shift of the target shared by every row of a year reaches a test row through the training rows
+    of its year, when the split is grouped by unit over stacked years; a model trained without that year's rows loses
+    it. Without such a shift the year's own rows gain nothing above noise.
+    """
+    frame = _stacked_book(shock_sd=shock_sd)
+    codes, labels, kind = leak_probe.outcome_periods(frame["year"])
+    assert (labels, kind) == (["2001", "2002", "2003", "2004", "2005"], "yearly")
+    result = leak_probe.period_outcome(
+        frame,
+        "y",
+        "regression",
+        _by_unit(frame),
+        codes,
+        labels=labels,
+        group_cols=["unit"],
+        period_name="year",
+        period_kind=kind,
+        seeds=(0,),
+        n_estimators=60,
+        n_jobs=1,
+        report=False,
+    )
+    assert result["splits"] == 6
+    assert set(result["per_period"]) == set(labels)
+    assert bool(result["flags"]) is flagged
+    if flagged:
+        assert result["flags"] == ["pooled", "within"]
+        assert result["pooled"]["mean"] > 0.05
+        assert result["pooled"]["positive"] == 6
+    else:
+        assert abs(result["pooled"]["mean"]) < 0.02
+    lines = leak_probe.period_outcome_lines(result)
+    assert lines[0].startswith("period outcome (probe 23) on `year` (yearly, 5 periods: 2001, 2002")
+    assert "SPLIT-8" in lines[-1]
+    json.dumps(result)  # what --out writes
+
+
+def test_shared_units_flags_a_unit_on_both_sides_of_a_forced_split(leak_probe):
+    """Probe 23 (b): with a random split of stacked years, a unit's other years sit in training, found by the exact
+    profile of the inputs without the year, and a lookup of their target gains above noise. Grouped by unit, no test
+    row's unit is in training, by the group column or by its profile, and no lookup is fitted.
+    """
+    frame = _stacked_book(shock_sd=0.0, unit_sd=1.0, units=400).drop(columns="x")
+    rows = np.random.default_rng(1).permutation(len(frame))
+    by_row = [(np.sort(np.setdiff1d(rows, part)), np.sort(part)) for part in np.array_split(rows, 3)]
+    kwargs = {"group_cols": ["unit"], "without": "year", "seeds": (0, 1), "n_estimators": 60, "n_jobs": 1}
+    random = leak_probe.shared_units(frame, "y", "regression", by_row, report=False, **kwargs)
+    profile, other_years = "the exact profile of the 2 model inputs", "the exact profile without `year`"
+    assert random["units"][profile]["matched"] == 0.0  # one row per unit and year
+    assert random["units"][profile]["lookup_gain"] is None
+    assert random["units"][other_years]["matched"] > 0.9
+    assert random["flags"] == [other_years]
+    grouped = leak_probe.shared_units(
+        frame, "y", "regression", _by_unit(frame, repeats=1), unit_cols=["unit"], report=False, **kwargs
+    )
+    assert {unit["matched"] for unit in grouped["units"].values()} == {0.0}
+    assert grouped["flags"] == []
+    assert all(unit["lookup_gain"] is None for unit in grouped["units"].values())
+    assert "`unit`: 0.0% of the test rows of 3 splits (0) have" in "\n".join(leak_probe.shared_units_lines(grouped))
+
+
+def test_outcome_periods_and_period_columns(leak_probe):
+    """The periods of probe 23: dates cut at the coarsest calendar period with three or more, many years merged into
+    runs of consecutive years, a category's own order kept; the period column found by dates, then years (fewest values
+    first), then by name, never from a word inside a longer name.
+    """
+    dates = pd.Series(pd.to_datetime(["2011-03-01", "2012-07-15", "2013-01-02", "2013-11-30"]))
+    codes, labels, kind = leak_probe.outcome_periods(dates)
+    assert (list(codes), labels, kind) == ([0, 1, 2, 2], ["2011", "2012", "2013"], "yearly")
+    codes, labels, kind = leak_probe.outcome_periods(np.repeat(np.arange(1990, 2020), 10), max_periods=6)
+    assert len(labels) == 6
+    assert labels[0] == "1990 to 1994"
+    assert kind == "yearly, merged into 6 runs"
+    assert list(np.unique(codes)) == list(range(6))
+    months = pd.Series(pd.Categorical(["mar", "jan", "feb", "jan"], categories=["jan", "feb", "mar"], ordered=True))
+    assert leak_probe.outcome_periods(months)[1] == ["jan", "feb", "mar"]
+    with pytest.raises(ValueError, match="one period"):
+        leak_probe.outcome_periods([2020] * 5)
+    frame = pd.DataFrame(
+        {
+            "Model_Year": np.arange(1980, 2000).repeat(3),
+            "Calendar_Year": np.tile([2005, 2006, 2007], 20),
+            "AMT_REQ_CREDIT_BUREAU_YEAR": np.arange(60) % 5,
+            "month": np.arange(60) % 3,
+            "start": pd.date_range("2020-01-01", periods=60, freq="W"),
+            "y": np.arange(60),
+        }
+    )
+    found = leak_probe.period_columns(frame, exclude=["y"])
+    assert [c for c, _ in found] == ["start", "Calendar_Year", "Model_Year", "month"]
+    assert [why for _, why in found][:2] == ["dates", "years"]
+
+
+def test_leak_probes_command_runs_the_forced_split_tests(leak_probe, tmp_path, warehouse, capsys):  # noqa: F811
+    """`leak_probes.py --forced-split` runs probe 23 on a split tagged forced from temporal, on the year column it
+    finds, and says why it does not run on any other split; the default run of a forced split ends with it.
+    """
+    del warehouse, leak_probe  # the fixture skips without LightGBM
+    root = tmp_path / "datasets"
+    body = DEFINITION.format(name="toy_ds", comment="x")
+    old = '        df["y"] = df["y"].map({0: "no", 1: "yes"})\n'
+    assert old in body
+    body = body.replace(old, old + '        df["year"] = 2001 + df["row_id"] % 4\n')
+    write_definition(
+        root, body=body.replace('    target = "y"\n', '    data_tags = ("ForcedIIDFromTemporal",)\n    target = "y"\n')
+    )
+    script = _import("leak_probes")
+    out = tmp_path / "out"
+    argv = ["toy_ds", "--root", str(root), "--forced-split", "--forced-splits", "2", "--seeds", "1", "--n-jobs", "1"]
+    assert script.main([*argv, "--out", str(out)]) == 0
+    result = json.loads((out / "toy_ds.json").read_text())["forced_split"]
+    assert result["tags"] == ["ForcedIIDFromTemporal"]
+    assert result["period_outcome"]["period"] == "year"
+    assert result["period_outcome"]["splits"] == 2
+    assert "the exact profile without `year`" in result["shared_units"]["units"]
+    printed = capsys.readouterr().out
+    assert "period outcome (probe 23): the periods of `year` (years)" in printed
+    assert "shared units (probe 23)" in printed
+    default = [a for a in argv if a != "--forced-split"]
+    assert script.main([*default, "--splits", "1", "--max-single-features", "2", "--out", str(out)]) == 0
+    result = json.loads((out / "toy_ds.json").read_text())
+    assert "all_features" in result
+    assert result["forced_split"]["tags"] == ["ForcedIIDFromTemporal"]
+    assert "period outcome (probe 23) on `year`" in capsys.readouterr().out
+    write_definition(root)
+    assert script.main(argv) == 0
+    assert "forced split (probe 23): not run (the split is not tagged" in capsys.readouterr().out
 
 
 def test_clean_rooms_name_the_training_weight(clean_room, tmp_path, warehouse):  # noqa: F811

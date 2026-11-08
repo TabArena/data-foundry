@@ -166,6 +166,8 @@ Kept in the frame for the metric; do not use them as features. Drop them from th
 |---|---|---|---|
 | `expo` | weight | mean_poisson_deviance: the share of 1997 the policy was in force (one day to one year), realized: shorter when the policy started or was surrendered during the year, a surrender often after a claim. The rate's denominator; each row's weight in the metric and in training; never a feature | training weight; never a feature |
 
+The test-row values of `expo` are for the scorer only: never read them when predicting a test row.
+
 **Training weight**
 
 Fit every model with `expo` as each row's sample weight (`sample_weight(container)` from `data_foundry.curation_container`), and never use it as a feature. The metric weights the test rows by the same column, so a model fitted without it targets another quantity.

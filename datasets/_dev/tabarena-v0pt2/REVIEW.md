@@ -79,31 +79,70 @@
   Implemented: all seven ship forced and tagged, under SPLIT-8 as reworded in #44 (a leak found is weighed case by case).
   Proposal: ship them as listed.
   Decision needed: go ahead, or name the tables to discuss.
+  **Resolved (2026-11-08, Lennart):** go ahead: the seven ship forced as listed. pricing_game_2016_french_fleet joined them on 2026-11-08 (grouped by contract, its issue 6), after its leak test across the folds passed.
 - **Re-read `how_much_did_it_rain`'s `No` under the reworded SPLIT-8?** It was set to `No` on 2026-10-30 for a measured leak across its split (the hours of one storm on both sides). Under the reworded rule a leak across a forced split is weighed case by case, not a reason to refuse by itself.
   Implemented: nothing; the record stays `No`.
   Proposal: re-open the record for a check of whether a split grouped on storms removes the leak, or how large it is when kept, as its own task.
   Decision needed: re-open or leave as is.
+  **Lennart (2026-11-08, ok):** re-open in the curation record but leave out of htis batch for now, next screening can take a look at it
+  **Resolved (2026-11-08, Lennart):** re-opened: the record's suggestion is `TBD -> 2nd Tier` again, out of this batch, and a CC line names the check for the next screening (does a split grouped on storms remove the leak, or how large is it when kept).
 - **Make the leak tests of a forced split probes?** The five tests above ran by hand for each table. Hidden groups is already a probe; the others are not.
   Implemented: nothing.
   Proposal: one probe for a forced split that runs the period-outcome test (drop the training rows of the test rows' period and compare) and the shared-unit test, so every forced split gets them without a panel.
   Decision needed: go ahead or leave as is.
+  **Resolved (2026-11-08, Lennart):** go ahead: probe 23 (`leak_probes.py`, at the end of the default run on a split tagged forced from temporal, alone with `--forced-split`) runs the period-outcome test (each test period without its own training rows against as many random rows, pooled and within a period) and the shared-unit test (group, exact profile, profile without the period, with a lookup of the unit's training target), with regularised fits on the declared metric. It reproduces the hand tests: spanish coverage +0.0053 Gini pooled (by hand +0.0045), pricing_game_2016 +0.07 (by hand -0.18).
 - **Retire the record `ausprivauto0405` as a duplicate of `australian_vehicle_insurance_2004_2005`?** CASdatasets' `ausprivauto0405` holds the same rows (exposure, vehicle value, claim count and cost equal on every row) without the area, the definition's `download_description` says so; the record is still `TBD -> Yes` with priority 4.
   Implemented: nothing.
   Proposal: set it to `No` as a duplicate, pointing to the australian folder.
   Decision needed: go ahead or leave as is.
+  **Resolved (2026-11-08, Lennart):** go ahead: `ausprivauto0405` is `No` with the marker `Duplicate`, pointing to the australian folder; its claim is released.
 - **Keep the test rows' weight away from the model (X1, from the `bemtpl97` and `fremtpl2` panels)?** A weight scoring column ships for the test rows too, because the scorer needs it, so a participant can read the realized weight of a row it predicts. Used as a feature it gains +0.0052 deviance on bemtpl97 (about a quarter of the honest gain over the constant), +0.0072 to +0.0088 on fremtpl2, and +0.09 to +0.12 weighted Gini on australian_vehicle_insurance_2004_2005; a model at the quote has no such value (LEAK-41). It concerns all six tables with a `sample_weight`.
   Implemented: the definitions meet LEAK-41 (`feature_columns` drops the weight; the README calls it "never a feature"); nothing says that the test rows' values belong to the scorer.
   Proposal: the generated README and `describe()` say for every weight scoring column that its test-row values are for the scorer only; the benchmark adapter passes scoring columns to the scorer and to training as the sample weight, never to `predict` (a line under "Training weights" in `BENCHMARK_CHANGES_TODO.md`).
   Decision needed: go ahead or leave as is.
+  **Resolved (2026-11-08, Lennart):** go ahead: the generated README (under the scoring-column table) and `describe()` (on each weight column's line) say that a weight column's test-row values are for the scorer only, never read when predicting a test row; `BENCHMARK_CHANGES_TODO.md` says the adapter passes scoring columns to the scorer and the `sample_weight` to the fit, never to `predict`. Nine READMEs regenerated; liberty_mutual_fire_peril_loss_cost's waits for its raw data.
 - **Reword LEAK-41's "score of 1/weight alone as the ceiling a leak would reach" (X2, from the `bemtpl97`, `fremtpl2` and `frempl_french_motor_personal_line` panels)?** Under a level-sensitive metric 1/weight used as the prediction is no ceiling: on fremtpl2 it scores 3.65 against the constant's 0.479 (k/weight fitted on train 0.490), while a model of the target on the weight alone scores 0.47114 against 0.47929 (bemtpl97: 0.6122 against 0.6193). Under a Gini it is no ceiling either: on frempl 1/length alone scores 0.184, but the realized length added to the features reaches 0.256. Probe 22 scores 1/weight only for a Gini.
   Implemented: both definitions report the fitted weight-alone score next to the leak's gain under the L2 and the actuarial fit.
   Proposal: amend LEAK-41's clause to report "the score of 1/weight alone for a ranking metric (a Gini), or of a model of the target on the weight alone for a level-sensitive metric (a deviance), next to the gain of the weight added to the features", without the word "ceiling"; probe 22 reports the fitted one for a deviance.
   Decision needed: go ahead or leave the text as it is.
+  **Resolved (2026-11-08, Lennart):** go ahead: LEAK-41 reports the weight-alone score (1/weight for a Gini, a model of the target on the weight for a deviance) next to the gain of the weight added to the features, without the word "ceiling"; probe 22 fits the weight-alone model for a deviance and prints no "ceiling".
 - **Ask MET-14's rebuild check only when the source releases the count (X3, from the `wadden_sea_sibes_macoma_abundance` and `noaa_afsc_bottom_trawl_survey_cpue` panels)?** MET-14 asks `_clean` to assert that the target times its denominator rebuilds the count. Two definitions ship a density the source already divided by its area and release no count to rebuild: boreal_postfire_lichen_biomass (kg/ha, the quadrat area folded in) and wadden_sea_sibes_macoma_abundance (density per m2; no count or subsample fraction released). noaa_afsc_bottom_trawl_survey_cpue does release the count, so it gets the assertion (the counted catches rebuild to 1.6e-4).
   Implemented: boreal's and wadden's notes say the source ships only the rate; noaa_afsc asserts the rebuild in `_clean`.
   Proposal: MET-14's check applies "when the source releases the count; when it ships only the rate, the notes say so".
   Decision needed: go ahead or leave the text as it is.
+  **Resolved (2026-11-08, Lennart):** go ahead: MET-14's rebuild check applies when the source releases the count; when the source ships only the rate, the notes say so (boreal_postfire_lichen_biomass and wadden_sea_sibes_macoma_abundance named, noaa_afsc_bottom_trawl_survey_cpue the case that rebuilds).
 - **Write the keep of spans the outcome sets into LEAK-10 as a third clause (X4, from the `noaa_storm_events_damage` panel)?** The Cases row of 2026-11-06 keeps, with a note, a span drawn "by the outcome or an outcome-free criterion" (noaa_storm's kept types, and since 2026-11-08 its Flash Flood duration; bank_marketing's `campaign` was dropped on 2026-11-08, as after the prediction point). Under the deviance noaa_storm's measured Thunderstorm Wind spans gain in 35 of 45 fits, which bears on "only when that worth is small". LEAK-10 is a Must and its text has only two clauses, so this keep stands on a Cases row alone, and the row sets no size limit: read literally, it would have kept heart_failure's `time`, dropped on its size (alone ROC AUC 0.84; LightGBM 0.75 without it, 0.90 with it).
   Implemented: the Cases row in `leak_checks.md`.
   Proposal: a third clause in LEAK-10: for a span the outcome or an outcome-free criterion draws, blank the part that can be located; keep the rest with a note giving its worth only when that worth is small; heart_failure's `time` named as the counter-case.
   Decision needed: go ahead, go ahead with other wording, or keep it as a Cases row only.
+  **Consistency check (AI, 2026-11-08):** Write the third clause with its size condition, when noaa_storm's Flash
+  Flood duration, kept with a note on the same day, is worth far more than "small"?
+  **Lennart (2026-11-08, chat):** The case for x4 is quite confusing to me, let us re-open it and discuss it once more
+  here. In essence, we have here features we belive to be set after the outcome, correct? Why would we want to keep
+  them? [after the diagnostic:] yes, write the clause and update the note
+
+  **Resolved (2026-11-08, Lennart):** a third clause in LEAK-10, by the share the outcome can draw rather than the size
+  of the worth: blank what features locate; keep the rest with a note only when the source lets the outcome draw a
+  minority of the spans and the span keeps its worth on the rows the outcome did not draw (measured with the narratives
+  as a diagnostic); a span the outcome ends every time goes (heart_failure's `time`). The diagnostic on noaa_storm: the
+  Flash Flood duration cuts the deviance by 40% to 48% on the 82% of test rows whose narratives name no damage-like
+  onset, so it stays, its note giving the worth by narrative class.
+
+  * **Problem:**
+    - The proposed clause keeps a span the outcome may draw "only when that worth is small", yet noaa_storm's issue 11
+      (your mark of 2026-11-08) keeps the Flash Flood duration with a note at +31% to +102% of the deviance on its rows
+      (+9% to +27% on all rows), and the measured Thunderstorm Wind spans gain in 35 of 45 fits.
+    - What sets heart_failure's `time` apart is not its size: the outcome ends every one of its spans (death or
+      censoring), while damage can set a Flash Flood's start in at most a small share of entries (6.8% of the
+      narratives name water at or damage to a building).
+  * **Options:**
+
+    | | Option | What it does | Pro | Con |
+    |---|---|---|---|---|
+    | a | The clause as proposed | keep the rest with a note only when its worth is small; noaa_storm's Flash Flood and measured Thunderstorm Wind spans reopen (blanked) | one simple test | reverses issue 11 of the same day; "small" needs a number |
+    | b | The clause by the share the outcome can draw | blank the part that can be located; keep the rest with a note giving its worth when the outcome can set only a small share of the spans (Flash Flood: at most 6.8% of starts); drop the span when the outcome sets every span's end (heart_failure's `time`) | matches every decision so far; the test is about the leak, not the score | the share is often an estimate (here from the narratives) |
+    | c | Keep it as a Cases row only | the rule's text stays as it is | no rule change | the keep stands on a row the rule's text does not name |
+
+  * **Recommendation:** (b): it names what separates heart_failure from noaa_storm, and the worth of a kept span stays in
+    its note, as now.
+  * **Decision:** (a), (b) or (c)?

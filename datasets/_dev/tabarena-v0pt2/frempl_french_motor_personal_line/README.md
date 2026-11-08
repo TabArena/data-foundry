@@ -184,6 +184,8 @@ Kept in the frame for the metric; do not use them as features. Drop them from th
 |---|---|---|---|
 | `Exposure` | weight | ordered_lorenz_gini: the record's realized length in years as published, (end - start) / 365 within 0.006 (0.001 to 1): shorter when the contract changed or ended during 2004, often after a claim. The claim amount per year's denominator; each record's weight in the metric and in training; never a feature | training weight; never a feature |
 
+The test-row values of `Exposure` are for the scorer only: never read them when predicting a test row.
+
 **Training weight**
 
 Fit every model with `Exposure` as each row's sample weight (`sample_weight(container)` from `data_foundry.curation_container`), and never use it as a feature. The metric weights the test rows by the same column, so a model fitted without it targets another quantity.

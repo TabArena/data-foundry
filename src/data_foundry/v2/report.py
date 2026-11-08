@@ -475,6 +475,13 @@ def _metric_block(task: Any) -> list[str]:
             _table(table, full=True),
             "",
         ]
+        weights = [c.column for c in task.scoring_columns if c.role == "weight"]
+        if weights:
+            out += [
+                f"The test-row values of {_names(weights)} are for the scorer only: never read them when predicting "
+                "a test row.",
+                "",
+            ]
     if weight is not None:
         out += [
             "**Training weight**",

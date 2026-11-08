@@ -1306,6 +1306,7 @@ def test_scoring_columns_are_kept_out_of_the_features(tmp_path: Path, warehouse:
     text = (folder / "README.md").read_text()
     assert "**Scoring columns**" in text
     assert "| `era` | group | test_mean_group_accuracy: the toy week of a row | never a feature |" in text
+    assert "for the scorer only" not in text  # said of weight columns only
     assert "and 2 features" in text
     assert "scoring column:        era" in result.container.describe()
     container = result.container

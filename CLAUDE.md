@@ -75,7 +75,8 @@ both container formats.
   Format 2 (`container.format_version == 2`): score by the spec `task_metadata.objective_metric` with
   `data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`, and take the inputs from
   `feature_columns(container)` (`data_foundry.curation_container`), which drops the target, the group and the
-  scoring columns (`task_metadata.scoring_columns`: metric inputs such as an era, never features). Class
+  scoring columns (`task_metadata.scoring_columns`: metric inputs such as an era, never features; a weight column's
+  test-row values are for the scorer only, never read when predicting). Class
   probabilities go in the sorted order of the classes (scikit-learn's `classes_`, also for an ordered target), or as
   a DataFrame whose columns are the class names, which the scorer matches by name. A task with a training weight
   names it (`sample_weight(container)` from `data_foundry.curation_container`, `None` otherwise): fit every model

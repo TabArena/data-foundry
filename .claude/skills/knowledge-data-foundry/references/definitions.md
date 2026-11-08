@@ -301,7 +301,9 @@ data stands for), `changes` (only our changes that alter the task for a reader; 
 
   The container stores it in the task metadata. `feature_columns(container)` leaves it out with the other scoring
   columns, `sample_weight(container)` (`data_foundry.curation_container`) returns it (`None` when the task has none),
-  and a harness fits every model with it as each row's weight, never as a feature. The amount at risk is described in
+  and a harness fits every model with it as each training row's weight, never as a feature. The test-row values of a
+  weight scoring column, a training weight or not, are for the scorer only: never read them when predicting a test
+  row (LEAK-41; the README and `describe()` say so, Lennart, 2026-11-08). The amount at risk is described in
   text: the scoring column's `description` (what it measures, whether the outcome can cut it short) and a
   `curation_comments` bullet. A metric weight that is a function of the features (liberty_mutual_fire_peril_loss_cost's
   `var11_weight`, g_research_crypto_forecasting_1m's asset `Weight`) needs no sample weight: accept

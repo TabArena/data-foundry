@@ -26,6 +26,7 @@ from data_foundry.schema import (
     ScoringColumn,
 )
 from data_foundry.utils.checksum import encode_pydantic_metadata
+from data_foundry.v2.report import _metric_block
 
 BIBTEX = """@misc{toy2025dataset,
   author = {Toy Author},
@@ -1107,6 +1108,20 @@ def test_a_row_weight_without_a_sample_weight_warns():
     assert weight_findings(_rate_container(sample_weight=None)) == {
         "task_metric_weight_without_sample_weight": "warning"
     }
+
+
+@pytest.mark.parametrize("sample_weight", ["exposure", None])
+def test_a_weight_columns_test_rows_are_for_the_scorer_only(sample_weight):
+    """The README and `describe()` say it for every weight scoring column, a training weight or not (LEAK-41)."""
+    task = _rate_container(sample_weight=sample_weight).task_metadata
+    block = _metric_block(task)
+    sentence = "The test-row values of `exposure` are for the scorer only: never read them when predicting a test row."
+    assert sentence in block
+    assert block.index(sentence) > block.index("**Scoring columns**")
+    assert (
+        "scoring column:        exposure (role weight, used by mean_poisson_deviance; never a feature; test-row values "
+        "for the scorer only, never read when predicting a test row): years insured"
+    ) in task.describe()
 
 
 def test_a_weighted_rmse_reads_a_row_weight():

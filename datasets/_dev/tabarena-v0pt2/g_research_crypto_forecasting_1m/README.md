@@ -154,6 +154,8 @@ Kept in the frame for the metric; do not use them as features. Drop them from th
 |---|---|---|---|
 | `Weight` | weight | weighted_pearsonr: the asset's weight from asset_details.csv (Bitcoin 6.78 ... IOTA and Maker 1.10), mapped from Asset_Name; each row is weighted by it in the Pearson correlation. Asset_Name stays a feature. | never a feature |
 
+The test-row values of `Weight` are for the scorer only: never read them when predicting a test row.
+
 <details>
 <summary>Feature types: 1 categorical, 0 string, 1 datetime</summary>
 

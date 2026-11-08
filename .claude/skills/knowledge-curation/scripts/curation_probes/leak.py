@@ -36,13 +36,22 @@ interpolation. Run it on the raw table.
 ``weight_proxy`` (probe 22) asks whether the features carry a realized weight, such as the time on risk of a rate
 target that a claim can cut short: a LightGBM of the weight on the features, the task's metric with the weight added as
 a feature against the honest fit (the leak reference), each top feature's gain through the weight with its SD over
-splits and seeds, and for a Gini metric the score of 1/weight alone. ``weight_proxy_lines`` prints it.
+splits and seeds, and the weight alone: the score of 1/weight for a Gini metric, of a fit of the target on the weight
+for any other. ``weight_proxy_lines`` prints it.
 
 The raw state has four more probes, which read the table before ``_clean`` and, through the lineage (the raw
 position of each curated row), what ``_clean`` did to it: ``row_order`` (probe 10, the target in the source's row
 order), ``removed_rows`` (probe 19, the target of the rows ``_clean`` removed against the kept ones),
 ``dropped_column_proxies`` (probe 20, each raw column the definition drops, alone against the target on the shipped
 splits) and ``raw_copies`` (probe 21, copies before deduplication, by label). ``raw_lines`` prints them.
+
+Probe 23 is for a split forced from temporal (SPLIT-8: IID, or grouped by entity over stacked periods), which puts
+rows of one period on both sides. ``period_outcome`` predicts each test period by a fit without the training rows of
+its period and by one without as many random training rows: what the period's own training rows add, pooled and within
+a period, is the period's outcome shared across the split (a shock of the year). ``shared_units`` counts the test rows
+whose unit (a group column, the exact profile of the inputs, the profile without the period column) has training rows,
+and what a lookup of their target adds. Both fit regularised LightGBM (``_regularised``) with the training weight and
+score the task's metric; ``period_columns`` and ``outcome_periods`` find and cut the period column.
 
 ``target_by_period`` (probe 13) needs the time of each row: it sets the target of the newest periods (an event rate,
 the class shares, a duration's p50 and p90, a count's zero share, the rows per day) against the band the earlier
@@ -67,6 +76,8 @@ suspected fix.
 """
 
 from __future__ import annotations
+
+import re
 
 import lightgbm as lgb
 import numpy as np
@@ -1150,19 +1161,29 @@ PROXY_TIMING = (
 def _proxy_model(
     *, regression: bool, seed: int, n_estimators: int, n_jobs: int, params: dict | None = None
 ) -> lgb.LGBMModel:
-    """Untuned LightGBM that bags rows, so that the seeds differ; ``params`` are passed on. Every tree sees every
-    column: with column sampling, dropping one column would change which columns the other trees see.
+    """Untuned LightGBM that bags rows, so that the seeds differ; ``params`` are passed on and win over these
+    settings. Every tree sees every column: with column sampling, dropping one column would change which columns the
+    other trees see.
     """
-    return (lgb.LGBMRegressor if regression else lgb.LGBMClassifier)(
-        n_estimators=n_estimators,
-        learning_rate=0.05,
-        subsample=0.8,
-        subsample_freq=1,
-        random_state=seed,
-        verbose=-1,
-        n_jobs=n_jobs,
-        **(params or {}),
-    )
+    settings = {
+        "n_estimators": n_estimators,
+        "learning_rate": 0.05,
+        "subsample": 0.8,
+        "subsample_freq": 1,
+        "random_state": seed,
+        "verbose": -1,
+        "n_jobs": n_jobs,
+    }
+    return (lgb.LGBMRegressor if regression else lgb.LGBMClassifier)(**{**settings, **(params or {})})
+
+
+def _regularised(rows: int) -> dict:
+    """Probe 23's LightGBM settings: shallow trees with many rows a leaf (a 200th of the ``rows`` it trains on, at
+    least 20), a slow rate and an L2 penalty, as the hand-run leak tests of 2026-11-06 and 2026-11-08 had them (300
+    rows a leaf on 58,000). An untuned fit can score far below the constant (pricing_game_2016_french_fleet: 92.0
+    against 82.6 on its deviance), and its overfitting then masks or mimics what the test reads.
+    """
+    return {"learning_rate": 0.03, "num_leaves": 15, "min_child_samples": max(20, rows // 200), "reg_lambda": 5.0}
 
 
 def _spread(values) -> dict:
@@ -1181,6 +1202,83 @@ _FROM_SHIPPED = {"identity": lambda v: v, "log": np.exp, "log1p": np.expm1, "log
 """A metric's ``target_transform`` (``metric["transform"]``): the scale the target ships on, and back."""
 _RATE_OBJECTIVES = ("poisson", "tweedie", "gamma")
 """LightGBM objectives of a mean on the original scale: fitted there, the predictions moved to the shipped scale."""
+
+
+class _TargetFits:
+    """The fits of the target that probes 22 and 23 share: an untuned LightGBM (``_proxy_model``) trained with each
+    row's training weight, scored by the task's metric (else R^2 or ROC AUC, weighted by the training weight).
+
+    ``fit_params`` sets the objective (None for LightGBM's default, L2 or log loss); a mean objective of a regression
+    (``_RATE_OBJECTIVES``) fits the target on its original scale and sends the prediction back to the shipped one.
+    ``sign`` is 1 when the metric's higher is better, else -1; a metric that fails on a fold scores NaN, and its first
+    error is kept in ``errors``. ``regularised`` fits with ``_regularised``'s settings (probe 23).
+    """
+
+    def __init__(
+        self,
+        y: pd.Series,
+        problem_type: str,
+        train_w: np.ndarray | None,
+        *,
+        metric: dict | None,
+        fit_params: dict | None,
+        n_estimators: int,
+        n_jobs: int,
+        regularised: bool = False,
+    ) -> None:
+        self.regression = problem_type == "regression"
+        self.regularised = regularised
+        self.y = y
+        self.truth = y.to_numpy(dtype=float) if self.regression else y.to_numpy()
+        self.classes = None if self.regression else np.unique(self.truth)
+        self.n_classes = 0 if self.regression else len(self.classes)
+        self.train_w = np.ones(len(y)) if train_w is None else np.asarray(train_w, dtype=float)
+        self.metric, self.fit_params = metric, fit_params
+        self.n_estimators, self.n_jobs = n_estimators, n_jobs
+        self.sign = 1.0 if metric is None or metric["greater_is_better"] else -1.0
+        self.errors: list[str] = []
+        # a target shipped on a log scale: a mean objective fits the original scale (the scorer inverts the transform)
+        transform = (metric or {}).get("transform") or "identity"
+        self.to_shipped, self.from_shipped = _TO_SHIPPED[transform], _FROM_SHIPPED[transform]
+        self.on_original_scale = self.regression and (fit_params or {}).get("objective") in _RATE_OBJECTIVES
+
+    def score(self, pred: np.ndarray, rows: np.ndarray) -> float:
+        """The metric of ``pred`` (values, or class probabilities in the order of ``classes``) on ``rows``."""
+        if self.metric is not None:
+            classes = () if self.regression else self.classes
+            value, error = weights.declared_score(self.metric, self.truth[rows], pred, rows, classes)
+            if error and error not in self.errors:
+                self.errors.append(error)
+            return value
+        if self.regression:
+            return float(r2_score(self.truth[rows], pred, sample_weight=self.train_w[rows]))
+        return auc(self.truth[rows], pred, self.classes, self.train_w[rows])
+
+    def constant(self, tr: np.ndarray, n: int) -> np.ndarray:
+        """The weighted dummy of the rows ``tr`` for ``n`` rows: the weighted mean, or the weighted class shares."""
+        w = self.train_w[tr]
+        if self.regression:
+            return np.full(n, np.average(self.truth[tr], weights=w))
+        shares = np.array([w[self.truth[tr] == c].sum() for c in self.classes]) / w.sum()
+        return np.tile(shares, (n, 1))
+
+    def fit_predict(self, x_tr: pd.DataFrame, x_te: pd.DataFrame, tr: np.ndarray, seed: int) -> np.ndarray:
+        """Fit on the rows ``tr`` (``x_tr`` holds their inputs) and predict ``x_te``; with no input, the dummy."""
+        if not x_tr.shape[1]:
+            return self.constant(tr, len(x_te))
+        params = {**_regularised(len(x_tr)), **(self.fit_params or {})} if self.regularised else self.fit_params
+        model = _proxy_model(
+            regression=self.regression, seed=seed, n_estimators=self.n_estimators, n_jobs=self.n_jobs, params=params
+        )
+        truth = self.truth[tr]
+        if self.on_original_scale:  # the rate itself (a Poisson or Tweedie mean), back on the shipped scale
+            weights.fit(model, x_tr, self.from_shipped(truth), self.train_w[tr])
+            pred = self.to_shipped(np.maximum(model.predict(x_te), 0.0))
+            return np.clip(pred, truth.min(), truth.max())
+        weights.fit(model, x_tr, truth if self.regression else self.y.iloc[tr], self.train_w[tr])
+        if self.regression:
+            return np.clip(model.predict(x_te), truth.min(), truth.max())
+        return class_proba(model, x_te, self.classes)
 
 
 def _inverse_weight(w: np.ndarray, n_classes: int) -> np.ndarray | None:
@@ -1237,8 +1335,10 @@ def weight_proxy(  # noqa: C901, PLR0912, PLR0913
        helps, whatever the metric's direction), once without the weight among the features and once with it. The
        weight-mediated part is the first gain less the second, with its mean and SD over splits x seeds: a feature
        that stands in for the weight loses its gain once the weight is there;
-    d. for a Gini metric (``metric["gini"]``): the score of 1/weight alone as the prediction, the ceiling a proxy
-       could reach (for a binary task, as the probability of the class it scores better for).
+    d. the weight alone: for a Gini metric (``metric["gini"]``), a ranking metric, the score of 1/weight as the
+       prediction (for a binary task, as the probability of the class it scores better for); for any other metric,
+       which also scores the level, the score of a fit of the target on the weight alone (the fits of b, with the
+       weight as the one input). Neither bounds what a proxy gains: b is what the weight adds to the features.
 
     A feature is flagged when its weight-mediated part is above ``PROXY_SD`` SDs and above ``PROXY_SHARE`` of the leak
     reference. A flag is no verdict: whether the feature stays is a timing call (``PROXY_TIMING``).
@@ -1276,45 +1376,17 @@ def weight_proxy(  # noqa: C901, PLR0912, PLR0913
     X = df[columns].select_dtypes(exclude=["string", "object", "datetime", "datetimetz"])
     names = list(X.columns)
     X = X.set_axis([f"f{i}" for i in range(X.shape[1])], axis=1)  # LightGBM refuses some characters in names
-    y = df[target]
-    truth = y.to_numpy(dtype=float) if regression else y.to_numpy()
-    classes = np.unique(truth) if not regression else None
-    n_classes = 0 if regression else len(classes)
-    sign = 1.0 if metric is None or metric["greater_is_better"] else -1.0
-    errors: list[str] = []
-    # a target shipped on a log scale: a mean objective fits the original scale, and 1/weight is sent on the shipped
-    # one (the scorer inverts the transform before the metric)
-    transform = (metric or {}).get("transform") or "identity"
-    to_shipped, from_shipped = _TO_SHIPPED[transform], _FROM_SHIPPED[transform]
-    on_original_scale = regression and (fit_params or {}).get("objective") in _RATE_OBJECTIVES
-
-    def evaluate(pred: np.ndarray, rows: np.ndarray) -> float:
-        if metric is not None:
-            value, error = weights.declared_score(metric, truth[rows], pred, rows, () if regression else classes)
-            if error and error not in errors:
-                errors.append(error)
-            return value
-        if regression:
-            return float(r2_score(truth[rows], pred, sample_weight=train_w[rows]))
-        return auc(truth[rows], pred, classes, train_w[rows])
-
-    def fit_predict(x_tr: pd.DataFrame, x_te: pd.DataFrame, tr: np.ndarray, seed: int) -> np.ndarray:
-        if not x_tr.shape[1]:  # no feature left: the weighted dummy
-            if regression:
-                return np.full(len(x_te), np.average(truth[tr], weights=train_w[tr]))
-            shares = np.array([train_w[tr][truth[tr] == c].sum() for c in classes]) / train_w[tr].sum()
-            return np.tile(shares, (len(x_te), 1))
-        model = _proxy_model(
-            regression=regression, seed=seed, n_estimators=n_estimators, n_jobs=n_jobs, params=fit_params
-        )
-        if on_original_scale:  # the rate itself (a Poisson or Tweedie mean), back on the shipped scale
-            weights.fit(model, x_tr, from_shipped(truth[tr]), train_w[tr])
-            pred = to_shipped(np.maximum(model.predict(x_te), 0.0))
-            return np.clip(pred, truth[tr].min(), truth[tr].max())
-        weights.fit(model, x_tr, truth[tr] if regression else y.iloc[tr], train_w[tr])
-        if regression:
-            return np.clip(model.predict(x_te), truth[tr].min(), truth[tr].max())
-        return class_proba(model, x_te, classes)
+    fits = _TargetFits(
+        df[target],
+        problem_type,
+        train_w,
+        metric=metric,
+        fit_params=fit_params,
+        n_estimators=n_estimators,
+        n_jobs=n_jobs,
+    )
+    evaluate, fit_predict, sign = fits.score, fits.fit_predict, fits.sign
+    gini = bool(metric is not None and metric.get("gini"))
 
     rng = np.random.default_rng(0)
     cap = lambda idx: np.sort(rng.choice(idx, min(len(idx), max_rows), replace=False))
@@ -1323,11 +1395,13 @@ def weight_proxy(  # noqa: C901, PLR0912, PLR0913
     pairs = [(cap(tr), cap(te)) for tr, te in chosen]
     seeds = tuple(seeds)
 
-    # a. and b.: the weight from the features, and the honest fit against the one with the weight as a feature
-    r2s, rhos, gains, ceiling = [], [], [], []
+    # a. and b.: the weight from the features, and the honest fit against the one with the weight as a feature;
+    # d.: the weight alone, as 1/weight under a Gini, else as a fit of the target on it
+    r2s, rhos, gains, weight_alone, constant = [], [], [], [], []
     honest, with_weight = {}, {}
     for i, (tr, te) in enumerate(pairs):
         x_tr, x_te = X.iloc[tr], X.iloc[te]
+        constant.append(evaluate(fits.constant(tr, len(te)), te))
         for seed in seeds:
             if X.shape[1]:
                 proxy = _proxy_model(regression=True, seed=seed, n_estimators=n_estimators, n_jobs=n_jobs)
@@ -1339,13 +1413,17 @@ def weight_proxy(  # noqa: C901, PLR0912, PLR0913
             honest[i, seed] = evaluate(fit_predict(x_tr, x_te, tr, seed), te)
             plus = fit_predict(x_tr.assign(_weight=w[tr]), x_te.assign(_weight=w[te]), tr, seed)
             with_weight[i, seed] = evaluate(plus, te)
-        inverse = _inverse_weight(w[te], n_classes)
+            if not gini:  # a level-sensitive metric: a model of the target on the weight alone
+                only = fit_predict(pd.DataFrame({"_weight": w[tr]}), pd.DataFrame({"_weight": w[te]}), tr, seed)
+                weight_alone.append(evaluate(only, te))
+        inverse = _inverse_weight(w[te], fits.n_classes)
         if inverse is not None and regression:
-            inverse = to_shipped(inverse)  # the scorer moves it back: 1/weight on the scale the metric scores
-        if metric is not None and metric.get("gini") and inverse is not None:
+            inverse = fits.to_shipped(inverse)  # the scorer moves it back: 1/weight on the scale the metric scores
+        if gini and inverse is not None:
             # a binary task's class order is arbitrary: 1/weight may point to either class, and the better one counts
-            tried = [sign * evaluate(p, te) for p in ([inverse] if not n_classes else [inverse, inverse[:, ::-1]])]
-            ceiling.append(sign * np.nanmax(tried) if np.isfinite(tried).any() else np.nan)
+            options = [inverse] if not fits.n_classes else [inverse, inverse[:, ::-1]]
+            tried = [sign * evaluate(p, te) for p in options]
+            weight_alone.append(sign * np.nanmax(tried) if np.isfinite(tried).any() else np.nan)
     mean_gain = pd.Series(np.mean(gains, axis=0) if gains else np.zeros(len(names)), index=names)
     mean_gain = mean_gain.sort_values(ascending=False, kind="stable")
     checked = [f for f in mean_gain.index[:top] if mean_gain[f] > 0]
@@ -1403,11 +1481,12 @@ def weight_proxy(  # noqa: C901, PLR0912, PLR0913
         "honest": _spread(honest.values()),
         "with_weight": _spread(with_weight.values()),
         "leak_reference": reference,
-        "inverse_weight_alone": _spread(ceiling) if ceiling else None,
+        "constant": _spread(constant),
+        "weight_alone": {"as": "1/weight" if gini else "fit", **_spread(weight_alone)} if weight_alone else None,
         "features_checked": features_checked,
         "flags": [f for f, v in features_checked.items() if v["flag"]],
         "thresholds": {"sd": PROXY_SD, "share_of_leak_reference": PROXY_SHARE},
-        "metric_errors": errors,
+        "metric_errors": fits.errors,
     }
     if result["flags"]:
         named = ", ".join(f"`{f}`" for f in result["flags"])
@@ -1432,7 +1511,7 @@ def _stat(stat: dict, *, signed: bool = False) -> str:
 
 def weight_proxy_lines(result: dict) -> list[str]:
     """``weight_proxy``'s result as the lines of the report: what was fitted, the weight model, the leak reference,
-    1/weight alone, a table of the checked features and the reading.
+    the weight alone, a table of the checked features and the reading.
     """
     weight = result["weight"]
     rows = (
@@ -1460,10 +1539,16 @@ def weight_proxy_lines(result: dict) -> list[str]:
         f"  leak reference: honest fit {_stat(result['honest'])}, with the weight as a feature "
         f"{_stat(result['with_weight'])}; the weight gains {_stat(result['leak_reference'], signed=True)}"
     )
-    if result["inverse_weight_alone"]:
+    alone = result["weight_alone"]
+    if alone:
+        how = (
+            "1/weight alone as the prediction"
+            if alone["as"] == "1/weight"
+            else f"a fit of the target on the weight alone (objective {result['objective']})"
+        )
         lines.append(
-            f"  1/weight alone, the ceiling of a proxy: {_stat(result['inverse_weight_alone'])}, against the honest "
-            f"fit's {result['honest']['mean']:.5g}"
+            f"  {how}: {_stat(alone)}, against the honest fit's {result['honest']['mean']:.5g} and the weighted "
+            f"constant's {result['constant']['mean']:.5g}"
         )
     table = [("feature", "gain without the weight", "gain with it", "weight-mediated (share of the gain)", "")]
     for f, v in result["features_checked"].items():
@@ -1480,6 +1565,606 @@ def weight_proxy_lines(result: dict) -> list[str]:
     if len(table) > 1:
         widths = [max(len(row[k]) for row in table) for k in range(len(table[0]))]
         lines += ["  " + "  ".join(c.ljust(widths[k]) for k, c in enumerate(row)).rstrip() for row in table]
+    if result["metric_errors"]:
+        lines.append(f"  the metric failed on some fits (scored NaN, left out): {result['metric_errors'][0]}")
+    lines.append(f"  reading: {result['reading']}")
+    return lines
+
+
+# Probe 23: the leak tests of a forced split
+
+FORCED_SE = 2.0
+"""A gain of probe 23 is flagged when its mean over the splits is above this many standard errors."""
+OUTCOME_PERIODS = 12
+"""The most periods the period-outcome test fits; more are merged into this many runs of consecutive periods."""
+MIN_PERIOD_ROWS = 30
+"""Test rows a period needs to be scored on its own (the score within a period)."""
+LOOKUP_FOLDS = 5
+"""Random folds of the training side for the out-of-fold lookup of a training row's unit."""
+PERIOD_WORDS = ("year", "quarter", "month", "week", "season", "period", "era")
+"""A column of whole numbers or labels named by one of these words (in at most three words) can be the period."""
+FORCED_READING = (
+    "A leak across a forced split is weighed case by case (SPLIT-8): removed where the data allows, otherwise measured "
+    "in the notes; the forced tag stays either way."
+)
+
+
+def _words(name: str) -> list[str]:
+    """The words of a column name, lower case: ``Calendar_Year`` and ``CalendarYear`` give ``["calendar", "year"]``,
+    ``AMT_REQ_CREDIT_BUREAU_YEAR`` five words.
+    """
+    return [w.lower() for w in re.findall(r"[A-Z]+(?![a-z])|[A-Z]?[a-z]+|\d+", str(name))]
+
+
+def period_columns(df: pd.DataFrame, exclude: list[str] | tuple[str, ...] = ()) -> list[tuple[str, str]]:
+    """The columns that can give each row's period, best first, with the reason: dates; whole numbers that are years
+    (2 to 60 distinct, fewest first: a calendar year before a vehicle's model year); whole numbers or labels named by a
+    ``PERIOD_WORDS`` word (``year``, ``policy_year``, ``month``; not ``AMT_REQ_CREDIT_BUREAU_YEAR``). ``exclude``: the
+    target, the weight.
+    """
+    names = [c for c in df.columns if c not in set(exclude)]
+    dates = [(c, "dates") for c in names if pd.api.types.is_datetime64_any_dtype(df[c])]
+    years = []
+    for c in names:
+        s = df[c]
+        if pd.api.types.is_integer_dtype(s) and not pd.api.types.is_bool_dtype(s):
+            known = s.dropna()
+            if len(known) and YEARS[0] <= known.min() and known.max() <= YEARS[1] and 2 <= known.nunique() <= 60:
+                years.append((known.nunique(), c))
+    found = dates + [(c, "years") for _, c in sorted(years, key=lambda kv: kv[0])]
+    for c in names:
+        s, words = df[c], _words(c)
+        labels = isinstance(s.dtype, pd.CategoricalDtype) or s.dtype == object or pd.api.types.is_string_dtype(s)
+        whole = pd.api.types.is_integer_dtype(s) and not pd.api.types.is_bool_dtype(s)
+        named = len(words) <= 3 and any(w in PERIOD_WORDS for w in words)
+        if named and (labels or whole) and s.nunique() >= 2 and all(c != f for f, _ in found):
+            found.append((c, f"named `{c}`"))
+    return found
+
+
+def outcome_periods(
+    values, *, freq: str | None = None, tz: str | None = None, max_periods: int = OUTCOME_PERIODS
+) -> tuple[np.ndarray, list[str], str]:
+    """Each row's period for the period-outcome test: its code (0 to k - 1, in time order), the labels and the kind.
+
+    Dates are cut into calendar periods (``freq``; by default the coarsest of years, quarters, months, weeks and days
+    with at least 3 periods), years and other whole numbers are their own periods, a category of words (a month's
+    name) is periods in the category's order, and any other labels (an era) are periods in their sorted order. More
+    than ``max_periods`` periods are merged into that many runs of consecutive periods of about equal rows, labelled by
+    their first and last. A missing time is a period of its own. Raises ``ValueError`` for one period only.
+    """
+    s = pd.Series(values).reset_index(drop=True)
+    named = isinstance(s.dtype, pd.CategoricalDtype) and not pd.api.types.is_numeric_dtype(s.cat.categories)
+    try:
+        if named:  # a category of words (``jan``, ``feb``): in its own order, never parsed as dates
+            raise ValueError("labels")
+        t, kind = period_times(s, tz=tz)
+    except ValueError:
+        t, kind = s.astype(object), "labels"
+    rank = list(s.cat.categories) if named else None
+    if kind == "datetime":
+        if freq is not None and freq not in PERIOD_FREQS:
+            raise ValueError(f"period {freq!r}: use one of {PERIOD_FREQS}")
+        coarse = [f for f in reversed(PERIOD_FREQS) if t.dt.to_period(f).nunique() >= 3]
+        freq = freq or (coarse[0] if coarse else PERIOD_FREQS[0])
+        keys, kind = t.dt.to_period(freq), PERIOD_NAMES[freq]
+    else:
+        keys, kind = t, {"year": "yearly", "integer": "whole numbers"}.get(kind, kind)
+    known = keys.notna().to_numpy()
+    present = set(pd.unique(keys[known]))
+    order = [v for v in rank if v in present] if rank is not None else sorted(present)  # a category's own order
+    if len(order) + (not known.all()) < 2:
+        raise ValueError("the time column holds one period: the test needs two or more")
+    codes = np.full(len(s), len(order), dtype=np.int64)  # a missing time: the last period
+    codes[known] = pd.Index(order).get_indexer(keys[known])
+    labels = [str(v) for v in order] + ([] if known.all() else ["missing"])
+    if len(labels) > max_periods:
+        rows = np.bincount(codes, minlength=len(labels))
+        middle = (np.cumsum(rows) - rows / 2) / rows.sum()
+        run = np.minimum((middle * max_periods).astype(np.int64), max_periods - 1)
+        run = pd.factorize(run)[0]  # runs without rows dropped, the order kept
+        labels = [
+            f"{labels[np.flatnonzero(run == r)[0]]} to {labels[np.flatnonzero(run == r)[-1]]}"
+            if (run == r).sum() > 1
+            else labels[np.flatnonzero(run == r)[0]]
+            for r in range(run.max() + 1)
+        ]
+        codes, kind = run[codes], f"{kind}, merged into {run.max() + 1} runs"
+    return codes, labels, kind
+
+
+def _forced_inputs(df: pd.DataFrame, columns: list[str]) -> pd.DataFrame:
+    """Probe 23's model inputs: numbers and categories as they ship, dates as days since the earliest (a participant
+    reads the period from them), strings left out; the columns renamed for LightGBM.
+    """
+    X = df[columns].select_dtypes(exclude=["string", "object", "datetime", "datetimetz"]).copy()
+    for c in columns:
+        s = df[c]
+        if pd.api.types.is_datetime64_any_dtype(s):
+            s = s.dt.tz_localize(None) if s.dt.tz is not None else s
+            X[c] = (s - s.min()).dt.total_seconds() / 86_400
+    return X.set_axis([f"f{i}" for i in range(X.shape[1])], axis=1)
+
+
+def _mean_se(values) -> dict:
+    """The mean of per-split values, its standard error (SD / sqrt(n), ddof 1), n, and how many are above 0."""
+    v = np.asarray(list(values), dtype=float)
+    v = v[np.isfinite(v)]
+    return {
+        "mean": float(v.mean()) if len(v) else float("nan"),
+        "se": float(v.std(ddof=1) / np.sqrt(len(v))) if len(v) > 1 else float("nan"),
+        "splits": len(v),
+        "positive": int((v > 0).sum()),
+    }
+
+
+def _nanmean(values) -> float:
+    """The mean of the finite values, NaN when there is none (and no warning)."""
+    v = np.asarray(list(values), dtype=float)
+    v = v[np.isfinite(v)]
+    return float(v.mean()) if len(v) else float("nan")
+
+
+def _above_noise(stat: dict) -> bool:
+    """A gain above 0 by more than ``FORCED_SE`` standard errors."""
+    return bool(stat["mean"] > 0 and np.isfinite(stat["se"]) and stat["mean"] > FORCED_SE * stat["se"])
+
+
+def _capped_pairs(splits: list, n_splits: int, max_rows: int) -> tuple[list, bool]:
+    """The first ``n_splits`` splits, each side capped at ``max_rows`` random rows (seed 0), and whether any was."""
+    rng = np.random.default_rng(0)
+    cap = lambda idx: np.sort(rng.choice(idx, min(len(idx), max_rows), replace=False))
+    chosen = [(np.asarray(tr), np.asarray(te)) for tr, te in list(splits)[:n_splits]]
+    return [(cap(tr), cap(te)) for tr, te in chosen], any(len(tr) > max_rows or len(te) > max_rows for tr, te in chosen)
+
+
+def _fit_header(fits: _TargetFits, metric: dict | None, fit_params: dict | None, sample_weight) -> dict:
+    """What probe 23's fits were: the metric, its direction and row weight, the training weight and the objective."""
+    regression = fits.regression
+    return {
+        "metric": metric["name"] if metric is not None else ("r2" if regression else "roc_auc"),
+        "declared_metric": metric is not None,
+        "greater_is_better": fits.sign > 0,
+        "metric_row_weight": metric.get("row_weight") if metric is not None else None,
+        "trained_with_sample_weight": sample_weight is not None,
+        "fit_params": dict(fit_params or {}),
+        "objective": (fit_params or {}).get("objective") or ("L2" if regression else "log loss"),
+    }
+
+
+def period_outcome(  # noqa: C901, PLR0912, PLR0913
+    df: pd.DataFrame,
+    target: str,
+    problem_type: str,
+    splits: list,
+    periods,
+    *,
+    labels: list[str] | None = None,
+    sample_weight=None,
+    feature_cols: list[str] | tuple[str, ...] | None = None,
+    group_cols: list[str] | tuple[str, ...] = (),
+    metric: dict | None = None,
+    period_name: str = "period",
+    period_kind: str = "",
+    name: str = "dataset",
+    n_splits: int = 9,
+    max_rows: int = 50_000,
+    seeds: tuple[int, ...] = (0, 1, 2),
+    n_estimators: int = 300,
+    fit_params: dict | None = None,
+    n_jobs: int = 8,
+    min_rows: int = MIN_PERIOD_ROWS,
+    report: bool = True,
+) -> dict:
+    """Probe 23 (a): do the training rows of a test row's period tell its outcome?
+
+    A split forced from temporal (``ForcedGroupedFromTemporal``, ``ForcedIIDFromTemporal``) puts rows of one period on
+    both sides, where a model deployed at the period's start would know none of its outcomes: a shock shared by the
+    period (a storm, a claims inflation, a price level) reaches the test rows through the training rows of their period.
+    On the first ``n_splits`` splits, each side capped at ``max_rows`` random rows (seed 0), and once per seed of
+    ``seeds``: the test rows of each period are predicted by a fit without the training rows of that period, and by a
+    fit without as many random training rows (the same training size, drawn per split, seed and period). The gain of
+    the period's own rows is the score of the second less the score of the first, positive when they help whatever the
+    metric's direction, taken pooled over the test side (each period's rows predicted by their own fits) and within a
+    period (the mean of the periods' own scores, over those with at least ``min_rows`` test rows), which leaves out a
+    shift of level between the periods (a ranking metric, or one rescaled to the scored rows' total, sees it only
+    pooled). A split's gain is the mean over its seeds; the result gives the mean over the splits, its standard error
+    (a lower bound: the repeats reuse the rows) and the splits with a positive gain, and the gain on each period's
+    rows. A gain above ``FORCED_SE`` standard errors is flagged: the split shares the period's outcome. A period
+    finer than the cycle of a feature can flag without a shared outcome: a quarter's rows may be the only ones with
+    some values of a seasonal feature, which the fit without them extrapolates (pricing_game_2016_french_fleet by
+    quarter, +0.46 pooled with SE 0.17, most of it in the fourth quarters, whose cover to 31 December is shortest;
+    by year +0.07 with SE 0.22). The default period, the coarsest with three or more, avoids that. The fits are
+    LightGBM with ``_regularised``'s settings, trained with the training weight and the objective of ``fit_params``,
+    scored by ``metric`` (``_TargetFits``), on the model inputs with dates as days since the earliest.
+
+    Args:
+        df: The rows, with the target and the group columns.
+        target: The target column.
+        problem_type: ``"regression"``, or a classification type.
+        splits: ``(train_idx, test_idx)`` row positions; the first ``n_splits`` are probed.
+        periods: Each row's period code, 0 to k - 1 (``outcome_periods``).
+        labels: The name of each period (default its code).
+        sample_weight: The task's training weight, one value per row, or None.
+        feature_cols: The model inputs (default: every column but the target and the groups).
+        group_cols: Columns that are not features.
+        metric: The task's own metric (``curation_probes.weights``), or None for R^2 or ROC AUC.
+        period_name: The column the periods come from, for the report.
+        period_kind: How it was cut (``yearly``, ``years``), for the report.
+        name: The dataset's name in the result.
+        n_splits: Splits to probe.
+        max_rows: Rows kept (at random) of each train and test side.
+        seeds: The LightGBM seeds; each split is fitted once per seed.
+        n_estimators: Trees per LightGBM fit.
+        fit_params: LightGBM parameters of the fits, such as ``{"objective": "tweedie"}``; None for the default.
+        n_jobs: Threads per LightGBM model.
+        min_rows: Test rows a period needs for its own score.
+        report: Print the lines of ``period_outcome_lines``.
+    """
+    codes = np.asarray(periods, dtype=np.int64)
+    if len(codes) != len(df):
+        raise ValueError(f"`{period_name}` needs one period per row ({len(codes):,} for {len(df):,} rows)")
+    count = int(codes.max()) + 1
+    labels = list(labels) if labels is not None else [str(k) for k in range(count)]
+    fits = _TargetFits(
+        df[target],
+        problem_type,
+        sample_weight,
+        metric=metric,
+        fit_params=fit_params,
+        n_estimators=n_estimators,
+        n_jobs=n_jobs,
+        regularised=True,
+    )
+    columns = list(feature_cols) if feature_cols is not None else [c for c in df.columns if c != target]
+    X = _forced_inputs(df, [c for c in columns if c not in {target, *group_cols}])
+    pairs, sampled = _capped_pairs(splits, n_splits, max_rows)
+    seeds, sign = tuple(seeds), fits.sign
+
+    pooled, within, constant = [], [], []
+    per_period: dict[int, list[float]] = {k: [] for k in range(count)}
+    scored = {"without_period": [], "without_random": []}
+    whole_side: set[int] = set()  # periods that hold every training row: nothing is left to fit on
+    for i, (tr, te) in enumerate(pairs):
+        constant.append(fits.score(fits.constant(tr, len(te)), te))
+        split_pooled, split_within = [], []
+        split_period: dict[int, list[float]] = {k: [] for k in range(count)}
+        for seed in seeds:
+            rng = np.random.default_rng([i, seed])
+            shape = (len(te),) if fits.regression else (len(te), fits.n_classes)
+            p_out, p_rand = np.full(shape, np.nan), np.full(shape, np.nan)
+            keep = np.zeros(len(te), dtype=bool)
+            own_scores = {}
+            for k in np.unique(codes[te]):
+                at, own = codes[te] == k, codes[tr] == k
+                if own.all():
+                    whole_side.add(int(k))
+                    continue
+                keep |= at
+                tr_out = tr[~own]
+                p_out[at] = fits.fit_predict(X.iloc[tr_out], X.iloc[te[at]], tr_out, seed)
+                if own.any():
+                    tr_rand = np.sort(rng.choice(tr, len(tr_out), replace=False))
+                    p_rand[at] = fits.fit_predict(X.iloc[tr_rand], X.iloc[te[at]], tr_rand, seed)
+                else:  # no training row of the period: nothing to leave out
+                    p_rand[at] = p_out[at]
+                if at.sum() >= min_rows:
+                    own_scores[int(k)] = (fits.score(p_out[at], te[at]), fits.score(p_rand[at], te[at]))
+            out, rand = fits.score(p_out[keep], te[keep]), fits.score(p_rand[keep], te[keep])
+            scored["without_period"].append(out)
+            scored["without_random"].append(rand)
+            split_pooled.append(sign * (rand - out))
+            gains = {k: sign * (r - o) for k, (o, r) in own_scores.items()}
+            split_within.append(_nanmean(gains.values()))
+            for k, gain in gains.items():
+                split_period[k].append(gain)
+        pooled.append(_nanmean(split_pooled))
+        within.append(_nanmean(split_within))
+        for k, values in split_period.items():
+            if values:
+                per_period[k].append(_nanmean(values))
+
+    result = {
+        "name": name,
+        "period": period_name,
+        "period_kind": period_kind,
+        "periods": labels,
+        **_fit_header(fits, metric, fit_params, sample_weight),
+        "rows": len(df),
+        "features": X.shape[1],
+        "splits": len(pairs),
+        "seeds": list(seeds),
+        "max_rows": max_rows,
+        "subsampled": sampled,
+        "min_rows": min_rows,
+        "scores": {
+            "without_period": _spread(scored["without_period"]),
+            "without_random": _spread(scored["without_random"]),
+            "constant": _spread(constant),
+        },
+        "pooled": _mean_se(pooled),
+        "within": _mean_se(within),
+        "per_period": {labels[k]: _mean_se(v) for k, v in per_period.items() if v},
+        "whole_side_periods": [labels[k] for k in sorted(whole_side)],
+        "threshold_se": FORCED_SE,
+        "metric_errors": fits.errors,
+    }
+    result["flags"] = [part for part in ("pooled", "within") if _above_noise(result[part])]
+    skill = sign * (result["scores"]["without_period"]["mean"] - result["scores"]["constant"]["mean"])
+    result["skill_without_period"] = skill
+    if result["flags"]:
+        head = (
+            f"The training rows of a test row's period add to its score above noise ({FORCED_SE:g} SEs over the "
+            f"splits; {', '.join(result['flags'])}): the split shares the period's outcome, which a model deployed at "
+            "the period's start would not know. "
+        )
+    else:
+        head = "No gain of the period's own training rows above noise: no outcome of the period is shared across the "
+        head += "split at this resolution. "
+    result["reading"] = head + FORCED_READING
+    if report:
+        for line in period_outcome_lines(result):
+            say(line)
+    return result
+
+
+def _gain(stat: dict) -> str:
+    """A gain over the splits as one cell: the mean, its SE, and the splits above 0."""
+    se = f"SE {stat['se']:.2g}" if np.isfinite(stat["se"]) else "no SE"
+    return f"{stat['mean']:+.4g} ({se}, above 0 on {stat['positive']} of {stat['splits']} splits)"
+
+
+def _fits_line(result: dict) -> str:
+    """The metric and the fits of a probe-23 result, for its first line."""
+    direction = "higher" if result["greater_is_better"] else "lower"
+    weighted = f", weighted by `{result['metric_row_weight']}`" if result["metric_row_weight"] else ""
+    if not result["declared_metric"]:
+        weighted = "; no declared metric, so the probe's own"
+    trained = ", every fit trained with the task's sample weight" if result["trained_with_sample_weight"] else ""
+    rows = (
+        f"train and test sides capped at {result['max_rows']:,} random rows (seed 0)"
+        if result["subsampled"]
+        else "every row of the splits"
+    )
+    return (
+        f"{result['splits']} splits x {len(result['seeds'])} seeds, {rows}; metric {result['metric']} ({direction} is "
+        f"better{weighted}){trained} (LightGBM objective {result['objective']})"
+    )
+
+
+def period_outcome_lines(result: dict) -> list[str]:
+    """``period_outcome``'s result as the lines of the report."""
+    shown = ", ".join(result["periods"][:6]) + (", ..." if len(result["periods"]) > 6 else "")
+    kind = f"{result['period_kind']}, " if result["period_kind"] else ""
+    scores = result["scores"]
+    lines = [
+        f"period outcome (probe 23) on `{result['period']}` ({kind}{len(result['periods'])} periods: {shown}): "
+        + _fits_line(result),
+        "  each test period predicted by a fit without its period's training rows, and by one without as many "
+        "random training rows (the same training size)",
+        f"  scores: without the period's rows {_stat(scores['without_period'])}, without random rows "
+        f"{_stat(scores['without_random'])}, the weighted constant {scores['constant']['mean']:.5g}",
+        f"  gain of the period's own training rows: pooled {_gain(result['pooled'])}; within a period "
+        f"{_gain(result['within'])}",
+    ]
+    per = "; ".join(f"{k} {v['mean']:+.3g} (SE {v['se']:.2g})" for k, v in result["per_period"].items())
+    if per:
+        lines.append(f"  per period (at least {result['min_rows']} test rows): {per}")
+    if result["whole_side_periods"]:
+        lines.append(f"  not tested (every training row in the period): {', '.join(result['whole_side_periods'])}")
+    if result["metric_errors"]:
+        lines.append(f"  the metric failed on some fits (scored NaN, left out): {result['metric_errors'][0]}")
+    lines.append(f"  reading: {result['reading']}")
+    return lines
+
+
+def _unit_targets(fits: _TargetFits) -> np.ndarray:
+    """What a lookup averages, one column per value: the target, the event of a binary target, each class's share."""
+    if fits.regression:
+        return fits.truth[:, None].astype(float)
+    hits = (fits.truth[:, None] == fits.classes[None, :]).astype(float)
+    return hits[:, 1:] if fits.n_classes == 2 else hits
+
+
+def _lookup(
+    units: np.ndarray, values: np.ndarray, w: np.ndarray, tr: np.ndarray, rows: np.ndarray, te: np.ndarray, rng
+) -> tuple[np.ndarray, np.ndarray]:
+    """The lookup of each row's unit: the weighted mean of ``values`` over the unit's training rows, for the training
+    rows ``rows`` out of fold (``LOOKUP_FOLDS`` random folds of the training side ``tr``) and for the test rows ``te``
+    over all of ``tr``. A row without a unit (code -1), or whose unit has no such row, gets NaN. The count of the rows
+    is left out: it reads no outcome, and a count of similar rows is a feature a deployed model may have.
+    """
+    size = int(units.max()) + 2  # the last slot holds the rows without a unit
+
+    def table(source: np.ndarray, target: np.ndarray) -> np.ndarray:
+        keys = np.where(units[source] >= 0, units[source], size - 1)
+        mass = np.bincount(keys, weights=w[source], minlength=size)
+        sums = np.column_stack([np.bincount(keys, weights=w[source] * v, minlength=size) for v in values[source].T])
+        mass[-1], sums[-1] = 0.0, 0.0
+        at = np.where(units[target] >= 0, units[target], size - 1)
+        with np.errstate(invalid="ignore", divide="ignore"):
+            return np.where(mass[at, None] > 0, sums[at] / mass[at, None], np.nan)
+
+    fold = np.full(len(units), -1)
+    fold[tr] = rng.permutation(len(tr)) % LOOKUP_FOLDS
+    on_train = np.empty((len(rows), values.shape[1]))
+    for f in range(LOOKUP_FOLDS):
+        at = fold[rows] == f
+        on_train[at] = table(tr[fold[tr] != f], rows[at])
+    return on_train, table(tr, te)
+
+
+def shared_units(  # noqa: C901, PLR0912, PLR0913
+    df: pd.DataFrame,
+    target: str,
+    problem_type: str,
+    splits: list,
+    *,
+    unit_cols: list[str] | tuple[str, ...] = (),
+    sample_weight=None,
+    feature_cols: list[str] | tuple[str, ...] | None = None,
+    group_cols: list[str] | tuple[str, ...] = (),
+    metric: dict | None = None,
+    without: str | None = None,
+    name: str = "dataset",
+    n_splits: int = 9,
+    max_rows: int = 50_000,
+    seeds: tuple[int, ...] = (0, 1, 2),
+    n_estimators: int = 300,
+    fit_params: dict | None = None,
+    n_jobs: int = 8,
+    report: bool = True,
+) -> dict:
+    """Probe 23 (b): do test rows share their unit with training rows, and what does a lookup of the unit gain?
+
+    The units: each column of ``unit_cols`` (the group columns, which a grouped split never shares; the probe confirms
+    it), the exact profile of the model inputs (strings and dates included, unrounded, a missing value equal to a
+    missing value: ``profile_codes``), and with ``without`` (the period column) the same profile without it: the unit
+    seen in another period. The share of test rows whose unit has a training row is counted on every split given (a
+    test row in several repeats counts each time). For each unit with such rows on the probed splits (the first
+    ``n_splits``, each side capped at ``max_rows`` random rows, seed 0, once per seed of ``seeds``), a lookup of the
+    unit's training target joins the inputs: the weighted mean of the target (of each class's indicator) over the
+    unit's training rows, out of fold on the training side and over the whole training side for a test row. The gain
+    is the score with the lookup less the honest fit's (positive when the lookup helps), a split's gain the mean over
+    its seeds; over the splits, the mean, its standard error and the splits with a positive gain. A gain above
+    ``FORCED_SE`` standard errors is flagged: the unit's outcome reaches the test rows through the training side. For
+    a profile the flag has a second reading: natural repeats of coarse features (LEAK-18), whose lookup is the mean of
+    a cell finer than the regularised fit makes; whether the copies are one entity decides (LEAK-17). The fits are
+    those of ``period_outcome``.
+
+    Args:
+        df: The rows, with the target and the group columns.
+        target: The target column.
+        problem_type: ``"regression"``, or a classification type.
+        splits: ``(train_idx, test_idx)`` row positions; the first ``n_splits`` are probed with the lookup.
+        unit_cols: Columns whose value names a unit (the group columns).
+        sample_weight: The task's training weight, one value per row, or None.
+        feature_cols: The model inputs (default: every column but the target and the groups).
+        group_cols: Columns that are not features.
+        metric: The task's own metric (``curation_probes.weights``), or None for R^2 or ROC AUC.
+        without: A model input (the period column) left out of a second profile.
+        name: The dataset's name in the result.
+        n_splits: Splits to probe with the lookup.
+        max_rows: Rows kept (at random) of each train and test side for the lookup fits.
+        seeds: The LightGBM seeds; each split is fitted once per seed.
+        n_estimators: Trees per LightGBM fit.
+        fit_params: LightGBM parameters of the fits; None for the default.
+        n_jobs: Threads per LightGBM model.
+        report: Print the lines of ``shared_units_lines``.
+    """
+    fits = _TargetFits(
+        df[target],
+        problem_type,
+        sample_weight,
+        metric=metric,
+        fit_params=fit_params,
+        n_estimators=n_estimators,
+        n_jobs=n_jobs,
+        regularised=True,
+    )
+    columns = list(feature_cols) if feature_cols is not None else [c for c in df.columns if c != target]
+    columns = [c for c in columns if c not in {target, *group_cols}]
+    units: dict[str, np.ndarray] = {}
+    for col in unit_cols:
+        units[f"`{col}`"] = pd.factorize(df[col])[0].astype(np.int64)
+    units[f"the exact profile of the {len(columns)} model inputs"] = profile_codes(df[columns])
+    if without is not None and without in columns and len(columns) > 1:
+        rest = [c for c in columns if c != without]
+        units[f"the exact profile without `{without}`"] = profile_codes(df[rest])
+    X = _forced_inputs(df, columns)
+    values = _unit_targets(fits)
+    pairs, sampled = _capped_pairs(splits, n_splits, max_rows)
+    seeds, sign = tuple(seeds), fits.sign
+
+    def matched(codes: np.ndarray, tr: np.ndarray, te: np.ndarray) -> np.ndarray:
+        seen = np.bincount(codes[tr][codes[tr] >= 0], minlength=int(codes.max()) + 1) > 0
+        return (codes[te] >= 0) & seen[np.maximum(codes[te], 0)]
+
+    found = {}
+    for label, codes in units.items():
+        per_split = [float(matched(codes, np.asarray(tr), np.asarray(te)).mean()) for tr, te in splits]
+        rows = sum(len(te) for _, te in splits)
+        hits = round(sum(share * len(te) for share, (_, te) in zip(per_split, splits, strict=True)))
+        found[label] = {
+            "matched": hits / rows if rows else float("nan"),
+            "matched_rows": hits,
+            "matched_per_split": per_split,
+        }
+
+    honest: dict[tuple[int, int], float] = {}
+    gains: dict[str, list[float]] = {label: [] for label in units}
+    for i, (tr, te) in enumerate(pairs):
+        tr_all = np.asarray(list(splits)[i][0])
+        shared = [label for label, codes in units.items() if matched(codes, tr_all, te).any()]
+        split_gains: dict[str, list[float]] = {label: [] for label in units}
+        for seed in seeds if shared else ():  # no shared unit on this split: nothing to look up
+            honest[i, seed] = fits.score(fits.fit_predict(X.iloc[tr], X.iloc[te], tr, seed), te)
+            for label in shared:
+                codes = units[label]
+                on_tr, on_te = _lookup(codes, values, fits.train_w, tr_all, tr, te, np.random.default_rng([i, seed]))
+                extra = [f"_lookup{j}" for j in range(on_tr.shape[1])]
+                x_tr = pd.concat([X.iloc[tr].reset_index(drop=True), pd.DataFrame(on_tr, columns=extra)], axis=1)
+                x_te = pd.concat([X.iloc[te].reset_index(drop=True), pd.DataFrame(on_te, columns=extra)], axis=1)
+                with_lookup = fits.score(fits.fit_predict(x_tr, x_te, tr, seed), te)
+                split_gains[label].append(sign * (with_lookup - honest[i, seed]))
+        for label, values_ in split_gains.items():
+            if values_:
+                gains[label].append(_nanmean(values_))
+    for label in units:
+        found[label]["lookup_gain"] = _mean_se(gains[label]) if gains[label] else None
+        found[label]["flag"] = bool(gains[label]) and _above_noise(found[label]["lookup_gain"])
+    result = {
+        "name": name,
+        **_fit_header(fits, metric, fit_params, sample_weight),
+        "rows": len(df),
+        "features": X.shape[1],
+        "splits_counted": len(list(splits)),
+        "splits": len(pairs),
+        "seeds": list(seeds),
+        "max_rows": max_rows,
+        "subsampled": sampled,
+        "honest": _spread(honest.values()),
+        "units": found,
+        "flags": [label for label, v in found.items() if v["flag"]],
+        "threshold_se": FORCED_SE,
+        "metric_errors": fits.errors,
+    }
+    if result["flags"]:
+        head = (
+            f"A lookup of the unit's training rows adds to the score above noise ({FORCED_SE:g} SEs over the splits; "
+            f"{'; '.join(result['flags'])}): the unit's outcome reaches the test rows through the training side. "
+        )
+        if any(label.startswith("the exact profile") for label in result["flags"]):
+            head += (
+                "For a profile, natural repeats of coarse features read the same (LEAK-18: the lookup is the mean of a "
+                "finer cell than the fit makes); whether the copies are one entity decides (LEAK-17). "
+            )
+    else:
+        head = "No lookup of a shared unit adds to the score above noise. "
+    result["reading"] = head + FORCED_READING
+    if report:
+        for line in shared_units_lines(result):
+            say(line)
+    return result
+
+
+def shared_units_lines(result: dict) -> list[str]:
+    """``shared_units``' result as the lines of the report."""
+    if result["honest"]["runs"]:
+        lines = [f"shared units (probe 23): lookups on {_fits_line(result)}; honest fit {_stat(result['honest'])}"]
+    else:
+        lines = [f"shared units (probe 23): no unit shared on the first {result['splits']} splits, so no lookup"]
+    for label, unit in result["units"].items():
+        spread = [s for s in unit["matched_per_split"] if np.isfinite(s)]
+        per_split = f" (per split {min(spread):.1%} to {max(spread):.1%})" if len(spread) > 1 else ""
+        line = (
+            f"  {label}: {unit['matched']:.1%} of the test rows of {result['splits_counted']} splits "
+            f"({unit['matched_rows']:,}) have their unit in training{per_split}"
+        )
+        if unit["lookup_gain"] is not None:
+            line += f"; a lookup of its training target gains {_gain(unit['lookup_gain'])}"
+            line += " flag" if unit["flag"] else ""
+        lines.append(line)
     if result["metric_errors"]:
         lines.append(f"  the metric failed on some fits (scored NaN, left out): {result['metric_errors'][0]}")
     lines.append(f"  reading: {result['reading']}")

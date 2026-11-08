@@ -858,9 +858,12 @@ class PredictiveMLTaskMetadataV2:
             f"  time_on:               {self.time_on}",
         ]
         for scoring in self.scoring_columns:
+            use = "never a feature"
+            if scoring.role == "weight":
+                use += "; test-row values for the scorer only, never read when predicting a test row"
             lines.append(
-                f"  scoring column:        {scoring.column} (role {scoring.role}, used by {scoring.used_by}; never a "
-                f"feature): {scoring.description}"
+                f"  scoring column:        {scoring.column} (role {scoring.role}, used by {scoring.used_by}; {use}): "
+                f"{scoring.description}"
             )
         if self.sample_weight is not None:
             lines.append(

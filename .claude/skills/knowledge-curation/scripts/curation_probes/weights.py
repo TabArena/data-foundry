@@ -16,8 +16,9 @@ The task's own metric is passed as a dict, ``metric``:
   the predicted classes, or the values on the target's shipped scale. It computes the metric as the benchmark does,
   the per-group aggregation and the metric's input columns (a weight, an era) included;
 * optional: ``floor``, the smallest prediction the metric scores (``min_prediction``, on the shipped scale);
-  ``gini``, whether it is a Gini (probe 22 then scores 1/weight alone); ``row_weight``, the column it weights the
-  rows by; ``params``, the metric's parameters (a Tweedie deviance's ``power``).
+  ``gini``, whether it is a Gini (probe 22 then scores 1/weight alone, else a fit of the target on the weight);
+  ``row_weight``, the column it weights the rows by; ``params``, the metric's parameters (a Tweedie deviance's
+  ``power``).
 
 ``declared_score`` scores a probe's prediction by it and ``at_floor`` gives the share of predictions at or below its
 floor.
