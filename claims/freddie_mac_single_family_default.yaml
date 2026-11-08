@@ -1,6 +1,6 @@
 name: freddie_mac_single_family_default
 holder: Lennart
-stage: triage
+stage: add
 claimed_at: '2026-11-08T15:13:37Z'
-expires_at: '2026-11-15T15:13:37Z'
-note: 'large-datasets screening review (most rows / most features), stacked on PR #47'
+expires_at: '2026-11-15T18:12:55Z'
+note: 'add-dataset: large-datasets batch (stacked PR on #47)'
