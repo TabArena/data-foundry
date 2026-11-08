@@ -1,6 +1,6 @@
 name: nchs_linked_birth_infant_death
 holder: Lennart
-stage: triage
+stage: add
 claimed_at: '2026-11-08T17:05:18Z'
-expires_at: '2026-11-15T17:05:18Z'
-note: 'large-datasets screening review: new candidates (wide non-bio, 2M+ rows)'
+expires_at: '2026-11-15T18:24:41Z'
+note: 'add-dataset: large-datasets batch (stacked PR on #47)'
