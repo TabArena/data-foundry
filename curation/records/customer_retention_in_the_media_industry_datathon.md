@@ -3,9 +3,6 @@ unique_name: customer_retention_in_the_media_industry_datathon
 name: customer-retention-in-the-media-industry-datathon
 checked_by:
 - AI (UNVERIFIED)
-data_foundry_status:
-- WIP (Triage)
-claimed_by: Lennart
 suggestion: TBD -> Yes
 priority: 3
 decision_markers:
