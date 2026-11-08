@@ -3,6 +3,9 @@ unique_name: genomic_prediction_soy_yield
 name: gp-soy-YLD (Soybean Yield Genomic Prediction)
 checked_by:
 - AI (UNVERIFIED)
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Lennart
 suggestion: TBD -> Yes
 priority: 3
 tags:
@@ -43,3 +46,11 @@ type_adapter_id: curation-record-v1
 - as published: 5,014 x 4,234; target: YLD.
 - Why: Yield of soybean lines from SNP genotypes
 - Notes: Same Azodi et al. release; the existing soybean record is the unrelated UCI disease set.
+
+**Assessment (AI, 2026-11-08):** size check for the large-datasets review: the Azodi table is 5,014 lines x 4,234 markers with one standardized yield per line. Its origin, the SoyNAM R package, has yield in kg/ha per line and environment (60,390 plots of 5,546 lines in 18 environments) and 4,611 raw markers, so a build from SoyNAM gives about 5,544 lines x 4,611 markers on the natural scale (PROV-8, PROV-13); the call stands, priority 3.
+- As published (Azodi): Zenodo 4980429 (CC0, 2019-10-04), counted 2026-11-08: `soy_pheno.csv` 5,014 rows with ID, HT, R8 and YLD (YLD has mean 0 and sd 1, although the README says "normalized between 0 and 1"), `soy_geno.csv` (50,038,368 bytes) with ID and 4,234 markers (header counted; the paper says 4,240), and `soy_CVFs.csv`. Neither the README nor the paper says whether YLD is a mean or a BLUP over environments. The line ids carry 38 families of 98 to 140 lines.
+- As published (origin): CRAN package `SoyNAM` 1.6.2 (2022-01-04, GPL-3, Xavier, Beavis, Specht, Diers et al.; data "downloaded on November 16th 2015 from https://soybase.org/SoyNAM/index.php", which now returns 404), counted from the package's .RData files on 2026-11-08. `data.line` has 60,744 line-environment rows, 60,390 with yield in kg/ha, for 5,546 lines of 40 families in 18 environments (IA, IL, IN, KS, MI, MO, NE and two Ohio sites, 2011-2013), with height, R8, lodging, protein, oil and seed size. `data.check` has 9,043 rows of checks and parents, and `gen.raw` 5,590 lines x 4,611 markers coded 0/1/2 (4.9% missing). The QA versions are `data.line.qa` (62,572 rows, 39 families) and `gen.qa` (5,180 x 4,312). Of Azodi's 5,014 lines, 5,007 have SoyNAM yields (54,602 plots, a median of 11 environments per line), and 4,230 of the 4,234 markers are in `gen.qa`.
+- The task's table: the breeder decides per line (SPLIT-23), so one row per line: 5,544 lines with yield and raw genotypes x 4,611 markers (or 4,312 QA markers), computed from the package files. The target is a line value in kg/ha computed from the plots: the package's `BLUP()` fits environment and check effects with lme4, and a mean over environments is the simpler option (a choice for the curator). One row per plot (60,366 rows with genotypes, the environment as an input) is a genotype-by-environment framing, another task.
+- Access: CRAN source tarball, 4,948,970 bytes, .RData, no login, GPL-3. The Azodi soy files on Zenodo are about 51 MB, CC0.
+- Changes the call: the origin repairs the scale problem the screening raised (MET-3, PROV-13): the yields exist in kg/ha per plot, so the record's first source is SoyNAM (PROV-8), and the Azodi table becomes a derived cut to cite. The split stays grouped by family (40 families) for a new cross. The priority stays 3: the standardized target is no longer a risk, but the line value is ours to compute (BLUP or mean), which keeps the risk point.
+- Not checked: how Azodi computed the line value; the SoyNAM papers (Song et al. 2017, Diers et al. 2018, Xavier et al. 2016) were not read; whether SoyBase serves the data at a new address (its project list names a data store SoyNAM_2014).

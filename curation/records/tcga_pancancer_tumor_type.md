@@ -3,6 +3,9 @@ unique_name: tcga_pancancer_tumor_type
 name: 'TCGA PanCancer Atlas: Cell-of-Origin Patterns Dominate the Molecular Classification of 10,000 Tumors from 33 Types of Cancer'
 checked_by:
 - AI (UNVERIFIED)
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Lennart
 suggestion: TBD -> Yes
 priority: 3
 tags:
@@ -39,3 +42,10 @@ type_adapter_id: curation-record-v1
 - as published: about 10,000 tumour specimens of 33 cancer types (Cell abstract); RNA-seq of about 20,500 genes per sample (PanCanAtlas file EBPlusPlusAdjustPANCAN_IlluminaHiSeq_RNASeqV2.geneExp.tsv; sample count ...; target: cancer type / tissue of origin (33 classes); access: open (gene expression is open-access tier at GDC).
 - Why: Same task as ova_breast (tissue of origin of a tumour from its gene-expression profile); RNA-seq measures the same quantity as the U133 arrays
 - Adds: About 5x the samples (vs 1,545), 33 cancer types instead of 9, a newer platform, curated clinical data. Caveats: the tcga_coad_molecular_subtype record warns that the PanCanAtlas batch-corrected matrix uses statistics over all tumours (a leak), so build from GDC per-sample files; tissue source sites may confound the ...
+
+**Assessment (AI, 2026-11-08):** size check for the large-datasets review: 10,308 primary-tumour RNA-seq files of 10,122 patients x 60,660 genes (GDC STAR-Counts, per sample), 33 cancer types; the call stands at priority 3. Treehouse holds 9,806 of the same TCGA samples.
+- As published: (1) The PanCanAtlas matrix `EBPlusPlusAdjustPANCAN_IlluminaHiSeq_RNASeqV2.geneExp.tsv` (https://api.gdc.cancer.gov/data/3586c0da-64d0-4b74-a449-5ff4d9136611; 1,882,540,959 bytes by a range request). Its header has 11,069 sample columns from 10,274 patients: sample type 01 (primary solid) 9,706, 03 (primary blood) 173, 06 (metastatic) 395, 11 (normal) 737, 02 46, 05 11, 07 1. The 9,879 primary columns come from 9,875 patients. The gene rows were not counted. The matrix is batch-adjusted over all samples (LEAK-30). (2) The GDC harmonised STAR-Counts (API, 2026-11-08): 11,505 open files over the 33 TCGA projects, 48.74 GB in total. Sample types: Primary Tumor 10,157, Primary Blood Derived Cancer - Peripheral Blood 151 (LAML), Solid Tissue Normal 740, Metastatic 394, Recurrent Tumor 51, Additional - New Primary 11, Additional Metastatic 1. One file (TCGA-CHOL, 4.2 MB) holds 60,660 genes of GENCODE v36 (19,962 protein coding, 16,901 lncRNA) with unstranded and stranded counts, TPM, FPKM and FPKM-UQ per gene, all computed per sample. The clinical table is TCGA-CDR (PanCanAtlas page). The target is the TCGA project.
+- The task's table: 10,308 primary files (10,157 solid + 151 blood) of 10,122 patients (computed from the API listing). 147 patients have more than one primary file (several portions or aliquots), so there is one row per patient or a group by patient. Inputs: 60,660 genes (stated in the file; 19,962 protein-coding). Classes: 33 projects; the smallest by patients are CHOL 35, DLBC 48, UCS 57, KICH 66, ACC 79 and UVM 80, the largest BRCA 1,095. SKCM has only 103 primary files, because most TCGA melanomas are metastatic.
+- Access: the GDC open-access tier, no login (GDC Data Portal or API). About 44 GB for the primary files (computed from about 4.2 MB per file); the EB++ matrix is 1.9 GB but adjusted over all samples.
+- Changes the call: (1) Overlap with `treehouse_pediatric_tumor_type`: Treehouse's compendium holds 9,806 TCGA datasets from 9,733 TCGA patients (TCGA sample codes 01 9,185, 06 392, 03 173, 02 44, 05 11, 07 1; counted in its GEO clinical table), re-quantified with TOIL/RSEM. A pan-cancer type task built on Treehouse would be a version of this one (PROV-6). Treehouse's paediatric cut shares 366 TCGA tumours with this one, under another label (PROV-7). (2) The other TCGA records (`sarcoma`, `tcga_lung_histology`, `tcga_kidney_cancers` and others) are the same tumours with other targets (PROV-7), as the screening said. The priority stays 3.
+- Not checked: the EB++ gene count (1.9 GB, only the header was read); the TCGA-CDR join; tissue source site and plate per class (the batch check); the text of the GDC data-use terms.

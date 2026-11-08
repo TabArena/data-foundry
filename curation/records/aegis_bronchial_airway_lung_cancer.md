@@ -3,6 +3,9 @@ unique_name: aegis_bronchial_airway_lung_cancer
 name: 'AEGIS-1 and AEGIS-2 bronchial airway gene expression (GEO GSE66499): validation of an airway gene-expression classifier for lung cancer'
 checked_by:
 - AI (UNVERIFIED)
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Lennart
 suggestion: TBD -> Yes
 priority: 3
 tags:
@@ -40,3 +43,10 @@ type_adapter_id: curation-record-v1
 - as published: 639 current or former smokers undergoing bronchoscopy for suspected lung cancer (AEGIS-1: 298, AEGIS-2: 341; 1,357 enrolled), 487 cancer and 152 benign; 680 CEL files (replicates) on Affymetrix ...; target: lung cancer diagnosis (cancer_yes_no), from bronchoscopy or 12 months of follow-up; access: open.
 - Why: the same task as SMK_CAN_187 (Spira et al. 2007: bronchial airway epithelium expression of smokers with suspect lung cancer, cancer or not), by the same research line, prospective and multicentre
 - Adds: 639 against 187 patients, prospective trials, 2015 against 2007, newer array. Caveats: 41 replicate arrays need grouping by specimen; ComBat batch adjustment over all arrays (like the RMA note on the record); a different cohort, so its own record, not a version
+
+**Assessment (AI, 2026-11-08):** size check for the large-datasets review: 639 patients x 33,297 probe sets (RMA) plus sex, cancer 487 against benign 152; the call stands at priority 3. The classifier's AEGIS-1 training set (299 patients) is not in this deposit.
+- As published: GEO GSE66499 (public 2015-05-17; https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE66499). The series matrix (115 MB, downloaded) has 680 arrays x 33,297 probe sets (GPL6244, HuGene 1.0 ST transcript clusters), with no missing cell and the processing "RMA normalization". The characteristics are `tissue`, `gender` and `cancer_yes_no`; the titles (A1_ or A2_, patient, replicate) carry the cohort and the patient. The CEL files are in `GSE66499_RAW.tar` (2.8 GB). GEO's GPL6244 annotation (2016) gives a gene symbol for 22,195 of the 33,297 probe sets; the others are control or unannotated clusters. The source names no QC subset.
+- The task's table: 639 patients (computed from the titles): AEGIS-1 298 (220 cancer, 78 benign) and AEGIS-2 341 (267, 74), 487 against 152 in total, matching the summary ("298 patients from AEGIS 1 and 341 from AEGIS 2"). 23 patients have 2 to 4 arrays (41 extra arrays), and the label agrees within each patient: collapse to one row per patient or group by patient (LEAK-17). Inputs: 33,297 probe sets + `gender` (22,195 probe sets if only the annotated ones are kept).
+- Access: open on GEO, no login, no licence stated; 115 MB processed, 2.8 GB of CEL files.
+- Changes the call: (1) The classifier's training set is not in this deposit. Whitney et al. 2015 (BMC Medical Genomics 8:18, PMC4434538) derived it on "A set of 299 patients from AEGIS 1 consisting of 223 patients diagnosed with lung cancer and 76 patients diagnosed with benign disease" (Results). GSE66499's AEGIS-1 part is 298 patients with 220/78, so other patients, and the paper's text names no deposit for the 299, so the task's table stays at 639. (2) The earlier note of a "ComBat batch adjustment over all arrays" has no support on GEO, whose processing field says only "RMA normalization". RMA over the deposited arrays together is the weak LEAK-30, repairable from the CEL files per sample. (3) As the screening said, no age, smoking or lesion fields ship. The priority stays 3.
+- Not checked: whether RMA ran over all 680 arrays at once or per batch; the NEJM supplement; better data (the AEGIS nasal series and others were not looked up in this pass).
