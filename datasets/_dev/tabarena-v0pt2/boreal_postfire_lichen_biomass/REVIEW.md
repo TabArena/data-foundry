@@ -1,13 +1,14 @@
 # boreal_postfire_lichen_biomass
 
 **Outcome:** added. The AI recommends shipping it as implemented: the re-review of 2026-11-06 under the exposure
-rules changed wording only, and one weighing call is open (issue 7). Greuel et al. (2021) surveyed caribou forage
+rules changed wording only, and its one weighing call (issue 7) is settled: each plot counts once (2026-11-08).
+Greuel et al. (2021) surveyed caribou forage
 lichen after boreal wildfires in the Northwest Territories (NT) and Saskatchewan (SK), in two Dryad deposits (CC0). One
 row is one ground quadrat: 2,010 quadrats of 516 plots, 40.4% of them at 0. The target is the authors' lichen biomass
 in kg/ha, estimated from cover and height. The inputs are the years since fire, the stand type, the coordinates, the
 ecoprovince, the ecozone and the jurisdiction. Whole NT burn scars or unburned areas are held out, and each SK plot on
-its own. The metric is RMSE on kg/ha (fallback), over quadrats, so an NT plot (5 quadrats) counts 2.5 times an SK plot
-(2).
+its own. The metric is RMSE on kg/ha with each plot counted once: a quadrat weighs 1 over its plot's quadrats (0.2 in
+NT, 0.5 in SK), where unweighted an NT plot (5 quadrats) would count 2.5 times an SK plot (2).
 
 Validity:
 * SEL-2 holds: Andrej's `Yes` of 2026-10-30 (policy call 1).
@@ -18,11 +19,12 @@ Validity:
 * LEAK-41 holds, nothing to remove: the quadrat's area (1 m2 in NT, 4 m2 in SK) is fixed by each protocol and set by
   `jurisdiction`, not realized.
 * SPLIT-1/SPLIT-4 triggered, fixed: re-split on the burn area (issue 1).
-* SPLIT-23 holds: every prediction is constant within a plot, so the per-quadrat RMSE ranks models exactly like a plot
-  score weighted by quadrats (Kendall tau 1 on 30 of 30 splits); that weighting is issue 7.
+* SPLIT-23 holds: every prediction is constant within a plot, so the RMSE weighted by 1 over the plot's quadrats ranks
+  models exactly like the plot score with each plot counted once (Kendall tau 1 on 30 of 30 splits; issue 7, B).
 * SPLIT-26 holds: the source's quadrat rows are kept.
 * MET-14 holds: the source ships the amount per unit area (kg/ha); the notes' reason is reworded (EV-7).
-* MET-15 not triggered as a weight rule (no realized denominator); its clause on equal-area maps opens issue 7.
+* MET-15 not triggered as a weight rule (no realized denominator); the plot weight of issue 7 is a function of
+  `jurisdiction`, so it needs no sample weight, and the bundle warning is accepted.
 * MET-16 holds: neither sheet has a survey or design weight; the sites were chosen by fire-age class, an input.
 * PROV-13 triggered, fixed: three plots' coordinates repaired from the authors' site sheet.
 * PROV-8 holds: the download is Dryad's own version zips, which the repair needs.
@@ -31,7 +33,8 @@ Validity:
 Value: TP-2, a small real signal. Under the burn-area split an untuned random forest has skill (1 - MSE / MSE of the
 training mean) +0.12, above 0 on 28 of 30 splits (the task probe's forest: 200 trees, min_samples_leaf 2, a square root
 of the inputs per split; the forest of issues 1 and 5, 300 trees with min_samples_leaf 20 and all inputs per split,
-scores +0.097). Fallback RMSE: the abstracts report significance tests and a growth curve, no prediction error (MET-1).
+scores +0.097). Fallback RMSE, each plot counted once since 2026-11-08 (issue 7): the abstracts report significance
+tests and a growth curve, no prediction error (MET-1).
 
 Quality: CLEAN-16 departure kept with a measured fact, the target stays on kg/ha (issue 5); counts and sentences in the
 notes corrected (EV-7). On 2026-11-06 EV-7 was triggered three more times, each fixed by rewording: the taus against
@@ -42,16 +45,16 @@ bullet's reason now follows MET-14.
 Weighed: source + (CC0, two documented deposits, a paper); use case + (range plans against the 40-year rule); signal -
 (skill about 0.1); size 0 (2,010 quadrats, 216 groups).
 
-Left for the curator: issue 7, a weighing call: the per-quadrat RMSE (A, implemented) or each plot counted once (B).
+Left for the curator: nothing; issue 7 is settled (B, each plot counted once; Lennart, 2026-11-08).
 
 The first panel (2026-11-01) reviewed the first draft (site split, Zenodo download, unrepaired coordinates); its eleven
 changes that need no decision were made. The focused re-review of 2026-11-06 (claim auditor and mediator) found
 wording only, and its changes are made (Mediator, "Changes to make now"). The numbers below are measured on the changed
 definition and its 30 shipped splits (untuned) unless marked as the panel's.
 
-**Main points:** Open: issue 7, keep the per-quadrat RMSE, which counts an NT plot 2.5 times an SK plot (A,
-implemented, recommended), or count each plot once (B)? Resolved on 2026-11-03: the paper's own forecast (1), the
-tree-ring stand age (2), the duplicate warnings (3), the paper read (4), kg/ha (5) and RMSE (6); verdict: ship.
+**Main points:** Open: none. Resolved on 2026-11-08: each plot counts once in the RMSE, weighted by 1 over its
+quadrats (7, B). Resolved on 2026-11-03: the paper's own forecast (1), the tree-ring stand age (2), the duplicate
+warnings (3), the paper read (4), kg/ha (5) and RMSE (6); verdict: ship.
 
 **Issues for Andrej and Lennart:**
 
@@ -542,6 +545,11 @@ tree-ring stand age (2), the duplicate warnings (3), the paper read (4), kg/ha (
      which reflects the difference in quadrat sizes and numbers, using the varIdent function in nlme"; "We assessed
      the accuracy of our final model by the R2 of a linear regression between measured lichen biomass and predicted
      lichen biomass." Fig. 6: "points are quadrat-level values used in these models."
+
+   **Resolved (2026-11-08, Lennart):** B, each plot counts once. `rmse` got an optional `weight` input, and the RMSE
+   on kg/ha is now weighted by `plot_weight`, 1 over the plot's number of quadrats (0.2 in NT, 0.5 in SK), a scoring
+   column for the metric only with no sample weight (the bundle warning accepted); the notes, the metric's reason and
+   the record say so.
 
 **Review panel:** ship after changes (mediator), wording only, now made. Tier focused, a re-review of 2026-11-06
 under LEAK-41 and MET-14 to MET-16 after the exposure rework: the claim auditor and the mediator; no blind review, task

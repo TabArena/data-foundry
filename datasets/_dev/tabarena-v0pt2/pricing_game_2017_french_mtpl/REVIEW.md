@@ -1,11 +1,12 @@
 # pricing_game_2017_french_mtpl
 
-**Outcome:** added. The AI recommends shipping it; one call is open, the metric's floor (issue 5). Year 0 of the 2017
+**Outcome:** added. The AI recommends shipping it; the metric's floor was lowered to 0.1 EUR on 2026-11-08 (issue 5,
+Lennart), the collection's rule for a deviance floor. Year 0 of the 2017
 French actuarial pricing game, from the R package CASdatasets (the organiser's copy; the game's own files are gone):
 100,000 car policies of 91,488 clients of an unnamed French insurer, about 2010-11. The target is the policy's claim
 total for the year in euros (0 for 88.9%), predicted when the premium is set, with no exposure column and no weight; all
 policies of a client stay on one side of the split, tagged as forced from temporal; the score is the mean Tweedie
-deviance (power 1.5, predictions floored at 1 EUR) as a stand-in for the game's market profit. Validity: SEL-1 holds
+deviance (power 1.5, predictions floored at 0.1 EUR) as a stand-in for the game's market profit. Validity: SEL-1 holds
 (driver sex kept with a note: a legal rating factor in the data's year, as frempl and australian); USE-1 holds, fit
 approximate (USE-8: next year's renewals with their claim history are the real task); USE-5 holds (negative totals from
 legal recourse set to 0, +4.8% on total cost); LEAK-10 holds for all 29 features; SPLIT-1 and SPLIT-4 hold (grouped by
@@ -16,13 +17,14 @@ weight to act on; MET-14 holds by its per-contract clause (every policy is price
 located, and the newest policies claim as their risk predicts, so at most about 9% of the policies in their first year
 could be half years). Value: the task probe flags no_signal (TP-1, TP-2), which reads an R²-type skill (best R² 0.003);
 on the declared deviance the random forest scores 62.44 against the constant's 63.10 (skill 0.011, 5 of 9 splits, task
-probe) and 60.57 against 63.31 (skill 0.043, 3 folds, mediator), a small real signal (EV-3); MET-11 holds (the deviance
-follows the game's profit at a Kendall tau of 0.58 to 0.79 in simulated markets); MET-13 is broken by the floor: 1 EUR
-sits 1.2 orders of magnitude (a factor of 17) below the smallest plausible mean policy cost (16.8 EUR), where the rule
-as amended on 2026-11-06 asks for two (issue 5). Quality: impossible values masked (CLEAN-11), make and model joined
-(CLEAN-12), the commune typed as text (CLEAN-14), the target in euros as an exception to CLEAN-16 (2026-11-03). Weighed:
-the organiser's copy with documented columns (+), a canonical pricing task (+), one claim year and a weak signal (-).
-Left for Andrej and Lennart: issue 5.
+probe) and 60.57 against 63.31 (skill 0.043, 3 folds, mediator), a small real signal (EV-3); at the 0.1 EUR floor the
+task probe's random forest scores 62.22 against 63.10; MET-11 holds (the deviance follows the game's profit at a
+Kendall tau of 0.58 to 0.79 in simulated markets); MET-13 holds since 2026-11-08: the floor is 0.1 EUR, two orders of
+magnitude below the smallest plausible mean policy cost (16.8 EUR), where Andrej's 1 EUR sat 1.2 orders below (issue
+5). Quality: impossible values masked (CLEAN-11), make and model joined (CLEAN-12), the commune typed as text
+(CLEAN-14), `pol_pay_freq` ordered by payments a year (2026-11-08, as in the two other pricing tables), the target in
+euros as an exception to CLEAN-16 (2026-11-03). Weighed: the organiser's copy with documented columns (+), a canonical
+pricing task (+), one claim year and a weak signal (-). Nothing is left open.
 
 Changes made after the review panel of 2026-11-06 (AI), text only; rows, target, split, metric and floor unchanged: the
 exposure paragraph rests the policy-year on the rules and on a risk-adjusted claim test of the newest policies, not on
@@ -30,9 +32,14 @@ the later year files (the organiser aged them from Year 0), and gives the share 
 at the rules' Sec. 1 and 4.9; the notes and the metric reason state the smallest plausible mean (16.8 EUR) and the task
 probe's share of predictions at the floor.
 
-**Main points:** open: the metric's floor (issue 5): keep 1 EUR by amending the rule for one dataset (A), or lower it to
-0.1 EUR, two orders below the smallest plausible mean as the amended rule asks (B, recommended); Andrej set the 1 EUR.
-Resolved on 2026-11-03: the deviance is in (2), euros stay (3) and the name stays (4); verdict ship (Andrej).
+Changed on Lennart's marks of 2026-11-08 (rows, target and split unchanged; a build waits for your ask): the metric's
+floor is 0.1 EUR (issue 5) and `pol_pay_freq` is an ordered category, Yearly < Biannual < Quarterly < Monthly; the
+task probe was re-run at the new floor.
+
+**Main points:** nothing open. Resolved on 2026-11-03: the deviance is in (2), euros stay (3) and the name stays (4);
+verdict ship (Andrej). On 2026-11-08 the floor was lowered from Andrej's 1 EUR to 0.1 EUR, following the collection's
+rule for a deviance floor, a convention that can change later (5, Lennart); `pol_pay_freq` is ordered by payments a
+year (from issue 8 of spanish_motor_insurance_coverage_level_2022_2024).
 
 **Issues for Andrej and Lennart:**
 
@@ -291,6 +298,16 @@ Resolved on 2026-11-03: the deviance is in (2), euros stay (3) and the name stay
    [^f4]: Principles, "Consistent judgement": a decision that departs from a precedent with similar facts and names no
      fact that sets it apart goes back to the curator; one that would break a Must is offered as an amendment of the
      rule, not as an exception.
+
+   **Lennart (2026-11-08, change):** Lower the floor to 0.1 EUR. highlight this mostly as us following a rule that we
+   can change in the future
+
+   **Resolved (2026-11-08, Lennart):** B, `min_prediction` is 0.1 EUR; the metric reason and the notes present it as
+   the collection's rule for a deviance floor (two orders below the smallest plausible mean, MET-13 as amended on
+   2026-11-06), a convention that can change later and not a property of the source, and the CC line names Andrej's
+   1 EUR of 2026-11-03 as superseded. Task probe at the new floor (5 of 9 splits): the random forest 62.22 against the
+   constant's 63.10, the linear model 81.97 and LightGBM 90.30 (66.28 and 70.90 at 1 EUR), with 0.1%, 6.7% and 3.8% of
+   their predictions at the floor.
 
 **Review panel:** ship after changes (mediator). A focused re-review of 2026-11-06 under LEAK-41 and MET-14 to MET-16,
 by a claim auditor and a mediator. Claims: 13; 9 hold (one with an off citation, now fixed), 1 holds only as a

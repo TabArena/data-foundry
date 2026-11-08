@@ -1109,6 +1109,25 @@ def test_a_row_weight_without_a_sample_weight_warns():
     }
 
 
+def test_a_weighted_rmse_reads_a_row_weight():
+    """RMSE's weight is a row weight: a task may train with it, and without a sample weight MET-15's prompt is asked
+    (accepted for a design weight such as one vote per plot); a negative weight is an error.
+    """
+    df = make_iid_frame().assign(target=np.linspace(0.0, 3.0, 60), plot_weight=np.tile([0.2, 0.5], 30))
+    weight = ScoringColumn(column="plot_weight", role="weight", used_by="rmse", description="1 / quadrats of the plot")
+
+    def container(sample_weight=None):
+        spec = _spec("rmse", inputs={"weight": "plot_weight"})
+        return make_v2_container(
+            df, spec=spec, scoring_columns=[weight], problem_type="regression", sample_weight=sample_weight
+        )
+
+    assert weight_findings(container()) == {"task_metric_weight_without_sample_weight": "warning"}
+    assert weight_findings(container("plot_weight")) == {}
+    df.loc[0, "plot_weight"] = -1.0
+    assert weight_findings(container()).get("task_weight_invalid") == "error"
+
+
 def test_sample_weight_must_name_a_weight_scoring_column():
     """The training weight ships as the metric's weight column, never as a feature or a group column."""
     with pytest.raises(ValueError, match="names no scoring column"):

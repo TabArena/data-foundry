@@ -142,6 +142,12 @@ CC (2026-11-06, Lennart): issue 4 of the folder's REVIEW.md resolved. `taxon` st
 
 **Assessment (AI, 2026-11-06):** review panel (full, re-review under LEAK-41, MET-14 to MET-16): ship after changes (the text and one assert, made; rows, target, features, split and metric unchanged); disputed: the scope of the cut claim (settled for the critic: refuted for six taxa, not one; your CC is issue 5), the train and test sides of the cut (settled for the advocate: both sides, different regions), the 1/weight score (settled for the critic: two labelled comparisons) and the kind and need of the time-on-risk Cases-row entry (settled: an application, and required; its wording is issue 6); for the curator: issues 5 and 6. Cross-dataset evidence: X2 and X3 of the working copy's REVIEW.md ("From PR #47").
 
+CC (2026-11-08, Lennart): issue 5 of the folder's REVIEW.md resolved, "Pollock and, to a lesser degree, Pacific cod": the cut claimed for pollock and, to a lesser degree, Pacific cod; the stop is the likely reading, not isolated. Supersedes the claim of Lennart's CC of 2026-11-06 above that the cut shows for walleye pollock only; against an area-only null Pacific cod's short tows stand about 4 standard deviations above it over all hauls and 9 with a catch. The fourth decision of the definition is retitled to match. Features, rows and scores do not change.
+
+CC (2026-11-08, Lennart): issue 6 resolved, "A clause in the row's remedy": the leak rules' Cases row on an amount at risk cut short by the outcome (LEAK-10, LEAK-7, LEAK-41) gains a clause in its remedy: where the decision is per unit of an equal-area map, the rate is scored unweighted and no sample weight is declared (MET-15), the notes naming the cut's bias. This dataset (the area swept released and left out as a weight; the cut not located row by row: 149 of the 256 tows under half the median duration carry performance code 0) and wadden_sea_sibes_macoma_abundance (the subsample fraction, set after the sample is seen, not released) are its cases, an application of MET-15, not an exception. The notes cite the clause; nothing changes in the data or the score.
+
+CC (2026-11-08, Lennart): the declared metric (`mean_group_normalized_rmse`) is checked, as declared on the PR #47 review board.
+
 ## Reference
 
 Laman E.A., Rooper C.N., Rooney S.C., Turner K.A., Cooper D.W., Zimmermann M. (2017). Model-based essential fish

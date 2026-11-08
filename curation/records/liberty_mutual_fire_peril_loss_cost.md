@@ -106,6 +106,10 @@ CC (2026-11-02, Andrej): ship, with `var11` a feature and the weight of the comp
 
 CC (2026-11-06, Lennart): `var11` stays a feature and a copy, `var11_weight`, ships as the scoring column the weighted Gini reads (MET-2 as reworded on 2026-11-05; asked in PR #47's review); no training weight, since the weight is a function of the features (MET-15). Issue 3 of the folder's REVIEW.md.
 
+CC (2026-11-08, Lennart): the declared metric (`normalized_weighted_gini`) is checked, as declared; the record ships, with no open issue on the PR #47 review board.
+
+**Assessment (AI, 2026-11-08):** ships by default (no open issue on the PR #47 board), but the definition's changes of 2026-11-06 (the `var11_weight` scoring column the metric reads and the exposure paragraph) have not passed `dataset check`, and the re-review panel under LEAK-41 and MET-14 to MET-16 has not run: both wait for the competition files, which download only after the Kaggle competition rules are accepted. No container is built before both pass.
+
 ## Reference
 
 Kaggle (2014). Liberty Mutual Group: Fire Peril Loss Cost. https://www.kaggle.com/competitions/liberty-mutual-fire-peril

@@ -272,7 +272,9 @@ def _floored(y_pred: Any, params: Mapping[str, Any]) -> np.ndarray:
 
 
 def _row_weight(weight: Any) -> np.ndarray | None:
-    """The optional row weight of a deviance: finite, >= 0 and with a positive sum, or ``None`` (every row weighs 1)."""
+    """The optional row weight of a deviance or of RMSE: finite, >= 0 and with a positive sum, or ``None`` (every row
+    weighs 1).
+    """
     if weight is None:
         return None
     w = np.asarray(weight, dtype=float)
@@ -295,6 +297,18 @@ def _poisson_deviance(y_true, y_pred, *, params, weight=None, **_):
     """
     return _sklearn_metrics().mean_poisson_deviance(
         np.asarray(y_true, dtype=float), _floored(y_pred, params), sample_weight=_row_weight(weight)
+    )
+
+
+def _rmse(y_true, y_pred, *, weight=None, **_):
+    """RMSE, the rows weighted by the optional ``weight`` input: ``sqrt(sum(w * (y - p)^2) / sum(w))``, scikit-learn's
+    ``sample_weight``; without one every row weighs 1.
+
+    A weight sets how much each row counts in the score, e.g. 1 over the number of rows of a unit, so that each unit
+    counts once (boreal_postfire_lichen_biomass: one vote per survey plot, whatever its number of quadrats).
+    """
+    return _sklearn_metrics().root_mean_squared_error(
+        np.asarray(y_true, dtype=float), np.asarray(y_pred, dtype=float), sample_weight=_row_weight(weight)
     )
 
 
@@ -397,10 +411,13 @@ class MetricDef:
         prediction_domain: The values a ``value`` prediction must take, on the original scale: ``None`` (any finite
             value) or ``positive`` (an expected mean, as for ``mean_poisson_deviance``). The metric-computes check
             draws its test predictions in this domain.
-        optional_inputs: Input roles it may take but does not need (the ``weight`` of a deviance); without one every
-            row weighs the same.
+        optional_inputs: Input roles it may take but does not need (the ``weight`` of a deviance or of RMSE); without
+            one every row weighs the same.
         row_weight: Whether its ``weight`` input is a row weight (each row counts in proportion to it), the kind a
             task may also train with (:func:`row_weight_column`); ``False`` for a weight read another way.
+        weighted_definition: The one-line formula of a spec that maps the optional ``weight``, when
+            :attr:`definition` is the unweighted one (``rmse``); ``None`` when :attr:`definition` covers both (the
+            deviances). It keeps the spec of an unweighted metric, and so a built container's checksum, unchanged.
     """
 
     name: str
@@ -419,6 +436,15 @@ class MetricDef:
     prediction_domain: str | None = None
     optional_inputs: tuple[str, ...] = ()
     row_weight: bool = False
+    weighted_definition: str | None = None
+
+    def definition_for(self, inputs: Mapping[str, str] | None) -> str:
+        """The one-line formula of a spec that maps ``inputs``: :attr:`weighted_definition` when the spec maps the
+        ``weight`` and the metric has one, else :attr:`definition`.
+        """
+        if self.weighted_definition is not None and "weight" in (inputs or {}):
+            return self.weighted_definition
+        return self.definition
 
     def prediction_for(self, params: Mapping[str, Any] | None) -> str:
         """The prediction kind under ``params``: :attr:`prediction`, or ``params["prediction"]`` when the metric
@@ -596,9 +622,12 @@ METRICS: dict[str, MetricDef] = {
             _REG,
             "value",
             _LOWER,
-            _value_metric("root_mean_squared_error"),
-            "sklearn.metrics.root_mean_squared_error",
+            _rmse,
+            "sklearn.metrics.root_mean_squared_error(sample_weight=weight)",
             "sqrt(mean((y - p)^2))",
+            optional_inputs=("weight",),
+            row_weight=True,
+            weighted_definition="sqrt(sum(w * (y - p)^2) / sum(w)), w the weight input (finite, >= 0)",
         ),
         _standard(
             "mae",
@@ -1700,14 +1729,19 @@ class Metric:
         )
 
     @classmethod
-    def fallback(cls, *, reason: str, target_transform: str = "identity") -> Metric:
+    def fallback(
+        cls, *, reason: str, target_transform: str = "identity", inputs: Mapping[str, str] | None = None
+    ) -> Metric:
         """No metric defined by the source (``reason``: where we looked); roc_auc / log_loss / rmse at build.
 
         ``target_transform`` (regression only) makes the fallback rmse the RMSE on the original scale, after the
         inverse; a log target whose relative error is the obvious goal declares :meth:`from_context` ``rmsle``
-        instead.
+        instead. ``inputs`` maps a scoring column to an input the fallback takes, such as the regression fallback's
+        optional ``weight`` (a row weight: each row counts in proportion to it).
         """
-        return cls(name=None, origin="fallback", reason=reason, target_transform=target_transform)
+        return cls(
+            name=None, origin="fallback", reason=reason, target_transform=target_transform, inputs=dict(inputs or {})
+        )
 
     @classmethod
     def local(  # noqa: PLR0913 - the spec's fields, all keyword-only
@@ -1788,7 +1822,8 @@ class Metric:
             "inputs": dict(resolved.inputs),
             "original": resolved.original,
             "reference": resolved.reference,
-            "definition": resolved.definition or (METRICS[resolved.name].definition if resolved.fn is None else None),
+            "definition": resolved.definition
+            or (METRICS[resolved.name].definition_for(resolved.inputs) if resolved.fn is None else None),
             "reason": resolved.reason,
             "target_transform": resolved.target_transform,
         }
@@ -1838,7 +1873,7 @@ def row_weight_column(spec: Any) -> str | None:
     """The column ``spec`` reads as a row weight, or ``None``.
 
     A row weight makes each row count in proportion to it (``normalized_weighted_gini``, ``weighted_pearsonr``, a
-    deviance with its ``weight`` input, ``ordered_lorenz_gini`` with ``per_unit``). The base premium of
+    deviance or ``rmse`` with its ``weight`` input, ``ordered_lorenz_gini`` with ``per_unit``). The base premium of
     ``ordered_lorenz_gini`` on totals is no row weight, and neither is the key column of ``weighted_pearsonr`` with
     ``params["weights"]``. A task's ``sample_weight`` is always this column (MET-15).
     """

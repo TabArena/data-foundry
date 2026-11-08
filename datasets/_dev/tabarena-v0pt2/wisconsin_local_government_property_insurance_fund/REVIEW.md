@@ -281,6 +281,44 @@ windows, on the curator's call of 2026-11-02, reopened by issue 3) and issue 2 (
    outcome. D: record `No` with its marker. pricing_game_2016_french_fleet's still-missing SPLIT-8 leak test should
    include the same size-controlled within-period test (20 or more repeats).
 
+   **Lennart (2026-11-06, ok):** This is an exception ruling. We think the task is too good to remove because of the
+   50% floor. So we overrule it here knowing it contradicts other judgement. The difference is that the task is better
+   than prior out-ruled cases. Please remark this as such in the record.
+
+   **Consistency check (AI, 2026-11-08):** Your decision stands and is in the record in your words; should the rules
+   record it as a change to the floor that names what sets this fund apart, or as an exception in your words?
+
+   * **Problem:**
+     - The floor is a rule of the kind that changes only by an amendment, never by an exception[^w3a].
+     - "Better than the cases ruled out before" weighs the task's value, which any forced split could claim, so the next
+       curator could not tell when the floor gives way again.
+     - Measured facts do set this fund apart from the precedents: two windows above the floor (each precedent had at
+       most one), recurring test members (97.6% to 98.8% of each test year's members are in earlier years), and a
+       shared-year leak under member folds[^w3b].
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Amend the floor on these facts | the rule adds: "a release with two windows above the floor may add one older window that trains on at least 40% of the rows, when most test entities recur and member folds would test unseen ones; the notes give the score on the valid windows next to all windows and what the short window changes"; your reason stays in the CC line | your decision stays; the next case can be checked against it; no shipped precedent falls under it | the rule loosened on one case; the 2008 window reorders the predictors, which the notes then state |
+     | b | An exception in your words | the notes and the rule's cases call it an exception, with your reason | faithful to your note | a form the rules do not give this kind of rule; a reason any forced split could claim |
+     | c | Treat it like the precedents | member folds (option E or F) | no rule changed | reverses your call |
+
+   * **Recommendation:** (a): it keeps your decision and writes down the facts that bound it.
+   * **Decision:** (a), (b) or (c)?
+
+   **Notes for the AI:** the CC line in Lennart's words is in the record (2026-11-08). On (a): amend SPLIT-14 in
+   splits.md (2026-11-08, Lennart, this case) with a Cases row, and give the no-gap exception to SPLIT-10, which still
+   cites pricing_game_2016_french_fleet (reopened), a fact of its own and a SPLIT-10 Cases row of kind exception. On
+   (b): a notes bullet `Exception to SPLIT-14 (2026-11-06, Lennart): ...` with the reason, and a SPLIT-14 Cases row of
+   kind exception. Decide pricing_game_2016_french_fleet issue 6 under the same wording.
+
+   [^w3a]: principles.md, "Exceptions and amendments": "A Must has no exceptions: only a higher-ranked Must overrides
+     it, and anything else is an amendment." **SPLIT-14** (Must): at least 3 windows, none training on less than half
+     the rows.
+   [^w3b]: **SPLIT-8** Cases: open_university_learning_analytics_dataset (one valid window, folds by entity,
+     2026-10-21); spanish_motor_insurance_coverage_level_2022_2024 (folds by policy, Andrej, 2026-11-02); **SPLIT-14**
+     Cases: california_house_prices_2020 (its 25% window raised to the floor, 2026-10-21).
+
    [^floor]: **SPLIT-14** (Must): a temporal task has at least 3 windows, and no window's train side holds less than
      50% of the data; "A task that cannot meet it ships under SPLIT-8".
    [^forced]: **SPLIT-8** (Must; narrows SPLIT-7, SPLIT-14 and USE-10), reworded 2026-11-05 (Lennart): a release with

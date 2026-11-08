@@ -1,8 +1,8 @@
 # australian_vehicle_insurance_2004_2005
 
 **Outcome:** added. The AI recommends shipping it: the re-review panel of 2026-11-06 under the exposure rules found no
-validity rule broken in the rows, features, target or split, its text changes are made (below), and three questions
-are open (issues 7 to 9), two of them on validity (7 and 8). Like every container with a `sample_weight`, it enters no
+validity rule broken in the rows, features, target or split, its text changes are made (below), and two questions
+on validity are open (issues 7 and 8); a third, the age bands' type (issue 9), was settled on 2026-11-08. Like every container with a `sample_weight`, it enters no
 run before the collection's training-weight gate (`BENCHMARK_CHANGES_TODO.md`, "Training weights", "The gate"). The
 "Car" table of de Jong and Heller (2008) from the R package insuranceData (CASdatasets holds the same rows): 67,856
 one-year Australian vehicle policies of 2004-2005, target the claim cost per year insured (the cost of the part of the
@@ -31,12 +31,12 @@ price level nor the spread of the relativities; MET-15 holds at the definition (
 Quality: the 53 vehicle values of 0 made missing (CLEAN-10, CLEAN-11); the claim costs at 200 kept as recorded, as the
 call on fremtpl2's fixed amounts (2026-10-20); dollars kept on Andrej's call of 2026-11-02 (issue 5; CLEAN-16 as
 amended 2026-11-06: a rate scored by a Gini keeps the curator's scale); the 7 costs per year of 1M dollars or more
-kept, since no row may be selected by the realized weight (LEAK-41); CLEAN-14: the age bands ship as integers, open
-(issue 9). Weighed: a documented textbook table +, the standard actuarial formulation (a rate with its weight) +, six
+kept, since no row may be selected by the realized weight (LEAK-41); CLEAN-14: the age bands ship as ordered categories
+(issue 9, 2026-11-08). Weighed: a documented textbook table +, the standard actuarial formulation (a rate with its weight) +, six
 coarse rating factors -, a thin signal (best honest score 0.109 to 0.120) -. For Andrej: Lennart's decision D8 of
 2026-11-06 (issue 6) supersedes his call on issue 2 (`exposure` kept as a feature) and changes the form of his Gini of
 issue 4 (unweighted on the cost, now weighted on the rate); the newer curator decision wins. Left for Andrej and
-Lennart: issues 7 to 9.
+Lennart: issues 7 and 8 (issue 9 settled on 2026-11-08).
 
 Changes made after the review panel (AI, 2026-11-01), text only (rows, split and metric unchanged): `exposure` is
 described as the share of the year observed, cut short after some claims, and named in `fit_reason` as a kept leak;
@@ -55,8 +55,8 @@ and the target superseded.
 
 **Main points:** Open: what sets `gender` apart from bemtpl97's dropped `sex` (7); for the cost per year insured, an
 exception to the per-contract rule or an amendment of it, settled once with spanish_motor_insurance_2015_2018's issue 7
-(8); the age bands as numbers or ordered categories (9). Issues 1 to 6 are resolved (6 supersedes 2 and changes the
-form of 4).
+(8). Issues 1 to 6 are resolved (6 supersedes 2 and changes the form of 4), and 9 on 2026-11-08 (the age bands as
+ordered categories).
 
 **Issues for Andrej and Lennart:**
 
@@ -361,6 +361,36 @@ form of 4).
    notes, and re-run `dataset check` and the leak and task probes. On E: the main session amends the Tensions row in
    principles.md (date, curator, this case).
 
+   **Lennart (2026-11-08, change):** Option C: Drop gender, as bemtpl97.
+
+   **Consistency check (AI, 2026-11-08):** Drop `gender` "as bemtpl97", when bemtpl97's ground was the law that binds
+   its actor today and the actor here is an Australian insurer?
+
+   * **Problem:**
+     - The rules drop a rating factor the actor knows at the quote only when the actor may no longer use it; bemtpl97's
+       `sex` went because EU law bars it (Test-Achats)[^a7a].
+     - Section 41 of the Sex Discrimination Act 1984 (Cth) exempts insurance terms that rest on actuarial or statistical
+       data it is reasonable to rely on (the panel's reading; the AI could not fetch the statute's text today), so an
+       Australian insurer may use the factor.
+     - Without a fact of its own, dropping it here departs from the rule on inputs known at the prediction point.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | A stance for the family | the tensions row is amended: sex leaves the rating factors of every insurance pricing task, whatever the law; `gender` dropped here | like cases alike without reading statutes; your C stands | drops an input this actor may use; a rule change |
+     | b | Follow the law of the actor | `gender` stays, the notes name s41 (the issue's option B) | the rule as written | differs from bemtpl97 by jurisdiction |
+     | c | C as an exception | `gender` dropped with a fact of its own | your mark stands | no such fact found |
+
+   * **Recommendation:** (a) if "as bemtpl97" was meant for the whole insurance family, otherwise (b).
+   * **Decision:** (a), (b) or (c)?
+
+   **Notes for the AI:** on (a), amend the tensions row in principles.md (2026-11-08, Lennart, this case) and drop
+   `gender` as the issue's option C says; on (b), the issue's option B. Re-run the task probe either way.
+
+   [^a7a]: principles.md, "Tensions" ("A rating factor known at the prediction point against a factor the actor may no
+     longer use"; bemtpl97, 2026-11-05); **USE-6** (Must), **USE-1** (Must).
+
+
    [^i7-tension]: The Tensions row of principles.md on "a rating factor known at the prediction point against a factor
      the actor may no longer use" (P3 and P4; **USE-1**, **USE-6**): when the use case is today's pricing, the actor's
      legal constraint today decides and the factor leaves the features; a use case set in the data's own time keeps
@@ -412,6 +442,148 @@ form of 4).
    MET-14's Cases table in metrics.md. On C: the main session amends MET-14's clause in metrics.md (date, curator,
    this case), and the notes' target bullet cites the amended clause. Either way the same call answers
    spanish_motor_insurance_2015_2018 issue 7.
+
+   **Lennart (2026-11-08, discuss):** Reinvestigate the prior decisions, from the original state of the data and its
+   context with our current rules, what target would be best?
+
+   **Answer (AI, 2026-11-08):** Keep the claim cost per year insured with the weighted Gini, and add one sentence to the
+   per-contract clause so that the rate follows from the rule?
+
+   * **Problem:**
+     - You asked which target and metric are best when the earlier calls (Andrej's of 2026-11-02 and decision D8 of
+       2026-11-06) are treated as hypotheses and tested against the raw data, the source and the current rules, and
+       what that means for the per-contract clause of this issue.
+     - The data hold each one-year contract only inside the extract's observation window (98.1% are part-years, 0.47
+       of a year per contract on average), so the recorded cost, claim count and claim indicator belong to that window,
+       and five targets were fitted on the 9 shipped splits without `exposure` and without `gender`.
+     - Only the two targets per year insured give no credit for predicting the window, and of those the cost per year
+       under the weighted Gini is the insurer's own quantity and tells the models apart best, so D8 stands and the
+       clause needs one sentence on what a per-contract target requires.
+   * **Background:**
+     - The source: one-year policies taken out in 2004 or 2005 (de Jong and Heller 2008); `exposure` is "0-1" in
+       insuranceData and "the number of policy years" in CASdatasets. The book treats it as the time at risk in its
+       claim-occurrence model (Sec. 7.3-7.4), models the claim cost with its zeros (Sec. 10.4) and scores no held-out
+       prediction[^a8a].
+     - What `exposure` measures: among the policies without a claim it is spread almost evenly over the year (12.4% in
+       the first tenth, 8.8% in the last), as a one-year window cuts one-year terms that start all through the year;
+       1,289 rows (1.9%) run the full year, against about 184 rows for any other day count; some claims cut the rest
+       short (the 193 likely write-offs have a median of 0.37 years against 0.65 for other claims).
+     - What that does to the recorded outcomes: the chance that a row has a claim rises from 1.3% (7 days or less) to
+       12.1% (0.9 years or more), while from 7 days on the claims per year insured fall from 0.23 to 0.14. The book's
+       own numbers show it: ROC AUC 0.662 with the exposure in the link, 0.548 without.
+   * **Experiments:** 9 shipped splits, five honest models (two GLMs, three LightGBMs), `gender` out, `exposure` only
+     as the weight of the targets per year.
+     - Predicting the window: a model of the exposure from the five rating factors, used as the score, reaches ROC AUC
+       0.539 on the claim indicator (the GLM 0.548) and a Gini of 0.057 on the cost per contract (the GLM 0.119; above
+       0 on 8 of 9), but a weighted Gini of -0.034 on the cost per year (below 0 on 8 of 9) and -0.016 on the claims
+       per year.
+     - Signal over the constant: cost per year, weighted Gini, GLMs 0.117 and 0.125 (SD 0.022 and 0.024, 9 of 9);
+       claims per year, weighted Poisson deviance, the best three models 0.47% to 0.49% of the constant's deviance
+       (SD 0.13% to 0.16%, 9 of 9); cost per year, weighted Tweedie deviance, GLMs 0.48% and 0.62% (6 and 8 of 9),
+       every LightGBM below the constant.
+     - Telling models apart: on the cost per year the GLM beats the regularised LightGBM by +0.031 Gini (8 of 9), and
+       the Gini puts the five models in the same order as the Tweedie deviance on the same target; on the claims per
+       year the GLMs and the regularised LightGBM tie (-0.0001, GLM ahead on 3 of 9). Within one test fold the Gini is
+       noisier: bootstrap SE 0.034 on the gap of 0.051 between the GLM and the 300-round LightGBM, against 0.0018 on a
+       gap of 0.0048 for the frequency deviance.
+     - The claim size: on the claimants a gamma GLM gains nothing over the mean claim (-1.0% of the deviance, above 0
+       on 4 of 9), and the frequency GLM's predictions score 0.1145 on the shipped Gini against 0.117 for the cost GLM.
+       The six factors order the cost per year through its frequency; the size adds the heavy tail, which is what
+       separates the GLM from boosting.
+     - Ranking across the 9 splits (Kendall's W of the five models, 1 for the same order on every split): Tweedie
+       deviance 0.90, claim occurrence 0.68, cost per contract 0.68, claims per year 0.66, cost per year Gini 0.54; the
+       Gini's lower value comes from pairs that are close (the two GLMs, the two slower LightGBMs).
+   * **Consistency:**
+     - Andrej's `exposure` as a feature (2026-11-02): overturned, as D8 did; alone it scores ROC AUC 0.653 on the claim
+       indicator and 0.205 weighted Gini, and a quote never has it[^a8b].
+     - Andrej's Gini (2026-11-02): kept as the metric; its first form, unweighted on each row's cost, is overturned,
+       since on it a model of the window earns 0.057 of the GLM's 0.119. His dollars (2026-11-02): kept, a Gini does
+       not depend on the scale.
+     - D8 (2026-11-06): kept in full. Its reason against the claim frequency gets a measured fact: here the claim size
+       adds no order, and the frequency score cannot tell the reasonable models apart.
+     - spanish_motor_insurance_2015_2018 (your B of 2026-11-08): the same clause, the other way for a stated fact.
+       There the contract itself ends (a lapse, priced through the surcharge for paying in instalments) and the data
+       record it to that end; here the extract's window ends the record while the contract runs on[^a8c].
+     - fremtpl2 and bemtpl97 ship the claims per year because their sources score that; this source scores no
+       frequency.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Keep the current target (implemented), the clause amended | cost per year insured, weighted Gini, `exposure` the weight; one sentence added to the per-contract clause in the same change as spanish's | the insurer's own quantity; the window earns nothing (-0.034); separates the GLM from boosting (+0.031, 8 of 9) | sees only the order, so a tariff twice too steep scores the same; noisier within one fold |
+     | b | Keep the current target, recorded as an exception | as a, with an exception line in the record, the notes and the rule's cases instead of the sentence | no second change to the clause | the first exception on the clause; the next table with a window needs one too |
+     | c | Claims per year insured, weighted Poisson deviance | target `numclaims / exposure`; the cost leaves; as fremtpl2 and bemtpl97 | a score that sees the level and the spread; less noise within a fold; the window earns nothing | drops the claim size the insurer prices; the reasonable models tie; a third task of the same kind |
+     | d | Cost per year insured, weighted Tweedie deviance | same target and weight, the metric changes | sees the level and the spread; same model order as the Gini | best gain 0.6% of the constant's; every LightGBM below the constant; a power and a floor to choose |
+     | e | Claim cost per contract, unweighted Gini | Andrej's target of 2026-11-02 with `exposure` out and no weight | the clause as it reads; no rule change | the recorded cost is the window's part of the contract; predicting the window earns 0.057 of 0.119 |
+     | f | Claim occurrence, ROC AUC | target `clm`, the book's measure | the book's own score (0.548 without the exposure, reproduced) | predicting the window earns 0.539 of 0.548; drops the count and the size; no insurer prices it alone |
+
+   * **Recommendation:** a. The insurer prices the cost per year insured[^a8d]; dividing by the time observed and
+     weighting by it removes the window that the per-contract cost and the occurrence reward[^a8b]; and on that
+     target the Gini orders the models as the proper deviance does while resolving them better[^a8e]. The added
+     sentence says what both tables show: a per-contract target needs the data to record each contract to its end,
+     so no exception is needed[^a8c][^a8f]. c is the choice if a score that sees the price level counts for more than
+     the claim size. **Decision:** a, b, c, d, e or f?
+
+   **Notes for the AI:**
+   - The numbers above are without `gender` (issue 7): the Tweedie GLM scores 0.117 and the Tweedie LightGBM of the
+     metric reason (300 rounds) 0.067, where the reason now gives 0.120 and 0.059 with `gender`; update them when
+     issue 7 is applied.
+   - On a: `dataset.py`'s target, weight, metric and split stay. In `curation_comments`, the target bullet gets: "The
+     per-contract clause of MET-14 (amended 2026-11-08) does not apply: the data record each one-year contract only
+     inside the extract's window (98.1% part-years, 0.469 of a year per contract on average), so the recorded cost is
+     the window's part of the contract's. A model of the exposure from the rating factors, used as the score, scores
+     0.057 Gini on the cost per contract (the GLM 0.119) and -0.034 on the cost per year (9 shipped splits,
+     2026-11-08)." In the metric reason, the sentence on the frequency becomes: "The alternative, the claim frequency
+     with an exposure-weighted Poisson deviance, was not chosen: it drops the claim size the insurer prices, and on
+     the shipped splits the GLMs and a regularised LightGBM tie on it (-0.0001, 3 of 9), while the weighted Gini on the
+     cost per year separates them (+0.031, 8 of 9) and orders the five models as the weighted Tweedie deviance does."
+     The main session amends MET-14's per-contract clause in metrics.md in one change with
+     spanish_motor_insurance_2015_2018 issue 7 (B), for example: "A per-contract target stays when the planned term is
+     constant and known at the prediction point and the data record each contract to its end; a cut known only at the
+     policy's end and priced into the contract (a surcharge for paying in instalments) does not make the target a
+     rate, and the notes give the share cut short (spanish_motor_insurance_2015_2018: 2,055 of 37,090). When the data
+     observe only part of each term, as an extract window that cuts the policies at its edges, the recorded amount is
+     the window's, not the contract's, and the rate ships (australian_vehicle_insurance_2004_2005: 98.1% part-years)."
+     Update this table's row in MET-14's Cases (the window fact) and spanish's row; a CC line in the record; the
+     resolved turn here and on spanish issue 7; `dataset check`.
+   - On b: append to the record and the notes' target bullet, in bold label: "Exception to MET-14 (2026-11-08,
+     Lennart): every policy has a one-year planned term known at the quote, but the data record 98.1% of them only
+     inside the extract's window (0.469 of a year per contract on average), so the recorded cost is the window's part
+     of the contract's; the cost per year insured, weighted by the time observed, is what the insurer prices. Serves
+     P3 (USE-5)." The main session adds a row of kind `exception` to MET-14's Cases; spanish's amendment stands alone.
+     The metric-reason sentence of a applies too.
+   - On c: `_clean` builds `claims_per_year` = `numclaims` / `exposure`, asserts that it times `exposure` gives back
+     `numclaims`, and drops `clm`, `claimcst0`, `numclaims` and `X_OBSTAT_`; `metric = Metric.from_context(
+     "mean_poisson_deviance", params={"min_prediction": 1e-4}, inputs={"weight": "exposure"}, ...)` with a reason
+     (the book fits no held-out frequency, the deviance of the offset model, fremtpl2's floor) and a definition;
+     `ScoringColumn.used_by` and `sample_weight` follow; the `task_summary` (question, predicted, changes), the
+     target-dominant acceptance (93.2% zero) and the decisions (the 200 floor goes to a note; the 7 rows become 52 to
+     365 claims a year) are rewritten; the clause amendment of a; `dataset check`, the task probe and probe 22.
+   - On d: `metric = Metric.from_context("mean_tweedie_deviance", params={"power": 1.5, "min_prediction": 1.0},
+     inputs={"weight": "exposure"}, ...)`, the reason naming the power and the floor (two orders below the portfolio's
+     293 dollars a year); the target stays on the identity scale; the clause amendment of a; `dataset check`.
+   - On e: the target is `claimcst0` renamed `claim_cost`, `exposure` dropped (still never a feature), no weight
+     scoring column and no `sample_weight`, `normalized_gini` from context; the notes name the window and the 0.057;
+     spanish's amendment stands alone.
+   - On f: the target is `clm`, binary, `roc_auc` with the book's in-sample AUC named as the original; `exposure`,
+     `numclaims` and `claimcst0` dropped; the notes give the 0.539 of the window model.
+
+   [^a8a]: Read by Andrej on 2026-11-02 (printed pages): Sec. 7.3-7.4 (logistic model, exposure in the link), Sec. 7.6
+     (ROC AUC 0.662 against 0.548, in-sample), Sec. 8.3 and 10.5 (Tweedie and multiple-claim models, not fitted to this
+     table), Sec. 10.4 (zero-adjusted inverse Gaussian model of the claim cost with its zeros, chosen by AIC). Whether
+     a chapter fits a claim-count or a claim-size model to this table was not checked.
+   [^a8b]: **LEAK-41** (Must): a column the task uses as a weight or a rate's denominator, cut after the prediction
+     point, is never a model input, and neither is a column that encodes it; **MET-15** (Must): a realized denominator
+     is the metric's row weight and the `sample_weight`.
+   [^a8c]: **MET-14** (Should), as it reads: "A per-contract target stays when the planned term is constant and known
+     at the prediction point"; amended on 2026-11-08 (Lennart, spanish_motor_insurance_2015_2018 issue 7, B): "a cut
+     known only at the policy's end and priced into the contract does not make the target a rate".
+   [^a8d]: **USE-5** (Must): predict what the actor acts on, at the resolution they act on it; **MET-1** (Must): the
+     metric scores the decision of the use case.
+   [^a8e]: **MET-10** (Weigh): the resolution on our folds and diversity; **MET-8** (Should): a proper score is
+     preferred for the same goal; **MET-11** (Must): the Gini and the deviances here are all from context.
+   [^a8f]: principles.md, "Strengths": a departure from a Should rule needs its fact recorded as an exception;
+     "Exceptions and amendments": an amendment replaces the rule's text under the same ID.
 
    [^i8-rule]: **MET-14** (Should; 2026-11-06, Lennart, on fremtpl2 and bemtpl97): a count or amount accrued over a
      varying amount at risk ships as the rate per unit when the decision prices per unit; "A per-contract target stays
@@ -467,6 +639,11 @@ form of 4).
      "does the source say in words what each level is?"; a score with words only at its two ends is a number; "Bands
      of a quantity ("21-25", "1-10%", "3 or more") are ordered categories with the band labels, decoded where the file
      stores a band's number." open_university_learning_analytics_dataset ships its `age_band` as ordered categories.
+
+   **Resolved (2026-11-08, Lennart):** B. `_feature_types` types `vehicle_age_band` (levels 1 to 4) and
+   `driver_age_band` (levels 1 to 6) as ordered categories, youngest first, the codes kept as levels since the band
+   limits are unpublished; the notes' bullet says so, with a CC. `dataset check`: 0 errors, 0 warnings; the dtype probe
+   flags 0 of 6 columns.
 
 **Review panel:** ship after changes (mediator). Tier full, re-review of 2026-11-06 under LEAK-41, MET-14 to MET-16,
 after decision D8 (issue 6): 12 reports. Claims: 39 audited, 34 hold (a few only approximately), 3 refuted in their

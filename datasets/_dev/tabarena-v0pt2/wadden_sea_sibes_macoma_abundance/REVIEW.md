@@ -1,7 +1,7 @@
 # wadden_sea_sibes_macoma_abundance
 
 **Outcome:** added. The AI recommends shipping it as implemented: the re-review of 2026-11-06 under the exposure
-rules changed wording only, and one low-ranked call is open (issue 7). The data are NIOZ's SIBES survey of the Dutch
+rules changed wording only, and its one low-ranked call (issue 7) was settled on 2026-11-08: the note only. The data are NIOZ's SIBES survey of the Dutch
 Wadden Sea flats (version 6 of 2024-12-21, CC BY-SA 4.0): one row per fauna sample, 59,044 samples at 5,092 stations,
 2008-2022. The target is the Baltic tellin (Macoma balthica) per m^2, zero where the sample held none (56.0%), built
 by the data descriptor's own join; shipped as log1p and scored after the inverse. Known: the position, tidal basin and
@@ -48,7 +48,7 @@ Quality: the 71 samples with unidentified tellinoid spat leave (CLEAN-15); six d
 their conflicting sediment is no source of the interpolation (CLEAN-1). The 117 pairs of a grid and a random sample
 taken at one station on one day share every feature; each pair stays in one fold through the station. CLEAN-11 holds
 with two notes: the 39 single boat cores stay (issue 6), and so do the 608 positive counts below one tellin per core,
-whose cause is unknown (issue 7). EV-8 triggered three times on 2026-11-06, each fixed by rewording: the 608, which the
+whose cause is unknown (issue 7, kept with the note only on 2026-11-08). EV-8 triggered three times on 2026-11-06, each fixed by rewording: the 608, which the
 area and the subsample correction cannot explain; the nominal survey stamps; the row text, which now names the single
 boat cores. The check warning `task_target_value_dominant` (56.0% zeros, observed absences) is accepted with Andrej's
 reason of 2026-11-03.
@@ -68,11 +68,10 @@ same values, and 400 of 400 sampled rows match a re-read of the source tiles. Th
 (claim auditor, column auditor, task gamer, mediator) found wording only, and its four changes are made (Mediator,
 "Changes to make now"). `dataset check`: 0 errors, 0 warnings.
 
-**Main points:** Open: issue 7, keep the 608 counts below one tellin per core with the note only (A, implemented,
-recommended), or ask NIOZ for their cause (B)? Settled: the interpolated sediment (issue 5), the split by station after
-a clean leak test (1), the 2008 samples without a fauna record dropped (2), the elevation joined (4) and RMSE on the
-density kept (Andrej's call, no issue in this file) on 2026-11-02; the 39 single boat cores kept with a note (6) on
-2026-11-06. Across datasets: X3, whether the check that the density times the core area rebuilds the count applies only
+**Main points:** Open: none. Settled: the interpolated sediment (issue 5), the split by station after a clean leak test
+(1), the 2008 samples without a fauna record dropped (2), the elevation joined (4) and RMSE on the density kept
+(Andrej's call, no issue in this file) on 2026-11-02; the 39 single boat cores kept with a note (6) on 2026-11-06; the
+608 counts below one tellin per core kept with the note only (7) on 2026-11-08. Across datasets: X3, whether the check that the density times the core area rebuilds the count applies only
 when the source releases the count.
 
 **Issues for Andrej and Lennart:**
@@ -346,6 +345,10 @@ when the source releases the count.
      documented note; exclude the dataset.
    [^7c]: **CLEAN-11** (Should): impossible values become missing, and the row stays; values that are only unusual
      stay. A part-animal may be a real record, so nothing is set missing.
+
+   **Resolved (2026-11-08, Lennart):** A, as implemented. The 608 densities ship as published, and the exposure note
+   says their cause is unknown, now with the CC of 2026-11-08; NIOZ is not asked for now. `dataset check`: 0 errors,
+   0 warnings.
 
 **Review panel:** ship after changes (mediator). The changes are wording only and are made. Tier focused, a re-review of
 2026-11-06 under LEAK-41 and MET-14 to MET-16, after decision D13 and the elevation fix: the claim auditor, the column

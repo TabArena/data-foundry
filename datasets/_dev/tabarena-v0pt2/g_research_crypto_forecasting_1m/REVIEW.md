@@ -7,10 +7,10 @@ weighted by its coin's `Weight`, on three 91-day test windows at the end, with a
 rows drawn as whole minutes. A focused re-review of 2026-11-06 under the new rules on exposure and weights (LEAK-41,
 MET-14 to MET-16), by the claim auditor and the mediator, finds no leak and no need for a training weight, and
 recommends shipping after text changes; they are applied in `dataset.py`, and the README is regenerated (not built yet).
-One question is open, a confirmation: whether the model still clearly beats each coin's naive forecast now that the
-oldest window's lead includes 0 (issue 8; recommended: keep).
+Its one question, a confirmation, was settled on 2026-11-08: the model still clearly beats each coin's naive forecast,
+though the oldest window's lead includes 0 (issue 8, A, keep).
 
-Validity: SEL-10 and TP-10 hold, leg 1 by the reading issue 8 asks you to confirm. On the shipped splits a 12-seed
+Validity: SEL-10 and TP-10 hold, leg 1 by the reading Lennart confirmed on 2026-11-08 (issue 8). On the shipped splits a 12-seed
 ensemble of early-stopped LightGBM leads the coin's mean by +0.038, +0.042 and +0.023 (newest window first); the 95%
 interval excludes 0 in the two newer windows, and pooled over the three the lead is +0.034 (SE about 0.008, z about
 4.3). Leg 2 is unchanged: no feature is a lag of `Target`, and the top solutions were LightGBM. SPLIT-9 and SPLIT-10
@@ -31,10 +31,10 @@ signal "clear" in every window, the rule's case row) and are corrected; the olde
 
 Weighed: the model leads the coin's mean in every window and by about 4.3 standard errors pooled, and its daily
 correlation is positive on 75-77 of 91 days (+), against the oldest window's interval including 0 and its R² below 0
-(-). For you: issue 8.
+(-). Issue 8 settled on 2026-11-08: the test still holds.
 
-**Main points:** Does the model still clearly beat each coin's naive forecast, now that the oldest window's lead
-includes 0 (issue 8; recommended A, keep)? The training weight needs no decision.
+**Main points:** Open: none. Settled: the model still clearly beats each coin's naive forecast, ahead in every window
+and with the interval read pooled (issue 8, A, 2026-11-08). The training weight needs no decision.
 
 **Record judgment:** valid. G-Research's own competition data and use case, a first-hand source; the record's fields
 agree with the definition. The earlier review file (issues 1 to 7) was settled on 2026-10-22 and removed, before the
@@ -117,6 +117,11 @@ numbered 8 so that no old mark lands on it. The R² and weighted Pearson figures
      naive forecast, LightGBM with 1,000 trees ahead in all three windows (1.261 / 1.176 / 1.223 against 1.393 / 1.273
      / 1.372); rain_in_australia (2026-10-26), the full model ahead of the forecasts from the location's own rain
      series in 9 of 9 windows. Neither row gives an interval per window.
+
+   **Resolved (2026-11-08, Lennart):** A, as implemented: TP-10 leg 1 holds on the shipped splits, the model ahead of
+   the coin's mean in every window by its point estimate and the interval read pooled, as for ashrae and
+   rain_in_australia. The dataset stays as defined; the Scope bullet of the notes and the record's CC say so, and the
+   rule's Cases row records the reading. `dataset check`: 0 errors, 0 warnings.
 
 **Review panel:** ship after changes, text only (mediator). Tier focused, a re-review of 2026-11-06 under LEAK-41 and
 MET-14 to MET-16: the claim auditor, then the mediator. Claims: 21; 15 hold (one with a wording caveat, fixed), 4

@@ -1,24 +1,20 @@
 # bank_marketing
 
-**Outcome:** added. UCI's bank-full file (45,211 records of a Portuguese bank's term-deposit phone campaigns, May 2008 to November 2010, one per client and campaign), predicting a subscription, scored by ROC AUC on a random split. A focused re-review of 2026-11-06 recommends shipping after changes. The changes that need no decision are made in `dataset.py` (notes on `campaign`, `contact`, `pdays` and `balance`; `job`'s "unknown" as missing; the row text), and the README is regenerated; the build stays stale until you ask. Open: the split, since a client's later row in training gives away its earlier row's label (issue 1); the prediction point, which decides `campaign` (issue 2); the duplicates (issue 3). Not checked on this tier: whether the authors' 2014 release of the same campaigns (with the month and weekday of each call, economic context and the true phone type of May-June 2008) is the better version; no provenance reviewer ran.
+**Outcome:** added. UCI's bank-full file (45,211 records of a Portuguese bank's term-deposit phone campaigns, May 2008 to November 2010, one per client and campaign), predicting a subscription, scored by ROC AUC on a random split. A focused re-review of 2026-11-06 recommends shipping after changes. The changes that need no decision are made in `dataset.py` (notes on `campaign`, `contact`, `pdays` and `balance`; `job`'s "unknown" as missing; the row text), and the README is regenerated; the build stays stale until you ask. Open: the split, since a client's later row in training gives away its earlier row's label (issue 1); the prediction point, which decides `campaign` (issue 2). Settled on 2026-11-08: the duplicates, kept with a note (issue 3), and the record's `year`, set to 2012. Not checked on this tier: whether the authors' 2014 release of the same campaigns (with the month and weekday of each call, economic context and the true phone type of May-June 2008) is the better version; no provenance reviewer ran.
 
 Validity: LEAK-17 and SPLIT-29 triggered, not fixed: clients recur across campaigns, and under the random split a client's later row gives away its earlier row's label through `poutcome` (+0.020 ROC AUC to a model that makes the match; issue 1). SPLIT-1, SPLIT-5, SPLIT-7, SPLIT-19 and SPLIT-22 point to a temporal split on the file's date order, against the SPLIT-31 precedent that names this dataset as IID (issue 1). USE-3 fails as written: the use case is before the campaign, yet `known` lists this campaign's calls (issue 2). LEAK-10 holds for `contact` and `pdays`; for `campaign` it depends on issue 2. LEAK-41 and MET-15 do not apply (no weight).
 
 Value: MET-1, MET-2 and MET-5 hold (ROC AUC is the source's selection criterion); 1,763 positives per test fold. Under the temporal windows the signal is weak (mean ROC AUC 0.56 to 0.62, the first window below chance): a fact for the task probes, no reason to keep the random split (P4 over P6).
 
-Quality: CLEAN-10 applied (`job`'s "unknown" missing; the reason for `pdays` = -1 written and its warning accepted); LEAK-16 open (issue 3); the wrong or one-sided sentences of the notes rewritten.
+Quality: CLEAN-10 applied (`job`'s "unknown" missing; the reason for `pdays` = -1 written and its warning accepted); LEAK-16 decided: the 274 exact copies kept with a note (issue 3, 2026-11-08); the wrong or one-sided sentences of the notes rewritten.
 
 Weighed: source + (a paper with a stated metric), use case + (a real decision), split gap - (random on dated data), signal - under the temporal split.
 
-Left for you: issues 1, 2, 3 and the `year` field (the definition's 2012 is UCI's release; the record's 2011 is the ESM paper, which only analysed the data).
+Left for you: issues 1 and 2. Settled on 2026-11-08: issue 3 and the `year` field (the record now takes the definition's 2012, UCI's release, in place of 2011, the ESM paper, which only analysed the data).
 
-**Main points:** Split by time on the file's date order, reversing your call that kept this dataset on a random split (issue 1)? Is the model used before the campaign, so `campaign` goes, or at a call during it, as the source frames it, so it stays (issue 2)? Keep the 274 exact copies with a note (issue 3)?
+**Main points:** Split by time on the file's date order, reversing your call that kept this dataset on a random split (issue 1)? Is the model used before the campaign, so `campaign` goes, or at a call during it, as the source frames it, so it stays (issue 2)? Settled on 2026-11-08: the 274 exact copies kept with a note (issue 3); the record's `year` set to 2012.
 
-**Record fields that disagree with the definition:**
-
-- `year`: record `2011`, definition `2012`.
-
-**Record judgment:** valid, keep (`Yes`), after changes. The record's `year` (2011, the ESM paper, which only analysed the data) disagrees with the definition's 2012 (UCI's release, donated 2012-02-13): the field row above. Its comment that the features "seem to be time-invariant" is superseded by an Assessment line of 2026-11-06 giving the measured shift by year; a second line of that date records this panel.
+**Record judgment:** valid, keep (`Yes`), after changes. The record's `year` (2011, the ESM paper, which only analysed the data) disagreed with the definition's 2012 (UCI's release, donated 2012-02-13); it was set to 2012 on 2026-11-08 (Lennart, `update`). Its comment that the features "seem to be time-invariant" is superseded by an Assessment line of 2026-11-06 giving the measured shift by year; a second line of that date records this panel.
 
 **Issues for Lennart:**
 
@@ -44,6 +40,37 @@ Left for you: issues 1, 2, 3 and the `year` field (the definition's 2012 is UCI'
    * **Recommendation:** A, by rank: the rules against the recurring-client leak and for a split that mirrors the application are firm ones, your earlier call applied a weaker one, and the date order exists, so the random split is not forced[^rank]. Under A, a short follow-up question asks whether the call month comes back as a feature (the source keeps it as an input, and the period is known when a campaign is planned). **Decision:** split by time (A), or keep the random split and amend the rule (B)?
 
    **Notes for the AI:** on A, in `dataset.py`: rebuild the year in `_clean` from the file order (it steps up where the month sequence wraps from December to January) and use year and month as the time key; declare a temporal split with five expanding windows at the 50% floor (test windows of 4,521 rows, SPLIT-14); rewrite `split`, `fit`, `fit_reason` and `data_tags`; set the record's `required_split` to `Temporal (NON-IID)` with the `Non-IID (Temporal)` tag; move bank_marketing out of the SPLIT-31 Cases row in splits.md (and the matching line of leak_checks.md) with the facts that set it apart; run the task probes on the windows. On A, raise the call month as a new issue (LEAK-10, USE-6). On B: amend LEAK-17 or SPLIT-29 (a Must takes no exception) and write the +0.020 and the period effect into the notes and `fit_reason`. Under both options the task summary's `split` ("Random clients ... other clients") is refuted and is rewritten.
+
+   **Consistency check (AI, 2026-11-08):** Your mark keeps the random split (B); what sets bank_marketing apart from
+   the dated tasks that went to a split by time?
+
+   * **Problem:**
+     - B keeps a measured leak across the split (a recurring client's later row: +0.020 ROC AUC) and the period's base
+       rate (5% to 52%), on a file whose date order the source states and that rebuilds into five windows above the
+       floor[^b1a].
+     - The rules on recurring entities are of the kind that changes only by amendment, and forest_fires settled that a
+       weak score under the right split is no reason to keep the wrong one[^b1b].
+     - Your earlier keep (SPLIT-31's case row, 2026-10) came before the leak and the period shift were measured, and the
+       mark has no note, so no fact that sets the case apart is on record yet.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Split by time (the issue's A) | five expanding windows on the file's order; bank_marketing leaves SPLIT-31's case row | no rule changed; follows the source's own evaluation and forest_fires | mean ROC AUC about 0.56 instead of 0.76; reverses the earlier keep |
+     | b | Amend the rules, as marked | e.g. "an IID split may stay over recurring entities on dated data when the leak is measured and stated and the windows leave little signal" | keeps the scores | needs the rules on recurring entities and on mirroring the application changed too; lets the score pick the split, which the rules' tensions forbid; reaches every dated task |
+     | c | Forced IID with the leak in the notes | tag forced from temporal; the +0.020 and the period effect stated as an approximate fit | no rule text changed | the forced regime is for a release that cannot give the windows, and this one can |
+
+   * **Recommendation:** (a): no amendment found holds in general without letting the score decide the split.
+   * **Decision:** (a), (b) or (c)? A fact that sets this case apart, if you see one, keeps (b) open as an exception.
+
+   **Notes for the AI:** the steps for A and B are in the issue's notes above; issue 2's answer gives `campaign`'s
+   worth under both splits.
+
+   [^b1a]: **LEAK-17**, **SPLIT-29**, **SPLIT-1**, **SPLIT-7** (Must); **SPLIT-22**, **SPLIT-19** (Should); **SPLIT-8**
+     (Must) for forced splits.
+   [^b1b]: principles.md, "Strengths", "Exceptions and amendments" and "Tensions" ("The right split against the score",
+     P4 over P6; forest_fires); **SPLIT-4**.
+
 
    [^split31]: **SPLIT-31** (Should): over related entities, a random split can match how a task is framed even when it is optimistic; such a task is a candidate for a grouped or temporal variant, not a fix. Cases: amazon_employee_access, bank_marketing (applied).
    [^order]: **SPLIT-22** (Should): the raw file order can be the time order without a timestamp; keep it. **SPLIT-7** (Must): a missing or hidden timestamp does not make a task IID.
@@ -77,6 +104,47 @@ Left for you: issues 1, 2, 3 and the `year` field (the definition's 2012 is UCI'
 
    **Notes for the AI:** the mediator's change i waits for this decision (USE-3, Must): `known` must agree with the stated prediction point. On A: drop `campaign` in `_clean`; remove "the number of calls in this campaign" from `known` and add the drop to `changes`; rewrite the last sentence of `fit_reason`; turn the `Potential leak, kept on purpose:` bullet into a drop bullet (after the prediction point, LEAK-10); in leak_checks.md's span row, replace the bank_marketing entry with "dropped, after the prediction point"; add a first notes bullet naming the prediction point (before the campaign's first call; known then: the client's profile and the earlier campaigns). On B: reword `use_case` (during a term-deposit campaign, the team picks the next client to call), `row` (the client's last call in one campaign) and `known` (the calls made to the client so far in this campaign); keep the note; add the distinguishing fact to the span row; add a first notes bullet naming the prediction point. Re-run `dataset check` either way.
 
+   **Lennart (2026-11-08, discuss):** How much smaller would the data become with (B) and how far away form the real
+   use case is (A)?
+
+   **Answer (AI, 2026-11-08):** Neither option drops a row: B's gap is the calls the release leaves out, A's is one
+   input the source used.
+
+   * **Problem:**
+     - B keeps all 45,211 rows, but its moment (the next call) needs a row per call, and the release keeps only each
+       client's last call: 45,211 of the campaign's 124,956 calls (36%).
+     - A keeps the same rows and moves no text away from the use case as the summary states it (the team picks whom to
+       call); it loses only this campaign's call count, worth 0.006 ROC AUC.
+   * **Background:**
+     - Counted on `bank-full.csv`: the 79,745 calls the release leaves out (64%) are each client's earlier calls, 6,035
+       of them failed calls to clients who subscribed later; 17,544 rows (39%) had a single call, where both moments
+       coincide.
+     - Under B the rows are therefore no sample of the calls a model would score: each subscriber appears at the call
+       that succeeded, each non-subscriber at the call after which the bank stopped, and no filter can rebuild the
+       calls in between, since the release does not have them.
+     - Under A the moment is before the first call, the inputs are the profile and the earlier campaigns, all known
+       then, and every row is a client the bank did call, as a list drawn for the next campaign would be[^a2b]. The
+       source frames its model at a call during the campaign (Moro et al. 2014, Table 2), with the calls so far as an
+       input; that is the one point where A departs from it.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | A: before the campaign, drop `campaign` | 13 to 12 features; `known`, `changes`, `fit_reason` and the span row's entry updated | the use case as written; no row lost; every input exists at the moment | departs from the source's framing; -0.006 ROC AUC (about -0.0035 under time windows) |
+     | b | B: at a call during the campaign, keep `campaign` | `use_case`, `row` and `known` reworded to the next call | follows the source; keeps your keep of 2026-11-06 | the rows are 36% of the calls and selected by how each client's calls ended |
+     | c | As now (implemented) | nothing changes | no work | the inputs list a count that does not exist at the stated moment |
+
+   * **Recommendation:** (a): it matches the use case the task states with the data as released, while (b) needs rows
+     the release does not have.
+   * **Decision:** (a), (b) or (c)?
+
+   **Notes for the AI:** the steps for A and B are in the issue's notes above. Counts from `bank-full.csv` (45,211
+   rows; `campaign` sums to 124,956).
+
+   [^a2b]: **USE-3** (Must): name the prediction point and what is known then. **USE-9** (Should): weigh another use
+     case practitioners have against one rephrased to excuse a gap.
+
+
    [^use3]: **USE-3** (Must): name the prediction point, when the model is used and what is known then; a value that did not exist at that point is a leak.
    [^leak10]: **LEAK-10** (Must): a feature holds only what existed at the prediction point and never gives the target away.
    [^leak11]: **LEAK-11** (Should): a value measured after the outcome that weakens the signal stays, with a note.
@@ -106,6 +174,11 @@ Left for you: issues 1, 2, 3 and the `year` field (the definition's 2012 is UCI'
    [^leak16]: **LEAK-16** (Must): duplicate rows need a decision every time.
    [^leak18]: **LEAK-18** (Should): many degrees of freedom and an exact match point to a collection artefact (drop it and give the share); few features and plausible repeats are natural (keep them and say so).
    [^leak34b]: **LEAK-34** (Must): an entity's own history under a temporal split is legitimate.
+
+   **Resolved (2026-11-08, Lennart):** A, as implemented: the 274 exact copies stay, and the notes gain the duplicates
+   bullet with the counts and the reason (93% of the copy rows have a balance of 0, plausible repeats of common
+   profiles; 0.9% of the test rows have a copy in training under the random split). `dataset check`: 0 errors, 0
+   warnings (the copies show as info, 274 and 32 rows).
 
 **Review panel:** ship after changes (mediator). Tier focused (claim auditor, column auditor, mediator), a re-review of 2026-11-06 under LEAK-41 and MET-14 to MET-16, which do not apply here (no weight, no rate target). Claims: 33; 22 hold (6 of them with a caveat), 8 refuted or partly refuted (5 fixed in wording; the use case's moment and the split go to issues 1 and 2, the record's year to the field row), 1 not established (when `pdays` is counted) and 1 untested (the date of `balance`), both reworded as notes, 1 not applicable. Blind review: not run on this tier. Agreed: `contact` and `pdays` stay; the measured worth of `campaign`; the recurring-client leak (raised by the claim auditor, not contested); the mediator's changes a to h, applied (change i waits for issue 2). Disputed: keep or drop `campaign`, which turns on the prediction point (issue 2); settled in wording: whether cellular and telephone differ within a period (change a) and when `pdays` is counted (change c).
 

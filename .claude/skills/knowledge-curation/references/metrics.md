@@ -207,25 +207,25 @@ k, the weights, the time offsets) are its parameters. One metric has one spellin
 force_2020's `force_2020_penalty_matrix` and amex_non_iid_1m's `amex_metric` renamed to general names.
 
 **MET-13 (Must).** A custom metric is shipped with the dataset that needs it, as a reference implementation in the
-shared metric library, in the same change. It is the fastest well-tested code available: a statistics library where
-it covers the metric, otherwise vectorised array code, or for a competition whose official code is slow, the faster
-versions posted in its discussions, checked. It is tested to equal the official implementation on random inputs (to
-1e-9 or exactly), on one case computed by hand, and timed on 1M rows. A metric only one definition holds is never
-shipped: a reader of the files could not compute it. A metric undefined at the edge of its prediction domain floors
-the predictions, so a method gets a score rather than none (P6). The floor is a parameter the definition states, as
-practice clips a model's output before scoring (Lennart, 2026-11-04, on bemtpl97: "in pratice we would also clip to a
-reasonable number"): two orders below the smallest plausible mean, on the scale the metric scores (amended
-2026-11-06, Lennart: 1e-4 claims per year on fremtpl2 and bemtpl97), and the task probe reports the share of
-predictions at the floor. The floor sets the scale of a deviance's worst error (above power 1 a Tweedie deviance's
-cost of a near-zero prediction grows without bound), so `min_prediction` is a required parameter of
-`mean_poisson_deviance` and `mean_tweedie_deviance`, with no library default. A deviance gets no per-row cap: a cap
-makes the metric improper (on fremtpl2 a cap of 10 binds on honest predictions for 4% of the claim rows and moves the
-best constant 8% below the portfolio rate). A metric is stable at its edges (amended 2026-11-05, Lennart): any
-prediction a model can make gets a finite score that does not depend on the row order (ties count by the mean over
-their orderings), a NaN or infinite prediction is an error, and a fold or group the metric cannot score gives NaN or
-is left out by a stated rule, never an infinite value or a number made of rounding noise. How in Data Foundry, with
-the checklist: [definitions.md](../../knowledge-data-foundry/references/definitions.md), "Metrics" and "Metric
-stability".
+shared metric library, in the same change. It is the fastest well-tested code available: a statistics library where it
+covers the metric, otherwise vectorised array code, or for a competition whose official code is slow, the faster
+versions posted in its discussions, checked. It is tested to equal the official implementation on random inputs (to 1e-9
+or exactly), on one case computed by hand, and timed on 1M rows. A metric only one definition holds is never shipped: a
+reader of the files could not compute it. A metric undefined at the edge of its prediction domain floors the
+predictions, so a method gets a score rather than none (P6). The floor is a parameter the definition states, as practice
+clips a model's output before scoring (Lennart, 2026-11-04, on bemtpl97: "in pratice we would also clip to a reasonable
+number"): two orders below the smallest plausible mean, on the scale the metric scores (amended 2026-11-06, Lennart:
+1e-4 claims per year on fremtpl2 and bemtpl97; applied 2026-11-08, Lennart: 0.1 EUR on pricing_game_2017_french_mtpl, a
+convention of the collection that can change later), and the task probe reports the share of predictions at the floor.
+The floor sets the scale of a deviance's worst error (above power 1 a Tweedie deviance's cost of a near-zero prediction
+grows without bound), so `min_prediction` is a required parameter of `mean_poisson_deviance` and
+`mean_tweedie_deviance`, with no library default. A deviance gets no per-row cap: a cap makes the metric improper (on
+fremtpl2 a cap of 10 binds on honest predictions for 4% of the claim rows and moves the best constant 8% below the
+portfolio rate). A metric is stable at its edges (amended 2026-11-05, Lennart): any prediction a model can make gets a
+finite score that does not depend on the row order (ties count by the mean over their orderings), a NaN or infinite
+prediction is an error, and a fold or group the metric cannot score gives NaN or is left out by a stated rule, never an
+infinite value or a number made of rounding noise. How in Data Foundry, with the checklist:
+[definitions.md](../../knowledge-data-foundry/references/definitions.md), "Metrics" and "Metric stability".
 
 ### Rates over an amount at risk, and weights
 
@@ -238,17 +238,18 @@ Poisson the rate weighted by its denominator is the source's offset model (MET-1
 weights the rate by v (the compound-Poisson convention); an offset on the total corresponds to weight v^(2-p) and is
 used only when the source scores that form.
 
-**MET-15 (Must; 2026-11-06, Lennart, on fremtpl2 and bemtpl97).** When a rate target's denominator is realized and
-the decision's quantity is a sum over it (a premium earned pro rata, a book's claims), the denominator is the metric's
-row weight (a weight scoring column read through the metric's `weight` input) and the task's `sample_weight`, never a
-feature (LEAK-41). The rule fixes the weight, not the metric: the metric is chosen per table (MET-10). When the
-decision is per unit of an equal-area map, per loan or per contract, the rate is scored unweighted and no sample
-weight is declared. A declared sample weight is always the metric's row weight. A metric weight that is a function of
-the features (liberty_mutual_fire_peril_loss_cost's `var11_weight`, g_research_crypto_forecasting_1m's asset
-`Weight`) needs no sample weight; the bundle check `task_metric_weight_without_sample_weight` is then accepted with
-that reason. Why: an unweighted fit of the rate estimates E[N/v | x], not the rate E[N | x] / E[v | x] that breaks
-even per unit; on fremtpl2 that is 1.61 times the portfolio rate (0.1186 against 0.0738 claims per year), and it
-scores worse than the constant rate (0.26187 against 0.25342).
+**MET-15 (Must; 2026-11-06, Lennart, on fremtpl2 and bemtpl97).** When a rate target's denominator is realized and the
+decision's quantity is a sum over it (a premium earned pro rata, a book's claims), the denominator is the metric's row
+weight (a weight scoring column read through the metric's `weight` input) and the task's `sample_weight`, never a
+feature (LEAK-41). The rule fixes the weight, not the metric: the metric is chosen per table (MET-10). When the decision
+is per unit of an equal-area map, per loan or per contract, the rate is scored unweighted and no sample weight is
+declared. A declared sample weight is always the metric's row weight. A metric weight that is a function of the features
+(liberty_mutual_fire_peril_loss_cost's `var11_weight`, g_research_crypto_forecasting_1m's asset `Weight`,
+boreal_postfire_lichen_biomass's `plot_weight`, one vote per plot) needs no sample weight; the bundle check
+`task_metric_weight_without_sample_weight` is then accepted with that reason. Why: an unweighted fit of the rate
+estimates E[N/v | x], not the rate E[N | x] / E[v | x] that breaks even per unit; on fremtpl2 that is 1.61 times the
+portfolio rate (0.1186 against 0.0738 claims per year), and it scores worse than the constant rate (0.26187 against
+0.25342).
 
 **MET-16 (Should; 2026-11-06, Lennart).** A survey or design weight is never a feature. The task is scored unweighted
 unless the use case is a population estimate; then one weight ships as a scoring column and as the sample weight, and
@@ -315,8 +316,11 @@ and wait for the curator; the others are decided.
 | MET-14, MET-15 (2026-11-06, Lennart) | australian_vehicle_insurance_2004_2005 | claim cost per year insured (`claimcst0 / exposure`, identity scale); `exposure` the weight scoring column and the `sample_weight`, never a feature; `normalized_weighted_gini` on the rate (from context) | on claim counts 47 to 82% of a free model's gain over the null is the leak the row Gini hid; with the weight, reading `exposure` adds +0.09 to +0.12 weighted Gini on 9 of 9 shipped splits, and 1/exposure alone scores 0.205 | applied |
 | MET-14, MET-15 (2026-11-06, Lennart) | frempl_french_motor_personal_line | log1p of the loss per realized year (CLEAN-16: a Gini-scored rate keeps the curator's scale); the realized length the weight scoring column and the `sample_weight`; `ordered_lorenz_gini` with `per_unit=True` (the unnormalised CAS Gini on the rate) | under the rate a weighted constant scores 0; the honest Tweedie fit scores 0.183, 1/length alone 0.184 (the ceiling LEAK-41 guards against); keeping the length to 31 December on log1p is open (its issue 7) | applied |
 | MET-14, MET-15 (2026-11-06, Lennart) | pricing_game_2016_french_fleet | the claim charge per vehicle-year over the realized `Exposition_au_risque`; the realized period the weight scoring column and the `sample_weight`; `normalized_weighted_gini` (stand-in) | the honest weighted Tweedie fit scores 0.114 / 0.158 / 0.190 against 0 for the weighted constant; the windows' training sides are open (its issue 6) | applied |
-| MET-15 (2026-11-06, Lennart) | spanish_motor_insurance_coverage_level_2022_2024 | `actual_exposure` stays the weight of `normalized_weighted_gini` on the log1p rate and becomes the `sample_weight`; the earned premiums are annualised; `total_exposure` dropped (LEAK-41) | the weighted fits score 0.317 (Tweedie and L2 on log1p); no proxy of the cancellation gains beyond noise through the premiums' values (0% to 6% of the leak reference); their decimals still mark a cut year (ROC AUC 0.965), and rounding them to the cent is open (review issue 7); exposure as a free feature gains +0.033 under Tweedie | applied |
+| MET-15 (2026-11-06, Lennart) | spanish_motor_insurance_coverage_level_2022_2024 | `actual_exposure` stays the weight of `normalized_weighted_gini` on the log1p rate and becomes the `sample_weight`; the earned premiums are annualised; `total_exposure` dropped (LEAK-41) | the weighted fits score 0.317 (Tweedie and L2 on log1p); no proxy of the cancellation gains beyond noise through the premiums' values (0% to 6% of the leak reference); their decimals marked a cut year (ROC AUC 0.965) until the premiums were rounded to the cent on 2026-11-08 (review issue 7, Lennart; 0.565 after, the decimal counts' gain +0.0001 under weighted Tweedie); exposure as a free feature gains +0.033 under Tweedie | applied |
 | MET-14 (2026-11-06, Lennart) | spanish_motor_insurance_2015_2018 | the per-contract target stays: every first year has a planned term of exactly one calendar year, known when it is written; 2,055 of 37,090 are cut short | per contract cut years claim as full years (35.4%), per year at risk 1.9 times as often; the written annual premium is not prorated, so no feature set after the quote carries the cut; the quote-time factors predict it through risk selection (ROC AUC 0.71, mostly `Premium`), which LEAK-41 allows | applied |
+| MET-1, MET-15, SPLIT-23 (2026-11-08, Lennart) | boreal_postfire_lichen_biomass | the fallback `rmse` on kg/ha weighted by `plot_weight`, 1 over the plot's number of quadrats (0.2 in NT, 0.5 in SK), so each survey plot counts once; a weight scoring column for the metric only, no `sample_weight` (`task_metric_weight_without_sample_weight` accepted: a function of `jurisdiction`); the first weight that gives each unit one vote when units have unequal numbers of rows | every input is constant within a plot, so a model predicts one value per plot; unweighted, an NT plot (5 quadrats) counted 2.5 times an SK plot (2), a weighting the two survey protocols set, while the planner acts on stands; the weighted score ranks models exactly as the RMSE of the plot means with each plot counted once (tau 1 on 30 of 30 splits), and against the per-quadrat RMSE at tau 0.81 per split (two pairs swap, within noise) | applied |
+| MET-13 (2026-11-08, Lennart) | pricing_game_2017_french_mtpl | `min_prediction` 0.1 EUR, two orders below the smallest plausible mean policy cost (16.8 EUR), in place of Andrej's 1 EUR (2026-11-03); a convention of the collection, not of the source, kept because the rule says so and open to change with the rule | task probe (5 of 9 splits): random forest 62.22 against the constant's 63.10, 0.1% of its predictions at the floor; linear 81.97 (6.7%) and LightGBM 90.30 (3.8%), against 66.28 and 70.90 at 1 EUR; the best family does not move | applied |
+| MET-1, MET-11, MET-13 (2026-11-08, Lennart) | noaa_storm_events_damage | the target in dollars (`property_damage_usd`, no `target_transform`: CLEAN-16), scored by the mean Tweedie deviance at power 1.5 from context with `min_prediction` 1 dollar; supersedes RMSLE (Andrej, 2026-11-03: issue 3 A for the triage actor, checked again when issue 5 made the planner the actor) | the actor changed to the planner, who sums the expected damage of events: the deviance is minimised by the mean, RMSLE by a geometric mean that understates the sum (its best constant for 2024 is $16 against a mean of $355,555); trained each for its own metric the two pick different models in 3 of 3 windows; the floor is two orders below the cheapest event type's training mean ($909, Dense Smoke), rounded down to a power of ten; under the deviance the task probe flags `no_signal` and a Tweedie-fitted LightGBM beats the mean per event type clearly in one window of three (open: review issue 10) | applied |
 
 ## In Data Foundry
 

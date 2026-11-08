@@ -6,7 +6,16 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, Metric, TaskSummary, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    ScoringColumn,
+    TaskSummary,
+    drop_columns,
+)
 
 # The two regional sheets of Greuel et al. (2021), one per Dryad deposit, and their columns as published.
 SHEETS = {"NT": "Lichen_data_NT", "SK": "Lichen_data_SK"}
@@ -182,15 +191,15 @@ class BorealPostfireLichenBiomass(AbstractCuratedDataset):
         - Dropped the quadrat label (`quadrat`, `plot.quadrat`: positions 0, 6, 12, 18, 24 in NT, `nw` and `se` in SK), an identifier within a plot; `species`, constant (`Cladonia spp.`, NT only); `acronym` and `acronym1`, one-to-one recodings of `ecoprovince` (CLEAN-5). Kept `ecozone` and `jurisdiction` (the published `design`), coarser levels of the ecoprovince; `jurisdiction` also marks the protocol, 1 m2 quadrats in NT and 4 m2 in SK.
         - Anomaly: plot F8-3A labels one quadrat `8` where every other plot has `6`; it is the plot's fifth quadrat, and the label is dropped anyway.
         - Repair (2026-11-01): a plot whose task-sheet coordinate differs from the authors' site sheet by more than 0.01 degree takes the site sheet's, rounded to 0.01 degree; three NT plots, 15 rows (Decisions). CG3-31A carries CG2-35A's coordinate (62.22, -116.33), 162 km from its site-mates; the site sheet puts it at 60.77, -116.56 with them, so it also takes their ecoprovince, Hay and Slave River Lowlands for Great Bear Plains (the ecozone stays Taiga plains). F13-5A and F13-5B move 7.8 and 7.9 km, from 63.03, -114.35 to 63.00, -114.21. The other 323 NT plots equal the site sheet rounded to 0.01 degree; that grid stays, since the coordinate links rest on it.
-        - Every input is constant within a plot, so the quadrats of a plot share one feature vector and differ only in the target; they stay as the source's rows (SPLIT-26) and are scored one by one. A model then predicts one value per plot, so the per-quadrat MSE splits into a fixed within-plot floor plus the stand score weighted by quadrats, and the per-quadrat RMSE ranks models exactly like that stand score (Kendall tau 1 on all 30 shipped splits): no weight is needed for a stand score (SPLIT-23). That score counts an NT plot 2.5 times an SK plot (5 quadrats against 2; NT holds 81% of the quadrats but 63% of the plots), a weighting the survey protocol sets. Against the stand score with equal weights per plot (516 plots), tau is 0.81 per split on average (min 0.00) and 0.86 for the ranking by the mean over the splits (8 untuned predictors: random forest, extra trees, two LightGBM, two ridge, knn and the training mean); that ranking swaps only two pairs, whose difference is noise (the training mean against ridge, paired t -0.45 over the 30 splits, and against knn, t -1.14). Tau depends on the model set: with a median and a zero predictor added it is 0.84 per split and 0.91 for the ranking. 32.5% of the target's variance lies within identical inputs (28.8% within a plot), a floor no model can go below. Hence 532 exact duplicate rows (518 at 0: 482 quadrats of one plot and 36 of sibling plots that share every input) and the 980 rows the check counts as sharing their inputs with a row of another target (1,671 rows sit in an input group with more than one target). No feature vector occurs in two groups, so the split keeps every copy on one side (LEAK-18: few features, natural repeats).
-        - Exposure (MET-14, MET-15; 2026-11-06): none. The lichen of a quadrat is an amount over a sampled area, which the source folds into the target: it ships the amount per unit area that MET-14 asks for (kg/ha), and the score is unweighted on this density. The sampled area, a 1 m2 quadrat in NT and a 4 m2 quadrat in SK, is a protocol constant set by `jurisdiction`, not realized, so LEAK-41 has nothing to remove; the planner decides per stand, not per sampled m2, so no row weight follows (MET-15). The number of quadrats per plot (5 in NT, 2 in SK) sets how much a plot weighs in the per-quadrat score (above); it is no exposure.
+        - Every input is constant within a plot, so the quadrats of a plot share one feature vector and differ only in the target; they stay as the source's rows (SPLIT-26). Each plot counts once in the score (Lennart, 2026-11-08, review issue 7): the RMSE weights a quadrat by 1 over its plot's number of quadrats (`plot_weight`: 0.2 for the five of an NT plot, 0.5 for the two of an SK plot, so 1 per plot), a scoring column for the metric only, no feature and no training weight. A model predicts one value per plot, so the weighted MSE splits into a fixed within-plot floor plus the squared error of the plot means with each of the 516 plots counted once, and the weighted RMSE ranks models exactly like that stand score (Kendall tau 1 on all 30 shipped splits; SPLIT-23). Unweighted, the per-quadrat RMSE declared until then counted an NT plot 2.5 times an SK plot (5 quadrats against 2; NT holds 81% of the quadrats but 63% of the plots), a weighting the survey protocols set while the planner acts on stands. The two scores mostly agree: Kendall tau 0.81 per split on average (the lowest split 0.00 or 0.21, depending on the run) and 0.86 for the ranking by the mean over the splits (8 untuned predictors: random forest, extra trees, two LightGBM, two ridge, knn and the training mean); that ranking swaps only two pairs, whose difference is noise (the training mean against ridge, paired t -0.45 over the 30 splits, and against knn, t -1.14). Tau depends on the model set: with a median and a zero predictor added it is 0.84 per split and 0.91 for the ranking. 32.5% of the target's variance lies within identical inputs (28.8% within a plot), a floor no model can go below. Hence 532 exact duplicate rows (518 at 0: 482 quadrats of one plot and 36 of sibling plots that share every input) and the 980 rows the check counts as sharing their inputs with a row of another target (1,671 rows sit in an input group with more than one target). No feature vector occurs in two groups, so the split keeps every copy on one side (LEAK-18: few features, natural repeats).
+        - Exposure (MET-14, MET-15; 2026-11-06): none. The lichen of a quadrat is an amount over a sampled area, which the source folds into the target: it ships the amount per unit area that MET-14 asks for (kg/ha). The sampled area, a 1 m2 quadrat in NT and a 4 m2 quadrat in SK, is a protocol constant set by `jurisdiction`, not realized, so LEAK-41 has nothing to remove; the planner decides per stand, not per sampled m2, so no exposure weight follows (MET-15). The score's `plot_weight` (above) is no exposure either: a design weight that gives each plot one vote, set by `jurisdiction`, a feature, so MET-15 asks for no training weight (2026-11-08).
         - Zeros: 813 of 2,010 quadrats (40.4%; NT 40.7%, SK 39.5%) have a target of 0, the presence part of the authors' hurdle model ("to account both for the heterogeneous nature of lichen presence (zero-inflation)", Dryad abstract). 811 have no forage-lichen cover; 2 in plot 2015-054 have cover but volume 0 and stay 0, as the authors' presence flag has them.
         - Note: `years_since_fire` (`TSSRF`, "Time since stand replacing fire") is the survey's stand age per plot, not a fire-map value. The 145 NT control plots (725 rows, 36%) lie in areas with "no recorded burn history" (Dryad NT methods) and carry ages of 33 to 241 years, so theirs were dated in the field: from four (SK) or five (NT) tree cores or disks per site, "the time since stand-replacing fire based on clusters of tree ages (<20-yr range)" and, "at sites without a clear cohort of similar-aged trees, and with no recorded fire history", "the ring count of the oldest sampled tree" (Methods, "Forest stand composition and structure"). The sites were chosen by fire-record age class (NT: 37-38 and 46-49 years after fire, and controls ">70 yr" with no recorded burn; Methods, "Site selection"); only 26 of 110 multi-plot NT sites share one age. A planner has an inventory age or "older than the fire record". Capping the age at assumed fire-record horizons (51 years in NT, 70 in SK, our assumption) costs 0.01 to 0.03 R^2 on the shipped splits (random forest 0.007, ridge 0.024, small LightGBM 0.032; SE 0.016 to 0.021). Kept: a stand age is known at the prediction point (USE-6), and the gap is named in the fit. `stand_type` is likewise the crew's class ("Stand types, Hart et al. 2019"), where a planner has the inventory's.
         - Grouped by burn area. A group is an NT burn scar or unburned area, the plot-name prefix (`F1` of `F1-22A`; the codebook: "Plot location: Burn Scar or Unburned area -xxx"), merged with any area that shares an exact recorded coordinate: only CG2 and F2 join (CG2-4A and F2-22A/B lie about 0.5 km apart in the site sheet). Each SK plot is its own group, since SK names ("Year -xxx") carry no burn key. 216 groups, 26 NT and 190 SK; the largest, CG2 with F2, holds 200 rows (10.0%). Burn areas hold 18.4% of the NT target's sum of squares. The use case predicts for burns nobody surveyed (SPLIT-1, SPLIT-4); under the former site split, 94.3% of NT test quadrats had another site of their own burn area in training.
         - Note: a test quadrat lies a median 22.0 km from the nearest training plot in NT (2.4 km under the former site split), against 95 km for a random point in the NT study hull; in SK, split per plot, 3.7 km (15.6 km for a point in the SK hull). SK plot means (log1p) still correlate with other plots nearby (r = 0.73 under 1 km on 16 pairs, 0.42 at 2 to 5 km, about 0.2 out to 50 km), so SK stays the laxer region; between plots of different NT areas r peaks at 0.21 (5 to 10 km) and is about 0 beyond 10 km.
         - Note: ridge loses its skill under this split (-0.085 against the training mean, below it on 8 of 30 splits; +0.13 under the former site split), while the random forest keeps +0.097. Its ecoprovince effects, learned from a handful of burns (Great Bear Plains has 5 NT areas, with means from 270 to 3,453 kg/ha), do not reach a new burn: without the three region labels ridge scores +0.064. Each label is known for every stand and the source names ecoprovince as a predictor, so they stay.
-        - The source's model and metric: a hurdle model, a binomial GLM of presence on stand age, stand type and ecoprovince and a nonlinear mixed-effects logistic growth model of biomass given presence, chosen by AICc and ANOVA; the combined model is judged in sample by "the R2 of a linear regression between measured lichen biomass and predicted lichen biomass" (Methods, "Modeling site-level mean biomass"), "a relatively weak but significant fit (R2 = 0.18, P < 0.001)" (Results, "Combined predictions"). No held-out error is reported. That R^2 is a squared correlation, blind to a biased forecast, so it cannot rank models; the fallback `rmse` on kg/ha, the planner's unit (Andrej, 2026-11-03, review issue 6: "We can keep RMSE in this case").
-        - Probes (2026-11-01, untuned, the 30 shipped splits): random forest skill +0.120 against the training mean (above it on 93% of the splits), LightGBM +0.033, linear -0.075 (it swings with the fold draw); no task-probe flag, no leak-probe flag (no feature alone above the mean, no exact feature copy across the split). A random split by quadrat would give LightGBM R^2 0.440 against 0.015 by burn area.
+        - The source's model and metric: a hurdle model, a binomial GLM of presence on stand age, stand type and ecoprovince and a nonlinear mixed-effects logistic growth model of biomass given presence, chosen by AICc and ANOVA; the combined model is judged in sample by "the R2 of a linear regression between measured lichen biomass and predicted lichen biomass" (Methods, "Modeling site-level mean biomass"), "a relatively weak but significant fit (R2 = 0.18, P < 0.001)" (Results, "Combined predictions"). No held-out error is reported. That R^2 is a squared correlation, blind to a biased forecast, so it cannot rank models; the task scores `rmse` on kg/ha, the planner's unit (Andrej, 2026-11-03, review issue 6: "We can keep RMSE in this case"), with each plot counted once (Lennart, 2026-11-08, review issue 7). It is declared from the context, since the fallback takes no weight.
+        - Probes (2026-11-01, untuned, the 30 shipped splits): random forest skill +0.120 against the training mean (above it on 93% of the splits), LightGBM +0.033, linear -0.075 (it swings with the fold draw); no task-probe flag, no leak-probe flag (no feature alone above the mean, no exact feature copy across the split). A random split by quadrat would give LightGBM R^2 0.440 against 0.015 by burn area. On the RMSE with each plot counted once (2026-11-08), the random forest scores 1,159.8 kg/ha against the training mean's 1,250.0, better on 80% of the splits; still no task-probe flag.
     """
 
     # Task
@@ -201,7 +210,22 @@ class BorealPostfireLichenBiomass(AbstractCuratedDataset):
             "The paper judges its combined hurdle model in sample by the R2 of a regression of observed on predicted "
             "biomass (0.18; Results, 'Combined predictions'), a squared correlation that ignores a bias of the "
             "predictions, and reports no held-out error; RMSE on kg/ha, the planner's unit, is kept (Andrej, "
-            "2026-11-03)."
+            "2026-11-03). Each plot counts once, since the planner acts on stands: a quadrat weighs 1 over its plot's "
+            "number of quadrats (`plot_weight`: 0.2 for the five of an NT plot, 0.5 for the two of an SK plot), "
+            "where unweighted the survey protocols would count an NT plot 2.5 times an SK plot (Lennart, 2026-11-08)."
+        ),
+        inputs={"weight": "plot_weight"},
+    )
+    scoring_columns = (
+        ScoringColumn(
+            column="plot_weight",
+            role="weight",
+            used_by="rmse",
+            description=(
+                "1 over the number of quadrats of the row's plot (0.2 for the five of an NT plot, 0.5 for the two of "
+                "an SK plot), so that each plot counts once in the RMSE; for scoring only, never a feature or a "
+                "training weight"
+            ),
         ),
     )
     grouping = Grouping(
@@ -228,6 +252,12 @@ class BorealPostfireLichenBiomass(AbstractCuratedDataset):
             "identical inputs (28.8% within a plot), a floor no model can go below. Each input vector stays in one "
             "group (Andrej, 2026-11-03)."
         ),
+        "task_metric_weight_without_sample_weight": (
+            "plot_weight is a design weight of the score that gives each plot one vote (the stand the planner acts on, "
+            "SPLIT-23), not an amount at risk (MET-15) nor a survey weight of the source (MET-16), and a function of "
+            "the features (0.2 in NT, 0.5 in SK, set by `jurisdiction`), so it needs no training weight; it is for "
+            "scoring only (Lennart, 2026-11-08, review issue 7)."
+        ),
     }
 
     def _load_raw(self, raw_dir: Path) -> dict[str, pd.DataFrame]:
@@ -245,7 +275,10 @@ class BorealPostfireLichenBiomass(AbstractCuratedDataset):
         # 3. The group: areas linked through identical coordinates (exact keys from the data; only CG2 and F2 join)
         plots = df.drop_duplicates("plot")
         df["burn_area"] = df["plot"].map(dict(zip(plots["plot"], _linked_groups(plots), strict=True)))
-        # 4. Drops: the cover-based biomass (cover x 61.934, a part of the target) and non_zero (target > 0) are
+        # 4. The metric's weight, 1 over the plot's number of quadrats (0.2 in NT, 0.5 in SK): each plot counts once
+        #    in the RMSE; a scoring column, no feature and no training weight
+        df["plot_weight"] = 1.0 / df.groupby("plot")["plot"].transform("size")
+        # 5. Drops: the cover-based biomass (cover x 61.934, a part of the target) and non_zero (target > 0) are
         #    LEAK-10; the plot and quadrat labels are identifiers; species is constant; acronym and acronym1 recode
         #    the ecoprovince one to one
         return drop_columns(

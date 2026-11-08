@@ -64,6 +64,8 @@ CC (2026-11-01, Lennart): counts with a cut end stay ordered categories of the s
 
 **Assessment (AI, 2026-11-06):** priority 3 (selection.md, Priority): a good shape (48,587 units, 261 features, temporal) +, a strong source (the ANES cumulative file and its codebook) +; no gap in the benchmark; the use case is the curation's (a pollster's likely-voter screen), so it does not count; no open issue.
 
+CC (2026-11-08, Lennart): the declared metric (`roc_auc`) is checked, as declared; the record ships, with no open issue on the PR #47 review board.
+
 ## Reference
 
 @dataset{anes_timeseries_cdf_2026,

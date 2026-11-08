@@ -2,16 +2,15 @@
 report_format: data-foundry-report-v2
 unique_name: australian_vehicle_insurance_2004_2005
 container_format: 2
-checksum: v2:fb6adb60d2cbd2d68ac2195861034b95c64b73a39f26358899efcb93a5e44deb
+checksum: v2:cc68becc31c9f0cb3ea0ad099ed73329c252f9b094fc3835f9fb6a4231779cf5
 build: null
 build_stale: false
 data:
   n_rows: 67856
   n_features: 6
   dtypes:
-    category: 3
+    category: 5
     float64: 3
-    int64: 2
   n_test_dataset_rows: null
 task:
   target: claim_cost_per_year
@@ -72,7 +71,7 @@ decisions:
 
 Regression of `claim_cost_per_year`, scored with `normalized_weighted_gini` on IID splits. 67,856 rows and 6 features. Source: Other (2008).
 
-Not built yet. The current definition gives checksum `v2:fb6adb60d2cbd2d68ac2195861034b95c64b73a39f26358899efcb93a5e44deb`.
+Not built yet. The current definition gives checksum `v2:cc68becc31c9f0cb3ea0ad099ed73329c252f9b094fc3835f9fb6a4231779cf5`.
 
 ## In brief
 
@@ -176,9 +175,10 @@ Kept in the frame for the metric; do not use them as features. Drop them from th
 Fit every model with `exposure` as each row's sample weight (`sample_weight(container)` from `data_foundry.curation_container`), and never use it as a feature. The metric weights the test rows by the same column, so a model fitted without it targets another quantity.
 
 <details>
-<summary>Feature types: 3 categorical, 0 string, 0 datetime</summary>
+<summary>Feature types: 3 categorical, 2 ordinal, 0 string, 0 datetime</summary>
 
 - categorical (3): `vehicle_body`, `gender`, `area`
+- ordinal (2): `vehicle_age_band (1 < 2 < 3 < 4)`, `driver_age_band (1 < 2 < 3 < 4 < 5 < 6)`
 - string (0): none
 - datetime (0): none
 
@@ -224,11 +224,12 @@ We start with `dataCar` of the R package insuranceData 1.0, the "Car" data of de
 - Anomaly: no claim cost lies below 200, and 705 of the 4,333 single-claim policies cost 200.00 to the cent (695 exactly, the rest float noise of the file); no policy with several claims does, and the two-claim policies start at 400 (10 of 271 at 400.00, one at 400.01), so each claim seems recorded at 200 at least. Kept as recorded, as Andrej's call on fremtpl2 of 2026-10-20 kept that table's fixed IRSA-IDA amounts as point masses: the floor is in the source's data. In the target it is a cost of 200 per claim over the time observed. Other point masses (353.77 for 219 claims, 389.95 for 94, 390 for 55) are kept as well.
 - Exposure (LEAK-41, MET-14, MET-15; issue 6, resolved 2026-11-06): `exposure` (days / 365.25, 1 to 365 days, a full year 0.9993; median 163 days, 1.9% full years, no 366-day row) is mostly the share of each one-year policy that fell inside the extract's observation period, fixed when the policy starts, but some claims cut it short. It is realized, not planned: at a quote it is one year for every policy. In claim occurrence: policies of 0.2 years or less have 145 to 147 more claims than the rate of longer ones predicts; at 7 days or less they claim 0.85 times per policy-year even without the claims of at least 80% of the vehicle's value (0.14-0.17 above 0.2 years); a free log-exposure coefficient is about 0.3 in a Tweedie GLM (0.28 to 0.31 by design), where proportional time gives 1. In size: the 193 claims of at least 80% of the vehicle's value (likely write-offs) have a median exposure of 0.37 against 0.65 for the other claims (Mann-Whitney p < 1e-20). The task uses it as the rate's denominator and each policy's weight, in the metric and in training, never as a feature: a column whose value the outcome can cut after the prediction point is never a model input, whatever it scores (LEAK-41). With the weight, dividing does not inflate short policies: each counts by its time observed. The old metric, the unweighted Gini of each policy's cost over its observed part-year, hid the leak: there exposure as a proportional offset only scored 0.1833 against 0.1824 as a free feature (9 shipped splits, Tweedie LightGBM, paired SE 0.0059), giving the write-offs a counterfactual uncut exposure lifted that Gini from 0.182 to 0.31 (18 of 18 runs), and exposure alone scored 0.168 of the best 0.205, though it is one year at every quote. The exposure study of 2026-11-05 (own 3x3 KFold) scored the claim counts by a Poisson deviance instead: 47% (GLM) to 82% (LightGBM) of a free model's gain over a constant rate is leak, and at a quote (exposure set to one year) the free LightGBM's mean deviance is 0.0068 worse than the offset model's, better on 0 of 9 folds. On the exposure-weighted Gini of the cost per year, a Tweedie GLM that reads the exposure scores 0.238 against 0.125 for an honest GLM, whose quotes see no exposure. The rating factors predict the exposure only weakly (LightGBM R^2 0.06; ROC AUC 0.62 for exposures of 0.2 years or less), so little of it can come back through them. Re-measured on this definition's 9 shipped splits, every model fitted with the sample weight (LightGBM: learning rate 0.05, 15 leaves, 300 rounds): an honest Tweedie LightGBM scores 0.059 (SD 0.021) against 0 for the weighted constant (above it on 9 of 9), an L2 LightGBM on the identity scale 0.060 and a Tweedie GLM 0.120; with `exposure` added as a feature they score 0.149 (+0.089, SE 0.010), 0.159 (+0.099, SE 0.008) and 0.236 (+0.116, SE 0.006), higher on 9 of 9 splits each (more regularised LightGBM settings: 0.070 to 0.090 honest, +0.094 to +0.124 with it). The weight alone (1/exposure as the prediction) scores 0.205, above every honest model; a model that reads the exposure together with the rating factors scores more (the Tweedie GLM with it, 0.236). Probe 22 (3 splits x 3 seeds, every fit weighted), in both arms: the rating factors predict the exposure at R^2 0.074 (Spearman 0.27, the vehicle value 70% of the gain); the exposure as a feature gains +0.098 (SD 0.03) over an honest L2 fit of 0.052 and +0.068 (SD 0.020) over an honest Tweedie fit of 0.068; in neither arm does a rating factor gain through it above noise (the largest, the driver age band in the Tweedie arm, +0.035 with SD 0.019, is known at the quote and stays). Revisit if a release gives the policy dates or why a policy ended.
 - `veh_value` (in $10,000s, insuranceData; CASdatasets says thousands of AUD, which would make the median car worth $1,500, an error of that copy) is 0 for 53 policies, most of them station wagons, buses, trucks or motor caravans of the oldest band, while the next lowest value is 0.18 ($1,800): a vehicle value of $0 is no value, so these are made missing (CLEAN-10, CLEAN-11).
-- The body codes are given the labels CASdatasets uses for the same rows (`HBACK` to Hatchback, `STNWG` to Station wagon, ...). The age bands of the vehicle (1 youngest to 4) and the driver (1 youngest to 6) stay numbers, the order of an age.
+- The body codes are given the labels CASdatasets uses for the same rows (`HBACK` to Hatchback, `STNWG` to Station wagon, ...). The age bands of the vehicle (1 youngest to 4) and the driver (1 youngest to 6) are ordered categories, youngest first, with their codes as levels, since the band limits are published nowhere (CLEAN-14: bands of a quantity; CC 2026-11-08, Lennart, issue 9). insuranceData names one end only ("1 (youngest), 2, 3, 4"), CASdatasets every level ("youngest cars" to "oldest cars").
 - Columns renamed to plain names: `vehicle_value`, `vehicle_body`, `vehicle_age_band`, `driver_age_band`; `gender`, `area` and `exposure` keep theirs, and the target is `claim_cost_per_year`. `gender` is "gender" in insuranceData and the policyholder's in CASdatasets, so it is not called the driver's. `area` is a code A-F that insuranceData leaves undocumented and CASdatasets lacks (the book's Table 1.6, pp. 15-16, says it denotes the area of residence and leaves A-F unexplained; Ye et al. 2022 call it the driver's area of residence). The age band keeps its name: the book's Table 1.1 says "Driver's age category", while its Table 1.6 and CASdatasets call it the policyholder's age.
 - 707 rows share every column with another row (378 extra copies, 0.6%), all without a claim. That is about three times chance: with the exposure shuffled among the no-claim rows, about 120 copies remain (98 to 139 over 20 runs). Among the 1,129 full-year rows without a claim there are 152 copies against 11.6 for random rows of that number; that cohort is rich in trucks and panel vans, likely fleet vehicles insured on the same dates. Kept (LEAK-18): on the earlier cost target (2026-11-01), dropping the copies moved the Gini by +0.0045, and 0.8% of the test rows had an exact feature copy in train then (leak probe, first split, with exposure a feature). Without exposure among the features, 34,974 rows (51.5%) share their six rating factors with another policy and 42-43% of the test rows have an exact copy of them in train (every shipped split): coarse rating cells of distinct policies, the portfolio a tariff prices, as in fremtpl2. On the rate, every fit weighted, splits grouped by those six factors or by the full row with the exposure score as the shipped ones (Tweedie LightGBM 0.054 and 0.077, Tweedie GLM 0.119 and 0.127, against 0.059 and 0.120; 9 splits each).
 - The split is forced (ForcedIIDFromTemporal, SPLIT-8): an insurer fits its tariff on past policy-years and prices the next year's policies, but the release has no date and no policy id. It looks like one observation period of about a year (exposure spread over 1-365 days, about 6,300 policies per 30 days at the short end falling to about 4,300 at the long end; 1.9% full years, no 366-day row), so a temporal test needs another year's extract. The exposure is cut at the extract window's edges as well as by some claims, and both sides of the random split share the one window; a temporal split on a dated release would cut it again at each cutoff and must check its training side for periods the cutoff ended (SPLIT-9, LEAK-41). The raw file order is not random (12.2% of adjacent rows share a day count, against 0.3% when the rows are permuted, and the mean exposure per tenth of the file runs from 0.42 to 0.53 against a chance SD of 0.0035; whether the order is time is unknown), but the claim indicator shows no serial dependence (lag-1 correlation 0.005), and training on the earlier quarters of the file to test the next shows no drop (on the rate, every fit weighted: Tweedie LightGBM 0.078 and Tweedie GLM 0.128 on average over the three such splits, against 0.060 and 0.111 for random splits of the same sizes). No policy is visibly split into two rows (116 pairs of identical rating factors sum to 365 days, against 102 on average for other sums) and the hidden-group probe finds no group. Shipped forced on the curator's call (Andrej, 2026-11-02): a forced IID split ships only when no leak is found across the random split, as here (no row shares its outcome across the split, no hidden group, no order dependence); how_much_did_it_rain's `No` named a measured leak.
 - CC (2026-11-06, Lennart): decision D8 of the exposure study of 2026-11-05 (issue 6): the target is the claim cost per year insured (`claimcst0` / `exposure`, in dollars, identity scale), `exposure` the weight scoring column, the `weight` input of `normalized_weighted_gini` and the task's `sample_weight`, and never a feature (LEAK-41, MET-14, MET-15); the metric stays a context Gini, now weighted on the rate; the 7 rows at 1M dollars or more a year are kept. Supersedes Andrej's call of 2026-11-02 (issue 2: `exposure` kept as a feature with its note, the LEAK-10 case for time on risk cut short by the outcome) and changes the form of his Gini of the same day (issue 4: unweighted on the cost, now weighted on the rate). What sets the case apart is a measurement made after the call: the deviance on the claim counts shows the leak the slice Gini hid (47 to 82% of a free model's gain over a constant rate is leak); on the weighted Gini of the cost per year a free GLM scores 0.238 against 0.125 for honest quotes, and on the shipped splits `exposure` as a feature lifts an honest LightGBM from 0.059 to 0.149 (9 of 9). The alternative, the claim frequency with an exposure-weighted deviance, was not chosen.
+- CC (2026-11-08, Lennart): the two age bands ship as ordered categories, youngest first (issue 9, "Ordered categories"): `vehicle_age_band` levels 1 to 4, `driver_age_band` levels 1 to 6, the codes kept as levels since the band limits are unpublished (CLEAN-14). Until then they shipped as integers, which no curator had decided.
 
 ## Splits
 
@@ -306,13 +307,13 @@ Accepted on purpose:
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
 | vehicle_body | category | 0 | 0 | 13 | Sedan, Hatchback, Station wagon, Utility, Truck, Hardtop, Coupe, Panel van, Min… |
+| vehicle_age_band | category | 0 | 0 | 4 | 3, 4, 2, 1 |
 | gender | category | 0 | 0 | 2 | F, M |
 | area | category | 0 | 0 | 6 | C, A, B, D, E, F |
+| driver_age_band | category | 0 | 0 | 6 | 4, 3, 2, 5, 6, 1 |
 | vehicle_value | float64 | 53 | 0.08 | 985 | 1.36, 1.26, 0.71, 1.3, 1.5, 1.37, 1.74, 1.29, 1.22, 1.31 |
 | exposure | float64 | 0 | 0 | 383 | 0.9993, 0.0027, 0.2546, 0.3368, 0.0849, 0.2136, 0.0821, 0.0794, 0.0301, 0.2519 |
 | claim_cost_per_year | float64 | 0 | 0 | 4115 | 0.0, 200.137, 354.0123, 204.0503, 521.7857, 394.8649, 274.6241, 212.3547, 358.0… |
-| vehicle_age_band | int64 | 0 | 0 | 4 | 3, 4, 2, 1 |
-| driver_age_band | int64 | 0 | 0 | 6 | 4, 3, 2, 5, 6, 1 |
 
 ### Target distribution
 
@@ -326,14 +327,12 @@ Accepted on purpose:
 |---|---|---|---|---|---|
 | vehicle_value | 67803 | 1.77841 | 1.20468 | 0.18 | 34.56 |
 | exposure | 67856 | 0.468652 | 0.290025 | 0.00273785 | 0.999316 |
-| vehicle_age_band | 67856 | 2.67353 | 1.06754 | 1 | 4 |
-| driver_age_band | 67856 | 3.48548 | 1.42561 | 1 | 6 |
 | claim_cost_per_year | 67856 | 755.259 | 31223.6 | 0 | 5.23888e+06 |
 
 ### Categorical features
 
 <details>
-<summary>Show the table (12 rows)</summary>
+<summary>Show the table (21 rows)</summary>
 
 | column | rank | value | count | pct |
 |---|---|---|---|---|
@@ -342,8 +341,17 @@ Accepted on purpose:
 | area | 3 | B | 13341 | 19.66 |
 | area | 4 | D | 8173 | 12.04 |
 | area | 5 | E | 5912 | 8.71 |
+| driver_age_band | 1 | 4 | 16189 | 23.86 |
+| driver_age_band | 2 | 3 | 15767 | 23.24 |
+| driver_age_band | 3 | 2 | 12875 | 18.97 |
+| driver_age_band | 4 | 5 | 10736 | 15.82 |
+| driver_age_band | 5 | 6 | 6547 | 9.65 |
 | gender | 1 | F | 38603 | 56.89 |
 | gender | 2 | M | 29253 | 43.11 |
+| vehicle_age_band | 1 | 3 | 20064 | 29.57 |
+| vehicle_age_band | 2 | 4 | 18948 | 27.92 |
+| vehicle_age_band | 3 | 2 | 16587 | 24.44 |
+| vehicle_age_band | 4 | 1 | 12257 | 18.06 |
 | vehicle_body | 1 | Sedan | 22233 | 32.76 |
 | vehicle_body | 2 | Hatchback | 18915 | 27.88 |
 | vehicle_body | 3 | Station wagon | 16261 | 23.96 |

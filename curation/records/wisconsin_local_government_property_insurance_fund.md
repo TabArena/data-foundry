@@ -124,6 +124,10 @@ CC (2026-11-02, Andrej): ship, on the three expanding yearly windows (test 2008,
 
 **Assessment (AI, 2026-11-06):** REVIEW.md issue 4, named in the two lines above, is withdrawn: a licence decides no fix and is no issue for the curator (EV-4), so `license` stays None with the completed reason, and the curator's open point is issue 3 alone. Route if the release needs a stated licence: download the second edition's WiscPropFund.csv (https://raw.githubusercontent.com/OpenActTexts/LDAVer2/f987c4ed5e33001bddf069740d893a934e82673f/Data/WiscPropFund.csv, sha256 36b1e151728c25bd2467582f08e51d64fd5c83533e879c81edb2602b2c594b75 on 2026-11-06; the same 5,639 member-years, every value the definition uses equal), map `EntityType` {1: Village, 2: City, 3: County, 4: Misc, 5: School, 6: Town} and `AlarmCredit` {1: 0, 2: 5, 3: 10, 4: 15} (one to one with the first edition's flags), compute `LnCoverage = log(BCcov / 1e6)` and `lnDeduct = log(Deduct)`, rename `BCClaim` to the target, keep CLAIMLEVEL.csv, `source_url`, `year` (2017) and the citation from the first edition (PROV-8, PROV-9), and set `license = "CC0-1.0"` (the repository's LICENSE; its book pages state CC BY 4.0).
 
+CC (2026-11-06, Lennart): issue 3, the three yearly windows stay (A), the 2008 window training on 40.6% of the rows, below the floor of half the rows: an exception ruling. "We think the task is too good to remove because of the 50% floor. So we overrule it here knowing it contradicts other judgement. The difference is that the task is better than prior out-ruled cases." How the rules record it (an amendment of the floor or an exception) is open in issue 3.
+
+CC (2026-11-08, Lennart): the declared metric (`ordered_lorenz_gini`) is checked, as declared on the PR #47 review board.
+
 ## Reference
 
 Frees, E.W., Lee, G., Yang, L. (2016). Multivariate Frequency-Severity Regression Models in Insurance. Risks 4(1):4.

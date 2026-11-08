@@ -53,6 +53,10 @@ CC (2026-11-02, Andrej): ship. Issue 1 (a), "I go with a)": the 13 once-read rat
 
 **Assessment (AI, 2026-11-06):** review panel (focused: claim auditor and mediator, re-review under LEAK-41, MET-14 to MET-16): ship after changes, text only and made (the Exposure note: at most the 29,296 lapse rows, 23.8%, can be years cut short, a bound since the release has no dates, and the lapse marker added as a feature gains no Gini; the elasticity of the cost to the insured values is 0.13 and 0.15, against 1 for an amount at risk, so they stay features; no LEAK-41 suspect; scored unweighted per contract, MET-15); disputed: none; for the curator: no issue.
 
+CC (2026-11-08, Lennart): the declared metric (`normalized_gini`) is checked, as declared; the record ships, with no open issue on the PR #47 review board.
+
+**Assessment (AI, 2026-11-08):** the exception line of 2026-11-02 above cites pricing_game_2016_french_fleet, whose windows were reopened on 2026-11-06 (its issue 6); the exception rests on its own fact (a one-year gap leaves the 2012 window 33% of the rows), so the notes no longer cite that case.
+
 ## Reference
 
 Guillen, M., Bolance, C., Frees, E.W., Valdez, E.A. (2021). Insurance data for homeowners and motor insurance customers monitored over five years. Mendeley Data, V1. https://doi.org/10.17632/vfchtm5y7j.1

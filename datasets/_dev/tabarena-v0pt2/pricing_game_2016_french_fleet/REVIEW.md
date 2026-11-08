@@ -14,8 +14,8 @@ container with a `sample_weight`, it enters no run before the collection's train
 Validity: SEL-1, SEL-2, USE-1 (fit direct, USE-8), USE-5, LEAK-7, LEAK-37, MET-15, SPLIT-1, SPLIT-9, SPLIT-13 hold;
 LEAK-10 fixed by LEAK-7 (2026-11-02); LEAK-41 holds for the features and the weight (probe 22: the L2 arm cannot see the
 weight itself, -0.001; in the weighted Tweedie arm the weight gains +0.007, SD 0.028, and no feature a gain through it
-above noise); LEAK-41's last clause is triggered by the source, which left out every period shorter than 30 days, about
-1.5% of the vehicle-years (issue 7); SPLIT-14 broken as shipped, three windows on one training side (issue 6); SPLIT-10
+above noise); LEAK-41's last clause, as amended on 2026-11-08 (issue 7), takes the source's floor as the task's
+population: the organisers left out every period shorter than 30 days, about 1.5% of the vehicle-years; SPLIT-14 broken as shipped, three windows on one training side (issue 6); SPLIT-10
 departed from (no gap, an exception whose stated reason is stale; it lapses under the forced split); SPLIT-11 departed
 from (LEAK-41: no 2013 period admitted by its early end); SPLIT-15 departed from (three windows, not nine).
 Value: TP-4 holds (a regularised Tweedie LightGBM fitted with the weight 0.114 / 0.158 / 0.190 newest first, re-measured
@@ -26,13 +26,14 @@ probes' linear family scores 0.168 and the random forest 0.121 against 0 for the
 pricing_game_2017_french_mtpl; MET-11: the stand-in's closeness to the game's market is now measured, and the uniformly
 rescaled weighted Tweedie deviance follows the market more closely than the Gini (issue 8).
 Quality: CLEAN-14, the four bands of a quantity (the contract's and the vehicle's age, the deductible, the insured
-value) are ordered categories now (they land with the next rebuild); LEAK-18 repeated rows natural; the text corrected
+value) are ordered categories now (they land with the next rebuild), and so is `payment_frequency` (annual <
+semi-annual < quarterly, 2026-11-08, as in the two other pricing tables); LEAK-18 repeated rows natural; the text corrected
 where the panel found it overstated.
 Weighed: the original files +, a real fleet-pricing task +, the family's only commercial-fleet damage table +; weak,
 anonymised covariates -, a noisy newest window - (it drops out under the forced split).
 Left for Andrej and Lennart: the split (issue 6; recommended: the forced split grouped by contract, whose leak test
-passes), the organisers' floor of 30 days (issue 7; recommended: an amendment of the rule) and the stand-in metric
-(issue 8; recommended: the rescaled deviance, if the bootstrap separates the models on the newest window).
+passes) and the stand-in metric (issue 8; recommended: the rescaled deviance, if the bootstrap separates the models on
+the newest window). The organisers' floor of 30 days (issue 7) was settled on 2026-11-08 by an amendment of the rule.
 
 Changes made after the review panel (AI, 2026-11-01 and 2026-11-02): `exposure` is the length of cover to 31 December
 for every period; the metric is a stand-in for the game's market; the statements the claim audit refuted are corrected;
@@ -51,12 +52,11 @@ pro-rata premium cites the sources checked; a line gives the trend of the charge
 stale reason of the exception to SPLIT-10. Rows, split and metric are unchanged. The panel's reports describe the
 definition of D11, before these changes; the panel of 2026-11-01 is in this file's git history.
 
-**Main points:** Three calls, ranked: the split (issue 6: re-split grouped by contract, recommended now that the leak
+**Main points:** Two calls, ranked: the split (issue 6: re-split grouped by contract, recommended now that the leak
 test across the contract folds passes, or keep the three windows or one window by amending the windows rule for the
-whole family); the organisers' floor of 30 days (issue 7: amend the rule on rows selected by their realized length for a
-selection the source made before release, recommended, or read the rule as barring the dataset); the stand-in metric
-(issue 8: score the uniformly rescaled weighted Tweedie deviance, recommended once its bootstrap separates the models,
-or keep the Gini with its measured shortfall). Issues 1 to 5 are resolved, 2 and 4 superseded by 5.
+whole family); the stand-in metric (issue 8: score the uniformly rescaled weighted Tweedie deviance, recommended once its
+bootstrap separates the models, or keep the Gini with its measured shortfall). Issues 1 to 5 are resolved, 2 and 4
+superseded by 5; issue 7 on 2026-11-08 (the rule amended for a selection the source made before release).
 
 **Issues for Andrej and Lennart:**
 
@@ -374,6 +374,157 @@ or keep the Gini with its measured shortfall). Issues 1 to 5 are resolved, 2 and
      grouped by policy, moves to its one valid window too (the precedent checker's conditional prompt of that
      dataset's re-review of 2026-11-06).
 
+   **Lennart (2026-11-08, discuss):** Re-open this investigation, would we maybe just need to remove the weight,
+   which we would not know as in other cases and then we could use expanding windows? this is might be the result of
+   an old decisions which our new rules would overule
+
+   **Answer (AI, 2026-11-08):** Removing the weight does not open the four-month windows: ship the forced split by
+   contract, or two yearly windows by amending the windows rule as wisconsin needs?
+
+   * **Problem:**
+     - You ask whether a target per period, with no realized length as its denominator or weight, would make the
+       expanding four-month windows valid, and whether the shared training side comes from an older call that the
+       newer rules overrule.
+     - It would not: inside 2013 a window can add only the periods that had already ended, a choice of rows by their
+       realized end that stays whatever the target, and a target per period brings back a score won by guessing how
+       long a vehicle stays.
+     - The only windows with training sides of their own and no such choice are whole years (2012 trained on 2011,
+       2013 on 2011-2012), two windows with the older on 30.4% of the rows, so the choice is between the rules'
+       forced split by contract and an amendment of the windows rule like the one wisconsin needs.
+   * **Background:**
+     - Where the shared side comes from: rows are cut at 31 December, and the claims carry no dates (the claim file
+       holds the period's dates, the IDA flags, the year the claim closed, the charge, the contract and the
+       registration), so a running period's claims to date cannot be counted at a window's start. The rule against
+       training on rows chosen by their realized length[^a6a] and the windows rule's clause that windows sharing a
+       training side are one evaluation[^a6b] then leave one training side. No newer rule overrules either clause,
+       and the weight comes from the rate rules of 2026-11-06, newer than the windows clause.
+     - The added rows' labels were known at the window's start, so the rule on labels not yet known does not bar
+       them[^a6c]; what bars them is the choice of rows. Your amendment of 2026-11-08 covers a choice the source made
+       before release on both sides alike, not one a split makes on its training side alone.
+     - The weight is information the actor has: a past period's vehicle-years are known once it ends, and the rate
+       rules use them only as the training weight and as the score's weight, which the score reads after the fact as
+       it reads the label. Only the period being priced has an unknown length, and there it is no input[^a6d].
+     - What a target per period would ask: the fleet tariff charges a rate per vehicle-year earned pro rata, and the
+       game's players had each 2014 period's vehicle-years in their file, so neither priced the stay. The rules keep a
+       target per contract only where the planned term is the same for every row and known; here the length to 31
+       December varies and the realized one is cut short after claims (a rate ratio of 1.22 given the rating
+       classes)[^a6e].
+     - Under a target per period, an actor refitting in May could use only the ended 2013 periods too, since a running
+       period has no final label; so the expanding windows would mirror a refit, but only for a target nobody prices.
+     - Wisconsin: on 2026-11-06 you kept its three yearly windows with the oldest on 40.6% of the rows ("the task is
+       too good to remove because of the 50% floor"), where its forced folds leaked the year's claim level; here the
+       forced folds pass the same leak test (the experiments of issue 6 above).
+   * **Experiments:** on the definition as committed (its four bands now ordered; the scores differ from issue 6's, run before).
+     - The rows an expanding window adds, against the 31,050 periods of 2013:
+
+       | Window starts | 2013 periods added | Their share of 2013 periods / vehicle-years | Claims per realized vehicle-year | Claims per period | Claims per vehicle-year to 31 Dec |
+       |---|---|---|---|---|---|
+       | 1 May | 5,619 | 18.1% / 7.4% | 0.131 (still running: 0.116) | 0.024 (0.082) | 0.025 (0.089) |
+       | 1 September | 11,708 | 37.7% / 21.5% | 0.127 (still running: 0.115) | 0.032 (0.081) | 0.036 (0.105) |
+       | all of 2013 | 31,050 | | 0.119 | 0.053 | 0.073 |
+
+     - Under the rate target the added rows claim 7% to 10% more per vehicle-year than 2013 as a whole; under a target
+       per period, set against the length to 31 December that such a model reads, they claim a third to a half as
+       much. Removing the weight turns the bias around; it does not remove it.
+     - Scores, regularised Tweedie LightGBM fitted with the weight, normalized weighted Gini, 5 seeds:
+
+       | Design | Sep-Dec | May-Aug | Jan-Apr | 2012 | 2013 | Mean |
+       |---|---|---|---|---|---|---|
+       | a: three windows on 2011-2012 | 0.103 | 0.155 | 0.204 | | | 0.154 |
+       | Andrej's expanding windows, with the weight | 0.118 | 0.160 | 0.204 | | | 0.160 |
+       | b: forced by contract, 3 x 3 | | | | | 0.173 (its 2013 rows) | 0.185 (all rows) |
+       | c: yearly windows | | | | 0.171 | 0.181 | 0.176 |
+       | d: lagged training sides | 0.103 | 0.146 | 0.199 | | | 0.150 |
+
+     - The expanding sides move the window mean by +0.006 (SD 0.015 over seeds, higher on 3 of 5), within noise: the
+       rule bars them for the choice of rows, not for a measured gain.
+     - With the weight removed (the charge per period, the length to 31 December a feature, no weight), the row Gini of
+       the charge per period is 0.117, 0.233 and 0.285 on the shared training side and 0.123, 0.229 and 0.285 on the
+       expanding sides, while the realized vehicle-years alone, the stay known only at the end, score 0.178, 0.332 and
+       0.292, above the model on every window. Turned into a rate by the length, that model scores 0.137 on the
+       declared metric against 0.154 for the rate model.
+     - The yearly windows train on whole closed years, every period ended by 31 December, so no row is chosen by its
+       end; they score 0.171 and 0.181 (mean 0.176, SD 0.004 over seeds). 67% of the 2012 test
+       periods and 80% of the 2013 ones belong to a contract in training (1,464 and 1,543 periods with a claim).
+     - The lagged training sides (each four-month window trained on the periods that started at least 8 months before
+       it: 51.1%, 58.3% and 64.4% of the rows) are the only four-month windows with sides of their own, every label
+       known and no row chosen by its end; their sides differ only because data known at each window's start is held
+       back, since all of 2012 is known on 1 January 2013, and the rules ask each window to train on all that came
+       before it[^a6b].
+   * **Consistency:**
+     - spanish_motor_insurance_coverage_level_2022_2024 has the same facts (stacked years, one valid yearly window,
+       recurring entities) and ships forced by policy[^a6f].
+     - wisconsin_local_government_property_insurance_fund keeps yearly windows below the floor; c would go further
+       (two windows, the older on 30.4% against 40.6%), and the forced folds pass here the leak test they failed
+       there, the fact that sets the two apart. california_house_prices_2020 dropped a window that trained on 25%.
+   * **Prior calls:** your D11 (the rate, the weight, the length to 31 December) stands under a to d; e reverses its
+     target and weight and restores Andrej's charge per period (issue 4) and expanding windows (issue 2 (d)). b ends
+     the three windows and the exception for no gap; c keeps D11's training side for 2013, adds 2012 on 2011 and keeps
+     the exception for both windows; a and d keep the January window's exception.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Three windows on 2011-2012 (implemented) | the three four-month windows of 2013 on one training side | D11 as shipped; the temporal regime | one evaluation counted three times; needs the clause on shared training sides amended |
+     | b | Forced by contract | 3 x 3 folds by `contract_id` over 2011-2013, tagged forced from temporal; rate and weight unchanged | the windows rule's own remedy; the leak test passes; as spanish coverage | mixes the years; tests fleets never insured (cold start 0.004); a rebuild |
+     | c | Two yearly windows | 2012 trained on 2011, 2013 trained on 2011-2012; rate and weight unchanged | each window its own training side; no row chosen by its end; the yearly tariff on known fleets; expanding, with the weight | two windows, the older on 30.4%; needs the windows rule amended further than wisconsin's departure |
+     | d | Lagged training sides | each four-month window trained on the periods that started at least 8 months before it (51%, 58%, 64%) | meets the windows rule's text; no row chosen by its end | holds back data known at each window's start; models nobody would fit; departs from training on all earlier data |
+     | e | Weight removed, expanding windows | the charge per period, no weight; each window trained on the periods closed before it | three training sides; what you asked | the choice of rows stays, its bias turned around; the stay outscores the model; departs from the rate rules; reverses D11 |
+
+   * **Recommendation:** b: the windows rule sends a release with one valid window to the forced split, the leak test
+     across it passes, it scores 2013 as the valid window does, and spanish coverage, with the same facts, ships it.
+     c if you extend wisconsin's departure to this table, as one amendment of the windows rule written for both; it
+     is the expanding design you asked for, valid with the weight kept. Not e: the weight is not what bars the
+     windows. **Decision:** a, b, c, d or e?
+
+   **Notes for the AI:**
+   - b: as issue 6's notes for C: `contract_id` out of `drop_columns` and the group column (never a feature; the
+     notes' "Dropped:" bullet), a `Grouping` on it with the default 3 x 3 splits in place of `temporal` and
+     `_make_splits`, `ForcedGroupedFromTemporal` in `data_tags`; rewrite `task_summary.split`, `fit_reason`, the gap
+     bullet (the SPLIT-10 exception and its record line go), `splits_comment` (what the dates would change, the cold
+     start 0.004, the yearly windows' scores as the cost against the valid windows) and Decision 2 with its table; the
+     record's `required_split` and tag; a CC line naming D11's three windows as replaced; the SPLIT-14 Cases row for
+     this dataset replaced and a SPLIT-8 row (the main session's); after the rebuild, the leak probes on the grouped
+     split.
+   - c: the main session first drafts the SPLIT-14 amendment together with wisconsin's departure (a Must takes no
+     exception, so wisconsin's call is an amendment too), worded to cover a release of yearly periods with whole
+     closed years: for example, "a release whose periods close at a year end, with fewer years than three valid
+     windows, ships its yearly expanding windows when each trains on whole closed years; the oldest may train on less
+     than half the rows (wisconsin 40.6%, this dataset 30.4%)". Then in `dataset.py`: `WINDOWS` becomes the years
+     (2013 on starts before 2013, then 2012 on starts before 2012, newest first), `_make_splits` builds the two
+     splits, `temporal` gets a one-year horizon; rewrite `task_summary.split`, `fit_reason`, `splits_comment` (the
+     scores, the known contracts 67% and 80%, the cohorts now pooled per year), the gap bullet (the exception now for
+     both windows, on the ground of the rule on realized lengths plus the floor) and Decision 2 with its table; a CC
+     line; the Cases rows of SPLIT-14 and SPLIT-10 (kind `exception`) replaced.
+   - d: `_make_splits` with each window's training side `start < window start - 8 months`; the record and the notes
+     carry an exception to SPLIT-11 (the fact: rows cut at 31 December, claims undated; serves SPLIT-14) and a Cases
+     row of kind `exception`; `splits_comment` says that the sides differ only by data held back.
+   - e (not recommended): `TARGET` the charge per period, no `sample_weight`, the metric back to the row Gini, the
+     expanding sides of 2026-11-02; an exception to MET-14 with a fact, which the measurements do not give; a CC line
+     reversing D11.
+   - a: the SPLIT-14 amendment reversing the clause on shared training sides for this case, decided with wisconsin's.
+
+   [^a6a]: **LEAK-41** (Must; 2026-11-06, last clause amended 2026-11-08 on this dataset's issue 7): "No model is
+     trained or scored on rows selected by the realized weight (such as full-year rows only); a row with no amount at
+     risk may go under USE-7, its claims counted in the notes; a selection the source made before release, the same
+     in train and test, that cannot be undone, defines the task's population and is sized in the notes."
+   [^a6b]: **SPLIT-14** (Must; amended 2026-11-02, Andrej; reframed 2026-11-05, Lennart): "A temporal task has at
+     least 3 windows, and no window's train side holds less than 50% of the data. ... Each window has its own train
+     side: windows that share one train side test one model on several test periods, which is one evaluation, not
+     several. As time moves on, a refit sees the data that arrived since, so each window trains on what is known
+     before it starts." **SPLIT-11** (Should): train on everything before the window.
+   [^a6c]: **SPLIT-9** (Must): a training row whose label tells a test row's outcome and was not yet known at the
+     prediction point must not be in train.
+   [^a6d]: **MET-15** (Must): a realized denominator is the metric's row weight and the task's `sample_weight`, never
+     a feature; **LEAK-41**: such a column is never a model input.
+   [^a6e]: **MET-14** (Should): an amount over a varying time on risk ships as the rate per unit when the decision
+     prices per unit; "A per-contract target stays when the planned term is constant and known at the prediction
+     point".
+   [^a6f]: **SPLIT-8** (Must): a release that cannot give the windows the windows rule asks for ships in the closest
+     regime that keeps the rows, grouped by the entity when the periods are stacked and the entities recur, after a
+     leak test across the split. Andrej, 2026-11-02, on spanish coverage: "Forced group splits should be fine".
+
+
    [^windows]: **SPLIT-14** (Must), amended 2026-11-02 (Andrej) and reframed 2026-11-05 (Lennart): "Each window has its
      own train side: windows that share one train side test one model on several test periods, which is one evaluation,
      not several." Its Cases row for this dataset still records the expanding windows of issue 2.
@@ -453,6 +604,16 @@ or keep the Gini with its measured shortfall). Issues 1 to 5 are resolved, 2 and
    [^must]: principles.md, "Exceptions and amendments": "A Must has no exceptions: only a higher-ranked Must overrides
      it, and anything else is an amendment." The remedy ladder: "Exclusion is for a Must that cannot be fixed."
 
+   **Resolved (2026-11-08, Lennart):** B, LEAK-41's last clause is amended for a selection the source made before
+   release, the same in train and test, that cannot be undone: it defines the task's population and is sized in the
+   notes (the rule's wording and its Cases row are the main session's edit of leak_checks.md); the notes' floor bullet
+   cites the amendment, and the task covers the periods of cover of a month or more, about 1.5% of the vehicle-years
+   cut. The siblings checked on their released lengths: no other insurance table of PR #47 has a minimum set by its
+   source (frempl_french_motor_personal_line, spanish_motor_insurance_coverage_level_2022_2024,
+   australian_vehicle_insurance_2004_2005, fremtpl2 and bemtpl97 start at one day or less and run on without an edge;
+   spanish_motor_insurance_2015_2018 has a planned year whose lapses cut it from one day on; pricing_game_2017_french_mtpl
+   has no length column).
+
 8. **Keep the Gini as the stand-in for the game's market, or score the uniformly rescaled weighted Tweedie deviance?**
 
    * **Problem:**
@@ -522,6 +683,30 @@ or keep the Gini with its measured shortfall). Issues 1 to 5 are resolved, 2 and
    stated as the oracle scale; `Metric.stand_in` with the closeness in the reason; a CC line naming the fact that sets
    the case apart from australian and spanish coverage (a market that rescaled uniformly, the closeness measured); a
    MET-11 Cases row (the main session's).
+
+   **Lennart (2026-11-08, discuss):** This owuld mean the metric could only be used for testing, not validaiton, as we
+   ues info from test, right?
+
+   **Answer (AI, 2026-11-08):** No: the factor uses only the labels of the rows being scored, as every metric does, so
+   the rescaled deviance works on a validation fold the same way.
+
+   * What was asked: whether the rescaling takes information from the test rows, so the metric could score a test
+     window but not guide validation, early stopping or tuning.
+   * What the metric does, on any set of scored rows: it multiplies the model's predictions by one factor, the rows'
+     weighted claim total over their weighted predicted total, then takes the weighted Tweedie deviance. The labels
+     enter the factor exactly as they enter the deviance; the model never sees them, and its predictions are fixed
+     before scoring.
+   * In validation: each validation fold is rescaled to its own claim total. Early stopping or tuning on it then
+     prefers the tariff with the best relative prices, which the game rewarded; nothing from the test rows is used.
+   * What the issue's con meant by "no insurer knows the test total when it prices": the score takes the price level
+     out, as the Gini does, so it cannot reward a model for the right level. The game did the same: it set every
+     player's premiums to one total before the market ran.
+   * One practical cost: no library ships it as an early-stopping metric, so a learner that stops on the validation
+     score needs it as a custom evaluation function (the factor computed per evaluation set). The benchmark's TODO on
+     dataset-specific metrics already covers custom metrics in validation.
+   * The bootstrap of its differences per window, which the recommendation waits for, runs once issue 6 settles the
+     split, since the split decides which sets are scored. The decision (A or B) stays open.
+
 
    [^standin]: **MET-11** (Must): a stand-in applies when the source's metric cannot be computed, "and the closest
      computable metric replaces it; it names the original and why the original cannot be computed, and the closeness is

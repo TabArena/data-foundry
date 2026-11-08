@@ -1,8 +1,8 @@
 # spanish_motor_insurance_coverage_level_2022_2024
 
-**Outcome:** added. The AI recommends shipping it once the annualised premiums are rounded to the cent (issue 7, a fix
-the rules require that needs the curator's yes): the re-review panel of 2026-11-06 under the exposure rules (LEAK-41,
-MET-14 to MET-16) found that their decimals tell a year cut short from a full one. Like every container with a
+**Outcome:** added. The AI recommends shipping it: the annualised premiums are now rounded to the cent (issue 7,
+Lennart, 2026-11-08), since the re-review panel of 2026-11-06 under the exposure rules (LEAK-41, MET-14 to MET-16) found
+that their decimals told a year cut short from a full one. Like every container with a
 `sample_weight`, it enters no run before the collection's training-weight gate (`BENCHMARK_CHANGES_TODO.md`, "Training
 weights", "The gate"). The motor portfolio of an unnamed Spanish insurer (Espinosa, Lledó and Atance, Data in Brief
 66:112883, 2026; Mendeley, CC BY 4.0): 354,091 policy-years of 185,677 policies, 2022 to 2024, with the premium of each
@@ -12,10 +12,11 @@ the time on risk is also each policy-year's training weight, and all years of a 
 Validity: SEL-1 and SEL-2 hold; USE-1, USE-5 and USE-6 hold, fit approximate on the forced split (USE-8); LEAK-10
 triggered and fixed (`policy_status` and the target's parts dropped); LEAK-41 holds for the weight (`actual_exposure` is
 the rate's denominator, the metric's weight and the `sample_weight`, never a feature; `total_exposure` dropped; every
-premium annualised; probe 22 fits the time on risk from the features at R^2 0.350 and finds no feature whose gain goes
-through it under weighted Tweedie or L2; 1/time on risk alone scores 0.075) and is triggered by the annualised premiums'
-decimals, which rank the located cancellations at ROC AUC 0.965 and gain +0.0035 under weighted Tweedie when a model
-reads them (issue 7: rounding to the cent removes the mark, 0.565, at no measurable cost); LEAK-41's report now covers
+premium annualised and rounded to the cent; probe 22, re-run on 2026-11-08, fits the time on risk from the features at
+R^2 0.340 and finds no feature whose gain goes through it under weighted Tweedie or L2; 1/time on risk alone scores
+0.075) and was triggered by the unrounded premiums' decimals, which ranked the located cancellations at ROC AUC 0.965
+and gained +0.0035 under weighted Tweedie when a model read them, fixed by the cent rounding (issue 7: 0.565 and
++0.0001 after, at no measurable cost); LEAK-41's report now covers
 `business_type`, read from the year's last record (no gain against its 1 January value); the two weaker late values stay
 with notes (issue 4), and the premiums' gain through any cancellation, +0.0010 under Tweedie with 10 seeds (SE 0.0006),
 keeps option A of issue 6; SPLIT-8 ships the three years as `ForcedGroupedFromTemporal` (Andrej, 2026-11-02), its cost
@@ -28,10 +29,12 @@ risk scores 0.3166 (L2 on log1p) and 0.3165 (Tweedie) on the declared metric aga
 raises no flag (its R^2-type skill is +0.048); TP-4 holds: the model beats the insurer's annual premium alone (0.298) on
 9 of 9 splits with L2 and 8 of 9 with Tweedie; MET-11 (context), MET-14 and MET-15 hold; MET-16 does not apply (no
 survey weight). Quality: CLEAN-11 holds (impossible values made missing, including 23 zero premiums of the compulsory
-liability cover); CLEAN-14 departed from and fixed (`bonus_score` is now ordered; `payment_frequency` is issue 8);
+liability cover); CLEAN-14 departed from and fixed (`bonus_score` and `payment_frequency` are now ordered, the second
+on issue 8);
 CLEAN-16 holds (the log1p scale kept on Lennart's call of 2026-11-06, at no measured cost). Weighed: recent real insurer
 data with costs and premiums per cover +, a data article with a variable table +, size +; core rating factors absent
-(vehicle age, postcode) -, low signal -, unnamed insurer -. Left for Andrej and Lennart: issues 7 and 8.
+(vehicle age, postcode) -, low signal -, unnamed insurer -. Nothing is left open: issues 7 and 8 were settled on
+2026-11-08 (Lennart).
 
 Changes made after the review panel (AI, 2026-11-01): the full-year fix now also covers the 13,842 cancelled
 new-business years of policies already in force on 1 January (they had a row the year before), which lowers no score
@@ -50,9 +53,14 @@ unchanged; a build waits for your ask): `bonus_score` is an ordered category (ba
 no premium carries the time on risk now name the decimals' mark (issue 7), Lennart's CC of D10 staying as written with a
 dated AI note; `business_type` has its leak note; `splits_comment` and the metric reason are re-measured and re-cited.
 
-**Main points:** Open: round the annualised premiums to the cent (7, a fix the rules require that changes Andrej's call
-of 2026-11-02 and the D10 call); order `payment_frequency` (8, low). Resolved: 3, 4 and 5 on 2026-11-02, 6 on
-2026-11-06.
+Changed on Lennart's marks of 2026-11-08 (rows, target, weight, split and metric unchanged; a build waits for your
+ask): the annualised premiums are rounded to the cent (issue 7) and `payment_frequency` is ordered annual < semiannual
+< quarterly, as in the two pricing games (issue 8); the dated AI note after D10's CC gave way to Lennart's CC; the
+decimal check, probe 22 and the task probe were re-run (issue 7's resolved turn).
+
+**Main points:** Nothing open. Resolved: 3, 4 and 5 on 2026-11-02, 6 on 2026-11-06, 7 (the annualised premiums rounded
+to the cent, which changes the wording of Andrej's issue 4 call and of D10's CC) and 8 (`payment_frequency` ordered here
+and in the two pricing games) on 2026-11-08.
 
 **Verdict (2026-11-02, Andrej):** ship. The metric is marked as declared (`normalized_weighted_gini` on the cost per
 year on risk, weighted by `actual_exposure`). The dataset joins the accepted set; a build waits for your ask.
@@ -352,6 +360,15 @@ year on risk, weighted by `actual_exposure`). The dataset joins the accepted set
      which hid the decimals of the realized length that told a continued record from an open one (AUC 0.92 to 0.71,
      and 0.91 to 0.61).
 
+   **Resolved (2026-11-08, Lennart):** B, `_clean` rounds each annualised premium to the cent; on the rebuilt frame
+   the premiums' decimal counts and cent-grid flags rank the located cancellations at ROC AUC 0.565 (0.965 before),
+   the decimal counts as features gain +0.0001 under weighted Tweedie and -0.0012 under weighted L2 (9 splits x 2
+   seeds; +0.0035 and -0.0052 before), probe 22 finds no feature whose gain goes through the time on risk under either
+   fit (R^2 0.340), and the task probe raises no flag (LightGBM 0.3187 against 0.3165 before). The CC line corrects
+   D10's "while the premiums stay unrounded" and changes the wording of Andrej's issue 4 call on the decimals' mark,
+   with his prices kept to the cent; the notes, the decision table and the task summary say so, and the dated AI note
+   after D10's CC gave way to this CC.
+
 8. **Order `payment_frequency` as annual < semiannual < quarterly?**
 
    * **Problem:**
@@ -397,6 +414,11 @@ year on risk, weighted by `actual_exposure`). The dataset joins the accepted set
      might be the safer bet".
    [^8b]: principles.md, "Consistent judgement, the curator's included", case 2: a precedent with similar facts decided
      the other way is a question for the curator.
+
+   **Resolved (2026-11-08, Lennart):** C, `payment_frequency` is an ordered category here, annual < semiannual <
+   quarterly, and the same order by payments a year is applied in pricing_game_2016_french_fleet (annual < semi-annual
+   < quarterly) and pricing_game_2017_french_mtpl (Yearly < Biannual < Quarterly < Monthly, its four levels in the
+   data), each with its notes and a CC line; `dataset check` 0 errors, 0 warnings on all three.
 
 **Review panel:** ship after changes (mediator). Tier full, re-review of 2026-11-06 under LEAK-41, MET-14 to MET-16,
 after decision D10 (issue 6): 12 reports. Claims: 16 audited, 10 hold (one a tautology the rules ask for, one except the

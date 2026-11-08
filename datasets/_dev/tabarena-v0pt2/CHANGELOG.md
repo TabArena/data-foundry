@@ -1,5 +1,91 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-08, PR #47: Lennart's marks on the review board applied (no container built)
+
+Lennart marked the PR #47 review board on 2026-11-06 and 2026-11-08. A consistency check ran first; four marks wait for
+his answer to its question (bank_marketing issue 1, wisconsin issue 3 on how the rules record it, fremtpl2 issue 10,
+australian issue 7), and five issues marked for discussion have an answer turn (australian 8, bank_marketing 2, frempl 7
+and 9, pricing_game_2016 6 and 8). The changes below follow the marks; no container was built, and frempl's and
+noaa_storm's definitions now differ from any build.
+
+- `noaa_afsc_bottom_trawl_survey_cpue`: issue 5 (B): Lennart's CC of 2026-11-08 claims the tow cut for walleye pollock
+  and, to a lesser degree, Pacific cod, superseding the pollock-only claim of 2026-11-06; the fourth decision retitled.
+  Issue 6 (B): the Effort bullet cites the new clause of the leak rules' time-on-risk row (an equal-area map is scored
+  unweighted, with no sample weight). Text only.
+- `wadden_sea_sibes_macoma_abundance`: issue 7 (A): the 608 counts below one tellin per core ship as published with the
+  note, and NIOZ is not asked for now; the exposure bullet cites the equal-area clause. Text only.
+- `g_research_crypto_forecasting_1m`: issue 8 (A): the model still clearly beats each coin's mean on the shipped splits
+  (ahead in every window by the point estimate, the interval read pooled); the Scope bullet says so. Text only.
+- `fremtpl2`: issue 11 (A): the random split stays with the note on the 19-row rating profile. Issue 10 open
+  (consistency check). Text only.
+- `australian_vehicle_insurance_2004_2005`: issue 9 (B): `vehicle_age_band` (levels 1-4) and `driver_age_band` (1-6) are
+  ordered categories, youngest first. Issues 7 (consistency check) and 8 (answered) open.
+- `bank_marketing`: issue 3 (A): the 274 exact copies stay, with a duplicates bullet in the notes; the record's `year`
+  set to 2012 (UCI's release). Issues 1 (consistency check) and 2 (answered) open.
+- `boreal_postfire_lichen_biomass`: issue 7 (B): the fallback RMSE on kg/ha counts each plot once, weighted by the new
+  scoring column `plot_weight` (1 over the plot's quadrats: 0.2 in NT, 0.5 in SK); no sample weight,
+  `task_metric_weight_without_sample_weight` accepted; same rows and splits, the frame's row order changes with the new
+  column.
+- `frempl_french_motor_personal_line`: issue 8 (B): the policy component also joins a record to a successor that changed
+  one profile column (no counter lower): 61,091 groups of 1 to 90 records (68,857 before), so the shipped folds change;
+  a lookup of those successors in training gains +0.001 (+0.020 before); the scores of the notes and the metric reason
+  re-measured on the new folds (Tweedie 0.181, squared error on log1p 0.152); the component-size table binned. Issues 7
+  and 9 open.
+- `spanish_homeowners_motor_insurance_2010_2014`: the SPLIT-10 note no longer cites pricing_game_2016_french_fleet,
+  whose windows are reopened. Text only.
+- `wisconsin_local_government_property_insurance_fund`: issue 3: Lennart keeps the three yearly windows as a deliberate
+  exception to the floor (CC of 2026-11-06 in his words); how the rules record it is open (consistency check). No
+  definition change.
+- `allstate_claim_prediction_challenge_1m`, `anes_voting_2026`, `bemtpl97`, `liberty_mutual_fire_peril_loss_cost`,
+  `loan_default_prediction_imperial_college`, `spanish_homeowners_motor_insurance_2010_2014`: no open issue, so they
+  ship by default, metric checked as declared (CC lines); the Kaggle three wait for their files, `dataset check` and the
+  re-review panel before any build.
+- `noaa_storm_events_damage`: issue 7 (B): `duration_hours` blank also on the 241,523 Thunderstorm Wind and High Wind
+  entries with a speed estimated from the damage (EG, ES) and on Thunderstorm Wind measured under 50 kt (304,268 blank
+  in all, 36.1%); the kept-with-note bullet covers the 78,843 rows left (measured winds, Coastal Flood, Lakeshore Flood,
+  Storm Surge/Tide, Dust Storm, Volcanic Ashfall), worth -0.02 to +0.12 RMSLE on their test rows; `changes`, the
+  duplicate count (5,402) and the longest-span example corrected.
+- `spanish_motor_insurance_coverage_level_2022_2024`: issues 7 (B) and 8 (C): the annualised premiums are rounded to the
+  cent, which removes the decimals' mark of a part-year (ROC AUC 0.965 to 0.565; the decimal counts' gain +0.0001 under
+  weighted Tweedie); `payment_frequency` ordered annual < semiannual < quarterly; D10's CC corrected and the wording of
+  Andrej's issue 4 of 2026-11-02 changed (prices kept to the cent).
+- `pricing_game_2017_french_mtpl`: issue 5 (B): the deviance floor goes from 1 EUR (Andrej, 2026-11-03) to 0.1 EUR,
+  following the collection's rule for a deviance floor (a convention that can change with the rule); `pol_pay_freq`
+  ordered Yearly < Biannual < Quarterly < Monthly (spanish coverage issue 8).
+- `pricing_game_2016_french_fleet`: issue 7 (B): the source's 30-day floor stays under LEAK-41's last clause as amended,
+  and the notes cite it; no other insurance table of PR #47 has such a floor; `payment_frequency` ordered annual <
+  semi-annual < quarterly (spanish coverage issue 8). Issues 6 and 8 answered, open.
+- `spanish_motor_insurance_2015_2018`: issues 7 (B) and 8 (B): the target stays per contract, MET-14's per-contract
+  clause to be amended (wording settled with australian issue 8), the 6% bound in the notes; Lennart's CC of 2026-11-06
+  reworded in place in the definition, the record and issue 6's resolved turn. Text only.
+- `noaa_storm_events_damage`: issue 8 (B): the target ships in dollars (`property_damage_usd`) and is scored by the mean
+  Tweedie deviance at power 1.5 with a $1 floor (two orders below the $909 training mean of Dense Smoke, rounded down),
+  superseding Andrej's RMSLE; the metric reason, `predicted`, the target, floor and signal notes and the kept spans'
+  worth on the new metric (no consistent sign; the Flood and Flash Flood durations carry much of the skill). The task
+  probe flags `no_signal`, `drift_baseline` and `unstable` under it (issue 10 open).
+- `pricing_game_2017_french_mtpl`: `pol_coverage` ordered Mini < Median1 < Median2 < Maxi, the order of the game's rules
+  (Lennart, 2026-11-08, in chat).
+- Code: `rmse` takes an optional row weight (`weight` input, `sqrt(sum(w*e^2)/sum(w))`), and `Metric.fallback` takes
+  inputs, so the regression fallback can be weighted; a weighted spec states its formula
+  (`MetricDef.weighted_definition`), unweighted specs and the built containers' checksums unchanged (190 definitions
+  checked); tests for the weighted RMSE and fallback, weight stability across prediction kinds, and the bundle warning.
+- Knowledge files: LEAK-41's last clause amended (a selection the source made before release, the same in train and
+  test, that cannot be undone, defines the task's population; pricing_game_2016_french_fleet's 30-day floor its case);
+  the time-on-risk row's remedy gains the equal-area clause (noaa_afsc, wadden) and its spans part noaa_storm's blanks
+  and the worth on the new metric; MET-13 applied at 0.1 EUR (pricing_game_2017) and on noaa_storm's $1; MET-15 names
+  boreal's `plot_weight`; Cases rows: boreal (one vote per plot), pricing_game_2017 (the floor), noaa_storm (the
+  metric), spanish coverage (rounded premiums, in LEAK-41, MET-15, the time-on-risk row and the probe-22 reading row),
+  the billing frequency and `pol_coverage` under CLEAN-14, fremtpl2 under SPLIT-8, frempl's widened component under
+  SPLIT-24, g_research under TP-10; definitions.md on the weighted RMSE. MET-14's per-contract clause waits for
+  australian issue 8, so one wording covers spanish_motor_insurance_2015_2018 too.
+- `noaa_storm_events_damage`: two open issues raised when issue 8 was applied, no definition change. Issue 10: tuned
+  Tweedie LightGBM (24 configurations, early stopping, 3 seeds) scores the declared deviance 3,463 / 2,044 / 962 against
+  2,660 / 2,301 / 1,740 for a mean per event type (2023 / 2024 / 2025), so it beats the per-type mean in 2024 and 2025
+  and not in 2023 (within noise); with the damage capped at $10M it beats it in every window (A, keep the deviance,
+  recommended). Issue 11: one of the Flash Flood onsets in NWSI Sec. 14 is damage to a building, and under the deviance
+  the Flash Flood duration carries much of the skill (+31% to +102% of the deviance on its rows when blanked; B, keep
+  with a note, recommended).
+
 ## 2026-11-06, PR #47: re-review under the exposure rules (no container built)
 
 Seventeen of the twenty datasets the exposure rework touched went through the review panel again under LEAK-41 and

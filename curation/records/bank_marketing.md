@@ -13,7 +13,7 @@ claimed_by: Lennart
 suggestion: 'Yes'
 priority: 2
 original_source: UCI
-year: '2011'
+year: '2012'
 required_split:
 - Random (IID)
 problem_type: Binary Classification
@@ -50,6 +50,12 @@ CC (2026-10-30, Lennart): `campaign` and `previous` are counts and stay numeric,
 **Assessment (AI, 2026-11-06):** review panel (focused, re-review under LEAK-41, MET-14 to MET-16): ship after changes, those needing no decision applied (notes on `campaign`, `contact`, `pdays` and `balance`, `job` "unknown" as missing, the row text, the `pdays` sentinel accepted); new: clients recur across campaigns, and the random split lets a client's later row give away its earlier row's label through `poutcome` (3.7% of test rows, +0.020 ROC AUC to a model that matches them; LEAK-17), while the source evaluates in time on date-ordered data; disputed: keep or drop `campaign`, which turns on the prediction point (issue 2); for the curator: issues 1 (split by time, against the SPLIT-31 call), 2 (the prediction point and `campaign`), 3 (duplicates).
 
 **Assessment (AI, 2026-11-06):** priority 2 (selection.md, Priority): a good shape (45,211 units, 13 features, categorical and ordinal) +, a strong source (UCI and Moro et al. 2014) +; no gap in the benchmark; the use case's fit is open (issue 2: before the campaign or at a call); a known risk -, the open issues on the split (1) and on `campaign` (2).
+
+CC (2026-11-08, Lennart): record field `year` set to the definition's 2012 (UCI's release, donated 2012-02-13), from 2011 (the ESM paper, which only analysed the data); the field row of the folder's REVIEW.md, `update`.
+
+CC (2026-11-08, Lennart): issue 3 of the folder's REVIEW.md, as implemented (ok): the 274 exact copies stay, with a note (LEAK-16, LEAK-18): 274 exact copies (0.6%, label included) and 32 feature-copies with the other label; 93% of the copy rows have a balance of 0, plausible repeats of common profiles; under the random split 0.9% of the test rows have a copy of every feature in training, 0.8% one with the same label.
+
+CC (2026-11-08, Lennart): the declared metric (`roc_auc`) is checked, as declared on the PR #47 review board.
 
 ## Reference
 

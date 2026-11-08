@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: fremtpl2
 container_format: 2
-checksum: v2:19a1f08c4c7893ca863d9d480b6eab28755e561d34db4f97f00420f0f28edb67
+checksum: v2:dfb115031e3e14762a17e1dd5aaf1ad3bca7a7d7cbedc826becff11dc1605a5d
 build: null
 build_stale: false
 data:
@@ -73,7 +73,7 @@ decisions:
 
 Regression of `claim_frequency`, scored with `mean_poisson_deviance` on IID splits. 677,991 rows and 9 features. Source: Other (2014).
 
-Not built yet. The current definition gives checksum `v2:19a1f08c4c7893ca863d9d480b6eab28755e561d34db4f97f00420f0f28edb67`.
+Not built yet. The current definition gives checksum `v2:dfb115031e3e14762a17e1dd5aaf1ad3bca7a7d7cbedc826becff11dc1605a5d`.
 
 ## In brief
 
@@ -239,6 +239,7 @@ We start with data/freMTPL2freq.rda (677,991 policies) and data/freMTPL2sev.rda 
 - CC (2026-11-05, Lennart): the label-free renewal signal stays (issue 8, as implemented, answered (a)): it is an evaluation leak, read from other rows, handled by LEAK-9 as amended on 2026-11-05 (a protocol line the benchmark checks; a method that learns from the test block is called out and not benchmarked), as medical_facility_operational_data. After issue 5 a model that reads the next-year record gains 0.0008 mean deviance (0.0009-0.0010 without `BonusMalus`).
 - CC (2026-11-06, Lennart): issue 6 resolved by option A of https://github.com/TabArena/data-foundry/issues/51: the target is the claims per year insured, Exposure the weight of the metric and of training and never a feature (LEAK-41, MET-14, MET-15), the floor 1e-4 a year (MET-13). Supersedes the call of 2026-10-20 (Andrej: Exposure "a feature, not a divisor", capped at 1) and the parking of 2026-11-05: the conditional measurement came later (+0.0040; never better at quotation), and with the weight, dividing does not inflate short records.
 - CC (2026-11-06, Lennart): the claim amounts (the proposal of PR #46, D12) stay out for now; a task on amounts per year insured or on the claim size is a separate decision, made on leak-free numbers.
+- CC (2026-11-08, Lennart): the random split stays, with the note on the one rating profile of the high counts (issue 11, as implemented): its 19 rows of 677,991 make 94-102% of the gap to folds grouped on identical rating factors, and LightGBM ranks ahead of a Poisson GLM under every split. Follows the IID call of 2026-11-05 (issue 7) and bemtpl97; the counts of 5 to 16 stay as kept on 2026-11-04.
 
 ## Splits
 

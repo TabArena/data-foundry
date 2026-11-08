@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: spanish_homeowners_motor_insurance_2010_2014
 container_format: 2
-checksum: v2:c23727eaf71fcc95f4131fee4392273c6a13e2c0c78968d2cec9316c202e8a74
+checksum: v2:8deec4676f5aa061f7a9c3839c8ec8165fcecd6f9fd3c7bb40f809edbc67e812
 build: null
 build_stale: false
 data:
@@ -65,7 +65,7 @@ decisions:
 
 Regression of `log1p_home_claim_cost`, scored with `normalized_gini` on temporal splits by `policy_year`. 122,935 rows and 20 features. Source: Other (2021).
 
-Not built yet. The current definition gives checksum `v2:c23727eaf71fcc95f4131fee4392273c6a13e2c0c78968d2cec9316c202e8a74`.
+Not built yet. The current definition gives checksum `v2:8deec4676f5aa061f7a9c3839c8ec8165fcecd6f9fd3c7bb40f809edbc67e812`.
 
 ## In brief
 
@@ -229,9 +229,8 @@ Gini of 0.226 and 0.203, against 0.219 as shipped. Read as a policy year from ea
 newest training year can overlap the test year by up to a year; the upper bound is a run without the newest
 training year, which moves the mean from 0.219 to 0.200 (2014 0.161 to 0.148, 2013 0.315 to 0.244, about one
 null SD, 2012 0.182 to 0.207). Both effects are within the noise. A one-year gap, the smallest the yearly
-column allows, leaves 2012 a training side of 33%, so only two windows would meet SPLIT-14. As in
-pricing_game_2016_french_fleet; the curator declined a SPLIT-10 amendment (CC on avito_demand_prediction,
-2026-11-02).
+column allows, leaves 2012 a training side of 33%, so only two windows would meet SPLIT-14; the curator
+declined a SPLIT-10 amendment (CC on avito_demand_prediction, 2026-11-02).
 
 3 repeat(s) x 1 fold(s) with seed 4267; train 70,102 to 109,651 rows, test 13,284 to 22,505 rows. Prediction horizon: 1 years.
 

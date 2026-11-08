@@ -2,11 +2,12 @@
 
 **Outcome:** added. The AI recommends shipping it after changes: the re-review panel of 2026-11-06 under the exposure
 rules (LEAK-41, MET-14 to MET-16) found no exposure, weight or offset to add and the split right; its changes that need
-no decision are made (below), and two questions are open (issues 7 and 8), one of them on validity (7). NOAA NCEI's
-Storm Events Database, 2007-2025: 843,144 entries of the property damage an NWS office entered for one event in one
-county or zone, 68% of them $0, for a state hazard-mitigation planner who estimates the damage of storm events before
-it is assessed (Diaz and Joseph 2019); tested on the calendar years 2023-2025 with a 3-month gap, scored by RMSLE (by
-context; the source has none).
+no decision are made (below), issues 7 and 8 are decided and applied (2026-11-08), and two questions raised when issue 8
+was applied are open (10 and 11). NOAA NCEI's Storm Events Database, 2007-2025: 843,144 entries of the property damage
+an NWS office entered for one event in one county or zone, 68% of them $0, for a state hazard-mitigation planner who
+estimates the damage of storm events before it is assessed (Diaz and Joseph 2019); tested on the calendar years
+2023-2025 with a 3-month gap, scored by the mean Tweedie deviance at power 1.5 on the dollars (by context; the source
+has none; RMSLE until 2026-11-08).
 
 Validity:
 * SEL-3 holds on the `Yes` of 2026-10-30. USE-1 and USE-5 hold with the planner as the actor (issue 5); USE-8: fit
@@ -24,25 +25,37 @@ Validity:
   outcome-free.
 * LEAK-10 and the Cases row on spans: the note's premise that the damage-timed part of the kept spans "cannot be
   located row by row" does not hold. `magnitude_type` locates most of it (241,523 of 318,813 rows), and on those rows a
-  stronger LightGBM gains +0.023 to +0.031 RMSLE from the span (12 of 12 seeds): issue 7, B (blank them) recommended.
+  stronger LightGBM gains +0.023 to +0.031 RMSLE from the span (12 of 12 seeds): issue 7, B, decided on 2026-11-08 and
+  applied: these spans are blank, and the 78,843 rows still kept with a note are worth -0.02 to +0.12 RMSLE on their
+  test rows (15 fits, median about +0.04), the measured Thunderstorm Wind spans gaining in every fit; under the
+  declared deviance (issue 8) their worth has no consistent sign (median -5% of the deviance on their rows).
 * SPLIT-9, SPLIT-10 and SPLIT-13 hold: a 3-month gap against a public lag of 75-80 days, no storm crosses a window, no
   training event ends after its cutoff, 98.6-99.6% of the test rows in a county or zone seen in training.
 * MET-14, MET-15, MET-16 and LEAK-41 are not triggered: the target is one event's damage, not an amount accrued over a
   time at risk, so there is no weight and no offset (county population does not scale with the damage).
 
-Value: TP-2, a real signal: untuned LightGBM scores RMSLE 2.67, 2.93 and 2.94 (2025, 2024, 2023) against 4.05, 4.28
-and 4.20 for a constant. TP-3: the task probe flags `no_spread` (two untuned families, +0.051), but a LightGBM of 400
-rounds scores 2.83 against the linear family's 3.24, so methods spread; keep. MET-11: RMSLE by context. MET-1: the
-reason now names the planner and says that RMSLE scores the order of magnitude, not summed dollars; the Tweedie
-deviance on the dollars picks other models in 3 of 3 windows (issue 8, a weighing call, A recommended).
+Value: under the declared deviance (issue 8, 2026-11-08) the signal is weak and unstable. The task probe flags
+`no_signal`, `drift_baseline` and `unstable` (TP-1, TP-2, TP-5): its families, fitted by squared error on the dollars,
+all lose to the training mean (3,866 against 5,796 for the random forest). LightGBM fitted with the Tweedie loss at 100
+trees scores 4,108-5,327, 2,048-2,453 and 788-838 (2023, 2024, 2025) against 4,453, 4,216 and 2,929 for the training
+mean and 2,660, 2,301 and 1,740 for the mean per event type, so it beats the per-type mean clearly in 2025 only, and 400
+or 1,500 trees score worse. Tuned per window with early stopping (issue 10), it scores 3,463, 2,044 and 962 (3 seeds):
+it beats the training mean in every window and the per-type mean in 2024 and 2025, and loses to it in 2023 within noise
+(bootstrap SE 1,580 for a difference of +802); a GLM on event type and month beats the per-type mean in all three
+windows (2,553, 2,130, 1,598). Under RMSLE (until 2026-11-08) untuned LightGBM scored 2.67, 2.93 and 2.94 (2025, 2024,
+2023) against 4.05, 4.28 and 4.20 for a constant, and methods spread (TP-3). MET-11: the deviance by context. MET-1: the
+reason names the planner, who sums expected dollars, which RMSLE does not score. MET-13: floor $1, two orders below the
+$909 training mean of Dense Smoke, the cheapest event type with a positive mean, rounded down.
 
 Quality: LEAK-19 (918 double entries dropped), CLEAN-21 (`magnitude` split into wind speed and hail size), CLEAN-11 (24
 impossible wind speeds, all estimates, blank). EV: the counts left from before issue 2's drop are restated on the
-shipped rows, and the kept spans' worth is the measured range (-0.01 to +0.08 RMSLE over 15 fits, median about
-+0.03), no longer "+0.012 to +0.021, an upper bound".
+shipped rows, and the kept spans' worth is the measured range, since issue 7 measured on the spans that stay (-0.02 to
++0.12 RMSLE over 15 fits, median about +0.04) and since issue 8 on the declared deviance (no consistent sign), no
+longer "+0.012 to +0.021, an upper bound".
 
 Weighed: size +; the NWS directive and a public-domain source +; an honest temporal split +; approximate fit -; the
-office's $0 convention in the label -; a duration the damage partly times, kept with its worth noted -.
+office's $0 convention in the label -; a duration the damage partly times, kept with its worth noted -; under the
+declared deviance a model beats the mean per event type clearly in one window of three -.
 
 Not issues here: the amendment of LEAK-10 for spans that the panel asked for (a third clause tied to the test for
 located cells, with heart_failure's `time` as the counter-case on size) is cross-dataset item X4 of the working copy's
@@ -50,8 +63,8 @@ REVIEW.md. The mediator asks to record Andrej's release of D13 (the study's deci
 merging; not needed on the AI's reading: you took over this round as main reviewer on 2026-11-06 and decided D13
 yourself (CC of 2026-11-06).
 
-For the curator: issue 7 (blank the located damage-timed spans, B recommended), issue 8 (RMSLE or the Tweedie
-deviance, a weighing call, A recommended).
+For the curator: issue 10 (does the task beat a mean per event type under the deviance; A, keep it, recommended) and
+issue 11 (is the Flash Flood duration outcome-free; B, keep it with a note, recommended).
 
 Changes made after the re-review panel (AI, 2026-11-06), no decision needed (`dataset check`: 0 errors, 0 warnings):
 the 51 Seiche durations are blank by type, as for Strong Wind; the kept-span note drops "cannot be located row by row"
@@ -71,11 +84,16 @@ what the re-review corrected.
 
 Earlier changes: after the panel of 2026-11-01 the estimated wind speeds and the tornado durations were blanked, the
 hurricane category dropped and the gap set to 3 months; on 2026-11-03 the unassessed hazards were dropped (issue 2)
-and the use case became the planner's (issue 5); on 2026-11-06 D13 (issue 6).
+and the use case became the planner's (issue 5); on 2026-11-06 D13 (issue 6); on 2026-11-08 the duration blank on
+the 241,523 wind entries the first report gives as damage (issue 7, B), and the target in dollars scored by the mean
+Tweedie deviance with a $1 floor (issue 8, B; `dataset check`: 0 errors, 0 warnings).
 
-**Main points:** Open: blank the duration on the wind entries the first report gives as damage (7, B recommended);
-RMSLE or the Tweedie deviance on the dollars (8, a weighing call, A recommended). Made without a decision, say if you
-disagree: the 51 Seiche durations are blank, an extension of D13. Issues 2 to 6 are resolved.
+**Main points:** Open: does the task still beat a mean per event type under the deviance on the dollars (10: tuned
+LightGBM does in 2024 and 2025, not in 2023; A, keep, recommended); is the Flash Flood duration outcome-free (11: one of
+its onsets is damage to a building, and under the deviance it carries much of the skill; B, keep with a note,
+recommended). Issues 2 to 8 are resolved: on 2026-11-08 issue 7 blanked the duration on the wind entries the first
+report gives as damage, and issue 8 made the target the dollars, scored by the mean Tweedie deviance with a $1 floor.
+Made without a decision, say if you disagree: the 51 Seiche durations are blank, an extension of D13.
 
 **Issues for Andrej and Lennart:**
 
@@ -431,6 +449,13 @@ disagree: the 51 Seiche durations are blank, an extension of D13. Issues 2 to 6 
      criterion, tied to the second clause's test: blank the part that can be located; keep the rest with a note giving
      its worth only when that worth is small (heart_failure's `time`, dropped on its size, the counter-case).
 
+   **Resolved (2026-11-08, Lennart):** B. `duration_hours` is blank on the EG and ES entries of Thunderstorm Wind and
+   High Wind and on Thunderstorm Wind measured under 50 kt (241,523 rows, as the issue counted; the blank costs +0.023
+   to +0.036 RMSLE on them under the larger LightGBM, 12 of 12 seeds), superseding D13's keep on these rows (issue 6).
+   The note keeps the measured-wind, dust, ash and flood spans (78,843 rows), worth -0.02 to +0.12 RMSLE on their test
+   rows over the re-review's 15 fits, the measured Thunderstorm Wind spans +0.03 to +0.18 in 30 of 30 fits;
+   `dataset check`: 0 errors, 0 warnings.
+
 8. **Keep RMSLE, or score the Tweedie deviance on the dollars?**
 
    * **Problem:**
@@ -514,6 +539,177 @@ disagree: the 51 Seiche durations are blank, an extension of D13. Issues 2 to 6 
    [^8d]: diamonds (Lennart, 2026-10-21): "a price's error matters relative to the price, so `rmsle`";
      pricing_game_2017_french_mtpl: the mean Tweedie deviance at power 1.5, "Chosen over the Gini by the curator
      (Andrej, 2026-11-03)".
+
+   **Lennart (2026-11-08, change):** Option B: The Tweedie deviance on the dollars.; i think this is a similiar discussion that we should start from the right metric and maybe ignore prior claims if they dont match the task
+
+   **Resolved (2026-11-08, Lennart):** B. The target ships in dollars (`property_damage_usd`) and is scored by the mean
+   Tweedie deviance at power 1.5 with a $1 floor, two orders below the cheapest event type's training mean ($909, Dense
+   Smoke) rounded down, superseding Andrej's RMSLE (issue 3, A, and its check under issue 5). Under it the task probe
+   flags `no_signal`, LightGBM fitted with the Tweedie loss beats the mean per event type clearly in 2025 only, and the
+   Flood and Flash Flood durations carry much of a model's skill; `dataset check`: 0 errors, 0 warnings.
+
+10. **Under the deviance on the dollars, does the task still beat a mean per event type?**
+
+   * **Problem:**
+     - Under the mean Tweedie deviance on the dollars, shipped since issue 8, the task probe flags no signal, as all its
+       families, fitted by squared error, lose to the training mean[^10a].
+     - Tuned per window with early stopping, LightGBM with the Tweedie loss beats the mean damage per event type in 2024
+       and 2025 but not in 2023, where a few large events decide every score and no difference can be told from noise.
+     - Capping each entry's damage at $10M gives a model that beats the per-type mean in every window and seed, but it
+       scores another target than the dollars Lennart chose, and caps were declined elsewhere[^10b].
+   * **Background:**
+     - The tail decides the score: 0.1% of the 2024 test rows hold 74% of its dollars, the largest single entries are $1
+       billion, and a cap at $10M, which binds on 1,761 entries, removes 87% of all dollars.
+     - In 2023 the bootstrap standard error of the tuned model's difference to the per-type mean is 1,580, twice the
+       difference itself; in 2024 and 2025 the difference is 2 and 26 standard errors over test rows (0.8 and 18 over
+       test days).
+     - The probe's families are untuned and fitted by squared error on the dollars, so 44% of the linear model's and
+       LightGBM's predictions fall at the $1 floor; its flag is a question until tuned models are checked, which this
+       issue does[^10c].
+   * **Effect on the task:** a benchmark on this metric ranks methods mostly by how they treat the few largest events of
+     each test year; in 2023 a mean per event type beats every tuned model, while in 2025 the tuned model halves its
+     deviance.
+   * **Experiments:** LightGBM with the Tweedie loss at power 1.5, tuned per window over 24 configurations (learning
+     rate, leaves, rows per leaf, feature fraction) with early stopping on the last 12 months of the training side,
+     refit on the whole side, 3 seeds; scored by the declared metric, lower is better; in brackets the bootstrap
+     standard errors of the difference over test rows / test days (2,000 resamples):
+
+     | Window | Training mean | Mean per event type | GLM: event type and month | Tuned LightGBM, 3 seeds | Tuned minus per-type mean |
+     |---|---|---|---|---|---|
+     | 2023 | 4,453 | 2,660 | 2,553 | 3,463 (2,997 to 4,270) | +802 (1,580 / 1,617) |
+     | 2024 | 4,216 | 2,301 | 2,130 | 2,044 (1,968 to 2,101) | -257 (129 / 314) |
+     | 2025 | 2,929 | 1,740 | 1,598 | 962 (926 to 1,005) | -777 (30 / 44) |
+
+     The same tuning on alternative targets and metrics, the tuned model against the per-type mean on each one's own
+     score (relative difference; z over test rows / test days):
+
+     | Alternative | 2023 | 2024 | 2025 |
+     |---|---|---|---|
+     | Deviance at power 1.5 on the damage capped at $10M | -20% (-7.2 / -4.2) | -18% (-10.7 / -4.6) | -32% (-18.4 / -11.7) |
+     | Deviance at power 1.7 on the dollars | +79% (0.9 / 0.8) | -16% (-5.3 / -1.8) | -38% (-20.0 / -15.2) |
+     | Deviance at power 1.9 on the dollars | -8% (-2.0 / -1.7) | -3% (-0.7 / -0.5) | -15% (-9.3 / -8.4) |
+     | RMSLE, the metric before issue 8 (untuned LightGBM, 400 trees, against the per-type mean of the log) | 2.96 against 3.83 | 2.93 against 3.85 | 2.72 against 3.62 |
+
+     - The GLM with event type and month, a baseline a planner could build, beats the per-type mean in all three windows
+       (-4%, -7%, -8%; within noise in 2023), and in 2023 it beats the tuned LightGBM too; with event type and state it
+       is worse than the per-type mean in 2023 and 2024.
+     - Under the cap every seed of every window beats the per-type mean; under a power of 1.7 or 1.9 the signal stays
+       uneven across windows.
+   * **Consistency:**
+     - forest_fires (R^2 0.013) was kept because a strong model beats the mean on most folds, a small but real
+       signal[^10a].
+     - fremtpl2 keeps its claim count uncapped ("A cap is a modelling choice of the literature, not a shown error"), and
+       frempl_french_motor_personal_line keeps the claim that decides a fold, measuring a capped score only as
+       evidence[^10b].
+     - houses drops the rows whose price its source capped at 500,001, calling the capped target censored; no dataset of
+       the working copy was found that caps its own target.
+   * **Panel:** none; raised when issue 8 was applied.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | The deviance on the dollars (implemented) | as shipped; the notes give the signal by window, with the tuned results | the planner's sum of expected dollars, as issue 8 decided; tuned models beat the training mean in every window and the per-type mean in two | in 2023 no tuned model beats a mean per event type; a few events per year rank the methods |
+     | B | Back to RMSLE | the target as log1p and RMSLE, as before issue 8 | a clear signal in every window (2.7 to 3.0 against 3.6 to 3.9 for the per-type mean) | scores the order of magnitude, not the planner's sum; reverses issue 8 |
+     | C | The deviance on the damage capped at $10M | the target min(dollars, $10M), the same metric and floor; the notes say what the cap leaves out | a signal in every window and seed (-18% to -32% against the per-type mean); still the expected dollars of all but the largest entries | removes 87% of the dollars, the catastrophes; a cap is our modelling choice, which fremtpl2 declined and houses treats as censoring; tested at one value |
+     | D | Retire | the task leaves the collection | no task whose signal depends on the test year | tuned models beat the per-type mean in two windows and the training mean in all three, and B and C have a clear signal |
+
+   * **Recommendation:** A: a small but real signal is no reason to retire, tuned models beat the per-type mean in 2024
+     and 2025 and the training mean in every window, and 2023's loss is within noise; the instability is a fact of the
+     planner's sum, which issue 8 chose, and a cap would be a modelling choice other datasets declined. C if a stable
+     ranking matters more to you than the uncapped sum. **Decision:** A, B, C or D?
+
+   **Notes for the AI:** On A: add the tuned results to the notes' "Signal under the declared metric" bullet (the table
+   above, with the GLM baseline) and a CC line; no data change. On B: restore the definition of
+   `apply_2026-11-08/after_issue7/` in the run folder (target log1p, RMSLE) while keeping the issue 7 blank, keep the
+   issue 8 CC line and add one for the reversal; re-run `dataset check`, the task probe and `span_worth.py --metric
+   rmsle`. On C: in `_clean` cap the dollars at $10M before they become the target (rename the target, e.g.
+   `property_damage_usd_capped_10m`), say in the target bullet and the metric reason what the cap leaves out (it binds
+   on 1,761 entries and removes 87% of the dollars) and why $10M; recompute the floor's cheapest cell under the cap;
+   re-run `dataset check`, the task probe, `tune_tweedie.py --cap 10000000` and `span_worth.py`. On D: retire the record
+   as `No (Retired)` with the reason, and remove the folder as working_copy.md says. Scripts and outputs:
+   `tune_tweedie.py`, `bootstrap_tweedie.py`, `baselines_glm.py`, `tuned/`, `tuned_bootstrap.txt` in the run folder of
+   2026-11-08. The rules: TP-1 (Must) and TP-2 (Should) for the signal, MET-1 (Must) for the planner's sum; MET-13's ban
+   on a per-row cap is about the loss, not the target.
+
+   [^10a]: **TP-1** (Must): a flag is a question, not a verdict; the probes fit untuned models, so check every flag
+     against tuned methods before acting on it. **TP-2** (Should): a small but real signal is no reason to retire;
+     retire, fix or keep a task for a concrete reason found in the task itself. Case: forest_fires (R^2 0.013,
+     TabPFN-3.5 beats the mean on 26 of 32 folds), kept.
+   [^10b]: fremtpl2 (the notes on its 19-row rating profile): "A cap is a modelling choice of the literature, not a
+     shown error"; frempl_french_motor_personal_line keeps its largest claim, 802,620, and measures a score with each
+     loss capped at 50,000 only to show how it decides a fold. **MET-13** (Must): a deviance gets no per-row cap, as
+     that makes the metric improper; a cap on the target changes the task, not the metric.
+   [^10c]: **TP-1** (Must), "How to check a flag": against the benchmark's tuned methods. **MET-1** (Must): the metric
+     scores the decision of the use case; issue 8 made it the planner's sum of expected dollars.
+
+11. **Is the Flash Flood duration outcome-free?**
+
+   * **Problem:**
+     - The re-review read Flood and Flash Flood as timed by a threat to life or property and kept their durations as
+       outcome-free, with no note of their worth[^11a].
+     - One of the four example onsets of a Flash Flood is the moment water "comes in contact, flowing into, or causes
+       damage to an above ground residence or public building", so the damage can set some starts.
+     - Under the deviance on the dollars (issue 8) the Flash Flood duration carries much of a model's skill, so this
+       reading now moves the score.
+   * **Background:**
+     - NWSI 10-1605 Sec. 14 ends a Flash Flood when the waters "receded to a point where there was no longer an
+       immediate threat to life or property"; a Flood runs from when waters "began to threaten life or property" to when
+       there was "no longer any threat" (Sec. 15), and its definition, "inundation by water which causes damage", is the
+       entry criterion, not the clock.
+     - Storm Data records no onset type; `flood_cause` gives the cause (heavy rain for 95% of the Flash Flood entries),
+       not the onset.
+     - In the event narratives (read by the definition only to find double entries, then dropped), 6.8% of the 74,987
+       Flash Flood entries with a damage figure name water at or in a building or damage to one, 36% a road closed or
+       water over a road, 10% a rescue or evacuation; the ones naming a building average $6.5M against $0.8M. For Flood,
+       4.5% name a building.
+   * **Effect on the task:** blanking the Flash Flood durations would remove much of what a model fitted for the
+     deviance learns; keeping them keeps spans whose start the damage may set for an unknown share of entries, at most
+     the 6.8% that name a building.
+   * **Experiments:** the shipped splits, LightGBM of 100 trees fitted with the Tweedie loss, 5 set-ups per window; the
+     rise of the deviance when a type's durations are blanked (positive: the span helped; set-ups with a rise in
+     brackets):
+
+     | Blanked | On its own rows, 2023 / 2024 / 2025 | On all rows, 2023 / 2024 / 2025 |
+     |---|---|---|
+     | Flash Flood (74,914 rows) | +102% / +93% / +31% (15 of 15) | +9% / +27% / +16% |
+     | Flood (48,454 rows) | +43% / +0% / +9% (13 of 15) | +5% / +7% / +5% |
+
+     - Under RMSLE, the metric before issue 8, the two together had no consistent sign (-0.09 to +0.09).
+     - Among positive Flash Flood entries the duration tracks the dollars at Spearman 0.44 where the narrative names a
+       building and 0.31 where it does not.
+   * **Consistency:** Thunderstorm Wind, timed by the first damage or the first wind of the criterion, keeps its span
+     with a note where the wind can have set it and is blank where only the damage can (issue 7); Strong Wind, timed by
+     the damage alone, is blank[^11b].
+   * **Panel:** none; raised when issue 8 was applied.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Outcome-free, as read (implemented) | Flood and Flash Flood keep their durations, no note of their worth | no change | the building onset can be the damage; a large worth kept without the note other such spans carry |
+     | B | Flash Flood kept with a note | no data change; Flash Flood moves to the kept-with-note bullet with its worth; Flood stays outcome-free (its clock is the threat) | follows the reading for a span drawn by the outcome or a criterion without it; keeps the skill | the damage-timed share is unknown, at most the 6.8% naming a building, and no feature locates it |
+     | C | Blank the Flash Flood durations | blank for its 74,914 rows, as for Strong Wind; Flood keeps its own | no Flash Flood span the damage may set stays | loses most of the skill on Flash Flood rows (+31% to +102% of the deviance there), mostly spans a road or a stream sets |
+
+   * **Recommendation:** B: the onset list lets the damage set some starts, so the span is drawn by the outcome or by a
+     criterion without it and stays with a note giving its worth, as the measured Thunderstorm Wind spans do; no feature
+     locates the damage-timed starts, so there is nothing to blank row by row, and the narratives put them at no more
+     than 6.8%. **Decision:** A, B or C?
+
+   **Notes for the AI:** On B: in the notes move Flash Flood from the outcome-free sentence into the kept-with-note
+   bullet, with the onset quote (Sec. 14), the narrative shares and the worth above (`worth_floods_tables.txt`); Flood
+   stays read as outcome-free with its worth stated; a CC line; the main session updates the spans Cases row. On C: add
+   "Flash Flood" to `OUTCOME_SPAN` in `dataset.py`, update `changes` (word limit) and the notes, re-run `dataset check`,
+   the leak probes and `span_worth.py --metric tweedie:1.5:1`. On A: state the worth in the outcome-free sentence. If
+   you want the damage-timed share pinned down first: join the narratives to the shipped rows on begin time, county or
+   zone, type and dollars (`flood_onset.py` has the patterns) and measure the duration's worth on the building-named
+   rows alone. The rules: LEAK-10 (Must) and the LEAK-10 / LEAK-37 Cases row on spans; LEAK-10's second clause for
+   values that cannot be located.
+
+   [^11a]: **LEAK-10, LEAK-37** Cases row "A span or extent whose start or end the source defines by the outcome"
+     (Lennart, 2026-11-06): where the outcome alone draws it, blank or drop it for those types; where it is drawn by the
+     outcome or an outcome-free criterion, keep it with a `Potential leak, kept on purpose:` note giving its worth.
+   [^11b]: **LEAK-10** (Must), second clause (amended 2026-10-26, Lennart): late cells that can be located row by row
+     are blanked; values that cannot be located stay with a note only when the part that can be traced shows no gain.
+     Issue 7 (Lennart, 2026-11-08) and D13 (issue 6, 2026-11-06).
 
 **Review panel:** ship after changes (mediator). Tier full, a re-review of 2026-11-06 under LEAK-41 and MET-14 to
 MET-16, after decision D13 (issue 6): 12 reports. The mediator's issues 1 and 2 are issues 7 and 8 here (its option (a)

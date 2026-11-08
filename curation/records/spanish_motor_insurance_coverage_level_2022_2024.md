@@ -126,6 +126,14 @@ CC (2026-11-06, Lennart): REVIEW.md issue 6 resolved by decision D10 of the expo
 
 **Assessment (AI, 2026-11-06):** correction to the panel line above: the panel did not dispute the cent rounding (both briefs and both rebuttals leave it to the curator's yes, as review issue 7 asks); for the curator: review issues 7 and 8.
 
+CC (2026-11-08, Lennart): the annualised premiums are rounded to the cent (REVIEW.md issue 7 (B), "Round to the cent"): unrounded, their decimals marked a part-year (ROC AUC 0.965 for the located cancellations, 0.565 rounded). This corrects the CC of 2026-11-06 (D10, "every premium is annualised ... while the premiums stay unrounded"): every premium is annualised and rounded to the cent, and that CC's "no remaining column whose cancellation signal pays" held for the premiums' values, not for their decimals. It changes the wording of Andrej's call of 2026-11-02 ("do not round the premiums", REVIEW.md issue 4) on a fact found after it, the decimals' mark; his reason concerned the prices, which the cent rounding keeps.
+
+CC (2026-11-08, Lennart): `payment_frequency` is an ordered category, fewest payments a year first: annual < semiannual < quarterly (REVIEW.md issue 8 (C), "Ordered in all three"), with the same order by payments a year in pricing_game_2016_french_fleet and pricing_game_2017_french_mtpl, so the three pricing tables stay alike.
+
+**Assessment (AI, 2026-11-08):** both CC lines above applied in the definition. Re-run on the rebuilt frame (premiums rounded to the cent; untuned LightGBM; the run folder of the exposure review, `apply_2026-11-08`): the eight premiums' decimal counts and cent-grid flags rank the 32,626 located cancellations among the 169,919 policy-years in force from 1 January at ROC AUC 0.565 (0.965 on the unrounded frame, same script, folds grouped by policy), and no grid from 1 EUR to 1e-5 separates them (AUC at most 0.501); the decimal counts as features gain +0.0001 under weighted Tweedie (SE 0.0017, 5 of 9) and -0.0012 under weighted L2 (SE 0.0013, 3 of 9), against +0.0035 and -0.0052 before (9 splits x 2 seeds). The premiums' values still mark a located cancellation at ROC AUC 0.795 from the shipped features (0.81 unrounded, 0.62 without the premiums; first shipped repeat), the flat-amount trace kept with its note. Probe 22 (3 splits x 3 seeds): the time on risk from the features at R^2 0.340 (0.350 before), 1/time on risk alone 0.070, no feature whose gain goes through it under weighted Tweedie or L2. Task probe (5 of 9 splits): LightGBM 0.3187 on the declared metric (0.3165 before), no flags. `dataset check`: 0 errors, 0 warnings.
+
+CC (2026-11-08, Lennart): the declared metric (`normalized_weighted_gini`) is checked, as declared on the PR #47 review board.
+
 ## Reference
 
 Espinosa, P., Lledó, J., Atance, D. (2026). A detailed dataset of motor insurance policies with coverage-specific

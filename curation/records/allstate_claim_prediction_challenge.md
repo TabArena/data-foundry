@@ -112,6 +112,10 @@ CC (2026-11-03, Andrej): the competition's normalized Gini on the amount stays, 
 
 CC (2026-11-03, Andrej): ship (verdict). Issue 5 (A): households drawn at random and dealt to folds at random, the natural claim rate (claim households dealt evenly gave no steadier folds); the metric, the competition's normalized Gini on the amount, checked.
 
+CC (2026-11-08, Lennart): the declared metric (`normalized_gini`) is checked, as declared; the record ships, with no open issue on the PR #47 review board.
+
+**Assessment (AI, 2026-11-08):** ships by default (no open issue on the PR #47 board), but the definition's changes of 2026-11-06 (the exposure paragraph) have not passed `dataset check`, and the re-review panel under LEAK-41 and MET-14 to MET-16 has not run: both wait for the competition files, which download only after the Kaggle competition rules are accepted. No container is built before both pass.
+
 ## Reference
 
 Kaggle (2011). Allstate Claim Prediction Challenge. https://www.kaggle.com/competitions/ClaimPredictionChallenge

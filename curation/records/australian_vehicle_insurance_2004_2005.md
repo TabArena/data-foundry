@@ -116,6 +116,10 @@ CC (2026-11-06, Lennart): decision D8 of the exposure study of 2026-11-05 (issue
 
 **Assessment (AI, 2026-11-06):** review panel (full, re-review under LEAK-41, MET-14 to MET-16): ship after changes (text only, made; rows, features, target, weight, split and metric unchanged); disputed: `gender` kept while bemtpl97 dropped `sex` (issue 7), a hold or an exception under MET-14's per-contract clause, to be settled once with spanish_motor_insurance_2015_2018 issue 7 (issue 8), the age bands as numbers or ordered categories (issue 9); for the curator: issues 7, 8 and 9.
 
+CC (2026-11-08, Lennart): issue 9 of the folder's REVIEW.md, "Ordered categories": the two age bands ship as ordered categories, youngest first, `vehicle_age_band` with levels 1 to 4 and `driver_age_band` with levels 1 to 6; the codes stay the levels, as the band limits are published nowhere (CLEAN-14: bands of a quantity). Until now they shipped as integers, which no curator had decided.
+
+**Assessment (AI, 2026-11-08):** applied in `_feature_types` (`ordinal`); rows, target, weight, split and metric unchanged. `dataset check`: 0 errors, 0 warnings; the dtype probe flags 0 of 6 columns.
+
 ## Reference
 
 De Jong P., Heller G.Z. (2008). Generalized Linear Models for Insurance Data. Cambridge University Press.

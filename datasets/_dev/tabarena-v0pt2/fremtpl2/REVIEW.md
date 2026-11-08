@@ -1,8 +1,8 @@
 # fremtpl2
 
 **Outcome:** added. The AI recommends shipping it: the re-review panel of 2026-11-06 under the exposure rules found no
-rule of validity broken, its changes are text only and made (below), and a new measurement raises a new split question
-(issue 11). Like every container with a `sample_weight`, it enters no run before the collection's training-weight gate
+rule of validity broken, its changes are text only and made (below), and a new measurement raised a new split question
+(issue 11, settled on 2026-11-08: the random split kept with the note). Like every container with a `sample_weight`, it enters no run before the collection's training-weight gate
 (`BENCHMARK_CHANGES_TODO.md`, "Training weights", "The gate"). A French motor third-party liability portfolio
 (CASdatasets freMTPL2, 677,991 policy records, about 2011-2013): the target is the claims per year insured (`ClaimNb` /
 `Exposure`, 0 for 96.3%) from the 9 rating factors; `Exposure`, the share of the year insured, is each record's weight
@@ -15,7 +15,7 @@ what it would leak as a feature (+0.0082 Poisson, +0.0075 L2; a rate fitted on i
 EV-6); LEAK-9: next-year records found by reading other rows (label-free flags about 0.0010) stay under the protocol
 line (issue 8); SPLIT-8 holds (IID with `ForcedIIDFromTemporal`; holding out the later blocks costs +0.0009); SPLIT-29
 does not apply (19 rows are not many), but by SPLIT-30 the one rating profile behind 94-102% of the gap to a split
-grouped on identical rating factors is a question for you (issue 11). Value: MET-11 holds above the floor (the scorer
+grouped on identical rating factors was a question for you, kept with the note on 2026-11-08 (issue 11). Value: MET-11 holds above the floor (the scorer
 equals the source's offset count deviance times n/sum(Exposure), 1.886-1.896 per fold) and MET-13 holds (the floor of
 1e-4 a year binds for no prediction of a Poisson LightGBM); TP-2, a small real signal: a weighted Poisson LightGBM beats
 the constant rate on 3 of 3 folds by 0.0096 to 0.0127 (D^2 about 2.3%, actual over expected 1.00, Gini 0.195), while a
@@ -25,8 +25,8 @@ declared metric the probe's LightGBM scores 0.47283 against the dummy's 0.47838 
 re-check with the first tuned run (TP-1). The honest skill fell from about 6% to 2% with the `BonusMalus` blanking
 (issue 5), not with the rate target. Quality: CLEAN-11 (no cap, exposures above a year kept) and CLEAN-10 (default ages
 missing) hold as settled. Weighed: the reference table of actuarial frequency modelling, scored by the source's own
-metric +; `BonusMalus` blank in 88% of records, no dates, a thin signal -. Left for Lennart: issues 11 (the split on
-identical rating factors) and 10 (the record's tag); and in the working copy's REVIEW.md ("From PR #47"), X1 (keep the
+metric +; `BonusMalus` blank in 88% of records, no dates, a thin signal -. Left for Lennart: issue 10 (the record's
+tag; issue 11, the split on identical rating factors, settled on 2026-11-08); and in the working copy's REVIEW.md ("From PR #47"), X1 (keep the
 test rows' weight away from the model) and X2 (LEAK-41's 1/weight ceiling under a deviance), which this panel raised
 with bemtpl97's.
 
@@ -39,8 +39,8 @@ blocks 5-6 are cut mostly at a date; the metric's identity is stated above the f
 `BonusMalus` is blank and how small the signal is; the notes say a method must use the weight. The panel's reports
 quote the definition before these changes.
 
-**Main points:** Keep the random split with a note on the one rating profile behind its gap to a split grouped on
-identical rating factors, or group on those factors (issue 11)? Keep the record's tag `Two-Regime Zeros` (issue 10)?
+**Main points:** Keep the record's tag `Two-Regime Zeros` (issue 10)? Settled on 2026-11-08: the random split stays,
+with the note on the one rating profile behind its gap to a split grouped on identical rating factors (issue 11).
 
 **Issues for Lennart:**
 
@@ -380,6 +380,10 @@ identical rating factors, or group on those factors (issue 11)? Keep the record'
    [^composite]: `splits.md`, "Composite keys": when the key is what one row's entity is, group on it; when new rows
      keep the key, it is a feature.
 
+   **Resolved (2026-11-08, Lennart):** A, as implemented: the random split stays (`ForcedIIDFromTemporal`), and the
+   notes and `splits_comment` name the profile and its effect on the gap to a grouped split; the CC of 2026-11-08 in
+   the notes and the record says so. Rows, target, weight, metric and split are unchanged.
+
 8. **Keep the label-free renewal and record-structure signal with a note?**
 
    * **Problem:**
@@ -491,6 +495,28 @@ identical rating factors, or group on those factors (issue 11)? Keep the record'
 
    **Notes for the AI:** on B, remove `Two-Regime Zeros` from the record's `tags` through the store API and add an
    `**Assessment (AI, <date>):**` line with the zero shares above.
+
+   **Consistency check (AI, 2026-11-08):** Keep `Two-Regime Zeros` on fremtpl2 when bemtpl97, the same target treated
+   alike, carries none?
+
+   * **Problem:**
+     - The target is claims per year, scored by a Poisson deviance, and a Poisson model reproduces its zeros (96.2%
+       expected against 96.3% observed), which the tag's definition excludes[^f10a].
+     - bemtpl97 (same target and metric, treated alike since 2026-11-04) has no tag, and
+       thailand_road_accident_register_2019_2022 lost its tag for the same reason; the mark has no note.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Keep it as a marker for the amount task | a CC line says the tag holds a place for the claim-amount task kept out for later | your mark stands | a tag for a task that does not ship |
+     | b | Drop it, as bemtpl97 and thailand | the record's `tags` lose it | like cases alike | none found |
+     | c | Tag bemtpl97 too | both tagged | the pair alike | against the tag's definition twice |
+
+   * **Recommendation:** (b).
+   * **Decision:** (a), (b) or (c)?
+
+   [^f10a]: records.md, `tags` (Andrej, 2026-10-30); thailand_road_accident_register_2019_2022.
+
 
    [^amount]: Andrej, 2026-10-20 (the amount design of PR #46); kept out by D12 of the exposure study of 2026-11-05 (CC
      of 2026-11-06 in the notes).

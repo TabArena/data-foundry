@@ -1,9 +1,9 @@
 # spanish_motor_insurance_2015_2018
 
 **Outcome:** added. The AI recommends shipping it as built: the re-review of 2026-11-06 under the exposure rules found
-no rule broken, and its text fixes are applied. Issue 7 asks whether the rule that keeps the target per contract covers
-the half-yearly payers who stop paying at six months, and issue 8 whether to reword the sentence of your CC on what
-carries the cut. A sample of a Spanish non-life insurer's motor portfolio (Mendeley Data 5cxyb5fp4f version 2, CC BY
+no rule broken, and its text fixes are applied. On 2026-11-08 the target stayed per contract with the rule's
+per-contract clause amended for this case (issue 7, wording settled with australian_vehicle_insurance_2004_2005's
+issue 8), and the sentence of your CC on what carries the cut was reworded (issue 8). A sample of a Spanish non-life insurer's motor portfolio (Mendeley Data 5cxyb5fp4f version 2, CC BY
 4.0; Segura-Gisbert, Lledó and Pavía 2025). One row is a policy's first year of cover in the release (37,090 rows),
 and the target is that year's claim cost per contract (payments plus reserves), with no weight. It is shipped as log1p
 and scored on the amount by the normalized Gini, a context metric. The split is temporal: 5 monthly test windows,
@@ -22,8 +22,9 @@ Validity:
   Gini, up in 5 of 5 windows). The quote-time factors predict which first years a lapse cuts short at ROC AUC 0.71,
   mostly through `Premium`: risk selection, which stays.
 - MET-14 holds by its per-contract clause: every first year has a planned term of one calendar year, and 2,055 of
-  37,090 (5.5%) are cut short by a lapse (issue 6); whether the clause covers the half-yearly payers who stop at six
-  months is issue 7. MET-15 holds: no weight and no offset.
+  37,090 (5.5%) are cut short by a lapse (issue 6); the clause is amended to cover the half-yearly payers who stop at
+  six months (issue 7, 2026-11-08; a price per year in force would differ by at most about 6%). MET-15 holds: no
+  weight and no offset.
 - MET-16 holds: the release has no survey or design weight (the sample's design is not described, a gap `fit_reason`
   names).
 - SPLIT-9 and SPLIT-10 were triggered (training years not yet ended at the window's start), fixed by a 12-month gap;
@@ -40,7 +41,8 @@ noted (CLEAN-10).
 
 Weighed: documented source, licence and real decision +; thin signal beyond the premium, noisy monthly windows -.
 
-Left for Lennart: issues 7 and 8.
+Nothing is left open: issues 7 and 8 were settled on 2026-11-08 (Lennart); the amended clause's wording is written in
+the rules with australian_vehicle_insurance_2004_2005's issue 8.
 
 Changes made after the review panel of 2026-11-06 (AI), no decision needed; rows, features, target, metric and split
 are unchanged: the CLEAN-11 counts are corrected (22 licences and 26 contracts dated after the year's start, not 12
@@ -48,12 +50,12 @@ and 8); the splits comment no longer says the test windows hold new contracts on
 and they stay) and gives 763 rows, not 766, for the smallest window; the exposure paragraph says that no feature set
 after the quote carries the cut, and that the quote-time factors predict it through risk selection.
 
-**Main points:** open: whether the rule's per-contract clause still covers the half-yearly payers who stop paying at
-six months, to settle once with australian_vehicle_insurance_2004_2005's issue 8 on the same clause (7), and whether
-to reword the sentence "so no feature carries a cut" of your CC of 2026-11-06 (8). Resolved: on 2026-11-03 first-year
-pricing (1), every first year kept with the customer's other policies in force at the start (2, design S),
-`Value_vehicle` kept (3), no request to the authors now (4), ship and re-check `Trivial` (5); on 2026-11-06 the
-per-contract target under the exposure rules, with the count of first years cut short corrected to 2,055 (6).
+**Main points:** nothing open. Resolved: on 2026-11-03 first-year pricing (1), every first year kept with the
+customer's other policies in force at the start (2, design S), `Value_vehicle` kept (3), no request to the authors now
+(4), ship and re-check `Trivial` (5); on 2026-11-06 the per-contract target under the exposure rules, with the count of
+first years cut short corrected to 2,055 (6); on 2026-11-08 the per-contract target with MET-14's clause amended for
+this case, its wording settled with australian_vehicle_insurance_2004_2005's issue 8 (7), and the sentence of your CC
+reworded (8).
 
 **Issues for Andrej and Lennart:**
 
@@ -442,8 +444,8 @@ per-contract target under the exposure rules, with the count of first years cut 
      full-year rows only.
 
    **Resolved (2026-11-06, Lennart):** A, per contract (MET-14's per-contract clause, MET-15): every first year is a
-   contract of one calendar year and the premium is the written annual premium, so no feature carries the cut.
-   `fit_reason` now gives 2,055 of 37,090 first years cut short by a lapse (1,632 half-yearly payers who stopped
+   contract of one calendar year and the premium is the written annual premium, so no feature set after the quote
+   carries the cut, while the quote-time factors predict it through risk selection. `fit_reason` now gives 2,055 of 37,090 first years cut short by a lapse (1,632 half-yearly payers who stopped
    paying), not the 1,236 of the earlier one-policy design; the notes carry the exposure paragraph. Per contract the
    cut years claim like full years, per year at risk 1.9 times as often. `dataset check`: 0 errors, 0 warnings
    (`splits_rows_unused` accepted: the 5,685 first years in every window's 12-month gap).
@@ -535,6 +537,12 @@ per-contract target under the exposure rules, with the count of first years cut 
      the date, the curator and the case that prompted it; an exception departs from a Should rule for one dataset and
      names the fact that sets the case apart.
 
+   **Resolved (2026-11-08, Lennart):** B, the target stays per contract and MET-14's per-contract clause is amended for
+   this case; its wording is written once with australian_vehicle_insurance_2004_2005's issue 8 on the same clause,
+   still open. The notes' exposure paragraph gives the 6% bound (mean share of the year in force 0.992 for annual
+   payers, 0.936 for half-yearly payers, re-computed on the 37,090 first years) and names the amendment; the record has
+   the CC line. `dataset check`: 0 errors, 0 warnings.
+
 8. **Reword the sentence "so no feature carries a cut" in your CC of 2026-11-06?**
 
    * **Problem:**
@@ -588,6 +596,11 @@ per-contract target under the exposure rules, with the count of first years cut 
      point is a legitimate input, including a number the company itself computed.
    [^w2]: Records, "Who wrote a comment line": a `CC` line is the curator's decision with its reasoning; the AI never
      deletes a comment line, and marks a statement it no longer holds with a dated `Assessment (AI, ...)` line.
+
+   **Resolved (2026-11-08, Lennart):** B, on your mark the sentence was reworded in place in the three places: "so no
+   feature set after the quote carries the cut, while the quote-time factors predict it through risk selection" now
+   stands in the definition's CC bullet, the record's CC line of 2026-11-06 (through the store API) and issue 6's
+   resolved turn; the decision is unchanged.
 
 **Review panel:** ship after changes, text only (mediator). A focused re-review of 2026-11-06 under LEAK-41 and
 MET-14 to MET-16, by a claim auditor and a mediator. Claims: 19; 14 hold, 4 refuted and 1 partly refuted, all

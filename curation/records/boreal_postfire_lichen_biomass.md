@@ -103,6 +103,14 @@ CC (2026-11-03, Andrej): ship (verdict); the metric, RMSE on kg/ha, checked.
 
 **Assessment (AI, 2026-11-06):** review panel (focused, re-review under LEAK-41, MET-14 to MET-16): ship after changes (wording only; nothing shipped changes; the notes' equal-per-plot taus, the dropped 0.91 of the former site splits and the exposure reason are fixed); disputed: none, issue 7 is a weighing call (the per-quadrat RMSE counts an NT plot 2.5 times an SK plot: A keep and say so, implemented, or B count each plot once); for the curator: issue 7.
 
+CC (2026-11-08, Lennart): issue 7 (B) in boreal_postfire_lichen_biomass, "Each plot counts once." Andrej's RMSE on kg/ha (2026-11-03, issue 6) stays and is now weighted by 1 over the plot's number of quadrats (`plot_weight`: 0.2 in NT, 0.5 in SK), a scoring column for the metric only, not a training weight. The warning that the metric has a row weight but no sample weight is accepted: a design weight that gives each plot one vote, set by `jurisdiction`, not an amount at risk.
+
+**Assessment (AI, 2026-11-08):** `rmse` now takes an optional `weight` input (`sqrt(sum(w * (y - p)^2) / sum(w))`), and the definition declares it from context with `plot_weight`. On the data, `plot_weight` is 0.2 on all 1,630 NT quadrats and 0.5 on all 380 SK quadrats (326 plots of 5, 190 of 2), so it sums to 1 per plot. On the 30 shipped splits, with the 8 untuned predictors of the claim audit, the declared score ranks the models exactly like the RMSE of the plot means with each plot counted once (Kendall tau 1 on 30 of 30 splits). Against the per-quadrat RMSE declared before, tau is 0.81 per split (lowest 0.21) and 0.86 for the ranking by the mean RMSE; that ranking swaps the training mean with ridge and with knn. Task probe: the random forest scores 1,159.8 kg/ha against the training mean's 1,250.0 and beats it on 80% of the splits; no flag. The splits hold the same rows and test groups as before; only the frame's row order changed. `dataset check`: 0 errors, 0 warnings.
+
+**Assessment (AI, 2026-11-08):** correction to the line above: the metric stays the fallback RMSE, now weighted by `plot_weight` (`Metric.fallback` takes inputs since 2026-11-08), not declared from context; the README states origin `fallback`. The declared metric was checked as declared (CC 2026-11-08 above, issue 7 B).
+
+CC (2026-11-08, Lennart): the declared metric (the fallback `rmse`, weighted by `plot_weight` so each plot counts once) is checked: as marked, with issue 7 (B).
+
 ## Reference
 
 Greuel R.J., Degre-Timmons G.E., Baltzer J.L., Johnstone J.F., et al. (2021). Predicting patterns of terrestrial

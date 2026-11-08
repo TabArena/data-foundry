@@ -121,6 +121,16 @@ CC (2026-11-03, Andrej): ship (verdict). The target stays in euros (issue 3 (A))
 
 **Assessment (AI, 2026-11-06):** correction to the review-panel line above: option A of REVIEW.md issue 5, an amendment of MET-13 worded for a unit of the scored currency, leaves the 1e-4 claims-per-year floors of fremtpl2 and bemtpl97 as they are (they are checked against the new wording, not reopened); what A gives up is the "two orders" bar across the family.
 
+CC (2026-11-08, Lennart): the deviance's floor is 0.1 EUR (REVIEW.md issue 5 (B), "Lower the floor to 0.1 EUR"): a prediction below 0.1 EUR counts as 0.1 EUR. This follows the collection's rule for a deviance floor, two orders of magnitude below the smallest plausible mean (MET-13 as amended on 2026-11-06; 16.8 EUR here), a convention of the collection that can change later, not a property of the source. It supersedes Andrej's floor of 1 EUR (CC of 2026-11-03, issue 2 (B): "predictions floored at 1 EUR"), which sat 1.2 orders below that mean.
+
+CC (2026-11-08, Lennart): `pol_pay_freq` is an ordered category, fewest payments a year first: Yearly < Biannual < Quarterly < Monthly (REVIEW.md issue 8 (C) of spanish_motor_insurance_coverage_level_2022_2024, "Ordered in all three"), the same order as in that table and in pricing_game_2016_french_fleet.
+
+**Assessment (AI, 2026-11-08):** both CC lines above applied in the definition (`min_prediction=0.1`; the metric reason and the notes' floor bullet name the rule and the curator's framing; `pol_pay_freq` in `ORDINAL`, its four levels in the data: 37,733 Yearly, 29,702 Biannual, 2,547 Quarterly, 30,018 Monthly). Task probe at the new floor (5 of 9 splits): the random forest 62.22 against the constant's 63.10 (0.1% of its predictions at the floor), the linear model 81.97 (6.7%) and LightGBM 90.30 (3.8%), against 66.28 and 70.90 at the 1 EUR floor; the best family does not move. `dataset check`: 0 errors, 0 warnings.
+
+CC (2026-11-08, Lennart): the declared metric (`mean_tweedie_deviance`, with the floor of 0.1 EUR set in issue 5) is checked, as declared on the PR #47 review board.
+
+CC (2026-11-08, Lennart, in chat): `pol_coverage` is an ordered category, Mini < Median1 < Median2 < Maxi, the order in which the game's rules list the covers, as `pol_pay_freq` is ordered for the family (spanish coverage issue 8); it was an unordered category.
+
 ## Reference
 
 CASdatasets (Dutang C., Charpentier A.), `pg17trainpol`, `pg17trainclaim`, `pg17testyear1`-`pg17testyear4`,

@@ -127,6 +127,10 @@ CC (2026-11-06, Lennart): decision D13 of the exposure study (#51; issue 6 of th
 
 **Assessment (AI, 2026-11-06):** review panel (focused, re-review under LEAK-41, MET-14 to MET-16): ship after changes, wording only, now made; disputed: the cause of the 608 positive counts below one tellin per core (issue 7: unknown, as the subsample correction can only raise a count; asking NIOZ is the curator's call) and MET-14's rebuild check, which has nothing to rebuild when no count is released (cross-dataset item X3); for the curator: issue 7. Corrections to the lines above: the elevation (Assessment of 2026-11-02) comes from the latest survey whose date stamp is on or before the sample's date, and the stamps are mostly a nominal 1 January, so 19.3% of the samples take a survey stamped 1 January of their own year (no leak under the archive-map moment); the non-whole counts per core (CC of 2026-11-06) include 608 below one that the core area and the subsample correction do not explain. The elevation join was fixed the same day: a pandas-3 run had left 40.66% of the rows without elevation, now 5 rows, the same under pandas 2.3 and 3.1.
 
+CC (2026-11-08, Lennart): issue 7 of the folder's REVIEW.md, as implemented (ok): the note only. The 608 positive counts below one tellin per core ship as published, with the exposure note that their cause is unknown; NIOZ is not asked for now, and a question can go with a later version.
+
+CC (2026-11-08, Lennart): the declared metric (`rmse`) is checked, as declared on the PR #47 review board.
+
 ## Reference
 
 Lyashevska O., Brus D.J., van der Meer J. (2016). Mapping species abundance by a spatial zero-inflated Poisson model:

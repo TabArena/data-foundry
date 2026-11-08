@@ -1,9 +1,9 @@
 # frempl_french_motor_personal_line
 
-**Outcome:** added. The AI recommends shipping it once the split is fixed: the re-review panel of 2026-11-06 under the
-exposure rules found that a policy's later record can sit on the other side of the split when its contract change also
-changed one profile column (issue 8, a fix the rules require, in a form you choose); its text changes are made (below),
-and issues 7 and 9 are open. Like every container with a `sample_weight`, it enters no run before the collection's
+**Outcome:** added. The AI recommends shipping it: the re-review panel of 2026-11-06 under the exposure rules found
+that a policy's later record could sit on the other side of the split when its contract change also changed one profile
+column, and the component is widened to close it on Lennart's mark of 2026-11-08 (issue 8); its text changes are made
+(below), and issues 7 and 9 are open. Like every container with a `sample_weight`, it enters no run before the collection's
 training-weight gate (`BENCHMARK_CHANGES_TODO.md`, "Training weights", "The gate"). A French private insurer's motor
 portfolio of 2004 (CASdatasets freMPL5 to freMPL9, 115,155 records, each a policy's period of cover with fixed rating
 factors); the target is the period's claim amount per realized year, shipped as log1p and scored on the amount per year
@@ -13,29 +13,32 @@ holds (`Gender` noted); USE-1 holds, fit approximate (USE-8); LEAK-41 holds: the
 rate's denominator, the metric's weight and the `sample_weight`, never a feature (issue 6; it supersedes the fix of
 2026-11-02 under LEAK-10, which kept the realized length on the continued records); the feature `length_to_year_end`
 depends on the start day alone (one value per day), and its gain through the weight is negative under both fits of
-probe 22 (-0.038 weighted Tweedie, -0.060 L2), with no other feature above noise; LEAK-10 holds for the other
+probe 22 (-0.029 weighted Tweedie, -0.058 L2 on the folds of 2026-11-08), with no other feature above noise; LEAK-10 holds for the other
 features; LEAK-24 cannot be verified (issue 3); SPLIT-9 triggered and fixed for later records with the same profile
-(issue 1), and triggered again where a contract change also changes one profile column: the later record falls in
-another component, can sit in training and tells a test record's claim to a model that reads training rows (+0.020, 9
-of 9 splits), so the component is to be widened or each fold filtered, the form yours to choose (issue 8); LEAK-9: a
+(issue 1), and triggered again where a contract change also changes one profile column: the later record fell in
+another component, could sit in training and told a test record's claim to a model that reads training rows (+0.020, 9
+of 9 splits); the widened component keeps it on the test record's side (+0.001 on the new folds; issue 8); LEAK-9: a
 test record's later records are test rows, and a model that reads them gains +0.26 to +0.44, so a protocol line forbids
 reading other test rows; SPLIT-8 ships the one year as `ForcedGroupedFromTemporal` on Andrej's call of 2026-11-02; PROV-7, PROV-8 and PROV-9 hold. Value: TP-2, a small real
-signal: an honest weighted Tweedie fit scores 0.183, the weighted constant 0 and random orders 0.003 (per-fold SD
-0.037), and the fit beats the length to 31 December alone (0.005) on 9 of 9 splits (TP-4); the task probe flags
-`no_signal`, but the flag reads an R^2-type skill (+0.014 on the log1p scale), while on the declared metric its linear
-family scores 0.178 and the dummy 0 (5 splits; EV-3); MET-1 holds in part: the largest claim moves the fold that holds
-it by about 0.06, so the notes ask for paired fold comparisons. 1/`Exposure` alone scores 0.184, as much as the honest
-model, and `Exposure` as a feature lifts the model to 0.256; the word "ceiling" that LEAK-41 and probe 22 use for
-1/weight alone is cross-dataset item X2 ("From PR #47"). Quality: CLEAN-16 departed from with no fact that sets the
-case apart: on the log1p scale the length to 31 December misleads a squared-error fit (0.156 with it, 0.185 without);
+signal: an honest weighted Tweedie fit scores 0.181, the weighted constant 0 and random orders 0.001 (per-fold SD
+0.037), and the fit beats the length to 31 December alone (0.006) on 9 of 9 splits (TP-4; the folds of 2026-11-08);
+the task probe (2026-11-06) flags `no_signal`, but the flag reads an R^2-type skill (+0.014 on the log1p scale), while
+on the declared metric its linear family scores 0.178 and the dummy 0 (5 splits; EV-3); MET-1 holds in part: the large
+claims decide the fold that holds the largest (a loss cap of 50,000 moves it by 0.016 to 0.076), so the notes ask for
+paired fold comparisons. 1/`Exposure` alone scores 0.184, as much as the honest model, and `Exposure` as a feature
+lifts the model to 0.258; the word "ceiling" that LEAK-41 and probe 22 use for 1/weight alone is cross-dataset item X2
+("From PR #47"). Quality: CLEAN-16 departed from with no fact that sets the
+case apart: on the log1p scale the length to 31 December misleads a squared-error fit (0.152 with it, 0.184 without);
 the identity scale is recommended, and dropping the length needs LEAK-41's sentence on a part known at the start
 amended first (issue 7); the negative amounts stay set to 0. Weighed: the actuarial convention (a rate weighted by its
 time on risk) and a faithful, documented source +; an approximate fit (a thin tariff, no vehicle or cover factors),
 fold noise and a low signal -. For Andrej: Lennart's D9 (issue 6) supersedes his `Exposure` fix of 2026-11-02 (issue 2
 (a)) and his base of issue 4; the unrounded length undoes his month rounding on the AI's call, pending Lennart's mark
-(issue 9); issue 8 reopens his key of issue 1. Follow-up, not an issue: a large-loss cap in scoring (each loss
-capped at 50,000 moves fold 0 of the first repeat from 0.210 to 0.147), to be measured on the 9 shipped splits before
-it is offered; the metric is unchanged until then. Left for Andrej and Lennart: issues 8, 7 and 9.
+(issue 9); Lennart's mark on issue 8 widens his key of issue 1, in the direction of his call. Follow-up, not an
+issue: a large-loss cap in scoring (each loss capped at 50,000: on the 9 folds of 2026-11-08 one weighted Tweedie fit
+moves by 0.016 to 0.076 in the three folds that hold the largest claim, from 0.233 to 0.157 on fold 1 of the first
+repeat, and by 0.011 at most in the others), not offered yet; the metric is unchanged until then. Left for Andrej and
+Lennart: issues 7 and 9.
 
 Changes made after the review panel (AI, 2026-11-01): the folds grouped by policy chain, `Exposure` fixed (issue 2), the
 valid windows stated in `splits_comment` (SPLIT-8), the metric reason and the negatives text corrected, and the figures
@@ -50,13 +53,19 @@ features and `Exposure`; the metric reason and the notes no longer call 1/`Expos
 reach; the notes ask for paired fold comparisons (random orders' per-fold SD 0.037, up to 0.071; the 802,620 claim
 moves the fold that holds it by about 0.06) and say that the start date ships as the length to 31 December, one value
 per day; issue 6's resolution marks the unrounded length as the AI's call, pending Lennart's mark (issue 9); issue 7
-carries the panel's reading and the precedent checker's question.
+carries the panel's reading and the precedent checker's question. Changed on 2026-11-08 (issue 8, B): the policy
+component also joins the later records that changed one profile column (61,091 groups, the largest 90 records; 68,857
+before), so the folds changed, and every score in the notes and the metric reason is re-measured on them. Issues 7
+and 9 keep their figures of 2026-11-06; on the new folds, squared error on log1p scores 0.152 with the length to 31
+December and 0.184 without (lower with it on 9 of 9 splits; 0.156 and 0.185 before), a Tweedie fit 0.181 and 0.177
+(higher with it on 6 of 9; 0.183 and 0.179), squared error on the cost per year 0.149 and 0.152 (0.159 and 0.163); the
+month rounding moves a Tweedie fit by -0.005 (higher on 3 of 9; -0.002 before) and squared error on log1p by +0.002
+(6 of 9; -0.001), and rounded, 2,714 records would repeat another record of their policy (2,704 before).
 
-**Main points:** Open: widen the policy component to the later records that change one profile column, or filter each
-fold's training side (8, a fix the rules require); the length to 31 December on the log1p scale, the identity scale
-recommended, a drop only with the leak rule amended (7); keep the length unrounded against Andrej's month rounding,
-confirmed in a CC line that also names both of his calls D9 supersedes, or restore the rounding (9). Resolved: 1, 3 and 4 on 2026-11-03, 6 on 2026-11-06. Verdict: ship
-(2026-11-03).
+**Main points:** Open: the length to 31 December on the log1p scale, the identity scale recommended, a drop only with
+the leak rule amended (7); keep the length unrounded against Andrej's month rounding, confirmed in a CC line that also
+names both of his calls D9 supersedes, or restore the rounding (9). Resolved: 1, 3 and 4 on 2026-11-03, 6 on
+2026-11-06, 8 on 2026-11-08 (the component widened). Verdict: ship (2026-11-03).
 
 **Issues for Andrej and Lennart:**
 
@@ -484,6 +493,15 @@ confirmed in a CC line that also names both of his calls D9 supersedes, or resto
    [^8f]: **LEAK-41** (Must; 2026-11-06, Lennart): "No model is trained or scored on rows selected by the realized
      weight (such as full-year rows only)".
 
+   **Resolved (2026-11-08, Lennart):** B, the component widened: it also joins a record to a successor with the same
+   gender, starting the day it ends, the driver's age the same or one more, the licence age advanced by the months
+   between the starts within one, exactly one of the other five profile columns changed and no counter lower, which
+   gives 61,091 groups of 1 to 90 records, the same groups the split auditor measured. On the new folds none of the
+   9,160 pairs crosses a split and the lookup gains +0.001 (SD 0.012, higher on 5 of 9; the auditor's own folds gave
+   -0.0045), `dataset check` shows 0 errors and 0 warnings, the leak and group probes flag nothing, the notes, the
+   metric reason, the Grouping text, `splits_comment` and the third Decision carry the new counts and the re-measured
+   scores, and the protocol line names the one-column successors; the container is rebuilt only on your ask.
+
 7. **Keep the log1p scale and the length to 31 December together, although together they mislead a squared-error fit?**
 
    * **Problem:**
@@ -565,6 +583,149 @@ confirmed in a CC line that also names both of his calls D9 supersedes, or resto
    On A: an exception line to CLEAN-16 with the fact the curator gives, in the record and the notes, and a row of kind
    `exception` in CLEAN-16's Cases table (the main session).
 
+   **Lennart (2026-11-08, discuss):** In another cases we are already discussing this, so check for
+   pricing_game_2016_french_fleet. should the length to X be a feature at all? what should we do here with our rules
+   from raw data/state ignoring prior decisions?
+
+   **Answer (AI, 2026-11-08):** Keep the length to 31 December and ship the cost per year on the identity scale, as
+   pricing_game_2016_french_fleet does, or keep log1p and drop the length by amending the leak rule?
+
+   * **Problem:**
+     - You ask whether the length to 31 December should be a feature at all, worked out from the raw data and the
+       rules instead of the calls of 2026-11-02 to 2026-11-06, and alike for pricing_game_2016_french_fleet, which
+       ships the same length.
+     - In both tables the length is the start day in another unit, 31 December is a cut of the release (here) or of
+       the source (there) that no one prices on, and with the cost per year as the target it adds no signal that can
+       be measured.
+     - It matters only on the log1p scale, where any form of the start day misleads a squared-error fit, so the real
+       choice is the scale: the rules as written keep the length and ask for the identity scale, and dropping the
+       length needs the leak rule's sentence on a part known at the start amended first.
+   * **Background:**
+     - What the length is here: one value per start day (366 days, 366 values, in exact reverse order of the day of
+       the year), and the start date ships in no other form. 48.4% of the records are still open at 31 December, the
+       release's end, where the length equals the realized length; 38.2% start on 1 January, the release's start.
+     - What it is in pricing_game_2016_french_fleet: the same formula from `period_start` (and the vehicle count, 2 on
+       two periods), and `period_start` ships beside it as a date. Periods are cut at 31 December in every year, in
+       the 2014 file too, while contracts start on any day: where a vehicle's next period follows a cut within the
+       year, the contract's age class steps up at 19% of those cuts, an anniversary. So 31 December is the source's
+       year, not a contract's term.
+     - What the actor uses: the insurer prices a year of cover from the policy's anniversary, which the release does
+       not give; the fleet insurer charges a rate per vehicle-year, earned pro rata; the game's players had each 2014
+       period's vehicle-years in their file. With the cost per realized year as the target, the length is no
+       denominator any more: it is a covariate, the start date recoded[^a7a].
+     - The length would have a role of its own only under a target per period, where it bounds the period's time on
+       risk. pricing_game_2016_french_fleet issue 6 asks about such a target (the weight removed); the answer there is
+       to keep the rate, so in both tables the length stays a covariate.
+     - Why log1p reacts: a short period rarely has a claim, but its rate is large when it has one. So the mean of
+       log1p(rate), weighted by the realized length, rises with the length (here 0.29 up to 3 months, 0.98 to 1.08
+       from 9 months on; there 0.15 to 0.52), while the cost per realized year stays flat (here 394 to 469; there 164
+       to 200 per vehicle-year). A squared-error fit on log1p learns that rise and ranks short periods too low; on the
+       identity scale the same fit estimates the cost per year that breaks even, which the length does not move[^a7b].
+     - The rules, read from the raw data: the start date is known when a record starts, so it is a legitimate input,
+       and it is nothing that takes a column out of the features[^a7c]; the length is the part of the time on risk
+       known at the start (it bounds the realized length and equals it on the open records), which the leak rule
+       ships as its own column[^a7d]; the scale rule then asks for the identity scale or the column dropped[^a7b], and only the identity
+       scale meets both as written[^a7e]. The exposure study listed the length to 31 December as a planned term; the
+       data shows it is a cut of the release, which an amendment could rest on but which does not change what the
+       rule asks now.
+   * **Experiments:** here, untuned LightGBM weighted by the realized length on the 9 shipped splits (the policy
+     component widened by issue 8), 3 seeds; in pricing_game_2016_french_fleet, its regularised LightGBM weighted by
+     the vehicle-years on its three windows (5 seeds) and on the 3 x 3 folds by contract of its issue 6.
+
+     | Fit (this table) | With the length | No start information | Start's day of the year instead | Flag "starts on 1 January" instead |
+     |---|---|---|---|---|
+     | squared error on log1p | 0.152 | 0.184 | 0.152 | 0.185 |
+     | squared error on the cost per year | 0.149 | 0.152 | 0.150 | 0.150 |
+     | Tweedie on the cost per year | 0.181 | 0.177 | 0.181 | 0.178 |
+
+     - The start information adds nothing beyond noise to the cost per year: Tweedie +0.004 with it (SE 0.004,
+       higher on 6 of 9 splits), squared error on the cost per year -0.003 (SE 0.006). On log1p it costs squared
+       error 0.032 (SE 0.005, lower with it on 9 of 9).
+     - On log1p, the start's day of the year misleads exactly as the length does (0.152 both), so the harm is the
+       start day's information, not the column's name. The flag keeps the record type (carried into 2004 or begun in
+       it) but no length below a year: it misleads nothing and adds nothing (0.185 against 0.184 without).
+     - On the identity scale, squared error scores 0.032 below Tweedie (SE 0.004, 9 of 9) with the length and 0.029
+       without, led by the tail of a rate over records as short as a day (up to 11.6 million per year). On log1p
+       without the length the two fits score alike (0.184 and 0.177).
+     - pricing_game_2016_french_fleet shows the same pattern. On its identity scale the length and the start together
+       add 0.006 to Tweedie (SD 0.012, folds by contract; 0.008 on the windows), and dropping the length alone changes
+       nothing (+0.001), since the start date carries the same information. On log1p both time columns would cost
+       squared error 0.022 (9 of 9 folds by contract), though not on its windows, where each window holds one cohort
+       of lengths. Squared error on its identity scale scores 0.002 to 0.010 below Tweedie: its source left out every
+       period under 30 days, so its tail stops at 75,929 per vehicle-year.
+   * **Consistency:**
+     - pricing_game_2016_french_fleet keeps its length and its start date on the identity scale (your D11), so b
+       gives the two tables the same scale and the same inputs; c drops its length too, under the same amendment, and
+       keeps its start date, the time column of its split.
+     - australian_vehicle_insurance_2004_2005 ships its cost per year on the identity scale;
+       spanish_motor_insurance_coverage_level_2022_2024 keeps log1p and has no length known at the start (its
+       `total_exposure`, realized on some rows, left the features).
+     - What sets this table apart from pricing_game_2016_french_fleet is the tail, not the length: records as short as
+       a day here, none under 30 days there. It is the fact c would rest on.
+   * **Prior calls:** your D9 (target, weight, metric) stands under every option; a keeps both its clauses on the
+     length and the scale, b reverses its log1p scale, c reverses "the length stays a feature". Andrej's month
+     rounding of 2026-11-02 stays open as issue 9 under a and b and falls away under c. The re-review's reading by
+     rank (identity scale unless the leak rule is amended) is what b follows and what c amends.
+   * **Issue 9 under each option:** under a or b it stays, recommended B (confirm the unrounded length in one CC line
+     that names Andrej's two calls D9 superseded), with its figures re-measured on the widened folds: rounded to
+     months, 2,714 records would repeat another record of their policy, and the Tweedie fit loses 0.005 (SE 0.0015);
+     under c no length ships, so it closes, and the CC line of c names those two calls.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | a | Log1p with the length (implemented) | as issue 6 decided | an input known at the start stays; nothing changes | squared error on log1p loses 0.032 (9 of 9 splits); needs an exception to the scale rule that no fact supports |
+     | b | Identity scale, the length kept | the cost per year ships untransformed; the length stays, unrounded (issue 9); pricing_game_2016_french_fleet unchanged | meets every rule as written; the same scale and inputs as pricing_game_2016_french_fleet; the length then costs no fit anything | squared error scores 0.149, 0.032 below Tweedie, led by the tail; reverses D9's log1p |
+     | c | Log1p, the length dropped, the leak rule amended | the sentence on a part known at the start is limited to a term of the cover, so a distance to a cut of the release or the source may go; no start information ships here; pricing_game_2016_french_fleet drops its length and keeps its start date | squared error and Tweedie score alike (0.184 and 0.177); drops a column that is no term and adds nothing measured; keeps D9's scale | a rule change first; the start date goes with it here; reverses D9's "stays a feature"; no applied precedent |
+
+   * **Recommendation:** b: read from the raw data, the rules keep the start information as the length and settle the
+     scale rule by the identity scale, which gives this table the scale and inputs of pricing_game_2016_french_fleet,
+     and on that scale the length costs no fit anything. c if you weigh squared-error fits on this table's tail above
+     the rules as written, as an amendment that reaches pricing_game_2016_french_fleet too. a needs an exception that
+     no fact supports. **Decision:** a, b or c?
+
+   **Notes for the AI:**
+   - All options: the notes' bullets on the dates and on the length say that 31 December is the release's end (48.4%
+     of the records still open there, 38.2% starting on 1 January), not a term of the policy, and give its worth on
+     the cost per year (Tweedie +0.004, SE 0.004; squared error on the cost per year -0.003).
+   - b: in `dataset.py`, `TARGET = "claim_amount_per_year"`; in `_clean`, `df[TARGET] = df["ClaimAmount"] /
+     df["Exposure"]` with the assert that `df[TARGET] * df["Exposure"]` rebuilds `ClaimAmount`; drop
+     `target_transform="log1p"` from the metric (identity), keep `params={"per_unit": True}` and the weight
+     `Exposure`. Rewrite `task_summary.predicted` (no log1p), the target bullet, the learners bullet (CLEAN-16: on the
+     identity scale a weighted squared-error fit estimates the cost per year that breaks even; the tail costs it 0.032
+     against Tweedie), the metric reason's numbers, and the CC line in Lennart's name that names D9's log1p clause as
+     reversed (CLEAN-16 as amended, LEAK-41's sentence on the part known at the start). Then issue 9's CC line (B).
+     Re-run `dataset check`, the leak and task probes, probe 22 in both arms and the measurement of 2026-11-06
+     (`final.py`) on the new scale; the rebuild only on the curator's ask. pricing_game_2016_french_fleet: nothing.
+   - c: the main session first amends LEAK-41's sentence in leak_checks.md in place (date, curator, this case), for
+     example: "A part known at the start that is a term of the cover (a planned term the actor sets) ships as its own
+     column (LEAK-7, LEAK-37); the time from the start to a cut the release or the source makes, such as a calendar
+     year's end, is an input like any other and may go where it misleads a fit on the shipped scale (CLEAN-16)", and
+     the Mechanisms row's "(which may stay a feature)" to match. Then here: `_clean` stops adding
+     `length_to_year_end` (`RecordBeg` stays dropped); rewrite `task_summary.known` and `changes`, the bullets on the
+     dates, the length and the learners, and the metric reason's numbers; CC line naming D9's clause reversed and
+     Andrej's two superseded calls; issue 9 resolved as moot. In pricing_game_2016_french_fleet: `_clean` stops adding
+     `exposure_to_year_end` (`period_start` stays); rewrite `known`, `changes`, `predicted` where they name it, the
+     Exposure and probe-22 bullets, Decision 1's text; CC line. Re-run the same checks in both.
+   - a: an exception line to CLEAN-16 with the fact the curator gives, in the record and the notes, and a row of kind
+     `exception` in CLEAN-16's Cases table (the main session).
+
+   [^a7a]: **MET-14** (Should) and **MET-15** (Must), 2026-11-06: an amount over a realized time on risk ships as the
+     rate per unit, and the realized time on risk is the metric's row weight and the training weight, never a feature.
+   [^a7b]: **CLEAN-16** (Should; amended 2026-11-06, Lennart): "A rate scored by a Gini keeps the scale the curator
+     chose for the table, and the notes say what a weighted fit on that scale estimates. A log-scale rate with its
+     denominator as a feature misleads L2 fits (...); drop the feature or ship the identity scale."
+   [^a7c]: **USE-6** (Must): anything known at the prediction point is a legitimate input; "dropping it changes the
+     task". **CLEAN-22** (Must): columns leave for what they are (a leak, an identifier, a copy, the measurement that
+     defines the label), never for how many there are.
+   [^a7d]: **LEAK-41** (Must; 2026-11-06, amended 2026-11-08 on its last clause): "A part known at the start ships as
+     its own column (LEAK-7, LEAK-37)." Its row in the Mechanisms table: "fix it to the length known at the start
+     (which may stay a feature) or remove it".
+   [^a7e]: principles.md, "Conflicts between rules": a higher part wins over a lower one (LEAK-41 is Part 3, CLEAN-16
+     Part 7); "Exceptions and amendments": "A Must has no exceptions: only a higher-ranked Must overrides it, and
+     anything else is an amendment."
+
+
    [^7a]: **CLEAN-16** (Should; amended 2026-11-06, Lennart): a rate scored by a Gini keeps the scale the curator chose
      for the table, and the notes say what a weighted fit on that scale estimates; a log-scale rate with its
      denominator as a feature misleads squared-error fits (spanish_motor_insurance_coverage_level_2022_2024: the mean
@@ -631,6 +792,22 @@ confirmed in a CC line that also names both of his calls D9 supersedes, or resto
    34,324 continued records, every length rounded to months) and of 2026-11-03 (issue 4, option C)." On C: round
    `length_to_year_end` to whole months in `_clean`, as the feature of 2026-11-02 was, restate the length bullet,
    record the CC line, and re-run `dataset check`, the copies count and the measurements of the notes.
+
+   **Lennart (2026-11-08, change):** See discussion above
+
+   **Answer (AI, 2026-11-08):** This issue follows issue 7, whose answer above waits for your choice.
+
+   * Under issue 7's (a) or (b) the length stays, and this issue's B (a CC line confirming it unrounded, naming Andrej's
+     calls of 2026-11-02 and 2026-11-03 as superseded) is still the recommendation; under (c) the length goes and this
+     issue closes as moot.
+   * The numbers moved with the wider policy component of issue 8: rounded to whole months, 2,714 records would repeat
+     another record of their policy (2,704 before), and a Tweedie fit loses 0.005 Gini (SE 0.0015, lower on 6 of 9
+     splits), so option C's "gains nothing" now reads as a small loss.
+   * The Consistency bullet's second precedent changed on 2026-11-08: spanish_motor_insurance_coverage_level_2022_2024
+     now rounds its annualised premiums to the cent (its issue 7), because their decimals marked a cut year; this
+     length depends on the start day alone and holds no realized decimals, so that reason for rounding does not
+     carry over.
+
 
    [^9a]: principles.md, "Precedence in the process", who decides: "the curator's decision (a `CC` line, a review
      mark) > an AI assessment > an AI draft marked unverified > imported or legacy values. A newer decision of the

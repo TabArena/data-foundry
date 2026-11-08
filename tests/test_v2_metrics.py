@@ -560,11 +560,92 @@ def test_the_floor_applies_to_the_predicted_rate() -> None:
     assert got == pytest.approx(2 * (4.0 * np.log(4.0 / floor) - 4.0 + floor))
 
 
-@pytest.mark.parametrize("bad", [[np.nan, 1.0], [-0.5, 1.0], [0.0, 0.0]])
-def test_an_invalid_row_weight_raises(bad) -> None:
+@pytest.mark.parametrize("name", ["mean_poisson_deviance", "rmse"])
+@pytest.mark.parametrize("bad", [[np.nan, 1.0], [-0.5, 1.0], [0.0, 0.0], [np.inf, 1.0]])
+def test_an_invalid_row_weight_raises(name, bad) -> None:
     """A row weight is finite and >= 0, with weight on some row."""
+    spec = _poisson(weight="w") if name == "mean_poisson_deviance" else _weighted_rmse()
     with pytest.raises(ValueError, match="weight"):
-        score(_poisson(weight="w"), [0.0, 2.0], [0.5, 0.5], weight=bad)
+        score(spec, [0.0, 2.0], [0.5, 0.5], weight=bad)
+
+
+# --- weighted RMSE: how much each row counts, e.g. each unit once whatever its number of rows ------------------------
+
+
+def _weighted_rmse(column: str = "w") -> Metric:
+    return Metric.from_context("rmse", reason="r", inputs={"weight": column})
+
+
+def test_weighted_rmse_equals_scikit_learn_with_sample_weight() -> None:
+    """``sqrt(sum(w * (y - p)^2) / sum(w))``: scikit-learn's weighted MSE, square-rooted; zero weights drop a row."""
+    rng = np.random.default_rng(7)
+    y = rng.gamma(1.0, 800.0, 2000) * (rng.random(2000) < 0.6)
+    pred = y + rng.normal(0.0, 300.0, 2000)
+    w = rng.choice([0.2, 0.5], 2000)
+    got = score(_weighted_rmse(), y, pred, weight=w)
+    assert got == pytest.approx(np.sqrt(skm.mean_squared_error(y, pred, sample_weight=w)), rel=1e-12)
+    assert got == pytest.approx(np.sqrt(np.sum(w * (y - pred) ** 2) / w.sum()), rel=1e-12)
+    w[:10] = 0.0
+    assert score(_weighted_rmse(), y, pred, weight=w) == pytest.approx(
+        np.sqrt(skm.mean_squared_error(y[10:], pred[10:], sample_weight=w[10:])), rel=1e-12
+    )
+
+
+def test_unweighted_rmse_is_unchanged() -> None:
+    """Without a weight, RMSE is scikit-learn's, as before the weight input, and equal weights change nothing."""
+    unweighted = Metric.fallback(reason="r").resolve("regression")
+    assert score(unweighted, Y_REG, P_REG) == skm.root_mean_squared_error(Y_REG, P_REG)
+    ones = np.full(N, 3.0)
+    assert score(_weighted_rmse(), Y_REG, P_REG, weight=ones) == pytest.approx(score(unweighted, Y_REG, P_REG), 1e-12)
+
+
+def test_weight_one_over_the_rows_of_a_unit_counts_each_unit_once() -> None:
+    """With w = 1 / (the unit's number of rows) the squared score is the mean over units of each unit's MSE."""
+    rng = np.random.default_rng(8)
+    sizes = rng.choice([2, 5], 300)
+    unit = np.repeat(np.arange(300), sizes)
+    y = rng.gamma(1.0, 800.0, len(unit))
+    pred = np.repeat(rng.gamma(1.0, 800.0, 300), sizes)  # one prediction per unit
+    got = score(_weighted_rmse(), y, pred, weight=1.0 / sizes[unit])
+    per_unit = pd.Series((y - pred) ** 2).groupby(unit).mean().mean()
+    assert got**2 == pytest.approx(per_unit, rel=1e-12)
+
+
+def test_a_weighted_rmse_states_its_formula_and_the_unweighted_spec_stays_as_built() -> None:
+    """The weighted formula appears only when the spec maps a weight: the unweighted spec, and so the checksum of
+    every container built with it, is unchanged.
+    """
+    assert Metric.fallback(reason="r").spec("regression") == {
+        "name": "rmse",
+        "kind": "standard",
+        "prediction": "value",
+        "greater_is_better": False,
+        "origin": "fallback",
+        "params": {},
+        "inputs": {},
+        "original": None,
+        "reference": None,
+        "definition": "sqrt(mean((y - p)^2))",
+        "reason": "r",
+        "target_transform": "identity",
+    }
+    weighted = metric_spec(_weighted_rmse("plot_weight"), "regression")
+    assert weighted.inputs == {"weight": "plot_weight"}
+    assert weighted.definition == "sqrt(sum(w * (y - p)^2) / sum(w)), w the weight input (finite, >= 0)"
+    assert metric_spec(_poisson(weight="w"), "regression").definition == METRICS["mean_poisson_deviance"].definition
+
+
+def test_the_regression_fallback_takes_a_weight_and_stays_the_fallback() -> None:
+    """A source without a metric still gets the fallback rmse when each row should count by a weight: the origin
+    stays ``fallback`` and the spec states the weighted formula.
+    """
+    spec = metric_spec(Metric.fallback(reason="r", inputs={"weight": "plot_weight"}), "regression")
+    assert (spec.name, spec.origin, spec.inputs) == ("rmse", "fallback", {"weight": "plot_weight"})
+    assert spec.definition == metric_spec(_weighted_rmse("plot_weight"), "regression").definition
+    w = np.array([0.2, 0.2, 0.5, 0.5, 1.0])
+    y, p = np.array([1.0, 2.0, 3.0, 4.0, 5.0]), np.array([1.5, 2.0, 2.0, 4.5, 4.0])
+    expected = np.sqrt(np.sum(w * (y - p) ** 2) / np.sum(w))
+    assert score(spec, y, p, weight=w) == pytest.approx(expected, rel=1e-12)
 
 
 def test_weighted_tweedie_deviance_equals_scikit_learn_with_sample_weight() -> None:
@@ -581,15 +662,20 @@ def test_weighted_tweedie_deviance_equals_scikit_learn_with_sample_weight() -> N
 def test_an_input_the_metric_does_not_take_is_refused() -> None:
     """A weight passed to a metric that ignores it raises, at scoring and when the definition declares it."""
     with pytest.raises(ValueError, match="not \\['weight'\\]"):
-        score(Metric.source("rmse"), [1.0, 2.0], [1.5, 2.5], weight=[1.0, 2.0])
+        score(Metric.source("mae"), [1.0, 2.0], [1.5, 2.5], weight=[1.0, 2.0])
     with pytest.raises(ValueError, match="takes the input role"):
-        Metric.source("rmse", inputs={"weight": "w"})
+        Metric.source("mae", inputs={"weight": "w"})
+    with pytest.raises(ValueError, match="not \\['group'\\]"):
+        score(Metric.source("rmse"), [1.0, 2.0], [1.5, 2.5], group=[1, 2])
     assert score(_poisson(), [1.0, 2.0], [1.5, 2.5]) == pytest.approx(skm.mean_poisson_deviance([1, 2], [1.5, 2.5]))
 
 
 def test_row_weight_column_names_the_weight_a_task_may_train_with() -> None:
-    """The deviances and the weighted Gini read a row weight; the Lorenz base on totals and a key column do not."""
+    """The deviances, RMSE and the weighted Gini read a row weight; the Lorenz base on totals and a key column
+    do not.
+    """
     assert row_weight_column(_poisson(weight="Exposure")) == "Exposure"
+    assert row_weight_column(_weighted_rmse("plot_weight")) == "plot_weight"
     assert row_weight_column(_poisson()) is None
     assert row_weight_column(Metric.source("normalized_weighted_gini", inputs={"weight": "w"})) == "w"
     base = Metric.source("ordered_lorenz_gini", inputs={"weight": "Premium"})

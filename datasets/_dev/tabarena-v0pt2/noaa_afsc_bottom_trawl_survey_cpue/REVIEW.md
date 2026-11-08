@@ -1,8 +1,9 @@
 # noaa_afsc_bottom_trawl_survey_cpue
 
 **Outcome:** added. The AI recommends shipping it: the re-review of 2026-11-06 under the exposure rules corrected the
-notes and added one assert, with rows, target, features, split and metric unchanged, and leaves two questions that
-change neither the data nor the score (issues 5 and 6: a restated CC and a rule file's wording). The data are NOAA
+notes and added one assert, with rows, target, features, split and metric unchanged, and left two questions that
+change neither the data nor the score, both settled on 2026-11-08 (issue 5: a restated CC; issue 6: a rule file's
+wording). The data are NOAA
 AFSC's summer bottom-trawl hauls from the public FOSS tables: 35,561 hauls of 1982-2026 in five survey regions, one row
 per haul and taxon for 11 groundfish taxa (391,044 rows, 52.0% zero catches). The target is the catch in numbers per
 km^2 swept, shipped as log1p and scored after the inverse by `mean_group_normalized_rmse`, the source's RMSE taken per
@@ -23,7 +24,7 @@ Validity:
   swept is stated (a gain of 0.007-0.013 over the taxon alone, against the honest model's 0.90-0.93).
 * LEAK-10 holds: no feature carries the tow cut. EV-1 triggered on the notes' cut claim, fixed in the text: against an
   area-only null Pacific cod's short tows stand above it too, and among the tows with a catch those of four more taxa;
-  Lennart's CC of 2026-11-06 still claims the cut for walleye pollock alone (issue 5).
+  Lennart's CC of 2026-11-08 claims the cut for walleye pollock and, to a lesser degree, Pacific cod (issue 5).
 * SPLIT-1, SPLIT-3, SPLIT-9, SPLIT-11, SPLIT-12, SPLIT-13, SPLIT-14 and SPLIT-23 hold: no haul straddles a cutoff, and
   the training sides hold 54.0-95.4% of the rows. SPLIT-20 is a note: pollock's cut sits mostly in the EBS hauls of
   1989-2008, training rows in every window, and in the test years shows in the Aleutians and the Gulf of Alaska;
@@ -37,7 +38,8 @@ of an equal-area map; MET-16 holds, no design weight, as EFH is not a population
 weight ranks 7 untuned models alike, Kendall tau 0.81-1.00, the same winner in 4 of 4 windows). The stated reason,
 "cells of equal area", misdescribed the scored hauls (the Aleutians have about 8 times the EBS shelf's hauls per
 km^2) and is reworded. The task probe raises no flag (random forest skill +0.786 ± 0.012; on the metric 0.919 against
-the dummy's 1.092). How the time-on-risk row of the leak rules' cases records this dataset is issue 6.
+the dummy's 1.092). The time-on-risk row of the leak rules' cases records this dataset by a clause in its remedy
+(issue 6, 2026-11-08).
 
 Quality: MET-14 departure fixed: `_clean` asserts that the CPUE times the area swept rebuilds the count (201,731
 counted catches, to 1.6e-4); the frame and the splits are unchanged. CLEAN-15 holds: the 128 catches weighed but not
@@ -47,8 +49,8 @@ windows each). The check warning `task_target_value_dominant` (52.0% zeros) is a
 
 Weighed: NOAA's documented tables +; a use case set by law +; an approximate fit -. None open (the mediator).
 
-Left for the curator: issue 5, restate the claim of Lennart's CC of 2026-11-06 (a fact correction); issue 6, the wording
-of this dataset's entry in the time-on-risk row of the leak rules' cases. Across datasets, this dataset's evidence goes
+Settled on 2026-11-08 (Lennart): issue 5, the claim of the CC of 2026-11-06 restated by a new CC (B); issue 6, this
+dataset's entry in the time-on-risk row of the leak rules' cases as a clause in the row's remedy (B). Across datasets, this dataset's evidence goes
 to two items of the working copy's REVIEW.md ("From PR #47"), and no change here hangs on them: X2, rewording LEAK-41's
 "ceiling" (under this level-sensitive metric the model on 1/area swept beside the taxon scores 1.031-1.046, worse than
 the honest model's 0.90-0.93, while the free effort columns gain up to 0.033 in single windows, more than its
@@ -64,11 +66,10 @@ tier) made the nine changes that need no decision (Mediator, "Changes to make no
 panel's: Greenland turbot's spread, which the metric takes per test window, is 12-35 per km^2 from 2017 on against
 162-543 before (the panel's 8-38 and 47-639 are per survey year). `dataset check`: 0 errors, 0 warnings.
 
-**Main points:** Open: issue 5 (Lennart), restate your CC of 2026-11-06 so that it claims the tow cut for walleye
-pollock and, to a lesser degree, Pacific cod (B, recommended), or keep pollock alone and name the fact that sets cod
-apart (C)? Issue 6, record this dataset in the time-on-risk row of the leak rules' cases by a clause in the row's remedy
-(B, recommended) or as a listed case only (C)? Settled: the 11 taxa (issue 1), the temporal split (2) and RMSE (3) on
-2026-11-02; the copy `taxon_group` and the dropped effort (4) on 2026-11-06. Across datasets: X2 and X3.
+**Main points:** Open: none. Settled: the 11 taxa (issue 1), the temporal split (2) and RMSE (3) on 2026-11-02; the
+copy `taxon_group` and the dropped effort (4) on 2026-11-06; the cut claimed for walleye pollock and, to a lesser
+degree, Pacific cod (5) and a clause in the remedy of the leak rules' time-on-risk row (6) on 2026-11-08. Across
+datasets: X2 and X3.
 
 **Verdict (2026-11-02, Andrej):** ship. The metric is marked as declared (`mean_group_normalized_rmse`). The
 dataset joins the accepted set; a build waits for your ask.
@@ -476,6 +477,11 @@ dataset joins the accepted set; a build waits for your ask.
    [^5c]: **EV-1** (Must): facts before rules; settle a disputed fact with the decisive experiment, and test a claim
      the same way wherever it comes from, a curator's intuition included.
 
+   **Resolved (2026-11-08, Lennart):** B. A new CC claims the cut for walleye pollock and, to a lesser degree, Pacific
+   cod, with the stop the likely reading, not isolated; it supersedes the claim of the CC of 2026-11-06, which stays as
+   written. The fourth decision is retitled to match and the tow-cut bullet no longer points to this issue; features,
+   rows and scores are unchanged (`dataset check`: 0 errors, 0 warnings).
+
 6. **Record this unweighted dataset in the leak rules' worked case for a cut-short time on risk by a clause in its remedy, or only as a listed case?**
 
    * **Problem:**
@@ -532,6 +538,11 @@ dataset joins the accepted set; a build waits for your ask.
    [^6c]: principles.md, "Conflicts between rules": rules win over patterns and over precedents (how they were
      applied), and a precedent that contradicts a rule is flagged, not followed; "Exceptions and amendments": a Must
      has no exceptions.
+
+   **Resolved (2026-11-08, Lennart):** B. The remedy of the time-on-risk row of the leak rules' cases gains the clause
+   for a decision per unit of an equal-area map (the rate scored unweighted, no sample weight, the notes naming the
+   cut's bias), with this dataset and wadden_sea_sibes_macoma_abundance as its cases, an application of the rule for
+   rates; the notes' Effort bullet cites it. Nothing else changes in this folder.
 
 **Review panel:** ship after changes (mediator); the changes (text and one assert) are made. Tier full, a re-review of
 2026-11-06 under LEAK-41 and MET-14 to MET-16 after issue 4 was resolved: claim auditor, column auditor, split auditor,

@@ -230,9 +230,8 @@ class SpanishHomeownersMotorInsurance20102014(AbstractCuratedDataset):
         newest training year can overlap the test year by up to a year; the upper bound is a run without the newest
         training year, which moves the mean from 0.219 to 0.200 (2014 0.161 to 0.148, 2013 0.315 to 0.244, about one
         null SD, 2012 0.182 to 0.207). Both effects are within the noise. A one-year gap, the smallest the yearly
-        column allows, leaves 2012 a training side of 33%, so only two windows would meet SPLIT-14. As in
-        pricing_game_2016_french_fleet; the curator declined a SPLIT-10 amendment (CC on avito_demand_prediction,
-        2026-11-02).
+        column allows, leaves 2012 a training side of 33%, so only two windows would meet SPLIT-14; the curator
+        declined a SPLIT-10 amendment (CC on avito_demand_prediction, 2026-11-02).
     """
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
