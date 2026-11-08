@@ -2,11 +2,11 @@
 unique_name: chile_school_dropout_mineduc
 name: 'Chile Mineduc open data: Rendimiento por estudiante (student final academic status), for school dropout prediction'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 4
 decision_markers:
 - Needs extensive data wrangling
@@ -24,8 +24,6 @@ source_links:
 - https://doi.org/10.1007/s10639-022-11515-5
 - https://pmc.ncbi.nlm.nih.gov/articles/PMC9869310/
 - https://www.mineduc.cl/?p=22673
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -54,3 +52,5 @@ type_adapter_id: curation-record-v1
 - Access: open, no login; 24 RAR files of 37.3 to 48.0 MB (1,057,259,066 bytes in all), each CSV about 600 MB unpacked (2023: 598,707,057 bytes); RAR needs an unrar tool. The collection page states no licence.
 - Changes the call: no new reject; two facts for the curator. (1) The open-file label is noisier than the paper's. The paper removed deaths and graduations by other routes with MINEDUC's own lists (Table 1: "Deceased students"; "School graduates": "Students who completed compulsory education each year, either by regular or alternative means") and reports 1.7% dropouts for 2019 to 2020 (2,802,156 trajectories). The open files cannot tell a death, an emigrant or an exam-route graduate from a dropout, which likely explains part of the gap to 3.18% (USE-5). (2) Year t's final status carries much of the label: the 45,941 students withdrawn in 2023 (a row with SIT_FIN_R = Y and no promoted or failed row) hold 33,263 of the 90,096 dropouts (72.4% of them drop out, against 1.7% of the promoted and 19.1% of those who failed the year). The prediction point decides whether year t's final status, GPA and attendance are inputs: yes for an early warning at the end of the school year, lagged one year for a warning at its start (LEAK). Priority kept at 4.
 - Not checked: the files of 2002-2022 and 2025 (their rows are the layout's stated counts); whether MINEDUC publishes the deceased and graduates lists openly; the MRUN linkage before 2023.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).

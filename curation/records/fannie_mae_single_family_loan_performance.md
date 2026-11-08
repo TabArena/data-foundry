@@ -2,11 +2,11 @@
 unique_name: fannie_mae_single_family_loan_performance
 name: Fannie Mae Single-Family Loan Performance Data
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 4
 tags:
 - AI-Filled (Verify)
@@ -23,8 +23,6 @@ source_links:
 - https://www.fanniemae.com/loanperformance
 - https://capitalmarkets.fanniemae.com/media/9066/display
 - https://capitalmarkets.fanniemae.com/credit-risk-transfer/single-family-credit-risk-transfer/fannie-mae-release-actual-loss-single-family-loan-performance-data
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -53,3 +51,7 @@ type_adapter_id: curation-record-v1
 - Access: free registration on Data Dynamics and acceptance of the terms; "the Data is licensed by Fannie Mae for internal use only" and may not be redistributed without written consent (FAQ Q6), so only a definition built from each user's own download could ship (a note, EV-4). One-click download of all files; single-file downloads are capped at 100 files per hour. Fannie Mae states no total size; a third-party post gives 48.2 GB for the 2000Q1-2023Q2 archive (not opened). Every capitalmarkets.fanniemae.com page and file answers 403 to this machine; the Wayback copies were readable.
 - Changes the call: Freddie Mac's release (`freddie_mac_single_family_default`) holds the same task on the other agency's loans, a disjoint population: a second source, so no duplicate (PROV-4); PROV-7 does not apply, since it covers one source with distinct tasks. Neither is better data for the other: 57,864,281 loans acquired 2000 to March 2026 here, about 49.51 million Standard loans originated 1999 to June 2026 there, with origination fields of the same kind. Fannie Mae has 17% more loans and a co-borrower score; Freddie Mac has one more quarter, readable documents, an official random sample of 50,000 loans per vintage, and Relief Refinance loans that Fannie Mae's primary dataset excludes. The curator takes one per framing, as for `ppnn_ecmwf_t2m_postprocessing_germany` against `bias_correction_r_bias_correction_r_2`: one of the two at origination, or Fannie Mae as the periodic panel of `mortgage`'s task and Freddie Mac at origination, which gives two distinct tasks. The use case is now read (the publisher names investors and the analysis of credit and prepayment performance): use case +. The 2026-10-31 factors (gap +, use case 0, source +, shape +, risk -) summed to 3, not the 4 written; with use case + they give 4 under the panel framing (multiclass gap +) and 3 under a per-loan binary framing (no gap). Priority kept at 4.
 - Not checked: the 108-column layout and the current loan-month count from Fannie Mae's own files (403); the download size; the default definition and horizon a build would use.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+CC (2026-11-08, Lennart): framed as the loan-month panel (next month's status), while freddie_mac_single_family_default ships the per-loan task at origination; two distinct tasks on the two agencies' disjoint loans. Open: the shipped `mortgage` (the panel task, 50,000 loans) is to be decided against this one (keep both, or `mortgage` to 2nd Tier as with thailand_road_accident_fatalities_2015).

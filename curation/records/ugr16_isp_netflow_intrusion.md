@@ -2,12 +2,12 @@
 unique_name: ugr16_isp_netflow_intrusion
 name: 'UGR''16: NetFlow traces of a Spanish tier-3 ISP with labelled attacks and anomalies'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
-suggestion: TBD -> Yes
-priority: 3
+suggestion: 'Yes'
+priority: 2
 tags:
 - AI-Filled (Verify)
 - Non-IID (Temporal)
@@ -21,8 +21,6 @@ source_links:
 - https://nesg.ugr.es/nesg-ugr16/ (official download; answered 403 to this session)
 - https://huggingface.co/datasets/mehedi107/ugr-16 (mirror of the official weekly labelled CSVs)
 - https://huggingface.co/datasets/Lystea/UGR16-PARQUET (parquet conversion)
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -52,3 +50,7 @@ type_adapter_id: curation-record-v1
 - Access: the official site answers 403 here. The Hugging Face mirror `mehedi107/ugr-16` serves the 23 weekly archives with SHA-256 sums, about 239 GB, no login and no licence stated. It leaves out the per-attack CSV subsets, the attack timestamp files and the nfcapd files, which the official site offers per week (https://fkie-cad.github.io/COMIDDS/content/datasets/ugr16). The 6 test weeks are 56.8 GB compressed (7.71 + 12.08 + 12.06 + 11.86 + 12.51 + 0.57 GB in the manifest), so a build streams about 4.1 billion rows once to keep the labelled ones and a sample of the rest. The per-attack subsets would make this cheap if the site answers. The paper's green copy is CC BY-NC-ND (Semantic Scholar); the data's terms were not found.
 - Changes the call: (1) ctu_13 was rejected (`No`, `AHDS`, Lennart, 2026-11-04) because its labelled rows were staged infections against chosen hosts while the real traffic stayed an unlabelled Background. UGR'16's dos, scan11, scan44 and nerisbotnet classes share those facts: launched by the authors or spliced in, inside a background that is "the rest of captured traffic". The neris traffic is likely a capture like CTU-13's (scenarios 1, 2 and 9 are Neris), but no source here names it. What sets UGR'16 apart are the real anomaly classes found in customers' traffic: spam (about 78M test flows), SSH and UDP scans. Their labels come from the authors' detectors, the pattern of kyoto_2006_plus (`TBD -> 2nd Tier`, priority 1), and blacklist is an IP-list label. Camacho and Rodríguez-Gómez (2025) also report an unlabelled anomaly in the June calibration data and mislabelled test flows that "affects the reliability of the ROC/AUC" (Sect. III). (2) The gap point rested on the attack family as a multiclass target. Those families come from three label mechanisms (launched or spliced, detector, denylist), so the family target has no single real-world meaning. As a binary attack flag, the domain and the temporal regime are not thin. Proposed priority 2: gap 0, use case 0, source +, shape +, risk -. This is not a fast reject, because the real anomaly classes are not generated. A consistency question for the curator: does ctu_13's `AHDS` reading cover the launched and spliced classes, which would leave a spam-and-scan detector task on real ISP traffic?
 - Not checked: the original paper's text (403 and a bot wall): the definition of background, its own evaluation metric, the attack schedule; per-week label counts (two previews only); the data licence.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+CC (2026-11-08, Lennart): accepted with the real classes only: spam and the SSH and UDP scans that the authors' detectors found in the ISP's own customer traffic, against its real background. The classes the authors launched (dos, scan11, scan44) or spliced in from a public capture (nerisbotnet) leave the task, and so does blacklist (a flow whose IP is on a public denylist, no confirmed attack). This sets it apart from ctu_13 and ctu_sme_11 (`No`, `AHDS`, 2026-11-04): no staged traffic in the target (SEL-16). Priority 2 (was 3), as the size check of 2026-11-08 proposed.

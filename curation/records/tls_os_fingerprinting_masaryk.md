@@ -2,11 +2,11 @@
 unique_name: tls_os_fingerprinting_masaryk
 name: Dataset Using TLS Fingerprints for OS Identification in Encrypted Traffic
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -19,8 +19,6 @@ source_links:
 - https://doi.org/10.5281/zenodo.3461771
 - '# the NOMS 2020 paper (its PDF also on Zenodo, 10.5281/zenodo.3989382)'
 - https://doi.org/10.1109/NOMS47738.2020.9110319
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -49,3 +47,5 @@ type_adapter_id: curation-record-v1
 - Access: open, CC BY 4.0, a 701 MB zip of hourly CSVs, no login. The IPs are anonymised with Crypto-PAn.
 - Changes the call: none for this record. On `cesnet_os_fingerprinting_2024`: it is the same task from another publisher (CESNET and CTU Prague), another network and another year. It is not a version (PROV-6) and not a shared source (PROV-7). The CESNET paper names this group's other two releases, lasto18 (May 2017) and lasto23, as the only public datasets and does not list this one. Of the two records, this one keeps the device grouping, a temporal split and a DHCP-log label; the CESNET one is newer and larger, with five networks but no device key or time (its own assessment proposes priority 2). The same group's NOMS 2018 release (lasto18: May 2017, 6.9M flows, 21,746 IPs, labels from DHCP and RADIUS, per Table I of the CESNET paper) has no record. It is older and smaller, so it is not better data.
 - Not checked: the exact count of rows with SYN fields (one hour previewed); per-class counts in the files; whether the SSH fields are filled.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).

@@ -2,8 +2,11 @@
 unique_name: rais_employment_separation
 name: RAIS (Relacao Anual de Informacoes Sociais) public de-identified microdata, employment links (RAIS Vinculos)
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Lennart
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Lennart
+suggestion: 'Yes'
 priority: 3
 decision_markers:
 - Needs extensive data wrangling
@@ -19,8 +22,6 @@ source_links:
 - https://www.gov.br/trabalho-e-emprego/pt-br/assuntos/estatisticas-trabalho/microdados-rais-e-caged
 - https://basedosdados.org/dataset/3e7c4d58-96ba-448e-b053-d385a829ef00
 - https://cran.r-project.org/web/packages/raisr/index.html
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -42,3 +43,5 @@ type_adapter_id: curation-record-v1
 - as published: one row per formal employment link and year, every formal employer in Brazil: tens of millions of links per year, about 60 columns; base years 1985 to the latest (Base dos Dados lists 1985-2025); ...; target: whether an employment link active on 1 January ends during the year, with the separation reason (quit, dismissal with or without cause, end of contract, ...; access: open.
 - Why: The same target as the employee record (will this employee leave) with features of the same kind: education, age, sex, municipality, contracted pay, tenure from the admission date, plus occupation (CBO), sector (CNAE), establishment size, contracted hours and contract type. Real administrative records from a report ...
 - Adds: A defined horizon and a separation reason, traceable official provenance (the Kaggle table names neither its company nor its horizon), millions of employees across all sectors and years instead of 4,653 employees of one unnamed company. Caveats: de-identified, so a worker cannot be followed across years or employers; ...
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).

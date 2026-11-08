@@ -2,11 +2,11 @@
 unique_name: aegis_bronchial_airway_lung_cancer
 name: 'AEGIS-1 and AEGIS-2 bronchial airway gene expression (GEO GSE66499): validation of an airway gene-expression classifier for lung cancer'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 3
 tags:
 - Many features
@@ -20,8 +20,6 @@ problem_type: Binary Classification
 source_links:
 - https://doi.org/10.1056/NEJMoa1504601
 - https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE66499
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -50,3 +48,5 @@ type_adapter_id: curation-record-v1
 - Access: open on GEO, no login, no licence stated; 115 MB processed, 2.8 GB of CEL files.
 - Changes the call: (1) The classifier's training set is not in this deposit. Whitney et al. 2015 (BMC Medical Genomics 8:18, PMC4434538) derived it on "A set of 299 patients from AEGIS 1 consisting of 223 patients diagnosed with lung cancer and 76 patients diagnosed with benign disease" (Results). GSE66499's AEGIS-1 part is 298 patients with 220/78, so other patients, and the paper's text names no deposit for the 299, so the task's table stays at 639. (2) The earlier note of a "ComBat batch adjustment over all arrays" has no support on GEO, whose processing field says only "RMA normalization". RMA over the deposited arrays together is the weak LEAK-30, repairable from the CEL files per sample. (3) As the screening said, no age, smoking or lesion fields ship. The priority stays 3.
 - Not checked: whether RMA ran over all 680 arrays at once or per batch; the NEJM supplement; better data (the AEGIS nasal series and others were not looked up in this pass).
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).

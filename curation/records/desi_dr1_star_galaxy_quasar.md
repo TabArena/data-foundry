@@ -2,8 +2,11 @@
 unique_name: desi_dr1_star_galaxy_quasar
 name: DESI Data Release 1 (spectroscopic classes with Legacy Surveys DR9 photometry)
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Lennart
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Lennart
+suggestion: 'Yes'
 priority: 3
 decision_markers:
 - Selection Bias
@@ -20,8 +23,6 @@ source_links:
 - https://data.desi.lbl.gov/doc/releases/dr1/
 - https://data.desi.lbl.gov/public/dr1
 - https://ui.adsabs.harvard.edu/abs/2026AJ....171..285D
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -43,3 +44,5 @@ type_adapter_id: curation-record-v1
 - as published: 18,659,804 unique main-survey objects with useful spectra: 13,049,402 galaxies, 1,553,713 quasars, 4,056,689 stars; photometry from the Legacy Surveys DR9 Tractor catalogue (g, r, z, WISE W1/W2 ...; target: Spectroscopic class SPECTYPE (STAR, GALAXY, QSO), the same three classes as sdss_17; access: open.
 - Why: Same target and the same photometric classification task as sdss_17's v2 definition (position and broadband magnitudes, redshift and plate dropped), from a newer spectroscopic survey
 - Adds: Two orders of magnitude more labelled objects (subsample for the benchmark), newer data, infrared WISE bands that help separate quasars from stars. Same risk as sdss_17: targets were picked by colour cuts (Selection Bias); the DESI target bits and tile/fibre columns encode the class and must be dropped. A newer ...
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).

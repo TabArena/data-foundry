@@ -2,11 +2,11 @@
 unique_name: wioa_employment_after_exit
 name: 'WIOA Individual Performance Records (PIRL public use file): employment after exit from workforce programmes'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -18,8 +18,6 @@ source_links:
 - https://www.dol.gov/agencies/eta/performance/results/national
 - https://www.dol.gov/sites/dolgov/files/ETA/advisories/TEGL/2016/TEGL_26-15-Attachment-II_Acc.pdf
 - https://www.dol.gov/sites/dolgov/files/ETA/Performance/PY23%20Databooks/PY2023Appendix/WIOA%20Performance%20Records%20Public%20Use%20File%20Record%20Layout%20PY2023Q4.pdf
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -48,3 +46,5 @@ type_adapter_id: curation-record-v1
 - Access: open download, no login. The disclaimer (PY 2025, https://www.dol.gov/sites/dolgov/files/ETA/Performance/pdfs/PY2025/WIOA%20Performance%20Records%20Public%20Use%20File%20Disclaimer_PY2025.pdf) makes "receipt of the data" an agreement to "Use this information for valid research purposes only", not to identify any individual, and to suppress published summaries of fewer than three individuals (a note, EV-4). The dol.gov server answers 403 to direct requests from this machine; the page and PDFs were read through the fetch tool.
 - Changes the call: none for the priority. For the build: most of the "over 20 million" records carry no outcome (participants who have not exited, reportable individuals, recent exiters); the codes of PIRL 1600-1607 are "modified to avoid disclosing the data source", so check at the build that PIRL 1602 keeps its 0/1 meaning; the national Youth rate also counts entry into education or training (report, footnote 2), while PIRL 1602 records unsubsidized employment only, so a Youth label differs from DOL's Youth measure (USE-5).
 - Not checked: the exact record count (it needs the Parquet footer or the file: the server refuses direct and range requests from here, and the 539 MB Parquet file is above this check's download cap); the exit-cohort dates of the PY 2024 Q2 measure (not in the extracted text); the share of code 9 and blanks for PIRL 1602 in a file.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).

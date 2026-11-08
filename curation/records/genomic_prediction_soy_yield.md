@@ -2,11 +2,11 @@
 unique_name: genomic_prediction_soy_yield
 name: gp-soy-YLD (Soybean Yield Genomic Prediction)
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -23,8 +23,6 @@ source_links:
 - https://doi.org/10.5061/dryad.xksn02vb9
 - https://arxiv.org/abs/2609.07441
 - https://zenodo.org/records/4980429
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -54,3 +52,5 @@ type_adapter_id: curation-record-v1
 - Access: CRAN source tarball, 4,948,970 bytes, .RData, no login, GPL-3. The Azodi soy files on Zenodo are about 51 MB, CC0.
 - Changes the call: the origin repairs the scale problem the screening raised (MET-3, PROV-13): the yields exist in kg/ha per plot, so the record's first source is SoyNAM (PROV-8), and the Azodi table becomes a derived cut to cite. The split stays grouped by family (40 families) for a new cross. The priority stays 3: the standardized target is no longer a risk, but the line value is ours to compute (BLUP or mean), which keeps the risk point.
 - Not checked: how Azodi computed the line value; the SoyNAM papers (Song et al. 2017, Diers et al. 2018, Xavier et al. 2016) were not read; whether SoyBase serves the data at a new address (its project list names a data store SoyNAM_2014).
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).

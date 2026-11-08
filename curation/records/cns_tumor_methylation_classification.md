@@ -2,11 +2,11 @@
 unique_name: cns_tumor_methylation_classification
 name: DNA methylation-based classification of human central nervous system tumors [reference set], GEO GSE90496
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 3
 decision_markers:
 - Needs extensive data wrangling
@@ -22,8 +22,6 @@ problem_type: Multiclass Classification
 source_links:
 - https://doi.org/10.1038/nature26000
 - https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE90496
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -52,3 +50,7 @@ type_adapter_id: curation-record-v1
 - Access: open on GEO, no login, no licence stated; 9.2 GB of betas or 23 GB of IDATs.
 - Changes the call: (1) The validation set's labels are model output. The paper assigned the 1,104 cases "as either 'matching to a defined DNA methylation class' (calibrated score ≥0.9) or as 'no match' cases (highest score <0.9)" (Results, "Clinical implementation"), yet GEO gives every one of the 1,104 a class, so the GEO class is the classifier's top call and not a diagnosis (USE-5). The pathology diagnosis of each validation case is in Supplementary Table 4 (not read). The task is the 2,801 reference samples. (2) Material is tied to class: 35 of 91 classes are FFPE only or frozen only (591 samples), and 47 have 90% or more of one material. The paper removed it per probe with `removeBatchEffect`, estimated inside the cross-validation. The GEO betas are per sample and do not carry that correction, so LEAK-30 does not apply, but material is a shortcut to check. It is known to the lab, so it is a fair input. (3) 35 reference arrays (and 5 validation arrays) are also in `sarcoma_methylation_classification`'s GSE140686. They share the same chip and position IDs in both file lists, and both give them the matching class: schwannoma 10, melanoma 8, solitary fibrous tumour 7, chordoma 7, Ewing sarcoma 3. The tasks are distinct (PROV-7), but if both ship, drop the shared tumours from one. (4) Better data: the Heidelberg classifier v12.8 is trained on 7,495 profiles in 184 subclasses (Sill et al., medRxiv 2025, seen in a search result); no public deposit was found. The priority stays 3.
 - Not checked: Supplementary Table 2 (the reference cohort's centres and patient fields); the beta file's probe row count and missing values (9.2 GB, only the header was read); the v12.8 cohort beyond one search.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-08):** distinct from sarcoma_methylation_classification although 40 arrays are in both (35 of GSE90496, 5 of GSE109379): a CNS tumour classifier (91 classes) against a sarcoma classifier (65 classes), two tasks of one source line (PROV-7). /add-dataset decides whether the shared arrays leave one.

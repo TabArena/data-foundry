@@ -2,11 +2,11 @@
 unique_name: driams_antimicrobial_resistance
 name: 'DRIAMS: Database of Resistance Information on Antimicrobials and MALDI-TOF Mass Spectra'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 3
 decision_markers:
 - Needs extensive data wrangling
@@ -22,8 +22,6 @@ source_links:
 - https://doi.org/10.5061/dryad.bzkh1899q
 - https://doi.org/10.1038/s41591-021-01619-9
 - https://datadryad.org/dataset/doi:10.5061/dryad.bzkh1899q
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -52,3 +50,5 @@ type_adapter_id: curation-record-v1
 - Access: the binned spectra and the id tables come only inside the full archives, so a DRIAMS-A build downloads 86 GB (B alone is 3.7 GB). CC0, no data-use agreement. The Dryad API's file download answered "Unauthorized, must have current bearer token" and the web link gave a script a 403, so a build needs a Dryad API token or a browser download.
 - Changes the call: the size is per task, not per database: thousands of rows and 6,000 features per species-drug table. One fact for /add-dataset: hospital-hygiene samples are grown on "selective media containing antibiotics, enabling the growth of resistant strains only", and a classifier recognises the workstation from the spectrum (Supplemental Table 5), so the definition follows the paper and drops them (a route of mostly one class that models recognise, LEAK-39). The paper's own split is random, "stratified by both antimicrobial class and patient case number", 10 repeats, with a temporal check on May-August 2018. The priority stays 3: gap 0, use case +, source +, shape +, risk - (the 86 GB build, a choice of tasks).
 - Not checked: the sizes of `binned_6000` and `id` inside each archive (nothing downloaded); the id-table columns on a file (taken from the loader's code); the counts in the Nature Medicine version (the preprint was read); the spectra per site for B and C.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).

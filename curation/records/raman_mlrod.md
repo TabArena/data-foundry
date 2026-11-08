@@ -2,8 +2,11 @@
 unique_name: raman_mlrod
 name: ML Raman Open Dataset (MLROD)
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Lennart
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Lennart
+suggestion: 'Yes'
 priority: 3
 decision_markers:
 - TBD
@@ -24,8 +27,6 @@ source_links:
 - https://doi.org/10.1029/2021EA002125
 - https://odr.io/MLROD
 - https://arxiv.org/abs/2605.02003
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -47,3 +48,5 @@ type_adapter_id: curation-record-v1
 - as published: 130,061 spectra x 1,836 wavenumber features; 16 classes (raman-data id: mlrod); target: mineral / sample class.
 - Why: Identify the mineral (or rock/mixture) from a point Raman spectrum of Mars-analogue samples, clean or under basalt dust
 - Notes: Raw Raman spectral bins (1,836 wavenumber points, 141-1100 cm-1) as features; SEL-15 judges such signals case by case. Licence CC BY-NC. Spectra from point maps of few physical samples (likely grouped by sample). HF mirror: https://huggingface.co/datasets/HTW-KI-Werkstatt/RamanBench/tree/main/mlrod
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).

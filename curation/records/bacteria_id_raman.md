@@ -2,11 +2,11 @@
 unique_name: bacteria_id_raman
 name: Pathogenic Bacteria
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 4
 decision_markers:
 - TBD
@@ -29,8 +29,6 @@ source_links:
 - https://github.com/csho33/bacteria-ID
 - https://arxiv.org/abs/2605.02003
 - https://pypi.org/project/raman-data/
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -60,3 +58,5 @@ type_adapter_id: curation-record-v1
 - Access: `data.zip`, 628,639,018 bytes, with no login. The repository is MIT, and the README states no separate licence for the data.
 - Changes the call: the use-case point needs a direct fit (selection.md, "Priority"). The 66,000-spectrum task recognises 30 known reference strains, an approximate fit (as the screening says). The direct framing, the treatment group for a new patient's isolate, has 50 patients. Without that point the priority is 1 + gap + source + shape - risk = 3. Two facts for /add-dataset: the single test file allows only one evaluation split unless repeats resample the training side; pooling all five files (as RamanBench's 78,500 suggests) mixes the isolate codes and the treatment-group codes, which share the integers 0, 2, 3, 5 and 6.
 - Not checked: which of the three measurement times the reference file holds; how many cultures or maps the reference and test spectra come from; how RamanBench labels the pooled clinical spectra.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).

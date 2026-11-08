@@ -2,11 +2,11 @@
 unique_name: gse40279_methylation_age
 name: GEO-GSE40279-Methylation-Age (Blood DNA Methylation Age)
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -24,8 +24,6 @@ source_links:
 - https://doi.org/10.1016/j.molcel.2012.10.016
 - https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE40279
 - https://arxiv.org/abs/2609.07441
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -54,3 +52,7 @@ type_adapter_id: curation-record-v1
 - Access: open on GEO, no login; the series states no licence. 1.2 GB for the series matrix. Without IDATs, the only per-sample rebuild is from the 5.0 GB signal-intensity file.
 - Changes the call: (1) Better data for the same task: GEO GSE55763 (Lehne et al., Genome Biology 2015, Imperial College London; public 2015-01-22; https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE55763): "2,664 individuals, and 36 samples measured in duplicate", 2,711 peripheral-blood 450K arrays with `age` (23.7 to 75.0, counted in the series matrix) and `gender`. Normalised betas 9.7 GB (normalised over the cohort, LEAK-30); signal intensities 5.7 GB; `RAW.tar` 183 MB, the same size as here, so probably manifests only (not opened). It has 4 times the people and is newer, but its ages are narrower (no one over 75, against 19 to 101 here). It has no record. By the screening factors, better data found takes one point off, so priority 2 is proposed (from 3), and the curator weighs the age range. (2) The rebuild route for LEAK-30 is the signal-intensity file, not IDATs (PROV-13). The KNN imputation drew on all samples for the imputed cells, a weak transductive leak (LEAK-30): keep it with a note or rebuild. The grouping by plate stands.
 - Not checked: the missing cells over all 473,034 probes (the 1.2 GB matrix was only previewed), so whether the deposit holds imputed values is an inference; the column layout of the signal-intensity file; GSE55763's paper and its characteristics beyond age, sex and the duplicate flags.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-08):** better data for the same task was found by the size check, GSE55763 (Lehne et al. 2015, Imperial College London: 2,664 people, blood 450K arrays, ages 23.7-75.0); per screen-candidates "Better data" it is screened as its own record, and the curator picks which one enters once both are known. This record keeps its verdict.

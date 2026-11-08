@@ -2,11 +2,11 @@
 unique_name: backblaze_hard_drive_failure
 name: 'Backblaze hard drive test data: drive failure from daily SMART statistics'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -24,8 +24,6 @@ source_links:
 - https://github.com/ErikinBC/SurvSet
 - https://arxiv.org/abs/2203.03094
 - https://cran.r-project.org/package=frailtySurv
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -54,3 +52,5 @@ type_adapter_id: curation-record-v1
 - Access: open download, no login. A quarter is a zip of 1.0 to 2.1 GB (Q2 2026: 2,092,757,685 bytes, 91 daily files of about 138 MB each, 11.7 GB unpacked); one year of 2025 is about 4.4 GB zipped and 46 GB unpacked (the page's four quarters). Terms: "Cite Backblaze as the source if you use the data", "You can not sell the data itself to anyone; it is free" (no named licence).
 - Changes the call: a label risk the screening did not name. "for our purposes drive failure is either reactive or proactive", and "failed drives fall basically evenly into these two categories". A proactive failure means indicators "signal that the drive is having difficulty and drive failure is highly probable" (https://www.backblaze.com/blog/backblaze-drive-stats-for-q3-2024/). On the SATA pods, the drive sentinel tool cuts access to a drive whose read and write errors pass a threshold (https://www.backblaze.com/blog/backblaze-drive-stats-for-q3-2025/). About half the positives are therefore Backblaze's own replacement decisions, taken on signals that overlap the SMART inputs: a label that partly follows the operator's rule (USE-5). The rule is not published, so SEL-5 does not decide it; a TP-4 check at /add-dataset does (e.g. how far SMART 5, 187, 188, 197 and 198 above zero alone go). The Q3 2025 post also describes "cosmetic" failures: drives of a Toshiba MG08 population pulled for firmware updates and counted as failed. The risk point is already taken, so priority 3 stands. A related source, not better data: the PAKDD 2020 Alibaba AI Ops competition (https://github.com/alibaba-edu/dcbrain, `diskdata/`; Tianchi dataId 70251) has "over 200 thousands hard disk drives" of Alibaba Cloud, 2017-07-31 to 2018-12-31, as daily SMART logs of 514 columns plus a fault-tag table. It is scored by a precision and recall over 30-day windows. It is older and has fewer drives, but it fixes the task, a 30-day horizon per disk, that the Backblaze framing has to define itself; no record exists for it.
 - Not checked: positives per horizon counted on the files (computed from the page's totals); whether drives later found healthy are reset to `failure=0` in the published files (the Q3 2024 post says the dataset "is updated accordingly"); SMART fill rates over all models (one preview of one day).
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).

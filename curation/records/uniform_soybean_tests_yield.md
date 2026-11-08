@@ -2,8 +2,11 @@
 unique_name: uniform_soybean_tests_yield
 name: Uniform Soybean Tests yield with genotype and daily weather (Shook et al. 2021)
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Lennart
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Lennart
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -18,8 +21,6 @@ source_links:
 - https://doi.org/10.4231/r7hd7spk
 - https://eval.ai/web/challenges/challenge-page/1251/overview
 - https://github.com/itsMustafamr/Yield
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -41,3 +42,5 @@ type_adapter_id: curation-record-v1
 - as published: 103,365 performance records (variety x location x year), 2003-2015, 5,839 genotypes, about 150 locations; per record maturity group, genotype cluster, location and 214 days x 7 daily weather ...; target: Seed yield (bu/acre), regression; access: open.
 - Why: Large, real multi-environment trial data with a documented source; the 86,101-record set in the item matches it.
 - Adds: Large agricultural regression with grouped structure. Caveats: the season's weather is known only at harvest (an ex-post G x E model); plot traits such as protein, oil, lodging and seed size are measured at harvest (leaks for a yield task); data on Google Drive with no licence stated for the merged files (PURR ...
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).

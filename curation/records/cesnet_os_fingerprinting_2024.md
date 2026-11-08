@@ -2,7 +2,7 @@
 unique_name: cesnet_os_fingerprinting_2024
 name: Transferability of TCP/IP-based OS fingerprinting models (datasets)
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
@@ -17,8 +17,6 @@ problem_type: Multiclass Classification
 source_links:
 - https://doi.org/10.5281/zenodo.14703490
 - https://dl.ifip.org/db/conf/networking/networking2025/1571127729.pdf
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -48,3 +46,5 @@ type_adapter_id: curation-record-v1
 - Access: open, CC BY 4.0, a 281 MB zip of five CSVs (2.5 GB unpacked), no login.
 - Changes the call: (1) `tls_os_fingerprinting_masaryk` is the same task from another publisher (CESNET and CTU Prague here, Masaryk University there), another network (CESNET3 subnets and a dormitory against Masaryk's Eduroam) and another year (September 2024 against July 2019). It is not a version (PROV-6) and not a shared source (PROV-7), so each keeps its own record (PROV-4), and the curator picks. This one is newer and larger (42.7M flows and 25,231 devices, against 18.7M flows and 11,962 MAC addresses) and has five networks for a transfer test. Masaryk's label comes from DHCP host names, a record independent of the traffic, and it ships a session id for a grouping, timestamps for the paper's temporal split, TLS fields and more inputs. (2) The shape point (+) rested on a grouped or temporal structure that this table lacks, and the rows collapse onto few fingerprint tuples, which needs a TP-4 check at /add-dataset (a lookup on TCP_SYN_SIZE, TCP_WIN, TCP_MSS and TTL). Proposed priority 2: gap +, use case 0, source +, shape 0, risk -. (3) Metric: macro precision and macro F1 are reported side by side (Sect. IV.A), both on hard labels, so the fallback `log_loss` stands (MET-5, MET-6).
 - Not checked: the row count after the paper's zero-field filter; distinct-tuple counts over the full files (previews only); whether subnets 2-4 include Masaryk University's network (the paper says only "large universities").
+
+CC (2026-11-08, Lennart): kept for later (`TBD -> Yes`, priority 3) in the screening review of the large candidates; tls_os_fingerprinting_masaryk, the same task with sessions, times and DHCP labels, is accepted.

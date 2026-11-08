@@ -2,11 +2,11 @@
 unique_name: bosch_production_line_performance
 name: Bosch Production Line Performance (Kaggle competition)
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 3
 decision_markers:
 - Anonymized
@@ -24,8 +24,6 @@ original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://www.kaggle.com/competitions/bosch-production-line-performance
 - https://arxiv.org/abs/2606.26337
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -54,3 +52,5 @@ type_adapter_id: curation-record-v1
 - Access: Kaggle login and acceptance of the rules; this account gets a 403 on download because the rules are not accepted (2026-11-08). The rules (CLI, page `rules`): "Participants must use the Data solely for the purpose and duration of the Competition" and must not "redistribute or otherwise provide or make available the Data to any party not participating in the Competition"; a licence note, never a verdict reason (EV-4). The Evaluation page confirms the MCC.
 - Changes the call: none. The 1st place write-up (topic 25434) confirms the row-order leak: "consecutive rows had feature duplication and correlated Response", and the team built features from the previous and next records' Response. The definition keeps `Id` out of the features, and near-duplicate consecutive parts straddle a temporal split only at its boundary (LEAK-16, LEAK-17, to measure at build). The priority stays 3: gap 0, use case +, source +, shape +, risk - (anonymised columns, the row-order leak).
 - Not checked: the exact rows, columns and failures on the files (no download without accepting the rules); the date range and the time unit; whether training and test Ids interleave.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).

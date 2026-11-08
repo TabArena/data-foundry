@@ -2,8 +2,11 @@
 unique_name: smartshark_release_defect_prediction
 name: SmartSHARK release-level defect prediction data (Herbold, Trautsch, Trautsch, Ledel 2022), IND-JLMIV+R labels
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Lennart
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Lennart
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -19,8 +22,6 @@ source_links:
 - https://doi.org/10.5281/zenodo.5675024
 - https://doi.org/10.1007/s10664-021-10092-4
 - https://doi.org/10.5281/zenodo.4071448
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -42,3 +43,5 @@ type_adapter_id: curation-record-v1
 - as published: Java source files per release: 398 releases of 38 Apache projects (about 2003-2020), static code, process and warning metrics; release-level-data.tar.gz 616 MB; row and column counts not on the page; target: file is defective in the release, from bug issues validated by issue type and link (IND-JLMIV+R); the 6M-SZZ variant is marked DO_NOT_USE by the authors; access: open.
 - Why: Same task as defect_data and jm1 (defect-prone module prediction from code metrics) by the authors of the Zotero CPDP benchmark, with validated labels and the authors' explicit release for re-use
 - Adds: Newer (to about 2020 instead of 2004), far larger, curated labels instead of unknown labelling (MDP), project and release structure for a grouped or temporal split
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).

@@ -2,11 +2,11 @@
 unique_name: ppnn_ecmwf_t2m_postprocessing_germany
 name: 'PPNN full data: ECMWF ensemble 2 m temperature forecasts and DWD station observations (Rasp and Lerch 2018)'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 4
 tags:
 - AI-Filled (Verify)
@@ -26,8 +26,6 @@ source_links:
 - https://doi.org/10.6084/m9.figshare.19453580.v2
 - '# Chen and Lerch (2022), Full data for wind speed post-processing: another target (10 m wind speed), related data'
 - https://doi.org/10.6084/m9.figshare.19453622.v2
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -56,3 +54,5 @@ type_adapter_id: curation-record-v1
 - Access: open, no login; one 615 MB Feather file that pandas and pyarrow read; CC BY 4.0; the code is MIT.
 - Changes the call: the Chen and Lerch (2022) temperature deposit (figshare 10.6084/m9.figshare.19453580.v2, CC BY 4.0, `temperature_data_cgm_std.feather`, 1,360,331,336 bytes, schema read the same way) holds the same 1,808,942 rows x 94 columns: 50 columns X1 to X50 (by the description, likely the raw ensemble members of 2 m temperature), mean and standard deviation of 17 variables (no soil moisture), the 4 station features and three day-of-year columns. It is a version of this dataset (PROV-6) with no distinct task, which settles the open question in the links; the curator picks one copy (this one is the first publication, the 2022 one adds the raw members and names the spread `_std`). This file names its spread columns `_var` while the paper says standard deviation; the build should check which one the values hold. Priority kept at 4.
 - Not checked: the values (missing values per column, variance or standard deviation in `_var`); the rows of the wind-speed deposit; Jobst et al. (Zenodo 8127734).
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).

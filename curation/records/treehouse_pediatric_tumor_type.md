@@ -2,11 +2,11 @@
 unique_name: treehouse_pediatric_tumor_type
 name: 'Treehouse Tumor Compendium v25.01 PolyA: consistently processed RNA-seq from 13,359 tumours, GEO GSE294351'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -19,8 +19,6 @@ source_links:
 - https://doi.org/10.1038/s41597-025-05376-z
 - https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE294351
 - https://treehousegenomics.soe.ucsc.edu/public-data
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -49,3 +47,7 @@ type_adapter_id: curation-record-v1
 - Access: open on GEO, no login. GEO says the authors "released the expression values and metadata without access restrictions"; no licence is named. 1.3 GB for the TPM matrix of all 13,359 datasets; the paediatric columns are cut after the download.
 - Changes the call: (1) Overlap with TCGA: 9,806 of the 13,359 datasets are TCGA (9,733 patients), the same tumours as `tcga_pancancer_tumor_type`. The paediatric cut holds 366 TCGA datasets (among them glioma 88, thyroid carcinoma 67, testicular germ cell tumour 61, cervical 22, pheochromocytoma and paraganglioma 22, melanoma 21) and 1,337 TARGET datasets; TARGET is also the source of `target_pediatric_relapse_transcriptome`, another target. These are distinct tasks (PROV-7). A tumour-type task over the whole compendium would be a version of the TCGA one (PROV-6). (2) Study confounding: of the 16 diagnoses with 30 or more donors, 5 come 90% or more from one study (Wilms tumour 0.91, thyroid carcinoma 0.94, rhabdoid tumour 0.96, testicular germ cell tumour 0.98, acute megakaryoblastic leukaemia 0.99). A split by study would remove these classes from training. Grouping by donor is the minimum (SPLIT-3), and the study grouping is the curator's call, as the screening said. The priority stays 3.
 - Not checked: the TPM matrix itself (1.3 GB, not downloaded; the gene count comes from its file name); whether the 9,806 TCGA datasets are de-duplicated against TCGA aliquots as the descriptor says; the harmonised disease merges (USE-5).
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-08):** distinct from tcga_pancancer_tumor_type (PROV-7): only the paediatric cut ships (3,477 datasets, 366 of them TCGA tumours); the whole compendium would be a version of the TCGA task (PROV-6).

@@ -2,11 +2,11 @@
 unique_name: chicago_taxi_trip_duration
 name: Chicago Taxi Trips (2013-2023) and Taxi Trips (2024-)
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -20,8 +20,6 @@ source_links:
 - https://data.cityofchicago.org/Transportation/Taxi-Trips-2013-2023-/wrvz-psew
 - https://data.cityofchicago.org/api/views/wrvz-psew.json
 - https://data.cityofchicago.org/Transportation/Taxi-Trips-2024-/ajtu-isnz
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -50,3 +48,5 @@ type_adapter_id: curation-record-v1
 - Access: open, no login, through the Socrata API (SoQL) and CSV export. Terms: "See Terms of Use", the City's data portal terms, with no named licence. A one-week count took 112 s, so a build reads a year by monthly pages or by the bulk CSV export, not one query.
 - Changes the call: none that moves the priority. Points for the curator. (1) The inputs are coarse: a 15-minute start time, tract or community-area centroids, and the tract hidden for most recent pickups. Many trips share a centroid pair, such as O'Hare (community area 76), whose pickup tract is hidden in the three latest rows previewed. The task is the same ETA as `nyc_taxi_trip_duration` and `pkdd_15_taxi_trip_time_prediction_ii`, with worse inputs and more, newer rows. The fit stays approximate (USE-8). (2) Consistency with the sibling `chicago_rideshare_trip_duration` (`TBD -> 2nd Tier`, priority 2): the same portal, columns, rounding and suppression, but a risk point was taken there ("the task already covered") and none here. Selection.md's risk factor does not list a covered task, so this record's 0 follows the table. The curator may want one Chicago trip record and the two at the same priority. (3) Cleaning for /add-dataset: trip_seconds against the 15-minute timestamps, zero and multi-hour durations, and trips whose drop-off centroid equals the pickup centroid (the NYC and pkdd 100 m rule, USE-7) need counting on the data.
 - Not checked: per-year counts for 2013-2023 and an exact 2025 count (API timeouts); the share of zero or implausible trip_seconds; whether the cached null counts of the new table are current.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).

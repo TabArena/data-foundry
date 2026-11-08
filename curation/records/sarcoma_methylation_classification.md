@@ -2,11 +2,11 @@
 unique_name: sarcoma_methylation_classification
 name: 'Sarcoma classification by DNA methylation profiling: reference set (1,077) and validation set (428), GEO GSE140686'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 3
 decision_markers:
 - Needs extensive data wrangling
@@ -23,8 +23,6 @@ source_links:
 - https://doi.org/10.1038/s41467-020-20603-4
 - https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE140686
 - https://www.molecularsarcomapathology.org
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -53,3 +51,7 @@ type_adapter_id: curation-record-v1
 - Access: open on GEO, no login, no licence stated. 4.9 GB of processed matrices (both platforms) or 18 GB of IDATs; the labels are a 100 KB supplementary xlsx.
 - Changes the call: (1) Array type and centre are tied to class: 32 of 65 classes are on one array type only (326 cases), and 38 have 90% or more on one; 19 of 65 have 90% or more of their cases from one supplier. The paper removed the array and material effects with `removeBatchEffect`. In a merged table the array type is a shortcut, both as a batch shift and as the pattern of missing probes. For /add-dataset: either the paper's intersection with a note, or EPIC only (592 reference cases, fewer classes). (2) The source has a second label: SD1's `Diagnosis`, 76 histological diagnoses (14 with fewer than 7 cases), not defined by clustering. So the SEL-4 re-target the screening asked for has a source column. (3) 40 of the 1,505 arrays are also in the CNS series (35 in GSE90496's reference set, 5 in GSE109379), with the same Sentrix IDs and matching classes (schwannoma, melanoma, solitary fibrous tumour, chordoma, Ewing sarcoma). See `cns_tumor_methylation_classification`: the tasks are distinct (PROV-7), but if both ship, drop the shared tumours from one. No supplier is TCGA, so there is no overlap with `sarcoma` (TCGA SARC). (4) `Tumour cell content [absolute]` is estimated from the methylation profile itself, so it is not an input. (5) The screening's LEAK-30 worry does not hold for the GEO matrices, which are processed per sample; the batch correction was part of the paper's analysis. The priority stays 3.
 - Not checked: the processed matrices' probe row counts (1.6 and 3.3 GB, only their headers were read) and the size of the intersection before the filters; whether a `Batch` date is one array run.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-08):** distinct from cns_tumor_methylation_classification although 40 arrays are in both: a sarcoma classifier (65 classes) against a CNS tumour classifier (91 classes) (PROV-7).

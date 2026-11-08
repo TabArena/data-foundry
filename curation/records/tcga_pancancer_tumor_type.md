@@ -2,11 +2,11 @@
 unique_name: tcga_pancancer_tumor_type
 name: 'TCGA PanCancer Atlas: Cell-of-Origin Patterns Dominate the Molecular Classification of 10,000 Tumors from 33 Types of Cancer'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -19,8 +19,6 @@ source_links:
 - https://doi.org/10.1016/j.cell.2018.03.022
 - https://gdc.cancer.gov/about-data/publications/pancanatlas
 - https://portal.gdc.cancer.gov/
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -49,3 +47,7 @@ type_adapter_id: curation-record-v1
 - Access: the GDC open-access tier, no login (GDC Data Portal or API). About 44 GB for the primary files (computed from about 4.2 MB per file); the EB++ matrix is 1.9 GB but adjusted over all samples.
 - Changes the call: (1) Overlap with `treehouse_pediatric_tumor_type`: Treehouse's compendium holds 9,806 TCGA datasets from 9,733 TCGA patients (TCGA sample codes 01 9,185, 06 392, 03 173, 02 44, 05 11, 07 1; counted in its GEO clinical table), re-quantified with TOIL/RSEM. A pan-cancer type task built on Treehouse would be a version of this one (PROV-6). Treehouse's paediatric cut shares 366 TCGA tumours with this one, under another label (PROV-7). (2) The other TCGA records (`sarcoma`, `tcga_lung_histology`, `tcga_kidney_cancers` and others) are the same tumours with other targets (PROV-7), as the screening said. The priority stays 3.
 - Not checked: the EB++ gene count (1.9 GB, only the header was read); the TCGA-CDR join; tissue source site and plate per class (the batch check); the text of the GDC data-use terms.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+**Assessment (AI, 2026-11-08):** distinct from treehouse_pediatric_tumor_type, whose paediatric cut holds 366 TCGA tumours: 33 adult TCGA projects against 111 paediatric diagnoses (PROV-7). A tumour-type task over the whole Treehouse compendium would be a version of this one (PROV-6), so only Treehouse's paediatric cut ships.

@@ -2,8 +2,11 @@
 unique_name: milk_nir_composition
 name: Near-infrared spectra dataset of milk composition in transmittance mode (on-farm, Hooibeekhoeve, 2017)
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Lennart
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Lennart
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -15,8 +18,6 @@ source_links:
 - https://doi.org/10.5281/zenodo.8263430
 - https://doi.org/10.1016/j.dib.2023.109767
 - https://arxiv.org/abs/2605.21544
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -38,3 +39,5 @@ type_adapter_id: curation-record-v1
 - as published: 1,224 raw milk samples x NIR transmittance spectrum 960-1690 nm (255 bands in the NIR benchmark) + lab reference values; collected on-farm over 8 weeks in 2017 at the Hooibeekhoeve experimental ...; target: milk fat, protein or lactose content (%), urea, somatic cell count (lab reference); one target per task; access: open.
 - Why: The curator's comment on tecator asks for another spectra dataset without PCA preprocessing. This is a raw NIR calibration of a food composition quantity (fat, as in tecator) with lab reference values, open under CC BY 4.0, with a data paper.
 - Adds: Raw spectra instead of PCA scores; 5x tecator's 240 samples; several lab targets on the same spectra (fat, protein, lactose, urea, SCC); a dated on-farm collection. Caveats: raw spectral bins lean out (SEL-15); samples are likely repeated per cow over 8 weeks (check for a cow id and date for a grouped or temporal ...
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).

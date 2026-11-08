@@ -2,8 +2,11 @@
 unique_name: ny_wcb_assembled_claims
 name: 'Assembled Workers'' Compensation Claims: Beginning 2000 (New York State Workers'' Compensation Board)'
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Lennart
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Lennart
+suggestion: 'Yes'
 priority: 3
 tags:
 - Non-IID (Temporal)
@@ -18,8 +21,6 @@ source_links:
 - https://catalog.data.gov/dataset/assembled-workers-compensation-claims-beginning-2000
 - https://data.ny.gov/api/views/jshw-gkgu/columns.json
 - https://catalog.data.gov/dataset/nyswcb-workers-compensation-claim-multiple-body-parts
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -41,3 +42,5 @@ type_adapter_id: curation-record-v1
 - as published: 5,655,563 claims (count via the Socrata API, 2026-10-31) x about 57 documented columns: accident, assembly, C-2, C-3, ANCR, controverted, first hearing, appeal and PPD/PTD dates; age at injury, ...; target: Claim Injury Type (benefits awarded, ordered from cancelled and non-compensable to medical only, temporary, permanent partial, permanent total and death), or ...; access: open.
 - Why: BNP Paribas Cardif's task is claims triage (which claims can be approved fast, which need more information) on anonymized data whose structure was only recovered by de-anonymizing. No de-anonymized claims-triage table was found; this is the closest real, documented, claim-level triage table, from a public agency, ...
 - Adds: A documented claims-triage task in insurance (thin domain) with dates, so a temporal split by assembly date is natural; far larger and newer than any claims table we hold. Risks: many fields are filled after assembly (hearing, appeal, PPD/PTD, Section 32 dates, hearing and IME-4 counts, current status, highest ...
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).

@@ -2,8 +2,11 @@
 unique_name: sinan_dengue_case_screening
 name: 'SINAN dengue notifications (Brazil, DATASUS): suspected cases with symptoms, comorbidities and final classification'
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Lennart
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Lennart
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -16,8 +19,6 @@ problem_type: Binary Classification
 source_links:
 - https://dadosabertos.saude.gov.br/dataset/arboviroses-dengue
 - https://s3.sa-east-1.amazonaws.com/ckan.saude.gov.br/SINAN/Dengue/dic_dados_dengue.pdf
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -39,3 +40,5 @@ type_adapter_id: curation-record-v1
 - as published: notified suspected dengue cases, one row per notification. Yearly files 2000-2026, a combined file and a data dictionary (14/07/2025). Row counts are not on the page. 2024 alone had 6,484,890 ...; target: final classification (CLASSI_FIN): confirmed dengue vs discarded, as in Bohm et al. 2024 (laboratory-confirmed vs discarded); alternative: severity class ...; access: open.
 - Why: Real, national, open surveillance microdata for the task of item 303 (dengue diagnosis at first presentation), already used for ML dengue screening in the study the paper cites.
 - Adds: Better data for dengue diagnosis: far larger, with many years and states (temporal and state-grouped splits). Caveats: the portal licence is CC BY-ND 3.0 (no derivatives; check whether a curated subset is allowed). The lab-result columns define the label and must be dropped. Clinical-epidemiological confirmations are ...
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).

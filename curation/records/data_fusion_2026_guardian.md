@@ -2,8 +2,11 @@
 unique_name: data_fusion_2026_guardian
 name: Bank Fraud (Bank Fraud Datafusion)
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Lennart
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Lennart
+suggestion: 'Yes'
 priority: 3
 decision_markers:
 - Needs extensive data wrangling
@@ -25,8 +28,6 @@ source_links:
 - https://ods.ai/competitions/data-fusion2026-guardian/dataset
 - '# a participant''s re-upload of the competition files (Kaggle, licence ''other''), with the column dictionary'
 - https://www.kaggle.com/datasets/d1ffic00lt/data-fusion-2026-case-1
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -48,3 +49,5 @@ type_adapter_id: curation-record-v1
 - as published: 10.97M train / 591K val / 590K test, 119 features; temporal split: train 2024-10-01..2025-05-04, validation 2025-05-04..05-18, test 2025-05-18..06-01; training negatives sampled at 15%; about 0.5% ...; target: operation not confirmed by the client ('red' class; client-confirmed suspicious 'yellow' operations and all others are negatives).
 - Why: Flag bank client operations that the client did not confirm (fraud) for an anti-fraud system (Data Fusion Contest 2026, task 1 'Guardian', ODS.AI, 2026-02-09..03-30)
 - Notes: The release is operation logs of 100,000 clients over about 1.5 years (over 200M operations; about 51K red and 36K yellow labelled operations in train), with unlabelled pre-train and pre-test periods, split into train_part_1..3 parquet files and train_labels.parquet; the authors build per-operation features (event ...
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).

@@ -2,8 +2,11 @@
 unique_name: kumc_inpatient_aki_prediction
 name: Multi-perspective AKI prediction in general hospital populations (KUMC EMR)
 checked_by:
-- AI (UNVERIFIED)
-suggestion: TBD -> Yes
+- Lennart
+data_foundry_status:
+- WIP (Triage)
+claimed_by: Lennart
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -14,8 +17,6 @@ problem_type: Binary Classification
 source_links:
 - https://doi.org/10.5061/dryad.qc90qb4
 - https://doi.org/10.1093/jamiaopen/ooy043
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -37,3 +38,5 @@ type_adapter_id: curation-record-v1
 - as published: 76,957 inpatient encounters at one tertiary academic hospital, November 2007 to December 2016; an 8 MB zip (AKI_Prediction_Scrubbed_EMR) with a readme; file layout not previewed; target: onset of acute kidney injury during the stay, as defined in the paper (next-day and fixed-lead-time settings); access: open.
 - Why: A public CC0 EMR extract for a general inpatient population, with the prediction settings (at admission, fixed lead time) spelled out in the paper.
 - Adds: An inpatient deterioration task with public data. The snapshot design (at admission or fixed lead time) needs picking, and the scrubbed EMR format needs a look.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).

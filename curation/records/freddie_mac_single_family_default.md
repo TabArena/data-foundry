@@ -2,11 +2,11 @@
 unique_name: freddie_mac_single_family_default
 name: 'Freddie Mac Single-Family Loan-Level Dataset: default at origination'
 checked_by:
-- AI (UNVERIFIED)
+- Lennart
 data_foundry_status:
 - WIP (Triage)
 claimed_by: Lennart
-suggestion: TBD -> Yes
+suggestion: 'Yes'
 priority: 3
 tags:
 - AI-Filled (Verify)
@@ -16,8 +16,6 @@ problem_type: Binary Classification
 original_data_state: Database (or multiple to-be-joined tables)
 source_links:
 - https://www.freddiemac.com/research/datasets/sf-loanlevel-dataset
-needs_review:
-- ai_unverified
 type_adapter_id: curation-record-v1
 ---
 
@@ -46,3 +44,7 @@ type_adapter_id: curation-record-v1
 - Access: free registration on Clarity Data Intelligence. Terms (https://capitalmarkets.freddiemac.com/crt/docs/pdfs/fre_terms_conditions_sflld.pdf, effective November 2025): internal purposes and academic or research use; published results must not "include and cannot be used to derive or recreate any part" of the dataset; no "licensing, distributing, providing, re-posting" of the data or derived products to third parties without a separate licence. Only a definition built from each user's own download could ship (a note, EV-4). Freddie Mac states no download size; 2.91 billion performance rows of 35 fields come to several hundred GB unzipped (an estimate).
 - Changes the call: none for the priority (gap 0, use case +, source +, shape +, risk - for a label and horizon to define and a join: 3). The sibling question with `fannie_mae_single_family_loan_performance` is settled in that record's assessment of today: the same task on the other agency's disjoint loans, a second source (PROV-4), neither better data for the other (49.51 million Standard loans here against 57,864,281 there, origination fields of the same kind), so the curator takes one at origination, or both with Fannie Mae framed as `mortgage`'s periodic panel. The Standard dataset includes Relief Refinance (HARP) loans, which Fannie Mae's primary dataset excludes.
 - Not checked: the Standard counts per vintage (login); the download size; whether VantageScore 4.0 is filled for older loans; the default definition and horizon a build would use.
+
+CC (2026-11-08, Lennart): accepted for adding (`Yes`) in the screening review of the large candidates (most rows, most features).
+
+CC (2026-11-08, Lennart): framed per loan at origination (default within a fixed horizon, split by vintage); fannie_mae_single_family_loan_performance ships the loan-month panel of the same market. Not a duplicate: another source with disjoint loans (PROV-4 and PROV-6 do not apply), the same task, neither better data.
