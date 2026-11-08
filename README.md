@@ -2,7 +2,7 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-08 13:15 UTC: 49 claim(s) (Andrej 1, Lennart 29, Myunghwan 19).
+As of 2026-11-08 14:50 UTC: 50 claim(s) (Andrej 1, Lennart 30, Myunghwan 19).
 
 ## Andrej
 
@@ -38,6 +38,7 @@ As of 2026-11-08 13:15 UTC: 49 claim(s) (Andrej 1, Lennart 29, Myunghwan 19).
 | `spanish_homeowners_motor_insurance_2010_2014` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `spanish_motor_insurance_2015_2018` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `spanish_motor_insurance_coverage_level_2022_2024` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
+| `superconductivity` | add | 2026-11-08 | 2026-11-15 |  |
 | `swedish_motorcycle_insurance` | triage | 2026-11-06 | 2026-11-13 | exposure rules (MET-14/15) note; ausprivauto0405 duplicate check |
 | `wadden_sea_sibes_macoma_abundance` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
 | `wisconsin_local_government_property_insurance_fund` | review | 2026-11-06 | 2026-11-13 | exposure rework (#51) and re-review, PR #47 |
