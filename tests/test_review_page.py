@@ -125,6 +125,44 @@ def test_collector_names_filter(crv, tmp_path):
     assert _collect_fixture(crv, root, records, out, "--names", "no_such_record") == 1
 
 
+def test_collector_leaves_out_a_settled_record(crv, tmp_path):
+    """A record with every issue resolved, no field row and its declared metric checked leaves the page by default
+    (it ships by default; Lennart, 2026-11-08); --keep-settled keeps it, and an unchecked metric or an issue whose last
+    closing turn is Deferred keeps it too.
+    """
+    file = "working_copy/airfoil_self_noise/REVIEW.md"
+    text = (REVIEW_FILES / file).read_text()
+    fields = text[text.index("**Record fields that disagree") : text.index("**Record judgment:**")]
+    panel = text.index("**Review panel:**")
+    closing = "   **Deferred (2026-11-05):** parked.\n\n   **Resolved (2026-11-08, Lennart):** kept.\n\n"
+    settled = text[:panel].rstrip("\n") + "\n\n" + closing + text[panel:]
+    root, records, _ = _broken_copy(tmp_path, file, text, settled.replace(fields, ""))
+    out = tmp_path / "report.md"
+
+    assert _collect_fixture(crv, root, records, out) == 0
+    assert "### airfoil_self_noise" in out.read_text()  # the metric is not checked yet
+
+    record = records / "airfoil_self_noise.md"
+    record.write_text(
+        record.read_text().rstrip("\n")
+        + "\n\nCC (2026-11-08, Lennart): the declared metric (`rmse`) is checked, as declared.\n"
+    )
+    assert _collect_fixture(crv, root, records, out) == 0
+    report = out.read_text()
+    assert "### airfoil_self_noise" not in report
+    assert "**Settled, left out (they ship by default):** `airfoil_self_noise`." in report
+    assert "### churn_telco_south_asia_duplicate" in report
+
+    assert _collect_fixture(crv, root, records, out, "--keep-settled") == 0
+    assert "### airfoil_self_noise" in out.read_text()
+
+    # Deferred last: the record is parked, not settled.
+    review = root / "airfoil_self_noise" / "REVIEW.md"
+    review.write_text(review.read_text().replace(closing, "   **Deferred (2026-11-08):** parked.\n\n"))
+    assert _collect_fixture(crv, root, records, out) == 0
+    assert "### airfoil_self_noise" in out.read_text()
+
+
 @pytest.mark.skipif(shutil.which("git") is None, reason="needs git")
 def test_collector_keeps_a_retired_folder_from_its_last_commit(crv, tmp_path):
     """A named record whose folder left the working copy is read from the last commit that had its REVIEW.md."""
