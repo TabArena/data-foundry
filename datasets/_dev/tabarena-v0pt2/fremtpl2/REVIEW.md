@@ -27,9 +27,13 @@ re-check with the first tuned run (TP-1). The honest skill fell from about 6% to
 (issue 5), not with the rate target. Quality: CLEAN-11 (no cap, exposures above a year kept) and CLEAN-10 (default ages
 missing) hold as settled. Weighed: the reference table of actuarial frequency modelling, scored by the source's own
 metric +; `BonusMalus` blank in 88% of records, no dates, a thin signal -. Issues 10 (the record's tag stays, and
-bemtpl97 gets it) and 11 (the random split stays) were settled on 2026-11-08; left for Lennart in the working copy's
-REVIEW.md ("From PR #47"), X1 (keep the test rows' weight away from the model) and X2 (LEAK-41's 1/weight ceiling under
-a deviance), which this panel raised with bemtpl97's.
+bemtpl97 gets it) and 11 (the random split stays) were settled on 2026-11-08, and so were X1 (the test rows' weight is
+for the scorer only) and X2 (LEAK-41 reports the weight-alone score, no ceiling) in the working copy's REVIEW.md ("From
+PR #47"), which this panel raised with bemtpl97's. Open since 2026-11-08, on Lennart's question about D12: which one
+task these policies ship (issue 12, no panel). The AI keeps the claims per year and recommends it: on 9 random splits it
+tells a regularised LightGBM from the GLM on 9 of 9, while a score of the claim cost per year insured follows where a
+few claims land (one claim of 4.08M EUR is 18 to 19% of its test fold's claim amount; weighted Gini W 0.43); the claim
+cost per year is not created.
 
 Changes made after the review panel (AI, 2026-11-06), text only (rows, target, weight, metric, features and split
 unchanged): the `Exposure` bullet reports LEAK-41's numbers on the declared metric; the two accepted duplicate warnings
@@ -40,7 +44,8 @@ blocks 5-6 are cut mostly at a date; the metric's identity is stated above the f
 `BonusMalus` is blank and how small the signal is; the notes say a method must use the weight. The panel's reports
 quote the definition before these changes.
 
-**Main points:** Open: none. Settled on 2026-11-08: the tag `Two-Regime Zeros` stays and bemtpl97 gets it, as the
+**Main points:** Open: issue 12, ship the claims per year insured (as implemented) or the claim cost per year insured,
+one of the two only. Settled on 2026-11-08: the tag `Two-Regime Zeros` stays and bemtpl97 gets it, as the
 tag describes the target's distribution (issue 10); the random split stays, with the note on the one rating profile
 behind its gap to a split grouped on identical rating factors (issue 11).
 
@@ -535,6 +540,100 @@ behind its gap to a split grouped on identical rating factors (issue 11).
      otherwise not".
    [^tag-cases]: thailand_road_accident_register_2019_2022 (2026-11-01): "a count model given the features predicts
      89.2% zeros against 89.0% observed, so the zero is the first step of the count, as for how_much_did_it_rain_ii".
+
+12. **Ship the claims per year insured, as now, or the claim cost per year insured, and only one of the two?**
+
+   * **Problem:**
+     - You asked which of the two tasks on these policies is more representative of the real use case, to ship that one
+       and not create the other[^f12-ask].
+     - The insurer prices the claim cost per year insured, but builds that price from a model of the claims per year and
+       one of the claim size, and the source's case study scores the claims per year[^f12-use].
+     - On this table a score of the cost per year follows where a few claims land: the largest claim, 4.08M EUR, is 18
+       to 19% of the claim amount of the test fold it falls in.
+   * **Background:**
+     - The amounts come from freMTPL2sev, summed per policy and divided by `Exposure`, each policy weighted by
+       `Exposure`; the join is clean in the pinned release (26,444 claims on 24,944 policies, each count equal to its
+       policy's claims with an amount, no amount on a policy without a claim).
+     - The tail is real, not a data error[^f12-clean]: French motor liability covers bodily injury without a limit
+       ([Code des assurances, R211-7](https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000006812124)), and the
+       three largest claims (4.08M, 1.40M and 1.30M EUR) came from drivers aged 18 to 20.
+     - Noll, Salzmann and Wüthrich, Lorentzen and Mayer, and Wüthrich and Merz model the claims per year with the
+       Poisson deviance; the [scikit-learn Tweedie
+       example](https://scikit-learn.org/stable/auto_examples/linear_model/plot_tweedie_regression_insurance_claims.html)
+       models the cost per year (Tweedie at power 1.9, a Lorenz Gini weighted by exposure, each amount capped at 200,000
+       EUR) and concludes that "the claim amount is very challenging to predict".
+     - D12 of 2026-11-06 kept the amounts out for a later decision[^f12-d12].
+   * **Effect on the task:** A keeps the rows, target, weight, metric and split as shipped; B changes the target and the
+     metric, and the claim count leaves the frame; either way the other task is not created.
+   * **Experiments:** the AI, on 9 random splits (the 3 shipped folds and two more partitions of the same rows), five
+     honest models (two GLMs, three LightGBMs) fitted with the weight, `Exposure` never a feature:
+     - claims per year, weighted Poisson deviance: the best LightGBM removes 2.26% of the constant rate's deviance (SD
+       0.18%, 9 of 9) and the GLM 1.79%; a regularised LightGBM beats the GLM on 9 of 9 by 0.32% (split SD 0.03%,
+       bootstrap SE within one test fold 0.08%); the five models keep their order across splits (Kendall's W 0.89, where
+       1 is the same order on every split);
+     - claim cost per year, weighted Gini: 0.23 to 0.27 for the five models, split SD 0.07 to 0.09; the GLM and the
+       regularised LightGBM score 0.34 to 0.40 on the three test folds that hold the 4.08M claim and 0.13 to 0.27 on the
+       other six; the GLM leads by +0.011 (7 of 9, bootstrap SE within a fold 0.021); W 0.43;
+     - claim cost per year, weighted Tweedie deviance at power 1.5 (floor 0.1 EUR): the GLM removes 5.4% of the
+       constant's (SD 4.4%, -0.3% to 11.5%; bootstrap SE within a fold 3.5%); W 0.78, mostly from two LightGBMs that
+       chase the tail and lose to the constant on 3 and on 9 of the 9 splits;
+     - the claim size: a gamma GLM of the mean claim gains 5.8% (SD 8.5%) over the mean claim as released and -0.8%
+       (above 0 on 3 of 9) with the claims capped at 200,000 EUR; the frequency LightGBM times the mean claim ranks the
+       cost per year better (Gini 0.29) than any model fitted on it (0.23 to 0.27);
+     - with the claims capped at 200,000 EUR in the score alone, the cost's Gini still orders the models at W 0.40;
+     - the portfolio cost per year of the 9 test folds runs from 140 to 194 EUR, their claims per year from 0.0730 to
+       0.0745.
+   * **Consistency:**
+     - australian_vehicle_insurance_2004_2005 ships the cost per year with the weighted Gini, kept on 2026-11-08: its
+       source scores no frequency, and there the frequency models tied while the Gini separated the GLM from boosting
+       (+0.031, 8 of 9); here the measurements run the other way[^f12-d8].
+     - bemtpl97 ships the claims per year, as A; its release holds the claim amounts too, with the same tail (the
+       largest policy 1.99M EUR, 6.1% of all amounts, on a quarter of the rows), and its source builds the price from a
+       frequency and a severity model, scoring each by its deviance and the price by a Gini[^f12-bem].
+     - frempl_french_motor_personal_line and pricing_game_2016_french_fleet ship the cost per year: frempl's source
+       defines no task, and pricing_game_2016's game priced the cost, whose material-damage charges stop at 13,992 EUR a
+       period.
+   * **Panel:** none; asked by Lennart on 2026-11-08.
+   * **Unknown:** how tuned methods score the cost per year; the untuned models above are the evidence.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | Claims per year insured (implemented) | `ClaimNb` / `Exposure`, weighted Poisson deviance, as shipped; the amounts are not created as a task | the source's metric; tells the models apart on 9 of 9 splits; the part of the price the rating factors set on this table | not the price itself; the claim size is left out |
+     | B | Claim cost per year insured | `ClaimAmount` / `Exposure`, weighted Tweedie deviance at power 1.5 (floor 0.1 EUR) or the weighted Gini; the claim count leaves; the claims per year are not created | the quantity the insurer prices; as australian | one claim moves every model's Gini by about 0.15; the Gini orders the models by chance (W 0.43); a frequency model ranks it better than models fitted on it |
+
+   * **Recommendation:** A, the claims per year: on this table the price varies with the rating factors through the
+     claims per year, which the source scores and which tells the models apart on every split, while a score of the cost
+     per year follows where a handful of claims land. On the use case alone the cost per year is the closer quantity; on
+     the measurements it is not a close call. **Decision:** A or B?
+
+   **Notes for the AI:** on A, nothing more: the notes' bullet "One task" and the CC of 2026-11-08 in the notes and the
+   record say it; bemtpl97 stays as it is. On B: `_load_raw` sums `ClaimAmount` per `IDpol`; `_clean` builds
+   `claim_cost_per_year` = `ClaimAmount` / `Exposure`, asserts that it times `Exposure` gives the amount back, and drops
+   `ClaimNb` (MET-14, LEAK-10); `metric = Metric.from_context("mean_tweedie_deviance", params={"power": 1.5,
+   "min_prediction": 0.1}, inputs={"weight": "Exposure"}, ...)` with a reason that names the power and the floor
+   (MET-13: two orders below the cheapest rating cell of at least 500 policies, 55.7 EUR a year, rounded down to a power
+   of ten), or `normalized_weighted_gini` if Lennart prefers australian's; `ScoringColumn.used_by` follows; rewrite
+   `task_summary` (question, predicted, changes, fit_reason), the target-dominant acceptance, the notes' target, metric,
+   "Counts of 5 to 16" and split bullets and `splits_comment` (the random split stays, its folds move with the new
+   content order); `dataset check`, the task probe and probe 22 with both objectives (LEAK-41: the weight alone scores
+   0.32 Gini on the cost per year, above every honest model, and `Exposure` as a feature adds +0.13); the CC line; the
+   tag stays; then ask whether bemtpl97 follows.
+
+   [^f12-ask]: Lennart, 2026-11-08, on D12: "fremtpl2's claim-amount task -> which task is more representative of the
+     real use case? use that one and the other is not created as we dont want to have duplicates".
+   [^f12-use]: **USE-5** (Must): predict what the actor would act on, at the resolution they act on it; **MET-1**
+     (Must): the declared metric scores the decision of the use case; **MET-11** (Must): A's metric has origin
+     `source` (the case study's Poisson deviance on its offset model), B's would be `context`.
+   [^f12-clean]: **CLEAN-11** (Should): impossible values become missing, and values that are only unusual stay.
+   [^f12-d12]: Lennart, 2026-11-06 (D12 of the exposure study): the claim amounts "stay out for now; a task on amounts
+     per year insured or on the claim size is a separate decision, made on leak-free numbers"; the amount task was
+     Andrej's proposal of 2026-10-20 (the aggregate claim amount per policy).
+   [^f12-d8]: D8 of 2026-11-06 and australian_vehicle_insurance_2004_2005 issue 8, answered (a) on 2026-11-08 (Lennart);
+     **MET-10** (Weigh): the resolution on our folds is a factor in the choice of metric.
+   [^f12-bem]: Henckaerts, Côté, Antonio and Verbelen, [arXiv:1904.10890](https://arxiv.org/abs/1904.10890), Sec. 2:
+     "P&C insurers usually opt for a so-called frequency-severity strategy to price a contract"; Sec. 5.1: loss ratio
+     lift, double lift and the Gini index of Frees et al. (2013).
 
 **Review panel:** ship after changes (mediator). Tier full, a re-review of 2026-11-06 under LEAK-41 and MET-14 to
 MET-16, after option A of #51 (issue 6): 12 reports. Claims: 32 audited; 20 hold, 3 hold in part (`Exposure`'s share of

@@ -79,7 +79,7 @@
   Implemented: all seven ship forced and tagged, under SPLIT-8 as reworded in #44 (a leak found is weighed case by case).
   Proposal: ship them as listed.
   Decision needed: go ahead, or name the tables to discuss.
-  **Resolved (2026-11-08, Lennart):** go ahead: the seven ship forced as listed. pricing_game_2016_french_fleet joined them on 2026-11-08 (grouped by contract, its issue 6), after its leak test across the folds passed.
+  **Resolved (2026-11-08, Lennart):** go ahead: six of the seven ship forced as listed; rand_health_insurance_experiment_doctor_visits is `2nd Tier` since Andrej's call of 2026-11-03 and has no folder, so it ships nothing. pricing_game_2016_french_fleet joined them on 2026-11-08 (grouped by contract, its issue 6), after its leak test across the folds passed.
 - **Re-read `how_much_did_it_rain`'s `No` under the reworded SPLIT-8?** It was set to `No` on 2026-10-30 for a measured leak across its split (the hours of one storm on both sides). Under the reworded rule a leak across a forced split is weighed case by case, not a reason to refuse by itself.
   Implemented: nothing; the record stays `No`.
   Proposal: re-open the record for a check of whether a split grouped on storms removes the leak, or how large it is when kept, as its own task.
@@ -146,3 +146,64 @@
   * **Recommendation:** (b): it names what separates heart_failure from noaa_storm, and the worth of a kept span stays in
     its note, as now.
   * **Decision:** (a), (b) or (c)?
+
+### From the review of 2026-11-08 (after PR #47's board)
+
+- **Give each unit one vote in the score of superconductivity and pancreatic_cancer_mouse_detection, as
+  boreal_postfire_lichen_biomass does since 2026-11-08?** A scan of the 190 definitions for rows that repeat one
+  decision unit in unequal numbers (Lennart's question on boreal's issue 7) found two whose use case acts on the
+  unit. superconductivity: a row is one SuperCon entry, and the 15,164 compositions hold 1 to 110 entries
+  (YBa2Cu3O7 110, Bi2Sr2Ca1Cu2O8 83); the 16% of compositions with two or more entries hold 40% of the rows. Every
+  input is computed from the formula (all 81 equal within 99.8% of the multi-entry compositions), so a model predicts
+  one value per composition, and the materials scientist decides per composition which to synthesize. The notes say
+  "Every entry is kept and scored per row" (SPLIT-26 keeps the source's rows; Hamidieh 2018 scores RMSE per row on a
+  random split), while Stanev et al. (2018) average a material's entries, one vote per material; a weight keeps the
+  rows and counts each composition once. pancreatic_cancer_mouse_detection: a row is one serum spectrum, from 1 to 6
+  bleeds per mouse (median 2; 29 of the 73 mice have one); the label is the mouse's, and the use case reads "each
+  sample of an unseen mouse stands for a new patient's test", so a mouse bled six times counts as six patients. On
+  the shipped splits, with the 8 untuned predictors of boreal's check, the weighted score ranks models like the
+  per-row one at Kendall tau 0.98 per split (lowest 0.93) and 0.93 for the mean over the splits on
+  superconductivity, the same best model on 9 of 9 splits; on pancreatic at 0.66 per split (lowest -0.07, on 24 test
+  mice per fold) and 0.86 for the mean, the same best model on 77% of the splits (boreal: 0.81 per split, 0.86 for the
+  mean).
+  Implemented: nothing; the table and the scripts are in
+  `local-data-warehouse/_runs/2026-11-06_exposure_review/one_vote_scan/`.
+  Proposal: superconductivity: the source's `rmse` weighted by a `composition_weight` scoring column, 1 over the
+  composition's entries, the departure from Hamidieh's per-row score stated in the metric's reason; for the metric
+  only and no `sample_weight`, as boreal's `plot_weight` (the inputs are constant within a composition, so the fit's
+  target is the same; `task_metric_weight_without_sample_weight` accepted with that reason).
+  pancreatic_cancer_mouse_detection: `roc_auc` weighted by a `mouse_weight` scoring column, 1 over the mouse's
+  samples, each sample still read on its own; `roc_auc` takes no weight yet, so it gets an optional `weight` input
+  (scikit-learn's `sample_weight`), as `rmse` did for boreal. Its inputs differ between bleeds, so the weight is no
+  function of the features; it stays a design weight of the score with no `sample_weight`, the check's warning
+  accepted with that reason. A Cases row in metrics.md for each, next to boreal's.
+  Decision needed: go ahead for both, for one, or keep per row (pancreatic stays per row if the use case is a person
+  tested again and again, every test a decision).
+
+- **Which unit does the score count once in dementia_prediction, asp_potassco_classification and
+  video_transcoding_time_prediction?** The same scan. In these three the rows of a unit are not replicates (their
+  inputs differ), and the use case does not settle whether the actor acts per row or per unit. dementia_prediction:
+  150 people with 1 to 5 visits (91 with two, 13 with four or five), each visit with its own rating (31 people change
+  it); the use case is a first visit at a memory clinic, and "follow-up visits of test people are scored as if each
+  were a first visit", so a person seen five times counts five times. One vote per person ranks models at tau 0.94
+  per split (lowest 0.71) and 1.0 for the mean over the splits. asp_potassco_classification: 96 problem classes with
+  1 to 134 instances (median 5), the largest 10% of the classes holding 51% of the instances; the selector acts per
+  instance (ASlib scores per instance), but the split holds out whole classes, "as for a user with a new encoding".
+  One vote per class: tau 0.86 per split (lowest 0.64), 0.86 for the mean, the same best model on 57% of the splits.
+  video_transcoding_time_prediction: 1,099 videos; the 80 with the full grid of 841 output settings hold 97.8% of the
+  rows, and 1,018 videos (93%) have one job. The scheduler acts per job, but the grid is the experimenters' design,
+  not a cluster's mix of jobs; one vote per video would give the one-job videos 93% of the weight. tau 0.90 per split
+  (lowest 0.79) and 0.93 for the mean; the best model (random forest or LightGBM, close) is the same on 3 of 9
+  splits.
+  Implemented: nothing.
+  Proposal: dementia_prediction one vote per person (1 over the person's visits; `log_loss` gets an optional `weight`
+  input), since the clinic acts once per person, at a first visit; asp_potassco_classification and
+  video_transcoding_time_prediction stay per row, since each instance and each job is a decision, with a note that
+  names the imbalance (video's per-row score is in effect the grid of 80 videos).
+  Decision needed: per row or one vote per unit, for each of the three (for dementia also: score only each test
+  person's first visit).
+
+- **Correct african_credit_scoring_challenge's `row` text and notes on co-funded loans?** The `row` text and the notes (line 153) say a loan co-funded with a second lender gives two rows; in the shipped frame that never happens (52,826 rows and 52,826 loan ids), since the kept product has one lender (found by the scan above).
+  Implemented: nothing.
+  Proposal: say one row per loan and drop the co-funding sentence; text only, the README regenerated.
+  Decision needed: go ahead or leave as is.

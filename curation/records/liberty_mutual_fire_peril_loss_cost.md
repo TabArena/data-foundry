@@ -110,6 +110,8 @@ CC (2026-11-08, Lennart): the declared metric (`normalized_weighted_gini`) is ch
 
 **Assessment (AI, 2026-11-08):** ships by default (no open issue on the PR #47 board), but the definition's changes of 2026-11-06 (the `var11_weight` scoring column the metric reads and the exposure paragraph) have not passed `dataset check`, and the re-review panel under LEAK-41 and MET-14 to MET-16 has not run: both wait for the competition files, which download only after the Kaggle competition rules are accepted. No container is built before both pass.
 
+**Assessment (AI, 2026-11-08):** review panel (focused: claim auditor, column auditor, mediator; re-review under LEAK-41, MET-14 to MET-16, after the raw data arrived): ship after changes (two sentences in the notes, made: the `var11` bullet gives its shipped-fold gains, +0.0004 with an L2 fit and +0.0032 with the fit weighted by `var11`, the score of 1/`var11` alone, 0.071, and that `var11` changes no more often going into a loss term, a planned amount under LEAK-41; the target bullet says no term length is recorded, so the target stays per contract under MET-14); disputed: none; for the curator: issue 4 (the type of `var1`, `var3`, `var7`, `var8`: unordered as shipped, ordered by code, or numbers; the Kaggle data page settles it). This supersedes the earlier Assessment of 2026-11-08: the competition's files are in the warehouse, `dataset check` passes on them (0 errors, 0 warnings) and the re-review panel has run.
+
 ## Reference
 
 Kaggle (2014). Liberty Mutual Group: Fire Peril Loss Cost. https://www.kaggle.com/competitions/liberty-mutual-fire-peril

@@ -1967,12 +1967,24 @@ def _unit_targets(fits: _TargetFits) -> np.ndarray:
 
 
 def _lookup(
-    units: np.ndarray, values: np.ndarray, w: np.ndarray, tr: np.ndarray, rows: np.ndarray, te: np.ndarray, rng
+    units: np.ndarray,
+    values: np.ndarray,
+    w: np.ndarray,
+    tr: np.ndarray,
+    rows: np.ndarray,
+    te: np.ndarray,
+    rng,
+    groups: np.ndarray | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """The lookup of each row's unit: the weighted mean of ``values`` over the unit's training rows, for the training
     rows ``rows`` out of fold (``LOOKUP_FOLDS`` random folds of the training side ``tr``) and for the test rows ``te``
     over all of ``tr``. A row without a unit (code -1), or whose unit has no such row, gets NaN. The count of the rows
     is left out: it reads no outcome, and a count of similar rows is a feature a deployed model may have.
+
+    With ``groups`` (a group code per row: the split's groups), the folds are drawn by group, so a training row's
+    lookup never reads its own group, as a test row's never does. Folds of rows would let it: on
+    pricing_game_2016_french_fleet 19.2% of the training periods got an exact-profile lookup, 78% of its weight from
+    the same contract, and the fit learned a lookup the test rows never had (+0.117 by row folds, -0.047 by contract).
     """
     size = int(units.max()) + 2  # the last slot holds the rows without a unit
 
@@ -1986,7 +1998,11 @@ def _lookup(
             return np.where(mass[at, None] > 0, sums[at] / mass[at, None], np.nan)
 
     fold = np.full(len(units), -1)
-    fold[tr] = rng.permutation(len(tr)) % LOOKUP_FOLDS
+    if groups is None:
+        fold[tr] = rng.permutation(len(tr)) % LOOKUP_FOLDS
+    else:
+        _, at_group = np.unique(groups[tr], return_inverse=True)
+        fold[tr] = (rng.permutation(at_group.max() + 1) % LOOKUP_FOLDS)[at_group]
     on_train = np.empty((len(rows), values.shape[1]))
     for f in range(LOOKUP_FOLDS):
         at = fold[rows] == f
@@ -2024,13 +2040,19 @@ def shared_units(  # noqa: C901, PLR0912, PLR0913
     test row in several repeats counts each time). For each unit with such rows on the probed splits (the first
     ``n_splits``, each side capped at ``max_rows`` random rows, seed 0, once per seed of ``seeds``), a lookup of the
     unit's training target joins the inputs: the weighted mean of the target (of each class's indicator) over the
-    unit's training rows, out of fold on the training side and over the whole training side for a test row. The gain
-    is the score with the lookup less the honest fit's (positive when the lookup helps), a split's gain the mean over
-    its seeds; over the splits, the mean, its standard error and the splits with a positive gain. A gain above
-    ``FORCED_SE`` standard errors is flagged: the unit's outcome reaches the test rows through the training side. For
-    a profile the flag has a second reading: natural repeats of coarse features (LEAK-18), whose lookup is the mean of
-    a cell finer than the regularised fit makes; whether the copies are one entity decides (LEAK-17). The fits are
-    those of ``period_outcome``.
+    unit's training rows, over the whole training side for a test row and out of fold for a training row, the folds
+    drawn by the group columns on a grouped split (``_lookup``: a training row never reads its own group, as a test
+    row never does; a split that shares its groups gets folds of rows). The gain is the score with the lookup less the
+    honest fit's (positive when the lookup helps), and next to it the gain on the test rows with a lookup and the
+    change on the rest, each the two fits scored on those rows alone (the parts need not add up to the whole: a
+    rescaled or ranked metric of the whole side couples them; scored apart, the rest's change is 0 while its
+    predictions stay as they were). A split's numbers are the means over its seeds; over the splits, the mean, its
+    standard error and the splits above 0. A gain on the rows with a lookup above ``FORCED_SE`` standard errors is
+    flagged: the unit's outcome reaches the test rows through the training side. A change on the rest above noise is
+    no route of a leak but a sign that the lookup changed the fit (read the gain with care). For a profile the flag
+    has a second reading: natural repeats of coarse features (LEAK-18), whose lookup is the mean of a cell finer than
+    the regularised fit makes; whether the copies are one entity decides (LEAK-17). The fits are those of
+    ``period_outcome``.
 
     Args:
         df: The rows, with the target and the group columns.
@@ -2040,7 +2062,8 @@ def shared_units(  # noqa: C901, PLR0912, PLR0913
         unit_cols: Columns whose value names a unit (the group columns).
         sample_weight: The task's training weight, one value per row, or None.
         feature_cols: The model inputs (default: every column but the target and the groups).
-        group_cols: Columns that are not features.
+        group_cols: Columns that are not features; on a grouped split, the groups the training side's lookup folds
+            are drawn by.
         metric: The task's own metric (``curation_probes.weights``), or None for R^2 or ROC AUC.
         without: A model input (the period column) left out of a second profile.
         name: The dataset's name in the result.
@@ -2073,6 +2096,7 @@ def shared_units(  # noqa: C901, PLR0912, PLR0913
         units[f"the exact profile without `{without}`"] = profile_codes(df[rest])
     X = _forced_inputs(df, columns)
     values = _unit_targets(fits)
+    groups = profile_codes(df[list(group_cols)]) if group_cols else None
     pairs, sampled = _capped_pairs(splits, n_splits, max_rows)
     seeds, sign = tuple(seeds), fits.sign
 
@@ -2092,27 +2116,48 @@ def shared_units(  # noqa: C901, PLR0912, PLR0913
         }
 
     honest: dict[tuple[int, int], float] = {}
-    gains: dict[str, list[float]] = {label: [] for label in units}
+    parts = ("total", "with_lookup", "rest")
+    gains: dict[str, dict[str, list[float]]] = {label: {part: [] for part in parts} for label in units}
+    folds_by: set[str] = set()
     for i, (tr, te) in enumerate(pairs):
         tr_all = np.asarray(list(splits)[i][0])
         shared = [label for label, codes in units.items() if matched(codes, tr_all, te).any()]
-        split_gains: dict[str, list[float]] = {label: [] for label in units}
+        # folds by group where the split keeps the groups apart; a split that shares them gets folds of rows
+        apart = groups if groups is not None and not matched(groups, tr_all, te).any() else None
+        folds_by.add("by row" if apart is None else "by group")
+        split_gains = {label: {part: [] for part in parts} for label in units}
         for seed in seeds if shared else ():  # no shared unit on this split: nothing to look up
-            honest[i, seed] = fits.score(fits.fit_predict(X.iloc[tr], X.iloc[te], tr, seed), te)
+            plain = fits.fit_predict(X.iloc[tr], X.iloc[te], tr, seed)
+            honest[i, seed] = fits.score(plain, te)
             for label in shared:
-                codes = units[label]
-                on_tr, on_te = _lookup(codes, values, fits.train_w, tr_all, tr, te, np.random.default_rng([i, seed]))
+                rng = np.random.default_rng([i, seed])
+                on_tr, on_te = _lookup(units[label], values, fits.train_w, tr_all, tr, te, rng, apart)
                 extra = [f"_lookup{j}" for j in range(on_tr.shape[1])]
                 x_tr = pd.concat([X.iloc[tr].reset_index(drop=True), pd.DataFrame(on_tr, columns=extra)], axis=1)
                 x_te = pd.concat([X.iloc[te].reset_index(drop=True), pd.DataFrame(on_te, columns=extra)], axis=1)
-                with_lookup = fits.score(fits.fit_predict(x_tr, x_te, tr, seed), te)
-                split_gains[label].append(sign * (with_lookup - honest[i, seed]))
-        for label, values_ in split_gains.items():
-            if values_:
-                gains[label].append(_nanmean(values_))
+                looked = fits.fit_predict(x_tr, x_te, tr, seed)
+                hit = np.isfinite(on_te).any(axis=1)
+                total = sign * (fits.score(looked, te) - honest[i, seed])
+                # each part scored on its own rows: the rest's change is 0 while its predictions stay as they were (a
+                # rescaled or ranked metric of the whole side would couple the parts)
+                on_hit, rest = (
+                    sign * (fits.score(looked[at], te[at]) - fits.score(plain[at], te[at])) if at.any() else np.nan
+                    for at in (hit, ~hit)
+                )
+                for part, value in zip(parts, (total, on_hit, rest), strict=True):
+                    split_gains[label][part].append(value)
+        for label, by_part in split_gains.items():
+            for part, values_ in by_part.items():
+                if values_:
+                    gains[label][part].append(_nanmean(values_))
     for label in units:
-        found[label]["lookup_gain"] = _mean_se(gains[label]) if gains[label] else None
-        found[label]["flag"] = bool(gains[label]) and _above_noise(found[label]["lookup_gain"])
+        fitted = bool(gains[label]["total"])
+        found[label]["lookup_gain"] = _mean_se(gains[label]["total"]) if fitted else None
+        found[label]["gain_with_lookup"] = _mean_se(gains[label]["with_lookup"]) if fitted else None
+        found[label]["change_without_lookup"] = _mean_se(gains[label]["rest"]) if fitted else None
+        found[label]["flag"] = fitted and _above_noise(found[label]["gain_with_lookup"])
+        rest = found[label]["change_without_lookup"]
+        found[label]["rest_moved"] = fitted and (_above_noise(rest) or _above_noise({**rest, "mean": -rest["mean"]}))
     result = {
         "name": name,
         **_fit_header(fits, metric, fit_params, sample_weight),
@@ -2123,6 +2168,7 @@ def shared_units(  # noqa: C901, PLR0912, PLR0913
         "seeds": list(seeds),
         "max_rows": max_rows,
         "subsampled": sampled,
+        "lookup_folds": " and ".join(sorted(folds_by)) or "none",
         "honest": _spread(honest.values()),
         "units": found,
         "flags": [label for label, v in found.items() if v["flag"]],
@@ -2131,8 +2177,9 @@ def shared_units(  # noqa: C901, PLR0912, PLR0913
     }
     if result["flags"]:
         head = (
-            f"A lookup of the unit's training rows adds to the score above noise ({FORCED_SE:g} SEs over the splits; "
-            f"{'; '.join(result['flags'])}): the unit's outcome reaches the test rows through the training side. "
+            f"A lookup of the unit's training rows adds to the score of the test rows that have one, above noise "
+            f"({FORCED_SE:g} SEs over the splits; {'; '.join(result['flags'])}): the unit's outcome reaches the test "
+            "rows through the training side. "
         )
         if any(label.startswith("the exact profile") for label in result["flags"]):
             head += (
@@ -2140,7 +2187,13 @@ def shared_units(  # noqa: C901, PLR0912, PLR0913
                 "finer cell than the fit makes); whether the copies are one entity decides (LEAK-17). "
             )
     else:
-        head = "No lookup of a shared unit adds to the score above noise. "
+        head = "No lookup of a shared unit adds to the score of the test rows that have one above noise. "
+    moved = [label for label, v in found.items() if v["rest_moved"]]
+    if moved:
+        head += (
+            f"The lookup moved the fit on the rows without one ({'; '.join(moved)}): no route of a leak, but its gain "
+            "there says the lookup changed the fit; read the gain on the rows with one with care. "
+        )
     result["reading"] = head + FORCED_READING
     if report:
         for line in shared_units_lines(result):
@@ -2151,7 +2204,10 @@ def shared_units(  # noqa: C901, PLR0912, PLR0913
 def shared_units_lines(result: dict) -> list[str]:
     """``shared_units``' result as the lines of the report."""
     if result["honest"]["runs"]:
-        lines = [f"shared units (probe 23): lookups on {_fits_line(result)}; honest fit {_stat(result['honest'])}"]
+        lines = [
+            f"shared units (probe 23): lookups on {_fits_line(result)}; a training row's lookup out of fold, folds "
+            f"{result['lookup_folds']}; honest fit {_stat(result['honest'])}"
+        ]
     else:
         lines = [f"shared units (probe 23): no unit shared on the first {result['splits']} splits, so no lookup"]
     for label, unit in result["units"].items():
@@ -2162,7 +2218,11 @@ def shared_units_lines(result: dict) -> list[str]:
             f"({unit['matched_rows']:,}) have their unit in training{per_split}"
         )
         if unit["lookup_gain"] is not None:
-            line += f"; a lookup of its training target gains {_gain(unit['lookup_gain'])}"
+            line += (
+                f"; a lookup of its training target gains {_gain(unit['gain_with_lookup'])} on the test rows with "
+                f"one, changes the rest by {_gain(unit['change_without_lookup'])}, in all "
+                f"{_gain(unit['lookup_gain'])}"
+            )
             line += " flag" if unit["flag"] else ""
         lines.append(line)
     if result["metric_errors"]:

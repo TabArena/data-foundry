@@ -2,7 +2,7 @@
 report_format: data-foundry-report-v2
 unique_name: liberty_mutual_fire_peril_loss_cost
 container_format: 2
-checksum: v2:9ad1daa6ef48f4bf4075426b61d43d8a1184266b600dcb935cccb7553b3596a1
+checksum: v2:80afe60dff8aac5e39e80a11c937707d7d12b682a220b206b827fd5d0ed9096b
 build: null
 build_stale: false
 data:
@@ -10,14 +10,15 @@ data:
   n_features: 299
   dtypes:
     category: 10
-    float64: 290
+    float64: 291
   n_test_dataset_rows: null
 task:
   target: log1p_transformed_loss_ratio
   problem_type: regression
   metric: normalized_weighted_gini
   metric_origin: source
-  scoring_columns: null
+  scoring_columns:
+  - var11_weight
   split_regime: iid
   stratify_on: null
   time_on: null
@@ -45,8 +46,10 @@ bundle_checks:
   warnings: []
   infos:
   - dataset_duplicates_skipped
-  - task_metric_input_is_model_input
   accepted:
+    task_metric_weight_without_sample_weight: 'var11, the size of the risk set at
+      underwriting, is a feature: the metric''s weight is a function of the features,
+      so MET-15 needs no training weight (2026-11-06).'
     task_target_value_dominant: 'Zero-inflated by nature: the target is 0 for the
       450,873 policies (99.74%) without a fire loss; not a cap or a placeholder.'
 decisions:
@@ -63,7 +66,7 @@ decisions:
 
 Regression of `log1p_transformed_loss_ratio`, scored with `normalized_weighted_gini` on IID splits. 452,061 rows and 299 features. Source: Kaggle (2014).
 
-Not built yet. The current definition gives checksum `v2:9ad1daa6ef48f4bf4075426b61d43d8a1184266b600dcb935cccb7553b3596a1`.
+Not built yet. The current definition gives checksum `v2:80afe60dff8aac5e39e80a11c937707d7d12b682a220b206b827fd5d0ed9096b`.
 
 ## In brief
 
@@ -125,7 +128,7 @@ Only curators run `build`, when the dataset ships.
 | license | Kaggle Competition Rules |
 | data_tags | IID, Anonymized, Spatial, ForcedIIDFromTemporal |
 | reference | LibertyMutual2014FirePerilLossCost |
-| rows x columns | 452,061 x 300 |
+| rows x columns | 452,061 x 301 |
 | task.target | log1p_transformed_loss_ratio |
 | task.problem_type | regression |
 | task.metric | normalized_weighted_gini |
@@ -140,8 +143,18 @@ Only curators run `build`, when the dataset ships.
 | original | Normalized weighted Gini coefficient, weights var11 |
 | reference | https://www.kaggle.com/competitions/liberty-mutual-fire-peril/overview/evaluation |
 | definition | WG(y, p) / WG(y, y), WG = sum L_i R_(i-1) - sum L_(i-1) R_i over rows sorted by descending p, R the cumulative weight share, L the cumulative share of weight * y (tied p form one step, the mean over their orderings) |
-| inputs | weight: `var11` |
+| inputs | weight: `var11_weight` |
 | target scale | ships on the `log1p` scale for modelling; scored on the original scale after the inverse of `log1p` |
+
+**Scoring columns**
+
+Kept in the frame for the metric; do not use them as features. Drop them from the inputs (`feature_columns(container)`), then pass the test rows' values to the scorer (`data_foundry.v2.metrics.scorer(container)(y_test, y_pred, test_idx)`).
+
+| column | role | how the metric uses it | model input |
+|---|---|---|---|
+| `var11_weight` | weight | normalized_weighted_gini: a copy of var11 (the square root of a round sum insured, set at underwriting), the weight of the competition's Gini; var11 itself stays a feature | never a feature |
+
+The test-row values of `var11_weight` are for the scorer only: never read them when predicting a test row.
 
 <details>
 <summary>Feature types: 10 categorical, 0 string, 0 datetime</summary>
@@ -169,28 +182,28 @@ Only curators run `build`, when the dataset ships.
 
 ## Sample rows
 
-The first 5 of 452,061 rows of the final frame (random rows: the frame is shuffled); 12 of 300 columns, the target first. Cells are cut at 40 characters.
+The first 5 of 452,061 rows of the final frame (random rows: the frame is shuffled); 12 of 301 columns, the target first. Cells are cut at 40 characters.
 
 | log1p_transformed_loss_ratio | var1 | var2 | var3 | var4 | var4_group | var5 | var6 | var7 | var8 | var9 | var10 |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| 0 | nan | nan | nan | M1 | M | nan | nan | 3 | 1 | A | 4.17121 |
-| 0 | nan | nan | nan | D3 | D | nan | nan | 5 | 1 | A | 3.82445 |
-| 0 | nan | nan | nan | H1 | H | nan | nan | 2 | 2 | A | 3.82445 |
-| 0 | 3 | nan | nan | H1 | H | nan | nan | 4 | 4 | nan | 4.50907 |
-| 0 | nan | nan | nan | D1 | D | nan | nan | 4 | 2 | A | 3.89895 |
+| 0 | nan | nan | nan | E3 | E | nan | nan | 2 | 3 | A | 3.89895 |
+| 0 | 2 | nan | nan | D3 | D | nan | nan | 1 | 5 | nan | 4.98662 |
+| 0 | nan | nan | nan | C1 | C | nan | nan | 4 | 4 | A | 3.82445 |
+| 0 | nan | nan | nan | M1 | M | nan | nan | 2 | 2 | A | 3.89895 |
+| 0 | nan | nan | nan | D3 | D | nan | nan | 3 | 2 | A | 3.89895 |
 
 ## Curation notes
 
 We start with train.csv from the Kaggle competition (452,061 policies; the test half was never labelled publicly).
 
 - Prediction point: Liberty Mutual underwrites a commercial policy's fire cover, before the term. The host ships every feature in its test file, so it treats them as known then. The features are anonymised, but three checks pass. The weather block is the location's climate, not the term's weather: it stays the same in 94.6-96.9% of the consecutive terms of a risk, and the crime and geodemographic blocks never change (LEAK-10). `var13` changes at 23.1% of the terms with a loss against 28.3% of those without, so it is not updated after a loss (LEAK-38). The newest term of a risk has a loss as often as its earlier terms (0.261% against 0.292%, Fisher p 0.47), so recent losses are not missing (LEAK-24).
-- The target is the host's "transformed ratio of loss to total insured value" (data page), shipped as its log1p, `log1p_transformed_loss_ratio`, and scored on the published scale (`target_transform="log1p"`, MET-3), as in allstate_claim_prediction_challenge_1m. The transform is not disclosed, and 58% of the losses exceed 1, so the published value is not a plain ratio of loss to insured value (USE-5). 450,873 policies (99.74%) are exactly 0, the 1,188 losses run from 0.006 to 25.9 (skew 1.90 on the published scale, -0.16 on the log scale), none is negative or missing. A regularised LightGBM trained on the log1p scores 0.314 / 0.306 / 0.320 on the shipped folds, against 0.300 / 0.317 / 0.276 trained on the published scale (ahead on 2 of 3 folds, 0.313 against 0.298 on average).
+- The target is the host's "transformed ratio of loss to total insured value" (data page), shipped as its log1p, `log1p_transformed_loss_ratio`, and scored on the published scale (`target_transform="log1p"`, MET-3), as in allstate_claim_prediction_challenge_1m. The transform is not disclosed, and 58% of the losses exceed 1, so the published value is not a plain ratio of loss to insured value (USE-5). The release records no term length, so the share of terms cut short is unknown and cannot be given; no feature carries a cut (`var17` is no share of a year, `var11` does not fall at loss terms), and the target is a ratio over the insured value, so it stays per contract (MET-14). 450,873 policies (99.74%) are exactly 0, the 1,188 losses run from 0.006 to 25.9 (skew 1.90 on the published scale, -0.16 on the log scale), none is negative or missing. A regularised LightGBM trained on the log1p scores 0.314 / 0.306 / 0.320 on the shipped folds, against 0.300 / 0.317 / 0.276 trained on the published scale (ahead on 2 of 3 folds, 0.313 against 0.298 on average).
 - We drop `id`: Kaggle randomised it ("We randomized the id column", forum thread 10026), and the loss rate is 0.25-0.28% in every id decile.
 - We drop `dummy`, a "Nuisance variable used to control the model, but not working as a predictor" (data page): it is `B` exactly where `var9` is `Z` (forum thread 10101), which `var9` keeps.
 - The level `Z` of `var1` to `var9` becomes missing ("Level "Z" in these variable represents a missing value", data page). These nine are categorical, as the data page lists them; the rest is numeric.
 - We add `var4_group`, the letter of `var4`: the data page says its levels "are in a hierarchical structure", the letter the higher level, and competitors split `var4` that way (forum thread 10194, "I split var4 into two values") (CLEAN-19).
 - We drop `weatherVar115`, 0 wherever present.
-- `var11` is the metric's weight ("var11 is the weight used in the weighted gini score calculation", data page) and stays a feature, so it is no scoring column: the data page lists it among the "policy characteristics", the host ships it in the test file, and it behaves like the size of the risk (the decision "var11 behaves like the size of the risk"), known for train and test rows alike at underwriting (MET-2 as amended on the curator's call, Andrej, 2026-11-02). As a feature it changed an untuned model's weighted Gini (log1p target) by -0.010 on average (-0.060 to +0.084 over 6 random folds).
+- `var11` is the metric's weight ("var11 is the weight used in the weighted gini score calculation", data page) and stays a feature, and a copy, `var11_weight`, ships as the scoring column the metric reads (MET-2 as reworded on 2026-11-05: the scoring columns are the complete set of a metric's extra data; asked in PR #47's review). As a feature: the data page lists it among the "policy characteristics", the host ships it in the test file, and it behaves like the size of the risk (the decision "var11 behaves like the size of the risk"), known for train and test rows alike at underwriting (MET-2 as amended on the curator's call, Andrej, 2026-11-02). On the shipped folds `var11` as a feature gains +0.0004 (L2 on log1p) and +0.0032 (weighted by `var11`), within the fold standard deviation of about 0.04; 1/`var11` alone scores 0.071 (0.038 to 0.119), through risk selection (USE-6); `var11` is indexed by a median 1-2% a term and does not change more often going into a loss term (63.7% against 62.4% of the steps, Fisher p 0.70): a planned amount, not a realized one (LEAK-41).
 - The host "normalized" the blocks (data page): 213 of 289 numeric columns have a mean between 0.9 and 1.1. The constant is not these records' mean (177 of the 213 lie more than 10 standard errors from 1 on this half), so it comes from outside these records and carries nothing of a test row (LEAK-30); the unscaled values were never published.
 - We keep the exact copies: 28,965 rows (6.4%) equal another row in every column but `id` and `dummy` (16,981 extra copies). They are of two kinds: 11,433 extra copies have `var15` missing, so they may be terms whose age is not recorded, and 5,548 share a `var15`, so they are not terms but perhaps locations of one account. Every one of the 49 groups with a loss also holds a copy without one, and only 2 of the 1,188 losses have a copy with a loss: distinct policies the features cannot tell apart, with genuinely different outcomes (LEAK-19, LEAK-20; the decision "Exact copies"). 4.8-4.9% of the rows of a test fold have a copy in training.
 - Note: `var13` alone ranks the shipped test folds at a weighted Gini of 0.221-0.260 (ties averaged), the regularised LightGBM on the log1p target at 0.306-0.320, higher on every fold (TP-4: not trivial); the forum knew it ("target = -var13", thread 9706). Its loss rate falls from 0.41% to 0.04% over its range, like an underwriting grade, so it stays (LEAK-38).
@@ -302,13 +315,13 @@ Rows equal in every column but var15, which then mostly steps by 1: consecutive 
 
 ## Bundle checks
 
-0 error(s), 0 warning(s), 2 info (26 checks run, plus the dataset's own checks).
+0 error(s), 0 warning(s), 1 info (27 checks run, plus the dataset's own checks).
 
-- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 135,618,300 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
-- **info** `task_metric_input_is_model_input`: The metric's input column(s) ['var11'] are also given to the models (a feature, the group or the time column); they are not scoring columns. (hint: Declare a column as a `ScoringColumn` only when it exists for scoring alone and must not be a feature.)
+- **info** `dataset_duplicates_skipped`: Skipped duplicate-column/row checks: 136,070,361 cells exceed the budget of 50,000,000. (hint: Raise `heavy_cell_budget=` to force them, or rely on `dataset_checks.run_all_checks`.)
 
 Accepted on purpose:
 
+- `task_metric_weight_without_sample_weight`: var11, the size of the risk set at underwriting, is a feature: the metric's weight is a function of the features, so MET-15 needs no training weight (2026-11-06).
 - `task_target_value_dominant`: Zero-inflated by nature: the target is 0 for the 450,873 policies (99.74%) without a fire loss; not a cap or a placeholder.
 
 ## Data checks
@@ -316,7 +329,7 @@ Accepted on purpose:
 ### Feature summary
 
 <details>
-<summary>Show the table (300 rows)</summary>
+<summary>Show the table (301 rows)</summary>
 
 | index | dtype | n_missing | pct_missing | n_unique | examples |
 |---|---|---|---|---|---|
@@ -376,12 +389,12 @@ Accepted on purpose:
 | weatherVar229 | float64 | 19355 | 4.28 | 114 | 0.0, 2.0287, 27.5082, 2.5789, 0.6877, 1.2035, 1.874, 1.7021, 4.642, 1.5301 |
 | weatherVar230 | float64 | 19355 | 4.28 | 393 | 0.0, 1.5576, 1.732, 1.3663, 2.0852, 2.0579, 0.3763, 0.515, 0.4288, 0.1429 |
 | weatherVar231 | float64 | 19355 | 4.28 | 612 | 0.0, 1.1174, 0.1584, 0.683, 3.829, 2.7849, 20.5399, 1.2076, 0.7239, 0.0341 |
-| weatherVar232 | float64 | 19355 | 4.28 | 1620 | 1.2281, 1.2153, 1.1501, 1.0367, 0.9862, 0.6681, 1.2011, 1.0516, 0.9656, 1.1367 |
+| weatherVar232 | float64 | 19355 | 4.28 | 1620 | 1.2281, 1.2153, 1.1501, 1.0367, 0.9862, 1.2011, 0.6681, 1.0516, 0.9656, 1.1367 |
 | weatherVar233 | float64 | 19355 | 4.28 | 2516 | 0.037, 0.1126, 2.0003, 0.0331, 0.653, 0.1523, 0.0111, 0.9128, 0.0355, 0.0043 |
 | weatherVar234 | float64 | 19355 | 4.28 | 71 | 2.1951, 0.2677, 0.2142, 0.0, 0.4283, 0.8566, 0.6425, 1.4456, 0.3212, 0.1606 |
 | weatherVar235 | float64 | 19355 | 4.28 | 72 | 0.6359, 0.1734, 0.0578, 0.4047, 0.2312, 0.4625, 0.3468, 0.0, 0.1156, 0.289 |
 
-(240 more rows not shown)
+(241 more rows not shown)
 
 </details>
 
@@ -394,7 +407,7 @@ Accepted on purpose:
 ### Numeric features
 
 <details>
-<summary>Show the table (290 rows)</summary>
+<summary>Show the table (291 rows)</summary>
 
 | index | count | mean | std | min | max |
 |---|---|---|---|---|---|
@@ -459,7 +472,7 @@ Accepted on purpose:
 | weatherVar4 | 449989 | 0.975721 | 2.19679 | 0 | 63.0456 |
 | weatherVar5 | 450201 | 0.946418 | 0.397183 | 0.0627853 | 3.03818 |
 
-(230 more rows not shown)
+(231 more rows not shown)
 
 </details>
 

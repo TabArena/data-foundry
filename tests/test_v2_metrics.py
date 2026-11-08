@@ -648,6 +648,25 @@ def test_the_regression_fallback_takes_a_weight_and_stays_the_fallback() -> None
     assert score(spec, y, p, weight=w) == pytest.approx(expected, rel=1e-12)
 
 
+def test_a_rank_only_metric_scores_a_log_target_without_inverting_the_predictions() -> None:
+    """A Gini reads the predictions only through their order, which an increasing inverse keeps, so a log-scale
+    prediction beyond expm1's range scores instead of raising; the score equals the one on the original scale.
+    """
+    y_log = np.log1p(np.array([0.0, 10.0, 0.0, 250.0, 3.0, 0.0, 40.0]))
+    p_log = np.array([0.1, 2.0, 0.3, 800.0, 1.0, 0.2, 2.5])
+    for name, inputs in (("normalized_gini", {}), ("normalized_weighted_gini", {"weight": "w"})):
+        spec = metric_spec(Metric.from_context(name, reason="r", inputs=inputs, target_transform="log1p"), "regression")
+        extra = {"weight": np.ones(7)} if inputs else {}
+        got = score(spec, y_log, p_log, **extra)
+        capped = np.minimum(p_log, 700.0)  # the same order, within expm1's range
+        expected = score(spec, y_log, capped, **extra)
+        assert np.isfinite(got)
+        assert got == pytest.approx(expected, abs=1e-12)
+    rmse = metric_spec(Metric.fallback(reason="r", target_transform="log1p"), "regression")
+    with pytest.raises(ValueError, match="overflow"):
+        score(rmse, y_log, p_log)  # a metric of the level still refuses an overflow
+
+
 def test_weighted_tweedie_deviance_equals_scikit_learn_with_sample_weight() -> None:
     """The compound-Poisson convention: an amount per unit at risk weighted by the units."""
     rng = np.random.default_rng(5)

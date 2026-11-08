@@ -418,6 +418,9 @@ class MetricDef:
         weighted_definition: The one-line formula of a spec that maps the optional ``weight``, when
             :attr:`definition` is the unweighted one (``rmse``); ``None`` when :attr:`definition` covers both (the
             deviances). It keeps the spec of an unweighted metric, and so a built container's checksum, unchanged.
+        rank_only: Whether it reads the predictions only through their order (a Gini sorted by the prediction). The
+            inverse of a ``target_transform`` is increasing, so such a metric scores the transformed predictions as
+            they are, which keeps a large log-scale prediction from overflowing on the way back.
     """
 
     name: str
@@ -437,6 +440,7 @@ class MetricDef:
     optional_inputs: tuple[str, ...] = ()
     row_weight: bool = False
     weighted_definition: str | None = None
+    rank_only: bool = False
 
     def definition_for(self, inputs: Mapping[str, str] | None) -> str:
         """The one-line formula of a spec that maps ``inputs``: :attr:`weighted_definition` when the spec maps the
@@ -1437,6 +1441,7 @@ _CUSTOM_METRICS = (
         "(tied p averaged over their orderings, so a constant p scores 0; the Kaggle code takes row order)",
         "https://www.kaggle.com/competitions/ClaimPredictionChallenge/overview/evaluation (normalized Gini, the "
         "reference code posted on Kaggle)",
+        rank_only=True,
     ),
     _custom(
         "normalized_weighted_gini",
@@ -1451,6 +1456,7 @@ _CUSTOM_METRICS = (
         "forum thread 9880)",
         inputs=("weight",),
         row_weight=True,
+        rank_only=True,
     ),
     _custom(
         "ordered_lorenz_gini",
@@ -1999,9 +2005,11 @@ def score(spec: Any, y_true: Any, y_pred: Any, *, labels: Any = None, **inputs: 
         if transform not in INVERSE_TRANSFORMS:
             raise ValueError(f"target_transform is one of {TARGET_TRANSFORMS}, not {transform!r}.")
         inverse = INVERSE_TRANSFORMS[transform]
+        rank_only = fields.get("name") in METRICS and METRICS[fields["name"]].rank_only
         with np.errstate(over="ignore"):
             y_true = inverse(y_true.astype(float))
-            y_pred = inverse(np.asarray(y_pred, dtype=float))
+            if not rank_only:  # an increasing inverse keeps the order a rank-only metric reads
+                y_pred = inverse(np.asarray(y_pred, dtype=float))
         _require_finite("y_true", y_true, f" after the inverse of target_transform={transform!r} (an overflow)")
         _require_finite("y_pred", y_pred, f" after the inverse of target_transform={transform!r} (an overflow)")
     values = {role: np.asarray(v) for role, v in inputs.items()}

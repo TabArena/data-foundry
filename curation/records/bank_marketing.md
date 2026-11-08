@@ -67,6 +67,8 @@ CC (2026-11-08, Lennart): issue 2 of the folder's REVIEW.md, reply (a) to the an
 
 CC (2026-11-08, Lennart): issue 4, A (as implemented): the month of the last call stays out of the inputs, with the day: every input exists before the first call, and the period is in the time key (on the windows the month adds nothing: -0.0096 for LightGBM, -0.0019 for logistic regression).
 
+CC (2026-11-08, Lennart, in chat): the protocol line for the newest window's recurring clients (703 test records whose later record in the same window gives the label away; no use of other test rows) is enough ("that sounds valid to me"); the five windows stay as they are.
+
 ## Reference
 
 S. Moro, R. Laureano and P. Cortez. Using Data Mining for Bank Direct Marketing: An Application of the CRISP-DM Methodology. In P. Novais et al. (Eds.), Proceedings of the European Simulation and Modelling Conference - ESM'2011, pp. 117-121, Guimarães, Portugal, October, 2011. EUROSIS.

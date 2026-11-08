@@ -1189,6 +1189,69 @@ def test_shared_units_flags_a_unit_on_both_sides_of_a_forced_split(leak_probe):
     assert "`unit`: 0.0% of the test rows of 3 splits (0) have" in "\n".join(leak_probe.shared_units_lines(grouped))
 
 
+def _fleets(*, twins: int = 0, groups: int = 600, seed: int = 0) -> pd.DataFrame:
+    """Fleets of 1 to 6 vehicles: every vehicle of a fleet has the fleet's classes (``a``, ``b``, ``c`` on a coarse
+    grid, so some fleets share them by chance) and its claim level. With ``twins``, that many fleets are a copy of
+    another: one client under two contract numbers, with its classes and its level.
+    """
+    rng = np.random.default_rng(seed)
+    a, b, c = (rng.integers(0, 20, groups) for _ in range(3))
+    level = rng.normal(0, 1, groups)
+    first = np.arange(0, 2 * twins, 2)
+    a[first + 1], b[first + 1], c[first + 1], level[first + 1] = a[first], b[first], c[first], level[first]
+    g = np.repeat(np.arange(groups), rng.integers(1, 7, groups))
+    y = 0.05 * a[g] + level[g] + rng.normal(0, 0.5, len(g))
+    return pd.DataFrame({"g": g, "a": a[g], "b": b[g], "c": c[g], "y": y})
+
+
+@pytest.mark.parametrize(("twins", "flagged"), [(0, False), (150, True)])
+def test_shared_units_on_a_grouped_split_reads_no_group_of_its_own(leak_probe, twins, flagged):
+    """Probe 23 (b) on fleets split by contract: the vehicles of a fleet repeat their profile and share its claim
+    level, but no level crosses fleets, so a lookup of the exact profile gains nothing (the training side's lookup is
+    drawn by contract and never reads the row's own fleet, as a test row's never does). One client under two contract
+    numbers is a shared unit across the split, and its lookup gains on the test rows that have one.
+    """
+    frame = _fleets(twins=twins)
+    result = leak_probe.shared_units(
+        frame,
+        "y",
+        "regression",
+        _by_unit(frame.rename(columns={"g": "unit"})),
+        unit_cols=["g"],
+        group_cols=["g"],
+        seeds=(0, 1),
+        n_estimators=60,
+        n_jobs=1,
+        report=False,
+    )
+    assert result["lookup_folds"] == "by group"
+    assert result["units"]["`g`"]["matched"] == 0.0
+    profile = result["units"]["the exact profile of the 3 model inputs"]
+    assert profile["matched"] > 0.03  # fleets that share their classes by chance, or twins
+    assert bool(result["flags"]) is flagged
+    assert abs(profile["change_without_lookup"]["mean"]) < 0.02  # the rows without a lookup keep their score
+    if flagged:
+        assert profile["gain_with_lookup"]["mean"] > 0.05
+    line = next(x for x in leak_probe.shared_units_lines(result) if "the exact profile" in x)
+    assert "on the test rows with one, changes the rest by" in line
+
+
+def test_lookup_folds_by_group_never_read_a_rows_own_group(leak_probe):
+    """The training side's out-of-fold lookup: drawn by group, a fleet whose profile no other fleet has gets no
+    lookup; drawn by row, it reads its own fleet's other vehicles (the artefact of 2026-11-08 on
+    pricing_game_2016_french_fleet).
+    """
+    groups = np.repeat(np.arange(200), 4)
+    units = groups.copy()  # each fleet's profile is its own
+    values = np.random.default_rng(0).normal(size=(len(units), 1))
+    tr, te = np.arange(600), np.arange(600, 800)
+    on_tr, on_te = leak_probe._lookup(units, values, np.ones(len(units)), tr, tr, te, np.random.default_rng(0), groups)
+    assert np.isnan(on_tr).all()
+    assert np.isnan(on_te).all()
+    by_row, _ = leak_probe._lookup(units, values, np.ones(len(units)), tr, tr, te, np.random.default_rng(0))
+    assert np.isfinite(by_row).mean() > 0.9
+
+
 def test_outcome_periods_and_period_columns(leak_probe):
     """The periods of probe 23: dates cut at the coarsest calendar period with three or more, many years merged into
     runs of consecutive years, a category's own order kept; the period column found by dates, then years (fewest values

@@ -1,5 +1,56 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-08, PR #47: follow-ups and the Kaggle three's re-review (no container built)
+
+Lennart's follow-ups to the settled board (2026-11-08): the profile flag on pricing_game_2016, the reach of one vote per
+unit, fremtpl2's one task, loan_default's marker, and the three Kaggle datasets, whose files arrived once their rules
+were accepted and whose re-review panels (focused) ran. No container was built. New open issues: fremtpl2 12,
+pricing_game_2016 9, loan_default 4, liberty 4, allstate 6 and 7; new items across datasets on one vote per unit and a
+text fix.
+
+- `fremtpl2`: one task, the claims per year insured, kept; D12 closed on Lennart's question of 2026-11-08 ("which task
+  is more representative of the real use case? use that one and the other is not created"); the claim cost per year
+  insured was measured and is not created (on 9 random splits the weighted Poisson deviance orders five models on every
+  split, Kendall's W 0.89; on the cost per year one claim of 4.08M EUR is 18-19% of its test fold's amount and the
+  weighted Gini orders the models by chance, W 0.43). Notes only; the notes no longer call the weight-alone score a
+  ceiling. Open for confirmation as issue 12.
+- `bemtpl97`: the notes no longer call the weight-alone score a ceiling (LEAK-41 as reworded on 2026-11-08). Text only.
+- `bank_marketing`: the protocol line for the newest window's recurring clients is enough, and the five windows stay
+  (Lennart, in chat).
+- `loan_default_prediction_imperial_college`: issue 4 opened (remove the record's `Data Quality Issue` marker; both
+  concerns behind it are settled).
+- `liberty_mutual_fire_peril_loss_cost`, `allstate_claim_prediction_challenge_1m`,
+  `loan_default_prediction_imperial_college`: the Kaggle files downloaded (rules accepted); `dataset check` 0 errors
+  (loan_default: a new warning on -1 sentinels in 9 columns); liberty's README regenerated; their re-review panels under
+  the new rules run.
+- `pricing_game_2016_french_fleet`: issue 9 opened: probe 23's flag on shared rating profiles across the contract folds
+  is an artefact of the probe's row-fold lookup (by contract -0.047, SE 0.042); the matches are common cells (94% on 1
+  January) with no client link, shared claim or event; open: join the three contracts that share registration 32348 (B)
+  or only a note (A). Definition unchanged; the probe's lookup is drawn by group on a grouped split.
+- Probe 23 fixed: on a grouped split the training side's out-of-fold lookup is drawn by group (a training row never
+  reads its own group, as a test row never does); the gain is reported on the test rows with a lookup and on the rest,
+  each scored on its own rows. pricing_game_2016_french_fleet's flag (+0.117) was an artefact of the row folds: now
+  -0.40 on the matched rows (SE 0.44), -0.018 in all, no flag. Tests for both foldings.
+- Cross-dataset items opened (a new section "From the review of 2026-11-08"): one vote per unit for superconductivity
+  and pancreatic_cancer_mouse_detection; which unit the score counts once in dementia_prediction,
+  asp_potassco_classification and video_transcoding_time_prediction; a text fix in african_credit_scoring_challenge.
+- `liberty_mutual_fire_peril_loss_cost`: focused re-review under LEAK-41, MET-14 to MET-16 once the raw data arrived
+  (claim auditor, column auditor, mediator: ship after changes): `var11` is a planned amount, so no leak; its notes give
+  the shipped-fold gains (+0.0004 L2, +0.0032 weighted), 1/`var11` alone (0.071) and that it changes no more often at
+  loss terms; the target stays per contract (no term length recorded). Issue 4 opened (`var1`, `var3`, `var7`, `var8`:
+  unordered, ordered or numbers).
+- `allstate_claim_prediction_challenge_1m`: focused re-review once the raw data arrived (ship after changes, once the
+  population is decided): about 38% of the 2006 rows are cars that joined during the year, on risk for about half of it
+  (0.45 to 0.59 of their own 2007 rate), where the notes said 1.4%; the notes, the exposure paragraph and decision 1
+  corrected. Issues 6 (only the cars on the policy at the start of 2006, or all rows) and 7 (the per-contract target
+  when a claim ends the cover) opened.
+- `loan_default_prediction_imperial_college`: focused re-review once the raw data arrived (ship after changes):
+  `dataset_missing_value_sentinel` accepted (-1 is a value, not a missing code); the target's "share of the loan's
+  amount" marked as our reading of the host's "scaled number between 0 and 100"; the planned term named (MET-14); issue
+  4 corrected in place, still open.
+- Code: a rank-only metric (`normalized_gini`, `normalized_weighted_gini`) scores a log-scale target's predictions
+  without the inverse transform, which keeps their order and cannot overflow (`MetricDef.rank_only`); a test.
+
 ## 2026-11-08, PR #47: the items across datasets applied (no container built)
 
 Lennart marked the board's items across datasets (all go ahead) and discussed X4 in chat, which a measurement on

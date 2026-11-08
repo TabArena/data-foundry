@@ -19,7 +19,10 @@ no feature's gain goes through the weight above noise, and the weight as a featu
 arm); LEAK-41's last clause, as amended on 2026-11-08 (issue 7), takes the source's floor as the task's population: the
 organisers left out every period shorter than 30 days, about 1.5% of the vehicle-years; SPLIT-8 holds (forced from
 temporal by contract on 2026-11-08, issue 6: the leak test across the folds passes, and on the 2013 periods the forced
-split scores as the valid window does); the exception to SPLIT-10 lapsed with the windows.
+split scores as the valid window does); the exception to SPLIT-10 lapsed with the windows. Probe 23's shared-unit flag
+of 2026-11-08 (a lookup of the exact profile across the contract folds, +0.117) reads as LEAK-18's natural repeats and
+an artefact of the probe's row folds, not a leak (issue 9: with the lookup out of fold by contract, -0.047); LEAK-17
+is open for one registration under three contracts (issue 9).
 Value: TP-4 holds on the declared metric for a fit that keeps its relativities in check (on the contract folds a Tweedie
 GLM beats the weighted constant by 1.39, bootstrap standard error 0.46, on all 9 folds; a regularised Tweedie LightGBM
 by 0.59, 0.58), while untuned models score worse than the constant (an untuned LightGBM 86.84 against 82.63; the task
@@ -33,9 +36,11 @@ semi-annual < quarterly, 2026-11-08, as in the two other pricing tables); LEAK-1
 where the panel found it overstated.
 Weighed: the original files +, a real fleet-pricing task +, the family's only commercial-fleet damage table +; weak,
 anonymised covariates -, held-out fleets of the same years standing in for next year's book -.
-Left for Andrej and Lennart: nothing. The split (issue 6), the organisers' floor of 30 days (issue 7) and the stand-in
-metric (issue 8) were settled on 2026-11-08; the build is stale until a rebuild (the split, the metric, the ordered
-bands).
+Left for Andrej and Lennart: issue 9, opened on 2026-11-08 after probe 23 flagged shared rating profiles across the
+contract folds: they are common cells, not one client under several contracts, so the split by contract stays with a
+note; open is whether to join the three contracts that share one registration (recommended). The split (issue 6), the
+organisers' floor of 30 days (issue 7) and the stand-in metric (issue 8) were settled on 2026-11-08; the build is stale
+until a rebuild (the split, the metric, the ordered bands).
 
 Changes made after the review panel (AI, 2026-11-01 and 2026-11-02): `exposure` is the length of cover to 31 December
 for every period; the metric is a stand-in for the game's market; the statements the claim audit refuted are corrected;
@@ -61,7 +66,9 @@ summary's split and fit (approximate), the notes on late claims, the splits comm
 measurements are rewritten on the contract folds; the record's split fields follow. The panel's reports describe the
 definition before these changes.
 
-**Main points:** None left. Issues 1 to 5 are resolved, 2 and 4 superseded by 5; issues 6 to 8 on 2026-11-08 (the
+**Main points:** Issue 9 (open, probe 23 of 2026-11-08): the shared rating profiles across the contract folds are no
+leak, so the split by contract stays with a note; also join the three contracts that share a registration (B,
+recommended), or leave them (A)? Issues 1 to 5 are resolved, 2 and 4 superseded by 5; issues 6 to 8 on 2026-11-08 (the
 split by contract, forced from temporal; the rule amended for a selection the source made before release; the
 uniformly rescaled weighted Tweedie deviance as the stand-in). To note before the rebuild: under the new metric untuned
 models and the task probe's families score worse than the weighted constant, and only fits that keep the relativities
@@ -744,6 +751,129 @@ in check (a Tweedie GLM, a regularised LightGBM, a frequency model) beat it.
      a weighing between the source's metric and the fallback (**MET-10**, Weigh), since the original cannot be computed.
    [^newmetric]: **MET-13** (Must): a custom metric ships as a reference implementation in the shared metric library, in
      the same change, tested against the official implementation and timed on 1M rows.
+
+9. **Shared rating profiles across the contract folds: keep the split as shipped, or also join the three contracts that share a registration?**
+
+   * **Problem:**
+     - The leak test across the forced split flags a lookup: 4.3% of the test periods have the same rating classes and
+       start date as training periods of another contract, and giving a model those training periods' mean outcome
+       improves the declared metric by 0.117 (standard error 0.021, on 9 of 9 splits)[^p23].
+     - Two readings were open: one client insured under several contract numbers, whose outcome would then cross the
+       split and call for a wider group, or different fleets in the same common rating cell, whose repeats are natural
+       and need nothing[^unit].
+     - The follow-up finds no client link and no shared outcome (the matches are common cells, nearly all on 1 January,
+       and the gain comes from how the probe builds the lookup on the training side), so what is left to decide is the
+       one link between contracts the data states, a registration under three contracts with one period each and no
+       claim.
+   * **Background:**
+     - The probe's lookup: for each test period, the weighted mean charge per vehicle-year of the training periods with
+       the same 16 inputs (the fleet's classes, the vehicle's two classes, the start date and the length to 31 December)
+       joins the inputs of a regularised Tweedie LightGBM; the training periods get the same column out of fold, from 5
+       random folds of the training periods, so a training period also reads the other vehicles of its own fleet, which
+       a test period never can.
+     - 37.6% of all periods start on 1 January, the cut every vehicle in force gets at the year's start, and 54% on the
+       1st of a month; the vehicles of one fleet in one period share every input but their own two classes.
+     - The contract numbers appear to run in the order of subscription, so a profile, which holds the contract's age
+       class and the year, also fixes a cohort of contract numbers.
+     - Registration 32348 (the anonymised `vehicle_id`) has one period under each of contracts 6168, 6169 and 6170, in
+       three zones, two of them overlapping in 2013; every other vehicle of the 68,485 keeps one contract. The notes say
+       "one of 68,485 has two": it has three.
+   * **Effect on the task:**
+     - None measured from the shared profiles: a model gains nothing from another fleet's outcome in the same cell beyond
+       what the classes give it.
+     - The registration's three periods land on different sides of a fold in every repeat, with no claim to carry.
+   * **Experiments:** the counts on the whole table or the 9 shipped splits; every lookup on those 9 splits x 3 seeds,
+     each side capped at 50,000 periods and scored by the declared metric, as the probe runs.
+     - Where the matches fall: 94.3% of the matched test periods start on 1 January (37.6% of all test periods) and
+       98.4% on the 1st of a month, the rest on quarter starts (1 April, 1 July, 1 October); 86% of the shared profiles
+       are held by two contracts (at most six), and 95% of the 2,704 contract pairs with a shared profile share it in one
+       year only.
+     - No client: 29 of the 2,704 pairs (1.1%) are numbered within 2 of each other, against 0.4% of the pairs that share
+       only the fleet's classes and start and 0.07% of random pairs of one subscription cohort; a lookup restricted to
+       contracts numbered within 20 reaches 0.3% of the test periods and gains nothing.
+     - No shared claim: none of the 24 matched pairs with a claim on both sides has the same charge, and the charges that
+       recur in the claim file are flat amounts (130, 150 and 2,200 before the release's scaling).
+     - No shared outcome: a claim on one period of a matched pair goes with a claim on the other 1.45 times as often as
+       on average (phi 0.031, 3,905 pairs), against 1.20 times (phi 0.014) for the same cell in another year, a gap
+       within noise (standard error of phi about 0.016).
+     - No event: a lookup of the same cell, with the start and the length to 31 December left out, over periods started
+       within 7 or 31 days but not the same day gains -0.015 (SE 0.019) and +0.013 (SE 0.023) with the probe's folds
+       (-0.002 and -0.050 with folds by contract); over the same calendar date in another year -0.002 (SE 0.028).
+     - Where the gain comes from: per period, the test periods with a lookup lose 0.012 and those without one gain 0.129,
+       so the lookup does not predict the matched periods; with the probe's random row folds 19.2% of the training
+       periods get a lookup, 78% of its weight from their own fleet, against 4.3% of the test periods.
+     - The lookup built for the training periods as the test periods see it, out of fold by contract, gains nothing in
+       any form, and on the matched periods it loses 0.047 (SE 0.023): a test that would have kept the gain had another
+       fleet's outcome reached the test periods[^proof].
+
+       | Lookup over the training periods with | Test periods with one | Gain, the probe's row folds | Gain, folds by contract |
+       |---|---|---|---|
+       | the same 16 inputs | 4.3% | +0.117 (SE 0.021, 9 of 9) | -0.047 (SE 0.042, 4 of 9) |
+       | the same 16 inputs, the match alone (no outcome) | 4.3% | +0.029 (SE 0.029) | -0.053 (SE 0.033) |
+       | the same inputs but the start | 8.6% | +0.047 (SE 0.033) | -0.016 (SE 0.041) |
+       | the same inputs but the start, in the same year | 4.5% | +0.080 (SE 0.024) | -0.042 (SE 0.033) |
+       | the same 16 inputs, a contract numbered within 20 | 0.3% | 0 | 0 |
+
+   * **Consistency:**
+     - Natural repeats of coarse inputs are kept with a note, as in sepsis_survival_minimal_clinical_records and
+       ai4d_lab_tanzania_tourism_classification_challenge[^leak18]; this table's notes already keep its 13.5% of repeated
+       periods on that ground.
+     - frempl_french_motor_personal_line widened its group to records the data links by their dates[^frempl]; here the
+       data links contracts only through the one registration, and a client guessed from contract numbers and classes is
+       the kind of key the grouping rule bars[^unit].
+   * **Panel:** none; raised by probe 23 on 2026-11-08.
+   * **Options:**
+
+     | | Option | What it does | Pro | Con |
+     |---|---|---|---|---|
+     | A | The split by contract, with a note (implemented) | the notes say the shared profiles are natural repeats and why the probe's flag is no leak; rows, split and score unchanged | what the evidence supports; no fold changes | the registration under three contracts stays on several sides (three periods, no claim) |
+     | B | Also join the contracts that share a registration | the note as in A; the group becomes the contract with the contracts that share a vehicle joined (6168, 6169 and 6170 in one group, 18,035 groups) | every vehicle on one side; a key the data states exactly | a derived group column; every fold reshuffles, so the notes' fold numbers are measured again; no score can move |
+     | C | Group by a guessed client | contracts numbered next to each other with the same fleet classes joined | would catch a client with several contracts | a guess, not a key the data states; the matched pairs show no such link, and their lookup gains nothing |
+     | D | A protocol line | the benchmark's instructions bar looking up other rows' outcomes | none found | no leak to bar; the benchmark cannot check it |
+
+   * **Recommendation:** B: the flag needs only the note, since no fleet's outcome reaches another fleet's test periods,
+     and the one exact link between contracts costs little to honour as the rule on repeated entities asks; A if three
+     periods without a claim do not seem worth reshuffling the folds. **Decision:** A or B?
+
+   **Notes for the AI:**
+   - A and B: in `curation_comments`, the bullet on repeated rows (LEAK-18) gets after "8.6% without the start)": "Probe
+     23 (2026-11-08) flagged a lookup of that profile across the folds (+0.117 on the declared metric, SE 0.021, 9 of 9
+     splits). It comes from the probe's row folds, which let 19% of the training periods read their own fleet (78% of
+     the lookup's weight): built out of fold by contract, as a test period sees it, the lookup gains -0.047 (SE 0.042);
+     the matches are common cells, 94% on 1 January, with no shared claim and no client link (REVIEW.md issue 9)." The
+     vehicle with "two" contracts has three: fix "one of 68,485 has two" in the grouping definition, `splits_comment` and
+     the comment of `_clean` step 7 (A: "a vehicle keeps its contract, but for one of 68,485, with one period under
+     each of three contracts and no claim").
+   - B: in `_clean`, before `vehicle_id` is dropped, a group column (say `fleet_group`): `contract_id`, with the
+     contracts that share a `vehicle_id` joined under the smallest number (connected components of the contract and
+     vehicle pairs; assert that it joins exactly 6168, 6169 and 6170); `contract_id` dropped, `GROUP` the new column;
+     rewrite the grouping definition ("a vehicle keeps its group"), `task_summary.split` and `changes`, `splits_comment`,
+     Decision 2 and the notes' "Dropped:" bullet; re-run the fold measurements (`issues6_8/folds.py` of the exposure
+     review's run folder) and the leak probes with probe 23, and update every fold number in the notes; a CC line naming
+     the case (LEAK-17, SPLIT-24); `dataset check` and ruff.
+   - Either way, for the main session: probe 23's shared-unit test draws the training side's lookup folds by row; on a
+     grouped split it should draw them by group, as the test side sees the lookup, and report the gain on the test rows
+     with a lookup apart from the rest. The probe-23 row of leak_checks.md's probe table cites this dataset's +0.117:
+     it then reads as the probe's artefact (folds by contract: -0.047, SE 0.042). The run: the exposure review's run
+     folder, `pricing_game_2016_french_fleet/apply_2026-11-08/probe23_units/` (`describe.py`, `describe2.py`,
+     `lookups.py`, `lookups2.py`, `near_pairs.py`, `consecutive.py`, `shared_vehicle.py`, with their logs).
+
+   [^p23]: **SPLIT-8** (Must): a forced split "gets a leak test across the split and the leak probes: does a row share
+     its outcome, its unit's outcome or its period's outcome with the other side"; "a leak found is weighed case by
+     case". Probe 23 (b), leak_checks.md: a gain above 2 standard errors reads as "the unit's outcome reaches the test
+     rows through training; for a profile it can also be natural repeats (LEAK-18), and whether the copies are one
+     entity decides (LEAK-17)".
+   [^unit]: **LEAK-17** (Must): "Repeated entities in different rows (the same patient, house, molecule or object) leak
+     the target across the split even when the rows differ: keep one row per entity when the use case is that row
+     (USE-11), or group (SPLIT-24, SPLIT-29)." **SPLIT-24** (Must): "Group on a true group id, or on one constructed
+     exactly from the data ... Never on a similarity-threshold cluster, and never on a hash of the feature vector
+     standing in for an unknown entity."
+   [^leak18]: **LEAK-18** (Should): "Few features and plausible repeats: natural, keep them and say so." Its cases:
+     sepsis_survival_minimal_clinical_records, ai4d_lab_tanzania_tourism_classification_challenge (Lennart, 2026-11-05).
+   [^frempl]: **SPLIT-24**'s Cases row for frempl_french_motor_personal_line: "a policy component joins records where one
+     may continue another (starting the day the other ends, ages advanced) ... (Andrej, 2026-11-03), widened to a
+     successor with one profile column changed and no counter lower (Lennart, 2026-11-08)".
+   [^proof]: **EV-6** (Should): "A claim is proven by a test that could have refuted it."
 
 **Review panel:** ship after changes (mediator). Tier full, a re-review of 2026-11-06 under LEAK-41 and MET-14 to MET-16
 after D11 (issue 5): the claim, column and split auditors, the domain practitioner, the precedent checker, the blind
