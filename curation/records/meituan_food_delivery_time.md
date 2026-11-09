@@ -4,7 +4,7 @@ name: 'Meituan: Operational-Level On-Demand Food Delivery Data for the INFORMS T
 checked_by:
 - Myunghwan
 data_foundry_status:
-- WIP (DF)
+- WIP (Triage)
 claimed_by: Myunghwan
 suggestion: 'Yes'
 priority: 4
