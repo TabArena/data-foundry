@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, TaskSummary, drop_columns
+from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Metric, RowBudget, TaskSummary, drop_columns
 
 TARGET = "is_blocked"
 
@@ -105,7 +105,7 @@ class Huntprohibited1m(AbstractCuratedDataset):
     )
 
     # Splits: IID (no time index survives); the `_1m` version sub-samples the frame to the 1.5M-row budget.
-    subsample_to_budget = True
+    row_budget = RowBudget(train=1_000_000, test=500_000)
     accepted_check_warnings = {
         "dataset_pure_feature_value": "Real-estate ads (category Недвижимость and its subcategories) and children's "
         "clothes are almost never blocked (0.12% of 1,149,136 real-estate ads in the full file): the seller picks the "

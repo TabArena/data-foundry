@@ -5,7 +5,16 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-from data_foundry.v2 import AbstractCuratedDataset, Decision, FeatureTypes, Grouping, Metric, TaskSummary, drop_columns
+from data_foundry.v2 import (
+    AbstractCuratedDataset,
+    Decision,
+    FeatureTypes,
+    Grouping,
+    Metric,
+    RowBudget,
+    TaskSummary,
+    drop_columns,
+)
 
 CUT = "2013-01-01"
 """The prediction date: the features are the invoices before it, and the fraud labels look recorded from it on."""
@@ -240,12 +249,7 @@ class FraudDetectionInElectricityAndGasConsumption1m(AbstractCuratedDataset):
         forward: the labels are undated findings of 2013-2019, one per client, so no test window or gap can be set,
         and train and test clients share the same years, as in the challenge.
     """
-    subsample_to_budget = True
-    accepted_check_warnings = {
-        "splits_rows_never_tested": "The v2 protocol caps each test fold at 500k rows; the grouped folds of the 1.5M-row "
-        "frame overshoot by whole clients, so 430 rows (0.03%, 18 clients) are trimmed from a "
-        "test fold (2026-10-20).",
-    }
+    row_budget = RowBudget(train=1_000_000, test=500_000)
 
     def _load_raw(self, raw_dir: Path) -> pd.DataFrame:
         text = {"client_id": str, "creation_date": str}

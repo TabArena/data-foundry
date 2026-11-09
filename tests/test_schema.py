@@ -10,6 +10,7 @@ from data_foundry.schema import (
     PredictiveMLSplitsMetadata,
     PredictiveMLTaskMetadata,
     PredictiveMLTaskMetadataV2,
+    RowBudget,
     SpecialFeature,
     SpectrumDetails,
     resolve_warehouse_dir,
@@ -362,6 +363,34 @@ def test_predictive_splits_metadata_time_gap_is_left_out_of_the_checksum_while_u
     assert (gapped.time_gap, gapped.time_gap_unit) == (5, "years")
     assert encode_pydantic_metadata(plain) != encode_pydantic_metadata(gapped)
     assert b"time_gap" not in encode_pydantic_metadata(plain)
+
+
+def test_predictive_splits_metadata_row_budget_is_left_out_of_the_checksum_while_unset():
+    splits = {0: {0: ([0, 1], [2, 3])}}
+    plain = PredictiveMLSplitsMetadata(splits_comment="x", splits=splits)
+    budgeted = PredictiveMLSplitsMetadata(splits_comment="x", splits=splits, row_budget=RowBudget(train=2, test=2))
+    assert plain.row_budget is None
+    assert b"row_budget" not in encode_pydantic_metadata(plain)  # a container saved before the field keeps verifying
+    assert encode_pydantic_metadata(plain) != encode_pydantic_metadata(budgeted)
+    assert "row_budget:          at most 0.002k train / 0.002k test rows per split" in budgeted.describe()
+    assert "row_budget" not in plain.describe()
+
+
+@pytest.mark.parametrize(
+    ("train", "suffix"), [(1_000_000, "1m"), (10_000_000, "10m"), (2_500_000, "2p5m"), (300_000, "300k")]
+)
+def test_row_budget_names_its_version_after_the_train_budget(train: int, suffix: str):
+    assert RowBudget(train=train, test=250_000).suffix == suffix
+
+
+def test_row_budget_takes_whole_positive_row_counts():
+    assert RowBudget(train=1e7, test=2.5e5) == RowBudget(train=10_000_000, test=250_000)  # `1e7` is a count
+    assert isinstance(RowBudget(train=1e7, test=1).train, int)
+    for train, test in ((0, 10), (10, -1), (1.5, 10)):
+        with pytest.raises(pydantic.ValidationError):
+            RowBudget(train=train, test=test)
+    with pytest.raises(pydantic.ValidationError):
+        RowBudget(train=10, test=5, frame=20)  # the frame follows from the budget
 
 
 def test_predictive_splits_metadata_time_gap_in_minutes():

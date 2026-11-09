@@ -27,8 +27,8 @@ finding on purpose (the notebook then documents the accepted deviation).
 The split protocol a bundle is judged by follows its container format
 (:attr:`~data_foundry.curation_container.CuratedContainer.format_version`): format 1 (the v1 notebooks, the shipped
 BeyondArena containers) by the v1 protocol of :mod:`data_foundry.curation_recommendations` (repeat ladder, 250k test
-rows), format 2 (the v2 definitions) by :func:`data_foundry.v2.splits.protocol_checks` (always 3 folds, 500k test
-rows). Every other check is the same for both formats.
+rows), format 2 (the v2 definitions) by :func:`data_foundry.v2.splits.protocol_checks` (always 3 folds, and the
+row budget the container records, if any). Every other check is the same for both formats.
 """
 
 from __future__ import annotations
@@ -46,6 +46,7 @@ import pandas as pd
 
 from data_foundry.curation_container import CuratedContainer
 from data_foundry.curation_recommendations import SPLIT_TEST_ROW_BUDGET, SPLIT_TRAIN_ROW_BUDGET
+from data_foundry.row_table import ROWS_FILE, SPLITS_TABLE_TYPE
 from data_foundry.schema import as_column_list
 from data_foundry.utils.checksum import categorical_details
 from data_foundry.utils.dtypes import is_str_dtype, object_columns
@@ -1431,9 +1432,11 @@ def _check_splits_coverage(ctx: _Ctx) -> Iterator[CheckResult]:
         )
 
     # Only k-fold-shaped splits (>1 fold per repeat) promise to test every row; a single
-    # train/test split per repeat deliberately leaves most rows in train only.
+    # train/test split per repeat deliberately leaves most rows in train only. Splits fitted to a row budget test on
+    # a sample of each fold's third by design, and the container records the budget.
     n_folds_per_repeat = {len(folds) for folds in ctx.splits_metadata.splits.values()}
-    if ctx.regime != "temporal_non_iid" and n_folds_per_repeat != {1}:
+    budgeted = ctx.splits_metadata.row_budget is not None
+    if ctx.regime != "temporal_non_iid" and n_folds_per_repeat != {1} and not budgeted:
         n_never_tested = int((~tested).sum())
         if n_never_tested:
             yield CheckResult(
@@ -1609,14 +1612,16 @@ def _check_splits_dimensions(ctx: _Ctx) -> Iterator[CheckResult]:
 
 @_check
 def _check_splits_row_budget(ctx: _Ctx) -> Iterator[CheckResult]:
-    """No outer split may train on more than 1M rows (or, in format 1, test on more than 250k)."""
-    if not ctx.flat_splits:
+    """Format 1: no outer split may train on more than 1M rows or test on more than 250k (the v1 protocol).
+
+    Format 2 has no protocol budget: a container is held to the ``row_budget`` it records, if any
+    (:func:`data_foundry.v2.splits.protocol_checks`).
+    """
+    if not ctx.flat_splits or ctx.container.format_version != 1:
         return
     train_budget, test_budget = SPLIT_TRAIN_ROW_BUDGET, SPLIT_TEST_ROW_BUDGET
     over_train = [(r, f, len(train)) for r, f, train, _test in ctx.flat_splits if len(train) > train_budget]
     over_test = [(r, f, len(test)) for r, f, _train, test in ctx.flat_splits if len(test) > test_budget]
-    if ctx.container.format_version != 1:
-        over_test = []  # format 2 has its own test budget: _check_splits_protocol_v2
     if over_train:
         largest = max(n for *_, n in over_train)
         yield CheckResult(
@@ -2103,14 +2108,22 @@ def _task_metadata_file(path: Path, container: CuratedContainer | None) -> str:
 
 
 def _expected_files(path: Path, container: CuratedContainer | None) -> list[str]:
-    """The files a saved container must hold (the category and test-set files only when the frames need them)."""
+    """The files a saved container must hold.
+
+    The category and test-set files only when the frames need them, the row table when the splits are in it.
+    """
+    table = (path / f"experiment_metadata.{SPLITS_TABLE_TYPE}.json").is_file()
     files = [
         "dataset.parquet",
         "dtypes.json",
         "container_metadata.json",
         "dataset_metadata.dataset-mold-v1.json",
         _task_metadata_file(path, container),
-        "experiment_metadata.predictive-ml-splits-mold-v1.json",
+        *(
+            [f"experiment_metadata.{SPLITS_TABLE_TYPE}.json", ROWS_FILE]
+            if table
+            else ["experiment_metadata.predictive-ml-splits-mold-v1.json"]
+        ),
     ]
     if container is not None and categorical_details(container.dataset):
         files.append("categories.json")
