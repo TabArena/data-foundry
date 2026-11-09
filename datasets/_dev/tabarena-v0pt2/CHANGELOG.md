@@ -1,5 +1,26 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-08 (SuperLender explicit ship verdict)
+
+- Myunghwan explicitly said 'ship this', confirming the completed review's default-ship disposition after independent consistency review. Preserve context ROC AUC, Random (IID)/ForcedIIDFromTemporal approximate evaluation and all previously approved limitations. No recipe, data, predictor, label or split change.
+- Clarify the metric Cases row: the exception is to MET-4 only; MET-11's context-origin requirement is followed, not excepted. This corrects the decision register's exception-to-Must classification without changing the approved metric or general rules.
+- The verdict accepts the definition for a later requested build under review-added-datasets. Keep the existing ownership claim and preserve resolved issues and historical panel; no build, source commit, publication, DF: Yes or claim release was performed.
+
+## 2026-11-08 (SuperLender split-field choice and review completion)
+
+- Myunghwan accepted random or temporal evaluation with care about borrower overlap. Keep the existing ForcedIIDFromTemporal/approximate random splits and align the record's required_split to Random (IID), after independent actual-mark consistency and a fresh raw/native-ID check: 4,368 scored borrowers and zero train/test borrower overlap in all nine unchanged folds.
+- All numbered issues, metric and record fields are settled. Apply the current procedure's default ship disposition: ready for a separately requested build. Preserve resolved issues and historical panel, retain the ownership claim, and leave DF: Yes for integration. No recipe, data, labels, predictors, split indices, build or source commit changed.
+
+## 2026-11-08 (SuperLender curator metric choice)
+
+- Myunghwan chose AUROC after discussion of the majority accuracy baseline and source error-rate scoring. Declare context `roc_auc`, preserving the computable original and documenting the case-specific MET-4 departure after independent consistency review. No general metric rule changes.
+- Data, Good/Bad labels, 32 predictors, cleaning and all nine forced-IID folds remain unchanged. Required_split still awaits its own mark; no overall ship decision or build is inferred. Issue 4 closes with the metric choice; issues 1–3 and the original panel remain as history. Regenerate README and rerun affected checks.
+
+## 2026-11-06 (SuperLender current-workflow review preparation)
+
+- Carried the qualified SuperLender definition and Myunghwan's applied keep/keep/accept decisions from the preserved 1964e1b2 checkout into an isolated checkout at 9048f36a. The current upstream candidate record had no intervening changes. The definition and existing data recipe are unchanged; no overall inclusion, split-field or metric mark is inferred.
+- Restored resolved review issues 1–3 with their original November 5 decisions, following the current history-retention convention. The original full panel remains. The record still has '?' for required_split and the definition remains approximate forced IID. No container was saved or dataset commit made.
+
 ## 2026-11-05, GitHub issue #48: column types (Lennart's marks)
 
 - `eryhemato_squamous_disease`: the 10 clinical scores 0-3 ship as numbers; a blanket `_feature_types` had cast them
