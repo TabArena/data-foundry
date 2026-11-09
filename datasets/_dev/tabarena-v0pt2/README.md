@@ -18,6 +18,11 @@ Working setup towards TabArena-v0.2: one v2 folder (`dataset.py` and a generated
 
 ## Rebuild
 
+Scoped build on 2026-11-08 (November 9 UTC): one requested definition, container format 2,
+four traced input files totaling 5,003,658 bytes. Reload and minimal-input reproduction passed
+with zero build errors or warnings. The dated changelog records its UUID and checksum; each dataset's generated
+README identifies its own latest build. This scoped run does not update the other definitions' build records.
+
 - The raw files come from `local-data-warehouse/` (or `$DATA_FOUNDRY_WAREHOUSE`); each folder's `README.md` gives the
   download command.
 - To rebuild, ask Claude; it follows

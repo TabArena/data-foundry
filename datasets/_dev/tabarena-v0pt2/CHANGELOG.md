@@ -1,5 +1,12 @@
 # Changelog: TabArena v0.2 working copy
 
+## 2026-11-08 (SuperLender requested build and local commits; built November 9 UTC)
+
+- Built only `loan_default_prediction_challenge`: format 2, UUID `01a1be30-45b2-71ef-901f-e94be6c0c4dd`, checksum `v2:322cbc2623bd4067697bf91c009aec047dedc6b204ba35d8c6bd16cd861dc120`, from clean definition commit `73360580f6752ec1713d2d7d0e8d11e4d4efafcf`. Preserve all 4,368 labeled rows, 32 predictors, approved context ROC AUC and the exact nine ForcedIIDFromTemporal/approximate random folds. Fresh raw-ID lineage confirms zero borrower overlap in every fold.
+- Save/reload verification and a check from the four traced raw inputs reproduce the checksum exactly; zero errors and warnings. The local input backup contains 4 files (5,003,658 bytes). Native scorer checks and fold hashes match qualification. No full model/probe rerun was needed because rows, labels, features and splits are unchanged.
+- Tests: 2,017 passed, 286 skipped; 18 initial failures due to sandbox-denied localhost sockets all passed on targeted rerun with socket access. Pinned Ruff lint/format, strict record validation and diff checks pass. No unrelated definition was rebuilt, no prior container was deleted and no raw data or container enters Git.
+- Local build/commit only. Claim remains held for integration; no DF: Yes, registry membership, push, PR, merge or data redistribution is applied. Original-source redistribution permission remains unresolved and separate from scientific acceptance.
+
 ## 2026-11-08 (SuperLender explicit ship verdict)
 
 - Myunghwan explicitly said 'ship this', confirming the completed review's default-ship disposition after independent consistency review. Preserve context ROC AUC, Random (IID)/ForcedIIDFromTemporal approximate evaluation and all previously approved limitations. No recipe, data, predictor, label or split change.
