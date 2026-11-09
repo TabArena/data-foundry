@@ -2,13 +2,27 @@
 
 Who is working on which dataset right now. A claim covers the dataset's curation record and its dataset folder. One file per claim under `claims/`, written by `data-foundry-curation claims` (claim, release, renew); do not edit by hand. An expired claim can be taken over.
 
-As of 2026-11-09 10:22 UTC: 109 claim(s) (Andrej 1, Lennart 90, Myunghwan 18).
+As of 2026-11-09 10:22 UTC: 123 claim(s) (Andrej 15, Lennart 90, Myunghwan 18).
 
 ## Andrej
 
 | Dataset | Stage | Since | Until | Note |
 |---|---|---|---|---|
+| `australian_vehicle_insurance_2004_2005` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
+| `boreal_postfire_lichen_biomass` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
+| `frempl_french_motor_personal_line` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
+| `liberty_mutual_fire_peril_loss_cost` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
+| `loan_default_prediction_imperial_college` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
+| `noaa_afsc_bottom_trawl_survey_cpue` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
+| `noaa_storm_events_damage` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
+| `pricing_game_2016_french_fleet` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
+| `pricing_game_2017_french_mtpl` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
+| `spanish_homeowners_motor_insurance_2010_2014` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
+| `spanish_motor_insurance_2015_2018` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
+| `spanish_motor_insurance_coverage_level_2022_2024` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
+| `wadden_sea_sibes_macoma_abundance` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 | `walmart_sales_in_stormy_weather` | add | 2026-10-30 | 2026-11-06 (expired) | add-dataset, zero-inflated batch |
+| `wisconsin_local_government_property_insurance_fund` | review | 2026-11-09 | 2026-11-16 | re-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09) |
 
 ## Lennart
 

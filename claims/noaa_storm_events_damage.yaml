@@ -1,0 +1,6 @@
+name: noaa_storm_events_damage
+holder: Andrej
+stage: review
+claimed_at: '2026-11-09T10:22:31Z'
+expires_at: '2026-11-16T10:22:31Z'
+note: 're-review of PR #47 after the Train/Predict/Score audit (taken over from Lennart, 2026-11-09)'
